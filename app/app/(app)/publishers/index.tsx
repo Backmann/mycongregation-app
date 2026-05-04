@@ -11,11 +11,13 @@ import {
 } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
-import { Publisher, publishersApi, extractErrorMessage } from '../../lib/api';
-import { useAuth } from '../../lib/auth';
+import {
+  extractErrorMessage,
+  Publisher,
+  publishersApi,
+} from '../../../lib/api';
 
-export default function PublishersScreen() {
-  const { user, signOut } = useAuth();
+export default function PublishersListScreen() {
   const [search, setSearch] = useState('');
 
   const { data, isLoading, isRefetching, refetch, error } = useQuery({
@@ -23,23 +25,8 @@ export default function PublishersScreen() {
     queryFn: () => publishersApi.list({ search: search || undefined }),
   });
 
-  const handleSignOut = async () => {
-    await signOut();
-    router.replace('/(auth)/login');
-  };
-
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <View style={{ flex: 1 }}>
-          <Text style={styles.title}>Publishers</Text>
-          <Text style={styles.subtitle}>{user?.email}</Text>
-        </View>
-        <Pressable onPress={handleSignOut} style={styles.signOut}>
-          <Text style={styles.signOutText}>Sign out</Text>
-        </Pressable>
-      </View>
-
       <TextInput
         style={styles.search}
         value={search}
@@ -71,12 +58,12 @@ export default function PublishersScreen() {
             </Text>
           }
           ListHeaderComponent={
-            data && (
+            data ? (
               <Text style={styles.count}>
                 {data.total} total
                 {search ? ` (filtered: ${data.data.length})` : ''}
               </Text>
-            )
+            ) : null
           }
           renderItem={({ item }) => <PublisherRow publisher={item} />}
         />
@@ -95,12 +82,16 @@ function PublisherRow({ publisher }: { publisher: Publisher }) {
   if (publisher.isAnointed) tags.push('Anointed');
   if (!publisher.isActive) tags.push('Inactive');
 
+  const initials =
+    (publisher.firstName[0] ?? '') + (publisher.lastName[0] ?? '');
+
   return (
-    <View style={styles.row}>
+    <Pressable
+      style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
+      onPress={() => router.push(`/publishers/${publisher.id}` as any)}
+    >
       <View style={[styles.avatar, gendered(publisher.gender)]}>
-        <Text style={styles.avatarText}>
-          {(publisher.firstName[0] ?? '') + (publisher.lastName[0] ?? '')}
-        </Text>
+        <Text style={styles.avatarText}>{initials}</Text>
       </View>
       <View style={{ flex: 1 }}>
         <Text style={styles.name}>{publisher.displayName}</Text>
@@ -117,7 +108,8 @@ function PublisherRow({ publisher }: { publisher: Publisher }) {
           <Text style={styles.phone}>{publisher.mobilePhone}</Text>
         )}
       </View>
-    </View>
+      <Text style={styles.chevron}>›</Text>
+    </Pressable>
   );
 }
 
@@ -127,23 +119,6 @@ const gendered = (g: 'brother' | 'sister') => ({
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f1f5f9' },
-  header: {
-    paddingTop: 56,
-    paddingHorizontal: 20,
-    paddingBottom: 16,
-    backgroundColor: '#0f172a',
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  title: { fontSize: 24, fontWeight: '700', color: '#fff' },
-  subtitle: { fontSize: 13, color: '#94a3b8', marginTop: 2 },
-  signOut: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 6,
-    backgroundColor: '#1e293b',
-  },
-  signOutText: { color: '#cbd5e1', fontSize: 13 },
   search: {
     margin: 16,
     paddingHorizontal: 14,
@@ -169,6 +144,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#e2e8f0',
     alignItems: 'center',
   },
+  rowPressed: { backgroundColor: '#f8fafc' },
   avatar: {
     width: 44,
     height: 44,
@@ -188,6 +164,7 @@ const styles = StyleSheet.create({
   },
   tagText: { color: '#0369a1', fontSize: 11, fontWeight: '500' },
   phone: { color: '#64748b', fontSize: 13, marginTop: 4 },
+  chevron: { color: '#cbd5e1', fontSize: 24, marginLeft: 8 },
   empty: {
     textAlign: 'center',
     color: '#94a3b8',
