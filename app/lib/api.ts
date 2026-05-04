@@ -93,6 +93,42 @@ export interface Publisher {
   deletedAt: string | null;
 }
 
+export interface CreatePublisherInput {
+  firstName: string;
+  middleName?: string;
+  lastName: string;
+  gender: Gender;
+  birthDate?: string;
+  mobilePhone?: string;
+  email?: string;
+  address?: string;
+  familyId?: string;
+  serviceGroupId?: string;
+  userId?: string;
+  isActive?: boolean;
+  isRegular?: boolean;
+  isFamilyHead?: boolean;
+  isElderlyOrInfirm?: boolean;
+  isChild?: boolean;
+  isDeaf?: boolean;
+  isBlind?: boolean;
+  isPrisoner?: boolean;
+  appointment?: PublisherAppointment;
+  baptismDate?: string;
+  ministryStartDate?: string;
+  pioneerType?: PioneerType;
+  pioneerSince?: string;
+  isAnointed?: boolean;
+  hasKingdomHallKey?: boolean;
+  printedWatchtower?: boolean;
+  printedWorkbook?: boolean;
+  sendsReportDirectly?: boolean;
+  spiritualNotes?: string;
+  notes?: string;
+}
+
+export type UpdatePublisherInput = Partial<CreatePublisherInput>;
+
 export interface Family {
   id: string;
   congregationId: string;
@@ -122,6 +158,15 @@ export interface Paginated<T> {
   total: number;
   limit: number;
   offset: number;
+}
+
+// ---------- Helpers ----------
+
+/** Strips empty strings and undefined; null is kept (some fields accept null). */
+function cleanPayload<T extends Record<string, any>>(input: T): Partial<T> {
+  return Object.fromEntries(
+    Object.entries(input).filter(([_, v]) => v !== '' && v !== undefined),
+  ) as Partial<T>;
 }
 
 // ---------- Endpoints ----------
@@ -154,6 +199,20 @@ export const publishersApi = {
   },
   async getById(id: string): Promise<Publisher> {
     const { data } = await api.get<Publisher>(`/publishers/${id}`);
+    return data;
+  },
+  async create(input: CreatePublisherInput): Promise<Publisher> {
+    const { data } = await api.post<Publisher>(
+      '/publishers',
+      cleanPayload(input),
+    );
+    return data;
+  },
+  async update(id: string, input: UpdatePublisherInput): Promise<Publisher> {
+    const { data } = await api.patch<Publisher>(
+      `/publishers/${id}`,
+      cleanPayload(input),
+    );
     return data;
   },
   async remove(

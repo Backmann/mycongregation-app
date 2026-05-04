@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -16,7 +16,9 @@ import {
   Publisher,
   publishersApi,
   RemovalReason,
+  UpdatePublisherInput,
 } from '../../../lib/api';
+import { PublisherForm } from '../../../components/PublisherForm';
 
 const REMOVAL_LABELS: Record<RemovalReason, string> = {
   moved: 'Moved',
@@ -28,6 +30,7 @@ const REMOVAL_LABELS: Record<RemovalReason, string> = {
 export default function PublisherDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const queryClient = useQueryClient();
+  const [editing, setEditing] = useState(false);
 
   const {
     data: publisher,
@@ -37,6 +40,16 @@ export default function PublisherDetailScreen() {
     queryKey: ['publisher', id],
     queryFn: () => publishersApi.getById(id!),
     enabled: !!id,
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: (input: UpdatePublisherInput) =>
+      publishersApi.update(id!, input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['publishers'] });
+      queryClient.invalidateQueries({ queryKey: ['publisher', id] });
+      setEditing(false);
+    },
   });
 
   const removeMutation = useMutation({
@@ -109,8 +122,52 @@ export default function PublisherDetailScreen() {
     );
   }
 
+  if (editing) {
+    return (
+      <PublisherForm
+        initial={{
+          firstName: publisher.firstName,
+          middleName: publisher.middleName ?? undefined,
+          lastName: publisher.lastName,
+          gender: publisher.gender,
+          birthDate: publisher.birthDate ?? undefined,
+          mobilePhone: publisher.mobilePhone ?? undefined,
+          email: publisher.email ?? undefined,
+          address: publisher.address ?? undefined,
+          appointment: publisher.appointment,
+          baptismDate: publisher.baptismDate ?? undefined,
+          ministryStartDate: publisher.ministryStartDate ?? undefined,
+          pioneerType: publisher.pioneerType,
+          pioneerSince: publisher.pioneerSince ?? undefined,
+          isAnointed: publisher.isAnointed,
+          hasKingdomHallKey: publisher.hasKingdomHallKey,
+          isActive: publisher.isActive,
+          isRegular: publisher.isRegular,
+          isFamilyHead: publisher.isFamilyHead,
+          printedWatchtower: publisher.printedWatchtower,
+          printedWorkbook: publisher.printedWorkbook,
+          sendsReportDirectly: publisher.sendsReportDirectly,
+          isElderlyOrInfirm: publisher.isElderlyOrInfirm,
+          isChild: publisher.isChild,
+          isDeaf: publisher.isDeaf,
+          isBlind: publisher.isBlind,
+          isPrisoner: publisher.isPrisoner,
+          spiritualNotes: publisher.spiritualNotes ?? undefined,
+          notes: publisher.notes ?? undefined,
+        }}
+        onSubmit={updateMutation.mutateAsync}
+        isSubmitting={updateMutation.isPending}
+        submitLabel="Save"
+        onCancel={() => setEditing(false)}
+      />
+    );
+  }
+
   return (
-    <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 32 }}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={{ paddingBottom: 32 }}
+    >
       <PublisherHeader publisher={publisher} />
 
       {publisher.deletedAt && (
@@ -143,10 +200,7 @@ export default function PublisherDetailScreen() {
           label="Pioneer"
           value={pioneerLabel(publisher.pioneerType, publisher.pioneerSince)}
         />
-        <Field
-          label="Anointed"
-          value={publisher.isAnointed ? 'Yes' : 'No'}
-        />
+        <Field label="Anointed" value={publisher.isAnointed ? 'Yes' : 'No'} />
         <Field
           label="Kingdom Hall key"
           value={publisher.hasKingdomHallKey ? 'Yes' : 'No'}
@@ -162,10 +216,7 @@ export default function PublisherDetailScreen() {
           label="Gender"
           value={publisher.gender === 'brother' ? 'Brother' : 'Sister'}
         />
-        <Field
-          label="Active"
-          value={publisher.isActive ? 'Yes' : 'No'}
-        />
+        <Field label="Active" value={publisher.isActive ? 'Yes' : 'No'} />
         <Field
           label="Family head"
           value={publisher.isFamilyHead ? 'Yes' : 'No'}
@@ -185,6 +236,14 @@ export default function PublisherDetailScreen() {
       )}
 
       <View style={styles.actions}>
+        {!publisher.deletedAt && (
+          <Pressable
+            style={[styles.button, styles.buttonEdit]}
+            onPress={() => setEditing(true)}
+          >
+            <Text style={styles.buttonEditText}>Edit</Text>
+          </Pressable>
+        )}
         {publisher.deletedAt ? (
           <Pressable
             style={[styles.button, styles.buttonRestore]}
@@ -219,7 +278,10 @@ function PublisherHeader({ publisher }: { publisher: Publisher }) {
       <View
         style={[
           styles.headerAvatar,
-          { backgroundColor: publisher.gender === 'brother' ? '#0ea5e9' : '#ec4899' },
+          {
+            backgroundColor:
+              publisher.gender === 'brother' ? '#0ea5e9' : '#ec4899',
+          },
         ]}
       >
         <Text style={styles.headerAvatarText}>{initials}</Text>
@@ -370,12 +432,10 @@ const styles = StyleSheet.create({
   fieldValue: { fontSize: 15, color: '#0f172a' },
   fieldEmpty: { fontSize: 15, color: '#cbd5e1' },
 
-  actions: { padding: 20 },
-  button: {
-    paddingVertical: 14,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
+  actions: { padding: 20, gap: 8 },
+  button: { paddingVertical: 14, borderRadius: 8, alignItems: 'center' },
+  buttonEdit: { backgroundColor: '#0ea5e9' },
+  buttonEditText: { color: '#fff', fontSize: 16, fontWeight: '600' },
   buttonRemove: { backgroundColor: '#dc2626' },
   buttonRestore: { backgroundColor: '#059669' },
   buttonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
