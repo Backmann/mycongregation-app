@@ -49,6 +49,8 @@ export type PioneerType =
   | 'missionary';
 export type RemovalReason = 'moved' | 'disfellowshipped' | 'died' | 'other';
 
+export type Capabilities = Record<string, boolean>;
+
 export interface Publisher {
   id: string;
   congregationId: string;
@@ -84,6 +86,7 @@ export interface Publisher {
   sendsReportDirectly: boolean;
   spiritualNotes: string | null;
   notes: string | null;
+  capabilities: Capabilities;
   removalReason: RemovalReason | null;
   removedAt: string | null;
   removedNote: string | null;
@@ -125,6 +128,7 @@ export interface CreatePublisherInput {
   sendsReportDirectly?: boolean;
   spiritualNotes?: string;
   notes?: string;
+  capabilities?: Capabilities;
 }
 export type UpdatePublisherInput = Partial<CreatePublisherInput>;
 

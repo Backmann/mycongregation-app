@@ -11,7 +11,9 @@ import { FormField } from './FormField';
 import { FormSection } from './FormSection';
 import { FormChips } from './FormChips';
 import { FormSwitch } from './FormSwitch';
+import { CapabilitiesEditor } from './CapabilitiesEditor';
 import {
+  Capabilities,
   CreatePublisherInput,
   Gender,
   PioneerType,
@@ -84,6 +86,7 @@ export function PublisherForm({
     isPrisoner: initial?.isPrisoner ?? false,
     spiritualNotes: initial?.spiritualNotes ?? '',
     notes: initial?.notes ?? '',
+    capabilities: initial?.capabilities ?? {},
   });
 
   const [error, setError] = useState<string | null>(null);
@@ -93,6 +96,10 @@ export function PublisherForm({
     value: CreatePublisherInput[K],
   ) => {
     setForm((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const updateCapabilities = (caps: Capabilities) => {
+    setForm((prev) => ({ ...prev, capabilities: caps }));
   };
 
   const handleSubmit = async () => {
@@ -230,6 +237,14 @@ export function PublisherForm({
         />
       </FormSection>
 
+      <FormSection title="Capabilities">
+        <CapabilitiesEditor
+          value={form.capabilities ?? {}}
+          onChange={updateCapabilities}
+          gender={form.gender}
+        />
+      </FormSection>
+
       <FormSection title="Status">
         <FormSwitch
           label="Active"
@@ -308,7 +323,11 @@ export function PublisherForm({
 
       <View style={styles.actions}>
         <Pressable
-          style={[styles.button, styles.buttonPrimary, isSubmitting && styles.buttonDisabled]}
+          style={[
+            styles.button,
+            styles.buttonPrimary,
+            isSubmitting && styles.buttonDisabled,
+          ]}
           onPress={handleSubmit}
           disabled={isSubmitting}
         >
@@ -352,6 +371,10 @@ const styles = StyleSheet.create({
   buttonPrimary: { backgroundColor: '#0ea5e9' },
   buttonDisabled: { opacity: 0.6 },
   buttonPrimaryText: { color: '#fff', fontSize: 16, fontWeight: '600' },
-  buttonSecondary: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#cbd5e1' },
+  buttonSecondary: {
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#cbd5e1',
+  },
   buttonSecondaryText: { color: '#475569', fontSize: 16, fontWeight: '500' },
 });

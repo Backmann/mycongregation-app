@@ -19,6 +19,10 @@ import {
   UpdatePublisherInput,
 } from '../../../lib/api';
 import { PublisherForm } from '../../../components/PublisherForm';
+import {
+  CAPABILITY_CATEGORIES,
+  countActiveCapabilities,
+} from '../../../lib/capabilities';
 
 const REMOVAL_LABELS: Record<RemovalReason, string> = {
   moved: 'Moved',
@@ -154,6 +158,7 @@ export default function PublisherDetailScreen() {
           isPrisoner: publisher.isPrisoner,
           spiritualNotes: publisher.spiritualNotes ?? undefined,
           notes: publisher.notes ?? undefined,
+          capabilities: publisher.capabilities ?? {},
         }}
         onSubmit={updateMutation.mutateAsync}
         isSubmitting={updateMutation.isPending}
@@ -162,6 +167,8 @@ export default function PublisherDetailScreen() {
       />
     );
   }
+
+  const totalActiveCaps = countActiveCapabilities(publisher.capabilities ?? {});
 
   return (
     <ScrollView
@@ -209,6 +216,36 @@ export default function PublisherDetailScreen() {
           <Field label="Notes" value={publisher.spiritualNotes} />
         )}
       </Section>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>
+          Capabilities {totalActiveCaps > 0 ? `(${totalActiveCaps})` : ''}
+        </Text>
+        <View style={styles.sectionBody}>
+          {totalActiveCaps === 0 ? (
+            <Text style={styles.emptyCaps}>No capabilities set</Text>
+          ) : (
+            CAPABILITY_CATEGORIES.map((category) => {
+              const activeCaps = category.capabilities.filter(
+                (c) => publisher.capabilities?.[c.key],
+              );
+              if (activeCaps.length === 0) return null;
+              return (
+                <View key={category.key} style={styles.capCategory}>
+                  <Text style={styles.capCategoryLabel}>{category.label}</Text>
+                  <View style={styles.capChips}>
+                    {activeCaps.map((cap) => (
+                      <View key={cap.key} style={styles.capChip}>
+                        <Text style={styles.capChipText}>{cap.label}</Text>
+                      </View>
+                    ))}
+                  </View>
+                </View>
+              );
+            })
+          )}
+        </View>
+      </View>
 
       <Section title="Personal">
         <Field label="Birth date" value={publisher.birthDate} />
@@ -431,6 +468,33 @@ const styles = StyleSheet.create({
   fieldLabel: { fontSize: 12, color: '#94a3b8', marginBottom: 2 },
   fieldValue: { fontSize: 15, color: '#0f172a' },
   fieldEmpty: { fontSize: 15, color: '#cbd5e1' },
+
+  emptyCaps: {
+    color: '#cbd5e1',
+    fontSize: 14,
+    textAlign: 'center',
+    padding: 16,
+  },
+  capCategory: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f5f9',
+  },
+  capCategoryLabel: {
+    fontSize: 12,
+    color: '#94a3b8',
+    marginBottom: 6,
+    fontWeight: '500',
+  },
+  capChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  capChip: {
+    backgroundColor: '#e0f2fe',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  capChipText: { color: '#0369a1', fontSize: 12, fontWeight: '500' },
 
   actions: { padding: 20, gap: 8 },
   button: { paddingVertical: 14, borderRadius: 8, alignItems: 'center' },
