@@ -66,7 +66,6 @@ export default function AppLayout() {
         name="profile"
         options={{
           title: 'Profile',
-          headerShown: true,
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="person-circle" color={color} size={size} />
           ),

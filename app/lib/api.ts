@@ -194,6 +194,9 @@ export interface Assignment {
   assistantPublisherId: string | null;
   status: AssignmentStatus;
   notes: string | null;
+  publicTalkId: string | null;
+  speakerName: string | null;
+  speakerCongregation: string | null;
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;
@@ -210,6 +213,9 @@ export interface CreateAssignmentInput {
   assistantPublisherId?: string | null;
   status?: AssignmentStatus;
   notes?: string;
+  publicTalkId?: string | null;
+  speakerName?: string | null;
+  speakerCongregation?: string | null;
 }
 export type UpdateAssignmentInput = Partial<CreateAssignmentInput>;
 
@@ -235,6 +241,33 @@ export interface ImportResult {
   weeks: WeekImportSummary[];
   errors: string[];
   warnings: string[];
+}
+
+// ---------- Public talks types ----------
+
+export interface PublicTalk {
+  id: string;
+  number: number;
+  title: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreatePublicTalkInput {
+  number: number;
+  title: string;
+  isActive?: boolean;
+}
+export type UpdatePublicTalkInput = Partial<CreatePublicTalkInput>;
+
+export interface BulkImportResult {
+  parsed: number;
+  created: number;
+  updated: number;
+  unchanged: number;
+  invalid: number;
+  examples: Array<{ number: number; title: string }>;
 }
 
 export interface Paginated<T> {
@@ -266,12 +299,7 @@ export const authApi = {
 };
 
 export const publishersApi = {
-  async list(params?: {
-    search?: string;
-    limit?: number;
-    offset?: number;
-    includeRemoved?: boolean;
-  }): Promise<Paginated<Publisher>> {
+  async list(params?: { search?: string; limit?: number; offset?: number; includeRemoved?: boolean }): Promise<Paginated<Publisher>> {
     const { data } = await api.get<Paginated<Publisher>>('/publishers', { params });
     return data;
   },
@@ -402,10 +430,6 @@ export const assignmentsApi = {
   },
 };
 
-/**
- * Unified schedule import — auto-detects MWB vs Watchtower by filename.
- * Replaces the old mwb-import-only endpoint.
- */
 export const scheduleImportApi = {
   async upload(file: {
     uri: string;
@@ -432,6 +456,52 @@ export const scheduleImportApi = {
         headers: { 'Content-Type': 'multipart/form-data' },
         timeout: 120_000,
       },
+    );
+    return data;
+  },
+};
+
+export const publicTalksApi = {
+  async list(params?: {
+    search?: string;
+    includeInactive?: boolean;
+    limit?: number;
+    offset?: number;
+  }): Promise<Paginated<PublicTalk>> {
+    const { data } = await api.get<Paginated<PublicTalk>>('/public-talks', {
+      params,
+    });
+    return data;
+  },
+  async getById(id: string): Promise<PublicTalk> {
+    const { data } = await api.get<PublicTalk>(`/public-talks/${id}`);
+    return data;
+  },
+  async create(input: CreatePublicTalkInput): Promise<PublicTalk> {
+    const { data } = await api.post<PublicTalk>('/public-talks', input);
+    return data;
+  },
+  async update(id: string, input: UpdatePublicTalkInput): Promise<PublicTalk> {
+    const { data } = await api.patch<PublicTalk>(
+      `/public-talks/${id}`,
+      cleanPayload(input),
+    );
+    return data;
+  },
+  async deactivate(id: string): Promise<PublicTalk> {
+    const { data } = await api.delete<PublicTalk>(`/public-talks/${id}`);
+    return data;
+  },
+  async reactivate(id: string): Promise<PublicTalk> {
+    const { data } = await api.post<PublicTalk>(
+      `/public-talks/${id}/reactivate`,
+    );
+    return data;
+  },
+  async bulkImport(text: string): Promise<BulkImportResult> {
+    const { data } = await api.post<BulkImportResult>(
+      '/public-talks/bulk-import',
+      { text },
     );
     return data;
   },
