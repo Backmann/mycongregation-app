@@ -250,6 +250,10 @@ export interface PublicTalk {
   number: number;
   title: string;
   isActive: boolean;
+  /** Last time this talk was given in the current congregation. */
+  lastGivenAt: string | null;
+  /** Speaker name (publisher full name or invited speaker name). */
+  lastGivenBy: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -431,14 +435,8 @@ export const assignmentsApi = {
 };
 
 export const scheduleImportApi = {
-  async upload(file: {
-    uri: string;
-    name: string;
-    mimeType?: string;
-    file?: Blob;
-  }): Promise<ImportResult> {
+  async upload(file: { uri: string; name: string; mimeType?: string; file?: Blob }): Promise<ImportResult> {
     const formData = new FormData();
-
     if (file.file) {
       formData.append('file', file.file, file.name);
     } else {
@@ -448,15 +446,10 @@ export const scheduleImportApi = {
         type: file.mimeType ?? 'application/epub+zip',
       } as any);
     }
-
-    const { data } = await api.post<ImportResult>(
-      '/schedule-import/upload',
-      formData,
-      {
-        headers: { 'Content-Type': 'multipart/form-data' },
-        timeout: 120_000,
-      },
-    );
+    const { data } = await api.post<ImportResult>('/schedule-import/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 120_000,
+    });
     return data;
   },
 };
@@ -468,9 +461,7 @@ export const publicTalksApi = {
     limit?: number;
     offset?: number;
   }): Promise<Paginated<PublicTalk>> {
-    const { data } = await api.get<Paginated<PublicTalk>>('/public-talks', {
-      params,
-    });
+    const { data } = await api.get<Paginated<PublicTalk>>('/public-talks', { params });
     return data;
   },
   async getById(id: string): Promise<PublicTalk> {
@@ -482,10 +473,7 @@ export const publicTalksApi = {
     return data;
   },
   async update(id: string, input: UpdatePublicTalkInput): Promise<PublicTalk> {
-    const { data } = await api.patch<PublicTalk>(
-      `/public-talks/${id}`,
-      cleanPayload(input),
-    );
+    const { data } = await api.patch<PublicTalk>(`/public-talks/${id}`, cleanPayload(input));
     return data;
   },
   async deactivate(id: string): Promise<PublicTalk> {
@@ -493,16 +481,11 @@ export const publicTalksApi = {
     return data;
   },
   async reactivate(id: string): Promise<PublicTalk> {
-    const { data } = await api.post<PublicTalk>(
-      `/public-talks/${id}/reactivate`,
-    );
+    const { data } = await api.post<PublicTalk>(`/public-talks/${id}/reactivate`);
     return data;
   },
   async bulkImport(text: string): Promise<BulkImportResult> {
-    const { data } = await api.post<BulkImportResult>(
-      '/public-talks/bulk-import',
-      { text },
-    );
+    const { data } = await api.post<BulkImportResult>('/public-talks/bulk-import', { text });
     return data;
   },
 };

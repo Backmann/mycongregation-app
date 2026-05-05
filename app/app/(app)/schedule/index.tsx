@@ -237,7 +237,10 @@ function AssignmentRow({
   assistant: Publisher | null;
 }) {
   const partLabel = getPartLabel(assignment.partKey);
-  const isUnassigned = !publisher;
+
+  // Resolve who is assigned: local publisher OR invited speaker fallback
+  const hasInvitedSpeaker = !publisher && !!assignment.speakerName;
+  const isUnassigned = !publisher && !hasInvitedSpeaker;
 
   return (
     <Pressable
@@ -255,10 +258,17 @@ function AssignmentRow({
           </Text>
         )}
         <View style={styles.assigneeRow}>
-          {isUnassigned ? (
-            <Text style={styles.unassigned}>Unassigned</Text>
+          {publisher ? (
+            <Text style={styles.assignee}>{publisher.displayName}</Text>
+          ) : hasInvitedSpeaker ? (
+            <Text style={styles.invitedSpeaker}>
+              ✈ {assignment.speakerName}
+              {assignment.speakerCongregation
+                ? ` (${assignment.speakerCongregation})`
+                : ''}
+            </Text>
           ) : (
-            <Text style={styles.assignee}>{publisher!.displayName}</Text>
+            <Text style={styles.unassigned}>Unassigned</Text>
           )}
           {assistant && (
             <Text style={styles.assistant}> + {assistant.displayName}</Text>
@@ -354,6 +364,7 @@ const styles = StyleSheet.create({
   },
   assigneeRow: { flexDirection: 'row', flexWrap: 'wrap', marginTop: 4 },
   assignee: { fontSize: 14, color: '#0f172a' },
+  invitedSpeaker: { fontSize: 14, color: '#7c3aed', fontWeight: '500' },
   assistant: { fontSize: 13, color: '#64748b' },
   unassigned: {
     fontSize: 13,

@@ -11,11 +11,13 @@ import { FormField } from './FormField';
 import { FormSection } from './FormSection';
 import { FormChips } from './FormChips';
 import { PublisherSelector } from './PublisherSelector';
+import { PublicTalkSelector } from './PublicTalkSelector';
 import {
   AssignmentStatus,
   CreateAssignmentInput,
   EventType,
   extractErrorMessage,
+  PublicTalk,
 } from '../lib/api';
 import { getPartDef, getPartLabel } from '../lib/parts';
 
@@ -43,6 +45,11 @@ const STATUS_OPTIONS: { value: AssignmentStatus; label: string }[] = [
   { value: 'cancelled', label: 'Cancelled' },
 ];
 
+const SPEAKER_TYPE_OPTIONS: { value: 'local' | 'invited'; label: string }[] = [
+  { value: 'local', label: 'Local publisher' },
+  { value: 'invited', label: 'Invited speaker' },
+];
+
 export function AssignmentForm({
   initial,
   onSubmit,
@@ -62,7 +69,15 @@ export function AssignmentForm({
     assistantPublisherId: initial?.assistantPublisherId ?? null,
     status: initial?.status ?? 'draft',
     notes: initial?.notes ?? '',
+    publicTalkId: initial?.publicTalkId ?? null,
+    speakerName: initial?.speakerName ?? null,
+    speakerCongregation: initial?.speakerCongregation ?? null,
   });
+
+  // For public_talk_speaker only: 'local' = use publisherId, 'invited' = use speakerName
+  const [speakerType, setSpeakerType] = useState<'local' | 'invited'>(
+    initial?.speakerName ? 'invited' : 'local',
+  );
 
   const [error, setError] = useState<string | null>(null);
 
@@ -74,10 +89,35 @@ export function AssignmentForm({
   };
 
   const partDef = getPartDef(form.partKey);
+  const isPublicTalkSpeaker = form.partKey === 'public_talk_speaker';
   const showAssistant = !!partDef?.hasAssistant;
   const requiredCap = partDef?.requiredCapability;
   const requiredAssistantCap =
     partDef?.requiredAssistantCapability ?? partDef?.requiredCapability;
+
+  const handleTalkSelect = (talk: PublicTalk | null) => {
+    setForm((prev) => ({
+      ...prev,
+      publicTalkId: talk?.id ?? null,
+      // Auto-update partTitle when picking a talk; keep manual text when clearing
+      partTitle: talk ? `№${talk.number}. ${talk.title}` : prev.partTitle,
+    }));
+  };
+
+  const handleSpeakerTypeChange = (type: 'local' | 'invited') => {
+    setSpeakerType(type);
+    if (type === 'local') {
+      // Clear invited fields
+      setForm((prev) => ({
+        ...prev,
+        speakerName: null,
+        speakerCongregation: null,
+      }));
+    } else {
+      // Clear local publisher
+      setForm((prev) => ({ ...prev, publisherId: null }));
+    }
+  };
 
   const handleSubmit = async () => {
     setError(null);
@@ -154,6 +194,16 @@ export function AssignmentForm({
         )}
       </FormSection>
 
+      {isPublicTalkSpeaker && (
+        <FormSection title="Public talk">
+          <PublicTalkSelector
+            label="Talk"
+            value={form.publicTalkId}
+            onChange={handleTalkSelect}
+          />
+        </FormSection>
+      )}
+
       <FormSection title="Details">
         <FormField
           label="Part title (override)"
@@ -173,24 +223,62 @@ export function AssignmentForm({
         />
       </FormSection>
 
-      <FormSection title="Assignment">
-        <PublisherSelector
-          label="Publisher"
-          value={form.publisherId}
-          onChange={(id) => update('publisherId', id)}
-          excludeIds={
-            form.assistantPublisherId ? [form.assistantPublisherId] : []
-          }
-          requiredCapability={requiredCap}
-        />
-        {showAssistant && (
-          <PublisherSelector
-            label="Assistant"
-            value={form.assistantPublisherId}
-            onChange={(id) => update('assistantPublisherId', id)}
-            excludeIds={form.publisherId ? [form.publisherId] : []}
-            requiredCapability={requiredAssistantCap}
-          />
+      <FormSection title={isPublicTalkSpeaker ? 'Speaker' : 'Assignment'}>
+        {isPublicTalkSpeaker ? (
+          <>
+            <FormChips
+              label="Speaker type"
+              value={speakerType}
+              options={SPEAKER_TYPE_OPTIONS}
+              onChange={handleSpeakerTypeChange}
+            />
+            {speakerType === 'local' ? (
+              <PublisherSelector
+                label="Publisher"
+                value={form.publisherId}
+                onChange={(id) => update('publisherId', id)}
+                requiredCapability={requiredCap}
+              />
+            ) : (
+              <>
+                <FormField
+                  label="Speaker name"
+                  value={form.speakerName ?? ''}
+                  onChangeText={(v) => update('speakerName', v || null)}
+                  placeholder="Иван Иванов"
+                />
+                <FormField
+                  label="From congregation"
+                  value={form.speakerCongregation ?? ''}
+                  onChangeText={(v) =>
+                    update('speakerCongregation', v || null)
+                  }
+                  placeholder="Дортмунд Восток"
+                />
+              </>
+            )}
+          </>
+        ) : (
+          <>
+            <PublisherSelector
+              label="Publisher"
+              value={form.publisherId}
+              onChange={(id) => update('publisherId', id)}
+              excludeIds={
+                form.assistantPublisherId ? [form.assistantPublisherId] : []
+              }
+              requiredCapability={requiredCap}
+            />
+            {showAssistant && (
+              <PublisherSelector
+                label="Assistant"
+                value={form.assistantPublisherId}
+                onChange={(id) => update('assistantPublisherId', id)}
+                excludeIds={form.publisherId ? [form.publisherId] : []}
+                requiredCapability={requiredAssistantCap}
+              />
+            )}
+          </>
         )}
       </FormSection>
 

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -12,12 +12,23 @@ import {
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useFocusEffect } from 'expo-router';
-import { useCallback } from 'react';
 import {
   extractErrorMessage,
   PublicTalk,
   publicTalksApi,
 } from '../../../lib/api';
+
+type Recency = 'recent' | 'caution' | 'ok' | 'never';
+
+function getRecency(lastGivenAt: string | null): Recency {
+  if (!lastGivenAt) return 'never';
+  const monthsAgo =
+    (Date.now() - new Date(lastGivenAt).getTime()) /
+    (1000 * 60 * 60 * 24 * 30);
+  if (monthsAgo < 3) return 'recent';
+  if (monthsAgo < 6) return 'caution';
+  return 'ok';
+}
 
 export default function PublicTalksScreen() {
   const queryClient = useQueryClient();
@@ -34,7 +45,6 @@ export default function PublicTalksScreen() {
       }),
   });
 
-  // Refetch when returning from import screen
   useFocusEffect(
     useCallback(() => {
       queryClient.invalidateQueries({ queryKey: ['public-talks'] });
@@ -133,6 +143,20 @@ export default function PublicTalksScreen() {
 }
 
 function TalkRow({ talk }: { talk: PublicTalk }) {
+  const recency = getRecency(talk.lastGivenAt);
+  const recencyColor: Record<Recency, string> = {
+    recent: '#dc2626',
+    caution: '#d97706',
+    ok: '#94a3b8',
+    never: '#cbd5e1',
+  };
+  const recencyIcon: Record<Recency, any> = {
+    recent: 'warning',
+    caution: 'warning-outline',
+    ok: 'time-outline',
+    never: 'time-outline',
+  };
+
   return (
     <View style={[styles.row, !talk.isActive && styles.rowInactive]}>
       <View style={styles.numberBadge}>
@@ -145,8 +169,19 @@ function TalkRow({ talk }: { talk: PublicTalk }) {
         >
           {talk.title}
         </Text>
-        {!talk.isActive && (
-          <Text style={styles.retiredLabel}>Retired</Text>
+        {!talk.isActive && <Text style={styles.retiredLabel}>Retired</Text>}
+        {talk.lastGivenAt && (
+          <View style={styles.hintRow}>
+            <Ionicons
+              name={recencyIcon[recency]}
+              size={11}
+              color={recencyColor[recency]}
+            />
+            <Text style={[styles.hintText, { color: recencyColor[recency] }]}>
+              Last given {talk.lastGivenAt}
+              {talk.lastGivenBy ? ` · ${talk.lastGivenBy}` : ''}
+            </Text>
+          </View>
         )}
       </View>
     </View>
@@ -193,10 +228,7 @@ const styles = StyleSheet.create({
   },
   importButtonText: { color: '#fff', fontSize: 13, fontWeight: '600' },
 
-  empty: {
-    paddingVertical: 64,
-    alignItems: 'center',
-  },
+  empty: { paddingVertical: 64, alignItems: 'center' },
   emptyTitle: {
     fontSize: 16,
     color: '#475569',
@@ -244,6 +276,14 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
+
+  hintRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 4,
+  },
+  hintText: { fontSize: 11 },
 
   errorBox: {
     margin: 16,
