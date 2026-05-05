@@ -13,13 +13,19 @@ import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { extractErrorMessage, Family, familiesApi } from '../../../lib/api';
 import { Ionicons } from '@expo/vector-icons';
+import { FilterToggle } from '../../../components/FilterToggle';
 
 export default function FamiliesListScreen() {
   const [search, setSearch] = useState('');
+  const [showRemoved, setShowRemoved] = useState(false);
 
   const { data, isLoading, isRefetching, refetch, error } = useQuery({
-    queryKey: ['families', search],
-    queryFn: () => familiesApi.list({ search: search || undefined }),
+    queryKey: ['families', search, showRemoved],
+    queryFn: () =>
+      familiesApi.list({
+        search: search || undefined,
+        includeRemoved: showRemoved,
+      }),
   });
 
   return (
@@ -31,6 +37,12 @@ export default function FamiliesListScreen() {
         placeholder="Search by name…"
         autoCapitalize="none"
         autoCorrect={false}
+      />
+
+      <FilterToggle
+        label="Show removed"
+        value={showRemoved}
+        onValueChange={setShowRemoved}
       />
 
       {error && (
@@ -65,16 +77,31 @@ export default function FamiliesListScreen() {
 }
 
 function FamilyRow({ family }: { family: Family }) {
+  const isRemoved = !!family.deletedAt;
+
   return (
     <Pressable
-      style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
+      style={({ pressed }) => [
+        styles.row,
+        pressed && styles.rowPressed,
+        isRemoved && styles.rowRemoved,
+      ]}
       onPress={() => router.push(`/families/${family.id}` as any)}
     >
       <View style={styles.icon}>
         <Ionicons name="home" color="#0ea5e9" size={20} />
       </View>
       <View style={{ flex: 1 }}>
-        <Text style={styles.name}>{family.name}</Text>
+        <View style={styles.nameRow}>
+          <Text style={[styles.name, isRemoved && styles.nameRemoved]}>
+            {family.name}
+          </Text>
+          {isRemoved && (
+            <View style={styles.removedBadge}>
+              <Text style={styles.removedBadgeText}>Removed</Text>
+            </View>
+          )}
+        </View>
         {family.notes && (
           <Text style={styles.notes} numberOfLines={1}>
             {family.notes}
@@ -90,6 +117,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f1f5f9' },
   search: {
     margin: 16,
+    marginBottom: 8,
     paddingHorizontal: 14,
     paddingVertical: 10,
     backgroundColor: '#fff',
@@ -114,6 +142,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   rowPressed: { backgroundColor: '#f8fafc' },
+  rowRemoved: { opacity: 0.55 },
   icon: {
     width: 40,
     height: 40,
@@ -123,7 +152,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginRight: 14,
   },
+  nameRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   name: { fontSize: 16, fontWeight: '600', color: '#0f172a' },
+  nameRemoved: { textDecorationLine: 'line-through', color: '#64748b' },
+  removedBadge: {
+    backgroundColor: '#fef3c7',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  removedBadgeText: { color: '#92400e', fontSize: 10, fontWeight: '600' },
   notes: { fontSize: 13, color: '#64748b', marginTop: 2 },
   chevron: { color: '#cbd5e1', fontSize: 24, marginLeft: 8 },
   empty: {

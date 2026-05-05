@@ -16,13 +16,19 @@ import {
   Publisher,
   publishersApi,
 } from '../../../lib/api';
+import { FilterToggle } from '../../../components/FilterToggle';
 
 export default function PublishersListScreen() {
   const [search, setSearch] = useState('');
+  const [showRemoved, setShowRemoved] = useState(false);
 
   const { data, isLoading, isRefetching, refetch, error } = useQuery({
-    queryKey: ['publishers', search],
-    queryFn: () => publishersApi.list({ search: search || undefined }),
+    queryKey: ['publishers', search, showRemoved],
+    queryFn: () =>
+      publishersApi.list({
+        search: search || undefined,
+        includeRemoved: showRemoved,
+      }),
   });
 
   return (
@@ -34,6 +40,12 @@ export default function PublishersListScreen() {
         placeholder="Search by name…"
         autoCapitalize="none"
         autoCorrect={false}
+      />
+
+      <FilterToggle
+        label="Show removed"
+        value={showRemoved}
+        onValueChange={setShowRemoved}
       />
 
       {error && (
@@ -73,6 +85,8 @@ export default function PublishersListScreen() {
 }
 
 function PublisherRow({ publisher }: { publisher: Publisher }) {
+  const isRemoved = !!publisher.deletedAt;
+
   const tags: string[] = [];
   if (publisher.appointment === 'elder') tags.push('Elder');
   if (publisher.appointment === 'ministerial_servant') tags.push('MS');
@@ -87,14 +101,27 @@ function PublisherRow({ publisher }: { publisher: Publisher }) {
 
   return (
     <Pressable
-      style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
+      style={({ pressed }) => [
+        styles.row,
+        pressed && styles.rowPressed,
+        isRemoved && styles.rowRemoved,
+      ]}
       onPress={() => router.push(`/publishers/${publisher.id}` as any)}
     >
       <View style={[styles.avatar, gendered(publisher.gender)]}>
         <Text style={styles.avatarText}>{initials}</Text>
       </View>
       <View style={{ flex: 1 }}>
-        <Text style={styles.name}>{publisher.displayName}</Text>
+        <View style={styles.nameRow}>
+          <Text style={[styles.name, isRemoved && styles.nameRemoved]}>
+            {publisher.displayName}
+          </Text>
+          {isRemoved && (
+            <View style={styles.removedBadge}>
+              <Text style={styles.removedBadgeText}>Removed</Text>
+            </View>
+          )}
+        </View>
         {tags.length > 0 && (
           <View style={styles.tagsRow}>
             {tags.map((t) => (
@@ -121,6 +148,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f1f5f9' },
   search: {
     margin: 16,
+    marginBottom: 8,
     paddingHorizontal: 14,
     paddingVertical: 10,
     backgroundColor: '#fff',
@@ -145,6 +173,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   rowPressed: { backgroundColor: '#f8fafc' },
+  rowRemoved: { opacity: 0.55 },
   avatar: {
     width: 44,
     height: 44,
@@ -154,7 +183,16 @@ const styles = StyleSheet.create({
     marginRight: 14,
   },
   avatarText: { color: '#fff', fontWeight: '700', fontSize: 14 },
+  nameRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   name: { fontSize: 16, fontWeight: '600', color: '#0f172a' },
+  nameRemoved: { textDecorationLine: 'line-through', color: '#64748b' },
+  removedBadge: {
+    backgroundColor: '#fef3c7',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  removedBadgeText: { color: '#92400e', fontSize: 10, fontWeight: '600' },
   tagsRow: { flexDirection: 'row', flexWrap: 'wrap', marginTop: 4, gap: 4 },
   tag: {
     backgroundColor: '#e0f2fe',
