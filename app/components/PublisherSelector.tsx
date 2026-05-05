@@ -7,19 +7,25 @@ import {
   SafeAreaView,
   ScrollView,
   StyleSheet,
+  Switch,
   Text,
   TextInput,
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
-import { publishersApi } from '../lib/api';
+import { Publisher, publishersApi } from '../lib/api';
 
 interface Props {
   label: string;
   value: string | null | undefined;
   onChange: (id: string | null) => void;
   excludeIds?: string[];
+  /**
+   * If set, the picker only shows publishers with this capability=true by default.
+   * The user can toggle "Show all" inside the modal to override.
+   */
+  requiredCapability?: string;
 }
 
 export function PublisherSelector({
@@ -27,9 +33,11 @@ export function PublisherSelector({
   value,
   onChange,
   excludeIds = [],
+  requiredCapability,
 }: Props) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
+  const [showAll, setShowAll] = useState(false);
 
   const { data, isLoading } = useQuery({
     queryKey: ['publishers', 'all'],
@@ -39,12 +47,30 @@ export function PublisherSelector({
   const allPublishers = data?.data ?? [];
   const selectedPublisher = allPublishers.find((p) => p.id === value);
 
-  const filtered = allPublishers.filter(
-    (p) =>
-      !excludeIds.includes(p.id) &&
-      (search === '' ||
-        p.displayName.toLowerCase().includes(search.toLowerCase())),
-  );
+  const filterByCapability = !!requiredCapability && !showAll;
+
+  const filtered = allPublishers.filter((p) => {
+    if (excludeIds.includes(p.id)) return false;
+    if (
+      search !== '' &&
+      !p.displayName.toLowerCase().includes(search.toLowerCase())
+    )
+      return false;
+    if (filterByCapability && !p.capabilities?.[requiredCapability!])
+      return false;
+    return true;
+  });
+
+  // Hidden count = those filtered out only because of capability mismatch
+  const hiddenByCapability = filterByCapability
+    ? allPublishers.filter(
+        (p) =>
+          !excludeIds.includes(p.id) &&
+          (search === '' ||
+            p.displayName.toLowerCase().includes(search.toLowerCase())) &&
+          !p.capabilities?.[requiredCapability!],
+      ).length
+    : 0;
 
   return (
     <>
@@ -64,6 +90,16 @@ export function PublisherSelector({
           </Text>
           <Ionicons name="chevron-forward" size={18} color="#cbd5e1" />
         </View>
+        {selectedPublisher &&
+          requiredCapability &&
+          !selectedPublisher.capabilities?.[requiredCapability] && (
+            <View style={styles.warningRow}>
+              <Ionicons name="warning" size={12} color="#dc2626" />
+              <Text style={styles.warningText}>
+                Missing capability: {requiredCapability}
+              </Text>
+            </View>
+          )}
       </Pressable>
 
       <Modal
@@ -73,11 +109,43 @@ export function PublisherSelector({
       >
         <SafeAreaView style={styles.modal}>
           <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>{label}</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.modalTitle}>{label}</Text>
+              {requiredCapability && (
+                <Text style={styles.modalSubtitle}>
+                  Filtered by capability:{' '}
+                  <Text style={styles.modalCapName}>{requiredCapability}</Text>
+                </Text>
+              )}
+            </View>
             <Pressable onPress={() => setOpen(false)} hitSlop={8}>
               <Text style={styles.doneText}>Done</Text>
             </Pressable>
           </View>
+
+          {requiredCapability && (
+            <Pressable
+              style={styles.toggleRow}
+              onPress={() => setShowAll((v) => !v)}
+            >
+              <View style={{ flex: 1 }}>
+                <Text style={styles.toggleLabel}>
+                  Show all publishers (override filter)
+                </Text>
+                <Text style={styles.toggleHint}>
+                  {showAll
+                    ? 'Showing all — capability filter is OFF'
+                    : `${hiddenByCapability} hidden by capability filter`}
+                </Text>
+              </View>
+              <Switch
+                value={showAll}
+                onValueChange={setShowAll}
+                trackColor={{ false: '#e2e8f0', true: '#fde68a' }}
+                thumbColor={showAll ? '#d97706' : '#f8fafc'}
+              />
+            </Pressable>
+          )}
 
           <TextInput
             style={styles.search}
@@ -112,44 +180,84 @@ export function PublisherSelector({
                 )}
               </Pressable>
 
-              {filtered.length === 0 && search !== '' && (
-                <Text style={styles.empty}>No matches</Text>
+              {filtered.length === 0 && (
+                <Text style={styles.empty}>
+                  {search !== ''
+                    ? 'No matches'
+                    : filterByCapability
+                    ? `No publishers with capability "${requiredCapability}"`
+                    : 'No publishers'}
+                </Text>
               )}
 
               {filtered.map((p) => (
-                <Pressable
+                <PublisherOption
                   key={p.id}
-                  style={({ pressed }) => [
-                    styles.option,
-                    pressed && styles.optionPressed,
-                  ]}
+                  publisher={p}
+                  isSelected={value === p.id}
+                  hasCapability={
+                    !requiredCapability ||
+                    !!p.capabilities?.[requiredCapability]
+                  }
+                  showCapabilityWarning={
+                    !!requiredCapability && showAll
+                  }
                   onPress={() => {
                     onChange(p.id);
                     setOpen(false);
                   }}
-                >
-                  <View style={styles.optionMain}>
-                    <View
-                      style={[
-                        styles.dot,
-                        {
-                          backgroundColor:
-                            p.gender === 'brother' ? '#0ea5e9' : '#ec4899',
-                        },
-                      ]}
-                    />
-                    <Text style={styles.optionText}>{p.displayName}</Text>
-                  </View>
-                  {value === p.id && (
-                    <Ionicons name="checkmark" size={20} color="#0ea5e9" />
-                  )}
-                </Pressable>
+                />
               ))}
             </ScrollView>
           )}
         </SafeAreaView>
       </Modal>
     </>
+  );
+}
+
+function PublisherOption({
+  publisher,
+  isSelected,
+  hasCapability,
+  showCapabilityWarning,
+  onPress,
+}: {
+  publisher: Publisher;
+  isSelected: boolean;
+  hasCapability: boolean;
+  showCapabilityWarning: boolean;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      style={({ pressed }) => [
+        styles.option,
+        pressed && styles.optionPressed,
+      ]}
+      onPress={onPress}
+    >
+      <View style={styles.optionMain}>
+        <View
+          style={[
+            styles.dot,
+            {
+              backgroundColor:
+                publisher.gender === 'brother' ? '#0ea5e9' : '#ec4899',
+            },
+          ]}
+        />
+        <Text style={styles.optionText}>{publisher.displayName}</Text>
+        {showCapabilityWarning && !hasCapability && (
+          <View style={styles.optionWarn}>
+            <Ionicons name="warning" size={11} color="#dc2626" />
+          </View>
+        )}
+      </View>
+      {isSelected && (
+        <Ionicons name="checkmark" size={20} color="#0ea5e9" />
+      )}
+    </Pressable>
   );
 }
 
@@ -174,6 +282,13 @@ const styles = StyleSheet.create({
   },
   value: { fontSize: 16, color: '#0f172a' },
   valuePlaceholder: { color: '#cbd5e1' },
+  warningRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 4,
+  },
+  warningText: { fontSize: 11, color: '#dc2626' },
 
   modal: {
     flex: 1,
@@ -191,7 +306,21 @@ const styles = StyleSheet.create({
     borderBottomColor: '#e2e8f0',
   },
   modalTitle: { fontSize: 18, fontWeight: '600', color: '#0f172a' },
+  modalSubtitle: { fontSize: 12, color: '#64748b', marginTop: 2 },
+  modalCapName: { color: '#0369a1', fontWeight: '500' },
   doneText: { color: '#0ea5e9', fontSize: 16, fontWeight: '600' },
+
+  toggleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    backgroundColor: '#fffbeb',
+    borderBottomWidth: 1,
+    borderBottomColor: '#fde68a',
+  },
+  toggleLabel: { fontSize: 13, color: '#78350f', fontWeight: '500' },
+  toggleHint: { fontSize: 11, color: '#92400e', marginTop: 2 },
 
   search: {
     margin: 16,
@@ -215,9 +344,20 @@ const styles = StyleSheet.create({
     borderBottomColor: '#f1f5f9',
   },
   optionPressed: { backgroundColor: '#f8fafc' },
-  optionMain: { flexDirection: 'row', alignItems: 'center', flex: 1 },
-  dot: { width: 10, height: 10, borderRadius: 5, marginRight: 12 },
+  optionMain: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    gap: 6,
+  },
+  dot: { width: 10, height: 10, borderRadius: 5, marginRight: 6 },
   optionText: { fontSize: 15, color: '#0f172a' },
+  optionWarn: {
+    backgroundColor: '#fef2f2',
+    paddingHorizontal: 4,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
   empty: {
     textAlign: 'center',
     color: '#94a3b8',

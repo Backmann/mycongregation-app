@@ -27,6 +27,15 @@ export default function AppLayout() {
       }}
     >
       <Tabs.Screen
+        name="schedule"
+        options={{
+          title: 'Schedule',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="calendar" color={color} size={size} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="publishers"
         options={{
           title: 'Publishers',
