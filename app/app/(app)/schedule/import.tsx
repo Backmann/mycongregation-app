@@ -1,0 +1,411 @@
+import { useState } from 'react';
+import {
+  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+import * as DocumentPicker from 'expo-document-picker';
+import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+  extractErrorMessage,
+  ImportResult,
+  mwbImportApi,
+} from '../../../lib/api';
+
+interface PickedFile {
+  uri: string;
+  name: string;
+  mimeType?: string;
+  size?: number;
+  file?: Blob;
+}
+
+export default function ImportEpubScreen() {
+  const queryClient = useQueryClient();
+  const [picked, setPicked] = useState<PickedFile | null>(null);
+  const [pickError, setPickError] = useState<string | null>(null);
+
+  const uploadMutation = useMutation<ImportResult, unknown, PickedFile>({
+    mutationFn: (file) => mwbImportApi.upload(file),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['assignments'] });
+    },
+  });
+
+  const handlePick = async () => {
+    setPickError(null);
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ['application/epub+zip', '*/*'],
+        copyToCacheDirectory: true,
+        multiple: false,
+      });
+      if (result.canceled) return;
+      const asset = result.assets?.[0];
+      if (!asset) {
+        setPickError('No file selected');
+        return;
+      }
+      if (!asset.name.toLowerCase().endsWith('.epub')) {
+        setPickError('Please select a .epub file');
+        return;
+      }
+      setPicked({
+        uri: asset.uri,
+        name: asset.name,
+        mimeType: asset.mimeType ?? 'application/epub+zip',
+        size: asset.size,
+        file: (asset as any).file as Blob | undefined,
+      });
+      uploadMutation.reset();
+    } catch (e) {
+      setPickError(extractErrorMessage(e));
+    }
+  };
+
+  const handleUpload = () => {
+    if (!picked) return;
+    uploadMutation.mutate(picked);
+  };
+
+  const result = uploadMutation.data;
+
+  return (
+    <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 32 }}>
+      <View style={styles.intro}>
+        <Ionicons name="cloud-upload-outline" size={48} color="#0ea5e9" />
+        <Text style={styles.title}>Import MWB EPUB</Text>
+        <Text style={styles.subtitle}>
+          Upload the official Meeting Workbook EPUB to auto-create midweek
+          assignments for all weeks. Existing empty slots will be filled with
+          official titles; assignments that already have a publisher are
+          preserved.
+        </Text>
+      </View>
+
+      <View style={styles.section}>
+        <Pressable
+          style={({ pressed }) => [
+            styles.pickButton,
+            pressed && { opacity: 0.7 },
+          ]}
+          onPress={handlePick}
+        >
+          <Ionicons name="document-attach-outline" size={20} color="#0ea5e9" />
+          <Text style={styles.pickButtonText}>
+            {picked ? 'Choose a different file' : 'Choose EPUB file'}
+          </Text>
+        </Pressable>
+
+        {pickError && (
+          <View style={styles.errorBox}>
+            <Text style={styles.errorText}>{pickError}</Text>
+          </View>
+        )}
+
+        {picked && (
+          <View style={styles.fileCard}>
+            <Ionicons name="document-text-outline" size={20} color="#64748b" />
+            <View style={{ flex: 1 }}>
+              <Text style={styles.fileName} numberOfLines={1}>
+                {picked.name}
+              </Text>
+              {picked.size && (
+                <Text style={styles.fileSize}>
+                  {(picked.size / 1024 / 1024).toFixed(2)} MB
+                </Text>
+              )}
+            </View>
+          </View>
+        )}
+
+        {picked && !result && (
+          <Pressable
+            style={[
+              styles.uploadButton,
+              uploadMutation.isPending && { opacity: 0.6 },
+            ]}
+            onPress={handleUpload}
+            disabled={uploadMutation.isPending}
+          >
+            {uploadMutation.isPending ? (
+              <>
+                <ActivityIndicator color="#fff" />
+                <Text style={styles.uploadButtonText}>Uploading…</Text>
+              </>
+            ) : (
+              <>
+                <Ionicons name="cloud-upload" size={20} color="#fff" />
+                <Text style={styles.uploadButtonText}>Upload and import</Text>
+              </>
+            )}
+          </Pressable>
+        )}
+
+        {uploadMutation.error && (
+          <View style={styles.errorBox}>
+            <Text style={styles.errorText}>
+              {extractErrorMessage(uploadMutation.error)}
+            </Text>
+          </View>
+        )}
+      </View>
+
+      {result && (
+        <ResultSummary result={result} />
+      )}
+    </ScrollView>
+  );
+}
+
+function ResultSummary({ result }: { result: ImportResult }) {
+  return (
+    <View style={styles.section}>
+      <View style={styles.successHeader}>
+        <Ionicons name="checkmark-circle" size={32} color="#059669" />
+        <Text style={styles.successTitle}>Import complete</Text>
+      </View>
+
+      <View style={styles.statsRow}>
+        <Stat label="Weeks" value={result.weeksImported} color="#0369a1" />
+        <Stat label="Created" value={result.partsCreated} color="#059669" />
+        <Stat label="Updated" value={result.partsUpdated} color="#d97706" />
+        <Stat label="Skipped" value={result.partsSkipped} color="#64748b" />
+      </View>
+
+      {result.unclassifiedParts > 0 && (
+        <View style={styles.warningBox}>
+          <Text style={styles.warningText}>
+            {result.unclassifiedParts} part(s) could not be classified
+          </Text>
+        </View>
+      )}
+
+      {result.warnings.length > 0 && (
+        <View style={styles.warningBox}>
+          <Text style={styles.warningTitle}>Warnings:</Text>
+          {result.warnings.slice(0, 5).map((w, i) => (
+            <Text key={i} style={styles.warningText}>
+              • {w}
+            </Text>
+          ))}
+          {result.warnings.length > 5 && (
+            <Text style={styles.warningText}>
+              … and {result.warnings.length - 5} more
+            </Text>
+          )}
+        </View>
+      )}
+
+      <Text style={styles.weeksHeader}>Imported weeks</Text>
+      <View style={styles.weeksList}>
+        {result.weeks.map((w) => (
+          <View key={w.weekStartDate} style={styles.weekRow}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.weekDate}>
+                {w.weekStartDate} → {w.weekEndDate}
+              </Text>
+              <Text style={styles.weekBible}>{w.biblePassage}</Text>
+            </View>
+            <View style={styles.weekStats}>
+              {w.created > 0 && (
+                <Text style={[styles.weekStat, { color: '#059669' }]}>
+                  +{w.created}
+                </Text>
+              )}
+              {w.updated > 0 && (
+                <Text style={[styles.weekStat, { color: '#d97706' }]}>
+                  ~{w.updated}
+                </Text>
+              )}
+              {w.skipped > 0 && (
+                <Text style={[styles.weekStat, { color: '#64748b' }]}>
+                  ={w.skipped}
+                </Text>
+              )}
+            </View>
+          </View>
+        ))}
+      </View>
+
+      <Pressable
+        style={styles.doneButton}
+        onPress={() => router.replace('/schedule' as any)}
+      >
+        <Text style={styles.doneButtonText}>Open schedule</Text>
+      </Pressable>
+    </View>
+  );
+}
+
+function Stat({
+  label,
+  value,
+  color,
+}: {
+  label: string;
+  value: number;
+  color: string;
+}) {
+  return (
+    <View style={styles.stat}>
+      <Text style={[styles.statValue, { color }]}>{value}</Text>
+      <Text style={styles.statLabel}>{label}</Text>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#f1f5f9' },
+  intro: {
+    backgroundColor: '#fff',
+    paddingTop: 24,
+    paddingBottom: 24,
+    paddingHorizontal: 24,
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#0f172a',
+    marginTop: 12,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  subtitle: {
+    fontSize: 14,
+    color: '#64748b',
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  section: { padding: 16, gap: 12 },
+
+  pickButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 14,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#0ea5e9',
+    borderStyle: 'dashed',
+  },
+  pickButtonText: { color: '#0ea5e9', fontSize: 15, fontWeight: '500' },
+
+  fileCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  fileName: { fontSize: 14, fontWeight: '500', color: '#0f172a' },
+  fileSize: { fontSize: 12, color: '#64748b', marginTop: 2 },
+
+  uploadButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 14,
+    backgroundColor: '#0ea5e9',
+    borderRadius: 10,
+  },
+  uploadButtonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
+
+  errorBox: {
+    padding: 12,
+    backgroundColor: '#fef2f2',
+    borderColor: '#fecaca',
+    borderWidth: 1,
+    borderRadius: 8,
+  },
+  errorText: { color: '#dc2626', fontSize: 14 },
+
+  successHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 8,
+  },
+  successTitle: { fontSize: 18, fontWeight: '700', color: '#059669' },
+
+  statsRow: {
+    flexDirection: 'row',
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    paddingVertical: 16,
+  },
+  stat: { flex: 1, alignItems: 'center' },
+  statValue: { fontSize: 22, fontWeight: '700' },
+  statLabel: {
+    fontSize: 11,
+    color: '#64748b',
+    marginTop: 4,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+
+  warningBox: {
+    padding: 12,
+    backgroundColor: '#fffbeb',
+    borderColor: '#fde68a',
+    borderWidth: 1,
+    borderRadius: 8,
+  },
+  warningTitle: { color: '#78350f', fontSize: 13, fontWeight: '600', marginBottom: 4 },
+  warningText: { color: '#92400e', fontSize: 13, lineHeight: 18 },
+
+  weeksHeader: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#64748b',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginTop: 12,
+    marginBottom: 4,
+  },
+  weeksList: {
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    overflow: 'hidden',
+  },
+  weekRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f5f9',
+  },
+  weekDate: { fontSize: 13, color: '#0f172a', fontWeight: '500' },
+  weekBible: { fontSize: 12, color: '#64748b', marginTop: 2 },
+  weekStats: { flexDirection: 'row', gap: 8 },
+  weekStat: { fontSize: 13, fontWeight: '600', minWidth: 28, textAlign: 'right' },
+
+  doneButton: {
+    marginTop: 12,
+    paddingVertical: 14,
+    backgroundColor: '#0ea5e9',
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  doneButtonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
+});

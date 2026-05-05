@@ -7,7 +7,7 @@ export const TOKEN_KEY = 'congmap.token';
 
 export const api = axios.create({
   baseURL: API_URL,
-  timeout: 10_000,
+  timeout: 60_000, // increased for EPUB upload
 });
 
 api.interceptors.request.use(async (config) => {
@@ -213,6 +213,30 @@ export interface CreateAssignmentInput {
 }
 export type UpdateAssignmentInput = Partial<CreateAssignmentInput>;
 
+// ---------- MWB import types ----------
+
+export interface WeekImportSummary {
+  weekStartDate: string;
+  weekEndDate: string;
+  biblePassage: string;
+  created: number;
+  updated: number;
+  skipped: number;
+}
+
+export interface ImportResult {
+  epubFile: string;
+  year: number;
+  weeksImported: number;
+  partsCreated: number;
+  partsUpdated: number;
+  partsSkipped: number;
+  unclassifiedParts: number;
+  weeks: WeekImportSummary[];
+  errors: string[];
+  warnings: string[];
+}
+
 export interface Paginated<T> {
   data: T[];
   total: number;
@@ -232,10 +256,7 @@ function cleanPayload<T extends Record<string, any>>(input: T): Partial<T> {
 
 export const authApi = {
   async login(email: string, password: string): Promise<LoginResponse> {
-    const { data } = await api.post<LoginResponse>('/auth/login', {
-      email,
-      password,
-    });
+    const { data } = await api.post<LoginResponse>('/auth/login', { email, password });
     return data;
   },
   async me(): Promise<AuthUser> {
@@ -366,8 +387,6 @@ export const assignmentsApi = {
     return data;
   },
   async update(id: string, input: UpdateAssignmentInput): Promise<Assignment> {
-    // For assignments we want null to be sent explicitly (to clear publisher).
-    // So we don't strip nulls — just undefined and empty strings.
     const payload = Object.fromEntries(
       Object.entries(input).filter(([_, v]) => v !== '' && v !== undefined),
     );
@@ -379,6 +398,48 @@ export const assignmentsApi = {
   },
   async restore(id: string): Promise<Assignment> {
     const { data } = await api.post<Assignment>(`/assignments/${id}/restore`);
+    return data;
+  },
+};
+
+export const mwbImportApi = {
+  /**
+   * Upload an EPUB file. Accepts either:
+   *   - { uri, name, mimeType } from Expo DocumentPicker (mobile/web)
+   *   - a File/Blob from the browser
+   * The implementation builds FormData manually because RN's fetch doesn't
+   * support raw File-like objects the same way browsers do.
+   */
+  async upload(file: {
+    uri: string;
+    name: string;
+    mimeType?: string;
+    /** When picked via web, the underlying File object lives here. */
+    file?: Blob;
+  }): Promise<ImportResult> {
+    const formData = new FormData();
+
+    if (file.file) {
+      // Web: use the actual File/Blob
+      formData.append('file', file.file, file.name);
+    } else {
+      // Native: pass the {uri, name, type} shape RN understands
+      formData.append('file', {
+        uri: file.uri,
+        name: file.name,
+        type: file.mimeType ?? 'application/epub+zip',
+      } as any);
+    }
+
+    const { data } = await api.post<ImportResult>(
+      '/mwb-import/upload',
+      formData,
+      {
+        // Let axios/the platform set the multipart boundary automatically.
+        headers: { 'Content-Type': 'multipart/form-data' },
+        timeout: 120_000,
+      },
+    );
     return data;
   },
 };
