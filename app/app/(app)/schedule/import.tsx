@@ -14,7 +14,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   extractErrorMessage,
   ImportResult,
-  mwbImportApi,
+  scheduleImportApi,
 } from '../../../lib/api';
 
 interface PickedFile {
@@ -31,7 +31,7 @@ export default function ImportEpubScreen() {
   const [pickError, setPickError] = useState<string | null>(null);
 
   const uploadMutation = useMutation<ImportResult, unknown, PickedFile>({
-    mutationFn: (file) => mwbImportApi.upload(file),
+    mutationFn: (file) => scheduleImportApi.upload(file),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['assignments'] });
     },
@@ -74,17 +74,20 @@ export default function ImportEpubScreen() {
   };
 
   const result = uploadMutation.data;
+  const detectedType = picked ? detectFileType(picked.name) : null;
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 32 }}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={{ paddingBottom: 32 }}
+    >
       <View style={styles.intro}>
         <Ionicons name="cloud-upload-outline" size={48} color="#0ea5e9" />
-        <Text style={styles.title}>Import MWB EPUB</Text>
+        <Text style={styles.title}>Import schedule EPUB</Text>
         <Text style={styles.subtitle}>
-          Upload the official Meeting Workbook EPUB to auto-create midweek
-          assignments for all weeks. Existing empty slots will be filled with
-          official titles; assignments that already have a publisher are
-          preserved.
+          Upload Meeting Workbook (mwb_*.epub) or Watchtower study (w_*.epub)
+          to auto-create the weekly programme. Existing empty slots are filled
+          with official titles; assignments with publishers are preserved.
         </Text>
       </View>
 
@@ -115,12 +118,43 @@ export default function ImportEpubScreen() {
               <Text style={styles.fileName} numberOfLines={1}>
                 {picked.name}
               </Text>
-              {picked.size && (
-                <Text style={styles.fileSize}>
-                  {(picked.size / 1024 / 1024).toFixed(2)} MB
-                </Text>
-              )}
+              <View style={styles.fileMetaRow}>
+                {picked.size && (
+                  <Text style={styles.fileMeta}>
+                    {(picked.size / 1024 / 1024).toFixed(2)} MB
+                  </Text>
+                )}
+                {detectedType && (
+                  <View
+                    style={[
+                      styles.typeBadge,
+                      detectedType === 'mwb'
+                        ? styles.typeBadgeMidweek
+                        : detectedType === 'watchtower'
+                        ? styles.typeBadgeWeekend
+                        : styles.typeBadgeUnknown,
+                    ]}
+                  >
+                    <Text style={styles.typeBadgeText}>
+                      {detectedType === 'mwb'
+                        ? 'Midweek'
+                        : detectedType === 'watchtower'
+                        ? 'Weekend'
+                        : 'Unknown type'}
+                    </Text>
+                  </View>
+                )}
+              </View>
             </View>
+          </View>
+        )}
+
+        {picked && detectedType === 'unknown' && (
+          <View style={styles.warningBox}>
+            <Text style={styles.warningText}>
+              Filename doesn't match expected pattern. Backend will try to
+              detect, but may reject the file.
+            </Text>
           </View>
         )}
 
@@ -156,11 +190,16 @@ export default function ImportEpubScreen() {
         )}
       </View>
 
-      {result && (
-        <ResultSummary result={result} />
-      )}
+      {result && <ResultSummary result={result} />}
     </ScrollView>
   );
+}
+
+function detectFileType(filename: string): 'mwb' | 'watchtower' | 'unknown' {
+  const lower = filename.toLowerCase();
+  if (lower.startsWith('mwb_') || lower.startsWith('mwb-')) return 'mwb';
+  if (lower.startsWith('w_') || lower.startsWith('wp_')) return 'watchtower';
+  return 'unknown';
 }
 
 function ResultSummary({ result }: { result: ImportResult }) {
@@ -210,7 +249,9 @@ function ResultSummary({ result }: { result: ImportResult }) {
               <Text style={styles.weekDate}>
                 {w.weekStartDate} → {w.weekEndDate}
               </Text>
-              <Text style={styles.weekBible}>{w.biblePassage}</Text>
+              <Text style={styles.weekBible} numberOfLines={1}>
+                {w.biblePassage}
+              </Text>
             </View>
             <View style={styles.weekStats}>
               {w.created > 0 && (
@@ -313,7 +354,22 @@ const styles = StyleSheet.create({
     borderColor: '#e2e8f0',
   },
   fileName: { fontSize: 14, fontWeight: '500', color: '#0f172a' },
-  fileSize: { fontSize: 12, color: '#64748b', marginTop: 2 },
+  fileMetaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 4,
+  },
+  fileMeta: { fontSize: 12, color: '#64748b' },
+  typeBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+  },
+  typeBadgeMidweek: { backgroundColor: '#dbeafe' },
+  typeBadgeWeekend: { backgroundColor: '#fef3c7' },
+  typeBadgeUnknown: { backgroundColor: '#f1f5f9' },
+  typeBadgeText: { fontSize: 10, fontWeight: '600', color: '#0f172a' },
 
   uploadButton: {
     flexDirection: 'row',
@@ -368,7 +424,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 8,
   },
-  warningTitle: { color: '#78350f', fontSize: 13, fontWeight: '600', marginBottom: 4 },
+  warningTitle: {
+    color: '#78350f',
+    fontSize: 13,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
   warningText: { color: '#92400e', fontSize: 13, lineHeight: 18 },
 
   weeksHeader: {
@@ -398,7 +459,12 @@ const styles = StyleSheet.create({
   weekDate: { fontSize: 13, color: '#0f172a', fontWeight: '500' },
   weekBible: { fontSize: 12, color: '#64748b', marginTop: 2 },
   weekStats: { flexDirection: 'row', gap: 8 },
-  weekStat: { fontSize: 13, fontWeight: '600', minWidth: 28, textAlign: 'right' },
+  weekStat: {
+    fontSize: 13,
+    fontWeight: '600',
+    minWidth: 28,
+    textAlign: 'right',
+  },
 
   doneButton: {
     marginTop: 12,

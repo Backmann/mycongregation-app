@@ -7,7 +7,7 @@ export const TOKEN_KEY = 'congmap.token';
 
 export const api = axios.create({
   baseURL: API_URL,
-  timeout: 60_000, // increased for EPUB upload
+  timeout: 60_000,
 });
 
 api.interceptors.request.use(async (config) => {
@@ -213,7 +213,7 @@ export interface CreateAssignmentInput {
 }
 export type UpdateAssignmentInput = Partial<CreateAssignmentInput>;
 
-// ---------- MWB import types ----------
+// ---------- Schedule import types ----------
 
 export interface WeekImportSummary {
   weekStartDate: string;
@@ -402,28 +402,22 @@ export const assignmentsApi = {
   },
 };
 
-export const mwbImportApi = {
-  /**
-   * Upload an EPUB file. Accepts either:
-   *   - { uri, name, mimeType } from Expo DocumentPicker (mobile/web)
-   *   - a File/Blob from the browser
-   * The implementation builds FormData manually because RN's fetch doesn't
-   * support raw File-like objects the same way browsers do.
-   */
+/**
+ * Unified schedule import — auto-detects MWB vs Watchtower by filename.
+ * Replaces the old mwb-import-only endpoint.
+ */
+export const scheduleImportApi = {
   async upload(file: {
     uri: string;
     name: string;
     mimeType?: string;
-    /** When picked via web, the underlying File object lives here. */
     file?: Blob;
   }): Promise<ImportResult> {
     const formData = new FormData();
 
     if (file.file) {
-      // Web: use the actual File/Blob
       formData.append('file', file.file, file.name);
     } else {
-      // Native: pass the {uri, name, type} shape RN understands
       formData.append('file', {
         uri: file.uri,
         name: file.name,
@@ -432,10 +426,9 @@ export const mwbImportApi = {
     }
 
     const { data } = await api.post<ImportResult>(
-      '/mwb-import/upload',
+      '/schedule-import/upload',
       formData,
       {
-        // Let axios/the platform set the multipart boundary automatically.
         headers: { 'Content-Type': 'multipart/form-data' },
         timeout: 120_000,
       },
