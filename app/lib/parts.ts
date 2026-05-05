@@ -13,6 +13,8 @@ export interface PartDef {
   requiredAssistantCapability?: string;
 }
 
+// ---------- Midweek meeting (Жизнь и служение) ----------
+
 export const MIDWEEK_PARTS: PartDef[] = [
   {
     key: 'midweek_chairman',
@@ -49,9 +51,6 @@ export const MIDWEEK_PARTS: PartDef[] = [
     defaultDurationMin: 4,
     requiredCapability: 'bible_reading',
   },
-  // Apply Yourself parts: any of the three demo capabilities qualifies for the
-  // primary student. We use demo_initial_call as the canonical filter; for
-  // mixed/talk-style AY parts the user can toggle "Show all" in the picker.
   {
     key: 'apply_yourself_1',
     label: 'Apply Yourself 1',
@@ -116,16 +115,63 @@ export const MIDWEEK_PARTS: PartDef[] = [
   },
 ];
 
+// ---------- Weekend meeting (Сторожевая башня + Публичный доклад) ----------
+
+export const WEEKEND_PARTS: PartDef[] = [
+  {
+    key: 'weekend_chairman',
+    label: 'Chairman',
+    defaultOrder: 1,
+    defaultDurationMin: 0,
+    requiredCapability: 'weekend_chairman',
+  },
+  {
+    key: 'weekend_opening_prayer',
+    label: 'Opening prayer',
+    defaultOrder: 2,
+    defaultDurationMin: 1,
+    requiredCapability: 'weekend_opening_prayer',
+  },
+  {
+    key: 'public_talk_speaker',
+    label: 'Public talk',
+    defaultOrder: 3,
+    defaultDurationMin: 30,
+    requiredCapability: 'public_talk_speaker',
+  },
+  {
+    key: 'watchtower_conductor',
+    label: 'Watchtower study — conductor',
+    defaultOrder: 4,
+    defaultDurationMin: 60,
+    requiredCapability: 'watchtower_conductor',
+  },
+  {
+    key: 'watchtower_reader',
+    label: 'Watchtower study — reader',
+    defaultOrder: 5,
+    defaultDurationMin: 60,
+    requiredCapability: 'watchtower_reader',
+  },
+  {
+    key: 'weekend_closing_prayer',
+    label: 'Closing prayer',
+    defaultOrder: 6,
+    defaultDurationMin: 1,
+    requiredCapability: 'weekend_opening_prayer',
+  },
+];
+
 export const PARTS_BY_EVENT: Record<EventType, PartDef[]> = {
   midweek: MIDWEEK_PARTS,
-  weekend: [],
+  weekend: WEEKEND_PARTS,
   cleaning: [],
   av_duty: [],
   public_witnessing: [],
 };
 
 const ALL_PARTS = new Map<string, PartDef>();
-[...MIDWEEK_PARTS].forEach((p) => ALL_PARTS.set(p.key, p));
+[...MIDWEEK_PARTS, ...WEEKEND_PARTS].forEach((p) => ALL_PARTS.set(p.key, p));
 
 export function getPartDef(key: string): PartDef | undefined {
   return ALL_PARTS.get(key);

@@ -27,7 +27,7 @@ import {
 import {
   EVENT_TYPE_LABELS,
   getPartLabel,
-  MIDWEEK_PARTS,
+  PARTS_BY_EVENT,
 } from '../../../lib/parts';
 import { WeekNavigator } from '../../../components/WeekNavigator';
 
@@ -64,8 +64,7 @@ export default function ScheduleIndexScreen() {
 
   const createWeekMutation = useMutation({
     mutationFn: (eventType: EventType) => {
-      const parts =
-        eventType === 'midweek' ? MIDWEEK_PARTS : [];
+      const parts = PARTS_BY_EVENT[eventType] ?? [];
       const inputs: CreateAssignmentInput[] = parts.map((p) => ({
         weekStartDate: weekStartISO,
         eventType,
@@ -97,6 +96,8 @@ export default function ScheduleIndexScreen() {
   }
 
   const hasMidweek = (grouped.get('midweek')?.length ?? 0) > 0;
+  const hasWeekend = (grouped.get('weekend')?.length ?? 0) > 0;
+  const isEmpty = assignments.length === 0;
 
   return (
     <View style={styles.container}>
@@ -121,29 +122,6 @@ export default function ScheduleIndexScreen() {
 
         {assignmentsQuery.isLoading ? (
           <ActivityIndicator size="large" style={{ marginTop: 32 }} />
-        ) : assignments.length === 0 ? (
-          <View style={styles.empty}>
-            <Text style={styles.emptyText}>No assignments for this week.</Text>
-            <Pressable
-              style={[
-                styles.bigButton,
-                createWeekMutation.isPending && { opacity: 0.6 },
-              ]}
-              onPress={() => createWeekMutation.mutate('midweek')}
-              disabled={createWeekMutation.isPending}
-            >
-              <Text style={styles.bigButtonText}>
-                {createWeekMutation.isPending
-                  ? 'Creating…'
-                  : 'Create empty midweek week (13 slots)'}
-              </Text>
-            </Pressable>
-            {createWeekMutation.error && (
-              <Text style={styles.errorText}>
-                {extractErrorMessage(createWeekMutation.error)}
-              </Text>
-            )}
-          </View>
         ) : (
           <>
             {EVENT_TYPE_ORDER.map((eventType) => {
@@ -176,21 +154,76 @@ export default function ScheduleIndexScreen() {
               );
             })}
 
-            {!hasMidweek && (
-              <Pressable
-                style={styles.bigButton}
-                onPress={() => createWeekMutation.mutate('midweek')}
-                disabled={createWeekMutation.isPending}
-              >
-                <Text style={styles.bigButtonText}>
-                  Create empty midweek week
+            {isEmpty && (
+              <Text style={styles.emptyHint}>
+                No assignments for this week.
+              </Text>
+            )}
+
+            {/* Create buttons — show one per missing event type that has a template */}
+            <View style={styles.createButtons}>
+              {!hasMidweek && (
+                <CreateButton
+                  label={`Create empty midweek (${PARTS_BY_EVENT.midweek.length} slots)`}
+                  primary={isEmpty}
+                  onPress={() => createWeekMutation.mutate('midweek')}
+                  disabled={createWeekMutation.isPending}
+                />
+              )}
+              {!hasWeekend && (
+                <CreateButton
+                  label={`Create empty weekend (${PARTS_BY_EVENT.weekend.length} slots)`}
+                  primary={isEmpty && !PARTS_BY_EVENT.midweek.length}
+                  onPress={() => createWeekMutation.mutate('weekend')}
+                  disabled={createWeekMutation.isPending}
+                />
+              )}
+            </View>
+
+            {createWeekMutation.error && (
+              <View style={styles.errorBox}>
+                <Text style={styles.errorText}>
+                  {extractErrorMessage(createWeekMutation.error)}
                 </Text>
-              </Pressable>
+              </View>
             )}
           </>
         )}
       </ScrollView>
     </View>
+  );
+}
+
+function CreateButton({
+  label,
+  primary,
+  onPress,
+  disabled,
+}: {
+  label: string;
+  primary: boolean;
+  onPress: () => void;
+  disabled: boolean;
+}) {
+  return (
+    <Pressable
+      style={[
+        styles.createButton,
+        primary ? styles.createPrimary : styles.createSecondary,
+        disabled && { opacity: 0.6 },
+      ]}
+      onPress={onPress}
+      disabled={disabled}
+    >
+      <Text
+        style={[
+          styles.createButtonText,
+          primary ? styles.createPrimaryText : styles.createSecondaryText,
+        ]}
+      >
+        {label}
+      </Text>
+    </Pressable>
   );
 }
 
@@ -252,30 +285,30 @@ function AssignmentRow({
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f1f5f9' },
-  empty: {
-    paddingHorizontal: 24,
-    paddingTop: 48,
-    alignItems: 'center',
-  },
-  emptyText: {
-    fontSize: 15,
+  emptyHint: {
+    fontSize: 14,
     color: '#64748b',
-    marginBottom: 16,
     textAlign: 'center',
+    marginTop: 32,
+    marginBottom: 8,
   },
-  bigButton: {
-    backgroundColor: '#0ea5e9',
+  createButtons: { padding: 16, gap: 8 },
+  createButton: {
     paddingVertical: 14,
-    paddingHorizontal: 24,
+    paddingHorizontal: 20,
     borderRadius: 10,
-    margin: 16,
     alignItems: 'center',
   },
-  bigButtonText: {
-    color: '#fff',
-    fontSize: 15,
-    fontWeight: '600',
+  createPrimary: { backgroundColor: '#0ea5e9' },
+  createSecondary: {
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#0ea5e9',
   },
+  createButtonText: { fontSize: 14, fontWeight: '600' },
+  createPrimaryText: { color: '#fff' },
+  createSecondaryText: { color: '#0ea5e9' },
+
   section: { marginTop: 16 },
   sectionTitle: {
     fontSize: 12,
