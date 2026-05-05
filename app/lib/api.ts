@@ -102,8 +102,8 @@ export interface CreatePublisherInput {
   mobilePhone?: string;
   email?: string;
   address?: string;
-  familyId?: string;
-  serviceGroupId?: string;
+  familyId?: string | null;
+  serviceGroupId?: string | null;
   userId?: string;
   isActive?: boolean;
   isRegular?: boolean;
@@ -126,7 +126,6 @@ export interface CreatePublisherInput {
   spiritualNotes?: string;
   notes?: string;
 }
-
 export type UpdatePublisherInput = Partial<CreatePublisherInput>;
 
 export interface Family {
@@ -139,6 +138,12 @@ export interface Family {
   updatedAt: string;
   deletedAt: string | null;
 }
+export interface CreateFamilyInput {
+  name: string;
+  headPublisherId?: string | null;
+  notes?: string;
+}
+export type UpdateFamilyInput = Partial<CreateFamilyInput>;
 
 export interface ServiceGroup {
   id: string;
@@ -152,6 +157,14 @@ export interface ServiceGroup {
   updatedAt: string;
   deletedAt: string | null;
 }
+export interface CreateServiceGroupInput {
+  name: string;
+  overseerPublisherId?: string | null;
+  assistantPublisherId?: string | null;
+  meetingLocation?: string;
+  notes?: string;
+}
+export type UpdateServiceGroupInput = Partial<CreateServiceGroupInput>;
 
 export interface Paginated<T> {
   data: T[];
@@ -162,7 +175,7 @@ export interface Paginated<T> {
 
 // ---------- Helpers ----------
 
-/** Strips empty strings and undefined; null is kept (some fields accept null). */
+/** Strips empty strings and undefined; null is kept (server treats null as "clear field"). */
 function cleanPayload<T extends Record<string, any>>(input: T): Partial<T> {
   return Object.fromEntries(
     Object.entries(input).filter(([_, v]) => v !== '' && v !== undefined),
@@ -249,6 +262,24 @@ export const familiesApi = {
     );
     return data;
   },
+  async create(input: CreateFamilyInput): Promise<Family> {
+    const { data } = await api.post<Family>('/families', cleanPayload(input));
+    return data;
+  },
+  async update(id: string, input: UpdateFamilyInput): Promise<Family> {
+    const { data } = await api.patch<Family>(
+      `/families/${id}`,
+      cleanPayload(input),
+    );
+    return data;
+  },
+  async remove(id: string): Promise<void> {
+    await api.delete(`/families/${id}`);
+  },
+  async restore(id: string): Promise<Family> {
+    const { data } = await api.post<Family>(`/families/${id}/restore`);
+    return data;
+  },
 };
 
 export const serviceGroupsApi = {
@@ -268,6 +299,32 @@ export const serviceGroupsApi = {
   async getPublishers(id: string): Promise<Paginated<Publisher>> {
     const { data } = await api.get<Paginated<Publisher>>(
       `/service-groups/${id}/publishers`,
+    );
+    return data;
+  },
+  async create(input: CreateServiceGroupInput): Promise<ServiceGroup> {
+    const { data } = await api.post<ServiceGroup>(
+      '/service-groups',
+      cleanPayload(input),
+    );
+    return data;
+  },
+  async update(
+    id: string,
+    input: UpdateServiceGroupInput,
+  ): Promise<ServiceGroup> {
+    const { data } = await api.patch<ServiceGroup>(
+      `/service-groups/${id}`,
+      cleanPayload(input),
+    );
+    return data;
+  },
+  async remove(id: string): Promise<void> {
+    await api.delete(`/service-groups/${id}`);
+  },
+  async restore(id: string): Promise<ServiceGroup> {
+    const { data } = await api.post<ServiceGroup>(
+      `/service-groups/${id}/restore`,
     );
     return data;
   },

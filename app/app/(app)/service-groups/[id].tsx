@@ -1,5 +1,8 @@
+import { useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -7,15 +10,19 @@ import {
   View,
 } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   extractErrorMessage,
   Publisher,
   serviceGroupsApi,
+  UpdateServiceGroupInput,
 } from '../../../lib/api';
+import { ServiceGroupForm } from '../../../components/ServiceGroupForm';
 
 export default function ServiceGroupDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const queryClient = useQueryClient();
+  const [editing, setEditing] = useState(false);
 
   const groupQuery = useQuery({
     queryKey: ['service-group', id],
@@ -26,8 +33,51 @@ export default function ServiceGroupDetailScreen() {
   const membersQuery = useQuery({
     queryKey: ['service-group', id, 'publishers'],
     queryFn: () => serviceGroupsApi.getPublishers(id!),
-    enabled: !!id,
+    enabled: !!id && !editing,
   });
+
+  const updateMutation = useMutation({
+    mutationFn: (input: UpdateServiceGroupInput) =>
+      serviceGroupsApi.update(id!, input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['service-groups'] });
+      queryClient.invalidateQueries({ queryKey: ['service-group', id] });
+      setEditing(false);
+    },
+  });
+
+  const removeMutation = useMutation({
+    mutationFn: () => serviceGroupsApi.remove(id!),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['service-groups'] });
+      router.back();
+    },
+  });
+
+  const restoreMutation = useMutation({
+    mutationFn: () => serviceGroupsApi.restore(id!),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['service-groups'] });
+      queryClient.invalidateQueries({ queryKey: ['service-group', id] });
+    },
+  });
+
+  const confirmRemove = () => {
+    if (Platform.OS === 'web') {
+      if (window.confirm('Remove this group? Members will be unlinked.')) {
+        removeMutation.mutate();
+      }
+      return;
+    }
+    Alert.alert('Remove group', 'Members will be unlinked.', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Remove',
+        onPress: () => removeMutation.mutate(),
+        style: 'destructive',
+      },
+    ]);
+  };
 
   if (groupQuery.isLoading) {
     return (
@@ -54,8 +104,29 @@ export default function ServiceGroupDetailScreen() {
   const overseer = members.find((p) => p.id === group.overseerPublisherId);
   const assistant = members.find((p) => p.id === group.assistantPublisherId);
 
+  if (editing) {
+    return (
+      <ServiceGroupForm
+        initial={{
+          name: group.name,
+          overseerPublisherId: group.overseerPublisherId,
+          assistantPublisherId: group.assistantPublisherId,
+          meetingLocation: group.meetingLocation ?? undefined,
+          notes: group.notes ?? undefined,
+        }}
+        onSubmit={updateMutation.mutateAsync}
+        isSubmitting={updateMutation.isPending}
+        submitLabel="Save"
+        onCancel={() => setEditing(false)}
+      />
+    );
+  }
+
   return (
-    <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 32 }}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={{ paddingBottom: 32 }}
+    >
       <View style={styles.headerSection}>
         <Text style={styles.headerName}>{group.name}</Text>
         {group.meetingLocation && (
@@ -110,6 +181,38 @@ export default function ServiceGroupDetailScreen() {
           <Text style={styles.empty}>No members in this group yet</Text>
         ) : (
           members.map((p) => <MemberRow key={p.id} publisher={p} />)
+        )}
+      </View>
+
+      <View style={styles.actions}>
+        {!group.deletedAt && (
+          <Pressable
+            style={[styles.button, styles.buttonEdit]}
+            onPress={() => setEditing(true)}
+          >
+            <Text style={styles.buttonEditText}>Edit</Text>
+          </Pressable>
+        )}
+        {group.deletedAt ? (
+          <Pressable
+            style={[styles.button, styles.buttonRestore]}
+            onPress={() => restoreMutation.mutate()}
+            disabled={restoreMutation.isPending}
+          >
+            <Text style={styles.buttonText}>
+              {restoreMutation.isPending ? 'Restoring…' : 'Restore'}
+            </Text>
+          </Pressable>
+        ) : (
+          <Pressable
+            style={[styles.button, styles.buttonRemove]}
+            onPress={confirmRemove}
+            disabled={removeMutation.isPending}
+          >
+            <Text style={styles.buttonText}>
+              {removeMutation.isPending ? 'Removing…' : 'Remove'}
+            </Text>
+          </Pressable>
         )}
       </View>
     </ScrollView>
@@ -173,11 +276,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 
-  leadership: {
-    flexDirection: 'row',
-    padding: 16,
-    gap: 12,
-  },
+  leadership: { flexDirection: 'row', padding: 16, gap: 12 },
   leaderCard: {
     flex: 1,
     backgroundColor: '#fff',
@@ -254,4 +353,12 @@ const styles = StyleSheet.create({
   avatarText: { color: '#fff', fontWeight: '700', fontSize: 13 },
   name: { fontSize: 15, fontWeight: '500', color: '#0f172a', flex: 1 },
   chevron: { color: '#cbd5e1', fontSize: 24, marginLeft: 8 },
+
+  actions: { padding: 20, gap: 8 },
+  button: { paddingVertical: 14, borderRadius: 8, alignItems: 'center' },
+  buttonEdit: { backgroundColor: '#0ea5e9' },
+  buttonEditText: { color: '#fff', fontSize: 16, fontWeight: '600' },
+  buttonRemove: { backgroundColor: '#dc2626' },
+  buttonRestore: { backgroundColor: '#059669' },
+  buttonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
 });

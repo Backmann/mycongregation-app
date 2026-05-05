@@ -1,5 +1,8 @@
+import { useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -7,15 +10,19 @@ import {
   View,
 } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   extractErrorMessage,
   familiesApi,
   Publisher,
+  UpdateFamilyInput,
 } from '../../../lib/api';
+import { FamilyForm } from '../../../components/FamilyForm';
 
 export default function FamilyDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const queryClient = useQueryClient();
+  const [editing, setEditing] = useState(false);
 
   const familyQuery = useQuery({
     queryKey: ['family', id],
@@ -26,8 +33,50 @@ export default function FamilyDetailScreen() {
   const membersQuery = useQuery({
     queryKey: ['family', id, 'publishers'],
     queryFn: () => familiesApi.getPublishers(id!),
-    enabled: !!id,
+    enabled: !!id && !editing,
   });
+
+  const updateMutation = useMutation({
+    mutationFn: (input: UpdateFamilyInput) => familiesApi.update(id!, input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['families'] });
+      queryClient.invalidateQueries({ queryKey: ['family', id] });
+      setEditing(false);
+    },
+  });
+
+  const removeMutation = useMutation({
+    mutationFn: () => familiesApi.remove(id!),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['families'] });
+      router.back();
+    },
+  });
+
+  const restoreMutation = useMutation({
+    mutationFn: () => familiesApi.restore(id!),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['families'] });
+      queryClient.invalidateQueries({ queryKey: ['family', id] });
+    },
+  });
+
+  const confirmRemove = () => {
+    if (Platform.OS === 'web') {
+      if (window.confirm('Remove this family? Members will be unlinked.')) {
+        removeMutation.mutate();
+      }
+      return;
+    }
+    Alert.alert('Remove family', 'Members will be unlinked.', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Remove',
+        onPress: () => removeMutation.mutate(),
+        style: 'destructive',
+      },
+    ]);
+  };
 
   if (familyQuery.isLoading) {
     return (
@@ -53,13 +102,30 @@ export default function FamilyDetailScreen() {
   const members = membersQuery.data?.data ?? [];
   const head = members.find((p) => p.id === family.headPublisherId);
 
+  if (editing) {
+    return (
+      <FamilyForm
+        initial={{
+          name: family.name,
+          headPublisherId: family.headPublisherId,
+          notes: family.notes ?? undefined,
+        }}
+        onSubmit={updateMutation.mutateAsync}
+        isSubmitting={updateMutation.isPending}
+        submitLabel="Save"
+        onCancel={() => setEditing(false)}
+      />
+    );
+  }
+
   return (
-    <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 32 }}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={{ paddingBottom: 32 }}
+    >
       <View style={styles.headerSection}>
         <Text style={styles.headerName}>{family.name}</Text>
-        {family.deletedAt && (
-          <Text style={styles.removedBadge}>Removed</Text>
-        )}
+        {family.deletedAt && <Text style={styles.removedBadge}>Removed</Text>}
       </View>
 
       {family.notes && (
@@ -76,7 +142,7 @@ export default function FamilyDetailScreen() {
         {membersQuery.isLoading ? (
           <ActivityIndicator style={{ padding: 16 }} />
         ) : members.length === 0 ? (
-          <Text style={styles.empty}>No members linked to this family yet</Text>
+          <Text style={styles.empty}>No members linked yet</Text>
         ) : (
           members.map((p) => (
             <MemberRow
@@ -95,6 +161,38 @@ export default function FamilyDetailScreen() {
           </Text>
         </View>
       )}
+
+      <View style={styles.actions}>
+        {!family.deletedAt && (
+          <Pressable
+            style={[styles.button, styles.buttonEdit]}
+            onPress={() => setEditing(true)}
+          >
+            <Text style={styles.buttonEditText}>Edit</Text>
+          </Pressable>
+        )}
+        {family.deletedAt ? (
+          <Pressable
+            style={[styles.button, styles.buttonRestore]}
+            onPress={() => restoreMutation.mutate()}
+            disabled={restoreMutation.isPending}
+          >
+            <Text style={styles.buttonText}>
+              {restoreMutation.isPending ? 'Restoring…' : 'Restore'}
+            </Text>
+          </Pressable>
+        ) : (
+          <Pressable
+            style={[styles.button, styles.buttonRemove]}
+            onPress={confirmRemove}
+            disabled={removeMutation.isPending}
+          >
+            <Text style={styles.buttonText}>
+              {removeMutation.isPending ? 'Removing…' : 'Remove'}
+            </Text>
+          </Pressable>
+        )}
+      </View>
     </ScrollView>
   );
 }
@@ -196,6 +294,8 @@ const styles = StyleSheet.create({
     padding: 32,
     fontSize: 14,
   },
+  footnote: { padding: 16, paddingTop: 12 },
+  footnoteText: { fontSize: 12, color: '#94a3b8', textAlign: 'center' },
 
   row: {
     flexDirection: 'row',
@@ -229,9 +329,11 @@ const styles = StyleSheet.create({
   },
   chevron: { color: '#cbd5e1', fontSize: 24, marginLeft: 8 },
 
-  footnote: {
-    padding: 16,
-    paddingTop: 12,
-  },
-  footnoteText: { fontSize: 12, color: '#94a3b8', textAlign: 'center' },
+  actions: { padding: 20, gap: 8 },
+  button: { paddingVertical: 14, borderRadius: 8, alignItems: 'center' },
+  buttonEdit: { backgroundColor: '#0ea5e9' },
+  buttonEditText: { color: '#fff', fontSize: 16, fontWeight: '600' },
+  buttonRemove: { backgroundColor: '#dc2626' },
+  buttonRestore: { backgroundColor: '#059669' },
+  buttonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
 });
