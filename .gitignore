@@ -1,0 +1,13 @@
+# Legacy mobile project (separate, not part of mycongregation-app)
+mobile/
+
+# Server is a separate repo (mycongregation-server)
+server/
+
+# Build artifacts at parent level
+web-dist.tar.gz
+*.tar.gz
+
+# OS junk
+.DS_Store
+Thumbs.db

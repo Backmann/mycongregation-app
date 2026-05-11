@@ -15,7 +15,7 @@ import { extractErrorMessage } from '../../lib/api';
 
 export default function LoginScreen() {
   const { signIn } = useAuth();
-  const [email, setEmail] = useState('lionel@congmap.org');
+  const [email, setEmail] = useState('lionel@mycongregation.org');
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -39,7 +39,7 @@ export default function LoginScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <View style={styles.card}>
-        <Text style={styles.title}>congmap</Text>
+        <Text style={styles.title}>mycongregation</Text>
         <Text style={styles.subtitle}>Sign in to your congregation</Text>
 
         <Text style={styles.label}>Email</Text>

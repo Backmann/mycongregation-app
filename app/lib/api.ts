@@ -3,7 +3,7 @@ import { storage } from './storage';
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3000/api';
 
-export const TOKEN_KEY = 'congmap.token';
+export const TOKEN_KEY = 'mycongregation.token';
 
 export const api = axios.create({
   baseURL: API_URL,
