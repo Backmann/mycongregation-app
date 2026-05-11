@@ -4,7 +4,7 @@ Modern web and mobile app for Jehovah's Witnesses congregation administration.
 
 Live: **https://mycongregation.org**
 
-> ⚠️ This is an unofficial, community-built tool. Not affiliated with or endorsed by the Watch Tower Bible and Tract Society.
+> ⚠️ This is an unofficial, community-built tool. Not affiliated with or endorsed by any religious organization.
 
 ## Features
 
@@ -13,7 +13,7 @@ Live: **https://mycongregation.org**
 - 🤝 **Service groups** — weekly field service organization
 - 📋 **Assignments** — midweek and weekend meeting parts
 - 🎤 **Public talks** — 190+ catalog with bulk import, search, speaker history
-- 📅 **Schedule import** — parse MWB and Watchtower EPUBs into editable schedules
+- 📅 **Schedule import** — parse weekly meeting program EPUBs into editable schedules
 
 ## Tech stack
 
