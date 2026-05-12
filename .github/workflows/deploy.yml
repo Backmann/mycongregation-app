@@ -1,0 +1,81 @@
+name: Deploy frontend to production
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'app/**'
+      - '.github/workflows/deploy.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        working-directory: app
+        run: npm install
+
+      - name: Build web bundle
+        working-directory: app
+        env:
+          EXPO_PUBLIC_API_URL: https://api.mycongregation.org/api
+        run: npx expo export --platform web
+
+      - name: Create tarball
+        working-directory: app
+        run: |
+          tar -czf ../web-dist.tar.gz -C dist .
+          ls -lh ../web-dist.tar.gz
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          echo "${{ secrets.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          cat > ~/.ssh/config << 'EOF'
+          Host myserver
+              HostName ${{ secrets.SSH_HOST }}
+              User ${{ secrets.SSH_USER }}
+              IdentityFile ~/.ssh/deploy_key
+              UserKnownHostsFile ~/.ssh/known_hosts
+              IdentitiesOnly yes
+              StrictHostKeyChecking yes
+          EOF
+          chmod 600 ~/.ssh/config
+
+      - name: Upload to server
+        run: scp web-dist.tar.gz myserver:/tmp/web-dist.tar.gz
+
+      - name: Extract on server
+        run: |
+          ssh myserver bash << 'ENDSSH'
+          set -euo pipefail
+
+          echo "=== Replacing files ==="
+          cd /var/www/mycongregation
+          rm -rf * .[!.]* 2>/dev/null || true
+          tar -xzf /tmp/web-dist.tar.gz
+
+          echo "=== Brand check ==="
+          grep -c mycongregation login.html || echo "No mycongregation in login.html"
+
+          echo "=== Cleanup ==="
+          rm /tmp/web-dist.tar.gz
+
+          echo "=== Done ==="
+          ls -la | head -10
+          ENDSSH
+
+      - name: Cleanup local
+        if: always()
+        run: rm -f ~/.ssh/deploy_key ~/.ssh/known_hosts ~/.ssh/config web-dist.tar.gz
