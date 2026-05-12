@@ -1,5 +1,8 @@
 # mycongregation
 
+[![Deploy](https://github.com/Backmann/mycongregation-app/actions/workflows/deploy.yml/badge.svg)](https://github.com/Backmann/mycongregation-app/actions/workflows/deploy.yml)
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
+
 Modern web and mobile app for Jehovah's Witnesses congregation administration.
 
 Live: **https://mycongregation.org**
@@ -59,4 +62,4 @@ Output in `app/dist/` is deployed as static files behind nginx + Cloudflare.
 
 [AGPL-3.0](LICENSE) — derivative works distributed over a network must publish their source.
 
-Copyright (C) 2026 Lionel Hovorukha
+Copyright (C) 2026 Lionel Backmann (Hovorukha)
