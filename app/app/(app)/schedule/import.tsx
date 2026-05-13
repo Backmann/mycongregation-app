@@ -181,7 +181,7 @@ export default function ImportEpubScreen() {
           </Pressable>
         )}
 
-        {uploadMutation.error && (
+        {!!uploadMutation.error && (
           <View style={styles.errorBox}>
             <Text style={styles.errorText}>
               {extractErrorMessage(uploadMutation.error)}

@@ -4,6 +4,7 @@ import { storage } from './storage';
 const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3000/api';
 
 export const TOKEN_KEY = 'mycongregation.token';
+export const REFRESH_TOKEN_KEY = 'mycongregation.refresh_token';
 
 export const api = axios.create({
   baseURL: API_URL,
@@ -31,6 +32,7 @@ export interface AuthUser {
 
 export interface LoginResponse {
   accessToken: string;
+  refreshToken: string;
   user: AuthUser;
 }
 
@@ -500,3 +502,84 @@ export function extractErrorMessage(error: unknown): string {
   if (error instanceof Error) return error.message;
   return 'Unknown error';
 }
+
+// ---------- Auth failure callback ----------
+// AuthProvider registers a callback so the interceptor can clear UI state
+// and navigate to /login when both access AND refresh tokens are dead.
+let onAuthFailure: (() => void) | null = null;
+
+export function setOnAuthFailure(callback: (() => void) | null) {
+  onAuthFailure = callback;
+}
+
+// ---------- Token helpers ----------
+export async function storeAuthTokens(
+  accessToken: string,
+  refreshToken: string,
+): Promise<void> {
+  await storage.setItem(TOKEN_KEY, accessToken);
+  await storage.setItem(REFRESH_TOKEN_KEY, refreshToken);
+}
+
+export async function clearAuthTokens(): Promise<void> {
+  await storage.removeItem(TOKEN_KEY);
+  await storage.removeItem(REFRESH_TOKEN_KEY);
+}
+
+// ---------- Refresh-token response interceptor ----------
+// Deduplicates concurrent refresh attempts: while one refresh is in flight,
+// all other 401s wait for the same promise and retry with the new token.
+let refreshPromise: Promise<string> | null = null;
+
+async function performRefresh(): Promise<string> {
+  const refreshToken = await storage.getItem(REFRESH_TOKEN_KEY);
+  if (!refreshToken) {
+    throw new Error('No refresh token available');
+  }
+  // Raw axios call (not `api`) to bypass our own interceptors and avoid recursion
+  const { data } = await axios.post<{ accessToken: string }>(
+    `${API_URL}/auth/refresh`,
+    { refreshToken },
+    { timeout: 10_000 },
+  );
+  await storage.setItem(TOKEN_KEY, data.accessToken);
+  return data.accessToken;
+}
+
+api.interceptors.response.use(
+  (response) => response,
+  async (error: AxiosError) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const original = error.config as any;
+
+    const is401 = error.response?.status === 401;
+    const isAuthEndpoint =
+      original?.url?.includes('/auth/refresh') ||
+      original?.url?.includes('/auth/login');
+
+    if (is401 && original && !original._retry && !isAuthEndpoint) {
+      original._retry = true;
+
+      try {
+        if (!refreshPromise) {
+          refreshPromise = performRefresh().finally(() => {
+            refreshPromise = null;
+          });
+        }
+        const newAccessToken = await refreshPromise;
+
+        if (original.headers) {
+          original.headers.Authorization = `Bearer ${newAccessToken}`;
+        }
+        return api.request(original);
+      } catch {
+        // Refresh itself failed — both tokens are dead. Clear and notify UI.
+        await clearAuthTokens();
+        onAuthFailure?.();
+        return Promise.reject(error);
+      }
+    }
+
+    return Promise.reject(error);
+  },
+);

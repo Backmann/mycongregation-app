@@ -6,8 +6,16 @@ import {
   useEffect,
   useState,
 } from 'react';
+import { router } from 'expo-router';
 import { storage } from './storage';
-import { authApi, AuthUser, TOKEN_KEY } from './api';
+import {
+  authApi,
+  AuthUser,
+  TOKEN_KEY,
+  storeAuthTokens,
+  clearAuthTokens,
+  setOnAuthFailure,
+} from './api';
 
 interface AuthContextValue {
   user: AuthUser | null;
@@ -22,7 +30,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // On mount: try to load current user from existing token
+  // Register a callback so the api response interceptor can clear UI state
+  // and redirect to /login when refresh also fails (both tokens dead).
+  useEffect(() => {
+    setOnAuthFailure(() => {
+      setUser(null);
+      router.replace('/(auth)/login');
+    });
+    return () => {
+      setOnAuthFailure(null);
+    };
+  }, []);
+
+  // On mount: try to load current user from existing token.
+  // If access-token is expired, the interceptor will auto-refresh transparently.
   useEffect(() => {
     let alive = true;
     (async () => {
@@ -35,8 +56,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const me = await authApi.me();
         if (alive) setUser(me);
       } catch {
-        // Token invalid/expired
-        await storage.removeItem(TOKEN_KEY);
+        // Both access AND refresh failed (interceptor already cleared tokens
+        // and called onAuthFailure, but be defensive).
+        await clearAuthTokens();
       } finally {
         if (alive) setIsLoading(false);
       }
@@ -47,16 +69,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signIn = useCallback(async (email: string, password: string) => {
-    const { accessToken, user: authUser } = await authApi.login(
-      email,
-      password,
-    );
-    await storage.setItem(TOKEN_KEY, accessToken);
+    const {
+      accessToken,
+      refreshToken,
+      user: authUser,
+    } = await authApi.login(email, password);
+    await storeAuthTokens(accessToken, refreshToken);
     setUser(authUser);
   }, []);
 
   const signOut = useCallback(async () => {
-    await storage.removeItem(TOKEN_KEY);
+    await clearAuthTokens();
     setUser(null);
   }, []);
 

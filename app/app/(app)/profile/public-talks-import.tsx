@@ -93,7 +93,7 @@ export default function PublicTalksImportScreen() {
           </Pressable>
         )}
 
-        {importMutation.error && (
+        {!!importMutation.error && (
           <View style={styles.errorBox}>
             <Text style={styles.errorText}>
               {extractErrorMessage(importMutation.error)}

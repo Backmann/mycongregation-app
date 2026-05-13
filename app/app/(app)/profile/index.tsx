@@ -10,7 +10,7 @@ import { router } from 'expo-router';
 import { useAuth } from '../../../lib/auth';
 
 export default function ProfileScreen() {
-  const { user, logout } = useAuth();
+  const { user, signOut } = useAuth();
 
   if (!user) return null;
 
@@ -63,7 +63,7 @@ export default function ProfileScreen() {
             styles.logoutButton,
             pressed && { opacity: 0.7 },
           ]}
-          onPress={logout}
+          onPress={signOut}
         >
           <Ionicons name="log-out-outline" size={18} color="#dc2626" />
           <Text style={styles.logoutText}>Sign out</Text>
