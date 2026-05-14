@@ -276,6 +276,33 @@ export interface BulkImportResult {
   examples: Array<{ number: number; title: string }>;
 }
 
+// ---------- Service report types ----------
+
+export interface ServiceReport {
+  id: string;
+  congregationId: string;
+  publisherId: string;
+  reportMonth: string;            // ISO date, always YYYY-MM-01
+  servedThisMonth: boolean | null;
+  hoursReported: number | null;
+  bibleStudies: number;
+  notes: string | null;
+  submittedAt: string;
+  submittedById: string | null;
+  submittedOnBehalfOf: boolean;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+}
+
+export interface SubmitServiceReportInput {
+  reportMonth: string;            // YYYY-MM or YYYY-MM-DD
+  servedThisMonth?: boolean;
+  hoursReported?: number;
+  bibleStudies?: number;
+  notes?: string;
+}
+
 export interface Paginated<T> {
   data: T[];
   total: number;
@@ -488,6 +515,17 @@ export const publicTalksApi = {
   },
   async bulkImport(text: string): Promise<BulkImportResult> {
     const { data } = await api.post<BulkImportResult>('/public-talks/bulk-import', { text });
+    return data;
+  },
+};
+
+export const serviceReportsApi = {
+  async submit(input: SubmitServiceReportInput): Promise<ServiceReport> {
+    const { data } = await api.post<ServiceReport>('/service-reports', cleanPayload(input));
+    return data;
+  },
+  async listMy(): Promise<ServiceReport[]> {
+    const { data } = await api.get<ServiceReport[]>('/service-reports/my');
     return data;
   },
 };
