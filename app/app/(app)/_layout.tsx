@@ -1,11 +1,13 @@
 import { Redirect, Tabs } from 'expo-router';
 import { ActivityIndicator, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../lib/auth';
 import { usePushNotifications } from '../../lib/push-notifications';
 
 export default function AppLayout() {
   const { user, isLoading } = useAuth();
+  const { t } = useTranslation();
   usePushNotifications();
 
   if (isLoading) {
@@ -31,7 +33,7 @@ export default function AppLayout() {
       <Tabs.Screen
         name="schedule"
         options={{
-          title: 'Schedule',
+          title: t('tabs.schedule'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="calendar" color={color} size={size} />
           ),
@@ -40,7 +42,7 @@ export default function AppLayout() {
       <Tabs.Screen
         name="publishers"
         options={{
-          title: 'Publishers',
+          title: t('tabs.publishers'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="people" color={color} size={size} />
           ),
@@ -49,7 +51,7 @@ export default function AppLayout() {
       <Tabs.Screen
         name="families"
         options={{
-          title: 'Families',
+          title: t('tabs.families'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="home" color={color} size={size} />
           ),
@@ -58,7 +60,7 @@ export default function AppLayout() {
       <Tabs.Screen
         name="service-groups"
         options={{
-          title: 'Groups',
+          title: t('tabs.groups'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="grid" color={color} size={size} />
           ),
@@ -67,7 +69,7 @@ export default function AppLayout() {
       <Tabs.Screen
         name="service-reports"
         options={{
-          title: 'Reports',
+          title: t('tabs.reports'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="document-text" color={color} size={size} />
           ),
@@ -76,7 +78,7 @@ export default function AppLayout() {
       <Tabs.Screen
         name="profile"
         options={{
-          title: 'Profile',
+          title: t('tabs.profile'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="person-circle" color={color} size={size} />
           ),

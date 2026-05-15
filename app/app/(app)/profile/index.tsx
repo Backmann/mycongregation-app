@@ -7,10 +7,17 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../../lib/auth';
+import { LanguagePickerModal } from '../../../components/LanguagePicker';
+import { getCurrentLanguage } from '../../../lib/i18n';
 
 export default function ProfileScreen() {
   const { user, signOut } = useAuth();
+  const { t } = useTranslation();
+  const [langModalVisible, setLangModalVisible] = useState(false);
+  const currentLang = getCurrentLanguage();
 
   if (!user) return null;
 
@@ -22,7 +29,7 @@ export default function ProfileScreen() {
       contentContainerStyle={{ paddingBottom: 32 }}
     >
       <View style={styles.section}>
-        <Text style={styles.sectionLabel}>SIGNED IN AS</Text>
+        <Text style={styles.sectionLabel}>{t('profile.signedInAs')}</Text>
         <View style={styles.card}>
           <Text style={styles.email}>{user.email}</Text>
           <View style={styles.roleBadge}>
@@ -31,9 +38,31 @@ export default function ProfileScreen() {
         </View>
       </View>
 
+      <View style={styles.section}>
+        <Text style={styles.sectionLabel}>{t('profile.settings')}</Text>
+        <View style={styles.card}>
+          <Pressable
+            style={({ pressed }) => [
+              styles.row,
+              pressed && styles.rowPressed,
+            ]}
+            onPress={() => setLangModalVisible(true)}
+          >
+            <View style={styles.rowIcon}>
+              <Ionicons name="language-outline" size={20} color="#0ea5e9" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.rowTitle}>{t('profile.language')}</Text>
+              <Text style={styles.rowSubtitle}>{t(`language.${currentLang === 'en' ? 'english' : currentLang === 'ru' ? 'russian' : 'german'}`)}</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color="#cbd5e1" />
+          </Pressable>
+        </View>
+      </View>
+
       {isAdmin && (
         <View style={styles.section}>
-          <Text style={styles.sectionLabel}>ADMIN TOOLS</Text>
+          <Text style={styles.sectionLabel}>{t('profile.adminTools')}</Text>
           <View style={styles.card}>
             <Pressable
               style={({ pressed }) => [
@@ -46,10 +75,8 @@ export default function ProfileScreen() {
                 <Ionicons name="megaphone-outline" size={20} color="#0ea5e9" />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={styles.rowTitle}>Public talks catalog</Text>
-                <Text style={styles.rowSubtitle}>
-                  Manage S-34 talks list
-                </Text>
+                <Text style={styles.rowTitle}>{t('profile.publicTalks')}</Text>
+                <Text style={styles.rowSubtitle}>{t('profile.publicTalksDescription')}</Text>
               </View>
               <Ionicons name="chevron-forward" size={18} color="#cbd5e1" />
             </Pressable>
@@ -66,10 +93,11 @@ export default function ProfileScreen() {
           onPress={signOut}
         >
           <Ionicons name="log-out-outline" size={18} color="#dc2626" />
-          <Text style={styles.logoutText}>Sign out</Text>
+          <Text style={styles.logoutText}>{t('profile.signOut')}</Text>
         </Pressable>
       </View>
     </ScrollView>
+    {<LanguagePickerModal visible={langModalVisible} onClose={() => setLangModalVisible(false)} />}
   );
 }
 

@@ -1,0 +1,47 @@
+{
+  "tabs": {
+    "schedule": "Schedule",
+    "publishers": "Publishers",
+    "families": "Families",
+    "groups": "Groups",
+    "reports": "Reports",
+    "profile": "Profile"
+  },
+  "common": {
+    "edit": "Edit",
+    "cancel": "Cancel",
+    "save": "Save",
+    "create": "Create",
+    "delete": "Delete",
+    "remove": "Remove",
+    "confirm": "Confirm",
+    "yes": "Yes",
+    "no": "No",
+    "ok": "OK",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "submit": "Submit",
+    "loading": "Loading…",
+    "error": "Error",
+    "retry": "Try again",
+    "search": "Search"
+  },
+  "profile": {
+    "signedInAs": "Signed in as",
+    "adminTools": "Admin tools",
+    "publicTalks": "Public talks catalog",
+    "publicTalksDescription": "Manage S-34 talks list",
+    "settings": "Settings",
+    "language": "Language",
+    "signOut": "Sign out"
+  },
+  "language": {
+    "title": "Language",
+    "choose": "Choose your language",
+    "detected": "Detected from device",
+    "english": "English",
+    "russian": "Русский",
+    "german": "Deutsch"
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "tabs": {
+    "schedule": "Расписание",
+    "publishers": "Возвещатели",
+    "families": "Семьи",
+    "groups": "Группы",
+    "reports": "Отчёты",
+    "profile": "Профиль"
+  },
+  "common": {
+    "edit": "Изменить",
+    "cancel": "Отмена",
+    "save": "Сохранить",
+    "create": "Создать",
+    "delete": "Удалить",
+    "remove": "Удалить",
+    "confirm": "Подтвердить",
+    "yes": "Да",
+    "no": "Нет",
+    "ok": "ОК",
+    "close": "Закрыть",
+    "back": "Назад",
+    "next": "Далее",
+    "submit": "Отправить",
+    "loading": "Загрузка…",
+    "error": "Ошибка",
+    "retry": "Повторить",
+    "search": "Поиск"
+  },
+  "profile": {
+    "signedInAs": "Вход выполнен от",
+    "adminTools": "Инструменты администратора",
+    "publicTalks": "Каталог публичных речей",
+    "publicTalksDescription": "Управление списком речей S-34",
+    "settings": "Настройки",
+    "language": "Язык",
+    "signOut": "Выйти"
+  },
+  "language": {
+    "title": "Язык",
+    "choose": "Выберите язык",
+    "detected": "Определено по устройству",
+    "english": "English",
+    "russian": "Русский",
+    "german": "Deutsch"
+  }
+}

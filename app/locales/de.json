@@ -1,0 +1,47 @@
+{
+  "tabs": {
+    "schedule": "Plan",
+    "publishers": "Verkündiger",
+    "families": "Familien",
+    "groups": "Gruppen",
+    "reports": "Berichte",
+    "profile": "Profil"
+  },
+  "common": {
+    "edit": "Bearbeiten",
+    "cancel": "Abbrechen",
+    "save": "Speichern",
+    "create": "Erstellen",
+    "delete": "Löschen",
+    "remove": "Entfernen",
+    "confirm": "Bestätigen",
+    "yes": "Ja",
+    "no": "Nein",
+    "ok": "OK",
+    "close": "Schließen",
+    "back": "Zurück",
+    "next": "Weiter",
+    "submit": "Absenden",
+    "loading": "Wird geladen…",
+    "error": "Fehler",
+    "retry": "Erneut versuchen",
+    "search": "Suchen"
+  },
+  "profile": {
+    "signedInAs": "Angemeldet als",
+    "adminTools": "Administrator-Werkzeuge",
+    "publicTalks": "Verzeichnis öffentlicher Vorträge",
+    "publicTalksDescription": "S-34-Vortragsliste verwalten",
+    "settings": "Einstellungen",
+    "language": "Sprache",
+    "signOut": "Abmelden"
+  },
+  "language": {
+    "title": "Sprache",
+    "choose": "Sprache wählen",
+    "detected": "Vom Gerät erkannt",
+    "english": "English",
+    "russian": "Русский",
+    "german": "Deutsch"
+  }
+}
