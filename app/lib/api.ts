@@ -727,3 +727,22 @@ api.interceptors.response.use(
     return Promise.reject(error);
   },
 );
+
+
+// =============================================================
+// Push notifications (Phase G)
+// =============================================================
+
+export interface PushDeviceInfo {
+  platform: string;
+  osVersion?: string | null;
+}
+
+export const pushApi = {
+  register: async (token: string, deviceInfo: PushDeviceInfo): Promise<void> => {
+    await api.post('/push-tokens', { token, deviceInfo });
+  },
+  unregister: async (token: string): Promise<void> => {
+    await api.delete('/push-tokens', { data: { token } });
+  },
+};

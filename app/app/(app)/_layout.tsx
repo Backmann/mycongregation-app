@@ -2,9 +2,11 @@ import { Redirect, Tabs } from 'expo-router';
 import { ActivityIndicator, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../lib/auth';
+import { usePushNotifications } from '../../lib/push-notifications';
 
 export default function AppLayout() {
   const { user, isLoading } = useAuth();
+  usePushNotifications();
 
   if (isLoading) {
     return (
