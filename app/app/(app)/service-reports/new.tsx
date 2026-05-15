@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -12,7 +12,7 @@ import {
   View,
 } from 'react-native';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { router } from 'expo-router';
+import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useAuth } from '../../../lib/auth';
 import {
   extractErrorMessage,
@@ -24,6 +24,16 @@ const MONTH_NAMES = [
   'January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December',
 ];
+
+function formatMonth(yearMonthOrDate: string): string {
+  // Accepts "YYYY-MM" or "YYYY-MM-DD". Always interpret in UTC.
+  const ymd =
+    yearMonthOrDate.length === 7
+      ? `${yearMonthOrDate}-01`
+      : yearMonthOrDate;
+  const d = new Date(`${ymd}T00:00:00Z`);
+  return `${MONTH_NAMES[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
+}
 
 function getRecentMonths(): { value: string; label: string }[] {
   const now = new Date();
@@ -40,12 +50,19 @@ function getRecentMonths(): { value: string; label: string }[] {
   return months;
 }
 
-export default function NewServiceReportScreen() {
+/** YYYY-MM-DD or YYYY-MM-01 → YYYY-MM */
+function toYearMonth(s: string): string {
+  return s.slice(0, 7);
+}
+
+export default function NewOrEditServiceReportScreen() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const params = useLocalSearchParams<{ id?: string }>();
+  const editId = typeof params.id === 'string' ? params.id : undefined;
+  const isEditMode = !!editId;
 
-  // Fetch current user's publisher to determine pioneer status.
-  // Backend doesn't yet have GET /publishers/me, so we filter client-side.
+  // Resolve current user's publisher (for form-variant determination).
   const { data: myPublisher, isLoading: isLoadingPublisher } = useQuery({
     queryKey: ['my-publisher', user?.id],
     queryFn: async () => {
@@ -56,18 +73,54 @@ export default function NewServiceReportScreen() {
     enabled: !!user,
   });
 
+  // Edit mode: fetch the report being edited.
+  const { data: editingReport, isLoading: isLoadingReport } = useQuery({
+    queryKey: ['service-report', editId],
+    queryFn: () => serviceReportsApi.getById(editId!),
+    enabled: isEditMode,
+  });
+
+  // Create mode: list user's reports to detect duplicate months.
+  const { data: myReports } = useQuery({
+    queryKey: ['service-reports', 'my'],
+    queryFn: () => serviceReportsApi.listMy(),
+    enabled: !isEditMode,
+  });
+
   const recentMonths = useMemo(() => getRecentMonths(), []);
+  const submittedMonths = useMemo(() => {
+    if (!myReports) return new Set<string>();
+    return new Set(myReports.map((r) => toYearMonth(r.reportMonth)));
+  }, [myReports]);
+
+  // -------- Form state --------
   const [reportMonth, setReportMonth] = useState(recentMonths[0].value);
   const [servedThisMonth, setServedThisMonth] = useState<boolean | null>(null);
   const [hours, setHours] = useState('');
   const [bibleStudies, setBibleStudies] = useState('0');
   const [notes, setNotes] = useState('');
 
+  // Hydrate form from existing report once it loads (edit mode).
+  useEffect(() => {
+    if (editingReport) {
+      setReportMonth(toYearMonth(editingReport.reportMonth));
+      setServedThisMonth(editingReport.servedThisMonth);
+      setHours(
+        editingReport.hoursReported !== null
+          ? String(editingReport.hoursReported)
+          : '',
+      );
+      setBibleStudies(String(editingReport.bibleStudies));
+      setNotes(editingReport.notes ?? '');
+    }
+  }, [editingReport]);
+
   const isPioneer =
     myPublisher?.pioneerType !== undefined &&
     myPublisher.pioneerType !== 'none';
 
-  const mutation = useMutation({
+  // -------- Mutations --------
+  const submitMutation = useMutation({
     mutationFn: () =>
       serviceReportsApi.submit({
         reportMonth,
@@ -83,8 +136,32 @@ export default function NewServiceReportScreen() {
     },
   });
 
+  const updateMutation = useMutation({
+    mutationFn: () =>
+      serviceReportsApi.update(editId!, {
+        servedThisMonth:
+          !isPioneer && servedThisMonth !== null ? servedThisMonth : undefined,
+        hoursReported: isPioneer ? parseInt(hours, 10) : undefined,
+        bibleStudies: parseInt(bibleStudies || '0', 10),
+        notes: notes.trim() || undefined,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['service-reports'] });
+      queryClient.invalidateQueries({ queryKey: ['service-report', editId] });
+      router.back();
+    },
+  });
+
+  const mutation = isEditMode ? updateMutation : submitMutation;
+
+  function isDuplicateMonth(): boolean {
+    return !isEditMode && submittedMonths.has(reportMonth);
+  }
+
   function canSubmit(): boolean {
     if (mutation.isPending) return false;
+    if (isEditMode && !editingReport) return false;
+    if (isDuplicateMonth()) return false;
     if (isPioneer) {
       const h = parseInt(hours, 10);
       return !isNaN(h) && h >= 0 && h <= 744;
@@ -94,6 +171,13 @@ export default function NewServiceReportScreen() {
 
   function handleSubmit() {
     if (!canSubmit()) {
+      if (isDuplicateMonth()) {
+        Alert.alert(
+          'Already submitted',
+          `A report for ${formatMonth(reportMonth)} already exists. Go back and tap the pencil icon to edit it.`,
+        );
+        return;
+      }
       Alert.alert(
         'Validation',
         isPioneer
@@ -105,7 +189,8 @@ export default function NewServiceReportScreen() {
     mutation.mutate();
   }
 
-  if (isLoadingPublisher) {
+  // -------- Loading / not-linked guards --------
+  if (isLoadingPublisher || (isEditMode && isLoadingReport)) {
     return (
       <View style={styles.center}>
         <ActivityIndicator size="large" />
@@ -124,39 +209,76 @@ export default function NewServiceReportScreen() {
     );
   }
 
+  // Edit mode: backend says this report can't be edited any more.
+  if (isEditMode && editingReport && !editingReport.canEdit) {
+    return (
+      <View style={styles.center}>
+        <Text style={styles.errorText}>
+          This report can no longer be edited. The self-edit window
+          (1st–10th of the following month) has closed. Contact an elder or
+          admin to request changes.
+        </Text>
+      </View>
+    );
+  }
+
+  // -------- Render --------
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       style={{ flex: 1, backgroundColor: '#f1f5f9' }}
     >
+      <Stack.Screen
+        options={{ title: isEditMode ? 'Edit Report' : 'Submit Report' }}
+      />
       <ScrollView contentContainerStyle={styles.container}>
         <Text style={styles.welcome}>
-          Submitting as {myPublisher.displayName}
+          {isEditMode ? 'Editing report for ' : 'Submitting as '}
+          {myPublisher.displayName}
           {isPioneer ? ' (pioneer)' : ''}
         </Text>
 
         <Text style={styles.label}>Report month</Text>
-        <View style={styles.monthRow}>
-          {recentMonths.map((m) => (
-            <Pressable
-              key={m.value}
-              onPress={() => setReportMonth(m.value)}
-              style={[
-                styles.monthChip,
-                reportMonth === m.value && styles.monthChipActive,
-              ]}
-            >
-              <Text
-                style={[
-                  styles.monthChipText,
-                  reportMonth === m.value && styles.monthChipTextActive,
-                ]}
-              >
-                {m.label}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
+        {isEditMode ? (
+          <View style={[styles.monthChip, styles.monthChipLocked]}>
+            <Text style={styles.monthChipText}>{formatMonth(reportMonth)}</Text>
+          </View>
+        ) : (
+          <View style={styles.monthRow}>
+            {recentMonths.map((m) => {
+              const isSelected = reportMonth === m.value;
+              const isTaken = submittedMonths.has(m.value);
+              return (
+                <Pressable
+                  key={m.value}
+                  onPress={() => !isTaken && setReportMonth(m.value)}
+                  disabled={isTaken}
+                  style={[
+                    styles.monthChip,
+                    isSelected && styles.monthChipActive,
+                    isTaken && styles.monthChipTaken,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.monthChipText,
+                      isSelected && styles.monthChipTextActive,
+                      isTaken && styles.monthChipTextTaken,
+                    ]}
+                  >
+                    {m.label}
+                    {isTaken ? ' ✓' : ''}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        )}
+        {isDuplicateMonth() && (
+          <Text style={styles.hint}>
+            Already submitted. Go back and tap the pencil icon to edit.
+          </Text>
+        )}
 
         {isPioneer ? (
           <>
@@ -246,7 +368,9 @@ export default function NewServiceReportScreen() {
           {mutation.isPending ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.submitBtnText}>Submit Report</Text>
+            <Text style={styles.submitBtnText}>
+              {isEditMode ? 'Update Report' : 'Submit Report'}
+            </Text>
           )}
         </Pressable>
       </ScrollView>
@@ -276,6 +400,12 @@ const styles = StyleSheet.create({
     marginTop: 16,
     marginBottom: 8,
   },
+  hint: {
+    fontSize: 12,
+    color: '#dc2626',
+    marginTop: 8,
+    lineHeight: 16,
+  },
   input: {
     paddingHorizontal: 14,
     paddingVertical: 10,
@@ -296,8 +426,19 @@ const styles = StyleSheet.create({
     borderColor: '#e2e8f0',
   },
   monthChipActive: { backgroundColor: '#0ea5e9', borderColor: '#0ea5e9' },
+  monthChipTaken: {
+    backgroundColor: '#f1f5f9',
+    borderColor: '#cbd5e1',
+    opacity: 0.6,
+  },
+  monthChipLocked: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#e0f2fe',
+    borderColor: '#7dd3fc',
+  },
   monthChipText: { fontSize: 14, color: '#0f172a' },
   monthChipTextActive: { color: '#fff', fontWeight: '600' },
+  monthChipTextTaken: { color: '#94a3b8' },
   toggleRow: { flexDirection: 'row', gap: 12 },
   toggleBtn: {
     flex: 1,

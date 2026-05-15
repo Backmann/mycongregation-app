@@ -1,6 +1,7 @@
 import {
   ActivityIndicator,
   FlatList,
+  Pressable,
   RefreshControl,
   StyleSheet,
   Text,
@@ -8,6 +9,7 @@ import {
 } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import {
   extractErrorMessage,
   ServiceReport,
@@ -97,6 +99,9 @@ function ReportRow({ report }: { report: ServiceReport }) {
               {report.bibleStudies === 1 ? 'study' : 'studies'}
             </Text>
           )}
+          {report.lastEditedAt && (
+            <Text style={styles.statEdited}>edited</Text>
+          )}
         </View>
         {report.notes && (
           <Text style={styles.notes} numberOfLines={2}>
@@ -104,6 +109,17 @@ function ReportRow({ report }: { report: ServiceReport }) {
           </Text>
         )}
       </View>
+      {report.canEdit && (
+        <Pressable
+          onPress={() =>
+            router.push(`/service-reports/new?id=${report.id}` as any)
+          }
+          style={styles.editBtn}
+          hitSlop={8}
+        >
+          <Ionicons name="pencil" size={20} color="#0ea5e9" />
+        </Pressable>
+      )}
     </View>
   );
 }
@@ -112,16 +128,20 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f1f5f9' },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   row: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingVertical: 14,
     paddingHorizontal: 20,
     backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderBottomColor: '#e2e8f0',
   },
+  editBtn: { marginLeft: 12, padding: 8 },
   month: { fontSize: 16, fontWeight: '600', color: '#0f172a' },
   statsRow: { flexDirection: 'row', gap: 12, marginTop: 6, flexWrap: 'wrap' },
   statPrimary: { fontSize: 13, color: '#0ea5e9', fontWeight: '600' },
   statSecondary: { fontSize: 13, color: '#64748b', fontWeight: '500' },
+  statEdited: { fontSize: 12, color: '#94a3b8', fontStyle: 'italic' },
   notes: { fontSize: 13, color: '#64748b', marginTop: 6, lineHeight: 18 },
   emptyState: {
     alignItems: 'center',

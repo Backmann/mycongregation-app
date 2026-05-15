@@ -290,6 +290,9 @@ export interface ServiceReport {
   submittedAt: string;
   submittedById: string | null;
   submittedOnBehalfOf: boolean;
+  lastEditedAt: string | null;
+  lastEditedById: string | null;
+  canEdit: boolean;
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;
@@ -297,6 +300,13 @@ export interface ServiceReport {
 
 export interface SubmitServiceReportInput {
   reportMonth: string;            // YYYY-MM or YYYY-MM-DD
+  servedThisMonth?: boolean;
+  hoursReported?: number;
+  bibleStudies?: number;
+  notes?: string;
+}
+
+export interface UpdateServiceReportInput {
   servedThisMonth?: boolean;
   hoursReported?: number;
   bibleStudies?: number;
@@ -526,6 +536,14 @@ export const serviceReportsApi = {
   },
   async listMy(): Promise<ServiceReport[]> {
     const { data } = await api.get<ServiceReport[]>('/service-reports/my');
+    return data;
+  },
+  async getById(id: string): Promise<ServiceReport> {
+    const { data } = await api.get<ServiceReport>(`/service-reports/${id}`);
+    return data;
+  },
+  async update(id: string, input: UpdateServiceReportInput): Promise<ServiceReport> {
+    const { data } = await api.patch<ServiceReport>(`/service-reports/${id}`, cleanPayload(input));
     return data;
   },
 };
