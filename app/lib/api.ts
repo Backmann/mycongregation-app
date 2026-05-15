@@ -292,6 +292,7 @@ export interface ServiceReport {
   submittedOnBehalfOf: boolean;
   lastEditedAt: string | null;
   lastEditedById: string | null;
+  lastEditedByName: string | null;
   canEdit: boolean;
   createdAt: string;
   updatedAt: string;

@@ -34,6 +34,16 @@ function formatActivity(report: ServiceReport): string {
   return report.servedThisMonth ? 'Served' : 'Did not serve';
 }
 
+function formatEditedTime(iso: string): string {
+  const d = new Date(iso);
+  return d.toLocaleString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
 export default function ServiceReportsListScreen() {
   const { data, isLoading, isRefetching, refetch, error } = useQuery({
     queryKey: ['service-reports', 'my'],
@@ -99,13 +109,16 @@ function ReportRow({ report }: { report: ServiceReport }) {
               {report.bibleStudies === 1 ? 'study' : 'studies'}
             </Text>
           )}
-          {report.lastEditedAt && (
-            <Text style={styles.statEdited}>edited</Text>
-          )}
         </View>
         {report.notes && (
           <Text style={styles.notes} numberOfLines={2}>
             {report.notes}
+          </Text>
+        )}
+        {report.lastEditedAt && (
+          <Text style={styles.editInfo}>
+            edited {formatEditedTime(report.lastEditedAt)}
+            {report.lastEditedByName ? ` by ${report.lastEditedByName}` : ''}
           </Text>
         )}
       </View>
@@ -141,7 +154,12 @@ const styles = StyleSheet.create({
   statsRow: { flexDirection: 'row', gap: 12, marginTop: 6, flexWrap: 'wrap' },
   statPrimary: { fontSize: 13, color: '#0ea5e9', fontWeight: '600' },
   statSecondary: { fontSize: 13, color: '#64748b', fontWeight: '500' },
-  statEdited: { fontSize: 12, color: '#94a3b8', fontStyle: 'italic' },
+  editInfo: {
+    fontSize: 11,
+    color: '#94a3b8',
+    fontStyle: 'italic',
+    marginTop: 6,
+  },
   notes: { fontSize: 13, color: '#64748b', marginTop: 6, lineHeight: 18 },
   emptyState: {
     alignItems: 'center',
