@@ -314,6 +314,19 @@ export interface UpdateServiceReportInput {
   notes?: string;
 }
 
+export interface GroupReportsResponse {
+  reportMonth: string;
+  scopeLabel: string;
+  publishers: GroupReportRow[];
+}
+
+export interface GroupReportRow {
+  publisherId: string;
+  displayName: string;
+  isPioneer: boolean;
+  report: ServiceReport | null;
+}
+
 export interface Paginated<T> {
   data: T[];
   total: number;
@@ -545,6 +558,12 @@ export const serviceReportsApi = {
   },
   async update(id: string, input: UpdateServiceReportInput): Promise<ServiceReport> {
     const { data } = await api.patch<ServiceReport>(`/service-reports/${id}`, cleanPayload(input));
+    return data;
+  },
+  async findGroup(reportMonth: string): Promise<GroupReportsResponse> {
+    const { data } = await api.get<GroupReportsResponse>('/service-reports/group', {
+      params: { reportMonth },
+    });
     return data;
   },
 };

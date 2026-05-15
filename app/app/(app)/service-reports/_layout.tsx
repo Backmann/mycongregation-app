@@ -1,5 +1,5 @@
 import { Stack, router } from 'expo-router';
-import { Pressable } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function ServiceReportsLayout() {
@@ -10,17 +10,31 @@ export default function ServiceReportsLayout() {
         options={{
           title: 'Reports',
           headerRight: () => (
-            <Pressable
-              onPress={() => router.push('/service-reports/new' as any)}
-              style={{ paddingHorizontal: 12 }}
-              hitSlop={8}
-            >
-              <Ionicons name="add" size={28} color="#0ea5e9" />
-            </Pressable>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+              <Pressable
+                onPress={() => router.push('/service-reports/group' as any)}
+                style={{ paddingHorizontal: 8 }}
+                hitSlop={8}
+              >
+                <Ionicons
+                  name="people-outline"
+                  size={24}
+                  color="#0ea5e9"
+                />
+              </Pressable>
+              <Pressable
+                onPress={() => router.push('/service-reports/new' as any)}
+                style={{ paddingHorizontal: 8 }}
+                hitSlop={8}
+              >
+                <Ionicons name="add" size={28} color="#0ea5e9" />
+              </Pressable>
+            </View>
           ),
         }}
       />
       <Stack.Screen name="new" options={{ title: 'Submit Report' }} />
+      <Stack.Screen name="group" options={{ title: 'Group reports' }} />
     </Stack>
   );
 }
