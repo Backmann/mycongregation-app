@@ -330,6 +330,24 @@ export interface AuditLogEntry {
   createdAt: string;
 }
 
+export interface PublisherHistoryEntry {
+  reportMonth: string;
+  report:
+    | (ServiceReport & { canEdit: boolean; lastEditedByName: string | null })
+    | null;
+}
+
+export interface PublisherHistoryResponse {
+  publisher: {
+    id: string;
+    displayName: string;
+    status: PublisherStatus;
+    statusManuallyOverridden: boolean;
+    isPioneer: boolean;
+  };
+  timeline: PublisherHistoryEntry[];
+}
+
 export interface GroupReportsResponse {
   reportMonth: string;
   scopeLabel: string;
@@ -603,6 +621,16 @@ export const serviceReportsApi = {
   async getAuditLog(reportId: string): Promise<AuditLogEntry[]> {
     const { data } = await api.get<AuditLogEntry[]>(
       `/service-reports/${reportId}/audit-log`,
+    );
+    return data;
+  },
+  async getHistoryForPublisher(
+    publisherId: string,
+    months: number = 12,
+  ): Promise<PublisherHistoryResponse> {
+    const { data } = await api.get<PublisherHistoryResponse>(
+      `/service-reports/by-publisher/${publisherId}`,
+      { params: { months } },
     );
     return data;
   },

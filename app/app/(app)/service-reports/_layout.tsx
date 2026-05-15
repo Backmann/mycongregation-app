@@ -36,6 +36,10 @@ export default function ServiceReportsLayout() {
       <Stack.Screen name="new" options={{ title: 'Submit Report' }} />
       <Stack.Screen name="group" options={{ title: 'Group reports' }} />
       <Stack.Screen name="audit-log" options={{ title: 'Edit history' }} />
+      <Stack.Screen
+        name="publisher-history"
+        options={{ title: 'Publisher history' }}
+      />
     </Stack>
   );
 }

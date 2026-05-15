@@ -232,6 +232,11 @@ export default function GroupReportsScreen() {
                     })
                 : undefined
             }
+            onTapHistory={() =>
+              router.push(
+                `/service-reports/publisher-history?publisherId=${item.publisherId}&displayName=${encodeURIComponent(item.displayName)}` as any,
+              )
+            }
             onAddOnBehalf={
               data?.scopeLabel === 'Congregation'
                 ? (row) =>
@@ -287,12 +292,14 @@ function PublisherRow({
   statusInfo,
   canOverride,
   onOverride,
+  onTapHistory,
   onAddOnBehalf,
 }: {
   row: GroupReportRow;
   statusInfo: { status: PublisherStatus; manuallyOverridden: boolean } | null;
   canOverride: boolean;
   onOverride?: () => void;
+  onTapHistory?: () => void;
   onAddOnBehalf?: (row: GroupReportRow) => void;
 }) {
   const { report, displayName, isPioneer } = row;
@@ -320,6 +327,11 @@ function PublisherRow({
 
   return (
     <View style={styles.row}>
+      <Pressable
+        onPress={onTapHistory}
+        disabled={!onTapHistory}
+        style={styles.rowMain}
+      >
       <View
         style={[
           styles.indicator,
@@ -368,6 +380,7 @@ function PublisherRow({
           )}
         </Text>
       </View>
+      </Pressable>
       {showAddBtn && (
         <Pressable
           onPress={() => onAddOnBehalf!(row)}
@@ -656,6 +669,11 @@ const styles = StyleSheet.create({
   },
   activity: { fontSize: 13, color: '#64748b', marginTop: 2 },
   studies: { fontSize: 13, color: '#64748b' },
+  rowMain: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   addBtn: { marginLeft: 8, padding: 4 },
   overrideBtn: { marginLeft: 4, padding: 6 },
   emptyState: {
