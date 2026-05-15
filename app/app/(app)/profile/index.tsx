@@ -24,6 +24,7 @@ export default function ProfileScreen() {
   const isAdmin = user.role === 'admin' || user.role === 'elder';
 
   return (
+    <>
     <ScrollView
       style={{ flex: 1, backgroundColor: '#f1f5f9' }}
       contentContainerStyle={{ paddingBottom: 32 }}
@@ -97,7 +98,8 @@ export default function ProfileScreen() {
         </Pressable>
       </View>
     </ScrollView>
-    {<LanguagePickerModal visible={langModalVisible} onClose={() => setLangModalVisible(false)} />}
+    <LanguagePickerModal visible={langModalVisible} onClose={() => setLangModalVisible(false)} />
+    </>
   );
 }
 
