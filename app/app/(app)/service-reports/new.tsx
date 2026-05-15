@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../../lib/auth';
 import {
   extractErrorMessage,
@@ -399,6 +400,23 @@ export default function NewOrEditServiceReportScreen() {
           </View>
         )}
 
+        {isEditMode &&
+          editId &&
+          (user?.role === 'admin' || user?.role === 'elder') && (
+            <Pressable
+              onPress={() =>
+                router.push(
+                  `/service-reports/audit-log?id=${editId}` as any,
+                )
+              }
+              style={styles.historyBtn}
+              hitSlop={8}
+            >
+              <Ionicons name="time-outline" size={18} color="#0ea5e9" />
+              <Text style={styles.historyBtnText}>View edit history</Text>
+            </Pressable>
+          )}
+
         <Pressable
           onPress={handleSubmit}
           disabled={!canSubmit()}
@@ -521,6 +539,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 24,
   },
+  historyBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#bae6fd',
+    backgroundColor: '#f0f9ff',
+    marginTop: 16,
+  },
+  historyBtnText: { color: '#0ea5e9', fontSize: 14, fontWeight: '600' },
   submitBtnDisabled: { backgroundColor: '#cbd5e1' },
   submitBtnText: { color: '#fff', fontWeight: '700', fontSize: 16 },
   errorBox: {

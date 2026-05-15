@@ -319,6 +319,17 @@ export interface UpdateServiceReportInput {
   notes?: string;
 }
 
+export interface AuditLogEntry {
+  id: string;
+  action: 'UPDATE' | 'CREATE' | 'DELETE';
+  actorUserId: string;
+  actorName: string | null;
+  changedFields: string[];
+  before: Record<string, any> | null;
+  after: Record<string, any> | null;
+  createdAt: string;
+}
+
 export interface GroupReportsResponse {
   reportMonth: string;
   scopeLabel: string;
@@ -569,6 +580,12 @@ export const serviceReportsApi = {
     const { data } = await api.get<GroupReportsResponse>('/service-reports/group', {
       params: { reportMonth },
     });
+    return data;
+  },
+  async getAuditLog(reportId: string): Promise<AuditLogEntry[]> {
+    const { data } = await api.get<AuditLogEntry[]>(
+      `/service-reports/${reportId}/audit-log`,
+    );
     return data;
   },
 };
