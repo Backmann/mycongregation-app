@@ -371,6 +371,8 @@ export const authApi = {
   },
 };
 
+export type PublisherStatus = 'active' | 'irregular' | 'inactive';
+
 export const publishersApi = {
   async list(params?: { search?: string; limit?: number; offset?: number; includeRemoved?: boolean }): Promise<Paginated<Publisher>> {
     const { data } = await api.get<Paginated<Publisher>>('/publishers', { params });
@@ -394,6 +396,22 @@ export const publishersApi = {
   },
   async restore(id: string): Promise<Publisher> {
     const { data } = await api.post<Publisher>(`/publishers/${id}/restore`);
+    return data;
+  },
+  async overrideStatus(
+    id: string,
+    status: PublisherStatus,
+  ): Promise<Publisher> {
+    const { data } = await api.patch<Publisher>(
+      `/publishers/${id}/status`,
+      { status },
+    );
+    return data;
+  },
+  async clearOverride(id: string): Promise<Publisher> {
+    const { data } = await api.delete<Publisher>(
+      `/publishers/${id}/status-override`,
+    );
     return data;
   },
 };

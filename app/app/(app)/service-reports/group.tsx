@@ -1,7 +1,8 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
+  Modal,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -9,14 +10,17 @@ import {
   Text,
   View,
 } from 'react-native';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, router } from 'expo-router';
 import {
   extractErrorMessage,
   GroupReportRow,
+  publishersApi,
+  PublisherStatus,
   serviceReportsApi,
 } from '../../../lib/api';
+import { useAuth } from '../../../lib/auth';
 
 const MONTH_NAMES = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -48,6 +52,58 @@ export default function GroupReportsScreen() {
   const { data, isLoading, isRefetching, refetch, error } = useQuery({
     queryKey: ['service-reports', 'group', reportMonth],
     queryFn: () => serviceReportsApi.findGroup(reportMonth),
+  });
+
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const canOverride = user?.role === 'admin' || user?.role === 'elder';
+  const [overrideTarget, setOverrideTarget] = useState<{
+    publisherId: string;
+    displayName: string;
+  } | null>(null);
+
+  // Fetch all publishers separately to get status + statusManuallyOverridden.
+  // The group endpoint doesn't include these fields, so we merge client-side.
+  const publishersQuery = useQuery({
+    queryKey: ['publishers', 'list', 'for-status'],
+    queryFn: () => publishersApi.list({ limit: 500 }),
+  });
+
+  const statusMap = useMemo(() => {
+    const m = new Map<
+      string,
+      { status: PublisherStatus; manuallyOverridden: boolean }
+    >();
+    for (const p of publishersQuery.data?.data ?? []) {
+      m.set(p.id, {
+        status: ((p as any).status ?? 'inactive') as PublisherStatus,
+        manuallyOverridden: !!(p as any).statusManuallyOverridden,
+      });
+    }
+    return m;
+  }, [publishersQuery.data]);
+
+  const overrideMutation = useMutation({
+    mutationFn: ({
+      publisherId,
+      status,
+    }: {
+      publisherId: string;
+      status: PublisherStatus;
+    }) => publishersApi.overrideStatus(publisherId, status),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['publishers'] });
+      setOverrideTarget(null);
+    },
+  });
+
+  const clearOverrideMutation = useMutation({
+    mutationFn: (publisherId: string) =>
+      publishersApi.clearOverride(publisherId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['publishers'] });
+      setOverrideTarget(null);
+    },
   });
 
   const aggregate = useMemo(() => {
@@ -165,6 +221,17 @@ export default function GroupReportsScreen() {
         renderItem={({ item }) => (
           <PublisherRow
             row={item}
+            statusInfo={statusMap.get(item.publisherId) ?? null}
+            canOverride={canOverride}
+            onOverride={
+              canOverride
+                ? () =>
+                    setOverrideTarget({
+                      publisherId: item.publisherId,
+                      displayName: item.displayName,
+                    })
+                : undefined
+            }
             onAddOnBehalf={
               data?.scopeLabel === 'Congregation'
                 ? (row) =>
@@ -182,15 +249,50 @@ export default function GroupReportsScreen() {
           />
         )}
       />
+      <OverrideStatusModal
+        target={overrideTarget}
+        currentStatus={
+          overrideTarget
+            ? statusMap.get(overrideTarget.publisherId)?.status ?? 'inactive'
+            : 'inactive'
+        }
+        isOverridden={
+          overrideTarget
+            ? statusMap.get(overrideTarget.publisherId)?.manuallyOverridden ??
+              false
+            : false
+        }
+        onCancel={() => setOverrideTarget(null)}
+        onSave={(status) =>
+          overrideTarget &&
+          overrideMutation.mutate({
+            publisherId: overrideTarget.publisherId,
+            status,
+          })
+        }
+        onClear={() =>
+          overrideTarget &&
+          clearOverrideMutation.mutate(overrideTarget.publisherId)
+        }
+        isSaving={
+          overrideMutation.isPending || clearOverrideMutation.isPending
+        }
+      />
     </View>
   );
 }
 
 function PublisherRow({
   row,
+  statusInfo,
+  canOverride,
+  onOverride,
   onAddOnBehalf,
 }: {
   row: GroupReportRow;
+  statusInfo: { status: PublisherStatus; manuallyOverridden: boolean } | null;
+  canOverride: boolean;
+  onOverride?: () => void;
   onAddOnBehalf?: (row: GroupReportRow) => void;
 }) {
   const { report, displayName, isPioneer } = row;
@@ -227,10 +329,34 @@ function PublisherRow({
         ]}
       />
       <View style={{ flex: 1 }}>
-        <Text style={styles.name}>
-          {displayName}
-          {isPioneer && <Text style={styles.pioneerTag}> · pioneer</Text>}
-        </Text>
+        <View style={styles.nameRow}>
+          <Text style={styles.name} numberOfLines={1}>
+            {displayName}
+            {isPioneer && (
+              <Text style={styles.pioneerTag}> · pioneer</Text>
+            )}
+          </Text>
+          {statusInfo && (
+            <View
+              style={[
+                styles.statusBadge,
+                statusInfo.status === 'active' && styles.badgeActive,
+                statusInfo.status === 'irregular' && styles.badgeIrregular,
+                statusInfo.status === 'inactive' && styles.badgeInactive,
+              ]}
+            >
+              <Text style={styles.statusBadgeText}>{statusInfo.status}</Text>
+              {statusInfo.manuallyOverridden && (
+                <Ionicons
+                  name="lock-closed"
+                  size={9}
+                  color="#fff"
+                  style={{ marginLeft: 3 }}
+                />
+              )}
+            </View>
+          )}
+        </View>
         <Text style={styles.activity}>
           {summary}
           {report && report.bibleStudies > 0 && (
@@ -251,9 +377,172 @@ function PublisherRow({
           <Ionicons name="add-circle" size={28} color="#0ea5e9" />
         </Pressable>
       )}
+      {canOverride && onOverride && (
+        <Pressable
+          onPress={onOverride}
+          style={styles.overrideBtn}
+          hitSlop={8}
+        >
+          <Ionicons name="settings-outline" size={22} color="#64748b" />
+        </Pressable>
+      )}
     </View>
   );
 }
+
+function OverrideStatusModal({
+  target,
+  currentStatus,
+  isOverridden,
+  onCancel,
+  onSave,
+  onClear,
+  isSaving,
+}: {
+  target: { publisherId: string; displayName: string } | null;
+  currentStatus: PublisherStatus;
+  isOverridden: boolean;
+  onCancel: () => void;
+  onSave: (status: PublisherStatus) => void;
+  onClear: () => void;
+  isSaving: boolean;
+}) {
+  const [selected, setSelected] = useState<PublisherStatus>(currentStatus);
+
+  // Reset selection when target changes (different publisher) or status updates.
+  useEffect(() => {
+    setSelected(currentStatus);
+  }, [currentStatus, target?.publisherId]);
+
+  return (
+    <Modal
+      visible={!!target}
+      transparent
+      animationType="fade"
+      onRequestClose={onCancel}
+    >
+      <Pressable style={modalStyles.backdrop} onPress={onCancel}>
+        <Pressable style={modalStyles.sheet} onPress={() => {}}>
+          <Text style={modalStyles.title}>
+            Override status for {target?.displayName ?? ''}
+          </Text>
+          {(['active', 'irregular', 'inactive'] as PublisherStatus[]).map(
+            (s) => (
+              <Pressable
+                key={s}
+                onPress={() => setSelected(s)}
+                style={[
+                  modalStyles.option,
+                  selected === s && modalStyles.optionSelected,
+                ]}
+              >
+                <Ionicons
+                  name={
+                    selected === s ? 'radio-button-on' : 'radio-button-off'
+                  }
+                  size={20}
+                  color={selected === s ? '#0ea5e9' : '#94a3b8'}
+                />
+                <Text style={modalStyles.optionText}>
+                  {s[0].toUpperCase() + s.slice(1)}
+                </Text>
+              </Pressable>
+            ),
+          )}
+          <View style={modalStyles.btnRow}>
+            <Pressable
+              onPress={onCancel}
+              style={[modalStyles.btn, modalStyles.btnSecondary]}
+              disabled={isSaving}
+            >
+              <Text style={modalStyles.btnTextSecondary}>Cancel</Text>
+            </Pressable>
+            <Pressable
+              onPress={() => onSave(selected)}
+              style={[modalStyles.btn, modalStyles.btnPrimary]}
+              disabled={isSaving}
+            >
+              <Text style={modalStyles.btnTextPrimary}>
+                {isSaving ? '…' : 'Save override'}
+              </Text>
+            </Pressable>
+          </View>
+          {isOverridden && (
+            <Pressable
+              onPress={onClear}
+              style={modalStyles.clearBtn}
+              disabled={isSaving}
+            >
+              <Ionicons name="refresh" size={16} color="#dc2626" />
+              <Text style={modalStyles.clearBtnText}>
+                Clear override · resume auto-recompute
+              </Text>
+            </Pressable>
+          )}
+        </Pressable>
+      </Pressable>
+    </Modal>
+  );
+}
+
+const modalStyles = StyleSheet.create({
+  backdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(15, 23, 42, 0.55)',
+    justifyContent: 'center',
+    padding: 24,
+  },
+  sheet: {
+    backgroundColor: '#fff',
+    borderRadius: 14,
+    padding: 20,
+  },
+  title: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#0f172a',
+    marginBottom: 16,
+  },
+  option: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    marginBottom: 8,
+    gap: 10,
+  },
+  optionSelected: {
+    borderColor: '#0ea5e9',
+    backgroundColor: '#f0f9ff',
+  },
+  optionText: { fontSize: 15, color: '#0f172a' },
+  btnRow: { flexDirection: 'row', gap: 12, marginTop: 12 },
+  btn: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  btnSecondary: { backgroundColor: '#f1f5f9' },
+  btnPrimary: { backgroundColor: '#0ea5e9' },
+  btnTextSecondary: { color: '#475569', fontWeight: '600' },
+  btnTextPrimary: { color: '#fff', fontWeight: '600' },
+  clearBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 14,
+    borderTopWidth: 1,
+    borderTopColor: '#fee2e2',
+    marginTop: 14,
+    paddingTop: 14,
+  },
+  clearBtnText: { color: '#dc2626', fontSize: 13, fontWeight: '600' },
+});
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f1f5f9' },
@@ -335,11 +624,40 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     borderColor: '#cbd5e1',
   },
-  name: { fontSize: 15, fontWeight: '600', color: '#0f172a' },
+  nameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flexWrap: 'wrap',
+  },
+  name: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#0f172a',
+    flexShrink: 1,
+  },
   pioneerTag: { fontSize: 12, color: '#0ea5e9', fontWeight: '500' },
+  statusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  badgeActive: { backgroundColor: '#10b981' },
+  badgeIrregular: { backgroundColor: '#f59e0b' },
+  badgeInactive: { backgroundColor: '#94a3b8' },
+  statusBadgeText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
   activity: { fontSize: 13, color: '#64748b', marginTop: 2 },
   studies: { fontSize: 13, color: '#64748b' },
   addBtn: { marginLeft: 8, padding: 4 },
+  overrideBtn: { marginLeft: 4, padding: 6 },
   emptyState: {
     alignItems: 'center',
     paddingTop: 80,
