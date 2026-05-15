@@ -746,3 +746,50 @@ export const pushApi = {
     await api.delete('/push-tokens', { data: { token } });
   },
 };
+
+
+// =============================================================
+// Activity feed (Phase H)
+// =============================================================
+
+export type ActivityFeedEntryType =
+  | 'status_change'
+  | 'report_submitted'
+  | 'report_updated'
+  | 'override_applied'
+  | 'override_cleared'
+  | 'other';
+
+export interface ActivityFeedEntry {
+  id: string;
+  type: ActivityFeedEntryType;
+  occurredAt: string;
+  actorName: string | null;
+  targetType: 'publisher' | 'service_report' | 'other';
+  targetId: string;
+  summary: string;
+  publisherName?: string;
+  reportMonth?: string;
+  oldStatus?: string;
+  newStatus?: string;
+}
+
+export interface ActivityFeedResponse {
+  items: ActivityFeedEntry[];
+  nextCursor: string | null;
+}
+
+export const activityApi = {
+  list: async (opts: {
+    limit?: number;
+    before?: string;
+  }): Promise<ActivityFeedResponse> => {
+    const params: Record<string, any> = {};
+    if (opts.limit != null) params.limit = opts.limit;
+    if (opts.before != null) params.before = opts.before;
+    const { data } = await api.get<ActivityFeedResponse>('/activity-feed', {
+      params,
+    });
+    return data;
+  },
+};

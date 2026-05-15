@@ -12,6 +12,17 @@ export default function ServiceReportsLayout() {
           headerRight: () => (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
               <Pressable
+                onPress={() => router.push('/service-reports/activity' as any)}
+                style={{ paddingHorizontal: 8 }}
+                hitSlop={8}
+              >
+                <Ionicons
+                  name="pulse-outline"
+                  size={24}
+                  color="#0ea5e9"
+                />
+              </Pressable>
+              <Pressable
                 onPress={() => router.push('/service-reports/group' as any)}
                 style={{ paddingHorizontal: 8 }}
                 hitSlop={8}
@@ -39,6 +50,10 @@ export default function ServiceReportsLayout() {
       <Stack.Screen
         name="publisher-history"
         options={{ title: 'Publisher history' }}
+      />
+      <Stack.Screen
+        name="activity"
+        options={{ title: 'Activity feed' }}
       />
     </Stack>
   );
