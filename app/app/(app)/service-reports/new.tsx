@@ -26,7 +26,6 @@ const MONTH_NAMES = [
 ];
 
 function formatMonth(yearMonthOrDate: string): string {
-  // Accepts "YYYY-MM" or "YYYY-MM-DD". Always interpret in UTC.
   const ymd =
     yearMonthOrDate.length === 7
       ? `${yearMonthOrDate}-01`
@@ -58,11 +57,25 @@ function toYearMonth(s: string): string {
 export default function NewOrEditServiceReportScreen() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
-  const params = useLocalSearchParams<{ id?: string }>();
+  const params = useLocalSearchParams<{
+    id?: string;
+    publisherId?: string;
+    onBehalfName?: string;
+    onBehalfIsPioneer?: string;
+    reportMonth?: string;
+  }>();
   const editId = typeof params.id === 'string' ? params.id : undefined;
+  const onBehalfPublisherId =
+    typeof params.publisherId === 'string' ? params.publisherId : undefined;
+  const onBehalfName =
+    typeof params.onBehalfName === 'string' ? params.onBehalfName : undefined;
+  const onBehalfIsPioneer = params.onBehalfIsPioneer === '1';
+  const preFilledMonth =
+    typeof params.reportMonth === 'string' ? params.reportMonth : undefined;
   const isEditMode = !!editId;
+  const isOnBehalf = !!onBehalfPublisherId && !isEditMode;
 
-  // Resolve current user's publisher (for form-variant determination).
+  // Resolve current user's publisher (used for SELF submissions only).
   const { data: myPublisher, isLoading: isLoadingPublisher } = useQuery({
     queryKey: ['my-publisher', user?.id],
     queryFn: async () => {
@@ -80,11 +93,13 @@ export default function NewOrEditServiceReportScreen() {
     enabled: isEditMode,
   });
 
-  // Create mode: list user's reports to detect duplicate months.
+  // Self-create: list user's reports to detect duplicate months.
+  // Not used for edit mode or on-behalf submissions (target's history is
+  // not available client-side; server catches duplicates via 23505).
   const { data: myReports } = useQuery({
     queryKey: ['service-reports', 'my'],
     queryFn: () => serviceReportsApi.listMy(),
-    enabled: !isEditMode,
+    enabled: !isEditMode && !isOnBehalf,
   });
 
   const recentMonths = useMemo(() => getRecentMonths(), []);
@@ -93,14 +108,14 @@ export default function NewOrEditServiceReportScreen() {
     return new Set(myReports.map((r) => toYearMonth(r.reportMonth)));
   }, [myReports]);
 
-  // -------- Form state --------
-  const [reportMonth, setReportMonth] = useState(recentMonths[0].value);
+  const [reportMonth, setReportMonth] = useState(
+    preFilledMonth ? toYearMonth(preFilledMonth) : recentMonths[0].value,
+  );
   const [servedThisMonth, setServedThisMonth] = useState<boolean | null>(null);
   const [hours, setHours] = useState('');
   const [bibleStudies, setBibleStudies] = useState('0');
   const [notes, setNotes] = useState('');
 
-  // Hydrate form from existing report once it loads (edit mode).
   useEffect(() => {
     if (editingReport) {
       setReportMonth(toYearMonth(editingReport.reportMonth));
@@ -115,15 +130,19 @@ export default function NewOrEditServiceReportScreen() {
     }
   }, [editingReport]);
 
-  const isPioneer =
-    myPublisher?.pioneerType !== undefined &&
-    myPublisher.pioneerType !== 'none';
+  // Pioneer status comes from the TARGET publisher in on-behalf mode,
+  // not the caller (a publisher submitting for a pioneer must use the
+  // pioneer form variant).
+  const isPioneer = isOnBehalf
+    ? onBehalfIsPioneer
+    : myPublisher?.pioneerType !== undefined &&
+      myPublisher.pioneerType !== 'none';
 
-  // -------- Mutations --------
   const submitMutation = useMutation({
     mutationFn: () =>
       serviceReportsApi.submit({
         reportMonth,
+        publisherId: isOnBehalf ? onBehalfPublisherId : undefined,
         servedThisMonth:
           !isPioneer && servedThisMonth !== null ? servedThisMonth : undefined,
         hoursReported: isPioneer ? parseInt(hours, 10) : undefined,
@@ -153,9 +172,10 @@ export default function NewOrEditServiceReportScreen() {
   });
 
   const mutation = isEditMode ? updateMutation : submitMutation;
+  const isMonthLocked = isEditMode || isOnBehalf;
 
   function isDuplicateMonth(): boolean {
-    return !isEditMode && submittedMonths.has(reportMonth);
+    return !isEditMode && !isOnBehalf && submittedMonths.has(reportMonth);
   }
 
   function canSubmit(): boolean {
@@ -182,14 +202,15 @@ export default function NewOrEditServiceReportScreen() {
         'Validation',
         isPioneer
           ? 'Please enter valid hours (0–744).'
-          : 'Please indicate whether you served this month.',
+          : isOnBehalf
+            ? 'Please indicate whether they served this month.'
+            : 'Please indicate whether you served this month.',
       );
       return;
     }
     mutation.mutate();
   }
 
-  // -------- Loading / not-linked guards --------
   if (isLoadingPublisher || (isEditMode && isLoadingReport)) {
     return (
       <View style={styles.center}>
@@ -198,7 +219,9 @@ export default function NewOrEditServiceReportScreen() {
     );
   }
 
-  if (!myPublisher) {
+  // For self submissions, caller must have a publisher record.
+  // On-behalf submissions work even for admin users with no publisher.
+  if (!isOnBehalf && !myPublisher) {
     return (
       <View style={styles.center}>
         <Text style={styles.errorText}>
@@ -209,7 +232,6 @@ export default function NewOrEditServiceReportScreen() {
     );
   }
 
-  // Edit mode: backend says this report can't be edited any more.
   if (isEditMode && editingReport && !editingReport.canEdit) {
     return (
       <View style={styles.center}>
@@ -222,24 +244,39 @@ export default function NewOrEditServiceReportScreen() {
     );
   }
 
-  // -------- Render --------
+  const screenTitle = isEditMode
+    ? 'Edit Report'
+    : isOnBehalf
+      ? 'On-behalf Report'
+      : 'Submit Report';
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       style={{ flex: 1, backgroundColor: '#f1f5f9' }}
     >
-      <Stack.Screen
-        options={{ title: isEditMode ? 'Edit Report' : 'Submit Report' }}
-      />
+      <Stack.Screen options={{ title: screenTitle }} />
       <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.welcome}>
-          {isEditMode ? 'Editing report for ' : 'Submitting as '}
-          {myPublisher.displayName}
-          {isPioneer ? ' (pioneer)' : ''}
-        </Text>
+        {isOnBehalf ? (
+          <View style={styles.onBehalfBanner}>
+            <Text style={styles.onBehalfBannerTitle}>
+              Submitting on behalf of
+            </Text>
+            <Text style={styles.onBehalfBannerName}>
+              {onBehalfName ?? 'publisher'}
+              {isPioneer ? ' (pioneer)' : ''}
+            </Text>
+          </View>
+        ) : (
+          <Text style={styles.welcome}>
+            {isEditMode ? 'Editing report for ' : 'Submitting as '}
+            {myPublisher?.displayName ?? ''}
+            {isPioneer ? ' (pioneer)' : ''}
+          </Text>
+        )}
 
         <Text style={styles.label}>Report month</Text>
-        {isEditMode ? (
+        {isMonthLocked ? (
           <View style={[styles.monthChip, styles.monthChipLocked]}>
             <Text style={styles.monthChipText}>{formatMonth(reportMonth)}</Text>
           </View>
@@ -294,7 +331,9 @@ export default function NewOrEditServiceReportScreen() {
         ) : (
           <>
             <Text style={styles.label}>
-              Did you share in the ministry this month?
+              {isOnBehalf
+                ? 'Did they share in the ministry this month?'
+                : 'Did you share in the ministry this month?'}
             </Text>
             <View style={styles.toggleRow}>
               <Pressable
@@ -392,6 +431,28 @@ const styles = StyleSheet.create({
     color: '#64748b',
     marginBottom: 8,
     textAlign: 'center',
+  },
+  onBehalfBanner: {
+    backgroundColor: '#e0f2fe',
+    borderColor: '#7dd3fc',
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 14,
+    marginBottom: 4,
+    alignItems: 'center',
+  },
+  onBehalfBannerTitle: {
+    fontSize: 11,
+    color: '#0369a1',
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+    fontWeight: '600',
+    marginBottom: 2,
+  },
+  onBehalfBannerName: {
+    fontSize: 16,
+    color: '#0c4a6e',
+    fontWeight: '700',
   },
   label: {
     fontSize: 13,

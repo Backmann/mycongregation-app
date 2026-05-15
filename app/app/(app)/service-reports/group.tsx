@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
-import { Stack } from 'expo-router';
+import { Stack, router } from 'expo-router';
 import {
   extractErrorMessage,
   GroupReportRow,
@@ -162,13 +162,37 @@ export default function GroupReportsScreen() {
             <Text style={styles.emptyTitle}>No publishers in scope</Text>
           </View>
         }
-        renderItem={({ item }) => <PublisherRow row={item} />}
+        renderItem={({ item }) => (
+          <PublisherRow
+            row={item}
+            onAddOnBehalf={
+              data?.scopeLabel === 'Congregation'
+                ? (row) =>
+                    router.push({
+                      pathname: '/service-reports/new',
+                      params: {
+                        publisherId: row.publisherId,
+                        onBehalfName: row.displayName,
+                        onBehalfIsPioneer: row.isPioneer ? '1' : '0',
+                        reportMonth,
+                      },
+                    } as any)
+                : undefined
+            }
+          />
+        )}
       />
     </View>
   );
 }
 
-function PublisherRow({ row }: { row: GroupReportRow }) {
+function PublisherRow({
+  row,
+  onAddOnBehalf,
+}: {
+  row: GroupReportRow;
+  onAddOnBehalf?: (row: GroupReportRow) => void;
+}) {
   const { report, displayName, isPioneer } = row;
 
   const hasActivity =
@@ -189,6 +213,8 @@ function PublisherRow({ row }: { row: GroupReportRow }) {
       : report.servedThisMonth === true
         ? 'Served'
         : 'Did not serve';
+
+  const showAddBtn = status === 'pending' && !!onAddOnBehalf;
 
   return (
     <View style={styles.row}>
@@ -216,6 +242,15 @@ function PublisherRow({ row }: { row: GroupReportRow }) {
           )}
         </Text>
       </View>
+      {showAddBtn && (
+        <Pressable
+          onPress={() => onAddOnBehalf!(row)}
+          style={styles.addBtn}
+          hitSlop={8}
+        >
+          <Ionicons name="add-circle" size={28} color="#0ea5e9" />
+        </Pressable>
+      )}
     </View>
   );
 }
@@ -304,6 +339,7 @@ const styles = StyleSheet.create({
   pioneerTag: { fontSize: 12, color: '#0ea5e9', fontWeight: '500' },
   activity: { fontSize: 13, color: '#64748b', marginTop: 2 },
   studies: { fontSize: 13, color: '#64748b' },
+  addBtn: { marginLeft: 8, padding: 4 },
   emptyState: {
     alignItems: 'center',
     paddingTop: 80,

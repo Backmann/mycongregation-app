@@ -301,6 +301,11 @@ export interface ServiceReport {
 
 export interface SubmitServiceReportInput {
   reportMonth: string;            // YYYY-MM or YYYY-MM-DD
+  /**
+   * Optional: when an admin/elder submits on behalf of another publisher.
+   * Omit (or set to caller's own publisher id) for self-submission.
+   */
+  publisherId?: string;
   servedThisMonth?: boolean;
   hoursReported?: number;
   bibleStudies?: number;
