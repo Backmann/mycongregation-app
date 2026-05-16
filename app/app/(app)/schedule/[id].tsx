@@ -37,10 +37,18 @@ export default function AssignmentDetailScreen() {
     },
   });
 
-  const removeMutation = useMutation({
-    mutationFn: () => assignmentsApi.remove(id!),
+  const unassignMutation = useMutation({
+    mutationFn: () =>
+      assignmentsApi.update(id!, {
+        publisherId: null,
+        assistantPublisherId: null,
+        speakerName: null,
+        speakerCongregation: null,
+        publicTalkId: null,
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['assignments'] });
+      queryClient.invalidateQueries({ queryKey: ['assignment', id] });
       router.back();
     },
   });
@@ -53,21 +61,24 @@ export default function AssignmentDetailScreen() {
     },
   });
 
-  const confirmRemove = () => {
+  const confirmUnassign = () => {
     if (Platform.OS === 'web') {
-      if (window.confirm(t('schedule.removeConfirm.webMessage'))) {
-        removeMutation.mutate();
+      if (window.confirm(t('schedule.unassign.confirmWebMessage'))) {
+        unassignMutation.mutate();
       }
       return;
     }
-    Alert.alert(t('schedule.removeConfirm.title'), null as any, [
-      { text: t('common.cancel'), style: 'cancel' },
-      {
-        text: t('common.remove'),
-        onPress: () => removeMutation.mutate(),
-        style: 'destructive',
-      },
-    ]);
+    Alert.alert(
+      t('schedule.unassign.confirmTitle'),
+      t('schedule.unassign.confirmBody'),
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('schedule.unassign.button'),
+          onPress: () => unassignMutation.mutate(),
+        },
+      ],
+    );
   };
 
   if (assignmentQuery.isLoading) {
@@ -131,12 +142,14 @@ export default function AssignmentDetailScreen() {
           </Pressable>
         ) : (
           <Pressable
-            style={[styles.button, styles.buttonRemove]}
-            onPress={confirmRemove}
-            disabled={removeMutation.isPending}
+            style={[styles.button, styles.buttonUnassign]}
+            onPress={confirmUnassign}
+            disabled={unassignMutation.isPending || !a.publisherId}
           >
             <Text style={styles.buttonText}>
-              {removeMutation.isPending ? t('common.removing') : t('common.remove')}
+              {unassignMutation.isPending
+                ? t('schedule.unassign.unassigning')
+                : t('schedule.unassign.button')}
             </Text>
           </Pressable>
         )}
@@ -165,6 +178,7 @@ const styles = StyleSheet.create({
   },
   button: { paddingVertical: 14, borderRadius: 8, alignItems: 'center' },
   buttonRemove: { backgroundColor: '#dc2626' },
+  buttonUnassign: { backgroundColor: '#d97706' },
   buttonRestore: { backgroundColor: '#059669' },
   buttonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
 });

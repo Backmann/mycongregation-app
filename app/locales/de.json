@@ -529,6 +529,13 @@
         "moreWarnings": "… und {{count}} weitere",
         "importedWeeks": "Importierte Wochen"
       }
+    },
+    "unassign": {
+      "button": "Zuteilung aufheben",
+      "unassigning": "Wird aufgehoben…",
+      "confirmTitle": "Zuteilung aufheben",
+      "confirmBody": "Der Programmpunkt bleibt im Programm erhalten.",
+      "confirmWebMessage": "Zuteilung des Verkündigers aufheben? Der Programmpunkt bleibt erhalten."
     }
   },
   "audit": {
