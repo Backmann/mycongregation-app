@@ -37,7 +37,14 @@
     "totalCount": "{{count}} total",
     "nameRequired": "Name is required",
     "notes": "Notes",
-    "name": "Name"
+    "name": "Name",
+    "time": {
+      "justNow": "just now",
+      "secondsAgo": "{{count}}s ago",
+      "minutesAgo": "{{count}}min ago",
+      "hoursAgo": "{{count}}h ago",
+      "daysAgo": "{{count}}d ago"
+    }
   },
   "profile": {
     "signedInAs": "Signed in as",
@@ -183,6 +190,11 @@
       "date": "YYYY-MM-DD",
       "phone": "+49 170 1234567",
       "email": "john@example.com"
+    },
+    "status": {
+      "active": "Active",
+      "irregular": "Irregular",
+      "inactive": "Inactive"
     }
   },
   "capabilities": {
@@ -293,6 +305,34 @@
     "errors": {
       "notLinkedToPublisher": "Your account is not linked to a publisher record. Please contact an elder or admin.",
       "selfEditWindowClosed": "This report can no longer be edited. The self-edit window (1st–10th of the following month) has closed. Contact an elder or admin to request changes."
+    },
+    "pioneerInline": " · pioneer",
+    "hoursLong_one": "{{count}} hour",
+    "hoursLong_other": "{{count}} hours",
+    "group": {
+      "scopeCongregation": "Congregation",
+      "ofReported": "of {{total}} reported",
+      "active": "active",
+      "pending": "pending",
+      "noPublishersInScope": "No publishers in scope",
+      "noReportYet": "No report yet",
+      "couldNotLoad": "Could not load"
+    },
+    "override": {
+      "title": "Override status for {{name}}",
+      "save": "Save override",
+      "saving": "…",
+      "clear": "Clear override · resume auto-recompute"
+    },
+    "publisherHistory": {
+      "notSubmitted": "Not submitted",
+      "noPublisherId": "No publisher id supplied.",
+      "fallbackName": "Publisher",
+      "last12Months": "Last 12 months",
+      "noHistory": "No history",
+      "self": "(self)",
+      "submittedBy": "Submitted by {{name}}",
+      "editedBy": "edited by {{name}}"
     }
   },
   "families": {
@@ -483,5 +523,34 @@
         "importedWeeks": "Imported weeks"
       }
     }
+  },
+  "audit": {
+    "noReportId": "No report id supplied.",
+    "notAuthorized": "Not authorized",
+    "couldNotLoadHistory": "Could not load history",
+    "noEdits": "No edits yet",
+    "noEditsHint": "This report has not been modified since it was submitted.",
+    "unknownEditor": "(unknown editor)",
+    "before": "before",
+    "after": "after",
+    "noFieldsChanged": "(no fields changed)",
+    "value": {
+      "none": "(none)",
+      "empty": "(empty)"
+    },
+    "fields": {
+      "servedThisMonth": "Served this month",
+      "hoursReported": "Hours reported",
+      "bibleStudies": "Bible studies",
+      "notes": "Notes"
+    },
+    "actions": {
+      "self_edit": "Self edit",
+      "admin_edit": "Admin edit"
+    }
+  },
+  "activity": {
+    "noActivity": "No activity yet",
+    "noActivityHint": "Reports submitted and status changes will appear here."
   }
 }

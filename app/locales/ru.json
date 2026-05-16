@@ -37,7 +37,14 @@
     "totalCount": "Всего: {{count}}",
     "nameRequired": "Требуется название",
     "notes": "Заметки",
-    "name": "Название"
+    "name": "Название",
+    "time": {
+      "justNow": "только что",
+      "secondsAgo": "{{count}} с назад",
+      "minutesAgo": "{{count}} мин назад",
+      "hoursAgo": "{{count}} ч назад",
+      "daysAgo": "{{count}} дн назад"
+    }
   },
   "profile": {
     "signedInAs": "Вход выполнен от",
@@ -183,6 +190,11 @@
       "date": "ГГГГ-ММ-ДД",
       "phone": "+49 170 1234567",
       "email": "ivan@example.com"
+    },
+    "status": {
+      "active": "Активный",
+      "irregular": "Нерегулярный",
+      "inactive": "Неактивный"
     }
   },
   "capabilities": {
@@ -295,6 +307,36 @@
     "errors": {
       "notLinkedToPublisher": "Ваш аккаунт не привязан к записи возвещателя. Свяжитесь со старейшиной или администратором.",
       "selfEditWindowClosed": "Этот отчёт больше нельзя изменить. Окно самостоятельного редактирования (1–10 числа следующего месяца) закрыто. Обратитесь к старейшине или администратору."
+    },
+    "pioneerInline": " · пионер",
+    "hoursLong_one": "{{count}} час",
+    "hoursLong_few": "{{count}} часа",
+    "hoursLong_many": "{{count}} часов",
+    "hoursLong_other": "{{count}} часа",
+    "group": {
+      "scopeCongregation": "Собрание",
+      "ofReported": "из {{total}} сдали отчёт",
+      "active": "активных",
+      "pending": "ожидают",
+      "noPublishersInScope": "Возвещателей нет",
+      "noReportYet": "Отчёта пока нет",
+      "couldNotLoad": "Не удалось загрузить"
+    },
+    "override": {
+      "title": "Переопределить статус для {{name}}",
+      "save": "Сохранить",
+      "saving": "…",
+      "clear": "Сбросить · возобновить авторасчёт"
+    },
+    "publisherHistory": {
+      "notSubmitted": "Не подан",
+      "noPublisherId": "ID возвещателя не указан.",
+      "fallbackName": "Возвещатель",
+      "last12Months": "Последние 12 месяцев",
+      "noHistory": "История пуста",
+      "self": "(сам)",
+      "submittedBy": "Подал: {{name}}",
+      "editedBy": "изменил: {{name}}"
     }
   },
   "families": {
@@ -485,5 +527,34 @@
         "importedWeeks": "Импортированные недели"
       }
     }
+  },
+  "audit": {
+    "noReportId": "ID отчёта не указан.",
+    "notAuthorized": "Нет доступа",
+    "couldNotLoadHistory": "Не удалось загрузить историю",
+    "noEdits": "Изменений пока нет",
+    "noEditsHint": "Этот отчёт не изменялся с момента подачи.",
+    "unknownEditor": "(неизвестный редактор)",
+    "before": "было",
+    "after": "стало",
+    "noFieldsChanged": "(поля не изменены)",
+    "value": {
+      "none": "(нет)",
+      "empty": "(пусто)"
+    },
+    "fields": {
+      "servedThisMonth": "Участие в этом месяце",
+      "hoursReported": "Часы",
+      "bibleStudies": "Изучения Библии",
+      "notes": "Заметки"
+    },
+    "actions": {
+      "self_edit": "Самостоятельно",
+      "admin_edit": "Администратор"
+    }
+  },
+  "activity": {
+    "noActivity": "Активности пока нет",
+    "noActivityHint": "Поданные отчёты и изменения статуса будут отображаться здесь."
   }
 }

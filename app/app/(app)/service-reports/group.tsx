@@ -21,11 +21,8 @@ import {
   serviceReportsApi,
 } from '../../../lib/api';
 import { useAuth } from '../../../lib/auth';
-
-const MONTH_NAMES = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
-];
+import { useTranslation } from 'react-i18next';
+import i18n, { formatMonthLabel } from '../../../lib/i18n';
 
 function getRecentMonths(count: number): { value: string; label: string }[] {
   const now = new Date();
@@ -36,14 +33,15 @@ function getRecentMonths(count: number): { value: string; label: string }[] {
     const mm = String(d.getMonth() + 1).padStart(2, '0');
     months.push({
       value: `${yyyy}-${mm}`,
-      label: `${MONTH_NAMES[d.getMonth()]} ${yyyy}`,
+      label: formatMonthLabel(`${yyyy}-${mm}`),
     });
   }
   return months;
 }
 
 export default function GroupReportsScreen() {
-  const recentMonths = useMemo(() => getRecentMonths(6), []);
+  const { t, i18n: i18nInstance } = useTranslation();
+  const recentMonths = useMemo(() => getRecentMonths(6), [i18nInstance.language]);
   // Default to the previous completed month (most useful for follow-up).
   const [reportMonth, setReportMonth] = useState(
     recentMonths[Math.min(1, recentMonths.length - 1)].value,
@@ -125,7 +123,7 @@ export default function GroupReportsScreen() {
   if (isLoading) {
     return (
       <View style={styles.center}>
-        <Stack.Screen options={{ title: 'Group reports' }} />
+        <Stack.Screen options={{ title: t('reports.title.group') }} />
         <ActivityIndicator size="large" />
       </View>
     );
@@ -136,14 +134,14 @@ export default function GroupReportsScreen() {
     const isForbidden = /403|forbid|authoriz/i.test(message);
     return (
       <View style={styles.center}>
-        <Stack.Screen options={{ title: 'Group reports' }} />
+        <Stack.Screen options={{ title: t('reports.title.group') }} />
         <Ionicons
           name={isForbidden ? 'lock-closed-outline' : 'alert-circle-outline'}
           size={64}
           color="#cbd5e1"
         />
         <Text style={styles.errorTitle}>
-          {isForbidden ? 'Not authorized' : 'Could not load'}
+          {isForbidden ? t('audit.notAuthorized') : t('reports.group.couldNotLoad')}
         </Text>
         <Text style={styles.errorText}>{message}</Text>
       </View>
@@ -152,10 +150,10 @@ export default function GroupReportsScreen() {
 
   return (
     <View style={styles.container}>
-      <Stack.Screen options={{ title: 'Group reports' }} />
+      <Stack.Screen options={{ title: t('reports.title.group') }} />
       <View style={styles.header}>
         {data?.scopeLabel && (
-          <Text style={styles.scopeLabel}>{data.scopeLabel}</Text>
+          <Text style={styles.scopeLabel}>{data.scopeLabel === 'Congregation' ? t('reports.group.scopeCongregation') : data.scopeLabel}</Text>
         )}
         <ScrollView
           horizontal
@@ -187,20 +185,20 @@ export default function GroupReportsScreen() {
           <View style={styles.statBox}>
             <Text style={styles.statBig}>{aggregate.submitted}</Text>
             <Text style={styles.statLabel}>
-              of {aggregate.total} reported
+              {t('reports.group.ofReported', { total: aggregate.total })}
             </Text>
           </View>
           <View style={styles.statBox}>
             <Text style={[styles.statBig, styles.statActive]}>
               {aggregate.served}
             </Text>
-            <Text style={styles.statLabel}>active</Text>
+            <Text style={styles.statLabel}>{t('reports.group.active')}</Text>
           </View>
           <View style={styles.statBox}>
             <Text style={[styles.statBig, styles.statPending]}>
               {aggregate.total - aggregate.submitted}
             </Text>
-            <Text style={styles.statLabel}>pending</Text>
+            <Text style={styles.statLabel}>{t('reports.group.pending')}</Text>
           </View>
         </View>
       </View>
@@ -215,7 +213,7 @@ export default function GroupReportsScreen() {
         ListEmptyComponent={
           <View style={styles.emptyState}>
             <Ionicons name="people-outline" size={64} color="#cbd5e1" />
-            <Text style={styles.emptyTitle}>No publishers in scope</Text>
+            <Text style={styles.emptyTitle}>{t('reports.group.noPublishersInScope')}</Text>
           </View>
         }
         renderItem={({ item }) => (
@@ -302,6 +300,7 @@ function PublisherRow({
   onTapHistory?: () => void;
   onAddOnBehalf?: (row: GroupReportRow) => void;
 }) {
+  const { t } = useTranslation();
   const { report, displayName, isPioneer } = row;
 
   const hasActivity =
@@ -316,12 +315,12 @@ function PublisherRow({
       : 'reported-none';
 
   const summary = !report
-    ? 'No report yet'
+    ? t('reports.group.noReportYet')
     : isPioneer && report.hoursReported !== null
-      ? `${report.hoursReported} hour${report.hoursReported === 1 ? '' : 's'}`
+      ? t('reports.hoursLong', { count: report.hoursReported })
       : report.servedThisMonth === true
-        ? 'Served'
-        : 'Did not serve';
+        ? t('reports.served')
+        : t('reports.didNotServe');
 
   const showAddBtn = status === 'pending' && !!onAddOnBehalf;
 
@@ -345,7 +344,7 @@ function PublisherRow({
           <Text style={styles.name} numberOfLines={1}>
             {displayName}
             {isPioneer && (
-              <Text style={styles.pioneerTag}> · pioneer</Text>
+              <Text style={styles.pioneerTag}>{t('reports.pioneerInline')}</Text>
             )}
           </Text>
           {statusInfo && (
@@ -357,7 +356,7 @@ function PublisherRow({
                 statusInfo.status === 'inactive' && styles.badgeInactive,
               ]}
             >
-              <Text style={styles.statusBadgeText}>{statusInfo.status}</Text>
+              <Text style={styles.statusBadgeText}>{t(`publishers.status.${statusInfo.status}`)}</Text>
               {statusInfo.manuallyOverridden && (
                 <Ionicons
                   name="lock-closed"
@@ -374,8 +373,7 @@ function PublisherRow({
           {report && report.bibleStudies > 0 && (
             <Text style={styles.studies}>
               {' · '}
-              {report.bibleStudies}{' '}
-              {report.bibleStudies === 1 ? 'study' : 'studies'}
+              {t('reports.studies', { count: report.bibleStudies })}
             </Text>
           )}
         </Text>
@@ -420,6 +418,7 @@ function OverrideStatusModal({
   onClear: () => void;
   isSaving: boolean;
 }) {
+  const { t } = useTranslation();
   const [selected, setSelected] = useState<PublisherStatus>(currentStatus);
 
   // Reset selection when target changes (different publisher) or status updates.
@@ -437,7 +436,7 @@ function OverrideStatusModal({
       <Pressable style={modalStyles.backdrop} onPress={onCancel}>
         <Pressable style={modalStyles.sheet} onPress={() => {}}>
           <Text style={modalStyles.title}>
-            Override status for {target?.displayName ?? ''}
+            {t('reports.override.title', { name: target?.displayName ?? '' })}
           </Text>
           {(['active', 'irregular', 'inactive'] as PublisherStatus[]).map(
             (s) => (
@@ -457,7 +456,7 @@ function OverrideStatusModal({
                   color={selected === s ? '#0ea5e9' : '#94a3b8'}
                 />
                 <Text style={modalStyles.optionText}>
-                  {s[0].toUpperCase() + s.slice(1)}
+                  {t(`publishers.status.${s}`)}
                 </Text>
               </Pressable>
             ),
@@ -468,7 +467,7 @@ function OverrideStatusModal({
               style={[modalStyles.btn, modalStyles.btnSecondary]}
               disabled={isSaving}
             >
-              <Text style={modalStyles.btnTextSecondary}>Cancel</Text>
+              <Text style={modalStyles.btnTextSecondary}>{t('common.cancel')}</Text>
             </Pressable>
             <Pressable
               onPress={() => onSave(selected)}
@@ -476,7 +475,7 @@ function OverrideStatusModal({
               disabled={isSaving}
             >
               <Text style={modalStyles.btnTextPrimary}>
-                {isSaving ? '…' : 'Save override'}
+                {isSaving ? t('reports.override.saving') : t('reports.override.save')}
               </Text>
             </Pressable>
           </View>
@@ -488,7 +487,7 @@ function OverrideStatusModal({
             >
               <Ionicons name="refresh" size={16} color="#dc2626" />
               <Text style={modalStyles.clearBtnText}>
-                Clear override · resume auto-recompute
+                {t('reports.override.clear')}
               </Text>
             </Pressable>
           )}

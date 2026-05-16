@@ -37,7 +37,14 @@
     "totalCount": "{{count}} insgesamt",
     "nameRequired": "Name ist erforderlich",
     "notes": "Notizen",
-    "name": "Name"
+    "name": "Name",
+    "time": {
+      "justNow": "gerade eben",
+      "secondsAgo": "vor {{count}} Sek.",
+      "minutesAgo": "vor {{count}} Min.",
+      "hoursAgo": "vor {{count}} Std.",
+      "daysAgo": "vor {{count}} Tg."
+    }
   },
   "profile": {
     "signedInAs": "Angemeldet als",
@@ -183,6 +190,11 @@
       "date": "JJJJ-MM-TT",
       "phone": "+49 170 1234567",
       "email": "hans@example.com"
+    },
+    "status": {
+      "active": "Aktiv",
+      "irregular": "Unregelmäßig",
+      "inactive": "Inaktiv"
     }
   },
   "capabilities": {
@@ -293,6 +305,34 @@
     "errors": {
       "notLinkedToPublisher": "Dein Konto ist nicht mit einem Verkündigereintrag verknüpft. Bitte wende dich an einen Ältesten oder Administrator.",
       "selfEditWindowClosed": "Dieser Bericht kann nicht mehr bearbeitet werden. Das Selbstbearbeitungsfenster (1.–10. des Folgemonats) ist geschlossen. Wende dich an einen Ältesten oder Administrator."
+    },
+    "pioneerInline": " · Pionier",
+    "hoursLong_one": "{{count}} Stunde",
+    "hoursLong_other": "{{count}} Stunden",
+    "group": {
+      "scopeCongregation": "Versammlung",
+      "ofReported": "von {{total}} eingereicht",
+      "active": "aktiv",
+      "pending": "ausstehend",
+      "noPublishersInScope": "Keine Verkündiger im Bereich",
+      "noReportYet": "Noch kein Bericht",
+      "couldNotLoad": "Konnte nicht geladen werden"
+    },
+    "override": {
+      "title": "Status manuell überschreiben für {{name}}",
+      "save": "Speichern",
+      "saving": "…",
+      "clear": "Aufheben · automatische Neuberechnung fortsetzen"
+    },
+    "publisherHistory": {
+      "notSubmitted": "Nicht eingereicht",
+      "noPublisherId": "Keine Verkündiger-ID angegeben.",
+      "fallbackName": "Verkündiger",
+      "last12Months": "Letzte 12 Monate",
+      "noHistory": "Kein Verlauf",
+      "self": "(selbst)",
+      "submittedBy": "Eingereicht von {{name}}",
+      "editedBy": "bearbeitet von {{name}}"
     }
   },
   "families": {
@@ -483,5 +523,34 @@
         "importedWeeks": "Importierte Wochen"
       }
     }
+  },
+  "audit": {
+    "noReportId": "Keine Bericht-ID angegeben.",
+    "notAuthorized": "Nicht autorisiert",
+    "couldNotLoadHistory": "Verlauf konnte nicht geladen werden",
+    "noEdits": "Noch keine Bearbeitungen",
+    "noEditsHint": "Dieser Bericht wurde seit der Einreichung nicht geändert.",
+    "unknownEditor": "(unbekannter Bearbeiter)",
+    "before": "vorher",
+    "after": "nachher",
+    "noFieldsChanged": "(keine Felder geändert)",
+    "value": {
+      "none": "(keine)",
+      "empty": "(leer)"
+    },
+    "fields": {
+      "servedThisMonth": "Diesen Monat teilgenommen",
+      "hoursReported": "Stunden",
+      "bibleStudies": "Bibelstudien",
+      "notes": "Notizen"
+    },
+    "actions": {
+      "self_edit": "Eigene Bearbeitung",
+      "admin_edit": "Administrator"
+    }
+  },
+  "activity": {
+    "noActivity": "Noch keine Aktivität",
+    "noActivityHint": "Eingereichte Berichte und Statusänderungen erscheinen hier."
   }
 }

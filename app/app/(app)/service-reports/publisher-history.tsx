@@ -17,30 +17,10 @@ import {
   PublisherStatus,
   serviceReportsApi,
 } from '../../../lib/api';
+import { useTranslation } from 'react-i18next';
+import i18n, { formatMonthLabel } from '../../../lib/i18n';
 
-const MONTH_NAMES = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
-];
-
-function formatMonthLabel(reportMonth: string): string {
-  const [yyyy, mm] = reportMonth.split('-');
-  const monthIdx = parseInt(mm, 10) - 1;
-  if (Number.isNaN(monthIdx) || monthIdx < 0 || monthIdx > 11) {
-    return reportMonth;
-  }
-  return `${MONTH_NAMES[monthIdx]} ${yyyy}`;
-}
+// formatMonthLabel now imported from lib/i18n
 
 function describeReport(report: NonNullable<PublisherHistoryEntry['report']>): {
   summary: string;
@@ -51,18 +31,16 @@ function describeReport(report: NonNullable<PublisherHistoryEntry['report']>): {
     (report.hoursReported !== null && report.hoursReported > 0);
 
   if (!served && report.servedThisMonth === false) {
-    return { summary: 'Did not serve', served: false };
+    return { summary: i18n.t('reports.didNotServe'), served: false };
   }
   if (report.hoursReported !== null && report.hoursReported > 0) {
     return {
-      summary: `${report.hoursReported} hour${
-        report.hoursReported === 1 ? '' : 's'
-      }`,
+      summary: i18n.t('reports.hoursLong', { count: report.hoursReported }),
       served: true,
     };
   }
   if (report.servedThisMonth === true) {
-    return { summary: 'Served', served: true };
+    return { summary: i18n.t('reports.served'), served: true };
   }
   return { summary: '—', served: false };
 }
@@ -83,7 +61,7 @@ function StatusBadge({
         status === 'inactive' && styles.badgeInactive,
       ]}
     >
-      <Text style={styles.badgeText}>{status}</Text>
+      <Text style={styles.badgeText}>{i18n.t(`publishers.status.${status}`)}</Text>
       {isOverridden && (
         <Ionicons
           name="lock-closed"
@@ -111,7 +89,7 @@ function TimelineEntryCard({
         <Text style={styles.monthLabel}>{monthLabel}</Text>
         <View style={styles.row}>
           <View style={[styles.dot, styles.dotPending]} />
-          <Text style={styles.emptyText}>Not submitted</Text>
+          <Text style={styles.emptyText}>{i18n.t('reports.publisherHistory.notSubmitted')}</Text>
         </View>
       </View>
     );
@@ -119,10 +97,10 @@ function TimelineEntryCard({
 
   const { summary, served } = describeReport(entry.report);
   const submittedByName =
-    entry.report.submittedOnBehalfOf ?? '(self)';
+    entry.report.submittedOnBehalfOf ?? i18n.t('reports.publisherHistory.self');
   const editLabel =
     entry.report.lastEditedAt && entry.report.lastEditedByName
-      ? `edited by ${entry.report.lastEditedByName}`
+      ? i18n.t('reports.publisherHistory.editedBy', { name: entry.report.lastEditedByName })
       : null;
 
   return (
@@ -149,8 +127,7 @@ function TimelineEntryCard({
           {entry.report.bibleStudies > 0 && (
             <Text style={styles.studies}>
               {' · '}
-              {entry.report.bibleStudies}{' '}
-              {entry.report.bibleStudies === 1 ? 'study' : 'studies'}
+              {i18n.t('reports.studies', { count: entry.report.bibleStudies })}
             </Text>
           )}
         </Text>
@@ -161,7 +138,7 @@ function TimelineEntryCard({
         </Text>
       )}
       <Text style={styles.meta}>
-        Submitted by {submittedByName}
+        {i18n.t('reports.publisherHistory.submittedBy', { name: submittedByName })}
         {editLabel && <Text style={styles.metaEdited}>{' · ' + editLabel}</Text>}
       </Text>
     </Pressable>
@@ -169,6 +146,7 @@ function TimelineEntryCard({
 }
 
 export default function PublisherHistoryScreen() {
+  const { t } = useTranslation();
   const params = useLocalSearchParams<{
     publisherId?: string;
     displayName?: string;
@@ -185,15 +163,15 @@ export default function PublisherHistoryScreen() {
   });
 
   const headerTitle = useMemo(
-    () => data?.publisher.displayName ?? initialDisplayName ?? 'Publisher',
-    [data, initialDisplayName],
+    () => data?.publisher.displayName ?? initialDisplayName ?? t('reports.publisherHistory.fallbackName'),
+    [data, initialDisplayName, t],
   );
 
   if (!publisherId) {
     return (
       <View style={styles.center}>
-        <Stack.Screen options={{ title: 'Publisher history' }} />
-        <Text style={styles.errorText}>No publisher id supplied.</Text>
+        <Stack.Screen options={{ title: t('reports.title.publisherHistory') }} />
+        <Text style={styles.errorText}>{t('reports.publisherHistory.noPublisherId')}</Text>
       </View>
     );
   }
@@ -201,7 +179,7 @@ export default function PublisherHistoryScreen() {
   if (isLoading) {
     return (
       <View style={styles.center}>
-        <Stack.Screen options={{ title: 'Publisher history' }} />
+        <Stack.Screen options={{ title: t('reports.title.publisherHistory') }} />
         <ActivityIndicator size="large" />
       </View>
     );
@@ -212,14 +190,14 @@ export default function PublisherHistoryScreen() {
     const isForbidden = /403|forbid|authoriz/i.test(message);
     return (
       <View style={styles.center}>
-        <Stack.Screen options={{ title: 'Publisher history' }} />
+        <Stack.Screen options={{ title: t('reports.title.publisherHistory') }} />
         <Ionicons
           name={isForbidden ? 'lock-closed-outline' : 'alert-circle-outline'}
           size={64}
           color="#cbd5e1"
         />
         <Text style={styles.errorTitle}>
-          {isForbidden ? 'Not authorized' : 'Could not load history'}
+          {isForbidden ? t('audit.notAuthorized') : t('audit.couldNotLoadHistory')}
         </Text>
         <Text style={styles.errorText}>{message}</Text>
       </View>
@@ -228,13 +206,13 @@ export default function PublisherHistoryScreen() {
 
   return (
     <View style={styles.container}>
-      <Stack.Screen options={{ title: 'Publisher history' }} />
+      <Stack.Screen options={{ title: t('reports.title.publisherHistory') }} />
       <View style={styles.header}>
         <View style={styles.headerRow}>
           <Text style={styles.headerName} numberOfLines={1}>
             {headerTitle}
             {data?.publisher.isPioneer && (
-              <Text style={styles.pioneerTag}> · pioneer</Text>
+              <Text style={styles.pioneerTag}>{t('reports.pioneerInline')}</Text>
             )}
           </Text>
           {data && (
@@ -244,7 +222,7 @@ export default function PublisherHistoryScreen() {
             />
           )}
         </View>
-        <Text style={styles.headerSub}>Last 12 months</Text>
+        <Text style={styles.headerSub}>{t('reports.publisherHistory.last12Months')}</Text>
       </View>
 
       <FlatList
@@ -257,7 +235,7 @@ export default function PublisherHistoryScreen() {
         ListEmptyComponent={
           <View style={styles.emptyState}>
             <Ionicons name="calendar-outline" size={64} color="#cbd5e1" />
-            <Text style={styles.emptyStateTitle}>No history</Text>
+            <Text style={styles.emptyStateTitle}>{t('reports.publisherHistory.noHistory')}</Text>
           </View>
         }
         renderItem={({ item }) => (

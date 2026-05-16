@@ -15,15 +15,17 @@ import {
   ActivityFeedEntry,
   extractErrorMessage,
 } from '../../../lib/api';
+import { useTranslation } from 'react-i18next';
+import i18n from '../../../lib/i18n';
 
 function formatRelativeTime(iso: string): string {
   const d = new Date(iso);
   const diff = (Date.now() - d.getTime()) / 1000;
-  if (diff < 60) return 'just now';
-  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-  if (diff < 86400 * 7) return `${Math.floor(diff / 86400)}d ago`;
-  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  if (diff < 60) return i18n.t('common.time.justNow');
+  if (diff < 3600) return i18n.t('common.time.minutesAgo', { count: Math.floor(diff / 60) });
+  if (diff < 86400) return i18n.t('common.time.hoursAgo', { count: Math.floor(diff / 3600) });
+  if (diff < 86400 * 7) return i18n.t('common.time.daysAgo', { count: Math.floor(diff / 86400) });
+  return d.toLocaleDateString(i18n.language, { month: 'short', day: 'numeric' });
 }
 
 type IconSpec = { name: any; color: string };
@@ -129,9 +131,9 @@ export default function ActivityFeedScreen() {
       ListEmptyComponent={
         <View style={styles.empty}>
           <Ionicons name="pulse-outline" size={48} color="#94a3b8" />
-          <Text style={styles.emptyText}>No activity yet</Text>
+          <Text style={styles.emptyText}>{i18n.t('activity.noActivity')}</Text>
           <Text style={styles.emptyHint}>
-            Reports submitted and status changes will appear here.
+            {i18n.t('activity.noActivityHint')}
           </Text>
         </View>
       }
