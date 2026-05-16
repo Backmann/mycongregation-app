@@ -15,6 +15,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
 import { Publisher, publishersApi } from '../lib/api';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
   label: string;
@@ -35,6 +36,7 @@ export function PublisherSelector({
   excludeIds = [],
   requiredCapability,
 }: Props) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [showAll, setShowAll] = useState(false);
@@ -86,7 +88,7 @@ export function PublisherSelector({
               !selectedPublisher && styles.valuePlaceholder,
             ]}
           >
-            {selectedPublisher ? selectedPublisher.displayName : 'None'}
+            {selectedPublisher ? selectedPublisher.displayName : t('common.none')}
           </Text>
           <Ionicons name="chevron-forward" size={18} color="#cbd5e1" />
         </View>
@@ -96,7 +98,7 @@ export function PublisherSelector({
             <View style={styles.warningRow}>
               <Ionicons name="warning" size={12} color="#dc2626" />
               <Text style={styles.warningText}>
-                Missing capability: {requiredCapability}
+                {t('pickers.missingCapability', { capability: requiredCapability })}
               </Text>
             </View>
           )}
@@ -113,13 +115,13 @@ export function PublisherSelector({
               <Text style={styles.modalTitle}>{label}</Text>
               {requiredCapability && (
                 <Text style={styles.modalSubtitle}>
-                  Filtered by capability:{' '}
+                  {t('pickers.filteredByCapability')}{' '}
                   <Text style={styles.modalCapName}>{requiredCapability}</Text>
                 </Text>
               )}
             </View>
             <Pressable onPress={() => setOpen(false)} hitSlop={8}>
-              <Text style={styles.doneText}>Done</Text>
+              <Text style={styles.doneText}>{t('common.done')}</Text>
             </Pressable>
           </View>
 
@@ -130,12 +132,12 @@ export function PublisherSelector({
             >
               <View style={{ flex: 1 }}>
                 <Text style={styles.toggleLabel}>
-                  Show all publishers (override filter)
+                  {t('pickers.showAllOverride')}
                 </Text>
                 <Text style={styles.toggleHint}>
                   {showAll
-                    ? 'Showing all — capability filter is OFF'
-                    : `${hiddenByCapability} hidden by capability filter`}
+                    ? t('pickers.showingAllNoFilter')
+                    : t('pickers.hiddenByCapability', { count: hiddenByCapability })}
                 </Text>
               </View>
               <Switch
@@ -151,7 +153,7 @@ export function PublisherSelector({
             style={styles.search}
             value={search}
             onChangeText={setSearch}
-            placeholder="Search…"
+            placeholder={t('pickers.search')}
             placeholderTextColor="#cbd5e1"
             autoCapitalize="none"
             autoCorrect={false}
@@ -174,7 +176,7 @@ export function PublisherSelector({
                   setOpen(false);
                 }}
               >
-                <Text style={styles.optionText}>None</Text>
+                <Text style={styles.optionText}>{t('common.none')}</Text>
                 {value == null && (
                   <Ionicons name="checkmark" size={20} color="#0ea5e9" />
                 )}
@@ -183,10 +185,10 @@ export function PublisherSelector({
               {filtered.length === 0 && (
                 <Text style={styles.empty}>
                   {search !== ''
-                    ? 'No matches'
+                    ? t('pickers.noMatches')
                     : filterByCapability
-                    ? `No publishers with capability "${requiredCapability}"`
-                    : 'No publishers'}
+                    ? t('pickers.noPublishersWithCapability', { capability: requiredCapability ?? '' })
+                    : t('pickers.noPublishers')}
                 </Text>
               )}
 

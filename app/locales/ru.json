@@ -44,7 +44,9 @@
       "minutesAgo": "{{count}} мин назад",
       "hoursAgo": "{{count}} ч назад",
       "daysAgo": "{{count}} дн назад"
-    }
+    },
+    "done": "Готово",
+    "none": "Не выбрано"
   },
   "profile": {
     "signedInAs": "Вход выполнен от",
@@ -556,5 +558,19 @@
   "activity": {
     "noActivity": "Активности пока нет",
     "noActivityHint": "Поданные отчёты и изменения статуса будут отображаться здесь."
+  },
+  "pickers": {
+    "search": "Поиск…",
+    "searchByNumberOrTitle": "Поиск по номеру или названию…",
+    "noMatches": "Ничего не найдено",
+    "noPublishers": "Возвещателей нет",
+    "noPublishersWithCapability": "Нет возвещателей со способностью \"{{capability}}\"",
+    "noTalksInCatalog": "Речей в каталоге нет",
+    "missingCapability": "Отсутствует способность: {{capability}}",
+    "filteredByCapability": "Фильтр по способности:",
+    "showAllOverride": "Показать всех возвещателей (отключить фильтр)",
+    "showingAllNoFilter": "Показаны все — фильтр способностей ОТКЛЮЧЁН",
+    "hiddenByCapability": "Скрыто фильтром: {{count}}",
+    "lastGiven": "Последний раз: {{date}}"
   }
 }

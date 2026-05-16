@@ -14,6 +14,8 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
 import { PublicTalk, publicTalksApi } from '../lib/api';
+import { useTranslation } from 'react-i18next';
+import i18n from '../lib/i18n';
 
 interface Props {
   label: string;
@@ -35,6 +37,7 @@ function getRecency(lastGivenAt: string | null): Recency {
 }
 
 export function PublicTalkSelector({ label, value, onChange }: Props) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
 
@@ -72,7 +75,7 @@ export function PublicTalkSelector({ label, value, onChange }: Props) {
           >
             {selectedTalk
               ? `№${selectedTalk.number}. ${selectedTalk.title}`
-              : 'None'}
+              : t('common.none')}
           </Text>
           <Ionicons name="chevron-forward" size={18} color="#cbd5e1" />
         </View>
@@ -95,7 +98,7 @@ export function PublicTalkSelector({ label, value, onChange }: Props) {
           <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>{label}</Text>
             <Pressable onPress={() => setOpen(false)} hitSlop={8}>
-              <Text style={styles.doneText}>Done</Text>
+              <Text style={styles.doneText}>{t('common.done')}</Text>
             </Pressable>
           </View>
 
@@ -105,7 +108,7 @@ export function PublicTalkSelector({ label, value, onChange }: Props) {
               style={styles.searchInput}
               value={search}
               onChangeText={setSearch}
-              placeholder="Search by number or title…"
+              placeholder={t('pickers.searchByNumberOrTitle')}
               placeholderTextColor="#cbd5e1"
               autoCapitalize="none"
               autoCorrect={false}
@@ -131,7 +134,7 @@ export function PublicTalkSelector({ label, value, onChange }: Props) {
                   setOpen(false);
                 }}
               >
-                <Text style={styles.optionText}>None</Text>
+                <Text style={styles.optionText}>{t('common.none')}</Text>
                 {value == null && (
                   <Ionicons name="checkmark" size={20} color="#0ea5e9" />
                 )}
@@ -139,7 +142,7 @@ export function PublicTalkSelector({ label, value, onChange }: Props) {
 
               {filtered.length === 0 && (
                 <Text style={styles.empty}>
-                  {search ? 'No matches' : 'No talks in catalog'}
+                  {search ? t('pickers.noMatches') : t('pickers.noTalksInCatalog')}
                 </Text>
               )}
 
@@ -227,7 +230,7 @@ function RecencyHint({
     <View style={[styles.hintRow, inline && { marginTop: 4 }]}>
       <Ionicons name={icon[recency]} size={11} color={color} />
       <Text style={[styles.hintText, { color }]}>
-        Last given {lastGivenAt}
+        {i18n.t('pickers.lastGiven', { date: new Date(lastGivenAt).toLocaleDateString(i18n.language, { year: 'numeric', month: 'short', day: 'numeric' }) })}
         {lastGivenBy ? ` · ${lastGivenBy}` : ''}
       </Text>
     </View>

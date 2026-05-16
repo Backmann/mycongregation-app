@@ -44,7 +44,9 @@
       "minutesAgo": "vor {{count}} Min.",
       "hoursAgo": "vor {{count}} Std.",
       "daysAgo": "vor {{count}} Tg."
-    }
+    },
+    "done": "Fertig",
+    "none": "Keine"
   },
   "profile": {
     "signedInAs": "Angemeldet als",
@@ -552,5 +554,19 @@
   "activity": {
     "noActivity": "Noch keine Aktivität",
     "noActivityHint": "Eingereichte Berichte und Statusänderungen erscheinen hier."
+  },
+  "pickers": {
+    "search": "Suchen…",
+    "searchByNumberOrTitle": "Nach Nummer oder Titel suchen…",
+    "noMatches": "Keine Treffer",
+    "noPublishers": "Keine Verkündiger",
+    "noPublishersWithCapability": "Keine Verkündiger mit Fähigkeit \"{{capability}}\"",
+    "noTalksInCatalog": "Keine Vorträge im Katalog",
+    "missingCapability": "Fehlende Fähigkeit: {{capability}}",
+    "filteredByCapability": "Gefiltert nach Fähigkeit:",
+    "showAllOverride": "Alle Verkündiger anzeigen (Filter überschreiben)",
+    "showingAllNoFilter": "Alle angezeigt — Fähigkeitsfilter ist AUS",
+    "hiddenByCapability": "{{count}} durch Filter ausgeblendet",
+    "lastGiven": "Zuletzt gehalten {{date}}"
   }
 }

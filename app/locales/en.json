@@ -44,7 +44,9 @@
       "minutesAgo": "{{count}}min ago",
       "hoursAgo": "{{count}}h ago",
       "daysAgo": "{{count}}d ago"
-    }
+    },
+    "done": "Done",
+    "none": "None"
   },
   "profile": {
     "signedInAs": "Signed in as",
@@ -552,5 +554,19 @@
   "activity": {
     "noActivity": "No activity yet",
     "noActivityHint": "Reports submitted and status changes will appear here."
+  },
+  "pickers": {
+    "search": "Search…",
+    "searchByNumberOrTitle": "Search by number or title…",
+    "noMatches": "No matches",
+    "noPublishers": "No publishers",
+    "noPublishersWithCapability": "No publishers with capability \"{{capability}}\"",
+    "noTalksInCatalog": "No talks in catalog",
+    "missingCapability": "Missing capability: {{capability}}",
+    "filteredByCapability": "Filtered by capability:",
+    "showAllOverride": "Show all publishers (override filter)",
+    "showingAllNoFilter": "Showing all — capability filter is OFF",
+    "hiddenByCapability": "{{count}} hidden by capability filter",
+    "lastGiven": "Last given {{date}}"
   }
 }
