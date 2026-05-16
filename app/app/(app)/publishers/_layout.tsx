@@ -22,7 +22,24 @@ export default function PublishersLayout() {
           ),
         }}
       />
-      <Stack.Screen name="[id]" options={{ title: t('publishers.title.detail') }} />
+      <Stack.Screen name="[id]" options={{
+          title: t('publishers.title.detail'),
+          headerLeft: () => (
+            <Pressable
+              onPress={() => {
+                if (router.canGoBack()) {
+                  router.back();
+                } else {
+                  router.replace("/publishers" as any);
+                }
+              }}
+              style={{ paddingHorizontal: 12 }}
+              hitSlop={8}
+            >
+              <Ionicons name="chevron-back" size={28} color="#0ea5e9" />
+            </Pressable>
+          ),
+        }} />
       <Stack.Screen name="new" options={{ title: t('publishers.title.new') }} />
     </Stack>
   );
