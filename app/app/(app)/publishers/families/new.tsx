@@ -1,7 +1,7 @@
 import { router } from 'expo-router';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { FamilyForm } from '../../../components/FamilyForm';
-import { CreateFamilyInput, familiesApi } from '../../../lib/api';
+import { FamilyForm } from '../../../../components/FamilyForm';
+import { CreateFamilyInput, familiesApi } from '../../../../lib/api';
 import { useTranslation } from 'react-i18next';
 
 export default function NewFamilyScreen() {
@@ -12,7 +12,7 @@ export default function NewFamilyScreen() {
     mutationFn: (input: CreateFamilyInput) => familiesApi.create(input),
     onSuccess: (family) => {
       queryClient.invalidateQueries({ queryKey: ['families'] });
-      router.replace(`/families/${family.id}` as any);
+      router.replace(`/publishers/families/${family.id}` as any);
     },
   });
 

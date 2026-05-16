@@ -241,7 +241,7 @@ function FamilySectionHeader({ family, count }: { family: Family | null; count: 
   const { t } = useTranslation();
   return (
     <Pressable
-      onPress={() => family && router.push(`/families/${family.id}` as any)}
+      onPress={() => family && router.push(`/publishers/families/${family.id}` as any)}
       disabled={!family}
       style={({ pressed }) => [
         styles.sectionHeader,

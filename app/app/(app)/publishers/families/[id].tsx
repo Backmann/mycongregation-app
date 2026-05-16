@@ -16,8 +16,8 @@ import {
   familiesApi,
   Publisher,
   UpdateFamilyInput,
-} from '../../../lib/api';
-import { FamilyForm } from '../../../components/FamilyForm';
+} from '../../../../lib/api';
+import { FamilyForm } from '../../../../components/FamilyForm';
 import { useTranslation } from 'react-i18next';
 
 export default function FamilyDetailScreen() {

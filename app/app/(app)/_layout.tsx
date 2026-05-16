@@ -48,7 +48,6 @@ export default function AppLayout() {
           ),
         }}
       />
-      <Tabs.Screen name="families" options={{ href: null }} />
       <Tabs.Screen
         name="service-groups"
         options={{

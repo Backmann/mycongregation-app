@@ -11,9 +11,9 @@ import {
 } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
-import { extractErrorMessage, Family, familiesApi } from '../../../lib/api';
+import { extractErrorMessage, Family, familiesApi } from '../../../../lib/api';
 import { Ionicons } from '@expo/vector-icons';
-import { FilterToggle } from '../../../components/FilterToggle';
+import { FilterToggle } from '../../../../components/FilterToggle';
 import { useTranslation } from 'react-i18next';
 
 export default function FamiliesListScreen() {
@@ -89,7 +89,7 @@ function FamilyRow({ family }: { family: Family }) {
         pressed && styles.rowPressed,
         isRemoved && styles.rowRemoved,
       ]}
-      onPress={() => router.push(`/families/${family.id}` as any)}
+      onPress={() => router.push(`/publishers/families/${family.id}` as any)}
     >
       <View style={styles.icon}>
         <Ionicons name="home" color="#0ea5e9" size={20} />
