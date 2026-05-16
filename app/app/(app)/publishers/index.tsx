@@ -41,7 +41,7 @@ export default function PublishersListScreen() {
 
   const familiesQuery = useQuery({
     queryKey: ['families', 'all-for-grouping'],
-    queryFn: () => familiesApi.list({ limit: 500 }),
+    queryFn: () => familiesApi.list({}),
     enabled: viewMode === 'by-family',
   });
 
