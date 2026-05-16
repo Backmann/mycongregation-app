@@ -536,6 +536,10 @@
       "confirmTitle": "Zuteilung aufheben",
       "confirmBody": "Der Programmpunkt bleibt im Programm erhalten.",
       "confirmWebMessage": "Zuteilung des Verkündigers aufheben? Der Programmpunkt bleibt erhalten."
+    },
+    "weekNav": {
+      "thisWeek": "Diese Woche",
+      "jumpToToday": "Zur aktuellen Woche"
     }
   },
   "audit": {

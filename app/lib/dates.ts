@@ -7,7 +7,6 @@ export function startOfWeekMonday(date: Date): Date {
   d.setHours(0, 0, 0, 0);
   return d;
 }
-
 /** Format a Date as 'YYYY-MM-DD' in local time (no timezone shift). */
 export function formatDateISO(date: Date): string {
   const y = date.getFullYear();
@@ -15,46 +14,58 @@ export function formatDateISO(date: Date): string {
   const d = String(date.getDate()).padStart(2, '0');
   return `${y}-${m}-${d}`;
 }
-
 /** Parse 'YYYY-MM-DD' as local midnight (no timezone shift). */
 export function parseISODate(s: string): Date {
   const [y, m, d] = s.split('-').map(Number);
   return new Date(y, m - 1, d);
 }
-
 export function addDays(date: Date, n: number): Date {
   const d = new Date(date);
   d.setDate(d.getDate() + n);
   return d;
 }
-
 export function addWeeks(date: Date, n: number): Date {
   return addDays(date, n * 7);
 }
-
-const MONTHS = [
+const FALLBACK_MONTHS = [
   'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
 ];
-
-/** "May 4 – 10" if same month, "Apr 27 – May 3" if cross-month. Year suffix only if not current. */
-export function formatWeekRange(monday: Date): string {
+/**
+ * Locale-aware week range formatter using Intl.DateTimeFormat.formatRange.
+ * Examples:
+ *   en: "May 4 – 10" (same month) / "Apr 27 – May 3" (cross-month)
+ *   ru: "4 – 10 мая" / "27 апр. – 3 мая"
+ *   de: "4. – 10. Mai" / "27. Apr. – 3. Mai"
+ * Year suffix appears only when the range falls outside the current year.
+ */
+export function formatWeekRange(monday: Date, locale: string = 'en'): string {
   const sunday = addDays(monday, 6);
-  const m1 = MONTHS[monday.getMonth()];
-  const m2 = MONTHS[sunday.getMonth()];
   const currentYear = new Date().getFullYear();
-  const yearSuffix =
-    monday.getFullYear() === currentYear &&
-    sunday.getFullYear() === currentYear
-      ? ''
-      : `, ${monday.getFullYear()}`;
-
-  if (m1 === m2) {
-    return `${m1} ${monday.getDate()} – ${sunday.getDate()}${yearSuffix}`;
+  const showYear =
+    monday.getFullYear() !== currentYear ||
+    sunday.getFullYear() !== currentYear;
+  const options: Intl.DateTimeFormatOptions = {
+    month: 'short',
+    day: 'numeric',
+    ...(showYear && { year: 'numeric' as const }),
+  };
+  try {
+    const formatter = new Intl.DateTimeFormat(locale, options);
+    if (typeof (formatter as any).formatRange === 'function') {
+      return (formatter as any).formatRange(monday, sunday);
+    }
+    return `${formatter.format(monday)} – ${formatter.format(sunday)}`;
+  } catch {
+    const m1 = FALLBACK_MONTHS[monday.getMonth()];
+    const m2 = FALLBACK_MONTHS[sunday.getMonth()];
+    const yearSuffix = showYear ? `, ${monday.getFullYear()}` : '';
+    if (m1 === m2) {
+      return `${m1} ${monday.getDate()} – ${sunday.getDate()}${yearSuffix}`;
+    }
+    return `${m1} ${monday.getDate()} – ${m2} ${sunday.getDate()}${yearSuffix}`;
   }
-  return `${m1} ${monday.getDate()} – ${m2} ${sunday.getDate()}${yearSuffix}`;
 }
-
 export function isSameWeek(a: Date, b: Date): boolean {
   return formatDateISO(startOfWeekMonday(a)) === formatDateISO(startOfWeekMonday(b));
 }

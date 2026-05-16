@@ -536,6 +536,10 @@
       "confirmTitle": "Unassign publisher",
       "confirmBody": "The program part will remain in the schedule.",
       "confirmWebMessage": "Unassign the publisher from this part? The program part will remain."
+    },
+    "weekNav": {
+      "thisWeek": "This week",
+      "jumpToToday": "Jump to today"
     }
   },
   "audit": {

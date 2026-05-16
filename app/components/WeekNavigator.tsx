@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import {
   addWeeks,
   formatWeekRange,
@@ -13,6 +14,7 @@ interface Props {
 }
 
 export function WeekNavigator({ weekStart, onChange }: Props) {
+  const { t, i18n } = useTranslation();
   const today = new Date();
   const onCurrentWeek = isSameWeek(weekStart, today);
 
@@ -27,16 +29,16 @@ export function WeekNavigator({ weekStart, onChange }: Props) {
       </Pressable>
 
       <View style={styles.center}>
-        <Text style={styles.range}>{formatWeekRange(weekStart)}</Text>
+        <Text style={styles.range}>{formatWeekRange(weekStart, i18n.language)}</Text>
         {!onCurrentWeek && (
           <Pressable
             onPress={() => onChange(startOfWeekMonday(today))}
             hitSlop={8}
           >
-            <Text style={styles.todayLink}>Jump to today</Text>
+            <Text style={styles.todayLink}>{t('schedule.weekNav.jumpToToday')}</Text>
           </Pressable>
         )}
-        {onCurrentWeek && <Text style={styles.thisWeek}>This week</Text>}
+        {onCurrentWeek && <Text style={styles.thisWeek}>{t('schedule.weekNav.thisWeek')}</Text>}
       </View>
 
       <Pressable
