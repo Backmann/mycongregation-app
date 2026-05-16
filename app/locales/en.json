@@ -211,5 +211,76 @@
       "cleaning_team": "Regular cleaning",
       "cleaning_special": "Special / Quarterly cleaning"
     }
+  },
+  "auth": {
+    "subtitle": "Sign in to your congregation",
+    "email": "Email",
+    "password": "Password",
+    "emailPlaceholder": "you@example.com",
+    "signIn": "Sign in"
+  },
+  "months": {
+    "january": "January",
+    "february": "February",
+    "march": "March",
+    "april": "April",
+    "may": "May",
+    "june": "June",
+    "july": "July",
+    "august": "August",
+    "september": "September",
+    "october": "October",
+    "november": "November",
+    "december": "December"
+  },
+  "reports": {
+    "title": {
+      "list": "Reports",
+      "new": "Submit Report",
+      "edit": "Edit Report",
+      "onBehalf": "On-behalf Report",
+      "group": "Group reports",
+      "editHistory": "Edit history",
+      "publisherHistory": "Publisher history",
+      "activity": "Activity feed"
+    },
+    "served": "Served",
+    "didNotServe": "Did not serve",
+    "hoursShort": "{{count}} h",
+    "studies_one": "{{count}} study",
+    "studies_other": "{{count}} studies",
+    "noReports": "No reports yet",
+    "noReportsHint": "Tap the + above to submit your first monthly report.",
+    "editedAt": "edited {{when}}",
+    "editedAtBy": "edited {{when}} by {{name}}",
+    "submittingOnBehalfOf": "Submitting on behalf of",
+    "publisher": "publisher",
+    "pioneerSuffix": " (pioneer)",
+    "editingReportFor": "Editing report for ",
+    "submittingAs": "Submitting as ",
+    "reportMonth": "Report month",
+    "alreadySubmitted": "Already submitted. Go back and tap the pencil icon to edit.",
+    "hoursLabel": "Hours in ministry",
+    "hoursPlaceholder": "e.g. 70",
+    "didTheyShare": "Did they share in the ministry this month?",
+    "didYouShare": "Did you share in the ministry this month?",
+    "bibleStudies": "Bible studies",
+    "notesOptional": "Notes (optional)",
+    "notesPlaceholder": "Any additional information…",
+    "viewEditHistory": "View edit history",
+    "updateReport": "Update Report",
+    "submitReport": "Submit Report",
+    "alerts": {
+      "alreadySubmittedTitle": "Already submitted",
+      "alreadySubmittedBody": "A report for {{month}} already exists. Go back and tap the pencil icon to edit it.",
+      "validationTitle": "Validation",
+      "validationHours": "Please enter valid hours (0–744).",
+      "validationServedOnBehalf": "Please indicate whether they served this month.",
+      "validationServedSelf": "Please indicate whether you served this month."
+    },
+    "errors": {
+      "notLinkedToPublisher": "Your account is not linked to a publisher record. Please contact an elder or admin.",
+      "selfEditWindowClosed": "This report can no longer be edited. The self-edit window (1st–10th of the following month) has closed. Contact an elder or admin to request changes."
+    }
   }
 }

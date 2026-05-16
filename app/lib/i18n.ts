@@ -76,3 +76,23 @@ export function getCurrentLanguage(): SupportedLanguage {
 }
 
 export default i18n;
+
+
+const MONTH_KEYS = [
+  'january', 'february', 'march', 'april', 'may', 'june',
+  'july', 'august', 'september', 'october', 'november', 'december',
+] as const;
+
+/**
+ * Formats "YYYY-MM" or "YYYY-MM-DD" as a localized "Month YYYY" string.
+ * E.g. "2026-04" → "April 2026" (en) / "апрель 2026" (ru) / "April 2026" (de).
+ */
+export function formatMonthLabel(yearMonthOrDate: string): string {
+  const ymd =
+    yearMonthOrDate.length === 7
+      ? `${yearMonthOrDate}-01`
+      : yearMonthOrDate;
+  const d = new Date(ymd + 'T00:00:00Z');
+  const monthKey = MONTH_KEYS[d.getUTCMonth()];
+  return `${i18n.t(`months.${monthKey}`)} ${d.getUTCFullYear()}`;
+}

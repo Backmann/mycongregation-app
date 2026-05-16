@@ -12,8 +12,10 @@ import {
 import { router } from 'expo-router';
 import { useAuth } from '../../lib/auth';
 import { extractErrorMessage } from '../../lib/api';
+import { useTranslation } from 'react-i18next';
 
 export default function LoginScreen() {
+  const { t } = useTranslation();
   const { signIn } = useAuth();
   const [email, setEmail] = useState('lionel@mycongregation.org');
   const [password, setPassword] = useState('');
@@ -40,9 +42,9 @@ export default function LoginScreen() {
     >
       <View style={styles.card}>
         <Text style={styles.title}>mycongregation</Text>
-        <Text style={styles.subtitle}>Sign in to your congregation</Text>
+        <Text style={styles.subtitle}>{t('auth.subtitle')}</Text>
 
-        <Text style={styles.label}>Email</Text>
+        <Text style={styles.label}>{t('auth.email')}</Text>
         <TextInput
           style={styles.input}
           value={email}
@@ -51,11 +53,11 @@ export default function LoginScreen() {
           autoCorrect={false}
           autoComplete="email"
           keyboardType="email-address"
-          placeholder="you@example.com"
+          placeholder={t('auth.emailPlaceholder')}
           editable={!submitting}
         />
 
-        <Text style={styles.label}>Password</Text>
+        <Text style={styles.label}>{t('auth.password')}</Text>
         <TextInput
           style={styles.input}
           value={password}
@@ -79,7 +81,7 @@ export default function LoginScreen() {
           {submitting ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.buttonText}>Sign in</Text>
+            <Text style={styles.buttonText}>{t('auth.signIn')}</Text>
           )}
         </Pressable>
       </View>

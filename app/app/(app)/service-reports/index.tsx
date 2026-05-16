@@ -15,28 +15,21 @@ import {
   ServiceReport,
   serviceReportsApi,
 } from '../../../lib/api';
+import { useTranslation } from 'react-i18next';
+import i18n, { formatMonthLabel } from '../../../lib/i18n';
 
-const MONTH_NAMES = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
-];
-
-function formatMonth(reportMonth: string): string {
-  // reportMonth is YYYY-MM-DD (always first of month)
-  const d = new Date(reportMonth + 'T00:00:00Z');
-  return `${MONTH_NAMES[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
-}
+// formatMonth now lives in lib/i18n.ts as formatMonthLabel
 
 function formatActivity(report: ServiceReport): string {
   if (report.hoursReported !== null) {
-    return `${report.hoursReported} h`;
+    return i18n.t('reports.hoursShort', { count: report.hoursReported });
   }
-  return report.servedThisMonth ? 'Served' : 'Did not serve';
+  return report.servedThisMonth ? i18n.t('reports.served') : i18n.t('reports.didNotServe');
 }
 
 function formatEditedTime(iso: string): string {
   const d = new Date(iso);
-  return d.toLocaleString(undefined, {
+  return d.toLocaleString(i18n.language, {
     month: 'short',
     day: 'numeric',
     hour: '2-digit',
@@ -45,6 +38,7 @@ function formatEditedTime(iso: string): string {
 }
 
 export default function ServiceReportsListScreen() {
+  const { t } = useTranslation();
   const { data, isLoading, isRefetching, refetch, error } = useQuery({
     queryKey: ['service-reports', 'my'],
     queryFn: () => serviceReportsApi.listMy(),
@@ -84,9 +78,9 @@ export default function ServiceReportsListScreen() {
         ListEmptyComponent={
           <View style={styles.emptyState}>
             <Ionicons name="document-text-outline" size={64} color="#cbd5e1" />
-            <Text style={styles.emptyTitle}>No reports yet</Text>
+            <Text style={styles.emptyTitle}>{t('reports.noReports')}</Text>
             <Text style={styles.emptySubtitle}>
-              Tap the + above to submit your first monthly report.
+              {t('reports.noReportsHint')}
             </Text>
           </View>
         }
@@ -100,13 +94,12 @@ function ReportRow({ report }: { report: ServiceReport }) {
   return (
     <View style={styles.row}>
       <View style={{ flex: 1 }}>
-        <Text style={styles.month}>{formatMonth(report.reportMonth)}</Text>
+        <Text style={styles.month}>{formatMonthLabel(report.reportMonth)}</Text>
         <View style={styles.statsRow}>
           <Text style={styles.statPrimary}>{formatActivity(report)}</Text>
           {report.bibleStudies > 0 && (
             <Text style={styles.statSecondary}>
-              {report.bibleStudies}{' '}
-              {report.bibleStudies === 1 ? 'study' : 'studies'}
+              {i18n.t('reports.studies', { count: report.bibleStudies })}
             </Text>
           )}
         </View>
@@ -117,8 +110,9 @@ function ReportRow({ report }: { report: ServiceReport }) {
         )}
         {report.lastEditedAt && (
           <Text style={styles.editInfo}>
-            edited {formatEditedTime(report.lastEditedAt)}
-            {report.lastEditedByName ? ` by ${report.lastEditedByName}` : ''}
+            {report.lastEditedByName
+              ? i18n.t('reports.editedAtBy', { when: formatEditedTime(report.lastEditedAt), name: report.lastEditedByName })
+              : i18n.t('reports.editedAt', { when: formatEditedTime(report.lastEditedAt) })}
           </Text>
         )}
       </View>

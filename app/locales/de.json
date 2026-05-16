@@ -211,5 +211,76 @@
       "cleaning_team": "Reguläre Reinigung",
       "cleaning_special": "Sonderreinigung / Vierteljährlich"
     }
+  },
+  "auth": {
+    "subtitle": "Bei deiner Versammlung anmelden",
+    "email": "E-Mail",
+    "password": "Passwort",
+    "emailPlaceholder": "du@beispiel.de",
+    "signIn": "Anmelden"
+  },
+  "months": {
+    "january": "Januar",
+    "february": "Februar",
+    "march": "März",
+    "april": "April",
+    "may": "Mai",
+    "june": "Juni",
+    "july": "Juli",
+    "august": "August",
+    "september": "September",
+    "october": "Oktober",
+    "november": "November",
+    "december": "Dezember"
+  },
+  "reports": {
+    "title": {
+      "list": "Berichte",
+      "new": "Bericht abgeben",
+      "edit": "Bericht bearbeiten",
+      "onBehalf": "Bericht für jemand anderen",
+      "group": "Gruppenberichte",
+      "editHistory": "Bearbeitungsverlauf",
+      "publisherHistory": "Verlauf des Verkündigers",
+      "activity": "Aktivitäten"
+    },
+    "served": "Teilgenommen",
+    "didNotServe": "Nicht teilgenommen",
+    "hoursShort": "{{count}} Std.",
+    "studies_one": "{{count}} Bibelstudium",
+    "studies_other": "{{count}} Bibelstudien",
+    "noReports": "Noch keine Berichte",
+    "noReportsHint": "Tippe auf + oben, um deinen ersten Monatsbericht abzugeben.",
+    "editedAt": "bearbeitet {{when}}",
+    "editedAtBy": "bearbeitet {{when}} von {{name}}",
+    "submittingOnBehalfOf": "Bericht abgegeben für",
+    "publisher": "Verkündiger",
+    "pioneerSuffix": " (Pionier)",
+    "editingReportFor": "Bericht bearbeiten für ",
+    "submittingAs": "Bericht abgeben als ",
+    "reportMonth": "Berichtsmonat",
+    "alreadySubmitted": "Bereits eingereicht. Gehe zurück und tippe auf das Stift-Symbol, um zu bearbeiten.",
+    "hoursLabel": "Stunden im Predigtdienst",
+    "hoursPlaceholder": "z. B. 70",
+    "didTheyShare": "Haben sie diesen Monat am Predigtdienst teilgenommen?",
+    "didYouShare": "Hast du diesen Monat am Predigtdienst teilgenommen?",
+    "bibleStudies": "Bibelstudien",
+    "notesOptional": "Notizen (optional)",
+    "notesPlaceholder": "Zusätzliche Informationen…",
+    "viewEditHistory": "Bearbeitungsverlauf anzeigen",
+    "updateReport": "Bericht aktualisieren",
+    "submitReport": "Bericht einreichen",
+    "alerts": {
+      "alreadySubmittedTitle": "Bereits eingereicht",
+      "alreadySubmittedBody": "Ein Bericht für {{month}} existiert bereits. Gehe zurück und tippe auf das Stift-Symbol, um ihn zu bearbeiten.",
+      "validationTitle": "Validierung",
+      "validationHours": "Bitte gib gültige Stunden ein (0–744).",
+      "validationServedOnBehalf": "Bitte gib an, ob sie diesen Monat am Predigtdienst teilgenommen haben.",
+      "validationServedSelf": "Bitte gib an, ob du diesen Monat am Predigtdienst teilgenommen hast."
+    },
+    "errors": {
+      "notLinkedToPublisher": "Dein Konto ist nicht mit einem Verkündigereintrag verknüpft. Bitte wende dich an einen Ältesten oder Administrator.",
+      "selfEditWindowClosed": "Dieser Bericht kann nicht mehr bearbeitet werden. Das Selbstbearbeitungsfenster (1.–10. des Folgemonats) ist geschlossen. Wende dich an einen Ältesten oder Administrator."
+    }
   }
 }

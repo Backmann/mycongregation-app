@@ -1,14 +1,16 @@
 import { Stack, router } from 'expo-router';
 import { Pressable, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 
 export default function ServiceReportsLayout() {
+  const { t } = useTranslation();
   return (
     <Stack>
       <Stack.Screen
         name="index"
         options={{
-          title: 'Reports',
+          title: t('reports.title.list'),
           headerRight: () => (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
               <Pressable
@@ -44,16 +46,16 @@ export default function ServiceReportsLayout() {
           ),
         }}
       />
-      <Stack.Screen name="new" options={{ title: 'Submit Report' }} />
-      <Stack.Screen name="group" options={{ title: 'Group reports' }} />
-      <Stack.Screen name="audit-log" options={{ title: 'Edit history' }} />
+      <Stack.Screen name="new" options={{ title: t('reports.title.new') }} />
+      <Stack.Screen name="group" options={{ title: t('reports.title.group') }} />
+      <Stack.Screen name="audit-log" options={{ title: t('reports.title.editHistory') }} />
       <Stack.Screen
         name="publisher-history"
-        options={{ title: 'Publisher history' }}
+        options={{ title: t('reports.title.publisherHistory') }}
       />
       <Stack.Screen
         name="activity"
-        options={{ title: 'Activity feed' }}
+        options={{ title: t('reports.title.activity') }}
       />
     </Stack>
   );

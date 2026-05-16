@@ -20,20 +20,10 @@ import {
   publishersApi,
   serviceReportsApi,
 } from '../../../lib/api';
+import { useTranslation } from 'react-i18next';
+import i18n, { formatMonthLabel } from '../../../lib/i18n';
 
-const MONTH_NAMES = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
-];
-
-function formatMonth(yearMonthOrDate: string): string {
-  const ymd =
-    yearMonthOrDate.length === 7
-      ? `${yearMonthOrDate}-01`
-      : yearMonthOrDate;
-  const d = new Date(`${ymd}T00:00:00Z`);
-  return `${MONTH_NAMES[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
-}
+// formatMonth replaced by formatMonthLabel from lib/i18n.ts
 
 function getRecentMonths(): { value: string; label: string }[] {
   const now = new Date();
@@ -44,7 +34,7 @@ function getRecentMonths(): { value: string; label: string }[] {
     const mm = String(d.getMonth() + 1).padStart(2, '0');
     months.push({
       value: `${yyyy}-${mm}`,
-      label: `${MONTH_NAMES[d.getMonth()]} ${yyyy}`,
+      label: formatMonthLabel(`${yyyy}-${mm}`),
     });
   }
   return months;
@@ -56,6 +46,7 @@ function toYearMonth(s: string): string {
 }
 
 export default function NewOrEditServiceReportScreen() {
+  const { t, i18n: i18nInstance } = useTranslation();
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const params = useLocalSearchParams<{
@@ -103,7 +94,7 @@ export default function NewOrEditServiceReportScreen() {
     enabled: !isEditMode && !isOnBehalf,
   });
 
-  const recentMonths = useMemo(() => getRecentMonths(), []);
+  const recentMonths = useMemo(() => getRecentMonths(), [i18nInstance.language]);
   const submittedMonths = useMemo(() => {
     if (!myReports) return new Set<string>();
     return new Set(myReports.map((r) => toYearMonth(r.reportMonth)));
@@ -194,18 +185,18 @@ export default function NewOrEditServiceReportScreen() {
     if (!canSubmit()) {
       if (isDuplicateMonth()) {
         Alert.alert(
-          'Already submitted',
-          `A report for ${formatMonth(reportMonth)} already exists. Go back and tap the pencil icon to edit it.`,
+          t('reports.alerts.alreadySubmittedTitle'),
+          t('reports.alerts.alreadySubmittedBody', { month: formatMonthLabel(reportMonth) }),
         );
         return;
       }
       Alert.alert(
-        'Validation',
+        t('reports.alerts.validationTitle'),
         isPioneer
-          ? 'Please enter valid hours (0–744).'
+          ? t('reports.alerts.validationHours')
           : isOnBehalf
-            ? 'Please indicate whether they served this month.'
-            : 'Please indicate whether you served this month.',
+            ? t('reports.alerts.validationServedOnBehalf')
+            : t('reports.alerts.validationServedSelf'),
       );
       return;
     }
@@ -226,8 +217,7 @@ export default function NewOrEditServiceReportScreen() {
     return (
       <View style={styles.center}>
         <Text style={styles.errorText}>
-          Your account is not linked to a publisher record. Please contact an
-          elder or admin.
+          {t('reports.errors.notLinkedToPublisher')}
         </Text>
       </View>
     );
@@ -237,19 +227,17 @@ export default function NewOrEditServiceReportScreen() {
     return (
       <View style={styles.center}>
         <Text style={styles.errorText}>
-          This report can no longer be edited. The self-edit window
-          (1st–10th of the following month) has closed. Contact an elder or
-          admin to request changes.
+          {t('reports.errors.selfEditWindowClosed')}
         </Text>
       </View>
     );
   }
 
   const screenTitle = isEditMode
-    ? 'Edit Report'
+    ? t('reports.title.edit')
     : isOnBehalf
-      ? 'On-behalf Report'
-      : 'Submit Report';
+      ? t('reports.title.onBehalf')
+      : t('reports.title.new');
 
   return (
     <KeyboardAvoidingView
@@ -261,25 +249,25 @@ export default function NewOrEditServiceReportScreen() {
         {isOnBehalf ? (
           <View style={styles.onBehalfBanner}>
             <Text style={styles.onBehalfBannerTitle}>
-              Submitting on behalf of
+              {t('reports.submittingOnBehalfOf')}
             </Text>
             <Text style={styles.onBehalfBannerName}>
-              {onBehalfName ?? 'publisher'}
-              {isPioneer ? ' (pioneer)' : ''}
+              {onBehalfName ?? t('reports.publisher')}
+              {isPioneer ? t('reports.pioneerSuffix') : ''}
             </Text>
           </View>
         ) : (
           <Text style={styles.welcome}>
-            {isEditMode ? 'Editing report for ' : 'Submitting as '}
+            {isEditMode ? t('reports.editingReportFor') : t('reports.submittingAs')}
             {myPublisher?.displayName ?? ''}
-            {isPioneer ? ' (pioneer)' : ''}
+            {isPioneer ? t('reports.pioneerSuffix') : ''}
           </Text>
         )}
 
-        <Text style={styles.label}>Report month</Text>
+        <Text style={styles.label}>{t('reports.reportMonth')}</Text>
         {isMonthLocked ? (
           <View style={[styles.monthChip, styles.monthChipLocked]}>
-            <Text style={styles.monthChipText}>{formatMonth(reportMonth)}</Text>
+            <Text style={styles.monthChipText}>{formatMonthLabel(reportMonth)}</Text>
           </View>
         ) : (
           <View style={styles.monthRow}>
@@ -314,27 +302,27 @@ export default function NewOrEditServiceReportScreen() {
         )}
         {isDuplicateMonth() && (
           <Text style={styles.hint}>
-            Already submitted. Go back and tap the pencil icon to edit.
+            {t('reports.alreadySubmitted')}
           </Text>
         )}
 
         {isPioneer ? (
           <>
-            <Text style={styles.label}>Hours in ministry</Text>
+            <Text style={styles.label}>{t('reports.hoursLabel')}</Text>
             <TextInput
               style={styles.input}
               keyboardType="numeric"
               value={hours}
               onChangeText={setHours}
-              placeholder="e.g. 70"
+              placeholder={t('reports.hoursPlaceholder')}
             />
           </>
         ) : (
           <>
             <Text style={styles.label}>
               {isOnBehalf
-                ? 'Did they share in the ministry this month?'
-                : 'Did you share in the ministry this month?'}
+                ? t('reports.didTheyShare')
+                : t('reports.didYouShare')}
             </Text>
             <View style={styles.toggleRow}>
               <Pressable
@@ -350,7 +338,7 @@ export default function NewOrEditServiceReportScreen() {
                     servedThisMonth === true && styles.toggleTextActive,
                   ]}
                 >
-                  Yes
+                  {t('common.yes')}
                 </Text>
               </Pressable>
               <Pressable
@@ -366,14 +354,14 @@ export default function NewOrEditServiceReportScreen() {
                     servedThisMonth === false && styles.toggleTextActive,
                   ]}
                 >
-                  No
+                  {t('common.no')}
                 </Text>
               </Pressable>
             </View>
           </>
         )}
 
-        <Text style={styles.label}>Bible studies</Text>
+        <Text style={styles.label}>{t('reports.bibleStudies')}</Text>
         <TextInput
           style={styles.input}
           keyboardType="numeric"
@@ -382,13 +370,13 @@ export default function NewOrEditServiceReportScreen() {
           placeholder="0"
         />
 
-        <Text style={styles.label}>Notes (optional)</Text>
+        <Text style={styles.label}>{t('reports.notesOptional')}</Text>
         <TextInput
           style={[styles.input, styles.notesInput]}
           multiline
           value={notes}
           onChangeText={setNotes}
-          placeholder="Any additional information…"
+          placeholder={t('reports.notesPlaceholder')}
           textAlignVertical="top"
         />
 
@@ -413,7 +401,7 @@ export default function NewOrEditServiceReportScreen() {
               hitSlop={8}
             >
               <Ionicons name="time-outline" size={18} color="#0ea5e9" />
-              <Text style={styles.historyBtnText}>View edit history</Text>
+              <Text style={styles.historyBtnText}>{t('reports.viewEditHistory')}</Text>
             </Pressable>
           )}
 
@@ -426,7 +414,7 @@ export default function NewOrEditServiceReportScreen() {
             <ActivityIndicator color="#fff" />
           ) : (
             <Text style={styles.submitBtnText}>
-              {isEditMode ? 'Update Report' : 'Submit Report'}
+              {isEditMode ? t('reports.updateReport') : t('reports.submitReport')}
             </Text>
           )}
         </Pressable>

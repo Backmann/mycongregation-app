@@ -211,5 +211,78 @@
       "cleaning_team": "Регулярная уборка",
       "cleaning_special": "Специальная / Ежеквартальная уборка"
     }
+  },
+  "auth": {
+    "subtitle": "Войдите в собрание",
+    "email": "Электронная почта",
+    "password": "Пароль",
+    "emailPlaceholder": "you@example.com",
+    "signIn": "Войти"
+  },
+  "months": {
+    "january": "январь",
+    "february": "февраль",
+    "march": "март",
+    "april": "апрель",
+    "may": "май",
+    "june": "июнь",
+    "july": "июль",
+    "august": "август",
+    "september": "сентябрь",
+    "october": "октябрь",
+    "november": "ноябрь",
+    "december": "декабрь"
+  },
+  "reports": {
+    "title": {
+      "list": "Отчёты",
+      "new": "Сдать отчёт",
+      "edit": "Изменить отчёт",
+      "onBehalf": "Отчёт от имени",
+      "group": "Отчёты по группе",
+      "editHistory": "История изменений",
+      "publisherHistory": "История возвещателя",
+      "activity": "Лента событий"
+    },
+    "served": "Участвовал",
+    "didNotServe": "Не участвовал",
+    "hoursShort": "{{count}} ч",
+    "studies_one": "{{count}} изучение",
+    "studies_few": "{{count}} изучения",
+    "studies_many": "{{count}} изучений",
+    "studies_other": "{{count}} изучения",
+    "noReports": "Отчётов пока нет",
+    "noReportsHint": "Нажмите + выше, чтобы отправить первый месячный отчёт.",
+    "editedAt": "изменено {{when}}",
+    "editedAtBy": "изменено {{when}}, {{name}}",
+    "submittingOnBehalfOf": "Сдача отчёта от имени",
+    "publisher": "возвещателя",
+    "pioneerSuffix": " (пионер)",
+    "editingReportFor": "Изменение отчёта: ",
+    "submittingAs": "Сдача отчёта: ",
+    "reportMonth": "Месяц отчёта",
+    "alreadySubmitted": "Уже сдан. Вернитесь и нажмите карандаш, чтобы изменить.",
+    "hoursLabel": "Часы в служении",
+    "hoursPlaceholder": "напр., 70",
+    "didTheyShare": "Участвовали ли они в служении в этом месяце?",
+    "didYouShare": "Участвовали ли вы в служении в этом месяце?",
+    "bibleStudies": "Изучения Библии",
+    "notesOptional": "Заметки (необязательно)",
+    "notesPlaceholder": "Дополнительная информация…",
+    "viewEditHistory": "История изменений",
+    "updateReport": "Обновить отчёт",
+    "submitReport": "Сдать отчёт",
+    "alerts": {
+      "alreadySubmittedTitle": "Уже сдан",
+      "alreadySubmittedBody": "Отчёт за {{month}} уже существует. Вернитесь и нажмите карандаш, чтобы изменить его.",
+      "validationTitle": "Проверка",
+      "validationHours": "Введите часы (0–744).",
+      "validationServedOnBehalf": "Укажите, участвовали ли они в служении в этом месяце.",
+      "validationServedSelf": "Укажите, участвовали ли вы в служении в этом месяце."
+    },
+    "errors": {
+      "notLinkedToPublisher": "Ваш аккаунт не привязан к записи возвещателя. Свяжитесь со старейшиной или администратором.",
+      "selfEditWindowClosed": "Этот отчёт больше нельзя изменить. Окно самостоятельного редактирования (1–10 числа следующего месяца) закрыто. Обратитесь к старейшине или администратору."
+    }
   }
 }
