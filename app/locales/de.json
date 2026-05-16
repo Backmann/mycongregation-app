@@ -197,7 +197,12 @@
       "active": "Aktiv",
       "irregular": "Unregelmäßig",
       "inactive": "Inaktiv"
-    }
+    },
+    "viewMode": {
+      "list": "Liste",
+      "byFamily": "Nach Familie"
+    },
+    "unassignedFamily": "Ohne Familie"
   },
   "capabilities": {
     "hints": {

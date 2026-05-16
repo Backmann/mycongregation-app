@@ -197,7 +197,12 @@
       "active": "Активный",
       "irregular": "Нерегулярный",
       "inactive": "Неактивный"
-    }
+    },
+    "viewMode": {
+      "list": "Список",
+      "byFamily": "По семьям"
+    },
+    "unassignedFamily": "Без семьи"
   },
   "capabilities": {
     "hints": {
