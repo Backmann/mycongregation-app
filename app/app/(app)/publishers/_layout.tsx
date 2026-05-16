@@ -1,5 +1,5 @@
 import { Stack, router } from 'expo-router';
-import { Pressable } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 
@@ -12,13 +12,23 @@ export default function PublishersLayout() {
         options={{
           title: t('publishers.title.list'),
           headerRight: () => (
-            <Pressable
-              onPress={() => router.push('/publishers/new' as any)}
-              style={{ paddingHorizontal: 12 }}
-              hitSlop={8}
-            >
-              <Ionicons name="add" size={28} color="#0ea5e9" />
-            </Pressable>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Pressable
+                onPress={() => router.push('/families' as any)}
+                style={{ paddingHorizontal: 10 }}
+                hitSlop={8}
+                accessibilityLabel={t('families.title.list')}
+              >
+                <Ionicons name="home-outline" size={24} color="#0ea5e9" />
+              </Pressable>
+              <Pressable
+                onPress={() => router.push('/publishers/new' as any)}
+                style={{ paddingHorizontal: 10 }}
+                hitSlop={8}
+              >
+                <Ionicons name="add" size={28} color="#0ea5e9" />
+              </Pressable>
+            </View>
           ),
         }}
       />
