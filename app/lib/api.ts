@@ -6,13 +6,54 @@ const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3000/api';
 export const TOKEN_KEY = 'mycongregation.token';
 export const REFRESH_TOKEN_KEY = 'mycongregation.refresh_token';
 
+/**
+ * Decode JWT payload (no signature verification) to check if the token is
+ * about to expire. Returns true if exp is within the buffer or if the token
+ * is malformed (treat as expired so caller refreshes).
+ */
+function isTokenExpiringSoon(token: string, bufferSec = 60): boolean {
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return true;
+    const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+    const padded = base64 + '='.repeat((4 - (base64.length % 4)) % 4);
+    const payload = JSON.parse(atob(padded));
+    if (typeof payload.exp !== 'number') return false;
+    return Date.now() >= payload.exp * 1000 - bufferSec * 1000;
+  } catch {
+    return true;
+  }
+}
+
 export const api = axios.create({
   baseURL: API_URL,
   timeout: 60_000,
 });
 
 api.interceptors.request.use(async (config) => {
-  const token = await storage.getItem(TOKEN_KEY);
+  let token = await storage.getItem(TOKEN_KEY);
+
+  // Proactive refresh: if AT is close to expiry, refresh BEFORE sending the
+  // request. This avoids the 401-then-refresh-then-retry round-trip that
+  // causes brief UI flashes. Excludes /auth/* endpoints to avoid recursion.
+  const isAuthEndpoint =
+    config.url?.includes('/auth/refresh') ||
+    config.url?.includes('/auth/login') ||
+    config.url?.includes('/auth/bootstrap');
+
+  if (token && !isAuthEndpoint && isTokenExpiringSoon(token)) {
+    if (!refreshPromise) {
+      refreshPromise = performRefresh().finally(() => {
+        refreshPromise = null;
+      });
+    }
+    try {
+      token = await refreshPromise;
+    } catch {
+      // Keep old token; response interceptor will handle the resulting 401.
+    }
+  }
+
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -699,7 +740,8 @@ api.interceptors.response.use(
     const is401 = error.response?.status === 401;
     const isAuthEndpoint =
       original?.url?.includes('/auth/refresh') ||
-      original?.url?.includes('/auth/login');
+      original?.url?.includes('/auth/login') ||
+      original?.url?.includes('/auth/bootstrap');
 
     if (is401 && original && !original._retry && !isAuthEndpoint) {
       original._retry = true;
