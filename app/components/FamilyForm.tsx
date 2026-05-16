@@ -11,6 +11,7 @@ import { FormField } from './FormField';
 import { FormSection } from './FormSection';
 import { PublisherSelector } from './PublisherSelector';
 import { CreateFamilyInput, extractErrorMessage } from '../lib/api';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
   initial?: Partial<CreateFamilyInput>;
@@ -25,8 +26,10 @@ export function FamilyForm({
   onSubmit,
   onCancel,
   isSubmitting,
-  submitLabel = 'Save',
+  submitLabel,
 }: Props) {
+  const { t } = useTranslation();
+  const effectiveSubmitLabel = submitLabel ?? t('common.save');
   const [form, setForm] = useState<CreateFamilyInput>({
     name: initial?.name ?? '',
     headPublisherId: initial?.headPublisherId ?? null,
@@ -45,7 +48,7 @@ export function FamilyForm({
   const handleSubmit = async () => {
     setError(null);
     if (!form.name?.trim()) {
-      setError('Name is required');
+      setError(t('common.nameRequired'));
       return;
     }
     try {
@@ -61,21 +64,21 @@ export function FamilyForm({
       contentContainerStyle={{ paddingBottom: 32 }}
       keyboardShouldPersistTaps="handled"
     >
-      <FormSection title="Family">
+      <FormSection title={t('families.form.section')}>
         <FormField
-          label="Name"
+          label={t('common.name')}
           value={form.name}
           onChangeText={(v) => update('name', v)}
           required
-          placeholder="Семья Ивановых"
+          placeholder={t('families.form.namePlaceholder')}
         />
         <PublisherSelector
-          label="Family head"
+          label={t('families.form.head')}
           value={form.headPublisherId}
           onChange={(id) => update('headPublisherId', id)}
         />
         <FormField
-          label="Notes"
+          label={t('common.notes')}
           value={form.notes}
           onChangeText={(v) => update('notes', v)}
           multiline
@@ -101,7 +104,7 @@ export function FamilyForm({
           {isSubmitting ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.buttonPrimaryText}>{submitLabel}</Text>
+            <Text style={styles.buttonPrimaryText}>{effectiveSubmitLabel}</Text>
           )}
         </Pressable>
         {onCancel && (
@@ -110,7 +113,7 @@ export function FamilyForm({
             onPress={onCancel}
             disabled={isSubmitting}
           >
-            <Text style={styles.buttonSecondaryText}>Cancel</Text>
+            <Text style={styles.buttonSecondaryText}>{t('common.cancel')}</Text>
           </Pressable>
         )}
       </View>

@@ -14,8 +14,10 @@ import { router } from 'expo-router';
 import { extractErrorMessage, Family, familiesApi } from '../../../lib/api';
 import { Ionicons } from '@expo/vector-icons';
 import { FilterToggle } from '../../../components/FilterToggle';
+import { useTranslation } from 'react-i18next';
 
 export default function FamiliesListScreen() {
+  const { t } = useTranslation();
   const [search, setSearch] = useState('');
   const [showRemoved, setShowRemoved] = useState(false);
 
@@ -34,13 +36,13 @@ export default function FamiliesListScreen() {
         style={styles.search}
         value={search}
         onChangeText={setSearch}
-        placeholder="Search by name…"
+        placeholder={t('common.searchByName')}
         autoCapitalize="none"
         autoCorrect={false}
       />
 
       <FilterToggle
-        label="Show removed"
+        label={t('common.showRemoved')}
         value={showRemoved}
         onValueChange={setShowRemoved}
       />
@@ -63,11 +65,11 @@ export default function FamiliesListScreen() {
           }
           ListEmptyComponent={
             <Text style={styles.empty}>
-              {search ? 'No matches' : 'No families yet'}
+              {search ? t('common.noMatches') : t('families.noFamiliesYet')}
             </Text>
           }
           ListHeaderComponent={
-            data ? <Text style={styles.count}>{data.total} total</Text> : null
+            data ? <Text style={styles.count}>{t('common.totalCount', { count: data.total })}</Text> : null
           }
           renderItem={({ item }) => <FamilyRow family={item} />}
         />
@@ -77,6 +79,7 @@ export default function FamiliesListScreen() {
 }
 
 function FamilyRow({ family }: { family: Family }) {
+  const { t } = useTranslation();
   const isRemoved = !!family.deletedAt;
 
   return (
@@ -98,7 +101,7 @@ function FamilyRow({ family }: { family: Family }) {
           </Text>
           {isRemoved && (
             <View style={styles.removedBadge}>
-              <Text style={styles.removedBadgeText}>Removed</Text>
+              <Text style={styles.removedBadgeText}>{t('common.removed')}</Text>
             </View>
           )}
         </View>

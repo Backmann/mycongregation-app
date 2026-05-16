@@ -25,7 +25,19 @@
     "loading": "Loading…",
     "error": "Error",
     "retry": "Try again",
-    "search": "Search"
+    "search": "Search",
+    "restore": "Restore",
+    "removing": "Removing…",
+    "restoring": "Restoring…",
+    "notFound": "Not found",
+    "removed": "Removed",
+    "searchByName": "Search by name…",
+    "showRemoved": "Show removed",
+    "noMatches": "No matches",
+    "totalCount": "{{count}} total",
+    "nameRequired": "Name is required",
+    "notes": "Notes",
+    "name": "Name"
   },
   "profile": {
     "signedInAs": "Signed in as",
@@ -282,5 +294,53 @@
       "notLinkedToPublisher": "Your account is not linked to a publisher record. Please contact an elder or admin.",
       "selfEditWindowClosed": "This report can no longer be edited. The self-edit window (1st–10th of the following month) has closed. Contact an elder or admin to request changes."
     }
+  },
+  "families": {
+    "title": {
+      "list": "Families",
+      "detail": "Family",
+      "new": "New Family"
+    },
+    "removeConfirm": {
+      "title": "Remove family",
+      "body": "Members will be unlinked.",
+      "webMessage": "Remove this family? Members will be unlinked."
+    },
+    "noFamiliesYet": "No families yet",
+    "form": {
+      "section": "Family",
+      "namePlaceholder": "The Smith Family",
+      "head": "Family head"
+    },
+    "membersCount": "Members ({{count}})",
+    "noMembersYet": "No members linked yet",
+    "headFootnote": "Family head: {{name}}",
+    "headTag": "Head"
+  },
+  "serviceGroups": {
+    "title": {
+      "list": "Service Groups",
+      "detail": "Group",
+      "new": "New Group"
+    },
+    "removeConfirm": {
+      "title": "Remove group",
+      "body": "Members will be unlinked.",
+      "webMessage": "Remove this group? Members will be unlinked."
+    },
+    "noGroupsYet": "No groups yet",
+    "form": {
+      "section": "Group",
+      "namePlaceholder": "Group #1 North",
+      "meetingLocation": "Meeting location",
+      "meetingLocationPlaceholder": "123 Main Street",
+      "leadership": "Leadership",
+      "overseer": "Group overseer",
+      "assistant": "Group assistant"
+    },
+    "membersCount": "Members ({{count}})",
+    "noMembersYet": "No members in this group yet",
+    "overseer": "Overseer",
+    "assistant": "Assistant"
   }
 }

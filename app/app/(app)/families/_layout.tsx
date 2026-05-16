@@ -1,14 +1,16 @@
 import { Stack, router } from 'expo-router';
 import { Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 
 export default function FamiliesLayout() {
+  const { t } = useTranslation();
   return (
     <Stack>
       <Stack.Screen
         name="index"
         options={{
-          title: 'Families',
+          title: t('families.title.list'),
           headerRight: () => (
             <Pressable
               onPress={() => router.push('/families/new' as any)}
@@ -20,8 +22,8 @@ export default function FamiliesLayout() {
           ),
         }}
       />
-      <Stack.Screen name="[id]" options={{ title: 'Family' }} />
-      <Stack.Screen name="new" options={{ title: 'New Family' }} />
+      <Stack.Screen name="[id]" options={{ title: t('families.title.detail') }} />
+      <Stack.Screen name="new" options={{ title: t('families.title.new') }} />
     </Stack>
   );
 }

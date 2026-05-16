@@ -25,7 +25,19 @@
     "loading": "Загрузка…",
     "error": "Ошибка",
     "retry": "Повторить",
-    "search": "Поиск"
+    "search": "Поиск",
+    "restore": "Восстановить",
+    "removing": "Удаление…",
+    "restoring": "Восстановление…",
+    "notFound": "Не найдено",
+    "removed": "Удалено",
+    "searchByName": "Поиск по имени…",
+    "showRemoved": "Показать удалённые",
+    "noMatches": "Ничего не найдено",
+    "totalCount": "Всего: {{count}}",
+    "nameRequired": "Требуется название",
+    "notes": "Заметки",
+    "name": "Название"
   },
   "profile": {
     "signedInAs": "Вход выполнен от",
@@ -284,5 +296,53 @@
       "notLinkedToPublisher": "Ваш аккаунт не привязан к записи возвещателя. Свяжитесь со старейшиной или администратором.",
       "selfEditWindowClosed": "Этот отчёт больше нельзя изменить. Окно самостоятельного редактирования (1–10 числа следующего месяца) закрыто. Обратитесь к старейшине или администратору."
     }
+  },
+  "families": {
+    "title": {
+      "list": "Семьи",
+      "detail": "Семья",
+      "new": "Новая семья"
+    },
+    "removeConfirm": {
+      "title": "Удалить семью",
+      "body": "Связь с участниками будет удалена.",
+      "webMessage": "Удалить эту семью? Связь с участниками будет удалена."
+    },
+    "noFamiliesYet": "Семей пока нет",
+    "form": {
+      "section": "Семья",
+      "namePlaceholder": "Семья Ивановых",
+      "head": "Глава семьи"
+    },
+    "membersCount": "Участников ({{count}})",
+    "noMembersYet": "Участников пока нет",
+    "headFootnote": "Глава семьи: {{name}}",
+    "headTag": "Глава"
+  },
+  "serviceGroups": {
+    "title": {
+      "list": "Группы служения",
+      "detail": "Группа",
+      "new": "Новая группа"
+    },
+    "removeConfirm": {
+      "title": "Удалить группу",
+      "body": "Связь с участниками будет удалена.",
+      "webMessage": "Удалить эту группу? Связь с участниками будет удалена."
+    },
+    "noGroupsYet": "Групп пока нет",
+    "form": {
+      "section": "Группа",
+      "namePlaceholder": "Группа №1 Север",
+      "meetingLocation": "Место встречи",
+      "meetingLocationPlaceholder": "Brackeler Hellweg 14",
+      "leadership": "Руководство",
+      "overseer": "Старший в группе",
+      "assistant": "Помощник старшего"
+    },
+    "membersCount": "Участников ({{count}})",
+    "noMembersYet": "В группе пока нет участников",
+    "overseer": "Старший",
+    "assistant": "Помощник"
   }
 }

@@ -1,14 +1,16 @@
 import { Stack, router } from 'expo-router';
 import { Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 
 export default function ServiceGroupsLayout() {
+  const { t } = useTranslation();
   return (
     <Stack>
       <Stack.Screen
         name="index"
         options={{
-          title: 'Service Groups',
+          title: t('serviceGroups.title.list'),
           headerRight: () => (
             <Pressable
               onPress={() => router.push('/service-groups/new' as any)}
@@ -20,8 +22,8 @@ export default function ServiceGroupsLayout() {
           ),
         }}
       />
-      <Stack.Screen name="[id]" options={{ title: 'Group' }} />
-      <Stack.Screen name="new" options={{ title: 'New Group' }} />
+      <Stack.Screen name="[id]" options={{ title: t('serviceGroups.title.detail') }} />
+      <Stack.Screen name="new" options={{ title: t('serviceGroups.title.new') }} />
     </Stack>
   );
 }

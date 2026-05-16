@@ -25,7 +25,19 @@
     "loading": "Wird geladen…",
     "error": "Fehler",
     "retry": "Erneut versuchen",
-    "search": "Suchen"
+    "search": "Suchen",
+    "restore": "Wiederherstellen",
+    "removing": "Wird entfernt…",
+    "restoring": "Wird wiederhergestellt…",
+    "notFound": "Nicht gefunden",
+    "removed": "Entfernt",
+    "searchByName": "Nach Name suchen…",
+    "showRemoved": "Entfernte anzeigen",
+    "noMatches": "Keine Treffer",
+    "totalCount": "{{count}} insgesamt",
+    "nameRequired": "Name ist erforderlich",
+    "notes": "Notizen",
+    "name": "Name"
   },
   "profile": {
     "signedInAs": "Angemeldet als",
@@ -282,5 +294,53 @@
       "notLinkedToPublisher": "Dein Konto ist nicht mit einem Verkündigereintrag verknüpft. Bitte wende dich an einen Ältesten oder Administrator.",
       "selfEditWindowClosed": "Dieser Bericht kann nicht mehr bearbeitet werden. Das Selbstbearbeitungsfenster (1.–10. des Folgemonats) ist geschlossen. Wende dich an einen Ältesten oder Administrator."
     }
+  },
+  "families": {
+    "title": {
+      "list": "Familien",
+      "detail": "Familie",
+      "new": "Neue Familie"
+    },
+    "removeConfirm": {
+      "title": "Familie entfernen",
+      "body": "Die Verknüpfung zu den Mitgliedern wird aufgehoben.",
+      "webMessage": "Diese Familie entfernen? Die Verknüpfung zu den Mitgliedern wird aufgehoben."
+    },
+    "noFamiliesYet": "Noch keine Familien",
+    "form": {
+      "section": "Familie",
+      "namePlaceholder": "Familie Müller",
+      "head": "Familienoberhaupt"
+    },
+    "membersCount": "Mitglieder ({{count}})",
+    "noMembersYet": "Noch keine verknüpften Mitglieder",
+    "headFootnote": "Familienoberhaupt: {{name}}",
+    "headTag": "Oberhaupt"
+  },
+  "serviceGroups": {
+    "title": {
+      "list": "Predigtdienstgruppen",
+      "detail": "Gruppe",
+      "new": "Neue Gruppe"
+    },
+    "removeConfirm": {
+      "title": "Gruppe entfernen",
+      "body": "Die Verknüpfung zu den Mitgliedern wird aufgehoben.",
+      "webMessage": "Diese Gruppe entfernen? Die Verknüpfung zu den Mitgliedern wird aufgehoben."
+    },
+    "noGroupsYet": "Noch keine Gruppen",
+    "form": {
+      "section": "Gruppe",
+      "namePlaceholder": "Gruppe Nr. 1 Nord",
+      "meetingLocation": "Versammlungsort",
+      "meetingLocationPlaceholder": "Brackeler Hellweg 14",
+      "leadership": "Leitung",
+      "overseer": "Gruppenaufseher",
+      "assistant": "Gehilfe des Gruppenaufsehers"
+    },
+    "membersCount": "Mitglieder ({{count}})",
+    "noMembersYet": "Noch keine Mitglieder in dieser Gruppe",
+    "overseer": "Aufseher",
+    "assistant": "Gehilfe"
   }
 }

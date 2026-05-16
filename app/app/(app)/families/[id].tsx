@@ -18,8 +18,10 @@ import {
   UpdateFamilyInput,
 } from '../../../lib/api';
 import { FamilyForm } from '../../../components/FamilyForm';
+import { useTranslation } from 'react-i18next';
 
 export default function FamilyDetailScreen() {
+  const { t } = useTranslation();
   const { id } = useLocalSearchParams<{ id: string }>();
   const queryClient = useQueryClient();
   const [editing, setEditing] = useState(false);
@@ -63,15 +65,15 @@ export default function FamilyDetailScreen() {
 
   const confirmRemove = () => {
     if (Platform.OS === 'web') {
-      if (window.confirm('Remove this family? Members will be unlinked.')) {
+      if (window.confirm(t('families.removeConfirm.webMessage'))) {
         removeMutation.mutate();
       }
       return;
     }
-    Alert.alert('Remove family', 'Members will be unlinked.', [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert(t('families.removeConfirm.title'), t('families.removeConfirm.body'), [
+      { text: t('common.cancel'), style: 'cancel' },
       {
-        text: 'Remove',
+        text: t('common.remove'),
         onPress: () => removeMutation.mutate(),
         style: 'destructive',
       },
@@ -92,7 +94,7 @@ export default function FamilyDetailScreen() {
         <Text style={styles.errorText}>
           {familyQuery.error
             ? extractErrorMessage(familyQuery.error)
-            : 'Not found'}
+            : t('common.notFound')}
         </Text>
       </View>
     );
@@ -112,7 +114,6 @@ export default function FamilyDetailScreen() {
         }}
         onSubmit={updateMutation.mutateAsync}
         isSubmitting={updateMutation.isPending}
-        submitLabel="Save"
         onCancel={() => setEditing(false)}
       />
     );
@@ -125,7 +126,7 @@ export default function FamilyDetailScreen() {
     >
       <View style={styles.headerSection}>
         <Text style={styles.headerName}>{family.name}</Text>
-        {family.deletedAt && <Text style={styles.removedBadge}>Removed</Text>}
+        {family.deletedAt && <Text style={styles.removedBadge}>{t('common.removed')}</Text>}
       </View>
 
       {family.notes && (
@@ -135,14 +136,14 @@ export default function FamilyDetailScreen() {
       )}
 
       <Text style={styles.sectionTitle}>
-        Members ({membersQuery.data?.total ?? 0})
+        {t('families.membersCount', { count: membersQuery.data?.total ?? 0 })}
       </Text>
 
       <View style={styles.list}>
         {membersQuery.isLoading ? (
           <ActivityIndicator style={{ padding: 16 }} />
         ) : members.length === 0 ? (
-          <Text style={styles.empty}>No members linked yet</Text>
+          <Text style={styles.empty}>{t('families.noMembersYet')}</Text>
         ) : (
           members.map((p) => (
             <MemberRow
@@ -157,7 +158,7 @@ export default function FamilyDetailScreen() {
       {head && (
         <View style={styles.footnote}>
           <Text style={styles.footnoteText}>
-            Family head: {head.displayName}
+            {t('families.headFootnote', { name: head.displayName })}
           </Text>
         </View>
       )}
@@ -168,7 +169,7 @@ export default function FamilyDetailScreen() {
             style={[styles.button, styles.buttonEdit]}
             onPress={() => setEditing(true)}
           >
-            <Text style={styles.buttonEditText}>Edit</Text>
+            <Text style={styles.buttonEditText}>{t('common.edit')}</Text>
           </Pressable>
         )}
         {family.deletedAt ? (
@@ -178,7 +179,7 @@ export default function FamilyDetailScreen() {
             disabled={restoreMutation.isPending}
           >
             <Text style={styles.buttonText}>
-              {restoreMutation.isPending ? 'Restoring…' : 'Restore'}
+              {restoreMutation.isPending ? t('common.restoring') : t('common.restore')}
             </Text>
           </Pressable>
         ) : (
@@ -188,7 +189,7 @@ export default function FamilyDetailScreen() {
             disabled={removeMutation.isPending}
           >
             <Text style={styles.buttonText}>
-              {removeMutation.isPending ? 'Removing…' : 'Remove'}
+              {removeMutation.isPending ? t('common.removing') : t('common.remove')}
             </Text>
           </Pressable>
         )}
@@ -204,6 +205,7 @@ function MemberRow({
   publisher: Publisher;
   isHead: boolean;
 }) {
+  const { t } = useTranslation();
   const initials =
     (publisher.firstName[0] ?? '') + (publisher.lastName[0] ?? '');
   return (
@@ -224,7 +226,7 @@ function MemberRow({
       </View>
       <View style={{ flex: 1 }}>
         <Text style={styles.name}>{publisher.displayName}</Text>
-        {isHead && <Text style={styles.headTag}>Head</Text>}
+        {isHead && <Text style={styles.headTag}>{t('families.headTag')}</Text>}
       </View>
       <Text style={styles.chevron}>›</Text>
     </Pressable>

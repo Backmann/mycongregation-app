@@ -2,8 +2,10 @@ import { router } from 'expo-router';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ServiceGroupForm } from '../../../components/ServiceGroupForm';
 import { CreateServiceGroupInput, serviceGroupsApi } from '../../../lib/api';
+import { useTranslation } from 'react-i18next';
 
 export default function NewServiceGroupScreen() {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
 
   const createMutation = useMutation({
@@ -19,7 +21,7 @@ export default function NewServiceGroupScreen() {
     <ServiceGroupForm
       onSubmit={createMutation.mutateAsync}
       isSubmitting={createMutation.isPending}
-      submitLabel="Create"
+      submitLabel={t('common.create')}
       onCancel={() => router.back()}
     />
   );

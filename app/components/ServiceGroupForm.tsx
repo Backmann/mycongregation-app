@@ -11,6 +11,7 @@ import { FormField } from './FormField';
 import { FormSection } from './FormSection';
 import { PublisherSelector } from './PublisherSelector';
 import { CreateServiceGroupInput, extractErrorMessage } from '../lib/api';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
   initial?: Partial<CreateServiceGroupInput>;
@@ -25,8 +26,10 @@ export function ServiceGroupForm({
   onSubmit,
   onCancel,
   isSubmitting,
-  submitLabel = 'Save',
+  submitLabel,
 }: Props) {
+  const { t } = useTranslation();
+  const effectiveSubmitLabel = submitLabel ?? t('common.save');
   const [form, setForm] = useState<CreateServiceGroupInput>({
     name: initial?.name ?? '',
     overseerPublisherId: initial?.overseerPublisherId ?? null,
@@ -47,7 +50,7 @@ export function ServiceGroupForm({
   const handleSubmit = async () => {
     setError(null);
     if (!form.name?.trim()) {
-      setError('Name is required');
+      setError(t('common.nameRequired'));
       return;
     }
     try {
@@ -63,25 +66,25 @@ export function ServiceGroupForm({
       contentContainerStyle={{ paddingBottom: 32 }}
       keyboardShouldPersistTaps="handled"
     >
-      <FormSection title="Group">
+      <FormSection title={t('serviceGroups.form.section')}>
         <FormField
-          label="Name"
+          label={t('common.name')}
           value={form.name}
           onChangeText={(v) => update('name', v)}
           required
-          placeholder="Группа №1 Север"
+          placeholder={t('serviceGroups.form.namePlaceholder')}
         />
         <FormField
-          label="Meeting location"
+          label={t('serviceGroups.form.meetingLocation')}
           value={form.meetingLocation}
           onChangeText={(v) => update('meetingLocation', v)}
-          placeholder="Brackeler Hellweg 14"
+          placeholder={t('serviceGroups.form.meetingLocationPlaceholder')}
         />
       </FormSection>
 
-      <FormSection title="Leadership">
+      <FormSection title={t('serviceGroups.form.leadership')}>
         <PublisherSelector
-          label="Overseer"
+          label={t('serviceGroups.form.overseer')}
           value={form.overseerPublisherId}
           onChange={(id) => {
             update('overseerPublisherId', id);
@@ -92,7 +95,7 @@ export function ServiceGroupForm({
           }}
         />
         <PublisherSelector
-          label="Assistant"
+          label={t('serviceGroups.form.assistant')}
           value={form.assistantPublisherId}
           onChange={(id) => update('assistantPublisherId', id)}
           excludeIds={
@@ -101,9 +104,9 @@ export function ServiceGroupForm({
         />
       </FormSection>
 
-      <FormSection title="Notes">
+      <FormSection title={t('common.notes')}>
         <FormField
-          label="Notes"
+          label={t('common.notes')}
           value={form.notes}
           onChangeText={(v) => update('notes', v)}
           multiline
@@ -129,7 +132,7 @@ export function ServiceGroupForm({
           {isSubmitting ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.buttonPrimaryText}>{submitLabel}</Text>
+            <Text style={styles.buttonPrimaryText}>{effectiveSubmitLabel}</Text>
           )}
         </Pressable>
         {onCancel && (
@@ -138,7 +141,7 @@ export function ServiceGroupForm({
             onPress={onCancel}
             disabled={isSubmitting}
           >
-            <Text style={styles.buttonSecondaryText}>Cancel</Text>
+            <Text style={styles.buttonSecondaryText}>{t('common.cancel')}</Text>
           </Pressable>
         )}
       </View>

@@ -18,8 +18,10 @@ import {
 } from '../../../lib/api';
 import { Ionicons } from '@expo/vector-icons';
 import { FilterToggle } from '../../../components/FilterToggle';
+import { useTranslation } from 'react-i18next';
 
 export default function ServiceGroupsListScreen() {
+  const { t } = useTranslation();
   const [search, setSearch] = useState('');
   const [showRemoved, setShowRemoved] = useState(false);
 
@@ -38,13 +40,13 @@ export default function ServiceGroupsListScreen() {
         style={styles.search}
         value={search}
         onChangeText={setSearch}
-        placeholder="Search by name…"
+        placeholder={t('common.searchByName')}
         autoCapitalize="none"
         autoCorrect={false}
       />
 
       <FilterToggle
-        label="Show removed"
+        label={t('common.showRemoved')}
         value={showRemoved}
         onValueChange={setShowRemoved}
       />
@@ -67,11 +69,11 @@ export default function ServiceGroupsListScreen() {
           }
           ListEmptyComponent={
             <Text style={styles.empty}>
-              {search ? 'No matches' : 'No groups yet'}
+              {search ? t('common.noMatches') : t('serviceGroups.noGroupsYet')}
             </Text>
           }
           ListHeaderComponent={
-            data ? <Text style={styles.count}>{data.total} total</Text> : null
+            data ? <Text style={styles.count}>{t('common.totalCount', { count: data.total })}</Text> : null
           }
           renderItem={({ item }) => <GroupRow group={item} />}
         />
@@ -81,6 +83,7 @@ export default function ServiceGroupsListScreen() {
 }
 
 function GroupRow({ group }: { group: ServiceGroup }) {
+  const { t } = useTranslation();
   const isRemoved = !!group.deletedAt;
 
   return (
@@ -102,7 +105,7 @@ function GroupRow({ group }: { group: ServiceGroup }) {
           </Text>
           {isRemoved && (
             <View style={styles.removedBadge}>
-              <Text style={styles.removedBadgeText}>Removed</Text>
+              <Text style={styles.removedBadgeText}>{t('common.removed')}</Text>
             </View>
           )}
         </View>

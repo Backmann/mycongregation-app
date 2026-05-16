@@ -18,8 +18,10 @@ import {
   UpdateServiceGroupInput,
 } from '../../../lib/api';
 import { ServiceGroupForm } from '../../../components/ServiceGroupForm';
+import { useTranslation } from 'react-i18next';
 
 export default function ServiceGroupDetailScreen() {
+  const { t } = useTranslation();
   const { id } = useLocalSearchParams<{ id: string }>();
   const queryClient = useQueryClient();
   const [editing, setEditing] = useState(false);
@@ -64,15 +66,15 @@ export default function ServiceGroupDetailScreen() {
 
   const confirmRemove = () => {
     if (Platform.OS === 'web') {
-      if (window.confirm('Remove this group? Members will be unlinked.')) {
+      if (window.confirm(t('serviceGroups.removeConfirm.webMessage'))) {
         removeMutation.mutate();
       }
       return;
     }
-    Alert.alert('Remove group', 'Members will be unlinked.', [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert(t('serviceGroups.removeConfirm.title'), t('serviceGroups.removeConfirm.body'), [
+      { text: t('common.cancel'), style: 'cancel' },
       {
-        text: 'Remove',
+        text: t('common.remove'),
         onPress: () => removeMutation.mutate(),
         style: 'destructive',
       },
@@ -93,7 +95,7 @@ export default function ServiceGroupDetailScreen() {
         <Text style={styles.errorText}>
           {groupQuery.error
             ? extractErrorMessage(groupQuery.error)
-            : 'Not found'}
+            : t('common.notFound')}
         </Text>
       </View>
     );
@@ -116,7 +118,6 @@ export default function ServiceGroupDetailScreen() {
         }}
         onSubmit={updateMutation.mutateAsync}
         isSubmitting={updateMutation.isPending}
-        submitLabel="Save"
         onCancel={() => setEditing(false)}
       />
     );
@@ -132,7 +133,7 @@ export default function ServiceGroupDetailScreen() {
         {group.meetingLocation && (
           <Text style={styles.headerSub}>📍 {group.meetingLocation}</Text>
         )}
-        {group.deletedAt && <Text style={styles.removedBadge}>Removed</Text>}
+        {group.deletedAt && <Text style={styles.removedBadge}>{t('common.removed')}</Text>}
       </View>
 
       {(overseer || assistant) && (
@@ -145,7 +146,7 @@ export default function ServiceGroupDetailScreen() {
               ]}
               onPress={() => router.push(`/publishers/${overseer.id}` as any)}
             >
-              <Text style={styles.leaderRole}>Overseer</Text>
+              <Text style={styles.leaderRole}>{t('serviceGroups.overseer')}</Text>
               <Text style={styles.leaderName}>{overseer.displayName}</Text>
             </Pressable>
           )}
@@ -157,7 +158,7 @@ export default function ServiceGroupDetailScreen() {
               ]}
               onPress={() => router.push(`/publishers/${assistant.id}` as any)}
             >
-              <Text style={styles.leaderRole}>Assistant</Text>
+              <Text style={styles.leaderRole}>{t('serviceGroups.assistant')}</Text>
               <Text style={styles.leaderName}>{assistant.displayName}</Text>
             </Pressable>
           )}
@@ -171,14 +172,14 @@ export default function ServiceGroupDetailScreen() {
       )}
 
       <Text style={styles.sectionTitle}>
-        Members ({membersQuery.data?.total ?? 0})
+        {t('serviceGroups.membersCount', { count: membersQuery.data?.total ?? 0 })}
       </Text>
 
       <View style={styles.list}>
         {membersQuery.isLoading ? (
           <ActivityIndicator style={{ padding: 16 }} />
         ) : members.length === 0 ? (
-          <Text style={styles.empty}>No members in this group yet</Text>
+          <Text style={styles.empty}>{t('serviceGroups.noMembersYet')}</Text>
         ) : (
           members.map((p) => <MemberRow key={p.id} publisher={p} />)
         )}
@@ -190,7 +191,7 @@ export default function ServiceGroupDetailScreen() {
             style={[styles.button, styles.buttonEdit]}
             onPress={() => setEditing(true)}
           >
-            <Text style={styles.buttonEditText}>Edit</Text>
+            <Text style={styles.buttonEditText}>{t('common.edit')}</Text>
           </Pressable>
         )}
         {group.deletedAt ? (
@@ -200,7 +201,7 @@ export default function ServiceGroupDetailScreen() {
             disabled={restoreMutation.isPending}
           >
             <Text style={styles.buttonText}>
-              {restoreMutation.isPending ? 'Restoring…' : 'Restore'}
+              {restoreMutation.isPending ? t('common.restoring') : t('common.restore')}
             </Text>
           </Pressable>
         ) : (
@@ -210,7 +211,7 @@ export default function ServiceGroupDetailScreen() {
             disabled={removeMutation.isPending}
           >
             <Text style={styles.buttonText}>
-              {removeMutation.isPending ? 'Removing…' : 'Remove'}
+              {removeMutation.isPending ? t('common.removing') : t('common.remove')}
             </Text>
           </Pressable>
         )}
