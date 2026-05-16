@@ -26,9 +26,13 @@ import {
 } from '../../../lib/dates';
 import {
   getEventTypeLabel,
+  getPartDef,
   getPartLabel,
   PARTS_BY_EVENT,
+  Subsection,
+  SUBSECTIONS,
 } from '../../../lib/parts';
+import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { WeekNavigator } from '../../../components/WeekNavigator';
 
@@ -129,6 +133,15 @@ export default function ScheduleIndexScreen() {
             {EVENT_TYPE_ORDER.map((eventType) => {
               const items = grouped.get(eventType) ?? [];
               if (items.length === 0) return null;
+              if (eventType === 'midweek') {
+                return (
+                  <MidweekSections
+                    key="midweek"
+                    items={items}
+                    publishersById={publishersById}
+                  />
+                );
+              }
               return (
                 <View key={eventType} style={styles.section}>
                   <Text style={styles.sectionTitle}>
@@ -196,6 +209,69 @@ export default function ScheduleIndexScreen() {
   );
 }
 
+const SUBSECTION_ORDER: Subsection[] = [
+  'opening',
+  'treasures',
+  'apply_yourself',
+  'christian_life',
+];
+
+function MidweekSections({
+  items,
+  publishersById,
+}: {
+  items: Assignment[];
+  publishersById: Map<string, Publisher>;
+}) {
+  const { t } = useTranslation();
+
+  const bySubsection = new Map<Subsection, Assignment[]>();
+  for (const a of items) {
+    const def = getPartDef(a.partKey);
+    const sub = def?.subsection ?? 'opening';
+    const arr = bySubsection.get(sub) ?? [];
+    arr.push(a);
+    bySubsection.set(sub, arr);
+  }
+
+  return (
+    <>
+      {SUBSECTION_ORDER.map((sub) => {
+        const arr = bySubsection.get(sub) ?? [];
+        if (arr.length === 0) return null;
+        const meta = SUBSECTIONS[sub];
+        return (
+          <View key={sub} style={styles.section}>
+            <View style={[styles.subsectionBanner, { backgroundColor: meta.color }]}>
+              <Ionicons name={meta.icon as any} size={16} color="#fff" />
+              <Text style={styles.subsectionBannerText}>{t(meta.i18nKey)}</Text>
+            </View>
+            <View style={styles.sectionBody}>
+              {arr.map((a) => (
+                <AssignmentRow
+                  key={a.id}
+                  assignment={a}
+                  publisher={
+                    a.publisherId
+                      ? publishersById.get(a.publisherId) ?? null
+                      : null
+                  }
+                  assistant={
+                    a.assistantPublisherId
+                      ? publishersById.get(a.assistantPublisherId) ?? null
+                      : null
+                  }
+                  accentColor={meta.color}
+                />
+              ))}
+            </View>
+          </View>
+        );
+      })}
+    </>
+  );
+}
+
 function CreateButton({
   label,
   primary,
@@ -233,10 +309,12 @@ function AssignmentRow({
   assignment,
   publisher,
   assistant,
+  accentColor,
 }: {
   assignment: Assignment;
   publisher: Publisher | null;
   assistant: Publisher | null;
+  accentColor?: string;
 }) {
   const { t } = useTranslation();
   const partLabel = getPartLabel(assignment.partKey);
@@ -247,7 +325,11 @@ function AssignmentRow({
 
   return (
     <Pressable
-      style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
+      style={({ pressed }) => [
+        styles.row,
+        accentColor ? { borderLeftWidth: 3, borderLeftColor: accentColor } : null,
+        pressed && styles.rowPressed,
+      ]}
       onPress={() => router.push(`/schedule/${assignment.id}` as any)}
     >
       <View style={styles.orderBadge}>
@@ -323,6 +405,21 @@ const styles = StyleSheet.create({
   createSecondaryText: { color: '#0ea5e9' },
 
   section: { marginTop: 16 },
+  subsectionBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    gap: 8,
+  },
+  subsectionBannerText: {
+    color: '#fff',
+    fontSize: 13,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+    flex: 1,
+  },
   sectionTitle: {
     fontSize: 12,
     fontWeight: '600',

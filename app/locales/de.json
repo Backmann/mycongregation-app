@@ -540,6 +540,12 @@
     "weekNav": {
       "thisWeek": "Diese Woche",
       "jumpToToday": "Zur aktuellen Woche"
+    },
+    "subsection": {
+      "opening": "Eröffnung",
+      "treasures": "Schätze aus Gottes Wort",
+      "applyYourself": "Werde ein besserer Lehrer",
+      "christianLife": "Unser Leben als Christ"
     }
   },
   "audit": {

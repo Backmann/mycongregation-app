@@ -1,6 +1,8 @@
 import { EventType } from './api';
 import i18n from './i18n';
 
+export type Subsection = 'opening' | 'treasures' | 'apply_yourself' | 'christian_life';
+
 export interface PartDef {
   key: string;
   label: string;
@@ -12,7 +14,52 @@ export interface PartDef {
   requiredCapability?: string;
   /** Capability key required for the assistant. Defaults to requiredCapability if omitted. */
   requiredAssistantCapability?: string;
+  /** Visual sub-section grouping (midweek only). Mirrors JW workbook color coding. */
+  subsection?: Subsection;
 }
+
+export interface SubsectionMeta {
+  key: Subsection;
+  /** Primary banner background color. */
+  color: string;
+  /** Lighter shade for accents. */
+  colorMuted: string;
+  /** Ionicon name for banner. */
+  icon: string;
+  /** i18n key for the section title. */
+  i18nKey: string;
+}
+
+export const SUBSECTIONS: Record<Subsection, SubsectionMeta> = {
+  opening: {
+    key: 'opening',
+    color: '#475569',
+    colorMuted: '#f1f5f9',
+    icon: 'time-outline',
+    i18nKey: 'schedule.subsection.opening',
+  },
+  treasures: {
+    key: 'treasures',
+    color: '#0e7490',
+    colorMuted: '#cffafe',
+    icon: 'diamond-outline',
+    i18nKey: 'schedule.subsection.treasures',
+  },
+  apply_yourself: {
+    key: 'apply_yourself',
+    color: '#b45309',
+    colorMuted: '#fef3c7',
+    icon: 'paper-plane-outline',
+    i18nKey: 'schedule.subsection.applyYourself',
+  },
+  christian_life: {
+    key: 'christian_life',
+    color: '#991b1b',
+    colorMuted: '#fee2e2',
+    icon: 'people-outline',
+    i18nKey: 'schedule.subsection.christianLife',
+  },
+};
 
 // ---------- Midweek meeting (Жизнь и служение) ----------
 
@@ -23,6 +70,7 @@ export const MIDWEEK_PARTS: PartDef[] = [
     defaultOrder: 1,
     defaultDurationMin: 0,
     requiredCapability: 'midweek_chairman',
+    subsection: 'opening',
   },
   {
     key: 'midweek_opening_prayer',
@@ -30,6 +78,7 @@ export const MIDWEEK_PARTS: PartDef[] = [
     defaultOrder: 2,
     defaultDurationMin: 1,
     requiredCapability: 'midweek_opening_prayer',
+    subsection: 'opening',
   },
   {
     key: 'treasures_talk',
@@ -37,6 +86,7 @@ export const MIDWEEK_PARTS: PartDef[] = [
     defaultOrder: 3,
     defaultDurationMin: 10,
     requiredCapability: 'treasures_talk',
+    subsection: 'treasures',
   },
   {
     key: 'spiritual_gems',
@@ -44,6 +94,7 @@ export const MIDWEEK_PARTS: PartDef[] = [
     defaultOrder: 4,
     defaultDurationMin: 10,
     requiredCapability: 'spiritual_gems',
+    subsection: 'treasures',
   },
   {
     key: 'bible_reading',
@@ -51,6 +102,7 @@ export const MIDWEEK_PARTS: PartDef[] = [
     defaultOrder: 5,
     defaultDurationMin: 4,
     requiredCapability: 'bible_reading',
+    subsection: 'treasures',
   },
   {
     key: 'apply_yourself_1',
@@ -60,6 +112,7 @@ export const MIDWEEK_PARTS: PartDef[] = [
     hasAssistant: true,
     requiredCapability: 'demo_initial_call',
     requiredAssistantCapability: 'demo_initial_call',
+    subsection: 'apply_yourself',
   },
   {
     key: 'apply_yourself_2',
@@ -69,6 +122,7 @@ export const MIDWEEK_PARTS: PartDef[] = [
     hasAssistant: true,
     requiredCapability: 'demo_return_visit',
     requiredAssistantCapability: 'demo_return_visit',
+    subsection: 'apply_yourself',
   },
   {
     key: 'apply_yourself_3',
@@ -78,6 +132,7 @@ export const MIDWEEK_PARTS: PartDef[] = [
     hasAssistant: true,
     requiredCapability: 'demo_bible_study',
     requiredAssistantCapability: 'demo_bible_study',
+    subsection: 'apply_yourself',
   },
   {
     key: 'living_christians_1',
@@ -85,6 +140,7 @@ export const MIDWEEK_PARTS: PartDef[] = [
     defaultOrder: 9,
     defaultDurationMin: 15,
     requiredCapability: 'service_meeting_part',
+    subsection: 'christian_life',
   },
   {
     key: 'living_christians_2',
@@ -92,6 +148,7 @@ export const MIDWEEK_PARTS: PartDef[] = [
     defaultOrder: 10,
     defaultDurationMin: 15,
     requiredCapability: 'service_meeting_part',
+    subsection: 'christian_life',
   },
   {
     key: 'cbs_conductor',
@@ -99,6 +156,7 @@ export const MIDWEEK_PARTS: PartDef[] = [
     defaultOrder: 11,
     defaultDurationMin: 30,
     requiredCapability: 'congregation_study_conductor',
+    subsection: 'christian_life',
   },
   {
     key: 'cbs_reader',
@@ -106,6 +164,7 @@ export const MIDWEEK_PARTS: PartDef[] = [
     defaultOrder: 12,
     defaultDurationMin: 30,
     requiredCapability: 'congregation_study_reader',
+    subsection: 'christian_life',
   },
   {
     key: 'midweek_closing_prayer',
@@ -113,6 +172,7 @@ export const MIDWEEK_PARTS: PartDef[] = [
     defaultOrder: 13,
     defaultDurationMin: 1,
     requiredCapability: 'midweek_opening_prayer',
+    subsection: 'christian_life',
   },
 ];
 

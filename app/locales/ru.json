@@ -544,6 +544,12 @@
     "weekNav": {
       "thisWeek": "Эта неделя",
       "jumpToToday": "К текущей неделе"
+    },
+    "subsection": {
+      "opening": "Вступление",
+      "treasures": "Сокровища из Слова Бога",
+      "applyYourself": "Оттачиваем навыки служения",
+      "christianLife": "Христианская жизнь"
     }
   },
   "audit": {

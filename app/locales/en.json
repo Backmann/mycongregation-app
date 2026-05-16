@@ -540,6 +540,12 @@
     "weekNav": {
       "thisWeek": "This week",
       "jumpToToday": "Jump to today"
+    },
+    "subsection": {
+      "opening": "Opening",
+      "treasures": "Treasures From God's Word",
+      "applyYourself": "Apply Yourself to the Ministry",
+      "christianLife": "Living as Christians"
     }
   },
   "audit": {
