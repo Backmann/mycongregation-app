@@ -9,8 +9,10 @@ import {
   formatDateISO,
   startOfWeekMonday,
 } from '../../../lib/dates';
+import { useTranslation } from 'react-i18next';
 
 export default function NewAssignmentScreen() {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
 
   const createMutation = useMutation({
@@ -36,7 +38,7 @@ export default function NewAssignmentScreen() {
       }}
       onSubmit={createMutation.mutateAsync}
       isSubmitting={createMutation.isPending}
-      submitLabel="Create"
+      submitLabel={t('common.create')}
       onCancel={() => router.back()}
     />
   );

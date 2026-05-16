@@ -344,5 +344,146 @@
     "noMembersYet": "В группе пока нет участников",
     "overseer": "Старший",
     "assistant": "Помощник"
+  },
+  "parts": {
+    "midweek_chairman": "Председатель встречи",
+    "midweek_opening_prayer": "Открывающая молитва",
+    "treasures_talk": "Сокровища из Слова Бога",
+    "spiritual_gems": "Углубляйся в Слово Бога",
+    "bible_reading": "Чтение Библии",
+    "apply_yourself_1": "Совершенствуй своё служение 1",
+    "apply_yourself_2": "Совершенствуй своё служение 2",
+    "apply_yourself_3": "Совершенствуй своё служение 3",
+    "living_christians_1": "В жизни христианина 1",
+    "living_christians_2": "В жизни христианина 2",
+    "cbs_conductor": "Изучение книги собранием — ведущий",
+    "cbs_reader": "Изучение книги собранием — чтец",
+    "midweek_closing_prayer": "Заключительная молитва",
+    "weekend_chairman": "Председатель встречи",
+    "weekend_opening_prayer": "Открывающая молитва",
+    "public_talk_speaker": "Публичная речь",
+    "watchtower_conductor": "Изучение «Сторожевой башни» — ведущий",
+    "watchtower_reader": "Изучение «Сторожевой башни» — чтец",
+    "weekend_closing_prayer": "Заключительная молитва"
+  },
+  "eventTypes": {
+    "midweek": "Встреча среди недели",
+    "weekend": "Встреча в выходные",
+    "cleaning": "Уборка",
+    "av_duty": "Аудио/видео",
+    "public_witnessing": "Публичное служение"
+  },
+  "assignments": {
+    "eventTypeShort": {
+      "midweek": "Среди недели",
+      "weekend": "Выходные",
+      "cleaning": "Уборка",
+      "av_duty": "А/В",
+      "public_witnessing": "Публ. служ."
+    },
+    "status": {
+      "draft": "Черновик",
+      "published": "Опубликовано",
+      "cancelled": "Отменено"
+    },
+    "speakerType": {
+      "local": "Местный возвещатель",
+      "invited": "Приглашённый докладчик"
+    },
+    "form": {
+      "section": {
+        "identity": "Назначение",
+        "publicTalk": "Публичная речь",
+        "details": "Детали",
+        "speaker": "Докладчик",
+        "assignment": "Назначение",
+        "status": "Статус"
+      },
+      "readonly": {
+        "weekStart": "Начало недели",
+        "eventType": "Тип встречи",
+        "part": "Часть"
+      },
+      "field": {
+        "weekStartFull": "Начало недели (понедельник, ГГГГ-ММ-ДД)",
+        "eventType": "Тип встречи",
+        "partKey": "Ключ части",
+        "partOrder": "Порядок части",
+        "talk": "Доклад",
+        "partTitleOverride": "Название части (переопределить)",
+        "durationMinutes": "Продолжительность (минут)",
+        "speakerTypeLabel": "Тип докладчика",
+        "publisher": "Возвещатель",
+        "speakerName": "Имя докладчика",
+        "fromCongregation": "Из собрания",
+        "assistant": "Помощник",
+        "statusLabel": "Статус"
+      },
+      "placeholder": {
+        "weekStart": "2026-05-04",
+        "partKey": "bible_reading",
+        "partTitleOverride": "напр., Числа 1:1—19",
+        "duration": "4",
+        "speakerName": "Иван Иванов",
+        "fromCongregation": "Дортмунд Восток"
+      },
+      "validation": {
+        "weekStartRequired": "Требуется дата начала недели",
+        "partKeyRequired": "Требуется ключ части"
+      }
+    }
+  },
+  "schedule": {
+    "title": {
+      "list": "Расписание",
+      "detail": "Назначение",
+      "new": "Новое назначение",
+      "import": "Импорт MWB"
+    },
+    "a11y": {
+      "importEpub": "Импортировать EPUB",
+      "newAssignment": "Новое назначение"
+    },
+    "noAssignments": "На эту неделю назначений нет.",
+    "unassigned": "Не назначен",
+    "createEmptyMidweek": "Создать пустую встречу среди недели ({{count}} слотов)",
+    "createEmptyWeekend": "Создать пустую встречу в выходные ({{count}} слотов)",
+    "removedBanner": "Это назначение удалено",
+    "removeConfirm": {
+      "title": "Удалить назначение",
+      "webMessage": "Удалить это назначение?"
+    },
+    "import": {
+      "title": "Импорт расписания (EPUB)",
+      "subtitle": "Загрузите рабочую тетрадь встречи (mwb_*.epub) или изучение «Сторожевой башни» (w_*.epub), чтобы автоматически создать программу. Пустые слоты будут заполнены официальными названиями; назначения с возвещателями сохранятся.",
+      "choosePrompt": "Выбрать файл EPUB",
+      "chooseDifferent": "Выбрать другой файл",
+      "uploadAndImport": "Загрузить и импортировать",
+      "uploading": "Загрузка…",
+      "openSchedule": "Открыть расписание",
+      "errors": {
+        "noFileSelected": "Файл не выбран",
+        "notEpub": "Пожалуйста, выберите файл .epub"
+      },
+      "typeBadge": {
+        "midweek": "Среди недели",
+        "weekend": "Выходные",
+        "unknown": "Неизвестный тип"
+      },
+      "unknownTypeWarning": "Имя файла не соответствует ожидаемому шаблону. Сервер попробует определить тип, но может отклонить файл.",
+      "result": {
+        "complete": "Импорт завершён",
+        "stats": {
+          "weeks": "Недель",
+          "created": "Создано",
+          "updated": "Обновлено",
+          "skipped": "Пропущено"
+        },
+        "unclassified": "Не удалось классифицировать частей: {{count}}",
+        "warningsTitle": "Предупреждения:",
+        "moreWarnings": "…и ещё {{count}}",
+        "importedWeeks": "Импортированные недели"
+      }
+    }
   }
 }

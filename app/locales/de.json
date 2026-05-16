@@ -342,5 +342,146 @@
     "noMembersYet": "Noch keine Mitglieder in dieser Gruppe",
     "overseer": "Aufseher",
     "assistant": "Gehilfe"
+  },
+  "parts": {
+    "midweek_chairman": "Vorsitzender",
+    "midweek_opening_prayer": "Anfangsgebet",
+    "treasures_talk": "Schätze aus Gottes Wort",
+    "spiritual_gems": "Nach geistigen Schätzen graben",
+    "bible_reading": "Bibellesung",
+    "apply_yourself_1": "Werde ein besserer Lehrer 1",
+    "apply_yourself_2": "Werde ein besserer Lehrer 2",
+    "apply_yourself_3": "Werde ein besserer Lehrer 3",
+    "living_christians_1": "Unser Leben als Christen 1",
+    "living_christians_2": "Unser Leben als Christen 2",
+    "cbs_conductor": "Bibelstudium der Versammlung — Leiter",
+    "cbs_reader": "Bibelstudium der Versammlung — Vorleser",
+    "midweek_closing_prayer": "Schlussgebet",
+    "weekend_chairman": "Vorsitzender",
+    "weekend_opening_prayer": "Anfangsgebet",
+    "public_talk_speaker": "Öffentlicher Vortrag",
+    "watchtower_conductor": "Wachtturm-Studium — Leiter",
+    "watchtower_reader": "Wachtturm-Studium — Vorleser",
+    "weekend_closing_prayer": "Schlussgebet"
+  },
+  "eventTypes": {
+    "midweek": "Zusammenkunft unter der Woche",
+    "weekend": "Zusammenkunft am Wochenende",
+    "cleaning": "Reinigung",
+    "av_duty": "Audio/Video",
+    "public_witnessing": "Öffentliches Zeugnis"
+  },
+  "assignments": {
+    "eventTypeShort": {
+      "midweek": "Mittwoch",
+      "weekend": "Wochenende",
+      "cleaning": "Reinigung",
+      "av_duty": "A/V",
+      "public_witnessing": "Öff. Zeugnis"
+    },
+    "status": {
+      "draft": "Entwurf",
+      "published": "Veröffentlicht",
+      "cancelled": "Abgesagt"
+    },
+    "speakerType": {
+      "local": "Örtlicher Verkündiger",
+      "invited": "Eingeladener Redner"
+    },
+    "form": {
+      "section": {
+        "identity": "Zuteilung",
+        "publicTalk": "Öffentlicher Vortrag",
+        "details": "Details",
+        "speaker": "Redner",
+        "assignment": "Zuteilung",
+        "status": "Status"
+      },
+      "readonly": {
+        "weekStart": "Wochenbeginn",
+        "eventType": "Veranstaltungstyp",
+        "part": "Programmpunkt"
+      },
+      "field": {
+        "weekStartFull": "Wochenbeginn (Montag, JJJJ-MM-TT)",
+        "eventType": "Veranstaltungstyp",
+        "partKey": "Programmpunkt-Schlüssel",
+        "partOrder": "Reihenfolge",
+        "talk": "Vortrag",
+        "partTitleOverride": "Titel überschreiben",
+        "durationMinutes": "Dauer (Minuten)",
+        "speakerTypeLabel": "Rednertyp",
+        "publisher": "Verkündiger",
+        "speakerName": "Name des Redners",
+        "fromCongregation": "Aus Versammlung",
+        "assistant": "Gehilfe",
+        "statusLabel": "Status"
+      },
+      "placeholder": {
+        "weekStart": "2026-05-04",
+        "partKey": "bible_reading",
+        "partTitleOverride": "z. B. 4. Mose 1:1–19",
+        "duration": "4",
+        "speakerName": "Max Müller",
+        "fromCongregation": "Berlin Mitte"
+      },
+      "validation": {
+        "weekStartRequired": "Wochenbeginn ist erforderlich",
+        "partKeyRequired": "Programmpunkt-Schlüssel ist erforderlich"
+      }
+    }
+  },
+  "schedule": {
+    "title": {
+      "list": "Programm",
+      "detail": "Zuteilung",
+      "new": "Neue Zuteilung",
+      "import": "MWB importieren"
+    },
+    "a11y": {
+      "importEpub": "EPUB importieren",
+      "newAssignment": "Neue Zuteilung"
+    },
+    "noAssignments": "Keine Zuteilungen für diese Woche.",
+    "unassigned": "Nicht zugeteilt",
+    "createEmptyMidweek": "Leere Wochenzusammenkunft erstellen ({{count}} Plätze)",
+    "createEmptyWeekend": "Leere Wochenendzusammenkunft erstellen ({{count}} Plätze)",
+    "removedBanner": "Diese Zuteilung wurde entfernt",
+    "removeConfirm": {
+      "title": "Zuteilung entfernen",
+      "webMessage": "Diese Zuteilung entfernen?"
+    },
+    "import": {
+      "title": "Programm (EPUB) importieren",
+      "subtitle": "Lade das Arbeitsheft für die Zusammenkunft (mwb_*.epub) oder das Wachtturm-Studium (w_*.epub) hoch, um das Wochenprogramm automatisch zu erstellen. Leere Plätze werden mit offiziellen Titeln gefüllt; Zuteilungen mit Verkündigern bleiben erhalten.",
+      "choosePrompt": "EPUB-Datei wählen",
+      "chooseDifferent": "Andere Datei wählen",
+      "uploadAndImport": "Hochladen und importieren",
+      "uploading": "Wird hochgeladen…",
+      "openSchedule": "Programm öffnen",
+      "errors": {
+        "noFileSelected": "Keine Datei ausgewählt",
+        "notEpub": "Bitte eine .epub-Datei auswählen"
+      },
+      "typeBadge": {
+        "midweek": "Mittwoch",
+        "weekend": "Wochenende",
+        "unknown": "Unbekannter Typ"
+      },
+      "unknownTypeWarning": "Dateiname entspricht nicht dem erwarteten Muster. Der Server versucht es zu erkennen, kann die Datei jedoch ablehnen.",
+      "result": {
+        "complete": "Import abgeschlossen",
+        "stats": {
+          "weeks": "Wochen",
+          "created": "Erstellt",
+          "updated": "Aktualisiert",
+          "skipped": "Übersprungen"
+        },
+        "unclassified": "{{count}} Programmpunkt(e) konnten nicht klassifiziert werden",
+        "warningsTitle": "Warnungen:",
+        "moreWarnings": "… und {{count}} weitere",
+        "importedWeeks": "Importierte Wochen"
+      }
+    }
   }
 }

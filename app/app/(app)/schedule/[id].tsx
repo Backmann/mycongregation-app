@@ -15,8 +15,10 @@ import {
   UpdateAssignmentInput,
 } from '../../../lib/api';
 import { AssignmentForm } from '../../../components/AssignmentForm';
+import { useTranslation } from 'react-i18next';
 
 export default function AssignmentDetailScreen() {
+  const { t } = useTranslation();
   const { id } = useLocalSearchParams<{ id: string }>();
   const queryClient = useQueryClient();
 
@@ -53,15 +55,15 @@ export default function AssignmentDetailScreen() {
 
   const confirmRemove = () => {
     if (Platform.OS === 'web') {
-      if (window.confirm('Remove this assignment?')) {
+      if (window.confirm(t('schedule.removeConfirm.webMessage'))) {
         removeMutation.mutate();
       }
       return;
     }
-    Alert.alert('Remove assignment', null as any, [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert(t('schedule.removeConfirm.title'), null as any, [
+      { text: t('common.cancel'), style: 'cancel' },
       {
-        text: 'Remove',
+        text: t('common.remove'),
         onPress: () => removeMutation.mutate(),
         style: 'destructive',
       },
@@ -82,7 +84,7 @@ export default function AssignmentDetailScreen() {
         <Text style={styles.errorText}>
           {assignmentQuery.error
             ? extractErrorMessage(assignmentQuery.error)
-            : 'Not found'}
+            : t('common.notFound')}
         </Text>
       </View>
     );
@@ -94,7 +96,7 @@ export default function AssignmentDetailScreen() {
     <View style={{ flex: 1, backgroundColor: '#f1f5f9' }}>
       {a.deletedAt && (
         <View style={styles.removedBanner}>
-          <Text style={styles.removedText}>This assignment is removed</Text>
+          <Text style={styles.removedText}>{t('schedule.removedBanner')}</Text>
         </View>
       )}
 
@@ -113,7 +115,6 @@ export default function AssignmentDetailScreen() {
         }}
         onSubmit={updateMutation.mutateAsync}
         isSubmitting={updateMutation.isPending}
-        submitLabel="Save"
         lockIdentity
       />
 
@@ -125,7 +126,7 @@ export default function AssignmentDetailScreen() {
             disabled={restoreMutation.isPending}
           >
             <Text style={styles.buttonText}>
-              {restoreMutation.isPending ? 'Restoring…' : 'Restore'}
+              {restoreMutation.isPending ? t('common.restoring') : t('common.restore')}
             </Text>
           </Pressable>
         ) : (
@@ -135,7 +136,7 @@ export default function AssignmentDetailScreen() {
             disabled={removeMutation.isPending}
           >
             <Text style={styles.buttonText}>
-              {removeMutation.isPending ? 'Removing…' : 'Remove'}
+              {removeMutation.isPending ? t('common.removing') : t('common.remove')}
             </Text>
           </Pressable>
         )}

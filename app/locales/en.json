@@ -342,5 +342,146 @@
     "noMembersYet": "No members in this group yet",
     "overseer": "Overseer",
     "assistant": "Assistant"
+  },
+  "parts": {
+    "midweek_chairman": "Chairman",
+    "midweek_opening_prayer": "Opening prayer",
+    "treasures_talk": "Treasures from God's Word",
+    "spiritual_gems": "Digging for Spiritual Gems",
+    "bible_reading": "Bible reading",
+    "apply_yourself_1": "Apply Yourself 1",
+    "apply_yourself_2": "Apply Yourself 2",
+    "apply_yourself_3": "Apply Yourself 3",
+    "living_christians_1": "Living as Christians 1",
+    "living_christians_2": "Living as Christians 2",
+    "cbs_conductor": "Congregation Bible Study — conductor",
+    "cbs_reader": "Congregation Bible Study — reader",
+    "midweek_closing_prayer": "Closing prayer",
+    "weekend_chairman": "Chairman",
+    "weekend_opening_prayer": "Opening prayer",
+    "public_talk_speaker": "Public talk",
+    "watchtower_conductor": "Watchtower study — conductor",
+    "watchtower_reader": "Watchtower study — reader",
+    "weekend_closing_prayer": "Closing prayer"
+  },
+  "eventTypes": {
+    "midweek": "Midweek meeting",
+    "weekend": "Weekend meeting",
+    "cleaning": "Cleaning",
+    "av_duty": "A/V duty",
+    "public_witnessing": "Public witnessing"
+  },
+  "assignments": {
+    "eventTypeShort": {
+      "midweek": "Midweek",
+      "weekend": "Weekend",
+      "cleaning": "Cleaning",
+      "av_duty": "A/V",
+      "public_witnessing": "Public W."
+    },
+    "status": {
+      "draft": "Draft",
+      "published": "Published",
+      "cancelled": "Cancelled"
+    },
+    "speakerType": {
+      "local": "Local publisher",
+      "invited": "Invited speaker"
+    },
+    "form": {
+      "section": {
+        "identity": "Identity",
+        "publicTalk": "Public talk",
+        "details": "Details",
+        "speaker": "Speaker",
+        "assignment": "Assignment",
+        "status": "Status"
+      },
+      "readonly": {
+        "weekStart": "Week start",
+        "eventType": "Event type",
+        "part": "Part"
+      },
+      "field": {
+        "weekStartFull": "Week start (Monday, YYYY-MM-DD)",
+        "eventType": "Event type",
+        "partKey": "Part key",
+        "partOrder": "Part order",
+        "talk": "Talk",
+        "partTitleOverride": "Part title (override)",
+        "durationMinutes": "Duration (minutes)",
+        "speakerTypeLabel": "Speaker type",
+        "publisher": "Publisher",
+        "speakerName": "Speaker name",
+        "fromCongregation": "From congregation",
+        "assistant": "Assistant",
+        "statusLabel": "Status"
+      },
+      "placeholder": {
+        "weekStart": "2026-05-04",
+        "partKey": "bible_reading",
+        "partTitleOverride": "e.g. Numbers 1:1-19",
+        "duration": "4",
+        "speakerName": "John Smith",
+        "fromCongregation": "Berlin Central"
+      },
+      "validation": {
+        "weekStartRequired": "Week start date is required",
+        "partKeyRequired": "Part key is required"
+      }
+    }
+  },
+  "schedule": {
+    "title": {
+      "list": "Schedule",
+      "detail": "Assignment",
+      "new": "New Assignment",
+      "import": "Import MWB"
+    },
+    "a11y": {
+      "importEpub": "Import EPUB",
+      "newAssignment": "New assignment"
+    },
+    "noAssignments": "No assignments for this week.",
+    "unassigned": "Unassigned",
+    "createEmptyMidweek": "Create empty midweek ({{count}} slots)",
+    "createEmptyWeekend": "Create empty weekend ({{count}} slots)",
+    "removedBanner": "This assignment is removed",
+    "removeConfirm": {
+      "title": "Remove assignment",
+      "webMessage": "Remove this assignment?"
+    },
+    "import": {
+      "title": "Import schedule EPUB",
+      "subtitle": "Upload Meeting Workbook (mwb_*.epub) or Watchtower study (w_*.epub) to auto-create the weekly programme. Existing empty slots are filled with official titles; assignments with publishers are preserved.",
+      "choosePrompt": "Choose EPUB file",
+      "chooseDifferent": "Choose a different file",
+      "uploadAndImport": "Upload and import",
+      "uploading": "Uploading…",
+      "openSchedule": "Open schedule",
+      "errors": {
+        "noFileSelected": "No file selected",
+        "notEpub": "Please select a .epub file"
+      },
+      "typeBadge": {
+        "midweek": "Midweek",
+        "weekend": "Weekend",
+        "unknown": "Unknown type"
+      },
+      "unknownTypeWarning": "Filename doesn't match expected pattern. Backend will try to detect, but may reject the file.",
+      "result": {
+        "complete": "Import complete",
+        "stats": {
+          "weeks": "Weeks",
+          "created": "Created",
+          "updated": "Updated",
+          "skipped": "Skipped"
+        },
+        "unclassified": "{{count}} part(s) could not be classified",
+        "warningsTitle": "Warnings:",
+        "moreWarnings": "… and {{count}} more",
+        "importedWeeks": "Imported weeks"
+      }
+    }
   }
 }

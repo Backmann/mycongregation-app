@@ -20,6 +20,7 @@ import {
   PublicTalk,
 } from '../lib/api';
 import { getPartDef, getPartLabel } from '../lib/parts';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
   initial?: Partial<CreateAssignmentInput>;
@@ -31,33 +32,34 @@ interface Props {
   lockIdentity?: boolean;
 }
 
-const EVENT_TYPE_OPTIONS: { value: EventType; label: string }[] = [
-  { value: 'midweek', label: 'Midweek' },
-  { value: 'weekend', label: 'Weekend' },
-  { value: 'cleaning', label: 'Cleaning' },
-  { value: 'av_duty', label: 'A/V' },
-  { value: 'public_witnessing', label: 'Public W.' },
-];
-
-const STATUS_OPTIONS: { value: AssignmentStatus; label: string }[] = [
-  { value: 'draft', label: 'Draft' },
-  { value: 'published', label: 'Published' },
-  { value: 'cancelled', label: 'Cancelled' },
-];
-
-const SPEAKER_TYPE_OPTIONS: { value: 'local' | 'invited'; label: string }[] = [
-  { value: 'local', label: 'Local publisher' },
-  { value: 'invited', label: 'Invited speaker' },
-];
+// EVENT_TYPE_OPTIONS, STATUS_OPTIONS, SPEAKER_TYPE_OPTIONS moved inside component (i18n)
 
 export function AssignmentForm({
   initial,
   onSubmit,
   onCancel,
   isSubmitting,
-  submitLabel = 'Save',
+  submitLabel,
   lockIdentity,
 }: Props) {
+  const { t } = useTranslation();
+  const effectiveSubmitLabel = submitLabel ?? t('common.save');
+  const EVENT_TYPE_OPTIONS: { value: EventType; label: string }[] = [
+    { value: 'midweek', label: t('assignments.eventTypeShort.midweek') },
+    { value: 'weekend', label: t('assignments.eventTypeShort.weekend') },
+    { value: 'cleaning', label: t('assignments.eventTypeShort.cleaning') },
+    { value: 'av_duty', label: t('assignments.eventTypeShort.av_duty') },
+    { value: 'public_witnessing', label: t('assignments.eventTypeShort.public_witnessing') },
+  ];
+  const STATUS_OPTIONS: { value: AssignmentStatus; label: string }[] = [
+    { value: 'draft', label: t('assignments.status.draft') },
+    { value: 'published', label: t('assignments.status.published') },
+    { value: 'cancelled', label: t('assignments.status.cancelled') },
+  ];
+  const SPEAKER_TYPE_OPTIONS: { value: 'local' | 'invited'; label: string }[] = [
+    { value: 'local', label: t('assignments.speakerType.local') },
+    { value: 'invited', label: t('assignments.speakerType.invited') },
+  ];
   const [form, setForm] = useState<CreateAssignmentInput>({
     weekStartDate: initial?.weekStartDate ?? '',
     eventType: initial?.eventType ?? 'midweek',
@@ -122,11 +124,11 @@ export function AssignmentForm({
   const handleSubmit = async () => {
     setError(null);
     if (!form.weekStartDate?.trim()) {
-      setError('Week start date is required');
+      setError(t('assignments.form.validation.weekStartRequired'));
       return;
     }
     if (!form.partKey?.trim()) {
-      setError('Part key is required');
+      setError(t('assignments.form.validation.partKeyRequired'));
       return;
     }
     try {
@@ -142,19 +144,19 @@ export function AssignmentForm({
       contentContainerStyle={{ paddingBottom: 32 }}
       keyboardShouldPersistTaps="handled"
     >
-      <FormSection title="Identity">
+      <FormSection title={t('assignments.form.section.identity')}>
         {lockIdentity ? (
           <>
             <View style={styles.readonly}>
-              <Text style={styles.readonlyLabel}>Week start</Text>
+              <Text style={styles.readonlyLabel}>{t('assignments.form.readonly.weekStart')}</Text>
               <Text style={styles.readonlyValue}>{form.weekStartDate}</Text>
             </View>
             <View style={styles.readonly}>
-              <Text style={styles.readonlyLabel}>Event type</Text>
+              <Text style={styles.readonlyLabel}>{t('assignments.form.readonly.eventType')}</Text>
               <Text style={styles.readonlyValue}>{form.eventType}</Text>
             </View>
             <View style={styles.readonly}>
-              <Text style={styles.readonlyLabel}>Part</Text>
+              <Text style={styles.readonlyLabel}>{t('assignments.form.readonly.part')}</Text>
               <Text style={styles.readonlyValue}>
                 {getPartLabel(form.partKey)}
               </Text>
@@ -163,29 +165,29 @@ export function AssignmentForm({
         ) : (
           <>
             <FormField
-              label="Week start (Monday, YYYY-MM-DD)"
+              label={t('assignments.form.field.weekStartFull')}
               value={form.weekStartDate}
               onChangeText={(v) => update('weekStartDate', v)}
-              placeholder="2026-05-04"
+              placeholder={t('assignments.form.placeholder.weekStart')}
               required
               autoCapitalize="none"
             />
             <FormChips
-              label="Event type"
+              label={t('assignments.form.field.eventType')}
               value={form.eventType}
               options={EVENT_TYPE_OPTIONS}
               onChange={(v) => update('eventType', v)}
             />
             <FormField
-              label="Part key"
+              label={t('assignments.form.field.partKey')}
               value={form.partKey}
               onChangeText={(v) => update('partKey', v)}
-              placeholder="bible_reading"
+              placeholder={t('assignments.form.placeholder.partKey')}
               required
               autoCapitalize="none"
             />
             <FormField
-              label="Part order"
+              label={t('assignments.form.field.partOrder')}
               value={form.partOrder?.toString() ?? '0'}
               onChangeText={(v) => update('partOrder', parseInt(v, 10) || 0)}
               keyboardType="numeric"
@@ -195,46 +197,46 @@ export function AssignmentForm({
       </FormSection>
 
       {isPublicTalkSpeaker && (
-        <FormSection title="Public talk">
+        <FormSection title={t('assignments.form.section.publicTalk')}>
           <PublicTalkSelector
-            label="Talk"
+            label={t('assignments.form.field.talk')}
             value={form.publicTalkId}
             onChange={handleTalkSelect}
           />
         </FormSection>
       )}
 
-      <FormSection title="Details">
+      <FormSection title={t('assignments.form.section.details')}>
         <FormField
-          label="Part title (override)"
+          label={t('assignments.form.field.partTitleOverride')}
           value={form.partTitle ?? ''}
           onChangeText={(v) => update('partTitle', v)}
-          placeholder="e.g. Числа 1:1-19"
+          placeholder={t('assignments.form.placeholder.partTitleOverride')}
           multiline
         />
         <FormField
-          label="Duration (minutes)"
+          label={t('assignments.form.field.durationMinutes')}
           value={form.partDurationMin?.toString() ?? ''}
           onChangeText={(v) =>
             update('partDurationMin', v ? parseInt(v, 10) : undefined)
           }
           keyboardType="numeric"
-          placeholder="4"
+          placeholder={t('assignments.form.placeholder.duration')}
         />
       </FormSection>
 
-      <FormSection title={isPublicTalkSpeaker ? 'Speaker' : 'Assignment'}>
+      <FormSection title={isPublicTalkSpeaker ? t('assignments.form.section.speaker') : t('assignments.form.section.assignment')}>
         {isPublicTalkSpeaker ? (
           <>
             <FormChips
-              label="Speaker type"
+              label={t('assignments.form.field.speakerTypeLabel')}
               value={speakerType}
               options={SPEAKER_TYPE_OPTIONS}
               onChange={handleSpeakerTypeChange}
             />
             {speakerType === 'local' ? (
               <PublisherSelector
-                label="Publisher"
+                label={t('assignments.form.field.publisher')}
                 value={form.publisherId}
                 onChange={(id) => update('publisherId', id)}
                 requiredCapability={requiredCap}
@@ -242,18 +244,18 @@ export function AssignmentForm({
             ) : (
               <>
                 <FormField
-                  label="Speaker name"
+                  label={t('assignments.form.field.speakerName')}
                   value={form.speakerName ?? ''}
                   onChangeText={(v) => update('speakerName', v || null)}
-                  placeholder="Иван Иванов"
+                  placeholder={t('assignments.form.placeholder.speakerName')}
                 />
                 <FormField
-                  label="From congregation"
+                  label={t('assignments.form.field.fromCongregation')}
                   value={form.speakerCongregation ?? ''}
                   onChangeText={(v) =>
                     update('speakerCongregation', v || null)
                   }
-                  placeholder="Дортмунд Восток"
+                  placeholder={t('assignments.form.placeholder.fromCongregation')}
                 />
               </>
             )}
@@ -261,7 +263,7 @@ export function AssignmentForm({
         ) : (
           <>
             <PublisherSelector
-              label="Publisher"
+              label={t('assignments.form.field.publisher')}
               value={form.publisherId}
               onChange={(id) => update('publisherId', id)}
               excludeIds={
@@ -271,7 +273,7 @@ export function AssignmentForm({
             />
             {showAssistant && (
               <PublisherSelector
-                label="Assistant"
+                label={t('assignments.form.field.assistant')}
                 value={form.assistantPublisherId}
                 onChange={(id) => update('assistantPublisherId', id)}
                 excludeIds={form.publisherId ? [form.publisherId] : []}
@@ -282,15 +284,15 @@ export function AssignmentForm({
         )}
       </FormSection>
 
-      <FormSection title="Status">
+      <FormSection title={t('assignments.form.section.status')}>
         <FormChips
-          label="Status"
+          label={t('assignments.form.field.statusLabel')}
           value={form.status ?? 'draft'}
           options={STATUS_OPTIONS}
           onChange={(v) => update('status', v)}
         />
         <FormField
-          label="Notes"
+          label={t('common.notes')}
           value={form.notes ?? ''}
           onChangeText={(v) => update('notes', v)}
           multiline
@@ -316,7 +318,7 @@ export function AssignmentForm({
           {isSubmitting ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.buttonPrimaryText}>{submitLabel}</Text>
+            <Text style={styles.buttonPrimaryText}>{effectiveSubmitLabel}</Text>
           )}
         </Pressable>
         {onCancel && (
@@ -325,7 +327,7 @@ export function AssignmentForm({
             onPress={onCancel}
             disabled={isSubmitting}
           >
-            <Text style={styles.buttonSecondaryText}>Cancel</Text>
+            <Text style={styles.buttonSecondaryText}>{t('common.cancel')}</Text>
           </Pressable>
         )}
       </View>

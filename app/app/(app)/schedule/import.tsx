@@ -16,6 +16,7 @@ import {
   ImportResult,
   scheduleImportApi,
 } from '../../../lib/api';
+import { useTranslation } from 'react-i18next';
 
 interface PickedFile {
   uri: string;
@@ -26,6 +27,7 @@ interface PickedFile {
 }
 
 export default function ImportEpubScreen() {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [picked, setPicked] = useState<PickedFile | null>(null);
   const [pickError, setPickError] = useState<string | null>(null);
@@ -48,11 +50,11 @@ export default function ImportEpubScreen() {
       if (result.canceled) return;
       const asset = result.assets?.[0];
       if (!asset) {
-        setPickError('No file selected');
+        setPickError(t('schedule.import.errors.noFileSelected'));
         return;
       }
       if (!asset.name.toLowerCase().endsWith('.epub')) {
-        setPickError('Please select a .epub file');
+        setPickError(t('schedule.import.errors.notEpub'));
         return;
       }
       setPicked({
@@ -83,11 +85,9 @@ export default function ImportEpubScreen() {
     >
       <View style={styles.intro}>
         <Ionicons name="cloud-upload-outline" size={48} color="#0ea5e9" />
-        <Text style={styles.title}>Import schedule EPUB</Text>
+        <Text style={styles.title}>{t('schedule.import.title')}</Text>
         <Text style={styles.subtitle}>
-          Upload Meeting Workbook (mwb_*.epub) or Watchtower study (w_*.epub)
-          to auto-create the weekly programme. Existing empty slots are filled
-          with official titles; assignments with publishers are preserved.
+          {t('schedule.import.subtitle')}
         </Text>
       </View>
 
@@ -101,7 +101,7 @@ export default function ImportEpubScreen() {
         >
           <Ionicons name="document-attach-outline" size={20} color="#0ea5e9" />
           <Text style={styles.pickButtonText}>
-            {picked ? 'Choose a different file' : 'Choose EPUB file'}
+            {picked ? t('schedule.import.chooseDifferent') : t('schedule.import.choosePrompt')}
           </Text>
         </Pressable>
 
@@ -137,10 +137,10 @@ export default function ImportEpubScreen() {
                   >
                     <Text style={styles.typeBadgeText}>
                       {detectedType === 'mwb'
-                        ? 'Midweek'
+                        ? t('schedule.import.typeBadge.midweek')
                         : detectedType === 'watchtower'
-                        ? 'Weekend'
-                        : 'Unknown type'}
+                        ? t('schedule.import.typeBadge.weekend')
+                        : t('schedule.import.typeBadge.unknown')}
                     </Text>
                   </View>
                 )}
@@ -152,8 +152,7 @@ export default function ImportEpubScreen() {
         {picked && detectedType === 'unknown' && (
           <View style={styles.warningBox}>
             <Text style={styles.warningText}>
-              Filename doesn't match expected pattern. Backend will try to
-              detect, but may reject the file.
+              {t('schedule.import.unknownTypeWarning')}
             </Text>
           </View>
         )}
@@ -170,12 +169,12 @@ export default function ImportEpubScreen() {
             {uploadMutation.isPending ? (
               <>
                 <ActivityIndicator color="#fff" />
-                <Text style={styles.uploadButtonText}>Uploading…</Text>
+                <Text style={styles.uploadButtonText}>{t('schedule.import.uploading')}</Text>
               </>
             ) : (
               <>
                 <Ionicons name="cloud-upload" size={20} color="#fff" />
-                <Text style={styles.uploadButtonText}>Upload and import</Text>
+                <Text style={styles.uploadButtonText}>{t('schedule.import.uploadAndImport')}</Text>
               </>
             )}
           </Pressable>
@@ -203,31 +202,32 @@ function detectFileType(filename: string): 'mwb' | 'watchtower' | 'unknown' {
 }
 
 function ResultSummary({ result }: { result: ImportResult }) {
+  const { t } = useTranslation();
   return (
     <View style={styles.section}>
       <View style={styles.successHeader}>
         <Ionicons name="checkmark-circle" size={32} color="#059669" />
-        <Text style={styles.successTitle}>Import complete</Text>
+        <Text style={styles.successTitle}>{t('schedule.import.result.complete')}</Text>
       </View>
 
       <View style={styles.statsRow}>
-        <Stat label="Weeks" value={result.weeksImported} color="#0369a1" />
-        <Stat label="Created" value={result.partsCreated} color="#059669" />
-        <Stat label="Updated" value={result.partsUpdated} color="#d97706" />
-        <Stat label="Skipped" value={result.partsSkipped} color="#64748b" />
+        <Stat label={t('schedule.import.result.stats.weeks')} value={result.weeksImported} color="#0369a1" />
+        <Stat label={t('schedule.import.result.stats.created')} value={result.partsCreated} color="#059669" />
+        <Stat label={t('schedule.import.result.stats.updated')} value={result.partsUpdated} color="#d97706" />
+        <Stat label={t('schedule.import.result.stats.skipped')} value={result.partsSkipped} color="#64748b" />
       </View>
 
       {result.unclassifiedParts > 0 && (
         <View style={styles.warningBox}>
           <Text style={styles.warningText}>
-            {result.unclassifiedParts} part(s) could not be classified
+            {t('schedule.import.result.unclassified', { count: result.unclassifiedParts })}
           </Text>
         </View>
       )}
 
       {result.warnings.length > 0 && (
         <View style={styles.warningBox}>
-          <Text style={styles.warningTitle}>Warnings:</Text>
+          <Text style={styles.warningTitle}>{t('schedule.import.result.warningsTitle')}</Text>
           {result.warnings.slice(0, 5).map((w, i) => (
             <Text key={i} style={styles.warningText}>
               • {w}
@@ -235,13 +235,13 @@ function ResultSummary({ result }: { result: ImportResult }) {
           ))}
           {result.warnings.length > 5 && (
             <Text style={styles.warningText}>
-              … and {result.warnings.length - 5} more
+              {t('schedule.import.result.moreWarnings', { count: result.warnings.length - 5 })}
             </Text>
           )}
         </View>
       )}
 
-      <Text style={styles.weeksHeader}>Imported weeks</Text>
+      <Text style={styles.weeksHeader}>{t('schedule.import.result.importedWeeks')}</Text>
       <View style={styles.weeksList}>
         {result.weeks.map((w) => (
           <View key={w.weekStartDate} style={styles.weekRow}>
@@ -278,7 +278,7 @@ function ResultSummary({ result }: { result: ImportResult }) {
         style={styles.doneButton}
         onPress={() => router.replace('/schedule' as any)}
       >
-        <Text style={styles.doneButtonText}>Open schedule</Text>
+        <Text style={styles.doneButtonText}>{t('schedule.import.openSchedule')}</Text>
       </Pressable>
     </View>
   );

@@ -25,10 +25,11 @@ import {
   startOfWeekMonday,
 } from '../../../lib/dates';
 import {
-  EVENT_TYPE_LABELS,
+  getEventTypeLabel,
   getPartLabel,
   PARTS_BY_EVENT,
 } from '../../../lib/parts';
+import { useTranslation } from 'react-i18next';
 import { WeekNavigator } from '../../../components/WeekNavigator';
 
 const EVENT_TYPE_ORDER: EventType[] = [
@@ -40,6 +41,7 @@ const EVENT_TYPE_ORDER: EventType[] = [
 ];
 
 export default function ScheduleIndexScreen() {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [weekStart, setWeekStart] = useState(() =>
     startOfWeekMonday(new Date()),
@@ -130,7 +132,7 @@ export default function ScheduleIndexScreen() {
               return (
                 <View key={eventType} style={styles.section}>
                   <Text style={styles.sectionTitle}>
-                    {EVENT_TYPE_LABELS[eventType]} ({items.length})
+                    {getEventTypeLabel(eventType)} ({items.length})
                   </Text>
                   <View style={styles.sectionBody}>
                     {items.map((a) => (
@@ -156,7 +158,7 @@ export default function ScheduleIndexScreen() {
 
             {isEmpty && (
               <Text style={styles.emptyHint}>
-                No assignments for this week.
+                {t('schedule.noAssignments')}
               </Text>
             )}
 
@@ -164,7 +166,7 @@ export default function ScheduleIndexScreen() {
             <View style={styles.createButtons}>
               {!hasMidweek && (
                 <CreateButton
-                  label={`Create empty midweek (${PARTS_BY_EVENT.midweek.length} slots)`}
+                  label={t('schedule.createEmptyMidweek', { count: PARTS_BY_EVENT.midweek.length })}
                   primary={isEmpty}
                   onPress={() => createWeekMutation.mutate('midweek')}
                   disabled={createWeekMutation.isPending}
@@ -172,7 +174,7 @@ export default function ScheduleIndexScreen() {
               )}
               {!hasWeekend && (
                 <CreateButton
-                  label={`Create empty weekend (${PARTS_BY_EVENT.weekend.length} slots)`}
+                  label={t('schedule.createEmptyWeekend', { count: PARTS_BY_EVENT.weekend.length })}
                   primary={isEmpty && !PARTS_BY_EVENT.midweek.length}
                   onPress={() => createWeekMutation.mutate('weekend')}
                   disabled={createWeekMutation.isPending}
@@ -236,6 +238,7 @@ function AssignmentRow({
   publisher: Publisher | null;
   assistant: Publisher | null;
 }) {
+  const { t } = useTranslation();
   const partLabel = getPartLabel(assignment.partKey);
 
   // Resolve who is assigned: local publisher OR invited speaker fallback
@@ -268,7 +271,7 @@ function AssignmentRow({
                 : ''}
             </Text>
           ) : (
-            <Text style={styles.unassigned}>Unassigned</Text>
+            <Text style={styles.unassigned}>{t('schedule.unassigned')}</Text>
           )}
           {assistant && (
             <Text style={styles.assistant}> + {assistant.displayName}</Text>
@@ -283,7 +286,7 @@ function AssignmentRow({
             ]}
           >
             <Text style={styles.statusBadgeText}>
-              {assignment.status.toUpperCase()}
+              {t(`assignments.status.${assignment.status}`).toUpperCase()}
             </Text>
           </View>
         )}

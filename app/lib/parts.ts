@@ -1,4 +1,5 @@
 import { EventType } from './api';
+import i18n from './i18n';
 
 export interface PartDef {
   key: string;
@@ -178,13 +179,13 @@ export function getPartDef(key: string): PartDef | undefined {
 }
 
 export function getPartLabel(key: string): string {
-  return ALL_PARTS.get(key)?.label ?? key;
+  const def = ALL_PARTS.get(key);
+  if (!def) return key;
+  return i18n.t(`parts.${key}`, { defaultValue: def.label });
 }
 
-export const EVENT_TYPE_LABELS: Record<EventType, string> = {
-  midweek: 'Midweek meeting',
-  weekend: 'Weekend meeting',
-  cleaning: 'Cleaning',
-  av_duty: 'A/V duty',
-  public_witnessing: 'Public witnessing',
-};
+export function getEventTypeLabel(type: EventType): string {
+  return i18n.t(`eventTypes.${type}`);
+}
+
+// EVENT_TYPE_LABELS replaced by getEventTypeLabel() above.
