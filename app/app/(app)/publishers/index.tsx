@@ -11,6 +11,8 @@ import {
 } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
+import { useTranslation } from 'react-i18next';
+import i18n from '../../../lib/i18n';
 import {
   extractErrorMessage,
   Publisher,
@@ -19,6 +21,7 @@ import {
 import { FilterToggle } from '../../../components/FilterToggle';
 
 export default function PublishersListScreen() {
+  const { t } = useTranslation();
   const [search, setSearch] = useState('');
   const [showRemoved, setShowRemoved] = useState(false);
 
@@ -37,13 +40,13 @@ export default function PublishersListScreen() {
         style={styles.search}
         value={search}
         onChangeText={setSearch}
-        placeholder="Search by name…"
+        placeholder={t('publishers.search')}
         autoCapitalize="none"
         autoCorrect={false}
       />
 
       <FilterToggle
-        label="Show removed"
+        label={t('publishers.showRemoved')}
         value={showRemoved}
         onValueChange={setShowRemoved}
       />
@@ -66,14 +69,14 @@ export default function PublishersListScreen() {
           }
           ListEmptyComponent={
             <Text style={styles.empty}>
-              {search ? 'No matches' : 'No publishers yet'}
+              {search ? t('publishers.noMatches') : t('publishers.noPublishers')}
             </Text>
           }
           ListHeaderComponent={
             data ? (
               <Text style={styles.count}>
-                {data.total} total
-                {search ? ` (filtered: ${data.data.length})` : ''}
+                {t('publishers.totalCount', { count: data.total })}
+                {search ? ' ' + t('publishers.filteredCount', { count: data.data.length }) : ''}
               </Text>
             ) : null
           }
@@ -88,13 +91,13 @@ function PublisherRow({ publisher }: { publisher: Publisher }) {
   const isRemoved = !!publisher.deletedAt;
 
   const tags: string[] = [];
-  if (publisher.appointment === 'elder') tags.push('Elder');
-  if (publisher.appointment === 'ministerial_servant') tags.push('MS');
-  if (publisher.pioneerType === 'regular') tags.push('Regular pioneer');
-  if (publisher.pioneerType === 'special') tags.push('Special pioneer');
-  if (publisher.pioneerType === 'missionary') tags.push('Missionary');
-  if (publisher.isAnointed) tags.push('Anointed');
-  if (!publisher.isActive) tags.push('Inactive');
+  if (publisher.appointment === 'elder') tags.push(i18n.t('publishers.tags.elder'));
+  if (publisher.appointment === 'ministerial_servant') tags.push(i18n.t('publishers.tags.ms'));
+  if (publisher.pioneerType === 'regular') tags.push(i18n.t('publishers.tags.regularPioneer'));
+  if (publisher.pioneerType === 'special') tags.push(i18n.t('publishers.tags.specialPioneer'));
+  if (publisher.pioneerType === 'missionary') tags.push(i18n.t('publishers.tags.missionary'));
+  if (publisher.isAnointed) tags.push(i18n.t('publishers.tags.anointed'));
+  if (!publisher.isActive) tags.push(i18n.t('publishers.tags.inactive'));
 
   const initials =
     (publisher.firstName[0] ?? '') + (publisher.lastName[0] ?? '');
@@ -118,7 +121,7 @@ function PublisherRow({ publisher }: { publisher: Publisher }) {
           </Text>
           {isRemoved && (
             <View style={styles.removedBadge}>
-              <Text style={styles.removedBadgeText}>Removed</Text>
+              <Text style={styles.removedBadgeText}>{i18n.t('publishers.removedBadge')}</Text>
             </View>
           )}
         </View>

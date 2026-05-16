@@ -18,21 +18,21 @@ import {
   RemovalReason,
   UpdatePublisherInput,
 } from '../../../lib/api';
+import { useTranslation } from 'react-i18next';
+import i18n from '../../../lib/i18n';
 import { PublisherForm } from '../../../components/PublisherForm';
 import {
   CAPABILITY_CATEGORIES,
   countActiveCapabilities,
 } from '../../../lib/capabilities';
 
-const REMOVAL_LABELS: Record<RemovalReason, string> = {
-  moved: 'Moved',
-  disfellowshipped: 'Disfellowshipped',
-  died: 'Died',
-  other: 'Other',
-};
+function removalLabel(reason: RemovalReason): string {
+  return i18n.t(`publishers.removal.${reason}`);
+}
 
 export default function PublisherDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [editing, setEditing] = useState(false);
 
@@ -76,7 +76,7 @@ export default function PublisherDetailScreen() {
   const handleRemove = () => {
     if (Platform.OS === 'web') {
       const reason = window.prompt(
-        'Removal reason: moved / disfellowshipped / died / other',
+        t('publishers.removal.webPrompt'),
       );
       if (
         reason &&
@@ -86,23 +86,23 @@ export default function PublisherDetailScreen() {
       }
       return;
     }
-    Alert.alert('Remove publisher', 'Reason?', [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert(t('publishers.removal.title'), t('publishers.removal.prompt'), [
+      { text: t('common.cancel'), style: 'cancel' },
       {
-        text: 'Moved',
+        text: t('publishers.removal.moved'),
         onPress: () => removeMutation.mutate({ reason: 'moved' }),
       },
       {
-        text: 'Disfellowshipped',
+        text: t('publishers.removal.disfellowshipped'),
         onPress: () => removeMutation.mutate({ reason: 'disfellowshipped' }),
         style: 'destructive',
       },
       {
-        text: 'Died',
+        text: t('publishers.removal.died'),
         onPress: () => removeMutation.mutate({ reason: 'died' }),
       },
       {
-        text: 'Other',
+        text: t('publishers.removal.other'),
         onPress: () => removeMutation.mutate({ reason: 'other' }),
       },
     ]);
@@ -120,7 +120,7 @@ export default function PublisherDetailScreen() {
     return (
       <View style={styles.center}>
         <Text style={styles.errorText}>
-          {error ? extractErrorMessage(error) : 'Not found'}
+          {error ? extractErrorMessage(error) : t('publishers.notFound')}
         </Text>
       </View>
     );
@@ -162,7 +162,7 @@ export default function PublisherDetailScreen() {
         }}
         onSubmit={updateMutation.mutateAsync}
         isSubmitting={updateMutation.isPending}
-        submitLabel="Save"
+        submitLabel={t('publishers.actions.save')}
         onCancel={() => setEditing(false)}
       />
     );
@@ -180,9 +180,9 @@ export default function PublisherDetailScreen() {
       {publisher.deletedAt && (
         <View style={styles.removedBanner}>
           <Text style={styles.removedText}>
-            Removed
+            {t('publishers.removedBanner')}
             {publisher.removalReason
-              ? ` — ${REMOVAL_LABELS[publisher.removalReason]}`
+              ? ` — ${removalLabel(publisher.removalReason)}`
               : ''}
           </Text>
           {publisher.removedNote && (
@@ -191,39 +191,39 @@ export default function PublisherDetailScreen() {
         </View>
       )}
 
-      <Section title="Contact">
-        <Field label="Phone" value={publisher.mobilePhone} />
-        <Field label="Email" value={publisher.email} />
-        <Field label="Address" value={publisher.address} />
+      <Section title={t('publishers.sections.contact')}>
+        <Field label={t('publishers.fields.phone')} value={publisher.mobilePhone} />
+        <Field label={t('publishers.fields.email')} value={publisher.email} />
+        <Field label={t('publishers.fields.address')} value={publisher.address} />
       </Section>
 
-      <Section title="Spirituality">
+      <Section title={t('publishers.sections.spirituality')}>
         <Field
-          label="Appointment"
+          label={t('publishers.fields.appointment')}
           value={appointmentLabel(publisher.appointment)}
         />
-        <Field label="Baptism" value={publisher.baptismDate} />
+        <Field label={t('publishers.fields.baptism')} value={publisher.baptismDate} />
         <Field
-          label="Pioneer"
+          label={t('publishers.fields.pioneer')}
           value={pioneerLabel(publisher.pioneerType, publisher.pioneerSince)}
         />
-        <Field label="Anointed" value={publisher.isAnointed ? 'Yes' : 'No'} />
+        <Field label={t('publishers.fields.anointed')} value={publisher.isAnointed ? t('common.yes') : t('common.no')} />
         <Field
-          label="Kingdom Hall key"
-          value={publisher.hasKingdomHallKey ? 'Yes' : 'No'}
+          label={t('publishers.fields.kingdomHallKey')}
+          value={publisher.hasKingdomHallKey ? t('common.yes') : t('common.no')}
         />
         {publisher.spiritualNotes && (
-          <Field label="Notes" value={publisher.spiritualNotes} />
+          <Field label={t('publishers.fields.spiritualNotes')} value={publisher.spiritualNotes} />
         )}
       </Section>
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>
-          Capabilities {totalActiveCaps > 0 ? `(${totalActiveCaps})` : ''}
+          {t('publishers.sections.capabilities')} {totalActiveCaps > 0 ? `(${totalActiveCaps})` : ''}
         </Text>
         <View style={styles.sectionBody}>
           {totalActiveCaps === 0 ? (
-            <Text style={styles.emptyCaps}>No capabilities set</Text>
+            <Text style={styles.emptyCaps}>{t('publishers.noCapabilities')}</Text>
           ) : (
             CAPABILITY_CATEGORIES.map((category) => {
               const activeCaps = category.capabilities.filter(
@@ -232,11 +232,11 @@ export default function PublisherDetailScreen() {
               if (activeCaps.length === 0) return null;
               return (
                 <View key={category.key} style={styles.capCategory}>
-                  <Text style={styles.capCategoryLabel}>{category.label}</Text>
+                  <Text style={styles.capCategoryLabel}>{t(`capabilities.categories.${category.key}`)}</Text>
                   <View style={styles.capChips}>
                     {activeCaps.map((cap) => (
                       <View key={cap.key} style={styles.capChip}>
-                        <Text style={styles.capChipText}>{cap.label}</Text>
+                        <Text style={styles.capChipText}>{t(`capabilities.items.${cap.key}`)}</Text>
                       </View>
                     ))}
                   </View>
@@ -247,28 +247,28 @@ export default function PublisherDetailScreen() {
         </View>
       </View>
 
-      <Section title="Personal">
-        <Field label="Birth date" value={publisher.birthDate} />
+      <Section title={t('publishers.sections.personal')}>
+        <Field label={t('publishers.fields.birthDate')} value={publisher.birthDate} />
         <Field
-          label="Gender"
-          value={publisher.gender === 'brother' ? 'Brother' : 'Sister'}
+          label={t('publishers.fields.gender')}
+          value={publisher.gender === 'brother' ? t('publishers.gender.brother') : t('publishers.gender.sister')}
         />
-        <Field label="Active" value={publisher.isActive ? 'Yes' : 'No'} />
+        <Field label={t('publishers.fields.active')} value={publisher.isActive ? t('common.yes') : t('common.no')} />
         <Field
-          label="Family head"
-          value={publisher.isFamilyHead ? 'Yes' : 'No'}
+          label={t('publishers.fields.familyHead')}
+          value={publisher.isFamilyHead ? t('common.yes') : t('common.no')}
         />
       </Section>
 
       {hasSpecialNeeds(publisher) && (
-        <Section title="Special needs">
+        <Section title={t('publishers.sections.specialNeeds')}>
           {publisher.isElderlyOrInfirm && (
-            <Field label="Elderly / Infirm" value="Yes" />
+            <Field label={t('publishers.fields.elderlyInfirmShort')} value={t('common.yes')} />
           )}
-          {publisher.isChild && <Field label="Child" value="Yes" />}
-          {publisher.isDeaf && <Field label="Deaf" value="Yes" />}
-          {publisher.isBlind && <Field label="Blind" value="Yes" />}
-          {publisher.isPrisoner && <Field label="Prisoner" value="Yes" />}
+          {publisher.isChild && <Field label={t('publishers.fields.child')} value={t('common.yes')} />}
+          {publisher.isDeaf && <Field label={t('publishers.fields.deaf')} value={t('common.yes')} />}
+          {publisher.isBlind && <Field label={t('publishers.fields.blind')} value={t('common.yes')} />}
+          {publisher.isPrisoner && <Field label={t('publishers.fields.prisoner')} value={t('common.yes')} />}
         </Section>
       )}
 
@@ -278,7 +278,7 @@ export default function PublisherDetailScreen() {
             style={[styles.button, styles.buttonEdit]}
             onPress={() => setEditing(true)}
           >
-            <Text style={styles.buttonEditText}>Edit</Text>
+            <Text style={styles.buttonEditText}>{t('publishers.actions.edit')}</Text>
           </Pressable>
         )}
         {publisher.deletedAt ? (
@@ -288,7 +288,7 @@ export default function PublisherDetailScreen() {
             disabled={restoreMutation.isPending}
           >
             <Text style={styles.buttonText}>
-              {restoreMutation.isPending ? 'Restoring…' : 'Restore'}
+              {restoreMutation.isPending ? t('publishers.actions.restoring') : t('publishers.actions.restore')}
             </Text>
           </Pressable>
         ) : (
@@ -298,7 +298,7 @@ export default function PublisherDetailScreen() {
             disabled={removeMutation.isPending}
           >
             <Text style={styles.buttonText}>
-              {removeMutation.isPending ? 'Removing…' : 'Remove'}
+              {removeMutation.isPending ? t('publishers.actions.removing') : t('publishers.actions.remove')}
             </Text>
           </Pressable>
         )}
@@ -325,7 +325,7 @@ function PublisherHeader({ publisher }: { publisher: Publisher }) {
       </View>
       <Text style={styles.headerName}>{publisher.displayName}</Text>
       <Text style={styles.headerSub}>
-        {publisher.gender === 'brother' ? 'Brother' : 'Sister'}
+        {publisher.gender === 'brother' ? i18n.t('publishers.gender.brother') : i18n.t('publishers.gender.sister')}
         {publisher.appointment !== 'publisher' &&
         publisher.appointment !== 'unbaptized_publisher'
           ? ` · ${appointmentLabel(publisher.appointment)}`
@@ -368,27 +368,17 @@ function Field({ label, value }: { label: string; value: string | null }) {
 }
 
 function appointmentLabel(a: Publisher['appointment']): string {
-  return {
-    elder: 'Elder',
-    ministerial_servant: 'Ministerial Servant',
-    publisher: 'Publisher',
-    unbaptized_publisher: 'Unbaptized Publisher',
-    none: 'None',
-  }[a];
+  return i18n.t(`publishers.appointment.${a}`);
 }
 
 function pioneerLabel(
   type: Publisher['pioneerType'],
   since: string | null,
 ): string {
-  const label = {
-    none: '—',
-    auxiliary_until_cancelled: 'Auxiliary',
-    regular: 'Regular pioneer',
-    special: 'Special pioneer',
-    missionary: 'Missionary',
-  }[type];
-  return type === 'none' || !since ? label : `${label} (since ${since})`;
+  const label = i18n.t(`publishers.pioneer.detail.${type}`);
+  return type === 'none' || !since
+    ? label
+    : i18n.t('publishers.pioneerSinceFormat', { label, date: since });
 }
 
 function hasSpecialNeeds(p: Publisher): boolean {

@@ -1,14 +1,16 @@
 import { Stack, router } from 'expo-router';
 import { Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 
 export default function PublishersLayout() {
+  const { t } = useTranslation();
   return (
     <Stack>
       <Stack.Screen
         name="index"
         options={{
-          title: 'Publishers',
+          title: t('publishers.title.list'),
           headerRight: () => (
             <Pressable
               onPress={() => router.push('/publishers/new' as any)}
@@ -20,8 +22,8 @@ export default function PublishersLayout() {
           ),
         }}
       />
-      <Stack.Screen name="[id]" options={{ title: 'Publisher' }} />
-      <Stack.Screen name="new" options={{ title: 'New Publisher' }} />
+      <Stack.Screen name="[id]" options={{ title: t('publishers.title.detail') }} />
+      <Stack.Screen name="new" options={{ title: t('publishers.title.new') }} />
     </Stack>
   );
 }

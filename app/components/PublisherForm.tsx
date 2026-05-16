@@ -20,6 +20,7 @@ import {
   PublisherAppointment,
   extractErrorMessage,
 } from '../lib/api';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
   initial?: Partial<CreatePublisherInput>;
@@ -29,34 +30,39 @@ interface Props {
   submitLabel?: string;
 }
 
-const GENDER_OPTIONS: { value: Gender; label: string }[] = [
-  { value: 'brother', label: 'Brother' },
-  { value: 'sister', label: 'Sister' },
-];
-
-const APPOINTMENT_OPTIONS: { value: PublisherAppointment; label: string }[] = [
-  { value: 'publisher', label: 'Publisher' },
-  { value: 'unbaptized_publisher', label: 'Unbaptized' },
-  { value: 'ministerial_servant', label: 'MS' },
-  { value: 'elder', label: 'Elder' },
-  { value: 'none', label: 'None' },
-];
-
-const PIONEER_OPTIONS: { value: PioneerType; label: string }[] = [
-  { value: 'none', label: 'None' },
-  { value: 'auxiliary_until_cancelled', label: 'Auxiliary' },
-  { value: 'regular', label: 'Regular' },
-  { value: 'special', label: 'Special' },
-  { value: 'missionary', label: 'Missionary' },
-];
+// Option arrays moved inside PublisherForm to use translations
 
 export function PublisherForm({
   initial,
   onSubmit,
   onCancel,
   isSubmitting,
-  submitLabel = 'Save',
+  submitLabel,
 }: Props) {
+  const { t } = useTranslation();
+
+  const GENDER_OPTIONS: { value: Gender; label: string }[] = [
+    { value: 'brother', label: t('publishers.gender.brother') },
+    { value: 'sister', label: t('publishers.gender.sister') },
+  ];
+
+  const APPOINTMENT_OPTIONS: { value: PublisherAppointment; label: string }[] = [
+    { value: 'publisher', label: t('publishers.appointment.publisher') },
+    { value: 'unbaptized_publisher', label: t('publishers.appointment.unbaptized') },
+    { value: 'ministerial_servant', label: t('publishers.appointment.ms') },
+    { value: 'elder', label: t('publishers.appointment.elder') },
+    { value: 'none', label: t('publishers.appointment.none') },
+  ];
+
+  const PIONEER_OPTIONS: { value: PioneerType; label: string }[] = [
+    { value: 'none', label: t('publishers.pioneer.options.none') },
+    { value: 'auxiliary_until_cancelled', label: t('publishers.pioneer.options.auxiliary_until_cancelled') },
+    { value: 'regular', label: t('publishers.pioneer.options.regular') },
+    { value: 'special', label: t('publishers.pioneer.options.special') },
+    { value: 'missionary', label: t('publishers.pioneer.options.missionary') },
+  ];
+
+  const effectiveSubmitLabel = submitLabel ?? t('publishers.actions.save');
   const [form, setForm] = useState<CreatePublisherInput>({
     firstName: initial?.firstName ?? '',
     middleName: initial?.middleName ?? '',
@@ -105,11 +111,11 @@ export function PublisherForm({
   const handleSubmit = async () => {
     setError(null);
     if (!form.firstName?.trim()) {
-      setError('First name is required');
+      setError(t('publishers.validation.firstNameRequired'));
       return;
     }
     if (!form.lastName?.trim()) {
-      setError('Last name is required');
+      setError(t('publishers.validation.lastNameRequired'));
       return;
     }
     try {
@@ -125,119 +131,119 @@ export function PublisherForm({
       contentContainerStyle={{ paddingBottom: 32 }}
       keyboardShouldPersistTaps="handled"
     >
-      <FormSection title="Personal">
+      <FormSection title={t('publishers.sections.personal')}>
         <FormField
-          label="First name"
+          label={t('publishers.fields.firstName')}
           value={form.firstName}
           onChangeText={(v) => update('firstName', v)}
           required
-          placeholder="Иван"
+          placeholder={t('publishers.placeholders.firstName')}
         />
         <FormField
-          label="Middle name / Patronymic"
+          label={t('publishers.fields.middleName')}
           value={form.middleName}
           onChangeText={(v) => update('middleName', v)}
-          placeholder="Иванович"
+          placeholder={t('publishers.placeholders.middleName')}
         />
         <FormField
-          label="Last name"
+          label={t('publishers.fields.lastName')}
           value={form.lastName}
           onChangeText={(v) => update('lastName', v)}
           required
-          placeholder="Иванов"
+          placeholder={t('publishers.placeholders.lastName')}
         />
         <FormChips
-          label="Gender"
+          label={t('publishers.fields.gender')}
           value={form.gender}
           options={GENDER_OPTIONS}
           onChange={(v) => update('gender', v)}
         />
         <FormField
-          label="Birth date"
+          label={t('publishers.fields.birthDate')}
           value={form.birthDate}
           onChangeText={(v) => update('birthDate', v)}
-          placeholder="YYYY-MM-DD"
+          placeholder={t('publishers.placeholders.date')}
           autoCapitalize="none"
         />
       </FormSection>
 
-      <FormSection title="Contact">
+      <FormSection title={t('publishers.sections.contact')}>
         <FormField
-          label="Mobile phone"
+          label={t('publishers.fields.mobilePhone')}
           value={form.mobilePhone}
           onChangeText={(v) => update('mobilePhone', v)}
-          placeholder="+49 170 1234567"
+          placeholder={t('publishers.placeholders.phone')}
           keyboardType="phone-pad"
         />
         <FormField
-          label="Email"
+          label={t('publishers.fields.email')}
           value={form.email}
           onChangeText={(v) => update('email', v)}
-          placeholder="ivan@example.com"
+          placeholder={t('publishers.placeholders.email')}
           keyboardType="email-address"
           autoCapitalize="none"
         />
         <FormField
-          label="Address"
+          label={t('publishers.fields.address')}
           value={form.address}
           onChangeText={(v) => update('address', v)}
           multiline
         />
       </FormSection>
 
-      <FormSection title="Spirituality">
+      <FormSection title={t('publishers.sections.spirituality')}>
         <FormChips
-          label="Appointment"
+          label={t('publishers.fields.appointment')}
           value={form.appointment}
           options={APPOINTMENT_OPTIONS}
           onChange={(v) => update('appointment', v)}
         />
         <FormField
-          label="Baptism date"
+          label={t('publishers.fields.baptismDate')}
           value={form.baptismDate}
           onChangeText={(v) => update('baptismDate', v)}
-          placeholder="YYYY-MM-DD"
+          placeholder={t('publishers.placeholders.date')}
           autoCapitalize="none"
         />
         <FormField
-          label="Ministry start (unbaptized)"
+          label={t('publishers.fields.ministryStart')}
           value={form.ministryStartDate}
           onChangeText={(v) => update('ministryStartDate', v)}
-          placeholder="YYYY-MM-DD"
+          placeholder={t('publishers.placeholders.date')}
           autoCapitalize="none"
         />
         <FormChips
-          label="Pioneer type"
+          label={t('publishers.fields.pioneerType')}
           value={form.pioneerType}
           options={PIONEER_OPTIONS}
           onChange={(v) => update('pioneerType', v)}
         />
         <FormField
-          label="Pioneer since"
+          label={t('publishers.fields.pioneerSince')}
           value={form.pioneerSince}
           onChangeText={(v) => update('pioneerSince', v)}
-          placeholder="YYYY-MM-DD"
+          placeholder={t('publishers.placeholders.date')}
           autoCapitalize="none"
         />
         <FormSwitch
-          label="Anointed"
+          label={t('publishers.fields.anointed')}
           value={form.isAnointed}
           onValueChange={(v) => update('isAnointed', v)}
         />
         <FormSwitch
-          label="Kingdom Hall key"
+          label={t('publishers.fields.kingdomHallKey')}
           value={form.hasKingdomHallKey}
           onValueChange={(v) => update('hasKingdomHallKey', v)}
         />
         <FormField
-          label="Spiritual notes"
+          label={t('publishers.fields.spiritualNotes')}
           value={form.spiritualNotes}
           onChangeText={(v) => update('spiritualNotes', v)}
           multiline
         />
       </FormSection>
 
-      <FormSection title="Capabilities">
+      <FormSection title={t('publishers.sections.capabilities')}>
         <CapabilitiesEditor
           value={form.capabilities ?? {}}
           onChange={updateCapabilities}
@@ -245,70 +251,70 @@ export function PublisherForm({
         />
       </FormSection>
 
-      <FormSection title="Status">
+      <FormSection title={t('publishers.sections.status')}>
         <FormSwitch
-          label="Active"
+          label={t('publishers.fields.active')}
           value={form.isActive}
           onValueChange={(v) => update('isActive', v)}
         />
         <FormSwitch
-          label="Regular"
+          label={t('publishers.fields.regular')}
           value={form.isRegular}
           onValueChange={(v) => update('isRegular', v)}
         />
         <FormSwitch
-          label="Family head"
+          label={t('publishers.fields.familyHead')}
           value={form.isFamilyHead}
           onValueChange={(v) => update('isFamilyHead', v)}
         />
         <FormSwitch
-          label="Printed Watchtower"
+          label={t('publishers.fields.printedWatchtower')}
           value={form.printedWatchtower}
           onValueChange={(v) => update('printedWatchtower', v)}
         />
         <FormSwitch
-          label="Printed Workbook"
+          label={t('publishers.fields.printedWorkbook')}
           value={form.printedWorkbook}
           onValueChange={(v) => update('printedWorkbook', v)}
         />
         <FormSwitch
-          label="Sends report directly to branch"
+          label={t('publishers.fields.sendsReportDirectly')}
           value={form.sendsReportDirectly}
           onValueChange={(v) => update('sendsReportDirectly', v)}
         />
       </FormSection>
 
-      <FormSection title="Special needs">
+      <FormSection title={t('publishers.sections.specialNeeds')}>
         <FormSwitch
-          label="Elderly or infirm"
+          label={t('publishers.fields.elderlyOrInfirm')}
           value={form.isElderlyOrInfirm}
           onValueChange={(v) => update('isElderlyOrInfirm', v)}
         />
         <FormSwitch
-          label="Child"
+          label={t('publishers.fields.child')}
           value={form.isChild}
           onValueChange={(v) => update('isChild', v)}
         />
         <FormSwitch
-          label="Deaf"
+          label={t('publishers.fields.deaf')}
           value={form.isDeaf}
           onValueChange={(v) => update('isDeaf', v)}
         />
         <FormSwitch
-          label="Blind"
+          label={t('publishers.fields.blind')}
           value={form.isBlind}
           onValueChange={(v) => update('isBlind', v)}
         />
         <FormSwitch
-          label="Prisoner"
+          label={t('publishers.fields.prisoner')}
           value={form.isPrisoner}
           onValueChange={(v) => update('isPrisoner', v)}
         />
       </FormSection>
 
-      <FormSection title="Notes">
+      <FormSection title={t('publishers.sections.notes')}>
         <FormField
-          label="General notes"
+          label={t('publishers.fields.generalNotes')}
           value={form.notes}
           onChangeText={(v) => update('notes', v)}
           multiline
@@ -334,7 +340,7 @@ export function PublisherForm({
           {isSubmitting ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.buttonPrimaryText}>{submitLabel}</Text>
+            <Text style={styles.buttonPrimaryText}>{effectiveSubmitLabel}</Text>
           )}
         </Pressable>
         {onCancel && (
@@ -343,7 +349,7 @@ export function PublisherForm({
             onPress={onCancel}
             disabled={isSubmitting}
           >
-            <Text style={styles.buttonSecondaryText}>Cancel</Text>
+            <Text style={styles.buttonSecondaryText}>{t('common.cancel')}</Text>
           </Pressable>
         )}
       </View>

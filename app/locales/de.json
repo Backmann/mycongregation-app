@@ -43,5 +43,173 @@
     "english": "English",
     "russian": "Русский",
     "german": "Deutsch"
+  },
+  "publishers": {
+    "title": {
+      "list": "Verkündiger",
+      "detail": "Verkündiger",
+      "new": "Neuer Verkündiger"
+    },
+    "search": "Suche nach Namen…",
+    "showRemoved": "Entfernte anzeigen",
+    "noMatches": "Keine Treffer",
+    "noPublishers": "Noch keine Verkündiger",
+    "totalCount": "Gesamt: {{count}}",
+    "filteredCount": "(gefiltert: {{count}})",
+    "removedBadge": "Entfernt",
+    "removedBanner": "Entfernt",
+    "notFound": "Nicht gefunden",
+    "noCapabilities": "Keine Fähigkeiten gesetzt",
+    "tags": {
+      "elder": "Ältester",
+      "ms": "DA-Gehilfe",
+      "regularPioneer": "Allgemeiner Pionier",
+      "specialPioneer": "Sonderpionier",
+      "missionary": "Missionar",
+      "anointed": "Gesalbter",
+      "inactive": "Inaktiv"
+    },
+    "sections": {
+      "contact": "Kontakt",
+      "spirituality": "Geistliches",
+      "capabilities": "Fähigkeiten",
+      "personal": "Persönlich",
+      "specialNeeds": "Besondere Bedürfnisse",
+      "status": "Status",
+      "notes": "Notizen"
+    },
+    "fields": {
+      "phone": "Telefon",
+      "email": "E-Mail",
+      "address": "Anschrift",
+      "appointment": "Berufung",
+      "baptism": "Taufe",
+      "baptismDate": "Tauftag",
+      "ministryStart": "Predigtdienstbeginn (ungetauft)",
+      "pioneer": "Pionier",
+      "pioneerType": "Pionierart",
+      "pioneerSince": "Pionier seit",
+      "anointed": "Gesalbter",
+      "kingdomHallKey": "Königreichssaal-Schlüssel",
+      "spiritualNotes": "Geistliche Notizen",
+      "birthDate": "Geburtsdatum",
+      "gender": "Geschlecht",
+      "active": "Aktiv",
+      "regular": "Regelmäßig",
+      "familyHead": "Familienoberhaupt",
+      "printedWatchtower": "Wachtturm gedruckt",
+      "printedWorkbook": "Arbeitsheft gedruckt",
+      "sendsReportDirectly": "Sendet Bericht direkt an Zweigbüro",
+      "elderlyOrInfirm": "Älter oder gebrechlich",
+      "elderlyInfirmShort": "Älter / Gebrechlich",
+      "child": "Kind",
+      "deaf": "Gehörlos",
+      "blind": "Blind",
+      "prisoner": "Inhaftiert",
+      "firstName": "Vorname",
+      "middleName": "Zweiter Vorname",
+      "lastName": "Nachname",
+      "mobilePhone": "Mobiltelefon",
+      "generalNotes": "Allgemeine Notizen"
+    },
+    "appointment": {
+      "publisher": "Verkündiger",
+      "unbaptized_publisher": "Ungetaufter Verkündiger",
+      "unbaptized": "Ungetauft",
+      "ministerial_servant": "Dienstamtgehilfe",
+      "ms": "DA-Gehilfe",
+      "elder": "Ältester",
+      "none": "Keine"
+    },
+    "pioneer": {
+      "options": {
+        "none": "Keiner",
+        "auxiliary_until_cancelled": "Hilfspionier",
+        "regular": "Allgemein",
+        "special": "Sonder",
+        "missionary": "Missionar"
+      },
+      "detail": {
+        "none": "—",
+        "auxiliary_until_cancelled": "Hilfspionier",
+        "regular": "Allgemeiner Pionier",
+        "special": "Sonderpionier",
+        "missionary": "Missionar"
+      }
+    },
+    "pioneerSinceFormat": "{{label}} (seit {{date}})",
+    "gender": {
+      "brother": "Bruder",
+      "sister": "Schwester"
+    },
+    "removal": {
+      "title": "Verkündiger entfernen",
+      "prompt": "Grund?",
+      "webPrompt": "Grund: moved / disfellowshipped / died / other",
+      "moved": "Umgezogen",
+      "disfellowshipped": "Ausgeschlossen",
+      "died": "Verstorben",
+      "other": "Sonstiges"
+    },
+    "actions": {
+      "edit": "Bearbeiten",
+      "remove": "Entfernen",
+      "restore": "Wiederherstellen",
+      "removing": "Wird entfernt…",
+      "restoring": "Wird wiederhergestellt…",
+      "save": "Speichern",
+      "create": "Erstellen"
+    },
+    "validation": {
+      "firstNameRequired": "Vorname ist erforderlich",
+      "lastNameRequired": "Nachname ist erforderlich"
+    },
+    "placeholders": {
+      "firstName": "Hans",
+      "middleName": "Karl",
+      "lastName": "Müller",
+      "date": "JJJJ-MM-TT",
+      "phone": "+49 170 1234567",
+      "email": "hans@example.com"
+    }
+  },
+  "capabilities": {
+    "hints": {
+      "brother": "Bruder",
+      "elder": "Ältester",
+      "baptized": "Getauft"
+    },
+    "categories": {
+      "midweek": "Zusammenkunft unter der Woche",
+      "weekend": "Wochenend-Zusammenkunft",
+      "field_service": "Demonstrationen im Predigtdienst",
+      "duties": "Audio / Video / Saaldienst",
+      "cleaning": "Reinigung"
+    },
+    "items": {
+      "midweek_chairman": "Vorsitzender",
+      "midweek_opening_prayer": "Eröffnungsgebet",
+      "treasures_talk": "Schätze aus Gottes Wort",
+      "spiritual_gems": "Geistige Kostbarkeiten",
+      "bible_reading": "Bibellesung",
+      "congregation_study_conductor": "Leiter des Versammlungsbibelstudiums",
+      "congregation_study_reader": "Vorleser des Versammlungsbibelstudiums",
+      "weekend_chairman": "Vorsitzender",
+      "weekend_opening_prayer": "Eröffnungsgebet",
+      "public_talk_speaker": "Redner für den öffentlichen Vortrag",
+      "watchtower_conductor": "Leiter des Wachtturm-Studiums",
+      "watchtower_reader": "Vorleser des Wachtturm-Studiums",
+      "demo_initial_call": "Demonstration: Erstgespräch",
+      "demo_return_visit": "Demonstration: Rückbesuch",
+      "demo_bible_study": "Demonstration: Bibelstudium",
+      "service_meeting_part": "Programmpunkt",
+      "attendant": "Saaldienst",
+      "microphone": "Mikrofondienst",
+      "stage": "Bühne / Podium",
+      "sound": "Audiotechnik",
+      "video_presenter": "Videodienst",
+      "cleaning_team": "Reguläre Reinigung",
+      "cleaning_special": "Sonderreinigung / Vierteljährlich"
+    }
   }
 }

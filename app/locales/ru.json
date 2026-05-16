@@ -43,5 +43,173 @@
     "english": "English",
     "russian": "Русский",
     "german": "Deutsch"
+  },
+  "publishers": {
+    "title": {
+      "list": "Возвещатели",
+      "detail": "Возвещатель",
+      "new": "Новый возвещатель"
+    },
+    "search": "Поиск по имени…",
+    "showRemoved": "Показать удалённых",
+    "noMatches": "Совпадений нет",
+    "noPublishers": "Возвещателей пока нет",
+    "totalCount": "Всего: {{count}}",
+    "filteredCount": "(найдено: {{count}})",
+    "removedBadge": "Удалён",
+    "removedBanner": "Удалён",
+    "notFound": "Не найдено",
+    "noCapabilities": "Способности не заданы",
+    "tags": {
+      "elder": "Старейшина",
+      "ms": "Служ. пом.",
+      "regularPioneer": "Общий пионер",
+      "specialPioneer": "Специальный пионер",
+      "missionary": "Миссионер",
+      "anointed": "Помазанник",
+      "inactive": "Неактивный"
+    },
+    "sections": {
+      "contact": "Контакты",
+      "spirituality": "Духовность",
+      "capabilities": "Способности",
+      "personal": "Личные данные",
+      "specialNeeds": "Особые потребности",
+      "status": "Статус",
+      "notes": "Заметки"
+    },
+    "fields": {
+      "phone": "Телефон",
+      "email": "Электронная почта",
+      "address": "Адрес",
+      "appointment": "Назначение",
+      "baptism": "Крещение",
+      "baptismDate": "Дата крещения",
+      "ministryStart": "Начало служения (некрещ.)",
+      "pioneer": "Пионер",
+      "pioneerType": "Тип пионерского служения",
+      "pioneerSince": "Пионер с",
+      "anointed": "Помазанник",
+      "kingdomHallKey": "Ключ от Зала Царства",
+      "spiritualNotes": "Духовные заметки",
+      "birthDate": "Дата рождения",
+      "gender": "Пол",
+      "active": "Активный",
+      "regular": "Регулярный",
+      "familyHead": "Глава семьи",
+      "printedWatchtower": "Печатная «Сторожевая башня»",
+      "printedWorkbook": "Печатная «Рабочая тетрадь»",
+      "sendsReportDirectly": "Отправляет отчёт напрямую в филиал",
+      "elderlyOrInfirm": "Пожилой или больной",
+      "elderlyInfirmShort": "Пожилой / Больной",
+      "child": "Ребёнок",
+      "deaf": "Глухой",
+      "blind": "Слепой",
+      "prisoner": "Заключённый",
+      "firstName": "Имя",
+      "middleName": "Отчество",
+      "lastName": "Фамилия",
+      "mobilePhone": "Мобильный телефон",
+      "generalNotes": "Общие заметки"
+    },
+    "appointment": {
+      "publisher": "Возвещатель",
+      "unbaptized_publisher": "Некрещёный возвещатель",
+      "unbaptized": "Некрещёный",
+      "ministerial_servant": "Служебный помощник",
+      "ms": "Служ. пом.",
+      "elder": "Старейшина",
+      "none": "Нет"
+    },
+    "pioneer": {
+      "options": {
+        "none": "Нет",
+        "auxiliary_until_cancelled": "Подсобный",
+        "regular": "Общий",
+        "special": "Специальный",
+        "missionary": "Миссионер"
+      },
+      "detail": {
+        "none": "—",
+        "auxiliary_until_cancelled": "Подсобный пионер",
+        "regular": "Общий пионер",
+        "special": "Специальный пионер",
+        "missionary": "Миссионер"
+      }
+    },
+    "pioneerSinceFormat": "{{label}} (с {{date}})",
+    "gender": {
+      "brother": "Брат",
+      "sister": "Сестра"
+    },
+    "removal": {
+      "title": "Удалить возвещателя",
+      "prompt": "Причина?",
+      "webPrompt": "Причина: moved / disfellowshipped / died / other",
+      "moved": "Переехал",
+      "disfellowshipped": "Исключён",
+      "died": "Умер",
+      "other": "Другое"
+    },
+    "actions": {
+      "edit": "Изменить",
+      "remove": "Удалить",
+      "restore": "Восстановить",
+      "removing": "Удаление…",
+      "restoring": "Восстановление…",
+      "save": "Сохранить",
+      "create": "Создать"
+    },
+    "validation": {
+      "firstNameRequired": "Имя обязательно",
+      "lastNameRequired": "Фамилия обязательна"
+    },
+    "placeholders": {
+      "firstName": "Иван",
+      "middleName": "Иванович",
+      "lastName": "Иванов",
+      "date": "ГГГГ-ММ-ДД",
+      "phone": "+49 170 1234567",
+      "email": "ivan@example.com"
+    }
+  },
+  "capabilities": {
+    "hints": {
+      "brother": "Брат",
+      "elder": "Старейшина",
+      "baptized": "Крещён"
+    },
+    "categories": {
+      "midweek": "Встреча среди недели",
+      "weekend": "Встреча в выходные",
+      "field_service": "Демонстрации в служении",
+      "duties": "Аудио / Видео / Помощники",
+      "cleaning": "Уборка"
+    },
+    "items": {
+      "midweek_chairman": "Председательствующий",
+      "midweek_opening_prayer": "Молитва в начале",
+      "treasures_talk": "Сокровища из Слова Бога",
+      "spiritual_gems": "Духовные жемчужины",
+      "bible_reading": "Чтение Библии",
+      "congregation_study_conductor": "Ведущий изучения Библии в собрании",
+      "congregation_study_reader": "Чтец на изучении Библии в собрании",
+      "weekend_chairman": "Председательствующий",
+      "weekend_opening_prayer": "Молитва в начале",
+      "public_talk_speaker": "Докладчик публичной речи",
+      "watchtower_conductor": "Ведущий изучения «Сторожевой башни»",
+      "watchtower_reader": "Чтец на изучении «Сторожевой башни»",
+      "demo_initial_call": "Демонстрация первого посещения",
+      "demo_return_visit": "Демонстрация повторного посещения",
+      "demo_bible_study": "Демонстрация изучения Библии",
+      "service_meeting_part": "Часть на встрече для служения",
+      "attendant": "Помощник на встречах",
+      "microphone": "Микрофон",
+      "stage": "Сцена / Подиум",
+      "sound": "Звуковая аппаратура",
+      "video_presenter": "Видеоведущий",
+      "cleaning_team": "Регулярная уборка",
+      "cleaning_special": "Специальная / Ежеквартальная уборка"
+    }
   }
 }

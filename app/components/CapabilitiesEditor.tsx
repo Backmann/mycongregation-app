@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import {
   Capabilities,
   Gender,
@@ -44,6 +45,7 @@ function CategorySection({
   onChange: (v: Capabilities) => void;
   gender: Gender;
 }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const active = countActiveInCategory(value, category);
   const total = category.capabilities.length;
@@ -62,7 +64,7 @@ function CategorySection({
           size={18}
           color="#64748b"
         />
-        <Text style={styles.headerLabel}>{category.label}</Text>
+        <Text style={styles.headerLabel}>{t(`capabilities.categories.${category.key}`)}</Text>
         <View style={styles.counter}>
           <Text style={styles.counterText}>
             {active}/{total}
@@ -85,7 +87,7 @@ function CategorySection({
                       isBrotherOnlyConflict && styles.capLabelDisabled,
                     ]}
                   >
-                    {cap.label}
+                    {t(`capabilities.items.${cap.key}`)}
                   </Text>
                   {(cap.brotherOnly || cap.elderOnly || cap.baptizedOnly) && (
                     <View style={styles.hintRow}>
@@ -96,14 +98,14 @@ function CategorySection({
                             isBrotherOnlyConflict && styles.hintWarn,
                           ]}
                         >
-                          Brother
+                          {t('capabilities.hints.brother')}
                         </Text>
                       )}
                       {cap.elderOnly && (
-                        <Text style={styles.hint}>Elder</Text>
+                        <Text style={styles.hint}>{t('capabilities.hints.elder')}</Text>
                       )}
                       {cap.baptizedOnly && (
-                        <Text style={styles.hint}>Baptized</Text>
+                        <Text style={styles.hint}>{t('capabilities.hints.baptized')}</Text>
                       )}
                     </View>
                   )}

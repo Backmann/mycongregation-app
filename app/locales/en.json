@@ -43,5 +43,173 @@
     "english": "English",
     "russian": "Русский",
     "german": "Deutsch"
+  },
+  "publishers": {
+    "title": {
+      "list": "Publishers",
+      "detail": "Publisher",
+      "new": "New Publisher"
+    },
+    "search": "Search by name…",
+    "showRemoved": "Show removed",
+    "noMatches": "No matches",
+    "noPublishers": "No publishers yet",
+    "totalCount": "{{count}} total",
+    "filteredCount": "(filtered: {{count}})",
+    "removedBadge": "Removed",
+    "removedBanner": "Removed",
+    "notFound": "Not found",
+    "noCapabilities": "No capabilities set",
+    "tags": {
+      "elder": "Elder",
+      "ms": "MS",
+      "regularPioneer": "Regular pioneer",
+      "specialPioneer": "Special pioneer",
+      "missionary": "Missionary",
+      "anointed": "Anointed",
+      "inactive": "Inactive"
+    },
+    "sections": {
+      "contact": "Contact",
+      "spirituality": "Spirituality",
+      "capabilities": "Capabilities",
+      "personal": "Personal",
+      "specialNeeds": "Special needs",
+      "status": "Status",
+      "notes": "Notes"
+    },
+    "fields": {
+      "phone": "Phone",
+      "email": "Email",
+      "address": "Address",
+      "appointment": "Appointment",
+      "baptism": "Baptism",
+      "baptismDate": "Baptism date",
+      "ministryStart": "Ministry start (unbaptized)",
+      "pioneer": "Pioneer",
+      "pioneerType": "Pioneer type",
+      "pioneerSince": "Pioneer since",
+      "anointed": "Anointed",
+      "kingdomHallKey": "Kingdom Hall key",
+      "spiritualNotes": "Spiritual notes",
+      "birthDate": "Birth date",
+      "gender": "Gender",
+      "active": "Active",
+      "regular": "Regular",
+      "familyHead": "Family head",
+      "printedWatchtower": "Printed Watchtower",
+      "printedWorkbook": "Printed Workbook",
+      "sendsReportDirectly": "Sends report directly to branch",
+      "elderlyOrInfirm": "Elderly or infirm",
+      "elderlyInfirmShort": "Elderly / Infirm",
+      "child": "Child",
+      "deaf": "Deaf",
+      "blind": "Blind",
+      "prisoner": "Prisoner",
+      "firstName": "First name",
+      "middleName": "Middle name / Patronymic",
+      "lastName": "Last name",
+      "mobilePhone": "Mobile phone",
+      "generalNotes": "General notes"
+    },
+    "appointment": {
+      "publisher": "Publisher",
+      "unbaptized_publisher": "Unbaptized Publisher",
+      "unbaptized": "Unbaptized",
+      "ministerial_servant": "Ministerial Servant",
+      "ms": "MS",
+      "elder": "Elder",
+      "none": "None"
+    },
+    "pioneer": {
+      "options": {
+        "none": "None",
+        "auxiliary_until_cancelled": "Auxiliary",
+        "regular": "Regular",
+        "special": "Special",
+        "missionary": "Missionary"
+      },
+      "detail": {
+        "none": "—",
+        "auxiliary_until_cancelled": "Auxiliary",
+        "regular": "Regular pioneer",
+        "special": "Special pioneer",
+        "missionary": "Missionary"
+      }
+    },
+    "pioneerSinceFormat": "{{label}} (since {{date}})",
+    "gender": {
+      "brother": "Brother",
+      "sister": "Sister"
+    },
+    "removal": {
+      "title": "Remove publisher",
+      "prompt": "Reason?",
+      "webPrompt": "Removal reason: moved / disfellowshipped / died / other",
+      "moved": "Moved",
+      "disfellowshipped": "Disfellowshipped",
+      "died": "Died",
+      "other": "Other"
+    },
+    "actions": {
+      "edit": "Edit",
+      "remove": "Remove",
+      "restore": "Restore",
+      "removing": "Removing…",
+      "restoring": "Restoring…",
+      "save": "Save",
+      "create": "Create"
+    },
+    "validation": {
+      "firstNameRequired": "First name is required",
+      "lastNameRequired": "Last name is required"
+    },
+    "placeholders": {
+      "firstName": "John",
+      "middleName": "James",
+      "lastName": "Smith",
+      "date": "YYYY-MM-DD",
+      "phone": "+49 170 1234567",
+      "email": "john@example.com"
+    }
+  },
+  "capabilities": {
+    "hints": {
+      "brother": "Brother",
+      "elder": "Elder",
+      "baptized": "Baptized"
+    },
+    "categories": {
+      "midweek": "Midweek meeting",
+      "weekend": "Weekend meeting",
+      "field_service": "Field service demonstrations",
+      "duties": "Audio / Visual / Attendant",
+      "cleaning": "Cleaning"
+    },
+    "items": {
+      "midweek_chairman": "Chairman",
+      "midweek_opening_prayer": "Opening prayer",
+      "treasures_talk": "Treasures from God's Word",
+      "spiritual_gems": "Spiritual Gems",
+      "bible_reading": "Bible reading",
+      "congregation_study_conductor": "Congregation Bible Study conductor",
+      "congregation_study_reader": "Congregation Bible Study reader",
+      "weekend_chairman": "Chairman",
+      "weekend_opening_prayer": "Opening prayer",
+      "public_talk_speaker": "Public talk speaker",
+      "watchtower_conductor": "Watchtower study conductor",
+      "watchtower_reader": "Watchtower study reader",
+      "demo_initial_call": "Initial call demonstration",
+      "demo_return_visit": "Return visit demonstration",
+      "demo_bible_study": "Bible study demonstration",
+      "service_meeting_part": "Service meeting part",
+      "attendant": "Attendant",
+      "microphone": "Microphone",
+      "stage": "Stage / Platform",
+      "sound": "Sound system",
+      "video_presenter": "Video presenter",
+      "cleaning_team": "Regular cleaning",
+      "cleaning_special": "Special / Quarterly cleaning"
+    }
   }
 }
