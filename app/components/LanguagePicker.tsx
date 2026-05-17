@@ -14,6 +14,8 @@ import {
   setLanguage,
   SupportedLanguage,
 } from '../lib/i18n';
+import { api, TOKEN_KEY } from '../lib/api';
+import { storage } from '../lib/storage';
 
 interface Props {
   visible: boolean;
@@ -41,6 +43,16 @@ export function LanguagePickerModal({ visible, onClose, required = false }: Prop
   const handleConfirm = async () => {
     await setLanguage(selected);
     onClose();
+    // Persist to server so push notifications and cross-device sync use the
+    // latest choice. Best-effort: failures don't undo the local change.
+    try {
+      const token = await storage.getItem(TOKEN_KEY);
+      if (token) {
+        await api.patch('/auth/me', { uiLanguage: selected });
+      }
+    } catch (err) {
+      console.warn('[i18n] Failed to persist uiLanguage to server:', err);
+    }
   };
 
   return (
