@@ -55,7 +55,19 @@
     "publicTalksDescription": "S-34-Vortragsliste verwalten",
     "settings": "Einstellungen",
     "language": "Sprache",
-    "signOut": "Abmelden"
+    "signOut": "Abmelden",
+    "notifications": "Benachrichtigungen",
+    "webPush": {
+      "title": "Browser-Benachrichtigungen",
+      "enabled": "Aktiviert",
+      "disabled": "Deaktiviert",
+      "denied": "In den Browser-Einstellungen blockiert",
+      "unsupported": "Von diesem Browser nicht unterstützt",
+      "unconfigured": "In diesem Build nicht verfügbar",
+      "iosHint": "Zum Aktivieren: Website zuerst zum Home-Bildschirm hinzufügen",
+      "deniedTitle": "Benachrichtigungen blockiert",
+      "deniedBody": "Öffnen Sie die Browser-Einstellungen und erlauben Sie Benachrichtigungen für diese Website."
+    }
   },
   "language": {
     "title": "Sprache",

@@ -55,7 +55,19 @@
     "publicTalksDescription": "Manage S-34 talks list",
     "settings": "Settings",
     "language": "Language",
-    "signOut": "Sign out"
+    "signOut": "Sign out",
+    "notifications": "Notifications",
+    "webPush": {
+      "title": "Browser notifications",
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "denied": "Blocked in browser settings",
+      "unsupported": "Not supported by this browser",
+      "unconfigured": "Not available in this build",
+      "iosHint": "To enable, first add the site to your home screen",
+      "deniedTitle": "Notifications blocked",
+      "deniedBody": "Open browser settings and allow notifications for this site."
+    }
   },
   "language": {
     "title": "Language",

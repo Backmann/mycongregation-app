@@ -1,4 +1,6 @@
 import {
+  Alert,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -7,17 +9,71 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../../lib/auth';
 import { LanguagePickerModal } from '../../../components/LanguagePicker';
 import { getCurrentLanguage } from '../../../lib/i18n';
+import {
+  getWebPushStatus,
+  isIosWithoutStandalone,
+  subscribeToWebPush,
+  unsubscribeFromWebPush,
+  WebPushStatus,
+} from '../../../lib/web-push';
 
 export default function ProfileScreen() {
   const { user, signOut } = useAuth();
   const { t } = useTranslation();
   const [langModalVisible, setLangModalVisible] = useState(false);
   const currentLang = getCurrentLanguage();
+  const [webPushStatus, setWebPushStatus] = useState<WebPushStatus | null>(null);
+  const [webPushBusy, setWebPushBusy] = useState(false);
+  const showIosHint = isIosWithoutStandalone();
+
+  useEffect(() => {
+    if (Platform.OS !== 'web') return;
+    getWebPushStatus().then(setWebPushStatus);
+  }, []);
+
+  const handleWebPushToggle = useCallback(async () => {
+    if (webPushBusy) return;
+    setWebPushBusy(true);
+    try {
+      if (webPushStatus === 'subscribed') {
+        await unsubscribeFromWebPush();
+      } else if (webPushStatus === 'granted' || webPushStatus === 'default') {
+        await subscribeToWebPush();
+      } else if (webPushStatus === 'denied') {
+        Alert.alert(
+          t('profile.webPush.deniedTitle'),
+          t('profile.webPush.deniedBody'),
+        );
+      }
+      const fresh = await getWebPushStatus();
+      setWebPushStatus(fresh);
+    } finally {
+      setWebPushBusy(false);
+    }
+  }, [webPushStatus, webPushBusy, t]);
+
+  const webPushSubtitleKey = showIosHint
+    ? 'profile.webPush.iosHint'
+    : webPushStatus === 'subscribed'
+      ? 'profile.webPush.enabled'
+      : webPushStatus === 'denied'
+        ? 'profile.webPush.denied'
+        : webPushStatus === 'unsupported'
+          ? 'profile.webPush.unsupported'
+          : webPushStatus === 'unconfigured'
+            ? 'profile.webPush.unconfigured'
+            : 'profile.webPush.disabled';
+
+  const webPushDisabled =
+    webPushBusy ||
+    webPushStatus === 'unsupported' ||
+    webPushStatus === 'unconfigured' ||
+    showIosHint;
 
   if (!user) return null;
 
@@ -60,6 +116,38 @@ export default function ProfileScreen() {
           </Pressable>
         </View>
       </View>
+
+      {Platform.OS === 'web' && webPushStatus !== null && (
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>{t('profile.notifications')}</Text>
+          <View style={styles.card}>
+            <Pressable
+              style={({ pressed }) => [
+                styles.row,
+                pressed && !webPushDisabled && styles.rowPressed,
+                webPushDisabled && { opacity: 0.6 },
+              ]}
+              onPress={handleWebPushToggle}
+              disabled={webPushDisabled}
+            >
+              <View style={styles.rowIcon}>
+                <Ionicons
+                  name={webPushStatus === 'subscribed' ? 'notifications' : 'notifications-outline'}
+                  size={20}
+                  color="#0ea5e9"
+                />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.rowTitle}>{t('profile.webPush.title')}</Text>
+                <Text style={styles.rowSubtitle}>{t(webPushSubtitleKey)}</Text>
+              </View>
+              {webPushStatus === 'subscribed' && (
+                <Ionicons name="checkmark-circle" size={20} color="#10b981" />
+              )}
+            </Pressable>
+          </View>
+        </View>
+      )}
 
       {isAdmin && (
         <View style={styles.section}>
