@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Platform } from 'react-native';
 import { Stack } from 'expo-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from '../lib/auth';
@@ -25,6 +26,18 @@ export default function RootLayout() {
       setShowLanguagePrompt(isFirstLaunch);
       setReady(true);
     })();
+  }, []);
+
+  // Service Worker registration for Web Push (web-only). Failures are
+  // non-fatal — the app keeps working without push.
+  useEffect(() => {
+    if (Platform.OS !== 'web') return;
+    if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) {
+      return;
+    }
+    navigator.serviceWorker
+      .register('/service-worker.js')
+      .catch((err) => console.warn('SW registration failed:', err));
   }, []);
 
   if (!ready) return null;
