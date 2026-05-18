@@ -1,0 +1,121 @@
+name: Deploy app to production
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Write .env.production from secrets
+        run: |
+          {
+            echo "EXPO_PUBLIC_API_URL=${{ secrets.EXPO_PUBLIC_API_URL }}"
+            echo "EXPO_PUBLIC_VAPID_KEY=${{ secrets.EXPO_PUBLIC_VAPID_KEY }}"
+          } > .env.production
+
+      - name: Clear caches (prevent stale env in bundle)
+        run: rm -rf .expo node_modules/.cache dist
+
+      - name: Build PWA bundle
+        env:
+          NODE_ENV: production
+        run: npx expo export -p web
+
+      - name: Verify bundle
+        run: |
+          BUNDLE=$(ls dist/_expo/static/js/web/entry-*.js | head -1)
+          echo "Bundle: $BUNDLE"
+          if ! grep -q 'api.mycongregation.org' "$BUNDLE"; then
+            echo "FAIL: API URL not embedded in production bundle"
+            exit 1
+          fi
+          if grep -q 'localhost:3000' "$BUNDLE"; then
+            echo "FAIL: localhost found in production bundle"
+            exit 1
+          fi
+          if ! grep -q 'BE1HMG09' "$BUNDLE"; then
+            echo "FAIL: VAPID key not embedded"
+            exit 1
+          fi
+          echo "Bundle verification passed"
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          echo "${{ secrets.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          cat > ~/.ssh/config << 'SSH_EOF'
+          Host myserver
+              HostName ${{ secrets.SSH_HOST }}
+              User ${{ secrets.SSH_USER }}
+              IdentityFile ~/.ssh/deploy_key
+              UserKnownHostsFile ~/.ssh/known_hosts
+              IdentitiesOnly yes
+              StrictHostKeyChecking yes
+          SSH_EOF
+          chmod 600 ~/.ssh/config
+
+      - name: Package dist
+        run: tar -czf /tmp/mycong-dist.tar.gz -C dist .
+
+      - name: Upload to server
+        run: scp /tmp/mycong-dist.tar.gz myserver:/tmp/mycong-dist.tar.gz
+
+      - name: Deploy in-place
+        run: |
+          ssh myserver bash << 'ENDSSH'
+          set -euo pipefail
+
+          echo "=== In-place extract to /var/www/mycongregation/ ==="
+          echo "    (preserves nginx bind mount inode)"
+          cd /var/www/mycongregation
+          rm -rf ./* ./.[!.]* 2>/dev/null || true
+          tar xzf /tmp/mycong-dist.tar.gz -C /var/www/mycongregation/
+          chown -R 1001:1001 /var/www/mycongregation/
+
+          echo "=== Cleanup ==="
+          rm /tmp/mycong-dist.tar.gz
+
+          echo "=== Status ==="
+          ls -la /var/www/mycongregation/ | head -10
+          echo "Deploy complete"
+          ENDSSH
+
+      - name: Cleanup local
+        if: always()
+        run: rm -f ~/.ssh/deploy_key ~/.ssh/known_hosts ~/.ssh/config /tmp/mycong-dist.tar.gz .env.production
