@@ -67,7 +67,9 @@
       "iosHint": "To enable, first add the site to your home screen",
       "deniedTitle": "Notifications blocked",
       "deniedBody": "Open browser settings and allow notifications for this site."
-    }
+    },
+    "userManagement": "User management",
+    "userManagementDescription": "Create users, change roles, activate, reset passwords"
   },
   "language": {
     "title": "Language",
@@ -602,5 +604,64 @@
     "showingAllNoFilter": "Showing all — capability filter is OFF",
     "hiddenByCapability": "{{count}} hidden by capability filter",
     "lastGiven": "Last given {{date}}"
+  },
+  "admin": {
+    "users": {
+      "title": "Users",
+      "countSummary": "{{count}} users",
+      "addUser": "Add user",
+      "noUsers": "No users",
+      "you": "You",
+      "neverLoggedIn": "Never signed in",
+      "status": {
+        "active": "Active",
+        "inactive": "Deactivated"
+      },
+      "roles": {
+        "admin": "Administrator",
+        "elder": "Elder",
+        "ministerial_servant": "Ministerial servant",
+        "publisher": "Publisher"
+      },
+      "actions": {
+        "changeRole": "Role",
+        "resetPassword": "Password",
+        "deactivate": "Deactivate",
+        "activate": "Activate"
+      },
+      "create": {
+        "title": "New user",
+        "email": "Email",
+        "password": "Initial password",
+        "passwordHint": "At least 8 characters. Share with the user out-of-band — the password is not shown again here.",
+        "role": "Role",
+        "submit": "Create"
+      },
+      "changeRole": {
+        "title": "Change role",
+        "subtitle": "Current role for {{email}}: {{current}}",
+        "submit": "Apply",
+        "confirmDemoteAdmin": "Demote administrator",
+        "confirmDemoteAdminBody": "{{email}} will no longer be able to manage system users. Continue?"
+      },
+      "resetPassword": {
+        "title": "Reset password",
+        "subtitle": "Set a new password for {{email}}. Share it with the user out-of-band.",
+        "password": "New password",
+        "passwordHint": "At least 8 characters.",
+        "submit": "Reset",
+        "successMessage": "Password for {{email}} updated."
+      },
+      "deactivate": {
+        "confirmTitle": "Deactivate user",
+        "confirmBody": "{{email}} will no longer be able to sign in. Data is preserved. Continue?",
+        "confirmAction": "Deactivate"
+      },
+      "activate": {
+        "confirmTitle": "Activate user",
+        "confirmBody": "{{email}} will be able to sign in again.",
+        "confirmAction": "Activate"
+      }
+    }
   }
 }

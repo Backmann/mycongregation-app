@@ -67,7 +67,9 @@
       "iosHint": "Zum Aktivieren: Website zuerst zum Home-Bildschirm hinzufügen",
       "deniedTitle": "Benachrichtigungen blockiert",
       "deniedBody": "Öffnen Sie die Browser-Einstellungen und erlauben Sie Benachrichtigungen für diese Website."
-    }
+    },
+    "userManagement": "Benutzerverwaltung",
+    "userManagementDescription": "Benutzer anlegen, Rollen ändern, aktivieren, Passwörter zurücksetzen"
   },
   "language": {
     "title": "Sprache",
@@ -602,5 +604,64 @@
     "showingAllNoFilter": "Alle angezeigt — Fähigkeitsfilter ist AUS",
     "hiddenByCapability": "{{count}} durch Filter ausgeblendet",
     "lastGiven": "Zuletzt gehalten {{date}}"
+  },
+  "admin": {
+    "users": {
+      "title": "Benutzer",
+      "countSummary": "{{count}} Benutzer",
+      "addUser": "Benutzer hinzufügen",
+      "noUsers": "Keine Benutzer",
+      "you": "Du",
+      "neverLoggedIn": "Noch nie angemeldet",
+      "status": {
+        "active": "Aktiv",
+        "inactive": "Deaktiviert"
+      },
+      "roles": {
+        "admin": "Administrator",
+        "elder": "Ältester",
+        "ministerial_servant": "Dienstamtgehilfe",
+        "publisher": "Verkündiger"
+      },
+      "actions": {
+        "changeRole": "Rolle",
+        "resetPassword": "Passwort",
+        "deactivate": "Deaktivieren",
+        "activate": "Aktivieren"
+      },
+      "create": {
+        "title": "Neuer Benutzer",
+        "email": "E-Mail",
+        "password": "Anfangspasswort",
+        "passwordHint": "Mindestens 8 Zeichen. Teile es dem Benutzer separat mit — das Passwort wird hier nicht mehr angezeigt.",
+        "role": "Rolle",
+        "submit": "Erstellen"
+      },
+      "changeRole": {
+        "title": "Rolle ändern",
+        "subtitle": "Aktuelle Rolle für {{email}}: {{current}}",
+        "submit": "Übernehmen",
+        "confirmDemoteAdmin": "Administrator herabstufen",
+        "confirmDemoteAdminBody": "{{email}} kann die Systembenutzer dann nicht mehr verwalten. Fortfahren?"
+      },
+      "resetPassword": {
+        "title": "Passwort zurücksetzen",
+        "subtitle": "Neues Passwort für {{email}} festlegen. Teile es dem Benutzer separat mit.",
+        "password": "Neues Passwort",
+        "passwordHint": "Mindestens 8 Zeichen.",
+        "submit": "Zurücksetzen",
+        "successMessage": "Passwort für {{email}} aktualisiert."
+      },
+      "deactivate": {
+        "confirmTitle": "Benutzer deaktivieren",
+        "confirmBody": "{{email}} kann sich dann nicht mehr anmelden. Daten bleiben erhalten. Fortfahren?",
+        "confirmAction": "Deaktivieren"
+      },
+      "activate": {
+        "confirmTitle": "Benutzer aktivieren",
+        "confirmBody": "{{email}} kann sich wieder anmelden.",
+        "confirmAction": "Aktivieren"
+      }
+    }
   }
 }

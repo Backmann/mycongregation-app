@@ -78,6 +78,7 @@ export default function ProfileScreen() {
   if (!user) return null;
 
   const isAdmin = user.role === 'admin' || user.role === 'elder';
+  const isFullAdmin = user.role === 'admin';
 
   return (
     <>
@@ -153,6 +154,24 @@ export default function ProfileScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionLabel}>{t('profile.adminTools')}</Text>
           <View style={styles.card}>
+            {isFullAdmin && (
+              <Pressable
+                style={({ pressed }) => [
+                  styles.row,
+                  pressed && styles.rowPressed,
+                ]}
+                onPress={() => router.push('/profile/admin-users' as any)}
+              >
+                <View style={styles.rowIcon}>
+                  <Ionicons name="people-outline" size={20} color="#0ea5e9" />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.rowTitle}>{t('profile.userManagement')}</Text>
+                  <Text style={styles.rowSubtitle}>{t('profile.userManagementDescription')}</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={18} color="#cbd5e1" />
+              </Pressable>
+            )}
             <Pressable
               style={({ pressed }) => [
                 styles.row,

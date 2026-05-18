@@ -92,6 +92,29 @@ export interface LoginResponse {
   user: AuthUser;
 }
 
+/**
+ * Admin-side projection of a User account (Phase 1 RBAC).
+ * Excludes sensitive fields (passwordHash) and soft-delete metadata.
+ * Returned from the admin /users endpoints.
+ */
+export interface PublicUser {
+  id: string;
+  email: string;
+  role: UserRole;
+  isActive: boolean;
+  uiLanguage: string;
+  lastLoginAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateUserInput {
+  email: string;
+  password: string;
+  role: UserRole;
+  uiLanguage?: string;
+}
+
 export type Gender = 'brother' | 'sister';
 export type PublisherAppointment =
   | 'elder'
@@ -442,6 +465,47 @@ export const authApi = {
   async me(): Promise<AuthUser> {
     const { data } = await api.get<AuthUser>('/auth/me');
     return data;
+  },
+  /**
+   * Self-service password change (Phase 1 follow-up — all roles).
+   * Server returns 400 BadRequest if currentPassword is incorrect (NOT 401,
+   * so the response interceptor will not trigger a refresh/logout cycle).
+   */
+  async changePassword(
+    currentPassword: string,
+    newPassword: string,
+  ): Promise<void> {
+    await api.patch('/auth/me/password', { currentPassword, newPassword });
+  },
+};
+
+/**
+ * Admin user management (Phase 1 RBAC — every endpoint is admin-only on the server).
+ * Mirrors UsersController in mycongregation-server.
+ */
+export const usersApi = {
+  async list(): Promise<PublicUser[]> {
+    const { data } = await api.get<PublicUser[]>('/users');
+    return data;
+  },
+  async create(input: CreateUserInput): Promise<PublicUser> {
+    const { data } = await api.post<PublicUser>('/users', cleanPayload(input));
+    return data;
+  },
+  async updateRole(id: string, role: UserRole): Promise<PublicUser> {
+    const { data } = await api.patch<PublicUser>(`/users/${id}/role`, { role });
+    return data;
+  },
+  async deactivate(id: string): Promise<PublicUser> {
+    const { data } = await api.patch<PublicUser>(`/users/${id}/deactivate`);
+    return data;
+  },
+  async activate(id: string): Promise<PublicUser> {
+    const { data } = await api.patch<PublicUser>(`/users/${id}/activate`);
+    return data;
+  },
+  async resetPassword(id: string, password: string): Promise<void> {
+    await api.post(`/users/${id}/reset-password`, { password });
   },
 };
 
