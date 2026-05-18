@@ -69,7 +69,25 @@
       "deniedBody": "Open browser settings and allow notifications for this site."
     },
     "userManagement": "User management",
-    "userManagementDescription": "Create users, change roles, activate, reset passwords"
+    "userManagementDescription": "Create users, change roles, activate, reset passwords",
+    "changePassword": {
+      "rowTitle": "Change password",
+      "rowSubtitle": "Change your account password",
+      "intro": "Enter your current password, then a new one. At least 8 characters. Your current session stays signed in after the change.",
+      "currentPassword": "Current password",
+      "newPassword": "New password",
+      "confirmPassword": "Confirm new password",
+      "minLength": "At least 8 characters",
+      "submit": "Change password",
+      "successTitle": "Password changed",
+      "successBody": "Your password has been updated. Existing sessions on this device stay signed in.",
+      "note": "Tip: if you forgot your current password, ask an administrator to reset it via User management.",
+      "errors": {
+        "tooShort": "New password must be at least 8 characters",
+        "sameAsCurrent": "New password must differ from current password",
+        "mismatch": "Passwords don't match"
+      }
+    }
   },
   "language": {
     "title": "Language",

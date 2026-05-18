@@ -115,6 +115,22 @@ export default function ProfileScreen() {
             </View>
             <Ionicons name="chevron-forward" size={18} color="#cbd5e1" />
           </Pressable>
+          <Pressable
+            style={({ pressed }) => [
+              styles.row,
+              pressed && styles.rowPressed,
+            ]}
+            onPress={() => router.push('/profile/change-password' as any)}
+          >
+            <View style={styles.rowIcon}>
+              <Ionicons name="key-outline" size={20} color="#0ea5e9" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.rowTitle}>{t('profile.changePassword.rowTitle')}</Text>
+              <Text style={styles.rowSubtitle}>{t('profile.changePassword.rowSubtitle')}</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color="#cbd5e1" />
+          </Pressable>
         </View>
       </View>
 

@@ -12,6 +12,14 @@ export default function ProfileLayout() {
         name="public-talks-import"
         options={{ title: 'Bulk import' }}
       />
+      <Stack.Screen
+        name="change-password"
+        options={{ title: 'Change password' }}
+      />
+      <Stack.Screen
+        name="admin-users"
+        options={{ title: 'User management' }}
+      />
     </Stack>
   );
 }
