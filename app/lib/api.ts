@@ -26,7 +26,7 @@ export const REFRESH_TOKEN_KEY = 'mycongregation.refresh_token';
  * about to expire. Returns true if exp is within the buffer or if the token
  * is malformed (treat as expired so caller refreshes).
  */
-function isTokenExpiringSoon(token: string, bufferSec = 60): boolean {
+function isTokenExpiringSoon(token: string, bufferSec = 180): boolean {
   try {
     const parts = token.split('.');
     if (parts.length !== 3) return true;
