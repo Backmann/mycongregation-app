@@ -1,24 +1,30 @@
 import { Stack } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 
 export default function ProfileLayout() {
+  const { t } = useTranslation();
+
   return (
     <Stack>
-      <Stack.Screen name="index" options={{ title: 'Profile' }} />
+      <Stack.Screen
+        name="index"
+        options={{ title: t('profile.title') }}
+      />
       <Stack.Screen
         name="public-talks"
-        options={{ title: 'Public talks' }}
+        options={{ title: t('profile.publicTalks') }}
       />
       <Stack.Screen
         name="public-talks-import"
-        options={{ title: 'Bulk import' }}
+        options={{ title: t('profile.publicTalksImport') }}
       />
       <Stack.Screen
         name="change-password"
-        options={{ title: 'Change password' }}
+        options={{ title: t('profile.changePassword.rowTitle') }}
       />
       <Stack.Screen
         name="admin-users"
-        options={{ title: 'User management' }}
+        options={{ title: t('profile.userManagement') }}
       />
     </Stack>
   );

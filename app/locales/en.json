@@ -87,7 +87,9 @@
         "sameAsCurrent": "New password must differ from current password",
         "mismatch": "Passwords don't match"
       }
-    }
+    },
+    "title": "Profile",
+    "publicTalksImport": "Bulk import"
   },
   "language": {
     "title": "Language",

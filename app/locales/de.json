@@ -87,7 +87,9 @@
         "sameAsCurrent": "Neues Passwort muss sich vom aktuellen unterscheiden",
         "mismatch": "Passwörter stimmen nicht überein"
       }
-    }
+    },
+    "title": "Profil",
+    "publicTalksImport": "Massenimport"
   },
   "language": {
     "title": "Sprache",
