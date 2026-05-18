@@ -22,7 +22,7 @@ import {
 } from '../../../lib/api';
 import { useAuth } from '../../../lib/auth';
 import { useTranslation } from 'react-i18next';
-import i18n, { formatMonthLabel } from '../../../lib/i18n';
+import { formatMonthLabel } from '../../../lib/i18n';
 
 function getRecentMonths(count: number): { value: string; label: string }[] {
   const now = new Date();
@@ -41,6 +41,8 @@ function getRecentMonths(count: number): { value: string; label: string }[] {
 
 export default function GroupReportsScreen() {
   const { t, i18n: i18nInstance } = useTranslation();
+  // formatMonthLabel reads global i18next state — re-memoize when language changes
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const recentMonths = useMemo(() => getRecentMonths(6), [i18nInstance.language]);
   // Default to the previous completed month (most useful for follow-up).
   const [reportMonth, setReportMonth] = useState(

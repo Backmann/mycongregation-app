@@ -21,7 +21,7 @@ import {
   serviceReportsApi,
 } from '../../../lib/api';
 import { useTranslation } from 'react-i18next';
-import i18n, { formatMonthLabel } from '../../../lib/i18n';
+import { formatMonthLabel } from '../../../lib/i18n';
 
 // formatMonth replaced by formatMonthLabel from lib/i18n.ts
 
@@ -94,6 +94,8 @@ export default function NewOrEditServiceReportScreen() {
     enabled: !isEditMode && !isOnBehalf,
   });
 
+  // formatMonthLabel reads global i18next state — re-memoize when language changes
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const recentMonths = useMemo(() => getRecentMonths(), [i18nInstance.language]);
   const submittedMonths = useMemo(() => {
     if (!myReports) return new Set<string>();

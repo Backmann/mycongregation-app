@@ -321,7 +321,6 @@ function AssignmentRow({
 
   // Resolve who is assigned: local publisher OR invited speaker fallback
   const hasInvitedSpeaker = !publisher && !!assignment.speakerName;
-  const isUnassigned = !publisher && !hasInvitedSpeaker;
 
   return (
     <Pressable
