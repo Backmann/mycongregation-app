@@ -1,7 +1,22 @@
 import axios, { AxiosError } from 'axios';
 import { storage } from './storage';
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3000/api';
+function resolveApiUrl(): string {
+  const url = process.env.EXPO_PUBLIC_API_URL;
+  if (url) return url;
+  if (__DEV__) {
+    console.warn(
+      '[api] EXPO_PUBLIC_API_URL not set; using http://localhost:3000/api (dev only)',
+    );
+    return 'http://localhost:3000/api';
+  }
+  throw new Error(
+    'EXPO_PUBLIC_API_URL must be set for production builds. ' +
+      'Add it to .env.production before running expo export.',
+  );
+}
+
+const API_URL = resolveApiUrl();
 
 export const TOKEN_KEY = 'mycongregation.token';
 export const REFRESH_TOKEN_KEY = 'mycongregation.refresh_token';
