@@ -687,5 +687,17 @@
         "confirmAction": "Активировать"
       }
     }
+  },
+  "publicTalks": {
+    "searchPlaceholder": "Поиск по номеру или названию…",
+    "showRetired": "Показать снятые",
+    "bulkImport": "Массовый импорт",
+    "retiredBadge": "Снято",
+    "import": {
+      "submitButton": "Импортировать",
+      "successTitle": "Импорт завершён",
+      "firstImported": "Первые импортированные",
+      "viewCatalog": "Открыть каталог"
+    }
   }
 }

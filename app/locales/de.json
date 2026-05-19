@@ -683,5 +683,17 @@
         "confirmAction": "Aktivieren"
       }
     }
+  },
+  "publicTalks": {
+    "searchPlaceholder": "Suche nach Nummer oder Titel…",
+    "showRetired": "Zurückgezogene anzeigen",
+    "bulkImport": "Massenimport",
+    "retiredBadge": "Zurückgezogen",
+    "import": {
+      "submitButton": "Importieren",
+      "successTitle": "Import abgeschlossen",
+      "firstImported": "Erste importierte Einträge",
+      "viewCatalog": "Katalog öffnen"
+    }
   }
 }

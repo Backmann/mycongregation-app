@@ -12,6 +12,7 @@ import {
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useFocusEffect } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import {
   extractErrorMessage,
   PublicTalk,
@@ -31,6 +32,7 @@ function getRecency(lastGivenAt: string | null): Recency {
 }
 
 export default function PublicTalksScreen() {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [showInactive, setShowInactive] = useState(false);
@@ -62,7 +64,7 @@ export default function PublicTalksScreen() {
           style={styles.searchInput}
           value={search}
           onChangeText={setSearch}
-          placeholder="Search by number or title…"
+          placeholder={t('publicTalks.searchPlaceholder')}
           placeholderTextColor="#cbd5e1"
           autoCapitalize="none"
         />
@@ -83,7 +85,9 @@ export default function PublicTalksScreen() {
             size={16}
             color={showInactive ? '#0ea5e9' : '#94a3b8'}
           />
-          <Text style={styles.toggleText}>Show retired</Text>
+          <Text style={styles.toggleText}>
+            {t('publicTalks.showRetired')}
+          </Text>
         </Pressable>
 
         <View style={{ flex: 1 }} />
@@ -93,7 +97,9 @@ export default function PublicTalksScreen() {
           onPress={() => router.push('/profile/public-talks-import' as any)}
         >
           <Ionicons name="cloud-upload-outline" size={16} color="#fff" />
-          <Text style={styles.importButtonText}>Bulk import</Text>
+          <Text style={styles.importButtonText}>
+            {t('publicTalks.bulkImport')}
+          </Text>
         </Pressable>
       </View>
 
@@ -143,6 +149,7 @@ export default function PublicTalksScreen() {
 }
 
 function TalkRow({ talk }: { talk: PublicTalk }) {
+  const { t } = useTranslation();
   const recency = getRecency(talk.lastGivenAt);
   const recencyColor: Record<Recency, string> = {
     recent: '#dc2626',
@@ -169,7 +176,11 @@ function TalkRow({ talk }: { talk: PublicTalk }) {
         >
           {talk.title}
         </Text>
-        {!talk.isActive && <Text style={styles.retiredLabel}>Retired</Text>}
+        {!talk.isActive && (
+          <Text style={styles.retiredLabel}>
+            {t('publicTalks.retiredBadge')}
+          </Text>
+        )}
         {talk.lastGivenAt && (
           <View style={styles.hintRow}>
             <Ionicons

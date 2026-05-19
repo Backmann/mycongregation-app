@@ -683,5 +683,17 @@
         "confirmAction": "Activate"
       }
     }
+  },
+  "publicTalks": {
+    "searchPlaceholder": "Search by number or title…",
+    "showRetired": "Show retired",
+    "bulkImport": "Bulk import",
+    "retiredBadge": "Retired",
+    "import": {
+      "submitButton": "Import",
+      "successTitle": "Import complete",
+      "firstImported": "First imported items",
+      "viewCatalog": "View catalog"
+    }
   }
 }

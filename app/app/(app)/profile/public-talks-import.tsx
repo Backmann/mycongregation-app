@@ -11,6 +11,7 @@ import {
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import {
   BulkImportResult,
   extractErrorMessage,
@@ -18,6 +19,7 @@ import {
 } from '../../../lib/api';
 
 export default function PublicTalksImportScreen() {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [text, setText] = useState('');
 
@@ -87,7 +89,9 @@ export default function PublicTalksImportScreen() {
             ) : (
               <>
                 <Ionicons name="checkmark" size={20} color="#fff" />
-                <Text style={styles.importButtonText}>Import</Text>
+                <Text style={styles.importButtonText}>
+                  {t('publicTalks.import.submitButton')}
+                </Text>
               </>
             )}
           </Pressable>
@@ -108,11 +112,14 @@ export default function PublicTalksImportScreen() {
 }
 
 function ResultSummary({ result }: { result: BulkImportResult }) {
+  const { t } = useTranslation();
   return (
     <View style={styles.section}>
       <View style={styles.successHeader}>
         <Ionicons name="checkmark-circle" size={32} color="#059669" />
-        <Text style={styles.successTitle}>Import complete</Text>
+        <Text style={styles.successTitle}>
+          {t('publicTalks.import.successTitle')}
+        </Text>
       </View>
 
       <View style={styles.statsRow}>
@@ -133,7 +140,9 @@ function ResultSummary({ result }: { result: BulkImportResult }) {
 
       {result.examples.length > 0 && (
         <>
-          <Text style={styles.examplesHeader}>First imported items</Text>
+          <Text style={styles.examplesHeader}>
+            {t('publicTalks.import.firstImported')}
+          </Text>
           <View style={styles.examplesList}>
             {result.examples.map((ex) => (
               <View key={ex.number} style={styles.exampleRow}>
@@ -153,7 +162,9 @@ function ResultSummary({ result }: { result: BulkImportResult }) {
         style={styles.doneButton}
         onPress={() => router.replace('/profile/public-talks' as any)}
       >
-        <Text style={styles.doneButtonText}>View catalog</Text>
+        <Text style={styles.doneButtonText}>
+          {t('publicTalks.import.viewCatalog')}
+        </Text>
       </Pressable>
     </View>
   );
