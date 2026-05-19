@@ -44,3 +44,5 @@ app-example
 
 # Build artifacts from deploy
 web-dist.tar.gz
+.env.production
+.env
