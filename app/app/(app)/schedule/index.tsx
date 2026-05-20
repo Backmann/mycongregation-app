@@ -129,6 +129,13 @@ export default function ScheduleIndexScreen() {
     mutationFn: (id: string) => dutiesApi.removeDuty(id),
     onSuccess: () => invalidateDuties(),
   });
+  const setMicMutation = useMutation({
+    mutationFn: (microphoneSlots: number) =>
+      dutiesApi.setMicrophoneSlots(microphoneSlots),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['meeting-settings'] });
+    },
+  });
 
   const createWeekMutation = useMutation({
     mutationFn: (eventType: EventType) => {
@@ -258,11 +265,14 @@ export default function ScheduleIndexScreen() {
                 createCustomDutyMutation.mutate({ eventType, customLabel })
               }
               onRemoveDuty={(id) => removeDutyMutation.mutate(id)}
+              micCount={meetingVersion?.microphoneSlots ?? 2}
+              onSetMicCount={(n) => setMicMutation.mutate(n)}
               pending={
                 generateDutiesMutation.isPending ||
                 assignDutyMutation.isPending ||
                 createCustomDutyMutation.isPending ||
-                removeDutyMutation.isPending
+                removeDutyMutation.isPending ||
+                setMicMutation.isPending
               }
             />
 

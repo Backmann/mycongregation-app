@@ -59,6 +59,8 @@ type Props = {
   onAssign: (dutyId: string, publisherId: string | null) => void;
   onAddCustom: (eventType: Meeting, customLabel: string) => void;
   onRemoveDuty: (dutyId: string) => void;
+  micCount?: number;
+  onSetMicCount?: (count: number) => void;
   pending?: boolean;
 };
 
@@ -70,6 +72,8 @@ export function DutiesSection({
   onAssign,
   onAddCustom,
   onRemoveDuty,
+  micCount,
+  onSetMicCount,
   pending,
 }: Props) {
   const { t } = useTranslation();
@@ -94,12 +98,41 @@ export function DutiesSection({
     setCustomLabel('');
   };
 
+  const showMicStepper =
+    canEdit && !!onSetMicCount && typeof micCount === 'number';
+
   return (
     <View style={styles.section}>
       <View style={styles.header}>
         <Ionicons name="people-outline" size={16} color="#475569" />
         <Text style={styles.headerText}>{t('duties.title')}</Text>
       </View>
+
+      {showMicStepper && (
+        <View style={styles.micBlock}>
+          <View style={styles.micRow}>
+            <Text style={styles.micLabel}>{t('duties.microphoneSlots')}</Text>
+            <View style={styles.stepper}>
+              <Pressable
+                style={[styles.stepperBtn, pending && styles.disabled]}
+                onPress={() => onSetMicCount!(Math.max(1, (micCount ?? 2) - 1))}
+                disabled={pending}
+              >
+                <Ionicons name="remove" size={18} color="#0369a1" />
+              </Pressable>
+              <Text style={styles.stepperValue}>{micCount}</Text>
+              <Pressable
+                style={[styles.stepperBtn, pending && styles.disabled]}
+                onPress={() => onSetMicCount!(Math.min(8, (micCount ?? 2) + 1))}
+                disabled={pending}
+              >
+                <Ionicons name="add" size={18} color="#0369a1" />
+              </Pressable>
+            </View>
+          </View>
+          <Text style={styles.micHint}>{t('duties.micCountHint')}</Text>
+        </View>
+      )}
 
       {MEETINGS.map((meeting) => {
         const list = (byMeeting.get(meeting) ?? []).slice().sort(sortDuties);
@@ -253,6 +286,42 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
+
+  // microphone-count control
+  micBlock: {
+    marginHorizontal: 16,
+    marginBottom: 6,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    backgroundColor: '#f8fafc',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  micRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  micLabel: { fontSize: 14, color: '#334155', fontWeight: '600' },
+  stepper: { flexDirection: 'row', alignItems: 'center', gap: 14 },
+  stepperBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: '#e0f2fe',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  stepperValue: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#0f172a',
+    minWidth: 20,
+    textAlign: 'center',
+  },
+  micHint: { fontSize: 12, color: '#94a3b8', marginTop: 6 },
+
   meetingBlock: { marginTop: 8 },
   meetingLabel: {
     fontSize: 12,

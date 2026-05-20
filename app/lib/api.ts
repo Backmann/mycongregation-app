@@ -642,6 +642,9 @@ export interface DutyWithWarnings {
 }
 
 export const dutiesApi = {
+  async setMicrophoneSlots(microphoneSlots: number): Promise<void> {
+    await api.patch('/duties/microphone-slots', { microphoneSlots });
+  },
   async list(
     params: { weekStart?: string; weekEnd?: string; eventType?: EventType } = {},
   ): Promise<Duty[]> {
