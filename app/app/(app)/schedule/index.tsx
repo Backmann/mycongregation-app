@@ -19,6 +19,7 @@ import {
   Publisher,
   publishersApi,
   meetingSettingsApi,
+  dutiesApi,
 } from '../../../lib/api';
 import {
   addWeeks,
@@ -38,6 +39,8 @@ import { useTranslation } from 'react-i18next';
 import { WeekNavigator } from '../../../components/WeekNavigator';
 import { MeetingHeader } from '../../../components/MeetingHeader';
 import { effectiveVersionFor } from '../../../lib/meeting-schedule';
+import { DutiesSection } from '../../../components/DutiesSection';
+import { usePermissions } from '../../../lib/permissions';
 
 const EVENT_TYPE_ORDER: EventType[] = [
   'midweek',
@@ -78,6 +81,20 @@ export default function ScheduleIndexScreen() {
     meetingSettingsQuery.data?.versions,
     weekStartISO,
   );
+  const { canEditDuties } = usePermissions();
+  const dutiesQuery = useQuery({
+    queryKey: ['duties', weekStartISO],
+    queryFn: () =>
+      dutiesApi.list({ weekStart: weekStartISO, weekEnd: nextWeekISO }),
+  });
+  const duties = dutiesQuery.data ?? [];
+  const generateDutiesMutation = useMutation({
+    mutationFn: (eventType: EventType) =>
+      dutiesApi.generate({ weekStartDate: weekStartISO, eventType }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['duties', weekStartISO] });
+    },
+  });
 
   const createWeekMutation = useMutation({
     mutationFn: (eventType: EventType) => {
@@ -192,6 +209,16 @@ export default function ScheduleIndexScreen() {
                 </View>
               );
             })}
+
+            <DutiesSection
+              duties={duties}
+              publishersById={publishersById}
+              canEdit={canEditDuties}
+              onGenerate={(eventType) =>
+                generateDutiesMutation.mutate(eventType)
+              }
+              pending={generateDutiesMutation.isPending}
+            />
 
             {isEmpty && (
               <Text style={styles.emptyHint}>
