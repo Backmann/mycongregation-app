@@ -512,6 +512,48 @@ export const usersApi = {
   },
 };
 
+export type ResponsibilityType =
+  | 'body_coordinator'
+  | 'life_ministry_overseer'
+  | 'wt_study_conductor'
+  | 'wt_study_conductor_backup'
+  | 'public_talk_coordinator'
+  | 'adviser'
+  | 'secretary'
+  | 'service_overseer'
+  | 'accounts_servant'
+  | 'public_witnessing'
+  | 'cleaning_coordinator';
+
+export interface Responsibility {
+  id: string;
+  congregationId: string;
+  type: ResponsibilityType;
+  userId: string;
+  assignedBy: string | null;
+  assignedAt: string;
+}
+
+export const responsibilitiesApi = {
+  async list(): Promise<Responsibility[]> {
+    const { data } = await api.get<Responsibility[]>('/responsibilities');
+    return data;
+  },
+  async assign(input: {
+    type: ResponsibilityType;
+    userId: string;
+  }): Promise<Responsibility> {
+    const { data } = await api.post<Responsibility>(
+      '/responsibilities',
+      input,
+    );
+    return data;
+  },
+  async revoke(type: ResponsibilityType): Promise<void> {
+    await api.delete(`/responsibilities/${type}`);
+  },
+};
+
 export type PublisherStatus = 'active' | 'irregular' | 'inactive';
 
 export const publishersApi = {
