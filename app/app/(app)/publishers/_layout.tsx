@@ -36,13 +36,7 @@ export default function PublishersLayout() {
           title: t('publishers.title.detail'),
           headerLeft: () => (
             <Pressable
-              onPress={() => {
-                if (router.canGoBack()) {
-                  router.back();
-                } else {
-                  router.replace("/publishers" as any);
-                }
-              }}
+              onPress={() => router.replace('/publishers' as any)}
               style={{ paddingHorizontal: 12 }}
               hitSlop={8}
             >
@@ -72,13 +66,7 @@ export default function PublishersLayout() {
           title: t('families.title.detail'),
           headerLeft: () => (
             <Pressable
-              onPress={() => {
-                if (router.canGoBack()) {
-                  router.back();
-                } else {
-                  router.replace('/publishers/families' as any);
-                }
-              }}
+              onPress={() => router.replace('/publishers/families' as any)}
               style={{ paddingHorizontal: 12 }}
               hitSlop={8}
             >
