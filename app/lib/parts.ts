@@ -135,6 +135,14 @@ export const MIDWEEK_PARTS: PartDef[] = [
     subsection: 'apply_yourself',
   },
   {
+    key: 'apply_yourself_4',
+    label: 'Apply Yourself 4',
+    defaultOrder: 9,
+    defaultDurationMin: 4,
+    hasAssistant: true,
+    subsection: 'apply_yourself',
+  },
+  {
     key: 'living_christians_1',
     label: 'Living as Christians 1',
     defaultOrder: 9,
@@ -242,6 +250,27 @@ export function getPartLabel(key: string): string {
   const def = ALL_PARTS.get(key);
   if (!def) return key;
   return i18n.t(`parts.${key}`, { defaultValue: def.label });
+}
+
+/**
+ * Subsection for a part key, even for keys not in the registry (e.g. a 4th/5th
+ * apply-yourself or living-as-Christians part), inferred from the key prefix.
+ */
+export function resolveSubsection(key: string): Subsection {
+  const def = getPartDef(key);
+  if (def?.subsection) return def.subsection;
+  if (key.startsWith('apply_yourself')) return 'apply_yourself';
+  if (key.startsWith('living_christians') || key.startsWith('cbs_')) {
+    return 'christian_life';
+  }
+  if (
+    key === 'treasures_talk' ||
+    key === 'spiritual_gems' ||
+    key === 'bible_reading'
+  ) {
+    return 'treasures';
+  }
+  return 'opening';
 }
 
 export function getEventTypeLabel(type: EventType): string {

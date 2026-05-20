@@ -32,9 +32,9 @@ import {
 } from '../../../lib/dates';
 import {
   getEventTypeLabel,
-  getPartDef,
   getPartLabel,
   PARTS_BY_EVENT,
+  resolveSubsection,
   Subsection,
   SUBSECTIONS,
 } from '../../../lib/parts';
@@ -142,21 +142,6 @@ export default function ScheduleIndexScreen() {
   const removeDutyMutation = useMutation({
     mutationFn: (id: string) => dutiesApi.removeDuty(id),
     onSuccess: () => invalidateDuties(),
-  });
-  const setMicMutation = useMutation({
-    mutationFn: (microphoneSlots: number) =>
-      dutiesApi.setMicrophoneSlots(microphoneSlots),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['meeting-settings'] });
-    },
-    onError: (e) => {
-      const message = extractErrorMessage(e);
-      if (Platform.OS === 'web') {
-        window.alert(message);
-      } else {
-        Alert.alert(t('duties.errorTitle'), message);
-      }
-    },
   });
 
   const createWeekMutation = useMutation({
@@ -287,16 +272,13 @@ export default function ScheduleIndexScreen() {
                 createCustomDutyMutation.mutate({ eventType, customLabel })
               }
               onRemoveDuty={(id) => removeDutyMutation.mutate(id)}
-              micCount={meetingSettingsQuery.data?.effective?.microphoneSlots ?? 2}
-              onSetMicCount={(n) => setMicMutation.mutate(n)}
               activityById={activityById}
               weekStartISO={weekStartISO}
               pending={
                 generateDutiesMutation.isPending ||
                 assignDutyMutation.isPending ||
                 createCustomDutyMutation.isPending ||
-                removeDutyMutation.isPending ||
-                setMicMutation.isPending
+                removeDutyMutation.isPending
               }
             />
 
@@ -358,8 +340,7 @@ function MidweekSections({
 
   const bySubsection = new Map<Subsection, Assignment[]>();
   for (const a of items) {
-    const def = getPartDef(a.partKey);
-    const sub = def?.subsection ?? 'opening';
+    const sub = resolveSubsection(a.partKey);
     const arr = bySubsection.get(sub) ?? [];
     arr.push(a);
     bySubsection.set(sub, arr);
@@ -436,16 +417,15 @@ function CreateButton({
   );
 }
 
-const TITLE_NAMED_PARTS = new Set<string>([
-  'treasures_talk',
-  'spiritual_gems',
-  'bible_reading',
-  'apply_yourself_1',
-  'apply_yourself_2',
-  'apply_yourself_3',
-  'living_christians_1',
-  'living_christians_2',
-]);
+function isTitleNamedPart(key: string): boolean {
+  return (
+    key === 'treasures_talk' ||
+    key === 'spiritual_gems' ||
+    key === 'bible_reading' ||
+    key.startsWith('apply_yourself_') ||
+    key.startsWith('living_christians_')
+  );
+}
 
 /**
  * Bold label + subtitle for an assignment. For parts whose imported title is
@@ -456,7 +436,7 @@ function partDisplay(
   partKey: string,
   partTitle: string | null | undefined,
 ): { label: string; subtitle: string | null } {
-  if (partTitle && TITLE_NAMED_PARTS.has(partKey)) {
+  if (partTitle && isTitleNamedPart(partKey)) {
     const idx = partTitle.indexOf(': ');
     if (idx > 0) {
       return {
