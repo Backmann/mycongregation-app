@@ -44,6 +44,7 @@ export interface Permissions {
   canEditCleaning: boolean;
   canEditCartWitnessing: boolean;
   canEditFieldServiceMeetings: boolean;
+  canEditDuties: boolean;
 
   /** The set of responsibility types held by the current user. */
   responsibilities: ReadonlySet<ResponsibilityType>;
@@ -102,6 +103,7 @@ export function usePermissions(): Permissions {
       canEditCleaning: isAdmin || holds('cleaning_coordinator'),
       canEditCartWitnessing: isAdmin || holds('public_witnessing'),
       canEditFieldServiceMeetings: isAdmin || holds('service_overseer'),
+      canEditDuties: isAdmin || holds('duties_coordinator'),
 
       responsibilities: mine,
     };

@@ -523,7 +523,8 @@ export type ResponsibilityType =
   | 'service_overseer'
   | 'accounts_servant'
   | 'public_witnessing'
-  | 'cleaning_coordinator';
+  | 'cleaning_coordinator'
+  | 'duties_coordinator';
 
 export interface Responsibility {
   id: string;
@@ -604,6 +605,77 @@ export const meetingSettingsApi = {
   },
   async removeVersion(id: string): Promise<void> {
     await api.delete(`/meeting-settings/${id}`);
+  },
+};
+
+export type DutyType =
+  | 'security'
+  | 'attendant'
+  | 'microphone'
+  | 'audio'
+  | 'video'
+  | 'zoom'
+  | 'stage'
+  | 'ventilation'
+  | 'custom';
+
+export type DutyWarning =
+  | 'already_on_duty'
+  | 'has_program_part'
+  | 'capability_off';
+
+export interface Duty {
+  id: string;
+  congregationId: string;
+  weekStartDate: string;
+  eventType: EventType;
+  dutyType: DutyType;
+  slotIndex: number;
+  customLabel: string | null;
+  publisherId: string | null;
+  notes: string | null;
+}
+
+export interface DutyWithWarnings {
+  duty: Duty;
+  warnings: DutyWarning[];
+}
+
+export const dutiesApi = {
+  async list(
+    params: { weekStart?: string; weekEnd?: string; eventType?: EventType } = {},
+  ): Promise<Duty[]> {
+    const { data } = await api.get<Duty[]>('/duties', { params });
+    return data;
+  },
+  async generate(input: {
+    weekStartDate: string;
+    eventType: EventType;
+  }): Promise<Duty[]> {
+    const { data } = await api.post<Duty[]>('/duties/generate', input);
+    return data;
+  },
+  async assign(
+    id: string,
+    input: { publisherId: string | null; notes?: string },
+  ): Promise<DutyWithWarnings> {
+    const { data } = await api.patch<DutyWithWarnings>(
+      `/duties/${id}/assign`,
+      input,
+    );
+    return data;
+  },
+  async createCustom(input: {
+    weekStartDate: string;
+    eventType: EventType;
+    customLabel: string;
+    publisherId?: string | null;
+  }): Promise<DutyWithWarnings> {
+    const { data } = await api.post<DutyWithWarnings>('/duties/custom', input);
+    return data;
+  },
+  async removeDuty(id: string): Promise<void> {
+    await api.delete(`/duties/${id}`);
   },
 };
 

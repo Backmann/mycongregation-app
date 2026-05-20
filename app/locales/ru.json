@@ -733,7 +733,8 @@
       "service_overseer": "Координатор полевого служения",
       "accounts_servant": "Счетовод",
       "public_witnessing": "Публичное свидетельствование",
-      "cleaning_coordinator": "Координатор уборки"
+      "cleaning_coordinator": "Координатор уборки",
+      "duties_coordinator": "Координатор обязанностей"
     }
   },
   "meetingSettings": {
@@ -766,6 +767,41 @@
       "5": "Пт",
       "6": "Сб",
       "7": "Вс"
+    }
+  },
+  "duties": {
+    "title": "Обязанности",
+    "generate": "Заполнить обязанности",
+    "addCustom": "Добавить обязанность",
+    "customLabel": "Название обязанности",
+    "customLabelPlaceholder": "Например: Встреча гостей",
+    "pickPublisher": "Выберите возвещателя",
+    "unassigned": "Не назначено",
+    "clear": "Очистить",
+    "remove": "Удалить",
+    "removeConfirmTitle": "Удалить обязанность?",
+    "removeConfirmBody": "Удалить эту обязанность из встречи?",
+    "removeAction": "Удалить",
+    "errorTitle": "Ошибка",
+    "microphoneSlots": "Количество микрофонов",
+    "micCountHint": "Применяется при заполнении обязанностей.",
+    "noDuties": "Обязанности ещё не заполнены",
+    "warningsTitle": "Внимание",
+    "types": {
+      "security": "Безопасность",
+      "attendant": "Распорядитель",
+      "microphone": "Микрофон",
+      "audio": "Звук",
+      "video": "Видео",
+      "zoom": "Видеосвязь (Zoom)",
+      "stage": "Сцена",
+      "ventilation": "Проветривание",
+      "custom": "Другое"
+    },
+    "warnings": {
+      "already_on_duty": "Уже назначен на другую обязанность в эту встречу",
+      "has_program_part": "Уже участвует в программе этой встречи",
+      "capability_off": "Не отмечен как способный к этой обязанности"
     }
   }
 }

@@ -729,7 +729,8 @@
       "service_overseer": "Service Overseer",
       "accounts_servant": "Accounts Servant",
       "public_witnessing": "Public Witnessing Overseer",
-      "cleaning_coordinator": "Cleaning Coordinator"
+      "cleaning_coordinator": "Cleaning Coordinator",
+      "duties_coordinator": "Duties coordinator"
     }
   },
   "meetingSettings": {
@@ -762,6 +763,41 @@
       "5": "Fri",
       "6": "Sat",
       "7": "Sun"
+    }
+  },
+  "duties": {
+    "title": "Duties",
+    "generate": "Fill in duties",
+    "addCustom": "Add duty",
+    "customLabel": "Duty name",
+    "customLabelPlaceholder": "e.g. Greeting visitors",
+    "pickPublisher": "Choose a publisher",
+    "unassigned": "Unassigned",
+    "clear": "Clear",
+    "remove": "Delete",
+    "removeConfirmTitle": "Delete duty?",
+    "removeConfirmBody": "Remove this duty from the meeting?",
+    "removeAction": "Delete",
+    "errorTitle": "Error",
+    "microphoneSlots": "Number of microphones",
+    "micCountHint": "Applied when filling in duties.",
+    "noDuties": "Duties not filled in yet",
+    "warningsTitle": "Note",
+    "types": {
+      "security": "Security",
+      "attendant": "Attendant",
+      "microphone": "Microphone",
+      "audio": "Audio",
+      "video": "Video",
+      "zoom": "Video conferencing (Zoom)",
+      "stage": "Stage",
+      "ventilation": "Ventilation",
+      "custom": "Other"
+    },
+    "warnings": {
+      "already_on_duty": "Already assigned to another duty in this meeting",
+      "has_program_part": "Already has a program part in this meeting",
+      "capability_off": "Not marked as able for this duty"
     }
   }
 }

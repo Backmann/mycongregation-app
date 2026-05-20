@@ -729,7 +729,8 @@
       "service_overseer": "Dienstaufseher",
       "accounts_servant": "Rechnungsführer",
       "public_witnessing": "Aufseher für öffentliches Zeugnisgeben",
-      "cleaning_coordinator": "Reinigungskoordinator"
+      "cleaning_coordinator": "Reinigungskoordinator",
+      "duties_coordinator": "Aufgabenkoordinator"
     }
   },
   "meetingSettings": {
@@ -762,6 +763,41 @@
       "5": "Fr",
       "6": "Sa",
       "7": "So"
+    }
+  },
+  "duties": {
+    "title": "Aufgaben",
+    "generate": "Aufgaben anlegen",
+    "addCustom": "Aufgabe hinzufügen",
+    "customLabel": "Bezeichnung der Aufgabe",
+    "customLabelPlaceholder": "z. B. Besucher begrüßen",
+    "pickPublisher": "Verkündiger auswählen",
+    "unassigned": "Nicht zugeteilt",
+    "clear": "Leeren",
+    "remove": "Löschen",
+    "removeConfirmTitle": "Aufgabe löschen?",
+    "removeConfirmBody": "Diese Aufgabe aus der Zusammenkunft entfernen?",
+    "removeAction": "Löschen",
+    "errorTitle": "Fehler",
+    "microphoneSlots": "Anzahl der Mikrofone",
+    "micCountHint": "Wird beim Anlegen der Aufgaben verwendet.",
+    "noDuties": "Aufgaben noch nicht angelegt",
+    "warningsTitle": "Hinweis",
+    "types": {
+      "security": "Sicherheit",
+      "attendant": "Ordner",
+      "microphone": "Mikrofon",
+      "audio": "Ton",
+      "video": "Video",
+      "zoom": "Videokonferenz (Zoom)",
+      "stage": "Bühne",
+      "ventilation": "Lüftung",
+      "custom": "Sonstiges"
+    },
+    "warnings": {
+      "already_on_duty": "Bereits einer anderen Aufgabe in dieser Zusammenkunft zugeteilt",
+      "has_program_part": "Hat bereits einen Programmteil in dieser Zusammenkunft",
+      "capability_off": "Nicht als fähig für diese Aufgabe markiert"
     }
   }
 }
