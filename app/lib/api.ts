@@ -236,6 +236,9 @@ export interface ServiceGroup {
   name: string;
   overseerPublisherId: string | null;
   assistantPublisherId: string | null;
+  /** Resolved by the server, independent of group membership. */
+  overseer?: Publisher | null;
+  assistant?: Publisher | null;
   meetingLocation: string | null;
   notes: string | null;
   createdAt: string;

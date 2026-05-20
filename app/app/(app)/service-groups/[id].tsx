@@ -103,8 +103,10 @@ export default function ServiceGroupDetailScreen() {
 
   const group = groupQuery.data;
   const members = membersQuery.data?.data ?? [];
-  const overseer = members.find((p) => p.id === group.overseerPublisherId);
-  const assistant = members.find((p) => p.id === group.assistantPublisherId);
+  const overseer =
+    group.overseer ?? members.find((p) => p.id === group.overseerPublisherId);
+  const assistant =
+    group.assistant ?? members.find((p) => p.id === group.assistantPublisherId);
 
   if (editing) {
     return (
