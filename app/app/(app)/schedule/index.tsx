@@ -420,6 +420,38 @@ function CreateButton({
   );
 }
 
+const TITLE_NAMED_PARTS = new Set<string>([
+  'treasures_talk',
+  'spiritual_gems',
+  'bible_reading',
+  'apply_yourself_1',
+  'apply_yourself_2',
+  'apply_yourself_3',
+  'living_christians_1',
+  'living_christians_2',
+]);
+
+/**
+ * Bold label + subtitle for an assignment. For parts whose imported title is
+ * "<MWB part name>: <description>", show the real MWB name as the bold label and
+ * the rest as the subtitle; otherwise use the generic part label + full title.
+ */
+function partDisplay(
+  partKey: string,
+  partTitle: string | null | undefined,
+): { label: string; subtitle: string | null } {
+  if (partTitle && TITLE_NAMED_PARTS.has(partKey)) {
+    const idx = partTitle.indexOf(': ');
+    if (idx > 0) {
+      return {
+        label: partTitle.slice(0, idx),
+        subtitle: partTitle.slice(idx + 2).trim() || null,
+      };
+    }
+  }
+  return { label: getPartLabel(partKey), subtitle: partTitle || null };
+}
+
 function AssignmentRow({
   assignment,
   publisher,
@@ -432,7 +464,10 @@ function AssignmentRow({
   accentColor?: string;
 }) {
   const { t } = useTranslation();
-  const partLabel = getPartLabel(assignment.partKey);
+  const { label: partLabel, subtitle } = partDisplay(
+    assignment.partKey,
+    assignment.partTitle,
+  );
 
   // Resolve who is assigned: local publisher OR invited speaker fallback
   const hasInvitedSpeaker = !publisher && !!assignment.speakerName;
@@ -451,9 +486,9 @@ function AssignmentRow({
       </View>
       <View style={{ flex: 1 }}>
         <Text style={styles.partLabel}>{partLabel}</Text>
-        {assignment.partTitle && (
+        {subtitle && (
           <Text style={styles.partTitle} numberOfLines={2}>
-            {assignment.partTitle}
+            {subtitle}
           </Text>
         )}
         <View style={styles.assigneeRow}>
