@@ -457,6 +457,9 @@ function partDisplay(
   partKey: string,
   partTitle: string | null | undefined,
 ): { label: string; subtitle: string | null } {
+  if (partKey === 'mid_song') {
+    return { label: partTitle || 'Песня', subtitle: null };
+  }
   if (PRAYER_PARTS.has(partKey)) {
     return {
       label: getPartLabel(partKey),

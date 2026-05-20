@@ -265,6 +265,7 @@ const NON_NUMBERED_PARTS = new Set<string>([
   'weekend_closing_prayer',
   'cbs_reader',
   'watchtower_reader',
+  'mid_song',
 ]);
 
 /** Parts that get a JW-style sequential number (excludes chairmen/prayers/readers). */
@@ -296,7 +297,11 @@ export function resolveSubsection(key: string): Subsection {
   const def = getPartDef(key);
   if (def?.subsection) return def.subsection;
   if (key.startsWith('apply_yourself')) return 'apply_yourself';
-  if (key.startsWith('living_christians') || key.startsWith('cbs_')) {
+  if (
+    key === 'mid_song' ||
+    key.startsWith('living_christians') ||
+    key.startsWith('cbs_')
+  ) {
     return 'christian_life';
   }
   if (
