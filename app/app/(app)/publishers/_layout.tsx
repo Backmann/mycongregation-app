@@ -44,11 +44,34 @@ export default function PublishersLayout() {
             </Pressable>
           ),
         }} />
-      <Stack.Screen name="new" options={{ title: t('publishers.title.new') }} />
+      <Stack.Screen
+        name="new"
+        options={{
+          title: t('publishers.title.new'),
+          headerLeft: () => (
+            <Pressable
+              onPress={() => router.replace('/publishers' as any)}
+              style={{ paddingHorizontal: 12 }}
+              hitSlop={8}
+            >
+              <Ionicons name="chevron-back" size={28} color="#0ea5e9" />
+            </Pressable>
+          ),
+        }}
+      />
       <Stack.Screen
         name="families/index"
         options={{
           title: t('families.title.list'),
+          headerLeft: () => (
+            <Pressable
+              onPress={() => router.replace('/publishers' as any)}
+              style={{ paddingHorizontal: 12 }}
+              hitSlop={8}
+            >
+              <Ionicons name="chevron-back" size={28} color="#0ea5e9" />
+            </Pressable>
+          ),
           headerRight: () => (
             <Pressable
               onPress={() => router.push('/publishers/families/new' as any)}
@@ -75,7 +98,21 @@ export default function PublishersLayout() {
           ),
         }}
       />
-      <Stack.Screen name="families/new" options={{ title: t('families.title.new') }} />
+      <Stack.Screen
+        name="families/new"
+        options={{
+          title: t('families.title.new'),
+          headerLeft: () => (
+            <Pressable
+              onPress={() => router.replace('/publishers/families' as any)}
+              style={{ paddingHorizontal: 12 }}
+              hitSlop={8}
+            >
+              <Ionicons name="chevron-back" size={28} color="#0ea5e9" />
+            </Pressable>
+          ),
+        }}
+      />
     </Stack>
   );
 }
