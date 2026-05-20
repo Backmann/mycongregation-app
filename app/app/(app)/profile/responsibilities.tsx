@@ -90,7 +90,6 @@ export default function ResponsibilitiesScreen() {
     const title = t('responsibilities.revokeConfirm.title');
     const body = t('responsibilities.revokeConfirm.body', { role });
     if (Platform.OS === 'web') {
-      // eslint-disable-next-line no-alert
       if (window.confirm(body)) revokeMutation.mutate(type);
       return;
     }
