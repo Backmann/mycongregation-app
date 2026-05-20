@@ -89,7 +89,9 @@
       }
     },
     "title": "Profile",
-    "publicTalksImport": "Bulk import"
+    "publicTalksImport": "Bulk import",
+    "responsibilities": "Responsibilities",
+    "responsibilitiesDescription": "Assign section coordinators"
   },
   "language": {
     "title": "Language",
@@ -694,6 +696,34 @@
       "successTitle": "Import complete",
       "firstImported": "First imported items",
       "viewCatalog": "View catalog"
+    }
+  },
+  "responsibilities": {
+    "title": "Responsibilities",
+    "subtitle": "Assign the brothers responsible for schedule sections. The assigned brother will be able to edit his section.",
+    "unassigned": "Unassigned",
+    "unknownUser": "Unknown user",
+    "assign": "Assign",
+    "change": "Change",
+    "pickUser": "Select a user",
+    "errorTitle": "Error",
+    "revokeConfirm": {
+      "title": "Remove responsibility?",
+      "body": "Remove the \"{{role}}\" responsibility?",
+      "action": "Remove"
+    },
+    "types": {
+      "body_coordinator": "Coordinator of the Body of Elders",
+      "life_ministry_overseer": "Life and Ministry Meeting Overseer",
+      "wt_study_conductor": "Watchtower Study Conductor",
+      "wt_study_conductor_backup": "Watchtower Study Conductor (Backup)",
+      "public_talk_coordinator": "Public Talk Coordinator",
+      "adviser": "Adviser",
+      "secretary": "Secretary",
+      "service_overseer": "Service Overseer",
+      "accounts_servant": "Accounts Servant",
+      "public_witnessing": "Public Witnessing Overseer",
+      "cleaning_coordinator": "Cleaning Coordinator"
     }
   }
 }

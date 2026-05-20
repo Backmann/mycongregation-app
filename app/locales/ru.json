@@ -89,7 +89,9 @@
       }
     },
     "title": "Профиль",
-    "publicTalksImport": "Массовый импорт"
+    "publicTalksImport": "Массовый импорт",
+    "responsibilities": "Обязанности",
+    "responsibilitiesDescription": "Назначение ответственных за разделы"
   },
   "language": {
     "title": "Язык",
@@ -698,6 +700,34 @@
       "successTitle": "Импорт завершён",
       "firstImported": "Первые импортированные",
       "viewCatalog": "Открыть каталог"
+    }
+  },
+  "responsibilities": {
+    "title": "Обязанности",
+    "subtitle": "Назначьте братьев, ответственных за разделы расписания. Назначенный брат сможет редактировать свой раздел.",
+    "unassigned": "Не назначено",
+    "unknownUser": "Неизвестный пользователь",
+    "assign": "Назначить",
+    "change": "Изменить",
+    "pickUser": "Выберите пользователя",
+    "errorTitle": "Ошибка",
+    "revokeConfirm": {
+      "title": "Снять обязанность?",
+      "body": "Снять обязанность «{{role}}»?",
+      "action": "Снять"
+    },
+    "types": {
+      "body_coordinator": "Координатор совета старейшин",
+      "life_ministry_overseer": "Руководитель встречи «Жизнь и служение»",
+      "wt_study_conductor": "Руководитель изучения «Сторожевой башни»",
+      "wt_study_conductor_backup": "Заместитель руководителя изучения СБ",
+      "public_talk_coordinator": "Ответственный за публичные речи",
+      "adviser": "Брат, дающий советы",
+      "secretary": "Секретарь",
+      "service_overseer": "Координатор полевого служения",
+      "accounts_servant": "Счетовод",
+      "public_witnessing": "Публичное свидетельствование",
+      "cleaning_coordinator": "Координатор уборки"
     }
   }
 }

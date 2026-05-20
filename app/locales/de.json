@@ -89,7 +89,9 @@
       }
     },
     "title": "Profil",
-    "publicTalksImport": "Massenimport"
+    "publicTalksImport": "Massenimport",
+    "responsibilities": "Aufgaben",
+    "responsibilitiesDescription": "Bereichskoordinatoren zuweisen"
   },
   "language": {
     "title": "Sprache",
@@ -694,6 +696,34 @@
       "successTitle": "Import abgeschlossen",
       "firstImported": "Erste importierte Einträge",
       "viewCatalog": "Katalog öffnen"
+    }
+  },
+  "responsibilities": {
+    "title": "Aufgaben",
+    "subtitle": "Weisen Sie die Brüder zu, die für die Programmbereiche verantwortlich sind. Der zugewiesene Bruder kann seinen Bereich bearbeiten.",
+    "unassigned": "Nicht zugewiesen",
+    "unknownUser": "Unbekannter Benutzer",
+    "assign": "Zuweisen",
+    "change": "Ändern",
+    "pickUser": "Benutzer auswählen",
+    "errorTitle": "Fehler",
+    "revokeConfirm": {
+      "title": "Aufgabe entfernen?",
+      "body": "Die Aufgabe „{{role}}“ entfernen?",
+      "action": "Entfernen"
+    },
+    "types": {
+      "body_coordinator": "Koordinator der Ältestenschaft",
+      "life_ministry_overseer": "Aufseher für „Leben und Dienst“",
+      "wt_study_conductor": "Leiter des Wachtturm-Studiums",
+      "wt_study_conductor_backup": "Leiter des Wachtturm-Studiums (Vertretung)",
+      "public_talk_coordinator": "Koordinator für öffentliche Vorträge",
+      "adviser": "Berater",
+      "secretary": "Sekretär",
+      "service_overseer": "Dienstaufseher",
+      "accounts_servant": "Rechnungsführer",
+      "public_witnessing": "Aufseher für öffentliches Zeugnisgeben",
+      "cleaning_coordinator": "Reinigungskoordinator"
     }
   }
 }

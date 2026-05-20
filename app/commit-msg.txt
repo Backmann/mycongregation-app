@@ -1,0 +1,31 @@
+feat(responsibilities): admin UI to assign Layer 2 responsibilities (Phase 4b)
+
+Adds a Responsibilities screen under Profile (admin-only) where the
+coordinator can assign each of the 11 responsibility types to a user.
+This is the human entry point for the Layer 2 model shipped server-side
+in dc117e9 and wired app-side in 7ffdfb4.
+
+app/(app)/profile/responsibilities.tsx (new):
+- Loads responsibilities + users via react-query.
+- Lists the 11 types in a sensible order (meeting roles, service,
+  administrative); each row shows the current holder's email or
+  "unassigned", an Assign/Change button, and a revoke (x) when held.
+- Assigning opens a bottom-sheet user picker; tapping a user calls
+  responsibilitiesApi.assign and invalidates ['responsibilities'].
+- Revoke is confirmed (Alert on native, window.confirm on web) and calls
+  responsibilitiesApi.revoke.
+
+Navigation:
+- profile/_layout.tsx: registers the "responsibilities" Stack.Screen.
+- profile/index.tsx: adds an isFullAdmin-gated row (ribbon icon) into the
+  Admin Tools section, below User Management.
+
+i18n:
+- New `responsibilities` namespace (title, subtitle, assign/change,
+  unassigned, pickUser, errorTitle, revokeConfirm.*, and the 11 type
+  labels) plus profile.responsibilities + profile.responsibilitiesDescription,
+  added identically to ru/en/de. Russian uses the canonical congregation
+  terms; en/de use the standard organisational equivalents.
+
+Holder is shown by account email for now (no User->Publisher display-name
+link yet); acceptable for v1 and can be enriched later.

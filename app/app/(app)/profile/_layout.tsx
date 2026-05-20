@@ -26,6 +26,10 @@ export default function ProfileLayout() {
         name="admin-users"
         options={{ title: t('profile.userManagement') }}
       />
+      <Stack.Screen
+        name="responsibilities"
+        options={{ title: t('responsibilities.title') }}
+      />
     </Stack>
   );
 }
