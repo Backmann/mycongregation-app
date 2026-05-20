@@ -33,6 +33,7 @@ const RESPONSIBILITY_ORDER: ResponsibilityType[] = [
   'service_overseer',
   'public_witnessing',
   'cleaning_coordinator',
+  'duties_coordinator',
   'secretary',
   'accounts_servant',
   'adviser',
