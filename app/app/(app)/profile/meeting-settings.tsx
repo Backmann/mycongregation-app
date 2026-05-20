@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -110,6 +110,8 @@ export default function MeetingSettingsScreen() {
       weekendDow: draft.weekendDow,
       weekendTime: draft.weekendTime.trim(),
       address: draft.address.trim(),
+      // Microphone-slot count is configured in the Duties feature; we carry the
+      // current value through so saving a new schedule version preserves it.
       microphoneSlots: draft.microphoneSlots,
     });
   };
@@ -219,36 +221,6 @@ export default function MeetingSettingsScreen() {
             placeholderTextColor="#94a3b8"
             multiline
           />
-
-          {/* Microphone slots */}
-          <View style={styles.stepperRow}>
-            <Text style={styles.fieldLabel}>{t('meetingSettings.microphoneSlots')}</Text>
-            <View style={styles.stepper}>
-              <Pressable
-                style={styles.stepperBtn}
-                onPress={() =>
-                  setDraft((p) => ({
-                    ...p,
-                    microphoneSlots: Math.max(1, p.microphoneSlots - 1),
-                  }))
-                }
-              >
-                <Ionicons name="remove" size={18} color="#0369a1" />
-              </Pressable>
-              <Text style={styles.stepperValue}>{draft.microphoneSlots}</Text>
-              <Pressable
-                style={styles.stepperBtn}
-                onPress={() =>
-                  setDraft((p) => ({
-                    ...p,
-                    microphoneSlots: Math.min(8, p.microphoneSlots + 1),
-                  }))
-                }
-              >
-                <Ionicons name="add" size={18} color="#0369a1" />
-              </Pressable>
-            </View>
-          </View>
 
           {/* Effective from */}
           <Text style={[styles.fieldLabel, { marginTop: 14 }]}>
@@ -399,22 +371,6 @@ const styles = StyleSheet.create({
   dayChipOn: { backgroundColor: '#0ea5e9', borderColor: '#0ea5e9' },
   dayChipText: { fontSize: 13, color: '#475569', fontWeight: '600' },
   dayChipTextOn: { color: '#fff' },
-  stepperRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: 14,
-  },
-  stepper: { flexDirection: 'row', alignItems: 'center', gap: 14 },
-  stepperBtn: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
-    backgroundColor: '#e0f2fe',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  stepperValue: { fontSize: 16, fontWeight: '700', color: '#0f172a', minWidth: 20, textAlign: 'center' },
   primaryBtn: {
     marginTop: 16,
     backgroundColor: '#0ea5e9',

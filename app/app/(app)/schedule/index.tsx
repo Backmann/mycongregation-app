@@ -18,6 +18,7 @@ import {
   extractErrorMessage,
   Publisher,
   publishersApi,
+  meetingSettingsApi,
 } from '../../../lib/api';
 import {
   addWeeks,
@@ -35,6 +36,8 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { WeekNavigator } from '../../../components/WeekNavigator';
+import { MeetingHeader } from '../../../components/MeetingHeader';
+import { effectiveVersionFor } from '../../../lib/meeting-schedule';
 
 const EVENT_TYPE_ORDER: EventType[] = [
   'midweek',
@@ -67,6 +70,14 @@ export default function ScheduleIndexScreen() {
     queryKey: ['publishers', 'all-for-schedule'],
     queryFn: () => publishersApi.list({ limit: 200 }),
   });
+  const meetingSettingsQuery = useQuery({
+    queryKey: ['meeting-settings'],
+    queryFn: () => meetingSettingsApi.getOverview(),
+  });
+  const meetingVersion = effectiveVersionFor(
+    meetingSettingsQuery.data?.versions,
+    weekStartISO,
+  );
 
   const createWeekMutation = useMutation({
     mutationFn: (eventType: EventType) => {
@@ -135,11 +146,17 @@ export default function ScheduleIndexScreen() {
               if (items.length === 0) return null;
               if (eventType === 'midweek') {
                 return (
-                  <MidweekSections
-                    key="midweek"
-                    items={items}
-                    publishersById={publishersById}
-                  />
+                  <View key="midweek">
+                    <MeetingHeader
+                      weekStart={weekStart}
+                      version={meetingVersion}
+                      eventType="midweek"
+                    />
+                    <MidweekSections
+                      items={items}
+                      publishersById={publishersById}
+                    />
+                  </View>
                 );
               }
               return (
@@ -147,6 +164,13 @@ export default function ScheduleIndexScreen() {
                   <Text style={styles.sectionTitle}>
                     {getEventTypeLabel(eventType)} ({items.length})
                   </Text>
+                  {eventType === 'weekend' && (
+                    <MeetingHeader
+                      weekStart={weekStart}
+                      version={meetingVersion}
+                      eventType="weekend"
+                    />
+                  )}
                   <View style={styles.sectionBody}>
                     {items.map((a) => (
                       <AssignmentRow
