@@ -135,6 +135,14 @@ export default function ScheduleIndexScreen() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['meeting-settings'] });
     },
+    onError: (e) => {
+      const message = extractErrorMessage(e);
+      if (Platform.OS === 'web') {
+        window.alert(message);
+      } else {
+        Alert.alert(t('duties.errorTitle'), message);
+      }
+    },
   });
 
   const createWeekMutation = useMutation({
@@ -265,7 +273,7 @@ export default function ScheduleIndexScreen() {
                 createCustomDutyMutation.mutate({ eventType, customLabel })
               }
               onRemoveDuty={(id) => removeDutyMutation.mutate(id)}
-              micCount={meetingVersion?.microphoneSlots ?? 2}
+              micCount={meetingSettingsQuery.data?.effective?.microphoneSlots ?? 2}
               onSetMicCount={(n) => setMicMutation.mutate(n)}
               pending={
                 generateDutiesMutation.isPending ||
