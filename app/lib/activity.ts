@@ -21,32 +21,54 @@ export function activityItemLabel(item: ActivityItem): string {
   return getPartLabel(item.partKey ?? '');
 }
 
+export interface ActivityHistoryItem {
+  weekStartDate: string;
+  eventType: string;
+  label: string;
+}
+
 export interface ActivitySummary {
   /** Labels of items in the current week + meeting being edited. */
   thisMeeting: string[];
   /** Count of all other items in the window (recent load). */
   recentCount: number;
+  /** Other items in the window, most recent first (for the expandable list). */
+  recentItems: ActivityHistoryItem[];
 }
 
 /**
  * Split a publisher's activity into "this meeting" (current week + event type)
- * and everything else (recent load over the window).
+ * and everything else (recent load over the window, newest first).
  */
 export function summarizeActivity(
   activity: PublisherActivity | undefined,
   currentWeekStart: string | undefined,
   currentEventType: string | undefined,
 ): ActivitySummary {
-  if (!activity) return { thisMeeting: [], recentCount: 0 };
+  if (!activity) return { thisMeeting: [], recentCount: 0, recentItems: [] };
   const thisMeeting: string[] = [];
-  let recentCount = 0;
+  const recentItems: ActivityHistoryItem[] = [];
   for (const item of activity.items) {
     const isThisMeeting =
       currentWeekStart != null &&
       item.weekStartDate === currentWeekStart &&
       (currentEventType == null || item.eventType === currentEventType);
-    if (isThisMeeting) thisMeeting.push(activityItemLabel(item));
-    else recentCount += 1;
+    if (isThisMeeting) {
+      thisMeeting.push(activityItemLabel(item));
+    } else {
+      recentItems.push({
+        weekStartDate: item.weekStartDate,
+        eventType: item.eventType,
+        label: activityItemLabel(item),
+      });
+    }
   }
-  return { thisMeeting, recentCount };
+  recentItems.sort((a, b) =>
+    a.weekStartDate < b.weekStartDate
+      ? 1
+      : a.weekStartDate > b.weekStartDate
+        ? -1
+        : 0,
+  );
+  return { thisMeeting, recentCount: recentItems.length, recentItems };
 }

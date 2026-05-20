@@ -249,7 +249,9 @@ function PublisherOption({
   onPress: () => void;
 }) {
   const { t } = useTranslation();
+  const [expanded, setExpanded] = useState(false);
   const busyThisMeeting = !!activity && activity.thisMeeting.length > 0;
+  const recentItems = activity?.recentItems ?? [];
   return (
     <Pressable
       style={({ pressed }) => [
@@ -277,16 +279,38 @@ function PublisherOption({
             </View>
           )}
         </View>
-        {busyThisMeeting ? (
+        {busyThisMeeting && (
           <Text style={styles.optionBusyText} numberOfLines={1}>
             {t('publisherActivity.thisMeeting')}{' '}
             {activity!.thisMeeting.join(', ')}
           </Text>
-        ) : activity && activity.recentCount > 0 ? (
-          <Text style={styles.optionRecentText}>
-            {t('publisherActivity.recent', { count: activity.recentCount })}
-          </Text>
-        ) : null}
+        )}
+        {recentItems.length > 0 && (
+          <Pressable
+            onPress={(e) => {
+              e?.stopPropagation?.();
+              setExpanded((v) => !v);
+            }}
+            hitSlop={6}
+            style={styles.recentToggle}
+          >
+            <Text style={styles.optionRecentText}>
+              {t('publisherActivity.recent', { count: recentItems.length })}
+            </Text>
+            <Ionicons
+              name={expanded ? 'chevron-up' : 'chevron-down'}
+              size={12}
+              color="#94a3b8"
+            />
+          </Pressable>
+        )}
+        {expanded &&
+          recentItems.map((it, i) => (
+            <Text key={i} style={styles.historyRow} numberOfLines={1}>
+              {it.weekStartDate.slice(8, 10)}.{it.weekStartDate.slice(5, 7)} ·{' '}
+              {it.label}
+            </Text>
+          ))}
       </View>
       {isSelected && <Ionicons name="checkmark" size={20} color="#0ea5e9" />}
     </Pressable>
@@ -329,12 +353,15 @@ const styles = StyleSheet.create({
     marginLeft: 16,
     marginTop: 2,
   },
-  optionRecentText: {
-    fontSize: 12,
-    color: '#94a3b8',
+  optionRecentText: { fontSize: 12, color: '#94a3b8' },
+  recentToggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
     marginLeft: 16,
     marginTop: 2,
   },
+  historyRow: { fontSize: 11, color: '#64748b', marginLeft: 16, marginTop: 2 },
 
   modal: {
     flex: 1,
