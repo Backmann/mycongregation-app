@@ -92,7 +92,9 @@ export function PublisherForm({
     isPrisoner: initial?.isPrisoner ?? false,
     spiritualNotes: initial?.spiritualNotes ?? '',
     notes: initial?.notes ?? '',
-    capabilities: initial?.capabilities ?? {},
+    capabilities:
+      initial?.capabilities ??
+      (initial?.gender === 'sister' ? { hospitality: true } : {}),
   });
 
   const [error, setError] = useState<string | null>(null);
@@ -156,7 +158,16 @@ export function PublisherForm({
           label={t('publishers.fields.gender')}
           value={form.gender}
           options={GENDER_OPTIONS}
-          onChange={(v) => update('gender', v)}
+          onChange={(v) =>
+            setForm((prev) => ({
+              ...prev,
+              gender: v,
+              capabilities:
+                v === 'sister' && prev.capabilities?.hospitality === undefined
+                  ? { ...prev.capabilities, hospitality: true }
+                  : prev.capabilities,
+            }))
+          }
         />
         <FormField
           label={t('publishers.fields.birthDate')}
