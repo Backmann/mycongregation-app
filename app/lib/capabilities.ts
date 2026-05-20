@@ -3,6 +3,9 @@
  * Stored as Record<string, boolean> in publisher.capabilities (jsonb).
  * Keys here are also stored in the DB; once a key is in production data,
  * don't rename it without a migration script.
+ *
+ * The `label` strings below are dev fallbacks only — the UI always renders
+ * via i18n (`capabilities.categories.${key}` / `capabilities.items.${key}`).
  */
 
 export interface CapabilityDef {
@@ -32,7 +35,7 @@ export const CAPABILITY_CATEGORIES: CapabilityCategory[] = [
       { key: 'treasures_talk', label: 'Treasures from God\'s Word', brotherOnly: true, elderOnly: true },
       { key: 'spiritual_gems', label: 'Spiritual Gems', brotherOnly: true, baptizedOnly: true },
       { key: 'bible_reading', label: 'Bible reading', brotherOnly: true, baptizedOnly: true },
-      { key: 'congregation_study_conductor', label: 'Congregation Bible Study conductor', brotherOnly: true, elderOnly: true },
+      { key: 'congregation_study_conductor', label: 'Congregation Bible Study', brotherOnly: true, elderOnly: true },
       { key: 'congregation_study_reader', label: 'Congregation Bible Study reader', brotherOnly: true, baptizedOnly: true },
     ],
   },
@@ -48,32 +51,37 @@ export const CAPABILITY_CATEGORIES: CapabilityCategory[] = [
     ],
   },
   {
+    // "Apply Yourself to the Field Ministry" (ОТТАЧИВАЕМ НАВЫКИ СЛУЖЕНИЯ)
     key: 'field_service',
-    label: 'Field service demonstrations',
+    label: 'Apply Yourself to the Field Ministry',
     capabilities: [
-      { key: 'demo_initial_call', label: 'Initial call demonstration' },
-      { key: 'demo_return_visit', label: 'Return visit demonstration' },
-      { key: 'demo_bible_study', label: 'Bible study demonstration' },
-      { key: 'service_meeting_part', label: 'Service meeting part', brotherOnly: true },
+      { key: 'fs_starting_conversation', label: 'Starting a Conversation' },
+      { key: 'fs_following_up', label: 'Following Up' },
+      { key: 'fs_making_disciples', label: 'Making Disciples' },
+      { key: 'fs_explaining_beliefs', label: 'Explaining Your Beliefs' },
+      { key: 'fs_talk', label: 'Talk', brotherOnly: true },
     ],
   },
   {
+    // Meeting duties (eligibility flags for the future Duties schedule feature)
     key: 'duties',
-    label: 'Audio / Visual / Attendant',
+    label: 'Duties',
     capabilities: [
-      { key: 'attendant', label: 'Attendant' },
-      { key: 'microphone', label: 'Microphone' },
-      { key: 'stage', label: 'Stage / Platform' },
-      { key: 'sound', label: 'Sound system' },
-      { key: 'video_presenter', label: 'Video presenter' },
+      { key: 'duty_security', label: 'Security' },
+      { key: 'duty_attendant', label: 'Hall attendant' },
+      { key: 'duty_zoom', label: 'Zoom' },
+      { key: 'duty_microphone', label: 'Microphones' },
+      { key: 'duty_audio', label: 'Audio' },
+      { key: 'duty_video', label: 'Video' },
+      { key: 'duty_stage', label: 'Stage' },
+      { key: 'duty_ventilation', label: 'Ventilation' },
     ],
   },
   {
-    key: 'cleaning',
-    label: 'Cleaning',
+    key: 'hospitality',
+    label: 'Hospitality',
     capabilities: [
-      { key: 'cleaning_team', label: 'Regular cleaning' },
-      { key: 'cleaning_special', label: 'Special / Quarterly cleaning' },
+      { key: 'hospitality', label: 'Hospitality' },
     ],
   },
 ];

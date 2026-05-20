@@ -34,6 +34,7 @@ export default function PublishersListScreen() {
     queryKey: ['publishers', search, showRemoved],
     queryFn: () =>
       publishersApi.list({
+        limit: 200,
         search: search || undefined,
         includeRemoved: showRemoved,
       }),

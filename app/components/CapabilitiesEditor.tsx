@@ -9,6 +9,7 @@ import {
 import {
   CAPABILITY_CATEGORIES,
   CapabilityCategory,
+  CapabilityDef,
   countActiveInCategory,
 } from '../lib/capabilities';
 
@@ -50,6 +51,22 @@ function CategorySection({
   const active = countActiveInCategory(value, category);
   const total = category.capabilities.length;
 
+  // Capabilities a sister cannot hold (brother-only) are excluded from
+  // "select all" so the toggle reflects only what can actually be enabled.
+  const isConflict = (cap: CapabilityDef) =>
+    !!cap.brotherOnly && gender === 'sister';
+  const eligible = category.capabilities.filter((c) => !isConflict(c));
+  const allEligibleOn =
+    eligible.length > 0 && eligible.every((c) => !!value?.[c.key]);
+
+  const setAll = (checked: boolean) => {
+    const next = { ...value };
+    for (const cap of category.capabilities) {
+      if (!isConflict(cap)) next[cap.key] = checked;
+    }
+    onChange(next);
+  };
+
   return (
     <View style={styles.section}>
       <Pressable
@@ -74,8 +91,21 @@ function CategorySection({
 
       {open && (
         <View style={styles.body}>
+          {eligible.length > 1 && (
+            <View style={[styles.capRow, styles.selectAllRow]}>
+              <Text style={[styles.capLabel, styles.selectAllLabel]}>
+                {t('capabilities.selectAll')}
+              </Text>
+              <Switch
+                value={allEligibleOn}
+                onValueChange={setAll}
+                trackColor={{ false: '#e2e8f0', true: '#7dd3fc' }}
+                thumbColor={allEligibleOn ? '#0ea5e9' : '#f8fafc'}
+              />
+            </View>
+          )}
           {category.capabilities.map((cap) => {
-            const isBrotherOnlyConflict = cap.brotherOnly && gender === 'sister';
+            const isBrotherOnlyConflict = isConflict(cap);
             const isOn = !!value?.[cap.key];
 
             return (
@@ -162,6 +192,19 @@ const styles = StyleSheet.create({
     paddingLeft: 36,
     paddingRight: 20,
     minHeight: 44,
+  },
+  selectAllRow: {
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
+    marginBottom: 2,
+  },
+  selectAllLabel: {
+    flex: 1,
+    fontWeight: '600',
+    color: '#475569',
+    textTransform: 'uppercase',
+    fontSize: 12,
+    letterSpacing: 0.4,
   },
   capLabel: { fontSize: 14, color: '#0f172a' },
   capLabelDisabled: { color: '#cbd5e1' },

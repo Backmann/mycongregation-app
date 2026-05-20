@@ -248,10 +248,10 @@
     },
     "categories": {
       "midweek": "Zusammenkunft unter der Woche",
-      "weekend": "Wochenend-Zusammenkunft",
-      "field_service": "Demonstrationen im Predigtdienst",
-      "duties": "Audio / Video / Saaldienst",
-      "cleaning": "Reinigung"
+      "weekend": "Zusammenkunft am Wochenende",
+      "field_service": "Uns im Predigtdienst verbessern",
+      "duties": "Aufgaben",
+      "hospitality": "Gastfreundschaft"
     },
     "items": {
       "midweek_chairman": "Vorsitzender",
@@ -259,25 +259,29 @@
       "treasures_talk": "Schätze aus Gottes Wort",
       "spiritual_gems": "Geistige Kostbarkeiten",
       "bible_reading": "Bibellesung",
-      "congregation_study_conductor": "Leiter des Versammlungsbibelstudiums",
+      "congregation_study_conductor": "Bibelstudium der Versammlung",
       "congregation_study_reader": "Vorleser des Versammlungsbibelstudiums",
       "weekend_chairman": "Vorsitzender",
       "weekend_opening_prayer": "Eröffnungsgebet",
       "public_talk_speaker": "Redner für den öffentlichen Vortrag",
       "watchtower_conductor": "Leiter des Wachtturm-Studiums",
       "watchtower_reader": "Vorleser des Wachtturm-Studiums",
-      "demo_initial_call": "Demonstration: Erstgespräch",
-      "demo_return_visit": "Demonstration: Rückbesuch",
-      "demo_bible_study": "Demonstration: Bibelstudium",
-      "service_meeting_part": "Programmpunkt",
-      "attendant": "Saaldienst",
-      "microphone": "Mikrofondienst",
-      "stage": "Bühne / Podium",
-      "sound": "Audiotechnik",
-      "video_presenter": "Videodienst",
-      "cleaning_team": "Reguläre Reinigung",
-      "cleaning_special": "Sonderreinigung / Vierteljährlich"
-    }
+      "fs_starting_conversation": "Ein Gespräch beginnen",
+      "fs_following_up": "Interesse wecken",
+      "fs_making_disciples": "Jünger machen",
+      "fs_explaining_beliefs": "Den eigenen Glauben erklären",
+      "fs_talk": "Ansprache",
+      "duty_security": "Sicherheit",
+      "duty_attendant": "Saaldienst",
+      "duty_zoom": "Zoom",
+      "duty_microphone": "Mikrofone",
+      "duty_audio": "Audio",
+      "duty_video": "Video",
+      "duty_stage": "Bühne",
+      "duty_ventilation": "Lüften",
+      "hospitality": "Gastfreundschaft"
+    },
+    "selectAll": "Alle auswählen"
   },
   "auth": {
     "subtitle": "Bei deiner Versammlung anmelden",

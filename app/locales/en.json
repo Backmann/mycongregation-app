@@ -249,9 +249,9 @@
     "categories": {
       "midweek": "Midweek meeting",
       "weekend": "Weekend meeting",
-      "field_service": "Field service demonstrations",
-      "duties": "Audio / Visual / Attendant",
-      "cleaning": "Cleaning"
+      "field_service": "Apply Yourself to the Field Ministry",
+      "duties": "Duties",
+      "hospitality": "Hospitality"
     },
     "items": {
       "midweek_chairman": "Chairman",
@@ -259,25 +259,29 @@
       "treasures_talk": "Treasures from God's Word",
       "spiritual_gems": "Spiritual Gems",
       "bible_reading": "Bible reading",
-      "congregation_study_conductor": "Congregation Bible Study conductor",
+      "congregation_study_conductor": "Congregation Bible Study",
       "congregation_study_reader": "Congregation Bible Study reader",
       "weekend_chairman": "Chairman",
       "weekend_opening_prayer": "Opening prayer",
       "public_talk_speaker": "Public talk speaker",
       "watchtower_conductor": "Watchtower study conductor",
       "watchtower_reader": "Watchtower study reader",
-      "demo_initial_call": "Initial call demonstration",
-      "demo_return_visit": "Return visit demonstration",
-      "demo_bible_study": "Bible study demonstration",
-      "service_meeting_part": "Service meeting part",
-      "attendant": "Attendant",
-      "microphone": "Microphone",
-      "stage": "Stage / Platform",
-      "sound": "Sound system",
-      "video_presenter": "Video presenter",
-      "cleaning_team": "Regular cleaning",
-      "cleaning_special": "Special / Quarterly cleaning"
-    }
+      "fs_starting_conversation": "Starting a Conversation",
+      "fs_following_up": "Following Up",
+      "fs_making_disciples": "Making Disciples",
+      "fs_explaining_beliefs": "Explaining Your Beliefs",
+      "fs_talk": "Talk",
+      "duty_security": "Security",
+      "duty_attendant": "Hall attendant",
+      "duty_zoom": "Zoom",
+      "duty_microphone": "Microphones",
+      "duty_audio": "Audio",
+      "duty_video": "Video",
+      "duty_stage": "Stage",
+      "duty_ventilation": "Ventilation",
+      "hospitality": "Hospitality"
+    },
+    "selectAll": "Select all"
   },
   "auth": {
     "subtitle": "Sign in to your congregation",
