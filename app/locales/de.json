@@ -91,7 +91,9 @@
     "title": "Profil",
     "publicTalksImport": "Massenimport",
     "responsibilities": "Aufgaben",
-    "responsibilitiesDescription": "Bereichskoordinatoren zuweisen"
+    "responsibilitiesDescription": "Bereichskoordinatoren zuweisen",
+    "meetingSettings": "Zeit & Ort der Zusammenkünfte",
+    "meetingSettingsDescription": "Tag, Uhrzeit und Adresse der Zusammenkünfte"
   },
   "language": {
     "title": "Sprache",
@@ -728,6 +730,38 @@
       "accounts_servant": "Rechnungsführer",
       "public_witnessing": "Aufseher für öffentliches Zeugnisgeben",
       "cleaning_coordinator": "Reinigungskoordinator"
+    }
+  },
+  "meetingSettings": {
+    "title": "Zeit & Ort der Zusammenkünfte",
+    "congregationName": "Name der Versammlung",
+    "saveName": "Namen speichern",
+    "editTitle": "Zusammenkunftsplan",
+    "midweek": "Zusammenkunft unter der Woche",
+    "weekend": "Zusammenkunft am Wochenende",
+    "address": "Adresse des Königreichssaals",
+    "addressPlaceholder": "Straße, PLZ, Stadt",
+    "microphoneSlots": "Mikrofon-Plätze",
+    "effectiveFrom": "Gültig ab (JJJJ-MM-TT)",
+    "effectiveFromHint": "Beim Speichern wird ab diesem Datum eine neue Version erstellt. Vergangene Wochen behalten ihren bisherigen Tag und ihre Uhrzeit.",
+    "saveVersion": "Plan speichern",
+    "history": "Änderungsverlauf",
+    "effectiveNow": "Aktuell gültig",
+    "noVersions": "Noch keine Versionen",
+    "errorTitle": "Fehler",
+    "deleteConfirm": {
+      "title": "Version löschen?",
+      "body": "Die Version vom {{date}} löschen?",
+      "action": "Löschen"
+    },
+    "dow": {
+      "1": "Mo",
+      "2": "Di",
+      "3": "Mi",
+      "4": "Do",
+      "5": "Fr",
+      "6": "Sa",
+      "7": "So"
     }
   }
 }

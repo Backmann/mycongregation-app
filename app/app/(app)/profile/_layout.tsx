@@ -30,6 +30,10 @@ export default function ProfileLayout() {
         name="responsibilities"
         options={{ title: t('responsibilities.title') }}
       />
+      <Stack.Screen
+        name="meeting-settings"
+        options={{ title: t('meetingSettings.title') }}
+      />
     </Stack>
   );
 }

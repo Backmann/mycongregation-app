@@ -91,7 +91,9 @@
     "title": "Профиль",
     "publicTalksImport": "Массовый импорт",
     "responsibilities": "Обязанности",
-    "responsibilitiesDescription": "Назначение ответственных за разделы"
+    "responsibilitiesDescription": "Назначение ответственных за разделы",
+    "meetingSettings": "Время и место встреч",
+    "meetingSettingsDescription": "День, время и адрес встреч собрания"
   },
   "language": {
     "title": "Язык",
@@ -732,6 +734,38 @@
       "accounts_servant": "Счетовод",
       "public_witnessing": "Публичное свидетельствование",
       "cleaning_coordinator": "Координатор уборки"
+    }
+  },
+  "meetingSettings": {
+    "title": "Время и место встреч",
+    "congregationName": "Название собрания",
+    "saveName": "Сохранить название",
+    "editTitle": "Расписание встреч",
+    "midweek": "Встреча среди недели",
+    "weekend": "Встреча в выходные",
+    "address": "Адрес Зала Царства",
+    "addressPlaceholder": "Улица, индекс, город",
+    "microphoneSlots": "Слотов для микрофонов",
+    "effectiveFrom": "Действует с (ГГГГ-ММ-ДД)",
+    "effectiveFromHint": "Сохранение создаёт новую версию расписания с этой даты. Прошлые недели сохранят прежние день и время.",
+    "saveVersion": "Сохранить расписание",
+    "history": "История изменений",
+    "effectiveNow": "Действует сейчас",
+    "noVersions": "Пока нет версий расписания",
+    "errorTitle": "Ошибка",
+    "deleteConfirm": {
+      "title": "Удалить версию?",
+      "body": "Удалить версию расписания от {{date}}?",
+      "action": "Удалить"
+    },
+    "dow": {
+      "1": "Пн",
+      "2": "Вт",
+      "3": "Ср",
+      "4": "Чт",
+      "5": "Пт",
+      "6": "Сб",
+      "7": "Вс"
     }
   }
 }

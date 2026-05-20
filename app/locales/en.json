@@ -91,7 +91,9 @@
     "title": "Profile",
     "publicTalksImport": "Bulk import",
     "responsibilities": "Responsibilities",
-    "responsibilitiesDescription": "Assign section coordinators"
+    "responsibilitiesDescription": "Assign section coordinators",
+    "meetingSettings": "Meeting time & place",
+    "meetingSettingsDescription": "Day, time and address of the meetings"
   },
   "language": {
     "title": "Language",
@@ -728,6 +730,38 @@
       "accounts_servant": "Accounts Servant",
       "public_witnessing": "Public Witnessing Overseer",
       "cleaning_coordinator": "Cleaning Coordinator"
+    }
+  },
+  "meetingSettings": {
+    "title": "Meeting time & place",
+    "congregationName": "Congregation name",
+    "saveName": "Save name",
+    "editTitle": "Meeting schedule",
+    "midweek": "Midweek meeting",
+    "weekend": "Weekend meeting",
+    "address": "Kingdom Hall address",
+    "addressPlaceholder": "Street, postcode, city",
+    "microphoneSlots": "Microphone slots",
+    "effectiveFrom": "Effective from (YYYY-MM-DD)",
+    "effectiveFromHint": "Saving creates a new schedule version from this date. Past weeks keep their previous day and time.",
+    "saveVersion": "Save schedule",
+    "history": "Change history",
+    "effectiveNow": "In effect now",
+    "noVersions": "No schedule versions yet",
+    "errorTitle": "Error",
+    "deleteConfirm": {
+      "title": "Delete version?",
+      "body": "Delete the schedule version from {{date}}?",
+      "action": "Delete"
+    },
+    "dow": {
+      "1": "Mon",
+      "2": "Tue",
+      "3": "Wed",
+      "4": "Thu",
+      "5": "Fri",
+      "6": "Sat",
+      "7": "Sun"
     }
   }
 }

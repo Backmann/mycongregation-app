@@ -554,6 +554,59 @@ export const responsibilitiesApi = {
   },
 };
 
+export interface MeetingSettingsVersion {
+  id: string;
+  congregationId: string;
+  effectiveFrom: string;
+  midweekDow: number;
+  midweekTime: string;
+  weekendDow: number;
+  weekendTime: string;
+  address: string;
+  microphoneSlots: number;
+}
+
+export interface MeetingSettingsOverview {
+  congregation: { id: string; name: string; timezone: string | null };
+  versions: MeetingSettingsVersion[];
+  effective: MeetingSettingsVersion | null;
+}
+
+export interface UpsertMeetingSettingsInput {
+  effectiveFrom: string;
+  midweekDow: number;
+  midweekTime: string;
+  weekendDow: number;
+  weekendTime: string;
+  address: string;
+  microphoneSlots?: number;
+}
+
+export const meetingSettingsApi = {
+  async getOverview(): Promise<MeetingSettingsOverview> {
+    const { data } = await api.get<MeetingSettingsOverview>('/meeting-settings');
+    return data;
+  },
+  async updateCongregation(input: {
+    name?: string;
+    timezone?: string;
+  }): Promise<void> {
+    await api.patch('/meeting-settings/congregation', input);
+  },
+  async upsertVersion(
+    input: UpsertMeetingSettingsInput,
+  ): Promise<MeetingSettingsVersion> {
+    const { data } = await api.post<MeetingSettingsVersion>(
+      '/meeting-settings',
+      input,
+    );
+    return data;
+  },
+  async removeVersion(id: string): Promise<void> {
+    await api.delete(`/meeting-settings/${id}`);
+  },
+};
+
 export type PublisherStatus = 'active' | 'irregular' | 'inactive';
 
 export const publishersApi = {
