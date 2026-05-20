@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import {
   ActivityIndicator,
   Pressable,
@@ -18,6 +19,8 @@ import {
   EventType,
   extractErrorMessage,
   PublicTalk,
+  PublisherActivity,
+  publisherActivityApi,
 } from '../lib/api';
 import { getPartDef, getPartLabel } from '../lib/parts';
 import { useTranslation } from 'react-i18next';
@@ -89,6 +92,18 @@ export function AssignmentForm({
   ) => {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
+
+  const activityQuery = useQuery({
+    queryKey: ['publisher-activity', form.weekStartDate],
+    queryFn: () =>
+      publisherActivityApi.getActivity({
+        weekStart: form.weekStartDate,
+        weeks: 4,
+      }),
+    enabled: !!form.weekStartDate,
+  });
+  const activityById = new Map<string, PublisherActivity>();
+  for (const a of activityQuery.data ?? []) activityById.set(a.publisherId, a);
 
   const partDef = getPartDef(form.partKey);
   const isPublicTalkSpeaker = form.partKey === 'public_talk_speaker';
@@ -240,6 +255,9 @@ export function AssignmentForm({
                 value={form.publisherId}
                 onChange={(id) => update('publisherId', id)}
                 requiredCapability={requiredCap}
+                activityById={activityById}
+                currentWeekStart={form.weekStartDate}
+                currentEventType={form.eventType}
               />
             ) : (
               <>
@@ -270,6 +288,9 @@ export function AssignmentForm({
                 form.assistantPublisherId ? [form.assistantPublisherId] : []
               }
               requiredCapability={requiredCap}
+              activityById={activityById}
+              currentWeekStart={form.weekStartDate}
+              currentEventType={form.eventType}
             />
             {showAssistant && (
               <PublisherSelector
@@ -278,6 +299,9 @@ export function AssignmentForm({
                 onChange={(id) => update('assistantPublisherId', id)}
                 excludeIds={form.publisherId ? [form.publisherId] : []}
                 requiredCapability={requiredAssistantCap}
+                activityById={activityById}
+                currentWeekStart={form.weekStartDate}
+                currentEventType={form.eventType}
               />
             )}
           </>
