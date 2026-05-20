@@ -34,6 +34,7 @@ import {
   getEventTypeLabel,
   getPartLabel,
   PARTS_BY_EVENT,
+  buildPartNumbers,
   resolveSubsection,
   Subsection,
   SUBSECTIONS,
@@ -209,6 +210,7 @@ export default function ScheduleIndexScreen() {
             {EVENT_TYPE_ORDER.map((eventType) => {
               const items = grouped.get(eventType) ?? [];
               if (items.length === 0) return null;
+              const numbers = buildPartNumbers(items);
               if (eventType === 'midweek') {
                 return (
                   <View key="midweek">
@@ -219,6 +221,7 @@ export default function ScheduleIndexScreen() {
                     />
                     <MidweekSections
                       items={items}
+                      numbers={numbers}
                       publishersById={publishersById}
                     />
                   </View>
@@ -251,6 +254,7 @@ export default function ScheduleIndexScreen() {
                             ? publishersById.get(a.assistantPublisherId) ?? null
                             : null
                         }
+                        displayNumber={numbers.get(a.id) ?? null}
                       />
                     ))}
                   </View>
@@ -331,9 +335,11 @@ const SUBSECTION_ORDER: Subsection[] = [
 
 function MidweekSections({
   items,
+  numbers,
   publishersById,
 }: {
   items: Assignment[];
+  numbers: Map<string, number | null>;
   publishersById: Map<string, Publisher>;
 }) {
   const { t } = useTranslation();
@@ -373,6 +379,7 @@ function MidweekSections({
                       ? publishersById.get(a.assistantPublisherId) ?? null
                       : null
                   }
+                  displayNumber={numbers.get(a.id) ?? null}
                   accentColor={meta.color}
                 />
               ))}
@@ -423,8 +430,22 @@ function isTitleNamedPart(key: string): boolean {
     key === 'spiritual_gems' ||
     key === 'bible_reading' ||
     key.startsWith('apply_yourself_') ||
-    key.startsWith('living_christians_')
+    key.startsWith('living_christians_') ||
+    key === 'cbs_conductor'
   );
+}
+
+const PRAYER_PARTS = new Set<string>([
+  'midweek_opening_prayer',
+  'midweek_closing_prayer',
+  'weekend_opening_prayer',
+  'weekend_closing_prayer',
+]);
+
+/** Extracts just the song reference (e.g. "Песня 44") from a prayer title. */
+function songFromTitle(title: string): string | null {
+  const m = title.match(/(?:Песня|Song|Lied)\s*№?\s*\d+/i);
+  return m ? m[0] : null;
 }
 
 /**
@@ -436,6 +457,12 @@ function partDisplay(
   partKey: string,
   partTitle: string | null | undefined,
 ): { label: string; subtitle: string | null } {
+  if (PRAYER_PARTS.has(partKey)) {
+    return {
+      label: getPartLabel(partKey),
+      subtitle: partTitle ? songFromTitle(partTitle) : null,
+    };
+  }
   if (partTitle && isTitleNamedPart(partKey)) {
     const idx = partTitle.indexOf(': ');
     if (idx > 0) {
@@ -453,11 +480,13 @@ function AssignmentRow({
   publisher,
   assistant,
   accentColor,
+  displayNumber,
 }: {
   assignment: Assignment;
   publisher: Publisher | null;
   assistant: Publisher | null;
   accentColor?: string;
+  displayNumber?: number | null;
 }) {
   const { t } = useTranslation();
   const { label: partLabel, subtitle } = partDisplay(
@@ -477,8 +506,13 @@ function AssignmentRow({
       ]}
       onPress={() => router.push(`/schedule/${assignment.id}` as any)}
     >
-      <View style={styles.orderBadge}>
-        <Text style={styles.orderText}>{assignment.partOrder || '–'}</Text>
+      <View
+        style={[
+          styles.orderBadge,
+          displayNumber == null && styles.orderBadgeInfo,
+        ]}
+      >
+        <Text style={styles.orderText}>{displayNumber ?? '·'}</Text>
       </View>
       <View style={{ flex: 1 }}>
         <Text style={styles.partLabel}>{partLabel}</Text>
@@ -600,6 +634,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   orderText: { color: '#0369a1', fontWeight: '700', fontSize: 13 },
+  orderBadgeInfo: { backgroundColor: '#f1f5f9' },
   partLabel: { fontSize: 15, fontWeight: '600', color: '#0f172a' },
   partTitle: {
     fontSize: 13,

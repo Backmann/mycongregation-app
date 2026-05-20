@@ -256,6 +256,42 @@ export function getPartLabel(key: string): string {
  * Subsection for a part key, even for keys not in the registry (e.g. a 4th/5th
  * apply-yourself or living-as-Christians part), inferred from the key prefix.
  */
+const NON_NUMBERED_PARTS = new Set<string>([
+  'midweek_chairman',
+  'weekend_chairman',
+  'midweek_opening_prayer',
+  'midweek_closing_prayer',
+  'weekend_opening_prayer',
+  'weekend_closing_prayer',
+  'cbs_reader',
+  'watchtower_reader',
+]);
+
+/** Parts that get a JW-style sequential number (excludes chairmen/prayers/readers). */
+export function isNumberedPart(key: string): boolean {
+  return !NON_NUMBERED_PARTS.has(key);
+}
+
+/** Map of assignment id -> JW display number (null for non-numbered info rows). */
+export function buildPartNumbers(
+  items: { id: string; partKey: string; partOrder: number | null }[],
+): Map<string, number | null> {
+  const sorted = [...items].sort(
+    (a, b) => (a.partOrder ?? 0) - (b.partOrder ?? 0),
+  );
+  const map = new Map<string, number | null>();
+  let n = 0;
+  for (const it of sorted) {
+    if (isNumberedPart(it.partKey)) {
+      n += 1;
+      map.set(it.id, n);
+    } else {
+      map.set(it.id, null);
+    }
+  }
+  return map;
+}
+
 export function resolveSubsection(key: string): Subsection {
   const def = getPartDef(key);
   if (def?.subsection) return def.subsection;
