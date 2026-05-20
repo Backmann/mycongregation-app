@@ -799,5 +799,9 @@
       "has_program_part": "Already has a program part in this meeting",
       "capability_off": "Not marked as able for this duty"
     }
+  },
+  "publisherActivity": {
+    "thisMeeting": "This meeting:",
+    "recent": "Last 4 wks: {{count}}"
   }
 }

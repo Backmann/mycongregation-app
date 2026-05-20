@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import { Duty, DutyType, Publisher } from '../lib/api';
+import { Duty, DutyType, Publisher, PublisherActivity } from '../lib/api';
 import { PublisherSelector } from './PublisherSelector';
 
 type Meeting = 'midweek' | 'weekend';
@@ -61,6 +61,8 @@ type Props = {
   onRemoveDuty: (dutyId: string) => void;
   micCount?: number;
   onSetMicCount?: (count: number) => void;
+  activityById?: Map<string, PublisherActivity>;
+  weekStartISO?: string;
   pending?: boolean;
 };
 
@@ -74,6 +76,8 @@ export function DutiesSection({
   onRemoveDuty,
   micCount,
   onSetMicCount,
+  activityById,
+  weekStartISO,
   pending,
 }: Props) {
   const { t } = useTranslation();
@@ -173,6 +177,9 @@ export function DutiesSection({
                         value={d.publisherId}
                         onChange={(id) => onAssign(d.id, id)}
                         requiredCapability={capabilityFor(d)}
+                        activityById={activityById}
+                        currentWeekStart={weekStartISO}
+                        currentEventType={meeting}
                       />
                     </View>
                     {d.dutyType === 'custom' && (

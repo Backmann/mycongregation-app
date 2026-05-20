@@ -14,7 +14,8 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
-import { Publisher, publishersApi } from '../lib/api';
+import { Publisher, PublisherActivity, publishersApi } from '../lib/api';
+import { ActivitySummary, summarizeActivity } from '../lib/activity';
 import { useTranslation } from 'react-i18next';
 
 interface Props {
@@ -27,6 +28,12 @@ interface Props {
    * The user can toggle "Show all" inside the modal to override.
    */
   requiredCapability?: string;
+  /** Optional per-publisher recent activity, keyed by publisher id. */
+  activityById?: Map<string, PublisherActivity>;
+  /** Current week (Monday ISO) — flags "this meeting" activity. */
+  currentWeekStart?: string;
+  /** Current meeting type — flags "this meeting" activity. */
+  currentEventType?: string;
 }
 
 export function PublisherSelector({
@@ -35,6 +42,9 @@ export function PublisherSelector({
   onChange,
   excludeIds = [],
   requiredCapability,
+  activityById,
+  currentWeekStart,
+  currentEventType,
 }: Props) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
@@ -208,6 +218,11 @@ export function PublisherSelector({
                     onChange(p.id);
                     setOpen(false);
                   }}
+                  activity={summarizeActivity(
+                    activityById?.get(p.id),
+                    currentWeekStart,
+                    currentEventType,
+                  )}
                 />
               ))}
             </ScrollView>
@@ -223,42 +238,57 @@ function PublisherOption({
   isSelected,
   hasCapability,
   showCapabilityWarning,
+  activity,
   onPress,
 }: {
   publisher: Publisher;
   isSelected: boolean;
   hasCapability: boolean;
   showCapabilityWarning: boolean;
+  activity?: ActivitySummary;
   onPress: () => void;
 }) {
+  const { t } = useTranslation();
+  const busyThisMeeting = !!activity && activity.thisMeeting.length > 0;
   return (
     <Pressable
       style={({ pressed }) => [
         styles.option,
+        busyThisMeeting && styles.optionBusy,
         pressed && styles.optionPressed,
       ]}
       onPress={onPress}
     >
-      <View style={styles.optionMain}>
-        <View
-          style={[
-            styles.dot,
-            {
-              backgroundColor:
-                publisher.gender === 'brother' ? '#0ea5e9' : '#ec4899',
-            },
-          ]}
-        />
-        <Text style={styles.optionText}>{publisher.displayName}</Text>
-        {showCapabilityWarning && !hasCapability && (
-          <View style={styles.optionWarn}>
-            <Ionicons name="warning" size={11} color="#dc2626" />
-          </View>
-        )}
+      <View style={{ flex: 1 }}>
+        <View style={styles.optionMain}>
+          <View
+            style={[
+              styles.dot,
+              {
+                backgroundColor:
+                  publisher.gender === 'brother' ? '#0ea5e9' : '#ec4899',
+              },
+            ]}
+          />
+          <Text style={styles.optionText}>{publisher.displayName}</Text>
+          {showCapabilityWarning && !hasCapability && (
+            <View style={styles.optionWarn}>
+              <Ionicons name="warning" size={11} color="#dc2626" />
+            </View>
+          )}
+        </View>
+        {busyThisMeeting ? (
+          <Text style={styles.optionBusyText} numberOfLines={1}>
+            {t('publisherActivity.thisMeeting')}{' '}
+            {activity!.thisMeeting.join(', ')}
+          </Text>
+        ) : activity && activity.recentCount > 0 ? (
+          <Text style={styles.optionRecentText}>
+            {t('publisherActivity.recent', { count: activity.recentCount })}
+          </Text>
+        ) : null}
       </View>
-      {isSelected && (
-        <Ionicons name="checkmark" size={20} color="#0ea5e9" />
-      )}
+      {isSelected && <Ionicons name="checkmark" size={20} color="#0ea5e9" />}
     </Pressable>
   );
 }
@@ -291,6 +321,20 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   warningText: { fontSize: 11, color: '#dc2626' },
+  optionBusy: { backgroundColor: '#f0f9ff' },
+  optionBusyText: {
+    fontSize: 12,
+    color: '#0369a1',
+    fontWeight: '600',
+    marginLeft: 16,
+    marginTop: 2,
+  },
+  optionRecentText: {
+    fontSize: 12,
+    color: '#94a3b8',
+    marginLeft: 16,
+    marginTop: 2,
+  },
 
   modal: {
     flex: 1,

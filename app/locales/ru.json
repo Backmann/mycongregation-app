@@ -803,5 +803,9 @@
       "has_program_part": "Уже участвует в программе этой встречи",
       "capability_off": "Не отмечен как способный к этой обязанности"
     }
+  },
+  "publisherActivity": {
+    "thisMeeting": "На этой встрече:",
+    "recent": "За 4 нед.: {{count}}"
   }
 }

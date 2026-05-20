@@ -799,5 +799,9 @@
       "has_program_part": "Hat bereits einen Programmteil in dieser Zusammenkunft",
       "capability_off": "Nicht als fähig für diese Aufgabe markiert"
     }
+  },
+  "publisherActivity": {
+    "thisMeeting": "Dieses Treffen:",
+    "recent": "Letzte 4 Wo.: {{count}}"
   }
 }

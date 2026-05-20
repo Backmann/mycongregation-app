@@ -22,6 +22,8 @@ import {
   publishersApi,
   meetingSettingsApi,
   dutiesApi,
+  activityApi,
+  PublisherActivity,
 } from '../../../lib/api';
 import {
   addWeeks,
@@ -97,8 +99,20 @@ export default function ScheduleIndexScreen() {
       queryClient.invalidateQueries({ queryKey: ['duties', weekStartISO] });
     },
   });
-  const invalidateDuties = () =>
+  const activityQuery = useQuery({
+    queryKey: ['publisher-activity', weekStartISO],
+    queryFn: () =>
+      activityApi.getActivity({ weekStart: weekStartISO, weeks: 4 }),
+  });
+  const activityById = new Map<string, PublisherActivity>();
+  for (const a of activityQuery.data ?? []) activityById.set(a.publisherId, a);
+
+  const invalidateDuties = () => {
     queryClient.invalidateQueries({ queryKey: ['duties', weekStartISO] });
+    queryClient.invalidateQueries({
+      queryKey: ['publisher-activity', weekStartISO],
+    });
+  };
   const showDutyWarnings = (warnings: string[]) => {
     if (warnings.length === 0) return;
     const body = warnings.map((w) => t(`duties.warnings.${w}`)).join('\n');
@@ -275,6 +289,8 @@ export default function ScheduleIndexScreen() {
               onRemoveDuty={(id) => removeDutyMutation.mutate(id)}
               micCount={meetingSettingsQuery.data?.effective?.microphoneSlots ?? 2}
               onSetMicCount={(n) => setMicMutation.mutate(n)}
+              activityById={activityById}
+              weekStartISO={weekStartISO}
               pending={
                 generateDutiesMutation.isPending ||
                 assignDutyMutation.isPending ||
