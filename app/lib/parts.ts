@@ -110,8 +110,8 @@ export const MIDWEEK_PARTS: PartDef[] = [
     defaultOrder: 6,
     defaultDurationMin: 4,
     hasAssistant: true,
-    requiredCapability: 'demo_initial_call',
-    requiredAssistantCapability: 'demo_initial_call',
+    requiredCapability: 'fs_starting_conversation',
+    requiredAssistantCapability: 'fs_starting_conversation',
     subsection: 'apply_yourself',
   },
   {
@@ -120,8 +120,8 @@ export const MIDWEEK_PARTS: PartDef[] = [
     defaultOrder: 7,
     defaultDurationMin: 4,
     hasAssistant: true,
-    requiredCapability: 'demo_return_visit',
-    requiredAssistantCapability: 'demo_return_visit',
+    requiredCapability: 'fs_following_up',
+    requiredAssistantCapability: 'fs_following_up',
     subsection: 'apply_yourself',
   },
   {
@@ -130,8 +130,8 @@ export const MIDWEEK_PARTS: PartDef[] = [
     defaultOrder: 8,
     defaultDurationMin: 4,
     hasAssistant: true,
-    requiredCapability: 'demo_bible_study',
-    requiredAssistantCapability: 'demo_bible_study',
+    requiredCapability: 'fs_making_disciples',
+    requiredAssistantCapability: 'fs_making_disciples',
     subsection: 'apply_yourself',
   },
   {
@@ -139,7 +139,7 @@ export const MIDWEEK_PARTS: PartDef[] = [
     label: 'Living as Christians 1',
     defaultOrder: 9,
     defaultDurationMin: 15,
-    requiredCapability: 'service_meeting_part',
+    requiredCapability: 'fs_talk',
     subsection: 'christian_life',
   },
   {
@@ -147,7 +147,7 @@ export const MIDWEEK_PARTS: PartDef[] = [
     label: 'Living as Christians 2',
     defaultOrder: 10,
     defaultDurationMin: 15,
-    requiredCapability: 'service_meeting_part',
+    requiredCapability: 'fs_talk',
     subsection: 'christian_life',
   },
   {
