@@ -641,6 +641,33 @@ export interface DutyWithWarnings {
   warnings: DutyWarning[];
 }
 
+export interface ActivityItem {
+  weekStartDate: string;
+  eventType: string;
+  kind: 'part' | 'duty';
+  partKey?: string;
+  partTitle?: string | null;
+  role?: 'primary' | 'assistant';
+  dutyType?: string;
+  slotIndex?: number;
+  customLabel?: string | null;
+}
+
+export interface PublisherActivity {
+  publisherId: string;
+  items: ActivityItem[];
+}
+
+export const publisherActivityApi = {
+  async getActivity(params: {
+    weekStart: string;
+    weeks?: number;
+  }): Promise<PublisherActivity[]> {
+    const { data } = await api.get('/publisher-activity', { params });
+    return data;
+  },
+};
+
 export const dutiesApi = {
   async setMicrophoneSlots(microphoneSlots: number): Promise<void> {
     await api.patch('/duties/microphone-slots', { microphoneSlots });

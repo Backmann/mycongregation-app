@@ -22,7 +22,7 @@ import {
   publishersApi,
   meetingSettingsApi,
   dutiesApi,
-  activityApi,
+  publisherActivityApi,
   PublisherActivity,
 } from '../../../lib/api';
 import {
@@ -102,7 +102,7 @@ export default function ScheduleIndexScreen() {
   const activityQuery = useQuery({
     queryKey: ['publisher-activity', weekStartISO],
     queryFn: () =>
-      activityApi.getActivity({ weekStart: weekStartISO, weeks: 4 }),
+      publisherActivityApi.getActivity({ weekStart: weekStartISO, weeks: 4 }),
   });
   const activityById = new Map<string, PublisherActivity>();
   for (const a of activityQuery.data ?? []) activityById.set(a.publisherId, a);
