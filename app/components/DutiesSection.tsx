@@ -1,7 +1,16 @@
-import { StyleSheet, Text, View, Pressable } from 'react-native';
+import { useState } from 'react';
+import {
+  Modal,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { Duty, DutyType, Publisher } from '../lib/api';
+import { PublisherSelector } from './PublisherSelector';
 
 type Meeting = 'midweek' | 'weekend';
 
@@ -28,10 +37,7 @@ function sortDuties(a: Duty, b: Duty): number {
   return orderIndex(a.dutyType) - orderIndex(b.dutyType) || a.slotIndex - b.slotIndex;
 }
 
-export function dutyLabel(
-  duty: Duty,
-  t: (k: string) => string,
-): string {
+export function dutyLabel(duty: Duty, t: (k: string) => string): string {
   if (duty.dutyType === 'custom') {
     return duty.customLabel || t('duties.types.custom');
   }
@@ -41,13 +47,18 @@ export function dutyLabel(
   return t(`duties.types.${duty.dutyType}`);
 }
 
+function capabilityFor(duty: Duty): string | undefined {
+  return duty.dutyType === 'custom' ? undefined : `duty_${duty.dutyType}`;
+}
+
 type Props = {
   duties: Duty[];
   publishersById: Map<string, Publisher>;
   canEdit: boolean;
   onGenerate: (eventType: Meeting) => void;
-  /** Optional: tapping a slot (added in A2c for assignment). */
-  onPressSlot?: (duty: Duty) => void;
+  onAssign: (dutyId: string, publisherId: string | null) => void;
+  onAddCustom: (eventType: Meeting, customLabel: string) => void;
+  onRemoveDuty: (dutyId: string) => void;
   pending?: boolean;
 };
 
@@ -56,10 +67,14 @@ export function DutiesSection({
   publishersById,
   canEdit,
   onGenerate,
-  onPressSlot,
+  onAssign,
+  onAddCustom,
+  onRemoveDuty,
   pending,
 }: Props) {
   const { t } = useTranslation();
+  const [customFor, setCustomFor] = useState<Meeting | null>(null);
+  const [customLabel, setCustomLabel] = useState('');
 
   if (duties.length === 0 && !canEdit) return null;
 
@@ -71,6 +86,13 @@ export function DutiesSection({
     arr.push(d);
     byMeeting.set(m, arr);
   }
+
+  const submitCustom = () => {
+    const label = customLabel.trim();
+    if (customFor && label) onAddCustom(customFor, label);
+    setCustomFor(null);
+    setCustomLabel('');
+  };
 
   return (
     <View style={styles.section}>
@@ -107,46 +129,110 @@ export function DutiesSection({
         return (
           <View key={meeting} style={styles.meetingBlock}>
             <Text style={styles.meetingLabel}>{meetingLabel}</Text>
-            <View style={styles.rows}>
-              {list.map((d) => {
-                const publisher = d.publisherId
-                  ? publishersById.get(d.publisherId) ?? null
-                  : null;
-                const tappable = canEdit && !!onPressSlot;
-                const content = (
-                  <>
-                    <Text style={styles.dutyLabel}>{dutyLabel(d, t)}</Text>
-                    <Text
-                      style={[
-                        styles.publisher,
-                        !publisher && styles.unassigned,
-                      ]}
-                      numberOfLines={1}
-                    >
-                      {publisher
-                        ? publisher.displayName
-                        : t('duties.unassigned')}
-                    </Text>
-                  </>
-                );
-                return tappable ? (
-                  <Pressable
-                    key={d.id}
-                    style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
-                    onPress={() => onPressSlot?.(d)}
-                  >
-                    {content}
-                  </Pressable>
-                ) : (
-                  <View key={d.id} style={styles.row}>
-                    {content}
+
+            {canEdit ? (
+              <View style={styles.editList}>
+                {list.map((d) => (
+                  <View key={d.id} style={styles.editRow}>
+                    <View style={{ flex: 1 }}>
+                      <PublisherSelector
+                        label={dutyLabel(d, t)}
+                        value={d.publisherId}
+                        onChange={(id) => onAssign(d.id, id)}
+                        requiredCapability={capabilityFor(d)}
+                      />
+                    </View>
+                    {d.dutyType === 'custom' && (
+                      <Pressable
+                        onPress={() => onRemoveDuty(d.id)}
+                        hitSlop={8}
+                        style={styles.delBtn}
+                        disabled={pending}
+                      >
+                        <Ionicons name="trash-outline" size={20} color="#dc2626" />
+                      </Pressable>
+                    )}
                   </View>
-                );
-              })}
-            </View>
+                ))}
+
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.addCustomBtn,
+                    pressed && styles.fillBtnPressed,
+                  ]}
+                  onPress={() => {
+                    setCustomLabel('');
+                    setCustomFor(meeting);
+                  }}
+                >
+                  <Ionicons name="add-outline" size={16} color="#0369a1" />
+                  <Text style={styles.fillBtnText}>{t('duties.addCustom')}</Text>
+                </Pressable>
+              </View>
+            ) : (
+              <View style={styles.rows}>
+                {list.map((d) => {
+                  const publisher = d.publisherId
+                    ? publishersById.get(d.publisherId) ?? null
+                    : null;
+                  return (
+                    <View key={d.id} style={styles.row}>
+                      <Text style={styles.dutyLabel}>{dutyLabel(d, t)}</Text>
+                      <Text
+                        style={[styles.publisher, !publisher && styles.unassigned]}
+                        numberOfLines={1}
+                      >
+                        {publisher ? publisher.displayName : t('duties.unassigned')}
+                      </Text>
+                    </View>
+                  );
+                })}
+              </View>
+            )}
           </View>
         );
       })}
+
+      {/* Custom duty label modal */}
+      <Modal
+        visible={customFor !== null}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setCustomFor(null)}
+      >
+        <View style={styles.overlay}>
+          <View style={styles.modalCard}>
+            <Text style={styles.modalTitle}>{t('duties.addCustom')}</Text>
+            <TextInput
+              style={styles.modalInput}
+              value={customLabel}
+              onChangeText={setCustomLabel}
+              placeholder={t('duties.customLabelPlaceholder')}
+              placeholderTextColor="#94a3b8"
+              autoFocus
+              maxLength={255}
+            />
+            <View style={styles.modalActions}>
+              <Pressable
+                style={styles.modalCancel}
+                onPress={() => setCustomFor(null)}
+              >
+                <Text style={styles.modalCancelText}>{t('common.cancel')}</Text>
+              </Pressable>
+              <Pressable
+                style={[
+                  styles.modalConfirm,
+                  !customLabel.trim() && styles.disabled,
+                ]}
+                onPress={submitCustom}
+                disabled={!customLabel.trim()}
+              >
+                <Text style={styles.modalConfirmText}>{t('duties.addCustom')}</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -175,6 +261,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     marginBottom: 4,
   },
+
+  // read-only list
   rows: {
     backgroundColor: '#fff',
     borderTopWidth: 1,
@@ -191,10 +279,15 @@ const styles = StyleSheet.create({
     borderTopColor: '#f1f5f9',
     gap: 12,
   },
-  rowPressed: { backgroundColor: '#f8fafc' },
   dutyLabel: { fontSize: 14, color: '#0f172a', flexShrink: 1 },
   publisher: { fontSize: 14, color: '#334155', fontWeight: '600', maxWidth: '55%' },
   unassigned: { color: '#cbd5e1', fontWeight: '400' },
+
+  // editable list
+  editList: { paddingHorizontal: 16, gap: 4 },
+  editRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 8 },
+  delBtn: { padding: 6, marginBottom: 6 },
+
   fillBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -209,5 +302,52 @@ const styles = StyleSheet.create({
   },
   fillBtnPressed: { backgroundColor: '#e0f2fe' },
   fillBtnText: { fontSize: 14, fontWeight: '600', color: '#0369a1' },
+  addCustomBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    marginTop: 4,
+    paddingVertical: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    borderColor: '#bae6fd',
+    backgroundColor: '#f8fafc',
+  },
   disabled: { opacity: 0.5 },
+
+  // custom modal
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(15,23,42,0.45)',
+    justifyContent: 'center',
+    paddingHorizontal: 24,
+  },
+  modalCard: {
+    backgroundColor: '#fff',
+    borderRadius: 14,
+    padding: 18,
+    gap: 12,
+  },
+  modalTitle: { fontSize: 16, fontWeight: '700', color: '#0f172a' },
+  modalInput: {
+    borderWidth: 1,
+    borderColor: '#cbd5e1',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 15,
+    color: '#0f172a',
+  },
+  modalActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 10 },
+  modalCancel: { paddingVertical: 10, paddingHorizontal: 14 },
+  modalCancelText: { fontSize: 15, color: '#64748b', fontWeight: '600' },
+  modalConfirm: {
+    paddingVertical: 10,
+    paddingHorizontal: 18,
+    borderRadius: 10,
+    backgroundColor: '#0ea5e9',
+  },
+  modalConfirmText: { fontSize: 15, color: '#fff', fontWeight: '600' },
 });

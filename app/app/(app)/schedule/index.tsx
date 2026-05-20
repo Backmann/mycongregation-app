@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
+  Platform,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -94,6 +96,38 @@ export default function ScheduleIndexScreen() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['duties', weekStartISO] });
     },
+  });
+  const invalidateDuties = () =>
+    queryClient.invalidateQueries({ queryKey: ['duties', weekStartISO] });
+  const showDutyWarnings = (warnings: string[]) => {
+    if (warnings.length === 0) return;
+    const body = warnings.map((w) => t(`duties.warnings.${w}`)).join('\n');
+    if (Platform.OS === 'web') {
+      window.alert(`${t('duties.warningsTitle')}\n\n${body}`);
+    } else {
+      Alert.alert(t('duties.warningsTitle'), body);
+    }
+  };
+  const assignDutyMutation = useMutation({
+    mutationFn: (vars: { id: string; publisherId: string | null }) =>
+      dutiesApi.assign(vars.id, { publisherId: vars.publisherId }),
+    onSuccess: (res) => {
+      invalidateDuties();
+      showDutyWarnings(res.warnings);
+    },
+  });
+  const createCustomDutyMutation = useMutation({
+    mutationFn: (vars: { eventType: EventType; customLabel: string }) =>
+      dutiesApi.createCustom({
+        weekStartDate: weekStartISO,
+        eventType: vars.eventType,
+        customLabel: vars.customLabel,
+      }),
+    onSuccess: () => invalidateDuties(),
+  });
+  const removeDutyMutation = useMutation({
+    mutationFn: (id: string) => dutiesApi.removeDuty(id),
+    onSuccess: () => invalidateDuties(),
   });
 
   const createWeekMutation = useMutation({
@@ -217,7 +251,19 @@ export default function ScheduleIndexScreen() {
               onGenerate={(eventType) =>
                 generateDutiesMutation.mutate(eventType)
               }
-              pending={generateDutiesMutation.isPending}
+              onAssign={(id, publisherId) =>
+                assignDutyMutation.mutate({ id, publisherId })
+              }
+              onAddCustom={(eventType, customLabel) =>
+                createCustomDutyMutation.mutate({ eventType, customLabel })
+              }
+              onRemoveDuty={(id) => removeDutyMutation.mutate(id)}
+              pending={
+                generateDutiesMutation.isPending ||
+                assignDutyMutation.isPending ||
+                createCustomDutyMutation.isPending ||
+                removeDutyMutation.isPending
+              }
             />
 
             {isEmpty && (
