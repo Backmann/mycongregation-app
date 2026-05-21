@@ -814,5 +814,36 @@
   "publisherActivity": {
     "thisMeeting": "На этой встрече:",
     "recent": "За 4 нед.: {{count}}"
+  },
+  "fieldService": {
+    "title": "Встречи для проповеди",
+    "empty": "На эту неделю встреч нет",
+    "addEntry": "Добавить встречу",
+    "conductor": "Проводящий",
+    "unassigned": "не назначен",
+    "addressLabel": "Адрес",
+    "timeLabel": "Время",
+    "dayLabel": "День",
+    "topicLabel": "Тема",
+    "linkLabel": "Ссылка",
+    "openLink": "Открыть источник",
+    "form": {
+      "addTitle": "Новая встреча",
+      "editTitle": "Редактировать встречу",
+      "save": "Сохранить",
+      "timePlaceholder": "ЧЧ:ММ",
+      "addressPlaceholder": "Где собираемся",
+      "topicPlaceholder": "Тема или указание (необязательно)",
+      "linkPlaceholder": "https://www.jw.org/…"
+    },
+    "days": {
+      "1": "Пн",
+      "2": "Вт",
+      "3": "Ср",
+      "4": "Чт",
+      "5": "Пт",
+      "6": "Сб",
+      "7": "Вс"
+    }
   }
 }

@@ -22,6 +22,7 @@ import {
   publishersApi,
   meetingSettingsApi,
   dutiesApi,
+  fieldServiceApi,
   publisherActivityApi,
   PublisherActivity,
 } from '../../../lib/api';
@@ -45,6 +46,7 @@ import { WeekNavigator } from '../../../components/WeekNavigator';
 import { MeetingHeader } from '../../../components/MeetingHeader';
 import { effectiveVersionFor } from '../../../lib/meeting-schedule';
 import { DutiesSection } from '../../../components/DutiesSection';
+import { FieldServiceSection } from '../../../components/FieldServiceSection';
 import { usePermissions } from '../../../lib/permissions';
 
 const EVENT_TYPE_ORDER: EventType[] = [
@@ -86,7 +88,7 @@ export default function ScheduleIndexScreen() {
     meetingSettingsQuery.data?.versions,
     weekStartISO,
   );
-  const { canEditDuties } = usePermissions();
+  const { canEditDuties, canEditFieldServiceMeetings } = usePermissions();
   const dutiesQuery = useQuery({
     queryKey: ['duties', weekStartISO],
     queryFn: () =>
@@ -143,6 +145,32 @@ export default function ScheduleIndexScreen() {
   const removeDutyMutation = useMutation({
     mutationFn: (id: string) => dutiesApi.removeDuty(id),
     onSuccess: () => invalidateDuties(),
+  });
+
+  const fieldServiceQuery = useQuery({
+    queryKey: ['field-service', weekStartISO],
+    queryFn: () => fieldServiceApi.list({ weekStart: weekStartISO }),
+  });
+  const fieldServiceMeetings = fieldServiceQuery.data ?? [];
+  const invalidateFieldService = () =>
+    queryClient.invalidateQueries({
+      queryKey: ['field-service', weekStartISO],
+    });
+  const createFieldServiceMutation = useMutation({
+    mutationFn: (input: Parameters<typeof fieldServiceApi.create>[0]) =>
+      fieldServiceApi.create(input),
+    onSuccess: () => invalidateFieldService(),
+  });
+  const updateFieldServiceMutation = useMutation({
+    mutationFn: (vars: {
+      id: string;
+      input: Parameters<typeof fieldServiceApi.update>[1];
+    }) => fieldServiceApi.update(vars.id, vars.input),
+    onSuccess: () => invalidateFieldService(),
+  });
+  const removeFieldServiceMutation = useMutation({
+    mutationFn: (id: string) => fieldServiceApi.remove(id),
+    onSuccess: () => invalidateFieldService(),
   });
 
   const createWeekMutation = useMutation({
@@ -283,6 +311,23 @@ export default function ScheduleIndexScreen() {
                 assignDutyMutation.isPending ||
                 createCustomDutyMutation.isPending ||
                 removeDutyMutation.isPending
+              }
+            />
+
+            <FieldServiceSection
+              meetings={fieldServiceMeetings}
+              publishersById={publishersById}
+              canEdit={canEditFieldServiceMeetings}
+              weekStartISO={weekStartISO}
+              onCreate={(input) => createFieldServiceMutation.mutate(input)}
+              onUpdate={(id, input) =>
+                updateFieldServiceMutation.mutate({ id, input })
+              }
+              onRemove={(id) => removeFieldServiceMutation.mutate(id)}
+              pending={
+                createFieldServiceMutation.isPending ||
+                updateFieldServiceMutation.isPending ||
+                removeFieldServiceMutation.isPending
               }
             />
 

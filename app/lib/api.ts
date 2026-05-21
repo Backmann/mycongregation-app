@@ -709,6 +709,68 @@ export const dutiesApi = {
   },
 };
 
+export interface FieldServiceMeeting {
+  id: string;
+  congregationId: string;
+  weekStartDate: string;
+  dayOfWeek: number; // 1=Mon .. 7=Sun
+  startTime: string; // "HH:MM"
+  address: string;
+  conductorPublisherId: string | null;
+  topic: string | null;
+  sourceUrl: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateFieldServiceMeetingInput {
+  weekStartDate: string;
+  dayOfWeek: number;
+  startTime: string;
+  address: string;
+  conductorPublisherId?: string | null;
+  topic?: string | null;
+  sourceUrl?: string | null;
+}
+
+export type UpdateFieldServiceMeetingInput = Partial<
+  Omit<CreateFieldServiceMeetingInput, 'weekStartDate'>
+>;
+
+export const fieldServiceApi = {
+  async list(
+    params: { weekStart?: string } = {},
+  ): Promise<FieldServiceMeeting[]> {
+    const { data } = await api.get<FieldServiceMeeting[]>(
+      '/field-service-meetings',
+      { params },
+    );
+    return data;
+  },
+  async create(
+    input: CreateFieldServiceMeetingInput,
+  ): Promise<FieldServiceMeeting> {
+    const { data } = await api.post<FieldServiceMeeting>(
+      '/field-service-meetings',
+      input,
+    );
+    return data;
+  },
+  async update(
+    id: string,
+    input: UpdateFieldServiceMeetingInput,
+  ): Promise<FieldServiceMeeting> {
+    const { data } = await api.patch<FieldServiceMeeting>(
+      `/field-service-meetings/${id}`,
+      input,
+    );
+    return data;
+  },
+  async remove(id: string): Promise<void> {
+    await api.delete(`/field-service-meetings/${id}`);
+  },
+};
+
 export type PublisherStatus = 'active' | 'irregular' | 'inactive';
 
 export const publishersApi = {

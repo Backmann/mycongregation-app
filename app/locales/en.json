@@ -810,5 +810,36 @@
   "publisherActivity": {
     "thisMeeting": "This meeting:",
     "recent": "Last 4 wks: {{count}}"
+  },
+  "fieldService": {
+    "title": "Field Ministry Meetings",
+    "empty": "No meetings this week",
+    "addEntry": "Add a meeting",
+    "conductor": "Conductor",
+    "unassigned": "unassigned",
+    "addressLabel": "Address",
+    "timeLabel": "Time",
+    "dayLabel": "Day",
+    "topicLabel": "Topic",
+    "linkLabel": "Link",
+    "openLink": "Open source",
+    "form": {
+      "addTitle": "New meeting",
+      "editTitle": "Edit meeting",
+      "save": "Save",
+      "timePlaceholder": "HH:MM",
+      "addressPlaceholder": "Where to meet",
+      "topicPlaceholder": "Topic or note (optional)",
+      "linkPlaceholder": "https://www.jw.org/…"
+    },
+    "days": {
+      "1": "Mon",
+      "2": "Tue",
+      "3": "Wed",
+      "4": "Thu",
+      "5": "Fri",
+      "6": "Sat",
+      "7": "Sun"
+    }
   }
 }

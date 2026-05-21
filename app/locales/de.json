@@ -810,5 +810,36 @@
   "publisherActivity": {
     "thisMeeting": "Dieses Treffen:",
     "recent": "Letzte 4 Wo.: {{count}}"
+  },
+  "fieldService": {
+    "title": "Treffen für den Predigtdienst",
+    "empty": "Diese Woche keine Treffen",
+    "addEntry": "Treffen hinzufügen",
+    "conductor": "Leitung",
+    "unassigned": "nicht zugeteilt",
+    "addressLabel": "Adresse",
+    "timeLabel": "Zeit",
+    "dayLabel": "Tag",
+    "topicLabel": "Thema",
+    "linkLabel": "Link",
+    "openLink": "Quelle öffnen",
+    "form": {
+      "addTitle": "Neues Treffen",
+      "editTitle": "Treffen bearbeiten",
+      "save": "Speichern",
+      "timePlaceholder": "HH:MM",
+      "addressPlaceholder": "Treffpunkt",
+      "topicPlaceholder": "Thema oder Hinweis (optional)",
+      "linkPlaceholder": "https://www.jw.org/…"
+    },
+    "days": {
+      "1": "Mo",
+      "2": "Di",
+      "3": "Mi",
+      "4": "Do",
+      "5": "Fr",
+      "6": "Sa",
+      "7": "So"
+    }
   }
 }
