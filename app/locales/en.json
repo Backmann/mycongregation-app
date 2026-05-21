@@ -690,6 +690,12 @@
         "confirmTitle": "Activate user",
         "confirmBody": "{{email}} will be able to sign in again.",
         "confirmAction": "Activate"
+      },
+      "adminLimit": {
+        "banner": "We recommend no more than 2 administrators. Currently active: {{count}}.",
+        "confirmTitle": "Many administrators",
+        "confirmBody": "Two administrators are usually enough for a congregation (currently active: {{count}}). Assign another one anyway?",
+        "confirmAction": "Assign"
       }
     }
   },

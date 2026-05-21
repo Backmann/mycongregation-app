@@ -690,6 +690,12 @@
         "confirmTitle": "Benutzer aktivieren",
         "confirmBody": "{{email}} kann sich wieder anmelden.",
         "confirmAction": "Aktivieren"
+      },
+      "adminLimit": {
+        "banner": "Empfohlen werden höchstens 2 Administratoren. Derzeit aktiv: {{count}}.",
+        "confirmTitle": "Viele Administratoren",
+        "confirmBody": "Für eine Versammlung genügen normalerweise 2 Administratoren (derzeit aktiv: {{count}}). Trotzdem einen weiteren zuweisen?",
+        "confirmAction": "Zuweisen"
       }
     }
   },

@@ -128,6 +128,9 @@ export default function AdminUsersScreen() {
     );
 
   const users = usersQuery.data ?? [];
+  const activeAdminCount = users.filter(
+    (u) => u.role === 'admin' && u.isActive,
+  ).length;
 
   return (
     <View style={styles.container}>
@@ -146,6 +149,19 @@ export default function AdminUsersScreen() {
             {t('admin.users.countSummary', { count: users.length })}
           </Text>
         </View>
+
+        {activeAdminCount >= 2 && (
+          <View style={styles.adminLimitBanner}>
+            <Ionicons
+              name="information-circle-outline"
+              size={18}
+              color="#92400e"
+            />
+            <Text style={styles.adminLimitBannerText}>
+              {t('admin.users.adminLimit.banner', { count: activeAdminCount })}
+            </Text>
+          </View>
+        )}
 
         <Pressable
           style={({ pressed }) => [
@@ -189,6 +205,7 @@ export default function AdminUsersScreen() {
 
       <CreateUserModal
         visible={createOpen}
+        adminCount={activeAdminCount}
         onClose={() => setCreateOpen(false)}
         onSuccess={() => {
           setCreateOpen(false);
@@ -197,6 +214,7 @@ export default function AdminUsersScreen() {
       />
       <ChangeRoleModal
         user={changeRoleFor}
+        adminCount={activeAdminCount}
         onClose={() => setChangeRoleFor(null)}
         onSuccess={() => {
           setChangeRoleFor(null);
@@ -347,10 +365,12 @@ function ActionButton({
 
 function CreateUserModal({
   visible,
+  adminCount,
   onClose,
   onSuccess,
 }: {
   visible: boolean;
+  adminCount: number;
   onClose: () => void;
   onSuccess: () => void;
 }) {
@@ -378,13 +398,31 @@ function CreateUserModal({
   const passwordOk = password.length >= 8;
   const canSubmit = emailOk && passwordOk && !createMutation.isPending;
 
-  const handleSubmit = () => {
-    if (!canSubmit) return;
+  const performCreate = () => {
     createMutation.mutate({
       email: email.trim().toLowerCase(),
       password,
       role,
     });
+  };
+
+  const handleSubmit = () => {
+    if (!canSubmit) return;
+    if (role === 'admin' && adminCount >= 2) {
+      Alert.alert(
+        t('admin.users.adminLimit.confirmTitle'),
+        t('admin.users.adminLimit.confirmBody', { count: adminCount }),
+        [
+          { text: t('common.cancel'), style: 'cancel' },
+          {
+            text: t('admin.users.adminLimit.confirmAction'),
+            onPress: performCreate,
+          },
+        ],
+      );
+      return;
+    }
+    performCreate();
   };
 
   return (
@@ -465,10 +503,12 @@ function CreateUserModal({
 
 function ChangeRoleModal({
   user,
+  adminCount,
   onClose,
   onSuccess,
 }: {
   user: PublicUser | null;
+  adminCount: number;
   onClose: () => void;
   onSuccess: () => void;
 }) {
@@ -510,6 +550,20 @@ function ChangeRoleModal({
           {
             text: t('admin.users.changeRole.submit'),
             style: 'destructive',
+            onPress: performMutation,
+          },
+        ],
+      );
+      return;
+    }
+    if (user.role !== 'admin' && role === 'admin' && adminCount >= 2) {
+      Alert.alert(
+        t('admin.users.adminLimit.confirmTitle'),
+        t('admin.users.adminLimit.confirmBody', { count: adminCount }),
+        [
+          { text: t('common.cancel'), style: 'cancel' },
+          {
+            text: t('admin.users.adminLimit.confirmAction'),
             onPress: performMutation,
           },
         ],
@@ -737,6 +791,25 @@ function FieldLabel({
 // ---------------------------------------------------------------------------
 
 const styles = StyleSheet.create({
+  adminLimitBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#fef3c7',
+    borderColor: '#fcd34d',
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    marginHorizontal: 16,
+    marginBottom: 12,
+  },
+  adminLimitBannerText: {
+    flex: 1,
+    color: '#92400e',
+    fontSize: 13,
+    lineHeight: 18,
+  },
   container: { flex: 1, backgroundColor: '#f1f5f9' },
 
   // Header
