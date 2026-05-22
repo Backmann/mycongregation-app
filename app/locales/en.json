@@ -841,5 +841,20 @@
       "6": "Sat",
       "7": "Sun"
     }
+  },
+  "cleaning": {
+    "title": "Cleaning",
+    "empty": "Unassigned",
+    "notSelected": "Not selected",
+    "noGroups": "No service groups",
+    "nextInTurn": "Next in turn",
+    "allCongregation": "Whole congregation",
+    "scheduled": "Scheduled",
+    "unknownGroup": "Group removed",
+    "slots": {
+      "after_meeting": "After meetings",
+      "thorough": "Thorough cleaning",
+      "general": "General cleaning"
+    }
   }
 }

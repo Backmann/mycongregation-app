@@ -771,6 +771,46 @@ export const fieldServiceApi = {
   },
 };
 
+export type CleaningSlotType = 'after_meeting' | 'thorough' | 'general';
+
+export interface CleaningAssignment {
+  id: string;
+  congregationId: string;
+  weekStartDate: string;
+  slotType: CleaningSlotType;
+  serviceGroupId: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CleaningWeek {
+  assignments: CleaningAssignment[];
+  suggestedAfterMeetingGroupId: string | null;
+}
+
+export const cleaningApi = {
+  async getWeek(weekStart: string): Promise<CleaningWeek> {
+    const { data } = await api.get<CleaningWeek>('/cleaning', {
+      params: { weekStart },
+    });
+    return data;
+  },
+  async setSlot(input: {
+    weekStartDate: string;
+    slotType: CleaningSlotType;
+    serviceGroupId?: string | null;
+  }): Promise<CleaningAssignment> {
+    const { data } = await api.put<CleaningAssignment>('/cleaning', input);
+    return data;
+  },
+  async clearSlot(
+    weekStartDate: string,
+    slotType: CleaningSlotType,
+  ): Promise<void> {
+    await api.delete('/cleaning', { params: { weekStartDate, slotType } });
+  },
+};
+
 export type PublisherStatus = 'active' | 'irregular' | 'inactive';
 
 export const publishersApi = {

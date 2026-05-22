@@ -23,6 +23,7 @@ import {
   meetingSettingsApi,
   dutiesApi,
   fieldServiceApi,
+  cleaningApi,
   publisherActivityApi,
   PublisherActivity,
 } from '../../../lib/api';
@@ -47,6 +48,7 @@ import { MeetingHeader } from '../../../components/MeetingHeader';
 import { effectiveVersionFor } from '../../../lib/meeting-schedule';
 import { DutiesSection } from '../../../components/DutiesSection';
 import { FieldServiceSection } from '../../../components/FieldServiceSection';
+import { CleaningSection } from '../../../components/CleaningSection';
 import { usePermissions } from '../../../lib/permissions';
 
 const EVENT_TYPE_ORDER: EventType[] = [
@@ -88,7 +90,8 @@ export default function ScheduleIndexScreen() {
     meetingSettingsQuery.data?.versions,
     weekStartISO,
   );
-  const { canEditDuties, canEditFieldServiceMeetings } = usePermissions();
+  const { canEditDuties, canEditFieldServiceMeetings, canEditCleaning } =
+    usePermissions();
   const dutiesQuery = useQuery({
     queryKey: ['duties', weekStartISO],
     queryFn: () =>
@@ -171,6 +174,34 @@ export default function ScheduleIndexScreen() {
   const removeFieldServiceMutation = useMutation({
     mutationFn: (id: string) => fieldServiceApi.remove(id),
     onSuccess: () => invalidateFieldService(),
+  });
+
+  const cleaningQuery = useQuery({
+    queryKey: ['cleaning', weekStartISO],
+    queryFn: () => cleaningApi.getWeek(weekStartISO),
+  });
+  const cleaningWeek = cleaningQuery.data ?? {
+    assignments: [],
+    suggestedAfterMeetingGroupId: null,
+  };
+  const invalidateCleaning = () =>
+    queryClient.invalidateQueries({ queryKey: ['cleaning', weekStartISO] });
+  const setCleaningSlotMutation = useMutation({
+    mutationFn: (vars: {
+      slotType: Parameters<typeof cleaningApi.setSlot>[0]['slotType'];
+      serviceGroupId: string | null;
+    }) =>
+      cleaningApi.setSlot({
+        weekStartDate: weekStartISO,
+        slotType: vars.slotType,
+        serviceGroupId: vars.serviceGroupId,
+      }),
+    onSuccess: () => invalidateCleaning(),
+  });
+  const clearCleaningSlotMutation = useMutation({
+    mutationFn: (slotType: Parameters<typeof cleaningApi.clearSlot>[1]) =>
+      cleaningApi.clearSlot(weekStartISO, slotType),
+    onSuccess: () => invalidateCleaning(),
   });
 
   const createWeekMutation = useMutation({
@@ -328,6 +359,24 @@ export default function ScheduleIndexScreen() {
                 createFieldServiceMutation.isPending ||
                 updateFieldServiceMutation.isPending ||
                 removeFieldServiceMutation.isPending
+              }
+            />
+
+            <CleaningSection
+              assignments={cleaningWeek.assignments}
+              suggestedAfterMeetingGroupId={
+                cleaningWeek.suggestedAfterMeetingGroupId
+              }
+              canEdit={canEditCleaning}
+              pending={
+                setCleaningSlotMutation.isPending ||
+                clearCleaningSlotMutation.isPending
+              }
+              onSetSlot={(slotType, serviceGroupId) =>
+                setCleaningSlotMutation.mutate({ slotType, serviceGroupId })
+              }
+              onClearSlot={(slotType) =>
+                clearCleaningSlotMutation.mutate(slotType)
               }
             />
 

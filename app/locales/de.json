@@ -841,5 +841,20 @@
       "6": "Sa",
       "7": "So"
     }
+  },
+  "cleaning": {
+    "title": "Reinigung",
+    "empty": "Nicht zugeteilt",
+    "notSelected": "Nicht ausgewählt",
+    "noGroups": "Keine Dienstgruppen",
+    "nextInTurn": "Als Nächstes",
+    "allCongregation": "Ganze Versammlung",
+    "scheduled": "Geplant",
+    "unknownGroup": "Gruppe entfernt",
+    "slots": {
+      "after_meeting": "Nach den Zusammenkünften",
+      "thorough": "Gründliche Reinigung",
+      "general": "Generalreinigung"
+    }
   }
 }
