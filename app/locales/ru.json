@@ -5,7 +5,8 @@
     "families": "Семьи",
     "groups": "Группы",
     "reports": "Отчёты",
-    "profile": "Профиль"
+    "profile": "Профиль",
+    "cart": "Тележки"
   },
   "common": {
     "edit": "Изменить",
@@ -253,7 +254,8 @@
       "weekend": "Встреча в выходные",
       "field_service": "ОТТАЧИВАЕМ НАВЫКИ СЛУЖЕНИЯ",
       "duties": "Обязанности",
-      "hospitality": "Гостеприимство"
+      "hospitality": "Гостеприимство",
+      "public_witnessing": "Служение в общественных местах"
     },
     "items": {
       "midweek_chairman": "Председатель",
@@ -281,7 +283,8 @@
       "duty_video": "Видео",
       "duty_stage": "Сцена",
       "duty_ventilation": "Проветривание",
-      "hospitality": "Гостеприимство"
+      "hospitality": "Гостеприимство",
+      "public_witnessing": "Служение с тележками"
     },
     "selectAll": "Выбрать все"
   },
@@ -860,5 +863,26 @@
       "thorough": "Еженедельная уборка",
       "general": "Генеральная уборка"
     }
+  },
+  "cart": {
+    "title": "Тележки",
+    "empty": "Пока нет запланированных смен",
+    "createShift": "Создать смену",
+    "editTitle": "Изменить смену",
+    "addTitle": "Новая смена",
+    "dateLabel": "Дата",
+    "datePlaceholder": "ГГГГ-ММ-ДД",
+    "startLabel": "Начало",
+    "endLabel": "Конец",
+    "timePlaceholder": "ЧЧ:ММ",
+    "locationLabel": "Место",
+    "locationPlaceholder": "Адрес или место",
+    "save": "Сохранить",
+    "addParticipant": "Добавить участника",
+    "needMin": "Нужно минимум 2",
+    "full": "Максимум 4 участника",
+    "removeTitle": "Удалить смену?",
+    "removeBody": "Смена и все её участники будут удалены.",
+    "removeWeb": "Удалить смену со всеми участниками?"
   }
 }

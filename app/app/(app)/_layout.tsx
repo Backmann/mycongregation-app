@@ -58,6 +58,15 @@ export default function AppLayout() {
         }}
       />
       <Tabs.Screen
+        name="cart"
+        options={{
+          title: t('tabs.cart'),
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="cart" color={color} size={size} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="service-reports"
         options={{
           title: t('tabs.reports'),

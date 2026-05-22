@@ -84,6 +84,14 @@ export const CAPABILITY_CATEGORIES: CapabilityCategory[] = [
       { key: 'hospitality', label: 'Hospitality' },
     ],
   },
+  {
+    // Public witnessing (carts) — eligibility for cart shifts
+    key: 'public_witnessing',
+    label: 'Public witnessing',
+    capabilities: [
+      { key: 'public_witnessing', label: 'Public witnessing' },
+    ],
+  },
 ];
 
 /** Flat list of all capability defs, keyed for quick lookup. */

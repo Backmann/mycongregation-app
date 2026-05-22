@@ -5,7 +5,8 @@
     "families": "Families",
     "groups": "Groups",
     "reports": "Reports",
-    "profile": "Profile"
+    "profile": "Profile",
+    "cart": "Carts"
   },
   "common": {
     "edit": "Edit",
@@ -253,7 +254,8 @@
       "weekend": "Weekend meeting",
       "field_service": "Apply Yourself to the Field Ministry",
       "duties": "Duties",
-      "hospitality": "Hospitality"
+      "hospitality": "Hospitality",
+      "public_witnessing": "Public witnessing"
     },
     "items": {
       "midweek_chairman": "Chairman",
@@ -281,7 +283,8 @@
       "duty_video": "Video",
       "duty_stage": "Stage",
       "duty_ventilation": "Ventilation",
-      "hospitality": "Hospitality"
+      "hospitality": "Hospitality",
+      "public_witnessing": "Cart witnessing"
     },
     "selectAll": "Select all"
   },
@@ -856,5 +859,26 @@
       "thorough": "Weekly cleaning",
       "general": "General cleaning"
     }
+  },
+  "cart": {
+    "title": "Carts",
+    "empty": "No shifts scheduled yet",
+    "createShift": "Create shift",
+    "editTitle": "Edit shift",
+    "addTitle": "New shift",
+    "dateLabel": "Date",
+    "datePlaceholder": "YYYY-MM-DD",
+    "startLabel": "Start",
+    "endLabel": "End",
+    "timePlaceholder": "HH:MM",
+    "locationLabel": "Location",
+    "locationPlaceholder": "Address or place",
+    "save": "Save",
+    "addParticipant": "Add participant",
+    "needMin": "At least 2 needed",
+    "full": "Maximum 4 participants",
+    "removeTitle": "Delete shift?",
+    "removeBody": "The shift and all its participants will be deleted.",
+    "removeWeb": "Delete this shift and all its participants?"
   }
 }

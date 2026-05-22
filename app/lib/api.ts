@@ -811,6 +811,70 @@ export const cleaningApi = {
   },
 };
 
+export interface CartShiftParticipant {
+  id: string;
+  cartShiftId: string;
+  publisherId: string;
+  createdAt: string;
+}
+
+export interface CartShift {
+  id: string;
+  congregationId: string;
+  date: string; // "YYYY-MM-DD"
+  startTime: string; // "HH:MM"
+  endTime: string; // "HH:MM"
+  location: string;
+  participants: CartShiftParticipant[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateCartShiftInput {
+  date: string;
+  startTime: string;
+  endTime: string;
+  location: string;
+}
+
+export type UpdateCartShiftInput = Partial<CreateCartShiftInput>;
+
+export const cartShiftsApi = {
+  async list(
+    params: { from?: string; to?: string } = {},
+  ): Promise<CartShift[]> {
+    const { data } = await api.get<CartShift[]>('/cart-shifts', { params });
+    return data;
+  },
+  async create(input: CreateCartShiftInput): Promise<CartShift> {
+    const { data } = await api.post<CartShift>('/cart-shifts', input);
+    return data;
+  },
+  async update(id: string, input: UpdateCartShiftInput): Promise<CartShift> {
+    const { data } = await api.patch<CartShift>(`/cart-shifts/${id}`, input);
+    return data;
+  },
+  async remove(id: string): Promise<void> {
+    await api.delete(`/cart-shifts/${id}`);
+  },
+  async addParticipant(id: string, publisherId: string): Promise<CartShift> {
+    const { data } = await api.post<CartShift>(
+      `/cart-shifts/${id}/participants`,
+      { publisherId },
+    );
+    return data;
+  },
+  async removeParticipant(
+    id: string,
+    publisherId: string,
+  ): Promise<CartShift> {
+    const { data } = await api.delete<CartShift>(
+      `/cart-shifts/${id}/participants/${publisherId}`,
+    );
+    return data;
+  },
+};
+
 export type PublisherStatus = 'active' | 'irregular' | 'inactive';
 
 export const publishersApi = {

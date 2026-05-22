@@ -5,7 +5,8 @@
     "families": "Familien",
     "groups": "Gruppen",
     "reports": "Berichte",
-    "profile": "Profil"
+    "profile": "Profil",
+    "cart": "Wagen"
   },
   "common": {
     "edit": "Bearbeiten",
@@ -253,7 +254,8 @@
       "weekend": "Zusammenkunft am Wochenende",
       "field_service": "Uns im Predigtdienst verbessern",
       "duties": "Aufgaben",
-      "hospitality": "Gastfreundschaft"
+      "hospitality": "Gastfreundschaft",
+      "public_witnessing": "Öffentliches Zeugnisgeben"
     },
     "items": {
       "midweek_chairman": "Vorsitzender",
@@ -281,7 +283,8 @@
       "duty_video": "Video",
       "duty_stage": "Bühne",
       "duty_ventilation": "Lüften",
-      "hospitality": "Gastfreundschaft"
+      "hospitality": "Gastfreundschaft",
+      "public_witnessing": "Zeugnisgeben mit Wagen"
     },
     "selectAll": "Alle auswählen"
   },
@@ -856,5 +859,26 @@
       "thorough": "Wöchentliche Reinigung",
       "general": "Generalreinigung"
     }
+  },
+  "cart": {
+    "title": "Wagen",
+    "empty": "Noch keine Schichten geplant",
+    "createShift": "Schicht erstellen",
+    "editTitle": "Schicht bearbeiten",
+    "addTitle": "Neue Schicht",
+    "dateLabel": "Datum",
+    "datePlaceholder": "JJJJ-MM-TT",
+    "startLabel": "Beginn",
+    "endLabel": "Ende",
+    "timePlaceholder": "HH:MM",
+    "locationLabel": "Ort",
+    "locationPlaceholder": "Adresse oder Ort",
+    "save": "Speichern",
+    "addParticipant": "Teilnehmer hinzufügen",
+    "needMin": "Mindestens 2 nötig",
+    "full": "Maximal 4 Teilnehmer",
+    "removeTitle": "Schicht löschen?",
+    "removeBody": "Die Schicht und alle Teilnehmer werden gelöscht.",
+    "removeWeb": "Diese Schicht und alle Teilnehmer löschen?"
   }
 }
