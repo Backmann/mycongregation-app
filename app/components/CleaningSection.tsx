@@ -14,15 +14,28 @@ import { useQuery } from '@tanstack/react-query';
 import {
   CleaningAssignment,
   CleaningSlotType,
+  Publisher,
   ServiceGroup,
   serviceGroupsApi,
 } from '../lib/api';
 
 const GROUP_SLOTS: CleaningSlotType[] = ['after_meeting', 'thorough'];
 
+function overseerName(
+  group: ServiceGroup | null | undefined,
+  publishersById: Map<string, Publisher>,
+): string | null {
+  if (!group) return null;
+  if (group.overseer) return group.overseer.displayName;
+  if (group.overseerPublisherId) {
+    return publishersById.get(group.overseerPublisherId)?.displayName ?? null;
+  }
+  return null;
+}
+
 type Props = {
   assignments: CleaningAssignment[];
-  suggestedAfterMeetingGroupId: string | null;
+  publishersById: Map<string, Publisher>;
   canEdit: boolean;
   pending?: boolean;
   onSetSlot: (slotType: CleaningSlotType, serviceGroupId: string | null) => void;
@@ -31,7 +44,7 @@ type Props = {
 
 export function CleaningSection({
   assignments,
-  suggestedAfterMeetingGroupId,
+  publishersById,
   canEdit,
   pending,
   onSetSlot,
@@ -56,9 +69,6 @@ export function CleaningSection({
 
   if (!canEdit && assignments.length === 0) return null;
 
-  const groupName = (id: string | null | undefined) =>
-    id ? groupsById.get(id)?.name ?? t('cleaning.unknownGroup') : null;
-
   return (
     <View style={styles.section}>
       <View style={styles.header}>
@@ -69,57 +79,46 @@ export function CleaningSection({
       <View style={styles.card}>
         {GROUP_SLOTS.map((slot) => {
           const assigned = bySlot.get(slot) ?? null;
-          const name = groupName(assigned?.serviceGroupId);
+          const group = assigned?.serviceGroupId
+            ? groupsById.get(assigned.serviceGroupId) ?? null
+            : null;
+          const overseer = overseerName(group, publishersById);
           return (
             <View key={slot} style={styles.slotRow}>
               <Text style={styles.slotLabel}>{t(`cleaning.slots.${slot}`)}</Text>
 
               {canEdit ? (
-                <View style={styles.slotControls}>
-                  <GroupSelect
-                    title={t(`cleaning.slots.${slot}`)}
-                    value={assigned?.serviceGroupId ?? null}
-                    groups={groups}
-                    disabled={pending}
-                    onChange={(id) =>
-                      id ? onSetSlot(slot, id) : onClearSlot(slot)
-                    }
-                  />
-                  {slot === 'after_meeting' && suggestedAfterMeetingGroupId && (
-                    <Pressable
-                      style={({ pressed }) => [
-                        styles.nextBtn,
-                        pressed && styles.nextBtnPressed,
-                      ]}
-                      onPress={() =>
-                        onSetSlot('after_meeting', suggestedAfterMeetingGroupId)
-                      }
-                      disabled={pending}
-                    >
-                      <Ionicons name="sync-outline" size={14} color="#0369a1" />
-                      <Text style={styles.nextBtnText}>
-                        {t('cleaning.nextInTurn')}
-                        {groupName(suggestedAfterMeetingGroupId)
-                          ? `: ${groupName(suggestedAfterMeetingGroupId)}`
-                          : ''}
-                      </Text>
-                    </Pressable>
+                <GroupSelect
+                  title={t(`cleaning.slots.${slot}`)}
+                  value={assigned?.serviceGroupId ?? null}
+                  groups={groups}
+                  publishersById={publishersById}
+                  disabled={pending}
+                  onChange={(id) =>
+                    id ? onSetSlot(slot, id) : onClearSlot(slot)
+                  }
+                />
+              ) : (
+                <View style={styles.readValue}>
+                  <Text
+                    style={[styles.slotValue, !group && styles.slotEmpty]}
+                    numberOfLines={1}
+                  >
+                    {group ? group.name : t('cleaning.empty')}
+                  </Text>
+                  {!!overseer && (
+                    <Text style={styles.overseer} numberOfLines={1}>
+                      {overseer}
+                    </Text>
                   )}
                 </View>
-              ) : (
-                <Text
-                  style={[styles.slotValue, !name && styles.slotEmpty]}
-                  numberOfLines={1}
-                >
-                  {name ?? t('cleaning.empty')}
-                </Text>
               )}
             </View>
           );
         })}
 
         {/* General cleaning — once a year, whole congregation */}
-        <View style={[styles.slotRow, styles.generalRow]}>
+        <View style={styles.slotRow}>
           <View style={{ flex: 1 }}>
             <Text style={styles.slotLabel}>{t('cleaning.slots.general')}</Text>
             <Text style={styles.generalHint}>{t('cleaning.allCongregation')}</Text>
@@ -150,18 +149,21 @@ function GroupSelect({
   title,
   value,
   groups,
+  publishersById,
   onChange,
   disabled,
 }: {
   title: string;
   value: string | null;
   groups: ServiceGroup[];
+  publishersById: Map<string, Publisher>;
   onChange: (id: string | null) => void;
   disabled?: boolean;
 }) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const current = value ? groups.find((g) => g.id === value) ?? null : null;
+  const currentOverseer = overseerName(current, publishersById);
 
   return (
     <>
@@ -170,12 +172,19 @@ function GroupSelect({
         onPress={() => setOpen(true)}
         disabled={disabled}
       >
-        <Text
-          style={[styles.selectValue, !current && styles.selectPlaceholder]}
-          numberOfLines={1}
-        >
-          {current ? current.name : t('cleaning.notSelected')}
-        </Text>
+        <View style={{ flex: 1 }}>
+          <Text
+            style={[styles.selectValue, !current && styles.selectPlaceholder]}
+            numberOfLines={1}
+          >
+            {current ? current.name : t('cleaning.notSelected')}
+          </Text>
+          {!!currentOverseer && (
+            <Text style={styles.overseer} numberOfLines={1}>
+              {currentOverseer}
+            </Text>
+          )}
+        </View>
         <Ionicons name="chevron-down" size={16} color="#94a3b8" />
       </Pressable>
 
@@ -206,23 +215,33 @@ function GroupSelect({
               {groups.length === 0 && (
                 <Text style={styles.noGroups}>{t('cleaning.noGroups')}</Text>
               )}
-              {groups.map((g) => (
-                <Pressable
-                  key={g.id}
-                  style={styles.pickerRow}
-                  onPress={() => {
-                    onChange(g.id);
-                    setOpen(false);
-                  }}
-                >
-                  <Text style={styles.pickerName} numberOfLines={1}>
-                    {g.name}
-                  </Text>
-                  {value === g.id && (
-                    <Ionicons name="checkmark" size={18} color="#0ea5e9" />
-                  )}
-                </Pressable>
-              ))}
+              {groups.map((g) => {
+                const ovs = overseerName(g, publishersById);
+                return (
+                  <Pressable
+                    key={g.id}
+                    style={styles.pickerRow}
+                    onPress={() => {
+                      onChange(g.id);
+                      setOpen(false);
+                    }}
+                  >
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.pickerName} numberOfLines={1}>
+                        {g.name}
+                      </Text>
+                      {!!ovs && (
+                        <Text style={styles.overseer} numberOfLines={1}>
+                          {ovs}
+                        </Text>
+                      )}
+                    </View>
+                    {value === g.id && (
+                      <Ionicons name="checkmark" size={18} color="#0ea5e9" />
+                    )}
+                  </Pressable>
+                );
+              })}
             </ScrollView>
           </Pressable>
         </Pressable>
@@ -263,24 +282,20 @@ const styles = StyleSheet.create({
     borderTopColor: '#f1f5f9',
     gap: 12,
   },
-  generalRow: { alignItems: 'center' },
   slotLabel: { fontSize: 14, color: '#0f172a', fontWeight: '600', flexShrink: 1 },
   generalHint: { fontSize: 12, color: '#94a3b8', marginTop: 2 },
-  slotValue: {
-    fontSize: 14,
-    color: '#334155',
-    fontWeight: '600',
-    maxWidth: '55%',
-  },
-  slotEmpty: { color: '#cbd5e1', fontWeight: '400' },
 
-  slotControls: { alignItems: 'flex-end', gap: 6, flexShrink: 1 },
+  readValue: { alignItems: 'flex-end', maxWidth: '60%' },
+  slotValue: { fontSize: 14, color: '#334155', fontWeight: '600' },
+  slotEmpty: { color: '#cbd5e1', fontWeight: '400' },
+  overseer: { fontSize: 12, color: '#94a3b8', marginTop: 1 },
+
   select: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    minWidth: 150,
-    maxWidth: 200,
+    minWidth: 160,
+    maxWidth: 210,
     borderWidth: 1,
     borderColor: '#cbd5e1',
     borderRadius: 8,
@@ -288,17 +303,8 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     justifyContent: 'space-between',
   },
-  selectValue: { fontSize: 14, color: '#0f172a', flexShrink: 1 },
+  selectValue: { fontSize: 14, color: '#0f172a' },
   selectPlaceholder: { color: '#94a3b8' },
-  nextBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingVertical: 4,
-    paddingHorizontal: 6,
-  },
-  nextBtnPressed: { opacity: 0.6 },
-  nextBtnText: { fontSize: 12, color: '#0369a1', fontWeight: '600' },
 
   overlay: {
     flex: 1,
@@ -317,7 +323,7 @@ const styles = StyleSheet.create({
     borderTopColor: '#f1f5f9',
     gap: 12,
   },
-  pickerName: { fontSize: 15, color: '#0f172a', flexShrink: 1 },
+  pickerName: { fontSize: 15, color: '#0f172a' },
   pickerClear: { fontSize: 15, color: '#64748b', fontWeight: '600' },
   noGroups: { fontSize: 13, color: '#94a3b8', paddingVertical: 12 },
 });

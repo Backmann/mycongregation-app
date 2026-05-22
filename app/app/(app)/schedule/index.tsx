@@ -364,9 +364,7 @@ export default function ScheduleIndexScreen() {
 
             <CleaningSection
               assignments={cleaningWeek.assignments}
-              suggestedAfterMeetingGroupId={
-                cleaningWeek.suggestedAfterMeetingGroupId
-              }
+              publishersById={publishersById}
               canEdit={canEditCleaning}
               pending={
                 setCleaningSlotMutation.isPending ||
