@@ -436,8 +436,8 @@
     },
     "membersCount": "Участников ({{count}})",
     "noMembersYet": "В группе пока нет участников",
-    "overseer": "Старший",
-    "assistant": "Помощник"
+    "overseer": "Ответственный за группу",
+    "assistant": "Помощник группы"
   },
   "parts": {
     "midweek_chairman": "Председатель встречи",

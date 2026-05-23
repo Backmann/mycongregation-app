@@ -432,8 +432,8 @@
     },
     "membersCount": "Mitglieder ({{count}})",
     "noMembersYet": "Noch keine Mitglieder in dieser Gruppe",
-    "overseer": "Aufseher",
-    "assistant": "Gehilfe"
+    "overseer": "Gruppenverantwortlicher",
+    "assistant": "Gruppenassistent"
   },
   "parts": {
     "midweek_chairman": "Vorsitzender",
