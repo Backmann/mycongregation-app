@@ -207,9 +207,18 @@
       "prompt": "Reason?",
       "webPrompt": "Removal reason: moved / disfellowshipped / died / other",
       "moved": "Moved",
-      "disfellowshipped": "Disfellowshipped",
+      "disfellowshipped": "Removed",
       "died": "Died",
-      "other": "Other"
+      "other": "Other",
+      "modalTitle": "Mark as departed",
+      "confirm": "Confirm",
+      "date": "Date",
+      "dateDied": "Date of death",
+      "dateMoved": "Date moved",
+      "dateRemoved": "Date removed",
+      "movedTo": "Moved to",
+      "movedToPlaceholder": "e.g. Dortmund Central congregation",
+      "note": "Note"
     },
     "actions": {
       "edit": "Edit",

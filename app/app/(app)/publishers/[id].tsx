@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
-  Platform,
+  Modal,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
@@ -35,6 +35,10 @@ export default function PublisherDetailScreen() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [editing, setEditing] = useState(false);
+  const [removeOpen, setRemoveOpen] = useState(false);
+  const [removeReason, setRemoveReason] = useState<RemovalReason | null>(null);
+  const [removeDate, setRemoveDate] = useState('');
+  const [removeNote, setRemoveNote] = useState('');
 
   const {
     data: publisher,
@@ -57,11 +61,12 @@ export default function PublisherDetailScreen() {
   });
 
   const removeMutation = useMutation({
-    mutationFn: (vars: { reason: RemovalReason }) =>
+    mutationFn: (vars: { reason: RemovalReason; date?: string; note?: string }) =>
       publishersApi.remove(id!, vars),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['publishers'] });
       queryClient.invalidateQueries({ queryKey: ['publisher', id] });
+      setRemoveOpen(false);
     },
   });
 
@@ -74,38 +79,25 @@ export default function PublisherDetailScreen() {
   });
 
   const handleRemove = () => {
-    if (Platform.OS === 'web') {
-      const reason = window.prompt(
-        t('publishers.removal.webPrompt'),
-      );
-      if (
-        reason &&
-        ['moved', 'disfellowshipped', 'died', 'other'].includes(reason)
-      ) {
-        removeMutation.mutate({ reason: reason as RemovalReason });
-      }
-      return;
-    }
-    Alert.alert(t('publishers.removal.title'), t('publishers.removal.prompt'), [
-      { text: t('common.cancel'), style: 'cancel' },
-      {
-        text: t('publishers.removal.moved'),
-        onPress: () => removeMutation.mutate({ reason: 'moved' }),
-      },
-      {
-        text: t('publishers.removal.disfellowshipped'),
-        onPress: () => removeMutation.mutate({ reason: 'disfellowshipped' }),
-        style: 'destructive',
-      },
-      {
-        text: t('publishers.removal.died'),
-        onPress: () => removeMutation.mutate({ reason: 'died' }),
-      },
-      {
-        text: t('publishers.removal.other'),
-        onPress: () => removeMutation.mutate({ reason: 'other' }),
-      },
-    ]);
+    setRemoveReason(null);
+    setRemoveDate('');
+    setRemoveNote('');
+    setRemoveOpen(true);
+  };
+
+  const reasonNeedsDate = (r: RemovalReason | null) =>
+    r === 'died' || r === 'disfellowshipped' || r === 'moved';
+  const removeValid =
+    !!removeReason &&
+    (!reasonNeedsDate(removeReason) || removeDate.trim().length > 0) &&
+    (removeReason !== 'moved' || removeNote.trim().length > 0);
+  const submitRemove = () => {
+    if (!removeReason || !removeValid) return;
+    removeMutation.mutate({
+      reason: removeReason,
+      date: removeDate.trim() || undefined,
+      note: removeNote.trim() || undefined,
+    });
   };
 
   if (isLoading) {
@@ -303,6 +295,19 @@ export default function PublisherDetailScreen() {
           </Pressable>
         )}
       </View>
+      <RemoveModal
+        visible={removeOpen}
+        reason={removeReason}
+        date={removeDate}
+        note={removeNote}
+        pending={removeMutation.isPending}
+        valid={removeValid}
+        onReason={setRemoveReason}
+        onDate={setRemoveDate}
+        onNote={setRemoveNote}
+        onCancel={() => setRemoveOpen(false)}
+        onSubmit={submitRemove}
+      />
     </ScrollView>
   );
 }
@@ -391,8 +396,197 @@ function hasSpecialNeeds(p: Publisher): boolean {
   );
 }
 
+function RemoveModal({
+  visible,
+  reason,
+  date,
+  note,
+  pending,
+  valid,
+  onReason,
+  onDate,
+  onNote,
+  onCancel,
+  onSubmit,
+}: {
+  visible: boolean;
+  reason: RemovalReason | null;
+  date: string;
+  note: string;
+  pending: boolean;
+  valid: boolean;
+  onReason: (r: RemovalReason) => void;
+  onDate: (v: string) => void;
+  onNote: (v: string) => void;
+  onCancel: () => void;
+  onSubmit: () => void;
+}) {
+  const { t } = useTranslation();
+  const REASONS: RemovalReason[] = [
+    'died',
+    'moved',
+    'disfellowshipped',
+    'other',
+  ];
+  const dateLabel =
+    reason === 'died'
+      ? t('publishers.removal.dateDied')
+      : reason === 'moved'
+        ? t('publishers.removal.dateMoved')
+        : reason === 'disfellowshipped'
+          ? t('publishers.removal.dateRemoved')
+          : t('publishers.removal.date');
+  const noteLabel =
+    reason === 'moved'
+      ? t('publishers.removal.movedTo')
+      : t('publishers.removal.note');
+  return (
+    <Modal
+      visible={visible}
+      transparent
+      animationType="fade"
+      onRequestClose={onCancel}
+    >
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalCard}>
+          <Text style={styles.modalTitle}>
+            {t('publishers.removal.modalTitle')}
+          </Text>
+          <View style={styles.reasonChips}>
+            {REASONS.map((r) => (
+              <Pressable
+                key={r}
+                style={[
+                  styles.reasonChip,
+                  reason === r && styles.reasonChipActive,
+                ]}
+                onPress={() => onReason(r)}
+              >
+                <Text
+                  style={[
+                    styles.reasonChipText,
+                    reason === r && styles.reasonChipTextActive,
+                  ]}
+                >
+                  {t(`publishers.removal.${r}`)}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+          {reason && (
+            <>
+              <Text style={styles.modalFieldLabel}>{dateLabel}</Text>
+              <TextInput
+                style={styles.modalInput}
+                value={date}
+                onChangeText={onDate}
+                placeholder="YYYY-MM-DD"
+                placeholderTextColor="#94a3b8"
+                autoCapitalize="none"
+              />
+              <Text style={styles.modalFieldLabel}>{noteLabel}</Text>
+              <TextInput
+                style={styles.modalInput}
+                value={note}
+                onChangeText={onNote}
+                placeholder={
+                  reason === 'moved'
+                    ? t('publishers.removal.movedToPlaceholder')
+                    : ''
+                }
+                placeholderTextColor="#94a3b8"
+              />
+            </>
+          )}
+          <View style={styles.modalButtons}>
+            <Pressable
+              style={[styles.modalBtn, styles.modalBtnCancel]}
+              onPress={onCancel}
+            >
+              <Text style={styles.modalBtnCancelText}>{t('common.cancel')}</Text>
+            </Pressable>
+            <Pressable
+              style={[
+                styles.modalBtn,
+                styles.modalBtnConfirm,
+                (!valid || pending) && { opacity: 0.5 },
+              ]}
+              onPress={onSubmit}
+              disabled={!valid || pending}
+            >
+              <Text style={styles.modalBtnConfirmText}>
+                {pending
+                  ? t('publishers.actions.removing')
+                  : t('publishers.removal.confirm')}
+              </Text>
+            </Pressable>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f1f5f9' },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  modalCard: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 20,
+    width: '100%',
+    maxWidth: 420,
+    gap: 10,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#0f172a',
+    marginBottom: 2,
+  },
+  reasonChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  reasonChip: {
+    borderWidth: 1,
+    borderColor: '#cbd5e1',
+    borderRadius: 999,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+  },
+  reasonChipActive: { backgroundColor: '#0ea5e9', borderColor: '#0ea5e9' },
+  reasonChipText: { color: '#334155', fontSize: 14, fontWeight: '600' },
+  reasonChipTextActive: { color: '#fff' },
+  modalFieldLabel: {
+    fontSize: 13,
+    color: '#64748b',
+    fontWeight: '600',
+    marginTop: 4,
+  },
+  modalInput: {
+    borderWidth: 1,
+    borderColor: '#cbd5e1',
+    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    fontSize: 16,
+    color: '#0f172a',
+  },
+  modalButtons: { flexDirection: 'row', gap: 10, marginTop: 8 },
+  modalBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  modalBtnCancel: { backgroundColor: '#f1f5f9' },
+  modalBtnCancelText: { color: '#334155', fontWeight: '600' },
+  modalBtnConfirm: { backgroundColor: '#dc2626' },
+  modalBtnConfirmText: { color: '#fff', fontWeight: '700' },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 32 },
   errorText: { color: '#dc2626', fontSize: 16, textAlign: 'center' },
 

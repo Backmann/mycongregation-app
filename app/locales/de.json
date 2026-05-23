@@ -207,9 +207,18 @@
       "prompt": "Grund?",
       "webPrompt": "Grund: moved / disfellowshipped / died / other",
       "moved": "Umgezogen",
-      "disfellowshipped": "Ausgeschlossen",
+      "disfellowshipped": "Entfernt",
       "died": "Verstorben",
-      "other": "Sonstiges"
+      "other": "Sonstiges",
+      "modalTitle": "Als ausgeschieden markieren",
+      "confirm": "Bestätigen",
+      "date": "Datum",
+      "dateDied": "Sterbedatum",
+      "dateMoved": "Datum des Wechsels",
+      "dateRemoved": "Datum der Entfernung",
+      "movedTo": "Gewechselt zu",
+      "movedToPlaceholder": "z. B. Versammlung Dortmund-Zentrum",
+      "note": "Notiz"
     },
     "actions": {
       "edit": "Bearbeiten",

@@ -207,9 +207,18 @@
       "prompt": "Причина?",
       "webPrompt": "Причина: moved / disfellowshipped / died / other",
       "moved": "Переехал",
-      "disfellowshipped": "Исключён",
+      "disfellowshipped": "Удалён",
       "died": "Умер",
-      "other": "Другое"
+      "other": "Другое",
+      "modalTitle": "Отметить выбывшим",
+      "confirm": "Подтвердить",
+      "date": "Дата",
+      "dateDied": "Дата смерти",
+      "dateMoved": "Дата перехода",
+      "dateRemoved": "Дата удаления",
+      "movedTo": "Куда перешёл",
+      "movedToPlaceholder": "Например: собрание «Дортмунд-Центр»",
+      "note": "Примечание"
     },
     "actions": {
       "edit": "Изменить",

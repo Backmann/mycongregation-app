@@ -894,7 +894,7 @@ export const publishersApi = {
     const { data } = await api.patch<Publisher>(`/publishers/${id}`, cleanPayload(input));
     return data;
   },
-  async remove(id: string, body: { reason: RemovalReason; note?: string }): Promise<Publisher> {
+  async remove(id: string, body: { reason: RemovalReason; date?: string; note?: string }): Promise<Publisher> {
     const { data } = await api.post<Publisher>(`/publishers/${id}/remove`, body);
     return data;
   },
