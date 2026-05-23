@@ -60,6 +60,9 @@ export function PublisherSelector({
   const selectedPublisher = allPublishers.find((p) => p.id === value);
 
   const filterByCapability = !!requiredCapability && !showAll;
+  const capabilityLabel = requiredCapability
+    ? t(`capabilities.items.${requiredCapability}`)
+    : '';
 
   const filtered = allPublishers.filter((p) => {
     if (excludeIds.includes(p.id)) return false;
@@ -108,7 +111,7 @@ export function PublisherSelector({
             <View style={styles.warningRow}>
               <Ionicons name="warning" size={12} color="#dc2626" />
               <Text style={styles.warningText}>
-                {t('pickers.missingCapability', { capability: requiredCapability })}
+                {t('pickers.missingCapability', { capability: capabilityLabel })}
               </Text>
             </View>
           )}
@@ -126,7 +129,7 @@ export function PublisherSelector({
               {requiredCapability && (
                 <Text style={styles.modalSubtitle}>
                   {t('pickers.filteredByCapability')}{' '}
-                  <Text style={styles.modalCapName}>{requiredCapability}</Text>
+                  <Text style={styles.modalCapName}>{capabilityLabel}</Text>
                 </Text>
               )}
             </View>
@@ -197,7 +200,7 @@ export function PublisherSelector({
                   {search !== ''
                     ? t('pickers.noMatches')
                     : filterByCapability
-                    ? t('pickers.noPublishersWithCapability', { capability: requiredCapability ?? '' })
+                    ? t('pickers.noPublishersWithCapability', { capability: capabilityLabel })
                     : t('pickers.noPublishers')}
                 </Text>
               )}
