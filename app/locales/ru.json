@@ -563,7 +563,8 @@
         "speakerName": "Имя докладчика",
         "fromCongregation": "Из собрания",
         "assistant": "Помощник",
-        "statusLabel": "Статус"
+        "statusLabel": "Статус",
+        "requiredSkill": "Требуемый навык"
       },
       "placeholder": {
         "weekStart": "2026-05-04",

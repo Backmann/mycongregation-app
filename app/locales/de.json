@@ -559,7 +559,8 @@
         "speakerName": "Name des Redners",
         "fromCongregation": "Aus Versammlung",
         "assistant": "Gehilfe",
-        "statusLabel": "Status"
+        "statusLabel": "Status",
+        "requiredSkill": "Erforderliche Fähigkeit"
       },
       "placeholder": {
         "weekStart": "2026-05-04",

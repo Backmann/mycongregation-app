@@ -122,6 +122,9 @@ export function AssignmentForm({
     titleCap ??
     partDef?.requiredAssistantCapability ??
     partDef?.requiredCapability;
+  const requiredSkillLabel = requiredCap
+    ? t(`capabilities.items.${requiredCap}`)
+    : null;
 
   const handleTalkSelect = (talk: PublicTalk | null) => {
     setForm((prev) => ({
@@ -249,6 +252,23 @@ export function AssignmentForm({
           keyboardType="numeric"
           placeholder={t('assignments.form.placeholder.duration')}
         />
+        {requiredSkillLabel && (
+          <View
+            style={{
+              paddingVertical: 12,
+              paddingHorizontal: 20,
+              borderTopWidth: 1,
+              borderTopColor: '#f1f5f9',
+            }}
+          >
+            <Text style={{ fontSize: 13, color: '#94a3b8', marginBottom: 4 }}>
+              {t('assignments.form.field.requiredSkill')}
+            </Text>
+            <Text style={{ fontSize: 15, color: '#0f172a' }}>
+              {requiredSkillLabel}
+            </Text>
+          </View>
+        )}
       </FormSection>
 
       <FormSection title={isPublicTalkSpeaker ? t('assignments.form.section.speaker') : t('assignments.form.section.assignment')}>

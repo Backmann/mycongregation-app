@@ -559,7 +559,8 @@
         "speakerName": "Speaker name",
         "fromCongregation": "From congregation",
         "assistant": "Assistant",
-        "statusLabel": "Status"
+        "statusLabel": "Status",
+        "requiredSkill": "Required skill"
       },
       "placeholder": {
         "weekStart": "2026-05-04",
