@@ -902,6 +902,9 @@ export const publishersApi = {
     const { data } = await api.post<Publisher>(`/publishers/${id}/restore`);
     return data;
   },
+  async purge(id: string): Promise<void> {
+    await api.delete(`/publishers/${id}`);
+  },
   async overrideStatus(
     id: string,
     status: PublisherStatus,

@@ -218,13 +218,14 @@
       "dateRemoved": "Date removed",
       "movedTo": "Moved to",
       "movedToPlaceholder": "e.g. Dortmund Central congregation",
-      "note": "Note"
+      "note": "Note",
+      "hint": "Died · moved · removed — the record is kept and can be restored"
     },
     "actions": {
       "edit": "Edit",
-      "remove": "Remove",
+      "remove": "Mark as departed",
       "restore": "Restore",
-      "removing": "Removing…",
+      "removing": "Marking…",
       "restoring": "Restoring…",
       "save": "Save",
       "create": "Create"
@@ -267,6 +268,14 @@
       "standingSection": "Congregation standing",
       "current": "Current",
       "departed": "Departed"
+    },
+    "purge": {
+      "button": "Delete permanently",
+      "deleting": "Deleting…",
+      "title": "Delete permanently",
+      "action": "Delete permanently",
+      "confirm": "Permanently delete the record for {{name}}? This cannot be undone.",
+      "hasHistory": "This publisher has history (reports or assignments). Permanent deletion is blocked — use \"Mark as departed\" instead."
     }
   },
   "capabilities": {

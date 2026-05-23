@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   Modal,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -9,7 +11,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   extractErrorMessage,
@@ -25,6 +27,7 @@ import {
   CAPABILITY_CATEGORIES,
   countActiveCapabilities,
 } from '../../../lib/capabilities';
+import { useAuth } from '../../../lib/auth';
 
 function removalLabel(reason: RemovalReason): string {
   return i18n.t(`publishers.removal.${reason}`);
@@ -34,6 +37,7 @@ export default function PublisherDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { t } = useTranslation();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
   const [editing, setEditing] = useState(false);
   const [removeOpen, setRemoveOpen] = useState(false);
   const [removeReason, setRemoveReason] = useState<RemovalReason | null>(null);
@@ -98,6 +102,43 @@ export default function PublisherDetailScreen() {
       date: removeDate.trim() || undefined,
       note: removeNote.trim() || undefined,
     });
+  };
+
+  const isAdmin = user?.role === 'admin';
+  const purgeMutation = useMutation({
+    mutationFn: () => publishersApi.purge(id!),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['publishers'] });
+      router.back();
+    },
+    onError: (e: unknown) => {
+      const raw = extractErrorMessage(e);
+      const body = raw.includes('publisher_has_history')
+        ? t('publishers.purge.hasHistory')
+        : raw;
+      if (Platform.OS === 'web') {
+        window.alert(body);
+      } else {
+        Alert.alert(t('publishers.purge.title'), body);
+      }
+    },
+  });
+  const handlePurge = () => {
+    const msg = t('publishers.purge.confirm', {
+      name: publisher?.displayName ?? '',
+    });
+    if (Platform.OS === 'web') {
+      if (window.confirm(msg)) purgeMutation.mutate();
+      return;
+    }
+    Alert.alert(t('publishers.purge.title'), msg, [
+      { text: t('common.cancel'), style: 'cancel' },
+      {
+        text: t('publishers.purge.action'),
+        style: 'destructive',
+        onPress: () => purgeMutation.mutate(),
+      },
+    ]);
   };
 
   if (isLoading) {
@@ -284,15 +325,35 @@ export default function PublisherDetailScreen() {
             </Text>
           </Pressable>
         ) : (
-          <Pressable
-            style={[styles.button, styles.buttonRemove]}
-            onPress={handleRemove}
-            disabled={removeMutation.isPending}
-          >
-            <Text style={styles.buttonText}>
-              {removeMutation.isPending ? t('publishers.actions.removing') : t('publishers.actions.remove')}
+          <>
+            <Pressable
+              style={[styles.button, styles.buttonRemove]}
+              onPress={handleRemove}
+              disabled={removeMutation.isPending}
+            >
+              <Text style={styles.buttonText}>
+                {removeMutation.isPending
+                  ? t('publishers.actions.removing')
+                  : t('publishers.actions.remove')}
+              </Text>
+            </Pressable>
+            <Text style={styles.actionHint}>
+              {t('publishers.removal.hint')}
             </Text>
-          </Pressable>
+            {isAdmin && (
+              <Pressable
+                style={[styles.button, styles.buttonPurge]}
+                onPress={handlePurge}
+                disabled={purgeMutation.isPending}
+              >
+                <Text style={styles.buttonText}>
+                  {purgeMutation.isPending
+                    ? t('publishers.purge.deleting')
+                    : t('publishers.purge.button')}
+                </Text>
+              </Pressable>
+            )}
+          </>
         )}
       </View>
       <RemoveModal
@@ -685,6 +746,14 @@ const styles = StyleSheet.create({
   buttonEdit: { backgroundColor: '#0ea5e9' },
   buttonEditText: { color: '#fff', fontSize: 16, fontWeight: '600' },
   buttonRemove: { backgroundColor: '#dc2626' },
+  buttonPurge: { backgroundColor: '#7f1d1d' },
+  actionHint: {
+    color: '#94a3b8',
+    fontSize: 12,
+    textAlign: 'center',
+    marginTop: -2,
+    marginBottom: 4,
+  },
   buttonRestore: { backgroundColor: '#059669' },
   buttonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
 });

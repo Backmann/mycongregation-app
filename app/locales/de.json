@@ -218,13 +218,14 @@
       "dateRemoved": "Datum der Entfernung",
       "movedTo": "Gewechselt zu",
       "movedToPlaceholder": "z. B. Versammlung Dortmund-Zentrum",
-      "note": "Notiz"
+      "note": "Notiz",
+      "hint": "Verstorben · gewechselt · entfernt — der Eintrag bleibt erhalten und kann wiederhergestellt werden"
     },
     "actions": {
       "edit": "Bearbeiten",
-      "remove": "Entfernen",
+      "remove": "Als ausgeschieden markieren",
       "restore": "Wiederherstellen",
-      "removing": "Wird entfernt…",
+      "removing": "Markiere…",
       "restoring": "Wird wiederhergestellt…",
       "save": "Speichern",
       "create": "Erstellen"
@@ -267,6 +268,14 @@
       "standingSection": "Versammlungsstatus",
       "current": "Aktuell",
       "departed": "Ausgeschieden"
+    },
+    "purge": {
+      "button": "Endgültig löschen",
+      "deleting": "Lösche…",
+      "title": "Endgültig löschen",
+      "action": "Endgültig löschen",
+      "confirm": "Den Eintrag für {{name}} endgültig löschen? Das kann nicht rückgängig gemacht werden.",
+      "hasHistory": "Dieser Verkündiger hat Verlaufsdaten (Berichte oder Zuteilungen). Endgültiges Löschen ist gesperrt — bitte \"Als ausgeschieden markieren\" verwenden."
     }
   },
   "capabilities": {
