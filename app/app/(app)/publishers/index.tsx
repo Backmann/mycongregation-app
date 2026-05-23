@@ -156,9 +156,15 @@ export default function PublishersListScreen() {
     return result;
   }, [viewMode, filtered, familiesQuery.data]);
 
+  const allLoaded = data?.data ?? [];
+  const currentCount = allLoaded.filter((p) => !p.deletedAt).length;
+  const departedCount = allLoaded.length - currentCount;
   const countHeader = data ? (
     <Text style={styles.count}>
-      {t('publishers.totalCount', { count: data.total })}
+      {t('publishers.totalCount', { count: currentCount })}
+      {departedCount > 0
+        ? ' · ' + t('publishers.departedCount', { count: departedCount })
+        : ''}
       {search || activeCount > 0
         ? ' ' + t('publishers.filteredCount', { count: filtered.length })
         : ''}

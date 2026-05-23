@@ -276,7 +276,8 @@
       "action": "Endgültig löschen",
       "confirm": "Den Eintrag für {{name}} endgültig löschen? Das kann nicht rückgängig gemacht werden.",
       "hasHistory": "Dieser Verkündiger hat Verlaufsdaten (Berichte oder Zuteilungen). Endgültiges Löschen ist gesperrt — bitte \"Als ausgeschieden markieren\" verwenden."
-    }
+    },
+    "departedCount": "{{count}} ausgeschieden"
   },
   "capabilities": {
     "hints": {

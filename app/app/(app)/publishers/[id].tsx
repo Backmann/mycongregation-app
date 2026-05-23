@@ -74,13 +74,6 @@ export default function PublisherDetailScreen() {
     },
   });
 
-  const restoreMutation = useMutation({
-    mutationFn: () => publishersApi.restore(id!),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['publishers'] });
-      queryClient.invalidateQueries({ queryKey: ['publisher', id] });
-    },
-  });
 
   const handleRemove = () => {
     setRemoveReason(null);
@@ -314,17 +307,7 @@ export default function PublisherDetailScreen() {
             <Text style={styles.buttonEditText}>{t('publishers.actions.edit')}</Text>
           </Pressable>
         )}
-        {publisher.deletedAt ? (
-          <Pressable
-            style={[styles.button, styles.buttonRestore]}
-            onPress={() => restoreMutation.mutate()}
-            disabled={restoreMutation.isPending}
-          >
-            <Text style={styles.buttonText}>
-              {restoreMutation.isPending ? t('publishers.actions.restoring') : t('publishers.actions.restore')}
-            </Text>
-          </Pressable>
-        ) : (
+        {!publisher.deletedAt && (
           <>
             <Pressable
               style={[styles.button, styles.buttonRemove]}
@@ -340,20 +323,20 @@ export default function PublisherDetailScreen() {
             <Text style={styles.actionHint}>
               {t('publishers.removal.hint')}
             </Text>
-            {isAdmin && (
-              <Pressable
-                style={[styles.button, styles.buttonPurge]}
-                onPress={handlePurge}
-                disabled={purgeMutation.isPending}
-              >
-                <Text style={styles.buttonText}>
-                  {purgeMutation.isPending
-                    ? t('publishers.purge.deleting')
-                    : t('publishers.purge.button')}
-                </Text>
-              </Pressable>
-            )}
           </>
+        )}
+        {isAdmin && (
+          <Pressable
+            style={[styles.button, styles.buttonPurge]}
+            onPress={handlePurge}
+            disabled={purgeMutation.isPending}
+          >
+            <Text style={styles.buttonText}>
+              {purgeMutation.isPending
+                ? t('publishers.purge.deleting')
+                : t('publishers.purge.button')}
+            </Text>
+          </Pressable>
         )}
       </View>
       <RemoveModal
@@ -754,6 +737,5 @@ const styles = StyleSheet.create({
     marginTop: -2,
     marginBottom: 4,
   },
-  buttonRestore: { backgroundColor: '#059669' },
   buttonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
 });

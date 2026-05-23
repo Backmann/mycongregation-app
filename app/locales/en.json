@@ -276,7 +276,8 @@
       "action": "Delete permanently",
       "confirm": "Permanently delete the record for {{name}}? This cannot be undone.",
       "hasHistory": "This publisher has history (reports or assignments). Permanent deletion is blocked — use \"Mark as departed\" instead."
-    }
+    },
+    "departedCount": "{{count}} departed"
   },
   "capabilities": {
     "hints": {
