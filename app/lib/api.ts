@@ -963,6 +963,12 @@ export const serviceGroupsApi = {
     const { data } = await api.get<Paginated<Publisher>>(`/service-groups/${id}/publishers`);
     return data;
   },
+  async addPublishers(id: string, publisherIds: string[]): Promise<void> {
+    await api.post(`/service-groups/${id}/publishers`, { publisherIds });
+  },
+  async removePublisher(id: string, publisherId: string): Promise<void> {
+    await api.delete(`/service-groups/${id}/publishers/${publisherId}`);
+  },
   async create(input: CreateServiceGroupInput): Promise<ServiceGroup> {
     const { data } = await api.post<ServiceGroup>('/service-groups', cleanPayload(input));
     return data;

@@ -437,7 +437,22 @@
     "membersCount": "Участников ({{count}})",
     "noMembersYet": "В группе пока нет участников",
     "overseer": "Ответственный за группу",
-    "assistant": "Помощник группы"
+    "assistant": "Помощник группы",
+    "addMembers": "Добавить участников",
+    "addSelected": "Добавить ({{count}})",
+    "noPublishersToAdd": "Все возвещатели уже в этой группе",
+    "inGroup": "В группе: {{name}}",
+    "noGroup": "Без группы",
+    "memberRole": {
+      "overseer": "Ответственный",
+      "assistant": "Помощник"
+    },
+    "removeMember": {
+      "title": "Убрать из группы?",
+      "body": "{{name}} будет исключён из группы.",
+      "web": "Убрать {{name}} из группы?",
+      "action": "Убрать"
+    }
   },
   "parts": {
     "midweek_chairman": "Председатель встречи",

@@ -433,7 +433,22 @@
     "membersCount": "Members ({{count}})",
     "noMembersYet": "No members in this group yet",
     "overseer": "Group overseer",
-    "assistant": "Group assistant"
+    "assistant": "Group assistant",
+    "addMembers": "Add members",
+    "addSelected": "Add ({{count}})",
+    "noPublishersToAdd": "All publishers are already in this group",
+    "inGroup": "In group: {{name}}",
+    "noGroup": "No group",
+    "memberRole": {
+      "overseer": "Overseer",
+      "assistant": "Assistant"
+    },
+    "removeMember": {
+      "title": "Remove from group?",
+      "body": "{{name}} will be removed from the group.",
+      "web": "Remove {{name}} from the group?",
+      "action": "Remove"
+    }
   },
   "parts": {
     "midweek_chairman": "Chairman",

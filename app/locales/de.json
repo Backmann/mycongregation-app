@@ -433,7 +433,22 @@
     "membersCount": "Mitglieder ({{count}})",
     "noMembersYet": "Noch keine Mitglieder in dieser Gruppe",
     "overseer": "Gruppenverantwortlicher",
-    "assistant": "Gruppenassistent"
+    "assistant": "Gruppenassistent",
+    "addMembers": "Mitglieder hinzufügen",
+    "addSelected": "Hinzufügen ({{count}})",
+    "noPublishersToAdd": "Alle Verkündiger sind bereits in dieser Gruppe",
+    "inGroup": "In Gruppe: {{name}}",
+    "noGroup": "Keine Gruppe",
+    "memberRole": {
+      "overseer": "Verantwortlicher",
+      "assistant": "Assistent"
+    },
+    "removeMember": {
+      "title": "Aus Gruppe entfernen?",
+      "body": "{{name}} wird aus der Gruppe entfernt.",
+      "web": "{{name}} aus der Gruppe entfernen?",
+      "action": "Entfernen"
+    }
   },
   "parts": {
     "midweek_chairman": "Vorsitzender",
