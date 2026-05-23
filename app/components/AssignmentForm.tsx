@@ -22,7 +22,11 @@ import {
   PublisherActivity,
   publisherActivityApi,
 } from '../lib/api';
-import { getPartDef, getPartLabel } from '../lib/parts';
+import {
+  getPartDef,
+  getPartLabel,
+  skillCapabilityFromTitle,
+} from '../lib/parts';
 import { useTranslation } from 'react-i18next';
 
 interface Props {
@@ -108,9 +112,16 @@ export function AssignmentForm({
   const partDef = getPartDef(form.partKey);
   const isPublicTalkSpeaker = form.partKey === 'public_talk_speaker';
   const showAssistant = !!partDef?.hasAssistant;
-  const requiredCap = partDef?.requiredCapability;
+  // Apply-Yourself parts are numbered positionally, but the real skill is in
+  // the title — prefer that so the picker filters by the correct capability.
+  const titleCap = form.partKey?.startsWith('apply_yourself')
+    ? skillCapabilityFromTitle(form.partTitle)
+    : null;
+  const requiredCap = titleCap ?? partDef?.requiredCapability;
   const requiredAssistantCap =
-    partDef?.requiredAssistantCapability ?? partDef?.requiredCapability;
+    titleCap ??
+    partDef?.requiredAssistantCapability ??
+    partDef?.requiredCapability;
 
   const handleTalkSelect = (talk: PublicTalk | null) => {
     setForm((prev) => ({

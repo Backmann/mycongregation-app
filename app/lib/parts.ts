@@ -269,6 +269,30 @@ const NON_NUMBERED_PARTS = new Set<string>([
 ]);
 
 /** Parts that get a JW-style sequential number (excludes chairmen/prayers/readers). */
+/**
+ * "Apply Yourself to the Field Ministry" parts are imported numbered by their
+ * position in the meeting (apply_yourself_1..N), but the actual ministry skill
+ * is named in the part's title. Derive the matching capability from the title
+ * so the picker filters by the REAL skill rather than the positional default.
+ * Russian headings only (mirrors the RU-only parser); returns null when the
+ * skill is not recognized, so callers fall back to the positional capability.
+ */
+export function skillCapabilityFromTitle(
+  title: string | null | undefined,
+): string | null {
+  if (!title) return null;
+  const t = title.toLowerCase();
+  if (t.includes('начина') && t.includes('разговор'))
+    return 'fs_starting_conversation';
+  if (t.includes('развива') && t.includes('интерес')) return 'fs_following_up';
+  if (t.includes('ученик') && (t.includes('подготав') || t.includes('готов')))
+    return 'fs_making_disciples';
+  if (t.includes('объясня') && t.includes('взгляд'))
+    return 'fs_explaining_beliefs';
+  if (t.includes('речь')) return 'fs_talk';
+  return null;
+}
+
 export function isNumberedPart(key: string): boolean {
   return !NON_NUMBERED_PARTS.has(key);
 }
