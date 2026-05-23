@@ -241,7 +241,21 @@
       "list": "List",
       "byFamily": "By family"
     },
-    "unassignedFamily": "Without family"
+    "unassignedFamily": "Without family",
+    "filter": {
+      "title": "Filter",
+      "reset": "Reset",
+      "apply": "Done",
+      "groupSection": "Group",
+      "roleSection": "Role",
+      "pioneerSection": "Pioneer",
+      "genderSection": "Gender",
+      "statusSection": "Status",
+      "brother": "Brother",
+      "sister": "Sister",
+      "active": "Active",
+      "inactive": "Inactive"
+    }
   },
   "capabilities": {
     "hints": {

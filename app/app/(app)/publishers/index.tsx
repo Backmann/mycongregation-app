@@ -2,9 +2,11 @@ import { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
+  Modal,
   Pressable,
   SectionList,
   RefreshControl,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -20,15 +22,45 @@ import {
   familiesApi,
   Publisher,
   publishersApi,
+  ServiceGroup,
+  serviceGroupsApi,
 } from '../../../lib/api';
 import { FilterToggle } from '../../../components/FilterToggle';
 import { Ionicons } from '@expo/vector-icons';
+
+type Filters = {
+  groupId: string | 'none' | null;
+  appointment: string | null;
+  pioneerType: string | null;
+  gender: 'brother' | 'sister' | null;
+  isActive: boolean | null;
+};
+
+const EMPTY_FILTERS: Filters = {
+  groupId: null,
+  appointment: null,
+  pioneerType: null,
+  gender: null,
+  isActive: null,
+};
+
+function countActive(f: Filters): number {
+  return (
+    (f.groupId !== null ? 1 : 0) +
+    (f.appointment !== null ? 1 : 0) +
+    (f.pioneerType !== null ? 1 : 0) +
+    (f.gender !== null ? 1 : 0) +
+    (f.isActive !== null ? 1 : 0)
+  );
+}
 
 export default function PublishersListScreen() {
   const { t } = useTranslation();
   const [search, setSearch] = useState('');
   const [showRemoved, setShowRemoved] = useState(false);
   const [viewMode, setViewMode] = useState<'list' | 'by-family'>('list');
+  const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
+  const [filterOpen, setFilterOpen] = useState(false);
 
   const { data, isLoading, isRefetching, refetch, error } = useQuery({
     queryKey: ['publishers', search, showRemoved],
@@ -46,36 +78,81 @@ export default function PublishersListScreen() {
     enabled: viewMode === 'by-family',
   });
 
+  const groupsQuery = useQuery({
+    queryKey: ['service-groups', 'names'],
+    queryFn: () => serviceGroupsApi.list({}),
+  });
+  const groups = groupsQuery.data?.data ?? [];
+  const groupNameById = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const g of groups) m.set(g.id, g.name);
+    return m;
+  }, [groups]);
+  const groupNameFor = (p: Publisher): string | null =>
+    p.serviceGroupId ? groupNameById.get(p.serviceGroupId) ?? null : null;
+
+  const activeCount = countActive(filters);
+
+  const filtered = useMemo(() => {
+    const all = data?.data ?? [];
+    if (activeCount === 0) return all;
+    return all.filter((p) => {
+      if (filters.groupId === 'none' && p.serviceGroupId != null) return false;
+      if (
+        filters.groupId &&
+        filters.groupId !== 'none' &&
+        p.serviceGroupId !== filters.groupId
+      )
+        return false;
+      if (filters.appointment && p.appointment !== filters.appointment)
+        return false;
+      if (filters.pioneerType && p.pioneerType !== filters.pioneerType)
+        return false;
+      if (filters.gender && p.gender !== filters.gender) return false;
+      if (filters.isActive !== null && p.isActive !== filters.isActive)
+        return false;
+      return true;
+    });
+  }, [data, filters, activeCount]);
+
   const sections = useMemo(() => {
-    if (viewMode !== 'by-family' || !data?.data) return [];
+    if (viewMode !== 'by-family') return [];
     const familyMap = new Map<string, Family>(
       (familiesQuery.data?.data ?? []).map((fam) => [fam.id, fam]),
     );
-    const groups = new Map<string | null, Publisher[]>();
-    for (const pub of data.data) {
+    const groupsByFamily = new Map<string | null, Publisher[]>();
+    for (const pub of filtered) {
       const key = pub.familyId;
-      const arr = groups.get(key) ?? [];
+      const arr = groupsByFamily.get(key) ?? [];
       arr.push(pub);
-      groups.set(key, arr);
+      groupsByFamily.set(key, arr);
     }
-    const result: { key: string; family: Family | null; data: Publisher[] }[] = [];
-    for (const [familyId, members] of groups.entries()) {
+    const result: { key: string; family: Family | null; data: Publisher[] }[] =
+      [];
+    for (const [familyId, members] of groupsByFamily.entries()) {
       if (familyId !== null) {
         const family = familyMap.get(familyId);
-        if (family) {
-          result.push({ key: family.id, family, data: members });
-        }
+        if (family) result.push({ key: family.id, family, data: members });
       }
     }
     result.sort((a, b) =>
       (a.family?.name ?? '').localeCompare(b.family?.name ?? ''),
     );
-    const unassigned = groups.get(null);
+    const unassigned = groupsByFamily.get(null);
     if (unassigned && unassigned.length > 0) {
       result.push({ key: '__unassigned', family: null, data: unassigned });
     }
     return result;
-  }, [viewMode, data, familiesQuery.data]);
+  }, [viewMode, filtered, familiesQuery.data]);
+
+  const countHeader = data ? (
+    <Text style={styles.count}>
+      {t('publishers.totalCount', { count: data.total })}
+      {search || activeCount > 0
+        ? ' ' + t('publishers.filteredCount', { count: filtered.length })
+        : ''}
+    </Text>
+  ) : null;
 
   return (
     <View style={styles.container}>
@@ -98,14 +175,31 @@ export default function PublishersListScreen() {
         </Pressable>
       </View>
 
-      <TextInput
-        style={styles.search}
-        value={search}
-        onChangeText={setSearch}
-        placeholder={t('publishers.search')}
-        autoCapitalize="none"
-        autoCorrect={false}
-      />
+      <View style={styles.searchRow}>
+        <TextInput
+          style={styles.search}
+          value={search}
+          onChangeText={setSearch}
+          placeholder={t('publishers.search')}
+          autoCapitalize="none"
+          autoCorrect={false}
+        />
+        <Pressable
+          style={[styles.filterBtn, activeCount > 0 && styles.filterBtnActive]}
+          onPress={() => setFilterOpen(true)}
+        >
+          <Ionicons
+            name="options-outline"
+            size={20}
+            color={activeCount > 0 ? '#fff' : '#0369a1'}
+          />
+          {activeCount > 0 && (
+            <View style={styles.filterCountBadge}>
+              <Text style={styles.filterCountText}>{activeCount}</Text>
+            </View>
+          )}
+        </Pressable>
+      </View>
 
       <FilterToggle
         label={t('publishers.showRemoved')}
@@ -123,7 +217,7 @@ export default function PublishersListScreen() {
         <ActivityIndicator size="large" style={{ marginTop: 32 }} />
       ) : viewMode === 'list' ? (
         <FlatList
-          data={data?.data ?? []}
+          data={filtered}
           keyExtractor={(item) => item.id}
           contentContainerStyle={{ paddingBottom: 32 }}
           refreshControl={
@@ -131,18 +225,15 @@ export default function PublishersListScreen() {
           }
           ListEmptyComponent={
             <Text style={styles.empty}>
-              {search ? t('publishers.noMatches') : t('publishers.noPublishers')}
+              {search || activeCount > 0
+                ? t('publishers.noMatches')
+                : t('publishers.noPublishers')}
             </Text>
           }
-          ListHeaderComponent={
-            data ? (
-              <Text style={styles.count}>
-                {t('publishers.totalCount', { count: data.total })}
-                {search ? ' ' + t('publishers.filteredCount', { count: data.data.length }) : ''}
-              </Text>
-            ) : null
-          }
-          renderItem={({ item }) => <PublisherRow publisher={item} />}
+          ListHeaderComponent={countHeader}
+          renderItem={({ item }) => (
+            <PublisherRow publisher={item} groupName={groupNameFor(item)} />
+          )}
         />
       ) : (
         <SectionList
@@ -160,29 +251,41 @@ export default function PublishersListScreen() {
           }
           ListEmptyComponent={
             <Text style={styles.empty}>
-              {search ? t('publishers.noMatches') : t('publishers.noPublishers')}
+              {search || activeCount > 0
+                ? t('publishers.noMatches')
+                : t('publishers.noPublishers')}
             </Text>
           }
-          ListHeaderComponent={
-            data ? (
-              <Text style={styles.count}>
-                {t('publishers.totalCount', { count: data.total })}
-                {search ? ' ' + t('publishers.filteredCount', { count: data.data.length }) : ''}
-              </Text>
-            ) : null
-          }
-          renderItem={({ item }) => <PublisherRow publisher={item} />}
+          ListHeaderComponent={countHeader}
+          renderItem={({ item }) => (
+            <PublisherRow publisher={item} groupName={groupNameFor(item)} />
+          )}
           renderSectionHeader={({ section }) => (
             <FamilySectionHeader family={section.family} count={section.data.length} />
           )}
           stickySectionHeadersEnabled={false}
         />
       )}
+
+      <FilterSheet
+        visible={filterOpen}
+        filters={filters}
+        groups={groups}
+        onChange={setFilters}
+        onReset={() => setFilters(EMPTY_FILTERS)}
+        onClose={() => setFilterOpen(false)}
+      />
     </View>
   );
 }
 
-function PublisherRow({ publisher }: { publisher: Publisher }) {
+function PublisherRow({
+  publisher,
+  groupName,
+}: {
+  publisher: Publisher;
+  groupName: string | null;
+}) {
   const isRemoved = !!publisher.deletedAt;
 
   const tags: string[] = [];
@@ -222,9 +325,9 @@ function PublisherRow({ publisher }: { publisher: Publisher }) {
         </View>
         {tags.length > 0 && (
           <View style={styles.tagsRow}>
-            {tags.map((t) => (
-              <View key={t} style={styles.tag}>
-                <Text style={styles.tagText}>{t}</Text>
+            {tags.map((tag) => (
+              <View key={tag} style={styles.tag}>
+                <Text style={styles.tagText}>{tag}</Text>
               </View>
             ))}
           </View>
@@ -232,6 +335,16 @@ function PublisherRow({ publisher }: { publisher: Publisher }) {
         {publisher.mobilePhone && (
           <Text style={styles.phone}>{publisher.mobilePhone}</Text>
         )}
+        <View style={styles.groupLine}>
+          <Ionicons
+            name="people-outline"
+            size={12}
+            color={groupName ? '#64748b' : '#b45309'}
+          />
+          <Text style={[styles.groupText, !groupName && styles.groupTextNone]}>
+            {groupName ?? i18n.t('serviceGroups.noGroup')}
+          </Text>
+        </View>
       </View>
       <Text style={styles.chevron}>›</Text>
     </Pressable>
@@ -273,15 +386,162 @@ function FamilySectionHeader({ family, count }: { family: Family | null; count: 
   );
 }
 
+function Chip({
+  label,
+  active,
+  onPress,
+}: {
+  label: string;
+  active: boolean;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      style={[styles.chip, active && styles.chipActive]}
+    >
+      <Text style={[styles.chipText, active && styles.chipTextActive]}>
+        {label}
+      </Text>
+    </Pressable>
+  );
+}
+
+function FilterSheet({
+  visible,
+  filters,
+  groups,
+  onChange,
+  onReset,
+  onClose,
+}: {
+  visible: boolean;
+  filters: Filters;
+  groups: ServiceGroup[];
+  onChange: (f: Filters) => void;
+  onReset: () => void;
+  onClose: () => void;
+}) {
+  const { t } = useTranslation();
+  const set = <K extends keyof Filters>(key: K, value: Filters[K]) =>
+    onChange({ ...filters, [key]: filters[key] === value ? null : value });
+
+  return (
+    <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
+      <View style={styles.sheetOverlay}>
+        <View style={styles.sheet}>
+          <View style={styles.sheetHeader}>
+            <Text style={styles.sheetTitle}>{t('publishers.filter.title')}</Text>
+            <Pressable onPress={onReset} hitSlop={8}>
+              <Text style={styles.resetText}>{t('publishers.filter.reset')}</Text>
+            </Pressable>
+          </View>
+
+          <ScrollView style={{ maxHeight: 460 }}>
+            <Text style={styles.filterSection}>{t('publishers.filter.groupSection')}</Text>
+            <View style={styles.chipWrap}>
+              {groups.map((g) => (
+                <Chip
+                  key={g.id}
+                  label={g.name}
+                  active={filters.groupId === g.id}
+                  onPress={() => set('groupId', g.id)}
+                />
+              ))}
+              <Chip
+                label={t('serviceGroups.noGroup')}
+                active={filters.groupId === 'none'}
+                onPress={() => set('groupId', 'none')}
+              />
+            </View>
+
+            <Text style={styles.filterSection}>{t('publishers.filter.roleSection')}</Text>
+            <View style={styles.chipWrap}>
+              <Chip
+                label={t('publishers.tags.elder')}
+                active={filters.appointment === 'elder'}
+                onPress={() => set('appointment', 'elder')}
+              />
+              <Chip
+                label={t('publishers.tags.ms')}
+                active={filters.appointment === 'ministerial_servant'}
+                onPress={() => set('appointment', 'ministerial_servant')}
+              />
+            </View>
+
+            <Text style={styles.filterSection}>{t('publishers.filter.pioneerSection')}</Text>
+            <View style={styles.chipWrap}>
+              <Chip
+                label={t('publishers.tags.regularPioneer')}
+                active={filters.pioneerType === 'regular'}
+                onPress={() => set('pioneerType', 'regular')}
+              />
+              <Chip
+                label={t('publishers.tags.specialPioneer')}
+                active={filters.pioneerType === 'special'}
+                onPress={() => set('pioneerType', 'special')}
+              />
+              <Chip
+                label={t('publishers.tags.missionary')}
+                active={filters.pioneerType === 'missionary'}
+                onPress={() => set('pioneerType', 'missionary')}
+              />
+            </View>
+
+            <Text style={styles.filterSection}>{t('publishers.filter.genderSection')}</Text>
+            <View style={styles.chipWrap}>
+              <Chip
+                label={t('publishers.filter.brother')}
+                active={filters.gender === 'brother'}
+                onPress={() => set('gender', 'brother')}
+              />
+              <Chip
+                label={t('publishers.filter.sister')}
+                active={filters.gender === 'sister'}
+                onPress={() => set('gender', 'sister')}
+              />
+            </View>
+
+            <Text style={styles.filterSection}>{t('publishers.filter.statusSection')}</Text>
+            <View style={styles.chipWrap}>
+              <Chip
+                label={t('publishers.filter.active')}
+                active={filters.isActive === true}
+                onPress={() => set('isActive', true)}
+              />
+              <Chip
+                label={t('publishers.filter.inactive')}
+                active={filters.isActive === false}
+                onPress={() => set('isActive', false)}
+              />
+            </View>
+          </ScrollView>
+
+          <Pressable style={styles.applyBtn} onPress={onClose}>
+            <Text style={styles.applyBtnText}>{t('publishers.filter.apply')}</Text>
+          </Pressable>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
 const gendered = (g: 'brother' | 'sister') => ({
   backgroundColor: g === 'brother' ? '#0ea5e9' : '#ec4899',
 });
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f1f5f9' },
-  search: {
-    margin: 16,
+  searchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginHorizontal: 16,
+    marginTop: 16,
     marginBottom: 8,
+  },
+  search: {
+    flex: 1,
     paddingHorizontal: 14,
     paddingVertical: 10,
     backgroundColor: '#fff',
@@ -290,6 +550,30 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#e2e8f0',
   },
+  filterBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#bae6fd',
+    backgroundColor: '#fff',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  filterBtnActive: { backgroundColor: '#0ea5e9', borderColor: '#0ea5e9' },
+  filterCountBadge: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    minWidth: 18,
+    height: 18,
+    paddingHorizontal: 4,
+    borderRadius: 9,
+    backgroundColor: '#dc2626',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  filterCountText: { color: '#fff', fontSize: 11, fontWeight: '700' },
   count: {
     paddingHorizontal: 20,
     paddingBottom: 8,
@@ -335,6 +619,9 @@ const styles = StyleSheet.create({
   },
   tagText: { color: '#0369a1', fontSize: 11, fontWeight: '500' },
   phone: { color: '#64748b', fontSize: 13, marginTop: 4 },
+  groupLine: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 },
+  groupText: { fontSize: 12, color: '#64748b', fontWeight: '500' },
+  groupTextNone: { color: '#b45309' },
   chevron: { color: '#cbd5e1', fontSize: 24, marginLeft: 8 },
   empty: {
     textAlign: 'center',
@@ -367,10 +654,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     alignItems: 'center',
   },
-  viewModeBtnActive: {
-    backgroundColor: '#0ea5e9',
-    borderColor: '#0ea5e9',
-  },
+  viewModeBtnActive: { backgroundColor: '#0ea5e9', borderColor: '#0ea5e9' },
   viewModeText: { fontSize: 14, color: '#475569', fontWeight: '500' },
   viewModeTextActive: { color: '#fff', fontWeight: '600' },
   sectionHeader: {
@@ -382,9 +666,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#e2e8f0',
   },
-  sectionHeaderPressed: {
-    backgroundColor: '#e2e8f0',
-  },
+  sectionHeaderPressed: { backgroundColor: '#e2e8f0' },
   sectionHeaderText: {
     flex: 1,
     fontSize: 13,
@@ -402,4 +684,54 @@ const styles = StyleSheet.create({
     borderColor: '#e2e8f0',
   },
   sectionCountText: { fontSize: 11, fontWeight: '600', color: '#64748b' },
+
+  sheetOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(15,23,42,0.45)',
+    justifyContent: 'flex-end',
+  },
+  sheet: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 18,
+    borderTopRightRadius: 18,
+    padding: 20,
+    paddingBottom: 28,
+  },
+  sheetHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  sheetTitle: { fontSize: 18, fontWeight: '700', color: '#0f172a' },
+  resetText: { color: '#0ea5e9', fontSize: 15, fontWeight: '600' },
+  filterSection: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#64748b',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  chipWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  chip: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: '#cbd5e1',
+    backgroundColor: '#f8fafc',
+  },
+  chipActive: { backgroundColor: '#e0f2fe', borderColor: '#0ea5e9' },
+  chipText: { fontSize: 14, color: '#475569', fontWeight: '500' },
+  chipTextActive: { color: '#0369a1', fontWeight: '700' },
+  applyBtn: {
+    marginTop: 20,
+    paddingVertical: 14,
+    borderRadius: 10,
+    backgroundColor: '#0ea5e9',
+    alignItems: 'center',
+  },
+  applyBtnText: { color: '#fff', fontSize: 16, fontWeight: '600' },
 });

@@ -241,7 +241,21 @@
       "list": "Список",
       "byFamily": "По семьям"
     },
-    "unassignedFamily": "Без семьи"
+    "unassignedFamily": "Без семьи",
+    "filter": {
+      "title": "Фильтр",
+      "reset": "Сбросить",
+      "apply": "Готово",
+      "groupSection": "Группа",
+      "roleSection": "Роль",
+      "pioneerSection": "Пионер",
+      "genderSection": "Пол",
+      "statusSection": "Статус",
+      "brother": "Брат",
+      "sister": "Сестра",
+      "active": "Активные",
+      "inactive": "Неактивные"
+    }
   },
   "capabilities": {
     "hints": {
