@@ -82,7 +82,7 @@ export default function PublishersListScreen() {
     queryKey: ['service-groups', 'names'],
     queryFn: () => serviceGroupsApi.list({}),
   });
-  const groups = groupsQuery.data?.data ?? [];
+  const groups = useMemo(() => groupsQuery.data?.data ?? [], [groupsQuery.data]);
   const groupNameById = useMemo(() => {
     const m = new Map<string, string>();
     for (const g of groups) m.set(g.id, g.name);
