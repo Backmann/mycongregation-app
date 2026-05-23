@@ -263,7 +263,10 @@
       "brother": "Brother",
       "sister": "Sister",
       "active": "Active",
-      "inactive": "Inactive"
+      "inactive": "Inactive",
+      "standingSection": "Congregation standing",
+      "current": "Current",
+      "departed": "Departed"
     }
   },
   "capabilities": {

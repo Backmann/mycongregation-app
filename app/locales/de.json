@@ -263,7 +263,10 @@
       "brother": "Bruder",
       "sister": "Schwester",
       "active": "Aktiv",
-      "inactive": "Inaktiv"
+      "inactive": "Inaktiv",
+      "standingSection": "Versammlungsstatus",
+      "current": "Aktuell",
+      "departed": "Ausgeschieden"
     }
   },
   "capabilities": {

@@ -25,7 +25,6 @@ import {
   ServiceGroup,
   serviceGroupsApi,
 } from '../../../lib/api';
-import { FilterToggle } from '../../../components/FilterToggle';
 import { Ionicons } from '@expo/vector-icons';
 
 type Filters = {
@@ -34,6 +33,7 @@ type Filters = {
   pioneerType: string | null;
   gender: 'brother' | 'sister' | null;
   isActive: boolean | null;
+  departed: 'active' | 'departed' | null;
 };
 
 const EMPTY_FILTERS: Filters = {
@@ -42,6 +42,7 @@ const EMPTY_FILTERS: Filters = {
   pioneerType: null,
   gender: null,
   isActive: null,
+  departed: null,
 };
 
 function countActive(f: Filters): number {
@@ -50,25 +51,25 @@ function countActive(f: Filters): number {
     (f.appointment !== null ? 1 : 0) +
     (f.pioneerType !== null ? 1 : 0) +
     (f.gender !== null ? 1 : 0) +
-    (f.isActive !== null ? 1 : 0)
+    (f.isActive !== null ? 1 : 0) +
+    (f.departed !== null ? 1 : 0)
   );
 }
 
 export default function PublishersListScreen() {
   const { t } = useTranslation();
   const [search, setSearch] = useState('');
-  const [showRemoved, setShowRemoved] = useState(false);
   const [viewMode, setViewMode] = useState<'list' | 'by-family'>('list');
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
   const [filterOpen, setFilterOpen] = useState(false);
 
   const { data, isLoading, isRefetching, refetch, error } = useQuery({
-    queryKey: ['publishers', search, showRemoved],
+    queryKey: ['publishers', search, 'with-removed'],
     queryFn: () =>
       publishersApi.list({
         limit: 200,
         search: search || undefined,
-        includeRemoved: showRemoved,
+        includeRemoved: true,
       }),
   });
 
@@ -95,24 +96,34 @@ export default function PublishersListScreen() {
 
   const filtered = useMemo(() => {
     const all = data?.data ?? [];
-    if (activeCount === 0) return all;
-    return all.filter((p) => {
-      if (filters.groupId === 'none' && p.serviceGroupId != null) return false;
-      if (
-        filters.groupId &&
-        filters.groupId !== 'none' &&
-        p.serviceGroupId !== filters.groupId
-      )
-        return false;
-      if (filters.appointment && p.appointment !== filters.appointment)
-        return false;
-      if (filters.pioneerType && p.pioneerType !== filters.pioneerType)
-        return false;
-      if (filters.gender && p.gender !== filters.gender) return false;
-      if (filters.isActive !== null && p.isActive !== filters.isActive)
-        return false;
-      return true;
-    });
+    const matched =
+      activeCount === 0
+        ? all
+        : all.filter((p) => {
+            if (filters.groupId === 'none' && p.serviceGroupId != null)
+              return false;
+            if (
+              filters.groupId &&
+              filters.groupId !== 'none' &&
+              p.serviceGroupId !== filters.groupId
+            )
+              return false;
+            if (filters.appointment && p.appointment !== filters.appointment)
+              return false;
+            if (filters.pioneerType && p.pioneerType !== filters.pioneerType)
+              return false;
+            if (filters.gender && p.gender !== filters.gender) return false;
+            if (filters.isActive !== null && p.isActive !== filters.isActive)
+              return false;
+            if (filters.departed === 'active' && p.deletedAt != null)
+              return false;
+            if (filters.departed === 'departed' && p.deletedAt == null)
+              return false;
+            return true;
+          });
+    return [...matched].sort(
+      (a, b) => Number(!!a.deletedAt) - Number(!!b.deletedAt),
+    );
   }, [data, filters, activeCount]);
 
   const sections = useMemo(() => {
@@ -201,12 +212,6 @@ export default function PublishersListScreen() {
         </Pressable>
       </View>
 
-      <FilterToggle
-        label={t('publishers.showRemoved')}
-        value={showRemoved}
-        onValueChange={setShowRemoved}
-      />
-
       {error && (
         <View style={styles.errorBox}>
           <Text style={styles.errorText}>{extractErrorMessage(error)}</Text>
@@ -287,6 +292,9 @@ function PublisherRow({
   groupName: string | null;
 }) {
   const isRemoved = !!publisher.deletedAt;
+  const removedLabel = publisher.removalReason
+    ? i18n.t(`publishers.removal.${publisher.removalReason}`)
+    : i18n.t('publishers.removedBadge');
 
   const tags: string[] = [];
   if (publisher.appointment === 'elder') tags.push(i18n.t('publishers.tags.elder'));
@@ -319,7 +327,7 @@ function PublisherRow({
           </Text>
           {isRemoved && (
             <View style={styles.removedBadge}>
-              <Text style={styles.removedBadgeText}>{i18n.t('publishers.removedBadge')}</Text>
+              <Text style={styles.removedBadgeText}>{removedLabel}</Text>
             </View>
           )}
         </View>
@@ -513,6 +521,20 @@ function FilterSheet({
                 label={t('publishers.filter.inactive')}
                 active={filters.isActive === false}
                 onPress={() => set('isActive', false)}
+              />
+            </View>
+
+            <Text style={styles.filterSection}>{t('publishers.filter.standingSection')}</Text>
+            <View style={styles.chipWrap}>
+              <Chip
+                label={t('publishers.filter.current')}
+                active={filters.departed === 'active'}
+                onPress={() => set('departed', 'active')}
+              />
+              <Chip
+                label={t('publishers.filter.departed')}
+                active={filters.departed === 'departed'}
+                onPress={() => set('departed', 'departed')}
               />
             </View>
           </ScrollView>

@@ -263,7 +263,10 @@
       "brother": "Брат",
       "sister": "Сестра",
       "active": "Активные",
-      "inactive": "Неактивные"
+      "inactive": "Неактивные",
+      "standingSection": "Статус в собрании",
+      "current": "Действующие",
+      "departed": "Выбывшие"
     }
   },
   "capabilities": {
