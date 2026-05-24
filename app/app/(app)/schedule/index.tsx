@@ -571,7 +571,8 @@ function partDisplay(
   if (
     partKey === 'mid_song' ||
     partKey === 'weekend_song' ||
-    partKey === 'weekend_opening_song'
+    partKey === 'weekend_opening_song' ||
+    partKey === 'midweek_opening_song'
   ) {
     return { label: partTitle || 'Песня', subtitle: null };
   }
@@ -624,7 +625,8 @@ function AssignmentRow({
   const isSong =
     assignment.partKey === 'mid_song' ||
     assignment.partKey === 'weekend_song' ||
-    assignment.partKey === 'weekend_opening_song';
+    assignment.partKey === 'weekend_opening_song' ||
+    assignment.partKey === 'midweek_opening_song';
   if (isSong) {
     return (
       <Pressable
