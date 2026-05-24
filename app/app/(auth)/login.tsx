@@ -14,10 +14,17 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useAuth } from '../../lib/auth';
 import { extractErrorMessage } from '../../lib/api';
+import { setLanguage, SupportedLanguage } from '../../lib/i18n';
 import { useTranslation } from 'react-i18next';
 
+const LANGUAGES: { code: SupportedLanguage; label: string }[] = [
+  { code: 'en', label: 'EN' },
+  { code: 'de', label: 'DE' },
+  { code: 'ru', label: 'RU' },
+];
+
 export default function LoginScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { signIn } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -25,6 +32,7 @@ export default function LoginScreen() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const current = (i18n.language?.split('-')[0] ?? 'en') as SupportedLanguage;
   const canSubmit = email.trim() !== '' && password !== '' && !submitting;
 
   const handleSubmit = async () => {
@@ -51,6 +59,31 @@ export default function LoginScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.card}>
+          <View style={styles.langRow}>
+            {LANGUAGES.map((lng) => {
+              const active = current === lng.code;
+              return (
+                <Pressable
+                  key={lng.code}
+                  onPress={() => {
+                    void setLanguage(lng.code);
+                  }}
+                  style={[styles.langPill, active && styles.langPillActive]}
+                  accessibilityLabel={lng.label}
+                >
+                  <Text
+                    style={[
+                      styles.langPillText,
+                      active && styles.langPillTextActive,
+                    ]}
+                  >
+                    {lng.label}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+
           <View style={styles.brand}>
             <View style={styles.logoBadge}>
               <Ionicons name="people" size={30} color="#0284c7" />
@@ -75,8 +108,6 @@ export default function LoginScreen() {
               autoCorrect={false}
               autoComplete="email"
               keyboardType="email-address"
-              placeholder={t('auth.emailPlaceholder')}
-              placeholderTextColor="#cbd5e1"
               editable={!submitting}
             />
           </View>
@@ -177,6 +208,36 @@ const styles = StyleSheet.create({
     shadowRadius: 24,
     shadowOffset: { width: 0, height: 10 },
     elevation: 8,
+  },
+  langRow: {
+    flexDirection: 'row',
+    alignSelf: 'center',
+    backgroundColor: '#f1f5f9',
+    borderRadius: 10,
+    padding: 3,
+    marginBottom: 22,
+  },
+  langPill: {
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  langPillActive: {
+    backgroundColor: '#fff',
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 1 },
+    elevation: 1,
+  },
+  langPillText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#94a3b8',
+    letterSpacing: 0.5,
+  },
+  langPillTextActive: {
+    color: '#0284c7',
   },
   brand: {
     alignItems: 'center',
