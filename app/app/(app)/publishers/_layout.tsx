@@ -35,20 +35,20 @@ export default function PublishersLayout() {
       />
       <Stack.Screen name="[id]" options={{
           title: t('publishers.title.detail'),
-          headerLeft: () => <BackButton fallback="/publishers" />,
+          headerLeft: () => <BackButton fallback="/publishers" toParent />,
         }} />
       <Stack.Screen
         name="new"
         options={{
           title: t('publishers.title.new'),
-          headerLeft: () => <BackButton fallback="/publishers" />,
+          headerLeft: () => <BackButton fallback="/publishers" toParent />,
         }}
       />
       <Stack.Screen
         name="families/index"
         options={{
           title: t('families.title.list'),
-          headerLeft: () => <BackButton fallback="/publishers" />,
+          headerLeft: () => <BackButton fallback="/publishers" toParent />,
           headerRight: () => (
             <Pressable
               onPress={() => router.push('/publishers/families/new' as any)}
@@ -64,14 +64,14 @@ export default function PublishersLayout() {
         name="families/[id]"
         options={{
           title: t('families.title.detail'),
-          headerLeft: () => <BackButton fallback="/publishers/families" />,
+          headerLeft: () => <BackButton fallback="/publishers/families" toParent />,
         }}
       />
       <Stack.Screen
         name="families/new"
         options={{
           title: t('families.title.new'),
-          headerLeft: () => <BackButton fallback="/publishers/families" />,
+          headerLeft: () => <BackButton fallback="/publishers/families" toParent />,
         }}
       />
     </Stack>

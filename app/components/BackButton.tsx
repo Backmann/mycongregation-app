@@ -3,16 +3,24 @@ import { Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 /**
- * Header back button that never gets stuck. On web the navigation stack can be
- * empty after a refresh or a deep link, so the default back arrow (which calls
- * goBack()) does nothing. This goes back when there is history, otherwise it
- * replaces to a sensible parent route.
+ * Header back button that never gets stuck.
+ *
+ * - default: go back when there is history, otherwise replace to `fallback`.
+ * - toParent: always go to `fallback`. Use when a screen has one logical parent
+ *   regardless of where it was opened from — e.g. a publisher card should always
+ *   return to the publishers list, not to the schedule it was opened from.
  */
-export function BackButton({ fallback }: { fallback: string }) {
+export function BackButton({
+  fallback,
+  toParent,
+}: {
+  fallback: string;
+  toParent?: boolean;
+}) {
   return (
     <Pressable
       onPress={() => {
-        if (router.canGoBack()) {
+        if (!toParent && router.canGoBack()) {
           router.back();
         } else {
           router.replace(fallback as any);
