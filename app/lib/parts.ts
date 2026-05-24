@@ -266,6 +266,7 @@ const NON_NUMBERED_PARTS = new Set<string>([
   'cbs_reader',
   'watchtower_reader',
   'mid_song',
+  'weekend_song',
 ]);
 
 /** Parts that get a JW-style sequential number (excludes chairmen/prayers/readers). */

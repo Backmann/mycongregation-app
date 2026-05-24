@@ -568,7 +568,7 @@ function partDisplay(
   partKey: string,
   partTitle: string | null | undefined,
 ): { label: string; subtitle: string | null } {
-  if (partKey === 'mid_song') {
+  if (partKey === 'mid_song' || partKey === 'weekend_song') {
     return { label: partTitle || 'Песня', subtitle: null };
   }
   if (PRAYER_PARTS.has(partKey)) {
@@ -617,7 +617,9 @@ function AssignmentRow({
   const hasInvitedSpeaker = !publisher && !!assignment.speakerName;
 
   // Songs (e.g. the middle song) are informational — no assignment, no editing.
-  const isSong = assignment.partKey === 'mid_song';
+  const isSong =
+    assignment.partKey === 'mid_song' ||
+    assignment.partKey === 'weekend_song';
   if (isSong) {
     return (
       <View
