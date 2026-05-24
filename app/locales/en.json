@@ -329,7 +329,11 @@
     "email": "Email",
     "password": "Password",
     "emailPlaceholder": "you@example.com",
-    "signIn": "Sign in"
+    "signIn": "Sign in",
+    "noAccountHint": "Accounts are created by your congregation administrator. No access yet? Reach out to them.",
+    "forgotPasswordHint": "Forgot your password? Contact your congregation administrator.",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password"
   },
   "months": {
     "january": "January",

@@ -329,7 +329,11 @@
     "email": "E-Mail",
     "password": "Passwort",
     "emailPlaceholder": "du@beispiel.de",
-    "signIn": "Anmelden"
+    "signIn": "Anmelden",
+    "noAccountHint": "Konten werden vom Administrator der Versammlung erstellt. Noch kein Zugang? Wenden Sie sich an ihn.",
+    "forgotPasswordHint": "Passwort vergessen? Wenden Sie sich an den Administrator der Versammlung.",
+    "showPassword": "Passwort anzeigen",
+    "hidePassword": "Passwort verbergen"
   },
   "months": {
     "january": "Januar",

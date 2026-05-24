@@ -329,7 +329,11 @@
     "email": "Электронная почта",
     "password": "Пароль",
     "emailPlaceholder": "you@example.com",
-    "signIn": "Войти"
+    "signIn": "Войти",
+    "noAccountHint": "Аккаунт создаёт администратор собрания. Если у вас нет доступа — обратитесь к нему.",
+    "forgotPasswordHint": "Забыли пароль? Обратитесь к администратору собрания.",
+    "showPassword": "Показать пароль",
+    "hidePassword": "Скрыть пароль"
   },
   "months": {
     "january": "январь",
