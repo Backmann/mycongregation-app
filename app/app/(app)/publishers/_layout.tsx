@@ -2,6 +2,7 @@ import { Stack, router } from 'expo-router';
 import { Pressable, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
+import { BackButton } from '../../../components/BackButton';
 
 export default function PublishersLayout() {
   const { t } = useTranslation();
@@ -34,44 +35,20 @@ export default function PublishersLayout() {
       />
       <Stack.Screen name="[id]" options={{
           title: t('publishers.title.detail'),
-          headerLeft: () => (
-            <Pressable
-              onPress={() => router.replace('/publishers' as any)}
-              style={{ paddingHorizontal: 12 }}
-              hitSlop={8}
-            >
-              <Ionicons name="chevron-back" size={28} color="#0ea5e9" />
-            </Pressable>
-          ),
+          headerLeft: () => <BackButton fallback="/publishers" />,
         }} />
       <Stack.Screen
         name="new"
         options={{
           title: t('publishers.title.new'),
-          headerLeft: () => (
-            <Pressable
-              onPress={() => router.replace('/publishers' as any)}
-              style={{ paddingHorizontal: 12 }}
-              hitSlop={8}
-            >
-              <Ionicons name="chevron-back" size={28} color="#0ea5e9" />
-            </Pressable>
-          ),
+          headerLeft: () => <BackButton fallback="/publishers" />,
         }}
       />
       <Stack.Screen
         name="families/index"
         options={{
           title: t('families.title.list'),
-          headerLeft: () => (
-            <Pressable
-              onPress={() => router.replace('/publishers' as any)}
-              style={{ paddingHorizontal: 12 }}
-              hitSlop={8}
-            >
-              <Ionicons name="chevron-back" size={28} color="#0ea5e9" />
-            </Pressable>
-          ),
+          headerLeft: () => <BackButton fallback="/publishers" />,
           headerRight: () => (
             <Pressable
               onPress={() => router.push('/publishers/families/new' as any)}
@@ -87,30 +64,14 @@ export default function PublishersLayout() {
         name="families/[id]"
         options={{
           title: t('families.title.detail'),
-          headerLeft: () => (
-            <Pressable
-              onPress={() => router.replace('/publishers/families' as any)}
-              style={{ paddingHorizontal: 12 }}
-              hitSlop={8}
-            >
-              <Ionicons name="chevron-back" size={28} color="#0ea5e9" />
-            </Pressable>
-          ),
+          headerLeft: () => <BackButton fallback="/publishers/families" />,
         }}
       />
       <Stack.Screen
         name="families/new"
         options={{
           title: t('families.title.new'),
-          headerLeft: () => (
-            <Pressable
-              onPress={() => router.replace('/publishers/families' as any)}
-              style={{ paddingHorizontal: 12 }}
-              hitSlop={8}
-            >
-              <Ionicons name="chevron-back" size={28} color="#0ea5e9" />
-            </Pressable>
-          ),
+          headerLeft: () => <BackButton fallback="/publishers/families" />,
         }}
       />
     </Stack>
