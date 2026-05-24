@@ -644,7 +644,8 @@
       "treasures": "Schätze aus Gottes Wort",
       "applyYourself": "Werde ein besserer Lehrer",
       "christianLife": "Unser Leben als Christ"
-    }
+    },
+    "readOnlyBanner": "Nur Ansicht — Sie dürfen diesen Teil nicht bearbeiten"
   },
   "audit": {
     "noReportId": "Keine Bericht-ID angegeben.",

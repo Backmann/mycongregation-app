@@ -15,10 +15,12 @@ import {
   UpdateAssignmentInput,
 } from '../../../lib/api';
 import { AssignmentForm } from '../../../components/AssignmentForm';
+import { usePermissions } from '../../../lib/permissions';
 import { useTranslation } from 'react-i18next';
 
 export default function AssignmentDetailScreen() {
   const { t } = useTranslation();
+  const perms = usePermissions();
   const { id } = useLocalSearchParams<{ id: string }>();
   const queryClient = useQueryClient();
 
@@ -102,12 +104,23 @@ export default function AssignmentDetailScreen() {
   }
 
   const a = assignmentQuery.data;
+  const canEdit =
+    a.eventType === 'weekend'
+      ? perms.canEditWeekendSchedule
+      : a.eventType === 'midweek'
+        ? perms.canEditMidweekSchedule
+        : perms.isAdmin;
 
   return (
     <View style={{ flex: 1, backgroundColor: '#f1f5f9' }}>
       {a.deletedAt && (
         <View style={styles.removedBanner}>
           <Text style={styles.removedText}>{t('schedule.removedBanner')}</Text>
+        </View>
+      )}
+      {!canEdit && (
+        <View style={styles.removedBanner}>
+          <Text style={styles.removedText}>{t('schedule.readOnlyBanner')}</Text>
         </View>
       )}
 
@@ -127,8 +140,10 @@ export default function AssignmentDetailScreen() {
         onSubmit={updateMutation.mutateAsync}
         isSubmitting={updateMutation.isPending}
         lockIdentity
+        readOnly={!canEdit}
       />
 
+      {canEdit && (
       <View style={styles.bottomActions}>
         {a.deletedAt ? (
           <Pressable
@@ -154,6 +169,7 @@ export default function AssignmentDetailScreen() {
           </Pressable>
         )}
       </View>
+      )}
     </View>
   );
 }

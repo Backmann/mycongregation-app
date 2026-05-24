@@ -95,8 +95,13 @@ export default function ScheduleIndexScreen() {
     meetingSettingsQuery.data?.versions,
     weekStartISO,
   );
-  const { canEditDuties, canEditFieldServiceMeetings, canEditCleaning } =
-    usePermissions();
+  const {
+    canEditDuties,
+    canEditFieldServiceMeetings,
+    canEditCleaning,
+    canEditMidweekSchedule,
+    canEditWeekendSchedule,
+  } = usePermissions();
   const dutiesQuery = useQuery({
     queryKey: ['duties', weekStartISO],
     queryFn: () =>
@@ -396,7 +401,7 @@ export default function ScheduleIndexScreen() {
 
             {/* Create buttons — show one per missing event type that has a template */}
             <View style={styles.createButtons}>
-              {!hasMidweek && (
+              {!hasMidweek && canEditMidweekSchedule && (
                 <CreateButton
                   label={t('schedule.createEmptyMidweek', { count: PARTS_BY_EVENT.midweek.length })}
                   primary={isEmpty}
@@ -404,7 +409,7 @@ export default function ScheduleIndexScreen() {
                   disabled={createWeekMutation.isPending}
                 />
               )}
-              {!hasWeekend && (
+              {!hasWeekend && canEditWeekendSchedule && (
                 <CreateButton
                   label={t('schedule.createEmptyWeekend', { count: PARTS_BY_EVENT.weekend.length })}
                   primary={isEmpty && !PARTS_BY_EVENT.midweek.length}

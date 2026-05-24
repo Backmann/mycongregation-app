@@ -37,6 +37,8 @@ interface Props {
   submitLabel?: string;
   /** When true, weekStartDate / eventType / partKey become read-only. */
   lockIdentity?: boolean;
+  /** When true the whole form is non-interactive and the actions are hidden. */
+  readOnly?: boolean;
 }
 
 // EVENT_TYPE_OPTIONS, STATUS_OPTIONS, SPEAKER_TYPE_OPTIONS moved inside component (i18n)
@@ -48,6 +50,7 @@ export function AssignmentForm({
   isSubmitting,
   submitLabel,
   lockIdentity,
+  readOnly,
 }: Props) {
   const { t } = useTranslation();
   const effectiveSubmitLabel = submitLabel ?? t('common.save');
@@ -173,6 +176,10 @@ export function AssignmentForm({
       contentContainerStyle={{ paddingBottom: 32 }}
       keyboardShouldPersistTaps="handled"
     >
+      <View
+        pointerEvents={readOnly ? 'none' : 'auto'}
+        style={readOnly ? { opacity: 0.55 } : undefined}
+      >
       <FormSection title={t('assignments.form.section.identity')}>
         {lockIdentity ? (
           <>
@@ -360,6 +367,7 @@ export function AssignmentForm({
         </View>
       )}
 
+      {!readOnly && (
       <View style={styles.actions}>
         <Pressable
           style={[
@@ -385,6 +393,8 @@ export function AssignmentForm({
             <Text style={styles.buttonSecondaryText}>{t('common.cancel')}</Text>
           </Pressable>
         )}
+      </View>
+      )}
       </View>
     </ScrollView>
   );

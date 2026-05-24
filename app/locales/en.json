@@ -644,7 +644,8 @@
       "treasures": "Treasures From God's Word",
       "applyYourself": "Apply Yourself to the Ministry",
       "christianLife": "Living as Christians"
-    }
+    },
+    "readOnlyBanner": "Read-only — you don't have permission to edit this part"
   },
   "audit": {
     "noReportId": "No report id supplied.",
