@@ -138,7 +138,7 @@ export default function AssignmentDetailScreen() {
           isSaving={updateMutation.isPending}
           onSave={(pt) =>
             updateMutation
-              .mutateAsync({ partTitle: pt })
+              .mutateAsync({ partTitle: pt ?? '' })
               .then(() => router.back())
           }
         />

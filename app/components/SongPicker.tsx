@@ -41,7 +41,10 @@ export function SongPicker({
     staleTime: 1000 * 60 * 60,
   });
 
-  const songs = songsQuery.data?.data ?? [];
+  const songs = useMemo(
+    () => songsQuery.data?.data ?? [],
+    [songsQuery.data],
+  );
   const current = currentNumberFromTitle(currentTitle);
   const currentSong = songs.find((s) => s.number === current);
 
