@@ -612,6 +612,28 @@ function AssignmentRow({
   // Resolve who is assigned: local publisher OR invited speaker fallback
   const hasInvitedSpeaker = !publisher && !!assignment.speakerName;
 
+  // Songs (e.g. the middle song) are informational — no assignment, no editing.
+  const isSong = assignment.partKey === 'mid_song';
+  if (isSong) {
+    return (
+      <View
+        style={[
+          styles.row,
+          accentColor
+            ? { borderLeftWidth: 3, borderLeftColor: accentColor }
+            : null,
+        ]}
+      >
+        <View style={[styles.orderBadge, styles.orderBadgeInfo]}>
+          <Text style={styles.orderText}>·</Text>
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.partLabel}>{partLabel}</Text>
+        </View>
+      </View>
+    );
+  }
+
   return (
     <Pressable
       style={({ pressed }) => [
