@@ -33,6 +33,7 @@ import {
   formatDateISO,
   startOfWeekMonday,
 } from '../../../lib/dates';
+import { useSongsMap, enrichSongRef } from '../../../lib/songs';
 import {
   getEventTypeLabel,
   getPartLabel,
@@ -604,10 +605,13 @@ function AssignmentRow({
   groupNameById: Map<string, string>;
 }) {
   const { t } = useTranslation();
-  const { label: partLabel, subtitle } = partDisplay(
+  const { label: rawPartLabel, subtitle: rawSubtitle } = partDisplay(
     assignment.partKey,
     assignment.partTitle,
   );
+  const songTitles = useSongsMap();
+  const partLabel = enrichSongRef(rawPartLabel, songTitles) ?? rawPartLabel;
+  const subtitle = enrichSongRef(rawSubtitle, songTitles);
 
   // Resolve who is assigned: local publisher OR invited speaker fallback
   const hasInvitedSpeaker = !publisher && !!assignment.speakerName;
