@@ -115,8 +115,7 @@ export default function AssignmentDetailScreen() {
   const isSong =
     a.partKey === 'mid_song' ||
     a.partKey === 'weekend_song' ||
-    a.partKey === 'weekend_opening_song' ||
-    a.partKey === 'midweek_opening_song';
+    a.partKey === 'weekend_opening_song';
 
   return (
     <View style={{ flex: 1, backgroundColor: '#f1f5f9' }}>
