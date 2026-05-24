@@ -2,15 +2,21 @@ import { Stack, router } from 'expo-router';
 import { Pressable, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
+import { BackButton } from '../../../components/BackButton';
 
 export default function ServiceReportsLayout() {
   const { t } = useTranslation();
   return (
-    <Stack>
+    <Stack
+      screenOptions={{
+        headerLeft: () => <BackButton fallback="/service-reports" />,
+      }}
+    >
       <Stack.Screen
         name="index"
         options={{
           title: t('reports.title.list'),
+          headerLeft: () => null,
           headerRight: () => (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
               <Pressable

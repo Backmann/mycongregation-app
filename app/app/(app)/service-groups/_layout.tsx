@@ -2,6 +2,7 @@ import { Stack, router } from 'expo-router';
 import { Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
+import { BackButton } from '../../../components/BackButton';
 
 export default function ServiceGroupsLayout() {
   const { t } = useTranslation();
@@ -40,7 +41,13 @@ export default function ServiceGroupsLayout() {
             </Pressable>
           ),
         }} />
-      <Stack.Screen name="new" options={{ title: t('serviceGroups.title.new') }} />
+      <Stack.Screen
+        name="new"
+        options={{
+          title: t('serviceGroups.title.new'),
+          headerLeft: () => <BackButton fallback="/service-groups" />,
+        }}
+      />
     </Stack>
   );
 }

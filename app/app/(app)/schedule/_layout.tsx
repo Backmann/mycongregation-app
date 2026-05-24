@@ -2,6 +2,7 @@ import { Stack, router } from 'expo-router';
 import { Pressable, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
+import { BackButton } from '../../../components/BackButton';
 
 export default function ScheduleLayout() {
   const { t } = useTranslation();
@@ -51,8 +52,20 @@ export default function ScheduleLayout() {
             </Pressable>
           ),
         }} />
-      <Stack.Screen name="new" options={{ title: t('schedule.title.new') }} />
-      <Stack.Screen name="import" options={{ title: t('schedule.title.import') }} />
+      <Stack.Screen
+        name="new"
+        options={{
+          title: t('schedule.title.new'),
+          headerLeft: () => <BackButton fallback="/schedule" />,
+        }}
+      />
+      <Stack.Screen
+        name="import"
+        options={{
+          title: t('schedule.title.import'),
+          headerLeft: () => <BackButton fallback="/schedule" />,
+        }}
+      />
     </Stack>
   );
 }

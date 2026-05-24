@@ -1,14 +1,19 @@
 import { Stack } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import { BackButton } from '../../../components/BackButton';
 
 export default function ProfileLayout() {
   const { t } = useTranslation();
 
   return (
-    <Stack>
+    <Stack
+      screenOptions={{
+        headerLeft: () => <BackButton fallback="/profile" />,
+      }}
+    >
       <Stack.Screen
         name="index"
-        options={{ title: t('profile.title') }}
+        options={{ title: t('profile.title'), headerLeft: () => null }}
       />
       <Stack.Screen
         name="public-talks"
