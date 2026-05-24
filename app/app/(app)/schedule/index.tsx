@@ -568,7 +568,11 @@ function partDisplay(
   partKey: string,
   partTitle: string | null | undefined,
 ): { label: string; subtitle: string | null } {
-  if (partKey === 'mid_song' || partKey === 'weekend_song') {
+  if (
+    partKey === 'mid_song' ||
+    partKey === 'weekend_song' ||
+    partKey === 'weekend_opening_song'
+  ) {
     return { label: partTitle || 'Песня', subtitle: null };
   }
   if (PRAYER_PARTS.has(partKey)) {
@@ -619,7 +623,8 @@ function AssignmentRow({
   // Songs (e.g. the middle song) are informational — no assignment, no editing.
   const isSong =
     assignment.partKey === 'mid_song' ||
-    assignment.partKey === 'weekend_song';
+    assignment.partKey === 'weekend_song' ||
+    assignment.partKey === 'weekend_opening_song';
   if (isSong) {
     return (
       <Pressable
