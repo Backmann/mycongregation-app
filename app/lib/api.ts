@@ -349,6 +349,24 @@ export interface CreatePublicTalkInput {
 }
 export type UpdatePublicTalkInput = Partial<CreatePublicTalkInput>;
 
+// ---------- Songs types ----------
+
+export interface Song {
+  id: string;
+  number: number;
+  title: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateSongInput {
+  number: number;
+  title: string;
+  isActive?: boolean;
+}
+export type UpdateSongInput = Partial<CreateSongInput>;
+
 export interface BulkImportResult {
   parsed: number;
   created: number;
@@ -1086,6 +1104,30 @@ export const publicTalksApi = {
   },
   async bulkImport(text: string): Promise<BulkImportResult> {
     const { data } = await api.post<BulkImportResult>('/public-talks/bulk-import', { text });
+    return data;
+  },
+};
+
+export const songsApi = {
+  async list(params?: {
+    search?: string;
+    includeInactive?: boolean;
+    limit?: number;
+    offset?: number;
+  }): Promise<Paginated<Song>> {
+    const { data } = await api.get<Paginated<Song>>('/songs', { params });
+    return data;
+  },
+  async create(input: CreateSongInput): Promise<Song> {
+    const { data } = await api.post<Song>('/songs', input);
+    return data;
+  },
+  async update(id: string, input: UpdateSongInput): Promise<Song> {
+    const { data } = await api.patch<Song>(`/songs/${id}`, input);
+    return data;
+  },
+  async bulkImport(text: string): Promise<BulkImportResult> {
+    const { data } = await api.post<BulkImportResult>('/songs/bulk-import', { text });
     return data;
   },
 };

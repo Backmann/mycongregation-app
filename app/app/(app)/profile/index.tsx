@@ -240,6 +240,22 @@ export default function ProfileScreen() {
               </View>
               <Ionicons name="chevron-forward" size={18} color="#cbd5e1" />
             </Pressable>
+            <Pressable
+              style={({ pressed }) => [
+                styles.row,
+                pressed && styles.rowPressed,
+              ]}
+              onPress={() => router.push('/profile/songs-import' as any)}
+            >
+              <View style={styles.rowIcon}>
+                <Ionicons name="musical-notes-outline" size={20} color="#0ea5e9" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.rowTitle}>Песни</Text>
+                <Text style={styles.rowSubtitle}>Импорт песенника собрания</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color="#cbd5e1" />
+            </Pressable>
           </View>
         </View>
       )}

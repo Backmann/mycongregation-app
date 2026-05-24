@@ -24,6 +24,10 @@ export default function ProfileLayout() {
         options={{ title: t('profile.publicTalksImport') }}
       />
       <Stack.Screen
+        name="songs-import"
+        options={{ title: 'Импорт песен' }}
+      />
+      <Stack.Screen
         name="change-password"
         options={{ title: t('profile.changePassword.rowTitle') }}
       />
