@@ -622,13 +622,15 @@ function AssignmentRow({
     assignment.partKey === 'weekend_song';
   if (isSong) {
     return (
-      <View
-        style={[
+      <Pressable
+        style={({ pressed }) => [
           styles.row,
           accentColor
             ? { borderLeftWidth: 3, borderLeftColor: accentColor }
             : null,
+          pressed && styles.rowPressed,
         ]}
+        onPress={() => router.push(`/schedule/${assignment.id}` as any)}
       >
         <View style={[styles.orderBadge, styles.orderBadgeInfo]}>
           <Text style={styles.orderText}>·</Text>
@@ -636,7 +638,8 @@ function AssignmentRow({
         <View style={{ flex: 1 }}>
           <Text style={styles.partLabel}>{partLabel}</Text>
         </View>
-      </View>
+        <Text style={styles.chevron}>›</Text>
+      </Pressable>
     );
   }
 

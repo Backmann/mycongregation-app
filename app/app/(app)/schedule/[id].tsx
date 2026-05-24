@@ -15,6 +15,7 @@ import {
   UpdateAssignmentInput,
 } from '../../../lib/api';
 import { AssignmentForm } from '../../../components/AssignmentForm';
+import { SongPicker } from '../../../components/SongPicker';
 import { usePermissions } from '../../../lib/permissions';
 import { useTranslation } from 'react-i18next';
 
@@ -111,6 +112,12 @@ export default function AssignmentDetailScreen() {
         ? perms.canEditMidweekSchedule
         : perms.isAdmin;
 
+  const isSong =
+    a.partKey === 'mid_song' ||
+    a.partKey === 'weekend_song' ||
+    a.partKey === 'weekend_opening_song' ||
+    a.partKey === 'midweek_opening_song';
+
   return (
     <View style={{ flex: 1, backgroundColor: '#f1f5f9' }}>
       {a.deletedAt && (
@@ -124,26 +131,39 @@ export default function AssignmentDetailScreen() {
         </View>
       )}
 
-      <AssignmentForm
-        initial={{
-          weekStartDate: a.weekStartDate,
-          eventType: a.eventType,
-          partKey: a.partKey,
-          partOrder: a.partOrder,
-          partTitle: a.partTitle ?? undefined,
-          partDurationMin: a.partDurationMin ?? undefined,
-          publisherId: a.publisherId,
-          assistantPublisherId: a.assistantPublisherId,
-          status: a.status,
-          notes: a.notes ?? undefined,
-        }}
-        onSubmit={updateMutation.mutateAsync}
-        isSubmitting={updateMutation.isPending}
-        lockIdentity
-        readOnly={!canEdit}
-      />
+      {isSong ? (
+        <SongPicker
+          currentTitle={a.partTitle}
+          readOnly={!canEdit}
+          isSaving={updateMutation.isPending}
+          onSave={(pt) =>
+            updateMutation
+              .mutateAsync({ partTitle: pt })
+              .then(() => router.back())
+          }
+        />
+      ) : (
+        <AssignmentForm
+          initial={{
+            weekStartDate: a.weekStartDate,
+            eventType: a.eventType,
+            partKey: a.partKey,
+            partOrder: a.partOrder,
+            partTitle: a.partTitle ?? undefined,
+            partDurationMin: a.partDurationMin ?? undefined,
+            publisherId: a.publisherId,
+            assistantPublisherId: a.assistantPublisherId,
+            status: a.status,
+            notes: a.notes ?? undefined,
+          }}
+          onSubmit={updateMutation.mutateAsync}
+          isSubmitting={updateMutation.isPending}
+          lockIdentity
+          readOnly={!canEdit}
+        />
+      )}
 
-      {canEdit && (
+      {canEdit && !isSong && (
       <View style={styles.bottomActions}>
         {a.deletedAt ? (
           <Pressable
