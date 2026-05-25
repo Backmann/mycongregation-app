@@ -299,6 +299,12 @@ export default function PublisherDetailScreen() {
         </Section>
       )}
 
+      {isAdmin && !publisher.deletedAt && (
+        <Section title="Доступ к приложению">
+          <PublisherAccessContent publisher={publisher} />
+        </Section>
+      )}
+
       <View style={styles.actions}>
         {!publisher.deletedAt && (
           <Pressable
