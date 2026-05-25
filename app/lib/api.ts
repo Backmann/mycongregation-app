@@ -895,6 +895,26 @@ export const cartShiftsApi = {
 
 export type PublisherStatus = 'active' | 'irregular' | 'inactive';
 
+export interface AccessSummary {
+  hasAccess: boolean;
+  email: string | null;
+  role: 'admin' | 'elder' | 'ministerial_servant' | 'publisher' | null;
+  isActive: boolean | null;
+  lastLoginAt: string | null;
+}
+
+export interface GrantAccessInput {
+  email?: string;
+  password: string;
+  isAdmin?: boolean;
+}
+
+export interface UpdateAccessInput {
+  password?: string;
+  isAdmin?: boolean;
+  isActive?: boolean;
+}
+
 export const publishersApi = {
   async list(params?: { search?: string; limit?: number; offset?: number; includeRemoved?: boolean }): Promise<Paginated<Publisher>> {
     const { data } = await api.get<Paginated<Publisher>>('/publishers', { params });
@@ -936,6 +956,30 @@ export const publishersApi = {
   async clearOverride(id: string): Promise<Publisher> {
     const { data } = await api.delete<Publisher>(
       `/publishers/${id}/status-override`,
+    );
+    return data;
+  },
+  async getAccess(id: string): Promise<AccessSummary> {
+    const { data } = await api.get<AccessSummary>(`/publishers/${id}/access`);
+    return data;
+  },
+  async grantAccess(
+    id: string,
+    input: GrantAccessInput,
+  ): Promise<AccessSummary> {
+    const { data } = await api.post<AccessSummary>(
+      `/publishers/${id}/access`,
+      input,
+    );
+    return data;
+  },
+  async updateAccess(
+    id: string,
+    input: UpdateAccessInput,
+  ): Promise<AccessSummary> {
+    const { data } = await api.patch<AccessSummary>(
+      `/publishers/${id}/access`,
+      input,
     );
     return data;
   },
