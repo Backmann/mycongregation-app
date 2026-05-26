@@ -568,8 +568,8 @@ export const responsibilitiesApi = {
     );
     return data;
   },
-  async revoke(type: ResponsibilityType): Promise<void> {
-    await api.delete(`/responsibilities/${type}`);
+  async revoke(type: ResponsibilityType, userId: string): Promise<void> {
+    await api.delete(`/responsibilities/${type}/${userId}`);
   },
 };
 

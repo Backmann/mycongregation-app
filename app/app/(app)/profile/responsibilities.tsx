@@ -68,15 +68,20 @@ export default function ResponsibilitiesScreen() {
   });
 
   const revokeMutation = useMutation({
-    mutationFn: (type: ResponsibilityType) => responsibilitiesApi.revoke(type),
+    mutationFn: (vars: { type: ResponsibilityType; userId: string }) =>
+      responsibilitiesApi.revoke(vars.type, vars.userId),
     onSuccess: () => qc.invalidateQueries({ queryKey: QK_RESPONSIBILITIES }),
     onError: (e: unknown) =>
       Alert.alert(t('responsibilities.errorTitle'), extractErrorMessage(e)),
   });
 
   const byType = useMemo(() => {
-    const map = new Map<ResponsibilityType, Responsibility>();
-    for (const r of respQuery.data ?? []) map.set(r.type, r);
+    const map = new Map<ResponsibilityType, Responsibility[]>();
+    for (const r of respQuery.data ?? []) {
+      const list = map.get(r.type) ?? [];
+      list.push(r);
+      map.set(r.type, list);
+    }
     return map;
   }, [respQuery.data]);
 
@@ -86,12 +91,12 @@ export default function ResponsibilitiesScreen() {
     return map;
   }, [usersQuery.data]);
 
-  const confirmRevoke = (type: ResponsibilityType) => {
+  const confirmRevoke = (type: ResponsibilityType, userId: string) => {
     const role = t(`responsibilities.types.${type}`);
     const title = t('responsibilities.revokeConfirm.title');
     const body = t('responsibilities.revokeConfirm.body', { role });
     if (Platform.OS === 'web') {
-      if (window.confirm(body)) revokeMutation.mutate(type);
+      if (window.confirm(body)) revokeMutation.mutate({ type, userId });
       return;
     }
     Alert.alert(title, body, [
@@ -99,7 +104,7 @@ export default function ResponsibilitiesScreen() {
       {
         text: t('responsibilities.revokeConfirm.action'),
         style: 'destructive',
-        onPress: () => revokeMutation.mutate(type),
+        onPress: () => revokeMutation.mutate({ type, userId }),
       },
     ]);
   };
@@ -121,40 +126,42 @@ export default function ResponsibilitiesScreen() {
 
         <View style={styles.card}>
           {RESPONSIBILITY_ORDER.map((type, i) => {
-            const holder = byType.get(type);
-            const holderUser = holder
-              ? userById.get(holder.userId)
-              : undefined;
+            const holders = byType.get(type) ?? [];
             return (
               <View key={type} style={[styles.row, i > 0 && styles.rowBorder]}>
                 <View style={styles.rowMain}>
                   <Text style={styles.roleTitle}>
                     {t(`responsibilities.types.${type}`)}
                   </Text>
-                  <Text
-                    style={[
-                      styles.holder,
-                      !holder && styles.holderUnassigned,
-                    ]}
-                  >
-                    {holderUser
-                      ? holderUser.email
-                      : holder
-                        ? t('responsibilities.unknownUser')
-                        : t('responsibilities.unassigned')}
-                  </Text>
+                  {holders.length === 0 ? (
+                    <Text style={[styles.holder, styles.holderUnassigned]}>
+                      {t('responsibilities.unassigned')}
+                    </Text>
+                  ) : (
+                    holders.map((h) => {
+                      const u = userById.get(h.userId);
+                      return (
+                        <View key={h.userId} style={styles.holderRow}>
+                          <Text style={styles.holder}>
+                            {u ? u.email : t('responsibilities.unknownUser')}
+                          </Text>
+                          <Pressable
+                            onPress={() => confirmRevoke(type, h.userId)}
+                            style={styles.revokeBtn}
+                            hitSlop={8}
+                            disabled={revokeMutation.isPending}
+                          >
+                            <Ionicons
+                              name="close-circle"
+                              size={20}
+                              color="#dc2626"
+                            />
+                          </Pressable>
+                        </View>
+                      );
+                    })
+                  )}
                 </View>
-
-                {holder && (
-                  <Pressable
-                    onPress={() => confirmRevoke(type)}
-                    style={styles.revokeBtn}
-                    hitSlop={8}
-                    disabled={revokeMutation.isPending}
-                  >
-                    <Ionicons name="close-circle" size={22} color="#dc2626" />
-                  </Pressable>
-                )}
 
                 <Pressable
                   onPress={() => setPickerFor(type)}
@@ -164,9 +171,7 @@ export default function ResponsibilitiesScreen() {
                   ]}
                 >
                   <Text style={styles.assignBtnText}>
-                    {holder
-                      ? t('responsibilities.change')
-                      : t('responsibilities.assign')}
+                    {t('responsibilities.assign')}
                   </Text>
                 </Pressable>
               </View>
@@ -261,6 +266,12 @@ const styles = StyleSheet.create({
   roleTitle: { fontSize: 15, color: '#0f172a', fontWeight: '500' },
   holder: { fontSize: 12, color: '#0369a1', marginTop: 2 },
   holderUnassigned: { color: '#94a3b8', fontStyle: 'italic' },
+  holderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 2,
+  },
   revokeBtn: { padding: 4 },
   assignBtn: {
     paddingHorizontal: 12,
