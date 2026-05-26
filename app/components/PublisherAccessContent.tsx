@@ -13,13 +13,6 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { extractErrorMessage, publishersApi } from '../lib/api';
 import type { GrantAccessInput, Publisher } from '../lib/api';
 
-const ROLE_LABELS: Record<string, string> = {
-  admin: 'Администратор',
-  elder: 'Старейшина',
-  ministerial_servant: 'Помощник собрания',
-  publisher: 'Возвещатель',
-};
-
 function formatLastLogin(iso: string | null): string {
   if (!iso) return 'ещё не заходил';
   const d = new Date(iso);
@@ -112,19 +105,11 @@ export function PublisherAccessContent({ publisher }: { publisher: Publisher }) 
     );
   }
 
-  const roleLabel = access.role
-    ? (ROLE_LABELS[access.role] ?? access.role)
-    : '—';
-
   return (
     <View>
       <View style={styles.row}>
         <Text style={styles.rowLabel}>Email</Text>
         <Text style={styles.rowValue}>{access.email}</Text>
-      </View>
-      <View style={styles.row}>
-        <Text style={styles.rowLabel}>Роль</Text>
-        <Text style={styles.rowValue}>{roleLabel}</Text>
       </View>
       <View style={styles.row}>
         <Text style={styles.rowLabel}>Последний вход</Text>
