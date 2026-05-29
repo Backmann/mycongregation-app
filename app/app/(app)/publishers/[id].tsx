@@ -23,7 +23,6 @@ import {
 import { useTranslation } from 'react-i18next';
 import i18n from '../../../lib/i18n';
 import { PublisherForm } from '../../../components/PublisherForm';
-import { PublisherAccessContent } from '../../../components/PublisherAccessContent';
 import {
   CAPABILITY_CATEGORIES,
   countActiveCapabilities,
@@ -299,11 +298,6 @@ export default function PublisherDetailScreen() {
         </Section>
       )}
 
-      {isAdmin && !publisher.deletedAt && (
-        <Section title="Доступ к приложению">
-          <PublisherAccessContent publisher={publisher} />
-        </Section>
-      )}
 
       <View style={styles.actions}>
         {!publisher.deletedAt && (
