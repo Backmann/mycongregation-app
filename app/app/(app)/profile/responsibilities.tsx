@@ -27,16 +27,12 @@ import {
 const RESPONSIBILITY_ORDER: ResponsibilityType[] = [
   'body_coordinator',
   'life_ministry_overseer',
-  'wt_study_conductor',
-  'wt_study_conductor_backup',
   'public_talk_coordinator',
   'service_overseer',
   'public_witnessing',
   'cleaning_coordinator',
   'duties_coordinator',
   'secretary',
-  'accounts_servant',
-  'adviser',
 ];
 
 const QK_RESPONSIBILITIES = ['responsibilities'] as const;
