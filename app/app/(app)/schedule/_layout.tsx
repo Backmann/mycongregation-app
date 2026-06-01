@@ -34,36 +34,25 @@ export default function ScheduleLayout() {
           ),
         }}
       />
-      <Stack.Screen name="[id]" options={{
+      <Stack.Screen
+        name="[id]"
+        options={{
           title: t('schedule.title.detail'),
-          headerLeft: () => (
-            <Pressable
-              onPress={() => {
-                if (router.canGoBack()) {
-                  router.back();
-                } else {
-                  router.replace("/schedule" as any);
-                }
-              }}
-              style={{ paddingHorizontal: 12 }}
-              hitSlop={8}
-            >
-              <Ionicons name="chevron-back" size={28} color="#0ea5e9" />
-            </Pressable>
-          ),
-        }} />
+          headerLeft: () => <BackButton fallback="/schedule" toParent />,
+        }}
+      />
       <Stack.Screen
         name="new"
         options={{
           title: t('schedule.title.new'),
-          headerLeft: () => <BackButton fallback="/schedule" />,
+          headerLeft: () => <BackButton fallback="/schedule" toParent />,
         }}
       />
       <Stack.Screen
         name="import"
         options={{
           title: t('schedule.title.import'),
-          headerLeft: () => <BackButton fallback="/schedule" />,
+          headerLeft: () => <BackButton fallback="/schedule" toParent />,
         }}
       />
     </Stack>

@@ -8,7 +8,7 @@ export default function ProfileLayout() {
   return (
     <Stack
       screenOptions={{
-        headerLeft: () => <BackButton fallback="/profile" />,
+        headerLeft: () => <BackButton fallback="/profile" toParent />,
       }}
     >
       <Stack.Screen
