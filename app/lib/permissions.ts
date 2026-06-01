@@ -110,7 +110,8 @@ export function usePermissions(): Permissions {
       canEditCleaning: isAdmin || holds('cleaning_coordinator'),
       canEditCartWitnessing: isAdmin || holds('public_witnessing'),
       canEditFieldServiceMeetings: isAdmin || holds('service_overseer'),
-      canEditDuties: isAdmin || holds('duties_coordinator'),
+      canEditDuties:
+        isAdmin || holds('duties_coordinator') || holds('body_coordinator'),
 
       // Secretary + admin only.
       canViewServiceSummary: isAdmin || holds('secretary'),
