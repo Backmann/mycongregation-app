@@ -47,7 +47,7 @@ export default function BrothersScreen() {
   const brothersQuery = useQuery({
     queryKey: QK_BROTHERS,
     queryFn: async () => {
-      const res = await publishersApi.list({ limit: 500 });
+      const res = await publishersApi.list({ limit: 200 });
       return res.data
         .filter((p) => p.gender === 'brother' && !p.removedAt)
         .sort((a, b) => a.displayName.localeCompare(b.displayName, 'ru'));
@@ -74,7 +74,7 @@ export default function BrothersScreen() {
     onError: (e: unknown) => Alert.alert('Ошибка', extractErrorMessage(e)),
   });
 
-  const brothers = brothersQuery.data ?? [];
+  const brothers = useMemo(() => brothersQuery.data ?? [], [brothersQuery.data]);
   const selected = useMemo(
     () => brothers.find((p) => p.id === selectedId) ?? null,
     [brothers, selectedId],
