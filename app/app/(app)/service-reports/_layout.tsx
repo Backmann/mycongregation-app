@@ -3,9 +3,11 @@ import { Pressable, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { BackButton } from '../../../components/BackButton';
+import { usePermissions } from '../../../lib/permissions';
 
 export default function ServiceReportsLayout() {
   const { t } = useTranslation();
+  const { canViewServiceSummary } = usePermissions();
   return (
     <Stack
       screenOptions={{
@@ -19,6 +21,19 @@ export default function ServiceReportsLayout() {
           headerLeft: () => null,
           headerRight: () => (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+              {canViewServiceSummary && (
+                <Pressable
+                  onPress={() => router.push('/service-reports/summary' as any)}
+                  style={{ paddingHorizontal: 8 }}
+                  hitSlop={8}
+                >
+                  <Ionicons
+                    name="stats-chart-outline"
+                    size={22}
+                    color="#0ea5e9"
+                  />
+                </Pressable>
+              )}
               <Pressable
                 onPress={() => router.push('/service-reports/activity' as any)}
                 style={{ paddingHorizontal: 8 }}
@@ -54,6 +69,7 @@ export default function ServiceReportsLayout() {
       />
       <Stack.Screen name="new" options={{ title: t('reports.title.new') }} />
       <Stack.Screen name="group" options={{ title: t('reports.title.group') }} />
+      <Stack.Screen name="summary" options={{ title: 'Сводка за месяц' }} />
       <Stack.Screen name="audit-log" options={{ title: t('reports.title.editHistory') }} />
       <Stack.Screen
         name="publisher-history"

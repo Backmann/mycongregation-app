@@ -461,6 +461,20 @@ export interface GroupReportRow {
   report: ServiceReport | null;
 }
 
+export interface ServiceReportSummaryCategory {
+  pioneerType: PioneerType;
+  count: number;
+  hours: number | null;
+  bibleStudies: number;
+}
+
+export interface ServiceReportSummary {
+  reportMonth: string;
+  categories: ServiceReportSummaryCategory[];
+  totalActivePublishers: number;
+  totalInactivePublishers: number;
+}
+
 export interface Paginated<T> {
   data: T[];
   total: number;
@@ -1212,6 +1226,13 @@ export const serviceReportsApi = {
     const { data } = await api.get<PublisherHistoryResponse>(
       `/service-reports/by-publisher/${publisherId}`,
       { params: { months } },
+    );
+    return data;
+  },
+  async getSummary(reportMonth: string): Promise<ServiceReportSummary> {
+    const { data } = await api.get<ServiceReportSummary>(
+      '/service-reports/summary',
+      { params: { reportMonth } },
     );
     return data;
   },

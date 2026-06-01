@@ -46,6 +46,13 @@ export interface Permissions {
   canEditFieldServiceMeetings: boolean;
   canEditDuties: boolean;
 
+  /**
+   * Monthly service summary (secretary's tool). Admin OR the holder of the
+   * SECRETARY responsibility — elders are view-only on reports and are NOT
+   * summary recipients, mirroring the server-side getSummary gate.
+   */
+  canViewServiceSummary: boolean;
+
   /** The set of responsibility types held by the current user. */
   responsibilities: ReadonlySet<ResponsibilityType>;
 }
@@ -104,6 +111,9 @@ export function usePermissions(): Permissions {
       canEditCartWitnessing: isAdmin || holds('public_witnessing'),
       canEditFieldServiceMeetings: isAdmin || holds('service_overseer'),
       canEditDuties: isAdmin || holds('duties_coordinator'),
+
+      // Secretary + admin only.
+      canViewServiceSummary: isAdmin || holds('secretary'),
 
       responsibilities: mine,
     };
