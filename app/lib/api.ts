@@ -924,6 +924,7 @@ export interface AccessSummary {
   role: 'admin' | 'elder' | 'ministerial_servant' | 'publisher' | null;
   isActive: boolean | null;
   lastLoginAt: string | null;
+  canViewPrivateData: boolean | null;
 }
 
 export interface GrantAccessInput {
@@ -936,6 +937,7 @@ export interface UpdateAccessInput {
   password?: string;
   isAdmin?: boolean;
   isActive?: boolean;
+  canViewPrivateData?: boolean;
 }
 
 export const publishersApi = {

@@ -55,6 +55,7 @@ export function PublisherAccessContent({ publisher }: { publisher: Publisher }) 
       password?: string;
       isAdmin?: boolean;
       isActive?: boolean;
+      canViewPrivateData?: boolean;
     }) => publishersApi.updateAccess(publisher.id, input),
     onSuccess: () => {
       setResetOpen(false);
@@ -105,6 +106,14 @@ export function PublisherAccessContent({ publisher }: { publisher: Publisher }) 
     );
   }
 
+  // Admins and elders may view private data by role, regardless of the flag;
+  // for any other role the flag is what grants it. Show the switch on for the
+  // role-granted case but lock it, so it reads accurately without implying the
+  // admin can revoke a role-based right here.
+  const roleGrantsPrivate = access.role === 'admin' || access.role === 'elder';
+  const privateAccessGranted =
+    roleGrantsPrivate || access.canViewPrivateData === true;
+
   return (
     <View>
       <View style={styles.row}>
@@ -123,6 +132,26 @@ export function PublisherAccessContent({ publisher }: { publisher: Publisher }) 
           disabled={updateMutation.isPending}
         />
       </View>
+      <View style={styles.switchRow}>
+        <Text style={styles.rowLabel}>Доступ к личным данным</Text>
+        <Switch
+          value={privateAccessGranted}
+          onValueChange={(v) =>
+            updateMutation.mutate({ canViewPrivateData: v })
+          }
+          disabled={updateMutation.isPending || roleGrantsPrivate}
+        />
+      </View>
+      {roleGrantsPrivate ? (
+        <Text style={styles.disabledNote}>
+          Старейшины и администраторы видят личные данные по роли.
+        </Text>
+      ) : (
+        <Text style={styles.hint}>
+          Контакты, адреса, заметки и личные даты возвещателей. Включите только
+          тем, кому это нужно по служению.
+        </Text>
+      )}
 
       {!access.isActive && (
         <Text style={styles.disabledNote}>Доступ отключён — войти нельзя.</Text>
