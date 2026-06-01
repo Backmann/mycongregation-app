@@ -451,6 +451,7 @@ export interface PublisherHistoryResponse {
 export interface GroupReportsResponse {
   reportMonth: string;
   scopeLabel: string;
+  closed: boolean;
   publishers: GroupReportRow[];
 }
 
@@ -473,6 +474,14 @@ export interface ServiceReportSummary {
   categories: ServiceReportSummaryCategory[];
   totalActivePublishers: number;
   totalInactivePublishers: number;
+  closed: boolean;
+}
+
+export interface ClosureStatus {
+  reportMonth: string;
+  closed: boolean;
+  closedAt: string | null;
+  canManage: boolean;
 }
 
 export interface Paginated<T> {
@@ -1234,6 +1243,25 @@ export const serviceReportsApi = {
       '/service-reports/summary',
       { params: { reportMonth } },
     );
+    return data;
+  },
+  async getClosureStatus(reportMonth: string): Promise<ClosureStatus> {
+    const { data } = await api.get<ClosureStatus>(
+      '/service-reports/closure',
+      { params: { reportMonth } },
+    );
+    return data;
+  },
+  async closeMonth(reportMonth: string): Promise<ClosureStatus> {
+    const { data } = await api.post<ClosureStatus>('/service-reports/close', {
+      reportMonth,
+    });
+    return data;
+  },
+  async reopenMonth(reportMonth: string): Promise<ClosureStatus> {
+    const { data } = await api.post<ClosureStatus>('/service-reports/reopen', {
+      reportMonth,
+    });
     return data;
   },
 };

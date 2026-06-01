@@ -8,7 +8,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
 import { Stack } from 'expo-router';
 import {
@@ -60,6 +60,22 @@ export default function ServiceSummaryScreen() {
     queryKey: ['service-reports', 'summary', reportMonth],
     queryFn: () => serviceReportsApi.getSummary(reportMonth),
     enabled: canViewServiceSummary,
+  });
+
+  const queryClient = useQueryClient();
+  const closureMutation = useMutation({
+    mutationFn: (action: 'close' | 'reopen') =>
+      action === 'close'
+        ? serviceReportsApi.closeMonth(reportMonth)
+        : serviceReportsApi.reopenMonth(reportMonth),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['service-reports', 'summary', reportMonth],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['service-reports', 'group', reportMonth],
+      });
+    },
   });
 
   if (!canViewServiceSummary) {
@@ -140,6 +156,53 @@ export default function ServiceSummaryScreen() {
           <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
         }
       >
+        <View
+          style={[
+            styles.card,
+            data?.closed ? styles.closedCard : styles.openCard,
+          ]}
+        >
+          <View style={styles.closureRow}>
+            <Ionicons
+              name={data?.closed ? 'lock-closed' : 'lock-open-outline'}
+              size={20}
+              color={data?.closed ? '#b45309' : '#0ea5e9'}
+            />
+            <Text style={styles.closureTitle}>
+              {data?.closed ? 'Месяц закрыт' : 'Месяц открыт'}
+            </Text>
+          </View>
+          <Text style={styles.closureHint}>
+            {data?.closed
+              ? 'Правки заморожены для всех, кроме секретаря и администратора.'
+              : 'Возвещатели и надзиратели групп могут вносить отчёты в своём окне.'}
+          </Text>
+          <Pressable
+            onPress={() =>
+              closureMutation.mutate(data?.closed ? 'reopen' : 'close')
+            }
+            disabled={closureMutation.isPending}
+            style={[
+              styles.closureBtn,
+              data?.closed ? styles.reopenBtn : styles.closeBtn,
+              closureMutation.isPending && styles.btnDisabled,
+            ]}
+          >
+            <Text style={styles.closureBtnText}>
+              {closureMutation.isPending
+                ? 'Сохранение…'
+                : data?.closed
+                  ? 'Открыть месяц'
+                  : 'Закрыть месяц'}
+            </Text>
+          </Pressable>
+          {closureMutation.isError && (
+            <Text style={styles.closureError}>
+              {extractErrorMessage(closureMutation.error)}
+            </Text>
+          )}
+        </View>
+
         {data?.categories.map((cat) => (
           <View key={cat.pioneerType} style={styles.card}>
             <Text style={styles.cardTitle}>
@@ -218,6 +281,27 @@ const styles = StyleSheet.create({
   monthChipText: { fontSize: 13, color: '#0f172a' },
   monthChipTextActive: { color: '#fff', fontWeight: '600' },
   scrollBody: { padding: 16, paddingBottom: 32, gap: 12 },
+  closedCard: { borderColor: '#fcd34d', backgroundColor: '#fffbeb' },
+  openCard: { borderColor: '#bae6fd', backgroundColor: '#f0f9ff' },
+  closureRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  closureTitle: { fontSize: 15, fontWeight: '700', color: '#0f172a' },
+  closureHint: {
+    fontSize: 12,
+    color: '#64748b',
+    marginTop: 6,
+    lineHeight: 17,
+  },
+  closureBtn: {
+    marginTop: 12,
+    paddingVertical: 10,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  closeBtn: { backgroundColor: '#b45309' },
+  reopenBtn: { backgroundColor: '#0ea5e9' },
+  btnDisabled: { opacity: 0.6 },
+  closureBtnText: { color: '#fff', fontSize: 14, fontWeight: '700' },
+  closureError: { color: '#dc2626', fontSize: 13, marginTop: 8 },
   card: {
     backgroundColor: '#fff',
     borderRadius: 12,
