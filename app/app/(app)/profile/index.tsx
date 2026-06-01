@@ -212,6 +212,24 @@ export default function ProfileScreen() {
                   styles.row,
                   pressed && styles.rowPressed,
                 ]}
+                onPress={() => router.push('/profile/brothers' as any)}
+              >
+                <View style={styles.rowIcon}>
+                  <Ionicons name="people-circle-outline" size={20} color="#0ea5e9" />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.rowTitle}>Братья</Text>
+                  <Text style={styles.rowSubtitle}>Доступ и обязанности</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={18} color="#cbd5e1" />
+              </Pressable>
+            )}
+            {isFullAdmin && (
+              <Pressable
+                style={({ pressed }) => [
+                  styles.row,
+                  pressed && styles.rowPressed,
+                ]}
                 onPress={() => router.push('/profile/meeting-settings' as any)}
               >
                 <View style={styles.rowIcon}>
