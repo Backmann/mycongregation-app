@@ -11,7 +11,7 @@ export default function ServiceReportsLayout() {
   return (
     <Stack
       screenOptions={{
-        headerLeft: () => <BackButton fallback="/service-reports" />,
+        headerLeft: () => <BackButton fallback="/service-reports" toParent />,
       }}
     >
       <Stack.Screen
