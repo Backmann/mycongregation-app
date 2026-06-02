@@ -460,6 +460,7 @@ export interface GroupReportRow {
   displayName: string;
   isPioneer: boolean;
   report: ServiceReport | null;
+  canManage: boolean;
 }
 
 export interface ServiceReportSummaryCategory {

@@ -238,7 +238,7 @@ export default function GroupReportsScreen() {
               )
             }
             onAddOnBehalf={
-              data?.scopeLabel === 'Congregation'
+              item.canManage
                 ? (row) =>
                     router.push({
                       pathname: '/service-reports/new',
@@ -249,6 +249,14 @@ export default function GroupReportsScreen() {
                         reportMonth,
                       },
                     } as any)
+                : undefined
+            }
+            onEdit={
+              item.canManage && item.report
+                ? () =>
+                    router.push(
+                      `/service-reports/new?id=${item.report!.id}` as any,
+                    )
                 : undefined
             }
           />
@@ -294,6 +302,7 @@ function PublisherRow({
   onOverride,
   onTapHistory,
   onAddOnBehalf,
+  onEdit,
 }: {
   row: GroupReportRow;
   statusInfo: { status: PublisherStatus; manuallyOverridden: boolean } | null;
@@ -301,6 +310,7 @@ function PublisherRow({
   onOverride?: () => void;
   onTapHistory?: () => void;
   onAddOnBehalf?: (row: GroupReportRow) => void;
+  onEdit?: () => void;
 }) {
   const { t } = useTranslation();
   const { report, displayName, isPioneer } = row;
@@ -388,6 +398,11 @@ function PublisherRow({
           hitSlop={8}
         >
           <Ionicons name="add-circle" size={28} color="#0ea5e9" />
+        </Pressable>
+      )}
+      {report && onEdit && (
+        <Pressable onPress={onEdit} style={styles.overrideBtn} hitSlop={8}>
+          <Ionicons name="create-outline" size={22} color="#0ea5e9" />
         </Pressable>
       )}
       {canOverride && onOverride && (
