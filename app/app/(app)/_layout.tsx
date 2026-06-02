@@ -4,12 +4,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../lib/auth';
 import { usePushNotifications } from '../../lib/push-notifications';
-
 export default function AppLayout() {
   const { user, isLoading } = useAuth();
   const { t } = useTranslation();
   usePushNotifications();
-
   if (isLoading) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -17,11 +15,13 @@ export default function AppLayout() {
       </View>
     );
   }
-
   if (!user) {
     return <Redirect href="/(auth)/login" />;
   }
-
+  // The publishers directory carries personal data; only admins and elders
+  // browse it. Everyone else finds people through Groups, so the tab is
+  // hidden for them (the route still redacts server-side if reached directly).
+  const canSeeDirectory = user.role === 'admin' || user.role === 'elder';
   return (
     <Tabs
       screenOptions={{
@@ -43,6 +43,7 @@ export default function AppLayout() {
         name="publishers"
         options={{
           title: t('tabs.publishers'),
+          href: canSeeDirectory ? undefined : null,
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="people" color={color} size={size} />
           ),
