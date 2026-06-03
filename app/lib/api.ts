@@ -84,6 +84,7 @@ export interface AuthUser {
   email: string;
   role: UserRole;
   congregationId: string;
+  canViewPrivateData: boolean;
 }
 
 export interface LoginResponse {

@@ -21,7 +21,10 @@ export default function AppLayout() {
   // The publishers directory carries personal data; only admins and elders
   // browse it. Everyone else finds people through Groups, so the tab is
   // hidden for them (the route still redacts server-side if reached directly).
-  const canSeeDirectory = user.role === 'admin' || user.role === 'elder';
+  const canSeeDirectory =
+    user.role === 'admin' ||
+    user.role === 'elder' ||
+    user.canViewPrivateData === true;
   return (
     <Tabs
       screenOptions={{
