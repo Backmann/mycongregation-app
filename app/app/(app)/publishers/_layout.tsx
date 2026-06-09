@@ -24,6 +24,14 @@ export default function PublishersLayout() {
               >
                 <Ionicons name="home-outline" size={24} color="#0ea5e9" />
               </Pressable>
+              <Pressable
+                onPress={() => router.push('/service-groups' as any)}
+                style={{ paddingHorizontal: 10 }}
+                hitSlop={8}
+                accessibilityLabel={t('tabs.groups')}
+              >
+                <Ionicons name="grid-outline" size={22} color="#0ea5e9" />
+              </Pressable>
               {canEditPublishers && (
                 <Pressable
                   onPress={() => router.push('/publishers/new' as any)}

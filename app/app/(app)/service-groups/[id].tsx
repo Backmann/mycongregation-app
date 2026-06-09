@@ -23,10 +23,12 @@ import {
 } from '../../../lib/api';
 import { ServiceGroupForm } from '../../../components/ServiceGroupForm';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '../../../lib/auth';
 
 export default function ServiceGroupDetailScreen() {
   const { t } = useTranslation();
   const { id } = useLocalSearchParams<{ id: string }>();
+  const { user } = useAuth();
   const queryClient = useQueryClient();
   const [editing, setEditing] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
@@ -157,7 +159,8 @@ export default function ServiceGroupDetailScreen() {
     group.overseer ?? members.find((p) => p.id === group.overseerPublisherId);
   const assistant =
     group.assistant ?? members.find((p) => p.id === group.assistantPublisherId);
-  const canManage = !group.deletedAt;
+  const isAdmin = user?.role === 'admin';
+  const canManage = isAdmin && !group.deletedAt;
   const memberIds = members.map((p) => p.id);
 
   if (editing) {
@@ -267,7 +270,7 @@ export default function ServiceGroupDetailScreen() {
       )}
 
       <View style={styles.actions}>
-        {!group.deletedAt && (
+        {canManage && (
           <Pressable
             style={[styles.button, styles.buttonEdit]}
             onPress={() => setEditing(true)}
@@ -275,7 +278,7 @@ export default function ServiceGroupDetailScreen() {
             <Text style={styles.buttonEditText}>{t('common.edit')}</Text>
           </Pressable>
         )}
-        {group.deletedAt ? (
+        {isAdmin && (group.deletedAt ? (
           <Pressable
             style={[styles.button, styles.buttonRestore]}
             onPress={() => restoreMutation.mutate()}
