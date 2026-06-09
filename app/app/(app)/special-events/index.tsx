@@ -69,6 +69,21 @@ export default function SpecialEventsListScreen() {
   );
 }
 
+function rangeLabel(start: Date, end: Date, loc: string): string {
+  const sameYear = start.getFullYear() === end.getFullYear();
+  const startStr = start.toLocaleDateString(loc, {
+    day: 'numeric',
+    month: 'long',
+    ...(sameYear ? {} : { year: 'numeric' }),
+  });
+  const endStr = end.toLocaleDateString(loc, {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+  return `${startStr} – ${endStr}`;
+}
+
 function EventRow({ event }: { event: SpecialEvent }) {
   const { t, i18n } = useTranslation();
   const loc = i18n.language;
@@ -76,8 +91,6 @@ function EventRow({ event }: { event: SpecialEvent }) {
 
   const start = new Date(`${event.date}T00:00:00`);
   const end = event.endDate ? new Date(`${event.endDate}T00:00:00`) : null;
-  const dayOf = (d: Date) => d.toLocaleDateString(loc, { day: '2-digit' });
-  const monOf = (d: Date) => d.toLocaleDateString(loc, { month: 'short' });
 
   const typeLabel = event.type
     ? t(`specialEvents.types.${event.type}`, event.type)
@@ -89,22 +102,14 @@ function EventRow({ event }: { event: SpecialEvent }) {
       style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
       onPress={() => router.push(`/special-events/${event.id}` as any)}
     >
-      {end ? (
-        <View style={[styles.dateBadge, styles.dateBadgeRange]}>
-          <Text style={styles.rangeLine}>
-            {dayOf(start)} {monOf(start)}
-          </Text>
-          <Ionicons name="arrow-down" size={12} color="#0369a1" />
-          <Text style={styles.rangeLine}>
-            {dayOf(end)} {monOf(end)}
-          </Text>
-        </View>
-      ) : (
-        <View style={styles.dateBadge}>
-          <Text style={styles.dateDay}>{dayOf(start)}</Text>
-          <Text style={styles.dateMon}>{monOf(start)}</Text>
-        </View>
-      )}
+      <View style={styles.dateBadge}>
+        <Text style={styles.dateDay}>
+          {start.toLocaleDateString(loc, { day: '2-digit' })}
+        </Text>
+        <Text style={styles.dateMon}>
+          {start.toLocaleDateString(loc, { month: 'short' })}
+        </Text>
+      </View>
 
       <View style={{ flex: 1 }}>
         {typeLabel ? <Text style={styles.typeTag}>{typeLabel}</Text> : null}
@@ -114,6 +119,9 @@ function EventRow({ event }: { event: SpecialEvent }) {
         >
           {event.title}
         </Text>
+        {end ? (
+          <Text style={styles.dateRange}>{rangeLabel(start, end, loc)}</Text>
+        ) : null}
         {meta ? (
           <Text style={styles.meta} numberOfLines={1}>
             {meta}
@@ -157,16 +165,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: '#e0f2fe',
     borderRadius: 8,
-    paddingVertical: 6,
+    paddingVertical: 8,
   },
-  dateBadgeRange: { paddingVertical: 8 },
-  dateDay: { fontSize: 18, fontWeight: '700', color: '#0369a1' },
-  dateMon: { fontSize: 11, color: '#0369a1', textTransform: 'uppercase' },
-  rangeLine: {
-    fontSize: 12,
-    fontWeight: '700',
+  dateDay: { fontSize: 20, fontWeight: '700', color: '#0369a1' },
+  dateMon: {
+    fontSize: 11,
     color: '#0369a1',
     textTransform: 'uppercase',
+    marginTop: 1,
   },
   typeTag: {
     fontSize: 11,
@@ -178,6 +184,7 @@ const styles = StyleSheet.create({
   },
   title: { fontSize: 16, fontWeight: '600', color: '#0f172a' },
   removedText: { textDecorationLine: 'line-through', color: '#94a3b8' },
+  dateRange: { fontSize: 13, color: '#0369a1', fontWeight: '500', marginTop: 2 },
   meta: { fontSize: 13, color: '#64748b', marginTop: 2 },
   hint: { fontSize: 12, color: '#b45309', marginTop: 2 },
 });
