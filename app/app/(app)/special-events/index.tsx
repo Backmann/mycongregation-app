@@ -69,6 +69,9 @@ export default function SpecialEventsListScreen() {
   );
 }
 
+const pad = (n: number) => String(n).padStart(2, '0');
+const ddmm = (d: Date) => `${pad(d.getDate())}.${pad(d.getMonth() + 1)}`;
+
 function rangeLabel(start: Date, end: Date, loc: string): string {
   const sameYear = start.getFullYear() === end.getFullYear();
   const startStr = start.toLocaleDateString(loc, {
@@ -102,14 +105,22 @@ function EventRow({ event }: { event: SpecialEvent }) {
       style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
       onPress={() => router.push(`/special-events/${event.id}` as any)}
     >
-      <View style={styles.dateBadge}>
-        <Text style={styles.dateDay}>
-          {start.toLocaleDateString(loc, { day: '2-digit' })}
-        </Text>
-        <Text style={styles.dateMon}>
-          {start.toLocaleDateString(loc, { month: 'short' })}
-        </Text>
-      </View>
+      {end ? (
+        <View style={[styles.dateBadge, styles.dateBadgeRange]}>
+          <Text style={styles.rangeNum}>{ddmm(start)}</Text>
+          <Ionicons name="arrow-down" size={11} color="#0369a1" />
+          <Text style={styles.rangeNum}>{ddmm(end)}</Text>
+        </View>
+      ) : (
+        <View style={styles.dateBadge}>
+          <Text style={styles.dateDay}>
+            {start.toLocaleDateString(loc, { day: '2-digit' })}
+          </Text>
+          <Text style={styles.dateMon}>
+            {start.toLocaleDateString(loc, { month: 'short' })}
+          </Text>
+        </View>
+      )}
 
       <View style={{ flex: 1 }}>
         {typeLabel ? <Text style={styles.typeTag}>{typeLabel}</Text> : null}
@@ -160,13 +171,14 @@ const styles = StyleSheet.create({
   },
   rowPressed: { backgroundColor: '#f8fafc' },
   dateBadge: {
-    width: 52,
+    width: 56,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#e0f2fe',
     borderRadius: 8,
     paddingVertical: 8,
   },
+  dateBadgeRange: { paddingVertical: 10 },
   dateDay: { fontSize: 20, fontWeight: '700', color: '#0369a1' },
   dateMon: {
     fontSize: 11,
@@ -174,6 +186,7 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     marginTop: 1,
   },
+  rangeNum: { fontSize: 14, fontWeight: '700', color: '#0369a1' },
   typeTag: {
     fontSize: 11,
     fontWeight: '700',
