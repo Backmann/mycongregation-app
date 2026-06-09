@@ -298,7 +298,7 @@ export default function ServiceGroupDetailScreen() {
               {removeMutation.isPending ? t('common.removing') : t('common.remove')}
             </Text>
           </Pressable>
-        )}
+        ))}
       </View>
 
       <AddMembersModal
