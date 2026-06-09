@@ -12,7 +12,6 @@ import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import dayjs from 'dayjs';
 import {
   extractErrorMessage,
   SpecialEvent,
@@ -72,47 +71,61 @@ export default function SpecialEventsListScreen() {
 
 function EventRow({ event }: { event: SpecialEvent }) {
   const { t, i18n } = useTranslation();
+  const loc = i18n.language;
   const isRemoved = !!event.deletedAt;
-  const start = dayjs(`${event.date}T00:00:00`);
-  const day = start.toDate().toLocaleDateString(i18n.language, {
-    day: '2-digit',
-  });
-  const mon = start.toDate().toLocaleDateString(i18n.language, {
-    month: 'short',
-  });
 
-  const rangeText = event.endDate
-    ? `${start.format('DD.MM')} – ${dayjs(event.endDate).format('DD.MM.YYYY')}`
+  const start = new Date(`${event.date}T00:00:00`);
+  const end = event.endDate ? new Date(`${event.endDate}T00:00:00`) : null;
+  const dayOf = (d: Date) => d.toLocaleDateString(loc, { day: '2-digit' });
+  const monOf = (d: Date) => d.toLocaleDateString(loc, { month: 'short' });
+
+  const typeLabel = event.type
+    ? t(`specialEvents.types.${event.type}`, event.type)
     : null;
-  const meta =
-    [rangeText, event.time, event.address].filter(Boolean).join(' · ') ||
-    t('specialEvents.upcoming');
+  const meta = [event.time, event.address].filter(Boolean).join(' · ');
 
   return (
     <Pressable
-      style={styles.row}
+      style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
       onPress={() => router.push(`/special-events/${event.id}` as any)}
     >
-      <View style={styles.dateBadge}>
-        <Text style={styles.dateDay}>{day}</Text>
-        <Text style={styles.dateMon}>{mon}</Text>
-      </View>
+      {end ? (
+        <View style={[styles.dateBadge, styles.dateBadgeRange]}>
+          <Text style={styles.rangeLine}>
+            {dayOf(start)} {monOf(start)}
+          </Text>
+          <Ionicons name="arrow-down" size={12} color="#0369a1" />
+          <Text style={styles.rangeLine}>
+            {dayOf(end)} {monOf(end)}
+          </Text>
+        </View>
+      ) : (
+        <View style={styles.dateBadge}>
+          <Text style={styles.dateDay}>{dayOf(start)}</Text>
+          <Text style={styles.dateMon}>{monOf(start)}</Text>
+        </View>
+      )}
+
       <View style={{ flex: 1 }}>
+        {typeLabel ? <Text style={styles.typeTag}>{typeLabel}</Text> : null}
         <Text
           style={[styles.title, isRemoved && styles.removedText]}
-          numberOfLines={1}
+          numberOfLines={2}
         >
           {event.title}
         </Text>
-        <Text style={styles.meta} numberOfLines={1}>
-          {meta}
-        </Text>
+        {meta ? (
+          <Text style={styles.meta} numberOfLines={1}>
+            {meta}
+          </Text>
+        ) : null}
         {event.replacesMeeting ? (
           <Text style={styles.hint}>
             {t('specialEvents.replacesMeetingHint')}
           </Text>
         ) : null}
       </View>
+
       <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
     </Pressable>
   );
@@ -137,16 +150,32 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     gap: 12,
   },
+  rowPressed: { backgroundColor: '#f8fafc' },
   dateBadge: {
-    width: 48,
+    width: 52,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#e0f2fe',
     borderRadius: 8,
     paddingVertical: 6,
   },
+  dateBadgeRange: { paddingVertical: 8 },
   dateDay: { fontSize: 18, fontWeight: '700', color: '#0369a1' },
   dateMon: { fontSize: 11, color: '#0369a1', textTransform: 'uppercase' },
+  rangeLine: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#0369a1',
+    textTransform: 'uppercase',
+  },
+  typeTag: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#0369a1',
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+    marginBottom: 2,
+  },
   title: { fontSize: 16, fontWeight: '600', color: '#0f172a' },
   removedText: { textDecorationLine: 'line-through', color: '#94a3b8' },
   meta: { fontSize: 13, color: '#64748b', marginTop: 2 },
