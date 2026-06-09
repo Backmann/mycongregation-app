@@ -10,7 +10,7 @@ export default function NewAbsenceScreen() {
     mutationFn: (input: CreateAbsenceInput) => absencesApi.create(input),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['absences'] });
-      router.replace('/absences');
+      router.replace('/absences' as any);
     },
   });
 

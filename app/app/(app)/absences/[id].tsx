@@ -48,7 +48,7 @@ export default function AbsenceDetailScreen() {
     mutationFn: () => absencesApi.remove(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['absences'] });
-      router.replace('/absences');
+      router.replace('/absences' as any);
     },
   });
 
