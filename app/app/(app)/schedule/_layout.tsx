@@ -15,6 +15,14 @@ export default function ScheduleLayout() {
           headerRight: () => (
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <Pressable
+                onPress={() => router.push('/special-events' as any)}
+                style={{ paddingHorizontal: 10 }}
+                hitSlop={8}
+                accessibilityLabel={t('schedule.a11y.events')}
+              >
+                <Ionicons name="megaphone-outline" size={24} color="#0ea5e9" />
+              </Pressable>
+              <Pressable
                 onPress={() => router.push('/schedule/import' as any)}
                 style={{ paddingHorizontal: 10 }}
                 hitSlop={8}

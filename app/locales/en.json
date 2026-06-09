@@ -589,7 +589,8 @@
     },
     "a11y": {
       "importEpub": "Import EPUB",
-      "newAssignment": "New assignment"
+      "newAssignment": "New assignment",
+      "events": "Events"
     },
     "noAssignments": "No assignments for this week.",
     "unassigned": "Unassigned",
@@ -937,5 +938,47 @@
     "removeTitle": "Delete shift?",
     "removeBody": "The shift and all its participants will be deleted.",
     "removeWeb": "Delete this shift and all its participants?"
+  },
+  "specialEvents": {
+    "title": {
+      "list": "Events",
+      "detail": "Event",
+      "new": "New event"
+    },
+    "empty": "No upcoming events yet",
+    "showPast": "Show past",
+    "upcoming": "Upcoming",
+    "replacesMeetingHint": "No regular meeting on this day",
+    "fields": {
+      "title": "Title",
+      "type": "Type",
+      "date": "Date",
+      "time": "Time",
+      "address": "Address",
+      "mapUrl": "Map link",
+      "programUrl": "Program link",
+      "note": "Note",
+      "replacesMeeting": "No regular meeting on this day"
+    },
+    "placeholders": {
+      "title": "Regional convention",
+      "type": "regional_convention",
+      "date": "YYYY-MM-DD",
+      "time": "09:20",
+      "address": "City, address",
+      "mapUrl": "https://…",
+      "programUrl": "https://…",
+      "note": "Additional details"
+    },
+    "actions": {
+      "create": "Add event",
+      "save": "Save",
+      "edit": "Edit",
+      "delete": "Delete",
+      "restore": "Restore",
+      "cancel": "Cancel",
+      "openMap": "Open map",
+      "openProgram": "Open program"
+    }
   }
 }

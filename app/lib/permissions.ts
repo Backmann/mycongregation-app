@@ -51,6 +51,9 @@ export interface Permissions {
    * SECRETARY responsibility — elders are view-only on reports and are NOT
    * summary recipients, mirroring the server-side getSummary gate.
    */
+  /** Special events — admin OR body coordinator (совет старейшин). */
+  canManageEvents: boolean;
+
   canViewServiceSummary: boolean;
 
   /** The set of responsibility types held by the current user. */
@@ -114,6 +117,7 @@ export function usePermissions(): Permissions {
         isAdmin || holds('duties_coordinator') || holds('body_coordinator'),
 
       // Secretary + admin only.
+      canManageEvents: isAdmin || holds('body_coordinator'),
       canViewServiceSummary: isAdmin || holds('secretary'),
 
       responsibilities: mine,

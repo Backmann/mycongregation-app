@@ -1079,6 +1079,92 @@ export const serviceGroupsApi = {
   },
 };
 
+// ---------- Special events ----------
+
+export interface SpecialEvent {
+  id: string;
+  congregationId: string;
+  title: string;
+  type: string | null;
+  date: string;
+  time: string | null;
+  address: string | null;
+  mapUrl: string | null;
+  programUrl: string | null;
+  note: string | null;
+  replacesMeeting: boolean;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+}
+
+export interface CreateSpecialEventInput {
+  title: string;
+  type?: string;
+  date: string;
+  time?: string;
+  address?: string;
+  mapUrl?: string;
+  programUrl?: string;
+  note?: string;
+  replacesMeeting?: boolean;
+}
+
+export type UpdateSpecialEventInput = Partial<CreateSpecialEventInput>;
+
+function cleanEventPayload(
+  input: CreateSpecialEventInput | UpdateSpecialEventInput,
+): Record<string, unknown> {
+  return Object.fromEntries(
+    Object.entries(input).filter(([, v]) => v !== '' && v !== undefined),
+  );
+}
+
+export const specialEventsApi = {
+  async list(params?: {
+    all?: boolean;
+    includeRemoved?: boolean;
+  }): Promise<SpecialEvent[]> {
+    const { data } = await api.get<SpecialEvent[]>('/special-events', {
+      params: {
+        all: params?.all ? 'true' : undefined,
+        includeRemoved: params?.includeRemoved ? 'true' : undefined,
+      },
+    });
+    return data;
+  },
+  async getById(id: string): Promise<SpecialEvent> {
+    const { data } = await api.get<SpecialEvent>(`/special-events/${id}`);
+    return data;
+  },
+  async create(input: CreateSpecialEventInput): Promise<SpecialEvent> {
+    const { data } = await api.post<SpecialEvent>(
+      '/special-events',
+      cleanEventPayload(input),
+    );
+    return data;
+  },
+  async update(
+    id: string,
+    input: UpdateSpecialEventInput,
+  ): Promise<SpecialEvent> {
+    const { data } = await api.patch<SpecialEvent>(
+      `/special-events/${id}`,
+      cleanEventPayload(input),
+    );
+    return data;
+  },
+  async remove(id: string): Promise<void> {
+    await api.delete(`/special-events/${id}`);
+  },
+  async restore(id: string): Promise<SpecialEvent> {
+    const { data } = await api.post<SpecialEvent>(
+      `/special-events/${id}/restore`,
+    );
+    return data;
+  },
+};
+
 export const assignmentsApi = {
   async list(params?: {
     weekStart?: string;

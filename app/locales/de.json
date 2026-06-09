@@ -589,7 +589,8 @@
     },
     "a11y": {
       "importEpub": "EPUB importieren",
-      "newAssignment": "Neue Zuteilung"
+      "newAssignment": "Neue Zuteilung",
+      "events": "Termine"
     },
     "noAssignments": "Keine Zuteilungen für diese Woche.",
     "unassigned": "Nicht zugeteilt",
@@ -937,5 +938,47 @@
     "removeTitle": "Schicht löschen?",
     "removeBody": "Die Schicht und alle Teilnehmer werden gelöscht.",
     "removeWeb": "Diese Schicht und alle Teilnehmer löschen?"
+  },
+  "specialEvents": {
+    "title": {
+      "list": "Termine",
+      "detail": "Termin",
+      "new": "Neuer Termin"
+    },
+    "empty": "Noch keine bevorstehenden Termine",
+    "showPast": "Vergangene anzeigen",
+    "upcoming": "Bevorstehend",
+    "replacesMeetingHint": "An diesem Tag keine reguläre Zusammenkunft",
+    "fields": {
+      "title": "Titel",
+      "type": "Typ",
+      "date": "Datum",
+      "time": "Uhrzeit",
+      "address": "Adresse",
+      "mapUrl": "Karten-Link",
+      "programUrl": "Programm-Link",
+      "note": "Notiz",
+      "replacesMeeting": "An diesem Tag keine reguläre Zusammenkunft"
+    },
+    "placeholders": {
+      "title": "Regionaler Kongress",
+      "type": "regional_convention",
+      "date": "JJJJ-MM-TT",
+      "time": "09:20",
+      "address": "Stadt, Adresse",
+      "mapUrl": "https://…",
+      "programUrl": "https://…",
+      "note": "Weitere Angaben"
+    },
+    "actions": {
+      "create": "Termin hinzufügen",
+      "save": "Speichern",
+      "edit": "Bearbeiten",
+      "delete": "Löschen",
+      "restore": "Wiederherstellen",
+      "cancel": "Abbrechen",
+      "openMap": "Karte öffnen",
+      "openProgram": "Programm öffnen"
+    }
   }
 }

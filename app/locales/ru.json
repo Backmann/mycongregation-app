@@ -593,7 +593,8 @@
     },
     "a11y": {
       "importEpub": "Импортировать EPUB",
-      "newAssignment": "Новое назначение"
+      "newAssignment": "Новое назначение",
+      "events": "События"
     },
     "noAssignments": "На эту неделю назначений нет.",
     "unassigned": "Не назначен",
@@ -941,5 +942,47 @@
     "removeTitle": "Удалить смену?",
     "removeBody": "Смена и все её участники будут удалены.",
     "removeWeb": "Удалить смену со всеми участниками?"
+  },
+  "specialEvents": {
+    "title": {
+      "list": "События",
+      "detail": "Событие",
+      "new": "Новое событие"
+    },
+    "empty": "Пока нет предстоящих событий",
+    "showPast": "Показать прошедшие",
+    "upcoming": "Предстоит",
+    "replacesMeetingHint": "Обычной встречи в этот день нет",
+    "fields": {
+      "title": "Название",
+      "type": "Тип",
+      "date": "Дата",
+      "time": "Время",
+      "address": "Адрес",
+      "mapUrl": "Ссылка на карту",
+      "programUrl": "Ссылка на программу",
+      "note": "Заметка",
+      "replacesMeeting": "В этот день обычной встречи нет"
+    },
+    "placeholders": {
+      "title": "Областной конгресс",
+      "type": "regional_convention",
+      "date": "ГГГГ-ММ-ДД",
+      "time": "09:20",
+      "address": "Город, адрес",
+      "mapUrl": "https://…",
+      "programUrl": "https://…",
+      "note": "Доп. сведения"
+    },
+    "actions": {
+      "create": "Добавить событие",
+      "save": "Сохранить",
+      "edit": "Редактировать",
+      "delete": "Удалить",
+      "restore": "Восстановить",
+      "cancel": "Отмена",
+      "openMap": "Открыть карту",
+      "openProgram": "Открыть программу"
+    }
   }
 }

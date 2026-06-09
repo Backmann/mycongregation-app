@@ -88,6 +88,7 @@ export default function AppLayout() {
           ),
         }}
       />
+      <Tabs.Screen name="special-events" options={{ href: null }} />
     </Tabs>
   );
 }
