@@ -56,6 +56,7 @@ export default function AppLayout() {
         name="service-groups"
         options={{
           title: t('tabs.groups'),
+          href: null, // moved to the Publishers header
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="grid" color={color} size={size} />
           ),

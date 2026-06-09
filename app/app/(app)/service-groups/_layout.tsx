@@ -14,6 +14,7 @@ export default function ServiceGroupsLayout() {
         name="index"
         options={{
           title: t('serviceGroups.title.list'),
+          headerLeft: () => <BackButton fallback="/publishers" toParent />,
           headerRight: isAdmin ? () => (
             <Pressable
               onPress={() => router.push('/service-groups/new' as any)}

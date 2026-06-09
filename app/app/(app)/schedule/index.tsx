@@ -28,7 +28,6 @@ import {
   publisherActivityApi,
   PublisherActivity,
   specialEventsApi,
-  SpecialEvent,
 } from '../../../lib/api';
 import {
   addWeeks,
