@@ -12,6 +12,7 @@ import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
+import dayjs from 'dayjs';
 import {
   extractErrorMessage,
   SpecialEvent,
@@ -72,11 +73,19 @@ export default function SpecialEventsListScreen() {
 function EventRow({ event }: { event: SpecialEvent }) {
   const { t, i18n } = useTranslation();
   const isRemoved = !!event.deletedAt;
-  const dt = new Date(`${event.date}T00:00:00`);
-  const day = dt.toLocaleDateString(i18n.language, { day: '2-digit' });
-  const mon = dt.toLocaleDateString(i18n.language, { month: 'short' });
+  const start = dayjs(`${event.date}T00:00:00`);
+  const day = start.toDate().toLocaleDateString(i18n.language, {
+    day: '2-digit',
+  });
+  const mon = start.toDate().toLocaleDateString(i18n.language, {
+    month: 'short',
+  });
+
+  const rangeText = event.endDate
+    ? `${start.format('DD.MM')} – ${dayjs(event.endDate).format('DD.MM.YYYY')}`
+    : null;
   const meta =
-    [event.time, event.address].filter(Boolean).join(' · ') ||
+    [rangeText, event.time, event.address].filter(Boolean).join(' · ') ||
     t('specialEvents.upcoming');
 
   return (

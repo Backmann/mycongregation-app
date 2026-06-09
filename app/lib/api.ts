@@ -1087,6 +1087,7 @@ export interface SpecialEvent {
   title: string;
   type: string | null;
   date: string;
+  endDate: string | null;
   time: string | null;
   address: string | null;
   mapUrl: string | null;
@@ -1102,6 +1103,7 @@ export interface CreateSpecialEventInput {
   title: string;
   type?: string;
   date: string;
+  endDate?: string;
   time?: string;
   address?: string;
   mapUrl?: string;

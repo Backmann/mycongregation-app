@@ -11,6 +11,7 @@ import {
 import { useLocalSearchParams, router } from 'expo-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
+import dayjs from 'dayjs';
 import {
   extractErrorMessage,
   SpecialEvent,
@@ -27,6 +28,7 @@ function toForm(e: SpecialEvent): EventFormValue {
     title: e.title ?? '',
     type: e.type ?? '',
     date: e.date ?? '',
+    endDate: e.endDate ?? '',
     time: e.time ?? '',
     address: e.address ?? '',
     mapUrl: e.mapUrl ?? '',
@@ -60,6 +62,7 @@ export default function SpecialEventDetailScreen() {
         title: form!.title.trim(),
         type: form!.type.trim() || undefined,
         date: form!.date.trim(),
+        endDate: form!.endDate.trim() || undefined,
         time: form!.time.trim() || undefined,
         address: form!.address.trim() || undefined,
         mapUrl: form!.mapUrl.trim() || undefined,
@@ -136,19 +139,36 @@ export default function SpecialEventDetailScreen() {
     );
   }
 
-  const dateLabel = new Date(`${event.date}T00:00:00`).toLocaleDateString(
-    i18n.language,
-    { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' },
-  );
+  const startLabel = dayjs(`${event.date}T00:00:00`)
+    .toDate()
+    .toLocaleDateString(i18n.language, {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
+  const endLabel = event.endDate
+    ? dayjs(`${event.endDate}T00:00:00`)
+        .toDate()
+        .toLocaleDateString(i18n.language, {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+        })
+    : null;
+  const typeLabel = event.type
+    ? t(`specialEvents.types.${event.type}`, event.type)
+    : null;
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.h1}>{event.title}</Text>
       <Text style={styles.date}>
-        {dateLabel}
+        {startLabel}
+        {endLabel ? ` – ${endLabel}` : ''}
         {event.time ? ` · ${event.time}` : ''}
       </Text>
-      {event.type ? <Text style={styles.badge}>{event.type}</Text> : null}
+      {typeLabel ? <Text style={styles.badge}>{typeLabel}</Text> : null}
       {isRemoved ? (
         <Text style={styles.removedBadge}>{t('common.showRemoved')}</Text>
       ) : null}

@@ -979,6 +979,23 @@
       "cancel": "Abbrechen",
       "openMap": "Karte öffnen",
       "openProgram": "Programm öffnen"
+    },
+    "form": {
+      "multiDay": "Mehrtägig",
+      "pickDate": "Datum wählen",
+      "pickType": "Typ wählen",
+      "time": "Uhrzeit",
+      "noTime": "ohne Uhrzeit",
+      "customTime": "eigene…",
+      "close": "Fertig"
+    },
+    "types": {
+      "regional_convention": "Regionaler Kongress",
+      "circuit_assembly": "Kreiskongress",
+      "memorial": "Gedächtnismahl",
+      "circuit_overseer_visit": "Besuch des Kreisaufsehers",
+      "branch_representative_visit": "Besuch des Zweigvertreters",
+      "other": "Sonstige"
     }
   }
 }

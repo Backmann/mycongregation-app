@@ -27,6 +27,7 @@ export default function NewSpecialEventScreen() {
         title: form.title.trim(),
         type: form.type.trim() || undefined,
         date: form.date.trim(),
+        endDate: form.endDate.trim() || undefined,
         time: form.time.trim() || undefined,
         address: form.address.trim() || undefined,
         mapUrl: form.mapUrl.trim() || undefined,

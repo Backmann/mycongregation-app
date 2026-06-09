@@ -979,6 +979,23 @@
       "cancel": "Cancel",
       "openMap": "Open map",
       "openProgram": "Open program"
+    },
+    "form": {
+      "multiDay": "Multi-day",
+      "pickDate": "Pick a date",
+      "pickType": "Pick a type",
+      "time": "Time",
+      "noTime": "no time",
+      "customTime": "custom…",
+      "close": "Done"
+    },
+    "types": {
+      "regional_convention": "Regional convention",
+      "circuit_assembly": "Circuit assembly",
+      "memorial": "Memorial",
+      "circuit_overseer_visit": "Circuit overseer visit",
+      "branch_representative_visit": "Branch representative visit",
+      "other": "Other"
     }
   }
 }

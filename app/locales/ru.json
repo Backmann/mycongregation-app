@@ -983,6 +983,23 @@
       "cancel": "Отмена",
       "openMap": "Открыть карту",
       "openProgram": "Открыть программу"
+    },
+    "form": {
+      "multiDay": "Несколько дней",
+      "pickDate": "Выбрать дату",
+      "pickType": "Выбрать тип",
+      "time": "Время",
+      "noTime": "без времени",
+      "customTime": "своё…",
+      "close": "Готово"
+    },
+    "types": {
+      "regional_convention": "Областной конгресс",
+      "circuit_assembly": "Районный конгресс",
+      "memorial": "Вечеря",
+      "circuit_overseer_visit": "Визит районного надзирателя",
+      "branch_representative_visit": "Визит представителя филиала",
+      "other": "Другое"
     }
   }
 }
