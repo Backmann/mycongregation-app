@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Modal,
@@ -14,7 +14,13 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
-import { Publisher, PublisherActivity, publishersApi } from '../lib/api';
+import {
+  Absence,
+  absencesApi,
+  Publisher,
+  PublisherActivity,
+  publishersApi,
+} from '../lib/api';
 import { ActivitySummary, summarizeActivity } from '../lib/activity';
 import { useTranslation } from 'react-i18next';
 
@@ -36,6 +42,39 @@ interface Props {
   currentEventType?: string;
 }
 
+const ISO_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+/** Monday ISO + 6 days, as YYYY-MM-DD (string-comparable). */
+function weekEndISO(weekStartISO: string): string {
+  const d = new Date(`${weekStartISO}T00:00:00`);
+  d.setDate(d.getDate() + 6);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+/** Compact human range for an absence, e.g. "1–5 июля" or "30 июля – 2 августа". */
+function absenceRangeLabel(a: Absence, loc: string): string {
+  const start = new Date(`${a.startDate}T00:00:00`);
+  if (!a.endDate) {
+    return start.toLocaleDateString(loc, { day: 'numeric', month: 'long' });
+  }
+  const end = new Date(`${a.endDate}T00:00:00`);
+  const sameMonth =
+    start.getMonth() === end.getMonth() &&
+    start.getFullYear() === end.getFullYear();
+  if (sameMonth) {
+    return `${start.getDate()}\u2013${end.toLocaleDateString(loc, {
+      day: 'numeric',
+      month: 'long',
+    })}`;
+  }
+  const s = start.toLocaleDateString(loc, { day: 'numeric', month: 'long' });
+  const e = end.toLocaleDateString(loc, { day: 'numeric', month: 'long' });
+  return `${s} \u2013 ${e}`;
+}
+
 export function PublisherSelector({
   label,
   value,
@@ -46,7 +85,7 @@ export function PublisherSelector({
   currentWeekStart,
   currentEventType,
 }: Props) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [showAll, setShowAll] = useState(false);
@@ -58,6 +97,30 @@ export function PublisherSelector({
 
   const allPublishers = data?.data ?? [];
   const selectedPublisher = allPublishers.find((p) => p.id === value);
+
+  // --- Absence awareness (advisory) -------------------------------------
+  const weekValid = !!currentWeekStart && ISO_RE.test(currentWeekStart);
+  const { data: weekAbsData } = useQuery({
+    queryKey: ['absences', 'week-warn'],
+    queryFn: () => absencesApi.list(),
+    enabled: weekValid,
+    staleTime: 5 * 60 * 1000,
+  });
+  const absentThisWeek = useMemo(() => {
+    const m = new Map<string, Absence>();
+    if (!weekValid || !currentWeekStart || !weekAbsData) return m;
+    const ws = currentWeekStart;
+    const we = weekEndISO(ws);
+    for (const a of weekAbsData) {
+      const end = a.endDate ?? a.startDate;
+      if (a.startDate <= we && end >= ws && !m.has(a.publisherId)) {
+        m.set(a.publisherId, a);
+      }
+    }
+    return m;
+  }, [weekAbsData, currentWeekStart, weekValid]);
+  const selectedAbsence = value ? absentThisWeek.get(value) : undefined;
+  // ----------------------------------------------------------------------
 
   const filterByCapability = !!requiredCapability && !showAll;
   const capabilityLabel = requiredCapability
@@ -115,6 +178,16 @@ export function PublisherSelector({
               </Text>
             </View>
           )}
+        {selectedAbsence && (
+          <View style={styles.absenceRow}>
+            <Ionicons name="airplane" size={12} color="#b45309" />
+            <Text style={styles.absenceText}>
+              {t('absences.warnAway', {
+                range: absenceRangeLabel(selectedAbsence, i18n.language),
+              })}
+            </Text>
+          </View>
+        )}
       </Pressable>
 
       <Modal
@@ -226,6 +299,7 @@ export function PublisherSelector({
                     currentWeekStart,
                     currentEventType,
                   )}
+                  absence={absentThisWeek.get(p.id)}
                 />
               ))}
             </ScrollView>
@@ -242,6 +316,7 @@ function PublisherOption({
   hasCapability,
   showCapabilityWarning,
   activity,
+  absence,
   onPress,
 }: {
   publisher: Publisher;
@@ -249,9 +324,10 @@ function PublisherOption({
   hasCapability: boolean;
   showCapabilityWarning: boolean;
   activity?: ActivitySummary;
+  absence?: Absence;
   onPress: () => void;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [expanded, setExpanded] = useState(false);
   const busyThisMeeting = !!activity && activity.thisMeeting.length > 0;
   const recentItems = activity?.recentItems ?? [];
@@ -282,6 +358,14 @@ function PublisherOption({
             </View>
           )}
         </View>
+        {absence && (
+          <Text style={styles.optionAbsentText} numberOfLines={1}>
+            {'\u2708 '}
+            {t('absences.warnAway', {
+              range: absenceRangeLabel(absence, i18n.language),
+            })}
+          </Text>
+        )}
         {busyThisMeeting && (
           <Text style={styles.optionBusyText} numberOfLines={1}>
             {t('publisherActivity.thisMeeting')}{' '}
@@ -348,10 +432,24 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   warningText: { fontSize: 11, color: '#dc2626' },
+  absenceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 4,
+  },
+  absenceText: { fontSize: 11, color: '#b45309', flex: 1 },
   optionBusy: { backgroundColor: '#f0f9ff' },
   optionBusyText: {
     fontSize: 12,
     color: '#0369a1',
+    fontWeight: '600',
+    marginLeft: 16,
+    marginTop: 2,
+  },
+  optionAbsentText: {
+    fontSize: 12,
+    color: '#b45309',
     fontWeight: '600',
     marginLeft: 16,
     marginTop: 2,

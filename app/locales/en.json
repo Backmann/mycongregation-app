@@ -1034,6 +1034,7 @@
       "delete": "Delete",
       "restore": "Restore",
       "cancel": "Cancel"
-    }
+    },
+    "warnAway": "Away: {{range}}"
   }
 }

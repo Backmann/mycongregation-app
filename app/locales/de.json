@@ -1034,6 +1034,7 @@
       "delete": "Löschen",
       "restore": "Wiederherstellen",
       "cancel": "Abbrechen"
-    }
+    },
+    "warnAway": "Abwesend: {{range}}"
   }
 }
