@@ -176,6 +176,7 @@ export interface Publisher {
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;
+  lastEditedByName?: string | null;
 }
 
 export interface CreatePublisherInput {

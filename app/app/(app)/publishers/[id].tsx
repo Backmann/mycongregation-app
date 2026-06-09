@@ -28,6 +28,7 @@ import {
   countActiveCapabilities,
 } from '../../../lib/capabilities';
 import { useAuth } from '../../../lib/auth';
+import { usePermissions } from '../../../lib/permissions';
 
 function removalLabel(reason: RemovalReason): string {
   return i18n.t(`publishers.removal.${reason}`);
@@ -98,6 +99,7 @@ export default function PublisherDetailScreen() {
   };
 
   const isAdmin = user?.role === 'admin';
+  const { canEditPublishers } = usePermissions();
   const purgeMutation = useMutation({
     mutationFn: () => publishersApi.purge(id!),
     onSuccess: () => {
@@ -299,8 +301,28 @@ export default function PublisherDetailScreen() {
       )}
 
 
+      {publisher.lastEditedByName ? (
+        <Text
+          style={{
+            color: '#94a3b8',
+            fontSize: 12,
+            textAlign: 'center',
+            marginBottom: 10,
+            paddingHorizontal: 16,
+          }}
+        >
+          Изменил: {publisher.lastEditedByName} ·{' '}
+          {new Date(publisher.updatedAt).toLocaleString('ru-RU', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+          })}
+        </Text>
+      ) : null}
       <View style={styles.actions}>
-        {!publisher.deletedAt && (
+        {!publisher.deletedAt && canEditPublishers && (
           <Pressable
             style={[styles.button, styles.buttonEdit]}
             onPress={() => setEditing(true)}
@@ -308,7 +330,7 @@ export default function PublisherDetailScreen() {
             <Text style={styles.buttonEditText}>{t('publishers.actions.edit')}</Text>
           </Pressable>
         )}
-        {!publisher.deletedAt && (
+        {!publisher.deletedAt && canEditPublishers && (
           <>
             <Pressable
               style={[styles.button, styles.buttonRemove]}

@@ -101,7 +101,7 @@ export function usePermissions(): Permissions {
       canManagePublicTalks: isAdmin || isElder,
       canImportMidweekSchedule: isAdmin || isElder,
       canImportWeekendSchedule: isAdmin || isElder,
-      canEditPublishers: isAdmin || isElder,
+      canEditPublishers: isAdmin || holds('secretary'),
       canSubmitReportForOthers: isAdmin || isElder,
 
       // Responsibility-aware (Phase 2): admin OR specific responsibility.
