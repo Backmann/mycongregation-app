@@ -999,7 +999,8 @@
       "memorial": "Вечеря",
       "circuit_overseer_visit": "Посещение районного старейшины",
       "branch_representative_visit": "Посещение представителя филиала",
-      "other": "Другое"
+      "other": "Другое",
+      "special_talk": "Специальная речь"
     },
     "weekTitle": "События этой недели"
   },

@@ -995,7 +995,8 @@
       "memorial": "Gedächtnismahl",
       "circuit_overseer_visit": "Besuch des Kreisaufsehers",
       "branch_representative_visit": "Besuch des Zweigvertreters",
-      "other": "Sonstige"
+      "other": "Sonstige",
+      "special_talk": "Sondervortrag"
     },
     "weekTitle": "Termine diese Woche"
   },

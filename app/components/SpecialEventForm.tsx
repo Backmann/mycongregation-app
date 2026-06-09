@@ -23,6 +23,7 @@ export const EVENT_TYPES = [
   'memorial',
   'circuit_overseer_visit',
   'branch_representative_visit',
+  'special_talk',
   'other',
 ] as const;
 

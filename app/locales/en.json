@@ -995,7 +995,8 @@
       "memorial": "Memorial",
       "circuit_overseer_visit": "Circuit overseer visit",
       "branch_representative_visit": "Branch representative visit",
-      "other": "Other"
+      "other": "Other",
+      "special_talk": "Special talk"
     },
     "weekTitle": "This week's events"
   },
