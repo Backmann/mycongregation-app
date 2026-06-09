@@ -54,6 +54,9 @@ export interface Permissions {
   /** Special events — admin OR body coordinator (совет старейшин). */
   canManageEvents: boolean;
 
+  /** Absences — admin OR body coordinator / midweek overseer / secretary. */
+  canManageAbsences: boolean;
+
   canViewServiceSummary: boolean;
 
   /** The set of responsibility types held by the current user. */
@@ -118,6 +121,11 @@ export function usePermissions(): Permissions {
 
       // Secretary + admin only.
       canManageEvents: isAdmin || holds('body_coordinator'),
+      canManageAbsences:
+        isAdmin ||
+        holds('body_coordinator') ||
+        holds('life_ministry_overseer') ||
+        holds('secretary'),
       canViewServiceSummary: isAdmin || holds('secretary'),
 
       responsibilities: mine,

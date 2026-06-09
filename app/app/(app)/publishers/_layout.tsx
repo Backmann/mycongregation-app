@@ -7,7 +7,7 @@ import { usePermissions } from '../../../lib/permissions';
 
 export default function PublishersLayout() {
   const { t } = useTranslation();
-  const { canEditPublishers } = usePermissions();
+  const { canEditPublishers, canManageAbsences } = usePermissions();
   return (
     <Stack>
       <Stack.Screen
@@ -32,6 +32,16 @@ export default function PublishersLayout() {
               >
                 <Ionicons name="grid-outline" size={22} color="#0ea5e9" />
               </Pressable>
+              {canManageAbsences && (
+                <Pressable
+                  onPress={() => router.push('/absences' as any)}
+                  style={{ paddingHorizontal: 10 }}
+                  hitSlop={8}
+                  accessibilityLabel={t('absences.title.list')}
+                >
+                  <Ionicons name="airplane-outline" size={22} color="#0ea5e9" />
+                </Pressable>
+              )}
               {canEditPublishers && (
                 <Pressable
                   onPress={() => router.push('/publishers/new' as any)}

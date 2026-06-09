@@ -998,5 +998,42 @@
       "other": "Sonstige"
     },
     "weekTitle": "Termine diese Woche"
+  },
+  "absences": {
+    "title": {
+      "list": "Abwesenheiten",
+      "detail": "Abwesenheit",
+      "new": "Neue Abwesenheit"
+    },
+    "empty": "Noch keine Abwesenheiten",
+    "showPast": "Vergangene anzeigen",
+    "inactive": "inaktiv",
+    "noMatches": "Keine Treffer",
+    "deleted": "Gelöscht",
+    "confirmDelete": "Wirklich löschen?",
+    "fields": {
+      "publisher": "Verkündiger",
+      "dates": "Daten",
+      "note": "Notiz"
+    },
+    "placeholders": {
+      "search": "Verkündiger suchen…",
+      "note": "z. B. Urlaub, Dienstreise"
+    },
+    "form": {
+      "multiDay": "Mehrere Tage",
+      "pickDate": "Datum",
+      "pickStart": "Beginn",
+      "pickEnd": "Ende",
+      "change": "Ändern"
+    },
+    "actions": {
+      "create": "Hinzufügen",
+      "save": "Speichern",
+      "edit": "Bearbeiten",
+      "delete": "Löschen",
+      "restore": "Wiederherstellen",
+      "cancel": "Abbrechen"
+    }
   }
 }

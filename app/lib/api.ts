@@ -1122,6 +1122,73 @@ function cleanEventPayload(
   );
 }
 
+export interface Absence {
+  id: string;
+  congregationId: string;
+  publisherId: string;
+  startDate: string;
+  endDate: string | null;
+  note: string | null;
+  createdById: string | null;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+  publisher?: {
+    id: string;
+    displayName: string;
+    firstName: string;
+    lastName: string;
+  } | null;
+}
+
+export interface CreateAbsenceInput {
+  publisherId: string;
+  startDate: string;
+  endDate?: string;
+  note?: string;
+}
+
+export type UpdateAbsenceInput = Partial<CreateAbsenceInput>;
+
+export const absencesApi = {
+  async list(params?: {
+    publisherId?: string;
+    all?: boolean;
+    includeRemoved?: boolean;
+  }): Promise<Absence[]> {
+    const { data } = await api.get<Absence[]>('/absences', {
+      params: {
+        publisherId: params?.publisherId || undefined,
+        all: params?.all ? 'true' : undefined,
+        includeRemoved: params?.includeRemoved ? 'true' : undefined,
+      },
+    });
+    return data;
+  },
+  async getById(id: string): Promise<Absence> {
+    const { data } = await api.get<Absence>(`/absences/${id}`);
+    return data;
+  },
+  async create(input: CreateAbsenceInput): Promise<Absence> {
+    const { data } = await api.post<Absence>('/absences', cleanPayload(input));
+    return data;
+  },
+  async update(id: string, input: UpdateAbsenceInput): Promise<Absence> {
+    const { data } = await api.patch<Absence>(
+      `/absences/${id}`,
+      cleanPayload(input),
+    );
+    return data;
+  },
+  async remove(id: string): Promise<void> {
+    await api.delete(`/absences/${id}`);
+  },
+  async restore(id: string): Promise<Absence> {
+    const { data } = await api.post<Absence>(`/absences/${id}/restore`);
+    return data;
+  },
+};
+
 export const specialEventsApi = {
   async list(params?: {
     all?: boolean;

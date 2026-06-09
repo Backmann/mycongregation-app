@@ -998,5 +998,42 @@
       "other": "Other"
     },
     "weekTitle": "This week's events"
+  },
+  "absences": {
+    "title": {
+      "list": "Absences",
+      "detail": "Absence",
+      "new": "New absence"
+    },
+    "empty": "No absences yet",
+    "showPast": "Show past",
+    "inactive": "inactive",
+    "noMatches": "No matches",
+    "deleted": "Deleted",
+    "confirmDelete": "Confirm delete?",
+    "fields": {
+      "publisher": "Publisher",
+      "dates": "Dates",
+      "note": "Note"
+    },
+    "placeholders": {
+      "search": "Search publisher…",
+      "note": "e.g. vacation, business trip"
+    },
+    "form": {
+      "multiDay": "Several days",
+      "pickDate": "Date",
+      "pickStart": "Start",
+      "pickEnd": "End",
+      "change": "Change"
+    },
+    "actions": {
+      "create": "Add",
+      "save": "Save",
+      "edit": "Edit",
+      "delete": "Delete",
+      "restore": "Restore",
+      "cancel": "Cancel"
+    }
   }
 }
