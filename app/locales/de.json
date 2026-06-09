@@ -961,7 +961,7 @@
       "replacesMeeting": "An diesem Tag keine reguläre Zusammenkunft"
     },
     "placeholders": {
-      "title": "Regionaler Kongress",
+      "title": "Titel eingeben",
       "type": "regional_convention",
       "date": "JJJJ-MM-TT",
       "time": "09:20",

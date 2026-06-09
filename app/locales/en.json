@@ -961,7 +961,7 @@
       "replacesMeeting": "No regular meeting on this day"
     },
     "placeholders": {
-      "title": "Regional convention",
+      "title": "Enter a title",
       "type": "regional_convention",
       "date": "YYYY-MM-DD",
       "time": "09:20",

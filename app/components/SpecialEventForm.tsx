@@ -1,8 +1,6 @@
 import { useState } from 'react';
 import {
-  Modal,
   Pressable,
-  ScrollView,
   StyleSheet,
   Switch,
   Text,
@@ -12,6 +10,8 @@ import {
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 import dayjs from 'dayjs';
+import 'dayjs/locale/ru';
+import 'dayjs/locale/de';
 import DateTimePicker, {
   useDefaultStyles,
   type DateType,
@@ -75,14 +75,36 @@ export function SpecialEventForm({
   value: EventFormValue;
   onChange: (v: EventFormValue) => void;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const dpStyles = useDefaultStyles();
-  const [multiDay, setMultiDay] = useState<boolean>(!!value.endDate);
-  const [dateModal, setDateModal] = useState(false);
-  const [timeModal, setTimeModal] = useState(false);
-  const [typeModal, setTypeModal] = useState(false);
+  const locale = i18n.language;
 
-  const set = (patch: Partial<EventFormValue>) => onChange({ ...value, ...patch });
+  const [multiDay, setMultiDay] = useState<boolean>(!!value.endDate);
+  const [showDate, setShowDate] = useState(false);
+  const [showTime, setShowTime] = useState(false);
+  const [showType, setShowType] = useState(false);
+
+  const set = (patch: Partial<EventFormValue>) =>
+    onChange({ ...value, ...patch });
+
+  // Set of auto-generated titles (the type labels). Used so that picking /
+  // switching a type fills the title automatically, unless the user typed
+  // their own title.
+  const typeLabels = new Set(
+    EVENT_TYPES.map((k) => t(`specialEvents.types.${k}`, k)),
+  );
+
+  const selectType = (key: string) => {
+    const isOther = key === 'other';
+    const label = t(`specialEvents.types.${key}`, key);
+    const current = value.title.trim();
+    const titleIsAuto = current === '' || typeLabels.has(current);
+    set({
+      type: isOther ? '' : key,
+      title: titleIsAuto ? (isOther ? '' : label) : value.title,
+    });
+    setShowType(false);
+  };
 
   const dateLabel = value.date
     ? multiDay && value.endDate
@@ -94,7 +116,6 @@ export function SpecialEventForm({
     ? t(`specialEvents.types.${value.type}`, value.type)
     : t('specialEvents.form.pickType');
 
-  // Anchor date for the time-only picker (date part is ignored on save).
   const timeAnchor: DateType = value.time
     ? dayjs(`2000-01-01T${value.time}`)
     : dayjs('2000-01-01T09:00');
@@ -108,20 +129,50 @@ export function SpecialEventForm({
           value={value.title}
           onChangeText={(x) => set({ title: x })}
           placeholder={t('specialEvents.placeholders.title')}
+          placeholderTextColor="#94a3b8"
         />
       </Field>
 
-      {/* Type picker */}
+      {/* Type (inline list) */}
       <Field label={t('specialEvents.fields.type')}>
-        <Pressable style={styles.selectBtn} onPress={() => setTypeModal(true)}>
+        <Pressable
+          style={styles.selectBtn}
+          onPress={() => setShowType((s) => !s)}
+        >
           <Text style={[styles.selectText, !value.type && styles.placeholder]}>
             {typeLabel}
           </Text>
-          <Ionicons name="chevron-down" size={18} color="#64748b" />
+          <Ionicons
+            name={showType ? 'chevron-up' : 'chevron-down'}
+            size={18}
+            color="#64748b"
+          />
         </Pressable>
+        {showType && (
+          <View style={styles.inlineCard}>
+            {EVENT_TYPES.map((key) => {
+              const active =
+                value.type === key || (key === 'other' && !value.type);
+              return (
+                <Pressable
+                  key={key}
+                  style={styles.typeRow}
+                  onPress={() => selectType(key)}
+                >
+                  <Text style={styles.typeText}>
+                    {t(`specialEvents.types.${key}`, key)}
+                  </Text>
+                  {active && (
+                    <Ionicons name="checkmark" size={20} color="#0ea5e9" />
+                  )}
+                </Pressable>
+              );
+            })}
+          </View>
+        )}
       </Field>
 
-      {/* Multi-day switch */}
+      {/* Multi-day */}
       <View style={styles.switchRow}>
         <Text style={styles.label}>{t('specialEvents.form.multiDay')}</Text>
         <Switch
@@ -133,9 +184,12 @@ export function SpecialEventForm({
         />
       </View>
 
-      {/* Date picker */}
+      {/* Date (inline calendar) */}
       <Field label={t('specialEvents.fields.date')}>
-        <Pressable style={styles.selectBtn} onPress={() => setDateModal(true)}>
+        <Pressable
+          style={styles.selectBtn}
+          onPress={() => setShowDate((s) => !s)}
+        >
           <Ionicons
             name="calendar-outline"
             size={18}
@@ -145,23 +199,68 @@ export function SpecialEventForm({
           <Text style={[styles.selectText, !value.date && styles.placeholder]}>
             {dateLabel}
           </Text>
+          <Ionicons
+            name={showDate ? 'chevron-up' : 'chevron-down'}
+            size={18}
+            color="#64748b"
+          />
         </Pressable>
+        {showDate && (
+          <View style={styles.inlineCard}>
+            {multiDay ? (
+              <DateTimePicker
+                mode="range"
+                startDate={value.date ? dayjs(value.date) : undefined}
+                endDate={value.endDate ? dayjs(value.endDate) : undefined}
+                firstDayOfWeek={1}
+                locale={locale}
+                onChange={({ startDate, endDate }) =>
+                  set({
+                    date: startDate
+                      ? dayjs(startDate).format('YYYY-MM-DD')
+                      : '',
+                    endDate: endDate ? dayjs(endDate).format('YYYY-MM-DD') : '',
+                  })
+                }
+                styles={dpStyles}
+              />
+            ) : (
+              <DateTimePicker
+                mode="single"
+                date={value.date ? dayjs(value.date) : undefined}
+                firstDayOfWeek={1}
+                locale={locale}
+                onChange={({ date }) => {
+                  set({ date: date ? dayjs(date).format('YYYY-MM-DD') : '' });
+                  setShowDate(false);
+                }}
+                styles={dpStyles}
+              />
+            )}
+          </View>
+        )}
       </Field>
 
-      {/* Time presets + custom */}
+      {/* Time (presets + inline custom picker) */}
       <Field label={t('specialEvents.form.time')}>
         <View style={styles.chips}>
           <Chip
             label={t('specialEvents.form.noTime')}
             active={!value.time}
-            onPress={() => set({ time: '' })}
+            onPress={() => {
+              set({ time: '' });
+              setShowTime(false);
+            }}
           />
           {TIME_PRESETS.map((tm) => (
             <Chip
               key={tm}
               label={tm}
               active={value.time === tm}
-              onPress={() => set({ time: tm })}
+              onPress={() => {
+                set({ time: tm });
+                setShowTime(false);
+              }}
             />
           ))}
           <Chip
@@ -171,9 +270,24 @@ export function SpecialEventForm({
                 : t('specialEvents.form.customTime')
             }
             active={!!value.time && !TIME_PRESETS.includes(value.time)}
-            onPress={() => setTimeModal(true)}
+            onPress={() => setShowTime((s) => !s)}
           />
         </View>
+        {showTime && (
+          <View style={styles.inlineCard}>
+            <DateTimePicker
+              mode="single"
+              date={timeAnchor}
+              timePicker
+              initialView="time"
+              locale={locale}
+              onChange={({ date }) =>
+                set({ time: date ? dayjs(date).format('HH:mm') : '' })
+              }
+              styles={dpStyles}
+            />
+          </View>
+        )}
       </Field>
 
       {/* Address */}
@@ -183,6 +297,7 @@ export function SpecialEventForm({
           value={value.address}
           onChangeText={(x) => set({ address: x })}
           placeholder={t('specialEvents.placeholders.address')}
+          placeholderTextColor="#94a3b8"
         />
       </Field>
 
@@ -193,6 +308,7 @@ export function SpecialEventForm({
           value={value.mapUrl}
           onChangeText={(x) => set({ mapUrl: x })}
           placeholder={t('specialEvents.placeholders.mapUrl')}
+          placeholderTextColor="#94a3b8"
           autoCapitalize="none"
           keyboardType="url"
         />
@@ -205,6 +321,7 @@ export function SpecialEventForm({
           value={value.programUrl}
           onChangeText={(x) => set({ programUrl: x })}
           placeholder={t('specialEvents.placeholders.programUrl')}
+          placeholderTextColor="#94a3b8"
           autoCapitalize="none"
           keyboardType="url"
         />
@@ -217,6 +334,7 @@ export function SpecialEventForm({
           value={value.note}
           onChangeText={(x) => set({ note: x })}
           placeholder={t('specialEvents.placeholders.note')}
+          placeholderTextColor="#94a3b8"
           multiline
         />
       </Field>
@@ -231,82 +349,6 @@ export function SpecialEventForm({
           onValueChange={(x) => set({ replacesMeeting: x })}
         />
       </View>
-
-      {/* ----- Date modal ----- */}
-      <PickerModal
-        visible={dateModal}
-        onClose={() => setDateModal(false)}
-        closeLabel={t('specialEvents.form.close')}
-      >
-        {multiDay ? (
-          <DateTimePicker
-            mode="range"
-            startDate={value.date ? dayjs(value.date) : undefined}
-            endDate={value.endDate ? dayjs(value.endDate) : undefined}
-            onChange={({ startDate, endDate }) =>
-              set({
-                date: startDate ? dayjs(startDate).format('YYYY-MM-DD') : '',
-                endDate: endDate ? dayjs(endDate).format('YYYY-MM-DD') : '',
-              })
-            }
-            styles={dpStyles}
-          />
-        ) : (
-          <DateTimePicker
-            mode="single"
-            date={value.date ? dayjs(value.date) : undefined}
-            onChange={({ date }) =>
-              set({ date: date ? dayjs(date).format('YYYY-MM-DD') : '' })
-            }
-            styles={dpStyles}
-          />
-        )}
-      </PickerModal>
-
-      {/* ----- Time modal ----- */}
-      <PickerModal
-        visible={timeModal}
-        onClose={() => setTimeModal(false)}
-        closeLabel={t('specialEvents.form.close')}
-      >
-        <DateTimePicker
-          mode="single"
-          date={timeAnchor}
-          timePicker
-          initialView="time"
-          onChange={({ date }) =>
-            set({ time: date ? dayjs(date).format('HH:mm') : '' })
-          }
-          styles={dpStyles}
-        />
-      </PickerModal>
-
-      {/* ----- Type modal ----- */}
-      <PickerModal
-        visible={typeModal}
-        onClose={() => setTypeModal(false)}
-        closeLabel={t('specialEvents.form.close')}
-      >
-        <View>
-          {EVENT_TYPES.map((key) => (
-            <Pressable
-              key={key}
-              style={styles.typeRow}
-              onPress={() => {
-                set({ type: key === 'other' ? '' : key });
-                setTypeModal(false);
-              }}
-            >
-              <Text style={styles.typeText}>
-                {t(`specialEvents.types.${key}`, key)}
-              </Text>
-              {(value.type === key || (key === 'other' && !value.type)) && (
-                <Ionicons name="checkmark" size={20} color="#0ea5e9" />
-              )}
-            </Pressable>
-          ))}
-        </View>
-      </PickerModal>
     </View>
   );
 }
@@ -347,36 +389,6 @@ function Chip({
   );
 }
 
-function PickerModal({
-  visible,
-  onClose,
-  closeLabel,
-  children,
-}: {
-  visible: boolean;
-  onClose: () => void;
-  closeLabel: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="fade"
-      onRequestClose={onClose}
-    >
-      <Pressable style={styles.backdrop} onPress={onClose}>
-        <Pressable style={styles.sheet} onPress={() => {}}>
-          <ScrollView>{children}</ScrollView>
-          <Pressable style={styles.doneBtn} onPress={onClose}>
-            <Text style={styles.doneText}>{closeLabel}</Text>
-          </Pressable>
-        </Pressable>
-      </Pressable>
-    </Modal>
-  );
-}
-
 const styles = StyleSheet.create({
   field: { marginBottom: 14 },
   label: { fontSize: 13, fontWeight: '600', color: '#475569', marginBottom: 6 },
@@ -388,6 +400,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     fontSize: 16,
     backgroundColor: '#fff',
+    color: '#0f172a',
   },
   multiline: { minHeight: 80, textAlignVertical: 'top' },
   switchRow: {
@@ -408,6 +421,14 @@ const styles = StyleSheet.create({
   },
   selectText: { flex: 1, fontSize: 16, color: '#0f172a' },
   placeholder: { color: '#94a3b8' },
+  inlineCard: {
+    marginTop: 8,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderRadius: 10,
+    backgroundColor: '#fff',
+    padding: 8,
+  },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   chip: {
     paddingHorizontal: 12,
@@ -420,26 +441,6 @@ const styles = StyleSheet.create({
   chipActive: { backgroundColor: '#0ea5e9', borderColor: '#0ea5e9' },
   chipText: { fontSize: 14, color: '#334155' },
   chipTextActive: { color: '#fff', fontWeight: '600' },
-  backdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(15,23,42,0.5)',
-    justifyContent: 'center',
-    padding: 20,
-  },
-  sheet: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 12,
-    maxHeight: '85%',
-  },
-  doneBtn: {
-    backgroundColor: '#0ea5e9',
-    borderRadius: 8,
-    paddingVertical: 12,
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  doneText: { color: '#fff', fontSize: 16, fontWeight: '600' },
   typeRow: {
     flexDirection: 'row',
     alignItems: 'center',

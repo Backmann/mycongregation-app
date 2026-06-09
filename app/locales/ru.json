@@ -965,7 +965,7 @@
       "replacesMeeting": "В этот день обычной встречи нет"
     },
     "placeholders": {
-      "title": "Областной конгресс",
+      "title": "Впишите название",
       "type": "regional_convention",
       "date": "ГГГГ-ММ-ДД",
       "time": "09:20",
@@ -994,11 +994,11 @@
       "close": "Готово"
     },
     "types": {
-      "regional_convention": "Областной конгресс",
+      "regional_convention": "Региональный конгресс",
       "circuit_assembly": "Районный конгресс",
       "memorial": "Вечеря",
-      "circuit_overseer_visit": "Визит районного надзирателя",
-      "branch_representative_visit": "Визит представителя филиала",
+      "circuit_overseer_visit": "Посещение районного старейшины",
+      "branch_representative_visit": "Посещение представителя филиала",
       "other": "Другое"
     }
   }
