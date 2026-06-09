@@ -996,6 +996,7 @@
       "circuit_overseer_visit": "Besuch des Kreisaufsehers",
       "branch_representative_visit": "Besuch des Zweigvertreters",
       "other": "Sonstige"
-    }
+    },
+    "weekTitle": "Termine diese Woche"
   }
 }

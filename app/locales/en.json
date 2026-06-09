@@ -996,6 +996,7 @@
       "circuit_overseer_visit": "Circuit overseer visit",
       "branch_representative_visit": "Branch representative visit",
       "other": "Other"
-    }
+    },
+    "weekTitle": "This week's events"
   }
 }

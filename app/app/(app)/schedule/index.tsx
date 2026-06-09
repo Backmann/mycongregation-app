@@ -27,6 +27,8 @@ import {
   cleaningApi,
   publisherActivityApi,
   PublisherActivity,
+  specialEventsApi,
+  SpecialEvent,
 } from '../../../lib/api';
 import {
   addWeeks,
@@ -52,6 +54,7 @@ import { DutiesSection } from '../../../components/DutiesSection';
 import { FieldServiceSection } from '../../../components/FieldServiceSection';
 import { CleaningSection } from '../../../components/CleaningSection';
 import { usePermissions } from '../../../lib/permissions';
+import { SpecialEventsWeekBanner } from '../../../components/SpecialEventsWeekBanner';
 
 const EVENT_TYPE_ORDER: EventType[] = [
   'midweek',
@@ -80,6 +83,10 @@ export default function ScheduleIndexScreen() {
       }),
   });
 
+  const specialEventsQuery = useQuery({
+    queryKey: ['special-events', 'all'],
+    queryFn: () => specialEventsApi.list({ all: true }),
+  });
   const publishersQuery = useQuery({
     queryKey: ['publishers', 'all-for-schedule'],
     queryFn: () => publishersApi.list({ limit: 200 }),
@@ -233,6 +240,9 @@ export default function ScheduleIndexScreen() {
     },
   });
 
+  const weekEvents = (specialEventsQuery.data ?? []).filter(
+    (e) => e.date < nextWeekISO && (e.endDate ?? e.date) >= weekStartISO,
+  );
   const assignments = assignmentsQuery.data?.data ?? [];
   const publishersById = new Map<string, Publisher>(
     (publishersQuery.data?.data ?? []).map((p) => [p.id, p]),
@@ -280,6 +290,7 @@ export default function ScheduleIndexScreen() {
           <ActivityIndicator size="large" style={{ marginTop: 32 }} />
         ) : (
           <>
+            <SpecialEventsWeekBanner events={weekEvents} />
             {EVENT_TYPE_ORDER.map((eventType) => {
               const items = grouped.get(eventType) ?? [];
               if (items.length === 0) return null;

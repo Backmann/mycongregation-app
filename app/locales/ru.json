@@ -1000,6 +1000,7 @@
       "circuit_overseer_visit": "Посещение районного старейшины",
       "branch_representative_visit": "Посещение представителя филиала",
       "other": "Другое"
-    }
+    },
+    "weekTitle": "События этой недели"
   }
 }
