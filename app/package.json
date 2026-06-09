@@ -1,5 +1,6 @@
 {
   "name": "mycongregation",
+  "description": "Helper for organizing meetings and managing members in small organizations and groups.",
   "main": "expo-router/entry",
   "version": "1.0.0",
   "author": "Lionel Backmann (Hovorukha)",

@@ -3,26 +3,26 @@
 [![Deploy](https://github.com/Backmann/mycongregation-app/actions/workflows/deploy.yml/badge.svg)](https://github.com/Backmann/mycongregation-app/actions/workflows/deploy.yml)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 
-Expo + React Native client for [mycongregation](https://github.com/Backmann/mycongregation-server) — congregation management for Jehovah's Witnesses congregations.
+Expo + React Native client for [mycongregation](https://github.com/Backmann/mycongregation-server) — a helper for organizing meetings and managing members in small organizations and groups.
 
 Production web app: **https://mycongregation.org**
 Companion API: [mycongregation-server](https://github.com/Backmann/mycongregation-server)
 
-> ⚠️ This is an unofficial, community-built tool. Not affiliated with or endorsed by any religious organization.
+> ⚠️ Independent, community-built tool. Not affiliated with or endorsed by any organization.
 
 ## Features
 
 - 🌐 Cross-platform — Web (in production), iOS and Android from one codebase
 - 🔐 JWT authentication with sliding refresh-token rotation
 - 🌍 Three UI languages: Russian, English, German (more planned)
-- 👥 Publishers — list, create, edit, soft-delete with restore
-- 👨‍👩‍👧 Families and service groups
-- 🎤 Public talks catalog with bulk-import UI (~200 talks per congregation)
-- 📊 Service reports with self-edit window (current month + prior month until day 10)
-- 📋 Assignments — midweek and weekend meeting program
+- 👥 Member records — list, create, edit, soft-delete with restore
+- 👨‍👩‍👧 Families and groups
+- 🎤 Talks catalog
+- 📊 Activity reports with a self-edit window (current month + prior month until day 10)
+- 📋 Assignments — scheduled meeting program
 - 🔔 Push notifications — Expo Push (native) + Web Push API (browser)
 - 👤 Self-service profile — change password, change UI language, edit own info
-- 🛡️ Admin user management — invite, role assignment, deactivate (RBAC Phase 1)
+- 🛡️ Admin user management — role assignment, activate/deactivate (role-based access)
 
 ## Tech stack
 
@@ -96,7 +96,7 @@ npx expo export --platform web
 # Outputs a static bundle to dist/
 ```
 
-In CI/CD, the export step builds the bundle and SCPs it to the production server's `/var/www/` directory, served by Caddy with HTTPS terminated at Cloudflare.
+In CI/CD, the export step builds the bundle and SCPs it to the production server's web root, served behind nginx with HTTPS terminated at Cloudflare.
 
 ## Project structure
 
@@ -104,9 +104,9 @@ In CI/CD, the export step builds the bundle and SCPs it to the production server
 app/                       # Routes (file-based, expo-router)
   (auth)/                  # Public routes — login, bootstrap
   (app)/                   # Authenticated routes
-    profile/               # User profile, public talks, admin tools
-    publishers/            # Publishers list, edit, family relations
-    assignments/           # Midweek/weekend program
+    profile/               # User profile, talks catalog, admin tools
+    publishers/            # Member list, edit, family relations
+    assignments/           # Meeting program
     ...
 components/                # Shared UI components
 lib/
@@ -127,16 +127,16 @@ GitHub Actions workflow (`.github/workflows/deploy.yml`) runs on every push to `
 2. `npm run lint` (ESLint — blocks on warnings)
 3. `npx expo export --platform web`
 4. `scp` the bundle to the production server
-5. Atomic swap into `/var/www/`
+5. Atomic swap into the web root
 
 A typical deploy completes in ~90 seconds.
 
 ## Roadmap
 
-- Sub-role permissions (responsibilities entity — Phase 2 RBAC)
+- Sub-role permissions (responsibilities — Phase 2 role-based access)
 - Native iOS and Android builds via EAS Build
-- Offline-first service reports
-- Expanded i18n (more EPUB parsers per language)
+- Offline-first reports
+- Expanded internationalization
 - Jest test suite
 
 ## Contributing
