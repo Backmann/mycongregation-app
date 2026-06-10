@@ -999,7 +999,11 @@
       "other": "Sonstige",
       "special_talk": "Sondervortrag"
     },
-    "weekTitle": "Termine diese Woche"
+    "weekTitle": "Termine diese Woche",
+    "replaced": {
+      "insteadOf": "statt der Zusammenkunft",
+      "hidden": "Ausgeblendete Aufgaben: {{count}} — verschieben oder absagen"
+    }
   },
   "absences": {
     "title": {

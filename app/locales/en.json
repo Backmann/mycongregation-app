@@ -999,7 +999,11 @@
       "other": "Other",
       "special_talk": "Special talk"
     },
-    "weekTitle": "This week's events"
+    "weekTitle": "This week's events",
+    "replaced": {
+      "insteadOf": "instead of the meeting",
+      "hidden": "Hidden assignments: {{count}} — move or cancel them"
+    }
   },
   "absences": {
     "title": {

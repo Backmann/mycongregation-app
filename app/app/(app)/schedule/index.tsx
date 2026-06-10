@@ -30,6 +30,7 @@ import {
   specialEventsApi,
 } from '../../../lib/api';
 import {
+  addDays,
   addWeeks,
   formatDateISO,
   startOfWeekMonday,
@@ -54,6 +55,7 @@ import { FieldServiceSection } from '../../../components/FieldServiceSection';
 import { CleaningSection } from '../../../components/CleaningSection';
 import { usePermissions } from '../../../lib/permissions';
 import { SpecialEventsWeekBanner } from '../../../components/SpecialEventsWeekBanner';
+import { ReplacedMeetingNotice } from '../../../components/ReplacedMeetingNotice';
 
 const EVENT_TYPE_ORDER: EventType[] = [
   'midweek',
@@ -260,6 +262,23 @@ export default function ScheduleIndexScreen() {
     arr.sort((a, b) => a.partOrder - b.partOrder);
   }
 
+  // v2: a replacesMeeting event covering a meeting's date replaces its section.
+  const replacedBy = (kind: 'midweek' | 'weekend') => {
+    if (!meetingVersion) return undefined;
+    const dow =
+      kind === 'midweek' ? meetingVersion.midweekDow : meetingVersion.weekendDow;
+    if (!dow) return undefined;
+    const dateISO = formatDateISO(addDays(weekStart, dow - 1));
+    return weekEvents.find(
+      (e) =>
+        e.replacesMeeting &&
+        e.date <= dateISO &&
+        (e.endDate ?? e.date) >= dateISO,
+    );
+  };
+  const midweekReplacedBy = replacedBy('midweek');
+  const weekendReplacedBy = replacedBy('weekend');
+
   const hasMidweek = (grouped.get('midweek')?.length ?? 0) > 0;
   const hasWeekend = (grouped.get('weekend')?.length ?? 0) > 0;
   const isEmpty = assignments.length === 0;
@@ -294,6 +313,26 @@ export default function ScheduleIndexScreen() {
               const items = grouped.get(eventType) ?? [];
               if (items.length === 0) return null;
               const numbers = buildPartNumbers(items);
+              if (eventType === 'midweek' && midweekReplacedBy) {
+                return (
+                  <ReplacedMeetingNotice
+                    key="midweek"
+                    event={midweekReplacedBy}
+                    eventType="midweek"
+                    hiddenCount={items.length}
+                  />
+                );
+              }
+              if (eventType === 'weekend' && weekendReplacedBy) {
+                return (
+                  <ReplacedMeetingNotice
+                    key="weekend"
+                    event={weekendReplacedBy}
+                    eventType="weekend"
+                    hiddenCount={items.length}
+                  />
+                );
+              }
               if (eventType === 'midweek') {
                 return (
                   <View key="midweek">
