@@ -1052,6 +1052,14 @@
       "publishers": "Publishers",
       "absences": "Absences",
       "profile": "Profile"
+    },
+    "nextMeeting": "Next meeting",
+    "meeting": {
+      "midweek": "Midweek meeting",
+      "weekend": "Weekend meeting",
+      "myParts": "My assignments",
+      "asAssistant": "assistant",
+      "noParts": "No assignments this week"
     }
   }
 }

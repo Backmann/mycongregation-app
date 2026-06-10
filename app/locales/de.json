@@ -1052,6 +1052,14 @@
       "publishers": "Verkündiger",
       "absences": "Abwesenheiten",
       "profile": "Profil"
+    },
+    "nextMeeting": "Nächste Zusammenkunft",
+    "meeting": {
+      "midweek": "Zusammenkunft unter der Woche",
+      "weekend": "Wochenend-Zusammenkunft",
+      "myParts": "Meine Aufgaben",
+      "asAssistant": "Assistent",
+      "noParts": "Keine Aufgaben in dieser Woche"
     }
   }
 }
