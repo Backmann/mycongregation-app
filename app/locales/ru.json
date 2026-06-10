@@ -95,7 +95,13 @@
     "responsibilities": "Обязанности",
     "responsibilitiesDescription": "Назначение ответственных за разделы",
     "meetingSettings": "Время и место встреч",
-    "meetingSettingsDescription": "День, время и адрес встреч собрания"
+    "meetingSettingsDescription": "День, время и адрес встреч собрания",
+    "roles": {
+      "admin": "Администратор",
+      "elder": "Старейшина",
+      "secretary": "Секретарь",
+      "publisher": "Возвещатель"
+    }
   },
   "language": {
     "title": "Язык",

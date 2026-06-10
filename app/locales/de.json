@@ -95,7 +95,13 @@
     "responsibilities": "Aufgaben",
     "responsibilitiesDescription": "Bereichskoordinatoren zuweisen",
     "meetingSettings": "Zeit & Ort der Zusammenkünfte",
-    "meetingSettingsDescription": "Tag, Uhrzeit und Adresse der Zusammenkünfte"
+    "meetingSettingsDescription": "Tag, Uhrzeit und Adresse der Zusammenkünfte",
+    "roles": {
+      "admin": "Administrator",
+      "elder": "Ältester",
+      "secretary": "Sekretär",
+      "publisher": "Verkündiger"
+    }
   },
   "language": {
     "title": "Sprache",

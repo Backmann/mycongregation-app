@@ -12,6 +12,7 @@ import { router } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../../lib/auth';
+import { useMyPublisher } from '../../../lib/useMyPublisher';
 import { LanguagePickerModal } from '../../../components/LanguagePicker';
 import { getCurrentLanguage } from '../../../lib/i18n';
 import {
@@ -24,6 +25,7 @@ import {
 
 export default function ProfileScreen() {
   const { user, signOut } = useAuth();
+  const { myPublisher } = useMyPublisher();
   const { t } = useTranslation();
   const [langModalVisible, setLangModalVisible] = useState(false);
   const currentLang = getCurrentLanguage();
@@ -89,9 +91,14 @@ export default function ProfileScreen() {
       <View style={styles.section}>
         <Text style={styles.sectionLabel}>{t('profile.signedInAs')}</Text>
         <View style={styles.card}>
+          {myPublisher?.displayName ? (
+            <Text style={styles.displayName}>{myPublisher.displayName}</Text>
+          ) : null}
           <Text style={styles.email}>{user.email}</Text>
           <View style={styles.roleBadge}>
-            <Text style={styles.roleText}>{user.role}</Text>
+            <Text style={styles.roleText}>
+              {t(`profile.roles.${user.role}`, { defaultValue: user.role })}
+            </Text>
           </View>
         </View>
       </View>
@@ -312,6 +319,12 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderBottomWidth: 1,
     borderColor: '#e2e8f0',
+  },
+  displayName: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#0f172a',
+    marginBottom: 2,
   },
   email: {
     fontSize: 15,

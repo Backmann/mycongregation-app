@@ -95,7 +95,13 @@
     "responsibilities": "Responsibilities",
     "responsibilitiesDescription": "Assign section coordinators",
     "meetingSettings": "Meeting time & place",
-    "meetingSettingsDescription": "Day, time and address of the meetings"
+    "meetingSettingsDescription": "Day, time and address of the meetings",
+    "roles": {
+      "admin": "Administrator",
+      "elder": "Elder",
+      "secretary": "Secretary",
+      "publisher": "Publisher"
+    }
   },
   "language": {
     "title": "Language",
