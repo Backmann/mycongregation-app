@@ -15,8 +15,10 @@ import {
   absencesApi,
   Assignment,
   assignmentsApi,
+  meApi,
   MeetingSettingsVersion,
   meetingSettingsApi,
+  MyAssignmentItem,
   SpecialEvent,
   specialEventsApi,
 } from '../../../lib/api';
@@ -199,6 +201,158 @@ function NextMeetingCard({ myPublisherId }: { myPublisherId: string | null }) {
   );
 }
 
+const TASK_ICONS: Record<MyAssignmentItem['kind'], keyof typeof Ionicons.glyphMap> = {
+  meeting: 'calendar-outline',
+  duty: 'construct-outline',
+  cleaning: 'sparkles-outline',
+  cart: 'cart-outline',
+  field_service: 'walk-outline',
+};
+
+function MyTasksCard() {
+  const { t, i18n } = useTranslation();
+  const { user } = useAuth();
+  const todayISO = formatDateISO(new Date());
+
+  const { data: overview } = useQuery({
+    queryKey: ['meeting-settings'],
+    queryFn: () => meetingSettingsApi.getOverview(),
+    staleTime: 5 * 60 * 1000,
+  });
+  const versions = overview?.versions ?? [];
+
+  const { data } = useQuery({
+    queryKey: ['me', 'assignments'],
+    queryFn: () => meApi.assignments(),
+    enabled: !!user,
+    retry: false,
+    staleTime: 60 * 1000,
+  });
+
+  if (!data || data.items.length === 0) return null;
+
+  type Refined = {
+    item: MyAssignmentItem;
+    dateISO: string;
+    weekOnly: boolean;
+  };
+  const refined: Refined[] = [];
+  for (const item of data.items) {
+    let dateISO: string | null = null;
+    let weekOnly = false;
+    if (item.date) {
+      dateISO = item.date;
+    } else if (
+      item.kind === 'field_service' &&
+      item.weekStartDate &&
+      item.dayOfWeek
+    ) {
+      dateISO = formatDateISO(
+        addDays(new Date(`${item.weekStartDate}T00:00:00`), item.dayOfWeek - 1),
+      );
+    } else if (
+      (item.kind === 'meeting' || item.kind === 'duty') &&
+      item.weekStartDate &&
+      (item.eventType === 'midweek' || item.eventType === 'weekend')
+    ) {
+      const v = effectiveVersionFor(versions, item.weekStartDate);
+      const dow =
+        item.eventType === 'midweek' ? v?.midweekDow : v?.weekendDow;
+      if (v && dow) {
+        dateISO = formatDateISO(
+          addDays(new Date(`${item.weekStartDate}T00:00:00`), dow - 1),
+        );
+      }
+    }
+    if (!dateISO) {
+      dateISO = item.weekStartDate ?? item.sortDate;
+      weekOnly = true;
+    }
+    // Drop items already in the past (week-scoped: past once the week ends).
+    if (weekOnly) {
+      const weekEnd = formatDateISO(
+        addDays(new Date(`${dateISO}T00:00:00`), 6),
+      );
+      if (weekEnd < todayISO) continue;
+    } else if (dateISO < todayISO) {
+      continue;
+    }
+    refined.push({ item, dateISO, weekOnly });
+  }
+  if (refined.length === 0) return null;
+  refined.sort((a, b) => a.dateISO.localeCompare(b.dateISO));
+  const top = refined.slice(0, 5);
+
+  const labelFor = (item: MyAssignmentItem): string => {
+    if (item.kind === 'duty') {
+      return t(`home.dutyTypes.${item.label}`, item.label);
+    }
+    if (item.kind === 'cleaning') {
+      return t(`home.cleaningSlots.${item.label}`, item.label);
+    }
+    if (item.kind === 'meeting') {
+      return (
+        item.label +
+        (item.asAssistant ? ` (${t('home.meeting.asAssistant')})` : '')
+      );
+    }
+    return item.label;
+  };
+
+  const dateFor = (r: Refined): string => {
+    const d = new Date(`${r.dateISO}T00:00:00`);
+    if (r.weekOnly) {
+      return t('home.weekOf', {
+        date: d.toLocaleDateString(i18n.language, {
+          day: 'numeric',
+          month: 'long',
+        }),
+      });
+    }
+    return d.toLocaleDateString(i18n.language, {
+      weekday: 'short',
+      day: 'numeric',
+      month: 'long',
+    });
+  };
+
+  return (
+    <>
+      <Text style={[styles.sectionTitle, { marginTop: 24, marginBottom: 12 }]}>
+        {t('home.myTasks')}
+      </Text>
+      <View style={styles.card}>
+        {top.map((r, idx) => (
+          <View
+            key={`${r.item.kind}-${idx}-${r.dateISO}`}
+            style={[styles.eventRow, idx > 0 && styles.eventRowBorder]}
+          >
+            <Ionicons
+              name={TASK_ICONS[r.item.kind]}
+              size={18}
+              color="#0ea5e9"
+              style={{ marginRight: 10 }}
+            />
+            <View style={{ flex: 1 }}>
+              <Text style={styles.eventTitle} numberOfLines={1}>
+                {labelFor(r.item)}
+              </Text>
+              <Text style={styles.eventDate} numberOfLines={1}>
+                {dateFor(r)}
+                {r.item.time
+                  ? ` · ${r.item.time}${r.item.endTime ? `\u2013${r.item.endTime}` : ''}`
+                  : ''}
+                {' · '}
+                {t(`home.kinds.${r.item.kind}`)}
+              </Text>
+            </View>
+          </View>
+        ))}
+      </View>
+    </>
+  );
+}
+
 function MyAbsencesBlock({ myPublisherId }: { myPublisherId: string | null }) {
   const { t, i18n } = useTranslation();
   const { data } = useQuery({
@@ -287,6 +441,8 @@ export default function HomeScreen() {
         {t('home.nextMeeting')}
       </Text>
       <NextMeetingCard myPublisherId={myPublisherId} />
+
+      <MyTasksCard />
 
       <MyAbsencesBlock myPublisherId={myPublisherId} />
 

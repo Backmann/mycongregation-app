@@ -1065,6 +1065,31 @@
       "asAssistant": "помощник",
       "noParts": "На этой неделе назначений нет"
     },
-    "myAbsences": "Мои отсутствия"
+    "myAbsences": "Мои отсутствия",
+    "myTasks": "Мои ближайшие задания",
+    "weekOf": "Неделя с {{date}}",
+    "kinds": {
+      "meeting": "встреча",
+      "duty": "обязанность",
+      "cleaning": "уборка",
+      "cart": "тележка",
+      "field_service": "служение"
+    },
+    "dutyTypes": {
+      "security": "Охрана",
+      "attendant": "Распорядитель",
+      "microphone": "Микрофоны",
+      "audio": "Аудио",
+      "video": "Видео",
+      "zoom": "Zoom",
+      "stage": "Сцена",
+      "ventilation": "Проветривание",
+      "custom": "Особое поручение"
+    },
+    "cleaningSlots": {
+      "after_meeting": "Уборка после встречи",
+      "thorough": "Тщательная уборка",
+      "general": "Генеральная уборка"
+    }
   }
 }

@@ -1150,6 +1150,39 @@ export interface CreateAbsenceInput {
 
 export type UpdateAbsenceInput = Partial<CreateAbsenceInput>;
 
+export type MyAssignmentKind =
+  | 'meeting'
+  | 'duty'
+  | 'cleaning'
+  | 'cart'
+  | 'field_service';
+
+export interface MyAssignmentItem {
+  kind: MyAssignmentKind;
+  sortDate: string;
+  weekStartDate?: string;
+  dayOfWeek?: number;
+  date?: string;
+  eventType?: string;
+  time?: string;
+  endTime?: string;
+  label: string;
+  location?: string;
+  asAssistant?: boolean;
+}
+
+export interface MyAssignmentsResponse {
+  publisherId: string | null;
+  items: MyAssignmentItem[];
+}
+
+export const meApi = {
+  async assignments(): Promise<MyAssignmentsResponse> {
+    const { data } = await api.get<MyAssignmentsResponse>('/me/assignments');
+    return data;
+  },
+};
+
 export const absencesApi = {
   async list(params?: {
     publisherId?: string;

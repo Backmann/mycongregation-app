@@ -1061,6 +1061,31 @@
       "asAssistant": "Assistent",
       "noParts": "Keine Aufgaben in dieser Woche"
     },
-    "myAbsences": "Meine Abwesenheiten"
+    "myAbsences": "Meine Abwesenheiten",
+    "myTasks": "Meine nächsten Aufgaben",
+    "weekOf": "Woche ab {{date}}",
+    "kinds": {
+      "meeting": "Zusammenkunft",
+      "duty": "Dienst",
+      "cleaning": "Reinigung",
+      "cart": "Trolley",
+      "field_service": "Predigtdienst"
+    },
+    "dutyTypes": {
+      "security": "Sicherheit",
+      "attendant": "Ordner",
+      "microphone": "Mikrofone",
+      "audio": "Audio",
+      "video": "Video",
+      "zoom": "Zoom",
+      "stage": "Bühne",
+      "ventilation": "Lüftung",
+      "custom": "Sonderaufgabe"
+    },
+    "cleaningSlots": {
+      "after_meeting": "Reinigung nach der Zusammenkunft",
+      "thorough": "Gründliche Reinigung",
+      "general": "Generalreinigung"
+    }
   }
 }

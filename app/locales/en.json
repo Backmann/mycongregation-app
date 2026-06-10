@@ -1061,6 +1061,31 @@
       "asAssistant": "assistant",
       "noParts": "No assignments this week"
     },
-    "myAbsences": "My absences"
+    "myAbsences": "My absences",
+    "myTasks": "My upcoming assignments",
+    "weekOf": "Week of {{date}}",
+    "kinds": {
+      "meeting": "meeting",
+      "duty": "duty",
+      "cleaning": "cleaning",
+      "cart": "cart",
+      "field_service": "field service"
+    },
+    "dutyTypes": {
+      "security": "Security",
+      "attendant": "Attendant",
+      "microphone": "Microphones",
+      "audio": "Audio",
+      "video": "Video",
+      "zoom": "Zoom",
+      "stage": "Stage",
+      "ventilation": "Ventilation",
+      "custom": "Custom duty"
+    },
+    "cleaningSlots": {
+      "after_meeting": "Cleaning after the meeting",
+      "thorough": "Thorough cleaning",
+      "general": "General cleaning"
+    }
   }
 }
