@@ -11,11 +11,12 @@ import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import {
+  Absence,
+  absencesApi,
   Assignment,
   assignmentsApi,
   MeetingSettingsVersion,
   meetingSettingsApi,
-  publishersApi,
   SpecialEvent,
   specialEventsApi,
 } from '../../../lib/api';
@@ -24,6 +25,7 @@ import { addDays, formatDateISO, startOfWeekMonday } from '../../../lib/dates';
 import { getPartLabel } from '../../../lib/parts';
 import { usePermissions } from '../../../lib/permissions';
 import { useAuth } from '../../../lib/auth';
+import { useMyPublisher } from '../../../lib/useMyPublisher';
 
 function eventDateLabel(e: SpecialEvent, loc: string): string {
   const start = new Date(`${e.date}T00:00:00`);
@@ -44,6 +46,30 @@ function eventDateLabel(e: SpecialEvent, loc: string): string {
     day: 'numeric',
     month: 'long',
   })} \u2013 ${end.toLocaleDateString(loc, { day: 'numeric', month: 'long' })}`;
+}
+
+function absenceRangeLabel(a: Absence, loc: string): string {
+  const start = new Date(`${a.startDate}T00:00:00`);
+  if (!a.endDate) {
+    return start.toLocaleDateString(loc, {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
+  }
+  const end = new Date(`${a.endDate}T00:00:00`);
+  const sameYear = start.getFullYear() === end.getFullYear();
+  const s = start.toLocaleDateString(loc, {
+    day: 'numeric',
+    month: 'long',
+    ...(sameYear ? {} : { year: 'numeric' }),
+  });
+  const e = end.toLocaleDateString(loc, {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+  return `${s} \u2013 ${e}`;
 }
 
 type NextMeeting = {
@@ -89,9 +115,8 @@ function computeNextMeeting(
   return candidates[0] ?? null;
 }
 
-function NextMeetingCard() {
+function NextMeetingCard({ myPublisherId }: { myPublisherId: string | null }) {
   const { t, i18n } = useTranslation();
-  const { user } = useAuth();
   const todayISO = formatDateISO(new Date());
 
   const { data: overview, isLoading } = useQuery({
@@ -103,17 +128,6 @@ function NextMeetingCard() {
   const next = overview
     ? computeNextMeeting(overview.versions, todayISO)
     : null;
-
-  // "My publisher": resolved silently; some roles may not be able to list.
-  const { data: pubData } = useQuery({
-    queryKey: ['publishers', 'me-resolve'],
-    queryFn: () => publishersApi.list({ limit: 1000 }),
-    enabled: !!user,
-    retry: false,
-    staleTime: 5 * 60 * 1000,
-  });
-  const myPublisherId =
-    pubData?.data?.find((p) => p.userId === user?.id)?.id ?? null;
 
   const { data: weekAssignments } = useQuery({
     queryKey: ['assignments', 'home-week', next?.weekStartISO, myPublisherId],
@@ -185,6 +199,52 @@ function NextMeetingCard() {
   );
 }
 
+function MyAbsencesBlock({ myPublisherId }: { myPublisherId: string | null }) {
+  const { t, i18n } = useTranslation();
+  const { data } = useQuery({
+    queryKey: ['absences', 'mine', myPublisherId],
+    queryFn: () => absencesApi.list({ publisherId: myPublisherId! }),
+    enabled: !!myPublisherId,
+    retry: false,
+    staleTime: 60 * 1000,
+  });
+  const mine = (data ?? []).slice(0, 3);
+  if (!myPublisherId || mine.length === 0) return null;
+
+  return (
+    <>
+      <Text style={[styles.sectionTitle, { marginTop: 24, marginBottom: 12 }]}>
+        {t('home.myAbsences')}
+      </Text>
+      <View style={styles.card}>
+        {mine.map((a, idx) => (
+          <View
+            key={a.id}
+            style={[styles.eventRow, idx > 0 && styles.eventRowBorder]}
+          >
+            <Ionicons
+              name="airplane-outline"
+              size={18}
+              color="#b45309"
+              style={{ marginRight: 10 }}
+            />
+            <View style={{ flex: 1 }}>
+              <Text style={styles.eventTitle}>
+                {absenceRangeLabel(a, i18n.language)}
+              </Text>
+              {a.note ? (
+                <Text style={styles.eventDate} numberOfLines={1}>
+                  {a.note}
+                </Text>
+              ) : null}
+            </View>
+          </View>
+        ))}
+      </View>
+    </>
+  );
+}
+
 type Tile = {
   key: string;
   label: string;
@@ -197,6 +257,7 @@ export default function HomeScreen() {
   const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const { canManageAbsences } = usePermissions();
+  const { myPublisherId } = useMyPublisher();
   const canSeeDirectory =
     user?.role === 'admin' ||
     user?.role === 'elder' ||
@@ -225,7 +286,9 @@ export default function HomeScreen() {
       <Text style={[styles.sectionTitle, { marginBottom: 12 }]}>
         {t('home.nextMeeting')}
       </Text>
-      <NextMeetingCard />
+      <NextMeetingCard myPublisherId={myPublisherId} />
+
+      <MyAbsencesBlock myPublisherId={myPublisherId} />
 
       <View style={[styles.sectionHeader, { marginTop: 24 }]}>
         <Text style={styles.sectionTitle}>{t('home.upcomingEvents')}</Text>
