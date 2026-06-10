@@ -702,12 +702,36 @@ export interface PublisherActivity {
   items: ActivityItem[];
 }
 
+export interface PartSuggestion {
+  publisherId: string;
+  /** Last week (before the target week) they led one of the parts. */
+  lastPrimaryAt: string | null;
+  /** Last week they assisted on one of the parts. */
+  lastAssistantAt: string | null;
+  /** Most recent distinct assistants when they led (newest first, max 3). */
+  recentAssistants: { publisherId: string; weekStartDate: string }[];
+}
+
 export const publisherActivityApi = {
   async getActivity(params: {
     weekStart: string;
     weeks?: number;
   }): Promise<PublisherActivity[]> {
     const { data } = await api.get('/publisher-activity', { params });
+    return data;
+  },
+  async getSuggestions(params: {
+    weekStart: string;
+    partKeys: string[];
+    weeks?: number;
+  }): Promise<PartSuggestion[]> {
+    const { data } = await api.get('/publisher-activity/suggestions', {
+      params: {
+        weekStart: params.weekStart,
+        partKeys: params.partKeys.join(','),
+        weeks: params.weeks,
+      },
+    });
     return data;
   },
 };

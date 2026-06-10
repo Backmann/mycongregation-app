@@ -700,7 +700,11 @@
     "showAllOverride": "Alle Verkündiger anzeigen (Filter überschreiben)",
     "showingAllNoFilter": "Alle angezeigt — Fähigkeitsfilter ist AUS",
     "hiddenByCapability": "{{count}} durch Filter ausgeblendet",
-    "lastGiven": "Zuletzt gehalten {{date}}"
+    "lastGiven": "Zuletzt gehalten {{date}}",
+    "lastDidPart": "Dieser Teil: {{date}} ({{ago}})",
+    "weeksAgoShort": "vor {{count}} Wo.",
+    "neverDidPart": "Hat diesen Teil noch nicht gemacht",
+    "recentPartner": "Kürzlich Partner ({{date}})"
   },
   "admin": {
     "users": {

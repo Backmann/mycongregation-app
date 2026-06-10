@@ -17,8 +17,10 @@ import { useQuery } from '@tanstack/react-query';
 import {
   Absence,
   absencesApi,
+  PartSuggestion,
   Publisher,
   PublisherActivity,
+  publisherActivityApi,
   publishersApi,
 } from '../lib/api';
 import { ActivitySummary, summarizeActivity } from '../lib/activity';
@@ -40,6 +42,12 @@ interface Props {
   currentWeekStart?: string;
   /** Current meeting type — flags "this meeting" activity. */
   currentEventType?: string;
+  /** Part keys (incl. equivalents) to fetch "last done" history for. */
+  suggestionPartKeys?: string[];
+  /** Which side this picker selects — affects the shown date and sorting. */
+  suggestionRole?: 'primary' | 'assistant';
+  /** For assistant pickers: the primary publisher whose recent partners to mark. */
+  partnerOfPublisherId?: string | null;
 }
 
 const ISO_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -75,6 +83,21 @@ function absenceRangeLabel(a: Absence, loc: string): string {
   return `${s} \u2013 ${e}`;
 }
 
+/** Splits an ISO date into a short localized date + whole weeks ago. */
+function lastDoneParts(
+  iso: string,
+  loc: string,
+): { date: string; weeks: number } {
+  const d = new Date(`${iso}T00:00:00`);
+  return {
+    date: d.toLocaleDateString(loc, { day: 'numeric', month: 'short' }),
+    weeks: Math.max(
+      0,
+      Math.round((Date.now() - d.getTime()) / (7 * 24 * 3600 * 1000)),
+    ),
+  };
+}
+
 export function PublisherSelector({
   label,
   value,
@@ -84,6 +107,9 @@ export function PublisherSelector({
   activityById,
   currentWeekStart,
   currentEventType,
+  suggestionPartKeys,
+  suggestionRole = 'primary',
+  partnerOfPublisherId,
 }: Props) {
   const { t, i18n } = useTranslation();
   const [open, setOpen] = useState(false);
@@ -122,6 +148,42 @@ export function PublisherSelector({
   const selectedAbsence = value ? absentThisWeek.get(value) : undefined;
   // ----------------------------------------------------------------------
 
+  // --- Suggestions: when did each candidate last do this part ------------
+  const suggKeys = suggestionPartKeys ?? [];
+  const suggEnabled = weekValid && suggKeys.length > 0;
+  const { data: suggData } = useQuery({
+    queryKey: ['part-suggestions', currentWeekStart, suggKeys.join(',')],
+    queryFn: () =>
+      publisherActivityApi.getSuggestions({
+        weekStart: currentWeekStart!,
+        partKeys: suggKeys,
+      }),
+    enabled: suggEnabled,
+    staleTime: 5 * 60 * 1000,
+  });
+  const suggestionById = useMemo(() => {
+    const m = new Map<string, PartSuggestion>();
+    for (const s of suggData ?? []) m.set(s.publisherId, s);
+    return m;
+  }, [suggData]);
+  const lastDoneAt = (publisherId: string): string | null => {
+    const s = suggestionById.get(publisherId);
+    if (!s) return null;
+    return suggestionRole === 'assistant'
+      ? s.lastAssistantAt
+      : s.lastPrimaryAt;
+  };
+  const partnerHistory = partnerOfPublisherId
+    ? (suggestionById.get(partnerOfPublisherId)?.recentAssistants ?? [])
+    : [];
+  const recentPartnerWeekById = new Map<string, string>();
+  for (const r of partnerHistory) {
+    if (!recentPartnerWeekById.has(r.publisherId)) {
+      recentPartnerWeekById.set(r.publisherId, r.weekStartDate);
+    }
+  }
+  // ----------------------------------------------------------------------
+
   const filterByCapability = !!requiredCapability && !showAll;
   const capabilityLabel = requiredCapability
     ? t(`capabilities.items.${requiredCapability}`)
@@ -138,6 +200,17 @@ export function PublisherSelector({
       return false;
     return true;
   });
+
+  const sorted = suggEnabled
+    ? [...filtered].sort((a, b) => {
+        const da = lastDoneAt(a.id);
+        const db = lastDoneAt(b.id);
+        if (da === db) return a.displayName.localeCompare(b.displayName);
+        if (da === null) return -1;
+        if (db === null) return 1;
+        return da.localeCompare(db);
+      })
+    : filtered;
 
   // Hidden count = those filtered out only because of capability mismatch
   const hiddenByCapability = filterByCapability
@@ -278,7 +351,7 @@ export function PublisherSelector({
                 </Text>
               )}
 
-              {filtered.map((p) => (
+              {sorted.map((p) => (
                 <PublisherOption
                   key={p.id}
                   publisher={p}
@@ -300,6 +373,8 @@ export function PublisherSelector({
                     currentEventType,
                   )}
                   absence={absentThisWeek.get(p.id)}
+                  lastDoneAt={suggEnabled ? lastDoneAt(p.id) : undefined}
+                  partnerWeek={recentPartnerWeekById.get(p.id)}
                 />
               ))}
             </ScrollView>
@@ -317,6 +392,8 @@ function PublisherOption({
   showCapabilityWarning,
   activity,
   absence,
+  lastDoneAt,
+  partnerWeek,
   onPress,
 }: {
   publisher: Publisher;
@@ -325,12 +402,20 @@ function PublisherOption({
   showCapabilityWarning: boolean;
   activity?: ActivitySummary;
   absence?: Absence;
+  /** ISO date they last did this part; null = never; undefined = hints off. */
+  lastDoneAt?: string | null;
+  /** ISO week when they were recently this primary’s partner. */
+  partnerWeek?: string;
   onPress: () => void;
 }) {
   const { t, i18n } = useTranslation();
   const [expanded, setExpanded] = useState(false);
   const busyThisMeeting = !!activity && activity.thisMeeting.length > 0;
   const recentItems = activity?.recentItems ?? [];
+  const last = lastDoneAt ? lastDoneParts(lastDoneAt, i18n.language) : null;
+  const partner = partnerWeek
+    ? lastDoneParts(partnerWeek, i18n.language)
+    : null;
   return (
     <Pressable
       style={({ pressed }) => [
@@ -364,6 +449,21 @@ function PublisherOption({
             {t('absences.warnAway', {
               range: absenceRangeLabel(absence, i18n.language),
             })}
+          </Text>
+        )}
+        {lastDoneAt !== undefined && (
+          <Text style={styles.optionLastDone} numberOfLines={1}>
+            {last
+              ? t('pickers.lastDidPart', {
+                  date: last.date,
+                  ago: t('pickers.weeksAgoShort', { count: last.weeks }),
+                })
+              : t('pickers.neverDidPart')}
+          </Text>
+        )}
+        {partner && (
+          <Text style={styles.optionPartner} numberOfLines={1}>
+            {t('pickers.recentPartner', { date: partner.date })}
           </Text>
         )}
         {busyThisMeeting && (
@@ -439,6 +539,8 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   absenceText: { fontSize: 11, color: '#b45309', flex: 1 },
+  optionLastDone: { fontSize: 11, color: '#0369a1', marginTop: 2 },
+  optionPartner: { fontSize: 11, color: '#7c3aed', marginTop: 2 },
   optionBusy: { backgroundColor: '#f0f9ff' },
   optionBusyText: {
     fontSize: 12,

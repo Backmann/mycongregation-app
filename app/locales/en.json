@@ -700,7 +700,11 @@
     "showAllOverride": "Show all publishers (override filter)",
     "showingAllNoFilter": "Showing all — capability filter is OFF",
     "hiddenByCapability": "{{count}} hidden by capability filter",
-    "lastGiven": "Last given {{date}}"
+    "lastGiven": "Last given {{date}}",
+    "lastDidPart": "This part: {{date}} ({{ago}})",
+    "weeksAgoShort": "{{count}} wk ago",
+    "neverDidPart": "Hasn't done this part yet",
+    "recentPartner": "Recent partner ({{date}})"
   },
   "admin": {
     "users": {

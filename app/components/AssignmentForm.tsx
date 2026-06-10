@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
   ActivityIndicator,
@@ -26,6 +26,7 @@ import {
 import {
   getPartDef,
   getPartLabel,
+  PARTS_BY_EVENT,
   skillCapabilityFromTitle,
 } from '../lib/parts';
 import { useTranslation } from 'react-i18next';
@@ -129,6 +130,20 @@ export function AssignmentForm({
   const requiredSkillLabel = requiredCap
     ? t(`capabilities.items.${requiredCap}`)
     : null;
+
+  // Equivalent keys for "last did this part" suggestions: the whole
+  // apply-yourself family counts as one part; everything else is exact.
+  const suggestionPartKeys = useMemo(() => {
+    const key = form.partKey?.trim();
+    if (!key) return [];
+    if (key.startsWith('apply_yourself')) {
+      const family = (PARTS_BY_EVENT.midweek ?? [])
+        .map((p) => p.key)
+        .filter((k) => k.startsWith('apply_yourself'));
+      return family.length > 0 ? family : [key];
+    }
+    return [key];
+  }, [form.partKey]);
 
   const handleTalkSelect = (talk: PublicTalk | null) => {
     setForm((prev) => ({
@@ -334,6 +349,7 @@ export function AssignmentForm({
                 form.assistantPublisherId ? [form.assistantPublisherId] : []
               }
               requiredCapability={requiredCap}
+              suggestionPartKeys={suggestionPartKeys}
               activityById={activityById}
               currentWeekStart={form.weekStartDate}
               currentEventType={form.eventType}
@@ -345,6 +361,9 @@ export function AssignmentForm({
                 onChange={(id) => update('assistantPublisherId', id)}
                 excludeIds={form.publisherId ? [form.publisherId] : []}
                 requiredCapability={requiredAssistantCap}
+                suggestionPartKeys={suggestionPartKeys}
+                suggestionRole="assistant"
+                partnerOfPublisherId={form.publisherId ?? null}
                 activityById={activityById}
                 currentWeekStart={form.weekStartDate}
                 currentEventType={form.eventType}
