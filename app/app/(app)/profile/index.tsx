@@ -81,6 +81,11 @@ export default function ProfileScreen() {
 
   const isAdmin = user.role === 'admin' || user.role === 'elder';
   const isFullAdmin = user.role === 'admin';
+  const initials =
+    (myPublisher
+      ? `${myPublisher.firstName?.[0] ?? ''}${myPublisher.lastName?.[0] ?? ''}`
+      : (user.email[0] ?? '')
+    ).toUpperCase() || '?';
 
   return (
     <>
@@ -91,14 +96,23 @@ export default function ProfileScreen() {
       <View style={styles.section}>
         <Text style={styles.sectionLabel}>{t('profile.signedInAs')}</Text>
         <View style={styles.card}>
-          {myPublisher?.displayName ? (
-            <Text style={styles.displayName}>{myPublisher.displayName}</Text>
-          ) : null}
-          <Text style={styles.email}>{user.email}</Text>
-          <View style={styles.roleBadge}>
-            <Text style={styles.roleText}>
-              {t(`profile.roles.${user.role}`, { defaultValue: user.role })}
-            </Text>
+          <View style={styles.identityRow}>
+            <View style={styles.avatar}>
+              <Text style={styles.avatarText}>{initials}</Text>
+            </View>
+            <View style={styles.identityCol}>
+              {myPublisher?.displayName ? (
+                <Text style={styles.identityName}>
+                  {myPublisher.displayName}
+                </Text>
+              ) : null}
+              <Text style={styles.identityEmail}>{user.email}</Text>
+              <View style={styles.identityBadge}>
+                <Text style={styles.identityBadgeText}>
+                  {t(`profile.roles.${user.role}`, { defaultValue: user.role })}
+                </Text>
+              </View>
+            </View>
           </View>
         </View>
       </View>
@@ -320,11 +334,37 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: '#e2e8f0',
   },
-  displayName: {
-    fontSize: 18,
+  identityRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    padding: 14,
+  },
+  avatar: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#0ea5e9',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarText: { color: '#ffffff', fontSize: 16, fontWeight: '700' },
+  identityCol: { flex: 1, gap: 2 },
+  identityName: { fontSize: 17, fontWeight: '700', color: '#0f172a' },
+  identityEmail: { fontSize: 13, color: '#64748b' },
+  identityBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#e0f2fe',
+    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    marginTop: 4,
+  },
+  identityBadgeText: {
+    fontSize: 11,
     fontWeight: '700',
-    color: '#0f172a',
-    marginBottom: 2,
+    color: '#0369a1',
+    letterSpacing: 0.3,
   },
   email: {
     fontSize: 15,

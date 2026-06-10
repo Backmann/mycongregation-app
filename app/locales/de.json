@@ -143,7 +143,8 @@
       "personal": "Persönlich",
       "specialNeeds": "Besondere Bedürfnisse",
       "status": "Status",
-      "notes": "Notizen"
+      "notes": "Notizen",
+      "appAccess": "App-Zugang"
     },
     "fields": {
       "phone": "Telefon",
