@@ -375,6 +375,7 @@ export function PublisherSelector({
                   absence={absentThisWeek.get(p.id)}
                   lastDoneAt={suggEnabled ? lastDoneAt(p.id) : undefined}
                   partnerWeek={recentPartnerWeekById.get(p.id)}
+                  eventTypeFilter={currentEventType}
                 />
               ))}
             </ScrollView>
@@ -394,6 +395,7 @@ function PublisherOption({
   absence,
   lastDoneAt,
   partnerWeek,
+  eventTypeFilter,
   onPress,
 }: {
   publisher: Publisher;
@@ -406,12 +408,16 @@ function PublisherOption({
   lastDoneAt?: string | null;
   /** ISO week when they were recently this primary’s partner. */
   partnerWeek?: string;
+  /** When set, the expandable history shows only this meeting type. */
+  eventTypeFilter?: string;
   onPress: () => void;
 }) {
   const { t, i18n } = useTranslation();
   const [expanded, setExpanded] = useState(false);
   const busyThisMeeting = !!activity && activity.thisMeeting.length > 0;
-  const recentItems = activity?.recentItems ?? [];
+  const recentItems = (activity?.recentItems ?? []).filter(
+    (it) => !eventTypeFilter || it.eventType === eventTypeFilter,
+  );
   const last = lastDoneAt ? lastDoneParts(lastDoneAt, i18n.language) : null;
   const partner = partnerWeek
     ? lastDoneParts(partnerWeek, i18n.language)
@@ -467,10 +473,13 @@ function PublisherOption({
           </Text>
         )}
         {busyThisMeeting && (
-          <Text style={styles.optionBusyText} numberOfLines={1}>
-            {t('publisherActivity.thisMeeting')}{' '}
-            {activity!.thisMeeting.join(', ')}
-          </Text>
+          <View style={styles.busyChipRow}>
+            <Ionicons name="time" size={11} color="#b45309" />
+            <Text style={styles.busyChipText} numberOfLines={1}>
+              {t('publisherActivity.thisMeeting')}{' '}
+              {activity!.thisMeeting.join(', ')}
+            </Text>
+          </View>
         )}
         {recentItems.length > 0 && (
           <Pressable
@@ -541,6 +550,18 @@ const styles = StyleSheet.create({
   absenceText: { fontSize: 11, color: '#b45309', flex: 1 },
   optionLastDone: { fontSize: 11, color: '#0369a1', marginTop: 2 },
   optionPartner: { fontSize: 11, color: '#7c3aed', marginTop: 2 },
+  busyChipRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    alignSelf: 'flex-start',
+    backgroundColor: '#fef3c7',
+    borderRadius: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    marginTop: 3,
+  },
+  busyChipText: { fontSize: 11, color: '#92400e', flexShrink: 1 },
   optionBusy: { backgroundColor: '#f0f9ff' },
   optionBusyText: {
     fontSize: 12,

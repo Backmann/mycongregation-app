@@ -585,7 +585,8 @@
       "validation": {
         "weekStartRequired": "Week start date is required",
         "partKeyRequired": "Part key is required"
-      }
+      },
+      "minutesShort": "{{count}} min"
     }
   },
   "schedule": {

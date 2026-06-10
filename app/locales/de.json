@@ -585,7 +585,8 @@
       "validation": {
         "weekStartRequired": "Wochenbeginn ist erforderlich",
         "partKeyRequired": "Programmpunkt-Schlüssel ist erforderlich"
-      }
+      },
+      "minutesShort": "{{count}} Min."
     }
   },
   "schedule": {

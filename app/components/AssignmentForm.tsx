@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { FormField } from './FormField';
 import { FormSection } from './FormSection';
+import { CollapsibleSection } from './CollapsibleSection';
 import { FormChips } from './FormChips';
 import { PublisherSelector } from './PublisherSelector';
 import { PublicTalkSelector } from './PublicTalkSelector';
@@ -203,25 +204,39 @@ export function AssignmentForm({
           eventType={form.eventType}
         />
       ) : null}
-      <FormSection title={t('assignments.form.section.identity')}>
-        {lockIdentity ? (
-          <>
-            <View style={styles.readonly}>
-              <Text style={styles.readonlyLabel}>{t('assignments.form.readonly.weekStart')}</Text>
-              <Text style={styles.readonlyValue}>{form.weekStartDate}</Text>
+      {lockIdentity ? (
+        <View style={styles.contextCard}>
+          <Text style={styles.contextMeta}>
+            {form.weekStartDate}
+            {' \u00b7 '}
+            {t(`assignments.eventTypeShort.${form.eventType}`, {
+              defaultValue: form.eventType,
+            })}
+          </Text>
+          <Text style={styles.contextPart}>{getPartLabel(form.partKey)}</Text>
+          {form.partDurationMin || requiredSkillLabel ? (
+            <View style={styles.contextChips}>
+              {form.partDurationMin ? (
+                <View style={styles.contextChip}>
+                  <Text style={styles.contextChipText}>
+                    {t('assignments.form.minutesShort', {
+                      count: form.partDurationMin,
+                    })}
+                  </Text>
+                </View>
+              ) : null}
+              {requiredSkillLabel ? (
+                <View style={styles.contextChip}>
+                  <Text style={styles.contextChipText}>
+                    {requiredSkillLabel}
+                  </Text>
+                </View>
+              ) : null}
             </View>
-            <View style={styles.readonly}>
-              <Text style={styles.readonlyLabel}>{t('assignments.form.readonly.eventType')}</Text>
-              <Text style={styles.readonlyValue}>{form.eventType}</Text>
-            </View>
-            <View style={styles.readonly}>
-              <Text style={styles.readonlyLabel}>{t('assignments.form.readonly.part')}</Text>
-              <Text style={styles.readonlyValue}>
-                {getPartLabel(form.partKey)}
-              </Text>
-            </View>
-          </>
-        ) : (
+          ) : null}
+        </View>
+      ) : (
+        <FormSection title={t('assignments.form.section.identity')}>
           <>
             <FormField
               label={t('assignments.form.field.weekStartFull')}
@@ -252,8 +267,8 @@ export function AssignmentForm({
               keyboardType="numeric"
             />
           </>
-        )}
-      </FormSection>
+        </FormSection>
+      )}
 
       {isPublicTalkSpeaker && (
         <FormSection title={t('assignments.form.section.publicTalk')}>
@@ -265,7 +280,10 @@ export function AssignmentForm({
         </FormSection>
       )}
 
-      <FormSection title={t('assignments.form.section.details')}>
+      <CollapsibleSection
+        title={t('assignments.form.section.details')}
+        initiallyOpen={!!form.partTitle || !!form.partDurationMin}
+      >
         <FormField
           label={t('assignments.form.field.partTitleOverride')}
           value={form.partTitle ?? ''}
@@ -299,7 +317,7 @@ export function AssignmentForm({
             </Text>
           </View>
         )}
-      </FormSection>
+      </CollapsibleSection>
 
       <FormSection title={isPublicTalkSpeaker ? t('assignments.form.section.speaker') : t('assignments.form.section.assignment')}>
         {isPublicTalkSpeaker ? (
@@ -428,6 +446,31 @@ export function AssignmentForm({
 }
 
 const styles = StyleSheet.create({
+  contextCard: {
+    backgroundColor: '#ffffff',
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: '#e2e8f0',
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    marginTop: 16,
+    gap: 4,
+  },
+  contextMeta: {
+    fontSize: 12,
+    color: '#64748b',
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+  },
+  contextPart: { fontSize: 17, fontWeight: '700', color: '#0f172a' },
+  contextChips: { flexDirection: 'row', gap: 6, marginTop: 4 },
+  contextChip: {
+    backgroundColor: '#f1f5f9',
+    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+  },
+  contextChipText: { fontSize: 12, color: '#475569', fontWeight: '600' },
   container: { flex: 1, backgroundColor: '#f1f5f9' },
   readonly: {
     paddingVertical: 8,

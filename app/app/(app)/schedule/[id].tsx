@@ -176,11 +176,16 @@ export default function AssignmentDetailScreen() {
           </Pressable>
         ) : (
           <Pressable
-            style={[styles.button, styles.buttonUnassign]}
+            style={({ pressed }) => [
+              styles.unassignLink,
+              pressed && styles.unassignLinkPressed,
+              (unassignMutation.isPending || !a.publisherId) &&
+                styles.unassignLinkDisabled,
+            ]}
             onPress={confirmUnassign}
             disabled={unassignMutation.isPending || !a.publisherId}
           >
-            <Text style={styles.buttonText}>
+            <Text style={styles.unassignLinkText}>
               {unassignMutation.isPending
                 ? t('schedule.unassign.unassigning')
                 : t('schedule.unassign.button')}
@@ -205,6 +210,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   removedText: { color: '#92400e', fontWeight: '600', fontSize: 13 },
+  unassignLink: {
+    alignSelf: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+  },
+  unassignLinkPressed: { opacity: 0.6 },
+  unassignLinkDisabled: { opacity: 0.35 },
+  unassignLinkText: {
+    color: '#dc2626',
+    fontSize: 14,
+    fontWeight: '600',
+  },
   bottomActions: {
     padding: 16,
     backgroundColor: '#f1f5f9',

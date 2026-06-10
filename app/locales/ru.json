@@ -589,7 +589,8 @@
       "validation": {
         "weekStartRequired": "Требуется дата начала недели",
         "partKeyRequired": "Требуется ключ части"
-      }
+      },
+      "minutesShort": "{{count}} мин"
     }
   },
   "schedule": {
