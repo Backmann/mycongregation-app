@@ -13,6 +13,7 @@ import { FormSection } from './FormSection';
 import { FormChips } from './FormChips';
 import { PublisherSelector } from './PublisherSelector';
 import { PublicTalkSelector } from './PublicTalkSelector';
+import { EventOnDateNotice } from './EventOnDateNotice';
 import {
   AssignmentStatus,
   CreateAssignmentInput,
@@ -180,6 +181,13 @@ export function AssignmentForm({
         pointerEvents={readOnly ? 'none' : 'auto'}
         style={readOnly ? { opacity: 0.55 } : undefined}
       >
+      {(form.eventType === 'midweek' || form.eventType === 'weekend') &&
+      !!form.weekStartDate ? (
+        <EventOnDateNotice
+          weekStartDate={form.weekStartDate}
+          eventType={form.eventType}
+        />
+      ) : null}
       <FormSection title={t('assignments.form.section.identity')}>
         {lockIdentity ? (
           <>

@@ -1003,6 +1003,10 @@
     "replaced": {
       "insteadOf": "instead of the meeting",
       "hidden": "Hidden assignments: {{count}} — move or cancel them"
+    },
+    "formNotice": {
+      "title": "Event on this date",
+      "replaces": "The event replaces this meeting — check whether the assignment is needed"
     }
   },
   "absences": {

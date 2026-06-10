@@ -62,6 +62,8 @@ type Props = {
   activityById?: Map<string, PublisherActivity>;
   weekStartISO?: string;
   pending?: boolean;
+  /** Meetings replaced by a special event this week; their duty blocks are hidden. */
+  replacedEventTypes?: Meeting[];
 };
 
 export function DutiesSection({
@@ -75,6 +77,7 @@ export function DutiesSection({
   activityById,
   weekStartISO,
   pending,
+  replacedEventTypes,
 }: Props) {
   const { t } = useTranslation();
   const [customFor, setCustomFor] = useState<Meeting | null>(null);
@@ -106,6 +109,9 @@ export function DutiesSection({
       </View>
 
       {MEETINGS.map((meeting) => {
+        // Meeting replaced by a special event — hide its duties entirely,
+        // including the empty block with the Generate button.
+        if (replacedEventTypes?.includes(meeting)) return null;
         const list = (byMeeting.get(meeting) ?? []).slice().sort(sortDuties);
         const meetingLabel = t(`meetingSettings.${meeting}`);
 

@@ -1003,6 +1003,10 @@
     "replaced": {
       "insteadOf": "statt der Zusammenkunft",
       "hidden": "Ausgeblendete Aufgaben: {{count}} — verschieben oder absagen"
+    },
+    "formNotice": {
+      "title": "Ereignis an diesem Datum",
+      "replaces": "Das Ereignis ersetzt diese Zusammenkunft – prüfe, ob die Aufgabe nötig ist"
     }
   },
   "absences": {

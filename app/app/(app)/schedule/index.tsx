@@ -278,6 +278,10 @@ export default function ScheduleIndexScreen() {
   };
   const midweekReplacedBy = replacedBy('midweek');
   const weekendReplacedBy = replacedBy('weekend');
+  const replacedEventTypes: ('midweek' | 'weekend')[] = [
+    ...(midweekReplacedBy ? (['midweek'] as const) : []),
+    ...(weekendReplacedBy ? (['weekend'] as const) : []),
+  ];
 
   const hasMidweek = (grouped.get('midweek')?.length ?? 0) > 0;
   const hasWeekend = (grouped.get('weekend')?.length ?? 0) > 0;
@@ -388,6 +392,7 @@ export default function ScheduleIndexScreen() {
 
             <DutiesSection
               duties={duties}
+              replacedEventTypes={replacedEventTypes}
               publishersById={publishersById}
               canEdit={canEditDuties}
               onGenerate={(eventType) =>
