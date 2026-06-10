@@ -41,7 +41,7 @@ export default function LoginScreen() {
     setError(null);
     try {
       await signIn(email.trim(), password);
-      router.replace('/(app)/publishers');
+      router.replace('/(app)/home' as any);
     } catch (e) {
       setError(extractErrorMessage(e));
     } finally {

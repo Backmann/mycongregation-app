@@ -13,5 +13,5 @@ export default function Index() {
     );
   }
 
-  return <Redirect href={user ? '/(app)/publishers' : '/(auth)/login'} />;
+  return <Redirect href={(user ? '/(app)/home' : '/(auth)/login') as any} />;
 }
