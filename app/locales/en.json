@@ -6,7 +6,8 @@
     "groups": "Groups",
     "reports": "Reports",
     "profile": "Profile",
-    "cart": "Carts"
+    "cart": "Carts",
+    "home": "Home"
   },
   "common": {
     "edit": "Edit",
@@ -1037,5 +1038,20 @@
       "cancel": "Cancel"
     },
     "warnAway": "Away: {{range}}"
+  },
+  "home": {
+    "title": "Home",
+    "upcomingEvents": "Upcoming events",
+    "noEvents": "No upcoming events",
+    "allEvents": "All events",
+    "quickActions": "Quick actions",
+    "actions": {
+      "schedule": "Schedule",
+      "report": "Submit report",
+      "events": "Events",
+      "publishers": "Publishers",
+      "absences": "Absences",
+      "profile": "Profile"
+    }
   }
 }

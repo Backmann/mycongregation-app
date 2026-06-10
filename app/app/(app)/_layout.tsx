@@ -34,6 +34,15 @@ export default function AppLayout() {
       }}
     >
       <Tabs.Screen
+        name="home"
+        options={{
+          title: t('tabs.home'),
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="home" color={color} size={size} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="schedule"
         options={{
           title: t('tabs.schedule'),

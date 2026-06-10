@@ -6,7 +6,8 @@
     "groups": "Группы",
     "reports": "Отчёты",
     "profile": "Профиль",
-    "cart": "Тележки"
+    "cart": "Тележки",
+    "home": "Главная"
   },
   "common": {
     "edit": "Изменить",
@@ -1041,5 +1042,20 @@
       "cancel": "Отмена"
     },
     "warnAway": "Отсутствует: {{range}}"
+  },
+  "home": {
+    "title": "Главная",
+    "upcomingEvents": "Ближайшие события",
+    "noEvents": "Нет ближайших событий",
+    "allEvents": "Все события",
+    "quickActions": "Быстрые действия",
+    "actions": {
+      "schedule": "Расписание",
+      "report": "Сдать отчёт",
+      "events": "События",
+      "publishers": "Возвещатели",
+      "absences": "Отсутствия",
+      "profile": "Профиль"
+    }
   }
 }

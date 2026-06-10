@@ -6,7 +6,8 @@
     "groups": "Gruppen",
     "reports": "Berichte",
     "profile": "Profil",
-    "cart": "Wagen"
+    "cart": "Wagen",
+    "home": "Start"
   },
   "common": {
     "edit": "Bearbeiten",
@@ -1037,5 +1038,20 @@
       "cancel": "Abbrechen"
     },
     "warnAway": "Abwesend: {{range}}"
+  },
+  "home": {
+    "title": "Start",
+    "upcomingEvents": "Bevorstehende Ereignisse",
+    "noEvents": "Keine bevorstehenden Ereignisse",
+    "allEvents": "Alle Ereignisse",
+    "quickActions": "Schnellzugriff",
+    "actions": {
+      "schedule": "Programm",
+      "report": "Bericht abgeben",
+      "events": "Ereignisse",
+      "publishers": "Verkündiger",
+      "absences": "Abwesenheiten",
+      "profile": "Profil"
+    }
   }
 }
