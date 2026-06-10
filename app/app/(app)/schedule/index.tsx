@@ -56,6 +56,7 @@ import { CleaningSection } from '../../../components/CleaningSection';
 import { usePermissions } from '../../../lib/permissions';
 import { SpecialEventsWeekBanner } from '../../../components/SpecialEventsWeekBanner';
 import { ReplacedMeetingNotice } from '../../../components/ReplacedMeetingNotice';
+import { CollapsibleMeetingBlock } from '../../../components/CollapsibleMeetingBlock';
 
 const EVENT_TYPE_ORDER: EventType[] = [
   'midweek',
@@ -66,7 +67,7 @@ const EVENT_TYPE_ORDER: EventType[] = [
 ];
 
 export default function ScheduleIndexScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const queryClient = useQueryClient();
   const [weekStart, setWeekStart] = useState(() =>
     startOfWeekMonday(new Date()),
@@ -282,6 +283,19 @@ export default function ScheduleIndexScreen() {
     ...(midweekReplacedBy ? (['midweek'] as const) : []),
     ...(weekendReplacedBy ? (['weekend'] as const) : []),
   ];
+  const assignedCount = (list: Assignment[]) =>
+    list.filter((x) => x.publisherId && x.status !== 'cancelled').length;
+  const meetingDateLabel = (kind: 'midweek' | 'weekend'): string | null => {
+    if (!meetingVersion) return null;
+    const dow =
+      kind === 'midweek' ? meetingVersion.midweekDow : meetingVersion.weekendDow;
+    if (!dow) return null;
+    return addDays(weekStart, dow - 1).toLocaleDateString(i18n.language, {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+    });
+  };
 
   const hasMidweek = (grouped.get('midweek')?.length ?? 0) > 0;
   const hasWeekend = (grouped.get('weekend')?.length ?? 0) > 0;
@@ -339,7 +353,13 @@ export default function ScheduleIndexScreen() {
               }
               if (eventType === 'midweek') {
                 return (
-                  <View key="midweek">
+                  <CollapsibleMeetingBlock
+                    key="midweek"
+                    title={getEventTypeLabel('midweek')}
+                    meta={meetingDateLabel('midweek')}
+                    assigned={assignedCount(items)}
+                    total={items.length}
+                  >
                     <MeetingHeader
                       weekStart={weekStart}
                       version={meetingVersion}
@@ -351,7 +371,45 @@ export default function ScheduleIndexScreen() {
                       publishersById={publishersById}
                       groupNameById={groupNameById}
                     />
-                  </View>
+                  </CollapsibleMeetingBlock>
+                );
+              }
+              if (eventType === 'weekend') {
+                return (
+                  <CollapsibleMeetingBlock
+                    key="weekend"
+                    title={getEventTypeLabel('weekend')}
+                    meta={meetingDateLabel('weekend')}
+                    assigned={assignedCount(items)}
+                    total={items.length}
+                  >
+                    <MeetingHeader
+                      weekStart={weekStart}
+                      version={meetingVersion}
+                      eventType="weekend"
+                    />
+                    <View style={styles.sectionBody}>
+                      {items.map((a) => (
+                        <AssignmentRow
+                          key={a.id}
+                          assignment={a}
+                          publisher={
+                            a.publisherId
+                              ? publishersById.get(a.publisherId) ?? null
+                              : null
+                          }
+                          assistant={
+                            a.assistantPublisherId
+                              ? publishersById.get(a.assistantPublisherId) ??
+                                null
+                              : null
+                          }
+                          displayNumber={numbers.get(a.id) ?? null}
+                          groupNameById={groupNameById}
+                        />
+                      ))}
+                    </View>
+                  </CollapsibleMeetingBlock>
                 );
               }
               return (
@@ -359,13 +417,6 @@ export default function ScheduleIndexScreen() {
                   <Text style={styles.sectionTitle}>
                     {getEventTypeLabel(eventType)} ({items.length})
                   </Text>
-                  {eventType === 'weekend' && (
-                    <MeetingHeader
-                      weekStart={weekStart}
-                      version={meetingVersion}
-                      eventType="weekend"
-                    />
-                  )}
                   <View style={styles.sectionBody}>
                     {items.map((a) => (
                       <AssignmentRow
