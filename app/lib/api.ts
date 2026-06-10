@@ -1176,9 +1176,26 @@ export interface MyAssignmentsResponse {
   items: MyAssignmentItem[];
 }
 
+export interface MyPublisherLite {
+  id: string;
+  displayName: string;
+  firstName: string;
+  lastName: string;
+  pioneerType: string | null;
+}
+
+export interface MyPublisherIdentityResponse {
+  publisher: MyPublisherLite | null;
+}
+
 export const meApi = {
   async assignments(): Promise<MyAssignmentsResponse> {
     const { data } = await api.get<MyAssignmentsResponse>('/me/assignments');
+    return data;
+  },
+  async publisher(): Promise<MyPublisherIdentityResponse> {
+    const { data } =
+      await api.get<MyPublisherIdentityResponse>('/me/publisher');
     return data;
   },
 };

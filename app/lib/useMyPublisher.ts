@@ -1,25 +1,24 @@
 import { useQuery } from '@tanstack/react-query';
-import { publishersApi, Publisher } from './api';
+import { meApi, MyPublisherLite } from './api';
 import { useAuth } from './auth';
 
 /**
- * Resolves the publisher linked to the signed-in user (publisher.userId).
- * Fails silently for roles that cannot list the directory — consumers should
- * hide publisher-bound UI when myPublisher is null.
+ * Resolves the publisher linked to the signed-in user via GET /me/publisher.
+ * Works for every role (no directory access required); returns null when no
+ * publisher is linked to the login. Consumers should hide publisher-bound UI
+ * when myPublisher is null.
  */
 export function useMyPublisher(): {
-  myPublisher: Publisher | null;
+  myPublisher: MyPublisherLite | null;
   myPublisherId: string | null;
 } {
   const { user } = useAuth();
   const { data } = useQuery({
-    queryKey: ['publishers', 'me-resolve'],
-    queryFn: () => publishersApi.list({ limit: 1000 }),
+    queryKey: ['me-publisher'],
+    queryFn: () => meApi.publisher(),
     enabled: !!user,
-    retry: false,
     staleTime: 5 * 60 * 1000,
   });
-  const myPublisher =
-    data?.data?.find((p) => p.userId === user?.id) ?? null;
+  const myPublisher = data?.publisher ?? null;
   return { myPublisher, myPublisherId: myPublisher?.id ?? null };
 }
