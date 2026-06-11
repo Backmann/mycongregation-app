@@ -11,11 +11,13 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
+import { useQuery } from '@tanstack/react-query';
 import {
   CreateFieldServiceMeetingInput,
   FieldServiceMeeting,
   Publisher,
   UpdateFieldServiceMeetingInput,
+  hallsApi,
 } from '../lib/api';
 import { PublisherSelector } from './PublisherSelector';
 
@@ -188,6 +190,13 @@ function FieldServiceForm({
   const editing = target && target !== 'new' ? target : null;
   const visible = target !== null;
 
+  const hallsQuery = useQuery({
+    queryKey: ['halls'],
+    queryFn: () => hallsApi.list(),
+    enabled: visible,
+  });
+  const halls = hallsQuery.data ?? [];
+
   const [dayOfWeek, setDayOfWeek] = useState<number>(2);
   const [startTime, setStartTime] = useState('');
   const [address, setAddress] = useState('');
@@ -214,6 +223,16 @@ function FieldServiceForm({
       setSourceUrl(target.sourceUrl ?? '');
     }
   }, [target]);
+
+  // Prefill a brand-new meeting with the default hall address — once,
+  // and only while the field is still empty (a cleared field stays cleared).
+  useEffect(() => {
+    if (target === 'new' && address === '' && halls.length > 0) {
+      const def = halls.find((h) => h.isDefault) ?? halls[0];
+      setAddress(def.address);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [target, hallsQuery.data]);
 
   const canSave = address.trim().length > 0 && TIME_RE.test(startTime);
 
@@ -286,6 +305,32 @@ function FieldServiceForm({
             />
 
             <Text style={styles.fieldLabel}>{t('fieldService.addressLabel')}</Text>
+            {halls.length > 0 && (
+              <View style={styles.hallChips}>
+                {halls.map((h) => {
+                  const active = address.trim() === h.address;
+                  return (
+                    <Pressable
+                      key={h.id}
+                      style={[
+                        styles.hallChip,
+                        active && styles.hallChipActive,
+                      ]}
+                      onPress={() => setAddress(h.address)}
+                    >
+                      <Text
+                        style={[
+                          styles.hallChipText,
+                          active && styles.hallChipTextActive,
+                        ]}
+                      >
+                        {h.name}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            )}
             <TextInput
               style={styles.input}
               value={address}
@@ -348,6 +393,26 @@ function FieldServiceForm({
 }
 
 const styles = StyleSheet.create({
+  hallChips: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginBottom: 6,
+  },
+  hallChip: {
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: '#cbd5e1',
+    backgroundColor: '#f8fafc',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  hallChipActive: {
+    borderColor: '#0ea5e9',
+    backgroundColor: '#e0f2fe',
+  },
+  hallChipText: { fontSize: 13, color: '#475569', fontWeight: '600' },
+  hallChipTextActive: { color: '#0369a1' },
   section: { marginTop: 16 },
   header: {
     flexDirection: 'row',
