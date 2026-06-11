@@ -16,7 +16,7 @@ export function CollapsibleMeetingBlock({
   actionLabel,
   onAction,
   actionBusy,
-  initiallyOpen = true,
+  initiallyOpen = false,
   children,
 }: {
   title: string;
