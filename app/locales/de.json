@@ -101,7 +101,9 @@
       "elder": "Ältester",
       "secretary": "Sekretär",
       "publisher": "Verkündiger"
-    }
+    },
+    "halls": "Königreichssäle",
+    "hallsDescription": "Adressen für Zusammenkünfte und Predigtdienst"
   },
   "language": {
     "title": "Sprache",
@@ -1114,5 +1116,24 @@
       "thorough": "Gründliche Reinigung",
       "general": "Generalreinigung"
     }
+  },
+  "halls": {
+    "title": "Königreichssäle",
+    "hint": "Adress-Verzeichnis: Beim Anlegen einer Predigtdienst-Zusammenkunft wird die Saaladresse mit einem Tipp eingefügt. Vergangene Termine behalten ihre Adresse.",
+    "add": "Saal hinzufügen",
+    "editTitle": "Saal bearbeiten",
+    "name": "Name",
+    "namePlaceholder": "z. B. Saal Ahlen",
+    "address": "Adresse",
+    "addressPlaceholder": "Straße, PLZ, Ort",
+    "default": "Standard",
+    "makeDefault": "Als Standardsaal festlegen",
+    "save": "Speichern",
+    "deleteTitle": "Diesen Saal löschen?",
+    "deleteBody": "Bestehende Termine behalten ihre Adresse.",
+    "deleteConfirm": "Löschen",
+    "empty": "Noch keine Säle hinzugefügt",
+    "adminOnly": "Nur für Administratoren",
+    "errorTitle": "Fehler"
   }
 }

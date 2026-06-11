@@ -263,6 +263,24 @@ export default function ProfileScreen() {
                 <Ionicons name="chevron-forward" size={18} color="#cbd5e1" />
               </Pressable>
             )}
+            {isFullAdmin && (
+              <Pressable
+                style={({ pressed }) => [
+                  styles.row,
+                  pressed && styles.rowPressed,
+                ]}
+                onPress={() => router.push('/profile/halls' as any)}
+              >
+                <View style={styles.rowIcon}>
+                  <Ionicons name="business-outline" size={20} color="#0ea5e9" />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.rowTitle}>{t('profile.halls')}</Text>
+                  <Text style={styles.rowSubtitle}>{t('profile.hallsDescription')}</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={18} color="#cbd5e1" />
+              </Pressable>
+            )}
             <Pressable
               style={({ pressed }) => [
                 styles.row,

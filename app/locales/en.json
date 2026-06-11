@@ -101,7 +101,9 @@
       "elder": "Elder",
       "secretary": "Secretary",
       "publisher": "Publisher"
-    }
+    },
+    "halls": "Kingdom Halls",
+    "hallsDescription": "Addresses for meetings and field service"
   },
   "language": {
     "title": "Language",
@@ -1114,5 +1116,24 @@
       "thorough": "Thorough cleaning",
       "general": "General cleaning"
     }
+  },
+  "halls": {
+    "title": "Kingdom Halls",
+    "hint": "An address reference list: when creating a field-service meeting, a hall address is filled in with one tap. Past meetings keep their address as-is.",
+    "add": "Add hall",
+    "editTitle": "Edit hall",
+    "name": "Name",
+    "namePlaceholder": "e.g. Ahlen Hall",
+    "address": "Address",
+    "addressPlaceholder": "Street, postcode, city",
+    "default": "default",
+    "makeDefault": "Make this the default hall",
+    "save": "Save",
+    "deleteTitle": "Delete this hall?",
+    "deleteBody": "Existing meetings keep their address.",
+    "deleteConfirm": "Delete",
+    "empty": "No halls added yet",
+    "adminOnly": "Admins only",
+    "errorTitle": "Error"
   }
 }

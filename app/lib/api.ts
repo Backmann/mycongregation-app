@@ -736,6 +736,38 @@ export const publisherActivityApi = {
   },
 };
 
+export interface Hall {
+  id: string;
+  name: string;
+  address: string;
+  isDefault: boolean;
+}
+
+export const hallsApi = {
+  async list(): Promise<Hall[]> {
+    const { data } = await api.get<Hall[]>('/halls');
+    return data;
+  },
+  async create(input: {
+    name: string;
+    address: string;
+    isDefault?: boolean;
+  }): Promise<Hall> {
+    const { data } = await api.post<Hall>('/halls', input);
+    return data;
+  },
+  async update(
+    id: string,
+    input: { name?: string; address?: string; isDefault?: boolean },
+  ): Promise<Hall> {
+    const { data } = await api.patch<Hall>(`/halls/${id}`, input);
+    return data;
+  },
+  async remove(id: string): Promise<void> {
+    await api.delete(`/halls/${id}`);
+  },
+};
+
 export const dutiesApi = {
   async setMicrophoneSlots(microphoneSlots: number): Promise<void> {
     await api.patch('/duties/microphone-slots', { microphoneSlots });
