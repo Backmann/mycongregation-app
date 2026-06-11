@@ -281,10 +281,6 @@ export default function ScheduleIndexScreen() {
   };
   const midweekReplacedBy = replacedBy('midweek');
   const weekendReplacedBy = replacedBy('weekend');
-  const replacedEventTypes: ('midweek' | 'weekend')[] = [
-    ...(midweekReplacedBy ? (['midweek'] as const) : []),
-    ...(weekendReplacedBy ? (['weekend'] as const) : []),
-  ];
   const assignedCount = (list: Assignment[]) =>
     list.filter((x) => x.publisherId && x.status !== 'cancelled').length;
   const meetingDateLabel = (kind: 'midweek' | 'weekend'): string | null => {
@@ -401,6 +397,24 @@ export default function ScheduleIndexScreen() {
                       publishersById={publishersById}
                       groupNameById={groupNameById}
                     />
+                    <DutiesSection
+                      only="midweek"
+                      duties={duties}
+                      publishersById={publishersById}
+                      canEdit={canEditDuties}
+                      onGenerate={(eventType) =>
+                        generateDutiesMutation.mutate(eventType)
+                      }
+                      onAssign={(id, publisherId) =>
+                        assignDutyMutation.mutate({ id, publisherId })
+                      }
+                      onAddCustom={(eventType, customLabel) =>
+                        createCustomDutyMutation.mutate({ eventType, customLabel })
+                      }
+                      onRemoveDuty={(id) => removeDutyMutation.mutate(id)}
+                      activityById={activityById}
+                      weekStartISO={weekStartISO}
+                    />
                   </CollapsibleMeetingBlock>
                 );
               }
@@ -448,6 +462,24 @@ export default function ScheduleIndexScreen() {
                         />
                       ))}
                     </View>
+                    <DutiesSection
+                      only="weekend"
+                      duties={duties}
+                      publishersById={publishersById}
+                      canEdit={canEditDuties}
+                      onGenerate={(eventType) =>
+                        generateDutiesMutation.mutate(eventType)
+                      }
+                      onAssign={(id, publisherId) =>
+                        assignDutyMutation.mutate({ id, publisherId })
+                      }
+                      onAddCustom={(eventType, customLabel) =>
+                        createCustomDutyMutation.mutate({ eventType, customLabel })
+                      }
+                      onRemoveDuty={(id) => removeDutyMutation.mutate(id)}
+                      activityById={activityById}
+                      weekStartISO={weekStartISO}
+                    />
                   </CollapsibleMeetingBlock>
                 );
               }
@@ -480,30 +512,6 @@ export default function ScheduleIndexScreen() {
               );
             })}
 
-            <DutiesSection
-              duties={duties}
-              replacedEventTypes={replacedEventTypes}
-              publishersById={publishersById}
-              canEdit={canEditDuties}
-              onGenerate={(eventType) =>
-                generateDutiesMutation.mutate(eventType)
-              }
-              onAssign={(id, publisherId) =>
-                assignDutyMutation.mutate({ id, publisherId })
-              }
-              onAddCustom={(eventType, customLabel) =>
-                createCustomDutyMutation.mutate({ eventType, customLabel })
-              }
-              onRemoveDuty={(id) => removeDutyMutation.mutate(id)}
-              activityById={activityById}
-              weekStartISO={weekStartISO}
-              pending={
-                generateDutiesMutation.isPending ||
-                assignDutyMutation.isPending ||
-                createCustomDutyMutation.isPending ||
-                removeDutyMutation.isPending
-              }
-            />
 
             <FieldServiceSection
               meetings={fieldServiceMeetings}

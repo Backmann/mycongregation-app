@@ -64,6 +64,8 @@ type Props = {
   pending?: boolean;
   /** Meetings replaced by a special event this week; their duty blocks are hidden. */
   replacedEventTypes?: Meeting[];
+  /** Render only this meeting, embedded inside its collapsible block. */
+  only?: Meeting;
 };
 
 export function DutiesSection({
@@ -78,6 +80,7 @@ export function DutiesSection({
   weekStartISO,
   pending,
   replacedEventTypes,
+  only,
 }: Props) {
   const { t } = useTranslation();
   const [customFor, setCustomFor] = useState<Meeting | null>(null);
@@ -94,6 +97,10 @@ export function DutiesSection({
     byMeeting.set(m, arr);
   }
 
+  const onlyList = only ? (byMeeting.get(only) ?? []) : [];
+  const onlyAssigned = onlyList.filter((d) => d.publisherId).length;
+  if (only && onlyList.length === 0 && !canEdit) return null;
+
   const submitCustom = () => {
     const label = customLabel.trim();
     if (customFor && label) onAddCustom(customFor, label);
@@ -102,13 +109,34 @@ export function DutiesSection({
   };
 
   return (
-    <View style={styles.section}>
-      <View style={styles.header}>
+    <View style={only ? styles.embedded : styles.section}>
+      <View style={only ? styles.embeddedHeader : styles.header}>
         <Ionicons name="people-outline" size={16} color="#475569" />
         <Text style={styles.headerText}>{t('duties.title')}</Text>
+        {only && onlyList.length > 0 ? (
+          <View
+            style={[
+              styles.countBadge,
+              onlyAssigned === onlyList.length
+                ? styles.countBadgeDone
+                : styles.countBadgeOpen,
+            ]}
+          >
+            <Text
+              style={[
+                styles.countBadgeText,
+                onlyAssigned === onlyList.length
+                  ? styles.countTextDone
+                  : styles.countTextOpen,
+              ]}
+            >
+              {onlyAssigned}/{onlyList.length}
+            </Text>
+          </View>
+        ) : null}
       </View>
 
-      {MEETINGS.map((meeting) => {
+      {(only ? [only] : MEETINGS).map((meeting) => {
         // Meeting replaced by a special event — hide its duties entirely,
         // including the empty block with the Generate button.
         if (replacedEventTypes?.includes(meeting)) return null;
@@ -119,7 +147,9 @@ export function DutiesSection({
           if (!canEdit) return null;
           return (
             <View key={meeting} style={styles.meetingBlock}>
-              <Text style={styles.meetingLabel}>{meetingLabel}</Text>
+              {!only && (
+                <Text style={styles.meetingLabel}>{meetingLabel}</Text>
+              )}
               <Pressable
                 style={({ pressed }) => [
                   styles.fillBtn,
@@ -138,7 +168,9 @@ export function DutiesSection({
 
         return (
           <View key={meeting} style={styles.meetingBlock}>
-            <Text style={styles.meetingLabel}>{meetingLabel}</Text>
+            {!only && (
+              <Text style={styles.meetingLabel}>{meetingLabel}</Text>
+            )}
 
             {canEdit ? (
               <View style={styles.editList}>
@@ -251,6 +283,31 @@ export function DutiesSection({
 }
 
 const styles = StyleSheet.create({
+  embedded: {
+    borderTopWidth: 1,
+    borderTopColor: '#e2e8f0',
+    backgroundColor: '#f8fafc',
+    paddingBottom: 12,
+  },
+  embeddedHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 4,
+  },
+  countBadge: {
+    marginLeft: 'auto',
+    borderRadius: 999,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+  },
+  countBadgeOpen: { backgroundColor: '#fef3c7' },
+  countBadgeDone: { backgroundColor: '#dcfce7' },
+  countBadgeText: { fontSize: 11, fontWeight: '700' },
+  countTextOpen: { color: '#92400e' },
+  countTextDone: { color: '#166534' },
   section: { marginTop: 16 },
   header: {
     flexDirection: 'row',
