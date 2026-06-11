@@ -733,7 +733,9 @@ function partDisplay(
       subtitle: partTitle ? songFromTitle(partTitle) : null,
     };
   }
-  if (partTitle && isTitleNamedPart(partKey)) {
+  // EPUB/override title is always the heading when present; the generic
+  // part label is only a fallback for untitled parts.
+  if (partTitle) {
     const idx = partTitle.indexOf(': ');
     if (idx > 0) {
       return {
@@ -741,8 +743,9 @@ function partDisplay(
         subtitle: partTitle.slice(idx + 2).trim() || null,
       };
     }
+    return { label: partTitle, subtitle: null };
   }
-  return { label: getPartLabel(partKey), subtitle: partTitle || null };
+  return { label: getPartLabel(partKey), subtitle: null };
 }
 
 function AssignmentRow({
