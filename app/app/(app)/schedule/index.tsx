@@ -57,6 +57,7 @@ import { usePermissions } from '../../../lib/permissions';
 import { SpecialEventsWeekBanner } from '../../../components/SpecialEventsWeekBanner';
 import { ReplacedMeetingNotice } from '../../../components/ReplacedMeetingNotice';
 import { CollapsibleMeetingBlock } from '../../../components/CollapsibleMeetingBlock';
+import { HospitalityZone } from '../../../components/HospitalityZone';
 
 const EVENT_TYPE_ORDER: EventType[] = [
   'midweek',
@@ -314,6 +315,27 @@ export default function ScheduleIndexScreen() {
     }
   };
 
+  const hospitalityMutation = useMutation({
+    mutationFn: (v: {
+      existing: Assignment | null;
+      publisherId: string | null;
+      weekStartDate: string;
+    }) =>
+      v.existing
+        ? assignmentsApi.update(v.existing.id, { publisherId: v.publisherId })
+        : assignmentsApi.create({
+            weekStartDate: v.weekStartDate,
+            eventType: 'weekend',
+            partKey: 'weekend_hospitality',
+            partOrder: 99,
+            partTitle: 'Гостеприимство',
+            publisherId: v.publisherId,
+            status: 'draft',
+          }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ['assignments'] }),
+  });
+
   const hasMidweek = (grouped.get('midweek')?.length ?? 0) > 0;
   const hasWeekend = (grouped.get('weekend')?.length ?? 0) > 0;
   const isEmpty = assignments.length === 0;
@@ -419,13 +441,19 @@ export default function ScheduleIndexScreen() {
                 );
               }
               if (eventType === 'weekend') {
+                const hospitality =
+                  items.find((a) => a.partKey === 'weekend_hospitality') ??
+                  null;
+                const programItems = items.filter(
+                  (a) => a.partKey !== 'weekend_hospitality',
+                );
                 return (
                   <CollapsibleMeetingBlock
                     key="weekend"
                     title={getEventTypeLabel('weekend')}
                     meta={meetingDateLabel('weekend')}
-                    assigned={assignedCount(items)}
-                    total={items.length}
+                    assigned={assignedCount(programItems)}
+                    total={programItems.length}
                     actionLabel={
                       perms.canEditWeekendSchedule && draftCount(items) > 0
                         ? t('schedule.publish.button')
@@ -442,7 +470,7 @@ export default function ScheduleIndexScreen() {
                       eventType="weekend"
                     />
                     <View style={styles.sectionBody}>
-                      {items.map((a) => (
+                      {programItems.map((a) => (
                         <AssignmentRow
                           key={a.id}
                           assignment={a}
@@ -479,6 +507,20 @@ export default function ScheduleIndexScreen() {
                       onRemoveDuty={(id) => removeDutyMutation.mutate(id)}
                       activityById={activityById}
                       weekStartISO={weekStartISO}
+                    />
+                    <HospitalityZone
+                      hospitality={hospitality}
+                      canEdit={perms.canEditWeekendSchedule}
+                      publishersById={publishersById}
+                      activityById={activityById}
+                      weekStartISO={weekStartISO}
+                      onChange={(publisherId) =>
+                        hospitalityMutation.mutate({
+                          existing: hospitality,
+                          publisherId,
+                          weekStartDate: items[0].weekStartDate,
+                        })
+                      }
                     />
                   </CollapsibleMeetingBlock>
                 );
@@ -687,16 +729,6 @@ function CreateButton({
   );
 }
 
-function isTitleNamedPart(key: string): boolean {
-  return (
-    key === 'treasures_talk' ||
-    key === 'spiritual_gems' ||
-    key === 'bible_reading' ||
-    key.startsWith('apply_yourself_') ||
-    key.startsWith('living_christians_') ||
-    key === 'cbs_conductor'
-  );
-}
 
 const PRAYER_PARTS = new Set<string>([
   'midweek_opening_prayer',

@@ -1135,5 +1135,9 @@
     "empty": "No halls added yet",
     "adminOnly": "Admins only",
     "errorTitle": "Error"
+  },
+  "hospitality": {
+    "title": "Hospitality",
+    "sister": "Sister"
   }
 }

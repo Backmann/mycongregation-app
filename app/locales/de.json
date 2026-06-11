@@ -1135,5 +1135,9 @@
     "empty": "Noch keine Säle hinzugefügt",
     "adminOnly": "Nur für Administratoren",
     "errorTitle": "Fehler"
+  },
+  "hospitality": {
+    "title": "Gastfreundschaft",
+    "sister": "Schwester"
   }
 }

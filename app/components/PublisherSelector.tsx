@@ -36,6 +36,8 @@ interface Props {
    * The user can toggle "Show all" inside the modal to override.
    */
   requiredCapability?: string;
+  /** If set, only publishers of this gender are shown. */
+  genderFilter?: 'sister' | 'brother';
   /** Optional per-publisher recent activity, keyed by publisher id. */
   activityById?: Map<string, PublisherActivity>;
   /** Current week (Monday ISO) — flags "this meeting" activity. */
@@ -104,6 +106,7 @@ export function PublisherSelector({
   onChange,
   excludeIds = [],
   requiredCapability,
+  genderFilter,
   activityById,
   currentWeekStart,
   currentEventType,
@@ -191,6 +194,7 @@ export function PublisherSelector({
 
   const filtered = allPublishers.filter((p) => {
     if (excludeIds.includes(p.id)) return false;
+    if (genderFilter && p.gender !== genderFilter) return false;
     if (
       search !== '' &&
       !p.displayName.toLowerCase().includes(search.toLowerCase())
