@@ -1337,6 +1337,17 @@ export const assignmentsApi = {
     });
     return data;
   },
+  /** Flip every draft of one meeting (week + section) to published. */
+  async publish(input: {
+    weekStartDate: string;
+    eventType: EventType;
+  }): Promise<{ published: number }> {
+    const { data } = await api.post<{ published: number }>(
+      '/assignments/publish',
+      input,
+    );
+    return data;
+  },
   async update(id: string, input: UpdateAssignmentInput): Promise<Assignment> {
     const payload = Object.fromEntries(
       Object.entries(input).filter(([_, v]) => v !== '' && v !== undefined),

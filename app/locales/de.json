@@ -663,7 +663,10 @@
       "applyYourself": "Werde ein besserer Lehrer",
       "christianLife": "Unser Leben als Christ"
     },
-    "readOnlyBanner": "Nur Ansicht — Sie dürfen diesen Teil nicht bearbeiten"
+    "readOnlyBanner": "Nur Ansicht — Sie dürfen diesen Teil nicht bearbeiten",
+    "publish": {
+      "button": "Veröffentlichen"
+    }
   },
   "audit": {
     "noReportId": "Keine Bericht-ID angegeben.",

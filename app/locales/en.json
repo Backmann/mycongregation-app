@@ -663,7 +663,10 @@
       "applyYourself": "Apply Yourself to the Ministry",
       "christianLife": "Living as Christians"
     },
-    "readOnlyBanner": "Read-only — you don't have permission to edit this part"
+    "readOnlyBanner": "Read-only — you don't have permission to edit this part",
+    "publish": {
+      "button": "Publish"
+    }
   },
   "audit": {
     "noReportId": "No report id supplied.",

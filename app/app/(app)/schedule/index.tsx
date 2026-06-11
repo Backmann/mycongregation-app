@@ -68,6 +68,8 @@ const EVENT_TYPE_ORDER: EventType[] = [
 
 export default function ScheduleIndexScreen() {
   const { t, i18n } = useTranslation();
+  const perms = usePermissions();
+  const [publishingType, setPublishingType] = useState<string | null>(null);
   const queryClient = useQueryClient();
   const [weekStart, setWeekStart] = useState(() =>
     startOfWeekMonday(new Date()),
@@ -296,6 +298,25 @@ export default function ScheduleIndexScreen() {
       month: 'long',
     });
   };
+  const draftCount = (list: Assignment[]) =>
+    list.filter((x) => String(x.status) === 'draft').length;
+  const publishMeetingNow = async (
+    eventType: 'midweek' | 'weekend',
+    weekStartDate: string,
+  ) => {
+    setPublishingType(eventType);
+    try {
+      await assignmentsApi.publish({ weekStartDate, eventType });
+      await queryClient.invalidateQueries({ queryKey: ['assignments'] });
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      if (typeof window !== 'undefined' && typeof window.alert === 'function') {
+        window.alert(msg);
+      }
+    } finally {
+      setPublishingType(null);
+    }
+  };
 
   const hasMidweek = (grouped.get('midweek')?.length ?? 0) > 0;
   const hasWeekend = (grouped.get('weekend')?.length ?? 0) > 0;
@@ -359,6 +380,15 @@ export default function ScheduleIndexScreen() {
                     meta={meetingDateLabel('midweek')}
                     assigned={assignedCount(items)}
                     total={items.length}
+                    actionLabel={
+                      perms.canEditMidweekSchedule && draftCount(items) > 0
+                        ? t('schedule.publish.button')
+                        : undefined
+                    }
+                    actionBusy={publishingType === 'midweek'}
+                    onAction={() =>
+                      void publishMeetingNow('midweek', items[0].weekStartDate)
+                    }
                   >
                     <MeetingHeader
                       weekStart={weekStart}
@@ -382,6 +412,15 @@ export default function ScheduleIndexScreen() {
                     meta={meetingDateLabel('weekend')}
                     assigned={assignedCount(items)}
                     total={items.length}
+                    actionLabel={
+                      perms.canEditWeekendSchedule && draftCount(items) > 0
+                        ? t('schedule.publish.button')
+                        : undefined
+                    }
+                    actionBusy={publishingType === 'weekend'}
+                    onAction={() =>
+                      void publishMeetingNow('weekend', items[0].weekStartDate)
+                    }
                   >
                     <MeetingHeader
                       weekStart={weekStart}

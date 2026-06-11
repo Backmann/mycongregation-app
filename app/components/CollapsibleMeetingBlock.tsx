@@ -13,6 +13,9 @@ export function CollapsibleMeetingBlock({
   meta,
   assigned,
   total,
+  actionLabel,
+  onAction,
+  actionBusy,
   initiallyOpen = true,
   children,
 }: {
@@ -20,6 +23,10 @@ export function CollapsibleMeetingBlock({
   meta?: string | null;
   assigned: number;
   total: number;
+  /** Header action (e.g. Publish); rendered only when both are set. */
+  actionLabel?: string;
+  onAction?: () => void;
+  actionBusy?: boolean;
   initiallyOpen?: boolean;
   children: ReactNode;
 }) {
@@ -37,6 +44,21 @@ export function CollapsibleMeetingBlock({
           <Text style={styles.title}>{title}</Text>
           {meta ? <Text style={styles.meta}>{meta}</Text> : null}
         </View>
+        {actionLabel && onAction ? (
+          <Pressable
+            style={({ pressed }) => [
+              styles.actionBtn,
+              pressed && styles.actionBtnPressed,
+              actionBusy && styles.actionBtnDisabled,
+            ]}
+            onPress={onAction}
+            disabled={!!actionBusy}
+          >
+            <Text style={styles.actionBtnText}>
+              {actionBusy ? '…' : actionLabel}
+            </Text>
+          </Pressable>
+        ) : null}
         <View
           style={[styles.badge, complete ? styles.badgeDone : styles.badgeOpen]}
         >
@@ -74,6 +96,15 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   headerPressed: { backgroundColor: '#f8fafc' },
+  actionBtn: {
+    backgroundColor: '#0ea5e9',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  actionBtnPressed: { opacity: 0.8 },
+  actionBtnDisabled: { opacity: 0.5 },
+  actionBtnText: { color: '#fff', fontSize: 12, fontWeight: '700' },
   title: {
     fontSize: 14,
     fontWeight: '700',
