@@ -156,6 +156,7 @@ export default function AssignmentDetailScreen() {
             notes: a.notes ?? undefined,
           }}
           onSubmit={updateMutation.mutateAsync}
+          onInstantSave={canEdit ? updateMutation.mutateAsync : undefined}
           isSubmitting={updateMutation.isPending}
           lockIdentity
           readOnly={!canEdit}

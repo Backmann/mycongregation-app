@@ -590,7 +590,11 @@
         "weekStartRequired": "Требуется дата начала недели",
         "partKeyRequired": "Требуется ключ части"
       },
-      "minutesShort": "{{count}} мин"
+      "minutesShort": "{{count}} мин",
+      "saving": "Сохранение…",
+      "saved": "Сохранено",
+      "cancelPart": "Отменить часть",
+      "restorePart": "Вернуть часть"
     }
   },
   "schedule": {

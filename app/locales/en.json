@@ -586,7 +586,11 @@
         "weekStartRequired": "Week start date is required",
         "partKeyRequired": "Part key is required"
       },
-      "minutesShort": "{{count}} min"
+      "minutesShort": "{{count}} min",
+      "saving": "Saving…",
+      "saved": "Saved",
+      "cancelPart": "Cancel part",
+      "restorePart": "Restore part"
     }
   },
   "schedule": {

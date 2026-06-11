@@ -586,7 +586,11 @@
         "weekStartRequired": "Wochenbeginn ist erforderlich",
         "partKeyRequired": "Programmpunkt-Schlüssel ist erforderlich"
       },
-      "minutesShort": "{{count}} Min."
+      "minutesShort": "{{count}} Min.",
+      "saving": "Wird gespeichert…",
+      "saved": "Gespeichert",
+      "cancelPart": "Programmpunkt absagen",
+      "restorePart": "Programmpunkt wiederherstellen"
     }
   },
   "schedule": {

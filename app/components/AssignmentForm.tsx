@@ -35,6 +35,8 @@ import { useTranslation } from 'react-i18next';
 interface Props {
   initial?: Partial<CreateAssignmentInput>;
   onSubmit: (data: CreateAssignmentInput) => Promise<unknown>;
+  /** When set, edits save instantly (pickers) or debounced (text). */
+  onInstantSave?: (patch: Partial<CreateAssignmentInput>) => Promise<unknown>;
   onCancel?: () => void;
   isSubmitting: boolean;
   submitLabel?: string;
@@ -49,6 +51,7 @@ interface Props {
 export function AssignmentForm({
   initial,
   onSubmit,
+  onInstantSave,
   onCancel,
   isSubmitting,
   submitLabel,
@@ -56,6 +59,33 @@ export function AssignmentForm({
   readOnly,
 }: Props) {
   const { t } = useTranslation();
+  const autosave = !!onInstantSave;
+  const [instantSaving, setInstantSaving] = useState(false);
+  const [instantSavedAt, setInstantSavedAt] = useState<number | null>(null);
+  const [instantError, setInstantError] = useState<string | null>(null);
+  // useState initializer: a stable box that survives re-renders (no useRef
+  // needed, keeps the import surface untouched).
+  const debounceBox = useState(() => ({
+    timer: null as ReturnType<typeof setTimeout> | null,
+  }))[0];
+  const instant = async (patch: Partial<CreateAssignmentInput>) => {
+    if (!onInstantSave) return;
+    setInstantSaving(true);
+    setInstantError(null);
+    try {
+      await onInstantSave(patch);
+      setInstantSavedAt(Date.now());
+    } catch (e) {
+      setInstantError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setInstantSaving(false);
+    }
+  };
+  const queueInstant = (patch: Partial<CreateAssignmentInput>) => {
+    if (!onInstantSave) return;
+    if (debounceBox.timer) clearTimeout(debounceBox.timer);
+    debounceBox.timer = setTimeout(() => void instant(patch), 1200);
+  };
   const effectiveSubmitLabel = submitLabel ?? t('common.save');
   const EVENT_TYPE_OPTIONS: { value: EventType; label: string }[] = [
     { value: 'midweek', label: t('assignments.eventTypeShort.midweek') },
@@ -214,6 +244,21 @@ export function AssignmentForm({
             })}
           </Text>
           <Text style={styles.contextPart}>{getPartLabel(form.partKey)}</Text>
+          {autosave && (instantSaving || instantSavedAt || instantError) ? (
+            <Text
+              style={[
+                styles.instantStatus,
+                instantError ? styles.instantStatusError : null,
+              ]}
+              numberOfLines={2}
+            >
+              {instantError
+                ? instantError
+                : instantSaving
+                  ? t('assignments.form.saving')
+                  : t('assignments.form.saved')}
+            </Text>
+          ) : null}
           {form.partDurationMin || requiredSkillLabel ? (
             <View style={styles.contextChips}>
               {form.partDurationMin ? (
@@ -287,16 +332,20 @@ export function AssignmentForm({
         <FormField
           label={t('assignments.form.field.partTitleOverride')}
           value={form.partTitle ?? ''}
-          onChangeText={(v) => update('partTitle', v)}
+          onChangeText={(v) => {
+            update('partTitle', v);
+            queueInstant({ partTitle: v });
+          }}
           placeholder={t('assignments.form.placeholder.partTitleOverride')}
           multiline
         />
         <FormField
           label={t('assignments.form.field.durationMinutes')}
           value={form.partDurationMin?.toString() ?? ''}
-          onChangeText={(v) =>
-            update('partDurationMin', v ? parseInt(v, 10) : undefined)
-          }
+          onChangeText={(v) => {
+            update('partDurationMin', v ? parseInt(v, 10) : undefined);
+            queueInstant({ partDurationMin: v ? parseInt(v, 10) : undefined });
+          }}
           keyboardType="numeric"
           placeholder={t('assignments.form.placeholder.duration')}
         />
@@ -332,7 +381,10 @@ export function AssignmentForm({
               <PublisherSelector
                 label={t('assignments.form.field.publisher')}
                 value={form.publisherId}
-                onChange={(id) => update('publisherId', id)}
+                onChange={(id) => {
+                  update('publisherId', id);
+                  void instant({ publisherId: id });
+                }}
                 requiredCapability={requiredCap}
                 activityById={activityById}
                 currentWeekStart={form.weekStartDate}
@@ -362,7 +414,10 @@ export function AssignmentForm({
             <PublisherSelector
               label={t('assignments.form.field.publisher')}
               value={form.publisherId}
-              onChange={(id) => update('publisherId', id)}
+              onChange={(id) => {
+                update('publisherId', id);
+                void instant({ publisherId: id });
+              }}
               excludeIds={
                 form.assistantPublisherId ? [form.assistantPublisherId] : []
               }
@@ -376,7 +431,10 @@ export function AssignmentForm({
               <PublisherSelector
                 label={t('assignments.form.field.assistant')}
                 value={form.assistantPublisherId}
-                onChange={(id) => update('assistantPublisherId', id)}
+                onChange={(id) => {
+                  update('assistantPublisherId', id);
+                  void instant({ assistantPublisherId: id });
+                }}
                 excludeIds={form.publisherId ? [form.publisherId] : []}
                 requiredCapability={requiredAssistantCap}
                 suggestionPartKeys={suggestionPartKeys}
@@ -392,18 +450,48 @@ export function AssignmentForm({
       </FormSection>
 
       <FormSection title={t('assignments.form.section.status')}>
-        <FormChips
-          label={t('assignments.form.field.statusLabel')}
-          value={form.status ?? 'draft'}
-          options={STATUS_OPTIONS}
-          onChange={(v) => update('status', v)}
-        />
+        {!autosave && (
+          <FormChips
+            label={t('assignments.form.field.statusLabel')}
+            value={form.status ?? 'draft'}
+            options={STATUS_OPTIONS}
+            onChange={(v) => update('status', v)}
+          />
+        )}
         <FormField
           label={t('common.notes')}
           value={form.notes ?? ''}
-          onChangeText={(v) => update('notes', v)}
+          onChangeText={(v) => {
+            update('notes', v);
+            queueInstant({ notes: v });
+          }}
           multiline
         />
+        {autosave ? (
+          <Pressable
+            style={({ pressed }) => [
+              styles.cancelPartLink,
+              pressed && styles.cancelPartLinkPressed,
+            ]}
+            onPress={() => {
+              const next =
+                form.status === 'cancelled' ? 'draft' : 'cancelled';
+              update('status', next);
+              void instant({ status: next });
+            }}
+          >
+            <Text
+              style={[
+                styles.cancelPartText,
+                form.status === 'cancelled' && styles.restorePartText,
+              ]}
+            >
+              {form.status === 'cancelled'
+                ? t('assignments.form.restorePart')
+                : t('assignments.form.cancelPart')}
+            </Text>
+          </Pressable>
+        ) : null}
       </FormSection>
 
       {error && (
@@ -412,7 +500,7 @@ export function AssignmentForm({
         </View>
       )}
 
-      {!readOnly && (
+      {!readOnly && !autosave && (
       <View style={styles.actions}>
         <Pressable
           style={[
@@ -446,6 +534,24 @@ export function AssignmentForm({
 }
 
 const styles = StyleSheet.create({
+  instantStatus: {
+    fontSize: 12,
+    color: '#16a34a',
+    marginTop: 2,
+  },
+  instantStatusError: { color: '#dc2626' },
+  cancelPartLink: {
+    alignSelf: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+  },
+  cancelPartLinkPressed: { opacity: 0.6 },
+  cancelPartText: {
+    color: '#dc2626',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  restorePartText: { color: '#0369a1' },
   contextCard: {
     backgroundColor: '#ffffff',
     borderTopWidth: 1,
