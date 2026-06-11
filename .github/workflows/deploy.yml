@@ -1,5 +1,4 @@
 name: Deploy frontend to production
-
 on:
   push:
     branches: [main]
@@ -7,35 +6,77 @@ on:
       - 'app/**'
       - '.github/workflows/deploy.yml'
   workflow_dispatch:
-
 jobs:
-  deploy:
+  test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-
       - name: Install dependencies
         working-directory: app
         run: npm install
-
+      - name: Lint
+        working-directory: app
+        run: npm run lint
+      - name: i18n drift check
+        working-directory: app
+        run: npm run i18n:check
+  deploy:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        working-directory: app
+        run: npm install
+      - name: Clear caches (prevent stale env in bundle)
+        working-directory: app
+        run: rm -rf .expo node_modules/.cache dist
       - name: Build web bundle
         working-directory: app
         env:
+          NODE_ENV: production
           EXPO_PUBLIC_API_URL: https://api.mycongregation.org/api
+          EXPO_PUBLIC_VAPID_KEY: ${{ secrets.EXPO_PUBLIC_VAPID_KEY }}
         run: npx expo export --platform web
-
+      - name: Verify bundle
+        working-directory: app
+        env:
+          VAPID_KEY: ${{ secrets.EXPO_PUBLIC_VAPID_KEY }}
+        run: |
+          BUNDLE=$(ls dist/_expo/static/js/web/entry-*.js | head -1)
+          echo "Bundle: $BUNDLE"
+          if ! grep -q 'api.mycongregation.org' "$BUNDLE"; then
+            echo "FAIL: API URL not embedded in production bundle"
+            exit 1
+          fi
+          if grep -q 'localhost:3000' "$BUNDLE"; then
+            echo "FAIL: localhost found in production bundle"
+            exit 1
+          fi
+          if [ -z "$VAPID_KEY" ]; then
+            echo "FAIL: EXPO_PUBLIC_VAPID_KEY secret is empty"
+            exit 1
+          fi
+          if ! grep -q "${VAPID_KEY:0:16}" "$BUNDLE"; then
+            echo "FAIL: VAPID key not embedded in bundle"
+            exit 1
+          fi
+          echo "Bundle verification passed"
       - name: Create tarball
         working-directory: app
         run: |
           tar -czf ../web-dist.tar.gz -C dist .
           ls -lh ../web-dist.tar.gz
-
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
@@ -52,30 +93,23 @@ jobs:
               StrictHostKeyChecking yes
           EOF
           chmod 600 ~/.ssh/config
-
       - name: Upload to server
         run: scp web-dist.tar.gz myserver:/tmp/web-dist.tar.gz
-
       - name: Extract on server
         run: |
           ssh myserver bash << 'ENDSSH'
           set -euo pipefail
-
           echo "=== Replacing files ==="
           cd /var/www/mycongregation
           rm -rf * .[!.]* 2>/dev/null || true
           tar -xzf /tmp/web-dist.tar.gz
-
           echo "=== Brand check ==="
           grep -c mycongregation login.html || echo "No mycongregation in login.html"
-
           echo "=== Cleanup ==="
           rm /tmp/web-dist.tar.gz
-
           echo "=== Done ==="
           ls -la | head -10
           ENDSSH
-
       - name: Cleanup local
         if: always()
         run: rm -f ~/.ssh/deploy_key ~/.ssh/known_hosts ~/.ssh/config web-dist.tar.gz
