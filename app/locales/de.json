@@ -647,7 +647,10 @@
       "openSchedule": "Programm öffnen",
       "errors": {
         "noFileSelected": "Keine Datei ausgewählt",
-        "notEpub": "Bitte eine .epub-Datei auswählen"
+        "notEpub": "Bitte eine .epub-Datei auswählen",
+        "webOnly": "Der Datei-Import ist in der Web-Version verfügbar (mycongregation.org im Desktop-Browser öffnen).",
+        "noWeeks": "Keine Wochenprogramme in dieser Datei gefunden. Ist es ein Arbeitsheft?",
+        "parseFailed": "Datei konnte nicht ausgewertet werden"
       },
       "typeBadge": {
         "midweek": "Mittwoch",
@@ -667,6 +670,15 @@
         "warningsTitle": "Warnungen:",
         "moreWarnings": "… und {{count}} weitere",
         "importedWeeks": "Importierte Wochen"
+      },
+      "privacyNote": "Die Datei wird direkt im Browser ausgewertet und nie auf den Server hochgeladen — in den Plan gelangen nur Titel und Dauer der Programmpunkte.",
+      "parsing": "Datei wird ausgewertet…",
+      "applying": "Importiere…",
+      "applyButton": "Importieren ({{count}} Wo.)",
+      "preview": {
+        "title": "Gefundene Wochen",
+        "partsShort": "{{count}} Punkte",
+        "unclassifiedTitle": "Nicht erkannte Punkte: {{count}} (werden übersprungen)"
       }
     },
     "unassign": {

@@ -1,0 +1,7 @@
+feat: parse MWB EPUB in the browser, send only schedule metadata
+
+Replace the server upload with client-side parsing (jszip + DOMParser;
+selector logic ported 1:1 from the battle-tested server parser, verified
+bit-identical on a real workbook). A new preview step shows found weeks
+and unclassified parts before applying via POST /schedule-import/apply.
+The publication file never leaves the admin's device.

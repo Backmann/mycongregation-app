@@ -1,5 +1,6 @@
 import axios, { AxiosError } from 'axios';
 import { storage } from './storage';
+import type { ApplyParsedPayload } from './mwb-parser';
 
 function resolveApiUrl(): string {
   const url = process.env.EXPO_PUBLIC_API_URL;
@@ -1422,6 +1423,14 @@ export const scheduleImportApi = {
       headers: { 'Content-Type': 'multipart/form-data' },
       timeout: 120_000,
     });
+    return data;
+  },
+  /**
+   * Применяет программу, разобранную НА КЛИЕНТЕ: файл публикации
+   * не загружается — отправляются только готовые назначения.
+   */
+  async apply(payload: ApplyParsedPayload): Promise<ImportResult> {
+    const { data } = await api.post<ImportResult>('/schedule-import/apply', payload);
     return data;
   },
 };

@@ -647,7 +647,10 @@
       "openSchedule": "Open schedule",
       "errors": {
         "noFileSelected": "No file selected",
-        "notEpub": "Please select a .epub file"
+        "notEpub": "Please select a .epub file",
+        "webOnly": "File import is available in the web version (open mycongregation.org in a desktop browser).",
+        "noWeeks": "No weekly programmes found in this file. Is it a Meeting Workbook?",
+        "parseFailed": "Could not parse the file"
       },
       "typeBadge": {
         "midweek": "Midweek",
@@ -667,6 +670,15 @@
         "warningsTitle": "Warnings:",
         "moreWarnings": "… and {{count}} more",
         "importedWeeks": "Imported weeks"
+      },
+      "privacyNote": "The file is parsed right in your browser and is never uploaded to the server — only part titles and durations go into the schedule.",
+      "parsing": "Parsing the file…",
+      "applying": "Importing…",
+      "applyButton": "Import ({{count}} wk)",
+      "preview": {
+        "title": "Weeks found",
+        "partsShort": "{{count}} parts",
+        "unclassifiedTitle": "Unrecognized parts: {{count}} (will be skipped)"
       }
     },
     "unassign": {

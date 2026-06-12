@@ -16,6 +16,13 @@ import {
   ImportResult,
   scheduleImportApi,
 } from '../../../lib/api';
+import {
+  ParsedWorkbook,
+  collectUnclassified,
+  isClientParsingSupported,
+  parseMwbFile,
+  toApplyPayload,
+} from '../../../lib/mwb-parser';
 import { useTranslation } from 'react-i18next';
 
 interface PickedFile {
@@ -31,9 +38,12 @@ export default function ImportEpubScreen() {
   const queryClient = useQueryClient();
   const [picked, setPicked] = useState<PickedFile | null>(null);
   const [pickError, setPickError] = useState<string | null>(null);
+  const [parsing, setParsing] = useState(false);
+  const [parsed, setParsed] = useState<ParsedWorkbook | null>(null);
+  const [parseError, setParseError] = useState<string | null>(null);
 
-  const uploadMutation = useMutation<ImportResult, unknown, PickedFile>({
-    mutationFn: (file) => scheduleImportApi.upload(file),
+  const applyMutation = useMutation<ImportResult, unknown, ParsedWorkbook>({
+    mutationFn: (wb) => scheduleImportApi.apply(toApplyPayload(wb)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['assignments'] });
     },
@@ -41,6 +51,9 @@ export default function ImportEpubScreen() {
 
   const handlePick = async () => {
     setPickError(null);
+    setParseError(null);
+    setParsed(null);
+    applyMutation.reset();
     try {
       const result = await DocumentPicker.getDocumentAsync({
         type: ['application/epub+zip', '*/*'],
@@ -57,26 +70,40 @@ export default function ImportEpubScreen() {
         setPickError(t('schedule.import.errors.notEpub'));
         return;
       }
+      const blob = (asset as any).file as Blob | undefined;
+      if (!blob || !isClientParsingSupported()) {
+        setPickError(t('schedule.import.errors.webOnly'));
+        return;
+      }
       setPicked({
         uri: asset.uri,
         name: asset.name,
         mimeType: asset.mimeType ?? 'application/epub+zip',
         size: asset.size,
-        file: (asset as any).file as Blob | undefined,
+        file: blob,
       });
-      uploadMutation.reset();
+
+      // Локальный разбор: файл публикации не покидает это устройство.
+      setParsing(true);
+      try {
+        const wb = await parseMwbFile(blob, undefined, asset.name);
+        setParsed(wb);
+      } catch (e) {
+        setParseError(
+          `${t('schedule.import.errors.parseFailed')}: ${extractErrorMessage(e)}`,
+        );
+      } finally {
+        setParsing(false);
+      }
     } catch (e) {
       setPickError(extractErrorMessage(e));
+      setParsing(false);
     }
   };
 
-  const handleUpload = () => {
-    if (!picked) return;
-    uploadMutation.mutate(picked);
-  };
-
-  const result = uploadMutation.data;
+  const result = applyMutation.data;
   const detectedType = picked ? detectFileType(picked.name) : null;
+  const unclassified = parsed ? collectUnclassified(parsed) : [];
 
   return (
     <ScrollView
@@ -84,11 +111,15 @@ export default function ImportEpubScreen() {
       contentContainerStyle={{ paddingBottom: 32 }}
     >
       <View style={styles.intro}>
-        <Ionicons name="cloud-upload-outline" size={48} color="#0ea5e9" />
+        <Ionicons name="document-text-outline" size={48} color="#0ea5e9" />
         <Text style={styles.title}>{t('schedule.import.title')}</Text>
-        <Text style={styles.subtitle}>
-          {t('schedule.import.subtitle')}
-        </Text>
+        <Text style={styles.subtitle}>{t('schedule.import.subtitle')}</Text>
+        <View style={styles.privacyRow}>
+          <Ionicons name="shield-checkmark-outline" size={16} color="#059669" />
+          <Text style={styles.privacyText}>
+            {t('schedule.import.privacyNote')}
+          </Text>
+        </View>
       </View>
 
       <View style={styles.section}>
@@ -101,7 +132,9 @@ export default function ImportEpubScreen() {
         >
           <Ionicons name="document-attach-outline" size={20} color="#0ea5e9" />
           <Text style={styles.pickButtonText}>
-            {picked ? t('schedule.import.chooseDifferent') : t('schedule.import.choosePrompt')}
+            {picked
+              ? t('schedule.import.chooseDifferent')
+              : t('schedule.import.choosePrompt')}
           </Text>
         </Pressable>
 
@@ -157,33 +190,101 @@ export default function ImportEpubScreen() {
           </View>
         )}
 
-        {picked && !result && (
-          <Pressable
-            style={[
-              styles.uploadButton,
-              uploadMutation.isPending && { opacity: 0.6 },
-            ]}
-            onPress={handleUpload}
-            disabled={uploadMutation.isPending}
-          >
-            {uploadMutation.isPending ? (
-              <>
-                <ActivityIndicator color="#fff" />
-                <Text style={styles.uploadButtonText}>{t('schedule.import.uploading')}</Text>
-              </>
-            ) : (
-              <>
-                <Ionicons name="cloud-upload" size={20} color="#fff" />
-                <Text style={styles.uploadButtonText}>{t('schedule.import.uploadAndImport')}</Text>
-              </>
-            )}
-          </Pressable>
+        {parsing && (
+          <View style={styles.parsingRow}>
+            <ActivityIndicator color="#0ea5e9" />
+            <Text style={styles.parsingText}>
+              {t('schedule.import.parsing')}
+            </Text>
+          </View>
         )}
 
-        {!!uploadMutation.error && (
+        {parseError && (
+          <View style={styles.errorBox}>
+            <Text style={styles.errorText}>{parseError}</Text>
+          </View>
+        )}
+
+        {parsed && parsed.weeks.length === 0 && !parsing && (
+          <View style={styles.warningBox}>
+            <Text style={styles.warningText}>
+              {t('schedule.import.errors.noWeeks')}
+            </Text>
+          </View>
+        )}
+
+        {parsed && parsed.weeks.length > 0 && !result && (
+          <>
+            <Text style={styles.weeksHeader}>
+              {t('schedule.import.preview.title')}
+            </Text>
+            <View style={styles.weeksList}>
+              {parsed.weeks.map((w) => (
+                <View key={w.weekStartDate} style={styles.weekRow}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.weekDate}>{w.weekRangeText}</Text>
+                    <Text style={styles.weekBible} numberOfLines={1}>
+                      {w.biblePassage}
+                    </Text>
+                  </View>
+                  <Text style={styles.weekPartsCount}>
+                    {t('schedule.import.preview.partsShort', {
+                      count: w.parts.filter((p) => p.partKey !== 'unknown')
+                        .length,
+                    })}
+                  </Text>
+                </View>
+              ))}
+            </View>
+
+            {unclassified.length > 0 && (
+              <View style={styles.warningBox}>
+                <Text style={styles.warningTitle}>
+                  {t('schedule.import.preview.unclassifiedTitle', {
+                    count: unclassified.length,
+                  })}
+                </Text>
+                {unclassified.slice(0, 5).map((u, i) => (
+                  <Text key={i} style={styles.warningText}>
+                    • {u.weekStartDate}: {u.rawTitle}
+                  </Text>
+                ))}
+              </View>
+            )}
+
+            <Pressable
+              style={[
+                styles.uploadButton,
+                applyMutation.isPending && { opacity: 0.6 },
+              ]}
+              onPress={() => parsed && applyMutation.mutate(parsed)}
+              disabled={applyMutation.isPending}
+            >
+              {applyMutation.isPending ? (
+                <>
+                  <ActivityIndicator color="#fff" />
+                  <Text style={styles.uploadButtonText}>
+                    {t('schedule.import.applying')}
+                  </Text>
+                </>
+              ) : (
+                <>
+                  <Ionicons name="checkmark-circle" size={20} color="#fff" />
+                  <Text style={styles.uploadButtonText}>
+                    {t('schedule.import.applyButton', {
+                      count: parsed.weeks.length,
+                    })}
+                  </Text>
+                </>
+              )}
+            </Pressable>
+          </>
+        )}
+
+        {!!applyMutation.error && (
           <View style={styles.errorBox}>
             <Text style={styles.errorText}>
-              {extractErrorMessage(uploadMutation.error)}
+              {extractErrorMessage(applyMutation.error)}
             </Text>
           </View>
         )}
@@ -207,27 +308,49 @@ function ResultSummary({ result }: { result: ImportResult }) {
     <View style={styles.section}>
       <View style={styles.successHeader}>
         <Ionicons name="checkmark-circle" size={32} color="#059669" />
-        <Text style={styles.successTitle}>{t('schedule.import.result.complete')}</Text>
+        <Text style={styles.successTitle}>
+          {t('schedule.import.result.complete')}
+        </Text>
       </View>
 
       <View style={styles.statsRow}>
-        <Stat label={t('schedule.import.result.stats.weeks')} value={result.weeksImported} color="#0369a1" />
-        <Stat label={t('schedule.import.result.stats.created')} value={result.partsCreated} color="#059669" />
-        <Stat label={t('schedule.import.result.stats.updated')} value={result.partsUpdated} color="#d97706" />
-        <Stat label={t('schedule.import.result.stats.skipped')} value={result.partsSkipped} color="#64748b" />
+        <Stat
+          label={t('schedule.import.result.stats.weeks')}
+          value={result.weeksImported}
+          color="#0369a1"
+        />
+        <Stat
+          label={t('schedule.import.result.stats.created')}
+          value={result.partsCreated}
+          color="#059669"
+        />
+        <Stat
+          label={t('schedule.import.result.stats.updated')}
+          value={result.partsUpdated}
+          color="#d97706"
+        />
+        <Stat
+          label={t('schedule.import.result.stats.skipped')}
+          value={result.partsSkipped}
+          color="#64748b"
+        />
       </View>
 
       {result.unclassifiedParts > 0 && (
         <View style={styles.warningBox}>
           <Text style={styles.warningText}>
-            {t('schedule.import.result.unclassified', { count: result.unclassifiedParts })}
+            {t('schedule.import.result.unclassified', {
+              count: result.unclassifiedParts,
+            })}
           </Text>
         </View>
       )}
 
       {result.warnings.length > 0 && (
         <View style={styles.warningBox}>
-          <Text style={styles.warningTitle}>{t('schedule.import.result.warningsTitle')}</Text>
+          <Text style={styles.warningTitle}>
+            {t('schedule.import.result.warningsTitle')}
+          </Text>
           {result.warnings.slice(0, 5).map((w, i) => (
             <Text key={i} style={styles.warningText}>
               • {w}
@@ -235,13 +358,17 @@ function ResultSummary({ result }: { result: ImportResult }) {
           ))}
           {result.warnings.length > 5 && (
             <Text style={styles.warningText}>
-              {t('schedule.import.result.moreWarnings', { count: result.warnings.length - 5 })}
+              {t('schedule.import.result.moreWarnings', {
+                count: result.warnings.length - 5,
+              })}
             </Text>
           )}
         </View>
       )}
 
-      <Text style={styles.weeksHeader}>{t('schedule.import.result.importedWeeks')}</Text>
+      <Text style={styles.weeksHeader}>
+        {t('schedule.import.result.importedWeeks')}
+      </Text>
       <View style={styles.weeksList}>
         {result.weeks.map((w) => (
           <View key={w.weekStartDate} style={styles.weekRow}>
@@ -278,7 +405,9 @@ function ResultSummary({ result }: { result: ImportResult }) {
         style={styles.doneButton}
         onPress={() => router.replace('/schedule' as any)}
       >
-        <Text style={styles.doneButtonText}>{t('schedule.import.openSchedule')}</Text>
+        <Text style={styles.doneButtonText}>
+          {t('schedule.import.openSchedule')}
+        </Text>
       </Pressable>
     </View>
   );
@@ -326,6 +455,22 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 20,
   },
+  privacyRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    backgroundColor: '#ecfdf5',
+    borderRadius: 8,
+  },
+  privacyText: {
+    flex: 1,
+    fontSize: 12,
+    color: '#047857',
+    lineHeight: 16,
+  },
   section: { padding: 16, gap: 12 },
 
   pickButton: {
@@ -370,6 +515,15 @@ const styles = StyleSheet.create({
   typeBadgeWeekend: { backgroundColor: '#fef3c7' },
   typeBadgeUnknown: { backgroundColor: '#f1f5f9' },
   typeBadgeText: { fontSize: 10, fontWeight: '600', color: '#0f172a' },
+
+  parsingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    paddingVertical: 12,
+  },
+  parsingText: { color: '#0ea5e9', fontSize: 14, fontWeight: '500' },
 
   uploadButton: {
     flexDirection: 'row',
@@ -458,6 +612,7 @@ const styles = StyleSheet.create({
   },
   weekDate: { fontSize: 13, color: '#0f172a', fontWeight: '500' },
   weekBible: { fontSize: 12, color: '#64748b', marginTop: 2 },
+  weekPartsCount: { fontSize: 12, color: '#64748b', fontWeight: '500' },
   weekStats: { flexDirection: 'row', gap: 8 },
   weekStat: {
     fontSize: 13,
