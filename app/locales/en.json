@@ -343,7 +343,28 @@
     "noAccountHint": "Accounts are created by your congregation administrator. No access yet? Reach out to them.",
     "forgotPasswordHint": "Forgot your password? Contact your congregation administrator.",
     "showPassword": "Show password",
-    "hidePassword": "Hide password"
+    "hidePassword": "Hide password",
+    "forgotPassword": "Forgot password?",
+    "forgot": {
+      "title": "Password recovery",
+      "subtitle": "Enter the email you sign in with — we will send a link to set a new password.",
+      "submit": "Send the link",
+      "sent": "If this address is registered, we have sent it an email with a link. The link is valid for 1 hour.",
+      "checkSpam": "No email? Check your spam folder.",
+      "backToLogin": "Back to sign in"
+    },
+    "reset": {
+      "title": "New password",
+      "newPassword": "New password",
+      "confirmPassword": "Repeat the password",
+      "minLength": "At least 8 characters",
+      "mismatch": "Passwords do not match",
+      "submit": "Save the password",
+      "success": "Password changed. You can sign in with the new password now.",
+      "goToLogin": "Sign in",
+      "invalidLink": "This link is invalid or has expired.",
+      "requestNew": "Request a new link"
+    }
   },
   "months": {
     "january": "January",

@@ -178,7 +178,19 @@ export default function LoginScreen() {
               />
               <Text style={styles.hintText}>{t('auth.noAccountHint')}</Text>
             </View>
-            <Text style={styles.forgotText}>{t('auth.forgotPasswordHint')}</Text>
+            <Pressable
+              onPress={() => router.push('/(auth)/forgot-password' as never)}
+              hitSlop={6}
+            >
+              <Text
+                style={[
+                  styles.forgotText,
+                  { color: '#0369a1', fontWeight: '600' },
+                ]}
+              >
+                {t('auth.forgotPassword')}
+              </Text>
+            </Pressable>
           </View>
         </View>
       </ScrollView>

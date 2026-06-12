@@ -343,7 +343,28 @@
     "noAccountHint": "Konten werden vom Administrator der Versammlung erstellt. Noch kein Zugang? Wenden Sie sich an ihn.",
     "forgotPasswordHint": "Passwort vergessen? Wenden Sie sich an den Administrator der Versammlung.",
     "showPassword": "Passwort anzeigen",
-    "hidePassword": "Passwort verbergen"
+    "hidePassword": "Passwort verbergen",
+    "forgotPassword": "Passwort vergessen?",
+    "forgot": {
+      "title": "Passwort wiederherstellen",
+      "subtitle": "Geben Sie die E-Mail-Adresse ein, mit der Sie sich anmelden — wir senden einen Link zum Festlegen eines neuen Passworts.",
+      "submit": "Link senden",
+      "sent": "Falls diese Adresse registriert ist, haben wir eine E-Mail mit einem Link gesendet. Der Link ist 1 Stunde gültig.",
+      "checkSpam": "Keine E-Mail? Prüfen Sie den Spam-Ordner.",
+      "backToLogin": "Zurück zur Anmeldung"
+    },
+    "reset": {
+      "title": "Neues Passwort",
+      "newPassword": "Neues Passwort",
+      "confirmPassword": "Passwort wiederholen",
+      "minLength": "Mindestens 8 Zeichen",
+      "mismatch": "Passwörter stimmen nicht überein",
+      "submit": "Passwort speichern",
+      "success": "Passwort geändert. Sie können sich jetzt mit dem neuen Passwort anmelden.",
+      "goToLogin": "Anmelden",
+      "invalidLink": "Dieser Link ist ungültig oder abgelaufen.",
+      "requestNew": "Neuen Link anfordern"
+    }
   },
   "months": {
     "january": "Januar",

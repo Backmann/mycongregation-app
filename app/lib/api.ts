@@ -524,6 +524,14 @@ export const authApi = {
   ): Promise<void> {
     await api.patch('/auth/me/password', { currentPassword, newPassword });
   },
+  /** Public: always resolves OK regardless of whether the email exists. */
+  async forgotPassword(email: string): Promise<void> {
+    await api.post('/auth/forgot-password', { email });
+  },
+  /** Public: sets a new password using a token from the reset email. */
+  async resetPassword(token: string, password: string): Promise<void> {
+    await api.post('/auth/reset-password', { token, password });
+  },
 };
 
 /**
