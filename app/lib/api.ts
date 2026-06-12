@@ -993,6 +993,8 @@ export interface GrantAccessInput {
 }
 
 export interface UpdateAccessInput {
+  /** New login email — e.g. to fix a typo. Must be unique. */
+  email?: string;
   password?: string;
   isAdmin?: boolean;
   isActive?: boolean;

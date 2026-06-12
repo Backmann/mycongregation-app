@@ -28,6 +28,7 @@ export function PublisherAccessContent({ publisher }: { publisher: Publisher }) 
   const queryClient = useQueryClient();
   const [grantOpen, setGrantOpen] = useState(false);
   const [resetOpen, setResetOpen] = useState(false);
+  const [emailOpen, setEmailOpen] = useState(false);
 
   const accessQuery = useQuery({
     queryKey: ['publisher-access', publisher.id],
@@ -52,6 +53,7 @@ export function PublisherAccessContent({ publisher }: { publisher: Publisher }) 
 
   const updateMutation = useMutation({
     mutationFn: (input: {
+      email?: string;
       password?: string;
       isAdmin?: boolean;
       isActive?: boolean;
@@ -59,6 +61,7 @@ export function PublisherAccessContent({ publisher }: { publisher: Publisher }) 
     }) => publishersApi.updateAccess(publisher.id, input),
     onSuccess: () => {
       setResetOpen(false);
+      setEmailOpen(false);
       invalidate();
     },
   });
@@ -118,7 +121,14 @@ export function PublisherAccessContent({ publisher }: { publisher: Publisher }) 
     <View>
       <View style={styles.row}>
         <Text style={styles.rowLabel}>Email</Text>
-        <Text style={styles.rowValue}>{access.email}</Text>
+        <Pressable
+          style={emailStyles.rowBtn}
+          onPress={() => setEmailOpen(true)}
+          hitSlop={6}
+        >
+          <Text style={styles.rowValue}>{access.email}</Text>
+          <Text style={emailStyles.pencil}>✎</Text>
+        </Pressable>
       </View>
       <View style={styles.row}>
         <Text style={styles.rowLabel}>Последний вход</Text>
@@ -183,6 +193,21 @@ export function PublisherAccessContent({ publisher }: { publisher: Publisher }) 
         </Text>
       </Pressable>
 
+      <EmailModal
+        visible={emailOpen}
+        current={access.email}
+        pending={updateMutation.isPending}
+        error={
+          updateMutation.isError
+            ? extractErrorMessage(updateMutation.error)
+            : null
+        }
+        onCancel={() => {
+          updateMutation.reset();
+          setEmailOpen(false);
+        }}
+        onSubmit={(email) => updateMutation.mutate({ email })}
+      />
       <ResetModal
         visible={resetOpen}
         pending={updateMutation.isPending}
@@ -196,6 +221,126 @@ export function PublisherAccessContent({ publisher }: { publisher: Publisher }) 
     </View>
   );
 }
+
+function EmailModal({
+  visible,
+  current,
+  pending,
+  error,
+  onCancel,
+  onSubmit,
+}: {
+  visible: boolean;
+  current: string | null;
+  pending: boolean;
+  error: string | null;
+  onCancel: () => void;
+  onSubmit: (email: string) => void;
+}) {
+  const [email, setEmail] = useState(current ?? '');
+
+  useEffect(() => {
+    if (visible) setEmail(current ?? '');
+  }, [visible, current]);
+
+  const trimmed = email.trim();
+  const canSave =
+    /.+@.+\..+/.test(trimmed) &&
+    trimmed.toLowerCase() !== (current ?? '').toLowerCase();
+
+  return (
+    <Modal
+      visible={visible}
+      transparent
+      animationType="fade"
+      onRequestClose={onCancel}
+    >
+      <View style={emailStyles.overlay}>
+        <View style={emailStyles.card}>
+          <Text style={emailStyles.title}>Изменить почту</Text>
+          <Text style={emailStyles.hint}>
+            Человек будет входить с новой почтой. Пароль не меняется.
+          </Text>
+          <TextInput
+            style={emailStyles.input}
+            value={email}
+            onChangeText={setEmail}
+            autoCapitalize="none"
+            autoCorrect={false}
+            keyboardType="email-address"
+            placeholder="email@example.com"
+            placeholderTextColor="#94a3b8"
+          />
+          {error && <Text style={emailStyles.error}>{error}</Text>}
+          <View style={emailStyles.actions}>
+            <Pressable
+              style={emailStyles.cancel}
+              onPress={onCancel}
+              disabled={pending}
+            >
+              <Text style={emailStyles.cancelText}>Отмена</Text>
+            </Pressable>
+            <Pressable
+              style={[
+                emailStyles.confirm,
+                (!canSave || pending) && emailStyles.disabled,
+              ]}
+              onPress={() => onSubmit(trimmed)}
+              disabled={!canSave || pending}
+            >
+              <Text style={emailStyles.confirmText}>Сохранить</Text>
+            </Pressable>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
+const emailStyles = StyleSheet.create({
+  rowBtn: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  pencil: { fontSize: 14, color: '#0369a1' },
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(15,23,42,0.45)',
+    justifyContent: 'center',
+    paddingHorizontal: 24,
+  },
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: 14,
+    padding: 18,
+    gap: 10,
+  },
+  title: { fontSize: 16, fontWeight: '700', color: '#0f172a' },
+  hint: { fontSize: 13, color: '#64748b', lineHeight: 18 },
+  input: {
+    borderWidth: 1,
+    borderColor: '#cbd5e1',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 15,
+    color: '#0f172a',
+  },
+  error: { fontSize: 13, color: '#dc2626' },
+  actions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 10,
+    marginTop: 4,
+  },
+  cancel: { paddingVertical: 10, paddingHorizontal: 14 },
+  cancelText: { fontSize: 15, color: '#64748b', fontWeight: '600' },
+  confirm: {
+    paddingVertical: 10,
+    paddingHorizontal: 18,
+    borderRadius: 10,
+    backgroundColor: '#0ea5e9',
+  },
+  confirmText: { fontSize: 15, color: '#fff', fontWeight: '600' },
+  disabled: { opacity: 0.5 },
+});
 
 function GrantModal({
   visible,
