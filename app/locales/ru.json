@@ -1163,7 +1163,12 @@
     "events": {
       "replacesMeeting": "Вместо встречи собрания"
     },
-    "nextFieldService": "Встреча для проповеди"
+    "nextFieldService": "Встреча для проповеди",
+    "allTasks": "Все ({{count}})",
+    "myTasksScreen": {
+      "title": "Мои задания",
+      "empty": "Заданий на ближайшие недели нет"
+    }
   },
   "halls": {
     "title": "Залы Царства",

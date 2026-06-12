@@ -1159,7 +1159,12 @@
     "events": {
       "replacesMeeting": "Replaces the congregation meeting"
     },
-    "nextFieldService": "Field service meeting"
+    "nextFieldService": "Field service meeting",
+    "allTasks": "All ({{count}})",
+    "myTasksScreen": {
+      "title": "My assignments",
+      "empty": "No assignments in the coming weeks"
+    }
   },
   "halls": {
     "title": "Kingdom Halls",

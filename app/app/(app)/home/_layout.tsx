@@ -6,6 +6,10 @@ export default function HomeLayout() {
   return (
     <Stack>
       <Stack.Screen name="index" options={{ title: t('home.title') }} />
+      <Stack.Screen
+        name="my-assignments"
+        options={{ title: t('home.myTasksScreen.title') }}
+      />
     </Stack>
   );
 }

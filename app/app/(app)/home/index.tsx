@@ -33,6 +33,11 @@ import { getPartLabel } from '../../../lib/parts';
 import { usePermissions } from '../../../lib/permissions';
 import { useAuth } from '../../../lib/auth';
 import { useMyPublisher } from '../../../lib/useMyPublisher';
+import {
+  refineMyTasks,
+  taskMeta,
+  taskTitle,
+} from '../../../lib/my-tasks';
 
 const pad = (n: number) => String(n).padStart(2, '0');
 const ddmm = (d: Date) => `${pad(d.getDate())}.${pad(d.getMonth() + 1)}`;
@@ -387,125 +392,23 @@ function MyTasksCard() {
 
   if (!data || data.items.length === 0) return null;
 
-  type Refined = {
-    item: MyAssignmentItem;
-    dateISO: string;
-    weekOnly: boolean;
-    meetingTime?: string;
-  };
-  const refined: Refined[] = [];
-  for (const item of data.items) {
-    let dateISO: string | null = null;
-    let weekOnly = false;
-    let meetingTime: string | undefined;
-    if (item.date) {
-      dateISO = item.date;
-    } else if (
-      item.kind === 'field_service' &&
-      item.weekStartDate &&
-      item.dayOfWeek
-    ) {
-      dateISO = formatDateISO(
-        addDays(new Date(`${item.weekStartDate}T00:00:00`), item.dayOfWeek - 1),
-      );
-    } else if (
-      (item.kind === 'meeting' || item.kind === 'duty') &&
-      item.weekStartDate &&
-      (item.eventType === 'midweek' || item.eventType === 'weekend')
-    ) {
-      const v = effectiveVersionFor(versions, item.weekStartDate);
-      const dow =
-        item.eventType === 'midweek' ? v?.midweekDow : v?.weekendDow;
-      if (v && dow) {
-        dateISO = formatDateISO(
-          addDays(new Date(`${item.weekStartDate}T00:00:00`), dow - 1),
-        );
-        meetingTime =
-          item.eventType === 'midweek' ? v.midweekTime : v.weekendTime;
-      }
-    }
-    if (!dateISO) {
-      dateISO = item.weekStartDate ?? item.sortDate;
-      weekOnly = true;
-    }
-    // Drop items already in the past (week-scoped: past once the week ends).
-    if (weekOnly) {
-      const weekEnd = formatDateISO(
-        addDays(new Date(`${dateISO}T00:00:00`), 6),
-      );
-      if (weekEnd < todayISO) continue;
-    } else if (dateISO < todayISO) {
-      continue;
-    }
-    refined.push({ item, dateISO, weekOnly, meetingTime });
-  }
+  const refined = refineMyTasks(data.items, versions, todayISO);
   if (refined.length === 0) return null;
-  refined.sort((a, b) => a.dateISO.localeCompare(b.dateISO));
-  const top = refined.slice(0, 5);
-
-  const labelFor = (item: MyAssignmentItem): string => {
-    if (item.kind === 'duty') {
-      return t(`home.dutyTypes.${item.label}`, item.label);
-    }
-    if (item.kind === 'cleaning') {
-      return t(`home.cleaningSlots.${item.label}`, item.label);
-    }
-    if (item.kind === 'meeting') {
-      return (
-        item.label +
-        (item.asAssistant ? ` (${t('home.meeting.asAssistant')})` : '')
-      );
-    }
-    if (item.kind === 'field_service') {
-      return t('home.fieldService.leading');
-    }
-    return item.label;
-  };
-
-  const dateFor = (r: Refined): string => {
-    const d = new Date(`${r.dateISO}T00:00:00`);
-    if (r.weekOnly) {
-      return t('home.weekOf', {
-        date: d.toLocaleDateString(i18n.language, {
-          day: 'numeric',
-          month: 'long',
-        }),
-      });
-    }
-    return d.toLocaleDateString(i18n.language, {
-      weekday: 'short',
-      day: 'numeric',
-      month: 'long',
-    });
-  };
-
-  const metaFor = (r: Refined): string => {
-    const bits: string[] = [dateFor(r)];
-    const time = r.item.time ?? r.meetingTime;
-    if (time) {
-      bits.push(
-        r.item.endTime ? `${time}\u2013${r.item.endTime}` : time,
-      );
-    }
-    if (
-      (r.item.kind === 'meeting' || r.item.kind === 'duty') &&
-      (r.item.eventType === 'midweek' || r.item.eventType === 'weekend')
-    ) {
-      bits.push(t(`home.eventTypes.${r.item.eventType}`));
-    } else {
-      bits.push(t(`home.kinds.${r.item.kind}`));
-    }
-    if (r.item.kind === 'field_service' && r.item.location) {
-      bits.push(r.item.location);
-    }
-    return bits.join(' \u00b7 ');
-  };
+  const top = refined.slice(0, 3);
 
   return (
     <>
-      <Text style={[styles.sectionTitle, { marginTop: 24, marginBottom: 12 }]}>
-        {t('home.myTasks')}
-      </Text>
+      <View style={[styles.sectionHeader, { marginTop: 24 }]}>
+        <Text style={styles.sectionTitle}>{t('home.myTasks')}</Text>
+        <Pressable
+          onPress={() => router.push('/home/my-assignments' as any)}
+          hitSlop={8}
+        >
+          <Text style={styles.link}>
+            {t('home.allTasks', { count: refined.length })}
+          </Text>
+        </Pressable>
+      </View>
       <View style={styles.card}>
         {top.map((r, idx) => (
           <View
@@ -520,10 +423,10 @@ function MyTasksCard() {
             />
             <View style={{ flex: 1 }}>
               <Text style={styles.eventTitle} numberOfLines={1}>
-                {labelFor(r.item)}
+                {taskTitle(r.item, t)}
               </Text>
               <Text style={styles.eventDate} numberOfLines={2}>
-                {metaFor(r)}
+                {taskMeta(r, t, i18n.language)}
               </Text>
             </View>
           </View>
@@ -588,7 +491,7 @@ type Tile = {
 };
 
 export default function HomeScreen() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { canManageAbsences } = usePermissions();
   const { myPublisherId } = useMyPublisher();

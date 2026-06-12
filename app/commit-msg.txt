@@ -1,9 +1,7 @@
-feat: Home shows next field-service meeting and admin-style event rows
+feat: full "My assignments" screen, compact card on Home
 
-New "Field service meeting" card visible to every member: nearest
-meeting of this or next week with full schedule details (day, time,
-date, address, conductor by name, topic, link). Upcoming events now
-mirror the admin list rows (date badge, type tag, range, time/address,
-note). My tasks gain meeting time and a human-readable meeting type;
-field-service tasks read "you conduct" with the address in the
-subtitle. Client-only change.
+New /home/my-assignments screen lists every upcoming assignment for the
+whole aggregator horizon, grouped by week, with the same detailed rows.
+The Home card shrinks to the top 3 with an "All (N)" link. Shared row
+logic moves to lib/my-tasks.ts so the card and the screen cannot drift.
+Also silences the unused-i18n lint warning in HomeScreen.

@@ -1159,7 +1159,12 @@
     "events": {
       "replacesMeeting": "Ersetzt die Zusammenkunft"
     },
-    "nextFieldService": "Predigtdienst-Zusammenkunft"
+    "nextFieldService": "Predigtdienst-Zusammenkunft",
+    "allTasks": "Alle ({{count}})",
+    "myTasksScreen": {
+      "title": "Meine Aufgaben",
+      "empty": "Keine Aufgaben in den kommenden Wochen"
+    }
   },
   "halls": {
     "title": "Königreichssäle",
