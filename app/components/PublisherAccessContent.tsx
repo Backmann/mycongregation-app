@@ -196,6 +196,7 @@ export function PublisherAccessContent({ publisher }: { publisher: Publisher }) 
       <EmailModal
         visible={emailOpen}
         current={access.email}
+        suggestion={publisher.email}
         pending={updateMutation.isPending}
         error={
           updateMutation.isError
@@ -225,6 +226,7 @@ export function PublisherAccessContent({ publisher }: { publisher: Publisher }) 
 function EmailModal({
   visible,
   current,
+  suggestion,
   pending,
   error,
   onCancel,
@@ -232,6 +234,7 @@ function EmailModal({
 }: {
   visible: boolean;
   current: string | null;
+  suggestion?: string | null;
   pending: boolean;
   error: string | null;
   onCancel: () => void;
@@ -271,6 +274,19 @@ function EmailModal({
             placeholder="email@example.com"
             placeholderTextColor="#94a3b8"
           />
+          {suggestion &&
+            suggestion.trim() !== '' &&
+            suggestion.trim().toLowerCase() !==
+              (current ?? '').toLowerCase() && (
+              <Pressable
+                style={emailStyles.suggestBtn}
+                onPress={() => setEmail(suggestion.trim())}
+              >
+                <Text style={emailStyles.suggestText}>
+                  Из карточки: {suggestion.trim()}
+                </Text>
+              </Pressable>
+            )}
           {error && <Text style={emailStyles.error}>{error}</Text>}
           <View style={emailStyles.actions}>
             <Pressable
@@ -340,6 +356,16 @@ const emailStyles = StyleSheet.create({
   },
   confirmText: { fontSize: 15, color: '#fff', fontWeight: '600' },
   disabled: { opacity: 0.5 },
+  suggestBtn: {
+    alignSelf: 'flex-start',
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: '#bae6fd',
+    backgroundColor: '#f0f9ff',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  suggestText: { fontSize: 13, color: '#0369a1', fontWeight: '600' },
 });
 
 function GrantModal({
