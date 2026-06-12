@@ -1148,6 +1148,16 @@
       "after_meeting": "Reinigung nach der Zusammenkunft",
       "thorough": "Gründliche Reinigung",
       "general": "Generalreinigung"
+    },
+    "eventTypes": {
+      "midweek": "Zusammenkunft unter der Woche",
+      "weekend": "Wochenend-Zusammenkunft"
+    },
+    "fieldService": {
+      "leading": "Predigtdienst-Zusammenkunft — du leitest"
+    },
+    "events": {
+      "replacesMeeting": "Ersetzt die Zusammenkunft"
     }
   },
   "halls": {

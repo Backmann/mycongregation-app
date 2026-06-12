@@ -1148,6 +1148,16 @@
       "after_meeting": "Cleaning after the meeting",
       "thorough": "Thorough cleaning",
       "general": "General cleaning"
+    },
+    "eventTypes": {
+      "midweek": "Midweek meeting",
+      "weekend": "Weekend meeting"
+    },
+    "fieldService": {
+      "leading": "Field service meeting — you conduct"
+    },
+    "events": {
+      "replacesMeeting": "Replaces the congregation meeting"
     }
   },
   "halls": {

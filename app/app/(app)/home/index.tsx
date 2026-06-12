@@ -235,11 +235,13 @@ function MyTasksCard() {
     item: MyAssignmentItem;
     dateISO: string;
     weekOnly: boolean;
+    meetingTime?: string;
   };
   const refined: Refined[] = [];
   for (const item of data.items) {
     let dateISO: string | null = null;
     let weekOnly = false;
+    let meetingTime: string | undefined;
     if (item.date) {
       dateISO = item.date;
     } else if (
@@ -262,6 +264,8 @@ function MyTasksCard() {
         dateISO = formatDateISO(
           addDays(new Date(`${item.weekStartDate}T00:00:00`), dow - 1),
         );
+        meetingTime =
+          item.eventType === 'midweek' ? v.midweekTime : v.weekendTime;
       }
     }
     if (!dateISO) {
@@ -277,7 +281,7 @@ function MyTasksCard() {
     } else if (dateISO < todayISO) {
       continue;
     }
-    refined.push({ item, dateISO, weekOnly });
+    refined.push({ item, dateISO, weekOnly, meetingTime });
   }
   if (refined.length === 0) return null;
   refined.sort((a, b) => a.dateISO.localeCompare(b.dateISO));
@@ -295,6 +299,9 @@ function MyTasksCard() {
         item.label +
         (item.asAssistant ? ` (${t('home.meeting.asAssistant')})` : '')
       );
+    }
+    if (item.kind === 'field_service') {
+      return t('home.fieldService.leading');
     }
     return item.label;
   };
@@ -314,6 +321,28 @@ function MyTasksCard() {
       day: 'numeric',
       month: 'long',
     });
+  };
+
+  const metaFor = (r: Refined): string => {
+    const bits: string[] = [dateFor(r)];
+    const time = r.item.time ?? r.meetingTime;
+    if (time) {
+      bits.push(
+        r.item.endTime ? `${time}\u2013${r.item.endTime}` : time,
+      );
+    }
+    if (
+      (r.item.kind === 'meeting' || r.item.kind === 'duty') &&
+      (r.item.eventType === 'midweek' || r.item.eventType === 'weekend')
+    ) {
+      bits.push(t(`home.eventTypes.${r.item.eventType}`));
+    } else {
+      bits.push(t(`home.kinds.${r.item.kind}`));
+    }
+    if (r.item.kind === 'field_service' && r.item.location) {
+      bits.push(r.item.location);
+    }
+    return bits.join(' \u00b7 ');
   };
 
   return (
@@ -337,13 +366,8 @@ function MyTasksCard() {
               <Text style={styles.eventTitle} numberOfLines={1}>
                 {labelFor(r.item)}
               </Text>
-              <Text style={styles.eventDate} numberOfLines={1}>
-                {dateFor(r)}
-                {r.item.time
-                  ? ` · ${r.item.time}${r.item.endTime ? `\u2013${r.item.endTime}` : ''}`
-                  : ''}
-                {' · '}
-                {t(`home.kinds.${r.item.kind}`)}
+              <Text style={styles.eventDate} numberOfLines={2}>
+                {metaFor(r)}
               </Text>
             </View>
           </View>
@@ -471,12 +495,30 @@ export default function HomeScreen() {
                 style={{ marginRight: 10 }}
               />
               <View style={{ flex: 1 }}>
-                <Text style={styles.eventTitle} numberOfLines={1}>
+                <Text style={styles.eventTitle} numberOfLines={2}>
                   {e.title}
                 </Text>
                 <Text style={styles.eventDate}>
                   {eventDateLabel(e, i18n.language)}
+                  {e.time ? ` · ${e.time}` : ''}
                 </Text>
+                {e.address ? (
+                  <Text style={styles.eventMeta} numberOfLines={1}>
+                    {e.address}
+                  </Text>
+                ) : null}
+                {e.note ? (
+                  <Text style={styles.eventMeta} numberOfLines={1}>
+                    {e.note}
+                  </Text>
+                ) : null}
+                {e.replacesMeeting ? (
+                  <View style={styles.replacesChip}>
+                    <Text style={styles.replacesChipText}>
+                      {t('home.events.replacesMeeting')}
+                    </Text>
+                  </View>
+                ) : null}
               </View>
               <Ionicons name="chevron-forward" size={18} color="#cbd5e1" />
             </Pressable>
@@ -554,6 +596,24 @@ const styles = StyleSheet.create({
   eventRowBorder: { borderTopWidth: 1, borderTopColor: '#f1f5f9' },
   eventTitle: { fontSize: 15, fontWeight: '600', color: '#0f172a' },
   eventDate: { fontSize: 13, color: '#0369a1', marginTop: 2 },
+  eventMeta: { fontSize: 12, color: '#64748b', marginTop: 2 },
+  replacesChip: {
+    alignSelf: 'flex-start',
+    marginTop: 6,
+    backgroundColor: '#fff7ed',
+    borderWidth: 1,
+    borderColor: '#fdba74',
+    borderRadius: 10,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+  },
+  replacesChipText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#c2410c',
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+  },
   tiles: {
     flexDirection: 'row',
     flexWrap: 'wrap',
