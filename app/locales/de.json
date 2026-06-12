@@ -1158,7 +1158,8 @@
     },
     "events": {
       "replacesMeeting": "Ersetzt die Zusammenkunft"
-    }
+    },
+    "nextFieldService": "Predigtdienst-Zusammenkunft"
   },
   "halls": {
     "title": "Königreichssäle",

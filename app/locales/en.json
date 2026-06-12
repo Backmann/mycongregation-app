@@ -1158,7 +1158,8 @@
     },
     "events": {
       "replacesMeeting": "Replaces the congregation meeting"
-    }
+    },
+    "nextFieldService": "Field service meeting"
   },
   "halls": {
     "title": "Kingdom Halls",

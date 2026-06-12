@@ -1,7 +1,9 @@
-feat: detailed rows on Home for my tasks and upcoming events
+feat: Home shows next field-service meeting and admin-style event rows
 
-My tasks now show the meeting time (from meeting settings) and a
-human-readable meeting type; field-service rows get a proper
-"you conduct" title with the address moved to the subtitle. Upcoming
-events show time, address, note, and a "replaces meeting" chip.
-Client-only change.
+New "Field service meeting" card visible to every member: nearest
+meeting of this or next week with full schedule details (day, time,
+date, address, conductor by name, topic, link). Upcoming events now
+mirror the admin list rows (date badge, type tag, range, time/address,
+note). My tasks gain meeting time and a human-readable meeting type;
+field-service tasks read "you conduct" with the address in the
+subtitle. Client-only change.

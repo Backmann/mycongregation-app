@@ -1,5 +1,6 @@
 import {
   ActivityIndicator,
+  Linking,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -15,10 +16,14 @@ import {
   absencesApi,
   Assignment,
   assignmentsApi,
+  fieldServiceApi,
+  FieldServiceMeeting,
   meApi,
   MeetingSettingsVersion,
   meetingSettingsApi,
   MyAssignmentItem,
+  Publisher,
+  publishersApi,
   SpecialEvent,
   specialEventsApi,
 } from '../../../lib/api';
@@ -29,25 +34,22 @@ import { usePermissions } from '../../../lib/permissions';
 import { useAuth } from '../../../lib/auth';
 import { useMyPublisher } from '../../../lib/useMyPublisher';
 
-function eventDateLabel(e: SpecialEvent, loc: string): string {
-  const start = new Date(`${e.date}T00:00:00`);
-  if (!e.endDate) {
-    return start.toLocaleDateString(loc, { day: 'numeric', month: 'long' });
-  }
-  const end = new Date(`${e.endDate}T00:00:00`);
-  const sameMonth =
-    start.getMonth() === end.getMonth() &&
-    start.getFullYear() === end.getFullYear();
-  if (sameMonth) {
-    return `${start.getDate()}\u2013${end.toLocaleDateString(loc, {
-      day: 'numeric',
-      month: 'long',
-    })}`;
-  }
-  return `${start.toLocaleDateString(loc, {
+const pad = (n: number) => String(n).padStart(2, '0');
+const ddmm = (d: Date) => `${pad(d.getDate())}.${pad(d.getMonth() + 1)}`;
+
+function rangeLabel(start: Date, end: Date, loc: string): string {
+  const sameYear = start.getFullYear() === end.getFullYear();
+  const startStr = start.toLocaleDateString(loc, {
     day: 'numeric',
     month: 'long',
-  })} \u2013 ${end.toLocaleDateString(loc, { day: 'numeric', month: 'long' })}`;
+    ...(sameYear ? {} : { year: 'numeric' }),
+  });
+  const endStr = end.toLocaleDateString(loc, {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+  return `${startStr} \u2013 ${endStr}`;
 }
 
 function absenceRangeLabel(a: Absence, loc: string): string {
@@ -198,6 +200,160 @@ function NextMeetingCard({ myPublisherId }: { myPublisherId: string | null }) {
         )
       ) : null}
     </View>
+  );
+}
+
+function NextFieldServiceCard() {
+  const { t, i18n } = useTranslation();
+  const todayISO = formatDateISO(new Date());
+  const thisMonday = formatDateISO(startOfWeekMonday(new Date()));
+  const nextMonday = formatDateISO(
+    addDays(startOfWeekMonday(new Date()), 7),
+  );
+
+  const weekA = useQuery({
+    queryKey: ['field-service', thisMonday],
+    queryFn: () => fieldServiceApi.list({ weekStart: thisMonday }),
+    staleTime: 60 * 1000,
+  });
+  const weekB = useQuery({
+    queryKey: ['field-service', nextMonday],
+    queryFn: () => fieldServiceApi.list({ weekStart: nextMonday }),
+    staleTime: 60 * 1000,
+  });
+  const publishersQuery = useQuery({
+    queryKey: ['publishers', 'all-for-schedule'],
+    queryFn: () => publishersApi.list({ limit: 200 }),
+    staleTime: 5 * 60 * 1000,
+  });
+  const publishersById = new Map<string, Publisher>(
+    (publishersQuery.data?.data ?? []).map((p) => [p.id, p]),
+  );
+
+  type Dated = { m: FieldServiceMeeting; dateISO: string };
+  const dated: Dated[] = [];
+  for (const m of [...(weekA.data ?? []), ...(weekB.data ?? [])]) {
+    const dateISO = formatDateISO(
+      addDays(new Date(`${m.weekStartDate}T00:00:00`), m.dayOfWeek - 1),
+    );
+    if (dateISO < todayISO) continue;
+    dated.push({ m, dateISO });
+  }
+  dated.sort(
+    (a, b) =>
+      a.dateISO.localeCompare(b.dateISO) ||
+      a.m.startTime.localeCompare(b.m.startTime),
+  );
+  const next = dated[0];
+  if (!next) return null;
+
+  const m = next.m;
+  const conductor = m.conductorPublisherId
+    ? publishersById.get(m.conductorPublisherId) ?? null
+    : null;
+  const dateLabel = new Date(`${next.dateISO}T00:00:00`).toLocaleDateString(
+    i18n.language,
+    { weekday: 'long', day: 'numeric', month: 'long' },
+  );
+
+  return (
+    <>
+      <Text style={[styles.sectionTitle, { marginTop: 24, marginBottom: 12 }]}>
+        {t('home.nextFieldService')}
+      </Text>
+      <View style={[styles.card, { paddingVertical: 14 }]}>
+        <View style={styles.meetingHeader}>
+          <Ionicons name="walk-outline" size={18} color="#0ea5e9" />
+          <Text style={styles.meetingKind}>
+            {t(`fieldService.days.${m.dayOfWeek}`)} · {m.startTime}
+          </Text>
+        </View>
+        <Text style={styles.meetingDate}>{dateLabel}</Text>
+        <Text style={styles.meetingMeta}>{m.address}</Text>
+        <Text
+          style={[styles.meetingMeta, !conductor && styles.fsUnassigned]}
+        >
+          {t('fieldService.conductor')}:{' '}
+          {conductor ? conductor.displayName : t('fieldService.unassigned')}
+        </Text>
+        {!!m.topic && <Text style={styles.fsTopic}>{m.topic}</Text>}
+        {!!m.sourceUrl && (
+          <Pressable
+            onPress={() =>
+              Linking.openURL(m.sourceUrl as string).catch(() => {})
+            }
+            hitSlop={6}
+          >
+            <Text style={styles.fsLink} numberOfLines={1}>
+              {t('fieldService.openLink')}
+            </Text>
+          </Pressable>
+        )}
+      </View>
+    </>
+  );
+}
+
+function EventHomeRow({
+  event: e,
+  first,
+}: {
+  event: SpecialEvent;
+  first: boolean;
+}) {
+  const { t, i18n } = useTranslation();
+  const start = new Date(`${e.date}T00:00:00`);
+  const end = e.endDate ? new Date(`${e.endDate}T00:00:00`) : null;
+  const typeLabel = e.type
+    ? t(`specialEvents.types.${e.type}`, e.type)
+    : null;
+  const meta = [e.time, e.address].filter(Boolean).join(' · ');
+  return (
+    <Pressable
+      style={[styles.eventRow, !first && styles.eventRowBorder]}
+      onPress={() => router.push(`/special-events/${e.id}` as any)}
+    >
+      {end ? (
+        <View style={[styles.evBadge, styles.evBadgeRange]}>
+          <Text style={styles.evRangeNum}>{ddmm(start)}</Text>
+          <Ionicons name="arrow-down" size={11} color="#0369a1" />
+          <Text style={styles.evRangeNum}>{ddmm(end)}</Text>
+        </View>
+      ) : (
+        <View style={styles.evBadge}>
+          <Text style={styles.evDay}>
+            {start.toLocaleDateString(i18n.language, { day: '2-digit' })}
+          </Text>
+          <Text style={styles.evMon}>
+            {start.toLocaleDateString(i18n.language, { month: 'short' })}
+          </Text>
+        </View>
+      )}
+      <View style={{ flex: 1, marginLeft: 10 }}>
+        {typeLabel ? (
+          <Text style={styles.evTypeTag}>{typeLabel}</Text>
+        ) : null}
+        <Text style={styles.eventTitle} numberOfLines={2}>
+          {e.title}
+        </Text>
+        {end ? (
+          <Text style={styles.evRange}>
+            {rangeLabel(start, end, i18n.language)}
+          </Text>
+        ) : null}
+        {meta ? (
+          <Text style={styles.evMeta} numberOfLines={1}>
+            {meta}
+          </Text>
+        ) : null}
+        {e.note ? (
+          <Text style={styles.evMeta} numberOfLines={1}>
+            {e.note}
+          </Text>
+        ) : null}
+      </View>
+      <Ionicons name="chevron-forward" size={18} color="#cbd5e1" />
+    </Pressable>
   );
 }
 
@@ -466,6 +622,8 @@ export default function HomeScreen() {
       </Text>
       <NextMeetingCard myPublisherId={myPublisherId} />
 
+      <NextFieldServiceCard />
+
       <MyTasksCard />
 
       <MyAbsencesBlock myPublisherId={myPublisherId} />
@@ -483,45 +641,7 @@ export default function HomeScreen() {
           <Text style={styles.muted}>{t('home.noEvents')}</Text>
         ) : (
           upcoming.map((e, idx) => (
-            <Pressable
-              key={e.id}
-              style={[styles.eventRow, idx > 0 && styles.eventRowBorder]}
-              onPress={() => router.push(`/special-events/${e.id}` as any)}
-            >
-              <Ionicons
-                name="megaphone-outline"
-                size={18}
-                color="#0ea5e9"
-                style={{ marginRight: 10 }}
-              />
-              <View style={{ flex: 1 }}>
-                <Text style={styles.eventTitle} numberOfLines={2}>
-                  {e.title}
-                </Text>
-                <Text style={styles.eventDate}>
-                  {eventDateLabel(e, i18n.language)}
-                  {e.time ? ` · ${e.time}` : ''}
-                </Text>
-                {e.address ? (
-                  <Text style={styles.eventMeta} numberOfLines={1}>
-                    {e.address}
-                  </Text>
-                ) : null}
-                {e.note ? (
-                  <Text style={styles.eventMeta} numberOfLines={1}>
-                    {e.note}
-                  </Text>
-                ) : null}
-                {e.replacesMeeting ? (
-                  <View style={styles.replacesChip}>
-                    <Text style={styles.replacesChipText}>
-                      {t('home.events.replacesMeeting')}
-                    </Text>
-                  </View>
-                ) : null}
-              </View>
-              <Ionicons name="chevron-forward" size={18} color="#cbd5e1" />
-            </Pressable>
+            <EventHomeRow key={e.id} event={e} first={idx === 0} />
           ))
         )}
       </View>
@@ -596,24 +716,41 @@ const styles = StyleSheet.create({
   eventRowBorder: { borderTopWidth: 1, borderTopColor: '#f1f5f9' },
   eventTitle: { fontSize: 15, fontWeight: '600', color: '#0f172a' },
   eventDate: { fontSize: 13, color: '#0369a1', marginTop: 2 },
-  eventMeta: { fontSize: 12, color: '#64748b', marginTop: 2 },
-  replacesChip: {
-    alignSelf: 'flex-start',
-    marginTop: 6,
-    backgroundColor: '#fff7ed',
-    borderWidth: 1,
-    borderColor: '#fdba74',
-    borderRadius: 10,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
+  evBadge: {
+    width: 56,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#e0f2fe',
+    borderRadius: 8,
+    paddingVertical: 8,
   },
-  replacesChipText: {
-    fontSize: 10,
+  evBadgeRange: { paddingVertical: 10 },
+  evDay: { fontSize: 20, fontWeight: '700', color: '#0369a1' },
+  evMon: {
+    fontSize: 11,
+    color: '#0369a1',
+    textTransform: 'uppercase',
+    marginTop: 1,
+  },
+  evRangeNum: { fontSize: 14, fontWeight: '700', color: '#0369a1' },
+  evTypeTag: {
+    fontSize: 11,
     fontWeight: '700',
-    color: '#c2410c',
+    color: '#0369a1',
     textTransform: 'uppercase',
     letterSpacing: 0.4,
+    marginBottom: 2,
   },
+  evRange: { fontSize: 13, color: '#0369a1', fontWeight: '500', marginTop: 2 },
+  evMeta: { fontSize: 12, color: '#64748b', marginTop: 2 },
+  fsUnassigned: { color: '#cbd5e1' },
+  fsTopic: {
+    fontSize: 13,
+    color: '#64748b',
+    fontStyle: 'italic',
+    marginTop: 4,
+  },
+  fsLink: { fontSize: 13, color: '#0369a1', fontWeight: '600', marginTop: 6 },
   tiles: {
     flexDirection: 'row',
     flexWrap: 'wrap',

@@ -1162,7 +1162,8 @@
     },
     "events": {
       "replacesMeeting": "Вместо встречи собрания"
-    }
+    },
+    "nextFieldService": "Встреча для проповеди"
   },
   "halls": {
     "title": "Залы Царства",
