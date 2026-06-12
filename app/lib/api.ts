@@ -1430,7 +1430,7 @@ export const scheduleImportApi = {
    * не загружается — отправляются только готовые назначения.
    */
   async apply(payload: ApplyParsedPayload): Promise<ImportResult> {
-    const { data } = await api.post<ImportResult>('/schedule-import/apply', payload);
+    const { data } = await api.post<ImportResult>('/mwb-import/apply', payload);
     return data;
   },
 };
