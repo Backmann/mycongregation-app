@@ -1164,6 +1164,12 @@
     "myTasksScreen": {
       "title": "My assignments",
       "empty": "No assignments in the coming weeks"
+    },
+    "nextMeetings": "Next meetings",
+    "feed": {
+      "empty": "No meetings in the next 7 days",
+      "today": "Today",
+      "youConduct": "You conduct this meeting"
     }
   },
   "halls": {

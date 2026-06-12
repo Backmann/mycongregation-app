@@ -1164,6 +1164,12 @@
     "myTasksScreen": {
       "title": "Meine Aufgaben",
       "empty": "Keine Aufgaben in den kommenden Wochen"
+    },
+    "nextMeetings": "Nächste Zusammenkünfte",
+    "feed": {
+      "empty": "Keine Zusammenkünfte in den nächsten 7 Tagen",
+      "today": "Heute",
+      "youConduct": "Du leitest diese Zusammenkunft"
     }
   },
   "halls": {

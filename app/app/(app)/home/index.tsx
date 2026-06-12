@@ -14,8 +14,6 @@ import { useTranslation } from 'react-i18next';
 import {
   Absence,
   absencesApi,
-  Assignment,
-  assignmentsApi,
   fieldServiceApi,
   FieldServiceMeeting,
   meApi,
@@ -29,7 +27,6 @@ import {
 } from '../../../lib/api';
 import { effectiveVersionFor } from '../../../lib/meeting-schedule';
 import { addDays, formatDateISO, startOfWeekMonday } from '../../../lib/dates';
-import { getPartLabel } from '../../../lib/parts';
 import { usePermissions } from '../../../lib/permissions';
 import { useAuth } from '../../../lib/auth';
 import { useMyPublisher } from '../../../lib/useMyPublisher';
@@ -81,140 +78,43 @@ function absenceRangeLabel(a: Absence, loc: string): string {
   return `${s} \u2013 ${e}`;
 }
 
-type NextMeeting = {
-  kind: 'midweek' | 'weekend';
-  date: Date;
+type FeedEntry = {
+  key: string;
+  kind: 'midweek' | 'weekend' | 'field_service';
   dateISO: string;
-  weekStartISO: string;
   time: string;
   address: string;
+  conductorName: string | null;
+  unassignedConductor: boolean;
+  topic: string | null;
+  sourceUrl: string | null;
+  replacedBy: SpecialEvent | null;
+  myLabels: string[];
 };
 
-/** Earliest upcoming meeting (today counts), looking up to 2 weeks ahead. */
-function computeNextMeeting(
-  versions: MeetingSettingsVersion[],
-  todayISO: string,
-): NextMeeting | null {
-  const today = new Date(`${todayISO}T00:00:00`);
-  const thisMonday = startOfWeekMonday(today);
-  const candidates: NextMeeting[] = [];
-  for (let w = 0; w < 2; w++) {
-    const monday = addDays(thisMonday, w * 7);
-    const weekStartISO = formatDateISO(monday);
-    const v = effectiveVersionFor(versions, weekStartISO);
-    if (!v) continue;
-    for (const kind of ['midweek', 'weekend'] as const) {
-      const dow = kind === 'midweek' ? v.midweekDow : v.weekendDow;
-      const time = kind === 'midweek' ? v.midweekTime : v.weekendTime;
-      if (!dow) continue;
-      const date = addDays(monday, dow - 1);
-      const dateISO = formatDateISO(date);
-      if (dateISO < todayISO) continue;
-      candidates.push({
-        kind,
-        date,
-        dateISO,
-        weekStartISO,
-        time,
-        address: v.address,
-      });
-    }
-  }
-  candidates.sort((a, b) => a.dateISO.localeCompare(b.dateISO));
-  return candidates[0] ?? null;
-}
-
-function NextMeetingCard({ myPublisherId }: { myPublisherId: string | null }) {
+/**
+ * Every meeting of the next 7 days — congregation meetings from the
+ * meeting settings, field-service meetings of this and next week —
+ * in one chronological feed. Cards with my assignments are highlighted;
+ * an event flagged "replaces meeting" takes the meeting’s place.
+ */
+function MeetingsFeed() {
   const { t, i18n } = useTranslation();
   const todayISO = formatDateISO(new Date());
+  const horizonISO = formatDateISO(
+    addDays(new Date(`${todayISO}T00:00:00`), 7),
+  );
+  const thisMonday = formatDateISO(startOfWeekMonday(new Date()));
+  const nextMonday = formatDateISO(
+    addDays(startOfWeekMonday(new Date()), 7),
+  );
 
   const { data: overview, isLoading } = useQuery({
     queryKey: ['meeting-settings'],
     queryFn: () => meetingSettingsApi.getOverview(),
     staleTime: 5 * 60 * 1000,
   });
-
-  const next = overview
-    ? computeNextMeeting(overview.versions, todayISO)
-    : null;
-
-  const { data: weekAssignments } = useQuery({
-    queryKey: ['assignments', 'home-week', next?.weekStartISO, myPublisherId],
-    queryFn: () =>
-      assignmentsApi.list({
-        weekStart: next!.weekStartISO,
-        weekEnd: next!.weekStartISO,
-        limit: 200,
-      }),
-    enabled: !!next && !!myPublisherId,
-    retry: false,
-    staleTime: 60 * 1000,
-  });
-  const myParts: Assignment[] = (weekAssignments?.data ?? []).filter(
-    (a) =>
-      a.status !== 'cancelled' &&
-      !a.deletedAt &&
-      (a.publisherId === myPublisherId ||
-        a.assistantPublisherId === myPublisherId),
-  );
-
-  if (isLoading) {
-    return (
-      <View style={styles.card}>
-        <ActivityIndicator style={{ paddingVertical: 16 }} />
-      </View>
-    );
-  }
-  if (!next) return null;
-
-  const dateLabel = next.date.toLocaleDateString(i18n.language, {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-  });
-
-  return (
-    <View style={[styles.card, { paddingVertical: 14 }]}>
-      <View style={styles.meetingHeader}>
-        <Ionicons name="calendar" size={18} color="#0ea5e9" />
-        <Text style={styles.meetingKind}>
-          {t(`home.meeting.${next.kind}`)}
-        </Text>
-      </View>
-      <Text style={styles.meetingDate}>{dateLabel}</Text>
-      <Text style={styles.meetingMeta}>
-        {next.time}
-        {next.address ? ` · ${next.address}` : ''}
-      </Text>
-      {myPublisherId ? (
-        myParts.length > 0 ? (
-          <View style={styles.partsBox}>
-            <Text style={styles.partsTitle}>{t('home.meeting.myParts')}</Text>
-            {myParts.map((a) => (
-              <Text key={a.id} style={styles.partRow} numberOfLines={1}>
-                {'\u2022 '}
-                {a.partTitle || getPartLabel(a.partKey)}
-                {a.assistantPublisherId === myPublisherId
-                  ? ` (${t('home.meeting.asAssistant')})`
-                  : ''}
-              </Text>
-            ))}
-          </View>
-        ) : (
-          <Text style={styles.noParts}>{t('home.meeting.noParts')}</Text>
-        )
-      ) : null}
-    </View>
-  );
-}
-
-function NextFieldServiceCard() {
-  const { t, i18n } = useTranslation();
-  const todayISO = formatDateISO(new Date());
-  const thisMonday = formatDateISO(startOfWeekMonday(new Date()));
-  const nextMonday = formatDateISO(
-    addDays(startOfWeekMonday(new Date()), 7),
-  );
+  const versions = overview?.versions ?? [];
 
   const weekA = useQuery({
     queryKey: ['field-service', thisMonday],
@@ -231,71 +131,230 @@ function NextFieldServiceCard() {
     queryFn: () => publishersApi.list({ limit: 200 }),
     staleTime: 5 * 60 * 1000,
   });
+  const eventsQuery = useQuery({
+    queryKey: ['special-events', 'home'],
+    queryFn: () => specialEventsApi.list(),
+  });
+  const myTasksQuery = useQuery({
+    queryKey: ['me', 'assignments'],
+    queryFn: () => meApi.assignments(),
+    retry: false,
+    staleTime: 60 * 1000,
+  });
+
   const publishersById = new Map<string, Publisher>(
     (publishersQuery.data?.data ?? []).map((p) => [p.id, p]),
   );
+  const myItems = myTasksQuery.data?.items ?? [];
+  const events = eventsQuery.data ?? [];
 
-  type Dated = { m: FieldServiceMeeting; dateISO: string };
-  const dated: Dated[] = [];
+  const entries: FeedEntry[] = [];
+
+  for (const weekISO of [thisMonday, nextMonday]) {
+    const v = effectiveVersionFor(versions, weekISO);
+    if (!v) continue;
+    for (const kind of ['midweek', 'weekend'] as const) {
+      const dow = kind === 'midweek' ? v.midweekDow : v.weekendDow;
+      const time = kind === 'midweek' ? v.midweekTime : v.weekendTime;
+      if (!dow) continue;
+      const dateISO = formatDateISO(
+        addDays(new Date(`${weekISO}T00:00:00`), dow - 1),
+      );
+      if (dateISO < todayISO || dateISO > horizonISO) continue;
+      const replacedBy =
+        events.find(
+          (e) =>
+            e.replacesMeeting &&
+            e.date <= dateISO &&
+            dateISO <= (e.endDate ?? e.date),
+        ) ?? null;
+      const myLabels = myItems
+        .filter(
+          (it) =>
+            (it.kind === 'meeting' || it.kind === 'duty') &&
+            it.weekStartDate === weekISO &&
+            it.eventType === kind,
+        )
+        .map((it) => taskTitle(it, t));
+      entries.push({
+        key: `${kind}-${dateISO}`,
+        kind,
+        dateISO,
+        time,
+        address: v.address,
+        conductorName: null,
+        unassignedConductor: false,
+        topic: null,
+        sourceUrl: null,
+        replacedBy,
+        myLabels,
+      });
+    }
+  }
+
   for (const m of [...(weekA.data ?? []), ...(weekB.data ?? [])]) {
     const dateISO = formatDateISO(
       addDays(new Date(`${m.weekStartDate}T00:00:00`), m.dayOfWeek - 1),
     );
-    if (dateISO < todayISO) continue;
-    dated.push({ m, dateISO });
+    if (dateISO < todayISO || dateISO > horizonISO) continue;
+    const conductor = m.conductorPublisherId
+      ? publishersById.get(m.conductorPublisherId) ?? null
+      : null;
+    const myLabels = myItems
+      .filter(
+        (it) =>
+          it.kind === 'field_service' &&
+          it.weekStartDate === m.weekStartDate &&
+          it.dayOfWeek === m.dayOfWeek &&
+          (!it.time || it.time === m.startTime),
+      )
+      .map(() => t('home.feed.youConduct'));
+    entries.push({
+      key: `fs-${m.id}`,
+      kind: 'field_service',
+      dateISO,
+      time: m.startTime,
+      address: m.address,
+      conductorName: conductor ? conductor.displayName : null,
+      unassignedConductor: !conductor,
+      topic: m.topic,
+      sourceUrl: m.sourceUrl,
+      replacedBy: null,
+      myLabels,
+    });
   }
-  dated.sort(
-    (a, b) =>
-      a.dateISO.localeCompare(b.dateISO) ||
-      a.m.startTime.localeCompare(b.m.startTime),
-  );
-  const next = dated[0];
-  if (!next) return null;
 
-  const m = next.m;
-  const conductor = m.conductorPublisherId
-    ? publishersById.get(m.conductorPublisherId) ?? null
-    : null;
-  const dateLabel = new Date(`${next.dateISO}T00:00:00`).toLocaleDateString(
-    i18n.language,
-    { weekday: 'long', day: 'numeric', month: 'long' },
+  entries.sort(
+    (a, b) =>
+      a.dateISO.localeCompare(b.dateISO) || a.time.localeCompare(b.time),
   );
+
+  if (isLoading) {
+    return (
+      <View style={styles.card}>
+        <ActivityIndicator style={{ paddingVertical: 16 }} />
+      </View>
+    );
+  }
+  if (entries.length === 0) {
+    return (
+      <View style={styles.card}>
+        <Text style={styles.muted}>{t('home.feed.empty')}</Text>
+      </View>
+    );
+  }
 
   return (
-    <>
-      <Text style={[styles.sectionTitle, { marginTop: 24, marginBottom: 12 }]}>
-        {t('home.nextFieldService')}
-      </Text>
-      <View style={[styles.card, { paddingVertical: 14 }]}>
-        <View style={styles.meetingHeader}>
-          <Ionicons name="walk-outline" size={18} color="#0ea5e9" />
-          <Text style={styles.meetingKind}>
-            {t(`fieldService.days.${m.dayOfWeek}`)} · {m.startTime}
-          </Text>
-        </View>
-        <Text style={styles.meetingDate}>{dateLabel}</Text>
-        <Text style={styles.meetingMeta}>{m.address}</Text>
-        <Text
-          style={[styles.meetingMeta, !conductor && styles.fsUnassigned]}
-        >
-          {t('fieldService.conductor')}:{' '}
-          {conductor ? conductor.displayName : t('fieldService.unassigned')}
-        </Text>
-        {!!m.topic && <Text style={styles.fsTopic}>{m.topic}</Text>}
-        {!!m.sourceUrl && (
-          <Pressable
-            onPress={() =>
-              Linking.openURL(m.sourceUrl as string).catch(() => {})
-            }
-            hitSlop={6}
+    <View style={{ gap: 10 }}>
+      {entries.map((en) => {
+        const mine = en.myLabels.length > 0;
+        const isToday = en.dateISO === todayISO;
+        const dateLabel = new Date(
+          `${en.dateISO}T00:00:00`,
+        ).toLocaleDateString(i18n.language, {
+          weekday: 'long',
+          day: 'numeric',
+          month: 'long',
+        });
+
+        if (en.replacedBy) {
+          const e = en.replacedBy;
+          const typeLabel = e.type
+            ? t(`specialEvents.types.${e.type}`, e.type)
+            : null;
+          return (
+            <Pressable
+              key={en.key}
+              style={[styles.card, { paddingVertical: 14 }]}
+              onPress={() => router.push(`/special-events/${e.id}` as any)}
+            >
+              <View style={styles.meetingHeader}>
+                <Ionicons name="megaphone-outline" size={18} color="#0ea5e9" />
+                <Text style={styles.meetingKind}>
+                  {typeLabel ?? t('home.kinds.meeting')}
+                </Text>
+                {isToday ? (
+                  <Text style={styles.todayChip}>{t('home.feed.today')}</Text>
+                ) : null}
+              </View>
+              <Text style={styles.meetingDate}>{e.title}</Text>
+              <Text style={styles.meetingMeta}>
+                {dateLabel}
+                {e.time ? ` · ${e.time}` : ''}
+                {e.address ? ` · ${e.address}` : ''}
+              </Text>
+            </Pressable>
+          );
+        }
+
+        const kindLabel =
+          en.kind === 'field_service'
+            ? t('home.nextFieldService')
+            : t(`home.eventTypes.${en.kind}`);
+        return (
+          <View
+            key={en.key}
+            style={[
+              styles.card,
+              { paddingVertical: 14 },
+              mine && styles.feedMine,
+            ]}
           >
-            <Text style={styles.fsLink} numberOfLines={1}>
-              {t('fieldService.openLink')}
+            <View style={styles.meetingHeader}>
+              <Ionicons
+                name={en.kind === 'field_service' ? 'walk-outline' : 'calendar'}
+                size={18}
+                color="#0ea5e9"
+              />
+              <Text style={styles.meetingKind}>{kindLabel}</Text>
+              {isToday ? (
+                <Text style={styles.todayChip}>{t('home.feed.today')}</Text>
+              ) : null}
+            </View>
+            <Text style={styles.meetingDate}>{dateLabel}</Text>
+            <Text style={styles.meetingMeta}>
+              {en.time}
+              {en.address ? ` · ${en.address}` : ''}
             </Text>
-          </Pressable>
-        )}
-      </View>
-    </>
+            {en.kind === 'field_service' ? (
+              <Text
+                style={[
+                  styles.meetingMeta,
+                  en.unassignedConductor && styles.fsUnassigned,
+                ]}
+              >
+                {t('fieldService.conductor')}:{' '}
+                {en.conductorName ?? t('fieldService.unassigned')}
+              </Text>
+            ) : null}
+            {!!en.topic && <Text style={styles.fsTopic}>{en.topic}</Text>}
+            {!!en.sourceUrl && (
+              <Pressable
+                onPress={() =>
+                  Linking.openURL(en.sourceUrl as string).catch(() => {})
+                }
+                hitSlop={6}
+              >
+                <Text style={styles.fsLink} numberOfLines={1}>
+                  {t('fieldService.openLink')}
+                </Text>
+              </Pressable>
+            )}
+            {mine ? (
+              <View style={styles.partsBox}>
+                <Text style={styles.partsTitle}>{t('home.meeting.myParts')}</Text>
+                {en.myLabels.map((l, i) => (
+                  <Text key={i} style={styles.partRow} numberOfLines={2}>
+                    {'\u2022 '}
+                    {l}
+                  </Text>
+                ))}
+              </View>
+            ) : null}
+          </View>
+        );
+      })}
+    </View>
   );
 }
 
@@ -521,11 +580,9 @@ export default function HomeScreen() {
       contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
     >
       <Text style={[styles.sectionTitle, { marginBottom: 12 }]}>
-        {t('home.nextMeeting')}
+        {t('home.nextMeetings')}
       </Text>
-      <NextMeetingCard myPublisherId={myPublisherId} />
-
-      <NextFieldServiceCard />
+      <MeetingsFeed />
 
       <MyTasksCard />
 
@@ -587,6 +644,19 @@ const styles = StyleSheet.create({
   },
   muted: { color: '#94a3b8', textAlign: 'center', paddingVertical: 20 },
   meetingHeader: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  feedMine: { borderLeftWidth: 3, borderLeftColor: '#0ea5e9' },
+  todayChip: {
+    marginLeft: 'auto',
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#0369a1',
+    backgroundColor: '#e0f2fe',
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+  },
   meetingKind: {
     fontSize: 12,
     fontWeight: '700',

@@ -1,7 +1,9 @@
-feat: full "My assignments" screen, compact card on Home
+feat: unified meetings feed on Home with my-assignment highlights
 
-New /home/my-assignments screen lists every upcoming assignment for the
-whole aggregator horizon, grouped by week, with the same detailed rows.
-The Home card shrinks to the top 3 with an "All (N)" link. Shared row
-logic moves to lib/my-tasks.ts so the card and the screen cannot drift.
-Also silences the unused-i18n lint warning in HomeScreen.
+NextMeetingCard and NextFieldServiceCard merge into one chronological
+feed of every meeting in the next 7 days: midweek, weekend and
+field-service meetings with full details. Cards where the member has
+an assignment get an accent border and a "my parts" block fed from the
+/me/assignments cache. An event flagged as replacing a meeting takes
+the meeting's slot in the feed. A "Today" chip marks the current day.
+Client-only change.
