@@ -35,11 +35,6 @@ function isAssigned(a: Assignment): boolean {
   return !!a.publisherId || !!a.speakerName;
 }
 
-/** A part needs planning if it's a real (non-song) part without an assignee. */
-function needsPlanning(a: Assignment): boolean {
-  if (SONG_KEYS.includes(a.partKey)) return false;
-  return !isAssigned(a);
-}
 
 /**
  * Planning mode — a focused overlay for filling ONE meeting (the zone the
