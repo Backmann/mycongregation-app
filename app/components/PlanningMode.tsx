@@ -28,11 +28,8 @@ interface Props {
   canPublish: boolean;
   publishing: boolean;
   canEdit: boolean;
-  onPublish: (
-    eventType: 'midweek' | 'weekend',
-    weekStartDate: string,
-    notify: boolean,
-  ) => void;
+  // openPublishDialog: opens the shared publish dialog for this zone.
+  onPublish: (eventType: 'midweek' | 'weekend', weekStartDate: string) => void;
   onClose: () => void;
 }
 
@@ -216,27 +213,13 @@ export function PlanningMode({
               ]}
               disabled={publishing}
               onPress={() =>
-                zone && onPublish(zone.eventType, zone.weekStartDate, true)
+                zone && onPublish(zone.eventType, zone.weekStartDate)
               }
             >
               <Text style={styles.publishBtnText}>
                 {publishing
                   ? t('schedule.planning.publishing')
-                  : t('schedule.planning.publishNotify')}
-              </Text>
-            </Pressable>
-            <Pressable
-              style={({ pressed }) => [
-                styles.publishSilently,
-                pressed && styles.publishBtnPressed,
-              ]}
-              disabled={publishing}
-              onPress={() =>
-                zone && onPublish(zone.eventType, zone.weekStartDate, false)
-              }
-            >
-              <Text style={styles.publishSilentlyText}>
-                {t('schedule.planning.publishSilent')}
+                  : t('schedule.planning.publishThis')}
               </Text>
             </Pressable>
           </View>
@@ -317,10 +300,5 @@ const styles = StyleSheet.create({
   publishBtnPressed: { opacity: 0.85 },
   publishBtnDisabled: { opacity: 0.5 },
   publishBtnText: { color: '#fff', fontSize: 15, fontWeight: '700' },
-  publishSilently: {
-    alignItems: 'center',
-    paddingVertical: 10,
-    marginTop: 6,
-  },
-  publishSilentlyText: { color: '#64748b', fontSize: 13, fontWeight: '600' },
+
 });

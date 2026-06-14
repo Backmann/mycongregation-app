@@ -1,9 +1,8 @@
-fix: save invited (out-of-town) speaker immediately
+feat: one publish dialog everywhere (notify / silent)
 
-The invited-speaker fields (speakerName, speakerCongregation) only
-called update() on local form state, never onInstantSave — like the
-public-talk pick before. In the bottom sheet (no submit button) the
-invited speaker was lost on close and the row showed "unassigned". The
-fields now queueInstant their value, and the local/invited toggle
-instant-saves the cleared opposite fields. Mirrors the publisher picker
-which already saved instantly.
+Publishing now goes through a single PublishDialog from every entry
+point — the publish buttons on the midweek/weekend meeting blocks and
+the one in planning mode all open the same notify/silent/cancel dialog.
+Previously the block buttons always notified (no choice) and only
+planning mode offered silent, so behaviour was inconsistent. Planning
+mode drops its two-button bar for one button that opens the dialog.

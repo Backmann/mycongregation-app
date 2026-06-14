@@ -713,6 +713,14 @@
       "publishing": "Wird veröffentlicht…",
       "publishNotify": "Veröffentlichen und benachrichtigen",
       "publishSilent": "Still veröffentlichen (ohne Benachrichtigung)"
+    },
+    "publishDialog": {
+      "title": "Zusammenkunft veröffentlichen",
+      "subtitle": "Zuteilungen werden für alle sichtbar. Brüder benachrichtigen?",
+      "notify": "Veröffentlichen und benachrichtigen",
+      "notifyHint": "Die Brüder erhalten eine Benachrichtigung",
+      "silent": "Still veröffentlichen",
+      "silentHint": "Ohne Benachrichtigung"
     }
   },
   "audit": {

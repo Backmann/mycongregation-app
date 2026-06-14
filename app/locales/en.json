@@ -713,6 +713,14 @@
       "publishing": "Publishing…",
       "publishNotify": "Publish and notify",
       "publishSilent": "Publish silently (no notification)"
+    },
+    "publishDialog": {
+      "title": "Publish meeting",
+      "subtitle": "Assignments become visible to everyone. Notify the brothers?",
+      "notify": "Publish and notify",
+      "notifyHint": "The brothers get a notification",
+      "silent": "Publish silently",
+      "silentHint": "No notification"
     }
   },
   "audit": {

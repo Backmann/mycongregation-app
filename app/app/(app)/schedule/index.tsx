@@ -60,6 +60,7 @@ import { CollapsibleMeetingBlock } from '../../../components/CollapsibleMeetingB
 import { HospitalityZone } from '../../../components/HospitalityZone';
 import { AssignmentSheet } from '../../../components/AssignmentSheet';
 import { PlanningMode } from '../../../components/PlanningMode';
+import { PublishDialog } from '../../../components/PublishDialog';
 
 const EVENT_TYPE_ORDER: EventType[] = [
   'midweek',
@@ -86,6 +87,10 @@ export default function ScheduleIndexScreen() {
   const queryClient = useQueryClient();
   const params = useLocalSearchParams<{ week?: string }>();
   const [editing, setEditing] = useState<Assignment | null>(null);
+  const [publishPrompt, setPublishPrompt] = useState<{
+    eventType: 'midweek' | 'weekend';
+    weekStartDate: string;
+  } | null>(null);
   const [planningZone, setPlanningZone] = useState<{
     eventType: 'midweek' | 'weekend';
     title: string;
@@ -399,8 +404,23 @@ export default function ScheduleIndexScreen() {
               ? perms.canEditWeekendSchedule
               : false
         }
-        onPublish={(et, ws, notify) => void publishMeetingNow(et, ws, notify)}
+        onPublish={(et, ws) => setPublishPrompt({ eventType: et, weekStartDate: ws })}
         onClose={() => setPlanningZone(null)}
+      />
+      <PublishDialog
+        open={!!publishPrompt}
+        busy={publishingType === publishPrompt?.eventType}
+        onPublish={(notify) => {
+          if (publishPrompt) {
+            void publishMeetingNow(
+              publishPrompt.eventType,
+              publishPrompt.weekStartDate,
+              notify,
+            );
+          }
+          setPublishPrompt(null);
+        }}
+        onCancel={() => setPublishPrompt(null)}
       />
 
       <ScrollView
@@ -464,7 +484,10 @@ export default function ScheduleIndexScreen() {
                     }
                     actionBusy={publishingType === 'midweek'}
                     onAction={() =>
-                      void publishMeetingNow('midweek', items[0].weekStartDate)
+                      setPublishPrompt({
+                        eventType: 'midweek',
+                        weekStartDate: items[0].weekStartDate,
+                      })
                     }
                   >
                     <MeetingHeader
@@ -545,7 +568,10 @@ export default function ScheduleIndexScreen() {
                     }
                     actionBusy={publishingType === 'weekend'}
                     onAction={() =>
-                      void publishMeetingNow('weekend', items[0].weekStartDate)
+                      setPublishPrompt({
+                        eventType: 'weekend',
+                        weekStartDate: items[0].weekStartDate,
+                      })
                     }
                   >
                     <MeetingHeader
