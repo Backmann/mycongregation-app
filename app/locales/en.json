@@ -721,6 +721,9 @@
       "notifyHint": "The brothers get a notification",
       "silent": "Publish silently",
       "silentHint": "No notification"
+    },
+    "sheet": {
+      "next": "Next →"
     }
   },
   "audit": {

@@ -17,6 +17,9 @@ interface Props {
   weekStartISO: string;
   canEdit: boolean;
   onClose: () => void;
+  /** When set (planning mode), shows a "Next" button to jump to the
+   * next unassigned part. */
+  onNext?: (() => void) | null;
 }
 
 const SONG_KEYS = ['mid_song', 'weekend_song', 'weekend_opening_song'];
@@ -32,6 +35,7 @@ export function AssignmentSheet({
   weekStartISO,
   canEdit,
   onClose,
+  onNext,
 }: Props) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
@@ -109,9 +113,16 @@ export function AssignmentSheet({
           <Text style={styles.title} numberOfLines={1}>
             {assignment?.partTitle || t('schedule.sheet.title')}
           </Text>
-          <Pressable onPress={onClose} hitSlop={8} style={styles.closeBtn}>
-            <Text style={styles.closeText}>{t('common.close')}</Text>
-          </Pressable>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+            {onNext ? (
+              <Pressable onPress={onNext} hitSlop={8} style={styles.nextBtn}>
+                <Text style={styles.nextText}>{t('schedule.sheet.next')}</Text>
+              </Pressable>
+            ) : null}
+            <Pressable onPress={onClose} hitSlop={8} style={styles.closeBtn}>
+              <Text style={styles.closeText}>{t('common.close')}</Text>
+            </Pressable>
+          </View>
         </View>
 
         {assignment ? (
@@ -222,6 +233,13 @@ const styles = StyleSheet.create({
   title: { flex: 1, fontSize: 16, fontWeight: '700', color: '#0f172a' },
   closeBtn: { paddingHorizontal: 8, paddingVertical: 4 },
   closeText: { color: '#0ea5e9', fontSize: 14, fontWeight: '600' },
+  nextBtn: {
+    backgroundColor: '#0ea5e9',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  nextText: { color: '#fff', fontSize: 14, fontWeight: '700' },
   unassignLink: {
     alignSelf: 'center',
     paddingVertical: 12,

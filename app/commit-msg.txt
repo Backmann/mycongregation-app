@@ -1,9 +1,7 @@
-fix: localize weekend part titles in my-assignments
+feat: "Next" button to jump to the next empty part in planning mode
 
-Weekend assignment rows showed raw part keys (weekend_chairman,
-weekend_opening_prayer) because taskTitle used item.label verbatim, and
-the aggregator puts the partKey there when a part has no human title
-(unlike EPUB-imported parts). taskTitle now runs the label through
-getPartLabel: keys in the registry are translated ("Председатель
-встречи"), human titles pass through unchanged. Fixes both the Home
-feed and the My-assignments screen for everyone.
+AssignmentSheet gains an optional onNext prop: when provided (only from
+planning mode), a "Next" button appears beside Close to jump straight to
+the next unassigned part. PlanningMode computes the next empty part from
+the live zone items and wires onNext. Outside planning mode the prop is
+absent, so the sheet is unchanged everywhere else.

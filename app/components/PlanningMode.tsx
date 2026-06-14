@@ -229,6 +229,19 @@ export function PlanningMode({
         assignment={editingInPlan}
         weekStartISO={zone?.weekStartDate ?? ''}
         canEdit={canEdit}
+        onNext={(() => {
+          if (!editingInPlan) return null;
+          const nextUnassigned = zoneItems.find(
+            (a) =>
+              !SONG_KEYS.includes(a.partKey) &&
+              !a.publisherId &&
+              !a.speakerName &&
+              a.id !== editingInPlan.id,
+          );
+          return nextUnassigned
+            ? () => setEditingInPlan(nextUnassigned)
+            : null;
+        })()}
         onClose={() => setEditingInPlan(null)}
       />
     </Modal>

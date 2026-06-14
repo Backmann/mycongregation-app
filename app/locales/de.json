@@ -721,6 +721,9 @@
       "notifyHint": "Die Brüder erhalten eine Benachrichtigung",
       "silent": "Still veröffentlichen",
       "silentHint": "Ohne Benachrichtigung"
+    },
+    "sheet": {
+      "next": "Weiter →"
     }
   },
   "audit": {
