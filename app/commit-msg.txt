@@ -1,8 +1,9 @@
-fix: planning-mode rows now open the editor
+fix: planning mode reflects assignments as you make them
 
-Tapping a row in planning mode did nothing: PlanningMode (a Modal)
-called the outer onEdit→setEditing, but AssignmentSheet (also a Modal)
-was mounted as a sibling beneath the planning Modal and stayed hidden
-behind it. PlanningMode now owns its own editing state and renders the
-AssignmentSheet inside its own Modal, so tapping a part opens the editor
-over the planning screen as intended.
+PlanningMode received a frozen snapshot of items captured when the zone
+was opened, so assigning someone in the sheet never updated the list or
+progress. It now subscribes to the same ['assignments', weekStartISO]
+query and derives its items by eventType (weekend minus hospitality), so
+saving an assignment immediately moves the row out of "needs assigning"
+and advances the progress bar. The planningZone state type carries
+weekStartISO/nextWeekISO instead of an items snapshot.

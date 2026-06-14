@@ -90,7 +90,8 @@ export default function ScheduleIndexScreen() {
     eventType: 'midweek' | 'weekend';
     title: string;
     meta: string | null;
-    items: Assignment[];
+    weekStartISO: string;
+    nextWeekISO: string;
     weekStartDate: string;
   } | null>(null);
   const weekStart = weekFromParam(params.week);
@@ -478,7 +479,8 @@ export default function ScheduleIndexScreen() {
                             eventType: 'midweek',
                             title: getEventTypeLabel('midweek'),
                             meta: meetingDateLabel('midweek'),
-                            items,
+                            weekStartISO,
+                            nextWeekISO,
                             weekStartDate: items[0].weekStartDate,
                           })
                         }
@@ -558,7 +560,8 @@ export default function ScheduleIndexScreen() {
                             eventType: 'weekend',
                             title: getEventTypeLabel('weekend'),
                             meta: meetingDateLabel('weekend'),
-                            items: programItems,
+                            weekStartISO,
+                            nextWeekISO,
                             weekStartDate: items[0].weekStartDate,
                           })
                         }

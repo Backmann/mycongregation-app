@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import {
   Modal,
   Platform,
@@ -10,7 +11,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import { Assignment, Publisher } from '../lib/api';
+import { Assignment, assignmentsApi, Publisher } from '../lib/api';
 import { AssignmentSheet } from './AssignmentSheet';
 
 interface Props {
@@ -19,7 +20,8 @@ interface Props {
     eventType: 'midweek' | 'weekend';
     title: string;
     meta: string | null;
-    items: Assignment[];
+    weekStartISO: string;
+    nextWeekISO: string;
     weekStartDate: string;
   } | null;
   publishersById: Map<string, Publisher>;
@@ -58,8 +60,26 @@ export function PlanningMode({
     null,
   );
 
+  const liveQuery = useQuery({
+    queryKey: ['assignments', zone?.weekStartISO ?? ''],
+    queryFn: () =>
+      assignmentsApi.list({
+        weekStart: zone!.weekStartISO,
+        weekEnd: zone!.nextWeekISO,
+      }),
+    enabled: !!zone,
+  });
+  const zoneItems = useMemo(() => {
+    const all = (liveQuery.data?.data ?? []).filter(
+      (a) => a.eventType === zone?.eventType,
+    );
+    return zone?.eventType === 'weekend'
+      ? all.filter((a) => a.partKey !== 'weekend_hospitality')
+      : all;
+  }, [liveQuery.data, zone]);
+
   const { todo, drafts, assignedCount, totalCount } = useMemo(() => {
-    const real = (zone?.items ?? []).filter(
+    const real = zoneItems.filter(
       (a) => !SONG_KEYS.includes(a.partKey),
     );
     const todo = real.filter((a) => !isAssigned(a));
@@ -68,7 +88,7 @@ export function PlanningMode({
     );
     const assignedCount = real.filter(isAssigned).length;
     return { todo, drafts, assignedCount, totalCount: real.length };
-  }, [zone]);
+  }, [zoneItems]);
 
   const allDone = todo.length === 0;
   const pct = totalCount === 0 ? 0 : Math.round((assignedCount / totalCount) * 100);
