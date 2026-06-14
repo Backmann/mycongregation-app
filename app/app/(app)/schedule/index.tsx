@@ -11,7 +11,7 @@ import {
   View,
 } from 'react-native';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import {
   Assignment,
   assignmentsApi,
@@ -67,16 +67,27 @@ const EVENT_TYPE_ORDER: EventType[] = [
   'public_witnessing',
 ];
 
+/** Parse ?week=YYYY-MM-DD into a Monday; fall back to current week. */
+function weekFromParam(raw: string | string[] | undefined): Date {
+  const v = Array.isArray(raw) ? raw[0] : raw;
+  if (v && /^\d{4}-\d{2}-\d{2}$/.test(v)) {
+    const d = new Date(`${v}T00:00:00`);
+    if (!Number.isNaN(d.getTime())) return startOfWeekMonday(d);
+  }
+  return startOfWeekMonday(new Date());
+}
+
 export default function ScheduleIndexScreen() {
   const { t, i18n } = useTranslation();
   const perms = usePermissions();
   const [publishingType, setPublishingType] = useState<string | null>(null);
   const queryClient = useQueryClient();
-  const [weekStart, setWeekStart] = useState(() =>
-    startOfWeekMonday(new Date()),
-  );
-
+  const params = useLocalSearchParams<{ week?: string }>();
+  const weekStart = weekFromParam(params.week);
   const weekStartISO = formatDateISO(weekStart);
+  const setWeekStart = (d: Date) => {
+    router.setParams({ week: formatDateISO(startOfWeekMonday(d)) });
+  };
   const nextWeekISO = formatDateISO(addWeeks(weekStart, 1));
 
   const assignmentsQuery = useQuery({

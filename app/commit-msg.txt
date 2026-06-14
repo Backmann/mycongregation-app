@@ -1,9 +1,7 @@
-feat: unified meetings feed on Home with my-assignment highlights
+fix: keep selected schedule week in the URL
 
-NextMeetingCard and NextFieldServiceCard merge into one chronological
-feed of every meeting in the next 7 days: midweek, weekend and
-field-service meetings with full details. Cards where the member has
-an assignment get an accent border and a "my parts" block fed from the
-/me/assignments cache. An event flagged as replacing a meeting takes
-the meeting's slot in the feed. A "Today" chip marks the current day.
-Client-only change.
+The schedule week was local component state, so any remount (e.g.
+returning from the assignment screen) reset it to the current week and
+collapsed the open meeting block. The week now lives in a ?week=
+URL param: it survives remounts and is shareable. No change to how the
+week navigator behaves for the user.
