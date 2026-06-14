@@ -1,8 +1,8 @@
-feat: planning mode — focused per-meeting assignment flow
+fix: planning-mode rows now open the editor
 
-A "Plan" button inside each meeting block opens a focused overlay for
-that meeting (the brother's zone): a progress bar, a "needs assigning"
-group and a "draft, not published" group. Tapping a row opens the same
-bottom sheet; when nothing is left to assign, a soft "publish this
-meeting" bar appears. One meeting at a time, gated by the midweek/
-weekend edit permission, so brothers plan only their own zone.
+Tapping a row in planning mode did nothing: PlanningMode (a Modal)
+called the outer onEdit→setEditing, but AssignmentSheet (also a Modal)
+was mounted as a sibling beneath the planning Modal and stayed hidden
+behind it. PlanningMode now owns its own editing state and renders the
+AssignmentSheet inside its own Modal, so tapping a part opens the editor
+over the planning screen as intended.

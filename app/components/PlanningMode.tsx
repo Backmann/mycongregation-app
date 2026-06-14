@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import {
   Modal,
   Platform,
@@ -11,6 +11,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { Assignment, Publisher } from '../lib/api';
+import { AssignmentSheet } from './AssignmentSheet';
 
 interface Props {
   /** Open when non-null; the meeting zone being planned. */
@@ -24,7 +25,7 @@ interface Props {
   publishersById: Map<string, Publisher>;
   canPublish: boolean;
   publishing: boolean;
-  onEdit: (a: Assignment) => void;
+  canEdit: boolean;
   onPublish: (eventType: 'midweek' | 'weekend', weekStartDate: string) => void;
   onClose: () => void;
 }
@@ -47,12 +48,15 @@ export function PlanningMode({
   publishersById,
   canPublish,
   publishing,
-  onEdit,
+  canEdit,
   onPublish,
   onClose,
 }: Props) {
   const { t } = useTranslation();
   const open = !!zone;
+  const [editingInPlan, setEditingInPlan] = useState<Assignment | null>(
+    null,
+  );
 
   const { todo, drafts, assignedCount, totalCount } = useMemo(() => {
     const real = (zone?.items ?? []).filter(
@@ -85,7 +89,7 @@ export function PlanningMode({
   const Row = ({ a, draft }: { a: Assignment; draft: boolean }) => (
     <Pressable
       style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
-      onPress={() => onEdit(a)}
+      onPress={() => setEditingInPlan(a)}
     >
       <View
         style={[styles.dot, draft ? styles.dotDraft : styles.dotTodo]}
@@ -200,6 +204,12 @@ export function PlanningMode({
           </View>
         ) : null}
       </View>
+      <AssignmentSheet
+        assignment={editingInPlan}
+        weekStartISO={zone?.weekStartDate ?? ''}
+        canEdit={canEdit}
+        onClose={() => setEditingInPlan(null)}
+      />
     </Modal>
   );
 }

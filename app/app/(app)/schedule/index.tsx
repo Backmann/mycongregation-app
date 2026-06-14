@@ -390,7 +390,13 @@ export default function ScheduleIndexScreen() {
               : false
         }
         publishing={publishingType === planningZone?.eventType}
-        onEdit={setEditing}
+        canEdit={
+          planningZone?.eventType === 'midweek'
+            ? perms.canEditMidweekSchedule
+            : planningZone?.eventType === 'weekend'
+              ? perms.canEditWeekendSchedule
+              : false
+        }
         onPublish={(et, ws) => void publishMeetingNow(et, ws)}
         onClose={() => setPlanningZone(null)}
       />
