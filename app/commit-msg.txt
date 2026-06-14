@@ -1,7 +1,7 @@
-feat: "Next" button to jump to the next empty part in planning mode
+feat: invite checkbox in the grant-access modal
 
-AssignmentSheet gains an optional onNext prop: when provided (only from
-planning mode), a "Next" button appears beside Close to jump straight to
-the next unassigned part. PlanningMode computes the next empty part from
-the live zone items and wires onNext. Outside planning mode the prop is
-absent, so the sheet is unchanged everywhere else.
+The grant-access modal now offers "Send an email invitation": when on,
+the password field is hidden and the person receives an email link to
+set their own password (server issues a 72h token). When off, behaviour
+is unchanged (admin sets the password). sendInvite is threaded through
+grantAccess; GrantAccessInput.password becomes optional.

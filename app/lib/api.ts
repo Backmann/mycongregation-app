@@ -997,8 +997,11 @@ export interface AccessSummary {
 
 export interface GrantAccessInput {
   email?: string;
-  password: string;
+  password?: string;
   isAdmin?: boolean;
+  /** When true, create the account without a password and email an
+   * invitation link so the person sets their own password. */
+  sendInvite?: boolean;
 }
 
 export interface UpdateAccessInput {

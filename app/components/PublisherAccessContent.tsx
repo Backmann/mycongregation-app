@@ -56,6 +56,7 @@ export function PublisherAccessContent({ publisher }: { publisher: Publisher }) 
       email?: string;
       password?: string;
       isAdmin?: boolean;
+      sendInvite?: boolean;
       isActive?: boolean;
       canViewPrivateData?: boolean;
     }) => publishersApi.updateAccess(publisher.id, input),
@@ -97,11 +98,12 @@ export function PublisherAccessContent({ publisher }: { publisher: Publisher }) 
             grantMutation.reset();
             setGrantOpen(false);
           }}
-          onSubmit={(email, password, isAdmin) =>
+          onSubmit={(email, password, isAdmin, sendInvite) =>
             grantMutation.mutate({
               email: email || undefined,
               password,
               isAdmin,
+              sendInvite,
             })
           }
         />
@@ -381,21 +383,30 @@ function GrantModal({
   pending: boolean;
   error: string | null;
   onCancel: () => void;
-  onSubmit: (email: string, password: string, isAdmin: boolean) => void;
+  onSubmit: (
+    email: string,
+    password: string,
+    isAdmin: boolean,
+    sendInvite: boolean,
+  ) => void;
 }) {
   const [email, setEmail] = useState(defaultEmail);
   const [password, setPassword] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
+  const [sendInvite, setSendInvite] = useState(false);
 
   useEffect(() => {
     if (visible) {
       setEmail(defaultEmail);
       setPassword('');
       setIsAdmin(false);
+      setSendInvite(false);
     }
   }, [visible, defaultEmail]);
 
-  const canSubmit = password.length >= 8 && !pending;
+  const canSubmit =
+    !pending &&
+    (sendInvite ? email.trim().includes('@') : password.length >= 8);
 
   return (
     <Modal
@@ -419,14 +430,22 @@ function GrantModal({
             placeholder="name@example.org"
           />
 
-          <Text style={styles.modalLabel}>Пароль</Text>
-          <TextInput
-            style={styles.input}
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            placeholder="Минимум 8 символов"
-          />
+          <View style={styles.switchRow}>
+            <Text style={styles.rowLabel}>Отправить приглашение по email</Text>
+            <Switch value={sendInvite} onValueChange={setSendInvite} />
+          </View>
+          {sendInvite ? null : (
+            <>
+              <Text style={styles.modalLabel}>Пароль</Text>
+              <TextInput
+                style={styles.input}
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+                placeholder="Минимум 8 символов"
+              />
+            </>
+          )}
 
           <View style={styles.switchRow}>
             <Text style={styles.rowLabel}>Сделать администратором</Text>
@@ -434,8 +453,9 @@ function GrantModal({
           </View>
 
           <Text style={styles.hint}>
-            Роль присвоится автоматически по назначению человека. Пароль сообщите
-            ему отдельно — здесь он больше не показывается.
+            {sendInvite
+              ? 'Человек получит письмо со ссылкой и сам задаст пароль (ссылка действует 72 часа).'
+              : 'Роль присвоится автоматически по назначению человека. Пароль сообщите ему отдельно — здесь он больше не показывается.'}
           </Text>
 
           {error ? <Text style={styles.error}>{error}</Text> : null}
@@ -447,10 +467,10 @@ function GrantModal({
             <Pressable
               style={[styles.modalOk, !canSubmit && styles.modalOkDisabled]}
               disabled={!canSubmit}
-              onPress={() => onSubmit(email.trim(), password, isAdmin)}
+              onPress={() => onSubmit(email.trim(), password, isAdmin, sendInvite)}
             >
               <Text style={styles.modalOkText}>
-                {pending ? '…' : 'Создать'}
+                {pending ? '…' : sendInvite ? 'Пригласить' : 'Создать'}
               </Text>
             </Pressable>
           </View>
