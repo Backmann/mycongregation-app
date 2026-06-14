@@ -1,6 +1,9 @@
-feat: notify / silent publish buttons in planning mode
+fix: save invited (out-of-town) speaker immediately
 
-Planning mode now offers two clear actions when a meeting is ready: a
-primary "Publish and notify" (push to the brothers) and an unobtrusive
-"Publish silently" (status only, no push). notify is threaded through
-assignmentsApi.publish and publishMeetingNow.
+The invited-speaker fields (speakerName, speakerCongregation) only
+called update() on local form state, never onInstantSave — like the
+public-talk pick before. In the bottom sheet (no submit button) the
+invited speaker was lost on close and the row showed "unassigned". The
+fields now queueInstant their value, and the local/invited toggle
+instant-saves the cleared opposite fields. Mirrors the publisher picker
+which already saved instantly.

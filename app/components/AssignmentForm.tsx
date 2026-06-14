@@ -203,9 +203,15 @@ export function AssignmentForm({
         speakerName: null,
         speakerCongregation: null,
       }));
+      if (onInstantSave) {
+        void instant({ speakerName: null, speakerCongregation: null });
+      }
     } else {
       // Clear local publisher
       setForm((prev) => ({ ...prev, publisherId: null }));
+      if (onInstantSave) {
+        void instant({ publisherId: null });
+      }
     }
   };
 
@@ -404,15 +410,20 @@ export function AssignmentForm({
                 <FormField
                   label={t('assignments.form.field.speakerName')}
                   value={form.speakerName ?? ''}
-                  onChangeText={(v) => update('speakerName', v || null)}
+                  onChangeText={(v) => {
+                    update('speakerName', v || null);
+                    // instant-save invited speaker
+                    queueInstant({ speakerName: v || null });
+                  }}
                   placeholder={t('assignments.form.placeholder.speakerName')}
                 />
                 <FormField
                   label={t('assignments.form.field.fromCongregation')}
                   value={form.speakerCongregation ?? ''}
-                  onChangeText={(v) =>
-                    update('speakerCongregation', v || null)
-                  }
+                  onChangeText={(v) => {
+                    update('speakerCongregation', v || null);
+                    queueInstant({ speakerCongregation: v || null });
+                  }}
                   placeholder={t('assignments.form.placeholder.fromCongregation')}
                 />
               </>
