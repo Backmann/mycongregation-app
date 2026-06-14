@@ -1,8 +1,9 @@
-fix: save public-talk pick immediately
+fix: sheet form shows current values for the opened assignment
 
-Picking a public talk only updated local form state; unlike the
-publisher pickers it never called onInstantSave, so in the new bottom
-sheet (which has no submit button) the choice was lost on close — the
-row fell back to the generic "Public talk" label. handleTalkSelect now
-instant-saves publicTalkId and the derived part title, fixing both the
-sheet and the detail screen.
+AssignmentForm reads initial only on mount (useState), but the Modal in
+the sheet reuses its subtree, so opening an already-filled part showed
+empty/stale fields — you had to re-enter both talk and speaker even to
+change one. The form now carries key={assignment.id}: switching parts
+remounts it with the live values (talk, speaker, assistant, status,
+notes), while editing the same part keeps your input. Changing only the
+talk or only the speaker now leaves the other intact.

@@ -117,6 +117,7 @@ export function AssignmentSheet({
         {assignment ? (
           isSong ? (
             <SongPicker
+              key={assignment.id}
               currentTitle={assignment.partTitle}
               readOnly={!canEdit}
               isSaving={updateMutation.isPending}
@@ -129,6 +130,7 @@ export function AssignmentSheet({
           ) : (
             <>
               <AssignmentForm
+                key={assignment.id}
                 initial={{
                   weekStartDate: assignment.weekStartDate,
                   eventType: assignment.eventType,
