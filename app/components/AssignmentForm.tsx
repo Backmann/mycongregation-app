@@ -177,12 +177,21 @@ export function AssignmentForm({
   }, [form.partKey]);
 
   const handleTalkSelect = (talk: PublicTalk | null) => {
+    // Keep manual title when clearing; derive it from the talk when picking.
+    const nextTitle = talk
+      ? `№${talk.number}. ${talk.title}`
+      : form.partTitle ?? null;
     setForm((prev) => ({
       ...prev,
       publicTalkId: talk?.id ?? null,
-      // Auto-update partTitle when picking a talk; keep manual text when clearing
-      partTitle: talk ? `№${talk.number}. ${talk.title}` : prev.partTitle,
+      partTitle: talk ? nextTitle ?? undefined : prev.partTitle,
     }));
+    // instant-save the talk pick (publicTalkId + derived title) like the
+    // publisher pickers do — otherwise the choice never leaves the form.
+    void instant({
+      publicTalkId: talk?.id ?? null,
+      ...(talk ? { partTitle: nextTitle ?? undefined } : {}),
+    });
   };
 
   const handleSpeakerTypeChange = (type: 'local' | 'invited') => {

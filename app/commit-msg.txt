@@ -1,9 +1,8 @@
-feat: edit assignments in a bottom sheet instead of a separate screen
+fix: save public-talk pick immediately
 
-Tapping a part now opens a bottom sheet over the schedule instead of
-navigating to /schedule/[id]. The week, scroll position and open block
-stay put, so filling a week no longer bounces you back to the current
-week. Pickers save optimistically — the row fills in immediately while
-the request flies in the background. The [id] screen stays for direct
-links. New AssignmentSheet component wraps the existing AssignmentForm;
-onEdit is threaded through MidweekSections for the midweek rows.
+Picking a public talk only updated local form state; unlike the
+publisher pickers it never called onInstantSave, so in the new bottom
+sheet (which has no submit button) the choice was lost on close — the
+row fell back to the generic "Public talk" label. handleTalkSelect now
+instant-saves publicTalkId and the derived part title, fixing both the
+sheet and the detail screen.
