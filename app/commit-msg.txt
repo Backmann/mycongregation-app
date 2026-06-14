@@ -1,7 +1,9 @@
-fix: keep selected schedule week in the URL
+feat: edit assignments in a bottom sheet instead of a separate screen
 
-The schedule week was local component state, so any remount (e.g.
-returning from the assignment screen) reset it to the current week and
-collapsed the open meeting block. The week now lives in a ?week=
-URL param: it survives remounts and is shareable. No change to how the
-week navigator behaves for the user.
+Tapping a part now opens a bottom sheet over the schedule instead of
+navigating to /schedule/[id]. The week, scroll position and open block
+stay put, so filling a week no longer bounces you back to the current
+week. Pickers save optimistically — the row fills in immediately while
+the request flies in the background. The [id] screen stays for direct
+links. New AssignmentSheet component wraps the existing AssignmentForm;
+onEdit is threaded through MidweekSections for the midweek rows.

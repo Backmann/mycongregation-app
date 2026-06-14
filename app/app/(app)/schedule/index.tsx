@@ -58,6 +58,7 @@ import { SpecialEventsWeekBanner } from '../../../components/SpecialEventsWeekBa
 import { ReplacedMeetingNotice } from '../../../components/ReplacedMeetingNotice';
 import { CollapsibleMeetingBlock } from '../../../components/CollapsibleMeetingBlock';
 import { HospitalityZone } from '../../../components/HospitalityZone';
+import { AssignmentSheet } from '../../../components/AssignmentSheet';
 
 const EVENT_TYPE_ORDER: EventType[] = [
   'midweek',
@@ -83,6 +84,7 @@ export default function ScheduleIndexScreen() {
   const [publishingType, setPublishingType] = useState<string | null>(null);
   const queryClient = useQueryClient();
   const params = useLocalSearchParams<{ week?: string }>();
+  const [editing, setEditing] = useState<Assignment | null>(null);
   const weekStart = weekFromParam(params.week);
   const weekStartISO = formatDateISO(weekStart);
   const setWeekStart = (d: Date) => {
@@ -350,10 +352,25 @@ export default function ScheduleIndexScreen() {
   const hasMidweek = (grouped.get('midweek')?.length ?? 0) > 0;
   const hasWeekend = (grouped.get('weekend')?.length ?? 0) > 0;
   const isEmpty = assignments.length === 0;
+  const canEditEditing =
+    editing == null
+      ? false
+      : editing.eventType === 'weekend'
+        ? canEditWeekendSchedule
+        : editing.eventType === 'midweek'
+          ? canEditMidweekSchedule
+          : perms.isAdmin;
+
 
   return (
     <View style={styles.container}>
       <WeekNavigator weekStart={weekStart} onChange={setWeekStart} />
+      <AssignmentSheet
+        assignment={editing}
+        weekStartISO={weekStartISO}
+        canEdit={canEditEditing}
+        onClose={() => setEditing(null)}
+      />
 
       <ScrollView
         contentContainerStyle={{ paddingBottom: 32 }}
@@ -425,6 +442,7 @@ export default function ScheduleIndexScreen() {
                       eventType="midweek"
                     />
                     <MidweekSections
+                      onEdit={setEditing}
                       items={items}
                       numbers={numbers}
                       publishersById={publishersById}
@@ -485,6 +503,7 @@ export default function ScheduleIndexScreen() {
                         <AssignmentRow
                           key={a.id}
                           assignment={a}
+                          onEdit={setEditing}
                           publisher={
                             a.publisherId
                               ? publishersById.get(a.publisherId) ?? null
@@ -546,6 +565,7 @@ export default function ScheduleIndexScreen() {
                       <AssignmentRow
                         key={a.id}
                         assignment={a}
+                        onEdit={setEditing}
                         publisher={
                           a.publisherId
                             ? publishersById.get(a.publisherId) ?? null
@@ -651,11 +671,13 @@ function MidweekSections({
   numbers,
   publishersById,
   groupNameById,
+  onEdit,
 }: {
   items: Assignment[];
   numbers: Map<string, number | null>;
   publishersById: Map<string, Publisher>;
   groupNameById: Map<string, string>;
+  onEdit: (a: Assignment) => void;
 }) {
   const { t } = useTranslation();
 
@@ -684,6 +706,7 @@ function MidweekSections({
                 <AssignmentRow
                   key={a.id}
                   assignment={a}
+                  onEdit={onEdit}
                   publisher={
                     a.publisherId
                       ? publishersById.get(a.publisherId) ?? null
@@ -798,6 +821,7 @@ function AssignmentRow({
   accentColor,
   displayNumber,
   groupNameById,
+  onEdit,
 }: {
   assignment: Assignment;
   publisher: Publisher | null;
@@ -805,6 +829,7 @@ function AssignmentRow({
   accentColor?: string;
   displayNumber?: number | null;
   groupNameById: Map<string, string>;
+  onEdit: (a: Assignment) => void;
 }) {
   const { t } = useTranslation();
   const { label: rawPartLabel, subtitle: rawSubtitle } = partDisplay(
@@ -833,7 +858,7 @@ function AssignmentRow({
             : null,
           pressed && styles.rowPressed,
         ]}
-        onPress={() => router.push(`/schedule/${assignment.id}` as any)}
+        onPress={() => onEdit(assignment)}
       >
         <View style={[styles.orderBadge, styles.orderBadgeInfo]}>
           <Text style={styles.orderText}>·</Text>
@@ -853,7 +878,7 @@ function AssignmentRow({
         accentColor ? { borderLeftWidth: 3, borderLeftColor: accentColor } : null,
         pressed && styles.rowPressed,
       ]}
-      onPress={() => router.push(`/schedule/${assignment.id}` as any)}
+      onPress={() => onEdit(assignment)}
     >
       <View
         style={[
