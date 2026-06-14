@@ -322,10 +322,11 @@ export default function ScheduleIndexScreen() {
   const publishMeetingNow = async (
     eventType: 'midweek' | 'weekend',
     weekStartDate: string,
+    notify = true,
   ) => {
     setPublishingType(eventType);
     try {
-      await assignmentsApi.publish({ weekStartDate, eventType });
+      await assignmentsApi.publish({ weekStartDate, eventType, notify });
       await queryClient.invalidateQueries({ queryKey: ['assignments'] });
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
@@ -398,7 +399,7 @@ export default function ScheduleIndexScreen() {
               ? perms.canEditWeekendSchedule
               : false
         }
-        onPublish={(et, ws) => void publishMeetingNow(et, ws)}
+        onPublish={(et, ws, notify) => void publishMeetingNow(et, ws, notify)}
         onClose={() => setPlanningZone(null)}
       />
 

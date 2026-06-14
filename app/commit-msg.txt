@@ -1,9 +1,6 @@
-fix: planning mode reflects assignments as you make them
+feat: notify / silent publish buttons in planning mode
 
-PlanningMode received a frozen snapshot of items captured when the zone
-was opened, so assigning someone in the sheet never updated the list or
-progress. It now subscribes to the same ['assignments', weekStartISO]
-query and derives its items by eventType (weekend minus hospitality), so
-saving an assignment immediately moves the row out of "needs assigning"
-and advances the progress bar. The planningZone state type carries
-weekStartISO/nextWeekISO instead of an items snapshot.
+Planning mode now offers two clear actions when a meeting is ready: a
+primary "Publish and notify" (push to the brothers) and an unobtrusive
+"Publish silently" (status only, no push). notify is threaded through
+assignmentsApi.publish and publishMeetingNow.

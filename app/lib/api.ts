@@ -1384,6 +1384,7 @@ export const assignmentsApi = {
   async publish(input: {
     weekStartDate: string;
     eventType: EventType;
+    notify?: boolean;
   }): Promise<{ published: number }> {
     const { data } = await api.post<{ published: number }>(
       '/assignments/publish',

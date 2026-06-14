@@ -710,7 +710,9 @@
       "draftHeader": "Draft, not published ({{count}})",
       "allAssigned": "Every part of this meeting is assigned",
       "publishThis": "Publish this meeting",
-      "publishing": "Publishing…"
+      "publishing": "Publishing…",
+      "publishNotify": "Publish and notify",
+      "publishSilent": "Publish silently (no notification)"
     }
   },
   "audit": {
