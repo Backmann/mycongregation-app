@@ -1,9 +1,8 @@
-fix: sheet form shows current values for the opened assignment
+feat: planning mode — focused per-meeting assignment flow
 
-AssignmentForm reads initial only on mount (useState), but the Modal in
-the sheet reuses its subtree, so opening an already-filled part showed
-empty/stale fields — you had to re-enter both talk and speaker even to
-change one. The form now carries key={assignment.id}: switching parts
-remounts it with the live values (talk, speaker, assistant, status,
-notes), while editing the same part keeps your input. Changing only the
-talk or only the speaker now leaves the other intact.
+A "Plan" button inside each meeting block opens a focused overlay for
+that meeting (the brother's zone): a progress bar, a "needs assigning"
+group and a "draft, not published" group. Tapping a row opens the same
+bottom sheet; when nothing is left to assign, a soft "publish this
+meeting" bar appears. One meeting at a time, gated by the midweek/
+weekend edit permission, so brothers plan only their own zone.

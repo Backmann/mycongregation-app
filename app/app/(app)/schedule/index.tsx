@@ -59,6 +59,7 @@ import { ReplacedMeetingNotice } from '../../../components/ReplacedMeetingNotice
 import { CollapsibleMeetingBlock } from '../../../components/CollapsibleMeetingBlock';
 import { HospitalityZone } from '../../../components/HospitalityZone';
 import { AssignmentSheet } from '../../../components/AssignmentSheet';
+import { PlanningMode } from '../../../components/PlanningMode';
 
 const EVENT_TYPE_ORDER: EventType[] = [
   'midweek',
@@ -85,6 +86,13 @@ export default function ScheduleIndexScreen() {
   const queryClient = useQueryClient();
   const params = useLocalSearchParams<{ week?: string }>();
   const [editing, setEditing] = useState<Assignment | null>(null);
+  const [planningZone, setPlanningZone] = useState<{
+    eventType: 'midweek' | 'weekend';
+    title: string;
+    meta: string | null;
+    items: Assignment[];
+    weekStartDate: string;
+  } | null>(null);
   const weekStart = weekFromParam(params.week);
   const weekStartISO = formatDateISO(weekStart);
   const setWeekStart = (d: Date) => {
@@ -371,6 +379,21 @@ export default function ScheduleIndexScreen() {
         canEdit={canEditEditing}
         onClose={() => setEditing(null)}
       />
+      <PlanningMode
+        zone={planningZone}
+        publishersById={publishersById}
+        canPublish={
+          planningZone?.eventType === 'midweek'
+            ? perms.canEditMidweekSchedule
+            : planningZone?.eventType === 'weekend'
+              ? perms.canEditWeekendSchedule
+              : false
+        }
+        publishing={publishingType === planningZone?.eventType}
+        onEdit={setEditing}
+        onPublish={(et, ws) => void publishMeetingNow(et, ws)}
+        onClose={() => setPlanningZone(null)}
+      />
 
       <ScrollView
         contentContainerStyle={{ paddingBottom: 32 }}
@@ -441,6 +464,29 @@ export default function ScheduleIndexScreen() {
                       version={meetingVersion}
                       eventType="midweek"
                     />
+                    {perms.canEditMidweekSchedule ? (
+                      <Pressable
+                        style={styles.planBtn}
+                        onPress={() =>
+                          setPlanningZone({
+                            eventType: 'midweek',
+                            title: getEventTypeLabel('midweek'),
+                            meta: meetingDateLabel('midweek'),
+                            items,
+                            weekStartDate: items[0].weekStartDate,
+                          })
+                        }
+                      >
+                        <Ionicons
+                          name="create-outline"
+                          size={16}
+                          color="#0ea5e9"
+                        />
+                        <Text style={styles.planBtnText}>
+                          {t('schedule.planning.enter')}
+                        </Text>
+                      </Pressable>
+                    ) : null}
                     <MidweekSections
                       onEdit={setEditing}
                       items={items}
@@ -498,6 +544,29 @@ export default function ScheduleIndexScreen() {
                       version={meetingVersion}
                       eventType="weekend"
                     />
+                    {perms.canEditWeekendSchedule ? (
+                      <Pressable
+                        style={styles.planBtn}
+                        onPress={() =>
+                          setPlanningZone({
+                            eventType: 'weekend',
+                            title: getEventTypeLabel('weekend'),
+                            meta: meetingDateLabel('weekend'),
+                            items: programItems,
+                            weekStartDate: items[0].weekStartDate,
+                          })
+                        }
+                      >
+                        <Ionicons
+                          name="create-outline"
+                          size={16}
+                          color="#0ea5e9"
+                        />
+                        <Text style={styles.planBtnText}>
+                          {t('schedule.planning.enter')}
+                        </Text>
+                      </Pressable>
+                    ) : null}
                     <View style={styles.sectionBody}>
                       {programItems.map((a) => (
                         <AssignmentRow
@@ -942,6 +1011,18 @@ function AssignmentRow({
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f1f5f9' },
+  planBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    gap: 6,
+    marginVertical: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 10,
+    backgroundColor: '#e0f2fe',
+  },
+  planBtnText: { color: '#0369a1', fontSize: 14, fontWeight: '700' },
   emptyHint: {
     fontSize: 14,
     color: '#64748b',

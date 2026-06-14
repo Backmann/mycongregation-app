@@ -701,6 +701,16 @@
     "readOnlyBanner": "Read-only — you don't have permission to edit this part",
     "publish": {
       "button": "Publish"
+    },
+    "planning": {
+      "enter": "Plan",
+      "title": "Meeting planning",
+      "progress": "{{done}} of {{total}} assigned",
+      "todoHeader": "Needs assigning ({{count}})",
+      "draftHeader": "Draft, not published ({{count}})",
+      "allAssigned": "Every part of this meeting is assigned",
+      "publishThis": "Publish this meeting",
+      "publishing": "Publishing…"
     }
   },
   "audit": {

@@ -701,6 +701,16 @@
     "readOnlyBanner": "Nur Ansicht — Sie dürfen diesen Teil nicht bearbeiten",
     "publish": {
       "button": "Veröffentlichen"
+    },
+    "planning": {
+      "enter": "Planen",
+      "title": "Zusammenkunft planen",
+      "progress": "{{done}} von {{total}} zugeteilt",
+      "todoHeader": "Zuzuteilen ({{count}})",
+      "draftHeader": "Entwurf, nicht veröffentlicht ({{count}})",
+      "allAssigned": "Alle Programmpunkte dieser Zusammenkunft sind zugeteilt",
+      "publishThis": "Diese Zusammenkunft veröffentlichen",
+      "publishing": "Wird veröffentlicht…"
     }
   },
   "audit": {
