@@ -5,6 +5,7 @@
 import { MeetingSettingsVersion, MyAssignmentItem } from './api';
 import { effectiveVersionFor } from './meeting-schedule';
 import { addDays, formatDateISO } from './dates';
+import { getPartLabel } from './parts';
 
 type TFunc = (key: string, options?: any) => string;
 
@@ -82,8 +83,12 @@ export function taskTitle(item: MyAssignmentItem, t: TFunc): string {
     return t(`home.cleaningSlots.${item.label}`, item.label);
   }
   if (item.kind === 'meeting') {
+    // label is either a human part title (from EPUB) or a raw partKey
+    // (e.g. weekend_chairman); getPartLabel translates known keys and
+    // returns the input unchanged for anything not in the registry.
+    const label = getPartLabel(item.label);
     return (
-      item.label +
+      label +
       (item.asAssistant ? ` (${t('home.meeting.asAssistant')})` : '')
     );
   }

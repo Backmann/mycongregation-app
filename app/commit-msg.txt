@@ -1,8 +1,9 @@
-feat: one publish dialog everywhere (notify / silent)
+fix: localize weekend part titles in my-assignments
 
-Publishing now goes through a single PublishDialog from every entry
-point — the publish buttons on the midweek/weekend meeting blocks and
-the one in planning mode all open the same notify/silent/cancel dialog.
-Previously the block buttons always notified (no choice) and only
-planning mode offered silent, so behaviour was inconsistent. Planning
-mode drops its two-button bar for one button that opens the dialog.
+Weekend assignment rows showed raw part keys (weekend_chairman,
+weekend_opening_prayer) because taskTitle used item.label verbatim, and
+the aggregator puts the partKey there when a part has no human title
+(unlike EPUB-imported parts). taskTitle now runs the label through
+getPartLabel: keys in the registry are translated ("Председатель
+встречи"), human titles pass through unchanged. Fixes both the Home
+feed and the My-assignments screen for everyone.
