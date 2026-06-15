@@ -712,7 +712,8 @@
       "publishThis": "Publish this meeting",
       "publishing": "Publishing…",
       "publishNotify": "Publish and notify",
-      "publishSilent": "Publish silently (no notification)"
+      "publishSilent": "Publish silently (no notification)",
+      "dutiesHeader": "Duties ({{count}})"
     },
     "publishDialog": {
       "title": "Publish meeting",
@@ -944,7 +945,8 @@
       "already_on_duty": "Already assigned to another duty in this meeting",
       "has_program_part": "Already has a program part in this meeting",
       "capability_off": "Not marked as able for this duty"
-    }
+    },
+    "assignee": "Assignee"
   },
   "publisherActivity": {
     "thisMeeting": "This meeting:",

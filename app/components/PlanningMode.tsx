@@ -1,5 +1,9 @@
 import { useMemo, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+} from '@tanstack/react-query';
 import {
   Modal,
   Platform,
@@ -11,7 +15,15 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import { Assignment, assignmentsApi, Publisher } from '../lib/api';
+import {
+  Assignment,
+  assignmentsApi,
+  Duty,
+  dutiesApi,
+  Publisher,
+} from '../lib/api';
+import { PublisherSelector } from './PublisherSelector';
+import { dutyLabel } from './DutiesSection';
 import { AssignmentSheet } from './AssignmentSheet';
 
 interface Props {
@@ -34,6 +46,10 @@ interface Props {
 }
 
 const SONG_KEYS = ['mid_song', 'weekend_song', 'weekend_opening_song'];
+
+function capabilityFor(duty: Duty): string | undefined {
+  return duty.dutyType === 'custom' ? undefined : `duty_${duty.dutyType}`;
+}
 
 function isAssigned(a: Assignment): boolean {
   return !!a.publisherId || !!a.speakerName;
@@ -60,6 +76,8 @@ export function PlanningMode({
   const [editingInPlan, setEditingInPlan] = useState<Assignment | null>(
     null,
   );
+  const [dutyPicker, setDutyPicker] = useState<Duty | null>(null);
+  const queryClient = useQueryClient();
 
   const liveQuery = useQuery({
     queryKey: ['assignments', zone?.weekStartISO ?? ''],
@@ -70,6 +88,32 @@ export function PlanningMode({
       }),
     enabled: !!zone,
   });
+  const dutiesQuery = useQuery({
+    queryKey: ['duties', zone?.weekStartISO ?? ''],
+    queryFn: () =>
+      dutiesApi.list({
+        weekStart: zone!.weekStartISO,
+        weekEnd: zone!.nextWeekISO,
+      }),
+    enabled: !!zone,
+  });
+  const zoneDuties = useMemo(
+    () =>
+      (dutiesQuery.data ?? []).filter(
+        (d) => d.eventType === zone?.eventType,
+      ),
+    [dutiesQuery.data, zone],
+  );
+  const dutyAssign = useMutation({
+    mutationFn: (vars: { id: string; publisherId: string | null }) =>
+      dutiesApi.assign(vars.id, { publisherId: vars.publisherId }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: ['duties', zone?.weekStartISO ?? ''],
+      });
+    },
+  });
+
   const zoneItems = useMemo(() => {
     const all = (liveQuery.data?.data ?? []).filter(
       (a) => a.eventType === zone?.eventType,
@@ -91,8 +135,17 @@ export function PlanningMode({
     return { todo, drafts, assignedCount, totalCount: real.length };
   }, [zoneItems]);
 
-  const allDone = todo.length === 0;
-  const pct = totalCount === 0 ? 0 : Math.round((assignedCount / totalCount) * 100);
+  const dutiesTodo = useMemo(
+    () => zoneDuties.filter((d) => !d.publisherId),
+    [zoneDuties],
+  );
+  const dutiesAssignedCount = zoneDuties.length - dutiesTodo.length;
+
+  const grandAssigned = assignedCount + dutiesAssignedCount;
+  const grandTotal = totalCount + zoneDuties.length;
+  const allDone = todo.length === 0 && dutiesTodo.length === 0;
+  const pct =
+    grandTotal === 0 ? 0 : Math.round((grandAssigned / grandTotal) * 100);
 
   const partTitleOf = (a: Assignment) =>
     a.partTitle && a.partTitle.trim().length > 0
@@ -106,6 +159,31 @@ export function PlanningMode({
     if (a.speakerName) return a.speakerName;
     return null;
   };
+
+  const dutyAssigneeOf = (d: Duty): string | null =>
+    d.publisherId
+      ? publishersById.get(d.publisherId)?.displayName ?? null
+      : null;
+
+  const DutyRow = ({ d }: { d: Duty }) => (
+    <Pressable
+      style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
+      onPress={() => setDutyPicker(d)}
+    >
+      <View style={[styles.dot, styles.dotTodo]} />
+      <View style={{ flex: 1 }}>
+        <Text style={styles.rowTitle} numberOfLines={2}>
+          {dutyLabel(d, t)}
+        </Text>
+        {d.publisherId ? (
+          <Text style={styles.rowAssignee} numberOfLines={1}>
+            {dutyAssigneeOf(d)}
+          </Text>
+        ) : null}
+      </View>
+      <Ionicons name="chevron-forward" size={18} color="#cbd5e1" />
+    </Pressable>
+  );
 
   const Row = ({ a, draft }: { a: Assignment; draft: boolean }) => (
     <Pressable
@@ -159,8 +237,8 @@ export function PlanningMode({
             </View>
             <Text style={styles.progressText}>
               {t('schedule.planning.progress', {
-                done: assignedCount,
-                total: totalCount,
+                done: grandAssigned,
+                total: grandTotal,
               })}
             </Text>
           </View>
@@ -188,6 +266,21 @@ export function PlanningMode({
               </View>
             </>
           )}
+
+          {dutiesTodo.length > 0 ? (
+            <>
+              <Text style={[styles.groupHeader, { marginTop: 20 }]}>
+                {t('schedule.planning.dutiesHeader', {
+                  count: dutiesTodo.length,
+                })}
+              </Text>
+              <View style={styles.card}>
+                {dutiesTodo.map((d) => (
+                  <DutyRow key={d.id} d={d} />
+                ))}
+              </View>
+            </>
+          ) : null}
 
           {drafts.length > 0 ? (
             <>
@@ -225,6 +318,39 @@ export function PlanningMode({
           </View>
         ) : null}
       </View>
+      <Modal
+        visible={!!dutyPicker}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setDutyPicker(null)}
+      >
+        <View style={styles.dutyBackdrop}>
+          <View style={styles.dutySheet}>
+            <View style={styles.dutySheetHeader}>
+              <Text style={styles.dutySheetTitle} numberOfLines={1}>
+                {dutyPicker ? dutyLabel(dutyPicker, t) : ''}
+              </Text>
+              <Pressable
+                onPress={() => setDutyPicker(null)}
+                hitSlop={8}
+              >
+                <Text style={styles.headerBtnText}>{t('common.close')}</Text>
+              </Pressable>
+            </View>
+            {dutyPicker ? (
+              <PublisherSelector
+                label={t('duties.assignee')}
+                value={dutyPicker.publisherId}
+                requiredCapability={capabilityFor(dutyPicker)}
+                onChange={(id) => {
+                  dutyAssign.mutate({ id: dutyPicker.id, publisherId: id });
+                  setDutyPicker(null);
+                }}
+              />
+            ) : null}
+          </View>
+        </View>
+      </Modal>
       <AssignmentSheet
         assignment={editingInPlan}
         weekStartISO={zone?.weekStartDate ?? ''}
@@ -313,5 +439,24 @@ const styles = StyleSheet.create({
   publishBtnPressed: { opacity: 0.85 },
   publishBtnDisabled: { opacity: 0.5 },
   publishBtnText: { color: '#fff', fontSize: 15, fontWeight: '700' },
+  dutyBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(15,23,42,0.45)',
+    justifyContent: 'flex-end',
+  },
+  dutySheet: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    padding: 16,
+    maxHeight: '80%',
+  },
+  dutySheetHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  dutySheetTitle: { fontSize: 17, fontWeight: '700', color: '#0f172a', flex: 1 },
 
 });

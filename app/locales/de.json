@@ -712,7 +712,8 @@
       "publishThis": "Diese Zusammenkunft veröffentlichen",
       "publishing": "Wird veröffentlicht…",
       "publishNotify": "Veröffentlichen und benachrichtigen",
-      "publishSilent": "Still veröffentlichen (ohne Benachrichtigung)"
+      "publishSilent": "Still veröffentlichen (ohne Benachrichtigung)",
+      "dutiesHeader": "Aufgaben ({{count}})"
     },
     "publishDialog": {
       "title": "Zusammenkunft veröffentlichen",
@@ -944,7 +945,8 @@
       "already_on_duty": "Bereits einer anderen Aufgabe in dieser Zusammenkunft zugeteilt",
       "has_program_part": "Hat bereits einen Programmteil in dieser Zusammenkunft",
       "capability_off": "Nicht als fähig für diese Aufgabe markiert"
-    }
+    },
+    "assignee": "Zugeteilt an"
   },
   "publisherActivity": {
     "thisMeeting": "Dieses Treffen:",
