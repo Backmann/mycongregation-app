@@ -145,7 +145,7 @@ export function CleaningSection({
   );
 }
 
-function GroupSelect({
+export function GroupSelect({
   title,
   value,
   groups,

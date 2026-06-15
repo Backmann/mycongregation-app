@@ -53,6 +53,7 @@ import { effectiveVersionFor } from '../../../lib/meeting-schedule';
 import { DutiesSection } from '../../../components/DutiesSection';
 import { FieldServiceSection } from '../../../components/FieldServiceSection';
 import { CleaningSection } from '../../../components/CleaningSection';
+import { CleaningPlanMode } from '../../../components/CleaningPlanMode';
 import { usePermissions } from '../../../lib/permissions';
 import { SpecialEventsWeekBanner } from '../../../components/SpecialEventsWeekBanner';
 import { ReplacedMeetingNotice } from '../../../components/ReplacedMeetingNotice';
@@ -91,6 +92,7 @@ export default function ScheduleIndexScreen() {
     eventType: 'midweek' | 'weekend';
     weekStartDate: string;
   } | null>(null);
+  const [cleaningPlanOpen, setCleaningPlanOpen] = useState(false);
   const [planningZone, setPlanningZone] = useState<{
     eventType: 'midweek' | 'weekend';
     title: string;
@@ -385,6 +387,13 @@ export default function ScheduleIndexScreen() {
         weekStartISO={weekStartISO}
         canEdit={canEditEditing}
         onClose={() => setEditing(null)}
+      />
+      <CleaningPlanMode
+        weekStartISO={cleaningPlanOpen ? weekStartISO : null}
+        weekLabel={t('cleaning.planTitle')}
+        publishersById={publishersById}
+        canEdit={canEditCleaning}
+        onClose={() => setCleaningPlanOpen(false)}
       />
       <PlanningMode
         zone={planningZone}
@@ -708,6 +717,17 @@ export default function ScheduleIndexScreen() {
               }
             />
 
+            {canEditCleaning ? (
+              <Pressable
+                style={styles.planBtn}
+                onPress={() => setCleaningPlanOpen(true)}
+              >
+                <Ionicons name="sparkles-outline" size={16} color="#fff" />
+                <Text style={styles.planBtnText}>
+                  {t('cleaning.planStart')}
+                </Text>
+              </Pressable>
+            ) : null}
             <CleaningSection
               assignments={cleaningWeek.assignments}
               publishersById={publishersById}

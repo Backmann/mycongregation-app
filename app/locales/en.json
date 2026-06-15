@@ -996,7 +996,11 @@
       "after_meeting": "After meetings",
       "thorough": "Weekly cleaning",
       "general": "General cleaning"
-    }
+    },
+    "planStart": "Plan cleaning",
+    "planTitle": "Cleaning",
+    "planAllDone": "Cleaning is assigned",
+    "useSuggested": "Suggested: {{name}}"
   },
   "cart": {
     "title": "Carts",

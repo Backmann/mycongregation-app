@@ -1,9 +1,0 @@
-feat: duties in planning mode
-
-Planning mode now also covers the meeting's duties (microphones, stage,
-audio, security, etc.), not just the programme. It subscribes to the
-duties query for the zone's week, filters by eventType, and shows the
-unassigned ones in a "Duties" group that counts toward the zone's
-progress. Tapping a duty opens a compact publisher picker (filtered by
-the duty's capability); choosing someone assigns it and refreshes the
-list. Cleaning slots are a separate follow-up.

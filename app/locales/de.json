@@ -996,7 +996,11 @@
       "after_meeting": "Nach den Zusammenkünften",
       "thorough": "Wöchentliche Reinigung",
       "general": "Generalreinigung"
-    }
+    },
+    "planStart": "Reinigung planen",
+    "planTitle": "Reinigung",
+    "planAllDone": "Reinigung ist zugeteilt",
+    "useSuggested": "Vorschlag: {{name}}"
   },
   "cart": {
     "title": "Wagen",
