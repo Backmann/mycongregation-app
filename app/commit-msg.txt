@@ -1,7 +1,7 @@
-fix: brief task titles in My Tasks
+feat: show the section as a subheading in My Tasks
 
-Meeting parts in My Tasks showed the full enriched title, including the
-long detail note with scripture citations after ": " (e.g. discussions,
-talks, prayers). They now show only the topic, matching the schedule's
-clean look. Songs are exempt — their label is the song name itself. The
-schedule screen is unchanged.
+Meeting tasks now show their program section (e.g. "Сокровища из Слова
+Бога") as a small uppercase subheading above the title, mirroring the
+section headers in the schedule. Derived from partKey via the parts
+registry; parts with no section (chairman, prayers) and non-meeting
+tasks (duties, cleaning) show no subheading.

@@ -5,7 +5,7 @@
 import { MeetingSettingsVersion, MyAssignmentItem } from './api';
 import { effectiveVersionFor } from './meeting-schedule';
 import { addDays, formatDateISO } from './dates';
-import { getPartLabel } from './parts';
+import { getPartDef, getPartLabel, SUBSECTIONS } from './parts';
 
 type TFunc = (key: string, options?: any) => string;
 
@@ -84,6 +84,22 @@ const SONG_TASK_KEYS = new Set<string>([
   'weekend_song',
   'weekend_opening_song',
 ]);
+
+/**
+ * Section label for a meeting task (e.g. "Сокровища из Слова Бога"),
+ * shown as a small subheading. Returns null for non-meeting tasks and
+ * for parts that belong to no section (chairman, prayers).
+ */
+export function taskSubsectionLabel(
+  item: MyAssignmentItem,
+  t: TFunc,
+): string | null {
+  if (item.kind !== 'meeting' || !item.partKey) return null;
+  const def = getPartDef(item.partKey);
+  if (!def || !def.subsection) return null;
+  const meta = SUBSECTIONS[def.subsection];
+  return meta ? t(meta.i18nKey) : null;
+}
 
 /** Row title: part title, translated duty/cleaning, "you conduct" etc. */
 export function taskTitle(item: MyAssignmentItem, t: TFunc): string {

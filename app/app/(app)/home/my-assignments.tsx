@@ -16,6 +16,7 @@ import {
   RefinedTask,
   refineMyTasks,
   taskMeta,
+  taskSubsectionLabel,
   taskTitle,
 } from '../../../lib/my-tasks';
 import { addDays, formatDateISO, startOfWeekMonday } from '../../../lib/dates';
@@ -146,6 +147,11 @@ export default function MyAssignmentsScreen() {
                     style={{ marginRight: 10, marginTop: 2 }}
                   />
                   <View style={{ flex: 1 }}>
+                    {taskSubsectionLabel(r.item, t) ? (
+                      <Text style={styles.subsection} numberOfLines={1}>
+                        {taskSubsectionLabel(r.item, t)}
+                      </Text>
+                    ) : null}
                     <Text style={styles.title} numberOfLines={2}>
                       {taskTitle(r.item, t)}
                     </Text>
@@ -204,6 +210,14 @@ const styles = StyleSheet.create({
     paddingVertical: 13,
   },
   rowBorder: { borderTopWidth: 1, borderTopColor: '#f1f5f9' },
+  subsection: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#64748b',
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+    marginBottom: 2,
+  },
   title: { fontSize: 15, fontWeight: '600', color: '#0f172a' },
   meta: { fontSize: 13, color: '#0369a1', marginTop: 2 },
   emptyBox: { alignItems: 'center', marginTop: 48, gap: 10 },
