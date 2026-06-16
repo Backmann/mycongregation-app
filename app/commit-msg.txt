@@ -1,8 +1,7 @@
-fix: sort My Tasks by program order within a day
+fix: brief task titles in My Tasks
 
-Tasks on the same day were shown in arrival order, so a meeting's parts
-could appear out of sequence (e.g. closing words before the chairman).
-They now sort by partOrder as a secondary key after date, matching the
-program (chairman = 1 ... closing prayer = last). Non-meeting tasks
-(duties, cleaning) have no partOrder and fall to the end of the day.
-Requires the server partOrder change.
+Meeting parts in My Tasks showed the full enriched title, including the
+long detail note with scripture citations after ": " (e.g. discussions,
+talks, prayers). They now show only the topic, matching the schedule's
+clean look. Songs are exempt — their label is the song name itself. The
+schedule screen is unchanged.

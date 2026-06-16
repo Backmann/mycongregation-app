@@ -78,6 +78,13 @@ export function refineMyTasks(
   return refined;
 }
 
+/** Song parts keep their full label (the song name is the content). */
+const SONG_TASK_KEYS = new Set<string>([
+  'mid_song',
+  'weekend_song',
+  'weekend_opening_song',
+]);
+
 /** Row title: part title, translated duty/cleaning, "you conduct" etc. */
 export function taskTitle(item: MyAssignmentItem, t: TFunc): string {
   if (item.kind === 'duty') {
@@ -90,10 +97,11 @@ export function taskTitle(item: MyAssignmentItem, t: TFunc): string {
     // label is either a human part title (from EPUB) or a raw partKey
     // (e.g. weekend_chairman); getPartLabel translates known keys and
     // returns the input unchanged for anything not in the registry.
-    // For the opening Treasures talk, show only the topic (mirror of the
-    // schedule screen) — drop the enriched note after ": ".
+    // Brief titles: show only the topic (drop the enriched note after
+    // ": "), to match the schedule's clean look. Songs keep their full
+    // label (the song name IS the content); everything else is trimmed.
     let raw = item.label;
-    if (item.partKey === 'treasures_talk') {
+    if (item.partKey && !SONG_TASK_KEYS.has(item.partKey)) {
       const idx = raw.indexOf(': ');
       if (idx > 0) raw = raw.slice(0, idx);
     }
