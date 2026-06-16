@@ -25,7 +25,6 @@ import {
 } from '../../../lib/api';
 import { effectiveVersionFor } from '../../../lib/meeting-schedule';
 import { addDays, formatDateISO, startOfWeekMonday } from '../../../lib/dates';
-import { usePermissions } from '../../../lib/permissions';
 import { useAuth } from '../../../lib/auth';
 import { useMyPublisher } from '../../../lib/useMyPublisher';
 import {
@@ -550,7 +549,6 @@ type Tile = {
 export default function HomeScreen() {
   const { t } = useTranslation();
   const { user } = useAuth();
-  const { canManageAbsences } = usePermissions();
   const { myPublisherId } = useMyPublisher();
   const canSeeDirectory =
     user?.role === 'admin' ||

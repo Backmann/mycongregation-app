@@ -1,9 +1,6 @@
-feat: self-service absences in the app UI
+chore: drop unused canManageAbsences from home screen
 
-Wires up the client side of self-service absences (server side already
-authorizes own-absence writes). The Absences tile is now shown to
-everyone, not just managers. A regular publisher sees only their own
-absences and files new ones with their publisher fixed (the picker is
-hidden and the directory is not queried, which they can't access);
-managers keep the full picker and see everyone. Adds an "add absence"
-button to the list and an absences.add label in all locales.
+After the Absences tile became visible to everyone (show: true), the
+canManageAbsences permission was no longer read on the home screen,
+leaving an unused variable and an orphaned usePermissions import. Both
+removed to clear the lint warning.
