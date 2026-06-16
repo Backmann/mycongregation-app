@@ -1,10 +1,9 @@
-fix: drop country flags from language picker, sync html lang
+fix: set a localized document title on web
 
-Two language-selection fixes:
-- Removed the country-flag emojis from the language picker. A country
-  flag doesn't represent a language (Russian isn't only Russia, English
-  isn't only the UK), so only the language names remain.
-- Sync <html lang> with the active language on web. The web build
-  advertised the default lang (en) even when the UI was Russian, so
-  Chrome offered to translate the page. Setting documentElement.lang on
-  init and on change stops that and improves screen-reader accuracy.
+document.title was empty, leaving Chrome without a strong language
+signal, so it offered to translate the page even though <html lang> is
+ru and the visible UI is Russian (likely triggered by Latin text in the
+data — emails, names). syncHtmlLang now also sets a localized title
+("Моё собрание" / "My Congregation" / "Meine Versammlung") alongside the
+lang attribute, which names the browser tab properly and gives Chrome a
+clear language signal.

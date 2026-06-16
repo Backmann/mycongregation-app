@@ -1225,5 +1225,8 @@
   "hospitality": {
     "title": "Hospitality",
     "sister": "Sister"
+  },
+  "app": {
+    "title": "My Congregation"
   }
 }

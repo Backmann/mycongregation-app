@@ -1225,5 +1225,8 @@
   "hospitality": {
     "title": "Gastfreundschaft",
     "sister": "Schwester"
+  },
+  "app": {
+    "title": "Meine Versammlung"
   }
 }

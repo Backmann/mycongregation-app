@@ -21,6 +21,10 @@ export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number];
 function syncHtmlLang(lang: SupportedLanguage): void {
   if (Platform.OS === 'web' && typeof document !== 'undefined') {
     document.documentElement.lang = lang;
+    // A localized, non-empty title gives Chrome a strong language signal
+    // (otherwise it may offer to translate despite lang=ru).
+    const title = i18n.t('app.title');
+    if (title && title !== 'app.title') document.title = title;
   }
 }
 
