@@ -1,7 +1,8 @@
-feat: group My Tasks into per-meeting cards
+fix: show clean prayer name in My Tasks
 
-Tasks are now grouped into a card per meeting (date + event type), with
-the date/time/type shown once in the card header and the parts listed
-below in program order, each with its section subheading. This removes
-the repeated date on every row and reads like a mini-program. Cleaning
-(a weekly task) gets its own card. The schedule screen is unchanged.
+The opening/closing prayer tasks displayed their imported partTitle,
+which often joins an adjacent part or song with " | " (e.g. "Песня 5 и
+молитва | Вступительные слова"). That extra context confuses the person
+assigned, who only needs to know it's the opening or closing prayer.
+Prayers now show just the translated part name via getPartLabel, like
+the schedule. Other parts are unchanged.

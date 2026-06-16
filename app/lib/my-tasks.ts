@@ -86,6 +86,18 @@ const SONG_TASK_KEYS = new Set<string>([
 ]);
 
 /**
+ * Prayer parts: show the clean part name only. Their imported partTitle
+ * often carries an adjacent part/song joined with " | ", which would
+ * confuse the assigned person — they just need "opening/closing prayer".
+ */
+const PRAYER_TASK_KEYS = new Set<string>([
+  'midweek_opening_prayer',
+  'midweek_closing_prayer',
+  'weekend_opening_prayer',
+  'weekend_closing_prayer',
+]);
+
+/**
  * Section label for a meeting task (e.g. "Сокровища из Слова Бога"),
  * shown as a small subheading. Returns null for non-meeting tasks and
  * for parts that belong to no section (chairman, prayers).
@@ -116,6 +128,10 @@ export function taskTitle(item: MyAssignmentItem, t: TFunc): string {
     // Brief titles: show only the topic (drop the enriched note after
     // ": "), to match the schedule's clean look. Songs keep their full
     // label (the song name IS the content); everything else is trimmed.
+    // Prayers: clean name only, ignore the joined imported title.
+    if (item.partKey && PRAYER_TASK_KEYS.has(item.partKey)) {
+      return getPartLabel(item.partKey);
+    }
     let raw = item.label;
     if (item.partKey && !SONG_TASK_KEYS.has(item.partKey)) {
       const idx = raw.indexOf(': ');
