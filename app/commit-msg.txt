@@ -1,9 +1,10 @@
-feat: drag-and-drop EPUB on the import screen (web)
+fix: make EPUB drag-and-drop actually work on web
 
-The import screen now accepts an EPUB dropped onto the file-picker area,
-in addition to choosing one from a folder. Drag-and-drop is web-only
-(DropZone.web.tsx; native uses a passthrough DropZone.tsx since OS file
-drop isn't available there). A dropped File is a Blob, so it flows
-through the same client-side parser as the picker — the parsing/branch
-logic was extracted into a shared processBlob() called by both paths.
-The publication file still never leaves the device.
+The previous DropZone relied on a .web.tsx platform file and passed
+onDrop/onDragOver as JSX props on a <View>. react-native-web filters
+unknown DOM handlers off View, so the drop events never reached the
+underlying <div>, and the platform file wasn't picked up — so nothing
+happened. Replaced with a single DropZone that gates on Platform.OS and
+attaches the drag handlers via a ref + addEventListener on the real DOM
+node. Also added a visible dashed drop area with a hint so it's
+discoverable, with highlight on drag-over.

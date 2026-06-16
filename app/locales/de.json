@@ -679,7 +679,9 @@
         "title": "Gefundene Wochen",
         "partsShort": "{{count}} Punkte",
         "unclassifiedTitle": "Nicht erkannte Punkte: {{count}} (werden übersprungen)"
-      }
+      },
+      "dropHint": "oder eine .epub-Datei hierher ziehen",
+      "dropRelease": "Zum Laden loslassen"
     },
     "unassign": {
       "button": "Zuteilung aufheben",

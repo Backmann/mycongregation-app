@@ -679,7 +679,9 @@
         "title": "Weeks found",
         "partsShort": "{{count}} parts",
         "unclassifiedTitle": "Unrecognized parts: {{count}} (will be skipped)"
-      }
+      },
+      "dropHint": "or drag an .epub file here",
+      "dropRelease": "Release to load"
     },
     "unassign": {
       "button": "Unassign publisher",
