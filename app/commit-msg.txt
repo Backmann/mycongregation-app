@@ -1,11 +1,8 @@
-chore: remove JW branding and set domain as page title
+fix: show only the topic for the Treasures talk, hide the detail note
 
-The app is a general helper for organizing congregation meetings, not
-tied to a specific denomination, so denominational branding is removed:
-"JW" dropped from parser/parts code comments, the docs.jw.org source line
-removed from the public-talks import screen, and the jw.org link
-placeholder replaced with a neutral one in all locales. Functionality
-(public_witnessing, MWB/Watchtower parsing) is unchanged — those are
-features, not branding. The browser tab title is now the brand domain
-"mycongregation.org" (set in syncHtmlLang), which also gives Chrome a
-clear, non-empty language signal.
+The opening "Treasures from God's Word" talk (treasures_talk) was showing
+its enriched detail note (the line the MWB parser appends after ": ") as
+an italic subtitle under the topic. That part now shows only its topic;
+other parts (Spiritual Gems, Bible reading, discussions) keep their
+subtitle. This is display-only — the stored partTitle and the parser are
+unchanged.

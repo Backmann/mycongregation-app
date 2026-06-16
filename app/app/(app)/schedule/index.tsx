@@ -930,9 +930,14 @@ function partDisplay(
   if (partTitle) {
     const idx = partTitle.indexOf(': ');
     if (idx > 0) {
+      // treasures_talk: topic only — hide the enriched detail note for
+      // the opening "Treasures" talk; other parts keep their subtitle.
+      const isTreasuresTalk = partKey === 'treasures_talk';
       return {
         label: partTitle.slice(0, idx),
-        subtitle: partTitle.slice(idx + 2).trim() || null,
+        subtitle: isTreasuresTalk
+          ? null
+          : partTitle.slice(idx + 2).trim() || null,
       };
     }
     return { label: partTitle, subtitle: null };
