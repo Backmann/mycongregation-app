@@ -23,6 +23,7 @@ import {
   parseMwbFile,
   toApplyPayload,
 } from '../../../lib/mwb-parser';
+import { parseWtFile, wtToWorkbook } from '../../../lib/wt-parser';
 import { useTranslation } from 'react-i18next';
 
 interface PickedFile {
@@ -86,7 +87,13 @@ export default function ImportEpubScreen() {
       // Локальный разбор: файл публикации не покидает это устройство.
       setParsing(true);
       try {
-        const wb = await parseMwbFile(blob, undefined, asset.name);
+        const kind = detectFileType(asset.name);
+        const wb =
+          kind === 'watchtower'
+            ? wtToWorkbook(
+                await parseWtFile(blob, undefined, asset.name),
+              )
+            : await parseMwbFile(blob, undefined, asset.name);
         setParsed(wb);
       } catch (e) {
         setParseError(

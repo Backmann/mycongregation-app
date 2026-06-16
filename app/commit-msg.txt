@@ -1,9 +1,11 @@
-fix: gate duties in planning mode by canEditDuties
+feat: parse Watchtower EPUB on the client
 
-Duties in planning mode were shown and assignable using the meeting
-schedule right (canEditMidweekSchedule/canEditWeekendSchedule) rather
-than the dedicated canEditDuties right, so a non-admin with schedule
-access but without duties access saw and could touch duties. PlanningMode
-now takes canEditDuties; when false, zoneDuties is empty, so the Duties
-group is hidden, excluded from the progress count, and the picker is
-unreachable. Matches how DutiesSection is gated on the main screen.
+Watchtower study EPUBs are now parsed entirely in the browser (port of
+server/src/wt-import/wt-parser.ts: adm-zip -> jszip, cheerio -> DOMParser,
+selector logic kept 1:1). The import screen already detected the file
+type but always ran the MWB parser; it now routes Watchtower files to
+parseWtFile and adapts the result to the shared ParsedWorkbook shape so
+the existing preview and /schedule-import/apply flow are reused. The
+publication file never leaves the device — only derived schedule
+metadata is sent. Pure-function parity verified against the server
+spec's cases (dates, ranges, songs, year extraction).
