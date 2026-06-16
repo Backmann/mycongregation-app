@@ -1,7 +1,7 @@
-feat: show the section as a subheading in My Tasks
+feat: group My Tasks into per-meeting cards
 
-Meeting tasks now show their program section (e.g. "Сокровища из Слова
-Бога") as a small uppercase subheading above the title, mirroring the
-section headers in the schedule. Derived from partKey via the parts
-registry; parts with no section (chairman, prayers) and non-meeting
-tasks (duties, cleaning) show no subheading.
+Tasks are now grouped into a card per meeting (date + event type), with
+the date/time/type shown once in the card header and the parts listed
+below in program order, each with its section subheading. This removes
+the repeated date on every row and reads like a mini-program. Cleaning
+(a weekly task) gets its own card. The schedule screen is unchanged.

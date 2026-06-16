@@ -53,6 +53,47 @@ function weekHeaderLabel(weekStartISO: string, locale: string): string {
   })}`;
 }
 
+/** One "meeting card": tasks sharing a date + event/kind, in program order. */
+interface TaskGroup {
+  key: string;
+  rows: RefinedTask[];
+}
+
+/** A whole week: its Monday ISO plus the meeting/cleaning cards within it. */
+interface WeekBlock {
+  weekISO: string;
+  groups: TaskGroup[];
+}
+
+/**
+ * Build week blocks, and within each week group consecutive tasks into cards
+ * by date + eventType/kind (meeting parts and their duties land in the same
+ * card; cleaning gets its own). `refined` is already sorted by date then
+ * partOrder, so a simple run-length grouping preserves order.
+ */
+function buildWeeks(refined: RefinedTask[]): WeekBlock[] {
+  const weeks: WeekBlock[] = [];
+  for (const r of refined) {
+    const weekISO = formatDateISO(
+      startOfWeekMonday(new Date(`${r.dateISO}T00:00:00`)),
+    );
+    const groupKey = `${r.dateISO}|${r.item.eventType ?? r.item.kind}`;
+
+    let week = weeks[weeks.length - 1];
+    if (!week || week.weekISO !== weekISO) {
+      week = { weekISO, groups: [] };
+      weeks.push(week);
+    }
+    const lastGroup = week.groups[week.groups.length - 1];
+    if (lastGroup && lastGroup.key === groupKey) {
+      lastGroup.rows.push(r);
+    } else {
+      week.groups.push({ key: groupKey, rows: [r] });
+    }
+  }
+  return weeks;
+}
+
 export default function MyAssignmentsScreen() {
   const { t, i18n } = useTranslation();
   const todayISO = formatDateISO(new Date());
@@ -83,26 +124,14 @@ export default function MyAssignmentsScreen() {
     versions,
     todayISO,
   );
-
-  // Group by ISO week (Monday) keeping chronological order.
-  const weeks: { weekISO: string; rows: RefinedTask[] }[] = [];
-  for (const r of refined) {
-    const weekISO = formatDateISO(
-      startOfWeekMonday(new Date(`${r.dateISO}T00:00:00`)),
-    );
-    const last = weeks[weeks.length - 1];
-    if (last && last.weekISO === weekISO) {
-      last.rows.push(r);
-    } else {
-      weeks.push({ weekISO, rows: [r] });
-    }
-  }
+  const weeks = buildWeeks(refined);
 
   const router = useRouter();
   const goBack = () => {
     if (router.canGoBack()) router.back();
     else router.replace('/home' as any);
   };
+
   return (
     <View style={styles.screen}>
       <View style={styles.header}>
@@ -121,50 +150,61 @@ export default function MyAssignmentsScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-      {isLoading ? (
-        <ActivityIndicator size="large" style={{ marginTop: 32 }} />
-      ) : refined.length === 0 ? (
-        <View style={styles.emptyBox}>
-          <Ionicons name="checkmark-done-circle-outline" size={40} color="#94a3b8" />
-          <Text style={styles.emptyText}>{t('home.myTasksScreen.empty')}</Text>
-        </View>
-      ) : (
-        weeks.map((w) => (
-          <View key={w.weekISO} style={styles.weekBlock}>
-            <Text style={styles.weekHeader}>
-              {weekHeaderLabel(w.weekISO, i18n.language)}
+        {isLoading ? (
+          <ActivityIndicator size="large" style={{ marginTop: 32 }} />
+        ) : refined.length === 0 ? (
+          <View style={styles.emptyBox}>
+            <Ionicons
+              name="checkmark-done-circle-outline"
+              size={40}
+              color="#94a3b8"
+            />
+            <Text style={styles.emptyText}>
+              {t('home.myTasksScreen.empty')}
             </Text>
-            <View style={styles.card}>
-              {w.rows.map((r, idx) => (
-                <View
-                  key={`${r.item.kind}-${idx}-${r.dateISO}`}
-                  style={[styles.row, idx > 0 && styles.rowBorder]}
-                >
-                  <Ionicons
-                    name={TASK_ICONS[r.item.kind]}
-                    size={18}
-                    color="#0ea5e9"
-                    style={{ marginRight: 10, marginTop: 2 }}
-                  />
-                  <View style={{ flex: 1 }}>
-                    {taskSubsectionLabel(r.item, t) ? (
-                      <Text style={styles.subsection} numberOfLines={1}>
-                        {taskSubsectionLabel(r.item, t)}
-                      </Text>
-                    ) : null}
-                    <Text style={styles.title} numberOfLines={2}>
-                      {taskTitle(r.item, t)}
-                    </Text>
-                    <Text style={styles.meta} numberOfLines={2}>
-                      {taskMeta(r, t, i18n.language)}
-                    </Text>
-                  </View>
-                </View>
-              ))}
-            </View>
           </View>
-        ))
-      )}
+        ) : (
+          weeks.map((w) => (
+            <View key={w.weekISO} style={styles.weekBlock}>
+              <Text style={styles.weekHeader}>
+                {weekHeaderLabel(w.weekISO, i18n.language)}
+              </Text>
+              {w.groups.map((g) => {
+                const head = g.rows[0];
+                return (
+                  <View key={g.key} style={styles.card}>
+                    <View style={styles.cardHead}>
+                      <Ionicons
+                        name={TASK_ICONS[head.item.kind]}
+                        size={16}
+                        color="#0ea5e9"
+                        style={{ marginRight: 8 }}
+                      />
+                      <Text style={styles.cardHeadText} numberOfLines={1}>
+                        {taskMeta(head, t, i18n.language)}
+                      </Text>
+                    </View>
+                    {g.rows.map((r, idx) => (
+                      <View
+                        key={`${r.item.kind}-${idx}-${r.dateISO}`}
+                        style={[styles.partRow, idx > 0 && styles.rowBorder]}
+                      >
+                        {taskSubsectionLabel(r.item, t) ? (
+                          <Text style={styles.subsection} numberOfLines={1}>
+                            {taskSubsectionLabel(r.item, t)}
+                          </Text>
+                        ) : null}
+                        <Text style={styles.title} numberOfLines={2}>
+                          {taskTitle(r.item, t)}
+                        </Text>
+                      </View>
+                    ))}
+                  </View>
+                );
+              })}
+            </View>
+          ))
+        )}
       </ScrollView>
     </View>
   );
@@ -203,11 +243,25 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 12,
     paddingHorizontal: 14,
+    paddingBottom: 4,
+    marginBottom: 10,
   },
-  row: {
+  cardHead: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    paddingVertical: 13,
+    alignItems: 'center',
+    paddingTop: 12,
+    paddingBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
+  },
+  cardHeadText: {
+    flex: 1,
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#0369a1',
+  },
+  partRow: {
+    paddingVertical: 11,
   },
   rowBorder: { borderTopWidth: 1, borderTopColor: '#f1f5f9' },
   subsection: {
@@ -219,7 +273,6 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   title: { fontSize: 15, fontWeight: '600', color: '#0f172a' },
-  meta: { fontSize: 13, color: '#0369a1', marginTop: 2 },
   emptyBox: { alignItems: 'center', marginTop: 48, gap: 10 },
   emptyText: { fontSize: 14, color: '#64748b', textAlign: 'center' },
 });
