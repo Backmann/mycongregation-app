@@ -3,20 +3,41 @@
 [![Deploy](https://github.com/Backmann/mycongregation-app/actions/workflows/deploy.yml/badge.svg)](https://github.com/Backmann/mycongregation-app/actions/workflows/deploy.yml)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 
-Modern web and mobile app for organizing congregation meetings and members.
+A modern, privacy-first web and mobile platform for organizing recurring
+meetings and coordinating members in communities and groups.
 
 Live: **https://mycongregation.org**
 
-> ⚠️ This is an unofficial, community-built tool. Not affiliated with or endorsed by any religious organization.
+> ⚠️ This is an unofficial, community-built tool. Not affiliated with or endorsed by any organization.
+
+## Why it's different
+
+**Privacy by design.** Publication files (EPUB) are parsed **entirely in
+the browser** — their contents never reach the server. Only the derived
+schedule metadata (part labels, order, durations) is sent to the API. The
+source document stays on the user's device.
+
+**Encryption at rest.** Personal data is encrypted at the database-column
+level with **AES-256-GCM** authenticated encryption (RFC 5288) via a
+TypeORM value transformer — encrypted on write, decrypted on read.
+Encryption is versioned (`enc:v1:`) for phased rollout, and tampered
+ciphertext fails closed rather than returning corrupted data.
+
+**Fine-grained access control.** A role-based permission model with
+per-section capability grants, email invitations with a passwordless
+set-up flow, and a sliding-window login rate limiter.
 
 ## Features
 
-- 👥 **Publishers** — directory with pioneer status, appointed roles, soft-delete
+- 👥 **Members** — directory with roles, status tracking, and soft-delete
 - 👨‍👩‍👧 **Families** — household management with member linking
-- 🤝 **Service groups** — weekly field service organization
-- 📋 **Assignments** — midweek and weekend meeting parts
-- 🎤 **Public talks** — 190+ catalog with bulk import, search, speaker history
-- 📅 **Schedule import** — parse weekly meeting program EPUBs into editable schedules
+- 🤝 **Groups** — weekly group organization and coordination
+- 📋 **Assignments** — plan recurring meeting parts with a focused planning mode, including auto-advance through unfilled slots
+- 🧹 **Duties & cleaning** — assign responsibilities and cleaning slots to people and groups
+- 🎤 **Talks catalog** — searchable catalog with bulk import and speaker history
+- 📅 **Schedule import** — parse program EPUBs into editable schedules, **client-side** (see Privacy above), with drag-and-drop on web
+- 🔔 **Notifications** — web push (VAPID) plus an in-app notification center
+- 🌍 **Localization** — full UI in English, Russian, and German, with proper `<html lang>` and document title handling
 
 ## Tech stack
 
@@ -27,6 +48,8 @@ Live: **https://mycongregation.org**
 - Axios + JWT auth via expo-secure-store
 
 Backend API: [mycongregation-server](https://github.com/Backmann/mycongregation-server)
+— NestJS, PostgreSQL, TypeORM, with column-level encryption, Sentry
+monitoring, daily database backups, and a test suite run in CI.
 
 ## Repository structure
 
@@ -60,6 +83,4 @@ Output in `app/dist/` is deployed as static files behind nginx + Cloudflare.
 
 ## License
 
-[AGPL-3.0](LICENSE) — derivative works distributed over a network must publish their source.
-
-Copyright (C) 2026 Lionel Backmann (Hovorukha)
+Licensed under the GNU Affero General Public License v3.0 (AGPL-3.0).
