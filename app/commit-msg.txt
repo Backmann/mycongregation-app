@@ -1,11 +1,7 @@
-feat: parse Watchtower EPUB on the client
+chore: remove dead schedule-import upload client method
 
-Watchtower study EPUBs are now parsed entirely in the browser (port of
-server/src/wt-import/wt-parser.ts: adm-zip -> jszip, cheerio -> DOMParser,
-selector logic kept 1:1). The import screen already detected the file
-type but always ran the MWB parser; it now routes Watchtower files to
-parseWtFile and adapts the result to the shared ParsedWorkbook shape so
-the existing preview and /schedule-import/apply flow are reused. The
-publication file never leaves the device — only derived schedule
-metadata is sent. Pure-function parity verified against the server
-spec's cases (dates, ranges, songs, year extraction).
+scheduleImportApi.upload (POST /schedule-import/upload) is no longer
+called: EPUB parsing for both MWB and Watchtower now happens in the
+browser, and apply sends the derived payload to /mwb-import/apply. The
+server route and its parser remain as a fallback; only the unused client
+method is removed.

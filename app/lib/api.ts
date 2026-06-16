@@ -1412,23 +1412,6 @@ export const assignmentsApi = {
 };
 
 export const scheduleImportApi = {
-  async upload(file: { uri: string; name: string; mimeType?: string; file?: Blob }): Promise<ImportResult> {
-    const formData = new FormData();
-    if (file.file) {
-      formData.append('file', file.file, file.name);
-    } else {
-      formData.append('file', {
-        uri: file.uri,
-        name: file.name,
-        type: file.mimeType ?? 'application/epub+zip',
-      } as any);
-    }
-    const { data } = await api.post<ImportResult>('/schedule-import/upload', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-      timeout: 120_000,
-    });
-    return data;
-  },
   /**
    * Применяет программу, разобранную НА КЛИЕНТЕ: файл публикации
    * не загружается — отправляются только готовые назначения.
