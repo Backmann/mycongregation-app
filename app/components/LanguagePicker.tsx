@@ -25,13 +25,13 @@ interface Props {
 }
 
 const LANGUAGES: {
+  /* flags removed */
   code: SupportedLanguage;
   nameKey: string;
-  flag: string;
 }[] = [
-  { code: 'en', nameKey: 'language.english', flag: '🇬🇧' },
-  { code: 'ru', nameKey: 'language.russian', flag: '🇷🇺' },
-  { code: 'de', nameKey: 'language.german', flag: '🇩🇪' },
+  { code: 'en', nameKey: 'language.english' },
+  { code: 'ru', nameKey: 'language.russian' },
+  { code: 'de', nameKey: 'language.german' },
 ];
 
 export function LanguagePickerModal({ visible, onClose, required = false }: Props) {
@@ -74,7 +74,6 @@ export function LanguagePickerModal({ visible, onClose, required = false }: Prop
                 style={[styles.option, isSelected && styles.optionSelected]}
                 onPress={() => setSelected(lang.code)}
               >
-                <Text style={styles.flag}>{lang.flag}</Text>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.optionText}>{t(lang.nameKey)}</Text>
                   {isDetected && (
@@ -137,7 +136,6 @@ const styles = StyleSheet.create({
     borderColor: '#0ea5e9',
     backgroundColor: '#e0f2fe',
   },
-  flag: { fontSize: 24, marginRight: 12 },
   optionText: { fontSize: 15, color: '#0f172a' },
   detectedText: { fontSize: 11, color: '#0ea5e9', marginTop: 2 },
   confirmButton: {

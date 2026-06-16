@@ -1,5 +1,6 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
+import { Platform } from 'react-native';
 import * as Localization from 'expo-localization';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -11,6 +12,17 @@ const STORAGE_KEY = 'user_language';
 
 export const SUPPORTED_LANGUAGES = ['en', 'ru', 'de'] as const;
 export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number];
+
+/**
+ * Keep <html lang> in sync with the active language (web only). Without
+ * this the page advertises the default lang (en) while showing e.g.
+ * Russian, so Chrome offers to translate it. Also helps screen readers.
+ */
+function syncHtmlLang(lang: SupportedLanguage): void {
+  if (Platform.OS === 'web' && typeof document !== 'undefined') {
+    document.documentElement.lang = lang;
+  }
+}
 
 export function getDeviceLanguage(): SupportedLanguage {
   try {
@@ -50,6 +62,7 @@ export async function initI18nFromStorage(): Promise<{
     const stored = await AsyncStorage.getItem(STORAGE_KEY);
     if (stored && (SUPPORTED_LANGUAGES as readonly string[]).includes(stored)) {
       await i18n.changeLanguage(stored);
+      syncHtmlLang(stored as SupportedLanguage);
       return { language: stored as SupportedLanguage, isFirstLaunch: false };
     }
     return { language: getDeviceLanguage(), isFirstLaunch: true };
@@ -65,6 +78,7 @@ export async function setLanguage(lang: SupportedLanguage): Promise<void> {
     // ignore storage failures — language still applies in memory
   }
   await i18n.changeLanguage(lang);
+  syncHtmlLang(lang);
 }
 
 export function getCurrentLanguage(): SupportedLanguage {
