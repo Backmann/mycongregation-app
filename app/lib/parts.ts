@@ -14,7 +14,7 @@ export interface PartDef {
   requiredCapability?: string;
   /** Capability key required for the assistant. Defaults to requiredCapability if omitted. */
   requiredAssistantCapability?: string;
-  /** Visual sub-section grouping (midweek only). Mirrors JW workbook color coding. */
+  /** Visual sub-section grouping (midweek only). Mirrors the workbook color coding. */
   subsection?: Subsection;
 }
 
@@ -270,7 +270,7 @@ const NON_NUMBERED_PARTS = new Set<string>([
   'weekend_opening_song',
 ]);
 
-/** Parts that get a JW-style sequential number (excludes chairmen/prayers/readers). */
+/** Parts that get a sequential number (excludes chairmen/prayers/readers). */
 /**
  * "Apply Yourself to the Field Ministry" parts are imported numbered by their
  * position in the meeting (apply_yourself_1..N), but the actual ministry skill
@@ -299,7 +299,7 @@ export function isNumberedPart(key: string): boolean {
   return !NON_NUMBERED_PARTS.has(key);
 }
 
-/** Map of assignment id -> JW display number (null for non-numbered info rows). */
+/** Map of assignment id -> display number (null for non-numbered info rows). */
 export function buildPartNumbers(
   items: { id: string; partKey: string; partOrder: number | null }[],
 ): Map<string, number | null> {

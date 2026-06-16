@@ -1,5 +1,5 @@
 /**
- * Parses a JW Meeting Workbook (MWB) EPUB into structured weekly programmes
+ * Parses a Meeting Workbook (MWB) EPUB into structured weekly programmes
  * **entirely on the client** (browser). The publication file never leaves
  * the admin's device — only derived schedule metadata (part keys, titles,
  * durations) is sent to the API via POST /schedule-import/apply.

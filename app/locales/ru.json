@@ -977,7 +977,7 @@
       "timePlaceholder": "ЧЧ:ММ",
       "addressPlaceholder": "Где собираемся",
       "topicPlaceholder": "Тема или указание (необязательно)",
-      "linkPlaceholder": "https://www.jw.org/…"
+      "linkPlaceholder": "https://…"
     },
     "days": {
       "1": "Пн",
@@ -1231,6 +1231,6 @@
     "sister": "Сестра"
   },
   "app": {
-    "title": "Моё собрание"
+    "title": "mycongregation.org"
   }
 }

@@ -973,7 +973,7 @@
       "timePlaceholder": "HH:MM",
       "addressPlaceholder": "Where to meet",
       "topicPlaceholder": "Topic or note (optional)",
-      "linkPlaceholder": "https://www.jw.org/…"
+      "linkPlaceholder": "https://…"
     },
     "days": {
       "1": "Mon",
@@ -1227,6 +1227,6 @@
     "sister": "Sister"
   },
   "app": {
-    "title": "My Congregation"
+    "title": "mycongregation.org"
   }
 }

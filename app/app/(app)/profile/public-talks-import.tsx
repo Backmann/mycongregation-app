@@ -48,7 +48,7 @@ export default function PublicTalksImportScreen() {
           <Text style={styles.code}>1. Хорошо ли вы знаете Бога?</Text>
           {'\n'}
           Existing talks (matched by number) will be updated; new ones
-          created. Source: docs.jw.org/ru/-/pub-s-34
+          created.
         </Text>
       </View>
 

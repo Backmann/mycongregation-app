@@ -1,9 +1,11 @@
-fix: set a localized document title on web
+chore: remove JW branding and set domain as page title
 
-document.title was empty, leaving Chrome without a strong language
-signal, so it offered to translate the page even though <html lang> is
-ru and the visible UI is Russian (likely triggered by Latin text in the
-data — emails, names). syncHtmlLang now also sets a localized title
-("Моё собрание" / "My Congregation" / "Meine Versammlung") alongside the
-lang attribute, which names the browser tab properly and gives Chrome a
-clear language signal.
+The app is a general helper for organizing congregation meetings, not
+tied to a specific denomination, so denominational branding is removed:
+"JW" dropped from parser/parts code comments, the docs.jw.org source line
+removed from the public-talks import screen, and the jw.org link
+placeholder replaced with a neutral one in all locales. Functionality
+(public_witnessing, MWB/Watchtower parsing) is unchanged — those are
+features, not branding. The browser tab title is now the brand domain
+"mycongregation.org" (set in syncHtmlLang), which also gives Chrome a
+clear, non-empty language signal.
