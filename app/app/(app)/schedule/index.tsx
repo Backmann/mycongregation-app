@@ -406,6 +406,7 @@ export default function ScheduleIndexScreen() {
               : false
         }
         publishing={publishingType === planningZone?.eventType}
+        canEditDuties={canEditDuties}
         canEdit={
           planningZone?.eventType === 'midweek'
             ? perms.canEditMidweekSchedule

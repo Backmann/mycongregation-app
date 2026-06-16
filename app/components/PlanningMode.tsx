@@ -40,6 +40,8 @@ interface Props {
   canPublish: boolean;
   publishing: boolean;
   canEdit: boolean;
+  /** Separate right for duties — distinct from the meeting schedule. */
+  canEditDuties: boolean;
   // openPublishDialog: opens the shared publish dialog for this zone.
   onPublish: (eventType: 'midweek' | 'weekend', weekStartDate: string) => void;
   onClose: () => void;
@@ -68,6 +70,7 @@ export function PlanningMode({
   canPublish,
   publishing,
   canEdit,
+  canEditDuties,
   onPublish,
   onClose,
 }: Props) {
@@ -99,10 +102,12 @@ export function PlanningMode({
   });
   const zoneDuties = useMemo(
     () =>
-      (dutiesQuery.data ?? []).filter(
-        (d) => d.eventType === zone?.eventType,
-      ),
-    [dutiesQuery.data, zone],
+      canEditDuties
+        ? (dutiesQuery.data ?? []).filter(
+            (d) => d.eventType === zone?.eventType,
+          )
+        : [],
+    [dutiesQuery.data, zone, canEditDuties],
   );
   const dutyAssign = useMutation({
     mutationFn: (vars: { id: string; publisherId: string | null }) =>

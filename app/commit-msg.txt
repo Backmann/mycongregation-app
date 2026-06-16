@@ -1,0 +1,9 @@
+fix: gate duties in planning mode by canEditDuties
+
+Duties in planning mode were shown and assignable using the meeting
+schedule right (canEditMidweekSchedule/canEditWeekendSchedule) rather
+than the dedicated canEditDuties right, so a non-admin with schedule
+access but without duties access saw and could touch duties. PlanningMode
+now takes canEditDuties; when false, zoneDuties is empty, so the Duties
+group is hidden, excluded from the progress count, and the picker is
+unreachable. Matches how DutiesSection is gated on the main screen.
