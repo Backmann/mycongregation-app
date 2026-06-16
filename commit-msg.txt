@@ -1,0 +1,4 @@
+docs: remove JW branding from README
+
+Replaced the denominational description line with a neutral one. The
+"not affiliated with any religious organization" disclaimer is kept.

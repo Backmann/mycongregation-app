@@ -3,7 +3,7 @@
 [![Deploy](https://github.com/Backmann/mycongregation-app/actions/workflows/deploy.yml/badge.svg)](https://github.com/Backmann/mycongregation-app/actions/workflows/deploy.yml)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 
-Modern web and mobile app for Jehovah's Witnesses congregation administration.
+Modern web and mobile app for organizing congregation meetings and members.
 
 Live: **https://mycongregation.org**
 
