@@ -1,8 +1,9 @@
-fix: show clean prayer name in My Tasks
+feat: self-service absences in the app UI
 
-The opening/closing prayer tasks displayed their imported partTitle,
-which often joins an adjacent part or song with " | " (e.g. "Песня 5 и
-молитва | Вступительные слова"). That extra context confuses the person
-assigned, who only needs to know it's the opening or closing prayer.
-Prayers now show just the translated part name via getPartLabel, like
-the schedule. Other parts are unchanged.
+Wires up the client side of self-service absences (server side already
+authorizes own-absence writes). The Absences tile is now shown to
+everyone, not just managers. A regular publisher sees only their own
+absences and files new ones with their publisher fixed (the picker is
+hidden and the directory is not queried, which they can't access);
+managers keep the full picker and see everyone. Adds an "add absence"
+button to the list and an absences.add label in all locales.

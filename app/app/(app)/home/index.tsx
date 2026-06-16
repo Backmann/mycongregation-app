@@ -567,7 +567,7 @@ export default function HomeScreen() {
     { key: 'schedule', label: t('home.actions.schedule'), icon: 'calendar', href: '/schedule', show: true },
     { key: 'report', label: t('home.actions.report'), icon: 'document-text', href: '/service-reports', show: true },
     { key: 'events', label: t('home.actions.events'), icon: 'megaphone', href: '/special-events', show: true },
-    { key: 'absences', label: t('home.actions.absences'), icon: 'airplane', href: '/absences', show: canManageAbsences },
+    { key: 'absences', label: t('home.actions.absences'), icon: 'airplane', href: '/absences', show: true },
     { key: 'publishers', label: t('home.actions.publishers'), icon: 'people', href: '/publishers', show: canSeeDirectory },
     { key: 'profile', label: t('home.actions.profile'), icon: 'person-circle', href: '/profile', show: true },
   ];

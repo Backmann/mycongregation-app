@@ -1130,7 +1130,8 @@
       "restore": "Restore",
       "cancel": "Cancel"
     },
-    "warnAway": "Away: {{range}}"
+    "warnAway": "Away: {{range}}",
+    "add": "Add absence"
   },
   "home": {
     "title": "Home",

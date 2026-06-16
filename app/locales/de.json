@@ -1130,7 +1130,8 @@
       "restore": "Wiederherstellen",
       "cancel": "Abbrechen"
     },
-    "warnAway": "Abwesend: {{range}}"
+    "warnAway": "Abwesend: {{range}}",
+    "add": "Abwesenheit hinzufügen"
   },
   "home": {
     "title": "Start",

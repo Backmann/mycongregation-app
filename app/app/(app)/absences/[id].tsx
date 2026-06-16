@@ -91,6 +91,13 @@ export default function AbsenceDetailScreen() {
           error={update.error}
           onSubmit={(input) => update.mutate(input)}
           onCancel={() => setEditing(false)}
+          lockedPublisher={
+            canManageAbsences
+              ? undefined
+              : data.publisher
+                ? { id: data.publisherId, label: data.publisher.displayName }
+                : undefined
+          }
         />
       </ScrollView>
     );

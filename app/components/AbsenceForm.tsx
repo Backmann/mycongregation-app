@@ -36,6 +36,8 @@ interface Props {
   error?: unknown;
   onSubmit: (input: CreateAbsenceInput) => void;
   onCancel?: () => void;
+  /** When set, the publisher is fixed (self-service) and the picker is hidden. */
+  lockedPublisher?: { id: string; label: string };
 }
 
 export function AbsenceForm({
@@ -44,17 +46,18 @@ export function AbsenceForm({
   error,
   onSubmit,
   onCancel,
+  lockedPublisher,
 }: Props) {
   const { t, i18n } = useTranslation();
   const defaultStyles = useDefaultStyles();
 
   const [publisherId, setPublisherId] = useState<string | null>(
-    initial?.publisherId ?? null,
+    lockedPublisher?.id ?? initial?.publisherId ?? null,
   );
   const [publisherLabel, setPublisherLabel] = useState<string>(
-    initial?.publisher?.displayName ?? '',
+    lockedPublisher?.label ?? initial?.publisher?.displayName ?? '',
   );
-  const [pickerOpen, setPickerOpen] = useState(!initial);
+  const [pickerOpen, setPickerOpen] = useState(!initial && !lockedPublisher);
   const [search, setSearch] = useState('');
 
   const [multiDay, setMultiDay] = useState<boolean>(!!initial?.endDate);
@@ -70,6 +73,7 @@ export function AbsenceForm({
     queryKey: ['publishers', 'for-absence'],
     queryFn: () => publishersApi.list({ limit: 1000 }),
     staleTime: 5 * 60 * 1000,
+    enabled: !lockedPublisher,
   });
 
   const publishers = useMemo<Publisher[]>(() => {
@@ -101,7 +105,11 @@ export function AbsenceForm({
     <View>
       {/* ---- Publisher ---- */}
       <Text style={styles.label}>{t('absences.fields.publisher')}</Text>
-      {publisherId && !pickerOpen ? (
+      {lockedPublisher ? (
+        <View style={styles.selectedRow}>
+          <Text style={styles.selectedName}>{lockedPublisher.label}</Text>
+        </View>
+      ) : publisherId && !pickerOpen ? (
         <Pressable
           style={styles.selectedRow}
           onPress={() => setPickerOpen(true)}

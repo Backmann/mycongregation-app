@@ -14,6 +14,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { Absence, absencesApi, extractErrorMessage } from '../../../lib/api';
 import { FilterToggle } from '../../../components/FilterToggle';
+import { usePermissions } from '../../../lib/permissions';
+import { useMyPublisher } from '../../../lib/useMyPublisher';
 
 function fmtRange(a: Absence, loc: string): string {
   const start = new Date(`${a.startDate}T00:00:00`);
@@ -43,15 +45,31 @@ export default function AbsencesListScreen() {
   const { t, i18n } = useTranslation();
   const [showPast, setShowPast] = useState(false);
   const [showRemoved, setShowRemoved] = useState(false);
+  const { canManageAbsences } = usePermissions();
+  const { myPublisherId } = useMyPublisher();
+  // Managers see everyone; a regular publisher sees only their own.
+  const mineOnly = !canManageAbsences;
 
   const { data, isLoading, isRefetching, refetch, error } = useQuery({
-    queryKey: ['absences', showPast, showRemoved],
+    queryKey: ['absences', showPast, showRemoved, mineOnly, myPublisherId],
     queryFn: () =>
-      absencesApi.list({ all: showPast, includeRemoved: showRemoved }),
+      absencesApi.list({
+        all: showPast,
+        includeRemoved: showRemoved,
+        ...(mineOnly && myPublisherId ? { publisherId: myPublisherId } : {}),
+      }),
+    enabled: !mineOnly || !!myPublisherId,
   });
 
   return (
     <View style={styles.container}>
+      <Pressable
+        style={styles.addBtn}
+        onPress={() => router.push('/absences/new' as any)}
+      >
+        <Ionicons name="add" size={20} color="#fff" />
+        <Text style={styles.addBtnText}>{t('absences.add')}</Text>
+      </Pressable>
       <FilterToggle
         label={t('absences.showPast')}
         value={showPast}
@@ -121,6 +139,17 @@ export default function AbsencesListScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16, backgroundColor: '#f8fafc' },
+  addBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#0ea5e9',
+    borderRadius: 10,
+    paddingVertical: 12,
+    marginBottom: 12,
+    gap: 6,
+  },
+  addBtnText: { color: '#fff', fontSize: 15, fontWeight: '700' },
   empty: { textAlign: 'center', color: '#64748b', marginTop: 32 },
   errorBox: {
     backgroundColor: '#fee2e2',
