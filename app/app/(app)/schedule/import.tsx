@@ -24,6 +24,7 @@ import {
   toApplyPayload,
 } from '../../../lib/mwb-parser';
 import { parseWtFile, wtToWorkbook } from '../../../lib/wt-parser';
+import { DropZone } from '../../../components/DropZone';
 import { useTranslation } from 'react-i18next';
 
 interface PickedFile {
@@ -50,6 +51,62 @@ export default function ImportEpubScreen() {
     },
   });
 
+  // Общий разбор: и выбор из папки, и drag-and-drop ведут сюда. Файл
+  // публикации не покидает устройство — разбирается локально.
+  const processBlob = async (
+    blob: Blob,
+    name: string,
+    uri: string,
+    size?: number,
+    mimeType?: string,
+  ) => {
+    if (!name.toLowerCase().endsWith('.epub')) {
+      setPickError(t('schedule.import.errors.notEpub'));
+      return;
+    }
+    if (!isClientParsingSupported()) {
+      setPickError(t('schedule.import.errors.webOnly'));
+      return;
+    }
+    setPicked({
+      uri,
+      name,
+      mimeType: mimeType ?? 'application/epub+zip',
+      size,
+      file: blob,
+    });
+    setParsing(true);
+    try {
+      const kind = detectFileType(name);
+      const wb =
+        kind === 'watchtower'
+          ? wtToWorkbook(await parseWtFile(blob, undefined, name))
+          : await parseMwbFile(blob, undefined, name);
+      setParsed(wb);
+    } catch (e) {
+      setParseError(
+        `${t('schedule.import.errors.parseFailed')}: ${extractErrorMessage(e)}`,
+      );
+    } finally {
+      setParsing(false);
+    }
+  };
+
+  // Drag-and-drop (web): dropped File is a Blob → same parser path.
+  const handleDropped = (dropped: File) => {
+    setPickError(null);
+    setParseError(null);
+    setParsed(null);
+    applyMutation.reset();
+    void processBlob(
+      dropped,
+      dropped.name,
+      (dropped as any).path ?? dropped.name,
+      dropped.size,
+      dropped.type || undefined,
+    );
+  };
+
   const handlePick = async () => {
     setPickError(null);
     setParseError(null);
@@ -72,36 +129,17 @@ export default function ImportEpubScreen() {
         return;
       }
       const blob = (asset as any).file as Blob | undefined;
-      if (!blob || !isClientParsingSupported()) {
+      if (!blob) {
         setPickError(t('schedule.import.errors.webOnly'));
         return;
       }
-      setPicked({
-        uri: asset.uri,
-        name: asset.name,
-        mimeType: asset.mimeType ?? 'application/epub+zip',
-        size: asset.size,
-        file: blob,
-      });
-
-      // Локальный разбор: файл публикации не покидает это устройство.
-      setParsing(true);
-      try {
-        const kind = detectFileType(asset.name);
-        const wb =
-          kind === 'watchtower'
-            ? wtToWorkbook(
-                await parseWtFile(blob, undefined, asset.name),
-              )
-            : await parseMwbFile(blob, undefined, asset.name);
-        setParsed(wb);
-      } catch (e) {
-        setParseError(
-          `${t('schedule.import.errors.parseFailed')}: ${extractErrorMessage(e)}`,
-        );
-      } finally {
-        setParsing(false);
-      }
+      await processBlob(
+        blob,
+        asset.name,
+        asset.uri,
+        asset.size,
+        asset.mimeType ?? undefined,
+      );
     } catch (e) {
       setPickError(extractErrorMessage(e));
       setParsing(false);
@@ -130,20 +168,26 @@ export default function ImportEpubScreen() {
       </View>
 
       <View style={styles.section}>
-        <Pressable
-          style={({ pressed }) => [
-            styles.pickButton,
-            pressed && { opacity: 0.7 },
-          ]}
-          onPress={handlePick}
-        >
-          <Ionicons name="document-attach-outline" size={20} color="#0ea5e9" />
-          <Text style={styles.pickButtonText}>
-            {picked
-              ? t('schedule.import.chooseDifferent')
-              : t('schedule.import.choosePrompt')}
-          </Text>
-        </Pressable>
+        <DropZone onFile={handleDropped} disabled={parsing}>
+          <Pressable
+            style={({ pressed }) => [
+              styles.pickButton,
+              pressed && { opacity: 0.7 },
+            ]}
+            onPress={handlePick}
+          >
+            <Ionicons
+              name="document-attach-outline"
+              size={20}
+              color="#0ea5e9"
+            />
+            <Text style={styles.pickButtonText}>
+              {picked
+                ? t('schedule.import.chooseDifferent')
+                : t('schedule.import.choosePrompt')}
+            </Text>
+          </Pressable>
+        </DropZone>
 
         {pickError && (
           <View style={styles.errorBox}>

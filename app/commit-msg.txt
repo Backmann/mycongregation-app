@@ -1,7 +1,9 @@
-chore: remove dead schedule-import upload client method
+feat: drag-and-drop EPUB on the import screen (web)
 
-scheduleImportApi.upload (POST /schedule-import/upload) is no longer
-called: EPUB parsing for both MWB and Watchtower now happens in the
-browser, and apply sends the derived payload to /mwb-import/apply. The
-server route and its parser remain as a fallback; only the unused client
-method is removed.
+The import screen now accepts an EPUB dropped onto the file-picker area,
+in addition to choosing one from a folder. Drag-and-drop is web-only
+(DropZone.web.tsx; native uses a passthrough DropZone.tsx since OS file
+drop isn't available there). A dropped File is a Blob, so it flows
+through the same client-side parser as the picker — the parsing/branch
+logic was extracted into a shared processBlob() called by both paths.
+The publication file still never leaves the device.
