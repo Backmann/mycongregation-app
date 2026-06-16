@@ -1,5 +1,6 @@
 import {
   ActivityIndicator,
+  Pressable,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -9,6 +10,7 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
+import { useRouter } from 'expo-router';
 import { meApi, meetingSettingsApi, MyAssignmentItem } from '../../../lib/api';
 import {
   RefinedTask,
@@ -95,14 +97,29 @@ export default function MyAssignmentsScreen() {
     }
   }
 
+  const router = useRouter();
+  const goBack = () => {
+    if (router.canGoBack()) router.back();
+    else router.replace('/home' as any);
+  };
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
-    >
+    <View style={styles.screen}>
+      <View style={styles.header}>
+        <Pressable onPress={goBack} hitSlop={10} style={styles.backBtn}>
+          <Ionicons name="chevron-back" size={24} color="#0ea5e9" />
+        </Pressable>
+        <Text style={styles.headerTitle} numberOfLines={1}>
+          {t('home.myTasksScreen.title')}
+        </Text>
+        <View style={styles.backBtn} />
+      </View>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
       {isLoading ? (
         <ActivityIndicator size="large" style={{ marginTop: 32 }} />
       ) : refined.length === 0 ? (
@@ -142,11 +159,30 @@ export default function MyAssignmentsScreen() {
           </View>
         ))
       )}
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  screen: { flex: 1, backgroundColor: '#f8fafc' },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 10,
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
+  },
+  backBtn: { width: 40, alignItems: 'center' },
+  headerTitle: {
+    flex: 1,
+    textAlign: 'center',
+    fontSize: 17,
+    fontWeight: '700',
+    color: '#0f172a',
+  },
   container: { flex: 1, backgroundColor: '#f8fafc' },
   weekBlock: { marginBottom: 18 },
   weekHeader: {

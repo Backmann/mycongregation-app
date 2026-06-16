@@ -1,8 +1,8 @@
-fix: show only the topic for the Treasures talk, hide the detail note
+fix: add a smart back button to the My Tasks screen
 
-The opening "Treasures from God's Word" talk (treasures_talk) was showing
-its enriched detail note (the line the MWB parser appends after ": ") as
-an italic subtitle under the topic. That part now shows only its topic;
-other parts (Spiritual Gems, Bible reading, discussions) keep their
-subtitle. This is display-only — the stored partTitle and the parser are
-unchanged.
+Headers are globally disabled (headerShown: false), and the My Tasks
+screen had no header of its own, so opening it from Home left no way
+back. Added a header with a back arrow that goes back through history
+when possible and falls back to Home otherwise
+(router.canGoBack() ? back() : replace('/home')), so the screen is
+always exitable regardless of how it was reached.
