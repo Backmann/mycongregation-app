@@ -86,7 +86,14 @@ export function taskTitle(item: MyAssignmentItem, t: TFunc): string {
     // label is either a human part title (from EPUB) or a raw partKey
     // (e.g. weekend_chairman); getPartLabel translates known keys and
     // returns the input unchanged for anything not in the registry.
-    const label = getPartLabel(item.label);
+    // For the opening Treasures talk, show only the topic (mirror of the
+    // schedule screen) — drop the enriched note after ": ".
+    let raw = item.label;
+    if (item.partKey === 'treasures_talk') {
+      const idx = raw.indexOf(': ');
+      if (idx > 0) raw = raw.slice(0, idx);
+    }
+    const label = getPartLabel(raw);
     return (
       label +
       (item.asAssistant ? ` (${t('home.meeting.asAssistant')})` : '')

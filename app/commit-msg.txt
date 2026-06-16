@@ -1,8 +1,6 @@
-fix: add a smart back button to the My Tasks screen
+fix: add partKey to MyAssignmentItem type
 
-Headers are globally disabled (headerShown: false), and the My Tasks
-screen had no header of its own, so opening it from Home left no way
-back. Added a header with a back arrow that goes back through history
-when possible and falls back to Home otherwise
-(router.canGoBack() ? back() : replace('/home')), so the screen is
-always exitable regardless of how it was reached.
+The previous client change skipped this field because the generic guard
+matched partKey already present on other interfaces, so MyAssignmentItem
+never got it and tsc failed in my-tasks.ts. Added partKey to the correct
+interface.

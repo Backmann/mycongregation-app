@@ -1239,6 +1239,7 @@ export interface MyAssignmentItem {
   label: string;
   location?: string;
   asAssistant?: boolean;
+  partKey?: string;
 }
 
 export interface MyAssignmentsResponse {
