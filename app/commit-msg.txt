@@ -1,6 +1,8 @@
-fix: add partKey to MyAssignmentItem type
+fix: sort My Tasks by program order within a day
 
-The previous client change skipped this field because the generic guard
-matched partKey already present on other interfaces, so MyAssignmentItem
-never got it and tsc failed in my-tasks.ts. Added partKey to the correct
-interface.
+Tasks on the same day were shown in arrival order, so a meeting's parts
+could appear out of sequence (e.g. closing words before the chairman).
+They now sort by partOrder as a secondary key after date, matching the
+program (chairman = 1 ... closing prayer = last). Non-meeting tasks
+(duties, cleaning) have no partOrder and fall to the end of the day.
+Requires the server partOrder change.

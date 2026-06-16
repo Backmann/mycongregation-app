@@ -70,7 +70,11 @@ export function refineMyTasks(
     }
     refined.push({ item, dateISO, weekOnly, meetingTime });
   }
-  refined.sort((a, b) => a.dateISO.localeCompare(b.dateISO));
+  refined.sort(
+    (a, b) =>
+      a.dateISO.localeCompare(b.dateISO) ||
+      (a.item.partOrder ?? 999) - (b.item.partOrder ?? 999),
+  );
   return refined;
 }
 

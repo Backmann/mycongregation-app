@@ -1240,6 +1240,7 @@ export interface MyAssignmentItem {
   location?: string;
   asAssistant?: boolean;
   partKey?: string;
+  partOrder?: number;
 }
 
 export interface MyAssignmentsResponse {
