@@ -1,10 +1,4 @@
-feat: role icons in the duties picker
+chore: move DUTY_ICONS below imports
 
-Each duty in the duties section now shows a tinted icon in a rounded
-circle to the left of its picker — shield for security, mic for
-microphone, video camera for video, screen for stage, and so on — each
-with its own accent colour. PublisherSelector gains optional roleIcon
-and roleColor props and lays the trigger out horizontally when they are
-set; without them it renders exactly as before, so its other uses
-(meeting assignments) are unchanged. This completes the schedule
-redesign so the duties section matches the approved mockup.
+The duty icon map was inserted between import statements, tripping the
+import/first lint rule. Moved it below all imports. No behaviour change.

@@ -8,6 +8,10 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
+import { Duty, DutyType, Publisher, PublisherActivity } from '../lib/api';
+import { PublisherSelector } from './PublisherSelector';
+import { getEventTypeLabel } from '../lib/parts';
 
 /** Icon + accent colour per duty type (role circle in the picker). */
 const DUTY_ICONS: Record<
@@ -24,10 +28,6 @@ const DUTY_ICONS: Record<
   ventilation: { icon: 'cloud-outline', color: '#0284c7' },
   custom: { icon: 'ellipsis-horizontal-circle-outline', color: '#64748b' },
 };
-import { useTranslation } from 'react-i18next';
-import { Duty, DutyType, Publisher, PublisherActivity } from '../lib/api';
-import { PublisherSelector } from './PublisherSelector';
-import { getEventTypeLabel } from '../lib/parts';
 
 type Meeting = 'midweek' | 'weekend';
 
