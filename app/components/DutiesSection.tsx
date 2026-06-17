@@ -153,7 +153,10 @@ export function DutiesSection({
           if (!canEdit) return null;
           return (
             <View key={meeting} style={styles.meetingBlock}>
-              <Text style={styles.meetingLabel}>{meetingLabel}</Text>
+              <View style={styles.dayChip}>
+                <Ionicons name="calendar-outline" size={13} color="#fff" />
+                <Text style={styles.dayChipText}>{meetingLabel}</Text>
+              </View>
               <Pressable
                 style={({ pressed }) => [
                   styles.fillBtn,
@@ -172,7 +175,10 @@ export function DutiesSection({
 
         return (
           <View key={meeting} style={styles.meetingBlock}>
-            <Text style={styles.meetingLabel}>{meetingLabel}</Text>
+            <View style={styles.dayChip}>
+              <Ionicons name="calendar-outline" size={13} color="#fff" />
+              <Text style={styles.dayChipText}>{meetingLabel}</Text>
+            </View>
 
             {canEdit ? (
               <View style={styles.editList}>
@@ -335,6 +341,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     marginBottom: 4,
   },
+  dayChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    gap: 6,
+    backgroundColor: '#0d9488',
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    marginTop: 14,
+    marginBottom: 10,
+  },
+  dayChipText: { color: '#fff', fontSize: 12, fontWeight: '700' },
 
   // read-only list
   rows: {
@@ -354,8 +373,8 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   dutyLabel: { fontSize: 14, color: '#0f172a', flexShrink: 1 },
-  publisher: { fontSize: 14, color: '#334155', fontWeight: '600', maxWidth: '55%' },
-  unassigned: { color: '#cbd5e1', fontWeight: '400' },
+  publisher: { fontSize: 15, color: '#0f172a', fontWeight: '600', maxWidth: '55%' },
+  unassigned: { color: '#94a3b8', fontWeight: '500', fontStyle: 'italic' },
 
   // editable list
   editList: { paddingHorizontal: 16, gap: 4 },

@@ -1,12 +1,30 @@
 import { ReactNode, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import {
+  LayoutAnimation,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  UIManager,
+  View,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
+// Enable LayoutAnimation on Android (no-op on iOS/web where it's on by default).
+if (
+  Platform.OS === 'android' &&
+  UIManager.setLayoutAnimationEnabledExperimental
+) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
+
+const DEFAULT_ACCENT = '#1e6b8c';
+
 /**
- * Top-level collapsible container for one meeting (midweek / weekend) in the
- * week view. The header shows the meeting label, its calendar date and an
- * assigned/total progress badge, so gaps are visible even when collapsed.
- * Open/closed state is screen-local and intentionally not persisted.
+ * Top-level collapsible section for the week view (meetings, duties, cleaning,
+ * field-service). The header shows an accent stripe + tinted icon, the title,
+ * an optional meta line and an optional assigned/total progress badge. Opening
+ * and closing is animated and screen-local (not persisted).
  */
 export function CollapsibleMeetingBlock({
   title,
@@ -18,6 +36,8 @@ export function CollapsibleMeetingBlock({
   actionBusy,
   initiallyOpen = false,
   showBadge = true,
+  accent = DEFAULT_ACCENT,
+  icon = 'calendar-outline',
   children,
 }: {
   title: string;
@@ -31,18 +51,38 @@ export function CollapsibleMeetingBlock({
   initiallyOpen?: boolean;
   /** Show the assigned/total progress badge (meetings only). */
   showBadge?: boolean;
+  /** Section accent colour (stripe + icon tint). */
+  accent?: string;
+  /** Section icon shown in the tinted circle. */
+  icon?: keyof typeof Ionicons.glyphMap;
   children: ReactNode;
 }) {
   const [open, setOpen] = useState(initiallyOpen);
   const complete = total > 0 && assigned === total;
+
+  const toggle = () => {
+    LayoutAnimation.configureNext(
+      LayoutAnimation.create(
+        220,
+        LayoutAnimation.Types.easeInEaseOut,
+        LayoutAnimation.Properties.opacity,
+      ),
+    );
+    setOpen((v) => !v);
+  };
+
   return (
     <View style={styles.wrap}>
       <Pressable
         style={({ pressed }) => [styles.header, pressed && styles.headerPressed]}
-        onPress={() => setOpen((v) => !v)}
+        onPress={toggle}
         accessibilityRole="button"
         accessibilityState={{ expanded: open }}
       >
+        <View style={[styles.stripe, { backgroundColor: accent }]} />
+        <View style={[styles.iconWrap, { backgroundColor: tint(accent) }]}>
+          <Ionicons name={icon} size={20} color={accent} />
+        </View>
         <View style={{ flex: 1 }}>
           <Text style={styles.title}>{title}</Text>
           {meta ? <Text style={styles.meta}>{meta}</Text> : null}
@@ -51,6 +91,7 @@ export function CollapsibleMeetingBlock({
           <Pressable
             style={({ pressed }) => [
               styles.actionBtn,
+              { backgroundColor: accent },
               pressed && styles.actionBtnPressed,
               actionBusy && styles.actionBtnDisabled,
             ]}
@@ -79,30 +120,58 @@ export function CollapsibleMeetingBlock({
         <Ionicons
           name={open ? 'chevron-up' : 'chevron-down'}
           size={18}
-          color="#64748b"
+          color="#94a3b8"
         />
       </Pressable>
-      {open && children}
+      {open ? children : null}
     </View>
   );
 }
 
+/** Light tint of an accent colour for icon backgrounds (accent + alpha). */
+function tint(hex: string): string {
+  // Render the accent at ~14% opacity over white by appending an alpha byte.
+  return `${hex}22`;
+}
+
 const styles = StyleSheet.create({
-  wrap: { marginTop: 14 },
+  wrap: {
+    marginTop: 12,
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    overflow: 'hidden',
+    // Soft elevation (web + native).
+    shadowColor: '#0f172a',
+    shadowOpacity: 0.06,
+    shadowRadius: 3,
+    shadowOffset: { width: 0, height: 1 },
+    elevation: 2,
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 12,
     backgroundColor: '#ffffff',
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
-    borderColor: '#e2e8f0',
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 14,
+    paddingLeft: 18,
   },
   headerPressed: { backgroundColor: '#f8fafc' },
+  stripe: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 4,
+  },
+  iconWrap: {
+    width: 38,
+    height: 38,
+    borderRadius: 11,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   actionBtn: {
-    backgroundColor: '#0ea5e9',
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 6,
@@ -114,18 +183,17 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     color: '#0f172a',
-    textTransform: 'uppercase',
-    letterSpacing: 0.4,
+    letterSpacing: 0.2,
   },
-  meta: { fontSize: 12, color: '#64748b', marginTop: 1 },
+  meta: { fontSize: 12, color: '#64748b', marginTop: 2 },
   badge: {
     borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 3,
+    paddingHorizontal: 11,
+    paddingVertical: 4,
   },
   badgeOpen: { backgroundColor: '#fef3c7' },
   badgeDone: { backgroundColor: '#dcfce7' },
-  badgeText: { fontSize: 12, fontWeight: '700' },
-  badgeTextOpen: { color: '#92400e' },
-  badgeTextDone: { color: '#166534' },
+  badgeText: { fontSize: 12, fontWeight: '800' },
+  badgeTextOpen: { color: '#b45309' },
+  badgeTextDone: { color: '#15803d' },
 });

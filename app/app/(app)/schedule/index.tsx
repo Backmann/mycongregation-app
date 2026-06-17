@@ -483,6 +483,8 @@ export default function ScheduleIndexScreen() {
                 return (
                   <CollapsibleMeetingBlock
                     key="midweek"
+                    accent="#1e6b8c"
+                    icon="calendar-outline"
                     title={getEventTypeLabel('midweek')}
                     meta={meetingDateLabel('midweek')}
                     assigned={assignedCount(items)}
@@ -549,6 +551,8 @@ export default function ScheduleIndexScreen() {
                 return (
                   <CollapsibleMeetingBlock
                     key="weekend"
+                    accent="#5b21b6"
+                    icon="calendar-outline"
                     title={getEventTypeLabel('weekend')}
                     meta={meetingDateLabel('weekend')}
                     assigned={assignedCount(programItems)}
@@ -667,6 +671,8 @@ export default function ScheduleIndexScreen() {
 
             {/* dutiesAccordion: обязанности отдельной разворачивающейся секцией */}
             <CollapsibleMeetingBlock
+              accent="#0d9488"
+              icon="people-outline"
               title={t('schedule.tabs.duties')}
               assigned={0}
               total={0}
@@ -714,6 +720,8 @@ export default function ScheduleIndexScreen() {
 
             {/* Встречи для проповеди — разворачивающаяся секция */}
             <CollapsibleMeetingBlock
+              accent="#15803d"
+              icon="navigate-outline"
               title={t('fieldService.title')}
               assigned={0}
               total={0}
@@ -740,6 +748,8 @@ export default function ScheduleIndexScreen() {
 
             {/* Уборка — разворачивающаяся секция */}
             <CollapsibleMeetingBlock
+              accent="#0e7490"
+              icon="sparkles-outline"
               title={t('cleaning.title')}
               assigned={0}
               total={0}

@@ -1,8 +1,12 @@
-fix: label each day inside the duties section
+feat: redesign the schedule sections
 
-In the new collapsible duties section the midweek and weekend duty
-groups were stacked with no indication which was which (hideHeader had
-removed the per-group label along with the section title). Each group
-now shows its day — "Встреча в будний день" / "Встреча в выходной день"
-— via getEventTypeLabel, matching the meeting section headers. The label
-is shown in the only/embedded mode too, not just the standalone list.
+Refreshes the week view into clean, card-style collapsible sections with
+a visual language borrowed from the printed meeting workbook. Each
+section now carries its own accent colour and a tinted icon: midweek and
+weekend meetings, duties (teal), field-service (green) and cleaning
+(cyan). CollapsibleMeetingBlock gains accent and icon props, an animated
+open/close (LayoutAnimation), a rounded card with soft elevation and a
+colour-coded progress badge (green when complete, amber when gaps
+remain). Inside duties, each day is marked with a coloured chip instead
+of faint grey text, and assignee names read in stronger contrast so the
+section no longer looks disabled.
