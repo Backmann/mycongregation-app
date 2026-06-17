@@ -544,6 +544,7 @@ export default function ScheduleIndexScreen() {
                       </Pressable>
                     ) : null}
                     <MidweekSections
+                      canEdit={perms.canEditMidweekSchedule}
                       onEdit={setEditing}
                       items={items}
                       numbers={numbers}
@@ -612,6 +613,7 @@ export default function ScheduleIndexScreen() {
                       </Pressable>
                     ) : null}
                     <WeekendSections
+                      canEdit={perms.canEditWeekendSchedule}
                       items={programItems}
                       numbers={numbers}
                       publishersById={publishersById}
@@ -646,6 +648,13 @@ export default function ScheduleIndexScreen() {
                         key={a.id}
                         assignment={a}
                         onEdit={setEditing}
+                        canEdit={
+                          eventType === 'midweek'
+                            ? canEditMidweekSchedule
+                            : eventType === 'weekend'
+                              ? canEditWeekendSchedule
+                              : perms.isAdmin
+                        }
                         publisher={
                           a.publisherId
                             ? publishersById.get(a.publisherId) ?? null
@@ -846,12 +855,14 @@ function MidweekSections({
   publishersById,
   groupNameById,
   onEdit,
+  canEdit,
 }: {
   items: Assignment[];
   numbers: Map<string, number | null>;
   publishersById: Map<string, Publisher>;
   groupNameById: Map<string, string>;
   onEdit: (a: Assignment) => void;
+  canEdit: boolean;
 }) {
   const { t } = useTranslation();
 
@@ -892,6 +903,7 @@ function MidweekSections({
                       : null
                   }
                   displayNumber={numbers.get(a.id) ?? null}
+                  canEdit={canEdit}
                   accentColor={meta.color}
                   groupNameById={groupNameById}
                 />
@@ -925,12 +937,14 @@ function WeekendSections({
   publishersById,
   groupNameById,
   onEdit,
+  canEdit,
 }: {
   items: Assignment[];
   numbers: Map<string, number | null>;
   publishersById: Map<string, Publisher>;
   groupNameById: Map<string, string>;
   onEdit: (a: Assignment) => void;
+  canEdit: boolean;
 }) {
   const { t } = useTranslation();
 
@@ -957,6 +971,7 @@ function WeekendSections({
             : null
         }
         displayNumber={numbers.get(a.id) ?? null}
+        canEdit={canEdit}
         accentColor={accentColor}
         groupNameById={groupNameById}
       />
@@ -1107,6 +1122,7 @@ function AssignmentRow({
   displayNumber,
   groupNameById,
   onEdit,
+  canEdit,
 }: {
   assignment: Assignment;
   publisher: Publisher | null;
@@ -1115,6 +1131,7 @@ function AssignmentRow({
   displayNumber?: number | null;
   groupNameById: Map<string, string>;
   onEdit: (a: Assignment) => void;
+  canEdit: boolean;
 }) {
   const { t } = useTranslation();
   const {
@@ -1145,7 +1162,8 @@ function AssignmentRow({
             : null,
           pressed && styles.rowPressed,
         ]}
-        onPress={() => onEdit(assignment)}
+        onPress={canEdit ? () => onEdit(assignment) : undefined}
+        disabled={!canEdit}
       >
         <View style={[styles.orderBadge, styles.orderBadgeInfo]}>
           <Ionicons name="musical-notes-outline" size={15} color="#94a3b8" />
@@ -1156,7 +1174,7 @@ function AssignmentRow({
             <Text style={styles.songHint}>{t('schedule.songHint')}</Text>
           )}
         </View>
-        <Text style={styles.chevron}>›</Text>
+        {canEdit ? <Text style={styles.chevron}>›</Text> : null}
       </Pressable>
     );
   }
@@ -1168,7 +1186,8 @@ function AssignmentRow({
         accentColor ? { borderLeftWidth: 3, borderLeftColor: accentColor } : null,
         pressed && styles.rowPressed,
       ]}
-      onPress={() => onEdit(assignment)}
+      onPress={canEdit ? () => onEdit(assignment) : undefined}
+      disabled={!canEdit}
     >
       <View
         style={[
@@ -1226,7 +1245,7 @@ function AssignmentRow({
           </View>
         )}
       </View>
-      <Text style={styles.chevron}>›</Text>
+      {canEdit ? <Text style={styles.chevron}>›</Text> : null}
     </Pressable>
   );
 }
