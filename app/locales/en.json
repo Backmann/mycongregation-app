@@ -727,6 +727,9 @@
     },
     "sheet": {
       "next": "Next →"
+    },
+    "tabs": {
+      "duties": "Duties"
     }
   },
   "audit": {

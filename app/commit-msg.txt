@@ -1,6 +1,11 @@
-chore: drop unused canManageAbsences from home screen
+feat: split the schedule into three tabs
 
-After the Absences tile became visible to everyone (show: true), the
-canManageAbsences permission was no longer read on the home screen,
-leaving an unused variable and an orphaned usePermissions import. Both
-removed to clear the lint warning.
+The schedule now has three tabs — midweek meeting, weekend meeting and
+duties — switched above the week navigation. Each tab is its own context
+with its own "plan" action: the midweek tab plans the midweek meeting,
+the weekend tab plans the weekend meeting, and the duties tab carries
+both the midweek and weekend duty groups, each with its own targeted
+plan button. Duties are no longer nested at the bottom of each meeting
+section, so the program reads cleaner. The Russian labels for the
+meetings are also clarified to "Встреча в будний день" / "Встреча в
+выходной день" (applied everywhere via getEventTypeLabel).
