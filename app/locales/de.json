@@ -1187,7 +1187,7 @@
     "nextMeeting": "Nächste Zusammenkunft",
     "meeting": {
       "midweek": "Zusammenkunft unter der Woche",
-      "weekend": "Wochenend-Zusammenkunft",
+      "weekend": "Zusammenkunft am Wochenende",
       "myParts": "Meine Aufgaben",
       "asAssistant": "Assistent",
       "noParts": "Keine Aufgaben in dieser Woche"
@@ -1220,7 +1220,7 @@
     },
     "eventTypes": {
       "midweek": "Zusammenkunft unter der Woche",
-      "weekend": "Wochenend-Zusammenkunft"
+      "weekend": "Zusammenkunft am Wochenende"
     },
     "fieldService": {
       "leading": "Predigtdienst-Zusammenkunft — du leitest"
