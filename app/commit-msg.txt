@@ -1,12 +1,10 @@
-feat: redesign the schedule sections
+feat: role icons in the duties picker
 
-Refreshes the week view into clean, card-style collapsible sections with
-a visual language borrowed from the printed meeting workbook. Each
-section now carries its own accent colour and a tinted icon: midweek and
-weekend meetings, duties (teal), field-service (green) and cleaning
-(cyan). CollapsibleMeetingBlock gains accent and icon props, an animated
-open/close (LayoutAnimation), a rounded card with soft elevation and a
-colour-coded progress badge (green when complete, amber when gaps
-remain). Inside duties, each day is marked with a coloured chip instead
-of faint grey text, and assignee names read in stronger contrast so the
-section no longer looks disabled.
+Each duty in the duties section now shows a tinted icon in a rounded
+circle to the left of its picker — shield for security, mic for
+microphone, video camera for video, screen for stage, and so on — each
+with its own accent colour. PublisherSelector gains optional roleIcon
+and roleColor props and lays the trigger out horizontally when they are
+set; without them it renders exactly as before, so its other uses
+(meeting assignments) are unchanged. This completes the schedule
+redesign so the duties section matches the approved mockup.

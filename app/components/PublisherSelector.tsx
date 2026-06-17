@@ -29,6 +29,10 @@ import { useTranslation } from 'react-i18next';
 interface Props {
   label: string;
   value: string | null | undefined;
+  /** Optional role icon shown in a tinted circle left of the label. */
+  roleIcon?: keyof typeof Ionicons.glyphMap;
+  /** Accent colour for the role icon circle. */
+  roleColor?: string;
   onChange: (id: string | null) => void;
   excludeIds?: string[];
   /**
@@ -103,6 +107,8 @@ function lastDoneParts(
 export function PublisherSelector({
   label,
   value,
+  roleIcon,
+  roleColor,
   onChange,
   excludeIds = [],
   requiredCapability,
@@ -230,9 +236,24 @@ export function PublisherSelector({
   return (
     <>
       <Pressable
-        style={({ pressed }) => [styles.field, pressed && styles.fieldPressed]}
+        style={({ pressed }) => [
+          styles.field,
+          roleIcon && styles.fieldWithIcon,
+          pressed && styles.fieldPressed,
+        ]}
         onPress={() => setOpen(true)}
       >
+        {roleIcon ? (
+          <View
+            style={[
+              styles.roleIconWrap,
+              { backgroundColor: `${roleColor ?? '#0d9488'}22` },
+            ]}
+          >
+            <Ionicons name={roleIcon} size={18} color={roleColor ?? '#0d9488'} />
+          </View>
+        ) : null}
+        <View style={styles.fieldMain}>
         <Text style={styles.label}>{label}</Text>
         <View style={styles.row}>
           <Text
@@ -265,6 +286,7 @@ export function PublisherSelector({
             </Text>
           </View>
         )}
+        </View>
       </Pressable>
 
       <Modal
@@ -523,6 +545,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderBottomWidth: 1,
     borderBottomColor: '#f1f5f9',
+  },
+  fieldWithIcon: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  fieldMain: { flex: 1 },
+  roleIconWrap: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   fieldPressed: { backgroundColor: '#f8fafc' },
   label: {

@@ -8,6 +8,22 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+
+/** Icon + accent colour per duty type (role circle in the picker). */
+const DUTY_ICONS: Record<
+  string,
+  { icon: keyof typeof Ionicons.glyphMap; color: string }
+> = {
+  security: { icon: 'shield-checkmark-outline', color: '#dc2626' },
+  attendant: { icon: 'people-outline', color: '#2563eb' },
+  microphone: { icon: 'mic-outline', color: '#9333ea' },
+  audio: { icon: 'volume-high-outline', color: '#0891b2' },
+  video: { icon: 'videocam-outline', color: '#ea580c' },
+  zoom: { icon: 'laptop-outline', color: '#4f46e5' },
+  stage: { icon: 'tv-outline', color: '#0d9488' },
+  ventilation: { icon: 'cloud-outline', color: '#0284c7' },
+  custom: { icon: 'ellipsis-horizontal-circle-outline', color: '#64748b' },
+};
 import { useTranslation } from 'react-i18next';
 import { Duty, DutyType, Publisher, PublisherActivity } from '../lib/api';
 import { PublisherSelector } from './PublisherSelector';
@@ -187,6 +203,8 @@ export function DutiesSection({
                     <View style={{ flex: 1 }}>
                       <PublisherSelector
                         label={dutyLabel(d, t)}
+                        roleIcon={DUTY_ICONS[d.dutyType]?.icon}
+                        roleColor={DUTY_ICONS[d.dutyType]?.color}
                         value={d.publisherId}
                         onChange={(id) => onAssign(d.id, id)}
                         requiredCapability={capabilityFor(d)}
