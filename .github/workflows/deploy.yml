@@ -6,9 +6,13 @@ on:
       - 'app/**'
       - '.github/workflows/deploy.yml'
   workflow_dispatch:
+concurrency:
+  group: deploy-frontend
+  cancel-in-progress: false
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -16,9 +20,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: app/package-lock.json
       - name: Install dependencies
         working-directory: app
-        run: npm install
+        run: npm install --prefer-offline --no-audit --fund=false
       - name: Lint
         working-directory: app
         run: npm run lint
@@ -28,6 +34,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: test
+    timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -35,9 +42,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: app/package-lock.json
       - name: Install dependencies
         working-directory: app
-        run: npm install
+        run: npm install --prefer-offline --no-audit --fund=false
       - name: Clear caches (prevent stale env in bundle)
         working-directory: app
         run: rm -rf .expo node_modules/.cache dist
@@ -94,10 +103,10 @@ jobs:
           EOF
           chmod 600 ~/.ssh/config
       - name: Upload to server
-        run: scp web-dist.tar.gz myserver:/tmp/web-dist.tar.gz
+        run: scp -o ConnectTimeout=30 web-dist.tar.gz myserver:/tmp/web-dist.tar.gz
       - name: Extract on server
         run: |
-          ssh myserver bash << 'ENDSSH'
+          ssh -o ConnectTimeout=30 myserver bash << 'ENDSSH'
           set -euo pipefail
           echo "=== Replacing files ==="
           cd /var/www/mycongregation
