@@ -680,6 +680,12 @@ export default function ScheduleIndexScreen() {
                 duties={duties}
                 publishersById={publishersById}
                 canEdit={canEditDuties}
+                pending={
+                  generateDutiesMutation.isPending ||
+                  assignDutyMutation.isPending ||
+                  createCustomDutyMutation.isPending ||
+                  removeDutyMutation.isPending
+                }
                 hideHeader
                 onGenerate={(eventType) =>
                   generateDutiesMutation.mutate(eventType)
@@ -699,6 +705,12 @@ export default function ScheduleIndexScreen() {
                 duties={duties}
                 publishersById={publishersById}
                 canEdit={canEditDuties}
+                pending={
+                  generateDutiesMutation.isPending ||
+                  assignDutyMutation.isPending ||
+                  createCustomDutyMutation.isPending ||
+                  removeDutyMutation.isPending
+                }
                 hideHeader
                 onGenerate={(eventType) =>
                   generateDutiesMutation.mutate(eventType)
