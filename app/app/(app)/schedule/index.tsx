@@ -1123,6 +1123,7 @@ function AssignmentRow({
     assignment.partKey === 'weekend_song' ||
     assignment.partKey === 'weekend_opening_song';
   if (isSong) {
+    const hasSongNumber = /\d/.test(assignment.partTitle ?? '');
     return (
       <Pressable
         style={({ pressed }) => [
@@ -1135,10 +1136,13 @@ function AssignmentRow({
         onPress={() => onEdit(assignment)}
       >
         <View style={[styles.orderBadge, styles.orderBadgeInfo]}>
-          <Text style={styles.orderText}>·</Text>
+          <Ionicons name="musical-notes-outline" size={15} color="#94a3b8" />
         </View>
         <View style={{ flex: 1 }}>
           <Text style={styles.partLabel}>{partLabel}</Text>
+          {hasSongNumber ? null : (
+            <Text style={styles.songHint}>{t('schedule.songHint')}</Text>
+          )}
         </View>
         <Text style={styles.chevron}>›</Text>
       </Pressable>
@@ -1328,6 +1332,12 @@ const styles = StyleSheet.create({
   orderText: { color: '#0369a1', fontWeight: '700', fontSize: 13 },
   orderBadgeInfo: { backgroundColor: '#f1f5f9' },
   partLabel: { fontSize: 15, fontWeight: '600', color: '#0f172a' },
+  songHint: {
+    fontSize: 13,
+    color: '#94a3b8',
+    fontStyle: 'italic',
+    marginTop: 2,
+  },
   partTitle: {
     fontSize: 13,
     color: '#475569',

@@ -702,6 +702,7 @@
       "publicTalk": "Public talk",
       "watchtower": "Watchtower Study"
     },
+    "songHint": "Choose number",
     "readOnlyBanner": "Read-only — you don't have permission to edit this part",
     "publish": {
       "button": "Publish"
