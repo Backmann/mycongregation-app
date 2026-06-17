@@ -716,8 +716,6 @@
       "allAssigned": "Every part of this meeting is assigned",
       "publishThis": "Publish this meeting",
       "publishing": "Publishing…",
-      "publishNotify": "Publish and notify",
-      "publishSilent": "Publish silently (no notification)",
       "dutiesHeader": "Duties ({{count}})"
     },
     "publishDialog": {
@@ -1197,9 +1195,6 @@
     },
     "fieldService": {
       "leading": "Field service meeting — you conduct"
-    },
-    "events": {
-      "replacesMeeting": "Replaces the congregation meeting"
     },
     "nextFieldService": "Field service meeting",
     "allTasks": "All ({{count}})",

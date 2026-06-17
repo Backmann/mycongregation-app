@@ -720,8 +720,6 @@
       "allAssigned": "Все части этой встречи назначены",
       "publishThis": "Опубликовать эту встречу",
       "publishing": "Публикуем…",
-      "publishNotify": "Опубликовать и уведомить",
-      "publishSilent": "Опубликовать тихо (без уведомления)",
       "dutiesHeader": "Обязанности ({{count}})"
     },
     "publishDialog": {
@@ -1201,9 +1199,6 @@
     },
     "fieldService": {
       "leading": "Встреча для проповеди — вы ведёте"
-    },
-    "events": {
-      "replacesMeeting": "Вместо встречи собрания"
     },
     "nextFieldService": "Встреча для проповеди",
     "allTasks": "Все ({{count}})",

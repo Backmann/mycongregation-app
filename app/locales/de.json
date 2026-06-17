@@ -716,8 +716,6 @@
       "allAssigned": "Alle Programmpunkte dieser Zusammenkunft sind zugeteilt",
       "publishThis": "Diese Zusammenkunft veröffentlichen",
       "publishing": "Wird veröffentlicht…",
-      "publishNotify": "Veröffentlichen und benachrichtigen",
-      "publishSilent": "Still veröffentlichen (ohne Benachrichtigung)",
       "dutiesHeader": "Aufgaben ({{count}})"
     },
     "publishDialog": {
@@ -1197,9 +1195,6 @@
     },
     "fieldService": {
       "leading": "Predigtdienst-Zusammenkunft — du leitest"
-    },
-    "events": {
-      "replacesMeeting": "Ersetzt die Zusammenkunft"
     },
     "nextFieldService": "Predigtdienst-Zusammenkunft",
     "allTasks": "Alle ({{count}})",
