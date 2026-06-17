@@ -11,6 +11,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { Duty, DutyType, Publisher, PublisherActivity } from '../lib/api';
 import { PublisherSelector } from './PublisherSelector';
+import { getEventTypeLabel } from '../lib/parts';
 
 type Meeting = 'midweek' | 'weekend';
 
@@ -146,15 +147,13 @@ export function DutiesSection({
         // including the empty block with the Generate button.
         if (replacedEventTypes?.includes(meeting)) return null;
         const list = (byMeeting.get(meeting) ?? []).slice().sort(sortDuties);
-        const meetingLabel = t(`meetingSettings.${meeting}`);
+        const meetingLabel = getEventTypeLabel(meeting);
 
         if (list.length === 0) {
           if (!canEdit) return null;
           return (
             <View key={meeting} style={styles.meetingBlock}>
-              {!only && (
-                <Text style={styles.meetingLabel}>{meetingLabel}</Text>
-              )}
+              <Text style={styles.meetingLabel}>{meetingLabel}</Text>
               <Pressable
                 style={({ pressed }) => [
                   styles.fillBtn,
@@ -173,9 +172,7 @@ export function DutiesSection({
 
         return (
           <View key={meeting} style={styles.meetingBlock}>
-            {!only && (
-              <Text style={styles.meetingLabel}>{meetingLabel}</Text>
-            )}
+            <Text style={styles.meetingLabel}>{meetingLabel}</Text>
 
             {canEdit ? (
               <View style={styles.editList}>

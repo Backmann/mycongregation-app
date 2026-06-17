@@ -1,17 +1,8 @@
-feat: collapsible sections in the schedule
+fix: label each day inside the duties section
 
-The schedule is now five independent collapsible sections, in order:
-midweek meeting, weekend meeting, duties, field-service meetings and
-cleaning. Each expands and collapses on its own and starts collapsed,
-so the week is compact and you open what you need.
-
-Duties are no longer nested at the bottom of each meeting; they get
-their own section holding both the midweek and weekend duty groups,
-each with its targeted plan button. Field-service meetings and cleaning
-are wrapped in the same collapsible container as the meetings, and their
-own inline headers are hidden (via a new hideHeader prop) to avoid a
-double title. CollapsibleMeetingBlock gains an optional showBadge so the
-non-meeting sections render without a progress badge.
-
-Replaces the earlier tab experiment, which mixed unrelated sections
-under one tab.
+In the new collapsible duties section the midweek and weekend duty
+groups were stacked with no indication which was which (hideHeader had
+removed the per-group label along with the section title). Each group
+now shows its day — "Встреча в будний день" / "Встреча в выходной день"
+— via getEventTypeLabel, matching the meeting section headers. The label
+is shown in the only/embedded mode too, not just the standalone list.
