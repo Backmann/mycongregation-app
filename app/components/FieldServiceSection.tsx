@@ -37,6 +37,7 @@ type Props = {
   onUpdate: (id: string, input: UpdateFieldServiceMeetingInput) => void;
   onRemove: (id: string) => void;
   pending?: boolean;
+  hideHeader?: boolean;
 };
 
 export function FieldServiceSection({
@@ -48,6 +49,7 @@ export function FieldServiceSection({
   onUpdate,
   onRemove,
   pending,
+  hideHeader,
 }: Props) {
   const { t } = useTranslation();
   const [formFor, setFormFor] = useState<FieldServiceMeeting | 'new' | null>(
@@ -64,10 +66,12 @@ export function FieldServiceSection({
 
   return (
     <View style={styles.section}>
-      <View style={styles.header}>
-        <Ionicons name="megaphone-outline" size={16} color="#475569" />
-        <Text style={styles.headerText}>{t('fieldService.title')}</Text>
-      </View>
+      {!hideHeader ? (
+        <View style={styles.header}>
+          <Ionicons name="megaphone-outline" size={16} color="#475569" />
+          <Text style={styles.headerText}>{t('fieldService.title')}</Text>
+        </View>
+      ) : null}
 
       {list.length === 0 ? (
         <Text style={styles.empty}>{t('fieldService.empty')}</Text>

@@ -93,9 +93,6 @@ export default function ScheduleIndexScreen() {
     weekStartDate: string;
   } | null>(null);
   const [cleaningPlanOpen, setCleaningPlanOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'midweek' | 'weekend' | 'duties'>(
-    'midweek',
-  );
   const [planningZone, setPlanningZone] = useState<{
     eventType: 'midweek' | 'weekend';
     title: string;
@@ -458,32 +455,6 @@ export default function ScheduleIndexScreen() {
         ) : (
           <>
             <SpecialEventsWeekBanner events={weekEvents} />
-            <View style={styles.tabBar}>
-              {([
-                ['midweek', getEventTypeLabel('midweek')],
-                ['weekend', getEventTypeLabel('weekend')],
-                ['duties', t('schedule.tabs.duties')],
-              ] as const).map(([key, label]) => (
-                <Pressable
-                  key={key}
-                  style={[
-                    styles.tab,
-                    activeTab === key && styles.tabActive,
-                  ]}
-                  onPress={() => setActiveTab(key)}
-                >
-                  <Text
-                    style={[
-                      styles.tabText,
-                      activeTab === key && styles.tabTextActive,
-                    ]}
-                    numberOfLines={1}
-                  >
-                    {label}
-                  </Text>
-                </Pressable>
-              ))}
-            </View>
             {EVENT_TYPE_ORDER.map((eventType) => {
               const items = grouped.get(eventType) ?? [];
               if (items.length === 0) return null;
@@ -509,7 +480,6 @@ export default function ScheduleIndexScreen() {
                 );
               }
               if (eventType === 'midweek') {
-                if (activeTab !== 'midweek') return null;
                 return (
                   <CollapsibleMeetingBlock
                     key="midweek"
@@ -570,7 +540,6 @@ export default function ScheduleIndexScreen() {
                 );
               }
               if (eventType === 'weekend') {
-                if (activeTab !== 'weekend') return null;
                 const hospitality =
                   items.find((a) => a.partKey === 'weekend_hospitality') ??
                   null;
@@ -696,8 +665,63 @@ export default function ScheduleIndexScreen() {
             })}
 
 
-            <FieldServiceSection
-              meetings={fieldServiceMeetings}
+            {/* dutiesAccordion: обязанности отдельной разворачивающейся секцией */}
+            <CollapsibleMeetingBlock
+              title={t('schedule.tabs.duties')}
+              assigned={0}
+              total={0}
+              showBadge={false}
+            >
+              <DutiesSection
+                only="midweek"
+                duties={duties}
+                publishersById={publishersById}
+                canEdit={canEditDuties}
+                hideHeader
+                onGenerate={(eventType) =>
+                  generateDutiesMutation.mutate(eventType)
+                }
+                onAssign={(id, publisherId) =>
+                  assignDutyMutation.mutate({ id, publisherId })
+                }
+                onAddCustom={(eventType, customLabel) =>
+                  createCustomDutyMutation.mutate({ eventType, customLabel })
+                }
+                onRemoveDuty={(id) => removeDutyMutation.mutate(id)}
+                activityById={activityById}
+                weekStartISO={weekStartISO}
+              />
+              <DutiesSection
+                only="weekend"
+                duties={duties}
+                publishersById={publishersById}
+                canEdit={canEditDuties}
+                hideHeader
+                onGenerate={(eventType) =>
+                  generateDutiesMutation.mutate(eventType)
+                }
+                onAssign={(id, publisherId) =>
+                  assignDutyMutation.mutate({ id, publisherId })
+                }
+                onAddCustom={(eventType, customLabel) =>
+                  createCustomDutyMutation.mutate({ eventType, customLabel })
+                }
+                onRemoveDuty={(id) => removeDutyMutation.mutate(id)}
+                activityById={activityById}
+                weekStartISO={weekStartISO}
+              />
+            </CollapsibleMeetingBlock>
+
+            {/* Встречи для проповеди — разворачивающаяся секция */}
+            <CollapsibleMeetingBlock
+              title={t('fieldService.title')}
+              assigned={0}
+              total={0}
+              showBadge={false}
+            >
+              <FieldServiceSection
+                meetings={fieldServiceMeetings}
+                hideHeader
               publishersById={publishersById}
               canEdit={canEditFieldServiceMeetings}
               weekStartISO={weekStartISO}
@@ -711,21 +735,30 @@ export default function ScheduleIndexScreen() {
                 updateFieldServiceMutation.isPending ||
                 removeFieldServiceMutation.isPending
               }
-            />
+              />
+            </CollapsibleMeetingBlock>
 
-            {canEditCleaning ? (
-              <Pressable
-                style={styles.planBtn}
-                onPress={() => setCleaningPlanOpen(true)}
-              >
-                <Ionicons name="sparkles-outline" size={16} color="#fff" />
-                <Text style={styles.planBtnText}>
-                  {t('cleaning.planStart')}
-                </Text>
-              </Pressable>
-            ) : null}
-            <CleaningSection
-              assignments={cleaningWeek.assignments}
+            {/* Уборка — разворачивающаяся секция */}
+            <CollapsibleMeetingBlock
+              title={t('cleaning.title')}
+              assigned={0}
+              total={0}
+              showBadge={false}
+            >
+              {canEditCleaning ? (
+                <Pressable
+                  style={styles.planBtn}
+                  onPress={() => setCleaningPlanOpen(true)}
+                >
+                  <Ionicons name="sparkles-outline" size={16} color="#fff" />
+                  <Text style={styles.planBtnText}>
+                    {t('cleaning.planStart')}
+                  </Text>
+                </Pressable>
+              ) : null}
+              <CleaningSection
+                assignments={cleaningWeek.assignments}
+                hideHeader
               publishersById={publishersById}
               canEdit={canEditCleaning}
               pending={
@@ -735,10 +768,11 @@ export default function ScheduleIndexScreen() {
               onSetSlot={(slotType, serviceGroupId) =>
                 setCleaningSlotMutation.mutate({ slotType, serviceGroupId })
               }
-              onClearSlot={(slotType) =>
-                clearCleaningSlotMutation.mutate(slotType)
-              }
-            />
+                onClearSlot={(slotType) =>
+                  clearCleaningSlotMutation.mutate(slotType)
+                }
+              />
+            </CollapsibleMeetingBlock>
 
             {isEmpty && (
               <Text style={styles.emptyHint}>
@@ -765,47 +799,6 @@ export default function ScheduleIndexScreen() {
                 />
               )}
             </View>
-
-            {activeTab === 'duties' ? (
-              <View style={styles.dutiesTab}>
-                <DutiesSection
-                  only="midweek"
-                  duties={duties}
-                  publishersById={publishersById}
-                  canEdit={canEditDuties}
-                  onGenerate={(eventType) =>
-                    generateDutiesMutation.mutate(eventType)
-                  }
-                  onAssign={(id, publisherId) =>
-                    assignDutyMutation.mutate({ id, publisherId })
-                  }
-                  onAddCustom={(eventType, customLabel) =>
-                    createCustomDutyMutation.mutate({ eventType, customLabel })
-                  }
-                  onRemoveDuty={(id) => removeDutyMutation.mutate(id)}
-                  activityById={activityById}
-                  weekStartISO={weekStartISO}
-                />
-                <DutiesSection
-                  only="weekend"
-                  duties={duties}
-                  publishersById={publishersById}
-                  canEdit={canEditDuties}
-                  onGenerate={(eventType) =>
-                    generateDutiesMutation.mutate(eventType)
-                  }
-                  onAssign={(id, publisherId) =>
-                    assignDutyMutation.mutate({ id, publisherId })
-                  }
-                  onAddCustom={(eventType, customLabel) =>
-                    createCustomDutyMutation.mutate({ eventType, customLabel })
-                  }
-                  onRemoveDuty={(id) => removeDutyMutation.mutate(id)}
-                  activityById={activityById}
-                  weekStartISO={weekStartISO}
-                />
-              </View>
-            ) : null}
 
             {createWeekMutation.error && (
               <View style={styles.errorBox}>
@@ -1108,25 +1101,6 @@ function AssignmentRow({
 }
 
 const styles = StyleSheet.create({
-  tabBar: {
-    flexDirection: 'row',
-    backgroundColor: '#e2e8f0',
-    borderRadius: 10,
-    padding: 3,
-    marginHorizontal: 16,
-    marginTop: 8,
-    marginBottom: 4,
-  },
-  tab: {
-    flex: 1,
-    paddingVertical: 8,
-    alignItems: 'center',
-    borderRadius: 8,
-  },
-  tabActive: { backgroundColor: '#fff' },
-  tabText: { fontSize: 12, fontWeight: '600', color: '#64748b' },
-  tabTextActive: { color: '#0f172a' },
-  dutiesTab: { marginTop: 4 },
   container: { flex: 1, backgroundColor: '#f1f5f9' },
   planBtn: {
     flexDirection: 'row',

@@ -1,11 +1,17 @@
-feat: split the schedule into three tabs
+feat: collapsible sections in the schedule
 
-The schedule now has three tabs — midweek meeting, weekend meeting and
-duties — switched above the week navigation. Each tab is its own context
-with its own "plan" action: the midweek tab plans the midweek meeting,
-the weekend tab plans the weekend meeting, and the duties tab carries
-both the midweek and weekend duty groups, each with its own targeted
-plan button. Duties are no longer nested at the bottom of each meeting
-section, so the program reads cleaner. The Russian labels for the
-meetings are also clarified to "Встреча в будний день" / "Встреча в
-выходной день" (applied everywhere via getEventTypeLabel).
+The schedule is now five independent collapsible sections, in order:
+midweek meeting, weekend meeting, duties, field-service meetings and
+cleaning. Each expands and collapses on its own and starts collapsed,
+so the week is compact and you open what you need.
+
+Duties are no longer nested at the bottom of each meeting; they get
+their own section holding both the midweek and weekend duty groups,
+each with its targeted plan button. Field-service meetings and cleaning
+are wrapped in the same collapsible container as the meetings, and their
+own inline headers are hidden (via a new hideHeader prop) to avoid a
+double title. CollapsibleMeetingBlock gains an optional showBadge so the
+non-meeting sections render without a progress badge.
+
+Replaces the earlier tab experiment, which mixed unrelated sections
+under one tab.

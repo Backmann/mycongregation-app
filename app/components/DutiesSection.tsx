@@ -66,6 +66,8 @@ type Props = {
   replacedEventTypes?: Meeting[];
   /** Render only this meeting, embedded inside its collapsible block. */
   only?: Meeting;
+  /** Hide the "Duties" title text (when wrapped in an outer collapsible). */
+  hideHeader?: boolean;
 };
 
 export function DutiesSection({
@@ -81,6 +83,7 @@ export function DutiesSection({
   pending,
   replacedEventTypes,
   only,
+  hideHeader,
 }: Props) {
   const { t } = useTranslation();
   const [customFor, setCustomFor] = useState<Meeting | null>(null);
@@ -112,7 +115,9 @@ export function DutiesSection({
     <View style={only ? styles.embedded : styles.section}>
       <View style={only ? styles.embeddedHeader : styles.header}>
         <Ionicons name="people-outline" size={16} color="#475569" />
-        <Text style={styles.headerText}>{t('duties.title')}</Text>
+        {!hideHeader ? (
+          <Text style={styles.headerText}>{t('duties.title')}</Text>
+        ) : null}
         {only && onlyList.length > 0 ? (
           <View
             style={[

@@ -40,6 +40,7 @@ type Props = {
   pending?: boolean;
   onSetSlot: (slotType: CleaningSlotType, serviceGroupId: string | null) => void;
   onClearSlot: (slotType: CleaningSlotType) => void;
+  hideHeader?: boolean;
 };
 
 export function CleaningSection({
@@ -49,6 +50,7 @@ export function CleaningSection({
   pending,
   onSetSlot,
   onClearSlot,
+  hideHeader,
 }: Props) {
   const { t } = useTranslation();
 
@@ -71,10 +73,12 @@ export function CleaningSection({
 
   return (
     <View style={styles.section}>
-      <View style={styles.header}>
-        <Ionicons name="sparkles-outline" size={16} color="#475569" />
-        <Text style={styles.headerText}>{t('cleaning.title')}</Text>
-      </View>
+      {!hideHeader ? (
+        <View style={styles.header}>
+          <Ionicons name="sparkles-outline" size={16} color="#475569" />
+          <Text style={styles.headerText}>{t('cleaning.title')}</Text>
+        </View>
+      ) : null}
 
       <View style={styles.card}>
         {GROUP_SLOTS.map((slot) => {

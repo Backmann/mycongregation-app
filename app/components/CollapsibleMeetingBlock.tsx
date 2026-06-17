@@ -17,6 +17,7 @@ export function CollapsibleMeetingBlock({
   onAction,
   actionBusy,
   initiallyOpen = false,
+  showBadge = true,
   children,
 }: {
   title: string;
@@ -28,6 +29,8 @@ export function CollapsibleMeetingBlock({
   onAction?: () => void;
   actionBusy?: boolean;
   initiallyOpen?: boolean;
+  /** Show the assigned/total progress badge (meetings only). */
+  showBadge?: boolean;
   children: ReactNode;
 }) {
   const [open, setOpen] = useState(initiallyOpen);
@@ -59,18 +62,20 @@ export function CollapsibleMeetingBlock({
             </Text>
           </Pressable>
         ) : null}
-        <View
-          style={[styles.badge, complete ? styles.badgeDone : styles.badgeOpen]}
-        >
-          <Text
-            style={[
-              styles.badgeText,
-              complete ? styles.badgeTextDone : styles.badgeTextOpen,
-            ]}
+        {showBadge ? (
+          <View
+            style={[styles.badge, complete ? styles.badgeDone : styles.badgeOpen]}
           >
-            {assigned}/{total}
-          </Text>
-        </View>
+            <Text
+              style={[
+                styles.badgeText,
+                complete ? styles.badgeTextDone : styles.badgeTextOpen,
+              ]}
+            >
+              {assigned}/{total}
+            </Text>
+          </View>
+        ) : null}
         <Ionicons
           name={open ? 'chevron-up' : 'chevron-down'}
           size={18}
