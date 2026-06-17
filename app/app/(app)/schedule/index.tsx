@@ -36,6 +36,7 @@ import {
   startOfWeekMonday,
 } from '../../../lib/dates';
 import { useSongsMap, enrichSongRef } from '../../../lib/songs';
+import i18n from '../../../lib/i18n';
 import {
   getEventTypeLabel,
   getPartLabel,
@@ -961,7 +962,26 @@ function songFromTitle(title: string): string | null {
 function partDisplay(
   partKey: string,
   partTitle: string | null | undefined,
-): { label: string; subtitle: string | null } {
+): { label: string; subtitle: string | null; overline?: string } {
+  // Weekend: show the part role as an overline above the EPUB topic, so it
+  // is clear what the topic belongs to. The reader's long label is shortened.
+  if (partKey === 'public_talk_speaker') {
+    return {
+      overline: getPartLabel('public_talk_speaker'),
+      label: partTitle || getPartLabel('public_talk_speaker'),
+      subtitle: null,
+    };
+  }
+  if (partKey === 'watchtower_conductor') {
+    return {
+      overline: i18n.t('schedule.weekend.watchtowerStudy'),
+      label: partTitle || getPartLabel('watchtower_conductor'),
+      subtitle: null,
+    };
+  }
+  if (partKey === 'watchtower_reader') {
+    return { label: i18n.t('schedule.weekend.reader'), subtitle: null };
+  }
   if (
     partKey === 'mid_song' ||
     partKey === 'weekend_song' ||
@@ -1013,10 +1033,11 @@ function AssignmentRow({
   onEdit: (a: Assignment) => void;
 }) {
   const { t } = useTranslation();
-  const { label: rawPartLabel, subtitle: rawSubtitle } = partDisplay(
-    assignment.partKey,
-    assignment.partTitle,
-  );
+  const {
+    label: rawPartLabel,
+    subtitle: rawSubtitle,
+    overline,
+  } = partDisplay(assignment.partKey, assignment.partTitle);
   const songTitles = useSongsMap();
   const partLabel = enrichSongRef(rawPartLabel, songTitles) ?? rawPartLabel;
   const subtitle = enrichSongRef(rawSubtitle, songTitles);
@@ -1070,6 +1091,7 @@ function AssignmentRow({
         <Text style={styles.orderText}>{displayNumber ?? '·'}</Text>
       </View>
       <View style={{ flex: 1 }}>
+        {overline ? <Text style={styles.overline}>{overline}</Text> : null}
         <Text style={styles.partLabel}>{partLabel}</Text>
         {subtitle && (
           <Text style={styles.partTitle} numberOfLines={2}>
@@ -1123,6 +1145,14 @@ function AssignmentRow({
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f1f5f9' },
+  overline: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#7c3aed',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 2,
+  },
   planBtn: {
     flexDirection: 'row',
     alignItems: 'center',

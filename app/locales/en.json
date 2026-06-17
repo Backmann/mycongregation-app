@@ -730,6 +730,10 @@
     },
     "tabs": {
       "duties": "Duties"
+    },
+    "weekend": {
+      "watchtowerStudy": "Watchtower Study",
+      "reader": "Reader"
     }
   },
   "audit": {

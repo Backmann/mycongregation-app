@@ -734,6 +734,10 @@
     },
     "tabs": {
       "duties": "Обязанности"
+    },
+    "weekend": {
+      "watchtowerStudy": "Изучение Сторожевой башни",
+      "reader": "Чтец"
     }
   },
   "audit": {

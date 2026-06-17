@@ -730,6 +730,10 @@
     },
     "tabs": {
       "duties": "Aufgaben"
+    },
+    "weekend": {
+      "watchtowerStudy": "Wachtturm-Studium",
+      "reader": "Leser"
     }
   },
   "audit": {

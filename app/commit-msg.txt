@@ -1,7 +1,8 @@
-fix: exclude songs from the meeting progress badge
+feat: clearer weekend part headings
 
-Songs aren't assigned to a person, so counting them made every meeting
-look under-filled — e.g. a fully-staffed weekend showed 6/8 because of
-its two songs. The progress badge now ignores songs in both the
-numerator and denominator, so it reflects how many assignable parts
-actually have someone. Prayers still count (they do have an assignee).
+Weekend parts whose topic comes from the imported program now show the
+part role as an overline above the topic, so it is clear what the topic
+belongs to: "Публичная речь" above the public-talk title and "Изучение
+Сторожевой башни" above the study title. The Watchtower reader's long
+label is shortened to just "Чтец". New locale keys schedule.weekend.
+watchtowerStudy and schedule.weekend.reader (ru/en/de).
