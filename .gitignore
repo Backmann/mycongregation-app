@@ -11,3 +11,8 @@ web-dist.tar.gz
 # OS junk
 .DS_Store
 Thumbs.db
+
+# Service scratch files (one-off patch/runner scripts, commit-message drafts)
+patch-*.cjs
+run-*.cjs
+commit-msg.txt

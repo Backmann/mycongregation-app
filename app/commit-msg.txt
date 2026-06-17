@@ -1,8 +1,0 @@
-feat: clearer weekend part headings
-
-Weekend parts whose topic comes from the imported program now show the
-part role as an overline above the topic, so it is clear what the topic
-belongs to: "Публичная речь" above the public-talk title and "Изучение
-Сторожевой башни" above the study title. The Watchtower reader's long
-label is shortened to just "Чтец". New locale keys schedule.weekend.
-watchtowerStudy and schedule.weekend.reader (ru/en/de).

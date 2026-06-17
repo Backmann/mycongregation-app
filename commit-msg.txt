@@ -1,8 +1,0 @@
-docs: rewrite README around product strengths, fully de-branded
-
-Rewrote the README to lead with what the product does well — privacy
-(client-side EPUB parsing, contents never reach the server), AES-256-GCM
-column-level encryption at rest, fine-grained access control — and the
-feature set, described in neutral community/group terms. Removed all
-denominational wording and any terms that indirectly implied a specific
-organization. Tech stack, development, and build instructions are kept.
