@@ -1,7 +1,14 @@
 import { EventType } from './api';
 import i18n from './i18n';
 
-export type Subsection = 'opening' | 'treasures' | 'apply_yourself' | 'christian_life';
+export type Subsection =
+  | 'opening'
+  | 'treasures'
+  | 'apply_yourself'
+  | 'christian_life'
+  | 'public_talk'
+  | 'watchtower'
+  | 'closing';
 
 export interface PartDef {
   key: string;
@@ -58,6 +65,30 @@ export const SUBSECTIONS: Record<Subsection, SubsectionMeta> = {
     colorMuted: '#fee2e2',
     icon: 'people-outline',
     i18nKey: 'schedule.subsection.christianLife',
+  },
+  public_talk: {
+    key: 'public_talk',
+    color: '#5b21b6',
+    colorMuted: '#f3eefe',
+    icon: 'mic-outline',
+    i18nKey: 'schedule.subsection.publicTalk',
+  },
+  watchtower: {
+    key: 'watchtower',
+    color: '#6d28d9',
+    colorMuted: '#f5f0ff',
+    icon: 'book-outline',
+    i18nKey: 'schedule.subsection.watchtower',
+  },
+  // Weekend opening (chairman/song/prayer) and the closing prayer render as
+  // plain rows without a banner, so these metas are only used for grouping
+  // order; the i18nKey is never shown for them.
+  closing: {
+    key: 'closing',
+    color: '#475569',
+    colorMuted: '#f1f5f9',
+    icon: 'time-outline',
+    i18nKey: 'schedule.subsection.opening',
   },
 };
 
@@ -322,6 +353,21 @@ export function buildPartNumbers(
 export function resolveSubsection(key: string): Subsection {
   const def = getPartDef(key);
   if (def?.subsection) return def.subsection;
+  // Weekend grouping is kept here (not on PartDef) so it only affects the
+  // schedule screen — My Tasks reads PartDef.subsection and stays unchanged.
+  // The two main parts form labeled sections; the pre-study song joins the
+  // Watchtower study; chairman/prayers/opening song stay in the unlabeled
+  // opening group; the closing prayer renders last with no heading.
+  if (key === 'public_talk_speaker') return 'public_talk';
+  if (
+    key === 'watchtower_conductor' ||
+    key === 'watchtower_reader' ||
+    key === 'weekend_song'
+  ) {
+    return 'watchtower';
+  }
+  if (key === 'weekend_closing_prayer') return 'closing';
+  if (key === 'weekend_opening_song') return 'opening';
   if (key.startsWith('apply_yourself')) return 'apply_yourself';
   if (
     key === 'mid_song' ||

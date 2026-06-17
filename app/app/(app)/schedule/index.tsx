@@ -611,28 +611,13 @@ export default function ScheduleIndexScreen() {
                         </Text>
                       </Pressable>
                     ) : null}
-                    <View style={styles.sectionBody}>
-                      {programItems.map((a) => (
-                        <AssignmentRow
-                          key={a.id}
-                          assignment={a}
-                          onEdit={setEditing}
-                          publisher={
-                            a.publisherId
-                              ? publishersById.get(a.publisherId) ?? null
-                              : null
-                          }
-                          assistant={
-                            a.assistantPublisherId
-                              ? publishersById.get(a.assistantPublisherId) ??
-                                null
-                              : null
-                          }
-                          displayNumber={numbers.get(a.id) ?? null}
-                          groupNameById={groupNameById}
-                        />
-                      ))}
-                    </View>
+                    <WeekendSections
+                      items={programItems}
+                      numbers={numbers}
+                      publishersById={publishersById}
+                      groupNameById={groupNameById}
+                      onEdit={setEditing}
+                    />
                     <HospitalityZone
                       hospitality={hospitality}
                       canEdit={perms.canEditWeekendSchedule}
@@ -907,6 +892,95 @@ function MidweekSections({
   );
 }
 
+const WEEKEND_SUBSECTION_ORDER: Subsection[] = [
+  'opening',
+  'public_talk',
+  'watchtower',
+  'closing',
+];
+
+// Only the two main parts get a colored, labeled section card. The opening
+// rows (chairman / song / prayer) and the closing prayer render as plain rows
+// without a banner — the weekend program has no "opening"/"closing" headings.
+const WEEKEND_BANNER_SUBSECTIONS = new Set<Subsection>([
+  'public_talk',
+  'watchtower',
+]);
+
+function WeekendSections({
+  items,
+  numbers,
+  publishersById,
+  groupNameById,
+  onEdit,
+}: {
+  items: Assignment[];
+  numbers: Map<string, number | null>;
+  publishersById: Map<string, Publisher>;
+  groupNameById: Map<string, string>;
+  onEdit: (a: Assignment) => void;
+}) {
+  const { t } = useTranslation();
+
+  const bySubsection = new Map<Subsection, Assignment[]>();
+  for (const a of items) {
+    const sub = resolveSubsection(a.partKey);
+    const arr = bySubsection.get(sub) ?? [];
+    arr.push(a);
+    bySubsection.set(sub, arr);
+  }
+
+  const renderRows = (arr: Assignment[], accentColor?: string) =>
+    arr.map((a) => (
+      <AssignmentRow
+        key={a.id}
+        assignment={a}
+        onEdit={onEdit}
+        publisher={
+          a.publisherId ? publishersById.get(a.publisherId) ?? null : null
+        }
+        assistant={
+          a.assistantPublisherId
+            ? publishersById.get(a.assistantPublisherId) ?? null
+            : null
+        }
+        displayNumber={numbers.get(a.id) ?? null}
+        accentColor={accentColor}
+        groupNameById={groupNameById}
+      />
+    ));
+
+  return (
+    <>
+      {WEEKEND_SUBSECTION_ORDER.map((sub) => {
+        const arr = bySubsection.get(sub) ?? [];
+        if (arr.length === 0) return null;
+        if (!WEEKEND_BANNER_SUBSECTIONS.has(sub)) {
+          return (
+            <View key={sub} style={[styles.sectionBody, { marginTop: 12 }]}>
+              {renderRows(arr)}
+            </View>
+          );
+        }
+        const meta = SUBSECTIONS[sub];
+        return (
+          <View key={sub} style={styles.weekendSection}>
+            <View
+              style={[styles.subsectionBanner, { backgroundColor: meta.color }]}
+            >
+              <Ionicons name={meta.icon as any} size={16} color="#fff" />
+              <Text style={styles.subsectionBannerText}>{t(meta.i18nKey)}</Text>
+            </View>
+            <View style={{ backgroundColor: meta.colorMuted }}>
+              {renderRows(arr, meta.color)}
+            </View>
+          </View>
+        );
+      })}
+    </>
+  );
+}
+
 function CreateButton({
   label,
   primary,
@@ -967,14 +1041,12 @@ function partDisplay(
   // is clear what the topic belongs to. The reader's long label is shortened.
   if (partKey === 'public_talk_speaker') {
     return {
-      overline: getPartLabel('public_talk_speaker'),
       label: partTitle || getPartLabel('public_talk_speaker'),
       subtitle: null,
     };
   }
   if (partKey === 'watchtower_conductor') {
     return {
-      overline: i18n.t('schedule.weekend.watchtowerStudy'),
       label: partTitle || getPartLabel('watchtower_conductor'),
       subtitle: null,
     };
@@ -1197,6 +1269,13 @@ const styles = StyleSheet.create({
   createSecondaryText: { color: '#0ea5e9' },
 
   section: { marginTop: 16 },
+  weekendSection: {
+    marginTop: 16,
+    borderRadius: 12,
+    overflow: 'hidden',
+    borderWidth: 0.5,
+    borderColor: '#e2e8f0',
+  },
   subsectionBanner: {
     flexDirection: 'row',
     alignItems: 'center',
