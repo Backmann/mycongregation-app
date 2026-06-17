@@ -104,7 +104,7 @@ export function PublisherAccessContent({ publisher }: { publisher: Publisher }) 
           onSubmit={(email, password, isAdmin, sendInvite) =>
             grantMutation.mutate({
               email: email || undefined,
-              password,
+              password: sendInvite ? undefined : password,
               isAdmin,
               sendInvite,
             })
