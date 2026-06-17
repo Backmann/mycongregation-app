@@ -648,13 +648,7 @@ export default function ScheduleIndexScreen() {
                         key={a.id}
                         assignment={a}
                         onEdit={setEditing}
-                        canEdit={
-                          eventType === 'midweek'
-                            ? canEditMidweekSchedule
-                            : eventType === 'weekend'
-                              ? canEditWeekendSchedule
-                              : perms.isAdmin
-                        }
+                        canEdit={perms.isAdmin}
                         publisher={
                           a.publisherId
                             ? publishersById.get(a.publisherId) ?? null
