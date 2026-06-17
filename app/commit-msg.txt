@@ -1,4 +1,7 @@
-chore: move DUTY_ICONS below imports
+fix: exclude songs from the meeting progress badge
 
-The duty icon map was inserted between import statements, tripping the
-import/first lint rule. Moved it below all imports. No behaviour change.
+Songs aren't assigned to a person, so counting them made every meeting
+look under-filled — e.g. a fully-staffed weekend showed 6/8 because of
+its two songs. The progress badge now ignores songs in both the
+numerator and denominator, so it reflects how many assignable parts
+actually have someone. Prayers still count (they do have an assignee).

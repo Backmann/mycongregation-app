@@ -311,8 +311,19 @@ export default function ScheduleIndexScreen() {
   };
   const midweekReplacedBy = replacedBy('midweek');
   const weekendReplacedBy = replacedBy('weekend');
+  // Songs are not assigned to a person, so they must not count toward the
+  // progress badge (otherwise meetings always look under-filled).
+  const BADGE_SONG_KEYS = new Set<string>([
+    'mid_song',
+    'weekend_song',
+    'weekend_opening_song',
+  ]);
+  const badgeParts = (list: Assignment[]) =>
+    list.filter((x) => !BADGE_SONG_KEYS.has(x.partKey));
   const assignedCount = (list: Assignment[]) =>
-    list.filter((x) => x.publisherId && x.status !== 'cancelled').length;
+    badgeParts(list).filter(
+      (x) => x.publisherId && x.status !== 'cancelled',
+    ).length;
   const meetingDateLabel = (kind: 'midweek' | 'weekend'): string | null => {
     if (!meetingVersion) return null;
     const dow =
@@ -488,7 +499,7 @@ export default function ScheduleIndexScreen() {
                     title={getEventTypeLabel('midweek')}
                     meta={meetingDateLabel('midweek')}
                     assigned={assignedCount(items)}
-                    total={items.length}
+                    total={badgeParts(items).length}
                     actionLabel={
                       perms.canEditMidweekSchedule && draftCount(items) > 0
                         ? t('schedule.publish.button')
@@ -556,7 +567,7 @@ export default function ScheduleIndexScreen() {
                     title={getEventTypeLabel('weekend')}
                     meta={meetingDateLabel('weekend')}
                     assigned={assignedCount(programItems)}
-                    total={programItems.length}
+                    total={badgeParts(programItems).length}
                     actionLabel={
                       perms.canEditWeekendSchedule && draftCount(items) > 0
                         ? t('schedule.publish.button')
