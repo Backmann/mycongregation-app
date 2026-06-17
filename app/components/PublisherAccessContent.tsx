@@ -10,14 +10,16 @@ import {
   View,
 } from 'react-native';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { extractErrorMessage, publishersApi } from '../lib/api';
 import type { GrantAccessInput, Publisher } from '../lib/api';
+import i18n from '../lib/i18n';
 
-function formatLastLogin(iso: string | null): string {
-  if (!iso) return 'ещё не заходил';
+function formatLastLogin(iso: string | null): string | null {
+  if (!iso) return null;
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return '—';
-  return d.toLocaleDateString('ru-RU', {
+  return d.toLocaleDateString(i18n.language, {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
@@ -25,6 +27,7 @@ function formatLastLogin(iso: string | null): string {
 }
 
 export function PublisherAccessContent({ publisher }: { publisher: Publisher }) {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [grantOpen, setGrantOpen] = useState(false);
   const [resetOpen, setResetOpen] = useState(false);
@@ -81,13 +84,13 @@ export function PublisherAccessContent({ publisher }: { publisher: Publisher }) 
     return (
       <View>
         <Text style={styles.muted}>
-          У этого человека нет входа в приложение.
+          {t('publisherAccess.noAccess')}
         </Text>
         <Pressable
           style={styles.primaryBtn}
           onPress={() => setGrantOpen(true)}
         >
-          <Text style={styles.primaryBtnText}>Дать доступ</Text>
+          <Text style={styles.primaryBtnText}>{t('publisherAccess.grant')}</Text>
         </Pressable>
         <GrantModal
           visible={grantOpen}
@@ -133,11 +136,13 @@ export function PublisherAccessContent({ publisher }: { publisher: Publisher }) 
         </Pressable>
       </View>
       <View style={styles.row}>
-        <Text style={styles.rowLabel}>Последний вход</Text>
-        <Text style={styles.rowValue}>{formatLastLogin(access.lastLoginAt)}</Text>
+        <Text style={styles.rowLabel}>{t('publisherAccess.lastLogin')}</Text>
+        <Text style={styles.rowValue}>
+          {formatLastLogin(access.lastLoginAt) ?? t('publisherAccess.neverLoggedIn')}
+        </Text>
       </View>
       <View style={styles.switchRow}>
-        <Text style={styles.rowLabel}>Администратор</Text>
+        <Text style={styles.rowLabel}>{t('publisherAccess.admin')}</Text>
         <Switch
           value={access.role === 'admin'}
           onValueChange={(v) => updateMutation.mutate({ isAdmin: v })}
@@ -145,7 +150,7 @@ export function PublisherAccessContent({ publisher }: { publisher: Publisher }) 
         />
       </View>
       <View style={styles.switchRow}>
-        <Text style={styles.rowLabel}>Доступ к личным данным</Text>
+        <Text style={styles.rowLabel}>{t('publisherAccess.privateData')}</Text>
         <Switch
           value={privateAccessGranted}
           onValueChange={(v) =>
@@ -156,17 +161,16 @@ export function PublisherAccessContent({ publisher }: { publisher: Publisher }) 
       </View>
       {roleGrantsPrivate ? (
         <Text style={styles.disabledNote}>
-          Старейшины и администраторы видят личные данные по роли.
+          {t('publisherAccess.privateDataByRole')}
         </Text>
       ) : (
         <Text style={styles.hint}>
-          Контакты, адреса, заметки и личные даты возвещателей. Включите только
-          тем, кому это нужно по служению.
+          {t('publisherAccess.privateDataDesc')}
         </Text>
       )}
 
       {!access.isActive && (
-        <Text style={styles.disabledNote}>Доступ отключён — войти нельзя.</Text>
+        <Text style={styles.disabledNote}>{t('publisherAccess.disabled')}</Text>
       )}
 
       {updateMutation.isError && (
@@ -177,7 +181,7 @@ export function PublisherAccessContent({ publisher }: { publisher: Publisher }) 
         style={styles.secondaryBtn}
         onPress={() => setResetOpen(true)}
       >
-        <Text style={styles.secondaryBtnText}>Сбросить пароль</Text>
+        <Text style={styles.secondaryBtnText}>{t('publisherAccess.resetPassword')}</Text>
       </Pressable>
 
       <Pressable
@@ -191,7 +195,7 @@ export function PublisherAccessContent({ publisher }: { publisher: Publisher }) 
             access.isActive && styles.dangerText,
           ]}
         >
-          {access.isActive ? 'Отключить доступ' : 'Включить доступ'}
+          {access.isActive ? t('publisherAccess.disableAccess') : t('publisherAccess.enableAccess')}
         </Text>
       </Pressable>
 
@@ -242,6 +246,7 @@ function EmailModal({
   onCancel: () => void;
   onSubmit: (email: string) => void;
 }) {
+  const { t } = useTranslation();
   const [email, setEmail] = useState(current ?? '');
 
   useEffect(() => {
@@ -262,9 +267,9 @@ function EmailModal({
     >
       <View style={emailStyles.overlay}>
         <View style={emailStyles.card}>
-          <Text style={emailStyles.title}>Изменить почту</Text>
+          <Text style={emailStyles.title}>{t('publisherAccess.changeEmail')}</Text>
           <Text style={emailStyles.hint}>
-            Человек будет входить с новой почтой. Пароль не меняется.
+            {t('publisherAccess.changeEmailDesc')}
           </Text>
           <TextInput
             style={emailStyles.input}
@@ -285,7 +290,7 @@ function EmailModal({
                 onPress={() => setEmail(suggestion.trim())}
               >
                 <Text style={emailStyles.suggestText}>
-                  Из карточки: {suggestion.trim()}
+                  {t('publisherAccess.fromCard', { value: suggestion.trim() })}
                 </Text>
               </Pressable>
             )}
@@ -296,7 +301,7 @@ function EmailModal({
               onPress={onCancel}
               disabled={pending}
             >
-              <Text style={emailStyles.cancelText}>Отмена</Text>
+              <Text style={emailStyles.cancelText}>{t('publisherAccess.cancel')}</Text>
             </Pressable>
             <Pressable
               style={[
@@ -306,7 +311,7 @@ function EmailModal({
               onPress={() => onSubmit(trimmed)}
               disabled={!canSave || pending}
             >
-              <Text style={emailStyles.confirmText}>Сохранить</Text>
+              <Text style={emailStyles.confirmText}>{t('publisherAccess.save')}</Text>
             </Pressable>
           </View>
         </View>
@@ -390,6 +395,7 @@ function GrantModal({
     sendInvite: boolean,
   ) => void;
 }) {
+  const { t } = useTranslation();
   const [email, setEmail] = useState(defaultEmail);
   const [password, setPassword] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
@@ -417,7 +423,7 @@ function GrantModal({
     >
       <View style={styles.backdrop}>
         <View style={styles.modal}>
-          <Text style={styles.modalTitle}>Дать доступ</Text>
+          <Text style={styles.modalTitle}>{t('publisherAccess.grant')}</Text>
 
           <Text style={styles.modalLabel}>Email</Text>
           <TextInput
@@ -431,38 +437,38 @@ function GrantModal({
           />
 
           <View style={styles.switchRow}>
-            <Text style={styles.rowLabel}>Отправить приглашение по email</Text>
+            <Text style={styles.rowLabel}>{t('publisherAccess.sendInvite')}</Text>
             <Switch value={sendInvite} onValueChange={setSendInvite} />
           </View>
           {sendInvite ? null : (
             <>
-              <Text style={styles.modalLabel}>Пароль</Text>
+              <Text style={styles.modalLabel}>{t('publisherAccess.password')}</Text>
               <TextInput
                 style={styles.input}
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry
-                placeholder="Минимум 8 символов"
+                placeholder={t('publisherAccess.min8')}
               />
             </>
           )}
 
           <View style={styles.switchRow}>
-            <Text style={styles.rowLabel}>Сделать администратором</Text>
+            <Text style={styles.rowLabel}>{t('publisherAccess.makeAdmin')}</Text>
             <Switch value={isAdmin} onValueChange={setIsAdmin} />
           </View>
 
           <Text style={styles.hint}>
             {sendInvite
-              ? 'Человек получит письмо со ссылкой и сам задаст пароль (ссылка действует 72 часа).'
-              : 'Роль присвоится автоматически по назначению человека. Пароль сообщите ему отдельно — здесь он больше не показывается.'}
+              ? t('publisherAccess.inviteHint')
+              : t('publisherAccess.manualHint')}
           </Text>
 
           {error ? <Text style={styles.error}>{error}</Text> : null}
 
           <View style={styles.modalBtns}>
             <Pressable style={styles.modalCancel} onPress={onCancel}>
-              <Text style={styles.modalCancelText}>Отмена</Text>
+              <Text style={styles.modalCancelText}>{t('publisherAccess.cancel')}</Text>
             </Pressable>
             <Pressable
               style={[styles.modalOk, !canSubmit && styles.modalOkDisabled]}
@@ -470,7 +476,7 @@ function GrantModal({
               onPress={() => onSubmit(email.trim(), password, isAdmin, sendInvite)}
             >
               <Text style={styles.modalOkText}>
-                {pending ? '…' : sendInvite ? 'Пригласить' : 'Создать'}
+                {pending ? '…' : sendInvite ? t('publisherAccess.invite') : t('publisherAccess.create')}
               </Text>
             </Pressable>
           </View>
@@ -493,6 +499,7 @@ function ResetModal({
   onCancel: () => void;
   onSubmit: (password: string) => void;
 }) {
+  const { t } = useTranslation();
   const [password, setPassword] = useState('');
 
   useEffect(() => {
@@ -510,24 +517,24 @@ function ResetModal({
     >
       <View style={styles.backdrop}>
         <View style={styles.modal}>
-          <Text style={styles.modalTitle}>Сбросить пароль</Text>
+          <Text style={styles.modalTitle}>{t('publisherAccess.resetPassword')}</Text>
 
-          <Text style={styles.modalLabel}>Новый пароль</Text>
+          <Text style={styles.modalLabel}>{t('publisherAccess.newPassword')}</Text>
           <TextInput
             style={styles.input}
             value={password}
             onChangeText={setPassword}
             secureTextEntry
-            placeholder="Минимум 8 символов"
+            placeholder={t('publisherAccess.min8')}
           />
 
-          <Text style={styles.hint}>Сообщите новый пароль человеку отдельно.</Text>
+          <Text style={styles.hint}>{t('publisherAccess.resetHint')}</Text>
 
           {error ? <Text style={styles.error}>{error}</Text> : null}
 
           <View style={styles.modalBtns}>
             <Pressable style={styles.modalCancel} onPress={onCancel}>
-              <Text style={styles.modalCancelText}>Отмена</Text>
+              <Text style={styles.modalCancelText}>{t('publisherAccess.cancel')}</Text>
             </Pressable>
             <Pressable
               style={[styles.modalOk, !canSubmit && styles.modalOkDisabled]}
@@ -535,7 +542,7 @@ function ResetModal({
               onPress={() => onSubmit(password)}
             >
               <Text style={styles.modalOkText}>
-                {pending ? '…' : 'Сохранить'}
+                {pending ? '…' : t('publisherAccess.save')}
               </Text>
             </Pressable>
           </View>
