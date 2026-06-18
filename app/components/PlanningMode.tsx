@@ -25,6 +25,7 @@ import {
 import { PublisherSelector } from './PublisherSelector';
 import { dutyLabel } from './DutiesSection';
 import { AssignmentSheet } from './AssignmentSheet';
+import { getPartLabel } from '../lib/parts';
 
 interface Props {
   /** Open when non-null; the meeting zone being planned. */
@@ -155,7 +156,7 @@ export function PlanningMode({
   const partTitleOf = (a: Assignment) =>
     a.partTitle && a.partTitle.trim().length > 0
       ? a.partTitle
-      : t('schedule.unassigned');
+      : getPartLabel(a.partKey);
 
   const assigneeOf = (a: Assignment): string | null => {
     if (a.publisherId) {
