@@ -31,7 +31,6 @@
   "tabs": {
     "schedule": "Расписание",
     "publishers": "Возвещатели",
-    "families": "Семьи",
     "groups": "Группы",
     "reports": "Отчёты",
     "profile": "Профиль",
@@ -195,7 +194,6 @@
       "gender": "Пол",
       "active": "Активный",
       "regular": "Регулярный",
-      "familyHead": "Глава семьи",
       "printedWatchtower": "Печатная «Сторожевая башня»",
       "printedWorkbook": "Печатная «Рабочая тетрадь»",
       "sendsReportDirectly": "Отправляет отчёт напрямую в филиал",
@@ -286,11 +284,6 @@
       "irregular": "Нерегулярный",
       "inactive": "Неактивный"
     },
-    "viewMode": {
-      "list": "Список",
-      "byFamily": "По семьям"
-    },
-    "unassignedFamily": "Без семьи",
     "filter": {
       "title": "Фильтр",
       "reset": "Сбросить",
@@ -490,28 +483,6 @@
       "submittedBy": "Подал: {{name}}",
       "editedBy": "изменил: {{name}}"
     }
-  },
-  "families": {
-    "title": {
-      "list": "Семьи",
-      "detail": "Семья",
-      "new": "Новая семья"
-    },
-    "removeConfirm": {
-      "title": "Удалить семью",
-      "body": "Связь с участниками будет удалена.",
-      "webMessage": "Удалить эту семью? Связь с участниками будет удалена."
-    },
-    "noFamiliesYet": "Семей пока нет",
-    "form": {
-      "section": "Семья",
-      "namePlaceholder": "Семья Ивановых",
-      "head": "Глава семьи"
-    },
-    "membersCount": "Участников ({{count}})",
-    "noMembersYet": "Участников пока нет",
-    "headFootnote": "Глава семьи: {{name}}",
-    "headTag": "Глава"
   },
   "serviceGroups": {
     "title": {

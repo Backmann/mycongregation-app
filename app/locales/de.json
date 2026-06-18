@@ -31,7 +31,6 @@
   "tabs": {
     "schedule": "Plan",
     "publishers": "Verkündiger",
-    "families": "Familien",
     "groups": "Gruppen",
     "reports": "Berichte",
     "profile": "Profil",
@@ -195,7 +194,6 @@
       "gender": "Geschlecht",
       "active": "Aktiv",
       "regular": "Regelmäßig",
-      "familyHead": "Familienoberhaupt",
       "printedWatchtower": "Wachtturm gedruckt",
       "printedWorkbook": "Arbeitsheft gedruckt",
       "sendsReportDirectly": "Sendet Bericht direkt an Zweigbüro",
@@ -286,11 +284,6 @@
       "irregular": "Unregelmäßig",
       "inactive": "Inaktiv"
     },
-    "viewMode": {
-      "list": "Liste",
-      "byFamily": "Nach Familie"
-    },
-    "unassignedFamily": "Ohne Familie",
     "filter": {
       "title": "Filter",
       "reset": "Zurücksetzen",
@@ -486,28 +479,6 @@
       "submittedBy": "Eingereicht von {{name}}",
       "editedBy": "bearbeitet von {{name}}"
     }
-  },
-  "families": {
-    "title": {
-      "list": "Familien",
-      "detail": "Familie",
-      "new": "Neue Familie"
-    },
-    "removeConfirm": {
-      "title": "Familie entfernen",
-      "body": "Die Verknüpfung zu den Mitgliedern wird aufgehoben.",
-      "webMessage": "Diese Familie entfernen? Die Verknüpfung zu den Mitgliedern wird aufgehoben."
-    },
-    "noFamiliesYet": "Noch keine Familien",
-    "form": {
-      "section": "Familie",
-      "namePlaceholder": "Familie Müller",
-      "head": "Familienoberhaupt"
-    },
-    "membersCount": "Mitglieder ({{count}})",
-    "noMembersYet": "Noch keine verknüpften Mitglieder",
-    "headFootnote": "Familienoberhaupt: {{name}}",
-    "headTag": "Oberhaupt"
   },
   "serviceGroups": {
     "title": {

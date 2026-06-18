@@ -31,7 +31,6 @@
   "tabs": {
     "schedule": "Schedule",
     "publishers": "Publishers",
-    "families": "Families",
     "groups": "Groups",
     "reports": "Reports",
     "profile": "Profile",
@@ -195,7 +194,6 @@
       "gender": "Gender",
       "active": "Active",
       "regular": "Regular",
-      "familyHead": "Family head",
       "printedWatchtower": "Printed Watchtower",
       "printedWorkbook": "Printed Workbook",
       "sendsReportDirectly": "Sends report directly to branch",
@@ -286,11 +284,6 @@
       "irregular": "Irregular",
       "inactive": "Inactive"
     },
-    "viewMode": {
-      "list": "List",
-      "byFamily": "By family"
-    },
-    "unassignedFamily": "Without family",
     "filter": {
       "title": "Filter",
       "reset": "Reset",
@@ -486,28 +479,6 @@
       "submittedBy": "Submitted by {{name}}",
       "editedBy": "edited by {{name}}"
     }
-  },
-  "families": {
-    "title": {
-      "list": "Families",
-      "detail": "Family",
-      "new": "New Family"
-    },
-    "removeConfirm": {
-      "title": "Remove family",
-      "body": "Members will be unlinked.",
-      "webMessage": "Remove this family? Members will be unlinked."
-    },
-    "noFamiliesYet": "No families yet",
-    "form": {
-      "section": "Family",
-      "namePlaceholder": "The Smith Family",
-      "head": "Family head"
-    },
-    "membersCount": "Members ({{count}})",
-    "noMembersYet": "No members linked yet",
-    "headFootnote": "Family head: {{name}}",
-    "headTag": "Head"
   },
   "serviceGroups": {
     "title": {

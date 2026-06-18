@@ -4,7 +4,6 @@ import {
   FlatList,
   Modal,
   Pressable,
-  SectionList,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -18,8 +17,6 @@ import { useTranslation } from 'react-i18next';
 import i18n from '../../../lib/i18n';
 import {
   extractErrorMessage,
-  Family,
-  familiesApi,
   Publisher,
   publishersApi,
   ServiceGroup,
@@ -59,7 +56,6 @@ function countActive(f: Filters): number {
 export default function PublishersListScreen() {
   const { t } = useTranslation();
   const [search, setSearch] = useState('');
-  const [viewMode, setViewMode] = useState<'list' | 'by-family'>('list');
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
   const [filterOpen, setFilterOpen] = useState(false);
 
@@ -71,12 +67,6 @@ export default function PublishersListScreen() {
         search: search || undefined,
         includeRemoved: true,
       }),
-  });
-
-  const familiesQuery = useQuery({
-    queryKey: ['families', 'all-for-grouping'],
-    queryFn: () => familiesApi.list({}),
-    enabled: viewMode === 'by-family',
   });
 
   const groupsQuery = useQuery({
@@ -126,36 +116,6 @@ export default function PublishersListScreen() {
     );
   }, [data, filters, activeCount]);
 
-  const sections = useMemo(() => {
-    if (viewMode !== 'by-family') return [];
-    const familyMap = new Map<string, Family>(
-      (familiesQuery.data?.data ?? []).map((fam) => [fam.id, fam]),
-    );
-    const groupsByFamily = new Map<string | null, Publisher[]>();
-    for (const pub of filtered) {
-      const key = pub.familyId;
-      const arr = groupsByFamily.get(key) ?? [];
-      arr.push(pub);
-      groupsByFamily.set(key, arr);
-    }
-    const result: { key: string; family: Family | null; data: Publisher[] }[] =
-      [];
-    for (const [familyId, members] of groupsByFamily.entries()) {
-      if (familyId !== null) {
-        const family = familyMap.get(familyId);
-        if (family) result.push({ key: family.id, family, data: members });
-      }
-    }
-    result.sort((a, b) =>
-      (a.family?.name ?? '').localeCompare(b.family?.name ?? ''),
-    );
-    const unassigned = groupsByFamily.get(null);
-    if (unassigned && unassigned.length > 0) {
-      result.push({ key: '__unassigned', family: null, data: unassigned });
-    }
-    return result;
-  }, [viewMode, filtered, familiesQuery.data]);
-
   const allLoaded = data?.data ?? [];
   const currentCount = allLoaded.filter((p) => !p.deletedAt).length;
   const departedCount = allLoaded.length - currentCount;
@@ -173,25 +133,6 @@ export default function PublishersListScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.viewModeRow}>
-        <Pressable
-          onPress={() => setViewMode('list')}
-          style={[styles.viewModeBtn, viewMode === 'list' && styles.viewModeBtnActive]}
-        >
-          <Text style={[styles.viewModeText, viewMode === 'list' && styles.viewModeTextActive]}>
-            {t('publishers.viewMode.list')}
-          </Text>
-        </Pressable>
-        <Pressable
-          onPress={() => setViewMode('by-family')}
-          style={[styles.viewModeBtn, viewMode === 'by-family' && styles.viewModeBtnActive]}
-        >
-          <Text style={[styles.viewModeText, viewMode === 'by-family' && styles.viewModeTextActive]}>
-            {t('publishers.viewMode.byFamily')}
-          </Text>
-        </Pressable>
-      </View>
-
       <View style={styles.searchRow}>
         <TextInput
           style={styles.search}
@@ -226,7 +167,7 @@ export default function PublishersListScreen() {
 
       {isLoading ? (
         <ActivityIndicator size="large" style={{ marginTop: 32 }} />
-      ) : viewMode === 'list' ? (
+      ) : (
         <FlatList
           data={filtered}
           keyExtractor={(item) => item.id}
@@ -245,36 +186,6 @@ export default function PublishersListScreen() {
           renderItem={({ item }) => (
             <PublisherRow publisher={item} groupName={groupNameFor(item)} />
           )}
-        />
-      ) : (
-        <SectionList
-          sections={sections}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={{ paddingBottom: 32 }}
-          refreshControl={
-            <RefreshControl
-              refreshing={isRefetching || familiesQuery.isRefetching}
-              onRefresh={() => {
-                refetch();
-                familiesQuery.refetch();
-              }}
-            />
-          }
-          ListEmptyComponent={
-            <Text style={styles.empty}>
-              {search || activeCount > 0
-                ? t('publishers.noMatches')
-                : t('publishers.noPublishers')}
-            </Text>
-          }
-          ListHeaderComponent={countHeader}
-          renderItem={({ item }) => (
-            <PublisherRow publisher={item} groupName={groupNameFor(item)} />
-          )}
-          renderSectionHeader={({ section }) => (
-            <FamilySectionHeader family={section.family} count={section.data.length} />
-          )}
-          stickySectionHeadersEnabled={false}
         />
       )}
 
@@ -361,41 +272,6 @@ function PublisherRow({
         </View>
       </View>
       <Text style={styles.chevron}>›</Text>
-    </Pressable>
-  );
-}
-
-function FamilySectionHeader({ family, count }: { family: Family | null; count: number }) {
-  const { t } = useTranslation();
-  return (
-    <Pressable
-      onPress={() => family && router.push(`/publishers/families/${family.id}` as any)}
-      disabled={!family}
-      style={({ pressed }) => [
-        styles.sectionHeader,
-        pressed && family && styles.sectionHeaderPressed,
-      ]}
-    >
-      <Ionicons
-        name={family ? 'home-outline' : 'help-circle-outline'}
-        size={16}
-        color={family ? '#0ea5e9' : '#94a3b8'}
-        style={{ marginRight: 8 }}
-      />
-      <Text style={styles.sectionHeaderText} numberOfLines={1}>
-        {family ? family.name : t('publishers.unassignedFamily')}
-      </Text>
-      <View style={styles.sectionCountBadge}>
-        <Text style={styles.sectionCountText}>{count}</Text>
-      </View>
-      {family && (
-        <Ionicons
-          name="chevron-forward"
-          size={14}
-          color="#cbd5e1"
-          style={{ marginLeft: 4 }}
-        />
-      )}
     </Pressable>
   );
 }
@@ -666,52 +542,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   errorText: { color: '#dc2626', fontSize: 14 },
-  viewModeRow: {
-    flexDirection: 'row',
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    gap: 8,
-  },
-  viewModeBtn: {
-    flex: 1,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#cbd5e1',
-    backgroundColor: '#fff',
-    alignItems: 'center',
-  },
-  viewModeBtnActive: { backgroundColor: '#0ea5e9', borderColor: '#0ea5e9' },
-  viewModeText: { fontSize: 14, color: '#475569', fontWeight: '500' },
-  viewModeTextActive: { color: '#fff', fontWeight: '600' },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    backgroundColor: '#f1f5f9',
-    borderTopWidth: 1,
-    borderTopColor: '#e2e8f0',
-  },
-  sectionHeaderPressed: { backgroundColor: '#e2e8f0' },
-  sectionHeaderText: {
-    flex: 1,
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#0f172a',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  sectionCountBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-  },
-  sectionCountText: { fontSize: 11, fontWeight: '600', color: '#64748b' },
 
   sheetOverlay: {
     flex: 1,

@@ -81,7 +81,6 @@ export function PublisherForm({
     hasKingdomHallKey: initial?.hasKingdomHallKey ?? false,
     isActive: initial?.isActive ?? true,
     isRegular: initial?.isRegular ?? true,
-    isFamilyHead: initial?.isFamilyHead ?? false,
     printedWatchtower: initial?.printedWatchtower ?? false,
     printedWorkbook: initial?.printedWorkbook ?? false,
     sendsReportDirectly: initial?.sendsReportDirectly ?? false,
@@ -272,11 +271,6 @@ export function PublisherForm({
           label={t('publishers.fields.regular')}
           value={form.isRegular}
           onValueChange={(v) => update('isRegular', v)}
-        />
-        <FormSwitch
-          label={t('publishers.fields.familyHead')}
-          value={form.isFamilyHead}
-          onValueChange={(v) => update('isFamilyHead', v)}
         />
         <FormSwitch
           label={t('publishers.fields.printedWatchtower')}

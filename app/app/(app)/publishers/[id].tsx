@@ -176,7 +176,6 @@ export default function PublisherDetailScreen() {
           hasKingdomHallKey: publisher.hasKingdomHallKey,
           isActive: publisher.isActive,
           isRegular: publisher.isRegular,
-          isFamilyHead: publisher.isFamilyHead,
           printedWatchtower: publisher.printedWatchtower,
           printedWorkbook: publisher.printedWorkbook,
           sendsReportDirectly: publisher.sendsReportDirectly,
@@ -283,10 +282,6 @@ export default function PublisherDetailScreen() {
           value={publisher.gender === 'brother' ? t('publishers.gender.brother') : t('publishers.gender.sister')}
         />
         <Field label={t('publishers.fields.active')} value={publisher.isActive ? t('common.yes') : t('common.no')} />
-        <Field
-          label={t('publishers.fields.familyHead')}
-          value={publisher.isFamilyHead ? t('common.yes') : t('common.no')}
-        />
       </Section>
 
       {hasSpecialNeeds(publisher) && (

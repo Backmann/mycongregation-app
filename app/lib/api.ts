@@ -138,7 +138,6 @@ export interface Publisher {
   id: string;
   congregationId: string;
   userId: string | null;
-  familyId: string | null;
   serviceGroupId: string | null;
   firstName: string;
   middleName: string | null;
@@ -151,7 +150,6 @@ export interface Publisher {
   address: string | null;
   isActive: boolean;
   isRegular: boolean;
-  isFamilyHead: boolean;
   isElderlyOrInfirm: boolean;
   isChild: boolean;
   isDeaf: boolean;
@@ -189,12 +187,10 @@ export interface CreatePublisherInput {
   mobilePhone?: string;
   email?: string;
   address?: string;
-  familyId?: string | null;
   serviceGroupId?: string | null;
   userId?: string;
   isActive?: boolean;
   isRegular?: boolean;
-  isFamilyHead?: boolean;
   isElderlyOrInfirm?: boolean;
   isChild?: boolean;
   isDeaf?: boolean;
@@ -215,23 +211,6 @@ export interface CreatePublisherInput {
   capabilities?: Capabilities;
 }
 export type UpdatePublisherInput = Partial<CreatePublisherInput>;
-
-export interface Family {
-  id: string;
-  congregationId: string;
-  name: string;
-  headPublisherId: string | null;
-  notes: string | null;
-  createdAt: string;
-  updatedAt: string;
-  deletedAt: string | null;
-}
-export interface CreateFamilyInput {
-  name: string;
-  headPublisherId?: string | null;
-  notes?: string;
-}
-export type UpdateFamilyInput = Partial<CreateFamilyInput>;
 
 export interface ServiceGroup {
   id: string;
@@ -1083,35 +1062,6 @@ export const publishersApi = {
   },
 };
 
-export const familiesApi = {
-  async list(params?: { search?: string; includeRemoved?: boolean }): Promise<Paginated<Family>> {
-    const { data } = await api.get<Paginated<Family>>('/families', { params });
-    return data;
-  },
-  async getById(id: string): Promise<Family> {
-    const { data } = await api.get<Family>(`/families/${id}`);
-    return data;
-  },
-  async getPublishers(id: string): Promise<Paginated<Publisher>> {
-    const { data } = await api.get<Paginated<Publisher>>(`/families/${id}/publishers`);
-    return data;
-  },
-  async create(input: CreateFamilyInput): Promise<Family> {
-    const { data } = await api.post<Family>('/families', cleanPayload(input));
-    return data;
-  },
-  async update(id: string, input: UpdateFamilyInput): Promise<Family> {
-    const { data } = await api.patch<Family>(`/families/${id}`, cleanPayload(input));
-    return data;
-  },
-  async remove(id: string): Promise<void> {
-    await api.delete(`/families/${id}`);
-  },
-  async restore(id: string): Promise<Family> {
-    const { data } = await api.post<Family>(`/families/${id}/restore`);
-    return data;
-  },
-};
 
 export const serviceGroupsApi = {
   async list(params?: { search?: string; includeRemoved?: boolean }): Promise<Paginated<ServiceGroup>> {
