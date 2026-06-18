@@ -782,7 +782,13 @@
     "lastDidPart": "Dieser Teil: {{date}} ({{ago}})",
     "weeksAgoShort": "vor {{count}} Wo.",
     "neverDidPart": "Hat diesen Teil noch nicht gemacht",
-    "recentPartner": "Kürzlich Partner ({{date}})"
+    "recentPartner": "Kürzlich Partner ({{date}})",
+    "didThisPart": "Dieser Teil (3 Mon.): {{dates}}",
+    "neverDidPart3mo": "Diesen Teil seit 3 Monaten nicht",
+    "didThisDuty": "Diese Aufgabe (3 Mon.): {{dates}}",
+    "neverDidDuty3mo": "Diese Aufgabe seit 3 Monaten nicht",
+    "pairedWith": "Mit {{name}}: {{count}}× — {{dates}}",
+    "notPairedYet": "Noch nicht mit {{name}} im Team"
   },
   "admin": {
     "users": {

@@ -782,7 +782,13 @@
     "lastDidPart": "This part: {{date}} ({{ago}})",
     "weeksAgoShort": "{{count}} wk ago",
     "neverDidPart": "Hasn't done this part yet",
-    "recentPartner": "Recent partner ({{date}})"
+    "recentPartner": "Recent partner ({{date}})",
+    "didThisPart": "This part (3 mo): {{dates}}",
+    "neverDidPart3mo": "Hasn't done this part in 3 months",
+    "didThisDuty": "This duty (3 mo): {{dates}}",
+    "neverDidDuty3mo": "Hasn't done this duty in 3 months",
+    "pairedWith": "With {{name}}: {{count}}× — {{dates}}",
+    "notPairedYet": "Not paired with {{name}} yet"
   },
   "admin": {
     "users": {

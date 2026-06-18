@@ -786,7 +786,13 @@
     "lastDidPart": "Эта часть: {{date}} ({{ago}})",
     "weeksAgoShort": "{{count}} нед. назад",
     "neverDidPart": "Эту часть ещё не делал(а)",
-    "recentPartner": "Недавний напарник ({{date}})"
+    "recentPartner": "Недавний напарник ({{date}})",
+    "didThisPart": "Эту часть (3 мес.): {{dates}}",
+    "neverDidPart3mo": "Эту часть за 3 месяца не делал(а)",
+    "didThisDuty": "Эту обязанность (3 мес.): {{dates}}",
+    "neverDidDuty3mo": "Эту обязанность за 3 месяца не выполнял(а)",
+    "pairedWith": "С {{name}}: {{count}}× — {{dates}}",
+    "notPairedYet": "С {{name}} ещё не были в паре"
   },
   "admin": {
     "users": {

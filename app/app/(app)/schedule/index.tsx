@@ -161,7 +161,7 @@ export default function ScheduleIndexScreen() {
   const activityQuery = useQuery({
     queryKey: ['publisher-activity', weekStartISO],
     queryFn: () =>
-      publisherActivityApi.getActivity({ weekStart: weekStartISO, weeks: 4 }),
+      publisherActivityApi.getActivity({ weekStart: weekStartISO, weeks: 13 }),
   });
   const activityById = new Map<string, PublisherActivity>();
   for (const a of activityQuery.data ?? []) activityById.set(a.publisherId, a);

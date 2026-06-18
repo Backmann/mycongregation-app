@@ -209,6 +209,7 @@ export function DutiesSection({
                         onChange={(id) => onAssign(d.id, id)}
                         requiredCapability={capabilityFor(d)}
                         activityById={activityById}
+                        scopeDutyType={d.dutyType}
                         currentWeekStart={weekStartISO}
                         currentEventType={meeting}
                       />

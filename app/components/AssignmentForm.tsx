@@ -138,7 +138,7 @@ export function AssignmentForm({
     queryFn: () =>
       publisherActivityApi.getActivity({
         weekStart: form.weekStartDate,
-        weeks: 4,
+        weeks: 13,
       }),
     enabled: !!form.weekStartDate,
   });

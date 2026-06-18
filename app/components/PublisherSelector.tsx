@@ -17,6 +17,7 @@ import { useQuery } from '@tanstack/react-query';
 import {
   Absence,
   absencesApi,
+  ActivityItem,
   PartSuggestion,
   Publisher,
   PublisherActivity,
@@ -56,6 +57,8 @@ interface Props {
   partnerOfPublisherId?: string | null;
   /** For assistant pickers: soft-filter to the same gender as this publisher; "Show all" reveals others (e.g. family). */
   matchGenderOfPublisherId?: string | null;
+  /** When set, scoped history shows this duty type (instead of part keys). */
+  scopeDutyType?: string;
 }
 
 const ISO_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -91,19 +94,9 @@ function absenceRangeLabel(a: Absence, loc: string): string {
   return `${s} \u2013 ${e}`;
 }
 
-/** Splits an ISO date into a short localized date + whole weeks ago. */
-function lastDoneParts(
-  iso: string,
-  loc: string,
-): { date: string; weeks: number } {
-  const d = new Date(`${iso}T00:00:00`);
-  return {
-    date: d.toLocaleDateString(loc, { day: 'numeric', month: 'short' }),
-    weeks: Math.max(
-      0,
-      Math.round((Date.now() - d.getTime()) / (7 * 24 * 3600 * 1000)),
-    ),
-  };
+/** ISO YYYY-MM-DD -> dd.MM.yyyy (locale-independent full date). */
+function fmtFullDate(iso: string): string {
+  return `${iso.slice(8, 10)}.${iso.slice(5, 7)}.${iso.slice(0, 4)}`;
 }
 
 export function PublisherSelector({
@@ -122,6 +115,7 @@ export function PublisherSelector({
   suggestionRole = 'primary',
   partnerOfPublisherId,
   matchGenderOfPublisherId,
+  scopeDutyType,
 }: Props) {
   const { t, i18n } = useTranslation();
   const [open, setOpen] = useState(false);
@@ -194,6 +188,52 @@ export function PublisherSelector({
       recentPartnerWeekById.set(r.publisherId, r.weekStartDate);
     }
   }
+  // ----------------------------------------------------------------------
+
+  // --- Scoped history + pairing (always-visible, ~3 months) --------------
+  const scopeKeySet = new Set(suggKeys);
+  const historyEnabled = scopeKeySet.size > 0 || !!scopeDutyType;
+  const partnerName = partnerOfPublisherId
+    ? allPublishers.find((p) => p.id === partnerOfPublisherId)?.displayName
+    : undefined;
+  const primaryItems: ActivityItem[] = partnerOfPublisherId
+    ? (activityById?.get(partnerOfPublisherId)?.items ?? [])
+    : [];
+  const inScopePart = (it: ActivityItem) =>
+    it.kind === 'part' && !!it.partKey && scopeKeySet.has(it.partKey);
+
+  // Distinct ISO weeks (newest first) the candidate did this exact part/duty.
+  const thisItemDatesFor = (pubId: string): string[] => {
+    const items = activityById?.get(pubId)?.items ?? [];
+    const weeks = items
+      .filter((it) =>
+        scopeDutyType
+          ? it.kind === 'duty' && it.dutyType === scopeDutyType
+          : inScopePart(it) && it.role === suggestionRole,
+      )
+      .map((it) => it.weekStartDate);
+    return Array.from(new Set(weeks)).sort((a, b) => b.localeCompare(a));
+  };
+
+  // Distinct ISO weeks (newest first) the candidate was paired with the
+  // primary on the same part instance (one led, the other assisted).
+  const pairDatesFor = (pubId: string): string[] => {
+    if (!partnerOfPublisherId || scopeDutyType) return [];
+    const candByKey = new Map<string, string>();
+    for (const it of activityById?.get(pubId)?.items ?? []) {
+      if (inScopePart(it) && it.role) {
+        candByKey.set(`${it.partKey}|${it.weekStartDate}`, it.role);
+      }
+    }
+    const weeks: string[] = [];
+    for (const it of primaryItems) {
+      if (inScopePart(it) && it.role) {
+        const cr = candByKey.get(`${it.partKey}|${it.weekStartDate}`);
+        if (cr && cr !== it.role) weeks.push(it.weekStartDate);
+      }
+    }
+    return Array.from(new Set(weeks)).sort((a, b) => b.localeCompare(a));
+  };
   // ----------------------------------------------------------------------
 
   const matchGender =
@@ -421,9 +461,11 @@ export function PublisherSelector({
                     currentEventType,
                   )}
                   absence={absentThisWeek.get(p.id)}
-                  lastDoneAt={suggEnabled ? lastDoneAt(p.id) : undefined}
-                  partnerWeek={recentPartnerWeekById.get(p.id)}
-                  eventTypeFilter={currentEventType}
+                  showHistory={historyEnabled}
+                  historyKind={scopeDutyType ? 'duty' : 'part'}
+                  thisItemDates={thisItemDatesFor(p.id)}
+                  pairDates={pairDatesFor(p.id)}
+                  pairWithName={partnerName}
                 />
               ))}
             </ScrollView>
@@ -441,9 +483,11 @@ function PublisherOption({
   showCapabilityWarning,
   activity,
   absence,
-  lastDoneAt,
-  partnerWeek,
-  eventTypeFilter,
+  showHistory,
+  historyKind,
+  thisItemDates,
+  pairDates,
+  pairWithName,
   onPress,
 }: {
   publisher: Publisher;
@@ -452,24 +496,22 @@ function PublisherOption({
   showCapabilityWarning: boolean;
   activity?: ActivitySummary;
   absence?: Absence;
-  /** ISO date they last did this part; null = never; undefined = hints off. */
-  lastDoneAt?: string | null;
-  /** ISO week when they were recently this primary’s partner. */
-  partnerWeek?: string;
-  /** When set, the expandable history shows only this meeting type. */
-  eventTypeFilter?: string;
+  /** Whether to show the always-visible scoped-history block. */
+  showHistory?: boolean;
+  /** Whether the scoped item is a program part or a duty. */
+  historyKind?: 'part' | 'duty';
+  /** ISO weeks the candidate did this exact part/duty (~3 months, newest first). */
+  thisItemDates?: string[];
+  /** ISO weeks the candidate was paired with the primary (~3 months). */
+  pairDates?: string[];
+  /** Primary's name; presence enables the pairing line (assistant picker). */
+  pairWithName?: string;
   onPress: () => void;
 }) {
   const { t, i18n } = useTranslation();
-  const [expanded, setExpanded] = useState(false);
   const busyThisMeeting = !!activity && activity.thisMeeting.length > 0;
-  const recentItems = (activity?.recentItems ?? []).filter(
-    (it) => !eventTypeFilter || it.eventType === eventTypeFilter,
-  );
-  const last = lastDoneAt ? lastDoneParts(lastDoneAt, i18n.language) : null;
-  const partner = partnerWeek
-    ? lastDoneParts(partnerWeek, i18n.language)
-    : null;
+  const itemDates = thisItemDates ?? [];
+  const pdates = pairDates ?? [];
   return (
     <Pressable
       style={({ pressed }) => [
@@ -505,20 +547,48 @@ function PublisherOption({
             })}
           </Text>
         )}
-        {lastDoneAt !== undefined && (
-          <Text style={styles.optionLastDone} numberOfLines={1}>
-            {last
-              ? t('pickers.lastDidPart', {
-                  date: last.date,
-                  ago: t('pickers.weeksAgoShort', { count: last.weeks }),
-                })
-              : t('pickers.neverDidPart')}
-          </Text>
+        {showHistory && (
+          <View style={styles.histRow}>
+            <Ionicons
+              name="time-outline"
+              size={12}
+              color="#475569"
+              style={styles.histIcon}
+            />
+            <Text style={styles.histText}>
+              {itemDates.length > 0
+                ? t(
+                    historyKind === 'duty'
+                      ? 'pickers.didThisDuty'
+                      : 'pickers.didThisPart',
+                    { dates: itemDates.map(fmtFullDate).join(', ') },
+                  )
+                : t(
+                    historyKind === 'duty'
+                      ? 'pickers.neverDidDuty3mo'
+                      : 'pickers.neverDidPart3mo',
+                  )}
+            </Text>
+          </View>
         )}
-        {partner && (
-          <Text style={styles.optionPartner} numberOfLines={1}>
-            {t('pickers.recentPartner', { date: partner.date })}
-          </Text>
+        {pairWithName !== undefined && (
+          <View style={styles.histRow}>
+            <Ionicons
+              name="people-outline"
+              size={12}
+              color="#7c3aed"
+              style={styles.histIcon}
+            />
+            <Text style={[styles.histText, styles.pairText]}>
+              {pdates.length > 0
+                ? t('pickers.pairedWith', {
+                    name: pairWithName,
+                    count: pdates.length,
+                    dates: pdates.map(fmtFullDate).join(', '),
+                  })
+                : t('pickers.notPairedYet', { name: pairWithName })}
+            </Text>
+          </View>
         )}
         {busyThisMeeting && (
           <View style={styles.busyChipRow}>
@@ -529,32 +599,6 @@ function PublisherOption({
             </Text>
           </View>
         )}
-        {recentItems.length > 0 && (
-          <Pressable
-            onPress={(e) => {
-              e?.stopPropagation?.();
-              setExpanded((v) => !v);
-            }}
-            hitSlop={6}
-            style={styles.recentToggle}
-          >
-            <Text style={styles.optionRecentText}>
-              {t('publisherActivity.recent', { count: recentItems.length })}
-            </Text>
-            <Ionicons
-              name={expanded ? 'chevron-up' : 'chevron-down'}
-              size={12}
-              color="#94a3b8"
-            />
-          </Pressable>
-        )}
-        {expanded &&
-          recentItems.map((it, i) => (
-            <Text key={i} style={styles.historyRow} numberOfLines={1}>
-              {it.weekStartDate.slice(8, 10)}.{it.weekStartDate.slice(5, 7)} ·{' '}
-              {it.label}
-            </Text>
-          ))}
       </View>
       {isSelected && <Ionicons name="checkmark" size={20} color="#0ea5e9" />}
     </Pressable>
@@ -647,6 +691,16 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   historyRow: { fontSize: 11, color: '#64748b', marginLeft: 16, marginTop: 2 },
+  histRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 5,
+    marginTop: 3,
+    marginLeft: 16,
+  },
+  histIcon: { marginTop: 1 },
+  histText: { fontSize: 11, color: '#475569', flexShrink: 1, lineHeight: 15 },
+  pairText: { color: '#6d28d9' },
 
   modal: {
     flex: 1,
