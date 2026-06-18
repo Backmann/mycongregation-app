@@ -50,6 +50,15 @@ interface Props {
 
 const SONG_KEYS = ['mid_song', 'weekend_song', 'weekend_opening_song'];
 
+// Prayers import a verbose title (song + chairman's opening/closing words).
+// In the planning list only the assignable role matters, so show the label.
+const PRAYER_KEYS = new Set([
+  'midweek_opening_prayer',
+  'midweek_closing_prayer',
+  'weekend_opening_prayer',
+  'weekend_closing_prayer',
+]);
+
 function capabilityFor(duty: Duty): string | undefined {
   return duty.dutyType === 'custom' ? undefined : `duty_${duty.dutyType}`;
 }
@@ -153,10 +162,12 @@ export function PlanningMode({
   const pct =
     grandTotal === 0 ? 0 : Math.round((grandAssigned / grandTotal) * 100);
 
-  const partTitleOf = (a: Assignment) =>
-    a.partTitle && a.partTitle.trim().length > 0
+  const partTitleOf = (a: Assignment) => {
+    if (PRAYER_KEYS.has(a.partKey)) return getPartLabel(a.partKey);
+    return a.partTitle && a.partTitle.trim().length > 0
       ? a.partTitle
       : getPartLabel(a.partKey);
+  };
 
   const assigneeOf = (a: Assignment): string | null => {
     if (a.publisherId) {
