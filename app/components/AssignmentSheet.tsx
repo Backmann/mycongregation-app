@@ -1,4 +1,12 @@
-import { Modal, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import {
+  Modal,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View,
+} from 'react-native';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import {
@@ -38,6 +46,9 @@ export function AssignmentSheet({
   onNext,
 }: Props) {
   const { t } = useTranslation();
+  const { width } = useWindowDimensions();
+  // Wide screens (desktop web) get a centered dialog; narrow stays a bottom sheet.
+  const centered = Platform.OS === 'web' && width >= 700;
   const queryClient = useQueryClient();
   const open = !!assignment;
   const queryKey = ['assignments', weekStartISO];
@@ -103,12 +114,21 @@ export function AssignmentSheet({
     <Modal
       visible={open}
       transparent
-      animationType="slide"
+      animationType={centered ? 'fade' : 'slide'}
       onRequestClose={onClose}
     >
       <Pressable style={styles.backdrop} onPress={onClose} />
-      <View style={styles.sheet}>
-        <View style={styles.handleBar} />
+      <View
+        style={centered ? styles.centerWrap : styles.bottomWrap}
+        pointerEvents="box-none"
+      >
+        <View
+          style={[
+            styles.sheet,
+            centered ? styles.sheetCentered : styles.sheetBottom,
+          ]}
+        >
+          {centered ? null : <View style={styles.handleBar} />}
         <View style={styles.header}>
           <Text style={styles.title} numberOfLines={1}>
             {assignment?.partTitle || t('schedule.sheet.title')}
@@ -188,6 +208,7 @@ export function AssignmentSheet({
             </>
           )
         ) : null}
+        </View>
       </View>
     </Modal>
   );
@@ -198,19 +219,35 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(15,23,42,0.45)',
   },
-  sheet: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
+  bottomWrap: { ...StyleSheet.absoluteFillObject, justifyContent: 'flex-end' },
+  centerWrap: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 16,
+  },
+  sheet: { backgroundColor: '#f1f5f9', overflow: 'hidden' },
+  sheetBottom: {
+    width: '100%',
     maxHeight: '90%',
-    backgroundColor: '#f1f5f9',
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
     paddingBottom: 8,
     ...(Platform.OS === 'web'
-      ? { maxWidth: 680, marginHorizontal: 'auto' as never }
+      ? { maxWidth: 680, alignSelf: 'center' as never }
       : null),
+  },
+  sheetCentered: {
+    width: '100%',
+    maxWidth: 560,
+    maxHeight: '85%',
+    borderRadius: 16,
+    paddingBottom: 8,
+    shadowColor: '#0f172a',
+    shadowOpacity: 0.3,
+    shadowRadius: 32,
+    shadowOffset: { width: 0, height: 16 },
+    elevation: 16,
   },
   handleBar: {
     alignSelf: 'center',
