@@ -727,7 +727,8 @@
       "silentHint": "No notification"
     },
     "sheet": {
-      "next": "Next →"
+      "next": "Next →",
+      "title": "Assignment"
     },
     "tabs": {
       "duties": "Duties"

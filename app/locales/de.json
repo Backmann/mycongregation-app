@@ -727,7 +727,8 @@
       "silentHint": "Ohne Benachrichtigung"
     },
     "sheet": {
-      "next": "Weiter →"
+      "next": "Weiter →",
+      "title": "Zuweisung"
     },
     "tabs": {
       "duties": "Aufgaben"

@@ -131,7 +131,7 @@ export function AssignmentSheet({
           {centered ? null : <View style={styles.handleBar} />}
         <View style={styles.header}>
           <Text style={styles.title} numberOfLines={1}>
-            {assignment?.partTitle || t('schedule.sheet.title')}
+            {assignment ? assignment.partTitle || t('schedule.sheet.title') : ''}
           </Text>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
             {onNext ? (
