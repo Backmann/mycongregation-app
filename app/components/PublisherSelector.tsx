@@ -406,6 +406,15 @@ export function PublisherSelector({
             autoCorrect={false}
           />
 
+          {historyEnabled && (
+            <View style={styles.histScopeNote}>
+              <Ionicons name="calendar-outline" size={13} color="#64748b" />
+              <Text style={styles.histScopeText}>
+                {t('pickers.historyScope')}
+              </Text>
+            </View>
+          )}
+
           {isLoading ? (
             <ActivityIndicator size="large" style={{ marginTop: 32 }} />
           ) : (
@@ -555,20 +564,29 @@ function PublisherOption({
               color="#475569"
               style={styles.histIcon}
             />
-            <Text style={styles.histText}>
-              {itemDates.length > 0
-                ? t(
-                    historyKind === 'duty'
-                      ? 'pickers.didThisDuty'
-                      : 'pickers.didThisPart',
-                    { dates: itemDates.map(fmtFullDate).join(', ') },
-                  )
-                : t(
-                    historyKind === 'duty'
-                      ? 'pickers.neverDidDuty3mo'
-                      : 'pickers.neverDidPart3mo',
-                  )}
-            </Text>
+            <View style={styles.chipsWrap}>
+              <Text style={styles.histLabel}>
+                {t(
+                  historyKind === 'duty'
+                    ? 'pickers.histThisDuty'
+                    : 'pickers.histThisPart',
+                )}
+              </Text>
+              {itemDates.length > 0 ? (
+                itemDates.map((d) => (
+                  <View key={d} style={[styles.chip, styles.chipBusy]}>
+                    <Text style={styles.chipBusyText}>{fmtFullDate(d)}</Text>
+                  </View>
+                ))
+              ) : (
+                <View style={[styles.chip, styles.chipFresh]}>
+                  <Ionicons name="checkmark" size={10} color="#0F6E56" />
+                  <Text style={styles.chipFreshText}>
+                    {t('pickers.histNever')}
+                  </Text>
+                </View>
+              )}
+            </View>
           </View>
         )}
         {pairWithName !== undefined && (
@@ -579,15 +597,25 @@ function PublisherOption({
               color="#7c3aed"
               style={styles.histIcon}
             />
-            <Text style={[styles.histText, styles.pairText]}>
-              {pdates.length > 0
-                ? t('pickers.pairedWith', {
-                    name: pairWithName,
-                    count: pdates.length,
-                    dates: pdates.map(fmtFullDate).join(', '),
-                  })
-                : t('pickers.notPairedYet', { name: pairWithName })}
-            </Text>
+            <View style={styles.chipsWrap}>
+              <Text style={styles.histLabel}>
+                {t('pickers.histPairWith', { name: pairWithName })}
+              </Text>
+              {pdates.length > 0 ? (
+                pdates.map((d) => (
+                  <View key={d} style={[styles.chip, styles.chipPair]}>
+                    <Text style={styles.chipPairText}>{fmtFullDate(d)}</Text>
+                  </View>
+                ))
+              ) : (
+                <View style={[styles.chip, styles.chipFresh]}>
+                  <Ionicons name="checkmark" size={10} color="#0F6E56" />
+                  <Text style={styles.chipFreshText}>
+                    {t('pickers.histNever')}
+                  </Text>
+                </View>
+              )}
+            </View>
           </View>
         )}
         {busyThisMeeting && (
@@ -699,8 +727,37 @@ const styles = StyleSheet.create({
     marginLeft: 16,
   },
   histIcon: { marginTop: 1 },
-  histText: { fontSize: 11, color: '#475569', flexShrink: 1, lineHeight: 15 },
-  pairText: { color: '#6d28d9' },
+  chipsWrap: {
+    flex: 1,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    gap: 6,
+  },
+  histLabel: { fontSize: 11, color: '#94a3b8' },
+  chip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+    borderRadius: 10,
+    paddingHorizontal: 7,
+    paddingVertical: 1,
+  },
+  chipBusy: { backgroundColor: '#faeeda' },
+  chipBusyText: { fontSize: 11, color: '#854f0b' },
+  chipPair: { backgroundColor: '#eeedfe' },
+  chipPairText: { fontSize: 11, color: '#3c3489' },
+  chipFresh: { backgroundColor: '#e1f5ee' },
+  chipFreshText: { fontSize: 11, color: '#0f6e56' },
+  histScopeNote: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 20,
+    paddingBottom: 8,
+    marginTop: -4,
+  },
+  histScopeText: { fontSize: 11, color: '#64748b' },
 
   modal: {
     flex: 1,

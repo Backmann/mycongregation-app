@@ -788,7 +788,12 @@
     "didThisDuty": "This duty (3 mo): {{dates}}",
     "neverDidDuty3mo": "Hasn't done this duty in 3 months",
     "pairedWith": "With {{name}}: {{count}}× — {{dates}}",
-    "notPairedYet": "Not paired with {{name}} yet"
+    "notPairedYet": "Not paired with {{name}} yet",
+    "histThisPart": "this part:",
+    "histThisDuty": "this duty:",
+    "histNever": "not yet",
+    "histPairWith": "paired with {{name}}:",
+    "historyScope": "Activity over the last 3 months"
   },
   "admin": {
     "users": {

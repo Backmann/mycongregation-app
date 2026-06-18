@@ -792,7 +792,12 @@
     "didThisDuty": "Эту обязанность (3 мес.): {{dates}}",
     "neverDidDuty3mo": "Эту обязанность за 3 месяца не выполнял(а)",
     "pairedWith": "С {{name}}: {{count}}× — {{dates}}",
-    "notPairedYet": "С {{name}} ещё не были в паре"
+    "notPairedYet": "С {{name}} ещё не были в паре",
+    "histThisPart": "эту часть:",
+    "histThisDuty": "эту обязанность:",
+    "histNever": "ещё ни разу",
+    "histPairWith": "в паре с {{name}}:",
+    "historyScope": "История за последние 3 месяца"
   },
   "admin": {
     "users": {
