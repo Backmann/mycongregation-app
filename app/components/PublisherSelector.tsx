@@ -18,10 +18,8 @@ import {
   Absence,
   absencesApi,
   ActivityItem,
-  PartSuggestion,
   Publisher,
   PublisherActivity,
-  publisherActivityApi,
   publishersApi,
 } from '../lib/api';
 import { ActivitySummary, summarizeActivity } from '../lib/activity';
@@ -154,41 +152,8 @@ export function PublisherSelector({
   const selectedAbsence = value ? absentThisWeek.get(value) : undefined;
   // ----------------------------------------------------------------------
 
-  // --- Suggestions: when did each candidate last do this part ------------
+  // --- Scope keys for part-scoped history -------------------------------
   const suggKeys = suggestionPartKeys ?? [];
-  const suggEnabled = weekValid && suggKeys.length > 0;
-  const { data: suggData } = useQuery({
-    queryKey: ['part-suggestions', currentWeekStart, suggKeys.join(',')],
-    queryFn: () =>
-      publisherActivityApi.getSuggestions({
-        weekStart: currentWeekStart!,
-        partKeys: suggKeys,
-      }),
-    enabled: suggEnabled,
-    staleTime: 5 * 60 * 1000,
-  });
-  const suggestionById = useMemo(() => {
-    const m = new Map<string, PartSuggestion>();
-    for (const s of suggData ?? []) m.set(s.publisherId, s);
-    return m;
-  }, [suggData]);
-  const lastDoneAt = (publisherId: string): string | null => {
-    const s = suggestionById.get(publisherId);
-    if (!s) return null;
-    return suggestionRole === 'assistant'
-      ? s.lastAssistantAt
-      : s.lastPrimaryAt;
-  };
-  const partnerHistory = partnerOfPublisherId
-    ? (suggestionById.get(partnerOfPublisherId)?.recentAssistants ?? [])
-    : [];
-  const recentPartnerWeekById = new Map<string, string>();
-  for (const r of partnerHistory) {
-    if (!recentPartnerWeekById.has(r.publisherId)) {
-      recentPartnerWeekById.set(r.publisherId, r.weekStartDate);
-    }
-  }
-  // ----------------------------------------------------------------------
 
   // --- Scoped history + pairing (always-visible, ~3 months) --------------
   const scopeKeySet = new Set(suggKeys);
@@ -262,21 +227,31 @@ export function PublisherSelector({
     return true;
   });
 
-  const sorted = suggEnabled
+  // Precompute each candidate's 3-month history once (drives sort + chips,
+  // so the order always matches what's shown).
+  const itemDatesById = new Map<string, string[]>();
+  const pairDatesById = new Map<string, string[]>();
+  for (const p of filtered) {
+    itemDatesById.set(p.id, thisItemDatesFor(p.id));
+    if (partnerOfPublisherId) pairDatesById.set(p.id, pairDatesFor(p.id));
+  }
+
+  // Float up those who least-recently (or never) did this exact part/duty —
+  // and, for assistant pickers, least-recently (or never) paired with the
+  // primary. Empty/undefined (never, in 3 months) ranks first.
+  const sorted = historyEnabled
     ? [...filtered].sort((a, b) => {
-        // For assistant pickers, float up those least-recently (or never)
-        // paired with this primary; recent partners sink.
         if (partnerOfPublisherId) {
-          const pa = recentPartnerWeekById.get(a.id);
-          const pb = recentPartnerWeekById.get(b.id);
+          const pa = pairDatesById.get(a.id)?.[0];
+          const pb = pairDatesById.get(b.id)?.[0];
           if (pa !== pb) {
-            if (pa === undefined) return -1;
-            if (pb === undefined) return 1;
+            if (!pa) return -1;
+            if (!pb) return 1;
             return pa.localeCompare(pb);
           }
         }
-        const da = lastDoneAt(a.id);
-        const db = lastDoneAt(b.id);
+        const da = itemDatesById.get(a.id)?.[0] ?? null;
+        const db = itemDatesById.get(b.id)?.[0] ?? null;
         if (da === db) return a.displayName.localeCompare(b.displayName);
         if (da === null) return -1;
         if (db === null) return 1;
@@ -472,8 +447,8 @@ export function PublisherSelector({
                   absence={absentThisWeek.get(p.id)}
                   showHistory={historyEnabled}
                   historyKind={scopeDutyType ? 'duty' : 'part'}
-                  thisItemDates={thisItemDatesFor(p.id)}
-                  pairDates={pairDatesFor(p.id)}
+                  thisItemDates={itemDatesById.get(p.id) ?? []}
+                  pairDates={pairDatesById.get(p.id) ?? []}
                   pairWithName={partnerName}
                 />
               ))}
