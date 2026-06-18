@@ -460,6 +460,7 @@ export function AssignmentForm({
                 suggestionPartKeys={suggestionPartKeys}
                 suggestionRole="assistant"
                 partnerOfPublisherId={form.publisherId ?? null}
+                matchGenderOfPublisherId={form.publisherId ?? null}
                 activityById={activityById}
                 currentWeekStart={form.weekStartDate}
                 currentEventType={form.eventType}

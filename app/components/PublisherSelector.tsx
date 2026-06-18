@@ -54,6 +54,8 @@ interface Props {
   suggestionRole?: 'primary' | 'assistant';
   /** For assistant pickers: the primary publisher whose recent partners to mark. */
   partnerOfPublisherId?: string | null;
+  /** For assistant pickers: soft-filter to the same gender as this publisher; "Show all" reveals others (e.g. family). */
+  matchGenderOfPublisherId?: string | null;
 }
 
 const ISO_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -119,6 +121,7 @@ export function PublisherSelector({
   suggestionPartKeys,
   suggestionRole = 'primary',
   partnerOfPublisherId,
+  matchGenderOfPublisherId,
 }: Props) {
   const { t, i18n } = useTranslation();
   const [open, setOpen] = useState(false);
@@ -193,6 +196,13 @@ export function PublisherSelector({
   }
   // ----------------------------------------------------------------------
 
+  const matchGender =
+    matchGenderOfPublisherId != null
+      ? (allPublishers.find((p) => p.id === matchGenderOfPublisherId)?.gender ??
+        null)
+      : null;
+  const softGenderActive = matchGender != null && !showAll;
+
   const filterByCapability = !!requiredCapability && !showAll;
   const capabilityLabel = requiredCapability
     ? t(`capabilities.items.${requiredCapability}`)
@@ -201,6 +211,7 @@ export function PublisherSelector({
   const filtered = allPublishers.filter((p) => {
     if (excludeIds.includes(p.id)) return false;
     if (genderFilter && p.gender !== genderFilter) return false;
+    if (softGenderActive && p.gender !== matchGender) return false;
     if (
       search !== '' &&
       !p.displayName.toLowerCase().includes(search.toLowerCase())
@@ -213,6 +224,17 @@ export function PublisherSelector({
 
   const sorted = suggEnabled
     ? [...filtered].sort((a, b) => {
+        // For assistant pickers, float up those least-recently (or never)
+        // paired with this primary; recent partners sink.
+        if (partnerOfPublisherId) {
+          const pa = recentPartnerWeekById.get(a.id);
+          const pb = recentPartnerWeekById.get(b.id);
+          if (pa !== pb) {
+            if (pa === undefined) return -1;
+            if (pb === undefined) return 1;
+            return pa.localeCompare(pb);
+          }
+        }
         const da = lastDoneAt(a.id);
         const db = lastDoneAt(b.id);
         if (da === db) return a.displayName.localeCompare(b.displayName);
@@ -310,7 +332,7 @@ export function PublisherSelector({
             </Pressable>
           </View>
 
-          {requiredCapability && (
+          {(requiredCapability || matchGender) && (
             <Pressable
               style={styles.toggleRow}
               onPress={() => setShowAll((v) => !v)}
