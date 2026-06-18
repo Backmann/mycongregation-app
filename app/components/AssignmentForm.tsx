@@ -26,7 +26,6 @@ import {
 } from '../lib/api';
 import {
   getPartDef,
-  getPartLabel,
   PARTS_BY_EVENT,
   skillCapabilityFromTitle,
 } from '../lib/parts';
@@ -258,7 +257,6 @@ export function AssignmentForm({
               defaultValue: form.eventType,
             })}
           </Text>
-          <Text style={styles.contextPart}>{getPartLabel(form.partKey)}</Text>
           {autosave && (instantSaving || instantSavedAt || instantError) ? (
             <Text
               style={[
@@ -339,49 +337,6 @@ export function AssignmentForm({
           />
         </FormSection>
       )}
-
-      <CollapsibleSection
-        title={t('assignments.form.section.details')}
-        initiallyOpen={!!form.partTitle || !!form.partDurationMin}
-      >
-        <FormField
-          label={t('assignments.form.field.partTitleOverride')}
-          value={form.partTitle ?? ''}
-          onChangeText={(v) => {
-            update('partTitle', v);
-            queueInstant({ partTitle: v });
-          }}
-          placeholder={t('assignments.form.placeholder.partTitleOverride')}
-          multiline
-        />
-        <FormField
-          label={t('assignments.form.field.durationMinutes')}
-          value={form.partDurationMin?.toString() ?? ''}
-          onChangeText={(v) => {
-            update('partDurationMin', v ? parseInt(v, 10) : undefined);
-            queueInstant({ partDurationMin: v ? parseInt(v, 10) : undefined });
-          }}
-          keyboardType="numeric"
-          placeholder={t('assignments.form.placeholder.duration')}
-        />
-        {requiredSkillLabel && (
-          <View
-            style={{
-              paddingVertical: 12,
-              paddingHorizontal: 20,
-              borderTopWidth: 1,
-              borderTopColor: '#f1f5f9',
-            }}
-          >
-            <Text style={{ fontSize: 13, color: '#94a3b8', marginBottom: 4 }}>
-              {t('assignments.form.field.requiredSkill')}
-            </Text>
-            <Text style={{ fontSize: 15, color: '#0f172a' }}>
-              {requiredSkillLabel}
-            </Text>
-          </View>
-        )}
-      </CollapsibleSection>
 
       <FormSection title={isPublicTalkSpeaker ? t('assignments.form.section.speaker') : t('assignments.form.section.assignment')}>
         {isPublicTalkSpeaker ? (
@@ -470,14 +425,46 @@ export function AssignmentForm({
         )}
       </FormSection>
 
-      <FormSection title={t('assignments.form.section.status')}>
-        {!autosave && (
-          <FormChips
-            label={t('assignments.form.field.statusLabel')}
-            value={form.status ?? 'draft'}
-            options={STATUS_OPTIONS}
-            onChange={(v) => update('status', v)}
-          />
+      <CollapsibleSection
+        title={t('assignments.form.section.details')}
+        initiallyOpen={false}
+      >
+        <FormField
+          label={t('assignments.form.field.partTitleOverride')}
+          value={form.partTitle ?? ''}
+          onChangeText={(v) => {
+            update('partTitle', v);
+            queueInstant({ partTitle: v });
+          }}
+          placeholder={t('assignments.form.placeholder.partTitleOverride')}
+          multiline
+        />
+        <FormField
+          label={t('assignments.form.field.durationMinutes')}
+          value={form.partDurationMin?.toString() ?? ''}
+          onChangeText={(v) => {
+            update('partDurationMin', v ? parseInt(v, 10) : undefined);
+            queueInstant({ partDurationMin: v ? parseInt(v, 10) : undefined });
+          }}
+          keyboardType="numeric"
+          placeholder={t('assignments.form.placeholder.duration')}
+        />
+        {requiredSkillLabel && (
+          <View
+            style={{
+              paddingVertical: 12,
+              paddingHorizontal: 20,
+              borderTopWidth: 1,
+              borderTopColor: '#f1f5f9',
+            }}
+          >
+            <Text style={{ fontSize: 13, color: '#94a3b8', marginBottom: 4 }}>
+              {t('assignments.form.field.requiredSkill')}
+            </Text>
+            <Text style={{ fontSize: 15, color: '#0f172a' }}>
+              {requiredSkillLabel}
+            </Text>
+          </View>
         )}
         <FormField
           label={t('common.notes')}
@@ -488,6 +475,17 @@ export function AssignmentForm({
           }}
           multiline
         />
+      </CollapsibleSection>
+
+      <FormSection title={t('assignments.form.section.status')}>
+        {!autosave && (
+          <FormChips
+            label={t('assignments.form.field.statusLabel')}
+            value={form.status ?? 'draft'}
+            options={STATUS_OPTIONS}
+            onChange={(v) => update('status', v)}
+          />
+        )}
         {autosave ? (
           <Pressable
             style={({ pressed }) => [
@@ -589,7 +587,6 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 0.4,
   },
-  contextPart: { fontSize: 17, fontWeight: '700', color: '#0f172a' },
   contextChips: { flexDirection: 'row', gap: 6, marginTop: 4 },
   contextChip: {
     backgroundColor: '#f1f5f9',
