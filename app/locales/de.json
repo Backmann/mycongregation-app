@@ -1276,6 +1276,9 @@
     "placeholders": {
       "title": "z. B. Hinweis zur Reinigung des Königreichssaals",
       "notes": "Notizen für den Redner…"
-    }
+    },
+    "insertCta": "Aus Örtlichen Bedürfnissen einfügen",
+    "insertTitle": "Thema auswählen",
+    "insertEmpty": "Keine geplanten Themen. Füge sie im Bildschirm „Örtliche Bedürfnisse“ hinzu (Glühbirne in der Kopfzeile des Programms)."
   }
 }

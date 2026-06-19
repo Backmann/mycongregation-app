@@ -1276,6 +1276,9 @@
     "placeholders": {
       "title": "e.g. Reminder about cleaning the Kingdom Hall",
       "notes": "Notes for the speaker…"
-    }
+    },
+    "insertCta": "Insert from Local Needs",
+    "insertTitle": "Choose a topic",
+    "insertEmpty": "No planned topics. Add them on the Local Needs screen (the bulb icon in the schedule header)."
   }
 }

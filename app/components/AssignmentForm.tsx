@@ -1,13 +1,15 @@
 import { useMemo, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   ActivityIndicator,
+  Modal,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { FormField } from './FormField';
 import { FormSection } from './FormSection';
 import { CollapsibleSection } from './CollapsibleSection';
@@ -20,6 +22,8 @@ import {
   CreateAssignmentInput,
   EventType,
   extractErrorMessage,
+  localNeedsApi,
+  LocalNeedsTopic,
   PublicTalk,
   PublisherActivity,
   publisherActivityApi,
@@ -29,6 +33,7 @@ import {
   PARTS_BY_EVENT,
   skillCapabilityFromTitle,
 } from '../lib/parts';
+import { usePermissions } from '../lib/permissions';
 import { useTranslation } from 'react-i18next';
 
 interface Props {
@@ -130,6 +135,34 @@ export function AssignmentForm({
     value: CreateAssignmentInput[K],
   ) => {
     setForm((prev) => ({ ...prev, [key]: value }));
+  };
+
+  // ---- Local Needs: insert a planned topic into a "Living as Christians" part ----
+  const qc = useQueryClient();
+  const { canManageLocalNeeds } = usePermissions();
+  const [lnPickerOpen, setLnPickerOpen] = useState(false);
+  const isLivingChristians = (form.partKey ?? '').startsWith(
+    'living_christians',
+  );
+  const lnQuery = useQuery({
+    queryKey: ['local-needs', 'planned'],
+    queryFn: () => localNeedsApi.list({ onlyPlanned: true }),
+    enabled: lnPickerOpen,
+  });
+  const markUsedMut = useMutation({
+    mutationFn: (id: string) =>
+      localNeedsApi.update(id, { usedWeek: form.weekStartDate || null }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['local-needs'] }),
+  });
+  const applyLocalNeed = (topic: LocalNeedsTopic) => {
+    update('partTitle', topic.title);
+    void instant({ partTitle: topic.title });
+    if (topic.speakerPublisherId) {
+      update('publisherId', topic.speakerPublisherId);
+      void instant({ publisherId: topic.speakerPublisherId });
+    }
+    if (form.weekStartDate) markUsedMut.mutate(topic.id);
+    setLnPickerOpen(false);
   };
 
   const activityQuery = useQuery({
@@ -327,6 +360,68 @@ export function AssignmentForm({
           </>
         </FormSection>
       )}
+
+      {isLivingChristians && canManageLocalNeeds && !readOnly ? (
+        <Pressable
+          style={styles.lnInsertBtn}
+          onPress={() => setLnPickerOpen(true)}
+        >
+          <Ionicons name="bulb-outline" size={18} color="#0ea5e9" />
+          <Text style={styles.lnInsertText}>{t('localNeeds.insertCta')}</Text>
+        </Pressable>
+      ) : null}
+
+      <Modal
+        visible={lnPickerOpen}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setLnPickerOpen(false)}
+      >
+        <View style={styles.lnBackdrop}>
+          <View style={styles.lnCard}>
+            <View style={styles.lnHeader}>
+              <Text style={styles.lnTitle}>{t('localNeeds.insertTitle')}</Text>
+              <Pressable onPress={() => setLnPickerOpen(false)} hitSlop={8}>
+                <Ionicons name="close" size={24} color="#64748b" />
+              </Pressable>
+            </View>
+            {lnQuery.isLoading ? (
+              <ActivityIndicator style={{ marginVertical: 24 }} />
+            ) : (lnQuery.data ?? []).length === 0 ? (
+              <Text style={styles.lnEmpty}>{t('localNeeds.insertEmpty')}</Text>
+            ) : (
+              <ScrollView style={{ maxHeight: 360 }}>
+                {(lnQuery.data ?? []).map((topic) => (
+                  <Pressable
+                    key={topic.id}
+                    style={styles.lnRow}
+                    onPress={() => applyLocalNeed(topic)}
+                  >
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.lnRowTitle}>{topic.title}</Text>
+                      {topic.notes ? (
+                        <Text style={styles.lnRowNotes} numberOfLines={2}>
+                          {topic.notes}
+                        </Text>
+                      ) : null}
+                      {topic.speaker ? (
+                        <Text style={styles.lnRowSpeaker}>
+                          {topic.speaker.displayName}
+                        </Text>
+                      ) : null}
+                    </View>
+                    <Ionicons
+                      name="add-circle-outline"
+                      size={22}
+                      color="#0ea5e9"
+                    />
+                  </Pressable>
+                ))}
+              </ScrollView>
+            )}
+          </View>
+        </View>
+      </Modal>
 
       {isPublicTalkSpeaker && (
         <FormSection title={t('assignments.form.section.publicTalk')}>
@@ -628,4 +723,61 @@ const styles = StyleSheet.create({
     borderColor: '#cbd5e1',
   },
   buttonSecondaryText: { color: '#475569', fontSize: 16, fontWeight: '500' },
+  lnInsertBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    marginHorizontal: 16,
+    marginBottom: 12,
+    paddingVertical: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#bae6fd',
+    backgroundColor: '#f0f9ff',
+  },
+  lnInsertText: { color: '#0369a1', fontSize: 15, fontWeight: '700' },
+  lnBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(15,23,42,0.45)',
+    justifyContent: 'center',
+    padding: 16,
+  },
+  lnCard: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 16,
+    maxHeight: '80%',
+  },
+  lnHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  lnTitle: { fontSize: 18, fontWeight: '700', color: '#0f172a' },
+  lnEmpty: {
+    fontSize: 14,
+    color: '#64748b',
+    textAlign: 'center',
+    marginVertical: 24,
+    lineHeight: 20,
+  },
+  lnRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 4,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f5f9',
+  },
+  lnRowTitle: { fontSize: 15, fontWeight: '600', color: '#0f172a' },
+  lnRowNotes: { fontSize: 13, color: '#64748b', marginTop: 2 },
+  lnRowSpeaker: {
+    fontSize: 12,
+    color: '#0369a1',
+    fontWeight: '500',
+    marginTop: 3,
+  },
 });
