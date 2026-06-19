@@ -796,7 +796,8 @@
     "histThisDuty": "diese Aufgabe war:",
     "histNever": "noch nie",
     "histPairWith": "im Team mit {{name}}:",
-    "historyScope": "Aktivität der letzten 3 Monate"
+    "historyScope": "Aktivität der letzten 3 Monate",
+    "showingElders": "Älteste werden angezeigt"
   },
   "admin": {
     "users": {
@@ -1279,6 +1280,7 @@
     },
     "insertCta": "Aus Örtlichen Bedürfnissen einfügen",
     "insertTitle": "Thema auswählen",
-    "insertEmpty": "Keine geplanten Themen. Füge sie im Bildschirm „Örtliche Bedürfnisse“ hinzu (Glühbirne in der Kopfzeile des Programms)."
+    "insertEmpty": "Keine geplanten Themen. Füge sie im Bildschirm „Örtliche Bedürfnisse“ hinzu (Glühbirne in der Kopfzeile des Programms).",
+    "noAccess": "Örtliche Bedürfnisse sind nur für Älteste verfügbar."
   }
 }

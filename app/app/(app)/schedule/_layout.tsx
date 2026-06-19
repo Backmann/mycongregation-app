@@ -12,7 +12,7 @@ export default function ScheduleLayout() {
     canImportWeekendSchedule,
     canEditMidweekSchedule,
     canEditWeekendSchedule,
-    canManageLocalNeeds,
+    canViewLocalNeeds,
   } = usePermissions();
   const canImport = canImportMidweekSchedule || canImportWeekendSchedule;
   const canCreate = canEditMidweekSchedule || canEditWeekendSchedule;
@@ -24,7 +24,7 @@ export default function ScheduleLayout() {
           title: t('schedule.title.list'),
           headerRight: () => (
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              {canManageLocalNeeds && (
+              {canViewLocalNeeds && (
                 <Pressable
                   onPress={() => router.push('/local-needs' as any)}
                   style={{ paddingHorizontal: 10 }}

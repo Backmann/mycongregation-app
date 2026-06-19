@@ -46,11 +46,12 @@ function fmtWeek(week: string, loc: string): string {
 export default function LocalNeedsScreen() {
   const { t, i18n } = useTranslation();
   const qc = useQueryClient();
-  const { canManageLocalNeeds } = usePermissions();
+  const { canManageLocalNeeds, canViewLocalNeeds } = usePermissions();
 
   const { data, isLoading, isRefetching, refetch, error } = useQuery({
     queryKey: ['local-needs'],
     queryFn: () => localNeedsApi.list(),
+    enabled: canViewLocalNeeds,
   });
 
   const [modalOpen, setModalOpen] = useState(false);
@@ -222,6 +223,16 @@ export default function LocalNeedsScreen() {
     );
   }
 
+  if (!canViewLocalNeeds) {
+    return (
+      <View style={styles.container}>
+        <Text style={[styles.empty, { paddingHorizontal: 24 }]}>
+          {t('localNeeds.noAccess')}
+        </Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <ScrollView
@@ -319,6 +330,7 @@ export default function LocalNeedsScreen() {
                 label={t('localNeeds.fields.speaker')}
                 value={speakerId}
                 onChange={setSpeakerId}
+                preferAppointment="elder"
               />
 
               {saveError && (

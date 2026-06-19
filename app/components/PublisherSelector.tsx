@@ -57,6 +57,8 @@ interface Props {
   matchGenderOfPublisherId?: string | null;
   /** When set, scoped history shows this duty type (instead of part keys). */
   scopeDutyType?: string;
+  /** Soft-filter to this appointment (e.g. 'elder'); "Show all" reveals others. */
+  preferAppointment?: 'elder' | 'ministerial_servant';
 }
 
 const ISO_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -114,6 +116,7 @@ export function PublisherSelector({
   partnerOfPublisherId,
   matchGenderOfPublisherId,
   scopeDutyType,
+  preferAppointment,
 }: Props) {
   const { t, i18n } = useTranslation();
   const [open, setOpen] = useState(false);
@@ -207,6 +210,7 @@ export function PublisherSelector({
         null)
       : null;
   const softGenderActive = matchGender != null && !showAll;
+  const softApptActive = !!preferAppointment && !showAll;
 
   const filterByCapability = !!requiredCapability && !showAll;
   const capabilityLabel = requiredCapability
@@ -217,6 +221,7 @@ export function PublisherSelector({
     if (excludeIds.includes(p.id)) return false;
     if (genderFilter && p.gender !== genderFilter) return false;
     if (softGenderActive && p.gender !== matchGender) return false;
+    if (softApptActive && p.appointment !== preferAppointment) return false;
     if (
       search !== '' &&
       !p.displayName.toLowerCase().includes(search.toLowerCase())
@@ -367,7 +372,7 @@ export function PublisherSelector({
             </Pressable>
           </View>
 
-          {(requiredCapability || matchGender) && (
+          {(requiredCapability || matchGender || preferAppointment) && (
             <Pressable
               style={styles.toggleRow}
               onPress={() => setShowAll((v) => !v)}
@@ -379,7 +384,11 @@ export function PublisherSelector({
                 <Text style={styles.toggleHint}>
                   {showAll
                     ? t('pickers.showingAllNoFilter')
-                    : t('pickers.hiddenByCapability', { count: hiddenByCapability })}
+                    : preferAppointment && !requiredCapability && !matchGender
+                      ? t('pickers.showingElders')
+                      : t('pickers.hiddenByCapability', {
+                          count: hiddenByCapability,
+                        })}
                 </Text>
               </View>
               <Switch

@@ -57,7 +57,8 @@ export interface Permissions {
   /** Absences — admin OR body coordinator / midweek overseer / secretary. */
   canManageAbsences: boolean;
 
-  /** Local needs backlog — same managers as absences. */
+  /** Local needs — visible to elders (read); managed by admin + L&M overseer. */
+  canViewLocalNeeds: boolean;
   canManageLocalNeeds: boolean;
 
   canViewServiceSummary: boolean;
@@ -129,11 +130,8 @@ export function usePermissions(): Permissions {
         holds('body_coordinator') ||
         holds('life_ministry_overseer') ||
         holds('secretary'),
-      canManageLocalNeeds:
-        isAdmin ||
-        holds('body_coordinator') ||
-        holds('life_ministry_overseer') ||
-        holds('secretary'),
+      canViewLocalNeeds: isAdmin || isElder,
+      canManageLocalNeeds: isAdmin || holds('life_ministry_overseer'),
       canViewServiceSummary: isAdmin || holds('secretary'),
 
       responsibilities: mine,

@@ -796,7 +796,8 @@
     "histThisDuty": "this duty was:",
     "histNever": "not yet",
     "histPairWith": "paired with {{name}}:",
-    "historyScope": "Activity over the last 3 months"
+    "historyScope": "Activity over the last 3 months",
+    "showingElders": "Showing elders"
   },
   "admin": {
     "users": {
@@ -1279,6 +1280,7 @@
     },
     "insertCta": "Insert from Local Needs",
     "insertTitle": "Choose a topic",
-    "insertEmpty": "No planned topics. Add them on the Local Needs screen (the bulb icon in the schedule header)."
+    "insertEmpty": "No planned topics. Add them on the Local Needs screen (the bulb icon in the schedule header).",
+    "noAccess": "Local Needs are available to elders only."
   }
 }
