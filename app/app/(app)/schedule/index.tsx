@@ -1220,43 +1220,42 @@ function AssignmentRow({
             {subtitle}
           </Text>
         )}
-        {assistant ? (
-          <View style={styles.pairRow}>
-            {publisher ? (
-              <View style={[styles.chip, styles.chipMain]}>
-                <Ionicons name="person-outline" size={13} color="#0c4a6e" />
-                <Text style={styles.chipMainText}>{publisher.displayName}</Text>
-              </View>
-            ) : (
-              <View style={[styles.chip, styles.chipEmpty]}>
-                <Text style={styles.chipEmptyText}>
-                  {t('schedule.unassigned')}
-                </Text>
-              </View>
-            )}
+        <View style={styles.pairRow}>
+          {publisher ? (
+            <View style={[styles.chip, styles.chipMain]}>
+              <Ionicons name="person-outline" size={13} color="#0c4a6e" />
+              <Text style={styles.chipMainText}>{publisher.displayName}</Text>
+            </View>
+          ) : hasInvitedSpeaker ? (
+            <View style={[styles.chip, styles.chipSpeaker]}>
+              <Ionicons name="airplane-outline" size={13} color="#6d28d9" />
+              <Text style={styles.chipSpeakerText}>
+                {assignment.speakerName}
+                {assignment.speakerCongregation ? (
+                  <Text style={styles.chipSpeakerCong}>
+                    {' · '}
+                    {assignment.speakerCongregation}
+                  </Text>
+                ) : null}
+              </Text>
+            </View>
+          ) : (
+            <View style={[styles.chip, styles.chipEmpty]}>
+              <Ionicons name="person-add-outline" size={13} color="#94a3b8" />
+              <Text style={styles.chipEmptyText}>
+                {t('schedule.unassigned')}
+              </Text>
+            </View>
+          )}
+          {assistant && (
             <View style={[styles.chip, styles.chipAssistant]}>
               <Ionicons name="people-outline" size={13} color="#475569" />
               <Text style={styles.chipAssistantText}>
                 {assistant.displayName}
               </Text>
             </View>
-          </View>
-        ) : (
-          <View style={styles.assigneeRow}>
-            {publisher ? (
-              <Text style={styles.assignee}>{publisher.displayName}</Text>
-            ) : hasInvitedSpeaker ? (
-              <Text style={styles.invitedSpeaker}>
-                ✈ {assignment.speakerName}
-                {assignment.speakerCongregation
-                  ? ` (${assignment.speakerCongregation})`
-                  : ''}
-              </Text>
-            ) : (
-              <Text style={styles.unassigned}>{t('schedule.unassigned')}</Text>
-            )}
-          </View>
-        )}
+          )}
+        </View>
         {publisher?.serviceGroupId &&
         groupNameById.get(publisher.serviceGroupId) ? (
           <View style={styles.assigneeGroupRow}>
@@ -1410,9 +1409,6 @@ const styles = StyleSheet.create({
     marginTop: 2,
     fontStyle: 'italic',
   },
-  assigneeRow: { flexDirection: 'row', flexWrap: 'wrap', marginTop: 4 },
-  assignee: { fontSize: 14, color: '#0f172a' },
-  invitedSpeaker: { fontSize: 14, color: '#7c3aed', fontWeight: '500' },
   pairRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -1432,13 +1428,17 @@ const styles = StyleSheet.create({
   chipMainText: { fontSize: 13, color: '#0c4a6e', fontWeight: '500' },
   chipAssistant: { backgroundColor: '#f1f5f9' },
   chipAssistantText: { fontSize: 13, color: '#475569', fontWeight: '500' },
-  chipEmpty: { backgroundColor: '#f1f5f9' },
-  chipEmptyText: { fontSize: 13, color: '#94a3b8', fontStyle: 'italic' },
-  unassigned: {
-    fontSize: 13,
-    color: '#94a3b8',
-    fontStyle: 'italic',
+  chipSpeaker: { backgroundColor: '#ede9fe' },
+  chipSpeakerText: { fontSize: 13, color: '#6d28d9', fontWeight: '500' },
+  chipSpeakerCong: { fontSize: 13, color: '#9b7fd4', fontWeight: '400' },
+  chipEmpty: {
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    borderColor: '#cbd5e1',
+    paddingVertical: 3,
   },
+  chipEmptyText: { fontSize: 13, color: '#94a3b8', fontStyle: 'italic' },
   statusBadge: {
     alignSelf: 'flex-start',
     paddingHorizontal: 6,
