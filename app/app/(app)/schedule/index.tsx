@@ -320,6 +320,19 @@ export default function ScheduleIndexScreen() {
     (e) =>
       e.type === 'regional_convention' || e.type === 'circuit_assembly',
   );
+  // Circuit-overseer visit week: surface the overseer so the assignment sheet
+  // can offer him for the prayers and title his talks.
+  const coVisitEvent = weekEvents.find(
+    (e) => e.type === 'circuit_overseer_visit',
+  );
+  const circuitOverseer = coVisitEvent
+    ? {
+        displayName: [coVisitEvent.coFirstName, coVisitEvent.coLastName]
+          .filter(Boolean)
+          .join(' ')
+          .trim(),
+      }
+    : null;
   // Songs are not assigned to a person, so they must not count toward the
   // progress badge (otherwise meetings always look under-filled).
   const BADGE_SONG_KEYS = new Set<string>([
@@ -425,6 +438,7 @@ export default function ScheduleIndexScreen() {
         assignment={editing}
         weekStartISO={weekStartISO}
         canEdit={canEditEditing}
+        circuitOverseer={circuitOverseer}
         onClose={() => setEditing(null)}
       />
       <CleaningPlanMode

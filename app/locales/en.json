@@ -582,7 +582,8 @@
         "details": "Details",
         "speaker": "Speaker",
         "assignment": "Assignment",
-        "status": "Status"
+        "status": "Status",
+        "coTalk": "Circuit overseer talk"
       },
       "readonly": {
         "weekStart": "Week start",
@@ -603,7 +604,9 @@
         "fromCongregation": "From congregation",
         "assistant": "Assistant",
         "statusLabel": "Status",
-        "requiredSkill": "Required skill"
+        "requiredSkill": "Required skill",
+        "talkTheme": "Talk theme",
+        "talkThemeManual": "Theme (manual)"
       },
       "placeholder": {
         "weekStart": "2026-05-04",
@@ -611,7 +614,9 @@
         "partTitleOverride": "e.g. Numbers 1:1-19",
         "duration": "4",
         "speakerName": "John Smith",
-        "fromCongregation": "Berlin Central"
+        "fromCongregation": "Berlin Central",
+        "talkTheme": "Enter the talk theme",
+        "talkThemeManual": "Or enter the theme manually"
       },
       "validation": {
         "weekStartRequired": "Week start date is required",
@@ -621,7 +626,17 @@
       "saving": "Saving…",
       "saved": "Saved",
       "cancelPart": "Cancel part",
-      "restorePart": "Restore part"
+      "restorePart": "Restore part",
+      "prayerBy": {
+        "label": "Who says the prayer",
+        "local": "From congregation",
+        "co": "Circuit overseer · {{name}}",
+        "coShort": "Circuit overseer"
+      },
+      "coSpeaker": "Given by the circuit overseer: {{name}}",
+      "coSpeakerNoName": "Given by the circuit overseer",
+      "prayerCoNote": "Prayer by the circuit overseer: {{name}}",
+      "prayerCoNoteNoName": "Prayer by the circuit overseer"
     }
   },
   "schedule": {

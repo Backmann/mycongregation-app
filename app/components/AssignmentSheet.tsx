@@ -29,6 +29,9 @@ interface Props {
   /** When set (planning mode), shows a "Next" button to jump to the
    * next unassigned part. */
   onNext?: (() => void) | null;
+  /** Circuit overseer for the week (CO-visit week only); enables CO talk
+   * titles and CO-led prayers in the form. */
+  circuitOverseer?: { displayName: string } | null;
 }
 
 const SONG_KEYS = ['mid_song', 'weekend_song', 'weekend_opening_song'];
@@ -45,6 +48,7 @@ export function AssignmentSheet({
   canEdit,
   onClose,
   onNext,
+  circuitOverseer,
 }: Props) {
   const { t } = useTranslation();
   const { width } = useWindowDimensions();
@@ -183,6 +187,9 @@ export function AssignmentSheet({
                   partDurationMin: active.partDurationMin ?? undefined,
                   publisherId: active.publisherId,
                   assistantPublisherId: active.assistantPublisherId,
+                  publicTalkId: active.publicTalkId ?? null,
+                  speakerName: active.speakerName ?? null,
+                  speakerCongregation: active.speakerCongregation ?? null,
                   status: active.status,
                   notes: active.notes ?? undefined,
                 }}
@@ -197,6 +204,7 @@ export function AssignmentSheet({
                 onCancel={onClose}
                 isSubmitting={updateMutation.isPending}
                 lockIdentity
+                circuitOverseer={circuitOverseer}
                 readOnly={!canEdit}
               />
               {canEdit && (

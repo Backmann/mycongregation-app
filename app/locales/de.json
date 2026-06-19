@@ -582,7 +582,8 @@
         "details": "Details",
         "speaker": "Redner",
         "assignment": "Zuteilung",
-        "status": "Status"
+        "status": "Status",
+        "coTalk": "Vortrag des Kreisaufsehers"
       },
       "readonly": {
         "weekStart": "Wochenbeginn",
@@ -603,7 +604,9 @@
         "fromCongregation": "Aus Versammlung",
         "assistant": "Gehilfe",
         "statusLabel": "Status",
-        "requiredSkill": "Erforderliche Fähigkeit"
+        "requiredSkill": "Erforderliche Fähigkeit",
+        "talkTheme": "Vortragsthema",
+        "talkThemeManual": "Thema (manuell)"
       },
       "placeholder": {
         "weekStart": "2026-05-04",
@@ -611,7 +614,9 @@
         "partTitleOverride": "z. B. 4. Mose 1:1–19",
         "duration": "4",
         "speakerName": "Max Müller",
-        "fromCongregation": "Berlin Mitte"
+        "fromCongregation": "Berlin Mitte",
+        "talkTheme": "Vortragsthema eingeben",
+        "talkThemeManual": "Oder Thema manuell eingeben"
       },
       "validation": {
         "weekStartRequired": "Wochenbeginn ist erforderlich",
@@ -621,7 +626,17 @@
       "saving": "Wird gespeichert…",
       "saved": "Gespeichert",
       "cancelPart": "Programmpunkt absagen",
-      "restorePart": "Programmpunkt wiederherstellen"
+      "restorePart": "Programmpunkt wiederherstellen",
+      "prayerBy": {
+        "label": "Wer betet",
+        "local": "Aus der Versammlung",
+        "co": "Kreisaufseher · {{name}}",
+        "coShort": "Kreisaufseher"
+      },
+      "coSpeaker": "Gehalten vom Kreisaufseher: {{name}}",
+      "coSpeakerNoName": "Gehalten vom Kreisaufseher",
+      "prayerCoNote": "Gebet vom Kreisaufseher: {{name}}",
+      "prayerCoNoteNoName": "Gebet vom Kreisaufseher"
     }
   },
   "schedule": {

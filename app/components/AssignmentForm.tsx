@@ -48,6 +48,11 @@ interface Props {
   lockIdentity?: boolean;
   /** When true the whole form is non-interactive and the actions are hidden. */
   readOnly?: boolean;
+  /**
+   * Circuit overseer for this week (when it is a CO-visit week), used to offer
+   * the overseer as a prayer participant and to label his talks. Null otherwise.
+   */
+  circuitOverseer?: { displayName: string } | null;
 }
 
 // EVENT_TYPE_OPTIONS, STATUS_OPTIONS, SPEAKER_TYPE_OPTIONS moved inside component (i18n)
@@ -61,6 +66,7 @@ export function AssignmentForm({
   submitLabel,
   lockIdentity,
   readOnly,
+  circuitOverseer,
 }: Props) {
   const { t } = useTranslation();
   const autosave = !!onInstantSave;
@@ -180,6 +186,44 @@ export function AssignmentForm({
   const partDef = getPartDef(form.partKey);
   const isPublicTalkSpeaker = form.partKey === 'public_talk_speaker';
   const showAssistant = !!partDef?.hasAssistant;
+
+  // ---- Circuit-overseer visit week: CO talks + CO-led prayers ----
+  const PRAYER_KEYS = [
+    'midweek_opening_prayer',
+    'midweek_closing_prayer',
+    'weekend_opening_prayer',
+    'weekend_closing_prayer',
+  ];
+  const isPrayer = PRAYER_KEYS.includes(form.partKey ?? '');
+  const isCoTalk =
+    form.partKey === 'co_service_talk' ||
+    form.partKey === 'co_concluding_talk';
+  const isCoWeek = !!circuitOverseer;
+  const coName = circuitOverseer?.displayName?.trim() || null;
+  // 'co' = the prayer is said by the circuit overseer (stored in speakerName).
+  const [prayerBy, setPrayerBy] = useState<'local' | 'co'>(
+    initial?.speakerName ? 'co' : 'local',
+  );
+  const PRAYER_BY_OPTIONS: { value: 'local' | 'co'; label: string }[] = [
+    { value: 'local', label: t('assignments.form.prayerBy.local') },
+    {
+      value: 'co',
+      label: coName
+        ? t('assignments.form.prayerBy.co', { name: coName })
+        : t('assignments.form.prayerBy.coShort'),
+    },
+  ];
+  const handlePrayerByChange = (v: 'local' | 'co') => {
+    setPrayerBy(v);
+    if (v === 'co') {
+      update('speakerName', coName);
+      update('publisherId', null);
+      void instant({ speakerName: coName, publisherId: null });
+    } else {
+      update('speakerName', null);
+      void instant({ speakerName: null });
+    }
+  };
   // Apply-Yourself parts are numbered positionally, but the real skill is in
   // the title — prefer that so the picker filters by the correct capability.
   const titleCap = form.partKey?.startsWith('apply_yourself')
@@ -423,6 +467,31 @@ export function AssignmentForm({
         </View>
       </Modal>
 
+      {isCoTalk && (
+        <FormSection title={t('assignments.form.section.coTalk')}>
+          <FormField
+            label={t('assignments.form.field.talkTheme')}
+            value={form.partTitle ?? ''}
+            onChangeText={(v) => {
+              update('partTitle', v);
+              queueInstant({ partTitle: v });
+            }}
+            placeholder={t('assignments.form.placeholder.talkTheme')}
+            multiline
+          />
+          <View style={styles.coSpeakerNote}>
+            <Ionicons name="person" size={16} color="#6d28d9" />
+            <Text style={styles.coSpeakerText}>
+              {form.speakerName || coName
+                ? t('assignments.form.coSpeaker', {
+                    name: form.speakerName ?? coName ?? '',
+                  })
+                : t('assignments.form.coSpeakerNoName')}
+            </Text>
+          </View>
+        </FormSection>
+      )}
+
       {isPublicTalkSpeaker && (
         <FormSection title={t('assignments.form.section.publicTalk')}>
           <PublicTalkSelector
@@ -430,10 +499,31 @@ export function AssignmentForm({
             value={form.publicTalkId}
             onChange={handleTalkSelect}
           />
+          {isCoWeek && (
+            <FormField
+              label={t('assignments.form.field.talkThemeManual')}
+              value={form.partTitle ?? ''}
+              onChangeText={(v) => {
+                update('partTitle', v);
+                queueInstant({ partTitle: v });
+              }}
+              placeholder={t('assignments.form.placeholder.talkThemeManual')}
+              multiline
+            />
+          )}
         </FormSection>
       )}
 
-      <FormSection title={isPublicTalkSpeaker ? t('assignments.form.section.speaker') : t('assignments.form.section.assignment')}>
+      {!isCoTalk && (
+      <FormSection
+        title={
+          isPublicTalkSpeaker
+            ? t('assignments.form.section.speaker')
+            : isPrayer && isCoWeek
+              ? t('assignments.form.prayerBy.label')
+              : t('assignments.form.section.assignment')
+        }
+      >
         {isPublicTalkSpeaker ? (
           <>
             <FormChips
@@ -479,6 +569,38 @@ export function AssignmentForm({
               </>
             )}
           </>
+        ) : isPrayer && isCoWeek ? (
+          <>
+            <FormChips
+              label={t('assignments.form.prayerBy.label')}
+              value={prayerBy}
+              options={PRAYER_BY_OPTIONS}
+              onChange={handlePrayerByChange}
+            />
+            {prayerBy === 'local' ? (
+              <PublisherSelector
+                label={t('assignments.form.field.publisher')}
+                value={form.publisherId}
+                onChange={(id) => {
+                  update('publisherId', id);
+                  void instant({ publisherId: id });
+                }}
+                requiredCapability={requiredCap}
+                activityById={activityById}
+                currentWeekStart={form.weekStartDate}
+                currentEventType={form.eventType}
+              />
+            ) : (
+              <View style={styles.coSpeakerNote}>
+                <Ionicons name="person" size={16} color="#6d28d9" />
+                <Text style={styles.coSpeakerText}>
+                  {coName
+                    ? t('assignments.form.prayerCoNote', { name: coName })
+                    : t('assignments.form.prayerCoNoteNoName')}
+                </Text>
+              </View>
+            )}
+          </>
         ) : (
           <>
             <PublisherSelector
@@ -519,6 +641,7 @@ export function AssignmentForm({
           </>
         )}
       </FormSection>
+      )}
 
       <CollapsibleSection
         title={t('assignments.form.section.details')}
@@ -737,6 +860,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#f0f9ff',
   },
   lnInsertText: { color: '#0369a1', fontSize: 15, fontWeight: '700' },
+  coSpeakerNote: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+  },
+  coSpeakerText: { flex: 1, fontSize: 14, color: '#6d28d9', fontWeight: '600' },
   lnBackdrop: {
     flex: 1,
     backgroundColor: 'rgba(15,23,42,0.45)',
