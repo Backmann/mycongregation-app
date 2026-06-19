@@ -745,7 +745,9 @@
       "reader": "Reader"
     },
     "congressWeek": {
-      "noMeetings": "No congregation meetings are held during the convention week"
+      "noMeetings": "No congregation meetings are held during the convention week",
+      "programRegional": "Regional convention program",
+      "programCircuit": "Circuit assembly program"
     }
   },
   "audit": {

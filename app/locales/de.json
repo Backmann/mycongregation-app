@@ -745,7 +745,9 @@
       "reader": "Leser"
     },
     "congressWeek": {
-      "noMeetings": "In der Kongresswoche finden keine Zusammenkünfte der Versammlung statt"
+      "noMeetings": "In der Kongresswoche finden keine Zusammenkünfte der Versammlung statt",
+      "programRegional": "Programm des regionalen Kongresses",
+      "programCircuit": "Programm des Kreiskongresses"
     }
   },
   "audit": {

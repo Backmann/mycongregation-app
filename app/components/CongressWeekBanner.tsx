@@ -4,39 +4,31 @@ import { useTranslation } from 'react-i18next';
 import { SpecialEvent } from '../lib/api';
 
 /**
- * Shown for a week that contains a regional convention or circuit assembly:
- * no congregation meetings are held (midweek, weekend, duties and cleaning are
- * hidden by the schedule; field-service meetings stay). The event itself is
- * still listed in the week's events banner above.
+ * Shown for a week that contains a regional convention or circuit assembly: a
+ * quick link to that congress's program. The "no meetings" message itself lives
+ * on the event card in the week's events list, so this banner is purely the
+ * program shortcut and is hidden entirely when no program link is set.
  */
 export function CongressWeekBanner({ event }: { event: SpecialEvent }) {
   const { t } = useTranslation();
 
+  if (!event.programUrl) return null;
+
+  const label =
+    event.type === 'circuit_assembly'
+      ? t('schedule.congressWeek.programCircuit')
+      : t('schedule.congressWeek.programRegional');
+
   return (
     <View style={styles.wrap}>
-      <View style={styles.card}>
-        <View style={styles.row}>
-          <Ionicons
-            name="megaphone"
-            size={18}
-            color="#92400e"
-            style={{ marginTop: 1 }}
-          />
-          <Text style={styles.text}>{t('schedule.congressWeek.noMeetings')}</Text>
-        </View>
-        {event.programUrl ? (
-          <Pressable
-            style={styles.linkBtn}
-            onPress={() => Linking.openURL(event.programUrl!)}
-            hitSlop={6}
-          >
-            <Ionicons name="document-outline" size={14} color="#92400e" />
-            <Text style={styles.linkText}>
-              {t('specialEvents.fields.programUrl')}
-            </Text>
-          </Pressable>
-        ) : null}
-      </View>
+      <Pressable
+        style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
+        onPress={() => Linking.openURL(event.programUrl!)}
+      >
+        <Ionicons name="document-text-outline" size={20} color="#92400e" />
+        <Text style={styles.text}>{label}</Text>
+        <Ionicons name="open-outline" size={16} color="#b45309" />
+      </Pressable>
     </View>
   );
 }
@@ -44,31 +36,22 @@ export function CongressWeekBanner({ event }: { event: SpecialEvent }) {
 const styles = StyleSheet.create({
   wrap: { marginTop: 16, marginHorizontal: 16 },
   card: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
     backgroundColor: '#fffbeb',
     borderWidth: 1,
     borderColor: '#fde68a',
     borderRadius: 10,
-    padding: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
   },
-  row: { flexDirection: 'row', alignItems: 'flex-start', gap: 8 },
+  cardPressed: { backgroundColor: '#fef3c7' },
   text: {
     flex: 1,
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 15,
+    fontWeight: '700',
     color: '#78350f',
-    lineHeight: 20,
-  },
-  linkBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    marginTop: 10,
-    marginLeft: 26,
-  },
-  linkText: {
-    fontSize: 13,
-    color: '#92400e',
-    fontWeight: '600',
     textDecorationLine: 'underline',
   },
 });

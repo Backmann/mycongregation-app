@@ -32,6 +32,8 @@ export function SpecialEventsWeekBanner({ events }: { events: SpecialEvent[] }) 
             e.type === 'circuit_overseer_visit'
               ? [e.coFirstName, e.coLastName].filter(Boolean).join(' ').trim()
               : '';
+          const isCongress =
+            e.type === 'regional_convention' || e.type === 'circuit_assembly';
           return (
             <Pressable
               key={e.id}
@@ -55,7 +57,7 @@ export function SpecialEventsWeekBanner({ events }: { events: SpecialEvent[] }) 
                       : ''}
                   </Text>
                 ) : null}
-                {e.replacesMeeting ? (
+                {isCongress || e.replacesMeeting ? (
                   <View style={styles.noMeeting}>
                     <Ionicons
                       name="alert-circle-outline"
@@ -63,7 +65,11 @@ export function SpecialEventsWeekBanner({ events }: { events: SpecialEvent[] }) 
                       color="#b45309"
                     />
                     <Text style={styles.noMeetingText}>
-                      {t('specialEvents.replacesMeetingHint')}
+                      {t(
+                        isCongress
+                          ? 'schedule.congressWeek.noMeetings'
+                          : 'specialEvents.replacesMeetingHint',
+                      )}
                     </Text>
                   </View>
                 ) : null}
