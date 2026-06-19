@@ -790,8 +790,8 @@
     "neverDidDuty3mo": "Diese Aufgabe seit 3 Monaten nicht",
     "pairedWith": "Mit {{name}}: {{count}}× — {{dates}}",
     "notPairedYet": "Noch nicht mit {{name}} im Team",
-    "histThisPart": "dieser Teil:",
-    "histThisDuty": "diese Aufgabe:",
+    "histThisPart": "dieser Teil war:",
+    "histThisDuty": "diese Aufgabe war:",
     "histNever": "noch nie",
     "histPairWith": "im Team mit {{name}}:",
     "historyScope": "Aktivität der letzten 3 Monate"

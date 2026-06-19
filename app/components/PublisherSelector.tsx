@@ -231,16 +231,36 @@ export function PublisherSelector({
   // so the order always matches what's shown).
   const itemDatesById = new Map<string, string[]>();
   const pairDatesById = new Map<string, string[]>();
+  const busyThisMeeting = new Set<string>();
   for (const p of filtered) {
     itemDatesById.set(p.id, thisItemDatesFor(p.id));
     if (partnerOfPublisherId) pairDatesById.set(p.id, pairDatesFor(p.id));
+    const items = activityById?.get(p.id)?.items ?? [];
+    if (
+      currentWeekStart != null &&
+      items.some(
+        (it) =>
+          it.weekStartDate === currentWeekStart &&
+          (currentEventType == null || it.eventType === currentEventType),
+      )
+    ) {
+      busyThisMeeting.add(p.id);
+    }
   }
 
-  // Float up those who least-recently (or never) did this exact part/duty —
-  // and, for assistant pickers, least-recently (or never) paired with the
+  // Order: available candidates first (those absent this week or already
+  // assigned elsewhere in this meeting sink to the bottom), and within each
+  // group float up whoever least-recently (or never) did this exact
+  // part/duty — or, for assistant pickers, was least-recently paired with the
   // primary. Empty/undefined (never, in 3 months) ranks first.
   const sorted = historyEnabled
     ? [...filtered].sort((a, b) => {
+        const aAbsent = absentThisWeek.has(a.id) ? 1 : 0;
+        const bAbsent = absentThisWeek.has(b.id) ? 1 : 0;
+        if (aAbsent !== bAbsent) return aAbsent - bAbsent;
+        const aBusy = busyThisMeeting.has(a.id) ? 1 : 0;
+        const bBusy = busyThisMeeting.has(b.id) ? 1 : 0;
+        if (aBusy !== bBusy) return aBusy - bBusy;
         if (partnerOfPublisherId) {
           const pa = pairDatesById.get(a.id)?.[0];
           const pb = pairDatesById.get(b.id)?.[0];

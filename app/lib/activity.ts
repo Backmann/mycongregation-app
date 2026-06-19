@@ -1,5 +1,5 @@
 import i18n from './i18n';
-import { getPartLabel } from './parts';
+import { getPartDef, getPartLabel } from './parts';
 import { ActivityItem, PublisherActivity } from './api';
 
 /** Human label for one activity item (duty or program part). */
@@ -13,12 +13,26 @@ export function activityItemLabel(item: ActivityItem): string {
     }
     return i18n.t(`duties.types.${item.dutyType}`);
   }
-  // Program part: prefer the real MWB name from the title prefix.
-  if (item.partTitle) {
+  // Program part.
+  const key = item.partKey ?? '';
+  // Apply-yourself and Living-as-Christians carry their real name in the
+  // title prefix; every other part reads cleaner as its part-type label
+  // (e.g. "Вступительная молитва" instead of "Песня 5 и молитва | …").
+  const themed =
+    key.startsWith('apply_yourself') || key.startsWith('living_christians');
+  if (themed && item.partTitle) {
     const idx = item.partTitle.indexOf(': ');
-    if (idx > 0) return item.partTitle.slice(0, idx);
+    return idx > 0 ? item.partTitle.slice(0, idx) : item.partTitle;
   }
-  return getPartLabel(item.partKey ?? '');
+  return getPartLabel(key);
+}
+
+/** Program order of an item (parts by catalog order; duties after, by slot). */
+function meetingOrder(item: ActivityItem): number {
+  if (item.kind === 'part') {
+    return getPartDef(item.partKey ?? '')?.defaultOrder ?? 500;
+  }
+  return 1000 + (item.slotIndex ?? 0);
 }
 
 export interface ActivityHistoryItem {
@@ -46,7 +60,7 @@ export function summarizeActivity(
   currentEventType: string | undefined,
 ): ActivitySummary {
   if (!activity) return { thisMeeting: [], recentCount: 0, recentItems: [] };
-  const thisMeeting: string[] = [];
+  const thisMeeting: { label: string; order: number }[] = [];
   const recentItems: ActivityHistoryItem[] = [];
   for (const item of activity.items) {
     const isThisMeeting =
@@ -54,7 +68,10 @@ export function summarizeActivity(
       item.weekStartDate === currentWeekStart &&
       (currentEventType == null || item.eventType === currentEventType);
     if (isThisMeeting) {
-      thisMeeting.push(activityItemLabel(item));
+      thisMeeting.push({
+        label: activityItemLabel(item),
+        order: meetingOrder(item),
+      });
     } else {
       recentItems.push({
         weekStartDate: item.weekStartDate,
@@ -63,6 +80,7 @@ export function summarizeActivity(
       });
     }
   }
+  thisMeeting.sort((a, b) => a.order - b.order);
   recentItems.sort((a, b) =>
     a.weekStartDate < b.weekStartDate
       ? 1
@@ -70,5 +88,9 @@ export function summarizeActivity(
         ? -1
         : 0,
   );
-  return { thisMeeting, recentCount: recentItems.length, recentItems };
+  return {
+    thisMeeting: thisMeeting.map((x) => x.label),
+    recentCount: recentItems.length,
+    recentItems,
+  };
 }
