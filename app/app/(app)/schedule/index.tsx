@@ -20,7 +20,6 @@ import {
   extractErrorMessage,
   Publisher,
   publishersApi,
-  serviceGroupsApi,
   meetingSettingsApi,
   dutiesApi,
   fieldServiceApi,
@@ -126,10 +125,6 @@ export default function ScheduleIndexScreen() {
   const publishersQuery = useQuery({
     queryKey: ['publishers', 'all-for-schedule'],
     queryFn: () => publishersApi.list({ limit: 200 }),
-  });
-  const groupsQuery = useQuery({
-    queryKey: ['service-groups', 'names'],
-    queryFn: () => serviceGroupsApi.list({}),
   });
   const meetingSettingsQuery = useQuery({
     queryKey: ['meeting-settings'],
@@ -282,9 +277,6 @@ export default function ScheduleIndexScreen() {
   const assignments = assignmentsQuery.data?.data ?? [];
   const publishersById = new Map<string, Publisher>(
     (publishersQuery.data?.data ?? []).map((p) => [p.id, p]),
-  );
-  const groupNameById = new Map<string, string>(
-    (groupsQuery.data?.data ?? []).map((g) => [g.id, g.name]),
   );
 
   const grouped = new Map<EventType, Assignment[]>();
@@ -566,7 +558,6 @@ export default function ScheduleIndexScreen() {
                       items={items}
                       numbers={numbers}
                       publishersById={publishersById}
-                      groupNameById={groupNameById}
                     />
                   </CollapsibleMeetingBlock>
                 );
@@ -634,7 +625,6 @@ export default function ScheduleIndexScreen() {
                       items={programItems}
                       numbers={numbers}
                       publishersById={publishersById}
-                      groupNameById={groupNameById}
                       onEdit={setEditing}
                     />
                     <HospitalityZone
@@ -677,7 +667,6 @@ export default function ScheduleIndexScreen() {
                             : null
                         }
                         displayNumber={numbers.get(a.id) ?? null}
-                        groupNameById={groupNameById}
                       />
                     ))}
                   </View>
@@ -868,14 +857,12 @@ function MidweekSections({
   items,
   numbers,
   publishersById,
-  groupNameById,
   onEdit,
   canEdit,
 }: {
   items: Assignment[];
   numbers: Map<string, number | null>;
   publishersById: Map<string, Publisher>;
-  groupNameById: Map<string, string>;
   onEdit: (a: Assignment) => void;
   canEdit: boolean;
 }) {
@@ -920,7 +907,6 @@ function MidweekSections({
                   displayNumber={numbers.get(a.id) ?? null}
                   canEdit={canEdit}
                   accentColor={meta.color}
-                  groupNameById={groupNameById}
                 />
               ))}
             </View>
@@ -950,14 +936,12 @@ function WeekendSections({
   items,
   numbers,
   publishersById,
-  groupNameById,
   onEdit,
   canEdit,
 }: {
   items: Assignment[];
   numbers: Map<string, number | null>;
   publishersById: Map<string, Publisher>;
-  groupNameById: Map<string, string>;
   onEdit: (a: Assignment) => void;
   canEdit: boolean;
 }) {
@@ -988,7 +972,6 @@ function WeekendSections({
         displayNumber={numbers.get(a.id) ?? null}
         canEdit={canEdit}
         accentColor={accentColor}
-        groupNameById={groupNameById}
       />
     ));
 
@@ -1135,7 +1118,6 @@ function AssignmentRow({
   assistant,
   accentColor,
   displayNumber,
-  groupNameById,
   onEdit,
   canEdit,
 }: {
@@ -1144,7 +1126,6 @@ function AssignmentRow({
   assistant: Publisher | null;
   accentColor?: string;
   displayNumber?: number | null;
-  groupNameById: Map<string, string>;
   onEdit: (a: Assignment) => void;
   canEdit: boolean;
 }) {
@@ -1256,15 +1237,6 @@ function AssignmentRow({
             </View>
           )}
         </View>
-        {publisher?.serviceGroupId &&
-        groupNameById.get(publisher.serviceGroupId) ? (
-          <View style={styles.assigneeGroupRow}>
-            <Ionicons name="people-outline" size={11} color="#94a3b8" />
-            <Text style={styles.assigneeGroup}>
-              {groupNameById.get(publisher.serviceGroupId)}
-            </Text>
-          </View>
-        ) : null}
         {assignment.status !== 'draft' && (
           <View
             style={[
@@ -1328,13 +1300,6 @@ const styles = StyleSheet.create({
   },
   createButtonText: { fontSize: 14, fontWeight: '600' },
   createPrimaryText: { color: '#fff' },
-  assigneeGroupRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
-    marginTop: 2,
-  },
-  assigneeGroup: { fontSize: 12, color: '#94a3b8', fontWeight: '500' },
   createSecondaryText: { color: '#0ea5e9' },
 
   section: { marginTop: 16 },
