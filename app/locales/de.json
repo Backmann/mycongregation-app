@@ -743,6 +743,9 @@
     "weekend": {
       "watchtowerStudy": "Wachtturm-Studium",
       "reader": "Leser"
+    },
+    "congressWeek": {
+      "noMeetings": "In der Kongresswoche finden keine Zusammenkünfte der Versammlung statt"
     }
   },
   "audit": {

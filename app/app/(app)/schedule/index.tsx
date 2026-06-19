@@ -54,6 +54,7 @@ import { effectiveVersionFor } from '../../../lib/meeting-schedule';
 import { DutiesSection } from '../../../components/DutiesSection';
 import { FieldServiceSection } from '../../../components/FieldServiceSection';
 import { CleaningSection } from '../../../components/CleaningSection';
+import { CongressWeekBanner } from '../../../components/CongressWeekBanner';
 import { CleaningPlanMode } from '../../../components/CleaningPlanMode';
 import { usePermissions } from '../../../lib/permissions';
 import { SpecialEventsWeekBanner } from '../../../components/SpecialEventsWeekBanner';
@@ -312,6 +313,13 @@ export default function ScheduleIndexScreen() {
   };
   const midweekReplacedBy = replacedBy('midweek');
   const weekendReplacedBy = replacedBy('weekend');
+  // A regional convention or circuit assembly means no congregation meetings
+  // that week — both meetings, duties and cleaning are hidden (field-service
+  // meetings stay, since they can still happen midweek).
+  const congressThisWeek = weekEvents.find(
+    (e) =>
+      e.type === 'regional_convention' || e.type === 'circuit_assembly',
+  );
   // Songs are not assigned to a person, so they must not count toward the
   // progress badge (otherwise meetings always look under-filled).
   const BADGE_SONG_KEYS = new Set<string>([
@@ -467,8 +475,17 @@ export default function ScheduleIndexScreen() {
         ) : (
           <>
             <SpecialEventsWeekBanner events={weekEvents} />
+            {congressThisWeek && (
+              <CongressWeekBanner event={congressThisWeek} />
+            )}
             {EVENT_TYPE_ORDER.map((eventType) => {
               const items = grouped.get(eventType) ?? [];
+              if (
+                congressThisWeek &&
+                (eventType === 'midweek' || eventType === 'weekend')
+              ) {
+                return null;
+              }
               if (items.length === 0) return null;
               const numbers = buildPartNumbers(items);
               if (eventType === 'midweek' && midweekReplacedBy) {
@@ -670,6 +687,7 @@ export default function ScheduleIndexScreen() {
 
 
             {/* dutiesAccordion: обязанности отдельной разворачивающейся секцией */}
+            {!congressThisWeek && (
             <CollapsibleMeetingBlock
               accent="#0d9488"
               icon="people-outline"
@@ -729,6 +747,7 @@ export default function ScheduleIndexScreen() {
                 weekStartISO={weekStartISO}
               />
             </CollapsibleMeetingBlock>
+            )}
 
             {/* Встречи для проповеди — разворачивающаяся секция */}
             <CollapsibleMeetingBlock
@@ -759,6 +778,7 @@ export default function ScheduleIndexScreen() {
             </CollapsibleMeetingBlock>
 
             {/* Уборка — разворачивающаяся секция */}
+            {!congressThisWeek && (
             <CollapsibleMeetingBlock
               accent="#0e7490"
               icon="sparkles-outline"
@@ -795,6 +815,7 @@ export default function ScheduleIndexScreen() {
                 }
               />
             </CollapsibleMeetingBlock>
+            )}
 
             {isEmpty && (
               <Text style={styles.emptyHint}>

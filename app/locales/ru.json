@@ -747,6 +747,9 @@
     "weekend": {
       "watchtowerStudy": "Изучение Сторожевой башни",
       "reader": "Чтец"
+    },
+    "congressWeek": {
+      "noMeetings": "На неделе конгресса встречи собрания не проводятся"
     }
   },
   "audit": {

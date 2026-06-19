@@ -743,6 +743,9 @@
     "weekend": {
       "watchtowerStudy": "Watchtower Study",
       "reader": "Reader"
+    },
+    "congressWeek": {
+      "noMeetings": "No congregation meetings are held during the convention week"
     }
   },
   "audit": {
