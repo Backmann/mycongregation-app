@@ -1120,7 +1120,8 @@
     "formNotice": {
       "title": "Event on this date",
       "replaces": "The event replaces this meeting — check whether the assignment is needed"
-    }
+    },
+    "coWife": "with wife {{name}}"
   },
   "absences": {
     "title": {

@@ -28,6 +28,10 @@ export function SpecialEventsWeekBanner({ events }: { events: SpecialEvent[] }) 
             ? t(`specialEvents.types.${e.type}`, e.type)
             : null;
           const meta = [rangeText, e.time, typeLabel].filter(Boolean).join(' · ');
+          const coName =
+            e.type === 'circuit_overseer_visit'
+              ? [e.coFirstName, e.coLastName].filter(Boolean).join(' ').trim()
+              : '';
           return (
             <Pressable
               key={e.id}
@@ -43,6 +47,14 @@ export function SpecialEventsWeekBanner({ events }: { events: SpecialEvent[] }) 
               <View style={{ flex: 1 }}>
                 <Text style={styles.title}>{e.title}</Text>
                 {meta ? <Text style={styles.meta}>{meta}</Text> : null}
+                {coName ? (
+                  <Text style={styles.coName}>
+                    {coName}
+                    {e.coWifeName
+                      ? ` · ${t('specialEvents.coWife', { name: e.coWifeName })}`
+                      : ''}
+                  </Text>
+                ) : null}
                 {e.replacesMeeting ? (
                   <View style={styles.noMeeting}>
                     <Ionicons
@@ -94,6 +106,7 @@ const styles = StyleSheet.create({
   cardPressed: { backgroundColor: '#f8fafc' },
   title: { fontSize: 15, fontWeight: '600', color: '#0f172a' },
   meta: { fontSize: 13, color: '#64748b', marginTop: 2 },
+  coName: { fontSize: 13, color: '#0f172a', fontWeight: '500', marginTop: 2 },
   noMeeting: {
     flexDirection: 'row',
     alignItems: 'center',

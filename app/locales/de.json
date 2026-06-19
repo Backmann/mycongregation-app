@@ -1120,7 +1120,8 @@
     "formNotice": {
       "title": "Ereignis an diesem Datum",
       "replaces": "Das Ereignis ersetzt diese Zusammenkunft – prüfe, ob die Aufgabe nötig ist"
-    }
+    },
+    "coWife": "mit Ehefrau {{name}}"
   },
   "absences": {
     "title": {

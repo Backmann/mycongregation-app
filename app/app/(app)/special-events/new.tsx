@@ -34,6 +34,9 @@ export default function NewSpecialEventScreen() {
         programUrl: form.programUrl.trim() || undefined,
         note: form.note.trim() || undefined,
         replacesMeeting: form.replacesMeeting,
+        coFirstName: form.coFirstName.trim() || undefined,
+        coLastName: form.coLastName.trim() || undefined,
+        coWifeName: form.coWifeName.trim() || undefined,
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['special-events'] });

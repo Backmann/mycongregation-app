@@ -35,6 +35,9 @@ function toForm(e: SpecialEvent): EventFormValue {
     programUrl: e.programUrl ?? '',
     note: e.note ?? '',
     replacesMeeting: !!e.replacesMeeting,
+    coFirstName: e.coFirstName ?? '',
+    coLastName: e.coLastName ?? '',
+    coWifeName: e.coWifeName ?? '',
   };
 }
 
@@ -69,6 +72,9 @@ export default function SpecialEventDetailScreen() {
         programUrl: form!.programUrl.trim() || undefined,
         note: form!.note.trim() || undefined,
         replacesMeeting: form!.replacesMeeting,
+        coFirstName: form!.coFirstName.trim() || undefined,
+        coLastName: form!.coLastName.trim() || undefined,
+        coWifeName: form!.coWifeName.trim() || undefined,
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['special-events'] });

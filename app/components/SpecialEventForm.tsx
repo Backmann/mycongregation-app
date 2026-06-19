@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Pressable,
   StyleSheet,
@@ -8,6 +8,7 @@ import {
   View,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { useQuery } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ru';
@@ -16,6 +17,7 @@ import DateTimePicker, {
   useDefaultStyles,
   type DateType,
 } from 'react-native-ui-datepicker';
+import { circuitOverseerApi } from '../lib/api';
 
 export const EVENT_TYPES = [
   'regional_convention',
@@ -48,7 +50,12 @@ export interface EventFormValue {
   programUrl: string;
   note: string;
   replacesMeeting: boolean;
+  coFirstName: string;
+  coLastName: string;
+  coWifeName: string;
 }
+
+export const CIRCUIT_OVERSEER_VISIT_TYPE = 'circuit_overseer_visit';
 
 export function emptyEventForm(): EventFormValue {
   return {
@@ -62,6 +69,9 @@ export function emptyEventForm(): EventFormValue {
     programUrl: '',
     note: '',
     replacesMeeting: false,
+    coFirstName: '',
+    coLastName: '',
+    coWifeName: '',
   };
 }
 
@@ -87,6 +97,33 @@ export function SpecialEventForm({
 
   const set = (patch: Partial<EventFormValue>) =>
     onChange({ ...value, ...patch });
+
+  const isCoVisit = value.type === CIRCUIT_OVERSEER_VISIT_TYPE;
+
+  // Default circuit-overseer card — fetched only for the CO-visit type, used to
+  // pre-fill the names when they are still empty (new visit). Editing a saved
+  // visit keeps its own snapshot, so non-empty names are never overwritten.
+  const { data: coDefault } = useQuery({
+    queryKey: ['circuit-overseer'],
+    queryFn: () => circuitOverseerApi.get(),
+    enabled: isCoVisit,
+  });
+
+  useEffect(() => {
+    if (!isCoVisit || !coDefault) return;
+    const empty =
+      !value.coFirstName.trim() &&
+      !value.coLastName.trim() &&
+      !value.coWifeName.trim();
+    if (empty) {
+      set({
+        coFirstName: coDefault.firstName ?? '',
+        coLastName: coDefault.lastName ?? '',
+        coWifeName: coDefault.wifeName ?? '',
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isCoVisit, coDefault]);
 
   // Set of auto-generated titles (the type labels). Used so that picking /
   // switching a type fills the title automatically, unless the user typed
@@ -173,7 +210,38 @@ export function SpecialEventForm({
         )}
       </Field>
 
-      {/* Multi-day */}
+      {/* Circuit overseer names (visit type only) */}
+      {isCoVisit && (
+        <>
+          <Field label={t('circuitOverseer.firstName')}>
+            <TextInput
+              style={styles.input}
+              value={value.coFirstName}
+              onChangeText={(x) => set({ coFirstName: x })}
+              autoCapitalize="words"
+              placeholderTextColor="#94a3b8"
+            />
+          </Field>
+          <Field label={t('circuitOverseer.lastName')}>
+            <TextInput
+              style={styles.input}
+              value={value.coLastName}
+              onChangeText={(x) => set({ coLastName: x })}
+              autoCapitalize="words"
+              placeholderTextColor="#94a3b8"
+            />
+          </Field>
+          <Field label={t('circuitOverseer.wifeName')}>
+            <TextInput
+              style={styles.input}
+              value={value.coWifeName}
+              onChangeText={(x) => set({ coWifeName: x })}
+              autoCapitalize="words"
+              placeholderTextColor="#94a3b8"
+            />
+          </Field>
+        </>
+      )}
       <View style={styles.switchRow}>
         <Text style={styles.label}>{t('specialEvents.form.multiDay')}</Text>
         <Switch
@@ -291,8 +359,11 @@ export function SpecialEventForm({
         )}
       </Field>
 
-      {/* Address */}
-      <Field label={t('specialEvents.fields.address')}>
+      {/* Address / map / program — not relevant for a CO visit */}
+      {!isCoVisit && (
+        <>
+          {/* Address */}
+          <Field label={t('specialEvents.fields.address')}>
         <TextInput
           style={styles.input}
           value={value.address}
@@ -327,6 +398,8 @@ export function SpecialEventForm({
           keyboardType="url"
         />
       </Field>
+        </>
+      )}
 
       {/* Note */}
       <Field label={t('specialEvents.fields.note')}>
@@ -340,16 +413,18 @@ export function SpecialEventForm({
         />
       </Field>
 
-      {/* Replaces meeting */}
-      <View style={styles.switchRow}>
-        <Text style={styles.label}>
-          {t('specialEvents.fields.replacesMeeting')}
-        </Text>
-        <Switch
-          value={value.replacesMeeting}
-          onValueChange={(x) => set({ replacesMeeting: x })}
-        />
-      </View>
+      {/* Replaces meeting (not for a CO visit — the meeting still happens) */}
+      {!isCoVisit && (
+        <View style={styles.switchRow}>
+          <Text style={styles.label}>
+            {t('specialEvents.fields.replacesMeeting')}
+          </Text>
+          <Switch
+            value={value.replacesMeeting}
+            onValueChange={(x) => set({ replacesMeeting: x })}
+          />
+        </View>
+      )}
     </View>
   );
 }
