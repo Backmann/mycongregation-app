@@ -7,6 +7,7 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
+import { useEffect, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import {
@@ -51,6 +52,17 @@ export function AssignmentSheet({
   const centered = Platform.OS === 'web' && width >= 700;
   const queryClient = useQueryClient();
   const open = !!assignment;
+  // Keep the last assignment mounted through the close animation so the
+  // sheet doesn't briefly collapse to an empty header before fading out.
+  const [active, setActive] = useState<Assignment | null>(assignment);
+  useEffect(() => {
+    if (assignment) {
+      setActive(assignment);
+      return;
+    }
+    const timer = setTimeout(() => setActive(null), 240);
+    return () => clearTimeout(timer);
+  }, [assignment]);
   const queryKey = ['assignments', weekStartISO];
 
   const updateMutation = useMutation({
@@ -108,7 +120,7 @@ export function AssignmentSheet({
     unassignMutation.mutate();
   };
 
-  const isSong = !!assignment && SONG_KEYS.includes(assignment.partKey);
+  const isSong = !!active && SONG_KEYS.includes(active.partKey);
 
   return (
     <Modal
@@ -131,7 +143,7 @@ export function AssignmentSheet({
           {centered ? null : <View style={styles.handleBar} />}
         <View style={styles.header}>
           <Text style={styles.title} numberOfLines={1}>
-            {assignment ? assignment.partTitle || t('schedule.sheet.title') : ''}
+            {active ? active.partTitle || t('schedule.sheet.title') : ''}
           </Text>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
             {onNext ? (
@@ -145,11 +157,11 @@ export function AssignmentSheet({
           </View>
         </View>
 
-        {assignment ? (
+        {active ? (
           isSong ? (
             <SongPicker
-              key={assignment.id}
-              currentTitle={assignment.partTitle}
+              key={active.id}
+              currentTitle={active.partTitle}
               readOnly={!canEdit}
               isSaving={updateMutation.isPending}
               onSave={(pt) =>
@@ -161,18 +173,18 @@ export function AssignmentSheet({
           ) : (
             <>
               <AssignmentForm
-                key={assignment.id}
+                key={active.id}
                 initial={{
-                  weekStartDate: assignment.weekStartDate,
-                  eventType: assignment.eventType,
-                  partKey: assignment.partKey,
-                  partOrder: assignment.partOrder,
-                  partTitle: assignment.partTitle ?? undefined,
-                  partDurationMin: assignment.partDurationMin ?? undefined,
-                  publisherId: assignment.publisherId,
-                  assistantPublisherId: assignment.assistantPublisherId,
-                  status: assignment.status,
-                  notes: assignment.notes ?? undefined,
+                  weekStartDate: active.weekStartDate,
+                  eventType: active.eventType,
+                  partKey: active.partKey,
+                  partOrder: active.partOrder,
+                  partTitle: active.partTitle ?? undefined,
+                  partDurationMin: active.partDurationMin ?? undefined,
+                  publisherId: active.publisherId,
+                  assistantPublisherId: active.assistantPublisherId,
+                  status: active.status,
+                  notes: active.notes ?? undefined,
                 }}
                 onSubmit={(data: CreateAssignmentInput) =>
                   updateMutation.mutateAsync(data).then(() => onClose())
@@ -192,11 +204,11 @@ export function AssignmentSheet({
                   style={({ pressed }) => [
                     styles.unassignLink,
                     pressed && styles.unassignLinkPressed,
-                    (unassignMutation.isPending || !assignment.publisherId) &&
+                    (unassignMutation.isPending || !active.publisherId) &&
                       styles.unassignLinkDisabled,
                   ]}
                   onPress={confirmUnassign}
-                  disabled={unassignMutation.isPending || !assignment.publisherId}
+                  disabled={unassignMutation.isPending || !active.publisherId}
                 >
                   <Text style={styles.unassignLinkText}>
                     {unassignMutation.isPending

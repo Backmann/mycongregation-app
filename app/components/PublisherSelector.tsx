@@ -616,7 +616,7 @@ function PublisherOption({
         {busyThisMeeting && (
           <View style={styles.busyChipRow}>
             <Ionicons name="time" size={11} color="#b45309" />
-            <Text style={styles.busyChipText} numberOfLines={1}>
+            <Text style={styles.busyChipText}>
               {t('publisherActivity.thisMeeting')}{' '}
               {activity!.thisMeeting.join(', ')}
             </Text>
@@ -680,7 +680,7 @@ const styles = StyleSheet.create({
   optionPartner: { fontSize: 11, color: '#7c3aed', marginTop: 2 },
   busyChipRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     gap: 4,
     alignSelf: 'flex-start',
     backgroundColor: '#fef3c7',
@@ -689,7 +689,7 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     marginTop: 3,
   },
-  busyChipText: { fontSize: 11, color: '#92400e', flexShrink: 1 },
+  busyChipText: { fontSize: 11, color: '#92400e', flexShrink: 1, lineHeight: 15 },
   optionBusy: { backgroundColor: '#f0f9ff' },
   optionBusyText: {
     fontSize: 12,
