@@ -235,14 +235,6 @@ export default function PublisherDetailScreen() {
           label={t('publishers.fields.pioneer')}
           value={pioneerLabel(publisher.pioneerType, publisher.pioneerSince)}
         />
-        <Field label={t('publishers.fields.anointed')} value={publisher.isAnointed ? t('common.yes') : t('common.no')} />
-        <Field
-          label={t('publishers.fields.kingdomHallKey')}
-          value={publisher.hasKingdomHallKey ? t('common.yes') : t('common.no')}
-        />
-        {publisher.spiritualNotes && (
-          <Field label={t('publishers.fields.spiritualNotes')} value={publisher.spiritualNotes} />
-        )}
       </Section>
 
       <View style={styles.section}>
@@ -283,19 +275,6 @@ export default function PublisherDetailScreen() {
         />
         <Field label={t('publishers.fields.active')} value={publisher.isActive ? t('common.yes') : t('common.no')} />
       </Section>
-
-      {hasSpecialNeeds(publisher) && (
-        <Section title={t('publishers.sections.specialNeeds')}>
-          {publisher.isElderlyOrInfirm && (
-            <Field label={t('publishers.fields.elderlyInfirmShort')} value={t('common.yes')} />
-          )}
-          {publisher.isChild && <Field label={t('publishers.fields.child')} value={t('common.yes')} />}
-          {publisher.isDeaf && <Field label={t('publishers.fields.deaf')} value={t('common.yes')} />}
-          {publisher.isBlind && <Field label={t('publishers.fields.blind')} value={t('common.yes')} />}
-          {publisher.isPrisoner && <Field label={t('publishers.fields.prisoner')} value={t('common.yes')} />}
-        </Section>
-      )}
-
 
       {isAdmin && (
         <Section title={t('publishers.sections.appAccess')}>
@@ -453,16 +432,6 @@ function pioneerLabel(
   return type === 'none' || !since
     ? label
     : i18n.t('publishers.pioneerSinceFormat', { label, date: since });
-}
-
-function hasSpecialNeeds(p: Publisher): boolean {
-  return (
-    p.isElderlyOrInfirm ||
-    p.isChild ||
-    p.isDeaf ||
-    p.isBlind ||
-    p.isPrisoner
-  );
 }
 
 function RemoveModal({

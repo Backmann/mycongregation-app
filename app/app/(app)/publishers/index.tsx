@@ -219,7 +219,6 @@ function PublisherRow({
   if (publisher.pioneerType === 'regular') tags.push(i18n.t('publishers.tags.regularPioneer'));
   if (publisher.pioneerType === 'special') tags.push(i18n.t('publishers.tags.specialPioneer'));
   if (publisher.pioneerType === 'missionary') tags.push(i18n.t('publishers.tags.missionary'));
-  if (publisher.isAnointed) tags.push(i18n.t('publishers.tags.anointed'));
   if (!publisher.isActive) tags.push(i18n.t('publishers.tags.inactive'));
 
   const initials =

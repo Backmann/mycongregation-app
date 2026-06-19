@@ -217,7 +217,8 @@
       "ministerial_servant": "Служебный помощник",
       "ms": "Служ. пом.",
       "elder": "Старейшина",
-      "none": "Нет"
+      "none": "Нет",
+      "student": "Учащийся"
     },
     "pioneer": {
       "options": {

@@ -123,6 +123,7 @@ export type PublisherAppointment =
   | 'ministerial_servant'
   | 'publisher'
   | 'unbaptized_publisher'
+  | 'student'
   | 'none';
 export type PioneerType =
   | 'none'

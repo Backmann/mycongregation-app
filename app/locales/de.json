@@ -217,7 +217,8 @@
       "ministerial_servant": "Dienstamtgehilfe",
       "ms": "DA-Gehilfe",
       "elder": "Ältester",
-      "none": "Keine"
+      "none": "Keine",
+      "student": "Schüler"
     },
     "pioneer": {
       "options": {

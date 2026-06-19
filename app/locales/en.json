@@ -217,7 +217,8 @@
       "ministerial_servant": "Ministerial Servant",
       "ms": "MS",
       "elder": "Elder",
-      "none": "None"
+      "none": "None",
+      "student": "Student"
     },
     "pioneer": {
       "options": {

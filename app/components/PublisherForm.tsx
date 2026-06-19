@@ -49,6 +49,7 @@ export function PublisherForm({
   const APPOINTMENT_OPTIONS: { value: PublisherAppointment; label: string }[] = [
     { value: 'publisher', label: t('publishers.appointment.publisher') },
     { value: 'unbaptized_publisher', label: t('publishers.appointment.unbaptized') },
+    { value: 'student', label: t('publishers.appointment.student') },
     { value: 'ministerial_servant', label: t('publishers.appointment.ms') },
     { value: 'elder', label: t('publishers.appointment.elder') },
     { value: 'none', label: t('publishers.appointment.none') },
@@ -235,22 +236,6 @@ export function PublisherForm({
           placeholder={t('publishers.placeholders.date')}
           autoCapitalize="none"
         />
-        <FormSwitch
-          label={t('publishers.fields.anointed')}
-          value={form.isAnointed}
-          onValueChange={(v) => update('isAnointed', v)}
-        />
-        <FormSwitch
-          label={t('publishers.fields.kingdomHallKey')}
-          value={form.hasKingdomHallKey}
-          onValueChange={(v) => update('hasKingdomHallKey', v)}
-        />
-        <FormField
-          label={t('publishers.fields.spiritualNotes')}
-          value={form.spiritualNotes}
-          onChangeText={(v) => update('spiritualNotes', v)}
-          multiline
-        />
       </FormSection>
 
       <FormSection title={t('publishers.sections.capabilities')}>
@@ -271,49 +256,6 @@ export function PublisherForm({
           label={t('publishers.fields.regular')}
           value={form.isRegular}
           onValueChange={(v) => update('isRegular', v)}
-        />
-        <FormSwitch
-          label={t('publishers.fields.printedWatchtower')}
-          value={form.printedWatchtower}
-          onValueChange={(v) => update('printedWatchtower', v)}
-        />
-        <FormSwitch
-          label={t('publishers.fields.printedWorkbook')}
-          value={form.printedWorkbook}
-          onValueChange={(v) => update('printedWorkbook', v)}
-        />
-        <FormSwitch
-          label={t('publishers.fields.sendsReportDirectly')}
-          value={form.sendsReportDirectly}
-          onValueChange={(v) => update('sendsReportDirectly', v)}
-        />
-      </FormSection>
-
-      <FormSection title={t('publishers.sections.specialNeeds')}>
-        <FormSwitch
-          label={t('publishers.fields.elderlyOrInfirm')}
-          value={form.isElderlyOrInfirm}
-          onValueChange={(v) => update('isElderlyOrInfirm', v)}
-        />
-        <FormSwitch
-          label={t('publishers.fields.child')}
-          value={form.isChild}
-          onValueChange={(v) => update('isChild', v)}
-        />
-        <FormSwitch
-          label={t('publishers.fields.deaf')}
-          value={form.isDeaf}
-          onValueChange={(v) => update('isDeaf', v)}
-        />
-        <FormSwitch
-          label={t('publishers.fields.blind')}
-          value={form.isBlind}
-          onValueChange={(v) => update('isBlind', v)}
-        />
-        <FormSwitch
-          label={t('publishers.fields.prisoner')}
-          value={form.isPrisoner}
-          onValueChange={(v) => update('isPrisoner', v)}
         />
       </FormSection>
 
