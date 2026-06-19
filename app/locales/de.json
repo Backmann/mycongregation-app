@@ -73,7 +73,9 @@
       "secondsAgo": "vor {{count}} Sek.",
       "minutesAgo": "vor {{count}} Min.",
       "hoursAgo": "vor {{count}} Std.",
-      "daysAgo": "vor {{count}} Tg."
+      "daysAgo": "vor {{count}} Tg.",
+      "monthsAgo": "vor {{count}} Mon.",
+      "yearsAgo": "vor {{count}} J."
     },
     "done": "Fertig",
     "none": "Keine",
@@ -880,7 +882,8 @@
         "confirmTitle": "Viele Administratoren",
         "confirmBody": "Für eine Versammlung genügen normalerweise 2 Administratoren (derzeit aktiv: {{count}}). Trotzdem einen weiteren zuweisen?",
         "confirmAction": "Zuweisen"
-      }
+      },
+      "online": "online"
     }
   },
   "publicTalks": {

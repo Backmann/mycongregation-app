@@ -73,7 +73,9 @@
       "secondsAgo": "{{count}}s ago",
       "minutesAgo": "{{count}}min ago",
       "hoursAgo": "{{count}}h ago",
-      "daysAgo": "{{count}}d ago"
+      "daysAgo": "{{count}}d ago",
+      "monthsAgo": "{{count}}mo ago",
+      "yearsAgo": "{{count}}y ago"
     },
     "done": "Done",
     "none": "None",
@@ -880,7 +882,8 @@
         "confirmTitle": "Many administrators",
         "confirmBody": "Two administrators are usually enough for a congregation (currently active: {{count}}). Assign another one anyway?",
         "confirmAction": "Assign"
-      }
+      },
+      "online": "online"
     }
   },
   "publicTalks": {

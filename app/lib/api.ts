@@ -106,6 +106,8 @@ export interface PublicUser {
   isActive: boolean;
   uiLanguage: string;
   lastLoginAt: string | null;
+  lastSeenAt: string | null;
+  online: boolean;
   createdAt: string;
   updatedAt: string;
   appointment: PublisherAppointment | null;

@@ -11,6 +11,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../../lib/auth';
+import { PresenceDot } from '../../../components/PresenceDot';
 import {
   PublicUser,
   UserRole,
@@ -55,7 +56,13 @@ function formatRelativeTime(
   const hr = Math.floor(min / 60);
   if (hr < 24) return t('common.time.hoursAgo', { count: hr });
   const day = Math.floor(hr / 24);
-  return t('common.time.daysAgo', { count: day });
+  if (day < 30) return t('common.time.daysAgo', { count: day });
+  if (day < 365) {
+    const month = Math.max(1, Math.floor(day / 30));
+    return t('common.time.monthsAgo', { count: month });
+  }
+  const year = Math.floor(day / 365);
+  return t('common.time.yearsAgo', { count: year });
 }
 
 export default function AdminUsersScreen() {
@@ -65,6 +72,7 @@ export default function AdminUsersScreen() {
   const usersQuery = useQuery({
     queryKey: QK_USERS,
     queryFn: () => usersApi.list(),
+    refetchInterval: 30_000,
   });
 
   const users = usersQuery.data ?? [];
@@ -160,9 +168,16 @@ function UserCard({ user, isSelf }: { user: PublicUser; isSelf: boolean }) {
               </View>
             )}
           </View>
-          <Text style={styles.lastLogin}>
-            {formatRelativeTime(user.lastLoginAt, t)}
-          </Text>
+          {user.online ? (
+            <View style={styles.presenceRow}>
+              <PresenceDot />
+              <Text style={styles.onlineText}>{t('admin.users.online')}</Text>
+            </View>
+          ) : (
+            <Text style={styles.lastLogin}>
+              {formatRelativeTime(user.lastSeenAt ?? user.lastLoginAt, t)}
+            </Text>
+          )}
         </View>
         <View style={[styles.roleChip, { backgroundColor: roleColor.bg }]}>
           <Text style={[styles.roleChipText, { color: roleColor.fg }]}>
@@ -233,6 +248,13 @@ const styles = StyleSheet.create({
   },
   selfBadgeText: { fontSize: 10, color: '#0369a1', fontWeight: '700' },
   lastLogin: { fontSize: 12, color: '#64748b', marginTop: 3 },
+  presenceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 3,
+  },
+  onlineText: { fontSize: 12, color: '#16a34a', fontWeight: '600' },
   roleChip: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
   roleChipText: { fontSize: 11, fontWeight: '700', textTransform: 'uppercase' },
   inactiveBanner: {

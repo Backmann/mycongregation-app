@@ -73,7 +73,9 @@
       "secondsAgo": "{{count}} с назад",
       "minutesAgo": "{{count}} мин назад",
       "hoursAgo": "{{count}} ч назад",
-      "daysAgo": "{{count}} дн назад"
+      "daysAgo": "{{count}} дн назад",
+      "monthsAgo": "{{count}} мес назад",
+      "yearsAgo": "{{count}} г назад"
     },
     "done": "Готово",
     "none": "Не выбрано",
@@ -884,7 +886,8 @@
         "confirmTitle": "Много администраторов",
         "confirmBody": "Обычно в собрании достаточно 2 администраторов (сейчас активных: {{count}}). Всё равно назначить ещё одного?",
         "confirmAction": "Назначить"
-      }
+      },
+      "online": "в сети"
     }
   },
   "publicTalks": {
