@@ -64,6 +64,8 @@ import { AssignmentSheet } from '../../../components/AssignmentSheet';
 import { PlanningMode } from '../../../components/PlanningMode';
 import { PublishDialog } from '../../../components/PublishDialog';
 import { NotifyChangesDialog } from '../../../components/NotifyChangesDialog';
+import { useMyPublisher } from '../../../lib/useMyPublisher';
+import { MyBulb } from '../../../components/MyBulb';
 
 const EVENT_TYPE_ORDER: EventType[] = [
   'midweek',
@@ -1193,6 +1195,11 @@ function AssignmentRow({
   canEdit: boolean;
 }) {
   const { t } = useTranslation();
+  const { myPublisherId } = useMyPublisher();
+  const isMine =
+    !!myPublisherId &&
+    (assignment.publisherId === myPublisherId ||
+      assignment.assistantPublisherId === myPublisherId);
   const {
     label: rawPartLabel,
     subtitle: rawSubtitle,
@@ -1243,6 +1250,7 @@ function AssignmentRow({
       style={({ pressed }) => [
         styles.row,
         accentColor ? { borderLeftWidth: 3, borderLeftColor: accentColor } : null,
+        isMine && styles.rowMine,
         pressed && styles.rowPressed,
       ]}
       onPress={canEdit ? () => onEdit(assignment) : undefined}
@@ -1258,7 +1266,10 @@ function AssignmentRow({
       </View>
       <View style={{ flex: 1 }}>
         {overline ? <Text style={styles.overline}>{overline}</Text> : null}
-        <Text style={styles.partLabel}>{partLabel}</Text>
+        <View style={styles.partLabelRow}>
+          <Text style={styles.partLabel}>{partLabel}</Text>
+          {isMine ? <MyBulb /> : null}
+        </View>
         {subtitle && (
           <Text style={styles.partTitle} numberOfLines={2}>
             {subtitle}
@@ -1432,6 +1443,8 @@ const styles = StyleSheet.create({
   orderText: { color: '#0369a1', fontWeight: '700', fontSize: 13 },
   orderBadgeInfo: { backgroundColor: '#f1f5f9' },
   partLabel: { fontSize: 15, fontWeight: '600', color: '#0f172a' },
+  partLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  rowMine: { backgroundColor: '#fffbeb' },
   songHint: {
     fontSize: 13,
     color: '#94a3b8',

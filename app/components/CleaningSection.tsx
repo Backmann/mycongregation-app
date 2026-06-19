@@ -11,6 +11,8 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
+import { useMyPublisher } from '../lib/useMyPublisher';
+import { MyBulb } from './MyBulb';
 import {
   CleaningAssignment,
   CleaningSlotType,
@@ -53,6 +55,8 @@ export function CleaningSection({
   hideHeader,
 }: Props) {
   const { t } = useTranslation();
+  const { myPublisher } = useMyPublisher();
+  const myGroupId = myPublisher?.serviceGroupId ?? null;
 
   const groupsQuery = useQuery({
     queryKey: ['service-groups'],
@@ -87,8 +91,13 @@ export function CleaningSection({
             ? groupsById.get(assigned.serviceGroupId) ?? null
             : null;
           const overseer = overseerName(group, publishersById);
+          const isMine =
+            !!myGroupId && assigned?.serviceGroupId === myGroupId;
           return (
-            <View key={slot} style={styles.slotRow}>
+            <View
+              key={slot}
+              style={[styles.slotRow, isMine && styles.slotRowMine]}
+            >
               <Text style={styles.slotLabel}>{t(`cleaning.slots.${slot}`)}</Text>
 
               {canEdit ? (
@@ -104,12 +113,15 @@ export function CleaningSection({
                 />
               ) : (
                 <View style={styles.readValue}>
-                  <Text
-                    style={[styles.slotValue, !group && styles.slotEmpty]}
-                    numberOfLines={1}
-                  >
-                    {group ? group.name : t('cleaning.empty')}
-                  </Text>
+                  <View style={styles.cleaningNameRow}>
+                    {isMine ? <MyBulb size={14} /> : null}
+                    <Text
+                      style={[styles.slotValue, !group && styles.slotEmpty]}
+                      numberOfLines={1}
+                    >
+                      {group ? group.name : t('cleaning.empty')}
+                    </Text>
+                  </View>
                   {!!overseer && (
                     <Text style={styles.overseer} numberOfLines={1}>
                       {overseer}
@@ -290,6 +302,8 @@ const styles = StyleSheet.create({
   generalHint: { fontSize: 12, color: '#94a3b8', marginTop: 2 },
 
   readValue: { alignItems: 'flex-end', maxWidth: '60%' },
+  slotRowMine: { backgroundColor: '#fffbeb' },
+  cleaningNameRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   slotValue: { fontSize: 14, color: '#334155', fontWeight: '600' },
   slotEmpty: { color: '#cbd5e1', fontWeight: '400' },
   overseer: { fontSize: 12, color: '#94a3b8', marginTop: 1 },

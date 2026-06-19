@@ -12,6 +12,8 @@ import { useTranslation } from 'react-i18next';
 import { Duty, DutyType, Publisher, PublisherActivity } from '../lib/api';
 import { PublisherSelector } from './PublisherSelector';
 import { getEventTypeLabel } from '../lib/parts';
+import { useMyPublisher } from '../lib/useMyPublisher';
+import { MyBulb } from './MyBulb';
 
 /** Icon + accent colour per duty type (role circle in the picker). */
 const DUTY_ICONS: Record<
@@ -103,6 +105,7 @@ export function DutiesSection({
   hideHeader,
 }: Props) {
   const { t } = useTranslation();
+  const { myPublisherId } = useMyPublisher();
   const [customFor, setCustomFor] = useState<Meeting | null>(null);
   const [customLabel, setCustomLabel] = useState('');
 
@@ -247,15 +250,28 @@ export function DutiesSection({
                   const publisher = d.publisherId
                     ? publishersById.get(d.publisherId) ?? null
                     : null;
+                  const isMine =
+                    !!myPublisherId && d.publisherId === myPublisherId;
                   return (
-                    <View key={d.id} style={styles.row}>
+                    <View
+                      key={d.id}
+                      style={[styles.row, isMine && styles.rowMine]}
+                    >
                       <Text style={styles.dutyLabel}>{dutyLabel(d, t)}</Text>
-                      <Text
-                        style={[styles.publisher, !publisher && styles.unassigned]}
-                        numberOfLines={1}
-                      >
-                        {publisher ? publisher.displayName : t('duties.unassigned')}
-                      </Text>
+                      <View style={styles.dutyRight}>
+                        {isMine ? <MyBulb size={15} /> : null}
+                        <Text
+                          style={[
+                            styles.publisher,
+                            !publisher && styles.unassigned,
+                          ]}
+                          numberOfLines={1}
+                        >
+                          {publisher
+                            ? publisher.displayName
+                            : t('duties.unassigned')}
+                        </Text>
+                      </View>
                     </View>
                   );
                 })}
@@ -393,6 +409,13 @@ const styles = StyleSheet.create({
   },
   dutyLabel: { fontSize: 14, color: '#0f172a', flexShrink: 1 },
   publisher: { fontSize: 15, color: '#0f172a', fontWeight: '600', maxWidth: '55%' },
+  rowMine: { backgroundColor: '#fffbeb' },
+  dutyRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    maxWidth: '60%',
+  },
   unassigned: { color: '#94a3b8', fontWeight: '500', fontStyle: 'italic' },
 
   // editable list

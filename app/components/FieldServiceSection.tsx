@@ -12,6 +12,8 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
+import { useMyPublisher } from '../lib/useMyPublisher';
+import { MyBulb } from './MyBulb';
 import {
   CreateFieldServiceMeetingInput,
   FieldServiceMeeting,
@@ -52,6 +54,7 @@ export function FieldServiceSection({
   hideHeader,
 }: Props) {
   const { t } = useTranslation();
+  const { myPublisherId } = useMyPublisher();
   const [formFor, setFormFor] = useState<FieldServiceMeeting | 'new' | null>(
     null,
   );
@@ -81,24 +84,29 @@ export function FieldServiceSection({
             const conductor = m.conductorPublisherId
               ? publishersById.get(m.conductorPublisherId) ?? null
               : null;
+            const isMine =
+              !!myPublisherId && m.conductorPublisherId === myPublisherId;
             return (
-              <View key={m.id} style={styles.row}>
+              <View key={m.id} style={[styles.row, isMine && styles.rowMine]}>
                 <View style={styles.rowMain}>
                   <View style={styles.rowTop}>
                     <Text style={styles.when}>
                       {t(`fieldService.days.${m.dayOfWeek}`)} · {m.startTime}
                     </Text>
-                    <Text
-                      style={[
-                        styles.conductor,
-                        !conductor && styles.unassigned,
-                      ]}
-                      numberOfLines={1}
-                    >
-                      {conductor
-                        ? conductor.displayName
-                        : t('fieldService.unassigned')}
-                    </Text>
+                    <View style={styles.fsRight}>
+                      {isMine ? <MyBulb size={15} /> : null}
+                      <Text
+                        style={[
+                          styles.conductor,
+                          !conductor && styles.unassigned,
+                        ]}
+                        numberOfLines={1}
+                      >
+                        {conductor
+                          ? conductor.displayName
+                          : t('fieldService.unassigned')}
+                      </Text>
+                    </View>
                   </View>
                   <Text style={styles.address} numberOfLines={2}>
                     {m.address}
@@ -467,6 +475,13 @@ const styles = StyleSheet.create({
     color: '#334155',
     fontWeight: '600',
     maxWidth: '55%',
+  },
+  rowMine: { backgroundColor: '#fffbeb' },
+  fsRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    maxWidth: '60%',
   },
   unassigned: { color: '#cbd5e1', fontWeight: '400' },
   address: { fontSize: 13, color: '#475569' },

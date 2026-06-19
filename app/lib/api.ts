@@ -1229,6 +1229,7 @@ export interface MyPublisherLite {
   firstName: string;
   lastName: string;
   pioneerType: string | null;
+  serviceGroupId: string | null;
 }
 
 export interface MyPublisherIdentityResponse {
