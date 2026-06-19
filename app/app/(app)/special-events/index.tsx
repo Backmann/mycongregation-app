@@ -98,6 +98,9 @@ function EventRow({ event }: { event: SpecialEvent }) {
   const typeLabel = event.type
     ? t(`specialEvents.types.${event.type}`, event.type)
     : null;
+  const isCongress =
+    event.type === 'regional_convention' ||
+    event.type === 'circuit_assembly';
   const meta = [event.time, event.address].filter(Boolean).join(' · ');
 
   return (
@@ -138,9 +141,13 @@ function EventRow({ event }: { event: SpecialEvent }) {
             {meta}
           </Text>
         ) : null}
-        {event.replacesMeeting ? (
+        {isCongress || event.replacesMeeting ? (
           <Text style={styles.hint}>
-            {t('specialEvents.replacesMeetingHint')}
+            {t(
+              isCongress
+                ? 'schedule.congressWeek.noMeetings'
+                : 'specialEvents.replacesMeetingHint',
+            )}
           </Text>
         ) : null}
       </View>
