@@ -262,6 +262,7 @@ export interface Assignment {
   assistantPublisherId: string | null;
   status: AssignmentStatus;
   notes: string | null;
+  changedSincePublish: boolean;
   publicTalkId: string | null;
   speakerName: string | null;
   speakerCongregation: string | null;
@@ -1457,6 +1458,16 @@ export const assignmentsApi = {
   }): Promise<{ published: number }> {
     const { data } = await api.post<{ published: number }>(
       '/assignments/publish',
+      input,
+    );
+    return data;
+  },
+  async notifyChanges(input: {
+    weekStartDate: string;
+    eventType: EventType;
+  }): Promise<{ notified: number }> {
+    const { data } = await api.post<{ notified: number }>(
+      '/assignments/notify-changes',
       input,
     );
     return data;

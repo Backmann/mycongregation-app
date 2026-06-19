@@ -63,6 +63,7 @@ import { HospitalityZone } from '../../../components/HospitalityZone';
 import { AssignmentSheet } from '../../../components/AssignmentSheet';
 import { PlanningMode } from '../../../components/PlanningMode';
 import { PublishDialog } from '../../../components/PublishDialog';
+import { NotifyChangesDialog } from '../../../components/NotifyChangesDialog';
 
 const EVENT_TYPE_ORDER: EventType[] = [
   'midweek',
@@ -86,10 +87,15 @@ export default function ScheduleIndexScreen() {
   const { t, i18n } = useTranslation();
   const perms = usePermissions();
   const [publishingType, setPublishingType] = useState<string | null>(null);
+  const [notifyingType, setNotifyingType] = useState<string | null>(null);
   const queryClient = useQueryClient();
   const params = useLocalSearchParams<{ week?: string }>();
   const [editing, setEditing] = useState<Assignment | null>(null);
   const [publishPrompt, setPublishPrompt] = useState<{
+    eventType: 'midweek' | 'weekend';
+    weekStartDate: string;
+  } | null>(null);
+  const [notifyPrompt, setNotifyPrompt] = useState<{
     eventType: 'midweek' | 'weekend';
     weekStartDate: string;
   } | null>(null);
@@ -338,6 +344,8 @@ export default function ScheduleIndexScreen() {
   };
   const draftCount = (list: Assignment[]) =>
     list.filter((x) => String(x.status) === 'draft').length;
+  const changedCount = (list: Assignment[]) =>
+    list.filter((x) => x.changedSincePublish).length;
   const publishMeetingNow = async (
     eventType: 'midweek' | 'weekend',
     weekStartDate: string,
@@ -354,6 +362,23 @@ export default function ScheduleIndexScreen() {
       }
     } finally {
       setPublishingType(null);
+    }
+  };
+  const notifyChangesNow = async (
+    eventType: 'midweek' | 'weekend',
+    weekStartDate: string,
+  ) => {
+    setNotifyingType(eventType);
+    try {
+      await assignmentsApi.notifyChanges({ weekStartDate, eventType });
+      await queryClient.invalidateQueries({ queryKey: ['assignments'] });
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      if (typeof window !== 'undefined' && typeof window.alert === 'function') {
+        window.alert(msg);
+      }
+    } finally {
+      setNotifyingType(null);
     }
   };
 
@@ -444,6 +469,20 @@ export default function ScheduleIndexScreen() {
         }}
         onCancel={() => setPublishPrompt(null)}
       />
+      <NotifyChangesDialog
+        open={!!notifyPrompt}
+        busy={notifyingType === notifyPrompt?.eventType}
+        onConfirm={() => {
+          if (notifyPrompt) {
+            void notifyChangesNow(
+              notifyPrompt.eventType,
+              notifyPrompt.weekStartDate,
+            );
+          }
+          setNotifyPrompt(null);
+        }}
+        onCancel={() => setNotifyPrompt(null)}
+      />
 
       <ScrollView
         contentContainerStyle={{ paddingBottom: 32 }}
@@ -511,16 +550,28 @@ export default function ScheduleIndexScreen() {
                     assigned={assignedCount(items)}
                     total={badgeParts(items).length}
                     actionLabel={
-                      perms.canEditMidweekSchedule && draftCount(items) > 0
-                        ? t('schedule.publish.button')
-                        : undefined
+                      !perms.canEditMidweekSchedule
+                        ? undefined
+                        : draftCount(items) > 0
+                          ? t('schedule.publish.button')
+                          : changedCount(items) > 0
+                            ? t('schedule.notifyChanges.button')
+                            : undefined
                     }
-                    actionBusy={publishingType === 'midweek'}
+                    actionBusy={
+                      publishingType === 'midweek' ||
+                      notifyingType === 'midweek'
+                    }
                     onAction={() =>
-                      setPublishPrompt({
-                        eventType: 'midweek',
-                        weekStartDate: items[0].weekStartDate,
-                      })
+                      draftCount(items) > 0
+                        ? setPublishPrompt({
+                            eventType: 'midweek',
+                            weekStartDate: items[0].weekStartDate,
+                          })
+                        : setNotifyPrompt({
+                            eventType: 'midweek',
+                            weekStartDate: items[0].weekStartDate,
+                          })
                     }
                   >
                     <MeetingHeader
@@ -579,16 +630,28 @@ export default function ScheduleIndexScreen() {
                     assigned={assignedCount(programItems)}
                     total={badgeParts(programItems).length}
                     actionLabel={
-                      perms.canEditWeekendSchedule && draftCount(items) > 0
-                        ? t('schedule.publish.button')
-                        : undefined
+                      !perms.canEditWeekendSchedule
+                        ? undefined
+                        : draftCount(items) > 0
+                          ? t('schedule.publish.button')
+                          : changedCount(items) > 0
+                            ? t('schedule.notifyChanges.button')
+                            : undefined
                     }
-                    actionBusy={publishingType === 'weekend'}
+                    actionBusy={
+                      publishingType === 'weekend' ||
+                      notifyingType === 'weekend'
+                    }
                     onAction={() =>
-                      setPublishPrompt({
-                        eventType: 'weekend',
-                        weekStartDate: items[0].weekStartDate,
-                      })
+                      draftCount(items) > 0
+                        ? setPublishPrompt({
+                            eventType: 'weekend',
+                            weekStartDate: items[0].weekStartDate,
+                          })
+                        : setNotifyPrompt({
+                            eventType: 'weekend',
+                            weekStartDate: items[0].weekStartDate,
+                          })
                     }
                   >
                     <MeetingHeader
@@ -1250,6 +1313,13 @@ function AssignmentRow({
             </Text>
           </View>
         )}
+        {assignment.changedSincePublish && (
+          <View style={[styles.statusBadge, styles.statusChanged]}>
+            <Text style={[styles.statusBadgeText, styles.statusChangedText]}>
+              {t('schedule.notifyChanges.badge').toUpperCase()}
+            </Text>
+          </View>
+        )}
       </View>
       {canEdit ? <Text style={styles.chevron}>›</Text> : null}
     </Pressable>
@@ -1420,6 +1490,8 @@ const styles = StyleSheet.create({
   },
   statusPublished: { backgroundColor: '#dcfce7' },
   statusCancelled: { backgroundColor: '#fee2e2' },
+  statusChanged: { backgroundColor: '#fef3c7' },
+  statusChangedText: { color: '#b45309' },
   chevron: { color: '#cbd5e1', fontSize: 24, marginLeft: 8 },
   errorBox: {
     margin: 16,

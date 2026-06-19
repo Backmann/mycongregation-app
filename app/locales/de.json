@@ -748,6 +748,15 @@
       "noMeetings": "In der Kongresswoche finden keine Zusammenkünfte der Versammlung statt",
       "programRegional": "Programm des regionalen Kongresses",
       "programCircuit": "Programm des Kreiskongresses"
+    },
+    "notifyChanges": {
+      "button": "Mitteilen",
+      "badge": "geändert",
+      "dialog": {
+        "title": "Über Änderungen benachrichtigen",
+        "subtitle": "Verkündiger werden benachrichtigt, dass das veröffentlichte Programm geändert wurde.",
+        "confirm": "Senden"
+      }
     }
   },
   "audit": {

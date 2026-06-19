@@ -748,6 +748,15 @@
       "noMeetings": "No congregation meetings are held during the convention week",
       "programRegional": "Regional convention program",
       "programCircuit": "Circuit assembly program"
+    },
+    "notifyChanges": {
+      "button": "Notify",
+      "badge": "changed",
+      "dialog": {
+        "title": "Notify about changes",
+        "subtitle": "Publishers will be notified that the published programme has changed.",
+        "confirm": "Send"
+      }
     }
   },
   "audit": {
