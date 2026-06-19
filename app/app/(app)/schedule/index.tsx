@@ -1220,23 +1220,43 @@ function AssignmentRow({
             {subtitle}
           </Text>
         )}
-        <View style={styles.assigneeRow}>
-          {publisher ? (
-            <Text style={styles.assignee}>{publisher.displayName}</Text>
-          ) : hasInvitedSpeaker ? (
-            <Text style={styles.invitedSpeaker}>
-              ✈ {assignment.speakerName}
-              {assignment.speakerCongregation
-                ? ` (${assignment.speakerCongregation})`
-                : ''}
-            </Text>
-          ) : (
-            <Text style={styles.unassigned}>{t('schedule.unassigned')}</Text>
-          )}
-          {assistant && (
-            <Text style={styles.assistant}> + {assistant.displayName}</Text>
-          )}
-        </View>
+        {assistant ? (
+          <View style={styles.pairRow}>
+            {publisher ? (
+              <View style={[styles.chip, styles.chipMain]}>
+                <Ionicons name="person-outline" size={13} color="#0c4a6e" />
+                <Text style={styles.chipMainText}>{publisher.displayName}</Text>
+              </View>
+            ) : (
+              <View style={[styles.chip, styles.chipEmpty]}>
+                <Text style={styles.chipEmptyText}>
+                  {t('schedule.unassigned')}
+                </Text>
+              </View>
+            )}
+            <View style={[styles.chip, styles.chipAssistant]}>
+              <Ionicons name="people-outline" size={13} color="#475569" />
+              <Text style={styles.chipAssistantText}>
+                {assistant.displayName}
+              </Text>
+            </View>
+          </View>
+        ) : (
+          <View style={styles.assigneeRow}>
+            {publisher ? (
+              <Text style={styles.assignee}>{publisher.displayName}</Text>
+            ) : hasInvitedSpeaker ? (
+              <Text style={styles.invitedSpeaker}>
+                ✈ {assignment.speakerName}
+                {assignment.speakerCongregation
+                  ? ` (${assignment.speakerCongregation})`
+                  : ''}
+              </Text>
+            ) : (
+              <Text style={styles.unassigned}>{t('schedule.unassigned')}</Text>
+            )}
+          </View>
+        )}
         {publisher?.serviceGroupId &&
         groupNameById.get(publisher.serviceGroupId) ? (
           <View style={styles.assigneeGroupRow}>
@@ -1393,7 +1413,27 @@ const styles = StyleSheet.create({
   assigneeRow: { flexDirection: 'row', flexWrap: 'wrap', marginTop: 4 },
   assignee: { fontSize: 14, color: '#0f172a' },
   invitedSpeaker: { fontSize: 14, color: '#7c3aed', fontWeight: '500' },
-  assistant: { fontSize: 13, color: '#64748b' },
+  pairRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 6,
+  },
+  chip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderRadius: 14,
+  },
+  chipMain: { backgroundColor: '#e0f2fe' },
+  chipMainText: { fontSize: 13, color: '#0c4a6e', fontWeight: '500' },
+  chipAssistant: { backgroundColor: '#f1f5f9' },
+  chipAssistantText: { fontSize: 13, color: '#475569', fontWeight: '500' },
+  chipEmpty: { backgroundColor: '#f1f5f9' },
+  chipEmptyText: { fontSize: 13, color: '#94a3b8', fontStyle: 'italic' },
   unassigned: {
     fontSize: 13,
     color: '#94a3b8',
