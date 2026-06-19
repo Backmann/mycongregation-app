@@ -206,6 +206,15 @@ export const MIDWEEK_PARTS: PartDef[] = [
     subsection: 'christian_life',
   },
   {
+    // Circuit overseer visit: replaces the Congregation Bible Study. Given by
+    // the visiting overseer (a free-text speaker), so no required capability.
+    key: 'co_service_talk',
+    label: 'Service talk (circuit overseer)',
+    defaultOrder: 11,
+    defaultDurationMin: 30,
+    subsection: 'christian_life',
+  },
+  {
     key: 'midweek_closing_prayer',
     label: 'Closing prayer',
     defaultOrder: 13,
@@ -252,6 +261,14 @@ export const WEEKEND_PARTS: PartDef[] = [
     defaultOrder: 5,
     defaultDurationMin: 60,
     requiredCapability: 'watchtower_reader',
+  },
+  {
+    // Circuit overseer visit: concluding talk after the Watchtower study,
+    // given by the visiting overseer (free-text speaker).
+    key: 'co_concluding_talk',
+    label: 'Concluding talk (circuit overseer)',
+    defaultOrder: 5,
+    defaultDurationMin: 30,
   },
   {
     key: 'weekend_closing_prayer',
@@ -362,7 +379,8 @@ export function resolveSubsection(key: string): Subsection {
   if (
     key === 'watchtower_conductor' ||
     key === 'watchtower_reader' ||
-    key === 'weekend_song'
+    key === 'weekend_song' ||
+    key === 'co_concluding_talk'
   ) {
     return 'watchtower';
   }

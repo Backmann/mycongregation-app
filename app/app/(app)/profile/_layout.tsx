@@ -48,6 +48,10 @@ export default function ProfileLayout() {
         name="halls"
         options={{ title: t('halls.title') }}
       />
+      <Stack.Screen
+        name="circuit-overseer"
+        options={{ title: t('profile.circuitOverseer') }}
+      />
     </Stack>
   );
 }

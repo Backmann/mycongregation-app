@@ -1115,6 +1115,9 @@ export interface SpecialEvent {
   mapUrl: string | null;
   programUrl: string | null;
   note: string | null;
+  coFirstName: string | null;
+  coLastName: string | null;
+  coWifeName: string | null;
   replacesMeeting: boolean;
   createdAt: string;
   updatedAt: string;
@@ -1131,10 +1134,29 @@ export interface CreateSpecialEventInput {
   mapUrl?: string;
   programUrl?: string;
   note?: string;
+  coFirstName?: string;
+  coLastName?: string;
+  coWifeName?: string;
   replacesMeeting?: boolean;
 }
 
 export type UpdateSpecialEventInput = Partial<CreateSpecialEventInput>;
+
+export interface CircuitOverseer {
+  id: string;
+  congregationId: string;
+  firstName: string;
+  lastName: string;
+  wifeName: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UpsertCircuitOverseerInput {
+  firstName: string;
+  lastName: string;
+  wifeName?: string | null;
+}
 
 function cleanEventPayload(
   input: CreateSpecialEventInput | UpdateSpecialEventInput,
@@ -1379,6 +1401,21 @@ export const specialEventsApi = {
     const { data } = await api.post<SpecialEvent>(
       `/special-events/${id}/restore`,
     );
+    return data;
+  },
+};
+
+export const circuitOverseerApi = {
+  async get(): Promise<CircuitOverseer | null> {
+    const { data } = await api.get<CircuitOverseer | null>('/circuit-overseer');
+    return data;
+  },
+  async upsert(input: UpsertCircuitOverseerInput): Promise<CircuitOverseer> {
+    const { data } = await api.post<CircuitOverseer>('/circuit-overseer', {
+      firstName: input.firstName,
+      lastName: input.lastName,
+      wifeName: input.wifeName ?? null,
+    });
     return data;
   },
 };

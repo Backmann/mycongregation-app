@@ -132,7 +132,9 @@
       "publisher": "Publisher"
     },
     "halls": "Kingdom Halls",
-    "hallsDescription": "Addresses for meetings and field service"
+    "hallsDescription": "Addresses for meetings and field service",
+    "circuitOverseer": "Circuit overseer",
+    "circuitOverseerDescription": "Default name for the CO visit"
   },
   "language": {
     "title": "Language",
@@ -543,7 +545,9 @@
     "public_talk_speaker": "Public talk",
     "watchtower_conductor": "Watchtower study — conductor",
     "watchtower_reader": "Watchtower study — reader",
-    "weekend_closing_prayer": "Closing prayer"
+    "weekend_closing_prayer": "Closing prayer",
+    "co_service_talk": "Service talk (circuit overseer)",
+    "co_concluding_talk": "Concluding talk"
   },
   "eventTypes": {
     "midweek": "Midweek meeting",
@@ -1283,5 +1287,16 @@
     "insertTitle": "Choose a topic",
     "insertEmpty": "No planned topics. Add them on the Local Needs screen (the bulb icon in the schedule header).",
     "noAccess": "Local Needs are available to elders only."
+  },
+  "circuitOverseer": {
+    "intro": "These details pre-fill a new circuit-overseer-visit event. Each visit keeps its own name snapshot, so editing here doesn't change past visits.",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "wifeName": "Wife's name",
+    "wifeHint": "Optional — if the circuit overseer is married.",
+    "save": "Save",
+    "savedTitle": "Saved",
+    "savedBody": "Circuit overseer details updated.",
+    "note": "You can change this anytime."
   }
 }
