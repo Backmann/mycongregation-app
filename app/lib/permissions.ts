@@ -57,6 +57,9 @@ export interface Permissions {
   /** Absences — admin OR body coordinator / midweek overseer / secretary. */
   canManageAbsences: boolean;
 
+  /** Local needs backlog — same managers as absences. */
+  canManageLocalNeeds: boolean;
+
   canViewServiceSummary: boolean;
 
   /** The set of responsibility types held by the current user. */
@@ -122,6 +125,11 @@ export function usePermissions(): Permissions {
       // Secretary + admin only.
       canManageEvents: isAdmin || holds('body_coordinator'),
       canManageAbsences:
+        isAdmin ||
+        holds('body_coordinator') ||
+        holds('life_ministry_overseer') ||
+        holds('secretary'),
+      canManageLocalNeeds:
         isAdmin ||
         holds('body_coordinator') ||
         holds('life_ministry_overseer') ||

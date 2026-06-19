@@ -76,7 +76,8 @@
       "daysAgo": "vor {{count}} Tg."
     },
     "done": "Fertig",
-    "none": "Keine"
+    "none": "Keine",
+    "saving": "Speichern…"
   },
   "profile": {
     "signedInAs": "Angemeldet als",
@@ -626,7 +627,8 @@
     "a11y": {
       "importEpub": "EPUB importieren",
       "newAssignment": "Neue Zuteilung",
-      "events": "Termine"
+      "events": "Termine",
+      "localNeeds": "Örtliche Bedürfnisse"
     },
     "noAssignments": "Keine Zuteilungen für diese Woche.",
     "unassigned": "Nicht zugeteilt",
@@ -1246,5 +1248,34 @@
   },
   "app": {
     "title": "mycongregation.org"
+  },
+  "localNeeds": {
+    "title": {
+      "list": "Örtliche Bedürfnisse"
+    },
+    "intro": "Ein Themenspeicher für den Teil „Unser Leben als Christ“. Plane Themen und füge sie in der gewünschten Woche ein.",
+    "add": "Thema hinzufügen",
+    "empty": "Noch keine Themen. Füge Themen hinzu, die die Versammlung betreffen.",
+    "section": {
+      "planned": "Geplant",
+      "used": "Behandelt"
+    },
+    "noPlanned": "Alle Themen wurden behandelt.",
+    "newTitle": "Neues Thema",
+    "editTitle": "Thema bearbeiten",
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "confirmDelete": "Dieses Thema löschen?",
+    "markUsed": "Als behandelt markieren",
+    "markPlanned": "Zurück zu geplant",
+    "fields": {
+      "title": "Thema",
+      "notes": "Notizen",
+      "speaker": "Redner (optional)"
+    },
+    "placeholders": {
+      "title": "z. B. Hinweis zur Reinigung des Königreichssaals",
+      "notes": "Notizen für den Redner…"
+    }
   }
 }

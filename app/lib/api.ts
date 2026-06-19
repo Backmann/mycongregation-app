@@ -1261,6 +1261,81 @@ export const absencesApi = {
   },
 };
 
+export interface LocalNeedsTopic {
+  id: string;
+  congregationId: string;
+  title: string;
+  notes: string | null;
+  speakerPublisherId: string | null;
+  usedWeek: string | null;
+  sortOrder: number;
+  createdById: string | null;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+  speaker?: {
+    id: string;
+    displayName: string;
+    firstName: string;
+    lastName: string;
+  } | null;
+}
+
+export interface CreateLocalNeedsTopicInput {
+  title: string;
+  notes?: string | null;
+  speakerPublisherId?: string | null;
+  usedWeek?: string | null;
+  sortOrder?: number;
+}
+
+export type UpdateLocalNeedsTopicInput = Partial<CreateLocalNeedsTopicInput>;
+
+export const localNeedsApi = {
+  async list(params?: {
+    onlyPlanned?: boolean;
+    includeRemoved?: boolean;
+  }): Promise<LocalNeedsTopic[]> {
+    const { data } = await api.get<LocalNeedsTopic[]>('/local-needs', {
+      params: {
+        onlyPlanned: params?.onlyPlanned ? 'true' : undefined,
+        includeRemoved: params?.includeRemoved ? 'true' : undefined,
+      },
+    });
+    return data;
+  },
+  async getById(id: string): Promise<LocalNeedsTopic> {
+    const { data } = await api.get<LocalNeedsTopic>(`/local-needs/${id}`);
+    return data;
+  },
+  async create(input: CreateLocalNeedsTopicInput): Promise<LocalNeedsTopic> {
+    const { data } = await api.post<LocalNeedsTopic>(
+      '/local-needs',
+      cleanPayload(input),
+    );
+    return data;
+  },
+  async update(
+    id: string,
+    input: UpdateLocalNeedsTopicInput,
+  ): Promise<LocalNeedsTopic> {
+    const { data } = await api.patch<LocalNeedsTopic>(
+      `/local-needs/${id}`,
+      cleanPayload(input),
+    );
+    return data;
+  },
+  async remove(id: string): Promise<void> {
+    await api.delete(`/local-needs/${id}`);
+  },
+  async restore(id: string): Promise<LocalNeedsTopic> {
+    const { data } = await api.post<LocalNeedsTopic>(
+      `/local-needs/${id}/restore`,
+    );
+    return data;
+  },
+};
+
 export const specialEventsApi = {
   async list(params?: {
     all?: boolean;

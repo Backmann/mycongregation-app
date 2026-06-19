@@ -76,7 +76,8 @@
       "daysAgo": "{{count}}d ago"
     },
     "done": "Done",
-    "none": "None"
+    "none": "None",
+    "saving": "Saving…"
   },
   "profile": {
     "signedInAs": "Signed in as",
@@ -626,7 +627,8 @@
     "a11y": {
       "importEpub": "Import EPUB",
       "newAssignment": "New assignment",
-      "events": "Events"
+      "events": "Events",
+      "localNeeds": "Local Needs"
     },
     "noAssignments": "No assignments for this week.",
     "unassigned": "Unassigned",
@@ -1246,5 +1248,34 @@
   },
   "app": {
     "title": "mycongregation.org"
+  },
+  "localNeeds": {
+    "title": {
+      "list": "Local Needs"
+    },
+    "intro": "A topic bank for the “Living as Christians” part. Plan topics and slot them into the week you need.",
+    "add": "Add topic",
+    "empty": "No topics yet. Add topics that concern the congregation.",
+    "section": {
+      "planned": "Planned",
+      "used": "Covered"
+    },
+    "noPlanned": "All topics have been covered.",
+    "newTitle": "New topic",
+    "editTitle": "Edit topic",
+    "edit": "Edit",
+    "delete": "Delete",
+    "confirmDelete": "Delete this topic?",
+    "markUsed": "Mark as covered",
+    "markPlanned": "Move back to planned",
+    "fields": {
+      "title": "Topic",
+      "notes": "Notes",
+      "speaker": "Speaker (optional)"
+    },
+    "placeholders": {
+      "title": "e.g. Reminder about cleaning the Kingdom Hall",
+      "notes": "Notes for the speaker…"
+    }
   }
 }

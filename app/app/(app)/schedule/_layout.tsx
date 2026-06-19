@@ -12,6 +12,7 @@ export default function ScheduleLayout() {
     canImportWeekendSchedule,
     canEditMidweekSchedule,
     canEditWeekendSchedule,
+    canManageLocalNeeds,
   } = usePermissions();
   const canImport = canImportMidweekSchedule || canImportWeekendSchedule;
   const canCreate = canEditMidweekSchedule || canEditWeekendSchedule;
@@ -23,6 +24,16 @@ export default function ScheduleLayout() {
           title: t('schedule.title.list'),
           headerRight: () => (
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              {canManageLocalNeeds && (
+                <Pressable
+                  onPress={() => router.push('/local-needs' as any)}
+                  style={{ paddingHorizontal: 10 }}
+                  hitSlop={8}
+                  accessibilityLabel={t('schedule.a11y.localNeeds')}
+                >
+                  <Ionicons name="bulb-outline" size={24} color="#0ea5e9" />
+                </Pressable>
+              )}
               <Pressable
                 onPress={() => router.push('/special-events' as any)}
                 style={{ paddingHorizontal: 10 }}
