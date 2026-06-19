@@ -28,6 +28,17 @@ const ROLE_COLORS: Record<UserRole, { bg: string; fg: string }> = {
   publisher: { bg: '#dcfce7', fg: '#166534' },
 };
 
+// Appointments that all map to the 'publisher' login role but should read
+// as their real status on this audit list (e.g. a Student is not a Publisher).
+const APPOINTMENT_OVERRIDE: Record<
+  'unbaptized_publisher' | 'student' | 'none',
+  { bg: string; fg: string }
+> = {
+  unbaptized_publisher: { bg: '#ccfbf1', fg: '#115e59' },
+  student: { bg: '#fef3c7', fg: '#92400e' },
+  none: { bg: '#f1f5f9', fg: '#475569' },
+};
+
 const QK_USERS = ['users'] as const;
 
 function formatRelativeTime(
@@ -113,7 +124,23 @@ export default function AdminUsersScreen() {
 
 function UserCard({ user, isSelf }: { user: PublicUser; isSelf: boolean }) {
   const { t } = useTranslation();
-  const roleColor = ROLE_COLORS[user.role];
+  // The login role collapses unbaptized publishers, students and "none" all
+  // into 'publisher'. On this list, show the real appointment for those so a
+  // Student doesn't read as a Publisher. Admin (an explicit elevation) and the
+  // elder/MS/publisher appointments keep their role badge.
+  const override =
+    user.role !== 'admin' &&
+    (user.appointment === 'unbaptized_publisher' ||
+      user.appointment === 'student' ||
+      user.appointment === 'none')
+      ? user.appointment
+      : null;
+  const roleColor = override
+    ? APPOINTMENT_OVERRIDE[override]
+    : ROLE_COLORS[user.role];
+  const roleLabel = override
+    ? t(`publishers.appointment.${override}`)
+    : t(`admin.users.roles.${user.role}`);
 
   return (
     <View style={[styles.userCard, !user.isActive && styles.userCardInactive]}>
@@ -139,7 +166,7 @@ function UserCard({ user, isSelf }: { user: PublicUser; isSelf: boolean }) {
         </View>
         <View style={[styles.roleChip, { backgroundColor: roleColor.bg }]}>
           <Text style={[styles.roleChipText, { color: roleColor.fg }]}>
-            {t(`admin.users.roles.${user.role}`)}
+            {roleLabel}
           </Text>
         </View>
       </View>

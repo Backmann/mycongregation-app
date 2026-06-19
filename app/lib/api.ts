@@ -108,6 +108,7 @@ export interface PublicUser {
   lastLoginAt: string | null;
   createdAt: string;
   updatedAt: string;
+  appointment: PublisherAppointment | null;
 }
 
 export interface CreateUserInput {
