@@ -26,7 +26,7 @@ export function FormChips<T extends string | number | null>({
 }: Props<T>) {
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>{label}</Text>
+      {label ? <Text style={styles.label}>{label}</Text> : null}
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}

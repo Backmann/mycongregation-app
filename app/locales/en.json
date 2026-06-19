@@ -583,7 +583,8 @@
         "speaker": "Speaker",
         "assignment": "Assignment",
         "status": "Status",
-        "coTalk": "Circuit overseer talk"
+        "coTalk": "Circuit overseer talk",
+        "prayer": "Prayer"
       },
       "readonly": {
         "weekStart": "Week start",
@@ -605,7 +606,6 @@
         "assistant": "Assistant",
         "statusLabel": "Status",
         "requiredSkill": "Required skill",
-        "talkTheme": "Talk theme",
         "talkThemeManual": "Theme (manual)"
       },
       "placeholder": {
@@ -615,7 +615,6 @@
         "duration": "4",
         "speakerName": "John Smith",
         "fromCongregation": "Berlin Central",
-        "talkTheme": "Enter the talk theme",
         "talkThemeManual": "Or enter the theme manually"
       },
       "validation": {
@@ -628,15 +627,12 @@
       "cancelPart": "Cancel part",
       "restorePart": "Restore part",
       "prayerBy": {
-        "label": "Who says the prayer",
         "local": "From congregation",
         "co": "Circuit overseer · {{name}}",
         "coShort": "Circuit overseer"
       },
       "coSpeaker": "Given by the circuit overseer: {{name}}",
-      "coSpeakerNoName": "Given by the circuit overseer",
-      "prayerCoNote": "Prayer by the circuit overseer: {{name}}",
-      "prayerCoNoteNoName": "Prayer by the circuit overseer"
+      "coSpeakerNoName": "Given by the circuit overseer"
     }
   },
   "schedule": {

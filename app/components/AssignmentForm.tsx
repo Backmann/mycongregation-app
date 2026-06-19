@@ -469,14 +469,19 @@ export function AssignmentForm({
 
       {isCoTalk && (
         <FormSection title={t('assignments.form.section.coTalk')}>
+          <PublicTalkSelector
+            label={t('assignments.form.field.talk')}
+            value={form.publicTalkId}
+            onChange={handleTalkSelect}
+          />
           <FormField
-            label={t('assignments.form.field.talkTheme')}
+            label={t('assignments.form.field.talkThemeManual')}
             value={form.partTitle ?? ''}
             onChangeText={(v) => {
               update('partTitle', v);
               queueInstant({ partTitle: v });
             }}
-            placeholder={t('assignments.form.placeholder.talkTheme')}
+            placeholder={t('assignments.form.placeholder.talkThemeManual')}
             multiline
           />
           <View style={styles.coSpeakerNote}>
@@ -520,7 +525,7 @@ export function AssignmentForm({
           isPublicTalkSpeaker
             ? t('assignments.form.section.speaker')
             : isPrayer && isCoWeek
-              ? t('assignments.form.prayerBy.label')
+              ? t('assignments.form.section.prayer')
               : t('assignments.form.section.assignment')
         }
       >
@@ -572,7 +577,7 @@ export function AssignmentForm({
         ) : isPrayer && isCoWeek ? (
           <>
             <FormChips
-              label={t('assignments.form.prayerBy.label')}
+              label=""
               value={prayerBy}
               options={PRAYER_BY_OPTIONS}
               onChange={handlePrayerByChange}
@@ -590,16 +595,7 @@ export function AssignmentForm({
                 currentWeekStart={form.weekStartDate}
                 currentEventType={form.eventType}
               />
-            ) : (
-              <View style={styles.coSpeakerNote}>
-                <Ionicons name="person" size={16} color="#6d28d9" />
-                <Text style={styles.coSpeakerText}>
-                  {coName
-                    ? t('assignments.form.prayerCoNote', { name: coName })
-                    : t('assignments.form.prayerCoNoteNoName')}
-                </Text>
-              </View>
-            )}
+            ) : null}
           </>
         ) : (
           <>

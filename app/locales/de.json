@@ -583,7 +583,8 @@
         "speaker": "Redner",
         "assignment": "Zuteilung",
         "status": "Status",
-        "coTalk": "Vortrag des Kreisaufsehers"
+        "coTalk": "Vortrag des Kreisaufsehers",
+        "prayer": "Gebet"
       },
       "readonly": {
         "weekStart": "Wochenbeginn",
@@ -605,7 +606,6 @@
         "assistant": "Gehilfe",
         "statusLabel": "Status",
         "requiredSkill": "Erforderliche Fähigkeit",
-        "talkTheme": "Vortragsthema",
         "talkThemeManual": "Thema (manuell)"
       },
       "placeholder": {
@@ -615,7 +615,6 @@
         "duration": "4",
         "speakerName": "Max Müller",
         "fromCongregation": "Berlin Mitte",
-        "talkTheme": "Vortragsthema eingeben",
         "talkThemeManual": "Oder Thema manuell eingeben"
       },
       "validation": {
@@ -628,15 +627,12 @@
       "cancelPart": "Programmpunkt absagen",
       "restorePart": "Programmpunkt wiederherstellen",
       "prayerBy": {
-        "label": "Wer betet",
         "local": "Aus der Versammlung",
         "co": "Kreisaufseher · {{name}}",
         "coShort": "Kreisaufseher"
       },
       "coSpeaker": "Gehalten vom Kreisaufseher: {{name}}",
-      "coSpeakerNoName": "Gehalten vom Kreisaufseher",
-      "prayerCoNote": "Gebet vom Kreisaufseher: {{name}}",
-      "prayerCoNoteNoName": "Gebet vom Kreisaufseher"
+      "coSpeakerNoName": "Gehalten vom Kreisaufseher"
     }
   },
   "schedule": {

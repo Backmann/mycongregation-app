@@ -1297,7 +1297,6 @@ function AssignmentRow({
             </View>
           ) : hasInvitedSpeaker ? (
             <View style={[styles.chip, styles.chipSpeaker]}>
-              <Ionicons name="airplane-outline" size={13} color="#6d28d9" />
               <Text style={styles.chipSpeakerText}>
                 {assignment.speakerName}
                 {assignment.speakerCongregation ? (

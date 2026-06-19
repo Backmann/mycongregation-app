@@ -587,7 +587,8 @@
         "speaker": "Докладчик",
         "assignment": "Назначение",
         "status": "Статус",
-        "coTalk": "Речь районного старейшины"
+        "coTalk": "Речь районного старейшины",
+        "prayer": "Молитва"
       },
       "readonly": {
         "weekStart": "Начало недели",
@@ -609,7 +610,6 @@
         "assistant": "Помощник",
         "statusLabel": "Статус",
         "requiredSkill": "Требуемый навык",
-        "talkTheme": "Тема речи",
         "talkThemeManual": "Тема (вручную)"
       },
       "placeholder": {
@@ -619,7 +619,6 @@
         "duration": "4",
         "speakerName": "Иван Иванов",
         "fromCongregation": "Дортмунд Восток",
-        "talkTheme": "Введите тему речи",
         "talkThemeManual": "Или впишите тему вручную"
       },
       "validation": {
@@ -632,15 +631,12 @@
       "cancelPart": "Отменить часть",
       "restorePart": "Вернуть часть",
       "prayerBy": {
-        "label": "Кто читает молитву",
         "local": "Из собрания",
         "co": "Районный · {{name}}",
         "coShort": "Районный старейшина"
       },
       "coSpeaker": "Речь проводит районный старейшина: {{name}}",
-      "coSpeakerNoName": "Речь проводит районный старейшина",
-      "prayerCoNote": "Молитву читает районный старейшина: {{name}}",
-      "prayerCoNoteNoName": "Молитву читает районный старейшина"
+      "coSpeakerNoName": "Речь проводит районный старейшина"
     }
   },
   "schedule": {
