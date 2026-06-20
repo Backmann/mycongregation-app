@@ -599,6 +599,11 @@ export default function ScheduleIndexScreen() {
                       weekStart={weekStart}
                       version={meetingVersion}
                       eventType="midweek"
+                      dowOverride={
+                        coVisitEvent
+                          ? (coVisitEvent.coMidweekDow ?? 2)
+                          : undefined
+                      }
                     />
                     {perms.canEditMidweekSchedule ? (
                       <Pressable

@@ -8,6 +8,8 @@ type Props = {
   weekStart: Date;
   version: MeetingSettingsVersion | null;
   eventType: 'midweek' | 'weekend';
+  /** Override the midweek weekday (1=Mon..7=Sun), e.g. a CO-visit Tuesday. */
+  dowOverride?: number | null;
 };
 
 function formatDate(date: Date, locale: string): string {
@@ -26,11 +28,18 @@ function formatDate(date: Date, locale: string): string {
  * Compact banner showing when/where a meeting takes place, derived from the
  * effective meeting-settings version. Renders nothing if no version applies.
  */
-export function MeetingHeader({ weekStart, version, eventType }: Props) {
+export function MeetingHeader({
+  weekStart,
+  version,
+  eventType,
+  dowOverride,
+}: Props) {
   if (!version) return null;
 
   const dow =
-    eventType === 'midweek' ? version.midweekDow : version.weekendDow;
+    eventType === 'midweek'
+      ? (dowOverride ?? version.midweekDow)
+      : version.weekendDow;
   const rawTime =
     eventType === 'midweek' ? version.midweekTime : version.weekendTime;
   const time = (rawTime || '').slice(0, 5);
