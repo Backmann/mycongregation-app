@@ -18,6 +18,7 @@ import DateTimePicker, {
   type DateType,
 } from 'react-native-ui-datepicker';
 import { circuitOverseerApi } from '../lib/api';
+import { FormChips } from './FormChips';
 
 export const EVENT_TYPES = [
   'regional_convention',
@@ -53,6 +54,7 @@ export interface EventFormValue {
   coFirstName: string;
   coLastName: string;
   coWifeName: string;
+  coMidweekDow: number;
 }
 
 export const CIRCUIT_OVERSEER_VISIT_TYPE = 'circuit_overseer_visit';
@@ -72,6 +74,7 @@ export function emptyEventForm(): EventFormValue {
     coFirstName: '',
     coLastName: '',
     coWifeName: '',
+    coMidweekDow: 2,
   };
 }
 
@@ -240,6 +243,15 @@ export function SpecialEventForm({
               placeholderTextColor="#94a3b8"
             />
           </Field>
+          <FormChips
+            label={t('circuitOverseer.midweekDow')}
+            value={value.coMidweekDow}
+            options={[1, 2, 3, 4, 5, 6, 7].map((d) => ({
+              value: d,
+              label: t(`meetingSettings.dow.${d}`),
+            }))}
+            onChange={(d) => set({ coMidweekDow: d })}
+          />
         </>
       )}
       <View style={styles.switchRow}>

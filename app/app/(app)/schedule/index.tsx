@@ -297,11 +297,21 @@ export default function ScheduleIndexScreen() {
     arr.sort((a, b) => a.partOrder - b.partOrder);
   }
 
+  // Circuit-overseer visit week: the overseer is surfaced for the assignment
+  // sheet (prayers/talks), and the midweek meeting often moves to another day
+  // (commonly Tuesday), stored per-visit on the event.
+  const coVisitEvent = weekEvents.find(
+    (e) => e.type === 'circuit_overseer_visit',
+  );
+  const dowFor = (kind: 'midweek' | 'weekend'): number | undefined => {
+    if (kind === 'weekend') return meetingVersion?.weekendDow;
+    if (coVisitEvent) return coVisitEvent.coMidweekDow ?? 2;
+    return meetingVersion?.midweekDow;
+  };
   // v2: a replacesMeeting event covering a meeting's date replaces its section.
   const replacedBy = (kind: 'midweek' | 'weekend') => {
     if (!meetingVersion) return undefined;
-    const dow =
-      kind === 'midweek' ? meetingVersion.midweekDow : meetingVersion.weekendDow;
+    const dow = dowFor(kind);
     if (!dow) return undefined;
     const dateISO = formatDateISO(addDays(weekStart, dow - 1));
     return weekEvents.find(
@@ -320,11 +330,7 @@ export default function ScheduleIndexScreen() {
     (e) =>
       e.type === 'regional_convention' || e.type === 'circuit_assembly',
   );
-  // Circuit-overseer visit week: surface the overseer so the assignment sheet
-  // can offer him for the prayers and title his talks.
-  const coVisitEvent = weekEvents.find(
-    (e) => e.type === 'circuit_overseer_visit',
-  );
+  // Circuit overseer display name (for the assignment sheet).
   const circuitOverseer = coVisitEvent
     ? {
         displayName: [coVisitEvent.coFirstName, coVisitEvent.coLastName]
@@ -348,8 +354,7 @@ export default function ScheduleIndexScreen() {
     ).length;
   const meetingDateLabel = (kind: 'midweek' | 'weekend'): string | null => {
     if (!meetingVersion) return null;
-    const dow =
-      kind === 'midweek' ? meetingVersion.midweekDow : meetingVersion.weekendDow;
+    const dow = dowFor(kind);
     if (!dow) return null;
     return addDays(weekStart, dow - 1).toLocaleDateString(i18n.language, {
       weekday: 'long',

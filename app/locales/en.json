@@ -1326,6 +1326,7 @@
     "save": "Save",
     "savedTitle": "Saved",
     "savedBody": "Circuit overseer details updated.",
-    "note": "You can change this anytime."
+    "note": "You can change this anytime.",
+    "midweekDow": "Midweek meeting day"
   }
 }

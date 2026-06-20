@@ -1326,6 +1326,7 @@
     "save": "Speichern",
     "savedTitle": "Gespeichert",
     "savedBody": "Angaben zum Kreisaufseher aktualisiert.",
-    "note": "Sie können dies jederzeit ändern."
+    "note": "Sie können dies jederzeit ändern.",
+    "midweekDow": "Tag der Versammlung unter der Woche"
   }
 }

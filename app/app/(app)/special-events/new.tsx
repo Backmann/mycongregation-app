@@ -14,6 +14,7 @@ import {
   SpecialEventForm,
   EventFormValue,
   emptyEventForm,
+  CIRCUIT_OVERSEER_VISIT_TYPE,
 } from '../../../components/SpecialEventForm';
 
 export default function NewSpecialEventScreen() {
@@ -37,6 +38,10 @@ export default function NewSpecialEventScreen() {
         coFirstName: form.coFirstName.trim() || undefined,
         coLastName: form.coLastName.trim() || undefined,
         coWifeName: form.coWifeName.trim() || undefined,
+        coMidweekDow:
+          form.type.trim() === CIRCUIT_OVERSEER_VISIT_TYPE
+            ? form.coMidweekDow
+            : undefined,
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['special-events'] });
