@@ -8,6 +8,7 @@ export type Subsection =
   | 'christian_life'
   | 'public_talk'
   | 'watchtower'
+  | 'concluding_talk'
   | 'closing';
 
 export interface PartDef {
@@ -79,6 +80,13 @@ export const SUBSECTIONS: Record<Subsection, SubsectionMeta> = {
     colorMuted: '#f5f0ff',
     icon: 'book-outline',
     i18nKey: 'schedule.subsection.watchtower',
+  },
+  concluding_talk: {
+    key: 'concluding_talk',
+    color: '#0f766e',
+    colorMuted: '#ccfbf1',
+    icon: 'flag-outline',
+    i18nKey: 'schedule.subsection.concludingTalk',
   },
   // Weekend opening (chairman/song/prayer) and the closing prayer render as
   // plain rows without a banner, so these metas are only used for grouping
@@ -376,11 +384,11 @@ export function resolveSubsection(key: string): Subsection {
   // Watchtower study; chairman/prayers/opening song stay in the unlabeled
   // opening group; the closing prayer renders last with no heading.
   if (key === 'public_talk_speaker') return 'public_talk';
+  if (key === 'co_concluding_talk') return 'concluding_talk';
   if (
     key === 'watchtower_conductor' ||
     key === 'watchtower_reader' ||
-    key === 'weekend_song' ||
-    key === 'co_concluding_talk'
+    key === 'weekend_song'
   ) {
     return 'watchtower';
   }

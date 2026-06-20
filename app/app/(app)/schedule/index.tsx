@@ -1010,6 +1010,7 @@ const WEEKEND_SUBSECTION_ORDER: Subsection[] = [
   'opening',
   'public_talk',
   'watchtower',
+  'concluding_talk',
   'closing',
 ];
 
@@ -1019,6 +1020,7 @@ const WEEKEND_SUBSECTION_ORDER: Subsection[] = [
 const WEEKEND_BANNER_SUBSECTIONS = new Set<Subsection>([
   'public_talk',
   'watchtower',
+  'concluding_talk',
 ]);
 
 function WeekendSections({
