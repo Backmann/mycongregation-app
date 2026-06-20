@@ -1039,8 +1039,21 @@ function WeekendSections({
   const { t } = useTranslation();
 
   const bySubsection = new Map<Subsection, Assignment[]>();
+  const concludingOrder = items.find(
+    (a) => a.partKey === 'co_concluding_talk',
+  )?.partOrder;
   for (const a of items) {
-    const sub = resolveSubsection(a.partKey);
+    let sub = resolveSubsection(a.partKey);
+    // A CO visit adds a second weekend song — the concluding song, sung right
+    // before the closing prayer. Group it with the closing prayer (above it),
+    // not with the pre-study song in the Watchtower section.
+    if (
+      a.partKey === 'weekend_song' &&
+      concludingOrder != null &&
+      a.partOrder >= concludingOrder
+    ) {
+      sub = 'closing';
+    }
     const arr = bySubsection.get(sub) ?? [];
     arr.push(a);
     bySubsection.set(sub, arr);
