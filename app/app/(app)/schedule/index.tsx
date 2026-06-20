@@ -89,7 +89,7 @@ function weekFromParam(raw: string | string[] | undefined): Date {
 export default function ScheduleIndexScreen() {
   const { t, i18n } = useTranslation();
   const { width } = useWindowDimensions();
-  const dutiesTwoCol = width >= 720;
+  const dutiesNarrow = width < 720;
   const perms = usePermissions();
   const [publishingType, setPublishingType] = useState<string | null>(null);
   const [notifyingType, setNotifyingType] = useState<string | null>(null);
@@ -777,13 +777,16 @@ export default function ScheduleIndexScreen() {
               total={0}
               showBadge={false}
             >
-              <View style={dutiesTwoCol ? styles.dutiesRow : undefined}>
-              <View style={dutiesTwoCol ? styles.dutiesCol : undefined}>
+              <View
+                style={[styles.dutiesRow, dutiesNarrow && styles.dutiesRowNarrow]}
+              >
+              <View style={styles.dutiesCol}>
               <DutiesSection
                 only="midweek"
                 duties={duties}
                 publishersById={publishersById}
                 canEdit={canEditDuties}
+                compact={dutiesNarrow}
                 pending={
                   generateDutiesMutation.isPending ||
                   assignDutyMutation.isPending ||
@@ -805,12 +808,13 @@ export default function ScheduleIndexScreen() {
                 weekStartISO={weekStartISO}
               />
               </View>
-              <View style={dutiesTwoCol ? styles.dutiesCol : undefined}>
+              <View style={styles.dutiesCol}>
               <DutiesSection
                 only="weekend"
                 duties={duties}
                 publishersById={publishersById}
                 canEdit={canEditDuties}
+                compact={dutiesNarrow}
                 pending={
                   generateDutiesMutation.isPending ||
                   assignDutyMutation.isPending ||
@@ -1386,7 +1390,8 @@ function AssignmentRow({
 
 const styles = StyleSheet.create({
   dutiesRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 16 },
-  dutiesCol: { flex: 1 },
+  dutiesRowNarrow: { gap: 8 },
+  dutiesCol: { flex: 1, minWidth: 0 },
   container: { flex: 1, backgroundColor: '#f1f5f9' },
   overline: {
     fontSize: 11,

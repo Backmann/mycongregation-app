@@ -88,6 +88,8 @@ type Props = {
   only?: Meeting;
   /** Hide the "Duties" title text (when wrapped in an outer collapsible). */
   hideHeader?: boolean;
+  /** Tighten horizontal padding/gaps (e.g. when shown two-up on a phone). */
+  compact?: boolean;
 };
 
 export function DutiesSection({
@@ -104,6 +106,7 @@ export function DutiesSection({
   replacedEventTypes,
   only,
   hideHeader,
+  compact,
 }: Props) {
   const { t } = useTranslation();
   const { myPublisherId } = useMyPublisher();
@@ -134,7 +137,12 @@ export function DutiesSection({
 
   return (
     <View style={only ? styles.embedded : styles.section}>
-      <View style={only ? styles.embeddedHeader : styles.header}>
+      <View
+        style={[
+          only ? styles.embeddedHeader : styles.header,
+          compact && styles.hPadCompact,
+        ]}
+      >
         <Ionicons name="people-outline" size={16} color="#475569" />
         {!hideHeader ? (
           <Text style={styles.headerText}>{t('duties.title')}</Text>
@@ -180,6 +188,7 @@ export function DutiesSection({
               <Pressable
                 style={({ pressed }) => [
                   styles.fillBtn,
+                  compact && styles.mHorizCompact,
                   pressed && styles.fillBtnPressed,
                   pending && styles.disabled,
                 ]}
@@ -201,7 +210,7 @@ export function DutiesSection({
             </View>
 
             {canEdit ? (
-              <View style={styles.editList}>
+              <View style={[styles.editList, compact && styles.hPadCompact]}>
                 {list.map((d) => (
                   <View key={d.id} style={styles.editRow}>
                     <View style={styles.editCell}>
@@ -237,6 +246,7 @@ export function DutiesSection({
                 <Pressable
                   style={({ pressed }) => [
                     styles.addCustomBtn,
+                    compact && styles.mHorizCompact,
                     pressed && styles.fillBtnPressed,
                   ]}
                   onPress={() => {
@@ -259,7 +269,11 @@ export function DutiesSection({
                   return (
                     <View
                       key={d.id}
-                      style={[styles.row, isMine && styles.rowMine]}
+                      style={[
+                        styles.row,
+                        isMine && styles.rowMine,
+                        compact && styles.hPadCompact,
+                      ]}
                     >
                       <Text style={styles.dutyLabel}>{dutyLabel(d, t)}</Text>
                       <ChipRow>
@@ -418,6 +432,9 @@ const styles = StyleSheet.create({
   editRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   editCell: { flex: 1, gap: 6, paddingVertical: 6 },
   delBtn: { padding: 6 },
+  // two-up on narrow screens: tighten horizontal padding/margins
+  hPadCompact: { paddingHorizontal: 8 },
+  mHorizCompact: { marginHorizontal: 8 },
 
   fillBtn: {
     flexDirection: 'row',
