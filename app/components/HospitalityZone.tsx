@@ -3,6 +3,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { Assignment, Publisher, PublisherActivity } from '../lib/api';
 import { PublisherSelector } from './PublisherSelector';
+import { PersonChip } from './PersonChip';
 
 /**
  * Weekend hospitality slot. Stored as a regular assignment with
@@ -42,6 +43,8 @@ export function HospitalityZone({
       </View>
       {canEdit ? (
         <PublisherSelector
+          variant="chip"
+          emptyLabel={t('hospitality.sister')}
           label={t('hospitality.sister')}
           value={hospitality?.publisherId ?? null}
           onChange={onChange}
@@ -52,9 +55,9 @@ export function HospitalityZone({
           suggestionPartKeys={['weekend_hospitality']}
           suggestionRole="primary"
         />
-      ) : (
-        <Text style={styles.name}>{sister?.displayName}</Text>
-      )}
+      ) : sister ? (
+        <PersonChip label={sister.displayName} variant="main" />
+      ) : null}
     </View>
   );
 }
@@ -83,5 +86,4 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
     textTransform: 'uppercase',
   },
-  name: { fontSize: 15, fontWeight: '600', color: '#0f172a' },
 });

@@ -204,8 +204,11 @@ export function DutiesSection({
               <View style={styles.editList}>
                 {list.map((d) => (
                   <View key={d.id} style={styles.editRow}>
-                    <View style={{ flex: 1 }}>
+                    <View style={styles.editCell}>
+                      <Text style={styles.dutyLabel}>{dutyLabel(d, t)}</Text>
                       <PublisherSelector
+                        variant="chip"
+                        emptyLabel={t('duties.unassigned')}
                         label={dutyLabel(d, t)}
                         roleIcon={DUTY_ICONS[d.dutyType]?.icon}
                         roleColor={DUTY_ICONS[d.dutyType]?.color}
@@ -412,8 +415,9 @@ const styles = StyleSheet.create({
 
   // editable list
   editList: { paddingHorizontal: 16, gap: 4 },
-  editRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 8 },
-  delBtn: { padding: 6, marginBottom: 6 },
+  editRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  editCell: { flex: 1, gap: 6, paddingVertical: 6 },
+  delBtn: { padding: 6 },
 
   fillBtn: {
     flexDirection: 'row',

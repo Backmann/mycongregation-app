@@ -8,6 +8,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -87,6 +88,8 @@ function weekFromParam(raw: string | string[] | undefined): Date {
 
 export default function ScheduleIndexScreen() {
   const { t, i18n } = useTranslation();
+  const { width } = useWindowDimensions();
+  const dutiesTwoCol = width >= 720;
   const perms = usePermissions();
   const [publishingType, setPublishingType] = useState<string | null>(null);
   const [notifyingType, setNotifyingType] = useState<string | null>(null);
@@ -774,6 +777,8 @@ export default function ScheduleIndexScreen() {
               total={0}
               showBadge={false}
             >
+              <View style={dutiesTwoCol ? styles.dutiesRow : undefined}>
+              <View style={dutiesTwoCol ? styles.dutiesCol : undefined}>
               <DutiesSection
                 only="midweek"
                 duties={duties}
@@ -799,6 +804,8 @@ export default function ScheduleIndexScreen() {
                 activityById={activityById}
                 weekStartISO={weekStartISO}
               />
+              </View>
+              <View style={dutiesTwoCol ? styles.dutiesCol : undefined}>
               <DutiesSection
                 only="weekend"
                 duties={duties}
@@ -824,6 +831,8 @@ export default function ScheduleIndexScreen() {
                 activityById={activityById}
                 weekStartISO={weekStartISO}
               />
+              </View>
+              </View>
             </CollapsibleMeetingBlock>
             )}
 
@@ -1376,6 +1385,8 @@ function AssignmentRow({
 }
 
 const styles = StyleSheet.create({
+  dutiesRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 16 },
+  dutiesCol: { flex: 1 },
   container: { flex: 1, backgroundColor: '#f1f5f9' },
   overline: {
     fontSize: 11,

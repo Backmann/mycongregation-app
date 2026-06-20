@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
+import { PersonChip } from './PersonChip';
 import {
   Absence,
   absencesApi,
@@ -59,6 +60,10 @@ interface Props {
   scopeDutyType?: string;
   /** Soft-filter to this appointment (e.g. 'elder'); "Show all" reveals others. */
   preferAppointment?: 'elder' | 'ministerial_servant';
+  /** Resting trigger style: 'field' (bordered, default) or 'chip' (program-style). */
+  variant?: 'field' | 'chip';
+  /** Label for the empty chip in chip variant. Defaults to common.none. */
+  emptyLabel?: string;
 }
 
 const ISO_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -117,6 +122,8 @@ export function PublisherSelector({
   matchGenderOfPublisherId,
   scopeDutyType,
   preferAppointment,
+  variant = 'field',
+  emptyLabel,
 }: Props) {
   const { t, i18n } = useTranslation();
   const [open, setOpen] = useState(false);
@@ -295,61 +302,84 @@ export function PublisherSelector({
       ).length
     : 0;
 
-  return (
+  const warnings = (
     <>
-      <Pressable
-        style={({ pressed }) => [
-          styles.field,
-          roleIcon && styles.fieldWithIcon,
-          pressed && styles.fieldPressed,
-        ]}
-        onPress={() => setOpen(true)}
-      >
-        {roleIcon ? (
-          <View
-            style={[
-              styles.roleIconWrap,
-              { backgroundColor: `${roleColor ?? '#0d9488'}22` },
-            ]}
-          >
-            <Ionicons name={roleIcon} size={18} color={roleColor ?? '#0d9488'} />
-          </View>
-        ) : null}
-        <View style={styles.fieldMain}>
-        <Text style={styles.label}>{label}</Text>
-        <View style={styles.row}>
-          <Text
-            style={[
-              styles.value,
-              !selectedPublisher && styles.valuePlaceholder,
-            ]}
-          >
-            {selectedPublisher ? selectedPublisher.displayName : t('common.none')}
-          </Text>
-          <Ionicons name="chevron-forward" size={18} color="#cbd5e1" />
-        </View>
-        {selectedPublisher &&
-          requiredCapability &&
-          !selectedPublisher.capabilities?.[requiredCapability] && (
-            <View style={styles.warningRow}>
-              <Ionicons name="warning" size={12} color="#dc2626" />
-              <Text style={styles.warningText}>
-                {t('pickers.missingCapability', { capability: capabilityLabel })}
-              </Text>
-            </View>
-          )}
-        {selectedAbsence && (
-          <View style={styles.absenceRow}>
-            <Ionicons name="airplane" size={12} color="#b45309" />
-            <Text style={styles.absenceText}>
-              {t('absences.warnAway', {
-                range: absenceRangeLabel(selectedAbsence, i18n.language),
-              })}
+      {selectedPublisher &&
+        requiredCapability &&
+        !selectedPublisher.capabilities?.[requiredCapability] && (
+          <View style={styles.warningRow}>
+            <Ionicons name="warning" size={12} color="#dc2626" />
+            <Text style={styles.warningText}>
+              {t('pickers.missingCapability', { capability: capabilityLabel })}
             </Text>
           </View>
         )}
+      {selectedAbsence && (
+        <View style={styles.absenceRow}>
+          <Ionicons name="airplane" size={12} color="#b45309" />
+          <Text style={styles.absenceText}>
+            {t('absences.warnAway', {
+              range: absenceRangeLabel(selectedAbsence, i18n.language),
+            })}
+          </Text>
         </View>
-      </Pressable>
+      )}
+    </>
+  );
+
+  return (
+    <>
+      {variant === 'chip' ? (
+        <Pressable
+          style={({ pressed }) => [
+            styles.chipTrigger,
+            pressed && styles.chipPressed,
+          ]}
+          onPress={() => setOpen(true)}
+        >
+          {selectedPublisher ? (
+            <PersonChip label={selectedPublisher.displayName} variant="main" />
+          ) : (
+            <PersonChip label={emptyLabel ?? t('common.none')} variant="empty" />
+          )}
+          {warnings}
+        </Pressable>
+      ) : (
+        <Pressable
+          style={({ pressed }) => [
+            styles.field,
+            roleIcon && styles.fieldWithIcon,
+            pressed && styles.fieldPressed,
+          ]}
+          onPress={() => setOpen(true)}
+        >
+          {roleIcon ? (
+            <View
+              style={[
+                styles.roleIconWrap,
+                { backgroundColor: `${roleColor ?? '#0d9488'}22` },
+              ]}
+            >
+              <Ionicons name={roleIcon} size={18} color={roleColor ?? '#0d9488'} />
+            </View>
+          ) : null}
+          <View style={styles.fieldMain}>
+            <Text style={styles.label}>{label}</Text>
+            <View style={styles.row}>
+              <Text
+                style={[
+                  styles.value,
+                  !selectedPublisher && styles.valuePlaceholder,
+                ]}
+              >
+                {selectedPublisher ? selectedPublisher.displayName : t('common.none')}
+              </Text>
+              <Ionicons name="chevron-forward" size={18} color="#cbd5e1" />
+            </View>
+            {warnings}
+          </View>
+        </Pressable>
+      )}
 
       <Modal
         visible={open}
@@ -658,6 +688,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   fieldPressed: { backgroundColor: '#f8fafc' },
+  chipTrigger: { alignSelf: 'flex-start', gap: 4 },
+  chipPressed: { opacity: 0.6 },
   label: {
     fontSize: 12,
     color: '#64748b',
