@@ -13,6 +13,7 @@ import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { useMyPublisher } from '../lib/useMyPublisher';
 import { MyBulb } from './MyBulb';
+import { ChipRow, PersonChip } from './PersonChip';
 import {
   CleaningAssignment,
   CleaningSlotType,
@@ -96,7 +97,7 @@ export function CleaningSection({
           return (
             <View
               key={slot}
-              style={[styles.slotRow, isMine && styles.slotRowMine]}
+              style={[styles.groupSlotRow, isMine && styles.slotRowMine]}
             >
               <Text style={styles.slotLabel}>{t(`cleaning.slots.${slot}`)}</Text>
 
@@ -112,22 +113,17 @@ export function CleaningSection({
                   }
                 />
               ) : (
-                <View style={styles.readValue}>
-                  <View style={styles.cleaningNameRow}>
-                    {isMine ? <MyBulb size={14} /> : null}
-                    <Text
-                      style={[styles.slotValue, !group && styles.slotEmpty]}
-                      numberOfLines={1}
-                    >
-                      {group ? group.name : t('cleaning.empty')}
-                    </Text>
-                  </View>
-                  {!!overseer && (
-                    <Text style={styles.overseer} numberOfLines={1}>
-                      {overseer}
-                    </Text>
+                <ChipRow>
+                  {isMine ? <MyBulb size={14} /> : null}
+                  {group ? (
+                    <PersonChip label={group.name} variant="group" />
+                  ) : (
+                    <PersonChip label={t('cleaning.empty')} variant="empty" />
                   )}
-                </View>
+                  {!!overseer && (
+                    <PersonChip label={overseer} variant="assistant" />
+                  )}
+                </ChipRow>
               )}
             </View>
           );
@@ -301,9 +297,16 @@ const styles = StyleSheet.create({
   slotLabel: { fontSize: 14, color: '#0f172a', fontWeight: '600', flexShrink: 1 },
   generalHint: { fontSize: 12, color: '#94a3b8', marginTop: 2 },
 
-  readValue: { alignItems: 'flex-end', maxWidth: '60%' },
+  groupSlotRow: {
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    paddingHorizontal: 16,
+    paddingVertical: 11,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: '#f1f5f9',
+    gap: 6,
+  },
   slotRowMine: { backgroundColor: '#fffbeb' },
-  cleaningNameRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   slotValue: { fontSize: 14, color: '#334155', fontWeight: '600' },
   slotEmpty: { color: '#cbd5e1', fontWeight: '400' },
   overseer: { fontSize: 12, color: '#94a3b8', marginTop: 1 },

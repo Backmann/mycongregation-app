@@ -14,6 +14,7 @@ import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { useMyPublisher } from '../lib/useMyPublisher';
 import { MyBulb } from './MyBulb';
+import { ChipRow, PersonChip } from './PersonChip';
 import {
   CreateFieldServiceMeetingInput,
   FieldServiceMeeting,
@@ -89,25 +90,23 @@ export function FieldServiceSection({
             return (
               <View key={m.id} style={[styles.row, isMine && styles.rowMine]}>
                 <View style={styles.rowMain}>
-                  <View style={styles.rowTop}>
-                    <Text style={styles.when}>
-                      {t(`fieldService.days.${m.dayOfWeek}`)} · {m.startTime}
-                    </Text>
-                    <View style={styles.fsRight}>
-                      {isMine ? <MyBulb size={15} /> : null}
-                      <Text
-                        style={[
-                          styles.conductor,
-                          !conductor && styles.unassigned,
-                        ]}
-                        numberOfLines={1}
-                      >
-                        {conductor
-                          ? conductor.displayName
-                          : t('fieldService.unassigned')}
-                      </Text>
-                    </View>
-                  </View>
+                  <Text style={styles.when}>
+                    {t(`fieldService.days.${m.dayOfWeek}`)} · {m.startTime}
+                  </Text>
+                  <ChipRow>
+                    {isMine ? <MyBulb size={15} /> : null}
+                    {conductor ? (
+                      <PersonChip
+                        label={conductor.displayName}
+                        variant="main"
+                      />
+                    ) : (
+                      <PersonChip
+                        label={t('fieldService.unassigned')}
+                        variant="empty"
+                      />
+                    )}
+                  </ChipRow>
                   <Text style={styles.address} numberOfLines={2}>
                     {m.address}
                   </Text>
@@ -463,27 +462,8 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   rowMain: { flex: 1, gap: 2 },
-  rowTop: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 10,
-  },
   when: { fontSize: 14, fontWeight: '700', color: '#0f172a' },
-  conductor: {
-    fontSize: 14,
-    color: '#334155',
-    fontWeight: '600',
-    maxWidth: '55%',
-  },
   rowMine: { backgroundColor: '#fffbeb' },
-  fsRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    maxWidth: '60%',
-  },
-  unassigned: { color: '#cbd5e1', fontWeight: '400' },
   address: { fontSize: 13, color: '#475569' },
   topic: { fontSize: 13, color: '#64748b', fontStyle: 'italic' },
   link: { fontSize: 13, color: '#0369a1', fontWeight: '600', marginTop: 2 },

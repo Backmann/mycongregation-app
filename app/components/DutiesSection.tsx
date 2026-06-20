@@ -14,6 +14,7 @@ import { PublisherSelector } from './PublisherSelector';
 import { getEventTypeLabel } from '../lib/parts';
 import { useMyPublisher } from '../lib/useMyPublisher';
 import { MyBulb } from './MyBulb';
+import { ChipRow, PersonChip } from './PersonChip';
 
 /** Icon + accent colour per duty type (role circle in the picker). */
 const DUTY_ICONS: Record<
@@ -258,20 +259,20 @@ export function DutiesSection({
                       style={[styles.row, isMine && styles.rowMine]}
                     >
                       <Text style={styles.dutyLabel}>{dutyLabel(d, t)}</Text>
-                      <View style={styles.dutyRight}>
+                      <ChipRow>
                         {isMine ? <MyBulb size={15} /> : null}
-                        <Text
-                          style={[
-                            styles.publisher,
-                            !publisher && styles.unassigned,
-                          ]}
-                          numberOfLines={1}
-                        >
-                          {publisher
-                            ? publisher.displayName
-                            : t('duties.unassigned')}
-                        </Text>
-                      </View>
+                        {publisher ? (
+                          <PersonChip
+                            label={publisher.displayName}
+                            variant="main"
+                          />
+                        ) : (
+                          <PersonChip
+                            label={t('duties.unassigned')}
+                            variant="empty"
+                          />
+                        )}
+                      </ChipRow>
                     </View>
                   );
                 })}
@@ -398,25 +399,16 @@ const styles = StyleSheet.create({
     borderColor: '#e2e8f0',
   },
   row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: 'column',
+    alignItems: 'flex-start',
     paddingHorizontal: 16,
     paddingVertical: 11,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: '#f1f5f9',
-    gap: 12,
+    gap: 6,
   },
   dutyLabel: { fontSize: 14, color: '#0f172a', flexShrink: 1 },
-  publisher: { fontSize: 15, color: '#0f172a', fontWeight: '600', maxWidth: '55%' },
   rowMine: { backgroundColor: '#fffbeb' },
-  dutyRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    maxWidth: '60%',
-  },
-  unassigned: { color: '#94a3b8', fontWeight: '500', fontStyle: 'italic' },
 
   // editable list
   editList: { paddingHorizontal: 16, gap: 4 },
