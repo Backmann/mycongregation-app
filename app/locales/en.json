@@ -769,7 +769,9 @@
       "dialog": {
         "title": "Notify about changes",
         "subtitle": "Publishers will be notified that the published programme has changed.",
-        "confirm": "Send"
+        "confirm": "Send",
+        "silent": "Apply silently",
+        "silentHint": "Apply the changes without notifying publishers."
       }
     }
   },

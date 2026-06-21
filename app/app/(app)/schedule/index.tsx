@@ -495,13 +495,26 @@ export default function ScheduleIndexScreen() {
       />
       <NotifyChangesDialog
         open={!!notifyPrompt}
-        busy={notifyingType === notifyPrompt?.eventType}
-        onConfirm={() => {
+        busy={
+          notifyingType === notifyPrompt?.eventType ||
+          publishingType === notifyPrompt?.eventType
+        }
+        onConfirm={(notify) => {
           if (notifyPrompt) {
-            void notifyChangesNow(
-              notifyPrompt.eventType,
-              notifyPrompt.weekStartDate,
-            );
+            if (notify) {
+              void notifyChangesNow(
+                notifyPrompt.eventType,
+                notifyPrompt.weekStartDate,
+              );
+            } else {
+              // Silent: a no-notify re-publish clears the "changed since
+              // publish" flags without sending any push.
+              void publishMeetingNow(
+                notifyPrompt.eventType,
+                notifyPrompt.weekStartDate,
+                false,
+              );
+            }
           }
           setNotifyPrompt(null);
         }}

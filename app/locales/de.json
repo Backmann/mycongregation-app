@@ -769,7 +769,9 @@
       "dialog": {
         "title": "Über Änderungen benachrichtigen",
         "subtitle": "Verkündiger werden benachrichtigt, dass das veröffentlichte Programm geändert wurde.",
-        "confirm": "Senden"
+        "confirm": "Senden",
+        "silent": "Still übernehmen",
+        "silentHint": "Änderungen ohne Benachrichtigung übernehmen."
       }
     }
   },

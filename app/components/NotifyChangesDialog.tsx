@@ -4,13 +4,15 @@ import { useTranslation } from 'react-i18next';
 interface Props {
   open: boolean;
   busy?: boolean;
-  onConfirm: () => void;
+  /** Called with notify=true (send push) or notify=false (apply silently). */
+  onConfirm: (notify: boolean) => void;
   onCancel: () => void;
 }
 
 /**
- * Shown when a scheduler chooses to notify the congregation that an already
- * published programme was edited. One outcome (send) plus cancel.
+ * Shown when a scheduler edits an already-published programme. Three
+ * outcomes: notify the congregation, apply the changes silently (no push),
+ * or cancel.
  */
 export function NotifyChangesDialog({ open, busy, onConfirm, onCancel }: Props) {
   const { t } = useTranslation();
@@ -38,10 +40,27 @@ export function NotifyChangesDialog({ open, busy, onConfirm, onCancel }: Props) 
               busy && styles.disabled,
             ]}
             disabled={busy}
-            onPress={onConfirm}
+            onPress={() => onConfirm(true)}
           >
             <Text style={styles.primaryText}>
               {t('schedule.notifyChanges.dialog.confirm')}
+            </Text>
+          </Pressable>
+
+          <Pressable
+            style={({ pressed }) => [
+              styles.silentBtn,
+              pressed && styles.pressed,
+              busy && styles.disabled,
+            ]}
+            disabled={busy}
+            onPress={() => onConfirm(false)}
+          >
+            <Text style={styles.silentText}>
+              {t('schedule.notifyChanges.dialog.silent')}
+            </Text>
+            <Text style={styles.silentHint}>
+              {t('schedule.notifyChanges.dialog.silentHint')}
             </Text>
           </Pressable>
 
@@ -82,6 +101,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   primaryText: { color: '#fff', fontSize: 15, fontWeight: '700' },
+  silentBtn: {
+    backgroundColor: '#f1f5f9',
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+  },
+  silentText: { color: '#0f172a', fontSize: 15, fontWeight: '600' },
+  silentHint: { color: '#64748b', fontSize: 12, marginTop: 2 },
   cancelBtn: { alignItems: 'center', paddingVertical: 12, marginTop: 2 },
   cancelText: { color: '#64748b', fontSize: 14, fontWeight: '600' },
   pressed: { opacity: 0.85 },
