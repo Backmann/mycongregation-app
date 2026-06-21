@@ -87,7 +87,7 @@ type FeedEntry = {
   topic: string | null;
   sourceUrl: string | null;
   replacedBy: SpecialEvent | null;
-  myLabels: string[];
+  myParts: { section: string | null; title: string }[];
 };
 
 /**
@@ -166,14 +166,17 @@ function MeetingsFeed() {
             e.date <= dateISO &&
             dateISO <= (e.endDate ?? e.date),
         ) ?? null;
-      const myLabels = myItems
+      const myParts = myItems
         .filter(
           (it) =>
             (it.kind === 'meeting' || it.kind === 'duty') &&
             it.weekStartDate === weekISO &&
             it.eventType === kind,
         )
-        .map((it) => taskTitle(it, t));
+        .map((it) => ({
+          section: taskSubsectionLabel(it, t),
+          title: taskTitle(it, t),
+        }));
       entries.push({
         key: `${kind}-${dateISO}`,
         kind,
@@ -185,7 +188,7 @@ function MeetingsFeed() {
         topic: null,
         sourceUrl: null,
         replacedBy,
-        myLabels,
+        myParts,
       });
     }
   }
@@ -198,7 +201,7 @@ function MeetingsFeed() {
     const conductor = m.conductorPublisherId
       ? publishersById.get(m.conductorPublisherId) ?? null
       : null;
-    const myLabels = myItems
+    const myParts = myItems
       .filter(
         (it) =>
           it.kind === 'field_service' &&
@@ -206,7 +209,7 @@ function MeetingsFeed() {
           it.dayOfWeek === m.dayOfWeek &&
           (!it.time || it.time === m.startTime),
       )
-      .map(() => t('home.feed.youConduct'));
+      .map(() => ({ section: null, title: t('home.feed.youConduct') }));
     entries.push({
       key: `fs-${m.id}`,
       kind: 'field_service',
@@ -218,7 +221,7 @@ function MeetingsFeed() {
       topic: m.topic,
       sourceUrl: m.sourceUrl,
       replacedBy: null,
-      myLabels,
+      myParts,
     });
   }
 
@@ -245,7 +248,7 @@ function MeetingsFeed() {
   return (
     <View style={{ gap: 10 }}>
       {entries.map((en) => {
-        const mine = en.myLabels.length > 0;
+        const mine = en.myParts.length > 0;
         const isToday = en.dateISO === todayISO;
         const dateLabel = new Date(
           `${en.dateISO}T00:00:00`,
@@ -341,11 +344,18 @@ function MeetingsFeed() {
             {mine ? (
               <View style={styles.partsBox}>
                 <Text style={styles.partsTitle}>{t('home.meeting.myParts')}</Text>
-                {en.myLabels.map((l, i) => (
-                  <Text key={i} style={styles.partRow} numberOfLines={2}>
-                    {'\u2022 '}
-                    {l}
-                  </Text>
+                {en.myParts.map((p, i) => (
+                  <View key={i} style={styles.myPartItem}>
+                    {p.section ? (
+                      <Text style={styles.partSubsection} numberOfLines={1}>
+                        {p.section}
+                      </Text>
+                    ) : null}
+                    <Text style={styles.partRow} numberOfLines={2}>
+                      {'\u2022 '}
+                      {p.title}
+                    </Text>
+                  </View>
                 ))}
               </View>
             ) : null}
@@ -682,6 +692,15 @@ const styles = StyleSheet.create({
   },
   partsTitle: { fontSize: 12, fontWeight: '700', color: '#0369a1', marginBottom: 4 },
   partRow: { fontSize: 14, color: '#0f172a', marginTop: 2 },
+  myPartItem: { marginTop: 6 },
+  partSubsection: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#64748b',
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+    marginBottom: 1,
+  },
   noParts: { fontSize: 13, color: '#94a3b8', marginTop: 10 },
   eventRow: {
     flexDirection: 'row',
