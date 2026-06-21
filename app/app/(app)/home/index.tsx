@@ -30,6 +30,7 @@ import { useMyPublisher } from '../../../lib/useMyPublisher';
 import {
   refineMyTasks,
   taskMeta,
+  taskSubsectionLabel,
   taskTitle,
 } from '../../../lib/my-tasks';
 
@@ -478,6 +479,11 @@ function MyTasksCard() {
               style={{ marginRight: 10 }}
             />
             <View style={{ flex: 1 }}>
+              {taskSubsectionLabel(r.item, t) ? (
+                <Text style={styles.eventSubsection} numberOfLines={1}>
+                  {taskSubsectionLabel(r.item, t)}
+                </Text>
+              ) : null}
               <Text style={styles.eventTitle} numberOfLines={1}>
                 {taskTitle(r.item, t)}
               </Text>
@@ -684,6 +690,14 @@ const styles = StyleSheet.create({
   },
   eventRowBorder: { borderTopWidth: 1, borderTopColor: '#f1f5f9' },
   eventTitle: { fontSize: 15, fontWeight: '600', color: '#0f172a' },
+  eventSubsection: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#64748b',
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+    marginBottom: 2,
+  },
   eventDate: { fontSize: 13, color: '#0369a1', marginTop: 2 },
   evBadge: {
     width: 56,

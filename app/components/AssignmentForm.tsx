@@ -253,20 +253,19 @@ export function AssignmentForm({
   }, [form.partKey]);
 
   const handleTalkSelect = (talk: PublicTalk | null) => {
-    // Keep manual title when clearing; derive it from the talk when picking.
-    const nextTitle = talk
-      ? `№${talk.number}. ${talk.title}`
-      : form.partTitle ?? null;
+    // Picking derives the title from the talk; clearing wipes both the talk
+    // and its derived title so the program shows the slot as empty.
+    const nextTitle = talk ? `№${talk.number}. ${talk.title}` : null;
     setForm((prev) => ({
       ...prev,
       publicTalkId: talk?.id ?? null,
-      partTitle: talk ? nextTitle ?? undefined : prev.partTitle,
+      partTitle: nextTitle ?? '',
     }));
     // instant-save the talk pick (publicTalkId + derived title) like the
     // publisher pickers do — otherwise the choice never leaves the form.
     void instant({
       publicTalkId: talk?.id ?? null,
-      ...(talk ? { partTitle: nextTitle ?? undefined } : {}),
+      partTitle: nextTitle ?? '',
     });
   };
 
