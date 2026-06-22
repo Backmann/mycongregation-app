@@ -646,7 +646,8 @@
       "importEpub": "EPUB importieren",
       "newAssignment": "Neue Zuteilung",
       "events": "Termine",
-      "localNeeds": "Örtliche Bedürfnisse"
+      "localNeeds": "Örtliche Bedürfnisse",
+      "talkCoordinator": "Redner-Koordinator"
     },
     "noAssignments": "Keine Zuteilungen für diese Woche.",
     "unassigned": "Nicht zugeteilt",
@@ -1205,8 +1206,7 @@
       "events": "Ereignisse",
       "publishers": "Verkündiger",
       "absences": "Abwesenheiten",
-      "profile": "Profil",
-      "talkCoordinator": "Redner-Koordinator"
+      "profile": "Profil"
     },
     "nextMeeting": "Nächste Zusammenkunft",
     "meeting": {

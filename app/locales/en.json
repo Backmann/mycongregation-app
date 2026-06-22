@@ -646,7 +646,8 @@
       "importEpub": "Import EPUB",
       "newAssignment": "New assignment",
       "events": "Events",
-      "localNeeds": "Local Needs"
+      "localNeeds": "Local Needs",
+      "talkCoordinator": "Talk coordinator"
     },
     "noAssignments": "No assignments for this week.",
     "unassigned": "Unassigned",
@@ -1205,8 +1206,7 @@
       "events": "Events",
       "publishers": "Publishers",
       "absences": "Absences",
-      "profile": "Profile",
-      "talkCoordinator": "Talk coordinator"
+      "profile": "Profile"
     },
     "nextMeeting": "Next meeting",
     "meeting": {

@@ -13,6 +13,7 @@ export default function ScheduleLayout() {
     canEditMidweekSchedule,
     canEditWeekendSchedule,
     canViewLocalNeeds,
+    canCoordinatePublicTalks,
   } = usePermissions();
   const canImport = canImportMidweekSchedule || canImportWeekendSchedule;
   const canCreate = canEditMidweekSchedule || canEditWeekendSchedule;
@@ -32,6 +33,16 @@ export default function ScheduleLayout() {
                   accessibilityLabel={t('schedule.a11y.localNeeds')}
                 >
                   <Ionicons name="bulb-outline" size={24} color="#0ea5e9" />
+                </Pressable>
+              )}
+              {canCoordinatePublicTalks && (
+                <Pressable
+                  onPress={() => router.push('/talk-coordinator' as any)}
+                  style={{ paddingHorizontal: 10 }}
+                  hitSlop={8}
+                  accessibilityLabel={t('schedule.a11y.talkCoordinator')}
+                >
+                  <Ionicons name="mic-outline" size={24} color="#0ea5e9" />
                 </Pressable>
               )}
               <Pressable

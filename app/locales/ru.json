@@ -650,7 +650,8 @@
       "importEpub": "Импортировать EPUB",
       "newAssignment": "Новое назначение",
       "events": "События",
-      "localNeeds": "Местные потребности"
+      "localNeeds": "Местные потребности",
+      "talkCoordinator": "Координатор речей"
     },
     "noAssignments": "На эту неделю назначений нет.",
     "unassigned": "Не назначен",
@@ -1209,8 +1210,7 @@
       "events": "События",
       "publishers": "Возвещатели",
       "absences": "Отсутствия",
-      "profile": "Профиль",
-      "talkCoordinator": "Координатор речей"
+      "profile": "Профиль"
     },
     "nextMeeting": "Следующая встреча",
     "meeting": {
