@@ -1351,7 +1351,11 @@
       "city": "City",
       "contactName": "Contact",
       "contactPhone": "Phone",
-      "note": "Note"
+      "note": "Note",
+      "address": "Hall address",
+      "meetingDay": "Meeting day",
+      "meetingTime": "Meeting time",
+      "mapUrl": "Map link"
     },
     "speakers": {
       "title": "Visiting speakers",

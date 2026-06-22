@@ -1351,7 +1351,11 @@
       "city": "Stadt",
       "contactName": "Kontakt",
       "contactPhone": "Telefon",
-      "note": "Notiz"
+      "note": "Notiz",
+      "address": "Saaladresse",
+      "meetingDay": "Versammlungstag",
+      "meetingTime": "Versammlungszeit",
+      "mapUrl": "Kartenlink"
     },
     "speakers": {
       "title": "Gastredner",

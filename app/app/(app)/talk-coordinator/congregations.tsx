@@ -15,6 +15,9 @@ import {
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
+import dayjs from 'dayjs';
+import 'dayjs/locale/ru';
+import 'dayjs/locale/de';
 import {
   ExternalCongregation,
   externalCongregationsApi,
@@ -25,7 +28,7 @@ import { usePermissions } from '../../../lib/permissions';
 const QK = ['external-congregations'] as const;
 
 export default function CongregationsScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const perms = usePermissions();
   const qc = useQueryClient();
 
@@ -36,6 +39,13 @@ export default function CongregationsScreen() {
   const [contactName, setContactName] = useState('');
   const [contactPhone, setContactPhone] = useState('');
   const [note, setNote] = useState('');
+  const [address, setAddress] = useState('');
+  const [meetingDow, setMeetingDow] = useState<number | null>(null);
+  const [meetingTime, setMeetingTime] = useState('');
+  const [mapUrl, setMapUrl] = useState('');
+
+  const dayLabel = (dow: number) =>
+    dayjs('2024-01-01').add(dow - 1, 'day').locale(i18n.language).format('dd');
 
   const listQuery = useQuery({ queryKey: QK, queryFn: () => externalCongregationsApi.list() });
 
@@ -73,6 +83,10 @@ export default function CongregationsScreen() {
     setContactName('');
     setContactPhone('');
     setNote('');
+    setAddress('');
+    setMeetingDow(null);
+    setMeetingTime('');
+    setMapUrl('');
     setModalOpen(true);
   };
 
@@ -83,6 +97,10 @@ export default function CongregationsScreen() {
     setContactName(c.contactName ?? '');
     setContactPhone(c.contactPhone ?? '');
     setNote(c.note ?? '');
+    setAddress(c.address ?? '');
+    setMeetingDow(c.meetingDow ?? null);
+    setMeetingTime(c.meetingTime ?? '');
+    setMapUrl(c.mapUrl ?? '');
     setModalOpen(true);
   };
 
@@ -96,6 +114,10 @@ export default function CongregationsScreen() {
       contactName: contactName.trim() || null,
       contactPhone: contactPhone.trim() || null,
       note: note.trim() || null,
+      address: address.trim() || null,
+      meetingDow: meetingDow,
+      meetingTime: meetingTime.trim() || null,
+      mapUrl: mapUrl.trim() || null,
     };
     if (editing) await updateMutation.mutateAsync({ id: editing.id, input });
     else await createMutation.mutateAsync(input);
@@ -150,6 +172,18 @@ export default function CongregationsScreen() {
                       {[c.contactName, c.contactPhone].filter(Boolean).join(' · ')}
                     </Text>
                   )}
+                  {(c.address || c.meetingDow || c.meetingTime) && (
+                    <Text style={styles.subHall}>
+                      {[
+                        [c.meetingDow ? dayLabel(c.meetingDow) : null, c.meetingTime]
+                          .filter(Boolean)
+                          .join(' '),
+                        c.address,
+                      ]
+                        .filter(Boolean)
+                        .join(' · ')}
+                    </Text>
+                  )}
                 </View>
                 <Pressable hitSlop={8} onPress={() => openEdit(c)} style={styles.iconBtn} disabled={pending}>
                   <Ionicons name="create-outline" size={20} color="#0369a1" />
@@ -175,6 +209,7 @@ export default function CongregationsScreen() {
       <Modal visible={modalOpen} transparent animationType="fade" onRequestClose={() => setModalOpen(false)}>
         <View style={styles.overlay}>
           <View style={styles.modalCard}>
+            <ScrollView keyboardShouldPersistTaps="handled">
             <Text style={styles.modalTitle}>
               {editing ? t('talkCoordinator.congregations.editTitle') : t('talkCoordinator.congregations.add')}
             </Text>
@@ -184,6 +219,50 @@ export default function CongregationsScreen() {
 
             <Text style={styles.fieldLabel}>{t('talkCoordinator.congregations.city')}</Text>
             <TextInput style={styles.input} value={city} onChangeText={setCity} placeholderTextColor="#94a3b8" />
+
+            <Text style={styles.fieldLabel}>{t('talkCoordinator.congregations.address')}</Text>
+            <TextInput style={styles.input} value={address} onChangeText={setAddress} placeholderTextColor="#94a3b8" />
+
+            <Text style={styles.fieldLabel}>{t('talkCoordinator.congregations.meetingDay')}</Text>
+            <View style={styles.dayRow}>
+              <Pressable
+                style={[styles.dayChip, meetingDow === null && styles.dayChipActive]}
+                onPress={() => setMeetingDow(null)}
+              >
+                <Text style={[styles.dayChipText, meetingDow === null && styles.dayChipTextActive]}>—</Text>
+              </Pressable>
+              {[1, 2, 3, 4, 5, 6, 7].map((d) => (
+                <Pressable
+                  key={d}
+                  style={[styles.dayChip, meetingDow === d && styles.dayChipActive]}
+                  onPress={() => setMeetingDow(d)}
+                >
+                  <Text style={[styles.dayChipText, meetingDow === d && styles.dayChipTextActive]}>
+                    {dayLabel(d)}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+
+            <Text style={styles.fieldLabel}>{t('talkCoordinator.congregations.meetingTime')}</Text>
+            <TextInput
+              style={styles.input}
+              value={meetingTime}
+              onChangeText={setMeetingTime}
+              placeholder="13:00"
+              placeholderTextColor="#94a3b8"
+            />
+
+            <Text style={styles.fieldLabel}>{t('talkCoordinator.congregations.mapUrl')}</Text>
+            <TextInput
+              style={styles.input}
+              value={mapUrl}
+              onChangeText={setMapUrl}
+              placeholder="https://maps.google.com/…"
+              placeholderTextColor="#94a3b8"
+              autoCapitalize="none"
+              keyboardType="url"
+            />
 
             <Text style={styles.fieldLabel}>{t('talkCoordinator.congregations.contactName')}</Text>
             <TextInput style={styles.input} value={contactName} onChangeText={setContactName} placeholderTextColor="#94a3b8" />
@@ -212,6 +291,7 @@ export default function CongregationsScreen() {
                 <Text style={styles.modalConfirmText}>{t('common.save')}</Text>
               </Pressable>
             </View>
+            </ScrollView>
           </View>
         </View>
       </Modal>
@@ -237,6 +317,12 @@ const styles = StyleSheet.create({
   },
   name: { fontSize: 15, fontWeight: '600', color: '#0f172a' },
   sub: { fontSize: 13, color: '#475569', marginTop: 1 },
+  subHall: { fontSize: 12, color: '#0369a1', marginTop: 2 },
+  dayRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 2 },
+  dayChip: { paddingVertical: 6, paddingHorizontal: 12, borderRadius: 14, borderWidth: 1, borderColor: '#cbd5e1', backgroundColor: '#fff' },
+  dayChipActive: { backgroundColor: '#e0f2fe', borderColor: '#0ea5e9' },
+  dayChipText: { fontSize: 13, color: '#475569', textTransform: 'capitalize' },
+  dayChipTextActive: { color: '#0369a1', fontWeight: '600' },
   iconBtn: { padding: 6 },
   addBtn: {
     flexDirection: 'row',
@@ -254,7 +340,7 @@ const styles = StyleSheet.create({
   addBtnText: { fontSize: 14, fontWeight: '600', color: '#0369a1' },
   disabled: { opacity: 0.5 },
   overlay: { flex: 1, backgroundColor: 'rgba(15,23,42,0.45)', justifyContent: 'center', paddingHorizontal: 24 },
-  modalCard: { backgroundColor: '#fff', borderRadius: 14, padding: 18, gap: 8 },
+  modalCard: { backgroundColor: '#fff', borderRadius: 14, padding: 18, gap: 8, maxHeight: '88%' },
   modalTitle: { fontSize: 16, fontWeight: '700', color: '#0f172a', marginBottom: 2 },
   fieldLabel: { fontSize: 12, fontWeight: '600', color: '#64748b', marginTop: 4 },
   input: {

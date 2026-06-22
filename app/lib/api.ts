@@ -769,6 +769,10 @@ export interface ExternalCongregation {
   contactName: string | null;
   contactPhone: string | null;
   note: string | null;
+  address: string | null;
+  meetingDow: number | null;
+  meetingTime: string | null;
+  mapUrl: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -799,6 +803,10 @@ export const externalCongregationsApi = {
     contactName?: string | null;
     contactPhone?: string | null;
     note?: string | null;
+    address?: string | null;
+    meetingDow?: number | null;
+    meetingTime?: string | null;
+    mapUrl?: string | null;
   }): Promise<ExternalCongregation> {
     const { data } = await api.post<ExternalCongregation>(
       '/external-congregations',
@@ -814,6 +822,10 @@ export const externalCongregationsApi = {
       contactName: string | null;
       contactPhone: string | null;
       note: string | null;
+      address: string | null;
+      meetingDow: number | null;
+      meetingTime: string | null;
+      mapUrl: string | null;
     }>,
   ): Promise<ExternalCongregation> {
     const { data } = await api.patch<ExternalCongregation>(
