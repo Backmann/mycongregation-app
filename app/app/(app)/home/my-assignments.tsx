@@ -30,6 +30,7 @@ const TASK_ICONS: Record<
   cleaning: 'sparkles-outline',
   cart: 'cart-outline',
   field_service: 'walk-outline',
+  outgoing_talk: 'mic-outline',
 };
 
 function weekHeaderLabel(weekStartISO: string, locale: string): string {

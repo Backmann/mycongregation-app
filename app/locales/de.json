@@ -1224,7 +1224,8 @@
       "duty": "Dienst",
       "cleaning": "Reinigung",
       "cart": "Trolley",
-      "field_service": "Predigtdienst"
+      "field_service": "Predigtdienst",
+      "outgoing_talk": "Vortrag in Versammlung"
     },
     "dutyTypes": {
       "security": "Sicherheit",

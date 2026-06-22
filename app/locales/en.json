@@ -1224,7 +1224,8 @@
       "duty": "duty",
       "cleaning": "cleaning",
       "cart": "cart",
-      "field_service": "field service"
+      "field_service": "field service",
+      "outgoing_talk": "talk at congregation"
     },
     "dutyTypes": {
       "security": "Security",

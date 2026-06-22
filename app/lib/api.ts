@@ -1379,7 +1379,8 @@ export type MyAssignmentKind =
   | 'duty'
   | 'cleaning'
   | 'cart'
-  | 'field_service';
+  | 'field_service'
+  | 'outgoing_talk';
 
 export interface MyAssignmentItem {
   kind: MyAssignmentKind;
@@ -1392,6 +1393,8 @@ export interface MyAssignmentItem {
   endTime?: string;
   label: string;
   location?: string;
+  mapUrl?: string;
+  congregationName?: string;
   asAssistant?: boolean;
   partKey?: string;
   partOrder?: number;

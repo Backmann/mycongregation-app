@@ -1228,7 +1228,8 @@
       "duty": "обязанность",
       "cleaning": "уборка",
       "cart": "тележка",
-      "field_service": "служение"
+      "field_service": "служение",
+      "outgoing_talk": "речь в собрании"
     },
     "dutyTypes": {
       "security": "Охрана",
