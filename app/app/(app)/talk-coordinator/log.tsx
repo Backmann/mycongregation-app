@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -15,10 +15,7 @@ import {
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
-import DateTimePicker, {
-  DateType,
-  useDefaultStyles,
-} from 'react-native-ui-datepicker';
+import { router } from 'expo-router';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ru';
 import 'dayjs/locale/de';
@@ -32,17 +29,34 @@ import {
   externalCongregationsApi,
   publishersApi,
   publicTalksApi,
+  meetingSettingsApi,
   extractErrorMessage,
 } from '../../../lib/api';
 import { usePermissions } from '../../../lib/permissions';
 import { PublisherSelector } from '../../../components/PublisherSelector';
 import { PublicTalkSelector } from '../../../components/PublicTalkSelector';
+import { startOfWeekMonday, addDays, formatDateISO } from '../../../lib/dates';
 
 const QK = ['talk-exchange'] as const;
-type Filter = 'all' | TalkExchangeDirection;
+const YEAR = 2026;
 
-const toISO = (d: DateType | null | undefined): string | null =>
-  d ? dayjs(d).format('YYYY-MM-DD') : null;
+type WeekendRow = { date: string };
+type MonthBlock = { key: string; title: string; rows: WeekendRow[] };
+type SlotState = { incoming?: TalkExchange; outgoing?: TalkExchange };
+
+/** All weekend meeting dates of YEAR, given the congregation's weekend day (ISO 1–7). */
+function buildWeekends(weekendDow: number): string[] {
+  const res: string[] = [];
+  let monday = startOfWeekMonday(new Date(`${YEAR - 1}-12-22T00:00:00`));
+  for (let i = 0; i < 60; i++) {
+    const wd = addDays(monday, weekendDow - 1);
+    const y = wd.getFullYear();
+    if (y === YEAR) res.push(formatDateISO(wd));
+    if (y > YEAR) break;
+    monday = addDays(monday, 7);
+  }
+  return res;
+}
 
 function confirmReplace(title: string, body: string, ok: string, cancel: string): Promise<boolean> {
   return new Promise((resolve) => {
@@ -57,19 +71,20 @@ function confirmReplace(title: string, body: string, ok: string, cancel: string)
   });
 }
 
-export default function TalkExchangeLogScreen() {
+export default function TalkExchangeYearScreen() {
   const { t, i18n } = useTranslation();
   const perms = usePermissions();
   const qc = useQueryClient();
-  const defaultStyles = useDefaultStyles();
 
-  const [filter, setFilter] = useState<Filter>('all');
-  const [modalOpen, setModalOpen] = useState(false);
+  const scrollRef = useRef<ScrollView>(null);
+  const monthOffsets = useRef<Record<string, number>>({});
+  const didInitialScroll = useRef(false);
+
+  // ---- editor state ----
+  const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<TalkExchange | null>(null);
-
-  // form state
   const [direction, setDirection] = useState<TalkExchangeDirection>('incoming');
-  const [date, setDate] = useState<string | null>(null);
+  const [date, setDate] = useState<string>('');
   const [status, setStatus] = useState<TalkExchangeStatus>('confirmed');
   const [publicTalkId, setPublicTalkId] = useState<string | null>(null);
   const [visitingSpeakerId, setVisitingSpeakerId] = useState<string | null>(null);
@@ -79,6 +94,10 @@ export default function TalkExchangeLogScreen() {
   const [note, setNote] = useState('');
 
   const listQuery = useQuery({ queryKey: QK, queryFn: () => talkExchangeApi.list() });
+  const settingsQuery = useQuery({
+    queryKey: ['meeting-settings'],
+    queryFn: () => meetingSettingsApi.getOverview(),
+  });
   const speakersQuery = useQuery({
     queryKey: ['visiting-speakers'],
     queryFn: () => visitingSpeakersApi.list(),
@@ -95,6 +114,8 @@ export default function TalkExchangeLogScreen() {
     queryKey: ['public-talks', 'all'],
     queryFn: () => publicTalksApi.list({ includeInactive: true, limit: 300 }),
   });
+
+  const weekendDow = settingsQuery.data?.effective?.weekendDow ?? 7;
 
   const speakerById = useMemo(() => {
     const m = new Map<string, { name: string; cong: string | null }>();
@@ -121,13 +142,59 @@ export default function TalkExchangeLogScreen() {
     return m;
   }, [talksQuery.data]);
 
+  const byDate = useMemo(() => {
+    const m = new Map<string, SlotState>();
+    for (const e of listQuery.data ?? []) {
+      const slot = m.get(e.date) ?? {};
+      if (e.direction === 'incoming') slot.incoming = e;
+      else slot.outgoing = e;
+      m.set(e.date, slot);
+    }
+    return m;
+  }, [listQuery.data]);
+
+  const months = useMemo<MonthBlock[]>(() => {
+    const dates = new Set<string>(buildWeekends(weekendDow));
+    for (const e of listQuery.data ?? []) {
+      if (e.date.startsWith(`${YEAR}`)) dates.add(e.date);
+    }
+    const sorted = [...dates].sort();
+    const byMonth = new Map<string, WeekendRow[]>();
+    for (const d of sorted) {
+      const key = d.slice(0, 7);
+      if (!byMonth.has(key)) byMonth.set(key, []);
+      byMonth.get(key)!.push({ date: d });
+    }
+    return [...byMonth.entries()].map(([key, rows]) => ({
+      key,
+      title: dayjs(`${key}-01`).locale(i18n.language).format('MMMM'),
+      rows,
+    }));
+  }, [weekendDow, listQuery.data, i18n.language]);
+
+  const currentMonthKey = dayjs().format('YYYY-MM');
+
+  // auto-scroll to current month once layout offsets are known
+  useEffect(() => {
+    if (didInitialScroll.current) return;
+    const off = monthOffsets.current[currentMonthKey];
+    if (off != null && months.length > 0) {
+      didInitialScroll.current = true;
+      setTimeout(() => scrollRef.current?.scrollTo({ y: Math.max(off - 8, 0), animated: false }), 50);
+    }
+  });
+
+  const scrollToMonth = (key: string) => {
+    const off = monthOffsets.current[key];
+    if (off != null) scrollRef.current?.scrollTo({ y: Math.max(off - 8, 0), animated: true });
+  };
+
   const invalidate = () => qc.invalidateQueries({ queryKey: QK });
   const showError = (e: unknown) => {
     const msg = extractErrorMessage(e);
     if (Platform.OS === 'web') window.alert(msg);
     else Alert.alert(t('talkCoordinator.errorTitle'), msg);
   };
-
   const createMutation = useMutation({
     mutationFn: (input: TalkExchangeInput) => talkExchangeApi.create(input),
     onSuccess: invalidate,
@@ -147,39 +214,25 @@ export default function TalkExchangeLogScreen() {
   const pending =
     createMutation.isPending || updateMutation.isPending || removeMutation.isPending;
 
-  const openAdd = () => {
-    setEditing(null);
-    setDirection('incoming');
-    setDate(null);
-    setStatus('confirmed');
-    setPublicTalkId(null);
-    setVisitingSpeakerId(null);
-    setHospitalityPublisherId(null);
-    setPublisherId(null);
-    setHostCongregationId(null);
-    setNote('');
-    setModalOpen(true);
-  };
-  const openEdit = (e: TalkExchange) => {
-    setEditing(e);
-    setDirection(e.direction);
-    setDate(e.date);
-    setStatus(e.status);
-    setPublicTalkId(e.publicTalkId);
-    setVisitingSpeakerId(e.visitingSpeakerId);
-    setHospitalityPublisherId(e.hospitalityPublisherId);
-    setPublisherId(e.publisherId);
-    setHostCongregationId(e.hostCongregationId);
-    setNote(e.note ?? '');
-    setModalOpen(true);
+  const openSlot = (d: string, dir: TalkExchangeDirection, entry?: TalkExchange) => {
+    setEditing(entry ?? null);
+    setDirection(dir);
+    setDate(d);
+    setStatus(entry?.status ?? 'confirmed');
+    setPublicTalkId(entry?.publicTalkId ?? null);
+    setVisitingSpeakerId(entry?.visitingSpeakerId ?? null);
+    setHospitalityPublisherId(entry?.hospitalityPublisherId ?? null);
+    setPublisherId(entry?.publisherId ?? null);
+    setHostCongregationId(entry?.hostCongregationId ?? null);
+    setNote(entry?.note ?? '');
+    setOpen(true);
   };
 
   const canSave =
-    !!date &&
-    (direction === 'incoming' ? !!visitingSpeakerId : !!publisherId);
+    !!date && (direction === 'incoming' ? !!visitingSpeakerId : !!publisherId);
 
   const save = async () => {
-    if (!canSave || !date) return;
+    if (!canSave) return;
     const input: TalkExchangeInput = {
       direction,
       date,
@@ -202,24 +255,25 @@ export default function TalkExchangeLogScreen() {
         t('common.cancel'),
       );
       if (ok) {
-        await updateMutation.mutateAsync({
-          id: saved.id,
-          input: { ...input, overwriteProgram: true },
-        });
+        await updateMutation.mutateAsync({ id: saved.id, input: { ...input, overwriteProgram: true } });
       }
     }
-    setModalOpen(false);
+    setOpen(false);
   };
 
-  const confirmDelete = (e: TalkExchange) => {
-    const doDelete = () => removeMutation.mutate(e.id);
+  const del = () => {
+    if (!editing) return;
+    const doDelete = async () => {
+      await removeMutation.mutateAsync(editing.id);
+      setOpen(false);
+    };
     if (Platform.OS === 'web') {
-      if (window.confirm(t('talkCoordinator.log.deleteBody'))) doDelete();
+      if (window.confirm(t('talkCoordinator.log.deleteBody'))) void doDelete();
       return;
     }
     Alert.alert(t('talkCoordinator.log.deleteTitle'), t('talkCoordinator.log.deleteBody'), [
       { text: t('common.cancel'), style: 'cancel' },
-      { text: t('common.delete'), style: 'destructive', onPress: doDelete },
+      { text: t('common.delete'), style: 'destructive', onPress: () => void doDelete() },
     ]);
   };
 
@@ -230,7 +284,7 @@ export default function TalkExchangeLogScreen() {
       </View>
     );
   }
-  if (listQuery.isLoading) {
+  if (listQuery.isLoading || settingsQuery.isLoading) {
     return (
       <View style={styles.center}>
         <ActivityIndicator size="large" />
@@ -238,150 +292,117 @@ export default function TalkExchangeLogScreen() {
     );
   }
 
-  const all = listQuery.data ?? [];
-  const rows = filter === 'all' ? all : all.filter((e) => e.direction === filter);
-
   const talkLabel = (id: string | null): string | null => {
     if (!id) return null;
     const tk = talkById.get(id);
     return tk ? `№${tk.number}. ${tk.title}` : null;
   };
-  const fmtDate = (d: string) => dayjs(d).locale(i18n.language).format('dd, D MMM YYYY');
+  const fmtWeekend = (d: string) => dayjs(d).locale(i18n.language).format('dd, D MMM');
+  const todayISO = dayjs().format('YYYY-MM-DD');
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#f1f5f9' }}>
-      <View style={styles.filterRow}>
-        {(['all', 'incoming', 'outgoing'] as Filter[]).map((f) => (
-          <Pressable
-            key={f}
-            style={[styles.filterChip, filter === f && styles.filterChipActive]}
-            onPress={() => setFilter(f)}
-          >
-            <Text style={[styles.filterChipText, filter === f && styles.filterChipTextActive]}>
-              {t(`talkCoordinator.log.filter.${f}`)}
-            </Text>
-          </Pressable>
-        ))}
+      <View style={styles.monthBar}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.monthBarInner}>
+          {months.map((m) => (
+            <Pressable
+              key={m.key}
+              style={[styles.monthChip, m.key === currentMonthKey && styles.monthChipCurrent]}
+              onPress={() => scrollToMonth(m.key)}
+            >
+              <Text style={[styles.monthChipText, m.key === currentMonthKey && styles.monthChipTextCurrent]}>
+                {m.title}
+              </Text>
+            </Pressable>
+          ))}
+        </ScrollView>
       </View>
 
-      <ScrollView contentContainerStyle={styles.container}>
-        {rows.length === 0 ? (
-          <Text style={styles.empty}>{t('talkCoordinator.log.empty')}</Text>
-        ) : (
-          rows.map((e) => {
-            const incoming = e.direction === 'incoming';
-            const speaker = e.visitingSpeakerId ? speakerById.get(e.visitingSpeakerId) : null;
-            const host = e.hostCongregationId ? congById.get(e.hostCongregationId) : null;
-            const ourBrother = e.publisherId ? pubById.get(e.publisherId) : null;
-            const hospitality = e.hospitalityPublisherId ? pubById.get(e.hospitalityPublisherId) : null;
-            return (
-              <View key={e.id} style={styles.row}>
-                <View
-                  style={[
-                    styles.dirIcon,
-                    { backgroundColor: incoming ? '#e0f2fe' : '#fef3c7' },
-                  ]}
-                >
-                  <Ionicons
-                    name={incoming ? 'enter-outline' : 'exit-outline'}
-                    size={18}
-                    color={incoming ? '#0369a1' : '#b45309'}
-                  />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <View style={styles.titleRow}>
-                    <Text style={styles.date}>{fmtDate(e.date)}</Text>
-                    <View
-                      style={[
-                        styles.statusBadge,
-                        e.status === 'confirmed' ? styles.statusConfirmed : styles.statusTentative,
-                      ]}
+      <ScrollView ref={scrollRef} contentContainerStyle={styles.container}>
+        {months.map((m) => (
+          <View
+            key={m.key}
+            onLayout={(e) => {
+              monthOffsets.current[m.key] = e.nativeEvent.layout.y;
+            }}
+          >
+            <Text style={styles.monthHeader}>{m.title}</Text>
+            {m.rows.map((row) => {
+              const slot = byDate.get(row.date) ?? {};
+              const upcoming = row.date >= todayISO;
+              return (
+                <View key={row.date} style={[styles.weekendRow, !upcoming && styles.weekendPast]}>
+                  <Text style={styles.weekendDate}>{fmtWeekend(row.date)}</Text>
+                  <View style={styles.slots}>
+                    <Slot
+                      label={t('talkCoordinator.log.filter.incoming')}
+                      accent="#0369a1"
+                      bg="#e0f2fe"
+                      entry={slot.incoming}
+                      onPress={() => openSlot(row.date, 'incoming', slot.incoming)}
                     >
-                      <Text
-                        style={[
-                          styles.statusText,
-                          e.status === 'confirmed' ? styles.statusTextConfirmed : styles.statusTextTentative,
-                        ]}
-                      >
-                        {t(`talkCoordinator.log.status.${e.status}`)}
-                      </Text>
-                    </View>
+                      {slot.incoming ? (
+                        <>
+                          <Text style={styles.slotMain} numberOfLines={1}>
+                            {slot.incoming.visitingSpeakerId
+                              ? speakerById.get(slot.incoming.visitingSpeakerId)?.name ??
+                                t('talkCoordinator.log.unknownSpeaker')
+                              : t('talkCoordinator.log.unknownSpeaker')}
+                          </Text>
+                          {!!talkLabel(slot.incoming.publicTalkId) && (
+                            <Text style={styles.slotSub} numberOfLines={1}>
+                              {talkLabel(slot.incoming.publicTalkId)}
+                            </Text>
+                          )}
+                        </>
+                      ) : null}
+                    </Slot>
+                    <Slot
+                      label={t('talkCoordinator.log.filter.outgoing')}
+                      accent="#b45309"
+                      bg="#fef3c7"
+                      entry={slot.outgoing}
+                      onPress={() => openSlot(row.date, 'outgoing', slot.outgoing)}
+                    >
+                      {slot.outgoing ? (
+                        <>
+                          <Text style={styles.slotMain} numberOfLines={1}>
+                            {slot.outgoing.publisherId ? pubById.get(slot.outgoing.publisherId) ?? '—' : '—'}
+                            {slot.outgoing.hostCongregationId
+                              ? ` → ${congById.get(slot.outgoing.hostCongregationId) ?? ''}`
+                              : ''}
+                          </Text>
+                          {!!talkLabel(slot.outgoing.publicTalkId) && (
+                            <Text style={styles.slotSub} numberOfLines={1}>
+                              {talkLabel(slot.outgoing.publicTalkId)}
+                            </Text>
+                          )}
+                        </>
+                      ) : null}
+                    </Slot>
                   </View>
-                  <Text style={styles.main}>
-                    {incoming
-                      ? `${speaker?.name ?? t('talkCoordinator.log.unknownSpeaker')}${speaker?.cong ? ` (${speaker.cong})` : ''}`
-                      : `${ourBrother ?? '—'} → ${host ?? '—'}`}
-                  </Text>
-                  {!!talkLabel(e.publicTalkId) && (
-                    <Text style={styles.sub} numberOfLines={2}>
-                      {talkLabel(e.publicTalkId)}
-                    </Text>
-                  )}
-                  {incoming && !!hospitality && (
-                    <Text style={styles.sub}>
-                      {t('talkCoordinator.log.hostedBy', { name: hospitality })}
-                    </Text>
-                  )}
-                  {!!e.note && <Text style={styles.note}>{e.note}</Text>}
                 </View>
-                <Pressable hitSlop={6} onPress={() => openEdit(e)} style={styles.iconBtn} disabled={pending}>
-                  <Ionicons name="create-outline" size={19} color="#0369a1" />
-                </Pressable>
-                <Pressable hitSlop={6} onPress={() => confirmDelete(e)} style={styles.iconBtn} disabled={pending}>
-                  <Ionicons name="trash-outline" size={19} color="#dc2626" />
-                </Pressable>
-              </View>
-            );
-          })
-        )}
-
-        <Pressable
-          style={({ pressed }) => [styles.addBtn, pressed && styles.addBtnPressed, pending && styles.disabled]}
-          onPress={openAdd}
-          disabled={pending}
-        >
-          <Ionicons name="add-circle-outline" size={18} color="#0369a1" />
-          <Text style={styles.addBtnText}>{t('talkCoordinator.log.add')}</Text>
-        </Pressable>
+              );
+            })}
+          </View>
+        ))}
       </ScrollView>
 
-      <Modal visible={modalOpen} transparent animationType="fade" onRequestClose={() => setModalOpen(false)}>
+      <Modal visible={open} transparent animationType="fade" onRequestClose={() => setOpen(false)}>
         <View style={styles.overlay}>
           <View style={styles.modalCard}>
             <ScrollView keyboardShouldPersistTaps="handled">
-              <Text style={styles.modalTitle}>
-                {editing ? t('talkCoordinator.log.editTitle') : t('talkCoordinator.log.add')}
-              </Text>
-
-              {/* direction */}
-              <View style={styles.segment}>
-                {(['incoming', 'outgoing'] as TalkExchangeDirection[]).map((d) => (
-                  <Pressable
-                    key={d}
-                    style={[styles.segmentBtn, direction === d && styles.segmentBtnActive]}
-                    onPress={() => setDirection(d)}
-                  >
-                    <Text style={[styles.segmentText, direction === d && styles.segmentTextActive]}>
-                      {t(`talkCoordinator.log.filter.${d}`)}
-                    </Text>
-                  </Pressable>
-                ))}
+              <View style={styles.editorHead}>
+                <Text style={styles.modalTitle}>
+                  {direction === 'incoming'
+                    ? t('talkCoordinator.log.filter.incoming')
+                    : t('talkCoordinator.log.filter.outgoing')}
+                </Text>
+                <Text style={styles.editorDate}>
+                  {date ? dayjs(date).locale(i18n.language).format('dd, D MMM YYYY') : ''}
+                </Text>
               </View>
 
-              {/* date */}
-              <Text style={styles.fieldLabel}>{t('talkCoordinator.log.date')}</Text>
-              <View style={styles.calendarBox}>
-                <DateTimePicker
-                  mode="single"
-                  date={date ? dayjs(date) : undefined}
-                  onChange={({ date: d }) => setDate(toISO(d))}
-                  firstDayOfWeek={1}
-                  locale={i18n.language}
-                  styles={defaultStyles}
-                />
-              </View>
-
-              {/* status */}
               <Text style={styles.fieldLabel}>{t('talkCoordinator.log.statusLabel')}</Text>
               <View style={styles.segment}>
                 {(['confirmed', 'tentative'] as TalkExchangeStatus[]).map((s) => (
@@ -415,9 +436,18 @@ export default function TalkExchangeLogScreen() {
                         </Pressable>
                       );
                     })}
-                    {(speakersQuery.data ?? []).length === 0 && (
-                      <Text style={styles.muted}>{t('talkCoordinator.log.noSpeakers')}</Text>
-                    )}
+                    <Pressable
+                      style={[styles.pickChip, styles.linkChip]}
+                      onPress={() => {
+                        setOpen(false);
+                        router.push('/talk-coordinator/speakers' as any);
+                      }}
+                    >
+                      <Ionicons name="add" size={14} color="#0369a1" />
+                      <Text style={[styles.pickChipText, { color: '#0369a1' }]}>
+                        {t('talkCoordinator.speakers.add')}
+                      </Text>
+                    </Pressable>
                   </View>
 
                   <View style={{ marginTop: 10 }}>
@@ -427,7 +457,6 @@ export default function TalkExchangeLogScreen() {
                       onChange={(talk) => setPublicTalkId(talk?.id ?? null)}
                     />
                   </View>
-
                   <View style={{ marginTop: 10 }}>
                     <PublisherSelector
                       label={t('talkCoordinator.log.hospitality')}
@@ -446,7 +475,6 @@ export default function TalkExchangeLogScreen() {
                       genderFilter="brother"
                     />
                   </View>
-
                   <Text style={styles.fieldLabel}>{t('talkCoordinator.log.hostCongregation')}</Text>
                   <View style={styles.chipWrap}>
                     {(congQuery.data ?? []).map((c) => {
@@ -457,9 +485,7 @@ export default function TalkExchangeLogScreen() {
                           style={[styles.pickChip, sel && styles.pickChipActive]}
                           onPress={() => setHostCongregationId(sel ? null : c.id)}
                         >
-                          <Text style={[styles.pickChipText, sel && styles.pickChipTextActive]}>
-                            {c.name}
-                          </Text>
+                          <Text style={[styles.pickChipText, sel && styles.pickChipTextActive]}>{c.name}</Text>
                         </Pressable>
                       );
                     })}
@@ -467,7 +493,6 @@ export default function TalkExchangeLogScreen() {
                       <Text style={styles.muted}>{t('talkCoordinator.log.noCongregations')}</Text>
                     )}
                   </View>
-
                   <View style={{ marginTop: 10 }}>
                     <PublicTalkSelector
                       label={t('talkCoordinator.log.talk')}
@@ -482,7 +507,14 @@ export default function TalkExchangeLogScreen() {
               <TextInput style={styles.input} value={note} onChangeText={setNote} multiline placeholderTextColor="#94a3b8" />
 
               <View style={styles.modalActions}>
-                <Pressable style={styles.modalCancel} onPress={() => setModalOpen(false)} disabled={pending}>
+                {editing ? (
+                  <Pressable style={styles.deleteBtn} onPress={del} disabled={pending}>
+                    <Ionicons name="trash-outline" size={18} color="#dc2626" />
+                  </Pressable>
+                ) : (
+                  <View style={{ flex: 1 }} />
+                )}
+                <Pressable style={styles.modalCancel} onPress={() => setOpen(false)} disabled={pending}>
                   <Text style={styles.modalCancelText}>{t('common.cancel')}</Text>
                 </Pressable>
                 <Pressable
@@ -501,92 +533,99 @@ export default function TalkExchangeLogScreen() {
   );
 }
 
+function Slot({
+  label,
+  accent,
+  bg,
+  entry,
+  onPress,
+  children,
+}: {
+  label: string;
+  accent: string;
+  bg: string;
+  entry?: TalkExchange;
+  onPress: () => void;
+  children?: React.ReactNode;
+}) {
+  const { t } = useTranslation();
+  return (
+    <Pressable style={[styles.slot, entry ? { backgroundColor: bg } : styles.slotEmpty]} onPress={onPress}>
+      <View style={styles.slotHead}>
+        <Text style={[styles.slotLabel, { color: accent }]}>{label}</Text>
+        {entry?.status === 'tentative' && (
+          <View style={styles.tentativeDot}>
+            <Text style={styles.tentativeDotText}>?</Text>
+          </View>
+        )}
+      </View>
+      {entry ? <View>{children}</View> : <Text style={styles.slotAdd}>+ {t('talkCoordinator.log.addSlot')}</Text>}
+    </Pressable>
+  );
+}
+
 const styles = StyleSheet.create({
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 32 },
   muted: { color: '#64748b', fontSize: 13 },
-  filterRow: {
-    flexDirection: 'row',
-    gap: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
+  monthBar: { backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#e2e8f0' },
+  monthBarInner: { paddingHorizontal: 12, paddingVertical: 8, gap: 6 },
+  monthChip: { paddingVertical: 5, paddingHorizontal: 12, borderRadius: 14, backgroundColor: '#f1f5f9' },
+  monthChipCurrent: { backgroundColor: '#0ea5e9' },
+  monthChipText: { fontSize: 12, color: '#475569', fontWeight: '600', textTransform: 'capitalize' },
+  monthChipTextCurrent: { color: '#fff' },
+  container: { padding: 12, paddingBottom: 48 },
+  monthHeader: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#64748b',
+    textTransform: 'capitalize',
+    marginTop: 14,
+    marginBottom: 6,
+    marginLeft: 4,
   },
-  filterChip: {
-    paddingVertical: 6,
-    paddingHorizontal: 14,
-    borderRadius: 16,
-    backgroundColor: '#f1f5f9',
-  },
-  filterChipActive: { backgroundColor: '#0ea5e9' },
-  filterChipText: { fontSize: 13, color: '#475569', fontWeight: '600' },
-  filterChipTextActive: { color: '#fff' },
-  container: { padding: 16, paddingBottom: 40 },
-  empty: { padding: 24, color: '#94a3b8', fontSize: 14, textAlign: 'center' },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 10,
+  weekendRow: {
     backgroundColor: '#fff',
     borderRadius: 12,
     borderWidth: 1,
     borderColor: '#e2e8f0',
-    padding: 12,
+    padding: 10,
     marginBottom: 8,
   },
-  dirIcon: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
+  weekendPast: { opacity: 0.55 },
+  weekendDate: { fontSize: 13, fontWeight: '700', color: '#0f172a', textTransform: 'capitalize', marginBottom: 6 },
+  slots: { flexDirection: 'row', gap: 8 },
+  slot: { flex: 1, borderRadius: 10, padding: 8, minHeight: 56, justifyContent: 'center' },
+  slotEmpty: { backgroundColor: '#f8fafc', borderWidth: 1, borderColor: '#e2e8f0', borderStyle: 'dashed' },
+  slotHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  slotLabel: { fontSize: 10, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.4 },
+  tentativeDot: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: '#f59e0b',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
-  date: { fontSize: 13, fontWeight: '700', color: '#0f172a' },
-  statusBadge: { borderRadius: 6, paddingHorizontal: 7, paddingVertical: 2 },
-  statusConfirmed: { backgroundColor: '#dcfce7' },
-  statusTentative: { backgroundColor: '#ffedd5' },
-  statusText: { fontSize: 10, fontWeight: '700' },
-  statusTextConfirmed: { color: '#166534' },
-  statusTextTentative: { color: '#9a3412' },
-  main: { fontSize: 15, fontWeight: '600', color: '#0f172a', marginTop: 3 },
-  sub: { fontSize: 13, color: '#475569', marginTop: 1 },
-  note: { fontSize: 12, color: '#94a3b8', marginTop: 3, fontStyle: 'italic' },
-  iconBtn: { padding: 4 },
-  addBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    marginTop: 8,
-    paddingVertical: 12,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#bae6fd',
-    backgroundColor: '#f0f9ff',
-  },
-  addBtnPressed: { backgroundColor: '#e0f2fe' },
-  addBtnText: { fontSize: 14, fontWeight: '600', color: '#0369a1' },
-  disabled: { opacity: 0.5 },
+  tentativeDotText: { fontSize: 9, color: '#fff', fontWeight: '800' },
+  slotMain: { fontSize: 13, fontWeight: '600', color: '#0f172a', marginTop: 3 },
+  slotSub: { fontSize: 11, color: '#475569', marginTop: 1 },
+  slotAdd: { fontSize: 12, color: '#94a3b8', marginTop: 4 },
   overlay: { flex: 1, backgroundColor: 'rgba(15,23,42,0.45)', justifyContent: 'center', paddingHorizontal: 16 },
   modalCard: { backgroundColor: '#fff', borderRadius: 14, padding: 18, maxHeight: '88%' },
-  modalTitle: { fontSize: 16, fontWeight: '700', color: '#0f172a', marginBottom: 8 },
+  editorHead: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between' },
+  modalTitle: { fontSize: 16, fontWeight: '700', color: '#0f172a' },
+  editorDate: { fontSize: 13, color: '#0ea5e9', fontWeight: '600', textTransform: 'capitalize' },
   fieldLabel: { fontSize: 12, fontWeight: '600', color: '#64748b', marginTop: 12, marginBottom: 4 },
-  segment: {
-    flexDirection: 'row',
-    gap: 6,
-    backgroundColor: '#f1f5f9',
-    borderRadius: 10,
-    padding: 3,
-  },
+  segment: { flexDirection: 'row', gap: 6, backgroundColor: '#f1f5f9', borderRadius: 10, padding: 3 },
   segmentBtn: { flex: 1, paddingVertical: 8, borderRadius: 8, alignItems: 'center' },
   segmentBtnActive: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#e2e8f0' },
   segmentText: { fontSize: 13, color: '#64748b', fontWeight: '600' },
   segmentTextActive: { color: '#0f172a' },
-  calendarBox: { backgroundColor: '#f8fafc', borderRadius: 10, padding: 6, marginTop: 4 },
   chipWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   pickChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 16,
@@ -597,6 +636,7 @@ const styles = StyleSheet.create({
   pickChipActive: { backgroundColor: '#e0f2fe', borderColor: '#0ea5e9' },
   pickChipText: { fontSize: 13, color: '#475569' },
   pickChipTextActive: { color: '#0369a1', fontWeight: '600' },
+  linkChip: { borderStyle: 'dashed', borderColor: '#bae6fd' },
   input: {
     borderWidth: 1,
     borderColor: '#cbd5e1',
@@ -606,9 +646,11 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#0f172a',
   },
-  modalActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 10, marginTop: 14 },
+  modalActions: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 10, marginTop: 16 },
+  deleteBtn: { marginRight: 'auto', padding: 8, borderRadius: 8, backgroundColor: '#fef2f2' },
   modalCancel: { paddingVertical: 10, paddingHorizontal: 14 },
   modalCancelText: { fontSize: 15, color: '#64748b', fontWeight: '600' },
   modalConfirm: { paddingVertical: 10, paddingHorizontal: 18, borderRadius: 10, backgroundColor: '#0ea5e9' },
   modalConfirmText: { fontSize: 15, color: '#fff', fontWeight: '600' },
+  disabled: { opacity: 0.5 },
 });

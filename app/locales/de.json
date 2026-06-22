@@ -1403,7 +1403,8 @@
       "status": {
         "confirmed": "Bestätigt",
         "tentative": "Vorläufig"
-      }
+      },
+      "addSlot": "Hinzufügen"
     }
   }
 }

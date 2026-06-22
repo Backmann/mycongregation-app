@@ -1403,7 +1403,8 @@
       "status": {
         "confirmed": "Confirmed",
         "tentative": "Tentative"
-      }
+      },
+      "addSlot": "Add"
     }
   }
 }
