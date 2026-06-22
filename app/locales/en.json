@@ -1409,7 +1409,11 @@
         "confirmed": "Confirmed",
         "tentative": "Tentative"
       },
-      "addSlot": "Add"
+      "addSlot": "Add",
+      "event": "Event",
+      "ourMeetingHint": "Time/address from meeting settings",
+      "openMap": "Open map",
+      "tripDate": "Trip date"
     }
   }
 }

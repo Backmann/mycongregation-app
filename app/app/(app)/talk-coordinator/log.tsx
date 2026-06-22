@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Linking,
   Modal,
   Platform,
   Pressable,
@@ -20,6 +21,8 @@ import dayjs from 'dayjs';
 import 'dayjs/locale/ru';
 import 'dayjs/locale/de';
 import {
+  ExternalCongregation,
+  SpecialEvent,
   TalkExchange,
   TalkExchangeDirection,
   TalkExchangeInput,
@@ -30,6 +33,8 @@ import {
   publishersApi,
   publicTalksApi,
   meetingSettingsApi,
+  specialEventsApi,
+  MeetingSettingsVersion,
   extractErrorMessage,
 } from '../../../lib/api';
 import { usePermissions } from '../../../lib/permissions';
@@ -40,22 +45,52 @@ import { startOfWeekMonday, addDays, formatDateISO } from '../../../lib/dates';
 const QK = ['talk-exchange'] as const;
 const YEAR = 2026;
 
-type WeekendRow = { date: string };
-type MonthBlock = { key: string; title: string; rows: WeekendRow[] };
+type WeekRow = {
+  monday: string;
+  date: string; // our weekend meeting date
+  time: string | null;
+  address: string | null;
+};
+type MonthBlock = { key: string; title: string; rows: WeekRow[] };
 type SlotState = { incoming?: TalkExchange; outgoing?: TalkExchange };
 
-/** All weekend meeting dates of YEAR, given the congregation's weekend day (ISO 1–7). */
-function buildWeekends(weekendDow: number): string[] {
-  const res: string[] = [];
+function mondayISO(dateISO: string): string {
+  return formatDateISO(startOfWeekMonday(new Date(`${dateISO}T00:00:00`)));
+}
+
+function effectiveVersionFor(
+  dateISO: string,
+  versions: MeetingSettingsVersion[],
+): MeetingSettingsVersion | null {
+  const sorted = [...versions].sort((a, b) =>
+    b.effectiveFrom.localeCompare(a.effectiveFrom),
+  );
+  return sorted.find((v) => v.effectiveFrom <= dateISO) ?? sorted[sorted.length - 1] ?? null;
+}
+
+function buildWeeks(
+  versions: MeetingSettingsVersion[],
+  fallback: MeetingSettingsVersion | null,
+): WeekRow[] {
+  const rows: WeekRow[] = [];
   let monday = startOfWeekMonday(new Date(`${YEAR - 1}-12-22T00:00:00`));
   for (let i = 0; i < 60; i++) {
-    const wd = addDays(monday, weekendDow - 1);
+    const mISO = formatDateISO(monday);
+    const v = effectiveVersionFor(mISO, versions) ?? fallback;
+    const dow = v?.weekendDow ?? 7;
+    const wd = addDays(monday, dow - 1);
     const y = wd.getFullYear();
-    if (y === YEAR) res.push(formatDateISO(wd));
+    if (y === YEAR)
+      rows.push({
+        monday: mISO,
+        date: formatDateISO(wd),
+        time: v?.weekendTime ?? null,
+        address: v?.address ?? null,
+      });
     if (y > YEAR) break;
     monday = addDays(monday, 7);
   }
-  return res;
+  return rows;
 }
 
 function confirmReplace(title: string, body: string, ok: string, cancel: string): Promise<boolean> {
@@ -80,10 +115,10 @@ export default function TalkExchangeYearScreen() {
   const monthOffsets = useRef<Record<string, number>>({});
   const didInitialScroll = useRef(false);
 
-  // ---- editor state ----
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<TalkExchange | null>(null);
   const [direction, setDirection] = useState<TalkExchangeDirection>('incoming');
+  const [week, setWeek] = useState<WeekRow | null>(null);
   const [date, setDate] = useState<string>('');
   const [status, setStatus] = useState<TalkExchangeStatus>('confirmed');
   const [publicTalkId, setPublicTalkId] = useState<string | null>(null);
@@ -97,6 +132,10 @@ export default function TalkExchangeYearScreen() {
   const settingsQuery = useQuery({
     queryKey: ['meeting-settings'],
     queryFn: () => meetingSettingsApi.getOverview(),
+  });
+  const eventsQuery = useQuery({
+    queryKey: ['special-events', 'all'],
+    queryFn: () => specialEventsApi.list({ all: true }),
   });
   const speakersQuery = useQuery({
     queryKey: ['visiting-speakers'],
@@ -115,20 +154,15 @@ export default function TalkExchangeYearScreen() {
     queryFn: () => publicTalksApi.list({ includeInactive: true, limit: 300 }),
   });
 
-  const weekendDow = settingsQuery.data?.effective?.weekendDow ?? 7;
-
   const speakerById = useMemo(() => {
-    const m = new Map<string, { name: string; cong: string | null }>();
+    const m = new Map<string, string>();
     for (const s of speakersQuery.data ?? [])
-      m.set(s.id, {
-        name: [s.firstName, s.lastName].filter(Boolean).join(' '),
-        cong: s.externalCongregation?.name ?? null,
-      });
+      m.set(s.id, [s.firstName, s.lastName].filter(Boolean).join(' '));
     return m;
   }, [speakersQuery.data]);
   const congById = useMemo(() => {
-    const m = new Map<string, string>();
-    for (const c of congQuery.data ?? []) m.set(c.id, c.name);
+    const m = new Map<string, ExternalCongregation>();
+    for (const c of congQuery.data ?? []) m.set(c.id, c);
     return m;
   }, [congQuery.data]);
   const pubById = useMemo(() => {
@@ -142,39 +176,46 @@ export default function TalkExchangeYearScreen() {
     return m;
   }, [talksQuery.data]);
 
-  const byDate = useMemo(() => {
+  const byWeek = useMemo(() => {
     const m = new Map<string, SlotState>();
     for (const e of listQuery.data ?? []) {
-      const slot = m.get(e.date) ?? {};
+      const k = mondayISO(e.date);
+      const slot = m.get(k) ?? {};
       if (e.direction === 'incoming') slot.incoming = e;
       else slot.outgoing = e;
-      m.set(e.date, slot);
+      m.set(k, slot);
     }
     return m;
   }, [listQuery.data]);
 
+  const eventsForDate = useMemo(() => {
+    const events = eventsQuery.data ?? [];
+    return (d: string): SpecialEvent[] =>
+      events.filter((ev) => {
+        const end = ev.endDate ?? ev.date;
+        return ev.date <= d && d <= end;
+      });
+  }, [eventsQuery.data]);
+
   const months = useMemo<MonthBlock[]>(() => {
-    const dates = new Set<string>(buildWeekends(weekendDow));
-    for (const e of listQuery.data ?? []) {
-      if (e.date.startsWith(`${YEAR}`)) dates.add(e.date);
-    }
-    const sorted = [...dates].sort();
-    const byMonth = new Map<string, WeekendRow[]>();
-    for (const d of sorted) {
-      const key = d.slice(0, 7);
+    const versions = settingsQuery.data?.versions ?? [];
+    const fallback = settingsQuery.data?.effective ?? null;
+    const weeks = buildWeeks(versions, fallback);
+    const byMonth = new Map<string, WeekRow[]>();
+    for (const w of weeks) {
+      const key = w.date.slice(0, 7);
       if (!byMonth.has(key)) byMonth.set(key, []);
-      byMonth.get(key)!.push({ date: d });
+      byMonth.get(key)!.push(w);
     }
     return [...byMonth.entries()].map(([key, rows]) => ({
       key,
       title: dayjs(`${key}-01`).locale(i18n.language).format('MMMM'),
       rows,
     }));
-  }, [weekendDow, listQuery.data, i18n.language]);
+  }, [settingsQuery.data, i18n.language]);
 
   const currentMonthKey = dayjs().format('YYYY-MM');
 
-  // auto-scroll to current month once layout offsets are known
   useEffect(() => {
     if (didInitialScroll.current) return;
     const off = monthOffsets.current[currentMonthKey];
@@ -214,10 +255,11 @@ export default function TalkExchangeYearScreen() {
   const pending =
     createMutation.isPending || updateMutation.isPending || removeMutation.isPending;
 
-  const openSlot = (d: string, dir: TalkExchangeDirection, entry?: TalkExchange) => {
+  const openSlot = (w: WeekRow, dir: TalkExchangeDirection, entry?: TalkExchange) => {
+    setWeek(w);
     setEditing(entry ?? null);
     setDirection(dir);
-    setDate(d);
+    setDate(entry?.date ?? w.date);
     setStatus(entry?.status ?? 'confirmed');
     setPublicTalkId(entry?.publicTalkId ?? null);
     setVisitingSpeakerId(entry?.visitingSpeakerId ?? null);
@@ -226,6 +268,15 @@ export default function TalkExchangeYearScreen() {
     setHostCongregationId(entry?.hostCongregationId ?? null);
     setNote(entry?.note ?? '');
     setOpen(true);
+  };
+
+  const onPickHost = (id: string | null) => {
+    setHostCongregationId(id);
+    // default the trip date to the host congregation's meeting day, if known
+    const host = id ? congById.get(id) : null;
+    if (host?.meetingDow && week) {
+      setDate(formatDateISO(addDays(new Date(`${week.monday}T00:00:00`), host.meetingDow - 1)));
+    }
   };
 
   const canSave =
@@ -297,8 +348,14 @@ export default function TalkExchangeYearScreen() {
     const tk = talkById.get(id);
     return tk ? `№${tk.number}. ${tk.title}` : null;
   };
-  const fmtWeekend = (d: string) => dayjs(d).locale(i18n.language).format('dd, D MMM');
+  const fmtDay = (d: string) => dayjs(d).locale(i18n.language).format('dd, D MMM');
   const todayISO = dayjs().format('YYYY-MM-DD');
+  const host = hostCongregationId ? congById.get(hostCongregationId) ?? null : null;
+  const weekDays = week
+    ? [0, 1, 2, 3, 4, 5, 6].map((i) =>
+        formatDateISO(addDays(new Date(`${week.monday}T00:00:00`), i)),
+      )
+    : [];
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#f1f5f9' }}>
@@ -327,56 +384,68 @@ export default function TalkExchangeYearScreen() {
             }}
           >
             <Text style={styles.monthHeader}>{m.title}</Text>
-            {m.rows.map((row) => {
-              const slot = byDate.get(row.date) ?? {};
-              const upcoming = row.date >= todayISO;
+            {m.rows.map((w) => {
+              const slot = byWeek.get(w.monday) ?? {};
+              const upcoming = w.date >= todayISO;
+              const events = eventsForDate(w.date);
               return (
-                <View key={row.date} style={[styles.weekendRow, !upcoming && styles.weekendPast]}>
-                  <Text style={styles.weekendDate}>{fmtWeekend(row.date)}</Text>
+                <View key={w.monday} style={[styles.weekendRow, !upcoming && styles.weekendPast]}>
+                  <View style={styles.weekendHead}>
+                    <Text style={styles.weekendDate}>{fmtDay(w.date)}</Text>
+                    {!!w.time && <Text style={styles.weekendTime}>{w.time}</Text>}
+                  </View>
                   <View style={styles.slots}>
-                    <Slot
-                      label={t('talkCoordinator.log.filter.incoming')}
-                      accent="#0369a1"
-                      bg="#e0f2fe"
-                      entry={slot.incoming}
-                      onPress={() => openSlot(row.date, 'incoming', slot.incoming)}
-                    >
-                      {slot.incoming ? (
-                        <>
-                          <Text style={styles.slotMain} numberOfLines={1}>
-                            {slot.incoming.visitingSpeakerId
-                              ? speakerById.get(slot.incoming.visitingSpeakerId)?.name ??
-                                t('talkCoordinator.log.unknownSpeaker')
-                              : t('talkCoordinator.log.unknownSpeaker')}
-                          </Text>
-                          {!!talkLabel(slot.incoming.publicTalkId) && (
-                            <Text style={styles.slotSub} numberOfLines={1}>
-                              {talkLabel(slot.incoming.publicTalkId)}
+                    {events.length > 0 ? (
+                      <View style={[styles.slot, styles.eventSlot]}>
+                        <Text style={styles.eventLabel}>{t('talkCoordinator.log.event')}</Text>
+                        <Text style={styles.eventTitle} numberOfLines={2}>
+                          {events.map((ev) => ev.title).join(' · ')}
+                        </Text>
+                      </View>
+                    ) : (
+                      <Slot
+                        label={t('talkCoordinator.log.filter.incoming')}
+                        accent="#0369a1"
+                        bg="#e0f2fe"
+                        entry={slot.incoming}
+                        onPress={() => openSlot(w, 'incoming', slot.incoming)}
+                      >
+                        {slot.incoming ? (
+                          <>
+                            <Text style={styles.slotMain} numberOfLines={1}>
+                              {slot.incoming.visitingSpeakerId
+                                ? speakerById.get(slot.incoming.visitingSpeakerId) ??
+                                  t('talkCoordinator.log.unknownSpeaker')
+                                : t('talkCoordinator.log.unknownSpeaker')}
                             </Text>
-                          )}
-                        </>
-                      ) : null}
-                    </Slot>
+                            {!!talkLabel(slot.incoming.publicTalkId) && (
+                              <Text style={styles.slotSub} numberOfLines={1}>
+                                {talkLabel(slot.incoming.publicTalkId)}
+                              </Text>
+                            )}
+                          </>
+                        ) : null}
+                      </Slot>
+                    )}
                     <Slot
                       label={t('talkCoordinator.log.filter.outgoing')}
                       accent="#b45309"
                       bg="#fef3c7"
                       entry={slot.outgoing}
-                      onPress={() => openSlot(row.date, 'outgoing', slot.outgoing)}
+                      onPress={() => openSlot(w, 'outgoing', slot.outgoing)}
                     >
                       {slot.outgoing ? (
                         <>
                           <Text style={styles.slotMain} numberOfLines={1}>
                             {slot.outgoing.publisherId ? pubById.get(slot.outgoing.publisherId) ?? '—' : '—'}
                             {slot.outgoing.hostCongregationId
-                              ? ` → ${congById.get(slot.outgoing.hostCongregationId) ?? ''}`
+                              ? ` → ${congById.get(slot.outgoing.hostCongregationId)?.name ?? ''}`
                               : ''}
                           </Text>
-                          {!!talkLabel(slot.outgoing.publicTalkId) && (
-                            <Text style={styles.slotSub} numberOfLines={1}>
-                              {talkLabel(slot.outgoing.publicTalkId)}
-                            </Text>
-                          )}
+                          <Text style={styles.slotSub} numberOfLines={1}>
+                            {slot.outgoing.date !== w.date ? `${fmtDay(slot.outgoing.date)} · ` : ''}
+                            {talkLabel(slot.outgoing.publicTalkId) ?? ''}
+                          </Text>
                         </>
                       ) : null}
                     </Slot>
@@ -402,6 +471,13 @@ export default function TalkExchangeYearScreen() {
                   {date ? dayjs(date).locale(i18n.language).format('dd, D MMM YYYY') : ''}
                 </Text>
               </View>
+
+              {direction === 'incoming' && week && (
+                <Text style={styles.infoLine}>
+                  {[week.time, week.address].filter(Boolean).join(' · ') ||
+                    t('talkCoordinator.log.ourMeetingHint')}
+                </Text>
+              )}
 
               <Text style={styles.fieldLabel}>{t('talkCoordinator.log.statusLabel')}</Text>
               <View style={styles.segment}>
@@ -475,6 +551,7 @@ export default function TalkExchangeYearScreen() {
                       genderFilter="brother"
                     />
                   </View>
+
                   <Text style={styles.fieldLabel}>{t('talkCoordinator.log.hostCongregation')}</Text>
                   <View style={styles.chipWrap}>
                     {(congQuery.data ?? []).map((c) => {
@@ -483,7 +560,7 @@ export default function TalkExchangeYearScreen() {
                         <Pressable
                           key={c.id}
                           style={[styles.pickChip, sel && styles.pickChipActive]}
-                          onPress={() => setHostCongregationId(sel ? null : c.id)}
+                          onPress={() => onPickHost(sel ? null : c.id)}
                         >
                           <Text style={[styles.pickChipText, sel && styles.pickChipTextActive]}>{c.name}</Text>
                         </Pressable>
@@ -493,6 +570,40 @@ export default function TalkExchangeYearScreen() {
                       <Text style={styles.muted}>{t('talkCoordinator.log.noCongregations')}</Text>
                     )}
                   </View>
+
+                  {!!host && (host.address || host.meetingTime || host.mapUrl) && (
+                    <View style={styles.hostBox}>
+                      {(host.meetingTime || host.address) && (
+                        <Text style={styles.hostInfo}>
+                          {[host.meetingTime, host.address].filter(Boolean).join(' · ')}
+                        </Text>
+                      )}
+                      {!!host.mapUrl && (
+                        <Pressable onPress={() => host.mapUrl && Linking.openURL(host.mapUrl)}>
+                          <Text style={styles.hostMap}>{t('talkCoordinator.log.openMap')}</Text>
+                        </Pressable>
+                      )}
+                    </View>
+                  )}
+
+                  <Text style={styles.fieldLabel}>{t('talkCoordinator.log.tripDate')}</Text>
+                  <View style={styles.chipWrap}>
+                    {weekDays.map((d) => {
+                      const sel = date === d;
+                      return (
+                        <Pressable
+                          key={d}
+                          style={[styles.dayChip, sel && styles.pickChipActive]}
+                          onPress={() => setDate(d)}
+                        >
+                          <Text style={[styles.pickChipText, sel && styles.pickChipTextActive]}>
+                            {dayjs(d).locale(i18n.language).format('dd D')}
+                          </Text>
+                        </Pressable>
+                      );
+                    })}
+                  </View>
+
                   <View style={{ marginTop: 10 }}>
                     <PublicTalkSelector
                       label={t('talkCoordinator.log.talk')}
@@ -592,10 +703,15 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   weekendPast: { opacity: 0.55 },
-  weekendDate: { fontSize: 13, fontWeight: '700', color: '#0f172a', textTransform: 'capitalize', marginBottom: 6 },
+  weekendHead: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 6 },
+  weekendDate: { fontSize: 13, fontWeight: '700', color: '#0f172a', textTransform: 'capitalize' },
+  weekendTime: { fontSize: 12, color: '#64748b', fontWeight: '600' },
   slots: { flexDirection: 'row', gap: 8 },
   slot: { flex: 1, borderRadius: 10, padding: 8, minHeight: 56, justifyContent: 'center' },
   slotEmpty: { backgroundColor: '#f8fafc', borderWidth: 1, borderColor: '#e2e8f0', borderStyle: 'dashed' },
+  eventSlot: { backgroundColor: '#ede9fe' },
+  eventLabel: { fontSize: 10, fontWeight: '700', color: '#6d28d9', textTransform: 'uppercase', letterSpacing: 0.4 },
+  eventTitle: { fontSize: 13, fontWeight: '600', color: '#5b21b6', marginTop: 3 },
   slotHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   slotLabel: { fontSize: 10, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.4 },
   tentativeDot: {
@@ -615,6 +731,7 @@ const styles = StyleSheet.create({
   editorHead: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between' },
   modalTitle: { fontSize: 16, fontWeight: '700', color: '#0f172a' },
   editorDate: { fontSize: 13, color: '#0ea5e9', fontWeight: '600', textTransform: 'capitalize' },
+  infoLine: { fontSize: 12, color: '#64748b', marginTop: 4 },
   fieldLabel: { fontSize: 12, fontWeight: '600', color: '#64748b', marginTop: 12, marginBottom: 4 },
   segment: { flexDirection: 'row', gap: 6, backgroundColor: '#f1f5f9', borderRadius: 10, padding: 3 },
   segmentBtn: { flex: 1, paddingVertical: 8, borderRadius: 8, alignItems: 'center' },
@@ -633,10 +750,21 @@ const styles = StyleSheet.create({
     borderColor: '#cbd5e1',
     backgroundColor: '#fff',
   },
+  dayChip: {
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#cbd5e1',
+    backgroundColor: '#fff',
+  },
   pickChipActive: { backgroundColor: '#e0f2fe', borderColor: '#0ea5e9' },
-  pickChipText: { fontSize: 13, color: '#475569' },
+  pickChipText: { fontSize: 13, color: '#475569', textTransform: 'capitalize' },
   pickChipTextActive: { color: '#0369a1', fontWeight: '600' },
   linkChip: { borderStyle: 'dashed', borderColor: '#bae6fd' },
+  hostBox: { marginTop: 8, padding: 10, borderRadius: 10, backgroundColor: '#fffbeb', borderWidth: 1, borderColor: '#fde68a' },
+  hostInfo: { fontSize: 13, color: '#92400e' },
+  hostMap: { fontSize: 13, color: '#0369a1', fontWeight: '600', marginTop: 4 },
   input: {
     borderWidth: 1,
     borderColor: '#cbd5e1',

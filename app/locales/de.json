@@ -1409,7 +1409,11 @@
         "confirmed": "Bestätigt",
         "tentative": "Vorläufig"
       },
-      "addSlot": "Hinzufügen"
+      "addSlot": "Hinzufügen",
+      "event": "Ereignis",
+      "ourMeetingHint": "Zeit/Adresse aus den Einstellungen",
+      "openMap": "Karte öffnen",
+      "tripDate": "Reisedatum"
     }
   }
 }
