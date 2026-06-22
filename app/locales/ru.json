@@ -1209,7 +1209,8 @@
       "events": "События",
       "publishers": "Возвещатели",
       "absences": "Отсутствия",
-      "profile": "Профиль"
+      "profile": "Профиль",
+      "talkCoordinator": "Координатор речей"
     },
     "nextMeeting": "Следующая встреча",
     "meeting": {

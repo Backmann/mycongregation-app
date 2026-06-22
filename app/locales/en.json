@@ -1205,7 +1205,8 @@
       "events": "Events",
       "publishers": "Publishers",
       "absences": "Absences",
-      "profile": "Profile"
+      "profile": "Profile",
+      "talkCoordinator": "Talk coordinator"
     },
     "nextMeeting": "Next meeting",
     "meeting": {

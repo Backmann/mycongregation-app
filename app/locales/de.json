@@ -1205,7 +1205,8 @@
       "events": "Ereignisse",
       "publishers": "Verkündiger",
       "absences": "Abwesenheiten",
-      "profile": "Profil"
+      "profile": "Profil",
+      "talkCoordinator": "Redner-Koordinator"
     },
     "nextMeeting": "Nächste Zusammenkunft",
     "meeting": {
