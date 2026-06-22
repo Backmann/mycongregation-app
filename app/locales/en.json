@@ -1331,5 +1331,45 @@
     "savedBody": "Circuit overseer details updated.",
     "note": "You can change this anytime.",
     "midweekDow": "Midweek meeting day"
+  },
+  "talkCoordinator": {
+    "title": "Talk coordinator",
+    "intro": "Keep incoming and outgoing speakers, their talks and the directories. The “Incoming / Outgoing” log will live here.",
+    "noAccess": "Available to the public talk coordinator.",
+    "errorTitle": "Error",
+    "directoriesLabel": "Directories",
+    "logSoon": "“Incoming / Outgoing” log — coming soon",
+    "congregations": {
+      "title": "Congregations",
+      "subtitle": "Other congregations (where speakers come from / go to)",
+      "hint": "Directory of other congregations — used when picking speakers and trips.",
+      "empty": "No congregations yet.",
+      "add": "Add congregation",
+      "editTitle": "Edit congregation",
+      "deleteTitle": "Delete congregation?",
+      "name": "Name",
+      "city": "City",
+      "contactName": "Contact",
+      "contactPhone": "Phone",
+      "note": "Note"
+    },
+    "speakers": {
+      "title": "Visiting speakers",
+      "subtitle": "Speakers from other congregations and their talks",
+      "hint": "Directory of visiting speakers. Repertoire = the talk numbers he gives.",
+      "empty": "No speakers yet.",
+      "add": "Add speaker",
+      "editTitle": "Edit speaker",
+      "deleteTitle": "Delete speaker?",
+      "firstName": "First name",
+      "lastName": "Last name",
+      "congregation": "Congregation",
+      "noCongregation": "No congregation",
+      "phone": "Phone",
+      "note": "Note",
+      "repertoire": "Repertoire (talk numbers)",
+      "talkNumberPlaceholder": "Talk no.",
+      "talksCount": "Talks: {{n}}"
+    }
   }
 }

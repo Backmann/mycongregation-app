@@ -1331,5 +1331,45 @@
     "savedBody": "Angaben zum Kreisaufseher aktualisiert.",
     "note": "Sie können dies jederzeit ändern.",
     "midweekDow": "Tag der Versammlung unter der Woche"
+  },
+  "talkCoordinator": {
+    "title": "Redner-Koordinator",
+    "intro": "Verwalte eingehende und ausgehende Redner, ihre Vorträge und die Verzeichnisse. Das Protokoll „Zu uns / Von uns“ erscheint hier.",
+    "noAccess": "Verfügbar für den Verantwortlichen für öffentliche Vorträge.",
+    "errorTitle": "Fehler",
+    "directoriesLabel": "Verzeichnisse",
+    "logSoon": "Protokoll „Zu uns / Von uns“ — bald",
+    "congregations": {
+      "title": "Versammlungen",
+      "subtitle": "Andere Versammlungen (woher / wohin)",
+      "hint": "Verzeichnis anderer Versammlungen — für Redner und Reisen.",
+      "empty": "Noch keine Versammlungen.",
+      "add": "Versammlung hinzufügen",
+      "editTitle": "Versammlung bearbeiten",
+      "deleteTitle": "Versammlung löschen?",
+      "name": "Name",
+      "city": "Stadt",
+      "contactName": "Kontakt",
+      "contactPhone": "Telefon",
+      "note": "Notiz"
+    },
+    "speakers": {
+      "title": "Gastredner",
+      "subtitle": "Redner aus anderen Versammlungen und ihre Vorträge",
+      "hint": "Verzeichnis der Gastredner. Repertoire = die Vortragsnummern, die er hält.",
+      "empty": "Noch keine Redner.",
+      "add": "Redner hinzufügen",
+      "editTitle": "Redner bearbeiten",
+      "deleteTitle": "Redner löschen?",
+      "firstName": "Vorname",
+      "lastName": "Nachname",
+      "congregation": "Versammlung",
+      "noCongregation": "Keine Versammlung",
+      "phone": "Telefon",
+      "note": "Notiz",
+      "repertoire": "Repertoire (Vortragsnummern)",
+      "talkNumberPlaceholder": "Vortrag-Nr.",
+      "talksCount": "Vorträge: {{n}}"
+    }
   }
 }

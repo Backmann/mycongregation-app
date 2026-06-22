@@ -441,7 +441,21 @@ export default function ScheduleIndexScreen() {
 
   return (
     <View style={styles.container}>
-      <WeekNavigator weekStart={weekStart} onChange={setWeekStart} />
+      <WeekNavigator
+        weekStart={weekStart}
+        onChange={setWeekStart}
+        right={
+          perms.canCoordinatePublicTalks ? (
+            <Pressable
+              hitSlop={8}
+              style={styles.coordBtn}
+              onPress={() => router.push('/talk-coordinator' as any)}
+            >
+              <Ionicons name="mic-outline" size={20} color="#0ea5e9" />
+            </Pressable>
+          ) : null
+        }
+      />
       <AssignmentSheet
         assignment={editing}
         weekStartISO={weekStartISO}
@@ -1405,6 +1419,14 @@ const styles = StyleSheet.create({
   dutiesRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 16 },
   dutiesRowNarrow: { gap: 8 },
   dutiesCol: { flex: 1, minWidth: 0 },
+  coordBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#f1f5f9',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   container: { flex: 1, backgroundColor: '#f1f5f9' },
   overline: {
     fontSize: 11,

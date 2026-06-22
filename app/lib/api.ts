@@ -761,6 +761,113 @@ export const hallsApi = {
   },
 };
 
+// ---- Public talk coordinator: external congregations + visiting speakers ----
+export interface ExternalCongregation {
+  id: string;
+  name: string;
+  city: string | null;
+  contactName: string | null;
+  contactPhone: string | null;
+  note: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface VisitingSpeaker {
+  id: string;
+  firstName: string;
+  lastName: string | null;
+  externalCongregationId: string | null;
+  externalCongregation: ExternalCongregation | null;
+  phone: string | null;
+  note: string | null;
+  talkNumbers: number[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export const externalCongregationsApi = {
+  async list(): Promise<ExternalCongregation[]> {
+    const { data } = await api.get<ExternalCongregation[]>(
+      '/external-congregations',
+    );
+    return data;
+  },
+  async create(input: {
+    name: string;
+    city?: string | null;
+    contactName?: string | null;
+    contactPhone?: string | null;
+    note?: string | null;
+  }): Promise<ExternalCongregation> {
+    const { data } = await api.post<ExternalCongregation>(
+      '/external-congregations',
+      input,
+    );
+    return data;
+  },
+  async update(
+    id: string,
+    input: Partial<{
+      name: string;
+      city: string | null;
+      contactName: string | null;
+      contactPhone: string | null;
+      note: string | null;
+    }>,
+  ): Promise<ExternalCongregation> {
+    const { data } = await api.patch<ExternalCongregation>(
+      `/external-congregations/${id}`,
+      input,
+    );
+    return data;
+  },
+  async remove(id: string): Promise<void> {
+    await api.delete(`/external-congregations/${id}`);
+  },
+};
+
+export const visitingSpeakersApi = {
+  async list(): Promise<VisitingSpeaker[]> {
+    const { data } = await api.get<VisitingSpeaker[]>('/visiting-speakers');
+    return data;
+  },
+  async create(input: {
+    firstName: string;
+    lastName?: string | null;
+    externalCongregationId?: string | null;
+    phone?: string | null;
+    note?: string | null;
+    talkNumbers?: number[];
+  }): Promise<VisitingSpeaker> {
+    const { data } = await api.post<VisitingSpeaker>(
+      '/visiting-speakers',
+      input,
+    );
+    return data;
+  },
+  async update(
+    id: string,
+    input: Partial<{
+      firstName: string;
+      lastName: string | null;
+      externalCongregationId: string | null;
+      phone: string | null;
+      note: string | null;
+      talkNumbers: number[];
+    }>,
+  ): Promise<VisitingSpeaker> {
+    const { data } = await api.patch<VisitingSpeaker>(
+      `/visiting-speakers/${id}`,
+      input,
+    );
+    return data;
+  },
+  async remove(id: string): Promise<void> {
+    await api.delete(`/visiting-speakers/${id}`);
+  },
+};
+
 export const dutiesApi = {
   async setMicrophoneSlots(microphoneSlots: number): Promise<void> {
     await api.patch('/duties/microphone-slots', { microphoneSlots });

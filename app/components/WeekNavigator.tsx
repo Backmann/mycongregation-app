@@ -1,4 +1,5 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import type { ReactNode } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import {
@@ -11,9 +12,11 @@ import {
 interface Props {
   weekStart: Date;
   onChange: (newWeekStart: Date) => void;
+  /** Optional element rendered at the far right (e.g. a coordinator icon). */
+  right?: ReactNode;
 }
 
-export function WeekNavigator({ weekStart, onChange }: Props) {
+export function WeekNavigator({ weekStart, onChange, right }: Props) {
   const { t, i18n } = useTranslation();
   const today = new Date();
   const onCurrentWeek = isSameWeek(weekStart, today);
@@ -48,6 +51,8 @@ export function WeekNavigator({ weekStart, onChange }: Props) {
       >
         <Ionicons name="chevron-forward" size={20} color="#0ea5e9" />
       </Pressable>
+
+      {right ? <View style={styles.right}>{right}</View> : null}
     </View>
   );
 }
@@ -72,6 +77,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   arrowPressed: { backgroundColor: '#e0f2fe' },
+  right: { marginLeft: 4 },
   center: { flex: 1, alignItems: 'center' },
   range: { fontSize: 16, fontWeight: '600', color: '#0f172a' },
   thisWeek: { fontSize: 11, color: '#0ea5e9', marginTop: 2, fontWeight: '500' },

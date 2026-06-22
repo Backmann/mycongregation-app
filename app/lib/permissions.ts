@@ -61,6 +61,9 @@ export interface Permissions {
   canViewLocalNeeds: boolean;
   canManageLocalNeeds: boolean;
 
+  /** Public talk coordinator — speaker exchange (incoming/outgoing) + directories. */
+  canCoordinatePublicTalks: boolean;
+
   canViewServiceSummary: boolean;
 
   /** The set of responsibility types held by the current user. */
@@ -132,6 +135,7 @@ export function usePermissions(): Permissions {
         holds('secretary'),
       canViewLocalNeeds: isAdmin || isElder,
       canManageLocalNeeds: isAdmin || holds('life_ministry_overseer'),
+      canCoordinatePublicTalks: isAdmin || holds('public_talk_coordinator'),
       canViewServiceSummary: isAdmin || holds('secretary'),
 
       responsibilities: mine,
