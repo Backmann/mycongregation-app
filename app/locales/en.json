@@ -1338,7 +1338,6 @@
     "noAccess": "Available to the public talk coordinator.",
     "errorTitle": "Error",
     "directoriesLabel": "Directories",
-    "logSoon": "“Incoming / Outgoing” log — coming soon",
     "congregations": {
       "title": "Congregations",
       "subtitle": "Other congregations (where speakers come from / go to)",
@@ -1370,6 +1369,39 @@
       "repertoire": "Repertoire (talk numbers)",
       "talkNumberPlaceholder": "Talk no.",
       "talksCount": "Talks: {{n}}"
+    },
+    "log": {
+      "title": "Incoming / Outgoing log",
+      "subtitle": "Visiting and outgoing talks in one list",
+      "add": "Add entry",
+      "editTitle": "Edit entry",
+      "empty": "No entries yet.",
+      "date": "Date",
+      "statusLabel": "Status",
+      "note": "Note",
+      "speaker": "Speaker",
+      "talk": "Talk",
+      "hospitality": "Hospitality (host)",
+      "ourBrother": "Our brother",
+      "hostCongregation": "Host congregation",
+      "noSpeakers": "Add speakers to the directory first.",
+      "noCongregations": "Add congregations to the directory first.",
+      "unknownSpeaker": "No speaker set",
+      "hostedBy": "Hosted by: {{name}}",
+      "deleteTitle": "Delete entry?",
+      "deleteBody": "The linked absence will also be removed. The talk stays in the program.",
+      "conflictTitle": "Slot taken",
+      "conflictBody": "That week already has a public talk in the program. Replace it with this speaker?",
+      "replace": "Replace",
+      "filter": {
+        "all": "All",
+        "incoming": "Incoming",
+        "outgoing": "Outgoing"
+      },
+      "status": {
+        "confirmed": "Confirmed",
+        "tentative": "Tentative"
+      }
     }
   }
 }

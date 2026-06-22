@@ -28,6 +28,16 @@ export default function TalkCoordinatorScreen() {
       <ScrollView contentContainerStyle={styles.container}>
         <Text style={styles.hint}>{t('talkCoordinator.intro')}</Text>
 
+        <View style={styles.card}>
+          <Row
+            icon="swap-horizontal-outline"
+            color="#0ea5e9"
+            title={t('talkCoordinator.log.title')}
+            subtitle={t('talkCoordinator.log.subtitle')}
+            onPress={() => router.push('/talk-coordinator/log' as any)}
+          />
+        </View>
+
         <Text style={styles.sectionLabel}>
           {t('talkCoordinator.directoriesLabel')}
         </Text>
@@ -48,11 +58,6 @@ export default function TalkCoordinatorScreen() {
             subtitle={t('talkCoordinator.speakers.subtitle')}
             onPress={() => router.push('/talk-coordinator/speakers' as any)}
           />
-        </View>
-
-        <View style={styles.soon}>
-          <Ionicons name="time-outline" size={16} color="#94a3b8" />
-          <Text style={styles.soonText}>{t('talkCoordinator.logSoon')}</Text>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -135,12 +140,4 @@ const styles = StyleSheet.create({
   },
   rowTitle: { fontSize: 15, fontWeight: '600', color: '#0f172a' },
   rowSubtitle: { fontSize: 13, color: '#64748b', marginTop: 1 },
-  soon: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    marginTop: 20,
-  },
-  soonText: { fontSize: 12, color: '#94a3b8' },
 });

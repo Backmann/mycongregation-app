@@ -16,6 +16,10 @@ export default function TalkCoordinatorLayout() {
         options={{ title: t('talkCoordinator.title') }}
       />
       <Stack.Screen
+        name="log"
+        options={{ title: t('talkCoordinator.log.title') }}
+      />
+      <Stack.Screen
         name="congregations"
         options={{ title: t('talkCoordinator.congregations.title') }}
       />

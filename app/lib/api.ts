@@ -868,6 +868,62 @@ export const visitingSpeakersApi = {
   },
 };
 
+// ---- Public talk exchange log (incoming + outgoing) ----
+export type TalkExchangeDirection = 'incoming' | 'outgoing';
+export type TalkExchangeStatus = 'tentative' | 'confirmed';
+
+export interface TalkExchange {
+  id: string;
+  direction: TalkExchangeDirection;
+  date: string;
+  status: TalkExchangeStatus;
+  publicTalkId: string | null;
+  visitingSpeakerId: string | null;
+  hospitalityPublisherId: string | null;
+  publisherId: string | null;
+  hostCongregationId: string | null;
+  linkedAbsenceId: string | null;
+  note: string | null;
+  createdAt: string;
+  updatedAt: string;
+  /** Transient: set on create/update when an occupied program slot was not overwritten. */
+  programConflict?: boolean;
+}
+
+export interface TalkExchangeInput {
+  direction: TalkExchangeDirection;
+  date: string;
+  status?: TalkExchangeStatus;
+  publicTalkId?: string | null;
+  visitingSpeakerId?: string | null;
+  hospitalityPublisherId?: string | null;
+  publisherId?: string | null;
+  hostCongregationId?: string | null;
+  note?: string | null;
+  overwriteProgram?: boolean;
+}
+
+export const talkExchangeApi = {
+  async list(): Promise<TalkExchange[]> {
+    const { data } = await api.get<TalkExchange[]>('/talk-exchange');
+    return data;
+  },
+  async create(input: TalkExchangeInput): Promise<TalkExchange> {
+    const { data } = await api.post<TalkExchange>('/talk-exchange', input);
+    return data;
+  },
+  async update(
+    id: string,
+    input: Partial<TalkExchangeInput>,
+  ): Promise<TalkExchange> {
+    const { data } = await api.patch<TalkExchange>(`/talk-exchange/${id}`, input);
+    return data;
+  },
+  async remove(id: string): Promise<void> {
+    await api.delete(`/talk-exchange/${id}`);
+  },
+};
+
 export const dutiesApi = {
   async setMicrophoneSlots(microphoneSlots: number): Promise<void> {
     await api.patch('/duties/microphone-slots', { microphoneSlots });

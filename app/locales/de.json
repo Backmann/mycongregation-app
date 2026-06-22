@@ -1338,7 +1338,6 @@
     "noAccess": "Verfügbar für den Verantwortlichen für öffentliche Vorträge.",
     "errorTitle": "Fehler",
     "directoriesLabel": "Verzeichnisse",
-    "logSoon": "Protokoll „Zu uns / Von uns“ — bald",
     "congregations": {
       "title": "Versammlungen",
       "subtitle": "Andere Versammlungen (woher / wohin)",
@@ -1370,6 +1369,39 @@
       "repertoire": "Repertoire (Vortragsnummern)",
       "talkNumberPlaceholder": "Vortrag-Nr.",
       "talksCount": "Vorträge: {{n}}"
+    },
+    "log": {
+      "title": "Protokoll „Zu uns / Von uns“",
+      "subtitle": "Eingehende und ausgehende Vorträge in einer Liste",
+      "add": "Eintrag hinzufügen",
+      "editTitle": "Eintrag bearbeiten",
+      "empty": "Noch keine Einträge.",
+      "date": "Datum",
+      "statusLabel": "Status",
+      "note": "Notiz",
+      "speaker": "Redner",
+      "talk": "Vortrag",
+      "hospitality": "Gastgeber",
+      "ourBrother": "Unser Bruder",
+      "hostCongregation": "Gastversammlung",
+      "noSpeakers": "Füge zuerst Redner zum Verzeichnis hinzu.",
+      "noCongregations": "Füge zuerst Versammlungen zum Verzeichnis hinzu.",
+      "unknownSpeaker": "Kein Redner angegeben",
+      "hostedBy": "Gastgeber: {{name}}",
+      "deleteTitle": "Eintrag löschen?",
+      "deleteBody": "Die verknüpfte Abwesenheit wird ebenfalls entfernt. Der Vortrag bleibt im Programm.",
+      "conflictTitle": "Slot belegt",
+      "conflictBody": "Für diese Woche steht bereits ein öffentlicher Vortrag im Programm. Mit diesem Redner ersetzen?",
+      "replace": "Ersetzen",
+      "filter": {
+        "all": "Alle",
+        "incoming": "Zu uns",
+        "outgoing": "Von uns"
+      },
+      "status": {
+        "confirmed": "Bestätigt",
+        "tentative": "Vorläufig"
+      }
     }
   }
 }
