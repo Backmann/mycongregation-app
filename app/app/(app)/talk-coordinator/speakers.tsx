@@ -2,7 +2,6 @@ import { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
-  Modal,
   Platform,
   Pressable,
   SafeAreaView,
@@ -35,8 +34,8 @@ export default function SpeakersScreen() {
   const perms = usePermissions();
   const qc = useQueryClient();
 
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editing, setEditing] = useState<VisitingSpeaker | null>(null);
+  // editingId: a speaker id, or 'new' for the add form, or null
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [congId, setCongId] = useState<string | null>(null);
@@ -90,8 +89,7 @@ export default function SpeakersScreen() {
   const pending =
     createMutation.isPending || updateMutation.isPending || removeMutation.isPending;
 
-  const openAdd = () => {
-    setEditing(null);
+  const resetFields = () => {
     setFirstName('');
     setLastName('');
     setCongId(null);
@@ -101,11 +99,14 @@ export default function SpeakersScreen() {
     setNote('');
     setTalks([]);
     setTalkInput('');
-    setModalOpen(true);
   };
 
-  const openEdit = (s: VisitingSpeaker) => {
-    setEditing(s);
+  const startAdd = () => {
+    resetFields();
+    setEditingId('new');
+  };
+
+  const startEdit = (s: VisitingSpeaker) => {
     setFirstName(s.firstName);
     setLastName(s.lastName ?? '');
     setCongId(s.externalCongregationId);
@@ -115,8 +116,10 @@ export default function SpeakersScreen() {
     setNote(s.note ?? '');
     setTalks([...s.talkNumbers].sort((a, b) => a - b));
     setTalkInput('');
-    setModalOpen(true);
+    setEditingId(s.id);
   };
+
+  const cancel = () => setEditingId(null);
 
   const addTalk = () => {
     const n = parseInt(talkInput.trim(), 10);
@@ -132,9 +135,7 @@ export default function SpeakersScreen() {
     if (!canSave) return;
     let resolvedCongId = congId;
     if (addingCong && newCongName.trim()) {
-      const created = await externalCongregationsApi.create({
-        name: newCongName.trim(),
-      });
+      const created = await externalCongregationsApi.create({ name: newCongName.trim() });
       qc.invalidateQueries({ queryKey: ['external-congregations'] });
       resolvedCongId = created.id;
     }
@@ -146,9 +147,9 @@ export default function SpeakersScreen() {
       note: note.trim() || null,
       talkNumbers: talks,
     };
-    if (editing) await updateMutation.mutateAsync({ id: editing.id, input });
+    if (editingId && editingId !== 'new') await updateMutation.mutateAsync({ id: editingId, input });
     else await createMutation.mutateAsync(input);
-    setModalOpen(false);
+    setEditingId(null);
   };
 
   const confirmDelete = (s: VisitingSpeaker) => {
@@ -181,171 +182,167 @@ export default function SpeakersScreen() {
   const rows = listQuery.data ?? [];
   const congregations = congQuery.data ?? [];
 
+  const editor = (key: string) => (
+    <View key={key} style={styles.editorCard}>
+      <Text style={styles.fieldLabel}>{t('talkCoordinator.speakers.firstName')}</Text>
+      <TextInput style={styles.input} value={firstName} onChangeText={setFirstName} placeholderTextColor="#94a3b8" autoFocus />
+
+      <Text style={styles.fieldLabel}>{t('talkCoordinator.speakers.lastName')}</Text>
+      <TextInput style={styles.input} value={lastName} onChangeText={setLastName} placeholderTextColor="#94a3b8" />
+
+      <Text style={styles.fieldLabel}>{t('talkCoordinator.speakers.congregation')}</Text>
+      <View style={styles.chipWrap}>
+        <Pressable
+          style={[styles.pickChip, congId === null && !addingCong && styles.pickChipActive]}
+          onPress={() => {
+            setCongId(null);
+            setAddingCong(false);
+          }}
+        >
+          <Text style={[styles.pickChipText, congId === null && !addingCong && styles.pickChipTextActive]}>
+            {t('talkCoordinator.speakers.noCongregation')}
+          </Text>
+        </Pressable>
+        {congregations.map((c) => (
+          <Pressable
+            key={c.id}
+            style={[styles.pickChip, congId === c.id && !addingCong && styles.pickChipActive]}
+            onPress={() => {
+              setCongId(c.id);
+              setAddingCong(false);
+            }}
+          >
+            <Text style={[styles.pickChipText, congId === c.id && !addingCong && styles.pickChipTextActive]}>
+              {c.name}
+            </Text>
+          </Pressable>
+        ))}
+        <Pressable
+          style={[styles.pickChip, styles.newChip, addingCong && styles.pickChipActive]}
+          onPress={() => {
+            setAddingCong(true);
+            setCongId(null);
+          }}
+        >
+          <Ionicons name="add" size={14} color={addingCong ? '#0369a1' : '#475569'} />
+          <Text style={[styles.pickChipText, addingCong && styles.pickChipTextActive]}>
+            {t('talkCoordinator.speakers.newCongregation')}
+          </Text>
+        </Pressable>
+      </View>
+      {addingCong && (
+        <TextInput
+          style={styles.input}
+          value={newCongName}
+          onChangeText={setNewCongName}
+          placeholder={t('talkCoordinator.speakers.newCongregationPlaceholder')}
+          placeholderTextColor="#94a3b8"
+          autoFocus
+        />
+      )}
+
+      <Text style={styles.fieldLabel}>{t('talkCoordinator.speakers.phone')}</Text>
+      <TextInput
+        style={styles.input}
+        value={phone}
+        onChangeText={setPhone}
+        keyboardType="phone-pad"
+        placeholderTextColor="#94a3b8"
+      />
+
+      <Text style={styles.fieldLabel}>{t('talkCoordinator.speakers.repertoire')}</Text>
+      <View style={styles.talkAddRow}>
+        <TextInput
+          style={[styles.input, { flex: 1 }]}
+          value={talkInput}
+          onChangeText={setTalkInput}
+          keyboardType="number-pad"
+          placeholder={t('talkCoordinator.speakers.talkNumberPlaceholder')}
+          placeholderTextColor="#94a3b8"
+          onSubmitEditing={addTalk}
+        />
+        <Pressable style={styles.talkAddBtn} onPress={addTalk}>
+          <Ionicons name="add" size={20} color="#0369a1" />
+        </Pressable>
+      </View>
+      {talks.length > 0 && (
+        <View style={styles.chipWrap}>
+          {talks.map((n) => (
+            <Pressable key={n} style={styles.talkChip} onPress={() => removeTalk(n)}>
+              <Text style={styles.talkChipText} numberOfLines={1}>
+                №{n}
+                {titleByNumber.get(n) ? ` · ${titleByNumber.get(n)}` : ''}
+              </Text>
+              <Ionicons name="close" size={14} color="#6d28d9" />
+            </Pressable>
+          ))}
+        </View>
+      )}
+
+      <Text style={styles.fieldLabel}>{t('talkCoordinator.speakers.note')}</Text>
+      <TextInput style={styles.input} value={note} onChangeText={setNote} multiline placeholderTextColor="#94a3b8" />
+
+      <View style={styles.editorActions}>
+        <Pressable style={styles.cancelBtn} onPress={cancel} disabled={pending}>
+          <Text style={styles.cancelText}>{t('common.cancel')}</Text>
+        </Pressable>
+        <Pressable
+          style={[styles.saveBtn, (!canSave || pending) && styles.disabled]}
+          onPress={() => void save()}
+          disabled={!canSave || pending}
+        >
+          <Text style={styles.saveText}>{t('common.save')}</Text>
+        </Pressable>
+      </View>
+    </View>
+  );
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#f1f5f9' }}>
-      <ScrollView contentContainerStyle={styles.container}>
+      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
         <Text style={styles.hint}>{t('talkCoordinator.speakers.hint')}</Text>
 
-        <View style={styles.card}>
-          {rows.length === 0 ? (
-            <Text style={styles.empty}>{t('talkCoordinator.speakers.empty')}</Text>
-          ) : (
-            rows.map((s) => (
+        {editingId === 'new' ? (
+          editor('new')
+        ) : (
+          <Pressable
+            style={({ pressed }) => [styles.addBtn, pressed && styles.addBtnPressed, pending && styles.disabled]}
+            onPress={startAdd}
+            disabled={pending}
+          >
+            <Ionicons name="add-circle-outline" size={18} color="#0369a1" />
+            <Text style={styles.addBtnText}>{t('talkCoordinator.speakers.add')}</Text>
+          </Pressable>
+        )}
+
+        {rows.length === 0 && editingId !== 'new' ? (
+          <Text style={styles.empty}>{t('talkCoordinator.speakers.empty')}</Text>
+        ) : (
+          rows.map((s) =>
+            editingId === s.id ? (
+              editor(s.id)
+            ) : (
               <View key={s.id} style={styles.row}>
-                <View style={{ flex: 1 }}>
+                <Pressable style={{ flex: 1 }} onPress={() => startEdit(s)} disabled={pending}>
                   <Text style={styles.name}>{speakerName(s)}</Text>
-                  {!!s.externalCongregation && (
-                    <Text style={styles.sub}>{s.externalCongregation.name}</Text>
-                  )}
+                  {!!s.externalCongregation && <Text style={styles.sub}>{s.externalCongregation.name}</Text>}
                   {s.talkNumbers.length > 0 && (
                     <Text style={styles.sub} numberOfLines={1}>
                       {t('talkCoordinator.speakers.talksCount', { n: s.talkNumbers.length })}
                     </Text>
                   )}
-                </View>
-                <Pressable hitSlop={8} onPress={() => openEdit(s)} style={styles.iconBtn} disabled={pending}>
+                </Pressable>
+                <Pressable hitSlop={8} onPress={() => startEdit(s)} style={styles.iconBtn} disabled={pending}>
                   <Ionicons name="create-outline" size={20} color="#0369a1" />
                 </Pressable>
                 <Pressable hitSlop={8} onPress={() => confirmDelete(s)} style={styles.iconBtn} disabled={pending}>
                   <Ionicons name="trash-outline" size={20} color="#dc2626" />
                 </Pressable>
               </View>
-            ))
-          )}
-        </View>
-
-        <Pressable
-          style={({ pressed }) => [styles.addBtn, pressed && styles.addBtnPressed, pending && styles.disabled]}
-          onPress={openAdd}
-          disabled={pending}
-        >
-          <Ionicons name="add-circle-outline" size={18} color="#0369a1" />
-          <Text style={styles.addBtnText}>{t('talkCoordinator.speakers.add')}</Text>
-        </Pressable>
+            ),
+          )
+        )}
       </ScrollView>
-
-      <Modal visible={modalOpen} transparent animationType="fade" onRequestClose={() => setModalOpen(false)}>
-        <View style={styles.overlay}>
-          <View style={styles.modalCard}>
-            <ScrollView keyboardShouldPersistTaps="handled">
-              <Text style={styles.modalTitle}>
-                {editing ? t('talkCoordinator.speakers.editTitle') : t('talkCoordinator.speakers.add')}
-              </Text>
-
-              <Text style={styles.fieldLabel}>{t('talkCoordinator.speakers.firstName')}</Text>
-              <TextInput style={styles.input} value={firstName} onChangeText={setFirstName} placeholderTextColor="#94a3b8" />
-
-              <Text style={styles.fieldLabel}>{t('talkCoordinator.speakers.lastName')}</Text>
-              <TextInput style={styles.input} value={lastName} onChangeText={setLastName} placeholderTextColor="#94a3b8" />
-
-              <Text style={styles.fieldLabel}>{t('talkCoordinator.speakers.congregation')}</Text>
-              <View style={styles.chipWrap}>
-                <Pressable
-                  style={[styles.pickChip, congId === null && !addingCong && styles.pickChipActive]}
-                  onPress={() => {
-                    setCongId(null);
-                    setAddingCong(false);
-                  }}
-                >
-                  <Text style={[styles.pickChipText, congId === null && !addingCong && styles.pickChipTextActive]}>
-                    {t('talkCoordinator.speakers.noCongregation')}
-                  </Text>
-                </Pressable>
-                {congregations.map((c) => (
-                  <Pressable
-                    key={c.id}
-                    style={[styles.pickChip, congId === c.id && !addingCong && styles.pickChipActive]}
-                    onPress={() => {
-                      setCongId(c.id);
-                      setAddingCong(false);
-                    }}
-                  >
-                    <Text style={[styles.pickChipText, congId === c.id && !addingCong && styles.pickChipTextActive]}>
-                      {c.name}
-                    </Text>
-                  </Pressable>
-                ))}
-                <Pressable
-                  style={[styles.pickChip, styles.newChip, addingCong && styles.pickChipActive]}
-                  onPress={() => {
-                    setAddingCong(true);
-                    setCongId(null);
-                  }}
-                >
-                  <Ionicons name="add" size={14} color={addingCong ? '#0369a1' : '#475569'} />
-                  <Text style={[styles.pickChipText, addingCong && styles.pickChipTextActive]}>
-                    {t('talkCoordinator.speakers.newCongregation')}
-                  </Text>
-                </Pressable>
-              </View>
-              {addingCong && (
-                <TextInput
-                  style={styles.input}
-                  value={newCongName}
-                  onChangeText={setNewCongName}
-                  placeholder={t('talkCoordinator.speakers.newCongregationPlaceholder')}
-                  placeholderTextColor="#94a3b8"
-                  autoFocus
-                />
-              )}
-
-              <Text style={styles.fieldLabel}>{t('talkCoordinator.speakers.phone')}</Text>
-              <TextInput
-                style={styles.input}
-                value={phone}
-                onChangeText={setPhone}
-                keyboardType="phone-pad"
-                placeholderTextColor="#94a3b8"
-              />
-
-              <Text style={styles.fieldLabel}>{t('talkCoordinator.speakers.repertoire')}</Text>
-              <View style={styles.talkAddRow}>
-                <TextInput
-                  style={[styles.input, { flex: 1 }]}
-                  value={talkInput}
-                  onChangeText={setTalkInput}
-                  keyboardType="number-pad"
-                  placeholder={t('talkCoordinator.speakers.talkNumberPlaceholder')}
-                  placeholderTextColor="#94a3b8"
-                  onSubmitEditing={addTalk}
-                />
-                <Pressable style={styles.talkAddBtn} onPress={addTalk}>
-                  <Ionicons name="add" size={20} color="#0369a1" />
-                </Pressable>
-              </View>
-              {talks.length > 0 && (
-                <View style={styles.chipWrap}>
-                  {talks.map((n) => (
-                    <Pressable key={n} style={styles.talkChip} onPress={() => removeTalk(n)}>
-                      <Text style={styles.talkChipText} numberOfLines={1}>
-                        №{n}
-                        {titleByNumber.get(n) ? ` · ${titleByNumber.get(n)}` : ''}
-                      </Text>
-                      <Ionicons name="close" size={14} color="#6d28d9" />
-                    </Pressable>
-                  ))}
-                </View>
-              )}
-
-              <Text style={styles.fieldLabel}>{t('talkCoordinator.speakers.note')}</Text>
-              <TextInput style={styles.input} value={note} onChangeText={setNote} multiline placeholderTextColor="#94a3b8" />
-
-              <View style={styles.modalActions}>
-                <Pressable style={styles.modalCancel} onPress={() => setModalOpen(false)} disabled={pending}>
-                  <Text style={styles.modalCancelText}>{t('common.cancel')}</Text>
-                </Pressable>
-                <Pressable
-                  style={[styles.modalConfirm, (!canSave || pending) && styles.disabled]}
-                  onPress={() => void save()}
-                  disabled={!canSave || pending}
-                >
-                  <Text style={styles.modalConfirmText}>{t('common.save')}</Text>
-                </Pressable>
-              </View>
-            </ScrollView>
-          </View>
-        </View>
-      </Modal>
     </SafeAreaView>
   );
 }
@@ -355,16 +352,18 @@ const styles = StyleSheet.create({
   muted: { color: '#64748b', fontSize: 15, textAlign: 'center' },
   container: { padding: 16, paddingBottom: 40 },
   hint: { fontSize: 13, color: '#64748b', marginBottom: 12, lineHeight: 18 },
-  card: { backgroundColor: '#fff', borderRadius: 14, borderWidth: 1, borderColor: '#e2e8f0', overflow: 'hidden' },
   empty: { padding: 18, color: '#94a3b8', fontSize: 14, textAlign: 'center' },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
     paddingHorizontal: 14,
     paddingVertical: 12,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#f1f5f9',
+    marginBottom: 8,
   },
   name: { fontSize: 15, fontWeight: '600', color: '#0f172a' },
   sub: { fontSize: 13, color: '#475569', marginTop: 1 },
@@ -374,7 +373,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
-    marginTop: 14,
+    marginBottom: 12,
     paddingVertical: 12,
     borderRadius: 10,
     borderWidth: 1,
@@ -384,10 +383,15 @@ const styles = StyleSheet.create({
   addBtnPressed: { backgroundColor: '#e0f2fe' },
   addBtnText: { fontSize: 14, fontWeight: '600', color: '#0369a1' },
   disabled: { opacity: 0.5 },
-  overlay: { flex: 1, backgroundColor: 'rgba(15,23,42,0.45)', justifyContent: 'center', paddingHorizontal: 20 },
-  modalCard: { backgroundColor: '#fff', borderRadius: 14, padding: 18, maxHeight: '85%' },
-  modalTitle: { fontSize: 16, fontWeight: '700', color: '#0f172a', marginBottom: 2 },
-  fieldLabel: { fontSize: 12, fontWeight: '600', color: '#64748b', marginTop: 10 },
+  editorCard: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#bae6fd',
+    padding: 14,
+    marginBottom: 8,
+  },
+  fieldLabel: { fontSize: 12, fontWeight: '600', color: '#64748b', marginTop: 10, marginBottom: 4 },
   input: {
     borderWidth: 1,
     borderColor: '#cbd5e1',
@@ -396,11 +400,12 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     fontSize: 15,
     color: '#0f172a',
-    marginTop: 4,
   },
-  chipWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 6 },
-  newChip: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  chipWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   pickChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 16,
@@ -411,6 +416,7 @@ const styles = StyleSheet.create({
   pickChipActive: { backgroundColor: '#e0f2fe', borderColor: '#0ea5e9' },
   pickChipText: { fontSize: 13, color: '#475569' },
   pickChipTextActive: { color: '#0369a1', fontWeight: '600' },
+  newChip: { borderStyle: 'dashed' },
   talkAddRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   talkAddBtn: {
     width: 40,
@@ -421,7 +427,6 @@ const styles = StyleSheet.create({
     borderColor: '#bae6fd',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 4,
   },
   talkChip: {
     flexDirection: 'row',
@@ -434,9 +439,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#ede9fe',
   },
   talkChipText: { fontSize: 12, color: '#6d28d9', fontWeight: '500', flexShrink: 1 },
-  modalActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 10, marginTop: 14 },
-  modalCancel: { paddingVertical: 10, paddingHorizontal: 14 },
-  modalCancelText: { fontSize: 15, color: '#64748b', fontWeight: '600' },
-  modalConfirm: { paddingVertical: 10, paddingHorizontal: 18, borderRadius: 10, backgroundColor: '#0ea5e9' },
-  modalConfirmText: { fontSize: 15, color: '#fff', fontWeight: '600' },
+  editorActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 10, marginTop: 14 },
+  cancelBtn: { paddingVertical: 10, paddingHorizontal: 14 },
+  cancelText: { fontSize: 15, color: '#64748b', fontWeight: '600' },
+  saveBtn: { paddingVertical: 10, paddingHorizontal: 18, borderRadius: 10, backgroundColor: '#0ea5e9' },
+  saveText: { fontSize: 15, color: '#fff', fontWeight: '600' },
 });
