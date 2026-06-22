@@ -1372,7 +1372,9 @@
       "note": "Заметка",
       "repertoire": "Репертуар (номера речей)",
       "talkNumberPlaceholder": "№ речи",
-      "talksCount": "Речей: {{n}}"
+      "talksCount": "Речей: {{n}}",
+      "newCongregation": "Новое",
+      "newCongregationPlaceholder": "Название собрания"
     },
     "log": {
       "title": "Журнал «К нам / От нас»",

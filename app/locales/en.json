@@ -1368,7 +1368,9 @@
       "note": "Note",
       "repertoire": "Repertoire (talk numbers)",
       "talkNumberPlaceholder": "Talk no.",
-      "talksCount": "Talks: {{n}}"
+      "talksCount": "Talks: {{n}}",
+      "newCongregation": "New",
+      "newCongregationPlaceholder": "Congregation name"
     },
     "log": {
       "title": "Incoming / Outgoing log",

@@ -40,6 +40,8 @@ export default function SpeakersScreen() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [congId, setCongId] = useState<string | null>(null);
+  const [addingCong, setAddingCong] = useState(false);
+  const [newCongName, setNewCongName] = useState('');
   const [phone, setPhone] = useState('');
   const [note, setNote] = useState('');
   const [talks, setTalks] = useState<number[]>([]);
@@ -93,6 +95,8 @@ export default function SpeakersScreen() {
     setFirstName('');
     setLastName('');
     setCongId(null);
+    setAddingCong(false);
+    setNewCongName('');
     setPhone('');
     setNote('');
     setTalks([]);
@@ -105,6 +109,8 @@ export default function SpeakersScreen() {
     setFirstName(s.firstName);
     setLastName(s.lastName ?? '');
     setCongId(s.externalCongregationId);
+    setAddingCong(false);
+    setNewCongName('');
     setPhone(s.phone ?? '');
     setNote(s.note ?? '');
     setTalks([...s.talkNumbers].sort((a, b) => a - b));
@@ -124,10 +130,18 @@ export default function SpeakersScreen() {
 
   const save = async () => {
     if (!canSave) return;
+    let resolvedCongId = congId;
+    if (addingCong && newCongName.trim()) {
+      const created = await externalCongregationsApi.create({
+        name: newCongName.trim(),
+      });
+      qc.invalidateQueries({ queryKey: ['external-congregations'] });
+      resolvedCongId = created.id;
+    }
     const input = {
       firstName: firstName.trim(),
       lastName: lastName.trim() || null,
-      externalCongregationId: congId,
+      externalCongregationId: resolvedCongId,
       phone: phone.trim() || null,
       note: note.trim() || null,
       talkNumbers: talks,
@@ -227,25 +241,53 @@ export default function SpeakersScreen() {
               <Text style={styles.fieldLabel}>{t('talkCoordinator.speakers.congregation')}</Text>
               <View style={styles.chipWrap}>
                 <Pressable
-                  style={[styles.pickChip, congId === null && styles.pickChipActive]}
-                  onPress={() => setCongId(null)}
+                  style={[styles.pickChip, congId === null && !addingCong && styles.pickChipActive]}
+                  onPress={() => {
+                    setCongId(null);
+                    setAddingCong(false);
+                  }}
                 >
-                  <Text style={[styles.pickChipText, congId === null && styles.pickChipTextActive]}>
+                  <Text style={[styles.pickChipText, congId === null && !addingCong && styles.pickChipTextActive]}>
                     {t('talkCoordinator.speakers.noCongregation')}
                   </Text>
                 </Pressable>
                 {congregations.map((c) => (
                   <Pressable
                     key={c.id}
-                    style={[styles.pickChip, congId === c.id && styles.pickChipActive]}
-                    onPress={() => setCongId(c.id)}
+                    style={[styles.pickChip, congId === c.id && !addingCong && styles.pickChipActive]}
+                    onPress={() => {
+                      setCongId(c.id);
+                      setAddingCong(false);
+                    }}
                   >
-                    <Text style={[styles.pickChipText, congId === c.id && styles.pickChipTextActive]}>
+                    <Text style={[styles.pickChipText, congId === c.id && !addingCong && styles.pickChipTextActive]}>
                       {c.name}
                     </Text>
                   </Pressable>
                 ))}
+                <Pressable
+                  style={[styles.pickChip, styles.newChip, addingCong && styles.pickChipActive]}
+                  onPress={() => {
+                    setAddingCong(true);
+                    setCongId(null);
+                  }}
+                >
+                  <Ionicons name="add" size={14} color={addingCong ? '#0369a1' : '#475569'} />
+                  <Text style={[styles.pickChipText, addingCong && styles.pickChipTextActive]}>
+                    {t('talkCoordinator.speakers.newCongregation')}
+                  </Text>
+                </Pressable>
               </View>
+              {addingCong && (
+                <TextInput
+                  style={styles.input}
+                  value={newCongName}
+                  onChangeText={setNewCongName}
+                  placeholder={t('talkCoordinator.speakers.newCongregationPlaceholder')}
+                  placeholderTextColor="#94a3b8"
+                  autoFocus
+                />
+              )}
 
               <Text style={styles.fieldLabel}>{t('talkCoordinator.speakers.phone')}</Text>
               <TextInput
@@ -357,6 +399,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   chipWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 6 },
+  newChip: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   pickChip: {
     paddingVertical: 6,
     paddingHorizontal: 12,

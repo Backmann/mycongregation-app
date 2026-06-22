@@ -1368,7 +1368,9 @@
       "note": "Notiz",
       "repertoire": "Repertoire (Vortragsnummern)",
       "talkNumberPlaceholder": "Vortrag-Nr.",
-      "talksCount": "Vorträge: {{n}}"
+      "talksCount": "Vorträge: {{n}}",
+      "newCongregation": "Neu",
+      "newCongregationPlaceholder": "Versammlungsname"
     },
     "log": {
       "title": "Protokoll „Zu uns / Von uns“",
