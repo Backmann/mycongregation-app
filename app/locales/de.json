@@ -1414,7 +1414,10 @@
       "event": "Ereignis",
       "ourMeetingHint": "Zeit/Adresse aus den Einstellungen",
       "openMap": "Karte öffnen",
-      "tripDate": "Reisedatum"
+      "tripDate": "Reisedatum",
+      "fromDirectory": "Aus Verzeichnis",
+      "speakerName": "Name des Redners",
+      "speakerCong": "Versammlung"
     }
   }
 }

@@ -891,6 +891,8 @@ export interface TalkExchange {
   status: TalkExchangeStatus;
   publicTalkId: string | null;
   visitingSpeakerId: string | null;
+  speakerName: string | null;
+  speakerCongregation: string | null;
   hospitalityPublisherId: string | null;
   publisherId: string | null;
   hostCongregationId: string | null;
@@ -908,6 +910,8 @@ export interface TalkExchangeInput {
   status?: TalkExchangeStatus;
   publicTalkId?: string | null;
   visitingSpeakerId?: string | null;
+  speakerName?: string | null;
+  speakerCongregation?: string | null;
   hospitalityPublisherId?: string | null;
   publisherId?: string | null;
   hostCongregationId?: string | null;

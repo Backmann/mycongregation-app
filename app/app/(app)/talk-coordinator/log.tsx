@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -16,7 +16,6 @@ import {
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ru';
 import 'dayjs/locale/de';
@@ -26,7 +25,6 @@ import {
   TalkExchange,
   TalkExchangeDirection,
   TalkExchangeInput,
-  TalkExchangeStatus,
   talkExchangeApi,
   visitingSpeakersApi,
   externalCongregationsApi,
@@ -43,14 +41,22 @@ import { PublicTalkSelector } from '../../../components/PublicTalkSelector';
 import { startOfWeekMonday, addDays, formatDateISO } from '../../../lib/dates';
 
 const QK = ['talk-exchange'] as const;
-const YEAR = 2026;
 
-type WeekRow = {
-  monday: string;
-  date: string; // our weekend meeting date
-  time: string | null;
-  address: string | null;
-};
+// Years shown: current + next (auto-rolls over).
+const YEAR_FROM = new Date().getFullYear();
+const YEAR_TO = YEAR_FROM + 1;
+
+// Only these special events are written onto the planner (Memorial only shows
+// when it lands on a weekend row, which happens automatically).
+const PLANNER_EVENT_TYPES = new Set([
+  'regional_convention',
+  'circuit_assembly',
+  'special_talk',
+  'memorial',
+  'circuit_overseer_visit',
+]);
+
+type WeekRow = { monday: string; date: string; address: string | null };
 type MonthBlock = { key: string; title: string; rows: WeekRow[] };
 type SlotState = { incoming?: TalkExchange; outgoing?: TalkExchange };
 
@@ -62,9 +68,7 @@ function effectiveVersionFor(
   dateISO: string,
   versions: MeetingSettingsVersion[],
 ): MeetingSettingsVersion | null {
-  const sorted = [...versions].sort((a, b) =>
-    b.effectiveFrom.localeCompare(a.effectiveFrom),
-  );
+  const sorted = [...versions].sort((a, b) => b.effectiveFrom.localeCompare(a.effectiveFrom));
   return sorted.find((v) => v.effectiveFrom <= dateISO) ?? sorted[sorted.length - 1] ?? null;
 }
 
@@ -73,21 +77,16 @@ function buildWeeks(
   fallback: MeetingSettingsVersion | null,
 ): WeekRow[] {
   const rows: WeekRow[] = [];
-  let monday = startOfWeekMonday(new Date(`${YEAR - 1}-12-22T00:00:00`));
-  for (let i = 0; i < 60; i++) {
+  let monday = startOfWeekMonday(new Date(`${YEAR_FROM - 1}-12-22T00:00:00`));
+  for (let i = 0; i < 130; i++) {
     const mISO = formatDateISO(monday);
     const v = effectiveVersionFor(mISO, versions) ?? fallback;
     const dow = v?.weekendDow ?? 7;
     const wd = addDays(monday, dow - 1);
     const y = wd.getFullYear();
-    if (y === YEAR)
-      rows.push({
-        monday: mISO,
-        date: formatDateISO(wd),
-        time: v?.weekendTime ?? null,
-        address: v?.address ?? null,
-      });
-    if (y > YEAR) break;
+    if (y >= YEAR_FROM && y <= YEAR_TO)
+      rows.push({ monday: mISO, date: formatDateISO(wd), address: v?.address ?? null });
+    if (y > YEAR_TO) break;
     monday = addDays(monday, 7);
   }
   return rows;
@@ -113,6 +112,7 @@ export default function TalkExchangeYearScreen() {
 
   const scrollRef = useRef<ScrollView>(null);
   const monthOffsets = useRef<Record<string, number>>({});
+  const weekOffsets = useRef<Record<string, number>>({});
   const didInitialScroll = useRef(false);
 
   const [open, setOpen] = useState(false);
@@ -120,9 +120,10 @@ export default function TalkExchangeYearScreen() {
   const [direction, setDirection] = useState<TalkExchangeDirection>('incoming');
   const [week, setWeek] = useState<WeekRow | null>(null);
   const [date, setDate] = useState<string>('');
-  const [status, setStatus] = useState<TalkExchangeStatus>('confirmed');
   const [publicTalkId, setPublicTalkId] = useState<string | null>(null);
   const [visitingSpeakerId, setVisitingSpeakerId] = useState<string | null>(null);
+  const [speakerNameInput, setSpeakerNameInput] = useState('');
+  const [speakerCongInput, setSpeakerCongInput] = useState('');
   const [hospitalityPublisherId, setHospitalityPublisherId] = useState<string | null>(null);
   const [publisherId, setPublisherId] = useState<string | null>(null);
   const [hostCongregationId, setHostCongregationId] = useState<string | null>(null);
@@ -155,9 +156,12 @@ export default function TalkExchangeYearScreen() {
   });
 
   const speakerById = useMemo(() => {
-    const m = new Map<string, string>();
+    const m = new Map<string, { name: string; cong: string | null }>();
     for (const s of speakersQuery.data ?? [])
-      m.set(s.id, [s.firstName, s.lastName].filter(Boolean).join(' '));
+      m.set(s.id, {
+        name: [s.firstName, s.lastName].filter(Boolean).join(' '),
+        cong: s.externalCongregation?.name ?? null,
+      });
     return m;
   }, [speakersQuery.data]);
   const congById = useMemo(() => {
@@ -189,7 +193,7 @@ export default function TalkExchangeYearScreen() {
   }, [listQuery.data]);
 
   const eventsForDate = useMemo(() => {
-    const events = eventsQuery.data ?? [];
+    const events = (eventsQuery.data ?? []).filter((ev) => PLANNER_EVENT_TYPES.has(ev.type ?? ''));
     return (d: string): SpecialEvent[] =>
       events.filter((ev) => {
         const end = ev.endDate ?? ev.date;
@@ -209,19 +213,21 @@ export default function TalkExchangeYearScreen() {
     }
     return [...byMonth.entries()].map(([key, rows]) => ({
       key,
-      title: dayjs(`${key}-01`).locale(i18n.language).format('MMMM'),
+      title: dayjs(`${key}-01`).locale(i18n.language).format('MMMM YYYY'),
       rows,
     }));
   }, [settingsQuery.data, i18n.language]);
 
   const currentMonthKey = dayjs().format('YYYY-MM');
+  const currentWeekMonday = mondayISO(dayjs().format('YYYY-MM-DD'));
 
+  // On open, scroll to the current week row.
   useEffect(() => {
     if (didInitialScroll.current) return;
-    const off = monthOffsets.current[currentMonthKey];
+    const off = weekOffsets.current[currentWeekMonday] ?? monthOffsets.current[currentMonthKey];
     if (off != null && months.length > 0) {
       didInitialScroll.current = true;
-      setTimeout(() => scrollRef.current?.scrollTo({ y: Math.max(off - 8, 0), animated: false }), 50);
+      setTimeout(() => scrollRef.current?.scrollTo({ y: Math.max(off - 8, 0), animated: false }), 60);
     }
   });
 
@@ -260,9 +266,16 @@ export default function TalkExchangeYearScreen() {
     setEditing(entry ?? null);
     setDirection(dir);
     setDate(entry?.date ?? w.date);
-    setStatus(entry?.status ?? 'confirmed');
     setPublicTalkId(entry?.publicTalkId ?? null);
     setVisitingSpeakerId(entry?.visitingSpeakerId ?? null);
+    if (entry?.visitingSpeakerId) {
+      const sp = speakerById.get(entry.visitingSpeakerId);
+      setSpeakerNameInput(sp?.name ?? '');
+      setSpeakerCongInput(sp?.cong ?? '');
+    } else {
+      setSpeakerNameInput(entry?.speakerName ?? '');
+      setSpeakerCongInput(entry?.speakerCongregation ?? '');
+    }
     setHospitalityPublisherId(entry?.hospitalityPublisherId ?? null);
     setPublisherId(entry?.publisherId ?? null);
     setHostCongregationId(entry?.hostCongregationId ?? null);
@@ -270,27 +283,42 @@ export default function TalkExchangeYearScreen() {
     setOpen(true);
   };
 
+  const pickSpeaker = (id: string) => {
+    const sel = visitingSpeakerId === id;
+    if (sel) {
+      setVisitingSpeakerId(null);
+      return;
+    }
+    const sp = speakerById.get(id);
+    setVisitingSpeakerId(id);
+    setSpeakerNameInput(sp?.name ?? '');
+    setSpeakerCongInput(sp?.cong ?? '');
+  };
+
   const onPickHost = (id: string | null) => {
     setHostCongregationId(id);
-    // default the trip date to the host congregation's meeting day, if known
-    const host = id ? congById.get(id) : null;
-    if (host?.meetingDow && week) {
-      setDate(formatDateISO(addDays(new Date(`${week.monday}T00:00:00`), host.meetingDow - 1)));
+    const h = id ? congById.get(id) : null;
+    if (h?.meetingDow && (h.meetingDow === 6 || h.meetingDow === 7) && week) {
+      setDate(formatDateISO(addDays(new Date(`${week.monday}T00:00:00`), h.meetingDow - 1)));
     }
   };
 
   const canSave =
-    !!date && (direction === 'incoming' ? !!visitingSpeakerId : !!publisherId);
+    direction === 'incoming'
+      ? !!visitingSpeakerId || speakerNameInput.trim().length > 0
+      : !!publisherId && !!date;
 
   const save = async () => {
     if (!canSave) return;
     const input: TalkExchangeInput = {
       direction,
       date,
-      status,
       publicTalkId: publicTalkId ?? null,
       note: note.trim() || null,
       visitingSpeakerId: direction === 'incoming' ? visitingSpeakerId : null,
+      speakerName: direction === 'incoming' && !visitingSpeakerId ? speakerNameInput.trim() || null : null,
+      speakerCongregation:
+        direction === 'incoming' && !visitingSpeakerId ? speakerCongInput.trim() || null : null,
       hospitalityPublisherId: direction === 'incoming' ? hospitalityPublisherId : null,
       publisherId: direction === 'outgoing' ? publisherId : null,
       hostCongregationId: direction === 'outgoing' ? hostCongregationId : null,
@@ -348,13 +376,13 @@ export default function TalkExchangeYearScreen() {
     const tk = talkById.get(id);
     return tk ? `№${tk.number}. ${tk.title}` : null;
   };
+  const incomingName = (e: TalkExchange): string | null =>
+    e.visitingSpeakerId ? speakerById.get(e.visitingSpeakerId)?.name ?? null : e.speakerName;
   const fmtDay = (d: string) => dayjs(d).locale(i18n.language).format('dd, D MMM');
   const todayISO = dayjs().format('YYYY-MM-DD');
   const host = hostCongregationId ? congById.get(hostCongregationId) ?? null : null;
-  const weekDays = week
-    ? [0, 1, 2, 3, 4, 5, 6].map((i) =>
-        formatDateISO(addDays(new Date(`${week.monday}T00:00:00`), i)),
-      )
+  const weekendDays = week
+    ? [5, 6].map((i) => formatDateISO(addDays(new Date(`${week.monday}T00:00:00`), i)))
     : [];
 
   return (
@@ -368,7 +396,7 @@ export default function TalkExchangeYearScreen() {
               onPress={() => scrollToMonth(m.key)}
             >
               <Text style={[styles.monthChipText, m.key === currentMonthKey && styles.monthChipTextCurrent]}>
-                {m.title}
+                {dayjs(`${m.key}-01`).locale(i18n.language).format('MMM YY')}
               </Text>
             </Pressable>
           ))}
@@ -377,29 +405,40 @@ export default function TalkExchangeYearScreen() {
 
       <ScrollView ref={scrollRef} contentContainerStyle={styles.container}>
         {months.map((m) => (
-          <View
-            key={m.key}
-            onLayout={(e) => {
-              monthOffsets.current[m.key] = e.nativeEvent.layout.y;
-            }}
-          >
-            <Text style={styles.monthHeader}>{m.title}</Text>
+          <Fragment key={m.key}>
+            <Text
+              style={styles.monthHeader}
+              onLayout={(e) => {
+                monthOffsets.current[m.key] = e.nativeEvent.layout.y;
+              }}
+            >
+              {m.title}
+            </Text>
             {m.rows.map((w) => {
               const slot = byWeek.get(w.monday) ?? {};
               const upcoming = w.date >= todayISO;
               const events = eventsForDate(w.date);
               return (
-                <View key={w.monday} style={[styles.weekendRow, !upcoming && styles.weekendPast]}>
-                  <View style={styles.weekendHead}>
-                    <Text style={styles.weekendDate}>{fmtDay(w.date)}</Text>
-                    {!!w.time && <Text style={styles.weekendTime}>{w.time}</Text>}
-                  </View>
+                <View
+                  key={w.monday}
+                  style={[styles.weekendRow, !upcoming && styles.weekendPast]}
+                  onLayout={(e) => {
+                    weekOffsets.current[w.monday] = e.nativeEvent.layout.y;
+                  }}
+                >
+                  <Text style={styles.weekendDate}>{fmtDay(w.date)}</Text>
                   <View style={styles.slots}>
                     {events.length > 0 ? (
                       <View style={[styles.slot, styles.eventSlot]}>
                         <Text style={styles.eventLabel}>{t('talkCoordinator.log.event')}</Text>
                         <Text style={styles.eventTitle} numberOfLines={2}>
-                          {events.map((ev) => ev.title).join(' · ')}
+                          {events
+                            .map((ev) =>
+                              t(`specialEvents.types.${ev.type}`, {
+                                defaultValue: ev.title ?? ev.type ?? '',
+                              }),
+                            )
+                            .join(' · ')}
                         </Text>
                       </View>
                     ) : (
@@ -413,10 +452,7 @@ export default function TalkExchangeYearScreen() {
                         {slot.incoming ? (
                           <>
                             <Text style={styles.slotMain} numberOfLines={1}>
-                              {slot.incoming.visitingSpeakerId
-                                ? speakerById.get(slot.incoming.visitingSpeakerId) ??
-                                  t('talkCoordinator.log.unknownSpeaker')
-                                : t('talkCoordinator.log.unknownSpeaker')}
+                              {incomingName(slot.incoming) ?? t('talkCoordinator.log.unknownSpeaker')}
                             </Text>
                             {!!talkLabel(slot.incoming.publicTalkId) && (
                               <Text style={styles.slotSub} numberOfLines={1}>
@@ -453,7 +489,7 @@ export default function TalkExchangeYearScreen() {
                 </View>
               );
             })}
-          </View>
+          </Fragment>
         ))}
       </ScrollView>
 
@@ -472,59 +508,53 @@ export default function TalkExchangeYearScreen() {
                 </Text>
               </View>
 
-              {direction === 'incoming' && week && (
-                <Text style={styles.infoLine}>
-                  {[week.time, week.address].filter(Boolean).join(' · ') ||
-                    t('talkCoordinator.log.ourMeetingHint')}
-                </Text>
-              )}
-
-              <Text style={styles.fieldLabel}>{t('talkCoordinator.log.statusLabel')}</Text>
-              <View style={styles.segment}>
-                {(['confirmed', 'tentative'] as TalkExchangeStatus[]).map((s) => (
-                  <Pressable
-                    key={s}
-                    style={[styles.segmentBtn, status === s && styles.segmentBtnActive]}
-                    onPress={() => setStatus(s)}
-                  >
-                    <Text style={[styles.segmentText, status === s && styles.segmentTextActive]}>
-                      {t(`talkCoordinator.log.status.${s}`)}
-                    </Text>
-                  </Pressable>
-                ))}
-              </View>
-
               {direction === 'incoming' ? (
                 <>
-                  <Text style={styles.fieldLabel}>{t('talkCoordinator.log.speaker')}</Text>
-                  <View style={styles.chipWrap}>
-                    {(speakersQuery.data ?? []).map((s) => {
-                      const sel = visitingSpeakerId === s.id;
-                      return (
-                        <Pressable
-                          key={s.id}
-                          style={[styles.pickChip, sel && styles.pickChipActive]}
-                          onPress={() => setVisitingSpeakerId(sel ? null : s.id)}
-                        >
-                          <Text style={[styles.pickChipText, sel && styles.pickChipTextActive]}>
-                            {[s.firstName, s.lastName].filter(Boolean).join(' ')}
-                          </Text>
-                        </Pressable>
-                      );
-                    })}
-                    <Pressable
-                      style={[styles.pickChip, styles.linkChip]}
-                      onPress={() => {
-                        setOpen(false);
-                        router.push('/talk-coordinator/speakers' as any);
-                      }}
-                    >
-                      <Ionicons name="add" size={14} color="#0369a1" />
-                      <Text style={[styles.pickChipText, { color: '#0369a1' }]}>
-                        {t('talkCoordinator.speakers.add')}
-                      </Text>
-                    </Pressable>
-                  </View>
+                  {week?.address ? <Text style={styles.infoLine}>{week.address}</Text> : null}
+
+                  {(speakersQuery.data ?? []).length > 0 && (
+                    <>
+                      <Text style={styles.fieldLabel}>{t('talkCoordinator.log.fromDirectory')}</Text>
+                      <View style={styles.chipWrap}>
+                        {(speakersQuery.data ?? []).map((s) => {
+                          const sel = visitingSpeakerId === s.id;
+                          return (
+                            <Pressable
+                              key={s.id}
+                              style={[styles.pickChip, sel && styles.pickChipActive]}
+                              onPress={() => pickSpeaker(s.id)}
+                            >
+                              <Text style={[styles.pickChipText, sel && styles.pickChipTextActive]}>
+                                {[s.firstName, s.lastName].filter(Boolean).join(' ')}
+                              </Text>
+                            </Pressable>
+                          );
+                        })}
+                      </View>
+                    </>
+                  )}
+
+                  <Text style={styles.fieldLabel}>{t('talkCoordinator.log.speakerName')}</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={speakerNameInput}
+                    onChangeText={(v) => {
+                      setSpeakerNameInput(v);
+                      setVisitingSpeakerId(null);
+                    }}
+                    placeholderTextColor="#94a3b8"
+                  />
+
+                  <Text style={styles.fieldLabel}>{t('talkCoordinator.log.speakerCong')}</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={speakerCongInput}
+                    onChangeText={(v) => {
+                      setSpeakerCongInput(v);
+                      setVisitingSpeakerId(null);
+                    }}
+                    placeholderTextColor="#94a3b8"
+                  />
 
                   <View style={{ marginTop: 10 }}>
                     <PublicTalkSelector
@@ -543,7 +573,7 @@ export default function TalkExchangeYearScreen() {
                 </>
               ) : (
                 <>
-                  <View style={{ marginTop: 10 }}>
+                  <View style={{ marginTop: 6 }}>
                     <PublisherSelector
                       label={t('talkCoordinator.log.ourBrother')}
                       value={publisherId}
@@ -588,7 +618,7 @@ export default function TalkExchangeYearScreen() {
 
                   <Text style={styles.fieldLabel}>{t('talkCoordinator.log.tripDate')}</Text>
                   <View style={styles.chipWrap}>
-                    {weekDays.map((d) => {
+                    {weekendDays.map((d) => {
                       const sel = date === d;
                       return (
                         <Pressable
@@ -597,7 +627,7 @@ export default function TalkExchangeYearScreen() {
                           onPress={() => setDate(d)}
                         >
                           <Text style={[styles.pickChipText, sel && styles.pickChipTextActive]}>
-                            {dayjs(d).locale(i18n.language).format('dd D')}
+                            {dayjs(d).locale(i18n.language).format('dddd, D MMM')}
                           </Text>
                         </Pressable>
                       );
@@ -662,14 +692,7 @@ function Slot({
   const { t } = useTranslation();
   return (
     <Pressable style={[styles.slot, entry ? { backgroundColor: bg } : styles.slotEmpty]} onPress={onPress}>
-      <View style={styles.slotHead}>
-        <Text style={[styles.slotLabel, { color: accent }]}>{label}</Text>
-        {entry?.status === 'tentative' && (
-          <View style={styles.tentativeDot}>
-            <Text style={styles.tentativeDotText}>?</Text>
-          </View>
-        )}
-      </View>
+      <Text style={[styles.slotLabel, { color: accent }]}>{label}</Text>
       {entry ? <View>{children}</View> : <Text style={styles.slotAdd}>+ {t('talkCoordinator.log.addSlot')}</Text>}
     </Pressable>
   );
@@ -703,26 +726,14 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   weekendPast: { opacity: 0.55 },
-  weekendHead: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 6 },
-  weekendDate: { fontSize: 13, fontWeight: '700', color: '#0f172a', textTransform: 'capitalize' },
-  weekendTime: { fontSize: 12, color: '#64748b', fontWeight: '600' },
+  weekendDate: { fontSize: 13, fontWeight: '700', color: '#0f172a', textTransform: 'capitalize', marginBottom: 6 },
   slots: { flexDirection: 'row', gap: 8 },
   slot: { flex: 1, borderRadius: 10, padding: 8, minHeight: 56, justifyContent: 'center' },
   slotEmpty: { backgroundColor: '#f8fafc', borderWidth: 1, borderColor: '#e2e8f0', borderStyle: 'dashed' },
   eventSlot: { backgroundColor: '#ede9fe' },
   eventLabel: { fontSize: 10, fontWeight: '700', color: '#6d28d9', textTransform: 'uppercase', letterSpacing: 0.4 },
   eventTitle: { fontSize: 13, fontWeight: '600', color: '#5b21b6', marginTop: 3 },
-  slotHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   slotLabel: { fontSize: 10, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.4 },
-  tentativeDot: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
-    backgroundColor: '#f59e0b',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  tentativeDotText: { fontSize: 9, color: '#fff', fontWeight: '800' },
   slotMain: { fontSize: 13, fontWeight: '600', color: '#0f172a', marginTop: 3 },
   slotSub: { fontSize: 11, color: '#475569', marginTop: 1 },
   slotAdd: { fontSize: 12, color: '#94a3b8', marginTop: 4 },
@@ -733,11 +744,6 @@ const styles = StyleSheet.create({
   editorDate: { fontSize: 13, color: '#0ea5e9', fontWeight: '600', textTransform: 'capitalize' },
   infoLine: { fontSize: 12, color: '#64748b', marginTop: 4 },
   fieldLabel: { fontSize: 12, fontWeight: '600', color: '#64748b', marginTop: 12, marginBottom: 4 },
-  segment: { flexDirection: 'row', gap: 6, backgroundColor: '#f1f5f9', borderRadius: 10, padding: 3 },
-  segmentBtn: { flex: 1, paddingVertical: 8, borderRadius: 8, alignItems: 'center' },
-  segmentBtnActive: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#e2e8f0' },
-  segmentText: { fontSize: 13, color: '#64748b', fontWeight: '600' },
-  segmentTextActive: { color: '#0f172a' },
   chipWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   pickChip: {
     flexDirection: 'row',
@@ -752,7 +758,7 @@ const styles = StyleSheet.create({
   },
   dayChip: {
     paddingVertical: 6,
-    paddingHorizontal: 10,
+    paddingHorizontal: 12,
     borderRadius: 14,
     borderWidth: 1,
     borderColor: '#cbd5e1',
@@ -761,7 +767,6 @@ const styles = StyleSheet.create({
   pickChipActive: { backgroundColor: '#e0f2fe', borderColor: '#0ea5e9' },
   pickChipText: { fontSize: 13, color: '#475569', textTransform: 'capitalize' },
   pickChipTextActive: { color: '#0369a1', fontWeight: '600' },
-  linkChip: { borderStyle: 'dashed', borderColor: '#bae6fd' },
   hostBox: { marginTop: 8, padding: 10, borderRadius: 10, backgroundColor: '#fffbeb', borderWidth: 1, borderColor: '#fde68a' },
   hostInfo: { fontSize: 13, color: '#92400e' },
   hostMap: { fontSize: 13, color: '#0369a1', fontWeight: '600', marginTop: 4 },

@@ -1414,7 +1414,10 @@
       "event": "Event",
       "ourMeetingHint": "Time/address from meeting settings",
       "openMap": "Open map",
-      "tripDate": "Trip date"
+      "tripDate": "Trip date",
+      "fromDirectory": "From directory",
+      "speakerName": "Speaker name",
+      "speakerCong": "Congregation"
     }
   }
 }

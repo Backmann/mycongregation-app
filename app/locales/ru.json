@@ -1418,7 +1418,10 @@
       "event": "Событие",
       "ourMeetingHint": "Время/адрес — из настроек встреч",
       "openMap": "Открыть карту",
-      "tripDate": "Дата поездки"
+      "tripDate": "Дата поездки",
+      "fromDirectory": "Из справочника",
+      "speakerName": "Имя и фамилия",
+      "speakerCong": "Собрание"
     }
   }
 }
