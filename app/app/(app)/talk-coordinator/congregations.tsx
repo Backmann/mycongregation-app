@@ -175,18 +175,17 @@ export default function CongregationsScreen() {
                       {[c.contactName, c.contactPhone].filter(Boolean).join(' · ')}
                     </Text>
                   )}
-                  {(c.address || c.meetingDow || c.meetingTime) && (
-                    <Text style={styles.subHall}>
-                      {[
-                        [c.meetingDow ? dayLabel(c.meetingDow) : null, c.meetingTime]
+                  {(c.meetingDow || c.meetingTime) && (
+                    <View style={styles.dayBadge}>
+                      <Ionicons name="calendar-outline" size={11} color="#0369a1" />
+                      <Text style={styles.dayBadgeText}>
+                        {[c.meetingDow ? dayLabel(c.meetingDow) : null, c.meetingTime]
                           .filter(Boolean)
-                          .join(' '),
-                        c.address,
-                      ]
-                        .filter(Boolean)
-                        .join(' · ')}
-                    </Text>
+                          .join(' ')}
+                      </Text>
+                    </View>
                   )}
+                  {!!c.address && <Text style={styles.subHall}>{c.address}</Text>}
                 </View>
                 <Pressable hitSlop={8} onPress={() => openEdit(c)} style={styles.iconBtn} disabled={pending}>
                   <Ionicons name="create-outline" size={20} color="#0369a1" />
@@ -333,6 +332,8 @@ const styles = StyleSheet.create({
   name: { fontSize: 15, fontWeight: '600', color: '#0f172a' },
   sub: { fontSize: 13, color: '#475569', marginTop: 1 },
   subHall: { fontSize: 12, color: '#0369a1', marginTop: 2 },
+  dayBadge: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', gap: 4, marginTop: 3, paddingVertical: 2, paddingHorizontal: 8, borderRadius: 10, backgroundColor: '#e0f2fe' },
+  dayBadgeText: { fontSize: 12, fontWeight: '600', color: '#0369a1', textTransform: 'capitalize' },
   dayRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 2 },
   dayChip: { paddingVertical: 6, paddingHorizontal: 12, borderRadius: 14, borderWidth: 1, borderColor: '#cbd5e1', backgroundColor: '#fff' },
   dayChipActive: { backgroundColor: '#e0f2fe', borderColor: '#0ea5e9' },

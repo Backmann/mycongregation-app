@@ -1421,6 +1421,7 @@
       "speakerName": "Speaker name",
       "speakerCong": "Congregation",
       "givenTimes": "Given times: {{n}}",
+      "upcoming": "Upcoming",
       "phone": "Phone"
     }
   }

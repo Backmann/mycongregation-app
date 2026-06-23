@@ -418,6 +418,8 @@ export default function TalkExchangeYearScreen() {
     ? (incomingByTalk.get(publicTalkId) ?? []).filter((o) => o.id !== editing?.id)
     : [];
   const fmtHist = (d: string) => dayjs(d).locale(i18n.language).format('D MMM YYYY');
+  const pastOccs = talkOccs.filter((o) => o.date < todayISO);
+  const futureOccs = talkOccs.filter((o) => o.date >= todayISO);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#f1f5f9' }}>
@@ -652,11 +654,16 @@ export default function TalkExchangeYearScreen() {
                   {publicTalkId ? (
                     <View style={styles.histBox}>
                       <Text style={styles.histCount}>
-                        {t('talkCoordinator.log.givenTimes', { n: talkOccs.length })}
+                        {t('talkCoordinator.log.givenTimes', { n: pastOccs.length })}
                       </Text>
-                      {talkOccs.map((o) => (
+                      {pastOccs.map((o) => (
                         <Text key={o.id} style={styles.histItem} numberOfLines={1}>
                           {fmtHist(o.date)} · {incomingName(o) ?? t('talkCoordinator.log.unknownSpeaker')}
+                        </Text>
+                      ))}
+                      {futureOccs.map((o) => (
+                        <Text key={o.id} style={styles.histUpcoming} numberOfLines={1}>
+                          {t('talkCoordinator.log.upcoming')}: {fmtHist(o.date)} · {incomingName(o) ?? t('talkCoordinator.log.unknownSpeaker')}
                         </Text>
                       ))}
                     </View>
@@ -852,6 +859,7 @@ const styles = StyleSheet.create({
   histBox: { marginTop: 8, padding: 10, borderRadius: 10, backgroundColor: '#eff6ff', borderWidth: 1, borderColor: '#bfdbfe' },
   histCount: { fontSize: 12, fontWeight: '700', color: '#1d4ed8', marginBottom: 4 },
   histItem: { fontSize: 12, color: '#475569', marginTop: 1 },
+  histUpcoming: { fontSize: 12, fontWeight: '600', color: '#b45309', marginTop: 1 },
   fieldLabel: { fontSize: 12, fontWeight: '600', color: '#64748b', marginTop: 12, marginBottom: 4 },
   chipWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   pickChip: {

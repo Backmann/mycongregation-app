@@ -1425,6 +1425,7 @@
       "speakerName": "Имя и фамилия",
       "speakerCong": "Собрание",
       "givenTimes": "Высказана раз: {{n}}",
+      "upcoming": "Будет",
       "phone": "Телефон"
     }
   }
