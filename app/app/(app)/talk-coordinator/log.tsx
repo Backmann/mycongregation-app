@@ -465,14 +465,7 @@ export default function TalkExchangeYearScreen() {
                     if (w.monday === currentWeekMonday) scrollToCurrentWeek();
                   }}
                 >
-                  <View style={styles.weekendHead}>
-                    <Text style={styles.weekendDate}>{fmtDay(w.date)}</Text>
-                    {w.date > todayISO && (
-                      <View style={styles.upcomingBadge}>
-                        <Text style={styles.upcomingBadgeText}>{t('talkCoordinator.log.upcoming')}</Text>
-                      </View>
-                    )}
-                  </View>
+                  <Text style={styles.weekendDate}>{fmtDay(w.date)}</Text>
                   <View style={styles.slots}>
                     {events.length > 0 ? (
                       <View style={[styles.slot, styles.eventSlot]}>
@@ -843,10 +836,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   weekendPast: { opacity: 0.55 },
-  weekendDate: { fontSize: 13, fontWeight: '700', color: '#0f172a', textTransform: 'capitalize' },
-  weekendHead: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 },
-  upcomingBadge: { backgroundColor: '#fef3c7', paddingVertical: 1, paddingHorizontal: 7, borderRadius: 6 },
-  upcomingBadgeText: { fontSize: 10, fontWeight: '700', color: '#b45309', textTransform: 'uppercase', letterSpacing: 0.3 },
+  weekendDate: { fontSize: 13, fontWeight: '700', color: '#0f172a', textTransform: 'capitalize', marginBottom: 6 },
   outHint: { fontSize: 11, color: '#dc2626', fontStyle: 'italic', marginTop: 1 },
   slots: { flexDirection: 'row', gap: 8 },
   slot: { flex: 1, borderRadius: 10, padding: 8, minHeight: 56, justifyContent: 'center' },

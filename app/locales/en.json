@@ -818,6 +818,7 @@
     "showingAllNoFilter": "Showing all — capability filter is OFF",
     "hiddenByCapability": "{{count}} hidden by capability filter",
     "lastGiven": "Last given {{date}}",
+    "upcoming": "Upcoming {{date}}",
     "lastDidPart": "This part: {{date}} ({{ago}})",
     "weeksAgoShort": "{{count}} wk ago",
     "neverDidPart": "Hasn't done this part yet",

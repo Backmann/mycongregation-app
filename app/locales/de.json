@@ -818,6 +818,7 @@
     "showingAllNoFilter": "Alle angezeigt — Fähigkeitsfilter ist AUS",
     "hiddenByCapability": "{{count}} durch Filter ausgeblendet",
     "lastGiven": "Zuletzt gehalten {{date}}",
+    "upcoming": "Geplant {{date}}",
     "lastDidPart": "Dieser Teil: {{date}} ({{ago}})",
     "weeksAgoShort": "vor {{count}} Wo.",
     "neverDidPart": "Hat diesen Teil noch nicht gemacht",

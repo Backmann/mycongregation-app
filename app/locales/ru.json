@@ -822,6 +822,7 @@
     "showingAllNoFilter": "Показаны все — фильтр способностей ОТКЛЮЧЁН",
     "hiddenByCapability": "Скрыто фильтром: {{count}}",
     "lastGiven": "Последний раз: {{date}}",
+    "upcoming": "Будет: {{date}}",
     "lastDidPart": "Эта часть: {{date}} ({{ago}})",
     "weeksAgoShort": "{{count}} нед. назад",
     "neverDidPart": "Эту часть ещё не делал(а)",

@@ -224,13 +224,17 @@ function RecencyHint({
     ok: 'time-outline',
     never: 'time-outline',
   };
-  const color = colors[recency];
+  const future = lastGivenAt.slice(0, 10) > new Date().toLocaleDateString('en-CA');
+  const color = future ? '#0369a1' : colors[recency];
+  const dateStr = new Date(lastGivenAt).toLocaleDateString(i18n.language, { year: 'numeric', month: 'short', day: 'numeric' });
 
   return (
     <View style={[styles.hintRow, inline && { marginTop: 4 }]}>
-      <Ionicons name={icon[recency]} size={11} color={color} />
+      <Ionicons name={future ? 'calendar-outline' : icon[recency]} size={11} color={color} />
       <Text style={[styles.hintText, { color }]}>
-        {i18n.t('pickers.lastGiven', { date: new Date(lastGivenAt).toLocaleDateString(i18n.language, { year: 'numeric', month: 'short', day: 'numeric' }) })}
+        {future
+          ? i18n.t('pickers.upcoming', { date: dateStr })
+          : i18n.t('pickers.lastGiven', { date: dateStr })}
         {lastGivenBy ? ` · ${lastGivenBy}` : ''}
       </Text>
     </View>
