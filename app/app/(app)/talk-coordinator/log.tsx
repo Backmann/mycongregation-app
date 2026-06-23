@@ -148,7 +148,7 @@ export default function TalkExchangeYearScreen() {
   });
   const publishersQuery = useQuery({
     queryKey: ['publishers', 'all'],
-    queryFn: () => publishersApi.list({ limit: 500 }),
+    queryFn: () => publishersApi.list({ limit: 200 }),
   });
   const talksQuery = useQuery({
     queryKey: ['public-talks', 'all'],
