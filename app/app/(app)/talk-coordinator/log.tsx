@@ -156,11 +156,12 @@ export default function TalkExchangeYearScreen() {
   });
 
   const speakerById = useMemo(() => {
-    const m = new Map<string, { name: string; cong: string | null }>();
+    const m = new Map<string, { name: string; cong: string | null; phone: string | null }>();
     for (const s of speakersQuery.data ?? [])
       m.set(s.id, {
         name: [s.firstName, s.lastName].filter(Boolean).join(' '),
         cong: s.externalCongregation?.name ?? null,
+        phone: s.phone ?? null,
       });
     return m;
   }, [speakersQuery.data]);
@@ -395,6 +396,12 @@ export default function TalkExchangeYearScreen() {
   };
   const incomingName = (e: TalkExchange): string | null =>
     e.visitingSpeakerId ? speakerById.get(e.visitingSpeakerId)?.name ?? null : e.speakerName;
+  const incomingCong = (e: TalkExchange): string | null =>
+    e.visitingSpeakerId
+      ? speakerById.get(e.visitingSpeakerId)?.cong ?? null
+      : e.speakerCongregation;
+  const incomingPhone = (e: TalkExchange): string | null =>
+    e.visitingSpeakerId ? speakerById.get(e.visitingSpeakerId)?.phone ?? null : null;
   const fmtDay = (d: string) => dayjs(d).locale(i18n.language).format('dd, D MMM');
   const todayISO = dayjs().format('YYYY-MM-DD');
   const host = hostCongregationId ? congById.get(hostCongregationId) ?? null : null;
@@ -486,6 +493,16 @@ export default function TalkExchangeYearScreen() {
                             <Text style={styles.slotMain} numberOfLines={1}>
                               {incomingName(slot.incoming) ?? t('talkCoordinator.log.unknownSpeaker')}
                             </Text>
+                            {!!incomingCong(slot.incoming) && (
+                              <Text style={styles.slotCong} numberOfLines={1}>
+                                {incomingCong(slot.incoming)}
+                              </Text>
+                            )}
+                            {!!incomingPhone(slot.incoming) && (
+                              <Text style={styles.slotCong} numberOfLines={1}>
+                                {t('talkCoordinator.log.phone')}: {incomingPhone(slot.incoming)}
+                              </Text>
+                            )}
                             {!!talkLabel(slot.incoming.publicTalkId) && (
                               <Text style={styles.slotSub} numberOfLines={1}>
                                 {talkLabel(slot.incoming.publicTalkId)}
@@ -818,6 +835,7 @@ const styles = StyleSheet.create({
   slotLabel: { fontSize: 10, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.4 },
   slotMain: { fontSize: 13, fontWeight: '600', color: '#0f172a', marginTop: 3 },
   slotSub: { fontSize: 11, color: '#475569', marginTop: 1 },
+  slotCong: { fontSize: 11, color: '#64748b', marginTop: 1 },
   slotAdd: { fontSize: 12, color: '#94a3b8', marginTop: 4 },
   outCol: { flex: 1, borderRadius: 10, padding: 8, backgroundColor: '#fffbeb', minHeight: 56 },
   outItem: { paddingVertical: 4, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: '#fde68a' },
