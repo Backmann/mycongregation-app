@@ -1422,6 +1422,7 @@
       "speakerCong": "Versammlung",
       "givenTimes": "Gehalten: {{n}}×",
       "upcoming": "Geplant",
+      "noTalk": "Kein Vortrag gewählt",
       "phone": "Telefon"
     }
   }

@@ -1422,6 +1422,7 @@
       "speakerCong": "Congregation",
       "givenTimes": "Given times: {{n}}",
       "upcoming": "Upcoming",
+      "noTalk": "No talk selected",
       "phone": "Phone"
     }
   }

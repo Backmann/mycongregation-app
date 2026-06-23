@@ -418,8 +418,6 @@ export default function TalkExchangeYearScreen() {
     ? (incomingByTalk.get(publicTalkId) ?? []).filter((o) => o.id !== editing?.id)
     : [];
   const fmtHist = (d: string) => dayjs(d).locale(i18n.language).format('D MMM YYYY');
-  const pastOccs = talkOccs.filter((o) => o.date < todayISO);
-  const futureOccs = talkOccs.filter((o) => o.date >= todayISO);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#f1f5f9' }}>
@@ -467,7 +465,14 @@ export default function TalkExchangeYearScreen() {
                     if (w.monday === currentWeekMonday) scrollToCurrentWeek();
                   }}
                 >
-                  <Text style={styles.weekendDate}>{fmtDay(w.date)}</Text>
+                  <View style={styles.weekendHead}>
+                    <Text style={styles.weekendDate}>{fmtDay(w.date)}</Text>
+                    {w.date > todayISO && (
+                      <View style={styles.upcomingBadge}>
+                        <Text style={styles.upcomingBadgeText}>{t('talkCoordinator.log.upcoming')}</Text>
+                      </View>
+                    )}
+                  </View>
                   <View style={styles.slots}>
                     {events.length > 0 ? (
                       <View style={[styles.slot, styles.eventSlot]}>
@@ -535,6 +540,9 @@ export default function TalkExchangeYearScreen() {
                             {o.date !== w.date && talkLabel(o.publicTalkId) ? ' · ' : ''}
                             {talkLabel(o.publicTalkId) ?? ''}
                           </Text>
+                          {!o.publicTalkId && (
+                            <Text style={styles.outHint}>{t('talkCoordinator.log.noTalk')}</Text>
+                          )}
                         </Pressable>
                       ))}
                       <Pressable style={styles.outAdd} onPress={() => openSlot(w, 'outgoing', undefined)}>
@@ -662,16 +670,11 @@ export default function TalkExchangeYearScreen() {
                   {publicTalkId ? (
                     <View style={styles.histBox}>
                       <Text style={styles.histCount}>
-                        {t('talkCoordinator.log.givenTimes', { n: pastOccs.length })}
+                        {t('talkCoordinator.log.givenTimes', { n: talkOccs.length })}
                       </Text>
-                      {pastOccs.map((o) => (
+                      {talkOccs.map((o) => (
                         <Text key={o.id} style={styles.histItem} numberOfLines={1}>
                           {fmtHist(o.date)} · {incomingName(o) ?? t('talkCoordinator.log.unknownSpeaker')}
-                        </Text>
-                      ))}
-                      {futureOccs.map((o) => (
-                        <Text key={o.id} style={styles.histUpcoming} numberOfLines={1}>
-                          {t('talkCoordinator.log.upcoming')}: {fmtHist(o.date)} · {incomingName(o) ?? t('talkCoordinator.log.unknownSpeaker')}
                         </Text>
                       ))}
                     </View>
@@ -840,7 +843,11 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   weekendPast: { opacity: 0.55 },
-  weekendDate: { fontSize: 13, fontWeight: '700', color: '#0f172a', textTransform: 'capitalize', marginBottom: 6 },
+  weekendDate: { fontSize: 13, fontWeight: '700', color: '#0f172a', textTransform: 'capitalize' },
+  weekendHead: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 },
+  upcomingBadge: { backgroundColor: '#fef3c7', paddingVertical: 1, paddingHorizontal: 7, borderRadius: 6 },
+  upcomingBadgeText: { fontSize: 10, fontWeight: '700', color: '#b45309', textTransform: 'uppercase', letterSpacing: 0.3 },
+  outHint: { fontSize: 11, color: '#dc2626', fontStyle: 'italic', marginTop: 1 },
   slots: { flexDirection: 'row', gap: 8 },
   slot: { flex: 1, borderRadius: 10, padding: 8, minHeight: 56, justifyContent: 'center' },
   slotEmpty: { backgroundColor: '#f8fafc', borderWidth: 1, borderColor: '#e2e8f0', borderStyle: 'dashed' },
@@ -868,7 +875,6 @@ const styles = StyleSheet.create({
   histBox: { marginTop: 8, padding: 10, borderRadius: 10, backgroundColor: '#eff6ff', borderWidth: 1, borderColor: '#bfdbfe' },
   histCount: { fontSize: 12, fontWeight: '700', color: '#1d4ed8', marginBottom: 4 },
   histItem: { fontSize: 12, color: '#475569', marginTop: 1 },
-  histUpcoming: { fontSize: 12, fontWeight: '600', color: '#b45309', marginTop: 1 },
   fieldLabel: { fontSize: 12, fontWeight: '600', color: '#64748b', marginTop: 12, marginBottom: 4 },
   chipWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   pickChip: {
