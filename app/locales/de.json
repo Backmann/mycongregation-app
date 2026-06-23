@@ -1418,7 +1418,8 @@
       "fromDirectory": "Aus Verzeichnis",
       "speakerName": "Name des Redners",
       "speakerCong": "Versammlung",
-      "givenTimes": "Gehalten: {{n}}×"
+      "givenTimes": "Gehalten: {{n}}×",
+      "phone": "Telefon"
     }
   }
 }

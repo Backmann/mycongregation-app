@@ -1422,7 +1422,8 @@
       "fromDirectory": "Из справочника",
       "speakerName": "Имя и фамилия",
       "speakerCong": "Собрание",
-      "givenTimes": "Высказана раз: {{n}}"
+      "givenTimes": "Высказана раз: {{n}}",
+      "phone": "Телефон"
     }
   }
 }

@@ -1418,7 +1418,8 @@
       "fromDirectory": "From directory",
       "speakerName": "Speaker name",
       "speakerCong": "Congregation",
-      "givenTimes": "Given times: {{n}}"
+      "givenTimes": "Given times: {{n}}",
+      "phone": "Phone"
     }
   }
 }

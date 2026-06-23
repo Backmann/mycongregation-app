@@ -398,6 +398,12 @@ export default function TalkExchangeYearScreen() {
   const fmtDay = (d: string) => dayjs(d).locale(i18n.language).format('dd, D MMM');
   const todayISO = dayjs().format('YYYY-MM-DD');
   const host = hostCongregationId ? congById.get(hostCongregationId) ?? null : null;
+  const selSpeaker = visitingSpeakerId
+    ? (speakersQuery.data ?? []).find((s) => s.id === visitingSpeakerId) ?? null
+    : null;
+  const selSpeakerCong = selSpeaker?.externalCongregationId
+    ? congById.get(selSpeaker.externalCongregationId) ?? null
+    : null;
   const weekendDays = week
     ? [5, 6].map((i) => formatDateISO(addDays(new Date(`${week.monday}T00:00:00`), i)))
     : [];
@@ -591,6 +597,33 @@ export default function TalkExchangeYearScreen() {
                     }}
                     placeholderTextColor="#94a3b8"
                   />
+
+                  {selSpeaker && (selSpeaker.phone || selSpeakerCong) ? (
+                    <View style={styles.spInfoBox}>
+                      {selSpeaker.phone ? (
+                        <Pressable onPress={() => selSpeaker.phone && Linking.openURL(`tel:${selSpeaker.phone}`)}>
+                          <Text style={styles.spInfoPhone}>
+                            {t('talkCoordinator.log.phone')}: {selSpeaker.phone}
+                          </Text>
+                        </Pressable>
+                      ) : null}
+                      {selSpeakerCong ? (
+                        <>
+                          <Text style={styles.spInfoText}>
+                            {[selSpeakerCong.name, selSpeakerCong.city].filter(Boolean).join(', ')}
+                          </Text>
+                          {(selSpeakerCong.contactName || selSpeakerCong.contactPhone) && (
+                            <Text style={styles.spInfoText}>
+                              {[selSpeakerCong.contactName, selSpeakerCong.contactPhone].filter(Boolean).join(' · ')}
+                            </Text>
+                          )}
+                          {!!selSpeakerCong.address && (
+                            <Text style={styles.spInfoText}>{selSpeakerCong.address}</Text>
+                          )}
+                        </>
+                      ) : null}
+                    </View>
+                  ) : null}
 
                   <View style={{ marginTop: 10 }}>
                     <PublicTalkSelector
@@ -826,6 +859,9 @@ const styles = StyleSheet.create({
   pickChipText: { fontSize: 13, color: '#475569', textTransform: 'capitalize' },
   pickChipTextActive: { color: '#0369a1', fontWeight: '600' },
   hostBox: { marginTop: 8, padding: 10, borderRadius: 10, backgroundColor: '#fffbeb', borderWidth: 1, borderColor: '#fde68a' },
+  spInfoBox: { marginTop: 8, padding: 10, borderRadius: 10, backgroundColor: '#eff6ff', borderWidth: 1, borderColor: '#bfdbfe' },
+  spInfoPhone: { fontSize: 13, color: '#0369a1', fontWeight: '600' },
+  spInfoText: { fontSize: 12, color: '#475569', marginTop: 2 },
   hostInfo: { fontSize: 13, color: '#92400e' },
   hostMap: { fontSize: 13, color: '#0369a1', fontWeight: '600', marginTop: 4 },
   input: {
