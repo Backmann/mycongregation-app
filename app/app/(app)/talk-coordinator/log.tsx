@@ -124,6 +124,7 @@ export default function TalkExchangeYearScreen() {
   const [visitingSpeakerId, setVisitingSpeakerId] = useState<string | null>(null);
   const [speakerNameInput, setSpeakerNameInput] = useState('');
   const [speakerCongInput, setSpeakerCongInput] = useState('');
+  const [incomingMode, setIncomingMode] = useState<'invited' | 'local'>('invited');
   const [hospitalityPublisherId, setHospitalityPublisherId] = useState<string | null>(null);
   const [publisherId, setPublisherId] = useState<string | null>(null);
   const [hostCongregationId, setHostCongregationId] = useState<string | null>(null);
@@ -296,6 +297,9 @@ export default function TalkExchangeYearScreen() {
     }
     setHospitalityPublisherId(entry?.hospitalityPublisherId ?? null);
     setPublisherId(entry?.publisherId ?? null);
+    setIncomingMode(
+      dir === 'incoming' && entry?.publisherId ? 'local' : 'invited',
+    );
     setHostCongregationId(entry?.hostCongregationId ?? null);
     setNote(entry?.note ?? '');
     setOpen(true);
@@ -323,7 +327,9 @@ export default function TalkExchangeYearScreen() {
 
   const canSave =
     direction === 'incoming'
-      ? !!visitingSpeakerId || speakerNameInput.trim().length > 0
+      ? incomingMode === 'local'
+        ? !!publisherId
+        : !!visitingSpeakerId || speakerNameInput.trim().length > 0
       : !!publisherId && !!date;
 
   const save = async () => {
@@ -333,12 +339,21 @@ export default function TalkExchangeYearScreen() {
       date,
       publicTalkId: publicTalkId ?? null,
       note: note.trim() || null,
-      visitingSpeakerId: direction === 'incoming' ? visitingSpeakerId : null,
-      speakerName: direction === 'incoming' && !visitingSpeakerId ? speakerNameInput.trim() || null : null,
+      visitingSpeakerId:
+        direction === 'incoming' && incomingMode === 'invited' ? visitingSpeakerId : null,
+      speakerName:
+        direction === 'incoming' && incomingMode === 'invited' && !visitingSpeakerId
+          ? speakerNameInput.trim() || null
+          : null,
       speakerCongregation:
-        direction === 'incoming' && !visitingSpeakerId ? speakerCongInput.trim() || null : null,
+        direction === 'incoming' && incomingMode === 'invited' && !visitingSpeakerId
+          ? speakerCongInput.trim() || null
+          : null,
       hospitalityPublisherId: direction === 'incoming' ? hospitalityPublisherId : null,
-      publisherId: direction === 'outgoing' ? publisherId : null,
+      publisherId:
+        direction === 'outgoing' || (direction === 'incoming' && incomingMode === 'local')
+          ? publisherId
+          : null,
       hostCongregationId: direction === 'outgoing' ? hostCongregationId : null,
     };
     const saved = editing
@@ -395,7 +410,11 @@ export default function TalkExchangeYearScreen() {
     return tk ? `№${tk.number}. ${tk.title}` : null;
   };
   const incomingName = (e: TalkExchange): string | null =>
-    e.visitingSpeakerId ? speakerById.get(e.visitingSpeakerId)?.name ?? null : e.speakerName;
+    e.publisherId
+      ? pubById.get(e.publisherId) ?? null
+      : e.visitingSpeakerId
+        ? speakerById.get(e.visitingSpeakerId)?.name ?? null
+        : e.speakerName;
   const incomingCong = (e: TalkExchange): string | null =>
     e.visitingSpeakerId
       ? speakerById.get(e.visitingSpeakerId)?.cong ?? null
@@ -582,6 +601,48 @@ export default function TalkExchangeYearScreen() {
                     </Text>
                   ) : null}
 
+                  <Text style={styles.fieldLabel}>{t('talkCoordinator.log.speakerSource')}</Text>
+                  <View style={styles.chipWrap}>
+                    <Pressable
+                      style={[styles.pickChip, incomingMode === 'invited' && styles.pickChipActive]}
+                      onPress={() => {
+                        setIncomingMode('invited');
+                        setPublisherId(null);
+                      }}
+                    >
+                      <Text style={[styles.pickChipText, incomingMode === 'invited' && styles.pickChipTextActive]}>
+                        {t('talkCoordinator.log.visiting')}
+                      </Text>
+                    </Pressable>
+                    <Pressable
+                      style={[styles.pickChip, incomingMode === 'local' && styles.pickChipActive]}
+                      onPress={() => {
+                        setIncomingMode('local');
+                        setVisitingSpeakerId(null);
+                        setSpeakerNameInput('');
+                        setSpeakerCongInput('');
+                      }}
+                    >
+                      <Text style={[styles.pickChipText, incomingMode === 'local' && styles.pickChipTextActive]}>
+                        {t('talkCoordinator.log.ourBrother')}
+                      </Text>
+                    </Pressable>
+                  </View>
+
+                  {incomingMode === 'local' && (
+                    <View style={{ marginTop: 6 }}>
+                      <PublisherSelector
+                        label={t('talkCoordinator.log.ourBrother')}
+                        value={publisherId}
+                        onChange={setPublisherId}
+                        genderFilter="brother"
+                        requiredCapability="public_talk_speaker"
+                      />
+                    </View>
+                  )}
+
+                  {incomingMode === 'invited' && (
+                    <>
                   {(speakersQuery.data ?? []).length > 0 && (
                     <>
                       <Text style={styles.fieldLabel}>{t('talkCoordinator.log.fromDirectory')}</Text>
@@ -652,6 +713,8 @@ export default function TalkExchangeYearScreen() {
                       ) : null}
                     </View>
                   ) : null}
+                    </>
+                  )}
 
                   <View style={{ marginTop: 10 }}>
                     <PublicTalkSelector

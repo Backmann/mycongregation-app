@@ -1394,6 +1394,8 @@
       "talk": "Talk",
       "hospitality": "Hospitality (host)",
       "ourBrother": "Our brother",
+      "visiting": "Visiting",
+      "speakerSource": "Who gives the talk",
       "hostCongregation": "Host congregation",
       "noSpeakers": "Add speakers to the directory first.",
       "noCongregations": "Add congregations to the directory first.",
