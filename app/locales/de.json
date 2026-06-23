@@ -1417,7 +1417,8 @@
       "tripDate": "Reisedatum",
       "fromDirectory": "Aus Verzeichnis",
       "speakerName": "Name des Redners",
-      "speakerCong": "Versammlung"
+      "speakerCong": "Versammlung",
+      "givenTimes": "Gehalten: {{n}}×"
     }
   }
 }

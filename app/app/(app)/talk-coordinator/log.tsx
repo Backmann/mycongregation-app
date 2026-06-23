@@ -196,6 +196,19 @@ export default function TalkExchangeYearScreen() {
     return m;
   }, [listQuery.data]);
 
+  // Incoming talk history: which public talks were/will be given here, by whom.
+  const incomingByTalk = useMemo(() => {
+    const m = new Map<string, TalkExchange[]>();
+    for (const e of listQuery.data ?? []) {
+      if (e.direction !== 'incoming' || !e.publicTalkId) continue;
+      const arr = m.get(e.publicTalkId) ?? [];
+      arr.push(e);
+      m.set(e.publicTalkId, arr);
+    }
+    for (const arr of m.values()) arr.sort((a, b) => a.date.localeCompare(b.date));
+    return m;
+  }, [listQuery.data]);
+
   const eventsForDate = useMemo(() => {
     const events = (eventsQuery.data ?? []).filter((ev) => PLANNER_EVENT_TYPES.has(ev.type ?? ''));
     return (d: string): SpecialEvent[] =>
@@ -388,6 +401,10 @@ export default function TalkExchangeYearScreen() {
   const weekendDays = week
     ? [5, 6].map((i) => formatDateISO(addDays(new Date(`${week.monday}T00:00:00`), i)))
     : [];
+  const talkOccs = publicTalkId
+    ? (incomingByTalk.get(publicTalkId) ?? []).filter((o) => o.id !== editing?.id)
+    : [];
+  const fmtHist = (d: string) => dayjs(d).locale(i18n.language).format('D MMM YYYY');
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#f1f5f9' }}>
@@ -582,6 +599,18 @@ export default function TalkExchangeYearScreen() {
                       onChange={(talk) => setPublicTalkId(talk?.id ?? null)}
                     />
                   </View>
+                  {publicTalkId ? (
+                    <View style={styles.histBox}>
+                      <Text style={styles.histCount}>
+                        {t('talkCoordinator.log.givenTimes', { n: talkOccs.length })}
+                      </Text>
+                      {talkOccs.map((o) => (
+                        <Text key={o.id} style={styles.histItem} numberOfLines={1}>
+                          {fmtHist(o.date)} · {incomingName(o) ?? t('talkCoordinator.log.unknownSpeaker')}
+                        </Text>
+                      ))}
+                    </View>
+                  ) : null}
                   <View style={{ marginTop: 10 }}>
                     <PublisherSelector
                       label={t('talkCoordinator.log.hospitality')}
@@ -769,6 +798,9 @@ const styles = StyleSheet.create({
   modalTitle: { fontSize: 16, fontWeight: '700', color: '#0f172a' },
   editorDate: { fontSize: 13, color: '#0ea5e9', fontWeight: '600', textTransform: 'capitalize' },
   infoLine: { fontSize: 12, color: '#64748b', marginTop: 4 },
+  histBox: { marginTop: 8, padding: 10, borderRadius: 10, backgroundColor: '#eff6ff', borderWidth: 1, borderColor: '#bfdbfe' },
+  histCount: { fontSize: 12, fontWeight: '700', color: '#1d4ed8', marginBottom: 4 },
+  histItem: { fontSize: 12, color: '#475569', marginTop: 1 },
   fieldLabel: { fontSize: 12, fontWeight: '600', color: '#64748b', marginTop: 12, marginBottom: 4 },
   chipWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   pickChip: {
