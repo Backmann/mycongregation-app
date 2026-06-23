@@ -210,7 +210,15 @@ export default function CongregationsScreen() {
 
       <Modal visible={modalOpen} transparent animationType="fade" onRequestClose={() => setModalOpen(false)}>
         <View style={styles.overlay}>
+          <Pressable
+            style={StyleSheet.absoluteFill}
+            onPress={() => setModalOpen(false)}
+            accessibilityRole="button"
+          />
           <View style={styles.modalCard}>
+            <Pressable style={styles.modalClose} onPress={() => setModalOpen(false)} hitSlop={8} accessibilityRole="button">
+              <Ionicons name="close" size={22} color="#94a3b8" />
+            </Pressable>
             <ScrollView keyboardShouldPersistTaps="handled">
             <Text style={styles.modalTitle}>
               {editing ? t('talkCoordinator.congregations.editTitle') : t('talkCoordinator.congregations.add')}
@@ -356,6 +364,7 @@ const styles = StyleSheet.create({
   addBtnText: { fontSize: 14, fontWeight: '600', color: '#0369a1' },
   disabled: { opacity: 0.5 },
   overlay: { flex: 1, backgroundColor: 'rgba(15,23,42,0.45)', justifyContent: 'center', paddingHorizontal: 24 },
+  modalClose: { position: 'absolute', top: 10, right: 10, zIndex: 5, padding: 4 },
   modalCard: { backgroundColor: '#fff', borderRadius: 14, padding: 18, gap: 8, maxHeight: '88%' },
   modalTitle: { fontSize: 16, fontWeight: '700', color: '#0f172a', marginBottom: 2 },
   fieldLabel: { fontSize: 12, fontWeight: '600', color: '#64748b', marginTop: 4 },

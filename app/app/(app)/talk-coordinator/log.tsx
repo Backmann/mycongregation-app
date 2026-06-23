@@ -492,21 +492,21 @@ export default function TalkExchangeYearScreen() {
                       >
                         {slot.incoming ? (
                           <>
-                            <Text style={styles.slotMain} numberOfLines={1}>
+                            <Text style={styles.slotMain}>
                               {incomingName(slot.incoming) ?? t('talkCoordinator.log.unknownSpeaker')}
                             </Text>
                             {!!incomingCong(slot.incoming) && (
-                              <Text style={styles.slotCong} numberOfLines={1}>
+                              <Text style={styles.slotCong}>
                                 {incomingCong(slot.incoming)}
                               </Text>
                             )}
                             {!!incomingPhone(slot.incoming) && (
-                              <Text style={styles.slotCong} numberOfLines={1}>
+                              <Text style={styles.slotCong}>
                                 {t('talkCoordinator.log.phone')}: {incomingPhone(slot.incoming)}
                               </Text>
                             )}
                             {!!talkLabel(slot.incoming.publicTalkId) && (
-                              <Text style={styles.slotSub} numberOfLines={1}>
+                              <Text style={styles.slotSub}>
                                 {talkLabel(slot.incoming.publicTalkId)}
                               </Text>
                             )}
@@ -524,13 +524,13 @@ export default function TalkExchangeYearScreen() {
                           style={styles.outItem}
                           onPress={() => openSlot(w, 'outgoing', o)}
                         >
-                          <Text style={styles.outMain} numberOfLines={1}>
+                          <Text style={styles.outMain}>
                             {o.publisherId ? pubById.get(o.publisherId) ?? '—' : '—'}
                             {o.hostCongregationId
                               ? ` → ${congById.get(o.hostCongregationId)?.name ?? ''}`
                               : ''}
                           </Text>
-                          <Text style={styles.outSub} numberOfLines={1}>
+                          <Text style={styles.outSub}>
                             {o.date !== w.date ? `${fmtDay(o.date)}` : ''}
                             {o.date !== w.date && talkLabel(o.publicTalkId) ? ' · ' : ''}
                             {talkLabel(o.publicTalkId) ?? ''}
@@ -552,7 +552,15 @@ export default function TalkExchangeYearScreen() {
 
       <Modal visible={open} transparent animationType="fade" onRequestClose={() => setOpen(false)}>
         <View style={styles.overlay}>
+          <Pressable
+            style={StyleSheet.absoluteFill}
+            onPress={() => setOpen(false)}
+            accessibilityRole="button"
+          />
           <View style={styles.modalCard}>
+            <Pressable style={styles.modalClose} onPress={() => setOpen(false)} hitSlop={8} accessibilityRole="button">
+              <Ionicons name="close" size={22} color="#94a3b8" />
+            </Pressable>
             <ScrollView keyboardShouldPersistTaps="handled">
               <View style={styles.editorHead}>
                 <Text style={styles.modalTitle}>
@@ -851,6 +859,7 @@ const styles = StyleSheet.create({
   outAdd: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingTop: 6 },
   outAddText: { fontSize: 12, color: '#b45309', fontWeight: '600' },
   overlay: { flex: 1, backgroundColor: 'rgba(15,23,42,0.45)', justifyContent: 'center', paddingHorizontal: 16 },
+  modalClose: { position: 'absolute', top: 10, right: 10, zIndex: 5, padding: 4 },
   modalCard: { backgroundColor: '#fff', borderRadius: 14, padding: 18, maxHeight: '88%' },
   editorHead: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between' },
   modalTitle: { fontSize: 16, fontWeight: '700', color: '#0f172a' },
