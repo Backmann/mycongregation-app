@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -56,9 +56,9 @@ const PLANNER_EVENT_TYPES = new Set([
   'circuit_overseer_visit',
 ]);
 
-type WeekRow = { monday: string; date: string; address: string | null };
+type WeekRow = { monday: string; date: string; time: string | null; address: string | null };
 type MonthBlock = { key: string; title: string; rows: WeekRow[] };
-type SlotState = { incoming?: TalkExchange; outgoing?: TalkExchange };
+type SlotState = { incoming?: TalkExchange; outgoing: TalkExchange[] };
 
 function mondayISO(dateISO: string): string {
   return formatDateISO(startOfWeekMonday(new Date(`${dateISO}T00:00:00`)));
@@ -85,7 +85,7 @@ function buildWeeks(
     const wd = addDays(monday, dow - 1);
     const y = wd.getFullYear();
     if (y >= YEAR_FROM && y <= YEAR_TO)
-      rows.push({ monday: mISO, date: formatDateISO(wd), address: v?.address ?? null });
+      rows.push({ monday: mISO, date: formatDateISO(wd), time: v?.weekendTime ?? null, address: v?.address ?? null });
     if (y > YEAR_TO) break;
     monday = addDays(monday, 7);
   }
@@ -184,10 +184,14 @@ export default function TalkExchangeYearScreen() {
     const m = new Map<string, SlotState>();
     for (const e of listQuery.data ?? []) {
       const k = mondayISO(e.date);
-      const slot = m.get(k) ?? {};
+      const slot = m.get(k) ?? { outgoing: [] };
       if (e.direction === 'incoming') slot.incoming = e;
-      else slot.outgoing = e;
+      else slot.outgoing.push(e);
       m.set(k, slot);
+    }
+    // sort each week's outgoing by date then brother
+    for (const slot of m.values()) {
+      slot.outgoing.sort((a, b) => a.date.localeCompare(b.date));
     }
     return m;
   }, [listQuery.data]);
@@ -221,15 +225,15 @@ export default function TalkExchangeYearScreen() {
   const currentMonthKey = dayjs().format('YYYY-MM');
   const currentWeekMonday = mondayISO(dayjs().format('YYYY-MM-DD'));
 
-  // On open, scroll to the current week row.
-  useEffect(() => {
+  // On open, scroll to the current week row (fires as soon as that row lays out).
+  const scrollToCurrentWeek = () => {
     if (didInitialScroll.current) return;
     const off = weekOffsets.current[currentWeekMonday] ?? monthOffsets.current[currentMonthKey];
-    if (off != null && months.length > 0) {
+    if (off != null) {
       didInitialScroll.current = true;
-      setTimeout(() => scrollRef.current?.scrollTo({ y: Math.max(off - 8, 0), animated: false }), 60);
+      scrollRef.current?.scrollTo({ y: Math.max(off - 8, 0), animated: false });
     }
-  });
+  };
 
   const scrollToMonth = (key: string) => {
     const off = monthOffsets.current[key];
@@ -403,7 +407,11 @@ export default function TalkExchangeYearScreen() {
         </ScrollView>
       </View>
 
-      <ScrollView ref={scrollRef} contentContainerStyle={styles.container}>
+      <ScrollView
+        ref={scrollRef}
+        contentContainerStyle={styles.container}
+        onContentSizeChange={scrollToCurrentWeek}
+      >
         {months.map((m) => (
           <Fragment key={m.key}>
             <Text
@@ -415,7 +423,7 @@ export default function TalkExchangeYearScreen() {
               {m.title}
             </Text>
             {m.rows.map((w) => {
-              const slot = byWeek.get(w.monday) ?? {};
+              const slot = byWeek.get(w.monday) ?? { outgoing: [] };
               const upcoming = w.date >= todayISO;
               const events = eventsForDate(w.date);
               return (
@@ -424,6 +432,7 @@ export default function TalkExchangeYearScreen() {
                   style={[styles.weekendRow, !upcoming && styles.weekendPast]}
                   onLayout={(e) => {
                     weekOffsets.current[w.monday] = e.nativeEvent.layout.y;
+                    if (w.monday === currentWeekMonday) scrollToCurrentWeek();
                   }}
                 >
                   <Text style={styles.weekendDate}>{fmtDay(w.date)}</Text>
@@ -463,28 +472,34 @@ export default function TalkExchangeYearScreen() {
                         ) : null}
                       </Slot>
                     )}
-                    <Slot
-                      label={t('talkCoordinator.log.filter.outgoing')}
-                      accent="#b45309"
-                      bg="#fef3c7"
-                      entry={slot.outgoing}
-                      onPress={() => openSlot(w, 'outgoing', slot.outgoing)}
-                    >
-                      {slot.outgoing ? (
-                        <>
-                          <Text style={styles.slotMain} numberOfLines={1}>
-                            {slot.outgoing.publisherId ? pubById.get(slot.outgoing.publisherId) ?? '—' : '—'}
-                            {slot.outgoing.hostCongregationId
-                              ? ` → ${congById.get(slot.outgoing.hostCongregationId)?.name ?? ''}`
+                    <View style={styles.outCol}>
+                      <Text style={[styles.slotLabel, { color: '#b45309', marginBottom: 4 }]}>
+                        {t('talkCoordinator.log.filter.outgoing')}
+                      </Text>
+                      {slot.outgoing.map((o) => (
+                        <Pressable
+                          key={o.id}
+                          style={styles.outItem}
+                          onPress={() => openSlot(w, 'outgoing', o)}
+                        >
+                          <Text style={styles.outMain} numberOfLines={1}>
+                            {o.publisherId ? pubById.get(o.publisherId) ?? '—' : '—'}
+                            {o.hostCongregationId
+                              ? ` → ${congById.get(o.hostCongregationId)?.name ?? ''}`
                               : ''}
                           </Text>
-                          <Text style={styles.slotSub} numberOfLines={1}>
-                            {slot.outgoing.date !== w.date ? `${fmtDay(slot.outgoing.date)} · ` : ''}
-                            {talkLabel(slot.outgoing.publicTalkId) ?? ''}
+                          <Text style={styles.outSub} numberOfLines={1}>
+                            {o.date !== w.date ? `${fmtDay(o.date)}` : ''}
+                            {o.date !== w.date && talkLabel(o.publicTalkId) ? ' · ' : ''}
+                            {talkLabel(o.publicTalkId) ?? ''}
                           </Text>
-                        </>
-                      ) : null}
-                    </Slot>
+                        </Pressable>
+                      ))}
+                      <Pressable style={styles.outAdd} onPress={() => openSlot(w, 'outgoing', undefined)}>
+                        <Ionicons name="add" size={14} color="#b45309" />
+                        <Text style={styles.outAddText}>{t('talkCoordinator.log.addSlot')}</Text>
+                      </Pressable>
+                    </View>
                   </View>
                 </View>
               );
@@ -510,7 +525,11 @@ export default function TalkExchangeYearScreen() {
 
               {direction === 'incoming' ? (
                 <>
-                  {week?.address ? <Text style={styles.infoLine}>{week.address}</Text> : null}
+                  {week && (week.time || week.address) ? (
+                    <Text style={styles.infoLine}>
+                      {[week.time, week.address].filter(Boolean).join(' · ')}
+                    </Text>
+                  ) : null}
 
                   {(speakersQuery.data ?? []).length > 0 && (
                     <>
@@ -579,6 +598,7 @@ export default function TalkExchangeYearScreen() {
                       value={publisherId}
                       onChange={setPublisherId}
                       genderFilter="brother"
+                      requiredCapability="public_talk_speaker"
                     />
                   </View>
 
@@ -737,6 +757,12 @@ const styles = StyleSheet.create({
   slotMain: { fontSize: 13, fontWeight: '600', color: '#0f172a', marginTop: 3 },
   slotSub: { fontSize: 11, color: '#475569', marginTop: 1 },
   slotAdd: { fontSize: 12, color: '#94a3b8', marginTop: 4 },
+  outCol: { flex: 1, borderRadius: 10, padding: 8, backgroundColor: '#fffbeb', minHeight: 56 },
+  outItem: { paddingVertical: 4, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: '#fde68a' },
+  outMain: { fontSize: 13, fontWeight: '600', color: '#0f172a' },
+  outSub: { fontSize: 11, color: '#475569', marginTop: 1 },
+  outAdd: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingTop: 6 },
+  outAddText: { fontSize: 12, color: '#b45309', fontWeight: '600' },
   overlay: { flex: 1, backgroundColor: 'rgba(15,23,42,0.45)', justifyContent: 'center', paddingHorizontal: 16 },
   modalCard: { backgroundColor: '#fff', borderRadius: 14, padding: 18, maxHeight: '88%' },
   editorHead: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between' },
