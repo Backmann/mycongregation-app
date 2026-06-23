@@ -1359,6 +1359,8 @@
       "note": "Заметка",
       "address": "Адрес зала",
       "meetingDay": "День встречи",
+      "weekendMeeting": "Выходная встреча",
+      "moreFields": "Дополнительно",
       "meetingTime": "Время встречи",
       "mapUrl": "Ссылка на карту"
     },

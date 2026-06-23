@@ -43,6 +43,7 @@ export default function CongregationsScreen() {
   const [meetingDow, setMeetingDow] = useState<number | null>(null);
   const [meetingTime, setMeetingTime] = useState('');
   const [mapUrl, setMapUrl] = useState('');
+  const [showMore, setShowMore] = useState(false);
 
   const dayLabel = (dow: number) =>
     dayjs('2024-01-01').add(dow - 1, 'day').locale(i18n.language).format('dd');
@@ -87,6 +88,7 @@ export default function CongregationsScreen() {
     setMeetingDow(null);
     setMeetingTime('');
     setMapUrl('');
+    setShowMore(false);
     setModalOpen(true);
   };
 
@@ -101,6 +103,7 @@ export default function CongregationsScreen() {
     setMeetingDow(c.meetingDow ?? null);
     setMeetingTime(c.meetingTime ?? '');
     setMapUrl(c.mapUrl ?? '');
+    setShowMore(Boolean(c.city || c.address || c.mapUrl || c.contactName || c.contactPhone || c.note));
     setModalOpen(true);
   };
 
@@ -217,67 +220,79 @@ export default function CongregationsScreen() {
             <Text style={styles.fieldLabel}>{t('talkCoordinator.congregations.name')}</Text>
             <TextInput style={styles.input} value={name} onChangeText={setName} placeholderTextColor="#94a3b8" />
 
-            <Text style={styles.fieldLabel}>{t('talkCoordinator.congregations.city')}</Text>
-            <TextInput style={styles.input} value={city} onChangeText={setCity} placeholderTextColor="#94a3b8" />
-
-            <Text style={styles.fieldLabel}>{t('talkCoordinator.congregations.address')}</Text>
-            <TextInput style={styles.input} value={address} onChangeText={setAddress} placeholderTextColor="#94a3b8" />
-
-            <Text style={styles.fieldLabel}>{t('talkCoordinator.congregations.meetingDay')}</Text>
-            <View style={styles.dayRow}>
-              <Pressable
-                style={[styles.dayChip, meetingDow === null && styles.dayChipActive]}
-                onPress={() => setMeetingDow(null)}
-              >
-                <Text style={[styles.dayChipText, meetingDow === null && styles.dayChipTextActive]}>—</Text>
-              </Pressable>
-              {[1, 2, 3, 4, 5, 6, 7].map((d) => (
+            <Text style={styles.sectionLabel}>{t('talkCoordinator.congregations.weekendMeeting')}</Text>
+            <View style={styles.weekendBox}>
+              <Text style={styles.fieldLabel}>{t('talkCoordinator.congregations.meetingDay')}</Text>
+              <View style={styles.dayRow}>
                 <Pressable
-                  key={d}
-                  style={[styles.dayChip, meetingDow === d && styles.dayChipActive]}
-                  onPress={() => setMeetingDow(d)}
+                  style={[styles.dayChip, meetingDow === null && styles.dayChipActive]}
+                  onPress={() => setMeetingDow(null)}
                 >
-                  <Text style={[styles.dayChipText, meetingDow === d && styles.dayChipTextActive]}>
-                    {dayLabel(d)}
-                  </Text>
+                  <Text style={[styles.dayChipText, meetingDow === null && styles.dayChipTextActive]}>—</Text>
                 </Pressable>
-              ))}
+                {[6, 7].map((d) => (
+                  <Pressable
+                    key={d}
+                    style={[styles.dayChip, meetingDow === d && styles.dayChipActive]}
+                    onPress={() => setMeetingDow(d)}
+                  >
+                    <Text style={[styles.dayChipText, meetingDow === d && styles.dayChipTextActive]}>
+                      {dayLabel(d)}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+
+              <Text style={[styles.fieldLabel, { marginTop: 8 }]}>{t('talkCoordinator.congregations.meetingTime')}</Text>
+              <TextInput
+                style={styles.input}
+                value={meetingTime}
+                onChangeText={setMeetingTime}
+                placeholder="13:00"
+                placeholderTextColor="#94a3b8"
+              />
             </View>
 
-            <Text style={styles.fieldLabel}>{t('talkCoordinator.congregations.meetingTime')}</Text>
-            <TextInput
-              style={styles.input}
-              value={meetingTime}
-              onChangeText={setMeetingTime}
-              placeholder="13:00"
-              placeholderTextColor="#94a3b8"
-            />
+            <Pressable style={styles.moreToggle} onPress={() => setShowMore((v) => !v)}>
+              <Ionicons name={showMore ? 'chevron-down' : 'chevron-forward'} size={16} color="#0369a1" />
+              <Text style={styles.moreToggleText}>{t('talkCoordinator.congregations.moreFields')}</Text>
+            </Pressable>
 
-            <Text style={styles.fieldLabel}>{t('talkCoordinator.congregations.mapUrl')}</Text>
-            <TextInput
-              style={styles.input}
-              value={mapUrl}
-              onChangeText={setMapUrl}
-              placeholder="https://maps.google.com/…"
-              placeholderTextColor="#94a3b8"
-              autoCapitalize="none"
-              keyboardType="url"
-            />
+            {showMore && (
+              <View>
+                <Text style={styles.fieldLabel}>{t('talkCoordinator.congregations.city')}</Text>
+                <TextInput style={styles.input} value={city} onChangeText={setCity} placeholderTextColor="#94a3b8" />
 
-            <Text style={styles.fieldLabel}>{t('talkCoordinator.congregations.contactName')}</Text>
-            <TextInput style={styles.input} value={contactName} onChangeText={setContactName} placeholderTextColor="#94a3b8" />
+                <Text style={styles.fieldLabel}>{t('talkCoordinator.congregations.address')}</Text>
+                <TextInput style={styles.input} value={address} onChangeText={setAddress} placeholderTextColor="#94a3b8" />
 
-            <Text style={styles.fieldLabel}>{t('talkCoordinator.congregations.contactPhone')}</Text>
-            <TextInput
-              style={styles.input}
-              value={contactPhone}
-              onChangeText={setContactPhone}
-              keyboardType="phone-pad"
-              placeholderTextColor="#94a3b8"
-            />
+                <Text style={styles.fieldLabel}>{t('talkCoordinator.congregations.mapUrl')}</Text>
+                <TextInput
+                  style={styles.input}
+                  value={mapUrl}
+                  onChangeText={setMapUrl}
+                  placeholder="https://maps.google.com/…"
+                  placeholderTextColor="#94a3b8"
+                  autoCapitalize="none"
+                  keyboardType="url"
+                />
 
-            <Text style={styles.fieldLabel}>{t('talkCoordinator.congregations.note')}</Text>
-            <TextInput style={styles.input} value={note} onChangeText={setNote} multiline placeholderTextColor="#94a3b8" />
+                <Text style={styles.fieldLabel}>{t('talkCoordinator.congregations.contactName')}</Text>
+                <TextInput style={styles.input} value={contactName} onChangeText={setContactName} placeholderTextColor="#94a3b8" />
+
+                <Text style={styles.fieldLabel}>{t('talkCoordinator.congregations.contactPhone')}</Text>
+                <TextInput
+                  style={styles.input}
+                  value={contactPhone}
+                  onChangeText={setContactPhone}
+                  keyboardType="phone-pad"
+                  placeholderTextColor="#94a3b8"
+                />
+
+                <Text style={styles.fieldLabel}>{t('talkCoordinator.congregations.note')}</Text>
+                <TextInput style={styles.input} value={note} onChangeText={setNote} multiline placeholderTextColor="#94a3b8" />
+              </View>
+            )}
 
             <View style={styles.modalActions}>
               <Pressable style={styles.modalCancel} onPress={() => setModalOpen(false)} disabled={pending}>
@@ -357,4 +372,8 @@ const styles = StyleSheet.create({
   modalCancelText: { fontSize: 15, color: '#64748b', fontWeight: '600' },
   modalConfirm: { paddingVertical: 10, paddingHorizontal: 18, borderRadius: 10, backgroundColor: '#0ea5e9' },
   modalConfirmText: { fontSize: 15, color: '#fff', fontWeight: '600' },
+  sectionLabel: { fontSize: 13, fontWeight: '700', color: '#0f172a', marginTop: 12, marginBottom: 2 },
+  weekendBox: { backgroundColor: '#f8fafc', borderRadius: 10, borderWidth: 1, borderColor: '#e2e8f0', padding: 10, gap: 2 },
+  moreToggle: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 10, marginTop: 6 },
+  moreToggleText: { fontSize: 14, fontWeight: '600', color: '#0369a1' },
 });

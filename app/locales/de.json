@@ -1355,6 +1355,8 @@
       "note": "Notiz",
       "address": "Saaladresse",
       "meetingDay": "Versammlungstag",
+      "weekendMeeting": "Wochenendzusammenkunft",
+      "moreFields": "Weitere Angaben",
       "meetingTime": "Versammlungszeit",
       "mapUrl": "Kartenlink"
     },

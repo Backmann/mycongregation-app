@@ -1355,6 +1355,8 @@
       "note": "Note",
       "address": "Hall address",
       "meetingDay": "Meeting day",
+      "weekendMeeting": "Weekend meeting",
+      "moreFields": "More details",
       "meetingTime": "Meeting time",
       "mapUrl": "Map link"
     },
