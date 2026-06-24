@@ -16,6 +16,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import {
   Assignment,
   assignmentsApi,
+  absencesApi,
   CreateAssignmentInput,
   EventType,
   extractErrorMessage,
@@ -145,6 +146,10 @@ export default function ScheduleIndexScreen() {
     meetingSettingsQuery.data?.versions,
     weekStartISO,
   );
+  const absencesQuery = useQuery({
+    queryKey: ['absences', 'schedule'],
+    queryFn: () => absencesApi.list(),
+  });
   const {
     canEditDuties,
     canEditFieldServiceMeetings,
@@ -326,6 +331,26 @@ export default function ScheduleIndexScreen() {
   };
   const midweekReplacedBy = replacedBy('midweek');
   const weekendReplacedBy = replacedBy('weekend');
+  // Absence visibility: publishers away on each meeting's actual calendar day.
+  const mwDow = dowFor('midweek');
+  const weDow = dowFor('weekend');
+  const midweekDateISO = mwDow
+    ? formatDateISO(addDays(weekStart, mwDow - 1))
+    : null;
+  const weekendDateISO = weDow
+    ? formatDateISO(addDays(weekStart, weDow - 1))
+    : null;
+  const absentIdsFor = (dateISO: string | null): Set<string> => {
+    const set = new Set<string>();
+    if (!dateISO) return set;
+    for (const a of absencesQuery.data ?? []) {
+      const end = a.endDate ?? a.startDate;
+      if (a.startDate <= dateISO && end >= dateISO) set.add(a.publisherId);
+    }
+    return set;
+  };
+  const midweekAbsentIds = absentIdsFor(midweekDateISO);
+  const weekendAbsentIds = absentIdsFor(weekendDateISO);
   // A regional convention or circuit assembly means no congregation meetings
   // that week — both meetings, duties and cleaning are hidden (field-service
   // meetings stay, since they can still happen midweek).
@@ -651,6 +676,7 @@ export default function ScheduleIndexScreen() {
                       items={items}
                       numbers={numbers}
                       publishersById={publishersById}
+                      absentIds={midweekAbsentIds}
                     />
                   </CollapsibleMeetingBlock>
                 );
@@ -731,6 +757,7 @@ export default function ScheduleIndexScreen() {
                       numbers={numbers}
                       publishersById={publishersById}
                       onEdit={setEditing}
+                      absentIds={weekendAbsentIds}
                     />
                     <HospitalityZone
                       hospitality={hospitality}
@@ -974,12 +1001,14 @@ function MidweekSections({
   publishersById,
   onEdit,
   canEdit,
+  absentIds,
 }: {
   items: Assignment[];
   numbers: Map<string, number | null>;
   publishersById: Map<string, Publisher>;
   onEdit: (a: Assignment) => void;
   canEdit: boolean;
+  absentIds?: Set<string>;
 }) {
   const { t } = useTranslation();
 
@@ -1021,6 +1050,7 @@ function MidweekSections({
                   }
                   displayNumber={numbers.get(a.id) ?? null}
                   canEdit={canEdit}
+                  absentIds={absentIds}
                   accentColor={meta.color}
                 />
               ))}
@@ -1055,12 +1085,14 @@ function WeekendSections({
   publishersById,
   onEdit,
   canEdit,
+  absentIds,
 }: {
   items: Assignment[];
   numbers: Map<string, number | null>;
   publishersById: Map<string, Publisher>;
   onEdit: (a: Assignment) => void;
   canEdit: boolean;
+  absentIds?: Set<string>;
 }) {
   const { t } = useTranslation();
 
@@ -1101,6 +1133,7 @@ function WeekendSections({
         }
         displayNumber={numbers.get(a.id) ?? null}
         canEdit={canEdit}
+        absentIds={absentIds}
         accentColor={accentColor}
       />
     ));
@@ -1250,6 +1283,7 @@ function AssignmentRow({
   displayNumber,
   onEdit,
   canEdit,
+  absentIds,
 }: {
   assignment: Assignment;
   publisher: Publisher | null;
@@ -1258,6 +1292,7 @@ function AssignmentRow({
   displayNumber?: number | null;
   onEdit: (a: Assignment) => void;
   canEdit: boolean;
+  absentIds?: Set<string>;
 }) {
   const { t } = useTranslation();
   const { myPublisherId } = useMyPublisher();
@@ -1345,6 +1380,14 @@ function AssignmentRow({
             <View style={[styles.chip, styles.chipMain]}>
               <Ionicons name="person-outline" size={13} color="#0c4a6e" />
               <Text style={styles.chipMainText}>{publisher.displayName}</Text>
+              {absentIds?.has(publisher.id) ? (
+                <Ionicons
+                  name="airplane"
+                  size={12}
+                  color="#b45309"
+                  style={{ marginLeft: 4 }}
+                />
+              ) : null}
             </View>
           ) : hasInvitedSpeaker ? (
             <View style={[styles.chip, styles.chipSpeaker]}>
@@ -1372,6 +1415,14 @@ function AssignmentRow({
               <Text style={styles.chipAssistantText}>
                 {assistant.displayName}
               </Text>
+              {absentIds?.has(assistant.id) ? (
+                <Ionicons
+                  name="airplane"
+                  size={12}
+                  color="#b45309"
+                  style={{ marginLeft: 4 }}
+                />
+              ) : null}
             </View>
           )}
         </View>
