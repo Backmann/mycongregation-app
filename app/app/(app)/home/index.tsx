@@ -173,6 +173,7 @@ function MeetingsFeed() {
             it.weekStartDate === weekISO &&
             it.eventType === kind,
         )
+        .sort((a, b) => (a.partOrder ?? 999) - (b.partOrder ?? 999))
         .map((it) => ({
           section: taskSubsectionLabel(it, t),
           title: taskTitle(it, t),
@@ -346,7 +347,7 @@ function MeetingsFeed() {
                 <Text style={styles.partsTitle}>{t('home.meeting.myParts')}</Text>
                 {en.myParts.map((p, i) => (
                   <View key={i} style={styles.myPartItem}>
-                    {p.section ? (
+                    {p.section && p.section !== en.myParts[i - 1]?.section ? (
                       <Text style={styles.partSubsection} numberOfLines={1}>
                         {p.section}
                       </Text>
