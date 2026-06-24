@@ -11,8 +11,10 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { MonthCalendar } from './MonthCalendar';
+import { Ionicons } from '@expo/vector-icons';
 import {
   Absence,
+  absencesApi,
   CreateAbsenceInput,
   extractErrorMessage,
   Publisher,
@@ -20,6 +22,14 @@ import {
 } from '../lib/api';
 
 type Paginatedish<T> = { items?: T[]; data?: T[]; results?: T[] };
+
+function fmtRange(a: Absence, loc: string): string {
+  const start = new Date(`${a.startDate}T00:00:00`);
+  const opts = { day: 'numeric', month: 'long' } as const;
+  if (!a.endDate) return start.toLocaleDateString(loc, opts);
+  const end = new Date(`${a.endDate}T00:00:00`);
+  return `${start.toLocaleDateString(loc, opts)} – ${end.toLocaleDateString(loc, opts)}`;
+}
 
 interface Props {
   initial?: Absence;
@@ -75,6 +85,23 @@ export function AbsenceForm({
       : items;
     return filtered.slice(0, 60);
   }, [pubData, search]);
+
+  const { data: existingAbsences } = useQuery({
+    queryKey: ['absences', 'overlap', publisherId],
+    queryFn: () => absencesApi.list({ publisherId: publisherId!, all: true }),
+    enabled: !!publisherId,
+    staleTime: 60 * 1000,
+  });
+
+  const overlaps = useMemo<Absence[]>(() => {
+    if (!publisherId || !startDate) return [];
+    const selEnd = (multiDay ? endDate : startDate) ?? startDate;
+    return (existingAbsences ?? []).filter((a) => {
+      if (initial && a.id === initial.id) return false;
+      const aEnd = a.endDate ?? a.startDate;
+      return a.startDate <= selEnd && aEnd >= startDate;
+    });
+  }, [existingAbsences, publisherId, startDate, endDate, multiDay, initial]);
 
   const valid =
     !!publisherId &&
@@ -195,6 +222,16 @@ export function AbsenceForm({
         multiline
       />
 
+      {overlaps.length > 0 ? (
+        <View style={styles.overlapBox}>
+          <Ionicons name="alert-circle-outline" size={16} color="#b45309" />
+          <Text style={styles.overlapText}>
+            {t('absences.overlapWarning')}{' '}
+            {overlaps.map((a) => fmtRange(a, i18n.language)).join(', ')}
+          </Text>
+        </View>
+      ) : null}
+
       {error ? (
         <Text style={styles.errorText}>{extractErrorMessage(error)}</Text>
       ) : null}
@@ -301,6 +338,16 @@ const styles = StyleSheet.create({
     minHeight: 64,
     textAlignVertical: 'top',
   },
+  overlapBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#fef3c7',
+    borderRadius: 8,
+    padding: 10,
+    marginTop: 14,
+  },
+  overlapText: { flex: 1, fontSize: 13, color: '#92400e' },
   errorText: { color: '#b91c1c', marginTop: 12 },
   actions: { flexDirection: 'row', gap: 10, marginTop: 20 },
   btn: {

@@ -1163,6 +1163,7 @@
     "nextWeek": "Next week"
   },
   "absences": {
+    "overlapWarning": "This person already has an absence:",
     "title": {
       "list": "Absences",
       "detail": "Absence",
