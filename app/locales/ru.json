@@ -1160,6 +1160,12 @@
     },
     "coWife": "с женой {{name}}"
   },
+  "calendar": {
+    "today": "Сегодня",
+    "tomorrow": "Завтра",
+    "weekend": "Эти выходные",
+    "nextWeek": "Следующая неделя"
+  },
   "absences": {
     "title": {
       "list": "Отсутствия",

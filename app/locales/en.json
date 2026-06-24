@@ -1156,6 +1156,12 @@
     },
     "coWife": "with wife {{name}}"
   },
+  "calendar": {
+    "today": "Today",
+    "tomorrow": "Tomorrow",
+    "weekend": "This weekend",
+    "nextWeek": "Next week"
+  },
   "absences": {
     "title": {
       "list": "Absences",

@@ -10,13 +10,7 @@ import {
 } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import DateTimePicker, {
-  DateType,
-  useDefaultStyles,
-} from 'react-native-ui-datepicker';
-import dayjs from 'dayjs';
-import 'dayjs/locale/ru';
-import 'dayjs/locale/de';
+import { MonthCalendar } from './MonthCalendar';
 import {
   Absence,
   CreateAbsenceInput,
@@ -26,9 +20,6 @@ import {
 } from '../lib/api';
 
 type Paginatedish<T> = { items?: T[]; data?: T[]; results?: T[] };
-
-const toISO = (d: DateType | null | undefined): string | null =>
-  d ? dayjs(d).format('YYYY-MM-DD') : null;
 
 interface Props {
   initial?: Absence;
@@ -49,7 +40,6 @@ export function AbsenceForm({
   lockedPublisher,
 }: Props) {
   const { t, i18n } = useTranslation();
-  const defaultStyles = useDefaultStyles();
 
   const [publisherId, setPublisherId] = useState<string | null>(
     lockedPublisher?.id ?? initial?.publisherId ?? null,
@@ -176,37 +166,23 @@ export function AbsenceForm({
       </View>
 
       {/* ---- Date(s) ---- */}
-      {!multiDay ? (
-        <View style={styles.calendarBox}>
-          <Text style={styles.subLabel}>{t('absences.form.pickDate')}</Text>
-          <DateTimePicker
-            mode="single"
-            date={startDate ? dayjs(startDate) : undefined}
-            onChange={({ date }) => setStartDate(toISO(date))}
-            firstDayOfWeek={1}
-            locale={i18n.language}
-            styles={defaultStyles}
-          />
-        </View>
-      ) : (
-        <View style={styles.calendarBox}>
-          <Text style={styles.subLabel}>
-            {t('absences.form.pickStart')} — {t('absences.form.pickEnd')}
-          </Text>
-          <DateTimePicker
-            mode="range"
-            startDate={startDate ? dayjs(startDate) : undefined}
-            endDate={endDate ? dayjs(endDate) : undefined}
-            onChange={({ startDate: s, endDate: e }) => {
-              setStartDate(toISO(s));
-              setEndDate(toISO(e));
-            }}
-            firstDayOfWeek={1}
-            locale={i18n.language}
-            styles={defaultStyles}
-          />
-        </View>
-      )}
+      <View style={styles.calendarBox}>
+        <Text style={styles.subLabel}>
+          {multiDay
+            ? `${t('absences.form.pickStart')} — ${t('absences.form.pickEnd')}`
+            : t('absences.form.pickDate')}
+        </Text>
+        <MonthCalendar
+          mode={multiDay ? 'range' : 'single'}
+          start={startDate}
+          end={endDate}
+          onChange={({ start, end }) => {
+            setStartDate(start);
+            setEndDate(end);
+          }}
+          locale={i18n.language}
+        />
+      </View>
 
       {/* ---- Note ---- */}
       <Text style={styles.label}>{t('absences.fields.note')}</Text>
