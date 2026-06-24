@@ -22,8 +22,10 @@ import {
   Publisher,
   PublisherActivity,
   publishersApi,
+  meetingSettingsApi,
 } from '../lib/api';
 import { ActivitySummary, summarizeActivity } from '../lib/activity';
+import { effectiveVersionFor, meetingDate } from '../lib/meeting-schedule';
 import { useTranslation } from 'react-i18next';
 
 interface Props {
@@ -146,6 +148,25 @@ export function PublisherSelector({
     enabled: weekValid,
     staleTime: 5 * 60 * 1000,
   });
+  const { data: msOverview } = useQuery({
+    queryKey: ['meeting-settings', 'overview'],
+    queryFn: () => meetingSettingsApi.getOverview(),
+    enabled: weekValid,
+    staleTime: 10 * 60 * 1000,
+  });
+  // Exact calendar date of the meeting being assigned (midweek vs weekend),
+  // so an absence only warns on the day it actually covers.
+  const meetingDayISO = useMemo(() => {
+    if (!weekValid || !currentWeekStart) return null;
+    const v = effectiveVersionFor(msOverview?.versions, currentWeekStart);
+    if (!v) return null;
+    const dow = currentEventType === 'weekend' ? v.weekendDow : v.midweekDow;
+    if (!dow) return null;
+    const d = meetingDate(new Date(`${currentWeekStart}T00:00:00`), dow);
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return `${d.getFullYear()}-${mm}-${dd}`;
+  }, [msOverview, currentWeekStart, currentEventType, weekValid]);
   const absentThisWeek = useMemo(() => {
     const m = new Map<string, Absence>();
     if (!weekValid || !currentWeekStart || !weekAbsData) return m;
@@ -153,12 +174,17 @@ export function PublisherSelector({
     const we = weekEndISO(ws);
     for (const a of weekAbsData) {
       const end = a.endDate ?? a.startDate;
-      if (a.startDate <= we && end >= ws && !m.has(a.publisherId)) {
+      // Prefer the specific meeting day; if it can't be resolved (no settings),
+      // fall back to overlapping the whole week.
+      const hit = meetingDayISO
+        ? a.startDate <= meetingDayISO && end >= meetingDayISO
+        : a.startDate <= we && end >= ws;
+      if (hit && !m.has(a.publisherId)) {
         m.set(a.publisherId, a);
       }
     }
     return m;
-  }, [weekAbsData, currentWeekStart, weekValid]);
+  }, [weekAbsData, currentWeekStart, weekValid, meetingDayISO]);
   const selectedAbsence = value ? absentThisWeek.get(value) : undefined;
   // ----------------------------------------------------------------------
 
