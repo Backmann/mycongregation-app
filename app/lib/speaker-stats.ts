@@ -126,6 +126,7 @@ export interface OutgoingVisit {
   talkTitle: string | null;
   hostCongregationId: string | null;
   hostCongregation: string | null;
+  local: boolean; // true = at our hall (incoming-local), false = away
   tentative: boolean;
 }
 
@@ -160,7 +161,7 @@ export function computeOutgoingStats(
   const today = day(todayISO);
   const visits: OutgoingVisit[] = [];
   for (const e of entries) {
-    if (e.direction !== 'outgoing' || e.publisherId !== publisherId) continue;
+    if (e.publisherId !== publisherId) continue;
     const talk = e.publicTalkId ? talkById.get(e.publicTalkId) ?? null : null;
     const cong = e.hostCongregationId
       ? congById.get(e.hostCongregationId) ?? null
@@ -172,6 +173,7 @@ export function computeOutgoingStats(
       talkTitle: talk?.title ?? null,
       hostCongregationId: e.hostCongregationId ?? null,
       hostCongregation: cong?.name ?? null,
+      local: e.direction === 'incoming',
       tentative: e.status === 'tentative',
     });
   }

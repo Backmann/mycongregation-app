@@ -1375,16 +1375,17 @@
     "ourSpeakerProfile": {
       "title": "Unser Redner",
       "notFound": "Redner nicht gefunden",
-      "timesOut": "Einsätze",
+      "timesOut": "Vorträge",
       "lastTime": "zuletzt",
       "congregations": "Versammlungen",
-      "never": "noch nicht ausgesandt",
-      "recentWarning": "Dieser Bruder war kürzlich unterwegs — vielleicht andere an die Reihe kommen lassen.",
+      "never": "noch keine Vorträge",
+      "recentWarning": "Dieser Bruder hat kürzlich gesprochen — vielleicht andere an die Reihe kommen lassen.",
       "upcoming": "Anstehend",
-      "noUpcoming": "Keine geplanten Einsätze",
-      "history": "Einsatzverlauf",
-      "noHistory": "Noch keine Einsätze",
+      "noUpcoming": "Keine geplanten Vorträge",
+      "history": "Vortragsverlauf",
+      "noHistory": "Noch keine Vorträge",
       "noCongregation": "Keine Versammlung angegeben",
+      "here": "bei uns",
       "noTalk": "Kein Vortrag gewählt",
       "tentative": "vorläufig",
       "repertoire": "Repertoire (aus Verlauf)",
@@ -1392,14 +1393,14 @@
     },
     "ourSpeakers": {
       "title": "Unsere Redner",
-      "subtitle": "Unsere Brüder, die zu Vorträgen reisen",
-      "hint": "Brüder, die auswärts Vorträge halten. Oben steht, wer am längsten nicht unterwegs war.",
+      "subtitle": "Unsere Brüder, die öffentliche Vorträge halten",
+      "hint": "Brüder, die öffentliche Vorträge halten (bei uns und auswärts). Oben steht, wer am längsten nicht gesprochen hat.",
       "searchPlaceholder": "Nach Name suchen",
       "noResults": "Keine Treffer",
       "empty": "Noch keine Redner",
       "sort": {
         "recency": "Aktualität",
-        "trips": "Einsätze",
+        "trips": "Vorträge",
         "name": "Name"
       },
       "filter": {
@@ -1409,7 +1410,7 @@
         "never": "Nie"
       },
       "status": {
-        "never": "noch nicht ausgesandt",
+        "never": "noch keine Vorträge",
         "lastSeen": "{{count}}× · {{rel}}"
       }
     },

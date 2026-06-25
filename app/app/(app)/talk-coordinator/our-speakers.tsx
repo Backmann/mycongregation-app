@@ -77,14 +77,13 @@ export default function OurSpeakersScreen() {
   // Our speakers = active publishers who either carry the public-talk-speaker
   // capability or already have at least one outgoing trip on record.
   const ourSpeakers = useMemo(() => {
-    const withOutgoing = new Set<string>();
+    const withTalk = new Set<string>();
     for (const e of entriesQuery.data ?? [])
-      if (e.direction === 'outgoing' && e.publisherId)
-        withOutgoing.add(e.publisherId);
+      if (e.publisherId) withTalk.add(e.publisherId);
     return (publishersQuery.data?.data ?? []).filter(
       (p) =>
         p.isActive &&
-        (p.capabilities?.public_talk_speaker === true || withOutgoing.has(p.id)),
+        (p.capabilities?.public_talk_speaker === true || withTalk.has(p.id)),
     );
   }, [publishersQuery.data, entriesQuery.data]);
 

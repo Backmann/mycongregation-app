@@ -125,8 +125,10 @@ export default function OurSpeakerProfileScreen() {
       </View>
       <View style={styles.visitTalkCol}>
         <Text style={styles.visitHost} numberOfLines={1}>
-          {v.hostCongregation ??
-            t('talkCoordinator.ourSpeakerProfile.noCongregation')}
+          {v.local
+            ? t('talkCoordinator.ourSpeakerProfile.here')
+            : (v.hostCongregation ??
+              t('talkCoordinator.ourSpeakerProfile.noCongregation'))}
         </Text>
         {v.talkNumber != null ? (
           <Text style={styles.visitTalk} numberOfLines={2}>

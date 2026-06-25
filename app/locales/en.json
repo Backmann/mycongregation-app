@@ -1375,16 +1375,17 @@
     "ourSpeakerProfile": {
       "title": "Our speaker",
       "notFound": "Speaker not found",
-      "timesOut": "trips",
+      "timesOut": "talks",
       "lastTime": "last time",
       "congregations": "congregations",
-      "never": "not sent out yet",
-      "recentWarning": "This brother went out recently — consider giving others a turn.",
+      "never": "no talks yet",
+      "recentWarning": "This brother spoke recently — consider giving others a turn.",
       "upcoming": "Upcoming",
-      "noUpcoming": "No scheduled trips",
-      "history": "Trip history",
-      "noHistory": "No trips yet",
+      "noUpcoming": "No scheduled talks",
+      "history": "Talk history",
+      "noHistory": "No talks yet",
       "noCongregation": "No congregation set",
+      "here": "at our hall",
       "noTalk": "No talk selected",
       "tentative": "tentative",
       "repertoire": "Repertoire (from history)",
@@ -1392,24 +1393,24 @@
     },
     "ourSpeakers": {
       "title": "Our speakers",
-      "subtitle": "Our brothers who travel to give talks",
-      "hint": "Brothers who give public talks elsewhere. Sorted by who's been waiting longest.",
+      "subtitle": "Our brothers who give public talks",
+      "hint": "Brothers who give public talks (here and away). Sorted by who's been waiting longest.",
       "searchPlaceholder": "Search by name",
       "noResults": "No matches",
       "empty": "No speakers yet",
       "sort": {
         "recency": "Recency",
-        "trips": "Trips",
+        "trips": "Talks",
         "name": "Name"
       },
       "filter": {
         "all": "All",
         "upcoming": "Scheduled",
         "overdue": "Overdue",
-        "never": "Never out"
+        "never": "No talks"
       },
       "status": {
-        "never": "not sent out yet",
+        "never": "no talks yet",
         "lastSeen": "{{count}}× · {{rel}}"
       }
     },

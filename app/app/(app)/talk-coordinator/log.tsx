@@ -239,16 +239,14 @@ export default function TalkExchangeYearScreen() {
 
   // --- "From us": our outgoing speakers + recency, for the outgoing picker ---
   const ourPubs = useMemo(() => {
-    const withOutgoing = new Set<string>();
+    const withTalk = new Set<string>();
     for (const e of listQuery.data ?? [])
-      if (e.direction === 'outgoing' && e.publisherId)
-        withOutgoing.add(e.publisherId);
+      if (e.publisherId) withTalk.add(e.publisherId);
     return (publishersQuery.data?.data ?? []).filter(
       (p) =>
         p.isActive &&
         p.gender === 'brother' &&
-        (p.capabilities?.public_talk_speaker === true ||
-          withOutgoing.has(p.id)),
+        (p.capabilities?.public_talk_speaker === true || withTalk.has(p.id)),
     );
   }, [publishersQuery.data, listQuery.data]);
   const outStatsById = useMemo(() => {
