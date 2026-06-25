@@ -317,13 +317,18 @@ export default function TalkExchangeYearScreen() {
     return m;
   }, [listQuery.data]);
 
-  const eventsForDate = useMemo(() => {
+  const eventsForWeekend = useMemo(() => {
     const events = (eventsQuery.data ?? []).filter((ev) => PLANNER_EVENT_TYPES.has(ev.type ?? ''));
-    return (d: string): SpecialEvent[] =>
-      events.filter((ev) => {
+    return (monday: string): SpecialEvent[] => {
+      const sat = formatDateISO(addDays(new Date(`${monday}T00:00:00`), 5));
+      const sun = formatDateISO(addDays(new Date(`${monday}T00:00:00`), 6));
+      // A weekend event (e.g. a convention on Saturday OR Sunday) replaces
+      // the weekend public talk, so match any overlap with the Sat–Sun window.
+      return events.filter((ev) => {
         const end = ev.endDate ?? ev.date;
-        return ev.date <= d && d <= end;
+        return ev.date <= sun && sat <= end;
       });
+    };
   }, [eventsQuery.data]);
 
   const months = useMemo<MonthBlock[]>(() => {
@@ -696,7 +701,7 @@ export default function TalkExchangeYearScreen() {
             {m.rows.map((w) => {
               const slot = byWeek.get(w.monday) ?? { outgoing: [] };
               const upcoming = w.date >= todayISO;
-              const events = eventsForDate(w.date);
+              const events = eventsForWeekend(w.monday);
               return (
                 <View
                   key={w.monday}
