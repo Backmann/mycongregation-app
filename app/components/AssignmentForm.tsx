@@ -77,6 +77,7 @@ export function AssignmentForm({
   // needed, keeps the import surface untouched).
   const debounceBox = useState(() => ({
     timer: null as ReturnType<typeof setTimeout> | null,
+    pending: null as Partial<CreateAssignmentInput> | null,
   }))[0];
   const instant = async (patch: Partial<CreateAssignmentInput>) => {
     if (!onInstantSave) return;
@@ -93,8 +94,26 @@ export function AssignmentForm({
   };
   const queueInstant = (patch: Partial<CreateAssignmentInput>) => {
     if (!onInstantSave) return;
+    debounceBox.pending = { ...(debounceBox.pending ?? {}), ...patch };
     if (debounceBox.timer) clearTimeout(debounceBox.timer);
-    debounceBox.timer = setTimeout(() => void instant(patch), 1200);
+    debounceBox.timer = setTimeout(() => {
+      const p = debounceBox.pending;
+      debounceBox.pending = null;
+      debounceBox.timer = null;
+      if (p) void instant(p);
+    }, 1200);
+  };
+  // Save any pending edit immediately when a field loses focus, so a quick
+  // edit-then-close (e.g. clearing the manual theme) is never lost to the
+  // debounce window. Runs while the sheet is still open (assignment present).
+  const flushInstant = () => {
+    if (debounceBox.timer) {
+      clearTimeout(debounceBox.timer);
+      debounceBox.timer = null;
+    }
+    const p = debounceBox.pending;
+    debounceBox.pending = null;
+    if (p && onInstantSave) void onInstantSave(p);
   };
   const effectiveSubmitLabel = submitLabel ?? t('common.save');
   const EVENT_TYPE_OPTIONS: { value: EventType; label: string }[] = [
@@ -480,6 +499,7 @@ export function AssignmentForm({
               update('partTitle', v);
               queueInstant({ partTitle: v });
             }}
+            onBlur={flushInstant}
             placeholder={t('assignments.form.placeholder.talkThemeManual')}
             multiline
           />
@@ -511,6 +531,7 @@ export function AssignmentForm({
                 update('partTitle', v);
                 queueInstant({ partTitle: v });
               }}
+              onBlur={flushInstant}
               placeholder={t('assignments.form.placeholder.talkThemeManual')}
               multiline
             />
@@ -559,6 +580,7 @@ export function AssignmentForm({
                     // instant-save invited speaker
                     queueInstant({ speakerName: v || null });
                   }}
+                  onBlur={flushInstant}
                   placeholder={t('assignments.form.placeholder.speakerName')}
                 />
                 <FormField
@@ -568,6 +590,7 @@ export function AssignmentForm({
                     update('speakerCongregation', v || null);
                     queueInstant({ speakerCongregation: v || null });
                   }}
+                  onBlur={flushInstant}
                   placeholder={t('assignments.form.placeholder.fromCongregation')}
                 />
               </>
@@ -649,6 +672,7 @@ export function AssignmentForm({
             update('partTitle', v);
             queueInstant({ partTitle: v });
           }}
+          onBlur={flushInstant}
           placeholder={t('assignments.form.placeholder.partTitleOverride')}
           multiline
         />
@@ -659,6 +683,7 @@ export function AssignmentForm({
             update('partDurationMin', v ? parseInt(v, 10) : undefined);
             queueInstant({ partDurationMin: v ? parseInt(v, 10) : undefined });
           }}
+          onBlur={flushInstant}
           keyboardType="numeric"
           placeholder={t('assignments.form.placeholder.duration')}
         />
@@ -686,6 +711,7 @@ export function AssignmentForm({
             update('notes', v);
             queueInstant({ notes: v });
           }}
+          onBlur={flushInstant}
           multiline
         />
       </CollapsibleSection>
