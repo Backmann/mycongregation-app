@@ -1390,6 +1390,29 @@
       "repertoire": "Repertoire (from history)",
       "repertoireHint": "Talks in repertoire: {{n}}"
     },
+    "ourSpeakers": {
+      "title": "Our speakers",
+      "subtitle": "Our brothers who travel to give talks",
+      "hint": "Brothers who give public talks elsewhere. Sorted by who's been waiting longest.",
+      "searchPlaceholder": "Search by name",
+      "noResults": "No matches",
+      "empty": "No speakers yet",
+      "sort": {
+        "recency": "Recency",
+        "trips": "Trips",
+        "name": "Name"
+      },
+      "filter": {
+        "all": "All",
+        "upcoming": "Scheduled",
+        "overdue": "Overdue",
+        "never": "Never out"
+      },
+      "status": {
+        "never": "not sent out yet",
+        "lastSeen": "{{count}}× · {{rel}}"
+      }
+    },
     "title": "Talk coordinator",
     "intro": "Keep incoming and outgoing speakers, their talks and the directories. The “Incoming / Outgoing” log will live here.",
     "noAccess": "Available to the public talk coordinator.",

@@ -1390,6 +1390,29 @@
       "repertoire": "Repertoire (aus Verlauf)",
       "repertoireHint": "Vorträge im Repertoire: {{n}}"
     },
+    "ourSpeakers": {
+      "title": "Unsere Redner",
+      "subtitle": "Unsere Brüder, die zu Vorträgen reisen",
+      "hint": "Brüder, die auswärts Vorträge halten. Oben steht, wer am längsten nicht unterwegs war.",
+      "searchPlaceholder": "Nach Name suchen",
+      "noResults": "Keine Treffer",
+      "empty": "Noch keine Redner",
+      "sort": {
+        "recency": "Aktualität",
+        "trips": "Einsätze",
+        "name": "Name"
+      },
+      "filter": {
+        "all": "Alle",
+        "upcoming": "Geplant",
+        "overdue": "Überfällig",
+        "never": "Nie"
+      },
+      "status": {
+        "never": "noch nicht ausgesandt",
+        "lastSeen": "{{count}}× · {{rel}}"
+      }
+    },
     "title": "Redner-Koordinator",
     "intro": "Verwalte eingehende und ausgehende Redner, ihre Vorträge und die Verzeichnisse. Das Protokoll „Zu uns / Von uns“ erscheint hier.",
     "noAccess": "Verfügbar für den Verantwortlichen für öffentliche Vorträge.",

@@ -58,6 +58,13 @@ export default function TalkCoordinatorScreen() {
             subtitle={t('talkCoordinator.speakers.subtitle')}
             onPress={() => router.push('/talk-coordinator/speakers' as any)}
           />
+          <Row
+            icon="airplane-outline"
+            color="#0891b2"
+            title={t('talkCoordinator.ourSpeakers.title')}
+            subtitle={t('talkCoordinator.ourSpeakers.subtitle')}
+            onPress={() => router.push('/talk-coordinator/our-speakers' as any)}
+          />
         </View>
       </ScrollView>
     </SafeAreaView>
