@@ -143,7 +143,7 @@ export default function OurSpeakersScreen() {
 
   const appointmentLabel = (p: Publisher) =>
     p.appointment === 'elder' || p.appointment === 'ministerial_servant'
-      ? t(`appointment.${p.appointment}`)
+      ? t(`publishers.appointment.${p.appointment}`)
       : null;
 
   return (

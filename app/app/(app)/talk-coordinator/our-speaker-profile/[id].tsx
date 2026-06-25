@@ -107,7 +107,7 @@ export default function OurSpeakerProfileScreen() {
   const appointmentLabel =
     publisher.appointment === 'elder' ||
     publisher.appointment === 'ministerial_servant'
-      ? t(`appointment.${publisher.appointment}`)
+      ? t(`publishers.appointment.${publisher.appointment}`)
       : null;
 
   const fmtDate = (iso: string) =>
