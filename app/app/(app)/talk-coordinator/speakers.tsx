@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -11,6 +11,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
@@ -35,6 +36,8 @@ export default function SpeakersScreen() {
   const qc = useQueryClient();
 
   // editingId: a speaker id, or 'new' for the add form, or null
+  const { edit: editParam } = useLocalSearchParams<{ edit?: string }>();
+  const handledEditRef = useRef(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -118,6 +121,17 @@ export default function SpeakersScreen() {
     setTalkInput('');
     setEditingId(s.id);
   };
+
+  // Deep-link from the speaker profile screen: open the editor for ?edit=<id>
+  // once the list has loaded. Runs a single time so cancelling won't reopen it.
+  useEffect(() => {
+    if (handledEditRef.current || !editParam) return;
+    const sp = (listQuery.data ?? []).find((x) => x.id === editParam);
+    if (sp) {
+      handledEditRef.current = true;
+      startEdit(sp);
+    }
+  }, [editParam, listQuery.data]);
 
   const cancel = () => setEditingId(null);
 
@@ -323,7 +337,15 @@ export default function SpeakersScreen() {
               editor(s.id)
             ) : (
               <View key={s.id} style={styles.row}>
-                <Pressable style={{ flex: 1 }} onPress={() => startEdit(s)} disabled={pending}>
+                <Pressable
+                  style={{ flex: 1 }}
+                  onPress={() =>
+                    router.push(
+                      `/talk-coordinator/speaker-profile/${s.id}` as any,
+                    )
+                  }
+                  disabled={pending}
+                >
                   <Text style={styles.name}>{speakerName(s)}</Text>
                   {!!s.externalCongregation && <Text style={styles.sub}>{s.externalCongregation.name}</Text>}
                   {s.talkNumbers.length > 0 && (

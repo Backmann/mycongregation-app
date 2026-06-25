@@ -1342,7 +1342,36 @@
     "note": "Sie können dies jederzeit ändern.",
     "midweekDow": "Tag der Versammlung unter der Woche"
   },
+  "relative": {
+    "today": "heute",
+    "yesterday": "gestern",
+    "tomorrow": "morgen",
+    "ago": "vor {{value}}",
+    "in": "in {{value}}",
+    "d": "{{n}} T.",
+    "w": "{{n}} Wo.",
+    "mo": "{{n}} Mon.",
+    "y": "{{n}} J."
+  },
   "talkCoordinator": {
+    "speakerProfile": {
+      "title": "Redner",
+      "notFound": "Redner nicht gefunden",
+      "never": "noch nie",
+      "timesHere": "Mal bei uns",
+      "lastTime": "letztes Mal",
+      "avgInterval": "Abstand",
+      "recentWarning": "War kürzlich bei uns — eventuell zu früh für eine erneute Einladung.",
+      "upcoming": "Bevorstehende Besuche",
+      "noUpcoming": "Keine Besuche geplant",
+      "history": "Verlauf",
+      "noHistory": "War noch nicht da",
+      "noTalk": "Kein Vortrag angegeben",
+      "tentative": "vorläufig",
+      "repertoire": "Repertoire",
+      "repertoireLegend": "✓ — schon gehalten · hervorgehoben — noch nicht ({{fresh}})",
+      "edit": "Redner bearbeiten"
+    },
     "title": "Redner-Koordinator",
     "intro": "Verwalte eingehende und ausgehende Redner, ihre Vorträge und die Verzeichnisse. Das Protokoll „Zu uns / Von uns“ erscheint hier.",
     "noAccess": "Verfügbar für den Verantwortlichen für öffentliche Vorträge.",

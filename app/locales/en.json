@@ -1342,7 +1342,36 @@
     "note": "You can change this anytime.",
     "midweekDow": "Midweek meeting day"
   },
+  "relative": {
+    "today": "today",
+    "yesterday": "yesterday",
+    "tomorrow": "tomorrow",
+    "ago": "{{value}} ago",
+    "in": "in {{value}}",
+    "d": "{{n}}d",
+    "w": "{{n}}w",
+    "mo": "{{n}}mo",
+    "y": "{{n}}y"
+  },
   "talkCoordinator": {
+    "speakerProfile": {
+      "title": "Speaker",
+      "notFound": "Speaker not found",
+      "never": "not yet",
+      "timesHere": "times here",
+      "lastTime": "last time",
+      "avgInterval": "interval",
+      "recentWarning": "Visited recently — it may be too soon to invite again.",
+      "upcoming": "Upcoming visits",
+      "noUpcoming": "No visits scheduled",
+      "history": "History",
+      "noHistory": "Hasn't visited yet",
+      "noTalk": "No talk set",
+      "tentative": "tentative",
+      "repertoire": "Repertoire",
+      "repertoireLegend": "✓ — already given here · highlighted — not yet ({{fresh}})",
+      "edit": "Edit speaker"
+    },
     "title": "Talk coordinator",
     "intro": "Keep incoming and outgoing speakers, their talks and the directories. The “Incoming / Outgoing” log will live here.",
     "noAccess": "Available to the public talk coordinator.",
