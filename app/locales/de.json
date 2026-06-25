@@ -1396,7 +1396,7 @@
     "ourSpeakers": {
       "title": "Unsere Redner",
       "subtitle": "Unsere Brüder, die öffentliche Vorträge halten",
-      "hint": "Brüder, die öffentliche Vorträge halten (bei uns und auswärts). Oben steht, wer am längsten nicht gesprochen hat.",
+      "hint": "Brüder, die öffentliche Vorträge halten (bei uns und auswärts). Sortieren und filtern mit den Schaltflächen unten.",
       "searchPlaceholder": "Nach Name suchen",
       "noResults": "Keine Treffer",
       "empty": "Noch keine Redner",

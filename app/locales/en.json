@@ -1396,7 +1396,7 @@
     "ourSpeakers": {
       "title": "Our speakers",
       "subtitle": "Our brothers who give public talks",
-      "hint": "Brothers who give public talks (here and away). Sorted by who's been waiting longest.",
+      "hint": "Brothers who give public talks (here and away). Sort and filter with the buttons below.",
       "searchPlaceholder": "Search by name",
       "noResults": "No matches",
       "empty": "No speakers yet",
