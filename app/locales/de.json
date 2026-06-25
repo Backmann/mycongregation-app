@@ -1517,7 +1517,7 @@
       "fromDirectory": "Aus Verzeichnis",
       "speakerSearch": "Redner suchen",
       "brotherSearch": "Bruder nach Name suchen",
-      "moreSpeakers": "+{{n}} weitere — nach Name suchen",
+      "moreSpeakers": "Alle anzeigen ({{n}})",
       "speakerName": "Name des Redners",
       "speakerCong": "Versammlung",
       "givenTimes": "Gehalten: {{n}}×",

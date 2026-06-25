@@ -137,6 +137,8 @@ export default function TalkExchangeYearScreen() {
   const [speakerCongInput, setSpeakerCongInput] = useState('');
   const [speakerSearch, setSpeakerSearch] = useState('');
   const [pubSearch, setPubSearch] = useState('');
+  const [showAllSpeakers, setShowAllSpeakers] = useState(false);
+  const [showAllPubs, setShowAllPubs] = useState(false);
   const [incomingMode, setIncomingMode] = useState<'invited' | 'local'>('invited');
   const [hospitalityPublisherId, setHospitalityPublisherId] = useState<string | null>(null);
   const [publisherId, setPublisherId] = useState<string | null>(null);
@@ -225,14 +227,14 @@ export default function TalkExchangeYearScreen() {
     return filtered;
   }, [speakersQuery.data, speakerSearch, statsById]);
   const visibleSpeakers = useMemo(() => {
-    if (speakerSearch.trim()) return sortedSpeakers;
+    if (speakerSearch.trim() || showAllSpeakers) return sortedSpeakers;
     const top = sortedSpeakers.slice(0, 6);
     if (visitingSpeakerId && !top.some((sp) => sp.id === visitingSpeakerId)) {
       const sel = sortedSpeakers.find((sp) => sp.id === visitingSpeakerId);
       if (sel) return [sel, ...top];
     }
     return top;
-  }, [sortedSpeakers, speakerSearch, visitingSpeakerId]);
+  }, [sortedSpeakers, speakerSearch, visitingSpeakerId, showAllSpeakers]);
   const hiddenSpeakerCount = sortedSpeakers.length - visibleSpeakers.length;
 
   // --- "From us": our outgoing speakers + recency, for the outgoing picker ---
@@ -275,7 +277,8 @@ export default function TalkExchangeYearScreen() {
     return pool;
   }, [ourPubs, pubSearch, publishersQuery.data, outStatsById]);
   const visiblePubs = useMemo(() => {
-    const base = pubSearch.trim() ? sortedPubs : sortedPubs.slice(0, 6);
+    const base =
+      pubSearch.trim() || showAllPubs ? sortedPubs : sortedPubs.slice(0, 6);
     if (publisherId && !base.some((p) => p.id === publisherId)) {
       const sel = (publishersQuery.data?.data ?? []).find(
         (p) => p.id === publisherId,
@@ -283,10 +286,9 @@ export default function TalkExchangeYearScreen() {
       if (sel) return [sel, ...base];
     }
     return base;
-  }, [sortedPubs, pubSearch, publisherId, publishersQuery.data]);
-  const hiddenPubCount = pubSearch.trim()
-    ? 0
-    : Math.max(0, sortedPubs.length - 6);
+  }, [sortedPubs, pubSearch, publisherId, publishersQuery.data, showAllPubs]);
+  const hiddenPubCount =
+    pubSearch.trim() || showAllPubs ? 0 : Math.max(0, sortedPubs.length - 6);
 
   const byWeek = useMemo(() => {
     const m = new Map<string, SlotState>();
@@ -408,6 +410,10 @@ export default function TalkExchangeYearScreen() {
     );
     setHostCongregationId(entry?.hostCongregationId ?? null);
     setNote(entry?.note ?? '');
+    setSpeakerSearch('');
+    setPubSearch('');
+    setShowAllSpeakers(false);
+    setShowAllPubs(false);
     setOpen(true);
   };
 
@@ -684,20 +690,24 @@ export default function TalkExchangeYearScreen() {
             accessibilityRole="button"
           />
           <View style={styles.modalCard}>
-            <Pressable style={styles.modalClose} onPress={() => setOpen(false)} hitSlop={8} accessibilityRole="button">
-              <Ionicons name="close" size={22} color="#94a3b8" />
-            </Pressable>
-            <ScrollView keyboardShouldPersistTaps="handled">
-              <View style={styles.editorHead}>
+            <View style={styles.modalHeaderRow}>
+              <View style={styles.modalHeaderText}>
                 <Text style={styles.modalTitle}>
                   {direction === 'incoming'
                     ? t('talkCoordinator.log.filter.incoming')
                     : t('talkCoordinator.log.filter.outgoing')}
                 </Text>
-                <Text style={styles.editorDate}>
-                  {date ? dayjs(date).locale(i18n.language).format('dd, D MMM YYYY') : ''}
-                </Text>
+                {date ? (
+                  <Text style={styles.editorDate}>
+                    {dayjs(date).locale(i18n.language).format('dd, D MMM YYYY')}
+                  </Text>
+                ) : null}
               </View>
+              <Pressable style={styles.modalClose} onPress={() => setOpen(false)} hitSlop={8} accessibilityRole="button">
+                <Ionicons name="close" size={22} color="#94a3b8" />
+              </Pressable>
+            </View>
+            <ScrollView keyboardShouldPersistTaps="handled">
 
               {direction === 'incoming' ? (
                 <>
@@ -857,11 +867,16 @@ export default function TalkExchangeYearScreen() {
                           );
                         })}
                         {!speakerSearch && hiddenSpeakerCount > 0 ? (
-                          <Text style={styles.dirMore}>
-                            {t('talkCoordinator.log.moreSpeakers', {
-                              n: hiddenSpeakerCount,
-                            })}
-                          </Text>
+                          <Pressable
+                            onPress={() => setShowAllSpeakers(true)}
+                            style={styles.dirMoreBtn}
+                          >
+                            <Text style={styles.dirMore}>
+                              {t('talkCoordinator.log.moreSpeakers', {
+                                n: hiddenSpeakerCount,
+                              })}
+                            </Text>
+                          </Pressable>
                         ) : null}
                       </View>
                     </>
@@ -1042,11 +1057,16 @@ export default function TalkExchangeYearScreen() {
                       );
                     })}
                     {hiddenPubCount > 0 ? (
-                      <Text style={styles.dirMore}>
-                        {t('talkCoordinator.log.moreSpeakers', {
-                          n: hiddenPubCount,
-                        })}
-                      </Text>
+                      <Pressable
+                        onPress={() => setShowAllPubs(true)}
+                        style={styles.dirMoreBtn}
+                      >
+                        <Text style={styles.dirMore}>
+                          {t('talkCoordinator.log.moreSpeakers', {
+                            n: hiddenPubCount,
+                          })}
+                        </Text>
+                      </Pressable>
                     ) : null}
                   </View>
 
@@ -1214,11 +1234,20 @@ const styles = StyleSheet.create({
   outAdd: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingTop: 6 },
   outAddText: { fontSize: 12, color: '#b45309', fontWeight: '600' },
   overlay: { flex: 1, backgroundColor: 'rgba(15,23,42,0.45)', justifyContent: 'center', paddingHorizontal: 16 },
-  modalClose: { position: 'absolute', top: 10, right: 10, zIndex: 5, padding: 4 },
+  modalClose: { padding: 4, marginTop: -2 },
+  modalHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: 8,
+    marginBottom: 10,
+  },
+  modalHeaderText: { flex: 1 },
+  dirMoreBtn: { paddingVertical: 2 },
   modalCard: { backgroundColor: '#fff', borderRadius: 14, padding: 18, maxHeight: '88%' },
   editorHead: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between' },
   modalTitle: { fontSize: 16, fontWeight: '700', color: '#0f172a' },
-  editorDate: { fontSize: 13, color: '#0ea5e9', fontWeight: '600', textTransform: 'capitalize' },
+  editorDate: { fontSize: 13, color: '#0ea5e9', fontWeight: '600', textTransform: 'capitalize', marginTop: 2 },
   infoLine: { fontSize: 12, color: '#64748b', marginTop: 4 },
   histBox: { marginTop: 8, padding: 10, borderRadius: 10, backgroundColor: '#eff6ff', borderWidth: 1, borderColor: '#bfdbfe' },
   histCount: { fontSize: 12, fontWeight: '700', color: '#1d4ed8', marginBottom: 4 },

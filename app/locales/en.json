@@ -1517,7 +1517,7 @@
       "fromDirectory": "From directory",
       "speakerSearch": "Find a speaker",
       "brotherSearch": "Find a brother by name",
-      "moreSpeakers": "+{{n}} more — search by name",
+      "moreSpeakers": "Show all ({{n}})",
       "speakerName": "Speaker name",
       "speakerCong": "Congregation",
       "givenTimes": "Given times: {{n}}",
