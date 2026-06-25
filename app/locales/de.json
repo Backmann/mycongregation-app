@@ -1516,6 +1516,7 @@
       "tripDate": "Reisedatum",
       "fromDirectory": "Aus Verzeichnis",
       "speakerSearch": "Redner suchen",
+      "brotherSearch": "Bruder nach Name suchen",
       "moreSpeakers": "+{{n}} weitere — nach Name suchen",
       "speakerName": "Name des Redners",
       "speakerCong": "Versammlung",

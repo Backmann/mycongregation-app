@@ -40,8 +40,11 @@ import {
 import { usePermissions } from '../../../lib/permissions';
 import {
   computeSpeakerStats,
+  computeOutgoingStats,
+  OutgoingStats,
   SpeakerStats,
   visitedRecently,
+  wentOutRecently,
 } from '../../../lib/speaker-stats';
 import { formatRelativeDay } from '../../../lib/relative-time';
 import { PublisherSelector } from '../../../components/PublisherSelector';
@@ -133,6 +136,7 @@ export default function TalkExchangeYearScreen() {
   const [speakerNameInput, setSpeakerNameInput] = useState('');
   const [speakerCongInput, setSpeakerCongInput] = useState('');
   const [speakerSearch, setSpeakerSearch] = useState('');
+  const [pubSearch, setPubSearch] = useState('');
   const [incomingMode, setIncomingMode] = useState<'invited' | 'local'>('invited');
   const [hospitalityPublisherId, setHospitalityPublisherId] = useState<string | null>(null);
   const [publisherId, setPublisherId] = useState<string | null>(null);
@@ -230,6 +234,59 @@ export default function TalkExchangeYearScreen() {
     return top;
   }, [sortedSpeakers, speakerSearch, visitingSpeakerId]);
   const hiddenSpeakerCount = sortedSpeakers.length - visibleSpeakers.length;
+
+  // --- "From us": our outgoing speakers + recency, for the outgoing picker ---
+  const ourPubs = useMemo(() => {
+    const withOutgoing = new Set<string>();
+    for (const e of listQuery.data ?? [])
+      if (e.direction === 'outgoing' && e.publisherId)
+        withOutgoing.add(e.publisherId);
+    return (publishersQuery.data?.data ?? []).filter(
+      (p) =>
+        p.isActive &&
+        p.gender === 'brother' &&
+        (p.capabilities?.public_talk_speaker === true ||
+          withOutgoing.has(p.id)),
+    );
+  }, [publishersQuery.data, listQuery.data]);
+  const outStatsById = useMemo(() => {
+    const tmap = new Map<string, PublicTalk>();
+    for (const tk of talksQuery.data?.data ?? []) tmap.set(tk.id, tk);
+    const m = new Map<string, OutgoingStats>();
+    for (const p of ourPubs)
+      m.set(p.id, computeOutgoingStats(p.id, listQuery.data ?? [], tmap, congById, today));
+    return m;
+  }, [ourPubs, listQuery.data, talksQuery.data, congById, today]);
+  const sortedPubs = useMemo(() => {
+    const q = pubSearch.trim().toLowerCase();
+    const pool = q
+      ? (publishersQuery.data?.data ?? []).filter(
+          (p) =>
+            p.isActive &&
+            p.gender === 'brother' &&
+            p.displayName.toLowerCase().includes(q),
+        )
+      : [...ourPubs];
+    pool.sort((a, b) => {
+      const la = outStatsById.get(a.id)?.lastVisit?.date ?? '';
+      const lb = outStatsById.get(b.id)?.lastVisit?.date ?? '';
+      return la.localeCompare(lb) || a.displayName.localeCompare(b.displayName);
+    });
+    return pool;
+  }, [ourPubs, pubSearch, publishersQuery.data, outStatsById]);
+  const visiblePubs = useMemo(() => {
+    const base = pubSearch.trim() ? sortedPubs : sortedPubs.slice(0, 6);
+    if (publisherId && !base.some((p) => p.id === publisherId)) {
+      const sel = (publishersQuery.data?.data ?? []).find(
+        (p) => p.id === publisherId,
+      );
+      if (sel) return [sel, ...base];
+    }
+    return base;
+  }, [sortedPubs, pubSearch, publisherId, publishersQuery.data]);
+  const hiddenPubCount = pubSearch.trim()
+    ? 0
+    : Math.max(0, sortedPubs.length - 6);
 
   const byWeek = useMemo(() => {
     const m = new Map<string, SlotState>();
@@ -890,14 +947,107 @@ export default function TalkExchangeYearScreen() {
                 </>
               ) : (
                 <>
-                  <View style={{ marginTop: 6 }}>
-                    <PublisherSelector
-                      label={t('talkCoordinator.log.ourBrother')}
-                      value={publisherId}
-                      onChange={setPublisherId}
-                      genderFilter="brother"
-                      requiredCapability="public_talk_speaker"
+                  <Text style={styles.fieldLabel}>
+                    {t('talkCoordinator.log.ourBrother')}
+                  </Text>
+                  <View style={styles.dirSearchRow}>
+                    <Ionicons name="search" size={15} color="#94a3b8" />
+                    <TextInput
+                      style={styles.dirSearchInput}
+                      value={pubSearch}
+                      onChangeText={setPubSearch}
+                      placeholder={t('talkCoordinator.log.brotherSearch')}
+                      placeholderTextColor="#94a3b8"
                     />
+                    {pubSearch ? (
+                      <Pressable hitSlop={8} onPress={() => setPubSearch('')}>
+                        <Ionicons
+                          name="close-circle"
+                          size={15}
+                          color="#cbd5e1"
+                        />
+                      </Pressable>
+                    ) : null}
+                  </View>
+                  <View style={styles.dirList}>
+                    {visiblePubs.map((p) => {
+                      const sel = publisherId === p.id;
+                      const st = outStatsById.get(p.id);
+                      const recent = st ? wentOutRecently(st, today) : false;
+                      return (
+                        <Pressable
+                          key={p.id}
+                          style={[styles.dirRow, sel && styles.dirRowActive]}
+                          onPress={() => setPublisherId(sel ? null : p.id)}
+                        >
+                          <View style={{ flex: 1 }}>
+                            <Text
+                              style={[
+                                styles.dirName,
+                                sel && styles.dirNameActive,
+                              ]}
+                            >
+                              {p.displayName}
+                            </Text>
+                          </View>
+                          {st && (st.count > 0 || st.nextVisit) ? (
+                            <View style={styles.dirBadgeCol}>
+                              {st.count > 0 && st.lastVisit ? (
+                                <Text
+                                  style={[
+                                    styles.dirBadge,
+                                    recent && styles.dirBadgeRecent,
+                                  ]}
+                                >
+                                  {t('talkCoordinator.ourSpeakers.status.lastSeen', {
+                                    count: st.count,
+                                    rel: formatRelativeDay(
+                                      st.lastVisit.date,
+                                      today,
+                                      t,
+                                    ),
+                                  })}
+                                </Text>
+                              ) : null}
+                              {st.nextVisit ? (
+                                <View style={styles.dirUpcoming}>
+                                  <Ionicons
+                                    name="airplane"
+                                    size={10}
+                                    color="#0369a1"
+                                  />
+                                  <Text style={styles.dirUpcomingText}>
+                                    {formatRelativeDay(
+                                      st.nextVisit.date,
+                                      today,
+                                      t,
+                                    )}
+                                  </Text>
+                                </View>
+                              ) : null}
+                            </View>
+                          ) : (
+                            <Text style={styles.dirNew}>
+                              {t('talkCoordinator.ourSpeakers.status.never')}
+                            </Text>
+                          )}
+                          {sel ? (
+                            <Ionicons
+                              name="checkmark-circle"
+                              size={18}
+                              color="#0ea5e9"
+                            />
+                          ) : null}
+                        </Pressable>
+                      );
+                    })}
+                    {hiddenPubCount > 0 ? (
+                      <Text style={styles.dirMore}>
+                        {t('talkCoordinator.log.moreSpeakers', {
+                          n: hiddenPubCount,
+                        })}
+                      </Text>
+                    ) : null}
                   </View>
 
                   <Text style={styles.fieldLabel}>{t('talkCoordinator.log.hostCongregation')}</Text>
