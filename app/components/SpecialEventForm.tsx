@@ -19,6 +19,7 @@ import DateTimePicker, {
 } from 'react-native-ui-datepicker';
 import { circuitOverseerApi } from '../lib/api';
 import { FormChips } from './FormChips';
+import { MonthCalendar } from './MonthCalendar';
 
 export const EVENT_TYPES = [
   'regional_convention',
@@ -288,36 +289,20 @@ export function SpecialEventForm({
         </Pressable>
         {showDate && (
           <View style={styles.inlineCard}>
-            {multiDay ? (
-              <DateTimePicker
-                mode="range"
-                startDate={value.date ? dayjs(value.date) : undefined}
-                endDate={value.endDate ? dayjs(value.endDate) : undefined}
-                firstDayOfWeek={1}
-                locale={locale}
-                onChange={({ startDate, endDate }) =>
-                  set({
-                    date: startDate
-                      ? dayjs(startDate).format('YYYY-MM-DD')
-                      : '',
-                    endDate: endDate ? dayjs(endDate).format('YYYY-MM-DD') : '',
-                  })
-                }
-                styles={dpStyles}
-              />
-            ) : (
-              <DateTimePicker
-                mode="single"
-                date={value.date ? dayjs(value.date) : undefined}
-                firstDayOfWeek={1}
-                locale={locale}
-                onChange={({ date }) => {
-                  set({ date: date ? dayjs(date).format('YYYY-MM-DD') : '' });
+            <MonthCalendar
+              mode={multiDay ? 'range' : 'single'}
+              start={value.date || null}
+              end={value.endDate || null}
+              onChange={({ start, end }) => {
+                if (multiDay) {
+                  set({ date: start ?? '', endDate: end ?? '' });
+                } else {
+                  set({ date: start ?? '' });
                   setShowDate(false);
-                }}
-                styles={dpStyles}
-              />
-            )}
+                }
+              }}
+              locale={locale}
+            />
           </View>
         )}
       </Field>
