@@ -11,7 +11,8 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "lint": "expo lint",
-    "i18n:check": "node scripts/check-i18n-drift.mjs"
+    "i18n:check": "node scripts/check-i18n-drift.mjs && node scripts/check-i18n-usage.mjs",
+    "i18n:usage": "node scripts/check-i18n-usage.mjs"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
