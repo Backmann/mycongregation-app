@@ -34,6 +34,10 @@ export default function TalkCoordinatorLayout() {
         name="speaker-profile/[id]"
         options={{ title: t('talkCoordinator.speakerProfile.title') }}
       />
+      <Stack.Screen
+        name="our-speaker-profile/[id]"
+        options={{ title: t('talkCoordinator.ourSpeakerProfile.title') }}
+      />
     </Stack>
   );
 }
