@@ -118,17 +118,26 @@ export default function SpeakersScreen() {
           Math.abs(dayDiff(st.lastVisit.date, today)) > 120
         );
       });
-    const nameOf = (sp: VisitingSpeaker) => speakerName(sp).toLowerCase();
+    const nameKey = (sp: VisitingSpeaker) =>
+      `${sp.lastName ?? ''} ${sp.firstName}`.toLowerCase().trim();
+    const recencyKey = (sp: VisitingSpeaker) => {
+      const st = statsById.get(sp.id);
+      if (st?.lastVisit) return `1_${st.lastVisit.date}`;
+      // First-timers: order by nearest upcoming visit (soonest first);
+      // unscheduled ones fall after the scheduled.
+      return `0_${st?.nextVisit?.date ?? '9999-99-99'}`;
+    };
     list.sort((a, b) => {
-      if (sortMode === 'name') return nameOf(a).localeCompare(nameOf(b));
+      if (sortMode === 'name') return nameKey(a).localeCompare(nameKey(b));
       if (sortMode === 'congregation') {
         const ca = a.externalCongregation?.name ?? '\uffff';
         const cb = b.externalCongregation?.name ?? '\uffff';
-        return ca.localeCompare(cb) || nameOf(a).localeCompare(nameOf(b));
+        return ca.localeCompare(cb) || nameKey(a).localeCompare(nameKey(b));
       }
-      const la = statsById.get(a.id)?.lastVisit?.date ?? '';
-      const lb = statsById.get(b.id)?.lastVisit?.date ?? '';
-      return la.localeCompare(lb) || nameOf(a).localeCompare(nameOf(b));
+      return (
+        recencyKey(a).localeCompare(recencyKey(b)) ||
+        nameKey(a).localeCompare(nameKey(b))
+      );
     });
     return list;
   }, [listQuery.data, search, filterMode, sortMode, statsById, today]);
