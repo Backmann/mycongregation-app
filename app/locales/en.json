@@ -1415,7 +1415,24 @@
       "talkNumberPlaceholder": "Talk no.",
       "talksCount": "Talks: {{n}}",
       "newCongregation": "New",
-      "newCongregationPlaceholder": "Congregation name"
+      "newCongregationPlaceholder": "Congregation name",
+      "searchPlaceholder": "Search by name or congregation",
+      "noResults": "No matches",
+      "status": {
+        "never": "not visited yet",
+        "lastSeen": "{{count}}× · {{rel}}"
+      },
+      "sort": {
+        "recency": "By recency",
+        "congregation": "By congregation",
+        "name": "By name"
+      },
+      "filter": {
+        "all": "All",
+        "upcoming": "Upcoming",
+        "overdue": "Overdue",
+        "never": "New"
+      }
     },
     "log": {
       "title": "Incoming / Outgoing log",

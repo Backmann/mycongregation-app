@@ -1419,7 +1419,24 @@
       "talkNumberPlaceholder": "№ речи",
       "talksCount": "Речей: {{n}}",
       "newCongregation": "Новое",
-      "newCongregationPlaceholder": "Название собрания"
+      "newCongregationPlaceholder": "Название собрания",
+      "searchPlaceholder": "Поиск по имени или собранию",
+      "noResults": "Никого не найдено",
+      "status": {
+        "never": "ещё не приезжал",
+        "lastSeen": "{{count}}× · {{rel}}"
+      },
+      "sort": {
+        "recency": "По давности",
+        "congregation": "По собранию",
+        "name": "По имени"
+      },
+      "filter": {
+        "all": "Все",
+        "upcoming": "Скоро будет",
+        "overdue": "Давно не было",
+        "never": "Ещё не был"
+      }
     },
     "log": {
       "title": "Журнал «К нам / От нас»",

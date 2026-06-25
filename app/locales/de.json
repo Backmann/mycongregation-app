@@ -1415,7 +1415,24 @@
       "talkNumberPlaceholder": "Vortrag-Nr.",
       "talksCount": "Vorträge: {{n}}",
       "newCongregation": "Neu",
-      "newCongregationPlaceholder": "Versammlungsname"
+      "newCongregationPlaceholder": "Versammlungsname",
+      "searchPlaceholder": "Nach Name oder Versammlung suchen",
+      "noResults": "Keine Treffer",
+      "status": {
+        "never": "noch nicht da gewesen",
+        "lastSeen": "{{count}}× · {{rel}}"
+      },
+      "sort": {
+        "recency": "Nach Aktualität",
+        "congregation": "Nach Versammlung",
+        "name": "Nach Name"
+      },
+      "filter": {
+        "all": "Alle",
+        "upcoming": "Bald",
+        "overdue": "Lange her",
+        "never": "Neu"
+      }
     },
     "log": {
       "title": "Protokoll „Zu uns / Von uns“",

@@ -20,9 +20,17 @@ import {
   visitingSpeakersApi,
   externalCongregationsApi,
   publicTalksApi,
+  talkExchangeApi,
+  PublicTalk,
   extractErrorMessage,
 } from '../../../lib/api';
 import { usePermissions } from '../../../lib/permissions';
+import {
+  computeSpeakerStats,
+  SpeakerStats,
+  visitedRecently,
+} from '../../../lib/speaker-stats';
+import { dayDiff, formatRelativeDay } from '../../../lib/relative-time';
 
 const QK = ['visiting-speakers'] as const;
 
@@ -58,12 +66,72 @@ export default function SpeakersScreen() {
     queryKey: ['public-talks', 'all'],
     queryFn: () => publicTalksApi.list({ includeInactive: true, limit: 300 }),
   });
+  const entriesQuery = useQuery({
+    queryKey: ['talk-exchange'],
+    queryFn: () => talkExchangeApi.list(),
+  });
 
   const titleByNumber = useMemo(() => {
     const map = new Map<number, string>();
     for (const pt of talksQuery.data?.data ?? []) map.set(pt.number, pt.title);
     return map;
   }, [talksQuery.data]);
+
+  const [search, setSearch] = useState('');
+  const [sortMode, setSortMode] = useState<
+    'recency' | 'congregation' | 'name'
+  >('recency');
+  const [filterMode, setFilterMode] = useState<
+    'all' | 'upcoming' | 'overdue' | 'never'
+  >('all');
+  const today = new Date().toLocaleDateString('en-CA');
+  const talkById = useMemo(() => {
+    const m = new Map<string, PublicTalk>();
+    for (const tk of talksQuery.data?.data ?? []) m.set(tk.id, tk);
+    return m;
+  }, [talksQuery.data]);
+  const statsById = useMemo(() => {
+    const m = new Map<string, SpeakerStats>();
+    const entries = entriesQuery.data ?? [];
+    for (const sp of listQuery.data ?? [])
+      m.set(sp.id, computeSpeakerStats(sp, entries, talkById, today));
+    return m;
+  }, [listQuery.data, entriesQuery.data, talkById, today]);
+  const rows = useMemo(() => {
+    let list = [...(listQuery.data ?? [])];
+    const q = search.trim().toLowerCase();
+    if (q)
+      list = list.filter(
+        (sp) =>
+          speakerName(sp).toLowerCase().includes(q) ||
+          (sp.externalCongregation?.name ?? '').toLowerCase().includes(q),
+      );
+    if (filterMode !== 'all')
+      list = list.filter((sp) => {
+        const st = statsById.get(sp.id);
+        if (!st) return false;
+        if (filterMode === 'upcoming') return !!st.nextVisit;
+        if (filterMode === 'never') return st.count === 0 && !st.nextVisit;
+        return (
+          !!st.lastVisit &&
+          !st.nextVisit &&
+          Math.abs(dayDiff(st.lastVisit.date, today)) > 120
+        );
+      });
+    const nameOf = (sp: VisitingSpeaker) => speakerName(sp).toLowerCase();
+    list.sort((a, b) => {
+      if (sortMode === 'name') return nameOf(a).localeCompare(nameOf(b));
+      if (sortMode === 'congregation') {
+        const ca = a.externalCongregation?.name ?? '\uffff';
+        const cb = b.externalCongregation?.name ?? '\uffff';
+        return ca.localeCompare(cb) || nameOf(a).localeCompare(nameOf(b));
+      }
+      const la = statsById.get(a.id)?.lastVisit?.date ?? '';
+      const lb = statsById.get(b.id)?.lastVisit?.date ?? '';
+      return la.localeCompare(lb) || nameOf(a).localeCompare(nameOf(b));
+    });
+    return list;
+  }, [listQuery.data, search, filterMode, sortMode, statsById, today]);
 
   const invalidate = () => qc.invalidateQueries({ queryKey: QK });
   const showError = (e: unknown) => {
@@ -193,7 +261,6 @@ export default function SpeakersScreen() {
     );
   }
 
-  const rows = listQuery.data ?? [];
   const congregations = congQuery.data ?? [];
 
   const editor = (key: string) => (
@@ -329,8 +396,71 @@ export default function SpeakersScreen() {
           </Pressable>
         )}
 
+        {editingId === null ? (
+          <View style={styles.toolbar}>
+            <View style={styles.searchRow}>
+              <Ionicons name="search" size={16} color="#94a3b8" />
+              <TextInput
+                style={styles.searchInput}
+                value={search}
+                onChangeText={setSearch}
+                placeholder={t('talkCoordinator.speakers.searchPlaceholder')}
+                placeholderTextColor="#94a3b8"
+              />
+              {search ? (
+                <Pressable hitSlop={8} onPress={() => setSearch('')}>
+                  <Ionicons name="close-circle" size={16} color="#cbd5e1" />
+                </Pressable>
+              ) : null}
+            </View>
+            <View style={styles.segmentRow}>
+              {(['recency', 'congregation', 'name'] as const).map((m) => (
+                <Pressable
+                  key={m}
+                  style={[styles.segment, sortMode === m && styles.segmentActive]}
+                  onPress={() => setSortMode(m)}
+                >
+                  <Text
+                    style={[
+                      styles.segmentText,
+                      sortMode === m && styles.segmentTextActive,
+                    ]}
+                  >
+                    {t(`talkCoordinator.speakers.sort.${m}`)}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+            <View style={styles.filterRow}>
+              {(['all', 'upcoming', 'overdue', 'never'] as const).map((m) => (
+                <Pressable
+                  key={m}
+                  style={[
+                    styles.filterChip,
+                    filterMode === m && styles.filterChipActive,
+                  ]}
+                  onPress={() => setFilterMode(m)}
+                >
+                  <Text
+                    style={[
+                      styles.filterChipText,
+                      filterMode === m && styles.filterChipTextActive,
+                    ]}
+                  >
+                    {t(`talkCoordinator.speakers.filter.${m}`)}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+          </View>
+        ) : null}
+
         {rows.length === 0 && editingId !== 'new' ? (
-          <Text style={styles.empty}>{t('talkCoordinator.speakers.empty')}</Text>
+          <Text style={styles.empty}>
+            {search || filterMode !== 'all'
+              ? t('talkCoordinator.speakers.noResults')
+              : t('talkCoordinator.speakers.empty')}
+          </Text>
         ) : (
           rows.map((s) =>
             editingId === s.id ? (
@@ -347,12 +477,50 @@ export default function SpeakersScreen() {
                   disabled={pending}
                 >
                   <Text style={styles.name}>{speakerName(s)}</Text>
-                  {!!s.externalCongregation && <Text style={styles.sub}>{s.externalCongregation.name}</Text>}
-                  {s.talkNumbers.length > 0 && (
-                    <Text style={styles.sub} numberOfLines={1}>
-                      {t('talkCoordinator.speakers.talksCount', { n: s.talkNumbers.length })}
+                  {!!s.externalCongregation && (
+                    <Text style={styles.sub}>
+                      {s.externalCongregation.name}
                     </Text>
                   )}
+                  {(() => {
+                    const st = statsById.get(s.id);
+                    if (!st || (st.count === 0 && !st.nextVisit))
+                      return (
+                        <Text style={styles.statusNever}>
+                          {t('talkCoordinator.speakers.status.never')}
+                        </Text>
+                      );
+                    const recent = visitedRecently(st, today);
+                    return (
+                      <View style={styles.statusRow}>
+                        {st.count > 0 && st.lastVisit ? (
+                          <Text
+                            style={[
+                              styles.statusText,
+                              recent && styles.statusRecent,
+                            ]}
+                          >
+                            {t('talkCoordinator.speakers.status.lastSeen', {
+                              count: st.count,
+                              rel: formatRelativeDay(st.lastVisit.date, today, t),
+                            })}
+                          </Text>
+                        ) : null}
+                        {st.nextVisit ? (
+                          <View style={styles.upcomingTag}>
+                            <Ionicons
+                              name="airplane"
+                              size={11}
+                              color="#0369a1"
+                            />
+                            <Text style={styles.upcomingText}>
+                              {formatRelativeDay(st.nextVisit.date, today, t)}
+                            </Text>
+                          </View>
+                        ) : null}
+                      </View>
+                    );
+                  })()}
                 </Pressable>
                 <Pressable hitSlop={8} onPress={() => startEdit(s)} style={styles.iconBtn} disabled={pending}>
                   <Ionicons name="create-outline" size={20} color="#0369a1" />
@@ -389,6 +557,53 @@ const styles = StyleSheet.create({
   },
   name: { fontSize: 15, fontWeight: '600', color: '#0f172a' },
   sub: { fontSize: 13, color: '#475569', marginTop: 1 },
+  toolbar: { marginBottom: 12, gap: 8 },
+  searchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  searchInput: { flex: 1, fontSize: 15, color: '#0f172a', paddingVertical: 0 },
+  segmentRow: {
+    flexDirection: 'row',
+    backgroundColor: '#e2e8f0',
+    borderRadius: 10,
+    padding: 2,
+  },
+  segment: { flex: 1, paddingVertical: 7, borderRadius: 8, alignItems: 'center' },
+  segmentActive: { backgroundColor: '#fff' },
+  segmentText: { fontSize: 13, color: '#64748b', fontWeight: '500' },
+  segmentTextActive: { color: '#0f172a', fontWeight: '700' },
+  filterRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  filterChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    backgroundColor: '#fff',
+  },
+  filterChipActive: { backgroundColor: '#0ea5e9', borderColor: '#0ea5e9' },
+  filterChipText: { fontSize: 13, color: '#475569' },
+  filterChipTextActive: { color: '#fff', fontWeight: '600' },
+  statusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 3,
+  },
+  statusText: { fontSize: 13, color: '#64748b' },
+  statusRecent: { color: '#b45309', fontWeight: '600' },
+  statusNever: { fontSize: 13, color: '#94a3b8', fontStyle: 'italic', marginTop: 3 },
+  upcomingTag: { flexDirection: 'row', alignItems: 'center', gap: 3 },
+  upcomingText: { fontSize: 13, color: '#0369a1', fontWeight: '600' },
   iconBtn: { padding: 6 },
   addBtn: {
     flexDirection: 'row',
