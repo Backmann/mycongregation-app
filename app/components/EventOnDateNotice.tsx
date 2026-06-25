@@ -51,16 +51,21 @@ export function EventOnDateNotice({
   const dow = eventType === 'midweek' ? version.midweekDow : version.weekendDow;
   if (!dow) return null;
 
-  const meetingISO = formatDateISO(
-    meetingDate(new Date(`${weekISO}T00:00:00`), dow),
-  );
+  const base = new Date(`${weekISO}T00:00:00`);
+  const meetingISO = formatDateISO(meetingDate(base, dow));
+  const satISO = formatDateISO(meetingDate(base, 6));
+  const sunISO = formatDateISO(meetingDate(base, 7));
 
-  const event: SpecialEvent | undefined = (eventsQuery.data ?? []).find(
-    (e) =>
-      e.replacesMeeting &&
-      e.date <= meetingISO &&
-      (e.endDate ?? e.date) >= meetingISO,
-  );
+  const event: SpecialEvent | undefined = (eventsQuery.data ?? []).find((e) => {
+    const isCongress =
+      e.type === 'regional_convention' || e.type === 'circuit_assembly';
+    if (!e.replacesMeeting && !isCongress) return false;
+    const end = e.endDate ?? e.date;
+    // A convention on either weekend day (Sat or Sun) cancels the weekend
+    // meeting; midweek only when an event covers its exact day.
+    if (eventType === 'weekend') return e.date <= sunISO && satISO <= end;
+    return e.date <= meetingISO && end >= meetingISO;
+  });
   if (!event) return null;
 
   const loc = i18n.language;

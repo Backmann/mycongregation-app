@@ -322,12 +322,18 @@ export default function ScheduleIndexScreen() {
     const dow = dowFor(kind);
     if (!dow) return undefined;
     const dateISO = formatDateISO(addDays(weekStart, dow - 1));
-    return weekEvents.find(
-      (e) =>
-        e.replacesMeeting &&
-        e.date <= dateISO &&
-        (e.endDate ?? e.date) >= dateISO,
-    );
+    const satISO = formatDateISO(addDays(weekStart, 5));
+    const sunISO = formatDateISO(addDays(weekStart, 6));
+    return weekEvents.find((e) => {
+      const isCongress =
+        e.type === 'regional_convention' || e.type === 'circuit_assembly';
+      if (!e.replacesMeeting && !isCongress) return false;
+      const end = e.endDate ?? e.date;
+      // A convention on either weekend day (Sat or Sun) cancels the weekend
+      // meeting; the midweek meeting only when an event covers its exact day.
+      if (kind === 'weekend') return e.date <= sunISO && satISO <= end;
+      return e.date <= dateISO && end >= dateISO;
+    });
   };
   const midweekReplacedBy = replacedBy('midweek');
   const weekendReplacedBy = replacedBy('weekend');

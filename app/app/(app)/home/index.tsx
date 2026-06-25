@@ -160,12 +160,21 @@ function MeetingsFeed() {
       );
       if (dateISO < todayISO || dateISO > horizonISO) continue;
       const replacedBy =
-        events.find(
-          (e) =>
-            e.replacesMeeting &&
-            e.date <= dateISO &&
-            dateISO <= (e.endDate ?? e.date),
-        ) ?? null;
+        events.find((e) => {
+          const isCongress =
+            e.type === 'regional_convention' || e.type === 'circuit_assembly';
+          if (!e.replacesMeeting && !isCongress) return false;
+          const end = e.endDate ?? e.date;
+          if (kind === 'weekend') {
+            // A convention on either weekend day (Sat or Sun) cancels the weekend
+            // meeting, even if logged on only one of the two days.
+            const base = new Date(`${weekISO}T00:00:00`);
+            const sat = formatDateISO(addDays(base, 5));
+            const sun = formatDateISO(addDays(base, 6));
+            return e.date <= sun && sat <= end;
+          }
+          return e.date <= dateISO && dateISO <= end;
+        }) ?? null;
       const myParts = myItems
         .filter(
           (it) =>
