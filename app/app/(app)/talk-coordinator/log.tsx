@@ -548,6 +548,118 @@ export default function TalkExchangeYearScreen() {
     : [];
   const fmtHist = (d: string) => dayjs(d).locale(i18n.language).format('D MMM YYYY');
 
+  const renderBrotherPicker = () => (
+    <>
+      <Text style={styles.fieldLabel}>
+        {t('talkCoordinator.log.ourBrother')}
+      </Text>
+      <View style={styles.dirSearchRow}>
+        <Ionicons name="search" size={15} color="#94a3b8" />
+        <TextInput
+          style={styles.dirSearchInput}
+          value={pubSearch}
+          onChangeText={setPubSearch}
+          placeholder={t('talkCoordinator.log.brotherSearch')}
+          placeholderTextColor="#94a3b8"
+        />
+        {pubSearch ? (
+          <Pressable hitSlop={8} onPress={() => setPubSearch('')}>
+            <Ionicons
+              name="close-circle"
+              size={15}
+              color="#cbd5e1"
+            />
+          </Pressable>
+        ) : null}
+      </View>
+      <View style={styles.dirList}>
+        {visiblePubs.map((p) => {
+          const sel = publisherId === p.id;
+          const st = outStatsById.get(p.id);
+          const recent = st ? wentOutRecently(st, today) : false;
+          return (
+            <Pressable
+              key={p.id}
+              style={[styles.dirRow, sel && styles.dirRowActive]}
+              onPress={() => setPublisherId(sel ? null : p.id)}
+            >
+              <View style={{ flex: 1 }}>
+                <Text
+                  style={[
+                    styles.dirName,
+                    sel && styles.dirNameActive,
+                  ]}
+                >
+                  {p.displayName}
+                </Text>
+              </View>
+              {st && (st.count > 0 || st.nextVisit) ? (
+                <View style={styles.dirBadgeCol}>
+                  {st.count > 0 && st.lastVisit ? (
+                    <Text
+                      style={[
+                        styles.dirBadge,
+                        recent && styles.dirBadgeRecent,
+                      ]}
+                    >
+                      {t('talkCoordinator.ourSpeakers.status.lastSeen', {
+                        count: st.count,
+                        rel: formatRelativeDay(
+                          st.lastVisit.date,
+                          today,
+                          t,
+                        ),
+                      })}
+                    </Text>
+                  ) : null}
+                  {st.nextVisit ? (
+                    <View style={styles.dirUpcoming}>
+                      <Ionicons
+                        name="airplane"
+                        size={10}
+                        color="#0369a1"
+                      />
+                      <Text style={styles.dirUpcomingText}>
+                        {formatRelativeDay(
+                          st.nextVisit.date,
+                          today,
+                          t,
+                        )}
+                      </Text>
+                    </View>
+                  ) : null}
+                </View>
+              ) : (
+                <Text style={styles.dirNew}>
+                  {t('talkCoordinator.ourSpeakers.status.never')}
+                </Text>
+              )}
+              {sel ? (
+                <Ionicons
+                  name="checkmark-circle"
+                  size={18}
+                  color="#0ea5e9"
+                />
+              ) : null}
+            </Pressable>
+          );
+        })}
+        {hiddenPubCount > 0 ? (
+          <Pressable
+            onPress={() => setShowAllPubs(true)}
+            style={styles.dirMoreBtn}
+          >
+            <Text style={styles.dirMore}>
+              {t('talkCoordinator.log.moreSpeakers', {
+                n: hiddenPubCount,
+              })}
+            </Text>
+          </Pressable>
+        ) : null}
+      </View>
+    </>
+  );
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#f1f5f9' }}>
       <View style={styles.monthBar}>
@@ -744,15 +856,7 @@ export default function TalkExchangeYearScreen() {
                   </View>
 
                   {incomingMode === 'local' && (
-                    <View style={{ marginTop: 6 }}>
-                      <PublisherSelector
-                        label={t('talkCoordinator.log.ourBrother')}
-                        value={publisherId}
-                        onChange={setPublisherId}
-                        genderFilter="brother"
-                        requiredCapability="public_talk_speaker"
-                      />
-                    </View>
+                    <View style={{ marginTop: 6 }}>{renderBrotherPicker()}</View>
                   )}
 
                   {incomingMode === 'invited' && (
@@ -960,113 +1064,7 @@ export default function TalkExchangeYearScreen() {
                 </>
               ) : (
                 <>
-                  <Text style={styles.fieldLabel}>
-                    {t('talkCoordinator.log.ourBrother')}
-                  </Text>
-                  <View style={styles.dirSearchRow}>
-                    <Ionicons name="search" size={15} color="#94a3b8" />
-                    <TextInput
-                      style={styles.dirSearchInput}
-                      value={pubSearch}
-                      onChangeText={setPubSearch}
-                      placeholder={t('talkCoordinator.log.brotherSearch')}
-                      placeholderTextColor="#94a3b8"
-                    />
-                    {pubSearch ? (
-                      <Pressable hitSlop={8} onPress={() => setPubSearch('')}>
-                        <Ionicons
-                          name="close-circle"
-                          size={15}
-                          color="#cbd5e1"
-                        />
-                      </Pressable>
-                    ) : null}
-                  </View>
-                  <View style={styles.dirList}>
-                    {visiblePubs.map((p) => {
-                      const sel = publisherId === p.id;
-                      const st = outStatsById.get(p.id);
-                      const recent = st ? wentOutRecently(st, today) : false;
-                      return (
-                        <Pressable
-                          key={p.id}
-                          style={[styles.dirRow, sel && styles.dirRowActive]}
-                          onPress={() => setPublisherId(sel ? null : p.id)}
-                        >
-                          <View style={{ flex: 1 }}>
-                            <Text
-                              style={[
-                                styles.dirName,
-                                sel && styles.dirNameActive,
-                              ]}
-                            >
-                              {p.displayName}
-                            </Text>
-                          </View>
-                          {st && (st.count > 0 || st.nextVisit) ? (
-                            <View style={styles.dirBadgeCol}>
-                              {st.count > 0 && st.lastVisit ? (
-                                <Text
-                                  style={[
-                                    styles.dirBadge,
-                                    recent && styles.dirBadgeRecent,
-                                  ]}
-                                >
-                                  {t('talkCoordinator.ourSpeakers.status.lastSeen', {
-                                    count: st.count,
-                                    rel: formatRelativeDay(
-                                      st.lastVisit.date,
-                                      today,
-                                      t,
-                                    ),
-                                  })}
-                                </Text>
-                              ) : null}
-                              {st.nextVisit ? (
-                                <View style={styles.dirUpcoming}>
-                                  <Ionicons
-                                    name="airplane"
-                                    size={10}
-                                    color="#0369a1"
-                                  />
-                                  <Text style={styles.dirUpcomingText}>
-                                    {formatRelativeDay(
-                                      st.nextVisit.date,
-                                      today,
-                                      t,
-                                    )}
-                                  </Text>
-                                </View>
-                              ) : null}
-                            </View>
-                          ) : (
-                            <Text style={styles.dirNew}>
-                              {t('talkCoordinator.ourSpeakers.status.never')}
-                            </Text>
-                          )}
-                          {sel ? (
-                            <Ionicons
-                              name="checkmark-circle"
-                              size={18}
-                              color="#0ea5e9"
-                            />
-                          ) : null}
-                        </Pressable>
-                      );
-                    })}
-                    {hiddenPubCount > 0 ? (
-                      <Pressable
-                        onPress={() => setShowAllPubs(true)}
-                        style={styles.dirMoreBtn}
-                      >
-                        <Text style={styles.dirMore}>
-                          {t('talkCoordinator.log.moreSpeakers', {
-                            n: hiddenPubCount,
-                          })}
-                        </Text>
-                      </Pressable>
-                    ) : null}
-                  </View>
+                  {renderBrotherPicker()}
 
                   <Text style={styles.fieldLabel}>{t('talkCoordinator.log.hostCongregation')}</Text>
                   <View style={styles.chipWrap}>
