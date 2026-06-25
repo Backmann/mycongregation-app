@@ -111,18 +111,27 @@ export default function OurSpeakersScreen() {
           Math.abs(dayDiff(st.lastVisit.date, today)) > OVERDUE_DAYS
         );
       });
+    const nameKey = (p: Publisher) =>
+      `${p.lastName ?? ''} ${p.firstName}`.toLowerCase().trim();
+    const recencyKey = (p: Publisher) => {
+      const st = statsById.get(p.id);
+      if (st?.lastVisit) return `1_${st.lastVisit.date}`;
+      // First-timers (no past talk): order by nearest upcoming talk
+      // (soonest first); unscheduled ones fall after the scheduled.
+      return `0_${st?.nextVisit?.date ?? '9999-99-99'}`;
+    };
     list.sort((a, b) => {
-      if (sortMode === 'name')
-        return a.displayName.localeCompare(b.displayName);
+      if (sortMode === 'name') return nameKey(a).localeCompare(nameKey(b));
       if (sortMode === 'trips') {
         const ca = statsById.get(a.id)?.count ?? 0;
         const cb = statsById.get(b.id)?.count ?? 0;
-        return cb - ca || a.displayName.localeCompare(b.displayName);
+        return cb - ca || nameKey(a).localeCompare(nameKey(b));
       }
-      // recency: longest-since-first (never-out sort to the very top)
-      const la = statsById.get(a.id)?.lastVisit?.date ?? '';
-      const lb = statsById.get(b.id)?.lastVisit?.date ?? '';
-      return la.localeCompare(lb) || a.displayName.localeCompare(b.displayName);
+      // recency: longest-since-first; first-timers by nearest upcoming
+      return (
+        recencyKey(a).localeCompare(recencyKey(b)) ||
+        nameKey(a).localeCompare(nameKey(b))
+      );
     });
     return list;
   }, [ourSpeakers, search, filterMode, sortMode, statsById, today]);
