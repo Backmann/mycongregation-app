@@ -1478,6 +1478,8 @@
       "openMap": "Открыть карту",
       "tripDate": "Дата поездки",
       "fromDirectory": "Из справочника",
+      "speakerSearch": "Найти докладчика",
+      "moreSpeakers": "+ ещё {{n}}, введите имя для поиска",
       "speakerName": "Имя и фамилия",
       "speakerCong": "Собрание",
       "givenTimes": "Высказана раз: {{n}}",

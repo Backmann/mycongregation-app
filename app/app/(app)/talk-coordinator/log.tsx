@@ -30,12 +30,20 @@ import {
   externalCongregationsApi,
   publishersApi,
   publicTalksApi,
+  PublicTalk,
+  VisitingSpeaker,
   meetingSettingsApi,
   specialEventsApi,
   MeetingSettingsVersion,
   extractErrorMessage,
 } from '../../../lib/api';
 import { usePermissions } from '../../../lib/permissions';
+import {
+  computeSpeakerStats,
+  SpeakerStats,
+  visitedRecently,
+} from '../../../lib/speaker-stats';
+import { formatRelativeDay } from '../../../lib/relative-time';
 import { PublisherSelector } from '../../../components/PublisherSelector';
 import { PublicTalkSelector } from '../../../components/PublicTalkSelector';
 import { startOfWeekMonday, addDays, formatDateISO } from '../../../lib/dates';
@@ -124,6 +132,7 @@ export default function TalkExchangeYearScreen() {
   const [visitingSpeakerId, setVisitingSpeakerId] = useState<string | null>(null);
   const [speakerNameInput, setSpeakerNameInput] = useState('');
   const [speakerCongInput, setSpeakerCongInput] = useState('');
+  const [speakerSearch, setSpeakerSearch] = useState('');
   const [incomingMode, setIncomingMode] = useState<'invited' | 'local'>('invited');
   const [hospitalityPublisherId, setHospitalityPublisherId] = useState<string | null>(null);
   const [publisherId, setPublisherId] = useState<string | null>(null);
@@ -181,6 +190,46 @@ export default function TalkExchangeYearScreen() {
     for (const pt of talksQuery.data?.data ?? []) m.set(pt.id, { number: pt.number, title: pt.title });
     return m;
   }, [talksQuery.data]);
+
+  const today = new Date().toLocaleDateString('en-CA');
+  const statsById = useMemo(() => {
+    const tmap = new Map<string, PublicTalk>();
+    for (const tk of talksQuery.data?.data ?? []) tmap.set(tk.id, tk);
+    const m = new Map<string, SpeakerStats>();
+    const entries = listQuery.data ?? [];
+    for (const sp of speakersQuery.data ?? [])
+      m.set(sp.id, computeSpeakerStats(sp, entries, tmap, today));
+    return m;
+  }, [speakersQuery.data, listQuery.data, talksQuery.data, today]);
+  const sortedSpeakers = useMemo(() => {
+    const arr = [...(speakersQuery.data ?? [])];
+    const q = speakerSearch.trim().toLowerCase();
+    const nameOf = (sp: VisitingSpeaker) =>
+      [sp.firstName, sp.lastName].filter(Boolean).join(' ');
+    const filtered = q
+      ? arr.filter(
+          (sp) =>
+            nameOf(sp).toLowerCase().includes(q) ||
+            (sp.externalCongregation?.name ?? '').toLowerCase().includes(q),
+        )
+      : arr;
+    filtered.sort((a, b) => {
+      const la = statsById.get(a.id)?.lastVisit?.date ?? '';
+      const lb = statsById.get(b.id)?.lastVisit?.date ?? '';
+      return la.localeCompare(lb) || nameOf(a).localeCompare(nameOf(b));
+    });
+    return filtered;
+  }, [speakersQuery.data, speakerSearch, statsById]);
+  const visibleSpeakers = useMemo(() => {
+    if (speakerSearch.trim()) return sortedSpeakers;
+    const top = sortedSpeakers.slice(0, 6);
+    if (visitingSpeakerId && !top.some((sp) => sp.id === visitingSpeakerId)) {
+      const sel = sortedSpeakers.find((sp) => sp.id === visitingSpeakerId);
+      if (sel) return [sel, ...top];
+    }
+    return top;
+  }, [sortedSpeakers, speakerSearch, visitingSpeakerId]);
+  const hiddenSpeakerCount = sortedSpeakers.length - visibleSpeakers.length;
 
   const byWeek = useMemo(() => {
     const m = new Map<string, SlotState>();
@@ -646,21 +695,117 @@ export default function TalkExchangeYearScreen() {
                   {(speakersQuery.data ?? []).length > 0 && (
                     <>
                       <Text style={styles.fieldLabel}>{t('talkCoordinator.log.fromDirectory')}</Text>
-                      <View style={styles.chipWrap}>
-                        {(speakersQuery.data ?? []).map((s) => {
+                      <View style={styles.dirSearchRow}>
+                        <Ionicons name="search" size={15} color="#94a3b8" />
+                        <TextInput
+                          style={styles.dirSearchInput}
+                          value={speakerSearch}
+                          onChangeText={setSpeakerSearch}
+                          placeholder={t('talkCoordinator.log.speakerSearch')}
+                          placeholderTextColor="#94a3b8"
+                        />
+                        {speakerSearch ? (
+                          <Pressable
+                            hitSlop={8}
+                            onPress={() => setSpeakerSearch('')}
+                          >
+                            <Ionicons
+                              name="close-circle"
+                              size={15}
+                              color="#cbd5e1"
+                            />
+                          </Pressable>
+                        ) : null}
+                      </View>
+                      <View style={styles.dirList}>
+                        {visibleSpeakers.map((s) => {
                           const sel = visitingSpeakerId === s.id;
+                          const st = statsById.get(s.id);
+                          const recent = st ? visitedRecently(st, today) : false;
                           return (
                             <Pressable
                               key={s.id}
-                              style={[styles.pickChip, sel && styles.pickChipActive]}
+                              style={[styles.dirRow, sel && styles.dirRowActive]}
                               onPress={() => pickSpeaker(s.id)}
                             >
-                              <Text style={[styles.pickChipText, sel && styles.pickChipTextActive]}>
-                                {[s.firstName, s.lastName].filter(Boolean).join(' ')}
-                              </Text>
+                              <View style={{ flex: 1 }}>
+                                <Text
+                                  style={[
+                                    styles.dirName,
+                                    sel && styles.dirNameActive,
+                                  ]}
+                                >
+                                  {[s.firstName, s.lastName]
+                                    .filter(Boolean)
+                                    .join(' ')}
+                                </Text>
+                                {s.externalCongregation ? (
+                                  <Text style={styles.dirCong}>
+                                    {s.externalCongregation.name}
+                                  </Text>
+                                ) : null}
+                              </View>
+                              {st && (st.count > 0 || st.nextVisit) ? (
+                                <View style={styles.dirBadgeCol}>
+                                  {st.count > 0 && st.lastVisit ? (
+                                    <Text
+                                      style={[
+                                        styles.dirBadge,
+                                        recent && styles.dirBadgeRecent,
+                                      ]}
+                                    >
+                                      {t(
+                                        'talkCoordinator.speakers.status.lastSeen',
+                                        {
+                                          count: st.count,
+                                          rel: formatRelativeDay(
+                                            st.lastVisit.date,
+                                            today,
+                                            t,
+                                          ),
+                                        },
+                                      )}
+                                    </Text>
+                                  ) : null}
+                                  {st.nextVisit ? (
+                                    <View style={styles.dirUpcoming}>
+                                      <Ionicons
+                                        name="airplane"
+                                        size={10}
+                                        color="#0369a1"
+                                      />
+                                      <Text style={styles.dirUpcomingText}>
+                                        {formatRelativeDay(
+                                          st.nextVisit.date,
+                                          today,
+                                          t,
+                                        )}
+                                      </Text>
+                                    </View>
+                                  ) : null}
+                                </View>
+                              ) : (
+                                <Text style={styles.dirNew}>
+                                  {t('talkCoordinator.speakers.status.never')}
+                                </Text>
+                              )}
+                              {sel ? (
+                                <Ionicons
+                                  name="checkmark-circle"
+                                  size={18}
+                                  color="#0ea5e9"
+                                />
+                              ) : null}
                             </Pressable>
                           );
                         })}
+                        {!speakerSearch && hiddenSpeakerCount > 0 ? (
+                          <Text style={styles.dirMore}>
+                            {t('talkCoordinator.log.moreSpeakers', {
+                              n: hiddenSpeakerCount,
+                            })}
+                          </Text>
+                        ) : null}
                       </View>
                     </>
                   )}
@@ -930,6 +1075,42 @@ const styles = StyleSheet.create({
   histItem: { fontSize: 12, color: '#475569', marginTop: 1 },
   fieldLabel: { fontSize: 12, fontWeight: '600', color: '#64748b', marginTop: 12, marginBottom: 4 },
   chipWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  dirSearchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#f8fafc',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    marginBottom: 8,
+  },
+  dirSearchInput: { flex: 1, fontSize: 15, color: '#0f172a', paddingVertical: 0 },
+  dirList: { gap: 4 },
+  dirRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    backgroundColor: '#fff',
+  },
+  dirRowActive: { borderColor: '#0ea5e9', backgroundColor: '#e0f2fe' },
+  dirName: { fontSize: 15, fontWeight: '600', color: '#0f172a' },
+  dirNameActive: { color: '#0369a1' },
+  dirCong: { fontSize: 12, color: '#64748b', marginTop: 1 },
+  dirBadgeCol: { alignItems: 'flex-end', gap: 2 },
+  dirBadge: { fontSize: 12, color: '#64748b' },
+  dirBadgeRecent: { color: '#b45309', fontWeight: '600' },
+  dirUpcoming: { flexDirection: 'row', alignItems: 'center', gap: 3 },
+  dirUpcomingText: { fontSize: 12, color: '#0369a1', fontWeight: '600' },
+  dirNew: { fontSize: 12, color: '#94a3b8', fontStyle: 'italic' },
+  dirMore: { fontSize: 12, color: '#94a3b8', textAlign: 'center', paddingVertical: 6 },
   pickChip: {
     flexDirection: 'row',
     alignItems: 'center',

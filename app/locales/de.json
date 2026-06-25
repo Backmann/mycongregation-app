@@ -1474,6 +1474,8 @@
       "openMap": "Karte öffnen",
       "tripDate": "Reisedatum",
       "fromDirectory": "Aus Verzeichnis",
+      "speakerSearch": "Redner suchen",
+      "moreSpeakers": "+{{n}} weitere — nach Name suchen",
       "speakerName": "Name des Redners",
       "speakerCong": "Versammlung",
       "givenTimes": "Gehalten: {{n}}×",

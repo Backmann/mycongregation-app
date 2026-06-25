@@ -1474,6 +1474,8 @@
       "openMap": "Open map",
       "tripDate": "Trip date",
       "fromDirectory": "From directory",
+      "speakerSearch": "Find a speaker",
+      "moreSpeakers": "+{{n}} more — search by name",
       "speakerName": "Speaker name",
       "speakerCong": "Congregation",
       "givenTimes": "Given times: {{n}}",
