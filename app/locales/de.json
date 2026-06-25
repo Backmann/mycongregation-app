@@ -1134,6 +1134,8 @@
       "time": "Uhrzeit",
       "noTime": "ohne Uhrzeit",
       "customTime": "eigene…",
+      "timePlaceholder": "HH:MM",
+      "timeHint": "4 Ziffern eingeben, z. B. 1830 → 18:30",
       "close": "Fertig"
     },
     "types": {

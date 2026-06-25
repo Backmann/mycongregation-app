@@ -1134,6 +1134,8 @@
       "time": "Time",
       "noTime": "no time",
       "customTime": "custom…",
+      "timePlaceholder": "HH:MM",
+      "timeHint": "Type 4 digits, e.g. 1830 → 18:30",
       "close": "Done"
     },
     "types": {

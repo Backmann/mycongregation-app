@@ -13,10 +13,6 @@ import { Ionicons } from '@expo/vector-icons';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ru';
 import 'dayjs/locale/de';
-import DateTimePicker, {
-  useDefaultStyles,
-  type DateType,
-} from 'react-native-ui-datepicker';
 import { circuitOverseerApi } from '../lib/api';
 import { FormChips } from './FormChips';
 import { MonthCalendar } from './MonthCalendar';
@@ -79,6 +75,32 @@ export function emptyEventForm(): EventFormValue {
   };
 }
 
+/** Normalize free time input ('1830', '18:3', '930', '9') to 'HH:mm' or ''. */
+function normalizeTime(s: string): string {
+  const digits = s.replace(/\D/g, '');
+  if (digits.length === 0) return '';
+  let h: number;
+  let m: number;
+  if (s.includes(':')) {
+    const [hp, mp] = s.split(':');
+    h = parseInt(hp || '0', 10);
+    m = parseInt((mp || '0').slice(0, 2), 10);
+  } else if (digits.length <= 2) {
+    h = parseInt(digits, 10);
+    m = 0;
+  } else if (digits.length === 3) {
+    h = parseInt(digits.slice(0, 1), 10);
+    m = parseInt(digits.slice(1), 10);
+  } else {
+    h = parseInt(digits.slice(0, 2), 10);
+    m = parseInt(digits.slice(2, 4), 10);
+  }
+  if (Number.isNaN(h) || Number.isNaN(m)) return '';
+  h = Math.min(23, Math.max(0, h));
+  m = Math.min(59, Math.max(0, m));
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+}
+
 function fmt(d: string): string {
   return d ? dayjs(d).format('DD.MM.YYYY') : '';
 }
@@ -91,13 +113,16 @@ export function SpecialEventForm({
   onChange: (v: EventFormValue) => void;
 }) {
   const { t, i18n } = useTranslation();
-  const dpStyles = useDefaultStyles();
   const locale = i18n.language;
 
   const [multiDay, setMultiDay] = useState<boolean>(!!value.endDate);
   const [showDate, setShowDate] = useState(false);
   const [showTime, setShowTime] = useState(false);
   const [showType, setShowType] = useState(false);
+  const [timeDraft, setTimeDraft] = useState(value.time);
+  useEffect(() => {
+    setTimeDraft(value.time);
+  }, [value.time]);
 
   const set = (patch: Partial<EventFormValue>) =>
     onChange({ ...value, ...patch });
@@ -157,10 +182,6 @@ export function SpecialEventForm({
   const typeLabel = value.type
     ? t(`specialEvents.types.${value.type}`, value.type)
     : t('specialEvents.form.pickType');
-
-  const timeAnchor: DateType = value.time
-    ? dayjs(`2000-01-01T${value.time}`)
-    : dayjs('2000-01-01T09:00');
 
   return (
     <View>
@@ -341,17 +362,29 @@ export function SpecialEventForm({
         </View>
         {showTime && (
           <View style={styles.inlineCard}>
-            <DateTimePicker
-              mode="single"
-              date={timeAnchor}
-              timePicker
-              initialView="time"
-              locale={locale}
-              onChange={({ date }) =>
-                set({ time: date ? dayjs(date).format('HH:mm') : '' })
-              }
-              styles={dpStyles}
-            />
+            <View style={styles.timeInputRow}>
+              <Ionicons name="time-outline" size={18} color="#64748b" />
+              <TextInput
+                style={styles.timeInput}
+                value={timeDraft}
+                onChangeText={(raw) => setTimeDraft(raw.replace(/[^\d:]/g, ''))}
+                onBlur={() => {
+                  const norm = normalizeTime(timeDraft);
+                  setTimeDraft(norm);
+                  set({ time: norm });
+                }}
+                onSubmitEditing={() => {
+                  const norm = normalizeTime(timeDraft);
+                  setTimeDraft(norm);
+                  set({ time: norm });
+                }}
+                placeholder={t('specialEvents.form.timePlaceholder')}
+                placeholderTextColor="#94a3b8"
+                keyboardType="number-pad"
+                maxLength={5}
+              />
+            </View>
+            <Text style={styles.timeHint}>{t('specialEvents.form.timeHint')}</Text>
           </View>
         )}
       </Field>
@@ -503,6 +536,15 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  timeInputRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  timeInput: {
+    flex: 1,
+    fontSize: 18,
+    color: '#0f172a',
+    paddingVertical: 6,
+    letterSpacing: 1,
+  },
+  timeHint: { fontSize: 12, color: '#94a3b8', marginTop: 6 },
   chip: {
     paddingHorizontal: 12,
     paddingVertical: 8,
