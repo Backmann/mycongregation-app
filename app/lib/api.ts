@@ -1661,7 +1661,9 @@ export const assignmentsApi = {
   },
   async update(id: string, input: UpdateAssignmentInput): Promise<Assignment> {
     const payload = Object.fromEntries(
-      Object.entries(input).filter(([_, v]) => v !== '' && v !== undefined),
+      // Keep '' so a cleared field reaches the server; only drop undefined
+      // (undefined means "field not part of this patch / no change").
+      Object.entries(input).filter(([_, v]) => v !== undefined),
     );
     const { data } = await api.patch<Assignment>(`/assignments/${id}`, payload);
     return data;
