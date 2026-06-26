@@ -20,8 +20,8 @@ self.addEventListener('push', (event) => {
     self.registration.showNotification(title, {
       body,
       data,
-      icon: '/favicon.ico',
-      badge: '/favicon.ico',
+      icon: '/icon-192.png',
+      badge: '/icon-mono-96.png',
       tag: data.publisherId || 'notification',
     })
   );
