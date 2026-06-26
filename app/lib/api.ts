@@ -154,11 +154,6 @@ export interface Publisher {
   address: string | null;
   isActive: boolean;
   isRegular: boolean;
-  isElderlyOrInfirm: boolean;
-  isChild: boolean;
-  isDeaf: boolean;
-  isBlind: boolean;
-  isPrisoner: boolean;
   appointment: PublisherAppointment;
   baptismDate: string | null;
   ministryStartDate: string | null;
@@ -195,11 +190,6 @@ export interface CreatePublisherInput {
   userId?: string;
   isActive?: boolean;
   isRegular?: boolean;
-  isElderlyOrInfirm?: boolean;
-  isChild?: boolean;
-  isDeaf?: boolean;
-  isBlind?: boolean;
-  isPrisoner?: boolean;
   appointment?: PublisherAppointment;
   baptismDate?: string;
   ministryStartDate?: string;

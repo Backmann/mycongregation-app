@@ -85,11 +85,6 @@ export function PublisherForm({
     printedWatchtower: initial?.printedWatchtower ?? false,
     printedWorkbook: initial?.printedWorkbook ?? false,
     sendsReportDirectly: initial?.sendsReportDirectly ?? false,
-    isElderlyOrInfirm: initial?.isElderlyOrInfirm ?? false,
-    isChild: initial?.isChild ?? false,
-    isDeaf: initial?.isDeaf ?? false,
-    isBlind: initial?.isBlind ?? false,
-    isPrisoner: initial?.isPrisoner ?? false,
     spiritualNotes: initial?.spiritualNotes ?? '',
     notes: initial?.notes ?? '',
     capabilities:
