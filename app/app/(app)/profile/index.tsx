@@ -336,6 +336,23 @@ export default function ProfileScreen() {
       )}
 
       <View style={styles.section}>
+        <Text style={styles.sectionLabel}>{t('legal.sectionLabel')}</Text>
+        <Pressable
+          style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
+          onPress={() => router.push('/legal' as any)}
+        >
+          <View style={styles.rowIcon}>
+            <Ionicons name="shield-checkmark-outline" size={20} color="#0ea5e9" />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.rowTitle}>{t('legal.title')}</Text>
+            <Text style={styles.rowSubtitle}>{t('legal.subtitle')}</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color="#cbd5e1" />
+        </Pressable>
+      </View>
+
+      <View style={styles.section}>
         <Pressable
           style={({ pressed }) => [
             styles.logoutButton,

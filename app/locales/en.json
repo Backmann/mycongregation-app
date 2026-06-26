@@ -1,4 +1,12 @@
 {
+  "legal": {
+    "title": "Legal information",
+    "subtitle": "Imprint, privacy, terms",
+    "sectionLabel": "Legal",
+    "linkShort": "Legal information",
+    "prevailNote": "In case of discrepancy, the German version prevails.",
+    "updated": "Version: {{date}}"
+  },
   "publisherAccess": {
     "neverLoggedIn": "never logged in",
     "noAccess": "This person has no app login.",

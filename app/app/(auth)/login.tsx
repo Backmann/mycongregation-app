@@ -190,6 +190,14 @@ export default function LoginScreen() {
               </Text>
             </Pressable>
           </View>
+
+          <Pressable
+            onPress={() => router.push('/legal' as never)}
+            hitSlop={6}
+            style={styles.legalLinkWrap}
+          >
+            <Text style={styles.legalLink}>{t('legal.linkShort')}</Text>
+          </Pressable>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -358,5 +366,14 @@ const styles = StyleSheet.create({
     fontSize: 13,
     textAlign: 'center',
     marginTop: 12,
+  },
+  legalLinkWrap: {
+    marginTop: 16,
+    alignItems: 'center',
+  },
+  legalLink: {
+    fontSize: 13,
+    color: '#64748b',
+    textDecorationLine: 'underline',
   },
 });

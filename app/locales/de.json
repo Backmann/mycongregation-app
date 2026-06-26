@@ -1,4 +1,12 @@
 {
+  "legal": {
+    "title": "Rechtliche Informationen",
+    "subtitle": "Impressum, Datenschutz, Nutzung",
+    "sectionLabel": "Rechtliches",
+    "linkShort": "Rechtliche Informationen",
+    "prevailNote": "Bei Abweichungen ist die deutsche Fassung maßgeblich.",
+    "updated": "Fassung: {{date}}"
+  },
   "publisherAccess": {
     "neverLoggedIn": "noch nicht angemeldet",
     "noAccess": "Diese Person hat keinen App-Zugang.",
