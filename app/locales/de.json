@@ -1,4 +1,18 @@
 {
+  "backups": {
+    "rowTitle": "Sicherungen",
+    "rowSubtitle": "Status und verschlüsselte Kopie herunterladen",
+    "title": "Sicherungen",
+    "statusOk": "Letzte Sicherung: {{date}}",
+    "size": "Größe: {{size}}",
+    "count": "Sicherungen gesamt: {{count}}",
+    "none": "Noch keine Sicherungen",
+    "encryptedNote": "Die Datei ist verschlüsselt. Entschlüsseln nur mit Ihrem Backup-Schlüssel am Computer möglich.",
+    "download": "Letzte Sicherung herunterladen",
+    "downloading": "Wird heruntergeladen…",
+    "webOnly": "Der Download ist in der Web-Version (im Browser) verfügbar.",
+    "error": "Sicherungen konnten nicht geladen werden"
+  },
   "dataRights": {
     "sectionLabel": "Meine Daten",
     "export": "Meine Daten herunterladen",

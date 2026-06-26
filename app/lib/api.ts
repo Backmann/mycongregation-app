@@ -1400,6 +1400,28 @@ export interface MyPublisherIdentityResponse {
   publisher: MyPublisherLite | null;
 }
 
+export interface BackupStatus {
+  available: boolean;
+  count: number;
+  latest: { name: string; size: number; modifiedAt: string } | null;
+}
+
+export const backupsApi = {
+  /** Admin only — status of the encrypted DB backups produced by the cron. */
+  async status(): Promise<BackupStatus> {
+    const { data } = await api.get<BackupStatus>('/admin/backups');
+    return data;
+  },
+  /** Admin only — fetch one encrypted backup file as a Blob (web download). */
+  async download(name: string): Promise<Blob> {
+    const { data } = await api.get(
+      `/admin/backups/${encodeURIComponent(name)}`,
+      { responseType: 'blob' },
+    );
+    return data as Blob;
+  },
+};
+
 export const meApi = {
   async assignments(): Promise<MyAssignmentsResponse> {
     const { data } = await api.get<MyAssignmentsResponse>('/me/assignments');

@@ -1,4 +1,18 @@
 {
+  "backups": {
+    "rowTitle": "Backups",
+    "rowSubtitle": "Status and download of the encrypted copy",
+    "title": "Backups",
+    "statusOk": "Latest backup: {{date}}",
+    "size": "Size: {{size}}",
+    "count": "Total backups: {{count}}",
+    "none": "No backups yet",
+    "encryptedNote": "The file is encrypted. It can only be decrypted with your backup key on a computer.",
+    "download": "Download latest backup",
+    "downloading": "Downloading…",
+    "webOnly": "Download is available in the web version (in a browser).",
+    "error": "Could not load backups"
+  },
   "dataRights": {
     "sectionLabel": "My data",
     "export": "Download my data",

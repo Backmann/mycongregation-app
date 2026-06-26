@@ -31,6 +31,7 @@ export default function ProfileLayout() {
         name="change-password"
         options={{ title: t('profile.changePassword.rowTitle') }}
       />
+      <Stack.Screen name="backups" options={{ title: t('backups.title') }} />
       <Stack.Screen
         name="delete-account"
         options={{ title: t('deleteAccount.title') }}
