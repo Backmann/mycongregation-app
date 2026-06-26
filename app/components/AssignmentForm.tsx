@@ -204,7 +204,13 @@ export function AssignmentForm({
 
   const partDef = getPartDef(form.partKey);
   const isPublicTalkSpeaker = form.partKey === 'public_talk_speaker';
-  const showAssistant = !!partDef?.hasAssistant;
+  // Apply-Yourself "Talk" (Речь) is delivered solo — no householder/assistant,
+  // unlike the ministry demonstrations. Detect it from the title-derived skill.
+  const applyYourselfSkill = (form.partKey ?? '').startsWith('apply_yourself')
+    ? skillCapabilityFromTitle(form.partTitle)
+    : null;
+  const isStudentTalk = applyYourselfSkill === 'fs_talk';
+  const showAssistant = !!partDef?.hasAssistant && !isStudentTalk;
 
   // ---- Circuit-overseer visit week: CO talks + CO-led prayers ----
   const PRAYER_KEYS = [
@@ -245,9 +251,7 @@ export function AssignmentForm({
   };
   // Apply-Yourself parts are numbered positionally, but the real skill is in
   // the title — prefer that so the picker filters by the correct capability.
-  const titleCap = form.partKey?.startsWith('apply_yourself')
-    ? skillCapabilityFromTitle(form.partTitle)
-    : null;
+  const titleCap = applyYourselfSkill;
   const requiredCap = titleCap ?? partDef?.requiredCapability;
   const requiredAssistantCap =
     titleCap ??

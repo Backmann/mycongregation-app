@@ -13,9 +13,11 @@ import { Ionicons } from '@expo/vector-icons';
 export function BackButton({
   fallback,
   toParent,
+  color,
 }: {
   fallback: string;
   toParent?: boolean;
+  color?: string;
 }) {
   return (
     <Pressable
@@ -30,7 +32,7 @@ export function BackButton({
       hitSlop={8}
       accessibilityRole="button"
     >
-      <Ionicons name="chevron-back" size={28} color="#0ea5e9" />
+      <Ionicons name="chevron-back" size={28} color={color ?? '#0ea5e9'} />
     </Pressable>
   );
 }

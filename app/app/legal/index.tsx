@@ -7,9 +7,10 @@ import {
   Text,
   View,
 } from 'react-native';
-import { useTranslation } from 'react-i18next';
+import { Stack } from 'expo-router';
 import {
   LEGAL,
+  LEGAL_CHROME,
   LEGAL_UPDATED,
   type DocKey,
   type Lang,
@@ -41,16 +42,17 @@ function renderText(text: string, base: object) {
 }
 
 export default function LegalScreen() {
-  const { t } = useTranslation();
   const current = getCurrentLanguage() as Lang;
   const [lang, setLang] = useState<Lang>(
     LANGS.includes(current) ? current : 'de',
   );
   const [docKey, setDocKey] = useState<DocKey>('privacy');
   const doc = LEGAL[lang][docKey];
+  const chrome = LEGAL_CHROME[lang];
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+      <Stack.Screen options={{ title: chrome.screenTitle }} />
       <View style={styles.langRow}>
         {LANGS.map((l) => (
           <Pressable
@@ -118,9 +120,9 @@ export default function LegalScreen() {
         return <View key={i}>{renderText(b.p ?? '', styles.p)}</View>;
       })}
 
-      <Text style={styles.note}>{t('legal.prevailNote')}</Text>
+      <Text style={styles.note}>{chrome.prevailNote}</Text>
       <Text style={styles.note}>
-        {t('legal.updated', { date: LEGAL_UPDATED })}
+        {chrome.updated.replace('{date}', LEGAL_UPDATED)}
       </Text>
     </ScrollView>
   );

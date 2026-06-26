@@ -10,6 +10,32 @@ export type Doc = { title: string; tab: string; blocks: Block[] };
 
 export const LEGAL_UPDATED = '01.07.2026';
 
+/**
+ * Chrome strings for the legal screen itself (header title + footer notes).
+ * These follow the SELECTED legal language, not the app UI language, so a
+ * single language is never mixed on screen. {date} is substituted at render.
+ */
+export const LEGAL_CHROME: Record<
+  Lang,
+  { screenTitle: string; prevailNote: string; updated: string }
+> = {
+  ru: {
+    screenTitle: 'Правовая информация',
+    prevailNote: 'При расхождении версий действует немецкая редакция.',
+    updated: 'Редакция: {date}',
+  },
+  de: {
+    screenTitle: 'Rechtliche Informationen',
+    prevailNote: 'Bei Abweichungen ist die deutsche Fassung maßgeblich.',
+    updated: 'Fassung: {date}',
+  },
+  en: {
+    screenTitle: 'Legal information',
+    prevailNote: 'In case of discrepancy, the German version prevails.',
+    updated: 'Version: {date}',
+  },
+};
+
 const ADDRESS = 'Beverfördering 66, 59071 Hamm, Deutschland';
 const EMAIL = 'info@mycongregation.org';
 const REPO_SERVER = 'https://github.com/Backmann/mycongregation-server';
