@@ -11,6 +11,7 @@ import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
+import BrandLockup from '../../../components/BrandLockup';
 import {
   Absence,
   absencesApi,
@@ -602,6 +603,9 @@ export default function HomeScreen() {
       style={styles.container}
       contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
     >
+      <View style={{ marginBottom: 18 }}>
+        <BrandLockup mark={34} word={20} />
+      </View>
       <Text style={[styles.sectionTitle, { marginBottom: 12 }]}>
         {t('home.nextMeetings')}
       </Text>

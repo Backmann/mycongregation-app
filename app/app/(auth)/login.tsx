@@ -16,6 +16,7 @@ import { useAuth } from '../../lib/auth';
 import { extractErrorMessage } from '../../lib/api';
 import { setLanguage, SupportedLanguage } from '../../lib/i18n';
 import { useTranslation } from 'react-i18next';
+import BrandLockup from '../../components/BrandLockup';
 
 const LANGUAGES: { code: SupportedLanguage; label: string }[] = [
   { code: 'en', label: 'EN' },
@@ -85,10 +86,7 @@ export default function LoginScreen() {
           </View>
 
           <View style={styles.brand}>
-            <View style={styles.logoBadge}>
-              <Ionicons name="people" size={30} color="#0284c7" />
-            </View>
-            <Text style={styles.title}>mycongregation</Text>
+            <BrandLockup mark={58} word={26} layout="stacked" />
             <Text style={styles.subtitle}>{t('auth.subtitle')}</Text>
           </View>
 
