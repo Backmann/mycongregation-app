@@ -1100,8 +1100,8 @@
   },
   "service": {
     "hubTitle": "Служение",
-    "publicWitnessing": "Общественное служение",
-    "publicWitnessingSubtitle": "Тележки и стенды",
+    "publicWitnessing": "Служение в общественных местах",
+    "publicWitnessingSubtitle": "Проповедь со стендами и тележками",
     "locations": "Точки служения",
     "locationsSubtitle": "Адреса тележек и стендов"
   },
