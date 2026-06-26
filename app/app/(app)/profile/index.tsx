@@ -3,6 +3,7 @@ import {
   Platform,
   Pressable,
   ScrollView,
+  Share,
   StyleSheet,
   Text,
   View,
@@ -15,6 +16,7 @@ import { useAuth } from '../../../lib/auth';
 import { useMyPublisher } from '../../../lib/useMyPublisher';
 import { LanguagePickerModal } from '../../../components/LanguagePicker';
 import { getCurrentLanguage } from '../../../lib/i18n';
+import { extractErrorMessage, meApi } from '../../../lib/api';
 import {
   getWebPushStatus,
   isIosWithoutStandalone,
@@ -31,6 +33,36 @@ export default function ProfileScreen() {
   const currentLang = getCurrentLanguage();
   const [webPushStatus, setWebPushStatus] = useState<WebPushStatus | null>(null);
   const [webPushBusy, setWebPushBusy] = useState(false);
+  const [exporting, setExporting] = useState(false);
+
+  const handleExport = useCallback(async () => {
+    if (exporting) return;
+    setExporting(true);
+    try {
+      const data = await meApi.exportData();
+      const json = JSON.stringify(data, null, 2);
+      const filename = `mycongregation-data-${new Date()
+        .toISOString()
+        .slice(0, 10)}.json`;
+      if (Platform.OS === 'web') {
+        const blob = new Blob([json], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      } else {
+        await Share.share({ message: json });
+      }
+    } catch (err) {
+      Alert.alert(t('common.error'), extractErrorMessage(err));
+    } finally {
+      setExporting(false);
+    }
+  }, [exporting, t]);
   const showIosHint = isIosWithoutStandalone();
 
   useEffect(() => {
@@ -334,6 +366,43 @@ export default function ProfileScreen() {
           </View>
         </View>
       )}
+
+      <View style={styles.section}>
+        <Text style={styles.sectionLabel}>
+          {t('dataRights.sectionLabel')}
+        </Text>
+        <Pressable
+          style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
+          onPress={handleExport}
+          disabled={exporting}
+        >
+          <View style={styles.rowIcon}>
+            <Ionicons name="download-outline" size={20} color="#0ea5e9" />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.rowTitle}>{t('dataRights.export')}</Text>
+            <Text style={styles.rowSubtitle}>
+              {t('dataRights.exportHint')}
+            </Text>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color="#cbd5e1" />
+        </Pressable>
+        <Pressable
+          style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
+          onPress={() => router.push('/profile/delete-account' as any)}
+        >
+          <View style={styles.rowIcon}>
+            <Ionicons name="trash-outline" size={20} color="#dc2626" />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.rowTitle}>{t('dataRights.delete')}</Text>
+            <Text style={styles.rowSubtitle}>
+              {t('dataRights.deleteHint')}
+            </Text>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color="#cbd5e1" />
+        </Pressable>
+      </View>
 
       <View style={styles.section}>
         <Text style={styles.sectionLabel}>{t('legal.sectionLabel')}</Text>

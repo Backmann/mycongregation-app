@@ -32,6 +32,10 @@ export default function ProfileLayout() {
         options={{ title: t('profile.changePassword.rowTitle') }}
       />
       <Stack.Screen
+        name="delete-account"
+        options={{ title: t('deleteAccount.title') }}
+      />
+      <Stack.Screen
         name="admin-users"
         options={{ title: t('profile.userManagement') }}
       />

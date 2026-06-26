@@ -1422,6 +1422,15 @@ export const meApi = {
       await api.get<MyPublisherIdentityResponse>('/me/publisher');
     return data;
   },
+  /** GDPR Art. 15/20 — download the signed-in user's own data as JSON. */
+  async exportData(): Promise<unknown> {
+    const { data } = await api.get<unknown>('/me/export');
+    return data;
+  },
+  /** GDPR Art. 17 — erase own account (anonymises the publisher record). */
+  async eraseAccount(password: string): Promise<void> {
+    await api.post('/me/erase', { password });
+  },
 };
 
 export const absencesApi = {

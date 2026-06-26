@@ -1,4 +1,23 @@
 {
+  "dataRights": {
+    "sectionLabel": "Meine Daten",
+    "export": "Meine Daten herunterladen",
+    "exportHint": "Export als Datei (JSON)",
+    "delete": "Konto und Daten löschen",
+    "deleteHint": "Meinen Datensatz unwiderruflich anonymisieren"
+  },
+  "deleteAccount": {
+    "title": "Konto löschen",
+    "warning": "Diese Aktion ist unwiderruflich.",
+    "intro": "Ihr Konto wird gelöscht und Ihr Verkündigerdatensatz anonymisiert: Name und Kontaktdaten werden entfernt. Organisatorische Aufzeichnungen der Versammlung bleiben anonymisiert erhalten. Bitte mit dem Passwort bestätigen.",
+    "passwordLabel": "Passwort",
+    "submit": "Endgültig löschen",
+    "note": "Nach dem Löschen werden Sie abgemeldet.",
+    "confirmTitle": "Konto löschen?",
+    "confirmBody": "Diese Aktion kann nicht rückgängig gemacht werden.",
+    "confirmButton": "Löschen",
+    "lastAdmin": "Sie sind der einzige Administrator. Bestimmen Sie einen anderen Administrator, bevor Sie Ihr Konto löschen."
+  },
   "legal": {
     "title": "Rechtliche Informationen",
     "subtitle": "Impressum, Datenschutz, Nutzung",

@@ -1,4 +1,23 @@
 {
+  "dataRights": {
+    "sectionLabel": "My data",
+    "export": "Download my data",
+    "exportHint": "Export to a file (JSON)",
+    "delete": "Delete account and data",
+    "deleteHint": "Irreversibly anonymise my record"
+  },
+  "deleteAccount": {
+    "title": "Delete account",
+    "warning": "This action is irreversible.",
+    "intro": "Your account will be deleted and your publisher record anonymised: name and contact details are removed. The congregation's organisational records are kept in anonymised form. Please confirm with your password.",
+    "passwordLabel": "Password",
+    "submit": "Delete permanently",
+    "note": "After deletion you will be signed out.",
+    "confirmTitle": "Delete account?",
+    "confirmBody": "This action cannot be undone.",
+    "confirmButton": "Delete",
+    "lastAdmin": "You are the only administrator. Assign another administrator before deleting your account."
+  },
   "legal": {
     "title": "Legal information",
     "subtitle": "Imprint, privacy, terms",
