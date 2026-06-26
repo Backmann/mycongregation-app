@@ -75,7 +75,7 @@
     "groups": "Gruppen",
     "reports": "Berichte",
     "profile": "Profil",
-    "cart": "Wagen",
+    "cart": "Dienst",
     "home": "Start"
   },
   "common": {
@@ -1093,6 +1093,37 @@
     "planTitle": "Reinigung",
     "planAllDone": "Reinigung ist zugeteilt",
     "useSuggested": "Vorschlag: {{name}}"
+  },
+  "service": {
+    "hubTitle": "Dienst",
+    "publicWitnessing": "Öffentliches Zeugnisgeben",
+    "publicWitnessingSubtitle": "Wagen und Stände",
+    "locations": "Zeugnis-Standorte",
+    "locationsSubtitle": "Adressen für Wagen und Stände"
+  },
+  "cartLocations": {
+    "title": "Zeugnis-Standorte",
+    "add": "Standort hinzufügen",
+    "empty": "Noch keine Standorte",
+    "name": "Name",
+    "namePlaceholder": "z. B. Einkaufszentrum",
+    "address": "Adresse",
+    "addressPlaceholder": "Optional",
+    "kind": "Typ",
+    "kindCart": "Wagen",
+    "kindStand": "Stand",
+    "active": "Aktiv",
+    "inactive": "Deaktiviert",
+    "showInactive": "Deaktivierte anzeigen",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "editTitle": "Standort bearbeiten",
+    "addTitle": "Neuer Standort",
+    "removeTitle": "Standort löschen?",
+    "removeBody": "Der Standort wird unwiderruflich gelöscht.",
+    "removeWeb": "Diesen Standort löschen?",
+    "saveError": "Speichern fehlgeschlagen"
   },
   "cart": {
     "title": "Wagen",

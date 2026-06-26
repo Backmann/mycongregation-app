@@ -1125,6 +1125,54 @@ export const cartShiftsApi = {
   },
 };
 
+export type CartLocationKind = 'cart' | 'stand';
+
+export interface CartLocation {
+  id: string;
+  congregationId: string;
+  name: string;
+  address: string | null;
+  kind: CartLocationKind;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateCartLocationInput {
+  name: string;
+  address?: string | null;
+  kind?: CartLocationKind;
+  isActive?: boolean;
+}
+
+export type UpdateCartLocationInput = Partial<CreateCartLocationInput>;
+
+export const cartLocationsApi = {
+  async list(includeInactive = false): Promise<CartLocation[]> {
+    const { data } = await api.get<CartLocation[]>('/cart-locations', {
+      params: includeInactive ? { includeInactive: 'true' } : {},
+    });
+    return data;
+  },
+  async create(input: CreateCartLocationInput): Promise<CartLocation> {
+    const { data } = await api.post<CartLocation>('/cart-locations', input);
+    return data;
+  },
+  async update(
+    id: string,
+    input: UpdateCartLocationInput,
+  ): Promise<CartLocation> {
+    const { data } = await api.patch<CartLocation>(
+      `/cart-locations/${id}`,
+      input,
+    );
+    return data;
+  },
+  async remove(id: string): Promise<void> {
+    await api.delete(`/cart-locations/${id}`);
+  },
+};
+
 export type PublisherStatus = 'active' | 'irregular' | 'inactive';
 
 export interface AccessSummary {

@@ -75,7 +75,7 @@
     "groups": "Groups",
     "reports": "Reports",
     "profile": "Profile",
-    "cart": "Carts",
+    "cart": "Ministry",
     "home": "Home"
   },
   "common": {
@@ -1093,6 +1093,37 @@
     "planTitle": "Cleaning",
     "planAllDone": "Cleaning is assigned",
     "useSuggested": "Suggested: {{name}}"
+  },
+  "service": {
+    "hubTitle": "Ministry",
+    "publicWitnessing": "Public witnessing",
+    "publicWitnessingSubtitle": "Carts and stands",
+    "locations": "Witnessing points",
+    "locationsSubtitle": "Cart and stand addresses"
+  },
+  "cartLocations": {
+    "title": "Witnessing points",
+    "add": "Add point",
+    "empty": "No points yet",
+    "name": "Name",
+    "namePlaceholder": "e.g. Central Mall",
+    "address": "Address",
+    "addressPlaceholder": "Optional",
+    "kind": "Type",
+    "kindCart": "Cart",
+    "kindStand": "Stand",
+    "active": "Active",
+    "inactive": "Deactivated",
+    "showInactive": "Show deactivated",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "editTitle": "Edit point",
+    "addTitle": "New point",
+    "removeTitle": "Delete point?",
+    "removeBody": "The point will be permanently deleted.",
+    "removeWeb": "Delete this point?",
+    "saveError": "Could not save"
   },
   "cart": {
     "title": "Carts",

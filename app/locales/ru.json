@@ -75,7 +75,7 @@
     "groups": "Группы",
     "reports": "Отчёты",
     "profile": "Профиль",
-    "cart": "Тележки",
+    "cart": "Служение",
     "home": "Главная"
   },
   "common": {
@@ -1097,6 +1097,37 @@
     "planTitle": "Уборка",
     "planAllDone": "Уборка распределена",
     "useSuggested": "Предложить: {{name}}"
+  },
+  "service": {
+    "hubTitle": "Служение",
+    "publicWitnessing": "Общественное служение",
+    "publicWitnessingSubtitle": "Тележки и стенды",
+    "locations": "Точки служения",
+    "locationsSubtitle": "Адреса тележек и стендов"
+  },
+  "cartLocations": {
+    "title": "Точки служения",
+    "add": "Добавить точку",
+    "empty": "Точек пока нет",
+    "name": "Название",
+    "namePlaceholder": "Напр. ТЦ Центральный",
+    "address": "Адрес",
+    "addressPlaceholder": "Необязательно",
+    "kind": "Тип",
+    "kindCart": "Тележка",
+    "kindStand": "Стенд",
+    "active": "Активна",
+    "inactive": "Выключена",
+    "showInactive": "Показать выключенные",
+    "save": "Сохранить",
+    "cancel": "Отмена",
+    "delete": "Удалить",
+    "editTitle": "Изменить точку",
+    "addTitle": "Новая точка",
+    "removeTitle": "Удалить точку?",
+    "removeBody": "Точка будет удалена без возможности восстановления.",
+    "removeWeb": "Удалить эту точку?",
+    "saveError": "Не удалось сохранить"
   },
   "cart": {
     "title": "Тележки",

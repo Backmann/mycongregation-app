@@ -5,7 +5,15 @@ export default function CartLayout() {
   const { t } = useTranslation();
   return (
     <Stack>
-      <Stack.Screen name="index" options={{ title: t('cart.title') }} />
+      <Stack.Screen name="index" options={{ title: t('service.hubTitle') }} />
+      <Stack.Screen
+        name="shifts"
+        options={{ title: t('service.publicWitnessing') }}
+      />
+      <Stack.Screen
+        name="locations"
+        options={{ title: t('service.locations') }}
+      />
     </Stack>
   );
 }

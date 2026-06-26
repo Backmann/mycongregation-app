@@ -76,7 +76,7 @@ export default function AppLayout() {
         options={{
           title: t('tabs.cart'),
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="cart" color={color} size={size} />
+            <Ionicons name="navigate" color={color} size={size} />
           ),
         }}
       />
