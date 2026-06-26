@@ -159,12 +159,6 @@ export interface Publisher {
   ministryStartDate: string | null;
   pioneerType: PioneerType;
   pioneerSince: string | null;
-  isAnointed: boolean;
-  hasKingdomHallKey: boolean;
-  printedWatchtower: boolean;
-  printedWorkbook: boolean;
-  sendsReportDirectly: boolean;
-  spiritualNotes: string | null;
   notes: string | null;
   capabilities: Capabilities;
   removalReason: RemovalReason | null;
@@ -195,12 +189,6 @@ export interface CreatePublisherInput {
   ministryStartDate?: string;
   pioneerType?: PioneerType;
   pioneerSince?: string;
-  isAnointed?: boolean;
-  hasKingdomHallKey?: boolean;
-  printedWatchtower?: boolean;
-  printedWorkbook?: boolean;
-  sendsReportDirectly?: boolean;
-  spiritualNotes?: string;
   notes?: string;
   capabilities?: Capabilities;
 }

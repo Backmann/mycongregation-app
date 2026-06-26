@@ -78,14 +78,8 @@ export function PublisherForm({
     ministryStartDate: initial?.ministryStartDate ?? '',
     pioneerType: initial?.pioneerType ?? 'none',
     pioneerSince: initial?.pioneerSince ?? '',
-    isAnointed: initial?.isAnointed ?? false,
-    hasKingdomHallKey: initial?.hasKingdomHallKey ?? false,
     isActive: initial?.isActive ?? true,
     isRegular: initial?.isRegular ?? true,
-    printedWatchtower: initial?.printedWatchtower ?? false,
-    printedWorkbook: initial?.printedWorkbook ?? false,
-    sendsReportDirectly: initial?.sendsReportDirectly ?? false,
-    spiritualNotes: initial?.spiritualNotes ?? '',
     notes: initial?.notes ?? '',
     capabilities:
       initial?.capabilities ??
