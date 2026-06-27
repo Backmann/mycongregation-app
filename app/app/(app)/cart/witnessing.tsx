@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -63,9 +63,13 @@ const PERIOD_TIMES: { key: string; times: string[] }[] = [
 const STEP_OPTIONS = [60, 90, 120] as const;
 const DOW = [1, 2, 3, 4, 5, 6, 7];
 
-function dayLabel(dateISO: string, locale: string): string {
+function dayHeader(dateISO: string, locale: string): string {
   const d = parseISODate(dateISO);
-  return d.toLocaleDateString(locale, { weekday: 'short', day: 'numeric' });
+  return d.toLocaleDateString(locale, {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+  });
 }
 
 export default function WitnessingScreen() {
@@ -79,7 +83,6 @@ export default function WitnessingScreen() {
 
   const [monday, setMonday] = useState<Date>(() => startOfWeekMonday(new Date()));
   const weekISO = formatDateISO(monday);
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [showBuild, setShowBuild] = useState(false);
   const [appendMode, setAppendMode] = useState(false);
 
@@ -111,16 +114,6 @@ export default function WitnessingScreen() {
 
   const visible = week && !(week.status === 'draft' && !canManage);
 
-  const dates = useMemo(() => {
-    if (!visible || !week) return [];
-    return [...new Set(week.slots.map((s) => s.date))].sort();
-  }, [visible, week]);
-
-  useEffect(() => {
-    if (dates.length && (!selectedDate || !dates.includes(selectedDate))) {
-      setSelectedDate(dates[0]);
-    }
-  }, [dates, selectedDate]);
 
   const buildMutation = useMutation({
     mutationFn: (input: BuildCartWeekInput) => cartWeeksApi.build(input),
@@ -214,20 +207,26 @@ export default function WitnessingScreen() {
     ]);
   }
 
-  const daySlots = useMemo(() => {
-    if (!week || !selectedDate) return [];
-    return week.slots.filter((s) => s.date === selectedDate);
-  }, [week, selectedDate]);
-
-  const byLocation = useMemo(() => {
-    const map = new Map<string, { name: string; slots: CartSlotView[] }>();
-    for (const s of daySlots) {
-      const e = map.get(s.locationId) ?? { name: s.locationName, slots: [] };
+  const byDay = useMemo(() => {
+    if (!week) return [];
+    const days = new Map<
+      string,
+      Map<string, { name: string; slots: CartSlotView[] }>
+    >();
+    for (const s of week.slots) {
+      let locs = days.get(s.date);
+      if (!locs) {
+        locs = new Map();
+        days.set(s.date, locs);
+      }
+      const e = locs.get(s.locationId) ?? { name: s.locationName, slots: [] };
       e.slots.push(s);
-      map.set(s.locationId, e);
+      locs.set(s.locationId, e);
     }
-    return [...map.values()];
-  }, [daySlots]);
+    return [...days.entries()]
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([date, locs]) => ({ date, locations: [...locs.values()] }));
+  }, [week]);
 
   return (
     <ScrollView
@@ -278,73 +277,50 @@ export default function WitnessingScreen() {
         </View>
       ) : (
         <>
-          {/* Day selector */}
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.dayRow}
-          >
-            {dates.map((d) => (
-              <Pressable
-                key={d}
-                onPress={() => setSelectedDate(d)}
-                style={[styles.dayChip, selectedDate === d && styles.dayChipActive]}
-              >
-                <Text
-                  style={[
-                    styles.dayChipText,
-                    selectedDate === d && styles.dayChipTextActive,
-                  ]}
-                >
-                  {dayLabel(d, locale)}
-                </Text>
-              </Pressable>
-            ))}
-          </ScrollView>
-
-          {byLocation.length === 0 ? (
+          {byDay.length === 0 ? (
             <Text style={styles.emptyText}>{t('witnessing.noSlots')}</Text>
           ) : (
-            byLocation.map((loc, i) => (
-              <View key={i} style={styles.locBlock}>
-                <Text style={styles.locName}>{loc.name}</Text>
-                <View style={styles.cellWrap}>
-                  {loc.slots.map((s) => {
-                    const full =
-                      typeof s.requestCount === 'number' &&
-                      false; /* capacity handled in Phase 3 */
-                    const state = s.myRequest
-                      ? 'mine'
-                      : full
-                        ? 'full'
-                        : 'free';
-                    return (
-                      <Pressable
-                        key={s.id}
-                        onPress={() => setSlotModal(s)}
-                        style={[
-                          styles.cell,
-                          state === 'free' && styles.cellFree,
-                          state === 'mine' && styles.cellMine,
-                        ]}
-                      >
-                        <Text
-                          style={[
-                            styles.cellTime,
-                            state === 'mine' && styles.cellTimeMine,
-                          ]}
-                        >
-                          {s.startTime}
-                        </Text>
-                        {canManage && typeof s.requestCount === 'number' && (
-                          <Text style={styles.cellCount}>
-                            {s.requestCount} {t('witnessing.requests')}
-                          </Text>
-                        )}
-                      </Pressable>
-                    );
-                  })}
-                </View>
+            byDay.map((day) => (
+              <View key={day.date} style={styles.dayBlock}>
+                <Text style={styles.dayHeader}>
+                  {dayHeader(day.date, locale)}
+                </Text>
+                {day.locations.map((loc, i) => (
+                  <View key={i} style={styles.locBlock}>
+                    <Text style={styles.locName}>{loc.name}</Text>
+                    <View style={styles.cellWrap}>
+                      {loc.slots.map((s) => {
+                        const state = s.myRequest ? 'mine' : 'free';
+                        return (
+                          <Pressable
+                            key={s.id}
+                            onPress={() => setSlotModal(s)}
+                            style={[
+                              styles.cell,
+                              state === 'free' && styles.cellFree,
+                              state === 'mine' && styles.cellMine,
+                            ]}
+                          >
+                            <Text
+                              style={[
+                                styles.cellTime,
+                                state === 'mine' && styles.cellTimeMine,
+                              ]}
+                            >
+                              {s.startTime}
+                            </Text>
+                            {canManage &&
+                              typeof s.requestCount === 'number' && (
+                                <Text style={styles.cellCount}>
+                                  {s.requestCount} {t('witnessing.requests')}
+                                </Text>
+                              )}
+                          </Pressable>
+                        );
+                      })}
+                    </View>
+                  </View>
+                ))}
               </View>
             ))
           )}
@@ -686,16 +662,14 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   primaryBtnText: { color: '#fff', fontSize: 15, fontWeight: '600' },
-  dayRow: { gap: 8, paddingVertical: 4, marginBottom: 12 },
-  dayChip: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: '#e2e8f0',
+  dayBlock: { marginBottom: 20 },
+  dayHeader: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#0f172a',
+    marginBottom: 10,
+    textTransform: 'capitalize',
   },
-  dayChipActive: { backgroundColor: '#0ea5e9' },
-  dayChipText: { fontSize: 13, color: '#475569', fontWeight: '600' },
-  dayChipTextActive: { color: '#fff' },
   locBlock: { marginBottom: 16 },
   locName: {
     fontSize: 15,
