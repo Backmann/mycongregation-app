@@ -1102,6 +1102,10 @@
     "locationsSubtitle": "Cart and stand addresses"
   },
   "witnessing": {
+    "window": "Service window",
+    "addToWeek": "Add point/days",
+    "add": "Add",
+    "period": { "morning": "Morning", "day": "Day", "evening": "Evening" },
     "notOpen": "This week's schedule is not open yet",
     "build": "Build week",
     "days": "Days",

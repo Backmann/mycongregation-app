@@ -1102,6 +1102,10 @@
     "locationsSubtitle": "Adressen für Wagen und Stände"
   },
   "witnessing": {
+    "window": "Dienstfenster",
+    "addToWeek": "Standort/Tage hinzufügen",
+    "add": "Hinzufügen",
+    "period": { "morning": "Morgen", "day": "Tag", "evening": "Abend" },
     "notOpen": "Der Plan für diese Woche ist noch nicht offen",
     "build": "Woche erstellen",
     "days": "Tage",

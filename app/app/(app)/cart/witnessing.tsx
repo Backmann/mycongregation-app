@@ -44,6 +44,22 @@ const TIME_OPTIONS: string[] = (() => {
   return out;
 })();
 
+function timeToMin(hhmm: string): number {
+  const [h, m] = hhmm.split(':').map(Number);
+  return h * 60 + m;
+}
+
+const PERIOD_TIMES: { key: string; times: string[] }[] = [
+  { key: 'morning', from: 6 * 60, to: 11 * 60 + 30 },
+  { key: 'day', from: 12 * 60, to: 17 * 60 + 30 },
+  { key: 'evening', from: 18 * 60, to: 20 * 60 },
+].map((p) => ({
+  key: p.key,
+  times: TIME_OPTIONS.filter(
+    (tm) => timeToMin(tm) >= p.from && timeToMin(tm) <= p.to,
+  ),
+}));
+
 const STEP_OPTIONS = [60, 90, 120] as const;
 const DOW = [1, 2, 3, 4, 5, 6, 7];
 
@@ -65,6 +81,7 @@ export default function WitnessingScreen() {
   const weekISO = formatDateISO(monday);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [showBuild, setShowBuild] = useState(false);
+  const [appendMode, setAppendMode] = useState(false);
 
   // build-form state
   const [bDays, setBDays] = useState<number[]>([]);
@@ -158,6 +175,16 @@ export default function WitnessingScreen() {
     return arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v];
   }
 
+  function pickTime(tm: string) {
+    if (!bStart || (bStart && bEnd)) {
+      setBStart(tm);
+      setBEnd('');
+      return;
+    }
+    if (timeToMin(tm) > timeToMin(bStart)) setBEnd(tm);
+    else setBStart(tm);
+  }
+
   function weekHeader(): string {
     const end = addDays(monday, 6);
     return `${monday.toLocaleDateString(locale, { day: 'numeric', month: 'short' })} – ${end.toLocaleDateString(locale, { day: 'numeric', month: 'short' })}`;
@@ -235,7 +262,15 @@ export default function WitnessingScreen() {
         <View style={styles.emptyBox}>
           <Text style={styles.emptyText}>{t('witnessing.notOpen')}</Text>
           {canManage && !showBuild && (
-            <Pressable style={styles.primaryBtn} onPress={() => setShowBuild(true)}>
+            <Pressable
+              style={styles.primaryBtn}
+              onPress={() => {
+                setAppendMode(false);
+                setBDays([]);
+                setBLocations([]);
+                setShowBuild(true);
+              }}
+            >
               <Ionicons name="construct-outline" size={18} color="#fff" />
               <Text style={styles.primaryBtnText}>{t('witnessing.build')}</Text>
             </Pressable>
@@ -315,6 +350,22 @@ export default function WitnessingScreen() {
           )}
 
           {/* Manager controls */}
+          {canManage && week && week.status !== 'published' && (
+            <Pressable
+              style={styles.secondaryBtn}
+              onPress={() => {
+                setAppendMode(true);
+                setBDays([]);
+                setBLocations([]);
+                setShowBuild(true);
+              }}
+            >
+              <Ionicons name="add" size={18} color="#0ea5e9" />
+              <Text style={styles.secondaryBtnText}>
+                {t('witnessing.addToWeek')}
+              </Text>
+            </Pressable>
+          )}
           {canManage && week && week.status === 'draft' && (
             <Pressable
               style={styles.primaryBtn}
@@ -401,84 +452,76 @@ export default function WitnessingScreen() {
                 </View>
               )}
 
-              <View style={styles.timeRow}>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.fieldLabel}>
-                    {t('witnessing.windowStart')}
-                  </Text>
-                  <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={styles.timeScroll}
-                  >
-                    {TIME_OPTIONS.map((tm) => (
-                      <Pressable
-                        key={tm}
-                        onPress={() => setBStart(tm)}
-                        style={[styles.timeChip, bStart === tm && styles.optChipOn]}
-                      >
-                        <Text
-                          style={[
-                            styles.optChipText,
-                            bStart === tm && styles.optChipTextOn,
-                          ]}
-                        >
-                          {tm}
-                        </Text>
-                      </Pressable>
-                    ))}
-                  </ScrollView>
-                </View>
-              </View>
-              <View style={styles.timeRow}>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.fieldLabel}>
-                    {t('witnessing.windowEnd')}
-                  </Text>
-                  <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={styles.timeScroll}
-                  >
-                    {TIME_OPTIONS.map((tm) => (
-                      <Pressable
-                        key={tm}
-                        onPress={() => setBEnd(tm)}
-                        style={[styles.timeChip, bEnd === tm && styles.optChipOn]}
-                      >
-                        <Text
-                          style={[
-                            styles.optChipText,
-                            bEnd === tm && styles.optChipTextOn,
-                          ]}
-                        >
-                          {tm}
-                        </Text>
-                      </Pressable>
-                    ))}
-                  </ScrollView>
-                </View>
-              </View>
-
-              <Text style={styles.fieldLabel}>{t('witnessing.step')}</Text>
-              <View style={styles.cellWrap}>
-                {STEP_OPTIONS.map((st) => (
-                  <Pressable
-                    key={st}
-                    onPress={() => setBStep(st)}
-                    style={[styles.optChip, bStep === st && styles.optChipOn]}
-                  >
-                    <Text
-                      style={[
-                        styles.optChipText,
-                        bStep === st && styles.optChipTextOn,
-                      ]}
-                    >
-                      {t(`witnessing.step${st}`)}
+              {!appendMode && (
+                <>
+                  <View style={styles.windowHeader}>
+                    <Text style={styles.fieldLabel}>
+                      {t('witnessing.window')}
                     </Text>
-                  </Pressable>
-                ))}
-              </View>
+                    <Text style={styles.windowValue}>
+                      {bStart} – {bEnd}
+                    </Text>
+                  </View>
+                  {PERIOD_TIMES.map((p) => (
+                    <View key={p.key}>
+                      <Text style={styles.periodLabel}>
+                        {t(`witnessing.period.${p.key}`)}
+                      </Text>
+                      <View style={styles.cellWrap}>
+                        {p.times.map((tm) => {
+                          const edge = tm === bStart || tm === bEnd;
+                          const inRange =
+                            !!bStart &&
+                            !!bEnd &&
+                            timeToMin(tm) > timeToMin(bStart) &&
+                            timeToMin(tm) < timeToMin(bEnd);
+                          return (
+                            <Pressable
+                              key={tm}
+                              onPress={() => pickTime(tm)}
+                              style={[
+                                styles.timeCell,
+                                inRange && styles.timeCellRange,
+                                edge && styles.optChipOn,
+                              ]}
+                            >
+                              <Text
+                                style={[
+                                  styles.optChipText,
+                                  inRange && styles.timeCellRangeText,
+                                  edge && styles.optChipTextOn,
+                                ]}
+                              >
+                                {tm}
+                              </Text>
+                            </Pressable>
+                          );
+                        })}
+                      </View>
+                    </View>
+                  ))}
+
+                  <Text style={styles.fieldLabel}>{t('witnessing.step')}</Text>
+                  <View style={styles.cellWrap}>
+                    {STEP_OPTIONS.map((st) => (
+                      <Pressable
+                        key={st}
+                        onPress={() => setBStep(st)}
+                        style={[styles.optChip, bStep === st && styles.optChipOn]}
+                      >
+                        <Text
+                          style={[
+                            styles.optChipText,
+                            bStep === st && styles.optChipTextOn,
+                          ]}
+                        >
+                          {t(`witnessing.step${st}`)}
+                        </Text>
+                      </Pressable>
+                    ))}
+                  </View>
+                </>
+              )}
 
               <View style={styles.modalActions}>
                 <Pressable
@@ -494,26 +537,30 @@ export default function WitnessingScreen() {
                     styles.saveBtn,
                     (bDays.length === 0 ||
                       bLocations.length === 0 ||
+                      (!appendMode && (!bStart || !bEnd)) ||
                       buildMutation.isPending) &&
                       styles.saveBtnDisabled,
                   ]}
                   disabled={
                     bDays.length === 0 ||
                     bLocations.length === 0 ||
+                    (!appendMode && (!bStart || !bEnd)) ||
                     buildMutation.isPending
                   }
                   onPress={() =>
                     buildMutation.mutate({
                       weekStartDate: weekISO,
-                      startTime: bStart,
-                      endTime: bEnd,
-                      stepMinutes: bStep,
+                      startTime: appendMode && week ? week.startTime : bStart,
+                      endTime: appendMode && week ? week.endTime : bEnd,
+                      stepMinutes: appendMode && week ? week.stepMinutes : bStep,
                       daysOfWeek: bDays,
                       locationIds: bLocations,
                     })
                   }
                 >
-                  <Text style={styles.saveBtnText}>{t('witnessing.create')}</Text>
+                  <Text style={styles.saveBtnText}>
+                    {appendMode ? t('witnessing.add') : t('witnessing.create')}
+                  </Text>
                 </Pressable>
               </View>
             </ScrollView>
@@ -715,15 +762,43 @@ const styles = StyleSheet.create({
   optChipOn: { backgroundColor: '#0ea5e9', borderColor: '#0ea5e9' },
   optChipText: { fontSize: 14, color: '#475569', fontWeight: '600' },
   optChipTextOn: { color: '#fff' },
-  timeRow: { flexDirection: 'row', gap: 8 },
-  timeScroll: { gap: 6, paddingVertical: 2 },
-  timeChip: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+  secondaryBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#0ea5e9',
+    paddingVertical: 12,
+    marginTop: 16,
+  },
+  secondaryBtnText: { color: '#0ea5e9', fontSize: 15, fontWeight: '600' },
+  windowHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 12,
+  },
+  windowValue: { fontSize: 14, fontWeight: '700', color: '#0ea5e9' },
+  periodLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#94a3b8',
+    marginTop: 10,
+    marginBottom: 4,
+  },
+  timeCell: {
+    width: '22%',
+    alignItems: 'center',
+    paddingVertical: 10,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#cbd5e1',
+    borderColor: '#e2e8f0',
+    backgroundColor: '#fff',
   },
+  timeCellRange: { backgroundColor: '#e0f2fe', borderColor: '#bae6fd' },
+  timeCellRangeText: { color: '#0369a1' },
   modalActions: {
     flexDirection: 'row',
     alignItems: 'center',
