@@ -1102,6 +1102,8 @@
     "locationsSubtitle": "Cart and stand addresses"
   },
   "witnessing": {
+    "youAreAssigned": "You're assigned to this slot",
+    "cancelAssignment": "Cancel participation",
     "recentlyWith": "Recently with",
     "applyHint": "Apply for this slot?",
     "assigned": "Assigned",

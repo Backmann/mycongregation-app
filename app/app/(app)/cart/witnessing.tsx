@@ -198,6 +198,16 @@ export default function WitnessingScreen() {
       Alert.alert(t('witnessing.publishError'), extractErrorMessage(e)),
   });
 
+  const cancelMineMutation = useMutation({
+    mutationFn: (slotId: string) => cartWeeksApi.cancelMine(slotId),
+    onSuccess: () => {
+      setSlotModal(null);
+      invalidateWeek();
+    },
+    onError: (e) =>
+      Alert.alert(t('witnessing.assignError'), extractErrorMessage(e)),
+  });
+
   const withdrawMutation = useMutation({
     mutationFn: (slotId: string) => cartWeeksApi.withdraw(slotId),
     onSuccess: () => {
@@ -859,20 +869,17 @@ export default function WitnessingScreen() {
                   {slotModal.locationName} · {slotModal.startTime}–
                   {slotModal.endTime}
                 </Text>
-                {week?.status === 'published' ? (
+                {slotModal.myAssignment ? (
                   <>
-                    {(slotModal.assignments ?? []).length === 0 ? (
-                      <Text style={styles.emptyText}>
-                        {t('witnessing.noneYet')}
+                    <Text style={styles.appliedNote}>
+                      {t('witnessing.youAreAssigned')}
+                    </Text>
+                    {(slotModal.assignments ?? []).map((a) => (
+                      <Text key={a.id} style={styles.assignedName}>
+                        • {a.name}
+                        {a.external ? ` · ${t('witnessing.external')}` : ''}
                       </Text>
-                    ) : (
-                      (slotModal.assignments ?? []).map((a) => (
-                        <Text key={a.id} style={styles.assignedName}>
-                          • {a.name}
-                          {a.external ? ` · ${t('witnessing.external')}` : ''}
-                        </Text>
-                      ))
-                    )}
+                    ))}
                     <View style={styles.modalActions}>
                       <Pressable
                         style={styles.cancelBtn}
@@ -880,6 +887,15 @@ export default function WitnessingScreen() {
                       >
                         <Text style={styles.cancelBtnText}>
                           {t('witnessing.close')}
+                        </Text>
+                      </Pressable>
+                      <Pressable
+                        style={styles.deleteBtn}
+                        disabled={cancelMineMutation.isPending}
+                        onPress={() => cancelMineMutation.mutate(slotModal.id)}
+                      >
+                        <Text style={styles.deleteBtnText}>
+                          {t('witnessing.cancelAssignment')}
                         </Text>
                       </Pressable>
                     </View>
@@ -908,8 +924,14 @@ export default function WitnessingScreen() {
                       </Pressable>
                     </View>
                   </>
-                ) : (
+                ) : (slotModal.assignedCount ?? 0) < slotModal.capacityMax ? (
                   <>
+                    {(slotModal.assignments ?? []).map((a) => (
+                      <Text key={a.id} style={styles.assignedName}>
+                        • {a.name}
+                        {a.external ? ` · ${t('witnessing.external')}` : ''}
+                      </Text>
+                    ))}
                     <Text style={styles.appliedNote}>
                       {t('witnessing.applyHint')}
                     </Text>
@@ -931,6 +953,31 @@ export default function WitnessingScreen() {
                       >
                         <Text style={styles.saveBtnText}>
                           {t('witnessing.apply')}
+                        </Text>
+                      </Pressable>
+                    </View>
+                  </>
+                ) : (
+                  <>
+                    {(slotModal.assignments ?? []).length === 0 ? (
+                      <Text style={styles.emptyText}>
+                        {t('witnessing.noneYet')}
+                      </Text>
+                    ) : (
+                      (slotModal.assignments ?? []).map((a) => (
+                        <Text key={a.id} style={styles.assignedName}>
+                          • {a.name}
+                          {a.external ? ` · ${t('witnessing.external')}` : ''}
+                        </Text>
+                      ))
+                    )}
+                    <View style={styles.modalActions}>
+                      <Pressable
+                        style={styles.cancelBtn}
+                        onPress={() => setSlotModal(null)}
+                      >
+                        <Text style={styles.cancelBtnText}>
+                          {t('witnessing.close')}
                         </Text>
                       </Pressable>
                     </View>

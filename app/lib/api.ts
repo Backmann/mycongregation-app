@@ -1220,6 +1220,9 @@ export const cartWeeksApi = {
     );
     return data;
   },
+  async cancelMine(slotId: string): Promise<void> {
+    await api.delete(`/cart-slots/${slotId}/my-assignment`);
+  },
 };
 
 export type PublisherStatus = 'active' | 'irregular' | 'inactive';

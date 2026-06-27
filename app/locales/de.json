@@ -1102,6 +1102,8 @@
     "locationsSubtitle": "Adressen für Wagen und Stände"
   },
   "witnessing": {
+    "youAreAssigned": "Sie sind diesem Slot zugeteilt",
+    "cancelAssignment": "Teilnahme absagen",
     "recentlyWith": "Kürzlich mit",
     "applyHint": "Für diesen Slot bewerben?",
     "assigned": "Zugeteilt",
