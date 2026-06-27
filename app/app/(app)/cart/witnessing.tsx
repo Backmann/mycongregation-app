@@ -23,6 +23,7 @@ import {
   extractErrorMessage,
 } from '../../../lib/api';
 import { usePermissions } from '../../../lib/permissions';
+import { PublisherSelector } from '../../../components/PublisherSelector';
 import {
   addDays,
   addWeeks,
@@ -95,6 +96,8 @@ export default function WitnessingScreen() {
 
   // apply modal
   const [slotModal, setSlotModal] = useState<CartSlotView | null>(null);
+  const [distSlotId, setDistSlotId] = useState<string | null>(null);
+  const [extName, setExtName] = useState('');
   const [withWhom, setWithWhom] = useState('');
 
   const weekQuery = useQuery({
@@ -113,6 +116,13 @@ export default function WitnessingScreen() {
     queryClient.invalidateQueries({ queryKey: ['cart-week', weekISO] });
 
   const visible = week && !(week.status === 'draft' && !canManage);
+
+  const distSlot = useMemo(
+    () => week?.slots.find((s) => s.id === distSlotId) ?? null,
+    [week, distSlotId],
+  );
+  const atCapacity =
+    !!distSlot && (distSlot.assignedCount ?? 0) >= distSlot.capacityMax;
 
 
   const buildMutation = useMutation({
@@ -153,6 +163,34 @@ export default function WitnessingScreen() {
         status === 403 ? '' : extractErrorMessage(e),
       );
     },
+  });
+
+  const assignMutation = useMutation({
+    mutationFn: (v: {
+      slotId: string;
+      body: { publisherId?: string; externalName?: string };
+    }) => cartWeeksApi.assign(v.slotId, v.body),
+    onSuccess: () => {
+      setExtName('');
+      invalidateWeek();
+    },
+    onError: (e) =>
+      Alert.alert(t('witnessing.assignError'), extractErrorMessage(e)),
+  });
+
+  const unassignMutation = useMutation({
+    mutationFn: (v: { slotId: string; assignmentId: string }) =>
+      cartWeeksApi.unassign(v.slotId, v.assignmentId),
+    onSuccess: () => invalidateWeek(),
+    onError: (e) =>
+      Alert.alert(t('witnessing.assignError'), extractErrorMessage(e)),
+  });
+
+  const publishMutation = useMutation({
+    mutationFn: (id: string) => cartWeeksApi.publish(id),
+    onSuccess: () => invalidateWeek(),
+    onError: (e) =>
+      Alert.alert(t('witnessing.publishError'), extractErrorMessage(e)),
   });
 
   const withdrawMutation = useMutation({
@@ -203,6 +241,23 @@ export default function WitnessingScreen() {
         text: t('witnessing.deleteWeek'),
         style: 'destructive',
         onPress: () => deleteMutation.mutate(id),
+      },
+    ]);
+  }
+
+  function confirmPublish() {
+    if (!week) return;
+    const id = week.id;
+    if (Platform.OS === 'web') {
+      if (window.confirm(t('witnessing.publishConfirm')))
+        publishMutation.mutate(id);
+      return;
+    }
+    Alert.alert('', t('witnessing.publishConfirm'), [
+      { text: t('witnessing.cancel'), style: 'cancel' },
+      {
+        text: t('witnessing.publish'),
+        onPress: () => publishMutation.mutate(id),
       },
     ]);
   }
@@ -290,15 +345,28 @@ export default function WitnessingScreen() {
                     <Text style={styles.locName}>{loc.name}</Text>
                     <View style={styles.cellWrap}>
                       {loc.slots.map((s) => {
-                        const state = s.myRequest ? 'mine' : 'free';
+                        const cnt = s.assignedCount ?? 0;
+                        const mine = s.myRequest || s.myAssignment;
+                        const full = cnt >= s.capacityMax;
+                        const warn =
+                          canManage &&
+                          !!s.warnings &&
+                          (s.warnings.underMin ||
+                            s.warnings.brotherSister ||
+                            s.warnings.secondShiftSameDay);
+                        const state = mine ? 'mine' : full ? 'full' : 'free';
                         return (
                           <Pressable
                             key={s.id}
-                            onPress={() => setSlotModal(s)}
+                            onPress={() =>
+                              canManage ? setDistSlotId(s.id) : setSlotModal(s)
+                            }
                             style={[
                               styles.cell,
                               state === 'free' && styles.cellFree,
                               state === 'mine' && styles.cellMine,
+                              state === 'full' && styles.cellFull,
+                              warn && styles.cellWarn,
                             ]}
                           >
                             <Text
@@ -309,12 +377,18 @@ export default function WitnessingScreen() {
                             >
                               {s.startTime}
                             </Text>
-                            {canManage &&
-                              typeof s.requestCount === 'number' && (
+                            {canManage ? (
+                              <Text style={styles.cellCount}>
+                                {cnt}/{s.capacityMax}
+                                {s.requestCount ? ` · ${s.requestCount}` : ''}
+                              </Text>
+                            ) : (
+                              typeof s.assignedCount === 'number' && (
                                 <Text style={styles.cellCount}>
-                                  {s.requestCount} {t('witnessing.requests')}
+                                  {cnt}/{s.capacityMax}
                                 </Text>
-                              )}
+                              )
+                            )}
                           </Pressable>
                         );
                       })}
@@ -355,6 +429,14 @@ export default function WitnessingScreen() {
               <Ionicons name="megaphone-outline" size={18} color="#fff" />
               <Text style={styles.primaryBtnText}>
                 {t('witnessing.openCollecting')}
+              </Text>
+            </Pressable>
+          )}
+          {canManage && week && week.status === 'collecting' && (
+            <Pressable style={styles.primaryBtn} onPress={confirmPublish}>
+              <Ionicons name="checkmark-done-outline" size={18} color="#fff" />
+              <Text style={styles.primaryBtnText}>
+                {t('witnessing.publish')}
               </Text>
             </Pressable>
           )}
@@ -548,6 +630,205 @@ export default function WitnessingScreen() {
       </Modal>
 
       {/* Apply / withdraw modal */}
+      {/* Distribution modal (manager) */}
+      <Modal
+        visible={!!distSlot}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setDistSlotId(null)}
+      >
+        <View style={styles.modalBackdrop}>
+          <View style={styles.modalCard}>
+            <ScrollView>
+              {distSlot && (
+                <>
+                  <Text style={styles.modalTitle}>
+                    {distSlot.locationName} · {distSlot.startTime}–
+                    {distSlot.endTime}
+                  </Text>
+                  <Text style={styles.capacityLine}>
+                    {distSlot.assignedCount ?? 0}/{distSlot.capacityMax}{' '}
+                    {t('witnessing.assignedOf')}
+                  </Text>
+
+                  {distSlot.warnings &&
+                    (distSlot.warnings.underMin ||
+                      distSlot.warnings.brotherSister ||
+                      distSlot.warnings.secondShiftSameDay) && (
+                      <View style={styles.warnWrap}>
+                        {distSlot.warnings.underMin && (
+                          <Text style={styles.warnChip}>
+                            {t('witnessing.warn.underMin')}
+                          </Text>
+                        )}
+                        {distSlot.warnings.brotherSister && (
+                          <Text style={styles.warnChip}>
+                            {t('witnessing.warn.brotherSister')}
+                          </Text>
+                        )}
+                        {distSlot.warnings.secondShiftSameDay && (
+                          <Text style={styles.warnChip}>
+                            {t('witnessing.warn.secondShift')}
+                          </Text>
+                        )}
+                      </View>
+                    )}
+
+                  <Text style={styles.fieldLabel}>
+                    {t('witnessing.assigned')}
+                  </Text>
+                  {(distSlot.assignments ?? []).length === 0 ? (
+                    <Text style={styles.emptyText}>
+                      {t('witnessing.noneYet')}
+                    </Text>
+                  ) : (
+                    (distSlot.assignments ?? []).map((a) => (
+                      <View key={a.id} style={styles.assignedRow}>
+                        <Text style={styles.assignedName}>
+                          {a.name}
+                          {a.external ? ` · ${t('witnessing.external')}` : ''}
+                        </Text>
+                        <Pressable
+                          onPress={() =>
+                            unassignMutation.mutate({
+                              slotId: distSlot.id,
+                              assignmentId: a.id,
+                            })
+                          }
+                        >
+                          <Ionicons
+                            name="close-circle"
+                            size={22}
+                            color="#ef4444"
+                          />
+                        </Pressable>
+                      </View>
+                    ))
+                  )}
+
+                  {(distSlot.requests ?? []).filter(
+                    (r) =>
+                      !(distSlot.assignments ?? []).some(
+                        (a) => a.publisherId === r.publisherId,
+                      ),
+                  ).length > 0 && (
+                    <>
+                      <Text style={styles.fieldLabel}>
+                        {t('witnessing.applicants')}
+                      </Text>
+                      {(distSlot.requests ?? [])
+                        .filter(
+                          (r) =>
+                            !(distSlot.assignments ?? []).some(
+                              (a) => a.publisherId === r.publisherId,
+                            ),
+                        )
+                        .map((r) => (
+                          <View key={r.publisherId} style={styles.applicantRow}>
+                            <View style={{ flex: 1 }}>
+                              <Text style={styles.assignedName}>{r.name}</Text>
+                              {!!r.withWhomNote && (
+                                <Text style={styles.withWhomNote}>
+                                  {t('witnessing.withWhomShort')}:{' '}
+                                  {r.withWhomNote}
+                                </Text>
+                              )}
+                            </View>
+                            <Pressable
+                              style={[
+                                styles.assignBtn,
+                                atCapacity && styles.assignBtnDisabled,
+                              ]}
+                              disabled={atCapacity || assignMutation.isPending}
+                              onPress={() =>
+                                assignMutation.mutate({
+                                  slotId: distSlot.id,
+                                  body: { publisherId: r.publisherId },
+                                })
+                              }
+                            >
+                              <Text style={styles.assignBtnText}>
+                                {t('witnessing.assign')}
+                              </Text>
+                            </Pressable>
+                          </View>
+                        ))}
+                    </>
+                  )}
+
+                  {!atCapacity ? (
+                    <>
+                      <PublisherSelector
+                        label={t('witnessing.addPublisher')}
+                        value={null}
+                        requiredCapability="public_witnessing"
+                        excludeIds={(distSlot.assignments ?? [])
+                          .map((a) => a.publisherId)
+                          .filter((x): x is string => !!x)}
+                        onChange={(id) => {
+                          if (id)
+                            assignMutation.mutate({
+                              slotId: distSlot.id,
+                              body: { publisherId: id },
+                            });
+                        }}
+                      />
+                      <Text style={styles.fieldLabel}>
+                        {t('witnessing.addExternal')}
+                      </Text>
+                      <View style={styles.extRow}>
+                        <TextInput
+                          style={[styles.input, { flex: 1 }]}
+                          value={extName}
+                          onChangeText={setExtName}
+                          placeholder={t('witnessing.externalPlaceholder')}
+                          placeholderTextColor="#94a3b8"
+                        />
+                        <Pressable
+                          style={[
+                            styles.assignBtn,
+                            !extName.trim() && styles.assignBtnDisabled,
+                          ]}
+                          disabled={!extName.trim() || assignMutation.isPending}
+                          onPress={() =>
+                            assignMutation.mutate({
+                              slotId: distSlot.id,
+                              body: { externalName: extName.trim() },
+                            })
+                          }
+                        >
+                          <Text style={styles.assignBtnText}>
+                            {t('witnessing.add')}
+                          </Text>
+                        </Pressable>
+                      </View>
+                    </>
+                  ) : (
+                    <Text style={styles.appliedNote}>
+                      {t('witnessing.slotFull')}
+                    </Text>
+                  )}
+
+                  <View style={styles.modalActions}>
+                    <Pressable
+                      style={styles.cancelBtn}
+                      onPress={() => {
+                        setDistSlotId(null);
+                        setExtName('');
+                      }}
+                    >
+                      <Text style={styles.cancelBtnText}>
+                        {t('witnessing.close')}
+                      </Text>
+                    </Pressable>
+                  </View>
+                </>
+              )}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+
       <Modal
         visible={!!slotModal}
         animationType="slide"
@@ -562,7 +843,32 @@ export default function WitnessingScreen() {
                   {slotModal.locationName} · {slotModal.startTime}–
                   {slotModal.endTime}
                 </Text>
-                {slotModal.myRequest ? (
+                {week?.status === 'published' ? (
+                  <>
+                    {(slotModal.assignments ?? []).length === 0 ? (
+                      <Text style={styles.emptyText}>
+                        {t('witnessing.noneYet')}
+                      </Text>
+                    ) : (
+                      (slotModal.assignments ?? []).map((a) => (
+                        <Text key={a.id} style={styles.assignedName}>
+                          • {a.name}
+                          {a.external ? ` · ${t('witnessing.external')}` : ''}
+                        </Text>
+                      ))
+                    )}
+                    <View style={styles.modalActions}>
+                      <Pressable
+                        style={styles.cancelBtn}
+                        onPress={() => setSlotModal(null)}
+                      >
+                        <Text style={styles.cancelBtnText}>
+                          {t('witnessing.close')}
+                        </Text>
+                      </Pressable>
+                    </View>
+                  </>
+                ) : slotModal.myRequest ? (
                   <>
                     <Text style={styles.appliedNote}>
                       {t('witnessing.applied')}
@@ -691,6 +997,46 @@ const styles = StyleSheet.create({
   cellTime: { fontSize: 15, fontWeight: '700', color: '#166534' },
   cellTimeMine: { color: '#fff' },
   cellCount: { fontSize: 11, color: '#475569', marginTop: 2 },
+  cellFull: { backgroundColor: '#e2e8f0' },
+  cellWarn: { borderWidth: 2, borderColor: '#f59e0b' },
+  capacityLine: { fontSize: 14, color: '#475569', marginBottom: 8 },
+  warnWrap: { gap: 6, marginBottom: 8 },
+  warnChip: {
+    backgroundColor: '#fef3c7',
+    color: '#92400e',
+    fontSize: 12,
+    fontWeight: '600',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  assignedRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f5f9',
+  },
+  assignedName: { fontSize: 15, color: '#0f172a', fontWeight: '600' },
+  applicantRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f5f9',
+  },
+  withWhomNote: { fontSize: 12, color: '#64748b', marginTop: 2 },
+  assignBtn: {
+    backgroundColor: '#0ea5e9',
+    borderRadius: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+  },
+  assignBtnText: { color: '#fff', fontSize: 14, fontWeight: '600' },
+  assignBtnDisabled: { opacity: 0.5 },
+  extRow: { flexDirection: 'row', gap: 8, alignItems: 'center' },
   deleteWeekBtn: { alignItems: 'center', paddingVertical: 14, marginTop: 8 },
   deleteWeekText: { color: '#ef4444', fontSize: 14, fontWeight: '600' },
   modalBackdrop: {

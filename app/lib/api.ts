@@ -1111,6 +1111,26 @@ export const cartLocationsApi = {
 
 export type CartWeekStatus = 'draft' | 'collecting' | 'published';
 
+export interface CartAssignmentView {
+  id: string;
+  publisherId: string | null;
+  name: string;
+  gender: Gender | null;
+  external: boolean;
+}
+
+export interface CartRequestView {
+  publisherId: string;
+  name: string;
+  withWhomNote: string | null;
+}
+
+export interface SlotWarnings {
+  underMin: boolean;
+  brotherSister: boolean;
+  secondShiftSameDay: boolean;
+}
+
 export interface CartSlotView {
   id: string;
   date: string;
@@ -1119,8 +1139,14 @@ export interface CartSlotView {
   locationId: string;
   locationName: string;
   locationKind: CartLocationKind;
+  capacityMax: number;
   myRequest: boolean;
+  myAssignment?: boolean;
+  assignedCount?: number;
   requestCount?: number;
+  assignments?: CartAssignmentView[];
+  requests?: CartRequestView[];
+  warnings?: SlotWarnings;
 }
 
 export interface CartWeekView {
@@ -1167,6 +1193,18 @@ export const cartWeeksApi = {
   },
   async withdraw(slotId: string): Promise<void> {
     await api.delete(`/cart-slots/${slotId}/request`);
+  },
+  async publish(id: string): Promise<void> {
+    await api.post(`/cart-weeks/${id}/publish`);
+  },
+  async assign(
+    slotId: string,
+    body: { publisherId?: string; externalName?: string },
+  ): Promise<void> {
+    await api.post(`/cart-slots/${slotId}/assignments`, body);
+  },
+  async unassign(slotId: string, assignmentId: string): Promise<void> {
+    await api.delete(`/cart-slots/${slotId}/assignments/${assignmentId}`);
   },
 };
 
