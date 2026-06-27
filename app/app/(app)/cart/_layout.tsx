@@ -11,6 +11,10 @@ export default function CartLayout() {
         options={{ title: t('service.publicWitnessing') }}
       />
       <Stack.Screen
+        name="witnessing"
+        options={{ title: t('service.publicWitnessing') }}
+      />
+      <Stack.Screen
         name="locations"
         options={{ title: t('service.locations') }}
       />

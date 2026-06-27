@@ -1173,6 +1173,67 @@ export const cartLocationsApi = {
   },
 };
 
+export type CartWeekStatus = 'draft' | 'collecting' | 'published';
+
+export interface CartSlotView {
+  id: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  locationId: string;
+  locationName: string;
+  locationKind: CartLocationKind;
+  myRequest: boolean;
+  requestCount?: number;
+}
+
+export interface CartWeekView {
+  id: string;
+  weekStartDate: string;
+  status: CartWeekStatus;
+  startTime: string;
+  endTime: string;
+  stepMinutes: number;
+  slots: CartSlotView[];
+}
+
+export interface BuildCartWeekInput {
+  weekStartDate: string;
+  startTime: string;
+  endTime: string;
+  stepMinutes: number;
+  daysOfWeek: number[];
+  locationIds: string[];
+}
+
+export const cartWeeksApi = {
+  async getWeek(weekStart: string): Promise<CartWeekView | null> {
+    const { data } = await api.get<CartWeekView | null>('/cart-weeks', {
+      params: { weekStart },
+    });
+    return data || null;
+  },
+  async build(input: BuildCartWeekInput): Promise<{ id: string }> {
+    const { data } = await api.post<{ id: string }>('/cart-weeks', input);
+    return data;
+  },
+  async open(id: string): Promise<void> {
+    await api.post(`/cart-weeks/${id}/open`);
+  },
+  async remove(id: string): Promise<void> {
+    await api.delete(`/cart-weeks/${id}`);
+  },
+  async apply(slotId: string, withWhomNote?: string): Promise<void> {
+    await api.post(
+      `/cart-slots/${slotId}/request`,
+      withWhomNote ? { withWhomNote } : {},
+    );
+  },
+  async withdraw(slotId: string): Promise<void> {
+    await api.delete(`/cart-slots/${slotId}/request`);
+  },
+};
+
 export type PublisherStatus = 'active' | 'irregular' | 'inactive';
 
 export interface AccessSummary {

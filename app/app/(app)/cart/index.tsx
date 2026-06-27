@@ -19,7 +19,7 @@ export default function ServiceHubScreen() {
       icon: 'cart-outline',
       title: t('service.publicWitnessing'),
       subtitle: t('service.publicWitnessingSubtitle'),
-      route: '/cart/shifts',
+      route: '/cart/witnessing',
     },
     {
       icon: 'location-outline',
