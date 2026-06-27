@@ -1,10 +1,11 @@
 import { ScrollView, StyleSheet, Text, View, Pressable } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
 
 type Row = {
-  icon: keyof typeof Ionicons.glyphMap;
+  family: 'ion' | 'mdi';
+  icon: string;
   title: string;
   subtitle: string;
   route: string;
@@ -16,12 +17,14 @@ export default function ServiceHubScreen() {
 
   const rows: Row[] = [
     {
-      icon: 'cart-outline',
+      family: 'mdi',
+      icon: 'bookshelf',
       title: t('service.publicWitnessing'),
       subtitle: t('service.publicWitnessingSubtitle'),
       route: '/cart/witnessing',
     },
     {
+      family: 'ion',
       icon: 'location-outline',
       title: t('service.locations'),
       subtitle: t('service.locationsSubtitle'),
@@ -41,7 +44,19 @@ export default function ServiceHubScreen() {
           onPress={() => router.push(r.route as never)}
         >
           <View style={styles.rowIcon}>
-            <Ionicons name={r.icon} size={22} color="#0ea5e9" />
+            {r.family === 'mdi' ? (
+              <MaterialCommunityIcons
+                name={r.icon as keyof typeof MaterialCommunityIcons.glyphMap}
+                size={24}
+                color="#0ea5e9"
+              />
+            ) : (
+              <Ionicons
+                name={r.icon as keyof typeof Ionicons.glyphMap}
+                size={22}
+                color="#0ea5e9"
+              />
+            )}
           </View>
           <View style={styles.rowText}>
             <Text style={styles.rowTitle}>{r.title}</Text>
