@@ -98,7 +98,6 @@ export default function WitnessingScreen() {
   const [slotModal, setSlotModal] = useState<CartSlotView | null>(null);
   const [distSlotId, setDistSlotId] = useState<string | null>(null);
   const [extName, setExtName] = useState('');
-  const [withWhom, setWithWhom] = useState('');
 
   const weekQuery = useQuery({
     queryKey: ['cart-week', weekISO],
@@ -151,7 +150,6 @@ export default function WitnessingScreen() {
       cartWeeksApi.apply(v.slotId, v.note),
     onSuccess: () => {
       setSlotModal(null);
-      setWithWhom('');
       invalidateWeek();
     },
     onError: (e: unknown) => {
@@ -894,23 +892,13 @@ export default function WitnessingScreen() {
                   </>
                 ) : (
                   <>
-                    <Text style={styles.fieldLabel}>
-                      {t('witnessing.withWhom')}
+                    <Text style={styles.appliedNote}>
+                      {t('witnessing.applyHint')}
                     </Text>
-                    <TextInput
-                      style={styles.input}
-                      value={withWhom}
-                      onChangeText={setWithWhom}
-                      placeholder={t('witnessing.withWhomPlaceholder')}
-                      placeholderTextColor="#94a3b8"
-                    />
                     <View style={styles.modalActions}>
                       <Pressable
                         style={styles.cancelBtn}
-                        onPress={() => {
-                          setSlotModal(null);
-                          setWithWhom('');
-                        }}
+                        onPress={() => setSlotModal(null)}
                       >
                         <Text style={styles.cancelBtnText}>
                           {t('witnessing.cancel')}
@@ -920,10 +908,7 @@ export default function WitnessingScreen() {
                         style={styles.saveBtn}
                         disabled={applyMutation.isPending}
                         onPress={() =>
-                          applyMutation.mutate({
-                            slotId: slotModal.id,
-                            note: withWhom.trim() || undefined,
-                          })
+                          applyMutation.mutate({ slotId: slotModal.id })
                         }
                       >
                         <Text style={styles.saveBtnText}>

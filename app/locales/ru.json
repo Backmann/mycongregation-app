@@ -1106,6 +1106,7 @@
     "locationsSubtitle": "Адреса тележек и стендов"
   },
   "witnessing": {
+    "applyHint": "Подать заявку на этот слот?",
     "assigned": "Назначены",
     "assignedOf": "назначено",
     "applicants": "Заявки",
