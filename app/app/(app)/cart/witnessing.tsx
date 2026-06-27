@@ -105,6 +105,13 @@ export default function WitnessingScreen() {
   });
   const week = weekQuery.data ?? null;
 
+  const pairingsQuery = useQuery({
+    queryKey: ['cart-pairings'],
+    queryFn: () => cartWeeksApi.pairings(),
+    enabled: canManage && !!week,
+  });
+  const pairings = pairingsQuery.data;
+
   const locationsQuery = useQuery({
     queryKey: ['cart-locations', false],
     queryFn: () => cartLocationsApi.list(false),
@@ -731,6 +738,17 @@ export default function WitnessingScreen() {
                                   {r.withWhomNote}
                                 </Text>
                               )}
+                              {pairings &&
+                                pairings[r.publisherId] &&
+                                pairings[r.publisherId].length > 0 && (
+                                  <Text style={styles.pairingHint}>
+                                    {t('witnessing.recentlyWith')}:{' '}
+                                    {pairings[r.publisherId]
+                                      .slice(0, 3)
+                                      .map((p) => p.name)
+                                      .join(', ')}
+                                  </Text>
+                                )}
                             </View>
                             <Pressable
                               style={[
@@ -1013,6 +1031,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#f1f5f9',
   },
   withWhomNote: { fontSize: 12, color: '#64748b', marginTop: 2 },
+  pairingHint: { fontSize: 12, color: '#0369a1', marginTop: 2 },
   assignBtn: {
     backgroundColor: '#0ea5e9',
     borderRadius: 8,

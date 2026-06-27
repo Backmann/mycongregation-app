@@ -1102,6 +1102,7 @@
     "locationsSubtitle": "Adressen für Wagen und Stände"
   },
   "witnessing": {
+    "recentlyWith": "Kürzlich mit",
     "applyHint": "Für diesen Slot bewerben?",
     "assigned": "Zugeteilt",
     "assignedOf": "zugeteilt",

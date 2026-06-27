@@ -1111,6 +1111,13 @@ export const cartLocationsApi = {
 
 export type CartWeekStatus = 'draft' | 'collecting' | 'published';
 
+export interface PartnerHint {
+  partnerId: string;
+  name: string;
+  count: number;
+  lastDate: string;
+}
+
 export interface CartAssignmentView {
   id: string;
   publisherId: string | null;
@@ -1205,6 +1212,13 @@ export const cartWeeksApi = {
   },
   async unassign(slotId: string, assignmentId: string): Promise<void> {
     await api.delete(`/cart-slots/${slotId}/assignments/${assignmentId}`);
+  },
+  async pairings(weeks?: number): Promise<Record<string, PartnerHint[]>> {
+    const { data } = await api.get<Record<string, PartnerHint[]>>(
+      '/cart-weeks/pairings',
+      { params: weeks ? { weeks } : {} },
+    );
+    return data;
   },
 };
 

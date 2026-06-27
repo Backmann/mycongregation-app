@@ -1102,6 +1102,7 @@
     "locationsSubtitle": "Cart and stand addresses"
   },
   "witnessing": {
+    "recentlyWith": "Recently with",
     "applyHint": "Apply for this slot?",
     "assigned": "Assigned",
     "assignedOf": "assigned",
