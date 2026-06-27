@@ -357,6 +357,11 @@ export default function WitnessingScreen() {
                 setAppendMode(true);
                 setBDays([]);
                 setBLocations([]);
+                if (week) {
+                  setBStart(week.startTime);
+                  setBEnd(week.endTime);
+                  setBStep(week.stepMinutes);
+                }
                 setShowBuild(true);
               }}
             >
@@ -452,8 +457,7 @@ export default function WitnessingScreen() {
                 </View>
               )}
 
-              {!appendMode && (
-                <>
+              <>
                   <View style={styles.windowHeader}>
                     <Text style={styles.fieldLabel}>
                       {t('witnessing.window')}
@@ -520,8 +524,7 @@ export default function WitnessingScreen() {
                       </Pressable>
                     ))}
                   </View>
-                </>
-              )}
+              </>
 
               <View style={styles.modalActions}>
                 <Pressable
@@ -537,22 +540,22 @@ export default function WitnessingScreen() {
                     styles.saveBtn,
                     (bDays.length === 0 ||
                       bLocations.length === 0 ||
-                      (!appendMode && (!bStart || !bEnd)) ||
+                      (!bStart || !bEnd) ||
                       buildMutation.isPending) &&
                       styles.saveBtnDisabled,
                   ]}
                   disabled={
                     bDays.length === 0 ||
                     bLocations.length === 0 ||
-                    (!appendMode && (!bStart || !bEnd)) ||
+                    (!bStart || !bEnd) ||
                     buildMutation.isPending
                   }
                   onPress={() =>
                     buildMutation.mutate({
                       weekStartDate: weekISO,
-                      startTime: appendMode && week ? week.startTime : bStart,
-                      endTime: appendMode && week ? week.endTime : bEnd,
-                      stepMinutes: appendMode && week ? week.stepMinutes : bStep,
+                      startTime: bStart,
+                      endTime: bEnd,
+                      stepMinutes: bStep,
                       daysOfWeek: bDays,
                       locationIds: bLocations,
                     })
