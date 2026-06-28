@@ -522,10 +522,8 @@ export function AssignmentForm({
           <View style={styles.coSpeakerNote}>
             <Ionicons name="person" size={16} color="#6d28d9" />
             <Text style={styles.coSpeakerText}>
-              {form.speakerName || coName
-                ? t('assignments.form.coSpeaker', {
-                    name: form.speakerName ?? coName ?? '',
-                  })
+              {coName
+                ? t('assignments.form.coSpeaker', { name: coName })
                 : t('assignments.form.coSpeakerNoName')}
             </Text>
           </View>
@@ -939,7 +937,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   coSpeakerText: { flex: 1, fontSize: 14, color: '#6d28d9', fontWeight: '600' },
-  coPickerWrap: { marginTop: 12 },
+  coPickerWrap: { paddingHorizontal: 20, paddingBottom: 14 },
   coPickerLabel: {
     fontSize: 12,
     fontWeight: '600',

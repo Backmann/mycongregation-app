@@ -152,6 +152,7 @@ export default function ScheduleIndexScreen() {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['special-events'] });
+      queryClient.invalidateQueries({ queryKey: ['assignments'] });
     },
   });
   const publishersQuery = useQuery({
