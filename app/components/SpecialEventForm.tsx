@@ -51,6 +51,7 @@ export interface EventFormValue {
   coFirstName: string;
   coLastName: string;
   coWifeName: string;
+  coRole: string;
   coAccommodationAddress: string;
   coMidweekDow: number;
 }
@@ -72,6 +73,7 @@ export function emptyEventForm(): EventFormValue {
     coFirstName: '',
     coLastName: '',
     coWifeName: '',
+    coRole: 'overseer',
     coAccommodationAddress: '',
     coMidweekDow: 2,
   };
@@ -153,6 +155,7 @@ export function SpecialEventForm({
         coFirstName: primary.firstName ?? '',
         coLastName: primary.lastName ?? '',
         coWifeName: primary.wifeName ?? '',
+        coRole: primary.role,
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -163,6 +166,7 @@ export function SpecialEventForm({
       coFirstName: c.firstName,
       coLastName: c.lastName,
       coWifeName: c.wifeName ?? '',
+      coRole: c.role,
     });
 
   // Set of auto-generated titles (the type labels). Used so that picking /

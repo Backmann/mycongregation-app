@@ -657,11 +657,19 @@
       "restorePart": "Programmpunkt wiederherstellen",
       "prayerBy": {
         "local": "Aus der Versammlung",
-        "co": "Kreisaufseher · {{name}}",
-        "coShort": "Kreisaufseher"
+        "co": "{{role}} · {{name}}",
+        "coShort": "{{role}}"
       },
-      "coSpeaker": "Gehalten vom Kreisaufseher: {{name}}",
-      "coSpeakerNoName": "Gehalten vom Kreisaufseher"
+      "coSpeaker": "Gehalten vom {{role}}: {{name}}",
+      "coSpeakerNoName": "Gehalten vom {{role}}",
+      "coRole": {
+        "overseer": "Kreisaufseher",
+        "substitute": "Vertreter"
+      },
+      "coRoleShort": {
+        "overseer": "Kreisaufseher",
+        "substitute": "Vertreter"
+      }
     }
   },
   "schedule": {

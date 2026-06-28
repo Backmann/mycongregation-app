@@ -41,6 +41,7 @@ function toForm(e: SpecialEvent): EventFormValue {
     coFirstName: e.coFirstName ?? '',
     coLastName: e.coLastName ?? '',
     coWifeName: e.coWifeName ?? '',
+    coRole: e.coRole ?? 'overseer',
     coAccommodationAddress: e.coAccommodationAddress ?? '',
     coMidweekDow: e.coMidweekDow ?? 2,
   };
@@ -80,6 +81,10 @@ export default function SpecialEventDetailScreen() {
         coFirstName: form!.coFirstName.trim() || undefined,
         coLastName: form!.coLastName.trim() || undefined,
         coWifeName: form!.coWifeName.trim() || undefined,
+        coRole:
+          form!.type.trim() === CIRCUIT_OVERSEER_VISIT_TYPE
+            ? form!.coRole
+            : undefined,
         coAccommodationAddress:
           form!.coAccommodationAddress.trim() || undefined,
         coMidweekDow:
@@ -126,6 +131,7 @@ export default function SpecialEventDetailScreen() {
         coFirstName: c.firstName,
         coLastName: c.lastName,
         coWifeName: c.wifeName ?? null,
+        coRole: c.role,
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['special-events'] });
@@ -220,7 +226,11 @@ export default function SpecialEventDetailScreen() {
       {isCoVisit ? (
         <View style={styles.coBlock}>
           <Text style={styles.infoLabel}>
-            {t('circuitOverseer.roleOverseer')}
+            {t(
+              event.coRole === 'substitute'
+                ? 'circuitOverseer.roleSubstitute'
+                : 'circuitOverseer.roleOverseer',
+            )}
           </Text>
           <Text style={styles.coName}>
             {[event.coFirstName, event.coLastName].filter(Boolean).join(' ') ||

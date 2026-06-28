@@ -657,11 +657,19 @@
       "restorePart": "Restore part",
       "prayerBy": {
         "local": "From congregation",
-        "co": "Circuit overseer · {{name}}",
-        "coShort": "Circuit overseer"
+        "co": "{{role}} · {{name}}",
+        "coShort": "{{role}}"
       },
-      "coSpeaker": "Given by the circuit overseer: {{name}}",
-      "coSpeakerNoName": "Given by the circuit overseer"
+      "coSpeaker": "Given by the {{role}}: {{name}}",
+      "coSpeakerNoName": "Given by the {{role}}",
+      "coRole": {
+        "overseer": "circuit overseer",
+        "substitute": "substitute circuit overseer"
+      },
+      "coRoleShort": {
+        "overseer": "Circuit overseer",
+        "substitute": "Substitute"
+      }
     }
   },
   "schedule": {

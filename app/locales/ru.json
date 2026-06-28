@@ -661,11 +661,19 @@
       "restorePart": "Вернуть часть",
       "prayerBy": {
         "local": "Из собрания",
-        "co": "Районный · {{name}}",
-        "coShort": "Районный старейшина"
+        "co": "{{role}} · {{name}}",
+        "coShort": "{{role}}"
       },
-      "coSpeaker": "Речь проводит районный старейшина: {{name}}",
-      "coSpeakerNoName": "Речь проводит районный старейшина"
+      "coSpeaker": "Речь проводит {{role}}: {{name}}",
+      "coSpeakerNoName": "Речь проводит {{role}}",
+      "coRole": {
+        "overseer": "районный старейшина",
+        "substitute": "заместитель районного старейшины"
+      },
+      "coRoleShort": {
+        "overseer": "Районный",
+        "substitute": "Заместитель"
+      }
     }
   },
   "schedule": {

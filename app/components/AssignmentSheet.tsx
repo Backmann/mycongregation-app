@@ -31,7 +31,7 @@ interface Props {
   onNext?: (() => void) | null;
   /** Circuit overseer for the week (CO-visit week only); enables CO talk
    * titles and CO-led prayers in the form. */
-  circuitOverseer?: { displayName: string } | null;
+  circuitOverseer?: { displayName: string; role?: string | null } | null;
   /** Forwarded to the form: manager-only visiting-overseer picker. */
   coPicker?: AssignmentFormCoPicker | null;
 }

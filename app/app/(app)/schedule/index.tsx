@@ -149,6 +149,7 @@ export default function ScheduleIndexScreen() {
         coFirstName: c.firstName,
         coLastName: c.lastName,
         coWifeName: c.wifeName ?? null,
+        coRole: c.role,
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['special-events'] });
@@ -392,6 +393,7 @@ export default function ScheduleIndexScreen() {
           .filter(Boolean)
           .join(' ')
           .trim(),
+        role: coVisitEvent.coRole ?? 'overseer',
       }
     : null;
 

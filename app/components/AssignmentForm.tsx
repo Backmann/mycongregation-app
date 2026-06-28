@@ -53,7 +53,7 @@ interface Props {
    * Circuit overseer for this week (when it is a CO-visit week), used to offer
    * the overseer as a prayer participant and to label his talks. Null otherwise.
    */
-  circuitOverseer?: { displayName: string } | null;
+  circuitOverseer?: { displayName: string; role?: string | null } | null;
   /** Manager-only picker to switch the visiting overseer for the whole week
    * (updates the CO-visit event snapshot, so both meetings reflect it). */
   coPicker?: AssignmentFormCoPicker | null;
@@ -237,6 +237,42 @@ export function AssignmentForm({
     form.partKey === 'co_concluding_talk';
   const isCoWeek = !!circuitOverseer;
   const coName = circuitOverseer?.displayName?.trim() || null;
+  const coRole =
+    circuitOverseer?.role === 'substitute' ? 'substitute' : 'overseer';
+  const coRoleWord = t(`assignments.form.coRole.${coRole}`);
+  const coRoleShort = t(`assignments.form.coRoleShort.${coRole}`);
+  const coPickerBlock =
+    coPicker && coPicker.overseers.length > 0 ? (
+      <View style={styles.coPickerWrap}>
+        <Text style={styles.coPickerLabel}>
+          {t('circuitOverseer.pickLabel')}
+        </Text>
+        <View style={styles.coChips}>
+          {coPicker.overseers.map((c) => {
+            const active =
+              c.firstName === coPicker.current.firstName &&
+              c.lastName === coPicker.current.lastName;
+            return (
+              <Pressable
+                key={c.id}
+                disabled={coPicker.pending}
+                onPress={() => coPicker.onPick(c)}
+                style={[styles.coChip, active && styles.coChipActive]}
+              >
+                <Text
+                  style={[styles.coChipText, active && styles.coChipTextActive]}
+                >
+                  {c.firstName} {c.lastName}
+                  {c.role === 'substitute'
+                    ? ` · ${t('circuitOverseer.roleSubstitute')}`
+                    : ''}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      </View>
+    ) : null;
   // 'co' = the prayer is said by the circuit overseer (stored in speakerName).
   const [prayerBy, setPrayerBy] = useState<'local' | 'co'>(
     initial?.speakerName ? 'co' : 'local',
@@ -246,8 +282,11 @@ export function AssignmentForm({
     {
       value: 'co',
       label: coName
-        ? t('assignments.form.prayerBy.co', { name: coName })
-        : t('assignments.form.prayerBy.coShort'),
+        ? t('assignments.form.prayerBy.co', {
+            role: coRoleShort,
+            name: coName,
+          })
+        : t('assignments.form.prayerBy.coShort', { role: coRoleShort }),
     },
   ];
   const handlePrayerByChange = (v: 'local' | 'co') => {
@@ -523,44 +562,14 @@ export function AssignmentForm({
             <Ionicons name="person" size={16} color="#6d28d9" />
             <Text style={styles.coSpeakerText}>
               {coName
-                ? t('assignments.form.coSpeaker', { name: coName })
-                : t('assignments.form.coSpeakerNoName')}
+                ? t('assignments.form.coSpeaker', {
+                    role: coRoleWord,
+                    name: coName,
+                  })
+                : t('assignments.form.coSpeakerNoName', { role: coRoleWord })}
             </Text>
           </View>
-          {coPicker && coPicker.overseers.length > 0 ? (
-            <View style={styles.coPickerWrap}>
-              <Text style={styles.coPickerLabel}>
-                {t('circuitOverseer.pickLabel')}
-              </Text>
-              <View style={styles.coChips}>
-                {coPicker.overseers.map((c) => {
-                  const active =
-                    c.firstName === coPicker.current.firstName &&
-                    c.lastName === coPicker.current.lastName;
-                  return (
-                    <Pressable
-                      key={c.id}
-                      disabled={coPicker.pending}
-                      onPress={() => coPicker.onPick(c)}
-                      style={[styles.coChip, active && styles.coChipActive]}
-                    >
-                      <Text
-                        style={[
-                          styles.coChipText,
-                          active && styles.coChipTextActive,
-                        ]}
-                      >
-                        {c.firstName} {c.lastName}
-                        {c.role === 'substitute'
-                          ? ` · ${t('circuitOverseer.roleSubstitute')}`
-                          : ''}
-                      </Text>
-                    </Pressable>
-                  );
-                })}
-              </View>
-            </View>
-          ) : null}
+          {coPickerBlock}
         </FormSection>
       )}
 
@@ -584,6 +593,7 @@ export function AssignmentForm({
               multiline
             />
           )}
+          {isCoWeek ? coPickerBlock : null}
         </FormSection>
       )}
 
