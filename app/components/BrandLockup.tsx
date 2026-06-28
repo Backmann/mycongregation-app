@@ -12,6 +12,8 @@ type Props = {
   layout?: Layout;
   /** 'light' for light backgrounds, 'dark' for dark/teal backgrounds */
   tone?: Tone;
+  /** When true, render only the icon mark (no wordmark) — for section headers. */
+  markOnly?: boolean;
 };
 
 /**
@@ -23,17 +25,28 @@ export default function BrandLockup({
   word,
   layout = 'row',
   tone = 'light',
+  markOnly = false,
 }: Props) {
   const wordSize = word ?? Math.round(mark * 0.6);
   const radius = Math.round(mark * 0.28);
   const stacked = layout === 'stacked';
   const myColor = tone === 'dark' ? '#ffffff' : '#0e7490';
   const restColor = tone === 'dark' ? '#ffffff' : '#0f172a';
+  const orgColor = tone === 'dark' ? '#bae6fd' : '#0e7490';
+  if (markOnly) {
+    return (
+      <Image
+        source={require('../assets/images/icon.png')}
+        style={{ width: mark, height: mark, borderRadius: radius }}
+        accessibilityLabel="MyCongregation.org"
+      />
+    );
+  }
   return (
     <View
       style={stacked ? styles.stacked : styles.row}
       accessibilityRole="header"
-      accessibilityLabel="MyCongregation"
+      accessibilityLabel="MyCongregation.org"
     >
       <Image
         source={require('../assets/images/icon.png')}
@@ -49,6 +62,7 @@ export default function BrandLockup({
       >
         <Text style={{ color: myColor }}>My</Text>
         <Text style={{ color: restColor }}>Congregation</Text>
+        <Text style={{ color: orgColor }}>.org</Text>
       </Text>
     </View>
   );
