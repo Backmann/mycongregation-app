@@ -44,6 +44,8 @@ interface Props {
   requiredCapability?: string;
   /** If set, only publishers of this gender are shown. */
   genderFilter?: 'sister' | 'brother';
+  /** If set, only publishers with this appointment are shown (hard filter). */
+  appointmentFilter?: 'elder' | 'ministerial_servant';
   /** Optional per-publisher recent activity, keyed by publisher id. */
   activityById?: Map<string, PublisherActivity>;
   /** Current week (Monday ISO) — flags "this meeting" activity. */
@@ -115,6 +117,7 @@ export function PublisherSelector({
   excludeIds = [],
   requiredCapability,
   genderFilter,
+  appointmentFilter,
   activityById,
   currentWeekStart,
   currentEventType,
@@ -253,6 +256,7 @@ export function PublisherSelector({
   const filtered = allPublishers.filter((p) => {
     if (excludeIds.includes(p.id)) return false;
     if (genderFilter && p.gender !== genderFilter) return false;
+    if (appointmentFilter && p.appointment !== appointmentFilter) return false;
     if (softGenderActive && p.gender !== matchGender) return false;
     if (softApptActive && p.appointment !== preferAppointment) return false;
     if (

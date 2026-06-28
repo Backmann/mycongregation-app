@@ -1129,7 +1129,21 @@
     "save": "Save",
     "cancel": "Cancel",
     "delete": "Delete",
-    "confirmDelete": "Delete this meeting?"
+    "confirmDelete": "Delete this meeting?",
+    "lunchesTitle": "Lunches",
+    "addLunch": "Add lunch",
+    "noLunches": "No lunches added",
+    "lunch": "Lunch",
+    "host": "Host (publisher)",
+    "hostOther": "Other",
+    "hostName": "Name or family",
+    "pastoralTitle": "Pastoral visits",
+    "addPastoral": "Add visit",
+    "noPastoral": "No visits added",
+    "pastoral": "Pastoral visit",
+    "pastoralElder": "Elder",
+    "pastoralTarget": "Whom",
+    "note": "Note"
   },
   "witnessing": {
     "youAreAssigned": "You're assigned to this slot",

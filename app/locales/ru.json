@@ -1133,7 +1133,21 @@
     "save": "Сохранить",
     "cancel": "Отмена",
     "delete": "Удалить",
-    "confirmDelete": "Удалить встречу?"
+    "confirmDelete": "Удалить встречу?",
+    "lunchesTitle": "Обеды",
+    "addLunch": "Добавить обед",
+    "noLunches": "Обеды не добавлены",
+    "lunch": "Обед",
+    "host": "Хозяин (возвещатель)",
+    "hostOther": "Другое",
+    "hostName": "Имя или семья",
+    "pastoralTitle": "Пастырские визиты",
+    "addPastoral": "Добавить визит",
+    "noPastoral": "Визиты не добавлены",
+    "pastoral": "Пастырский визит",
+    "pastoralElder": "Старейшина",
+    "pastoralTarget": "К кому",
+    "note": "Заметка"
   },
   "witnessing": {
     "youAreAssigned": "Вы назначены на этот слот",

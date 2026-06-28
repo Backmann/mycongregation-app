@@ -1121,6 +1121,8 @@ export interface CoVisitItem {
   placeText: string | null;
   assigneePublisherId: string | null;
   assigneeName: string | null;
+  assigneePhone: string | null;
+  assigneeAddress: string | null;
   assigneeText: string | null;
   note: string | null;
   sortOrder: number;

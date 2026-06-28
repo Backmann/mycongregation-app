@@ -1129,7 +1129,21 @@
     "save": "Speichern",
     "cancel": "Abbrechen",
     "delete": "Löschen",
-    "confirmDelete": "Treffen löschen?"
+    "confirmDelete": "Treffen löschen?",
+    "lunchesTitle": "Mittagessen",
+    "addLunch": "Mittagessen hinzufügen",
+    "noLunches": "Keine Mittagessen hinzugefügt",
+    "lunch": "Mittagessen",
+    "host": "Gastgeber (Verkündiger)",
+    "hostOther": "Andere",
+    "hostName": "Name oder Familie",
+    "pastoralTitle": "Seelsorgebesuche",
+    "addPastoral": "Besuch hinzufügen",
+    "noPastoral": "Keine Besuche hinzugefügt",
+    "pastoral": "Seelsorgebesuch",
+    "pastoralElder": "Ältester",
+    "pastoralTarget": "Bei wem",
+    "note": "Notiz"
   },
   "witnessing": {
     "youAreAssigned": "Sie sind diesem Slot zugeteilt",
