@@ -59,6 +59,7 @@ interface FormState {
   assigneeText: string;
   hostOther: boolean;
   note: string;
+  forWife: boolean;
 }
 
 function pickVisit(events: SpecialEvent[]): SpecialEvent | null {
@@ -106,6 +107,7 @@ export default function CoScheduleScreen() {
   const loc = i18n.language;
 
   const [form, setForm] = useState<FormState | null>(null);
+  const [mode, setMode] = useState<'co' | 'wife'>('co');
 
   const { data: events, isLoading } = useQuery({
     queryKey: ['special-events', 'co-schedule'],
@@ -157,7 +159,9 @@ export default function CoScheduleScreen() {
 
   const days = useMemo(() => (visit ? visitDays(visit) : []), [visit]);
   const itemsOf = (kind: ItemKind) =>
-    (items ?? []).filter((i) => i.kind === kind && !i.forWife);
+    (items ?? []).filter(
+      (i) => i.kind === kind && i.forWife === (mode === 'wife'),
+    );
 
   if (!canViewCoSchedule) {
     return (
@@ -228,6 +232,7 @@ export default function CoScheduleScreen() {
       assigneeText: '',
       hostOther: false,
       note: '',
+      forWife: mode === 'wife',
     });
   const openEdit = (it: CoVisitItem) =>
     setForm({
@@ -243,6 +248,7 @@ export default function CoScheduleScreen() {
       hostOther:
         it.kind === 'lunch' && !it.assigneePublisherId && !!it.assigneeText,
       note: it.note ?? '',
+      forWife: it.forWife,
     });
 
   const submit = () => {
@@ -283,7 +289,7 @@ export default function CoScheduleScreen() {
       createM.mutate({
         specialEventId: visit.id,
         kind: form.kind,
-        forWife: false,
+        forWife: form.forWife,
         ...payload,
       });
   };
@@ -311,6 +317,9 @@ export default function CoScheduleScreen() {
     emptyLabel: string,
     renderItem: (it: CoVisitItem) => ReactNode,
   ) => {
+    if (mode === 'wife' && kind !== 'field_service' && kind !== 'lunch') {
+      return null;
+    }
     const list = itemsOf(kind);
     return (
       <View style={styles.section}>
@@ -386,6 +395,32 @@ export default function CoScheduleScreen() {
         <Text style={styles.linkText}>{t('coVisit.openMeetingProgram')}</Text>
         <Ionicons name="chevron-forward" size={18} color="#cbd5e1" />
       </Pressable>
+
+      {visit.coWifeName ? (
+        <View style={styles.toggleRow}>
+          {(
+            [
+              ['co', t('coVisit.tabCo')],
+              ['wife', t('coVisit.tabWife')],
+            ] as ['co' | 'wife', string][]
+          ).map(([m, label]) => (
+            <Pressable
+              key={m}
+              style={[styles.modeChip, mode === m && styles.modeChipActive]}
+              onPress={() => setMode(m)}
+            >
+              <Text
+                style={[
+                  styles.modeChipText,
+                  mode === m && styles.modeChipTextActive,
+                ]}
+              >
+                {label}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+      ) : null}
 
       {renderSection(
         'field_service',
@@ -618,7 +653,7 @@ export default function CoScheduleScreen() {
                       <PublisherSelector
                         label={t('coVisit.accompanying')}
                         value={form.assigneePublisherId}
-                        genderFilter="brother"
+                        genderFilter={form.forWife ? 'sister' : 'brother'}
                         onChange={(id) =>
                           setForm({ ...form, assigneePublisherId: id })
                         }
@@ -868,6 +903,18 @@ const styles = StyleSheet.create({
   },
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   toggleRow: { flexDirection: 'row', gap: 8, marginTop: 8 },
+  modeChip: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 10,
+    alignItems: 'center',
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  modeChipActive: { backgroundColor: '#0ea5e9', borderColor: '#0ea5e9' },
+  modeChipText: { fontSize: 14, fontWeight: '600', color: '#334155' },
+  modeChipTextActive: { color: '#ffffff' },
   chip: {
     paddingHorizontal: 12,
     paddingVertical: 8,

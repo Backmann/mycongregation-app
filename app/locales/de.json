@@ -1152,7 +1152,9 @@
     "docReviewTitle": "Dokumentenprüfung",
     "docReview": "Dokumentenprüfung",
     "add": "Hinzufügen",
-    "empty": "Nicht hinzugefügt"
+    "empty": "Nicht hinzugefügt",
+    "tabCo": "Aufseher",
+    "tabWife": "Frau"
   },
   "witnessing": {
     "youAreAssigned": "Sie sind diesem Slot zugeteilt",

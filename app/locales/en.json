@@ -1152,7 +1152,9 @@
     "docReviewTitle": "Document review",
     "docReview": "Document review",
     "add": "Add",
-    "empty": "Not added"
+    "empty": "Not added",
+    "tabCo": "Overseer",
+    "tabWife": "Wife"
   },
   "witnessing": {
     "youAreAssigned": "You're assigned to this slot",
