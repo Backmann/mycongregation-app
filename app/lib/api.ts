@@ -1109,6 +1109,62 @@ export const cartLocationsApi = {
   },
 };
 
+export interface CoVisitItem {
+  id: string;
+  kind: string;
+  forWife: boolean;
+  itemDate: string;
+  startTime: string | null;
+  placeKind: string | null;
+  cartLocationId: string | null;
+  cartLocationName: string | null;
+  placeText: string | null;
+  assigneePublisherId: string | null;
+  assigneeName: string | null;
+  assigneeText: string | null;
+  note: string | null;
+  sortOrder: number;
+}
+
+export interface CoVisitItemInput {
+  specialEventId?: string;
+  kind?: string;
+  forWife?: boolean;
+  itemDate?: string;
+  startTime?: string | null;
+  placeKind?: string | null;
+  cartLocationId?: string | null;
+  placeText?: string | null;
+  assigneePublisherId?: string | null;
+  assigneeText?: string | null;
+  note?: string | null;
+  sortOrder?: number;
+}
+
+export const coVisitItemsApi = {
+  async list(specialEventId: string): Promise<CoVisitItem[]> {
+    const { data } = await api.get<CoVisitItem[]>('/co-visit-items', {
+      params: { specialEventId },
+    });
+    return data;
+  },
+  async create(input: CoVisitItemInput): Promise<CoVisitItem> {
+    const { data } = await api.post<CoVisitItem>('/co-visit-items', input);
+    return data;
+  },
+  async update(id: string, input: CoVisitItemInput): Promise<CoVisitItem> {
+    const { data } = await api.patch<CoVisitItem>(
+      `/co-visit-items/${id}`,
+      input,
+    );
+    return data;
+  },
+  async remove(id: string): Promise<void> {
+    await api.delete(`/co-visit-items/${id}`);
+  },
+};
+
+
 export type CartWeekStatus = 'draft' | 'collecting' | 'published';
 
 export interface PartnerHint {
