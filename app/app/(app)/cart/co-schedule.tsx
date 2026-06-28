@@ -39,7 +39,13 @@ const WEEKDAY_ANCHOR = [
 ];
 
 type PlaceKind = 'kingdom_hall' | 'cart_location' | 'custom';
-type ItemKind = 'field_service' | 'lunch' | 'pastoral';
+type ItemKind =
+  | 'field_service'
+  | 'lunch'
+  | 'pastoral'
+  | 'pioneers'
+  | 'elders'
+  | 'document_review';
 
 interface FormState {
   id: string | null;
@@ -263,12 +269,14 @@ export default function CoScheduleScreen() {
         assigneeText: form.hostOther ? form.assigneeText.trim() || null : null,
         note: form.note.trim() || null,
       };
-    } else {
+    } else if (form.kind === 'pastoral') {
       payload = {
         ...payload,
         assigneePublisherId: form.assigneePublisherId,
         note: form.note.trim() || null,
       };
+    } else {
+      payload = { ...payload, note: form.note.trim() || null };
     }
     if (form.id) updateM.mutate({ id: form.id, input: payload });
     else
@@ -434,6 +442,45 @@ export default function CoScheduleScreen() {
         ),
       )}
 
+      {renderSection(
+        'pioneers',
+        t('coVisit.pioneersTitle'),
+        t('coVisit.add'),
+        t('coVisit.empty'),
+        (it) =>
+          it.note ? (
+            <Text style={styles.itemPlace}>{it.note}</Text>
+          ) : (
+            <Text style={styles.itemAssignee}>—</Text>
+          ),
+      )}
+
+      {renderSection(
+        'elders',
+        t('coVisit.eldersTitle'),
+        t('coVisit.add'),
+        t('coVisit.empty'),
+        (it) =>
+          it.note ? (
+            <Text style={styles.itemPlace}>{it.note}</Text>
+          ) : (
+            <Text style={styles.itemAssignee}>—</Text>
+          ),
+      )}
+
+      {renderSection(
+        'document_review',
+        t('coVisit.docReviewTitle'),
+        t('coVisit.add'),
+        t('coVisit.empty'),
+        (it) =>
+          it.note ? (
+            <Text style={styles.itemPlace}>{it.note}</Text>
+          ) : (
+            <Text style={styles.itemAssignee}>—</Text>
+          ),
+      )}
+
       <Modal
         visible={!!form}
         animationType="slide"
@@ -450,9 +497,15 @@ export default function CoScheduleScreen() {
                       ? t('coVisit.lunch')
                       : form.kind === 'pastoral'
                         ? t('coVisit.pastoral')
-                        : form.id
-                          ? t('coVisit.editMeeting')
-                          : t('coVisit.addMeeting')}
+                        : form.kind === 'pioneers'
+                          ? t('coVisit.pioneers')
+                          : form.kind === 'elders'
+                            ? t('coVisit.elders')
+                            : form.kind === 'document_review'
+                              ? t('coVisit.docReview')
+                              : form.id
+                                ? t('coVisit.editMeeting')
+                                : t('coVisit.addMeeting')}
                   </Text>
 
                   <Text style={styles.fieldLabel}>{t('coVisit.day')}</Text>
@@ -652,6 +705,29 @@ export default function CoScheduleScreen() {
                         value={form.note}
                         onChangeText={(v) => setForm({ ...form, note: v })}
                         placeholder={t('coVisit.pastoralTarget')}
+                        placeholderTextColor="#94a3b8"
+                      />
+                    </>
+                  ) : null}
+
+                  {form.kind === 'pioneers' ||
+                  form.kind === 'elders' ||
+                  form.kind === 'document_review' ? (
+                    <>
+                      <Text style={styles.fieldLabel}>
+                        {form.kind === 'pioneers'
+                          ? t('coVisit.pioneersTheme')
+                          : t('coVisit.note')}
+                      </Text>
+                      <TextInput
+                        style={styles.input}
+                        value={form.note}
+                        onChangeText={(v) => setForm({ ...form, note: v })}
+                        placeholder={
+                          form.kind === 'pioneers'
+                            ? t('coVisit.pioneersTheme')
+                            : t('coVisit.note')
+                        }
                         placeholderTextColor="#94a3b8"
                       />
                     </>

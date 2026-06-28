@@ -1143,7 +1143,16 @@
     "pastoral": "Pastoral visit",
     "pastoralElder": "Elder",
     "pastoralTarget": "Whom",
-    "note": "Note"
+    "note": "Note",
+    "pioneersTitle": "Meeting with pioneers",
+    "pioneers": "Meeting with pioneers",
+    "pioneersTheme": "Theme or scripture",
+    "eldersTitle": "Meeting with elders",
+    "elders": "Meeting with elders",
+    "docReviewTitle": "Document review",
+    "docReview": "Document review",
+    "add": "Add",
+    "empty": "Not added"
   },
   "witnessing": {
     "youAreAssigned": "You're assigned to this slot",

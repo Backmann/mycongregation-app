@@ -1147,7 +1147,16 @@
     "pastoral": "Пастырский визит",
     "pastoralElder": "Старейшина",
     "pastoralTarget": "К кому",
-    "note": "Заметка"
+    "note": "Заметка",
+    "pioneersTitle": "Встреча с пионерами",
+    "pioneers": "Встреча с пионерами",
+    "pioneersTheme": "Тема или стих",
+    "eldersTitle": "Встреча со старейшинами",
+    "elders": "Встреча со старейшинами",
+    "docReviewTitle": "Просмотр документов",
+    "docReview": "Просмотр документов",
+    "add": "Добавить",
+    "empty": "Не добавлено"
   },
   "witnessing": {
     "youAreAssigned": "Вы назначены на этот слот",
