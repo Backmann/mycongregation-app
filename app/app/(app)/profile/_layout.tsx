@@ -17,9 +17,8 @@ export default function ProfileLayout() {
         name="index"
         options={{
           title: t('profile.title'),
-          headerLeft: () => null,
-          headerRight: () => (
-            <View style={{ paddingRight: 12 }}>
+          headerLeft: () => (
+            <View style={{ paddingLeft: 12, paddingRight: 6 }}>
               <BrandLockup mark={26} markOnly />
             </View>
           ),

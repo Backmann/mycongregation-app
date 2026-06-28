@@ -24,6 +24,11 @@ export default function ScheduleLayout() {
         name="index"
         options={{
           title: t('schedule.title.list'),
+          headerLeft: () => (
+            <View style={{ paddingLeft: 12, paddingRight: 6 }}>
+              <BrandLockup mark={26} markOnly />
+            </View>
+          ),
           headerRight: () => (
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               {canViewLocalNeeds && (
@@ -74,9 +79,6 @@ export default function ScheduleLayout() {
                   <Ionicons name="add" size={28} color="#0ea5e9" />
                 </Pressable>
               )}
-              <View style={{ paddingLeft: 6 }}>
-                <BrandLockup mark={24} markOnly />
-              </View>
             </View>
           ),
         }}

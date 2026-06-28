@@ -15,6 +15,11 @@ export default function PublishersLayout() {
         name="index"
         options={{
           title: t('publishers.title.list'),
+          headerLeft: () => (
+            <View style={{ paddingLeft: 12, paddingRight: 6 }}>
+              <BrandLockup mark={26} markOnly />
+            </View>
+          ),
           headerRight: () => (
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <Pressable
@@ -44,9 +49,6 @@ export default function PublishersLayout() {
                   <Ionicons name="add" size={28} color="#0ea5e9" />
                 </Pressable>
               )}
-              <View style={{ paddingLeft: 6 }}>
-                <BrandLockup mark={24} markOnly />
-              </View>
             </View>
           ),
         }}
