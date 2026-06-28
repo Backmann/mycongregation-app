@@ -1154,7 +1154,16 @@
     "add": "Add",
     "empty": "Not added",
     "tabCo": "Overseer",
-    "tabWife": "Wife"
+    "tabWife": "Wife",
+    "printButton": "Download PDF",
+    "visitTitle": "Circuit overseer visit",
+    "coScheduleTitle": "Circuit overseer service schedule",
+    "wifeScheduleTitle": "Wife's service schedule",
+    "phone": "Phone",
+    "address": "Address",
+    "congregation": "Congregation",
+    "printWebOnly": "PDF printing is available in the web version.",
+    "printBlocked": "The browser blocked the print window. Allow pop-ups."
   },
   "witnessing": {
     "youAreAssigned": "You're assigned to this slot",

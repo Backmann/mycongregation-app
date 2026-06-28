@@ -18,11 +18,13 @@ import { Ionicons } from '@expo/vector-icons';
 import {
   cartLocationsApi,
   coVisitItemsApi,
+  meetingSettingsApi,
   specialEventsApi,
   type CartLocation,
   type CoVisitItem,
   type SpecialEvent,
 } from '../../../lib/api';
+import { buildCoScheduleHtml } from '../../../lib/coSchedulePdf';
 import { CIRCUIT_OVERSEER_VISIT_TYPE } from '../../../components/SpecialEventForm';
 import { PublisherSelector } from '../../../components/PublisherSelector';
 import { usePermissions } from '../../../lib/permissions';
@@ -127,6 +129,11 @@ export default function CoScheduleScreen() {
     queryKey: ['cart-locations'],
     queryFn: () => cartLocationsApi.list(),
     enabled: canEditCoSchedule,
+  });
+  const { data: settingsOverview } = useQuery({
+    queryKey: ['meeting-settings-overview'],
+    queryFn: () => meetingSettingsApi.getOverview(),
+    enabled: canViewCoSchedule,
   });
 
   const invalidate = () =>
@@ -310,6 +317,55 @@ export default function CoScheduleScreen() {
     ]);
   };
 
+  const handlePrint = () => {
+    if (Platform.OS !== 'web') {
+      Alert.alert(t('coVisit.printWebOnly'));
+      return;
+    }
+    const html = buildCoScheduleHtml({
+      visit,
+      items: items ?? [],
+      locale: loc,
+      congregationName: settingsOverview?.congregation.name ?? null,
+      hallAddress: settingsOverview?.effective?.address ?? null,
+      labels: {
+        visitTitle: t('coVisit.visitTitle'),
+        coScheduleTitle: t('coVisit.coScheduleTitle'),
+        wifeScheduleTitle: t('coVisit.wifeScheduleTitle'),
+        fieldService: t('coVisit.fieldServiceTitle'),
+        lunches: t('coVisit.lunchesTitle'),
+        pastoral: t('coVisit.pastoralTitle'),
+        pioneers: t('coVisit.pioneersTitle'),
+        elders: t('coVisit.eldersTitle'),
+        docReview: t('coVisit.docReviewTitle'),
+        day: t('coVisit.day'),
+        time: t('coVisit.time'),
+        place: t('coVisit.place'),
+        accompanier: t('coVisit.accompanying'),
+        host: t('coVisit.host'),
+        address: t('coVisit.address'),
+        phone: t('coVisit.phone'),
+        note: t('coVisit.note'),
+        target: t('coVisit.pastoralTarget'),
+        theme: t('coVisit.pioneersTheme'),
+        kingdomHall: t('coVisit.kingdomHall'),
+        cartLocation: t('coVisit.cartLocation'),
+        wife: t('coVisit.wife'),
+        period: t('coVisit.period'),
+        accommodation: t('circuitOverseer.accommodationAddress'),
+        congregation: t('coVisit.congregation'),
+      },
+    });
+    const win = window.open('', '_blank');
+    if (!win) {
+      Alert.alert(t('coVisit.printBlocked'));
+      return;
+    }
+    win.document.open();
+    win.document.write(html);
+    win.document.close();
+  };
+
   const renderSection = (
     kind: ItemKind,
     title: string,
@@ -400,6 +456,14 @@ export default function CoScheduleScreen() {
         <Ionicons name="calendar-outline" size={20} color="#0ea5e9" />
         <Text style={styles.linkText}>{t('coVisit.openMeetingProgram')}</Text>
         <Ionicons name="chevron-forward" size={18} color="#cbd5e1" />
+      </Pressable>
+
+      <Pressable
+        style={({ pressed }) => [styles.pdfBtn, pressed && styles.pressed]}
+        onPress={handlePrint}
+      >
+        <Ionicons name="download-outline" size={18} color="#ffffff" />
+        <Text style={styles.pdfBtnText}>{t('coVisit.printButton')}</Text>
       </Pressable>
 
       {visit.coWifeName ? (
@@ -855,6 +919,16 @@ const styles = StyleSheet.create({
   },
   pressed: { opacity: 0.6 },
   linkText: { flex: 1, fontSize: 16, fontWeight: '600', color: '#0f172a' },
+  pdfBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#0ea5e9',
+    borderRadius: 12,
+    paddingVertical: 12,
+  },
+  pdfBtnText: { fontSize: 15, fontWeight: '700', color: '#ffffff' },
   section: { gap: 8, marginTop: 8 },
   sectionHeader: {
     flexDirection: 'row',

@@ -1158,7 +1158,16 @@
     "add": "Добавить",
     "empty": "Не добавлено",
     "tabCo": "Районный",
-    "tabWife": "Жена"
+    "tabWife": "Жена",
+    "printButton": "Скачать PDF",
+    "visitTitle": "Визит районного надзирателя",
+    "coScheduleTitle": "График служения районного",
+    "wifeScheduleTitle": "График служения жены",
+    "phone": "Телефон",
+    "address": "Адрес",
+    "congregation": "Собрание",
+    "printWebOnly": "Печать в PDF доступна в веб-версии.",
+    "printBlocked": "Браузер заблокировал окно печати. Разрешите всплывающие окна."
   },
   "witnessing": {
     "youAreAssigned": "Вы назначены на этот слот",

@@ -1154,7 +1154,16 @@
     "add": "Hinzufügen",
     "empty": "Nicht hinzugefügt",
     "tabCo": "Aufseher",
-    "tabWife": "Frau"
+    "tabWife": "Frau",
+    "printButton": "PDF herunterladen",
+    "visitTitle": "Besuch des Kreisaufsehers",
+    "coScheduleTitle": "Dienstplan des Kreisaufsehers",
+    "wifeScheduleTitle": "Dienstplan der Frau",
+    "phone": "Telefon",
+    "address": "Adresse",
+    "congregation": "Versammlung",
+    "printWebOnly": "PDF-Druck ist in der Webversion verfügbar.",
+    "printBlocked": "Der Browser hat das Druckfenster blockiert. Pop-ups zulassen."
   },
   "witnessing": {
     "youAreAssigned": "Sie sind diesem Slot zugeteilt",
