@@ -39,6 +39,8 @@ interface Props {
   onCancel?: () => void;
   /** When set, the publisher is fixed (self-service) and the picker is hidden. */
   lockedPublisher?: { id: string; label: string };
+  /** Pre-selected publisher for a NEW absence; still changeable (managers). */
+  defaultPublisher?: { id: string; label: string };
 }
 
 export function AbsenceForm({
@@ -48,16 +50,22 @@ export function AbsenceForm({
   onSubmit,
   onCancel,
   lockedPublisher,
+  defaultPublisher,
 }: Props) {
   const { t, i18n } = useTranslation();
 
   const [publisherId, setPublisherId] = useState<string | null>(
-    lockedPublisher?.id ?? initial?.publisherId ?? null,
+    lockedPublisher?.id ?? initial?.publisherId ?? defaultPublisher?.id ?? null,
   );
   const [publisherLabel, setPublisherLabel] = useState<string>(
-    lockedPublisher?.label ?? initial?.publisher?.displayName ?? '',
+    lockedPublisher?.label ??
+      initial?.publisher?.displayName ??
+      defaultPublisher?.label ??
+      '',
   );
-  const [pickerOpen, setPickerOpen] = useState(!initial && !lockedPublisher);
+  const [pickerOpen, setPickerOpen] = useState(
+    !initial && !lockedPublisher && !defaultPublisher,
+  );
   const [search, setSearch] = useState('');
 
   const [multiDay, setMultiDay] = useState<boolean>(!!initial?.endDate);
@@ -236,6 +244,16 @@ export function AbsenceForm({
         <Text style={styles.errorText}>{extractErrorMessage(error)}</Text>
       ) : null}
 
+      {!valid && !error ? (
+        <Text style={styles.hintText}>
+          {!publisherId
+            ? t('absences.form.needPublisher')
+            : !startDate
+              ? t('absences.form.needDate')
+              : t('absences.form.needEndDate')}
+        </Text>
+      ) : null}
+
       <View style={styles.actions}>
         {onCancel ? (
           <Pressable
@@ -349,6 +367,7 @@ const styles = StyleSheet.create({
   },
   overlapText: { flex: 1, fontSize: 13, color: '#92400e' },
   errorText: { color: '#b91c1c', marginTop: 12 },
+  hintText: { color: '#64748b', marginTop: 12, fontSize: 13 },
   actions: { flexDirection: 'row', gap: 10, marginTop: 20 },
   btn: {
     flex: 1,

@@ -10,11 +10,13 @@ export default function NewAbsenceScreen() {
   const qc = useQueryClient();
   const { canManageAbsences } = usePermissions();
   const { myPublisher } = useMyPublisher();
+  const self = myPublisher
+    ? { id: myPublisher.id, label: myPublisher.displayName }
+    : undefined;
   // Non-managers may only file their own absence; lock the publisher.
-  const locked =
-    !canManageAbsences && myPublisher
-      ? { id: myPublisher.id, label: myPublisher.displayName }
-      : undefined;
+  // Managers default to themselves but can still change the publisher.
+  const locked = !canManageAbsences ? self : undefined;
+  const defaultPublisher = canManageAbsences ? self : undefined;
   const mutation = useMutation({
     mutationFn: (input: CreateAbsenceInput) => absencesApi.create(input),
     onSuccess: () => {
@@ -34,6 +36,7 @@ export default function NewAbsenceScreen() {
         onSubmit={(input) => mutation.mutate(input)}
         onCancel={() => router.back()}
         lockedPublisher={locked}
+        defaultPublisher={defaultPublisher}
       />
     </ScrollView>
   );

@@ -1380,7 +1380,10 @@
       "pickDate": "Datum",
       "pickStart": "Beginn",
       "pickEnd": "Ende",
-      "change": "Ändern"
+      "change": "Ändern",
+      "needPublisher": "Wählen Sie einen Verkündiger",
+      "needDate": "Wählen Sie ein Datum",
+      "needEndDate": "Wählen Sie ein Enddatum"
     },
     "actions": {
       "create": "Hinzufügen",

@@ -1380,7 +1380,10 @@
       "pickDate": "Date",
       "pickStart": "Start",
       "pickEnd": "End",
-      "change": "Change"
+      "change": "Change",
+      "needPublisher": "Select a publisher",
+      "needDate": "Select a date",
+      "needEndDate": "Select an end date"
     },
     "actions": {
       "create": "Add",

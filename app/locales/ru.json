@@ -1384,7 +1384,10 @@
       "pickDate": "Дата",
       "pickStart": "Начало",
       "pickEnd": "Окончание",
-      "change": "Изменить"
+      "change": "Изменить",
+      "needPublisher": "Выберите возвещателя",
+      "needDate": "Выберите дату",
+      "needEndDate": "Выберите дату окончания"
     },
     "actions": {
       "create": "Добавить",
