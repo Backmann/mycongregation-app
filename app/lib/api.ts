@@ -1436,6 +1436,7 @@ export interface SpecialEvent {
   coFirstName: string | null;
   coLastName: string | null;
   coWifeName: string | null;
+  coAccommodationAddress: string | null;
   coMidweekDow: number | null;
   replacesMeeting: boolean;
   createdAt: string;
@@ -1456,6 +1457,7 @@ export interface CreateSpecialEventInput {
   coFirstName?: string;
   coLastName?: string;
   coWifeName?: string;
+  coAccommodationAddress?: string;
   coMidweekDow?: number;
   replacesMeeting?: boolean;
 }

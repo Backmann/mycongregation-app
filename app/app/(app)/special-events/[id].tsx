@@ -39,6 +39,7 @@ function toForm(e: SpecialEvent): EventFormValue {
     coFirstName: e.coFirstName ?? '',
     coLastName: e.coLastName ?? '',
     coWifeName: e.coWifeName ?? '',
+    coAccommodationAddress: e.coAccommodationAddress ?? '',
     coMidweekDow: e.coMidweekDow ?? 2,
   };
 }
@@ -77,6 +78,8 @@ export default function SpecialEventDetailScreen() {
         coFirstName: form!.coFirstName.trim() || undefined,
         coLastName: form!.coLastName.trim() || undefined,
         coWifeName: form!.coWifeName.trim() || undefined,
+        coAccommodationAddress:
+          form!.coAccommodationAddress.trim() || undefined,
         coMidweekDow:
           form!.type.trim() === CIRCUIT_OVERSEER_VISIT_TYPE
             ? form!.coMidweekDow

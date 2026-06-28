@@ -38,6 +38,7 @@ export default function NewSpecialEventScreen() {
         coFirstName: form.coFirstName.trim() || undefined,
         coLastName: form.coLastName.trim() || undefined,
         coWifeName: form.coWifeName.trim() || undefined,
+        coAccommodationAddress: form.coAccommodationAddress.trim() || undefined,
         coMidweekDow:
           form.type.trim() === CIRCUIT_OVERSEER_VISIT_TYPE
             ? form.coMidweekDow

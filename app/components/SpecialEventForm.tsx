@@ -51,6 +51,7 @@ export interface EventFormValue {
   coFirstName: string;
   coLastName: string;
   coWifeName: string;
+  coAccommodationAddress: string;
   coMidweekDow: number;
 }
 
@@ -71,6 +72,7 @@ export function emptyEventForm(): EventFormValue {
     coFirstName: '',
     coLastName: '',
     coWifeName: '',
+    coAccommodationAddress: '',
     coMidweekDow: 2,
   };
 }
@@ -262,6 +264,14 @@ export function SpecialEventForm({
               value={value.coWifeName}
               onChangeText={(x) => set({ coWifeName: x })}
               autoCapitalize="words"
+              placeholderTextColor="#94a3b8"
+            />
+          </Field>
+          <Field label={t('circuitOverseer.accommodationAddress')}>
+            <TextInput
+              style={styles.input}
+              value={value.coAccommodationAddress}
+              onChangeText={(x) => set({ coAccommodationAddress: x })}
               placeholderTextColor="#94a3b8"
             />
           </Field>

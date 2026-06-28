@@ -1522,7 +1522,8 @@
     "savedTitle": "Saved",
     "savedBody": "Circuit overseer details updated.",
     "note": "You can change this anytime.",
-    "midweekDow": "Midweek meeting day"
+    "midweekDow": "Midweek meeting day",
+    "accommodationAddress": "Accommodation address"
   },
   "relative": {
     "today": "today",

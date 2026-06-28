@@ -385,6 +385,12 @@ export default function CoScheduleScreen() {
           label={t('coVisit.midweekDay')}
           value={weekdayName(visit.coMidweekDow)}
         />
+        {visit.coAccommodationAddress ? (
+          <Kv
+            label={t('circuitOverseer.accommodationAddress')}
+            value={visit.coAccommodationAddress}
+          />
+        ) : null}
       </View>
 
       <Pressable

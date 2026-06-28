@@ -1522,7 +1522,8 @@
     "savedTitle": "Gespeichert",
     "savedBody": "Angaben zum Kreisaufseher aktualisiert.",
     "note": "Sie können dies jederzeit ändern.",
-    "midweekDow": "Tag der Versammlung unter der Woche"
+    "midweekDow": "Tag der Versammlung unter der Woche",
+    "accommodationAddress": "Unterkunftsadresse"
   },
   "relative": {
     "today": "heute",
