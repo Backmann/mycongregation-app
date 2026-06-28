@@ -29,6 +29,8 @@ import {
   publisherActivityApi,
   PublisherActivity,
   specialEventsApi,
+  circuitOverseersApi,
+  CircuitOverseer,
 } from '../../../lib/api';
 import {
   addDays,
@@ -133,6 +135,24 @@ export default function ScheduleIndexScreen() {
   const specialEventsQuery = useQuery({
     queryKey: ['special-events', 'all'],
     queryFn: () => specialEventsApi.list({ all: true }),
+  });
+
+  const circuitOverseersQuery = useQuery({
+    queryKey: ['circuit-overseers'],
+    queryFn: () => circuitOverseersApi.list(),
+    enabled: perms.canManageEvents,
+  });
+
+  const coPickMutation = useMutation({
+    mutationFn: ({ eventId, c }: { eventId: string; c: CircuitOverseer }) =>
+      specialEventsApi.update(eventId, {
+        coFirstName: c.firstName,
+        coLastName: c.lastName,
+        coWifeName: c.wifeName ?? null,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['special-events'] });
+    },
   });
   const publishersQuery = useQuery({
     queryKey: ['publishers', 'all-for-schedule'],
@@ -373,6 +393,23 @@ export default function ScheduleIndexScreen() {
           .trim(),
       }
     : null;
+
+  // Manager-only picker shown on the CO talk parts: switch which overseer is
+  // visiting this week. It updates the event snapshot, so the name flows to
+  // both the midweek and weekend talks (and the banner) at once.
+  const coPicker =
+    coVisitEvent && perms.canManageEvents && circuitOverseersQuery.data
+      ? {
+          overseers: circuitOverseersQuery.data,
+          current: {
+            firstName: coVisitEvent.coFirstName ?? '',
+            lastName: coVisitEvent.coLastName ?? '',
+          },
+          pending: coPickMutation.isPending,
+          onPick: (c: CircuitOverseer) =>
+            coPickMutation.mutate({ eventId: coVisitEvent.id, c }),
+        }
+      : null;
   // Songs are not assigned to a person, so they must not count toward the
   // progress badge (otherwise meetings always look under-filled).
   const BADGE_SONG_KEYS = new Set<string>([
@@ -478,6 +515,7 @@ export default function ScheduleIndexScreen() {
         weekStartISO={weekStartISO}
         canEdit={canEditEditing}
         circuitOverseer={circuitOverseer}
+        coPicker={coPicker}
         onClose={() => setEditing(null)}
       />
       <CleaningPlanMode

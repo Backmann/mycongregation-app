@@ -16,7 +16,7 @@ import {
   CreateAssignmentInput,
   UpdateAssignmentInput,
 } from '../lib/api';
-import { AssignmentForm } from './AssignmentForm';
+import { AssignmentForm, AssignmentFormCoPicker } from './AssignmentForm';
 import { SongPicker } from './SongPicker';
 
 interface Props {
@@ -32,6 +32,8 @@ interface Props {
   /** Circuit overseer for the week (CO-visit week only); enables CO talk
    * titles and CO-led prayers in the form. */
   circuitOverseer?: { displayName: string } | null;
+  /** Forwarded to the form: manager-only visiting-overseer picker. */
+  coPicker?: AssignmentFormCoPicker | null;
 }
 
 const SONG_KEYS = ['mid_song', 'weekend_song', 'weekend_opening_song'];
@@ -49,6 +51,7 @@ export function AssignmentSheet({
   onClose,
   onNext,
   circuitOverseer,
+  coPicker,
 }: Props) {
   const { t } = useTranslation();
   const { width } = useWindowDimensions();
@@ -205,6 +208,7 @@ export function AssignmentSheet({
                 isSubmitting={updateMutation.isPending}
                 lockIdentity
                 circuitOverseer={circuitOverseer}
+                coPicker={coPicker}
                 readOnly={!canEdit}
               />
               {canEdit && (

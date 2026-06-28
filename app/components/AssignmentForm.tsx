@@ -19,6 +19,7 @@ import { PublicTalkSelector } from './PublicTalkSelector';
 import { EventOnDateNotice } from './EventOnDateNotice';
 import {
   AssignmentStatus,
+  CircuitOverseer,
   CreateAssignmentInput,
   EventType,
   extractErrorMessage,
@@ -53,6 +54,16 @@ interface Props {
    * the overseer as a prayer participant and to label his talks. Null otherwise.
    */
   circuitOverseer?: { displayName: string } | null;
+  /** Manager-only picker to switch the visiting overseer for the whole week
+   * (updates the CO-visit event snapshot, so both meetings reflect it). */
+  coPicker?: AssignmentFormCoPicker | null;
+}
+
+export interface AssignmentFormCoPicker {
+  overseers: CircuitOverseer[];
+  current: { firstName: string; lastName: string };
+  pending: boolean;
+  onPick: (c: CircuitOverseer) => void;
 }
 
 // EVENT_TYPE_OPTIONS, STATUS_OPTIONS, SPEAKER_TYPE_OPTIONS moved inside component (i18n)
@@ -67,6 +78,7 @@ export function AssignmentForm({
   lockIdentity,
   readOnly,
   circuitOverseer,
+  coPicker,
 }: Props) {
   const { t } = useTranslation();
   const autosave = !!onInstantSave;
@@ -517,6 +529,40 @@ export function AssignmentForm({
                 : t('assignments.form.coSpeakerNoName')}
             </Text>
           </View>
+          {coPicker && coPicker.overseers.length > 0 ? (
+            <View style={styles.coPickerWrap}>
+              <Text style={styles.coPickerLabel}>
+                {t('circuitOverseer.pickLabel')}
+              </Text>
+              <View style={styles.coChips}>
+                {coPicker.overseers.map((c) => {
+                  const active =
+                    c.firstName === coPicker.current.firstName &&
+                    c.lastName === coPicker.current.lastName;
+                  return (
+                    <Pressable
+                      key={c.id}
+                      disabled={coPicker.pending}
+                      onPress={() => coPicker.onPick(c)}
+                      style={[styles.coChip, active && styles.coChipActive]}
+                    >
+                      <Text
+                        style={[
+                          styles.coChipText,
+                          active && styles.coChipTextActive,
+                        ]}
+                      >
+                        {c.firstName} {c.lastName}
+                        {c.role === 'substitute'
+                          ? ` · ${t('circuitOverseer.roleSubstitute')}`
+                          : ''}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            </View>
+          ) : null}
         </FormSection>
       )}
 
@@ -893,6 +939,27 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   coSpeakerText: { flex: 1, fontSize: 14, color: '#6d28d9', fontWeight: '600' },
+  coPickerWrap: { marginTop: 12 },
+  coPickerLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#475569',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 8,
+  },
+  coChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  coChip: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#ddd6fe',
+    backgroundColor: '#fff',
+  },
+  coChipActive: { backgroundColor: '#6d28d9', borderColor: '#6d28d9' },
+  coChipText: { fontSize: 13, color: '#6d28d9', fontWeight: '600' },
+  coChipTextActive: { color: '#fff' },
   lnBackdrop: {
     flex: 1,
     backgroundColor: 'rgba(15,23,42,0.45)',
