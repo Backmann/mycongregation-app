@@ -18,7 +18,7 @@ export default function ServiceReportsLayout() {
         name="index"
         options={{
           title: t('reports.title.list'),
-          headerLeft: () => <BackButton fallback="/cart" />,
+          headerLeft: () => <BackButton fallback="/cart" toParent />,
           headerRight: () => (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
               {canViewServiceSummary && (
