@@ -30,6 +30,13 @@ export default function ServiceHubScreen() {
       subtitle: t('service.locationsSubtitle'),
       route: '/cart/locations',
     },
+    {
+      family: 'ion',
+      icon: 'document-text-outline',
+      title: t('service.reports'),
+      subtitle: t('service.reportsSubtitle'),
+      route: '/service-reports',
+    },
   ];
 
   return (

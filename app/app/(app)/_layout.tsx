@@ -80,15 +80,7 @@ export default function AppLayout() {
           ),
         }}
       />
-      <Tabs.Screen
-        name="service-reports"
-        options={{
-          title: t('tabs.reports'),
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="document-text" color={color} size={size} />
-          ),
-        }}
-      />
+      <Tabs.Screen name="service-reports" options={{ href: null }} />
       <Tabs.Screen
         name="profile"
         options={{

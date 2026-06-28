@@ -1103,7 +1103,9 @@
     "publicWitnessing": "Служение в общественных местах",
     "publicWitnessingSubtitle": "Проповедь со стендами и тележками",
     "locations": "Точки служения",
-    "locationsSubtitle": "Адреса тележек и стендов"
+    "locationsSubtitle": "Адреса тележек и стендов",
+    "reports": "Отчёты",
+    "reportsSubtitle": "Отчёты о служении и активность"
   },
   "witnessing": {
     "youAreAssigned": "Вы назначены на этот слот",

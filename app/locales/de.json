@@ -1099,7 +1099,9 @@
     "publicWitnessing": "Öffentliches Zeugnisgeben",
     "publicWitnessingSubtitle": "Wagen und Stände",
     "locations": "Zeugnis-Standorte",
-    "locationsSubtitle": "Adressen für Wagen und Stände"
+    "locationsSubtitle": "Adressen für Wagen und Stände",
+    "reports": "Berichte",
+    "reportsSubtitle": "Predigtdienstberichte und Aktivität"
   },
   "witnessing": {
     "youAreAssigned": "Sie sind diesem Slot zugeteilt",

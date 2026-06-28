@@ -1099,7 +1099,9 @@
     "publicWitnessing": "Public witnessing",
     "publicWitnessingSubtitle": "Carts and stands",
     "locations": "Witnessing points",
-    "locationsSubtitle": "Cart and stand addresses"
+    "locationsSubtitle": "Cart and stand addresses",
+    "reports": "Reports",
+    "reportsSubtitle": "Field service reports and activity"
   },
   "witnessing": {
     "youAreAssigned": "You're assigned to this slot",
