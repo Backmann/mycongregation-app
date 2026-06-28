@@ -1456,7 +1456,7 @@ export interface CreateSpecialEventInput {
   note?: string;
   coFirstName?: string;
   coLastName?: string;
-  coWifeName?: string;
+  coWifeName?: string | null;
   coAccommodationAddress?: string;
   coMidweekDow?: number;
   replacesMeeting?: boolean;

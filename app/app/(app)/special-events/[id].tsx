@@ -13,6 +13,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
 import {
+  circuitOverseersApi,
+  CircuitOverseer,
   extractErrorMessage,
   SpecialEvent,
   specialEventsApi,
@@ -106,6 +108,30 @@ export default function SpecialEventDetailScreen() {
     },
   });
 
+  const isCoVisit = event?.type === CIRCUIT_OVERSEER_VISIT_TYPE;
+
+  // Circuit overseers the manager can switch the visit to, right from the
+  // event. Loaded only for a CO visit and only for managers (the picker is
+  // theirs); the read-only name below is taken from the event snapshot, so
+  // every member still sees who is coming without this list.
+  const { data: overseers } = useQuery({
+    queryKey: ['circuit-overseers'],
+    queryFn: () => circuitOverseersApi.list(),
+    enabled: !!isCoVisit && canManageEvents,
+  });
+
+  const pickM = useMutation({
+    mutationFn: (c: CircuitOverseer) =>
+      specialEventsApi.update(id!, {
+        coFirstName: c.firstName,
+        coLastName: c.lastName,
+        coWifeName: c.wifeName ?? null,
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['special-events'] });
+    },
+  });
+
   if (isLoading) {
     return <ActivityIndicator size="large" style={{ marginTop: 32 }} />;
   }
@@ -189,6 +215,74 @@ export default function SpecialEventDetailScreen() {
       ) : null}
       {event.replacesMeeting ? (
         <Text style={styles.hint}>{t('specialEvents.replacesMeetingHint')}</Text>
+      ) : null}
+
+      {isCoVisit ? (
+        <View style={styles.coBlock}>
+          <Text style={styles.infoLabel}>
+            {t('circuitOverseer.roleOverseer')}
+          </Text>
+          <Text style={styles.coName}>
+            {[event.coFirstName, event.coLastName].filter(Boolean).join(' ') ||
+              '—'}
+            {event.coWifeName
+              ? ` · ${t('specialEvents.coWife', { name: event.coWifeName })}`
+              : ''}
+          </Text>
+
+          {event.coMidweekDow ? (
+            <Text style={styles.coMeta}>
+              {t('circuitOverseer.midweekDow')}:{' '}
+              {t(`meetingSettings.dow.${event.coMidweekDow}`)}
+            </Text>
+          ) : null}
+          {canManageEvents && event.coAccommodationAddress ? (
+            <Text style={styles.coMeta}>
+              {t('circuitOverseer.accommodationAddress')}:{' '}
+              {event.coAccommodationAddress}
+            </Text>
+          ) : null}
+
+          {canManageEvents && !isRemoved && overseers && overseers.length > 0 ? (
+            <View style={styles.pickerWrap}>
+              <Text style={styles.pickerLabel}>
+                {t('circuitOverseer.pickLabel')}
+              </Text>
+              <View style={styles.chips}>
+                {overseers.map((c) => {
+                  const active =
+                    c.firstName === event.coFirstName &&
+                    c.lastName === event.coLastName;
+                  return (
+                    <Pressable
+                      key={c.id}
+                      disabled={pickM.isPending}
+                      onPress={() => pickM.mutate(c)}
+                      style={[styles.chip, active && styles.chipActive]}
+                    >
+                      <Text
+                        style={[
+                          styles.chipText,
+                          active && styles.chipTextActive,
+                        ]}
+                      >
+                        {c.firstName} {c.lastName}
+                        {c.role === 'substitute'
+                          ? ` · ${t('circuitOverseer.roleSubstitute')}`
+                          : ''}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+              {pickM.isError ? (
+                <Text style={styles.error}>
+                  {extractErrorMessage(pickM.error)}
+                </Text>
+              ) : null}
+            </View>
+          ) : null}
+        </View>
       ) : null}
 
       {event.address ? (
@@ -327,4 +421,40 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   deleteText: { color: '#ef4444', fontSize: 16, fontWeight: '600' },
+  coBlock: {
+    marginTop: 16,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    padding: 14,
+  },
+  coName: { fontSize: 18, fontWeight: '700', color: '#0f172a', marginTop: 2 },
+  coMeta: { fontSize: 14, color: '#475569', marginTop: 6 },
+  pickerWrap: {
+    marginTop: 14,
+    borderTopWidth: 1,
+    borderTopColor: '#f1f5f9',
+    paddingTop: 12,
+  },
+  pickerLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#475569',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 8,
+  },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  chip: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#cbd5e1',
+    backgroundColor: '#fff',
+  },
+  chipActive: { backgroundColor: '#0ea5e9', borderColor: '#0ea5e9' },
+  chipText: { fontSize: 13, color: '#475569', fontWeight: '600' },
+  chipTextActive: { color: '#fff' },
 });
