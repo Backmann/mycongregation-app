@@ -1,6 +1,8 @@
 import { Stack } from 'expo-router';
+import { View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { BackButton } from '../../../components/BackButton';
+import BrandLockup from '../../../components/BrandLockup';
 
 export default function CartLayout() {
   const { t } = useTranslation();
@@ -12,7 +14,15 @@ export default function CartLayout() {
     >
       <Stack.Screen
         name="index"
-        options={{ title: t('service.hubTitle'), headerLeft: () => null }}
+        options={{
+          title: t('service.hubTitle'),
+          headerLeft: () => null,
+          headerRight: () => (
+            <View style={{ paddingRight: 12 }}>
+              <BrandLockup mark={26} markOnly />
+            </View>
+          ),
+        }}
       />
       <Stack.Screen
         name="witnessing"

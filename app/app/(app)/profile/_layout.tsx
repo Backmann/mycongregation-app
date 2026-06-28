@@ -1,6 +1,8 @@
 import { Stack } from 'expo-router';
+import { View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { BackButton } from '../../../components/BackButton';
+import BrandLockup from '../../../components/BrandLockup';
 
 export default function ProfileLayout() {
   const { t } = useTranslation();
@@ -13,7 +15,15 @@ export default function ProfileLayout() {
     >
       <Stack.Screen
         name="index"
-        options={{ title: t('profile.title'), headerLeft: () => null }}
+        options={{
+          title: t('profile.title'),
+          headerLeft: () => null,
+          headerRight: () => (
+            <View style={{ paddingRight: 12 }}>
+              <BrandLockup mark={26} markOnly />
+            </View>
+          ),
+        }}
       />
       <Stack.Screen
         name="public-talks"

@@ -3,6 +3,7 @@ import { Pressable, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { BackButton } from '../../../components/BackButton';
+import BrandLockup from '../../../components/BrandLockup';
 import { usePermissions } from '../../../lib/permissions';
 
 export default function PublishersLayout() {
@@ -43,6 +44,9 @@ export default function PublishersLayout() {
                   <Ionicons name="add" size={28} color="#0ea5e9" />
                 </Pressable>
               )}
+              <View style={{ paddingLeft: 6 }}>
+                <BrandLockup mark={24} markOnly />
+              </View>
             </View>
           ),
         }}
