@@ -13,7 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ru';
 import 'dayjs/locale/de';
-import { circuitOverseerApi } from '../lib/api';
+import { circuitOverseersApi, CircuitOverseer } from '../lib/api';
 import { FormChips } from './FormChips';
 import { MonthCalendar } from './MonthCalendar';
 
@@ -131,30 +131,39 @@ export function SpecialEventForm({
 
   const isCoVisit = value.type === CIRCUIT_OVERSEER_VISIT_TYPE;
 
-  // Default circuit-overseer card — fetched only for the CO-visit type, used to
-  // pre-fill the names when they are still empty (new visit). Editing a saved
-  // visit keeps its own snapshot, so non-empty names are never overwritten.
-  const { data: coDefault } = useQuery({
-    queryKey: ['circuit-overseer'],
-    queryFn: () => circuitOverseerApi.get(),
+  // Circuit overseers to choose from (regular + substitutes). A new visit
+  // pre-fills the names from the primary; the picker lets you switch to a
+  // substitute. Editing a saved visit keeps its own snapshot, so non-empty
+  // names are never overwritten.
+  const { data: overseers } = useQuery({
+    queryKey: ['circuit-overseers'],
+    queryFn: () => circuitOverseersApi.list(),
     enabled: isCoVisit,
   });
 
   useEffect(() => {
-    if (!isCoVisit || !coDefault) return;
+    if (!isCoVisit || !overseers || overseers.length === 0) return;
     const empty =
       !value.coFirstName.trim() &&
       !value.coLastName.trim() &&
       !value.coWifeName.trim();
     if (empty) {
+      const primary = overseers.find((c) => c.isPrimary) ?? overseers[0];
       set({
-        coFirstName: coDefault.firstName ?? '',
-        coLastName: coDefault.lastName ?? '',
-        coWifeName: coDefault.wifeName ?? '',
+        coFirstName: primary.firstName ?? '',
+        coLastName: primary.lastName ?? '',
+        coWifeName: primary.wifeName ?? '',
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isCoVisit, coDefault]);
+  }, [isCoVisit, overseers]);
+
+  const pickOverseer = (c: CircuitOverseer) =>
+    set({
+      coFirstName: c.firstName,
+      coLastName: c.lastName,
+      coWifeName: c.wifeName ?? '',
+    });
 
   // Set of auto-generated titles (the type labels). Used so that picking /
   // switching a type fills the title automatically, unless the user typed
@@ -240,6 +249,36 @@ export function SpecialEventForm({
       {/* Circuit overseer names (visit type only) */}
       {isCoVisit && (
         <>
+          {overseers && overseers.length > 0 && (
+            <Field label={t('circuitOverseer.pickLabel')}>
+              <View style={styles.chips}>
+                {overseers.map((c) => {
+                  const active =
+                    c.firstName === value.coFirstName &&
+                    c.lastName === value.coLastName;
+                  return (
+                    <Pressable
+                      key={c.id}
+                      onPress={() => pickOverseer(c)}
+                      style={[styles.chip, active && styles.chipActive]}
+                    >
+                      <Text
+                        style={[
+                          styles.chipText,
+                          active && styles.chipTextActive,
+                        ]}
+                      >
+                        {c.firstName} {c.lastName}
+                        {c.role === 'substitute'
+                          ? ` · ${t('circuitOverseer.roleSubstitute')}`
+                          : ''}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            </Field>
+          )}
           <Field label={t('circuitOverseer.firstName')}>
             <TextInput
               style={styles.input}

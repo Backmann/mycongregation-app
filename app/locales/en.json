@@ -1547,7 +1547,8 @@
     "makePrimary": "Make primary (default)",
     "deleteConfirmTitle": "Delete record?",
     "deleteConfirmBody": "Remove “{{name}}” from the list? This won’t affect visits already created.",
-    "emptyList": "No one yet. Add a circuit overseer."
+    "emptyList": "No one yet. Add a circuit overseer.",
+    "pickLabel": "Who is coming"
   },
   "relative": {
     "today": "today",

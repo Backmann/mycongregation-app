@@ -1547,7 +1547,8 @@
     "makePrimary": "Als primär festlegen (Standard)",
     "deleteConfirmTitle": "Eintrag löschen?",
     "deleteConfirmBody": "„{{name}}“ aus der Liste entfernen? Bereits erstellte Besuche sind nicht betroffen.",
-    "emptyList": "Noch niemand. Füge einen Kreisaufseher hinzu."
+    "emptyList": "Noch niemand. Füge einen Kreisaufseher hinzu.",
+    "pickLabel": "Wer kommt"
   },
   "relative": {
     "today": "heute",
