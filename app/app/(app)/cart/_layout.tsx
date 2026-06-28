@@ -22,6 +22,10 @@ export default function CartLayout() {
         name="locations"
         options={{ title: t('service.locations') }}
       />
+      <Stack.Screen
+        name="co-schedule"
+        options={{ title: t('coVisit.title') }}
+      />
     </Stack>
   );
 }

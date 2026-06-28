@@ -1105,7 +1105,19 @@
     "locations": "Точки служения",
     "locationsSubtitle": "Адреса тележек и стендов",
     "reports": "Отчёты",
-    "reportsSubtitle": "Отчёты о служении и активность"
+    "reportsSubtitle": "Отчёты о служении и активность",
+    "coSchedule": "График районного",
+    "coScheduleSubtitle": "Посещение районного старейшины"
+  },
+  "coVisit": {
+    "title": "График районного",
+    "noVisit": "Визит не запланирован",
+    "noAccess": "Нет доступа",
+    "overseer": "Районный старейшина",
+    "wife": "Жена",
+    "period": "Период визита",
+    "midweekDay": "Будничная встреча",
+    "openMeetingProgram": "Программа встреч в Расписании"
   },
   "witnessing": {
     "youAreAssigned": "Вы назначены на этот слот",

@@ -1101,7 +1101,19 @@
     "locations": "Witnessing points",
     "locationsSubtitle": "Cart and stand addresses",
     "reports": "Reports",
-    "reportsSubtitle": "Field service reports and activity"
+    "reportsSubtitle": "Field service reports and activity",
+    "coSchedule": "Circuit overseer schedule",
+    "coScheduleSubtitle": "Circuit overseer visit"
+  },
+  "coVisit": {
+    "title": "Circuit overseer schedule",
+    "noVisit": "No visit scheduled",
+    "noAccess": "No access",
+    "overseer": "Circuit overseer",
+    "wife": "Wife",
+    "period": "Visit period",
+    "midweekDay": "Midweek meeting",
+    "openMeetingProgram": "Meeting program in Schedule"
   },
   "witnessing": {
     "youAreAssigned": "You're assigned to this slot",

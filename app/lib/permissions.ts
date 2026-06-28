@@ -66,6 +66,11 @@ export interface Permissions {
 
   canViewServiceSummary: boolean;
 
+  /** Circuit-overseer visit schedule (Служение). View: admin or elder; edit:
+   *  admin, service overseer, or body coordinator. */
+  canViewCoSchedule: boolean;
+  canEditCoSchedule: boolean;
+
   /** The set of responsibility types held by the current user. */
   responsibilities: ReadonlySet<ResponsibilityType>;
 }
@@ -137,6 +142,9 @@ export function usePermissions(): Permissions {
       canManageLocalNeeds: isAdmin || holds('life_ministry_overseer'),
       canCoordinatePublicTalks: isAdmin || holds('public_talk_coordinator'),
       canViewServiceSummary: isAdmin || holds('secretary'),
+      canViewCoSchedule: isAdmin || isElder,
+      canEditCoSchedule:
+        isAdmin || holds('service_overseer') || holds('body_coordinator'),
 
       responsibilities: mine,
     };

@@ -2,6 +2,7 @@ import { ScrollView, StyleSheet, Text, View, Pressable } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
+import { usePermissions } from '../../../lib/permissions';
 
 type Row = {
   family: 'ion' | 'mdi';
@@ -9,11 +10,13 @@ type Row = {
   title: string;
   subtitle: string;
   route: string;
+  show?: boolean;
 };
 
 export default function ServiceHubScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  const { canViewCoSchedule } = usePermissions();
 
   const rows: Row[] = [
     {
@@ -37,6 +40,14 @@ export default function ServiceHubScreen() {
       subtitle: t('service.reportsSubtitle'),
       route: '/service-reports',
     },
+    {
+      family: 'ion',
+      icon: 'clipboard-outline',
+      title: t('service.coSchedule'),
+      subtitle: t('service.coScheduleSubtitle'),
+      route: '/cart/co-schedule',
+      show: canViewCoSchedule,
+    },
   ];
 
   return (
@@ -44,7 +55,7 @@ export default function ServiceHubScreen() {
       style={styles.container}
       contentContainerStyle={styles.content}
     >
-      {rows.map((r) => (
+      {rows.filter((r) => r.show !== false).map((r) => (
         <Pressable
           key={r.route}
           style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}

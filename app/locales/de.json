@@ -1101,7 +1101,19 @@
     "locations": "Zeugnis-Standorte",
     "locationsSubtitle": "Adressen für Wagen und Stände",
     "reports": "Berichte",
-    "reportsSubtitle": "Predigtdienstberichte und Aktivität"
+    "reportsSubtitle": "Predigtdienstberichte und Aktivität",
+    "coSchedule": "Kreisaufseher-Plan",
+    "coScheduleSubtitle": "Besuch des Kreisaufsehers"
+  },
+  "coVisit": {
+    "title": "Kreisaufseher-Plan",
+    "noVisit": "Kein Besuch geplant",
+    "noAccess": "Kein Zugriff",
+    "overseer": "Kreisaufseher",
+    "wife": "Frau",
+    "period": "Besuchszeitraum",
+    "midweekDay": "Versammlung unter der Woche",
+    "openMeetingProgram": "Programm im Zeitplan"
   },
   "witnessing": {
     "youAreAssigned": "Sie sind diesem Slot zugeteilt",
