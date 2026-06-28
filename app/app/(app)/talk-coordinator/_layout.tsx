@@ -15,7 +15,7 @@ export default function TalkCoordinatorLayout() {
         name="index"
         options={{
           title: t('talkCoordinator.title'),
-          headerLeft: () => <BackButton fallback="/home" toParent />,
+          headerLeft: () => <BackButton fallback="/schedule" toParent />,
         }}
       />
       <Stack.Screen
