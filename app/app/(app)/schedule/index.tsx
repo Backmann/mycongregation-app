@@ -144,13 +144,43 @@ export default function ScheduleIndexScreen() {
   });
 
   const coPickMutation = useMutation({
-    mutationFn: ({ eventId, c }: { eventId: string; c: CircuitOverseer }) =>
-      specialEventsApi.update(eventId, {
+    mutationFn: async ({
+      eventId,
+      c,
+    }: {
+      eventId: string;
+      c: CircuitOverseer;
+    }) => {
+      const coName = [c.firstName, c.lastName]
+        .filter(Boolean)
+        .join(' ')
+        .trim();
+      await specialEventsApi.update(eventId, {
         coFirstName: c.firstName,
         coLastName: c.lastName,
         coWifeName: c.wifeName ?? null,
         coRole: c.role,
-      }),
+      });
+      // Put the overseer on his talks for this week directly, using the rows
+      // already loaded here, so the schedule reflects the pick immediately and
+      // reliably (independent of any server-side week matching).
+      const coKeys = [
+        'co_service_talk',
+        'co_concluding_talk',
+        'public_talk_speaker',
+      ];
+      const coParts = (assignmentsQuery.data?.data ?? []).filter(
+        (a) => coKeys.includes(a.partKey) && a.speakerName !== coName,
+      );
+      await Promise.all(
+        coParts.map((a) =>
+          assignmentsApi.update(a.id, {
+            speakerName: coName,
+            publisherId: null,
+          }),
+        ),
+      );
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['special-events'] });
       queryClient.invalidateQueries({ queryKey: ['assignments'] });
