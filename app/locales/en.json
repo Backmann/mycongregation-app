@@ -1535,7 +1535,19 @@
     "savedBody": "Circuit overseer details updated.",
     "note": "You can change this anytime.",
     "midweekDow": "Midweek meeting day",
-    "accommodationAddress": "Accommodation address"
+    "accommodationAddress": "Accommodation address",
+    "listIntro": "Circuit overseers (and substitutes) your congregation may host. One is marked primary and pre-fills a new visit; you can pick a different one in the visit form. Each visit keeps its own name snapshot, so changes here never rewrite past visits.",
+    "roleOverseer": "Circuit overseer",
+    "roleSubstitute": "Substitute overseer",
+    "primaryBadge": "Primary",
+    "addButton": "Add overseer",
+    "addTitle": "New circuit overseer",
+    "editTitle": "Edit record",
+    "roleLabel": "Role",
+    "makePrimary": "Make primary (default)",
+    "deleteConfirmTitle": "Delete record?",
+    "deleteConfirmBody": "Remove “{{name}}” from the list? This won’t affect visits already created.",
+    "emptyList": "No one yet. Add a circuit overseer."
   },
   "relative": {
     "today": "today",

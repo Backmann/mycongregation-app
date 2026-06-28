@@ -1535,7 +1535,19 @@
     "savedBody": "Angaben zum Kreisaufseher aktualisiert.",
     "note": "Sie können dies jederzeit ändern.",
     "midweekDow": "Tag der Versammlung unter der Woche",
-    "accommodationAddress": "Unterkunftsadresse"
+    "accommodationAddress": "Unterkunftsadresse",
+    "listIntro": "Kreisaufseher (und Vertreter), die eure Versammlung empfangen kann. Einer ist als primär markiert und wird beim Anlegen eines Besuchs vorausgefüllt; im Besuchsformular kannst du einen anderen wählen. Jeder Besuch behält seinen eigenen Namens-Schnappschuss, daher ändern Anpassungen hier keine vergangenen Besuche.",
+    "roleOverseer": "Kreisaufseher",
+    "roleSubstitute": "Vertretender Aufseher",
+    "primaryBadge": "Primär",
+    "addButton": "Aufseher hinzufügen",
+    "addTitle": "Neuer Kreisaufseher",
+    "editTitle": "Eintrag bearbeiten",
+    "roleLabel": "Rolle",
+    "makePrimary": "Als primär festlegen (Standard)",
+    "deleteConfirmTitle": "Eintrag löschen?",
+    "deleteConfirmBody": "„{{name}}“ aus der Liste entfernen? Bereits erstellte Besuche sind nicht betroffen.",
+    "emptyList": "Noch niemand. Füge einen Kreisaufseher hinzu."
   },
   "relative": {
     "today": "heute",

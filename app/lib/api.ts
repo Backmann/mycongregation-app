@@ -1464,21 +1464,29 @@ export interface CreateSpecialEventInput {
 
 export type UpdateSpecialEventInput = Partial<CreateSpecialEventInput>;
 
+export type CircuitOverseerRole = 'overseer' | 'substitute';
+
 export interface CircuitOverseer {
   id: string;
   congregationId: string;
   firstName: string;
   lastName: string;
   wifeName: string | null;
+  role: CircuitOverseerRole;
+  isPrimary: boolean;
   createdAt: string;
   updatedAt: string;
 }
 
-export interface UpsertCircuitOverseerInput {
+export interface CreateCircuitOverseerInput {
   firstName: string;
   lastName: string;
   wifeName?: string | null;
+  role?: CircuitOverseerRole;
+  isPrimary?: boolean;
 }
+
+export type UpdateCircuitOverseerInput = Partial<CreateCircuitOverseerInput>;
 
 function cleanEventPayload(
   input: CreateSpecialEventInput | UpdateSpecialEventInput,
@@ -1762,18 +1770,42 @@ export const specialEventsApi = {
   },
 };
 
-export const circuitOverseerApi = {
-  async get(): Promise<CircuitOverseer | null> {
-    const { data } = await api.get<CircuitOverseer | null>('/circuit-overseer');
+export const circuitOverseersApi = {
+  async list(): Promise<CircuitOverseer[]> {
+    const { data } = await api.get<CircuitOverseer[]>('/circuit-overseers');
     return data;
   },
-  async upsert(input: UpsertCircuitOverseerInput): Promise<CircuitOverseer> {
-    const { data } = await api.post<CircuitOverseer>('/circuit-overseer', {
+  async create(input: CreateCircuitOverseerInput): Promise<CircuitOverseer> {
+    const { data } = await api.post<CircuitOverseer>('/circuit-overseers', {
       firstName: input.firstName,
       lastName: input.lastName,
       wifeName: input.wifeName ?? null,
+      role: input.role ?? 'overseer',
+      isPrimary: input.isPrimary ?? false,
     });
     return data;
+  },
+  async update(
+    id: string,
+    input: UpdateCircuitOverseerInput,
+  ): Promise<CircuitOverseer> {
+    const { data } = await api.patch<CircuitOverseer>(
+      `/circuit-overseers/${id}`,
+      input,
+    );
+    return data;
+  },
+  async remove(id: string): Promise<void> {
+    await api.delete(`/circuit-overseers/${id}`);
+  },
+};
+
+// Backward-compatible helper used by the visit form until it adopts the
+// picker: returns the primary overseer (or the first), or null.
+export const circuitOverseerApi = {
+  async get(): Promise<CircuitOverseer | null> {
+    const list = await circuitOverseersApi.list();
+    return list.find((c) => c.isPrimary) ?? list[0] ?? null;
   },
 };
 
