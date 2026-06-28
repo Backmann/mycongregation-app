@@ -241,6 +241,16 @@ export function AssignmentForm({
     circuitOverseer?.role === 'substitute' ? 'substitute' : 'overseer';
   const coRoleWord = t(`assignments.form.coRole.${coRole}`);
   const coRoleShort = t(`assignments.form.coRoleShort.${coRole}`);
+  const coNoteBlock = (
+    <View style={styles.coSpeakerNote}>
+      <Ionicons name="person" size={16} color="#6d28d9" />
+      <Text style={styles.coSpeakerText}>
+        {coName
+          ? t('assignments.form.coSpeaker', { role: coRoleWord, name: coName })
+          : t('assignments.form.coSpeakerNoName', { role: coRoleWord })}
+      </Text>
+    </View>
+  );
   const coPickerBlock =
     coPicker && coPicker.overseers.length > 0 ? (
       <View style={styles.coPickerWrap}>
@@ -558,17 +568,7 @@ export function AssignmentForm({
             placeholder={t('assignments.form.placeholder.talkThemeManual')}
             multiline
           />
-          <View style={styles.coSpeakerNote}>
-            <Ionicons name="person" size={16} color="#6d28d9" />
-            <Text style={styles.coSpeakerText}>
-              {coName
-                ? t('assignments.form.coSpeaker', {
-                    role: coRoleWord,
-                    name: coName,
-                  })
-                : t('assignments.form.coSpeakerNoName', { role: coRoleWord })}
-            </Text>
-          </View>
+          {coNoteBlock}
           {coPickerBlock}
         </FormSection>
       )}
@@ -593,11 +593,12 @@ export function AssignmentForm({
               multiline
             />
           )}
+          {isCoWeek ? coNoteBlock : null}
           {isCoWeek ? coPickerBlock : null}
         </FormSection>
       )}
 
-      {!isCoTalk && (
+      {!isCoTalk && !(isPublicTalkSpeaker && isCoWeek) && (
       <FormSection
         title={
           isPublicTalkSpeaker
