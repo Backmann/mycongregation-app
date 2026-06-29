@@ -303,6 +303,10 @@ export interface PublicTalk {
   lastGivenAt: string | null;
   /** Speaker name (publisher full name or invited speaker name). */
   lastGivenBy: string | null;
+  /** Nearest upcoming (current/future week) scheduled delivery, if any. */
+  nextGivenAt: string | null;
+  /** Speaker for the upcoming delivery (publisher or invited speaker name). */
+  nextGivenBy: string | null;
   createdAt: string;
   updatedAt: string;
 }

@@ -366,7 +366,13 @@ export default function TalkExchangeYearScreen() {
     if (off != null) scrollRef.current?.scrollTo({ y: Math.max(off - 8, 0), animated: true });
   };
 
-  const invalidate = () => qc.invalidateQueries({ queryKey: QK });
+  const invalidate = () => {
+    qc.invalidateQueries({ queryKey: QK });
+    // Incoming entries write the weekend public-talk slot via server side
+    // effects, so refresh the schedule's assignments/events too.
+    qc.invalidateQueries({ queryKey: ['assignments'] });
+    qc.invalidateQueries({ queryKey: ['special-events'] });
+  };
   const showError = (e: unknown) => {
     const msg = extractErrorMessage(e);
     if (Platform.OS === 'web') window.alert(msg);

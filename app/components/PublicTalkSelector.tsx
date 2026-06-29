@@ -79,14 +79,10 @@ export function PublicTalkSelector({ label, value, onChange }: Props) {
           </Text>
           <Ionicons name="chevron-forward" size={18} color="#cbd5e1" />
         </View>
-        {selectedTalk && selectedTalk.lastGivenAt && (
-          <RecencyHint
-            recency={getRecency(selectedTalk.lastGivenAt)}
-            lastGivenAt={selectedTalk.lastGivenAt}
-            lastGivenBy={selectedTalk.lastGivenBy}
-            inline
-          />
-        )}
+        {selectedTalk &&
+          (selectedTalk.lastGivenAt || selectedTalk.nextGivenAt) && (
+            <RecencyHint talk={selectedTalk} inline />
+          )}
       </Pressable>
 
       <Modal
@@ -174,8 +170,6 @@ function TalkOption({
   isSelected: boolean;
   onPress: () => void;
 }) {
-  const recency = getRecency(talk.lastGivenAt);
-
   return (
     <Pressable
       style={({ pressed }) => [styles.option, pressed && styles.optionPressed]}
@@ -188,56 +182,55 @@ function TalkOption({
         <Text style={styles.optionTitle} numberOfLines={2}>
           {talk.title}
         </Text>
-        {talk.lastGivenAt && (
-          <RecencyHint
-            recency={recency}
-            lastGivenAt={talk.lastGivenAt}
-            lastGivenBy={talk.lastGivenBy}
-          />
-        )}
+        {(talk.lastGivenAt || talk.nextGivenAt) && <RecencyHint talk={talk} />}
       </View>
       {isSelected && <Ionicons name="checkmark" size={20} color="#0ea5e9" />}
     </Pressable>
   );
 }
 
-function RecencyHint({
-  recency,
-  lastGivenAt,
-  lastGivenBy,
-  inline,
-}: {
-  recency: Recency;
-  lastGivenAt: string;
-  lastGivenBy: string | null;
-  inline?: boolean;
-}) {
+function RecencyHint({ talk, inline }: { talk: PublicTalk; inline?: boolean }) {
   const colors: Record<Recency, string> = {
     recent: '#dc2626',
     caution: '#d97706',
     ok: '#94a3b8',
     never: '#cbd5e1',
   };
-  const icon: Record<Recency, any> = {
+  const icon: Record<Recency, 'warning' | 'warning-outline' | 'time-outline'> = {
     recent: 'warning',
     caution: 'warning-outline',
     ok: 'time-outline',
     never: 'time-outline',
   };
-  const future = lastGivenAt.slice(0, 10) > new Date().toLocaleDateString('en-CA');
-  const color = future ? '#0369a1' : colors[recency];
-  const dateStr = new Date(lastGivenAt).toLocaleDateString(i18n.language, { year: 'numeric', month: 'short', day: 'numeric' });
-
+  const fmt = (d: string) =>
+    new Date(d).toLocaleDateString(i18n.language, {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  const recency = getRecency(talk.lastGivenAt);
+  const rowStyle = [styles.hintRow, inline && { marginTop: 4 }];
   return (
-    <View style={[styles.hintRow, inline && { marginTop: 4 }]}>
-      <Ionicons name={future ? 'calendar-outline' : icon[recency]} size={11} color={color} />
-      <Text style={[styles.hintText, { color }]}>
-        {future
-          ? i18n.t('pickers.upcoming', { date: dateStr })
-          : i18n.t('pickers.lastGiven', { date: dateStr })}
-        {lastGivenBy ? ` · ${lastGivenBy}` : ''}
-      </Text>
-    </View>
+    <>
+      {talk.nextGivenAt ? (
+        <View style={rowStyle}>
+          <Ionicons name="calendar-outline" size={11} color="#0369a1" />
+          <Text style={[styles.hintText, { color: '#0369a1' }]}>
+            {i18n.t('pickers.upcoming', { date: fmt(talk.nextGivenAt) })}
+            {talk.nextGivenBy ? ` · ${talk.nextGivenBy}` : ''}
+          </Text>
+        </View>
+      ) : null}
+      {talk.lastGivenAt ? (
+        <View style={rowStyle}>
+          <Ionicons name={icon[recency]} size={11} color={colors[recency]} />
+          <Text style={[styles.hintText, { color: colors[recency] }]}>
+            {i18n.t('pickers.lastGiven', { date: fmt(talk.lastGivenAt) })}
+            {talk.lastGivenBy ? ` · ${talk.lastGivenBy}` : ''}
+          </Text>
+        </View>
+      ) : null}
+    </>
   );
 }
 
