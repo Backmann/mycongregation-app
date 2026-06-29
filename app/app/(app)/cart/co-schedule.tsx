@@ -116,6 +116,7 @@ export default function CoScheduleScreen() {
   const [mode, setMode] = useState<'co' | 'wife'>('co');
   const [viewMode, setViewMode] = useState<'day' | 'type'>('day');
   const [kindPickerDay, setKindPickerDay] = useState<string | null>(null);
+  const [confirmCopy, setConfirmCopy] = useState(false);
 
   const { data: events, isLoading } = useQuery({
     queryKey: ['special-events', 'co-schedule'],
@@ -188,6 +189,48 @@ export default function CoScheduleScreen() {
     onSuccess: () => {
       invalidate();
       setForm(null);
+    },
+  });
+
+  // Copy the overseer's schedule into the wife's tab: same days/times/places,
+  // partners cleared on field service so the user assigns sisters. Skips the
+  // joint "with wife" day (already mirrored) and items she already has.
+  const copyM = useMutation({
+    mutationFn: async () => {
+      if (!visit) return 0;
+      const copyKinds = ['field_service', 'lunch', 'lunch_box'];
+      const source = (items ?? []).filter(
+        (i) => !i.forWife && !i.withWife && copyKinds.includes(i.kind),
+      );
+      const existing = new Set(
+        (items ?? [])
+          .filter((i) => i.forWife)
+          .map((i) => `${i.kind}|${i.itemDate}|${i.startTime ?? ''}`),
+      );
+      const pending = source.filter(
+        (i) => !existing.has(`${i.kind}|${i.itemDate}|${i.startTime ?? ''}`),
+      );
+      for (const i of pending) {
+        const isService = i.kind === 'field_service';
+        await coVisitItemsApi.create({
+          specialEventId: visit.id,
+          kind: i.kind,
+          forWife: true,
+          itemDate: i.itemDate,
+          startTime: i.startTime,
+          placeKind: i.placeKind,
+          cartLocationId: i.cartLocationId,
+          placeText: i.placeText,
+          assigneePublisherId: isService ? null : i.assigneePublisherId,
+          assigneeText: isService ? null : i.assigneeText,
+          note: i.note,
+        });
+      }
+      return pending.length;
+    },
+    onSuccess: () => {
+      invalidate();
+      setConfirmCopy(false);
     },
   });
 
@@ -785,6 +828,16 @@ export default function CoScheduleScreen() {
         ))}
       </View>
 
+      {mode === 'wife' && canEditCoSchedule ? (
+        <Pressable
+          style={({ pressed }) => [styles.copyBtn, pressed && styles.pressed]}
+          onPress={() => setConfirmCopy(true)}
+        >
+          <Ionicons name="copy-outline" size={18} color="#0369a1" />
+          <Text style={styles.copyBtnText}>{t('coVisit.copyFromOverseer')}</Text>
+        </Pressable>
+      ) : null}
+
       {viewMode === 'day' ? (
         renderDayView()
       ) : (
@@ -972,6 +1025,80 @@ export default function CoScheduleScreen() {
                 <Ionicons name="chevron-forward" size={16} color="#cbd5e1" />
               </Pressable>
             ))}
+          </Pressable>
+        </Pressable>
+      </Modal>
+
+      <Modal
+        visible={confirmCopy}
+        animationType="fade"
+        transparent
+        onRequestClose={() => setConfirmCopy(false)}
+      >
+        <Pressable
+          style={{
+            flex: 1,
+            backgroundColor: 'rgba(15,23,42,0.4)',
+            justifyContent: 'center',
+            padding: 24,
+          }}
+          onPress={() => !copyM.isPending && setConfirmCopy(false)}
+          accessibilityRole="button"
+        >
+          <Pressable
+            style={{ backgroundColor: '#ffffff', borderRadius: 14, padding: 16 }}
+          >
+            <Text
+              style={{
+                fontSize: 15,
+                fontWeight: '700',
+                color: '#0f172a',
+                marginBottom: 6,
+              }}
+            >
+              {t('coVisit.copyFromOverseer')}
+            </Text>
+            <Text style={{ fontSize: 14, color: '#475569', marginBottom: 16 }}>
+              {t('coVisit.copyConfirm')}
+            </Text>
+            <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
+              <Pressable
+                disabled={copyM.isPending}
+                onPress={() => setConfirmCopy(false)}
+                style={({ pressed }) => [
+                  {
+                    paddingHorizontal: 16,
+                    paddingVertical: 10,
+                    borderRadius: 8,
+                    marginRight: 8,
+                  },
+                  pressed && { backgroundColor: '#f1f5f9' },
+                ]}
+              >
+                <Text style={{ fontSize: 15, color: '#64748b' }}>
+                  {t('coVisit.cancel')}
+                </Text>
+              </Pressable>
+              <Pressable
+                disabled={copyM.isPending}
+                onPress={() => copyM.mutate()}
+                style={({ pressed }) => [
+                  {
+                    paddingHorizontal: 16,
+                    paddingVertical: 10,
+                    borderRadius: 8,
+                    backgroundColor: '#0ea5e9',
+                  },
+                  pressed && { opacity: 0.85 },
+                ]}
+              >
+                <Text style={{ fontSize: 15, color: '#ffffff', fontWeight: '600' }}>
+                  {copyM.isPending
+                    ? t('coVisit.copying')
+                    : t('coVisit.copyDo')}
+                </Text>
+              </Pressable>
+            </View>
           </Pressable>
         </Pressable>
       </Modal>
@@ -1428,6 +1555,17 @@ const styles = StyleSheet.create({
   sectionTitle: { fontSize: 16, fontWeight: '700', color: '#0f172a' },
   addBtn: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   addText: { fontSize: 14, fontWeight: '600', color: '#0ea5e9' },
+  copyBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: '#e0f2fe',
+    borderRadius: 10,
+    paddingVertical: 10,
+    marginBottom: 12,
+  },
+  copyBtnText: { fontSize: 14, fontWeight: '600', color: '#0369a1' },
   dayBlock: { gap: 6 },
   dayHeader: {
     fontSize: 13,

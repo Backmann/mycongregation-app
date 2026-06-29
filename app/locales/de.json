@@ -1189,7 +1189,11 @@
     "address": "Adresse",
     "congregation": "Versammlung",
     "printWebOnly": "PDF-Druck ist in der Webversion verfügbar.",
-    "printBlocked": "Der Browser hat das Druckfenster blockiert. Pop-ups zulassen."
+    "printBlocked": "Der Browser hat das Druckfenster blockiert. Pop-ups zulassen.",
+    "copyFromOverseer": "Plan des Kreisaufsehers kopieren",
+    "copyConfirm": "Erstellt Einträge an denselben Tagen, Zeiten und Orten (Predigtdienst, Mittagessen). Die Begleiter im Predigtdienst müssen neu zugewiesen werden. Vorhandene Einträge werden nicht dupliziert.",
+    "copyDo": "Kopieren",
+    "copying": "Wird kopiert…"
   },
   "witnessing": {
     "youAreAssigned": "Sie sind diesem Slot zugeteilt",
@@ -1211,11 +1215,19 @@
     "publishError": "Veröffentlichen fehlgeschlagen",
     "assignError": "Zuteilung konnte nicht geändert werden",
     "withWhomShort": "mit",
-    "warn": { "underMin": "Unterbesetzt (1)", "brotherSister": "Bruder+Schwester ohne Dritten", "secondShift": "Zweite Schicht an diesem Tag" },
+    "warn": {
+      "underMin": "Unterbesetzt (1)",
+      "brotherSister": "Bruder+Schwester ohne Dritten",
+      "secondShift": "Zweite Schicht an diesem Tag"
+    },
     "window": "Dienstfenster",
     "addToWeek": "Standort/Tage hinzufügen",
     "add": "Hinzufügen",
-    "period": { "morning": "Morgen", "day": "Tag", "evening": "Abend" },
+    "period": {
+      "morning": "Morgen",
+      "day": "Tag",
+      "evening": "Abend"
+    },
     "notOpen": "Der Plan für diese Woche ist noch nicht offen",
     "build": "Woche erstellen",
     "days": "Tage",

@@ -1189,7 +1189,11 @@
     "address": "Address",
     "congregation": "Congregation",
     "printWebOnly": "PDF printing is available in the web version.",
-    "printBlocked": "The browser blocked the print window. Allow pop-ups."
+    "printBlocked": "The browser blocked the print window. Allow pop-ups.",
+    "copyFromOverseer": "Copy overseer's schedule",
+    "copyConfirm": "Creates entries on the same days, times and places (field service, lunches). Field-service partners will need to be reassigned. Existing entries are not duplicated.",
+    "copyDo": "Copy",
+    "copying": "Copying…"
   },
   "witnessing": {
     "youAreAssigned": "You're assigned to this slot",
@@ -1211,11 +1215,19 @@
     "publishError": "Could not publish",
     "assignError": "Could not change the assignment",
     "withWhomShort": "with",
-    "warn": { "underMin": "Under crew (1)", "brotherSister": "Brother+sister, no third", "secondShift": "Second shift this day" },
+    "warn": {
+      "underMin": "Under crew (1)",
+      "brotherSister": "Brother+sister, no third",
+      "secondShift": "Second shift this day"
+    },
     "window": "Service window",
     "addToWeek": "Add point/days",
     "add": "Add",
-    "period": { "morning": "Morning", "day": "Day", "evening": "Evening" },
+    "period": {
+      "morning": "Morning",
+      "day": "Day",
+      "evening": "Evening"
+    },
     "notOpen": "This week's schedule is not open yet",
     "build": "Build week",
     "days": "Days",
