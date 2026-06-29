@@ -64,6 +64,7 @@ interface FormState {
   assigneeText: string;
   hostOther: boolean;
   note: string;
+  withWife: boolean;
   forWife: boolean;
 }
 
@@ -189,10 +190,20 @@ export default function CoScheduleScreen() {
   });
 
   const days = useMemo(() => (visit ? visitDays(visit) : []), [visit]);
+  // The wife's schedule mirrors the overseer's joint field-service day, so
+  // that day shows on both sides from a single source of truth (no dupes).
+  const isSynced = (it: CoVisitItem) => mode === 'wife' && !it.forWife;
   const itemsOf = (kind: ItemKind) =>
-    (items ?? []).filter(
-      (i) => i.kind === kind && i.forWife === (mode === 'wife'),
-    );
+    (items ?? []).filter((i) => {
+      if (i.kind !== kind) return false;
+      if (i.forWife === (mode === 'wife')) return true;
+      return (
+        mode === 'wife' &&
+        kind === 'field_service' &&
+        !i.forWife &&
+        i.withWife
+      );
+    });
 
   if (!canViewCoSchedule) {
     return (
@@ -267,6 +278,7 @@ export default function CoScheduleScreen() {
       hostOther: false,
       note: '',
       forWife: mode === 'wife',
+      withWife: false,
     });
   const openEdit = (it: CoVisitItem) =>
     setForm({
@@ -283,6 +295,7 @@ export default function CoScheduleScreen() {
         it.kind === 'lunch' && !it.assigneePublisherId && !!it.assigneeText,
       note: it.note ?? '',
       forWife: it.forWife,
+      withWife: it.withWife,
     });
 
   const submit = () => {
@@ -305,6 +318,7 @@ export default function CoScheduleScreen() {
               ? form.placeText.trim() || defaultHallAddress || null
               : null,
         assigneePublisherId: form.assigneePublisherId,
+        withWife: form.withWife,
       };
     } else if (form.kind === 'lunch') {
       payload = {
@@ -435,16 +449,21 @@ export default function CoScheduleScreen() {
                   .map((it) => (
                     <Pressable
                       key={it.id}
-                      disabled={!canEditCoSchedule}
+                      disabled={!canEditCoSchedule || isSynced(it)}
                       style={({ pressed }) => [
                         styles.itemRow,
-                        pressed && canEditCoSchedule && styles.pressed,
+                        pressed &&
+                          canEditCoSchedule &&
+                          !isSynced(it) &&
+                          styles.pressed,
                       ]}
-                      onPress={() => canEditCoSchedule && openEdit(it)}
+                      onPress={() =>
+                        canEditCoSchedule && !isSynced(it) && openEdit(it)
+                      }
                     >
                       <Text style={styles.itemTime}>{it.startTime ?? '—'}</Text>
                       <View style={styles.itemBody}>{renderItem(it)}</View>
-                      {canEditCoSchedule ? (
+                      {canEditCoSchedule && !isSynced(it) ? (
                         <Ionicons
                           name="chevron-forward"
                           size={16}
@@ -531,10 +550,38 @@ export default function CoScheduleScreen() {
         (it) => (
           <>
             <Text style={styles.itemPlace}>{placeLabel(it)}</Text>
-            {it.assigneeName || it.assigneeText ? (
+            {(it.assigneeName || it.assigneeText) && !isSynced(it) ? (
               <Text style={styles.itemAssignee}>
                 {it.assigneeName ?? it.assigneeText}
               </Text>
+            ) : null}
+            {it.withWife ? (
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  alignSelf: 'flex-start',
+                  marginTop: 4,
+                  backgroundColor: '#f3e8ff',
+                  borderRadius: 10,
+                  paddingHorizontal: 8,
+                  paddingVertical: 2,
+                }}
+              >
+                <Ionicons name="people" size={12} color="#7c3aed" />
+                <Text
+                  style={{
+                    marginLeft: 4,
+                    fontSize: 11,
+                    color: '#7c3aed',
+                    fontWeight: '600',
+                  }}
+                >
+                  {isSynced(it)
+                    ? t('coVisit.coBadge')
+                    : t('coVisit.spouseBadge')}
+                </Text>
+              </View>
             ) : null}
           </>
         ),
@@ -788,6 +835,39 @@ export default function CoScheduleScreen() {
                           setForm({ ...form, assigneePublisherId: id })
                         }
                       />
+                      {!form.forWife ? (
+                        <Pressable
+                          onPress={() =>
+                            setForm({ ...form, withWife: !form.withWife })
+                          }
+                          style={{
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            marginTop: 14,
+                            marginBottom: 2,
+                          }}
+                          accessibilityRole="checkbox"
+                          accessibilityState={{ checked: form.withWife }}
+                        >
+                          <Ionicons
+                            name={
+                              form.withWife ? 'checkbox' : 'square-outline'
+                            }
+                            size={22}
+                            color={form.withWife ? '#0ea5e9' : '#94a3b8'}
+                          />
+                          <Text
+                            style={{
+                              marginLeft: 10,
+                              fontSize: 15,
+                              color: '#334155',
+                              fontWeight: form.withWife ? '600' : '400',
+                            }}
+                          >
+                            {t('coVisit.serveWithSpouse')}
+                          </Text>
+                        </Pressable>
+                      ) : null}
                     </>
                   ) : null}
 

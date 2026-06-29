@@ -1117,6 +1117,7 @@ export interface CoVisitItem {
   id: string;
   kind: string;
   forWife: boolean;
+  withWife: boolean;
   itemDate: string;
   startTime: string | null;
   placeKind: string | null;
@@ -1136,6 +1137,7 @@ export interface CoVisitItemInput {
   specialEventId?: string;
   kind?: string;
   forWife?: boolean;
+  withWife?: boolean;
   itemDate?: string;
   startTime?: string | null;
   placeKind?: string | null;

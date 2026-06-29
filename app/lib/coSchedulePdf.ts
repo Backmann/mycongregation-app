@@ -90,19 +90,29 @@ function detailSections(
   full: boolean,
 ): string {
   const of = (kind: string) =>
-    byDate(items.filter((i) => i.kind === kind && i.forWife === forWife));
+    byDate(
+      items.filter((i) => {
+        if (i.kind !== kind) return false;
+        if (i.forWife === forWife) return true;
+        // The wife's schedule mirrors the overseer's joint field-service day.
+        return forWife && kind === 'field_service' && !i.forWife && i.withWife;
+      }),
+    );
   const d = (iso: string) => fmtDate(iso, locale);
   let html = '';
   html += sectionHtml(
     L.fieldService,
     [L.day, L.time, L.place, L.accompanier, L.phone],
-    of('field_service').map((i) => [
-      d(i.itemDate),
-      i.startTime ?? '',
-      placeStr(i, L),
-      i.assigneeName ?? i.assigneeText ?? '',
-      i.assigneePhone ?? '',
-    ]),
+    of('field_service').map((i) => {
+      const synced = forWife && !i.forWife;
+      return [
+        d(i.itemDate),
+        i.startTime ?? '',
+        placeStr(i, L),
+        synced ? '' : (i.assigneeName ?? i.assigneeText ?? ''),
+        synced ? '' : (i.assigneePhone ?? ''),
+      ];
+    }),
   );
   html += sectionHtml(
     L.lunches,
