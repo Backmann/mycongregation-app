@@ -471,7 +471,7 @@ export default function CoScheduleScreen() {
           {(
             [
               ['co', t('coVisit.tabCo')],
-              ['wife', t('coVisit.tabWife')],
+              ['wife', visit.coWifeName || t('coVisit.tabWife')],
             ] as ['co' | 'wife', string][]
           ).map(([m, label]) => (
             <Pressable
