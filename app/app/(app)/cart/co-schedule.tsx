@@ -18,15 +18,18 @@ import { Ionicons } from '@expo/vector-icons';
 import {
   cartLocationsApi,
   coVisitItemsApi,
+  hallsApi,
   meetingSettingsApi,
   specialEventsApi,
   type CartLocation,
   type CoVisitItem,
+  type Hall,
   type SpecialEvent,
 } from '../../../lib/api';
 import { buildCoScheduleHtml } from '../../../lib/coSchedulePdf';
 import { CIRCUIT_OVERSEER_VISIT_TYPE } from '../../../components/SpecialEventForm';
 import { PublisherSelector } from '../../../components/PublisherSelector';
+import { TimeWheel } from '../../../components/TimeWheel';
 import { usePermissions } from '../../../lib/permissions';
 import { formatDateISO, startOfWeekMonday } from '../../../lib/dates';
 
@@ -135,6 +138,13 @@ export default function CoScheduleScreen() {
     queryFn: () => meetingSettingsApi.getOverview(),
     enabled: canViewCoSchedule,
   });
+  const { data: halls } = useQuery({
+    queryKey: ['halls'],
+    queryFn: () => hallsApi.list(),
+    enabled: canViewCoSchedule,
+  });
+  const defaultHall =
+    (halls ?? []).find((h) => h.isDefault) ?? (halls ?? [])[0] ?? null;
 
   const invalidate = () =>
     qc.invalidateQueries({ queryKey: ['co-visit-items', visit?.id] });
@@ -207,7 +217,10 @@ export default function CoScheduleScreen() {
     );
   };
   const placeLabel = (it: CoVisitItem) => {
-    if (it.placeKind === 'kingdom_hall') return t('coVisit.kingdomHall');
+    if (it.placeKind === 'kingdom_hall')
+      return it.placeText
+        ? `${t('coVisit.kingdomHall')} · ${it.placeText}`
+        : t('coVisit.kingdomHall');
     if (it.placeKind === 'cart_location')
       return it.cartLocationName ?? t('coVisit.cartLocation');
     if (it.placeKind === 'custom') return it.placeText ?? '';
@@ -272,7 +285,14 @@ export default function CoScheduleScreen() {
         cartLocationId:
           form.placeKind === 'cart_location' ? form.cartLocationId : null,
         placeText:
-          form.placeKind === 'custom' ? form.placeText.trim() || null : null,
+          form.placeKind === 'custom'
+            ? form.placeText.trim() || null
+            : form.placeKind === 'kingdom_hall'
+              ? form.placeText.trim() ||
+                defaultHall?.address ||
+                settingsOverview?.effective?.address ||
+                null
+              : null,
         assigneePublisherId: form.assigneePublisherId,
       };
     } else if (form.kind === 'lunch') {
@@ -645,13 +665,9 @@ export default function CoScheduleScreen() {
                   </View>
 
                   <Text style={styles.fieldLabel}>{t('coVisit.time')}</Text>
-                  <TextInput
-                    style={styles.input}
+                  <TimeWheel
                     value={form.startTime}
-                    onChangeText={(v) => setForm({ ...form, startTime: v })}
-                    placeholder="10:00"
-                    placeholderTextColor="#94a3b8"
-                    keyboardType="numbers-and-punctuation"
+                    onChange={(v) => setForm({ ...form, startTime: v })}
                   />
 
                   {form.kind === 'field_service' ? (
@@ -684,6 +700,51 @@ export default function CoScheduleScreen() {
                           </Pressable>
                         ))}
                       </View>
+                      {form.placeKind === 'kingdom_hall' &&
+                      (halls ?? []).length > 0 ? (
+                        <>
+                          <View style={styles.chipRow}>
+                            {(halls ?? []).map((hh: Hall) => {
+                              const active =
+                                form.placeText === hh.address ||
+                                (!form.placeText && hh.id === defaultHall?.id);
+                              return (
+                                <Pressable
+                                  key={hh.id}
+                                  style={[
+                                    styles.chip,
+                                    active && styles.chipActive,
+                                  ]}
+                                  onPress={() =>
+                                    setForm({ ...form, placeText: hh.address })
+                                  }
+                                >
+                                  <Text
+                                    style={[
+                                      styles.chipText,
+                                      active && styles.chipTextActive,
+                                    ]}
+                                  >
+                                    {hh.name}
+                                  </Text>
+                                </Pressable>
+                              );
+                            })}
+                          </View>
+                          {!!(form.placeText || defaultHall?.address) && (
+                            <Text
+                              style={{
+                                fontSize: 13,
+                                color: '#0c4a6e',
+                                marginTop: 2,
+                                marginBottom: 4,
+                              }}
+                            >
+                              {form.placeText || defaultHall?.address}
+                            </Text>
+                          )}
+                        </>
+                      ) : null}
                       {form.placeKind === 'cart_location' ? (
                         <View style={styles.chipRow}>
                           {(locations ?? []).map((l: CartLocation) => (
@@ -722,11 +783,8 @@ export default function CoScheduleScreen() {
                           placeholderTextColor="#94a3b8"
                         />
                       ) : null}
-                      <Text style={styles.fieldLabel}>
-                        {t('coVisit.accompanying')}
-                      </Text>
                       <PublisherSelector
-                        label={t('coVisit.accompanying')}
+                        label={t('coVisit.choosePartner')}
                         value={form.assigneePublisherId}
                         genderFilter={form.forWife ? 'sister' : 'brother'}
                         onChange={(id) =>

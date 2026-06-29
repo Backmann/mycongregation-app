@@ -49,7 +49,8 @@ function fmtDate(iso: string, locale: string): string {
 }
 
 function placeStr(it: CoVisitItem, L: CoPdfLabels): string {
-  if (it.placeKind === 'kingdom_hall') return L.kingdomHall;
+  if (it.placeKind === 'kingdom_hall')
+    return it.placeText ? `${L.kingdomHall} · ${it.placeText}` : L.kingdomHall;
   if (it.placeKind === 'cart_location')
     return it.cartLocationName ?? L.cartLocation;
   if (it.placeKind === 'custom') return it.placeText ?? '';
