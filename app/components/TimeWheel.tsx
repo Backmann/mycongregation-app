@@ -1,5 +1,12 @@
-import { useEffect } from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { useCallback, useEffect, useRef } from 'react';
+import {
+  View,
+  Text,
+  Pressable,
+  StyleSheet,
+  PanResponder,
+  Platform,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 const ITEM_H = 36;
@@ -9,9 +16,13 @@ function pad2(n: number): string {
 }
 
 /**
- * One column of the time picker. Click a visible value or the chevrons to
- * change it — no scroll gestures, so it works the same with a mouse on the
- * web and with touch on a phone. Values wrap around (a real wheel).
+ * One column of the time picker. It can be changed four ways, so it feels
+ * natural on every device:
+ *   • mouse wheel / touchpad scroll (web `wheel` events)
+ *   • drag up/down with finger or mouse (PanResponder — touch and web)
+ *   • the ▲/▼ chevrons (click/tap)
+ *   • tapping a visible value
+ * Values wrap around like a real wheel.
  */
 function Column({
   values,
@@ -23,12 +34,67 @@ function Column({
   onIndex: (i: number) => void;
 }) {
   const n = values.length;
-  const at = (offset: number) => (((index + offset) % n) + n) % n;
+  const rootRef = useRef<View>(null);
+  // Keep the latest state in a ref so the wheel/drag handlers (created once)
+  // never read stale values.
+  const stateRef = useRef({ index, n, onIndex });
+  stateRef.current = { index, n, onIndex };
+
+  const step = useCallback((dir: number) => {
+    const s = stateRef.current;
+    s.onIndex((((s.index + dir) % s.n) + s.n) % s.n);
+  }, []);
+
+  // Mouse wheel / touchpad (web only).
+  useEffect(() => {
+    if (Platform.OS !== 'web') return;
+    const node = rootRef.current as unknown as {
+      addEventListener?: (t: string, h: (e: WheelEvent) => void, o?: unknown) => void;
+      removeEventListener?: (t: string, h: (e: WheelEvent) => void) => void;
+    } | null;
+    if (!node || !node.addEventListener) return;
+    let acc = 0;
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      acc += e.deltaY;
+      let guard = 0;
+      while (Math.abs(acc) >= 50 && guard < 4) {
+        step(acc > 0 ? 1 : -1);
+        acc += acc > 0 ? -50 : 50;
+        guard += 1;
+      }
+    };
+    node.addEventListener('wheel', onWheel, { passive: false });
+    return () => node.removeEventListener?.('wheel', onWheel);
+  }, [step]);
+
+  // Drag with finger or mouse (touch + web).
+  const dragRef = useRef(0);
+  const responder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_e, g) =>
+        Math.abs(g.dy) > 4 && Math.abs(g.dy) >= Math.abs(g.dx),
+      onPanResponderGrant: () => {
+        dragRef.current = 0;
+      },
+      onPanResponderMove: (_e, g) => {
+        const target = Math.round(-g.dy / ITEM_H);
+        let delta = target - dragRef.current;
+        while (delta !== 0) {
+          step(delta > 0 ? 1 : -1);
+          delta += delta > 0 ? -1 : 1;
+        }
+        dragRef.current = target;
+      },
+    }),
+  ).current;
+
+  const at = (off: number) => (((index + off) % n) + n) % n;
 
   return (
-    <View style={styles.col}>
+    <View ref={rootRef} style={styles.col}>
       <Pressable
-        onPress={() => onIndex(at(-1))}
+        onPress={() => step(-1)}
         hitSlop={8}
         style={styles.chev}
         accessibilityRole="button"
@@ -36,7 +102,7 @@ function Column({
         <Ionicons name="chevron-up" size={20} color="#94a3b8" />
       </Pressable>
 
-      <View style={styles.window}>
+      <View style={styles.window} {...responder.panHandlers}>
         <View style={styles.band} pointerEvents="none" />
         {[-2, -1, 0, 1, 2].map((off) => {
           const i = at(off);
@@ -64,7 +130,7 @@ function Column({
       </View>
 
       <Pressable
-        onPress={() => onIndex(at(1))}
+        onPress={() => step(1)}
         hitSlop={8}
         style={styles.chev}
         accessibilityRole="button"
@@ -88,15 +154,12 @@ export function TimeWheel({
   const h = m ? Math.max(0, Math.min(23, parseInt(m[1], 10))) : 10;
   const min = m ? Math.max(0, Math.min(59, parseInt(m[2], 10))) : 0;
 
-  // Empty/invalid → a sensible default, just once, so the wheel and the stored
-  // value never disagree. Existing exact minutes are preserved.
   useEffect(() => {
     if (!m) onChange(`${pad2(h)}:${pad2(min)}`);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const hours = Array.from({ length: 24 }, (_, i) => i);
-  // Keep a non-5 minute selectable until the user moves off it.
   const minutes = BASE_MINUTES.includes(min)
     ? BASE_MINUTES
     : [...BASE_MINUTES, min].sort((a, b) => a - b);
