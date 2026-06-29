@@ -18,15 +18,18 @@ import { Ionicons } from '@expo/vector-icons';
 import {
   cartLocationsApi,
   coVisitItemsApi,
+  hallsApi,
   meetingSettingsApi,
   specialEventsApi,
   type CartLocation,
   type CoVisitItem,
+  type Hall,
   type SpecialEvent,
 } from '../../../lib/api';
 import { buildCoScheduleHtml } from '../../../lib/coSchedulePdf';
 import { CIRCUIT_OVERSEER_VISIT_TYPE } from '../../../components/SpecialEventForm';
 import { PublisherSelector } from '../../../components/PublisherSelector';
+import { TimeWheel } from '../../../components/TimeWheel';
 import { usePermissions } from '../../../lib/permissions';
 import { formatDateISO, startOfWeekMonday } from '../../../lib/dates';
 
@@ -135,6 +138,27 @@ export default function CoScheduleScreen() {
     queryFn: () => meetingSettingsApi.getOverview(),
     enabled: canViewCoSchedule,
   });
+  const { data: halls } = useQuery({
+    queryKey: ['halls'],
+    queryFn: () => hallsApi.list(),
+    enabled: canViewCoSchedule,
+  });
+  // Kingdom Hall addresses to choose from: the configured halls (profile) plus
+  // the meeting-settings address, so it works whether or not named halls exist.
+  const settingsHallAddress = settingsOverview?.effective?.address ?? null;
+  const hallOptions: { id: string; address: string }[] = (halls ?? []).map(
+    (h: Hall) => ({ id: h.id, address: h.address }),
+  );
+  if (
+    settingsHallAddress &&
+    !hallOptions.some((o) => o.address === settingsHallAddress)
+  ) {
+    hallOptions.push({ id: 'settings', address: settingsHallAddress });
+  }
+  const defaultHallAddress =
+    (halls ?? []).find((h: Hall) => h.isDefault)?.address ??
+    hallOptions[0]?.address ??
+    null;
 
   const invalidate = () =>
     qc.invalidateQueries({ queryKey: ['co-visit-items', visit?.id] });
@@ -207,7 +231,10 @@ export default function CoScheduleScreen() {
     );
   };
   const placeLabel = (it: CoVisitItem) => {
-    if (it.placeKind === 'kingdom_hall') return t('coVisit.kingdomHall');
+    if (it.placeKind === 'kingdom_hall')
+      return it.placeText
+        ? `${t('coVisit.kingdomHall')} · ${it.placeText}`
+        : t('coVisit.kingdomHall');
     if (it.placeKind === 'cart_location')
       return it.cartLocationName ?? t('coVisit.cartLocation');
     if (it.placeKind === 'custom') return it.placeText ?? '';
@@ -272,7 +299,11 @@ export default function CoScheduleScreen() {
         cartLocationId:
           form.placeKind === 'cart_location' ? form.cartLocationId : null,
         placeText:
-          form.placeKind === 'custom' ? form.placeText.trim() || null : null,
+          form.placeKind === 'custom'
+            ? form.placeText.trim() || null
+            : form.placeKind === 'kingdom_hall'
+              ? form.placeText.trim() || defaultHallAddress || null
+              : null,
         assigneePublisherId: form.assigneePublisherId,
       };
     } else if (form.kind === 'lunch') {
@@ -645,13 +676,9 @@ export default function CoScheduleScreen() {
                   </View>
 
                   <Text style={styles.fieldLabel}>{t('coVisit.time')}</Text>
-                  <TextInput
-                    style={styles.input}
+                  <TimeWheel
                     value={form.startTime}
-                    onChangeText={(v) => setForm({ ...form, startTime: v })}
-                    placeholder="10:00"
-                    placeholderTextColor="#94a3b8"
-                    keyboardType="numbers-and-punctuation"
+                    onChange={(v) => setForm({ ...form, startTime: v })}
                   />
 
                   {form.kind === 'field_service' ? (
@@ -683,6 +710,38 @@ export default function CoScheduleScreen() {
                           </Pressable>
                         ))}
                       </View>
+                      {form.placeKind === 'kingdom_hall' &&
+                      hallOptions.length > 0 ? (
+                        <View style={styles.chipRow}>
+                          {hallOptions.map((opt) => {
+                            const active =
+                              form.placeText === opt.address ||
+                              (!form.placeText &&
+                                opt.address === defaultHallAddress);
+                            return (
+                              <Pressable
+                                key={opt.id}
+                                style={[
+                                  styles.chip,
+                                  active && styles.chipActive,
+                                ]}
+                                onPress={() =>
+                                  setForm({ ...form, placeText: opt.address })
+                                }
+                              >
+                                <Text
+                                  style={[
+                                    styles.chipText,
+                                    active && styles.chipTextActive,
+                                  ]}
+                                >
+                                  {opt.address}
+                                </Text>
+                              </Pressable>
+                            );
+                          })}
+                        </View>
+                      ) : null}
                       {form.placeKind === 'cart_location' ? (
                         <View style={styles.chipRow}>
                           {(locations ?? []).map((l: CartLocation) => (
@@ -721,9 +780,6 @@ export default function CoScheduleScreen() {
                           placeholderTextColor="#94a3b8"
                         />
                       ) : null}
-                      <Text style={styles.fieldLabel}>
-                        {t('coVisit.accompanying')}
-                      </Text>
                       <PublisherSelector
                         label={t('coVisit.accompanying')}
                         value={form.assigneePublisherId}
