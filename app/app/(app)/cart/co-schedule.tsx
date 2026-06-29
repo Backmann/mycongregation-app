@@ -319,6 +319,7 @@ export default function CoScheduleScreen() {
               : null,
         assigneePublisherId: form.assigneePublisherId,
         withWife: form.withWife,
+        note: form.note.trim() || null,
       };
     } else if (form.kind === 'lunch') {
       payload = {
@@ -550,6 +551,11 @@ export default function CoScheduleScreen() {
         (it) => (
           <>
             <Text style={styles.itemPlace}>{placeLabel(it)}</Text>
+            {it.note && !isSynced(it) ? (
+              <Text style={{ fontSize: 13, color: '#475569', marginTop: 1 }}>
+                {it.note}
+              </Text>
+            ) : null}
             {(it.assigneeName || it.assigneeText) && !isSynced(it) ? (
               <Text style={styles.itemAssignee}>
                 {it.assigneeName ?? it.assigneeText}
@@ -828,6 +834,7 @@ export default function CoScheduleScreen() {
                         />
                       ) : null}
                       <PublisherSelector
+                        boxed
                         label={t('coVisit.accompanying')}
                         value={form.assigneePublisherId}
                         genderFilter={form.forWife ? 'sister' : 'brother'}
@@ -835,7 +842,14 @@ export default function CoScheduleScreen() {
                           setForm({ ...form, assigneePublisherId: id })
                         }
                       />
-                      {!form.forWife ? (
+                      {!form.forWife &&
+                      !(items ?? []).some(
+                        (i) =>
+                          i.kind === 'field_service' &&
+                          !i.forWife &&
+                          i.withWife &&
+                          i.id !== form.id,
+                      ) ? (
                         <Pressable
                           onPress={() =>
                             setForm({ ...form, withWife: !form.withWife })
@@ -868,6 +882,16 @@ export default function CoScheduleScreen() {
                           </Text>
                         </Pressable>
                       ) : null}
+                      <Text style={styles.fieldLabel}>
+                        {t('coVisit.serviceKind')}
+                      </Text>
+                      <TextInput
+                        style={styles.input}
+                        value={form.note}
+                        onChangeText={(v) => setForm({ ...form, note: v })}
+                        placeholder={t('coVisit.serviceKindHint')}
+                        placeholderTextColor="#94a3b8"
+                      />
                     </>
                   ) : null}
 

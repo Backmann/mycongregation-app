@@ -1137,6 +1137,8 @@
     "serveWithSpouse": "Field service with his wife",
     "spouseBadge": "With wife",
     "coBadge": "With overseer",
+    "serviceKind": "Type of service",
+    "serviceKindHint": "e.g. territory, return visit, Bible study",
     "choosePartner": "Choose a partner",
     "save": "Save",
     "cancel": "Cancel",

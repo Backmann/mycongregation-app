@@ -31,6 +31,8 @@ import { useTranslation } from 'react-i18next';
 interface Props {
   label: string;
   value: string | null | undefined;
+  /** Render as a bordered input box (for plain backgrounds like dialogs). */
+  boxed?: boolean;
   /** Optional role icon shown in a tinted circle left of the label. */
   roleIcon?: keyof typeof Ionicons.glyphMap;
   /** Accent colour for the role icon circle. */
@@ -111,6 +113,7 @@ function fmtFullDate(iso: string): string {
 export function PublisherSelector({
   label,
   value,
+  boxed = false,
   roleIcon,
   roleColor,
   onChange,
@@ -379,6 +382,7 @@ export function PublisherSelector({
           style={({ pressed }) => [
             styles.field,
             roleIcon && styles.fieldWithIcon,
+            boxed && styles.fieldBoxed,
             pressed && styles.fieldPressed,
           ]}
           onPress={() => setOpen(true)}
@@ -703,6 +707,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderBottomWidth: 1,
     borderBottomColor: '#f1f5f9',
+  },
+  fieldBoxed: {
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#cbd5e1',
+    borderBottomColor: '#cbd5e1',
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    marginTop: 2,
   },
   fieldWithIcon: {
     flexDirection: 'row',

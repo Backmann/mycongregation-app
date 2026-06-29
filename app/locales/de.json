@@ -1137,6 +1137,8 @@
     "serveWithSpouse": "Predigtdienst mit der Ehefrau",
     "spouseBadge": "Mit Ehefrau",
     "coBadge": "Mit Aufseher",
+    "serviceKind": "Art des Dienstes",
+    "serviceKindHint": "z. B. Gebiet, Rückbesuch, Bibelstudium",
     "choosePartner": "Begleiter wählen",
     "save": "Speichern",
     "cancel": "Abbrechen",
