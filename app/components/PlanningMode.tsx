@@ -342,6 +342,11 @@ export function PlanningMode({
         onRequestClose={() => setDutyPicker(null)}
       >
         <View style={styles.dutyBackdrop}>
+          <Pressable
+            style={StyleSheet.absoluteFill}
+            onPress={() => setDutyPicker(null)}
+            accessibilityRole="button"
+          />
           <View style={styles.dutySheet}>
             <View style={styles.dutySheetHeader}>
               <Text style={styles.dutySheetTitle} numberOfLines={1}>

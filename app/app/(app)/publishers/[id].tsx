@@ -475,6 +475,11 @@ function RemoveModal({
       onRequestClose={onCancel}
     >
       <View style={styles.modalOverlay}>
+        <Pressable
+          style={StyleSheet.absoluteFill}
+          onPress={onCancel}
+          accessibilityRole="button"
+        />
         <View style={styles.modalCard}>
           <Text style={styles.modalTitle}>
             {t('publishers.removal.modalTitle')}

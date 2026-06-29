@@ -220,6 +220,11 @@ export default function CircuitOverseerScreen() {
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
           style={styles.modalWrap}
         >
+          <Pressable
+            style={StyleSheet.absoluteFill}
+            onPress={() => setModalOpen(false)}
+            accessibilityRole="button"
+          />
           <View style={styles.modalCard}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>

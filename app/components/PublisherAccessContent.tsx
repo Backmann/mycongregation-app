@@ -266,6 +266,11 @@ function EmailModal({
       onRequestClose={onCancel}
     >
       <View style={emailStyles.overlay}>
+        <Pressable
+          style={StyleSheet.absoluteFill}
+          onPress={onCancel}
+          accessibilityRole="button"
+        />
         <View style={emailStyles.card}>
           <Text style={emailStyles.title}>{t('publisherAccess.changeEmail')}</Text>
           <Text style={emailStyles.hint}>
@@ -422,6 +427,11 @@ function GrantModal({
       onRequestClose={onCancel}
     >
       <View style={styles.backdrop}>
+        <Pressable
+          style={StyleSheet.absoluteFill}
+          onPress={onCancel}
+          accessibilityRole="button"
+        />
         <View style={styles.modal}>
           <Text style={styles.modalTitle}>{t('publisherAccess.grant')}</Text>
 
@@ -516,6 +526,11 @@ function ResetModal({
       onRequestClose={onCancel}
     >
       <View style={styles.backdrop}>
+        <Pressable
+          style={StyleSheet.absoluteFill}
+          onPress={onCancel}
+          accessibilityRole="button"
+        />
         <View style={styles.modal}>
           <Text style={styles.modalTitle}>{t('publisherAccess.resetPassword')}</Text>
 

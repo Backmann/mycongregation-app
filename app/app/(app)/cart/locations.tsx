@@ -179,6 +179,11 @@ export default function CartLocationsScreen() {
         onRequestClose={() => setModalOpen(false)}
       >
         <View style={styles.modalBackdrop}>
+          <Pressable
+            style={StyleSheet.absoluteFill}
+            onPress={() => setModalOpen(false)}
+            accessibilityRole="button"
+          />
           <View style={styles.modalCard}>
             <Text style={styles.modalTitle}>
               {editing

@@ -307,6 +307,11 @@ export function DutiesSection({
         onRequestClose={() => setCustomFor(null)}
       >
         <View style={styles.overlay}>
+          <Pressable
+            style={StyleSheet.absoluteFill}
+            onPress={() => setCustomFor(null)}
+            accessibilityRole="button"
+          />
           <View style={styles.modalCard}>
             <Text style={styles.modalTitle}>{t('duties.addCustom')}</Text>
             <TextInput

@@ -473,6 +473,11 @@ export default function WitnessingScreen() {
         onRequestClose={() => setShowBuild(false)}
       >
         <View style={styles.modalBackdrop}>
+          <Pressable
+            style={StyleSheet.absoluteFill}
+            onPress={() => setShowBuild(false)}
+            accessibilityRole="button"
+          />
           <View style={styles.modalCard}>
             <ScrollView>
               <Text style={styles.modalTitle}>{t('witnessing.build')}</Text>
@@ -653,6 +658,11 @@ export default function WitnessingScreen() {
         onRequestClose={() => setDistSlotId(null)}
       >
         <View style={styles.modalBackdrop}>
+          <Pressable
+            style={StyleSheet.absoluteFill}
+            onPress={() => setDistSlotId(null)}
+            accessibilityRole="button"
+          />
           <View style={styles.modalCard}>
             <ScrollView>
               {distSlot && (
@@ -862,6 +872,11 @@ export default function WitnessingScreen() {
         onRequestClose={() => setSlotModal(null)}
       >
         <View style={styles.modalBackdrop}>
+          <Pressable
+            style={StyleSheet.absoluteFill}
+            onPress={() => setSlotModal(null)}
+            accessibilityRole="button"
+          />
           <View style={styles.modalCard}>
             {slotModal && (
               <>

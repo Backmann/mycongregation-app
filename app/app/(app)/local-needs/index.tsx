@@ -293,6 +293,11 @@ export default function LocalNeedsScreen() {
         onRequestClose={closeModal}
       >
         <View style={styles.modalBackdrop}>
+          <Pressable
+            style={StyleSheet.absoluteFill}
+            onPress={closeModal}
+            accessibilityRole="button"
+          />
           <View style={styles.modalCard}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>
@@ -375,6 +380,11 @@ export default function LocalNeedsScreen() {
         onRequestClose={() => setConfirmDeleteId(null)}
       >
         <View style={styles.modalBackdrop}>
+          <Pressable
+            style={StyleSheet.absoluteFill}
+            onPress={() => setConfirmDeleteId(null)}
+            accessibilityRole="button"
+          />
           <View style={styles.confirmCard}>
             <Text style={styles.confirmText}>
               {t('localNeeds.confirmDelete')}

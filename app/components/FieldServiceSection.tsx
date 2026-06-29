@@ -272,6 +272,11 @@ function FieldServiceForm({
       onRequestClose={onClose}
     >
       <View style={styles.overlay}>
+        <Pressable
+          style={StyleSheet.absoluteFill}
+          onPress={onClose}
+          accessibilityRole="button"
+        />
         <View style={styles.modalCard}>
           <Text style={styles.modalTitle}>
             {editing ? t('fieldService.form.editTitle') : t('fieldService.form.addTitle')}

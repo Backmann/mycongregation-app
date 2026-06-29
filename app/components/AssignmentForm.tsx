@@ -505,6 +505,11 @@ export function AssignmentForm({
         onRequestClose={() => setLnPickerOpen(false)}
       >
         <View style={styles.lnBackdrop}>
+          <Pressable
+            style={StyleSheet.absoluteFill}
+            onPress={() => setLnPickerOpen(false)}
+            accessibilityRole="button"
+          />
           <View style={styles.lnCard}>
             <View style={styles.lnHeader}>
               <Text style={styles.lnTitle}>{t('localNeeds.insertTitle')}</Text>

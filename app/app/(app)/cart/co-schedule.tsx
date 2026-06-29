@@ -593,6 +593,11 @@ export default function CoScheduleScreen() {
         onRequestClose={() => setForm(null)}
       >
         <View style={styles.modalBackdrop}>
+          <Pressable
+            style={StyleSheet.absoluteFill}
+            onPress={() => setForm(null)}
+            accessibilityRole="button"
+          />
           <View style={styles.modalCard}>
             <ScrollView contentContainerStyle={styles.modalContent}>
               {form ? (

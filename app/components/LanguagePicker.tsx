@@ -63,6 +63,11 @@ export function LanguagePickerModal({ visible, onClose, required = false }: Prop
       onRequestClose={required ? undefined : onClose}
     >
       <View style={styles.backdrop}>
+        <Pressable
+          style={StyleSheet.absoluteFill}
+          onPress={required ? undefined : onClose}
+          accessibilityRole="button"
+        />
         <View style={styles.modal}>
           <Text style={styles.title}>{t('language.choose')}</Text>
           {LANGUAGES.map((lang) => {
