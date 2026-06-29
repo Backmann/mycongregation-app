@@ -145,17 +145,23 @@ function detailSections(
     );
     html += sectionHtml(
       L.pioneers,
-      [L.day, L.time, L.theme],
+      [L.day, L.time, L.place, L.theme],
       of('pioneers').map((i) => [
         d(i.itemDate),
         i.startTime ?? '',
+        placeStr(i, L),
         i.note ?? '',
       ]),
     );
     html += sectionHtml(
       L.elders,
-      [L.day, L.time, L.note],
-      of('elders').map((i) => [d(i.itemDate), i.startTime ?? '', i.note ?? '']),
+      [L.day, L.time, L.place, L.note],
+      of('elders').map((i) => [
+        d(i.itemDate),
+        i.startTime ?? '',
+        placeStr(i, L),
+        i.note ?? '',
+      ]),
     );
   }
   return html;

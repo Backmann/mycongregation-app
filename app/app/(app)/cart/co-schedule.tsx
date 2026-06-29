@@ -321,6 +321,90 @@ export default function CoScheduleScreen() {
     return '';
   };
 
+  // Place + theme/note body for pioneers/elders rows (day & type views).
+  const renderPlaceNote = (it: CoVisitItem): ReactNode => {
+    const place = placeLabel(it);
+    if (!place && !it.note) {
+      return <Text style={styles.itemAssignee}>—</Text>;
+    }
+    return (
+      <>
+        {place ? <Text style={styles.itemPlace}>{place}</Text> : null}
+        {it.note ? (
+          <Text style={styles.itemAssignee}>{it.note}</Text>
+        ) : null}
+      </>
+    );
+  };
+
+  // Kingdom Hall / custom place picker, reused by the pioneers & elders forms.
+  const renderHallPlaceField = (): ReactNode => {
+    if (!form) return null;
+    const f = form;
+    return (
+      <>
+        <Text style={styles.fieldLabel}>{t('coVisit.place')}</Text>
+        <View style={styles.chipRow}>
+          {(
+            [
+              ['kingdom_hall', t('coVisit.kingdomHall')],
+              ['custom', t('coVisit.placeOther')],
+            ] as [PlaceKind, string][]
+          ).map(([k, label]) => (
+            <Pressable
+              key={k}
+              style={[styles.chip, f.placeKind === k && styles.chipActive]}
+              onPress={() => setForm({ ...f, placeKind: k })}
+            >
+              <Text
+                style={[
+                  styles.chipText,
+                  f.placeKind === k && styles.chipTextActive,
+                ]}
+              >
+                {label}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+        {f.placeKind === 'kingdom_hall' && hallOptions.length > 0 ? (
+          <View style={styles.chipRow}>
+            {hallOptions.map((opt) => {
+              const active =
+                f.placeText === opt.address ||
+                (!f.placeText && opt.address === defaultHallAddress);
+              return (
+                <Pressable
+                  key={opt.id}
+                  style={[styles.chip, active && styles.chipActive]}
+                  onPress={() => setForm({ ...f, placeText: opt.address })}
+                >
+                  <Text
+                    style={[
+                      styles.chipText,
+                      active && styles.chipTextActive,
+                    ]}
+                  >
+                    {opt.address}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        ) : null}
+        {f.placeKind === 'custom' ? (
+          <TextInput
+            style={styles.input}
+            value={f.placeText}
+            onChangeText={(v) => setForm({ ...f, placeText: v })}
+            placeholder={t('coVisit.placeOtherHint')}
+            placeholderTextColor="#94a3b8"
+          />
+        ) : null}
+      </>
+    );
+  };
+
   const coName = [visit.coFirstName, visit.coLastName]
     .filter(Boolean)
     .join(' ')
@@ -407,6 +491,18 @@ export default function CoScheduleScreen() {
       payload = {
         ...payload,
         assigneePublisherId: form.assigneePublisherId,
+        note: form.note.trim() || null,
+      };
+    } else if (form.kind === 'pioneers' || form.kind === 'elders') {
+      payload = {
+        ...payload,
+        placeKind: form.placeKind,
+        placeText:
+          form.placeKind === 'custom'
+            ? form.placeText.trim() || null
+            : form.placeKind === 'kingdom_hall'
+              ? form.placeText.trim() || defaultHallAddress || null
+              : null,
         note: form.note.trim() || null,
       };
     } else {
@@ -666,6 +762,9 @@ export default function CoScheduleScreen() {
     }
     if (it.kind === 'lunch_box') {
       return <Text style={styles.itemPlace}>{it.assigneeName ?? '—'}</Text>;
+    }
+    if (it.kind === 'pioneers' || it.kind === 'elders') {
+      return renderPlaceNote(it);
     }
     return it.note ? (
       <Text style={styles.itemPlace}>{it.note}</Text>
@@ -970,12 +1069,7 @@ export default function CoScheduleScreen() {
         t('coVisit.pioneersTitle'),
         t('coVisit.add'),
         t('coVisit.empty'),
-        (it) =>
-          it.note ? (
-            <Text style={styles.itemPlace}>{it.note}</Text>
-          ) : (
-            <Text style={styles.itemAssignee}>—</Text>
-          ),
+        (it) => renderPlaceNote(it),
       )}
 
       {renderSection(
@@ -983,12 +1077,7 @@ export default function CoScheduleScreen() {
         t('coVisit.eldersTitle'),
         t('coVisit.add'),
         t('coVisit.empty'),
-        (it) =>
-          it.note ? (
-            <Text style={styles.itemPlace}>{it.note}</Text>
-          ) : (
-            <Text style={styles.itemAssignee}>—</Text>
-          ),
+        (it) => renderPlaceNote(it),
       )}
 
         </>
@@ -1483,6 +1572,7 @@ export default function CoScheduleScreen() {
 
                   {form.kind === 'pioneers' || form.kind === 'elders' ? (
                     <>
+                      {renderHallPlaceField()}
                       <Text style={styles.fieldLabel}>
                         {form.kind === 'pioneers'
                           ? t('coVisit.pioneersTheme')
