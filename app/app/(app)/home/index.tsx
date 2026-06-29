@@ -446,6 +446,7 @@ const TASK_ICONS: Record<MyAssignmentItem['kind'], keyof typeof Ionicons.glyphMa
   cart: 'cart-outline',
   field_service: 'walk-outline',
   outgoing_talk: 'mic-outline',
+  co_lunch: 'restaurant-outline',
 };
 
 function MyTasksCard() {

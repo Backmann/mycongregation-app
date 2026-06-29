@@ -20,10 +20,12 @@ import {
   coVisitItemsApi,
   hallsApi,
   meetingSettingsApi,
+  publishersApi,
   specialEventsApi,
   type CartLocation,
   type CoVisitItem,
   type Hall,
+  type Publisher,
   type SpecialEvent,
 } from '../../../lib/api';
 import { buildCoScheduleHtml } from '../../../lib/coSchedulePdf';
@@ -147,6 +149,28 @@ export default function CoScheduleScreen() {
     queryFn: () => hallsApi.list(),
     enabled: canViewCoSchedule,
   });
+  const { data: pubList } = useQuery({
+    queryKey: ['publishers', 'co-org-preview'],
+    queryFn: () => publishersApi.list({ limit: 200 }),
+    enabled: canViewCoSchedule,
+  });
+  // Show the chosen organizer's address/phone straight from their card.
+  const renderOrgPreview = (id: string | null): ReactNode => {
+    const p = id
+      ? ((pubList?.data ?? []).find((x: Publisher) => x.id === id) ?? null)
+      : null;
+    if (!p || (!p.address && !p.mobilePhone)) return null;
+    return (
+      <View style={styles.orgPreview}>
+        {p.address ? (
+          <Text style={styles.orgPreviewLine}>{p.address}</Text>
+        ) : null}
+        {p.mobilePhone ? (
+          <Text style={styles.orgPreviewLine}>{p.mobilePhone}</Text>
+        ) : null}
+      </View>
+    );
+  };
   // Kingdom Hall addresses to choose from: the configured halls (profile) plus
   // the meeting-settings address, so it works whether or not named halls exist.
   const settingsHallAddress = settingsOverview?.effective?.address ?? null;
@@ -383,6 +407,7 @@ export default function CoScheduleScreen() {
       payload = {
         ...payload,
         assigneePublisherId: form.assigneePublisherId,
+        note: form.note.trim() || null,
       };
     } else {
       payload = { ...payload, note: form.note.trim() || null };
@@ -1184,6 +1209,20 @@ export default function CoScheduleScreen() {
                           setForm({ ...form, assigneePublisherId: id })
                         }
                       />
+                      {renderOrgPreview(form.assigneePublisherId)}
+                      <Text style={styles.fieldLabel}>
+                        {t('coVisit.organizerNote')}
+                      </Text>
+                      <Text style={styles.hintText}>
+                        {t('coVisit.organizerNoteHint')}
+                      </Text>
+                      <TextInput
+                        style={styles.input}
+                        value={form.note}
+                        onChangeText={(v) => setForm({ ...form, note: v })}
+                        placeholder={t('coVisit.organizerNote')}
+                        placeholderTextColor="#94a3b8"
+                      />
                     </>
                   ) : null}
 
@@ -1396,12 +1435,20 @@ export default function CoScheduleScreen() {
                           }
                         />
                       )}
-                      <Text style={styles.fieldLabel}>{t('coVisit.note')}</Text>
+                      {!form.hostOther
+                        ? renderOrgPreview(form.assigneePublisherId)
+                        : null}
+                      <Text style={styles.fieldLabel}>
+                        {t('coVisit.organizerNote')}
+                      </Text>
+                      <Text style={styles.hintText}>
+                        {t('coVisit.organizerNoteHint')}
+                      </Text>
                       <TextInput
                         style={styles.input}
                         value={form.note}
                         onChangeText={(v) => setForm({ ...form, note: v })}
-                        placeholder={t('coVisit.note')}
+                        placeholder={t('coVisit.organizerNote')}
                         placeholderTextColor="#94a3b8"
                       />
                     </>
@@ -1609,6 +1656,16 @@ const styles = StyleSheet.create({
     color: '#475569',
     marginTop: 8,
   },
+  hintText: { fontSize: 12, color: '#94a3b8', marginTop: 2 },
+  orgPreview: {
+    backgroundColor: '#f8fafc',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    marginTop: 6,
+    gap: 2,
+  },
+  orgPreviewLine: { fontSize: 13, color: '#475569' },
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   toggleRow: { flexDirection: 'row', gap: 8, marginTop: 8 },
   modeChip: {

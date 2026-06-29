@@ -1160,9 +1160,9 @@
     "addLunch": "Mittagessen hinzufügen",
     "noLunches": "Keine Mittagessen hinzugefügt",
     "lunch": "Mittagessen",
-    "host": "Gastgeber (Verkündiger)",
+    "host": "Organisator",
     "hostOther": "Andere",
-    "hostName": "Name oder Familie",
+    "hostName": "Name des Organisators",
     "pastoralTitle": "Seelsorgebesuche",
     "addPastoral": "Besuch hinzufügen",
     "noPastoral": "Keine Besuche hinzugefügt",
@@ -1193,7 +1193,9 @@
     "copyFromOverseer": "Plan des Kreisaufsehers kopieren",
     "copyConfirm": "Erstellt Einträge an denselben Tagen, Zeiten und Orten (Predigtdienst, Mittagessen). Die Begleiter im Predigtdienst müssen neu zugewiesen werden. Vorhandene Einträge werden nicht dupliziert.",
     "copyDo": "Kopieren",
-    "copying": "Wird kopiert…"
+    "copying": "Wird kopiert…",
+    "organizerNote": "Hinweis für den Organisator",
+    "organizerNoteHint": "z. B. glutenfrei, ohne Zucker"
   },
   "witnessing": {
     "youAreAssigned": "Sie sind diesem Slot zugeteilt",
@@ -1465,7 +1467,8 @@
       "cleaning": "Reinigung",
       "cart": "Trolley",
       "field_service": "Predigtdienst",
-      "outgoing_talk": "Vortrag in Versammlung"
+      "outgoing_talk": "Vortrag in Versammlung",
+      "co_lunch": "Mittagessen (KA)"
     },
     "dutyTypes": {
       "security": "Sicherheit",
@@ -1501,6 +1504,9 @@
       "empty": "Keine Zusammenkünfte in den nächsten 7 Tagen",
       "today": "Heute",
       "youConduct": "Du leitest diese Zusammenkunft"
+    },
+    "coLunch": {
+      "title": "Mittagessen organisieren (KA-Besuch)"
     }
   },
   "halls": {

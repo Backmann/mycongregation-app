@@ -149,6 +149,9 @@ export function taskTitle(item: MyAssignmentItem, t: TFunc): string {
   if (item.kind === 'field_service') {
     return t('home.fieldService.leading');
   }
+  if (item.kind === 'co_lunch') {
+    return t('home.coLunch.title');
+  }
   return item.label;
 }
 
@@ -195,6 +198,9 @@ export function taskMeta(r: RefinedTask, t: TFunc, locale: string): string {
   if (r.item.kind === 'outgoing_talk') {
     if (r.item.congregationName) bits.push(r.item.congregationName);
     if (r.item.location) bits.push(r.item.location);
+  }
+  if (r.item.kind === 'co_lunch' && r.item.note) {
+    bits.push(r.item.note);
   }
   return bits.join(' \u00b7 ');
 }

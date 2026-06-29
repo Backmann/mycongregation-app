@@ -1160,9 +1160,9 @@
     "addLunch": "Add lunch",
     "noLunches": "No lunches added",
     "lunch": "Lunch",
-    "host": "Host (publisher)",
+    "host": "Organizer",
     "hostOther": "Other",
-    "hostName": "Name or family",
+    "hostName": "Organizer name",
     "pastoralTitle": "Pastoral visits",
     "addPastoral": "Add visit",
     "noPastoral": "No visits added",
@@ -1193,7 +1193,9 @@
     "copyFromOverseer": "Copy overseer's schedule",
     "copyConfirm": "Creates entries on the same days, times and places (field service, lunches). Field-service partners will need to be reassigned. Existing entries are not duplicated.",
     "copyDo": "Copy",
-    "copying": "Copying…"
+    "copying": "Copying…",
+    "organizerNote": "Note for the organizer",
+    "organizerNoteHint": "e.g. gluten-free, no sugar"
   },
   "witnessing": {
     "youAreAssigned": "You're assigned to this slot",
@@ -1465,7 +1467,8 @@
       "cleaning": "cleaning",
       "cart": "cart",
       "field_service": "field service",
-      "outgoing_talk": "talk at congregation"
+      "outgoing_talk": "talk at congregation",
+      "co_lunch": "CO lunch"
     },
     "dutyTypes": {
       "security": "Security",
@@ -1501,6 +1504,9 @@
       "empty": "No meetings in the next 7 days",
       "today": "Today",
       "youConduct": "You conduct this meeting"
+    },
+    "coLunch": {
+      "title": "Organizing lunch (CO visit)"
     }
   },
   "halls": {

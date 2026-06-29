@@ -118,14 +118,13 @@ function detailSections(
   );
   html += sectionHtml(
     L.lunches,
-    [L.day, L.time, L.host, L.address, L.phone, L.note],
+    [L.day, L.time, L.host, L.address, L.phone],
     of('lunch').map((i) => [
       d(i.itemDate),
       i.startTime ?? '',
       i.assigneeName ?? i.assigneeText ?? '',
       i.assigneeAddress ?? '',
       i.assigneePhone ?? '',
-      i.note ?? '',
     ]),
   );
   html += sectionHtml(

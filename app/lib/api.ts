@@ -1538,7 +1538,8 @@ export type MyAssignmentKind =
   | 'cleaning'
   | 'cart'
   | 'field_service'
-  | 'outgoing_talk';
+  | 'outgoing_talk'
+  | 'co_lunch';
 
 export interface MyAssignmentItem {
   kind: MyAssignmentKind;
@@ -1554,6 +1555,7 @@ export interface MyAssignmentItem {
   mapUrl?: string;
   congregationName?: string;
   asAssistant?: boolean;
+  note?: string;
   partKey?: string;
   partOrder?: number;
 }
