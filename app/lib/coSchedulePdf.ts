@@ -9,6 +9,8 @@ export interface CoPdfLabels {
   wifeScheduleTitle: string;
   fieldService: string;
   lunches: string;
+  lunchBox: string;
+  lunchBoxPublisher: string;
   pastoral: string;
   pioneers: string;
   elders: string;
@@ -126,6 +128,11 @@ function detailSections(
       i.note ?? '',
     ]),
   );
+  html += sectionHtml(
+    L.lunchBox,
+    [L.day, L.lunchBoxPublisher],
+    of('lunch_box').map((i) => [d(i.itemDate), i.assigneeName ?? '']),
+  );
   if (full) {
     html += sectionHtml(
       L.pastoral,
@@ -150,15 +157,6 @@ function detailSections(
       L.elders,
       [L.day, L.time, L.note],
       of('elders').map((i) => [d(i.itemDate), i.startTime ?? '', i.note ?? '']),
-    );
-    html += sectionHtml(
-      L.docReview,
-      [L.day, L.time, L.note],
-      of('document_review').map((i) => [
-        d(i.itemDate),
-        i.startTime ?? '',
-        i.note ?? '',
-      ]),
     );
   }
   return html;
@@ -230,7 +228,7 @@ export function buildCoScheduleHtml(opts: {
   const page3 = visit.coWifeName
     ? `<section class="page-break">
     ${pageHead(L.wifeScheduleTitle)}
-    ${detailSections(items, true, locale, L, false) || '<p>—</p>'}
+    ${detailSections(items, true, locale, L, true) || '<p>—</p>'}
   </section>`
     : '';
 

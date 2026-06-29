@@ -47,10 +47,10 @@ type PlaceKind = 'kingdom_hall' | 'cart_location' | 'custom';
 type ItemKind =
   | 'field_service'
   | 'lunch'
+  | 'lunch_box'
   | 'pastoral'
   | 'pioneers'
-  | 'elders'
-  | 'document_review';
+  | 'elders';
 
 interface FormState {
   id: string | null;
@@ -336,6 +336,11 @@ export default function CoScheduleScreen() {
         assigneePublisherId: form.assigneePublisherId,
         note: form.note.trim() || null,
       };
+    } else if (form.kind === 'lunch_box') {
+      payload = {
+        ...payload,
+        assigneePublisherId: form.assigneePublisherId,
+      };
     } else {
       payload = { ...payload, note: form.note.trim() || null };
     }
@@ -382,6 +387,8 @@ export default function CoScheduleScreen() {
         wifeScheduleTitle: t('coVisit.wifeScheduleTitle'),
         fieldService: t('coVisit.fieldServiceTitle'),
         lunches: t('coVisit.lunchesTitle'),
+        lunchBox: t('coVisit.lunchBoxTitle'),
+        lunchBoxPublisher: t('coVisit.lunchBoxPublisher'),
         pastoral: t('coVisit.pastoralTitle'),
         pioneers: t('coVisit.pioneersTitle'),
         elders: t('coVisit.eldersTitle'),
@@ -421,9 +428,6 @@ export default function CoScheduleScreen() {
     emptyLabel: string,
     renderItem: (it: CoVisitItem) => ReactNode,
   ) => {
-    if (mode === 'wife' && kind !== 'field_service' && kind !== 'lunch') {
-      return null;
-    }
     const list = itemsOf(kind);
     return (
       <View style={styles.section}>
@@ -485,8 +489,8 @@ export default function CoScheduleScreen() {
   // Which items belong to the active tab (the wife tab also mirrors the
   // overseer's joint field-service day).
   const visibleInMode = (i: CoVisitItem) => {
+    if (i.kind === 'document_review') return false;
     if (mode === 'wife') {
-      if (i.kind !== 'field_service' && i.kind !== 'lunch') return false;
       if (i.forWife) return true;
       return i.kind === 'field_service' && i.withWife;
     }
@@ -499,28 +503,25 @@ export default function CoScheduleScreen() {
         return t('coVisit.shortFieldService');
       case 'lunch':
         return t('coVisit.shortLunch');
+      case 'lunch_box':
+        return t('coVisit.shortLunchBox');
       case 'pastoral':
         return t('coVisit.shortPastoral');
       case 'pioneers':
         return t('coVisit.shortPioneers');
-      case 'elders':
-        return t('coVisit.shortElders');
       default:
-        return t('coVisit.shortDocs');
+        return t('coVisit.shortElders');
     }
   };
 
-  const addableKinds: ItemKind[] =
-    mode === 'wife'
-      ? ['field_service', 'lunch']
-      : [
-          'field_service',
-          'lunch',
-          'pastoral',
-          'pioneers',
-          'elders',
-          'document_review',
-        ];
+  const addableKinds: ItemKind[] = [
+    'field_service',
+    'lunch',
+    'lunch_box',
+    'pastoral',
+    'pioneers',
+    'elders',
+  ];
 
   // Per-item body, shared by the day view (mirrors the per-section renderers).
   const renderBody = (it: CoVisitItem): ReactNode => {
@@ -595,6 +596,9 @@ export default function CoScheduleScreen() {
         </>
       );
     }
+    if (it.kind === 'lunch_box') {
+      return <Text style={styles.itemPlace}>{it.assigneeName ?? '—'}</Text>;
+    }
     return it.note ? (
       <Text style={styles.itemPlace}>{it.note}</Text>
     ) : (
@@ -612,7 +616,7 @@ export default function CoScheduleScreen() {
           (a.startTime ?? '99:99').localeCompare(b.startTime ?? '99:99') ||
           a.sortOrder - b.sortOrder,
       );
-    const activeDays = days.filter((d) => all.some((i) => i.itemDate === d));
+    const activeDays = days; // show every day, even empty ones, while building
     return (
       <View style={styles.section}>
         {activeDays.length === 0 ? (
@@ -859,6 +863,16 @@ export default function CoScheduleScreen() {
       )}
 
       {renderSection(
+        'lunch_box',
+        t('coVisit.lunchBoxTitle'),
+        t('coVisit.add'),
+        t('coVisit.empty'),
+        (it) => (
+          <Text style={styles.itemPlace}>{it.assigneeName ?? '—'}</Text>
+        ),
+      )}
+
+      {renderSection(
         'pastoral',
         t('coVisit.pastoralTitle'),
         t('coVisit.addPastoral'),
@@ -899,18 +913,6 @@ export default function CoScheduleScreen() {
           ),
       )}
 
-      {renderSection(
-        'document_review',
-        t('coVisit.docReviewTitle'),
-        t('coVisit.add'),
-        t('coVisit.empty'),
-        (it) =>
-          it.note ? (
-            <Text style={styles.itemPlace}>{it.note}</Text>
-          ) : (
-            <Text style={styles.itemAssignee}>—</Text>
-          ),
-      )}
         </>
       )}
 
@@ -993,14 +995,14 @@ export default function CoScheduleScreen() {
                   <Text style={styles.modalTitle}>
                     {form.kind === 'lunch'
                       ? t('coVisit.lunch')
-                      : form.kind === 'pastoral'
-                        ? t('coVisit.pastoral')
-                        : form.kind === 'pioneers'
-                          ? t('coVisit.pioneers')
-                          : form.kind === 'elders'
-                            ? t('coVisit.elders')
-                            : form.kind === 'document_review'
-                              ? t('coVisit.docReview')
+                      : form.kind === 'lunch_box'
+                        ? t('coVisit.lunchBoxTitle')
+                        : form.kind === 'pastoral'
+                          ? t('coVisit.pastoral')
+                          : form.kind === 'pioneers'
+                            ? t('coVisit.pioneers')
+                            : form.kind === 'elders'
+                              ? t('coVisit.elders')
                               : form.id
                                 ? t('coVisit.editMeeting')
                                 : t('coVisit.addMeeting')}
@@ -1032,11 +1034,31 @@ export default function CoScheduleScreen() {
                     ))}
                   </View>
 
-                  <Text style={styles.fieldLabel}>{t('coVisit.time')}</Text>
-                  <TimeWheel
-                    value={form.startTime}
-                    onChange={(v) => setForm({ ...form, startTime: v })}
-                  />
+                  {form.kind !== 'lunch_box' ? (
+                    <>
+                      <Text style={styles.fieldLabel}>{t('coVisit.time')}</Text>
+                      <TimeWheel
+                        value={form.startTime}
+                        onChange={(v) => setForm({ ...form, startTime: v })}
+                      />
+                    </>
+                  ) : null}
+
+                  {form.kind === 'lunch_box' ? (
+                    <>
+                      <Text style={styles.fieldLabel}>
+                        {t('coVisit.lunchBoxPublisher')}
+                      </Text>
+                      <PublisherSelector
+                        boxed
+                        label={t('coVisit.lunchBoxPublisher')}
+                        value={form.assigneePublisherId}
+                        onChange={(id) =>
+                          setForm({ ...form, assigneePublisherId: id })
+                        }
+                      />
+                    </>
+                  ) : null}
 
                   {form.kind === 'field_service' ? (
                     <>
@@ -1239,6 +1261,7 @@ export default function CoScheduleScreen() {
                         />
                       ) : (
                         <PublisherSelector
+                          boxed
                           label={t('coVisit.host')}
                           value={form.assigneePublisherId}
                           onChange={(id) =>
@@ -1263,6 +1286,7 @@ export default function CoScheduleScreen() {
                         {t('coVisit.pastoralElder')}
                       </Text>
                       <PublisherSelector
+                        boxed
                         label={t('coVisit.pastoralElder')}
                         value={form.assigneePublisherId}
                         appointmentFilter="elder"
@@ -1283,9 +1307,7 @@ export default function CoScheduleScreen() {
                     </>
                   ) : null}
 
-                  {form.kind === 'pioneers' ||
-                  form.kind === 'elders' ||
-                  form.kind === 'document_review' ? (
+                  {form.kind === 'pioneers' || form.kind === 'elders' ? (
                     <>
                       <Text style={styles.fieldLabel}>
                         {form.kind === 'pioneers'
