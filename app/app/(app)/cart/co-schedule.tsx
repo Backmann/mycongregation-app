@@ -114,6 +114,8 @@ export default function CoScheduleScreen() {
 
   const [form, setForm] = useState<FormState | null>(null);
   const [mode, setMode] = useState<'co' | 'wife'>('co');
+  const [viewMode, setViewMode] = useState<'day' | 'type'>('day');
+  const [kindPickerDay, setKindPickerDay] = useState<string | null>(null);
 
   const { data: events, isLoading } = useQuery({
     queryKey: ['special-events', 'co-schedule'],
@@ -264,11 +266,11 @@ export default function CoScheduleScreen() {
     startOfWeekMonday(new Date(`${visit.date}T00:00:00`)),
   );
 
-  const openCreate = (kind: ItemKind) =>
+  const openCreate = (kind: ItemKind, day?: string) =>
     setForm({
       id: null,
       kind,
-      itemDate: days[0] ?? visit.date,
+      itemDate: day ?? days[0] ?? visit.date,
       startTime: '',
       placeKind: 'kingdom_hall',
       cartLocationId: null,
@@ -480,6 +482,218 @@ export default function CoScheduleScreen() {
     );
   };
 
+  // Which items belong to the active tab (the wife tab also mirrors the
+  // overseer's joint field-service day).
+  const visibleInMode = (i: CoVisitItem) => {
+    if (mode === 'wife') {
+      if (i.kind !== 'field_service' && i.kind !== 'lunch') return false;
+      if (i.forWife) return true;
+      return i.kind === 'field_service' && i.withWife;
+    }
+    return !i.forWife;
+  };
+
+  const kindShort = (k: string) => {
+    switch (k) {
+      case 'field_service':
+        return t('coVisit.shortFieldService');
+      case 'lunch':
+        return t('coVisit.shortLunch');
+      case 'pastoral':
+        return t('coVisit.shortPastoral');
+      case 'pioneers':
+        return t('coVisit.shortPioneers');
+      case 'elders':
+        return t('coVisit.shortElders');
+      default:
+        return t('coVisit.shortDocs');
+    }
+  };
+
+  const addableKinds: ItemKind[] =
+    mode === 'wife'
+      ? ['field_service', 'lunch']
+      : [
+          'field_service',
+          'lunch',
+          'pastoral',
+          'pioneers',
+          'elders',
+          'document_review',
+        ];
+
+  // Per-item body, shared by the day view (mirrors the per-section renderers).
+  const renderBody = (it: CoVisitItem): ReactNode => {
+    if (it.kind === 'field_service') {
+      return (
+        <>
+          <Text style={styles.itemPlace}>{placeLabel(it)}</Text>
+          {it.note && !isSynced(it) ? (
+            <Text style={{ fontSize: 13, color: '#475569', marginTop: 1 }}>
+              {it.note}
+            </Text>
+          ) : null}
+          {(it.assigneeName || it.assigneeText) && !isSynced(it) ? (
+            <Text style={styles.itemAssignee}>
+              {it.assigneeName ?? it.assigneeText}
+            </Text>
+          ) : null}
+          {it.withWife ? (
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                alignSelf: 'flex-start',
+                marginTop: 4,
+                backgroundColor: '#f3e8ff',
+                borderRadius: 10,
+                paddingHorizontal: 8,
+                paddingVertical: 2,
+              }}
+            >
+              <Ionicons name="people" size={12} color="#7c3aed" />
+              <Text
+                style={{
+                  marginLeft: 4,
+                  fontSize: 11,
+                  color: '#7c3aed',
+                  fontWeight: '600',
+                }}
+              >
+                {isSynced(it) ? t('coVisit.coBadge') : t('coVisit.spouseBadge')}
+              </Text>
+            </View>
+          ) : null}
+        </>
+      );
+    }
+    if (it.kind === 'lunch') {
+      return (
+        <>
+          <Text style={styles.itemPlace}>
+            {it.assigneeName ?? it.assigneeText ?? '—'}
+          </Text>
+          {it.assigneeAddress ? (
+            <Text style={styles.itemAssignee}>{it.assigneeAddress}</Text>
+          ) : null}
+          {it.assigneePhone ? (
+            <Text style={styles.itemAssignee}>{it.assigneePhone}</Text>
+          ) : null}
+          {it.note ? (
+            <Text style={styles.itemAssignee}>{it.note}</Text>
+          ) : null}
+        </>
+      );
+    }
+    if (it.kind === 'pastoral') {
+      return (
+        <>
+          <Text style={styles.itemPlace}>{it.assigneeName ?? '—'}</Text>
+          {it.note ? (
+            <Text style={styles.itemAssignee}>{it.note}</Text>
+          ) : null}
+        </>
+      );
+    }
+    return it.note ? (
+      <Text style={styles.itemPlace}>{it.note}</Text>
+    ) : (
+      <Text style={styles.itemAssignee}>—</Text>
+    );
+  };
+
+  // Chronological view: every event of a day, in time order, across all types.
+  const renderDayView = () => {
+    const all = (items ?? [])
+      .filter(visibleInMode)
+      .slice()
+      .sort(
+        (a, b) =>
+          (a.startTime ?? '99:99').localeCompare(b.startTime ?? '99:99') ||
+          a.sortOrder - b.sortOrder,
+      );
+    const activeDays = days.filter((d) => all.some((i) => i.itemDate === d));
+    return (
+      <View style={styles.section}>
+        {activeDays.length === 0 ? (
+          <Text style={styles.muted}>{t('coVisit.empty')}</Text>
+        ) : (
+          activeDays.map((day) => (
+            <View key={day} style={styles.dayBlock}>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}
+              >
+                <Text style={styles.dayHeader}>{fmt(day)}</Text>
+                {canEditCoSchedule ? (
+                  <Pressable
+                    style={({ pressed }) => [
+                      styles.addBtn,
+                      pressed && styles.pressed,
+                    ]}
+                    onPress={() => setKindPickerDay(day)}
+                  >
+                    <Ionicons name="add" size={18} color="#0ea5e9" />
+                    <Text style={styles.addText}>{t('coVisit.add')}</Text>
+                  </Pressable>
+                ) : null}
+              </View>
+              {all
+                .filter((i) => i.itemDate === day)
+                .map((it) => (
+                  <Pressable
+                    key={it.id}
+                    disabled={!canEditCoSchedule || isSynced(it)}
+                    style={({ pressed }) => [
+                      styles.itemRow,
+                      pressed &&
+                        canEditCoSchedule &&
+                        !isSynced(it) &&
+                        styles.pressed,
+                    ]}
+                    onPress={() =>
+                      canEditCoSchedule && !isSynced(it) && openEdit(it)
+                    }
+                  >
+                    <Text style={styles.itemTime}>{it.startTime ?? '—'}</Text>
+                    <View style={styles.itemBody}>
+                      <Text
+                        style={{
+                          alignSelf: 'flex-start',
+                          fontSize: 11,
+                          fontWeight: '600',
+                          color: '#0369a1',
+                          backgroundColor: '#e0f2fe',
+                          borderRadius: 8,
+                          paddingHorizontal: 6,
+                          paddingVertical: 1,
+                          marginBottom: 2,
+                          overflow: 'hidden',
+                        }}
+                      >
+                        {kindShort(it.kind)}
+                      </Text>
+                      {renderBody(it)}
+                    </View>
+                    {canEditCoSchedule && !isSynced(it) ? (
+                      <Ionicons
+                        name="chevron-forward"
+                        size={16}
+                        color="#cbd5e1"
+                      />
+                    ) : null}
+                  </Pressable>
+                ))}
+            </View>
+          ))
+        )}
+      </View>
+    );
+  };
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.card}>
@@ -543,6 +757,34 @@ export default function CoScheduleScreen() {
         </View>
       ) : null}
 
+      <View style={styles.toggleRow}>
+        {(
+          [
+            ['day', t('coVisit.dayViewTab')],
+            ['type', t('coVisit.typeViewTab')],
+          ] as ['day' | 'type', string][]
+        ).map(([v, label]) => (
+          <Pressable
+            key={v}
+            style={[styles.modeChip, viewMode === v && styles.modeChipActive]}
+            onPress={() => setViewMode(v)}
+          >
+            <Text
+              style={[
+                styles.modeChipText,
+                viewMode === v && styles.modeChipTextActive,
+              ]}
+            >
+              {label}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
+
+      {viewMode === 'day' ? (
+        renderDayView()
+      ) : (
+        <>
       {renderSection(
         'field_service',
         t('coVisit.fieldServiceTitle'),
@@ -669,6 +911,68 @@ export default function CoScheduleScreen() {
             <Text style={styles.itemAssignee}>—</Text>
           ),
       )}
+        </>
+      )}
+
+      <Modal
+        visible={!!kindPickerDay}
+        animationType="fade"
+        transparent
+        onRequestClose={() => setKindPickerDay(null)}
+      >
+        <Pressable
+          style={{
+            flex: 1,
+            backgroundColor: 'rgba(15,23,42,0.4)',
+            justifyContent: 'center',
+            padding: 24,
+          }}
+          onPress={() => setKindPickerDay(null)}
+          accessibilityRole="button"
+        >
+          <Pressable
+            style={{ backgroundColor: '#ffffff', borderRadius: 14, padding: 8 }}
+          >
+            <Text
+              style={{
+                fontSize: 15,
+                fontWeight: '700',
+                color: '#0f172a',
+                paddingHorizontal: 12,
+                paddingVertical: 10,
+              }}
+            >
+              {t('coVisit.pickKind')}
+            </Text>
+            {addableKinds.map((k) => (
+              <Pressable
+                key={k}
+                onPress={() => {
+                  const d = kindPickerDay;
+                  setKindPickerDay(null);
+                  openCreate(k, d ?? undefined);
+                }}
+                style={({ pressed }) => [
+                  {
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    paddingHorizontal: 12,
+                    paddingVertical: 12,
+                    borderRadius: 8,
+                  },
+                  pressed && { backgroundColor: '#f1f5f9' },
+                ]}
+              >
+                <Text style={{ fontSize: 15, color: '#0f172a' }}>
+                  {kindShort(k)}
+                </Text>
+                <Ionicons name="chevron-forward" size={16} color="#cbd5e1" />
+              </Pressable>
+            ))}
+          </Pressable>
+        </Pressable>
+      </Modal>
 
       <Modal
         visible={!!form}
