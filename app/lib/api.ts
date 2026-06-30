@@ -1067,6 +1067,52 @@ export const fieldServiceMonthThemeApi = {
   },
 };
 
+export interface FieldServiceTemplateSlot {
+  id: string;
+  congregationId: string;
+  position: number;
+  ordinal: number; // 1-5
+  dayOfWeek: number; // 1=Mon..7=Sun
+  startTime: string; // "HH:MM"
+  address: string;
+}
+
+export interface TemplateSlotInput {
+  ordinal: number;
+  dayOfWeek: number;
+  startTime: string;
+  address: string;
+}
+
+export const fieldServiceTemplateApi = {
+  async getSlots(): Promise<FieldServiceTemplateSlot[]> {
+    const { data } = await api.get<FieldServiceTemplateSlot[]>(
+      '/field-service-template',
+    );
+    return data;
+  },
+  async replaceSlots(
+    slots: TemplateSlotInput[],
+  ): Promise<FieldServiceTemplateSlot[]> {
+    const { data } = await api.put<FieldServiceTemplateSlot[]>(
+      '/field-service-template',
+      { slots },
+    );
+    return data;
+  },
+  async generate(input: {
+    startYear: number;
+    startMonth: number;
+    months: number;
+  }): Promise<{ created: number; skipped: number }> {
+    const { data } = await api.post<{ created: number; skipped: number }>(
+      '/field-service-template/generate',
+      input,
+    );
+    return data;
+  },
+};
+
 export type CleaningSlotType = 'after_meeting' | 'thorough' | 'general';
 
 export interface CleaningAssignment {

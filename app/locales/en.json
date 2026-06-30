@@ -1097,6 +1097,23 @@
       "add": "Month theme",
       "title": "Month theme",
       "placeholder": "e.g. Helping interested ones (optional)"
+    },
+    "generate": {
+      "title": "Generate schedule",
+      "button": "Generate",
+      "startMonth": "Start month",
+      "monthsCount": "How many months",
+      "template": "Meeting template",
+      "hint": "Conductor and topic stay empty — fill in later.",
+      "slot": "Slot {{n}}",
+      "ordinal": "Which one in the month",
+      "day": "Day",
+      "time": "Time",
+      "address": "Address",
+      "addSlot": "Add slot",
+      "saveTemplate": "Save template",
+      "saved": "Template saved",
+      "result": "Created {{created}}, skipped {{skipped}}"
     }
   },
   "cleaning": {

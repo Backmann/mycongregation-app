@@ -1097,6 +1097,23 @@
       "add": "Monatsthema",
       "title": "Monatsthema",
       "placeholder": "z. B. Interessierten helfen (optional)"
+    },
+    "generate": {
+      "title": "Plan generieren",
+      "button": "Generieren",
+      "startMonth": "Startmonat",
+      "monthsCount": "Wie viele Monate",
+      "template": "Vorlage",
+      "hint": "Leitung und Thema bleiben leer — später ausfüllen.",
+      "slot": "Slot {{n}}",
+      "ordinal": "Welche im Monat",
+      "day": "Tag",
+      "time": "Zeit",
+      "address": "Adresse",
+      "addSlot": "Slot hinzufügen",
+      "saveTemplate": "Vorlage speichern",
+      "saved": "Vorlage gespeichert",
+      "result": "Erstellt {{created}}, übersprungen {{skipped}}"
     }
   },
   "cleaning": {

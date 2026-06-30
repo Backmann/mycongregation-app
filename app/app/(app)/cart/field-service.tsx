@@ -28,6 +28,7 @@ import {
 import { usePermissions } from '../../../lib/permissions';
 import { useMyPublisher } from '../../../lib/useMyPublisher';
 import { FieldServiceForm } from '../../../components/FieldServiceSection';
+import { FieldServiceGenerateModal } from '../../../components/FieldServiceGenerateModal';
 import { MyBulb } from '../../../components/MyBulb';
 import { ChipRow, PersonChip } from '../../../components/PersonChip';
 import { parseISODate, addDays, formatDateISO } from '../../../lib/dates';
@@ -108,6 +109,7 @@ export default function FieldServiceMeetingsScreen() {
   // --- Form state ---
   const [target, setTarget] = useState<FieldServiceMeeting | 'new' | null>(null);
   const [addDefaultDate, setAddDefaultDate] = useState<string | undefined>();
+  const [genOpen, setGenOpen] = useState(false);
 
   const invalidate = () =>
     qc.invalidateQueries({ queryKey: ['field-service'] });
@@ -221,6 +223,7 @@ export default function FieldServiceMeetingsScreen() {
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.monthBarInner}
+          style={styles.monthBarScroll}
         >
           {months.map((m) => (
             <Pressable
@@ -244,6 +247,14 @@ export default function FieldServiceMeetingsScreen() {
             </Pressable>
           ))}
         </ScrollView>
+        {canEdit && (
+          <Pressable style={styles.genBtn} onPress={() => setGenOpen(true)}>
+            <Ionicons name="sparkles-outline" size={15} color="#0369a1" />
+            <Text style={styles.genBtnText}>
+              {t('fieldService.generate.button')}
+            </Text>
+          </Pressable>
+        )}
       </View>
 
       <ScrollView
@@ -456,6 +467,11 @@ export default function FieldServiceMeetingsScreen() {
           </View>
         </View>
       </Modal>
+
+      <FieldServiceGenerateModal
+        visible={genOpen}
+        onClose={() => setGenOpen(false)}
+      />
     </View>
   );
 }
@@ -472,7 +488,20 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderBottomColor: '#e2e8f0',
+    flexDirection: 'row',
+    alignItems: 'center',
   },
+  monthBarScroll: { flex: 1 },
+  genBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderLeftWidth: 1,
+    borderLeftColor: '#e2e8f0',
+  },
+  genBtnText: { fontSize: 13, fontWeight: '700', color: '#0369a1' },
   monthBarInner: { paddingHorizontal: 12, paddingVertical: 8, gap: 6 },
   monthChip: {
     paddingHorizontal: 12,
