@@ -1092,7 +1092,12 @@
     "hubSubtitle": "Field-service meeting schedule",
     "emptyMonth": "No meetings this month",
     "deleteConfirm": "Delete this meeting?",
-    "delete": "Delete"
+    "delete": "Delete",
+    "monthTheme": {
+      "add": "Month theme",
+      "title": "Month theme",
+      "placeholder": "e.g. Helping interested ones (optional)"
+    }
   },
   "cleaning": {
     "title": "Cleaning",

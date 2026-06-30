@@ -3,11 +3,13 @@ import {
   ActivityIndicator,
   Alert,
   Linking,
+  Modal,
   Platform,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -20,6 +22,7 @@ import {
   Publisher,
   UpdateFieldServiceMeetingInput,
   fieldServiceApi,
+  fieldServiceMonthThemeApi,
   publishersApi,
 } from '../../../lib/api';
 import { usePermissions } from '../../../lib/permissions';
@@ -69,6 +72,38 @@ export default function FieldServiceMeetingsScreen() {
   const publishersById = new Map<string, Publisher>(
     (publishersQuery.data?.data ?? []).map((p) => [p.id, p]),
   );
+  const themesQuery = useQuery({
+    queryKey: ['field-service-month-themes'],
+    queryFn: () => fieldServiceMonthThemeApi.list(),
+  });
+  const themeByMonth = new Map<string, string>(
+    (themesQuery.data ?? []).map((tm) => [
+      `${tm.year}-${String(tm.month).padStart(2, '0')}`,
+      tm.theme,
+    ]),
+  );
+
+  // --- Month-theme editor ---
+  const [themeEdit, setThemeEdit] = useState<{
+    monthKey: string;
+    value: string;
+  } | null>(null);
+  const themeM = useMutation({
+    mutationFn: (vars: { year: number; month: number; theme: string }) =>
+      fieldServiceMonthThemeApi.upsert(vars),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['field-service-month-themes'] });
+      setThemeEdit(null);
+    },
+  });
+  const saveTheme = () => {
+    if (!themeEdit) return;
+    themeM.mutate({
+      year: Number(themeEdit.monthKey.slice(0, 4)),
+      month: Number(themeEdit.monthKey.slice(5, 7)),
+      theme: themeEdit.value,
+    });
+  };
 
   // --- Form state ---
   const [target, setTarget] = useState<FieldServiceMeeting | 'new' | null>(null);
@@ -233,6 +268,41 @@ export default function FieldServiceMeetingsScreen() {
             >
               {m.title}
             </Text>
+            {(() => {
+              const theme = themeByMonth.get(m.key);
+              if (theme) {
+                return (
+                  <Pressable
+                    style={styles.themeRow}
+                    onPress={() =>
+                      canEdit && setThemeEdit({ monthKey: m.key, value: theme })
+                    }
+                    disabled={!canEdit}
+                  >
+                    <Ionicons name="bookmark" size={13} color="#0369a1" />
+                    <Text style={styles.themeText}>{theme}</Text>
+                  </Pressable>
+                );
+              }
+              if (canEdit) {
+                return (
+                  <Pressable
+                    style={styles.themeAdd}
+                    onPress={() => setThemeEdit({ monthKey: m.key, value: '' })}
+                  >
+                    <Ionicons
+                      name="bookmark-outline"
+                      size={13}
+                      color="#94a3b8"
+                    />
+                    <Text style={styles.themeAddText}>
+                      {t('fieldService.monthTheme.add')}
+                    </Text>
+                  </Pressable>
+                );
+              }
+              return null;
+            })()}
 
             {m.meetings.length === 0 ? (
               <Text style={styles.emptyMonth}>{t('fieldService.emptyMonth')}</Text>
@@ -338,6 +408,54 @@ export default function FieldServiceMeetingsScreen() {
         onCreate={(input) => createM.mutate(input)}
         onUpdate={(id, input) => updateM.mutate({ id, input })}
       />
+
+      <Modal
+        visible={themeEdit !== null}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setThemeEdit(null)}
+      >
+        <View style={styles.overlay}>
+          <Pressable
+            style={StyleSheet.absoluteFill}
+            onPress={() => setThemeEdit(null)}
+          />
+          <View style={styles.themeCard}>
+            <Text style={styles.themeCardTitle}>
+              {t('fieldService.monthTheme.title')}
+            </Text>
+            <TextInput
+              style={styles.themeInput}
+              value={themeEdit?.value ?? ''}
+              onChangeText={(v) =>
+                setThemeEdit((prev) => (prev ? { ...prev, value: v } : prev))
+              }
+              placeholder={t('fieldService.monthTheme.placeholder')}
+              placeholderTextColor="#94a3b8"
+              multiline
+              maxLength={2000}
+              autoFocus
+            />
+            <View style={styles.themeActions}>
+              <Pressable
+                style={styles.themeCancel}
+                onPress={() => setThemeEdit(null)}
+              >
+                <Text style={styles.themeCancelText}>{t('common.cancel')}</Text>
+              </Pressable>
+              <Pressable
+                style={styles.themeSave}
+                onPress={saveTheme}
+                disabled={themeM.isPending}
+              >
+                <Text style={styles.themeSaveText}>
+                  {t('fieldService.form.save')}
+                </Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -373,6 +491,64 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   monthTitleCurrent: { color: '#0369a1' },
+  themeRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 5,
+    marginTop: -4,
+    marginBottom: 10,
+  },
+  themeText: { flex: 1, fontSize: 13, color: '#0369a1', fontWeight: '600' },
+  themeAdd: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    marginTop: -4,
+    marginBottom: 10,
+  },
+  themeAddText: { fontSize: 12, color: '#94a3b8', fontWeight: '600' },
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(15,23,42,0.45)',
+    justifyContent: 'center',
+    paddingHorizontal: 20,
+  },
+  themeCard: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 18,
+  },
+  themeCardTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#0f172a',
+    marginBottom: 12,
+  },
+  themeInput: {
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderRadius: 12,
+    padding: 12,
+    fontSize: 14,
+    color: '#0f172a',
+    minHeight: 80,
+    textAlignVertical: 'top',
+  },
+  themeActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 10,
+    marginTop: 14,
+  },
+  themeCancel: { paddingHorizontal: 16, paddingVertical: 10 },
+  themeCancelText: { fontSize: 14, color: '#64748b', fontWeight: '600' },
+  themeSave: {
+    backgroundColor: '#0ea5e9',
+    borderRadius: 10,
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+  },
+  themeSaveText: { fontSize: 14, color: '#fff', fontWeight: '700' },
   emptyMonth: {
     fontSize: 13,
     color: '#94a3b8',

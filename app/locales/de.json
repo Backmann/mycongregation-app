@@ -1092,7 +1092,12 @@
     "hubSubtitle": "Plan der Zusammenkünfte für den Predigtdienst",
     "emptyMonth": "Keine Zusammenkünfte in diesem Monat",
     "deleteConfirm": "Diese Zusammenkunft löschen?",
-    "delete": "Löschen"
+    "delete": "Löschen",
+    "monthTheme": {
+      "add": "Monatsthema",
+      "title": "Monatsthema",
+      "placeholder": "z. B. Interessierten helfen (optional)"
+    }
   },
   "cleaning": {
     "title": "Reinigung",

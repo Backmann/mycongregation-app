@@ -1039,6 +1039,34 @@ export const fieldServiceApi = {
   },
 };
 
+export interface FieldServiceMonthTheme {
+  id: string;
+  congregationId: string;
+  year: number;
+  month: number; // 1-12
+  theme: string;
+}
+
+export const fieldServiceMonthThemeApi = {
+  async list(): Promise<FieldServiceMonthTheme[]> {
+    const { data } = await api.get<FieldServiceMonthTheme[]>(
+      '/field-service-month-themes',
+    );
+    return data;
+  },
+  async upsert(input: {
+    year: number;
+    month: number;
+    theme: string;
+  }): Promise<FieldServiceMonthTheme | null> {
+    const { data } = await api.put<FieldServiceMonthTheme | null>(
+      '/field-service-month-themes',
+      input,
+    );
+    return data;
+  },
+};
+
 export type CleaningSlotType = 'after_meeting' | 'thorough' | 'general';
 
 export interface CleaningAssignment {
