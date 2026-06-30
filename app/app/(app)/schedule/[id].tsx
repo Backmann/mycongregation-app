@@ -37,6 +37,9 @@ export default function AssignmentDetailScreen() {
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['assignments'] });
       queryClient.invalidateQueries({ queryKey: ['assignment', id] });
+      if (result.partKey === 'treasures_talk') {
+        queryClient.invalidateQueries({ queryKey: ['duties'] });
+      }
       const warnings = result.ruleWarnings;
       if (warnings && warnings.length) {
         const msg = warnings
@@ -66,9 +69,12 @@ export default function AssignmentDetailScreen() {
         speakerCongregation: null,
         publicTalkId: null,
       }),
-    onSuccess: () => {
+    onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['assignments'] });
       queryClient.invalidateQueries({ queryKey: ['assignment', id] });
+      if (result.partKey === 'treasures_talk') {
+        queryClient.invalidateQueries({ queryKey: ['duties'] });
+      }
       router.back();
     },
   });

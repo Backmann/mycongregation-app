@@ -119,6 +119,10 @@ export function AssignmentSheet({
           queryKey: ['assignment', assignment.id],
         });
       }
+      // Treasures-talk speaker mirrors onto a microphone duty — refresh duties.
+      if (assignment?.partKey === 'treasures_talk') {
+        queryClient.invalidateQueries({ queryKey: ['duties'] });
+      }
     },
   });
 
@@ -133,6 +137,9 @@ export function AssignmentSheet({
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['assignments'] });
+      if (assignment?.partKey === 'treasures_talk') {
+        queryClient.invalidateQueries({ queryKey: ['duties'] });
+      }
       onClose();
     },
   });
