@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { Children, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -267,7 +267,9 @@ export default function PublisherDetailScreen() {
 
       {isAdmin && (
         <Section title={t('publishers.sections.appAccess')}>
-          <PublisherAccessContent publisher={publisher} />
+          <View style={styles.accessWrap}>
+            <PublisherAccessContent publisher={publisher} />
+          </View>
         </Section>
       )}
 
@@ -307,7 +309,7 @@ export default function PublisherDetailScreen() {
               onPress={handleRemove}
               disabled={removeMutation.isPending}
             >
-              <Text style={styles.buttonText}>
+              <Text style={styles.buttonRemoveText}>
                 {removeMutation.isPending
                   ? t('publishers.actions.removing')
                   : t('publishers.actions.remove')}
@@ -324,7 +326,7 @@ export default function PublisherDetailScreen() {
             onPress={handlePurge}
             disabled={purgeMutation.isPending}
           >
-            <Text style={styles.buttonText}>
+            <Text style={styles.buttonPurgeText}>
               {purgeMutation.isPending
                 ? t('publishers.purge.deleting')
                 : t('publishers.purge.button')}
@@ -366,13 +368,17 @@ function PublisherHeader({ publisher }: { publisher: Publisher }) {
         <Text style={styles.headerAvatarText}>{initials}</Text>
       </View>
       <Text style={styles.headerName}>{publisher.displayName}</Text>
-      <Text style={styles.headerSub}>
-        {publisher.gender === 'brother' ? i18n.t('publishers.gender.brother') : i18n.t('publishers.gender.sister')}
-        {publisher.appointment !== 'publisher' &&
-        publisher.appointment !== 'unbaptized_publisher'
-          ? ` · ${appointmentLabel(publisher.appointment)}`
-          : ''}
-      </Text>
+      <View style={styles.headerRoleChip}>
+        <Text style={styles.headerRoleChipText}>
+          {publisher.gender === 'brother'
+            ? i18n.t('publishers.gender.brother')
+            : i18n.t('publishers.gender.sister')}
+          {publisher.appointment !== 'publisher' &&
+          publisher.appointment !== 'unbaptized_publisher'
+            ? ` · ${appointmentLabel(publisher.appointment)}`
+            : ''}
+        </Text>
+      </View>
     </View>
   );
 }
@@ -384,27 +390,31 @@ function Section({
   title: string;
   children: React.ReactNode;
 }) {
+  const items = Children.toArray(children).filter(Boolean);
   return (
     <View style={styles.section}>
       <Text style={styles.sectionTitle}>{title}</Text>
-      <View style={styles.sectionBody}>{children}</View>
+      <View style={styles.sectionBody}>
+        {items.map((child, i) => (
+          <View key={i}>
+            {i > 0 ? <View style={styles.divider} /> : null}
+            {child}
+          </View>
+        ))}
+      </View>
     </View>
   );
 }
 
 function Field({ label, value }: { label: string; value: string | null }) {
-  if (!value) {
-    return (
-      <View style={styles.field}>
-        <Text style={styles.fieldLabel}>{label}</Text>
-        <Text style={styles.fieldEmpty}>—</Text>
-      </View>
-    );
-  }
   return (
     <View style={styles.field}>
       <Text style={styles.fieldLabel}>{label}</Text>
-      <Text style={styles.fieldValue}>{value}</Text>
+      {value ? (
+        <Text style={styles.fieldValue}>{value}</Text>
+      ) : (
+        <Text style={styles.fieldEmpty}>—</Text>
+      )}
     </View>
   );
 }
@@ -624,11 +634,14 @@ const styles = StyleSheet.create({
 
   headerSection: {
     backgroundColor: '#fff',
-    paddingTop: 24,
-    paddingBottom: 24,
+    marginHorizontal: 16,
+    marginTop: 16,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    paddingVertical: 24,
+    paddingHorizontal: 20,
     alignItems: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
   },
   headerAvatar: {
     width: 88,
@@ -636,7 +649,7 @@ const styles = StyleSheet.create({
     borderRadius: 44,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 14,
   },
   headerAvatarText: { color: '#fff', fontWeight: '700', fontSize: 28 },
   headerName: {
@@ -644,9 +657,16 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#0f172a',
     textAlign: 'center',
-    paddingHorizontal: 24,
+    paddingHorizontal: 12,
   },
-  headerSub: { color: '#64748b', marginTop: 4, fontSize: 14 },
+  headerRoleChip: {
+    marginTop: 10,
+    backgroundColor: '#f1f5f9',
+    borderRadius: 999,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+  },
+  headerRoleChipText: { color: '#475569', fontSize: 13, fontWeight: '600' },
 
   removedBanner: {
     backgroundColor: '#fef3c7',
@@ -659,30 +679,31 @@ const styles = StyleSheet.create({
   removedText: { color: '#92400e', fontWeight: '600' },
   removedNote: { color: '#78350f', marginTop: 4, fontSize: 13 },
 
-  section: { marginTop: 16 },
+  section: { marginHorizontal: 16, marginTop: 18 },
   sectionTitle: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#64748b',
     textTransform: 'uppercase',
-    paddingHorizontal: 20,
-    marginBottom: 6,
-    letterSpacing: 0.5,
+    marginLeft: 4,
+    marginBottom: 8,
+    letterSpacing: 0.6,
   },
   sectionBody: {
     backgroundColor: '#fff',
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
+    borderRadius: 14,
+    borderWidth: 1,
     borderColor: '#e2e8f0',
+    overflow: 'hidden',
   },
+  divider: { height: 1, backgroundColor: '#f1f5f9', marginHorizontal: 16 },
   field: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
   },
-  fieldLabel: { fontSize: 12, color: '#94a3b8', marginBottom: 2 },
-  fieldValue: { fontSize: 15, color: '#0f172a' },
+  accessWrap: { paddingHorizontal: 16, paddingVertical: 4 },
+  fieldLabel: { fontSize: 12, color: '#94a3b8', marginBottom: 3 },
+  fieldValue: { fontSize: 15, color: '#0f172a', fontWeight: '500' },
   fieldEmpty: { fontSize: 15, color: '#cbd5e1' },
 
   emptyCaps: {
@@ -692,8 +713,8 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   capCategory: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#f1f5f9',
   },
@@ -712,12 +733,22 @@ const styles = StyleSheet.create({
   },
   capChipText: { color: '#0369a1', fontSize: 12, fontWeight: '500' },
 
-  actions: { padding: 20, gap: 8 },
-  button: { paddingVertical: 14, borderRadius: 8, alignItems: 'center' },
+  actions: { paddingHorizontal: 16, paddingTop: 22, gap: 10 },
+  button: { paddingVertical: 14, borderRadius: 12, alignItems: 'center' },
   buttonEdit: { backgroundColor: '#0ea5e9' },
-  buttonEditText: { color: '#fff', fontSize: 16, fontWeight: '600' },
-  buttonRemove: { backgroundColor: '#dc2626' },
-  buttonPurge: { backgroundColor: '#7f1d1d' },
+  buttonEditText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+  buttonRemove: {
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#fecaca',
+  },
+  buttonRemoveText: { color: '#dc2626', fontSize: 16, fontWeight: '600' },
+  buttonPurge: {
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#fca5a5',
+  },
+  buttonPurgeText: { color: '#7f1d1d', fontSize: 16, fontWeight: '600' },
   actionHint: {
     color: '#94a3b8',
     fontSize: 12,

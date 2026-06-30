@@ -205,7 +205,7 @@
     "noCapabilities": "Способности не заданы",
     "tags": {
       "elder": "Старейшина",
-      "ms": "Служ. пом.",
+      "ms": "Пом. собр.",
       "regularPioneer": "Общий пионер",
       "specialPioneer": "Специальный пионер",
       "missionary": "Миссионер",
@@ -247,7 +247,7 @@
       "publisher": "Возвещатель",
       "unbaptized_publisher": "Некрещёный возвещатель",
       "unbaptized": "Некрещёный",
-      "ministerial_servant": "Служебный помощник",
+      "ministerial_servant": "Помощник собрания",
       "ms": "Служ. пом.",
       "elder": "Старейшина",
       "none": "Нет",

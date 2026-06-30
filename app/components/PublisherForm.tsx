@@ -50,7 +50,10 @@ export function PublisherForm({
     { value: 'publisher', label: t('publishers.appointment.publisher') },
     { value: 'unbaptized_publisher', label: t('publishers.appointment.unbaptized') },
     { value: 'student', label: t('publishers.appointment.student') },
-    { value: 'ministerial_servant', label: t('publishers.appointment.ms') },
+    {
+      value: 'ministerial_servant',
+      label: t('publishers.appointment.ministerial_servant'),
+    },
     { value: 'elder', label: t('publishers.appointment.elder') },
     { value: 'none', label: t('publishers.appointment.none') },
   ];
@@ -151,6 +154,12 @@ export function PublisherForm({
             setForm((prev) => ({
               ...prev,
               gender: v,
+              appointment:
+                v === 'sister' &&
+                (prev.appointment === 'elder' ||
+                  prev.appointment === 'ministerial_servant')
+                  ? 'publisher'
+                  : prev.appointment,
               capabilities:
                 v === 'sister' && prev.capabilities?.hospitality === undefined
                   ? { ...prev.capabilities, hospitality: true }
@@ -195,7 +204,11 @@ export function PublisherForm({
         <FormChips
           label={t('publishers.fields.appointment')}
           value={form.appointment}
-          options={APPOINTMENT_OPTIONS}
+          options={APPOINTMENT_OPTIONS.filter(
+            (o) =>
+              form.gender !== 'sister' ||
+              (o.value !== 'ministerial_servant' && o.value !== 'elder'),
+          )}
           onChange={(v) => update('appointment', v)}
         />
         <FormField
