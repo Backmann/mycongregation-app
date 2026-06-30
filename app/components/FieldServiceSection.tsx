@@ -25,6 +25,22 @@ import {
 } from '../lib/api';
 import { PublisherSelector } from './PublisherSelector';
 import { TimeWheel } from './TimeWheel';
+import { MonthCalendar } from './MonthCalendar';
+import {
+  startOfWeekMonday,
+  formatDateISO,
+  parseISODate,
+} from '../lib/dates';
+
+/** Monday (ISO) of the week containing the given date. */
+function mondayOf(dateISO: string): string {
+  return formatDateISO(startOfWeekMonday(parseISODate(dateISO)));
+}
+/** ISO weekday 1=Mon..7=Sun for the given date. */
+function isoDow(dateISO: string): number {
+  const d = parseISODate(dateISO).getDay();
+  return d === 0 ? 7 : d;
+}
 
 const TIME_RE = /^([01]\d|2[0-3]):[0-5]\d$/;
 const DAYS = [1, 2, 3, 4, 5, 6, 7] as const;
@@ -194,20 +210,26 @@ export function FieldServiceSection({
   );
 }
 
-function FieldServiceForm({
+export function FieldServiceForm({
   target,
   weekStartISO,
   onClose,
   onCreate,
   onUpdate,
+  pickDate = false,
+  defaultDate,
 }: {
   target: FieldServiceMeeting | 'new' | null;
   weekStartISO: string;
   onClose: () => void;
   onCreate: (input: CreateFieldServiceMeetingInput) => void;
   onUpdate: (id: string, input: UpdateFieldServiceMeetingInput) => void;
+  /** When true (e.g. the month page), pick a full date instead of a weekday. */
+  pickDate?: boolean;
+  /** Default date (ISO) to preselect in date-pick mode. */
+  defaultDate?: string;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const editing = target && target !== 'new' ? target : null;
   const visible = target !== null;
 
@@ -227,6 +249,7 @@ function FieldServiceForm({
   const [topic, setTopic] = useState('');
   const [sourceUrl, setSourceUrl] = useState('');
   const [isGeneral, setIsGeneral] = useState(false);
+  const [pickedDate, setPickedDate] = useState<string>('');
 
   useEffect(() => {
     if (target === 'new') {
@@ -237,6 +260,7 @@ function FieldServiceForm({
       setTopic('');
       setSourceUrl('');
       setIsGeneral(false);
+      setPickedDate(defaultDate ?? '');
     } else if (target) {
       setDayOfWeek(target.dayOfWeek);
       setStartTime(target.startTime);
@@ -245,7 +269,9 @@ function FieldServiceForm({
       setTopic(target.topic ?? '');
       setSourceUrl(target.sourceUrl ?? '');
       setIsGeneral(target.isGeneral);
+      setPickedDate('');
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [target]);
 
   // Prefill a brand-new meeting with the default hall address — once,
@@ -258,7 +284,10 @@ function FieldServiceForm({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [target, hallsQuery.data]);
 
-  const canSave = address.trim().length > 0 && TIME_RE.test(startTime);
+  const canSave =
+    address.trim().length > 0 &&
+    TIME_RE.test(startTime) &&
+    (!pickDate || !!editing || !!pickedDate);
 
   const submit = () => {
     if (!canSave) return;
@@ -273,6 +302,12 @@ function FieldServiceForm({
     };
     if (editing) {
       onUpdate(editing.id, base);
+    } else if (pickDate && pickedDate) {
+      onCreate({
+        ...base,
+        weekStartDate: mondayOf(pickedDate),
+        dayOfWeek: isoDow(pickedDate),
+      });
     } else {
       onCreate({ weekStartDate: weekStartISO, ...base });
     }
@@ -300,28 +335,47 @@ function FieldServiceForm({
             style={styles.formScroll}
             keyboardShouldPersistTaps="handled"
           >
-            <Text style={styles.fieldLabel}>{t('fieldService.dayLabel')}</Text>
-            <View style={styles.dayRow}>
-              {DAYS.map((d) => {
-                const selected = d === dayOfWeek;
-                return (
-                  <Pressable
-                    key={d}
-                    onPress={() => setDayOfWeek(d)}
-                    style={[styles.dayChip, selected && styles.dayChipOn]}
-                  >
-                    <Text
-                      style={[
-                        styles.dayChipText,
-                        selected && styles.dayChipTextOn,
-                      ]}
-                    >
-                      {t(`fieldService.days.${d}`)}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </View>
+            {pickDate && !editing ? (
+              <>
+                <Text style={styles.fieldLabel}>
+                  {t('fieldService.form.dateLabel')}
+                </Text>
+                <MonthCalendar
+                  mode="single"
+                  start={pickedDate || null}
+                  end={null}
+                  onChange={({ start }) => start && setPickedDate(start)}
+                  locale={i18n.language}
+                />
+              </>
+            ) : (
+              <>
+                <Text style={styles.fieldLabel}>
+                  {t('fieldService.dayLabel')}
+                </Text>
+                <View style={styles.dayRow}>
+                  {DAYS.map((d) => {
+                    const selected = d === dayOfWeek;
+                    return (
+                      <Pressable
+                        key={d}
+                        onPress={() => setDayOfWeek(d)}
+                        style={[styles.dayChip, selected && styles.dayChipOn]}
+                      >
+                        <Text
+                          style={[
+                            styles.dayChipText,
+                            selected && styles.dayChipTextOn,
+                          ]}
+                        >
+                          {t(`fieldService.days.${d}`)}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+              </>
+            )}
 
             <Text style={styles.fieldLabel}>{t('fieldService.timeLabel')}</Text>
             <TimeWheel value={startTime} onChange={setStartTime} />

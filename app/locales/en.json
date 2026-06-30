@@ -1074,7 +1074,8 @@
       "timePlaceholder": "HH:MM",
       "addressPlaceholder": "Where to meet",
       "topicPlaceholder": "Topic or note (optional)",
-      "linkPlaceholder": "https://…"
+      "linkPlaceholder": "https://…",
+      "dateLabel": "Date"
     },
     "days": {
       "1": "Mon",
@@ -1087,7 +1088,11 @@
     },
     "isGeneral": "Combined field-service meeting",
     "isGeneralHint": "Meeting for the whole congregation",
-    "generalBadge": "Combined"
+    "generalBadge": "Combined",
+    "hubSubtitle": "Field-service meeting schedule",
+    "emptyMonth": "No meetings this month",
+    "deleteConfirm": "Delete this meeting?",
+    "delete": "Delete"
   },
   "cleaning": {
     "title": "Cleaning",

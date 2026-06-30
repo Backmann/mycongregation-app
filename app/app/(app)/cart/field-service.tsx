@@ -1,0 +1,423 @@
+import { useRef, useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  Linking,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import dayjs from 'dayjs';
+import {
+  CreateFieldServiceMeetingInput,
+  FieldServiceMeeting,
+  Publisher,
+  UpdateFieldServiceMeetingInput,
+  fieldServiceApi,
+  publishersApi,
+} from '../../../lib/api';
+import { usePermissions } from '../../../lib/permissions';
+import { useMyPublisher } from '../../../lib/useMyPublisher';
+import { FieldServiceForm } from '../../../components/FieldServiceSection';
+import { MyBulb } from '../../../components/MyBulb';
+import { ChipRow, PersonChip } from '../../../components/PersonChip';
+import { parseISODate, addDays, formatDateISO } from '../../../lib/dates';
+
+/** Actual calendar date (ISO) of a meeting, from its week + weekday. */
+function meetingDateISO(m: FieldServiceMeeting): string {
+  return formatDateISO(addDays(parseISODate(m.weekStartDate), m.dayOfWeek - 1));
+}
+
+/** First Saturday (ISO) of a "YYYY-MM" month — a sensible default for a new entry. */
+function firstSaturdayOf(monthKey: string): string {
+  let d = dayjs(`${monthKey}-01`);
+  while (d.day() !== 6) d = d.add(1, 'day');
+  return d.format('YYYY-MM-DD');
+}
+
+type MonthBlock = {
+  key: string;
+  title: string;
+  meetings: FieldServiceMeeting[];
+};
+
+export default function FieldServiceMeetingsScreen() {
+  const { t, i18n } = useTranslation();
+  const perms = usePermissions();
+  const canEdit = perms.canEditFieldServiceMeetings;
+  const qc = useQueryClient();
+  const { myPublisherId } = useMyPublisher();
+
+  const scrollRef = useRef<ScrollView>(null);
+  const monthOffsets = useRef<Record<string, number>>({});
+  const didInitialScroll = useRef(false);
+
+  const meetingsQuery = useQuery({
+    queryKey: ['field-service', 'all'],
+    queryFn: () => fieldServiceApi.list(),
+  });
+  const publishersQuery = useQuery({
+    queryKey: ['publishers'],
+    queryFn: () => publishersApi.list(),
+  });
+  const publishersById = new Map<string, Publisher>(
+    (publishersQuery.data?.data ?? []).map((p) => [p.id, p]),
+  );
+
+  // --- Form state ---
+  const [target, setTarget] = useState<FieldServiceMeeting | 'new' | null>(null);
+  const [addDefaultDate, setAddDefaultDate] = useState<string | undefined>();
+
+  const invalidate = () =>
+    qc.invalidateQueries({ queryKey: ['field-service'] });
+
+  const createM = useMutation({
+    mutationFn: (input: CreateFieldServiceMeetingInput) =>
+      fieldServiceApi.create(input),
+    onSuccess: () => {
+      invalidate();
+      setTarget(null);
+    },
+  });
+  const updateM = useMutation({
+    mutationFn: (vars: { id: string; input: UpdateFieldServiceMeetingInput }) =>
+      fieldServiceApi.update(vars.id, vars.input),
+    onSuccess: () => {
+      invalidate();
+      setTarget(null);
+    },
+  });
+  const removeM = useMutation({
+    mutationFn: (id: string) => fieldServiceApi.remove(id),
+    onSuccess: () => invalidate(),
+  });
+
+  const confirmRemove = (id: string) => {
+    const msg = t('fieldService.deleteConfirm');
+    if (Platform.OS === 'web') {
+      if (window.confirm(msg)) removeM.mutate(id);
+    } else {
+      Alert.alert('', msg, [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('fieldService.delete'),
+          style: 'destructive',
+          onPress: () => removeM.mutate(id),
+        },
+      ]);
+    }
+  };
+
+  if (meetingsQuery.isLoading) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator color="#0ea5e9" />
+      </View>
+    );
+  }
+
+  // --- Build continuous month blocks (data span ∪ current month) ---
+  const meetings = meetingsQuery.data ?? [];
+  const byMonth = new Map<string, FieldServiceMeeting[]>();
+  for (const m of meetings) {
+    const k = meetingDateISO(m).slice(0, 7);
+    const arr = byMonth.get(k);
+    if (arr) arr.push(m);
+    else byMonth.set(k, [m]);
+  }
+  const currentMonthKey = dayjs().format('YYYY-MM');
+  let minK = currentMonthKey;
+  let maxK = currentMonthKey;
+  for (const k of byMonth.keys()) {
+    if (k < minK) minK = k;
+    if (k > maxK) maxK = k;
+  }
+  const months: MonthBlock[] = [];
+  {
+    let d = dayjs(`${minK}-01`);
+    const end = dayjs(`${maxK}-01`);
+    while (d.isBefore(end) || d.isSame(end)) {
+      const k = d.format('YYYY-MM');
+      const ms = (byMonth.get(k) ?? [])
+        .slice()
+        .sort(
+          (a, b) =>
+            meetingDateISO(a).localeCompare(meetingDateISO(b)) ||
+            a.startTime.localeCompare(b.startTime),
+        );
+      const title = d
+        .toDate()
+        .toLocaleDateString(i18n.language, { month: 'long', year: 'numeric' });
+      months.push({ key: k, title: title.charAt(0).toUpperCase() + title.slice(1), meetings: ms });
+      d = d.add(1, 'month');
+    }
+  }
+
+  const scrollToCurrent = () => {
+    if (didInitialScroll.current) return;
+    const off = monthOffsets.current[currentMonthKey];
+    if (off != null) {
+      didInitialScroll.current = true;
+      scrollRef.current?.scrollTo({ y: Math.max(off - 8, 0), animated: false });
+    }
+  };
+  const scrollToMonth = (key: string) => {
+    const off = monthOffsets.current[key];
+    if (off != null)
+      scrollRef.current?.scrollTo({ y: Math.max(off - 8, 0), animated: true });
+  };
+
+  const openAdd = (monthKey: string) => {
+    setAddDefaultDate(firstSaturdayOf(monthKey));
+    setTarget('new');
+  };
+
+  return (
+    <View style={styles.container}>
+      {/* Month jump bar */}
+      <View style={styles.monthBar}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.monthBarInner}
+        >
+          {months.map((m) => (
+            <Pressable
+              key={m.key}
+              style={[
+                styles.monthChip,
+                m.key === currentMonthKey && styles.monthChipCurrent,
+              ]}
+              onPress={() => scrollToMonth(m.key)}
+            >
+              <Text
+                style={[
+                  styles.monthChipText,
+                  m.key === currentMonthKey && styles.monthChipTextCurrent,
+                ]}
+              >
+                {dayjs(`${m.key}-01`)
+                  .toDate()
+                  .toLocaleDateString(i18n.language, { month: 'short' })}
+              </Text>
+            </Pressable>
+          ))}
+        </ScrollView>
+      </View>
+
+      <ScrollView
+        ref={scrollRef}
+        contentContainerStyle={{ paddingBottom: 48 }}
+        onContentSizeChange={scrollToCurrent}
+      >
+        {months.map((m) => (
+          <View
+            key={m.key}
+            onLayout={(e) => {
+              monthOffsets.current[m.key] = e.nativeEvent.layout.y;
+              if (m.key === currentMonthKey) scrollToCurrent();
+            }}
+            style={styles.monthSection}
+          >
+            <Text
+              style={[
+                styles.monthTitle,
+                m.key === currentMonthKey && styles.monthTitleCurrent,
+              ]}
+            >
+              {m.title}
+            </Text>
+
+            {m.meetings.length === 0 ? (
+              <Text style={styles.emptyMonth}>{t('fieldService.emptyMonth')}</Text>
+            ) : (
+              m.meetings.map((mt) => {
+                const conductor = mt.conductorPublisherId
+                  ? publishersById.get(mt.conductorPublisherId) ?? null
+                  : null;
+                const isMine =
+                  !!myPublisherId && mt.conductorPublisherId === myPublisherId;
+                const dISO = meetingDateISO(mt);
+                return (
+                  <View key={mt.id} style={[styles.card, isMine && styles.cardMine]}>
+                    <Pressable
+                      style={styles.cardMain}
+                      onPress={() => canEdit && setTarget(mt)}
+                      disabled={!canEdit}
+                    >
+                      <Text style={styles.when}>
+                        {t(`fieldService.days.${mt.dayOfWeek}`)}{' '}
+                        {dayjs(dISO).format('DD.MM')} · {mt.startTime}
+                      </Text>
+                      {mt.isGeneral ? (
+                        <View style={styles.generalBadge}>
+                          <Ionicons name="people" size={12} color="#7c3aed" />
+                          <Text style={styles.generalBadgeText}>
+                            {t('fieldService.generalBadge')}
+                          </Text>
+                        </View>
+                      ) : null}
+                      <ChipRow>
+                        {isMine ? <MyBulb size={15} /> : null}
+                        {conductor ? (
+                          <PersonChip
+                            label={conductor.displayName}
+                            variant="main"
+                          />
+                        ) : (
+                          <PersonChip
+                            label={t('fieldService.unassigned')}
+                            variant="empty"
+                          />
+                        )}
+                      </ChipRow>
+                      <Text style={styles.address} numberOfLines={2}>
+                        {mt.address}
+                      </Text>
+                      {!!mt.topic && (
+                        <Text style={styles.topic} numberOfLines={3}>
+                          {mt.topic}
+                        </Text>
+                      )}
+                      {!!mt.sourceUrl && (
+                        <Pressable
+                          onPress={() => Linking.openURL(mt.sourceUrl as string)}
+                          hitSlop={6}
+                        >
+                          <Text style={styles.link} numberOfLines={1}>
+                            <Ionicons
+                              name="link-outline"
+                              size={13}
+                              color="#0369a1"
+                            />{' '}
+                            {t('fieldService.openLink')}
+                          </Text>
+                        </Pressable>
+                      )}
+                    </Pressable>
+                    {canEdit && (
+                      <Pressable
+                        style={styles.removeBtn}
+                        onPress={() => confirmRemove(mt.id)}
+                        hitSlop={8}
+                      >
+                        <Ionicons
+                          name="trash-outline"
+                          size={18}
+                          color="#dc2626"
+                        />
+                      </Pressable>
+                    )}
+                  </View>
+                );
+              })
+            )}
+
+            {canEdit && (
+              <Pressable style={styles.addBtn} onPress={() => openAdd(m.key)}>
+                <Ionicons name="add" size={18} color="#0369a1" />
+                <Text style={styles.addBtnText}>{t('fieldService.addEntry')}</Text>
+              </Pressable>
+            )}
+          </View>
+        ))}
+      </ScrollView>
+
+      <FieldServiceForm
+        target={target}
+        weekStartISO={target && target !== 'new' ? target.weekStartDate : ''}
+        pickDate={target === 'new'}
+        defaultDate={addDefaultDate}
+        onClose={() => setTarget(null)}
+        onCreate={(input) => createM.mutate(input)}
+        onUpdate={(id, input) => updateM.mutate({ id, input })}
+      />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#f1f5f9' },
+  center: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f1f5f9',
+  },
+  monthBar: {
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
+  },
+  monthBarInner: { paddingHorizontal: 12, paddingVertical: 8, gap: 6 },
+  monthChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 999,
+    backgroundColor: '#f1f5f9',
+  },
+  monthChipCurrent: { backgroundColor: '#0ea5e9' },
+  monthChipText: { fontSize: 13, fontWeight: '600', color: '#475569' },
+  monthChipTextCurrent: { color: '#fff' },
+  monthSection: { paddingHorizontal: 16, paddingTop: 16 },
+  monthTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#0f172a',
+    marginBottom: 10,
+  },
+  monthTitleCurrent: { color: '#0369a1' },
+  emptyMonth: {
+    fontSize: 13,
+    color: '#94a3b8',
+    fontStyle: 'italic',
+    marginBottom: 8,
+  },
+  card: {
+    flexDirection: 'row',
+    backgroundColor: '#fff',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    padding: 14,
+    marginBottom: 10,
+  },
+  cardMine: { borderColor: '#fbbf24', backgroundColor: '#fffbeb' },
+  cardMain: { flex: 1, gap: 4 },
+  when: { fontSize: 14, fontWeight: '700', color: '#0f172a' },
+  generalBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    gap: 3,
+    backgroundColor: '#f3e8ff',
+    borderRadius: 8,
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+  },
+  generalBadgeText: { fontSize: 11, fontWeight: '700', color: '#7c3aed' },
+  address: { fontSize: 13, color: '#475569' },
+  topic: { fontSize: 13, color: '#0f172a' },
+  link: { fontSize: 13, color: '#0369a1', fontWeight: '600' },
+  removeBtn: { paddingLeft: 10, paddingTop: 2 },
+  addBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#bae6fd',
+    borderStyle: 'dashed',
+    backgroundColor: '#f0f9ff',
+    paddingVertical: 12,
+    marginBottom: 6,
+  },
+  addBtnText: { fontSize: 14, fontWeight: '600', color: '#0369a1' },
+});

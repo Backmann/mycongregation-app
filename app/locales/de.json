@@ -1074,7 +1074,8 @@
       "timePlaceholder": "HH:MM",
       "addressPlaceholder": "Treffpunkt",
       "topicPlaceholder": "Thema oder Hinweis (optional)",
-      "linkPlaceholder": "https://…"
+      "linkPlaceholder": "https://…",
+      "dateLabel": "Datum"
     },
     "days": {
       "1": "Mo",
@@ -1087,7 +1088,11 @@
     },
     "isGeneral": "Gemeinsame Zusammenkunft für den Predigtdienst",
     "isGeneralHint": "Zusammenkunft für die ganze Versammlung",
-    "generalBadge": "Gemeinsam"
+    "generalBadge": "Gemeinsam",
+    "hubSubtitle": "Plan der Zusammenkünfte für den Predigtdienst",
+    "emptyMonth": "Keine Zusammenkünfte in diesem Monat",
+    "deleteConfirm": "Diese Zusammenkunft löschen?",
+    "delete": "Löschen"
   },
   "cleaning": {
     "title": "Reinigung",

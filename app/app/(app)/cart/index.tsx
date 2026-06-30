@@ -42,6 +42,13 @@ export default function ServiceHubScreen() {
     },
     {
       family: 'ion',
+      icon: 'walk-outline',
+      title: t('fieldService.title'),
+      subtitle: t('fieldService.hubSubtitle'),
+      route: '/cart/field-service',
+    },
+    {
+      family: 'ion',
       icon: 'clipboard-outline',
       title: t('service.coSchedule'),
       subtitle: t('service.coScheduleSubtitle'),

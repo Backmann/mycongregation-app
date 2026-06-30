@@ -1078,7 +1078,8 @@
       "timePlaceholder": "ЧЧ:ММ",
       "addressPlaceholder": "Где собираемся",
       "topicPlaceholder": "Тема или указание (необязательно)",
-      "linkPlaceholder": "https://…"
+      "linkPlaceholder": "https://…",
+      "dateLabel": "Дата"
     },
     "days": {
       "1": "Пн",
@@ -1091,7 +1092,11 @@
     },
     "isGeneral": "Общая встреча для проповеди",
     "isGeneralHint": "Встреча для всего собрания",
-    "generalBadge": "Общая встреча"
+    "generalBadge": "Общая встреча",
+    "hubSubtitle": "График встреч для проповеди",
+    "emptyMonth": "В этом месяце встреч нет",
+    "deleteConfirm": "Удалить эту встречу?",
+    "delete": "Удалить"
   },
   "cleaning": {
     "title": "Уборка",

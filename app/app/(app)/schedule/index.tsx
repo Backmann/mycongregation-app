@@ -277,7 +277,7 @@ export default function ScheduleIndexScreen() {
   const fieldServiceMeetings = fieldServiceQuery.data ?? [];
   const invalidateFieldService = () =>
     queryClient.invalidateQueries({
-      queryKey: ['field-service', weekStartISO],
+      queryKey: ['field-service'],
     });
   const createFieldServiceMutation = useMutation({
     mutationFn: (input: Parameters<typeof fieldServiceApi.create>[0]) =>
