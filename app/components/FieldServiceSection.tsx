@@ -22,6 +22,7 @@ import {
   Publisher,
   UpdateFieldServiceMeetingInput,
   hallsApi,
+  fieldServiceStatsApi,
 } from '../lib/api';
 import { PublisherSelector } from './PublisherSelector';
 import { TimeWheel } from './TimeWheel';
@@ -30,6 +31,7 @@ import {
   startOfWeekMonday,
   formatDateISO,
   parseISODate,
+  addDays,
 } from '../lib/dates';
 
 /** Monday (ISO) of the week containing the given date. */
@@ -196,6 +198,16 @@ export function FieldServiceSection({
       <FieldServiceForm
         target={formFor}
         weekStartISO={weekStartISO}
+        weekConductorIds={(week, excludeId) =>
+          meetings
+            .filter(
+              (m) =>
+                m.weekStartDate === week &&
+                m.id !== excludeId &&
+                !!m.conductorPublisherId,
+            )
+            .map((m) => m.conductorPublisherId as string)
+        }
         onClose={() => setFormFor(null)}
         onCreate={(input) => {
           onCreate(input);
@@ -218,6 +230,7 @@ export function FieldServiceForm({
   onUpdate,
   pickDate = false,
   defaultDate,
+  weekConductorIds,
 }: {
   target: FieldServiceMeeting | 'new' | null;
   weekStartISO: string;
@@ -228,6 +241,11 @@ export function FieldServiceForm({
   pickDate?: boolean;
   /** Default date (ISO) to preselect in date-pick mode. */
   defaultDate?: string;
+  /**
+   * Returns conductor ids already assigned in a given week (excluding one
+   * meeting id), so the form can warn about double-booking the same week.
+   */
+  weekConductorIds?: (weekStartISO: string, excludeMeetingId?: string) => string[];
 }) {
   const { t, i18n } = useTranslation();
   const editing = target && target !== 'new' ? target : null;
@@ -239,6 +257,17 @@ export function FieldServiceForm({
     enabled: visible,
   });
   const halls = hallsQuery.data ?? [];
+
+  const conductorStatsQuery = useQuery({
+    queryKey: ['field-service-conductor-stats'],
+    queryFn: () => fieldServiceStatsApi.conductorStats(),
+    enabled: visible,
+  });
+  const topicHistoryQuery = useQuery({
+    queryKey: ['field-service-topic-history'],
+    queryFn: () => fieldServiceStatsApi.topicHistory(),
+    enabled: visible,
+  });
 
   const [dayOfWeek, setDayOfWeek] = useState<number>(2);
   const [startTime, setStartTime] = useState('');
@@ -288,6 +317,39 @@ export function FieldServiceForm({
     address.trim().length > 0 &&
     TIME_RE.test(startTime) &&
     (!pickDate || !!editing || !!pickedDate);
+
+  // ---- Rotation / topic hints (advisory) ----
+  const fmtDate = (iso: string) => iso.split('-').reverse().join('.');
+  const effectiveWeek = editing
+    ? editing.weekStartDate
+    : pickDate && pickedDate
+      ? mondayOf(pickedDate)
+      : weekStartISO;
+  const selectedStat = conductorPublisherId
+    ? (conductorStatsQuery.data?.find(
+        (c) => c.conductorPublisherId === conductorPublisherId,
+      ) ?? null)
+    : null;
+  const doubleBooked =
+    !!conductorPublisherId &&
+    !!weekConductorIds &&
+    weekConductorIds(effectiveWeek, editing?.id).includes(conductorPublisherId);
+  const editingDate = editing
+    ? formatDateISO(
+        addDays(parseISODate(editing.weekStartDate), editing.dayOfWeek - 1),
+      )
+    : null;
+  const topicMatch = (() => {
+    const tt = topic.trim().toLowerCase();
+    if (!tt) return null;
+    const hit = topicHistoryQuery.data?.find(
+      (e) => e.topic.trim().toLowerCase() === tt,
+    );
+    if (!hit) return null;
+    // Don't flag a meeting against its own only-occurrence when editing.
+    if (editingDate && hit.lastDate === editingDate) return null;
+    return hit;
+  })();
 
   const submit = () => {
     if (!canSave) return;
@@ -421,6 +483,36 @@ export function FieldServiceForm({
               value={conductorPublisherId}
               onChange={setConductorPublisherId}
             />
+            {conductorPublisherId ? (
+              <>
+                <Text style={styles.statHint}>
+                  {selectedStat
+                    ? [
+                        t('fieldService.stat.total', {
+                          count: selectedStat.total,
+                        }),
+                        selectedStat.lastDate
+                          ? t('fieldService.stat.last', {
+                              date: fmtDate(selectedStat.lastDate),
+                            })
+                          : t('fieldService.stat.never'),
+                        selectedStat.nextDate
+                          ? t('fieldService.stat.next', {
+                              date: fmtDate(selectedStat.nextDate),
+                            })
+                          : null,
+                      ]
+                        .filter(Boolean)
+                        .join('  ·  ')
+                    : t('fieldService.stat.firstTime')}
+                </Text>
+                {doubleBooked ? (
+                  <Text style={styles.warnHint}>
+                    {t('fieldService.doubleWeek')}
+                  </Text>
+                ) : null}
+              </>
+            ) : null}
 
             <Text style={styles.fieldLabel}>{t('fieldService.topicLabel')}</Text>
             <TextInput
@@ -432,6 +524,13 @@ export function FieldServiceForm({
               multiline
               maxLength={2000}
             />
+            {topicMatch ? (
+              <Text style={styles.statHint}>
+                {t('fieldService.topicUsed', {
+                  date: fmtDate(topicMatch.lastDate),
+                })}
+              </Text>
+            ) : null}
 
             <Text style={styles.fieldLabel}>{t('fieldService.linkLabel')}</Text>
             <TextInput
@@ -608,6 +707,18 @@ const styles = StyleSheet.create({
     color: '#475569',
     marginTop: 10,
     marginBottom: 4,
+  },
+  statHint: {
+    fontSize: 12,
+    color: '#0369a1',
+    marginTop: 6,
+    fontWeight: '600',
+  },
+  warnHint: {
+    fontSize: 12,
+    color: '#b45309',
+    marginTop: 4,
+    fontWeight: '700',
   },
   dayRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   dayChip: {

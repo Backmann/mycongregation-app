@@ -1114,7 +1114,21 @@
       "saveTemplate": "Save template",
       "saved": "Template saved",
       "result": "Created {{created}}, skipped {{skipped}}"
-    }
+    },
+    "tabs": {
+      "months": "By month",
+      "conductors": "Conductors"
+    },
+    "stat": {
+      "total": "total: {{count}}",
+      "last": "last: {{date}}",
+      "never": "not yet",
+      "next": "next: {{date}}",
+      "firstTime": "not led yet"
+    },
+    "doubleWeek": "Already leads a meeting this week",
+    "topicUsed": "Topic already used: {{date}}",
+    "conductorsEmpty": "No conductors assigned yet"
   },
   "cleaning": {
     "title": "Cleaning",

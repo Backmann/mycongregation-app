@@ -23,6 +23,7 @@ import {
   UpdateFieldServiceMeetingInput,
   fieldServiceApi,
   fieldServiceMonthThemeApi,
+  fieldServiceStatsApi,
   publishersApi,
 } from '../../../lib/api';
 import { usePermissions } from '../../../lib/permissions';
@@ -110,9 +111,18 @@ export default function FieldServiceMeetingsScreen() {
   const [target, setTarget] = useState<FieldServiceMeeting | 'new' | null>(null);
   const [addDefaultDate, setAddDefaultDate] = useState<string | undefined>();
   const [genOpen, setGenOpen] = useState(false);
+  const [tab, setTab] = useState<'months' | 'conductors'>('months');
 
-  const invalidate = () =>
+  const conductorStatsQuery = useQuery({
+    queryKey: ['field-service-conductor-stats'],
+    queryFn: () => fieldServiceStatsApi.conductorStats(),
+  });
+
+  const invalidate = () => {
     qc.invalidateQueries({ queryKey: ['field-service'] });
+    qc.invalidateQueries({ queryKey: ['field-service-conductor-stats'] });
+    qc.invalidateQueries({ queryKey: ['field-service-topic-history'] });
+  };
 
   const createM = useMutation({
     mutationFn: (input: CreateFieldServiceMeetingInput) =>
@@ -217,8 +227,24 @@ export default function FieldServiceMeetingsScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Month jump bar */}
-      <View style={styles.monthBar}>
+      <View style={styles.tabs}>
+        {(['months', 'conductors'] as const).map((tb) => (
+          <Pressable
+            key={tb}
+            style={[styles.tabItem, tab === tb && styles.tabItemOn]}
+            onPress={() => setTab(tb)}
+          >
+            <Text style={[styles.tabText, tab === tb && styles.tabTextOn]}>
+              {t(`fieldService.tabs.${tb}`)}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
+
+      {tab === 'months' && (
+        <>
+          {/* Month jump bar */}
+          <View style={styles.monthBar}>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -409,12 +435,71 @@ export default function FieldServiceMeetingsScreen() {
           </View>
         ))}
       </ScrollView>
+        </>
+      )}
+
+      {tab === 'conductors' && (
+        <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 48 }}>
+          {(conductorStatsQuery.data ?? []).length === 0 ? (
+            <Text style={styles.emptyMonth}>
+              {t('fieldService.conductorsEmpty')}
+            </Text>
+          ) : (
+            (conductorStatsQuery.data ?? [])
+              .slice()
+              .sort((a, b) => {
+                if (!a.lastDate && b.lastDate) return -1;
+                if (a.lastDate && !b.lastDate) return 1;
+                if (a.lastDate && b.lastDate)
+                  return a.lastDate.localeCompare(b.lastDate);
+                return 0;
+              })
+              .map((c) => {
+                const pub = publishersById.get(c.conductorPublisherId);
+                return (
+                  <View key={c.conductorPublisherId} style={styles.condRow}>
+                    <Text style={styles.condName}>
+                      {pub?.displayName ?? '—'}
+                    </Text>
+                    <Text style={styles.condStat}>
+                      {[
+                        t('fieldService.stat.total', { count: c.total }),
+                        c.lastDate
+                          ? t('fieldService.stat.last', {
+                              date: c.lastDate.split('-').reverse().join('.'),
+                            })
+                          : t('fieldService.stat.never'),
+                        c.nextDate
+                          ? t('fieldService.stat.next', {
+                              date: c.nextDate.split('-').reverse().join('.'),
+                            })
+                          : null,
+                      ]
+                        .filter(Boolean)
+                        .join('  ·  ')}
+                    </Text>
+                  </View>
+                );
+              })
+          )}
+        </ScrollView>
+      )}
 
       <FieldServiceForm
         target={target}
         weekStartISO={target && target !== 'new' ? target.weekStartDate : ''}
         pickDate={target === 'new'}
         defaultDate={addDefaultDate}
+        weekConductorIds={(week, excludeId) =>
+          meetings
+            .filter(
+              (m) =>
+                m.weekStartDate === week &&
+                m.id !== excludeId &&
+                !!m.conductorPublisherId,
+            )
+            .map((m) => m.conductorPublisherId as string)
+        }
         onClose={() => setTarget(null)}
         onCreate={(input) => createM.mutate(input)}
         onUpdate={(id, input) => updateM.mutate({ id, input })}
@@ -478,6 +563,34 @@ export default function FieldServiceMeetingsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f1f5f9' },
+  tabs: {
+    flexDirection: 'row',
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
+    paddingHorizontal: 12,
+    paddingTop: 8,
+    gap: 6,
+  },
+  tabItem: {
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+    borderBottomWidth: 2,
+    borderBottomColor: 'transparent',
+  },
+  tabItemOn: { borderBottomColor: '#0ea5e9' },
+  tabText: { fontSize: 14, fontWeight: '700', color: '#94a3b8' },
+  tabTextOn: { color: '#0369a1' },
+  condRow: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    padding: 14,
+    marginBottom: 8,
+  },
+  condName: { fontSize: 15, fontWeight: '700', color: '#0f172a' },
+  condStat: { fontSize: 13, color: '#475569', marginTop: 4 },
   center: {
     flex: 1,
     justifyContent: 'center',

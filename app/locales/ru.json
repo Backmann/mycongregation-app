@@ -1118,7 +1118,21 @@
       "saveTemplate": "Сохранить шаблон",
       "saved": "Шаблон сохранён",
       "result": "Создано {{created}}, пропущено {{skipped}}"
-    }
+    },
+    "tabs": {
+      "months": "По месяцам",
+      "conductors": "Ведущие"
+    },
+    "stat": {
+      "total": "всего: {{count}}",
+      "last": "последний: {{date}}",
+      "never": "ещё не вёл",
+      "next": "следующий: {{date}}",
+      "firstTime": "ещё не вёл встреч"
+    },
+    "doubleWeek": "Уже ведёт встречу на этой неделе",
+    "topicUsed": "Тема уже была: {{date}}",
+    "conductorsEmpty": "Пока нет назначенных ведущих"
   },
   "cleaning": {
     "title": "Уборка",

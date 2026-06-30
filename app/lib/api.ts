@@ -1039,6 +1039,33 @@ export const fieldServiceApi = {
   },
 };
 
+export interface ConductorStat {
+  conductorPublisherId: string;
+  total: number;
+  lastDate: string | null;
+  nextDate: string | null;
+}
+
+export interface TopicHistoryEntry {
+  topic: string;
+  lastDate: string;
+}
+
+export const fieldServiceStatsApi = {
+  async conductorStats(): Promise<ConductorStat[]> {
+    const { data } = await api.get<ConductorStat[]>(
+      '/field-service-meetings/conductor-stats',
+    );
+    return data;
+  },
+  async topicHistory(): Promise<TopicHistoryEntry[]> {
+    const { data } = await api.get<TopicHistoryEntry[]>(
+      '/field-service-meetings/topic-history',
+    );
+    return data;
+  },
+};
+
 export interface FieldServiceMonthTheme {
   id: string;
   congregationId: string;

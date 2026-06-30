@@ -1114,7 +1114,21 @@
       "saveTemplate": "Vorlage speichern",
       "saved": "Vorlage gespeichert",
       "result": "Erstellt {{created}}, übersprungen {{skipped}}"
-    }
+    },
+    "tabs": {
+      "months": "Nach Monat",
+      "conductors": "Leiter"
+    },
+    "stat": {
+      "total": "gesamt: {{count}}",
+      "last": "letzte: {{date}}",
+      "never": "noch nicht",
+      "next": "nächste: {{date}}",
+      "firstTime": "noch nicht geleitet"
+    },
+    "doubleWeek": "Leitet bereits eine Zusammenkunft diese Woche",
+    "topicUsed": "Thema schon verwendet: {{date}}",
+    "conductorsEmpty": "Noch keine Leiter zugewiesen"
   },
   "cleaning": {
     "title": "Reinigung",
