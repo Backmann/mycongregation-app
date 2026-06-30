@@ -60,6 +60,12 @@ export const CAPABILITY_CATEGORIES: CapabilityCategory[] = [
       { key: 'fs_making_disciples', label: 'Making Disciples' },
       { key: 'fs_explaining_beliefs', label: 'Explaining Your Beliefs' },
       { key: 'fs_talk', label: 'Talk', brotherOnly: true },
+      {
+        key: 'fs_meeting_conductor',
+        label: 'Conducts field-service meeting',
+        brotherOnly: true,
+        baptizedOnly: true,
+      },
     ],
   },
   {

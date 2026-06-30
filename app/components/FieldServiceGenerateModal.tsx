@@ -98,19 +98,28 @@ export function FieldServiceGenerateModal({
   }, [visible]);
 
   // Seed the editable template from the server, falling back to the default.
+  // Any address that matches a Kingdom Hall *name* is upgraded to that hall's
+  // real street address, so generated meetings carry a concrete address.
   useEffect(() => {
     if (!visible) return;
     const loaded = templateQuery.data;
     if (!loaded) return;
+    const resolveAddr = (addr: string) => {
+      const a = addr.trim().toLowerCase();
+      const hall = (hallsQuery.data ?? []).find(
+        (h) => h.name.trim().toLowerCase() === a,
+      );
+      return hall ? hall.address : addr;
+    };
     setSlots(
       (loaded.length ? loaded : DEFAULT_TEMPLATE).map((s) => ({
         ordinal: s.ordinal,
         dayOfWeek: s.dayOfWeek,
         startTime: s.startTime,
-        address: s.address,
+        address: resolveAddr(s.address),
       })),
     );
-  }, [visible, templateQuery.data]);
+  }, [visible, templateQuery.data, hallsQuery.data]);
 
   const saveTemplate = useMutation({
     mutationFn: () =>

@@ -387,7 +387,8 @@
       "duty_stage": "Сцена",
       "duty_ventilation": "Проветривание",
       "hospitality": "Гостеприимство",
-      "public_witnessing": "Служение с тележками"
+      "public_witnessing": "Служение с тележками",
+      "fs_meeting_conductor": "Проводит встречу для проповеди"
     },
     "selectAll": "Выбрать все"
   },

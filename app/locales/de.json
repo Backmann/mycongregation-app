@@ -387,7 +387,8 @@
       "duty_stage": "Bühne",
       "duty_ventilation": "Lüften",
       "hospitality": "Gastfreundschaft",
-      "public_witnessing": "Zeugnisgeben mit Wagen"
+      "public_witnessing": "Zeugnisgeben mit Wagen",
+      "fs_meeting_conductor": "Leitet Zusammenkunft für den Predigtdienst"
     },
     "selectAll": "Alle auswählen"
   },

@@ -387,7 +387,8 @@
       "duty_stage": "Stage",
       "duty_ventilation": "Ventilation",
       "hospitality": "Hospitality",
-      "public_witnessing": "Cart witnessing"
+      "public_witnessing": "Cart witnessing",
+      "fs_meeting_conductor": "Conducts field-service meeting"
     },
     "selectAll": "Select all"
   },

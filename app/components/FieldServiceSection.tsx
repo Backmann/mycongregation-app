@@ -482,6 +482,7 @@ export function FieldServiceForm({
               label={t('fieldService.conductor')}
               value={conductorPublisherId}
               onChange={setConductorPublisherId}
+              requiredCapability="fs_meeting_conductor"
             />
             {conductorPublisherId ? (
               <>
@@ -741,7 +742,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#0f172a',
   },
-  multiline: { minHeight: 64, textAlignVertical: 'top' },
+  multiline: { minHeight: 40, textAlignVertical: 'top' },
   modalActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 10 },
   modalCancel: { paddingVertical: 10, paddingHorizontal: 14 },
   modalCancelText: { fontSize: 15, color: '#64748b', fontWeight: '600' },

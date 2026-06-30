@@ -68,8 +68,8 @@ export default function FieldServiceMeetingsScreen() {
     queryFn: () => fieldServiceApi.list(),
   });
   const publishersQuery = useQuery({
-    queryKey: ['publishers'],
-    queryFn: () => publishersApi.list(),
+    queryKey: ['publishers', 'all'],
+    queryFn: () => publishersApi.list({ limit: 200 }),
   });
   const publishersById = new Map<string, Publisher>(
     (publishersQuery.data?.data ?? []).map((p) => [p.id, p]),
