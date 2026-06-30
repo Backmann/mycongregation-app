@@ -60,6 +60,14 @@ export const CAPABILITY_CATEGORIES: CapabilityCategory[] = [
       { key: 'fs_making_disciples', label: 'Making Disciples' },
       { key: 'fs_explaining_beliefs', label: 'Explaining Your Beliefs' },
       { key: 'fs_talk', label: 'Talk', brotherOnly: true },
+    ],
+  },
+  {
+    // Field-service meeting conductor — a distinct role (conducting the
+    // gathering for field ministry), kept separate from the meeting parts.
+    key: 'field_service_meeting',
+    label: 'Field-service meeting',
+    capabilities: [
       {
         key: 'fs_meeting_conductor',
         label: 'Conducts field-service meeting',
