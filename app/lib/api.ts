@@ -985,6 +985,7 @@ export interface FieldServiceMeeting {
   conductorPublisherId: string | null;
   topic: string | null;
   sourceUrl: string | null;
+  isGeneral: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -997,6 +998,7 @@ export interface CreateFieldServiceMeetingInput {
   conductorPublisherId?: string | null;
   topic?: string | null;
   sourceUrl?: string | null;
+  isGeneral?: boolean;
 }
 
 export type UpdateFieldServiceMeetingInput = Partial<

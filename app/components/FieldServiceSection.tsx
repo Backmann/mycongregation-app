@@ -5,6 +5,7 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
+  Switch,
   Text,
   TextInput,
   View,
@@ -23,6 +24,7 @@ import {
   hallsApi,
 } from '../lib/api';
 import { PublisherSelector } from './PublisherSelector';
+import { TimeWheel } from './TimeWheel';
 
 const TIME_RE = /^([01]\d|2[0-3]):[0-5]\d$/;
 const DAYS = [1, 2, 3, 4, 5, 6, 7] as const;
@@ -93,6 +95,14 @@ export function FieldServiceSection({
                   <Text style={styles.when}>
                     {t(`fieldService.days.${m.dayOfWeek}`)} · {m.startTime}
                   </Text>
+                  {m.isGeneral ? (
+                    <View style={styles.generalBadge}>
+                      <Ionicons name="people" size={12} color="#7c3aed" />
+                      <Text style={styles.generalBadgeText}>
+                        {t('fieldService.generalBadge')}
+                      </Text>
+                    </View>
+                  ) : null}
                   <ChipRow>
                     {isMine ? <MyBulb size={15} /> : null}
                     {conductor ? (
@@ -216,15 +226,17 @@ function FieldServiceForm({
   >(null);
   const [topic, setTopic] = useState('');
   const [sourceUrl, setSourceUrl] = useState('');
+  const [isGeneral, setIsGeneral] = useState(false);
 
   useEffect(() => {
     if (target === 'new') {
       setDayOfWeek(2);
-      setStartTime('');
+      setStartTime('10:30');
       setAddress('');
       setConductorPublisherId(null);
       setTopic('');
       setSourceUrl('');
+      setIsGeneral(false);
     } else if (target) {
       setDayOfWeek(target.dayOfWeek);
       setStartTime(target.startTime);
@@ -232,6 +244,7 @@ function FieldServiceForm({
       setConductorPublisherId(target.conductorPublisherId);
       setTopic(target.topic ?? '');
       setSourceUrl(target.sourceUrl ?? '');
+      setIsGeneral(target.isGeneral);
     }
   }, [target]);
 
@@ -256,6 +269,7 @@ function FieldServiceForm({
       conductorPublisherId,
       topic: topic.trim() || null,
       sourceUrl: sourceUrl.trim() || null,
+      isGeneral,
     };
     if (editing) {
       onUpdate(editing.id, base);
@@ -310,15 +324,7 @@ function FieldServiceForm({
             </View>
 
             <Text style={styles.fieldLabel}>{t('fieldService.timeLabel')}</Text>
-            <TextInput
-              style={styles.input}
-              value={startTime}
-              onChangeText={setStartTime}
-              placeholder={t('fieldService.form.timePlaceholder')}
-              placeholderTextColor="#94a3b8"
-              keyboardType="numbers-and-punctuation"
-              maxLength={5}
-            />
+            <TimeWheel value={startTime} onChange={setStartTime} />
 
             <Text style={styles.fieldLabel}>{t('fieldService.addressLabel')}</Text>
             {halls.length > 0 && (
@@ -356,7 +362,6 @@ function FieldServiceForm({
               maxLength={255}
             />
 
-            <Text style={styles.fieldLabel}>{t('fieldService.conductor')}</Text>
             <PublisherSelector
               label={t('fieldService.conductor')}
               value={conductorPublisherId}
@@ -386,6 +391,22 @@ function FieldServiceForm({
               keyboardType="url"
               maxLength={2000}
             />
+
+            <View style={styles.toggleRow}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.toggleLabel}>
+                  {t('fieldService.isGeneral')}
+                </Text>
+                <Text style={styles.toggleHint}>
+                  {t('fieldService.isGeneralHint')}
+                </Text>
+              </View>
+              <Switch
+                value={isGeneral}
+                onValueChange={setIsGeneral}
+                trackColor={{ true: '#0ea5e9', false: '#cbd5e1' }}
+              />
+            </View>
           </ScrollView>
 
           <View style={styles.modalActions}>
@@ -468,6 +489,26 @@ const styles = StyleSheet.create({
   },
   rowMain: { flex: 1, gap: 2 },
   when: { fontSize: 14, fontWeight: '700', color: '#0f172a' },
+  generalBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    gap: 3,
+    backgroundColor: '#f3e8ff',
+    borderRadius: 8,
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    marginTop: 4,
+  },
+  generalBadgeText: { fontSize: 11, fontWeight: '700', color: '#7c3aed' },
+  toggleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginTop: 14,
+  },
+  toggleLabel: { fontSize: 14, fontWeight: '600', color: '#0f172a' },
+  toggleHint: { fontSize: 12, color: '#64748b', marginTop: 2 },
   rowMine: { backgroundColor: '#fffbeb' },
   address: { fontSize: 13, color: '#475569' },
   topic: { fontSize: 13, color: '#64748b', fontStyle: 'italic' },

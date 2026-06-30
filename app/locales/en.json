@@ -1084,7 +1084,10 @@
       "5": "Fri",
       "6": "Sat",
       "7": "Sun"
-    }
+    },
+    "isGeneral": "Combined field-service meeting",
+    "isGeneralHint": "Meeting for the whole congregation",
+    "generalBadge": "Combined"
   },
   "cleaning": {
     "title": "Cleaning",

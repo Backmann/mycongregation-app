@@ -1084,7 +1084,10 @@
       "5": "Fr",
       "6": "Sa",
       "7": "So"
-    }
+    },
+    "isGeneral": "Gemeinsame Zusammenkunft für den Predigtdienst",
+    "isGeneralHint": "Zusammenkunft für die ganze Versammlung",
+    "generalBadge": "Gemeinsam"
   },
   "cleaning": {
     "title": "Reinigung",
