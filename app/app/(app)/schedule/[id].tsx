@@ -34,9 +34,22 @@ export default function AssignmentDetailScreen() {
   const updateMutation = useMutation({
     mutationFn: (input: UpdateAssignmentInput) =>
       assignmentsApi.update(id!, input),
-    onSuccess: () => {
+    onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['assignments'] });
       queryClient.invalidateQueries({ queryKey: ['assignment', id] });
+      const warnings = result.ruleWarnings;
+      if (warnings && warnings.length) {
+        const msg = warnings
+          .map((w) =>
+            t('rules.warn.prayerCapability', { name: w.publisherName }),
+          )
+          .join('\n');
+        if (Platform.OS === 'web') {
+          window.alert(msg);
+        } else {
+          Alert.alert(t('rules.warn.title'), msg);
+        }
+      }
     },
   });
 

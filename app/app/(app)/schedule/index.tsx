@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { createContext, useContext, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -88,6 +88,9 @@ function weekFromParam(raw: string | string[] | undefined): Date {
   }
   return startOfWeekMonday(new Date());
 }
+
+/** IDs of prayer slots auto-filled from the chairman (for the "авто" badge). */
+const AutoAssignedContext = createContext<Set<string>>(new Set());
 
 export default function ScheduleIndexScreen() {
   const { t, i18n } = useTranslation();
@@ -343,6 +346,28 @@ export default function ScheduleIndexScreen() {
     (e) => e.date < nextWeekISO && (e.endDate ?? e.date) >= weekStartISO,
   );
   const assignments = assignmentsQuery.data?.data ?? [];
+  // Prayer slots that currently mirror the chairman (rule on) -> "авто" badge.
+  const automationOn =
+    meetingSettingsQuery.data?.congregation.assignmentAutomationEnabled ?? false;
+  const autoAssignedIds: Set<string> = (() => {
+    const ids = new Set<string>();
+    if (!automationOn) return ids;
+    const chairmen = new Map<string, string | null>();
+    for (const a of assignments) {
+      if (a.partKey === 'midweek_chairman' || a.partKey === 'weekend_chairman') {
+        chairmen.set(`${a.weekStartDate}|${a.eventType}`, a.publisherId);
+      }
+    }
+    for (const a of assignments) {
+      const isPrayer =
+        a.partKey === 'midweek_closing_prayer' ||
+        a.partKey === 'weekend_opening_prayer';
+      if (!isPrayer || !a.publisherId) continue;
+      const chair = chairmen.get(`${a.weekStartDate}|${a.eventType}`);
+      if (chair && a.publisherId === chair) ids.add(a.id);
+    }
+    return ids;
+  })();
   const publishersById = new Map<string, Publisher>(
     (publishersQuery.data?.data ?? []).map((p) => [p.id, p]),
   );
@@ -541,7 +566,8 @@ export default function ScheduleIndexScreen() {
 
 
   return (
-    <View style={styles.container}>
+    <AutoAssignedContext.Provider value={autoAssignedIds}>
+      <View style={styles.container}>
       <WeekNavigator weekStart={weekStart} onChange={setWeekStart} />
       <AssignmentSheet
         assignment={editing}
@@ -1062,6 +1088,7 @@ export default function ScheduleIndexScreen() {
         )}
       </ScrollView>
     </View>
+    </AutoAssignedContext.Provider>
   );
 }
 
@@ -1373,6 +1400,7 @@ function AssignmentRow({
 }) {
   const { t } = useTranslation();
   const { myPublisherId } = useMyPublisher();
+  const isAuto = useContext(AutoAssignedContext).has(assignment.id);
   const isMine =
     !!myPublisherId &&
     (assignment.publisherId === myPublisherId ||
@@ -1446,6 +1474,12 @@ function AssignmentRow({
         <View style={styles.partLabelRow}>
           <Text style={styles.partLabel}>{partLabel}</Text>
           {isMine ? <MyBulb /> : null}
+          {isAuto ? (
+            <View style={styles.autoBadge}>
+              <Ionicons name="flash" size={10} color="#0369a1" />
+              <Text style={styles.autoBadgeText}>{t('schedule.autoBadge')}</Text>
+            </View>
+          ) : null}
         </View>
         {subtitle && (
           <Text style={styles.partTitle} numberOfLines={2}>
@@ -1639,6 +1673,16 @@ const styles = StyleSheet.create({
   orderBadgeInfo: { backgroundColor: '#f1f5f9' },
   partLabel: { fontSize: 15, fontWeight: '600', color: '#0f172a' },
   partLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  autoBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+    backgroundColor: '#e0f2fe',
+    borderRadius: 8,
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+  },
+  autoBadgeText: { fontSize: 10, fontWeight: '700', color: '#0369a1' },
   rowMine: { backgroundColor: '#fffbeb' },
   songHint: {
     fontSize: 13,

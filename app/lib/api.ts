@@ -249,6 +249,12 @@ export interface Assignment {
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;
+  ruleWarnings?: {
+    code: string;
+    partKey: string;
+    capability: string;
+    publisherName: string;
+  }[];
 }
 
 export interface CreateAssignmentInput {
@@ -587,7 +593,12 @@ export interface MeetingSettingsVersion {
 }
 
 export interface MeetingSettingsOverview {
-  congregation: { id: string; name: string; timezone: string | null };
+  congregation: {
+    id: string;
+    name: string;
+    timezone: string | null;
+    assignmentAutomationEnabled: boolean;
+  };
   versions: MeetingSettingsVersion[];
   effective: MeetingSettingsVersion | null;
 }
@@ -610,6 +621,7 @@ export const meetingSettingsApi = {
   async updateCongregation(input: {
     name?: string;
     timezone?: string;
+    assignmentAutomationEnabled?: boolean;
   }): Promise<void> {
     await api.patch('/meeting-settings/congregation', input);
   },

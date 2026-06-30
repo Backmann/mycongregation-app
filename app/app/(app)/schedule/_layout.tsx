@@ -34,7 +34,7 @@ export default function ScheduleLayout() {
               {canViewLocalNeeds && (
                 <Pressable
                   onPress={() => router.push('/local-needs' as any)}
-                  style={{ paddingHorizontal: 10 }}
+                  style={{ paddingHorizontal: 8 }}
                   hitSlop={8}
                   accessibilityLabel={t('schedule.a11y.localNeeds')}
                 >
@@ -44,7 +44,7 @@ export default function ScheduleLayout() {
               {canCoordinatePublicTalks && (
                 <Pressable
                   onPress={() => router.push('/talk-coordinator' as any)}
-                  style={{ paddingHorizontal: 10 }}
+                  style={{ paddingHorizontal: 8 }}
                   hitSlop={8}
                   accessibilityLabel={t('schedule.a11y.talkCoordinator')}
                 >
@@ -53,7 +53,7 @@ export default function ScheduleLayout() {
               )}
               <Pressable
                 onPress={() => router.push('/special-events' as any)}
-                style={{ paddingHorizontal: 10 }}
+                style={{ paddingHorizontal: 8 }}
                 hitSlop={8}
                 accessibilityLabel={t('schedule.a11y.events')}
               >
@@ -62,7 +62,7 @@ export default function ScheduleLayout() {
               {canImport && (
                 <Pressable
                   onPress={() => router.push('/schedule/import' as any)}
-                  style={{ paddingHorizontal: 10 }}
+                  style={{ paddingHorizontal: 8 }}
                   hitSlop={8}
                   accessibilityLabel={t('schedule.a11y.importEpub')}
                 >
@@ -71,12 +71,22 @@ export default function ScheduleLayout() {
               )}
               {canCreate && (
                 <Pressable
+                  onPress={() => router.push('/schedule/rules' as any)}
+                  style={{ paddingHorizontal: 8 }}
+                  hitSlop={8}
+                  accessibilityLabel={t('schedule.a11y.rules')}
+                >
+                  <Ionicons name="options-outline" size={24} color="#0ea5e9" />
+                </Pressable>
+              )}
+              {canCreate && (
+                <Pressable
                   onPress={() => router.push('/schedule/new' as any)}
-                  style={{ paddingHorizontal: 10 }}
+                  style={{ paddingHorizontal: 8 }}
                   hitSlop={8}
                   accessibilityLabel={t('schedule.a11y.newAssignment')}
                 >
-                  <Ionicons name="add" size={28} color="#0ea5e9" />
+                  <Ionicons name="add" size={24} color="#0ea5e9" />
                 </Pressable>
               )}
             </View>
@@ -94,6 +104,13 @@ export default function ScheduleLayout() {
         name="new"
         options={{
           title: t('schedule.title.new'),
+          headerLeft: () => <BackButton fallback="/schedule" toParent />,
+        }}
+      />
+      <Stack.Screen
+        name="rules"
+        options={{
+          title: t('schedule.title.rules'),
           headerLeft: () => <BackButton fallback="/schedule" toParent />,
         }}
       />

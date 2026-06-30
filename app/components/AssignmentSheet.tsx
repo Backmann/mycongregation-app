@@ -1,4 +1,5 @@
 import {
+  Alert,
   Modal,
   Platform,
   Pressable,
@@ -91,6 +92,21 @@ export function AssignmentSheet({
     },
     onError: (_e, _input, ctx) => {
       if (ctx?.prev) queryClient.setQueryData(queryKey, ctx.prev);
+    },
+    onSuccess: (result) => {
+      const warnings = (result as Assignment).ruleWarnings;
+      if (warnings && warnings.length) {
+        const msg = warnings
+          .map((w) =>
+            t('rules.warn.prayerCapability', { name: w.publisherName }),
+          )
+          .join('\n');
+        if (Platform.OS === 'web') {
+          window.alert(msg);
+        } else {
+          Alert.alert(t('rules.warn.title'), msg);
+        }
+      }
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['assignments'] });

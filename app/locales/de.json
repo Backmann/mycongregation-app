@@ -677,14 +677,16 @@
       "list": "Programm",
       "detail": "Zuteilung",
       "new": "Neue Zuteilung",
-      "import": "MWB importieren"
+      "import": "MWB importieren",
+      "rules": "Versammlungsregeln"
     },
     "a11y": {
       "importEpub": "EPUB importieren",
       "newAssignment": "Neue Zuteilung",
       "events": "Termine",
       "localNeeds": "Örtliche Bedürfnisse",
-      "talkCoordinator": "Redner-Koordinator"
+      "talkCoordinator": "Redner-Koordinator",
+      "rules": "Regeln"
     },
     "noAssignments": "Keine Zuteilungen für diese Woche.",
     "unassigned": "Nicht zugeteilt",
@@ -811,7 +813,8 @@
         "silent": "Still übernehmen",
         "silentHint": "Änderungen ohne Benachrichtigung übernehmen."
       }
-    }
+    },
+    "autoBadge": "auto"
   },
   "audit": {
     "noReportId": "Keine Bericht-ID angegeben.",
@@ -1777,6 +1780,30 @@
       "upcoming": "Geplant",
       "noTalk": "Kein Vortrag gewählt",
       "phone": "Telefon"
+    }
+  },
+  "rules": {
+    "intro": "Automatisierungsregeln speziell für eure Versammlung. Sie gehören nicht zur gemeinsamen Vorlage und sind standardmäßig aus.",
+    "on": "Ein",
+    "off": "Aus",
+    "adminOnly": "Nur ein Administrator kann Regeln ändern.",
+    "autoAssign": {
+      "title": "Auto-Zuweisungen",
+      "whatTitle": "Was sie bewirkt",
+      "midweekTitle": "Unter der Woche",
+      "midweekBody": "Wer als Vorsitzender der Zusammenkunft eingeteilt ist, erhält automatisch das Schlussgebet.",
+      "weekendTitle": "Wochenende",
+      "weekendBody": "Wer als Vorsitzender der Zusammenkunft eingeteilt ist, erhält automatisch das Anfangsgebet.",
+      "notesTitle": "So funktioniert es",
+      "noteCapability": "Das Gebet wird nur eingetragen, wenn der Bruder die passende Fähigkeit hat. Andernfalls erscheint ein Hinweis, sie hinzuzufügen, und das Feld bleibt leer.",
+      "noteManual": "Manuelle Änderungen haben Vorrang: Wenn du jemand anderen für das Gebet einträgst, rührt die Regel es nicht mehr an.",
+      "noteExisting": "Bereits ausgefüllte Wochen werden nicht geändert — die Regel greift bei neuen Einteilungen.",
+      "notePublished": "Ist die Zusammenkunft schon veröffentlicht, wird die Änderung als „geändert“ markiert (es wird benachrichtigt).",
+      "soon": "Demnächst: Der Redner des Programmpunkts „Schätze aus Gottes Wort“ wird automatisch zum Mikrofontragen eingeteilt."
+    },
+    "warn": {
+      "title": "Fähigkeit nicht gesetzt",
+      "prayerCapability": "Um das Gebet automatisch zuzuweisen, füge {{name}} die Fähigkeit „Gebet“ in der Verkündigerkarte hinzu."
     }
   }
 }

@@ -677,14 +677,16 @@
       "list": "Schedule",
       "detail": "Assignment",
       "new": "New Assignment",
-      "import": "Import MWB"
+      "import": "Import MWB",
+      "rules": "Congregation rules"
     },
     "a11y": {
       "importEpub": "Import EPUB",
       "newAssignment": "New assignment",
       "events": "Events",
       "localNeeds": "Local Needs",
-      "talkCoordinator": "Talk coordinator"
+      "talkCoordinator": "Talk coordinator",
+      "rules": "Rules"
     },
     "noAssignments": "No assignments for this week.",
     "unassigned": "Unassigned",
@@ -811,7 +813,8 @@
         "silent": "Apply silently",
         "silentHint": "Apply the changes without notifying publishers."
       }
-    }
+    },
+    "autoBadge": "auto"
   },
   "audit": {
     "noReportId": "No report id supplied.",
@@ -1777,6 +1780,30 @@
       "upcoming": "Upcoming",
       "noTalk": "No talk selected",
       "phone": "Phone"
+    }
+  },
+  "rules": {
+    "intro": "Automation rules specific to your congregation. They are not part of the shared template and are off by default.",
+    "on": "On",
+    "off": "Off",
+    "adminOnly": "Only an admin can change rules.",
+    "autoAssign": {
+      "title": "Auto-assignments",
+      "whatTitle": "What it does",
+      "midweekTitle": "Midweek",
+      "midweekBody": "Whoever is assigned meeting chairman is automatically given the concluding prayer.",
+      "weekendTitle": "Weekend",
+      "weekendBody": "Whoever is assigned meeting chairman is automatically given the opening prayer.",
+      "notesTitle": "How it works",
+      "noteCapability": "The prayer is filled only if the brother has the matching capability. If not, you will be prompted to add it and the slot stays empty.",
+      "noteManual": "Manual edits win: if you assign someone else to the prayer, the rule will not touch it again.",
+      "noteExisting": "Already-filled weeks are not changed — the rule applies on new assignments.",
+      "notePublished": "If the meeting is already published, the change marks it as changed (a notification is sent).",
+      "soon": "Coming soon: the Treasures from God's Word speaker will be auto-assigned to carry a microphone."
+    },
+    "warn": {
+      "title": "Capability not set",
+      "prayerCapability": "To auto-assign the prayer, add the “Prayer” capability to {{name}} in their publisher card."
     }
   }
 }
