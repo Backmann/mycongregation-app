@@ -1799,11 +1799,14 @@
       "noteManual": "Manuelle Änderungen haben Vorrang: Wenn du jemand anderen für das Gebet einträgst, rührt die Regel es nicht mehr an.",
       "noteExisting": "Bereits ausgefüllte Wochen werden nicht geändert — die Regel greift bei neuen Einteilungen.",
       "notePublished": "Ist die Zusammenkunft schon veröffentlicht, wird die Änderung als „geändert“ markiert (es wird benachrichtigt).",
-      "soon": "Demnächst: Der Redner des Programmpunkts „Schätze aus Gottes Wort“ wird automatisch zum Mikrofontragen eingeteilt."
+      "micTitle": "Mikrofon",
+      "micBody": "Wer den Vortrag „Schätze aus Gottes Wort“ hält, wird automatisch Mikrofon Nr. 1 zugeteilt."
     },
     "warn": {
       "title": "Fähigkeit nicht gesetzt",
-      "prayerCapability": "Um das Gebet automatisch zuzuweisen, füge {{name}} die Fähigkeit „Gebet“ in der Verkündigerkarte hinzu."
+      "prayerCapability": "Um das Gebet automatisch zuzuweisen, füge {{name}} die Fähigkeit „Gebet“ in der Verkündigerkarte hinzu.",
+      "micCapability": "{{name}} wurde Mikrofon Nr. 1 zugeteilt, hat aber nicht die Fähigkeit „Mikrofon“ — prüfe die Verkündigerkarte.",
+      "micTaken": "Mikrofon Nr. 1 ist bereits manuell belegt — Auto-Zuweisung übersprungen."
     }
   }
 }

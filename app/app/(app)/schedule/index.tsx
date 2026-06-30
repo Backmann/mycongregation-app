@@ -368,6 +368,29 @@ export default function ScheduleIndexScreen() {
     }
     return ids;
   })();
+  // Microphone slot 0 that currently mirrors the Treasures-talk speaker.
+  const autoDutyIds: Set<string> = (() => {
+    const ids = new Set<string>();
+    if (!automationOn) return ids;
+    const treasuresByWeek = new Map<string, string | null>();
+    for (const a of assignments) {
+      if (a.partKey === 'treasures_talk' && a.eventType === 'midweek') {
+        treasuresByWeek.set(a.weekStartDate, a.publisherId);
+      }
+    }
+    for (const d of duties) {
+      if (
+        d.dutyType === 'microphone' &&
+        d.slotIndex === 0 &&
+        d.eventType === 'midweek' &&
+        d.publisherId &&
+        treasuresByWeek.get(d.weekStartDate) === d.publisherId
+      ) {
+        ids.add(d.id);
+      }
+    }
+    return ids;
+  })();
   const publishersById = new Map<string, Publisher>(
     (publishersQuery.data?.data ?? []).map((p) => [p.id, p]),
   );
@@ -927,6 +950,7 @@ export default function ScheduleIndexScreen() {
               <DutiesSection
                 only="midweek"
                 duties={duties}
+                autoDutyIds={autoDutyIds}
                 publishersById={publishersById}
                 canEdit={canEditDuties}
                 compact={dutiesNarrow}
@@ -955,6 +979,7 @@ export default function ScheduleIndexScreen() {
               <DutiesSection
                 only="weekend"
                 duties={duties}
+                autoDutyIds={autoDutyIds}
                 publishersById={publishersById}
                 canEdit={canEditDuties}
                 compact={dutiesNarrow}

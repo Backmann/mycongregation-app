@@ -251,9 +251,9 @@ export interface Assignment {
   deletedAt: string | null;
   ruleWarnings?: {
     code: string;
-    partKey: string;
-    capability: string;
     publisherName: string;
+    partKey?: string;
+    capability?: string;
   }[];
 }
 

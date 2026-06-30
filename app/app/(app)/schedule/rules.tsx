@@ -82,17 +82,17 @@ export default function CongregationRulesScreen() {
           title={t('rules.autoAssign.weekendTitle')}
           body={t('rules.autoAssign.weekendBody')}
         />
+        <RuleLine
+          icon="mic-outline"
+          title={t('rules.autoAssign.micTitle')}
+          body={t('rules.autoAssign.micBody')}
+        />
 
         <Text style={styles.sectionHead}>{t('rules.autoAssign.notesTitle')}</Text>
         <Bullet text={t('rules.autoAssign.noteCapability')} />
         <Bullet text={t('rules.autoAssign.noteManual')} />
         <Bullet text={t('rules.autoAssign.noteExisting')} />
         <Bullet text={t('rules.autoAssign.notePublished')} />
-
-        <View style={styles.soonBox}>
-          <Ionicons name="time-outline" size={15} color="#92400e" />
-          <Text style={styles.soonText}>{t('rules.autoAssign.soon')}</Text>
-        </View>
       </View>
 
       {!isAdmin ? (
@@ -194,17 +194,6 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
   bulletText: { flex: 1, fontSize: 13, color: '#475569', lineHeight: 18 },
-  soonBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: '#fef3c7',
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    marginTop: 12,
-  },
-  soonText: { flex: 1, fontSize: 12, color: '#92400e', lineHeight: 17 },
   adminNote: {
     fontSize: 12,
     color: '#94a3b8',

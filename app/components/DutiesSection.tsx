@@ -90,6 +90,8 @@ type Props = {
   hideHeader?: boolean;
   /** Tighten horizontal padding/gaps (e.g. when shown two-up on a phone). */
   compact?: boolean;
+  /** Duty ids auto-filled by a congregation rule (shows an "авто" badge). */
+  autoDutyIds?: Set<string>;
 };
 
 export function DutiesSection({
@@ -107,6 +109,7 @@ export function DutiesSection({
   only,
   hideHeader,
   compact,
+  autoDutyIds,
 }: Props) {
   const { t } = useTranslation();
   const { myPublisherId } = useMyPublisher();
@@ -214,7 +217,17 @@ export function DutiesSection({
                 {list.map((d) => (
                   <View key={d.id} style={styles.editRow}>
                     <View style={styles.editCell}>
-                      <Text style={styles.dutyLabel}>{dutyLabel(d, t)}</Text>
+                      <View style={styles.dutyLabelRow}>
+                        <Text style={styles.dutyLabel}>{dutyLabel(d, t)}</Text>
+                        {autoDutyIds?.has(d.id) ? (
+                          <View style={styles.autoBadge}>
+                            <Ionicons name="flash" size={10} color="#0369a1" />
+                            <Text style={styles.autoBadgeText}>
+                              {t('schedule.autoBadge')}
+                            </Text>
+                          </View>
+                        ) : null}
+                      </View>
                       <PublisherSelector
                         variant="chip"
                         emptyLabel={t('duties.unassigned')}
@@ -430,6 +443,17 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   dutyLabel: { fontSize: 14, color: '#0f172a', flexShrink: 1 },
+  dutyLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  autoBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+    backgroundColor: '#e0f2fe',
+    borderRadius: 8,
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+  },
+  autoBadgeText: { fontSize: 10, fontWeight: '700', color: '#0369a1' },
   rowMine: { backgroundColor: '#fffbeb' },
 
   // editable list

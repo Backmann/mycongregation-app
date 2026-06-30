@@ -98,7 +98,11 @@ export function AssignmentSheet({
       if (warnings && warnings.length) {
         const msg = warnings
           .map((w) =>
-            t('rules.warn.prayerCapability', { name: w.publisherName }),
+            w.code === 'mic_taken'
+              ? t('rules.warn.micTaken')
+              : w.code === 'mic_capability_off'
+                ? t('rules.warn.micCapability', { name: w.publisherName })
+                : t('rules.warn.prayerCapability', { name: w.publisherName }),
           )
           .join('\n');
         if (Platform.OS === 'web') {
