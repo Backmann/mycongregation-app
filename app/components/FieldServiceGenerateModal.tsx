@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   Modal,
   Pressable,
@@ -24,6 +24,27 @@ type EditSlot = {
   startTime: string;
   address: string;
 };
+
+/**
+ * ISO date ('YYYY-MM-DD') of the Nth occurrence of an ISO weekday
+ * (1=Mon..7=Sun) in a month, or null when it doesn't exist (e.g. a 5th
+ * Saturday). Mirrors the server generator so the preview matches exactly.
+ */
+function nthWeekdayISO(
+  year: number,
+  month: number, // 1-12
+  isoDow: number, // 1=Mon..7=Sun
+  ordinal: number,
+): string | null {
+  const jsTarget = isoDow === 7 ? 0 : isoDow;
+  const first = new Date(year, month - 1, 1);
+  const day = 1 + ((jsTarget - first.getDay() + 7) % 7) + (ordinal - 1) * 7;
+  const date = new Date(year, month - 1, day);
+  if (date.getMonth() !== month - 1) return null;
+  const mm = String(date.getMonth() + 1).padStart(2, '0');
+  const dd = String(date.getDate()).padStart(2, '0');
+  return `${date.getFullYear()}-${mm}-${dd}`;
+}
 
 /** Lionel's real default rota — shown when the saved template is empty. */
 const DEFAULT_TEMPLATE: EditSlot[] = [
@@ -143,6 +164,47 @@ export function FieldServiceGenerateModal({
           .toDate()
           .toLocaleDateString(i18n.language, { month: 'long', year: 'numeric' })
       : '';
+
+  // Live preview: the exact dates that "Generate" will produce.
+  const preview = useMemo(() => {
+    if (!year || !month) return [];
+    const out: {
+      label: string;
+      items: { dateISO: string; dayOfWeek: number; address: string }[];
+    }[] = [];
+    let y = year;
+    let m = month;
+    for (let i = 0; i < months; i += 1) {
+      const items: { dateISO: string; dayOfWeek: number; address: string }[] =
+        [];
+      for (const s of slots) {
+        const iso = nthWeekdayISO(y, m, s.dayOfWeek, s.ordinal);
+        if (iso)
+          items.push({
+            dateISO: iso,
+            dayOfWeek: s.dayOfWeek,
+            address: s.address.trim(),
+          });
+      }
+      items.sort((a, b) => a.dateISO.localeCompare(b.dateISO));
+      out.push({
+        label: dayjs(`${y}-${String(m).padStart(2, '0')}-01`)
+          .toDate()
+          .toLocaleDateString(i18n.language, {
+            month: 'long',
+            year: 'numeric',
+          }),
+        items,
+      });
+      m += 1;
+      if (m > 12) {
+        m = 1;
+        y += 1;
+      }
+    }
+    return out;
+  }, [year, month, months, slots, i18n.language]);
+  const previewTotal = preview.reduce((n, mo) => n + mo.items.length, 0);
 
   const updateSlot = (i: number, patch: Partial<EditSlot>) =>
     setSlots((prev) => prev.map((s, idx) => (idx === i ? { ...s, ...patch } : s)));
@@ -367,6 +429,29 @@ export function FieldServiceGenerateModal({
               </Text>
             </Pressable>
 
+            <View style={styles.previewBox}>
+              <Text style={styles.previewTitle}>
+                {t('fieldService.generate.previewTitle')} ({previewTotal})
+              </Text>
+              {previewTotal === 0 ? (
+                <Text style={styles.previewEmpty}>
+                  {t('fieldService.generate.previewEmpty')}
+                </Text>
+              ) : (
+                preview.map((mo) => (
+                  <View key={mo.label} style={styles.previewMonth}>
+                    <Text style={styles.previewMonthLabel}>{mo.label}</Text>
+                    {mo.items.map((it) => (
+                      <Text key={it.dateISO} style={styles.previewItem}>
+                        {t(`fieldService.days.${it.dayOfWeek}`)}{' '}
+                        {dayjs(it.dateISO).format('D.MM')} · {it.address}
+                      </Text>
+                    ))}
+                  </View>
+                ))
+              )}
+            </View>
+
             {result && (
               <View style={styles.resultBox}>
                 <Ionicons name="checkmark-circle" size={18} color="#15803d" />
@@ -554,6 +639,29 @@ const styles = StyleSheet.create({
   },
   saveTemplateOk: { backgroundColor: '#dcfce7' },
   saveTemplateText: { fontSize: 13, fontWeight: '700', color: '#475569' },
+  previewBox: {
+    backgroundColor: '#f0f9ff',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#bae6fd',
+    padding: 12,
+    marginBottom: 14,
+  },
+  previewTitle: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#0369a1',
+    marginBottom: 8,
+  },
+  previewEmpty: { fontSize: 13, color: '#94a3b8' },
+  previewMonth: { marginBottom: 8 },
+  previewMonthLabel: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#0f172a',
+    marginBottom: 3,
+  },
+  previewItem: { fontSize: 12, color: '#334155', lineHeight: 18 },
   resultBox: {
     flexDirection: 'row',
     alignItems: 'center',

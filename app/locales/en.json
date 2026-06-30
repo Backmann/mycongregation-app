@@ -1104,8 +1104,8 @@
       "startMonth": "Start month",
       "monthsCount": "How many months",
       "template": "Meeting template",
-      "hint": "Conductor and topic stay empty — fill in later.",
-      "slot": "Slot {{n}}",
+      "hint": "Each rule is a recurring meeting: which Saturday of the month, when and where. Dates for the chosen months are computed automatically. Conductor and topic stay empty.",
+      "slot": "Rule {{n}}",
       "ordinal": "Which one in the month",
       "day": "Day",
       "time": "Time",
@@ -1113,7 +1113,9 @@
       "addSlot": "Add slot",
       "saveTemplate": "Save template",
       "saved": "Template saved",
-      "result": "Created {{created}}, skipped {{skipped}}"
+      "result": "Created {{created}}, skipped {{skipped}}",
+      "previewTitle": "Will be created",
+      "previewEmpty": "No matching dates — check the template"
     },
     "tabs": {
       "months": "By month",

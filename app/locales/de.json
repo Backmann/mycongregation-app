@@ -1104,16 +1104,18 @@
       "startMonth": "Startmonat",
       "monthsCount": "Wie viele Monate",
       "template": "Vorlage",
-      "hint": "Leitung und Thema bleiben leer — später ausfüllen.",
-      "slot": "Slot {{n}}",
-      "ordinal": "Welche im Monat",
+      "hint": "Jede Regel ist eine wiederkehrende Zusammenkunft: welcher Samstag im Monat, wann und wo. Die Daten für die gewählten Monate werden automatisch berechnet. Leitung und Thema bleiben leer.",
+      "slot": "Regel {{n}}",
+      "ordinal": "Die wievielte im Monat",
       "day": "Tag",
       "time": "Zeit",
       "address": "Adresse",
       "addSlot": "Slot hinzufügen",
       "saveTemplate": "Vorlage speichern",
       "saved": "Vorlage gespeichert",
-      "result": "Erstellt {{created}}, übersprungen {{skipped}}"
+      "result": "Erstellt {{created}}, übersprungen {{skipped}}",
+      "previewTitle": "Wird erstellt",
+      "previewEmpty": "Keine passenden Daten — Vorlage prüfen"
     },
     "tabs": {
       "months": "Nach Monat",
