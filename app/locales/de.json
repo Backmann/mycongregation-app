@@ -1097,7 +1097,8 @@
       "hintDate": "Datum wählen",
       "hintTime": "Uhrzeit angeben",
       "hintAddress": "Adresse angeben",
-      "eventWarn": "An diesem Tag: {{title}}"
+      "eventWarn": "An diesem Tag: {{title}}",
+      "suggest": "Leiter vorschlagen"
     },
     "days": {
       "1": "Mo",
@@ -1152,7 +1153,8 @@
     },
     "doubleWeek": "Leitet bereits eine Zusammenkunft diese Woche",
     "topicUsed": "Thema schon verwendet: {{date}}",
-    "conductorsEmpty": "Noch keine Leiter zugewiesen"
+    "conductorsEmpty": "Noch keine Leiter zugewiesen",
+    "duplicate": "Zusammenkunft duplizieren"
   },
   "cleaning": {
     "title": "Reinigung",

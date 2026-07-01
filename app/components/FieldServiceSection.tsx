@@ -24,6 +24,8 @@ import {
   hallsApi,
   fieldServiceStatsApi,
   specialEventsApi,
+  publishersApi,
+  absencesApi,
 } from '../lib/api';
 import { resolveHallAddress } from '../lib/hallAddress';
 import { PublisherSelector } from './PublisherSelector';
@@ -238,6 +240,7 @@ export function FieldServiceForm({
   onCreate,
   onUpdate,
   pickDate = false,
+  prefill,
   defaultDate,
   weekConductorIds,
 }: {
@@ -248,6 +251,15 @@ export function FieldServiceForm({
   onUpdate: (id: string, input: UpdateFieldServiceMeetingInput) => void;
   /** When true (e.g. the month page), pick a full date instead of a weekday. */
   pickDate?: boolean;
+  /** Prefill for a brand-new meeting (used by "duplicate"). */
+  prefill?: {
+    startTime?: string;
+    address?: string;
+    topic?: string;
+    sourceUrl?: string;
+    isGeneral?: boolean;
+    conductorPublisherId?: string | null;
+  };
   /** Default date (ISO) to preselect in date-pick mode. */
   defaultDate?: string;
   /**
@@ -292,12 +304,12 @@ export function FieldServiceForm({
   useEffect(() => {
     if (target === 'new') {
       setDayOfWeek(2);
-      setStartTime('10:30');
-      setAddress('');
-      setConductorPublisherId(null);
-      setTopic('');
-      setSourceUrl('');
-      setIsGeneral(false);
+      setStartTime(prefill?.startTime ?? '10:30');
+      setAddress(prefill?.address ?? '');
+      setConductorPublisherId(prefill?.conductorPublisherId ?? null);
+      setTopic(prefill?.topic ?? '');
+      setSourceUrl(prefill?.sourceUrl ?? '');
+      setIsGeneral(prefill?.isGeneral ?? false);
       setPickedDate(defaultDate ?? '');
     } else if (target) {
       setDayOfWeek(target.dayOfWeek);
@@ -357,6 +369,55 @@ export function FieldServiceForm({
   const clashingEvents = (eventsQuery.data ?? []).filter(
     (e) => e.date <= meetingDateISO && meetingDateISO <= (e.endDate ?? e.date),
   );
+  // Candidates + absences: power the "suggest" button and picker ordering.
+  const formPublishersQuery = useQuery({
+    queryKey: ['publishers', 'all'],
+    queryFn: () => publishersApi.list({ limit: 200 }),
+    enabled: visible,
+    staleTime: 60 * 1000,
+  });
+  const formAbsencesQuery = useQuery({
+    queryKey: ['absences', 'week-warn'],
+    queryFn: () => absencesApi.list(),
+    enabled: visible,
+    staleTime: 60 * 1000,
+  });
+  const isAbsentOnDate = (publisherId: string) =>
+    (formAbsencesQuery.data ?? []).some(
+      (a) =>
+        a.publisherId === publisherId &&
+        a.startDate <= meetingDateISO &&
+        meetingDateISO <= (a.endDate ?? a.startDate),
+    );
+  // Rank: never led floats to the very top, then the longest-not-led.
+  const conductorRank = (publisherId: string) => {
+    const st = conductorStatsQuery.data?.find(
+      (c) => c.conductorPublisherId === publisherId,
+    );
+    if (!st || st.total === 0 || !st.lastDate) return 0;
+    return Date.parse(st.lastDate);
+  };
+  const suggestConductor = () => {
+    const busy = weekConductorIds
+      ? weekConductorIds(effectiveWeek, editing?.id)
+      : [];
+    const candidates = (formPublishersQuery.data?.data ?? []).filter(
+      (p) =>
+        p.isActive !== false &&
+        p.gender === 'brother' &&
+        p.capabilities?.fs_meeting_conductor === true &&
+        p.id !== conductorPublisherId &&
+        !busy.includes(p.id) &&
+        !isAbsentOnDate(p.id),
+    );
+    if (candidates.length === 0) return;
+    candidates.sort(
+      (a, b) =>
+        conductorRank(a.id) - conductorRank(b.id) ||
+        a.displayName.localeCompare(b.displayName),
+    );
+    setConductorPublisherId(candidates[0].id);
+  };
   const selectedStat = conductorPublisherId
     ? (conductorStatsQuery.data?.find(
         (c) => c.conductorPublisherId === conductorPublisherId,
@@ -529,6 +590,7 @@ export function FieldServiceForm({
               onChange={setConductorPublisherId}
               requiredCapability="fs_meeting_conductor"
               currentWeekStart={effectiveWeek}
+              sortRank={conductorRank}
               rowMeta={(id) => {
                 const st = conductorStatsQuery.data?.find(
                   (c) => c.conductorPublisherId === id,
@@ -549,6 +611,16 @@ export function FieldServiceForm({
                 return bits.join(' · ');
               }}
             />
+            <Pressable
+              onPress={suggestConductor}
+              hitSlop={6}
+              style={styles.suggestBtn}
+            >
+              <Ionicons name="sparkles-outline" size={14} color="#0369a1" />
+              <Text style={styles.suggestBtnText}>
+                {t('fieldService.form.suggest')}
+              </Text>
+            </Pressable>
             {conductorPublisherId ? (
               <>
                 <Text style={styles.statHint}>
@@ -812,6 +884,14 @@ const styles = StyleSheet.create({
   },
   multiline: { minHeight: 40, textAlignVertical: 'top' },
   modalActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 10 },
+  suggestBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    alignSelf: 'flex-start',
+    marginTop: 6,
+  },
+  suggestBtnText: { color: '#0369a1', fontSize: 13, fontWeight: '600' },
   saveHint: {
     color: '#dc2626',
     fontSize: 12,

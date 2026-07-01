@@ -72,6 +72,9 @@ interface Props {
   emptyLabel?: string;
   /** Optional extra info line under each candidate (e.g. rotation stats). */
   rowMeta?: (publisherId: string) => string | null;
+  /** Optional explicit ordering: lower rank floats up. Absent candidates
+   * still sink to the bottom. Overrides the built-in history sort. */
+  sortRank?: (publisherId: string) => number;
 }
 
 const ISO_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -135,6 +138,7 @@ export function PublisherSelector({
   variant = 'field',
   emptyLabel,
   rowMeta,
+  sortRank,
 }: Props) {
   const { t, i18n } = useTranslation();
   const [open, setOpen] = useState(false);
@@ -301,7 +305,17 @@ export function PublisherSelector({
   // group float up whoever least-recently (or never) did this exact
   // part/duty — or, for assistant pickers, was least-recently paired with the
   // primary. Empty/undefined (never, in 3 months) ranks first.
-  const sorted = historyEnabled
+  const sorted = sortRank
+    ? [...filtered].sort((a, b) => {
+        const aAbsent = absentThisWeek.has(a.id) ? 1 : 0;
+        const bAbsent = absentThisWeek.has(b.id) ? 1 : 0;
+        if (aAbsent !== bAbsent) return aAbsent - bAbsent;
+        const ra = sortRank(a.id);
+        const rb = sortRank(b.id);
+        if (ra !== rb) return ra - rb;
+        return a.displayName.localeCompare(b.displayName);
+      })
+    : historyEnabled
     ? [...filtered].sort((a, b) => {
         const aAbsent = absentThisWeek.has(a.id) ? 1 : 0;
         const bAbsent = absentThisWeek.has(b.id) ? 1 : 0;

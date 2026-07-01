@@ -1097,7 +1097,8 @@
       "hintDate": "Pick a date",
       "hintTime": "Set a time",
       "hintAddress": "Enter an address",
-      "eventWarn": "On this day: {{title}}"
+      "eventWarn": "On this day: {{title}}",
+      "suggest": "Suggest a conductor"
     },
     "days": {
       "1": "Mon",
@@ -1152,7 +1153,8 @@
     },
     "doubleWeek": "Already leads a meeting this week",
     "topicUsed": "Topic already used: {{date}}",
-    "conductorsEmpty": "No conductors assigned yet"
+    "conductorsEmpty": "No conductors assigned yet",
+    "duplicate": "Duplicate meeting"
   },
   "cleaning": {
     "title": "Cleaning",

@@ -118,6 +118,17 @@ export default function FieldServiceMeetingsScreen() {
   // --- Form state ---
   const [target, setTarget] = useState<FieldServiceMeeting | 'new' | null>(null);
   const [addDefaultDate, setAddDefaultDate] = useState<string | undefined>();
+  const [prefill, setPrefill] = useState<
+    | {
+        startTime?: string;
+        address?: string;
+        topic?: string;
+        sourceUrl?: string;
+        isGeneral?: boolean;
+        conductorPublisherId?: string | null;
+      }
+    | undefined
+  >();
   const [genOpen, setGenOpen] = useState(false);
   const [tab, setTab] = useState<'months' | 'conductors'>('months');
 
@@ -230,6 +241,7 @@ export default function FieldServiceMeetingsScreen() {
 
   const openAdd = (monthKey: string) => {
     setAddDefaultDate(firstSaturdayOf(monthKey));
+    setPrefill(undefined);
     setTarget('new');
   };
 
@@ -417,17 +429,42 @@ export default function FieldServiceMeetingsScreen() {
                       )}
                     </Pressable>
                     {canEdit && (
-                      <Pressable
-                        style={styles.removeBtn}
-                        onPress={() => confirmRemove(mt.id)}
-                        hitSlop={8}
-                      >
-                        <Ionicons
-                          name="trash-outline"
-                          size={18}
-                          color="#dc2626"
-                        />
-                      </Pressable>
+                      <View style={styles.cardActions}>
+                        <Pressable
+                          style={styles.removeBtn}
+                          onPress={() => {
+                            setPrefill({
+                              startTime: mt.startTime,
+                              address: mt.address,
+                              topic: mt.topic ?? '',
+                              sourceUrl: mt.sourceUrl ?? '',
+                              isGeneral: mt.isGeneral,
+                              conductorPublisherId: mt.conductorPublisherId,
+                            });
+                            setAddDefaultDate(undefined);
+                            setTarget('new');
+                          }}
+                          hitSlop={8}
+                          accessibilityLabel={t('fieldService.duplicate')}
+                        >
+                          <Ionicons
+                            name="copy-outline"
+                            size={18}
+                            color="#0369a1"
+                          />
+                        </Pressable>
+                        <Pressable
+                          style={styles.removeBtn}
+                          onPress={() => confirmRemove(mt.id)}
+                          hitSlop={8}
+                        >
+                          <Ionicons
+                            name="trash-outline"
+                            size={18}
+                            color="#dc2626"
+                          />
+                        </Pressable>
+                      </View>
                     )}
                   </View>
                 );
@@ -498,6 +535,7 @@ export default function FieldServiceMeetingsScreen() {
         weekStartISO={target && target !== 'new' ? target.weekStartDate : ''}
         pickDate={target === 'new'}
         defaultDate={addDefaultDate}
+        prefill={prefill}
         weekConductorIds={(week, excludeId) =>
           meetings
             .filter(
@@ -508,7 +546,10 @@ export default function FieldServiceMeetingsScreen() {
             )
             .map((m) => m.conductorPublisherId as string)
         }
-        onClose={() => setTarget(null)}
+        onClose={() => {
+          setTarget(null);
+          setPrefill(undefined);
+        }}
         onCreate={(input) => createM.mutate(input)}
         onUpdate={(id, input) => updateM.mutate({ id, input })}
       />
@@ -731,6 +772,7 @@ const styles = StyleSheet.create({
   address: { fontSize: 13, color: '#475569' },
   topic: { fontSize: 13, color: '#0f172a' },
   link: { fontSize: 13, color: '#0369a1', fontWeight: '600' },
+  cardActions: { gap: 2 },
   removeBtn: { paddingLeft: 10, paddingTop: 2 },
   addBtn: {
     flexDirection: 'row',
