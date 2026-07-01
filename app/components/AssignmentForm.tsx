@@ -313,7 +313,13 @@ export function AssignmentForm({
   // Apply-Yourself parts are numbered positionally, but the real skill is in
   // the title — prefer that so the picker filters by the correct capability.
   const titleCap = applyYourselfSkill;
-  const requiredCap = titleCap ?? partDef?.requiredCapability;
+  // Every "Living as Christians" part — the numbered ones and any manually
+  // added extra — is gated by the dedicated christian_life capability, so the
+  // conductor picker shows only brothers marked for it in the publisher card.
+  const christianLifeCap = (form.partKey ?? '').startsWith('living_christians')
+    ? 'christian_life'
+    : null;
+  const requiredCap = titleCap ?? christianLifeCap ?? partDef?.requiredCapability;
   const requiredAssistantCap =
     titleCap ??
     partDef?.requiredAssistantCapability ??

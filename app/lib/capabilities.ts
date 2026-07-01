@@ -35,6 +35,7 @@ export const CAPABILITY_CATEGORIES: CapabilityCategory[] = [
       { key: 'treasures_talk', label: 'Treasures from God\'s Word', brotherOnly: true, elderOnly: true },
       { key: 'spiritual_gems', label: 'Spiritual Gems', brotherOnly: true, baptizedOnly: true },
       { key: 'bible_reading', label: 'Bible reading', brotherOnly: true, baptizedOnly: true },
+      { key: 'christian_life', label: 'Life and Ministry part', brotherOnly: true },
       { key: 'congregation_study_conductor', label: 'Congregation Bible Study', brotherOnly: true, elderOnly: true },
       { key: 'congregation_study_reader', label: 'Congregation Bible Study reader', brotherOnly: true, baptizedOnly: true },
     ],

@@ -186,7 +186,7 @@ export const MIDWEEK_PARTS: PartDef[] = [
     label: 'Living as Christians 1',
     defaultOrder: 9,
     defaultDurationMin: 15,
-    requiredCapability: 'fs_talk',
+    requiredCapability: 'christian_life',
     subsection: 'christian_life',
   },
   {
@@ -194,7 +194,7 @@ export const MIDWEEK_PARTS: PartDef[] = [
     label: 'Living as Christians 2',
     defaultOrder: 10,
     defaultDurationMin: 15,
-    requiredCapability: 'fs_talk',
+    requiredCapability: 'christian_life',
     subsection: 'christian_life',
   },
   {
