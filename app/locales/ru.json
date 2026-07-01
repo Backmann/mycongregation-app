@@ -72,7 +72,9 @@
     "resendInviteDone": "Приглашение отправлено на email",
     "resendInviteSending": "Отправляем…",
     "resendInviteTitle": "Приглашение отправлено",
-    "resendInviteBody": "Письмо со ссылкой отправлено на {{email}}. Ссылка действует 72 часа."
+    "resendInviteBody": "Письмо со ссылкой отправлено на {{email}}. Ссылка действует 72 часа.",
+    "disableConfirmTitle": "Отключить доступ?",
+    "disableConfirmBody": "{{name}} больше не сможет войти в приложение. Доступ можно будет включить снова."
   },
   "tabs": {
     "schedule": "Расписание",

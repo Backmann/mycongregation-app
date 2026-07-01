@@ -32,6 +32,7 @@ export function PublisherAccessContent({ publisher }: { publisher: Publisher }) 
   const queryClient = useQueryClient();
   const [grantOpen, setGrantOpen] = useState(false);
   const [resetOpen, setResetOpen] = useState(false);
+  const [disableConfirm, setDisableConfirm] = useState(false);
   const [emailOpen, setEmailOpen] = useState(false);
   const [inviteSent, setInviteSent] = useState(false);
 
@@ -68,6 +69,7 @@ export function PublisherAccessContent({ publisher }: { publisher: Publisher }) 
     onSuccess: () => {
       setResetOpen(false);
       setEmailOpen(false);
+      setDisableConfirm(false);
       invalidate();
     },
   });
@@ -215,7 +217,11 @@ export function PublisherAccessContent({ publisher }: { publisher: Publisher }) 
 
       <Pressable
         style={styles.secondaryBtn}
-        onPress={() => updateMutation.mutate({ isActive: !access.isActive })}
+        onPress={() =>
+          access.isActive
+            ? setDisableConfirm(true)
+            : updateMutation.mutate({ isActive: true })
+        }
         disabled={updateMutation.isPending}
       >
         <Text
@@ -281,9 +287,80 @@ export function PublisherAccessContent({ publisher }: { publisher: Publisher }) 
           </View>
         </View>
       </Modal>
+
+      <Modal
+        visible={disableConfirm}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setDisableConfirm(false)}
+      >
+        <View style={sentStyles.overlay}>
+          <View style={sentStyles.card}>
+            <View style={confirmStyles.iconCircle}>
+              <Ionicons name="lock-closed" size={30} color="#dc2626" />
+            </View>
+            <Text style={sentStyles.title}>
+              {t('publisherAccess.disableConfirmTitle')}
+            </Text>
+            <Text style={sentStyles.body}>
+              {t('publisherAccess.disableConfirmBody', {
+                name: publisher.displayName,
+              })}
+            </Text>
+            <View style={confirmStyles.row}>
+              <Pressable
+                style={confirmStyles.cancel}
+                onPress={() => setDisableConfirm(false)}
+              >
+                <Text style={confirmStyles.cancelText}>
+                  {t('publisherAccess.cancel')}
+                </Text>
+              </Pressable>
+              <Pressable
+                style={confirmStyles.danger}
+                onPress={() => updateMutation.mutate({ isActive: false })}
+                disabled={updateMutation.isPending}
+              >
+                <Text style={confirmStyles.dangerText}>
+                  {t('publisherAccess.disableAccess')}
+                </Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
+
+const confirmStyles = StyleSheet.create({
+  iconCircle: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#fee2e2',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 14,
+  },
+  row: { flexDirection: 'row', gap: 10, alignSelf: 'stretch' },
+  cancel: {
+    flex: 1,
+    paddingVertical: 13,
+    borderRadius: 12,
+    backgroundColor: '#f1f5f9',
+    alignItems: 'center',
+  },
+  cancelText: { fontSize: 15, fontWeight: '700', color: '#475569' },
+  danger: {
+    flex: 1,
+    paddingVertical: 13,
+    borderRadius: 12,
+    backgroundColor: '#dc2626',
+    alignItems: 'center',
+  },
+  dangerText: { fontSize: 15, fontWeight: '700', color: '#fff' },
+});
 
 const sentStyles = StyleSheet.create({
   overlay: {

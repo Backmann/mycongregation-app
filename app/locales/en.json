@@ -72,7 +72,9 @@
     "resendInviteDone": "Invitation sent by email",
     "resendInviteSending": "Sending…",
     "resendInviteTitle": "Invitation sent",
-    "resendInviteBody": "An email with the link was sent to {{email}}. The link is valid for 72 hours."
+    "resendInviteBody": "An email with the link was sent to {{email}}. The link is valid for 72 hours.",
+    "disableConfirmTitle": "Disable access?",
+    "disableConfirmBody": "{{name}} will no longer be able to sign in. You can enable access again later."
   },
   "tabs": {
     "schedule": "Schedule",

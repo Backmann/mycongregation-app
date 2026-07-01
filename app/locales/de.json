@@ -72,7 +72,9 @@
     "resendInviteDone": "Einladung per E-Mail gesendet",
     "resendInviteSending": "Senden…",
     "resendInviteTitle": "Einladung gesendet",
-    "resendInviteBody": "Eine E-Mail mit dem Link wurde an {{email}} gesendet. Der Link ist 72 Stunden gültig."
+    "resendInviteBody": "Eine E-Mail mit dem Link wurde an {{email}} gesendet. Der Link ist 72 Stunden gültig.",
+    "disableConfirmTitle": "Zugang deaktivieren?",
+    "disableConfirmBody": "{{name}} kann sich dann nicht mehr anmelden. Sie können den Zugang später wieder aktivieren."
   },
   "tabs": {
     "schedule": "Plan",
