@@ -25,10 +25,12 @@ import {
   fieldServiceMonthThemeApi,
   fieldServiceStatsApi,
   publishersApi,
+  hallsApi,
 } from '../../../lib/api';
 import { usePermissions } from '../../../lib/permissions';
 import { useMyPublisher } from '../../../lib/useMyPublisher';
 import { FieldServiceForm } from '../../../components/FieldServiceSection';
+import { resolveHallAddress } from '../../../lib/hallAddress';
 import { FieldServiceGenerateModal } from '../../../components/FieldServiceGenerateModal';
 import { MyBulb } from '../../../components/MyBulb';
 import { ChipRow, PersonChip } from '../../../components/PersonChip';
@@ -74,6 +76,12 @@ export default function FieldServiceMeetingsScreen() {
   const publishersById = new Map<string, Publisher>(
     (publishersQuery.data?.data ?? []).map((p) => [p.id, p]),
   );
+  const hallsQuery = useQuery({
+    queryKey: ['halls'],
+    queryFn: () => hallsApi.list(),
+    staleTime: 5 * 60 * 1000,
+  });
+  const halls = hallsQuery.data ?? [];
   const themesQuery = useQuery({
     queryKey: ['field-service-month-themes'],
     queryFn: () => fieldServiceMonthThemeApi.list(),
@@ -385,7 +393,7 @@ export default function FieldServiceMeetingsScreen() {
                         )}
                       </ChipRow>
                       <Text style={styles.address} numberOfLines={2}>
-                        {mt.address}
+                        {resolveHallAddress(mt.address, halls)}
                       </Text>
                       {!!mt.topic && (
                         <Text style={styles.topic} numberOfLines={3}>

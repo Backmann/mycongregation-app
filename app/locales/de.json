@@ -1093,7 +1093,11 @@
       "addressPlaceholder": "Treffpunkt",
       "topicPlaceholder": "Thema oder Hinweis (optional)",
       "linkPlaceholder": "https://…",
-      "dateLabel": "Datum"
+      "dateLabel": "Datum",
+      "hintDate": "Datum wählen",
+      "hintTime": "Uhrzeit angeben",
+      "hintAddress": "Adresse angeben",
+      "eventWarn": "An diesem Tag: {{title}}"
     },
     "days": {
       "1": "Mo",

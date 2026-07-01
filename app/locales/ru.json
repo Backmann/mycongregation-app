@@ -1097,7 +1097,11 @@
       "addressPlaceholder": "Где собираемся",
       "topicPlaceholder": "Тема или указание (необязательно)",
       "linkPlaceholder": "https://…",
-      "dateLabel": "Дата"
+      "dateLabel": "Дата",
+      "hintDate": "Выберите дату",
+      "hintTime": "Укажите время",
+      "hintAddress": "Укажите адрес",
+      "eventWarn": "В этот день: {{title}}"
     },
     "days": {
       "1": "Пн",

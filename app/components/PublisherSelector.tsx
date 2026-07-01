@@ -70,6 +70,8 @@ interface Props {
   variant?: 'field' | 'chip';
   /** Label for the empty chip in chip variant. Defaults to common.none. */
   emptyLabel?: string;
+  /** Optional extra info line under each candidate (e.g. rotation stats). */
+  rowMeta?: (publisherId: string) => string | null;
 }
 
 const ISO_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -132,6 +134,7 @@ export function PublisherSelector({
   preferAppointment,
   variant = 'field',
   emptyLabel,
+  rowMeta,
 }: Props) {
   const { t, i18n } = useTranslation();
   const [open, setOpen] = useState(false);
@@ -538,6 +541,7 @@ export function PublisherSelector({
                     currentEventType,
                   )}
                   absence={absentThisWeek.get(p.id)}
+                  meta={rowMeta?.(p.id) ?? undefined}
                   showHistory={historyEnabled}
                   historyKind={scopeDutyType ? 'duty' : 'part'}
                   thisItemDates={itemDatesById.get(p.id) ?? []}
@@ -560,6 +564,7 @@ function PublisherOption({
   showCapabilityWarning,
   activity,
   absence,
+  meta,
   showHistory,
   historyKind,
   thisItemDates,
@@ -573,6 +578,8 @@ function PublisherOption({
   showCapabilityWarning: boolean;
   activity?: ActivitySummary;
   absence?: Absence;
+  /** Optional gray info line under the name (e.g. rotation stats). */
+  meta?: string;
   /** Whether to show the always-visible scoped-history block. */
   showHistory?: boolean;
   /** Whether the scoped item is a program part or a duty. */
@@ -616,6 +623,11 @@ function PublisherOption({
             </View>
           )}
         </View>
+        {meta ? (
+          <Text style={styles.optionMetaText} numberOfLines={1}>
+            {meta}
+          </Text>
+        ) : null}
         {absence && (
           <Text style={styles.optionAbsentText} numberOfLines={1}>
             {'\u2708 '}
@@ -789,6 +801,12 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginLeft: 16,
     marginTop: 2,
+  },
+  optionMetaText: {
+    fontSize: 12,
+    color: '#64748b',
+    marginTop: 2,
+    marginLeft: 18,
   },
   optionRecentText: { fontSize: 12, color: '#94a3b8' },
   recentToggle: {

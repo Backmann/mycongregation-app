@@ -23,7 +23,9 @@ import {
   UpdateFieldServiceMeetingInput,
   hallsApi,
   fieldServiceStatsApi,
+  specialEventsApi,
 } from '../lib/api';
+import { resolveHallAddress } from '../lib/hallAddress';
 import { PublisherSelector } from './PublisherSelector';
 import { TimeWheel } from './TimeWheel';
 import { MonthCalendar } from './MonthCalendar';
@@ -76,6 +78,13 @@ export function FieldServiceSection({
 }: Props) {
   const { t } = useTranslation();
   const { myPublisherId } = useMyPublisher();
+  // Halls: resolve shorthand meeting addresses to the exact hall address.
+  const sectionHallsQuery = useQuery({
+    queryKey: ['halls'],
+    queryFn: () => hallsApi.list(),
+    staleTime: 5 * 60 * 1000,
+  });
+  const sectionHalls = sectionHallsQuery.data ?? [];
   const [formFor, setFormFor] = useState<FieldServiceMeeting | 'new' | null>(
     null,
   );
@@ -136,7 +145,7 @@ export function FieldServiceSection({
                     )}
                   </ChipRow>
                   <Text style={styles.address} numberOfLines={2}>
-                    {m.address}
+                    {resolveHallAddress(m.address, sectionHalls)}
                   </Text>
                   {!!m.topic && (
                     <Text style={styles.topic} numberOfLines={3}>
@@ -318,6 +327,14 @@ export function FieldServiceForm({
     TIME_RE.test(startTime) &&
     (!pickDate || !!editing || !!pickedDate);
 
+  // Explain a disabled Save button: list exactly what is still missing.
+  const saveHints: string[] = [];
+  if (pickDate && !editing && !pickedDate)
+    saveHints.push(t('fieldService.form.hintDate'));
+  if (!TIME_RE.test(startTime)) saveHints.push(t('fieldService.form.hintTime'));
+  if (address.trim().length === 0)
+    saveHints.push(t('fieldService.form.hintAddress'));
+
   // ---- Rotation / topic hints (advisory) ----
   const fmtDate = (iso: string) => iso.split('-').reverse().join('.');
   const effectiveWeek = editing
@@ -325,6 +342,21 @@ export function FieldServiceForm({
     : pickDate && pickedDate
       ? mondayOf(pickedDate)
       : weekStartISO;
+  // Exact calendar date of the meeting (week Monday + selected weekday).
+  const meetingDateISO =
+    pickDate && !editing && pickedDate
+      ? pickedDate
+      : formatDateISO(addDays(parseISODate(effectiveWeek), dayOfWeek - 1));
+  // Special events (congress, CO visit, ...) overlapping the meeting date.
+  const eventsQuery = useQuery({
+    queryKey: ['special-events'],
+    queryFn: () => specialEventsApi.list(),
+    enabled: visible,
+    staleTime: 5 * 60 * 1000,
+  });
+  const clashingEvents = (eventsQuery.data ?? []).filter(
+    (e) => e.date <= meetingDateISO && meetingDateISO <= (e.endDate ?? e.date),
+  );
   const selectedStat = conductorPublisherId
     ? (conductorStatsQuery.data?.find(
         (c) => c.conductorPublisherId === conductorPublisherId,
@@ -439,6 +471,19 @@ export function FieldServiceForm({
               </>
             )}
 
+            {clashingEvents.length > 0 && (
+              <View style={styles.eventWarnBox}>
+                <Ionicons name="warning-outline" size={16} color="#b45309" />
+                <Text style={styles.eventWarnText}>
+                  {clashingEvents
+                    .map((e) =>
+                      t('fieldService.form.eventWarn', { title: e.title }),
+                    )
+                    .join('\n')}
+                </Text>
+              </View>
+            )}
+
             <Text style={styles.fieldLabel}>{t('fieldService.timeLabel')}</Text>
             <TimeWheel value={startTime} onChange={setStartTime} />
 
@@ -483,6 +528,26 @@ export function FieldServiceForm({
               value={conductorPublisherId}
               onChange={setConductorPublisherId}
               requiredCapability="fs_meeting_conductor"
+              currentWeekStart={effectiveWeek}
+              rowMeta={(id) => {
+                const st = conductorStatsQuery.data?.find(
+                  (c) => c.conductorPublisherId === id,
+                );
+                if (!st || st.total === 0)
+                  return t('fieldService.stat.never');
+                const bits = [
+                  t('fieldService.stat.total', { count: st.total }),
+                ];
+                if (st.lastDate)
+                  bits.push(
+                    t('fieldService.stat.last', { date: fmtDate(st.lastDate) }),
+                  );
+                if (st.nextDate)
+                  bits.push(
+                    t('fieldService.stat.next', { date: fmtDate(st.nextDate) }),
+                  );
+                return bits.join(' · ');
+              }}
             />
             {conductorPublisherId ? (
               <>
@@ -563,6 +628,9 @@ export function FieldServiceForm({
             </View>
           </ScrollView>
 
+          {!canSave && saveHints.length > 0 && (
+            <Text style={styles.saveHint}>{saveHints.join(' · ')}</Text>
+          )}
           <View style={styles.modalActions}>
             <Pressable style={styles.modalCancel} onPress={onClose}>
               <Text style={styles.modalCancelText}>{t('common.cancel')}</Text>
@@ -744,6 +812,31 @@ const styles = StyleSheet.create({
   },
   multiline: { minHeight: 40, textAlignVertical: 'top' },
   modalActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 10 },
+  saveHint: {
+    color: '#dc2626',
+    fontSize: 12,
+    fontWeight: '600',
+    textAlign: 'right',
+    marginBottom: 6,
+  },
+  eventWarnBox: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 8,
+    backgroundColor: '#fef3c7',
+    borderColor: '#fcd34d',
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginTop: 10,
+  },
+  eventWarnText: {
+    flex: 1,
+    color: '#92400e',
+    fontSize: 13,
+    lineHeight: 18,
+  },
   modalCancel: { paddingVertical: 10, paddingHorizontal: 14 },
   modalCancelText: { fontSize: 15, color: '#64748b', fontWeight: '600' },
   modalConfirm: {

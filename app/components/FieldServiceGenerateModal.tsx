@@ -1,3 +1,4 @@
+import { resolveHallAddress } from '../lib/hallAddress';
 import { useEffect, useMemo, useState } from 'react';
 import {
   Modal,
@@ -12,7 +13,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
-import { fieldServiceTemplateApi, hallsApi } from '../lib/api';
+import {
+  fieldServiceTemplateApi,
+  hallsApi,
+  specialEventsApi,
+} from '../lib/api';
 
 const TIME_RE = /^([01]\d|2[0-3]):[0-5]\d$/;
 const ORDINALS = [1, 2, 3, 4, 5];
@@ -104,13 +109,8 @@ export function FieldServiceGenerateModal({
     if (!visible) return;
     const loaded = templateQuery.data;
     if (!loaded) return;
-    const resolveAddr = (addr: string) => {
-      const a = addr.trim().toLowerCase();
-      const hall = (hallsQuery.data ?? []).find(
-        (h) => h.name.trim().toLowerCase() === a,
-      );
-      return hall ? hall.address : addr;
-    };
+    const resolveAddr = (addr: string) =>
+      resolveHallAddress(addr, hallsQuery.data);
     setSlots(
       (loaded.length ? loaded : DEFAULT_TEMPLATE).map((s) => ({
         ordinal: s.ordinal,
@@ -128,7 +128,7 @@ export function FieldServiceGenerateModal({
           ordinal: s.ordinal,
           dayOfWeek: s.dayOfWeek,
           startTime: s.startTime,
-          address: s.address.trim(),
+          address: resolveHallAddress(s.address.trim(), hallsQuery.data),
         })),
       ),
     onSuccess: () => {
@@ -214,6 +214,18 @@ export function FieldServiceGenerateModal({
     return out;
   }, [year, month, months, slots, i18n.language]);
   const previewTotal = preview.reduce((n, mo) => n + mo.items.length, 0);
+
+  // Special events (congress, CO visit, ...) — mark clashing preview dates.
+  const eventsQuery = useQuery({
+    queryKey: ['special-events'],
+    queryFn: () => specialEventsApi.list(),
+    enabled: visible,
+    staleTime: 5 * 60 * 1000,
+  });
+  const eventsOn = (dateISO: string) =>
+    (eventsQuery.data ?? []).filter(
+      (e) => e.date <= dateISO && dateISO <= (e.endDate ?? e.date),
+    );
 
   const updateSlot = (i: number, patch: Partial<EditSlot>) =>
     setSlots((prev) => prev.map((s, idx) => (idx === i ? { ...s, ...patch } : s)));
@@ -450,12 +462,25 @@ export function FieldServiceGenerateModal({
                 preview.map((mo) => (
                   <View key={mo.label} style={styles.previewMonth}>
                     <Text style={styles.previewMonthLabel}>{mo.label}</Text>
-                    {mo.items.map((it) => (
-                      <Text key={it.dateISO} style={styles.previewItem}>
-                        {t(`fieldService.days.${it.dayOfWeek}`)}{' '}
-                        {dayjs(it.dateISO).format('D.MM')} · {it.address}
-                      </Text>
-                    ))}
+                    {mo.items.map((it) => {
+                      const clashes = eventsOn(it.dateISO);
+                      return (
+                        <View key={it.dateISO}>
+                          <Text style={styles.previewItem}>
+                            {t(`fieldService.days.${it.dayOfWeek}`)}{' '}
+                            {dayjs(it.dateISO).format('D.MM')} · {it.address}
+                          </Text>
+                          {clashes.map((e) => (
+                            <Text key={e.id} style={styles.previewClash}>
+                              {'\u26a0 '}
+                              {t('fieldService.form.eventWarn', {
+                                title: e.title,
+                              })}
+                            </Text>
+                          ))}
+                        </View>
+                      );
+                    })}
                   </View>
                 ))
               )}
@@ -671,6 +696,12 @@ const styles = StyleSheet.create({
     marginBottom: 3,
   },
   previewItem: { fontSize: 12, color: '#334155', lineHeight: 18 },
+  previewClash: {
+    color: '#b45309',
+    fontSize: 12,
+    marginLeft: 12,
+    marginBottom: 2,
+  },
   resultBox: {
     flexDirection: 'row',
     alignItems: 'center',

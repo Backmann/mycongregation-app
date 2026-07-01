@@ -1093,7 +1093,11 @@
       "addressPlaceholder": "Where to meet",
       "topicPlaceholder": "Topic or note (optional)",
       "linkPlaceholder": "https://…",
-      "dateLabel": "Date"
+      "dateLabel": "Date",
+      "hintDate": "Pick a date",
+      "hintTime": "Set a time",
+      "hintAddress": "Enter an address",
+      "eventWarn": "On this day: {{title}}"
     },
     "days": {
       "1": "Mon",
