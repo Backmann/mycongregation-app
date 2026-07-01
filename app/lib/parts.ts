@@ -304,8 +304,9 @@ export function getPartDef(key: string): PartDef | undefined {
 
 export function getPartLabel(key: string): string {
   const def = ALL_PARTS.get(key);
-  if (!def) return key;
-  return i18n.t(`parts.${key}`, { defaultValue: def.label });
+  // Keys without a registry entry (e.g. a manually added living_christians_extra)
+  // still get a localized label via i18n, falling back to the def label or key.
+  return i18n.t(`parts.${key}`, { defaultValue: def?.label ?? key });
 }
 
 /**

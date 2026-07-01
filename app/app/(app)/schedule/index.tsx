@@ -349,6 +349,51 @@ export default function ScheduleIndexScreen() {
     },
   });
 
+  // Add an extra "Living as Christians" part: place it right after the last
+  // Christian-Life talk and before the Congregation Bible Study, making room by
+  // bumping the order of everything at/after the new slot. Then open the editor.
+  const addChristianLifeMut = useMutation({
+    mutationFn: async () => {
+      const cache = queryClient.getQueryData<{ data: Assignment[] }>([
+        'assignments',
+        weekStartISO,
+      ]);
+      const midweek = (cache?.data ?? []).filter(
+        (a) => a.eventType === 'midweek',
+      );
+      const cl = midweek.filter(
+        (a) => resolveSubsection(a.partKey) === 'christian_life',
+      );
+      const living = cl.filter((a) => a.partKey.startsWith('living_christians'));
+      const cbs = cl.filter((a) => a.partKey.startsWith('cbs'));
+      let anchor: number;
+      if (living.length) anchor = Math.max(...living.map((a) => a.partOrder));
+      else if (cbs.length) anchor = Math.min(...cbs.map((a) => a.partOrder)) - 1;
+      else if (cl.length) anchor = Math.max(...cl.map((a) => a.partOrder));
+      else anchor = 10;
+      const newOrder = anchor + 1;
+      const toBump = midweek
+        .filter((a) => a.partOrder >= newOrder)
+        .sort((a, b) => b.partOrder - a.partOrder);
+      for (const a of toBump) {
+        await assignmentsApi.update(a.id, { partOrder: a.partOrder + 1 });
+      }
+      return assignmentsApi.create({
+        weekStartDate: weekStartISO,
+        eventType: 'midweek',
+        partKey: 'living_christians_extra',
+        partOrder: newOrder,
+        partTitle: '',
+        partDurationMin: 5,
+        status: 'draft',
+      });
+    },
+    onSuccess: (created) => {
+      queryClient.invalidateQueries({ queryKey: ['assignments'] });
+      setEditing(created);
+    },
+  });
+
   const weekEvents = (specialEventsQuery.data ?? []).filter(
     (e) => e.date < nextWeekISO && (e.endDate ?? e.date) >= weekStartISO,
   );
@@ -806,6 +851,8 @@ export default function ScheduleIndexScreen() {
                     <MidweekSections
                       canEdit={perms.canEditMidweekSchedule}
                       onEdit={setEditing}
+                      onAddChristianLife={() => addChristianLifeMut.mutate()}
+                      addingChristianLife={addChristianLifeMut.isPending}
                       items={items}
                       numbers={numbers}
                       publishersById={publishersById}
@@ -1136,6 +1183,8 @@ function MidweekSections({
   numbers,
   publishersById,
   onEdit,
+  onAddChristianLife,
+  addingChristianLife,
   canEdit,
   absentIds,
 }: {
@@ -1143,6 +1192,8 @@ function MidweekSections({
   numbers: Map<string, number | null>;
   publishersById: Map<string, Publisher>;
   onEdit: (a: Assignment) => void;
+  onAddChristianLife?: () => void;
+  addingChristianLife?: boolean;
   canEdit: boolean;
   absentIds?: Set<string>;
 }) {
@@ -1165,8 +1216,25 @@ function MidweekSections({
         return (
           <View key={sub} style={styles.section}>
             <View style={[styles.subsectionBanner, { backgroundColor: meta.color }]}>
-              <Ionicons name={meta.icon as any} size={16} color="#fff" />
-              <Text style={styles.subsectionBannerText}>{t(meta.i18nKey)}</Text>
+              <View style={styles.subsectionBannerLeft}>
+                <Ionicons name={meta.icon as any} size={16} color="#fff" />
+                <Text style={styles.subsectionBannerText}>{t(meta.i18nKey)}</Text>
+              </View>
+              {canEdit && sub === 'christian_life' && onAddChristianLife ? (
+                <Pressable
+                  onPress={onAddChristianLife}
+                  disabled={addingChristianLife}
+                  hitSlop={8}
+                  style={styles.bannerAddBtn}
+                  accessibilityLabel={t('schedule.addChristianLife')}
+                >
+                  {addingChristianLife ? (
+                    <ActivityIndicator size="small" color="#fff" />
+                  ) : (
+                    <Ionicons name="add" size={20} color="#fff" />
+                  )}
+                </Pressable>
+              ) : null}
             </View>
             <View style={styles.sectionBody}>
               {arr.map((a) => (
@@ -1666,6 +1734,20 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 0.6,
     flex: 1,
+  },
+  subsectionBannerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flex: 1,
+  },
+  bannerAddBtn: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255,255,255,0.18)',
   },
   sectionTitle: {
     fontSize: 12,

@@ -592,7 +592,8 @@
     "watchtower_reader": "Изучение «Сторожевой башни» — чтец",
     "weekend_closing_prayer": "Заключительная молитва",
     "co_service_talk": "Служебная речь районного старейшины",
-    "co_concluding_talk": "Заключительная речь"
+    "co_concluding_talk": "Заключительная речь",
+    "living_christians_extra": "Христианская жизнь"
   },
   "eventTypes": {
     "midweek": "Встреча в будний день",
@@ -828,7 +829,14 @@
         "silentHint": "Изменения учтутся без уведомления возвещателей."
       }
     },
-    "autoBadge": "авто"
+    "autoBadge": "авто",
+    "addChristianLife": "Добавить пункт «Христианская жизнь»",
+    "deletePart": {
+      "title": "Удалить пункт?",
+      "confirm": "Пункт и его назначение будут удалены.",
+      "button": "Удалить пункт",
+      "deleting": "Удаляем…"
+    }
   },
   "audit": {
     "noReportId": "ID отчёта не указан.",

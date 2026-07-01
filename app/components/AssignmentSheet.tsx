@@ -154,6 +154,34 @@ export function AssignmentSheet({
     unassignMutation.mutate();
   };
 
+  // Manually added Christian-Life parts can be removed entirely (imported
+  // workbook parts cannot — they have no delete affordance).
+  const isExtraPart = !!active && active.partKey === 'living_christians_extra';
+  const removeMutation = useMutation({
+    mutationFn: () => assignmentsApi.remove(assignment!.id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['assignments'] });
+      onClose();
+    },
+  });
+
+  const confirmDelete = () => {
+    if (Platform.OS === 'web') {
+      if (window.confirm(t('schedule.deletePart.confirm'))) {
+        removeMutation.mutate();
+      }
+      return;
+    }
+    Alert.alert(t('schedule.deletePart.title'), t('schedule.deletePart.confirm'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      {
+        text: t('schedule.deletePart.button'),
+        style: 'destructive',
+        onPress: () => removeMutation.mutate(),
+      },
+    ]);
+  };
+
   const isSong = !!active && SONG_KEYS.includes(active.partKey);
 
   return (
@@ -256,6 +284,23 @@ export function AssignmentSheet({
                   </Text>
                 </Pressable>
               )}
+              {canEdit && isExtraPart && (
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.deletePartLink,
+                    pressed && styles.deletePartLinkPressed,
+                    removeMutation.isPending && styles.unassignLinkDisabled,
+                  ]}
+                  onPress={confirmDelete}
+                  disabled={removeMutation.isPending}
+                >
+                  <Text style={styles.deletePartLinkText}>
+                    {removeMutation.isPending
+                      ? t('schedule.deletePart.deleting')
+                      : t('schedule.deletePart.button')}
+                  </Text>
+                </Pressable>
+              )}
             </>
           )
         ) : null}
@@ -336,4 +381,12 @@ const styles = StyleSheet.create({
   unassignLinkPressed: { opacity: 0.6 },
   unassignLinkDisabled: { opacity: 0.35 },
   unassignLinkText: { color: '#dc2626', fontSize: 14, fontWeight: '600' },
+  deletePartLink: {
+    alignSelf: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    marginBottom: 4,
+  },
+  deletePartLinkPressed: { opacity: 0.6 },
+  deletePartLinkText: { color: '#b91c1c', fontSize: 13, fontWeight: '700' },
 });

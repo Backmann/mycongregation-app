@@ -588,7 +588,8 @@
     "watchtower_reader": "Wachtturm-Studium — Vorleser",
     "weekend_closing_prayer": "Schlussgebet",
     "co_service_talk": "Dienstvortrag des Kreisaufsehers",
-    "co_concluding_talk": "Schlussvortrag"
+    "co_concluding_talk": "Schlussvortrag",
+    "living_christians_extra": "Leben als Christ"
   },
   "eventTypes": {
     "midweek": "Zusammenkunft unter der Woche",
@@ -824,7 +825,14 @@
         "silentHint": "Änderungen ohne Benachrichtigung übernehmen."
       }
     },
-    "autoBadge": "auto"
+    "autoBadge": "auto",
+    "addChristianLife": "Teil „Leben als Christ\" hinzufügen",
+    "deletePart": {
+      "title": "Teil löschen?",
+      "confirm": "Der Teil und seine Zuteilung werden entfernt.",
+      "button": "Teil löschen",
+      "deleting": "Löschen…"
+    }
   },
   "audit": {
     "noReportId": "Keine Bericht-ID angegeben.",

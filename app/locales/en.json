@@ -588,7 +588,8 @@
     "watchtower_reader": "Watchtower study — reader",
     "weekend_closing_prayer": "Closing prayer",
     "co_service_talk": "Service talk (circuit overseer)",
-    "co_concluding_talk": "Concluding talk"
+    "co_concluding_talk": "Concluding talk",
+    "living_christians_extra": "Living as Christians"
   },
   "eventTypes": {
     "midweek": "Midweek meeting",
@@ -824,7 +825,14 @@
         "silentHint": "Apply the changes without notifying publishers."
       }
     },
-    "autoBadge": "auto"
+    "autoBadge": "auto",
+    "addChristianLife": "Add a Living as Christians part",
+    "deletePart": {
+      "title": "Delete part?",
+      "confirm": "The part and its assignment will be removed.",
+      "button": "Delete part",
+      "deleting": "Deleting…"
+    }
   },
   "audit": {
     "noReportId": "No report id supplied.",
