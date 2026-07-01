@@ -69,7 +69,10 @@
     "newPassword": "Neues Passwort",
     "resetHint": "Teilen Sie der Person das neue Passwort separat mit.",
     "resendInvite": "Einladung erneut senden",
-    "resendInviteDone": "Einladung per E-Mail gesendet"
+    "resendInviteDone": "Einladung per E-Mail gesendet",
+    "resendInviteSending": "Senden…",
+    "resendInviteTitle": "Einladung gesendet",
+    "resendInviteBody": "Eine E-Mail mit dem Link wurde an {{email}} gesendet. Der Link ist 72 Stunden gültig."
   },
   "tabs": {
     "schedule": "Plan",

@@ -69,7 +69,10 @@
     "newPassword": "Новый пароль",
     "resetHint": "Сообщите новый пароль человеку отдельно.",
     "resendInvite": "Отправить приглашение повторно",
-    "resendInviteDone": "Приглашение отправлено на email"
+    "resendInviteDone": "Приглашение отправлено на email",
+    "resendInviteSending": "Отправляем…",
+    "resendInviteTitle": "Приглашение отправлено",
+    "resendInviteBody": "Письмо со ссылкой отправлено на {{email}}. Ссылка действует 72 часа."
   },
   "tabs": {
     "schedule": "Расписание",

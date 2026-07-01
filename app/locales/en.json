@@ -69,7 +69,10 @@
     "newPassword": "New password",
     "resetHint": "Share the new password with the person separately.",
     "resendInvite": "Resend invitation",
-    "resendInviteDone": "Invitation sent by email"
+    "resendInviteDone": "Invitation sent by email",
+    "resendInviteSending": "Sending…",
+    "resendInviteTitle": "Invitation sent",
+    "resendInviteBody": "An email with the link was sent to {{email}}. The link is valid for 72 hours."
   },
   "tabs": {
     "schedule": "Schedule",

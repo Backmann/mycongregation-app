@@ -9,6 +9,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { extractErrorMessage, publishersApi } from '../lib/api';
@@ -75,7 +76,6 @@ export function PublisherAccessContent({ publisher }: { publisher: Publisher }) 
     mutationFn: () => publishersApi.resendInvite(publisher.id),
     onSuccess: () => {
       setInviteSent(true);
-      setTimeout(() => setInviteSent(false), 4000);
       invalidate();
     },
   });
@@ -199,15 +199,19 @@ export function PublisherAccessContent({ publisher }: { publisher: Publisher }) 
         onPress={() => resendMutation.mutate()}
         disabled={resendMutation.isPending}
       >
-        <Text style={styles.secondaryBtnText}>
-          {t('publisherAccess.resendInvite')}
-        </Text>
+        {resendMutation.isPending ? (
+          <View style={styles.btnRow}>
+            <ActivityIndicator size="small" color="#2563eb" />
+            <Text style={styles.secondaryBtnText}>
+              {t('publisherAccess.resendInviteSending')}
+            </Text>
+          </View>
+        ) : (
+          <Text style={styles.secondaryBtnText}>
+            {t('publisherAccess.resendInvite')}
+          </Text>
+        )}
       </Pressable>
-      {inviteSent && (
-        <Text style={styles.inviteSentText}>
-          {t('publisherAccess.resendInviteDone')}
-        </Text>
-      )}
 
       <Pressable
         style={styles.secondaryBtn}
@@ -250,9 +254,85 @@ export function PublisherAccessContent({ publisher }: { publisher: Publisher }) 
         }}
         onSubmit={(password) => updateMutation.mutate({ password })}
       />
+
+      <Modal
+        visible={inviteSent}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setInviteSent(false)}
+      >
+        <View style={sentStyles.overlay}>
+          <View style={sentStyles.card}>
+            <View style={sentStyles.iconCircle}>
+              <Ionicons name="checkmark" size={34} color="#fff" />
+            </View>
+            <Text style={sentStyles.title}>
+              {t('publisherAccess.resendInviteTitle')}
+            </Text>
+            <Text style={sentStyles.body}>
+              {t('publisherAccess.resendInviteBody', { email: access.email })}
+            </Text>
+            <Pressable
+              style={sentStyles.btn}
+              onPress={() => setInviteSent(false)}
+            >
+              <Text style={sentStyles.btnText}>{t('common.done')}</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
+
+const sentStyles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(15,23,42,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 28,
+  },
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: 18,
+    padding: 26,
+    alignItems: 'center',
+    width: '100%',
+    maxWidth: 360,
+  },
+  iconCircle: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: '#16a34a',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#0f172a',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  body: {
+    fontSize: 14,
+    color: '#475569',
+    textAlign: 'center',
+    lineHeight: 20,
+    marginBottom: 20,
+  },
+  btn: {
+    alignSelf: 'stretch',
+    backgroundColor: '#0ea5e9',
+    borderRadius: 12,
+    paddingVertical: 13,
+    alignItems: 'center',
+  },
+  btnText: { fontSize: 15, fontWeight: '700', color: '#fff' },
+});
 
 function EmailModal({
   visible,
@@ -657,13 +737,11 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
   },
-  inviteSentText: {
-    color: '#15803d',
-    fontSize: 13,
-    fontWeight: '600',
-    textAlign: 'center',
-    marginTop: -4,
-    marginBottom: 4,
+  btnRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
   },
   dangerText: {
     color: '#dc2626',
