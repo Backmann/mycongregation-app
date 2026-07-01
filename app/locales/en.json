@@ -998,7 +998,8 @@
       "accounts_servant": "Accounts Servant",
       "public_witnessing": "Public Witnessing Overseer",
       "cleaning_coordinator": "Cleaning Coordinator",
-      "duties_coordinator": "Duties coordinator"
+      "duties_coordinator": "Duties coordinator",
+      "service_overseer_assistant": "Service overseer's assistant"
     }
   },
   "meetingSettings": {

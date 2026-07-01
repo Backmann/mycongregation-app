@@ -998,7 +998,8 @@
       "accounts_servant": "Rechnungsführer",
       "public_witnessing": "Aufseher für öffentliches Zeugnisgeben",
       "cleaning_coordinator": "Reinigungskoordinator",
-      "duties_coordinator": "Aufgabenkoordinator"
+      "duties_coordinator": "Aufgabenkoordinator",
+      "service_overseer_assistant": "Assistent des Dienstaufsehers"
     }
   },
   "meetingSettings": {

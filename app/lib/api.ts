@@ -546,6 +546,7 @@ export type ResponsibilityType =
   | 'adviser'
   | 'secretary'
   | 'service_overseer'
+  | 'service_overseer_assistant'
   | 'accounts_servant'
   | 'public_witnessing'
   | 'cleaning_coordinator'

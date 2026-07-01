@@ -127,7 +127,10 @@ export function usePermissions(): Permissions {
       canEditWeekendSchedule: isAdmin || holds('body_coordinator'),
       canEditCleaning: isAdmin || holds('cleaning_coordinator'),
       canEditCartWitnessing: isAdmin || holds('public_witnessing'),
-      canEditFieldServiceMeetings: isAdmin || holds('service_overseer'),
+      canEditFieldServiceMeetings:
+        isAdmin ||
+        holds('service_overseer') ||
+        holds('service_overseer_assistant'),
       canEditDuties:
         isAdmin || holds('duties_coordinator') || holds('body_coordinator'),
 
@@ -144,7 +147,10 @@ export function usePermissions(): Permissions {
       canViewServiceSummary: isAdmin || holds('secretary'),
       canViewCoSchedule: isAdmin || isElder,
       canEditCoSchedule:
-        isAdmin || holds('service_overseer') || holds('body_coordinator'),
+        isAdmin ||
+        holds('service_overseer') ||
+        holds('service_overseer_assistant') ||
+        holds('body_coordinator'),
 
       responsibilities: mine,
     };

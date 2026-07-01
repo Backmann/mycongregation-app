@@ -29,6 +29,7 @@ const RESPONSIBILITY_ORDER: ResponsibilityType[] = [
   'life_ministry_overseer',
   'public_talk_coordinator',
   'service_overseer',
+  'service_overseer_assistant',
   'public_witnessing',
   'cleaning_coordinator',
   'duties_coordinator',

@@ -1002,7 +1002,8 @@
       "accounts_servant": "Счетовод",
       "public_witnessing": "Служение в общественных местах",
       "cleaning_coordinator": "Координатор уборки",
-      "duties_coordinator": "Координатор обязанностей"
+      "duties_coordinator": "Координатор обязанностей",
+      "service_overseer_assistant": "Помощник служебного старейшины"
     }
   },
   "meetingSettings": {
