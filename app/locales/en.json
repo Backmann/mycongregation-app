@@ -1863,14 +1863,15 @@
       "noteManual": "Manual edits win: if you assign someone else to the prayer, the rule will not touch it again.",
       "noteExisting": "Already-filled weeks are not changed — the rule applies on new assignments.",
       "notePublished": "If the meeting is already published, the change marks it as changed (a notification is sent).",
-      "micTitle": "Microphone",
-      "micBody": "Whoever gives the Treasures from God's Word talk is automatically assigned to microphone #1."
+      "micTitle": "Treasures talk",
+      "micBody": "Whoever gives the \"Treasures from God's Word\" talk is automatically assigned the opening prayer and microphone #1. The link works both ways: assign a brother to the talk or to the opening prayer and the other part fills in by itself, whichever you set first. If the speaker is removed, the auto-filled prayer and microphone are cleared too."
     },
     "warn": {
       "title": "Capability not set",
       "prayerCapability": "To auto-assign the prayer, add the “Prayer” capability to {{name}} in their publisher card.",
       "micCapability": "{{name}} was put on microphone #1 but lacks the “Microphone” capability — check their publisher card.",
-      "micTaken": "Microphone #1 is already taken manually — auto-fill skipped."
+      "micTaken": "Microphone #1 is already taken manually — auto-fill skipped.",
+      "treasuresCapability": "For the Treasures talk to be assigned automatically, add the \"Treasures from God's Word\" capability to {{name}} in the publisher card."
     }
   }
 }

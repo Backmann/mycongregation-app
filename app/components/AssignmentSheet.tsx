@@ -102,7 +102,13 @@ export function AssignmentSheet({
               ? t('rules.warn.micTaken')
               : w.code === 'mic_capability_off'
                 ? t('rules.warn.micCapability', { name: w.publisherName })
-                : t('rules.warn.prayerCapability', { name: w.publisherName }),
+                : w.code === 'treasures_capability_missing'
+                  ? t('rules.warn.treasuresCapability', {
+                      name: w.publisherName,
+                    })
+                  : t('rules.warn.prayerCapability', {
+                      name: w.publisherName,
+                    }),
           )
           .join('\n');
         if (Platform.OS === 'web') {

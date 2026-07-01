@@ -1863,14 +1863,15 @@
       "noteManual": "Manuelle Änderungen haben Vorrang: Wenn du jemand anderen für das Gebet einträgst, rührt die Regel es nicht mehr an.",
       "noteExisting": "Bereits ausgefüllte Wochen werden nicht geändert — die Regel greift bei neuen Einteilungen.",
       "notePublished": "Ist die Zusammenkunft schon veröffentlicht, wird die Änderung als „geändert“ markiert (es wird benachrichtigt).",
-      "micTitle": "Mikrofon",
-      "micBody": "Wer den Vortrag „Schätze aus Gottes Wort“ hält, wird automatisch Mikrofon Nr. 1 zugeteilt."
+      "micTitle": "Vortrag „Schätze\"",
+      "micBody": "Wer den Vortrag „Schätze aus Gottes Wort\" hält, wird automatisch für das Eingangsgebet und Mikrofon Nr. 1 eingeteilt. Die Verknüpfung wirkt in beide Richtungen: Teilen Sie einen Bruder für den Vortrag oder das Eingangsgebet ein — der andere Punkt füllt sich von selbst, egal was zuerst eingetragen wird. Wird der Redner entfernt, werden das automatisch eingetragene Gebet und das Mikrofon ebenfalls geleert."
     },
     "warn": {
       "title": "Fähigkeit nicht gesetzt",
       "prayerCapability": "Um das Gebet automatisch zuzuweisen, füge {{name}} die Fähigkeit „Gebet“ in der Verkündigerkarte hinzu.",
       "micCapability": "{{name}} wurde Mikrofon Nr. 1 zugeteilt, hat aber nicht die Fähigkeit „Mikrofon“ — prüfe die Verkündigerkarte.",
-      "micTaken": "Mikrofon Nr. 1 ist bereits manuell belegt — Auto-Zuweisung übersprungen."
+      "micTaken": "Mikrofon Nr. 1 ist bereits manuell belegt — Auto-Zuweisung übersprungen.",
+      "treasuresCapability": "Damit der Vortrag „Schätze\" automatisch zugeteilt wird, fügen Sie {{name}} in der Verkündigerkarte die Fähigkeit „Schätze aus Gottes Wort\" hinzu."
     }
   }
 }
