@@ -1501,6 +1501,12 @@ export const publishersApi = {
     );
     return data;
   },
+  async resendInvite(id: string): Promise<AccessSummary> {
+    const { data } = await api.post<AccessSummary>(
+      `/publishers/${id}/access/resend-invite`,
+    );
+    return data;
+  },
 };
 
 

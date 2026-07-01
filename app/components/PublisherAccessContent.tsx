@@ -32,6 +32,7 @@ export function PublisherAccessContent({ publisher }: { publisher: Publisher }) 
   const [grantOpen, setGrantOpen] = useState(false);
   const [resetOpen, setResetOpen] = useState(false);
   const [emailOpen, setEmailOpen] = useState(false);
+  const [inviteSent, setInviteSent] = useState(false);
 
   const accessQuery = useQuery({
     queryKey: ['publisher-access', publisher.id],
@@ -66,6 +67,15 @@ export function PublisherAccessContent({ publisher }: { publisher: Publisher }) 
     onSuccess: () => {
       setResetOpen(false);
       setEmailOpen(false);
+      invalidate();
+    },
+  });
+
+  const resendMutation = useMutation({
+    mutationFn: () => publishersApi.resendInvite(publisher.id),
+    onSuccess: () => {
+      setInviteSent(true);
+      setTimeout(() => setInviteSent(false), 4000);
       invalidate();
     },
   });
@@ -183,6 +193,21 @@ export function PublisherAccessContent({ publisher }: { publisher: Publisher }) 
       >
         <Text style={styles.secondaryBtnText}>{t('publisherAccess.resetPassword')}</Text>
       </Pressable>
+
+      <Pressable
+        style={styles.secondaryBtn}
+        onPress={() => resendMutation.mutate()}
+        disabled={resendMutation.isPending}
+      >
+        <Text style={styles.secondaryBtnText}>
+          {t('publisherAccess.resendInvite')}
+        </Text>
+      </Pressable>
+      {inviteSent && (
+        <Text style={styles.inviteSentText}>
+          {t('publisherAccess.resendInviteDone')}
+        </Text>
+      )}
 
       <Pressable
         style={styles.secondaryBtn}
@@ -631,6 +656,14 @@ const styles = StyleSheet.create({
     color: '#2563eb',
     fontSize: 15,
     fontWeight: '600',
+  },
+  inviteSentText: {
+    color: '#15803d',
+    fontSize: 13,
+    fontWeight: '600',
+    textAlign: 'center',
+    marginTop: -4,
+    marginBottom: 4,
   },
   dangerText: {
     color: '#dc2626',

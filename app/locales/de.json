@@ -67,7 +67,9 @@
     "invite": "Einladen",
     "create": "Erstellen",
     "newPassword": "Neues Passwort",
-    "resetHint": "Teilen Sie der Person das neue Passwort separat mit."
+    "resetHint": "Teilen Sie der Person das neue Passwort separat mit.",
+    "resendInvite": "Einladung erneut senden",
+    "resendInviteDone": "Einladung per E-Mail gesendet"
   },
   "tabs": {
     "schedule": "Plan",

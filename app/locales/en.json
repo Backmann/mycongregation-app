@@ -67,7 +67,9 @@
     "invite": "Invite",
     "create": "Create",
     "newPassword": "New password",
-    "resetHint": "Share the new password with the person separately."
+    "resetHint": "Share the new password with the person separately.",
+    "resendInvite": "Resend invitation",
+    "resendInviteDone": "Invitation sent by email"
   },
   "tabs": {
     "schedule": "Schedule",
