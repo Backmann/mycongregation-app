@@ -1313,7 +1313,8 @@
     "accHost": "With a publisher",
     "accAddressLabel": "Or enter an address",
     "accAddressHint": "Accommodation address",
-    "accNotArranged": "Accommodation not arranged yet"
+    "accNotArranged": "Accommodation not arranged yet",
+    "serviceKindOf": "Type of service ({{name}})"
   },
   "witnessing": {
     "youAreAssigned": "You're assigned to this slot",

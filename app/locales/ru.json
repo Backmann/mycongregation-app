@@ -1317,7 +1317,8 @@
     "accHost": "У возвещателя",
     "accAddressLabel": "Или адрес вручную",
     "accAddressHint": "Адрес проживания",
-    "accNotArranged": "Жильё ещё не организовано"
+    "accNotArranged": "Жильё ещё не организовано",
+    "serviceKindOf": "Вид служения ({{name}})"
   },
   "witnessing": {
     "youAreAssigned": "Вы назначены на этот слот",

@@ -72,6 +72,8 @@ interface FormState {
   /** Spouse participation on a field-service item: none / together / separate. */
   wifeMode: 'none' | 'together' | 'separate';
   wifePartnerPublisherId: string | null;
+  /** The wife's own type of service (separate service only). */
+  wifeNote: string;
   /** Existing wife's paired row id (separate service), if any. */
   wifePairId: string | null;
 }
@@ -429,6 +431,7 @@ export default function CoScheduleScreen() {
       withWife: false,
       wifeMode: 'none',
       wifePartnerPublisherId: null,
+      wifeNote: '',
       wifePairId: null,
     });
   const openEdit = (it: CoVisitItem) => {
@@ -454,6 +457,7 @@ export default function CoScheduleScreen() {
       withWife: it.withWife,
       wifeMode: it.withWife ? 'together' : pair ? 'separate' : 'none',
       wifePartnerPublisherId: pair?.assigneePublisherId ?? null,
+      wifeNote: pair?.note ?? '',
       wifePairId: pair?.id ?? null,
     });
 
@@ -537,7 +541,7 @@ export default function CoScheduleScreen() {
             cartLocationId: payload.cartLocationId ?? null,
             placeText: payload.placeText ?? null,
             assigneePublisherId: form.wifePartnerPublisherId,
-            note: form.note.trim() || null,
+            note: form.wifeNote.trim() || null,
           };
           if (form.wifePairId) {
             await coVisitItemsApi.update(form.wifePairId, pairPayload);
@@ -750,6 +754,11 @@ export default function CoScheduleScreen() {
                     {it.assigneeName ?? it.assigneeText ?? '—'}
                   </Text>
                 </View>
+                {it.note ? (
+                  <Text style={styles.pairNote}>
+                    {t('coVisit.serviceKind')}: {it.note}
+                  </Text>
+                ) : null}
                 <View style={styles.pairRow}>
                   <View style={[styles.pairDot, styles.pairDotWife]} />
                   <Text style={styles.pairText}>
@@ -759,6 +768,11 @@ export default function CoScheduleScreen() {
                     {pair.assigneeName ?? pair.assigneeText ?? '—'}
                   </Text>
                 </View>
+                {pair.note ? (
+                  <Text style={styles.pairNote}>
+                    {t('coVisit.serviceKind')}: {pair.note}
+                  </Text>
+                ) : null}
               </View>
             );
           })()}
@@ -788,7 +802,7 @@ export default function CoScheduleScreen() {
               </Text>
             </View>
           ) : null}
-          {it.note ? (
+          {it.note && !(!it.forWife && !it.withWife && wifePairOf(it)) ? (
             <Text style={styles.serviceTypeLine}>
               {t('coVisit.serviceKind')}: {it.note}
             </Text>
@@ -1339,23 +1353,45 @@ export default function CoScheduleScreen() {
                             ))}
                           </View>
                           {form.wifeMode === 'separate' ? (
-                            <PublisherSelector
-                              boxed
-                              label={t('coVisit.wifePartner')}
-                              value={form.wifePartnerPublisherId}
-                              genderFilter="sister"
-                              onChange={(id) =>
-                                setForm({
-                                  ...form,
-                                  wifePartnerPublisherId: id,
-                                })
-                              }
-                            />
+                            <>
+                              <PublisherSelector
+                                boxed
+                                label={t('coVisit.wifePartner')}
+                                value={form.wifePartnerPublisherId}
+                                genderFilter="sister"
+                                onChange={(id) =>
+                                  setForm({
+                                    ...form,
+                                    wifePartnerPublisherId: id,
+                                  })
+                                }
+                              />
+                              <Text style={styles.fieldLabel}>
+                                {t('coVisit.serviceKindOf', {
+                                  name:
+                                    visit.coWifeName ||
+                                    t('coVisit.wifeShort'),
+                                })}
+                              </Text>
+                              <TextInput
+                                style={styles.input}
+                                value={form.wifeNote}
+                                onChangeText={(v) =>
+                                  setForm({ ...form, wifeNote: v })
+                                }
+                                placeholder={t('coVisit.serviceKindHint')}
+                                placeholderTextColor="#94a3b8"
+                              />
+                            </>
                           ) : null}
                         </>
                       ) : null}
                       <Text style={styles.fieldLabel}>
-                        {t('coVisit.serviceKind')}
+                        {form.wifeMode === 'separate'
+                          ? t('coVisit.serviceKindOf', {
+                              name: coName || t('coVisit.coShort'),
+                            })
+                          : t('coVisit.serviceKind')}
                       </Text>
                       <TextInput
                         style={styles.input}
@@ -1636,6 +1672,12 @@ const styles = StyleSheet.create({
   pairDotCo: { backgroundColor: '#0ea5e9' },
   pairDotWife: { backgroundColor: '#8b5cf6' },
   pairText: { fontSize: 13.5, color: '#0f172a', flex: 1 },
+  pairNote: {
+    fontSize: 12.5,
+    color: '#7c3aed',
+    fontWeight: '600',
+    marginLeft: 14,
+  },
   pairWho: { fontWeight: '700', color: '#475569' },
   togetherBadge: {
     fontSize: 11,

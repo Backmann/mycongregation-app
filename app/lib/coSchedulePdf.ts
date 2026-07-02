@@ -138,6 +138,8 @@ function daySchedule(
           ];
         const pair = pairOf(i);
         if (pair) {
+          // Separate service: each spouse has their OWN partner and their
+          // OWN type of service.
           const co = withPhone(
             i.assigneeName ?? i.assigneeText,
             i.assigneePhone,
@@ -146,10 +148,9 @@ function daySchedule(
             pair.assigneeName ?? pair.assigneeText,
             pair.assigneePhone,
           );
-          return [
-            placeWithNote,
-            `${L.coShort}: ${co || '—'} · ${L.wifeShort}: ${wife || '—'}`,
-          ];
+          const coPart = `${L.coShort}: ${co || '—'}${i.note ? ` — ${i.note}` : ''}`;
+          const wifePart = `${L.wifeShort}: ${wife || '—'}${pair.note ? ` — ${pair.note}` : ''}`;
+          return [placeStr(i, L), `${coPart} · ${wifePart}`];
         }
         return [
           placeWithNote,

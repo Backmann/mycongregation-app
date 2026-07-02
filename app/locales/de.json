@@ -1313,7 +1313,8 @@
     "accHost": "Bei einem Verkündiger",
     "accAddressLabel": "Oder Adresse eingeben",
     "accAddressHint": "Adresse der Unterkunft",
-    "accNotArranged": "Unterkunft noch nicht organisiert"
+    "accNotArranged": "Unterkunft noch nicht organisiert",
+    "serviceKindOf": "Dienstart ({{name}})"
   },
   "witnessing": {
     "youAreAssigned": "Sie sind diesem Slot zugeteilt",
