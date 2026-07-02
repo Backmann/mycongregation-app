@@ -116,7 +116,6 @@ export default function CoScheduleScreen() {
 
   const [form, setForm] = useState<FormState | null>(null);
   const [mode, setMode] = useState<'co' | 'wife'>('co');
-  const [viewMode, setViewMode] = useState<'day' | 'type'>('day');
   const [kindPickerDay, setKindPickerDay] = useState<string | null>(null);
   const [confirmCopy, setConfirmCopy] = useState(false);
 
@@ -262,17 +261,6 @@ export default function CoScheduleScreen() {
   // The wife's schedule mirrors the overseer's joint field-service day, so
   // that day shows on both sides from a single source of truth (no dupes).
   const isSynced = (it: CoVisitItem) => mode === 'wife' && !it.forWife;
-  const itemsOf = (kind: ItemKind) =>
-    (items ?? []).filter((i) => {
-      if (i.kind !== kind) return false;
-      if (i.forWife === (mode === 'wife')) return true;
-      return (
-        mode === 'wife' &&
-        kind === 'field_service' &&
-        !i.forWife &&
-        i.withWife
-      );
-    });
 
   if (!canViewCoSchedule) {
     return (
@@ -573,6 +561,9 @@ export default function CoScheduleScreen() {
         period: t('coVisit.period'),
         accommodation: t('circuitOverseer.accommodationAddress'),
         congregation: t('coVisit.congregation'),
+        item: t('coVisit.pdfItem'),
+        who: t('coVisit.pdfWho'),
+        together: t('coVisit.togetherBadge'),
       },
     });
     const win = window.open('', '_blank');
@@ -585,70 +576,6 @@ export default function CoScheduleScreen() {
     win.document.close();
   };
 
-  const renderSection = (
-    kind: ItemKind,
-    title: string,
-    addLabel: string,
-    emptyLabel: string,
-    renderItem: (it: CoVisitItem) => ReactNode,
-  ) => {
-    const list = itemsOf(kind);
-    return (
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>{title}</Text>
-          {canEditCoSchedule ? (
-            <Pressable
-              style={({ pressed }) => [styles.addBtn, pressed && styles.pressed]}
-              onPress={() => openCreate(kind)}
-            >
-              <Ionicons name="add" size={18} color="#0ea5e9" />
-              <Text style={styles.addText}>{addLabel}</Text>
-            </Pressable>
-          ) : null}
-        </View>
-        {list.length === 0 ? (
-          <Text style={styles.muted}>{emptyLabel}</Text>
-        ) : (
-          days
-            .filter((day) => list.some((i) => i.itemDate === day))
-            .map((day) => (
-              <View key={day} style={styles.dayBlock}>
-                <Text style={styles.dayHeader}>{fmt(day)}</Text>
-                {list
-                  .filter((i) => i.itemDate === day)
-                  .map((it) => (
-                    <Pressable
-                      key={it.id}
-                      disabled={!canEditCoSchedule || isSynced(it)}
-                      style={({ pressed }) => [
-                        styles.itemRow,
-                        pressed &&
-                          canEditCoSchedule &&
-                          !isSynced(it) &&
-                          styles.pressed,
-                      ]}
-                      onPress={() =>
-                        canEditCoSchedule && !isSynced(it) && openEdit(it)
-                      }
-                    >
-                      <Text style={styles.itemTime}>{it.startTime ?? '—'}</Text>
-                      <View style={styles.itemBody}>{renderItem(it)}</View>
-                      {canEditCoSchedule && !isSynced(it) ? (
-                        <Ionicons
-                          name="chevron-forward"
-                          size={16}
-                          color="#cbd5e1"
-                        />
-                      ) : null}
-                    </Pressable>
-                  ))}
-              </View>
-            ))
-        )}
-      </View>
-    );
-  };
 
   // Which items belong to the active tab (the wife tab also mirrors the
   // overseer's joint field-service day).
@@ -675,6 +602,23 @@ export default function CoScheduleScreen() {
         return t('coVisit.shortPioneers');
       default:
         return t('coVisit.shortElders');
+    }
+  };
+
+  const kindColor = (k: string): { bg: string; fg: string } => {
+    switch (k) {
+      case 'field_service':
+        return { bg: '#dcfce7', fg: '#15803d' };
+      case 'lunch':
+        return { bg: '#ffedd5', fg: '#c2410c' };
+      case 'lunch_box':
+        return { bg: '#fef3c7', fg: '#b45309' };
+      case 'pastoral':
+        return { bg: '#f3e8ff', fg: '#7c3aed' };
+      case 'pioneers':
+        return { bg: '#ccfbf1', fg: '#0f766e' };
+      default:
+        return { bg: '#e0f2fe', fg: '#0369a1' };
     }
   };
 
@@ -790,7 +734,7 @@ export default function CoScheduleScreen() {
           <Text style={styles.muted}>{t('coVisit.empty')}</Text>
         ) : (
           activeDays.map((day) => (
-            <View key={day} style={styles.dayBlock}>
+            <View key={day} style={styles.dayCard}>
               <View
                 style={{
                   flexDirection: 'row',
@@ -798,7 +742,17 @@ export default function CoScheduleScreen() {
                   justifyContent: 'space-between',
                 }}
               >
-                <Text style={styles.dayHeader}>{fmt(day)}</Text>
+                <View style={styles.dayPlateRow}>
+                  <View
+                    style={[
+                      styles.dayPlate,
+                      mode === 'wife' && styles.dayPlateWife,
+                    ]}
+                  >
+                    <Text style={styles.dayPlateNum}>{day.slice(8, 10)}</Text>
+                  </View>
+                  <Text style={styles.dayHeader}>{fmt(day)}</Text>
+                </View>
                 {canEditCoSchedule ? (
                   <Pressable
                     style={({ pressed }) => [
@@ -831,22 +785,22 @@ export default function CoScheduleScreen() {
                   >
                     <Text style={styles.itemTime}>{it.startTime ?? '—'}</Text>
                     <View style={styles.itemBody}>
-                      <Text
-                        style={{
-                          alignSelf: 'flex-start',
-                          fontSize: 11,
-                          fontWeight: '600',
-                          color: '#0369a1',
-                          backgroundColor: '#e0f2fe',
-                          borderRadius: 8,
-                          paddingHorizontal: 6,
-                          paddingVertical: 1,
-                          marginBottom: 2,
-                          overflow: 'hidden',
-                        }}
-                      >
-                        {kindShort(it.kind)}
-                      </Text>
+                      <View style={styles.badgeRow}>
+                        <Text
+                          style={[
+                            styles.kindBadge,
+                            { backgroundColor: kindColor(it.kind).bg,
+                              color: kindColor(it.kind).fg },
+                          ]}
+                        >
+                          {kindShort(it.kind)}
+                        </Text>
+                        {mode === 'wife' && !it.forWife ? (
+                          <Text style={styles.togetherBadge}>
+                            {t('coVisit.togetherBadge')}
+                          </Text>
+                        ) : null}
+                      </View>
                       {renderBody(it)}
                     </View>
                     {canEditCoSchedule && !isSynced(it) ? (
@@ -912,7 +866,13 @@ export default function CoScheduleScreen() {
           ).map(([m, label]) => (
             <Pressable
               key={m}
-              style={[styles.modeChip, mode === m && styles.modeChipActive]}
+              style={[
+                styles.modeChip,
+                mode === m &&
+                  (m === 'wife'
+                    ? styles.modeChipActiveWife
+                    : styles.modeChipActive),
+              ]}
               onPress={() => setMode(m)}
             >
               <Text
@@ -928,28 +888,33 @@ export default function CoScheduleScreen() {
         </View>
       ) : null}
 
-      <View style={styles.toggleRow}>
-        {(
-          [
-            ['day', t('coVisit.dayViewTab')],
-            ['type', t('coVisit.typeViewTab')],
-          ] as ['day' | 'type', string][]
-        ).map(([v, label]) => (
-          <Pressable
-            key={v}
-            style={[styles.modeChip, viewMode === v && styles.modeChipActive]}
-            onPress={() => setViewMode(v)}
-          >
-            <Text
-              style={[
-                styles.modeChipText,
-                viewMode === v && styles.modeChipTextActive,
-              ]}
-            >
-              {label}
-            </Text>
-          </Pressable>
-        ))}
+      <View
+        style={[
+          styles.whoBanner,
+          mode === 'wife' ? styles.whoBannerWife : styles.whoBannerCo,
+        ]}
+      >
+        <Ionicons
+          name={mode === 'wife' ? 'flower-outline' : 'person-outline'}
+          size={15}
+          color={mode === 'wife' ? '#7c3aed' : '#0369a1'}
+        />
+        <Text
+          style={[
+            styles.whoBannerText,
+            mode === 'wife'
+              ? styles.whoBannerTextWife
+              : styles.whoBannerTextCo,
+          ]}
+        >
+          {mode === 'wife'
+            ? t('coVisit.scheduleOfWife', {
+                name: visit.coWifeName || t('coVisit.tabWife'),
+              })
+            : t('coVisit.scheduleOfCo', {
+                name: coName || t('coVisit.tabCo'),
+              })}
+        </Text>
       </View>
 
       {mode === 'wife' && canEditCoSchedule ? (
@@ -962,126 +927,7 @@ export default function CoScheduleScreen() {
         </Pressable>
       ) : null}
 
-      {viewMode === 'day' ? (
-        renderDayView()
-      ) : (
-        <>
-      {renderSection(
-        'field_service',
-        t('coVisit.fieldServiceTitle'),
-        t('coVisit.addMeeting'),
-        t('coVisit.noMeetings'),
-        (it) => (
-          <>
-            <Text style={styles.itemPlace}>{placeLabel(it)}</Text>
-            {it.note && !isSynced(it) ? (
-              <Text style={{ fontSize: 13, color: '#475569', marginTop: 1 }}>
-                {it.note}
-              </Text>
-            ) : null}
-            {(it.assigneeName || it.assigneeText) && !isSynced(it) ? (
-              <Text style={styles.itemAssignee}>
-                {it.assigneeName ?? it.assigneeText}
-              </Text>
-            ) : null}
-            {it.withWife ? (
-              <View
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  alignSelf: 'flex-start',
-                  marginTop: 4,
-                  backgroundColor: '#f3e8ff',
-                  borderRadius: 10,
-                  paddingHorizontal: 8,
-                  paddingVertical: 2,
-                }}
-              >
-                <Ionicons name="people" size={12} color="#7c3aed" />
-                <Text
-                  style={{
-                    marginLeft: 4,
-                    fontSize: 11,
-                    color: '#7c3aed',
-                    fontWeight: '600',
-                  }}
-                >
-                  {isSynced(it)
-                    ? t('coVisit.coBadge')
-                    : t('coVisit.spouseBadge')}
-                </Text>
-              </View>
-            ) : null}
-          </>
-        ),
-      )}
-
-      {renderSection(
-        'lunch',
-        t('coVisit.lunchesTitle'),
-        t('coVisit.addLunch'),
-        t('coVisit.noLunches'),
-        (it) => (
-          <>
-            <Text style={styles.itemPlace}>
-              {it.assigneeName ?? it.assigneeText ?? '—'}
-            </Text>
-            {it.assigneeAddress ? (
-              <Text style={styles.itemAssignee}>{it.assigneeAddress}</Text>
-            ) : null}
-            {it.assigneePhone ? (
-              <Text style={styles.itemAssignee}>{it.assigneePhone}</Text>
-            ) : null}
-            {it.note ? (
-              <Text style={styles.itemAssignee}>{it.note}</Text>
-            ) : null}
-          </>
-        ),
-      )}
-
-      {renderSection(
-        'lunch_box',
-        t('coVisit.lunchBoxTitle'),
-        t('coVisit.add'),
-        t('coVisit.empty'),
-        (it) => (
-          <Text style={styles.itemPlace}>{it.assigneeName ?? '—'}</Text>
-        ),
-      )}
-
-      {renderSection(
-        'pastoral',
-        t('coVisit.pastoralTitle'),
-        t('coVisit.addPastoral'),
-        t('coVisit.noPastoral'),
-        (it) => (
-          <>
-            <Text style={styles.itemPlace}>{it.assigneeName ?? '—'}</Text>
-            {it.note ? (
-              <Text style={styles.itemAssignee}>{it.note}</Text>
-            ) : null}
-          </>
-        ),
-      )}
-
-      {renderSection(
-        'pioneers',
-        t('coVisit.pioneersTitle'),
-        t('coVisit.add'),
-        t('coVisit.empty'),
-        (it) => renderPlaceNote(it),
-      )}
-
-      {renderSection(
-        'elders',
-        t('coVisit.eldersTitle'),
-        t('coVisit.add'),
-        t('coVisit.empty'),
-        (it) => renderPlaceNote(it),
-      )}
-
-        </>
-      )}
+      {renderDayView()}
 
       <Modal
         visible={!!kindPickerDay}
@@ -1704,6 +1550,66 @@ const styles = StyleSheet.create({
   },
   copyBtnText: { fontSize: 14, fontWeight: '600', color: '#0369a1' },
   dayBlock: { gap: 6 },
+  dayCard: {
+    gap: 6,
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderRadius: 14,
+    padding: 12,
+    marginBottom: 12,
+  },
+  dayPlateRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  dayPlate: {
+    width: 38,
+    height: 38,
+    borderRadius: 10,
+    backgroundColor: '#0ea5e9',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  dayPlateWife: { backgroundColor: '#8b5cf6' },
+  dayPlateNum: { color: '#fff', fontSize: 17, fontWeight: '800' },
+  badgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 2,
+  },
+  kindBadge: {
+    alignSelf: 'flex-start',
+    fontSize: 11,
+    fontWeight: '600',
+    borderRadius: 8,
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    overflow: 'hidden',
+  },
+  togetherBadge: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#7c3aed',
+    backgroundColor: '#f3e8ff',
+    borderRadius: 8,
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    overflow: 'hidden',
+  },
+  whoBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginBottom: 10,
+  },
+  whoBannerCo: { backgroundColor: '#e0f2fe' },
+  whoBannerWife: { backgroundColor: '#f3e8ff' },
+  whoBannerText: { fontSize: 13, fontWeight: '700', flex: 1 },
+  whoBannerTextCo: { color: '#075985' },
+  whoBannerTextWife: { color: '#6d28d9' },
+  modeChipActiveWife: { backgroundColor: '#8b5cf6' },
   dayHeader: {
     fontSize: 13,
     fontWeight: '700',

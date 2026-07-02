@@ -1287,7 +1287,12 @@
     "copyDo": "Copy",
     "copying": "Copying…",
     "organizerNote": "Note for the organizer",
-    "organizerNoteHint": "e.g. gluten-free, no sugar"
+    "organizerNoteHint": "e.g. gluten-free, no sugar",
+    "scheduleOfCo": "Circuit overseer's schedule: {{name}}",
+    "scheduleOfWife": "Wife's schedule: {{name}}",
+    "togetherBadge": "together with the CO",
+    "pdfItem": "Item",
+    "pdfWho": "Participant"
   },
   "witnessing": {
     "youAreAssigned": "You're assigned to this slot",

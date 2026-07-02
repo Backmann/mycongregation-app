@@ -1291,7 +1291,12 @@
     "copyDo": "Скопировать",
     "copying": "Копирование…",
     "organizerNote": "Пометка для организатора",
-    "organizerNoteHint": "напр.: не употребляет глютен"
+    "organizerNoteHint": "напр.: не употребляет глютен",
+    "scheduleOfCo": "График районного надзирателя: {{name}}",
+    "scheduleOfWife": "График жены: {{name}}",
+    "togetherBadge": "вместе с районным",
+    "pdfItem": "Пункт",
+    "pdfWho": "Участник"
   },
   "witnessing": {
     "youAreAssigned": "Вы назначены на этот слот",

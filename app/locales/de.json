@@ -1287,7 +1287,12 @@
     "copyDo": "Kopieren",
     "copying": "Wird kopiert…",
     "organizerNote": "Hinweis für den Organisator",
-    "organizerNoteHint": "z. B. glutenfrei, ohne Zucker"
+    "organizerNoteHint": "z. B. glutenfrei, ohne Zucker",
+    "scheduleOfCo": "Plan des Kreisaufsehers: {{name}}",
+    "scheduleOfWife": "Plan der Ehefrau: {{name}}",
+    "togetherBadge": "gemeinsam mit dem KA",
+    "pdfItem": "Programmpunkt",
+    "pdfWho": "Teilnehmer"
   },
   "witnessing": {
     "youAreAssigned": "Sie sind diesem Slot zugeteilt",
