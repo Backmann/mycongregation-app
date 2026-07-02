@@ -101,7 +101,14 @@ function EventRow({ event }: { event: SpecialEvent }) {
   const isCongress =
     event.type === 'regional_convention' ||
     event.type === 'circuit_assembly';
-  const meta = [event.time, event.address].filter(Boolean).join(' · ');
+  const meta = [
+    event.time
+      ? `${event.time}${event.timeEnd ? `–${event.timeEnd}` : ''}`
+      : null,
+    event.address,
+  ]
+    .filter(Boolean)
+    .join(' · ');
 
   return (
     <Pressable

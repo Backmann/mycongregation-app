@@ -12,6 +12,7 @@ import { useLocalSearchParams, router } from 'expo-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
+import { RichText } from '../../../components/RichText';
 import {
   circuitOverseersApi,
   CircuitOverseer,
@@ -33,6 +34,7 @@ function toForm(e: SpecialEvent): EventFormValue {
     date: e.date ?? '',
     endDate: e.endDate ?? '',
     time: e.time ?? '',
+    timeEnd: e.timeEnd ?? '',
     address: e.address ?? '',
     mapUrl: e.mapUrl ?? '',
     programUrl: e.programUrl ?? '',
@@ -73,6 +75,7 @@ export default function SpecialEventDetailScreen() {
         date: form!.date.trim(),
         endDate: form!.endDate.trim() || undefined,
         time: form!.time.trim() || undefined,
+        timeEnd: form!.timeEnd.trim(),
         address: form!.address.trim() || undefined,
         mapUrl: form!.mapUrl.trim() || undefined,
         programUrl: form!.programUrl.trim() || undefined,
@@ -213,7 +216,9 @@ export default function SpecialEventDetailScreen() {
       <Text style={styles.date}>
         {startLabel}
         {endLabel ? ` – ${endLabel}` : ''}
-        {event.time ? ` · ${event.time}` : ''}
+        {event.time
+          ? ` · ${event.time}${event.timeEnd ? `–${event.timeEnd}` : ''}`
+          : ''}
       </Text>
       {typeLabel ? <Text style={styles.badge}>{typeLabel}</Text> : null}
       {isRemoved ? (
@@ -361,7 +366,7 @@ function InfoRow({ label, value }: { label: string; value: string }) {
   return (
     <View style={styles.infoRow}>
       <Text style={styles.infoLabel}>{label}</Text>
-      <Text style={styles.infoValue}>{value}</Text>
+      <RichText text={value} style={styles.infoValue} />
     </View>
   );
 }

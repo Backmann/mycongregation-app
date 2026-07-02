@@ -1587,6 +1587,7 @@ export interface SpecialEvent {
   date: string;
   endDate: string | null;
   time: string | null;
+  timeEnd: string | null;
   address: string | null;
   mapUrl: string | null;
   programUrl: string | null;
@@ -1610,6 +1611,7 @@ export interface CreateSpecialEventInput {
   date: string;
   endDate?: string;
   time?: string;
+  timeEnd?: string;
   address?: string;
   mapUrl?: string;
   programUrl?: string;
@@ -1703,6 +1705,7 @@ export interface MyAssignmentItem {
   date?: string;
   eventType?: string;
   time?: string;
+  timeEnd?: string;
   endTime?: string;
   label: string;
   location?: string;

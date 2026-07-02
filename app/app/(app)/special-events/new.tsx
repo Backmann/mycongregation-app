@@ -30,6 +30,7 @@ export default function NewSpecialEventScreen() {
         date: form.date.trim(),
         endDate: form.endDate.trim() || undefined,
         time: form.time.trim() || undefined,
+        timeEnd: form.timeEnd.trim() || undefined,
         address: form.address.trim() || undefined,
         mapUrl: form.mapUrl.trim() || undefined,
         programUrl: form.programUrl.trim() || undefined,

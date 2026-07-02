@@ -10,6 +10,7 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { RichText } from '../../../components/RichText';
 import { useTranslation } from 'react-i18next';
 import {
   Absence,
@@ -432,7 +433,7 @@ function EventHomeRow({
         ) : null}
         {e.note ? (
           <Text style={styles.evMeta} numberOfLines={1}>
-            {e.note}
+            <RichText text={e.note} />
           </Text>
         ) : null}
       </View>

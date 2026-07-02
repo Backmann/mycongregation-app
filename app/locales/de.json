@@ -1488,7 +1488,12 @@
       "customTime": "eigene…",
       "timePlaceholder": "HH:MM",
       "timeHint": "4 Ziffern eingeben, z. B. 1830 → 18:30",
-      "close": "Fertig"
+      "close": "Fertig",
+      "singleTime": "Uhrzeit",
+      "rangeTime": "Von — bis",
+      "timeFrom": "Von",
+      "timeTo": "Bis",
+      "notePreview": "Vorschau"
     },
     "types": {
       "regional_convention": "Regionaler Kongress",

@@ -1492,7 +1492,12 @@
       "customTime": "своё…",
       "timePlaceholder": "ЧЧ:ММ",
       "timeHint": "Введите 4 цифры, например 1830 → 18:30",
-      "close": "Готово"
+      "close": "Готово",
+      "singleTime": "Время",
+      "rangeTime": "С — до",
+      "timeFrom": "С",
+      "timeTo": "До",
+      "notePreview": "Предпросмотр"
     },
     "types": {
       "regional_convention": "Региональный конгресс",

@@ -1488,7 +1488,12 @@
       "customTime": "custom…",
       "timePlaceholder": "HH:MM",
       "timeHint": "Type 4 digits, e.g. 1830 → 18:30",
-      "close": "Done"
+      "close": "Done",
+      "singleTime": "Time",
+      "rangeTime": "From — to",
+      "timeFrom": "From",
+      "timeTo": "To",
+      "notePreview": "Preview"
     },
     "types": {
       "regional_convention": "Regional convention",

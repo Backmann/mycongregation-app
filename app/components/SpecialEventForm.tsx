@@ -17,7 +17,8 @@ import 'dayjs/locale/de';
 import { circuitOverseersApi, CircuitOverseer } from '../lib/api';
 import { FormChips } from './FormChips';
 import { MonthCalendar } from './MonthCalendar';
-import { TimeWheel } from './TimeWheel';
+import { TimeField } from './TimeField';
+import { RichText } from './RichText';
 
 export const EVENT_TYPES = [
   'regional_convention',
@@ -45,6 +46,7 @@ export interface EventFormValue {
   date: string; // 'YYYY-MM-DD' (start)
   endDate: string; // '' or 'YYYY-MM-DD'
   time: string; // '' or 'HH:mm'
+  timeEnd: string; // '' or 'HH:mm' — the event runs time–timeEnd
   address: string;
   mapUrl: string;
   programUrl: string;
@@ -67,6 +69,7 @@ export function emptyEventForm(): EventFormValue {
     date: '',
     endDate: '',
     time: '',
+    timeEnd: '',
     address: '',
     mapUrl: '',
     programUrl: '',
@@ -99,7 +102,6 @@ export function SpecialEventForm({
 
   const [multiDay, setMultiDay] = useState<boolean>(!!value.endDate);
   const [showDate, setShowDate] = useState(false);
-  const [showTime, setShowTime] = useState(false);
   const [showType, setShowType] = useState(false);
 
   const set = (patch: Partial<EventFormValue>) =>
@@ -176,6 +178,30 @@ export function SpecialEventForm({
       end: sel.start + text.length,
     };
     set({ note: next });
+  };
+  /** Wrap the selected text in markers (or insert them and park the caret
+   * inside) — this is how B and I work, like in a real editor. */
+  const wrapNote = (marker: string) => {
+    const note = value.note ?? '';
+    const sel = noteSelRef.current ?? { start: note.length, end: note.length };
+    if (sel.end > sel.start) {
+      const inner = note.slice(sel.start, sel.end);
+      const next =
+        note.slice(0, sel.start) + marker + inner + marker + note.slice(sel.end);
+      noteSelRef.current = {
+        start: sel.end + marker.length * 2,
+        end: sel.end + marker.length * 2,
+      };
+      set({ note: next });
+    } else {
+      const next =
+        note.slice(0, sel.start) + marker + marker + note.slice(sel.end);
+      noteSelRef.current = {
+        start: sel.start + marker.length,
+        end: sel.start + marker.length,
+      };
+      set({ note: next });
+    }
   };
 
   const dateLabel = value.date
@@ -372,52 +398,56 @@ export function SpecialEventForm({
         )}
       </Field>
 
-      {/* Time (presets + inline custom picker) */}
+      {/* Time: none / a single time / a from–to range, on the iOS wheel */}
       <Field label={t('specialEvents.form.time')}>
         <View style={styles.chips}>
           <Chip
             label={t('specialEvents.form.noTime')}
             active={!value.time}
-            onPress={() => {
-              set({ time: '' });
-              setShowTime(false);
-            }}
+            onPress={() => set({ time: '', timeEnd: '' })}
           />
-          {TIME_PRESETS.map((tm) => (
-            <Chip
-              key={tm}
-              label={tm}
-              active={value.time === tm}
-              onPress={() => {
-                set({ time: tm });
-                setShowTime(false);
-              }}
-            />
-          ))}
           <Chip
-            label={
-              value.time && !TIME_PRESETS.includes(value.time)
-                ? value.time
-                : t('specialEvents.form.customTime')
+            label={t('specialEvents.form.singleTime')}
+            active={!!value.time && !value.timeEnd}
+            onPress={() => set({ time: value.time || '10:00', timeEnd: '' })}
+          />
+          <Chip
+            label={t('specialEvents.form.rangeTime')}
+            active={!!value.time && !!value.timeEnd}
+            onPress={() =>
+              set({
+                time: value.time || '10:00',
+                timeEnd: value.timeEnd || '12:00',
+              })
             }
-            active={!!value.time && !TIME_PRESETS.includes(value.time)}
-            onPress={() => setShowTime((s) => !s)}
           />
         </View>
-        {showTime && (
-          <View style={styles.inlineCard}>
-            <TimeWheel
-              value={value.time || '10:00'}
-              onChange={(v) => set({ time: v })}
-            />
-            <Pressable
-              style={styles.timeDoneBtn}
-              onPress={() => setShowTime(false)}
-            >
-              <Text style={styles.timeDoneText}>{t('common.done')}</Text>
-            </Pressable>
+        {value.time ? (
+          <View style={styles.timeFields}>
+            <View style={{ flex: 1 }}>
+              {value.timeEnd ? (
+                <Text style={styles.timeSubLabel}>
+                  {t('specialEvents.form.timeFrom')}
+                </Text>
+              ) : null}
+              <TimeField
+                value={value.time}
+                onChange={(v) => set({ time: v })}
+              />
+            </View>
+            {value.timeEnd ? (
+              <View style={{ flex: 1 }}>
+                <Text style={styles.timeSubLabel}>
+                  {t('specialEvents.form.timeTo')}
+                </Text>
+                <TimeField
+                  value={value.timeEnd}
+                  onChange={(v) => set({ timeEnd: v })}
+                />
+              </View>
+            ) : null}
           </View>
-        )}
+        ) : null}
       </Field>
 
       {/* Address / map / program — not relevant for a CO visit */}
@@ -470,6 +500,15 @@ export function SpecialEventForm({
           style={styles.noteToolbar}
           keyboardShouldPersistTaps="always"
         >
+          <Pressable style={styles.noteTool} onPress={() => wrapNote('**')}>
+            <Text style={[styles.noteToolText, { fontWeight: '800' }]}>Ж</Text>
+          </Pressable>
+          <Pressable style={styles.noteTool} onPress={() => wrapNote('_')}>
+            <Text style={[styles.noteToolText, { fontStyle: 'italic' }]}>
+              К
+            </Text>
+          </Pressable>
+          <View style={styles.noteToolDivider} />
           {NOTE_SNIPPETS.map((snip) => (
             <Pressable
               key={snip}
@@ -491,6 +530,14 @@ export function SpecialEventForm({
           placeholderTextColor="#94a3b8"
           multiline
         />
+        {/(\*\*[^*\n]+\*\*|_[^_\n]+_)/.test(value.note) ? (
+          <View style={styles.notePreview}>
+            <Text style={styles.notePreviewLabel}>
+              {t('specialEvents.form.notePreview')}
+            </Text>
+            <RichText text={value.note} style={styles.notePreviewText} />
+          </View>
+        ) : null}
       </Field>
 
       {/* Replaces meeting (not for a CO visit — the meeting still happens) */}
@@ -571,15 +618,34 @@ const styles = StyleSheet.create({
     marginRight: 6,
   },
   noteToolText: { fontSize: 14, color: '#0f172a' },
-  timeDoneBtn: {
-    alignSelf: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 22,
-    borderRadius: 10,
-    backgroundColor: '#e0f2fe',
-    marginTop: 2,
+  timeFields: { flexDirection: 'row', gap: 10, marginTop: 8 },
+  timeSubLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#64748b',
+    marginBottom: 4,
+    textTransform: 'uppercase',
   },
-  timeDoneText: { color: '#0369a1', fontSize: 14, fontWeight: '700' },
+  noteToolDivider: {
+    width: 1,
+    backgroundColor: '#e2e8f0',
+    marginRight: 6,
+    marginVertical: 4,
+  },
+  notePreview: {
+    marginTop: 8,
+    backgroundColor: '#f8fafc',
+    borderRadius: 10,
+    padding: 10,
+  },
+  notePreviewLabel: {
+    fontSize: 10.5,
+    fontWeight: '700',
+    color: '#94a3b8',
+    textTransform: 'uppercase',
+    marginBottom: 3,
+  },
+  notePreviewText: { fontSize: 14, color: '#0f172a', lineHeight: 20 },
   field: { marginBottom: 14 },
   label: { fontSize: 13, fontWeight: '600', color: '#475569', marginBottom: 6 },
   input: {
