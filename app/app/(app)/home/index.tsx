@@ -593,7 +593,9 @@ function CoVisitBlock() {
       month: '2-digit',
     });
   const kindName = (k: string) =>
-    k === 'field_service'
+    k === 'accommodation'
+      ? t('coVisit.accTitle')
+      : k === 'field_service'
       ? t('coVisit.fieldServiceTitle')
       : k === 'lunch'
         ? t('coVisit.lunchesTitle')
@@ -609,7 +611,9 @@ function CoVisitBlock() {
       ? (it.cartLocationName ?? '')
       : (it.placeText ?? '');
   const withLabel = (it: MyCoVisitItem) =>
-    it.kind !== 'field_service' || !it.serviceWith
+    it.kind === 'accommodation'
+      ? t('coVisit.accMine')
+      : it.kind !== 'field_service' || !it.serviceWith
       ? null
       : it.serviceWith === 'wife'
         ? t('coVisit.mineWithWife')
@@ -624,6 +628,12 @@ function CoVisitBlock() {
           <View style={coStyles.head}>
             <Ionicons name="briefcase-outline" size={18} color="#0e7490" />
             <Text style={coStyles.title}>{t('coVisit.mineTitle')}</Text>
+            <Text style={coStyles.period}>
+              {fmtDay(visit.date)}
+              {visit.endDate && visit.endDate !== visit.date
+                ? ` – ${fmtDay(visit.endDate)}`
+                : ''}
+            </Text>
           </View>
           {items.map((it) => {
             const wl = withLabel(it);
@@ -670,6 +680,7 @@ const coStyles = StyleSheet.create({
     marginBottom: 8,
   },
   title: { fontSize: 15, fontWeight: '800', color: '#0e7490', flex: 1 },
+  period: { fontSize: 12, fontWeight: '600', color: '#64748b' },
   row: {
     flexDirection: 'row',
     gap: 10,

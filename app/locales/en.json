@@ -1316,7 +1316,8 @@
     "accNotArranged": "Accommodation not arranged yet",
     "serviceKindOf": "Type of service ({{name}})",
     "participation": "Participation",
-    "togetherHint": "Serves together with her husband — shared partner and type of service above"
+    "togetherHint": "Serves together with her husband — shared partner and type of service above",
+    "accMine": "The circuit overseer and his wife are staying with you"
   },
   "witnessing": {
     "youAreAssigned": "You're assigned to this slot",

@@ -1316,7 +1316,8 @@
     "accNotArranged": "Unterkunft noch nicht organisiert",
     "serviceKindOf": "Dienstart ({{name}})",
     "participation": "Teilnahme",
-    "togetherHint": "Dient gemeinsam mit ihrem Mann — Partner und Dienstart oben gelten für beide"
+    "togetherHint": "Dient gemeinsam mit ihrem Mann — Partner und Dienstart oben gelten für beide",
+    "accMine": "Der Kreisaufseher und seine Frau wohnen bei euch"
   },
   "witnessing": {
     "youAreAssigned": "Sie sind diesem Slot zugeteilt",
