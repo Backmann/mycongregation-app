@@ -1296,7 +1296,14 @@
     "scheduleOfWife": "График жены: {{name}}",
     "togetherBadge": "вместе с районным",
     "pdfItem": "Пункт",
-    "pdfWho": "Участник"
+    "pdfWho": "Участник",
+    "spouseField": "Супруга ({{name}})",
+    "spouseNone": "Не участвует",
+    "spouseTogether": "Вместе",
+    "spouseSeparate": "Отдельно",
+    "wifePartner": "Напарница супруги",
+    "coShort": "Районный",
+    "wifeShort": "Супруга"
   },
   "witnessing": {
     "youAreAssigned": "Вы назначены на этот слот",

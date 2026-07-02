@@ -1292,7 +1292,14 @@
     "scheduleOfWife": "Wife's schedule: {{name}}",
     "togetherBadge": "together with the CO",
     "pdfItem": "Item",
-    "pdfWho": "Participant"
+    "pdfWho": "Participant",
+    "spouseField": "Wife ({{name}})",
+    "spouseNone": "Not taking part",
+    "spouseTogether": "Together",
+    "spouseSeparate": "Separately",
+    "wifePartner": "Wife's partner",
+    "coShort": "CO",
+    "wifeShort": "Wife"
   },
   "witnessing": {
     "youAreAssigned": "You're assigned to this slot",

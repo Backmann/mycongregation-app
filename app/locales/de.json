@@ -1292,7 +1292,14 @@
     "scheduleOfWife": "Plan der Ehefrau: {{name}}",
     "togetherBadge": "gemeinsam mit dem KA",
     "pdfItem": "Programmpunkt",
-    "pdfWho": "Teilnehmer"
+    "pdfWho": "Teilnehmer",
+    "spouseField": "Ehefrau ({{name}})",
+    "spouseNone": "Nimmt nicht teil",
+    "spouseTogether": "Gemeinsam",
+    "spouseSeparate": "Getrennt",
+    "wifePartner": "Partnerin der Ehefrau",
+    "coShort": "KA",
+    "wifeShort": "Ehefrau"
   },
   "witnessing": {
     "youAreAssigned": "Sie sind diesem Slot zugeteilt",

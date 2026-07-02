@@ -68,6 +68,11 @@ interface FormState {
   note: string;
   withWife: boolean;
   forWife: boolean;
+  /** Spouse participation on a field-service item: none / together / separate. */
+  wifeMode: 'none' | 'together' | 'separate';
+  wifePartnerPublisherId: string | null;
+  /** Existing wife's paired row id (separate service), if any. */
+  wifePairId: string | null;
 }
 
 function pickVisit(events: SpecialEvent[]): SpecialEvent | null {
@@ -115,9 +120,7 @@ export default function CoScheduleScreen() {
   const loc = i18n.language;
 
   const [form, setForm] = useState<FormState | null>(null);
-  const [mode, setMode] = useState<'co' | 'wife'>('co');
   const [kindPickerDay, setKindPickerDay] = useState<string | null>(null);
-  const [confirmCopy, setConfirmCopy] = useState(false);
 
   const { data: events, isLoading } = useQuery({
     queryKey: ['special-events', 'co-schedule'],
@@ -207,60 +210,21 @@ export default function CoScheduleScreen() {
       setForm(null);
     },
   });
-  const removeM = useMutation({
-    mutationFn: (id: string) => coVisitItemsApi.remove(id),
+  // Runs a save routine that may touch both the overseer's row and the
+  // wife's paired row, then refreshes once.
+  const pairM = useMutation({
+    mutationFn: (run: () => Promise<void>) => run(),
     onSuccess: () => {
-      invalidate();
+      qc.invalidateQueries({ queryKey: ['co-visit-items'] });
       setForm(null);
     },
   });
 
-  // Copy the overseer's schedule into the wife's tab: same days/times/places,
-  // partners cleared on field service so the user assigns sisters. Skips the
-  // joint "with wife" day (already mirrored) and items she already has.
-  const copyM = useMutation({
-    mutationFn: async () => {
-      if (!visit) return 0;
-      const copyKinds = ['field_service', 'lunch', 'lunch_box'];
-      const source = (items ?? []).filter(
-        (i) => !i.forWife && !i.withWife && copyKinds.includes(i.kind),
-      );
-      const existing = new Set(
-        (items ?? [])
-          .filter((i) => i.forWife)
-          .map((i) => `${i.kind}|${i.itemDate}|${i.startTime ?? ''}`),
-      );
-      const pending = source.filter(
-        (i) => !existing.has(`${i.kind}|${i.itemDate}|${i.startTime ?? ''}`),
-      );
-      for (const i of pending) {
-        const isService = i.kind === 'field_service';
-        await coVisitItemsApi.create({
-          specialEventId: visit.id,
-          kind: i.kind,
-          forWife: true,
-          itemDate: i.itemDate,
-          startTime: i.startTime,
-          placeKind: i.placeKind,
-          cartLocationId: i.cartLocationId,
-          placeText: i.placeText,
-          assigneePublisherId: isService ? null : i.assigneePublisherId,
-          assigneeText: isService ? null : i.assigneeText,
-          note: i.note,
-        });
-      }
-      return pending.length;
-    },
-    onSuccess: () => {
-      invalidate();
-      setConfirmCopy(false);
-    },
-  });
 
   const days = useMemo(() => (visit ? visitDays(visit) : []), [visit]);
   // The wife's schedule mirrors the overseer's joint field-service day, so
   // that day shows on both sides from a single source of truth (no dupes).
-  const isSynced = (it: CoVisitItem) => mode === 'wife' && !it.forWife;
+  const isSynced = (_it: CoVisitItem) => false;
 
   if (!canViewCoSchedule) {
     return (
@@ -418,10 +382,18 @@ export default function CoScheduleScreen() {
       assigneeText: '',
       hostOther: false,
       note: '',
-      forWife: mode === 'wife',
+      forWife: false,
       withWife: false,
+      wifeMode: 'none',
+      wifePartnerPublisherId: null,
+      wifePairId: null,
     });
-  const openEdit = (it: CoVisitItem) =>
+  const openEdit = (it: CoVisitItem) => {
+    const pair =
+      !it.forWife && it.kind === 'field_service' ? wifePairOf(it) : null;
+    setForm2(it, pair);
+  };
+  const setForm2 = (it: CoVisitItem, pair: CoVisitItem | null) =>
     setForm({
       id: it.id,
       kind: (it.kind as ItemKind) ?? 'field_service',
@@ -437,6 +409,9 @@ export default function CoScheduleScreen() {
       note: it.note ?? '',
       forWife: it.forWife,
       withWife: it.withWife,
+      wifeMode: it.withWife ? 'together' : pair ? 'separate' : 'none',
+      wifePartnerPublisherId: pair?.assigneePublisherId ?? null,
+      wifePairId: pair?.id ?? null,
     });
 
   const submit = () => {
@@ -459,7 +434,7 @@ export default function CoScheduleScreen() {
               ? form.placeText.trim() || defaultHallAddress || null
               : null,
         assigneePublisherId: form.assigneePublisherId,
-        withWife: form.withWife,
+        withWife: !form.forWife && form.wifeMode === 'together',
         note: form.note.trim() || null,
       };
     } else if (form.kind === 'lunch') {
@@ -496,20 +471,58 @@ export default function CoScheduleScreen() {
     } else {
       payload = { ...payload, note: form.note.trim() || null };
     }
-    if (form.id) updateM.mutate({ id: form.id, input: payload });
-    else
-      createM.mutate({
-        specialEventId: visit.id,
-        kind: form.kind,
-        forWife: form.forWife,
-        ...payload,
-      });
+    const isCoService = form.kind === 'field_service' && !form.forWife;
+    const run = async () => {
+      if (form.id) {
+        await coVisitItemsApi.update(form.id, payload);
+      } else {
+        await coVisitItemsApi.create({
+          specialEventId: visit.id,
+          kind: form.kind,
+          forWife: form.forWife,
+          ...payload,
+        });
+      }
+      if (isCoService) {
+        // Keep the wife's paired row in sync: same day/time/place, her own
+        // partner; created/updated on "separate", removed otherwise.
+        if (form.wifeMode === 'separate') {
+          const pairPayload = {
+            itemDate: form.itemDate,
+            startTime,
+            placeKind: payload.placeKind,
+            cartLocationId: payload.cartLocationId ?? null,
+            placeText: payload.placeText ?? null,
+            assigneePublisherId: form.wifePartnerPublisherId,
+          };
+          if (form.wifePairId) {
+            await coVisitItemsApi.update(form.wifePairId, pairPayload);
+          } else {
+            await coVisitItemsApi.create({
+              specialEventId: visit.id,
+              kind: 'field_service',
+              forWife: true,
+              ...pairPayload,
+            });
+          }
+        } else if (form.wifePairId) {
+          await coVisitItemsApi.remove(form.wifePairId);
+        }
+      }
+    };
+    pairM.mutate(run);
   };
   const onDelete = () => {
     if (!form?.id) return;
     const id = form.id;
+    const pairId = form.wifePairId;
+    const doRemove = () =>
+      pairM.mutate(async () => {
+        await coVisitItemsApi.remove(id);
+        if (pairId) await coVisitItemsApi.remove(pairId);
+      });
     if (Platform.OS === 'web') {
-      if (window.confirm(t('coVisit.confirmDelete'))) removeM.mutate(id);
+      if (window.confirm(t('coVisit.confirmDelete'))) doRemove();
       return;
     }
     Alert.alert(t('coVisit.confirmDelete'), '', [
@@ -517,7 +530,7 @@ export default function CoScheduleScreen() {
       {
         text: t('coVisit.delete'),
         style: 'destructive',
-        onPress: () => removeM.mutate(id),
+        onPress: () => doRemove(),
       },
     ]);
   };
@@ -563,7 +576,9 @@ export default function CoScheduleScreen() {
         congregation: t('coVisit.congregation'),
         item: t('coVisit.pdfItem'),
         who: t('coVisit.pdfWho'),
-        together: t('coVisit.togetherBadge'),
+        together: t('coVisit.spouseBadge'),
+        coShort: t('coVisit.coShort'),
+        wifeShort: t('coVisit.wifeShort'),
       },
     });
     const win = window.open('', '_blank');
@@ -577,15 +592,30 @@ export default function CoScheduleScreen() {
   };
 
 
-  // Which items belong to the active tab (the wife tab also mirrors the
-  // overseer's joint field-service day).
+  // Wife's separate-service partner lives in a paired forWife row with the
+  // same date and time. The unified list shows every overseer row once and
+  // folds the pair into it; legacy wife copies of shared items stay hidden.
+  const wifePairOf = (co: CoVisitItem): CoVisitItem | null =>
+    (items ?? []).find(
+      (i) =>
+        i.forWife &&
+        i.kind === 'field_service' &&
+        i.itemDate === co.itemDate &&
+        (i.startTime ?? '') === (co.startTime ?? ''),
+    ) ?? null;
+  const hasCoPair = (wifeRow: CoVisitItem): boolean =>
+    (items ?? []).some(
+      (i) =>
+        !i.forWife &&
+        i.kind === 'field_service' &&
+        i.itemDate === wifeRow.itemDate &&
+        (i.startTime ?? '') === (wifeRow.startTime ?? ''),
+    );
   const visibleInMode = (i: CoVisitItem) => {
     if (i.kind === 'document_review') return false;
-    if (mode === 'wife') {
-      if (i.forWife) return true;
-      return i.kind === 'field_service' && i.withWife;
-    }
-    return !i.forWife;
+    if (!i.forWife) return true;
+    // Orphan wife service rows stay visible so old data is never lost.
+    return i.kind === 'field_service' && !hasCoPair(i);
   };
 
   const kindShort = (k: string) => {
@@ -642,11 +672,43 @@ export default function CoScheduleScreen() {
               {it.note}
             </Text>
           ) : null}
-          {(it.assigneeName || it.assigneeText) && !isSynced(it) ? (
-            <Text style={styles.itemAssignee}>
-              {it.assigneeName ?? it.assigneeText}
-            </Text>
-          ) : null}
+          {(() => {
+            if (it.forWife || it.withWife)
+              return (it.assigneeName || it.assigneeText) ? (
+                <Text style={styles.itemAssignee}>
+                  {it.assigneeName ?? it.assigneeText}
+                </Text>
+              ) : null;
+            const pair = wifePairOf(it);
+            if (!pair)
+              return (it.assigneeName || it.assigneeText) ? (
+                <Text style={styles.itemAssignee}>
+                  {it.assigneeName ?? it.assigneeText}
+                </Text>
+              ) : null;
+            return (
+              <View style={{ marginTop: 2, gap: 2 }}>
+                <View style={styles.pairRow}>
+                  <View style={[styles.pairDot, styles.pairDotCo]} />
+                  <Text style={styles.pairText}>
+                    <Text style={styles.pairWho}>
+                      {t('coVisit.coShort')}:{' '}
+                    </Text>
+                    {it.assigneeName ?? it.assigneeText ?? '—'}
+                  </Text>
+                </View>
+                <View style={styles.pairRow}>
+                  <View style={[styles.pairDot, styles.pairDotWife]} />
+                  <Text style={styles.pairText}>
+                    <Text style={styles.pairWho}>
+                      {t('coVisit.wifeShort')}:{' '}
+                    </Text>
+                    {pair.assigneeName ?? pair.assigneeText ?? '—'}
+                  </Text>
+                </View>
+              </View>
+            );
+          })()}
           {it.withWife ? (
             <View
               style={{
@@ -743,12 +805,7 @@ export default function CoScheduleScreen() {
                 }}
               >
                 <View style={styles.dayPlateRow}>
-                  <View
-                    style={[
-                      styles.dayPlate,
-                      mode === 'wife' && styles.dayPlateWife,
-                    ]}
-                  >
+                  <View style={styles.dayPlate}>
                     <Text style={styles.dayPlateNum}>{day.slice(8, 10)}</Text>
                   </View>
                   <Text style={styles.dayHeader}>{fmt(day)}</Text>
@@ -795,9 +852,9 @@ export default function CoScheduleScreen() {
                         >
                           {kindShort(it.kind)}
                         </Text>
-                        {mode === 'wife' && !it.forWife ? (
+                        {it.forWife ? (
                           <Text style={styles.togetherBadge}>
-                            {t('coVisit.togetherBadge')}
+                            {t('coVisit.wifeShort')}
                           </Text>
                         ) : null}
                       </View>
@@ -856,76 +913,6 @@ export default function CoScheduleScreen() {
         <Text style={styles.pdfBtnText}>{t('coVisit.printButton')}</Text>
       </Pressable>
 
-      {visit.coWifeName ? (
-        <View style={styles.toggleRow}>
-          {(
-            [
-              ['co', t('coVisit.tabCo')],
-              ['wife', visit.coWifeName || t('coVisit.tabWife')],
-            ] as ['co' | 'wife', string][]
-          ).map(([m, label]) => (
-            <Pressable
-              key={m}
-              style={[
-                styles.modeChip,
-                mode === m &&
-                  (m === 'wife'
-                    ? styles.modeChipActiveWife
-                    : styles.modeChipActive),
-              ]}
-              onPress={() => setMode(m)}
-            >
-              <Text
-                style={[
-                  styles.modeChipText,
-                  mode === m && styles.modeChipTextActive,
-                ]}
-              >
-                {label}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
-      ) : null}
-
-      <View
-        style={[
-          styles.whoBanner,
-          mode === 'wife' ? styles.whoBannerWife : styles.whoBannerCo,
-        ]}
-      >
-        <Ionicons
-          name={mode === 'wife' ? 'flower-outline' : 'person-outline'}
-          size={15}
-          color={mode === 'wife' ? '#7c3aed' : '#0369a1'}
-        />
-        <Text
-          style={[
-            styles.whoBannerText,
-            mode === 'wife'
-              ? styles.whoBannerTextWife
-              : styles.whoBannerTextCo,
-          ]}
-        >
-          {mode === 'wife'
-            ? t('coVisit.scheduleOfWife', {
-                name: visit.coWifeName || t('coVisit.tabWife'),
-              })
-            : t('coVisit.scheduleOfCo', {
-                name: coName || t('coVisit.tabCo'),
-              })}
-        </Text>
-      </View>
-
-      {mode === 'wife' && canEditCoSchedule ? (
-        <Pressable
-          style={({ pressed }) => [styles.copyBtn, pressed && styles.pressed]}
-          onPress={() => setConfirmCopy(true)}
-        >
-          <Ionicons name="copy-outline" size={18} color="#0369a1" />
-          <Text style={styles.copyBtnText}>{t('coVisit.copyFromOverseer')}</Text>
-        </Pressable>
-      ) : null}
 
       {renderDayView()}
 
@@ -989,79 +976,6 @@ export default function CoScheduleScreen() {
         </Pressable>
       </Modal>
 
-      <Modal
-        visible={confirmCopy}
-        animationType="fade"
-        transparent
-        onRequestClose={() => setConfirmCopy(false)}
-      >
-        <Pressable
-          style={{
-            flex: 1,
-            backgroundColor: 'rgba(15,23,42,0.4)',
-            justifyContent: 'center',
-            padding: 24,
-          }}
-          onPress={() => !copyM.isPending && setConfirmCopy(false)}
-          accessibilityRole="button"
-        >
-          <Pressable
-            style={{ backgroundColor: '#ffffff', borderRadius: 14, padding: 16 }}
-          >
-            <Text
-              style={{
-                fontSize: 15,
-                fontWeight: '700',
-                color: '#0f172a',
-                marginBottom: 6,
-              }}
-            >
-              {t('coVisit.copyFromOverseer')}
-            </Text>
-            <Text style={{ fontSize: 14, color: '#475569', marginBottom: 16 }}>
-              {t('coVisit.copyConfirm')}
-            </Text>
-            <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
-              <Pressable
-                disabled={copyM.isPending}
-                onPress={() => setConfirmCopy(false)}
-                style={({ pressed }) => [
-                  {
-                    paddingHorizontal: 16,
-                    paddingVertical: 10,
-                    borderRadius: 8,
-                    marginRight: 8,
-                  },
-                  pressed && { backgroundColor: '#f1f5f9' },
-                ]}
-              >
-                <Text style={{ fontSize: 15, color: '#64748b' }}>
-                  {t('coVisit.cancel')}
-                </Text>
-              </Pressable>
-              <Pressable
-                disabled={copyM.isPending}
-                onPress={() => copyM.mutate()}
-                style={({ pressed }) => [
-                  {
-                    paddingHorizontal: 16,
-                    paddingVertical: 10,
-                    borderRadius: 8,
-                    backgroundColor: '#0ea5e9',
-                  },
-                  pressed && { opacity: 0.85 },
-                ]}
-              >
-                <Text style={{ fontSize: 15, color: '#ffffff', fontWeight: '600' }}>
-                  {copyM.isPending
-                    ? t('coVisit.copying')
-                    : t('coVisit.copyDo')}
-                </Text>
-              </Pressable>
-            </View>
-          </Pressable>
-        </Pressable>
-      </Modal>
 
       <Modal
         visible={!!form}
@@ -1269,45 +1183,59 @@ export default function CoScheduleScreen() {
                           setForm({ ...form, assigneePublisherId: id })
                         }
                       />
-                      {!form.forWife &&
-                      !(items ?? []).some(
-                        (i) =>
-                          i.kind === 'field_service' &&
-                          !i.forWife &&
-                          i.withWife &&
-                          i.id !== form.id,
-                      ) ? (
-                        <Pressable
-                          onPress={() =>
-                            setForm({ ...form, withWife: !form.withWife })
-                          }
-                          style={{
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            marginTop: 14,
-                            marginBottom: 2,
-                          }}
-                          accessibilityRole="checkbox"
-                          accessibilityState={{ checked: form.withWife }}
-                        >
-                          <Ionicons
-                            name={
-                              form.withWife ? 'checkbox' : 'square-outline'
-                            }
-                            size={22}
-                            color={form.withWife ? '#0ea5e9' : '#94a3b8'}
-                          />
-                          <Text
-                            style={{
-                              marginLeft: 10,
-                              fontSize: 15,
-                              color: '#334155',
-                              fontWeight: form.withWife ? '600' : '400',
-                            }}
-                          >
-                            {t('coVisit.serveWithSpouse')}
+                      {!form.forWife && visit.coWifeName ? (
+                        <>
+                          <Text style={styles.fieldLabel}>
+                            {t('coVisit.spouseField', {
+                              name: visit.coWifeName,
+                            })}
                           </Text>
-                        </Pressable>
+                          <View style={styles.toggleRow}>
+                            {(
+                              [
+                                ['none', t('coVisit.spouseNone')],
+                                ['together', t('coVisit.spouseTogether')],
+                                ['separate', t('coVisit.spouseSeparate')],
+                              ] as [FormState['wifeMode'], string][]
+                            ).map(([m, label]) => (
+                              <Pressable
+                                key={m}
+                                style={[
+                                  styles.modeChip,
+                                  form.wifeMode === m &&
+                                    styles.modeChipActiveWife,
+                                ]}
+                                onPress={() =>
+                                  setForm({ ...form, wifeMode: m })
+                                }
+                              >
+                                <Text
+                                  style={[
+                                    styles.modeChipText,
+                                    form.wifeMode === m &&
+                                      styles.modeChipTextActive,
+                                  ]}
+                                >
+                                  {label}
+                                </Text>
+                              </Pressable>
+                            ))}
+                          </View>
+                          {form.wifeMode === 'separate' ? (
+                            <PublisherSelector
+                              boxed
+                              label={t('coVisit.wifePartner')}
+                              value={form.wifePartnerPublisherId}
+                              genderFilter="sister"
+                              onChange={(id) =>
+                                setForm({
+                                  ...form,
+                                  wifePartnerPublisherId: id,
+                                })
+                              }
+                            />
+                          ) : null}
+                        </>
                       ) : null}
                       <Text style={styles.fieldLabel}>
                         {t('coVisit.serviceKind')}
@@ -1538,17 +1466,6 @@ const styles = StyleSheet.create({
   sectionTitle: { fontSize: 16, fontWeight: '700', color: '#0f172a' },
   addBtn: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   addText: { fontSize: 14, fontWeight: '600', color: '#0ea5e9' },
-  copyBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    backgroundColor: '#e0f2fe',
-    borderRadius: 10,
-    paddingVertical: 10,
-    marginBottom: 12,
-  },
-  copyBtnText: { fontSize: 14, fontWeight: '600', color: '#0369a1' },
   dayBlock: { gap: 6 },
   dayCard: {
     gap: 6,
@@ -1568,7 +1485,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  dayPlateWife: { backgroundColor: '#8b5cf6' },
   dayPlateNum: { color: '#fff', fontSize: 17, fontWeight: '800' },
   badgeRow: {
     flexDirection: 'row',
@@ -1585,6 +1501,12 @@ const styles = StyleSheet.create({
     paddingVertical: 1,
     overflow: 'hidden',
   },
+  pairRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  pairDot: { width: 8, height: 8, borderRadius: 4 },
+  pairDotCo: { backgroundColor: '#0ea5e9' },
+  pairDotWife: { backgroundColor: '#8b5cf6' },
+  pairText: { fontSize: 13.5, color: '#0f172a', flex: 1 },
+  pairWho: { fontWeight: '700', color: '#475569' },
   togetherBadge: {
     fontSize: 11,
     fontWeight: '600',
@@ -1595,20 +1517,6 @@ const styles = StyleSheet.create({
     paddingVertical: 1,
     overflow: 'hidden',
   },
-  whoBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    marginBottom: 10,
-  },
-  whoBannerCo: { backgroundColor: '#e0f2fe' },
-  whoBannerWife: { backgroundColor: '#f3e8ff' },
-  whoBannerText: { fontSize: 13, fontWeight: '700', flex: 1 },
-  whoBannerTextCo: { color: '#075985' },
-  whoBannerTextWife: { color: '#6d28d9' },
   modeChipActiveWife: { backgroundColor: '#8b5cf6' },
   dayHeader: {
     fontSize: 13,
