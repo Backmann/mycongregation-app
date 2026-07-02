@@ -1,28 +1,27 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
+import type { ScrollView as RNScrollView } from 'react-native';
 import {
-  View,
-  Text,
+  Animated,
+  Platform,
   Pressable,
   StyleSheet,
-  PanResponder,
-  Platform,
+  Text,
+  View,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 
 const ITEM_H = 36;
+const VISIBLE = 5; // odd number of rows in the window
+const PAD = (ITEM_H * (VISIBLE - 1)) / 2;
 
 function pad2(n: number): string {
   return n.toString().padStart(2, '0');
 }
 
 /**
- * One column of the time picker. It can be changed four ways, so it feels
- * natural on every device:
- *   • mouse wheel / touchpad scroll (web `wheel` events)
- *   • drag up/down with finger or mouse (PanResponder — touch and web)
- *   • the ▲/▼ chevrons (click/tap)
- *   • tapping a visible value
- * Values wrap around like a real wheel.
+ * One iOS-style wheel column: a real momentum ScrollView that snaps to the
+ * nearest value, with the classic drum look — the centered value is large and
+ * dark, neighbours fade, scale down and tilt away. Works with touch drag,
+ * trackpad/mouse wheel (native browser scrolling) and tapping a value.
  */
 function Column({
   values,
@@ -33,110 +32,135 @@ function Column({
   index: number;
   onIndex: (i: number) => void;
 }) {
-  const n = values.length;
-  const rootRef = useRef<View>(null);
-  // Keep the latest state in a ref so the wheel/drag handlers (created once)
-  // never read stale values.
-  const stateRef = useRef({ index, n, onIndex });
-  stateRef.current = { index, n, onIndex };
+  const scrollRef = useRef<RNScrollView>(null);
+  const scrollY = useRef(new Animated.Value(index * ITEM_H)).current;
+  // The index we last reported (or were given) — used to tell our own snap
+  // scrolls apart from an external value change.
+  const currentRef = useRef(index);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const onIndexRef = useRef(onIndex);
+  onIndexRef.current = onIndex;
+  const countRef = useRef(values.length);
+  countRef.current = values.length;
 
-  const step = useCallback((dir: number) => {
-    const s = stateRef.current;
-    s.onIndex((((s.index + dir) % s.n) + s.n) % s.n);
+  // Initial position + external value changes.
+  useEffect(() => {
+    if (index === currentRef.current) return;
+    currentRef.current = index;
+    requestAnimationFrame(() => {
+      scrollRef.current?.scrollTo({ y: index * ITEM_H, animated: false });
+    });
+  }, [index]);
+  useEffect(() => {
+    // First mount: place the wheel on the current value.
+    requestAnimationFrame(() => {
+      scrollRef.current?.scrollTo({
+        y: currentRef.current * ITEM_H,
+        animated: false,
+      });
+    });
   }, []);
 
-  // Mouse wheel / touchpad (web only).
-  useEffect(() => {
-    if (Platform.OS !== 'web') return;
-    const node = rootRef.current as unknown as {
-      addEventListener?: (t: string, h: (e: WheelEvent) => void, o?: unknown) => void;
-      removeEventListener?: (t: string, h: (e: WheelEvent) => void) => void;
-    } | null;
-    if (!node || !node.addEventListener) return;
-    let acc = 0;
-    const onWheel = (e: WheelEvent) => {
-      e.preventDefault();
-      acc += e.deltaY;
-      let guard = 0;
-      while (Math.abs(acc) >= 50 && guard < 4) {
-        step(acc > 0 ? 1 : -1);
-        acc += acc > 0 ? -50 : 50;
-        guard += 1;
-      }
-    };
-    node.addEventListener('wheel', onWheel, { passive: false });
-    return () => node.removeEventListener?.('wheel', onWheel);
-  }, [step]);
+  const settle = (offsetY: number) => {
+    const max = (countRef.current - 1) * ITEM_H;
+    const clamped = Math.max(0, Math.min(max, offsetY));
+    const idx = Math.round(clamped / ITEM_H);
+    if (idx !== currentRef.current) {
+      currentRef.current = idx;
+      onIndexRef.current(idx);
+    }
+    if (Math.abs(clamped - idx * ITEM_H) > 0.5 || clamped !== offsetY) {
+      scrollRef.current?.scrollTo({ y: idx * ITEM_H, animated: true });
+    }
+  };
 
-  // Drag with finger or mouse (touch + web).
-  const dragRef = useRef(0);
-  const responder = useRef(
-    PanResponder.create({
-      onMoveShouldSetPanResponder: (_e, g) =>
-        Math.abs(g.dy) > 4 && Math.abs(g.dy) >= Math.abs(g.dx),
-      onPanResponderGrant: () => {
-        dragRef.current = 0;
+  const onScroll = Animated.event(
+    [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+    {
+      useNativeDriver: false,
+      listener: (e: { nativeEvent: { contentOffset: { y: number } } }) => {
+        const y = e.nativeEvent.contentOffset.y;
+        // Debounced snap: fires once scrolling (incl. web inertia) goes quiet.
+        if (timerRef.current) clearTimeout(timerRef.current);
+        timerRef.current = setTimeout(() => settle(y), 140);
       },
-      onPanResponderMove: (_e, g) => {
-        const target = Math.round(-g.dy / ITEM_H);
-        let delta = target - dragRef.current;
-        while (delta !== 0) {
-          step(delta > 0 ? 1 : -1);
-          delta += delta > 0 ? -1 : 1;
-        }
-        dragRef.current = target;
-      },
-    }),
-  ).current;
+    },
+  );
 
-  const at = (off: number) => (((index + off) % n) + n) % n;
+  const tapTo = (i: number) => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    currentRef.current = i;
+    onIndexRef.current(i);
+    scrollRef.current?.scrollTo({ y: i * ITEM_H, animated: true });
+  };
 
   return (
-    <View ref={rootRef} style={styles.col}>
-      <Pressable
-        onPress={() => step(-1)}
-        hitSlop={8}
-        style={styles.chev}
-        accessibilityRole="button"
+    <View style={styles.window}>
+      <Animated.ScrollView
+        ref={scrollRef as never}
+        style={styles.scroll}
+        contentContainerStyle={{ paddingVertical: PAD }}
+        showsVerticalScrollIndicator={false}
+        decelerationRate="fast"
+        snapToInterval={Platform.OS === 'web' ? undefined : ITEM_H}
+        onScroll={onScroll}
+        onMomentumScrollEnd={(e) => {
+          if (timerRef.current) clearTimeout(timerRef.current);
+          settle(e.nativeEvent.contentOffset.y);
+        }}
+        scrollEventThrottle={16}
+        nestedScrollEnabled
       >
-        <Ionicons name="chevron-up" size={20} color="#94a3b8" />
-      </Pressable>
-
-      <View style={styles.window} {...responder.panHandlers}>
-        <View style={styles.band} pointerEvents="none" />
-        {[-2, -1, 0, 1, 2].map((off) => {
-          const i = at(off);
-          const dist = Math.abs(off);
+        {values.map((v, i) => {
+          const center = i * ITEM_H;
+          const inputRange = [
+            center - ITEM_H * 2,
+            center - ITEM_H,
+            center,
+            center + ITEM_H,
+            center + ITEM_H * 2,
+          ];
+          const opacity = scrollY.interpolate({
+            inputRange,
+            outputRange: [0.25, 0.45, 1, 0.45, 0.25],
+            extrapolate: 'clamp',
+          });
+          const scale = scrollY.interpolate({
+            inputRange,
+            outputRange: [0.78, 0.88, 1.12, 0.88, 0.78],
+            extrapolate: 'clamp',
+          });
+          const rotateX = scrollY.interpolate({
+            inputRange,
+            outputRange: ['48deg', '26deg', '0deg', '-26deg', '-48deg'],
+            extrapolate: 'clamp',
+          });
           return (
             <Pressable
-              key={off}
-              onPress={() => onIndex(i)}
-              style={styles.item}
+              key={i}
+              onPress={() => tapTo(i)}
               accessibilityRole="button"
             >
-              <Text
+              <Animated.View
                 style={[
-                  styles.text,
-                  dist === 0 && styles.active,
-                  dist === 1 && styles.near,
-                  dist >= 2 && styles.far,
+                  styles.item,
+                  {
+                    opacity,
+                    transform: [{ perspective: 600 }, { rotateX }, { scale }],
+                  },
                 ]}
               >
-                {pad2(values[i])}
-              </Text>
+                <Text style={styles.text}>{pad2(v)}</Text>
+              </Animated.View>
             </Pressable>
           );
         })}
-      </View>
+      </Animated.ScrollView>
 
-      <Pressable
-        onPress={() => step(1)}
-        hitSlop={8}
-        style={styles.chev}
-        accessibilityRole="button"
-      >
-        <Ionicons name="chevron-down" size={20} color="#94a3b8" />
-      </Pressable>
+      {/* iOS-style selection band + soft fade toward the edges. */}
+      <View style={styles.band} pointerEvents="none" />
+      <View style={[styles.fade, styles.fadeTop]} pointerEvents="none" />
+      <View style={[styles.fade, styles.fadeBottom]} pointerEvents="none" />
     </View>
   );
 }
@@ -159,10 +183,14 @@ export function TimeWheel({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const hours = Array.from({ length: 24 }, (_, i) => i);
-  const minutes = BASE_MINUTES.includes(min)
-    ? BASE_MINUTES
-    : [...BASE_MINUTES, min].sort((a, b) => a - b);
+  const hours = useMemo(() => Array.from({ length: 24 }, (_, i) => i), []);
+  const minutes = useMemo(
+    () =>
+      BASE_MINUTES.includes(min)
+        ? BASE_MINUTES
+        : [...BASE_MINUTES, min].sort((a, b) => a - b),
+    [min],
+  );
 
   return (
     <View style={styles.wrap}>
@@ -174,7 +202,7 @@ export function TimeWheel({
       <Text style={styles.colon}>:</Text>
       <Column
         values={minutes}
-        index={minutes.indexOf(min)}
+        index={Math.max(0, minutes.indexOf(min))}
         onIndex={(i) => onChange(`${pad2(h)}:${pad2(minutes[i])}`)}
       />
     </View>
@@ -187,31 +215,45 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     alignSelf: 'stretch',
-    paddingVertical: 4,
+    paddingVertical: 6,
   },
-  col: { alignItems: 'center', width: 80 },
-  chev: { height: 28, alignItems: 'center', justifyContent: 'center' },
-  window: { height: ITEM_H * 5, justifyContent: 'center' },
+  window: {
+    height: ITEM_H * VISIBLE,
+    width: 84,
+    overflow: 'hidden',
+  },
+  scroll: { flex: 1 },
+  item: { height: ITEM_H, alignItems: 'center', justifyContent: 'center' },
+  text: {
+    fontSize: 21,
+    fontWeight: '600',
+    fontVariant: ['tabular-nums'],
+    color: '#0f172a',
+  },
   band: {
     position: 'absolute',
-    left: 6,
-    right: 6,
-    top: ITEM_H * 2,
+    left: 4,
+    right: 4,
+    top: PAD,
     height: ITEM_H,
-    borderRadius: 12,
-    backgroundColor: '#e0f2fe',
+    borderRadius: 10,
+    backgroundColor: 'rgba(14,165,233,0.10)',
     borderWidth: 1,
-    borderColor: '#bae6fd',
+    borderColor: 'rgba(14,165,233,0.25)',
   },
-  item: { height: ITEM_H, alignItems: 'center', justifyContent: 'center' },
-  text: { fontSize: 20, fontVariant: ['tabular-nums'], color: '#94a3b8' },
-  active: { color: '#0c4a6e', fontWeight: '700', fontSize: 24 },
-  near: { color: '#64748b', fontSize: 18 },
-  far: { color: '#cbd5e1', fontSize: 16 },
+  fade: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    height: ITEM_H,
+    backgroundColor: 'rgba(255,255,255,0.55)',
+  },
+  fadeTop: { top: 0 },
+  fadeBottom: { bottom: 0 },
   colon: {
     fontSize: 24,
     fontWeight: '700',
     color: '#0c4a6e',
-    marginHorizontal: 2,
+    marginHorizontal: 4,
   },
 });
