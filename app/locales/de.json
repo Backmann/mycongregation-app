@@ -1141,7 +1141,9 @@
       "saved": "Vorlage gespeichert",
       "result": "Erstellt {{created}}, übersprungen {{skipped}}",
       "previewTitle": "Wird erstellt",
-      "previewEmpty": "Keine passenden Daten — Vorlage prüfen"
+      "previewEmpty": "Keine passenden Daten — Vorlage prüfen",
+      "successTitle": "Zusammenkünfte erstellt",
+      "working": "Wird erstellt…"
     },
     "tabs": {
       "months": "Nach Monat",

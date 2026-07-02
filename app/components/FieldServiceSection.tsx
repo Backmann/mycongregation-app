@@ -240,6 +240,7 @@ export function FieldServiceForm({
   onCreate,
   onUpdate,
   pickDate = false,
+  onDuplicate,
   prefill,
   defaultDate,
   weekConductorIds,
@@ -251,6 +252,8 @@ export function FieldServiceForm({
   onUpdate: (id: string, input: UpdateFieldServiceMeetingInput) => void;
   /** When true (e.g. the month page), pick a full date instead of a weekday. */
   pickDate?: boolean;
+  /** Called from the edit form to duplicate this meeting (page provides it). */
+  onDuplicate?: () => void;
   /** Prefill for a brand-new meeting (used by "duplicate"). */
   prefill?: {
     startTime?: string;
@@ -300,6 +303,7 @@ export function FieldServiceForm({
   const [sourceUrl, setSourceUrl] = useState('');
   const [isGeneral, setIsGeneral] = useState(false);
   const [notifyConductor, setNotifyConductor] = useState(true);
+  const [timeOpen, setTimeOpen] = useState(false);
   const [pickedDate, setPickedDate] = useState<string>('');
 
   useEffect(() => {
@@ -312,6 +316,7 @@ export function FieldServiceForm({
       setSourceUrl(prefill?.sourceUrl ?? '');
       setIsGeneral(prefill?.isGeneral ?? false);
       setNotifyConductor(true);
+      setTimeOpen(false);
       setPickedDate(defaultDate ?? '');
     } else if (target) {
       setDayOfWeek(target.dayOfWeek);
@@ -322,6 +327,7 @@ export function FieldServiceForm({
       setSourceUrl(target.sourceUrl ?? '');
       setIsGeneral(target.isGeneral);
       setNotifyConductor(true);
+      setTimeOpen(false);
       setPickedDate('');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -550,7 +556,19 @@ export function FieldServiceForm({
             )}
 
             <Text style={styles.fieldLabel}>{t('fieldService.timeLabel')}</Text>
-            <TimeWheel value={startTime} onChange={setStartTime} />
+            <Pressable
+              style={styles.timeField}
+              onPress={() => setTimeOpen((v) => !v)}
+            >
+              <Ionicons name="time-outline" size={17} color="#0369a1" />
+              <Text style={styles.timeFieldValue}>{startTime || '—'}</Text>
+              <Ionicons
+                name={timeOpen ? 'chevron-up' : 'chevron-down'}
+                size={16}
+                color="#94a3b8"
+              />
+            </Pressable>
+            {timeOpen && <TimeWheel value={startTime} onChange={setStartTime} />}
 
             <Text style={styles.fieldLabel}>{t('fieldService.addressLabel')}</Text>
             {halls.length > 0 && (
@@ -718,6 +736,15 @@ export function FieldServiceForm({
                 trackColor={{ true: '#0ea5e9', false: '#cbd5e1' }}
               />
             </View>
+
+            {!!editing && !!onDuplicate && (
+              <Pressable style={styles.duplicateLink} onPress={onDuplicate}>
+                <Ionicons name="copy-outline" size={15} color="#0369a1" />
+                <Text style={styles.duplicateLinkText}>
+                  {t('fieldService.duplicate')}
+                </Text>
+              </Pressable>
+            )}
           </ScrollView>
 
           {!canSave && saveHints.length > 0 && (
@@ -904,6 +931,31 @@ const styles = StyleSheet.create({
   },
   multiline: { minHeight: 40, textAlignVertical: 'top' },
   modalActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 10 },
+  timeField: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 11,
+    backgroundColor: '#f8fafc',
+  },
+  timeFieldValue: {
+    flex: 1,
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#0f172a',
+  },
+  duplicateLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    alignSelf: 'flex-start',
+    marginTop: 12,
+  },
+  duplicateLinkText: { color: '#0369a1', fontSize: 14, fontWeight: '600' },
   suggestBtn: {
     flexDirection: 'row',
     alignItems: 'center',

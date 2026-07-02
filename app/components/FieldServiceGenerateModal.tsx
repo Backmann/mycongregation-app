@@ -138,15 +138,28 @@ export function FieldServiceGenerateModal({
     },
   });
   const generateM = useMutation({
-    mutationFn: () =>
-      fieldServiceTemplateApi.generate({
+    mutationFn: async () => {
+      // Persist the edited rules first — generation runs off the SAVED
+      // template on the server, so without this step the result could
+      // silently differ from the on-screen preview.
+      await fieldServiceTemplateApi.replaceSlots(
+        slots.map((s) => ({
+          ordinal: s.ordinal,
+          dayOfWeek: s.dayOfWeek,
+          startTime: s.startTime,
+          address: resolveHallAddress(s.address.trim(), hallsQuery.data),
+        })),
+      );
+      return fieldServiceTemplateApi.generate({
         startYear: year,
         startMonth: month,
         months,
-      }),
+      });
+    },
     onSuccess: (res) => {
       setResult(res);
       qc.invalidateQueries({ queryKey: ['field-service'] });
+      qc.invalidateQueries({ queryKey: ['field-service-template'] });
     },
   });
 
@@ -254,6 +267,22 @@ export function FieldServiceGenerateModal({
         <View style={styles.card}>
           <Text style={styles.title}>{t('fieldService.generate.title')}</Text>
 
+          {result ? (
+            <View style={styles.successBox}>
+              <View style={styles.successCircle}>
+                <Ionicons name="checkmark" size={40} color="#fff" />
+              </View>
+              <Text style={styles.successTitle}>
+                {t('fieldService.generate.successTitle')}
+              </Text>
+              <Text style={styles.successBody}>
+                {t('fieldService.generate.result', {
+                  created: result.created,
+                  skipped: result.skipped,
+                })}
+              </Text>
+            </View>
+          ) : (
           <ScrollView style={styles.scroll} keyboardShouldPersistTaps="handled">
             {/* Start month */}
             <Text style={styles.label}>
@@ -486,18 +515,8 @@ export function FieldServiceGenerateModal({
               )}
             </View>
 
-            {result && (
-              <View style={styles.resultBox}>
-                <Ionicons name="checkmark-circle" size={18} color="#15803d" />
-                <Text style={styles.resultText}>
-                  {t('fieldService.generate.result', {
-                    created: result.created,
-                    skipped: result.skipped,
-                  })}
-                </Text>
-              </View>
-            )}
           </ScrollView>
+          )}
 
           <View style={styles.actions}>
             <Pressable style={styles.cancel} onPress={onClose}>
@@ -505,18 +524,22 @@ export function FieldServiceGenerateModal({
                 {result ? t('common.done') : t('common.cancel')}
               </Text>
             </Pressable>
-            <Pressable
-              style={[
-                styles.generate,
-                (!slotsValid || generateM.isPending) && styles.disabled,
-              ]}
-              onPress={() => generateM.mutate()}
-              disabled={!slotsValid || generateM.isPending}
-            >
-              <Text style={styles.generateText}>
-                {t('fieldService.generate.button')}
-              </Text>
-            </Pressable>
+            {!result && (
+              <Pressable
+                style={[
+                  styles.generate,
+                  (!slotsValid || generateM.isPending) && styles.disabled,
+                ]}
+                onPress={() => generateM.mutate()}
+                disabled={!slotsValid || generateM.isPending}
+              >
+                <Text style={styles.generateText}>
+                  {generateM.isPending
+                    ? t('fieldService.generate.working')
+                    : t('fieldService.generate.button')}
+                </Text>
+              </Pressable>
+            )}
           </View>
         </View>
       </View>
@@ -701,6 +724,33 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginLeft: 12,
     marginBottom: 2,
+  },
+  successBox: {
+    alignItems: 'center',
+    paddingVertical: 36,
+    paddingHorizontal: 20,
+  },
+  successCircle: {
+    width: 76,
+    height: 76,
+    borderRadius: 38,
+    backgroundColor: '#16a34a',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  successTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#0f172a',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  successBody: {
+    fontSize: 14,
+    color: '#475569',
+    textAlign: 'center',
+    lineHeight: 20,
   },
   resultBox: {
     flexDirection: 'row',

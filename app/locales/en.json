@@ -1141,7 +1141,9 @@
       "saved": "Template saved",
       "result": "Created {{created}}, skipped {{skipped}}",
       "previewTitle": "Will be created",
-      "previewEmpty": "No matching dates — check the template"
+      "previewEmpty": "No matching dates — check the template",
+      "successTitle": "Meetings created",
+      "working": "Generating…"
     },
     "tabs": {
       "months": "By month",

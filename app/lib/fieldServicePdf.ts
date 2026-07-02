@@ -101,7 +101,7 @@ ${rows}
   .cond { font-weight: 600; }
   .topic { color: #475569; font-size: 11px; margin-top: 1px; }
   .foot { margin-top: 24px; font-size: 10px; color: #94a3b8; display: flex; justify-content: space-between; }
-  @page { margin: 16mm; }
+  @page { size: A4 portrait; margin: 16mm; }
 </style></head>
 <body onload="setTimeout(function(){window.print();},250);">
 ${congregationName ? `<div class="congr">${esc(congregationName)}</div>` : ''}

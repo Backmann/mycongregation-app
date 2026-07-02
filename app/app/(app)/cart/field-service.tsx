@@ -521,42 +521,17 @@ export default function FieldServiceMeetingsScreen() {
                       )}
                     </Pressable>
                     {canEdit && (
-                      <View style={styles.cardActions}>
-                        <Pressable
-                          style={styles.removeBtn}
-                          onPress={() => {
-                            setPrefill({
-                              startTime: mt.startTime,
-                              address: mt.address,
-                              topic: mt.topic ?? '',
-                              sourceUrl: mt.sourceUrl ?? '',
-                              isGeneral: mt.isGeneral,
-                              conductorPublisherId: mt.conductorPublisherId,
-                            });
-                            setAddDefaultDate(undefined);
-                            setTarget('new');
-                          }}
-                          hitSlop={8}
-                          accessibilityLabel={t('fieldService.duplicate')}
-                        >
-                          <Ionicons
-                            name="copy-outline"
-                            size={18}
-                            color="#0369a1"
-                          />
-                        </Pressable>
-                        <Pressable
-                          style={styles.removeBtn}
-                          onPress={() => confirmRemove(mt.id)}
-                          hitSlop={8}
-                        >
-                          <Ionicons
-                            name="trash-outline"
-                            size={18}
-                            color="#dc2626"
-                          />
-                        </Pressable>
-                      </View>
+                      <Pressable
+                        style={styles.removeBtn}
+                        onPress={() => confirmRemove(mt.id)}
+                        hitSlop={8}
+                      >
+                        <Ionicons
+                          name="trash-outline"
+                          size={18}
+                          color="#dc2626"
+                        />
+                      </Pressable>
                     )}
                   </View>
                 );
@@ -628,6 +603,20 @@ export default function FieldServiceMeetingsScreen() {
         pickDate={target === 'new'}
         defaultDate={addDefaultDate}
         prefill={prefill}
+        onDuplicate={() => {
+          if (target === null || target === 'new') return;
+          const mt = target;
+          setPrefill({
+            startTime: mt.startTime,
+            address: mt.address,
+            topic: mt.topic ?? '',
+            sourceUrl: mt.sourceUrl ?? '',
+            isGeneral: mt.isGeneral,
+            conductorPublisherId: mt.conductorPublisherId,
+          });
+          setAddDefaultDate(undefined);
+          setTarget('new');
+        }}
         weekConductorIds={(week, excludeId) =>
           meetings
             .filter(
@@ -948,7 +937,6 @@ const styles = StyleSheet.create({
   address: { fontSize: 13, color: '#475569' },
   topic: { fontSize: 13, color: '#0f172a' },
   link: { fontSize: 13, color: '#0369a1', fontWeight: '600' },
-  cardActions: { gap: 2 },
   removeBtn: { paddingLeft: 10, paddingTop: 2 },
   addBtn: {
     flexDirection: 'row',
