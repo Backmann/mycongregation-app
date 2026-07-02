@@ -1218,7 +1218,7 @@
     "period": "Период визита",
     "midweekDay": "Будничная встреча",
     "openMeetingProgram": "Программа встреч в Расписании",
-    "fieldServiceTitle": "Встреча для проповеднического служения",
+    "fieldServiceTitle": "Встреча для проповеди",
     "addMeeting": "Добавить встречу",
     "editMeeting": "Встреча",
     "noMeetings": "Встречи не добавлены",
@@ -1307,7 +1307,17 @@
     "mineTitle": "Посещение районного надзирателя",
     "mineWithCo": "В паре с районным надзирателем",
     "mineWithWife": "В паре с женой районного",
-    "mineJoint": "Служение с районным и его женой"
+    "mineJoint": "Служение с районным и его женой",
+    "hostNever": "ещё не принимал",
+    "hostTotal": "принимал: {{count}}",
+    "hostLast": "последний: {{date}}",
+    "hostNext": "следующий: {{date}}",
+    "accTitle": "Проживание",
+    "accNeeded": "Нужно организовать жильё",
+    "accHost": "У возвещателя",
+    "accAddressLabel": "Или адрес вручную",
+    "accAddressHint": "Адрес проживания",
+    "accNotArranged": "Жильё ещё не организовано"
   },
   "witnessing": {
     "youAreAssigned": "Вы назначены на этот слот",

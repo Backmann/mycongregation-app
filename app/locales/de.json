@@ -1214,7 +1214,7 @@
     "period": "Besuchszeitraum",
     "midweekDay": "Versammlung unter der Woche",
     "openMeetingProgram": "Programm im Zeitplan",
-    "fieldServiceTitle": "Predigtdiensttreffen",
+    "fieldServiceTitle": "Zusammenkunft für den Predigtdienst",
     "addMeeting": "Treffen hinzufügen",
     "editMeeting": "Treffen",
     "noMeetings": "Keine Treffen hinzugefügt",
@@ -1303,7 +1303,17 @@
     "mineTitle": "Besuch des Kreisaufsehers",
     "mineWithCo": "Gemeinsam mit dem Kreisaufseher",
     "mineWithWife": "Gemeinsam mit der Frau des KA",
-    "mineJoint": "Dienst mit dem KA und seiner Frau"
+    "mineJoint": "Dienst mit dem KA und seiner Frau",
+    "hostNever": "hat noch nicht beherbergt",
+    "hostTotal": "beherbergt: {{count}}",
+    "hostLast": "zuletzt: {{date}}",
+    "hostNext": "nächste: {{date}}",
+    "accTitle": "Unterkunft",
+    "accNeeded": "Unterkunft noch zu organisieren",
+    "accHost": "Bei einem Verkündiger",
+    "accAddressLabel": "Oder Adresse eingeben",
+    "accAddressHint": "Adresse der Unterkunft",
+    "accNotArranged": "Unterkunft noch nicht organisiert"
   },
   "witnessing": {
     "youAreAssigned": "Sie sind diesem Slot zugeteilt",

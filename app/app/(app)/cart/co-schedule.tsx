@@ -27,11 +27,12 @@ import {
   type Hall,
   type Publisher,
   type SpecialEvent,
+  type CoHostStat,
 } from '../../../lib/api';
 import { buildCoScheduleHtml } from '../../../lib/coSchedulePdf';
 import { CIRCUIT_OVERSEER_VISIT_TYPE } from '../../../components/SpecialEventForm';
 import { PublisherSelector } from '../../../components/PublisherSelector';
-import { TimeWheel } from '../../../components/TimeWheel';
+import { TimeField } from '../../../components/TimeField';
 import { usePermissions } from '../../../lib/permissions';
 import { formatDateISO, startOfWeekMonday } from '../../../lib/dates';
 
@@ -129,6 +130,46 @@ export default function CoScheduleScreen() {
   });
 
   const visit = events ? pickVisit(events) : null;
+
+  const accM = useMutation({
+    mutationFn: (input: {
+      coAccommodationPublisherId?: string | null;
+      coAccommodationAddress?: string;
+    }) => specialEventsApi.update(visit!.id, input),
+    onSuccess: () =>
+      qc.invalidateQueries({ queryKey: ['special-events'] }),
+  });
+  const [accAddressDraft, setAccAddressDraft] = useState<string | null>(null);
+
+  const hostStatsQuery = useQuery({
+    queryKey: ['co-host-stats'],
+    queryFn: () => coVisitItemsApi.hostStats(),
+    enabled: canEditCoSchedule,
+    staleTime: 60 * 1000,
+  });
+  const hostMeta = (kind: 'lunch' | 'lunch_box') => {
+    const stats = hostStatsQuery.data ?? [];
+    const of = (id: string): CoHostStat | undefined =>
+      stats.find((h) => h.publisherId === id && h.kind === kind);
+    return {
+      rowMeta: (id: string) => {
+        const st = of(id);
+        if (!st || st.total === 0) return t('coVisit.hostNever');
+        const bits = [t('coVisit.hostTotal', { count: st.total })];
+        if (st.lastDate)
+          bits.push(t('coVisit.hostLast', { date: fmtShort(st.lastDate) }));
+        if (st.nextDate)
+          bits.push(t('coVisit.hostNext', { date: fmtShort(st.nextDate) }));
+        return bits.join(' · ');
+      },
+      sortRank: (id: string) => {
+        const st = of(id);
+        if (st?.nextDate) return 1e14 + Date.parse(st.nextDate);
+        if (!st || st.total === 0 || !st.lastDate) return 0;
+        return Date.parse(st.lastDate);
+      },
+    };
+  };
 
   const { data: items } = useQuery({
     queryKey: ['co-visit-items', visit?.id],
@@ -249,6 +290,8 @@ export default function CoScheduleScreen() {
     );
   }
 
+  const fmtShort = (iso: string) =>
+    `${iso.slice(8, 10)}.${iso.slice(5, 7)}.${iso.slice(0, 4)}`;
   const fmt = (iso: string) =>
     new Date(`${iso}T00:00:00`).toLocaleDateString(loc, {
       weekday: 'long',
@@ -547,6 +590,18 @@ export default function CoScheduleScreen() {
       locale: loc,
       congregationName: settingsOverview?.congregation.name ?? null,
       hallAddress: settingsOverview?.effective?.address ?? null,
+      accommodationText: (() => {
+        if (visit.coAccommodationPublisherId) {
+          const host = (pubList?.data ?? []).find(
+            (x: Publisher) => x.id === visit.coAccommodationPublisherId,
+          );
+          if (host)
+            return [host.displayName, host.address, host.mobilePhone]
+              .filter(Boolean)
+              .join(', ');
+        }
+        return visit.coAccommodationAddress ?? null;
+      })(),
       labels: {
         visitTitle: t('coVisit.visitTitle'),
         coScheduleTitle: t('coVisit.coScheduleTitle'),
@@ -578,8 +633,8 @@ export default function CoScheduleScreen() {
         item: t('coVisit.pdfItem'),
         who: t('coVisit.pdfWho'),
         together: t('coVisit.spouseBadge'),
-        coShort: t('coVisit.coShort'),
-        wifeShort: t('coVisit.wifeShort'),
+        coShort: coName || t('coVisit.coShort'),
+        wifeShort: visit.coWifeName || t('coVisit.wifeShort'),
       },
     });
     const win = window.open('', '_blank');
@@ -619,20 +674,22 @@ export default function CoScheduleScreen() {
     return i.kind === 'field_service' && !hasCoPair(i);
   };
 
+  // Full, unabbreviated kind names — the meeting title is what tells the
+  // reader what to prepare for, so it is never shortened.
   const kindShort = (k: string) => {
     switch (k) {
       case 'field_service':
-        return t('coVisit.shortFieldService');
+        return t('coVisit.fieldServiceTitle');
       case 'lunch':
-        return t('coVisit.shortLunch');
+        return t('coVisit.lunchesTitle');
       case 'lunch_box':
-        return t('coVisit.shortLunchBox');
+        return t('coVisit.lunchBoxTitle');
       case 'pastoral':
-        return t('coVisit.shortPastoral');
+        return t('coVisit.pastoralTitle');
       case 'pioneers':
-        return t('coVisit.shortPioneers');
+        return t('coVisit.pioneersTitle');
       default:
-        return t('coVisit.shortElders');
+        return t('coVisit.eldersTitle');
     }
   };
 
@@ -668,11 +725,6 @@ export default function CoScheduleScreen() {
       return (
         <>
           <Text style={styles.itemPlace}>{placeLabel(it)}</Text>
-          {it.note && !isSynced(it) ? (
-            <Text style={{ fontSize: 13, color: '#475569', marginTop: 1 }}>
-              {it.note}
-            </Text>
-          ) : null}
           {(() => {
             if (it.forWife || it.withWife)
               return (it.assigneeName || it.assigneeText) ? (
@@ -693,7 +745,7 @@ export default function CoScheduleScreen() {
                   <View style={[styles.pairDot, styles.pairDotCo]} />
                   <Text style={styles.pairText}>
                     <Text style={styles.pairWho}>
-                      {t('coVisit.coShort')}:{' '}
+                      {coName || t('coVisit.coShort')}:{' '}
                     </Text>
                     {it.assigneeName ?? it.assigneeText ?? '—'}
                   </Text>
@@ -702,7 +754,7 @@ export default function CoScheduleScreen() {
                   <View style={[styles.pairDot, styles.pairDotWife]} />
                   <Text style={styles.pairText}>
                     <Text style={styles.pairWho}>
-                      {t('coVisit.wifeShort')}:{' '}
+                      {visit.coWifeName || t('coVisit.wifeShort')}:{' '}
                     </Text>
                     {pair.assigneeName ?? pair.assigneeText ?? '—'}
                   </Text>
@@ -735,6 +787,11 @@ export default function CoScheduleScreen() {
                 {isSynced(it) ? t('coVisit.coBadge') : t('coVisit.spouseBadge')}
               </Text>
             </View>
+          ) : null}
+          {it.note ? (
+            <Text style={styles.serviceTypeLine}>
+              {t('coVisit.serviceKind')}: {it.note}
+            </Text>
           ) : null}
         </>
       );
@@ -893,12 +950,68 @@ export default function CoScheduleScreen() {
           label={t('coVisit.midweekDay')}
           value={weekdayName(visit.coMidweekDow)}
         />
-        {visit.coAccommodationAddress ? (
-          <Kv
-            label={t('circuitOverseer.accommodationAddress')}
-            value={visit.coAccommodationAddress}
-          />
-        ) : null}
+      </View>
+
+      <View style={accStyles.card}>
+        <View style={accStyles.head}>
+          <Ionicons name="home-outline" size={17} color="#0e7490" />
+          <Text style={accStyles.title}>{t('coVisit.accTitle')}</Text>
+          {!visit.coAccommodationPublisherId &&
+          !visit.coAccommodationAddress ? (
+            <Text style={accStyles.neededBadge}>{t('coVisit.accNeeded')}</Text>
+          ) : null}
+        </View>
+        {canEditCoSchedule ? (
+          <>
+            <PublisherSelector
+              boxed
+              label={t('coVisit.accHost')}
+              value={visit.coAccommodationPublisherId}
+              onChange={(id) =>
+                accM.mutate({
+                  coAccommodationPublisherId: id,
+                  ...(id ? { coAccommodationAddress: '' } : {}),
+                })
+              }
+            />
+            {visit.coAccommodationPublisherId ? (
+              renderOrgPreview(visit.coAccommodationPublisherId)
+            ) : (
+              <>
+                <Text style={styles.fieldLabel}>
+                  {t('coVisit.accAddressLabel')}
+                </Text>
+                <TextInput
+                  style={styles.input}
+                  value={accAddressDraft ?? visit.coAccommodationAddress ?? ''}
+                  onChangeText={setAccAddressDraft}
+                  onBlur={() => {
+                    if (
+                      accAddressDraft !== null &&
+                      accAddressDraft !==
+                        (visit.coAccommodationAddress ?? '')
+                    ) {
+                      accM.mutate({
+                        coAccommodationAddress: accAddressDraft.trim(),
+                      });
+                    }
+                  }}
+                  placeholder={t('coVisit.accAddressHint')}
+                  placeholderTextColor="#94a3b8"
+                />
+              </>
+            )}
+          </>
+        ) : (
+          <Text style={accStyles.readonly}>
+            {visit.coAccommodationPublisherId
+              ? ((pubList?.data ?? []).find(
+                  (x: Publisher) => x.id === visit.coAccommodationPublisherId,
+                )?.displayName ?? '—')
+              : visit.coAccommodationAddress ||
+                t('coVisit.accNotArranged')}
+          </Text>
+        )}
       </View>
 
       <Pressable
@@ -1043,7 +1156,7 @@ export default function CoScheduleScreen() {
                   {form.kind !== 'lunch_box' ? (
                     <>
                       <Text style={styles.fieldLabel}>{t('coVisit.time')}</Text>
-                      <TimeWheel
+                      <TimeField
                         value={form.startTime}
                         onChange={(v) => setForm({ ...form, startTime: v })}
                       />
@@ -1062,6 +1175,7 @@ export default function CoScheduleScreen() {
                         onChange={(id) =>
                           setForm({ ...form, assigneePublisherId: id })
                         }
+                        {...hostMeta('lunch_box')}
                       />
                       {renderOrgPreview(form.assigneePublisherId)}
                       <Text style={styles.fieldLabel}>
@@ -1191,9 +1305,7 @@ export default function CoScheduleScreen() {
                       {!form.forWife && visit.coWifeName ? (
                         <>
                           <Text style={styles.fieldLabel}>
-                            {t('coVisit.spouseField', {
-                              name: visit.coWifeName,
-                            })}
+                            {visit.coWifeName}
                           </Text>
                           <View style={styles.toggleRow}>
                             {(
@@ -1301,6 +1413,7 @@ export default function CoScheduleScreen() {
                           onChange={(id) =>
                             setForm({ ...form, assigneePublisherId: id })
                           }
+                          {...hostMeta('lunch')}
                         />
                       )}
                       {!form.hostOther
@@ -1512,6 +1625,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#fbfdff',
     borderRadius: 8,
   },
+  serviceTypeLine: {
+    fontSize: 13,
+    color: '#7c3aed',
+    fontWeight: '600',
+    marginTop: 3,
+  },
   pairRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   pairDot: { width: 8, height: 8, borderRadius: 4 },
   pairDotCo: { backgroundColor: '#0ea5e9' },
@@ -1637,4 +1756,33 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   saveText: { color: '#ffffff', fontWeight: '700', fontSize: 15 },
+});
+
+const accStyles = StyleSheet.create({
+  card: {
+    backgroundColor: '#ffffff',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#a5f3fc',
+    padding: 14,
+    marginBottom: 16,
+  },
+  head: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 8,
+  },
+  title: { fontSize: 15, fontWeight: '800', color: '#0e7490', flex: 1 },
+  neededBadge: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#b45309',
+    backgroundColor: '#fef3c7',
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    overflow: 'hidden',
+  },
+  readonly: { fontSize: 14, color: '#0f172a' },
 });

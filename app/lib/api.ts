@@ -1276,7 +1276,21 @@ export interface MyCoVisit {
   items: MyCoVisitItem[];
 }
 
+export interface CoHostStat {
+  publisherId: string;
+  kind: string;
+  total: number;
+  lastDate: string | null;
+  nextDate: string | null;
+}
+
 export const coVisitItemsApi = {
+  /** Hosting rotation across all visits (lunches / lunch boxes). */
+  async hostStats(): Promise<CoHostStat[]> {
+    const { data } = await api.get<CoHostStat[]>('/co-visit-items/host-stats');
+    return data;
+  },
+
   /** The signed-in member's own slice of upcoming CO visits (any role). */
   async mine(): Promise<MyCoVisit[]> {
     const { data } = await api.get<MyCoVisit[]>('/co-visit-items/mine');
@@ -1582,6 +1596,7 @@ export interface SpecialEvent {
   coWifeName: string | null;
   coRole: string | null;
   coAccommodationAddress: string | null;
+  coAccommodationPublisherId: string | null;
   coMidweekDow: number | null;
   replacesMeeting: boolean;
   createdAt: string;
@@ -1604,6 +1619,7 @@ export interface CreateSpecialEventInput {
   coWifeName?: string | null;
   coRole?: string | null;
   coAccommodationAddress?: string;
+  coAccommodationPublisherId?: string | null;
   coMidweekDow?: number;
   replacesMeeting?: boolean;
 }

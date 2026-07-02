@@ -1214,7 +1214,7 @@
     "period": "Visit period",
     "midweekDay": "Midweek meeting",
     "openMeetingProgram": "Meeting program in Schedule",
-    "fieldServiceTitle": "Field service meetings",
+    "fieldServiceTitle": "Field service meeting",
     "addMeeting": "Add meeting",
     "editMeeting": "Meeting",
     "noMeetings": "No meetings added",
@@ -1303,7 +1303,17 @@
     "mineTitle": "Circuit overseer visit",
     "mineWithCo": "Paired with the circuit overseer",
     "mineWithWife": "Paired with the CO's wife",
-    "mineJoint": "Service with the CO and his wife"
+    "mineJoint": "Service with the CO and his wife",
+    "hostNever": "has not hosted yet",
+    "hostTotal": "hosted: {{count}}",
+    "hostLast": "last: {{date}}",
+    "hostNext": "next: {{date}}",
+    "accTitle": "Accommodation",
+    "accNeeded": "Accommodation still needed",
+    "accHost": "With a publisher",
+    "accAddressLabel": "Or enter an address",
+    "accAddressHint": "Accommodation address",
+    "accNotArranged": "Accommodation not arranged yet"
   },
   "witnessing": {
     "youAreAssigned": "You're assigned to this slot",

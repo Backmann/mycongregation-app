@@ -197,9 +197,12 @@ export function buildCoScheduleHtml(opts: {
   locale: string;
   congregationName?: string | null;
   hallAddress?: string | null;
+  /** Precomposed accommodation line (host name/address/phone or address). */
+  accommodationText?: string | null;
   labels: CoPdfLabels;
 }): string {
   const { visit, items, locale, congregationName, hallAddress } = opts;
+  const accommodation = opts.accommodationText ?? visit.coAccommodationAddress;
   const L = opts.labels;
   const coName = [visit.coFirstName, visit.coLastName]
     .filter(Boolean)
@@ -222,10 +225,8 @@ export function buildCoScheduleHtml(opts: {
     hallAddress
       ? `<div class="meta">${esc(L.kingdomHall)}: ${esc(hallAddress)}</div>`
       : '',
-    visit.coAccommodationAddress
-      ? `<div class="meta">${esc(L.accommodation)}: ${esc(
-          visit.coAccommodationAddress,
-        )}</div>`
+    accommodation
+      ? `<div class="meta">${esc(L.accommodation)}: ${esc(accommodation)}</div>`
       : '',
   ]
     .filter(Boolean)

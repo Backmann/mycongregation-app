@@ -29,7 +29,7 @@ import {
 } from '../lib/api';
 import { resolveHallAddress } from '../lib/hallAddress';
 import { PublisherSelector } from './PublisherSelector';
-import { TimeWheel } from './TimeWheel';
+import { TimeField } from './TimeField';
 import { MonthCalendar } from './MonthCalendar';
 import {
   startOfWeekMonday,
@@ -303,7 +303,6 @@ export function FieldServiceForm({
   const [sourceUrl, setSourceUrl] = useState('');
   const [isGeneral, setIsGeneral] = useState(false);
   const [notifyConductor, setNotifyConductor] = useState(true);
-  const [timeOpen, setTimeOpen] = useState(false);
   const [pickedDate, setPickedDate] = useState<string>('');
 
   useEffect(() => {
@@ -316,7 +315,6 @@ export function FieldServiceForm({
       setSourceUrl(prefill?.sourceUrl ?? '');
       setIsGeneral(prefill?.isGeneral ?? false);
       setNotifyConductor(true);
-      setTimeOpen(false);
       setPickedDate(defaultDate ?? '');
     } else if (target) {
       setDayOfWeek(target.dayOfWeek);
@@ -327,7 +325,6 @@ export function FieldServiceForm({
       setSourceUrl(target.sourceUrl ?? '');
       setIsGeneral(target.isGeneral);
       setNotifyConductor(true);
-      setTimeOpen(false);
       setPickedDate('');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -561,19 +558,7 @@ export function FieldServiceForm({
             )}
 
             <Text style={styles.fieldLabel}>{t('fieldService.timeLabel')}</Text>
-            <Pressable
-              style={styles.timeField}
-              onPress={() => setTimeOpen((v) => !v)}
-            >
-              <Ionicons name="time-outline" size={17} color="#0369a1" />
-              <Text style={styles.timeFieldValue}>{startTime || '—'}</Text>
-              <Ionicons
-                name={timeOpen ? 'chevron-up' : 'chevron-down'}
-                size={16}
-                color="#94a3b8"
-              />
-            </Pressable>
-            {timeOpen && <TimeWheel value={startTime} onChange={setStartTime} />}
+            <TimeField value={startTime} onChange={setStartTime} />
 
             <Text style={styles.fieldLabel}>{t('fieldService.addressLabel')}</Text>
             {halls.length > 0 && (
@@ -936,23 +921,6 @@ const styles = StyleSheet.create({
   },
   multiline: { minHeight: 40, textAlignVertical: 'top' },
   modalActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 10 },
-  timeField: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 11,
-    backgroundColor: '#f8fafc',
-  },
-  timeFieldValue: {
-    flex: 1,
-    fontSize: 15,
-    fontWeight: '700',
-    color: '#0f172a',
-  },
   duplicateLink: {
     flexDirection: 'row',
     alignItems: 'center',
