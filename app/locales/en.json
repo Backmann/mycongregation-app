@@ -1157,7 +1157,21 @@
     "doubleWeek": "Already leads a meeting this week",
     "topicUsed": "Topic already used: {{date}}",
     "conductorsEmpty": "No conductors assigned yet",
-    "duplicate": "Duplicate meeting"
+    "duplicate": "Duplicate meeting",
+    "pdf": {
+      "button": "PDF",
+      "title": "Field service meetings",
+      "startMonth": "Start month",
+      "monthsCount": "Number of months",
+      "download": "Download PDF",
+      "webOnly": "PDF export is available in the web version",
+      "blocked": "The browser blocked the print window. Allow pop-ups and try again.",
+      "monthTheme": "Month theme",
+      "generated": "Generated",
+      "date": "Date",
+      "time": "Time",
+      "address": "Address"
+    }
   },
   "cleaning": {
     "title": "Cleaning",

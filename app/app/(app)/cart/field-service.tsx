@@ -26,12 +26,15 @@ import {
   fieldServiceStatsApi,
   publishersApi,
   hallsApi,
+  meetingSettingsApi,
 } from '../../../lib/api';
 import { usePermissions } from '../../../lib/permissions';
 import { useMyPublisher } from '../../../lib/useMyPublisher';
 import { FieldServiceForm } from '../../../components/FieldServiceSection';
 import { resolveHallAddress } from '../../../lib/hallAddress';
 import { FieldServiceGenerateModal } from '../../../components/FieldServiceGenerateModal';
+import { buildFieldServicePdfHtml } from '../../../lib/fieldServicePdf';
+import type { FsPdfMonth } from '../../../lib/fieldServicePdf';
 import { MyBulb } from '../../../components/MyBulb';
 import { ChipRow, PersonChip } from '../../../components/PersonChip';
 import { parseISODate, addDays, formatDateISO } from '../../../lib/dates';
@@ -76,6 +79,11 @@ export default function FieldServiceMeetingsScreen() {
   const publishersById = new Map<string, Publisher>(
     (publishersQuery.data?.data ?? []).map((p) => [p.id, p]),
   );
+  const overviewQuery = useQuery({
+    queryKey: ['meeting-settings-overview'],
+    queryFn: () => meetingSettingsApi.getOverview(),
+    staleTime: 5 * 60 * 1000,
+  });
   const hallsQuery = useQuery({
     queryKey: ['halls'],
     queryFn: () => hallsApi.list(),
@@ -117,6 +125,9 @@ export default function FieldServiceMeetingsScreen() {
 
   // --- Form state ---
   const [target, setTarget] = useState<FieldServiceMeeting | 'new' | null>(null);
+  const [pdfOpen, setPdfOpen] = useState(false);
+  const [pdfStart, setPdfStart] = useState(() => dayjs().format('YYYY-MM'));
+  const [pdfMonths, setPdfMonths] = useState(2);
   const [addDefaultDate, setAddDefaultDate] = useState<string | undefined>();
   const [prefill, setPrefill] = useState<
     | {
@@ -239,6 +250,83 @@ export default function FieldServiceMeetingsScreen() {
       scrollRef.current?.scrollTo({ y: Math.max(off - 8, 0), animated: true });
   };
 
+  const exportPdf = () => {
+    if (Platform.OS !== 'web') {
+      Alert.alert(t('fieldService.pdf.webOnly'));
+      return;
+    }
+    const monthsOut: FsPdfMonth[] = [];
+    for (let i = 0; i < pdfMonths; i++) {
+      const key = dayjs(`${pdfStart}-01`).add(i, 'month').format('YYYY-MM');
+      const list = (byMonth.get(key) ?? [])
+        .slice()
+        .sort(
+          (a, b) =>
+            meetingDateISO(a).localeCompare(meetingDateISO(b)) ||
+            a.startTime.localeCompare(b.startTime),
+        );
+      monthsOut.push({
+        title: dayjs(`${key}-01`)
+          .toDate()
+          .toLocaleDateString(i18n.language, {
+            month: 'long',
+            year: 'numeric',
+          }),
+        theme: themeByMonth.get(key) ?? null,
+        rows: list.map((m) => {
+          const dateISO = meetingDateISO(m);
+          return {
+            dateISO,
+            dayLabel: new Date(`${dateISO}T00:00:00`).toLocaleDateString(
+              i18n.language,
+              { weekday: 'short' },
+            ),
+            time: m.startTime,
+            address: resolveHallAddress(m.address, halls),
+            topic: m.topic ?? null,
+            conductorName: m.conductorPublisherId
+              ? (publishersById.get(m.conductorPublisherId)?.displayName ??
+                null)
+              : null,
+            isGeneral: m.isGeneral,
+          };
+        }),
+      });
+    }
+    const startT = dayjs(`${pdfStart}-01`)
+      .toDate()
+      .toLocaleDateString(i18n.language, { month: 'long', year: 'numeric' });
+    const endT = dayjs(`${pdfStart}-01`)
+      .add(pdfMonths - 1, 'month')
+      .toDate()
+      .toLocaleDateString(i18n.language, { month: 'long', year: 'numeric' });
+    const html = buildFieldServicePdfHtml({
+      congregationName: overviewQuery.data?.congregation.name ?? null,
+      rangeLabel: pdfMonths === 1 ? startT : `${startT} – ${endT}`,
+      generatedDate: new Date().toLocaleDateString(i18n.language),
+      months: monthsOut,
+      labels: {
+        title: t('fieldService.pdf.title'),
+        date: t('fieldService.pdf.date'),
+        time: t('fieldService.pdf.time'),
+        address: t('fieldService.pdf.address'),
+        conductor: t('fieldService.conductor'),
+        general: t('fieldService.generalBadge'),
+        monthTheme: t('fieldService.pdf.monthTheme'),
+        generated: t('fieldService.pdf.generated'),
+      },
+    });
+    const win = window.open('', '_blank');
+    if (!win) {
+      Alert.alert(t('fieldService.pdf.blocked'));
+      return;
+    }
+    win.document.open();
+    win.document.write(html);
+    win.document.close();
+    setPdfOpen(false);
+  };
+
   const openAdd = (monthKey: string) => {
     setAddDefaultDate(firstSaturdayOf(monthKey));
     setPrefill(undefined);
@@ -293,6 +381,10 @@ export default function FieldServiceMeetingsScreen() {
             </Pressable>
           ))}
         </ScrollView>
+        <Pressable style={styles.genBtn} onPress={() => setPdfOpen(true)}>
+          <Ionicons name="download-outline" size={15} color="#0369a1" />
+          <Text style={styles.genBtnText}>{t('fieldService.pdf.button')}</Text>
+        </Pressable>
         {canEdit && (
           <Pressable style={styles.genBtn} onPress={() => setGenOpen(true)}>
             <Ionicons name="sparkles-outline" size={15} color="#0369a1" />
@@ -602,6 +694,90 @@ export default function FieldServiceMeetingsScreen() {
         </View>
       </Modal>
 
+      <Modal
+        visible={pdfOpen}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setPdfOpen(false)}
+      >
+        <View style={pdfStyles.overlay}>
+          <View style={pdfStyles.card}>
+            <Text style={pdfStyles.title}>{t('fieldService.pdf.title')}</Text>
+            <Text style={pdfStyles.label}>
+              {t('fieldService.pdf.startMonth')}
+            </Text>
+            <View style={pdfStyles.stepRow}>
+              <Pressable
+                style={pdfStyles.stepBtn}
+                onPress={() =>
+                  setPdfStart((v) =>
+                    dayjs(`${v}-01`).subtract(1, 'month').format('YYYY-MM'),
+                  )
+                }
+              >
+                <Ionicons name="chevron-back" size={18} color="#0369a1" />
+              </Pressable>
+              <Text style={pdfStyles.stepValue}>
+                {dayjs(`${pdfStart}-01`)
+                  .toDate()
+                  .toLocaleDateString(i18n.language, {
+                    month: 'long',
+                    year: 'numeric',
+                  })}
+              </Text>
+              <Pressable
+                style={pdfStyles.stepBtn}
+                onPress={() =>
+                  setPdfStart((v) =>
+                    dayjs(`${v}-01`).add(1, 'month').format('YYYY-MM'),
+                  )
+                }
+              >
+                <Ionicons name="chevron-forward" size={18} color="#0369a1" />
+              </Pressable>
+            </View>
+            <Text style={pdfStyles.label}>
+              {t('fieldService.pdf.monthsCount')}
+            </Text>
+            <View style={pdfStyles.chipRow}>
+              {[1, 2, 3, 6].map((n) => (
+                <Pressable
+                  key={n}
+                  style={[
+                    pdfStyles.chip,
+                    pdfMonths === n && pdfStyles.chipActive,
+                  ]}
+                  onPress={() => setPdfMonths(n)}
+                >
+                  <Text
+                    style={[
+                      pdfStyles.chipText,
+                      pdfMonths === n && pdfStyles.chipTextActive,
+                    ]}
+                  >
+                    {n}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+            <View style={pdfStyles.actions}>
+              <Pressable
+                style={pdfStyles.cancel}
+                onPress={() => setPdfOpen(false)}
+              >
+                <Text style={pdfStyles.cancelText}>{t('common.cancel')}</Text>
+              </Pressable>
+              <Pressable style={pdfStyles.download} onPress={exportPdf}>
+                <Ionicons name="download-outline" size={16} color="#fff" />
+                <Text style={pdfStyles.downloadText}>
+                  {t('fieldService.pdf.download')}
+                </Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
       <FieldServiceGenerateModal
         visible={genOpen}
         onClose={() => setGenOpen(false)}
@@ -788,4 +964,69 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   addBtnText: { fontSize: 14, fontWeight: '600', color: '#0369a1' },
+});
+
+const pdfStyles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(15,23,42,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+  },
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: 18,
+    padding: 22,
+    width: '100%',
+    maxWidth: 380,
+  },
+  title: { fontSize: 17, fontWeight: '800', color: '#0f172a', marginBottom: 12 },
+  label: { fontSize: 12, fontWeight: '700', color: '#64748b', marginTop: 8 },
+  stepRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 6,
+  },
+  stepBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: '#e0f2fe',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stepValue: { fontSize: 15, fontWeight: '700', color: '#0f172a' },
+  chipRow: { flexDirection: 'row', gap: 8, marginTop: 6 },
+  chip: {
+    minWidth: 44,
+    paddingVertical: 8,
+    borderRadius: 10,
+    backgroundColor: '#f1f5f9',
+    alignItems: 'center',
+  },
+  chipActive: { backgroundColor: '#0ea5e9' },
+  chipText: { fontSize: 14, fontWeight: '700', color: '#475569' },
+  chipTextActive: { color: '#fff' },
+  actions: { flexDirection: 'row', gap: 10, marginTop: 18 },
+  cancel: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 12,
+    backgroundColor: '#f1f5f9',
+    alignItems: 'center',
+  },
+  cancelText: { fontSize: 15, fontWeight: '700', color: '#475569' },
+  download: {
+    flex: 1,
+    flexDirection: 'row',
+    gap: 6,
+    paddingVertical: 12,
+    borderRadius: 12,
+    backgroundColor: '#0ea5e9',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  downloadText: { fontSize: 15, fontWeight: '700', color: '#fff' },
 });
