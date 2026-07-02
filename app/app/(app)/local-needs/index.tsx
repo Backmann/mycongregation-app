@@ -93,13 +93,27 @@ export default function LocalNeedsScreen() {
     onSuccess: invalidate,
   });
 
-  const { planned, used } = useMemo(() => {
+  const { planned, upcoming, past } = useMemo(() => {
     const rows = data ?? [];
+    const monday = thisMonday();
+    const withWeek = rows.filter((r) => !!r.usedWeek);
     return {
       planned: rows.filter((r) => !r.usedWeek),
-      used: rows.filter((r) => !!r.usedWeek),
+      // Placed in the schedule, the meeting is still ahead (or this week).
+      upcoming: withWeek
+        .filter((r) => (r.usedWeek as string) >= monday)
+        .sort((a, b) =>
+          (a.usedWeek as string).localeCompare(b.usedWeek as string),
+        ),
+      // The meeting has already passed — kept for history, collapsed.
+      past: withWeek
+        .filter((r) => (r.usedWeek as string) < monday)
+        .sort((a, b) =>
+          (b.usedWeek as string).localeCompare(a.usedWeek as string),
+        ),
     };
   }, [data]);
+  const [pastOpen, setPastOpen] = useState(false);
 
   function openNew() {
     setEditId(null);
@@ -166,7 +180,14 @@ export default function LocalNeedsScreen() {
               </View>
             ) : null}
             {isUsed ? (
-              <View style={[styles.metaChip, styles.usedChip]}>
+              <View
+                style={[
+                  styles.metaChip,
+                  (item.usedWeek as string) >= thisMonday()
+                    ? styles.upcomingChip
+                    : styles.pastChip,
+                ]}
+              >
                 <Ionicons
                   name="checkmark-circle-outline"
                   size={12}
@@ -273,12 +294,33 @@ export default function LocalNeedsScreen() {
               planned.map(renderRow)
             )}
 
-            {used.length > 0 && (
+            {upcoming.length > 0 && (
               <>
                 <Text style={[styles.sectionLabel, { marginTop: 18 }]}>
-                  {t('localNeeds.section.used')} · {used.length}
+                  {t('localNeeds.section.upcoming')} · {upcoming.length}
                 </Text>
-                {used.map(renderRow)}
+                {upcoming.map(renderRow)}
+              </>
+            )}
+
+            {past.length > 0 && (
+              <>
+                <Pressable
+                  style={styles.pastHeader}
+                  onPress={() => setPastOpen((v) => !v)}
+                >
+                  <Text style={styles.sectionLabel}>
+                    {t('localNeeds.section.past')} · {past.length}
+                  </Text>
+                  <Ionicons
+                    name={pastOpen ? 'chevron-up' : 'chevron-down'}
+                    size={16}
+                    color="#94a3b8"
+                  />
+                </Pressable>
+                {pastOpen ? (
+                  <View style={styles.pastRow}>{past.map(renderRow)}</View>
+                ) : null}
               </>
             )}
           </>
@@ -428,6 +470,13 @@ const styles = StyleSheet.create({
   },
   addBtnText: { color: '#fff', fontSize: 15, fontWeight: '700' },
   empty: { textAlign: 'center', color: '#64748b', marginTop: 32 },
+  pastHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 18,
+  },
+  pastRow: { opacity: 0.6 },
   sectionLabel: {
     fontSize: 12,
     fontWeight: '700',
@@ -465,6 +514,8 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
   },
   usedChip: { backgroundColor: '#ecfdf5' },
+  upcomingChip: { backgroundColor: '#e0f2fe' },
+  pastChip: { backgroundColor: '#f1f5f9' },
   metaText: { fontSize: 12, color: '#475569', fontWeight: '500' },
   actions: { flexDirection: 'row', alignItems: 'center', gap: 2 },
   actionBtn: { padding: 6 },

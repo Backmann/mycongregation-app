@@ -1317,7 +1317,8 @@
     "serviceKindOf": "Dienstart ({{name}})",
     "participation": "Teilnahme",
     "togetherHint": "Dient gemeinsam mit ihrem Mann — Partner und Dienstart oben gelten für beide",
-    "accMine": "Der Kreisaufseher und seine Frau wohnen bei euch"
+    "accMine": "Der Kreisaufseher und seine Frau wohnen bei euch",
+    "noPartner": "kein Partner eingeteilt"
   },
   "witnessing": {
     "youAreAssigned": "Sie sind diesem Slot zugeteilt",
@@ -1666,7 +1667,9 @@
     "empty": "Noch keine Themen. Füge Themen hinzu, die die Versammlung betreffen.",
     "section": {
       "planned": "Geplant",
-      "used": "Behandelt"
+      "used": "Behandelt",
+      "upcoming": "Eingeplant",
+      "past": "Vergangen"
     },
     "noPlanned": "Alle Themen wurden behandelt.",
     "newTitle": "Neues Thema",

@@ -754,41 +754,41 @@ export default function CoScheduleScreen() {
                 </Text>
               ) : null;
             return (
-              <View style={{ marginTop: 2, gap: 2 }}>
-                <View style={styles.pairRow}>
-                  <View style={[styles.pairDot, styles.pairDotCo]} />
-                  <Text style={styles.pairText}>
-                    <Text style={styles.pairWho}>
-                      {coName || t('coVisit.coShort')}:{' '}
-                    </Text>
+              <View style={{ marginTop: 4, gap: 6 }}>
+                <View style={[styles.pairCard, styles.pairCardCo]}>
+                  <Text style={styles.pairName}>
+                    {coName || t('coVisit.coShort')}
+                  </Text>
+                  <Text style={styles.pairLine}>
+                    {t('coVisit.accompanying')}:{' '}
                     {nameWithPhone(
                       it.assigneeName ?? it.assigneeText,
                       it.assigneePhone,
-                    ) ?? '—'}
+                    ) ?? t('coVisit.noPartner')}
                   </Text>
-                </View>
-                {it.note ? (
-                  <Text style={styles.pairNote}>
-                    {t('coVisit.serviceKind')}: {it.note}
-                  </Text>
-                ) : null}
-                <View style={styles.pairRow}>
-                  <View style={[styles.pairDot, styles.pairDotWife]} />
-                  <Text style={styles.pairText}>
-                    <Text style={styles.pairWho}>
-                      {visit.coWifeName || t('coVisit.wifeShort')}:{' '}
+                  {it.note ? (
+                    <Text style={styles.pairNote}>
+                      {t('coVisit.serviceKind')}: {it.note}
                     </Text>
+                  ) : null}
+                </View>
+                <View style={[styles.pairCard, styles.pairCardWife]}>
+                  <Text style={styles.pairName}>
+                    {visit.coWifeName || t('coVisit.wifeShort')}
+                  </Text>
+                  <Text style={styles.pairLine}>
+                    {t('coVisit.accompanying')}:{' '}
                     {nameWithPhone(
                       pair.assigneeName ?? pair.assigneeText,
                       pair.assigneePhone,
-                    ) ?? '—'}
+                    ) ?? t('coVisit.noPartner')}
                   </Text>
+                  {pair.note ? (
+                    <Text style={styles.pairNote}>
+                      {t('coVisit.serviceKind')}: {pair.note}
+                    </Text>
+                  ) : null}
                 </View>
-                {pair.note ? (
-                  <Text style={styles.pairNote}>
-                    {t('coVisit.serviceKind')}: {pair.note}
-                  </Text>
-                ) : null}
               </View>
             );
           })()}
@@ -1732,18 +1732,25 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginTop: 3,
   },
-  pairRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   pairDot: { width: 8, height: 8, borderRadius: 4 },
   pairDotCo: { backgroundColor: '#0ea5e9' },
   pairDotWife: { backgroundColor: '#8b5cf6' },
-  pairText: { fontSize: 13.5, color: '#0f172a', flex: 1 },
+  pairCard: {
+    borderLeftWidth: 3,
+    borderRadius: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+  },
+  pairCardCo: { borderLeftColor: '#0ea5e9', backgroundColor: '#f0f9ff' },
+  pairCardWife: { borderLeftColor: '#8b5cf6', backgroundColor: '#faf5ff' },
+  pairName: { fontSize: 13, fontWeight: '800', color: '#0f172a' },
+  pairLine: { fontSize: 13, color: '#0f172a', marginTop: 1 },
   pairNote: {
     fontSize: 12.5,
     color: '#7c3aed',
     fontWeight: '600',
-    marginLeft: 14,
+    marginTop: 1,
   },
-  pairWho: { fontWeight: '700', color: '#475569' },
   togetherBadge: {
     fontSize: 11,
     fontWeight: '600',

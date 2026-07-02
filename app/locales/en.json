@@ -1317,7 +1317,8 @@
     "serviceKindOf": "Type of service ({{name}})",
     "participation": "Participation",
     "togetherHint": "Serves together with her husband — shared partner and type of service above",
-    "accMine": "The circuit overseer and his wife are staying with you"
+    "accMine": "The circuit overseer and his wife are staying with you",
+    "noPartner": "no partner assigned"
   },
   "witnessing": {
     "youAreAssigned": "You're assigned to this slot",
@@ -1666,7 +1667,9 @@
     "empty": "No topics yet. Add topics that concern the congregation.",
     "section": {
       "planned": "Planned",
-      "used": "Covered"
+      "used": "Covered",
+      "upcoming": "Scheduled",
+      "past": "Past"
     },
     "noPlanned": "All topics have been covered.",
     "newTitle": "New topic",
