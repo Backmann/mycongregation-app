@@ -1000,6 +1000,8 @@ export interface CreateFieldServiceMeetingInput {
   topic?: string | null;
   sourceUrl?: string | null;
   isGeneral?: boolean;
+  /** When false, the conductor is not push-notified about this change. */
+  notifyConductor?: boolean;
 }
 
 export type UpdateFieldServiceMeetingInput = Partial<

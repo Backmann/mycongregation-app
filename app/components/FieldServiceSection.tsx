@@ -299,6 +299,7 @@ export function FieldServiceForm({
   const [topic, setTopic] = useState('');
   const [sourceUrl, setSourceUrl] = useState('');
   const [isGeneral, setIsGeneral] = useState(false);
+  const [notifyConductor, setNotifyConductor] = useState(true);
   const [pickedDate, setPickedDate] = useState<string>('');
 
   useEffect(() => {
@@ -310,6 +311,7 @@ export function FieldServiceForm({
       setTopic(prefill?.topic ?? '');
       setSourceUrl(prefill?.sourceUrl ?? '');
       setIsGeneral(prefill?.isGeneral ?? false);
+      setNotifyConductor(true);
       setPickedDate(defaultDate ?? '');
     } else if (target) {
       setDayOfWeek(target.dayOfWeek);
@@ -319,6 +321,7 @@ export function FieldServiceForm({
       setTopic(target.topic ?? '');
       setSourceUrl(target.sourceUrl ?? '');
       setIsGeneral(target.isGeneral);
+      setNotifyConductor(true);
       setPickedDate('');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -454,6 +457,7 @@ export function FieldServiceForm({
       topic: topic.trim() || null,
       sourceUrl: sourceUrl.trim() || null,
       isGeneral,
+      notifyConductor,
     };
     if (editing) {
       onUpdate(editing.id, base);
@@ -695,6 +699,22 @@ export function FieldServiceForm({
               <Switch
                 value={isGeneral}
                 onValueChange={setIsGeneral}
+                trackColor={{ true: '#0ea5e9', false: '#cbd5e1' }}
+              />
+            </View>
+
+            <View style={styles.toggleRow}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.toggleLabel}>
+                  {t('fieldService.form.notifyConductor')}
+                </Text>
+                <Text style={styles.toggleHint}>
+                  {t('fieldService.form.notifyConductorHint')}
+                </Text>
+              </View>
+              <Switch
+                value={notifyConductor}
+                onValueChange={setNotifyConductor}
                 trackColor={{ true: '#0ea5e9', false: '#cbd5e1' }}
               />
             </View>

@@ -1099,7 +1099,9 @@
       "hintTime": "Set a time",
       "hintAddress": "Enter an address",
       "eventWarn": "On this day: {{title}}",
-      "suggest": "Suggest a conductor"
+      "suggest": "Suggest a conductor",
+      "notifyConductor": "Notify the conductor",
+      "notifyConductorHint": "Push to the brother when assigned or removed"
     },
     "days": {
       "1": "Mon",

@@ -1099,7 +1099,9 @@
       "hintTime": "Uhrzeit angeben",
       "hintAddress": "Adresse angeben",
       "eventWarn": "An diesem Tag: {{title}}",
-      "suggest": "Leiter vorschlagen"
+      "suggest": "Leiter vorschlagen",
+      "notifyConductor": "Leiter benachrichtigen",
+      "notifyConductorHint": "Push an den Bruder bei Ein- oder Austeilung"
     },
     "days": {
       "1": "Mo",
