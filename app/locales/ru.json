@@ -1299,7 +1299,7 @@
     "pdfWho": "Участник",
     "spouseField": "Супруга ({{name}})",
     "spouseNone": "Не участвует",
-    "spouseTogether": "Вместе",
+    "spouseTogether": "Вместе с мужем",
     "spouseSeparate": "Отдельно",
     "wifePartner": "Напарница супруги",
     "coShort": "Районный",
@@ -1318,7 +1318,9 @@
     "accAddressLabel": "Или адрес вручную",
     "accAddressHint": "Адрес проживания",
     "accNotArranged": "Жильё ещё не организовано",
-    "serviceKindOf": "Вид служения ({{name}})"
+    "serviceKindOf": "Вид служения ({{name}})",
+    "participation": "Участие",
+    "togetherHint": "Служит вместе с мужем — общий напарник и вид служения выше"
   },
   "witnessing": {
     "youAreAssigned": "Вы назначены на этот слот",

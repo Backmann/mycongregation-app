@@ -1307,19 +1307,62 @@ export default function CoScheduleScreen() {
                           placeholderTextColor="#94a3b8"
                         />
                       ) : null}
-                      <PublisherSelector
-                        boxed
-                        label={t('coVisit.accompanying')}
-                        value={form.assigneePublisherId}
-                        genderFilter={form.forWife ? 'sister' : 'brother'}
-                        onChange={(id) =>
-                          setForm({ ...form, assigneePublisherId: id })
-                        }
-                      />
+                      {/* ——— Overseer's section: HIS partner + HIS type of
+                          service, clearly attributed by name and colour. */}
+                      <View style={[styles.personBox, styles.personBoxCo]}>
+                        <View style={styles.personHead}>
+                          <View
+                            style={[styles.pairDot, styles.pairDotCo]}
+                          />
+                          <Text style={styles.personName}>
+                            {form.forWife
+                              ? visit.coWifeName || t('coVisit.wifeShort')
+                              : coName || t('coVisit.coShort')}
+                          </Text>
+                          <Text style={styles.personRole}>
+                            {form.forWife
+                              ? t('coVisit.wife')
+                              : t('coVisit.overseer')}
+                          </Text>
+                        </View>
+                        <PublisherSelector
+                          boxed
+                          label={t('coVisit.accompanying')}
+                          value={form.assigneePublisherId}
+                          genderFilter={form.forWife ? 'sister' : 'brother'}
+                          onChange={(id) =>
+                            setForm({ ...form, assigneePublisherId: id })
+                          }
+                        />
+                        <Text style={styles.fieldLabel}>
+                          {t('coVisit.serviceKind')}
+                        </Text>
+                        <TextInput
+                          style={styles.input}
+                          value={form.note}
+                          onChangeText={(v) => setForm({ ...form, note: v })}
+                          placeholder={t('coVisit.serviceKindHint')}
+                          placeholderTextColor="#94a3b8"
+                        />
+                      </View>
+
+                      {/* ——— Wife's section: her participation, and — when
+                          she serves separately — HER partner and HER type. */}
                       {!form.forWife && visit.coWifeName ? (
-                        <>
+                        <View style={[styles.personBox, styles.personBoxWife]}>
+                          <View style={styles.personHead}>
+                            <View
+                              style={[styles.pairDot, styles.pairDotWife]}
+                            />
+                            <Text style={styles.personName}>
+                              {visit.coWifeName}
+                            </Text>
+                            <Text style={styles.personRole}>
+                              {t('coVisit.wife')}
+                            </Text>
+                          </View>
                           <Text style={styles.fieldLabel}>
-                            {visit.coWifeName}
+                            {t('coVisit.participation')}
                           </Text>
                           <View style={styles.toggleRow}>
                             {(
@@ -1352,11 +1395,16 @@ export default function CoScheduleScreen() {
                               </Pressable>
                             ))}
                           </View>
+                          {form.wifeMode === 'together' ? (
+                            <Text style={styles.personHint}>
+                              {t('coVisit.togetherHint')}
+                            </Text>
+                          ) : null}
                           {form.wifeMode === 'separate' ? (
                             <>
                               <PublisherSelector
                                 boxed
-                                label={t('coVisit.wifePartner')}
+                                label={t('coVisit.accompanying')}
                                 value={form.wifePartnerPublisherId}
                                 genderFilter="sister"
                                 onChange={(id) =>
@@ -1367,11 +1415,7 @@ export default function CoScheduleScreen() {
                                 }
                               />
                               <Text style={styles.fieldLabel}>
-                                {t('coVisit.serviceKindOf', {
-                                  name:
-                                    visit.coWifeName ||
-                                    t('coVisit.wifeShort'),
-                                })}
+                                {t('coVisit.serviceKind')}
                               </Text>
                               <TextInput
                                 style={styles.input}
@@ -1384,22 +1428,8 @@ export default function CoScheduleScreen() {
                               />
                             </>
                           ) : null}
-                        </>
+                        </View>
                       ) : null}
-                      <Text style={styles.fieldLabel}>
-                        {form.wifeMode === 'separate'
-                          ? t('coVisit.serviceKindOf', {
-                              name: coName || t('coVisit.coShort'),
-                            })
-                          : t('coVisit.serviceKind')}
-                      </Text>
-                      <TextInput
-                        style={styles.input}
-                        value={form.note}
-                        onChangeText={(v) => setForm({ ...form, note: v })}
-                        placeholder={t('coVisit.serviceKindHint')}
-                        placeholderTextColor="#94a3b8"
-                      />
                     </>
                   ) : null}
 
@@ -1661,6 +1691,23 @@ const styles = StyleSheet.create({
     backgroundColor: '#fbfdff',
     borderRadius: 8,
   },
+  personBox: {
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 12,
+    marginTop: 14,
+  },
+  personBoxCo: { borderColor: '#bae6fd', backgroundColor: '#f8fcff' },
+  personBoxWife: { borderColor: '#ddd6fe', backgroundColor: '#fdfcff' },
+  personHead: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 4,
+  },
+  personName: { fontSize: 15, fontWeight: '800', color: '#0f172a' },
+  personRole: { fontSize: 12, color: '#64748b', fontWeight: '600' },
+  personHint: { fontSize: 12.5, color: '#7c3aed', marginTop: 8 },
   serviceTypeLine: {
     fontSize: 13,
     color: '#7c3aed',

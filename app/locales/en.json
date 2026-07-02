@@ -1295,7 +1295,7 @@
     "pdfWho": "Participant",
     "spouseField": "Wife ({{name}})",
     "spouseNone": "Not taking part",
-    "spouseTogether": "Together",
+    "spouseTogether": "Together with him",
     "spouseSeparate": "Separately",
     "wifePartner": "Wife's partner",
     "coShort": "CO",
@@ -1314,7 +1314,9 @@
     "accAddressLabel": "Or enter an address",
     "accAddressHint": "Accommodation address",
     "accNotArranged": "Accommodation not arranged yet",
-    "serviceKindOf": "Type of service ({{name}})"
+    "serviceKindOf": "Type of service ({{name}})",
+    "participation": "Participation",
+    "togetherHint": "Serves together with her husband — shared partner and type of service above"
   },
   "witnessing": {
     "youAreAssigned": "You're assigned to this slot",
