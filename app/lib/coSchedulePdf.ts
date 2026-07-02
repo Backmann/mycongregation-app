@@ -80,15 +80,18 @@ function tableHtml(headers: string[], rows: string[][]): string {
 
 
 function dayLabel(iso: string, locale: string): string {
-  const wd = new Date(`${iso}T00:00:00`).toLocaleDateString(locale, {
-    weekday: 'short',
-  });
-  return `${wd}, ${fmtDate(iso, locale)}`;
+  const s = fmtDate(iso, locale);
+  return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
 /**
  * Day-by-day schedule (mirrors the on-screen chronological view): one block
  * per day with every item of that day in time order, whatever its kind.
+ */
+/**
+ * One table per day with FIXED column widths (identical on every day), one
+ * line per person in the participants cell, and phones next to names. Empty
+ * halves are dropped instead of printing "Name: —" noise.
  */
 function daySchedule(
   items: CoVisitItem[],
@@ -120,56 +123,68 @@ function daySchedule(
               : L.elders;
   const withPhone = (name: string | null, phone: string | null) =>
     name ? (phone ? `${name} (${phone})` : name) : '';
-  const details = (i: CoVisitItem): [string, string] => {
+  const personLine = (
+    label: string,
+    partner: string,
+    note: string | null,
+  ): string | null => {
+    if (!partner && !note) return null;
+    return `${label}: ${partner || '—'}${note ? ` — ${note}` : ''}`;
+  };
+  /** [place lines, participant lines] for one row. */
+  const cells = (i: CoVisitItem): [string[], string[]] => {
     switch (i.kind) {
       case 'field_service': {
-        const placeWithNote = [placeStr(i, L), i.note ?? '']
-          .filter(Boolean)
-          .join(' — ');
-        if (i.withWife)
-          return [
-            placeWithNote,
-            [
-              withPhone(i.assigneeName ?? i.assigneeText, i.assigneePhone),
-              L.together,
-            ]
-              .filter(Boolean)
-              .join(' · '),
+        const place = [placeStr(i, L)].filter(Boolean);
+        const partner = withPhone(
+          i.assigneeName ?? i.assigneeText,
+          i.assigneePhone,
+        );
+        if (i.withWife) {
+          const who = [
+            personLine(L.together, partner, i.note) ?? L.together,
           ];
+          return [place, who];
+        }
         const pair = pairOf(i);
         if (pair) {
-          // Separate service: each spouse has their OWN partner and their
-          // OWN type of service.
-          const co = withPhone(
-            i.assigneeName ?? i.assigneeText,
-            i.assigneePhone,
-          );
-          const wife = withPhone(
+          const wifePartner = withPhone(
             pair.assigneeName ?? pair.assigneeText,
             pair.assigneePhone,
           );
-          const coPart = `${L.coShort}: ${co || '—'}${i.note ? ` — ${i.note}` : ''}`;
-          const wifePart = `${L.wifeShort}: ${wife || '—'}${pair.note ? ` — ${pair.note}` : ''}`;
-          return [placeStr(i, L), `${coPart} · ${wifePart}`];
+          const lines = [
+            personLine(L.coShort, partner, i.note),
+            personLine(L.wifeShort, wifePartner, pair.note),
+          ].filter((x): x is string => !!x);
+          return [place, lines.length > 0 ? lines : ['—']];
         }
-        return [
-          placeWithNote,
-          withPhone(i.assigneeName ?? i.assigneeText, i.assigneePhone),
-        ];
+        const single = personLine(L.coShort, partner, i.note);
+        return [place, single ? [single] : ['—']];
       }
-      case 'lunch':
-        return [
-          i.assigneeAddress ?? '',
-          withPhone(i.assigneeName ?? i.assigneeText, i.assigneePhone),
-        ];
-      case 'lunch_box':
-        return ['', i.assigneeName ?? i.assigneeText ?? ''];
-      case 'pastoral':
-        return [i.note ?? '', i.assigneeName ?? ''];
-      default:
-        return [[placeStr(i, L), i.note ?? ''].filter(Boolean).join(' — '), ''];
+      case 'lunch': {
+        const place = [i.assigneeAddress ?? ''].filter(Boolean);
+        const host = withPhone(
+          i.assigneeName ?? i.assigneeText,
+          i.assigneePhone,
+        );
+        return [place, host ? [host] : ['—']];
+      }
+      case 'lunch_box': {
+        const who = i.assigneeName ?? i.assigneeText ?? '';
+        return [[], who ? [who] : ['—']];
+      }
+      case 'pastoral': {
+        const who = withPhone(i.assigneeName, i.assigneePhone);
+        return [i.note ? [i.note] : [], who ? [who] : ['—']];
+      }
+      default: {
+        const place = [placeStr(i, L), i.note ?? ''].filter(Boolean);
+        return [place, []];
+      }
     }
   };
+  const cell = (lines: string[]): string =>
+    lines.length === 0 ? '' : lines.map((l) => esc(l)).join('<br/>');
   const dates = Array.from(new Set(visible.map((i) => i.itemDate))).sort();
   return dates
     .map((day) => {
@@ -181,12 +196,22 @@ function daySchedule(
             a.sortOrder - b.sortOrder,
         )
         .map((i) => {
-          const [detail, who] = details(i);
-          return [i.startTime ?? '—', kindName(i.kind), detail, who];
-        });
+          const [place, who] = cells(i);
+          return `<tr>
+<td class="t">${esc(i.startTime ?? '—')}</td>
+<td class="k">${esc(kindName(i.kind))}</td>
+<td>${cell(place)}</td>
+<td>${cell(who)}</td>
+</tr>`;
+        })
+        .join('\n');
       return `<div class="day">
 <p class="dtitle">${esc(dayLabel(day, locale))}</p>
-${tableHtml([L.time, L.item, L.place, L.who], rows)}
+<table class="dt">
+<colgroup><col class="c1"/><col class="c2"/><col class="c3"/><col class="c4"/></colgroup>
+<thead><tr><th>${esc(L.time)}</th><th>${esc(L.item)}</th><th>${esc(L.place)}</th><th>${esc(L.who)}</th></tr></thead>
+<tbody>${rows}</tbody>
+</table>
 </div>`;
     })
     .join('\n');
@@ -262,9 +287,15 @@ export function buildCoScheduleHtml(opts: {
   body { font-family: -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; color: #111; padding: 24px; }
   h1 { font-size: 18px; margin: 0 0 6px; }
   h2 { font-size: 15px; margin: 16px 0 6px; border-bottom: 2px solid #0e7490; padding-bottom: 3px; color: #0e7490; }
-  .day { page-break-inside: avoid; margin-bottom: 10px; }
-  .dtitle { font-size: 13.5px; font-weight: 700; color: #0e7490; margin: 10px 0 2px; }
-  .dtitle-w { color: #7c3aed; }
+  .day { page-break-inside: avoid; margin-bottom: 12px; }
+  .dtitle { font-size: 13.5px; font-weight: 700; color: #0e7490; margin: 12px 0 3px; border-left: 3px solid #0e7490; padding-left: 8px; }
+  .dt { table-layout: fixed; width: 100%; }
+  .dt .c1 { width: 42px; }
+  .dt .c2 { width: 132px; }
+  .dt .c3 { width: 30%; }
+  .dt td { word-wrap: break-word; overflow-wrap: break-word; }
+  .dt .t { font-weight: 700; white-space: nowrap; }
+  .dt .k { font-weight: 600; }
   .meta { color: #374151; font-size: 12px; margin-bottom: 2px; }
   .pagehead { border-bottom: 3px solid #0e7490; padding-bottom: 8px; margin-bottom: 10px; }
   .pagehead h1 { margin-bottom: 4px; }

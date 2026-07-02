@@ -292,6 +292,10 @@ export default function CoScheduleScreen() {
     );
   }
 
+  const nameWithPhone = (
+    name: string | null | undefined,
+    phone: string | null | undefined,
+  ) => (name ? (phone ? `${name} (${phone})` : name) : null);
   const fmtShort = (iso: string) =>
     `${iso.slice(8, 10)}.${iso.slice(5, 7)}.${iso.slice(0, 4)}`;
   const fmt = (iso: string) =>
@@ -733,14 +737,20 @@ export default function CoScheduleScreen() {
             if (it.forWife || it.withWife)
               return (it.assigneeName || it.assigneeText) ? (
                 <Text style={styles.itemAssignee}>
-                  {it.assigneeName ?? it.assigneeText}
+                  {nameWithPhone(
+                    it.assigneeName ?? it.assigneeText,
+                    it.assigneePhone,
+                  )}
                 </Text>
               ) : null;
             const pair = wifePairOf(it);
             if (!pair)
               return (it.assigneeName || it.assigneeText) ? (
                 <Text style={styles.itemAssignee}>
-                  {it.assigneeName ?? it.assigneeText}
+                  {nameWithPhone(
+                    it.assigneeName ?? it.assigneeText,
+                    it.assigneePhone,
+                  )}
                 </Text>
               ) : null;
             return (
@@ -751,7 +761,10 @@ export default function CoScheduleScreen() {
                     <Text style={styles.pairWho}>
                       {coName || t('coVisit.coShort')}:{' '}
                     </Text>
-                    {it.assigneeName ?? it.assigneeText ?? '—'}
+                    {nameWithPhone(
+                      it.assigneeName ?? it.assigneeText,
+                      it.assigneePhone,
+                    ) ?? '—'}
                   </Text>
                 </View>
                 {it.note ? (
@@ -765,7 +778,10 @@ export default function CoScheduleScreen() {
                     <Text style={styles.pairWho}>
                       {visit.coWifeName || t('coVisit.wifeShort')}:{' '}
                     </Text>
-                    {pair.assigneeName ?? pair.assigneeText ?? '—'}
+                    {nameWithPhone(
+                      pair.assigneeName ?? pair.assigneeText,
+                      pair.assigneePhone,
+                    ) ?? '—'}
                   </Text>
                 </View>
                 {pair.note ? (
@@ -831,7 +847,9 @@ export default function CoScheduleScreen() {
     if (it.kind === 'pastoral') {
       return (
         <>
-          <Text style={styles.itemPlace}>{it.assigneeName ?? '—'}</Text>
+          <Text style={styles.itemPlace}>
+            {nameWithPhone(it.assigneeName, it.assigneePhone) ?? '—'}
+          </Text>
           {it.note ? (
             <Text style={styles.itemAssignee}>{it.note}</Text>
           ) : null}
