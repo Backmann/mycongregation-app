@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import {
   Pressable,
   StyleSheet,
@@ -6,6 +6,7 @@ import {
   Text,
   TextInput,
   View,
+  ScrollView,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
@@ -16,6 +17,7 @@ import 'dayjs/locale/de';
 import { circuitOverseersApi, CircuitOverseer } from '../lib/api';
 import { FormChips } from './FormChips';
 import { MonthCalendar } from './MonthCalendar';
+import { TimeWheel } from './TimeWheel';
 
 export const EVENT_TYPES = [
   'regional_convention',
@@ -80,30 +82,6 @@ export function emptyEventForm(): EventFormValue {
 }
 
 /** Normalize free time input ('1830', '18:3', '930', '9') to 'HH:mm' or ''. */
-function normalizeTime(s: string): string {
-  const digits = s.replace(/\D/g, '');
-  if (digits.length === 0) return '';
-  let h: number;
-  let m: number;
-  if (s.includes(':')) {
-    const [hp, mp] = s.split(':');
-    h = parseInt(hp || '0', 10);
-    m = parseInt((mp || '0').slice(0, 2), 10);
-  } else if (digits.length <= 2) {
-    h = parseInt(digits, 10);
-    m = 0;
-  } else if (digits.length === 3) {
-    h = parseInt(digits.slice(0, 1), 10);
-    m = parseInt(digits.slice(1), 10);
-  } else {
-    h = parseInt(digits.slice(0, 2), 10);
-    m = parseInt(digits.slice(2, 4), 10);
-  }
-  if (Number.isNaN(h) || Number.isNaN(m)) return '';
-  h = Math.min(23, Math.max(0, h));
-  m = Math.min(59, Math.max(0, m));
-  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
-}
 
 function fmt(d: string): string {
   return d ? dayjs(d).format('DD.MM.YYYY') : '';
@@ -123,10 +101,6 @@ export function SpecialEventForm({
   const [showDate, setShowDate] = useState(false);
   const [showTime, setShowTime] = useState(false);
   const [showType, setShowType] = useState(false);
-  const [timeDraft, setTimeDraft] = useState(value.time);
-  useEffect(() => {
-    setTimeDraft(value.time);
-  }, [value.time]);
 
   const set = (patch: Partial<EventFormValue>) =>
     onChange({ ...value, ...patch });
@@ -186,6 +160,22 @@ export function SpecialEventForm({
       title: titleIsAuto ? (isOther ? '' : label) : value.title,
     });
     setShowType(false);
+  };
+
+  const noteSelRef = useRef<{ start: number; end: number } | null>(null);
+  const insertIntoNote = (snippet: string) => {
+    const note = value.note ?? '';
+    const sel = noteSelRef.current ?? { start: note.length, end: note.length };
+    let text = snippet;
+    // A bullet starts its own line.
+    if (snippet.startsWith('•') && sel.start > 0 && note[sel.start - 1] !== '\n')
+      text = `\n${snippet}`;
+    const next = note.slice(0, sel.start) + text + note.slice(sel.end);
+    noteSelRef.current = {
+      start: sel.start + text.length,
+      end: sel.start + text.length,
+    };
+    set({ note: next });
   };
 
   const dateLabel = value.date
@@ -364,6 +354,7 @@ export function SpecialEventForm({
         {showDate && (
           <View style={styles.inlineCard}>
             <MonthCalendar
+              compact
               mode={multiDay ? 'range' : 'single'}
               start={value.date || null}
               end={value.endDate || null}
@@ -415,29 +406,16 @@ export function SpecialEventForm({
         </View>
         {showTime && (
           <View style={styles.inlineCard}>
-            <View style={styles.timeInputRow}>
-              <Ionicons name="time-outline" size={18} color="#64748b" />
-              <TextInput
-                style={styles.timeInput}
-                value={timeDraft}
-                onChangeText={(raw) => setTimeDraft(raw.replace(/[^\d:]/g, ''))}
-                onBlur={() => {
-                  const norm = normalizeTime(timeDraft);
-                  setTimeDraft(norm);
-                  set({ time: norm });
-                }}
-                onSubmitEditing={() => {
-                  const norm = normalizeTime(timeDraft);
-                  setTimeDraft(norm);
-                  set({ time: norm });
-                }}
-                placeholder={t('specialEvents.form.timePlaceholder')}
-                placeholderTextColor="#94a3b8"
-                keyboardType="number-pad"
-                maxLength={5}
-              />
-            </View>
-            <Text style={styles.timeHint}>{t('specialEvents.form.timeHint')}</Text>
+            <TimeWheel
+              value={value.time || '10:00'}
+              onChange={(v) => set({ time: v })}
+            />
+            <Pressable
+              style={styles.timeDoneBtn}
+              onPress={() => setShowTime(false)}
+            >
+              <Text style={styles.timeDoneText}>{t('common.done')}</Text>
+            </Pressable>
           </View>
         )}
       </Field>
@@ -484,12 +462,31 @@ export function SpecialEventForm({
         </>
       )}
 
-      {/* Note */}
+      {/* Note — with a quick-insert toolbar (bullets, symbols) at the caret */}
       <Field label={t('specialEvents.fields.note')}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.noteToolbar}
+          keyboardShouldPersistTaps="always"
+        >
+          {NOTE_SNIPPETS.map((snip) => (
+            <Pressable
+              key={snip}
+              style={styles.noteTool}
+              onPress={() => insertIntoNote(snip)}
+            >
+              <Text style={styles.noteToolText}>{snip.trim() || snip}</Text>
+            </Pressable>
+          ))}
+        </ScrollView>
         <TextInput
           style={[styles.input, styles.multiline]}
           value={value.note}
           onChangeText={(x) => set({ note: x })}
+          onSelectionChange={(e) => {
+            noteSelRef.current = e.nativeEvent.selection;
+          }}
           placeholder={t('specialEvents.placeholders.note')}
           placeholderTextColor="#94a3b8"
           multiline
@@ -548,7 +545,41 @@ function Chip({
   );
 }
 
+/** Quick symbols for tidy, friendly notes. A bullet begins a new line. */
+const NOTE_SNIPPETS = [
+  '• ',
+  '— ',
+  '«»',
+  '⚠️',
+  '📌',
+  '✅',
+  '➡️',
+  '🕐',
+  '📍',
+  '❗',
+  '⭐',
+  '🙂',
+];
+
 const styles = StyleSheet.create({
+  noteToolbar: { marginBottom: 8, flexGrow: 0 },
+  noteTool: {
+    backgroundColor: '#f1f5f9',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    marginRight: 6,
+  },
+  noteToolText: { fontSize: 14, color: '#0f172a' },
+  timeDoneBtn: {
+    alignSelf: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 22,
+    borderRadius: 10,
+    backgroundColor: '#e0f2fe',
+    marginTop: 2,
+  },
+  timeDoneText: { color: '#0369a1', fontSize: 14, fontWeight: '700' },
   field: { marginBottom: 14 },
   label: { fontSize: 13, fontWeight: '600', color: '#475569', marginBottom: 6 },
   input: {
@@ -589,15 +620,6 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  timeInputRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  timeInput: {
-    flex: 1,
-    fontSize: 18,
-    color: '#0f172a',
-    paddingVertical: 6,
-    letterSpacing: 1,
-  },
-  timeHint: { fontSize: 12, color: '#94a3b8', marginTop: 6 },
   chip: {
     paddingHorizontal: 12,
     paddingVertical: 8,

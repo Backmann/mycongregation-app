@@ -1,12 +1,13 @@
 import { useEffect, useRef } from 'react';
-import { Animated, Easing } from 'react-native';
+import { Animated, Easing, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 /**
- * A softly, continuously pulsing lightbulb placed on schedule rows that
- * involve the signed-in publisher (their part, duty, field-service conductor
- * slot, or their cleaning group). Native-driven opacity + scale, so it stays
- * smooth even with several on screen.
+ * A premium pulsing lightbulb marking schedule rows that involve the
+ * signed-in publisher. Placed LEFT of the text it highlights. The bulb sits
+ * inside a soft, animated halo: two concentric amber layers breathe in
+ * counter-phase, so the light feels alive without stealing attention.
+ * Native-driven transforms keep it smooth with many bulbs on screen.
  */
 export function MyBulb({ size = 16 }: { size?: number }) {
   const pulse = useRef(new Animated.Value(0)).current;
@@ -16,13 +17,13 @@ export function MyBulb({ size = 16 }: { size?: number }) {
       Animated.sequence([
         Animated.timing(pulse, {
           toValue: 1,
-          duration: 900,
+          duration: 1100,
           easing: Easing.inOut(Easing.ease),
           useNativeDriver: true,
         }),
         Animated.timing(pulse, {
           toValue: 0,
-          duration: 900,
+          duration: 1100,
           easing: Easing.inOut(Easing.ease),
           useNativeDriver: true,
         }),
@@ -32,18 +33,65 @@ export function MyBulb({ size = 16 }: { size?: number }) {
     return () => loop.stop();
   }, [pulse]);
 
-  const opacity = pulse.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0.45, 1],
-  });
-  const scale = pulse.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0.9, 1.08],
-  });
+  const box = size + 12;
+  const outer = {
+    opacity: pulse.interpolate({ inputRange: [0, 1], outputRange: [0.15, 0.4] }),
+    transform: [
+      {
+        scale: pulse.interpolate({ inputRange: [0, 1], outputRange: [0.85, 1.25] }),
+      },
+    ],
+  };
+  const inner = {
+    opacity: pulse.interpolate({ inputRange: [0, 1], outputRange: [0.55, 0.25] }),
+    transform: [
+      {
+        scale: pulse.interpolate({ inputRange: [0, 1], outputRange: [1.05, 0.85] }),
+      },
+    ],
+  };
+  const bulb = {
+    transform: [
+      {
+        scale: pulse.interpolate({ inputRange: [0, 1], outputRange: [0.96, 1.06] }),
+      },
+    ],
+  };
 
   return (
-    <Animated.View style={{ opacity, transform: [{ scale }] }}>
-      <Ionicons name="bulb" size={size} color="#f59e0b" />
-    </Animated.View>
+    <View style={[styles.wrap, { width: box, height: box }]}>
+      <Animated.View
+        style={[
+          styles.halo,
+          {
+            width: box,
+            height: box,
+            borderRadius: box / 2,
+            backgroundColor: '#fbbf24',
+          },
+          outer,
+        ]}
+      />
+      <Animated.View
+        style={[
+          styles.halo,
+          {
+            width: box * 0.66,
+            height: box * 0.66,
+            borderRadius: (box * 0.66) / 2,
+            backgroundColor: '#fde047',
+          },
+          inner,
+        ]}
+      />
+      <Animated.View style={bulb}>
+        <Ionicons name="bulb" size={size} color="#f59e0b" />
+      </Animated.View>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  wrap: { alignItems: 'center', justifyContent: 'center' },
+  halo: { position: 'absolute' },
+});

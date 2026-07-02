@@ -31,6 +31,8 @@ interface Preset {
 }
 
 interface Props {
+  /** Tighter cells and centered max width — for space-constrained forms. */
+  compact?: boolean;
   mode: 'single' | 'range';
   start: string | null;
   end: string | null;
@@ -38,7 +40,14 @@ interface Props {
   locale: string;
 }
 
-export function MonthCalendar({ mode, start, end, onChange, locale }: Props) {
+export function MonthCalendar({
+  mode,
+  start,
+  end,
+  onChange,
+  locale,
+  compact,
+}: Props) {
   const { t } = useTranslation();
   const todayISO = toISO(new Date());
   const [viewMonth, setViewMonth] = useState<Date>(() => {
@@ -124,7 +133,7 @@ export function MonthCalendar({ mode, start, end, onChange, locale }: Props) {
     );
 
   return (
-    <View>
+    <View style={compact ? styles.compactWrap : undefined}>
       {/* Presets */}
       <View style={styles.presetRow}>
         {presets.map((p) => (
@@ -169,7 +178,10 @@ export function MonthCalendar({ mode, start, end, onChange, locale }: Props) {
           return (
             <Pressable
               key={i}
-              style={[styles.cell, between && styles.cellBetween]}
+              style={[
+                styles.cell,
+                between && styles.cellBetween,
+              ]}
               onPress={() => pick(iso)}
             >
               <View style={[styles.dayInner, selected && styles.daySelected]}>
@@ -193,6 +205,7 @@ export function MonthCalendar({ mode, start, end, onChange, locale }: Props) {
 }
 
 const styles = StyleSheet.create({
+  compactWrap: { maxWidth: 320, alignSelf: 'center', width: '100%' },
   presetRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 10 },
   presetChip: {
     backgroundColor: '#e0f2fe',

@@ -1572,8 +1572,8 @@ function AssignmentRow({
       <View style={{ flex: 1 }}>
         {overline ? <Text style={styles.overline}>{overline}</Text> : null}
         <View style={styles.partLabelRow}>
-          <Text style={styles.partLabel}>{partLabel}</Text>
           {isMine ? <MyBulb /> : null}
+          <Text style={styles.partLabel}>{partLabel}</Text>
           {isAuto ? (
             <View style={styles.autoBadge}>
               <Ionicons name="flash" size={10} color="#0369a1" />
