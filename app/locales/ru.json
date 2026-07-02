@@ -1303,7 +1303,11 @@
     "spouseSeparate": "Отдельно",
     "wifePartner": "Напарница супруги",
     "coShort": "Районный",
-    "wifeShort": "Супруга"
+    "wifeShort": "Супруга",
+    "mineTitle": "Посещение районного надзирателя",
+    "mineWithCo": "В паре с районным надзирателем",
+    "mineWithWife": "В паре с женой районного",
+    "mineJoint": "Служение с районным и его женой"
   },
   "witnessing": {
     "youAreAssigned": "Вы назначены на этот слот",

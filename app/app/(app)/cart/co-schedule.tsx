@@ -494,6 +494,7 @@ export default function CoScheduleScreen() {
             cartLocationId: payload.cartLocationId ?? null,
             placeText: payload.placeText ?? null,
             assigneePublisherId: form.wifePartnerPublisherId,
+            note: form.note.trim() || null,
           };
           if (form.wifePairId) {
             await coVisitItemsApi.update(form.wifePairId, pairPayload);
@@ -831,6 +832,10 @@ export default function CoScheduleScreen() {
                     disabled={!canEditCoSchedule || isSynced(it)}
                     style={({ pressed }) => [
                       styles.itemRow,
+                      (it.kind === 'pioneers' || it.kind === 'elders') && [
+                        styles.keyRow,
+                        { borderLeftColor: kindColor(it.kind).fg },
+                      ],
                       pressed &&
                         canEditCoSchedule &&
                         !isSynced(it) &&
@@ -1501,6 +1506,12 @@ const styles = StyleSheet.create({
     paddingVertical: 1,
     overflow: 'hidden',
   },
+  keyRow: {
+    borderLeftWidth: 3,
+    paddingLeft: 10,
+    backgroundColor: '#fbfdff',
+    borderRadius: 8,
+  },
   pairRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   pairDot: { width: 8, height: 8, borderRadius: 4 },
   pairDotCo: { backgroundColor: '#0ea5e9' },
@@ -1531,6 +1542,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     borderRadius: 10,
     padding: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#eef2f6',
+    paddingTop: 8,
+    marginTop: 2,
   },
   itemTime: { fontSize: 14, fontWeight: '700', color: '#0ea5e9', width: 48 },
   itemBody: { flex: 1 },

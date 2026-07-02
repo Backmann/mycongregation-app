@@ -22,6 +22,8 @@ import {
   publishersApi,
   SpecialEvent,
   specialEventsApi,
+  coVisitItemsApi,
+  MyCoVisitItem,
 } from '../../../lib/api';
 import { effectiveVersionFor } from '../../../lib/meeting-schedule';
 import { addDays, formatDateISO, startOfWeekMonday } from '../../../lib/dates';
@@ -574,6 +576,116 @@ type Tile = {
   show: boolean;
 };
 
+function CoVisitBlock() {
+  const { t, i18n } = useTranslation();
+  const { data } = useQuery({
+    queryKey: ['co-visit-mine'],
+    queryFn: () => coVisitItemsApi.mine(),
+    staleTime: 60 * 1000,
+  });
+  const visits = data ?? [];
+  if (visits.length === 0) return null;
+
+  const fmtDay = (iso: string) =>
+    new Date(`${iso}T00:00:00`).toLocaleDateString(i18n.language, {
+      weekday: 'short',
+      day: '2-digit',
+      month: '2-digit',
+    });
+  const kindName = (k: string) =>
+    k === 'field_service'
+      ? t('coVisit.fieldServiceTitle')
+      : k === 'lunch'
+        ? t('coVisit.lunchesTitle')
+        : k === 'lunch_box'
+          ? t('coVisit.lunchBoxTitle')
+          : k === 'pastoral'
+            ? t('coVisit.pastoralTitle')
+            : k === 'pioneers'
+              ? t('coVisit.pioneersTitle')
+              : t('coVisit.eldersTitle');
+  const place = (it: MyCoVisitItem) =>
+    it.placeKind === 'cart_location'
+      ? (it.cartLocationName ?? '')
+      : (it.placeText ?? '');
+  const withLabel = (it: MyCoVisitItem) =>
+    it.kind !== 'field_service' || !it.serviceWith
+      ? null
+      : it.serviceWith === 'wife'
+        ? t('coVisit.mineWithWife')
+        : it.serviceWith === 'joint'
+          ? t('coVisit.mineJoint')
+          : t('coVisit.mineWithCo');
+
+  return (
+    <>
+      {visits.map(({ visit, items }) => (
+        <View key={visit.id} style={coStyles.card}>
+          <View style={coStyles.head}>
+            <Ionicons name="briefcase-outline" size={18} color="#0e7490" />
+            <Text style={coStyles.title}>{t('coVisit.mineTitle')}</Text>
+          </View>
+          {items.map((it) => {
+            const wl = withLabel(it);
+            const key = k(it);
+            return (
+              <View key={key} style={coStyles.row}>
+                <View style={coStyles.when}>
+                  <Text style={coStyles.day}>{fmtDay(it.itemDate)}</Text>
+                  <Text style={coStyles.time}>{it.startTime ?? '—'}</Text>
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={coStyles.kind}>{kindName(it.kind)}</Text>
+                  {wl ? <Text style={coStyles.withText}>{wl}</Text> : null}
+                  {place(it) ? (
+                    <Text style={coStyles.meta}>{place(it)}</Text>
+                  ) : null}
+                  {it.note ? (
+                    <Text style={coStyles.note}>{it.note}</Text>
+                  ) : null}
+                </View>
+              </View>
+            );
+          })}
+        </View>
+      ))}
+    </>
+  );
+}
+const k = (it: MyCoVisitItem) => it.id;
+
+const coStyles = StyleSheet.create({
+  card: {
+    backgroundColor: '#ffffff',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#a5f3fc',
+    padding: 14,
+    marginTop: 16,
+  },
+  head: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 8,
+  },
+  title: { fontSize: 15, fontWeight: '800', color: '#0e7490', flex: 1 },
+  row: {
+    flexDirection: 'row',
+    gap: 10,
+    paddingVertical: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#f1f5f9',
+  },
+  when: { width: 74 },
+  day: { fontSize: 13, fontWeight: '700', color: '#0f172a' },
+  time: { fontSize: 13, color: '#64748b', marginTop: 1 },
+  kind: { fontSize: 14, fontWeight: '700', color: '#0f172a' },
+  withText: { fontSize: 12.5, color: '#0e7490', fontWeight: '600', marginTop: 1 },
+  meta: { fontSize: 13, color: '#475569', marginTop: 1 },
+  note: { fontSize: 13, color: '#7c3aed', fontWeight: '600', marginTop: 2 },
+});
+
 export default function HomeScreen() {
   const { t } = useTranslation();
   const { user } = useAuth();
@@ -609,6 +721,8 @@ export default function HomeScreen() {
       <MeetingsFeed />
 
       <MyTasksCard />
+
+      <CoVisitBlock />
 
       <MyAbsencesBlock myPublisherId={myPublisherId} />
 

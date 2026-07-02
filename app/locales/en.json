@@ -1299,7 +1299,11 @@
     "spouseSeparate": "Separately",
     "wifePartner": "Wife's partner",
     "coShort": "CO",
-    "wifeShort": "Wife"
+    "wifeShort": "Wife",
+    "mineTitle": "Circuit overseer visit",
+    "mineWithCo": "Paired with the circuit overseer",
+    "mineWithWife": "Paired with the CO's wife",
+    "mineJoint": "Service with the CO and his wife"
   },
   "witnessing": {
     "youAreAssigned": "You're assigned to this slot",

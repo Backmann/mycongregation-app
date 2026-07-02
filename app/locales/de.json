@@ -1299,7 +1299,11 @@
     "spouseSeparate": "Getrennt",
     "wifePartner": "Partnerin der Ehefrau",
     "coShort": "KA",
-    "wifeShort": "Ehefrau"
+    "wifeShort": "Ehefrau",
+    "mineTitle": "Besuch des Kreisaufsehers",
+    "mineWithCo": "Gemeinsam mit dem Kreisaufseher",
+    "mineWithWife": "Gemeinsam mit der Frau des KA",
+    "mineJoint": "Dienst mit dem KA und seiner Frau"
   },
   "witnessing": {
     "youAreAssigned": "Sie sind diesem Slot zugeteilt",

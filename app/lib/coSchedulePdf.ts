@@ -123,9 +123,12 @@ function daySchedule(
   const details = (i: CoVisitItem): [string, string] => {
     switch (i.kind) {
       case 'field_service': {
+        const placeWithNote = [placeStr(i, L), i.note ?? '']
+          .filter(Boolean)
+          .join(' — ');
         if (i.withWife)
           return [
-            placeStr(i, L),
+            placeWithNote,
             [
               withPhone(i.assigneeName ?? i.assigneeText, i.assigneePhone),
               L.together,
@@ -144,12 +147,12 @@ function daySchedule(
             pair.assigneePhone,
           );
           return [
-            placeStr(i, L),
+            placeWithNote,
             `${L.coShort}: ${co || '—'} · ${L.wifeShort}: ${wife || '—'}`,
           ];
         }
         return [
-          placeStr(i, L),
+          placeWithNote,
           withPhone(i.assigneeName ?? i.assigneeText, i.assigneePhone),
         ];
       }

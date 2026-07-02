@@ -1267,7 +1267,21 @@ export interface CoVisitItemInput {
   sortOrder?: number;
 }
 
+export interface MyCoVisitItem extends CoVisitItem {
+  serviceWith?: 'co' | 'wife' | 'joint';
+}
+
+export interface MyCoVisit {
+  visit: { id: string; title: string; date: string; endDate: string | null };
+  items: MyCoVisitItem[];
+}
+
 export const coVisitItemsApi = {
+  /** The signed-in member's own slice of upcoming CO visits (any role). */
+  async mine(): Promise<MyCoVisit[]> {
+    const { data } = await api.get<MyCoVisit[]>('/co-visit-items/mine');
+    return data;
+  },
   async list(specialEventId: string): Promise<CoVisitItem[]> {
     const { data } = await api.get<CoVisitItem[]>('/co-visit-items', {
       params: { specialEventId },
