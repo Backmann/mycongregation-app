@@ -398,11 +398,16 @@ export function FieldServiceForm({
         a.startDate <= meetingDateISO &&
         meetingDateISO <= (a.endDate ?? a.startDate),
     );
-  // Rank: never led floats to the very top, then the longest-not-led.
+  // Rank: free brothers first — never led on the very top, then the
+  // longest-not-led. Anyone with an UPCOMING meeting already on the books
+  // sinks to the bottom (they are taken), soonest upcoming last but ordered
+  // among themselves by that date.
+  const UPCOMING = 1e14; // larger than any Date.parse() ms value
   const conductorRank = (publisherId: string) => {
     const st = conductorStatsQuery.data?.find(
       (c) => c.conductorPublisherId === publisherId,
     );
+    if (st?.nextDate) return UPCOMING + Date.parse(st.nextDate);
     if (!st || st.total === 0 || !st.lastDate) return 0;
     return Date.parse(st.lastDate);
   };

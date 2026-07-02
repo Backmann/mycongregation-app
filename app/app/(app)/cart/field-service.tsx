@@ -560,11 +560,15 @@ export default function FieldServiceMeetingsScreen() {
             (conductorStatsQuery.data ?? [])
               .slice()
               .sort((a, b) => {
-                if (!a.lastDate && b.lastDate) return -1;
-                if (a.lastDate && !b.lastDate) return 1;
-                if (a.lastDate && b.lastDate)
-                  return a.lastDate.localeCompare(b.lastDate);
-                return 0;
+                // Free brothers first (never led, then longest-not-led);
+                // anyone with an upcoming meeting sinks to the bottom.
+                const rank = (c: (typeof a) & { nextDate: string | null }) =>
+                  c.nextDate
+                    ? 1e14 + Date.parse(c.nextDate)
+                    : c.lastDate
+                      ? Date.parse(c.lastDate)
+                      : 0;
+                return rank(a) - rank(b);
               })
               .map((c) => {
                 const pub = publishersById.get(c.conductorPublisherId);
