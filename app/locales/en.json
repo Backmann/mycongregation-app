@@ -1760,6 +1760,11 @@
     },
     "coLunch": {
       "title": "Organizing lunch (CO visit)"
+    },
+    "cleaning": {
+      "thoroughGroup": "Your group cleans the hall this week",
+      "afterMeetingGroup": "Your group cleans the hall after the meetings",
+      "windows": "Windows: {{list}}"
     }
   },
   "halls": {

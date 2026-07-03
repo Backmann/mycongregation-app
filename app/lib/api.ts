@@ -1724,6 +1724,8 @@ export interface MyAssignmentItem {
   timeEnd?: string;
   endTime?: string;
   label: string;
+  windows?: number[];
+  thoroughPlannedAt?: string;
   location?: string;
   mapUrl?: string;
   congregationName?: string;

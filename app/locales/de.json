@@ -1760,6 +1760,11 @@
     },
     "coLunch": {
       "title": "Mittagessen organisieren (KA-Besuch)"
+    },
+    "cleaning": {
+      "thoroughGroup": "Eure Gruppe reinigt diese Woche den Saal",
+      "afterMeetingGroup": "Eure Gruppe reinigt den Saal nach den Zusammenkünften",
+      "windows": "Fenster: {{list}}"
     }
   },
   "halls": {

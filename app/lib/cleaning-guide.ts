@@ -49,7 +49,7 @@ export const TECHNIK_BLOCKS: {
   {
     key: 'ladder',
     image: require('../assets/cleaning/technik-ladder.webp'),
-    aspect: 4.12,
+    aspect: 3.11,
   },
 ];
 

@@ -107,6 +107,14 @@ export function taskSubsectionLabel(
   item: MyAssignmentItem,
   t: TFunc,
 ): string | null {
+  if (item.kind === 'cleaning') {
+    if (item.label === 'thorough' && item.windows?.length) {
+      return t('home.cleaning.windows', {
+        list: item.windows.join(', '),
+      });
+    }
+    return null;
+  }
   if (item.kind !== 'meeting' || !item.partKey) return null;
   const sub = resolveSubsection(item.partKey);
   // 'opening' (chairman/prayers/opening song) and 'closing' (closing prayer)
@@ -122,6 +130,14 @@ export function taskTitle(item: MyAssignmentItem, t: TFunc): string {
     return t(`home.dutyTypes.${item.label}`, item.label);
   }
   if (item.kind === 'cleaning') {
+    // Cleaning is group work, not a personal assignment — frame it as a
+    // heads-up for the whole service group rather than a task card title.
+    if (item.label === 'thorough') {
+      return t('home.cleaning.thoroughGroup');
+    }
+    if (item.label === 'after_meeting') {
+      return t('home.cleaning.afterMeetingGroup');
+    }
     return t(`home.cleaningSlots.${item.label}`, item.label);
   }
   if (item.kind === 'meeting') {
