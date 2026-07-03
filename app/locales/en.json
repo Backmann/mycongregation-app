@@ -1182,6 +1182,114 @@
     "planAllDone": "Cleaning is assigned",
     "useSuggested": "Suggested: {{name}}"
   },
+  "cleaningGuide": {
+    "title": "How to clean",
+    "open": "Cleaning instructions",
+    "materials": "What you need",
+    "freq": {
+      "zsk": "After the meeting",
+      "weekly": "Weekly",
+      "yearly": "Once a year"
+    },
+    "categories": {
+      "wc": "Toilet & urinals",
+      "sanitary": "Sanitary surfaces",
+      "floors": "Floors",
+      "furniture": "Furniture & chairs",
+      "glass": "Glass & mirrors",
+      "kitchen": "Kitchen"
+    },
+    "intro": {
+      "title": "Why cleaning matters",
+      "text": "The Kingdom Hall is the congregation's main place of worship. It should represent Jehovah and his organization worthily, inside and out. Regular cleaning protects the health of everyone attending and reflects our deep faith and love for the brothers."
+    },
+    "directions": {
+      "title": "Three working directions",
+      "topDown": "From top to bottom",
+      "outsideIn": "From outside to inside",
+      "cleanToDirty": "From clean to dirty"
+    },
+    "principles": {
+      "title": "Cleaning principles",
+      "i1": "Cold water works best",
+      "i2": "A small amount of cleaner is enough",
+      "i3": "Never mix different cleaners",
+      "i4": "Use the right cleaner for each area",
+      "i5": "Clean from clean to dirty",
+      "i6": "One cloth per toilet",
+      "i7": "Don't rinse a used cloth — take a fresh one"
+    },
+    "safety": {
+      "title": "Safety",
+      "i1": "Wear protective gloves",
+      "i2": "Put out the “Caution! Wet floor” sign when mopping",
+      "i3": "Use ladders carefully: face the steps, never stand on the top step",
+      "i4": "Route the vacuum cable so nobody trips over it",
+      "i5": "Spray cleaner onto the cloth, not onto the surface"
+    },
+    "technik": {
+      "rules": "Key rules",
+      "basics": "Dosage and counting",
+      "ladder": "Working on a ladder"
+    },
+    "steps": {
+      "wc": {
+        "zsk1": "Pour cleaner into the toilet and scrub with the brush",
+        "zsk2": "Wipe the seat, lid and cistern with a red cloth",
+        "zsk3": "Pour cleaner into the urinal and scrub with the brush",
+        "zsk4": "Wipe the urinal outside and the partition next to it",
+        "weekly1": "Apply cleaner to toilet and urinal, let it work for 5 minutes",
+        "weekly2": "With gloves on, wash the seat on both sides, the rim and the wall nearby",
+        "weekly3": "Wash the toilet outside on all sides, plus the brush and its holder",
+        "weekly4": "With gloves on, clean the urinal inside with a pad",
+        "weekly5": "Wash the urinal outside, the partition and the surrounding wall"
+      },
+      "sanitary": {
+        "zsk1": "Wipe the door handles on both sides",
+        "zsk2": "Wipe the sink, tap and the shelf above it",
+        "zsk3": "Wipe dispensers, holders and cubicle handles",
+        "weekly1": "Wash the door completely, including handles and edges",
+        "weekly2": "Scrub the sink with a pad and cleaner",
+        "weekly3": "Wash the sink, shelf and surrounding wall, underneath too",
+        "weekly4": "Wash cubicle partitions, dispensers and holders",
+        "yearly1": "Deep-clean the doors on all sides",
+        "yearly2": "Wash soap and paper dispensers inside and out",
+        "yearly3": "Wash all washroom surfaces: walls, doors, cubicles"
+      },
+      "floors": {
+        "zsk1": "First mop along the edges and corners",
+        "zsk2": "Mop the whole floor in a figure-eight motion",
+        "zsk3": "Hang mops up to dry; used ones go to the laundry",
+        "weekly1": "Vacuum the carpeted areas"
+      },
+      "furniture": {
+        "zsk1": "Wipe the doors and door handles",
+        "zsk2": "Wipe the speaker's stand and the stands",
+        "zsk3": "Wipe the wardrobe rails",
+        "zsk4": "Wipe the cabinets outside and their handles",
+        "weekly1": "Brush the chair seats and backrests",
+        "weekly2": "Wash the speaker's stand and stands with a damp cloth",
+        "weekly3": "Wash the wardrobe rails and hooks",
+        "yearly1": "Wash the chairs completely, including frame and legs",
+        "yearly2": "Vacuum the chair upholstery with the nozzle",
+        "yearly3": "Deep-clean all doors on every side",
+        "yearly4": "Empty the cabinets and wash them inside and out"
+      },
+      "glass": {
+        "zsk1": "Remove spots from mirrors — spray cleaner onto the cloth",
+        "zsk2": "Remove fingerprints from the glass doors",
+        "weekly1": "Wash the mirrors completely, including frames",
+        "weekly2": "Wet the glass with the washer from the bucket",
+        "weekly3": "Squeegee the water off, wiping the blade after each pass",
+        "weekly4": "Wash frames and window sills, rinsing the cloth"
+      },
+      "kitchen": {
+        "weekly1": "Wipe the fronts, handles and appliance exteriors",
+        "weekly2": "Damp-mop the kitchen floor",
+        "weekly3": "Wash the splashback and worktops"
+      }
+    }
+  },
   "service": {
     "hubTitle": "Ministry",
     "publicWitnessing": "Public witnessing",

@@ -1182,6 +1182,114 @@
     "planAllDone": "Reinigung ist zugeteilt",
     "useSuggested": "Vorschlag: {{name}}"
   },
+  "cleaningGuide": {
+    "title": "Richtig reinigen",
+    "open": "Reinigungsanleitung",
+    "materials": "Was du brauchst",
+    "freq": {
+      "zsk": "Nach der Zusammenkunft",
+      "weekly": "Wöchentlich",
+      "yearly": "Einmal im Jahr"
+    },
+    "categories": {
+      "wc": "WC & Urinale",
+      "sanitary": "Sanitärflächen",
+      "floors": "Böden",
+      "furniture": "Möbel & Stühle",
+      "glass": "Glas & Spiegel",
+      "kitchen": "Küche"
+    },
+    "intro": {
+      "title": "Warum Reinigen wichtig ist",
+      "text": "Der Königreichssaal ist der wichtigste Versammlungsort. Er soll Jehova und seine Organisation würdig repräsentieren — innen wie außen. Regelmäßiges Reinigen schützt die Gesundheit der Anwesenden und spiegelt unseren Glauben und die Liebe zu den Brüdern wider."
+    },
+    "directions": {
+      "title": "Drei Arbeitsrichtungen",
+      "topDown": "Von oben nach unten",
+      "outsideIn": "Von außen nach innen",
+      "cleanToDirty": "Von sauber nach schmutzig"
+    },
+    "principles": {
+      "title": "Grundsätze der Reinigung",
+      "i1": "Kaltes Wasser wirkt am besten",
+      "i2": "Eine kleine Menge Reinigungsmittel genügt",
+      "i3": "Reinigungsmittel niemals mischen",
+      "i4": "Für jeden Bereich das richtige Mittel verwenden",
+      "i5": "Von sauber nach schmutzig arbeiten",
+      "i6": "Ein Lappen pro Toilette",
+      "i7": "Benutzten Lappen nicht auswaschen — einen neuen nehmen"
+    },
+    "safety": {
+      "title": "Sicherheit",
+      "i1": "Schutzhandschuhe tragen",
+      "i2": "Beim Wischen das Schild „Vorsicht! Nass“ aufstellen",
+      "i3": "Leitern sicher nutzen: zur Leiter gewandt, nie auf der obersten Stufe",
+      "i4": "Staubsaugerkabel so legen, dass niemand stolpert",
+      "i5": "Mittel in den Lappen sprühen, nicht auf die Fläche"
+    },
+    "technik": {
+      "rules": "Wichtige Regeln",
+      "basics": "Dosierung und Zählen",
+      "ladder": "Arbeiten auf der Leiter"
+    },
+    "steps": {
+      "wc": {
+        "zsk1": "Reiniger ins WC geben und mit der Bürste reinigen",
+        "zsk2": "Brille, Deckel und Spülkasten mit rotem Lappen abwischen",
+        "zsk3": "Reiniger ins Urinal geben und mit der Bürste reinigen",
+        "zsk4": "Urinal außen und die Trennwand daneben abwischen",
+        "weekly1": "Reiniger in WC und Urinal geben, 5 Minuten einwirken lassen",
+        "weekly2": "Mit Handschuhen Brille beidseitig, Rand und Wand daneben reinigen",
+        "weekly3": "WC außen rundum waschen, auch Bürste und Halter",
+        "weekly4": "Mit Handschuhen das Urinal innen mit dem Pad reinigen",
+        "weekly5": "Urinal außen, Trennwand und Wand ringsum waschen"
+      },
+      "sanitary": {
+        "zsk1": "Türgriffe beidseitig abwischen",
+        "zsk2": "Waschbecken, Armatur und Ablage darüber abwischen",
+        "zsk3": "Spender, Halter und Kabinengriffe abwischen",
+        "weekly1": "Tür komplett waschen, mit Griffen und Kanten",
+        "weekly2": "Becken mit Pad und Reiniger schrubben",
+        "weekly3": "Becken, Ablage und Wand ringsum waschen, auch unten",
+        "weekly4": "Kabinenwände, Spender und Halter waschen",
+        "yearly1": "Türen rundum gründlich reinigen",
+        "yearly2": "Seifen- und Papierspender innen und außen waschen",
+        "yearly3": "Alle Flächen im Sanitärraum waschen: Wände, Türen, Kabinen"
+      },
+      "floors": {
+        "zsk1": "Zuerst Ränder und Ecken wischen",
+        "zsk2": "Gesamte Fläche in Achterbewegung wischen",
+        "zsk3": "Mopps zum Trocknen aufhängen, benutzte in die Wäsche",
+        "weekly1": "Teppichflächen saugen"
+      },
+      "furniture": {
+        "zsk1": "Türen und Türgriffe abwischen",
+        "zsk2": "Rednerpult und Ständer abwischen",
+        "zsk3": "Garderobenstangen abwischen",
+        "zsk4": "Schränke außen und Griffe abwischen",
+        "weekly1": "Sitzflächen und Lehnen der Stühle abbürsten",
+        "weekly2": "Rednerpult und Ständer feucht reinigen",
+        "weekly3": "Garderobenstangen und Haken waschen",
+        "yearly1": "Stühle komplett waschen, mit Gestell und Beinen",
+        "yearly2": "Polster mit der Düse absaugen",
+        "yearly3": "Alle Türen rundum gründlich waschen",
+        "yearly4": "Schränke ausräumen, innen und außen waschen"
+      },
+      "glass": {
+        "zsk1": "Flecken am Spiegel entfernen — Mittel in den Lappen sprühen",
+        "zsk2": "Fingerabdrücke an Glastüren entfernen",
+        "weekly1": "Spiegel komplett waschen, mit Rahmen",
+        "weekly2": "Scheibe mit dem Einwascher aus dem Eimer einwaschen",
+        "weekly3": "Mit dem Abzieher abziehen, Gummi nach jedem Zug abwischen",
+        "weekly4": "Rahmen und Fensterbänke waschen, Lappen ausspülen"
+      },
+      "kitchen": {
+        "weekly1": "Fronten, Griffe und Geräte außen abwischen",
+        "weekly2": "Küchenboden feucht wischen",
+        "weekly3": "Fliesenspiegel und Arbeitsflächen waschen"
+      }
+    }
+  },
   "service": {
     "hubTitle": "Dienst",
     "publicWitnessing": "Öffentliches Zeugnisgeben",

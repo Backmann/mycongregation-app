@@ -9,6 +9,7 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { useMyPublisher } from '../lib/useMyPublisher';
@@ -152,6 +153,16 @@ export function CleaningSection({
             </Text>
           )}
         </View>
+
+        <Pressable
+          style={styles.guideLink}
+          onPress={() => router.push('/cleaning/guide' as any)}
+          accessibilityRole="button"
+        >
+          <Ionicons name="book-outline" size={15} color="#0369a1" />
+          <Text style={styles.guideLinkText}>{t('cleaningGuide.open')}</Text>
+          <Ionicons name="chevron-forward" size={14} color="#94a3b8" />
+        </Pressable>
       </View>
     </View>
   );
@@ -296,6 +307,21 @@ const styles = StyleSheet.create({
   },
   slotLabel: { fontSize: 14, color: '#0f172a', fontWeight: '600', flexShrink: 1 },
   generalHint: { fontSize: 12, color: '#94a3b8', marginTop: 2 },
+  guideLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 7,
+    marginTop: 10,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: '#f1f5f9',
+  },
+  guideLinkText: {
+    flex: 1,
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#0369a1',
+  },
 
   groupSlotRow: {
     flexDirection: 'column',
