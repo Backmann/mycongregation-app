@@ -10,64 +10,64 @@ import {
 import { useTranslation } from 'react-i18next';
 
 /**
- * Interactive Kingdom Hall floor plan for the weekly window-washing rota.
- * Pure RN views (no SVG dependency): walls are thin views, windows are
- * rounded bars on the walls. Selected window numbers glow with a soft
- * MyBulb-style amber pulse. Numbers 8 and 9 are groups of physical windows
- * (8 = foyer ×2 + kitchen, 9 = the three washroom windows) that toggle
- * together. Positions are percentages of the plan box, traced from the
- * hall's floor-plan drawing.
+ * Interactive Kingdom Hall floor plan for the weekly window-washing rota,
+ * traced from the congregation's floor-plan drawing. Pure RN views (no SVG
+ * dependency): outer + interior walls are thin dark views with door gaps,
+ * windows are rounded bars on the exterior walls.
+ *
+ * Layout (percent of the plan box, which is taller than wide):
+ *  - Left exterior wall, top->bottom: 9 men's WC, 9 women's WC (two cabins),
+ *    9 accessible WC, then 1, 2, 3 in the main hall.
+ *  - Top wall: 8 foyer, 8 foyer, 8 kitchen.
+ *  - Right exterior wall, top->bottom: 7 (by the kitchen), then 6, 5, 4.
+ *  - Top-right is the kitchen; centre-top the foyer; centre/lower the main
+ *    hall with the stage at the bottom wall.
+ *
+ * Selected window numbers glow with a soft MyBulb-style amber pulse. Numbers
+ * 8 and 9 are groups of physical windows that toggle together.
  */
 
 type Orientation = 'v' | 'h';
 
 interface WindowDef {
   num: number;
-  x: number; // %
-  y: number; // %
-  len: number; // % along the wall
+  x: number;
+  y: number;
+  len: number;
   o: Orientation;
   labelKey?: string;
 }
 
-const THICK = 3.4; // window bar thickness, %
+const THICK = 3;
 
 const WINDOWS: WindowDef[] = [
-  // левая стена, сверху вниз — группа 9 (туалеты), затем 1–3
-  { num: 9, x: 1.6, y: 6, len: 8.5, o: 'v', labelKey: 'wc1' },
-  { num: 9, x: 1.6, y: 18.5, len: 8.5, o: 'v', labelKey: 'wc2' },
-  { num: 9, x: 1.6, y: 43.5, len: 8.5, o: 'v', labelKey: 'wc3' },
-  { num: 1, x: 1.6, y: 67.5, len: 9, o: 'v' },
-  { num: 2, x: 1.6, y: 80, len: 9, o: 'v' },
-  { num: 3, x: 1.6, y: 91.5, len: 7, o: 'v' },
-  // верхняя стена — группа 8 (фойе ×2 + кухня)
-  { num: 8, x: 30, y: 1.6, len: 13, o: 'h', labelKey: 'foyer' },
-  { num: 8, x: 47, y: 1.6, len: 13, o: 'h', labelKey: 'foyer' },
-  { num: 8, x: 66, y: 1.6, len: 13, o: 'h', labelKey: 'kitchen' },
-  // правая стена, сверху вниз — 7, затем 6–4
-  { num: 7, x: 95, y: 34, len: 16, o: 'v' },
-  { num: 6, x: 95, y: 67.5, len: 9, o: 'v' },
-  { num: 5, x: 95, y: 80, len: 9, o: 'v' },
-  { num: 4, x: 95, y: 91.5, len: 7, o: 'v' },
+  { num: 9, x: 0, y: 3, len: 10, o: 'v', labelKey: 'wcMen' },
+  { num: 9, x: 0, y: 18.5, len: 8.5, o: 'v', labelKey: 'wcWomen' },
+  { num: 9, x: 0, y: 44, len: 10, o: 'v', labelKey: 'wcAccessible' },
+  { num: 1, x: 0, y: 71.5, len: 9.5, o: 'v' },
+  { num: 2, x: 0, y: 84, len: 8, o: 'v' },
+  { num: 3, x: 0, y: 95, len: 4.6, o: 'v' },
+  { num: 8, x: 28, y: 0, len: 16, o: 'h', labelKey: 'foyer' },
+  { num: 8, x: 47.5, y: 0, len: 16, o: 'h', labelKey: 'foyer' },
+  { num: 8, x: 67, y: 0, len: 16, o: 'h', labelKey: 'kitchen' },
+  { num: 7, x: 100, y: 35.5, len: 16.5, o: 'v' },
+  { num: 6, x: 100, y: 71.5, len: 9.5, o: 'v' },
+  { num: 5, x: 100, y: 84, len: 8.5, o: 'v' },
+  { num: 4, x: 100, y: 95, len: 4.6, o: 'v' },
 ];
 
-/** Simplified interior walls, traced from the drawing (percent boxes). */
+const WT = 1.4;
 const WALLS: { x: number; y: number; w: number; h: number }[] = [
-  // санитарный блок слева сверху
-  { x: 0, y: 16, w: 20, h: 1.1 },
-  { x: 19, y: 5, w: 1.6, h: 12 },
-  { x: 0, y: 29.5, w: 30, h: 1.1 },
-  { x: 29, y: 22, w: 1.6, h: 8.5 },
-  // малая комната слева в середине
-  { x: 0, y: 41, w: 12, h: 1.1 },
-  { x: 20, y: 41, w: 14, h: 1.1 },
-  { x: 33, y: 41, w: 1.6, h: 9 },
-  { x: 0, y: 53.5, w: 34.6, h: 1.1 },
-  // второй зал / кухня справа сверху
-  { x: 63, y: 22.5, w: 1.6, h: 31 },
-  { x: 63, y: 22.5, w: 34, h: 1.1 },
-  { x: 63, y: 52.5, w: 20, h: 1.1 },
-  { x: 88, y: 52.5, w: 12, h: 1.1 },
+  { x: 0, y: 15.7, w: 24.3, h: WT },
+  { x: 24.3 - WT, y: 5, w: WT, h: 10.7 },
+  { x: 0, y: 31.4, w: 34.6, h: WT },
+  { x: 34.6 - WT, y: 15.7, w: WT, h: 15.7 },
+  { x: 0, y: 40, w: 19.6, h: WT },
+  { x: 19.6 - WT, y: 40, w: WT, h: 18.6 },
+  { x: 0, y: 58.6, w: 34.6, h: WT },
+  { x: 61.7, y: 15.7, w: WT, h: 41.4 },
+  { x: 61.7, y: 57.1, w: 27.1, h: WT },
+  { x: 97.2, y: 57.1, w: 2.8, h: WT },
 ];
 
 function Halo({ size }: { size: number }) {
@@ -135,8 +135,12 @@ function WindowBar({
 }) {
   const { t } = useTranslation();
   const vertical = def.o === 'v';
+  const onLeft = vertical && def.x === 0;
+  const onRight = vertical && def.x === 100;
+
+  const left = onRight ? def.x - THICK : def.x;
   const box = {
-    left: `${def.x}%` as const,
+    left: `${left}%` as const,
     top: `${def.y}%` as const,
     width: `${vertical ? THICK : def.len}%` as const,
     height: `${vertical ? def.len : THICK}%` as const,
@@ -146,10 +150,10 @@ function WindowBar({
     <Pressable
       disabled={!editable}
       onPress={() => onToggle?.(def.num)}
-      hitSlop={10}
+      hitSlop={8}
       style={[styles.window, box]}
     >
-      {active ? <Halo size={44} /> : null}
+      {active ? <Halo size={40} /> : null}
       <View
         style={[
           styles.windowBar,
@@ -159,7 +163,9 @@ function WindowBar({
       <View
         style={[
           styles.badge,
-          vertical ? styles.badgeRight : styles.badgeBelow,
+          onLeft && styles.badgeToRight,
+          onRight && styles.badgeToLeft,
+          !vertical && styles.badgeToBelow,
           active && styles.badgeActive,
         ]}
       >
@@ -171,7 +177,8 @@ function WindowBar({
         <Text
           style={[
             styles.windowLabel,
-            vertical ? styles.labelRight : styles.labelBelow,
+            onLeft && styles.labelToRight,
+            !vertical && styles.labelToBelow,
           ]}
           numberOfLines={1}
         >
@@ -193,59 +200,61 @@ export function HallPlan({
   const set = new Set(selected);
 
   return (
-    <View style={styles.plan}>
-      {WALLS.map((w, i) => (
-        <View
-          key={i}
-          pointerEvents="none"
-          style={[
-            styles.wall,
-            {
-              left: `${w.x}%`,
-              top: `${w.y}%`,
-              width: `${w.w}%`,
-              height: `${w.h}%`,
-            },
-          ]}
-        />
-      ))}
+    <View style={styles.frame}>
+      <View style={styles.plan}>
+        {WALLS.map((w, i) => (
+          <View
+            key={i}
+            pointerEvents="none"
+            style={[
+              styles.wall,
+              {
+                left: `${w.x}%`,
+                top: `${w.y}%`,
+                width: `${w.w}%`,
+                height: `${w.h}%`,
+              },
+            ]}
+          />
+        ))}
 
-      <View pointerEvents="none" style={styles.stage}>
-        <Text style={styles.stageText}>{t('cleaning.windows.stage')}</Text>
+        <View pointerEvents="none" style={styles.stage}>
+          <Text style={styles.stageText}>{t('cleaning.windows.stage')}</Text>
+        </View>
+
+        {WINDOWS.map((def, i) => (
+          <WindowBar
+            key={i}
+            def={def}
+            active={set.has(def.num)}
+            editable={!!onToggle}
+            onToggle={onToggle}
+          />
+        ))}
       </View>
-
-      {WINDOWS.map((def, i) => (
-        <WindowBar
-          key={i}
-          def={def}
-          active={set.has(def.num)}
-          editable={!!onToggle}
-          onToggle={onToggle}
-        />
-      ))}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  frame: { paddingHorizontal: 30, paddingVertical: 8 },
   plan: {
     width: '100%',
-    aspectRatio: 0.82,
-    backgroundColor: '#fbfcfe',
-    borderRadius: 14,
-    borderWidth: 2.5,
+    aspectRatio: 0.764,
+    borderWidth: 3,
     borderColor: '#0f172a',
-    overflow: 'hidden',
+    borderRadius: 4,
+    backgroundColor: '#fbfcfe',
   },
-  wall: { position: 'absolute', backgroundColor: '#0f172a', borderRadius: 2 },
+  wall: { position: 'absolute', backgroundColor: '#0f172a', borderRadius: 1.5 },
   stage: {
     position: 'absolute',
     bottom: 0,
-    left: '22%',
-    right: '22%',
-    height: '7%',
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
+    left: '26%',
+    right: '18%',
+    height: '6.5%',
+    borderTopLeftRadius: 8,
+    borderTopRightRadius: 8,
     backgroundColor: '#eef2f7',
     borderWidth: 1,
     borderBottomWidth: 0,
@@ -254,20 +263,20 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   stageText: {
-    fontSize: 10.5,
+    fontSize: 9,
     fontWeight: '800',
-    letterSpacing: 1.4,
+    letterSpacing: 1.2,
     color: '#64748b',
     textTransform: 'uppercase',
   },
   window: { position: 'absolute' },
-  windowBar: { ...StyleSheet.absoluteFillObject, borderRadius: 4 },
-  windowIdle: { backgroundColor: '#cbd5e1' },
+  windowBar: { ...StyleSheet.absoluteFillObject, borderRadius: 3 },
+  windowIdle: { backgroundColor: '#f97316', opacity: 0.85 },
   windowActive: {
     backgroundColor: '#f59e0b',
     shadowColor: '#f59e0b',
-    shadowOpacity: 0.55,
-    shadowRadius: 6,
+    shadowOpacity: 0.6,
+    shadowRadius: 5,
     shadowOffset: { width: 0, height: 0 },
     elevation: 4,
   },
@@ -279,27 +288,28 @@ const styles = StyleSheet.create({
   },
   badge: {
     position: 'absolute',
-    width: 20,
-    height: 20,
-    borderRadius: 10,
+    width: 19,
+    height: 19,
+    borderRadius: 9.5,
     backgroundColor: '#fff',
     borderWidth: 1.5,
     borderColor: '#94a3b8',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  badgeRight: { left: '160%', top: '50%', marginTop: -10 },
-  badgeBelow: { top: '150%', left: '50%', marginLeft: -10 },
+  badgeToRight: { left: 20, top: '50%', marginTop: -9.5 },
+  badgeToLeft: { right: 20, top: '50%', marginTop: -9.5 },
+  badgeToBelow: { top: 20, left: '50%', marginLeft: -9.5 },
   badgeActive: { borderColor: '#d97706', backgroundColor: '#fffbeb' },
-  badgeText: { fontSize: 11, fontWeight: '800', color: '#64748b' },
+  badgeText: { fontSize: 10.5, fontWeight: '800', color: '#64748b' },
   badgeTextActive: { color: '#b45309' },
   windowLabel: {
     position: 'absolute',
-    fontSize: 8.5,
+    fontSize: 8,
     fontWeight: '600',
     color: '#94a3b8',
-    width: 64,
+    width: 78,
   },
-  labelRight: { left: '160%', top: '50%', marginTop: 12 },
-  labelBelow: { top: '150%', left: '50%', marginLeft: 14 },
+  labelToRight: { left: 42, top: '50%', marginTop: -5 },
+  labelToBelow: { top: 20, left: '50%', marginLeft: 12, width: 40 },
 });

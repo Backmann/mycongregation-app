@@ -94,6 +94,7 @@ export default function AppLayout() {
       <Tabs.Screen name="absences" options={{ href: null }} />
       <Tabs.Screen name="local-needs" options={{ href: null }} />
       <Tabs.Screen name="talk-coordinator" options={{ href: null }} />
+      <Tabs.Screen name="cleaning" options={{ href: null }} />
     </Tabs>
   );
 }

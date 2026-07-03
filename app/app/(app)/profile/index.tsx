@@ -187,6 +187,27 @@ export default function ProfileScreen() {
         </View>
       </View>
 
+      <View style={styles.section}>
+        <Text style={styles.sectionLabel}>{t('cleaningGuide.sectionLabel')}</Text>
+        <View style={styles.card}>
+          <Pressable
+            style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
+            onPress={() => router.push('/cleaning/guide' as any)}
+          >
+            <View style={styles.rowIcon}>
+              <Ionicons name="sparkles-outline" size={20} color="#0ea5e9" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.rowTitle}>{t('cleaningGuide.rowTitle')}</Text>
+              <Text style={styles.rowSubtitle}>
+                {t('cleaningGuide.rowSubtitle')}
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color="#cbd5e1" />
+          </Pressable>
+        </View>
+      </View>
+
       {Platform.OS === 'web' && webPushStatus !== null && (
         <View style={styles.section}>
           <Text style={styles.sectionLabel}>{t('profile.notifications')}</Text>

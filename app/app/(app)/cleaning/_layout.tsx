@@ -10,7 +10,7 @@ export default function CleaningLayout() {
         name="guide"
         options={{
           title: t('cleaningGuide.title'),
-          headerLeft: () => <BackButton fallback="/schedule" toParent />,
+          headerLeft: () => <BackButton fallback="/profile" toParent />,
         }}
       />
     </Stack>

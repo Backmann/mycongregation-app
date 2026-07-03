@@ -1191,22 +1191,27 @@
       "labels": {
         "foyer": "Foyer",
         "kitchen": "Kitchen",
-        "wc1": "Accessible WC",
-        "wc2": "Men's WC",
-        "wc3": "Women's WC"
-      }
+        "wcMen": "Men's WC",
+        "wcWomen": "Women's WC",
+        "wcAccessible": "Accessible WC"
+      },
+      "label": "Windows"
     },
     "plan": {
       "title": "When suits the group to clean?",
       "planned": "Planned",
       "tbd": "Day to be agreed",
       "set": "Pick a day",
-      "clear": "Clear"
+      "clear": "Clear",
+      "label": "Cleaning day"
+    },
+    "slotHints": {
+      "after_meeting": "After the midweek and weekend meeting",
+      "thorough": "Once a week, on a day that suits the group"
     }
   },
   "cleaningGuide": {
     "title": "How to clean",
-    "open": "Cleaning instructions",
     "materials": "What you need",
     "freq": {
       "zsk": "After the meeting",
@@ -1310,7 +1315,10 @@
         "weekly2": "Damp-mop the kitchen floor",
         "weekly3": "Wash the splashback and worktops"
       }
-    }
+    },
+    "sectionLabel": "Kingdom Hall cleaning",
+    "rowTitle": "Kingdom Hall cleaning guide",
+    "rowSubtitle": "How and where to clean: cards, technique, safety"
   },
   "service": {
     "hubTitle": "Ministry",

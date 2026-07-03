@@ -9,7 +9,6 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMyPublisher } from '../lib/useMyPublisher';
@@ -97,7 +96,7 @@ export function CleaningSection({
         </View>
       ) : null}
 
-      <View style={styles.card}>
+      <View style={styles.stack}>
         {GROUP_SLOTS.map((slot) => {
           const assigned = bySlot.get(slot) ?? null;
           const group = assigned?.serviceGroupId
@@ -106,15 +105,41 @@ export function CleaningSection({
           const overseer = overseerName(group, publishersById);
           const isMine =
             !!myGroupId && assigned?.serviceGroupId === myGroupId;
+          const isThorough = slot === 'thorough';
+          const accent = isThorough ? '#0891b2' : '#0ea5e9';
           return (
-            <View key={slot}>
-              <View
-                style={[styles.groupSlotRow, isMine && styles.slotRowMine]}
-              >
-                <Text style={styles.slotLabel}>
-                  {t(`cleaning.slots.${slot}`)}
-                </Text>
+            <View
+              key={slot}
+              style={[styles.slotCard, isMine && styles.slotCardMine]}
+            >
+              <View style={styles.slotCardHead}>
+                <View
+                  style={[styles.slotIcon, { backgroundColor: `${accent}14` }]}
+                >
+                  <Ionicons
+                    name={
+                      isThorough
+                        ? 'sparkles-outline'
+                        : 'refresh-circle-outline'
+                    }
+                    size={16}
+                    color={accent}
+                  />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <View style={styles.slotTitleRow}>
+                    {isMine ? <MyBulb size={13} /> : null}
+                    <Text style={styles.slotCardTitle}>
+                      {t(`cleaning.slots.${slot}`)}
+                    </Text>
+                  </View>
+                  <Text style={styles.slotCardHint}>
+                    {t(`cleaning.slotHints.${slot}`)}
+                  </Text>
+                </View>
+              </View>
 
+              <View style={styles.slotCardBody}>
                 {canEdit ? (
                   <GroupSelect
                     title={t(`cleaning.slots.${slot}`)}
@@ -127,7 +152,7 @@ export function CleaningSection({
                         ? onSetSlot(
                             slot,
                             id,
-                            slot === 'thorough'
+                            isThorough
                               ? (assigned?.windows ?? null)
                               : undefined,
                           )
@@ -136,7 +161,6 @@ export function CleaningSection({
                   />
                 ) : (
                   <ChipRow>
-                    {isMine ? <MyBulb size={14} /> : null}
                     {group ? (
                       <PersonChip label={group.name} variant="group" />
                     ) : (
@@ -147,58 +171,68 @@ export function CleaningSection({
                     )}
                   </ChipRow>
                 )}
-              </View>
 
-              {slot === 'thorough' ? (
-                <ThoroughExtras
-                  assignment={assigned}
-                  group={group}
-                  canEdit={canEdit}
-                  pending={pending}
-                  weekStart={weekStart}
-                  myPublisherId={myPublisher?.id ?? null}
-                  onSetWindows={(w) =>
-                    onSetSlot('thorough', assigned?.serviceGroupId ?? null, w)
-                  }
-                />
-              ) : null}
+                {isThorough ? (
+                  <ThoroughExtras
+                    assignment={assigned}
+                    group={group}
+                    canEdit={canEdit}
+                    pending={pending}
+                    weekStart={weekStart}
+                    myPublisherId={myPublisher?.id ?? null}
+                    onSetWindows={(w) =>
+                      onSetSlot('thorough', assigned?.serviceGroupId ?? null, w)
+                    }
+                  />
+                ) : null}
+              </View>
             </View>
           );
         })}
 
         {/* General cleaning — once a year, whole congregation */}
-        <View style={styles.slotRow}>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.slotLabel}>{t('cleaning.slots.general')}</Text>
-            <Text style={styles.generalHint}>{t('cleaning.allCongregation')}</Text>
+        <View style={styles.slotCard}>
+          <View style={styles.slotCardHead}>
+            <View style={[styles.slotIcon, { backgroundColor: '#f59e0b14' }]}>
+              <Ionicons name="calendar-outline" size={16} color="#d97706" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.slotCardTitle}>
+                {t('cleaning.slots.general')}
+              </Text>
+              <Text style={styles.slotCardHint}>
+                {t('cleaning.allCongregation')}
+              </Text>
+            </View>
+            {canEdit ? (
+              <Switch
+                value={generalOn}
+                disabled={pending}
+                onValueChange={(on) =>
+                  on ? onSetSlot('general', null) : onClearSlot('general')
+                }
+              />
+            ) : (
+              <View
+                style={[
+                  styles.generalBadge,
+                  !generalOn && styles.generalBadgeOff,
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.generalBadgeText,
+                    !generalOn && styles.generalBadgeTextOff,
+                  ]}
+                >
+                  {generalOn
+                    ? t('cleaning.scheduled')
+                    : t('cleaning.empty')}
+                </Text>
+              </View>
+            )}
           </View>
-          {canEdit ? (
-            <Switch
-              value={generalOn}
-              disabled={pending}
-              onValueChange={(on) =>
-                on ? onSetSlot('general', null) : onClearSlot('general')
-              }
-            />
-          ) : (
-            <Text
-              style={[styles.slotValue, !generalOn && styles.slotEmpty]}
-              numberOfLines={1}
-            >
-              {generalOn ? t('cleaning.scheduled') : t('cleaning.empty')}
-            </Text>
-          )}
         </View>
-
-        <Pressable
-          style={styles.guideLink}
-          onPress={() => router.push('/cleaning/guide' as any)}
-          accessibilityRole="button"
-        >
-          <Ionicons name="book-outline" size={15} color="#0369a1" />
-          <Text style={styles.guideLinkText}>{t('cleaningGuide.open')}</Text>
-          <Ionicons name="chevron-forward" size={14} color="#94a3b8" />
-        </Pressable>
       </View>
     </View>
   );
@@ -306,56 +340,77 @@ function ThoroughExtras({
 
   return (
     <View style={styles.extras}>
-      <View style={styles.extraRow}>
-        <Ionicons name="apps-outline" size={14} color="#64748b" />
-        {windows.length > 0 ? (
-          <View style={styles.windowChips}>
-            {windows.map((n) => (
-              <View key={n} style={styles.windowChip}>
-                <Text style={styles.windowChipText}>{n}</Text>
-              </View>
-            ))}
-          </View>
-        ) : (
-          <Text style={styles.extraMuted}>{t('cleaning.windows.none')}</Text>
-        )}
-        {canEdit ? (
-          <Pressable
-            disabled={pending}
-            onPress={() => {
-              setDraftWindows(windows);
-              setWindowsOpen(true);
-            }}
-            hitSlop={8}
-          >
-            <Text style={styles.extraAction}>
-              {t('cleaning.windows.edit')}
-            </Text>
-          </Pressable>
-        ) : windows.length > 0 ? (
-          <Pressable onPress={() => setWindowsOpen(true)} hitSlop={8}>
-            <Text style={styles.extraAction}>{t('cleaning.windows.map')}</Text>
-          </Pressable>
-        ) : null}
-      </View>
-
-      {hasGroup ? (
-        <View style={styles.extraRow}>
-          <Ionicons name="calendar-clear-outline" size={14} color="#64748b" />
-          {plannedAt ? (
-            <Text style={styles.extraValue}>
-              {t('cleaning.plan.planned')}: {fmtPlanned(plannedAt)}
-            </Text>
+      <View style={styles.extraItem}>
+        <Text style={styles.extraLabel}>{t('cleaning.windows.label')}</Text>
+        <View style={styles.extraContent}>
+          {windows.length > 0 ? (
+            <View style={styles.windowChips}>
+              {windows.map((n) => (
+                <View key={n} style={styles.windowChip}>
+                  <Text style={styles.windowChipText}>{n}</Text>
+                </View>
+              ))}
+            </View>
           ) : (
-            <Text style={styles.extraMuted}>{t('cleaning.plan.tbd')}</Text>
+            <Text style={styles.extraMuted}>{t('cleaning.windows.none')}</Text>
           )}
-          {canPlan ? (
-            <Pressable disabled={pending} onPress={openPlan} hitSlop={8}>
+          {canEdit ? (
+            <Pressable
+              disabled={pending}
+              onPress={() => {
+                setDraftWindows(windows);
+                setWindowsOpen(true);
+              }}
+              hitSlop={8}
+              style={styles.extraBtn}
+            >
+              <Ionicons name="map-outline" size={13} color="#0369a1" />
               <Text style={styles.extraAction}>
-                {plannedAt ? t('common.edit') : t('cleaning.plan.set')}
+                {t('cleaning.windows.edit')}
+              </Text>
+            </Pressable>
+          ) : windows.length > 0 ? (
+            <Pressable
+              onPress={() => setWindowsOpen(true)}
+              hitSlop={8}
+              style={styles.extraBtn}
+            >
+              <Ionicons name="map-outline" size={13} color="#0369a1" />
+              <Text style={styles.extraAction}>
+                {t('cleaning.windows.map')}
               </Text>
             </Pressable>
           ) : null}
+        </View>
+      </View>
+
+      {hasGroup ? (
+        <View style={styles.extraItem}>
+          <Text style={styles.extraLabel}>{t('cleaning.plan.label')}</Text>
+          <View style={styles.extraContent}>
+            {plannedAt ? (
+              <Text style={styles.extraValue}>{fmtPlanned(plannedAt)}</Text>
+            ) : (
+              <Text style={styles.extraMuted}>{t('cleaning.plan.tbd')}</Text>
+            )}
+            {canPlan ? (
+              <Pressable
+                disabled={pending}
+                onPress={openPlan}
+                hitSlop={8}
+                style={styles.extraBtn}
+              >
+                <Ionicons
+                  name="calendar-clear-outline"
+                  size={13}
+                  color="#0369a1"
+                />
+                <Text style={styles.extraAction}>
+                  {plannedAt ? t('common.edit') : t('cleaning.plan.set')}
+                </Text>
+              </Pressable>
+            ) : null}
+          </View>
         </View>
       ) : null}
 
@@ -631,47 +686,82 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
-  card: {
+  stack: {
+    marginHorizontal: 12,
+    gap: 8,
+  },
+  slotCard: {
     backgroundColor: '#fff',
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
+    borderRadius: 14,
+    borderWidth: 1,
     borderColor: '#e2e8f0',
+    padding: 12,
   },
-  slotRow: {
-    flexDirection: 'row',
+  slotCardMine: { borderColor: '#fcd34d', backgroundColor: '#fffdf7' },
+  slotCardHead: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  slotIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 9,
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 11,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#f1f5f9',
-    gap: 12,
+    justifyContent: 'center',
   },
-  slotLabel: { fontSize: 14, color: '#0f172a', fontWeight: '600', flexShrink: 1 },
-  generalHint: { fontSize: 12, color: '#94a3b8', marginTop: 2 },
+  slotTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  slotCardTitle: { fontSize: 14.5, fontWeight: '700', color: '#0f172a' },
+  slotCardHint: { fontSize: 12, color: '#94a3b8', marginTop: 1 },
+  slotCardBody: { marginTop: 10, gap: 10 },
+  generalBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 999,
+    backgroundColor: '#ecfdf5',
+    borderWidth: 1,
+    borderColor: '#6ee7b7',
+  },
+  generalBadgeOff: { backgroundColor: '#f8fafc', borderColor: '#e2e8f0' },
+  generalBadgeText: { fontSize: 12, fontWeight: '700', color: '#047857' },
+  generalBadgeTextOff: { color: '#cbd5e1' },
   extras: {
     marginTop: 2,
-    marginBottom: 8,
-    paddingLeft: 4,
-    gap: 5,
+    padding: 10,
+    borderRadius: 10,
+    backgroundColor: '#f8fafc',
+    borderWidth: 1,
+    borderColor: '#eef2f7',
+    gap: 9,
   },
-  extraRow: { flexDirection: 'row', alignItems: 'center', gap: 7 },
-  extraMuted: { flex: 1, fontSize: 12.5, color: '#94a3b8' },
-  extraValue: { flex: 1, fontSize: 12.5, color: '#334155', fontWeight: '600' },
+  extraItem: { gap: 5 },
+  extraLabel: {
+    fontSize: 10.5,
+    fontWeight: '700',
+    color: '#94a3b8',
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+  },
+  extraContent: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  extraMuted: { flex: 1, fontSize: 13, color: '#94a3b8' },
+  extraValue: {
+    flex: 1,
+    fontSize: 13,
+    color: '#0f172a',
+    fontWeight: '600',
+    textTransform: 'capitalize',
+  },
+  extraBtn: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   extraAction: { fontSize: 12.5, fontWeight: '700', color: '#0369a1' },
   windowChips: { flex: 1, flexDirection: 'row', flexWrap: 'wrap', gap: 4 },
   windowChip: {
-    minWidth: 22,
-    height: 22,
-    borderRadius: 11,
-    paddingHorizontal: 5,
+    minWidth: 24,
+    height: 24,
+    borderRadius: 12,
+    paddingHorizontal: 6,
     backgroundColor: '#fffbeb',
     borderWidth: 1,
     borderColor: '#f59e0b',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  windowChipText: { fontSize: 11.5, fontWeight: '800', color: '#b45309' },
+  windowChipText: { fontSize: 12, fontWeight: '800', color: '#b45309' },
   modalBackdrop: {
     flex: 1,
     backgroundColor: 'rgba(15,23,42,0.45)',
@@ -726,34 +816,8 @@ const styles = StyleSheet.create({
   dayChipNum: { fontSize: 13.5, fontWeight: '800', color: '#0f172a' },
   dayChipTextActive: { color: '#fff' },
   planError: { fontSize: 12.5, color: '#b91c1c' },
-  guideLink: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 7,
-    marginTop: 10,
-    paddingTop: 10,
-    borderTopWidth: 1,
-    borderTopColor: '#f1f5f9',
-  },
-  guideLinkText: {
-    flex: 1,
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#0369a1',
-  },
 
-  groupSlotRow: {
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-    paddingHorizontal: 16,
-    paddingVertical: 11,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#f1f5f9',
-    gap: 6,
-  },
   slotRowMine: { backgroundColor: '#fffbeb' },
-  slotValue: { fontSize: 14, color: '#334155', fontWeight: '600' },
-  slotEmpty: { color: '#cbd5e1', fontWeight: '400' },
   overseer: { fontSize: 12, color: '#94a3b8', marginTop: 1 },
 
   select: {

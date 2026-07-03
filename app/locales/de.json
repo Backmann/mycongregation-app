@@ -1191,22 +1191,27 @@
       "labels": {
         "foyer": "Foyer",
         "kitchen": "Küche",
-        "wc1": "Barrierefreies WC",
-        "wc2": "Herren-WC",
-        "wc3": "Damen-WC"
-      }
+        "wcMen": "Herren-WC",
+        "wcWomen": "Damen-WC",
+        "wcAccessible": "Barrierefreies WC"
+      },
+      "label": "Fenster"
     },
     "plan": {
       "title": "Wann passt es der Gruppe?",
       "planned": "Geplant",
       "tbd": "Tag wird abgestimmt",
       "set": "Tag wählen",
-      "clear": "Zurücksetzen"
+      "clear": "Zurücksetzen",
+      "label": "Reinigungstag"
+    },
+    "slotHints": {
+      "after_meeting": "Nach der Zusammenkunft (Woche + Wochenende)",
+      "thorough": "Einmal pro Woche, an einem passenden Tag"
     }
   },
   "cleaningGuide": {
     "title": "Richtig reinigen",
-    "open": "Reinigungsanleitung",
     "materials": "Was du brauchst",
     "freq": {
       "zsk": "Nach der Zusammenkunft",
@@ -1310,7 +1315,10 @@
         "weekly2": "Küchenboden feucht wischen",
         "weekly3": "Fliesenspiegel und Arbeitsflächen waschen"
       }
-    }
+    },
+    "sectionLabel": "Königreichssaal reinigen",
+    "rowTitle": "Anleitung zur Saalreinigung",
+    "rowSubtitle": "Wie und wo reinigen: Karten, Technik, Sicherheit"
   },
   "service": {
     "hubTitle": "Dienst",
