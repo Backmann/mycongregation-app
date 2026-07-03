@@ -47,6 +47,8 @@ import {
   buildPartNumbers,
   resolveSubsection,
   buildMidweekPartTimes,
+  skillCapabilityFromTitle,
+  getPartDef,
   type PartInterval,
   Subsection,
   SUBSECTIONS,
@@ -1527,6 +1529,9 @@ function AssignmentRow({
     overline,
   } = partDisplay(assignment.partKey, assignment.partTitle);
   const songTitles = useSongsMap();
+  const isStudentTalkRow =
+    !!getPartDef(assignment.partKey)?.hasAssistant &&
+    skillCapabilityFromTitle(assignment.partTitle) === 'fs_talk';
   const durationSuffix =
     assignment.partDurationMin != null &&
     ['treasures', 'apply_yourself', 'christian_life'].includes(
@@ -1654,7 +1659,7 @@ function AssignmentRow({
               </Text>
             </View>
           )}
-          {assistant && (
+          {assistant && !isStudentTalkRow && (
             <View style={[styles.chip, styles.chipAssistant]}>
               <Ionicons name="people-outline" size={13} color="#475569" />
               <Text style={styles.chipAssistantText}>

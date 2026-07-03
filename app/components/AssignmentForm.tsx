@@ -218,10 +218,12 @@ export function AssignmentForm({
   const isPublicTalkSpeaker = form.partKey === 'public_talk_speaker';
   // Apply-Yourself "Talk" (Речь) is delivered solo — no householder/assistant,
   // unlike the ministry demonstrations. Detect it from the title-derived skill.
-  const applyYourselfSkill = (form.partKey ?? '').startsWith('apply_yourself')
-    ? skillCapabilityFromTitle(form.partTitle)
-    : null;
-  const isStudentTalk = applyYourselfSkill === 'fs_talk';
+  // We check the title on ANY ministry part that would otherwise show an
+  // assistant, because the positional key (apply_yourself_1..4) varies and a
+  // talk can land on any of those slots.
+  const titleSkill = skillCapabilityFromTitle(form.partTitle);
+  const isStudentTalk =
+    !!partDef?.hasAssistant && titleSkill === 'fs_talk';
   const showAssistant = !!partDef?.hasAssistant && !isStudentTalk;
   // A student TALK has one participant: if the workbook title marks this
   // part as a talk, any previously stored assistant is cleared on open.
@@ -321,7 +323,9 @@ export function AssignmentForm({
   };
   // Apply-Yourself parts are numbered positionally, but the real skill is in
   // the title — prefer that so the picker filters by the correct capability.
-  const titleCap = applyYourselfSkill;
+  const titleCap = (form.partKey ?? '').startsWith('apply_yourself')
+    ? titleSkill
+    : null;
   // Every "Living as Christians" part — the numbered ones and any manually
   // added extra — is gated by the dedicated christian_life capability, so the
   // conductor picker shows only brothers marked for it in the publisher card.
