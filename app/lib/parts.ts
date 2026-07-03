@@ -456,9 +456,9 @@ export function buildMidweekPartTimes(
   }
   // CBS conductor (30). The reader deliberately gets no interval.
   span(first('cbs_conductor'), dur(first('cbs_conductor'), 30));
-  // Chairman's concluding words (3) — advance only.
-  t += 3;
-  span(first('midweek_closing_prayer'), 5);
+  // Final block: chairman's concluding words (3) + song & prayer — shown as a
+  // single interval on the closing-prayer row (e.g. 20:36 – 20:45).
+  span(first('midweek_closing_prayer'), 3 + 6);
   return map;
 }
 
