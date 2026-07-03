@@ -1180,7 +1180,29 @@
       "general": "General cleaning"
     },
     "planAllDone": "Cleaning is assigned",
-    "useSuggested": "Suggested: {{name}}"
+    "useSuggested": "Suggested: {{name}}",
+    "windows": {
+      "title": "This week's windows",
+      "hint": "Tap the windows the group washes this week. Numbers 8 and 9 are window groups.",
+      "edit": "Select",
+      "map": "On the plan",
+      "none": "No windows selected",
+      "stage": "Stage",
+      "labels": {
+        "foyer": "Foyer",
+        "kitchen": "Kitchen",
+        "wc1": "Accessible WC",
+        "wc2": "Men's WC",
+        "wc3": "Women's WC"
+      }
+    },
+    "plan": {
+      "title": "When suits the group to clean?",
+      "planned": "Planned",
+      "tbd": "Day to be agreed",
+      "set": "Pick a day",
+      "clear": "Clear"
+    }
   },
   "cleaningGuide": {
     "title": "How to clean",

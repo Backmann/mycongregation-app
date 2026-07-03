@@ -310,11 +310,13 @@ export default function ScheduleIndexScreen() {
     mutationFn: (vars: {
       slotType: Parameters<typeof cleaningApi.setSlot>[0]['slotType'];
       serviceGroupId: string | null;
+      windows?: number[] | null;
     }) =>
       cleaningApi.setSlot({
         weekStartDate: weekStartISO,
         slotType: vars.slotType,
         serviceGroupId: vars.serviceGroupId,
+        windows: vars.windows,
       }),
     onSuccess: () => invalidateCleaning(),
   });
@@ -1033,12 +1035,17 @@ export default function ScheduleIndexScreen() {
                 hideHeader
               publishersById={publishersById}
               canEdit={canEditCleaning}
+              weekStart={weekStartISO}
               pending={
                 setCleaningSlotMutation.isPending ||
                 clearCleaningSlotMutation.isPending
               }
-              onSetSlot={(slotType, serviceGroupId) =>
-                setCleaningSlotMutation.mutate({ slotType, serviceGroupId })
+              onSetSlot={(slotType, serviceGroupId, windows) =>
+                setCleaningSlotMutation.mutate({
+                  slotType,
+                  serviceGroupId,
+                  windows,
+                })
               }
                 onClearSlot={(slotType) =>
                   clearCleaningSlotMutation.mutate(slotType)

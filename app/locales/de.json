@@ -1180,7 +1180,29 @@
       "general": "Generalreinigung"
     },
     "planAllDone": "Reinigung ist zugeteilt",
-    "useSuggested": "Vorschlag: {{name}}"
+    "useSuggested": "Vorschlag: {{name}}",
+    "windows": {
+      "title": "Fenster dieser Woche",
+      "hint": "Tippe auf die Fenster, die die Gruppe diese Woche putzt. Nummern 8 und 9 sind Fenstergruppen.",
+      "edit": "Auswählen",
+      "map": "Auf dem Plan",
+      "none": "Keine Fenster ausgewählt",
+      "stage": "Bühne",
+      "labels": {
+        "foyer": "Foyer",
+        "kitchen": "Küche",
+        "wc1": "Barrierefreies WC",
+        "wc2": "Herren-WC",
+        "wc3": "Damen-WC"
+      }
+    },
+    "plan": {
+      "title": "Wann passt es der Gruppe?",
+      "planned": "Geplant",
+      "tbd": "Tag wird abgestimmt",
+      "set": "Tag wählen",
+      "clear": "Zurücksetzen"
+    }
   },
   "cleaningGuide": {
     "title": "Richtig reinigen",

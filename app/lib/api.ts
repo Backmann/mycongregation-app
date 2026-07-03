@@ -1151,6 +1151,10 @@ export interface CleaningAssignment {
   weekStartDate: string;
   slotType: CleaningSlotType;
   serviceGroupId: string | null;
+  /** Hall-plan window numbers for the weekly thorough cleaning. */
+  windows: number[] | null;
+  /** When the assigned group plans to do the thorough cleaning (ISO). */
+  thoroughPlannedAt: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -1171,8 +1175,20 @@ export const cleaningApi = {
     weekStartDate: string;
     slotType: CleaningSlotType;
     serviceGroupId?: string | null;
+    windows?: number[] | null;
   }): Promise<CleaningAssignment> {
     const { data } = await api.put<CleaningAssignment>('/cleaning', input);
+    return data;
+  },
+  /** Set (or clear with null) the day the group plans the thorough cleaning. */
+  async planThorough(input: {
+    weekStartDate: string;
+    plannedAt: string | null;
+  }): Promise<CleaningAssignment> {
+    const { data } = await api.patch<CleaningAssignment>(
+      '/cleaning/thorough-plan',
+      input,
+    );
     return data;
   },
   async clearSlot(
