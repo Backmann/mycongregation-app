@@ -14,19 +14,18 @@ import { useTranslation } from 'react-i18next';
  * traced from the congregation's drawing. Pure RN views (no SVG dependency).
  *
  * Layout (percent of the plan box, which is taller than wide):
- *  - Bottom half is the MAIN HALL: windows 1/2/3 (left) and 6/5/4 (right)
- *    are identical length and pairwise level, symmetric across the room.
+ *  - Bottom half is the MAIN HALL — a clean open room with the stage at the
+ *    bottom wall. Windows 1/2/3 (left) and 6/5/4 (right) are identical length
+ *    and pairwise level, symmetric across the room. No interior walls here.
  *  - Top-left: men's WC and women's WC (identical cabins), then the
- *    accessible WC below them. Window 9 on each left exterior wall.
- *  - Top-right: kitchen on top (smaller), the additional classroom below it
- *    (larger). Window 7 faces out on the classroom's right wall; window 8
- *    "kitchen" is on the top wall above the kitchen.
+ *    accessible WC below. Window 9 on each left exterior wall.
+ *  - Top-right: kitchen on top (smaller) with window 8 on the top wall; the
+ *    additional classroom below it (larger) with window 7 on the right wall.
  *  - Top wall: 8 foyer, 8 foyer, 8 kitchen — identical length.
- *  - Stage at the bottom wall, centre.
  *
- * Selecting a window lights the WHOLE window plus its number as one amber
- * unit, wrapped in a soft, breathing MyBulb-style halo. Numbers 8 and 9 are
- * groups of physical windows that toggle together.
+ * Selecting a window lights the whole bar plus a breathing amber halo, and its
+ * number chip (which sits just OUTSIDE the window) turns amber in sync.
+ * Numbers 8 and 9 are groups of physical windows that toggle together.
  */
 
 type Orientation = 'v' | 'h';
@@ -40,54 +39,52 @@ interface WindowDef {
   labelKey?: string;
 }
 
-const THICK = 3.4;
-
-const MAIN_YS = [68, 80, 92];
+const THICK = 3.6;
+const MAIN_YS = [64, 76, 88];
+const MAIN_LEN = 10; // bigger windows 1–6, still fitting above the bottom wall
 
 const WINDOWS: WindowDef[] = [
-  // левая внешняя стена — туалеты (одинаковые), окно 9
+  // левая внешняя стена — туалеты (одинаковые кабинки), окно 9
   { num: 9, x: 0, y: 4, len: 10, o: 'v', labelKey: 'wcMen' },
   { num: 9, x: 0, y: 20, len: 10, o: 'v', labelKey: 'wcWomen' },
   { num: 9, x: 0, y: 44, len: 10, o: 'v', labelKey: 'wcAccessible' },
-  // главный зал: 1-2-3 слева (одинаковые, симметрично с правыми)
-  { num: 1, x: 0, y: MAIN_YS[0], len: 8, o: 'v' },
-  { num: 2, x: 0, y: MAIN_YS[1], len: 8, o: 'v' },
-  { num: 3, x: 0, y: MAIN_YS[2], len: 8, o: 'v' },
+  // главный зал: 1-2-3 слева (крупнее, симметрично с правыми)
+  { num: 1, x: 0, y: MAIN_YS[0], len: MAIN_LEN, o: 'v' },
+  { num: 2, x: 0, y: MAIN_YS[1], len: MAIN_LEN, o: 'v' },
+  { num: 3, x: 0, y: MAIN_YS[2], len: MAIN_LEN, o: 'v' },
   // верхняя стена — окна 8 (одинаковые): фойе, фойе, кухня
   { num: 8, x: 28, y: 0, len: 15, o: 'h', labelKey: 'foyer' },
   { num: 8, x: 46, y: 0, len: 15, o: 'h', labelKey: 'foyer' },
   { num: 8, x: 70, y: 0, len: 15, o: 'h', labelKey: 'kitchen' },
   // правая стена: 7 в доп. классе, затем 6-5-4 в зале (симметрично слева)
   { num: 7, x: 100, y: 34, len: 14, o: 'v' },
-  { num: 6, x: 100, y: MAIN_YS[0], len: 8, o: 'v' },
-  { num: 5, x: 100, y: MAIN_YS[1], len: 8, o: 'v' },
-  { num: 4, x: 100, y: MAIN_YS[2], len: 8, o: 'v' },
+  { num: 6, x: 100, y: MAIN_YS[0], len: MAIN_LEN, o: 'v' },
+  { num: 5, x: 100, y: MAIN_YS[1], len: MAIN_LEN, o: 'v' },
+  { num: 4, x: 100, y: MAIN_YS[2], len: MAIN_LEN, o: 'v' },
 ];
 
 const WT = 1.4;
+// Interior walls — only in the UPPER half. The main hall stays open (no stubs).
 const WALLS: { x: number; y: number; w: number; h: number }[] = [
-  // стена верх/низ: главный зал отделён, с проёмом-входом по центру
-  { x: 0, y: 60, w: 30, h: WT },
-  { x: 44, y: 60, w: 18, h: WT },
   // мужской туалет (кабинка), одинаков с женским
   { x: 0, y: 16, w: 26, h: WT },
-  { x: 26 - WT, y: 4, w: WT, h: 12 },
+  { x: 26 - WT, y: 0, w: WT, h: 16 },
   // женский туалет
   { x: 0, y: 32, w: 26, h: WT },
-  { x: 26 - WT, y: 18, w: WT, h: 14 },
-  // туалет для инвалидов
-  { x: 0, y: 40, w: 20, h: WT },
-  { x: 20 - WT, y: 40, w: WT, h: 18 },
+  { x: 26 - WT, y: 16, w: WT, h: 16 },
+  // туалет для инвалидов (замкнутая комната)
+  { x: 0, y: 40, w: 26, h: WT },
+  { x: 26 - WT, y: 40, w: WT, h: 18 },
   { x: 0, y: 58, w: 26, h: WT },
-  // правая часть: вертикальная стена класса+кухни
+  // правая часть: вертикальная стена, отделяющая кухню+класс от зала/фойе
   { x: 62, y: 0, w: WT, h: 58 },
-  // стена между кухней (сверху) и классом (снизу), с проёмом у внешней стены
-  { x: 62, y: 24, w: 26, h: WT },
-  // низ класса
+  // стена между кухней (сверху) и классом (снизу)
+  { x: 62, y: 24, w: 38, h: WT },
+  // низ доп. класса (граница с главным залом справа)
   { x: 62, y: 58, w: 38, h: WT },
 ];
 
-function WindowHalo({ radius }: { radius: number }) {
+function WindowHalo({ vertical }: { vertical: boolean }) {
   const pulse = useRef(new Animated.Value(0)).current;
   useEffect(() => {
     const loop = Animated.loop(
@@ -116,16 +113,16 @@ function WindowHalo({ radius }: { radius: number }) {
       style={[
         styles.halo,
         {
-          borderRadius: radius,
+          borderRadius: vertical ? 12 : 10,
           opacity: pulse.interpolate({
             inputRange: [0, 1],
-            outputRange: [0.18, 0.45],
+            outputRange: [0.2, 0.5],
           }),
           transform: [
             {
               scale: pulse.interpolate({
                 inputRange: [0, 1],
-                outputRange: [0.9, 1.12],
+                outputRange: [0.88, 1.15],
               }),
             },
           ],
@@ -160,20 +157,23 @@ function WindowBar({
   };
 
   return (
-    <Pressable
-      disabled={!editable}
-      onPress={() => onToggle?.(def.num)}
-      hitSlop={10}
-      style={[styles.window, box]}
-    >
-      {active ? <WindowHalo radius={vertical ? 40 : 24} /> : null}
-      <View
-        style={[
-          styles.windowBar,
-          active ? styles.windowActive : styles.windowIdle,
-        ]}
-      />
-      {/* Цифра прямо на окне: часть светящегося блока */}
+    <View style={[styles.window, box]}>
+      {active ? <WindowHalo vertical={vertical} /> : null}
+      <Pressable
+        disabled={!editable}
+        onPress={() => onToggle?.(def.num)}
+        hitSlop={12}
+        style={StyleSheet.absoluteFill}
+      >
+        <View
+          style={[
+            styles.windowBar,
+            active ? styles.windowActive : styles.windowIdle,
+          ]}
+        />
+      </Pressable>
+
+      {/* Цифра рядом с окном (снаружи), подсвечивается синхронно */}
       <View
         style={[
           styles.badge,
@@ -182,11 +182,13 @@ function WindowBar({
           !vertical && styles.badgeTop,
           active && styles.badgeActive,
         ]}
+        pointerEvents="none"
       >
         <Text style={[styles.badgeText, active && styles.badgeTextActive]}>
           {def.num}
         </Text>
       </View>
+
       {def.labelKey ? (
         <Text
           style={[
@@ -195,11 +197,12 @@ function WindowBar({
             !vertical && styles.labelTop,
           ]}
           numberOfLines={1}
+          pointerEvents="none"
         >
           {t(`cleaning.windows.labels.${def.labelKey}`)}
         </Text>
       ) : null}
-    </Pressable>
+    </View>
   );
 }
 
@@ -251,7 +254,7 @@ export function HallPlan({
 }
 
 const styles = StyleSheet.create({
-  frame: { paddingHorizontal: 32, paddingVertical: 8 },
+  frame: { paddingHorizontal: 34, paddingVertical: 10 },
   plan: {
     width: '100%',
     aspectRatio: 0.764,
@@ -283,44 +286,57 @@ const styles = StyleSheet.create({
     color: '#64748b',
     textTransform: 'uppercase',
   },
-  window: { position: 'absolute', alignItems: 'center', justifyContent: 'center' },
+  window: { position: 'absolute' },
   halo: {
     ...StyleSheet.absoluteFillObject,
-    margin: -9,
+    margin: -10,
     backgroundColor: '#fbbf24',
   },
-  windowBar: { ...StyleSheet.absoluteFillObject, borderRadius: 3 },
+  windowBar: { flex: 1, borderRadius: 3 },
   windowIdle: { backgroundColor: '#f97316', opacity: 0.9 },
   windowActive: {
     backgroundColor: '#f59e0b',
     shadowColor: '#f59e0b',
-    shadowOpacity: 0.7,
+    shadowOpacity: 0.75,
     shadowRadius: 6,
     shadowOffset: { width: 0, height: 0 },
     elevation: 5,
   },
-  // Число сидит по центру окна — часть светящегося блока.
+  // Кружок с номером — снаружи окна.
   badge: {
-    width: 17,
-    height: 17,
-    borderRadius: 8.5,
-    backgroundColor: 'rgba(255,255,255,0.92)',
+    position: 'absolute',
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: '#fff',
+    borderWidth: 1.5,
+    borderColor: '#cbd5e1',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  badgeLeft: {},
-  badgeRight: {},
-  badgeTop: {},
-  badgeActive: { backgroundColor: '#fff' },
-  badgeText: { fontSize: 10, fontWeight: '800', color: '#b45309' },
-  badgeTextActive: { color: '#b45309' },
+  badgeLeft: { left: '100%', marginLeft: 5, top: '50%', marginTop: -10 },
+  badgeRight: { right: '100%', marginRight: 5, top: '50%', marginTop: -10 },
+  badgeTop: { top: '100%', marginTop: 5, left: '50%', marginLeft: -10 },
+  badgeActive: {
+    backgroundColor: '#f59e0b',
+    borderColor: '#d97706',
+  },
+  badgeText: { fontSize: 11, fontWeight: '800', color: '#64748b' },
+  badgeTextActive: { color: '#fff' },
   windowLabel: {
     position: 'absolute',
     fontSize: 8,
     fontWeight: '600',
     color: '#94a3b8',
-    width: 76,
+    width: 74,
   },
-  labelLeft: { left: 22, width: 76 },
-  labelTop: { top: 20, width: 44, textAlign: 'center' },
+  labelLeft: { left: '100%', marginLeft: 28, top: '50%', marginTop: -5 },
+  labelTop: {
+    top: '100%',
+    marginTop: 26,
+    left: '50%',
+    marginLeft: -37,
+    width: 74,
+    textAlign: 'center',
+  },
 });
