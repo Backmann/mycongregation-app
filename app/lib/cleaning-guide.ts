@@ -37,24 +37,19 @@ export interface CleaningCategory {
 export const MATERIALS_ASPECT = 5.16;
 
 export const TECHNIK_BLOCKS: {
-  key: 'ladder' | 'rules' | 'basics';
+  key: 'ladder' | 'rules';
   image: number;
   aspect: number;
 }[] = [
   {
     key: 'rules',
     image: require('../assets/cleaning/technik-rules.webp'),
-    aspect: 5.79,
-  },
-  {
-    key: 'basics',
-    image: require('../assets/cleaning/technik-basics.webp'),
-    aspect: 5.09,
+    aspect: 5.81,
   },
   {
     key: 'ladder',
     image: require('../assets/cleaning/technik-ladder.webp'),
-    aspect: 2.18,
+    aspect: 4.12,
   },
 ];
 
