@@ -341,6 +341,11 @@ export function skillCapabilityFromTitle(
 ): string | null {
   if (!title) return null;
   const t = title.toLowerCase();
+  // "Речь" (a student talk) is checked FIRST: it describes the delivery
+  // format (solo, no assistant) and overrides the ministry heading, which
+  // may itself read like a demonstration skill (e.g. "Объясняйте свои
+  // взгляды. Речь на основе ...").
+  if (t.includes('речь')) return 'fs_talk';
   if (t.includes('начина') && t.includes('разговор'))
     return 'fs_starting_conversation';
   if (t.includes('развива') && t.includes('интерес')) return 'fs_following_up';
@@ -348,7 +353,6 @@ export function skillCapabilityFromTitle(
     return 'fs_making_disciples';
   if (t.includes('объясня') && t.includes('взгляд'))
     return 'fs_explaining_beliefs';
-  if (t.includes('речь')) return 'fs_talk';
   return null;
 }
 
