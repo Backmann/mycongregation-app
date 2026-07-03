@@ -779,17 +779,6 @@
     "publish": {
       "button": "Veröffentlichen"
     },
-    "planning": {
-      "enter": "Planen",
-      "title": "Zusammenkunft planen",
-      "progress": "{{done}} von {{total}} zugeteilt",
-      "todoHeader": "Zuzuteilen ({{count}})",
-      "draftHeader": "Entwurf, nicht veröffentlicht ({{count}})",
-      "allAssigned": "Alle Programmpunkte dieser Zusammenkunft sind zugeteilt",
-      "publishThis": "Diese Zusammenkunft veröffentlichen",
-      "publishing": "Wird veröffentlicht…",
-      "dutiesHeader": "Aufgaben ({{count}})"
-    },
     "publishDialog": {
       "title": "Zusammenkunft veröffentlichen",
       "subtitle": "Zuteilungen werden für alle sichtbar. Brüder benachrichtigen?",
@@ -1190,8 +1179,6 @@
       "thorough": "Wöchentliche Reinigung",
       "general": "Generalreinigung"
     },
-    "planStart": "Reinigung planen",
-    "planTitle": "Reinigung",
     "planAllDone": "Reinigung ist zugeteilt",
     "useSuggested": "Vorschlag: {{name}}"
   },

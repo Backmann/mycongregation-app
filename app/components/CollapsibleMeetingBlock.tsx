@@ -29,6 +29,7 @@ const DEFAULT_ACCENT = '#1e6b8c';
 export function CollapsibleMeetingBlock({
   title,
   meta,
+  metaAddress,
   assigned,
   total,
   actionLabel,
@@ -42,6 +43,8 @@ export function CollapsibleMeetingBlock({
 }: {
   title: string;
   meta?: string | null;
+  /** Optional second meta line (e.g. the meeting address) with a pin icon. */
+  metaAddress?: string | null;
   assigned: number;
   total: number;
   /** Header action (e.g. Publish); rendered only when both are set. */
@@ -85,7 +88,20 @@ export function CollapsibleMeetingBlock({
         </View>
         <View style={{ flex: 1 }}>
           <Text style={styles.title}>{title}</Text>
-          {meta ? <Text style={styles.meta}>{meta}</Text> : null}
+          {meta ? (
+            <View style={styles.metaLine}>
+              <Ionicons name="calendar-outline" size={12} color="#64748b" />
+              <Text style={styles.meta}>{meta}</Text>
+            </View>
+          ) : null}
+          {metaAddress ? (
+            <View style={styles.metaLine}>
+              <Ionicons name="location-outline" size={12} color="#94a3b8" />
+              <Text style={styles.metaAddr} numberOfLines={2}>
+                {metaAddress}
+              </Text>
+            </View>
+          ) : null}
         </View>
         {actionLabel && onAction ? (
           <Pressable
@@ -185,7 +201,14 @@ const styles = StyleSheet.create({
     color: '#0f172a',
     letterSpacing: 0.2,
   },
-  meta: { fontSize: 12, color: '#64748b', marginTop: 2 },
+  metaLine: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    marginTop: 2,
+  },
+  metaAddr: { flex: 1, fontSize: 12, color: '#64748b' },
+  meta: { fontSize: 12, color: '#64748b' },
   badge: {
     borderRadius: 999,
     paddingHorizontal: 11,

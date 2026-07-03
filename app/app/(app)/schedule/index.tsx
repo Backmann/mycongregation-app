@@ -57,20 +57,17 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { WeekNavigator } from '../../../components/WeekNavigator';
-import { MeetingHeader } from '../../../components/MeetingHeader';
 import { effectiveVersionFor } from '../../../lib/meeting-schedule';
 import { DutiesSection } from '../../../components/DutiesSection';
 import { FieldServiceSection } from '../../../components/FieldServiceSection';
 import { CleaningSection } from '../../../components/CleaningSection';
 import { CongressWeekBanner } from '../../../components/CongressWeekBanner';
-import { CleaningPlanMode } from '../../../components/CleaningPlanMode';
 import { usePermissions } from '../../../lib/permissions';
 import { SpecialEventsWeekBanner } from '../../../components/SpecialEventsWeekBanner';
 import { ReplacedMeetingNotice } from '../../../components/ReplacedMeetingNotice';
 import { CollapsibleMeetingBlock } from '../../../components/CollapsibleMeetingBlock';
 import { HospitalityZone } from '../../../components/HospitalityZone';
 import { AssignmentSheet } from '../../../components/AssignmentSheet';
-import { PlanningMode } from '../../../components/PlanningMode';
 import { PublishDialog } from '../../../components/PublishDialog';
 import { NotifyChangesDialog } from '../../../components/NotifyChangesDialog';
 import { useMyPublisher } from '../../../lib/useMyPublisher';
@@ -113,15 +110,6 @@ export default function ScheduleIndexScreen() {
   } | null>(null);
   const [notifyPrompt, setNotifyPrompt] = useState<{
     eventType: 'midweek' | 'weekend';
-    weekStartDate: string;
-  } | null>(null);
-  const [cleaningPlanOpen, setCleaningPlanOpen] = useState(false);
-  const [planningZone, setPlanningZone] = useState<{
-    eventType: 'midweek' | 'weekend';
-    title: string;
-    meta: string | null;
-    weekStartISO: string;
-    nextWeekISO: string;
     weekStartDate: string;
   } | null>(null);
   const weekStart = weekFromParam(params.week);
@@ -565,12 +553,23 @@ export default function ScheduleIndexScreen() {
     if (!meetingVersion) return null;
     const dow = dowFor(kind);
     if (!dow) return null;
-    return addDays(weekStart, dow - 1).toLocaleDateString(i18n.language, {
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long',
-    });
+    const dateStr = addDays(weekStart, dow - 1).toLocaleDateString(
+      i18n.language,
+      {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+      },
+    );
+    const rawTime =
+      kind === 'midweek'
+        ? meetingVersion.midweekTime
+        : meetingVersion.weekendTime;
+    const time = (rawTime || '').slice(0, 5);
+    return time ? `${dateStr} · ${time}` : dateStr;
   };
+  const meetingAddress = (): string | null =>
+    meetingVersion?.address || null;
   const draftCount = (list: Assignment[]) =>
     list.filter((x) => String(x.status) === 'draft').length;
   const changedCount = (list: Assignment[]) =>
@@ -656,35 +655,6 @@ export default function ScheduleIndexScreen() {
         circuitOverseer={circuitOverseer}
         coPicker={coPicker}
         onClose={() => setEditing(null)}
-      />
-      <CleaningPlanMode
-        weekStartISO={cleaningPlanOpen ? weekStartISO : null}
-        weekLabel={t('cleaning.planTitle')}
-        publishersById={publishersById}
-        canEdit={canEditCleaning}
-        onClose={() => setCleaningPlanOpen(false)}
-      />
-      <PlanningMode
-        zone={planningZone}
-        publishersById={publishersById}
-        canPublish={
-          planningZone?.eventType === 'midweek'
-            ? perms.canEditMidweekSchedule
-            : planningZone?.eventType === 'weekend'
-              ? perms.canEditWeekendSchedule
-              : false
-        }
-        publishing={publishingType === planningZone?.eventType}
-        canEditDuties={canEditDuties}
-        canEdit={
-          planningZone?.eventType === 'midweek'
-            ? perms.canEditMidweekSchedule
-            : planningZone?.eventType === 'weekend'
-              ? perms.canEditWeekendSchedule
-              : false
-        }
-        onPublish={(et, ws) => setPublishPrompt({ eventType: et, weekStartDate: ws })}
-        onClose={() => setPlanningZone(null)}
       />
       <PublishDialog
         open={!!publishPrompt}
@@ -804,6 +774,7 @@ export default function ScheduleIndexScreen() {
                     icon="calendar-outline"
                     title={getEventTypeLabel('midweek')}
                     meta={meetingDateLabel('midweek')}
+                    metaAddress={meetingAddress()}
                     assigned={assignedCount(items)}
                     total={badgeParts(items).length}
                     actionLabel={
@@ -831,40 +802,6 @@ export default function ScheduleIndexScreen() {
                           })
                     }
                   >
-                    <MeetingHeader
-                      weekStart={weekStart}
-                      version={meetingVersion}
-                      eventType="midweek"
-                      dowOverride={
-                        coVisitEvent
-                          ? (coVisitEvent.coMidweekDow ?? 2)
-                          : undefined
-                      }
-                    />
-                    {perms.canEditMidweekSchedule ? (
-                      <Pressable
-                        style={styles.planBtn}
-                        onPress={() =>
-                          setPlanningZone({
-                            eventType: 'midweek',
-                            title: getEventTypeLabel('midweek'),
-                            meta: meetingDateLabel('midweek'),
-                            weekStartISO,
-                            nextWeekISO,
-                            weekStartDate: items[0].weekStartDate,
-                          })
-                        }
-                      >
-                        <Ionicons
-                          name="create-outline"
-                          size={16}
-                          color="#0ea5e9"
-                        />
-                        <Text style={styles.planBtnText}>
-                          {t('schedule.planning.enter')}
-                        </Text>
-                      </Pressable>
-                    ) : null}
                     <MidweekSections
                       canEdit={perms.canEditMidweekSchedule}
                       onEdit={setEditing}
@@ -893,6 +830,7 @@ export default function ScheduleIndexScreen() {
                     icon="calendar-outline"
                     title={getEventTypeLabel('weekend')}
                     meta={meetingDateLabel('weekend')}
+                    metaAddress={meetingAddress()}
                     assigned={assignedCount(programItems)}
                     total={badgeParts(programItems).length}
                     actionLabel={
@@ -920,35 +858,6 @@ export default function ScheduleIndexScreen() {
                           })
                     }
                   >
-                    <MeetingHeader
-                      weekStart={weekStart}
-                      version={meetingVersion}
-                      eventType="weekend"
-                    />
-                    {perms.canEditWeekendSchedule ? (
-                      <Pressable
-                        style={styles.planBtn}
-                        onPress={() =>
-                          setPlanningZone({
-                            eventType: 'weekend',
-                            title: getEventTypeLabel('weekend'),
-                            meta: meetingDateLabel('weekend'),
-                            weekStartISO,
-                            nextWeekISO,
-                            weekStartDate: items[0].weekStartDate,
-                          })
-                        }
-                      >
-                        <Ionicons
-                          name="create-outline"
-                          size={16}
-                          color="#0ea5e9"
-                        />
-                        <Text style={styles.planBtnText}>
-                          {t('schedule.planning.enter')}
-                        </Text>
-                      </Pressable>
-                    ) : null}
                     <WeekendSections
                       canEdit={perms.canEditWeekendSchedule}
                       items={programItems}
@@ -1119,17 +1028,6 @@ export default function ScheduleIndexScreen() {
               total={0}
               showBadge={false}
             >
-              {canEditCleaning ? (
-                <Pressable
-                  style={styles.planBtn}
-                  onPress={() => setCleaningPlanOpen(true)}
-                >
-                  <Ionicons name="sparkles-outline" size={16} color="#fff" />
-                  <Text style={styles.planBtnText}>
-                    {t('cleaning.planStart')}
-                  </Text>
-                </Pressable>
-              ) : null}
               <CleaningSection
                 assignments={cleaningWeek.assignments}
                 hideHeader
@@ -1725,18 +1623,6 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
     marginBottom: 2,
   },
-  planBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    alignSelf: 'flex-start',
-    gap: 6,
-    marginVertical: 8,
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    borderRadius: 10,
-    backgroundColor: '#e0f2fe',
-  },
-  planBtnText: { color: '#0369a1', fontSize: 14, fontWeight: '700' },
   emptyHint: {
     fontSize: 14,
     color: '#64748b',

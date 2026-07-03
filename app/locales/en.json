@@ -779,17 +779,6 @@
     "publish": {
       "button": "Publish"
     },
-    "planning": {
-      "enter": "Plan",
-      "title": "Meeting planning",
-      "progress": "{{done}} of {{total}} assigned",
-      "todoHeader": "Needs assigning ({{count}})",
-      "draftHeader": "Draft, not published ({{count}})",
-      "allAssigned": "Every part of this meeting is assigned",
-      "publishThis": "Publish this meeting",
-      "publishing": "Publishing…",
-      "dutiesHeader": "Duties ({{count}})"
-    },
     "publishDialog": {
       "title": "Publish meeting",
       "subtitle": "Assignments become visible to everyone. Notify the brothers?",
@@ -1190,8 +1179,6 @@
       "thorough": "Weekly cleaning",
       "general": "General cleaning"
     },
-    "planStart": "Plan cleaning",
-    "planTitle": "Cleaning",
     "planAllDone": "Cleaning is assigned",
     "useSuggested": "Suggested: {{name}}"
   },
