@@ -46,6 +46,7 @@ import {
   PARTS_BY_EVENT,
   buildPartNumbers,
   resolveSubsection,
+  buildMidweekPartTimes,
   Subsection,
   SUBSECTIONS,
 } from '../../../lib/parts';
@@ -759,6 +760,13 @@ export default function ScheduleIndexScreen() {
               }
               if (items.length === 0) return null;
               const numbers = buildPartNumbers(items);
+              const partTimes =
+                eventType === 'midweek'
+                  ? buildMidweekPartTimes(
+                      items,
+                      meetingSettingsQuery.data?.effective?.midweekTime,
+                    )
+                  : null;
               if (eventType === 'midweek' && midweekReplacedBy) {
                 return (
                   <ReplacedMeetingNotice
@@ -855,6 +863,7 @@ export default function ScheduleIndexScreen() {
                       addingChristianLife={addChristianLifeMut.isPending}
                       items={items}
                       numbers={numbers}
+                      times={partTimes}
                       publishersById={publishersById}
                       absentIds={midweekAbsentIds}
                     />
@@ -1179,6 +1188,7 @@ const SUBSECTION_ORDER: Subsection[] = [
 ];
 
 function MidweekSections({
+  times,
   items,
   numbers,
   publishersById,
@@ -1190,6 +1200,7 @@ function MidweekSections({
 }: {
   items: Assignment[];
   numbers: Map<string, number | null>;
+  times?: Map<string, string> | null;
   publishersById: Map<string, Publisher>;
   onEdit: (a: Assignment) => void;
   onAddChristianLife?: () => void;
@@ -1241,6 +1252,7 @@ function MidweekSections({
                 <AssignmentRow
                   key={a.id}
                   assignment={a}
+                  partTime={times?.get(a.id) ?? null}
                   onEdit={onEdit}
                   publisher={
                     a.publisherId
@@ -1485,6 +1497,7 @@ function AssignmentRow({
   assistant,
   accentColor,
   displayNumber,
+  partTime,
   onEdit,
   canEdit,
   absentIds,
@@ -1494,6 +1507,8 @@ function AssignmentRow({
   assistant: Publisher | null;
   accentColor?: string;
   displayNumber?: number | null;
+  /** Computed start time (midweek only) shown under the number circle. */
+  partTime?: string | null;
   onEdit: (a: Assignment) => void;
   canEdit: boolean;
   absentIds?: Set<string>;
@@ -1511,7 +1526,15 @@ function AssignmentRow({
     overline,
   } = partDisplay(assignment.partKey, assignment.partTitle);
   const songTitles = useSongsMap();
-  const partLabel = enrichSongRef(rawPartLabel, songTitles) ?? rawPartLabel;
+  const durationSuffix =
+    assignment.partDurationMin != null &&
+    ['treasures', 'apply_yourself', 'christian_life'].includes(
+      resolveSubsection(assignment.partKey) as string,
+    )
+      ? ` (${assignment.partDurationMin} ${t('schedule.minShort')})`
+      : '';
+  const partLabel =
+    (enrichSongRef(rawPartLabel, songTitles) ?? rawPartLabel) + durationSuffix;
   const subtitle = enrichSongRef(rawSubtitle, songTitles);
 
   // Resolve who is assigned: local publisher OR invited speaker fallback
@@ -1536,8 +1559,11 @@ function AssignmentRow({
         onPress={canEdit ? () => onEdit(assignment) : undefined}
         disabled={!canEdit}
       >
-        <View style={[styles.orderBadge, styles.orderBadgeInfo]}>
-          <Ionicons name="musical-notes-outline" size={15} color="#94a3b8" />
+        <View style={styles.badgeCol}>
+          <View style={[styles.orderBadge, styles.orderBadgeInfo]}>
+            <Ionicons name="musical-notes-outline" size={15} color="#94a3b8" />
+          </View>
+          {partTime ? <Text style={styles.partTime}>{partTime}</Text> : null}
         </View>
         <View style={{ flex: 1 }}>
           <Text style={styles.partLabel}>{partLabel}</Text>
@@ -1561,13 +1587,16 @@ function AssignmentRow({
       onPress={canEdit ? () => onEdit(assignment) : undefined}
       disabled={!canEdit}
     >
-      <View
-        style={[
-          styles.orderBadge,
-          displayNumber == null && styles.orderBadgeInfo,
-        ]}
-      >
-        <Text style={styles.orderText}>{displayNumber ?? '·'}</Text>
+      <View style={styles.badgeCol}>
+        <View
+          style={[
+            styles.orderBadge,
+            displayNumber == null && styles.orderBadgeInfo,
+          ]}
+        >
+          <Text style={styles.orderText}>{displayNumber ?? '·'}</Text>
+        </View>
+        {partTime ? <Text style={styles.partTime}>{partTime}</Text> : null}
       </View>
       <View style={{ flex: 1 }}>
         {overline ? <Text style={styles.overline}>{overline}</Text> : null}
@@ -1773,6 +1802,13 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   rowPressed: { backgroundColor: '#f8fafc' },
+  badgeCol: { alignItems: 'center' },
+  partTime: {
+    fontSize: 10.5,
+    fontWeight: '700',
+    color: '#0e7490',
+    marginTop: 3,
+  },
   orderBadge: {
     width: 30,
     height: 30,

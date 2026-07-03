@@ -376,6 +376,95 @@ export function buildPartNumbers(
   return map;
 }
 
+/**
+ * Computed start time for every midweek part, walking the canonical meeting
+ * flow from the congregation's midweek start time (105 minutes total):
+ * song+prayer 5 → chairman's opening words 1 → treasures (EPUB minutes) →
+ * gems → Bible reading +1 counsel → each ministry part +1 counsel →
+ * middle song 5 → Christian-life parts (unknowns share the 15-min block) →
+ * CBS 30 (reader shares the conductor's time) → closing words 3 → prayer.
+ * Missing parts still occupy their default minutes so times stay realistic.
+ */
+export function buildMidweekPartTimes(
+  items: {
+    id: string;
+    partKey: string;
+    partDurationMin: number | null;
+  }[],
+  startTime: string | null | undefined,
+): Map<string, string> {
+  const m = /^(\d{1,2}):(\d{2})$/.exec(startTime ?? '');
+  let t = m ? parseInt(m[1], 10) * 60 + parseInt(m[2], 10) : 19 * 60;
+  const fmt = (min: number) =>
+    `${String(Math.floor(min / 60)).padStart(2, '0')}:${String(
+      min % 60,
+    ).padStart(2, '0')}`;
+  const first = (key: string) => items.find((i) => i.partKey === key) ?? null;
+  const map = new Map<string, string>();
+  const stamp = (it: { id: string } | null) => {
+    if (it) map.set(it.id, fmt(t));
+  };
+  const dur = (
+    it: { partDurationMin: number | null } | null,
+    fallback: number,
+  ) => it?.partDurationMin ?? fallback;
+
+  stamp(first('midweek_opening_prayer'));
+  t += 5;
+  stamp(first('midweek_chairman'));
+  t += 1;
+  let it = first('treasures_talk');
+  stamp(it);
+  t += dur(it, 10);
+  it = first('spiritual_gems');
+  stamp(it);
+  t += dur(it, 10);
+  it = first('bible_reading');
+  stamp(it);
+  t += dur(it, 4) + 1;
+  for (const key of [
+    'apply_yourself_1',
+    'apply_yourself_2',
+    'apply_yourself_3',
+    'apply_yourself_4',
+  ]) {
+    const p = first(key);
+    if (!p) continue;
+    stamp(p);
+    t += dur(p, 4) + 1;
+  }
+  stamp(first('mid_song'));
+  t += 5;
+  const living = [
+    'living_christians_1',
+    'living_christians_2',
+    'living_christians_3',
+  ]
+    .map(first)
+    .filter((x): x is NonNullable<typeof x> => !!x);
+  const known = living.reduce((s2, p) => s2 + (p.partDurationMin ?? 0), 0);
+  const unknownCount = living.filter((p) => p.partDurationMin == null).length;
+  const share =
+    unknownCount > 0
+      ? Math.max(1, Math.round((15 - known) / unknownCount))
+      : 0;
+  for (const p of living) {
+    stamp(p);
+    t += p.partDurationMin ?? share;
+  }
+  const cbs = first('cbs_conductor');
+  stamp(cbs);
+  const reader = first('cbs_reader');
+  if (reader) {
+    if (cbs) map.set(reader.id, map.get(cbs.id) as string);
+    else stamp(reader);
+  }
+  t += dur(cbs, 30);
+  t += 3; // chairman's concluding words
+  stamp(first('midweek_closing_prayer'));
+  return map;
+}
+
 export function resolveSubsection(key: string): Subsection {
   const def = getPartDef(key);
   if (def?.subsection) return def.subsection;

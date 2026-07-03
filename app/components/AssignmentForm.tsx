@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   ActivityIndicator,
@@ -223,6 +223,15 @@ export function AssignmentForm({
     : null;
   const isStudentTalk = applyYourselfSkill === 'fs_talk';
   const showAssistant = !!partDef?.hasAssistant && !isStudentTalk;
+  // A student TALK has one participant: if the workbook title marks this
+  // part as a talk, any previously stored assistant is cleared on open.
+  useEffect(() => {
+    if (isStudentTalk && form.assistantPublisherId) {
+      update('assistantPublisherId', null);
+      void instant({ assistantPublisherId: null });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isStudentTalk]);
 
   // ---- Circuit-overseer visit week: CO talks + CO-led prayers ----
   const PRAYER_KEYS = [

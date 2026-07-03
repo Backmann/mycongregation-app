@@ -832,7 +832,8 @@
       "confirm": "Der Teil und seine Zuteilung werden entfernt.",
       "button": "Teil löschen",
       "deleting": "Löschen…"
-    }
+    },
+    "minShort": "Min."
   },
   "audit": {
     "noReportId": "Keine Bericht-ID angegeben.",

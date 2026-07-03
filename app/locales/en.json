@@ -832,7 +832,8 @@
       "confirm": "The part and its assignment will be removed.",
       "button": "Delete part",
       "deleting": "Deleting…"
-    }
+    },
+    "minShort": "min"
   },
   "audit": {
     "noReportId": "No report id supplied.",
