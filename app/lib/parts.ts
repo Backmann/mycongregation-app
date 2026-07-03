@@ -423,10 +423,10 @@ export function buildMidweekPartTimes(
     fallback: number,
   ) => it?.partDurationMin ?? fallback;
 
-  // Opening song + prayer (5) — the prayer row shows the interval.
-  span(first('midweek_opening_prayer'), 5);
-  // Chairman's opening words (1) — advance the clock, no interval shown.
-  t += 1;
+  // Opening song + prayer (5) + chairman's opening words (1): shown as one
+  // interval on the prayer row (e.g. 19:00 – 19:06), since together they are
+  // the run-up before the first numbered part.
+  span(first('midweek_opening_prayer'), 6);
   span(first('treasures_talk'), dur(first('treasures_talk'), 10));
   span(first('spiritual_gems'), dur(first('spiritual_gems'), 10));
   span(first('bible_reading'), dur(first('bible_reading'), 4) + 1);
@@ -463,6 +463,41 @@ export function buildMidweekPartTimes(
   // Final block: chairman's concluding words (3) + song & prayer — shown as a
   // single interval on the closing-prayer row (e.g. 20:36 – 20:45).
   span(first('midweek_closing_prayer'), 3 + 6);
+  return map;
+}
+
+/**
+ * Computed time intervals for the weekend meeting (105 minutes total):
+ * opening song + prayer 5 → public talk 30 → song 5 (no interval) →
+ * Watchtower study 60 → closing words + song & prayer 5. The reader gets no
+ * interval. Start time comes from the congregation's weekend setting.
+ */
+export function buildWeekendPartTimes(
+  items: { id: string; partKey: string }[],
+  startTime: string | null | undefined,
+): Map<string, PartInterval> {
+  const m = /^(\d{1,2}):(\d{2})$/.exec(startTime ?? '');
+  let t = m ? parseInt(m[1], 10) * 60 + parseInt(m[2], 10) : 13 * 60;
+  const fmt = (min: number) =>
+    `${String(Math.floor(min / 60)).padStart(2, '0')}:${String(
+      min % 60,
+    ).padStart(2, '0')}`;
+  const first = (key: string) => items.find((i) => i.partKey === key) ?? null;
+  const map = new Map<string, PartInterval>();
+  const span = (it: { id: string } | null, minutes: number) => {
+    if (it) map.set(it.id, { start: fmt(t), end: fmt(t + minutes) });
+    t += minutes;
+  };
+  // Opening song + prayer (5).
+  span(first('weekend_opening_prayer'), 5);
+  // Public talk (30).
+  span(first('public_talk_speaker'), 30);
+  // Middle song (5) — advance only, no interval shown.
+  t += 5;
+  // Watchtower study (60). The reader deliberately gets no interval.
+  span(first('watchtower_conductor'), 60);
+  // Closing words + song & prayer (5).
+  span(first('weekend_closing_prayer'), 5);
   return map;
 }
 

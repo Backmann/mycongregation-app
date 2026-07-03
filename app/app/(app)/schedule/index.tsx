@@ -47,6 +47,7 @@ import {
   buildPartNumbers,
   resolveSubsection,
   buildMidweekPartTimes,
+  buildWeekendPartTimes,
   skillCapabilityFromTitle,
   getPartDef,
   type PartInterval,
@@ -769,7 +770,12 @@ export default function ScheduleIndexScreen() {
                       items,
                       meetingSettingsQuery.data?.effective?.midweekTime,
                     )
-                  : null;
+                  : eventType === 'weekend'
+                    ? buildWeekendPartTimes(
+                        items,
+                        meetingSettingsQuery.data?.effective?.weekendTime,
+                      )
+                    : null;
               if (eventType === 'midweek' && midweekReplacedBy) {
                 return (
                   <ReplacedMeetingNotice
@@ -947,6 +953,7 @@ export default function ScheduleIndexScreen() {
                       canEdit={perms.canEditWeekendSchedule}
                       items={programItems}
                       numbers={numbers}
+                      times={partTimes}
                       publishersById={publishersById}
                       onEdit={setEditing}
                       absentIds={weekendAbsentIds}
@@ -1301,6 +1308,7 @@ const WEEKEND_BANNER_SUBSECTIONS = new Set<Subsection>([
 function WeekendSections({
   items,
   numbers,
+  times,
   publishersById,
   onEdit,
   canEdit,
@@ -1308,6 +1316,7 @@ function WeekendSections({
 }: {
   items: Assignment[];
   numbers: Map<string, number | null>;
+  times?: Map<string, PartInterval> | null;
   publishersById: Map<string, Publisher>;
   onEdit: (a: Assignment) => void;
   canEdit: boolean;
@@ -1341,6 +1350,7 @@ function WeekendSections({
       <AssignmentRow
         key={a.id}
         assignment={a}
+        partTime={times?.get(a.id) ?? null}
         onEdit={onEdit}
         publisher={
           a.publisherId ? publishersById.get(a.publisherId) ?? null : null
@@ -1813,33 +1823,33 @@ const styles = StyleSheet.create({
   },
   rowPressed: { backgroundColor: '#f8fafc' },
   badgeCol: {
-    width: 52,
+    width: 56,
     marginRight: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
   timePill: {
-    marginTop: 5,
+    marginTop: 3,
     alignSelf: 'stretch',
     alignItems: 'center',
     backgroundColor: '#ecfeff',
     borderWidth: 1,
     borderColor: '#a5f3fc',
-    borderRadius: 8,
-    paddingVertical: 2,
+    borderRadius: 9,
+    paddingVertical: 3,
     paddingHorizontal: 4,
   },
   timePillStart: {
-    fontSize: 11,
+    fontSize: 12.5,
     fontWeight: '800',
     color: '#0e7490',
-    lineHeight: 14,
+    lineHeight: 15,
   },
   timePillEnd: {
-    fontSize: 9.5,
+    fontSize: 11,
     fontWeight: '600',
-    color: '#67a9b8',
-    lineHeight: 12,
+    color: '#5b97a6',
+    lineHeight: 13,
   },
   orderBadge: {
     width: 30,
