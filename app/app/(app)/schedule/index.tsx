@@ -47,6 +47,7 @@ import {
   buildPartNumbers,
   resolveSubsection,
   buildMidweekPartTimes,
+  type PartInterval,
   Subsection,
   SUBSECTIONS,
 } from '../../../lib/parts';
@@ -1200,7 +1201,7 @@ function MidweekSections({
 }: {
   items: Assignment[];
   numbers: Map<string, number | null>;
-  times?: Map<string, string> | null;
+  times?: Map<string, PartInterval> | null;
   publishersById: Map<string, Publisher>;
   onEdit: (a: Assignment) => void;
   onAddChristianLife?: () => void;
@@ -1507,8 +1508,8 @@ function AssignmentRow({
   assistant: Publisher | null;
   accentColor?: string;
   displayNumber?: number | null;
-  /** Computed start time (midweek only) shown under the number circle. */
-  partTime?: string | null;
+  /** Computed time interval (midweek only) shown under the number circle. */
+  partTime?: PartInterval | null;
   onEdit: (a: Assignment) => void;
   canEdit: boolean;
   absentIds?: Set<string>;
@@ -1563,7 +1564,6 @@ function AssignmentRow({
           <View style={[styles.orderBadge, styles.orderBadgeInfo]}>
             <Ionicons name="musical-notes-outline" size={15} color="#94a3b8" />
           </View>
-          {partTime ? <Text style={styles.partTime}>{partTime}</Text> : null}
         </View>
         <View style={{ flex: 1 }}>
           <Text style={styles.partLabel}>{partLabel}</Text>
@@ -1596,7 +1596,12 @@ function AssignmentRow({
         >
           <Text style={styles.orderText}>{displayNumber ?? '·'}</Text>
         </View>
-        {partTime ? <Text style={styles.partTime}>{partTime}</Text> : null}
+        {partTime ? (
+          <View style={styles.timePill}>
+            <Text style={styles.timePillStart}>{partTime.start}</Text>
+            <Text style={styles.timePillEnd}>{partTime.end}</Text>
+          </View>
+        ) : null}
       </View>
       <View style={{ flex: 1 }}>
         {overline ? <Text style={styles.overline}>{overline}</Text> : null}
@@ -1802,12 +1807,29 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   rowPressed: { backgroundColor: '#f8fafc' },
-  badgeCol: { alignItems: 'center' },
-  partTime: {
-    fontSize: 10.5,
-    fontWeight: '700',
+  badgeCol: { alignItems: 'center', width: 46 },
+  timePill: {
+    marginTop: 5,
+    alignItems: 'center',
+    backgroundColor: '#ecfeff',
+    borderWidth: 1,
+    borderColor: '#a5f3fc',
+    borderRadius: 8,
+    paddingVertical: 2,
+    paddingHorizontal: 4,
+    minWidth: 44,
+  },
+  timePillStart: {
+    fontSize: 11,
+    fontWeight: '800',
     color: '#0e7490',
-    marginTop: 3,
+    lineHeight: 14,
+  },
+  timePillEnd: {
+    fontSize: 9.5,
+    fontWeight: '600',
+    color: '#67a9b8',
+    lineHeight: 12,
   },
   orderBadge: {
     width: 30,
