@@ -1710,7 +1710,8 @@
       "events": "Events",
       "publishers": "Publishers",
       "absences": "Absences",
-      "profile": "Profile"
+      "profile": "Profile",
+      "myGroup": "My group"
     },
     "nextMeeting": "Next meeting",
     "meeting": {

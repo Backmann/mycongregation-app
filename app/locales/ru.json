@@ -1714,7 +1714,8 @@
       "events": "События",
       "publishers": "Возвещатели",
       "absences": "Отсутствия",
-      "profile": "Профиль"
+      "profile": "Профиль",
+      "myGroup": "Моя группа"
     },
     "nextMeeting": "Следующая встреча",
     "meeting": {

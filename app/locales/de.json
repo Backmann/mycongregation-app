@@ -1710,7 +1710,8 @@
       "events": "Ereignisse",
       "publishers": "Verkündiger",
       "absences": "Abwesenheiten",
-      "profile": "Profil"
+      "profile": "Profil",
+      "myGroup": "Meine Gruppe"
     },
     "nextMeeting": "Nächste Zusammenkunft",
     "meeting": {
