@@ -1,5 +1,6 @@
 import {
   ActivityIndicator,
+  Modal,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -7,6 +8,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
@@ -20,6 +22,7 @@ import {
   taskTitle,
 } from '../../../lib/my-tasks';
 import { addDays, formatDateISO, startOfWeekMonday } from '../../../lib/dates';
+import { HallPlan } from '../../../components/HallPlan';
 
 const TASK_ICONS: Record<
   MyAssignmentItem['kind'],
@@ -99,6 +102,8 @@ function buildWeeks(refined: RefinedTask[]): WeekBlock[] {
 export default function MyAssignmentsScreen() {
   const { t, i18n } = useTranslation();
   const todayISO = formatDateISO(new Date());
+  // Окна недели для модалки плана зала (открывается из строки уборки).
+  const [planWindows, setPlanWindows] = useState<number[] | null>(null);
 
   const overviewQuery = useQuery({
     queryKey: ['meeting-settings'],
@@ -199,6 +204,13 @@ export default function MyAssignmentsScreen() {
                         <Text style={styles.title} numberOfLines={2}>
                           {taskTitle(r.item, t)}
                         </Text>
+                        {r.item.kind === 'cleaning' ? (
+                          <CleaningRowExtras
+                            item={r.item}
+                            locale={i18n.language}
+                            onShowPlan={(w) => setPlanWindows(w)}
+                          />
+                        ) : null}
                       </View>
                     ))}
                   </View>
@@ -208,12 +220,136 @@ export default function MyAssignmentsScreen() {
           ))
         )}
       </ScrollView>
+
+      <Modal
+        visible={planWindows !== null}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setPlanWindows(null)}
+      >
+        <View style={styles.modalBackdrop}>
+          <View style={styles.modalCard}>
+            <Text style={styles.modalTitle}>
+              {t('cleaning.windows.title')}
+            </Text>
+            <HallPlan selected={planWindows ?? []} />
+            <Pressable
+              style={styles.modalClose}
+              onPress={() => setPlanWindows(null)}
+            >
+              <Text style={styles.modalCloseText}>{t('common.close')}</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
+    </View>
+  );
+}
+
+/**
+ * Action links under a cleaning row: the illustrated guide opened on the
+ * matching frequency, the hall plan with this week's windows (weekly slot),
+ * and the planned date/time of the general cleaning.
+ */
+function CleaningRowExtras({
+  item,
+  locale,
+  onShowPlan,
+}: {
+  item: MyAssignmentItem;
+  locale: string;
+  onShowPlan: (windows: number[]) => void;
+}) {
+  const { t } = useTranslation();
+  const router = useRouter();
+  const freq =
+    item.label === 'after_meeting'
+      ? 'zsk'
+      : item.label === 'general'
+        ? 'yearly'
+        : 'weekly';
+  const planned = item.thoroughPlannedAt;
+
+  return (
+    <View style={styles.cleaningExtras}>
+      {item.label === 'general' && planned ? (
+        <Text style={styles.cleaningPlanned}>
+          {new Date(planned).toLocaleDateString(locale, {
+            weekday: 'short',
+            day: 'numeric',
+            month: 'short',
+          })}
+          {', '}
+          {new Date(planned).toLocaleTimeString(locale, {
+            hour: '2-digit',
+            minute: '2-digit',
+          })}
+        </Text>
+      ) : null}
+      <View style={styles.cleaningLinks}>
+        <Pressable
+          style={styles.cleaningLink}
+          onPress={() => router.push(`/cleaning/guide?freq=${freq}` as any)}
+          hitSlop={6}
+        >
+          <Ionicons name="book-outline" size={13} color="#0369a1" />
+          <Text style={styles.cleaningLinkText}>
+            {t(`cleaning.guideLinks.${freq}`)}
+          </Text>
+        </Pressable>
+        {item.label === 'thorough' && item.windows?.length ? (
+          <Pressable
+            style={styles.cleaningLink}
+            onPress={() => onShowPlan(item.windows!)}
+            hitSlop={6}
+          >
+            <Ionicons name="map-outline" size={13} color="#0369a1" />
+            <Text style={styles.cleaningLinkText}>
+              {t('cleaning.windows.map')}
+            </Text>
+          </Pressable>
+        ) : null}
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: '#f8fafc' },
+  cleaningExtras: { marginTop: 6, gap: 6 },
+  cleaningPlanned: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#0f172a',
+    textTransform: 'capitalize',
+  },
+  cleaningLinks: { flexDirection: 'row', flexWrap: 'wrap', gap: 14 },
+  cleaningLink: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  cleaningLinkText: { fontSize: 12.5, fontWeight: '600', color: '#0369a1' },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(15,23,42,0.45)',
+    justifyContent: 'center',
+    padding: 16,
+  },
+  modalCard: {
+    backgroundColor: '#fff',
+    borderRadius: 18,
+    padding: 16,
+    gap: 10,
+    maxWidth: 460,
+    width: '100%',
+    alignSelf: 'center',
+  },
+  modalTitle: { fontSize: 16, fontWeight: '800', color: '#0f172a' },
+  modalClose: {
+    alignSelf: 'flex-end',
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+    borderRadius: 10,
+    backgroundColor: '#f1f5f9',
+  },
+  modalCloseText: { fontSize: 13.5, fontWeight: '700', color: '#334155' },
   header: {
     flexDirection: 'row',
     alignItems: 'center',

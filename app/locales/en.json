@@ -1205,11 +1205,18 @@
       "tbd": "Day to be agreed",
       "set": "Pick a day",
       "clear": "Clear",
-      "label": "Cleaning day"
+      "label": "Cleaning day",
+      "generalLabel": "Date and time",
+      "generalTitle": "When is the general cleaning?"
     },
     "slotHints": {
       "after_meeting": "After the midweek and weekend meeting",
       "thorough": "Once a week, on a day that suits the group"
+    },
+    "guideLinks": {
+      "zsk": "Guide: after the meeting",
+      "weekly": "Guide: weekly cleaning",
+      "yearly": "Guide: general cleaning"
     }
   },
   "cleaningGuide": {
@@ -1766,7 +1773,8 @@
     "cleaning": {
       "thoroughGroup": "Your group cleans the hall this week",
       "afterMeetingGroup": "Your group cleans the hall after the meetings",
-      "windows": "Windows: {{list}}"
+      "windows": "Windows: {{list}}",
+      "generalTitle": "General hall cleaning — the whole congregation is invited"
     }
   },
   "halls": {

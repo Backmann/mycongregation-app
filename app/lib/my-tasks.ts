@@ -138,6 +138,9 @@ export function taskTitle(item: MyAssignmentItem, t: TFunc): string {
     if (item.label === 'after_meeting') {
       return t('home.cleaning.afterMeetingGroup');
     }
+    if (item.label === 'general') {
+      return t('home.cleaning.generalTitle');
+    }
     return t(`home.cleaningSlots.${item.label}`, item.label);
   }
   if (item.kind === 'meeting') {

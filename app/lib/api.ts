@@ -1191,6 +1191,17 @@ export const cleaningApi = {
     );
     return data;
   },
+  /** Set (or clear) the date/time of the general cleaning (coordinator only). */
+  async planGeneral(input: {
+    weekStartDate: string;
+    plannedAt: string | null;
+  }): Promise<CleaningAssignment> {
+    const { data } = await api.patch<CleaningAssignment>(
+      '/cleaning/general-plan',
+      input,
+    );
+    return data;
+  },
   async clearSlot(
     weekStartDate: string,
     slotType: CleaningSlotType,

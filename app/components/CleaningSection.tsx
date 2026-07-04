@@ -9,6 +9,7 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMyPublisher } from '../lib/useMyPublisher';
@@ -185,6 +186,8 @@ export function CleaningSection({
                     }
                   />
                 ) : null}
+
+                <GuideLink freq={isThorough ? 'weekly' : 'zsk'} />
               </View>
             </View>
           );
@@ -232,8 +235,235 @@ export function CleaningSection({
               </View>
             )}
           </View>
+
+          {generalOn ? (
+            <GeneralExtras
+              assignment={bySlot.get('general') ?? null}
+              canEdit={canEdit}
+              pending={pending}
+              weekStart={weekStart}
+            />
+          ) : null}
         </View>
       </View>
+    </View>
+  );
+}
+
+/** Small link to the illustrated guide, opened on the given frequency. */
+function GuideLink({ freq }: { freq: 'zsk' | 'weekly' | 'yearly' }) {
+  const { t } = useTranslation();
+  return (
+    <Pressable
+      style={styles.guideLinkRow}
+      onPress={() => router.push(`/cleaning/guide?freq=${freq}` as any)}
+      hitSlop={6}
+    >
+      <Ionicons name="book-outline" size={13} color="#0369a1" />
+      <Text style={styles.guideLinkText}>
+        {t(`cleaning.guideLinks.${freq}`)}
+      </Text>
+      <Ionicons name="chevron-forward" size={12} color="#94a3b8" />
+    </Pressable>
+  );
+}
+
+/**
+ * Extras under the general (annual) cleaning row: the congregation-wide date
+ * and time. Set by the cleaning coordinator; drives a 2h-before push to the
+ * whole congregation. Reuses the week-day-chips + time-wheel pattern of the
+ * thorough plan modal.
+ */
+function GeneralExtras({
+  assignment,
+  canEdit,
+  pending,
+  weekStart,
+}: {
+  assignment: CleaningAssignment | null;
+  canEdit: boolean;
+  pending?: boolean;
+  weekStart: string;
+}) {
+  const { t, i18n } = useTranslation();
+  const queryClient = useQueryClient();
+  const [open, setOpen] = useState(false);
+  const [draftDay, setDraftDay] = useState<string>('');
+  const [draftTime, setDraftTime] = useState<string>('10:00');
+  const [planError, setPlanError] = useState<string | null>(null);
+
+  const plannedAt = assignment?.thoroughPlannedAt ?? null;
+
+  const mutation = useMutation({
+    mutationFn: (plannedAtIso: string | null) =>
+      cleaningApi.planGeneral({
+        weekStartDate: weekStart,
+        plannedAt: plannedAtIso,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['cleaning', weekStart] });
+      setOpen(false);
+      setPlanError(null);
+    },
+    onError: (e) => setPlanError(extractErrorMessage(e)),
+  });
+
+  const weekDays = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(`${weekStart}T00:00:00`);
+    d.setDate(d.getDate() + i);
+    return d;
+  });
+
+  const openModal = () => {
+    if (plannedAt) {
+      const d = new Date(plannedAt);
+      setDraftDay(isoDate(d));
+      setDraftTime(
+        `${String(d.getHours()).padStart(2, '0')}:${String(
+          d.getMinutes(),
+        ).padStart(2, '0')}`,
+      );
+    } else {
+      setDraftDay('');
+      setDraftTime('10:00');
+    }
+    setPlanError(null);
+    setOpen(true);
+  };
+
+  const fmtPlanned = (iso: string) => {
+    const d = new Date(iso);
+    const day = d.toLocaleDateString(i18n.language, {
+      weekday: 'short',
+      day: 'numeric',
+      month: 'short',
+    });
+    const time = d.toLocaleTimeString(i18n.language, {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+    return `${day}, ${time}`;
+  };
+
+  return (
+    <View style={styles.slotCardBody}>
+      <View style={styles.extras}>
+        <View style={styles.extraItem}>
+          <Text style={styles.extraLabel}>
+            {t('cleaning.plan.generalLabel')}
+          </Text>
+          <View style={styles.extraContent}>
+            {plannedAt ? (
+              <Text style={styles.extraValue}>{fmtPlanned(plannedAt)}</Text>
+            ) : (
+              <Text style={styles.extraMuted}>{t('cleaning.plan.tbd')}</Text>
+            )}
+            {canEdit ? (
+              <Pressable
+                disabled={pending}
+                onPress={openModal}
+                hitSlop={8}
+                style={styles.extraBtn}
+              >
+                <Ionicons
+                  name="calendar-clear-outline"
+                  size={13}
+                  color="#0369a1"
+                />
+                <Text style={styles.extraAction}>
+                  {plannedAt ? t('common.edit') : t('cleaning.plan.set')}
+                </Text>
+              </Pressable>
+            ) : null}
+          </View>
+        </View>
+      </View>
+
+      <GuideLink freq="yearly" />
+
+      <Modal
+        visible={open}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setOpen(false)}
+      >
+        <View style={styles.modalBackdrop}>
+          <View style={styles.modalCard}>
+            <Text style={styles.modalTitle}>
+              {t('cleaning.plan.generalTitle')}
+            </Text>
+            <View style={styles.dayRow}>
+              {weekDays.map((d) => {
+                const iso = isoDate(d);
+                const active = iso === draftDay;
+                return (
+                  <Pressable
+                    key={iso}
+                    style={[styles.dayChip, active && styles.dayChipActive]}
+                    onPress={() => setDraftDay(iso)}
+                  >
+                    <Text
+                      style={[
+                        styles.dayChipText,
+                        active && styles.dayChipTextActive,
+                      ]}
+                    >
+                      {d.toLocaleDateString(i18n.language, {
+                        weekday: 'short',
+                      })}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.dayChipNum,
+                        active && styles.dayChipTextActive,
+                      ]}
+                    >
+                      {d.getDate()}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+            <TimeField value={draftTime} onChange={setDraftTime} />
+            {planError ? (
+              <Text style={styles.planError}>{planError}</Text>
+            ) : null}
+            <View style={styles.modalActions}>
+              <Pressable style={styles.modalBtn} onPress={() => setOpen(false)}>
+                <Text style={styles.modalBtnText}>{t('common.cancel')}</Text>
+              </Pressable>
+              {plannedAt ? (
+                <Pressable
+                  style={styles.modalBtn}
+                  disabled={mutation.isPending}
+                  onPress={() => mutation.mutate(null)}
+                >
+                  <Text style={[styles.modalBtnText, styles.modalBtnDanger]}>
+                    {t('cleaning.plan.clear')}
+                  </Text>
+                </Pressable>
+              ) : null}
+              <Pressable
+                style={[
+                  styles.modalBtn,
+                  styles.modalBtnPrimary,
+                  (!draftDay || !draftTime) && styles.modalBtnDisabled,
+                ]}
+                disabled={!draftDay || !draftTime || mutation.isPending}
+                onPress={() =>
+                  mutation.mutate(
+                    new Date(`${draftDay}T${draftTime}:00`).toISOString(),
+                  )
+                }
+              >
+                <Text style={[styles.modalBtnText, styles.modalBtnTextPrimary]}>
+                  {t('common.save')}
+                </Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -816,6 +1046,13 @@ const styles = StyleSheet.create({
   dayChipNum: { fontSize: 13.5, fontWeight: '800', color: '#0f172a' },
   dayChipTextActive: { color: '#fff' },
   planError: { fontSize: 12.5, color: '#b91c1c' },
+  guideLinkRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    alignSelf: 'flex-start',
+  },
+  guideLinkText: { fontSize: 12.5, fontWeight: '600', color: '#0369a1' },
 
   slotRowMine: { backgroundColor: '#fffbeb' },
   overseer: { fontSize: 12, color: '#94a3b8', marginTop: 1 },

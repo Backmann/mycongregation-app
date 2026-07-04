@@ -8,6 +8,7 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import {
   CLEANING_CATEGORIES,
@@ -27,11 +28,21 @@ const DIRECTIONS: { key: string; icon: string }[] = [
   { key: 'cleanToDirty', icon: 'arrow-forward-outline' },
 ];
 
-function CategoryCard({ category }: { category: CleaningCategory }) {
+function CategoryCard({
+  category,
+  defaultFreq,
+}: {
+  category: CleaningCategory;
+  defaultFreq?: CleaningFrequency;
+}) {
   const { t } = useTranslation();
   const available = CLEANING_FREQUENCIES.filter((f) => category.steps[f]);
   const [open, setOpen] = useState(false);
-  const [freq, setFreq] = useState<CleaningFrequency>(available[0]);
+  const [freq, setFreq] = useState<CleaningFrequency>(
+    defaultFreq && available.includes(defaultFreq)
+      ? defaultFreq
+      : available[0],
+  );
   const steps = category.steps[freq] ?? [];
 
   return (
@@ -138,6 +149,12 @@ function CategoryCard({ category }: { category: CleaningCategory }) {
 
 export default function CleaningGuideScreen() {
   const { t } = useTranslation();
+  // Deep link: /cleaning/guide?freq=zsk|weekly|yearly opens every category on
+  // the instructions for that cleaning type.
+  const { freq } = useLocalSearchParams<{ freq?: string }>();
+  const defaultFreq = CLEANING_FREQUENCIES.includes(freq as CleaningFrequency)
+    ? (freq as CleaningFrequency)
+    : undefined;
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
@@ -147,7 +164,7 @@ export default function CleaningGuideScreen() {
       </View>
 
       {CLEANING_CATEGORIES.map((c) => (
-        <CategoryCard key={c.id} category={c} />
+        <CategoryCard key={c.id} category={c} defaultFreq={defaultFreq} />
       ))}
 
       <View style={styles.block}>

@@ -1205,11 +1205,18 @@
       "tbd": "Tag wird abgestimmt",
       "set": "Tag wählen",
       "clear": "Zurücksetzen",
-      "label": "Reinigungstag"
+      "label": "Reinigungstag",
+      "generalLabel": "Datum und Uhrzeit",
+      "generalTitle": "Wann ist die Grundreinigung?"
     },
     "slotHints": {
       "after_meeting": "Nach der Zusammenkunft (Woche + Wochenende)",
       "thorough": "Einmal pro Woche, an einem passenden Tag"
+    },
+    "guideLinks": {
+      "zsk": "Anleitung: nach der Zusammenkunft",
+      "weekly": "Anleitung: wöchentliche Reinigung",
+      "yearly": "Anleitung: Grundreinigung"
     }
   },
   "cleaningGuide": {
@@ -1766,7 +1773,8 @@
     "cleaning": {
       "thoroughGroup": "Eure Gruppe reinigt diese Woche den Saal",
       "afterMeetingGroup": "Eure Gruppe reinigt den Saal nach den Zusammenkünften",
-      "windows": "Fenster: {{list}}"
+      "windows": "Fenster: {{list}}",
+      "generalTitle": "Grundreinigung des Saals — die ganze Versammlung ist eingeladen"
     }
   },
   "halls": {
