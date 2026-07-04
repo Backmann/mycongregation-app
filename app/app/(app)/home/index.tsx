@@ -1,5 +1,6 @@
+import { useEffect, useRef } from 'react';
 import {
-  ActivityIndicator,
+  Animated,
   Linking,
   Pressable,
   ScrollView,
@@ -99,6 +100,84 @@ type FeedEntry = {
  * in one chronological feed. Cards with my assignments are highlighted;
  * an event flagged "replaces meeting" takes the meeting’s place.
  */
+/** Breathing gray placeholder bar for skeleton cards. */
+function SkeletonBar({ width, height = 14 }: { width: string; height?: number }) {
+  const pulse = useRef(new Animated.Value(0.35)).current;
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulse, {
+          toValue: 0.75,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulse, {
+          toValue: 0.35,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+      ]),
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [pulse]);
+  return (
+    <Animated.View
+      style={{
+        width: width as never,
+        height,
+        borderRadius: 7,
+        backgroundColor: '#cbd5e1',
+        opacity: pulse,
+      }}
+    />
+  );
+}
+
+/** Skeleton placeholder shaped like a content card — no layout jumps. */
+function SkeletonCard({ rows = 3 }: { rows?: number }) {
+  return (
+    <View style={[styles.card, { paddingVertical: 14, gap: 12 }]}>
+      {Array.from({ length: rows }, (_, i) => (
+        <View key={i} style={{ gap: 6 }}>
+          <SkeletonBar width={i % 2 ? '55%' : '70%'} />
+          <SkeletonBar width="38%" height={10} />
+        </View>
+      ))}
+    </View>
+  );
+}
+
+/** Warm one-line greeting with the person's name and today's date. */
+function GreetingHeader() {
+  const { t, i18n } = useTranslation();
+  const { myPublisher } = useMyPublisher();
+  const hour = new Date().getHours();
+  const key =
+    hour >= 5 && hour < 11
+      ? 'morning'
+      : hour >= 11 && hour < 17
+        ? 'day'
+        : hour >= 17 && hour < 23
+          ? 'evening'
+          : 'night';
+  const name = myPublisher?.firstName ?? '';
+  const dateLine = new Date().toLocaleDateString(i18n.language, {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+  });
+  return (
+    <View style={styles.greeting}>
+      <Text style={styles.greetingText}>
+        {t(`home.greeting.${key}`)}
+        {name ? `, ${name}` : ''}
+      </Text>
+      <Text style={styles.greetingDate}>{dateLine}</Text>
+    </View>
+  );
+}
+
 function MeetingsFeed() {
   const { t, i18n } = useTranslation();
   const todayISO = formatDateISO(new Date());
@@ -244,11 +323,7 @@ function MeetingsFeed() {
   );
 
   if (isLoading) {
-    return (
-      <View style={styles.card}>
-        <ActivityIndicator style={{ paddingVertical: 16 }} />
-      </View>
-    );
+    return <SkeletonCard rows={3} />;
   }
   if (entries.length === 0) {
     return (
@@ -464,7 +539,7 @@ function MyTasksCard() {
   });
   const versions = overview?.versions ?? [];
 
-  const { data } = useQuery({
+  const { data, isLoading: tasksLoading } = useQuery({
     queryKey: ['me', 'assignments'],
     queryFn: () => meApi.assignments(),
     enabled: !!user,
@@ -472,6 +547,16 @@ function MyTasksCard() {
     staleTime: 60 * 1000,
   });
 
+  if (tasksLoading && !data) {
+    return (
+      <>
+        <View style={[styles.sectionHeader, { marginTop: 24 }]}>
+          <Text style={styles.sectionTitle}>{t('home.myWeek')}</Text>
+        </View>
+        <SkeletonCard rows={2} />
+      </>
+    );
+  }
   if (!data || data.items.length === 0) return null;
 
   const refined = refineMyTasks(data.items, versions, todayISO);
@@ -481,7 +566,7 @@ function MyTasksCard() {
   return (
     <>
       <View style={[styles.sectionHeader, { marginTop: 24 }]}>
-        <Text style={styles.sectionTitle}>{t('home.myTasks')}</Text>
+        <Text style={styles.sectionTitle}>{t('home.myWeek')}</Text>
         <Pressable
           onPress={() => router.push('/home/my-assignments' as any)}
           hitSlop={8}
@@ -710,6 +795,7 @@ export default function HomeScreen() {
   const { data: events, isLoading } = useQuery({
     queryKey: ['special-events', 'home'],
     queryFn: () => specialEventsApi.list(),
+    staleTime: 3 * 60 * 1000,
   });
   const upcoming = (events ?? []).slice(0, 3);
 
@@ -728,16 +814,44 @@ export default function HomeScreen() {
       style={styles.container}
       contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
     >
-      <Text style={[styles.sectionTitle, { marginBottom: 12 }]}>
-        {t('home.nextMeetings')}
-      </Text>
-      <MeetingsFeed />
+      <GreetingHeader />
+
+      {/* Быстрые действия — горизонтальная лента круглых иконок */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.actionStrip}
+        contentContainerStyle={styles.actionStripContent}
+      >
+        {tiles
+          .filter((x) => x.show)
+          .map((x) => (
+            <Pressable
+              key={x.key}
+              style={({ pressed }) => [
+                styles.actionItem,
+                pressed && { opacity: 0.6 },
+              ]}
+              onPress={() => router.push(x.href as any)}
+            >
+              <View style={styles.actionCircle}>
+                <Ionicons name={x.icon} size={24} color="#0284c7" />
+              </View>
+              <Text style={styles.actionLabel} numberOfLines={2}>
+                {x.label}
+              </Text>
+            </Pressable>
+          ))}
+      </ScrollView>
 
       <MyTasksCard />
 
       <CoVisitBlock />
 
-      <MyAbsencesBlock myPublisherId={myPublisherId} />
+      <Text style={[styles.sectionTitle, { marginTop: 24, marginBottom: 12 }]}>
+        {t('home.nextMeetings')}
+      </Text>
+      <MeetingsFeed />
 
       <View style={[styles.sectionHeader, { marginTop: 24 }]}>
         <Text style={styles.sectionTitle}>{t('home.upcomingEvents')}</Text>
@@ -745,41 +859,54 @@ export default function HomeScreen() {
           <Text style={styles.link}>{t('home.allEvents')}</Text>
         </Pressable>
       </View>
-      <View style={styles.card}>
-        {isLoading ? (
-          <ActivityIndicator style={{ paddingVertical: 16 }} />
-        ) : upcoming.length === 0 ? (
-          <Text style={styles.muted}>{t('home.noEvents')}</Text>
-        ) : (
-          upcoming.map((e, idx) => (
-            <EventHomeRow key={e.id} event={e} first={idx === 0} />
-          ))
-        )}
-      </View>
+      {isLoading && !events ? (
+        <SkeletonCard rows={2} />
+      ) : (
+        <View style={styles.card}>
+          {upcoming.length === 0 ? (
+            <Text style={styles.muted}>{t('home.noEvents')}</Text>
+          ) : (
+            upcoming.map((e, idx) => (
+              <EventHomeRow key={e.id} event={e} first={idx === 0} />
+            ))
+          )}
+        </View>
+      )}
 
-      <Text style={[styles.sectionTitle, { marginTop: 24, marginBottom: 12 }]}>
-        {t('home.quickActions')}
-      </Text>
-      <View style={styles.tiles}>
-        {tiles
-          .filter((x) => x.show)
-          .map((x) => (
-            <Pressable
-              key={x.key}
-              style={({ pressed }) => [styles.tile, pressed && styles.tilePressed]}
-              onPress={() => router.push(x.href as any)}
-            >
-              <Ionicons name={x.icon} size={26} color="#0ea5e9" />
-              <Text style={styles.tileLabel}>{x.label}</Text>
-            </Pressable>
-          ))}
-      </View>
+      <MyAbsencesBlock myPublisherId={myPublisherId} />
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f8fafc' },
+  greeting: { marginBottom: 14 },
+  greetingText: { fontSize: 22, fontWeight: '800', color: '#0f172a' },
+  greetingDate: {
+    fontSize: 13,
+    color: '#94a3b8',
+    marginTop: 2,
+    textTransform: 'capitalize',
+  },
+  actionStrip: { marginHorizontal: -16, marginBottom: 4 },
+  actionStripContent: { paddingHorizontal: 16, gap: 14 },
+  actionItem: { alignItems: 'center', width: 66 },
+  actionCircle: {
+    width: 54,
+    height: 54,
+    borderRadius: 27,
+    backgroundColor: '#e0f2fe',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 5,
+  },
+  actionLabel: {
+    fontSize: 10.5,
+    fontWeight: '600',
+    color: '#334155',
+    textAlign: 'center',
+    lineHeight: 13,
+  },
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',

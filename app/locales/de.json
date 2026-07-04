@@ -1776,7 +1776,14 @@
       "afterMeetingGroup": "Eure Gruppe reinigt den Saal nach den Zusammenkünften",
       "windows": "Fenster: {{list}}",
       "generalTitle": "Grundreinigung des Saals — die ganze Versammlung ist eingeladen"
-    }
+    },
+    "greeting": {
+      "morning": "Guten Morgen",
+      "day": "Guten Tag",
+      "evening": "Guten Abend",
+      "night": "Gute Nacht"
+    },
+    "myWeek": "Meine Woche"
   },
   "halls": {
     "title": "Königreichssäle",

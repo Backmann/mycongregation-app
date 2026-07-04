@@ -1776,7 +1776,14 @@
       "afterMeetingGroup": "Your group cleans the hall after the meetings",
       "windows": "Windows: {{list}}",
       "generalTitle": "General hall cleaning — the whole congregation is invited"
-    }
+    },
+    "greeting": {
+      "morning": "Good morning",
+      "day": "Good afternoon",
+      "evening": "Good evening",
+      "night": "Good night"
+    },
+    "myWeek": "My week"
   },
   "halls": {
     "title": "Kingdom Halls",
