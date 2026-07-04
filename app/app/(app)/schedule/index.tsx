@@ -183,8 +183,8 @@ export default function ScheduleIndexScreen() {
     },
   });
   const publishersQuery = useQuery({
-    queryKey: ['publishers', 'all-for-schedule'],
-    queryFn: () => publishersApi.list({ limit: 200 }),
+    queryKey: ['publishers', 'roster'],
+    queryFn: () => publishersApi.roster(),
   });
   const meetingSettingsQuery = useQuery({
     queryKey: ['meeting-settings'],

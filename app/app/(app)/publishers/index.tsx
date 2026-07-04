@@ -15,6 +15,7 @@ import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import i18n from '../../../lib/i18n';
+import { useAuth } from '../../../lib/auth';
 import {
   extractErrorMessage,
   Publisher,
@@ -55,6 +56,13 @@ function countActive(f: Filters): number {
 
 export default function PublishersListScreen() {
   const { t } = useTranslation();
+  const { user } = useAuth();
+  // Mirrors the server's private-access rule: regular publishers receive only
+  // their own service group and must not navigate into publisher cards.
+  const privileged =
+    user?.role === 'admin' ||
+    user?.role === 'elder' ||
+    user?.canViewPrivateData === true;
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
   const [filterOpen, setFilterOpen] = useState(false);
@@ -182,9 +190,22 @@ export default function PublishersListScreen() {
                 : t('publishers.noPublishers')}
             </Text>
           }
-          ListHeaderComponent={countHeader}
+          ListHeaderComponent={
+            <>
+              {!privileged ? (
+                <Text style={styles.groupOnlyNote}>
+                  {t('publishers.myGroupOnly')}
+                </Text>
+              ) : null}
+              {countHeader}
+            </>
+          }
           renderItem={({ item }) => (
-            <PublisherRow publisher={item} groupName={groupNameFor(item)} />
+            <PublisherRow
+              publisher={item}
+              groupName={groupNameFor(item)}
+              canOpenCard={privileged}
+            />
           )}
         />
       )}
@@ -204,9 +225,11 @@ export default function PublishersListScreen() {
 function PublisherRow({
   publisher,
   groupName,
+  canOpenCard,
 }: {
   publisher: Publisher;
   groupName: string | null;
+  canOpenCard: boolean;
 }) {
   const isRemoved = !!publisher.deletedAt;
   const removedLabel = publisher.removalReason
@@ -231,6 +254,7 @@ function PublisherRow({
         pressed && styles.rowPressed,
         isRemoved && styles.rowRemoved,
       ]}
+      disabled={!canOpenCard}
       onPress={() => router.push(`/publishers/${publisher.id}` as any)}
     >
       <View style={[styles.avatar, gendered(publisher.gender)]}>
@@ -487,6 +511,13 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
     color: '#64748b',
     fontSize: 13,
+  },
+  groupOnlyNote: {
+    paddingHorizontal: 20,
+    paddingTop: 2,
+    paddingBottom: 6,
+    color: '#94a3b8',
+    fontSize: 12.5,
   },
   row: {
     flexDirection: 'row',

@@ -146,10 +146,16 @@ export default function PublisherDetailScreen() {
   }
 
   if (error || !publisher) {
+    const status = (error as { response?: { status?: number } } | null)
+      ?.response?.status;
     return (
       <View style={styles.center}>
         <Text style={styles.errorText}>
-          {error ? extractErrorMessage(error) : t('publishers.notFound')}
+          {status === 403
+            ? t('publishers.cardRestricted')
+            : error
+              ? extractErrorMessage(error)
+              : t('publishers.notFound')}
         </Text>
       </View>
     );

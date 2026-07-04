@@ -351,7 +351,9 @@
       "confirm": "Den Eintrag für {{name}} endgültig löschen? Das kann nicht rückgängig gemacht werden.",
       "hasHistory": "Dieser Verkündiger hat Verlaufsdaten (Berichte oder Zuteilungen). Endgültiges Löschen ist gesperrt — bitte \"Als ausgeschieden markieren\" verwenden."
     },
-    "departedCount": "{{count}} ausgeschieden"
+    "departedCount": "{{count}} ausgeschieden",
+    "myGroupOnly": "Angezeigt werden Verkündiger deiner Gruppe",
+    "cardRestricted": "Verkündigerkarten sind nur für Älteste und beauftragte Brüder sichtbar"
   },
   "capabilities": {
     "hints": {

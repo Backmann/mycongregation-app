@@ -14,7 +14,7 @@ export default function AbsencesLayout() {
         name="index"
         options={{
           title: t('absences.title.list'),
-          headerLeft: () => <BackButton fallback="/publishers" toParent />,
+          headerLeft: () => <BackButton fallback="/home" toParent />,
           headerRight: () =>
             canManageAbsences ? (
               <Pressable

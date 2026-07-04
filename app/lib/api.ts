@@ -1485,6 +1485,15 @@ export const publishersApi = {
     const { data } = await api.get<Paginated<Publisher>>('/publishers', { params });
     return data;
   },
+  /**
+   * Names-only roster (id + displayName) for resolving assignment names on
+   * schedules. Open to every member; rows carry ONLY those two fields even
+   * though they are typed as Publisher for drop-in use in name maps.
+   */
+  async roster(): Promise<{ data: Publisher[] }> {
+    const { data } = await api.get<{ data: Publisher[] }>('/publishers/roster');
+    return data;
+  },
   async getById(id: string): Promise<Publisher> {
     const { data } = await api.get<Publisher>(`/publishers/${id}`);
     return data;

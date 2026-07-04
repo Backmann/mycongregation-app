@@ -128,8 +128,8 @@ function MeetingsFeed() {
     staleTime: 60 * 1000,
   });
   const publishersQuery = useQuery({
-    queryKey: ['publishers', 'all-for-schedule'],
-    queryFn: () => publishersApi.list({ limit: 200 }),
+    queryKey: ['publishers', 'roster'],
+    queryFn: () => publishersApi.roster(),
     staleTime: 5 * 60 * 1000,
   });
   const eventsQuery = useQuery({
