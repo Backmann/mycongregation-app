@@ -19,7 +19,6 @@ import {
   fieldServiceApi,
   meApi,
   meetingSettingsApi,
-  MyAssignmentItem,
   Publisher,
   publishersApi,
   SpecialEvent,

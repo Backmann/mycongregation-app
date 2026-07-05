@@ -1286,14 +1286,28 @@ function WeekendSections({
         }
         const meta = SUBSECTIONS[sub];
         return (
-          <View key={sub} style={styles.weekendSection}>
-            <View
-              style={[styles.subsectionBanner, { backgroundColor: meta.color }]}
-            >
-              <Ionicons name={meta.icon as any} size={16} color="#fff" />
-              <Text style={styles.subsectionBannerText}>{t(meta.i18nKey)}</Text>
+          <View
+            key={sub}
+            style={[styles.weekendCard, { borderLeftColor: meta.color }]}
+          >
+            <View style={styles.weekendCardHead}>
+              <View
+                style={[
+                  styles.weekendCardIcon,
+                  { backgroundColor: meta.colorMuted },
+                ]}
+              >
+                <Ionicons
+                  name={meta.icon as any}
+                  size={15}
+                  color={meta.color}
+                />
+              </View>
+              <Text style={[styles.weekendCardTitle, { color: meta.color }]}>
+                {t(meta.i18nKey)}
+              </Text>
             </View>
-            <View style={{ backgroundColor: meta.colorMuted }}>
+            <View style={styles.weekendCardBody}>
               {renderRows(arr, meta.color)}
             </View>
           </View>
@@ -1655,12 +1669,45 @@ const styles = StyleSheet.create({
   createSecondaryText: { color: '#0ea5e9' },
 
   section: { marginTop: 16 },
-  weekendSection: {
-    marginTop: 16,
-    borderRadius: 12,
+  weekendCard: {
+    marginTop: 14,
+    backgroundColor: '#fff',
+    borderRadius: 14,
     overflow: 'hidden',
+    borderLeftWidth: 4,
+    borderLeftColor: '#7c3aed',
     borderWidth: 0.5,
     borderColor: '#e2e8f0',
+    shadowColor: '#0f172a',
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 1,
+  },
+  weekendCardHead: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingTop: 12,
+    paddingBottom: 8,
+    gap: 9,
+  },
+  weekendCardIcon: {
+    width: 28,
+    height: 28,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  weekendCardTitle: {
+    fontSize: 13,
+    fontWeight: '800',
+    letterSpacing: 0.3,
+    flex: 1,
+  },
+  weekendCardBody: {
+    paddingHorizontal: 4,
+    paddingBottom: 4,
   },
   subsectionBanner: {
     flexDirection: 'row',
