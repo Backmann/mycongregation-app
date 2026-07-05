@@ -1,5 +1,4 @@
-import React from 'react';
-import { Platform, StyleSheet, Text, TextInput } from 'react-native';
+import { Platform, Text, TextInput } from 'react-native';
 import {
   useFonts,
   Manrope_400Regular,
@@ -11,66 +10,38 @@ import {
 
 /**
  * Manrope is the app-wide typeface — a clean, premium grotesque with full
- * Cyrillic + Latin-ext coverage, so RU / DE / EN all render correctly. We load
- * the weights we use and, instead of editing hundreds of components, wrap the
- * Text/TextInput render so every run of text is drawn in the Manrope face that
- * matches its resolved fontWeight. Because React Native won't synthesize a
- * weight when an explicit fontFamily is set, mapping weight -> face by hand is
- * the reliable way to keep bold headings actually bold.
+ * Cyrillic + Latin-ext coverage (RU / DE / EN).
+ *
+ * Application strategy (RN 0.81-safe): we do NOT wrap Text.render — on this RN
+ * version the forwardRef Text can't be render-wrapped without blanking heavy
+ * screens. Instead we set a base fontFamily on the shared defaultProps, which
+ * every <Text>/<TextInput> without its own family inherits. Components that
+ * declare an explicit fontWeight keep it; the weight is realized against the
+ * loaded Manrope faces (all five weights are registered below, and the native
+ * font matcher / web @font-face resolves the right face per weight).
  */
-const WEIGHT_TO_FAMILY: Record<string, string> = {
-  '100': 'Manrope_400Regular',
-  '200': 'Manrope_400Regular',
-  '300': 'Manrope_400Regular',
-  normal: 'Manrope_400Regular',
-  '400': 'Manrope_400Regular',
-  '500': 'Manrope_500Medium',
-  '600': 'Manrope_600SemiBold',
-  bold: 'Manrope_700Bold',
-  '700': 'Manrope_700Bold',
-  '800': 'Manrope_800ExtraBold',
-  '900': 'Manrope_800ExtraBold',
-};
+let applied = false;
 
-function familyForWeight(weight?: string | number | null): string {
-  if (weight == null) return 'Manrope_400Regular';
-  return WEIGHT_TO_FAMILY[String(weight)] ?? 'Manrope_400Regular';
-}
-
-let patched = false;
-
-function patchComponent(Component: typeof Text | typeof TextInput) {
-  const C = Component as unknown as {
-    render?: (...args: unknown[]) => React.ReactElement | null;
+function applyBaseFont() {
+  if (applied) return;
+  applied = true;
+  const apply = (C: typeof Text | typeof TextInput) => {
+    const Comp = C as unknown as { defaultProps?: Record<string, unknown> };
+    const existing = Comp.defaultProps ?? {};
+    const prevStyle = (existing as { style?: unknown }).style;
+    Comp.defaultProps = {
+      ...existing,
+      style: prevStyle
+        ? [{ fontFamily: 'Manrope_400Regular' }, prevStyle]
+        : { fontFamily: 'Manrope_400Regular' },
+    };
   };
-  const original = C.render;
-  if (typeof original !== 'function') return;
-
-  C.render = function (...args: unknown[]) {
-    const element = original.apply(this, args) as React.ReactElement | null;
-    if (!element) return element;
-    const flat =
-      (StyleSheet.flatten(
-        (element.props as { style?: unknown }).style,
-      ) as { fontWeight?: string | number; fontFamily?: string }) ?? {};
-    if (flat.fontFamily && !flat.fontFamily.startsWith('Manrope')) {
-      return element;
-    }
-    const family = familyForWeight(flat.fontWeight);
-    return React.cloneElement(element, {
-      style: [
-        { fontFamily: family },
-        (element.props as { style?: unknown }).style,
-      ],
-    } as Partial<typeof element.props>);
-  };
-}
-
-function applyGlobalManrope() {
-  if (patched) return;
-  patched = true;
-  patchComponent(Text);
-  patchComponent(TextInput);
+  try {
+    apply(Text);
+    apply(TextInput);
+  } catch {
+    // If defaultProps isn't writable, fall back to the system font silently.
+  }
 }
 
 export function useAppFonts() {
@@ -82,12 +53,10 @@ export function useAppFonts() {
     Manrope_800ExtraBold,
   });
   if (loaded) {
-    applyGlobalManrope();
+    applyBaseFont();
   }
   return {
     fontsLoaded: loaded || !!error || Platform.OS === 'web',
     fontsError: error,
   };
 }
-
-export { familyForWeight };
