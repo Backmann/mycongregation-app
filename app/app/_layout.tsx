@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from '../lib/auth';
 import { initI18nFromStorage } from '../lib/i18n';
 import { LanguagePickerModal } from '../components/LanguagePicker';
+import { useAppFonts } from '../lib/fonts';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -19,6 +20,7 @@ const queryClient = new QueryClient({
 export default function RootLayout() {
   const [ready, setReady] = useState(false);
   const [showLanguagePrompt, setShowLanguagePrompt] = useState(false);
+  const { fontsLoaded } = useAppFonts();
 
   useEffect(() => {
     (async () => {
@@ -40,7 +42,7 @@ export default function RootLayout() {
       .catch((err) => console.warn('SW registration failed:', err));
   }, []);
 
-  if (!ready) return null;
+  if (!ready || !fontsLoaded) return null;
 
   return (
     <QueryClientProvider client={queryClient}>
