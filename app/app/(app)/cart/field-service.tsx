@@ -73,8 +73,12 @@ export default function FieldServiceMeetingsScreen() {
     queryFn: () => fieldServiceApi.list(),
   });
   const publishersQuery = useQuery({
-    queryKey: ['publishers', 'all'],
-    queryFn: () => publishersApi.list({ limit: 200 }),
+    // Names-only roster: the full directory is restricted to the caller's own
+    // group for regular publishers, which broke conductor name resolution
+    // here. The roster is open to every member and carries id + displayName.
+    queryKey: ['publishers', 'roster'],
+    queryFn: () => publishersApi.roster(),
+    staleTime: 5 * 60 * 1000,
   });
   const publishersById = new Map<string, Publisher>(
     (publishersQuery.data?.data ?? []).map((p) => [p.id, p]),
