@@ -18,7 +18,7 @@ export function RichText({
       {parts.map((p, i) => {
         if (p.startsWith('**') && p.endsWith('**') && p.length > 4)
           return (
-            <Text key={i} style={{ fontWeight: '700' }}>
+            <Text key={i} style={{ fontWeight: '700', fontFamily: 'Manrope_700Bold',}}>
               {p.slice(2, -2)}
             </Text>
           );

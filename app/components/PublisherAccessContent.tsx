@@ -351,7 +351,7 @@ const confirmStyles = StyleSheet.create({
     backgroundColor: '#f1f5f9',
     alignItems: 'center',
   },
-  cancelText: { fontSize: 15, fontWeight: '700', color: '#475569' },
+  cancelText: { fontSize: 15, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#475569' },
   danger: {
     flex: 1,
     paddingVertical: 13,
@@ -359,7 +359,7 @@ const confirmStyles = StyleSheet.create({
     backgroundColor: '#dc2626',
     alignItems: 'center',
   },
-  dangerText: { fontSize: 15, fontWeight: '700', color: '#fff' },
+  dangerText: { fontSize: 15, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#fff' },
 });
 
 const sentStyles = StyleSheet.create({
@@ -389,7 +389,7 @@ const sentStyles = StyleSheet.create({
   },
   title: {
     fontSize: 18,
-    fontWeight: '800',
+    fontWeight: '800', fontFamily: 'Manrope_800ExtraBold',
     color: '#0f172a',
     textAlign: 'center',
     marginBottom: 8,
@@ -408,7 +408,7 @@ const sentStyles = StyleSheet.create({
     paddingVertical: 13,
     alignItems: 'center',
   },
-  btnText: { fontSize: 15, fontWeight: '700', color: '#fff' },
+  btnText: { fontSize: 15, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#fff' },
 });
 
 function EmailModal({
@@ -522,7 +522,7 @@ const emailStyles = StyleSheet.create({
     padding: 18,
     gap: 10,
   },
-  title: { fontSize: 16, fontWeight: '700', color: '#0f172a' },
+  title: { fontSize: 16, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0f172a' },
   hint: { fontSize: 13, color: '#64748b', lineHeight: 18 },
   input: {
     borderWidth: 1,
@@ -541,14 +541,14 @@ const emailStyles = StyleSheet.create({
     marginTop: 4,
   },
   cancel: { paddingVertical: 10, paddingHorizontal: 14 },
-  cancelText: { fontSize: 15, color: '#64748b', fontWeight: '600' },
+  cancelText: { fontSize: 15, color: '#64748b', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
   confirm: {
     paddingVertical: 10,
     paddingHorizontal: 18,
     borderRadius: 10,
     backgroundColor: '#0ea5e9',
   },
-  confirmText: { fontSize: 15, color: '#fff', fontWeight: '600' },
+  confirmText: { fontSize: 15, color: '#fff', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
   disabled: { opacity: 0.5 },
   suggestBtn: {
     alignSelf: 'flex-start',
@@ -559,7 +559,7 @@ const emailStyles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
   },
-  suggestText: { fontSize: 13, color: '#0369a1', fontWeight: '600' },
+  suggestText: { fontSize: 13, color: '#0369a1', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
 });
 
 function GrantModal({
@@ -780,7 +780,7 @@ const styles = StyleSheet.create({
   rowValue: {
     fontSize: 15,
     color: '#111827',
-    fontWeight: '500',
+    fontWeight: '500', fontFamily: 'Manrope_500Medium',
     flexShrink: 1,
     textAlign: 'right',
   },
@@ -799,7 +799,7 @@ const styles = StyleSheet.create({
   primaryBtnText: {
     color: '#ffffff',
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
   },
   secondaryBtn: {
     borderWidth: 1,
@@ -812,7 +812,7 @@ const styles = StyleSheet.create({
   secondaryBtnText: {
     color: '#2563eb',
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
   },
   btnRow: {
     flexDirection: 'row',
@@ -841,7 +841,7 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: '700', fontFamily: 'Manrope_700Bold',
     color: '#111827',
     marginBottom: 16,
   },
@@ -879,7 +879,7 @@ const styles = StyleSheet.create({
   modalCancelText: {
     color: '#6b7280',
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
   },
   modalOk: {
     backgroundColor: '#2563eb',
@@ -893,6 +893,6 @@ const styles = StyleSheet.create({
   modalOkText: {
     color: '#ffffff',
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
   },
 });

@@ -312,8 +312,8 @@ const styles = StyleSheet.create({
   },
   segment: { flex: 1, paddingVertical: 7, borderRadius: 8, alignItems: 'center' },
   segmentActive: { backgroundColor: '#fff' },
-  segmentText: { fontSize: 13, color: '#64748b', fontWeight: '500' },
-  segmentTextActive: { color: '#0f172a', fontWeight: '700' },
+  segmentText: { fontSize: 13, color: '#64748b', fontWeight: '500', fontFamily: 'Manrope_500Medium',},
+  segmentTextActive: { color: '#0f172a', fontWeight: '700', fontFamily: 'Manrope_700Bold',},
   filterRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   filterChip: {
     paddingHorizontal: 12,
@@ -325,7 +325,7 @@ const styles = StyleSheet.create({
   },
   filterChipActive: { backgroundColor: '#0ea5e9', borderColor: '#0ea5e9' },
   filterChipText: { fontSize: 13, color: '#475569' },
-  filterChipTextActive: { color: '#fff', fontWeight: '600' },
+  filterChipTextActive: { color: '#fff', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
 
   row: {
     flexDirection: 'row',
@@ -340,7 +340,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   rowPressed: { backgroundColor: '#f8fafc' },
-  name: { fontSize: 15, fontWeight: '600', color: '#0f172a' },
+  name: { fontSize: 15, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0f172a' },
   sub: { fontSize: 13, color: '#475569', marginTop: 1 },
   statusRow: {
     flexDirection: 'row',
@@ -350,9 +350,9 @@ const styles = StyleSheet.create({
     marginTop: 3,
   },
   statusText: { fontSize: 13, color: '#64748b' },
-  statusRecent: { color: '#b45309', fontWeight: '600' },
+  statusRecent: { color: '#b45309', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
   statusNever: { fontSize: 13, color: '#94a3b8', fontStyle: 'italic', marginTop: 3 },
   upcomingTag: { flexDirection: 'row', alignItems: 'center', gap: 3 },
-  upcomingText: { fontSize: 13, color: '#0369a1', fontWeight: '600' },
+  upcomingText: { fontSize: 13, color: '#0369a1', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
   empty: { fontSize: 14, color: '#94a3b8', textAlign: 'center', marginTop: 24 },
 });

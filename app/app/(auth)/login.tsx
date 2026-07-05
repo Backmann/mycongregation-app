@@ -183,7 +183,7 @@ export default function LoginScreen() {
               <Text
                 style={[
                   styles.forgotText,
-                  { color: '#0369a1', fontWeight: '600' },
+                  { color: '#0369a1', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
                 ]}
               >
                 {t('auth.forgotPassword')}
@@ -250,7 +250,7 @@ const styles = StyleSheet.create({
   },
   langPillText: {
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
     color: '#94a3b8',
     letterSpacing: 0.5,
   },
@@ -272,7 +272,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 26,
-    fontWeight: '700',
+    fontWeight: '700', fontFamily: 'Manrope_700Bold',
     color: '#0f172a',
   },
   subtitle: {
@@ -282,7 +282,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 13,
-    fontWeight: '500',
+    fontWeight: '500', fontFamily: 'Manrope_500Medium',
     color: '#475569',
     marginBottom: 6,
     marginTop: 14,
@@ -339,7 +339,7 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
   },
   footer: {
     marginTop: 22,

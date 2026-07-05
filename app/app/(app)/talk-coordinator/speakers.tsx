@@ -564,7 +564,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     marginBottom: 8,
   },
-  name: { fontSize: 15, fontWeight: '600', color: '#0f172a' },
+  name: { fontSize: 15, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0f172a' },
   sub: { fontSize: 13, color: '#475569', marginTop: 1 },
   toolbar: { marginBottom: 12, gap: 8 },
   searchRow: {
@@ -587,8 +587,8 @@ const styles = StyleSheet.create({
   },
   segment: { flex: 1, paddingVertical: 7, borderRadius: 8, alignItems: 'center' },
   segmentActive: { backgroundColor: '#fff' },
-  segmentText: { fontSize: 13, color: '#64748b', fontWeight: '500' },
-  segmentTextActive: { color: '#0f172a', fontWeight: '700' },
+  segmentText: { fontSize: 13, color: '#64748b', fontWeight: '500', fontFamily: 'Manrope_500Medium',},
+  segmentTextActive: { color: '#0f172a', fontWeight: '700', fontFamily: 'Manrope_700Bold',},
   filterRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   filterChip: {
     paddingHorizontal: 12,
@@ -600,7 +600,7 @@ const styles = StyleSheet.create({
   },
   filterChipActive: { backgroundColor: '#0ea5e9', borderColor: '#0ea5e9' },
   filterChipText: { fontSize: 13, color: '#475569' },
-  filterChipTextActive: { color: '#fff', fontWeight: '600' },
+  filterChipTextActive: { color: '#fff', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
   statusRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -609,10 +609,10 @@ const styles = StyleSheet.create({
     marginTop: 3,
   },
   statusText: { fontSize: 13, color: '#64748b' },
-  statusRecent: { color: '#b45309', fontWeight: '600' },
+  statusRecent: { color: '#b45309', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
   statusNever: { fontSize: 13, color: '#94a3b8', fontStyle: 'italic', marginTop: 3 },
   upcomingTag: { flexDirection: 'row', alignItems: 'center', gap: 3 },
-  upcomingText: { fontSize: 13, color: '#0369a1', fontWeight: '600' },
+  upcomingText: { fontSize: 13, color: '#0369a1', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
   iconBtn: { padding: 6 },
   addBtn: {
     flexDirection: 'row',
@@ -627,7 +627,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f0f9ff',
   },
   addBtnPressed: { backgroundColor: '#e0f2fe' },
-  addBtnText: { fontSize: 14, fontWeight: '600', color: '#0369a1' },
+  addBtnText: { fontSize: 14, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0369a1' },
   disabled: { opacity: 0.5 },
   editorCard: {
     backgroundColor: '#fff',
@@ -637,7 +637,7 @@ const styles = StyleSheet.create({
     padding: 14,
     marginBottom: 8,
   },
-  fieldLabel: { fontSize: 12, fontWeight: '600', color: '#64748b', marginTop: 10, marginBottom: 4 },
+  fieldLabel: { fontSize: 12, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#64748b', marginTop: 10, marginBottom: 4 },
   input: {
     borderWidth: 1,
     borderColor: '#cbd5e1',
@@ -661,7 +661,7 @@ const styles = StyleSheet.create({
   },
   pickChipActive: { backgroundColor: '#e0f2fe', borderColor: '#0ea5e9' },
   pickChipText: { fontSize: 13, color: '#475569' },
-  pickChipTextActive: { color: '#0369a1', fontWeight: '600' },
+  pickChipTextActive: { color: '#0369a1', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
   newChip: { borderStyle: 'dashed' },
   talkAddRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   talkAddBtn: {
@@ -684,10 +684,10 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     backgroundColor: '#ede9fe',
   },
-  talkChipText: { fontSize: 12, color: '#6d28d9', fontWeight: '500', flexShrink: 1 },
+  talkChipText: { fontSize: 12, color: '#6d28d9', fontWeight: '500', fontFamily: 'Manrope_500Medium', flexShrink: 1 },
   editorActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 10, marginTop: 14 },
   cancelBtn: { paddingVertical: 10, paddingHorizontal: 14 },
-  cancelText: { fontSize: 15, color: '#64748b', fontWeight: '600' },
+  cancelText: { fontSize: 15, color: '#64748b', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
   saveBtn: { paddingVertical: 10, paddingHorizontal: 18, borderRadius: 10, backgroundColor: '#0ea5e9' },
-  saveText: { fontSize: 15, color: '#fff', fontWeight: '600' },
+  saveText: { fontSize: 15, color: '#fff', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
 });

@@ -911,7 +911,7 @@ const styles = StyleSheet.create({
   },
   headerText: {
     fontSize: 13,
-    fontWeight: '700',
+    fontWeight: '700', fontFamily: 'Manrope_700Bold',
     color: '#475569',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -937,7 +937,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   slotTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  slotCardTitle: { fontSize: 14.5, fontWeight: '700', color: '#0f172a' },
+  slotCardTitle: { fontSize: 14.5, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0f172a' },
   slotCardHint: { fontSize: 12, color: '#94a3b8', marginTop: 1 },
   slotCardBody: { marginTop: 10, gap: 10 },
   generalBadge: {
@@ -949,7 +949,7 @@ const styles = StyleSheet.create({
     borderColor: '#6ee7b7',
   },
   generalBadgeOff: { backgroundColor: '#f8fafc', borderColor: '#e2e8f0' },
-  generalBadgeText: { fontSize: 12, fontWeight: '700', color: '#047857' },
+  generalBadgeText: { fontSize: 12, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#047857' },
   generalBadgeTextOff: { color: '#cbd5e1' },
   extras: {
     marginTop: 2,
@@ -963,7 +963,7 @@ const styles = StyleSheet.create({
   extraItem: { gap: 5 },
   extraLabel: {
     fontSize: 10.5,
-    fontWeight: '700',
+    fontWeight: '700', fontFamily: 'Manrope_700Bold',
     color: '#94a3b8',
     textTransform: 'uppercase',
     letterSpacing: 0.4,
@@ -974,11 +974,11 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 13,
     color: '#0f172a',
-    fontWeight: '600',
+    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
     textTransform: 'capitalize',
   },
   extraBtn: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  extraAction: { fontSize: 12.5, fontWeight: '700', color: '#0369a1' },
+  extraAction: { fontSize: 12.5, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0369a1' },
   windowChips: { flex: 1, flexDirection: 'row', flexWrap: 'wrap', gap: 4 },
   windowChip: {
     minWidth: 24,
@@ -991,7 +991,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  windowChipText: { fontSize: 12, fontWeight: '800', color: '#b45309' },
+  windowChipText: { fontSize: 12, fontWeight: '800', fontFamily: 'Manrope_800ExtraBold', color: '#b45309' },
   modalBackdrop: {
     flex: 1,
     backgroundColor: 'rgba(15,23,42,0.45)',
@@ -1007,7 +1007,7 @@ const styles = StyleSheet.create({
     width: '100%',
     alignSelf: 'center',
   },
-  modalTitle: { fontSize: 16, fontWeight: '800', color: '#0f172a' },
+  modalTitle: { fontSize: 16, fontWeight: '800', fontFamily: 'Manrope_800ExtraBold', color: '#0f172a' },
   modalHint: { fontSize: 12.5, color: '#64748b', marginTop: -4 },
   modalActions: {
     flexDirection: 'row',
@@ -1023,7 +1023,7 @@ const styles = StyleSheet.create({
   },
   modalBtnPrimary: { backgroundColor: '#0369a1' },
   modalBtnDisabled: { opacity: 0.45 },
-  modalBtnText: { fontSize: 13.5, fontWeight: '700', color: '#334155' },
+  modalBtnText: { fontSize: 13.5, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#334155' },
   modalBtnTextPrimary: { color: '#fff' },
   modalBtnDanger: { color: '#b91c1c' },
   dayRow: { flexDirection: 'row', gap: 5, flexWrap: 'wrap' },
@@ -1039,11 +1039,11 @@ const styles = StyleSheet.create({
   dayChipActive: { backgroundColor: '#0369a1', borderColor: '#0369a1' },
   dayChipText: {
     fontSize: 11,
-    fontWeight: '600',
+    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
     color: '#64748b',
     textTransform: 'capitalize',
   },
-  dayChipNum: { fontSize: 13.5, fontWeight: '800', color: '#0f172a' },
+  dayChipNum: { fontSize: 13.5, fontWeight: '800', fontFamily: 'Manrope_800ExtraBold', color: '#0f172a' },
   dayChipTextActive: { color: '#fff' },
   planError: { fontSize: 12.5, color: '#b91c1c' },
   guideLinkRow: {
@@ -1052,7 +1052,7 @@ const styles = StyleSheet.create({
     gap: 5,
     alignSelf: 'flex-start',
   },
-  guideLinkText: { fontSize: 12.5, fontWeight: '600', color: '#0369a1' },
+  guideLinkText: { fontSize: 12.5, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0369a1' },
 
   slotRowMine: { backgroundColor: '#fffbeb' },
   overseer: { fontSize: 12, color: '#94a3b8', marginTop: 1 },
@@ -1080,7 +1080,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   pickerCard: { backgroundColor: '#fff', borderRadius: 14, padding: 16, gap: 8 },
-  pickerTitle: { fontSize: 15, fontWeight: '700', color: '#0f172a' },
+  pickerTitle: { fontSize: 15, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0f172a' },
   pickerRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1091,6 +1091,6 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   pickerName: { fontSize: 15, color: '#0f172a' },
-  pickerClear: { fontSize: 15, color: '#64748b', fontWeight: '600' },
+  pickerClear: { fontSize: 15, color: '#64748b', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
   noGroups: { fontSize: 13, color: '#94a3b8', paddingVertical: 12 },
 });

@@ -562,13 +562,13 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 17,
-    fontWeight: '800',
+    fontWeight: '800', fontFamily: 'Manrope_800ExtraBold',
     color: '#0f172a',
     padding: 18,
     paddingBottom: 10,
   },
   scroll: { paddingHorizontal: 18 },
-  label: { fontSize: 13, fontWeight: '700', color: '#334155', marginBottom: 8 },
+  label: { fontSize: 13, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#334155', marginBottom: 8 },
   hint: { fontSize: 12, color: '#94a3b8', marginBottom: 10 },
   monthRow: {
     flexDirection: 'row',
@@ -581,7 +581,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   stepBtn: { padding: 8 },
-  monthLabel: { fontSize: 15, fontWeight: '700', color: '#0f172a' },
+  monthLabel: { fontSize: 15, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0f172a' },
   segment: {
     flexDirection: 'row',
     backgroundColor: '#f1f5f9',
@@ -596,7 +596,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   segmentItemOn: { backgroundColor: '#0ea5e9' },
-  segmentText: { fontSize: 14, fontWeight: '700', color: '#475569' },
+  segmentText: { fontSize: 14, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#475569' },
   segmentTextOn: { color: '#fff' },
   slotCard: {
     borderWidth: 1,
@@ -612,10 +612,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 6,
   },
-  slotTitle: { fontSize: 13, fontWeight: '700', color: '#0f172a' },
+  slotTitle: { fontSize: 13, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0f172a' },
   miniLabel: {
     fontSize: 11,
-    fontWeight: '600',
+    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
     color: '#64748b',
     marginBottom: 4,
     marginTop: 6,
@@ -632,7 +632,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   chipOn: { backgroundColor: '#0ea5e9', borderColor: '#0ea5e9' },
-  chipText: { fontSize: 12, fontWeight: '600', color: '#475569' },
+  chipText: { fontSize: 12, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#475569' },
   chipTextOn: { color: '#fff' },
   timeAddrRow: { flexDirection: 'row', gap: 10 },
   timeBox: { width: 84 },
@@ -669,7 +669,7 @@ const styles = StyleSheet.create({
     borderColor: '#e2e8f0',
   },
   hallChipOn: { backgroundColor: '#e0f2fe', borderColor: '#7dd3fc' },
-  hallChipText: { fontSize: 12, color: '#475569', fontWeight: '600' },
+  hallChipText: { fontSize: 12, color: '#475569', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
   hallChipTextOn: { color: '#0369a1' },
   addSlot: {
     flexDirection: 'row',
@@ -683,7 +683,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     marginBottom: 12,
   },
-  addSlotText: { fontSize: 13, fontWeight: '600', color: '#0369a1' },
+  addSlotText: { fontSize: 13, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0369a1' },
   saveTemplate: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -695,7 +695,7 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   saveTemplateOk: { backgroundColor: '#dcfce7' },
-  saveTemplateText: { fontSize: 13, fontWeight: '700', color: '#475569' },
+  saveTemplateText: { fontSize: 13, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#475569' },
   previewBox: {
     backgroundColor: '#f0f9ff',
     borderRadius: 12,
@@ -706,7 +706,7 @@ const styles = StyleSheet.create({
   },
   previewTitle: {
     fontSize: 13,
-    fontWeight: '800',
+    fontWeight: '800', fontFamily: 'Manrope_800ExtraBold',
     color: '#0369a1',
     marginBottom: 8,
   },
@@ -714,7 +714,7 @@ const styles = StyleSheet.create({
   previewMonth: { marginBottom: 8 },
   previewMonthLabel: {
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: '700', fontFamily: 'Manrope_700Bold',
     color: '#0f172a',
     marginBottom: 3,
   },
@@ -741,7 +741,7 @@ const styles = StyleSheet.create({
   },
   successTitle: {
     fontSize: 18,
-    fontWeight: '800',
+    fontWeight: '800', fontFamily: 'Manrope_800ExtraBold',
     color: '#0f172a',
     marginBottom: 8,
     textAlign: 'center',
@@ -761,7 +761,7 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 14,
   },
-  resultText: { fontSize: 14, fontWeight: '600', color: '#15803d', flex: 1 },
+  resultText: { fontSize: 14, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#15803d', flex: 1 },
   actions: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
@@ -771,13 +771,13 @@ const styles = StyleSheet.create({
     borderTopColor: '#e2e8f0',
   },
   cancel: { paddingHorizontal: 16, paddingVertical: 11 },
-  cancelText: { fontSize: 14, fontWeight: '600', color: '#64748b' },
+  cancelText: { fontSize: 14, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#64748b' },
   generate: {
     backgroundColor: '#0ea5e9',
     borderRadius: 10,
     paddingHorizontal: 20,
     paddingVertical: 11,
   },
-  generateText: { fontSize: 14, fontWeight: '700', color: '#fff' },
+  generateText: { fontSize: 14, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#fff' },
   disabled: { opacity: 0.5 },
 });

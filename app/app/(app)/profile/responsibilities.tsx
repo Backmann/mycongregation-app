@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
   },
   rowBorder: { borderTopWidth: 1, borderTopColor: '#f1f5f9' },
   rowMain: { flex: 1 },
-  roleTitle: { fontSize: 15, color: '#0f172a', fontWeight: '500' },
+  roleTitle: { fontSize: 15, color: '#0f172a', fontWeight: '500', fontFamily: 'Manrope_500Medium',},
   holder: { fontSize: 12, color: '#0369a1', marginTop: 2 },
   holderUnassigned: { color: '#94a3b8', fontStyle: 'italic' },
   holderRow: {
@@ -277,7 +277,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#e0f2fe',
   },
   assignBtnPressed: { backgroundColor: '#bae6fd' },
-  assignBtnText: { fontSize: 13, color: '#0369a1', fontWeight: '600' },
+  assignBtnText: { fontSize: 13, color: '#0369a1', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
   backdrop: {
     flex: 1,
     backgroundColor: 'rgba(15,23,42,0.45)',
@@ -291,7 +291,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 28,
   },
-  sheetTitle: { fontSize: 17, fontWeight: '700', color: '#0f172a' },
+  sheetTitle: { fontSize: 17, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0f172a' },
   sheetSubtitle: {
     fontSize: 13,
     color: '#64748b',
@@ -315,5 +315,5 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     backgroundColor: '#f1f5f9',
   },
-  cancelText: { fontSize: 15, color: '#475569', fontWeight: '600' },
+  cancelText: { fontSize: 15, color: '#475569', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
 });

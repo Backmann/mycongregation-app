@@ -144,10 +144,10 @@ const styles = StyleSheet.create({
     borderBottomColor: '#e2e8f0',
   },
   editBtn: { marginLeft: 12, padding: 8 },
-  month: { fontSize: 16, fontWeight: '600', color: '#0f172a' },
+  month: { fontSize: 16, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0f172a' },
   statsRow: { flexDirection: 'row', gap: 12, marginTop: 6, flexWrap: 'wrap' },
-  statPrimary: { fontSize: 13, color: '#0ea5e9', fontWeight: '600' },
-  statSecondary: { fontSize: 13, color: '#64748b', fontWeight: '500' },
+  statPrimary: { fontSize: 13, color: '#0ea5e9', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
+  statSecondary: { fontSize: 13, color: '#64748b', fontWeight: '500', fontFamily: 'Manrope_500Medium',},
   editInfo: {
     fontSize: 11,
     color: '#94a3b8',
@@ -162,7 +162,7 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
     color: '#475569',
     marginTop: 16,
   },

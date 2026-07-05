@@ -307,14 +307,14 @@ const styles = StyleSheet.create({
   },
   starBtn: { padding: 2 },
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  name: { fontSize: 15, fontWeight: '600', color: '#0f172a' },
+  name: { fontSize: 15, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0f172a' },
   defaultBadge: {
     backgroundColor: '#fef3c7',
     borderRadius: 6,
     paddingHorizontal: 6,
     paddingVertical: 1,
   },
-  defaultBadgeText: { fontSize: 10, fontWeight: '700', color: '#92400e' },
+  defaultBadgeText: { fontSize: 10, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#92400e' },
   address: { fontSize: 13, color: '#475569', marginTop: 1 },
   iconBtn: { padding: 6 },
   addBtn: {
@@ -330,7 +330,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f0f9ff',
   },
   addBtnPressed: { backgroundColor: '#e0f2fe' },
-  addBtnText: { fontSize: 14, fontWeight: '600', color: '#0369a1' },
+  addBtnText: { fontSize: 14, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0369a1' },
   disabled: { opacity: 0.5 },
 
   overlay: {
@@ -345,8 +345,8 @@ const styles = StyleSheet.create({
     padding: 18,
     gap: 10,
   },
-  modalTitle: { fontSize: 16, fontWeight: '700', color: '#0f172a' },
-  fieldLabel: { fontSize: 12, fontWeight: '600', color: '#64748b', marginTop: 4 },
+  modalTitle: { fontSize: 16, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0f172a' },
+  fieldLabel: { fontSize: 12, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#64748b', marginTop: 4 },
   input: {
     borderWidth: 1,
     borderColor: '#cbd5e1',
@@ -370,12 +370,12 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   modalCancel: { paddingVertical: 10, paddingHorizontal: 14 },
-  modalCancelText: { fontSize: 15, color: '#64748b', fontWeight: '600' },
+  modalCancelText: { fontSize: 15, color: '#64748b', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
   modalConfirm: {
     paddingVertical: 10,
     paddingHorizontal: 18,
     borderRadius: 10,
     backgroundColor: '#0ea5e9',
   },
-  modalConfirmText: { fontSize: 15, color: '#fff', fontWeight: '600' },
+  modalConfirmText: { fontSize: 15, color: '#fff', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
 });

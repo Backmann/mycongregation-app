@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     borderRadius: 14,
   },
-  text: { fontSize: 13, fontWeight: '500' },
+  text: { fontSize: 13, fontWeight: '500', fontFamily: 'Manrope_500Medium',},
   main: { backgroundColor: '#e0f2fe' },
   mainText: { color: '#0c4a6e' },
   assistant: { backgroundColor: '#f1f5f9' },
@@ -103,5 +103,5 @@ const styles = StyleSheet.create({
     borderColor: '#cbd5e1',
     paddingVertical: 3,
   },
-  emptyText: { color: '#94a3b8', fontStyle: 'italic', fontWeight: '400' },
+  emptyText: { color: '#94a3b8', fontStyle: 'italic', fontWeight: '400', fontFamily: 'Manrope_400Regular',},
 });

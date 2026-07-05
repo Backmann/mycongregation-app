@@ -1669,7 +1669,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f1f5f9' },
   overline: {
     fontSize: 11,
-    fontWeight: '700',
+    fontWeight: '700', fontFamily: 'Manrope_700Bold',
     color: '#7c3aed',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -1695,7 +1695,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#0ea5e9',
   },
-  createButtonText: { fontSize: 14, fontWeight: '600' },
+  createButtonText: { fontSize: 14, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
   createPrimaryText: { color: '#fff' },
   createSecondaryText: { color: '#0ea5e9' },
 
@@ -1732,7 +1732,7 @@ const styles = StyleSheet.create({
   },
   weekendCardTitle: {
     fontSize: 13,
-    fontWeight: '800',
+    fontWeight: '800', fontFamily: 'Manrope_800ExtraBold',
     letterSpacing: 0.3,
     flex: 1,
   },
@@ -1749,7 +1749,7 @@ const styles = StyleSheet.create({
   subsectionBannerText: {
     color: '#fff',
     fontSize: 13,
-    fontWeight: '700',
+    fontWeight: '700', fontFamily: 'Manrope_700Bold',
     textTransform: 'uppercase',
     letterSpacing: 0.6,
     flex: 1,
@@ -1770,7 +1770,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
     color: '#64748b',
     textTransform: 'uppercase',
     paddingHorizontal: 20,
@@ -1811,13 +1811,13 @@ const styles = StyleSheet.create({
   },
   timePillStart: {
     fontSize: 12.5,
-    fontWeight: '800',
+    fontWeight: '800', fontFamily: 'Manrope_800ExtraBold',
     color: '#475569',
     lineHeight: 15,
   },
   timePillEnd: {
     fontSize: 11,
-    fontWeight: '600',
+    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
     color: '#94a3b8',
     lineHeight: 13,
   },
@@ -1829,9 +1829,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  orderText: { color: '#0369a1', fontWeight: '700', fontSize: 13 },
+  orderText: { color: '#0369a1', fontWeight: '700', fontFamily: 'Manrope_700Bold', fontSize: 13 },
   orderBadgeInfo: { backgroundColor: '#f1f5f9' },
-  partLabel: { fontSize: 15, fontWeight: '600', color: '#0f172a' },
+  partLabel: { fontSize: 15, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0f172a' },
   partLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   autoBadge: {
     flexDirection: 'row',
@@ -1842,7 +1842,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
     paddingVertical: 1,
   },
-  autoBadgeText: { fontSize: 10, fontWeight: '700', color: '#0369a1' },
+  autoBadgeText: { fontSize: 10, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0369a1' },
   rowMine: { backgroundColor: '#fffbeb' },
   songHint: {
     fontSize: 13,
@@ -1872,12 +1872,12 @@ const styles = StyleSheet.create({
     borderRadius: 14,
   },
   chipMain: { backgroundColor: '#e0f2fe' },
-  chipMainText: { fontSize: 13, color: '#0c4a6e', fontWeight: '500' },
+  chipMainText: { fontSize: 13, color: '#0c4a6e', fontWeight: '500', fontFamily: 'Manrope_500Medium',},
   chipAssistant: { backgroundColor: '#f1f5f9' },
-  chipAssistantText: { fontSize: 13, color: '#475569', fontWeight: '500' },
+  chipAssistantText: { fontSize: 13, color: '#475569', fontWeight: '500', fontFamily: 'Manrope_500Medium',},
   chipSpeaker: { backgroundColor: '#ede9fe' },
-  chipSpeakerText: { fontSize: 13, color: '#6d28d9', fontWeight: '500' },
-  chipSpeakerCong: { fontSize: 13, color: '#9b7fd4', fontWeight: '400' },
+  chipSpeakerText: { fontSize: 13, color: '#6d28d9', fontWeight: '500', fontFamily: 'Manrope_500Medium',},
+  chipSpeakerCong: { fontSize: 13, color: '#9b7fd4', fontWeight: '400', fontFamily: 'Manrope_400Regular',},
   chipEmpty: {
     backgroundColor: 'transparent',
     borderWidth: 1,
@@ -1901,7 +1901,7 @@ const styles = StyleSheet.create({
   statusDotCancelled: { backgroundColor: '#dc2626' },
   statusDotLabel: {
     fontSize: 11,
-    fontWeight: '600',
+    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
   },
   statusDotLabelChanged: { color: '#b45309' },
   statusDotLabelCancel: { color: '#b91c1c' },

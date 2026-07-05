@@ -170,12 +170,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  cardTitle: { fontSize: 16, fontWeight: '700', color: '#0f172a' },
+  cardTitle: { fontSize: 16, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0f172a' },
   cardState: { fontSize: 13, color: '#94a3b8', marginTop: 1 },
   divider: { height: 1, backgroundColor: '#f1f5f9', marginVertical: 14 },
   sectionHead: {
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: '700', fontFamily: 'Manrope_700Bold',
     color: '#64748b',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -183,7 +183,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   ruleLine: { flexDirection: 'row', gap: 10, marginBottom: 12 },
-  ruleTitle: { fontSize: 14, fontWeight: '600', color: '#0f172a' },
+  ruleTitle: { fontSize: 14, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0f172a' },
   ruleBody: { fontSize: 13, color: '#475569', marginTop: 2, lineHeight: 18 },
   bullet: { flexDirection: 'row', gap: 8, marginBottom: 7, alignItems: 'flex-start' },
   dot: {

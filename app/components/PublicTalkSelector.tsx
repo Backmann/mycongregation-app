@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#64748b',
     marginBottom: 4,
-    fontWeight: '500',
+    fontWeight: '500', fontFamily: 'Manrope_500Medium',
   },
   fieldRow: {
     flexDirection: 'row',
@@ -271,8 +271,8 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#e2e8f0',
   },
-  modalTitle: { fontSize: 18, fontWeight: '600', color: '#0f172a' },
-  doneText: { color: '#0ea5e9', fontSize: 16, fontWeight: '600' },
+  modalTitle: { fontSize: 18, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0f172a' },
+  doneText: { color: '#0ea5e9', fontSize: 16, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
 
   searchBar: {
     flexDirection: 'row',
@@ -311,7 +311,7 @@ const styles = StyleSheet.create({
     marginRight: 12,
     marginTop: 1,
   },
-  numberText: { fontSize: 13, fontWeight: '700', color: '#0369a1' },
+  numberText: { fontSize: 13, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0369a1' },
 
   hintRow: {
     flexDirection: 'row',

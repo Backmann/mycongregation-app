@@ -12,13 +12,15 @@ import {
  * Manrope is the app-wide typeface — a clean, premium grotesque with full
  * Cyrillic + Latin-ext coverage (RU / DE / EN).
  *
- * Application strategy (RN 0.81-safe): we do NOT wrap Text.render — on this RN
- * version the forwardRef Text can't be render-wrapped without blanking heavy
- * screens. Instead we set a base fontFamily on the shared defaultProps, which
- * every <Text>/<TextInput> without its own family inherits. Components that
- * declare an explicit fontWeight keep it; the weight is realized against the
- * loaded Manrope faces (all five weights are registered below, and the native
- * font matcher / web @font-face resolves the right face per weight).
+ * Application strategy (RN 0.81-safe, weight-correct on web AND native):
+ *  - We load all five faces.
+ *  - Regular is set as the base family via defaultProps, so any text without an
+ *    explicit weight inherits Manrope. We do NOT wrap Text.render (that blanked
+ *    the schedule on RN 0.81).
+ *  - Everywhere a style sets a fontWeight, a matching `fontFamily`
+ *    ('Manrope_600SemiBold', 'Manrope_700Bold', …) is added by the codemod, so
+ *    bold text renders in the real bold face on every platform, including the
+ *    native Google Play build.
  */
 let applied = false;
 
@@ -40,7 +42,7 @@ function applyBaseFont() {
     apply(Text);
     apply(TextInput);
   } catch {
-    // If defaultProps isn't writable, fall back to the system font silently.
+    // If defaultProps isn't writable, the app renders in the system font.
   }
 }
 

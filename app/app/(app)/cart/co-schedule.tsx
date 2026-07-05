@@ -811,7 +811,7 @@ export default function CoScheduleScreen() {
                   marginLeft: 4,
                   fontSize: 11,
                   color: '#7c3aed',
-                  fontWeight: '600',
+                  fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
                 }}
               >
                 {isSynced(it) ? t('coVisit.coBadge') : t('coVisit.spouseBadge')}
@@ -1088,7 +1088,7 @@ export default function CoScheduleScreen() {
             <Text
               style={{
                 fontSize: 15,
-                fontWeight: '700',
+                fontWeight: '700', fontFamily: 'Manrope_700Bold',
                 color: '#0f172a',
                 paddingHorizontal: 12,
                 paddingVertical: 10,
@@ -1629,13 +1629,13 @@ const styles = StyleSheet.create({
   },
   muted: { fontSize: 15, color: '#64748b' },
   card: { backgroundColor: '#ffffff', borderRadius: 12, padding: 16, gap: 10 },
-  cardTitle: { fontSize: 18, fontWeight: '700', color: '#0f172a' },
+  cardTitle: { fontSize: 18, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0f172a' },
   kv: { flexDirection: 'row', justifyContent: 'space-between', gap: 12 },
   kvLabel: { fontSize: 14, color: '#64748b' },
   kvValue: {
     fontSize: 14,
     color: '#0f172a',
-    fontWeight: '600',
+    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
     flexShrink: 1,
     textAlign: 'right',
   },
@@ -1648,7 +1648,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   pressed: { opacity: 0.6 },
-  linkText: { flex: 1, fontSize: 16, fontWeight: '600', color: '#0f172a' },
+  linkText: { flex: 1, fontSize: 16, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0f172a' },
   pdfBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1658,16 +1658,16 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingVertical: 12,
   },
-  pdfBtnText: { fontSize: 15, fontWeight: '700', color: '#ffffff' },
+  pdfBtnText: { fontSize: 15, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#ffffff' },
   section: { gap: 8, marginTop: 8 },
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  sectionTitle: { fontSize: 16, fontWeight: '700', color: '#0f172a' },
+  sectionTitle: { fontSize: 16, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0f172a' },
   addBtn: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  addText: { fontSize: 14, fontWeight: '600', color: '#0ea5e9' },
+  addText: { fontSize: 14, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0ea5e9' },
   dayBlock: { gap: 6 },
   dayCard: {
     gap: 6,
@@ -1687,7 +1687,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  dayPlateNum: { color: '#fff', fontSize: 17, fontWeight: '800' },
+  dayPlateNum: { color: '#fff', fontSize: 17, fontWeight: '800', fontFamily: 'Manrope_800ExtraBold',},
   badgeRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1697,7 +1697,7 @@ const styles = StyleSheet.create({
   kindBadge: {
     alignSelf: 'flex-start',
     fontSize: 11,
-    fontWeight: '600',
+    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
     borderRadius: 8,
     paddingHorizontal: 6,
     paddingVertical: 1,
@@ -1723,13 +1723,13 @@ const styles = StyleSheet.create({
     gap: 8,
     marginBottom: 4,
   },
-  personName: { fontSize: 15, fontWeight: '800', color: '#0f172a' },
-  personRole: { fontSize: 12, color: '#64748b', fontWeight: '600' },
+  personName: { fontSize: 15, fontWeight: '800', fontFamily: 'Manrope_800ExtraBold', color: '#0f172a' },
+  personRole: { fontSize: 12, color: '#64748b', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
   personHint: { fontSize: 12.5, color: '#7c3aed', marginTop: 8 },
   serviceTypeLine: {
     fontSize: 13,
     color: '#7c3aed',
-    fontWeight: '600',
+    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
     marginTop: 3,
   },
   pairDot: { width: 8, height: 8, borderRadius: 4 },
@@ -1743,17 +1743,17 @@ const styles = StyleSheet.create({
   },
   pairCardCo: { borderLeftColor: '#0ea5e9', backgroundColor: '#f0f9ff' },
   pairCardWife: { borderLeftColor: '#8b5cf6', backgroundColor: '#faf5ff' },
-  pairName: { fontSize: 13, fontWeight: '800', color: '#0f172a' },
+  pairName: { fontSize: 13, fontWeight: '800', fontFamily: 'Manrope_800ExtraBold', color: '#0f172a' },
   pairLine: { fontSize: 13, color: '#0f172a', marginTop: 1 },
   pairNote: {
     fontSize: 12.5,
     color: '#7c3aed',
-    fontWeight: '600',
+    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
     marginTop: 1,
   },
   togetherBadge: {
     fontSize: 11,
-    fontWeight: '600',
+    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
     color: '#7c3aed',
     backgroundColor: '#f3e8ff',
     borderRadius: 8,
@@ -1764,7 +1764,7 @@ const styles = StyleSheet.create({
   modeChipActiveWife: { backgroundColor: '#8b5cf6' },
   dayHeader: {
     fontSize: 13,
-    fontWeight: '700',
+    fontWeight: '700', fontFamily: 'Manrope_700Bold',
     color: '#475569',
     textTransform: 'capitalize',
   },
@@ -1780,9 +1780,9 @@ const styles = StyleSheet.create({
     paddingTop: 8,
     marginTop: 2,
   },
-  itemTime: { fontSize: 14, fontWeight: '700', color: '#0ea5e9', width: 48 },
+  itemTime: { fontSize: 14, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0ea5e9', width: 48 },
   itemBody: { flex: 1 },
-  itemPlace: { fontSize: 15, color: '#0f172a', fontWeight: '600' },
+  itemPlace: { fontSize: 15, color: '#0f172a', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
   itemAssignee: { fontSize: 13, color: '#64748b', marginTop: 2 },
   modalBackdrop: {
     flex: 1,
@@ -1798,13 +1798,13 @@ const styles = StyleSheet.create({
   modalContent: { padding: 16, gap: 8 },
   modalTitle: {
     fontSize: 17,
-    fontWeight: '700',
+    fontWeight: '700', fontFamily: 'Manrope_700Bold',
     color: '#0f172a',
     marginBottom: 4,
   },
   fieldLabel: {
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
     color: '#475569',
     marginTop: 8,
   },
@@ -1830,7 +1830,7 @@ const styles = StyleSheet.create({
     borderColor: '#e2e8f0',
   },
   modeChipActive: { backgroundColor: '#0ea5e9', borderColor: '#0ea5e9' },
-  modeChipText: { fontSize: 14, fontWeight: '600', color: '#334155' },
+  modeChipText: { fontSize: 14, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#334155' },
   modeChipTextActive: { color: '#ffffff' },
   chip: {
     paddingHorizontal: 12,
@@ -1842,7 +1842,7 @@ const styles = StyleSheet.create({
   },
   chipActive: { backgroundColor: '#0ea5e9', borderColor: '#0ea5e9' },
   chipText: { fontSize: 13, color: '#334155' },
-  chipTextActive: { color: '#ffffff', fontWeight: '600' },
+  chipTextActive: { color: '#ffffff', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
   input: {
     backgroundColor: '#ffffff',
     borderRadius: 10,
@@ -1860,16 +1860,16 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   deleteBtn: { paddingVertical: 10, paddingHorizontal: 8 },
-  deleteText: { color: '#dc2626', fontWeight: '600', fontSize: 15 },
+  deleteText: { color: '#dc2626', fontWeight: '600', fontFamily: 'Manrope_600SemiBold', fontSize: 15 },
   cancelBtn: { marginLeft: 'auto', paddingVertical: 10, paddingHorizontal: 16 },
-  cancelText: { color: '#475569', fontWeight: '600', fontSize: 15 },
+  cancelText: { color: '#475569', fontWeight: '600', fontFamily: 'Manrope_600SemiBold', fontSize: 15 },
   saveBtn: {
     backgroundColor: '#0ea5e9',
     borderRadius: 10,
     paddingVertical: 10,
     paddingHorizontal: 20,
   },
-  saveText: { color: '#ffffff', fontWeight: '700', fontSize: 15 },
+  saveText: { color: '#ffffff', fontWeight: '700', fontFamily: 'Manrope_700Bold', fontSize: 15 },
 });
 
 const accStyles = StyleSheet.create({
@@ -1887,10 +1887,10 @@ const accStyles = StyleSheet.create({
     gap: 8,
     marginBottom: 8,
   },
-  title: { fontSize: 15, fontWeight: '800', color: '#0e7490', flex: 1 },
+  title: { fontSize: 15, fontWeight: '800', fontFamily: 'Manrope_800ExtraBold', color: '#0e7490', flex: 1 },
   neededBadge: {
     fontSize: 11,
-    fontWeight: '700',
+    fontWeight: '700', fontFamily: 'Manrope_700Bold',
     color: '#b45309',
     backgroundColor: '#fef3c7',
     borderRadius: 8,

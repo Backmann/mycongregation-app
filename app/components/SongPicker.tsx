@@ -158,7 +158,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
     marginBottom: 4,
   },
-  currentValue: { fontSize: 16, fontWeight: '600', color: '#0f172a' },
+  currentValue: { fontSize: 16, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0f172a' },
   search: {
     margin: 16,
     marginBottom: 8,
@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: 8,
   },
-  clearText: { color: '#dc2626', fontSize: 14, fontWeight: '500' },
+  clearText: { color: '#dc2626', fontSize: 14, fontWeight: '500', fontFamily: 'Manrope_500Medium',},
   empty: {
     textAlign: 'center',
     color: '#64748b',
@@ -212,8 +212,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   badgeActive: { backgroundColor: '#0ea5e9' },
-  badgeText: { fontSize: 13, fontWeight: '700', color: '#0369a1' },
+  badgeText: { fontSize: 13, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0369a1' },
   badgeTextActive: { color: '#fff' },
   rowTitle: { flex: 1, fontSize: 14, color: '#0f172a' },
-  rowTitleActive: { fontWeight: '600' },
+  rowTitleActive: { fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
 });

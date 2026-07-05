@@ -226,7 +226,7 @@ const styles = StyleSheet.create({
   item: { height: ITEM_H, alignItems: 'center', justifyContent: 'center' },
   text: {
     fontSize: 21,
-    fontWeight: '600',
+    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
     fontVariant: ['tabular-nums'],
     color: '#0f172a',
   },
@@ -252,7 +252,7 @@ const styles = StyleSheet.create({
   fadeBottom: { bottom: 0 },
   colon: {
     fontSize: 24,
-    fontWeight: '700',
+    fontWeight: '700', fontFamily: 'Manrope_700Bold',
     color: '#0c4a6e',
     marginHorizontal: 4,
   },

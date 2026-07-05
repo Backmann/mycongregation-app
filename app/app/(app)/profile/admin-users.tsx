@@ -201,7 +201,7 @@ function UserCard({ user, isSelf }: { user: PublicUser; isSelf: boolean }) {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f1f5f9' },
   headerBar: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 8 },
-  headerTitle: { fontSize: 22, fontWeight: '700', color: '#0f172a' },
+  headerTitle: { fontSize: 22, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0f172a' },
   headerSubtitle: { fontSize: 13, color: '#64748b', marginTop: 2 },
   noteCard: {
     flexDirection: 'row',
@@ -237,7 +237,7 @@ const styles = StyleSheet.create({
   userEmail: {
     fontSize: 15,
     color: '#0f172a',
-    fontWeight: '500',
+    fontWeight: '500', fontFamily: 'Manrope_500Medium',
     flexShrink: 1,
   },
   selfBadge: {
@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     borderRadius: 4,
   },
-  selfBadgeText: { fontSize: 10, color: '#0369a1', fontWeight: '700' },
+  selfBadgeText: { fontSize: 10, color: '#0369a1', fontWeight: '700', fontFamily: 'Manrope_700Bold',},
   lastLogin: { fontSize: 12, color: '#64748b', marginTop: 3 },
   presenceRow: {
     flexDirection: 'row',
@@ -254,14 +254,14 @@ const styles = StyleSheet.create({
     gap: 6,
     marginTop: 3,
   },
-  onlineText: { fontSize: 12, color: '#16a34a', fontWeight: '600' },
+  onlineText: { fontSize: 12, color: '#16a34a', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
   roleChip: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
-  roleChipText: { fontSize: 11, fontWeight: '700', textTransform: 'uppercase' },
+  roleChipText: { fontSize: 11, fontWeight: '700', fontFamily: 'Manrope_700Bold', textTransform: 'uppercase' },
   inactiveBanner: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
     marginTop: 10,
   },
-  inactiveText: { fontSize: 12, color: '#991b1b', fontWeight: '500' },
+  inactiveText: { fontSize: 12, color: '#991b1b', fontWeight: '500', fontFamily: 'Manrope_500Medium',},
 });

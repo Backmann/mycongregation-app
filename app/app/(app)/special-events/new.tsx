@@ -90,6 +90,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 8,
   },
-  saveText: { color: '#fff', fontSize: 16, fontWeight: '600' },
+  saveText: { color: '#fff', fontSize: 16, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
   disabled: { opacity: 0.5 },
 });

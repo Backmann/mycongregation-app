@@ -233,7 +233,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     alignItems: 'center',
   },
-  removedText: { color: '#92400e', fontWeight: '600', fontSize: 13 },
+  removedText: { color: '#92400e', fontWeight: '600', fontFamily: 'Manrope_600SemiBold', fontSize: 13 },
   unassignLink: {
     alignSelf: 'center',
     paddingVertical: 10,
@@ -244,7 +244,7 @@ const styles = StyleSheet.create({
   unassignLinkText: {
     color: '#dc2626',
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
   },
   bottomActions: {
     padding: 16,
@@ -256,5 +256,5 @@ const styles = StyleSheet.create({
   buttonRemove: { backgroundColor: '#dc2626' },
   buttonUnassign: { backgroundColor: '#d97706' },
   buttonRestore: { backgroundColor: '#059669' },
-  buttonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
+  buttonText: { color: '#fff', fontSize: 16, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
 });

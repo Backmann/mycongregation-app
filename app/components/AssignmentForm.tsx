@@ -890,7 +890,7 @@ const styles = StyleSheet.create({
   cancelPartText: {
     color: '#dc2626',
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
   },
   restorePartText: { color: '#0369a1' },
   contextCard: {
@@ -916,7 +916,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 3,
   },
-  contextChipText: { fontSize: 12, color: '#475569', fontWeight: '600' },
+  contextChipText: { fontSize: 12, color: '#475569', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
   container: { flex: 1, backgroundColor: '#f1f5f9' },
   readonly: {
     paddingVertical: 8,
@@ -943,13 +943,13 @@ const styles = StyleSheet.create({
   button: { paddingVertical: 14, borderRadius: 8, alignItems: 'center' },
   buttonPrimary: { backgroundColor: '#0ea5e9' },
   buttonDisabled: { opacity: 0.6 },
-  buttonPrimaryText: { color: '#fff', fontSize: 16, fontWeight: '600' },
+  buttonPrimaryText: { color: '#fff', fontSize: 16, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
   buttonSecondary: {
     backgroundColor: '#fff',
     borderWidth: 1,
     borderColor: '#cbd5e1',
   },
-  buttonSecondaryText: { color: '#475569', fontSize: 16, fontWeight: '500' },
+  buttonSecondaryText: { color: '#475569', fontSize: 16, fontWeight: '500', fontFamily: 'Manrope_500Medium',},
   lnInsertBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -963,7 +963,7 @@ const styles = StyleSheet.create({
     borderColor: '#bae6fd',
     backgroundColor: '#f0f9ff',
   },
-  lnInsertText: { color: '#0369a1', fontSize: 15, fontWeight: '700' },
+  lnInsertText: { color: '#0369a1', fontSize: 15, fontWeight: '700', fontFamily: 'Manrope_700Bold',},
   coSpeakerNote: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -971,11 +971,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 12,
   },
-  coSpeakerText: { flex: 1, fontSize: 14, color: '#6d28d9', fontWeight: '600' },
+  coSpeakerText: { flex: 1, fontSize: 14, color: '#6d28d9', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
   coPickerWrap: { paddingHorizontal: 20, paddingBottom: 14 },
   coPickerLabel: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
     color: '#475569',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -991,7 +991,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   coChipActive: { backgroundColor: '#6d28d9', borderColor: '#6d28d9' },
-  coChipText: { fontSize: 13, color: '#6d28d9', fontWeight: '600' },
+  coChipText: { fontSize: 13, color: '#6d28d9', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
   coChipTextActive: { color: '#fff' },
   lnBackdrop: {
     flex: 1,
@@ -1011,7 +1011,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 8,
   },
-  lnTitle: { fontSize: 18, fontWeight: '700', color: '#0f172a' },
+  lnTitle: { fontSize: 18, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0f172a' },
   lnEmpty: {
     fontSize: 14,
     color: '#64748b',
@@ -1028,12 +1028,12 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#f1f5f9',
   },
-  lnRowTitle: { fontSize: 15, fontWeight: '600', color: '#0f172a' },
+  lnRowTitle: { fontSize: 15, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0f172a' },
   lnRowNotes: { fontSize: 13, color: '#64748b', marginTop: 2 },
   lnRowSpeaker: {
     fontSize: 12,
     color: '#0369a1',
-    fontWeight: '500',
+    fontWeight: '500', fontFamily: 'Manrope_500Medium',
     marginTop: 3,
   },
 });

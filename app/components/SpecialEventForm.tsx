@@ -501,7 +501,7 @@ export function SpecialEventForm({
           keyboardShouldPersistTaps="always"
         >
           <Pressable style={styles.noteTool} onPress={() => wrapNote('**')}>
-            <Text style={[styles.noteToolText, { fontWeight: '800' }]}>Ж</Text>
+            <Text style={[styles.noteToolText, { fontWeight: '800', fontFamily: 'Manrope_800ExtraBold',}]}>Ж</Text>
           </Pressable>
           <Pressable style={styles.noteTool} onPress={() => wrapNote('_')}>
             <Text style={[styles.noteToolText, { fontStyle: 'italic' }]}>
@@ -621,7 +621,7 @@ const styles = StyleSheet.create({
   timeFields: { flexDirection: 'row', gap: 10, marginTop: 8 },
   timeSubLabel: {
     fontSize: 11,
-    fontWeight: '700',
+    fontWeight: '700', fontFamily: 'Manrope_700Bold',
     color: '#64748b',
     marginBottom: 4,
     textTransform: 'uppercase',
@@ -640,14 +640,14 @@ const styles = StyleSheet.create({
   },
   notePreviewLabel: {
     fontSize: 10.5,
-    fontWeight: '700',
+    fontWeight: '700', fontFamily: 'Manrope_700Bold',
     color: '#94a3b8',
     textTransform: 'uppercase',
     marginBottom: 3,
   },
   notePreviewText: { fontSize: 14, color: '#0f172a', lineHeight: 20 },
   field: { marginBottom: 14 },
-  label: { fontSize: 13, fontWeight: '600', color: '#475569', marginBottom: 6 },
+  label: { fontSize: 13, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#475569', marginBottom: 6 },
   input: {
     borderWidth: 1,
     borderColor: '#cbd5e1',
@@ -696,7 +696,7 @@ const styles = StyleSheet.create({
   },
   chipActive: { backgroundColor: '#0ea5e9', borderColor: '#0ea5e9' },
   chipText: { fontSize: 14, color: '#334155' },
-  chipTextActive: { color: '#fff', fontWeight: '600' },
+  chipTextActive: { color: '#fff', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
   typeRow: {
     flexDirection: 'row',
     alignItems: 'center',

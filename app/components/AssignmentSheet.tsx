@@ -369,16 +369,16 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#e2e8f0',
   },
-  title: { flex: 1, fontSize: 16, fontWeight: '700', color: '#0f172a' },
+  title: { flex: 1, fontSize: 16, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0f172a' },
   closeBtn: { paddingHorizontal: 8, paddingVertical: 4 },
-  closeText: { color: '#0ea5e9', fontSize: 14, fontWeight: '600' },
+  closeText: { color: '#0ea5e9', fontSize: 14, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
   nextBtn: {
     backgroundColor: '#0ea5e9',
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 6,
   },
-  nextText: { color: '#fff', fontSize: 14, fontWeight: '700' },
+  nextText: { color: '#fff', fontSize: 14, fontWeight: '700', fontFamily: 'Manrope_700Bold',},
   unassignLink: {
     alignSelf: 'center',
     paddingVertical: 12,
@@ -386,7 +386,7 @@ const styles = StyleSheet.create({
   },
   unassignLinkPressed: { opacity: 0.6 },
   unassignLinkDisabled: { opacity: 0.35 },
-  unassignLinkText: { color: '#dc2626', fontSize: 14, fontWeight: '600' },
+  unassignLinkText: { color: '#dc2626', fontSize: 14, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
   deletePartLink: {
     alignSelf: 'center',
     paddingVertical: 10,
@@ -394,5 +394,5 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   deletePartLinkPressed: { opacity: 0.6 },
-  deletePartLinkText: { color: '#b91c1c', fontSize: 13, fontWeight: '700' },
+  deletePartLinkText: { color: '#b91c1c', fontSize: 13, fontWeight: '700', fontFamily: 'Manrope_700Bold',},
 });

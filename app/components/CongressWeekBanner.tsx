@@ -50,7 +50,7 @@ const styles = StyleSheet.create({
   text: {
     flex: 1,
     fontSize: 15,
-    fontWeight: '700',
+    fontWeight: '700', fontFamily: 'Manrope_700Bold',
     color: '#78350f',
     textDecorationLine: 'underline',
   },

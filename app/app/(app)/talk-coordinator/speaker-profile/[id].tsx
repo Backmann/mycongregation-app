@@ -288,7 +288,7 @@ const styles = StyleSheet.create({
     padding: 14,
     marginBottom: 14,
   },
-  name: { fontSize: 20, fontWeight: '700', color: '#0f172a' },
+  name: { fontSize: 20, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0f172a' },
   cong: { fontSize: 14, color: '#475569', marginTop: 2 },
   phoneRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 10 },
   phone: { fontSize: 15, color: '#0369a1' },
@@ -307,8 +307,8 @@ const styles = StyleSheet.create({
   statsBandRecent: { borderColor: '#fcd34d', backgroundColor: '#fffbeb' },
   stat: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 2 },
   statDivider: { width: 1, backgroundColor: '#e2e8f0' },
-  statNum: { fontSize: 20, fontWeight: '700', color: '#0f172a' },
-  statText: { fontSize: 14, fontWeight: '600', color: '#0f172a', textAlign: 'center' },
+  statNum: { fontSize: 20, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0f172a' },
+  statText: { fontSize: 14, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0f172a', textAlign: 'center' },
   statTextRecent: { color: '#b45309' },
   statLabel: { fontSize: 11, color: '#94a3b8', textAlign: 'center' },
 
@@ -326,7 +326,7 @@ const styles = StyleSheet.create({
 
   sectionTitle: {
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
     color: '#64748b',
     textTransform: 'uppercase',
     letterSpacing: 0.3,
@@ -343,11 +343,11 @@ const styles = StyleSheet.create({
     borderBottomColor: '#f1f5f9',
   },
   visitDateCol: { width: 96 },
-  visitDate: { fontSize: 14, fontWeight: '600', color: '#0f172a' },
+  visitDate: { fontSize: 14, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0f172a' },
   visitRel: { fontSize: 12, color: '#94a3b8', marginTop: 1 },
   visitTalkCol: { flex: 1 },
   visitTalk: { fontSize: 14, color: '#0f172a', lineHeight: 19 },
-  visitNum: { fontWeight: '700', color: '#0369a1' },
+  visitNum: { fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0369a1' },
   visitTalkMuted: { fontSize: 14, color: '#94a3b8', fontStyle: 'italic' },
   tentative: { fontSize: 11, color: '#b45309', marginTop: 2 },
 
@@ -364,8 +364,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#eff6ff',
   },
   talkChipGiven: { borderColor: '#e2e8f0', backgroundColor: '#f8fafc' },
-  talkChipText: { fontSize: 13, fontWeight: '600', color: '#0369a1' },
-  talkChipTextGiven: { color: '#94a3b8', fontWeight: '500' },
+  talkChipText: { fontSize: 13, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0369a1' },
+  talkChipTextGiven: { color: '#94a3b8', fontWeight: '500', fontFamily: 'Manrope_500Medium',},
   repertoireLegend: { fontSize: 12, color: '#94a3b8', marginTop: 10 },
 
   editBtn: {
@@ -379,5 +379,5 @@ const styles = StyleSheet.create({
     borderColor: '#0369a1',
     backgroundColor: '#fff',
   },
-  editBtnText: { fontSize: 15, fontWeight: '600', color: '#0369a1' },
+  editBtnText: { fontSize: 15, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0369a1' },
 });

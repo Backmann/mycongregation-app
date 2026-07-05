@@ -199,7 +199,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: '700', fontFamily: 'Manrope_700Bold',
     color: '#0f172a',
     marginTop: 12,
     marginBottom: 8,
@@ -255,7 +255,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#0ea5e9',
     borderRadius: 10,
   },
-  importButtonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
+  importButtonText: { color: '#fff', fontSize: 16, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
 
   errorBox: {
     padding: 12,
@@ -272,7 +272,7 @@ const styles = StyleSheet.create({
     gap: 8,
     marginBottom: 8,
   },
-  successTitle: { fontSize: 18, fontWeight: '700', color: '#059669' },
+  successTitle: { fontSize: 18, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#059669' },
 
   statsRow: {
     flexDirection: 'row',
@@ -283,7 +283,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   stat: { flex: 1, alignItems: 'center' },
-  statValue: { fontSize: 22, fontWeight: '700' },
+  statValue: { fontSize: 22, fontWeight: '700', fontFamily: 'Manrope_700Bold',},
   statLabel: {
     fontSize: 11,
     color: '#64748b',
@@ -303,7 +303,7 @@ const styles = StyleSheet.create({
 
   examplesHeader: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
     color: '#64748b',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -335,7 +335,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginRight: 10,
   },
-  numberText: { fontSize: 12, fontWeight: '700', color: '#0369a1' },
+  numberText: { fontSize: 12, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0369a1' },
   exampleTitle: { fontSize: 13, color: '#0f172a', flex: 1 },
 
   doneButton: {
@@ -345,5 +345,5 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: 'center',
   },
-  doneButtonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
+  doneButtonText: { color: '#fff', fontSize: 16, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
 });

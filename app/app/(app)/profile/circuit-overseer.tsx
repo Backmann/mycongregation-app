@@ -378,14 +378,14 @@ const styles = StyleSheet.create({
   cardTop: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   roleTag: {
     fontSize: 11,
-    fontWeight: '700',
+    fontWeight: '700', fontFamily: 'Manrope_700Bold',
     color: '#0e7490',
     textTransform: 'uppercase',
     letterSpacing: 0.4,
   },
   primaryBadge: {
     fontSize: 10,
-    fontWeight: '700',
+    fontWeight: '700', fontFamily: 'Manrope_700Bold',
     color: '#fff',
     backgroundColor: '#0ea5e9',
     borderRadius: 6,
@@ -393,7 +393,7 @@ const styles = StyleSheet.create({
     paddingVertical: 1,
     overflow: 'hidden',
   },
-  name: { fontSize: 16, fontWeight: '600', color: '#0f172a', marginTop: 3 },
+  name: { fontSize: 16, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0f172a', marginTop: 3 },
   wife: { fontSize: 13, color: '#64748b', marginTop: 2 },
   cardActions: { flexDirection: 'row', gap: 4 },
   iconBtn: { padding: 6 },
@@ -407,7 +407,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginTop: 8,
   },
-  addBtnText: { color: '#fff', fontSize: 15, fontWeight: '600' },
+  addBtnText: { color: '#fff', fontSize: 15, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
   note: {
     fontSize: 12,
     color: '#94a3b8',
@@ -429,7 +429,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 8,
   },
-  modalTitle: { fontSize: 17, fontWeight: '700', color: '#0f172a' },
+  modalTitle: { fontSize: 17, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0f172a' },
   errorBoxText: {
     color: '#991b1b',
     fontSize: 13,
@@ -442,7 +442,7 @@ const styles = StyleSheet.create({
   },
   fieldLabel: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
     color: '#475569',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -470,7 +470,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   chipActive: { backgroundColor: '#0ea5e9', borderColor: '#0ea5e9' },
-  chipText: { fontSize: 13, color: '#475569', fontWeight: '600' },
+  chipText: { fontSize: 13, color: '#475569', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
   chipTextActive: { color: '#fff' },
   toggleRow: {
     flexDirection: 'row',
@@ -489,5 +489,5 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 10,
   },
-  submitButtonText: { color: '#fff', fontSize: 15, fontWeight: '600' },
+  submitButtonText: { color: '#fff', fontSize: 15, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
 });

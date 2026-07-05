@@ -488,7 +488,7 @@ const styles = StyleSheet.create({
   section: { marginTop: 16 },
   sectionLabel: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
     color: '#64748b',
     textTransform: 'uppercase',
     paddingHorizontal: 20,
@@ -515,9 +515,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  avatarText: { color: '#ffffff', fontSize: 16, fontWeight: '700' },
+  avatarText: { color: '#ffffff', fontSize: 16, fontWeight: '700', fontFamily: 'Manrope_700Bold',},
   identityCol: { flex: 1, gap: 2 },
-  identityName: { fontSize: 17, fontWeight: '700', color: '#0f172a' },
+  identityName: { fontSize: 17, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0f172a' },
   identityEmail: { fontSize: 13, color: '#64748b' },
   identityBadge: {
     alignSelf: 'flex-start',
@@ -529,7 +529,7 @@ const styles = StyleSheet.create({
   },
   identityBadgeText: {
     fontSize: 11,
-    fontWeight: '700',
+    fontWeight: '700', fontFamily: 'Manrope_700Bold',
     color: '#0369a1',
     letterSpacing: 0.3,
   },
@@ -538,7 +538,7 @@ const styles = StyleSheet.create({
     color: '#0f172a',
     paddingHorizontal: 20,
     paddingTop: 14,
-    fontWeight: '500',
+    fontWeight: '500', fontFamily: 'Manrope_500Medium',
   },
   roleBadge: {
     alignSelf: 'flex-start',
@@ -552,7 +552,7 @@ const styles = StyleSheet.create({
   roleText: {
     fontSize: 11,
     color: '#0369a1',
-    fontWeight: '700',
+    fontWeight: '700', fontFamily: 'Manrope_700Bold',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
@@ -572,7 +572,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginRight: 12,
   },
-  rowTitle: { fontSize: 15, color: '#0f172a', fontWeight: '500' },
+  rowTitle: { fontSize: 15, color: '#0f172a', fontWeight: '500', fontFamily: 'Manrope_500Medium',},
   rowSubtitle: { fontSize: 12, color: '#64748b', marginTop: 2 },
   logoutButton: {
     flexDirection: 'row',
@@ -586,5 +586,5 @@ const styles = StyleSheet.create({
     borderColor: '#fecaca',
     borderRadius: 10,
   },
-  logoutText: { color: '#dc2626', fontSize: 16, fontWeight: '500' },
+  logoutText: { color: '#dc2626', fontSize: 16, fontWeight: '500', fontFamily: 'Manrope_500Medium',},
 });

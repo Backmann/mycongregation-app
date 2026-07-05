@@ -594,7 +594,7 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: '700', fontFamily: 'Manrope_700Bold',
     color: '#0f172a',
     marginBottom: 2,
   },
@@ -607,12 +607,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
   },
   reasonChipActive: { backgroundColor: '#0ea5e9', borderColor: '#0ea5e9' },
-  reasonChipText: { color: '#334155', fontSize: 14, fontWeight: '600' },
+  reasonChipText: { color: '#334155', fontSize: 14, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
   reasonChipTextActive: { color: '#fff' },
   modalFieldLabel: {
     fontSize: 13,
     color: '#64748b',
-    fontWeight: '600',
+    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
     marginTop: 4,
   },
   modalInput: {
@@ -632,9 +632,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalBtnCancel: { backgroundColor: '#f1f5f9' },
-  modalBtnCancelText: { color: '#334155', fontWeight: '600' },
+  modalBtnCancelText: { color: '#334155', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
   modalBtnConfirm: { backgroundColor: '#dc2626' },
-  modalBtnConfirmText: { color: '#fff', fontWeight: '700' },
+  modalBtnConfirmText: { color: '#fff', fontWeight: '700', fontFamily: 'Manrope_700Bold',},
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 32 },
   errorText: { color: '#dc2626', fontSize: 16, textAlign: 'center' },
 
@@ -657,10 +657,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 14,
   },
-  headerAvatarText: { color: '#fff', fontWeight: '700', fontSize: 28 },
+  headerAvatarText: { color: '#fff', fontWeight: '700', fontFamily: 'Manrope_700Bold', fontSize: 28 },
   headerName: {
     fontSize: 22,
-    fontWeight: '700',
+    fontWeight: '700', fontFamily: 'Manrope_700Bold',
     color: '#0f172a',
     textAlign: 'center',
     paddingHorizontal: 12,
@@ -672,7 +672,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 6,
   },
-  headerRoleChipText: { color: '#475569', fontSize: 13, fontWeight: '600' },
+  headerRoleChipText: { color: '#475569', fontSize: 13, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
 
   removedBanner: {
     backgroundColor: '#fef3c7',
@@ -682,13 +682,13 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 8,
   },
-  removedText: { color: '#92400e', fontWeight: '600' },
+  removedText: { color: '#92400e', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
   removedNote: { color: '#78350f', marginTop: 4, fontSize: 13 },
 
   section: { marginHorizontal: 16, marginTop: 18 },
   sectionTitle: {
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: '700', fontFamily: 'Manrope_700Bold',
     color: '#64748b',
     textTransform: 'uppercase',
     marginLeft: 4,
@@ -709,7 +709,7 @@ const styles = StyleSheet.create({
   },
   accessWrap: { paddingHorizontal: 16, paddingVertical: 4 },
   fieldLabel: { fontSize: 12, color: '#94a3b8', marginBottom: 3 },
-  fieldValue: { fontSize: 15, color: '#0f172a', fontWeight: '500' },
+  fieldValue: { fontSize: 15, color: '#0f172a', fontWeight: '500', fontFamily: 'Manrope_500Medium',},
   fieldEmpty: { fontSize: 15, color: '#cbd5e1' },
 
   emptyCaps: {
@@ -728,7 +728,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#94a3b8',
     marginBottom: 6,
-    fontWeight: '500',
+    fontWeight: '500', fontFamily: 'Manrope_500Medium',
   },
   capChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   capChip: {
@@ -737,24 +737,24 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 12,
   },
-  capChipText: { color: '#0369a1', fontSize: 12, fontWeight: '500' },
+  capChipText: { color: '#0369a1', fontSize: 12, fontWeight: '500', fontFamily: 'Manrope_500Medium',},
 
   actions: { paddingHorizontal: 16, paddingTop: 22, gap: 10 },
   button: { paddingVertical: 14, borderRadius: 12, alignItems: 'center' },
   buttonEdit: { backgroundColor: '#0ea5e9' },
-  buttonEditText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+  buttonEditText: { color: '#fff', fontSize: 16, fontWeight: '700', fontFamily: 'Manrope_700Bold',},
   buttonRemove: {
     backgroundColor: '#fff',
     borderWidth: 1,
     borderColor: '#fecaca',
   },
-  buttonRemoveText: { color: '#dc2626', fontSize: 16, fontWeight: '600' },
+  buttonRemoveText: { color: '#dc2626', fontSize: 16, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
   buttonPurge: {
     backgroundColor: '#fff',
     borderWidth: 1,
     borderColor: '#fca5a5',
   },
-  buttonPurgeText: { color: '#7f1d1d', fontSize: 16, fontWeight: '600' },
+  buttonPurgeText: { color: '#7f1d1d', fontSize: 16, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
   actionHint: {
     color: '#94a3b8',
     fontSize: 12,
@@ -762,5 +762,5 @@ const styles = StyleSheet.create({
     marginTop: -2,
     marginBottom: 4,
   },
-  buttonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
+  buttonText: { color: '#fff', fontSize: 16, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
 });

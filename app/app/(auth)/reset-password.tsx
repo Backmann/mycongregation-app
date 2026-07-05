@@ -183,8 +183,8 @@ const styles = StyleSheet.create({
     width: '100%',
     alignSelf: 'center',
   },
-  title: { fontSize: 20, fontWeight: '700', color: '#0f172a' },
-  label: { fontSize: 13, fontWeight: '600', color: '#475569', marginTop: 2 },
+  title: { fontSize: 20, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0f172a' },
+  label: { fontSize: 13, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#475569', marginTop: 2 },
   inputWrap: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -227,5 +227,5 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
   buttonDisabled: { opacity: 0.5 },
-  buttonText: { color: '#fff', fontSize: 15, fontWeight: '600' },
+  buttonText: { color: '#fff', fontSize: 15, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
 });

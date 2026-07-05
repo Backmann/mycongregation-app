@@ -105,7 +105,7 @@ const styles = StyleSheet.create({
   wrap: { marginTop: 16, marginHorizontal: 16 },
   replacedLabel: {
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: '700', fontFamily: 'Manrope_700Bold',
     color: '#92400e',
     textTransform: 'uppercase',
     letterSpacing: 0.4,
@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
   title: {
     flex: 1,
     fontSize: 15,
-    fontWeight: '700',
+    fontWeight: '700', fontFamily: 'Manrope_700Bold',
     color: '#78350f',
   },
   meta: { fontSize: 13, color: '#92400e', marginTop: 4 },
@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
   linkText: {
     fontSize: 13,
     color: '#92400e',
-    fontWeight: '600',
+    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
     textDecorationLine: 'underline',
   },
   hiddenText: {

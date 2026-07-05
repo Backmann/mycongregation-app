@@ -325,11 +325,11 @@ const styles = StyleSheet.create({
   },
   buttonPrimary: { backgroundColor: '#0ea5e9' },
   buttonDisabled: { opacity: 0.6 },
-  buttonPrimaryText: { color: '#fff', fontSize: 16, fontWeight: '600' },
+  buttonPrimaryText: { color: '#fff', fontSize: 16, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
   buttonSecondary: {
     backgroundColor: '#fff',
     borderWidth: 1,
     borderColor: '#cbd5e1',
   },
-  buttonSecondaryText: { color: '#475569', fontSize: 16, fontWeight: '500' },
+  buttonSecondaryText: { color: '#475569', fontSize: 16, fontWeight: '500', fontFamily: 'Manrope_500Medium',},
 });

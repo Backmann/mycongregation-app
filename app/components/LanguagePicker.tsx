@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
     color: '#0f172a',
     marginBottom: 16,
     textAlign: 'center',
@@ -150,7 +150,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 8,
   },
-  confirmText: { color: 'white', fontSize: 16, fontWeight: '600' },
+  confirmText: { color: 'white', fontSize: 16, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
   cancelButton: { paddingVertical: 12, alignItems: 'center', marginTop: 4 },
   cancelText: { color: '#64748b', fontSize: 14 },
 });

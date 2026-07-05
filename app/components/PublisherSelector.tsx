@@ -764,7 +764,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#64748b',
     marginBottom: 4,
-    fontWeight: '500',
+    fontWeight: '500', fontFamily: 'Manrope_500Medium',
   },
   row: {
     flexDirection: 'row',
@@ -805,14 +805,14 @@ const styles = StyleSheet.create({
   optionBusyText: {
     fontSize: 12,
     color: '#0369a1',
-    fontWeight: '600',
+    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
     marginLeft: 16,
     marginTop: 2,
   },
   optionAbsentText: {
     fontSize: 12,
     color: '#b45309',
-    fontWeight: '600',
+    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
     marginLeft: 16,
     marginTop: 2,
   },
@@ -886,10 +886,10 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#e2e8f0',
   },
-  modalTitle: { fontSize: 18, fontWeight: '600', color: '#0f172a' },
+  modalTitle: { fontSize: 18, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0f172a' },
   modalSubtitle: { fontSize: 12, color: '#64748b', marginTop: 2 },
-  modalCapName: { color: '#0369a1', fontWeight: '500' },
-  doneText: { color: '#0ea5e9', fontSize: 16, fontWeight: '600' },
+  modalCapName: { color: '#0369a1', fontWeight: '500', fontFamily: 'Manrope_500Medium',},
+  doneText: { color: '#0ea5e9', fontSize: 16, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
 
   toggleRow: {
     flexDirection: 'row',
@@ -900,7 +900,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#fde68a',
   },
-  toggleLabel: { fontSize: 13, color: '#78350f', fontWeight: '500' },
+  toggleLabel: { fontSize: 13, color: '#78350f', fontWeight: '500', fontFamily: 'Manrope_500Medium',},
   toggleHint: { fontSize: 11, color: '#92400e', marginTop: 2 },
 
   search: {

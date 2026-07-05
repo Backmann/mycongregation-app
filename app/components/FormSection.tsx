@@ -20,7 +20,7 @@ const styles = StyleSheet.create({
   section: { marginTop: 16 },
   title: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
     color: '#64748b',
     textTransform: 'uppercase',
     paddingHorizontal: 20,

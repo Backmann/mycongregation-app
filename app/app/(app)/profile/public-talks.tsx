@@ -237,14 +237,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#0ea5e9',
     borderRadius: 8,
   },
-  importButtonText: { color: '#fff', fontSize: 13, fontWeight: '600' },
+  importButtonText: { color: '#fff', fontSize: 13, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
 
   empty: { paddingVertical: 64, alignItems: 'center' },
   emptyTitle: {
     fontSize: 16,
     color: '#475569',
     marginTop: 12,
-    fontWeight: '500',
+    fontWeight: '500', fontFamily: 'Manrope_500Medium',
   },
   emptySub: { fontSize: 13, color: '#94a3b8', marginTop: 4 },
 
@@ -276,14 +276,14 @@ const styles = StyleSheet.create({
     marginRight: 12,
     marginTop: 1,
   },
-  numberText: { fontSize: 13, fontWeight: '700', color: '#0369a1' },
+  numberText: { fontSize: 13, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0369a1' },
   title: { fontSize: 14, color: '#0f172a', lineHeight: 20 },
   titleInactive: { textDecorationLine: 'line-through', color: '#64748b' },
   retiredLabel: {
     fontSize: 11,
     color: '#dc2626',
     marginTop: 2,
-    fontWeight: '500',
+    fontWeight: '500', fontFamily: 'Manrope_500Medium',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },

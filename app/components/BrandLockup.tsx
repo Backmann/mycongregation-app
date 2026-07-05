@@ -54,7 +54,7 @@ export default function BrandLockup({
       />
       <Text
         style={[
-          { fontSize: wordSize, fontWeight: '700', letterSpacing: -0.5 },
+          { fontSize: wordSize, fontWeight: '700', fontFamily: 'Manrope_700Bold', letterSpacing: -0.5 },
           stacked
             ? { marginTop: Math.round(mark * 0.18) }
             : { marginLeft: Math.round(mark * 0.3) },

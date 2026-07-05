@@ -115,6 +115,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   rowText: { flex: 1 },
-  rowTitle: { fontSize: 16, fontWeight: '600', color: '#0f172a' },
+  rowTitle: { fontSize: 16, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0f172a' },
   rowSubtitle: { fontSize: 13, color: '#64748b', marginTop: 2 },
 });

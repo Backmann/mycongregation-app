@@ -93,7 +93,7 @@ const styles = StyleSheet.create({
     padding: 20,
     gap: 10,
   },
-  title: { fontSize: 18, fontWeight: '700', color: '#0f172a' },
+  title: { fontSize: 18, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0f172a' },
   subtitle: { fontSize: 14, color: '#64748b', marginBottom: 6 },
   primaryBtn: {
     backgroundColor: '#0ea5e9',
@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 14,
   },
-  primaryText: { color: '#fff', fontSize: 15, fontWeight: '700' },
+  primaryText: { color: '#fff', fontSize: 15, fontWeight: '700', fontFamily: 'Manrope_700Bold',},
   primaryHint: { color: '#e0f2fe', fontSize: 12, marginTop: 2 },
   silentBtn: {
     backgroundColor: '#f1f5f9',
@@ -109,10 +109,10 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 14,
   },
-  silentText: { color: '#0f172a', fontSize: 15, fontWeight: '600' },
+  silentText: { color: '#0f172a', fontSize: 15, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
   silentHint: { color: '#64748b', fontSize: 12, marginTop: 2 },
   cancelBtn: { alignItems: 'center', paddingVertical: 12, marginTop: 2 },
-  cancelText: { color: '#64748b', fontSize: 14, fontWeight: '600' },
+  cancelText: { color: '#64748b', fontSize: 14, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
   pressed: { opacity: 0.85 },
   disabled: { opacity: 0.5 },
 });

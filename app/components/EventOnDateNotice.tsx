@@ -116,12 +116,12 @@ const styles = StyleSheet.create({
   title: {
     flex: 1,
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: '700', fontFamily: 'Manrope_700Bold',
     color: '#b45309',
     textTransform: 'uppercase',
     letterSpacing: 0.4,
   },
-  eventTitle: { fontSize: 15, fontWeight: '600', color: '#78350f' },
+  eventTitle: { fontSize: 15, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#78350f' },
   meta: { fontSize: 13, color: '#92400e' },
   hint: { fontSize: 12, color: '#a16207', fontStyle: 'italic' },
 });

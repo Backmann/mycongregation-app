@@ -119,9 +119,9 @@ const styles = StyleSheet.create({
     width: '100%',
     alignSelf: 'center',
   },
-  title: { fontSize: 20, fontWeight: '700', color: '#0f172a' },
+  title: { fontSize: 20, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0f172a' },
   subtitle: { fontSize: 14, color: '#64748b', lineHeight: 20 },
-  label: { fontSize: 13, fontWeight: '600', color: '#475569' },
+  label: { fontSize: 13, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#475569' },
   input: {
     borderWidth: 1,
     borderColor: '#cbd5e1',
@@ -139,7 +139,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   buttonDisabled: { opacity: 0.5 },
-  buttonText: { color: '#fff', fontSize: 15, fontWeight: '600' },
+  buttonText: { color: '#fff', fontSize: 15, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
   sentRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   sentText: { flex: 1, fontSize: 14, color: '#0f172a', lineHeight: 20 },
   hint: { fontSize: 13, color: '#64748b', lineHeight: 18 },
@@ -150,5 +150,5 @@ const styles = StyleSheet.create({
     marginTop: 4,
     alignSelf: 'flex-start',
   },
-  backLinkText: { fontSize: 14, color: '#0369a1', fontWeight: '600' },
+  backLinkText: { fontSize: 14, color: '#0369a1', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
 });

@@ -279,12 +279,12 @@ const styles = StyleSheet.create({
   },
   monthChipActive: { backgroundColor: '#0ea5e9', borderColor: '#0ea5e9' },
   monthChipText: { fontSize: 13, color: '#0f172a' },
-  monthChipTextActive: { color: '#fff', fontWeight: '600' },
+  monthChipTextActive: { color: '#fff', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
   scrollBody: { padding: 16, paddingBottom: 32, gap: 12 },
   closedCard: { borderColor: '#fcd34d', backgroundColor: '#fffbeb' },
   openCard: { borderColor: '#bae6fd', backgroundColor: '#f0f9ff' },
   closureRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  closureTitle: { fontSize: 15, fontWeight: '700', color: '#0f172a' },
+  closureTitle: { fontSize: 15, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0f172a' },
   closureHint: {
     fontSize: 12,
     color: '#64748b',
@@ -300,7 +300,7 @@ const styles = StyleSheet.create({
   closeBtn: { backgroundColor: '#b45309' },
   reopenBtn: { backgroundColor: '#0ea5e9' },
   btnDisabled: { opacity: 0.6 },
-  closureBtnText: { color: '#fff', fontSize: 14, fontWeight: '700' },
+  closureBtnText: { color: '#fff', fontSize: 14, fontWeight: '700', fontFamily: 'Manrope_700Bold',},
   closureError: { color: '#dc2626', fontSize: 13, marginTop: 8 },
   card: {
     backgroundColor: '#fff',
@@ -312,7 +312,7 @@ const styles = StyleSheet.create({
   totalsCard: { marginTop: 4 },
   cardTitle: {
     fontSize: 15,
-    fontWeight: '700',
+    fontWeight: '700', fontFamily: 'Manrope_700Bold',
     color: '#0f172a',
     marginBottom: 12,
   },
@@ -324,7 +324,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: 'center',
   },
-  statBig: { fontSize: 22, fontWeight: '700', color: '#0f172a' },
+  statBig: { fontSize: 22, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0f172a' },
   statActive: { color: '#10b981' },
   statInactive: { color: '#94a3b8' },
   statLabel: {
@@ -341,7 +341,7 @@ const styles = StyleSheet.create({
   },
   errorTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
     color: '#475569',
     marginTop: 16,
     marginBottom: 8,

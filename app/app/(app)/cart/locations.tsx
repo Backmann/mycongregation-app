@@ -279,7 +279,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingVertical: 12,
   },
-  addBtnText: { color: '#ffffff', fontSize: 15, fontWeight: '600' },
+  addBtnText: { color: '#ffffff', fontSize: 15, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
   toggleRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -298,7 +298,7 @@ const styles = StyleSheet.create({
     padding: 14,
   },
   cardInactive: { opacity: 0.55 },
-  cardName: { fontSize: 16, fontWeight: '600', color: '#0f172a' },
+  cardName: { fontSize: 16, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0f172a' },
   cardAddress: { fontSize: 13, color: '#64748b', marginTop: 2 },
   badges: { alignItems: 'flex-end', gap: 4 },
   kindBadge: {
@@ -307,7 +307,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 2,
   },
-  kindBadgeText: { fontSize: 12, color: '#0369a1', fontWeight: '600' },
+  kindBadgeText: { fontSize: 12, color: '#0369a1', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
   inactiveTag: { fontSize: 11, color: '#ef4444' },
   modalBackdrop: {
     flex: 1,
@@ -323,13 +323,13 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: '700', fontFamily: 'Manrope_700Bold',
     color: '#0f172a',
     marginBottom: 12,
   },
   fieldLabel: {
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
     color: '#475569',
     marginBottom: 6,
     marginTop: 10,
@@ -353,7 +353,7 @@ const styles = StyleSheet.create({
     borderColor: '#cbd5e1',
   },
   kindOptionActive: { backgroundColor: '#0ea5e9', borderColor: '#0ea5e9' },
-  kindOptionText: { fontSize: 14, color: '#475569', fontWeight: '600' },
+  kindOptionText: { fontSize: 14, color: '#475569', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
   kindOptionTextActive: { color: '#ffffff' },
   switchRow: {
     flexDirection: 'row',
@@ -368,9 +368,9 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   deleteBtn: { paddingVertical: 10, paddingHorizontal: 8 },
-  deleteBtnText: { color: '#ef4444', fontSize: 15, fontWeight: '600' },
+  deleteBtnText: { color: '#ef4444', fontSize: 15, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
   cancelBtn: { paddingVertical: 10, paddingHorizontal: 12 },
-  cancelBtnText: { color: '#475569', fontSize: 15, fontWeight: '600' },
+  cancelBtnText: { color: '#475569', fontSize: 15, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
   saveBtn: {
     backgroundColor: '#0ea5e9',
     borderRadius: 8,
@@ -378,5 +378,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
   },
   saveBtnDisabled: { opacity: 0.5 },
-  saveBtnText: { color: '#ffffff', fontSize: 15, fontWeight: '600' },
+  saveBtnText: { color: '#ffffff', fontSize: 15, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
 });

@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     gap: 6,
   },
-  addBtnText: { color: '#fff', fontSize: 15, fontWeight: '700' },
+  addBtnText: { color: '#fff', fontSize: 15, fontWeight: '700', fontFamily: 'Manrope_700Bold',},
   empty: { textAlign: 'center', color: '#64748b', marginTop: 32 },
   errorBox: {
     backgroundColor: '#fee2e2',
@@ -167,8 +167,8 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   rowPressed: { backgroundColor: '#f8fafc' },
-  name: { fontSize: 16, fontWeight: '600', color: '#0f172a' },
+  name: { fontSize: 16, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0f172a' },
   removedText: { textDecorationLine: 'line-through', color: '#94a3b8' },
-  dates: { fontSize: 13, color: '#0369a1', fontWeight: '500', marginTop: 2 },
+  dates: { fontSize: 13, color: '#0369a1', fontWeight: '500', fontFamily: 'Manrope_500Medium', marginTop: 2 },
   note: { fontSize: 13, color: '#64748b', marginTop: 2 },
 });

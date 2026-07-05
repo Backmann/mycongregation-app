@@ -281,7 +281,7 @@ const styles = StyleSheet.create({
   },
   stageText: {
     fontSize: 9,
-    fontWeight: '800',
+    fontWeight: '800', fontFamily: 'Manrope_800ExtraBold',
     letterSpacing: 1.2,
     color: '#64748b',
     textTransform: 'uppercase',
@@ -321,12 +321,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#f59e0b',
     borderColor: '#d97706',
   },
-  badgeText: { fontSize: 11, fontWeight: '800', color: '#64748b' },
+  badgeText: { fontSize: 11, fontWeight: '800', fontFamily: 'Manrope_800ExtraBold', color: '#64748b' },
   badgeTextActive: { color: '#fff' },
   windowLabel: {
     position: 'absolute',
     fontSize: 8,
-    fontWeight: '600',
+    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
     color: '#94a3b8',
     width: 74,
   },

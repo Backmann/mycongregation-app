@@ -87,7 +87,7 @@ const styles = StyleSheet.create({
   section: { marginTop: 16 },
   sectionTitle: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
     color: '#64748b',
     textTransform: 'uppercase',
     paddingHorizontal: 20,
@@ -110,15 +110,15 @@ const styles = StyleSheet.create({
     borderBottomColor: '#f1f5f9',
   },
   cardPressed: { backgroundColor: '#f8fafc' },
-  title: { fontSize: 15, fontWeight: '600', color: '#0f172a' },
+  title: { fontSize: 15, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0f172a' },
   meta: { fontSize: 13, color: '#64748b', marginTop: 2 },
-  coName: { fontSize: 13, color: '#0f172a', fontWeight: '500', marginTop: 2 },
+  coName: { fontSize: 13, color: '#0f172a', fontWeight: '500', fontFamily: 'Manrope_500Medium', marginTop: 2 },
   noMeeting: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
     marginTop: 4,
   },
-  noMeetingText: { fontSize: 12, color: '#b45309', fontWeight: '500' },
+  noMeetingText: { fontSize: 12, color: '#b45309', fontWeight: '500', fontFamily: 'Manrope_500Medium',},
   chevron: { color: '#cbd5e1', fontSize: 24, marginLeft: 8 },
 });

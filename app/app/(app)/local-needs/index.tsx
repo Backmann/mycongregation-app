@@ -468,7 +468,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     gap: 6,
   },
-  addBtnText: { color: '#fff', fontSize: 15, fontWeight: '700' },
+  addBtnText: { color: '#fff', fontSize: 15, fontWeight: '700', fontFamily: 'Manrope_700Bold',},
   empty: { textAlign: 'center', color: '#64748b', marginTop: 32 },
   pastHeader: {
     flexDirection: 'row',
@@ -479,7 +479,7 @@ const styles = StyleSheet.create({
   pastRow: { opacity: 0.6 },
   sectionLabel: {
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: '700', fontFamily: 'Manrope_700Bold',
     color: '#64748b',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -501,7 +501,7 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 10,
   },
-  topicTitle: { fontSize: 16, fontWeight: '600', color: '#0f172a' },
+  topicTitle: { fontSize: 16, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0f172a' },
   notes: { fontSize: 13, color: '#64748b', marginTop: 3 },
   metaRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 6 },
   metaChip: {
@@ -516,7 +516,7 @@ const styles = StyleSheet.create({
   usedChip: { backgroundColor: '#ecfdf5' },
   upcomingChip: { backgroundColor: '#e0f2fe' },
   pastChip: { backgroundColor: '#f1f5f9' },
-  metaText: { fontSize: 12, color: '#475569', fontWeight: '500' },
+  metaText: { fontSize: 12, color: '#475569', fontWeight: '500', fontFamily: 'Manrope_500Medium',},
   actions: { flexDirection: 'row', alignItems: 'center', gap: 2 },
   actionBtn: { padding: 6 },
   // Modal
@@ -538,10 +538,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 8,
   },
-  modalTitle: { fontSize: 18, fontWeight: '700', color: '#0f172a' },
+  modalTitle: { fontSize: 18, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0f172a' },
   label: {
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
     color: '#334155',
     marginTop: 10,
     marginBottom: 4,
@@ -569,10 +569,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   cancelBtn: { backgroundColor: '#f1f5f9' },
-  cancelBtnText: { color: '#475569', fontSize: 15, fontWeight: '600' },
+  cancelBtnText: { color: '#475569', fontSize: 15, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
   saveBtn: { backgroundColor: '#0ea5e9' },
   saveBtnDisabled: { opacity: 0.5 },
-  saveBtnText: { color: '#fff', fontSize: 15, fontWeight: '700' },
+  saveBtnText: { color: '#fff', fontSize: 15, fontWeight: '700', fontFamily: 'Manrope_700Bold',},
   deleteBtn: { backgroundColor: '#ef4444' },
   confirmCard: {
     backgroundColor: '#fff',
@@ -582,7 +582,7 @@ const styles = StyleSheet.create({
   confirmText: {
     fontSize: 16,
     color: '#0f172a',
-    fontWeight: '600',
+    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
     textAlign: 'center',
   },
 });

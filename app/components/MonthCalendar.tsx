@@ -213,7 +213,7 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     paddingHorizontal: 12,
   },
-  presetText: { fontSize: 12, fontWeight: '600', color: '#0369a1' },
+  presetText: { fontSize: 12, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0369a1' },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -223,7 +223,7 @@ const styles = StyleSheet.create({
   navBtn: { padding: 4 },
   monthLabel: {
     fontSize: 15,
-    fontWeight: '700',
+    fontWeight: '700', fontFamily: 'Manrope_700Bold',
     color: '#0f172a',
     textTransform: 'capitalize',
   },
@@ -236,7 +236,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   cellBetween: { backgroundColor: '#e0f2fe' },
-  weekday: { fontSize: 11, fontWeight: '600', color: '#94a3b8' },
+  weekday: { fontSize: 11, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#94a3b8' },
   dayInner: {
     width: 34,
     height: 34,
@@ -247,6 +247,6 @@ const styles = StyleSheet.create({
   daySelected: { backgroundColor: '#0ea5e9' },
   dayText: { fontSize: 14, color: '#0f172a' },
   dayOther: { color: '#cbd5e1' },
-  dayToday: { color: '#0ea5e9', fontWeight: '700' },
-  daySelectedText: { color: '#fff', fontWeight: '700' },
+  dayToday: { color: '#0ea5e9', fontWeight: '700', fontFamily: 'Manrope_700Bold',},
+  daySelectedText: { color: '#fff', fontWeight: '700', fontFamily: 'Manrope_700Bold',},
 });

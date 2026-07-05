@@ -160,7 +160,7 @@ const styles = StyleSheet.create({
     marginRight: 14,
   },
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  name: { fontSize: 16, fontWeight: '600', color: '#0f172a' },
+  name: { fontSize: 16, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0f172a' },
   nameRemoved: { textDecorationLine: 'line-through', color: '#64748b' },
   removedBadge: {
     backgroundColor: '#fef3c7',
@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     borderRadius: 4,
   },
-  removedBadgeText: { color: '#92400e', fontSize: 10, fontWeight: '600' },
+  removedBadgeText: { color: '#92400e', fontSize: 10, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
   meta: { fontSize: 13, color: '#64748b', marginTop: 2 },
   chevron: { color: '#cbd5e1', fontSize: 24, marginLeft: 8 },
   empty: {

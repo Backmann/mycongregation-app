@@ -382,7 +382,7 @@ function LinkButton({ label, url }: { label: string; url: string }) {
 const styles = StyleSheet.create({
   container: { padding: 16, backgroundColor: '#f8fafc' },
   error: { color: '#b91c1c' },
-  h1: { fontSize: 22, fontWeight: '700', color: '#0f172a' },
+  h1: { fontSize: 22, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0f172a' },
   date: { fontSize: 15, color: '#0369a1', marginTop: 4 },
   badge: {
     alignSelf: 'flex-start',
@@ -406,7 +406,7 @@ const styles = StyleSheet.create({
   },
   hint: { fontSize: 13, color: '#b45309', marginTop: 8 },
   infoRow: { marginTop: 14 },
-  infoLabel: { fontSize: 13, fontWeight: '600', color: '#475569' },
+  infoLabel: { fontSize: 13, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#475569' },
   infoValue: { fontSize: 16, color: '#0f172a', marginTop: 2 },
   link: {
     marginTop: 14,
@@ -417,7 +417,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     alignItems: 'center',
   },
-  linkText: { color: '#0ea5e9', fontSize: 15, fontWeight: '600' },
+  linkText: { color: '#0ea5e9', fontSize: 15, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
   actions: { marginTop: 24, gap: 10 },
   save: {
     backgroundColor: '#0ea5e9',
@@ -425,9 +425,9 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     alignItems: 'center',
   },
-  saveText: { color: '#fff', fontSize: 16, fontWeight: '600' },
+  saveText: { color: '#fff', fontSize: 16, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
   cancel: { paddingVertical: 14, alignItems: 'center', marginTop: 4 },
-  cancelText: { color: '#64748b', fontSize: 15, fontWeight: '600' },
+  cancelText: { color: '#64748b', fontSize: 15, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
   delete: {
     borderWidth: 1,
     borderColor: '#ef4444',
@@ -435,7 +435,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     alignItems: 'center',
   },
-  deleteText: { color: '#ef4444', fontSize: 16, fontWeight: '600' },
+  deleteText: { color: '#ef4444', fontSize: 16, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
   coBlock: {
     marginTop: 16,
     backgroundColor: '#fff',
@@ -444,7 +444,7 @@ const styles = StyleSheet.create({
     borderColor: '#e2e8f0',
     padding: 14,
   },
-  coName: { fontSize: 18, fontWeight: '700', color: '#0f172a', marginTop: 2 },
+  coName: { fontSize: 18, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0f172a', marginTop: 2 },
   coMeta: { fontSize: 14, color: '#475569', marginTop: 6 },
   pickerWrap: {
     marginTop: 14,
@@ -454,7 +454,7 @@ const styles = StyleSheet.create({
   },
   pickerLabel: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
     color: '#475569',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -470,6 +470,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   chipActive: { backgroundColor: '#0ea5e9', borderColor: '#0ea5e9' },
-  chipText: { fontSize: 13, color: '#475569', fontWeight: '600' },
+  chipText: { fontSize: 13, color: '#475569', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
   chipTextActive: { color: '#fff' },
 });

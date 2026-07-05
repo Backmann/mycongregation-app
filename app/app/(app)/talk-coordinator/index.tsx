@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
   hint: { fontSize: 13, color: '#64748b', marginBottom: 16, lineHeight: 18 },
   sectionLabel: {
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: '700', fontFamily: 'Manrope_700Bold',
     color: '#64748b',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -145,6 +145,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  rowTitle: { fontSize: 15, fontWeight: '600', color: '#0f172a' },
+  rowTitle: { fontSize: 15, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0f172a' },
   rowSubtitle: { fontSize: 13, color: '#64748b', marginTop: 1 },
 });

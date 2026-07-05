@@ -79,7 +79,7 @@ const styles = StyleSheet.create({
   arrowPressed: { backgroundColor: '#e0f2fe' },
   right: { marginLeft: 4 },
   center: { flex: 1, alignItems: 'center' },
-  range: { fontSize: 16, fontWeight: '600', color: '#0f172a' },
-  thisWeek: { fontSize: 11, color: '#0ea5e9', marginTop: 2, fontWeight: '500' },
+  range: { fontSize: 16, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0f172a' },
+  thisWeek: { fontSize: 11, color: '#0ea5e9', marginTop: 2, fontWeight: '500', fontFamily: 'Manrope_500Medium',},
   todayLink: { fontSize: 11, color: '#64748b', marginTop: 2, textDecorationLine: 'underline' },
 });

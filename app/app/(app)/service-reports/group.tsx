@@ -528,7 +528,7 @@ const modalStyles = StyleSheet.create({
   },
   title: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
     color: '#0f172a',
     marginBottom: 16,
   },
@@ -557,8 +557,8 @@ const modalStyles = StyleSheet.create({
   },
   btnSecondary: { backgroundColor: '#f1f5f9' },
   btnPrimary: { backgroundColor: '#0ea5e9' },
-  btnTextSecondary: { color: '#475569', fontWeight: '600' },
-  btnTextPrimary: { color: '#fff', fontWeight: '600' },
+  btnTextSecondary: { color: '#475569', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
+  btnTextPrimary: { color: '#fff', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
   clearBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -570,7 +570,7 @@ const modalStyles = StyleSheet.create({
     marginTop: 14,
     paddingTop: 14,
   },
-  clearBtnText: { color: '#dc2626', fontSize: 13, fontWeight: '600' },
+  clearBtnText: { color: '#dc2626', fontSize: 13, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
 });
 
 const styles = StyleSheet.create({
@@ -591,7 +591,7 @@ const styles = StyleSheet.create({
   scopeLabel: {
     fontSize: 12,
     color: '#64748b',
-    fontWeight: '500',
+    fontWeight: '500', fontFamily: 'Manrope_500Medium',
     paddingHorizontal: 20,
     marginBottom: 8,
     textTransform: 'uppercase',
@@ -608,7 +608,7 @@ const styles = StyleSheet.create({
   },
   monthChipActive: { backgroundColor: '#0ea5e9', borderColor: '#0ea5e9' },
   monthChipText: { fontSize: 13, color: '#0f172a' },
-  monthChipTextActive: { color: '#fff', fontWeight: '600' },
+  monthChipTextActive: { color: '#fff', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
   statsBar: {
     flexDirection: 'row',
     paddingHorizontal: 16,
@@ -622,7 +622,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: 'center',
   },
-  statBig: { fontSize: 20, fontWeight: '700', color: '#0f172a' },
+  statBig: { fontSize: 20, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0f172a' },
   statActive: { color: '#10b981' },
   statPending: { color: '#dc2626' },
   statLabel: {
@@ -661,11 +661,11 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
     color: '#0f172a',
     flexShrink: 1,
   },
-  pioneerTag: { fontSize: 12, color: '#0ea5e9', fontWeight: '500' },
+  pioneerTag: { fontSize: 12, color: '#0ea5e9', fontWeight: '500', fontFamily: 'Manrope_500Medium',},
   statusBadge: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -679,7 +679,7 @@ const styles = StyleSheet.create({
   statusBadgeText: {
     color: '#fff',
     fontSize: 10,
-    fontWeight: '700',
+    fontWeight: '700', fontFamily: 'Manrope_700Bold',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
@@ -699,13 +699,13 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
     color: '#475569',
     marginTop: 16,
   },
   errorTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
     color: '#475569',
     marginTop: 16,
     marginBottom: 8,

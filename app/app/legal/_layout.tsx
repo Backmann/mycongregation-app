@@ -9,7 +9,7 @@ export default function LegalLayout() {
       screenOptions={{
         headerStyle: { backgroundColor: '#0e7490' },
         headerTintColor: '#ffffff',
-        headerTitleStyle: { fontWeight: '600' },
+        headerTitleStyle: { fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
         headerLeft: () => <BackButton fallback="/" color="#ffffff" />,
       }}
     >

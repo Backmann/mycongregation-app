@@ -113,5 +113,5 @@ const styles = StyleSheet.create({
     fontSize: 13,
     marginTop: 8,
   },
-  hintActive: { color: '#0ea5e9', fontWeight: '600' },
+  hintActive: { color: '#0ea5e9', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
 });

@@ -226,7 +226,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 10,
   },
-  actorName: { fontSize: 15, fontWeight: '700', color: '#0f172a' },
+  actorName: { fontSize: 15, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0f172a' },
   timestamp: { fontSize: 12, color: '#64748b', marginTop: 2 },
   actionBadge: {
     paddingHorizontal: 8,
@@ -237,7 +237,7 @@ const styles = StyleSheet.create({
   actionBadgeText: {
     fontSize: 10,
     color: '#1e40af',
-    fontWeight: '700',
+    fontWeight: '700', fontFamily: 'Manrope_700Bold',
     letterSpacing: 0.5,
   },
   fieldList: { gap: 12 },
@@ -247,7 +247,7 @@ const styles = StyleSheet.create({
     color: '#64748b',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
-    fontWeight: '600',
+    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
     marginBottom: 6,
   },
   diffRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
@@ -272,7 +272,7 @@ const styles = StyleSheet.create({
     color: '#64748b',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
-    fontWeight: '700',
+    fontWeight: '700', fontFamily: 'Manrope_700Bold',
     marginBottom: 2,
   },
   diffValue: { fontSize: 13, color: '#0f172a' },
@@ -291,7 +291,7 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
     color: '#475569',
     marginTop: 16,
   },
@@ -304,7 +304,7 @@ const styles = StyleSheet.create({
   },
   errorTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
     color: '#475569',
     marginTop: 16,
     marginBottom: 8,

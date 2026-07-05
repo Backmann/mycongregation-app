@@ -40,6 +40,6 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     color: '#475569',
-    fontWeight: '500',
+    fontWeight: '500', fontFamily: 'Manrope_500Medium',
   },
 });

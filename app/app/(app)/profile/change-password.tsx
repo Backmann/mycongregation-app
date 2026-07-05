@@ -218,7 +218,7 @@ const styles = StyleSheet.create({
 
   fieldLabel: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
     color: '#475569',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -249,7 +249,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 10,
   },
-  submitButtonText: { color: '#fff', fontSize: 15, fontWeight: '600' },
+  submitButtonText: { color: '#fff', fontSize: 15, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
 
   note: {
     fontSize: 12,

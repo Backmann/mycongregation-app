@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 16,
   },
-  warnText: { flex: 1, color: '#991b1b', fontSize: 13, fontWeight: '600' },
+  warnText: { flex: 1, color: '#991b1b', fontSize: 13, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
   intro: { fontSize: 14, color: '#475569', marginBottom: 16, lineHeight: 20 },
   errorBox: {
     flexDirection: 'row',
@@ -165,7 +165,7 @@ const styles = StyleSheet.create({
   errorBoxText: { flex: 1, color: '#991b1b', fontSize: 13 },
   fieldLabel: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
     color: '#475569',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -192,7 +192,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 10,
   },
-  submitButtonText: { color: '#fff', fontSize: 15, fontWeight: '600' },
+  submitButtonText: { color: '#fff', fontSize: 15, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
   note: {
     fontSize: 12,
     color: '#94a3b8',

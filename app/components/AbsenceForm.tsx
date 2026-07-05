@@ -287,7 +287,7 @@ export function AbsenceForm({
 const styles = StyleSheet.create({
   label: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
     color: '#0f172a',
     marginTop: 16,
     marginBottom: 6,
@@ -301,7 +301,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 12,
   },
-  selectedName: { fontSize: 16, fontWeight: '600', color: '#0369a1' },
+  selectedName: { fontSize: 16, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0369a1' },
   changeLink: { fontSize: 13, color: '#0284c7' },
   pickerBox: {
     backgroundColor: '#fff',
@@ -377,8 +377,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   btnPrimary: { backgroundColor: '#0ea5e9' },
-  btnPrimaryText: { color: '#fff', fontWeight: '700', fontSize: 16 },
+  btnPrimaryText: { color: '#fff', fontWeight: '700', fontFamily: 'Manrope_700Bold', fontSize: 16 },
   btnGhost: { backgroundColor: '#f1f5f9' },
-  btnGhostText: { color: '#475569', fontWeight: '600', fontSize: 16 },
+  btnGhostText: { color: '#475569', fontWeight: '600', fontFamily: 'Manrope_600SemiBold', fontSize: 16 },
   btnDisabled: { opacity: 0.5 },
 });

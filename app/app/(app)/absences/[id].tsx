@@ -185,13 +185,13 @@ export default function AbsenceDetailScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16 },
-  name: { fontSize: 22, fontWeight: '700', color: '#0f172a' },
+  name: { fontSize: 22, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0f172a' },
   removedBadge: {
     alignSelf: 'flex-start',
     backgroundColor: '#fee2e2',
     color: '#b91c1c',
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 6,
@@ -213,9 +213,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   btnPrimary: { backgroundColor: '#0ea5e9' },
-  btnPrimaryText: { color: '#fff', fontWeight: '700', fontSize: 16 },
+  btnPrimaryText: { color: '#fff', fontWeight: '700', fontFamily: 'Manrope_700Bold', fontSize: 16 },
   btnGhost: { backgroundColor: '#f1f5f9' },
-  btnGhostText: { color: '#475569', fontWeight: '600', fontSize: 16 },
+  btnGhostText: { color: '#475569', fontWeight: '600', fontFamily: 'Manrope_600SemiBold', fontSize: 16 },
   btnDanger: { backgroundColor: '#fee2e2' },
-  btnDangerText: { color: '#b91c1c', fontWeight: '700', fontSize: 16 },
+  btnDangerText: { color: '#b91c1c', fontWeight: '700', fontFamily: 'Manrope_700Bold', fontSize: 16 },
 });

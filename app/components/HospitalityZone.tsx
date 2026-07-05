@@ -81,7 +81,7 @@ const styles = StyleSheet.create({
   },
   headerText: {
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: '700', fontFamily: 'Manrope_700Bold',
     color: '#64748b',
     letterSpacing: 0.5,
     textTransform: 'uppercase',
