@@ -1140,29 +1140,38 @@ function MidweekSections({
         if (arr.length === 0) return null;
         const meta = SUBSECTIONS[sub];
         return (
-          <View key={sub} style={styles.section}>
-            <View style={[styles.subsectionBanner, { backgroundColor: meta.color }]}>
-              <View style={styles.subsectionBannerLeft}>
-                <Ionicons name={meta.icon as any} size={16} color="#fff" />
-                <Text style={styles.subsectionBannerText}>{t(meta.i18nKey)}</Text>
+          <View
+            key={sub}
+            style={[styles.weekendCard, { borderLeftColor: meta.color }]}
+          >
+            <View
+              style={[
+                styles.weekendCardHead,
+                { backgroundColor: meta.colorMuted },
+              ]}
+            >
+              <View style={styles.weekendCardIcon}>
+                <Ionicons name={meta.icon as any} size={15} color={meta.color} />
               </View>
+              <Text style={[styles.weekendCardTitle, { color: meta.color }]}>
+                {t(meta.i18nKey)}
+              </Text>
               {canEdit && sub === 'christian_life' && onAddChristianLife ? (
                 <Pressable
                   onPress={onAddChristianLife}
                   disabled={addingChristianLife}
                   hitSlop={8}
-                  style={styles.bannerAddBtn}
                   accessibilityLabel={t('schedule.addChristianLife')}
                 >
                   {addingChristianLife ? (
-                    <ActivityIndicator size="small" color="#fff" />
+                    <ActivityIndicator size="small" color={meta.color} />
                   ) : (
-                    <Ionicons name="add" size={20} color="#fff" />
+                    <Ionicons name="add" size={20} color={meta.color} />
                   )}
                 </Pressable>
               ) : null}
             </View>
-            <View style={styles.sectionBody}>
+            <View style={styles.weekendCardBody}>
               {arr.map((a) => (
                 <AssignmentRow
                   key={a.id}
@@ -1182,7 +1191,7 @@ function MidweekSections({
                   displayNumber={numbers.get(a.id) ?? null}
                   canEdit={canEdit}
                   absentIds={absentIds}
-                  accentColor={meta.color}
+                  accentTint={meta.color}
                 />
               ))}
             </View>
@@ -1250,7 +1259,7 @@ function WeekendSections({
     bySubsection.set(sub, arr);
   }
 
-  const renderRows = (arr: Assignment[], accentColor?: string) =>
+  const renderRows = (arr: Assignment[], accentColor?: string, tint?: string) =>
     arr.map((a) => (
       <AssignmentRow
         key={a.id}
@@ -1269,6 +1278,7 @@ function WeekendSections({
         canEdit={canEdit}
         absentIds={absentIds}
         accentColor={accentColor}
+        accentTint={tint}
       />
     ));
 
@@ -1290,13 +1300,13 @@ function WeekendSections({
             key={sub}
             style={[styles.weekendCard, { borderLeftColor: meta.color }]}
           >
-            <View style={styles.weekendCardHead}>
-              <View
-                style={[
-                  styles.weekendCardIcon,
-                  { backgroundColor: meta.colorMuted },
-                ]}
-              >
+            <View
+              style={[
+                styles.weekendCardHead,
+                { backgroundColor: meta.colorMuted },
+              ]}
+            >
+              <View style={styles.weekendCardIcon}>
                 <Ionicons
                   name={meta.icon as any}
                   size={15}
@@ -1308,7 +1318,7 @@ function WeekendSections({
               </Text>
             </View>
             <View style={styles.weekendCardBody}>
-              {renderRows(arr, meta.color)}
+              {renderRows(arr, undefined, meta.color)}
             </View>
           </View>
         );
@@ -1428,6 +1438,7 @@ function AssignmentRow({
   publisher,
   assistant,
   accentColor,
+  accentTint,
   displayNumber,
   partTime,
   onEdit,
@@ -1438,6 +1449,8 @@ function AssignmentRow({
   publisher: Publisher | null;
   assistant: Publisher | null;
   accentColor?: string;
+  /** Section color used only to tint the number/overline, not a left rail. */
+  accentTint?: string;
   displayNumber?: number | null;
   /** Computed time interval (midweek only) shown under the number circle. */
   partTime?: PartInterval | null;
@@ -1525,14 +1538,19 @@ function AssignmentRow({
         <View
           style={[
             styles.orderBadge,
-            accentColor
-              ? { backgroundColor: accentColor + '1A' }
+            (accentTint ?? accentColor)
+              ? { backgroundColor: (accentTint ?? accentColor) + '1A' }
               : null,
             displayNumber == null && styles.orderBadgeInfo,
           ]}
         >
           <Text
-            style={[styles.orderText, accentColor ? { color: accentColor } : null]}
+            style={[
+              styles.orderText,
+              (accentTint ?? accentColor)
+                ? { color: accentTint ?? accentColor }
+                : null,
+            ]}
           >
             {displayNumber ?? '·'}
           </Text>
@@ -1547,7 +1565,12 @@ function AssignmentRow({
       <View style={{ flex: 1 }}>
         {overline ? (
           <Text
-            style={[styles.overline, accentColor ? { color: accentColor } : null]}
+            style={[
+              styles.overline,
+              (accentTint ?? accentColor)
+                ? { color: accentTint ?? accentColor }
+                : null,
+            ]}
           >
             {overline}
           </Text>
@@ -1714,8 +1737,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   weekendCardBody: {
-    paddingHorizontal: 4,
-    paddingBottom: 4,
+    paddingBottom: 2,
   },
   subsectionBanner: {
     flexDirection: 'row',
@@ -1766,7 +1788,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
+    borderBottomColor: '#eef2f7',
     alignItems: 'center',
   },
   rowPressed: { backgroundColor: '#f8fafc' },
