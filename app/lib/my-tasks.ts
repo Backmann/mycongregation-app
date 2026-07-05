@@ -124,6 +124,46 @@ export function taskSubsectionLabel(
   return meta ? t(meta.i18nKey) : null;
 }
 
+
+/**
+ * Premium category accents for tasks: each kind gets a color, a tinted
+ * background and an icon, so the eye can separate weekend meetings, midweek
+ * meetings, duties, cleaning, field service and the rest at a glance.
+ */
+export interface TaskVisual {
+  color: string;
+  bg: string;
+  icon: string;
+}
+
+export function taskVisual(
+  item: Pick<MyAssignmentItem, 'kind' | 'eventType'>,
+): TaskVisual {
+  // Meetings (and duties inside them) are colored by the meeting day.
+  if (item.eventType === 'weekend') {
+    return { color: '#7c3aed', bg: '#f5f3ff', icon: 'people-outline' };
+  }
+  if (item.eventType === 'midweek') {
+    return { color: '#2563eb', bg: '#eff6ff', icon: 'book-outline' };
+  }
+  switch (item.kind) {
+    case 'duty':
+      return { color: '#0d9488', bg: '#f0fdfa', icon: 'construct-outline' };
+    case 'cleaning':
+      return { color: '#0891b2', bg: '#ecfeff', icon: 'sparkles-outline' };
+    case 'field_service':
+      return { color: '#16a34a', bg: '#f0fdf4', icon: 'walk-outline' };
+    case 'cart':
+      return { color: '#16a34a', bg: '#f0fdf4', icon: 'cart-outline' };
+    case 'outgoing_talk':
+      return { color: '#4f46e5', bg: '#eef2ff', icon: 'mic-outline' };
+    case 'co_lunch':
+      return { color: '#d97706', bg: '#fffbeb', icon: 'restaurant-outline' };
+    default:
+      return { color: '#0284c7', bg: '#e0f2fe', icon: 'calendar-outline' };
+  }
+}
+
 /** Row title: part title, translated duty/cleaning, "you conduct" etc. */
 export function taskTitle(item: MyAssignmentItem, t: TFunc): string {
   if (item.kind === 'duty') {

@@ -1783,7 +1783,10 @@
       "evening": "Good evening",
       "night": "Good night"
     },
-    "myWeek": "My week"
+    "myWeek": "My week",
+    "rowKind": {
+      "duty": "Duty"
+    }
   },
   "halls": {
     "title": "Kingdom Halls",

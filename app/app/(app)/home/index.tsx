@@ -36,6 +36,7 @@ import {
   taskMeta,
   taskSubsectionLabel,
   taskTitle,
+  taskVisual,
 } from '../../../lib/my-tasks';
 
 const pad = (n: number) => String(n).padStart(2, '0');
@@ -177,6 +178,16 @@ function GreetingHeader() {
     </View>
   );
 }
+
+const FEED_ACCENT: Record<
+  string,
+  { color: string; bg: string; icon: string }
+> = {
+  weekend: { color: '#7c3aed', bg: '#f5f3ff', icon: 'people-outline' },
+  midweek: { color: '#2563eb', bg: '#eff6ff', icon: 'book-outline' },
+  field_service: { color: '#16a34a', bg: '#f0fdf4', icon: 'walk-outline' },
+  event: { color: '#d97706', bg: '#fffbeb', icon: 'megaphone-outline' },
+};
 
 function MeetingsFeed() {
   const { t, i18n } = useTranslation();
@@ -351,15 +362,20 @@ function MeetingsFeed() {
           const typeLabel = e.type
             ? t(`specialEvents.types.${e.type}`, e.type)
             : null;
+          const av = FEED_ACCENT.event;
           return (
             <Pressable
               key={en.key}
-              style={[styles.card, { paddingVertical: 14 }]}
+              style={[
+                styles.card,
+                styles.feedCard,
+                { borderLeftColor: av.color },
+              ]}
               onPress={() => router.push(`/special-events/${e.id}` as any)}
             >
               <View style={styles.meetingHeader}>
-                <Ionicons name="megaphone-outline" size={18} color="#0ea5e9" />
-                <Text style={styles.meetingKind}>
+                <Ionicons name={av.icon as never} size={16} color={av.color} />
+                <Text style={[styles.meetingKind, { color: av.color }]}>
                   {typeLabel ?? t('home.kinds.meeting')}
                 </Text>
                 {isToday ? (
@@ -380,22 +396,15 @@ function MeetingsFeed() {
           en.kind === 'field_service'
             ? t('home.nextFieldService')
             : t(`home.eventTypes.${en.kind}`);
+        const ac = FEED_ACCENT[en.kind] ?? FEED_ACCENT.midweek;
         return (
           <View
             key={en.key}
-            style={[
-              styles.card,
-              { paddingVertical: 14 },
-              mine && styles.feedMine,
-            ]}
+            style={[styles.card, styles.feedCard, { borderLeftColor: ac.color }]}
           >
             <View style={styles.meetingHeader}>
-              <Ionicons
-                name={en.kind === 'field_service' ? 'walk-outline' : 'calendar'}
-                size={18}
-                color="#0ea5e9"
-              />
-              <Text style={styles.meetingKind}>{kindLabel}</Text>
+              <Ionicons name={ac.icon as never} size={16} color={ac.color} />
+              <Text style={[styles.meetingKind, { color: ac.color }]}>{kindLabel}</Text>
               {isToday ? (
                 <Text style={styles.todayChip}>{t('home.feed.today')}</Text>
               ) : null}
@@ -430,8 +439,10 @@ function MeetingsFeed() {
               </Pressable>
             )}
             {mine ? (
-              <View style={styles.partsBox}>
-                <Text style={styles.partsTitle}>{t('home.meeting.myParts')}</Text>
+              <View style={[styles.partsBox, { backgroundColor: ac.bg }]}>
+                <Text style={[styles.partsTitle, { color: ac.color }]}>
+                  {t('home.meeting.myParts')}
+                </Text>
                 {en.myParts.map((p, i) => (
                   <View key={i} style={styles.myPartItem}>
                     {p.section && p.section !== en.myParts[i - 1]?.section ? (
@@ -517,16 +528,6 @@ function EventHomeRow({
   );
 }
 
-const TASK_ICONS: Record<MyAssignmentItem['kind'], keyof typeof Ionicons.glyphMap> = {
-  meeting: 'calendar-outline',
-  duty: 'construct-outline',
-  cleaning: 'sparkles-outline',
-  cart: 'cart-outline',
-  field_service: 'walk-outline',
-  outgoing_talk: 'mic-outline',
-  co_lunch: 'restaurant-outline',
-};
-
 function MyTasksCard() {
   const { t, i18n } = useTranslation();
   const { user } = useAuth();
@@ -577,17 +578,16 @@ function MyTasksCard() {
         </Pressable>
       </View>
       <View style={styles.card}>
-        {top.map((r, idx) => (
+        {top.map((r, idx) => {
+          const v = taskVisual(r.item);
+          return (
           <View
             key={`${r.item.kind}-${idx}-${r.dateISO}`}
             style={[styles.eventRow, idx > 0 && styles.eventRowBorder]}
           >
-            <Ionicons
-              name={TASK_ICONS[r.item.kind]}
-              size={18}
-              color="#0ea5e9"
-              style={{ marginRight: 10 }}
-            />
+            <View style={[styles.kindChip, { backgroundColor: v.bg }]}>
+              <Ionicons name={v.icon as never} size={15} color={v.color} />
+            </View>
             <View style={{ flex: 1 }}>
               {taskSubsectionLabel(r.item, t) ? (
                 <Text style={styles.eventSubsection} numberOfLines={1}>
@@ -602,7 +602,8 @@ function MyTasksCard() {
               </Text>
             </View>
           </View>
-        ))}
+          );
+        })}
       </View>
     </>
   );
@@ -881,6 +882,20 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f8fafc' },
   greeting: { marginBottom: 14 },
+  kindChip: {
+    width: 30,
+    height: 30,
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 10,
+  },
+  feedCard: {
+    paddingVertical: 14,
+    borderLeftWidth: 4,
+    borderRadius: 14,
+    overflow: 'hidden',
+  },
   greetingText: { fontSize: 22, fontWeight: '800', color: '#0f172a' },
   greetingDate: {
     fontSize: 13,

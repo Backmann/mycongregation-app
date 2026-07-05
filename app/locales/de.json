@@ -1783,7 +1783,10 @@
       "evening": "Guten Abend",
       "night": "Gute Nacht"
     },
-    "myWeek": "Meine Woche"
+    "myWeek": "Meine Woche",
+    "rowKind": {
+      "duty": "Aufgabe"
+    }
   },
   "halls": {
     "title": "Königreichssäle",

@@ -20,22 +20,10 @@ import {
   taskMeta,
   taskSubsectionLabel,
   taskTitle,
+  taskVisual,
 } from '../../../lib/my-tasks';
 import { addDays, formatDateISO, startOfWeekMonday } from '../../../lib/dates';
 import { HallPlan } from '../../../components/HallPlan';
-
-const TASK_ICONS: Record<
-  MyAssignmentItem['kind'],
-  keyof typeof Ionicons.glyphMap
-> = {
-  meeting: 'calendar-outline',
-  duty: 'construct-outline',
-  cleaning: 'sparkles-outline',
-  cart: 'cart-outline',
-  field_service: 'walk-outline',
-  outgoing_talk: 'mic-outline',
-  co_lunch: 'restaurant-outline',
-};
 
 function weekHeaderLabel(weekStartISO: string, locale: string): string {
   const start = new Date(`${weekStartISO}T00:00:00`);
@@ -178,16 +166,23 @@ export default function MyAssignmentsScreen() {
               </Text>
               {w.groups.map((g) => {
                 const head = g.rows[0];
+                const v = taskVisual(head.item);
                 return (
-                  <View key={g.key} style={styles.card}>
-                    <View style={styles.cardHead}>
+                  <View
+                    key={g.key}
+                    style={[styles.card, { borderLeftColor: v.color }]}
+                  >
+                    <View style={[styles.cardHead, { backgroundColor: v.bg }]}>
                       <Ionicons
-                        name={TASK_ICONS[head.item.kind]}
-                        size={16}
-                        color="#0ea5e9"
+                        name={v.icon as never}
+                        size={15}
+                        color={v.color}
                         style={{ marginRight: 8 }}
                       />
-                      <Text style={styles.cardHeadText} numberOfLines={1}>
+                      <Text
+                        style={[styles.cardHeadText, { color: v.color }]}
+                        numberOfLines={1}
+                      >
                         {taskMeta(head, t, i18n.language)}
                       </Text>
                     </View>
@@ -199,6 +194,13 @@ export default function MyAssignmentsScreen() {
                         {taskSubsectionLabel(r.item, t) ? (
                           <Text style={styles.subsection} numberOfLines={1}>
                             {taskSubsectionLabel(r.item, t)}
+                          </Text>
+                        ) : r.item.kind === 'duty' ? (
+                          <Text
+                            style={[styles.subsection, styles.dutyLabel]}
+                            numberOfLines={1}
+                          >
+                            {t('home.rowKind.duty')}
                           </Text>
                         ) : null}
                         <Text style={styles.title} numberOfLines={2}>
@@ -379,29 +381,35 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: '#fff',
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingBottom: 4,
+    borderRadius: 14,
     marginBottom: 10,
+    overflow: 'hidden',
+    borderLeftWidth: 4,
+    borderLeftColor: '#0ea5e9',
+    shadowColor: '#0f172a',
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 1,
   },
   cardHead: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingTop: 12,
-    paddingBottom: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
+    paddingHorizontal: 14,
+    paddingVertical: 9,
   },
   cardHeadText: {
     flex: 1,
-    fontSize: 13,
-    fontWeight: '700',
+    fontSize: 12.5,
+    fontWeight: '800',
     color: '#0369a1',
   },
   partRow: {
     paddingVertical: 11,
+    paddingHorizontal: 14,
   },
   rowBorder: { borderTopWidth: 1, borderTopColor: '#f1f5f9' },
+  dutyLabel: { color: '#0d9488' },
   subsection: {
     fontSize: 11,
     fontWeight: '700',
