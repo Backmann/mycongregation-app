@@ -1525,10 +1525,17 @@ function AssignmentRow({
         <View
           style={[
             styles.orderBadge,
+            accentColor
+              ? { backgroundColor: accentColor + '1A' }
+              : null,
             displayNumber == null && styles.orderBadgeInfo,
           ]}
         >
-          <Text style={styles.orderText}>{displayNumber ?? '·'}</Text>
+          <Text
+            style={[styles.orderText, accentColor ? { color: accentColor } : null]}
+          >
+            {displayNumber ?? '·'}
+          </Text>
         </View>
         {partTime ? (
           <View style={styles.timePill}>
@@ -1538,7 +1545,13 @@ function AssignmentRow({
         ) : null}
       </View>
       <View style={{ flex: 1 }}>
-        {overline ? <Text style={styles.overline}>{overline}</Text> : null}
+        {overline ? (
+          <Text
+            style={[styles.overline, accentColor ? { color: accentColor } : null]}
+          >
+            {overline}
+          </Text>
+        ) : null}
         <View style={styles.partLabelRow}>
           {isMine ? <MyBulb /> : null}
           <Text style={styles.partLabel}>{partLabel}</Text>
@@ -1605,26 +1618,21 @@ function AssignmentRow({
             </View>
           )}
         </View>
-        {assignment.status !== 'draft' && (
-          <View
-            style={[
-              styles.statusBadge,
-              assignment.status === 'published' && styles.statusPublished,
-              assignment.status === 'cancelled' && styles.statusCancelled,
-            ]}
-          >
-            <Text style={styles.statusBadgeText}>
-              {t(`assignments.status.${assignment.status}`).toUpperCase()}
+        {assignment.status === 'cancelled' ? (
+          <View style={styles.statusDotRow}>
+            <View style={[styles.statusDot, styles.statusDotCancelled]} />
+            <Text style={[styles.statusDotLabel, styles.statusDotLabelCancel]}>
+              {t('assignments.status.cancelled')}
             </Text>
           </View>
-        )}
-        {assignment.changedSincePublish && (
-          <View style={[styles.statusBadge, styles.statusChanged]}>
-            <Text style={[styles.statusBadgeText, styles.statusChangedText]}>
-              {t('schedule.notifyChanges.badge').toUpperCase()}
+        ) : assignment.changedSincePublish ? (
+          <View style={styles.statusDotRow}>
+            <View style={[styles.statusDot, styles.statusDotChanged]} />
+            <Text style={[styles.statusDotLabel, styles.statusDotLabelChanged]}>
+              {t('schedule.notifyChanges.badge')}
             </Text>
           </View>
-        )}
+        ) : null}
       </View>
       {canEdit ? <Text style={styles.chevron}>›</Text> : null}
     </Pressable>
@@ -1772,9 +1780,9 @@ const styles = StyleSheet.create({
     marginTop: 3,
     alignSelf: 'stretch',
     alignItems: 'center',
-    backgroundColor: '#ecfeff',
+    backgroundColor: '#f8fafc',
     borderWidth: 1,
-    borderColor: '#a5f3fc',
+    borderColor: '#e2e8f0',
     borderRadius: 9,
     paddingVertical: 3,
     paddingHorizontal: 4,
@@ -1782,13 +1790,13 @@ const styles = StyleSheet.create({
   timePillStart: {
     fontSize: 12.5,
     fontWeight: '800',
-    color: '#0e7490',
+    color: '#475569',
     lineHeight: 15,
   },
   timePillEnd: {
     fontSize: 11,
     fontWeight: '600',
-    color: '#5b97a6',
+    color: '#94a3b8',
     lineHeight: 13,
   },
   orderBadge: {
@@ -1856,24 +1864,25 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
   },
   chipEmptyText: { fontSize: 13, color: '#94a3b8', fontStyle: 'italic' },
-  statusBadge: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-    backgroundColor: '#f1f5f9',
-    marginTop: 4,
+  statusDotRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    marginTop: 5,
   },
-  statusBadgeText: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: '#64748b',
-    letterSpacing: 0.5,
+  statusDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
   },
-  statusPublished: { backgroundColor: '#dcfce7' },
-  statusCancelled: { backgroundColor: '#fee2e2' },
-  statusChanged: { backgroundColor: '#fef3c7' },
-  statusChangedText: { color: '#b45309' },
+  statusDotChanged: { backgroundColor: '#d97706' },
+  statusDotCancelled: { backgroundColor: '#dc2626' },
+  statusDotLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  statusDotLabelChanged: { color: '#b45309' },
+  statusDotLabelCancel: { color: '#b91c1c' },
   chevron: { color: '#cbd5e1', fontSize: 24, marginLeft: 8 },
   errorBox: {
     margin: 16,
