@@ -66,6 +66,12 @@ export default function FieldServiceMeetingsScreen() {
 
   const scrollRef = useRef<ScrollView>(null);
   const monthOffsets = useRef<Record<string, number>>({});
+  // Чип месяца подсвечивает БЛОК, видимый на экране (синхронизируется со
+  // скроллом), а не календарный текущий месяц — иначе при прокрутке к
+  // августу остаётся подсвечен июль и кажется, что фильтр сломан.
+  const [activeMonthKey, setActiveMonthKey] = useState<string>(
+    dayjs().format('YYYY-MM'),
+  );
   const didInitialScroll = useRef(false);
 
   const meetingsQuery = useQuery({
@@ -249,9 +255,23 @@ export default function FieldServiceMeetingsScreen() {
     }
   };
   const scrollToMonth = (key: string) => {
+    setActiveMonthKey(key);
     const off = monthOffsets.current[key];
     if (off != null)
       scrollRef.current?.scrollTo({ y: Math.max(off - 8, 0), animated: true });
+  };
+
+  /** Highlight the month block currently at the top of the viewport. */
+  const syncActiveMonth = (y: number) => {
+    let best: string | null = null;
+    let bestOff = -Infinity;
+    for (const [key, off] of Object.entries(monthOffsets.current)) {
+      if (off <= y + 40 && off > bestOff) {
+        best = key;
+        bestOff = off;
+      }
+    }
+    if (best && best !== activeMonthKey) setActiveMonthKey(best);
   };
 
   const exportPdf = () => {
@@ -368,14 +388,14 @@ export default function FieldServiceMeetingsScreen() {
               key={m.key}
               style={[
                 styles.monthChip,
-                m.key === currentMonthKey && styles.monthChipCurrent,
+                m.key === activeMonthKey && styles.monthChipCurrent,
               ]}
               onPress={() => scrollToMonth(m.key)}
             >
               <Text
                 style={[
                   styles.monthChipText,
-                  m.key === currentMonthKey && styles.monthChipTextCurrent,
+                  m.key === activeMonthKey && styles.monthChipTextCurrent,
                 ]}
               >
                 {dayjs(`${m.key}-01`)
@@ -403,6 +423,8 @@ export default function FieldServiceMeetingsScreen() {
         ref={scrollRef}
         contentContainerStyle={{ paddingBottom: 48 }}
         onContentSizeChange={scrollToCurrent}
+        onScroll={(e) => syncActiveMonth(e.nativeEvent.contentOffset.y)}
+        scrollEventThrottle={48}
       >
         {months.map((m) => (
           <View
