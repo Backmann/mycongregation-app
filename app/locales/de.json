@@ -2055,6 +2055,19 @@
       "upcoming": "Geplant",
       "noTalk": "Kein Vortrag gewählt",
       "phone": "Telefon"
+    },
+    "swap": {
+      "action": "Redner ersetzen",
+      "title": "Ersetzen · {{date}}",
+      "hint": "Wähle die Woche, aus der der Redner übernommen wird. „Tauschen\" tauscht beide Wochen, „Verschieben\" leert die Quellwoche.",
+      "mode": {
+        "swap": "Tauschen",
+        "move": "Verschieben"
+      },
+      "confirm": {
+        "swap": "Tauschen",
+        "move": "Verschieben"
+      }
     }
   },
   "rules": {

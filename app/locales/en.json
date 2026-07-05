@@ -2055,6 +2055,19 @@
       "upcoming": "Upcoming",
       "noTalk": "No talk selected",
       "phone": "Phone"
+    },
+    "swap": {
+      "action": "Replace speaker",
+      "title": "Replace · {{date}}",
+      "hint": "Pick the week to take the speaker from. \"Swap\" exchanges both weeks, \"Move\" clears the source week.",
+      "mode": {
+        "swap": "Swap weeks",
+        "move": "Move"
+      },
+      "confirm": {
+        "swap": "Swap",
+        "move": "Move"
+      }
     }
   },
   "rules": {

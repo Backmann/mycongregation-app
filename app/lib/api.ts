@@ -2033,6 +2033,23 @@ export const assignmentsApi = {
     const { data } = await api.get<Assignment>(`/assignments/${id}`);
     return data;
   },
+  /**
+   * Swap or move the weekend public-talk contents between two weeks (the
+   * booked speaker arrived on a different date). 'swap' exchanges the weeks,
+   * 'move' fills the target and clears the source. The "К нам" journal is
+   * re-synced server-side for both weeks.
+   */
+  async swapPublicTalk(input: {
+    sourceWeekStartDate: string;
+    targetWeekStartDate: string;
+    mode: 'swap' | 'move';
+  }): Promise<{ source: Assignment; target: Assignment }> {
+    const { data } = await api.post<{ source: Assignment; target: Assignment }>(
+      '/assignments/public-talk/swap',
+      { eventType: 'weekend', ...input },
+    );
+    return data;
+  },
   async create(input: CreateAssignmentInput): Promise<Assignment> {
     const { data } = await api.post<Assignment>('/assignments', cleanPayload(input));
     return data;

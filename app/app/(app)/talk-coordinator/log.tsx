@@ -27,6 +27,7 @@ import {
   TalkExchangeInput,
   talkExchangeApi,
   visitingSpeakersApi,
+  assignmentsApi,
   externalCongregationsApi,
   publishersApi,
   publicTalksApi,
@@ -130,6 +131,11 @@ export default function TalkExchangeYearScreen() {
   const [editing, setEditing] = useState<TalkExchange | null>(null);
   const [direction, setDirection] = useState<TalkExchangeDirection>('incoming');
   const [week, setWeek] = useState<WeekRow | null>(null);
+  // «Заменить докладчика»: целевая неделя, неделя-источник и режим.
+  const [swapTarget, setSwapTarget] = useState<WeekRow | null>(null);
+  const [swapSource, setSwapSource] = useState<string | null>(null);
+  const [swapMode, setSwapMode] = useState<'swap' | 'move'>('swap');
+  const [swapError, setSwapError] = useState<string | null>(null);
   const [date, setDate] = useState<string>('');
   const [publicTalkId, setPublicTalkId] = useState<string | null>(null);
   const [visitingSpeakerId, setVisitingSpeakerId] = useState<string | null>(null);
@@ -348,6 +354,12 @@ export default function TalkExchangeYearScreen() {
     }));
   }, [settingsQuery.data, i18n.language]);
 
+  // Плоский список недель для модалки «Заменить докладчика».
+  const weeksFlat = useMemo<WeekRow[]>(
+    () => months.flatMap((mb) => mb.rows),
+    [months],
+  );
+
   const currentMonthKey = dayjs().format('YYYY-MM');
   const currentWeekMonday = mondayISO(dayjs().format('YYYY-MM-DD'));
 
@@ -396,6 +408,29 @@ export default function TalkExchangeYearScreen() {
   });
   const pending =
     createMutation.isPending || updateMutation.isPending || removeMutation.isPending;
+
+  const swapMutation = useMutation({
+    mutationFn: (vars: {
+      sourceWeekStartDate: string;
+      targetWeekStartDate: string;
+      mode: 'swap' | 'move';
+    }) => assignmentsApi.swapPublicTalk(vars),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: QK });
+      qc.invalidateQueries({ queryKey: ['assignments'] });
+      setSwapTarget(null);
+      setSwapSource(null);
+      setSwapError(null);
+    },
+    onError: (e) => setSwapError(extractErrorMessage(e)),
+  });
+
+  const openSwap = (w: WeekRow) => {
+    setSwapTarget(w);
+    setSwapSource(null);
+    setSwapMode('swap');
+    setSwapError(null);
+  };
 
   const openSlot = (w: WeekRow, dir: TalkExchangeDirection, entry?: TalkExchange) => {
     setWeek(w);
@@ -739,6 +774,8 @@ export default function TalkExchangeYearScreen() {
                         bg="#e0f2fe"
                         entry={slot.incoming}
                         onPress={() => openSlot(w, 'incoming', slot.incoming)}
+                        onSwap={() => openSwap(w)}
+                        swapHint={t('talkCoordinator.swap.action')}
                       >
                         {slot.incoming ? (
                           <>
@@ -802,6 +839,128 @@ export default function TalkExchangeYearScreen() {
           </Fragment>
         ))}
       </ScrollView>
+
+      {/* «Заменить докладчика»: обмен/перенос содержимого слота между неделями */}
+      <Modal
+        visible={swapTarget !== null}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setSwapTarget(null)}
+      >
+        <View style={styles.overlay}>
+          <Pressable
+            style={StyleSheet.absoluteFill}
+            onPress={() => setSwapTarget(null)}
+          />
+          <View style={styles.swapCard}>
+            <Text style={styles.swapTitle}>
+              {t('talkCoordinator.swap.title', {
+                date: swapTarget ? fmtDay(swapTarget.date) : '',
+              })}
+            </Text>
+            <Text style={styles.swapHint}>{t('talkCoordinator.swap.hint')}</Text>
+
+            <View style={styles.swapModeRow}>
+              {(['swap', 'move'] as const).map((m) => (
+                <Pressable
+                  key={m}
+                  style={[
+                    styles.swapModeBtn,
+                    swapMode === m && styles.swapModeBtnActive,
+                  ]}
+                  onPress={() => setSwapMode(m)}
+                >
+                  <Ionicons
+                    name={m === 'swap' ? 'swap-horizontal' : 'arrow-forward'}
+                    size={14}
+                    color={swapMode === m ? '#fff' : '#0369a1'}
+                  />
+                  <Text
+                    style={[
+                      styles.swapModeText,
+                      swapMode === m && styles.swapModeTextActive,
+                    ]}
+                  >
+                    {t(`talkCoordinator.swap.mode.${m}`)}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+
+            <ScrollView style={styles.swapList}>
+              {weeksFlat
+                .filter(
+                  (w) =>
+                    w.monday !== swapTarget?.monday &&
+                    !!byWeek.get(w.monday)?.incoming,
+                )
+                .map((w) => {
+                  const inc = byWeek.get(w.monday)!.incoming!;
+                  const active = swapSource === w.monday;
+                  return (
+                    <Pressable
+                      key={w.monday}
+                      style={[styles.swapRow, active && styles.swapRowActive]}
+                      onPress={() => setSwapSource(w.monday)}
+                    >
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.swapRowDate}>{fmtDay(w.date)}</Text>
+                        <Text style={styles.swapRowName} numberOfLines={1}>
+                          {incomingName(inc) ??
+                            t('talkCoordinator.log.unknownSpeaker')}
+                        </Text>
+                        {talkLabel(inc.publicTalkId) ? (
+                          <Text style={styles.swapRowTalk} numberOfLines={1}>
+                            {talkLabel(inc.publicTalkId)}
+                          </Text>
+                        ) : null}
+                      </View>
+                      {active ? (
+                        <Ionicons
+                          name="checkmark-circle"
+                          size={20}
+                          color="#0284c7"
+                        />
+                      ) : null}
+                    </Pressable>
+                  );
+                })}
+            </ScrollView>
+
+            {swapError ? (
+              <Text style={styles.swapError}>{swapError}</Text>
+            ) : null}
+
+            <View style={styles.swapActions}>
+              <Pressable
+                style={styles.swapCancel}
+                onPress={() => setSwapTarget(null)}
+              >
+                <Text style={styles.swapCancelText}>{t('common.cancel')}</Text>
+              </Pressable>
+              <Pressable
+                style={[
+                  styles.swapConfirm,
+                  (!swapSource || swapMutation.isPending) &&
+                    styles.swapConfirmDisabled,
+                ]}
+                disabled={!swapSource || swapMutation.isPending}
+                onPress={() =>
+                  swapMutation.mutate({
+                    sourceWeekStartDate: swapSource!,
+                    targetWeekStartDate: swapTarget!.monday,
+                    mode: swapMode,
+                  })
+                }
+              >
+                <Text style={styles.swapConfirmText}>
+                  {t(`talkCoordinator.swap.confirm.${swapMode}`)}
+                </Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
 
       <Modal visible={open} transparent animationType="fade" onRequestClose={() => setOpen(false)}>
         <View style={styles.overlay}>
@@ -1175,6 +1334,8 @@ function Slot({
   bg,
   entry,
   onPress,
+  onSwap,
+  swapHint,
   children,
 }: {
   label: string;
@@ -1182,12 +1343,26 @@ function Slot({
   bg: string;
   entry?: TalkExchange;
   onPress: () => void;
+  onSwap?: () => void;
+  swapHint?: string;
   children?: React.ReactNode;
 }) {
   const { t } = useTranslation();
   return (
     <Pressable style={[styles.slot, entry ? { backgroundColor: bg } : styles.slotEmpty]} onPress={onPress}>
-      <Text style={[styles.slotLabel, { color: accent }]}>{label}</Text>
+      <View style={styles.slotLabelRow}>
+        <Text style={[styles.slotLabel, { color: accent }]}>{label}</Text>
+        {onSwap ? (
+          <Pressable
+            onPress={onSwap}
+            hitSlop={10}
+            accessibilityLabel={swapHint}
+            style={styles.slotSwapBtn}
+          >
+            <Ionicons name="swap-horizontal" size={15} color={accent} />
+          </Pressable>
+        ) : null}
+      </View>
       {entry ? <View>{children}</View> : <Text style={styles.slotAdd}>+ {t('talkCoordinator.log.addSlot')}</Text>}
     </Pressable>
   );
@@ -1203,6 +1378,67 @@ const styles = StyleSheet.create({
   monthChipText: { fontSize: 12, color: '#475569', fontWeight: '600', textTransform: 'capitalize' },
   monthChipTextCurrent: { color: '#fff' },
   container: { padding: 12, paddingBottom: 48 },
+  slotLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  slotSwapBtn: { padding: 2 },
+  swapCard: {
+    backgroundColor: '#fff',
+    borderRadius: 18,
+    padding: 16,
+    gap: 10,
+    maxWidth: 440,
+    width: '92%',
+    maxHeight: '82%',
+    alignSelf: 'center',
+  },
+  swapTitle: { fontSize: 16, fontWeight: '800', color: '#0f172a' },
+  swapHint: { fontSize: 12.5, color: '#64748b' },
+  swapModeRow: { flexDirection: 'row', gap: 8 },
+  swapModeBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 7,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    backgroundColor: '#e0f2fe',
+  },
+  swapModeBtnActive: { backgroundColor: '#0284c7' },
+  swapModeText: { fontSize: 12.5, fontWeight: '700', color: '#0369a1' },
+  swapModeTextActive: { color: '#fff' },
+  swapList: { maxHeight: 300 },
+  swapRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 9,
+    paddingHorizontal: 10,
+    borderRadius: 12,
+  },
+  swapRowActive: { backgroundColor: '#f0f9ff' },
+  swapRowDate: { fontSize: 12, color: '#64748b', textTransform: 'capitalize' },
+  swapRowName: { fontSize: 14, fontWeight: '700', color: '#0f172a' },
+  swapRowTalk: { fontSize: 12, color: '#0369a1' },
+  swapError: { fontSize: 12.5, color: '#b91c1c' },
+  swapActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 10 },
+  swapCancel: {
+    paddingVertical: 9,
+    paddingHorizontal: 14,
+    borderRadius: 10,
+    backgroundColor: '#f1f5f9',
+  },
+  swapCancelText: { fontSize: 13.5, fontWeight: '700', color: '#334155' },
+  swapConfirm: {
+    paddingVertical: 9,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    backgroundColor: '#0284c7',
+  },
+  swapConfirmDisabled: { opacity: 0.45 },
+  swapConfirmText: { fontSize: 13.5, fontWeight: '700', color: '#fff' },
   monthHeader: {
     fontSize: 13,
     fontWeight: '700',
