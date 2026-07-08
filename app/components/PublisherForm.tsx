@@ -79,7 +79,6 @@ export function PublisherForm({
     pioneerType: initial?.pioneerType ?? 'none',
     pioneerSince: initial?.pioneerSince ?? '',
     isActive: initial?.isActive ?? true,
-    isRegular: initial?.isRegular ?? true,
     notes: initial?.notes ?? '',
     capabilities:
       initial?.capabilities ??

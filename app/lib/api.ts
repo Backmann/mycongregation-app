@@ -153,7 +153,6 @@ export interface Publisher {
   email: string | null;
   address: string | null;
   isActive: boolean;
-  isRegular: boolean;
   /** Computed status — present only for admins/elders (pastoral information). */
   status?: PublisherStatus;
   appointment: PublisherAppointment;
@@ -185,7 +184,6 @@ export interface CreatePublisherInput {
   serviceGroupId?: string | null;
   userId?: string;
   isActive?: boolean;
-  isRegular?: boolean;
   appointment?: PublisherAppointment;
   baptismDate?: string;
   ministryStartDate?: string;

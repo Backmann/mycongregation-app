@@ -184,7 +184,6 @@ export default function PublisherDetailScreen() {
           pioneerType: publisher.pioneerType,
           pioneerSince: publisher.pioneerSince ?? undefined,
           isActive: publisher.isActive,
-          isRegular: publisher.isRegular,
           notes: publisher.notes ?? undefined,
           capabilities: publisher.capabilities ?? {},
         }}
