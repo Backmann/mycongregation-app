@@ -278,8 +278,8 @@
     },
     "pioneerSinceFormat": "{{label}} (since {{date}})",
     "gender": {
-      "brother": "Brother",
-      "sister": "Sister"
+      "brother": "Male",
+      "sister": "Female"
     },
     "removal": {
       "title": "Remove publisher",

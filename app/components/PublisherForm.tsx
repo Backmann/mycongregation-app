@@ -55,12 +55,10 @@ export function PublisherForm({
       label: t('publishers.appointment.ministerial_servant'),
     },
     { value: 'elder', label: t('publishers.appointment.elder') },
-    { value: 'none', label: t('publishers.appointment.none') },
   ];
 
   const PIONEER_OPTIONS: { value: PioneerType; label: string }[] = [
     { value: 'none', label: t('publishers.pioneer.options.none') },
-    { value: 'auxiliary_until_cancelled', label: t('publishers.pioneer.options.auxiliary_until_cancelled') },
     { value: 'regular', label: t('publishers.pioneer.options.regular') },
     { value: 'special', label: t('publishers.pioneer.options.special') },
     { value: 'missionary', label: t('publishers.pioneer.options.missionary') },
@@ -132,12 +130,6 @@ export function PublisherForm({
           onChangeText={(v) => update('firstName', v)}
           required
           placeholder={t('publishers.placeholders.firstName')}
-        />
-        <FormField
-          label={t('publishers.fields.middleName')}
-          value={form.middleName}
-          onChangeText={(v) => update('middleName', v)}
-          placeholder={t('publishers.placeholders.middleName')}
         />
         <FormField
           label={t('publishers.fields.lastName')}
@@ -249,11 +241,6 @@ export function PublisherForm({
       </FormSection>
 
       <FormSection title={t('publishers.sections.status')}>
-        <FormSwitch
-          label={t('publishers.fields.active')}
-          value={form.isActive}
-          onValueChange={(v) => update('isActive', v)}
-        />
         <FormSwitch
           label={t('publishers.fields.regular')}
           value={form.isRegular}

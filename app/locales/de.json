@@ -278,8 +278,8 @@
     },
     "pioneerSinceFormat": "{{label}} (seit {{date}})",
     "gender": {
-      "brother": "Bruder",
-      "sister": "Schwester"
+      "brother": "Männlich",
+      "sister": "Weiblich"
     },
     "removal": {
       "title": "Verkündiger entfernen",

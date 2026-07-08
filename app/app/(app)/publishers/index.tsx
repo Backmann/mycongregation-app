@@ -125,8 +125,14 @@ export default function PublishersListScreen() {
   }, [data, filters, activeCount]);
 
   const allLoaded = data?.data ?? [];
-  const currentCount = allLoaded.filter((p) => !p.deletedAt).length;
-  const departedCount = allLoaded.length - currentCount;
+  // Students (appointment=STUDENT) are not reporting publishers and are not
+  // counted in the congregation's publisher total.
+  const currentCount = allLoaded.filter(
+    (p) => !p.deletedAt && p.appointment !== 'student',
+  ).length;
+  const departedCount = allLoaded.filter(
+    (p) => p.deletedAt && p.appointment !== 'student',
+  ).length;
   const countHeader = data ? (
     <Text style={styles.count}>
       {t('publishers.totalCount', { count: currentCount })}

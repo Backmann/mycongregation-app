@@ -278,8 +278,8 @@
     },
     "pioneerSinceFormat": "{{label}} (с {{date}})",
     "gender": {
-      "brother": "Брат",
-      "sister": "Сестра"
+      "brother": "Мужской",
+      "sister": "Женский"
     },
     "removal": {
       "title": "Удалить возвещателя",
