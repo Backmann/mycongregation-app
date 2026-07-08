@@ -19,6 +19,7 @@ import {
   extractErrorMessage,
   publishersApi,
   serviceReportsApi,
+  auxiliaryPioneersApi,
 } from '../../../lib/api';
 import { useTranslation } from 'react-i18next';
 import { formatMonthLabel } from '../../../lib/i18n';
@@ -105,6 +106,15 @@ export default function NewOrEditServiceReportScreen() {
   const [reportMonth, setReportMonth] = useState(
     preFilledMonth ? toYearMonth(preFilledMonth) : recentMonths[0].value,
   );
+
+  // Whether the current user serves as an auxiliary pioneer in the selected
+  // month — if so, the report uses the hours form even without pioneerType.
+  const { data: iAmAuxThisMonth } = useQuery({
+    queryKey: ['aux-pioneers', 'mine', reportMonth],
+    queryFn: () => auxiliaryPioneersApi.mine(reportMonth),
+    enabled: !isEditMode && !isOnBehalf && !!reportMonth,
+  });
+
   const [servedThisMonth, setServedThisMonth] = useState<boolean | null>(null);
   const [hours, setHours] = useState('');
   const [bibleStudies, setBibleStudies] = useState('0');
@@ -129,8 +139,9 @@ export default function NewOrEditServiceReportScreen() {
   // pioneer form variant).
   const isPioneer = isOnBehalf
     ? onBehalfIsPioneer
-    : myPublisher?.pioneerType !== undefined &&
-      myPublisher.pioneerType !== 'none';
+    : (myPublisher?.pioneerType !== undefined &&
+        myPublisher.pioneerType !== 'none') ||
+      iAmAuxThisMonth === true;
 
   const submitMutation = useMutation({
     mutationFn: () =>

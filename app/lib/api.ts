@@ -2436,6 +2436,14 @@ export const auxiliaryPioneersApi = {
     );
     return data;
   },
+  /** Whether the current user serves as an auxiliary pioneer in the month. */
+  async mine(monthIso: string): Promise<boolean> {
+    const { data } = await api.get<{ serving: boolean }>(
+      '/auxiliary-pioneers/mine',
+      { params: { month: monthIso } },
+    );
+    return data.serving;
+  },
   async create(input: {
     publisherId: string;
     startMonth: string;
