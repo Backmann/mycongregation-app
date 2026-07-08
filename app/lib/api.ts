@@ -2396,3 +2396,59 @@ export const activityApi = {
     return data;
   },
 };
+
+// ---- Auxiliary pioneers (Служение → Подсобное пионерское служение) ----
+
+export interface AuxPioneerMonthRow {
+  id: string;
+  publisherId: string;
+  publisherName: string;
+  startMonth: string;
+  endMonth: string | null;
+  untilCancelled: boolean;
+  hourGoal: number;
+}
+
+export interface AuxPioneerJournalRow {
+  id: string;
+  publisherId: string;
+  publisherName: string;
+  startMonth: string;
+  endMonth: string | null;
+  untilCancelled: boolean;
+  serving: boolean;
+}
+
+export const auxiliaryPioneersApi = {
+  async listForMonth(monthIso: string): Promise<{
+    month: string;
+    hourGoal: number;
+    rows: AuxPioneerMonthRow[];
+  }> {
+    const { data } = await api.get('/auxiliary-pioneers', {
+      params: { month: monthIso },
+    });
+    return data;
+  },
+  async journal(): Promise<AuxPioneerJournalRow[]> {
+    const { data } = await api.get<AuxPioneerJournalRow[]>(
+      '/auxiliary-pioneers/journal',
+    );
+    return data;
+  },
+  async create(input: {
+    publisherId: string;
+    startMonth: string;
+    endMonth?: string;
+    untilCancelled?: boolean;
+    note?: string;
+  }): Promise<void> {
+    await api.post('/auxiliary-pioneers', input);
+  },
+  async stop(id: string, endMonth?: string): Promise<void> {
+    await api.patch(`/auxiliary-pioneers/${id}/stop`, { endMonth });
+  },
+  async remove(id: string): Promise<void> {
+    await api.delete(`/auxiliary-pioneers/${id}`);
+  },
+};

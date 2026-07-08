@@ -127,7 +127,8 @@
     },
     "done": "Fertig",
     "none": "Keine",
-    "saving": "Speichern…"
+    "saving": "Speichern…",
+    "add": "Hinzufügen"
   },
   "profile": {
     "signedInAs": "Angemeldet als",
@@ -2101,5 +2102,28 @@
       "micTaken": "Mikrofon Nr. 1 ist bereits manuell belegt — Auto-Zuweisung übersprungen.",
       "treasuresCapability": "Damit der Vortrag „Schätze\" automatisch zugeteilt wird, fügen Sie {{name}} in der Verkündigerkarte die Fähigkeit „Schätze aus Gottes Wort\" hinzu."
     }
+  },
+  "auxPioneer": {
+    "title": "Hilfspionierdienst",
+    "menuSubtitle": "Wer als Hilfspionier dient",
+    "reducedNorm": "reduzierter Monat · 15 Stunden",
+    "standardNorm": "30 Stunden",
+    "servingThisMonth": "Dienen diesen Monat · {{count}}",
+    "add": "hinzufügen",
+    "noneThisMonth": "Diesen Monat dient niemand als Hilfspionier",
+    "journal": "Dienstjournal",
+    "journalEmpty": "Noch keine Einträge",
+    "serving": "dient",
+    "finished": "beendet",
+    "stop": "Beenden",
+    "untilCancelledSince": "bis auf Widerruf · seit {{month}}",
+    "onlyMonth": "nur {{month}}",
+    "rangeMonths": "{{from}} – {{to}}",
+    "addTitle": "Hinzufügen · {{month}}",
+    "publisher": "Verkündiger",
+    "untilCancelled": "Bis auf Widerruf",
+    "untilCancelledHint": "dient unbefristet, bis es beendet wird",
+    "singleMonthHint": "nur für {{month}}",
+    "youAreServing": "Du dienst als Hilfspionier"
   }
 }

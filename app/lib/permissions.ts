@@ -69,6 +69,7 @@ export interface Permissions {
   /** Circuit-overseer visit schedule (Служение). View: admin or elder; edit:
    *  admin, service overseer, or body coordinator. */
   canViewCoSchedule: boolean;
+  canManageAuxiliaryPioneers: boolean;
   canEditCoSchedule: boolean;
 
   /** The set of responsibility types held by the current user. */
@@ -133,6 +134,13 @@ export function usePermissions(): Permissions {
         holds('service_overseer_assistant'),
       canEditDuties:
         isAdmin || holds('duties_coordinator') || holds('body_coordinator'),
+
+      // Auxiliary pioneers — admin, body coordinator, secretary, service overseer.
+      canManageAuxiliaryPioneers:
+        isAdmin ||
+        holds('body_coordinator') ||
+        holds('secretary') ||
+        holds('service_overseer'),
 
       // Secretary + admin only.
       canManageEvents: isAdmin || holds('body_coordinator'),

@@ -127,7 +127,8 @@
     },
     "done": "Done",
     "none": "None",
-    "saving": "Saving…"
+    "saving": "Saving…",
+    "add": "Add"
   },
   "profile": {
     "signedInAs": "Signed in as",
@@ -2101,5 +2102,28 @@
       "micTaken": "Microphone #1 is already taken manually — auto-fill skipped.",
       "treasuresCapability": "For the Treasures talk to be assigned automatically, add the \"Treasures from God's Word\" capability to {{name}} in the publisher card."
     }
+  },
+  "auxPioneer": {
+    "title": "Auxiliary pioneer service",
+    "menuSubtitle": "Who serves as an auxiliary pioneer",
+    "reducedNorm": "reduced month · 15 hours",
+    "standardNorm": "30 hours",
+    "servingThisMonth": "Serving this month · {{count}}",
+    "add": "add",
+    "noneThisMonth": "No one serves as an auxiliary pioneer this month",
+    "journal": "Service journal",
+    "journalEmpty": "No records yet",
+    "serving": "serving",
+    "finished": "finished",
+    "stop": "Stop",
+    "untilCancelledSince": "until cancelled · since {{month}}",
+    "onlyMonth": "only {{month}}",
+    "rangeMonths": "{{from}} – {{to}}",
+    "addTitle": "Add · {{month}}",
+    "publisher": "Publisher",
+    "untilCancelled": "Until cancelled",
+    "untilCancelledHint": "serves indefinitely until stopped",
+    "singleMonthHint": "only for {{month}}",
+    "youAreServing": "You serve as an auxiliary pioneer"
   }
 }

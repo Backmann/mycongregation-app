@@ -39,6 +39,10 @@ export default function CartLayout() {
         name="field-service"
         options={{ title: t('fieldService.title') }}
       />
+      <Stack.Screen
+        name="auxiliary-pioneers"
+        options={{ title: t('auxPioneer.title') }}
+      />
     </Stack>
   );
 }

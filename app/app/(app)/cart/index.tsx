@@ -16,7 +16,7 @@ type Row = {
 export default function ServiceHubScreen() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { canViewCoSchedule } = usePermissions();
+  const { canViewCoSchedule, canManageAuxiliaryPioneers } = usePermissions();
 
   const rows: Row[] = [
     {
@@ -54,6 +54,14 @@ export default function ServiceHubScreen() {
       subtitle: t('service.coScheduleSubtitle'),
       route: '/cart/co-schedule',
       show: canViewCoSchedule,
+    },
+    {
+      family: 'mdi',
+      icon: 'clock-plus-outline',
+      title: t('auxPioneer.title'),
+      subtitle: t('auxPioneer.menuSubtitle'),
+      route: '/cart/auxiliary-pioneers',
+      show: canManageAuxiliaryPioneers,
     },
   ];
 
