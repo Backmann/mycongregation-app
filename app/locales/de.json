@@ -2124,6 +2124,7 @@
     "untilCancelled": "Bis auf Widerruf",
     "untilCancelledHint": "dient unbefristet, bis es beendet wird",
     "singleMonthHint": "nur für {{month}}",
-    "youAreServing": "Du dienst als Hilfspionier"
+    "youAreServing": "Du dienst als Hilfspionier",
+    "servesAsAux": "Dient als Hilfspionier"
   }
 }

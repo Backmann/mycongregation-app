@@ -170,6 +170,8 @@ export interface Publisher {
   updatedAt: string;
   deletedAt: string | null;
   lastEditedByName?: string | null;
+  /** Whether the publisher serves as an auxiliary pioneer this month (card badge). */
+  isAuxiliaryPioneerNow?: boolean;
 }
 
 export interface CreatePublisherInput {

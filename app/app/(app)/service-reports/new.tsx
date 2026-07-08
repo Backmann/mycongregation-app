@@ -277,6 +277,15 @@ export default function NewOrEditServiceReportScreen() {
           </Text>
         )}
 
+        {!isOnBehalf && iAmAuxThisMonth ? (
+          <View style={styles.auxNotice}>
+            <Ionicons name="infinite" size={15} color="#0F6E56" />
+            <Text style={styles.auxNoticeText}>
+              {t('auxPioneer.youAreServing')}
+            </Text>
+          </View>
+        ) : null}
+
         <Text style={styles.label}>{t('reports.reportMonth')}</Text>
         {isMonthLocked ? (
           <View style={[styles.monthChip, styles.monthChipLocked]}>
@@ -451,6 +460,18 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     textAlign: 'center',
   },
+  auxNotice: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'center',
+    gap: 6,
+    marginBottom: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 999,
+    backgroundColor: '#E1F5EE',
+  },
+  auxNoticeText: { fontSize: 12.5, fontWeight: '600', color: '#0F6E56' },
   onBehalfBanner: {
     backgroundColor: '#e0f2fe',
     borderColor: '#7dd3fc',

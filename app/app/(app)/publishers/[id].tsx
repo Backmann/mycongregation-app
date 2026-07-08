@@ -12,6 +12,7 @@ import {
   View,
 } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   extractErrorMessage,
@@ -234,6 +235,14 @@ export default function PublisherDetailScreen() {
           label={t('publishers.fields.pioneer')}
           value={pioneerLabel(publisher.pioneerType, publisher.pioneerSince)}
         />
+        {publisher.isAuxiliaryPioneerNow ? (
+          <View style={styles.auxRow}>
+            <Ionicons name="infinite" size={15} color="#0F6E56" />
+            <Text style={styles.auxRowText}>
+              {t('auxPioneer.servesAsAux')}
+            </Text>
+          </View>
+        ) : null}
       </Section>
 
       <View style={styles.section}>
@@ -616,6 +625,18 @@ const styles = StyleSheet.create({
   statusBadgeIrregular: { backgroundColor: '#f59e0b' },
   statusBadgeInactive: { backgroundColor: '#94a3b8' },
   statusBadgeText: { color: '#fff', fontSize: 12.5, fontWeight: '700', fontFamily: 'Manrope_700Bold' },
+  auxRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    marginHorizontal: 12,
+    marginTop: 4,
+    borderRadius: 10,
+    backgroundColor: '#E1F5EE',
+  },
+  auxRowText: { fontSize: 13, fontWeight: '600', color: '#0F6E56' },
   container: { flex: 1, backgroundColor: '#f1f5f9' },
   modalOverlay: {
     flex: 1,

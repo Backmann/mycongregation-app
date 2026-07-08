@@ -2128,6 +2128,7 @@
     "untilCancelled": "До отмены",
     "untilCancelledHint": "служит бессрочно, пока не остановят",
     "singleMonthHint": "только за {{month}}",
-    "youAreServing": "Вы служите подсобным пионером"
+    "youAreServing": "Вы служите подсобным пионером",
+    "servesAsAux": "Служит подсобным пионером"
   }
 }

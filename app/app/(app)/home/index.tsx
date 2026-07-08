@@ -25,6 +25,7 @@ import {
   specialEventsApi,
   coVisitItemsApi,
   MyCoVisitItem,
+  auxiliaryPioneersApi,
 } from '../../../lib/api';
 import { effectiveVersionFor } from '../../../lib/meeting-schedule';
 import { addDays, formatDateISO, startOfWeekMonday } from '../../../lib/dates';
@@ -152,6 +153,11 @@ function SkeletonCard({ rows = 3 }: { rows?: number }) {
 function GreetingHeader() {
   const { t, i18n } = useTranslation();
   const { myPublisher } = useMyPublisher();
+  const currentMonth = `${new Date().toISOString().slice(0, 7)}-01`;
+  const { data: iAmAux } = useQuery({
+    queryKey: ['aux-pioneers', 'mine', currentMonth],
+    queryFn: () => auxiliaryPioneersApi.mine(currentMonth),
+  });
   const hour = new Date().getHours();
   const key =
     hour >= 5 && hour < 11
@@ -174,6 +180,14 @@ function GreetingHeader() {
         {name ? `, ${name}` : ''}
       </Text>
       <Text style={styles.greetingDate}>{dateLine}</Text>
+      {iAmAux ? (
+        <View style={styles.auxBadge}>
+          <Ionicons name="infinite" size={13} color="#0F6E56" />
+          <Text style={styles.auxBadgeText}>
+            {t('auxPioneer.youAreServing')}
+          </Text>
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -902,6 +916,18 @@ const styles = StyleSheet.create({
     marginTop: 2,
     textTransform: 'capitalize',
   },
+  auxBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    gap: 5,
+    marginTop: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 999,
+    backgroundColor: '#E1F5EE',
+  },
+  auxBadgeText: { fontSize: 12, fontWeight: '600', color: '#0F6E56' },
   actionStrip: { marginHorizontal: -16, marginBottom: 4 },
   actionStripContent: { paddingHorizontal: 16, gap: 14 },
   actionItem: { alignItems: 'center', width: 66 },
