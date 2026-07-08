@@ -154,6 +154,8 @@ export interface Publisher {
   address: string | null;
   isActive: boolean;
   isRegular: boolean;
+  /** Computed status — present only for admins/elders (pastoral information). */
+  status?: PublisherStatus;
   appointment: PublisherAppointment;
   baptismDate: string | null;
   ministryStartDate: string | null;

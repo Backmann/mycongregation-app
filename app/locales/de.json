@@ -248,7 +248,8 @@
       "middleName": "Zweiter Vorname",
       "lastName": "Nachname",
       "mobilePhone": "Mobiltelefon",
-      "generalNotes": "Allgemeine Notizen"
+      "generalNotes": "Allgemeine Notizen",
+      "status": "Status"
     },
     "appointment": {
       "publisher": "Verkündiger",

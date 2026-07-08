@@ -10,7 +10,6 @@ import {
 import { FormField } from './FormField';
 import { FormSection } from './FormSection';
 import { FormChips } from './FormChips';
-import { FormSwitch } from './FormSwitch';
 import { CapabilitiesEditor } from './CapabilitiesEditor';
 import {
   Capabilities,
@@ -237,14 +236,6 @@ export function PublisherForm({
           value={form.capabilities ?? {}}
           onChange={updateCapabilities}
           gender={form.gender}
-        />
-      </FormSection>
-
-      <FormSection title={t('publishers.sections.status')}>
-        <FormSwitch
-          label={t('publishers.fields.regular')}
-          value={form.isRegular}
-          onValueChange={(v) => update('isRegular', v)}
         />
       </FormSection>
 

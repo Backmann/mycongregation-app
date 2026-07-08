@@ -248,7 +248,8 @@
       "middleName": "Middle name / Patronymic",
       "lastName": "Last name",
       "mobilePhone": "Mobile phone",
-      "generalNotes": "General notes"
+      "generalNotes": "General notes",
+      "status": "Status"
     },
     "appointment": {
       "publisher": "Publisher",

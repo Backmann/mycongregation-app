@@ -100,6 +100,11 @@ export default function PublisherDetailScreen() {
   };
 
   const isAdmin = user?.role === 'admin';
+  // The computed status (active/irregular/inactive) is pastoral information for
+  // elders — it must be visible ONLY to admins and elders, never to the
+  // publisher themselves or anyone else, since seeing "inactive" on one's own
+  // card could be hurtful. It exists to help elders support publishers.
+  const canSeeStatus = user?.role === 'admin' || user?.role === 'elder';
   const { canEditPublishers } = usePermissions();
   const purgeMutation = useMutation({
     mutationFn: () => publishersApi.purge(id!),
@@ -268,7 +273,25 @@ export default function PublisherDetailScreen() {
           label={t('publishers.fields.gender')}
           value={publisher.gender === 'brother' ? t('publishers.gender.brother') : t('publishers.gender.sister')}
         />
-        <Field label={t('publishers.fields.active')} value={publisher.isActive ? t('common.yes') : t('common.no')} />
+        {canSeeStatus && publisher.status ? (
+          <View style={styles.statusRow}>
+            <Text style={styles.statusRowLabel}>
+              {t('publishers.fields.status')}
+            </Text>
+            <View
+              style={[
+                styles.statusBadge,
+                publisher.status === 'active' && styles.statusBadgeActive,
+                publisher.status === 'irregular' && styles.statusBadgeIrregular,
+                publisher.status === 'inactive' && styles.statusBadgeInactive,
+              ]}
+            >
+              <Text style={styles.statusBadgeText}>
+                {t(`publishers.status.${publisher.status}`)}
+              </Text>
+            </View>
+          </View>
+        ) : null}
       </Section>
 
       {isAdmin && (
@@ -576,6 +599,24 @@ function RemoveModal({
 }
 
 const styles = StyleSheet.create({
+  statusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 11,
+  },
+  statusRowLabel: { fontSize: 14, color: '#64748b' },
+  statusBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 999,
+    backgroundColor: '#94a3b8',
+  },
+  statusBadgeActive: { backgroundColor: '#10b981' },
+  statusBadgeIrregular: { backgroundColor: '#f59e0b' },
+  statusBadgeInactive: { backgroundColor: '#94a3b8' },
+  statusBadgeText: { color: '#fff', fontSize: 12.5, fontWeight: '700', fontFamily: 'Manrope_700Bold' },
   container: { flex: 1, backgroundColor: '#f1f5f9' },
   modalOverlay: {
     flex: 1,

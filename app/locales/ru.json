@@ -248,7 +248,8 @@
       "middleName": "Отчество",
       "lastName": "Фамилия",
       "mobilePhone": "Мобильный телефон",
-      "generalNotes": "Общие заметки"
+      "generalNotes": "Общие заметки",
+      "status": "Статус"
     },
     "appointment": {
       "publisher": "Возвещатель",
