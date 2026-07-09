@@ -2128,6 +2128,7 @@
     "servesAsAux": "Dient als Hilfspionier",
     "addTitle2": "Hilfspionier hinzufügen",
     "startMonth": "Startmonat",
-    "endMonth": "Endmonat"
+    "endMonth": "Endmonat",
+    "editTitle": "Zeitraum bearbeiten"
   }
 }

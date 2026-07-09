@@ -46,6 +46,8 @@ export default function AuxiliaryPioneersScreen() {
   });
 
   const [addOpen, setAddOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingName, setEditingName] = useState<string>('');
   const [newPublisher, setNewPublisher] = useState<string | null>(null);
   const [untilCancelled, setUntilCancelled] = useState(false);
   const [startMonthSel, setStartMonthSel] = useState(monthParam);
@@ -68,11 +70,35 @@ export default function AuxiliaryPioneersScreen() {
 
   const openAdd = () => {
     setAddError(null);
+    setEditingId(null);
+    setEditingName('');
     setNewPublisher(null);
     setUntilCancelled(false);
     setStartMonthSel(monthParam);
     setEndMonthSel(monthParam);
     setAddOpen(true);
+  };
+
+  const openEdit = (r: {
+    id: string;
+    publisherName: string;
+    startMonth: string;
+    endMonth: string | null;
+    untilCancelled: boolean;
+  }) => {
+    setAddError(null);
+    setEditingId(r.id);
+    setEditingName(r.publisherName);
+    setNewPublisher(null);
+    setUntilCancelled(r.untilCancelled);
+    setStartMonthSel(`${r.startMonth.slice(0, 7)}-01`);
+    setEndMonthSel(`${(r.endMonth ?? r.startMonth).slice(0, 7)}-01`);
+    setAddOpen(true);
+  };
+
+  const invalidate = () => {
+    qc.invalidateQueries({ queryKey: QK_MONTH(monthParam) });
+    qc.invalidateQueries({ queryKey: QK_JOURNAL });
   };
 
   const createMutation = useMutation({
@@ -84,8 +110,7 @@ export default function AuxiliaryPioneersScreen() {
         endMonth: untilCancelled ? undefined : endMonthSel,
       }),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: QK_MONTH(monthParam) });
-      qc.invalidateQueries({ queryKey: QK_JOURNAL });
+      invalidate();
       setAddOpen(false);
       setNewPublisher(null);
       setUntilCancelled(false);
@@ -94,20 +119,30 @@ export default function AuxiliaryPioneersScreen() {
     onError: (e) => setAddError(extractErrorMessage(e)),
   });
 
+  const updateMutation = useMutation({
+    mutationFn: () =>
+      auxiliaryPioneersApi.update(editingId!, {
+        startMonth: startMonthSel,
+        untilCancelled,
+        endMonth: untilCancelled ? undefined : endMonthSel,
+      }),
+    onSuccess: () => {
+      invalidate();
+      setAddOpen(false);
+      setEditingId(null);
+      setAddError(null);
+    },
+    onError: (e) => setAddError(extractErrorMessage(e)),
+  });
+
   const stopMutation = useMutation({
     mutationFn: (id: string) => auxiliaryPioneersApi.stop(id),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: QK_MONTH(monthParam) });
-      qc.invalidateQueries({ queryKey: QK_JOURNAL });
-    },
+    onSuccess: invalidate,
   });
 
   const removeMutation = useMutation({
     mutationFn: (id: string) => auxiliaryPioneersApi.remove(id),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: QK_MONTH(monthParam) });
-      qc.invalidateQueries({ queryKey: QK_JOURNAL });
-    },
+    onSuccess: invalidate,
   });
 
   const reduced = (monthQuery.data?.hourGoal ?? 30) === 15;
@@ -218,8 +253,10 @@ export default function AuxiliaryPioneersScreen() {
               row={r}
               periodLabel={periodLabel(r)}
               canManage={canManageAuxiliaryPioneers}
+              onEdit={() => openEdit(r)}
               onStop={() => stopMutation.mutate(r.id)}
               onRemove={() => removeMutation.mutate(r.id)}
+              editLabel={t('common.edit')}
               stopLabel={t('auxPioneer.stop')}
               removeLabel={t('common.delete')}
             />
@@ -281,13 +318,22 @@ export default function AuxiliaryPioneersScreen() {
             onPress={() => setAddOpen(false)}
           />
           <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>{t('auxPioneer.addTitle2')}</Text>
-            <PublisherSelector
-              label={t('auxPioneer.publisher')}
-              value={newPublisher}
-              onChange={setNewPublisher}
-              boxed
-            />
+            <Text style={styles.modalTitle}>
+              {editingId ? t('auxPioneer.editTitle') : t('auxPioneer.addTitle2')}
+            </Text>
+            {editingId ? (
+              <View style={styles.editName}>
+                <Ionicons name="person-circle-outline" size={20} color="#64748b" />
+                <Text style={styles.editNameText}>{editingName}</Text>
+              </View>
+            ) : (
+              <PublisherSelector
+                label={t('auxPioneer.publisher')}
+                value={newPublisher}
+                onChange={setNewPublisher}
+                boxed
+              />
+            )}
 
             <Text style={styles.fieldLabel}>{t('auxPioneer.startMonth')}</Text>
             <MonthPicker
@@ -336,17 +382,30 @@ export default function AuxiliaryPioneersScreen() {
               >
                 <Text style={styles.cancelText}>{t('common.cancel')}</Text>
               </Pressable>
-              <Pressable
-                style={[
-                  styles.confirmBtn,
-                  (!newPublisher || createMutation.isPending) &&
-                    styles.confirmDisabled,
-                ]}
-                disabled={!newPublisher || createMutation.isPending}
-                onPress={() => createMutation.mutate()}
-              >
-                <Text style={styles.confirmText}>{t('common.add')}</Text>
-              </Pressable>
+              {editingId ? (
+                <Pressable
+                  style={[
+                    styles.confirmBtn,
+                    updateMutation.isPending && styles.confirmDisabled,
+                  ]}
+                  disabled={updateMutation.isPending}
+                  onPress={() => updateMutation.mutate()}
+                >
+                  <Text style={styles.confirmText}>{t('common.save')}</Text>
+                </Pressable>
+              ) : (
+                <Pressable
+                  style={[
+                    styles.confirmBtn,
+                    (!newPublisher || createMutation.isPending) &&
+                      styles.confirmDisabled,
+                  ]}
+                  disabled={!newPublisher || createMutation.isPending}
+                  onPress={() => createMutation.mutate()}
+                >
+                  <Text style={styles.confirmText}>{t('common.add')}</Text>
+                </Pressable>
+              )}
             </View>
           </View>
         </View>
@@ -418,16 +477,20 @@ function ServingCard({
   row,
   periodLabel,
   canManage,
+  onEdit,
   onStop,
   onRemove,
+  editLabel,
   stopLabel,
   removeLabel,
 }: {
   row: AuxPioneerMonthRow;
   periodLabel: string;
   canManage: boolean;
+  onEdit: () => void;
   onStop: () => void;
   onRemove: () => void;
+  editLabel: string;
   stopLabel: string;
   removeLabel: string;
 }) {
@@ -474,6 +537,16 @@ function ServingCard({
       </View>
       {menu ? (
         <View style={styles.rowMenu}>
+          <Pressable
+            style={styles.menuItem}
+            onPress={() => {
+              setMenu(false);
+              onEdit();
+            }}
+          >
+            <Ionicons name="create-outline" size={16} color="#334155" />
+            <Text style={styles.menuText}>{editLabel}</Text>
+          </Pressable>
           {openEnded ? (
             <Pressable
               style={styles.menuItem}
@@ -596,6 +669,13 @@ const styles = StyleSheet.create({
     color: '#64748b',
     marginTop: 2,
   },
+  editName: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 6,
+  },
+  editNameText: { fontSize: 15, fontWeight: '600', color: '#0f172a' },
   pickerBox: {
     flexDirection: 'row',
     alignItems: 'center',

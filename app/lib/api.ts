@@ -2458,6 +2458,16 @@ export const auxiliaryPioneersApi = {
   async stop(id: string, endMonth?: string): Promise<void> {
     await api.patch(`/auxiliary-pioneers/${id}/stop`, { endMonth });
   },
+  async update(
+    id: string,
+    input: {
+      startMonth?: string;
+      endMonth?: string;
+      untilCancelled?: boolean;
+    },
+  ): Promise<void> {
+    await api.patch(`/auxiliary-pioneers/${id}`, input);
+  },
   async remove(id: string): Promise<void> {
     await api.delete(`/auxiliary-pioneers/${id}`);
   },
