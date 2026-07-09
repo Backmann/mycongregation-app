@@ -510,7 +510,11 @@
       "pending": "ausstehend",
       "noPublishersInScope": "Keine Verkündiger im Bereich",
       "noReportYet": "Noch kein Bericht",
-      "couldNotLoad": "Konnte nicht geladen werden"
+      "couldNotLoad": "Konnte nicht geladen werden",
+      "submittedOfTotal": "{{submitted}} von {{total}} eingereicht",
+      "noGroup": "Ohne Gruppe",
+      "submittedByWhen": "erfasst von {{name}} · {{when}}",
+      "editedByWhen": "geändert von {{name}} · {{when}}"
     },
     "override": {
       "title": "Status manuell überschreiben für {{name}}",

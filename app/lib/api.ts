@@ -366,6 +366,7 @@ export interface ServiceReport {
   notes: string | null;
   submittedAt: string;
   submittedById: string | null;
+  submittedByName?: string | null;
   submittedOnBehalfOf: boolean;
   lastEditedAt: string | null;
   lastEditedById: string | null;
@@ -435,6 +436,8 @@ export interface GroupReportsResponse {
 export interface GroupReportRow {
   publisherId: string;
   displayName: string;
+  groupId: string | null;
+  groupName: string | null;
   isPioneer: boolean;
   report: ServiceReport | null;
   canManage: boolean;

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
-  FlatList,
+  SectionList,
   Modal,
   Pressable,
   RefreshControl,
@@ -23,6 +23,18 @@ import {
 import { useAuth } from '../../../lib/auth';
 import { useTranslation } from 'react-i18next';
 import { formatMonthLabel } from '../../../lib/i18n';
+
+/** Compact date like "8 июл." for the who/when byline. */
+function formatByline(iso: string): string {
+  try {
+    return new Date(iso).toLocaleDateString(undefined, {
+      day: 'numeric',
+      month: 'short',
+    });
+  } catch {
+    return '';
+  }
+}
 
 function getRecentMonths(count: number): { value: string; label: string }[] {
   const now = new Date();
@@ -122,6 +134,39 @@ export default function GroupReportsScreen() {
     return { total: data.publishers.length, submitted, served };
   }, [data]);
 
+  // Group publishers into sections by service group, each with a submitted
+  // count for the header. Preserves the server order; ungrouped go last.
+  const sections = useMemo(() => {
+    const rows = data?.publishers ?? [];
+    const out: {
+      title: string;
+      groupId: string | null;
+      submitted: number;
+      data: typeof rows;
+    }[] = [];
+    for (const row of rows) {
+      const key = row.groupId ?? '__none__';
+      let sec = out.find((s) => (s.groupId ?? '__none__') === key);
+      if (!sec) {
+        sec = {
+          title: row.groupName ?? t('reports.group.noGroup'),
+          groupId: row.groupId,
+          submitted: 0,
+          data: [],
+        };
+        out.push(sec);
+      }
+      sec.data.push(row);
+      if (row.report) sec.submitted++;
+    }
+    // Ungrouped section (if any) goes last.
+    return out.sort((a, b) => {
+      if (a.groupId === null) return 1;
+      if (b.groupId === null) return -1;
+      return 0;
+    });
+  }, [data, t]);
+
   if (isLoading) {
     return (
       <View style={styles.center}>
@@ -205,10 +250,11 @@ export default function GroupReportsScreen() {
         </View>
       </View>
 
-      <FlatList
-        data={data?.publishers ?? []}
+      <SectionList
+        sections={sections}
         keyExtractor={(item) => item.publisherId}
         contentContainerStyle={{ paddingBottom: 32 }}
+        stickySectionHeadersEnabled={false}
         refreshControl={
           <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
         }
@@ -218,6 +264,17 @@ export default function GroupReportsScreen() {
             <Text style={styles.emptyTitle}>{t('reports.group.noPublishersInScope')}</Text>
           </View>
         }
+        renderSectionHeader={({ section }) => (
+          <View style={styles.groupHeader}>
+            <Text style={styles.groupHeaderName}>{section.title}</Text>
+            <Text style={styles.groupHeaderCount}>
+              {t('reports.group.submittedOfTotal', {
+                submitted: section.submitted,
+                total: section.data.length,
+              })}
+            </Text>
+          </View>
+        )}
         renderItem={({ item }) => (
           <PublisherRow
             row={item}
@@ -389,6 +446,19 @@ function PublisherRow({
             </Text>
           )}
         </Text>
+        {report && (report.submittedByName || report.lastEditedByName) ? (
+          <Text style={styles.byline} numberOfLines={1}>
+            {report.lastEditedByName && report.lastEditedAt
+              ? t('reports.group.editedByWhen', {
+                  name: report.lastEditedByName,
+                  when: formatByline(report.lastEditedAt),
+                })
+              : t('reports.group.submittedByWhen', {
+                  name: report.submittedByName ?? '',
+                  when: formatByline(report.submittedAt),
+                })}
+          </Text>
+        ) : null}
       </View>
       </Pressable>
       {showAddBtn && (
@@ -692,6 +762,32 @@ const styles = StyleSheet.create({
   },
   addBtn: { marginLeft: 8, padding: 4 },
   overrideBtn: { marginLeft: 4, padding: 6 },
+  byline: {
+    fontSize: 11,
+    color: '#94a3b8',
+    marginTop: 2,
+    fontStyle: 'italic',
+  },
+  groupHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingTop: 18,
+    paddingBottom: 8,
+    backgroundColor: '#f8fafc',
+  },
+  groupHeaderName: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#0f172a',
+    fontFamily: 'Manrope_700Bold',
+  },
+  groupHeaderCount: {
+    fontSize: 12.5,
+    fontWeight: '600',
+    color: '#64748b',
+  },
   emptyState: {
     alignItems: 'center',
     paddingTop: 80,

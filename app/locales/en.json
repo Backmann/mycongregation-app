@@ -510,7 +510,11 @@
       "pending": "pending",
       "noPublishersInScope": "No publishers in scope",
       "noReportYet": "No report yet",
-      "couldNotLoad": "Could not load"
+      "couldNotLoad": "Could not load",
+      "submittedOfTotal": "{{submitted}} of {{total}} submitted",
+      "noGroup": "No group",
+      "submittedByWhen": "entered by {{name}} · {{when}}",
+      "editedByWhen": "edited by {{name}} · {{when}}"
     },
     "override": {
       "title": "Override status for {{name}}",

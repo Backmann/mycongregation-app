@@ -514,7 +514,11 @@
       "pending": "ожидают",
       "noPublishersInScope": "Возвещателей нет",
       "noReportYet": "Отчёта пока нет",
-      "couldNotLoad": "Не удалось загрузить"
+      "couldNotLoad": "Не удалось загрузить",
+      "submittedOfTotal": "сдано {{submitted}} из {{total}}",
+      "noGroup": "Без группы",
+      "submittedByWhen": "внёс {{name}} · {{when}}",
+      "editedByWhen": "изменил {{name}} · {{when}}"
     },
     "override": {
       "title": "Переопределить статус для {{name}}",
