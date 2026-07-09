@@ -29,7 +29,9 @@ import { formatMonthLabel } from '../../../lib/i18n';
 function getRecentMonths(): { value: string; label: string }[] {
   const now = new Date();
   const months: { value: string; label: string }[] = [];
-  for (let i = 0; i < 3; i++) {
+  // Start from last month: the current month has not finished yet, so a report
+  // for it cannot be submitted (in July you report for June).
+  for (let i = 1; i <= 3; i++) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
     const yyyy = d.getFullYear();
     const mm = String(d.getMonth() + 1).padStart(2, '0');
