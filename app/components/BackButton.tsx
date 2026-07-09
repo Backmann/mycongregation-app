@@ -6,9 +6,11 @@ import { Ionicons } from '@expo/vector-icons';
  * Header back button that never gets stuck.
  *
  * - default: go back when there is history, otherwise replace to `fallback`.
- * - toParent: always go to `fallback`. Use when a screen has one logical parent
- *   regardless of where it was opened from — e.g. a publisher card should always
- *   return to the publishers list, not to the schedule it was opened from.
+ * - toParent: always navigate to `fallback` (its one logical parent),
+ *   regardless of where it was opened from — e.g. a publisher card returns to
+ *   the publishers list, service reports return to Service, special events to
+ *   the schedule. Uses navigate() so the parent tab's stack is reused and the
+ *   next back press behaves naturally instead of jumping to Home.
  */
 export function BackButton({
   fallback,
@@ -22,7 +24,12 @@ export function BackButton({
   return (
     <Pressable
       onPress={() => {
-        if (!toParent && router.canGoBack()) {
+        if (toParent) {
+          // Always go to the logical parent. navigate() (not replace) targets
+          // the parent tab reusing its existing stack, so a subsequent back
+          // press behaves naturally instead of jumping to Home.
+          router.navigate(fallback as any);
+        } else if (router.canGoBack()) {
           router.back();
         } else {
           router.replace(fallback as any);
