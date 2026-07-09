@@ -530,49 +530,59 @@ function ServingCard({
           <Text style={styles.hourUnit}> ч</Text>
         </Text>
         {canManage ? (
-          <Pressable hitSlop={8} onPress={() => setMenu((m) => !m)}>
+          <Pressable hitSlop={8} onPress={() => setMenu(true)}>
             <Ionicons name="ellipsis-horizontal" size={18} color="#94a3b8" />
           </Pressable>
         ) : null}
       </View>
-      {menu ? (
-        <View style={styles.rowMenu}>
-          <Pressable
-            style={styles.menuItem}
-            onPress={() => {
-              setMenu(false);
-              onEdit();
-            }}
-          >
-            <Ionicons name="create-outline" size={16} color="#334155" />
-            <Text style={styles.menuText}>{editLabel}</Text>
-          </Pressable>
-          {openEnded ? (
+
+      <Modal
+        visible={menu}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setMenu(false)}
+      >
+        <Pressable style={styles.sheetOverlay} onPress={() => setMenu(false)}>
+          <View style={styles.actionSheet}>
+            <View style={styles.sheetHandle} />
+            <Text style={styles.sheetName}>{row.publisherName}</Text>
             <Pressable
-              style={styles.menuItem}
+              style={styles.sheetItem}
               onPress={() => {
                 setMenu(false);
-                onStop();
+                onEdit();
               }}
             >
-              <Ionicons name="stop-circle-outline" size={16} color="#b45309" />
-              <Text style={styles.menuText}>{stopLabel}</Text>
+              <Ionicons name="create-outline" size={19} color="#334155" />
+              <Text style={styles.sheetItemText}>{editLabel}</Text>
             </Pressable>
-          ) : null}
-          <Pressable
-            style={styles.menuItem}
-            onPress={() => {
-              setMenu(false);
-              onRemove();
-            }}
-          >
-            <Ionicons name="trash-outline" size={16} color="#dc2626" />
-            <Text style={[styles.menuText, { color: '#dc2626' }]}>
-              {removeLabel}
-            </Text>
-          </Pressable>
-        </View>
-      ) : null}
+            {openEnded ? (
+              <Pressable
+                style={styles.sheetItem}
+                onPress={() => {
+                  setMenu(false);
+                  onStop();
+                }}
+              >
+                <Ionicons name="stop-circle-outline" size={19} color="#b45309" />
+                <Text style={styles.sheetItemText}>{stopLabel}</Text>
+              </Pressable>
+            ) : null}
+            <Pressable
+              style={styles.sheetItem}
+              onPress={() => {
+                setMenu(false);
+                onRemove();
+              }}
+            >
+              <Ionicons name="trash-outline" size={19} color="#dc2626" />
+              <Text style={[styles.sheetItemText, { color: '#dc2626' }]}>
+                {removeLabel}
+              </Text>
+            </Pressable>
+          </View>
+        </Pressable>
+      </Modal>
     </View>
   );
 }
@@ -646,23 +656,43 @@ const styles = StyleSheet.create({
   cardPeriod: { fontSize: 11.5, fontWeight: '500' },
   hourGoal: { fontSize: 15, fontWeight: '700', color: '#0f172a' },
   hourUnit: { fontSize: 11, color: '#94a3b8', fontWeight: '400' },
-  rowMenu: {
-    position: 'absolute',
-    right: 12,
-    top: 46,
-    minWidth: 150,
-    backgroundColor: '#fff',
-    borderWidth: 0.5,
-    borderColor: '#e2e8f0',
-    borderRadius: 10,
-    paddingVertical: 4,
-    shadowColor: '#0f172a',
-    shadowOpacity: 0.12,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 6,
-    zIndex: 20,
+  sheetOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(15,23,42,0.4)',
+    justifyContent: 'flex-end',
   },
+  actionSheet: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 18,
+    borderTopRightRadius: 18,
+    paddingBottom: 28,
+    paddingTop: 8,
+    paddingHorizontal: 8,
+  },
+  sheetHandle: {
+    alignSelf: 'center',
+    width: 38,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#cbd5e1',
+    marginBottom: 8,
+  },
+  sheetName: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#94a3b8',
+    paddingHorizontal: 12,
+    paddingBottom: 6,
+  },
+  sheetItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 14,
+    borderRadius: 12,
+  },
+  sheetItemText: { fontSize: 15.5, color: '#334155', fontWeight: '500' },
   fieldLabel: {
     fontSize: 12.5,
     fontWeight: '600',
@@ -721,14 +751,6 @@ const styles = StyleSheet.create({
     textTransform: 'capitalize',
   },
   pickerItemTextActive: { color: '#0284c7', fontWeight: '600' },
-  menuItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-  },
-  menuText: { fontSize: 13.5, color: '#334155', fontWeight: '500' },
   journalTitle: { fontSize: 12.5, fontWeight: '600', color: '#64748b', flex: 1 },
   journalCard: {
     backgroundColor: '#fff',
