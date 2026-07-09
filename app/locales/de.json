@@ -2106,7 +2106,7 @@
   "auxPioneer": {
     "title": "Hilfspionierdienst",
     "menuSubtitle": "Wer als Hilfspionier dient",
-    "reducedNorm": "reduzierter Monat · 15 Stunden",
+    "reducedNorm": "reduzierte Norm · 15 Stunden",
     "standardNorm": "30 Stunden",
     "servingThisMonth": "Dienen diesen Monat · {{count}}",
     "add": "hinzufügen",
@@ -2129,6 +2129,11 @@
     "addTitle2": "Hilfspionier hinzufügen",
     "startMonth": "Startmonat",
     "endMonth": "Endmonat",
-    "editTitle": "Zeitraum bearbeiten"
+    "editTitle": "Zeitraum bearbeiten",
+    "section": {
+      "serving": "Dienen jetzt",
+      "upcoming": "Bevorstehend",
+      "finished": "Abgeschlossen"
+    }
   }
 }

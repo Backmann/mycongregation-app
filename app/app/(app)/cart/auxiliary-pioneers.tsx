@@ -27,6 +27,12 @@ import { PublisherSelector } from '../../../components/PublisherSelector';
 const QK_MONTH = (m: string) => ['aux-pioneers', 'month', m];
 const QK_JOURNAL = ['aux-pioneers', 'journal'];
 
+const STATE_DOT: Record<string, string> = {
+  serving: '#1D9E75',
+  upcoming: '#2563eb',
+  finished: '#94a3b8',
+};
+
 export default function AuxiliaryPioneersScreen() {
   const { t, i18n } = useTranslation();
   const qc = useQueryClient();
@@ -263,46 +269,55 @@ export default function AuxiliaryPioneersScreen() {
           ))
         )}
 
-        {/* History journal */}
+        {/* History journal — grouped into serving / upcoming / finished */}
         <View style={[styles.sectionHead, { marginTop: 22 }]}>
           <Ionicons name="time-outline" size={15} color="#64748b" />
           <Text style={styles.journalTitle}>{t('auxPioneer.journal')}</Text>
         </View>
-        <View style={styles.journalCard}>
-          {(journalQuery.data ?? []).length === 0 ? (
+        {(journalQuery.data ?? []).length === 0 ? (
+          <View style={styles.journalCard}>
             <Text style={[styles.empty, { padding: 14 }]}>
               {t('auxPioneer.journalEmpty')}
             </Text>
-          ) : (
-            (journalQuery.data ?? []).map((j, idx) => (
-              <View
-                key={j.id}
-                style={[styles.journalRow, idx > 0 && styles.journalBorder]}
-              >
-                <View
-                  style={[
-                    styles.dot,
-                    { backgroundColor: j.serving ? '#1D9E75' : '#94a3b8' },
-                  ]}
-                />
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.journalName}>{j.publisherName}</Text>
-                  <Text style={styles.journalPeriod}>{periodLabel(j)}</Text>
-                </View>
-                <Text
-                  style={[
-                    styles.journalTag,
-                    j.serving ? styles.tagServing : styles.tagDone,
-                  ]}
-                >
-                  {j.serving
-                    ? t('auxPioneer.serving')
-                    : t('auxPioneer.finished')}
+          </View>
+        ) : (
+          (['serving', 'upcoming', 'finished'] as const).map((state) => {
+            const items = (journalQuery.data ?? []).filter(
+              (j) => j.state === state,
+            );
+            if (items.length === 0) return null;
+            return (
+              <View key={state} style={styles.journalSection}>
+                <Text style={styles.journalSectionTitle}>
+                  {t(`auxPioneer.section.${state}`)}
                 </Text>
+                <View style={styles.journalCard}>
+                  {items.map((j, idx) => (
+                    <View
+                      key={j.id}
+                      style={[
+                        styles.journalRow,
+                        idx > 0 && styles.journalBorder,
+                      ]}
+                    >
+                      <View
+                        style={[styles.dot, { backgroundColor: STATE_DOT[state] }]}
+                      />
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.journalName}>
+                          {j.publisherName}
+                        </Text>
+                        <Text style={styles.journalPeriod}>
+                          {periodLabel(j)}
+                        </Text>
+                      </View>
+                    </View>
+                  ))}
+                </View>
               </View>
-            ))
-          )}
-        </View>
+            );
+          })
+        )}
       </ScrollView>
 
       {/* Add modal */}
@@ -769,15 +784,16 @@ const styles = StyleSheet.create({
   dot: { width: 6, height: 6, borderRadius: 3 },
   journalName: { fontSize: 13, color: '#0f172a', fontWeight: '500' },
   journalPeriod: { fontSize: 11, color: '#94a3b8' },
-  journalTag: {
-    fontSize: 10.5,
-    paddingHorizontal: 7,
-    paddingVertical: 2,
-    borderRadius: 10,
-    overflow: 'hidden',
+  journalSection: { marginBottom: 12 },
+  journalSectionTitle: {
+    fontSize: 11.5,
+    fontWeight: '700',
+    color: '#94a3b8',
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+    marginBottom: 6,
+    marginLeft: 2,
   },
-  tagServing: { color: '#0F6E56', backgroundColor: '#E1F5EE' },
-  tagDone: { color: '#94a3b8', backgroundColor: '#f1f5f9' },
   overlay: {
     flex: 1,
     backgroundColor: 'rgba(15,23,42,0.45)',

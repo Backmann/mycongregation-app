@@ -2106,7 +2106,7 @@
   "auxPioneer": {
     "title": "Auxiliary pioneer service",
     "menuSubtitle": "Who serves as an auxiliary pioneer",
-    "reducedNorm": "reduced month · 15 hours",
+    "reducedNorm": "reduced norm · 15 hours",
     "standardNorm": "30 hours",
     "servingThisMonth": "Serving this month · {{count}}",
     "add": "add",
@@ -2129,6 +2129,11 @@
     "addTitle2": "Add an auxiliary pioneer",
     "startMonth": "Start month",
     "endMonth": "End month",
-    "editTitle": "Edit period"
+    "editTitle": "Edit period",
+    "section": {
+      "serving": "Serving now",
+      "upcoming": "Upcoming",
+      "finished": "Finished"
+    }
   }
 }
