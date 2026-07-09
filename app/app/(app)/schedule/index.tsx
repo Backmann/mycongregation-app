@@ -57,6 +57,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { WeekNavigator } from '../../../components/WeekNavigator';
+import { WeekDrawer } from '../../../components/WeekDrawer';
 import { effectiveVersionFor } from '../../../lib/meeting-schedule';
 import { DutiesSection } from '../../../components/DutiesSection';
 import { FieldServiceSection } from '../../../components/FieldServiceSection';
@@ -100,6 +101,7 @@ export default function ScheduleIndexScreen() {
   const dutiesNarrow = width < 720;
   const perms = usePermissions();
   const [publishingType, setPublishingType] = useState<string | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const [notifyingType, setNotifyingType] = useState<string | null>(null);
   const queryClient = useQueryClient();
   const params = useLocalSearchParams<{ week?: string }>();
@@ -649,7 +651,17 @@ export default function ScheduleIndexScreen() {
   return (
     <AutoAssignedContext.Provider value={autoAssignedIds}>
       <View style={styles.container}>
-      <WeekNavigator weekStart={weekStart} onChange={setWeekStart} />
+      <WeekNavigator
+        weekStart={weekStart}
+        onChange={setWeekStart}
+        onOpenDrawer={() => setDrawerOpen(true)}
+      />
+      <WeekDrawer
+        visible={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        currentWeekStart={weekStart}
+        onPick={setWeekStart}
+      />
       <AssignmentSheet
         assignment={editing}
         weekStartISO={weekStartISO}

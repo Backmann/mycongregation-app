@@ -2017,6 +2017,14 @@ export const circuitOverseerApi = {
 };
 
 export const assignmentsApi = {
+  async publishedWeeks(): Promise<
+    { weekStartDate: string; hasMidweek: boolean; hasWeekend: boolean }[]
+  > {
+    const { data } = await api.get<
+      { weekStartDate: string; hasMidweek: boolean; hasWeekend: boolean }[]
+    >('/assignments/weeks');
+    return data;
+  },
   async list(params?: {
     weekStart?: string;
     weekEnd?: string;

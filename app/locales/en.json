@@ -2135,5 +2135,9 @@
       "upcoming": "Upcoming",
       "finished": "Finished"
     }
+  },
+  "weekDrawer": {
+    "title": "Jump to a week",
+    "empty": "No published weeks"
   }
 }

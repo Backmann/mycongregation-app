@@ -2135,5 +2135,9 @@
       "upcoming": "Bevorstehend",
       "finished": "Abgeschlossen"
     }
+  },
+  "weekDrawer": {
+    "title": "Zu einer Woche springen",
+    "empty": "Keine veröffentlichten Wochen"
   }
 }

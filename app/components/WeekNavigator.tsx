@@ -14,9 +14,16 @@ interface Props {
   onChange: (newWeekStart: Date) => void;
   /** Optional element rendered at the far right (e.g. a coordinator icon). */
   right?: ReactNode;
+  /** Tapping the week range opens the week-navigator drawer. */
+  onOpenDrawer?: () => void;
 }
 
-export function WeekNavigator({ weekStart, onChange, right }: Props) {
+export function WeekNavigator({
+  weekStart,
+  onChange,
+  right,
+  onOpenDrawer,
+}: Props) {
   const { t, i18n } = useTranslation();
   const today = new Date();
   const onCurrentWeek = isSameWeek(weekStart, today);
@@ -32,7 +39,19 @@ export function WeekNavigator({ weekStart, onChange, right }: Props) {
       </Pressable>
 
       <View style={styles.center}>
-        <Text style={styles.range}>{formatWeekRange(weekStart, i18n.language)}</Text>
+        <Pressable
+          onPress={onOpenDrawer}
+          hitSlop={8}
+          style={styles.rangeRow}
+          disabled={!onOpenDrawer}
+        >
+          <Text style={styles.range}>
+            {formatWeekRange(weekStart, i18n.language)}
+          </Text>
+          {onOpenDrawer ? (
+            <Ionicons name="chevron-down" size={15} color="#94a3b8" />
+          ) : null}
+        </Pressable>
         {!onCurrentWeek && (
           <Pressable
             onPress={() => onChange(startOfWeekMonday(today))}
@@ -79,6 +98,7 @@ const styles = StyleSheet.create({
   arrowPressed: { backgroundColor: '#e0f2fe' },
   right: { marginLeft: 4 },
   center: { flex: 1, alignItems: 'center' },
+  rangeRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   range: { fontSize: 16, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0f172a' },
   thisWeek: { fontSize: 11, color: '#0ea5e9', marginTop: 2, fontWeight: '500', fontFamily: 'Manrope_500Medium',},
   todayLink: { fontSize: 11, color: '#64748b', marginTop: 2, textDecorationLine: 'underline' },
