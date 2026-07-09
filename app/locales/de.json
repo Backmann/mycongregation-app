@@ -2138,6 +2138,7 @@
   },
   "weekDrawer": {
     "title": "Zu einer Woche springen",
-    "empty": "Keine veröffentlichten Wochen"
+    "empty": "Keine veröffentlichten Wochen",
+    "thisWeek": "Diese Woche"
   }
 }

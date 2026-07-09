@@ -57,11 +57,17 @@ export function WeekDrawer({
     }).start();
   }, [visible, slide]);
 
-  // Group weeks by "Month YYYY" preserving the newest-first order.
-  const groups = useMemo(() => {
+  // Split out the current week (shown in its own section on top); group the
+  // rest by "Month YYYY" preserving the newest-first order.
+  const { currentRow, groups } = useMemo(() => {
     const rows = weeksQuery.data ?? [];
+    let current: WeekRow | null = null;
     const out: { key: string; label: string; rows: WeekRow[] }[] = [];
     for (const r of rows) {
+      if (isSameWeek(new Date(r.weekStartDate), currentWeekStart)) {
+        current = r;
+        continue;
+      }
       const d = dayjs(r.weekStartDate).locale(i18n.language);
       const key = d.format('YYYY-MM');
       const label = d.format('MMMM YYYY');
@@ -72,8 +78,8 @@ export function WeekDrawer({
       }
       g.rows.push(r);
     }
-    return out;
-  }, [weeksQuery.data, i18n.language]);
+    return { currentRow: current, groups: out };
+  }, [weeksQuery.data, i18n.language, currentWeekStart]);
 
   const fmtRange = (weekStartIso: string) => {
     const start = dayjs(weekStartIso).locale(i18n.language);
@@ -88,6 +94,54 @@ export function WeekDrawer({
     dayjs(weekStartIso).locale(i18n.language).add(2, 'day').format('dd, D');
   const weekendLabel = (weekStartIso: string) =>
     dayjs(weekStartIso).locale(i18n.language).add(6, 'day').format('dd, D');
+
+  const renderWeek = (r: WeekRow, isCurrent: boolean) => {
+    const rowDate = new Date(r.weekStartDate);
+    return (
+      <Pressable
+        key={r.weekStartDate}
+        style={[styles.week, isCurrent && styles.weekCurrent]}
+        onPress={() => {
+          onPick(startOfWeekMonday(rowDate));
+          onClose();
+        }}
+      >
+        <Text style={[styles.weekRange, isCurrent && styles.weekRangeCurrent]}>
+          {fmtRange(r.weekStartDate)}
+        </Text>
+        <View style={styles.dates}>
+          {r.hasMidweek ? (
+            <View style={styles.dateChip}>
+              <Ionicons
+                name="calendar-outline"
+                size={12}
+                color={isCurrent ? '#185FA5' : '#94a3b8'}
+              />
+              <Text
+                style={[styles.dateText, isCurrent && styles.dateTextCurrent]}
+              >
+                {midweekLabel(r.weekStartDate)}
+              </Text>
+            </View>
+          ) : null}
+          {r.hasWeekend ? (
+            <View style={styles.dateChip}>
+              <Ionicons
+                name="calendar-number-outline"
+                size={12}
+                color={isCurrent ? '#185FA5' : '#94a3b8'}
+              />
+              <Text
+                style={[styles.dateText, isCurrent && styles.dateTextCurrent]}
+              >
+                {weekendLabel(r.weekStartDate)}
+              </Text>
+            </View>
+          ) : null}
+        </View>
+      </Pressable>
+    );
+  };
 
   return (
     <Modal
@@ -109,72 +163,23 @@ export function WeekDrawer({
 
           {weeksQuery.isLoading ? (
             <Text style={styles.empty}>{t('common.loading')}</Text>
-          ) : groups.length === 0 ? (
+          ) : !currentRow && groups.length === 0 ? (
             <Text style={styles.empty}>{t('weekDrawer.empty')}</Text>
           ) : (
             <ScrollView contentContainerStyle={{ paddingBottom: 24 }}>
+              {currentRow ? (
+                <View>
+                  <Text style={[styles.monthLabel, styles.currentLabel]}>
+                    {t('weekDrawer.thisWeek')}
+                  </Text>
+                  {renderWeek(currentRow, true)}
+                  {groups.length > 0 ? <View style={styles.divider} /> : null}
+                </View>
+              ) : null}
               {groups.map((g) => (
                 <View key={g.key}>
                   <Text style={styles.monthLabel}>{g.label}</Text>
-                  {g.rows.map((r) => {
-                    const rowDate = new Date(r.weekStartDate);
-                    const isCurrent = isSameWeek(rowDate, currentWeekStart);
-                    return (
-                      <Pressable
-                        key={r.weekStartDate}
-                        style={[styles.week, isCurrent && styles.weekCurrent]}
-                        onPress={() => {
-                          onPick(startOfWeekMonday(rowDate));
-                          onClose();
-                        }}
-                      >
-                        <Text
-                          style={[
-                            styles.weekRange,
-                            isCurrent && styles.weekRangeCurrent,
-                          ]}
-                        >
-                          {fmtRange(r.weekStartDate)}
-                        </Text>
-                        <View style={styles.dates}>
-                          {r.hasMidweek ? (
-                            <View style={styles.dateChip}>
-                              <Ionicons
-                                name="calendar-outline"
-                                size={12}
-                                color={isCurrent ? '#185FA5' : '#94a3b8'}
-                              />
-                              <Text
-                                style={[
-                                  styles.dateText,
-                                  isCurrent && styles.dateTextCurrent,
-                                ]}
-                              >
-                                {midweekLabel(r.weekStartDate)}
-                              </Text>
-                            </View>
-                          ) : null}
-                          {r.hasWeekend ? (
-                            <View style={styles.dateChip}>
-                              <Ionicons
-                                name="calendar-number-outline"
-                                size={12}
-                                color={isCurrent ? '#185FA5' : '#94a3b8'}
-                              />
-                              <Text
-                                style={[
-                                  styles.dateText,
-                                  isCurrent && styles.dateTextCurrent,
-                                ]}
-                              >
-                                {weekendLabel(r.weekStartDate)}
-                              </Text>
-                            </View>
-                          ) : null}
-                        </View>
-                      </Pressable>
-                    );
-                  })}
+                  {g.rows.map((r) => renderWeek(r, false))}
                 </View>
               ))}
             </ScrollView>
@@ -236,13 +241,25 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     paddingBottom: 4,
   },
+  currentLabel: { color: '#185FA5' },
+  divider: {
+    height: 0.5,
+    backgroundColor: '#e2e8f0',
+    marginHorizontal: 16,
+    marginTop: 10,
+    marginBottom: 2,
+  },
   week: {
     marginHorizontal: 8,
     paddingHorizontal: 11,
     paddingVertical: 10,
     borderRadius: 10,
   },
-  weekCurrent: { backgroundColor: '#E6F1FB' },
+  weekCurrent: {
+    backgroundColor: '#E6F1FB',
+    borderWidth: 0.5,
+    borderColor: '#B5D4F4',
+  },
   weekRange: {
     fontSize: 12.5,
     fontWeight: '600',

@@ -2138,6 +2138,7 @@
   },
   "weekDrawer": {
     "title": "Jump to a week",
-    "empty": "No published weeks"
+    "empty": "No published weeks",
+    "thisWeek": "This week"
   }
 }

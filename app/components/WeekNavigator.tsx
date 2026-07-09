@@ -1,4 +1,5 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useEffect, useRef } from 'react';
+import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 import type { ReactNode } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
@@ -39,19 +40,9 @@ export function WeekNavigator({
       </Pressable>
 
       <View style={styles.center}>
-        <Pressable
-          onPress={onOpenDrawer}
-          hitSlop={8}
-          style={styles.rangeRow}
-          disabled={!onOpenDrawer}
-        >
-          <Text style={styles.range}>
-            {formatWeekRange(weekStart, i18n.language)}
-          </Text>
-          {onOpenDrawer ? (
-            <Ionicons name="chevron-down" size={15} color="#94a3b8" />
-          ) : null}
-        </Pressable>
+        <Text style={styles.range}>
+          {formatWeekRange(weekStart, i18n.language)}
+        </Text>
         {!onCurrentWeek && (
           <Pressable
             onPress={() => onChange(startOfWeekMonday(today))}
@@ -63,6 +54,8 @@ export function WeekNavigator({
         {onCurrentWeek && <Text style={styles.thisWeek}>{t('schedule.weekNav.thisWeek')}</Text>}
       </View>
 
+      {onOpenDrawer ? <BreathingDrawerButton onPress={onOpenDrawer} /> : null}
+
       <Pressable
         style={({ pressed }) => [styles.arrow, pressed && styles.arrowPressed]}
         onPress={() => onChange(addWeeks(weekStart, 1))}
@@ -73,6 +66,45 @@ export function WeekNavigator({
 
       {right ? <View style={styles.right}>{right}</View> : null}
     </View>
+  );
+}
+
+function BreathingDrawerButton({ onPress }: { onPress: () => void }) {
+  const anim = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(anim, {
+          toValue: 1,
+          duration: 1300,
+          useNativeDriver: true,
+        }),
+        Animated.timing(anim, {
+          toValue: 0,
+          duration: 1300,
+          useNativeDriver: true,
+        }),
+      ]),
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [anim]);
+  const scale = anim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [1, 0.94],
+  });
+  const opacity = anim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [1, 0.72],
+  });
+  return (
+    <Pressable onPress={onPress} hitSlop={10}>
+      <Animated.View
+        style={[styles.drawerBtn, { opacity, transform: [{ scale }] }]}
+      >
+        <Ionicons name="list-outline" size={19} color="#185FA5" />
+      </Animated.View>
+    </Pressable>
   );
 }
 
@@ -98,7 +130,15 @@ const styles = StyleSheet.create({
   arrowPressed: { backgroundColor: '#e0f2fe' },
   right: { marginLeft: 4 },
   center: { flex: 1, alignItems: 'center' },
-  rangeRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  drawerBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 9,
+    backgroundColor: '#E6F1FB',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 4,
+  },
   range: { fontSize: 16, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0f172a' },
   thisWeek: { fontSize: 11, color: '#0ea5e9', marginTop: 2, fontWeight: '500', fontFamily: 'Manrope_500Medium',},
   todayLink: { fontSize: 11, color: '#64748b', marginTop: 2, textDecorationLine: 'underline' },
