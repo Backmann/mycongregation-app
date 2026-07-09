@@ -40,9 +40,14 @@ export function WeekNavigator({
       </Pressable>
 
       <View style={styles.center}>
-        <Text style={styles.range}>
-          {formatWeekRange(weekStart, i18n.language)}
-        </Text>
+        <View style={styles.rangeRow}>
+          <Text style={styles.range}>
+            {formatWeekRange(weekStart, i18n.language)}
+          </Text>
+          {onOpenDrawer ? (
+            <BreathingDrawerButton onPress={onOpenDrawer} />
+          ) : null}
+        </View>
         {!onCurrentWeek && (
           <Pressable
             onPress={() => onChange(startOfWeekMonday(today))}
@@ -53,8 +58,6 @@ export function WeekNavigator({
         )}
         {onCurrentWeek && <Text style={styles.thisWeek}>{t('schedule.weekNav.thisWeek')}</Text>}
       </View>
-
-      {onOpenDrawer ? <BreathingDrawerButton onPress={onOpenDrawer} /> : null}
 
       <Pressable
         style={({ pressed }) => [styles.arrow, pressed && styles.arrowPressed]}
@@ -102,7 +105,7 @@ function BreathingDrawerButton({ onPress }: { onPress: () => void }) {
       <Animated.View
         style={[styles.drawerBtn, { opacity, transform: [{ scale }] }]}
       >
-        <Ionicons name="list-outline" size={19} color="#185FA5" />
+        <Ionicons name="list-outline" size={17} color="#185FA5" />
       </Animated.View>
     </Pressable>
   );
@@ -130,14 +133,14 @@ const styles = StyleSheet.create({
   arrowPressed: { backgroundColor: '#e0f2fe' },
   right: { marginLeft: 4 },
   center: { flex: 1, alignItems: 'center' },
+  rangeRow: { flexDirection: 'row', alignItems: 'center', gap: 7 },
   drawerBtn: {
-    width: 32,
-    height: 32,
-    borderRadius: 9,
+    width: 28,
+    height: 28,
+    borderRadius: 8,
     backgroundColor: '#E6F1FB',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 4,
   },
   range: { fontSize: 16, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0f172a' },
   thisWeek: { fontSize: 11, color: '#0ea5e9', marginTop: 2, fontWeight: '500', fontFamily: 'Manrope_500Medium',},
