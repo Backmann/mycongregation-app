@@ -2125,6 +2125,9 @@
     "untilCancelledHint": "serves indefinitely until stopped",
     "singleMonthHint": "only for {{month}}",
     "youAreServing": "You serve as an auxiliary pioneer",
-    "servesAsAux": "Serves as an auxiliary pioneer"
+    "servesAsAux": "Serves as an auxiliary pioneer",
+    "addTitle2": "Add an auxiliary pioneer",
+    "startMonth": "Start month",
+    "endMonth": "End month"
   }
 }

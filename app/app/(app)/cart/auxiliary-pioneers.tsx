@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Modal,
@@ -47,23 +47,48 @@ export default function AuxiliaryPioneersScreen() {
 
   const [addOpen, setAddOpen] = useState(false);
   const [newPublisher, setNewPublisher] = useState<string | null>(null);
-  const [untilCancelled, setUntilCancelled] = useState(true);
+  const [untilCancelled, setUntilCancelled] = useState(false);
+  const [startMonthSel, setStartMonthSel] = useState(monthParam);
+  const [endMonthSel, setEndMonthSel] = useState(monthParam);
   const [addError, setAddError] = useState<string | null>(null);
+
+  // Month options: 24 months back … 12 months forward from today.
+  const monthOptions = useMemo(() => {
+    const base = dayjs().date(1);
+    const opts: { value: string; label: string }[] = [];
+    for (let i = -24; i <= 12; i++) {
+      const d = base.add(i, 'month');
+      opts.push({
+        value: d.format('YYYY-MM-01'),
+        label: d.locale(i18n.language).format('MMMM YYYY'),
+      });
+    }
+    return opts;
+  }, [i18n.language]);
+
+  const openAdd = () => {
+    setAddError(null);
+    setNewPublisher(null);
+    setUntilCancelled(false);
+    setStartMonthSel(monthParam);
+    setEndMonthSel(monthParam);
+    setAddOpen(true);
+  };
 
   const createMutation = useMutation({
     mutationFn: () =>
       auxiliaryPioneersApi.create({
         publisherId: newPublisher!,
-        startMonth: monthParam,
+        startMonth: startMonthSel,
         untilCancelled,
-        endMonth: untilCancelled ? undefined : monthParam,
+        endMonth: untilCancelled ? undefined : endMonthSel,
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: QK_MONTH(monthParam) });
       qc.invalidateQueries({ queryKey: QK_JOURNAL });
       setAddOpen(false);
       setNewPublisher(null);
-      setUntilCancelled(true);
+      setUntilCancelled(false);
       setAddError(null);
     },
     onError: (e) => setAddError(extractErrorMessage(e)),
@@ -91,6 +116,29 @@ export default function AuxiliaryPioneersScreen() {
   const fmtMonth = (iso: string) =>
     dayjs(iso).locale(i18n.language).format('MMMM YYYY');
 
+  // Russian needs the genitive case after "с" (since): "с июля", not "с июль".
+  const RU_GENITIVE = [
+    'января',
+    'февраля',
+    'марта',
+    'апреля',
+    'мая',
+    'июня',
+    'июля',
+    'августа',
+    'сентября',
+    'октября',
+    'ноября',
+    'декабря',
+  ];
+  const fmtMonthSince = (iso: string) => {
+    const d = dayjs(iso);
+    if (i18n.language === 'ru') {
+      return `${RU_GENITIVE[d.month()]} ${d.year()}`;
+    }
+    return fmtMonth(iso);
+  };
+
   const periodLabel = (r: {
     startMonth: string;
     endMonth: string | null;
@@ -98,7 +146,7 @@ export default function AuxiliaryPioneersScreen() {
   }) => {
     if (r.untilCancelled)
       return t('auxPioneer.untilCancelledSince', {
-        month: fmtMonth(r.startMonth),
+        month: fmtMonthSince(r.startMonth),
       });
     if (r.endMonth && r.endMonth.slice(0, 7) === r.startMonth.slice(0, 7))
       return t('auxPioneer.onlyMonth', { month: fmtMonth(r.startMonth) });
@@ -152,13 +200,7 @@ export default function AuxiliaryPioneersScreen() {
             {t('auxPioneer.servingThisMonth', { count: rows.length })}
           </Text>
           {canManageAuxiliaryPioneers ? (
-            <Pressable
-              style={styles.addBtn}
-              onPress={() => {
-                setAddError(null);
-                setAddOpen(true);
-              }}
-            >
+            <Pressable style={styles.addBtn} onPress={openAdd}>
               <Ionicons name="add" size={16} color="#0284c7" />
               <Text style={styles.addBtnText}>{t('auxPioneer.add')}</Text>
             </Pressable>
@@ -239,28 +281,44 @@ export default function AuxiliaryPioneersScreen() {
             onPress={() => setAddOpen(false)}
           />
           <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>
-              {t('auxPioneer.addTitle', {
-                month: monthDate.format('MMMM YYYY'),
-              })}
-            </Text>
+            <Text style={styles.modalTitle}>{t('auxPioneer.addTitle2')}</Text>
             <PublisherSelector
               label={t('auxPioneer.publisher')}
               value={newPublisher}
               onChange={setNewPublisher}
               boxed
             />
+
+            <Text style={styles.fieldLabel}>{t('auxPioneer.startMonth')}</Text>
+            <MonthPicker
+              value={startMonthSel}
+              options={monthOptions}
+              onChange={(v) => {
+                setStartMonthSel(v);
+                if (endMonthSel < v) setEndMonthSel(v);
+              }}
+            />
+
+            {!untilCancelled ? (
+              <>
+                <Text style={styles.fieldLabel}>
+                  {t('auxPioneer.endMonth')}
+                </Text>
+                <MonthPicker
+                  value={endMonthSel}
+                  options={monthOptions.filter((o) => o.value >= startMonthSel)}
+                  onChange={setEndMonthSel}
+                />
+              </>
+            ) : null}
+
             <View style={styles.switchRow}>
               <View style={{ flex: 1 }}>
                 <Text style={styles.switchLabel}>
                   {t('auxPioneer.untilCancelled')}
                 </Text>
                 <Text style={styles.switchHint}>
-                  {untilCancelled
-                    ? t('auxPioneer.untilCancelledHint')
-                    : t('auxPioneer.singleMonthHint', {
-                        month: monthDate.format('MMMM YYYY'),
-                      })}
+                  {t('auxPioneer.untilCancelledHint')}
                 </Text>
               </View>
               <Switch
@@ -294,6 +352,65 @@ export default function AuxiliaryPioneersScreen() {
         </View>
       </Modal>
     </SafeAreaView>
+  );
+}
+
+function MonthPicker({
+  value,
+  options,
+  onChange,
+}: {
+  value: string;
+  options: { value: string; label: string }[];
+  onChange: (v: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const selected = options.find((o) => o.value === value);
+  return (
+    <>
+      <Pressable style={styles.pickerBox} onPress={() => setOpen(true)}>
+        <Text style={styles.pickerValue}>{selected?.label ?? '—'}</Text>
+        <Ionicons name="chevron-down" size={16} color="#94a3b8" />
+      </Pressable>
+      <Modal
+        visible={open}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setOpen(false)}
+      >
+        <Pressable style={styles.pickerOverlay} onPress={() => setOpen(false)}>
+          <View style={styles.pickerSheet}>
+            <ScrollView>
+              {options.map((o) => {
+                const active = o.value === value;
+                return (
+                  <Pressable
+                    key={o.value}
+                    style={[styles.pickerItem, active && styles.pickerItemActive]}
+                    onPress={() => {
+                      onChange(o.value);
+                      setOpen(false);
+                    }}
+                  >
+                    <Text
+                      style={[
+                        styles.pickerItemText,
+                        active && styles.pickerItemTextActive,
+                      ]}
+                    >
+                      {o.label}
+                    </Text>
+                    {active ? (
+                      <Ionicons name="checkmark" size={17} color="#0284c7" />
+                    ) : null}
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
+          </View>
+        </Pressable>
+      </Modal>
+    </>
   );
 }
 
@@ -458,20 +575,72 @@ const styles = StyleSheet.create({
   hourUnit: { fontSize: 11, color: '#94a3b8', fontWeight: '400' },
   rowMenu: {
     position: 'absolute',
-    right: 10,
-    top: 44,
+    right: 12,
+    top: 46,
+    minWidth: 150,
     backgroundColor: '#fff',
     borderWidth: 0.5,
     borderColor: '#e2e8f0',
     borderRadius: 10,
     paddingVertical: 4,
     shadowColor: '#0f172a',
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 3 },
-    elevation: 4,
-    zIndex: 10,
+    shadowOpacity: 0.12,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 6,
+    zIndex: 20,
   },
+  fieldLabel: {
+    fontSize: 12.5,
+    fontWeight: '600',
+    color: '#64748b',
+    marginTop: 2,
+  },
+  pickerBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 11,
+    backgroundColor: '#f8fafc',
+  },
+  pickerValue: {
+    fontSize: 14,
+    color: '#0f172a',
+    fontWeight: '500',
+    textTransform: 'capitalize',
+  },
+  pickerOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(15,23,42,0.45)',
+    justifyContent: 'center',
+    padding: 32,
+  },
+  pickerSheet: {
+    backgroundColor: '#fff',
+    borderRadius: 14,
+    maxHeight: 360,
+    overflow: 'hidden',
+  },
+  pickerItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 0.5,
+    borderBottomColor: '#f1f5f9',
+  },
+  pickerItemActive: { backgroundColor: '#f0f9ff' },
+  pickerItemText: {
+    fontSize: 14,
+    color: '#334155',
+    textTransform: 'capitalize',
+  },
+  pickerItemTextActive: { color: '#0284c7', fontWeight: '600' },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -517,7 +686,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 16,
     padding: 16,
-    gap: 12,
+    gap: 10,
+    maxHeight: '85%',
   },
   modalTitle: { fontSize: 16, fontWeight: '700', color: '#0f172a' },
   switchRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
