@@ -339,6 +339,7 @@ export default function NewOrEditServiceReportScreen() {
               value={hours}
               onChangeText={setHours}
               placeholder={t('reports.hoursPlaceholder')}
+              placeholderTextColor="#cbd5e1"
             />
           </>
         ) : (
@@ -392,6 +393,7 @@ export default function NewOrEditServiceReportScreen() {
           value={bibleStudies}
           onChangeText={setBibleStudies}
           placeholder="0"
+          placeholderTextColor="#cbd5e1"
         />
 
         <Text style={styles.label}>{t('reports.notesOptional')}</Text>
@@ -401,6 +403,7 @@ export default function NewOrEditServiceReportScreen() {
           value={notes}
           onChangeText={setNotes}
           placeholder={t('reports.notesPlaceholder')}
+          placeholderTextColor="#cbd5e1"
           textAlignVertical="top"
         />
 

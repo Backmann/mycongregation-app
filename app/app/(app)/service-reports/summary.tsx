@@ -33,7 +33,9 @@ const CATEGORY_LABELS: Record<PioneerType, string> = {
 function getRecentMonths(count: number): { value: string; label: string }[] {
   const now = new Date();
   const months: { value: string; label: string }[] = [];
-  for (let i = 0; i < count; i++) {
+  // Start from last month: the current month has not finished, so its summary
+  // would be incomplete and it cannot be closed yet.
+  for (let i = 1; i <= count; i++) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
     const yyyy = d.getFullYear();
     const mm = String(d.getMonth() + 1).padStart(2, '0');
@@ -53,7 +55,7 @@ export default function ServiceSummaryScreen() {
   const recentMonths = useMemo(() => getRecentMonths(6), [i18nInstance.language]);
   // Default to the previous completed month — the one the secretary compiles.
   const [reportMonth, setReportMonth] = useState(
-    recentMonths[Math.min(1, recentMonths.length - 1)].value,
+    recentMonths[0].value,
   );
 
   const { data, isLoading, isRefetching, refetch, error } = useQuery({
