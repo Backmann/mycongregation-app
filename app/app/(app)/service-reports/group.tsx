@@ -39,7 +39,9 @@ function formatByline(iso: string): string {
 function getRecentMonths(count: number): { value: string; label: string }[] {
   const now = new Date();
   const months: { value: string; label: string }[] = [];
-  for (let i = 0; i < count; i++) {
+  // Start from last month: the current month has not finished, so its report
+  // cannot be submitted yet (July's report is submitted in August).
+  for (let i = 1; i <= count; i++) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
     const yyyy = d.getFullYear();
     const mm = String(d.getMonth() + 1).padStart(2, '0');
@@ -56,9 +58,9 @@ export default function GroupReportsScreen() {
   // formatMonthLabel reads global i18next state — re-memoize when language changes
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const recentMonths = useMemo(() => getRecentMonths(6), [i18nInstance.language]);
-  // Default to the previous completed month (most useful for follow-up).
+  // Default to the previous completed month (first in the list now).
   const [reportMonth, setReportMonth] = useState(
-    recentMonths[Math.min(1, recentMonths.length - 1)].value,
+    recentMonths[0].value,
   );
 
   const { data, isLoading, isRefetching, refetch, error } = useQuery({
