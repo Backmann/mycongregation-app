@@ -430,6 +430,7 @@ export interface GroupReportsResponse {
   reportMonth: string;
   scopeLabel: string;
   closed: boolean;
+  myGroupId: string | null;
   publishers: GroupReportRow[];
 }
 

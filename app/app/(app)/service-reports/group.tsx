@@ -36,19 +36,31 @@ function formatByline(iso: string): string {
   }
 }
 
-function getRecentMonths(count: number): { value: string; label: string }[] {
+// Reportable months: from last month back to January 2025 (reports are kept
+// forever, so history stays reachable). The current month is excluded — it
+// hasn't finished, so its report can't be submitted yet.
+function getReportableMonths(): { value: string; label: string }[] {
   const now = new Date();
   const months: { value: string; label: string }[] = [];
-  // Start from last month: the current month has not finished, so its report
-  // cannot be submitted yet (July's report is submitted in August).
-  for (let i = 1; i <= count; i++) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    const yyyy = d.getFullYear();
-    const mm = String(d.getMonth() + 1).padStart(2, '0');
+  let y = now.getFullYear();
+  let m = now.getMonth(); // 0-based; start at last month (current - 1)
+  m -= 1;
+  if (m < 0) {
+    m = 11;
+    y -= 1;
+  }
+  while (y > 2025 || (y === 2025 && m >= 0)) {
+    const yyyy = y;
+    const mm = String(m + 1).padStart(2, '0');
     months.push({
       value: `${yyyy}-${mm}`,
       label: formatMonthLabel(`${yyyy}-${mm}`),
     });
+    m -= 1;
+    if (m < 0) {
+      m = 11;
+      y -= 1;
+    }
   }
   return months;
 }
@@ -57,7 +69,7 @@ export default function GroupReportsScreen() {
   const { t, i18n: i18nInstance } = useTranslation();
   // formatMonthLabel reads global i18next state — re-memoize when language changes
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const recentMonths = useMemo(() => getRecentMonths(6), [i18nInstance.language]);
+  const recentMonths = useMemo(() => getReportableMonths(), [i18nInstance.language]);
   // Default to the previous completed month (first in the list now).
   const [reportMonth, setReportMonth] = useState(
     recentMonths[0].value,
@@ -75,6 +87,12 @@ export default function GroupReportsScreen() {
     publisherId: string;
     displayName: string;
   } | null>(null);
+  const [monthPickerOpen, setMonthPickerOpen] = useState(false);
+  // Groups collapsed by default; the caller's own group starts expanded.
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(
+    new Set(),
+  );
+  const [collapseInitialized, setCollapseInitialized] = useState(false);
 
   // Fetch all publishers separately to get status + statusManuallyOverridden.
   // The group endpoint doesn't include these fields, so we merge client-side.
@@ -143,23 +161,36 @@ export default function GroupReportsScreen() {
     const out: {
       title: string;
       groupId: string | null;
+      groupKey: string;
       submitted: number;
+      total: number;
+      collapsed: boolean;
       data: typeof rows;
     }[] = [];
     for (const row of rows) {
       const key = row.groupId ?? '__none__';
-      let sec = out.find((s) => (s.groupId ?? '__none__') === key);
+      let sec = out.find((s) => s.groupKey === key);
       if (!sec) {
         sec = {
           title: row.groupName ?? t('reports.group.noGroup'),
           groupId: row.groupId,
+          groupKey: key,
           submitted: 0,
+          total: 0,
+          collapsed: false,
           data: [],
         };
         out.push(sec);
       }
-      sec.data.push(row);
+      sec.total++;
       if (row.report) sec.submitted++;
+    }
+    // Fill rows only for expanded groups; collapsed groups keep just the header.
+    for (const sec of out) {
+      sec.collapsed = collapsedGroups.has(sec.groupKey);
+      sec.data = sec.collapsed
+        ? []
+        : rows.filter((r) => (r.groupId ?? '__none__') === sec.groupKey);
     }
     // Ungrouped section (if any) goes last.
     return out.sort((a, b) => {
@@ -167,7 +198,27 @@ export default function GroupReportsScreen() {
       if (b.groupId === null) return -1;
       return 0;
     });
-  }, [data, t]);
+  }, [data, t, collapsedGroups]);
+
+  // Initialize collapse state once data arrives: collapse everything except
+  // the caller's own group.
+  useEffect(() => {
+    if (!data || collapseInitialized) return;
+    const allKeys = new Set<string>();
+    for (const p of data.publishers) allKeys.add(p.groupId ?? '__none__');
+    if (data.myGroupId) allKeys.delete(data.myGroupId);
+    setCollapsedGroups(allKeys);
+    setCollapseInitialized(true);
+  }, [data, collapseInitialized]);
+
+  const toggleGroup = (groupKey: string) => {
+    setCollapsedGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(groupKey)) next.delete(groupKey);
+      else next.add(groupKey);
+      return next;
+    });
+  };
 
   if (isLoading) {
     return (
@@ -204,31 +255,69 @@ export default function GroupReportsScreen() {
         {data?.scopeLabel && (
           <Text style={styles.scopeLabel}>{data.scopeLabel === 'Congregation' ? t('reports.group.scopeCongregation') : data.scopeLabel}</Text>
         )}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.monthRow}
+        <Pressable
+          style={styles.monthPickerBtn}
+          onPress={() => setMonthPickerOpen(true)}
         >
-          {recentMonths.map((m) => {
-            const isActive = reportMonth === m.value;
-            return (
-              <Pressable
-                key={m.value}
-                onPress={() => setReportMonth(m.value)}
-                style={[styles.monthChip, isActive && styles.monthChipActive]}
-              >
-                <Text
-                  style={[
-                    styles.monthChipText,
-                    isActive && styles.monthChipTextActive,
-                  ]}
-                >
-                  {m.label}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </ScrollView>
+          <Ionicons name="calendar-outline" size={16} color="#0ea5e9" />
+          <Text style={styles.monthPickerBtnText}>
+            {recentMonths.find((m) => m.value === reportMonth)?.label ??
+              reportMonth}
+          </Text>
+          <Ionicons name="chevron-down" size={16} color="#64748b" />
+        </Pressable>
+
+        <Modal
+          visible={monthPickerOpen}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setMonthPickerOpen(false)}
+        >
+          <Pressable
+            style={styles.monthModalOverlay}
+            onPress={() => setMonthPickerOpen(false)}
+          >
+            <View style={styles.monthModalCard}>
+              <Text style={styles.monthModalTitle}>
+                {t('reports.group.pickMonth')}
+              </Text>
+              <ScrollView style={{ maxHeight: 360 }}>
+                {recentMonths.map((m) => {
+                  const isActive = reportMonth === m.value;
+                  return (
+                    <Pressable
+                      key={m.value}
+                      onPress={() => {
+                        setReportMonth(m.value);
+                        setMonthPickerOpen(false);
+                      }}
+                      style={[
+                        styles.monthModalRow,
+                        isActive && styles.monthModalRowActive,
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.monthModalRowText,
+                          isActive && styles.monthModalRowTextActive,
+                        ]}
+                      >
+                        {m.label}
+                      </Text>
+                      {isActive ? (
+                        <Ionicons
+                          name="checkmark"
+                          size={18}
+                          color="#0ea5e9"
+                        />
+                      ) : null}
+                    </Pressable>
+                  );
+                })}
+              </ScrollView>
+            </View>
+          </Pressable>
+        </Modal>
 
         <View style={styles.statsBar}>
           <View style={styles.statBox}>
@@ -267,15 +356,32 @@ export default function GroupReportsScreen() {
           </View>
         }
         renderSectionHeader={({ section }) => (
-          <View style={styles.groupHeader}>
+          <Pressable
+            style={styles.groupHeader}
+            onPress={() => toggleGroup(section.groupKey)}
+          >
+            <Ionicons
+              name={section.collapsed ? 'chevron-forward' : 'chevron-down'}
+              size={18}
+              color="#64748b"
+              style={{ marginRight: 6 }}
+            />
             <Text style={styles.groupHeaderName}>{section.title}</Text>
-            <Text style={styles.groupHeaderCount}>
+            <View style={{ flex: 1 }} />
+            <Text
+              style={[
+                styles.groupHeaderCount,
+                section.submitted === section.total &&
+                  section.total > 0 &&
+                  styles.groupHeaderCountDone,
+              ]}
+            >
               {t('reports.group.submittedOfTotal', {
                 submitted: section.submitted,
-                total: section.data.length,
+                total: section.total,
               })}
             </Text>
-          </View>
+          </Pressable>
         )}
         renderItem={({ item }) => (
           <PublisherRow
@@ -670,6 +776,53 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   monthRow: { paddingHorizontal: 16, gap: 8 },
+  monthPickerBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginHorizontal: 16,
+    marginTop: 4,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    backgroundColor: '#f1f5f9',
+    borderRadius: 10,
+  },
+  monthPickerBtnText: {
+    flex: 1,
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#0f172a',
+    fontFamily: 'Manrope_600SemiBold',
+  },
+  monthModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(15,23,42,0.35)',
+    justifyContent: 'center',
+    padding: 32,
+  },
+  monthModalCard: {
+    backgroundColor: '#fff',
+    borderRadius: 14,
+    paddingVertical: 8,
+    overflow: 'hidden',
+  },
+  monthModalTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#64748b',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  monthModalRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  monthModalRowActive: { backgroundColor: '#E6F1FB' },
+  monthModalRowText: { fontSize: 15, color: '#0f172a' },
+  monthModalRowTextActive: { color: '#0C447C', fontWeight: '600' },
   monthChip: {
     paddingHorizontal: 14,
     paddingVertical: 8,
@@ -773,12 +926,12 @@ const styles = StyleSheet.create({
   groupHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingTop: 18,
     paddingBottom: 8,
     backgroundColor: '#f8fafc',
   },
+  groupHeaderCountDone: { color: '#16a34a' },
   groupHeaderName: {
     fontSize: 14,
     fontWeight: '700',

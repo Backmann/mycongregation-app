@@ -158,7 +158,7 @@ export default function PublisherHistoryScreen() {
 
   const { data, isLoading, isRefetching, refetch, error } = useQuery({
     queryKey: ['publisher-history', publisherId],
-    queryFn: () => serviceReportsApi.getHistoryForPublisher(publisherId!, 12),
+    queryFn: () => serviceReportsApi.getHistoryForPublisher(publisherId!, 120),
     enabled: !!publisherId,
   });
 

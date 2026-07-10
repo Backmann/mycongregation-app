@@ -514,7 +514,8 @@
       "submittedOfTotal": "{{submitted}} von {{total}} eingereicht",
       "noGroup": "Ohne Gruppe",
       "submittedByWhen": "erfasst von {{name}} · {{when}}",
-      "editedByWhen": "geändert von {{name}} · {{when}}"
+      "editedByWhen": "geändert von {{name}} · {{when}}",
+      "pickMonth": "Monat wählen"
     },
     "override": {
       "title": "Status manuell überschreiben für {{name}}",

@@ -514,7 +514,8 @@
       "submittedOfTotal": "{{submitted}} of {{total}} submitted",
       "noGroup": "No group",
       "submittedByWhen": "entered by {{name}} · {{when}}",
-      "editedByWhen": "edited by {{name}} · {{when}}"
+      "editedByWhen": "edited by {{name}} · {{when}}",
+      "pickMonth": "Pick a month"
     },
     "override": {
       "title": "Override status for {{name}}",

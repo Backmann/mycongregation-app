@@ -518,7 +518,8 @@
       "submittedOfTotal": "сдано {{submitted}} из {{total}}",
       "noGroup": "Без группы",
       "submittedByWhen": "внёс {{name}} · {{when}}",
-      "editedByWhen": "изменил {{name}} · {{when}}"
+      "editedByWhen": "изменил {{name}} · {{when}}",
+      "pickMonth": "Выберите месяц"
     },
     "override": {
       "title": "Переопределить статус для {{name}}",
