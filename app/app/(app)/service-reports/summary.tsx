@@ -250,6 +250,42 @@ export default function ServiceSummaryScreen() {
             считаются отдельно и в это число не входят.
           </Text>
         </View>
+
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Средние показатели</Text>
+          <View style={styles.statsRow}>
+            <View style={styles.statBox}>
+              <Text style={styles.statBig}>
+                {data?.averages.pioneerHours ?? 0}
+              </Text>
+              <Text style={styles.statLabel}>Часы (пионеры)</Text>
+            </View>
+            <View style={styles.statBox}>
+              <Text style={styles.statBig}>
+                {data?.averages.bibleStudies ?? 0}
+              </Text>
+              <Text style={styles.statLabel}>Изучения</Text>
+            </View>
+          </View>
+          <View style={[styles.statsRow, { marginTop: 12 }]}>
+            <View style={styles.statBox}>
+              <Text style={[styles.statBig, styles.statActive]}>
+                {data?.averages.submittedPct ?? 0}%
+              </Text>
+              <Text style={styles.statLabel}>Сдали отчёт</Text>
+            </View>
+            <View style={styles.statBox}>
+              <Text style={[styles.statBig, styles.statActive]}>
+                {data?.averages.activePct ?? 0}%
+              </Text>
+              <Text style={styles.statLabel}>Активных</Text>
+            </View>
+          </View>
+          <Text style={styles.totalsHint}>
+            Средние часы — по пионерам, сдавшим отчёт. Средние изучения — по всем
+            сдавшим. «Сдали отчёт» — доля от активных; «активных» — доля от всех.
+          </Text>
+        </View>
       </ScrollView>
     </View>
   );

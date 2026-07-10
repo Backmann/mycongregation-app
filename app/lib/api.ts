@@ -457,6 +457,12 @@ export interface ServiceReportSummary {
   categories: ServiceReportSummaryCategory[];
   totalActivePublishers: number;
   totalInactivePublishers: number;
+  averages: {
+    pioneerHours: number;
+    bibleStudies: number;
+    submittedPct: number;
+    activePct: number;
+  };
   closed: boolean;
 }
 
