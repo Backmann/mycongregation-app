@@ -515,7 +515,10 @@
       "noGroup": "No group",
       "submittedByWhen": "entered by {{name}} · {{when}}",
       "editedByWhen": "edited by {{name}} · {{when}}",
-      "pickMonth": "Pick a month"
+      "pickMonth": "Pick a month",
+      "flagMissed": "Missed flag:",
+      "flagOff": "off",
+      "missedMonths": "missed {{count}} mo."
     },
     "override": {
       "title": "Override status for {{name}}",

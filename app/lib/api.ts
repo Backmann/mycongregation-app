@@ -440,6 +440,7 @@ export interface GroupReportRow {
   groupId: string | null;
   groupName: string | null;
   isPioneer: boolean;
+  consecutiveMissing: number;
   report: ServiceReport | null;
   canManage: boolean;
 }

@@ -93,6 +93,8 @@ export default function GroupReportsScreen() {
     new Set(),
   );
   const [collapseInitialized, setCollapseInitialized] = useState(false);
+  // Threshold (months in a row without a report) for the "missed" flag.
+  const [missedThreshold, setMissedThreshold] = useState(3);
 
   // Fetch all publishers separately to get status + statusManuallyOverridden.
   // The group endpoint doesn't include these fields, so we merge client-side.
@@ -339,6 +341,35 @@ export default function GroupReportsScreen() {
             <Text style={styles.statLabel}>{t('reports.group.pending')}</Text>
           </View>
         </View>
+
+        <View style={styles.thresholdRow}>
+          <Ionicons name="alert-circle-outline" size={15} color="#94a3b8" />
+          <Text style={styles.thresholdLabel}>
+            {t('reports.group.flagMissed')}
+          </Text>
+          {[2, 3, 4, 0].map((v) => {
+            const isActive = missedThreshold === v;
+            return (
+              <Pressable
+                key={v}
+                onPress={() => setMissedThreshold(v)}
+                style={[
+                  styles.thresholdChip,
+                  isActive && styles.thresholdChipActive,
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.thresholdChipText,
+                    isActive && styles.thresholdChipTextActive,
+                  ]}
+                >
+                  {v === 0 ? t('reports.group.flagOff') : `${v}+`}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
       </View>
 
       <SectionList
@@ -387,6 +418,7 @@ export default function GroupReportsScreen() {
           <PublisherRow
             row={item}
             statusInfo={statusMap.get(item.publisherId) ?? null}
+            missedThreshold={missedThreshold}
             canOverride={canOverride}
             onOverride={
               canOverride
@@ -468,6 +500,7 @@ function PublisherRow({
   onTapHistory,
   onAddOnBehalf,
   onEdit,
+  missedThreshold,
 }: {
   row: GroupReportRow;
   statusInfo: { status: PublisherStatus; manuallyOverridden: boolean } | null;
@@ -476,6 +509,7 @@ function PublisherRow({
   onTapHistory?: () => void;
   onAddOnBehalf?: (row: GroupReportRow) => void;
   onEdit?: () => void;
+  missedThreshold: number;
 }) {
   const { t } = useTranslation();
   const { report, displayName, isPioneer } = row;
@@ -544,6 +578,17 @@ function PublisherRow({
               )}
             </View>
           )}
+          {row.consecutiveMissing >= missedThreshold &&
+          missedThreshold > 0 ? (
+            <View style={styles.missedBadge}>
+              <Ionicons name="alert-circle" size={11} color="#fff" />
+              <Text style={styles.missedBadgeText}>
+                {t('reports.group.missedMonths', {
+                  count: row.consecutiveMissing,
+                })}
+              </Text>
+            </View>
+          ) : null}
         </View>
         <Text style={styles.activity}>
           {summary}
@@ -834,6 +879,38 @@ const styles = StyleSheet.create({
   monthChipActive: { backgroundColor: '#0ea5e9', borderColor: '#0ea5e9' },
   monthChipText: { fontSize: 13, color: '#0f172a' },
   monthChipTextActive: { color: '#fff', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
+  missedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    backgroundColor: '#ef4444',
+    borderRadius: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    marginLeft: 6,
+  },
+  missedBadgeText: {
+    fontSize: 10,
+    color: '#fff',
+    fontWeight: '600',
+  },
+  thresholdRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 16,
+    paddingTop: 10,
+  },
+  thresholdLabel: { fontSize: 12, color: '#64748b', marginRight: 2 },
+  thresholdChip: {
+    paddingHorizontal: 9,
+    paddingVertical: 3,
+    borderRadius: 8,
+    backgroundColor: '#f1f5f9',
+  },
+  thresholdChipActive: { backgroundColor: '#fee2e2' },
+  thresholdChipText: { fontSize: 12, color: '#64748b', fontWeight: '600' },
+  thresholdChipTextActive: { color: '#b91c1c' },
   statsBar: {
     flexDirection: 'row',
     paddingHorizontal: 16,

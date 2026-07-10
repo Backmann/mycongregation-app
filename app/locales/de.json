@@ -515,7 +515,10 @@
       "noGroup": "Ohne Gruppe",
       "submittedByWhen": "erfasst von {{name}} · {{when}}",
       "editedByWhen": "geändert von {{name}} · {{when}}",
-      "pickMonth": "Monat wählen"
+      "pickMonth": "Monat wählen",
+      "flagMissed": "Fehlend-Markierung:",
+      "flagOff": "aus",
+      "missedMonths": "{{count}} Mon. fehlt"
     },
     "override": {
       "title": "Status manuell überschreiben für {{name}}",
