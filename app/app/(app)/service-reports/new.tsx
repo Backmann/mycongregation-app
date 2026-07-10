@@ -139,11 +139,19 @@ export default function NewOrEditServiceReportScreen() {
   // Pioneer status comes from the TARGET publisher in on-behalf mode,
   // not the caller (a publisher submitting for a pioneer must use the
   // pioneer form variant).
-  const isPioneer = isOnBehalf
-    ? onBehalfIsPioneer
-    : (myPublisher?.pioneerType !== undefined &&
-        myPublisher.pioneerType !== 'none') ||
-      iAmAuxThisMonth === true;
+  // Form variant:
+  // - edit mode: derive from the existing report itself (hoursReported set ⇒
+  //   hours form). This is authoritative regardless of who is editing or the
+  //   author's current pioneerType, and correctly covers auxiliary pioneers.
+  // - on-behalf: from the target publisher's flag passed in.
+  // - self-create: own pioneerType, or auxiliary pioneer this month.
+  const isPioneer = isEditMode
+    ? editingReport?.hoursReported != null
+    : isOnBehalf
+      ? onBehalfIsPioneer
+      : (myPublisher?.pioneerType !== undefined &&
+          myPublisher.pioneerType !== 'none') ||
+        iAmAuxThisMonth === true;
 
   const submitMutation = useMutation({
     mutationFn: () =>
