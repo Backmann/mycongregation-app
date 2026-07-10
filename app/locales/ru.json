@@ -535,7 +535,10 @@
       "noHistory": "История пуста",
       "self": "(сам)",
       "submittedBy": "Подал: {{name}}",
-      "editedBy": "изменил: {{name}}"
+      "editedBy": "изменил: {{name}}",
+      "trendTitle": "Тенденция служения",
+      "hours": "Часы",
+      "studies": "Изучения"
     }
   },
   "serviceGroups": {

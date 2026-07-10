@@ -19,8 +19,21 @@ import {
 } from '../../../lib/api';
 import { useTranslation } from 'react-i18next';
 import i18n, { formatMonthLabel } from '../../../lib/i18n';
+import {
+  HistoryTrendChart,
+  TrendPoint,
+} from '../../../components/HistoryTrendChart';
 
 // formatMonthLabel now imported from lib/i18n
+
+/** Short axis label like "июн 26" for the trend chart. */
+function shortMonthLabel(reportMonth: string): string {
+  const full = formatMonthLabel(reportMonth); // "Июнь 2026"
+  const parts = full.split(' ');
+  const mon = parts[0]?.slice(0, 3).toLowerCase() ?? '';
+  const yr = parts[1]?.slice(2) ?? '';
+  return `${mon} ${yr}`;
+}
 
 function describeReport(report: NonNullable<PublisherHistoryEntry['report']>): {
   summary: string;
@@ -162,6 +175,22 @@ export default function PublisherHistoryScreen() {
     enabled: !!publisherId,
   });
 
+  // Trend points, oldest → newest (timeline is newest-first). Only months that
+  // have a report contribute; empty months are skipped so the trend isn't all
+  // zeros for irregular publishers.
+  const trendPoints = useMemo<TrendPoint[]>(() => {
+    const tl = data?.timeline ?? [];
+    const withReports = tl.filter((e) => e.report != null);
+    return withReports
+      .slice()
+      .reverse()
+      .map((e) => ({
+        monthLabel: shortMonthLabel(e.reportMonth),
+        hours: e.report!.hoursReported,
+        studies: e.report!.bibleStudies,
+      }));
+  }, [data]);
+
   const headerTitle = useMemo(
     () => data?.publisher.displayName ?? initialDisplayName ?? t('reports.publisherHistory.fallbackName'),
     [data, initialDisplayName, t],
@@ -229,6 +258,13 @@ export default function PublisherHistoryScreen() {
         data={data?.timeline ?? []}
         keyExtractor={(item) => item.reportMonth}
         contentContainerStyle={{ padding: 16, gap: 10 }}
+        ListHeaderComponent={
+          trendPoints.length >= 2 ? (
+            <View style={{ marginBottom: 6 }}>
+              <HistoryTrendChart points={trendPoints} />
+            </View>
+          ) : null
+        }
         refreshControl={
           <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
         }

@@ -531,7 +531,10 @@
       "noHistory": "Kein Verlauf",
       "self": "(selbst)",
       "submittedBy": "Eingereicht von {{name}}",
-      "editedBy": "bearbeitet von {{name}}"
+      "editedBy": "bearbeitet von {{name}}",
+      "trendTitle": "Diensttrend",
+      "hours": "Stunden",
+      "studies": "Studien"
     }
   },
   "serviceGroups": {

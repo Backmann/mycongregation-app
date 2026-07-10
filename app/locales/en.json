@@ -531,7 +531,10 @@
       "noHistory": "No history",
       "self": "(self)",
       "submittedBy": "Submitted by {{name}}",
-      "editedBy": "edited by {{name}}"
+      "editedBy": "edited by {{name}}",
+      "trendTitle": "Service trend",
+      "hours": "Hours",
+      "studies": "Studies"
     }
   },
   "serviceGroups": {
