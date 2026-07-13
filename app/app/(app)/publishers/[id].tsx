@@ -260,11 +260,26 @@ export default function PublisherDetailScreen() {
           label={t('publishers.fields.appointment')}
           value={appointmentLabel(publisher.appointment)}
         />
-        <Field label={t('publishers.fields.baptism')} value={publisher.baptismDate} />
-        <Field
-          label={t('publishers.fields.pioneer')}
-          value={pioneerLabel(publisher.pioneerType, publisher.pioneerSince)}
-        />
+        {(publisher.appointment === 'publisher' ||
+          publisher.appointment === 'ministerial_servant' ||
+          publisher.appointment === 'elder') && (
+          <Field
+            label={t('publishers.fields.baptism')}
+            value={publisher.baptismDate}
+          />
+        )}
+        {publisher.appointment === 'unbaptized_publisher' && (
+          <Field
+            label={t('publishers.fields.ministryStart')}
+            value={publisher.ministryStartDate}
+          />
+        )}
+        {publisher.appointment !== 'student' && (
+          <Field
+            label={t('publishers.fields.pioneer')}
+            value={pioneerLabel(publisher.pioneerType, publisher.pioneerSince)}
+          />
+        )}
         {publisher.isAuxiliaryPioneerNow ? (
           <View style={styles.auxRow}>
             <Ionicons name="infinite" size={15} color="#0F6E56" />

@@ -314,7 +314,8 @@
     },
     "validation": {
       "firstNameRequired": "First name is required",
-      "lastNameRequired": "Last name is required"
+      "lastNameRequired": "Last name is required",
+      "ministryStartRequired": "Enter the ministry start date for an unbaptized publisher"
     },
     "placeholders": {
       "firstName": "John",

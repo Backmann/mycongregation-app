@@ -314,7 +314,8 @@
     },
     "validation": {
       "firstNameRequired": "Имя обязательно",
-      "lastNameRequired": "Фамилия обязательна"
+      "lastNameRequired": "Фамилия обязательна",
+      "ministryStartRequired": "Укажите дату начала служения для некрещёного возвещателя"
     },
     "placeholders": {
       "firstName": "Иван",

@@ -314,7 +314,8 @@
     },
     "validation": {
       "firstNameRequired": "Vorname ist erforderlich",
-      "lastNameRequired": "Nachname ist erforderlich"
+      "lastNameRequired": "Nachname ist erforderlich",
+      "ministryStartRequired": "Geben Sie das Startdatum des Dienstes für einen ungetauften Verkündiger an"
     },
     "placeholders": {
       "firstName": "Hans",

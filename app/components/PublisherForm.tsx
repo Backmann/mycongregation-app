@@ -118,12 +118,35 @@ export function PublisherForm({
       setError(t('publishers.validation.lastNameRequired'));
       return;
     }
+    if (
+      form.appointment === 'unbaptized_publisher' &&
+      !form.ministryStartDate?.trim()
+    ) {
+      setError(t('publishers.validation.ministryStartRequired'));
+      return;
+    }
     try {
       await onSubmit(form);
     } catch (e) {
       setError(extractErrorMessage(e));
     }
   };
+
+  // Field visibility by appointment (three distinct stages):
+  // - student: only the appointment chips (no dates, status, or pioneer).
+  // - unbaptized publisher: ministry-start date + spiritual status + pioneer;
+  //   no baptism date yet.
+  // - baptized (publisher / MS / elder): baptism date + spiritual status +
+  //   pioneer; no ministry-start date.
+  const isUnbaptized = form.appointment === 'unbaptized_publisher';
+  const isBaptized =
+    form.appointment === 'publisher' ||
+    form.appointment === 'ministerial_servant' ||
+    form.appointment === 'elder';
+  const showBaptismDate = isBaptized;
+  const showMinistryStart = isUnbaptized;
+  const showSpiritualStatus = isUnbaptized || isBaptized;
+  const showPioneer = isUnbaptized || isBaptized;
 
   return (
     <ScrollView
@@ -209,41 +232,71 @@ export function PublisherForm({
               form.gender !== 'sister' ||
               (o.value !== 'ministerial_servant' && o.value !== 'elder'),
           )}
-          onChange={(v) => update('appointment', v)}
+          onChange={(v) =>
+            setForm((prev) => {
+              const next = { ...prev, appointment: v };
+              // Clear fields that don't apply to the new stage, so stale data
+              // (e.g. a baptism date on someone moved back to student) is not
+              // carried over.
+              if (v === 'student') {
+                next.baptismDate = '';
+                next.ministryStartDate = '';
+                next.spiritualStatus = 'unknown';
+                next.pioneerType = 'none';
+                next.pioneerSince = '';
+              } else if (v === 'unbaptized_publisher') {
+                next.baptismDate = '';
+              } else {
+                // Baptized: no ministry-start date.
+                next.ministryStartDate = '';
+              }
+              return next;
+            })
+          }
         />
-        <FormField
-          label={t('publishers.fields.baptismDate')}
-          value={form.baptismDate}
-          onChangeText={(v) => update('baptismDate', v)}
-          placeholder={t('publishers.placeholders.date')}
-          autoCapitalize="none"
-        />
-        <FormChips
-          label={t('publishers.fields.spiritualStatus')}
-          value={form.spiritualStatus ?? 'unknown'}
-          options={SPIRITUAL_STATUS_OPTIONS}
-          onChange={(v) => update('spiritualStatus', v)}
-        />
-        <FormField
-          label={t('publishers.fields.ministryStart')}
-          value={form.ministryStartDate}
-          onChangeText={(v) => update('ministryStartDate', v)}
-          placeholder={t('publishers.placeholders.date')}
-          autoCapitalize="none"
-        />
-        <FormChips
-          label={t('publishers.fields.pioneerType')}
-          value={form.pioneerType}
-          options={PIONEER_OPTIONS}
-          onChange={(v) => update('pioneerType', v)}
-        />
-        <FormField
-          label={t('publishers.fields.pioneerSince')}
-          value={form.pioneerSince}
-          onChangeText={(v) => update('pioneerSince', v)}
-          placeholder={t('publishers.placeholders.date')}
-          autoCapitalize="none"
-        />
+        {showBaptismDate && (
+          <FormField
+            label={t('publishers.fields.baptismDate')}
+            value={form.baptismDate}
+            onChangeText={(v) => update('baptismDate', v)}
+            placeholder={t('publishers.placeholders.date')}
+            autoCapitalize="none"
+          />
+        )}
+        {showSpiritualStatus && (
+          <FormChips
+            label={t('publishers.fields.spiritualStatus')}
+            value={form.spiritualStatus ?? 'unknown'}
+            options={SPIRITUAL_STATUS_OPTIONS}
+            onChange={(v) => update('spiritualStatus', v)}
+          />
+        )}
+        {showMinistryStart && (
+          <FormField
+            label={t('publishers.fields.ministryStart')}
+            value={form.ministryStartDate}
+            onChangeText={(v) => update('ministryStartDate', v)}
+            placeholder={t('publishers.placeholders.date')}
+            autoCapitalize="none"
+          />
+        )}
+        {showPioneer && (
+          <>
+            <FormChips
+              label={t('publishers.fields.pioneerType')}
+              value={form.pioneerType}
+              options={PIONEER_OPTIONS}
+              onChange={(v) => update('pioneerType', v)}
+            />
+            <FormField
+              label={t('publishers.fields.pioneerSince')}
+              value={form.pioneerSince}
+              onChangeText={(v) => update('pioneerSince', v)}
+              placeholder={t('publishers.placeholders.date')}
+              autoCapitalize="none"
+            />
+          </>
+        )}
       </FormSection>
 
       <FormSection title={t('publishers.sections.capabilities')}>
