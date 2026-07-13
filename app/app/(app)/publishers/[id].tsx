@@ -274,7 +274,9 @@ export default function PublisherDetailScreen() {
             value={publisher.ministryStartDate}
           />
         )}
-        {publisher.appointment !== 'student' && (
+        {(publisher.appointment === 'publisher' ||
+          publisher.appointment === 'ministerial_servant' ||
+          publisher.appointment === 'elder') && (
           <Field
             label={t('publishers.fields.pioneer')}
             value={pioneerLabel(publisher.pioneerType, publisher.pioneerSince)}

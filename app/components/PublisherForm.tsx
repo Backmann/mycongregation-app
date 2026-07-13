@@ -146,7 +146,9 @@ export function PublisherForm({
   const showBaptismDate = isBaptized;
   const showMinistryStart = isUnbaptized;
   const showSpiritualStatus = isUnbaptized || isBaptized;
-  const showPioneer = isUnbaptized || isBaptized;
+  // Only baptized publishers may be pioneers; unbaptized publishers can only
+  // report field service (the "served" checkbox).
+  const showPioneer = isBaptized;
 
   return (
     <ScrollView
@@ -245,7 +247,10 @@ export function PublisherForm({
                 next.pioneerType = 'none';
                 next.pioneerSince = '';
               } else if (v === 'unbaptized_publisher') {
+                // Unbaptized publishers can't be pioneers.
                 next.baptismDate = '';
+                next.pioneerType = 'none';
+                next.pioneerSince = '';
               } else {
                 // Baptized: no ministry-start date.
                 next.ministryStartDate = '';
