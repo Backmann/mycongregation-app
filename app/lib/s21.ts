@@ -1,10 +1,4 @@
-import type { Publisher, PublisherHistoryEntry } from './api';
-
-export interface S21Data {
-  publisher: Publisher;
-  /** History entries (any months); the card picks the service year it needs. */
-  timeline: PublisherHistoryEntry[];
-}
+import type { S21DataResponse } from './api';
 
 const MONTHS_ORDER = [8, 9, 10, 11, 0, 1, 2, 3, 4, 5, 6, 7]; // Sep..Aug (0-based)
 
@@ -30,7 +24,7 @@ function esc(s: string): string {
   );
 }
 
-/** The label of the service year that a given calendar month/year belongs to. */
+/** The service year a given calendar date belongs to (Sep starts a new one). */
 export function serviceYearOf(date: Date): number {
   return date.getUTCMonth() >= 8
     ? date.getUTCFullYear() + 1
@@ -45,40 +39,37 @@ export function availableServiceYears(now = new Date()): number[] {
 
 const CB = (on: boolean) => (on ? '☑' : '☐');
 
-/**
- * Build one S-21 card (a self-contained block). `serviceYear` selects Sep(year-1)
- * .. Aug(year). Reads the report for each month from `timeline`.
- */
-function cardHtml(data: S21Data, serviceYear: number): string {
+/** Build one S-21 card block from the server's S-21 data package. */
+function cardHtml(data: S21DataResponse): string {
   const p = data.publisher;
+  const serviceYear = data.serviceYear;
   const fullName = esc(
     [p.lastName, p.firstName].filter(Boolean).join(' ') || p.displayName || '',
   );
 
-  // Map "YYYY-MM" -> report for quick lookup.
-  const byMonth = new Map<string, PublisherHistoryEntry['report']>();
-  for (const e of data.timeline) {
-    byMonth.set(e.reportMonth.slice(0, 7), e.report);
+  const byMonth = new Map<string, S21DataResponse['months'][number]>();
+  for (const m of data.months) {
+    byMonth.set(m.reportMonth.slice(0, 7), m);
   }
 
   let totalHours = 0;
   const rows = MONTHS_ORDER.map((monthIdx, i) => {
     const calYear = monthIdx >= 8 ? serviceYear - 1 : serviceYear;
     const ym = `${calYear}-${String(monthIdx + 1).padStart(2, '0')}`;
-    const report = byMonth.get(ym) ?? null;
+    const r = byMonth.get(ym) ?? null;
 
     const shared =
-      report != null &&
-      (report.servedThisMonth === true ||
-        (report.hoursReported != null && report.hoursReported > 0));
-    const studies = report?.bibleStudies ?? '';
-    const isAux = report?.hoursReported != null && p.pioneerType === 'none';
+      r != null &&
+      (r.servedThisMonth === true ||
+        (r.hoursReported != null && r.hoursReported > 0));
+    const studies = r?.bibleStudies ?? '';
+    const isAux = r?.hoursReported != null && p.pioneerType === 'none';
     const hours =
-      report?.hoursReported != null && p.pioneerType !== 'none'
-        ? report.hoursReported
+      r?.hoursReported != null && p.pioneerType !== 'none'
+        ? r.hoursReported
         : '';
     if (typeof hours === 'number') totalHours += hours;
-    const notes = esc(report?.notes ?? '');
+    const notes = esc(r?.notes ?? '');
 
     return `<tr>
       <td class="mon">${MONTH_LABELS_RU[i]}</td>
@@ -150,7 +141,6 @@ const STYLES = `
   * { box-sizing: border-box; }
   body { font-family: -apple-system, "Segoe UI", Roboto, sans-serif; color: #111; margin: 0; padding: 14mm; }
   .s21 { page-break-inside: avoid; }
-  .s21 + .s21 { margin-top: 10mm; }
   .title { text-align: center; font-weight: 700; font-size: 14px; margin-bottom: 10px; }
   .idrow { font-size: 12px; margin-bottom: 4px; }
   .idrow .sp { margin-left: 18px; }
@@ -167,12 +157,9 @@ const STYLES = `
   @media print { body { padding: 8mm; } }
 `;
 
-/**
- * Full printable HTML for a single S-21 card. Returns a complete document
- * string.
- */
-export function buildS21Html(data: S21Data, serviceYear: number): string {
-  const body = cardHtml(data, serviceYear);
+/** Full printable HTML for a single S-21 card from the server data package. */
+export function buildS21Html(data: S21DataResponse): string {
+  const body = cardHtml(data);
   const name =
     [data.publisher.lastName, data.publisher.firstName]
       .filter(Boolean)

@@ -455,6 +455,31 @@ export interface ServiceReportSummaryCategory {
   bibleStudies: number;
 }
 
+export interface S21MonthRow {
+  reportMonth: string;
+  servedThisMonth: boolean | null;
+  hoursReported: number | null;
+  bibleStudies: number;
+  notes: string | null;
+}
+
+export interface S21DataResponse {
+  serviceYear: number;
+  publisher: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    displayName: string;
+    gender: Gender;
+    birthDate: string | null;
+    baptismDate: string | null;
+    spiritualStatus: SpiritualStatus;
+    appointment: PublisherAppointment;
+    pioneerType: PioneerType;
+  };
+  months: S21MonthRow[];
+}
+
 export interface ServiceYearSummary {
   serviceYear: number;
   firstMonth: string;
@@ -2259,6 +2284,13 @@ export const serviceReportsApi = {
   async getYearSummary(year?: number): Promise<ServiceYearSummary> {
     const { data } = await api.get<ServiceYearSummary>(
       '/service-reports/year-summary',
+      { params: year ? { year } : {} },
+    );
+    return data;
+  },
+  async getS21Data(publisherId: string, year?: number): Promise<S21DataResponse> {
+    const { data } = await api.get<S21DataResponse>(
+      `/service-reports/s21/${publisherId}`,
       { params: year ? { year } : {} },
     );
     return data;

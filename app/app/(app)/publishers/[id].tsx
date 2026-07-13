@@ -60,29 +60,31 @@ export default function PublisherDetailScreen() {
   });
 
   // Service history for the S-21 record card (web print). Loaded lazily —
-  // only when the card is opened.
+  // S-21 record card (web print) via the dedicated, elder-guarded endpoint.
   const [s21Open, setS21Open] = useState(false);
-  const historyQuery = useQuery({
-    queryKey: ['publisher-history', id],
-    queryFn: () => serviceReportsApi.getHistoryForPublisher(id!, 120),
-    enabled: !!id && s21Open,
-  });
+  const [s21Loading, setS21Loading] = useState(false);
   const s21Years = useMemo(() => availableServiceYears(), []);
-  const generateS21 = (serviceYear: number) => {
-    setS21Open(false);
-    if (Platform.OS !== 'web' || typeof window === 'undefined' || !publisher) {
-      return;
-    }
-    const html = buildS21Html(
-      { publisher, timeline: historyQuery.data?.timeline ?? [] },
-      serviceYear,
-    );
+  const generateS21 = async (serviceYear: number) => {
+    if (Platform.OS !== 'web' || typeof window === 'undefined' || !id) return;
+    // Open the print window synchronously (inside the click) so the browser
+    // doesn't block it as a popup; fill it once data arrives.
     const w = window.open('', '_blank');
-    if (!w) return;
-    w.document.write(html);
-    w.document.close();
-    w.focus();
-    setTimeout(() => w.print(), 300);
+    setS21Loading(true);
+    try {
+      const pkg = await serviceReportsApi.getS21Data(id, serviceYear);
+      const html = buildS21Html(pkg);
+      if (w) {
+        w.document.write(html);
+        w.document.close();
+        w.focus();
+        setTimeout(() => w.print(), 300);
+      }
+    } catch {
+      if (w) w.close();
+    } finally {
+      setS21Loading(false);
+      setS21Open(false);
+    }
   };
 
   const updateMutation = useMutation({
@@ -425,7 +427,7 @@ export default function PublisherDetailScreen() {
           <Pressable style={styles.s21Card} onPress={() => {}}>
             <Text style={styles.s21Title}>{t('publishers.s21.title')}</Text>
             <Text style={styles.s21Section}>{t('publishers.s21.year')}</Text>
-            {historyQuery.isLoading ? (
+            {s21Loading ? (
               <ActivityIndicator style={{ marginVertical: 16 }} />
             ) : (
               s21Years.map((y) => (
