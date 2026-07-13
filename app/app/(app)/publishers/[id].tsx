@@ -134,7 +134,7 @@ export default function PublisherDetailScreen() {
   // publisher themselves or anyone else, since seeing "inactive" on one's own
   // card could be hurtful. It exists to help elders support publishers.
   const canSeeStatus = user?.role === 'admin' || user?.role === 'elder';
-  const { canEditPublishers } = usePermissions();
+  const { canEditPublishers, canGenerateS21 } = usePermissions();
   const purgeMutation = useMutation({
     mutationFn: () => publishersApi.purge(id!),
     onSuccess: () => {
@@ -367,7 +367,7 @@ export default function PublisherDetailScreen() {
             <Text style={styles.buttonEditText}>{t('publishers.actions.edit')}</Text>
           </Pressable>
         )}
-        {!publisher.deletedAt && Platform.OS === 'web' && canEditPublishers && (
+        {!publisher.deletedAt && Platform.OS === 'web' && canGenerateS21 && (
           <Pressable
             style={[styles.button, styles.buttonS21]}
             onPress={() => setS21Open(true)}

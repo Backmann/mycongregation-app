@@ -32,6 +32,8 @@ export interface Permissions {
   canImportWeekendSchedule: boolean;
   canEditPublishers: boolean;
   canSubmitReportForOthers: boolean;
+  /** S-21 record card — elders only (secretary is an elder too) + admin. */
+  canGenerateS21: boolean;
 
   /**
    * Responsibility-aware flags (Phase 2). Each is "admin OR holds the
@@ -122,6 +124,7 @@ export function usePermissions(): Permissions {
       canImportWeekendSchedule: isAdmin || isElder,
       canEditPublishers: isAdmin || holds('secretary'),
       canSubmitReportForOthers: isAdmin || isElder,
+      canGenerateS21: isAdmin || isElder,
 
       // Responsibility-aware (Phase 2): admin OR specific responsibility.
       canEditMidweekSchedule: isAdmin || holds('life_ministry_overseer'),
