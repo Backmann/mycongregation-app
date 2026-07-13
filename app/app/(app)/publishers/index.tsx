@@ -17,6 +17,7 @@ import { useTranslation } from 'react-i18next';
 import i18n from '../../../lib/i18n';
 import { useAuth } from '../../../lib/auth';
 import {
+  auxiliaryPioneersApi,
   extractErrorMessage,
   Publisher,
   publishersApi,
@@ -29,6 +30,7 @@ type Filters = {
   groupId: string | 'none' | null;
   appointment: string | null;
   pioneerType: string | null;
+  auxiliaryPioneer: boolean | null;
   gender: 'brother' | 'sister' | null;
   status: 'active' | 'irregular' | 'inactive' | null;
   departed: 'active' | 'departed' | null;
@@ -38,6 +40,7 @@ const EMPTY_FILTERS: Filters = {
   groupId: null,
   appointment: null,
   pioneerType: null,
+  auxiliaryPioneer: null,
   gender: null,
   status: null,
   departed: null,
@@ -48,6 +51,7 @@ function countActive(f: Filters): number {
     (f.groupId !== null ? 1 : 0) +
     (f.appointment !== null ? 1 : 0) +
     (f.pioneerType !== null ? 1 : 0) +
+    (f.auxiliaryPioneer !== null ? 1 : 0) +
     (f.gender !== null ? 1 : 0) +
     (f.status !== null ? 1 : 0) +
     (f.departed !== null ? 1 : 0)
@@ -82,6 +86,20 @@ export default function PublishersListScreen() {
     queryFn: () => serviceGroupsApi.list({}),
   });
   const groups = useMemo(() => groupsQuery.data?.data ?? [], [groupsQuery.data]);
+
+  // Active auxiliary pioneers (serving this month) — for the "auxiliary
+  // pioneer" filter, which reflects real service periods, not a card field.
+  const auxJournalQuery = useQuery({
+    queryKey: ['auxiliary-pioneers', 'journal'],
+    queryFn: () => auxiliaryPioneersApi.journal(),
+  });
+  const activeAuxIds = useMemo(() => {
+    const s = new Set<string>();
+    for (const row of auxJournalQuery.data ?? []) {
+      if (row.state === 'serving') s.add(row.publisherId);
+    }
+    return s;
+  }, [auxJournalQuery.data]);
   const groupNameById = useMemo(() => {
     const m = new Map<string, string>();
     for (const g of groups) m.set(g.id, g.name);
@@ -111,6 +129,11 @@ export default function PublishersListScreen() {
             if (filters.pioneerType && p.pioneerType !== filters.pioneerType)
               return false;
             if (filters.gender && p.gender !== filters.gender) return false;
+            if (
+              filters.auxiliaryPioneer === true &&
+              !activeAuxIds.has(p.id)
+            )
+              return false;
             if (filters.status !== null && p.status !== filters.status)
               return false;
             if (filters.departed === 'active' && p.deletedAt != null)
@@ -122,7 +145,7 @@ export default function PublishersListScreen() {
     return [...matched].sort(
       (a, b) => Number(!!a.deletedAt) - Number(!!b.deletedAt),
     );
-  }, [data, filters, activeCount]);
+  }, [data, filters, activeCount, activeAuxIds]);
 
   const allLoaded = data?.data ?? [];
   // Students (appointment=STUDENT) are not reporting publishers and are not
@@ -412,10 +435,8 @@ function FilterSheet({
             <View style={styles.chipWrap}>
               <Chip
                 label={t('publishers.tags.auxiliaryPioneer')}
-                active={filters.pioneerType === 'auxiliary_until_cancelled'}
-                onPress={() =>
-                  set('pioneerType', 'auxiliary_until_cancelled')
-                }
+                active={filters.auxiliaryPioneer === true}
+                onPress={() => set('auxiliaryPioneer', true)}
               />
               <Chip
                 label={t('publishers.tags.regularPioneer')}
