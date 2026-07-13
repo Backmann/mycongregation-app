@@ -19,8 +19,21 @@ import {
 import { usePermissions } from '../../../lib/permissions';
 import { useTranslation } from 'react-i18next';
 import { formatMonthLabel } from '../../../lib/i18n';
+import {
+  HistoryTrendChart,
+  TrendPoint,
+} from '../../../components/HistoryTrendChart';
 
 const SCREEN_TITLE = 'Сводка за месяц';
+
+/** Short axis label like "сен 25" for the year trend. */
+function shortMonthLabel(reportMonth: string): string {
+  const full = formatMonthLabel(reportMonth);
+  const parts = full.split(' ');
+  const mon = parts[0]?.slice(0, 3).toLowerCase() ?? '';
+  const yr = parts[1]?.slice(2) ?? '';
+  return `${mon} ${yr}`;
+}
 
 const CATEGORY_LABELS: Record<PioneerType, string> = {
   none: 'Возвещатели',
@@ -63,6 +76,21 @@ export default function ServiceSummaryScreen() {
     queryFn: () => serviceReportsApi.getSummary(reportMonth),
     enabled: canViewServiceSummary,
   });
+
+  const yearQuery = useQuery({
+    queryKey: ['service-reports', 'year-summary'],
+    queryFn: () => serviceReportsApi.getYearSummary(),
+    enabled: canViewServiceSummary,
+  });
+
+  const yearTrendPoints = useMemo<TrendPoint[]>(() => {
+    const monthly = yearQuery.data?.monthly ?? [];
+    return monthly.map((m) => ({
+      monthLabel: shortMonthLabel(m.reportMonth),
+      hours: m.hours,
+      studies: m.studies,
+    }));
+  }, [yearQuery.data]);
 
   const queryClient = useQueryClient();
   const closureMutation = useMutation({
@@ -286,12 +314,47 @@ export default function ServiceSummaryScreen() {
             сдавшим. «Сдали отчёт» — доля от активных; «активных» — доля от всех.
           </Text>
         </View>
+
+        {yearQuery.data ? (
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>
+              Итог за служебный год {yearQuery.data.serviceYear}
+            </Text>
+            <Text style={styles.yearRange}>
+              {formatMonthLabel(yearQuery.data.firstMonth)} —{' '}
+              {formatMonthLabel(yearQuery.data.lastMonth)}
+            </Text>
+            <View style={styles.statsRow}>
+              <View style={styles.statBox}>
+                <Text style={styles.statBig}>{yearQuery.data.totalHours}</Text>
+                <Text style={styles.statLabel}>Всего часов</Text>
+              </View>
+              <View style={styles.statBox}>
+                <Text style={styles.statBig}>
+                  {yearQuery.data.totalStudies}
+                </Text>
+                <Text style={styles.statLabel}>Всего изучений</Text>
+              </View>
+            </View>
+            {yearTrendPoints.length >= 2 ? (
+              <View style={{ marginTop: 14 }}>
+                <HistoryTrendChart points={yearTrendPoints} />
+              </View>
+            ) : null}
+          </View>
+        ) : null}
       </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  yearRange: {
+    fontSize: 12,
+    color: '#94a3b8',
+    marginBottom: 12,
+    marginTop: -4,
+  },
   container: { flex: 1, backgroundColor: '#f1f5f9' },
   center: {
     flex: 1,

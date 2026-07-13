@@ -452,6 +452,21 @@ export interface ServiceReportSummaryCategory {
   bibleStudies: number;
 }
 
+export interface ServiceYearSummary {
+  serviceYear: number;
+  firstMonth: string;
+  lastMonth: string;
+  totalHours: number;
+  totalStudies: number;
+  avgMonthlyPioneerReports: number;
+  monthly: {
+    reportMonth: string;
+    hours: number;
+    studies: number;
+    reporters: number;
+  }[];
+}
+
 export interface ServiceReportSummary {
   reportMonth: string;
   categories: ServiceReportSummaryCategory[];
@@ -2235,6 +2250,13 @@ export const serviceReportsApi = {
     const { data } = await api.get<ServiceReportSummary>(
       '/service-reports/summary',
       { params: { reportMonth } },
+    );
+    return data;
+  },
+  async getYearSummary(year?: number): Promise<ServiceYearSummary> {
+    const { data } = await api.get<ServiceYearSummary>(
+      '/service-reports/year-summary',
+      { params: year ? { year } : {} },
     );
     return data;
   },
