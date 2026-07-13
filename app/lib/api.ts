@@ -128,6 +128,7 @@ export type PublisherAppointment =
   | 'unbaptized_publisher'
   | 'student'
   | 'none';
+export type SpiritualStatus = 'other_sheep' | 'anointed' | 'unknown';
 export type PioneerType =
   | 'none'
   | 'auxiliary_until_cancelled'
@@ -157,6 +158,7 @@ export interface Publisher {
   status?: PublisherStatus;
   appointment: PublisherAppointment;
   baptismDate: string | null;
+  spiritualStatus: SpiritualStatus;
   ministryStartDate: string | null;
   pioneerType: PioneerType;
   pioneerSince: string | null;
@@ -188,6 +190,7 @@ export interface CreatePublisherInput {
   isActive?: boolean;
   appointment?: PublisherAppointment;
   baptismDate?: string;
+  spiritualStatus?: SpiritualStatus;
   ministryStartDate?: string;
   pioneerType?: PioneerType;
   pioneerSince?: string;

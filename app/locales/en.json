@@ -250,7 +250,8 @@
       "lastName": "Last name",
       "mobilePhone": "Mobile phone",
       "generalNotes": "General notes",
-      "status": "Status"
+      "status": "Status",
+      "spiritualStatus": "Spiritual status"
     },
     "appointment": {
       "publisher": "Publisher",
@@ -355,7 +356,12 @@
     },
     "departedCount": "{{count}} departed",
     "myGroupOnly": "Showing publishers from your service group",
-    "cardRestricted": "Publisher cards are available only to elders and assigned brothers"
+    "cardRestricted": "Publisher cards are available only to elders and assigned brothers",
+    "spiritualStatus": {
+      "otherSheep": "Other sheep",
+      "anointed": "Anointed",
+      "unknown": "Not set"
+    }
   },
   "capabilities": {
     "hints": {

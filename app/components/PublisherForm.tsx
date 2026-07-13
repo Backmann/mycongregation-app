@@ -17,6 +17,7 @@ import {
   Gender,
   PioneerType,
   PublisherAppointment,
+  SpiritualStatus,
   extractErrorMessage,
 } from '../lib/api';
 import { useTranslation } from 'react-i18next';
@@ -43,6 +44,14 @@ export function PublisherForm({
   const GENDER_OPTIONS: { value: Gender; label: string }[] = [
     { value: 'brother', label: t('publishers.gender.brother') },
     { value: 'sister', label: t('publishers.gender.sister') },
+  ];
+  const SPIRITUAL_STATUS_OPTIONS: {
+    value: SpiritualStatus;
+    label: string;
+  }[] = [
+    { value: 'other_sheep', label: t('publishers.spiritualStatus.otherSheep') },
+    { value: 'anointed', label: t('publishers.spiritualStatus.anointed') },
+    { value: 'unknown', label: t('publishers.spiritualStatus.unknown') },
   ];
 
   const APPOINTMENT_OPTIONS: { value: PublisherAppointment; label: string }[] = [
@@ -75,6 +84,7 @@ export function PublisherForm({
     address: initial?.address ?? '',
     appointment: initial?.appointment ?? 'publisher',
     baptismDate: initial?.baptismDate ?? '',
+    spiritualStatus: initial?.spiritualStatus ?? 'unknown',
     ministryStartDate: initial?.ministryStartDate ?? '',
     pioneerType: initial?.pioneerType ?? 'none',
     pioneerSince: initial?.pioneerSince ?? '',
@@ -207,6 +217,12 @@ export function PublisherForm({
           onChangeText={(v) => update('baptismDate', v)}
           placeholder={t('publishers.placeholders.date')}
           autoCapitalize="none"
+        />
+        <FormChips
+          label={t('publishers.fields.spiritualStatus')}
+          value={form.spiritualStatus ?? 'unknown'}
+          options={SPIRITUAL_STATUS_OPTIONS}
+          onChange={(v) => update('spiritualStatus', v)}
         />
         <FormField
           label={t('publishers.fields.ministryStart')}

@@ -250,7 +250,8 @@
       "lastName": "Nachname",
       "mobilePhone": "Mobiltelefon",
       "generalNotes": "Allgemeine Notizen",
-      "status": "Status"
+      "status": "Status",
+      "spiritualStatus": "Geistlicher Status"
     },
     "appointment": {
       "publisher": "Verkündiger",
@@ -355,7 +356,12 @@
     },
     "departedCount": "{{count}} ausgeschieden",
     "myGroupOnly": "Angezeigt werden Verkündiger deiner Gruppe",
-    "cardRestricted": "Verkündigerkarten sind nur für Älteste und beauftragte Brüder sichtbar"
+    "cardRestricted": "Verkündigerkarten sind nur für Älteste und beauftragte Brüder sichtbar",
+    "spiritualStatus": {
+      "otherSheep": "Andere Schafe",
+      "anointed": "Gesalbter",
+      "unknown": "Nicht angegeben"
+    }
   },
   "capabilities": {
     "hints": {

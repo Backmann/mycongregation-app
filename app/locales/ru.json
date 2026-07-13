@@ -250,7 +250,8 @@
       "lastName": "Фамилия",
       "mobilePhone": "Мобильный телефон",
       "generalNotes": "Общие заметки",
-      "status": "Статус"
+      "status": "Статус",
+      "spiritualStatus": "Духовный статус"
     },
     "appointment": {
       "publisher": "Возвещатель",
@@ -355,7 +356,12 @@
     },
     "departedCount": "выбыло {{count}}",
     "myGroupOnly": "Показаны возвещатели вашей группы",
-    "cardRestricted": "Карточки возвещателей доступны только старейшинам и назначенным братьям"
+    "cardRestricted": "Карточки возвещателей доступны только старейшинам и назначенным братьям",
+    "spiritualStatus": {
+      "otherSheep": "Другая овца",
+      "anointed": "Помазанник",
+      "unknown": "Не указано"
+    }
   },
   "capabilities": {
     "hints": {
