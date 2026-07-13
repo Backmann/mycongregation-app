@@ -30,7 +30,7 @@ type Filters = {
   appointment: string | null;
   pioneerType: string | null;
   gender: 'brother' | 'sister' | null;
-  isActive: boolean | null;
+  status: 'active' | 'irregular' | 'inactive' | null;
   departed: 'active' | 'departed' | null;
 };
 
@@ -39,7 +39,7 @@ const EMPTY_FILTERS: Filters = {
   appointment: null,
   pioneerType: null,
   gender: null,
-  isActive: null,
+  status: null,
   departed: null,
 };
 
@@ -49,7 +49,7 @@ function countActive(f: Filters): number {
     (f.appointment !== null ? 1 : 0) +
     (f.pioneerType !== null ? 1 : 0) +
     (f.gender !== null ? 1 : 0) +
-    (f.isActive !== null ? 1 : 0) +
+    (f.status !== null ? 1 : 0) +
     (f.departed !== null ? 1 : 0)
   );
 }
@@ -111,7 +111,7 @@ export default function PublishersListScreen() {
             if (filters.pioneerType && p.pioneerType !== filters.pioneerType)
               return false;
             if (filters.gender && p.gender !== filters.gender) return false;
-            if (filters.isActive !== null && p.isActive !== filters.isActive)
+            if (filters.status !== null && p.status !== filters.status)
               return false;
             if (filters.departed === 'active' && p.deletedAt != null)
               return false;
@@ -382,19 +382,41 @@ function FilterSheet({
             <Text style={styles.filterSection}>{t('publishers.filter.roleSection')}</Text>
             <View style={styles.chipWrap}>
               <Chip
-                label={t('publishers.tags.elder')}
-                active={filters.appointment === 'elder'}
-                onPress={() => set('appointment', 'elder')}
+                label={t('publishers.appointment.student')}
+                active={filters.appointment === 'student'}
+                onPress={() => set('appointment', 'student')}
+              />
+              <Chip
+                label={t('publishers.appointment.unbaptized')}
+                active={filters.appointment === 'unbaptized_publisher'}
+                onPress={() => set('appointment', 'unbaptized_publisher')}
+              />
+              <Chip
+                label={t('publishers.appointment.publisher')}
+                active={filters.appointment === 'publisher'}
+                onPress={() => set('appointment', 'publisher')}
               />
               <Chip
                 label={t('publishers.tags.ms')}
                 active={filters.appointment === 'ministerial_servant'}
                 onPress={() => set('appointment', 'ministerial_servant')}
               />
+              <Chip
+                label={t('publishers.tags.elder')}
+                active={filters.appointment === 'elder'}
+                onPress={() => set('appointment', 'elder')}
+              />
             </View>
 
             <Text style={styles.filterSection}>{t('publishers.filter.pioneerSection')}</Text>
             <View style={styles.chipWrap}>
+              <Chip
+                label={t('publishers.tags.auxiliaryPioneer')}
+                active={filters.pioneerType === 'auxiliary_until_cancelled'}
+                onPress={() =>
+                  set('pioneerType', 'auxiliary_until_cancelled')
+                }
+              />
               <Chip
                 label={t('publishers.tags.regularPioneer')}
                 active={filters.pioneerType === 'regular'}
@@ -429,14 +451,19 @@ function FilterSheet({
             <Text style={styles.filterSection}>{t('publishers.filter.statusSection')}</Text>
             <View style={styles.chipWrap}>
               <Chip
-                label={t('publishers.filter.active')}
-                active={filters.isActive === true}
-                onPress={() => set('isActive', true)}
+                label={t('publishers.status.active')}
+                active={filters.status === 'active'}
+                onPress={() => set('status', 'active')}
               />
               <Chip
-                label={t('publishers.filter.inactive')}
-                active={filters.isActive === false}
-                onPress={() => set('isActive', false)}
+                label={t('publishers.status.irregular')}
+                active={filters.status === 'irregular'}
+                onPress={() => set('status', 'irregular')}
+              />
+              <Chip
+                label={t('publishers.status.inactive')}
+                active={filters.status === 'inactive'}
+                onPress={() => set('status', 'inactive')}
               />
             </View>
 

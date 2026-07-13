@@ -218,7 +218,8 @@
       "specialPioneer": "Special pioneer",
       "missionary": "Missionary",
       "anointed": "Anointed",
-      "inactive": "Inactive"
+      "inactive": "Inactive",
+      "auxiliaryPioneer": "Auxiliary pioneer"
     },
     "sections": {
       "contact": "Contact",

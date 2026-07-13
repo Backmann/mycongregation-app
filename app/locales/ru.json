@@ -218,7 +218,8 @@
       "specialPioneer": "Специальный пионер",
       "missionary": "Миссионер",
       "anointed": "Помазанник",
-      "inactive": "Неактивный"
+      "inactive": "Неактивный",
+      "auxiliaryPioneer": "Подсобный пионер"
     },
     "sections": {
       "contact": "Контакты",

@@ -218,7 +218,8 @@
       "specialPioneer": "Sonderpionier",
       "missionary": "Missionar",
       "anointed": "Gesalbter",
-      "inactive": "Inaktiv"
+      "inactive": "Inaktiv",
+      "auxiliaryPioneer": "Hilfspionier"
     },
     "sections": {
       "contact": "Kontakt",
