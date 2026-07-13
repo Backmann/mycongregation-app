@@ -425,6 +425,8 @@ export interface PublisherHistoryResponse {
     status: PublisherStatus | null;
     statusManuallyOverridden: boolean;
     isPioneer: boolean;
+    pioneerType: PioneerType;
+    pioneerSince: string | null;
   };
   timeline: PublisherHistoryEntry[];
 }

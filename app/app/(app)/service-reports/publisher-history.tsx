@@ -19,6 +19,7 @@ import {
 } from '../../../lib/api';
 import { useTranslation } from 'react-i18next';
 import i18n, { formatMonthLabel } from '../../../lib/i18n';
+import { pioneerProgress } from '../../../lib/pioneer-goal';
 import {
   HistoryTrendChart,
   TrendPoint,
@@ -197,6 +198,12 @@ export default function PublisherHistoryScreen() {
     [data, initialDisplayName, t],
   );
 
+  const progress = useMemo(() => {
+    const p = data?.publisher;
+    if (!p || p.pioneerType === 'none') return null;
+    return pioneerProgress(p.pioneerType, p.pioneerSince, data.timeline);
+  }, [data]);
+
   if (!publisherId) {
     return (
       <View style={styles.center}>
@@ -262,11 +269,57 @@ export default function PublisherHistoryScreen() {
         keyExtractor={(item) => item.reportMonth}
         contentContainerStyle={{ padding: 16, gap: 10 }}
         ListHeaderComponent={
-          trendPoints.length >= 2 ? (
-            <View style={{ marginBottom: 6 }}>
-              <HistoryTrendChart points={trendPoints} />
-            </View>
-          ) : null
+          <View>
+            {progress && (
+              <View style={styles.goalCard}>
+                <View style={styles.goalRow}>
+                  <Text style={styles.goalLabel}>
+                    {t('reports.pioneerGoal.title')}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.goalPace,
+                      progress.onTrack ? styles.goalOk : styles.goalBehind,
+                    ]}
+                  >
+                    {progress.onTrack
+                      ? t('reports.pioneerGoal.onTrack')
+                      : t('reports.pioneerGoal.behind')}
+                  </Text>
+                </View>
+                <View style={styles.goalBarTrack}>
+                  <View
+                    style={[
+                      styles.goalBarFill,
+                      progress.onTrack
+                        ? styles.goalBarOk
+                        : styles.goalBarBehind,
+                      {
+                        width: `${Math.min(
+                          100,
+                          progress.annualGoal > 0
+                            ? (progress.hours / progress.annualGoal) * 100
+                            : 0,
+                        )}%`,
+                      },
+                    ]}
+                  />
+                </View>
+                <Text style={styles.goalDetail}>
+                  {t('reports.pioneerGoal.detail', {
+                    hours: progress.hours,
+                    goalToDate: progress.goalToDate,
+                    annualGoal: progress.annualGoal,
+                  })}
+                </Text>
+              </View>
+            )}
+            {trendPoints.length >= 2 ? (
+              <View style={{ marginBottom: 6 }}>
+                <HistoryTrendChart points={trendPoints} />
+              </View>
+            ) : null}
+          </View>
         }
         refreshControl={
           <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
@@ -297,6 +350,34 @@ export default function PublisherHistoryScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f1f5f9' },
+  goalCard: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 12,
+    borderWidth: 0.5,
+    borderColor: '#e2e8f0',
+  },
+  goalRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  goalLabel: { fontSize: 14, fontWeight: '600', color: '#0f172a' },
+  goalPace: { fontSize: 12, fontWeight: '600' },
+  goalOk: { color: '#0f766e' },
+  goalBehind: { color: '#b45309' },
+  goalBarTrack: {
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#e2e8f0',
+    overflow: 'hidden',
+  },
+  goalBarFill: { height: 8, borderRadius: 4 },
+  goalBarOk: { backgroundColor: '#0ea5e9' },
+  goalBarBehind: { backgroundColor: '#f59e0b' },
+  goalDetail: { fontSize: 12, color: '#64748b', marginTop: 6 },
   center: {
     flex: 1,
     justifyContent: 'center',

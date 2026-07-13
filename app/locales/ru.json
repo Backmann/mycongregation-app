@@ -316,7 +316,8 @@
     "validation": {
       "firstNameRequired": "Имя обязательно",
       "lastNameRequired": "Фамилия обязательна",
-      "ministryStartRequired": "Укажите дату начала служения для некрещёного возвещателя"
+      "ministryStartRequired": "Укажите дату начала служения для некрещёного возвещателя",
+      "pioneerSinceRequired": "Укажите дату начала пионерского служения"
     },
     "placeholders": {
       "firstName": "Иван",
@@ -562,6 +563,12 @@
       "month": "Месяц",
       "activityCol": "Активность",
       "notesCol": "Заметки"
+    },
+    "pioneerGoal": {
+      "title": "Норма часов (год)",
+      "onTrack": "В графике",
+      "behind": "Отстаёт",
+      "detail": "{{hours}} ч из {{goalToDate}} ч к этому месяцу · годовая норма {{annualGoal}} ч"
     }
   },
   "serviceGroups": {

@@ -316,7 +316,8 @@
     "validation": {
       "firstNameRequired": "First name is required",
       "lastNameRequired": "Last name is required",
-      "ministryStartRequired": "Enter the ministry start date for an unbaptized publisher"
+      "ministryStartRequired": "Enter the ministry start date for an unbaptized publisher",
+      "pioneerSinceRequired": "Enter the date pioneer service began"
     },
     "placeholders": {
       "firstName": "John",
@@ -558,6 +559,12 @@
       "month": "Month",
       "activityCol": "Activity",
       "notesCol": "Notes"
+    },
+    "pioneerGoal": {
+      "title": "Hour goal (year)",
+      "onTrack": "On track",
+      "behind": "Behind",
+      "detail": "{{hours}} h of {{goalToDate}} h by this month · annual goal {{annualGoal}} h"
     }
   },
   "serviceGroups": {

@@ -125,6 +125,10 @@ export function PublisherForm({
       setError(t('publishers.validation.ministryStartRequired'));
       return;
     }
+    if (form.pioneerType !== 'none' && !form.pioneerSince?.trim()) {
+      setError(t('publishers.validation.pioneerSinceRequired'));
+      return;
+    }
     try {
       await onSubmit(form);
     } catch (e) {
@@ -291,15 +295,23 @@ export function PublisherForm({
               label={t('publishers.fields.pioneerType')}
               value={form.pioneerType}
               options={PIONEER_OPTIONS}
-              onChange={(v) => update('pioneerType', v)}
+              onChange={(v) =>
+                setForm((prev) => ({
+                  ...prev,
+                  pioneerType: v,
+                  pioneerSince: v === 'none' ? '' : prev.pioneerSince,
+                }))
+              }
             />
-            <FormField
-              label={t('publishers.fields.pioneerSince')}
-              value={form.pioneerSince}
-              onChangeText={(v) => update('pioneerSince', v)}
-              placeholder={t('publishers.placeholders.date')}
-              autoCapitalize="none"
-            />
+            {form.pioneerType !== 'none' && (
+              <FormField
+                label={t('publishers.fields.pioneerSince')}
+                value={form.pioneerSince}
+                onChangeText={(v) => update('pioneerSince', v)}
+                placeholder={t('publishers.placeholders.date')}
+                autoCapitalize="none"
+              />
+            )}
           </>
         )}
       </FormSection>

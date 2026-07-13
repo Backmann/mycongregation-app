@@ -316,7 +316,8 @@
     "validation": {
       "firstNameRequired": "Vorname ist erforderlich",
       "lastNameRequired": "Nachname ist erforderlich",
-      "ministryStartRequired": "Geben Sie das Startdatum des Dienstes für einen ungetauften Verkündiger an"
+      "ministryStartRequired": "Geben Sie das Startdatum des Dienstes für einen ungetauften Verkündiger an",
+      "pioneerSinceRequired": "Geben Sie das Startdatum des Pionierdienstes an"
     },
     "placeholders": {
       "firstName": "Hans",
@@ -558,6 +559,12 @@
       "month": "Monat",
       "activityCol": "Aktivität",
       "notesCol": "Notizen"
+    },
+    "pioneerGoal": {
+      "title": "Stundenziel (Jahr)",
+      "onTrack": "Im Plan",
+      "behind": "Im Rückstand",
+      "detail": "{{hours}} Std. von {{goalToDate}} Std. bis diesen Monat · Jahresziel {{annualGoal}} Std."
     }
   },
   "serviceGroups": {
