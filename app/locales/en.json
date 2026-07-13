@@ -537,7 +537,14 @@
       "editedBy": "edited by {{name}}",
       "trendTitle": "Service trend",
       "hours": "Hours",
-      "studies": "Studies"
+      "studies": "Studies",
+      "noReport": "No report",
+      "participated": "Participated",
+      "didNotParticipate": "Did not participate",
+      "exportSubtitle": "Service history",
+      "month": "Month",
+      "activityCol": "Activity",
+      "notesCol": "Notes"
     }
   },
   "serviceGroups": {

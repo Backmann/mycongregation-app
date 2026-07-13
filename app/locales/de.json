@@ -537,7 +537,14 @@
       "editedBy": "bearbeitet von {{name}}",
       "trendTitle": "Diensttrend",
       "hours": "Stunden",
-      "studies": "Studien"
+      "studies": "Studien",
+      "noReport": "Kein Bericht",
+      "participated": "Teilgenommen",
+      "didNotParticipate": "Nicht teilgenommen",
+      "exportSubtitle": "Dienstverlauf",
+      "month": "Monat",
+      "activityCol": "Aktivität",
+      "notesCol": "Notizen"
     }
   },
   "serviceGroups": {

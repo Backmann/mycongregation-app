@@ -541,7 +541,14 @@
       "editedBy": "изменил: {{name}}",
       "trendTitle": "Тенденция служения",
       "hours": "Часы",
-      "studies": "Изучения"
+      "studies": "Изучения",
+      "noReport": "Отчёта нет",
+      "participated": "Участвовал",
+      "didNotParticipate": "Не участвовал",
+      "exportSubtitle": "История служения",
+      "month": "Месяц",
+      "activityCol": "Активность",
+      "notesCol": "Заметки"
     }
   },
   "serviceGroups": {
