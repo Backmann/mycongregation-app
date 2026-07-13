@@ -1,4 +1,4 @@
-import { Children, useState } from 'react';
+import { Children, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -19,6 +19,7 @@ import {
   Publisher,
   publishersApi,
   RemovalReason,
+  serviceReportsApi,
   UpdatePublisherInput,
 } from '../../../lib/api';
 import { useTranslation } from 'react-i18next';
@@ -31,6 +32,7 @@ import {
 } from '../../../lib/capabilities';
 import { useAuth } from '../../../lib/auth';
 import { usePermissions } from '../../../lib/permissions';
+import { buildS21Html, availableServiceYears } from '../../../lib/s21';
 
 function removalLabel(reason: RemovalReason): string {
   return i18n.t(`publishers.removal.${reason}`);
@@ -56,6 +58,32 @@ export default function PublisherDetailScreen() {
     queryFn: () => publishersApi.getById(id!),
     enabled: !!id,
   });
+
+  // Service history for the S-21 record card (web print). Loaded lazily —
+  // only when the card is opened.
+  const [s21Open, setS21Open] = useState(false);
+  const historyQuery = useQuery({
+    queryKey: ['publisher-history', id],
+    queryFn: () => serviceReportsApi.getHistoryForPublisher(id!, 120),
+    enabled: !!id && s21Open,
+  });
+  const s21Years = useMemo(() => availableServiceYears(), []);
+  const generateS21 = (serviceYear: number) => {
+    setS21Open(false);
+    if (Platform.OS !== 'web' || typeof window === 'undefined' || !publisher) {
+      return;
+    }
+    const html = buildS21Html(
+      { publisher, timeline: historyQuery.data?.timeline ?? [] },
+      serviceYear,
+    );
+    const w = window.open('', '_blank');
+    if (!w) return;
+    w.document.write(html);
+    w.document.close();
+    w.focus();
+    setTimeout(() => w.print(), 300);
+  };
 
   const updateMutation = useMutation({
     mutationFn: (input: UpdatePublisherInput) =>
@@ -339,6 +367,22 @@ export default function PublisherDetailScreen() {
             <Text style={styles.buttonEditText}>{t('publishers.actions.edit')}</Text>
           </Pressable>
         )}
+        {!publisher.deletedAt && Platform.OS === 'web' && canEditPublishers && (
+          <Pressable
+            style={[styles.button, styles.buttonS21]}
+            onPress={() => setS21Open(true)}
+          >
+            <Ionicons
+              name="document-text-outline"
+              size={16}
+              color="#0369a1"
+              style={{ marginRight: 6 }}
+            />
+            <Text style={styles.buttonS21Text}>
+              {t('publishers.s21.button')}
+            </Text>
+          </Pressable>
+        )}
         {!publisher.deletedAt && canEditPublishers && (
           <>
             <Pressable
@@ -371,6 +415,36 @@ export default function PublisherDetailScreen() {
           </Pressable>
         )}
       </View>
+      <Modal
+        visible={s21Open}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setS21Open(false)}
+      >
+        <Pressable style={styles.s21Overlay} onPress={() => setS21Open(false)}>
+          <Pressable style={styles.s21Card} onPress={() => {}}>
+            <Text style={styles.s21Title}>{t('publishers.s21.title')}</Text>
+            <Text style={styles.s21Section}>{t('publishers.s21.year')}</Text>
+            {historyQuery.isLoading ? (
+              <ActivityIndicator style={{ marginVertical: 16 }} />
+            ) : (
+              s21Years.map((y) => (
+                <Pressable
+                  key={y}
+                  style={styles.s21YearRow}
+                  onPress={() => generateS21(y)}
+                >
+                  <Text style={styles.s21YearLabel}>
+                    {y - 1}/{y}
+                  </Text>
+                  <Ionicons name="print-outline" size={18} color="#0369a1" />
+                </Pressable>
+              ))
+            )}
+          </Pressable>
+        </Pressable>
+      </Modal>
+
       <RemoveModal
         visible={removeOpen}
         reason={removeReason}
@@ -804,6 +878,46 @@ const styles = StyleSheet.create({
   button: { paddingVertical: 14, borderRadius: 12, alignItems: 'center' },
   buttonEdit: { backgroundColor: '#0ea5e9' },
   buttonEditText: { color: '#fff', fontSize: 16, fontWeight: '700', fontFamily: 'Manrope_700Bold',},
+  buttonS21: {
+    backgroundColor: '#e0f2fe',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  buttonS21Text: {
+    color: '#0369a1',
+    fontSize: 16,
+    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
+  },
+  s21Overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(15,23,42,0.35)',
+    justifyContent: 'center',
+    padding: 28,
+  },
+  s21Card: { backgroundColor: '#fff', borderRadius: 14, padding: 18 },
+  s21Title: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#0f172a',
+    marginBottom: 4,
+  },
+  s21Section: {
+    fontSize: 12,
+    color: '#64748b',
+    marginTop: 8,
+    marginBottom: 4,
+  },
+  s21YearRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+    borderTopWidth: 0.5,
+    borderTopColor: '#e2e8f0',
+  },
+  s21YearLabel: { fontSize: 15, fontWeight: '600', color: '#0f172a' },
   buttonRemove: {
     backgroundColor: '#fff',
     borderWidth: 1,

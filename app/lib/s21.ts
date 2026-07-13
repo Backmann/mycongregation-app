@@ -168,16 +168,11 @@ const STYLES = `
 `;
 
 /**
- * Full printable HTML. `twoPerPage` renders the same card twice on one A4 sheet
- * (the S-21_s-Mlt layout). Returns a complete document string.
+ * Full printable HTML for a single S-21 card. Returns a complete document
+ * string.
  */
-export function buildS21Html(
-  data: S21Data,
-  serviceYear: number,
-  twoPerPage: boolean,
-): string {
-  const one = cardHtml(data, serviceYear);
-  const body = twoPerPage ? one + one : one;
+export function buildS21Html(data: S21Data, serviceYear: number): string {
+  const body = cardHtml(data, serviceYear);
   const name =
     [data.publisher.lastName, data.publisher.firstName]
       .filter(Boolean)

@@ -361,6 +361,11 @@
       "otherSheep": "Other sheep",
       "anointed": "Anointed",
       "unknown": "Not set"
+    },
+    "s21": {
+      "button": "S-21 card",
+      "title": "Generate S-21",
+      "year": "Choose the service year"
     }
   },
   "capabilities": {
@@ -550,11 +555,7 @@
       "exportSubtitle": "Service history",
       "month": "Month",
       "activityCol": "Activity",
-      "notesCol": "Notes",
-      "s21Title": "S-21 card",
-      "s21Year": "Service year",
-      "s21One": "1 per page",
-      "s21Two": "2 per page"
+      "notesCol": "Notes"
     }
   },
   "serviceGroups": {
