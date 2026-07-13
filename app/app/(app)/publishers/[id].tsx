@@ -369,7 +369,10 @@ export default function PublisherDetailScreen() {
             <Text style={styles.buttonEditText}>{t('publishers.actions.edit')}</Text>
           </Pressable>
         )}
-        {!publisher.deletedAt && Platform.OS === 'web' && canGenerateS21 && (
+        {!publisher.deletedAt &&
+          Platform.OS === 'web' &&
+          canGenerateS21 &&
+          publisher.appointment !== 'student' && (
           <Pressable
             style={[styles.button, styles.buttonS21]}
             onPress={() => setS21Open(true)}
