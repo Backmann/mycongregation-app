@@ -106,11 +106,11 @@ export default function GroupReportsScreen() {
   const statusMap = useMemo(() => {
     const m = new Map<
       string,
-      { status: PublisherStatus; manuallyOverridden: boolean }
+      { status: PublisherStatus | null; manuallyOverridden: boolean }
     >();
     for (const p of publishersQuery.data?.data ?? []) {
       m.set(p.id, {
-        status: ((p as any).status ?? 'inactive') as PublisherStatus,
+        status: ((p as any).status ?? null) as PublisherStatus | null,
         manuallyOverridden: !!(p as any).statusManuallyOverridden,
       });
     }
@@ -503,7 +503,10 @@ function PublisherRow({
   missedThreshold,
 }: {
   row: GroupReportRow;
-  statusInfo: { status: PublisherStatus; manuallyOverridden: boolean } | null;
+  statusInfo: {
+    status: PublisherStatus | null;
+    manuallyOverridden: boolean;
+  } | null;
   canOverride: boolean;
   onOverride?: () => void;
   onTapHistory?: () => void;
@@ -558,7 +561,7 @@ function PublisherRow({
               <Text style={styles.pioneerTag}>{t('reports.pioneerInline')}</Text>
             )}
           </Text>
-          {statusInfo && (
+          {statusInfo && statusInfo.status && (
             <View
               style={[
                 styles.statusBadge,

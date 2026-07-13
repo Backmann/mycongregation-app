@@ -422,7 +422,7 @@ export interface PublisherHistoryResponse {
   publisher: {
     id: string;
     displayName: string;
-    status: PublisherStatus;
+    status: PublisherStatus | null;
     statusManuallyOverridden: boolean;
     isPioneer: boolean;
   };

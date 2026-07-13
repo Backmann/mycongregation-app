@@ -62,9 +62,10 @@ function StatusBadge({
   status,
   isOverridden,
 }: {
-  status: PublisherStatus;
+  status: PublisherStatus | null;
   isOverridden: boolean;
 }) {
+  if (!status) return null;
   return (
     <View
       style={[
