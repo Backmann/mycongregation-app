@@ -550,7 +550,11 @@
       "exportSubtitle": "Dienstverlauf",
       "month": "Monat",
       "activityCol": "Aktivität",
-      "notesCol": "Notizen"
+      "notesCol": "Notizen",
+      "s21Title": "S-21-Karte",
+      "s21Year": "Dienstjahr",
+      "s21One": "1 pro Seite",
+      "s21Two": "2 pro Seite"
     }
   },
   "serviceGroups": {

@@ -1,7 +1,8 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
+  Modal,
   Platform,
   Pressable,
   RefreshControl,
@@ -16,10 +17,15 @@ import {
   extractErrorMessage,
   PublisherHistoryEntry,
   PublisherStatus,
+  publishersApi,
   serviceReportsApi,
 } from '../../../lib/api';
 import { useTranslation } from 'react-i18next';
 import i18n, { formatMonthLabel } from '../../../lib/i18n';
+import {
+  buildS21Html,
+  availableServiceYears,
+} from '../../../lib/s21';
 import {
   HistoryTrendChart,
   TrendPoint,
@@ -176,6 +182,14 @@ export default function PublisherHistoryScreen() {
     enabled: !!publisherId,
   });
 
+  // Full publisher card (name, gender, dates, status, appointment, pioneer) —
+  // needed for the S-21 record card header.
+  const publisherCardQuery = useQuery({
+    queryKey: ['publisher', publisherId],
+    queryFn: () => publishersApi.getById(publisherId!),
+    enabled: !!publisherId,
+  });
+
   // Trend points, oldest → newest (timeline is newest-first). Only months that
   // have a report contribute; empty months are skipped so the trend isn't all
   // zeros for irregular publishers.
@@ -255,6 +269,26 @@ export default function PublisherHistoryScreen() {
     setTimeout(() => w.print(), 300);
   };
 
+  const [s21Open, setS21Open] = useState(false);
+  const generateS21 = (serviceYear: number, twoPerPage: boolean) => {
+    setS21Open(false);
+    if (Platform.OS !== 'web' || typeof window === 'undefined') return;
+    const card = publisherCardQuery.data;
+    if (!card) return;
+    const html = buildS21Html(
+      { publisher: card, timeline: data?.timeline ?? [] },
+      serviceYear,
+      twoPerPage,
+    );
+    const w = window.open('', '_blank');
+    if (!w) return;
+    w.document.write(html);
+    w.document.close();
+    w.focus();
+    setTimeout(() => w.print(), 300);
+  };
+  const s21Years = useMemo(() => availableServiceYears(), []);
+
   if (!publisherId) {
     return (
       <View style={styles.center}>
@@ -300,21 +334,80 @@ export default function PublisherHistoryScreen() {
           headerRight:
             Platform.OS === 'web'
               ? () => (
-                  <Pressable
-                    onPress={exportToPdf}
-                    hitSlop={8}
-                    style={{ paddingHorizontal: 8 }}
-                  >
-                    <Ionicons
-                      name="download-outline"
-                      size={22}
-                      color="#0ea5e9"
-                    />
-                  </Pressable>
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <Pressable
+                      onPress={() => setS21Open(true)}
+                      hitSlop={8}
+                      style={{ paddingHorizontal: 8 }}
+                    >
+                      <Ionicons
+                        name="document-text-outline"
+                        size={22}
+                        color="#0ea5e9"
+                      />
+                    </Pressable>
+                    <Pressable
+                      onPress={exportToPdf}
+                      hitSlop={8}
+                      style={{ paddingHorizontal: 8 }}
+                    >
+                      <Ionicons
+                        name="download-outline"
+                        size={22}
+                        color="#0ea5e9"
+                      />
+                    </Pressable>
+                  </View>
                 )
               : undefined,
         }}
       />
+      <Modal
+        visible={s21Open}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setS21Open(false)}
+      >
+        <Pressable
+          style={styles.s21Overlay}
+          onPress={() => setS21Open(false)}
+        >
+          <Pressable style={styles.s21Card} onPress={() => {}}>
+            <Text style={styles.s21Title}>
+              {t('reports.publisherHistory.s21Title')}
+            </Text>
+            <Text style={styles.s21Section}>
+              {t('reports.publisherHistory.s21Year')}
+            </Text>
+            {s21Years.map((y) => (
+              <View key={y} style={styles.s21YearRow}>
+                <Text style={styles.s21YearLabel}>
+                  {y - 1}/{y}
+                </Text>
+                <View style={styles.s21Actions}>
+                  <Pressable
+                    style={styles.s21Btn}
+                    onPress={() => generateS21(y, false)}
+                  >
+                    <Text style={styles.s21BtnText}>
+                      {t('reports.publisherHistory.s21One')}
+                    </Text>
+                  </Pressable>
+                  <Pressable
+                    style={[styles.s21Btn, styles.s21BtnAlt]}
+                    onPress={() => generateS21(y, true)}
+                  >
+                    <Text style={styles.s21BtnText}>
+                      {t('reports.publisherHistory.s21Two')}
+                    </Text>
+                  </Pressable>
+                </View>
+              </View>
+            ))}
+          </Pressable>
+        </Pressable>
+      </Modal>
+
       <View style={styles.header}>
         <View style={styles.headerRow}>
           <Text style={styles.headerName} numberOfLines={1}>
@@ -372,6 +465,47 @@ export default function PublisherHistoryScreen() {
 }
 
 const styles = StyleSheet.create({
+  s21Overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(15,23,42,0.35)',
+    justifyContent: 'center',
+    padding: 28,
+  },
+  s21Card: {
+    backgroundColor: '#fff',
+    borderRadius: 14,
+    padding: 18,
+  },
+  s21Title: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#0f172a',
+    marginBottom: 4,
+  },
+  s21Section: {
+    fontSize: 12,
+    color: '#64748b',
+    marginTop: 8,
+    marginBottom: 8,
+  },
+  s21YearRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 6,
+    borderTopWidth: 0.5,
+    borderTopColor: '#e2e8f0',
+  },
+  s21YearLabel: { fontSize: 15, fontWeight: '600', color: '#0f172a' },
+  s21Actions: { flexDirection: 'row', gap: 8 },
+  s21Btn: {
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 8,
+    backgroundColor: '#0ea5e9',
+  },
+  s21BtnAlt: { backgroundColor: '#64748b' },
+  s21BtnText: { color: '#fff', fontSize: 12, fontWeight: '600' },
   container: { flex: 1, backgroundColor: '#f1f5f9' },
   center: {
     flex: 1,

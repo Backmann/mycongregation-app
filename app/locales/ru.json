@@ -554,7 +554,11 @@
       "exportSubtitle": "История служения",
       "month": "Месяц",
       "activityCol": "Активность",
-      "notesCol": "Заметки"
+      "notesCol": "Заметки",
+      "s21Title": "Карточка S-21",
+      "s21Year": "Служебный год",
+      "s21One": "1 на лист",
+      "s21Two": "2 на лист"
     }
   },
   "serviceGroups": {
