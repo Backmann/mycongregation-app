@@ -462,6 +462,7 @@ export interface S21MonthRow {
   hoursReported: number | null;
   bibleStudies: number;
   notes: string | null;
+  wasAuxiliaryPioneer: boolean;
 }
 
 export interface S21DataResponse {

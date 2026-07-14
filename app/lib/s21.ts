@@ -63,11 +63,14 @@ function cardHtml(data: S21DataResponse): string {
       (r.servedThisMonth === true ||
         (r.hoursReported != null && r.hoursReported > 0));
     const studies = r?.bibleStudies ?? '';
-    const isAux = r?.hoursReported != null && p.pioneerType === 'none';
+    // Auxiliary-pioneer months come from real service periods (server flag),
+    // not guessed from pioneerType.
+    const isAux = r?.wasAuxiliaryPioneer === true;
+    // Hours are shown for any pioneer month — regular/special/missionary
+    // (permanent pioneerType) OR an auxiliary-pioneer month.
+    const isPioneerMonth = p.pioneerType !== 'none' || isAux;
     const hours =
-      r?.hoursReported != null && p.pioneerType !== 'none'
-        ? r.hoursReported
-        : '';
+      r?.hoursReported != null && isPioneerMonth ? r.hoursReported : '';
     if (typeof hours === 'number') totalHours += hours;
     const notes = esc(r?.notes ?? '');
 
