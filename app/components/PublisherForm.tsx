@@ -8,6 +8,7 @@ import {
   View,
 } from 'react-native';
 import { FormField } from './FormField';
+import { DateField } from './DateField';
 import { FormSection } from './FormSection';
 import { FormChips } from './FormChips';
 import { CapabilitiesEditor } from './CapabilitiesEditor';
@@ -196,12 +197,11 @@ export function PublisherForm({
             }))
           }
         />
-        <FormField
+        <DateField
           label={t('publishers.fields.birthDate')}
           value={form.birthDate}
-          onChangeText={(v) => update('birthDate', v)}
+          onChange={(v) => update('birthDate', v)}
           placeholder={t('publishers.placeholders.date')}
-          autoCapitalize="none"
         />
       </FormSection>
 
@@ -264,12 +264,11 @@ export function PublisherForm({
           }
         />
         {showBaptismDate && (
-          <FormField
+          <DateField
             label={t('publishers.fields.baptismDate')}
             value={form.baptismDate}
-            onChangeText={(v) => update('baptismDate', v)}
+            onChange={(v) => update('baptismDate', v)}
             placeholder={t('publishers.placeholders.date')}
-            autoCapitalize="none"
           />
         )}
         {showSpiritualStatus && (
@@ -281,12 +280,11 @@ export function PublisherForm({
           />
         )}
         {showMinistryStart && (
-          <FormField
+          <DateField
             label={t('publishers.fields.ministryStart')}
             value={form.ministryStartDate}
-            onChangeText={(v) => update('ministryStartDate', v)}
+            onChange={(v) => update('ministryStartDate', v)}
             placeholder={t('publishers.placeholders.date')}
-            autoCapitalize="none"
           />
         )}
         {showPioneer && (
@@ -304,12 +302,11 @@ export function PublisherForm({
               }
             />
             {form.pioneerType !== 'none' && (
-              <FormField
+              <DateField
                 label={t('publishers.fields.pioneerSince')}
                 value={form.pioneerSince}
-                onChangeText={(v) => update('pioneerSince', v)}
+                onChange={(v) => update('pioneerSince', v)}
                 placeholder={t('publishers.placeholders.date')}
-                autoCapitalize="none"
               />
             )}
           </>

@@ -128,7 +128,9 @@
     "done": "Done",
     "none": "None",
     "saving": "Saving…",
-    "add": "Add"
+    "add": "Add",
+    "today": "Today",
+    "datePlaceholder": "YYYY-MM-DD"
   },
   "profile": {
     "signedInAs": "Signed in as",

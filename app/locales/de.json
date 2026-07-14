@@ -128,7 +128,9 @@
     "done": "Fertig",
     "none": "Keine",
     "saving": "Speichern…",
-    "add": "Hinzufügen"
+    "add": "Hinzufügen",
+    "today": "Heute",
+    "datePlaceholder": "JJJJ-MM-TT"
   },
   "profile": {
     "signedInAs": "Angemeldet als",
