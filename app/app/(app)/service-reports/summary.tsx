@@ -37,7 +37,6 @@ function shortMonthLabel(reportMonth: string): string {
 
 const CATEGORY_LABELS: Record<PioneerType, string> = {
   none: 'Возвещатели',
-  auxiliary_until_cancelled: 'Подсобные пионеры',
   regular: 'Общие пионеры',
   special: 'Специальные пионеры',
   missionary: 'Миссионеры',

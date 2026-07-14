@@ -131,7 +131,6 @@ export type PublisherAppointment =
 export type SpiritualStatus = 'other_sheep' | 'anointed' | 'unknown';
 export type PioneerType =
   | 'none'
-  | 'auxiliary_until_cancelled'
   | 'regular'
   | 'special'
   | 'missionary';
