@@ -34,6 +34,8 @@ export interface CoPdfLabels {
   period: string;
   accommodation: string;
   congregation: string;
+  pageForCongregationTitle: string;
+  pageForOverseerTitle: string;
 }
 
 function esc(s: string | null | undefined): string {
@@ -62,22 +64,6 @@ function placeStr(it: CoVisitItem, L: CoPdfLabels): string {
   return '';
 }
 
-function byDate(items: CoVisitItem[]): CoVisitItem[] {
-  return [...items].sort((a, b) => {
-    if (a.itemDate !== b.itemDate) return a.itemDate.localeCompare(b.itemDate);
-    return (a.startTime ?? '').localeCompare(b.startTime ?? '');
-  });
-}
-
-function tableHtml(headers: string[], rows: string[][]): string {
-  if (rows.length === 0) return '';
-  const head = headers.map((h) => `<th>${esc(h)}</th>`).join('');
-  const body = rows
-    .map((r) => `<tr>${r.map((c) => `<td>${esc(c)}</td>`).join('')}</tr>`)
-    .join('');
-  return `<table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table>`;
-}
-
 
 function dayLabel(iso: string, locale: string): string {
   const s = fmtDate(iso, locale);
@@ -85,15 +71,81 @@ function dayLabel(iso: string, locale: string): string {
 }
 
 /**
- * Day-by-day schedule (mirrors the on-screen chronological view): one block
- * per day with every item of that day in time order, whatever its kind.
+ * Human, readable name for an item kind — used as the row/section title.
  */
+function kindTitle(kind: string, L: CoPdfLabels): string {
+  switch (kind) {
+    case 'field_service':
+      return L.fieldService;
+    case 'lunch':
+      return L.lunches;
+    case 'lunch_box':
+      return L.lunchBox;
+    case 'pastoral':
+      return L.pastoral;
+    case 'pioneers':
+      return L.pioneers;
+    case 'elders':
+      return L.elders;
+    default:
+      return L.item;
+  }
+}
+
 /**
- * One table per day with FIXED column widths (identical on every day), one
- * line per person in the participants cell, and phones next to names. Empty
- * halves are dropped instead of printing "Name: —" noise.
+ * PAGE 1 — for the congregation. Only what everyone needs to know: the meetings
+ * that concern them, with time and place, and NO personal/host names. Grouped
+ * by day into clean cards.
  */
-function daySchedule(
+function congregationPage(
+  items: CoVisitItem[],
+  locale: string,
+  L: CoPdfLabels,
+): string {
+  // Kinds that are announced to the congregation. Field service (where to
+  // gather), the pioneer meeting, and the elders/MS meeting.
+  const publicKinds = new Set(['field_service', 'pioneers', 'elders']);
+  const visible = items.filter(
+    (i) => !i.forWife && publicKinds.has(i.kind),
+  );
+  if (visible.length === 0) return '<p class="empty">—</p>';
+
+  const dates = Array.from(new Set(visible.map((i) => i.itemDate))).sort();
+
+  return dates
+    .map((day) => {
+      const rows = visible
+        .filter((i) => i.itemDate === day)
+        .sort(
+          (a, b) =>
+            (a.startTime ?? '99:99').localeCompare(b.startTime ?? '99:99') ||
+            a.sortOrder - b.sortOrder,
+        )
+        .map((i) => {
+          const place = placeStr(i, L);
+          // Public row: time · meeting title · place. No names.
+          return `<div class="crow">
+  <div class="ctime">${esc(i.startTime ?? '')}</div>
+  <div class="cbody">
+    <div class="ctitle">${esc(kindTitle(i.kind, L))}</div>
+    ${place ? `<div class="cplace">${esc(place)}</div>` : ''}
+  </div>
+</div>`;
+        })
+        .join('\n');
+      return `<div class="daycard">
+  <div class="dayhead">${esc(dayLabel(day, locale))}</div>
+  <div class="daybody">${rows}</div>
+</div>`;
+    })
+    .join('\n');
+}
+
+/**
+ * PAGE 2 — for the circuit overseer. Full detail: every item of every day with
+ * names, phones, notes, in time order. This is the private working copy.
+ */
+function overseerPage(
   items: CoVisitItem[],
   locale: string,
   L: CoPdfLabels,
@@ -101,6 +153,8 @@ function daySchedule(
   const visible = items.filter(
     (i) => !i.forWife && i.kind !== 'document_review',
   );
+  if (visible.length === 0) return '<p class="empty">—</p>';
+
   const pairOf = (co: CoVisitItem): CoVisitItem | null =>
     items.find(
       (i) =>
@@ -109,20 +163,8 @@ function daySchedule(
         i.itemDate === co.itemDate &&
         (i.startTime ?? '') === (co.startTime ?? ''),
     ) ?? null;
-  const kindName = (k: string) =>
-    k === 'field_service'
-      ? L.fieldService
-      : k === 'lunch'
-        ? L.lunches
-        : k === 'lunch_box'
-          ? L.lunchBox
-          : k === 'pastoral'
-            ? L.pastoral
-            : k === 'pioneers'
-              ? L.pioneers
-              : L.elders;
   const withPhone = (name: string | null, phone: string | null) =>
-    name ? (phone ? `${name} (${phone})` : name) : '';
+    name ? (phone ? `${name} · ${phone}` : name) : '';
   const personLine = (
     label: string,
     partner: string,
@@ -131,6 +173,7 @@ function daySchedule(
     if (!partner && !note) return null;
     return `${label}: ${partner || '—'}${note ? ` — ${note}` : ''}`;
   };
+
   /** [place lines, participant lines] for one row. */
   const cells = (i: CoVisitItem): [string[], string[]] => {
     switch (i.kind) {
@@ -141,10 +184,7 @@ function daySchedule(
           i.assigneePhone,
         );
         if (i.withWife) {
-          const who = [
-            personLine(L.together, partner, i.note) ?? L.together,
-          ];
-          return [place, who];
+          return [place, [personLine(L.together, partner, i.note) ?? L.together]];
         }
         const pair = pairOf(i);
         if (pair) {
@@ -163,10 +203,7 @@ function daySchedule(
       }
       case 'lunch': {
         const place = [i.assigneeAddress ?? ''].filter(Boolean);
-        const host = withPhone(
-          i.assigneeName ?? i.assigneeText,
-          i.assigneePhone,
-        );
+        const host = withPhone(i.assigneeName ?? i.assigneeText, i.assigneePhone);
         return [place, host ? [host] : ['—']];
       }
       case 'lunch_box': {
@@ -185,6 +222,7 @@ function daySchedule(
   };
   const cell = (lines: string[]): string =>
     lines.length === 0 ? '' : lines.map((l) => esc(l)).join('<br/>');
+
   const dates = Array.from(new Set(visible.map((i) => i.itemDate))).sort();
   return dates
     .map((day) => {
@@ -199,19 +237,21 @@ function daySchedule(
           const [place, who] = cells(i);
           return `<tr>
 <td class="t">${esc(i.startTime ?? '—')}</td>
-<td class="k">${esc(kindName(i.kind))}</td>
+<td class="k">${esc(kindTitle(i.kind, L))}</td>
 <td>${cell(place)}</td>
 <td>${cell(who)}</td>
 </tr>`;
         })
         .join('\n');
-      return `<div class="day">
-<p class="dtitle">${esc(dayLabel(day, locale))}</p>
-<table class="dt">
-<colgroup><col class="c1"/><col class="c2"/><col class="c3"/><col class="c4"/></colgroup>
-<thead><tr><th>${esc(L.time)}</th><th>${esc(L.item)}</th><th>${esc(L.place)}</th><th>${esc(L.who)}</th></tr></thead>
-<tbody>${rows}</tbody>
-</table>
+      return `<div class="daycard">
+  <div class="dayhead">${esc(dayLabel(day, locale))}</div>
+  <table class="dt">
+    <colgroup><col class="c1"/><col class="c2"/><col class="c3"/><col class="c4"/></colgroup>
+    <thead><tr><th>${esc(L.time)}</th><th>${esc(L.item)}</th><th>${esc(
+      L.place,
+    )}</th><th>${esc(L.who)}</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table>
 </div>`;
     })
     .join('\n');
@@ -239,72 +279,142 @@ export function buildCoScheduleHtml(opts: {
       ? `${fmtDate(visit.date, locale)} — ${fmtDate(visit.endDate, locale)}`
       : fmtDate(visit.date, locale);
 
-  const header = [
-    coName ? `<div class="meta"><b>${esc(coName)}</b></div>` : '',
-    visit.coWifeName
-      ? `<div class="meta">${esc(L.wife)}: ${esc(visit.coWifeName)}</div>`
-      : '',
-    `<div class="meta">${esc(period)}</div>`,
-    congregationName
-      ? `<div class="meta">${esc(L.congregation)}: ${esc(congregationName)}</div>`
-      : '',
-    hallAddress
-      ? `<div class="meta">${esc(L.kingdomHall)}: ${esc(hallAddress)}</div>`
-      : '',
-    accommodation
-      ? `<div class="meta">${esc(L.accommodation)}: ${esc(accommodation)}</div>`
-      : '',
-  ]
-    .filter(Boolean)
-    .join('');
+  // Compact meta line shown under each page title.
+  const metaChips = (opts2: { withAccommodation: boolean }) =>
+    [
+      coName ? `<span class="chip chip-name">${esc(coName)}</span>` : '',
+      visit.coWifeName
+        ? `<span class="chip">${esc(L.wife)}: ${esc(visit.coWifeName)}</span>`
+        : '',
+      `<span class="chip">${esc(period)}</span>`,
+      congregationName
+        ? `<span class="chip">${esc(congregationName)}</span>`
+        : '',
+      hallAddress
+        ? `<span class="chip">${esc(L.kingdomHall)}: ${esc(hallAddress)}</span>`
+        : '',
+      opts2.withAccommodation && accommodation
+        ? `<span class="chip">${esc(L.accommodation)}: ${esc(
+            accommodation,
+          )}</span>`
+        : '',
+    ]
+      .filter(Boolean)
+      .join('');
 
-  const pageHead = (title: string) =>
-    `<div class="pagehead"><h1>${esc(title)}</h1>${header}</div>`;
+  const pageHead = (
+    title: string,
+    subtitle: string,
+    withAccommodation: boolean,
+  ) => `<header class="pagehead">
+  <div class="titlewrap">
+    <h1>${esc(title)}</h1>
+    <div class="subtitle">${esc(subtitle)}</div>
+  </div>
+  <div class="chips">${metaChips({ withAccommodation })}</div>
+</header>`;
 
-  const publicRows = byDate(
-    items.filter((i) => i.kind === 'field_service' && !i.forWife),
-  ).map((i) => [fmtDate(i.itemDate, locale), i.startTime ?? '', placeStr(i, L)]);
+  const page1 = `<section class="page">
+  ${pageHead(L.pageForCongregationTitle, L.visitTitle, false)}
+  ${congregationPage(items, locale, L)}
+  <div class="foot"><span>mycongregation.org</span><span>${esc(
+    new Date().toLocaleDateString(locale),
+  )}</span></div>
+</section>`;
 
-  const page1 = `<section>
-    ${pageHead(L.visitTitle)}
-    <h2>${esc(L.fieldService)}</h2>
-    ${tableHtml([L.day, L.time, L.place], publicRows) || '<p>—</p>'}
-  </section>`;
-
-  const page2 = `<section class="page-break">
-    ${pageHead(L.coScheduleTitle)}
-    ${daySchedule(items, locale, L) || '<p>—</p>'}
-    <div class="foot"><span>mycongregation.org</span><span>${esc(
-      new Date().toLocaleDateString(locale),
-    )}</span></div>
-  </section>`;
+  const page2 = `<section class="page page-break">
+  ${pageHead(L.pageForOverseerTitle, L.coScheduleTitle, true)}
+  ${overseerPage(items, locale, L)}
+  <div class="foot"><span>mycongregation.org</span><span>${esc(
+    new Date().toLocaleDateString(locale),
+  )}</span></div>
+</section>`;
 
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${esc(
     L.coScheduleTitle,
   )}</title>
 <style>
   * { box-sizing: border-box; }
-  body { font-family: -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; color: #111; padding: 24px; }
-  h1 { font-size: 18px; margin: 0 0 6px; }
-  h2 { font-size: 15px; margin: 16px 0 6px; border-bottom: 2px solid #0e7490; padding-bottom: 3px; color: #0e7490; }
-  .day { page-break-inside: avoid; margin-bottom: 12px; }
-  .dtitle { font-size: 13.5px; font-weight: 700; color: #0e7490; margin: 12px 0 3px; border-left: 3px solid #0e7490; padding-left: 8px; }
-  .dt { table-layout: fixed; width: 100%; }
-  .dt .c1 { width: 42px; }
-  .dt .c2 { width: 132px; }
-  .dt .c3 { width: 30%; }
-  .dt td { word-wrap: break-word; overflow-wrap: break-word; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+    color: #0f172a;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .page { padding: 22px 26px 40px; }
+
+  /* Header */
+  .pagehead {
+    border-bottom: 3px solid #0e7490;
+    padding-bottom: 12px;
+    margin-bottom: 16px;
+  }
+  .titlewrap { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .pagehead h1 { font-size: 20px; margin: 0; color: #0e7490; letter-spacing: -0.2px; }
+  .subtitle { font-size: 12px; color: #64748b; font-weight: 500; }
+  .chips { margin-top: 9px; display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip {
+    display: inline-block;
+    font-size: 10.5px;
+    color: #334155;
+    background: #f1f5f9;
+    border-radius: 999px;
+    padding: 3px 10px;
+  }
+  .chip-name { background: #cffafe; color: #0e7490; font-weight: 700; }
+
+  /* Day cards — clearly separated blocks */
+  .daycard {
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 14px;
+    page-break-inside: avoid;
+  }
+  .dayhead {
+    background: #ecfeff;
+    color: #0e7490;
+    font-weight: 700;
+    font-size: 13.5px;
+    padding: 8px 14px;
+    border-bottom: 1px solid #cffafe;
+  }
+  .daybody { padding: 4px 0; }
+
+  /* Page-1 congregation rows: time · title · place, no names */
+  .crow { display: flex; gap: 14px; padding: 9px 14px; align-items: baseline; }
+  .crow + .crow { border-top: 1px dashed #eef2f6; }
+  .ctime { font-weight: 700; font-size: 13px; color: #0f172a; min-width: 48px; white-space: nowrap; }
+  .cbody { flex: 1; }
+  .ctitle { font-weight: 600; font-size: 13px; color: #0f172a; }
+  .cplace { font-size: 12px; color: #475569; margin-top: 1px; }
+
+  /* Page-2 overseer tables */
+  .dt { table-layout: fixed; width: 100%; border-collapse: collapse; }
+  .dt col.c1 { width: 46px; }
+  .dt col.c2 { width: 128px; }
+  .dt col.c3 { width: 32%; }
+  .dt th {
+    text-align: left; font-size: 10px; text-transform: uppercase;
+    letter-spacing: 0.4px; color: #94a3b8; font-weight: 700;
+    padding: 6px 12px 5px; background: #fbfdfe;
+  }
+  .dt td {
+    text-align: left; vertical-align: top; padding: 7px 12px;
+    border-top: 1px solid #f1f5f9; font-size: 11.5px;
+    word-wrap: break-word; overflow-wrap: break-word;
+  }
   .dt .t { font-weight: 700; white-space: nowrap; }
-  .dt .k { font-weight: 600; }
-  .meta { color: #374151; font-size: 12px; margin-bottom: 2px; }
-  .pagehead { border-bottom: 3px solid #0e7490; padding-bottom: 8px; margin-bottom: 10px; }
-  .pagehead h1 { margin-bottom: 4px; }
-  .foot { margin-top: 18px; font-size: 10px; color: #94a3b8; display: flex; justify-content: space-between; }
-  table { width: 100%; border-collapse: collapse; margin: 4px 0 10px; }
-  th, td { text-align: left; vertical-align: top; padding: 3px 7px; border-bottom: 1px solid #e5e7eb; font-size: 11.5px; }
-  th { color: #6b7280; font-weight: 600; background: #f8fafc; }
+  .dt .k { font-weight: 600; color: #0e7490; }
+
+  .empty { color: #94a3b8; padding: 8px 2px; }
+  .foot {
+    margin-top: 20px; padding-top: 8px; border-top: 1px solid #eef2f6;
+    font-size: 9.5px; color: #94a3b8; display: flex; justify-content: space-between;
+  }
   .page-break { page-break-before: always; }
-  @page { size: A4 portrait; margin: 16mm; }
+  @page { size: A4 portrait; margin: 14mm; }
 </style></head>
 <body onload="setTimeout(function(){window.print();},250);">
   ${page1}

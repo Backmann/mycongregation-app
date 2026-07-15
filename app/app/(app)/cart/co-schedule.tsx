@@ -638,6 +638,8 @@ export default function CoScheduleScreen() {
         period: t('coVisit.period'),
         accommodation: t('circuitOverseer.accommodationAddress'),
         congregation: t('coVisit.congregation'),
+        pageForCongregationTitle: t('coVisit.pageForCongregation'),
+        pageForOverseerTitle: t('coVisit.pageForOverseer'),
         item: t('coVisit.pdfItem'),
         who: t('coVisit.pdfWho'),
         together: t('coVisit.spouseBadge'),

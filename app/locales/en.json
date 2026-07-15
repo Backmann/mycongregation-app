@@ -1494,7 +1494,9 @@
     "participation": "Participation",
     "togetherHint": "Serves together with her husband — shared partner and type of service above",
     "accMine": "The circuit overseer and his wife are staying with you",
-    "noPartner": "no partner assigned"
+    "noPartner": "no partner assigned",
+    "pageForCongregation": "Program for the congregation",
+    "pageForOverseer": "Program for the circuit overseer"
   },
   "witnessing": {
     "youAreAssigned": "You're assigned to this slot",

@@ -1494,7 +1494,9 @@
     "participation": "Teilnahme",
     "togetherHint": "Dient gemeinsam mit ihrem Mann — Partner und Dienstart oben gelten für beide",
     "accMine": "Der Kreisaufseher und seine Frau wohnen bei euch",
-    "noPartner": "kein Partner eingeteilt"
+    "noPartner": "kein Partner eingeteilt",
+    "pageForCongregation": "Programm für die Versammlung",
+    "pageForOverseer": "Programm für den Kreisaufseher"
   },
   "witnessing": {
     "youAreAssigned": "Sie sind diesem Slot zugeteilt",
