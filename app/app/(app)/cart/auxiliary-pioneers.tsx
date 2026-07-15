@@ -310,6 +310,21 @@ export default function AuxiliaryPioneersScreen() {
                         <Text style={styles.journalPeriod}>
                           {periodLabel(j)}
                         </Text>
+                        {state === 'finished' &&
+                        j.currentPioneerType !== 'none' ? (
+                          <View style={styles.movedBadge}>
+                            <Ionicons
+                              name="arrow-forward"
+                              size={11}
+                              color="#0369a1"
+                            />
+                            <Text style={styles.movedBadgeText}>
+                              {t(
+                                `auxPioneer.movedTo.${j.currentPioneerType}`,
+                              )}
+                            </Text>
+                          </View>
+                        ) : null}
                       </View>
                     </View>
                   ))}
@@ -784,6 +799,18 @@ const styles = StyleSheet.create({
   dot: { width: 6, height: 6, borderRadius: 3 },
   journalName: { fontSize: 13, color: '#0f172a', fontWeight: '500' },
   journalPeriod: { fontSize: 11, color: '#94a3b8' },
+  movedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    alignSelf: 'flex-start',
+    marginTop: 4,
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 6,
+    backgroundColor: '#e0f2fe',
+  },
+  movedBadgeText: { fontSize: 11, color: '#0369a1', fontWeight: '600' },
   journalSection: { marginBottom: 12 },
   journalSectionTitle: {
     fontSize: 11.5,

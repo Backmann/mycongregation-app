@@ -2178,6 +2178,11 @@
       "serving": "Служат сейчас",
       "upcoming": "Предстоят",
       "finished": "Завершённые"
+    },
+    "movedTo": {
+      "regular": "Общий пионер",
+      "special": "Специальный пионер",
+      "missionary": "Миссионер"
     }
   },
   "weekDrawer": {

@@ -2497,6 +2497,7 @@ export interface AuxPioneerJournalRow {
   endMonth: string | null;
   untilCancelled: boolean;
   state: 'upcoming' | 'serving' | 'finished';
+  currentPioneerType: PioneerType;
 }
 
 export const auxiliaryPioneersApi = {

@@ -2174,6 +2174,11 @@
       "serving": "Dienen jetzt",
       "upcoming": "Bevorstehend",
       "finished": "Abgeschlossen"
+    },
+    "movedTo": {
+      "regular": "Allgemeiner Pionier",
+      "special": "Sonderpionier",
+      "missionary": "Missionar"
     }
   },
   "weekDrawer": {
