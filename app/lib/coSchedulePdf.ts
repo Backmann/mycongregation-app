@@ -476,7 +476,7 @@ export function buildCoScheduleHtml(opts: {
   .page-break { page-break-before: always; }
   @page { size: A4 portrait; margin: 14mm; }
 </style></head>
-<body onload="setTimeout(function(){window.print();},250);">
+<body>
   ${page1}
   ${page2}
 </body></html>`;

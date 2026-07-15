@@ -31,6 +31,7 @@ import {
   type CoHostStat,
 } from '../../../lib/api';
 import { buildCoScheduleHtml } from '../../../lib/coSchedulePdf';
+import { exportHtmlAsPdf } from '../../../lib/pdf';
 import { CIRCUIT_OVERSEER_VISIT_TYPE } from '../../../components/SpecialEventForm';
 import { PublisherSelector } from '../../../components/PublisherSelector';
 import { TimeField } from '../../../components/TimeField';
@@ -662,10 +663,6 @@ export default function CoScheduleScreen() {
   };
 
   const handlePrint = async () => {
-    if (Platform.OS !== 'web') {
-      Alert.alert(t('coVisit.printWebOnly'));
-      return;
-    }
     const meetings = await buildVisitMeetings();
     const html = buildCoScheduleHtml({
       visit,
@@ -725,14 +722,12 @@ export default function CoScheduleScreen() {
         wifeShort: visit.coWifeName || t('coVisit.wifeShort'),
       },
     });
-    const win = window.open('', '_blank');
-    if (!win) {
+    const ok = await exportHtmlAsPdf(html, {
+      fileName: t('coVisit.visitTitle'),
+    });
+    if (!ok.ok && ok.reason === 'popup_blocked') {
       Alert.alert(t('coVisit.printBlocked'));
-      return;
     }
-    win.document.open();
-    win.document.write(html);
-    win.document.close();
   };
 
 
