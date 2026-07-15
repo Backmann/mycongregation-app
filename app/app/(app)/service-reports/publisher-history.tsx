@@ -20,6 +20,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import i18n, { formatMonthLabel } from '../../../lib/i18n';
 import { pioneerProgress } from '../../../lib/pioneer-goal';
+import { isActivePermanentPioneer } from '../../../lib/pioneer-status';
 import {
   HistoryTrendChart,
   TrendPoint,
@@ -200,7 +201,8 @@ export default function PublisherHistoryScreen() {
 
   const progress = useMemo(() => {
     const p = data?.publisher;
-    if (!p || p.pioneerType === 'none') return null;
+    if (!p || !isActivePermanentPioneer(p.pioneerType, p.pioneerSince))
+      return null;
     return pioneerProgress(p.pioneerType, p.pioneerSince, data.timeline);
   }, [data]);
 

@@ -16,6 +16,7 @@ import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import i18n from '../../../lib/i18n';
 import { useAuth } from '../../../lib/auth';
+import { isActivePermanentPioneer } from '../../../lib/pioneer-status';
 import {
   auxiliaryPioneersApi,
   extractErrorMessage,
@@ -268,9 +269,13 @@ function PublisherRow({
   const tags: string[] = [];
   if (publisher.appointment === 'elder') tags.push(i18n.t('publishers.tags.elder'));
   if (publisher.appointment === 'ministerial_servant') tags.push(i18n.t('publishers.tags.ms'));
-  if (publisher.pioneerType === 'regular') tags.push(i18n.t('publishers.tags.regularPioneer'));
-  if (publisher.pioneerType === 'special') tags.push(i18n.t('publishers.tags.specialPioneer'));
-  if (publisher.pioneerType === 'missionary') tags.push(i18n.t('publishers.tags.missionary'));
+  const pioneerActive = isActivePermanentPioneer(
+    publisher.pioneerType,
+    publisher.pioneerSince,
+  );
+  if (pioneerActive && publisher.pioneerType === 'regular') tags.push(i18n.t('publishers.tags.regularPioneer'));
+  if (pioneerActive && publisher.pioneerType === 'special') tags.push(i18n.t('publishers.tags.specialPioneer'));
+  if (pioneerActive && publisher.pioneerType === 'missionary') tags.push(i18n.t('publishers.tags.missionary'));
   if (!publisher.isActive) tags.push(i18n.t('publishers.tags.inactive'));
 
   const initials =
