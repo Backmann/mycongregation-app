@@ -33,6 +33,7 @@ import {
 import { useAuth } from '../../../lib/auth';
 import { usePermissions } from '../../../lib/permissions';
 import { buildS21Html, availableServiceYears } from '../../../lib/s21';
+import { exportHtmlAsPdf, openPrintWindow } from '../../../lib/pdf';
 
 function removalLabel(reason: RemovalReason): string {
   return i18n.t(`publishers.removal.${reason}`);
@@ -65,22 +66,20 @@ export default function PublisherDetailScreen() {
   const [s21Loading, setS21Loading] = useState(false);
   const s21Years = useMemo(() => availableServiceYears(), []);
   const generateS21 = async (serviceYear: number) => {
-    if (Platform.OS !== 'web' || typeof window === 'undefined' || !id) return;
-    // Open the print window synchronously (inside the click) so the browser
-    // doesn't block it as a popup; fill it once data arrives.
-    const w = window.open('', '_blank');
+    if (!id) return;
+    // On web, open the print window synchronously (inside the click) so it
+    // isn't blocked as a popup; fill it once data arrives.
+    const preopened = openPrintWindow();
     setS21Loading(true);
     try {
       const pkg = await serviceReportsApi.getS21Data(id, serviceYear);
       const html = buildS21Html(pkg);
-      if (w) {
-        w.document.write(html);
-        w.document.close();
-        w.focus();
-        setTimeout(() => w.print(), 300);
-      }
+      await exportHtmlAsPdf(html, {
+        fileName: 'S-21',
+        preopenedWindow: preopened,
+      });
     } catch {
-      if (w) w.close();
+      if (preopened) preopened.close();
     } finally {
       setS21Loading(false);
       setS21Open(false);

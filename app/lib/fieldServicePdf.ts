@@ -103,7 +103,7 @@ ${rows}
   .foot { margin-top: 24px; font-size: 10px; color: #94a3b8; display: flex; justify-content: space-between; }
   @page { size: A4 portrait; margin: 16mm; }
 </style></head>
-<body onload="setTimeout(function(){window.print();},250);">
+<body>
 ${congregationName ? `<div class="congr">${esc(congregationName)}</div>` : ''}
 <h1>${esc(L.title)}</h1>
 <div class="range">${esc(rangeLabel)}</div>

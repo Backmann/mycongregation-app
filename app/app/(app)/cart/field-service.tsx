@@ -35,6 +35,7 @@ import { resolveHallAddress } from '../../../lib/hallAddress';
 import { FieldServiceGenerateModal } from '../../../components/FieldServiceGenerateModal';
 import { buildFieldServicePdfHtml } from '../../../lib/fieldServicePdf';
 import type { FsPdfMonth } from '../../../lib/fieldServicePdf';
+import { exportHtmlAsPdf } from '../../../lib/pdf';
 import { MyBulb } from '../../../components/MyBulb';
 import { ChipRow, PersonChip } from '../../../components/PersonChip';
 import { parseISODate, addDays, formatDateISO } from '../../../lib/dates';
@@ -274,11 +275,7 @@ export default function FieldServiceMeetingsScreen() {
     if (best && best !== activeMonthKey) setActiveMonthKey(best);
   };
 
-  const exportPdf = () => {
-    if (Platform.OS !== 'web') {
-      Alert.alert(t('fieldService.pdf.webOnly'));
-      return;
-    }
+  const exportPdf = async () => {
     const monthsOut: FsPdfMonth[] = [];
     for (let i = 0; i < pdfMonths; i++) {
       const key = dayjs(`${pdfStart}-01`).add(i, 'month').format('YYYY-MM');
@@ -340,14 +337,12 @@ export default function FieldServiceMeetingsScreen() {
         generated: t('fieldService.pdf.generated'),
       },
     });
-    const win = window.open('', '_blank');
-    if (!win) {
+    const ok = await exportHtmlAsPdf(html, {
+      fileName: t('fieldService.pdf.title'),
+    });
+    if (!ok.ok && ok.reason === 'popup_blocked') {
       Alert.alert(t('fieldService.pdf.blocked'));
-      return;
     }
-    win.document.open();
-    win.document.write(html);
-    win.document.close();
     setPdfOpen(false);
   };
 

@@ -3,6 +3,16 @@ import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 
 /**
+ * Open a blank print window synchronously — call this inside a click handler,
+ * before any await, so the browser doesn't block it as a popup. Pass the result
+ * to exportHtmlAsPdf via `preopenedWindow`. Web only; returns null elsewhere.
+ */
+export function openPrintWindow(): Window | null {
+  if (Platform.OS !== 'web' || typeof window === 'undefined') return null;
+  return window.open('', '_blank');
+}
+
+/**
  * Export an HTML document as a PDF, reusing the same premium HTML we render for
  * every document in the app (visit schedule, S-21, …).
  *
@@ -13,31 +23,31 @@ import * as Sharing from 'expo-sharing';
  *
  * The HTML passed in should NOT include an auto-print onload handler — this
  * function drives printing itself.
+ *
+ * When the export happens after awaiting data, open the window first with
+ * openPrintWindow() inside the click and pass it as `preopenedWindow` so the
+ * popup isn't blocked.
  */
 export async function exportHtmlAsPdf(
   html: string,
-  opts?: { fileName?: string },
+  opts?: { fileName?: string; preopenedWindow?: Window | null },
 ): Promise<{ ok: boolean; reason?: string }> {
   if (Platform.OS === 'web') {
-    // Open a new window, write the document, and trigger the print dialog once
-    // the content has laid out. "Save as PDF" is available there.
-    const win = window.open('', '_blank');
+    const win = opts?.preopenedWindow ?? window.open('', '_blank');
     if (!win) return { ok: false, reason: 'popup_blocked' };
     const title = opts?.fileName ?? 'document';
-    // Set document.title so the print dialog suggests it as the file name.
     const withTitle = html.includes('<title>')
       ? html
       : html.replace('<head>', `<head><title>${title}</title>`);
     win.document.open();
     win.document.write(withTitle);
     win.document.close();
+    win.focus();
     // Give layout/fonts a moment, then print.
-    win.onload = () => {
-      setTimeout(() => {
-        win.focus();
-        win.print();
-      }, 300);
-    };
+    setTimeout(() => {
+      win.focus();
+      win.print();
+    }, 300);
     return { ok: true };
   }
 
@@ -53,7 +63,6 @@ export async function exportHtmlAsPdf(
       });
       return { ok: true };
     }
-    // No share sheet available — the file still exists at `uri`.
     return { ok: true, reason: 'no_sharing' };
   } catch (e) {
     return { ok: false, reason: String(e) };
