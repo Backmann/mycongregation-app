@@ -627,8 +627,11 @@ export default function CoScheduleScreen() {
         return a?.partTitle?.trim() || null;
       };
 
-      // Midweek: CO service talk.
-      const mwDate = formatDateISO(meetingDate(monday, eff.midweekDow));
+      // Midweek: CO service talk. During a visit the midweek meeting is often
+      // moved (e.g. from Wednesday to Tuesday) — the visit's own coMidweekDow
+      // takes precedence over the congregation's usual midweek day.
+      const midweekDow = visit.coMidweekDow ?? eff.midweekDow;
+      const mwDate = formatDateISO(meetingDate(monday, midweekDow));
       if (inRange(mwDate)) {
         const coTalk = titleFor('co_service_talk');
         out.push({
