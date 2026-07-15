@@ -1496,7 +1496,9 @@
     "accMine": "Der Kreisaufseher und seine Frau wohnen bei euch",
     "noPartner": "kein Partner eingeteilt",
     "pageForCongregation": "Programm für die Versammlung",
-    "pageForOverseer": "Programm für den Kreisaufseher"
+    "pageForOverseer": "Programm für den Kreisaufseher",
+    "midweekMeeting": "Zusammenkunft (Woche)",
+    "weekendMeeting": "Zusammenkunft (Wochenende)"
   },
   "witnessing": {
     "youAreAssigned": "Sie sind diesem Slot zugeteilt",

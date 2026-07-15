@@ -18,6 +18,7 @@ import { Ionicons } from '@expo/vector-icons';
 import {
   cartLocationsApi,
   coVisitItemsApi,
+  assignmentsApi,
   hallsApi,
   meetingSettingsApi,
   publishersApi,
@@ -35,6 +36,8 @@ import { PublisherSelector } from '../../../components/PublisherSelector';
 import { TimeField } from '../../../components/TimeField';
 import { usePermissions } from '../../../lib/permissions';
 import { formatDateISO, startOfWeekMonday } from '../../../lib/dates';
+import { meetingDate } from '../../../lib/meeting-schedule';
+import type { CoMeetingInfo } from '../../../lib/coSchedulePdf';
 
 const WEEKDAY_ANCHOR = [
   '2024-01-01',
@@ -587,15 +590,85 @@ export default function CoScheduleScreen() {
     ]);
   };
 
-  const handlePrint = () => {
+  // Collect the congregation meetings (midweek/weekend) that fall inside the
+  // visit dates, with the CO's talk titles pulled from the week's schedule.
+  const buildVisitMeetings = async (): Promise<CoMeetingInfo[]> => {
+    const eff = settingsOverview?.effective;
+    if (!eff) return [];
+    const hall = eff.address ?? null;
+    const startISO = visit.date;
+    const endISO = visit.endDate ?? visit.date;
+    const inRange = (iso: string) => iso >= startISO && iso <= endISO;
+
+    // Weeks spanned by the visit.
+    const weekSet = new Set<string>();
+    {
+      const cur = startOfWeekMonday(new Date(`${startISO}T00:00:00`));
+      const end = new Date(`${endISO}T00:00:00`);
+      while (cur.getTime() <= end.getTime()) {
+        weekSet.add(formatDateISO(cur));
+        cur.setDate(cur.getDate() + 7);
+      }
+    }
+
+    const out: CoMeetingInfo[] = [];
+    for (const weekStart of weekSet) {
+      const monday = new Date(`${weekStart}T00:00:00`);
+      // Load this week's assignments once.
+      let rows: Awaited<ReturnType<typeof assignmentsApi.list>>['data'] = [];
+      try {
+        const res = await assignmentsApi.list({ weekStart });
+        rows = res.data ?? [];
+      } catch {
+        rows = [];
+      }
+      const titleFor = (partKey: string): string | null => {
+        const a = rows.find((r) => r.partKey === partKey);
+        return a?.partTitle?.trim() || null;
+      };
+
+      // Midweek: CO service talk.
+      const mwDate = formatDateISO(meetingDate(monday, eff.midweekDow));
+      if (inRange(mwDate)) {
+        const coTalk = titleFor('co_service_talk');
+        out.push({
+          kind: 'midweek',
+          date: mwDate,
+          time: eff.midweekTime,
+          place: hall,
+          talks: [coTalk].filter((x): x is string => !!x),
+        });
+      }
+      // Weekend: public talk + CO concluding talk (two talks).
+      const weDate = formatDateISO(meetingDate(monday, eff.weekendDow));
+      if (inRange(weDate)) {
+        const publicTalk = titleFor('public_talk_speaker');
+        const coConcluding = titleFor('co_concluding_talk');
+        out.push({
+          kind: 'weekend',
+          date: weDate,
+          time: eff.weekendTime,
+          place: hall,
+          talks: [publicTalk, coConcluding].filter(
+            (x): x is string => !!x,
+          ),
+        });
+      }
+    }
+    return out;
+  };
+
+  const handlePrint = async () => {
     if (Platform.OS !== 'web') {
       Alert.alert(t('coVisit.printWebOnly'));
       return;
     }
+    const meetings = await buildVisitMeetings();
     const html = buildCoScheduleHtml({
       visit,
       items: items ?? [],
       locale: loc,
+      meetings,
       congregationName: settingsOverview?.congregation.name ?? null,
       hallAddress: settingsOverview?.effective?.address ?? null,
       accommodationText: (() => {
@@ -640,6 +713,8 @@ export default function CoScheduleScreen() {
         congregation: t('coVisit.congregation'),
         pageForCongregationTitle: t('coVisit.pageForCongregation'),
         pageForOverseerTitle: t('coVisit.pageForOverseer'),
+        midweekMeeting: t('coVisit.midweekMeeting'),
+        weekendMeeting: t('coVisit.weekendMeeting'),
         item: t('coVisit.pdfItem'),
         who: t('coVisit.pdfWho'),
         together: t('coVisit.spouseBadge'),

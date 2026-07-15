@@ -1496,7 +1496,9 @@
     "accMine": "The circuit overseer and his wife are staying with you",
     "noPartner": "no partner assigned",
     "pageForCongregation": "Program for the congregation",
-    "pageForOverseer": "Program for the circuit overseer"
+    "pageForOverseer": "Program for the circuit overseer",
+    "midweekMeeting": "Congregation meeting (midweek)",
+    "weekendMeeting": "Congregation meeting (weekend)"
   },
   "witnessing": {
     "youAreAssigned": "You're assigned to this slot",

@@ -1,5 +1,18 @@
 import type { CoVisitItem, SpecialEvent } from './api';
 
+/**
+ * A congregation meeting during the visit (midweek or weekend), with the
+ * talk title(s) delivered by the circuit overseer, for the printed program.
+ */
+export interface CoMeetingInfo {
+  kind: 'midweek' | 'weekend';
+  date: string; // YYYY-MM-DD
+  time: string; // "HH:MM"
+  place: string | null;
+  /** Talk titles to show (midweek: CO service talk; weekend: public talk + CO concluding talk). */
+  talks: string[];
+}
+
 
 export interface CoPdfLabels {
   coShort: string;
@@ -36,6 +49,8 @@ export interface CoPdfLabels {
   congregation: string;
   pageForCongregationTitle: string;
   pageForOverseerTitle: string;
+  midweekMeeting: string;
+  weekendMeeting: string;
 }
 
 function esc(s: string | null | undefined): string {
@@ -71,6 +86,26 @@ function dayLabel(iso: string, locale: string): string {
 }
 
 /**
+ * A congregation-meeting row (midweek/weekend) for page 1: time · meeting name
+ * · place, plus the talk title(s). No names.
+ */
+function meetingRowHtml(m: CoMeetingInfo, L: CoPdfLabels): string {
+  const title = m.kind === 'midweek' ? L.midweekMeeting : L.weekendMeeting;
+  const talks = m.talks
+    .filter(Boolean)
+    .map((t) => `<div class="ctalk">${esc(t)}</div>`)
+    .join('');
+  return `<div class="crow crow-meeting">
+  <div class="ctime">${esc(m.time)}</div>
+  <div class="cbody">
+    <div class="ctitle">${esc(title)}</div>
+    ${m.place ? `<div class="cplace">${esc(m.place)}</div>` : ''}
+    ${talks}
+  </div>
+</div>`;
+}
+
+/**
  * Human, readable name for an item kind — used as the row/section title.
  */
 function kindTitle(kind: string, L: CoPdfLabels): string {
@@ -99,43 +134,60 @@ function kindTitle(kind: string, L: CoPdfLabels): string {
  */
 function congregationPage(
   items: CoVisitItem[],
+  meetings: CoMeetingInfo[],
   locale: string,
   L: CoPdfLabels,
 ): string {
   // Kinds that are announced to the congregation. Field service (where to
   // gather), the pioneer meeting, and the elders/MS meeting.
   const publicKinds = new Set(['field_service', 'pioneers', 'elders']);
-  const visible = items.filter(
-    (i) => !i.forWife && publicKinds.has(i.kind),
-  );
-  if (visible.length === 0) return '<p class="empty">—</p>';
+  const visible = items.filter((i) => !i.forWife && publicKinds.has(i.kind));
 
-  const dates = Array.from(new Set(visible.map((i) => i.itemDate))).sort();
+  // All dates that have either a public item or a congregation meeting.
+  const meetingByDate = new Map<string, CoMeetingInfo[]>();
+  for (const m of meetings) {
+    const arr = meetingByDate.get(m.date) ?? [];
+    arr.push(m);
+    meetingByDate.set(m.date, arr);
+  }
+  const allDates = Array.from(
+    new Set([
+      ...visible.map((i) => i.itemDate),
+      ...meetings.map((m) => m.date),
+    ]),
+  ).sort();
+  if (allDates.length === 0) return '<p class="empty">—</p>';
 
-  return dates
+  return allDates
     .map((day) => {
-      const rows = visible
-        .filter((i) => i.itemDate === day)
-        .sort(
-          (a, b) =>
-            (a.startTime ?? '99:99').localeCompare(b.startTime ?? '99:99') ||
-            a.sortOrder - b.sortOrder,
-        )
-        .map((i) => {
-          const place = placeStr(i, L);
-          // Public row: time · meeting title · place. No names.
-          return `<div class="crow">
+      // Meetings and items for this day, interleaved by time.
+      const all = [
+        ...(meetingByDate.get(day) ?? []).map((m) => ({
+          time: m.time,
+          html: meetingRowHtml(m, L),
+        })),
+        ...visible
+          .filter((i) => i.itemDate === day)
+          .map((i) => {
+            const place = placeStr(i, L);
+            return {
+              time: i.startTime ?? '99:99',
+              html: `<div class="crow">
   <div class="ctime">${esc(i.startTime ?? '')}</div>
   <div class="cbody">
     <div class="ctitle">${esc(kindTitle(i.kind, L))}</div>
     ${place ? `<div class="cplace">${esc(place)}</div>` : ''}
   </div>
-</div>`;
-        })
+</div>`,
+            };
+          }),
+      ]
+        .sort((a, b) => a.time.localeCompare(b.time))
+        .map((x) => x.html)
         .join('\n');
       return `<div class="daycard">
   <div class="dayhead">${esc(dayLabel(day, locale))}</div>
-  <div class="daybody">${rows}</div>
+  <div class="daybody">${all}</div>
 </div>`;
     })
     .join('\n');
@@ -265,9 +317,12 @@ export function buildCoScheduleHtml(opts: {
   hallAddress?: string | null;
   /** Precomposed accommodation line (host name/address/phone or address). */
   accommodationText?: string | null;
+  /** Congregation meetings during the visit (midweek/weekend) with CO talks. */
+  meetings?: CoMeetingInfo[];
   labels: CoPdfLabels;
 }): string {
   const { visit, items, locale, congregationName, hallAddress } = opts;
+  const meetings = opts.meetings ?? [];
   const accommodation = opts.accommodationText ?? visit.coAccommodationAddress;
   const L = opts.labels;
   const coName = [visit.coFirstName, visit.coLastName]
@@ -316,7 +371,7 @@ export function buildCoScheduleHtml(opts: {
 
   const page1 = `<section class="page">
   ${pageHead(L.pageForCongregationTitle, L.visitTitle, false)}
-  ${congregationPage(items, locale, L)}
+  ${congregationPage(items, meetings, locale, L)}
   <div class="foot"><span>mycongregation.org</span><span>${esc(
     new Date().toLocaleDateString(locale),
   )}</span></div>
@@ -389,6 +444,11 @@ export function buildCoScheduleHtml(opts: {
   .cbody { flex: 1; }
   .ctitle { font-weight: 600; font-size: 13px; color: #0f172a; }
   .cplace { font-size: 12px; color: #475569; margin-top: 1px; }
+  .crow-meeting { background: #fbfeff; }
+  .ctalk {
+    font-size: 12px; color: #0e7490; margin-top: 3px; padding-left: 10px;
+    border-left: 2px solid #cffafe; font-style: italic;
+  }
 
   /* Page-2 overseer tables */
   .dt { table-layout: fixed; width: 100%; border-collapse: collapse; }
