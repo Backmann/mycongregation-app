@@ -397,13 +397,13 @@ export function buildCoScheduleHtml(opts: {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
-  .page { padding: 22px 26px 40px; }
+  .page { padding: 16px 24px 24px; }
 
   /* Header */
   .pagehead {
     border-bottom: 3px solid #0e7490;
-    padding-bottom: 12px;
-    margin-bottom: 16px;
+    padding-bottom: 8px;
+    margin-bottom: 10px;
   }
   .titlewrap { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
   .pagehead h1 { font-size: 20px; margin: 0; color: #0e7490; letter-spacing: -0.2px; }
@@ -424,21 +424,21 @@ export function buildCoScheduleHtml(opts: {
     border: 1px solid #e2e8f0;
     border-radius: 12px;
     overflow: hidden;
-    margin-bottom: 14px;
+    margin-bottom: 9px;
     page-break-inside: avoid;
   }
   .dayhead {
     background: #ecfeff;
     color: #0e7490;
     font-weight: 700;
-    font-size: 13.5px;
-    padding: 8px 14px;
+    font-size: 13px;
+    padding: 5px 14px;
     border-bottom: 1px solid #cffafe;
   }
-  .daybody { padding: 4px 0; }
+  .daybody { padding: 2px 0; }
 
   /* Page-1 congregation rows: time · title · place, no names */
-  .crow { display: flex; gap: 14px; padding: 9px 14px; align-items: baseline; }
+  .crow { display: flex; gap: 14px; padding: 6px 14px; align-items: baseline; }
   .crow + .crow { border-top: 1px dashed #eef2f6; }
   .ctime { font-weight: 700; font-size: 13px; color: #0f172a; min-width: 48px; white-space: nowrap; }
   .cbody { flex: 1; }
@@ -461,7 +461,7 @@ export function buildCoScheduleHtml(opts: {
     padding: 6px 12px 5px; background: #fbfdfe;
   }
   .dt td {
-    text-align: left; vertical-align: top; padding: 7px 12px;
+    text-align: left; vertical-align: top; padding: 5px 12px;
     border-top: 1px solid #f1f5f9; font-size: 11.5px;
     word-wrap: break-word; overflow-wrap: break-word;
   }
@@ -470,11 +470,11 @@ export function buildCoScheduleHtml(opts: {
 
   .empty { color: #94a3b8; padding: 8px 2px; }
   .foot {
-    margin-top: 20px; padding-top: 8px; border-top: 1px solid #eef2f6;
+    margin-top: 12px; padding-top: 7px; border-top: 1px solid #eef2f6;
     font-size: 9.5px; color: #94a3b8; display: flex; justify-content: space-between;
   }
   .page-break { page-break-before: always; }
-  @page { size: A4 portrait; margin: 14mm; }
+  @page { size: A4 portrait; margin: 12mm; }
 </style></head>
 <body>
   ${page1}
