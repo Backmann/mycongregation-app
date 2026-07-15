@@ -235,6 +235,7 @@ export default function PublishersListScreen() {
               publisher={item}
               groupName={groupNameFor(item)}
               canOpenCard={privileged}
+              isAuxiliaryPioneer={activeAuxIds.has(item.id)}
             />
           )}
         />
@@ -256,10 +257,12 @@ function PublisherRow({
   publisher,
   groupName,
   canOpenCard,
+  isAuxiliaryPioneer,
 }: {
   publisher: Publisher;
   groupName: string | null;
   canOpenCard: boolean;
+  isAuxiliaryPioneer: boolean;
 }) {
   const isRemoved = !!publisher.deletedAt;
   const removedLabel = publisher.removalReason
@@ -276,6 +279,9 @@ function PublisherRow({
   if (pioneerActive && publisher.pioneerType === 'regular') tags.push(i18n.t('publishers.tags.regularPioneer'));
   if (pioneerActive && publisher.pioneerType === 'special') tags.push(i18n.t('publishers.tags.specialPioneer'));
   if (pioneerActive && publisher.pioneerType === 'missionary') tags.push(i18n.t('publishers.tags.missionary'));
+  // Auxiliary pioneer this month (from real service periods), shown when the
+  // person isn't already an active permanent pioneer.
+  if (isAuxiliaryPioneer && !pioneerActive) tags.push(i18n.t('publishers.tags.auxiliaryPioneer'));
   if (!publisher.isActive) tags.push(i18n.t('publishers.tags.inactive'));
 
   const initials =
