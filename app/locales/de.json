@@ -870,7 +870,8 @@
     "print": {
       "midweekTitle": "Zusammenkunft unter der Woche",
       "coVisitNote": "Besuch des Kreisaufsehers",
-      "weekendTitle": "Zusammenkunft am Wochenende"
+      "weekendTitle": "Zusammenkunft am Wochenende",
+      "watchtowerPrefix": "Wachtturm"
     }
   },
   "audit": {

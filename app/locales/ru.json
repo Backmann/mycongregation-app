@@ -874,7 +874,8 @@
     "print": {
       "midweekTitle": "Встреча в будний день",
       "coVisitNote": "Посещение районного старейшины",
-      "weekendTitle": "Встреча в выходной день"
+      "weekendTitle": "Встреча в выходной день",
+      "watchtowerPrefix": "Сторожевая Башня"
     }
   },
   "audit": {

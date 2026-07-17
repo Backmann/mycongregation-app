@@ -870,7 +870,8 @@
     "print": {
       "midweekTitle": "Midweek Meeting",
       "coVisitNote": "Circuit overseer visit",
-      "weekendTitle": "Weekend Meeting"
+      "weekendTitle": "Weekend Meeting",
+      "watchtowerPrefix": "Watchtower"
     }
   },
   "audit": {

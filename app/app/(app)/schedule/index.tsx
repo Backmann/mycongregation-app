@@ -730,9 +730,22 @@ export default function ScheduleIndexScreen() {
         'weekend_chairman',
         'weekend_opening_prayer',
         'weekend_closing_prayer',
-        'watchtower_reader',
       ]);
       const realPartName = (partKey: string, partTitle: string | null): string => {
+        // Watchtower reader shows just "Чтец"; the conductor's theme is prefixed
+        // with "Сторожевая Башня:" so the board reader knows what it belongs to.
+        if (partKey === 'watchtower_reader') {
+          return t('schedule.weekend.reader');
+        }
+        if (partKey === 'watchtower_conductor') {
+          const theme = partTitle
+            ? partTitle.indexOf(': ') > 0
+              ? partTitle.slice(partTitle.indexOf(': ') + 2)
+              : partTitle
+            : null;
+          const prefix = t('schedule.print.watchtowerPrefix');
+          return theme ? `${prefix}: ${theme}` : prefix;
+        }
         if (FIXED_NAME_PARTS.has(partKey)) return getPartLabel(partKey);
         if (partTitle) {
           const idx = partTitle.indexOf(': ');
