@@ -11,6 +11,13 @@ import type { EventType } from './api';
 export interface MeetingPdfWeek {
   weekStartDate: string; // YYYY-MM-DD (Monday)
   meetingDateLabel: string; // e.g. "8 июля"
+  /** If set, this week is replaced by a special event (e.g. a convention). */
+  event?: {
+    typeLabel: string; // "Региональный конгресс"
+    title: string | null; // theme
+    place: string | null; // address
+    dateLabel: string | null; // date range
+  } | null;
 }
 
 /** A section (colored group of parts), e.g. Treasures / Apply Yourself. */
@@ -94,8 +101,27 @@ export function buildMeetingSchedulePdfHtml(opts: {
 </tr>`;
   };
 
-  // A week card: two columns of section-grouped rows.
+  // A week card: either a special-event banner or two columns of parts.
   const weekBlock = (w: MeetingPdfWeek): string => {
+    if (w.event) {
+      const ev = w.event;
+      const lines = [
+        ev.title
+          ? `<div class="ev-title">${esc(ev.title)}</div>`
+          : '',
+        ev.place ? `<div class="ev-line">${esc(ev.place)}</div>` : '',
+        ev.dateLabel ? `<div class="ev-line">${esc(ev.dateLabel)}</div>` : '',
+      ]
+        .filter(Boolean)
+        .join('');
+      return `<div class="wk">
+  <div class="wkh">${esc(w.meetingDateLabel)}</div>
+  <div class="ev">
+    <div class="ev-type">${esc(ev.typeLabel)}</div>
+    ${lines}
+  </div>
+</div>`;
+    }
     const allRows: string[] = [];
     for (const section of sections) {
       for (const pk of section.partKeys) {
@@ -159,6 +185,15 @@ export function buildMeetingSchedulePdfHtml(opts: {
     padding: 5px 12px; border-bottom: 1px solid #cffafe;
   }
   .cols { display: flex; gap: 0; }
+  /* Special-event banner (e.g. regional convention) replacing a week. */
+  .ev { padding: 10px 14px; background: #f5f3ff; }
+  .ev-type {
+    display: inline-block; font-size: 10px; font-weight: 700; color: #5b21b6;
+    text-transform: uppercase; letter-spacing: 0.5px;
+    background: #ede9fe; border-radius: 999px; padding: 3px 11px; margin-bottom: 5px;
+  }
+  .ev-title { font-size: 12.5px; font-weight: 700; color: #0f172a; margin-bottom: 3px; }
+  .ev-line { font-size: 10px; color: #475569; }
   table.col { width: 50%; border-collapse: collapse; table-layout: fixed; }
   col.pc { width: 46%; }
   col.vc { width: 54%; }

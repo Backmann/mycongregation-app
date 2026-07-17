@@ -615,22 +615,67 @@ export default function ScheduleIndexScreen() {
       // viewedMeeting is used only for the month label below.
       const viewedMeeting = new Date(year, month, 1);
 
-      const weeks: MeetingPdfWeek[] = mondays.map((mon) => ({
-        weekStartDate: formatDateISO(mon),
-        meetingDateLabel: meetingDate(mon, dow).toLocaleDateString(
+      // A regional convention / circuit assembly replaces the whole week's
+      // meeting; show the event (type, theme, place, dates) instead of parts.
+      const events = specialEventsQuery.data ?? [];
+      const congressForWeek = (mon: Date) => {
+        const meetingISO = formatDateISO(meetingDate(mon, dow));
+        const satISO = formatDateISO(addDays(mon, 5));
+        const sunISO = formatDateISO(addDays(mon, 6));
+        return events.find((e) => {
+          if (e.type !== 'regional_convention' && e.type !== 'circuit_assembly')
+            return false;
+          const end = e.endDate ?? e.date;
+          // Covers the meeting day, or (for the weekend) the Sat/Sun span.
+          return (
+            (e.date <= meetingISO && end >= meetingISO) ||
+            (e.date <= sunISO && satISO <= end)
+          );
+        });
+      };
+      const fmtRange = (start: string, end: string | null): string => {
+        const s = new Date(`${start}T00:00:00`).toLocaleDateString(
           i18n.language,
           { day: 'numeric', month: 'long' },
-        ),
-      }));
+        );
+        if (!end || end === start) return s;
+        const e = new Date(`${end}T00:00:00`).toLocaleDateString(i18n.language, {
+          day: 'numeric',
+          month: 'long',
+        });
+        return `${s} — ${e}`;
+      };
+
+      const weeks: MeetingPdfWeek[] = mondays.map((mon) => {
+        const congress = congressForWeek(mon);
+        return {
+          weekStartDate: formatDateISO(mon),
+          meetingDateLabel: meetingDate(mon, dow).toLocaleDateString(
+            i18n.language,
+            { day: 'numeric', month: 'long' },
+          ),
+          event: congress
+            ? {
+                typeLabel: t(`specialEvents.types.${congress.type}`),
+                title: congress.title || null,
+                place: congress.address || null,
+                dateLabel: fmtRange(congress.date, congress.endDate),
+              }
+            : null,
+        };
+      });
       if (weeks.length === 0) {
         win?.close();
         return;
       }
 
-      // Load the month's assignments in one range request.
+      // Load the month's assignments in one range request. The server filters
+      // weekStartDate < weekEnd (exclusive), so pass the Monday AFTER the last
+      // week to include the final week itself.
+      const lastMonday = mondays[mondays.length - 1];
       const res = await assignmentsApi.list({
         weekStart: weeks[0].weekStartDate,
-        weekEnd: weeks[weeks.length - 1].weekStartDate,
+        weekEnd: formatDateISO(addWeeks(lastMonday, 1)),
         eventType: kind,
       });
       const rows = res.data ?? [];
@@ -645,7 +690,24 @@ export default function ScheduleIndexScreen() {
       // Real part name from the workbook title (mirrors the on-screen display):
       // if the title is "<name>: <detail>" use the name before the colon; else
       // the whole title; else the generic part label.
+      // Parts whose name is fixed (chairman, prayers, Bible reading, CBS, etc.)
+      // always use the generic label; only workbook parts (talks, apply-yourself
+      // assignments, living-as-Christians) take their real name from partTitle.
+      const FIXED_NAME_PARTS = new Set<string>([
+        'midweek_chairman',
+        'midweek_opening_prayer',
+        'midweek_closing_prayer',
+        'bible_reading',
+        'cbs_conductor',
+        'cbs_reader',
+        'co_service_talk',
+        'weekend_chairman',
+        'weekend_opening_prayer',
+        'weekend_closing_prayer',
+        'watchtower_reader',
+      ]);
       const realPartName = (partKey: string, partTitle: string | null): string => {
+        if (FIXED_NAME_PARTS.has(partKey)) return getPartLabel(partKey);
         if (partTitle) {
           const idx = partTitle.indexOf(': ');
           if (idx > 0) return partTitle.slice(0, idx);
