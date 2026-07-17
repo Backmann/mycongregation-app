@@ -370,19 +370,23 @@ export function buildCoScheduleHtml(opts: {
 </header>`;
 
   const page1 = `<section class="page">
+  <div class="page-inner">
   ${pageHead(L.pageForCongregationTitle, L.visitTitle, false)}
   ${congregationPage(items, meetings, locale, L)}
   <div class="foot"><span>mycongregation.org</span><span>${esc(
     new Date().toLocaleDateString(locale),
   )}</span></div>
+  </div>
 </section>`;
 
   const page2 = `<section class="page page-break">
+  <div class="page-inner">
   ${pageHead(L.pageForOverseerTitle, L.coScheduleTitle, true)}
   ${overseerPage(items, locale, L)}
   <div class="foot"><span>mycongregation.org</span><span>${esc(
     new Date().toLocaleDateString(locale),
   )}</span></div>
+  </div>
 </section>`;
 
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${esc(
@@ -397,7 +401,8 @@ export function buildCoScheduleHtml(opts: {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
-  .page { padding: 16px 24px 24px; }
+  .page { padding: 0; }
+  .page-inner { padding: 16px 24px 24px; transform-origin: top center; }
 
   /* Header */
   .pagehead {
@@ -458,10 +463,10 @@ export function buildCoScheduleHtml(opts: {
   .dt th {
     text-align: left; font-size: 10px; text-transform: uppercase;
     letter-spacing: 0.4px; color: #94a3b8; font-weight: 700;
-    padding: 6px 12px 5px; background: #fbfdfe;
+    padding: 5px 12px 4px; background: #fbfdfe;
   }
   .dt td {
-    text-align: left; vertical-align: top; padding: 5px 12px;
+    text-align: left; vertical-align: top; padding: 4px 12px;
     border-top: 1px solid #f1f5f9; font-size: 11.5px;
     word-wrap: break-word; overflow-wrap: break-word;
   }
@@ -479,5 +484,35 @@ export function buildCoScheduleHtml(opts: {
 <body>
   ${page1}
   ${page2}
+  <script>
+    (function () {
+      // Fit each page's content to a single A4 page. A4 = 297mm tall; with 12mm
+      // margins top+bottom the usable height is 273mm. Convert mm->px using a
+      // measured 1mm probe so it matches the print engine (desktop & mobile).
+      function mmToPx() {
+        var probe = document.createElement('div');
+        probe.style.height = '100mm';
+        probe.style.position = 'absolute';
+        probe.style.visibility = 'hidden';
+        document.body.appendChild(probe);
+        var px = probe.getBoundingClientRect().height / 100;
+        document.body.removeChild(probe);
+        return px;
+      }
+      var pxPerMm = mmToPx();
+      var usable = 273 * pxPerMm; // 297 - 2*12
+      var inners = document.querySelectorAll('.page-inner');
+      for (var i = 0; i < inners.length; i++) {
+        var el = inners[i];
+        var h = el.getBoundingClientRect().height;
+        if (h > usable) {
+          var k = usable / h;
+          el.style.transform = 'scale(' + k + ')';
+          // Reserve the scaled height so the page box stays one A4 sheet.
+          el.parentElement.style.height = usable + 'px';
+        }
+      }
+    })();
+  </script>
 </body></html>`;
 }
