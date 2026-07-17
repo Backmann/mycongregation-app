@@ -106,18 +106,15 @@ export function buildMeetingSchedulePdfHtml(opts: {
     if (w.event) {
       const ev = w.event;
       const lines = [
-        ev.title
-          ? `<div class="ev-title">${esc(ev.title)}</div>`
-          : '',
+        ev.title ? `<div class="ev-title">${esc(ev.title)}</div>` : '',
         ev.place ? `<div class="ev-line">${esc(ev.place)}</div>` : '',
         ev.dateLabel ? `<div class="ev-line">${esc(ev.dateLabel)}</div>` : '',
       ]
         .filter(Boolean)
         .join('');
       return `<div class="wk">
-  <div class="wkh">${esc(w.meetingDateLabel)}</div>
+  <div class="wkh wkh-ev">${esc(ev.typeLabel)}</div>
   <div class="ev">
-    <div class="ev-type">${esc(ev.typeLabel)}</div>
     ${lines}
   </div>
 </div>`;
@@ -186,14 +183,10 @@ export function buildMeetingSchedulePdfHtml(opts: {
   }
   .cols { display: flex; gap: 0; }
   /* Special-event banner (e.g. regional convention) replacing a week. */
-  .ev { padding: 10px 14px; background: #f5f3ff; }
-  .ev-type {
-    display: inline-block; font-size: 10px; font-weight: 700; color: #5b21b6;
-    text-transform: uppercase; letter-spacing: 0.5px;
-    background: #ede9fe; border-radius: 999px; padding: 3px 11px; margin-bottom: 5px;
-  }
-  .ev-title { font-size: 12.5px; font-weight: 700; color: #0f172a; margin-bottom: 3px; }
-  .ev-line { font-size: 10px; color: #475569; }
+  .wkh-ev { background: #ede9fe; color: #5b21b6; border-bottom-color: #ddd6fe; }
+  .ev { padding: 12px 14px; background: #f5f3ff; text-align: center; }
+  .ev-title { font-size: 12.5px; font-weight: 700; color: #0f172a; margin-bottom: 4px; }
+  .ev-line { font-size: 11px; color: #334155; margin-top: 2px; }
   table.col { width: 50%; border-collapse: collapse; table-layout: fixed; }
   col.pc { width: 46%; }
   col.vc { width: 54%; }
