@@ -276,8 +276,7 @@ function overseerPage(
     lines.length === 0 ? '' : lines.map((l) => esc(l)).join('<br/>');
 
   const dates = Array.from(new Set(visible.map((i) => i.itemDate))).sort();
-  return dates
-    .map((day) => {
+  const dateCards = dates.map((day) => {
       const rows = visible
         .filter((i) => i.itemDate === day)
         .sort(
@@ -305,8 +304,31 @@ function overseerPage(
     <tbody>${rows}</tbody>
   </table>
 </div>`;
-    })
-    .join('\n');
+    });
+  // Two explicit columns (flex) so a full week fits one landscape A4 sheet.
+  // Greedily place each day into the currently shorter column (by estimated
+  // height) so heavy days (many rows) don't pile up in one column.
+  const dayHeights = dates.map((day) => {
+    const dayItems = visible.filter((i) => i.itemDate === day);
+    // Rough height: header + each row, with multi-line notes counting more.
+    let h = 1.6;
+    for (const i of dayItems) {
+      const [place, who] = cells(i);
+      const lines = Math.max(place.length, who.length, 1);
+      h += 0.7 + lines * 0.5;
+    }
+    return h;
+  });
+  const colCards: [string[], string[]] = [[], []];
+  const colH = [0, 0];
+  dateCards.forEach((card, idx) => {
+    const target = colH[0] <= colH[1] ? 0 : 1;
+    colCards[target].push(card);
+    colH[target] += dayHeights[idx];
+  });
+  return `<div class="day-grid"><div class="day-col">${colCards[0].join(
+    '\n',
+  )}</div><div class="day-col">${colCards[1].join('\n')}</div></div>`;
 }
 
 export function buildCoScheduleHtml(opts: {
@@ -369,24 +391,20 @@ export function buildCoScheduleHtml(opts: {
   <div class="chips">${metaChips({ withAccommodation })}</div>
 </header>`;
 
-  const page1 = `<section class="page">
-  <div class="page-inner">
+  const page1 = `<section class="page page-portrait">
   ${pageHead(L.pageForCongregationTitle, L.visitTitle, false)}
   ${congregationPage(items, meetings, locale, L)}
   <div class="foot"><span>mycongregation.org</span><span>${esc(
     new Date().toLocaleDateString(locale),
   )}</span></div>
-  </div>
 </section>`;
 
-  const page2 = `<section class="page page-break">
-  <div class="page-inner">
+  const page2 = `<section class="page page-landscape">
   ${pageHead(L.pageForOverseerTitle, L.coScheduleTitle, true)}
   ${overseerPage(items, locale, L)}
   <div class="foot"><span>mycongregation.org</span><span>${esc(
     new Date().toLocaleDateString(locale),
   )}</span></div>
-  </div>
 </section>`;
 
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${esc(
@@ -401,8 +419,7 @@ export function buildCoScheduleHtml(opts: {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
-  .page { padding: 0; }
-  .page-inner { padding: 16px 24px 24px; transform-origin: top center; }
+  .page { padding: 16px 24px 24px; }
 
   /* Header */
   .pagehead {
@@ -425,6 +442,15 @@ export function buildCoScheduleHtml(opts: {
   .chip-name { background: #cffafe; color: #0e7490; font-weight: 700; }
 
   /* Day cards — clearly separated blocks */
+  /* Two-column day layout on the landscape overseer page. */
+  .page-landscape .day-grid { display: flex; gap: 14px; align-items: flex-start; }
+  .page-landscape .day-col { flex: 1; min-width: 0; }
+  .page-landscape { padding: 10px 16px 12px; }
+  .page-landscape .pagehead { padding-bottom: 6px; margin-bottom: 8px; }
+  .page-landscape .daycard { margin-bottom: 8px; }
+  .page-landscape .dayhead { padding: 4px 12px; font-size: 12px; }
+  .page-landscape .dt th { padding: 3px 10px; font-size: 9px; }
+  .page-landscape .dt td { padding: 3px 10px; font-size: 10.5px; }
   .daycard {
     border: 1px solid #e2e8f0;
     border-radius: 12px;
@@ -457,9 +483,9 @@ export function buildCoScheduleHtml(opts: {
 
   /* Page-2 overseer tables */
   .dt { table-layout: fixed; width: 100%; border-collapse: collapse; }
-  .dt col.c1 { width: 46px; }
-  .dt col.c2 { width: 128px; }
-  .dt col.c3 { width: 32%; }
+  .dt col.c1 { width: 54px; }
+  .dt col.c2 { width: 160px; }
+  .dt col.c3 { width: 34%; }
   .dt th {
     text-align: left; font-size: 10px; text-transform: uppercase;
     letter-spacing: 0.4px; color: #94a3b8; font-weight: 700;
@@ -478,41 +504,16 @@ export function buildCoScheduleHtml(opts: {
     margin-top: 12px; padding-top: 7px; border-top: 1px solid #eef2f6;
     font-size: 9.5px; color: #94a3b8; display: flex; justify-content: space-between;
   }
-  .page-break { page-break-before: always; }
-  @page { size: A4 portrait; margin: 12mm; }
+  /* Page 1 (congregation) is portrait; page 2 (overseer) is landscape so long
+     German addresses and names fit on one line and the whole day list fits one
+     sheet. */
+  .page-portrait { page: p1; }
+  .page-landscape { page: p2; page-break-before: always; }
+  @page p1 { size: A4 portrait; margin: 12mm; }
+  @page p2 { size: A4 landscape; margin: 10mm; }
 </style></head>
 <body>
   ${page1}
   ${page2}
-  <script>
-    (function () {
-      // Fit each page's content to a single A4 page. A4 = 297mm tall; with 12mm
-      // margins top+bottom the usable height is 273mm. Convert mm->px using a
-      // measured 1mm probe so it matches the print engine (desktop & mobile).
-      function mmToPx() {
-        var probe = document.createElement('div');
-        probe.style.height = '100mm';
-        probe.style.position = 'absolute';
-        probe.style.visibility = 'hidden';
-        document.body.appendChild(probe);
-        var px = probe.getBoundingClientRect().height / 100;
-        document.body.removeChild(probe);
-        return px;
-      }
-      var pxPerMm = mmToPx();
-      var usable = 273 * pxPerMm; // 297 - 2*12
-      var inners = document.querySelectorAll('.page-inner');
-      for (var i = 0; i < inners.length; i++) {
-        var el = inners[i];
-        var h = el.getBoundingClientRect().height;
-        if (h > usable) {
-          var k = usable / h;
-          el.style.transform = 'scale(' + k + ')';
-          // Reserve the scaled height so the page box stays one A4 sheet.
-          el.parentElement.style.height = usable + 'px';
-        }
-      }
-    })();
-  </script>
 </body></html>`;
 }
