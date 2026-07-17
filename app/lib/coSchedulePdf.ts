@@ -229,63 +229,77 @@ function overseerPage(
     ) ?? null;
   const withPhone = (name: string | null, phone: string | null) =>
     name ? (phone ? `${name} · ${phone}` : name) : '';
-  const personLine = (
+  // Field-service partners: the person's NAME in bold, phone in normal weight.
+  const boldName = (name: string | null, phone: string | null): string => {
+    if (!name) return '';
+    const safe = esc(name);
+    return phone ? `<b>${safe}</b> · ${esc(phone)}` : `<b>${safe}</b>`;
+  };
+  // A participant line for field service: "Label: <b>Name</b> · phone — note".
+  // The name is bold; label, phone and note are normal weight. Everything is
+  // escaped here, so cell() must NOT escape again.
+  const personLineHtml = (
     label: string,
-    partner: string,
+    name: string | null,
+    phone: string | null,
     note: string | null,
   ): string | null => {
-    if (!partner && !note) return null;
-    return `${label}: ${partner || '—'}${note ? ` — ${note}` : ''}`;
+    const person = boldName(name, phone);
+    if (!person && !note) return null;
+    return `${esc(label)}: ${person || '—'}${
+      note ? ` — ${esc(note)}` : ''
+    }`;
   };
 
-  /** [place lines, participant lines] for one row. */
+  /** [place lines, participant lines] for one row — as escaped HTML strings. */
   const cells = (i: CoVisitItem): [string[], string[]] => {
     switch (i.kind) {
       case 'field_service': {
-        const place = [placeStr(i, L)].filter(Boolean);
-        const partner = withPhone(
-          i.assigneeName ?? i.assigneeText,
-          i.assigneePhone,
-        );
+        const place = [esc(placeStr(i, L))].filter(Boolean);
+        const name = i.assigneeName ?? i.assigneeText;
         if (i.withWife) {
-          return [place, [personLine(L.together, partner, i.note) ?? L.together]];
+          const line = personLineHtml(L.together, name, i.assigneePhone, i.note);
+          return [place, [line ?? esc(L.together)]];
         }
         const pair = pairOf(i);
         if (pair) {
-          const wifePartner = withPhone(
-            pair.assigneeName ?? pair.assigneeText,
-            pair.assigneePhone,
-          );
           const lines = [
-            personLine(L.coShort, partner, i.note),
-            personLine(L.wifeShort, wifePartner, pair.note),
+            personLineHtml(L.coShort, name, i.assigneePhone, i.note),
+            personLineHtml(
+              L.wifeShort,
+              pair.assigneeName ?? pair.assigneeText,
+              pair.assigneePhone,
+              pair.note,
+            ),
           ].filter((x): x is string => !!x);
           return [place, lines.length > 0 ? lines : ['—']];
         }
-        const single = personLine(L.coShort, partner, i.note);
+        const single = personLineHtml(L.coShort, name, i.assigneePhone, i.note);
         return [place, single ? [single] : ['—']];
       }
       case 'lunch': {
-        const place = [i.assigneeAddress ?? ''].filter(Boolean);
-        const host = withPhone(i.assigneeName ?? i.assigneeText, i.assigneePhone);
+        const place = [esc(i.assigneeAddress ?? '')].filter(Boolean);
+        const host = esc(
+          withPhone(i.assigneeName ?? i.assigneeText, i.assigneePhone),
+        );
         return [place, host ? [host] : ['—']];
       }
       case 'lunch_box': {
-        const who = i.assigneeName ?? i.assigneeText ?? '';
+        const who = esc(i.assigneeName ?? i.assigneeText ?? '');
         return [[], who ? [who] : ['—']];
       }
       case 'pastoral': {
-        const who = withPhone(i.assigneeName, i.assigneePhone);
-        return [i.note ? [i.note] : [], who ? [who] : ['—']];
+        const who = esc(withPhone(i.assigneeName, i.assigneePhone));
+        return [i.note ? [esc(i.note)] : [], who ? [who] : ['—']];
       }
       default: {
-        const place = [placeStr(i, L), i.note ?? ''].filter(Boolean);
+        const place = [esc(placeStr(i, L)), esc(i.note ?? '')].filter(Boolean);
         return [place, []];
       }
     }
   };
   const cell = (lines: string[]): string =>
-    lines.length === 0 ? '' : lines.map((l) => esc(l)).join('<br/>');
+    lines.length === 0 ? '' : lines.join('<br/>');
 
   const dates = Array.from(new Set(visible.map((i) => i.itemDate))).sort();
   const dateCards = dates.map((day) => {
@@ -298,7 +312,8 @@ function overseerPage(
         )
         .map((i) => {
           const [place, who] = cells(i);
-          return `<tr>
+          const rowClass = i.kind === 'lunch' ? ' class="lunch-row"' : '';
+          return `<tr${rowClass}>
 <td class="t">${esc(i.startTime ?? '—')}</td>
 <td class="k">${esc(kindTitle(i.kind, L))}</td>
 <td>${cell(place)}</td>
@@ -431,9 +446,14 @@ export function buildCoScheduleHtml(opts: {
   .chip-name { background: #cffafe; color: #0e7490; font-weight: 700; }
 
   /* Slightly tighter spacing on the overseer page for extra A4 headroom. */
-  .page-second .daycard { margin-bottom: 7px; }
-  .page-second .dt td { padding: 3px 12px; }
-  .page-second .dt th { padding: 4px 12px 3px; }
+  .page-second .daycard { margin-bottom: 5px; }
+  .page-second .dt td { padding: 2px 12px; }
+  .page-second .dt th { padding: 3px 12px 2px; }
+  .page-second .dayhead { padding: 3px 14px; font-size: 12.5px; }
+  .page-second .pagehead { padding-bottom: 6px; margin-bottom: 7px; }
+  /* Premium soft fill for lunch rows so they read as a distinct block. */
+  .lunch-row td { background: #fff7ed; }
+  .lunch-row td.k { color: #c2660c; }
   /* Day cards — clearly separated blocks */
   .daycard {
     border: 1px solid #e2e8f0;
@@ -494,7 +514,7 @@ export function buildCoScheduleHtml(opts: {
   .page-portrait { page: p1; }
   .page-second { page: p2; page-break-before: always; }
   @page p1 { size: A4 portrait; margin: 12mm; }
-  @page p2 { size: A4 portrait; margin: 12mm; }
+  @page p2 { size: A4 portrait; margin: 10mm; }
 </style></head>
 <body>
   ${page1}
