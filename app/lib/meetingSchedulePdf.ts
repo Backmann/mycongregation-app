@@ -11,6 +11,8 @@ import type { EventType } from './api';
 export interface MeetingPdfWeek {
   weekStartDate: string; // YYYY-MM-DD (Monday)
   meetingDateLabel: string; // e.g. "8 июля"
+  /** Optional centered note in the header (e.g. circuit-overseer visit). */
+  headerNote?: string | null;
   /** If set, this week is replaced by a special event (e.g. a convention). */
   event?: {
     typeLabel: string; // "Региональный конгресс"
@@ -135,8 +137,15 @@ export function buildMeetingSchedulePdfHtml(opts: {
     const mid = Math.ceil(allRows.length / 2);
     const left = allRows.slice(0, mid).join('');
     const right = allRows.slice(mid).join('');
+    const header = w.headerNote
+      ? `<div class="wkh wkh-note"><span class="wkh-date">${esc(
+          w.meetingDateLabel,
+        )}</span><span class="wkh-mid">${esc(
+          w.headerNote,
+        )}</span><span class="wkh-date"></span></div>`
+      : `<div class="wkh">${esc(w.meetingDateLabel)}</div>`;
     return `<div class="wk">
-  <div class="wkh">${esc(w.meetingDateLabel)}</div>
+  ${header}
   <div class="cols">
     <table class="col"><colgroup><col class="pc"/><col class="vc"/></colgroup>${left}</table>
     <table class="col"><colgroup><col class="pc"/><col class="vc"/></colgroup>${right}</table>
@@ -181,6 +190,13 @@ export function buildMeetingSchedulePdfHtml(opts: {
     background: #ecfeff; color: #0e7490; font-weight: 700; font-size: 12.5px;
     padding: 5px 12px; border-bottom: 1px solid #cffafe;
   }
+  .wkh-note { display: flex; align-items: baseline; }
+  .wkh-date { flex: 1; }
+  .wkh-mid {
+    flex: 0 0 auto; text-align: center; color: #5b21b6;
+    font-weight: 700; font-size: 11px;
+  }
+  .wkh-note .wkh-date:last-child { text-align: right; }
   .cols { display: flex; gap: 0; }
   /* Special-event banner (e.g. regional convention) replacing a week. */
   .wkh-ev { background: #ede9fe; color: #5b21b6; border-bottom-color: #ddd6fe; }

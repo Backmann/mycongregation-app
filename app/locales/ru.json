@@ -872,7 +872,8 @@
     },
     "minShort": "мин",
     "print": {
-      "midweekTitle": "Встреча в будний день"
+      "midweekTitle": "Встреча в будний день",
+      "coVisitNote": "Посещение районного старейшины"
     }
   },
   "audit": {

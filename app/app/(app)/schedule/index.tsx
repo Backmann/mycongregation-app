@@ -649,16 +649,18 @@ export default function ScheduleIndexScreen() {
       // The midweek meeting moves during a circuit-overseer visit (commonly to
       // Tuesday), stored per-visit on the event. Use the visit's day for that
       // week so the printed date and weekday are correct.
-      const dowForWeek = (mon: Date): number => {
-        if (kind !== 'midweek') return dow;
+      const visitForWeek = (mon: Date) => {
         const monISO = formatDateISO(mon);
         const sunISO = formatDateISO(addDays(mon, 6));
-        const visit = events.find((e) => {
+        return events.find((e) => {
           if (e.type !== 'circuit_overseer_visit') return false;
           const end = e.endDate ?? e.date;
-          // Visit overlaps this week.
-          return e.date <= sunISO && end >= monISO;
+          return e.date <= sunISO && end >= monISO; // visit overlaps this week
         });
+      };
+      const dowForWeek = (mon: Date): number => {
+        if (kind !== 'midweek') return dow;
+        const visit = visitForWeek(mon);
         if (visit) return visit.coMidweekDow ?? 2; // default Tuesday
         return dow;
       };
@@ -666,12 +668,15 @@ export default function ScheduleIndexScreen() {
       const weeks: MeetingPdfWeek[] = mondays.map((mon) => {
         const congress = congressForWeek(mon);
         const weekDow = dowForWeek(mon);
+        const visit = kind === 'midweek' ? visitForWeek(mon) : undefined;
         return {
           weekStartDate: formatDateISO(mon),
           meetingDateLabel: meetingDate(mon, weekDow).toLocaleDateString(
             i18n.language,
             { day: 'numeric', month: 'long' },
           ),
+          headerNote:
+            visit && !congress ? t('schedule.print.coVisitNote') : null,
           event: congress
             ? {
                 typeLabel: t(`specialEvents.types.${congress.type}`),
