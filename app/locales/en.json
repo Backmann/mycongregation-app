@@ -1266,7 +1266,8 @@
       "zsk": "Guide: after the meeting",
       "weekly": "Guide: weekly cleaning",
       "yearly": "Guide: general cleaning"
-    }
+    },
+    "slotColumn": "Cleaning"
   },
   "cleaningGuide": {
     "title": "How to clean",

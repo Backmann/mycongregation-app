@@ -26,6 +26,7 @@ import {
   dutiesApi,
   fieldServiceApi,
   cleaningApi,
+  serviceGroupsApi,
   publisherActivityApi,
   PublisherActivity,
   specialEventsApi,
@@ -73,6 +74,11 @@ import {
   type DutiesPdfWeek,
   type DutiesPdfRow,
 } from '../../../lib/dutiesSchedulePdf';
+import {
+  buildCleaningSchedulePdfHtml,
+  type CleaningPdfWeek,
+  type CleaningPdfRow,
+} from '../../../lib/cleaningSchedulePdf';
 import {
   DutiesSection,
   DUTY_ICONS,
@@ -1043,6 +1049,128 @@ export default function ScheduleIndexScreen() {
       setPrintingDuties(false);
     }
   };
+
+  // Monthly cleaning PDF: a grid of cleaning slots (rows) x weeks (columns) with
+  // the assigned service group per cell. Weeks grouped by Monday. Loads each
+  // week's cleaning assignments (getWeek is per-week) plus the service groups.
+  const [printingCleaning, setPrintingCleaning] = useState(false);
+  const printMonthCleaning = async () => {
+    const win = openPrintWindow();
+    setPrintingCleaning(true);
+    try {
+      const month = weekStart.getMonth();
+      const year = weekStart.getFullYear();
+      const firstOfMonth = new Date(year, month, 1);
+      let m = startOfWeekMonday(firstOfMonth);
+      const mondays: Date[] = [];
+      for (let i = 0; i < 6; i++) {
+        if (m.getMonth() === month && m.getFullYear() === year) {
+          mondays.push(new Date(m));
+        }
+        m = addWeeks(m, 1);
+      }
+      if (mondays.length === 0) {
+        win?.close();
+        return;
+      }
+      const events = specialEventsQuery.data ?? [];
+      const congressNote = (mon: Date): string | null => {
+        const satISO = formatDateISO(addDays(mon, 5));
+        const sunISO = formatDateISO(addDays(mon, 6));
+        const midISO = formatDateISO(addDays(mon, 3));
+        const c = events.find((e) => {
+          if (e.type !== 'regional_convention' && e.type !== 'circuit_assembly')
+            return false;
+          const end = e.endDate ?? e.date;
+          return (
+            (e.date <= sunISO && satISO <= end) ||
+            (e.date <= midISO && end >= midISO)
+          );
+        });
+        return c ? t(`specialEvents.types.${c.type}`) : null;
+      };
+
+      // Load service groups and each week's cleaning assignments in parallel.
+      const [groupsRes, ...weekData] = await Promise.all([
+        serviceGroupsApi.list(),
+        ...mondays.map((mon) => cleaningApi.getWeek(formatDateISO(mon))),
+      ]);
+      const groupsById = new Map(
+        (groupsRes.data ?? []).map((g) => [g.id, g]),
+      );
+
+      const weeks: CleaningPdfWeek[] = mondays.map((mon) => {
+        const sun = addDays(mon, 6);
+        const label = `${mon.toLocaleDateString(i18n.language, {
+          day: 'numeric',
+        })}–${sun.toLocaleDateString(i18n.language, {
+          day: 'numeric',
+          month: 'short',
+        })}`;
+        return {
+          weekStartDate: formatDateISO(mon),
+          label,
+          note: congressNote(mon),
+        };
+      });
+
+      // Cleaning slots, in display order, each a colored row.
+      const slotDefs: { slot: string; color: string }[] = [
+        { slot: 'after_meeting', color: '#0ea5e9' },
+        { slot: 'thorough', color: '#0891b2' },
+        { slot: 'general', color: '#0d9488' },
+      ];
+      const rows: CleaningPdfRow[] = slotDefs.map(({ slot, color }) => {
+        const valueByWeek: Record<string, string | null> = {};
+        mondays.forEach((mon, idx) => {
+          const wk = weekData[idx];
+          const a = (wk?.assignments ?? []).find((x) => x.slotType === slot);
+          if (!a) {
+            valueByWeek[formatDateISO(mon)] = null;
+          } else if (slot === 'general') {
+            // General cleaning is a whole-congregation flag.
+            valueByWeek[formatDateISO(mon)] = t('cleaning.allCongregation');
+          } else {
+            const g = a.serviceGroupId
+              ? groupsById.get(a.serviceGroupId)
+              : null;
+            valueByWeek[formatDateISO(mon)] = g?.name ?? null;
+          }
+        });
+        return {
+          label: t(`cleaning.slots.${slot}`),
+          color,
+          valueByWeek,
+        };
+      });
+
+      const monthLabel = firstOfMonth.toLocaleDateString(i18n.language, {
+        month: 'long',
+        year: 'numeric',
+      });
+      const html = buildCleaningSchedulePdfHtml({
+        weeks,
+        rows,
+        congregationName: meetingSettingsQuery.data?.congregation.name ?? null,
+        hallAddress: meetingVersion?.address ?? null,
+        monthLabel,
+        locale: i18n.language,
+        labels: {
+          title: t('cleaning.title'),
+          slotColumn: t('cleaning.slotColumn'),
+          emptyCell: '—',
+        },
+      });
+      await exportHtmlAsPdf(html, {
+        fileName: t('cleaning.title'),
+        preopenedWindow: win,
+      });
+    } catch {
+      win?.close();
+    } finally {
+      setPrintingCleaning(false);
+    }
+  };
   const draftCount = (list: Assignment[]) =>
     list.filter((x) => String(x.status) === 'draft').length;
   const changedCount = (list: Assignment[]) =>
@@ -1525,6 +1653,12 @@ export default function ScheduleIndexScreen() {
               accent="#0e7490"
               icon="sparkles-outline"
               title={t('cleaning.title')}
+              onPrint={
+                perms.isElder || perms.isAdmin
+                  ? () => printMonthCleaning()
+                  : undefined
+              }
+              printBusy={printingCleaning}
               assigned={0}
               total={0}
               showBadge={false}

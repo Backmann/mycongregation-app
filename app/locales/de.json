@@ -1266,7 +1266,8 @@
       "zsk": "Anleitung: nach der Zusammenkunft",
       "weekly": "Anleitung: wöchentliche Reinigung",
       "yearly": "Anleitung: Grundreinigung"
-    }
+    },
+    "slotColumn": "Reinigung"
   },
   "cleaningGuide": {
     "title": "Richtig reinigen",
