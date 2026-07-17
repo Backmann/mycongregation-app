@@ -202,8 +202,20 @@ function overseerPage(
   locale: string,
   L: CoPdfLabels,
 ): string {
+  // The overseer print copy omits: the wife's rows, document review, personal
+  // lunch-box entries (not part of the official program), and the Tuesday /
+  // Sunday of the visit — those days are printed on the congregation page
+  // (page 1), which is attached alongside.
+  const isTueOrSun = (iso: string): boolean => {
+    const dow = new Date(`${iso}T00:00:00`).getDay(); // 0=Sun .. 6=Sat
+    return dow === 2 || dow === 0;
+  };
   const visible = items.filter(
-    (i) => !i.forWife && i.kind !== 'document_review',
+    (i) =>
+      !i.forWife &&
+      i.kind !== 'document_review' &&
+      i.kind !== 'lunch_box' &&
+      !isTueOrSun(i.itemDate),
   );
   if (visible.length === 0) return '<p class="empty">—</p>';
 
@@ -305,30 +317,7 @@ function overseerPage(
   </table>
 </div>`;
     });
-  // Two explicit columns (flex) so a full week fits one landscape A4 sheet.
-  // Greedily place each day into the currently shorter column (by estimated
-  // height) so heavy days (many rows) don't pile up in one column.
-  const dayHeights = dates.map((day) => {
-    const dayItems = visible.filter((i) => i.itemDate === day);
-    // Rough height: header + each row, with multi-line notes counting more.
-    let h = 1.6;
-    for (const i of dayItems) {
-      const [place, who] = cells(i);
-      const lines = Math.max(place.length, who.length, 1);
-      h += 0.7 + lines * 0.5;
-    }
-    return h;
-  });
-  const colCards: [string[], string[]] = [[], []];
-  const colH = [0, 0];
-  dateCards.forEach((card, idx) => {
-    const target = colH[0] <= colH[1] ? 0 : 1;
-    colCards[target].push(card);
-    colH[target] += dayHeights[idx];
-  });
-  return `<div class="day-grid"><div class="day-col">${colCards[0].join(
-    '\n',
-  )}</div><div class="day-col">${colCards[1].join('\n')}</div></div>`;
+  return dateCards.join('\n');
 }
 
 export function buildCoScheduleHtml(opts: {
@@ -399,7 +388,7 @@ export function buildCoScheduleHtml(opts: {
   )}</span></div>
 </section>`;
 
-  const page2 = `<section class="page page-landscape">
+  const page2 = `<section class="page page-second">
   ${pageHead(L.pageForOverseerTitle, L.coScheduleTitle, true)}
   ${overseerPage(items, locale, L)}
   <div class="foot"><span>mycongregation.org</span><span>${esc(
@@ -441,16 +430,11 @@ export function buildCoScheduleHtml(opts: {
   }
   .chip-name { background: #cffafe; color: #0e7490; font-weight: 700; }
 
+  /* Slightly tighter spacing on the overseer page for extra A4 headroom. */
+  .page-second .daycard { margin-bottom: 7px; }
+  .page-second .dt td { padding: 3px 12px; }
+  .page-second .dt th { padding: 4px 12px 3px; }
   /* Day cards — clearly separated blocks */
-  /* Two-column day layout on the landscape overseer page. */
-  .page-landscape .day-grid { display: flex; gap: 14px; align-items: flex-start; }
-  .page-landscape .day-col { flex: 1; min-width: 0; }
-  .page-landscape { padding: 10px 16px 12px; }
-  .page-landscape .pagehead { padding-bottom: 6px; margin-bottom: 8px; }
-  .page-landscape .daycard { margin-bottom: 8px; }
-  .page-landscape .dayhead { padding: 4px 12px; font-size: 12px; }
-  .page-landscape .dt th { padding: 3px 10px; font-size: 9px; }
-  .page-landscape .dt td { padding: 3px 10px; font-size: 10.5px; }
   .daycard {
     border: 1px solid #e2e8f0;
     border-radius: 12px;
@@ -483,9 +467,9 @@ export function buildCoScheduleHtml(opts: {
 
   /* Page-2 overseer tables */
   .dt { table-layout: fixed; width: 100%; border-collapse: collapse; }
-  .dt col.c1 { width: 54px; }
-  .dt col.c2 { width: 160px; }
-  .dt col.c3 { width: 34%; }
+  .dt col.c1 { width: 46px; }
+  .dt col.c2 { width: 128px; }
+  .dt col.c3 { width: 32%; }
   .dt th {
     text-align: left; font-size: 10px; text-transform: uppercase;
     letter-spacing: 0.4px; color: #94a3b8; font-weight: 700;
@@ -508,9 +492,9 @@ export function buildCoScheduleHtml(opts: {
      German addresses and names fit on one line and the whole day list fits one
      sheet. */
   .page-portrait { page: p1; }
-  .page-landscape { page: p2; page-break-before: always; }
+  .page-second { page: p2; page-break-before: always; }
   @page p1 { size: A4 portrait; margin: 12mm; }
-  @page p2 { size: A4 landscape; margin: 10mm; }
+  @page p2 { size: A4 portrait; margin: 12mm; }
 </style></head>
 <body>
   ${page1}
