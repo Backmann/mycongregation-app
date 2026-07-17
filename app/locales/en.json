@@ -1093,8 +1093,8 @@
     "noDuties": "Duties not filled in yet",
     "warningsTitle": "Note",
     "types": {
-      "security": "Security",
-      "attendant": "Attendant",
+      "security": "Entrance attendant",
+      "attendant": "Hall attendant",
       "microphone": "Microphone",
       "audio": "Audio",
       "video": "Video",
@@ -1108,7 +1108,8 @@
       "has_program_part": "Already has a program part in this meeting",
       "capability_off": "Not marked as able for this duty"
     },
-    "assignee": "Assignee"
+    "assignee": "Assignee",
+    "preparing": "Preparing…"
   },
   "publisherActivity": {
     "thisMeeting": "This meeting:",

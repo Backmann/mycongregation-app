@@ -1093,8 +1093,8 @@
     "noDuties": "Aufgaben noch nicht angelegt",
     "warningsTitle": "Hinweis",
     "types": {
-      "security": "Sicherheit",
-      "attendant": "Ordner",
+      "security": "Ordner am Eingang",
+      "attendant": "Ordner im Saal",
       "microphone": "Mikrofon",
       "audio": "Ton",
       "video": "Video",
@@ -1108,7 +1108,8 @@
       "has_program_part": "Hat bereits einen Programmteil in dieser Zusammenkunft",
       "capability_off": "Nicht als fähig für diese Aufgabe markiert"
     },
-    "assignee": "Zugeteilt an"
+    "assignee": "Zugeteilt an",
+    "preparing": "Wird vorbereitet…"
   },
   "publisherActivity": {
     "thisMeeting": "Dieses Treffen:",

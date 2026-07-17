@@ -182,25 +182,23 @@ export function DutiesSection({
 
         if (list.length === 0) {
           if (!canEdit) return null;
+          // Duties auto-fill on open; show a subtle placeholder meanwhile.
           return (
             <View key={meeting} style={styles.meetingBlock}>
               <View style={styles.dayChip}>
                 <Ionicons name="calendar-outline" size={13} color="#fff" />
                 <Text style={styles.dayChipText}>{meetingLabel}</Text>
               </View>
-              <Pressable
-                style={({ pressed }) => [
-                  styles.fillBtn,
-                  compact && styles.mHorizCompact,
-                  pressed && styles.fillBtnPressed,
-                  pending && styles.disabled,
-                ]}
-                onPress={() => onGenerate(meeting)}
-                disabled={pending}
-              >
-                <Ionicons name="add-circle-outline" size={16} color="#0369a1" />
-                <Text style={styles.fillBtnText}>{t('duties.generate')}</Text>
-              </Pressable>
+              <View style={[styles.fillBtn, compact && styles.mHorizCompact]}>
+                <Ionicons
+                  name="hourglass-outline"
+                  size={16}
+                  color="#94a3b8"
+                />
+                <Text style={[styles.fillBtnText, { color: '#94a3b8' }]}>
+                  {t('duties.preparing')}
+                </Text>
+              </View>
             </View>
           );
         }

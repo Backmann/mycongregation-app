@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useEffect, useRef } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -521,6 +521,35 @@ export default function ScheduleIndexScreen() {
     (e) =>
       e.type === 'regional_convention' || e.type === 'circuit_assembly',
   );
+
+  // Auto-fill duties so the editor is always ready to use (no "Generate" step).
+  // The server generate is idempotent (orIgnore), so this only creates the empty
+  // slots once per meeting; skipped when the meeting is replaced by an event.
+  const autoGenTriedRef = useRef<Set<string>>(new Set());
+  useEffect(() => {
+    if (!canEditDuties || congressThisWeek) return;
+    if (dutiesQuery.isLoading || generateDutiesMutation.isPending) return;
+    const meetings: EventType[] = ['midweek', 'weekend'];
+    for (const m of meetings) {
+      const replaced = m === 'midweek' ? midweekReplacedBy : weekendReplacedBy;
+      if (replaced) continue;
+      const has = duties.some((d) => d.eventType === m);
+      const key = `${weekStartISO}|${m}`;
+      if (!has && !autoGenTriedRef.current.has(key)) {
+        autoGenTriedRef.current.add(key);
+        generateDutiesMutation.mutate(m);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    weekStartISO,
+    duties,
+    canEditDuties,
+    congressThisWeek,
+    midweekReplacedBy,
+    weekendReplacedBy,
+    dutiesQuery.isLoading,
+  ]);
   // Circuit overseer display name (for the assignment sheet).
   const circuitOverseer = coVisitEvent
     ? {
