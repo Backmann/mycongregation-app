@@ -66,7 +66,6 @@ import { exportHtmlAsPdf, openPrintWindow } from '../../../lib/pdf';
 import {
   buildMeetingSchedulePdfHtml,
   type MeetingPdfWeek,
-  type MeetingPdfSection,
   type MeetingPdfPart,
 } from '../../../lib/meetingSchedulePdf';
 import { DutiesSection } from '../../../components/DutiesSection';
@@ -641,43 +640,12 @@ export default function ScheduleIndexScreen() {
       const nameOf = (id: string | null): string | null =>
         id ? (publishersById.get(id)?.displayName ?? null) : null;
 
-      // Build sections from the canonical part list, grouped by subsection in
-      // order, skipping chairman/prayers is NOT done — the board shows all.
-      const parts = PARTS_BY_EVENT[kind] ?? [];
-      const order: string[] = [
-        'opening',
-        'treasures',
-        'apply_yourself',
-        'christian_life',
-      ];
-      const sectionsMap = new Map<string, MeetingPdfPart[]>();
-      for (const p of parts) {
-        const sub = resolveSubsection(p.key);
-        const arr = sectionsMap.get(sub) ?? [];
-        const def = getPartDef(p.key);
-        arr.push({
-          partKey: p.key,
-          label: getPartLabel(p.key),
-          subsection: sub,
-          durationLabel: def?.defaultDurationMin
-            ? `${def.defaultDurationMin} ${t('schedule.minShort')}`
-            : null,
-        });
-        sectionsMap.set(sub, arr);
-      }
-      const sections: MeetingPdfSection[] = order
-        .filter((sub) => sectionsMap.has(sub))
-        .map((sub) => {
-          const meta = SUBSECTIONS[sub as keyof typeof SUBSECTIONS];
-          const labeled = sub !== 'opening'; // opening has no heading
-          return {
-            key: sub,
-            label: labeled ? t(meta.i18nKey) : null,
-            color: meta.color,
-            colorMuted: meta.colorMuted,
-            parts: sectionsMap.get(sub) ?? [],
-          };
-        });
+      // Flat list of parts in canonical order (localized labels).
+      const partDefs = PARTS_BY_EVENT[kind] ?? [];
+      const parts: MeetingPdfPart[] = partDefs.map((p) => ({
+        partKey: p.key,
+        label: getPartLabel(p.key),
+      }));
 
       const cellFor = (weekStart: string, partKey: string) => {
         const a = byWeekPart.get(`${weekStart}|${partKey}`);
@@ -699,7 +667,7 @@ export default function ScheduleIndexScreen() {
       const html = buildMeetingSchedulePdfHtml({
         eventType: kind,
         weeks,
-        sections,
+        parts,
         cellFor,
         congregationName: meetingSettingsQuery.data?.congregation.name ?? null,
         hallAddress: meetingVersion.address ?? null,
@@ -708,8 +676,9 @@ export default function ScheduleIndexScreen() {
         locale: i18n.language,
         labels: {
           title: t('schedule.print.midweekTitle'),
-          subtitleDow: t('schedule.print.midweekDow'),
-          partColumn: t('schedule.print.partColumn'),
+          subtitleDow: viewedMeeting.toLocaleDateString(i18n.language, {
+            weekday: 'long',
+          }),
           emptyCell: '—',
           conductorShort: t('schedule.print.conductorShort'),
           readerShort: t('schedule.print.readerShort'),

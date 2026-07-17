@@ -873,8 +873,6 @@
     "minShort": "мин",
     "print": {
       "midweekTitle": "Встреча в будний день",
-      "midweekDow": "Будний день",
-      "partColumn": "Часть",
       "conductorShort": "рук.",
       "readerShort": "чтец"
     }

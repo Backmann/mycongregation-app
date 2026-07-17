@@ -869,8 +869,6 @@
     "minShort": "min",
     "print": {
       "midweekTitle": "Midweek Meeting",
-      "midweekDow": "Midweek",
-      "partColumn": "Part",
       "conductorShort": "cond.",
       "readerShort": "reader"
     }

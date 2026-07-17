@@ -869,8 +869,6 @@
     "minShort": "Min",
     "print": {
       "midweekTitle": "Zusammenkunft unter der Woche",
-      "midweekDow": "Woche",
-      "partColumn": "Teil",
       "conductorShort": "Ltr.",
       "readerShort": "Leser"
     }

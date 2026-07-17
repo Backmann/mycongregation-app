@@ -1,36 +1,27 @@
-import type { Assignment, EventType } from './api';
+import type { EventType } from './api';
 
 /**
- * Monthly meeting-schedule PDF as a grid: parts down the left, weeks across the
- * top, assignee names (+ themes) in the cells. Designed for the congregation
- * notice board — a public month-at-a-glance sheet that fits one A4 page even
- * with five weeks. No phone numbers or private data, just names, parts, themes.
+ * Monthly meeting-schedule PDF for the congregation notice board. Each week is a
+ * horizontal block (its meeting date as the header) whose parts are laid out in
+ * two columns; four or five such blocks stack down one A4 page. Every part shows
+ * its name, the assigned publisher and — inline, to save height — the theme with
+ * any publication reference stripped. No phone numbers or private data.
  */
 
 export interface MeetingPdfWeek {
   weekStartDate: string; // YYYY-MM-DD (Monday)
-  meetingDateLabel: string; // e.g. "7 июля"
+  meetingDateLabel: string; // e.g. "1 июля"
 }
 
+/** One programme part, in canonical order. */
 export interface MeetingPdfPart {
   partKey: string;
   label: string; // localized part label
-  subsection: string; // grouping key
-  durationLabel?: string | null; // e.g. "10 мин"
-}
-
-export interface MeetingPdfSection {
-  key: string;
-  label: string | null; // null = no heading (opening/closing)
-  color: string;
-  colorMuted: string;
-  parts: MeetingPdfPart[];
 }
 
 export interface MeetingPdfLabels {
   title: string; // "Встреча в будний день"
-  subtitleDow: string; // "Среда" / "Воскресенье"
-  partColumn: string; // "Часть"
+  subtitleDow: string; // "Среда"
   emptyCell: string; // "—"
   conductorShort: string; // "рук."
   readerShort: string; // "чтец"
@@ -52,13 +43,25 @@ function esc(s: string | null | undefined): string {
 }
 
 /**
- * Build the monthly meeting-schedule grid HTML for one event type.
+ * Strip a trailing publication reference in parentheses, e.g.
+ * "Как Иеремия справлялся с унынием? (w07 15/3 10, абз. 3)" ->
+ * "Как Иеремия справлялся с унынием?". Board themes stay short and readable.
+ */
+function stripReference(theme: string | null): string | null {
+  if (!theme) return null;
+  const cleaned = theme.replace(/\s*\([^)]*\)\s*$/, '').trim();
+  return cleaned || null;
+}
+
+/**
+ * Build the monthly meeting-schedule HTML: week blocks, two columns each.
  */
 export function buildMeetingSchedulePdfHtml(opts: {
   eventType: EventType;
   weeks: MeetingPdfWeek[];
-  sections: MeetingPdfSection[];
-  /** assignments[weekStartDate][partKey] -> cell data (name/assistant/theme). */
+  /** Programme parts in display order (already localized). */
+  parts: MeetingPdfPart[];
+  /** assignments[weekStartDate][partKey] -> cell data. */
   cellFor: (weekStartDate: string, partKey: string) => CellData | null;
   congregationName?: string | null;
   hallAddress?: string | null;
@@ -69,7 +72,7 @@ export function buildMeetingSchedulePdfHtml(opts: {
 }): string {
   const {
     weeks,
-    sections,
+    parts,
     cellFor,
     congregationName,
     hallAddress,
@@ -79,77 +82,55 @@ export function buildMeetingSchedulePdfHtml(opts: {
     labels: L,
   } = opts;
 
-  // Always render 5 week columns for a stable layout; empty ones show a dash.
-  const weekCols = weeks.slice(0, 5);
-
-  const cellHtml = (weekStart: string, part: MeetingPdfPart): string => {
+  const personHtml = (weekStart: string, part: MeetingPdfPart): string => {
     const data = cellFor(weekStart, part.partKey);
     if (!data || (!data.name && !data.assistant)) {
       return `<span class="empty">${esc(L.emptyCell)}</span>`;
     }
-    const parts: string[] = [];
+    let who: string;
     if (data.name && data.assistant) {
-      // Conductor / reader style pair (e.g. CBS): name (рук.) / assistant (чтец).
-      parts.push(
-        `<span class="nm">${esc(data.name)}</span> <span class="role">${esc(
-          L.conductorShort,
-        )}</span>`,
-      );
-      parts.push(
-        `<span class="nm">${esc(data.assistant)}</span> <span class="role">${esc(
-          L.readerShort,
-        )}</span>`,
-      );
-    } else if (data.name) {
-      parts.push(`<span class="nm">${esc(data.name)}</span>`);
+      who = `${esc(data.name)} <span class="role">${esc(
+        L.conductorShort,
+      )}</span> / ${esc(data.assistant)} <span class="role">${esc(
+        L.readerShort,
+      )}</span>`;
+    } else {
+      who = esc(data.name ?? data.assistant);
     }
-    let html = parts.join(' / ');
-    if (data.theme) {
-      html += `<span class="theme">${esc(data.theme)}</span>`;
-    }
-    return html;
+    const theme = stripReference(data.theme);
+    return theme
+      ? `${who} <span class="th">${esc(theme)}</span>`
+      : who;
   };
 
-  const bodyRows = sections
-    .map((section) => {
-      const sectionHeading =
-        section.label != null
-          ? `<tr><td colspan="${weekCols.length + 1}" class="sect" style="color:${
-              section.color
-            };background:${section.colorMuted}">${esc(section.label)}</td></tr>`
-          : '';
-      const partRows = section.parts
-        .map((part) => {
-          const cells = weekCols
-            .map(
-              (w) => `<td>${cellHtml(w.weekStartDate, part)}</td>`,
-            )
-            .join('');
-          const dur = part.durationLabel
-            ? `<span class="dur">${esc(part.durationLabel)}</span>`
-            : '';
-          return `<tr>
-<td class="part">${esc(part.label)}${dur}</td>
-${cells}
-</tr>`;
-        })
-        .join('\n');
-      return sectionHeading + '\n' + partRows;
-    })
-    .join('\n');
-
-  const weekHeaders = weekCols
-    .map((w) => `<th class="wk">${esc(w.meetingDateLabel)}</th>`)
-    .join('');
-  // Pad to 5 columns for a stable grid width.
-  const padCols = Array.from({ length: 5 - weekCols.length })
-    .map(() => `<th class="wk">${esc(L.emptyCell)}</th>`)
-    .join('');
+  // A week block: two columns of parts.
+  const weekBlock = (w: MeetingPdfWeek): string => {
+    const mid = Math.ceil(parts.length / 2);
+    const left = parts.slice(0, mid);
+    const right = parts.slice(mid);
+    const rowCount = Math.max(left.length, right.length);
+    const rows: string[] = [];
+    for (let r = 0; r < rowCount; r++) {
+      const cellFor2 = (p: MeetingPdfPart | undefined): string => {
+        if (!p) return '<td></td><td></td>';
+        return `<td class="p">${esc(p.label)}</td><td class="v">${personHtml(
+          w.weekStartDate,
+          p,
+        )}</td>`;
+      };
+      rows.push(`<tr>${cellFor2(left[r])}${cellFor2(right[r])}</tr>`);
+    }
+    return `<div class="wk">
+  <div class="wkh">${esc(w.meetingDateLabel)}</div>
+  <table><colgroup><col class="pc"/><col class="vc"/><col class="pc"/><col class="vc"/></colgroup>${rows.join(
+    '',
+  )}</table>
+</div>`;
+  };
 
   const metaChips = [
     `<span class="chip">${esc(L.subtitleDow)}</span>`,
     timeLabel ? `<span class="chip">${esc(timeLabel)}</span>` : '',
-    `<span class="chip">${esc(monthLabel)}</span>`,
     congregationName ? `<span class="chip">${esc(congregationName)}</span>` : '',
     hallAddress ? `<span class="chip">${esc(hallAddress)}</span>` : '',
   ]
@@ -168,58 +149,47 @@ ${cells}
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
-  .page { padding: 18px 24px 20px; }
-  .pagehead { border-bottom: 3px solid #0e7490; padding-bottom: 10px; margin-bottom: 14px; }
-  .pagehead h1 { font-size: 20px; margin: 0; color: #0e7490; letter-spacing: -0.2px; }
-  .chips { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px; }
+  .page { padding: 14px 18px 16px; }
+  .pagehead { border-bottom: 3px solid #0e7490; padding-bottom: 7px; margin-bottom: 9px; }
+  .pagehead h1 { font-size: 17px; margin: 0; color: #0e7490; letter-spacing: -0.2px; }
+  .chips { margin-top: 7px; display: flex; flex-wrap: wrap; gap: 6px; }
   .chip {
-    display: inline-block; font-size: 11px; color: #334155;
-    background: #f1f5f9; border-radius: 999px; padding: 3px 11px;
+    display: inline-block; font-size: 10.5px; color: #334155;
+    background: #f1f5f9; border-radius: 999px; padding: 3px 10px;
+  }
+  .wk {
+    margin-bottom: 5px; border: 1px solid #e2e8f0; border-radius: 8px;
+    overflow: hidden; page-break-inside: avoid;
+  }
+  .wkh {
+    background: #ecfeff; color: #0e7490; font-weight: 700; font-size: 12px;
+    padding: 4px 11px; border-bottom: 1px solid #cffafe;
   }
   table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-  col.partcol { width: 150px; }
-  th {
-    background: #ecfeff; color: #0e7490; font-weight: 700; font-size: 11.5px;
-    padding: 7px 9px; text-align: left; border: 1px solid #cffafe;
-  }
-  th.wk { text-align: center; }
+  col.pc { width: 20%; }
+  col.vc { width: 30%; }
   td {
-    padding: 6px 9px; border: 1px solid #eef2f6; vertical-align: top;
-    font-size: 11px; word-wrap: break-word; overflow-wrap: break-word;
+    padding: 1.5px 8px; font-size: 9px; vertical-align: top;
+    border-bottom: 1px solid #f6f8fa; word-wrap: break-word; overflow-wrap: break-word;
   }
-  td.part { font-weight: 600; color: #0f172a; background: #fbfdfe; }
-  .dur { color: #94a3b8; font-weight: 500; font-size: 9.5px; display: block; margin-top: 1px; }
-  .sect {
-    font-weight: 700; font-size: 10px; text-transform: uppercase;
-    letter-spacing: 0.4px; padding: 5px 9px; border: 1px solid #e0f2fe;
-  }
-  .nm { color: #0f172a; }
-  .role { color: #94a3b8; font-size: 9.5px; }
-  .theme { color: #64748b; font-size: 9.5px; display: block; margin-top: 1px; }
+  td.p { font-weight: 600; color: #475569; }
+  td.v { color: #0f172a; }
+  .role { color: #94a3b8; font-size: 7.5px; }
+  .th { color: #0e7490; font-size: 8px; font-style: italic; }
   .empty { color: #cbd5e1; }
   .foot {
-    margin-top: 16px; padding-top: 8px; border-top: 1px solid #eef2f6;
-    font-size: 9.5px; color: #94a3b8; display: flex; justify-content: space-between;
+    margin-top: 8px; padding-top: 6px; border-top: 1px solid #eef2f6;
+    font-size: 9px; color: #94a3b8; display: flex; justify-content: space-between;
   }
-  @page { size: A4 portrait; margin: 12mm; }
+  @page { size: A4 portrait; margin: 10mm; }
 </style></head>
 <body>
   <section class="page">
     <header class="pagehead">
-      <h1>${esc(L.title)}</h1>
+      <h1>${esc(L.title)} · ${esc(monthLabel)}</h1>
       <div class="chips">${metaChips}</div>
     </header>
-    <table>
-      <colgroup><col class="partcol"/>${weekCols
-        .map(() => '<col/>')
-        .join('')}${Array.from({ length: 5 - weekCols.length })
-    .map(() => '<col/>')
-    .join('')}</colgroup>
-      <thead><tr><th>${esc(
-        L.partColumn,
-      )}</th>${weekHeaders}${padCols}</tr></thead>
-      <tbody>${bodyRows}</tbody>
-    </table>
+    ${weeks.map(weekBlock).join('\n')}
     <div class="foot"><span>mycongregation.org</span><span>${esc(
       new Date().toLocaleDateString(locale),
     )}</span></div>
