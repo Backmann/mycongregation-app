@@ -868,9 +868,7 @@
     },
     "minShort": "min",
     "print": {
-      "midweekTitle": "Midweek Meeting",
-      "conductorShort": "cond.",
-      "readerShort": "reader"
+      "midweekTitle": "Midweek Meeting"
     }
   },
   "audit": {

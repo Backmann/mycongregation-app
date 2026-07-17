@@ -2,35 +2,38 @@ import type { EventType } from './api';
 
 /**
  * Monthly meeting-schedule PDF for the congregation notice board. Each week is a
- * horizontal block (its meeting date as the header) whose parts are laid out in
- * two columns; four or five such blocks stack down one A4 page. Every part shows
- * its name, the assigned publisher and — inline, to save height — the theme with
- * any publication reference stripped. No phone numbers or private data.
+ * card (its meeting date as the header). Inside, parts are grouped by section
+ * (Treasures / Apply Yourself / Christian Life) with the section's accent color;
+ * each row shows the real part name (from the workbook title) and the assigned
+ * publisher in bold. No phone numbers, no reference codes.
  */
 
 export interface MeetingPdfWeek {
   weekStartDate: string; // YYYY-MM-DD (Monday)
-  meetingDateLabel: string; // e.g. "1 июля"
+  meetingDateLabel: string; // e.g. "8 июля"
 }
 
-/** One programme part, in canonical order. */
-export interface MeetingPdfPart {
-  partKey: string;
-  label: string; // localized part label
+/** A section (colored group of parts), e.g. Treasures / Apply Yourself. */
+export interface MeetingPdfSection {
+  key: string;
+  color: string; // accent (text)
+  colorMuted: string; // soft background
+  /** Part keys belonging to this section, in display order. */
+  partKeys: string[];
 }
 
 export interface MeetingPdfLabels {
-  title: string; // "Встреча в будний день"
-  subtitleDow: string; // "Среда"
-  emptyCell: string; // "—"
-  conductorShort: string; // "рук."
-  readerShort: string; // "чтец"
+  title: string;
+  subtitleDow: string;
+  emptyCell: string;
 }
 
-interface CellData {
+/** Resolved cell for one (week, part): real part name + assignee(s). */
+export interface MeetingCell {
+  /** Real part name from the workbook (falls back to a generic label). */
+  partName: string;
   name: string | null;
   assistant: string | null;
-  theme: string | null;
 }
 
 function esc(s: string | null | undefined): string {
@@ -42,26 +45,23 @@ function esc(s: string | null | undefined): string {
     .replace(/"/g, '&quot;');
 }
 
-/**
- * Build the monthly meeting-schedule HTML: week blocks, two columns each.
- */
 export function buildMeetingSchedulePdfHtml(opts: {
   eventType: EventType;
   weeks: MeetingPdfWeek[];
-  /** Programme parts in display order (already localized). */
-  parts: MeetingPdfPart[];
-  /** assignments[weekStartDate][partKey] -> cell data. */
-  cellFor: (weekStartDate: string, partKey: string) => CellData | null;
+  /** Sections in display order, each listing its part keys. */
+  sections: MeetingPdfSection[];
+  /** Resolve a cell (real name + assignees) for a week + part. */
+  cellFor: (weekStartDate: string, partKey: string) => MeetingCell | null;
   congregationName?: string | null;
   hallAddress?: string | null;
-  monthLabel: string; // e.g. "Июль 2026"
-  timeLabel?: string | null; // e.g. "19:00"
+  monthLabel: string;
+  timeLabel?: string | null;
   locale: string;
   labels: MeetingPdfLabels;
 }): string {
   const {
     weeks,
-    parts,
+    sections,
     cellFor,
     congregationName,
     hallAddress,
@@ -71,43 +71,53 @@ export function buildMeetingSchedulePdfHtml(opts: {
     labels: L,
   } = opts;
 
-  const personHtml = (weekStart: string, part: MeetingPdfPart): string => {
-    const data = cellFor(weekStart, part.partKey);
-    if (!data || (!data.name && !data.assistant)) {
-      return `<span class="empty">${esc(L.emptyCell)}</span>`;
-    }
-    if (data.name && data.assistant) {
-      return `${esc(data.name)} <span class="role">${esc(
-        L.conductorShort,
-      )}</span> / ${esc(data.assistant)} <span class="role">${esc(
-        L.readerShort,
-      )}</span>`;
-    }
-    return esc(data.name ?? data.assistant);
+  // One row: part name (left) + assignees in bold (right). Colored per section.
+  const partRow = (
+    weekStart: string,
+    partKey: string,
+    color: string,
+    muted: string,
+  ): string | null => {
+    const cell = cellFor(weekStart, partKey);
+    if (!cell) return null;
+    const who =
+      cell.name && cell.assistant
+        ? `<b>${esc(cell.name)}</b> / <b>${esc(cell.assistant)}</b>`
+        : cell.name
+          ? `<b>${esc(cell.name)}</b>`
+          : `<span class="empty">${esc(L.emptyCell)}</span>`;
+    return `<tr>
+<td class="pn" style="border-left:3px solid ${color};background:${muted}">${esc(
+      cell.partName,
+    )}</td>
+<td class="who">${who}</td>
+</tr>`;
   };
 
-  // A week block: two columns of parts.
+  // A week card: two columns of section-grouped rows.
   const weekBlock = (w: MeetingPdfWeek): string => {
-    const mid = Math.ceil(parts.length / 2);
-    const left = parts.slice(0, mid);
-    const right = parts.slice(mid);
-    const rowCount = Math.max(left.length, right.length);
-    const rows: string[] = [];
-    for (let r = 0; r < rowCount; r++) {
-      const cellFor2 = (p: MeetingPdfPart | undefined): string => {
-        if (!p) return '<td></td><td></td>';
-        return `<td class="p">${esc(p.label)}</td><td class="v">${personHtml(
+    const allRows: string[] = [];
+    for (const section of sections) {
+      for (const pk of section.partKeys) {
+        const row = partRow(
           w.weekStartDate,
-          p,
-        )}</td>`;
-      };
-      rows.push(`<tr>${cellFor2(left[r])}${cellFor2(right[r])}</tr>`);
+          pk,
+          section.color,
+          section.colorMuted,
+        );
+        if (row) allRows.push(row);
+      }
     }
+    // Split rows across two columns for compactness.
+    const mid = Math.ceil(allRows.length / 2);
+    const left = allRows.slice(0, mid).join('');
+    const right = allRows.slice(mid).join('');
     return `<div class="wk">
   <div class="wkh">${esc(w.meetingDateLabel)}</div>
-  <table><colgroup><col class="pc"/><col class="vc"/><col class="pc"/><col class="vc"/></colgroup>${rows.join(
-    '',
-  )}</table>
+  <div class="cols">
+    <table class="col"><colgroup><col class="pc"/><col class="vc"/></colgroup>${left}</table>
+    <table class="col"><colgroup><col class="pc"/><col class="vc"/></colgroup>${right}</table>
+  </div>
 </div>`;
   };
 
@@ -132,7 +142,7 @@ export function buildMeetingSchedulePdfHtml(opts: {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
-  .page { padding: 14px 18px 16px; }
+  .page { padding: 14px 16px 14px; }
   .pagehead { border-bottom: 3px solid #0e7490; padding-bottom: 7px; margin-bottom: 9px; }
   .pagehead h1 { font-size: 17px; margin: 0; color: #0e7490; letter-spacing: -0.2px; }
   .chips { margin-top: 7px; display: flex; flex-wrap: wrap; gap: 6px; }
@@ -148,17 +158,18 @@ export function buildMeetingSchedulePdfHtml(opts: {
     background: #ecfeff; color: #0e7490; font-weight: 700; font-size: 12.5px;
     padding: 5px 12px; border-bottom: 1px solid #cffafe;
   }
-  table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-  col.pc { width: 20%; }
-  col.vc { width: 30%; }
+  .cols { display: flex; gap: 0; }
+  table.col { width: 50%; border-collapse: collapse; table-layout: fixed; }
+  col.pc { width: 46%; }
+  col.vc { width: 54%; }
   td {
-    padding: 3px 11px; font-size: 10px; vertical-align: top;
-    border-bottom: 1px solid #f6f8fa; word-wrap: break-word; overflow-wrap: break-word;
+    padding: 3px 9px; font-size: 9.5px; vertical-align: top;
+    border-bottom: 1px solid #f1f5f9; word-wrap: break-word; overflow-wrap: break-word;
   }
-  td.p { font-weight: 600; color: #475569; }
-  td.v { color: #0f172a; }
-  .role { color: #94a3b8; font-size: 9px; }
-  .empty { color: #cbd5e1; }
+  td.pn { color: #475569; font-weight: 500; }
+  td.who { color: #0f172a; }
+  td.who b { font-weight: 700; }
+  .empty { color: #cbd5e1; font-weight: 400; }
   .foot {
     margin-top: 8px; padding-top: 6px; border-top: 1px solid #eef2f6;
     font-size: 9px; color: #94a3b8; display: flex; justify-content: space-between;

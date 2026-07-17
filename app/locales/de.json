@@ -868,9 +868,7 @@
     },
     "minShort": "Min",
     "print": {
-      "midweekTitle": "Zusammenkunft unter der Woche",
-      "conductorShort": "Ltr.",
-      "readerShort": "Leser"
+      "midweekTitle": "Zusammenkunft unter der Woche"
     }
   },
   "audit": {

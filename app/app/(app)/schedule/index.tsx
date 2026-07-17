@@ -66,7 +66,6 @@ import { exportHtmlAsPdf, openPrintWindow } from '../../../lib/pdf';
 import {
   buildMeetingSchedulePdfHtml,
   type MeetingPdfWeek,
-  type MeetingPdfPart,
 } from '../../../lib/meetingSchedulePdf';
 import { DutiesSection } from '../../../components/DutiesSection';
 import { FieldServiceSection } from '../../../components/FieldServiceSection';
@@ -643,12 +642,44 @@ export default function ScheduleIndexScreen() {
       const nameOf = (id: string | null): string | null =>
         id ? (publishersById.get(id)?.displayName ?? null) : null;
 
-      // Flat list of parts in canonical order (localized labels).
+      // Real part name from the workbook title (mirrors the on-screen display):
+      // if the title is "<name>: <detail>" use the name before the colon; else
+      // the whole title; else the generic part label.
+      const realPartName = (partKey: string, partTitle: string | null): string => {
+        if (partTitle) {
+          const idx = partTitle.indexOf(': ');
+          if (idx > 0) return partTitle.slice(0, idx);
+          return partTitle;
+        }
+        return getPartLabel(partKey);
+      };
+
+      // Sections in display order with their accent colors and part keys.
       const partDefs = PARTS_BY_EVENT[kind] ?? [];
-      const parts: MeetingPdfPart[] = partDefs.map((p) => ({
-        partKey: p.key,
-        label: getPartLabel(p.key),
-      }));
+      const order: string[] = [
+        'opening',
+        'treasures',
+        'apply_yourself',
+        'christian_life',
+      ];
+      const keysBySection = new Map<string, string[]>();
+      for (const p of partDefs) {
+        const sub = resolveSubsection(p.key);
+        const arr = keysBySection.get(sub) ?? [];
+        arr.push(p.key);
+        keysBySection.set(sub, arr);
+      }
+      const sections = order
+        .filter((sub) => keysBySection.has(sub))
+        .map((sub) => {
+          const meta = SUBSECTIONS[sub as keyof typeof SUBSECTIONS];
+          return {
+            key: sub,
+            color: meta.color,
+            colorMuted: meta.colorMuted,
+            partKeys: keysBySection.get(sub) ?? [],
+          };
+        });
 
       const cellFor = (weekStart: string, partKey: string) => {
         const a = byWeekPart.get(`${weekStart}|${partKey}`);
@@ -656,9 +687,9 @@ export default function ScheduleIndexScreen() {
         const name = a.speakerName || nameOf(a.publisherId);
         const assistant = nameOf(a.assistantPublisherId);
         return {
+          partName: realPartName(partKey, a.partTitle),
           name: name ?? null,
           assistant: assistant ?? null,
-          theme: a.partTitle ?? null,
         };
       };
 
@@ -670,7 +701,7 @@ export default function ScheduleIndexScreen() {
       const html = buildMeetingSchedulePdfHtml({
         eventType: kind,
         weeks,
-        parts,
+        sections,
         cellFor,
         congregationName: meetingSettingsQuery.data?.congregation.name ?? null,
         hallAddress: meetingVersion.address ?? null,
@@ -686,8 +717,6 @@ export default function ScheduleIndexScreen() {
                 })
               : '',
           emptyCell: '—',
-          conductorShort: t('schedule.print.conductorShort'),
-          readerShort: t('schedule.print.readerShort'),
         },
       });
       await exportHtmlAsPdf(html, {
