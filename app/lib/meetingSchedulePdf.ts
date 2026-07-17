@@ -43,17 +43,6 @@ function esc(s: string | null | undefined): string {
 }
 
 /**
- * Strip a trailing publication reference in parentheses, e.g.
- * "Как Иеремия справлялся с унынием? (w07 15/3 10, абз. 3)" ->
- * "Как Иеремия справлялся с унынием?". Board themes stay short and readable.
- */
-function stripReference(theme: string | null): string | null {
-  if (!theme) return null;
-  const cleaned = theme.replace(/\s*\([^)]*\)\s*$/, '').trim();
-  return cleaned || null;
-}
-
-/**
  * Build the monthly meeting-schedule HTML: week blocks, two columns each.
  */
 export function buildMeetingSchedulePdfHtml(opts: {
@@ -87,20 +76,14 @@ export function buildMeetingSchedulePdfHtml(opts: {
     if (!data || (!data.name && !data.assistant)) {
       return `<span class="empty">${esc(L.emptyCell)}</span>`;
     }
-    let who: string;
     if (data.name && data.assistant) {
-      who = `${esc(data.name)} <span class="role">${esc(
+      return `${esc(data.name)} <span class="role">${esc(
         L.conductorShort,
       )}</span> / ${esc(data.assistant)} <span class="role">${esc(
         L.readerShort,
       )}</span>`;
-    } else {
-      who = esc(data.name ?? data.assistant);
     }
-    const theme = stripReference(data.theme);
-    return theme
-      ? `${who} <span class="th">${esc(theme)}</span>`
-      : who;
+    return esc(data.name ?? data.assistant);
   };
 
   // A week block: two columns of parts.
@@ -158,24 +141,23 @@ export function buildMeetingSchedulePdfHtml(opts: {
     background: #f1f5f9; border-radius: 999px; padding: 3px 10px;
   }
   .wk {
-    margin-bottom: 5px; border: 1px solid #e2e8f0; border-radius: 8px;
+    margin-bottom: 7px; border: 1px solid #e2e8f0; border-radius: 8px;
     overflow: hidden; page-break-inside: avoid;
   }
   .wkh {
-    background: #ecfeff; color: #0e7490; font-weight: 700; font-size: 12px;
-    padding: 4px 11px; border-bottom: 1px solid #cffafe;
+    background: #ecfeff; color: #0e7490; font-weight: 700; font-size: 12.5px;
+    padding: 5px 12px; border-bottom: 1px solid #cffafe;
   }
   table { width: 100%; border-collapse: collapse; table-layout: fixed; }
   col.pc { width: 20%; }
   col.vc { width: 30%; }
   td {
-    padding: 1.5px 8px; font-size: 9px; vertical-align: top;
+    padding: 3px 11px; font-size: 10px; vertical-align: top;
     border-bottom: 1px solid #f6f8fa; word-wrap: break-word; overflow-wrap: break-word;
   }
   td.p { font-weight: 600; color: #475569; }
   td.v { color: #0f172a; }
-  .role { color: #94a3b8; font-size: 7.5px; }
-  .th { color: #0e7490; font-size: 8px; font-style: italic; }
+  .role { color: #94a3b8; font-size: 9px; }
   .empty { color: #cbd5e1; }
   .foot {
     margin-top: 8px; padding-top: 6px; border-top: 1px solid #eef2f6;

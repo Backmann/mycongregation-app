@@ -596,22 +596,25 @@ export default function ScheduleIndexScreen() {
     setPrintingMonth(true);
     try {
       // All Mondays whose meeting date falls in the same month as the viewed week.
-      const viewedMeeting = meetingDate(weekStart, dow);
-      const month = viewedMeeting.getMonth();
-      const year = viewedMeeting.getFullYear();
+      // A week belongs to the month of its MONDAY (start of week), matching the
+      // workbook's structure: e.g. 29 Jun–5 Jul belongs to June, 31 Aug–6 Sep to
+      // August — even though the midweek meeting itself may fall in the next
+      // month. The month is taken from the currently viewed week's Monday.
+      const month = weekStart.getMonth();
+      const year = weekStart.getFullYear();
       const mondays: Date[] = [];
-      // Start from the first Monday whose meeting could land in this month.
+      // First Monday of the month's first week: the Monday on/before the 1st.
       const firstOfMonth = new Date(year, month, 1);
       let m = startOfWeekMonday(firstOfMonth);
-      // Walk back one week in case the 1st's week starts in the previous month.
-      m = addWeeks(m, -1);
-      for (let i = 0; i < 8; i++) {
-        const md = meetingDate(m, dow);
-        if (md.getMonth() === month && md.getFullYear() === year) {
+      for (let i = 0; i < 6; i++) {
+        // Keep weeks whose Monday is in this month.
+        if (m.getMonth() === month && m.getFullYear() === year) {
           mondays.push(new Date(m));
         }
         m = addWeeks(m, 1);
       }
+      // viewedMeeting is used only for the month label below.
+      const viewedMeeting = new Date(year, month, 1);
 
       const weeks: MeetingPdfWeek[] = mondays.map((mon) => ({
         weekStartDate: formatDateISO(mon),
@@ -676,9 +679,12 @@ export default function ScheduleIndexScreen() {
         locale: i18n.language,
         labels: {
           title: t('schedule.print.midweekTitle'),
-          subtitleDow: viewedMeeting.toLocaleDateString(i18n.language, {
-            weekday: 'long',
-          }),
+          subtitleDow:
+            mondays.length > 0
+              ? meetingDate(mondays[0], dow).toLocaleDateString(i18n.language, {
+                  weekday: 'long',
+                })
+              : '',
           emptyCell: '—',
           conductorShort: t('schedule.print.conductorShort'),
           readerShort: t('schedule.print.readerShort'),
@@ -909,7 +915,11 @@ export default function ScheduleIndexScreen() {
                     title={getEventTypeLabel('midweek')}
                     meta={meetingDateLabel('midweek')}
                     metaAddress={meetingAddress()}
-                    onPrint={() => printMonthMeeting('midweek')}
+                    onPrint={
+                      perms.isElder || perms.isAdmin
+                        ? () => printMonthMeeting('midweek')
+                        : undefined
+                    }
                     printBusy={printingMonth}
                     assigned={assignedCount(items)}
                     total={badgeParts(items).length}
