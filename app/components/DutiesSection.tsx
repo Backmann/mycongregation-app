@@ -212,6 +212,7 @@ export function DutiesSection({
               <View style={[styles.editList, compact && styles.hPadCompact]}>
                 {list.map((d) => {
                   const di = DUTY_ICONS[d.dutyType];
+                  const assigned = !!d.publisherId;
                   return (
                     <View key={d.id} style={styles.editRow}>
                       {di ? (
@@ -230,6 +231,7 @@ export function DutiesSection({
                       ) : null}
                       <View style={styles.editCell}>
                         <View style={styles.dutyLabelRow}>
+                          {assigned ? <MyBulb size={14} /> : null}
                           <Text style={styles.dutyLabel}>{dutyLabel(d, t)}</Text>
                           {autoDutyIds?.has(d.id) ? (
                             <View style={styles.autoBadge}>
