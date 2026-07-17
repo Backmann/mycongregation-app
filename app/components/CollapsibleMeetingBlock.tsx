@@ -35,6 +35,8 @@ export function CollapsibleMeetingBlock({
   actionLabel,
   onAction,
   actionBusy,
+  onPrint,
+  printBusy,
   initiallyOpen = false,
   showBadge = true,
   accent = DEFAULT_ACCENT,
@@ -51,6 +53,9 @@ export function CollapsibleMeetingBlock({
   actionLabel?: string;
   onAction?: () => void;
   actionBusy?: boolean;
+  /** Optional print action — shows a print icon in the header. */
+  onPrint?: () => void;
+  printBusy?: boolean;
   initiallyOpen?: boolean;
   /** Show the assigned/total progress badge (meetings only). */
   showBadge?: boolean;
@@ -103,6 +108,24 @@ export function CollapsibleMeetingBlock({
             </View>
           ) : null}
         </View>
+        {onPrint ? (
+          <Pressable
+            style={({ pressed }) => [
+              styles.printBtn,
+              pressed && styles.actionBtnPressed,
+              printBusy && styles.actionBtnDisabled,
+            ]}
+            onPress={onPrint}
+            disabled={!!printBusy}
+            hitSlop={8}
+          >
+            <Ionicons
+              name={printBusy ? 'hourglass-outline' : 'print-outline'}
+              size={18}
+              color={accent}
+            />
+          </Pressable>
+        ) : null}
         {actionLabel && onAction ? (
           <Pressable
             style={({ pressed }) => [
@@ -193,6 +216,15 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   actionBtnPressed: { opacity: 0.8 },
+  printBtn: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#f1f5f9',
+    marginRight: 8,
+  },
   actionBtnDisabled: { opacity: 0.5 },
   actionBtnText: { color: '#fff', fontSize: 12, fontWeight: '700', fontFamily: 'Manrope_700Bold',},
   title: {

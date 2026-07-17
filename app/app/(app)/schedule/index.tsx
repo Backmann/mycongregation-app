@@ -58,7 +58,17 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { WeekNavigator } from '../../../components/WeekNavigator';
 import { WeekDrawer } from '../../../components/WeekDrawer';
-import { effectiveVersionFor } from '../../../lib/meeting-schedule';
+import {
+  effectiveVersionFor,
+  meetingDate,
+} from '../../../lib/meeting-schedule';
+import { exportHtmlAsPdf, openPrintWindow } from '../../../lib/pdf';
+import {
+  buildMeetingSchedulePdfHtml,
+  type MeetingPdfWeek,
+  type MeetingPdfSection,
+  type MeetingPdfPart,
+} from '../../../lib/meetingSchedulePdf';
 import { DutiesSection } from '../../../components/DutiesSection';
 import { FieldServiceSection } from '../../../components/FieldServiceSection';
 import { CleaningSection } from '../../../components/CleaningSection';
@@ -574,6 +584,147 @@ export default function ScheduleIndexScreen() {
   };
   const meetingAddress = (): string | null =>
     meetingVersion?.address || null;
+
+  // Print the whole month's midweek meeting programme as a one-page A4 grid
+  // (parts × weeks) for the congregation notice board. Uses the month that the
+  // currently viewed week belongs to.
+  const [printingMonth, setPrintingMonth] = useState(false);
+  const printMonthMeeting = async (kind: 'midweek') => {
+    if (!meetingVersion) return;
+    const dow = kind === 'midweek' ? meetingVersion.midweekDow : null;
+    if (!dow) return;
+    const win = openPrintWindow();
+    setPrintingMonth(true);
+    try {
+      // All Mondays whose meeting date falls in the same month as the viewed week.
+      const viewedMeeting = meetingDate(weekStart, dow);
+      const month = viewedMeeting.getMonth();
+      const year = viewedMeeting.getFullYear();
+      const mondays: Date[] = [];
+      // Start from the first Monday whose meeting could land in this month.
+      const firstOfMonth = new Date(year, month, 1);
+      let m = startOfWeekMonday(firstOfMonth);
+      // Walk back one week in case the 1st's week starts in the previous month.
+      m = addWeeks(m, -1);
+      for (let i = 0; i < 8; i++) {
+        const md = meetingDate(m, dow);
+        if (md.getMonth() === month && md.getFullYear() === year) {
+          mondays.push(new Date(m));
+        }
+        m = addWeeks(m, 1);
+      }
+
+      const weeks: MeetingPdfWeek[] = mondays.map((mon) => ({
+        weekStartDate: formatDateISO(mon),
+        meetingDateLabel: meetingDate(mon, dow).toLocaleDateString(
+          i18n.language,
+          { day: 'numeric', month: 'long' },
+        ),
+      }));
+      if (weeks.length === 0) {
+        win?.close();
+        return;
+      }
+
+      // Load the month's assignments in one range request.
+      const res = await assignmentsApi.list({
+        weekStart: weeks[0].weekStartDate,
+        weekEnd: weeks[weeks.length - 1].weekStartDate,
+        eventType: kind,
+      });
+      const rows = res.data ?? [];
+      // Index by week + partKey for O(1) cell lookup.
+      const byWeekPart = new Map<string, Assignment>();
+      for (const a of rows) {
+        byWeekPart.set(`${a.weekStartDate}|${a.partKey}`, a);
+      }
+      const nameOf = (id: string | null): string | null =>
+        id ? (publishersById.get(id)?.displayName ?? null) : null;
+
+      // Build sections from the canonical part list, grouped by subsection in
+      // order, skipping chairman/prayers is NOT done — the board shows all.
+      const parts = PARTS_BY_EVENT[kind] ?? [];
+      const order: string[] = [
+        'opening',
+        'treasures',
+        'apply_yourself',
+        'christian_life',
+      ];
+      const sectionsMap = new Map<string, MeetingPdfPart[]>();
+      for (const p of parts) {
+        const sub = resolveSubsection(p.key);
+        const arr = sectionsMap.get(sub) ?? [];
+        const def = getPartDef(p.key);
+        arr.push({
+          partKey: p.key,
+          label: getPartLabel(p.key),
+          subsection: sub,
+          durationLabel: def?.defaultDurationMin
+            ? `${def.defaultDurationMin} ${t('schedule.minShort')}`
+            : null,
+        });
+        sectionsMap.set(sub, arr);
+      }
+      const sections: MeetingPdfSection[] = order
+        .filter((sub) => sectionsMap.has(sub))
+        .map((sub) => {
+          const meta = SUBSECTIONS[sub as keyof typeof SUBSECTIONS];
+          const labeled = sub !== 'opening'; // opening has no heading
+          return {
+            key: sub,
+            label: labeled ? t(meta.i18nKey) : null,
+            color: meta.color,
+            colorMuted: meta.colorMuted,
+            parts: sectionsMap.get(sub) ?? [],
+          };
+        });
+
+      const cellFor = (weekStart: string, partKey: string) => {
+        const a = byWeekPart.get(`${weekStart}|${partKey}`);
+        if (!a) return null;
+        const name = a.speakerName || nameOf(a.publisherId);
+        const assistant = nameOf(a.assistantPublisherId);
+        return {
+          name: name ?? null,
+          assistant: assistant ?? null,
+          theme: a.partTitle ?? null,
+        };
+      };
+
+      const monthLabel = viewedMeeting.toLocaleDateString(i18n.language, {
+        month: 'long',
+        year: 'numeric',
+      });
+      const time = (meetingVersion.midweekTime || '').slice(0, 5);
+      const html = buildMeetingSchedulePdfHtml({
+        eventType: kind,
+        weeks,
+        sections,
+        cellFor,
+        congregationName: meetingSettingsQuery.data?.congregation.name ?? null,
+        hallAddress: meetingVersion.address ?? null,
+        monthLabel,
+        timeLabel: time || null,
+        locale: i18n.language,
+        labels: {
+          title: t('schedule.print.midweekTitle'),
+          subtitleDow: t('schedule.print.midweekDow'),
+          partColumn: t('schedule.print.partColumn'),
+          emptyCell: '—',
+          conductorShort: t('schedule.print.conductorShort'),
+          readerShort: t('schedule.print.readerShort'),
+        },
+      });
+      await exportHtmlAsPdf(html, {
+        fileName: t('schedule.print.midweekTitle'),
+        preopenedWindow: win,
+      });
+    } catch {
+      win?.close();
+    } finally {
+      setPrintingMonth(false);
+    }
+  };
   const draftCount = (list: Assignment[]) =>
     list.filter((x) => String(x.status) === 'draft').length;
   const changedCount = (list: Assignment[]) =>
@@ -789,6 +940,8 @@ export default function ScheduleIndexScreen() {
                     title={getEventTypeLabel('midweek')}
                     meta={meetingDateLabel('midweek')}
                     metaAddress={meetingAddress()}
+                    onPrint={() => printMonthMeeting('midweek')}
+                    printBusy={printingMonth}
                     assigned={assignedCount(items)}
                     total={badgeParts(items).length}
                     actionLabel={

@@ -866,7 +866,14 @@
       "button": "Delete part",
       "deleting": "Deleting…"
     },
-    "minShort": "min"
+    "minShort": "min",
+    "print": {
+      "midweekTitle": "Midweek Meeting",
+      "midweekDow": "Midweek",
+      "partColumn": "Part",
+      "conductorShort": "cond.",
+      "readerShort": "reader"
+    }
   },
   "audit": {
     "noReportId": "No report id supplied.",
