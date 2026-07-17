@@ -869,7 +869,8 @@
     "minShort": "min",
     "print": {
       "midweekTitle": "Midweek Meeting",
-      "coVisitNote": "Circuit overseer visit"
+      "coVisitNote": "Circuit overseer visit",
+      "weekendTitle": "Weekend Meeting"
     }
   },
   "audit": {

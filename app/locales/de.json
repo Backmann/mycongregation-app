@@ -869,7 +869,8 @@
     "minShort": "Min",
     "print": {
       "midweekTitle": "Zusammenkunft unter der Woche",
-      "coVisitNote": "Besuch des Kreisaufsehers"
+      "coVisitNote": "Besuch des Kreisaufsehers",
+      "weekendTitle": "Zusammenkunft am Wochenende"
     }
   },
   "audit": {

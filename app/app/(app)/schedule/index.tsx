@@ -587,9 +587,12 @@ export default function ScheduleIndexScreen() {
   // (parts × weeks) for the congregation notice board. Uses the month that the
   // currently viewed week belongs to.
   const [printingMonth, setPrintingMonth] = useState(false);
-  const printMonthMeeting = async (kind: 'midweek') => {
+  const printMonthMeeting = async (kind: 'midweek' | 'weekend') => {
     if (!meetingVersion) return;
-    const dow = kind === 'midweek' ? meetingVersion.midweekDow : null;
+    const dow =
+      kind === 'midweek'
+        ? meetingVersion.midweekDow
+        : meetingVersion.weekendDow;
     if (!dow) return;
     const win = openPrintWindow();
     setPrintingMonth(true);
@@ -741,12 +744,10 @@ export default function ScheduleIndexScreen() {
 
       // Sections in display order with their accent colors and part keys.
       const partDefs = PARTS_BY_EVENT[kind] ?? [];
-      const order: string[] = [
-        'opening',
-        'treasures',
-        'apply_yourself',
-        'christian_life',
-      ];
+      const order: string[] =
+        kind === 'midweek'
+          ? ['opening', 'treasures', 'apply_yourself', 'christian_life']
+          : ['opening', 'public_talk', 'watchtower', 'concluding_talk', 'closing'];
       const keysBySection = new Map<string, string[]>();
       for (const p of partDefs) {
         const sub = resolveSubsection(p.key);
@@ -769,7 +770,15 @@ export default function ScheduleIndexScreen() {
       const cellFor = (weekStart: string, partKey: string) => {
         const a = byWeekPart.get(`${weekStart}|${partKey}`);
         if (!a) return null;
-        const name = a.speakerName || nameOf(a.publisherId);
+        // External public-talk speaker: show name + their congregation.
+        let name: string | null;
+        if (a.speakerName) {
+          name = a.speakerCongregation
+            ? `${a.speakerName} (${a.speakerCongregation})`
+            : a.speakerName;
+        } else {
+          name = nameOf(a.publisherId);
+        }
         const assistant = nameOf(a.assistantPublisherId);
         return {
           partName: realPartName(partKey, a.partTitle),
@@ -782,7 +791,11 @@ export default function ScheduleIndexScreen() {
         month: 'long',
         year: 'numeric',
       });
-      const time = (meetingVersion.midweekTime || '').slice(0, 5);
+      const time = (
+        (kind === 'midweek'
+          ? meetingVersion.midweekTime
+          : meetingVersion.weekendTime) || ''
+      ).slice(0, 5);
       const html = buildMeetingSchedulePdfHtml({
         eventType: kind,
         weeks,
@@ -794,7 +807,10 @@ export default function ScheduleIndexScreen() {
         timeLabel: time || null,
         locale: i18n.language,
         labels: {
-          title: t('schedule.print.midweekTitle'),
+          title:
+            kind === 'midweek'
+              ? t('schedule.print.midweekTitle')
+              : t('schedule.print.weekendTitle'),
           subtitleDow:
             mondays.length > 0
               ? meetingDate(mondays[0], dow).toLocaleDateString(i18n.language, {
@@ -805,7 +821,10 @@ export default function ScheduleIndexScreen() {
         },
       });
       await exportHtmlAsPdf(html, {
-        fileName: t('schedule.print.midweekTitle'),
+        fileName:
+          kind === 'midweek'
+            ? t('schedule.print.midweekTitle')
+            : t('schedule.print.weekendTitle'),
         preopenedWindow: win,
       });
     } catch {
@@ -1091,6 +1110,12 @@ export default function ScheduleIndexScreen() {
                     title={getEventTypeLabel('weekend')}
                     meta={meetingDateLabel('weekend')}
                     metaAddress={meetingAddress()}
+                    onPrint={
+                      perms.isElder || perms.isAdmin
+                        ? () => printMonthMeeting('weekend')
+                        : undefined
+                    }
+                    printBusy={printingMonth}
                     assigned={assignedCount(programItems)}
                     total={badgeParts(programItems).length}
                     actionLabel={
