@@ -1112,7 +1112,8 @@
       "capability_off": "Не отмечен как способный к этой обязанности"
     },
     "assignee": "Кто назначен",
-    "preparing": "Подготовка…"
+    "preparing": "Подготовка…",
+    "dutyColumn": "Обязанность"
   },
   "publisherActivity": {
     "thisMeeting": "На этой встрече:",

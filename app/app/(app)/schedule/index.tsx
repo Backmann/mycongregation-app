@@ -67,7 +67,17 @@ import {
   buildMeetingSchedulePdfHtml,
   type MeetingPdfWeek,
 } from '../../../lib/meetingSchedulePdf';
-import { DutiesSection } from '../../../components/DutiesSection';
+import {
+  buildDutiesSchedulePdfHtml,
+  type DutiesPdfSection,
+  type DutiesPdfWeek,
+  type DutiesPdfRow,
+} from '../../../lib/dutiesSchedulePdf';
+import {
+  DutiesSection,
+  DUTY_ICONS,
+  dutyLabel,
+} from '../../../components/DutiesSection';
 import { FieldServiceSection } from '../../../components/FieldServiceSection';
 import { CleaningSection } from '../../../components/CleaningSection';
 import { CongressWeekBanner } from '../../../components/CongressWeekBanner';
@@ -875,6 +885,164 @@ export default function ScheduleIndexScreen() {
       setPrintingMonth(false);
     }
   };
+
+  // Monthly duties PDF: one page, midweek section on top, weekend below, each a
+  // grid of duty types (rows) x weeks (columns). A week belongs to the month of
+  // its Monday (same rule as the meeting PDF). Convention weeks show "Конгресс".
+  const [printingDuties, setPrintingDuties] = useState(false);
+  const printMonthDuties = async () => {
+    if (!meetingVersion) return;
+    const win = openPrintWindow();
+    setPrintingDuties(true);
+    try {
+      const month = weekStart.getMonth();
+      const year = weekStart.getFullYear();
+      const firstOfMonth = new Date(year, month, 1);
+      let m = startOfWeekMonday(firstOfMonth);
+      const mondays: Date[] = [];
+      for (let i = 0; i < 6; i++) {
+        if (m.getMonth() === month && m.getFullYear() === year) {
+          mondays.push(new Date(m));
+        }
+        m = addWeeks(m, 1);
+      }
+      if (mondays.length === 0) {
+        win?.close();
+        return;
+      }
+      const lastMonday = mondays[mondays.length - 1];
+      const events = specialEventsQuery.data ?? [];
+
+      // A convention covering a week -> that week has no duties ("Конгресс").
+      const congressNote = (mon: Date): string | null => {
+        const satISO = formatDateISO(addDays(mon, 5));
+        const sunISO = formatDateISO(addDays(mon, 6));
+        const midISO = formatDateISO(addDays(mon, 3));
+        const c = events.find((e) => {
+          if (e.type !== 'regional_convention' && e.type !== 'circuit_assembly')
+            return false;
+          const end = e.endDate ?? e.date;
+          return (
+            (e.date <= sunISO && satISO <= end) ||
+            (e.date <= midISO && end >= midISO)
+          );
+        });
+        return c ? t(`specialEvents.types.${c.type}`) : null;
+      };
+
+      // Load the month's duties once (server filters weekStartDate < weekEnd).
+      const res = await dutiesApi.list({
+        weekStart: formatDateISO(mondays[0]),
+        weekEnd: formatDateISO(addWeeks(lastMonday, 1)),
+      });
+      const rows = res ?? [];
+      const nameOf = (id: string | null): string | null =>
+        id ? (publishersById.get(id)?.displayName ?? null) : null;
+
+      const dutyColorOf = (dutyType: string): string =>
+        DUTY_ICONS[dutyType]?.color ?? '#64748b';
+
+      // Build one section (midweek/weekend).
+      const buildSection = (
+        kind: 'midweek' | 'weekend',
+        title: string,
+        accent: string,
+      ): DutiesPdfSection => {
+        const dow =
+          kind === 'midweek'
+            ? meetingVersion.midweekDow
+            : meetingVersion.weekendDow;
+        const weeks: DutiesPdfWeek[] = mondays.map((mon) => ({
+          weekStartDate: formatDateISO(mon),
+          label: meetingDate(mon, dow ?? 3).toLocaleDateString(i18n.language, {
+            day: 'numeric',
+            month: 'short',
+          }),
+          note: congressNote(mon),
+        }));
+
+        // Group this section's duties by a stable row key (type + slot), in the
+        // canonical order, collecting the assignee per week.
+        const forKind = rows.filter((d) => d.eventType === kind);
+        const rowMap = new Map<string, DutiesPdfRow>();
+        const rowOrder: string[] = [];
+        for (const d of forKind) {
+          const key = `${d.dutyType}|${d.slotIndex}`;
+          if (!rowMap.has(key)) {
+            rowMap.set(key, {
+              label: dutyLabel(d, t),
+              color: dutyColorOf(d.dutyType),
+              nameByWeek: {},
+            });
+            rowOrder.push(key);
+          }
+          rowMap.get(key)!.nameByWeek[d.weekStartDate] = nameOf(d.publisherId);
+        }
+        // Sort rows by duty order then slot for a stable layout.
+        const order = [
+          'security',
+          'attendant',
+          'microphone',
+          'av',
+          'zoom',
+          'stage',
+          'ventilation',
+          'custom',
+        ];
+        rowOrder.sort((a, b) => {
+          const [ta, sa] = a.split('|');
+          const [tb, sb] = b.split('|');
+          const oa = order.indexOf(ta);
+          const ob = order.indexOf(tb);
+          return (
+            (oa === -1 ? order.length : oa) - (ob === -1 ? order.length : ob) ||
+            Number(sa) - Number(sb)
+          );
+        });
+        return {
+          title,
+          accent,
+          weeks,
+          rows: rowOrder.map((k) => rowMap.get(k)!),
+        };
+      };
+
+      const sections: DutiesPdfSection[] = [
+        buildSection('midweek', getEventTypeLabel('midweek'), '#0d9488'),
+        buildSection('weekend', getEventTypeLabel('weekend'), '#5b21b6'),
+      ].filter((s) => s.rows.length > 0);
+
+      if (sections.length === 0) {
+        win?.close();
+        return;
+      }
+
+      const monthLabel = firstOfMonth.toLocaleDateString(i18n.language, {
+        month: 'long',
+        year: 'numeric',
+      });
+      const html = buildDutiesSchedulePdfHtml({
+        sections,
+        congregationName: meetingSettingsQuery.data?.congregation.name ?? null,
+        hallAddress: meetingVersion.address ?? null,
+        monthLabel,
+        locale: i18n.language,
+        labels: {
+          title: t('schedule.tabs.duties'),
+          dutyColumn: t('duties.dutyColumn'),
+          emptyCell: '—',
+        },
+      });
+      await exportHtmlAsPdf(html, {
+        fileName: t('schedule.tabs.duties'),
+        preopenedWindow: win,
+      });
+    } catch {
+      win?.close();
+    } finally {
+      setPrintingDuties(false);
+    }
+  };
   const draftCount = (list: Assignment[]) =>
     list.filter((x) => String(x.status) === 'draft').length;
   const changedCount = (list: Assignment[]) =>
@@ -1248,6 +1416,12 @@ export default function ScheduleIndexScreen() {
               accent="#0d9488"
               icon="people-outline"
               title={t('schedule.tabs.duties')}
+              onPrint={
+                perms.isElder || perms.isAdmin
+                  ? () => printMonthDuties()
+                  : undefined
+              }
+              printBusy={printingDuties}
               assigned={0}
               total={0}
               showBadge={false}

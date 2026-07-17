@@ -1108,7 +1108,8 @@
       "capability_off": "Nicht als fähig für diese Aufgabe markiert"
     },
     "assignee": "Zugeteilt an",
-    "preparing": "Wird vorbereitet…"
+    "preparing": "Wird vorbereitet…",
+    "dutyColumn": "Aufgabe"
   },
   "publisherActivity": {
     "thisMeeting": "Dieses Treffen:",

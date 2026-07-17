@@ -17,7 +17,7 @@ import { MyBulb } from './MyBulb';
 import { ChipRow, PersonChip } from './PersonChip';
 
 /** Icon + accent colour per duty type (role circle in the picker). */
-const DUTY_ICONS: Record<
+export const DUTY_ICONS: Record<
   string,
   { icon: keyof typeof Ionicons.glyphMap; color: string }
 > = {

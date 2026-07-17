@@ -1108,7 +1108,8 @@
       "capability_off": "Not marked as able for this duty"
     },
     "assignee": "Assignee",
-    "preparing": "Preparing…"
+    "preparing": "Preparing…",
+    "dutyColumn": "Duty"
   },
   "publisherActivity": {
     "thisMeeting": "This meeting:",
