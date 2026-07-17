@@ -14,6 +14,7 @@ import { PublisherSelector } from './PublisherSelector';
 import { getEventTypeLabel } from '../lib/parts';
 import { useMyPublisher } from '../lib/useMyPublisher';
 import { MyBulb } from './MyBulb';
+import { MyGlowRow } from './MyGlowRow';
 import { ChipRow, PersonChip } from './PersonChip';
 
 /** Icon + accent colour per duty type (role circle in the picker). */
@@ -214,8 +215,15 @@ export function DutiesSection({
                   const di = DUTY_ICONS[d.dutyType];
                   const isMine =
                     !!myPublisherId && d.publisherId === myPublisherId;
+                  const RowWrap = isMine ? MyGlowRow : View;
                   return (
-                    <View key={d.id} style={styles.editRow}>
+                    <RowWrap
+                      key={d.id}
+                      style={[
+                        styles.editRow,
+                        isMine && styles.editRowMine,
+                      ]}
+                    >
                       {di ? (
                         <View
                           style={[
@@ -270,7 +278,7 @@ export function DutiesSection({
                           />
                         </Pressable>
                       )}
-                    </View>
+                    </RowWrap>
                   );
                 })}
 
@@ -297,12 +305,13 @@ export function DutiesSection({
                     : null;
                   const isMine =
                     !!myPublisherId && d.publisherId === myPublisherId;
+                  const RowWrap = isMine ? MyGlowRow : View;
                   return (
-                    <View
+                    <RowWrap
                       key={d.id}
                       style={[
                         styles.row,
-                        isMine && styles.rowMine,
+                        isMine && styles.rowMineGlow,
                         compact && styles.hPadCompact,
                       ]}
                     >
@@ -321,7 +330,7 @@ export function DutiesSection({
                           />
                         )}
                       </ChipRow>
-                    </View>
+                    </RowWrap>
                   );
                 })}
               </View>
@@ -478,7 +487,13 @@ const styles = StyleSheet.create({
     paddingVertical: 1,
   },
   autoBadgeText: { fontSize: 10, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0369a1' },
-  rowMine: { backgroundColor: '#fffbeb' },
+  rowMineGlow: {
+    borderTopWidth: 0,
+    marginHorizontal: 10,
+    marginVertical: 3,
+    paddingHorizontal: 10,
+    borderRadius: 12,
+  },
 
   // editable list
   editList: { paddingHorizontal: 16, gap: 2 },
@@ -489,6 +504,11 @@ const styles = StyleSheet.create({
     paddingVertical: 9,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: '#eef2f6',
+  },
+  editRowMine: {
+    borderTopWidth: 0,
+    paddingHorizontal: 10,
+    marginVertical: 3,
   },
   dutyIcon: {
     width: 34,
