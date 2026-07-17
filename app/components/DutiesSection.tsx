@@ -210,47 +210,66 @@ export function DutiesSection({
 
             {canEdit ? (
               <View style={[styles.editList, compact && styles.hPadCompact]}>
-                {list.map((d) => (
-                  <View key={d.id} style={styles.editRow}>
-                    <View style={styles.editCell}>
-                      <View style={styles.dutyLabelRow}>
-                        <Text style={styles.dutyLabel}>{dutyLabel(d, t)}</Text>
-                        {autoDutyIds?.has(d.id) ? (
-                          <View style={styles.autoBadge}>
-                            <Ionicons name="flash" size={10} color="#0369a1" />
-                            <Text style={styles.autoBadgeText}>
-                              {t('schedule.autoBadge')}
-                            </Text>
-                          </View>
-                        ) : null}
+                {list.map((d) => {
+                  const di = DUTY_ICONS[d.dutyType];
+                  return (
+                    <View key={d.id} style={styles.editRow}>
+                      {di ? (
+                        <View
+                          style={[
+                            styles.dutyIcon,
+                            { backgroundColor: `${di.color}14` },
+                          ]}
+                        >
+                          <Ionicons
+                            name={di.icon}
+                            size={17}
+                            color={di.color}
+                          />
+                        </View>
+                      ) : null}
+                      <View style={styles.editCell}>
+                        <View style={styles.dutyLabelRow}>
+                          <Text style={styles.dutyLabel}>{dutyLabel(d, t)}</Text>
+                          {autoDutyIds?.has(d.id) ? (
+                            <View style={styles.autoBadge}>
+                              <Ionicons name="flash" size={10} color="#0369a1" />
+                              <Text style={styles.autoBadgeText}>
+                                {t('schedule.autoBadge')}
+                              </Text>
+                            </View>
+                          ) : null}
+                        </View>
+                        <PublisherSelector
+                          variant="chip"
+                          emptyLabel={t('duties.unassigned')}
+                          label={dutyLabel(d, t)}
+                          value={d.publisherId}
+                          onChange={(id) => onAssign(d.id, id)}
+                          requiredCapability={capabilityFor(d)}
+                          activityById={activityById}
+                          scopeDutyType={d.dutyType}
+                          currentWeekStart={weekStartISO}
+                          currentEventType={meeting}
+                        />
                       </View>
-                      <PublisherSelector
-                        variant="chip"
-                        emptyLabel={t('duties.unassigned')}
-                        label={dutyLabel(d, t)}
-                        roleIcon={DUTY_ICONS[d.dutyType]?.icon}
-                        roleColor={DUTY_ICONS[d.dutyType]?.color}
-                        value={d.publisherId}
-                        onChange={(id) => onAssign(d.id, id)}
-                        requiredCapability={capabilityFor(d)}
-                        activityById={activityById}
-                        scopeDutyType={d.dutyType}
-                        currentWeekStart={weekStartISO}
-                        currentEventType={meeting}
-                      />
+                      {d.dutyType === 'custom' && (
+                        <Pressable
+                          onPress={() => onRemoveDuty(d.id)}
+                          hitSlop={8}
+                          style={styles.delBtn}
+                          disabled={pending}
+                        >
+                          <Ionicons
+                            name="trash-outline"
+                            size={20}
+                            color="#dc2626"
+                          />
+                        </Pressable>
+                      )}
                     </View>
-                    {d.dutyType === 'custom' && (
-                      <Pressable
-                        onPress={() => onRemoveDuty(d.id)}
-                        hitSlop={8}
-                        style={styles.delBtn}
-                        disabled={pending}
-                      >
-                        <Ionicons name="trash-outline" size={20} color="#dc2626" />
-                      </Pressable>
-                    )}
-                  </View>
-                ))}
+                  );
+                })}
 
                 <Pressable
                   style={({ pressed }) => [
@@ -438,7 +457,13 @@ const styles = StyleSheet.create({
     borderTopColor: '#f1f5f9',
     gap: 6,
   },
-  dutyLabel: { fontSize: 14, color: '#0f172a', flexShrink: 1 },
+  dutyLabel: {
+    fontSize: 13.5,
+    color: '#334155',
+    flexShrink: 1,
+    fontWeight: '600',
+    fontFamily: 'Manrope_600SemiBold',
+  },
   dutyLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   autoBadge: {
     flexDirection: 'row',
@@ -453,10 +478,25 @@ const styles = StyleSheet.create({
   rowMine: { backgroundColor: '#fffbeb' },
 
   // editable list
-  editList: { paddingHorizontal: 16, gap: 4 },
-  editRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  editCell: { flex: 1, gap: 6, paddingVertical: 6 },
-  delBtn: { padding: 6 },
+  editList: { paddingHorizontal: 16, gap: 2 },
+  editRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 11,
+    paddingVertical: 9,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: '#eef2f6',
+  },
+  dutyIcon: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 2,
+  },
+  editCell: { flex: 1, gap: 6, paddingVertical: 2 },
+  delBtn: { padding: 6, marginTop: 2 },
   // two-up on narrow screens: tighten horizontal padding/margins
   hPadCompact: { paddingHorizontal: 8 },
   mHorizCompact: { marginHorizontal: 8 },
