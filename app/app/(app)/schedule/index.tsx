@@ -1058,21 +1058,18 @@ export default function ScheduleIndexScreen() {
     const win = openPrintWindow();
     setPrintingCleaning(true);
     try {
-      const month = weekStart.getMonth();
+      // Print the calendar quarter (3 months) that the viewed week falls in:
+      // Q1 Jan–Mar, Q2 Apr–Jun, Q3 Jul–Sep, Q4 Oct–Dec. Each month is its own
+      // block. Weeks belong to the month of their Monday.
+      const viewedMonth = weekStart.getMonth();
       const year = weekStart.getFullYear();
-      const firstOfMonth = new Date(year, month, 1);
-      let m = startOfWeekMonday(firstOfMonth);
-      const mondays: Date[] = [];
-      for (let i = 0; i < 6; i++) {
-        if (m.getMonth() === month && m.getFullYear() === year) {
-          mondays.push(new Date(m));
-        }
-        m = addWeeks(m, 1);
-      }
-      if (mondays.length === 0) {
-        win?.close();
-        return;
-      }
+      const quarterStartMonth = Math.floor(viewedMonth / 3) * 3;
+      const monthsInQuarter = [
+        quarterStartMonth,
+        quarterStartMonth + 1,
+        quarterStartMonth + 2,
+      ];
+
       const events = specialEventsQuery.data ?? [];
       const congressNote = (mon: Date): string | null => {
         const satISO = formatDateISO(addDays(mon, 5));
@@ -1090,70 +1087,103 @@ export default function ScheduleIndexScreen() {
         return c ? t(`specialEvents.types.${c.type}`) : null;
       };
 
-      // Load service groups and each week's cleaning assignments in parallel.
+      // Mondays of a given month (a week belongs to the month of its Monday).
+      const mondaysOfMonth = (monthIdx: number): Date[] => {
+        const first = new Date(year, monthIdx, 1);
+        let m = startOfWeekMonday(first);
+        const out: Date[] = [];
+        for (let i = 0; i < 6; i++) {
+          if (m.getMonth() === monthIdx && m.getFullYear() === year) {
+            out.push(new Date(m));
+          }
+          m = addWeeks(m, 1);
+        }
+        return out;
+      };
+
+      // Collect every Monday across the quarter, load groups + weeks in parallel.
+      const allMondays: Date[] = monthsInQuarter.flatMap(mondaysOfMonth);
+      if (allMondays.length === 0) {
+        win?.close();
+        return;
+      }
       const [groupsRes, ...weekData] = await Promise.all([
         serviceGroupsApi.list(),
-        ...mondays.map((mon) => cleaningApi.getWeek(formatDateISO(mon))),
+        ...allMondays.map((mon) => cleaningApi.getWeek(formatDateISO(mon))),
       ]);
-      const groupsById = new Map(
-        (groupsRes.data ?? []).map((g) => [g.id, g]),
-      );
-
-      const weeks: CleaningPdfWeek[] = mondays.map((mon) => {
-        const sun = addDays(mon, 6);
-        const label = `${mon.toLocaleDateString(i18n.language, {
-          day: 'numeric',
-        })}–${sun.toLocaleDateString(i18n.language, {
-          day: 'numeric',
-          month: 'short',
-        })}`;
-        return {
-          weekStartDate: formatDateISO(mon),
-          label,
-          note: congressNote(mon),
-        };
+      const groupsById = new Map((groupsRes.data ?? []).map((g) => [g.id, g]));
+      const weekByISO = new Map<string, (typeof weekData)[number]>();
+      allMondays.forEach((mon, idx) => {
+        weekByISO.set(formatDateISO(mon), weekData[idx]);
       });
 
-      // Cleaning slots, in display order, each a colored row.
       const slotDefs: { slot: string; color: string }[] = [
         { slot: 'after_meeting', color: '#0ea5e9' },
         { slot: 'thorough', color: '#0891b2' },
         { slot: 'general', color: '#0d9488' },
       ];
-      const rows: CleaningPdfRow[] = slotDefs.map(({ slot, color }) => {
-        const valueByWeek: Record<string, string | null> = {};
-        mondays.forEach((mon, idx) => {
-          const wk = weekData[idx];
-          const a = (wk?.assignments ?? []).find((x) => x.slotType === slot);
-          if (!a) {
-            valueByWeek[formatDateISO(mon)] = null;
-          } else if (slot === 'general') {
-            // General cleaning is a whole-congregation flag.
-            valueByWeek[formatDateISO(mon)] = t('cleaning.allCongregation');
-          } else {
-            const g = a.serviceGroupId
-              ? groupsById.get(a.serviceGroupId)
-              : null;
-            valueByWeek[formatDateISO(mon)] = g?.name ?? null;
-          }
+
+      const months = monthsInQuarter.map((monthIdx) => {
+        const mondays = mondaysOfMonth(monthIdx);
+        const weeks: CleaningPdfWeek[] = mondays.map((mon) => {
+          const sun = addDays(mon, 6);
+          const label = `${mon.toLocaleDateString(i18n.language, {
+            day: 'numeric',
+          })}–${sun.toLocaleDateString(i18n.language, {
+            day: 'numeric',
+            month: 'short',
+          })}`;
+          return {
+            weekStartDate: formatDateISO(mon),
+            label,
+            note: congressNote(mon),
+          };
+        });
+        const rows: CleaningPdfRow[] = slotDefs.map(({ slot, color }) => {
+          const valueByWeek: Record<string, string | null> = {};
+          mondays.forEach((mon) => {
+            const iso = formatDateISO(mon);
+            const wk = weekByISO.get(iso);
+            const a = (wk?.assignments ?? []).find((x) => x.slotType === slot);
+            if (!a) {
+              valueByWeek[iso] = null;
+            } else if (slot === 'general') {
+              valueByWeek[iso] = t('cleaning.allCongregation');
+            } else {
+              const g = a.serviceGroupId
+                ? groupsById.get(a.serviceGroupId)
+                : null;
+              valueByWeek[iso] = g?.name ?? null;
+            }
+          });
+          return { label: t(`cleaning.slots.${slot}`), color, valueByWeek };
         });
         return {
-          label: t(`cleaning.slots.${slot}`),
-          color,
-          valueByWeek,
+          monthLabel: new Date(year, monthIdx, 1).toLocaleDateString(
+            i18n.language,
+            { month: 'long', year: 'numeric' },
+          ),
+          weeks,
+          rows,
         };
       });
 
-      const monthLabel = firstOfMonth.toLocaleDateString(i18n.language, {
-        month: 'long',
-        year: 'numeric',
-      });
+      // Period label, e.g. "Август — Октябрь 2026".
+      const startName = new Date(year, quarterStartMonth, 1).toLocaleDateString(
+        i18n.language,
+        { month: 'long' },
+      );
+      const endName = new Date(year, quarterStartMonth + 2, 1).toLocaleDateString(
+        i18n.language,
+        { month: 'long' },
+      );
+      const periodLabel = `${startName} — ${endName} ${year}`;
+
       const html = buildCleaningSchedulePdfHtml({
-        weeks,
-        rows,
+        months,
         congregationName: meetingSettingsQuery.data?.congregation.name ?? null,
         hallAddress: meetingVersion?.address ?? null,
-        monthLabel,
+        periodLabel,
         locale: i18n.language,
         labels: {
           title: t('cleaning.title'),
