@@ -16,6 +16,7 @@ import { useMyPublisher } from '../lib/useMyPublisher';
 import { HallPlan } from './HallPlan';
 import { TimeField } from './TimeField';
 import { MyBulb } from './MyBulb';
+import { MyGlowRow } from './MyGlowRow';
 import { ChipRow, PersonChip } from './PersonChip';
 import {
   CleaningAssignment,
@@ -108,10 +109,11 @@ export function CleaningSection({
             !!myGroupId && assigned?.serviceGroupId === myGroupId;
           const isThorough = slot === 'thorough';
           const accent = isThorough ? '#0891b2' : '#0ea5e9';
+          const RowWrap = isMine ? MyGlowRow : View;
           return (
-            <View
+            <RowWrap
               key={slot}
-              style={[styles.slotCard, isMine && styles.slotCardMine]}
+              style={[styles.slotCard, isMine && styles.slotCardMineGlow]}
             >
               <View style={styles.slotCardHead}>
                 <View
@@ -189,7 +191,7 @@ export function CleaningSection({
 
                 <GuideLink freq={isThorough ? 'weekly' : 'zsk'} />
               </View>
-            </View>
+            </RowWrap>
           );
         })}
 
@@ -927,7 +929,7 @@ const styles = StyleSheet.create({
     borderColor: '#e2e8f0',
     padding: 12,
   },
-  slotCardMine: { borderColor: '#fcd34d', backgroundColor: '#fffdf7' },
+  slotCardMineGlow: { marginVertical: 2 },
   slotCardHead: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   slotIcon: {
     width: 32,

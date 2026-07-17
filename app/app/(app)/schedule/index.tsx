@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, useRef } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Animated,
   Platform,
   Pressable,
   RefreshControl,
@@ -97,6 +98,7 @@ import { PublishDialog } from '../../../components/PublishDialog';
 import { NotifyChangesDialog } from '../../../components/NotifyChangesDialog';
 import { useMyPublisher } from '../../../lib/useMyPublisher';
 import { MyBulb } from '../../../components/MyBulb';
+import { useMyGlow } from '../../../components/useMyGlow';
 
 const EVENT_TYPE_ORDER: EventType[] = [
   'midweek',
@@ -2128,6 +2130,7 @@ function AssignmentRow({
     !!myPublisherId &&
     (assignment.publisherId === myPublisherId ||
       assignment.assistantPublisherId === myPublisherId);
+  const glow = useMyGlow(isMine);
   const {
     label: rawPartLabel,
     subtitle: rawSubtitle,
@@ -2186,12 +2189,11 @@ function AssignmentRow({
     );
   }
 
-  return (
+  const inner = (
     <Pressable
       style={({ pressed }) => [
         styles.row,
         accentColor ? { borderLeftWidth: 3, borderLeftColor: accentColor } : null,
-        isMine && styles.rowMine,
         pressed && styles.rowPressed,
       ]}
       onPress={canEdit ? () => onEdit(assignment) : undefined}
@@ -2323,6 +2325,19 @@ function AssignmentRow({
       {canEdit ? <Text style={styles.chevron}>›</Text> : null}
     </Pressable>
   );
+  if (isMine) {
+    return (
+      <Animated.View
+        style={[
+          styles.rowMineGlow,
+          { backgroundColor: glow.backgroundColor, borderColor: glow.borderColor },
+        ]}
+      >
+        {inner}
+      </Animated.View>
+    );
+  }
+  return inner;
 }
 
 const styles = StyleSheet.create({
@@ -2506,7 +2521,12 @@ const styles = StyleSheet.create({
     paddingVertical: 1,
   },
   autoBadgeText: { fontSize: 10, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0369a1' },
-  rowMine: { backgroundColor: '#fffbeb' },
+  rowMineGlow: {
+    borderWidth: 1,
+    borderRadius: 12,
+    marginVertical: 2,
+    overflow: 'hidden',
+  },
   songHint: {
     fontSize: 13,
     color: '#94a3b8',

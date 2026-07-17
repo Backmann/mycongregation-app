@@ -1,18 +1,12 @@
-import { useEffect, useRef } from 'react';
-import {
-  Animated,
-  Easing,
-  StyleProp,
-  StyleSheet,
-  ViewStyle,
-} from 'react-native';
+import { Animated, StyleProp, StyleSheet, ViewStyle } from 'react-native';
+import { useMyGlow } from './useMyGlow';
 
 /**
  * A premium "breathing" amber glow marking the schedule row that belongs to the
- * signed-in publisher. The background and a soft inner border pulse between a
- * barely-there tint and a warm amber, so the row feels alive without stealing
- * attention — the calm counterpart to the pulsing MyBulb. Colour animation
- * can't use the native driver, but a single slow loop stays smooth.
+ * signed-in publisher. Wraps its children in an Animated.View whose background
+ * and soft inner border pulse between a faint tint and warm amber — the calm
+ * counterpart to the pulsing MyBulb. For non-View rows (e.g. a Pressable), use
+ * the useMyGlow() hook directly on an animated component instead.
  */
 export function MyGlowRow({
   children,
@@ -23,38 +17,7 @@ export function MyGlowRow({
   style?: StyleProp<ViewStyle>;
   radius?: number;
 }) {
-  const pulse = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    const loop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulse, {
-          toValue: 1,
-          duration: 1400,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: false,
-        }),
-        Animated.timing(pulse, {
-          toValue: 0,
-          duration: 1400,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: false,
-        }),
-      ]),
-    );
-    loop.start();
-    return () => loop.stop();
-  }, [pulse]);
-
-  const backgroundColor = pulse.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['rgba(245,158,11,0.06)', 'rgba(245,158,11,0.15)'],
-  });
-  const borderColor = pulse.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['rgba(245,158,11,0.18)', 'rgba(245,158,11,0.42)'],
-  });
-
+  const { backgroundColor, borderColor } = useMyGlow(true);
   return (
     <Animated.View
       style={[

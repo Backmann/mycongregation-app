@@ -15,6 +15,7 @@ import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { useMyPublisher } from '../lib/useMyPublisher';
 import { MyBulb } from './MyBulb';
+import { MyGlowRow } from './MyGlowRow';
 import { ChipRow, PersonChip } from './PersonChip';
 import {
   CreateFieldServiceMeetingInput,
@@ -118,8 +119,12 @@ export function FieldServiceSection({
               : null;
             const isMine =
               !!myPublisherId && m.conductorPublisherId === myPublisherId;
+            const RowWrap = isMine ? MyGlowRow : View;
             return (
-              <View key={m.id} style={[styles.row, isMine && styles.rowMine]}>
+              <RowWrap
+                key={m.id}
+                style={[styles.row, isMine && styles.rowMineGlow]}
+              >
                 <View style={styles.rowMain}>
                   <Text style={styles.when}>
                     {t(`fieldService.days.${m.dayOfWeek}`)} · {m.startTime}
@@ -190,7 +195,7 @@ export function FieldServiceSection({
                     </Pressable>
                   </View>
                 )}
-              </View>
+              </RowWrap>
             );
           })}
         </View>
@@ -840,7 +845,7 @@ const styles = StyleSheet.create({
   },
   toggleLabel: { fontSize: 14, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0f172a' },
   toggleHint: { fontSize: 12, color: '#64748b', marginTop: 2 },
-  rowMine: { backgroundColor: '#fffbeb' },
+  rowMineGlow: { borderRadius: 12, marginVertical: 2 },
   address: { fontSize: 13, color: '#475569' },
   topic: { fontSize: 13, color: '#64748b', fontStyle: 'italic' },
   link: { fontSize: 13, color: '#0369a1', fontWeight: '600', fontFamily: 'Manrope_600SemiBold', marginTop: 2 },

@@ -37,6 +37,7 @@ import { buildFieldServicePdfHtml } from '../../../lib/fieldServicePdf';
 import type { FsPdfMonth } from '../../../lib/fieldServicePdf';
 import { exportHtmlAsPdf } from '../../../lib/pdf';
 import { MyBulb } from '../../../components/MyBulb';
+import { MyGlowRow } from '../../../components/MyGlowRow';
 import { ChipRow, PersonChip } from '../../../components/PersonChip';
 import { parseISODate, addDays, formatDateISO } from '../../../lib/dates';
 
@@ -484,8 +485,9 @@ export default function FieldServiceMeetingsScreen() {
                 const isMine =
                   !!myPublisherId && mt.conductorPublisherId === myPublisherId;
                 const dISO = meetingDateISO(mt);
+                const RowWrap = isMine ? MyGlowRow : View;
                 return (
-                  <View key={mt.id} style={[styles.card, isMine && styles.cardMine]}>
+                  <RowWrap key={mt.id} style={[styles.card, isMine && styles.cardMineGlow]}>
                     <Pressable
                       style={styles.cardMain}
                       onPress={() => canEdit && setTarget(mt)}
@@ -554,7 +556,7 @@ export default function FieldServiceMeetingsScreen() {
                         />
                       </Pressable>
                     )}
-                  </View>
+                  </RowWrap>
                 );
               })
             )}
@@ -945,7 +947,7 @@ const styles = StyleSheet.create({
     padding: 14,
     marginBottom: 10,
   },
-  cardMine: { borderColor: '#fbbf24', backgroundColor: '#fffbeb' },
+  cardMineGlow: { marginVertical: 2 },
   cardMain: { flex: 1, gap: 4 },
   when: { fontSize: 14, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0f172a' },
   generalBadge: {
