@@ -1110,7 +1110,8 @@
     "preparing": "Preparing…",
     "dutyColumn": "Duty",
     "today": "Today",
-    "nextUp": "Next"
+    "nextUp": "Next",
+    "past": "Past"
   },
   "publisherActivity": {
     "thisMeeting": "This meeting:",

@@ -1114,7 +1114,8 @@
     "preparing": "Подготовка…",
     "dutyColumn": "Обязанность",
     "today": "Сегодня",
-    "nextUp": "Ближайшая"
+    "nextUp": "Ближайшая",
+    "past": "Прошедшая"
   },
   "publisherActivity": {
     "thisMeeting": "На этой встрече:",

@@ -599,10 +599,12 @@ export default function ScheduleIndexScreen() {
   useEffect(() => {
     if (!canEditDuties || congressThisWeek) return;
     if (dutiesQuery.isLoading || generateDutiesMutation.isPending) return;
-    const meetings: EventType[] = ['midweek', 'weekend'];
+    const meetings: ('midweek' | 'weekend')[] = ['midweek', 'weekend'];
     for (const m of meetings) {
       const replaced = m === 'midweek' ? midweekReplacedBy : weekendReplacedBy;
       if (replaced) continue;
+      // Past meetings are frozen — generating there would only be rejected.
+      if (meetingLocked(m)) continue;
       const has = duties.some((d) => d.eventType === m);
       const key = `${weekStartISO}|${m}`;
       if (!has && !autoGenTriedRef.current.has(key)) {
@@ -715,6 +717,12 @@ export default function ScheduleIndexScreen() {
       .sort((a, b) => a.iso!.localeCompare(b.iso!));
     return ahead[0]?.m ?? null;
   })();
+  // A meeting's duties are history from midnight after its own day: the server
+  // refuses changes, so the UI must not offer them either.
+  const meetingLocked = (kind: 'midweek' | 'weekend'): boolean => {
+    const iso = meetingDateISO(kind);
+    return !!iso && iso < todayISO;
+  };
   const nextDutyIsToday =
     !!nextDutyMeeting && meetingDateISO(nextDutyMeeting) === todayISO;
 
@@ -1719,12 +1727,13 @@ export default function ScheduleIndexScreen() {
               <DutiesSection
                 only={meeting}
                 dateLabel={meetingDateLabel(meeting)}
+                locked={meetingLocked(meeting)}
                 nextUp={nextDutyMeeting === meeting}
                 nextUpToday={nextDutyIsToday}
                 duties={duties}
                 autoDutyIds={autoDutyIds}
                 publishersById={publishersById}
-                canEdit={canEditDuties}
+                canEdit={canEditDuties && !meetingLocked(meeting)}
                 compact={dutiesNarrow}
                 pending={
                   generateDutiesMutation.isPending ||

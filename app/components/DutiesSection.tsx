@@ -89,6 +89,8 @@ type Props = {
   hideHeader?: boolean;
   /** Tighten horizontal padding/gaps (e.g. when shown two-up on a phone). */
   compact?: boolean;
+  /** The meeting has taken place: the card becomes a muted, read-only record. */
+  locked?: boolean;
   /** Date line under the card title, e.g. "среда, 22 июля · 19:00". */
   dateLabel?: string | null;
   /** This is the meeting still ahead — shown first on phones and marked. */
@@ -114,6 +116,7 @@ export function DutiesSection({
   only,
   hideHeader,
   compact,
+  locked,
   dateLabel,
   nextUp,
   nextUpToday,
@@ -155,13 +158,22 @@ export function DutiesSection({
     assigned: number,
     total: number,
   ) => {
-    const accent = meeting === 'midweek' ? '#0d9488' : '#5b21b6';
+    // A past meeting is a record, not a task: everything cools down to grey and
+    // a small lock replaces the "next up" marker.
+    const accent = locked
+      ? '#94a3b8'
+      : meeting === 'midweek'
+        ? '#0d9488'
+        : '#5b21b6';
     const done = total > 0 && assigned === total;
     return (
-      <View style={styles.cardHead}>
+      <View style={[styles.cardHead, locked && styles.cardHeadLocked]}>
         <View style={[styles.cardDot, { backgroundColor: accent }]} />
         <View style={styles.cardTitleWrap}>
-          <Text style={styles.cardTitle} numberOfLines={1}>
+          <Text
+            style={[styles.cardTitle, locked && styles.cardTitleLocked]}
+            numberOfLines={1}
+          >
             {label}
           </Text>
           {dateLabel ? (
@@ -170,7 +182,12 @@ export function DutiesSection({
             </Text>
           ) : null}
         </View>
-        {nextUp ? (
+        {locked ? (
+          <View style={styles.pastChip}>
+            <Ionicons name="lock-closed" size={10} color="#64748b" />
+            <Text style={styles.pastChipText}>{t('duties.past')}</Text>
+          </View>
+        ) : nextUp ? (
           <View style={[styles.nextChip, { backgroundColor: `${accent}14` }]}>
             <Text style={[styles.nextChipText, { color: accent }]}>
               {nextUpToday ? t('duties.today') : t('duties.nextUp')}
@@ -181,13 +198,19 @@ export function DutiesSection({
           <View
             style={[
               styles.cardCount,
-              { backgroundColor: done ? '#dcfce7' : `${accent}14` },
+              {
+                backgroundColor: locked
+                  ? '#f1f5f9'
+                  : done
+                    ? '#dcfce7'
+                    : `${accent}14`,
+              },
             ]}
           >
             <Text
               style={[
                 styles.cardCountText,
-                { color: done ? '#166534' : accent },
+                { color: locked ? '#64748b' : done ? '#166534' : accent },
               ]}
             >
               {assigned}/{total}
@@ -266,7 +289,7 @@ export function DutiesSection({
         }
 
         return (
-          <View key={meeting} style={styles.card}>
+          <View key={meeting} style={[styles.card, locked && styles.cardLocked]}>
             {cardHead(
               meeting,
               meetingLabel,
@@ -370,7 +393,9 @@ export function DutiesSection({
                     ? publishersById.get(d.publisherId) ?? null
                     : null;
                   const isMine =
-                    !!myPublisherId && d.publisherId === myPublisherId;
+                    !locked &&
+                    !!myPublisherId &&
+                    d.publisherId === myPublisherId;
                   const RowWrap = isMine ? MyGlowRow : View;
                   return (
                     <RowWrap
@@ -542,6 +567,25 @@ const styles = StyleSheet.create({
     borderRadius: 13,
     backgroundColor: '#fff',
     overflow: 'hidden',
+  },
+  cardLocked: { backgroundColor: '#fcfdfe', borderColor: '#eef2f6' },
+  cardHeadLocked: { backgroundColor: '#f3f5f8' },
+  cardTitleLocked: { color: '#64748b' },
+  pastChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#f1f5f9',
+    borderRadius: 999,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+  },
+  pastChipText: {
+    fontSize: 10,
+    fontWeight: '800',
+    fontFamily: 'Manrope_800ExtraBold',
+    color: '#64748b',
+    textTransform: 'uppercase',
   },
   cardHead: {
     flexDirection: 'row',
