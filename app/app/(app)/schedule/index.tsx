@@ -2445,7 +2445,10 @@ const styles = StyleSheet.create({
   dutiesRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 16 },
   // On phones the two meetings stack instead of sharing the width: side by side
   // each block gets ~166px, which breaks labels and squeezes the selectors.
-  dutiesRowNarrow: { flexDirection: 'column', gap: 0 },
+  // 'stretch' matters: once the direction flips to a column, the row's
+  // 'flex-start' would start governing the horizontal axis and each card would
+  // shrink to its content and hug the left edge instead of filling the width.
+  dutiesRowNarrow: { flexDirection: 'column', alignItems: 'stretch', gap: 0 },
   dutiesCol: { flex: 1, minWidth: 0 },
   container: { flex: 1, backgroundColor: '#f1f5f9' },
   overline: {
