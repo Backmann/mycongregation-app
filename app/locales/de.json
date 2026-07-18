@@ -1784,7 +1784,8 @@
       "cart": "Trolley",
       "field_service": "Predigtdienst",
       "outgoing_talk": "Vortrag in Versammlung",
-      "co_lunch": "Mittagessen (KA)"
+      "co_lunch": "Mittagessen (KA)",
+      "co_lunch_box": "Lunchpaket"
     },
     "dutyTypes": {
       "security": "Ordner am Eingang",
@@ -1821,7 +1822,8 @@
       "youConduct": "Du leitest diese Zusammenkunft"
     },
     "coLunch": {
-      "title": "Mittagessen organisieren (KA-Besuch)"
+      "lunch": "Mittagessen organisieren (KA-Besuch)",
+      "lunchBox": "Lunchpaket (KA-Besuch)"
     },
     "cleaning": {
       "thoroughGroup": "Eure Gruppe reinigt diese Woche den Saal",

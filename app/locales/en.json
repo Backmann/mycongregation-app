@@ -1784,7 +1784,8 @@
       "cart": "cart",
       "field_service": "field service",
       "outgoing_talk": "talk at congregation",
-      "co_lunch": "CO lunch"
+      "co_lunch": "CO lunch",
+      "co_lunch_box": "lunch box"
     },
     "dutyTypes": {
       "security": "Entrance attendant",
@@ -1821,7 +1822,8 @@
       "youConduct": "You conduct this meeting"
     },
     "coLunch": {
-      "title": "Organizing lunch (CO visit)"
+      "lunch": "Organising lunch (CO visit)",
+      "lunchBox": "Lunch box (CO visit)"
     },
     "cleaning": {
       "thoroughGroup": "Your group cleans the hall this week",

@@ -167,7 +167,12 @@ export function taskVisual(
 /** Row title: part title, translated duty/cleaning, "you conduct" etc. */
 export function taskTitle(item: MyAssignmentItem, t: TFunc): string {
   if (item.kind === 'duty') {
-    return t(`home.dutyTypes.${item.label}`, item.label);
+    const label = t(`home.dutyTypes.${item.label}`, item.label);
+    // Microphones are numbered on the schedule; keep the home card as precise.
+    if (item.label === 'microphone' && item.slotIndex !== undefined) {
+      return `${label} ${item.slotIndex + 1}`;
+    }
+    return label;
   }
   if (item.kind === 'cleaning') {
     // Cleaning is group work, not a personal assignment — frame it as a
@@ -209,7 +214,11 @@ export function taskTitle(item: MyAssignmentItem, t: TFunc): string {
     return t('home.fieldService.leading');
   }
   if (item.kind === 'co_lunch') {
-    return t('home.coLunch.title');
+    // A lunch and a lunch box are two different things to organise; the server
+    // sends which one in `label`.
+    return item.label === 'lunch_box'
+      ? t('home.coLunch.lunchBox')
+      : t('home.coLunch.lunch');
   }
   return item.label;
 }
@@ -248,6 +257,12 @@ export function taskMeta(r: RefinedTask, t: TFunc, locale: string): string {
     (r.item.eventType === 'midweek' || r.item.eventType === 'weekend')
   ) {
     bits.push(t(`home.eventTypes.${r.item.eventType}`));
+  } else if (r.item.kind === 'co_lunch') {
+    bits.push(
+      r.item.label === 'lunch_box'
+        ? t('home.kinds.co_lunch_box')
+        : t('home.kinds.co_lunch'),
+    );
   } else {
     bits.push(t(`home.kinds.${r.item.kind}`));
   }

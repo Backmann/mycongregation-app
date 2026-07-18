@@ -1801,6 +1801,8 @@ export interface MyAssignmentItem {
   timeEnd?: string;
   endTime?: string;
   label: string;
+  /** Duty slot number (microphones are numbered 1..n on screen). */
+  slotIndex?: number;
   windows?: number[];
   thoroughPlannedAt?: string;
   location?: string;
