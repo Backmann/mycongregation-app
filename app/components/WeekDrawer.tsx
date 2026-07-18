@@ -15,7 +15,8 @@ import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ru';
 import 'dayjs/locale/de';
-import { assignmentsApi } from '../lib/api';
+import { assignmentsApi, meApi, type MyWeekMarks } from '../lib/api';
+import { MyDot } from './MyDot';
 import { isSameWeek, startOfWeekMonday } from '../lib/dates';
 
 type Kind = 'midweek' | 'weekend';
@@ -68,6 +69,18 @@ export function WeekDrawer({
     queryFn: () => assignmentsApi.publishedWeeks(),
     enabled: visible,
   });
+  // Weeks where the signed-in publisher has a part, a duty or their group's
+  // cleaning — rendered as small coloured dots next to each entry.
+  const myWeeksQuery = useQuery({
+    queryKey: ['me', 'weeks'],
+    queryFn: () => meApi.weeks(),
+    enabled: visible,
+  });
+  const marksByWeek = useMemo(() => {
+    const m = new Map<string, MyWeekMarks>();
+    for (const r of myWeeksQuery.data ?? []) m.set(r.weekStartDate, r);
+    return m;
+  }, [myWeeksQuery.data]);
 
   useEffect(() => {
     Animated.timing(slide, {
@@ -119,6 +132,22 @@ export function WeekDrawer({
     return `${start.format('D MMM')} – ${end.format('D MMM')}`;
   };
 
+  // Teal = a meeting part, amber = a duty, violet = cleaning (own group).
+  const renderDots = (weekStartIso: string) => {
+    const m = marksByWeek.get(weekStartIso);
+    if (!m) return null;
+    const hasPart = kind === 'midweek' ? m.midweekParts : m.weekendParts;
+    const hasDuty = kind === 'midweek' ? m.midweekDuties : m.weekendDuties;
+    if (!hasPart && !hasDuty && !m.cleaning) return null;
+    return (
+      <View style={styles.dots}>
+        {hasPart ? <MyDot size={7} color="#0e7490" /> : null}
+        {hasDuty ? <MyDot size={7} color="#f59e0b" /> : null}
+        {m.cleaning ? <MyDot size={7} color="#7c3aed" /> : null}
+      </View>
+    );
+  };
+
   const renderEntry = (e: MeetingEntry, isCurrent: boolean) => (
     <Pressable
       key={e.weekStartDate}
@@ -162,6 +191,7 @@ export function WeekDrawer({
           <Text style={styles.coBadgeText}>{t('weekDrawer.coShort')}</Text>
         </View>
       ) : null}
+      {renderDots(e.weekStartDate)}
     </Pressable>
   );
 
@@ -353,6 +383,7 @@ const styles = StyleSheet.create({
   },
   rowDateCurrent: { color: '#0C447C' },
   rowWeek: { fontSize: 10.5, color: '#94a3b8', marginTop: 1 },
+  dots: { flexDirection: 'row', alignItems: 'center', marginLeft: -2 },
   coBadge: {
     backgroundColor: '#ecfeff',
     borderRadius: 999,

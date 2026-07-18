@@ -15,7 +15,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMyPublisher } from '../lib/useMyPublisher';
 import { HallPlan } from './HallPlan';
 import { TimeField } from './TimeField';
-import { MyBulb } from './MyBulb';
+import { MyDot } from './MyDot';
 import { MyGlowRow } from './MyGlowRow';
 import { ChipRow, PersonChip } from './PersonChip';
 import {
@@ -131,7 +131,7 @@ export function CleaningSection({
                 </View>
                 <View style={{ flex: 1 }}>
                   <View style={styles.slotTitleRow}>
-                    {isMine ? <MyBulb size={13} /> : null}
+                    {isMine ? <MyDot /> : null}
                     <Text style={styles.slotCardTitle}>
                       {t(`cleaning.slots.${slot}`)}
                     </Text>

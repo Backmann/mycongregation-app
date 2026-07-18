@@ -36,7 +36,7 @@ import { FieldServiceGenerateModal } from '../../../components/FieldServiceGener
 import { buildFieldServicePdfHtml } from '../../../lib/fieldServicePdf';
 import type { FsPdfMonth } from '../../../lib/fieldServicePdf';
 import { exportHtmlAsPdf } from '../../../lib/pdf';
-import { MyBulb } from '../../../components/MyBulb';
+import { MyDot } from '../../../components/MyDot';
 import { MyGlowRow } from '../../../components/MyGlowRow';
 import { ChipRow, PersonChip } from '../../../components/PersonChip';
 import { parseISODate, addDays, formatDateISO } from '../../../lib/dates';
@@ -506,7 +506,7 @@ export default function FieldServiceMeetingsScreen() {
                         </View>
                       ) : null}
                       <ChipRow>
-                        {isMine ? <MyBulb size={15} /> : null}
+                        {isMine ? <MyDot /> : null}
                         {conductor ? (
                           <PersonChip
                             label={conductor.displayName}

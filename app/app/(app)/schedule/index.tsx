@@ -104,7 +104,7 @@ import { AssignmentSheet } from '../../../components/AssignmentSheet';
 import { PublishDialog } from '../../../components/PublishDialog';
 import { NotifyChangesDialog } from '../../../components/NotifyChangesDialog';
 import { useMyPublisher } from '../../../lib/useMyPublisher';
-import { MyBulb } from '../../../components/MyBulb';
+import { MyDot } from '../../../components/MyDot';
 import { useMyGlow } from '../../../components/useMyGlow';
 
 const EVENT_TYPE_ORDER: EventType[] = [
@@ -2321,7 +2321,7 @@ function AssignmentRow({
           </Text>
         ) : null}
         <View style={styles.partLabelRow}>
-          {isMine ? <MyBulb /> : null}
+          {isMine ? <MyDot /> : null}
           <Text style={styles.partLabel}>{partLabel}</Text>
           {isAuto ? (
             <View style={styles.autoBadge}>

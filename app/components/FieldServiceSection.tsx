@@ -14,7 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { useMyPublisher } from '../lib/useMyPublisher';
-import { MyBulb } from './MyBulb';
+import { MyDot } from './MyDot';
 import { MyGlowRow } from './MyGlowRow';
 import { ChipRow, PersonChip } from './PersonChip';
 import {
@@ -138,7 +138,7 @@ export function FieldServiceSection({
                     </View>
                   ) : null}
                   <ChipRow>
-                    {isMine ? <MyBulb size={15} /> : null}
+                    {isMine ? <MyDot /> : null}
                     {conductor ? (
                       <PersonChip
                         label={conductor.displayName}

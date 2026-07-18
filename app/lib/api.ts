@@ -1852,7 +1852,21 @@ export const backupsApi = {
   },
 };
 
+/** Weeks where the signed-in publisher has something on (week drawer marks). */
+export interface MyWeekMarks {
+  weekStartDate: string;
+  midweekParts: boolean;
+  midweekDuties: boolean;
+  weekendParts: boolean;
+  weekendDuties: boolean;
+  cleaning: boolean;
+}
+
 export const meApi = {
+  async weeks(): Promise<MyWeekMarks[]> {
+    const { data } = await api.get<MyWeekMarks[]>('/me/weeks');
+    return data;
+  },
   async assignments(): Promise<MyAssignmentsResponse> {
     const { data } = await api.get<MyAssignmentsResponse>('/me/assignments');
     return data;

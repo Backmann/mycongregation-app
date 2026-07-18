@@ -63,7 +63,7 @@ export function PersonChip({
   );
 }
 
-/** Wrapping row that lays out one or more chips (and an optional MyBulb). */
+/** Wrapping row that lays out one or more chips (and an optional MyDot). */
 export function ChipRow({
   children,
   style,

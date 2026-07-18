@@ -13,7 +13,7 @@ import { Duty, DutyType, Publisher, PublisherActivity } from '../lib/api';
 import { PublisherSelector } from './PublisherSelector';
 import { getEventTypeLabel } from '../lib/parts';
 import { useMyPublisher } from '../lib/useMyPublisher';
-import { MyBulb } from './MyBulb';
+import { MyDot } from './MyDot';
 import { MyGlowRow } from './MyGlowRow';
 import { ChipRow, PersonChip } from './PersonChip';
 
@@ -240,7 +240,7 @@ export function DutiesSection({
                       ) : null}
                       <View style={styles.editCell}>
                         <View style={styles.dutyLabelRow}>
-                          {isMine ? <MyBulb size={14} /> : null}
+                          {isMine ? <MyDot /> : null}
                           <Text style={styles.dutyLabel}>{dutyLabel(d, t)}</Text>
                           {autoDutyIds?.has(d.id) ? (
                             <View style={styles.autoBadge}>
@@ -317,7 +317,7 @@ export function DutiesSection({
                     >
                       <Text style={styles.dutyLabel}>{dutyLabel(d, t)}</Text>
                       <ChipRow>
-                        {isMine ? <MyBulb size={15} /> : null}
+                        {isMine ? <MyDot /> : null}
                         {publisher ? (
                           <PersonChip
                             label={publisher.displayName}
