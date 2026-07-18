@@ -122,24 +122,6 @@ export function CollapsibleMeetingBlock({
             </View>
           ) : null}
         </View>
-        {onPrint ? (
-          <Pressable
-            style={({ pressed }) => [
-              styles.printBtn,
-              pressed && styles.actionBtnPressed,
-              printBusy && styles.actionBtnDisabled,
-            ]}
-            onPress={onPrint}
-            disabled={!!printBusy}
-            hitSlop={8}
-          >
-            <Ionicons
-              name={printBusy ? 'hourglass-outline' : 'print-outline'}
-              size={18}
-              color={accent}
-            />
-          </Pressable>
-        ) : null}
         {actionLabel && onAction ? (
           <Pressable
             style={({ pressed }) => [
@@ -156,18 +138,45 @@ export function CollapsibleMeetingBlock({
             </Text>
           </Pressable>
         ) : null}
-        {showBadge ? (
-          <View
-            style={[styles.badge, complete ? styles.badgeDone : styles.badgeOpen]}
-          >
-            <Text
-              style={[
-                styles.badgeText,
-                complete ? styles.badgeTextDone : styles.badgeTextOpen,
-              ]}
-            >
-              {assigned}/{total}
-            </Text>
+        {/* Progress badge and the print button share one narrow column, so the
+            title keeps the width it needs on phone screens. */}
+        {showBadge || onPrint ? (
+          <View style={styles.rightCol}>
+            {showBadge ? (
+              <View
+                style={[
+                  styles.badge,
+                  complete ? styles.badgeDone : styles.badgeOpen,
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.badgeText,
+                    complete ? styles.badgeTextDone : styles.badgeTextOpen,
+                  ]}
+                >
+                  {assigned}/{total}
+                </Text>
+              </View>
+            ) : null}
+            {onPrint ? (
+              <Pressable
+                style={({ pressed }) => [
+                  styles.printBtn,
+                  pressed && styles.actionBtnPressed,
+                  printBusy && styles.actionBtnDisabled,
+                ]}
+                onPress={onPrint}
+                disabled={!!printBusy}
+                hitSlop={8}
+              >
+                <Ionicons
+                  name={printBusy ? 'hourglass-outline' : 'print-outline'}
+                  size={18}
+                  color={accent}
+                />
+              </Pressable>
+            ) : null}
           </View>
         ) : null}
         <Ionicons
@@ -230,14 +239,14 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   actionBtnPressed: { opacity: 0.8 },
+  rightCol: { alignItems: 'center', gap: 6, marginRight: 8 },
   printBtn: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#f1f5f9',
-    marginRight: 8,
   },
   actionBtnDisabled: { opacity: 0.5 },
   actionBtnText: { color: '#fff', fontSize: 12, fontWeight: '700', fontFamily: 'Manrope_700Bold',},
