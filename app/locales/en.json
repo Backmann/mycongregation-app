@@ -2192,8 +2192,11 @@
     }
   },
   "weekDrawer": {
-    "title": "Jump to a week",
+    "title": "Jump to a meeting",
     "empty": "No published weeks",
-    "thisWeek": "This week"
+    "thisWeek": "This week",
+    "midweek": "Midweek",
+    "weekend": "Weekend",
+    "coShort": "CO"
   }
 }

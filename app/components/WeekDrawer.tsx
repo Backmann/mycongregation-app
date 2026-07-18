@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Animated,
   Modal,
@@ -18,11 +18,21 @@ import 'dayjs/locale/de';
 import { assignmentsApi } from '../lib/api';
 import { isSameWeek, startOfWeekMonday } from '../lib/dates';
 
+type Kind = 'midweek' | 'weekend';
+
 interface Props {
   visible: boolean;
   onClose: () => void;
   currentWeekStart: Date;
-  onPick: (weekStart: Date) => void;
+  /** Jump to a week and open that meeting's section. */
+  onPick: (weekStart: Date, kind: Kind) => void;
+  /**
+   * Real meeting weekday (1 = Mon … 7 = Sun) for a given week, so the list
+   * shows actual dates — including a midweek meeting moved by a CO visit.
+   */
+  dowForWeek: (weekStartISO: string, kind: Kind) => number | null;
+  /** True when a circuit-overseer visit falls on that week (midweek marker). */
+  isCoVisitWeek?: (weekStartISO: string) => boolean;
 }
 
 const PANEL_WIDTH = 250;
@@ -33,15 +43,25 @@ interface WeekRow {
   hasWeekend: boolean;
 }
 
+/** One entry of the list: a meeting, with its real date. */
+interface MeetingEntry {
+  weekStartDate: string;
+  date: dayjs.Dayjs;
+  coVisit: boolean;
+}
+
 export function WeekDrawer({
   visible,
   onClose,
   currentWeekStart,
   onPick,
+  dowForWeek,
+  isCoVisitWeek,
 }: Props) {
   const { t, i18n } = useTranslation();
   const { height } = useWindowDimensions();
   const slide = useRef(new Animated.Value(-PANEL_WIDTH)).current;
+  const [kind, setKind] = useState<Kind>('midweek');
 
   const weeksQuery = useQuery({
     queryKey: ['assignments', 'published-weeks'],
@@ -57,31 +77,40 @@ export function WeekDrawer({
     }).start();
   }, [visible, slide]);
 
-  // Split out the current week (shown in its own section on top); group the
-  // rest by "Month YYYY" preserving the newest-first order.
-  const { currentRow, groups } = useMemo(() => {
-    const rows = weeksQuery.data ?? [];
-    let current: WeekRow | null = null;
-    const out: { key: string; label: string; rows: WeekRow[] }[] = [];
+  // Turn published weeks into a list of meetings of the selected kind: the
+  // current week on top, the rest grouped by the month the meeting falls in.
+  const { currentEntry, groups } = useMemo(() => {
+    const rows: WeekRow[] = weeksQuery.data ?? [];
+    let current: MeetingEntry | null = null;
+    const out: { key: string; label: string; entries: MeetingEntry[] }[] = [];
     for (const r of rows) {
+      if (kind === 'midweek' ? !r.hasMidweek : !r.hasWeekend) continue;
+      const dow = dowForWeek(r.weekStartDate, kind);
+      if (!dow) continue;
+      const date = dayjs(r.weekStartDate)
+        .locale(i18n.language)
+        .add(dow - 1, 'day');
+      const entry: MeetingEntry = {
+        weekStartDate: r.weekStartDate,
+        date,
+        coVisit: kind === 'midweek' && !!isCoVisitWeek?.(r.weekStartDate),
+      };
       if (isSameWeek(new Date(r.weekStartDate), currentWeekStart)) {
-        current = r;
+        current = entry;
         continue;
       }
-      const d = dayjs(r.weekStartDate).locale(i18n.language);
-      const key = d.format('YYYY-MM');
-      const label = d.format('MMMM YYYY');
+      const key = date.format('YYYY-MM');
       let g = out.find((x) => x.key === key);
       if (!g) {
-        g = { key, label, rows: [] };
+        g = { key, label: date.format('MMMM YYYY'), entries: [] };
         out.push(g);
       }
-      g.rows.push(r);
+      g.entries.push(entry);
     }
-    return { currentRow: current, groups: out };
-  }, [weeksQuery.data, i18n.language, currentWeekStart]);
+    return { currentEntry: current, groups: out };
+  }, [weeksQuery.data, i18n.language, currentWeekStart, kind, dowForWeek, isCoVisitWeek]);
 
-  const fmtRange = (weekStartIso: string) => {
+  const weekRange = (weekStartIso: string) => {
     const start = dayjs(weekStartIso).locale(i18n.language);
     const end = start.add(6, 'day');
     if (start.month() === end.month()) {
@@ -90,58 +119,62 @@ export function WeekDrawer({
     return `${start.format('D MMM')} – ${end.format('D MMM')}`;
   };
 
-  const midweekLabel = (weekStartIso: string) =>
-    dayjs(weekStartIso).locale(i18n.language).add(2, 'day').format('dd, D');
-  const weekendLabel = (weekStartIso: string) =>
-    dayjs(weekStartIso).locale(i18n.language).add(6, 'day').format('dd, D');
-
-  const renderWeek = (r: WeekRow, isCurrent: boolean) => {
-    const rowDate = new Date(r.weekStartDate);
-    return (
-      <Pressable
-        key={r.weekStartDate}
-        style={[styles.week, isCurrent && styles.weekCurrent]}
-        onPress={() => {
-          onPick(startOfWeekMonday(rowDate));
-          onClose();
-        }}
+  const renderEntry = (e: MeetingEntry, isCurrent: boolean) => (
+    <Pressable
+      key={e.weekStartDate}
+      style={[styles.row, isCurrent && styles.rowCurrent]}
+      onPress={() => {
+        onPick(startOfWeekMonday(new Date(e.weekStartDate)), kind);
+        onClose();
+      }}
+    >
+      <View
+        style={[
+          styles.dateBox,
+          kind === 'weekend' ? styles.dateBoxWeekend : styles.dateBoxMidweek,
+        ]}
       >
-        <Text style={[styles.weekRange, isCurrent && styles.weekRangeCurrent]}>
-          {fmtRange(r.weekStartDate)}
+        <Text
+          style={[
+            styles.dateDow,
+            kind === 'weekend' ? styles.textWeekend : styles.textMidweek,
+          ]}
+        >
+          {e.date.format('dd')}
         </Text>
-        <View style={styles.dates}>
-          {r.hasMidweek ? (
-            <View style={styles.dateChip}>
-              <Ionicons
-                name="calendar-outline"
-                size={12}
-                color={isCurrent ? '#185FA5' : '#94a3b8'}
-              />
-              <Text
-                style={[styles.dateText, isCurrent && styles.dateTextCurrent]}
-              >
-                {midweekLabel(r.weekStartDate)}
-              </Text>
-            </View>
-          ) : null}
-          {r.hasWeekend ? (
-            <View style={styles.dateChip}>
-              <Ionicons
-                name="calendar-number-outline"
-                size={12}
-                color={isCurrent ? '#185FA5' : '#94a3b8'}
-              />
-              <Text
-                style={[styles.dateText, isCurrent && styles.dateTextCurrent]}
-              >
-                {weekendLabel(r.weekStartDate)}
-              </Text>
-            </View>
-          ) : null}
+        <Text
+          style={[
+            styles.dateDay,
+            kind === 'weekend' ? styles.textWeekend : styles.textMidweek,
+          ]}
+        >
+          {e.date.date()}
+        </Text>
+      </View>
+      <View style={styles.rowMain}>
+        <Text style={[styles.rowDate, isCurrent && styles.rowDateCurrent]}>
+          {e.date.format('D MMMM')}
+        </Text>
+        <Text style={styles.rowWeek}>{weekRange(e.weekStartDate)}</Text>
+      </View>
+      {e.coVisit ? (
+        <View style={styles.coBadge}>
+          <Text style={styles.coBadgeText}>{t('weekDrawer.coShort')}</Text>
         </View>
-      </Pressable>
-    );
-  };
+      ) : null}
+    </Pressable>
+  );
+
+  const tab = (value: Kind, label: string) => (
+    <Pressable
+      style={[styles.tab, kind === value && styles.tabActive]}
+      onPress={() => setKind(value)}
+    >
+      <Text style={[styles.tabText, kind === value && styles.tabTextActive]}>
+        {label}
+      </Text>
+    </Pressable>
+  );
 
   return (
     <Modal
@@ -161,25 +194,30 @@ export function WeekDrawer({
             <Text style={styles.headerText}>{t('weekDrawer.title')}</Text>
           </View>
 
+          <View style={styles.tabs}>
+            {tab('midweek', t('weekDrawer.midweek'))}
+            {tab('weekend', t('weekDrawer.weekend'))}
+          </View>
+
           {weeksQuery.isLoading ? (
             <Text style={styles.empty}>{t('common.loading')}</Text>
-          ) : !currentRow && groups.length === 0 ? (
+          ) : !currentEntry && groups.length === 0 ? (
             <Text style={styles.empty}>{t('weekDrawer.empty')}</Text>
           ) : (
             <ScrollView contentContainerStyle={{ paddingBottom: 24 }}>
-              {currentRow ? (
+              {currentEntry ? (
                 <View>
                   <Text style={[styles.monthLabel, styles.currentLabel]}>
                     {t('weekDrawer.thisWeek')}
                   </Text>
-                  {renderWeek(currentRow, true)}
+                  {renderEntry(currentEntry, true)}
                   {groups.length > 0 ? <View style={styles.divider} /> : null}
                 </View>
               ) : null}
               {groups.map((g) => (
                 <View key={g.key}>
                   <Text style={styles.monthLabel}>{g.label}</Text>
-                  {g.rows.map((r) => renderWeek(r, false))}
+                  {g.entries.map((e) => renderEntry(e, false))}
                 </View>
               ))}
             </ScrollView>
@@ -230,6 +268,23 @@ const styles = StyleSheet.create({
     borderBottomColor: '#e2e8f0',
   },
   headerText: { fontSize: 14, fontWeight: '600', color: '#0f172a' },
+  tabs: {
+    flexDirection: 'row',
+    backgroundColor: '#f1f5f9',
+    borderRadius: 10,
+    padding: 3,
+    marginHorizontal: 10,
+    marginTop: 10,
+  },
+  tab: {
+    flex: 1,
+    paddingVertical: 6,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  tabActive: { backgroundColor: '#fff' },
+  tabText: { fontSize: 12.5, fontWeight: '600', color: '#64748b' },
+  tabTextActive: { color: '#0e7490' },
   empty: { fontSize: 13, color: '#94a3b8', padding: 16 },
   monthLabel: {
     fontSize: 13,
@@ -257,28 +312,54 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginBottom: 2,
   },
-  week: {
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 9,
     marginHorizontal: 8,
-    paddingHorizontal: 11,
-    paddingVertical: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
     borderRadius: 10,
   },
-  weekCurrent: {
+  rowCurrent: {
     backgroundColor: '#E6F1FB',
     borderWidth: 0.5,
     borderColor: '#B5D4F4',
   },
-  weekRange: {
-    fontSize: 12.5,
-    fontWeight: '600',
-    color: '#0f172a',
-    marginBottom: 5,
+  dateBox: {
+    width: 32,
+    height: 32,
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  weekRangeCurrent: { color: '#0C447C' },
-  dates: { flexDirection: 'row', gap: 14 },
-  dateChip: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  dateText: { fontSize: 12, color: '#64748b', textTransform: 'capitalize' },
-  dateTextCurrent: { color: '#185FA5' },
+  dateBoxMidweek: { backgroundColor: '#ecfeff' },
+  dateBoxWeekend: { backgroundColor: '#f5f3ff' },
+  textMidweek: { color: '#0e7490' },
+  textWeekend: { color: '#6d28d9' },
+  dateDow: {
+    fontSize: 8.5,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    opacity: 0.8,
+  },
+  dateDay: { fontSize: 12, fontWeight: '800', lineHeight: 14 },
+  rowMain: { flex: 1, minWidth: 0 },
+  rowDate: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#0f172a',
+    textTransform: 'capitalize',
+  },
+  rowDateCurrent: { color: '#0C447C' },
+  rowWeek: { fontSize: 10.5, color: '#94a3b8', marginTop: 1 },
+  coBadge: {
+    backgroundColor: '#ecfeff',
+    borderRadius: 999,
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+  },
+  coBadgeText: { fontSize: 9.5, fontWeight: '700', color: '#0e7490' },
   collar: {
     position: 'absolute',
     left: PANEL_WIDTH,

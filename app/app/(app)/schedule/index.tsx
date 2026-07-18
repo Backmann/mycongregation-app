@@ -1,4 +1,11 @@
-import { createContext, useContext, useState, useEffect, useRef } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useState,
+  useEffect,
+  useRef,
+} from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -222,6 +229,44 @@ export default function ScheduleIndexScreen() {
     meetingSettingsQuery.data?.versions,
     weekStartISO,
   );
+
+  // Week drawer helpers. The drawer lists real meeting dates, so resolve the
+  // weekday from the settings version effective for THAT week, and let a
+  // circuit-overseer visit move the midweek meeting (usually to Tuesday).
+  const allSpecialEvents = specialEventsQuery.data;
+  const settingsVersions = meetingSettingsQuery.data?.versions;
+  const coVisitForWeek = useCallback(
+    (weekStartISO2: string) => {
+      const sunISO = formatDateISO(addDays(new Date(weekStartISO2), 6));
+      return (allSpecialEvents ?? []).find(
+        (e) =>
+          e.type === 'circuit_overseer_visit' &&
+          e.date <= sunISO &&
+          (e.endDate ?? e.date) >= weekStartISO2,
+      );
+    },
+    [allSpecialEvents],
+  );
+  const drawerDowForWeek = useCallback(
+    (weekStartISO2: string, k: 'midweek' | 'weekend'): number | null => {
+      const v = effectiveVersionFor(settingsVersions, weekStartISO2);
+      if (k === 'weekend') return v?.weekendDow ?? null;
+      const visit = coVisitForWeek(weekStartISO2);
+      if (visit) return visit.coMidweekDow ?? 2;
+      return v?.midweekDow ?? null;
+    },
+    [settingsVersions, coVisitForWeek],
+  );
+  const drawerIsCoVisitWeek = useCallback(
+    (weekStartISO2: string) => !!coVisitForWeek(weekStartISO2),
+    [coVisitForWeek],
+  );
+  // Bumping this opens the picked meeting's section after the jump.
+  const [meetingFocus, setMeetingFocus] = useState<{
+    kind: 'midweek' | 'weekend';
+    n: number;
+  } | null>(null);
+
   const absencesQuery = useQuery({
     queryKey: ['absences', 'schedule'],
     queryFn: () => absencesApi.list(),
@@ -1313,7 +1358,12 @@ export default function ScheduleIndexScreen() {
         visible={drawerOpen}
         onClose={() => setDrawerOpen(false)}
         currentWeekStart={weekStart}
-        onPick={setWeekStart}
+        onPick={(ws, k) => {
+          setWeekStart(ws);
+          setMeetingFocus({ kind: k, n: Date.now() });
+        }}
+        dowForWeek={drawerDowForWeek}
+        isCoVisitWeek={drawerIsCoVisitWeek}
       />
       <AssignmentSheet
         assignment={editing}
@@ -1437,6 +1487,9 @@ export default function ScheduleIndexScreen() {
                 return (
                   <CollapsibleMeetingBlock
                     key="midweek"
+                    openSignal={
+                      meetingFocus?.kind === 'midweek' ? meetingFocus.n : undefined
+                    }
                     accent="#1e6b8c"
                     icon="calendar-outline"
                     title={getEventTypeLabel('midweek')}
@@ -1499,6 +1552,9 @@ export default function ScheduleIndexScreen() {
                 return (
                   <CollapsibleMeetingBlock
                     key="weekend"
+                    openSignal={
+                      meetingFocus?.kind === 'weekend' ? meetingFocus.n : undefined
+                    }
                     accent="#5b21b6"
                     icon="calendar-outline"
                     title={getEventTypeLabel('weekend')}

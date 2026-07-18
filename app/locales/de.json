@@ -2192,8 +2192,11 @@
     }
   },
   "weekDrawer": {
-    "title": "Zu einer Woche springen",
+    "title": "Zur Zusammenkunft",
     "empty": "Keine veröffentlichten Wochen",
-    "thisWeek": "Diese Woche"
+    "thisWeek": "Diese Woche",
+    "midweek": "Wochenmitte",
+    "weekend": "Wochenende",
+    "coShort": "KA"
   }
 }

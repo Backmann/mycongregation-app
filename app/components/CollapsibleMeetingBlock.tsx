@@ -1,4 +1,4 @@
-import { ReactNode, useState } from 'react';
+import { ReactNode, useEffect, useRef, useState } from 'react';
 import {
   LayoutAnimation,
   Platform,
@@ -38,6 +38,7 @@ export function CollapsibleMeetingBlock({
   onPrint,
   printBusy,
   initiallyOpen = false,
+  openSignal,
   showBadge = true,
   accent = DEFAULT_ACCENT,
   icon = 'calendar-outline',
@@ -57,6 +58,11 @@ export function CollapsibleMeetingBlock({
   onPrint?: () => void;
   printBusy?: boolean;
   initiallyOpen?: boolean;
+  /**
+   * Changing this value forces the section open — used when the week drawer
+   * jumps straight to a specific meeting.
+   */
+  openSignal?: number;
   /** Show the assigned/total progress badge (meetings only). */
   showBadge?: boolean;
   /** Section accent colour (stripe + icon tint). */
@@ -66,6 +72,14 @@ export function CollapsibleMeetingBlock({
   children: ReactNode;
 }) {
   const [open, setOpen] = useState(initiallyOpen);
+  // Open on demand (drawer jump), without touching the user's manual toggling.
+  const lastSignal = useRef(openSignal);
+  useEffect(() => {
+    if (openSignal === undefined || openSignal === lastSignal.current) return;
+    lastSignal.current = openSignal;
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setOpen(true);
+  }, [openSignal]);
   const complete = total > 0 && assigned === total;
 
   const toggle = () => {
