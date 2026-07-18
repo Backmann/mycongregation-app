@@ -1229,7 +1229,7 @@
     "scheduled": "Запланирована",
     "unknownGroup": "Группа удалена",
     "slots": {
-      "after_meeting": "После встреч",
+      "after_meeting": "Уборка после встреч",
       "thorough": "Еженедельная уборка",
       "general": "Генеральная уборка"
     },
@@ -1791,17 +1791,18 @@
       "co_lunch": "обед районного"
     },
     "dutyTypes": {
-      "security": "Охрана",
-      "attendant": "Распорядитель",
+      "security": "Распорядитель у входа",
+      "attendant": "Распорядитель в зале",
       "microphone": "Микрофоны",
+      "av": "Аудио/Видео",
       "zoom": "Zoom",
       "stage": "Сцена",
       "ventilation": "Проветривание",
       "custom": "Особое поручение"
     },
     "cleaningSlots": {
-      "after_meeting": "Уборка после встречи",
-      "thorough": "Тщательная уборка",
+      "after_meeting": "Уборка после встреч",
+      "thorough": "Еженедельная уборка",
       "general": "Генеральная уборка"
     },
     "eventTypes": {

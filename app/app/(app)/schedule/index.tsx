@@ -760,6 +760,26 @@ export default function ScheduleIndexScreen() {
       const nameOf = (id: string | null): string | null =>
         id ? (publishersById.get(id)?.displayName ?? null) : null;
 
+      // Midweek only: stamp each part with its start time, using the very same
+      // timeline the on-screen schedule shows (chairman, middle song and the
+      // CBS reader deliberately get none, but still consume their minutes).
+      const timeById = new Map<string, string>();
+      if (kind === 'midweek') {
+        for (const w of weeks) {
+          const items = rows
+            .filter((a) => a.weekStartDate === w.weekStartDate)
+            .map((a) => ({
+              id: a.id,
+              partKey: a.partKey,
+              partDurationMin: a.partDurationMin,
+            }));
+          if (items.length === 0) continue;
+          buildMidweekPartTimes(items, meetingVersion.midweekTime).forEach(
+            (iv, id) => timeById.set(id, iv.start),
+          );
+        }
+      }
+
       // Real part name from the workbook title (mirrors the on-screen display):
       // if the title is "<name>: <detail>" use the name before the colon; else
       // the whole title; else the generic part label.
@@ -844,6 +864,7 @@ export default function ScheduleIndexScreen() {
           partName: realPartName(partKey, a.partTitle),
           name: name ?? null,
           assistant: assistant ?? null,
+          time: timeById.get(a.id) ?? null,
         };
       };
 
@@ -866,6 +887,9 @@ export default function ScheduleIndexScreen() {
         monthLabel,
         timeLabel: time || null,
         locale: i18n.language,
+        // Five-week months (with part times on the midweek sheet) need tighter
+        // rows to stay on one page.
+        compact: weeks.length >= 5,
         labels: {
           title:
             kind === 'midweek'

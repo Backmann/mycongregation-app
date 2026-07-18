@@ -43,6 +43,8 @@ export interface MeetingCell {
   partName: string;
   name: string | null;
   assistant: string | null;
+  /** Start time of the part ("19:05"), shown before the name. Midweek only. */
+  time?: string | null;
 }
 
 function esc(s: string | null | undefined): string {
@@ -66,6 +68,11 @@ export function buildMeetingSchedulePdfHtml(opts: {
   monthLabel: string;
   timeLabel?: string | null;
   locale: string;
+  /**
+   * Tighten rows and spacing so a heavy month (five weeks of long workbook
+   * titles, with part times) still fits on a single A4 sheet.
+   */
+  compact?: boolean;
   labels: MeetingPdfLabels;
 }): string {
   const {
@@ -77,6 +84,7 @@ export function buildMeetingSchedulePdfHtml(opts: {
     monthLabel,
     timeLabel,
     locale,
+    compact = false,
     labels: L,
   } = opts;
 
@@ -96,9 +104,9 @@ export function buildMeetingSchedulePdfHtml(opts: {
           ? `<b>${esc(cell.name)}</b>`
           : `<span class="empty">${esc(L.emptyCell)}</span>`;
     return `<tr>
-<td class="pn" style="border-left:3px solid ${color};background:${muted}">${esc(
-      cell.partName,
-    )}</td>
+<td class="pn" style="border-left:3px solid ${color};background:${muted}">${
+      cell.time ? `<span class="pt">${esc(cell.time)}</span>` : ''
+    }${esc(cell.partName)}</td>
 <td class="who">${who}</td>
 </tr>`;
   };
@@ -183,12 +191,15 @@ export function buildMeetingSchedulePdfHtml(opts: {
     background: #f1f5f9; border-radius: 999px; padding: 3px 10px;
   }
   .wk {
-    margin-bottom: 7px; border: 1px solid #e2e8f0; border-radius: 8px;
+    margin-bottom: ${compact ? '5px' : '7px'};
+    border: 1px solid #e2e8f0; border-radius: 8px;
     overflow: hidden; page-break-inside: avoid;
   }
   .wkh {
-    background: #ecfeff; color: #0e7490; font-weight: 700; font-size: 12.5px;
-    padding: 5px 12px; border-bottom: 1px solid #cffafe;
+    background: #ecfeff; color: #0e7490; font-weight: 700;
+    font-size: ${compact ? '11.5px' : '12.5px'};
+    padding: ${compact ? '4px 10px' : '5px 12px'};
+    border-bottom: 1px solid #cffafe;
   }
   .wkh-note { display: flex; align-items: baseline; }
   .wkh-date { flex: 1; }
@@ -204,13 +215,18 @@ export function buildMeetingSchedulePdfHtml(opts: {
   .ev-title { font-size: 12.5px; font-weight: 700; color: #0f172a; margin-bottom: 4px; }
   .ev-line { font-size: 11px; color: #334155; margin-top: 2px; }
   table.col { width: 50%; border-collapse: collapse; table-layout: fixed; }
-  col.pc { width: 46%; }
-  col.vc { width: 54%; }
+  col.pc { width: 56%; }
+  col.vc { width: 44%; }
   td {
-    padding: 3px 9px; font-size: 9.5px; vertical-align: top;
+    padding: ${compact ? '2px 7px' : '3px 9px'};
+    font-size: ${compact ? '9px' : '9.5px'}; vertical-align: top;
     border-bottom: 1px solid #f1f5f9; word-wrap: break-word; overflow-wrap: break-word;
   }
   td.pn { color: #475569; font-weight: 500; }
+  .pt {
+    color: #0e7490; font-weight: 700; font-size: 9px;
+    margin-right: 5px; white-space: nowrap;
+  }
   td.who { color: #0f172a; }
   td.who b { font-weight: 700; }
   .empty { color: #cbd5e1; font-weight: 400; }

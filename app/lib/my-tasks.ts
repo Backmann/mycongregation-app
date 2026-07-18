@@ -261,5 +261,24 @@ export function taskMeta(r: RefinedTask, t: TFunc, locale: string): string {
   if (r.item.kind === 'co_lunch' && r.item.note) {
     bits.push(r.item.note);
   }
+  // Weekly cleaning: once the group has picked a day/time, show it here so the
+  // home card answers "when" without opening the schedule.
+  if (
+    r.item.kind === 'cleaning' &&
+    r.item.label === 'thorough' &&
+    r.item.thoroughPlannedAt
+  ) {
+    const planned = new Date(r.item.thoroughPlannedAt);
+    bits.push(
+      `${planned.toLocaleDateString(locale, {
+        weekday: 'short',
+        day: 'numeric',
+        month: 'short',
+      })}, ${planned.toLocaleTimeString(locale, {
+        hour: '2-digit',
+        minute: '2-digit',
+      })}`,
+    );
+  }
   return bits.join(' \u00b7 ');
 }

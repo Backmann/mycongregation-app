@@ -1225,7 +1225,7 @@
     "scheduled": "Scheduled",
     "unknownGroup": "Group removed",
     "slots": {
-      "after_meeting": "After meetings",
+      "after_meeting": "Cleaning after meetings",
       "thorough": "Weekly cleaning",
       "general": "General cleaning"
     },
@@ -1787,17 +1787,18 @@
       "co_lunch": "CO lunch"
     },
     "dutyTypes": {
-      "security": "Security",
-      "attendant": "Attendant",
+      "security": "Entrance attendant",
+      "attendant": "Hall attendant",
       "microphone": "Microphones",
+      "av": "Audio/Video",
       "zoom": "Zoom",
       "stage": "Stage",
       "ventilation": "Ventilation",
       "custom": "Custom duty"
     },
     "cleaningSlots": {
-      "after_meeting": "Cleaning after the meeting",
-      "thorough": "Thorough cleaning",
+      "after_meeting": "Cleaning after meetings",
+      "thorough": "Weekly cleaning",
       "general": "General cleaning"
     },
     "eventTypes": {

@@ -1225,7 +1225,7 @@
     "scheduled": "Geplant",
     "unknownGroup": "Gruppe entfernt",
     "slots": {
-      "after_meeting": "Nach den Zusammenkünften",
+      "after_meeting": "Reinigung nach den Zusammenkünften",
       "thorough": "Wöchentliche Reinigung",
       "general": "Generalreinigung"
     },
@@ -1787,17 +1787,18 @@
       "co_lunch": "Mittagessen (KA)"
     },
     "dutyTypes": {
-      "security": "Sicherheit",
-      "attendant": "Ordner",
+      "security": "Ordner am Eingang",
+      "attendant": "Ordner im Saal",
       "microphone": "Mikrofone",
+      "av": "Audio/Video",
       "zoom": "Zoom",
       "stage": "Bühne",
       "ventilation": "Lüftung",
       "custom": "Sonderaufgabe"
     },
     "cleaningSlots": {
-      "after_meeting": "Reinigung nach der Zusammenkunft",
-      "thorough": "Gründliche Reinigung",
+      "after_meeting": "Reinigung nach den Zusammenkünften",
+      "thorough": "Wöchentliche Reinigung",
       "general": "Generalreinigung"
     },
     "eventTypes": {
