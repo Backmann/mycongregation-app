@@ -261,11 +261,17 @@ export default function ScheduleIndexScreen() {
     (weekStartISO2: string) => !!coVisitForWeek(weekStartISO2),
     [coVisitForWeek],
   );
-  // Bumping this opens the picked meeting's section after the jump.
+  // Opens the picked meeting's section after a drawer jump. The week is part
+  // of the focus because switching weeks unmounts the sections while the new
+  // week loads — on remount `initiallyOpen` reopens the right one, and the
+  // counter handles the case where the sections stay mounted.
   const [meetingFocus, setMeetingFocus] = useState<{
     kind: 'midweek' | 'weekend';
+    weekISO: string;
     n: number;
   } | null>(null);
+  const focusOn = (k: 'midweek' | 'weekend') =>
+    meetingFocus?.kind === k && meetingFocus.weekISO === weekStartISO;
 
   const absencesQuery = useQuery({
     queryKey: ['absences', 'schedule'],
@@ -1360,7 +1366,11 @@ export default function ScheduleIndexScreen() {
         currentWeekStart={weekStart}
         onPick={(ws, k) => {
           setWeekStart(ws);
-          setMeetingFocus({ kind: k, n: Date.now() });
+          setMeetingFocus({
+            kind: k,
+            weekISO: formatDateISO(ws),
+            n: Date.now(),
+          });
         }}
         dowForWeek={drawerDowForWeek}
         isCoVisitWeek={drawerIsCoVisitWeek}
@@ -1487,9 +1497,8 @@ export default function ScheduleIndexScreen() {
                 return (
                   <CollapsibleMeetingBlock
                     key="midweek"
-                    openSignal={
-                      meetingFocus?.kind === 'midweek' ? meetingFocus.n : undefined
-                    }
+                    initiallyOpen={focusOn('midweek')}
+                    openSignal={focusOn('midweek') ? meetingFocus?.n : undefined}
                     accent="#1e6b8c"
                     icon="calendar-outline"
                     title={getEventTypeLabel('midweek')}
@@ -1552,9 +1561,8 @@ export default function ScheduleIndexScreen() {
                 return (
                   <CollapsibleMeetingBlock
                     key="weekend"
-                    openSignal={
-                      meetingFocus?.kind === 'weekend' ? meetingFocus.n : undefined
-                    }
+                    initiallyOpen={focusOn('weekend')}
+                    openSignal={focusOn('weekend') ? meetingFocus?.n : undefined}
                     accent="#5b21b6"
                     icon="calendar-outline"
                     title={getEventTypeLabel('weekend')}
