@@ -1112,7 +1112,9 @@
     },
     "assignee": "Кто назначен",
     "preparing": "Подготовка…",
-    "dutyColumn": "Обязанность"
+    "dutyColumn": "Обязанность",
+    "today": "Сегодня",
+    "nextUp": "Ближайшая"
   },
   "publisherActivity": {
     "thisMeeting": "На этой встрече:",

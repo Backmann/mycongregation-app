@@ -1108,7 +1108,9 @@
     },
     "assignee": "Zugeteilt an",
     "preparing": "Wird vorbereitet…",
-    "dutyColumn": "Aufgabe"
+    "dutyColumn": "Aufgabe",
+    "today": "Heute",
+    "nextUp": "Als Nächstes"
   },
   "publisherActivity": {
     "thisMeeting": "Dieses Treffen:",

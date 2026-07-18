@@ -1,6 +1,7 @@
 import {
   createContext,
   useCallback,
+  useMemo,
   useContext,
   useState,
   useEffect,
@@ -680,6 +681,42 @@ export default function ScheduleIndexScreen() {
   };
   const meetingAddress = (): string | null =>
     meetingVersion?.address || null;
+
+  // Duties on a phone are stacked, so whichever meeting is still ahead goes on
+  // top — a brother opening the section lands on the one he needs instead of
+  // filling in the wrong meeting. A meeting counts as "ahead" for the whole of
+  // its day, so the cards don't swap places during the meeting itself. Wide
+  // screens keep the two columns in their familiar order.
+  const meetingDateISO = (kind: 'midweek' | 'weekend'): string | null => {
+    const dow = dowFor(kind);
+    return dow ? formatDateISO(addDays(weekStart, dow - 1)) : null;
+  };
+  const todayISO = formatDateISO(new Date());
+  const dutyOrder = useMemo<('midweek' | 'weekend')[]>(() => {
+    const base: ('midweek' | 'weekend')[] = ['midweek', 'weekend'];
+    if (!dutiesNarrow) return base;
+    const dated = base.map((m) => ({ m, iso: meetingDateISO(m) }));
+    if (dated.some((d) => !d.iso)) return base;
+    return dated
+      .sort((a, b) => {
+        const aAhead = a.iso! >= todayISO ? 0 : 1;
+        const bAhead = b.iso! >= todayISO ? 0 : 1;
+        return aAhead - bAhead || a.iso!.localeCompare(b.iso!);
+      })
+      .map((d) => d.m);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dutiesNarrow, todayISO, weekStartISO, meetingVersion, coVisitEvent]);
+  // Which meeting is still ahead — computed on its own, not from the order, so
+  // the marker is right in the two-column layout too.
+  const nextDutyMeeting = ((): 'midweek' | 'weekend' | null => {
+    const ahead = (['midweek', 'weekend'] as const)
+      .map((m) => ({ m, iso: meetingDateISO(m) }))
+      .filter((x) => !!x.iso && x.iso >= todayISO)
+      .sort((a, b) => a.iso!.localeCompare(b.iso!));
+    return ahead[0]?.m ?? null;
+  })();
+  const nextDutyIsToday =
+    !!nextDutyMeeting && meetingDateISO(nextDutyMeeting) === todayISO;
 
   // Print the whole month's midweek meeting programme as a one-page A4 grid
   // (parts × weeks) for the congregation notice board. Uses the month that the
@@ -1677,9 +1714,13 @@ export default function ScheduleIndexScreen() {
               <View
                 style={[styles.dutiesRow, dutiesNarrow && styles.dutiesRowNarrow]}
               >
-              <View style={styles.dutiesCol}>
+              {dutyOrder.map((meeting) => (
+              <View key={meeting} style={styles.dutiesCol}>
               <DutiesSection
-                only="midweek"
+                only={meeting}
+                dateLabel={meetingDateLabel(meeting)}
+                nextUp={nextDutyMeeting === meeting}
+                nextUpToday={nextDutyIsToday}
                 duties={duties}
                 autoDutyIds={autoDutyIds}
                 publishersById={publishersById}
@@ -1706,35 +1747,7 @@ export default function ScheduleIndexScreen() {
                 weekStartISO={weekStartISO}
               />
               </View>
-              <View style={styles.dutiesCol}>
-              <DutiesSection
-                only="weekend"
-                duties={duties}
-                autoDutyIds={autoDutyIds}
-                publishersById={publishersById}
-                canEdit={canEditDuties}
-                compact={dutiesNarrow}
-                pending={
-                  generateDutiesMutation.isPending ||
-                  assignDutyMutation.isPending ||
-                  createCustomDutyMutation.isPending ||
-                  removeDutyMutation.isPending
-                }
-                hideHeader
-                onGenerate={(eventType) =>
-                  generateDutiesMutation.mutate(eventType)
-                }
-                onAssign={(id, publisherId) =>
-                  assignDutyMutation.mutate({ id, publisherId })
-                }
-                onAddCustom={(eventType, customLabel) =>
-                  createCustomDutyMutation.mutate({ eventType, customLabel })
-                }
-                onRemoveDuty={(id) => removeDutyMutation.mutate(id)}
-                activityById={activityById}
-                weekStartISO={weekStartISO}
-              />
-              </View>
+              ))}
               </View>
             </CollapsibleMeetingBlock>
             )}

@@ -1108,7 +1108,9 @@
     },
     "assignee": "Assignee",
     "preparing": "Preparing…",
-    "dutyColumn": "Duty"
+    "dutyColumn": "Duty",
+    "today": "Today",
+    "nextUp": "Next"
   },
   "publisherActivity": {
     "thisMeeting": "This meeting:",

@@ -89,6 +89,12 @@ type Props = {
   hideHeader?: boolean;
   /** Tighten horizontal padding/gaps (e.g. when shown two-up on a phone). */
   compact?: boolean;
+  /** Date line under the card title, e.g. "среда, 22 июля · 19:00". */
+  dateLabel?: string | null;
+  /** This is the meeting still ahead — shown first on phones and marked. */
+  nextUp?: boolean;
+  /** The upcoming meeting is today (changes the marker wording). */
+  nextUpToday?: boolean;
   /** Duty ids auto-filled by a congregation rule (shows an "авто" badge). */
   autoDutyIds?: Set<string>;
 };
@@ -108,6 +114,9 @@ export function DutiesSection({
   only,
   hideHeader,
   compact,
+  dateLabel,
+  nextUp,
+  nextUpToday,
   autoDutyIds,
 }: Props) {
   const { t } = useTranslation();
@@ -151,9 +160,23 @@ export function DutiesSection({
     return (
       <View style={styles.cardHead}>
         <View style={[styles.cardDot, { backgroundColor: accent }]} />
-        <Text style={styles.cardTitle} numberOfLines={1}>
-          {label}
-        </Text>
+        <View style={styles.cardTitleWrap}>
+          <Text style={styles.cardTitle} numberOfLines={1}>
+            {label}
+          </Text>
+          {dateLabel ? (
+            <Text style={styles.cardDate} numberOfLines={1}>
+              {dateLabel}
+            </Text>
+          ) : null}
+        </View>
+        {nextUp ? (
+          <View style={[styles.nextChip, { backgroundColor: `${accent}14` }]}>
+            <Text style={[styles.nextChipText, { color: accent }]}>
+              {nextUpToday ? t('duties.today') : t('duties.nextUp')}
+            </Text>
+          </View>
+        ) : null}
         {total > 0 ? (
           <View
             style={[
@@ -531,8 +554,21 @@ const styles = StyleSheet.create({
     borderBottomColor: '#eef2f6',
   },
   cardDot: { width: 8, height: 8, borderRadius: 4 },
+  cardTitleWrap: { flex: 1, minWidth: 0 },
+  cardDate: {
+    fontSize: 10.5,
+    color: '#64748b',
+    marginTop: 1,
+    textTransform: 'capitalize',
+  },
+  nextChip: { borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 },
+  nextChipText: {
+    fontSize: 10,
+    fontWeight: '800',
+    fontFamily: 'Manrope_800ExtraBold',
+    textTransform: 'uppercase',
+  },
   cardTitle: {
-    flex: 1,
     fontSize: 12.5,
     fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
