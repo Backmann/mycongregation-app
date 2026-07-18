@@ -2430,7 +2430,9 @@ function AssignmentRow({
 
 const styles = StyleSheet.create({
   dutiesRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 16 },
-  dutiesRowNarrow: { gap: 8 },
+  // On phones the two meetings stack instead of sharing the width: side by side
+  // each block gets ~166px, which breaks labels and squeezes the selectors.
+  dutiesRowNarrow: { flexDirection: 'column', gap: 0 },
   dutiesCol: { flex: 1, minWidth: 0 },
   container: { flex: 1, backgroundColor: '#f1f5f9' },
   overline: {

@@ -137,19 +137,62 @@ export function DutiesSection({
     setCustomLabel('');
   };
 
+  // Card header: a coloured dot in the meeting's own colour, the meeting name
+  // and how many of its duties are filled — the same "x/y" language the
+  // schedule sections use.
+  const cardHead = (
+    meeting: Meeting,
+    label: string,
+    assigned: number,
+    total: number,
+  ) => {
+    const accent = meeting === 'midweek' ? '#0d9488' : '#5b21b6';
+    const done = total > 0 && assigned === total;
+    return (
+      <View style={styles.cardHead}>
+        <View style={[styles.cardDot, { backgroundColor: accent }]} />
+        <Text style={styles.cardTitle} numberOfLines={1}>
+          {label}
+        </Text>
+        {total > 0 ? (
+          <View
+            style={[
+              styles.cardCount,
+              { backgroundColor: done ? '#dcfce7' : `${accent}14` },
+            ]}
+          >
+            <Text
+              style={[
+                styles.cardCountText,
+                { color: done ? '#166534' : accent },
+              ]}
+            >
+              {assigned}/{total}
+            </Text>
+          </View>
+        ) : null}
+      </View>
+    );
+  };
+
   return (
     <View style={only ? styles.embedded : styles.section}>
+      {/* The per-meeting card carries its own title and counter, so the section
+          header is only needed when this block is shown on its own. */}
       <View
         style={[
           only ? styles.embeddedHeader : styles.header,
           compact && styles.hPadCompact,
+          hideHeader && styles.headerHidden,
         ]}
       >
-        <Ionicons name="people-outline" size={16} color="#475569" />
+        {!hideHeader ? (
+          <Ionicons name="people-outline" size={16} color="#475569" />
+        ) : null}
         {!hideHeader ? (
           <Text style={styles.headerText}>{t('duties.title')}</Text>
         ) : null}
-        {only && onlyList.length > 0 ? (
+        {only && !hideHeader && onlyList.length > 0 ? (
           <View
             style={[
               styles.countBadge,
@@ -183,12 +226,9 @@ export function DutiesSection({
           if (!canEdit) return null;
           // Duties auto-fill on open; show a subtle placeholder meanwhile.
           return (
-            <View key={meeting} style={styles.meetingBlock}>
-              <View style={styles.dayChip}>
-                <Ionicons name="calendar-outline" size={13} color="#fff" />
-                <Text style={styles.dayChipText}>{meetingLabel}</Text>
-              </View>
-              <View style={[styles.fillBtn, compact && styles.mHorizCompact]}>
+            <View key={meeting} style={styles.card}>
+              {cardHead(meeting, meetingLabel, 0, 0)}
+              <View style={styles.preparingRow}>
                 <Ionicons
                   name="hourglass-outline"
                   size={16}
@@ -203,14 +243,16 @@ export function DutiesSection({
         }
 
         return (
-          <View key={meeting} style={styles.meetingBlock}>
-            <View style={styles.dayChip}>
-              <Ionicons name="calendar-outline" size={13} color="#fff" />
-              <Text style={styles.dayChipText}>{meetingLabel}</Text>
-            </View>
+          <View key={meeting} style={styles.card}>
+            {cardHead(
+              meeting,
+              meetingLabel,
+              list.filter((d) => d.publisherId).length,
+              list.length,
+            )}
 
             {canEdit ? (
-              <View style={[styles.editList, compact && styles.hPadCompact]}>
+              <View style={styles.cardBody}>
                 {list.map((d) => {
                   const di = DUTY_ICONS[d.dutyType];
                   const isMine =
@@ -238,19 +280,21 @@ export function DutiesSection({
                           />
                         </View>
                       ) : null}
-                      <View style={styles.editCell}>
-                        <View style={styles.dutyLabelRow}>
-                          {isMine ? <MyDot /> : null}
-                          <Text style={styles.dutyLabel}>{dutyLabel(d, t)}</Text>
-                          {autoDutyIds?.has(d.id) ? (
-                            <View style={styles.autoBadge}>
-                              <Ionicons name="flash" size={10} color="#0369a1" />
-                              <Text style={styles.autoBadgeText}>
-                                {t('schedule.autoBadge')}
-                              </Text>
-                            </View>
-                          ) : null}
-                        </View>
+                      <View style={styles.dutyLabelRow}>
+                        {isMine ? <MyDot /> : null}
+                        <Text style={styles.dutyLabel} numberOfLines={2}>
+                          {dutyLabel(d, t)}
+                        </Text>
+                        {autoDutyIds?.has(d.id) ? (
+                          <View style={styles.autoBadge}>
+                            <Ionicons name="flash" size={10} color="#0369a1" />
+                            <Text style={styles.autoBadgeText}>
+                              {t('schedule.autoBadge')}
+                            </Text>
+                          </View>
+                        ) : null}
+                      </View>
+                      <View style={styles.rowRight}>
                         <PublisherSelector
                           variant="chip"
                           emptyLabel={t('duties.unassigned')}
@@ -285,7 +329,6 @@ export function DutiesSection({
                 <Pressable
                   style={({ pressed }) => [
                     styles.addCustomBtn,
-                    compact && styles.mHorizCompact,
                     pressed && styles.fillBtnPressed,
                   ]}
                   onPress={() => {
@@ -298,7 +341,7 @@ export function DutiesSection({
                 </Pressable>
               </View>
             ) : (
-              <View style={styles.rows}>
+              <View style={styles.cardBody}>
                 {list.map((d) => {
                   const publisher = d.publisherId
                     ? publishersById.get(d.publisherId) ?? null
@@ -310,12 +353,13 @@ export function DutiesSection({
                     <RowWrap
                       key={d.id}
                       style={[
-                        styles.row,
+                        styles.roRow,
                         isMine && styles.rowMineGlow,
-                        compact && styles.hPadCompact,
                       ]}
                     >
-                      <Text style={styles.dutyLabel}>{dutyLabel(d, t)}</Text>
+                      <Text style={styles.dutyLabel} numberOfLines={2}>
+                        {dutyLabel(d, t)}
+                      </Text>
                       <ChipRow>
                         {isMine ? <MyDot /> : null}
                         {publisher ? (
@@ -431,44 +475,8 @@ const styles = StyleSheet.create({
   },
 
   // microphone-count control
-  meetingBlock: { marginTop: 8 },
-  meetingLabel: {
-    fontSize: 12,
-    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
-    color: '#94a3b8',
-    paddingHorizontal: 16,
-    marginBottom: 4,
-  },
-  dayChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    alignSelf: 'flex-start',
-    gap: 6,
-    backgroundColor: '#0d9488',
-    borderRadius: 999,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    marginTop: 14,
-    marginBottom: 10,
-  },
-  dayChipText: { color: '#fff', fontSize: 12, fontWeight: '700', fontFamily: 'Manrope_700Bold',},
 
   // read-only list
-  rows: {
-    backgroundColor: '#fff',
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
-    borderColor: '#e2e8f0',
-  },
-  row: {
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-    paddingHorizontal: 16,
-    paddingVertical: 11,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#f1f5f9',
-    gap: 6,
-  },
   dutyLabel: {
     fontSize: 13.5,
     color: '#334155',
@@ -476,7 +484,13 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontFamily: 'Manrope_600SemiBold',
   },
-  dutyLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  dutyLabelRow: {
+    flex: 1,
+    minWidth: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
   autoBadge: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -489,61 +503,99 @@ const styles = StyleSheet.create({
   autoBadgeText: { fontSize: 10, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0369a1' },
   rowMineGlow: {
     borderTopWidth: 0,
-    marginHorizontal: 10,
-    marginVertical: 3,
-    paddingHorizontal: 10,
-    borderRadius: 12,
+    marginHorizontal: -6,
+    paddingHorizontal: 5,
+    marginVertical: 2,
+    borderRadius: 11,
   },
 
   // editable list
-  editList: { paddingHorizontal: 16, gap: 2 },
-  editRow: {
+  headerHidden: { display: 'none' },
+  card: {
+    marginTop: 10,
+    marginHorizontal: 12,
+    borderWidth: 1,
+    borderColor: '#e8edf3',
+    borderRadius: 13,
+    backgroundColor: '#fff',
+    overflow: 'hidden',
+  },
+  cardHead: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 11,
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    backgroundColor: '#f8fafc',
+    borderBottomWidth: 1,
+    borderBottomColor: '#eef2f6',
+  },
+  cardDot: { width: 8, height: 8, borderRadius: 4 },
+  cardTitle: {
+    flex: 1,
+    fontSize: 12.5,
+    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
+    color: '#0f172a',
+  },
+  cardCount: { borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 },
+  cardCountText: {
+    fontSize: 11,
+    fontWeight: '800',
+    fontFamily: 'Manrope_800ExtraBold',
+  },
+  cardBody: { paddingHorizontal: 11, paddingBottom: 2 },
+  preparingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 14,
+  },
+  rowRight: { alignItems: 'flex-end', flexShrink: 0, maxWidth: '52%' },
+  roRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
     paddingVertical: 9,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#eef2f6',
+    borderTopColor: '#f3f6f9',
+  },
+  editRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingVertical: 8,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: '#f3f6f9',
   },
   editRowMine: {
     borderTopWidth: 0,
-    paddingHorizontal: 10,
-    marginVertical: 3,
+    marginHorizontal: -6,
+    paddingHorizontal: 5,
+    marginVertical: 2,
   },
   dutyIcon: {
-    width: 34,
-    height: 34,
+    width: 32,
+    height: 32,
     borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 2,
   },
-  editCell: { flex: 1, gap: 6, paddingVertical: 2 },
-  delBtn: { padding: 6, marginTop: 2 },
+  delBtn: { padding: 6 },
   // two-up on narrow screens: tighten horizontal padding/margins
   hPadCompact: { paddingHorizontal: 8 },
-  mHorizCompact: { marginHorizontal: 8 },
 
-  fillBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    marginHorizontal: 16,
-    paddingVertical: 11,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#bae6fd',
-    backgroundColor: '#f0f9ff',
-  },
   fillBtnPressed: { backgroundColor: '#e0f2fe' },
   fillBtnText: { fontSize: 14, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0369a1' },
   addCustomBtn: {
+    marginHorizontal: 11,
+    marginTop: 2,
+    marginBottom: 10,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
-    marginTop: 4,
     paddingVertical: 10,
     borderRadius: 10,
     borderWidth: 1,
