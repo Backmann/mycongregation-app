@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { router } from 'expo-router';
-import { meApi } from '../lib/api';
+import { extractErrorMessage, meApi } from '../lib/api';
 import { useAuth } from '../lib/auth';
 
 /**
@@ -25,6 +25,7 @@ export function ContactsCheckPrompt() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [deferred, setDeferred] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const { data } = useQuery({
     queryKey: ['me-publisher'],
@@ -36,10 +37,14 @@ export function ContactsCheckPrompt() {
 
   const confirmMutation = useMutation({
     mutationFn: () => meApi.confirmContacts(),
+    // Close on success rather than waiting for the refetch, and say so out loud
+    // when it fails — a card that silently stays put looks broken.
     onSuccess: () => {
+      setDeferred(true);
       queryClient.invalidateQueries({ queryKey: ['me-publisher'] });
       queryClient.invalidateQueries({ queryKey: ['publishers'] });
     },
+    onError: (e) => setError(extractErrorMessage(e)),
   });
 
   if (!me || deferred) return null;
@@ -84,6 +89,12 @@ export function ContactsCheckPrompt() {
             {line('mail-outline', me.email)}
             {line('home-outline', me.address)}
           </View>
+
+          {error ? (
+            <View style={styles.errorBox}>
+              <Text style={styles.errorText}>{error}</Text>
+            </View>
+          ) : null}
 
           <Pressable
             style={({ pressed }) => [
@@ -165,6 +176,15 @@ const styles = StyleSheet.create({
   line: { flexDirection: 'row', alignItems: 'center', gap: 9 },
   lineText: { flex: 1, fontSize: 13.5, color: '#0f172a' },
   lineEmpty: { color: '#94a3b8', fontStyle: 'italic' },
+  errorBox: {
+    backgroundColor: '#fef2f2',
+    borderColor: '#fecaca',
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 11,
+    marginBottom: 12,
+  },
+  errorText: { color: '#991b1b', fontSize: 12.5 },
   button: {
     paddingVertical: 13,
     borderRadius: 12,

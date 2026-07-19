@@ -45,6 +45,14 @@ export default function PublisherDetailScreen() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const [editing, setEditing] = useState(false);
+  const confirmContactsMutation = useMutation({
+    mutationFn: () => publishersApi.confirmContacts(id as string),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['publisher', id] });
+      queryClient.invalidateQueries({ queryKey: ['publishers'] });
+      queryClient.invalidateQueries({ queryKey: ['me-publisher'] });
+    },
+  });
   const [removeOpen, setRemoveOpen] = useState(false);
   const [removeReason, setRemoveReason] = useState<RemovalReason | null>(null);
   const [removeDate, setRemoveDate] = useState('');
@@ -255,6 +263,45 @@ export default function PublisherDetailScreen() {
         <Field label={t('publishers.fields.email')} value={publisher.email} />
         <Field label={t('publishers.fields.address')} value={publisher.address} />
       </Section>
+      {/* When the contacts were last vouched for, and a way to vouch for them
+          on behalf of a publisher who doesn't use the app. */}
+      <View style={styles.checkRow}>
+        <Ionicons
+          name={
+            publisher.contactsConfirmedAt
+              ? 'shield-checkmark-outline'
+              : 'alert-circle-outline'
+          }
+          size={14}
+          color={publisher.contactsConfirmedAt ? '#16a34a' : '#b45309'}
+        />
+        <Text style={styles.checkText}>
+          {publisher.contactsConfirmedAt
+            ? t('myContacts.confirmedAt', {
+                date: new Date(
+                  publisher.contactsConfirmedAt,
+                ).toLocaleDateString(i18n.language, {
+                  day: 'numeric',
+                  month: 'long',
+                  year: 'numeric',
+                }),
+              })
+            : t('myContacts.neverConfirmed')}
+        </Text>
+        {canEditPublishers ? (
+          <Pressable
+            onPress={() => confirmContactsMutation.mutate()}
+            disabled={confirmContactsMutation.isPending}
+            hitSlop={6}
+          >
+            <Text style={styles.checkAction}>
+              {confirmContactsMutation.isPending
+                ? t('common.loading')
+                : t('myContacts.confirm')}
+            </Text>
+          </Pressable>
+        ) : null}
+      </View>
 
       <Section title={t('publishers.sections.spirituality')}>
         <Field
@@ -851,6 +898,20 @@ const styles = StyleSheet.create({
   removedNote: { color: '#78350f', marginTop: 4, fontSize: 13 },
 
   section: { marginHorizontal: 12, marginTop: 16 },
+  checkRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 7,
+    marginHorizontal: 18,
+    marginTop: 8,
+  },
+  checkText: { flex: 1, fontSize: 12.5, color: '#64748b' },
+  checkAction: {
+    fontSize: 12.5,
+    color: '#0369a1',
+    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
+  },
   sectionTitle: {
     fontSize: 11.5,
     fontWeight: '600',

@@ -173,6 +173,9 @@ export interface Publisher {
   lastEditedByName?: string | null;
   /** Whether the publisher serves as an auxiliary pioneer this month (card badge). */
   isAuxiliaryPioneerNow?: boolean;
+  /** Yearly contact check: when confirmed, and by whom (self or secretary). */
+  contactsConfirmedAt?: string | null;
+  contactsConfirmedByUserId?: string | null;
 }
 
 export interface CreatePublisherInput {
@@ -1549,6 +1552,11 @@ export interface UpdateAccessInput {
 }
 
 export const publishersApi = {
+  /** "These contacts are still correct" — for a publisher who doesn't use the app. */
+  async confirmContacts(id: string): Promise<Publisher> {
+    const { data } = await api.post<Publisher>(`/publishers/${id}/contacts/confirm`);
+    return data;
+  },
   async list(params?: { search?: string; limit?: number; offset?: number; includeRemoved?: boolean }): Promise<Paginated<Publisher>> {
     const { data } = await api.get<Paginated<Publisher>>('/publishers', { params });
     return data;
