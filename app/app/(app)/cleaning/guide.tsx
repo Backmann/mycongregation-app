@@ -16,19 +16,9 @@ import {
   CLEANING_FREQUENCIES,
   CleaningCategory,
   CleaningFrequency,
-  MATERIALS_ASPECT,
   TECHNIK_BLOCKS,
 } from '../../../lib/cleaning-guide';
 
-/**
- * An asset's own aspect ratio. The materials strips used to share one fixed
- * ratio, so every picture that wasn't exactly that shape was letterboxed —
- * the sanitary strip lost a third of its width to white.
- */
-function assetAspect(source: number, fallback: number): number {
-  const meta = Image.resolveAssetSource(source);
-  return meta?.width && meta?.height ? meta.width / meta.height : fallback;
-}
 
 
 const SAFETY_ITEMS = ['i1', 'i2', 'i3', 'i4', 'i5'] as const;
@@ -91,11 +81,8 @@ function CategoryCard({
           </Text>
           <Image
             source={category.materials}
-            style={[
-              styles.materials,
-              { aspectRatio: assetAspect(category.materials, MATERIALS_ASPECT) },
-            ]}
-            resizeMode="cover"
+            style={[styles.materials, { aspectRatio: category.materialsAspect }]}
+            resizeMode="contain"
           />
 
           {!pinned && available.length > 1 ? (
@@ -155,11 +142,8 @@ function CategoryCard({
               </View>
               <Image
                 source={step.image}
-                style={[
-                  styles.stepImage,
-                  { aspectRatio: assetAspect(step.image, 1) },
-                ]}
-                resizeMode="cover"
+                style={styles.stepImage}
+                resizeMode="contain"
               />
             </View>
           ))}
@@ -371,6 +355,7 @@ const styles = StyleSheet.create({
   },
   stepImage: {
     width: '100%',
+    aspectRatio: 1,
     maxWidth: 440,
 
     alignSelf: 'center',

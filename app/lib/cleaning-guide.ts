@@ -28,12 +28,18 @@ export interface CleaningCategory {
   color: string;
   /** Soft background tint for the category card. */
   tint: string;
+  /** Width / height of this category's materials strip. */
+  materialsAspect: number;
   icon: string; // Ionicons name
   materials: number;
   steps: Partial<Record<CleaningFrequency, CleaningStep[]>>;
 }
 
-/** Width / height of the materials-strip images. */
+/**
+ * Width / height of each materials strip, measured from the file. They differ
+ * (3.29 … 5.54), so a single shared ratio letterboxed the odd ones — the
+ * sanitary strip lost a third of its width to white.
+ */
 export const MATERIALS_ASPECT = 5.16;
 
 export const TECHNIK_BLOCKS: {
@@ -66,6 +72,7 @@ export const CLEANING_CATEGORIES: CleaningCategory[] = [
     id: 'wc',
     color: '#dc2626',
     tint: '#fef2f2',
+    materialsAspect: 5.357,
     icon: 'water-outline',
     materials: require('../assets/cleaning/wc-materials.webp'),
     steps: {
@@ -88,6 +95,7 @@ export const CLEANING_CATEGORIES: CleaningCategory[] = [
     id: 'sanitary',
     color: '#d97706',
     tint: '#fffbeb',
+    materialsAspect: 3.293,
     icon: 'hand-left-outline',
     materials: require('../assets/cleaning/sanitary-materials.webp'),
     steps: {
@@ -113,6 +121,7 @@ export const CLEANING_CATEGORIES: CleaningCategory[] = [
     id: 'floors',
     color: '#2563eb',
     tint: '#eff6ff',
+    materialsAspect: 5.425,
     icon: 'grid-outline',
     materials: require('../assets/cleaning/floors-materials.webp'),
     steps: {
@@ -130,6 +139,7 @@ export const CLEANING_CATEGORIES: CleaningCategory[] = [
     id: 'furniture',
     color: '#0284c7',
     tint: '#f0f9ff',
+    materialsAspect: 5.04,
     icon: 'business-outline',
     materials: require('../assets/cleaning/furniture-materials.webp'),
     steps: {
@@ -156,6 +166,7 @@ export const CLEANING_CATEGORIES: CleaningCategory[] = [
     id: 'glass',
     color: '#0891b2',
     tint: '#ecfeff',
+    materialsAspect: 5.063,
     icon: 'tablet-portrait-outline',
     materials: require('../assets/cleaning/glass-materials.webp'),
     steps: {
@@ -175,6 +186,7 @@ export const CLEANING_CATEGORIES: CleaningCategory[] = [
     id: 'kitchen',
     color: '#16a34a',
     tint: '#f0fdf4',
+    materialsAspect: 5.537,
     icon: 'restaurant-outline',
     materials: require('../assets/cleaning/kitchen-materials.webp'),
     steps: {
