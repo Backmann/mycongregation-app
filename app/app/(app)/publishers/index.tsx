@@ -2,7 +2,6 @@ import { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
-  Modal,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -26,6 +25,7 @@ import {
   serviceGroupsApi,
 } from '../../../lib/api';
 import { Ionicons } from '@expo/vector-icons';
+import { Sheet } from '../../../components/Sheet';
 
 type Filters = {
   groupId: string | 'none' | null;
@@ -432,20 +432,17 @@ function FilterSheet({
     onChange({ ...filters, [key]: filters[key] === value ? null : value });
 
   return (
-    <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
-      <View style={styles.sheetOverlay}>
-        <Pressable
-          style={StyleSheet.absoluteFill}
-          onPress={onClose}
-          accessibilityRole="button"
-        />
-        <View style={styles.sheet}>
-          <View style={styles.sheetHeader}>
-            <Text style={styles.sheetTitle}>{t('publishers.filter.title')}</Text>
-            <Pressable onPress={onReset} hitSlop={8}>
-              <Text style={styles.resetText}>{t('publishers.filter.reset')}</Text>
-            </Pressable>
-          </View>
+    <Sheet
+      visible={visible}
+      variant="bottom"
+      title={t('publishers.filter.title')}
+      onClose={onClose}
+      action={
+        <Pressable onPress={onReset} hitSlop={8}>
+          <Text style={styles.resetText}>{t('publishers.filter.reset')}</Text>
+        </Pressable>
+      }
+    >
 
           <ScrollView style={{ maxHeight: 460 }}>
             <Text style={styles.filterSection}>{t('publishers.filter.groupSection')}</Text>
@@ -569,9 +566,7 @@ function FilterSheet({
           <Pressable style={styles.applyBtn} onPress={onClose}>
             <Text style={styles.applyBtnText}>{t('publishers.filter.apply')}</Text>
           </Pressable>
-        </View>
-      </View>
-    </Modal>
+            </Sheet>
   );
 }
 
@@ -709,25 +704,6 @@ const styles = StyleSheet.create({
   },
   errorText: { color: '#dc2626', fontSize: 14 },
 
-  sheetOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(15,23,42,0.45)',
-    justifyContent: 'flex-end',
-  },
-  sheet: {
-    backgroundColor: '#fff',
-    borderTopLeftRadius: 18,
-    borderTopRightRadius: 18,
-    padding: 20,
-    paddingBottom: 28,
-  },
-  sheetHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 8,
-  },
-  sheetTitle: { fontSize: 18, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0f172a' },
   resetText: { color: '#0ea5e9', fontSize: 15, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
   filterSection: {
     fontSize: 12,

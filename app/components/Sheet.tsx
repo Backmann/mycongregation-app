@@ -24,6 +24,8 @@ export function Sheet({
   closeLabel,
   children,
   footer,
+  variant = 'full',
+  action,
 }: {
   visible: boolean;
   title: string;
@@ -34,8 +36,50 @@ export function Sheet({
   children: ReactNode;
   /** Pinned under the content, for a save button and the like. */
   footer?: ReactNode;
+  /**
+   * 'full' takes the whole screen — for pickers and long forms. 'bottom' rises
+   * from the edge over the screen behind it, for short ones such as filters.
+   */
+  variant?: 'full' | 'bottom';
+  /** A second header action, e.g. "Reset". */
+  action?: ReactNode;
 }) {
   const { t } = useTranslation();
+  if (variant === 'bottom') {
+    return (
+      <Modal
+        visible={visible}
+        animationType="slide"
+        transparent
+        onRequestClose={onClose}
+      >
+        <View style={styles.bottomOverlay}>
+          <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
+          <View style={styles.bottomCard}>
+            <View style={styles.handle} />
+            <View style={styles.header}>
+              <View style={styles.headerText}>
+                <Text style={styles.title} numberOfLines={1}>
+                  {title}
+                </Text>
+                {subtitle ? (
+                  <View style={styles.subtitle}>{subtitle}</View>
+                ) : null}
+              </View>
+              {action}
+              <Pressable onPress={onClose} hitSlop={10} style={styles.closeBtn}>
+                <Text style={styles.closeText}>
+                  {closeLabel ?? t('common.done')}
+                </Text>
+              </Pressable>
+            </View>
+            <View style={styles.bottomBody}>{children}</View>
+            {footer ? <View style={styles.footer}>{footer}</View> : null}
+          </View>
+        </View>
+      </Modal>
+    );
+  }
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
       <SafeAreaView style={styles.screen}>
@@ -46,6 +90,7 @@ export function Sheet({
             </Text>
             {subtitle ? <View style={styles.subtitle}>{subtitle}</View> : null}
           </View>
+          {action}
           <Pressable onPress={onClose} hitSlop={10} style={styles.closeBtn}>
             <Text style={styles.closeText}>{closeLabel ?? t('common.done')}</Text>
           </Pressable>
@@ -59,6 +104,28 @@ export function Sheet({
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: '#f1f5f9' },
+  bottomOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(15,23,42,0.45)',
+    justifyContent: 'flex-end',
+  },
+  bottomCard: {
+    backgroundColor: '#f1f5f9',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    maxHeight: '86%',
+    overflow: 'hidden',
+  },
+  handle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#cbd5e1',
+    alignSelf: 'center',
+    marginTop: 8,
+    marginBottom: 4,
+  },
+  bottomBody: { paddingBottom: 8 },
   header: {
     flexDirection: 'row',
     alignItems: 'center',

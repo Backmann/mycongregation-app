@@ -2,7 +2,6 @@ import { useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
-  Modal,
   Platform,
   Pressable,
   SafeAreaView,
@@ -24,6 +23,7 @@ import {
   extractErrorMessage,
 } from '../../../lib/api';
 import { usePermissions } from '../../../lib/permissions';
+import { Dialog } from '../../../components/Dialog';
 
 const QK = ['external-congregations'] as const;
 
@@ -208,21 +208,22 @@ export default function CongregationsScreen() {
         </Pressable>
       </ScrollView>
 
-      <Modal visible={modalOpen} transparent animationType="fade" onRequestClose={() => setModalOpen(false)}>
-        <View style={styles.overlay}>
-          <Pressable
-            style={StyleSheet.absoluteFill}
-            onPress={() => setModalOpen(false)}
-            accessibilityRole="button"
-          />
-          <View style={styles.modalCard}>
-            <Pressable style={styles.modalClose} onPress={() => setModalOpen(false)} hitSlop={8} accessibilityRole="button">
-              <Ionicons name="close" size={22} color="#94a3b8" />
-            </Pressable>
-            <ScrollView keyboardShouldPersistTaps="handled">
-            <Text style={styles.modalTitle}>
-              {editing ? t('talkCoordinator.congregations.editTitle') : t('talkCoordinator.congregations.add')}
-            </Text>
+      <Dialog
+        visible={modalOpen}
+        title={
+          editing
+            ? t('talkCoordinator.congregations.editTitle')
+            : t('talkCoordinator.congregations.add')
+        }
+        icon="business-outline"
+        cancelLabel={t('common.cancel')}
+        confirmLabel={t('common.save')}
+        confirmDisabled={!canSave}
+        pending={pending}
+        onConfirm={() => void save()}
+        onCancel={() => setModalOpen(false)}
+        scroll
+      >
 
             <Text style={styles.fieldLabel}>{t('talkCoordinator.congregations.name')}</Text>
             <TextInput style={styles.input} value={name} onChangeText={setName} placeholderTextColor="#94a3b8" />
@@ -301,22 +302,7 @@ export default function CongregationsScreen() {
               </View>
             )}
 
-            <View style={styles.modalActions}>
-              <Pressable style={styles.modalCancel} onPress={() => setModalOpen(false)} disabled={pending}>
-                <Text style={styles.modalCancelText}>{t('common.cancel')}</Text>
-              </Pressable>
-              <Pressable
-                style={[styles.modalConfirm, (!canSave || pending) && styles.disabled]}
-                onPress={() => void save()}
-                disabled={!canSave || pending}
-              >
-                <Text style={styles.modalConfirmText}>{t('common.save')}</Text>
-              </Pressable>
-            </View>
-            </ScrollView>
-          </View>
-        </View>
-      </Modal>
+      </Dialog>
     </SafeAreaView>
   );
 }
@@ -363,10 +349,6 @@ const styles = StyleSheet.create({
   addBtnPressed: { backgroundColor: '#e0f2fe' },
   addBtnText: { fontSize: 14, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0369a1' },
   disabled: { opacity: 0.5 },
-  overlay: { flex: 1, backgroundColor: 'rgba(15,23,42,0.45)', justifyContent: 'center', paddingHorizontal: 24 },
-  modalClose: { position: 'absolute', top: 10, right: 10, zIndex: 5, padding: 4 },
-  modalCard: { backgroundColor: '#fff', borderRadius: 14, padding: 18, gap: 8, maxHeight: '88%' },
-  modalTitle: { fontSize: 16, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0f172a', marginBottom: 2 },
   fieldLabel: { fontSize: 12, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#64748b', marginTop: 4 },
   input: {
     borderWidth: 1,
@@ -377,11 +359,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#0f172a',
   },
-  modalActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 10, marginTop: 10 },
-  modalCancel: { paddingVertical: 10, paddingHorizontal: 14 },
-  modalCancelText: { fontSize: 15, color: '#64748b', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
-  modalConfirm: { paddingVertical: 10, paddingHorizontal: 18, borderRadius: 10, backgroundColor: '#0ea5e9' },
-  modalConfirmText: { fontSize: 15, color: '#fff', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
   sectionLabel: { fontSize: 13, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0f172a', marginTop: 12, marginBottom: 2 },
   weekendBox: { backgroundColor: '#f8fafc', borderRadius: 10, borderWidth: 1, borderColor: '#e2e8f0', padding: 10, gap: 2 },
   moreToggle: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 10, marginTop: 6 },
