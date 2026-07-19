@@ -1,8 +1,8 @@
 import { Children, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   Modal,
+  Alert,
   Platform,
   Pressable,
   ScrollView,
@@ -33,6 +33,7 @@ import {
 import { useAuth } from '../../../lib/auth';
 import { usePermissions } from '../../../lib/permissions';
 import { contactsCheckLine } from '../../../lib/contacts-check';
+import { Dialog } from '../../../components/Dialog';
 import { reportError } from '../../../lib/error-bus';
 import { buildS21Html, availableServiceYears } from '../../../lib/s21';
 import { exportHtmlAsPdf, openPrintWindow } from '../../../lib/pdf';
@@ -484,35 +485,32 @@ export default function PublisherDetailScreen() {
           </Pressable>
         )}
       </View>
-      <Modal
+      <Dialog
         visible={s21Open}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setS21Open(false)}
+        title={t('publishers.s21.title')}
+        icon="document-text-outline"
+        cancelLabel={t('common.cancel')}
+        onCancel={() => setS21Open(false)}
+        scroll
       >
-        <Pressable style={styles.s21Overlay} onPress={() => setS21Open(false)}>
-          <Pressable style={styles.s21Card} onPress={() => {}}>
-            <Text style={styles.s21Title}>{t('publishers.s21.title')}</Text>
-            <Text style={styles.s21Section}>{t('publishers.s21.year')}</Text>
-            {s21Loading ? (
-              <ActivityIndicator style={{ marginVertical: 16 }} />
-            ) : (
-              s21Years.map((y) => (
-                <Pressable
-                  key={y}
-                  style={styles.s21YearRow}
-                  onPress={() => generateS21(y)}
-                >
-                  <Text style={styles.s21YearLabel}>
-                    {y - 1}/{y}
-                  </Text>
-                  <Ionicons name="print-outline" size={18} color="#0369a1" />
-                </Pressable>
-              ))
-            )}
-          </Pressable>
-        </Pressable>
-      </Modal>
+        <Text style={styles.s21Section}>{t('publishers.s21.year')}</Text>
+        {s21Loading ? (
+          <ActivityIndicator style={{ marginVertical: 16 }} />
+        ) : (
+          s21Years.map((y) => (
+            <Pressable
+              key={y}
+              style={styles.s21YearRow}
+              onPress={() => generateS21(y)}
+            >
+              <Text style={styles.s21YearLabel}>
+                {y - 1}/{y}
+              </Text>
+              <Ionicons name="print-outline" size={18} color="#0369a1" />
+            </Pressable>
+          ))
+        )}
+      </Dialog>
 
       <RemoveModal
         visible={removeOpen}

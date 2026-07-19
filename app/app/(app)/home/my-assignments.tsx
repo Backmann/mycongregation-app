@@ -1,6 +1,5 @@
 import {
   ActivityIndicator,
-  Modal,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -24,6 +23,7 @@ import {
 } from '../../../lib/my-tasks';
 import { addDays, formatDateISO, startOfWeekMonday } from '../../../lib/dates';
 import { HallPlan } from '../../../components/HallPlan';
+import { Dialog } from '../../../components/Dialog';
 
 function weekHeaderLabel(weekStartISO: string, locale: string): string {
   const start = new Date(`${weekStartISO}T00:00:00`);
@@ -223,27 +223,18 @@ export default function MyAssignmentsScreen() {
         )}
       </ScrollView>
 
-      <Modal
+      <Dialog
         visible={planWindows !== null}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setPlanWindows(null)}
+        title={t('cleaning.windows.title')}
+        icon="grid-outline"
+        iconTint="#0284c7"
+        iconBg="#e0f2fe"
+        cancelLabel={t('common.close')}
+        onCancel={() => setPlanWindows(null)}
+        scroll
       >
-        <View style={styles.modalBackdrop}>
-          <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>
-              {t('cleaning.windows.title')}
-            </Text>
-            <HallPlan selected={planWindows ?? []} />
-            <Pressable
-              style={styles.modalClose}
-              onPress={() => setPlanWindows(null)}
-            >
-              <Text style={styles.modalCloseText}>{t('common.close')}</Text>
-            </Pressable>
-          </View>
-        </View>
-      </Modal>
+        <HallPlan selected={planWindows ?? []} />
+      </Dialog>
     </View>
   );
 }

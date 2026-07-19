@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { router } from 'expo-router';
 import { extractErrorMessage, meApi } from '../lib/api';
 import { useAuth } from '../lib/auth';
+import { Dialog } from './Dialog';
 
 /**
  * The yearly contact check. From 1 September the publisher's own card comes to
@@ -66,73 +67,52 @@ export function ContactsCheckPrompt() {
   );
 
   return (
-    <Modal visible transparent animationType="fade">
-      <View style={styles.backdrop}>
-        <View style={styles.card}>
-          <View style={styles.head}>
-            <Ionicons name="shield-checkmark-outline" size={20} color="#0ea5e9" />
-            <Text style={styles.title}>{t('myContacts.checkTitle')}</Text>
-          </View>
-          <Text style={styles.subtitle}>
-            {/* Before anyone has ever confirmed, talking about "since
-                1 September" would be confusing — say it plainly instead. */}
-            {confirmed
-              ? t('myContacts.checkSubtitle', {
-                  date: since.toLocaleDateString(i18n.language, {
-                    day: 'numeric',
-                    month: 'long',
-                  }),
-                })
-              : t('myContacts.checkSubtitleFirst')}
-          </Text>
+    <Dialog
+      visible
+      title={t('myContacts.checkTitle')}
+      icon="shield-checkmark-outline"
+      cancelLabel={t('myContacts.later')}
+      confirmLabel={t('myContacts.allCorrect')}
+      pending={confirmMutation.isPending}
+      onConfirm={() => confirmMutation.mutate()}
+      onCancel={() => setDeferred(true)}
+    >
+      <Text style={styles.subtitle}>
+        {confirmed
+          ? t('myContacts.checkSubtitle', {
+              date: since.toLocaleDateString(i18n.language, {
+                day: 'numeric',
+                month: 'long',
+              }),
+            })
+          : t('myContacts.checkSubtitleFirst')}
+      </Text>
 
-          <View style={styles.values}>
-            {line('call-outline', me.mobilePhone)}
-            {line('mail-outline', me.email)}
-            {line('home-outline', me.address)}
-          </View>
-
-          {error ? (
-            <View style={styles.errorBox}>
-              <Text style={styles.errorText}>{error}</Text>
-            </View>
-          ) : null}
-
-          <Pressable
-            style={({ pressed }) => [
-              styles.button,
-              styles.primary,
-              pressed && styles.pressed,
-              confirmMutation.isPending && styles.disabled,
-            ]}
-            onPress={() => confirmMutation.mutate()}
-            disabled={confirmMutation.isPending}
-          >
-            <Text style={styles.primaryText}>{t('myContacts.allCorrect')}</Text>
-          </Pressable>
-          <Pressable
-            style={({ pressed }) => [
-              styles.button,
-              styles.secondary,
-              pressed && styles.pressed,
-            ]}
-            onPress={() => {
-              setDeferred(true);
-              router.push('/profile/contacts' as never);
-            }}
-          >
-            <Text style={styles.secondaryText}>{t('myContacts.edit')}</Text>
-          </Pressable>
-          <Pressable
-            style={styles.laterBtn}
-            onPress={() => setDeferred(true)}
-            hitSlop={8}
-          >
-            <Text style={styles.laterText}>{t('myContacts.later')}</Text>
-          </Pressable>
-        </View>
+      <View style={styles.values}>
+        {line('call-outline', me.mobilePhone)}
+        {line('mail-outline', me.email)}
+        {line('home-outline', me.address)}
       </View>
-    </Modal>
+
+      {error ? (
+        <View style={styles.errorBox}>
+          <Text style={styles.errorText}>{error}</Text>
+        </View>
+      ) : null}
+
+      <Pressable
+        style={({ pressed }) => [
+          styles.editBtn,
+          pressed && styles.pressed,
+        ]}
+        onPress={() => {
+          setDeferred(true);
+          router.push('/profile/contacts' as never);
+        }}
+      >
+        <Text style={styles.editText}>{t('myContacts.edit')}</Text>
+      </Pressable>
+    </Dialog>
   );
 }
 
@@ -187,12 +167,15 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   errorText: { color: '#991b1b', fontSize: 12.5 },
-  button: {
-    paddingVertical: 13,
+  editBtn: {
+    marginTop: 14,
+    paddingVertical: 12,
     borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
     alignItems: 'center',
-    marginBottom: 9,
   },
+  editText: { color: '#334155', fontSize: 14.5, fontWeight: '600' },
   primary: { backgroundColor: '#0ea5e9' },
   primaryText: { color: '#fff', fontSize: 15, fontWeight: '700' },
   secondary: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#e2e8f0' },
