@@ -33,6 +33,7 @@ import {
 import { useAuth } from '../../../lib/auth';
 import { usePermissions } from '../../../lib/permissions';
 import { contactsCheckLine } from '../../../lib/contacts-check';
+import { reportError } from '../../../lib/error-bus';
 import { buildS21Html, availableServiceYears } from '../../../lib/s21';
 import { exportHtmlAsPdf, openPrintWindow } from '../../../lib/pdf';
 
@@ -87,8 +88,10 @@ export default function PublisherDetailScreen() {
         fileName: 'S-21',
         preopenedWindow: preopened,
       });
-    } catch {
+    } catch (e) {
+      // Used to fail in silence: the dialog closed and no report appeared.
       if (preopened) preopened.close();
+      reportError(extractErrorMessage(e));
     } finally {
       setS21Loading(false);
       setS21Open(false);

@@ -301,6 +301,8 @@ function GeneralExtras({
   const plannedAt = assignment?.thoroughPlannedAt ?? null;
 
   const mutation = useMutation({
+    // Shown in place by this form — keep it out of the error strip.
+    meta: { inlineError: true },
     mutationFn: (plannedAtIso: string | null) =>
       cleaningApi.planGeneral({
         weekStartDate: weekStart,
@@ -522,6 +524,8 @@ function ThoroughExtras({
   const canPlan = hasGroup && (canEdit || isMyGroupOverseer);
 
   const planMutation = useMutation({
+    // Shown in place by this form — keep it out of the error strip.
+    meta: { inlineError: true },
     mutationFn: (plannedAtIso: string | null) =>
       cleaningApi.planThorough({
         weekStartDate: weekStart,

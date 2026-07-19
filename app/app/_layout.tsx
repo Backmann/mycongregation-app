@@ -1,13 +1,30 @@
 import { useEffect, useState } from 'react';
 import { Platform } from 'react-native';
 import { Stack } from 'expo-router';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import {
+  MutationCache,
+  QueryClient,
+  QueryClientProvider,
+} from '@tanstack/react-query';
+import { extractErrorMessage } from '../lib/api';
+import { reportError } from '../lib/error-bus';
+import { ErrorToast } from '../components/ErrorToast';
 import { AuthProvider } from '../lib/auth';
 import { initI18nFromStorage } from '../lib/i18n';
 import { LanguagePickerModal } from '../components/LanguagePicker';
 import { useAppFonts } from '../lib/fonts';
 
 const queryClient = new QueryClient({
+  // Every failed change reports itself. Most requests used to fail in silence:
+  // the screen just did not move, which reads as a broken app. A screen that
+  // shows the failure in place marks its mutation `meta.inlineError` and stays
+  // out of the strip, so nothing is said twice.
+  mutationCache: new MutationCache({
+    onError: (error, _vars, _ctx, mutation) => {
+      if (mutation.meta?.inlineError) return;
+      reportError(extractErrorMessage(error));
+    },
+  }),
   defaultOptions: {
     queries: {
       retry: 1,
@@ -53,6 +70,7 @@ export default function RootLayout() {
           onClose={() => setShowLanguagePrompt(false)}
           required
         />
+        <ErrorToast />
       </AuthProvider>
     </QueryClientProvider>
   );

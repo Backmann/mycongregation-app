@@ -60,6 +60,8 @@ export default function MyContactsScreen() {
   };
 
   const saveMutation = useMutation({
+    // Shown in place by this form — keep it out of the error strip.
+    meta: { inlineError: true },
     mutationFn: () =>
       meApi.updateContacts({
         mobilePhone: form.mobilePhone.trim() || null,
@@ -70,6 +72,8 @@ export default function MyContactsScreen() {
     onError: (e) => setError(extractErrorMessage(e)),
   });
   const confirmMutation = useMutation({
+    // Shown in place by this form — keep it out of the error strip.
+    meta: { inlineError: true },
     mutationFn: () => meApi.confirmContacts(),
     onSuccess: done,
     onError: (e) => setError(extractErrorMessage(e)),

@@ -36,6 +36,8 @@ export function ContactsCheckPrompt() {
   const me = data?.publisher ?? null;
 
   const confirmMutation = useMutation({
+    // Shown in place by this form — keep it out of the error strip.
+    meta: { inlineError: true },
     mutationFn: () => meApi.confirmContacts(),
     // Close on success rather than waiting for the refetch, and say so out loud
     // when it fails — a card that silently stays put looks broken.

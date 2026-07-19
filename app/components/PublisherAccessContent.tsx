@@ -49,6 +49,8 @@ export function PublisherAccessContent({ publisher }: { publisher: Publisher }) 
   };
 
   const grantMutation = useMutation({
+    // Shown in place by this form — keep it out of the error strip.
+    meta: { inlineError: true },
     mutationFn: (input: GrantAccessInput) =>
       publishersApi.grantAccess(publisher.id, input),
     onSuccess: () => {
@@ -58,6 +60,8 @@ export function PublisherAccessContent({ publisher }: { publisher: Publisher }) 
   });
 
   const updateMutation = useMutation({
+    // Shown in place by this form — keep it out of the error strip.
+    meta: { inlineError: true },
     mutationFn: (input: {
       email?: string;
       password?: string;
@@ -75,6 +79,8 @@ export function PublisherAccessContent({ publisher }: { publisher: Publisher }) 
   });
 
   const resendMutation = useMutation({
+    // Shown in place by this form — keep it out of the error strip.
+    meta: { inlineError: true },
     mutationFn: () => publishersApi.resendInvite(publisher.id),
     onSuccess: () => {
       setInviteSent(true);
