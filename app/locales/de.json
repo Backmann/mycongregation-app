@@ -1378,7 +1378,10 @@
     },
     "sectionLabel": "Königreichssaal reinigen",
     "rowTitle": "Anleitung zur Saalreinigung",
-    "rowSubtitle": "Wie und wo reinigen: Karten, Technik, Sicherheit"
+    "rowSubtitle": "Wie und wo reinigen: Karten, Technik, Sicherheit",
+    "showingFor": "Angezeigt: {{freq}}",
+    "showAll": "Ganzer Leitfaden",
+    "showThisOnly": "Nur diese Reinigung"
   },
   "service": {
     "hubTitle": "Dienst",

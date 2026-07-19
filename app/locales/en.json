@@ -1378,7 +1378,10 @@
     },
     "sectionLabel": "Kingdom Hall cleaning",
     "rowTitle": "Kingdom Hall cleaning guide",
-    "rowSubtitle": "How and where to clean: cards, technique, safety"
+    "rowSubtitle": "How and where to clean: cards, technique, safety",
+    "showingFor": "Showing: {{freq}}",
+    "showAll": "Whole guide",
+    "showThisOnly": "This cleaning only"
   },
   "service": {
     "hubTitle": "Ministry",

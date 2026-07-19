@@ -10,6 +10,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+
 import {
   CLEANING_CATEGORIES,
   CLEANING_FREQUENCIES,
@@ -18,6 +19,17 @@ import {
   MATERIALS_ASPECT,
   TECHNIK_BLOCKS,
 } from '../../../lib/cleaning-guide';
+
+/**
+ * An asset's own aspect ratio. The materials strips used to share one fixed
+ * ratio, so every picture that wasn't exactly that shape was letterboxed —
+ * the sanitary strip lost a third of its width to white.
+ */
+function assetAspect(source: number, fallback: number): number {
+  const meta = Image.resolveAssetSource(source);
+  return meta?.width && meta?.height ? meta.width / meta.height : fallback;
+}
+
 
 const SAFETY_ITEMS = ['i1', 'i2', 'i3', 'i4', 'i5'] as const;
 const PRINCIPLE_ITEMS = ['i1', 'i2', 'i3', 'i4', 'i5', 'i6', 'i7'] as const;
@@ -43,7 +55,11 @@ function CategoryCard({
       ? defaultFreq
       : available[0],
   );
-  const steps = category.steps[freq] ?? [];
+  // Arriving from a cleaning row means "show me THIS cleaning": the frequency
+  // is fixed, so the card can never quietly switch to another one's steps.
+  const pinned = !!defaultFreq && available.includes(defaultFreq);
+  const shownFreq = pinned ? defaultFreq! : freq;
+  const steps = category.steps[shownFreq] ?? [];
 
   return (
     <View style={[styles.card, { backgroundColor: category.tint }]}>
@@ -75,14 +91,17 @@ function CategoryCard({
           </Text>
           <Image
             source={category.materials}
-            style={styles.materials}
-            resizeMode="contain"
+            style={[
+              styles.materials,
+              { aspectRatio: assetAspect(category.materials, MATERIALS_ASPECT) },
+            ]}
+            resizeMode="cover"
           />
 
-          {available.length > 1 ? (
+          {!pinned && available.length > 1 ? (
             <View style={styles.freqRow}>
               {available.map((f) => {
-                const active = f === freq;
+                const active = f === shownFreq;
                 return (
                   <Pressable
                     key={f}
@@ -104,7 +123,7 @@ function CategoryCard({
                 );
               })}
             </View>
-          ) : (
+          ) : !pinned ? (
             <View style={styles.freqRow}>
               <View
                 style={[
@@ -120,7 +139,7 @@ function CategoryCard({
                 </Text>
               </View>
             </View>
-          )}
+          ) : null}
 
           {steps.map((step, i) => (
             <View key={step.key} style={styles.step}>
@@ -136,8 +155,11 @@ function CategoryCard({
               </View>
               <Image
                 source={step.image}
-                style={styles.stepImage}
-                resizeMode="contain"
+                style={[
+                  styles.stepImage,
+                  { aspectRatio: assetAspect(step.image, 1) },
+                ]}
+                resizeMode="cover"
               />
             </View>
           ))}
@@ -155,6 +177,7 @@ export default function CleaningGuideScreen() {
   const defaultFreq = CLEANING_FREQUENCIES.includes(freq as CleaningFrequency)
     ? (freq as CleaningFrequency)
     : undefined;
+  const [showAll, setShowAll] = useState(false);
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
@@ -163,8 +186,35 @@ export default function CleaningGuideScreen() {
         <Text style={styles.introText}>{t('cleaningGuide.intro.text')}</Text>
       </View>
 
-      {CLEANING_CATEGORIES.map((c) => (
-        <CategoryCard key={c.id} category={c} defaultFreq={defaultFreq} />
+      {defaultFreq ? (
+        <View style={styles.freqNotice}>
+          <Ionicons name="funnel-outline" size={14} color="#0369a1" />
+          <Text style={styles.freqNoticeText}>
+            {t('cleaningGuide.showingFor', {
+              freq: t(`cleaningGuide.freq.${defaultFreq}`),
+            })}
+          </Text>
+          <Pressable onPress={() => setShowAll((v) => !v)} hitSlop={6}>
+            <Text style={styles.freqNoticeAction}>
+              {showAll
+                ? t('cleaningGuide.showThisOnly')
+                : t('cleaningGuide.showAll')}
+            </Text>
+          </Pressable>
+        </View>
+      ) : null}
+
+      {/* Coming from a cleaning row, only the parts that belong to that kind of
+          cleaning are listed — a category without steps for it used to appear
+          anyway and quietly show another cleaning's instructions. */}
+      {CLEANING_CATEGORIES.filter(
+        (c) => !defaultFreq || showAll || !!c.steps[defaultFreq],
+      ).map((c) => (
+        <CategoryCard
+          key={c.id}
+          category={c}
+          defaultFreq={showAll ? undefined : defaultFreq}
+        />
       ))}
 
       <View style={styles.block}>
@@ -262,9 +312,34 @@ const styles = StyleSheet.create({
   },
   materials: {
     width: '100%',
-    aspectRatio: MATERIALS_ASPECT,
+    // ratio comes from the asset itself
     backgroundColor: '#fff',
     borderRadius: 10,
+  },
+  freqNotice: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#f0f9ff',
+    borderWidth: 1,
+    borderColor: '#bae6fd',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginBottom: 12,
+  },
+  freqNoticeText: {
+    flex: 1,
+    fontSize: 12.5,
+    color: '#0c4a6e',
+    fontWeight: '600',
+    fontFamily: 'Manrope_600SemiBold',
+  },
+  freqNoticeAction: {
+    fontSize: 12.5,
+    color: '#0369a1',
+    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
   },
   freqRow: { flexDirection: 'row', gap: 6, marginTop: 10, flexWrap: 'wrap' },
   freqChip: {
@@ -297,7 +372,7 @@ const styles = StyleSheet.create({
   stepImage: {
     width: '100%',
     maxWidth: 440,
-    aspectRatio: 1,
+
     alignSelf: 'center',
     marginTop: 6,
     borderRadius: 12,
