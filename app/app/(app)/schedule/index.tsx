@@ -107,6 +107,7 @@ import { NotifyChangesDialog } from '../../../components/NotifyChangesDialog';
 import { useMyPublisher } from '../../../lib/useMyPublisher';
 import { MyDot } from '../../../components/MyDot';
 import { useMyGlow } from '../../../components/useMyGlow';
+import { reportError } from '../../../lib/error-bus';
 import {
   CLEANING_SHADES,
   SECTION_COLORS,
@@ -1011,8 +1012,10 @@ export default function ScheduleIndexScreen() {
             : t('schedule.print.weekendTitle'),
         preopenedWindow: win,
       });
-    } catch {
+    } catch (e) {
+      // Printing used to fail in silence: the print window just vanished.
       win?.close();
+      reportError(extractErrorMessage(e));
     } finally {
       setPrintingMonth(false);
     }
@@ -1177,8 +1180,10 @@ export default function ScheduleIndexScreen() {
         fileName: t('schedule.tabs.duties'),
         preopenedWindow: win,
       });
-    } catch {
+    } catch (e) {
+      // Printing used to fail in silence: the print window just vanished.
       win?.close();
+      reportError(extractErrorMessage(e));
     } finally {
       setPrintingDuties(false);
     }
@@ -1329,8 +1334,10 @@ export default function ScheduleIndexScreen() {
         fileName: t('cleaning.title'),
         preopenedWindow: win,
       });
-    } catch {
+    } catch (e) {
+      // Printing used to fail in silence: the print window just vanished.
       win?.close();
+      reportError(extractErrorMessage(e));
     } finally {
       setPrintingCleaning(false);
     }

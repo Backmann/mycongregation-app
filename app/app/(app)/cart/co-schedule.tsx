@@ -39,6 +39,7 @@ import { usePermissions } from '../../../lib/permissions';
 import { formatDateISO, startOfWeekMonday } from '../../../lib/dates';
 import { meetingDate } from '../../../lib/meeting-schedule';
 import type { CoMeetingInfo } from '../../../lib/coSchedulePdf';
+import { reportError } from '../../../lib/error-bus';
 
 const WEEKDAY_ANCHOR = [
   '2024-01-01',
@@ -613,6 +614,9 @@ export default function CoScheduleScreen() {
     }
 
     const out: CoMeetingInfo[] = [];
+    // A week that fails to load leaves its themes blank; say so once at the end
+    // rather than letting the schedule look simply empty.
+    let loadFailed = false;
     for (const weekStart of weekSet) {
       const monday = new Date(`${weekStart}T00:00:00`);
       // Load this week's assignments once.
@@ -622,6 +626,7 @@ export default function CoScheduleScreen() {
         rows = res.data ?? [];
       } catch {
         rows = [];
+        loadFailed = true;
       }
       const titleFor = (partKey: string): string | null => {
         const a = rows.find((r) => r.partKey === partKey);
@@ -659,6 +664,7 @@ export default function CoScheduleScreen() {
         });
       }
     }
+    if (loadFailed) reportError(t('coVisit.partialLoad'));
     return out;
   };
 

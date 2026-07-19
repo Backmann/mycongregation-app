@@ -1516,7 +1516,8 @@
     "pageForCongregation": "Program for the congregation",
     "pageForOverseer": "Program for the circuit overseer",
     "midweekMeeting": "Congregation meeting (midweek)",
-    "weekendMeeting": "Congregation meeting (weekend)"
+    "weekendMeeting": "Congregation meeting (weekend)",
+    "partialLoad": "Some weeks failed to load — meeting themes may be incomplete."
   },
   "witnessing": {
     "youAreAssigned": "You're assigned to this slot",

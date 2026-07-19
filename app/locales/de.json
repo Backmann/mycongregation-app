@@ -1516,7 +1516,8 @@
     "pageForCongregation": "Programm für die Versammlung",
     "pageForOverseer": "Programm für den Kreisaufseher",
     "midweekMeeting": "Zusammenkunft (Woche)",
-    "weekendMeeting": "Zusammenkunft (Wochenende)"
+    "weekendMeeting": "Zusammenkunft (Wochenende)",
+    "partialLoad": "Einige Wochen konnten nicht geladen werden — Themen sind möglicherweise unvollständig."
   },
   "witnessing": {
     "youAreAssigned": "Sie sind diesem Slot zugeteilt",
