@@ -63,7 +63,7 @@
     "min8": "At least 8 characters",
     "makeAdmin": "Make administrator",
     "inviteHint": "The person will receive an email with a link and set their own password (the link is valid for 72 hours).",
-    "manualHint": "The role is assigned automatically when the person receives an assignment. Share the password with them separately — it is no longer shown here.",
+    "manualHint": "You set the password yourself and pass it on — it is not shown here again.",
     "invite": "Invite",
     "create": "Create",
     "newPassword": "New password",
@@ -74,7 +74,10 @@
     "resendInviteTitle": "Invitation sent",
     "resendInviteBody": "An email with the link was sent to {{email}}. The link is valid for 72 hours.",
     "disableConfirmTitle": "Disable access?",
-    "disableConfirmBody": "{{name}} will no longer be able to sign in. You can enable access again later."
+    "disableConfirmBody": "{{name}} will no longer be able to sign in. You can enable access again later.",
+    "emailLabel": "E-mail",
+    "emailInvalid": "That address looks wrong",
+    "roleHint": "The role normally follows the appointment — turn this on only if administrator rights are needed."
   },
   "tabs": {
     "schedule": "Schedule",

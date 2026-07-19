@@ -586,20 +586,27 @@ function GrantModal({
   const [email, setEmail] = useState(defaultEmail);
   const [password, setPassword] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
-  const [sendInvite, setSendInvite] = useState(false);
+  // Inviting by e-mail is the better default: the person sets their own
+  // password and nobody has to pass one along by hand.
+  const [sendInvite, setSendInvite] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     if (visible) {
       setEmail(defaultEmail);
       setPassword('');
       setIsAdmin(false);
-      setSendInvite(false);
+      setSendInvite(true);
+      setShowPassword(false);
     }
   }, [visible, defaultEmail]);
 
-  const canSubmit =
-    !pending &&
-    (sendInvite ? email.trim().includes('@') : password.length >= 8);
+  // The address is the login, so it is required either way — the old check
+  // ignored it unless an invitation was being sent, and an empty or malformed
+  // address only failed once the server answered.
+  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+  const passwordOk = password.length >= 8;
+  const canSubmit = !pending && emailOk && (sendInvite || passwordOk);
 
   return (
     <Modal
@@ -614,49 +621,107 @@ function GrantModal({
           onPress={onCancel}
           accessibilityRole="button"
         />
-        <View style={styles.modal}>
-          <Text style={styles.modalTitle}>{t('publisherAccess.grant')}</Text>
+        <View style={[styles.modal, grantStyles.card]}>
+          <View style={grantStyles.head}>
+            <View style={grantStyles.headIcon}>
+              <Ionicons name="key-outline" size={19} color="#0ea5e9" />
+            </View>
+            <Text style={grantStyles.title}>{t('publisherAccess.grant')}</Text>
+          </View>
 
-          <Text style={styles.modalLabel}>Email</Text>
+          <Text style={grantStyles.label}>{t('publisherAccess.emailLabel')}</Text>
           <TextInput
-            style={styles.input}
+            style={[grantStyles.input, email.length > 0 && !emailOk && grantStyles.inputBad]}
             value={email}
             onChangeText={setEmail}
             autoCapitalize="none"
             autoCorrect={false}
             keyboardType="email-address"
+            textContentType="emailAddress"
             placeholder="name@example.org"
+            placeholderTextColor="#94a3b8"
           />
+          {email.length > 0 && !emailOk ? (
+            <Text style={grantStyles.fieldHint}>
+              {t('publisherAccess.emailInvalid')}
+            </Text>
+          ) : null}
 
-          <View style={styles.switchRow}>
-            <Text style={styles.rowLabel}>{t('publisherAccess.sendInvite')}</Text>
+          <Pressable
+            style={grantStyles.optionRow}
+            onPress={() => setSendInvite((v) => !v)}
+          >
+            <View style={{ flex: 1 }}>
+              <Text style={grantStyles.optionTitle}>
+                {t('publisherAccess.sendInvite')}
+              </Text>
+              <Text style={grantStyles.optionHint}>
+                {sendInvite
+                  ? t('publisherAccess.inviteHint')
+                  : t('publisherAccess.manualHint')}
+              </Text>
+            </View>
             <Switch value={sendInvite} onValueChange={setSendInvite} />
-          </View>
+          </Pressable>
+
           {sendInvite ? null : (
             <>
-              <Text style={styles.modalLabel}>{t('publisherAccess.password')}</Text>
-              <TextInput
-                style={styles.input}
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-                placeholder={t('publisherAccess.min8')}
-              />
+              <Text style={grantStyles.label}>
+                {t('publisherAccess.password')}
+              </Text>
+              <View style={grantStyles.passwordWrap}>
+                <TextInput
+                  style={grantStyles.passwordInput}
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry={!showPassword}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  textContentType="newPassword"
+                  placeholder={t('publisherAccess.min8')}
+                  placeholderTextColor="#94a3b8"
+                />
+                <Pressable
+                  onPress={() => setShowPassword((v) => !v)}
+                  hitSlop={8}
+                  style={grantStyles.eyeBtn}
+                >
+                  <Ionicons
+                    name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                    size={18}
+                    color="#64748b"
+                  />
+                </Pressable>
+              </View>
+              {password.length > 0 && !passwordOk ? (
+                <Text style={grantStyles.fieldHint}>
+                  {t('publisherAccess.min8')}
+                </Text>
+              ) : null}
             </>
           )}
 
-          <View style={styles.switchRow}>
-            <Text style={styles.rowLabel}>{t('publisherAccess.makeAdmin')}</Text>
+          <Pressable
+            style={grantStyles.optionRow}
+            onPress={() => setIsAdmin((v) => !v)}
+          >
+            <View style={{ flex: 1 }}>
+              <Text style={grantStyles.optionTitle}>
+                {t('publisherAccess.makeAdmin')}
+              </Text>
+              <Text style={grantStyles.optionHint}>
+                {t('publisherAccess.roleHint')}
+              </Text>
+            </View>
             <Switch value={isAdmin} onValueChange={setIsAdmin} />
-          </View>
+          </Pressable>
 
-          <Text style={styles.hint}>
-            {sendInvite
-              ? t('publisherAccess.inviteHint')
-              : t('publisherAccess.manualHint')}
-          </Text>
-
-          {error ? <Text style={styles.error}>{error}</Text> : null}
+          {error ? (
+            <View style={grantStyles.errorBox}>
+              <Ionicons name="alert-circle-outline" size={15} color="#991b1b" />
+              <Text style={grantStyles.errorText}>{error}</Text>
+            </View>
+          ) : null}
 
           <View style={styles.modalBtns}>
             <Pressable style={styles.modalCancel} onPress={onCancel}>
@@ -667,9 +732,15 @@ function GrantModal({
               disabled={!canSubmit}
               onPress={() => onSubmit(email.trim(), password, isAdmin, sendInvite)}
             >
-              <Text style={styles.modalOkText}>
-                {pending ? '…' : sendInvite ? t('publisherAccess.invite') : t('publisherAccess.create')}
-              </Text>
+              {pending ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Text style={styles.modalOkText}>
+                  {sendInvite
+                    ? t('publisherAccess.invite')
+                    : t('publisherAccess.create')}
+                </Text>
+              )}
             </Pressable>
           </View>
         </View>
@@ -748,6 +819,92 @@ function ResetModal({
     </Modal>
   );
 }
+
+/** The grant-access dialog: same shapes as the app's forms — bordered inputs,
+ *  13px labels, options as rows that explain themselves. */
+const grantStyles = StyleSheet.create({
+  card: { padding: 18, borderRadius: 18, gap: 0 },
+  head: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 14 },
+  headIcon: {
+    width: 34,
+    height: 34,
+    borderRadius: 11,
+    backgroundColor: '#e0f2fe',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  title: {
+    flex: 1,
+    fontSize: 17,
+    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
+    color: '#0f172a',
+  },
+  label: {
+    fontSize: 13,
+    color: '#475569',
+    fontWeight: '600',
+    fontFamily: 'Manrope_600SemiBold',
+    marginBottom: 6,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 11,
+    fontSize: 15,
+    color: '#0f172a',
+    backgroundColor: '#fff',
+  },
+  inputBad: { borderColor: '#fca5a5' },
+  fieldHint: { fontSize: 12, color: '#b45309', marginTop: 5 },
+  passwordWrap: { position: 'relative', justifyContent: 'center' },
+  passwordInput: {
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderRadius: 10,
+    paddingLeft: 12,
+    paddingRight: 42,
+    paddingVertical: 11,
+    fontSize: 15,
+    color: '#0f172a',
+    backgroundColor: '#fff',
+  },
+  eyeBtn: { position: 'absolute', right: 12 },
+  optionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: '#f8fafc',
+    borderWidth: 1,
+    borderColor: '#e8edf3',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 11,
+    marginTop: 14,
+    marginBottom: 2,
+  },
+  optionTitle: {
+    fontSize: 14,
+    color: '#0f172a',
+    fontWeight: '600',
+    fontFamily: 'Manrope_600SemiBold',
+  },
+  optionHint: { fontSize: 12, color: '#64748b', lineHeight: 17, marginTop: 3 },
+  errorBox: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 7,
+    backgroundColor: '#fef2f2',
+    borderColor: '#fecaca',
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 11,
+    marginTop: 14,
+  },
+  errorText: { flex: 1, fontSize: 12.5, color: '#991b1b', lineHeight: 17 },
+});
 
 const styles = StyleSheet.create({
   loading: {

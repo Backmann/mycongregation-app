@@ -63,7 +63,7 @@
     "min8": "Mindestens 8 Zeichen",
     "makeAdmin": "Zum Administrator machen",
     "inviteHint": "Die Person erhält eine E-Mail mit einem Link und legt ihr eigenes Passwort fest (der Link ist 72 Stunden gültig).",
-    "manualHint": "Die Rolle wird automatisch zugewiesen, wenn die Person eine Zuteilung erhält. Teilen Sie ihr das Passwort separat mit — es wird hier nicht mehr angezeigt.",
+    "manualHint": "Du legst das Passwort selbst fest und gibst es weiter — hier wird es nicht mehr angezeigt.",
     "invite": "Einladen",
     "create": "Erstellen",
     "newPassword": "Neues Passwort",
@@ -74,7 +74,10 @@
     "resendInviteTitle": "Einladung gesendet",
     "resendInviteBody": "Eine E-Mail mit dem Link wurde an {{email}} gesendet. Der Link ist 72 Stunden gültig.",
     "disableConfirmTitle": "Zugang deaktivieren?",
-    "disableConfirmBody": "{{name}} kann sich dann nicht mehr anmelden. Sie können den Zugang später wieder aktivieren."
+    "disableConfirmBody": "{{name}} kann sich dann nicht mehr anmelden. Sie können den Zugang später wieder aktivieren.",
+    "emailLabel": "E-Mail",
+    "emailInvalid": "Die Adresse sieht falsch aus",
+    "roleHint": "Die Rolle ergibt sich normalerweise aus der Ernennung — nur einschalten, wenn Administratorrechte nötig sind."
   },
   "tabs": {
     "schedule": "Plan",
