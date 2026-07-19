@@ -339,8 +339,21 @@ function PublisherRow({
           </View>
         )}
         {publisher.mobilePhone && (
-          <Text style={styles.phone}>{publisher.mobilePhone}</Text>
+          <View style={styles.contactLine}>
+            <Ionicons name="call-outline" size={12} color="#64748b" />
+            <Text style={styles.contactText}>{publisher.mobilePhone}</Text>
+          </View>
         )}
+        {/* The full address, in the same shape as the phone above it — elders
+            visiting or arranging lifts read it straight from the roster. */}
+        {publisher.address ? (
+          <View style={styles.contactLine}>
+            <Ionicons name="location-outline" size={12} color="#64748b" />
+            <Text style={styles.contactText} numberOfLines={2}>
+              {publisher.address}
+            </Text>
+          </View>
+        ) : null}
         <View style={styles.groupLine}>
           <Ionicons
             name="people-outline"
@@ -661,7 +674,13 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   tagText: { color: '#0369a1', fontSize: 11, fontWeight: '500', fontFamily: 'Manrope_500Medium',},
-  phone: { color: '#64748b', fontSize: 13, marginTop: 4 },
+  contactLine: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 5,
+    marginTop: 4,
+  },
+  contactText: { flex: 1, color: '#64748b', fontSize: 13, lineHeight: 17 },
   checkLine: {
     flexDirection: 'row',
     alignItems: 'center',
