@@ -2203,5 +2203,8 @@
     "midweek": "Wochenmitte",
     "weekend": "Wochenende",
     "coShort": "KA"
+  },
+  "activityFeed": {
+    "noAccess": "Die Ereignisliste steht Ältesten und Administratoren der Versammlung zur Verfügung."
   }
 }

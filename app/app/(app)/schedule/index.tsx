@@ -1723,7 +1723,13 @@ export default function ScheduleIndexScreen() {
                 style={[styles.dutiesRow, dutiesNarrow && styles.dutiesRowNarrow]}
               >
               {dutyOrder.map((meeting) => (
-              <View key={meeting} style={styles.dutiesCol}>
+              <View
+                key={meeting}
+                style={[
+                  styles.dutiesCol,
+                  dutiesNarrow && styles.dutiesColNarrow,
+                ]}
+              >
               <DutiesSection
                 only={meeting}
                 dateLabel={meetingDateLabel(meeting)}
@@ -2459,6 +2465,15 @@ const styles = StyleSheet.create({
   // shrink to its content and hug the left edge instead of filling the width.
   dutiesRowNarrow: { flexDirection: 'column', alignItems: 'stretch', gap: 0 },
   dutiesCol: { flex: 1, minWidth: 0 },
+  // Stacked, the column must size to its content: keeping flex:1 would make the
+  // two cards share the available height, and the taller one lost its bottom
+  // rows and the "add duty" button.
+  dutiesColNarrow: {
+    flexGrow: 0,
+    flexShrink: 0,
+    flexBasis: 'auto',
+    width: '100%',
+  },
   container: { flex: 1, backgroundColor: '#f1f5f9' },
   overline: {
     fontSize: 11,

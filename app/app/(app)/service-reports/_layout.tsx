@@ -7,7 +7,10 @@ import { usePermissions } from '../../../lib/permissions';
 
 export default function ServiceReportsLayout() {
   const { t } = useTranslation();
-  const { canViewServiceSummary } = usePermissions();
+  const { canViewServiceSummary, isAdmin, isElder } = usePermissions();
+  // The feed is an elders' tool: the server only serves it to admins and
+  // elders, so anyone else used to tap the icon and meet a raw API error.
+  const canViewActivityFeed = isAdmin || isElder;
   return (
     <Stack
       screenOptions={{
@@ -34,17 +37,15 @@ export default function ServiceReportsLayout() {
                   />
                 </Pressable>
               )}
-              <Pressable
-                onPress={() => router.push('/service-reports/activity' as any)}
-                style={{ paddingHorizontal: 8 }}
-                hitSlop={8}
-              >
-                <Ionicons
-                  name="pulse-outline"
-                  size={24}
-                  color="#0ea5e9"
-                />
-              </Pressable>
+              {canViewActivityFeed && (
+                <Pressable
+                  onPress={() => router.push('/service-reports/activity' as any)}
+                  style={{ paddingHorizontal: 8 }}
+                  hitSlop={8}
+                >
+                  <Ionicons name="pulse-outline" size={24} color="#0ea5e9" />
+                </Pressable>
+              )}
               <Pressable
                 onPress={() => router.push('/service-reports/group' as any)}
                 style={{ paddingHorizontal: 8 }}

@@ -2203,5 +2203,8 @@
     "midweek": "Midweek",
     "weekend": "Weekend",
     "coShort": "CO"
+  },
+  "activityFeed": {
+    "noAccess": "The activity feed is available to elders and congregation administrators."
   }
 }
