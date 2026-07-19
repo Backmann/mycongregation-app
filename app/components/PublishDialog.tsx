@@ -1,5 +1,6 @@
-import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { Dialog } from './Dialog';
 
 interface Props {
   /** Open when non-null. */
@@ -18,101 +19,78 @@ interface Props {
 export function PublishDialog({ open, busy, onPublish, onCancel }: Props) {
   const { t } = useTranslation();
   return (
-    <Modal visible={open} transparent animationType="fade" onRequestClose={onCancel}>
-      <Pressable style={styles.backdrop} onPress={busy ? undefined : onCancel} />
-      <View style={styles.center} pointerEvents="box-none">
-        <View style={styles.card}>
-          <Text style={styles.title}>{t('schedule.publishDialog.title')}</Text>
-          <Text style={styles.subtitle}>
-            {t('schedule.publishDialog.subtitle')}
-          </Text>
+    <Dialog
+      visible={open}
+      title={t('schedule.publishDialog.title')}
+      icon="cloud-upload-outline"
+      cancelLabel={t('common.cancel')}
+      onCancel={onCancel}
+      pending={busy}
+    >
+      <Text style={choiceStyles.subtitle}>
+        {t('schedule.publishDialog.subtitle')}
+      </Text>
 
-          <Pressable
-            style={({ pressed }) => [
-              styles.primaryBtn,
-              pressed && styles.pressed,
-              busy && styles.disabled,
-            ]}
-            disabled={busy}
-            onPress={() => onPublish(true)}
-          >
-            <Text style={styles.primaryText}>
-              {t('schedule.publishDialog.notify')}
-            </Text>
-            <Text style={styles.primaryHint}>
-              {t('schedule.publishDialog.notifyHint')}
-            </Text>
-          </Pressable>
+      <Pressable
+        style={({ pressed }) => [
+          choiceStyles.primary,
+          pressed && choiceStyles.pressed,
+          busy && choiceStyles.disabled,
+        ]}
+        disabled={busy}
+        onPress={() => onPublish(true)}
+      >
+        <Text style={choiceStyles.primaryText}>
+          {t('schedule.publishDialog.notify')}
+        </Text>
+        <Text style={choiceStyles.primaryHint}>
+          {t('schedule.publishDialog.notifyHint')}
+        </Text>
+      </Pressable>
 
-          <Pressable
-            style={({ pressed }) => [
-              styles.silentBtn,
-              pressed && styles.pressed,
-              busy && styles.disabled,
-            ]}
-            disabled={busy}
-            onPress={() => onPublish(false)}
-          >
-            <Text style={styles.silentText}>
-              {t('schedule.publishDialog.silent')}
-            </Text>
-            <Text style={styles.silentHint}>
-              {t('schedule.publishDialog.silentHint')}
-            </Text>
-          </Pressable>
-
-          <Pressable
-            style={({ pressed }) => [styles.cancelBtn, pressed && styles.pressed]}
-            disabled={busy}
-            onPress={onCancel}
-          >
-            <Text style={styles.cancelText}>{t('common.cancel')}</Text>
-          </Pressable>
-        </View>
-      </View>
-    </Modal>
+      <Pressable
+        style={({ pressed }) => [
+          choiceStyles.secondary,
+          pressed && choiceStyles.pressed,
+          busy && choiceStyles.disabled,
+        ]}
+        disabled={busy}
+        onPress={() => onPublish(false)}
+      >
+        <Text style={choiceStyles.secondaryText}>
+          {t('schedule.publishDialog.silent')}
+        </Text>
+        <Text style={choiceStyles.secondaryHint}>
+          {t('schedule.publishDialog.silentHint')}
+        </Text>
+      </Pressable>
+    </Dialog>
   );
 }
 
-const styles = StyleSheet.create({
-  backdrop: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(15,23,42,0.45)',
-  },
-  center: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 24,
-  },
-  card: {
-    width: '100%',
-    maxWidth: 420,
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 20,
-    gap: 10,
-  },
-  title: { fontSize: 18, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0f172a' },
-  subtitle: { fontSize: 14, color: '#64748b', marginBottom: 6 },
-  primaryBtn: {
+/** A choice inside a dialog: a bold action with a line explaining it. */
+export const choiceStyles = StyleSheet.create({
+  subtitle: { fontSize: 13.5, color: '#475569', lineHeight: 19, marginBottom: 14 },
+  primary: {
     backgroundColor: '#0ea5e9',
     borderRadius: 12,
     paddingVertical: 12,
     paddingHorizontal: 14,
+    marginBottom: 10,
   },
-  primaryText: { color: '#fff', fontSize: 15, fontWeight: '700', fontFamily: 'Manrope_700Bold',},
-  primaryHint: { color: '#e0f2fe', fontSize: 12, marginTop: 2 },
-  silentBtn: {
-    backgroundColor: '#f1f5f9',
+  primaryText: { color: '#fff', fontSize: 15, fontWeight: '700' },
+  primaryHint: { color: '#e0f2fe', fontSize: 12.5, marginTop: 3, lineHeight: 17 },
+  secondary: {
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
     borderRadius: 12,
     paddingVertical: 12,
     paddingHorizontal: 14,
   },
-  silentText: { color: '#0f172a', fontSize: 15, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
-  silentHint: { color: '#64748b', fontSize: 12, marginTop: 2 },
-  cancelBtn: { alignItems: 'center', paddingVertical: 12, marginTop: 2 },
-  cancelText: { color: '#64748b', fontSize: 14, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
+  secondaryText: { color: '#0f172a', fontSize: 15, fontWeight: '600' },
+  secondaryHint: { color: '#64748b', fontSize: 12.5, marginTop: 3, lineHeight: 17 },
   pressed: { opacity: 0.85 },
   disabled: { opacity: 0.5 },
 });
+

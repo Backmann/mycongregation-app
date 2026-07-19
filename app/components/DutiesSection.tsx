@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import {
-  Modal,
   Pressable,
   StyleSheet,
   Text,
@@ -15,6 +14,7 @@ import { getEventTypeLabel } from '../lib/parts';
 import { useMyPublisher } from '../lib/useMyPublisher';
 import { MyDot } from './MyDot';
 import { MyGlowRow } from './MyGlowRow';
+import { Dialog } from './Dialog';
 import { SECTION_COLORS } from '../lib/section-colors';
 import { ChipRow, PersonChip } from './PersonChip';
 
@@ -432,50 +432,29 @@ export function DutiesSection({
       })}
 
       {/* Custom duty label modal */}
-      <Modal
+      <Dialog
         visible={customFor !== null}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setCustomFor(null)}
+        title={t('duties.addCustom')}
+        icon="add-circle-outline"
+        iconTint="#dc2626"
+        iconBg="#fee2e2"
+        cancelLabel={t('common.cancel')}
+        confirmLabel={t('duties.addCustom')}
+        confirmDisabled={!customLabel.trim()}
+        pending={pending}
+        onConfirm={submitCustom}
+        onCancel={() => setCustomFor(null)}
       >
-        <View style={styles.overlay}>
-          <Pressable
-            style={StyleSheet.absoluteFill}
-            onPress={() => setCustomFor(null)}
-            accessibilityRole="button"
-          />
-          <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>{t('duties.addCustom')}</Text>
-            <TextInput
-              style={styles.modalInput}
-              value={customLabel}
-              onChangeText={setCustomLabel}
-              placeholder={t('duties.customLabelPlaceholder')}
-              placeholderTextColor="#94a3b8"
-              autoFocus
-              maxLength={255}
-            />
-            <View style={styles.modalActions}>
-              <Pressable
-                style={styles.modalCancel}
-                onPress={() => setCustomFor(null)}
-              >
-                <Text style={styles.modalCancelText}>{t('common.cancel')}</Text>
-              </Pressable>
-              <Pressable
-                style={[
-                  styles.modalConfirm,
-                  !customLabel.trim() && styles.disabled,
-                ]}
-                onPress={submitCustom}
-                disabled={!customLabel.trim()}
-              >
-                <Text style={styles.modalConfirmText}>{t('duties.addCustom')}</Text>
-              </Pressable>
-            </View>
-          </View>
-        </View>
-      </Modal>
+        <TextInput
+          style={styles.modalInput}
+          value={customLabel}
+          onChangeText={setCustomLabel}
+          placeholder={t('duties.customLabelPlaceholder')}
+          placeholderTextColor="#94a3b8"
+          autoFocus
+          maxLength={255}
+        />
+      </Dialog>
     </View>
   );
 }
@@ -686,19 +665,6 @@ const styles = StyleSheet.create({
   disabled: { opacity: 0.5 },
 
   // custom modal
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(15,23,42,0.45)',
-    justifyContent: 'center',
-    paddingHorizontal: 24,
-  },
-  modalCard: {
-    backgroundColor: '#fff',
-    borderRadius: 14,
-    padding: 18,
-    gap: 12,
-  },
-  modalTitle: { fontSize: 16, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0f172a' },
   modalInput: {
     borderWidth: 1,
     borderColor: '#cbd5e1',
@@ -708,14 +674,4 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#0f172a',
   },
-  modalActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 10 },
-  modalCancel: { paddingVertical: 10, paddingHorizontal: 14 },
-  modalCancelText: { fontSize: 15, color: '#64748b', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
-  modalConfirm: {
-    paddingVertical: 10,
-    paddingHorizontal: 18,
-    borderRadius: 10,
-    backgroundColor: '#0ea5e9',
-  },
-  modalConfirmText: { fontSize: 15, color: '#fff', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
 });
