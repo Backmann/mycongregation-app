@@ -2228,6 +2228,8 @@
     "checkSubtitle": "Once a year, from {{date}}, we ask you to confirm your contacts are current.",
     "checkSubtitleFirst": "Please check your contacts are correct. After this we will ask once a year, in September.",
     "confirmedByAt": "Checked {{date}} at {{time}} · {{name}}",
-    "confirmedAtTime": "Checked {{date}} at {{time}}"
+    "confirmedAtTime": "Checked {{date}} at {{time}}",
+    "listDue": "Contacts not confirmed this year",
+    "listNoAccount": "No account — the secretary confirms"
   }
 }

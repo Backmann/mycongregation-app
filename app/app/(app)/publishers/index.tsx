@@ -287,6 +287,29 @@ function PublisherRow({
   const initials =
     (publisher.firstName[0] ?? '') + (publisher.lastName[0] ?? '');
 
+  // Overdue since the service year began on 1 September; publishers who never
+  // confirmed count as overdue too.
+  const contactCheck = (() => {
+    if (isRemoved) return null;
+    const now = new Date();
+    const yearStart = new Date(
+      now.getMonth() >= 8 ? now.getFullYear() : now.getFullYear() - 1,
+      8,
+      1,
+    );
+    const at = publisher.contactsConfirmedAt
+      ? new Date(publisher.contactsConfirmedAt)
+      : null;
+    if (at && at >= yearStart) return null;
+    const selfService = !!publisher.userId;
+    return {
+      selfService,
+      label: selfService
+        ? i18n.t('myContacts.listDue')
+        : i18n.t('myContacts.listNoAccount'),
+    };
+  })();
+
   return (
     <Pressable
       style={({ pressed }) => [
@@ -333,6 +356,27 @@ function PublisherRow({
             {groupName ?? i18n.t('serviceGroups.noGroup')}
           </Text>
         </View>
+        {/* The yearly contact check, so the secretary can scan the list instead
+            of opening every card. Someone without an account can never confirm
+            for themselves — that is the secretary's job, and it reads
+            differently. */}
+        {contactCheck ? (
+          <View style={styles.checkLine}>
+            <Ionicons
+              name={contactCheck.selfService ? 'alert-circle-outline' : 'person-outline'}
+              size={12}
+              color={contactCheck.selfService ? '#b45309' : '#64748b'}
+            />
+            <Text
+              style={[
+                styles.checkText,
+                contactCheck.selfService && styles.checkTextDue,
+              ]}
+            >
+              {contactCheck.label}
+            </Text>
+          </View>
+        ) : null}
       </View>
       <Text style={styles.chevron}>›</Text>
     </Pressable>
@@ -623,6 +667,14 @@ const styles = StyleSheet.create({
   },
   tagText: { color: '#0369a1', fontSize: 11, fontWeight: '500', fontFamily: 'Manrope_500Medium',},
   phone: { color: '#64748b', fontSize: 13, marginTop: 4 },
+  checkLine: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    marginTop: 3,
+  },
+  checkText: { fontSize: 11.5, color: '#64748b' },
+  checkTextDue: { color: '#b45309', fontWeight: '600' },
   groupLine: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 },
   groupText: { fontSize: 12, color: '#64748b', fontWeight: '500', fontFamily: 'Manrope_500Medium',},
   groupTextNone: { color: '#b45309' },
