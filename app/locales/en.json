@@ -77,7 +77,8 @@
     "disableConfirmBody": "{{name}} will no longer be able to sign in. You can enable access again later.",
     "emailLabel": "E-mail",
     "emailInvalid": "That address looks wrong",
-    "roleHint": "The role normally follows the appointment — turn this on only if administrator rights are needed."
+    "roleHint": "The role normally follows the appointment — turn this on only if administrator rights are needed.",
+    "disableConfirmYes": "Disable"
   },
   "tabs": {
     "schedule": "Schedule",

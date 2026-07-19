@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
-  Modal,
   Pressable,
   StyleSheet,
   Switch,
@@ -13,6 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { extractErrorMessage, publishersApi } from '../lib/api';
+import { Dialog } from './Dialog';
 import type { GrantAccessInput, Publisher } from '../lib/api';
 import i18n from '../lib/i18n';
 
@@ -267,155 +267,45 @@ export function PublisherAccessContent({ publisher }: { publisher: Publisher }) 
         onSubmit={(password) => updateMutation.mutate({ password })}
       />
 
-      <Modal
+      <Dialog
         visible={inviteSent}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setInviteSent(false)}
+        title={t('publisherAccess.resendInviteTitle')}
+        icon="checkmark-circle-outline"
+        iconTint="#16a34a"
+        iconBg="#dcfce7"
+        confirmLabel={t('common.done')}
+        onConfirm={() => setInviteSent(false)}
+        onCancel={() => setInviteSent(false)}
       >
-        <View style={sentStyles.overlay}>
-          <View style={sentStyles.card}>
-            <View style={sentStyles.iconCircle}>
-              <Ionicons name="checkmark" size={34} color="#fff" />
-            </View>
-            <Text style={sentStyles.title}>
-              {t('publisherAccess.resendInviteTitle')}
-            </Text>
-            <Text style={sentStyles.body}>
-              {t('publisherAccess.resendInviteBody', { email: access.email })}
-            </Text>
-            <Pressable
-              style={sentStyles.btn}
-              onPress={() => setInviteSent(false)}
-            >
-              <Text style={sentStyles.btnText}>{t('common.done')}</Text>
-            </Pressable>
-          </View>
-        </View>
-      </Modal>
+        <Text style={dialogText.body}>
+          {t('publisherAccess.resendInviteBody', { email: access.email })}
+        </Text>
+      </Dialog>
 
-      <Modal
+      <Dialog
         visible={disableConfirm}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setDisableConfirm(false)}
+        title={t('publisherAccess.disableConfirmTitle')}
+        icon="lock-closed-outline"
+        iconTint="#dc2626"
+        iconBg="#fee2e2"
+        cancelLabel={t('publisherAccess.cancel')}
+        confirmLabel={t('publisherAccess.disableConfirmYes')}
+        confirmDanger
+        pending={updateMutation.isPending}
+        onConfirm={() => updateMutation.mutate({ isActive: false })}
+        onCancel={() => setDisableConfirm(false)}
       >
-        <View style={sentStyles.overlay}>
-          <View style={sentStyles.card}>
-            <View style={confirmStyles.iconCircle}>
-              <Ionicons name="lock-closed" size={30} color="#dc2626" />
-            </View>
-            <Text style={sentStyles.title}>
-              {t('publisherAccess.disableConfirmTitle')}
-            </Text>
-            <Text style={sentStyles.body}>
-              {t('publisherAccess.disableConfirmBody', {
-                name: publisher.displayName,
-              })}
-            </Text>
-            <View style={confirmStyles.row}>
-              <Pressable
-                style={confirmStyles.cancel}
-                onPress={() => setDisableConfirm(false)}
-              >
-                <Text style={confirmStyles.cancelText}>
-                  {t('publisherAccess.cancel')}
-                </Text>
-              </Pressable>
-              <Pressable
-                style={confirmStyles.danger}
-                onPress={() => updateMutation.mutate({ isActive: false })}
-                disabled={updateMutation.isPending}
-              >
-                <Text style={confirmStyles.dangerText}>
-                  {t('publisherAccess.disableAccess')}
-                </Text>
-              </Pressable>
-            </View>
-          </View>
-        </View>
-      </Modal>
+        <Text style={dialogText.body}>
+          {t('publisherAccess.disableConfirmBody', {
+            name: publisher.displayName,
+          })}
+        </Text>
+      </Dialog>
     </View>
   );
 }
 
-const confirmStyles = StyleSheet.create({
-  iconCircle: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: '#fee2e2',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 14,
-  },
-  row: { flexDirection: 'row', gap: 10, alignSelf: 'stretch' },
-  cancel: {
-    flex: 1,
-    paddingVertical: 13,
-    borderRadius: 12,
-    backgroundColor: '#f1f5f9',
-    alignItems: 'center',
-  },
-  cancelText: { fontSize: 15, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#475569' },
-  danger: {
-    flex: 1,
-    paddingVertical: 13,
-    borderRadius: 12,
-    backgroundColor: '#dc2626',
-    alignItems: 'center',
-  },
-  dangerText: { fontSize: 15, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#fff' },
-});
 
-const sentStyles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(15,23,42,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 28,
-  },
-  card: {
-    backgroundColor: '#fff',
-    borderRadius: 18,
-    padding: 26,
-    alignItems: 'center',
-    width: '100%',
-    maxWidth: 360,
-  },
-  iconCircle: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: '#16a34a',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 16,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: '800', fontFamily: 'Manrope_800ExtraBold',
-    color: '#0f172a',
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  body: {
-    fontSize: 14,
-    color: '#475569',
-    textAlign: 'center',
-    lineHeight: 20,
-    marginBottom: 20,
-  },
-  btn: {
-    alignSelf: 'stretch',
-    backgroundColor: '#0ea5e9',
-    borderRadius: 12,
-    paddingVertical: 13,
-    alignItems: 'center',
-  },
-  btnText: { fontSize: 15, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#fff' },
-});
 
 function EmailModal({
   visible,
@@ -447,20 +337,17 @@ function EmailModal({
     trimmed.toLowerCase() !== (current ?? '').toLowerCase();
 
   return (
-    <Modal
+    <Dialog
       visible={visible}
-      transparent
-      animationType="fade"
-      onRequestClose={onCancel}
+      title={t('publisherAccess.changeEmail')}
+      icon="mail-outline"
+      cancelLabel={t('publisherAccess.cancel')}
+      confirmLabel={t('publisherAccess.save')}
+      confirmDisabled={!canSave}
+      pending={pending}
+      onConfirm={() => onSubmit(trimmed)}
+      onCancel={onCancel}
     >
-      <View style={emailStyles.overlay}>
-        <Pressable
-          style={StyleSheet.absoluteFill}
-          onPress={onCancel}
-          accessibilityRole="button"
-        />
-        <View style={emailStyles.card}>
-          <Text style={emailStyles.title}>{t('publisherAccess.changeEmail')}</Text>
           <Text style={emailStyles.hint}>
             {t('publisherAccess.changeEmailDesc')}
           </Text>
@@ -488,47 +375,13 @@ function EmailModal({
               </Pressable>
             )}
           {error && <Text style={emailStyles.error}>{error}</Text>}
-          <View style={emailStyles.actions}>
-            <Pressable
-              style={emailStyles.cancel}
-              onPress={onCancel}
-              disabled={pending}
-            >
-              <Text style={emailStyles.cancelText}>{t('publisherAccess.cancel')}</Text>
-            </Pressable>
-            <Pressable
-              style={[
-                emailStyles.confirm,
-                (!canSave || pending) && emailStyles.disabled,
-              ]}
-              onPress={() => onSubmit(trimmed)}
-              disabled={!canSave || pending}
-            >
-              <Text style={emailStyles.confirmText}>{t('publisherAccess.save')}</Text>
-            </Pressable>
-          </View>
-        </View>
-      </View>
-    </Modal>
+    </Dialog>
   );
 }
 
 const emailStyles = StyleSheet.create({
   rowBtn: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   pencil: { fontSize: 14, color: '#0369a1' },
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(15,23,42,0.45)',
-    justifyContent: 'center',
-    paddingHorizontal: 24,
-  },
-  card: {
-    backgroundColor: '#fff',
-    borderRadius: 14,
-    padding: 18,
-    gap: 10,
-  },
-  title: { fontSize: 16, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0f172a' },
   hint: { fontSize: 13, color: '#64748b', lineHeight: 18 },
   input: {
     borderWidth: 1,
@@ -540,22 +393,6 @@ const emailStyles = StyleSheet.create({
     color: '#0f172a',
   },
   error: { fontSize: 13, color: '#dc2626' },
-  actions: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    gap: 10,
-    marginTop: 4,
-  },
-  cancel: { paddingVertical: 10, paddingHorizontal: 14 },
-  cancelText: { fontSize: 15, color: '#64748b', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
-  confirm: {
-    paddingVertical: 10,
-    paddingHorizontal: 18,
-    borderRadius: 10,
-    backgroundColor: '#0ea5e9',
-  },
-  confirmText: { fontSize: 15, color: '#fff', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
-  disabled: { opacity: 0.5 },
   suggestBtn: {
     alignSelf: 'flex-start',
     borderRadius: 999,
@@ -615,27 +452,21 @@ function GrantModal({
   const canSubmit = !pending && emailOk && (sendInvite || passwordOk);
 
   return (
-    <Modal
+    <Dialog
       visible={visible}
-      transparent
-      animationType="fade"
-      onRequestClose={onCancel}
+      title={t('publisherAccess.grant')}
+      icon="key-outline"
+      cancelLabel={t('publisherAccess.cancel')}
+      confirmLabel={
+        sendInvite ? t('publisherAccess.invite') : t('publisherAccess.create')
+      }
+      confirmDisabled={!canSubmit}
+      pending={pending}
+      onConfirm={() => onSubmit(email.trim(), password, isAdmin, sendInvite)}
+      onCancel={onCancel}
+      scroll
     >
-      <View style={styles.backdrop}>
-        <Pressable
-          style={StyleSheet.absoluteFill}
-          onPress={onCancel}
-          accessibilityRole="button"
-        />
-        <View style={[styles.modal, grantStyles.card]}>
-          <View style={grantStyles.head}>
-            <View style={grantStyles.headIcon}>
-              <Ionicons name="key-outline" size={19} color="#0ea5e9" />
-            </View>
-            <Text style={grantStyles.title}>{t('publisherAccess.grant')}</Text>
-          </View>
-
-          <Text style={grantStyles.label}>{t('publisherAccess.emailLabel')}</Text>
+                <Text style={grantStyles.label}>{t('publisherAccess.emailLabel')}</Text>
           <TextInput
             style={[grantStyles.input, email.length > 0 && !emailOk && grantStyles.inputBad]}
             value={email}
@@ -729,29 +560,7 @@ function GrantModal({
             </View>
           ) : null}
 
-          <View style={styles.modalBtns}>
-            <Pressable style={styles.modalCancel} onPress={onCancel}>
-              <Text style={styles.modalCancelText}>{t('publisherAccess.cancel')}</Text>
-            </Pressable>
-            <Pressable
-              style={[styles.modalOk, !canSubmit && styles.modalOkDisabled]}
-              disabled={!canSubmit}
-              onPress={() => onSubmit(email.trim(), password, isAdmin, sendInvite)}
-            >
-              {pending ? (
-                <ActivityIndicator size="small" color="#fff" />
-              ) : (
-                <Text style={styles.modalOkText}>
-                  {sendInvite
-                    ? t('publisherAccess.invite')
-                    : t('publisherAccess.create')}
-                </Text>
-              )}
-            </Pressable>
-          </View>
-        </View>
-      </View>
-    </Modal>
+    </Dialog>
   );
 }
 
@@ -778,20 +587,17 @@ function ResetModal({
   const canSubmit = password.length >= 8 && !pending;
 
   return (
-    <Modal
+    <Dialog
       visible={visible}
-      transparent
-      animationType="fade"
-      onRequestClose={onCancel}
+      title={t('publisherAccess.resetPassword')}
+      icon="lock-open-outline"
+      cancelLabel={t('publisherAccess.cancel')}
+      confirmLabel={t('publisherAccess.save')}
+      confirmDisabled={!canSubmit}
+      pending={pending}
+      onConfirm={() => onSubmit(password)}
+      onCancel={onCancel}
     >
-      <View style={styles.backdrop}>
-        <Pressable
-          style={StyleSheet.absoluteFill}
-          onPress={onCancel}
-          accessibilityRole="button"
-        />
-        <View style={styles.modal}>
-          <Text style={styles.modalTitle}>{t('publisherAccess.resetPassword')}</Text>
 
           <Text style={styles.modalLabel}>{t('publisherAccess.newPassword')}</Text>
           <TextInput
@@ -806,23 +612,7 @@ function ResetModal({
 
           {error ? <Text style={styles.error}>{error}</Text> : null}
 
-          <View style={styles.modalBtns}>
-            <Pressable style={styles.modalCancel} onPress={onCancel}>
-              <Text style={styles.modalCancelText}>{t('publisherAccess.cancel')}</Text>
-            </Pressable>
-            <Pressable
-              style={[styles.modalOk, !canSubmit && styles.modalOkDisabled]}
-              disabled={!canSubmit}
-              onPress={() => onSubmit(password)}
-            >
-              <Text style={styles.modalOkText}>
-                {pending ? '…' : t('publisherAccess.save')}
-              </Text>
-            </Pressable>
-          </View>
-        </View>
-      </View>
-    </Modal>
+    </Dialog>
   );
 }
 
@@ -910,6 +700,11 @@ const grantStyles = StyleSheet.create({
     marginTop: 14,
   },
   errorText: { flex: 1, fontSize: 12.5, color: '#991b1b', lineHeight: 17 },
+});
+
+/** Body text inside a dialog. */
+const dialogText = StyleSheet.create({
+  body: { fontSize: 14, color: '#475569', lineHeight: 20 },
 });
 
 const styles = StyleSheet.create({
