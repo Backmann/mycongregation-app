@@ -41,6 +41,7 @@ import { MyGlowRow } from '../../../components/MyGlowRow';
 import { ChipRow, PersonChip } from '../../../components/PersonChip';
 import { parseISODate, addDays, formatDateISO } from '../../../lib/dates';
 import { LoadError } from '../../../components/LoadError';
+import { Dialog } from '../../../components/Dialog';
 
 /** Actual calendar date (ISO) of a meeting, from its week + weekday. */
 function meetingDateISO(m: FieldServiceMeeting): string {
@@ -718,15 +719,17 @@ export default function FieldServiceMeetingsScreen() {
         </View>
       </Modal>
 
-      <Modal
+      <Dialog
         visible={pdfOpen}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setPdfOpen(false)}
+        title={t('fieldService.pdf.title')}
+        icon="print-outline"
+        iconTint="#16a34a"
+        iconBg="#dcfce7"
+        cancelLabel={t('common.cancel')}
+        confirmLabel={t('fieldService.pdf.title')}
+        onConfirm={exportPdf}
+        onCancel={() => setPdfOpen(false)}
       >
-        <View style={pdfStyles.overlay}>
-          <View style={pdfStyles.card}>
-            <Text style={pdfStyles.title}>{t('fieldService.pdf.title')}</Text>
             <Text style={pdfStyles.label}>
               {t('fieldService.pdf.startMonth')}
             </Text>
@@ -784,23 +787,7 @@ export default function FieldServiceMeetingsScreen() {
                 </Pressable>
               ))}
             </View>
-            <View style={pdfStyles.actions}>
-              <Pressable
-                style={pdfStyles.cancel}
-                onPress={() => setPdfOpen(false)}
-              >
-                <Text style={pdfStyles.cancelText}>{t('common.cancel')}</Text>
-              </Pressable>
-              <Pressable style={pdfStyles.download} onPress={exportPdf}>
-                <Ionicons name="download-outline" size={16} color="#fff" />
-                <Text style={pdfStyles.downloadText}>
-                  {t('fieldService.pdf.download')}
-                </Text>
-              </Pressable>
-            </View>
-          </View>
-        </View>
-      </Modal>
+      </Dialog>
 
       <FieldServiceGenerateModal
         visible={genOpen}

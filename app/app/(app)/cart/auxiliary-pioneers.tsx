@@ -23,6 +23,7 @@ import {
 } from '../../../lib/api';
 import { usePermissions } from '../../../lib/permissions';
 import { PublisherSelector } from '../../../components/PublisherSelector';
+import { Dialog } from '../../../components/Dialog';
 
 const QK_MONTH = (m: string) => ['aux-pioneers', 'month', m];
 const QK_JOURNAL = ['aux-pioneers', 'journal'];
@@ -336,21 +337,22 @@ export default function AuxiliaryPioneersScreen() {
       </ScrollView>
 
       {/* Add modal */}
-      <Modal
+      <Dialog
         visible={addOpen}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setAddOpen(false)}
+        title={editingId ? t('auxPioneer.editTitle') : t('auxPioneer.addTitle2')}
+        icon="person-add-outline"
+        iconTint="#16a34a"
+        iconBg="#dcfce7"
+        cancelLabel={t('common.cancel')}
+        confirmLabel={editingId ? t('common.save') : t('common.add')}
+        confirmDisabled={!editingId && !newPublisher}
+        pending={createMutation.isPending || updateMutation.isPending}
+        onConfirm={() =>
+          editingId ? updateMutation.mutate() : createMutation.mutate()
+        }
+        onCancel={() => setAddOpen(false)}
+        scroll
       >
-        <View style={styles.overlay}>
-          <Pressable
-            style={StyleSheet.absoluteFill}
-            onPress={() => setAddOpen(false)}
-          />
-          <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>
-              {editingId ? t('auxPioneer.editTitle') : t('auxPioneer.addTitle2')}
-            </Text>
             {editingId ? (
               <View style={styles.editName}>
                 <Ionicons name="person-circle-outline" size={20} color="#64748b" />
@@ -405,41 +407,7 @@ export default function AuxiliaryPioneersScreen() {
               />
             </View>
             {addError ? <Text style={styles.error}>{addError}</Text> : null}
-            <View style={styles.modalActions}>
-              <Pressable
-                style={styles.cancelBtn}
-                onPress={() => setAddOpen(false)}
-              >
-                <Text style={styles.cancelText}>{t('common.cancel')}</Text>
-              </Pressable>
-              {editingId ? (
-                <Pressable
-                  style={[
-                    styles.confirmBtn,
-                    updateMutation.isPending && styles.confirmDisabled,
-                  ]}
-                  disabled={updateMutation.isPending}
-                  onPress={() => updateMutation.mutate()}
-                >
-                  <Text style={styles.confirmText}>{t('common.save')}</Text>
-                </Pressable>
-              ) : (
-                <Pressable
-                  style={[
-                    styles.confirmBtn,
-                    (!newPublisher || createMutation.isPending) &&
-                      styles.confirmDisabled,
-                  ]}
-                  disabled={!newPublisher || createMutation.isPending}
-                  onPress={() => createMutation.mutate()}
-                >
-                  <Text style={styles.confirmText}>{t('common.add')}</Text>
-                </Pressable>
-              )}
-            </View>
-          </View>
-        </View>
-      </Modal>
+      </Dialog>
     </SafeAreaView>
   );
 }
