@@ -46,7 +46,14 @@ export default function MyContactsScreen() {
   }, [me, dirty]);
 
   const done = () => {
+    // The card, the publishers list and "my" view all read the same row, so
+    // refresh them together — an elder editing their own contacts would
+    // otherwise still see the old value in the list they opened earlier.
     queryClient.invalidateQueries({ queryKey: ['me-publisher'] });
+    queryClient.invalidateQueries({ queryKey: ['publishers'] });
+    if (me?.id) {
+      queryClient.invalidateQueries({ queryKey: ['publisher', me.id] });
+    }
     setDirty(false);
     setSavedAt(Date.now());
   };

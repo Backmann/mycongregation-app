@@ -36,8 +36,10 @@ export function ContactsCheckPrompt() {
 
   const confirmMutation = useMutation({
     mutationFn: () => meApi.confirmContacts(),
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: ['me-publisher'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['me-publisher'] });
+      queryClient.invalidateQueries({ queryKey: ['publishers'] });
+    },
   });
 
   if (!me || deferred) return null;
