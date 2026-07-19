@@ -1,10 +1,8 @@
 import { useState } from 'react';
 import {
   ActivityIndicator,
-  Modal,
   Platform,
   Pressable,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
@@ -16,6 +14,7 @@ import { useQuery } from '@tanstack/react-query';
 import { PublicTalk, publicTalksApi } from '../lib/api';
 import { useTranslation } from 'react-i18next';
 import i18n from '../lib/i18n';
+import { Sheet } from './Sheet';
 
 interface Props {
   label: string;
@@ -85,19 +84,11 @@ export function PublicTalkSelector({ label, value, onChange }: Props) {
           )}
       </Pressable>
 
-      <Modal
+      <Sheet
         visible={open}
-        animationType="slide"
-        onRequestClose={() => setOpen(false)}
+        title={label}
+        onClose={() => setOpen(false)}
       >
-        <SafeAreaView style={styles.modal}>
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>{label}</Text>
-            <Pressable onPress={() => setOpen(false)} hitSlop={8}>
-              <Text style={styles.doneText}>{t('common.done')}</Text>
-            </Pressable>
-          </View>
-
           <View style={styles.searchBar}>
             <Ionicons name="search" size={18} color="#94a3b8" />
             <TextInput
@@ -155,8 +146,7 @@ export function PublicTalkSelector({ label, value, onChange }: Props) {
               ))}
             </ScrollView>
           )}
-        </SafeAreaView>
-      </Modal>
+              </Sheet>
     </>
   );
 }
@@ -261,18 +251,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#f1f5f9',
     ...(Platform.OS === 'web' && { paddingTop: 0 }),
   },
-  modalHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
-  },
-  modalTitle: { fontSize: 18, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0f172a' },
-  doneText: { color: '#0ea5e9', fontSize: 16, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
 
   searchBar: {
     flexDirection: 'row',

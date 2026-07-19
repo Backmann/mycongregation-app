@@ -1,10 +1,8 @@
 import { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
-  Modal,
   Platform,
   Pressable,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Switch,
@@ -27,6 +25,7 @@ import {
 import { ActivitySummary, summarizeActivity } from '../lib/activity';
 import { effectiveVersionFor, meetingDate } from '../lib/meeting-schedule';
 import { useTranslation } from 'react-i18next';
+import { Sheet } from './Sheet';
 
 interface Props {
   label: string;
@@ -432,27 +431,19 @@ export function PublisherSelector({
         </Pressable>
       )}
 
-      <Modal
+      <Sheet
         visible={open}
-        animationType="slide"
-        onRequestClose={() => setOpen(false)}
+        title={label}
+        subtitle={
+          requiredCapability ? (
+            <Text style={styles.modalSubtitle}>
+              {t('pickers.filteredByCapability')}{' '}
+              <Text style={styles.modalCapName}>{capabilityLabel}</Text>
+            </Text>
+          ) : undefined
+        }
+        onClose={() => setOpen(false)}
       >
-        <SafeAreaView style={styles.modal}>
-          <View style={styles.modalHeader}>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.modalTitle}>{label}</Text>
-              {requiredCapability && (
-                <Text style={styles.modalSubtitle}>
-                  {t('pickers.filteredByCapability')}{' '}
-                  <Text style={styles.modalCapName}>{capabilityLabel}</Text>
-                </Text>
-              )}
-            </View>
-            <Pressable onPress={() => setOpen(false)} hitSlop={8}>
-              <Text style={styles.doneText}>{t('common.done')}</Text>
-            </Pressable>
-          </View>
-
           {(requiredCapability || matchGender || preferAppointment) && (
             <Pressable
               style={styles.toggleRow}
@@ -565,8 +556,7 @@ export function PublisherSelector({
               ))}
             </ScrollView>
           )}
-        </SafeAreaView>
-      </Modal>
+              </Sheet>
     </>
   );
 }
@@ -876,20 +866,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#f1f5f9',
     ...(Platform.OS === 'web' && { paddingTop: 0 }),
   },
-  modalHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
-  },
-  modalTitle: { fontSize: 18, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0f172a' },
   modalSubtitle: { fontSize: 12, color: '#64748b', marginTop: 2 },
   modalCapName: { color: '#0369a1', fontWeight: '500', fontFamily: 'Manrope_500Medium',},
-  doneText: { color: '#0ea5e9', fontSize: 16, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
 
   toggleRow: {
     flexDirection: 'row',
