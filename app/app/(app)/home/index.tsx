@@ -31,6 +31,7 @@ import { effectiveVersionFor } from '../../../lib/meeting-schedule';
 import { addDays, formatDateISO, startOfWeekMonday } from '../../../lib/dates';
 import { useAuth } from '../../../lib/auth';
 import { useMyPublisher } from '../../../lib/useMyPublisher';
+import { LoadError } from '../../../components/LoadError';
 import {
   refineMyTasks,
   taskMeta,
@@ -213,7 +214,12 @@ function MeetingsFeed() {
     addDays(startOfWeekMonday(new Date()), 7),
   );
 
-  const { data: overview, isLoading } = useQuery({
+  const {
+    data: overview,
+    isLoading,
+    isError: overviewFailed,
+    refetch: refetchOverview,
+  } = useQuery({
     queryKey: ['meeting-settings'],
     queryFn: () => meetingSettingsApi.getOverview(),
     staleTime: 5 * 60 * 1000,
@@ -348,6 +354,9 @@ function MeetingsFeed() {
 
   if (isLoading) {
     return <SkeletonCard rows={3} />;
+  }
+  if (overviewFailed && !overview) {
+    return <LoadError onRetry={() => refetchOverview()} />;
   }
   if (entries.length === 0) {
     return (
@@ -553,7 +562,12 @@ function MyTasksCard() {
   });
   const versions = overview?.versions ?? [];
 
-  const { data, isLoading: tasksLoading } = useQuery({
+  const {
+    data,
+    isLoading: tasksLoading,
+    isError: tasksFailed,
+    refetch: refetchTasks,
+  } = useQuery({
     queryKey: ['me', 'assignments'],
     queryFn: () => meApi.assignments(),
     enabled: !!user,
@@ -570,6 +584,11 @@ function MyTasksCard() {
         <SkeletonCard rows={2} />
       </>
     );
+  }
+  // A failed load used to render nothing at all, which reads as "no
+  // assignments this week" — the opposite of what happened.
+  if (tasksFailed && !data) {
+    return <LoadError onRetry={() => refetchTasks()} />;
   }
   if (!data || data.items.length === 0) return null;
 

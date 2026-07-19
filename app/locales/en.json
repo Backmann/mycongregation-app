@@ -106,7 +106,7 @@
     "submit": "Submit",
     "loading": "Loading…",
     "error": "Error",
-    "retry": "Try again",
+    "retry": "Retry",
     "search": "Search",
     "restore": "Restore",
     "removing": "Removing…",
@@ -134,7 +134,9 @@
     "saving": "Saving…",
     "add": "Add",
     "today": "Today",
-    "datePlaceholder": "YYYY-MM-DD"
+    "datePlaceholder": "YYYY-MM-DD",
+    "loadFailed": "Could not load",
+    "loadFailedHint": "Check your connection and try again — the data may not have arrived."
   },
   "profile": {
     "signedInAs": "Signed in as",

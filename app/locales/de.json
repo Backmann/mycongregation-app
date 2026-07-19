@@ -106,7 +106,7 @@
     "submit": "Absenden",
     "loading": "Wird geladen…",
     "error": "Fehler",
-    "retry": "Erneut versuchen",
+    "retry": "Erneut",
     "search": "Suchen",
     "restore": "Wiederherstellen",
     "removing": "Wird entfernt…",
@@ -134,7 +134,9 @@
     "saving": "Speichern…",
     "add": "Hinzufügen",
     "today": "Heute",
-    "datePlaceholder": "JJJJ-MM-TT"
+    "datePlaceholder": "JJJJ-MM-TT",
+    "loadFailed": "Laden fehlgeschlagen",
+    "loadFailedHint": "Prüfe die Verbindung und versuche es erneut — die Daten kamen möglicherweise nicht an."
   },
   "profile": {
     "signedInAs": "Angemeldet als",

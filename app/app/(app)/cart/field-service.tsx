@@ -40,6 +40,7 @@ import { MyDot } from '../../../components/MyDot';
 import { MyGlowRow } from '../../../components/MyGlowRow';
 import { ChipRow, PersonChip } from '../../../components/PersonChip';
 import { parseISODate, addDays, formatDateISO } from '../../../lib/dates';
+import { LoadError } from '../../../components/LoadError';
 
 /** Actual calendar date (ISO) of a meeting, from its week + weekday. */
 function meetingDateISO(m: FieldServiceMeeting): string {
@@ -207,6 +208,13 @@ export default function FieldServiceMeetingsScreen() {
     return (
       <View style={styles.center}>
         <ActivityIndicator color="#0ea5e9" />
+      </View>
+    );
+  }
+  if (meetingsQuery.isError) {
+    return (
+      <View style={styles.container}>
+        <LoadError onRetry={() => meetingsQuery.refetch()} />
       </View>
     );
   }

@@ -108,6 +108,7 @@ import { useMyPublisher } from '../../../lib/useMyPublisher';
 import { MyDot } from '../../../components/MyDot';
 import { useMyGlow } from '../../../components/useMyGlow';
 import { reportError } from '../../../lib/error-bus';
+import { LoadError } from '../../../components/LoadError';
 import {
   CLEANING_SHADES,
   SECTION_COLORS,
@@ -1509,6 +1510,10 @@ export default function ScheduleIndexScreen() {
 
         {assignmentsQuery.isLoading ? (
           <ActivityIndicator size="large" style={{ marginTop: 32 }} />
+        ) : assignmentsQuery.isError ? (
+          // Without this the week simply looked empty — as if nothing had been
+          // scheduled — when in fact the data never arrived.
+          <LoadError onRetry={() => assignmentsQuery.refetch()} />
         ) : (
           <>
             <SpecialEventsWeekBanner events={weekEvents} />
