@@ -1381,7 +1381,8 @@
     "rowSubtitle": "How and where to clean: cards, technique, safety",
     "showingFor": "Showing: {{freq}}",
     "showAll": "Whole guide",
-    "showThisOnly": "This cleaning only"
+    "showThisOnly": "This cleaning only",
+    "yearlyExtra": "Additionally for the general cleaning"
   },
   "service": {
     "hubTitle": "Ministry",

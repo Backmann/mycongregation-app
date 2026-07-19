@@ -67,6 +67,36 @@ function steps(
   return images.map((image, i) => ({ key: `${freq}${i + 1}`, image }));
 }
 
+/**
+ * General cleaning is not a separate routine: it is the weekly one plus a few
+ * extra steps. The data stores only those extras under `yearly`, so anything
+ * asking for the general cleaning gets the weekly steps first and the extras
+ * after — and a category with no extras still belongs to it.
+ */
+export function stepsFor(
+  category: CleaningCategory,
+  freq: CleaningFrequency,
+): { base: CleaningStep[]; extra: CleaningStep[] } {
+  if (freq === 'yearly') {
+    return {
+      base: category.steps.weekly ?? [],
+      extra: category.steps.yearly ?? [],
+    };
+  }
+  return { base: category.steps[freq] ?? [], extra: [] };
+}
+
+/** Whether a category takes part in a given cleaning at all. */
+export function hasFreq(
+  category: CleaningCategory,
+  freq: CleaningFrequency,
+): boolean {
+  if (freq === 'yearly') {
+    return !!(category.steps.weekly || category.steps.yearly);
+  }
+  return !!category.steps[freq];
+}
+
 export const CLEANING_CATEGORIES: CleaningCategory[] = [
   {
     id: 'wc',

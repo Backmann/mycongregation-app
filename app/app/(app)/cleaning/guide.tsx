@@ -17,6 +17,8 @@ import {
   CleaningCategory,
   CleaningFrequency,
   TECHNIK_BLOCKS,
+  hasFreq,
+  stepsFor,
 } from '../../../lib/cleaning-guide';
 
 
@@ -38,7 +40,7 @@ function CategoryCard({
   defaultFreq?: CleaningFrequency;
 }) {
   const { t } = useTranslation();
-  const available = CLEANING_FREQUENCIES.filter((f) => category.steps[f]);
+  const available = CLEANING_FREQUENCIES.filter((f) => hasFreq(category, f));
   const [open, setOpen] = useState(false);
   const [freq, setFreq] = useState<CleaningFrequency>(
     defaultFreq && available.includes(defaultFreq)
@@ -49,7 +51,7 @@ function CategoryCard({
   // is fixed, so the card can never quietly switch to another one's steps.
   const pinned = !!defaultFreq && available.includes(defaultFreq);
   const shownFreq = pinned ? defaultFreq! : freq;
-  const steps = category.steps[shownFreq] ?? [];
+  const { base: steps, extra: extraSteps } = stepsFor(category, shownFreq);
 
   return (
     <View style={[styles.card, { backgroundColor: category.tint }]}>
@@ -147,6 +149,35 @@ function CategoryCard({
               />
             </View>
           ))}
+
+          {/* The general cleaning adds these on top of the weekly routine. */}
+          {extraSteps.length > 0 ? (
+            <View style={styles.extraHeading}>
+              <Ionicons name="add-circle-outline" size={14} color="#0369a1" />
+              <Text style={styles.extraHeadingText}>
+                {t('cleaningGuide.yearlyExtra')}
+              </Text>
+            </View>
+          ) : null}
+          {extraSteps.map((step, i) => (
+            <View key={step.key} style={styles.step}>
+              <View style={styles.stepHeader}>
+                <View
+                  style={[styles.stepNum, { backgroundColor: category.color }]}
+                >
+                  <Text style={styles.stepNumText}>{steps.length + i + 1}</Text>
+                </View>
+                <Text style={styles.stepCaption}>
+                  {t(`cleaningGuide.steps.${category.id}.${step.key}`)}
+                </Text>
+              </View>
+              <Image
+                source={step.image}
+                style={styles.stepImage}
+                resizeMode="contain"
+              />
+            </View>
+          ))}
         </View>
       ) : null}
     </View>
@@ -192,7 +223,7 @@ export default function CleaningGuideScreen() {
           cleaning are listed — a category without steps for it used to appear
           anyway and quietly show another cleaning's instructions. */}
       {CLEANING_CATEGORIES.filter(
-        (c) => !defaultFreq || showAll || !!c.steps[defaultFreq],
+        (c) => !defaultFreq || showAll || hasFreq(c, defaultFreq),
       ).map((c) => (
         <CategoryCard
           key={c.id}
@@ -299,6 +330,22 @@ const styles = StyleSheet.create({
     // ratio comes from the asset itself
     backgroundColor: '#fff',
     borderRadius: 10,
+  },
+  extraHeading: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 7,
+    marginTop: 14,
+    marginBottom: 4,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#e2e8f0',
+  },
+  extraHeadingText: {
+    fontSize: 12.5,
+    color: '#0c4a6e',
+    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
   },
   freqNotice: {
     flexDirection: 'row',
