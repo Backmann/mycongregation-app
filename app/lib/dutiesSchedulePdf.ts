@@ -111,8 +111,8 @@ export function buildDutiesSchedulePdfHtml(opts: {
     print-color-adjust: exact;
   }
   .page { padding: 14px 16px 16px; }
-  .pagehead { border-bottom: 3px solid #0d9488; padding-bottom: 7px; margin-bottom: 11px; }
-  .pagehead h1 { font-size: 16px; margin: 0; color: #0d9488; letter-spacing: -0.2px; }
+  .pagehead { border-bottom: 3px solid #dc2626; padding-bottom: 7px; margin-bottom: 11px; }
+  .pagehead h1 { font-size: 16px; margin: 0; color: #dc2626; letter-spacing: -0.2px; }
   .pagehead .sub { font-size: 10px; color: #64748b; margin-top: 2px; }
   .sect { margin-bottom: 14px; }
   .slabel {

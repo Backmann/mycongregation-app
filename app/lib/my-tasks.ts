@@ -4,6 +4,7 @@
  */
 import { MeetingSettingsVersion, MyAssignmentItem } from './api';
 import { effectiveVersionFor } from './meeting-schedule';
+import { SECTION_COLORS } from './section-colors';
 import { addDays, formatDateISO } from './dates';
 import { getPartLabel, resolveSubsection, SUBSECTIONS } from './parts';
 
@@ -139,28 +140,48 @@ export interface TaskVisual {
 export function taskVisual(
   item: Pick<MyAssignmentItem, 'kind' | 'eventType'>,
 ): TaskVisual {
-  // Meetings (and duties inside them) are colored by the meeting day.
-  if (item.eventType === 'weekend') {
-    return { color: '#7c3aed', bg: '#f5f3ff', icon: 'people-outline' };
-  }
-  if (item.eventType === 'midweek') {
-    return { color: '#2563eb', bg: '#eff6ff', icon: 'book-outline' };
-  }
+  // Colour by WHAT the task is, never by which meeting it sits in: a duty at
+  // the midweek meeting used to come out in the meeting's colour, which made
+  // the home screen disagree with the schedule. The icon still varies.
+  const meeting = SECTION_COLORS.meeting;
   switch (item.kind) {
     case 'duty':
-      return { color: '#0d9488', bg: '#f0fdfa', icon: 'construct-outline' };
+      return {
+        color: SECTION_COLORS.duty.color,
+        bg: SECTION_COLORS.duty.soft,
+        icon: 'construct-outline',
+      };
     case 'cleaning':
-      return { color: '#0891b2', bg: '#ecfeff', icon: 'sparkles-outline' };
+      return {
+        color: SECTION_COLORS.cleaning.color,
+        bg: SECTION_COLORS.cleaning.soft,
+        icon: 'sparkles-outline',
+      };
     case 'field_service':
-      return { color: '#16a34a', bg: '#f0fdf4', icon: 'walk-outline' };
+      return {
+        color: SECTION_COLORS.field_service.color,
+        bg: SECTION_COLORS.field_service.soft,
+        icon: 'walk-outline',
+      };
     case 'cart':
-      return { color: '#16a34a', bg: '#f0fdf4', icon: 'cart-outline' };
+      return {
+        color: SECTION_COLORS.field_service.color,
+        bg: SECTION_COLORS.field_service.soft,
+        icon: 'cart-outline',
+      };
     case 'outgoing_talk':
-      return { color: '#4f46e5', bg: '#eef2ff', icon: 'mic-outline' };
+      // A talk given at another congregation is still a meeting part.
+      return { color: meeting.color, bg: meeting.soft, icon: 'mic-outline' };
     case 'co_lunch':
-      return { color: '#d97706', bg: '#fffbeb', icon: 'restaurant-outline' };
+      // Hospitality around the visit — its own hue, outside the four sections.
+      return { color: '#7c3aed', bg: '#f5f3ff', icon: 'restaurant-outline' };
     default:
-      return { color: '#0284c7', bg: '#e0f2fe', icon: 'calendar-outline' };
+      return {
+        color: meeting.color,
+        bg: meeting.soft,
+        icon:
+          item.eventType === 'weekend' ? 'people-outline' : 'book-outline',
+      };
   }
 }
 

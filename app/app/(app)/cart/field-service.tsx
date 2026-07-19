@@ -487,7 +487,7 @@ export default function FieldServiceMeetingsScreen() {
                 const dISO = meetingDateISO(mt);
                 const RowWrap = isMine ? MyGlowRow : View;
                 return (
-                  <RowWrap key={mt.id} style={[styles.card, isMine && styles.cardMineGlow]}>
+                  <RowWrap key={mt.id} kind="field_service" style={[styles.card, isMine && styles.cardMineGlow]}>
                     <Pressable
                       style={styles.cardMain}
                       onPress={() => canEdit && setTarget(mt)}
@@ -506,7 +506,7 @@ export default function FieldServiceMeetingsScreen() {
                         </View>
                       ) : null}
                       <ChipRow>
-                        {isMine ? <MyDot /> : null}
+                        {isMine ? <MyDot kind="field_service" /> : null}
                         {conductor ? (
                           <PersonChip
                             label={conductor.displayName}

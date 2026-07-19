@@ -103,18 +103,18 @@ export function buildCleaningSchedulePdfHtml(opts: {
     print-color-adjust: exact;
   }
   .page { padding: 14px 16px 16px; }
-  .pagehead { border-bottom: 3px solid #7c3aed; padding-bottom: 7px; margin-bottom: 11px; }
-  .pagehead h1 { font-size: 16px; margin: 0; color: #7c3aed; letter-spacing: -0.2px; }
+  .pagehead { border-bottom: 3px solid #0284c7; padding-bottom: 7px; margin-bottom: 11px; }
+  .pagehead h1 { font-size: 16px; margin: 0; color: #0284c7; letter-spacing: -0.2px; }
   .pagehead .sub { font-size: 10px; color: #64748b; margin-top: 2px; }
   .mblock { margin-bottom: 11px; page-break-inside: avoid; }
   .mlabel {
     display: inline-block; font-size: 12px; font-weight: 700; color: #fff;
-    background: #7c3aed; border-radius: 999px; padding: 3px 13px; margin-bottom: 5px;
+    background: #0284c7; border-radius: 999px; padding: 3px 13px; margin-bottom: 5px;
   }
   table { width: 100%; border-collapse: collapse; table-layout: fixed; }
   th {
     font-size: 9px; color: #64748b; font-weight: 700; text-align: center;
-    padding: 5px 3px; border-bottom: 2px solid #e2e8f0; background: #faf8ff;
+    padding: 5px 3px; border-bottom: 2px solid #e2e8f0; background: #f0f9ff;
   }
   th.dt { text-align: left; width: 26%; padding-left: 8px; }
   td {
@@ -123,7 +123,7 @@ export function buildCleaningSchedulePdfHtml(opts: {
     word-wrap: break-word; overflow-wrap: break-word;
   }
   td.dt { text-align: left; }
-  tbody tr:nth-child(even) td { background: #fdfcff; }
+  tbody tr:nth-child(even) td { background: #fbfdff; }
   .dot {
     display: inline-block; width: 9px; height: 9px; border-radius: 999px;
     margin-right: 7px; vertical-align: middle;

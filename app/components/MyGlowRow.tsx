@@ -1,5 +1,6 @@
 import { Animated, StyleProp, StyleSheet, ViewStyle } from 'react-native';
 import { useMyGlow } from './useMyGlow';
+import { SectionKind } from '../lib/section-colors';
 
 /**
  * A premium "breathing" amber glow marking the schedule row that belongs to the
@@ -12,12 +13,15 @@ export function MyGlowRow({
   children,
   style,
   radius = 12,
+  kind = 'meeting',
 }: {
   children: React.ReactNode;
   style?: StyleProp<ViewStyle>;
   radius?: number;
+  /** Section this row belongs to — decides the glow's hue. */
+  kind?: SectionKind;
 }) {
-  const { backgroundColor, borderColor } = useMyGlow(true);
+  const { backgroundColor, borderColor } = useMyGlow(true, kind);
   return (
     <Animated.View
       style={[

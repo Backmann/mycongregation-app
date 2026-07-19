@@ -183,8 +183,8 @@ export function buildMeetingSchedulePdfHtml(opts: {
     print-color-adjust: exact;
   }
   .page { padding: 14px 16px 14px; }
-  .pagehead { border-bottom: 3px solid #0e7490; padding-bottom: 7px; margin-bottom: 9px; }
-  .pagehead h1 { font-size: 17px; margin: 0; color: #0e7490; letter-spacing: -0.2px; }
+  .pagehead { border-bottom: 3px solid #d97706; padding-bottom: 7px; margin-bottom: 9px; }
+  .pagehead h1 { font-size: 17px; margin: 0; color: #d97706; letter-spacing: -0.2px; }
   .chips { margin-top: 7px; display: flex; flex-wrap: wrap; gap: 6px; }
   .chip {
     display: inline-block; font-size: 10.5px; color: #334155;
@@ -196,10 +196,10 @@ export function buildMeetingSchedulePdfHtml(opts: {
     overflow: hidden; page-break-inside: avoid;
   }
   .wkh {
-    background: #ecfeff; color: #0e7490; font-weight: 700;
+    background: #fffbeb; color: #b45309; font-weight: 700;
     font-size: ${compact ? '11.5px' : '12.5px'};
     padding: ${compact ? '4px 10px' : '5px 12px'};
-    border-bottom: 1px solid #cffafe;
+    border-bottom: 1px solid #fde68a;
   }
   .wkh-note { display: flex; align-items: baseline; }
   .wkh-date { flex: 1; }
@@ -224,7 +224,7 @@ export function buildMeetingSchedulePdfHtml(opts: {
   }
   td.pn { color: #475569; font-weight: 500; }
   .pt {
-    color: #0e7490; font-weight: 700; font-size: 9px;
+    color: #b45309; font-weight: 700; font-size: 9px;
     margin-right: 5px; white-space: nowrap;
   }
   td.who { color: #0f172a; }

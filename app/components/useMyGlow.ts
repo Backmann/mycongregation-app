@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Animated, Easing } from 'react-native';
+import { SectionKind, sectionRgba } from '../lib/section-colors';
 
 /**
  * Shared "breathing" amber glow for schedule rows that belong to the signed-in
@@ -9,7 +10,7 @@ import { Animated, Easing } from 'react-native';
  * Pressable). Colour animation can't use the native driver, but one slow loop
  * stays smooth. Enable/disable with `active` so non-mine rows pay no cost.
  */
-export function useMyGlow(active: boolean) {
+export function useMyGlow(active: boolean, kind: SectionKind = 'meeting') {
   const pulse = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -40,11 +41,11 @@ export function useMyGlow(active: boolean) {
   return {
     backgroundColor: pulse.interpolate({
       inputRange: [0, 1],
-      outputRange: ['rgba(245,158,11,0.06)', 'rgba(245,158,11,0.15)'],
+      outputRange: [sectionRgba(kind, 0.06), sectionRgba(kind, 0.15)],
     }),
     borderColor: pulse.interpolate({
       inputRange: [0, 1],
-      outputRange: ['rgba(245,158,11,0.18)', 'rgba(245,158,11,0.42)'],
+      outputRange: [sectionRgba(kind, 0.18), sectionRgba(kind, 0.42)],
     }),
   };
 }

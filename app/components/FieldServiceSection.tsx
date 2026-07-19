@@ -123,6 +123,7 @@ export function FieldServiceSection({
             return (
               <RowWrap
                 key={m.id}
+                kind="field_service"
                 style={[styles.row, isMine && styles.rowMineGlow]}
               >
                 <View style={styles.rowMain}>
@@ -138,7 +139,7 @@ export function FieldServiceSection({
                     </View>
                   ) : null}
                   <ChipRow>
-                    {isMine ? <MyDot /> : null}
+                    {isMine ? <MyDot kind="field_service" /> : null}
                     {conductor ? (
                       <PersonChip
                         label={conductor.displayName}

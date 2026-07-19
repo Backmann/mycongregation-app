@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Animated, Easing, View } from 'react-native';
+import { SECTION_COLORS, SectionKind } from '../lib/section-colors';
 
 /**
  * A small neon dot marking something that belongs to the signed-in publisher —
@@ -11,12 +12,17 @@ import { Animated, Easing, View } from 'react-native';
  */
 export function MyDot({
   size = 9,
-  color = '#f59e0b',
+  kind = 'meeting',
+  color,
 }: {
   /** Diameter of the solid core; the halo adds ~10px around it. */
   size?: number;
+  /** Section the marked row belongs to — decides the dot's colour. */
+  kind?: SectionKind;
+  /** Explicit colour, when the caller isn't tied to a section. */
   color?: string;
 }) {
+  const tone = color ?? SECTION_COLORS[kind].color;
   const pulse = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -65,7 +71,7 @@ export function MyDot({
           width: halo,
           height: halo,
           borderRadius: halo / 2,
-          backgroundColor: color,
+          backgroundColor: tone,
           opacity,
           transform: [{ scale }],
         }}
@@ -75,7 +81,7 @@ export function MyDot({
           width: size,
           height: size,
           borderRadius: size / 2,
-          backgroundColor: color,
+          backgroundColor: tone,
         }}
       />
     </View>

@@ -17,6 +17,7 @@ import { HallPlan } from './HallPlan';
 import { TimeField } from './TimeField';
 import { MyDot } from './MyDot';
 import { MyGlowRow } from './MyGlowRow';
+import { CLEANING_SHADES } from '../lib/section-colors';
 import { ChipRow, PersonChip } from './PersonChip';
 import {
   CleaningAssignment,
@@ -108,11 +109,14 @@ export function CleaningSection({
           const isMine =
             !!myGroupId && assigned?.serviceGroupId === myGroupId;
           const isThorough = slot === 'thorough';
-          const accent = isThorough ? '#0891b2' : '#0ea5e9';
+          const accent = isThorough
+            ? CLEANING_SHADES.thorough
+            : CLEANING_SHADES.after_meeting;
           const RowWrap = isMine ? MyGlowRow : View;
           return (
             <RowWrap
               key={slot}
+              kind="cleaning"
               style={[styles.slotCard, isMine && styles.slotCardMineGlow]}
             >
               <View style={styles.slotCardHead}>
@@ -131,7 +135,7 @@ export function CleaningSection({
                 </View>
                 <View style={{ flex: 1 }}>
                   <View style={styles.slotTitleRow}>
-                    {isMine ? <MyDot /> : null}
+                    {isMine ? <MyDot kind="cleaning" /> : null}
                     <Text style={styles.slotCardTitle}>
                       {t(`cleaning.slots.${slot}`)}
                     </Text>

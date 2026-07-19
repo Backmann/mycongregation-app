@@ -1862,6 +1862,7 @@ export interface MyWeekMarks {
   weekendParts: boolean;
   weekendDuties: boolean;
   cleaning: boolean;
+  fieldService: boolean;
 }
 
 export const meApi = {

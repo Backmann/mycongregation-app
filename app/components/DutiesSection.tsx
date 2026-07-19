@@ -15,6 +15,7 @@ import { getEventTypeLabel } from '../lib/parts';
 import { useMyPublisher } from '../lib/useMyPublisher';
 import { MyDot } from './MyDot';
 import { MyGlowRow } from './MyGlowRow';
+import { SECTION_COLORS } from '../lib/section-colors';
 import { ChipRow, PersonChip } from './PersonChip';
 
 /** Icon + accent colour per duty type (role circle in the picker). */
@@ -160,11 +161,8 @@ export function DutiesSection({
   ) => {
     // A past meeting is a record, not a task: everything cools down to grey and
     // a small lock replaces the "next up" marker.
-    const accent = locked
-      ? '#94a3b8'
-      : meeting === 'midweek'
-        ? '#0d9488'
-        : '#5b21b6';
+    // Colour says "duty" — which meeting it is, the title and date already say.
+    const accent = locked ? '#94a3b8' : SECTION_COLORS.duty.color;
     const done = total > 0 && assigned === total;
     return (
       <View style={[styles.cardHead, locked && styles.cardHeadLocked]}>
@@ -307,6 +305,7 @@ export function DutiesSection({
                   return (
                     <RowWrap
                       key={d.id}
+                      kind="duty"
                       style={[
                         styles.editRow,
                         isMine && styles.editRowMine,
@@ -327,7 +326,7 @@ export function DutiesSection({
                         </View>
                       ) : null}
                       <View style={styles.dutyLabelRow}>
-                        {isMine ? <MyDot /> : null}
+                        {isMine ? <MyDot kind="duty" /> : null}
                         <Text style={styles.dutyLabel} numberOfLines={2}>
                           {dutyLabel(d, t)}
                         </Text>
@@ -400,6 +399,7 @@ export function DutiesSection({
                   return (
                     <RowWrap
                       key={d.id}
+                      kind="duty"
                       style={[
                         styles.roRow,
                         isMine && styles.rowMineGlow,
@@ -409,7 +409,7 @@ export function DutiesSection({
                         {dutyLabel(d, t)}
                       </Text>
                       <ChipRow>
-                        {isMine ? <MyDot /> : null}
+                        {isMine ? <MyDot kind="duty" /> : null}
                         {publisher ? (
                           <PersonChip
                             label={publisher.displayName}

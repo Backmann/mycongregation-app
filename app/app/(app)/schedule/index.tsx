@@ -107,6 +107,10 @@ import { NotifyChangesDialog } from '../../../components/NotifyChangesDialog';
 import { useMyPublisher } from '../../../lib/useMyPublisher';
 import { MyDot } from '../../../components/MyDot';
 import { useMyGlow } from '../../../components/useMyGlow';
+import {
+  CLEANING_SHADES,
+  SECTION_COLORS,
+} from '../../../lib/section-colors';
 
 const EVENT_TYPE_ORDER: EventType[] = [
   'midweek',
@@ -1136,8 +1140,16 @@ export default function ScheduleIndexScreen() {
       };
 
       const sections: DutiesPdfSection[] = [
-        buildSection('midweek', getEventTypeLabel('midweek'), '#0d9488'),
-        buildSection('weekend', getEventTypeLabel('weekend'), '#5b21b6'),
+        buildSection(
+          'midweek',
+          getEventTypeLabel('midweek'),
+          SECTION_COLORS.duty.color,
+        ),
+        buildSection(
+          'weekend',
+          getEventTypeLabel('weekend'),
+          SECTION_COLORS.duty.color,
+        ),
       ].filter((s) => s.rows.length > 0);
 
       if (sections.length === 0) {
@@ -1240,9 +1252,9 @@ export default function ScheduleIndexScreen() {
       });
 
       const slotDefs: { slot: string; color: string }[] = [
-        { slot: 'after_meeting', color: '#0ea5e9' },
-        { slot: 'thorough', color: '#0891b2' },
-        { slot: 'general', color: '#0d9488' },
+        { slot: 'after_meeting', color: CLEANING_SHADES.after_meeting },
+        { slot: 'thorough', color: CLEANING_SHADES.thorough },
+        { slot: 'general', color: CLEANING_SHADES.general },
       ];
 
       const months = monthsInQuarter.map((monthIdx) => {
@@ -1544,7 +1556,7 @@ export default function ScheduleIndexScreen() {
                     key="midweek"
                     initiallyOpen={focusOn('midweek')}
                     openSignal={focusOn('midweek') ? meetingFocus?.n : undefined}
-                    accent="#1e6b8c"
+                    accent={SECTION_COLORS.meeting.color}
                     icon="calendar-outline"
                     title={getEventTypeLabel('midweek')}
                     meta={meetingDateLabel('midweek')}
@@ -1608,7 +1620,7 @@ export default function ScheduleIndexScreen() {
                     key="weekend"
                     initiallyOpen={focusOn('weekend')}
                     openSignal={focusOn('weekend') ? meetingFocus?.n : undefined}
-                    accent="#5b21b6"
+                    accent={SECTION_COLORS.meeting.color}
                     icon="calendar-outline"
                     title={getEventTypeLabel('weekend')}
                     meta={meetingDateLabel('weekend')}
@@ -1706,7 +1718,7 @@ export default function ScheduleIndexScreen() {
             {/* dutiesAccordion: обязанности отдельной разворачивающейся секцией */}
             {!congressThisWeek && (
             <CollapsibleMeetingBlock
-              accent="#0d9488"
+              accent={SECTION_COLORS.duty.color}
               icon="people-outline"
               title={t('schedule.tabs.duties')}
               onPrint={
@@ -1769,7 +1781,7 @@ export default function ScheduleIndexScreen() {
 
             {/* Встречи для проповеди — разворачивающаяся секция */}
             <CollapsibleMeetingBlock
-              accent="#15803d"
+              accent={SECTION_COLORS.field_service.color}
               icon="navigate-outline"
               title={t('fieldService.title')}
               assigned={0}
@@ -1798,7 +1810,7 @@ export default function ScheduleIndexScreen() {
             {/* Уборка — разворачивающаяся секция */}
             {!congressThisWeek && (
             <CollapsibleMeetingBlock
-              accent="#0e7490"
+              accent={SECTION_COLORS.cleaning.color}
               icon="sparkles-outline"
               title={t('cleaning.title')}
               onPrint={
@@ -2246,7 +2258,7 @@ function AssignmentRow({
     !!myPublisherId &&
     (assignment.publisherId === myPublisherId ||
       assignment.assistantPublisherId === myPublisherId);
-  const glow = useMyGlow(isMine);
+  const glow = useMyGlow(isMine, 'meeting');
   const {
     label: rawPartLabel,
     subtitle: rawSubtitle,

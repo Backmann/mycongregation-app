@@ -17,6 +17,7 @@ import 'dayjs/locale/ru';
 import 'dayjs/locale/de';
 import { assignmentsApi, meApi, type MyWeekMarks } from '../lib/api';
 import { MyDot } from './MyDot';
+import { SECTION_COLORS } from '../lib/section-colors';
 import { isSameWeek, startOfWeekMonday } from '../lib/dates';
 
 type Kind = 'midweek' | 'weekend';
@@ -132,18 +133,27 @@ export function WeekDrawer({
     return `${start.format('D MMM')} – ${end.format('D MMM')}`;
   };
 
-  // Teal = a meeting part, amber = a duty, violet = cleaning (own group).
+  // One dot per kind of assignment, in the section's own colour: orange a
+  // meeting part, red a duty, blue the group's cleaning, green a field service
+  // meeting you conduct.
   const renderDots = (weekStartIso: string) => {
     const m = marksByWeek.get(weekStartIso);
     if (!m) return null;
     const hasPart = kind === 'midweek' ? m.midweekParts : m.weekendParts;
     const hasDuty = kind === 'midweek' ? m.midweekDuties : m.weekendDuties;
-    if (!hasPart && !hasDuty && !m.cleaning) return null;
+    if (!hasPart && !hasDuty && !m.cleaning && !m.fieldService) return null;
     return (
       <View style={styles.dots}>
-        {hasPart ? <MyDot size={7} color="#0e7490" /> : null}
-        {hasDuty ? <MyDot size={7} color="#f59e0b" /> : null}
-        {m.cleaning ? <MyDot size={7} color="#7c3aed" /> : null}
+        {hasPart ? (
+          <MyDot size={7} color={SECTION_COLORS.meeting.color} />
+        ) : null}
+        {hasDuty ? <MyDot size={7} color={SECTION_COLORS.duty.color} /> : null}
+        {m.cleaning ? (
+          <MyDot size={7} color={SECTION_COLORS.cleaning.color} />
+        ) : null}
+        {m.fieldService ? (
+          <MyDot size={7} color={SECTION_COLORS.field_service.color} />
+        ) : null}
       </View>
     );
   };
