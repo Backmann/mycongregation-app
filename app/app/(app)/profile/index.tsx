@@ -28,7 +28,7 @@ import {
 export default function ProfileScreen() {
   const { user, signOut } = useAuth();
   const { myPublisher } = useMyPublisher();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [langModalVisible, setLangModalVisible] = useState(false);
   const currentLang = getCurrentLanguage();
   const [webPushStatus, setWebPushStatus] = useState<WebPushStatus | null>(null);
@@ -148,6 +148,37 @@ export default function ProfileScreen() {
           </View>
         </View>
       </View>
+
+      {myPublisher ? (
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>{t('myContacts.title')}</Text>
+          <View style={styles.card}>
+            <Pressable
+              style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
+              onPress={() => router.push('/profile/contacts' as never)}
+            >
+              <Ionicons name="call-outline" size={20} color="#0ea5e9" />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.rowTitle}>{t('myContacts.rowTitle')}</Text>
+                <Text style={styles.rowSubtitle}>
+                  {myPublisher.contactsConfirmedAt
+                    ? t('myContacts.confirmedAt', {
+                        date: new Date(
+                          myPublisher.contactsConfirmedAt,
+                        ).toLocaleDateString(i18n.language, {
+                          day: 'numeric',
+                          month: 'long',
+                          year: 'numeric',
+                        }),
+                      })
+                    : t('myContacts.neverConfirmed')}
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color="#94a3b8" />
+            </Pressable>
+          </View>
+        </View>
+      ) : null}
 
       <View style={styles.section}>
         <Text style={styles.sectionLabel}>{t('profile.settings')}</Text>

@@ -1826,6 +1826,13 @@ export interface MyPublisherLite {
   lastName: string;
   pioneerType: string | null;
   serviceGroupId: string | null;
+  /** Own contacts — the publisher keeps these up to date themselves. */
+  mobilePhone: string | null;
+  email: string | null;
+  address: string | null;
+  /** Yearly check: when the contacts were last confirmed, and by whom. */
+  contactsConfirmedAt: string | null;
+  contactsConfirmedByUserId: string | null;
 }
 
 export interface MyPublisherIdentityResponse {
@@ -1872,6 +1879,23 @@ export const meApi = {
   },
   async assignments(): Promise<MyAssignmentsResponse> {
     const { data } = await api.get<MyAssignmentsResponse>('/me/assignments');
+    return data;
+  },
+  async updateContacts(input: {
+    mobilePhone?: string | null;
+    email?: string | null;
+    address?: string | null;
+  }): Promise<MyPublisherIdentityResponse> {
+    const { data } = await api.patch<MyPublisherIdentityResponse>(
+      '/me/publisher/contacts',
+      input,
+    );
+    return data;
+  },
+  async confirmContacts(): Promise<MyPublisherIdentityResponse> {
+    const { data } = await api.post<MyPublisherIdentityResponse>(
+      '/me/publisher/contacts/confirm',
+    );
     return data;
   },
   async publisher(): Promise<MyPublisherIdentityResponse> {

@@ -2210,5 +2210,22 @@
   },
   "activityFeed": {
     "noAccess": "Die Ereignisliste steht Ältesten und Administratoren der Versammlung zur Verfügung."
+  },
+  "myContacts": {
+    "title": "Meine Daten",
+    "rowTitle": "Meine Kontaktdaten",
+    "intro": "Telefon, E-Mail und Adresse pflegst du selbst. Den Namen ändert ein Administrator der Versammlung — er wird in Plänen, Berichten und Ausdrucken verwendet.",
+    "confirm": "Angaben stimmen",
+    "allCorrect": "Angaben stimmen",
+    "edit": "Ändern",
+    "later": "Später",
+    "saved": "Gespeichert",
+    "empty": "nicht angegeben",
+    "noCard": "Mit deinem Konto ist keine Verkündigerkarte verknüpft. Bitte wende dich an den Sekretär.",
+    "confirmedAt": "Bestätigt am {{date}}",
+    "neverConfirmed": "Noch nie bestätigt",
+    "checkTitle": "Bitte Daten prüfen",
+    "checkSubtitle": "Einmal im Jahr, ab {{date}}, bitten wir dich zu bestätigen, dass deine Kontaktdaten aktuell sind.",
+    "checkSubtitleFirst": "Bitte prüfe, ob deine Kontaktdaten stimmen. Danach fragen wir einmal im Jahr, im September."
   }
 }

@@ -2210,5 +2210,22 @@
   },
   "activityFeed": {
     "noAccess": "The activity feed is available to elders and congregation administrators."
+  },
+  "myContacts": {
+    "title": "My details",
+    "rowTitle": "My contacts",
+    "intro": "You keep your phone, e-mail and address up to date yourself. The name is changed by a congregation administrator — it is used in schedules, reports and printed sheets.",
+    "confirm": "These are correct",
+    "allCorrect": "These are correct",
+    "edit": "Change",
+    "later": "Later",
+    "saved": "Saved",
+    "empty": "not set",
+    "noCard": "No publisher card is linked to your account. Please speak to the congregation secretary.",
+    "confirmedAt": "Confirmed {{date}}",
+    "neverConfirmed": "Never confirmed yet",
+    "checkTitle": "Check your details",
+    "checkSubtitle": "Once a year, from {{date}}, we ask you to confirm your contacts are current.",
+    "checkSubtitleFirst": "Please check your contacts are correct. After this we will ask once a year, in September."
   }
 }

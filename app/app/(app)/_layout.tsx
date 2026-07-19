@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../lib/auth';
 import { usePushNotifications } from '../../lib/push-notifications';
+import { ContactsCheckPrompt } from '../../components/ContactsCheckPrompt';
 export default function AppLayout() {
   const { user, isLoading } = useAuth();
   const { t } = useTranslation();
@@ -26,7 +27,9 @@ export default function AppLayout() {
     user.role === 'elder' ||
     user.canViewPrivateData === true;
   return (
-    <Tabs
+    <>
+      <ContactsCheckPrompt />
+      <Tabs
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: '#0ea5e9',
@@ -96,5 +99,6 @@ export default function AppLayout() {
       <Tabs.Screen name="talk-coordinator" options={{ href: null }} />
       <Tabs.Screen name="cleaning" options={{ href: null }} />
     </Tabs>
+    </>
   );
 }
