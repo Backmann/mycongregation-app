@@ -2,8 +2,6 @@ import { useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
-  KeyboardAvoidingView,
-  Modal,
   Platform,
   Pressable,
   ScrollView,
@@ -22,6 +20,7 @@ import {
   CircuitOverseerRole,
 } from '../../../lib/api';
 import { useAuth } from '../../../lib/auth';
+import { Sheet } from '../../../components/Sheet';
 
 type FormState = {
   id: string | null;
@@ -210,64 +209,42 @@ export default function CircuitOverseerScreen() {
         <Text style={styles.note}>{t('circuitOverseer.note')}</Text>
       </ScrollView>
 
-      <Modal
+      <Sheet
         visible={modalOpen}
-        animationType="slide"
-        transparent
-        onRequestClose={() => setModalOpen(false)}
-      >
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          style={styles.modalWrap}
-        >
-          <Pressable
-            style={StyleSheet.absoluteFill}
-            onPress={() => setModalOpen(false)}
-            accessibilityRole="button"
-          />
-          <View style={styles.modalCard}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>
-                {form.id
-                  ? t('circuitOverseer.editTitle')
-                  : t('circuitOverseer.addTitle')}
-              </Text>
-              <Pressable onPress={() => setModalOpen(false)} hitSlop={8}>
-                <Ionicons name="close" size={24} color="#64748b" />
-              </Pressable>
-            </View>
-
-            <ScrollView keyboardShouldPersistTaps="handled">
-              {serverError && (
-                <Text style={styles.errorBoxText}>{serverError}</Text>
-              )}
-
-              <Text style={styles.fieldLabel}>
-                {t('circuitOverseer.roleLabel')}
-              </Text>
-              <View style={styles.chipRow}>
-                {(['overseer', 'substitute'] as CircuitOverseerRole[]).map(
-                  (r) => (
-                    <Pressable
-                      key={r}
-                      onPress={() => setForm((f) => ({ ...f, role: r }))}
-                      style={[
-                        styles.chip,
-                        form.role === r && styles.chipActive,
-                      ]}
-                    >
-                      <Text
-                        style={[
-                          styles.chipText,
-                          form.role === r && styles.chipTextActive,
-                        ]}
-                      >
-                        {roleLabel(r)}
-                      </Text>
-                    </Pressable>
-                  ),
+        variant="bottom"
+        title={
+          form.id ? t('circuitOverseer.editTitle') : t('circuitOverseer.addTitle')
+        }
+        onClose={() => setModalOpen(false)}
+        footer={
+          <>
+            {serverError ? (
+              <Text style={styles.errorBoxText}>{serverError}</Text>
+            ) : null}
+            <Pressable
+                onPress={() => saveMutation.mutate()}
+                disabled={!canSubmit}
+                style={({ pressed }) => [
+                  styles.submitButton,
+                  !canSubmit && { opacity: 0.5 },
+                  pressed && canSubmit && { opacity: 0.85 },
+                ]}
+              >
+                {saveMutation.isPending ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <>
+                    <Ionicons name="save" size={18} color="#fff" />
+                    <Text style={styles.submitButtonText}>
+                      {t('common.save')}
+                    </Text>
+                  </>
                 )}
-              </View>
+              </Pressable>
+          </>
+        }
+      >
+        <ScrollView keyboardShouldPersistTaps="handled">
 
               <Text style={styles.fieldLabel}>
                 {t('circuitOverseer.firstName')}
@@ -322,30 +299,8 @@ export default function CircuitOverseerScreen() {
                 </Text>
               </Pressable>
 
-              <Pressable
-                onPress={() => saveMutation.mutate()}
-                disabled={!canSubmit}
-                style={({ pressed }) => [
-                  styles.submitButton,
-                  !canSubmit && { opacity: 0.5 },
-                  pressed && canSubmit && { opacity: 0.85 },
-                ]}
-              >
-                {saveMutation.isPending ? (
-                  <ActivityIndicator size="small" color="#fff" />
-                ) : (
-                  <>
-                    <Ionicons name="save" size={18} color="#fff" />
-                    <Text style={styles.submitButtonText}>
-                      {t('common.save')}
-                    </Text>
-                  </>
-                )}
-              </Pressable>
-            </ScrollView>
-          </View>
-        </KeyboardAvoidingView>
-      </Modal>
+                      </ScrollView>
+      </Sheet>
     </View>
   );
 }
@@ -415,21 +370,6 @@ const styles = StyleSheet.create({
     marginTop: 16,
     lineHeight: 18,
   },
-  modalWrap: { flex: 1, justifyContent: 'flex-end', backgroundColor: '#0006' },
-  modalCard: {
-    backgroundColor: '#f1f5f9',
-    borderTopLeftRadius: 18,
-    borderTopRightRadius: 18,
-    padding: 16,
-    maxHeight: '90%',
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 8,
-  },
-  modalTitle: { fontSize: 17, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0f172a' },
   errorBoxText: {
     color: '#991b1b',
     fontSize: 13,
