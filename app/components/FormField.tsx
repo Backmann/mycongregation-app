@@ -39,26 +39,29 @@ export function FormField({
 }
 
 const styles = StyleSheet.create({
-  container: {
-    paddingVertical: 8,
-    paddingHorizontal: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
-  },
+  // Same shape as DateField, so a form looks like one set of controls.
+  container: { marginBottom: 14 },
   label: {
-    fontSize: 12,
-    color: '#64748b',
-    marginBottom: 4,
-    fontWeight: '500', fontFamily: 'Manrope_500Medium',
+    fontSize: 13,
+    color: '#475569',
+    marginBottom: 6,
+    fontWeight: '600',
+    fontFamily: 'Manrope_600SemiBold',
   },
   required: { color: '#dc2626' },
   input: {
-    fontSize: 16,
+    fontSize: 15,
     color: '#0f172a',
-    paddingVertical: 4,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 11,
+    backgroundColor: '#fff',
   },
   multiline: {
-    minHeight: 60,
+    minHeight: 88,
+    paddingTop: 11,
     textAlignVertical: 'top',
   },
 });

@@ -39,25 +39,28 @@ export function CollapsibleSection({
 }
 
 const styles = StyleSheet.create({
-  section: { marginTop: 16 },
+  // Matches FormSection so both kinds of block sit on the same grid.
+  section: { marginTop: 16, marginHorizontal: 12 },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    marginBottom: 6,
+    paddingHorizontal: 6,
+    marginBottom: 8,
   },
   title: {
-    fontSize: 12,
-    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
+    fontSize: 11.5,
+    fontWeight: '600',
+    fontFamily: 'Manrope_600SemiBold',
     color: '#64748b',
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: 0.6,
   },
   body: {
     backgroundColor: '#fff',
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
-    borderColor: '#e2e8f0',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#e8edf3',
+    overflow: 'hidden',
   },
 });

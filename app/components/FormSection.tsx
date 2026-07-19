@@ -17,20 +17,26 @@ export function FormSection({
 }
 
 const styles = StyleSheet.create({
-  section: { marginTop: 16 },
+  // A section reads as its own card: the label sits above it, and the fields
+  // inside share one padding, so every form keeps the same rhythm.
+  section: { marginTop: 16, marginHorizontal: 12 },
   title: {
-    fontSize: 12,
-    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
+    fontSize: 11.5,
+    fontWeight: '600',
+    fontFamily: 'Manrope_600SemiBold',
     color: '#64748b',
     textTransform: 'uppercase',
-    paddingHorizontal: 20,
-    marginBottom: 6,
-    letterSpacing: 0.5,
+    paddingHorizontal: 6,
+    marginBottom: 8,
+    letterSpacing: 0.6,
   },
   body: {
     backgroundColor: '#fff',
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
-    borderColor: '#e2e8f0',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#e8edf3',
+    paddingHorizontal: 14,
+    paddingTop: 14,
+    paddingBottom: 1,
   },
 });

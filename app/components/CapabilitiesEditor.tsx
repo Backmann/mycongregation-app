@@ -166,8 +166,8 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 20,
+    paddingVertical: 13,
+    paddingHorizontal: 14,
     gap: 8,
     minHeight: 44,
   },
@@ -188,10 +188,10 @@ const styles = StyleSheet.create({
   capRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 8,
-    paddingLeft: 36,
-    paddingRight: 20,
-    minHeight: 44,
+    paddingVertical: 9,
+    paddingLeft: 30,
+    paddingRight: 14,
+    minHeight: 46,
   },
   selectAllRow: {
     borderBottomWidth: 1,
@@ -206,7 +206,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     letterSpacing: 0.4,
   },
-  capLabel: { fontSize: 14, color: '#0f172a' },
+  capLabel: { fontSize: 14.5, color: '#0f172a', lineHeight: 20 },
   capLabelDisabled: { color: '#cbd5e1' },
   hintRow: { flexDirection: 'row', gap: 4, marginTop: 2 },
   hint: {

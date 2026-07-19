@@ -52,26 +52,22 @@ export function FormChips<T extends string | number | null>({
 }
 
 const styles = StyleSheet.create({
-  container: {
-    paddingVertical: 8,
-    paddingHorizontal: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
-  },
+  container: { marginBottom: 14 },
   label: {
-    fontSize: 12,
-    color: '#64748b',
+    fontSize: 13,
+    color: '#475569',
     marginBottom: 8,
-    fontWeight: '500', fontFamily: 'Manrope_500Medium',
+    fontWeight: '600',
+    fontFamily: 'Manrope_600SemiBold',
   },
   chips: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 8,
-    paddingRight: 20,
   },
   chip: {
     paddingHorizontal: 14,
-    paddingVertical: 6,
+    paddingVertical: 8,
     borderRadius: 16,
     borderWidth: 1,
     borderColor: '#cbd5e1',

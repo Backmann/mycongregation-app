@@ -158,7 +158,10 @@ export function PublisherForm({
   return (
     <ScrollView
       style={styles.container}
-      contentContainerStyle={{ paddingBottom: 32 }}
+      // On a wide browser window the fields would otherwise run the full width
+      // of the screen, which is tiring to read and scan; the form keeps to a
+      // comfortable column and centres itself.
+      contentContainerStyle={styles.content}
       keyboardShouldPersistTaps="handled"
     >
       <FormSection title={t('publishers.sections.personal')}>
@@ -368,6 +371,12 @@ export function PublisherForm({
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f1f5f9' },
+  content: {
+    paddingBottom: 32,
+    width: '100%',
+    maxWidth: 720,
+    alignSelf: 'center',
+  },
   errorBox: {
     margin: 16,
     padding: 12,
@@ -377,10 +386,10 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   errorText: { color: '#dc2626', fontSize: 14 },
-  actions: { padding: 20, gap: 8 },
+  actions: { paddingHorizontal: 12, paddingVertical: 20, gap: 10 },
   button: {
     paddingVertical: 14,
-    borderRadius: 8,
+    borderRadius: 12,
     alignItems: 'center',
   },
   buttonPrimary: { backgroundColor: '#0ea5e9' },
