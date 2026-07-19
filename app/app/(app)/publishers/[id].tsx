@@ -230,7 +230,9 @@ export default function PublisherDetailScreen() {
   return (
     <ScrollView
       style={styles.container}
-      contentContainerStyle={{ paddingBottom: 32 }}
+      // Same comfortable column as the edit form, so switching between viewing
+      // and editing doesn't shift the layout under the reader.
+      contentContainerStyle={styles.content}
     >
       <PublisherHeader publisher={publisher} />
 
@@ -733,6 +735,12 @@ const styles = StyleSheet.create({
   },
   auxRowText: { fontSize: 13, fontWeight: '600', color: '#0F6E56' },
   container: { flex: 1, backgroundColor: '#f1f5f9' },
+  content: {
+    paddingBottom: 32,
+    width: '100%',
+    maxWidth: 720,
+    alignSelf: 'center',
+  },
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.4)',
@@ -796,11 +804,11 @@ const styles = StyleSheet.create({
 
   headerSection: {
     backgroundColor: '#fff',
-    marginHorizontal: 16,
+    marginHorizontal: 12,
     marginTop: 16,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: '#e8edf3',
     paddingVertical: 24,
     paddingHorizontal: 20,
     alignItems: 'center',
@@ -834,20 +842,22 @@ const styles = StyleSheet.create({
     backgroundColor: '#fef3c7',
     borderColor: '#fde68a',
     borderWidth: 1,
-    margin: 16,
+    marginHorizontal: 12,
+    marginTop: 16,
     padding: 12,
-    borderRadius: 8,
+    borderRadius: 12,
   },
   removedText: { color: '#92400e', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
   removedNote: { color: '#78350f', marginTop: 4, fontSize: 13 },
 
-  section: { marginHorizontal: 16, marginTop: 18 },
+  section: { marginHorizontal: 12, marginTop: 16 },
   sectionTitle: {
-    fontSize: 12,
-    fontWeight: '700', fontFamily: 'Manrope_700Bold',
+    fontSize: 11.5,
+    fontWeight: '600',
+    fontFamily: 'Manrope_600SemiBold',
     color: '#64748b',
     textTransform: 'uppercase',
-    marginLeft: 4,
+    marginLeft: 6,
     marginBottom: 8,
     letterSpacing: 0.6,
   },
@@ -855,16 +865,24 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: '#e8edf3',
     overflow: 'hidden',
   },
-  divider: { height: 1, backgroundColor: '#f1f5f9', marginHorizontal: 16 },
+  divider: { height: 1, backgroundColor: '#f3f6f9', marginHorizontal: 14 },
   field: {
     paddingVertical: 12,
-    paddingHorizontal: 16,
+    paddingHorizontal: 14,
   },
-  accessWrap: { paddingHorizontal: 16, paddingVertical: 4 },
-  fieldLabel: { fontSize: 12, color: '#94a3b8', marginBottom: 3 },
+  accessWrap: { paddingHorizontal: 14, paddingVertical: 4 },
+  // Labels read like the form's: same size and weight, so a value looks the
+  // same whether you are reading it or about to change it.
+  fieldLabel: {
+    fontSize: 13,
+    color: '#475569',
+    marginBottom: 4,
+    fontWeight: '600',
+    fontFamily: 'Manrope_600SemiBold',
+  },
   fieldValue: { fontSize: 15, color: '#0f172a', fontWeight: '500', fontFamily: 'Manrope_500Medium',},
   fieldEmpty: { fontSize: 15, color: '#cbd5e1' },
 
