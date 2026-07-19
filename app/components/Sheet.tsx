@@ -125,7 +125,10 @@ const styles = StyleSheet.create({
     marginTop: 8,
     marginBottom: 4,
   },
-  bottomBody: { paddingBottom: 8 },
+  // A bottom sheet holds a form or a short list, so its content sits on the
+  // same 16px margin the rest of the app uses. Full-screen sheets hold lists
+  // that manage their own padding, so they stay flush.
+  bottomBody: { paddingHorizontal: 16, paddingTop: 4, paddingBottom: 10 },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
