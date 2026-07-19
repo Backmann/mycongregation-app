@@ -2226,7 +2226,7 @@
     "neverConfirmed": "Noch nie bestätigt",
     "checkTitle": "Bitte Daten prüfen",
     "checkSubtitle": "Einmal im Jahr, ab {{date}}, bitten wir dich zu bestätigen, dass deine Kontaktdaten aktuell sind.",
-    "checkSubtitleFirst": "Bitte prüfe, ob deine Kontaktdaten stimmen. Danach fragen wir einmal im Jahr, im September.",
+    "checkSubtitleFirst": "Bitte prüfe, ob deine Kontaktdaten stimmen. Danach fragen wir einmal im Jahr, im Januar.",
     "confirmedByAt": "Geprüft am {{date}} um {{time}} · {{name}}",
     "confirmedAtTime": "Geprüft am {{date}} um {{time}}",
     "listDue": "Kontaktdaten dieses Jahr nicht bestätigt",

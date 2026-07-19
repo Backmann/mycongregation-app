@@ -2226,7 +2226,7 @@
     "neverConfirmed": "Never confirmed yet",
     "checkTitle": "Check your details",
     "checkSubtitle": "Once a year, from {{date}}, we ask you to confirm your contacts are current.",
-    "checkSubtitleFirst": "Please check your contacts are correct. After this we will ask once a year, in September.",
+    "checkSubtitleFirst": "Please check your contacts are correct. After this we will ask once a year, in January.",
     "confirmedByAt": "Checked {{date}} at {{time}} · {{name}}",
     "confirmedAtTime": "Checked {{date}} at {{time}}",
     "listDue": "Contacts not confirmed this year",

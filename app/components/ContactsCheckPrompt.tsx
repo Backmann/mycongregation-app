@@ -14,10 +14,10 @@ import { useAuth } from '../lib/auth';
  * so nobody is trapped mid-task but nobody quietly skips the year either.
  */
 function checkDueSince(now: Date): Date {
-  // The service year starts on 1 September; before that date the check still
-  // refers to last year's.
-  const year = now.getMonth() >= 8 ? now.getFullYear() : now.getFullYear() - 1;
-  return new Date(year, 8, 1);
+  // The check runs once a calendar year, from 1 January — so "confirmed this
+  // year" means exactly that, and the first round after the feature shipped
+  // carries everyone through to the new year.
+  return new Date(now.getFullYear(), 0, 1);
 }
 
 export function ContactsCheckPrompt() {

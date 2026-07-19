@@ -158,7 +158,9 @@ export default function ProfileScreen() {
               style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
               onPress={() => router.push('/profile/contacts' as never)}
             >
-              <Ionicons name="call-outline" size={20} color="#0ea5e9" />
+              <View style={styles.rowIcon}>
+                <Ionicons name="call-outline" size={20} color="#0ea5e9" />
+              </View>
               <View style={{ flex: 1 }}>
                 <Text style={styles.rowTitle}>{t('myContacts.rowTitle')}</Text>
                 <Text style={styles.rowSubtitle}>

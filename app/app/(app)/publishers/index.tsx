@@ -287,16 +287,11 @@ function PublisherRow({
   const initials =
     (publisher.firstName[0] ?? '') + (publisher.lastName[0] ?? '');
 
-  // Overdue since the service year began on 1 September; publishers who never
-  // confirmed count as overdue too.
+  // Overdue since 1 January; publishers who never confirmed count as overdue.
   const contactCheck = (() => {
     if (isRemoved) return null;
     const now = new Date();
-    const yearStart = new Date(
-      now.getMonth() >= 8 ? now.getFullYear() : now.getFullYear() - 1,
-      8,
-      1,
-    );
+    const yearStart = new Date(now.getFullYear(), 0, 1);
     const at = publisher.contactsConfirmedAt
       ? new Date(publisher.contactsConfirmedAt)
       : null;
