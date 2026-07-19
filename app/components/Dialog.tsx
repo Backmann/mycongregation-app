@@ -29,6 +29,8 @@ export function Dialog({
   confirmDanger,
   cancelLabel,
   onCancel,
+  extraLabel,
+  onExtra,
   pending,
   scroll,
 }: {
@@ -45,6 +47,9 @@ export function Dialog({
   cancelLabel?: string;
   /** Also runs when the backdrop is tapped or the device back button is used. */
   onCancel: () => void;
+  /** A third, quieter action on the left — "clear the plan" and the like. */
+  extraLabel?: string;
+  onExtra?: () => void;
   pending?: boolean;
   /** For long bodies — keeps the dialog within the screen. */
   scroll?: boolean;
@@ -75,8 +80,22 @@ export function Dialog({
 
           <Body style={scroll ? styles.scrollBody : undefined}>{children}</Body>
 
-          {onConfirm || cancelLabel ? (
+          {onConfirm || cancelLabel || onExtra ? (
             <View style={styles.actions}>
+              {onExtra && extraLabel ? (
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.btn,
+                    styles.extra,
+                    pressed && styles.pressed,
+                  ]}
+                  onPress={onExtra}
+                  disabled={pending}
+                >
+                  <Text style={styles.extraText}>{extraLabel}</Text>
+                </Pressable>
+              ) : null}
+              <View style={{ flex: 1 }} />
               {cancelLabel ? (
                 <Pressable
                   style={({ pressed }) => [
@@ -150,7 +169,7 @@ const styles = StyleSheet.create({
   scrollBody: { flexGrow: 0 },
   actions: {
     flexDirection: 'row',
-    justifyContent: 'flex-end',
+    alignItems: 'center',
     gap: 10,
     marginTop: 18,
   },
@@ -163,6 +182,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   cancel: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#e2e8f0' },
+  extra: { minWidth: 0, paddingHorizontal: 4, backgroundColor: 'transparent' },
+  extraText: { color: '#b91c1c', fontSize: 14, fontWeight: '600' },
   cancelText: { color: '#334155', fontSize: 14.5, fontWeight: '600' },
   confirm: { backgroundColor: '#0ea5e9' },
   danger: { backgroundColor: '#dc2626' },

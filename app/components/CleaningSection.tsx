@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import {
-  Modal,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -18,6 +17,7 @@ import { TimeField } from './TimeField';
 import { MyDot } from './MyDot';
 import { MyGlowRow } from './MyGlowRow';
 import { CLEANING_SHADES } from '../lib/section-colors';
+import { Dialog } from './Dialog';
 import { ChipRow, PersonChip } from './PersonChip';
 import {
   CleaningAssignment,
@@ -389,17 +389,23 @@ function GeneralExtras({
 
       <GuideLink freq="yearly" />
 
-      <Modal
+      <Dialog
         visible={open}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setOpen(false)}
+        title={t('cleaning.plan.generalTitle')}
+        icon="calendar-outline"
+        iconTint="#0284c7"
+        iconBg="#e0f2fe"
+        cancelLabel={t('common.cancel')}
+        confirmLabel={t('common.save')}
+        confirmDisabled={!draftDay || !draftTime}
+        pending={mutation.isPending}
+        extraLabel={plannedAt ? t('cleaning.plan.clear') : undefined}
+        onExtra={plannedAt ? () => mutation.mutate(null) : undefined}
+        onConfirm={() =>
+          mutation.mutate(new Date(`${draftDay}T${draftTime}:00`).toISOString())
+        }
+        onCancel={() => setOpen(false)}
       >
-        <View style={styles.modalBackdrop}>
-          <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>
-              {t('cleaning.plan.generalTitle')}
-            </Text>
             <View style={styles.dayRow}>
               {weekDays.map((d) => {
                 const iso = isoDate(d);
@@ -436,42 +442,7 @@ function GeneralExtras({
             {planError ? (
               <Text style={styles.planError}>{planError}</Text>
             ) : null}
-            <View style={styles.modalActions}>
-              <Pressable style={styles.modalBtn} onPress={() => setOpen(false)}>
-                <Text style={styles.modalBtnText}>{t('common.cancel')}</Text>
-              </Pressable>
-              {plannedAt ? (
-                <Pressable
-                  style={styles.modalBtn}
-                  disabled={mutation.isPending}
-                  onPress={() => mutation.mutate(null)}
-                >
-                  <Text style={[styles.modalBtnText, styles.modalBtnDanger]}>
-                    {t('cleaning.plan.clear')}
-                  </Text>
-                </Pressable>
-              ) : null}
-              <Pressable
-                style={[
-                  styles.modalBtn,
-                  styles.modalBtnPrimary,
-                  (!draftDay || !draftTime) && styles.modalBtnDisabled,
-                ]}
-                disabled={!draftDay || !draftTime || mutation.isPending}
-                onPress={() =>
-                  mutation.mutate(
-                    new Date(`${draftDay}T${draftTime}:00`).toISOString(),
-                  )
-                }
-              >
-                <Text style={[styles.modalBtnText, styles.modalBtnTextPrimary]}>
-                  {t('common.save')}
-                </Text>
-              </Pressable>
-            </View>
-          </View>
-        </View>
-      </Modal>
+      </Dialog>
     </View>
   );
 }
@@ -655,17 +626,22 @@ function ThoroughExtras({
       ) : null}
 
       {/* Окна: карта зала */}
-      <Modal
+      <Dialog
         visible={windowsOpen}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setWindowsOpen(false)}
+        title={t('cleaning.windows.title')}
+        icon="grid-outline"
+        iconTint="#0284c7"
+        iconBg="#e0f2fe"
+        cancelLabel={t('common.cancel')}
+        confirmLabel={t('common.save')}
+        pending={pending}
+        onConfirm={() => {
+          onSetWindows(draftWindows.length ? draftWindows : null);
+          setWindowsOpen(false);
+        }}
+        onCancel={() => setWindowsOpen(false)}
+        scroll
       >
-        <View style={styles.modalBackdrop}>
-          <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>
-              {t('cleaning.windows.title')}
-            </Text>
             {canEdit ? (
               <Text style={styles.modalHint}>
                 {t('cleaning.windows.hint')}
@@ -684,48 +660,28 @@ function ThoroughExtras({
                   : undefined
               }
             />
-            <View style={styles.modalActions}>
-              <Pressable
-                style={styles.modalBtn}
-                onPress={() => setWindowsOpen(false)}
-              >
-                <Text style={styles.modalBtnText}>
-                  {canEdit ? t('common.cancel') : t('common.close')}
-                </Text>
-              </Pressable>
-              {canEdit ? (
-                <Pressable
-                  style={[styles.modalBtn, styles.modalBtnPrimary]}
-                  disabled={pending}
-                  onPress={() => {
-                    onSetWindows(
-                      draftWindows.length > 0 ? draftWindows : null,
-                    );
-                    setWindowsOpen(false);
-                  }}
-                >
-                  <Text
-                    style={[styles.modalBtnText, styles.modalBtnTextPrimary]}
-                  >
-                    {t('common.save')}
-                  </Text>
-                </Pressable>
-              ) : null}
-            </View>
-          </View>
-        </View>
-      </Modal>
+      </Dialog>
 
       {/* День еженедельной уборки */}
-      <Modal
+      <Dialog
         visible={planOpen}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setPlanOpen(false)}
+        title={t('cleaning.plan.title')}
+        icon="time-outline"
+        iconTint="#0284c7"
+        iconBg="#e0f2fe"
+        cancelLabel={t('common.cancel')}
+        confirmLabel={t('common.save')}
+        confirmDisabled={!draftDay || !draftTime}
+        pending={planMutation.isPending}
+        extraLabel={plannedAt ? t('cleaning.plan.clear') : undefined}
+        onExtra={plannedAt ? () => planMutation.mutate(null) : undefined}
+        onConfirm={() =>
+          planMutation.mutate(
+            new Date(`${draftDay}T${draftTime}:00`).toISOString(),
+          )
+        }
+        onCancel={() => setPlanOpen(false)}
       >
-        <View style={styles.modalBackdrop}>
-          <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>{t('cleaning.plan.title')}</Text>
             <View style={styles.dayRow}>
               {weekDays.map((d) => {
                 const iso = isoDate(d);
@@ -762,45 +718,7 @@ function ThoroughExtras({
             {planError ? (
               <Text style={styles.planError}>{planError}</Text>
             ) : null}
-            <View style={styles.modalActions}>
-              <Pressable
-                style={styles.modalBtn}
-                onPress={() => setPlanOpen(false)}
-              >
-                <Text style={styles.modalBtnText}>{t('common.cancel')}</Text>
-              </Pressable>
-              {plannedAt ? (
-                <Pressable
-                  style={styles.modalBtn}
-                  disabled={planMutation.isPending}
-                  onPress={() => planMutation.mutate(null)}
-                >
-                  <Text style={[styles.modalBtnText, styles.modalBtnDanger]}>
-                    {t('cleaning.plan.clear')}
-                  </Text>
-                </Pressable>
-              ) : null}
-              <Pressable
-                style={[
-                  styles.modalBtn,
-                  styles.modalBtnPrimary,
-                  (!draftDay || !draftTime) && styles.modalBtnDisabled,
-                ]}
-                disabled={!draftDay || !draftTime || planMutation.isPending}
-                onPress={() =>
-                  planMutation.mutate(
-                    new Date(`${draftDay}T${draftTime}:00`).toISOString(),
-                  )
-                }
-              >
-                <Text style={[styles.modalBtnText, styles.modalBtnTextPrimary]}>
-                  {t('common.save')}
-                </Text>
-              </Pressable>
-            </View>
-          </View>
-        </View>
-      </Modal>
+      </Dialog>
     </View>
   );
 }
@@ -848,15 +766,16 @@ export function GroupSelect({
         <Ionicons name="chevron-down" size={16} color="#94a3b8" />
       </Pressable>
 
-      <Modal
+      <Dialog
         visible={open}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setOpen(false)}
+        title={title}
+        icon="people-outline"
+        iconTint="#0284c7"
+        iconBg="#e0f2fe"
+        cancelLabel={t('common.cancel')}
+        onCancel={() => setOpen(false)}
+        scroll
       >
-        <Pressable style={styles.overlay} onPress={() => setOpen(false)}>
-          <Pressable style={styles.pickerCard} onPress={() => {}}>
-            <Text style={styles.pickerTitle}>{title}</Text>
             <ScrollView style={{ maxHeight: 360 }}>
               <Pressable
                 style={styles.pickerRow}
@@ -903,9 +822,7 @@ export function GroupSelect({
                 );
               })}
             </ScrollView>
-          </Pressable>
-        </Pressable>
-      </Modal>
+      </Dialog>
     </>
   );
 }
@@ -1002,40 +919,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   windowChipText: { fontSize: 12, fontWeight: '800', fontFamily: 'Manrope_800ExtraBold', color: '#b45309' },
-  modalBackdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(15,23,42,0.45)',
-    justifyContent: 'center',
-    padding: 16,
-  },
-  modalCard: {
-    backgroundColor: '#fff',
-    borderRadius: 18,
-    padding: 16,
-    gap: 10,
-    maxWidth: 460,
-    width: '100%',
-    alignSelf: 'center',
-  },
-  modalTitle: { fontSize: 16, fontWeight: '800', fontFamily: 'Manrope_800ExtraBold', color: '#0f172a' },
   modalHint: { fontSize: 12.5, color: '#64748b', marginTop: -4 },
-  modalActions: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    gap: 8,
-    marginTop: 2,
-  },
-  modalBtn: {
-    paddingHorizontal: 14,
-    paddingVertical: 9,
-    borderRadius: 10,
-    backgroundColor: '#f1f5f9',
-  },
-  modalBtnPrimary: { backgroundColor: '#0369a1' },
-  modalBtnDisabled: { opacity: 0.45 },
-  modalBtnText: { fontSize: 13.5, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#334155' },
-  modalBtnTextPrimary: { color: '#fff' },
-  modalBtnDanger: { color: '#b91c1c' },
   dayRow: { flexDirection: 'row', gap: 5, flexWrap: 'wrap' },
   dayChip: {
     minWidth: 44,
@@ -1083,14 +967,6 @@ const styles = StyleSheet.create({
   selectValue: { fontSize: 14, color: '#0f172a' },
   selectPlaceholder: { color: '#94a3b8' },
 
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(15,23,42,0.45)',
-    justifyContent: 'center',
-    paddingHorizontal: 24,
-  },
-  pickerCard: { backgroundColor: '#fff', borderRadius: 14, padding: 16, gap: 8 },
-  pickerTitle: { fontSize: 15, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0f172a' },
   pickerRow: {
     flexDirection: 'row',
     alignItems: 'center',
