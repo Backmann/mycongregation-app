@@ -176,6 +176,7 @@ export interface Publisher {
   /** Yearly contact check: when confirmed, and by whom (self or secretary). */
   contactsConfirmedAt?: string | null;
   contactsConfirmedByUserId?: string | null;
+  contactsConfirmedByName?: string | null;
 }
 
 export interface CreatePublisherInput {
@@ -1841,6 +1842,7 @@ export interface MyPublisherLite {
   /** Yearly check: when the contacts were last confirmed, and by whom. */
   contactsConfirmedAt: string | null;
   contactsConfirmedByUserId: string | null;
+  contactsConfirmedByName: string | null;
 }
 
 export interface MyPublisherIdentityResponse {

@@ -14,6 +14,7 @@ import { router } from 'expo-router';
 import { FormField } from '../../../components/FormField';
 import { FormSection } from '../../../components/FormSection';
 import { extractErrorMessage, meApi } from '../../../lib/api';
+import { contactsCheckLine } from '../../../lib/contacts-check';
 
 /**
  * "My contacts": the one part of their card a publisher keeps up to date
@@ -125,7 +126,6 @@ export default function MyContactsScreen() {
             setDirty(true);
             setForm((p) => ({ ...p, address: v }));
           }}
-          multiline
         />
       </FormSection>
 
@@ -136,15 +136,12 @@ export default function MyContactsScreen() {
           color={confirmedAt ? '#16a34a' : '#b45309'}
         />
         <Text style={styles.stampText}>
-          {confirmedAt
-            ? t('myContacts.confirmedAt', {
-                date: confirmedAt.toLocaleDateString(i18n.language, {
-                  day: 'numeric',
-                  month: 'long',
-                  year: 'numeric',
-                }),
-              })
-            : t('myContacts.neverConfirmed')}
+          {contactsCheckLine(
+            t,
+            i18n.language,
+            me.contactsConfirmedAt,
+            me.contactsConfirmedByName,
+          )}
         </Text>
       </View>
 
@@ -217,14 +214,16 @@ const styles = StyleSheet.create({
     maxWidth: 720,
     alignSelf: 'center',
   },
-  intro: { paddingHorizontal: 18, paddingTop: 16 },
+  // Everything sits on the same vertical as the section cards (12 + 6),
+  // so the paragraph, the fields and the check line line up.
+  intro: { paddingHorizontal: 18, paddingTop: 16, paddingBottom: 2 },
   introText: { fontSize: 13.5, color: '#475569', lineHeight: 20 },
   stampRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 7,
-    marginHorizontal: 12,
-    marginTop: 10,
+    marginHorizontal: 18,
+    marginTop: 12,
   },
   stampText: { flex: 1, fontSize: 12.5, color: '#64748b' },
   noticeBox: {

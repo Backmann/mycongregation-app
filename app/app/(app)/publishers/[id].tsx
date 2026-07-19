@@ -32,6 +32,7 @@ import {
 } from '../../../lib/capabilities';
 import { useAuth } from '../../../lib/auth';
 import { usePermissions } from '../../../lib/permissions';
+import { contactsCheckLine } from '../../../lib/contacts-check';
 import { buildS21Html, availableServiceYears } from '../../../lib/s21';
 import { exportHtmlAsPdf, openPrintWindow } from '../../../lib/pdf';
 
@@ -276,17 +277,12 @@ export default function PublisherDetailScreen() {
           color={publisher.contactsConfirmedAt ? '#16a34a' : '#b45309'}
         />
         <Text style={styles.checkText}>
-          {publisher.contactsConfirmedAt
-            ? t('myContacts.confirmedAt', {
-                date: new Date(
-                  publisher.contactsConfirmedAt,
-                ).toLocaleDateString(i18n.language, {
-                  day: 'numeric',
-                  month: 'long',
-                  year: 'numeric',
-                }),
-              })
-            : t('myContacts.neverConfirmed')}
+          {contactsCheckLine(
+            t,
+            i18n.language,
+            publisher.contactsConfirmedAt,
+            publisher.contactsConfirmedByName,
+          )}
         </Text>
         {canEditPublishers ? (
           <Pressable

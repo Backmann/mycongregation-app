@@ -17,6 +17,7 @@ import { useMyPublisher } from '../../../lib/useMyPublisher';
 import { LanguagePickerModal } from '../../../components/LanguagePicker';
 import { getCurrentLanguage } from '../../../lib/i18n';
 import { extractErrorMessage, meApi } from '../../../lib/api';
+import { contactsCheckLine } from '../../../lib/contacts-check';
 import {
   getWebPushStatus,
   isIosWithoutStandalone,
@@ -161,17 +162,12 @@ export default function ProfileScreen() {
               <View style={{ flex: 1 }}>
                 <Text style={styles.rowTitle}>{t('myContacts.rowTitle')}</Text>
                 <Text style={styles.rowSubtitle}>
-                  {myPublisher.contactsConfirmedAt
-                    ? t('myContacts.confirmedAt', {
-                        date: new Date(
-                          myPublisher.contactsConfirmedAt,
-                        ).toLocaleDateString(i18n.language, {
-                          day: 'numeric',
-                          month: 'long',
-                          year: 'numeric',
-                        }),
-                      })
-                    : t('myContacts.neverConfirmed')}
+                  {contactsCheckLine(
+                    t,
+                    i18n.language,
+                    myPublisher.contactsConfirmedAt,
+                    myPublisher.contactsConfirmedByName,
+                  )}
                 </Text>
               </View>
               <Ionicons name="chevron-forward" size={18} color="#94a3b8" />
