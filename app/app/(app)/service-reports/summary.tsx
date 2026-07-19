@@ -60,7 +60,7 @@ function getRecentMonths(count: number): { value: string; label: string }[] {
 }
 
 export default function ServiceSummaryScreen() {
-  const { i18n: i18nInstance } = useTranslation();
+  const { t, i18n: i18nInstance } = useTranslation();
   const { canViewServiceSummary } = usePermissions();
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -112,9 +112,9 @@ export default function ServiceSummaryScreen() {
       <View style={styles.center}>
         <Stack.Screen options={{ title: SCREEN_TITLE }} />
         <Ionicons name="lock-closed-outline" size={64} color="#cbd5e1" />
-        <Text style={styles.errorTitle}>Доступ ограничен</Text>
+        <Text style={styles.errorTitle}>{t('serviceSummary.noAccessTitle')}</Text>
         <Text style={styles.errorText}>
-          Сводка доступна только секретарю и администратору.
+          {t('serviceSummary.noAccessBody')}
         </Text>
       </View>
     );
@@ -141,7 +141,9 @@ export default function ServiceSummaryScreen() {
           color="#cbd5e1"
         />
         <Text style={styles.errorTitle}>
-          {isForbidden ? 'Доступ ограничен' : 'Не удалось загрузить сводку'}
+          {isForbidden
+            ? t('serviceSummary.noAccessTitle')
+            : t('serviceSummary.loadFailed')}
         </Text>
         <Text style={styles.errorText}>{message}</Text>
       </View>
@@ -240,58 +242,55 @@ export default function ServiceSummaryScreen() {
             <View style={styles.statsRow}>
               <View style={styles.statBox}>
                 <Text style={styles.statBig}>{cat.count}</Text>
-                <Text style={styles.statLabel}>Количество</Text>
+                <Text style={styles.statLabel}>{t('serviceSummary.count')}</Text>
               </View>
               {cat.hours !== null && (
                 <View style={styles.statBox}>
                   <Text style={styles.statBig}>{cat.hours}</Text>
-                  <Text style={styles.statLabel}>Часы</Text>
+                  <Text style={styles.statLabel}>{t('serviceSummary.hours')}</Text>
                 </View>
               )}
               <View style={styles.statBox}>
                 <Text style={styles.statBig}>{cat.bibleStudies}</Text>
-                <Text style={styles.statLabel}>Изучения</Text>
+                <Text style={styles.statLabel}>{t('serviceSummary.studies')}</Text>
               </View>
             </View>
           </View>
         ))}
 
         <View style={[styles.card, styles.totalsCard]}>
-          <Text style={styles.cardTitle}>Численность собрания</Text>
+          <Text style={styles.cardTitle}>{t('serviceSummary.sizeTitle')}</Text>
           <View style={styles.statsRow}>
             <View style={styles.statBox}>
               <Text style={[styles.statBig, styles.statActive]}>
                 {data?.totalActivePublishers ?? 0}
               </Text>
-              <Text style={styles.statLabel}>Все активные</Text>
+              <Text style={styles.statLabel}>{t('serviceSummary.allActive')}</Text>
             </View>
             <View style={styles.statBox}>
               <Text style={[styles.statBig, styles.statInactive]}>
                 {data?.totalInactivePublishers ?? 0}
               </Text>
-              <Text style={styles.statLabel}>Неактивные</Text>
+              <Text style={styles.statLabel}>{t('serviceSummary.inactive')}</Text>
             </View>
           </View>
-          <Text style={styles.totalsHint}>
-            «Все активные» — активные и нерегулярные возвещатели. Неактивные
-            считаются отдельно и в это число не входят.
-          </Text>
+          <Text style={styles.totalsHint}>{t('serviceSummary.sizeHint')}</Text>
         </View>
 
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Средние показатели</Text>
+          <Text style={styles.cardTitle}>{t('serviceSummary.averagesTitle')}</Text>
           <View style={styles.statsRow}>
             <View style={styles.statBox}>
               <Text style={styles.statBig}>
                 {data?.averages.pioneerHours ?? 0}
               </Text>
-              <Text style={styles.statLabel}>Часы (пионеры)</Text>
+              <Text style={styles.statLabel}>{t('serviceSummary.hoursPioneers')}</Text>
             </View>
             <View style={styles.statBox}>
               <Text style={styles.statBig}>
                 {data?.averages.bibleStudies ?? 0}
               </Text>
-              <Text style={styles.statLabel}>Изучения</Text>
+              <Text style={styles.statLabel}>{t('serviceSummary.studies')}</Text>
             </View>
           </View>
           <View style={[styles.statsRow, { marginTop: 12 }]}>
@@ -299,18 +298,17 @@ export default function ServiceSummaryScreen() {
               <Text style={[styles.statBig, styles.statActive]}>
                 {data?.averages.submittedPct ?? 0}%
               </Text>
-              <Text style={styles.statLabel}>Сдали отчёт</Text>
+              <Text style={styles.statLabel}>{t('serviceSummary.reported')}</Text>
             </View>
             <View style={styles.statBox}>
               <Text style={[styles.statBig, styles.statActive]}>
                 {data?.averages.activePct ?? 0}%
               </Text>
-              <Text style={styles.statLabel}>Активных</Text>
+              <Text style={styles.statLabel}>{t('serviceSummary.activeCount')}</Text>
             </View>
           </View>
           <Text style={styles.totalsHint}>
-            Средние часы — по пионерам, сдавшим отчёт. Средние изучения — по всем
-            сдавшим. «Сдали отчёт» — доля от активных; «активных» — доля от всех.
+            {t('serviceSummary.averagesHint')}
           </Text>
         </View>
 
@@ -326,13 +324,13 @@ export default function ServiceSummaryScreen() {
             <View style={styles.statsRow}>
               <View style={styles.statBox}>
                 <Text style={styles.statBig}>{yearQuery.data.totalHours}</Text>
-                <Text style={styles.statLabel}>Всего часов</Text>
+                <Text style={styles.statLabel}>{t('serviceSummary.totalHours')}</Text>
               </View>
               <View style={styles.statBox}>
                 <Text style={styles.statBig}>
                   {yearQuery.data.totalStudies}
                 </Text>
-                <Text style={styles.statLabel}>Всего изучений</Text>
+                <Text style={styles.statLabel}>{t('serviceSummary.totalStudies')}</Text>
               </View>
             </View>
             {yearTrendPoints.length >= 2 ? (

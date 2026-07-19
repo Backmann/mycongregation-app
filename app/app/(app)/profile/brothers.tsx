@@ -100,7 +100,7 @@ export default function BrothersScreen() {
   if (user?.role !== 'admin') {
     return (
       <View style={styles.center}>
-        <Text style={styles.muted}>Недостаточно прав.</Text>
+        <Text style={styles.muted}>{t('brothers.noRights')}</Text>
       </View>
     );
   }
@@ -120,12 +120,10 @@ export default function BrothersScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={{ paddingBottom: 32 }}>
-        <Text style={styles.intro}>
-          Доступ в приложение и обязанности братьев собрания.
-        </Text>
+        <Text style={styles.intro}>{t('brothers.intro')}</Text>
         <View style={styles.card}>
           {brothers.length === 0 ? (
-            <Text style={styles.empty}>Список братьев пуст.</Text>
+            <Text style={styles.empty}>{t('brothers.empty')}</Text>
           ) : (
             brothers.map((b, i) => {
               const held = b.userId ? heldByUser.get(b.userId) : undefined;
@@ -174,12 +172,12 @@ export default function BrothersScreen() {
           >
             {selected && (
               <>
-                <Text style={styles.sectionLabel}>Вход в приложение</Text>
+                <Text style={styles.sectionLabel}>{t('brothers.appAccess')}</Text>
                 <View style={styles.block}>
                   <PublisherAccessContent publisher={selected} />
                 </View>
 
-                <Text style={styles.sectionLabel}>Обязанности</Text>
+                <Text style={styles.sectionLabel}>{t('brothers.responsibilities')}</Text>
                 <View style={styles.block}>
                   {!selected.userId ? (
                     <Text style={styles.muted}>

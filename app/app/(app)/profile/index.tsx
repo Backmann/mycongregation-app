@@ -321,8 +321,8 @@ export default function ProfileScreen() {
                   <Ionicons name="people-circle-outline" size={20} color="#0ea5e9" />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.rowTitle}>Братья</Text>
-                  <Text style={styles.rowSubtitle}>Доступ и обязанности</Text>
+                  <Text style={styles.rowTitle}>{t('profileExtra.brothers')}</Text>
+                  <Text style={styles.rowSubtitle}>{t('profileExtra.brothersSub')}</Text>
                 </View>
                 <Ionicons name="chevron-forward" size={18} color="#cbd5e1" />
               </Pressable>
@@ -432,8 +432,8 @@ export default function ProfileScreen() {
                 <Ionicons name="musical-notes-outline" size={20} color="#0ea5e9" />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={styles.rowTitle}>Песни</Text>
-                <Text style={styles.rowSubtitle}>Импорт песенника собрания</Text>
+                <Text style={styles.rowTitle}>{t('profileExtra.songs')}</Text>
+                <Text style={styles.rowSubtitle}>{t('profileExtra.songsSub')}</Text>
               </View>
               <Ionicons name="chevron-forward" size={18} color="#cbd5e1" />
             </Pressable>

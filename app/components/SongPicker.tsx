@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { songsApi } from '../lib/api';
 
 function currentNumberFromTitle(title: string | null | undefined): number | null {
@@ -34,6 +35,7 @@ export function SongPicker({
   isSaving?: boolean;
   onSave: (partTitle: string | null) => void;
 }) {
+  const { t } = useTranslation();
   const [search, setSearch] = useState('');
   const songsQuery = useQuery({
     queryKey: ['songs', 'list'],
@@ -60,11 +62,11 @@ export function SongPicker({
   return (
     <View style={styles.container}>
       <View style={styles.currentBox}>
-        <Text style={styles.currentLabel}>Текущая песня</Text>
+        <Text style={styles.currentLabel}>{t('songPicker.current')}</Text>
         <Text style={styles.currentValue}>
           {current
             ? `Песня ${current}${currentSong ? ` — ${currentSong.title}` : ''}`
-            : 'Не выбрана'}
+            : t('songPicker.none')}
         </Text>
       </View>
 
@@ -73,7 +75,7 @@ export function SongPicker({
           <TextInput
             value={search}
             onChangeText={setSearch}
-            placeholder="Поиск по номеру или названию"
+            placeholder={t('songPicker.search')}
             placeholderTextColor="#94a3b8"
             style={styles.search}
             autoCapitalize="none"
@@ -86,7 +88,7 @@ export function SongPicker({
               disabled={isSaving}
             >
               <Ionicons name="close-circle-outline" size={18} color="#dc2626" />
-              <Text style={styles.clearText}>Убрать песню</Text>
+              <Text style={styles.clearText}>{t('songPicker.clear')}</Text>
             </Pressable>
           )}
         </>

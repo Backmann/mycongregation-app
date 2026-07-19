@@ -2238,5 +2238,60 @@
     "confirmedAtTime": "Geprüft am {{date}} um {{time}}",
     "listDue": "Kontaktdaten dieses Jahr nicht bestätigt",
     "listNoAccount": "Kein Konto — der Sekretär bestätigt"
+  },
+  "profileExtra": {
+    "brothers": "Brüder",
+    "brothersSub": "Zugang und Aufgaben",
+    "songs": "Lieder",
+    "songsSub": "Liederbuch importieren"
+  },
+  "brothers": {
+    "noRights": "Nicht genügend Rechte.",
+    "intro": "App-Zugang und Aufgaben der Brüder in der Versammlung.",
+    "empty": "Keine Brüder vorhanden.",
+    "appAccess": "App-Zugang",
+    "responsibilities": "Aufgaben",
+    "error": "Fehler",
+    "hasAccess": "Zugang vorhanden",
+    "noAccess": "Kein Zugang"
+  },
+  "songPicker": {
+    "current": "Aktuelles Lied",
+    "clear": "Lied entfernen",
+    "search": "Nach Nummer oder Titel suchen",
+    "none": "Nicht gewählt"
+  },
+  "songsImport": {
+    "title": "Lieder importieren",
+    "sampleCode": "LIED 35",
+    "sampleTitle": "Vergewissert euch, was wichtiger ist",
+    "importing": "Import läuft…",
+    "import": "Importieren",
+    "done": "Import abgeschlossen",
+    "firstAdded": "Zuerst hinzugefügt",
+    "ok": "Fertig",
+    "parsed": "Erkannt",
+    "created": "Hinzugefügt",
+    "updated": "Aktualisiert",
+    "unchanged": "Unverändert"
+  },
+  "serviceSummary": {
+    "noAccessTitle": "Zugriff beschränkt",
+    "noAccessBody": "Die Übersicht steht nur dem Sekretär und Administratoren zur Verfügung.",
+    "loadFailed": "Übersicht konnte nicht geladen werden",
+    "count": "Anzahl",
+    "hours": "Stunden",
+    "studies": "Bibelstudien",
+    "sizeTitle": "Größe der Versammlung",
+    "allActive": "Alle aktiven",
+    "inactive": "Inaktive",
+    "sizeHint": "„Alle aktiven“ zählt aktive und unregelmäßige Verkündiger. Inaktive werden getrennt gezählt und sind hier nicht enthalten.",
+    "averagesTitle": "Durchschnitt",
+    "hoursPioneers": "Stunden (Pioniere)",
+    "reported": "Bericht abgegeben",
+    "activeCount": "Aktive",
+    "averagesHint": "Durchschnittliche Stunden: Pioniere mit Bericht; Studien: alle mit Bericht. „Bericht abgegeben“ ist ein Anteil der Aktiven, „Aktive“ ein Anteil aller.",
+    "totalHours": "Stunden gesamt",
+    "totalStudies": "Studien gesamt"
   }
 }

@@ -2238,5 +2238,60 @@
     "confirmedAtTime": "Checked {{date}} at {{time}}",
     "listDue": "Contacts not confirmed this year",
     "listNoAccount": "No account — the secretary confirms"
+  },
+  "profileExtra": {
+    "brothers": "Brothers",
+    "brothersSub": "App access and responsibilities",
+    "songs": "Songs",
+    "songsSub": "Import the congregation songbook"
+  },
+  "brothers": {
+    "noRights": "You do not have the necessary rights.",
+    "intro": "App access and responsibilities of the brothers in the congregation.",
+    "empty": "No brothers listed.",
+    "appAccess": "App access",
+    "responsibilities": "Responsibilities",
+    "error": "Error",
+    "hasAccess": "Has access",
+    "noAccess": "No access"
+  },
+  "songPicker": {
+    "current": "Current song",
+    "clear": "Remove the song",
+    "search": "Search by number or title",
+    "none": "Not chosen"
+  },
+  "songsImport": {
+    "title": "Import songs",
+    "sampleCode": "SONG 35",
+    "sampleTitle": "Make sure of the more important things",
+    "importing": "Importing…",
+    "import": "Import",
+    "done": "Import finished",
+    "firstAdded": "First ones added",
+    "ok": "Done",
+    "parsed": "Recognised",
+    "created": "Added",
+    "updated": "Updated",
+    "unchanged": "Unchanged"
+  },
+  "serviceSummary": {
+    "noAccessTitle": "Access restricted",
+    "noAccessBody": "The summary is available to the secretary and administrators only.",
+    "loadFailed": "Could not load the summary",
+    "count": "Count",
+    "hours": "Hours",
+    "studies": "Bible studies",
+    "sizeTitle": "Congregation size",
+    "allActive": "All active",
+    "inactive": "Inactive",
+    "sizeHint": "\"All active\" counts active and irregular publishers. Inactive ones are counted separately and are not included here.",
+    "averagesTitle": "Averages",
+    "hoursPioneers": "Hours (pioneers)",
+    "reported": "Reported",
+    "activeCount": "Active",
+    "averagesHint": "Average hours cover pioneers who reported; average studies cover everyone who reported. \"Reported\" is a share of the active; \"active\" is a share of everyone.",
+    "totalHours": "Total hours",
+    "totalStudies": "Total studies"
   }
 }

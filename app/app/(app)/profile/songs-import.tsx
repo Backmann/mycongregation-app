@@ -12,8 +12,10 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { BulkImportResult, extractErrorMessage, songsApi } from '../../../lib/api';
+import { useTranslation } from 'react-i18next';
 
 export default function SongsImportScreen() {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [text, setText] = useState('');
 
@@ -36,13 +38,13 @@ export default function SongsImportScreen() {
     >
       <View style={styles.intro}>
         <Ionicons name="musical-notes-outline" size={40} color="#0ea5e9" />
-        <Text style={styles.title}>Импорт песен</Text>
+        <Text style={styles.title}>{t('songsImport.title')}</Text>
         <Text style={styles.subtitle}>
           Вставьте список в формате: строка «ПЕСНЯ N», а на следующей строке —
           название:{'\n'}
-          <Text style={styles.code}>ПЕСНЯ 35</Text>
+          <Text style={styles.code}>{t('songsImport.sampleCode')}</Text>
           {'\n'}
-          <Text style={styles.code}>Удостоверяйтесь в том, что более важно</Text>
+          <Text style={styles.code}>{t('songsImport.sampleTitle')}</Text>
           {'\n'}
           Существующие песни (по номеру) обновятся, новые — добавятся. Заголовок
           «ПЕСНИ» и пустые строки игнорируются.
@@ -81,12 +83,12 @@ export default function SongsImportScreen() {
             {importMutation.isPending ? (
               <>
                 <ActivityIndicator color="#fff" />
-                <Text style={styles.importButtonText}>Импорт…</Text>
+                <Text style={styles.importButtonText}>{t('songsImport.importing')}</Text>
               </>
             ) : (
               <>
                 <Ionicons name="checkmark" size={20} color="#fff" />
-                <Text style={styles.importButtonText}>Импортировать</Text>
+                <Text style={styles.importButtonText}>{t('songsImport.import')}</Text>
               </>
             )}
           </Pressable>
@@ -107,18 +109,19 @@ export default function SongsImportScreen() {
 }
 
 function ResultSummary({ result }: { result: BulkImportResult }) {
+  const { t } = useTranslation();
   return (
     <View style={styles.section}>
       <View style={styles.successHeader}>
         <Ionicons name="checkmark-circle" size={32} color="#059669" />
-        <Text style={styles.successTitle}>Импорт завершён</Text>
+        <Text style={styles.successTitle}>{t('songsImport.done')}</Text>
       </View>
 
       <View style={styles.statsRow}>
-        <Stat label="Распознано" value={result.parsed} color="#0369a1" />
-        <Stat label="Добавлено" value={result.created} color="#059669" />
-        <Stat label="Обновлено" value={result.updated} color="#d97706" />
-        <Stat label="Без изм." value={result.unchanged} color="#64748b" />
+        <Stat label={t('songsImport.parsed')} value={result.parsed} color="#0369a1" />
+        <Stat label={t('songsImport.created')} value={result.created} color="#059669" />
+        <Stat label={t('songsImport.updated')} value={result.updated} color="#d97706" />
+        <Stat label={t('songsImport.unchanged')} value={result.unchanged} color="#64748b" />
       </View>
 
       {result.invalid > 0 && (
@@ -132,7 +135,7 @@ function ResultSummary({ result }: { result: BulkImportResult }) {
 
       {result.examples.length > 0 && (
         <>
-          <Text style={styles.examplesHeader}>Первые добавленные</Text>
+          <Text style={styles.examplesHeader}>{t('songsImport.firstAdded')}</Text>
           <View style={styles.examplesList}>
             {result.examples.map((ex) => (
               <View key={ex.number} style={styles.exampleRow}>
@@ -152,7 +155,7 @@ function ResultSummary({ result }: { result: BulkImportResult }) {
         style={styles.doneButton}
         onPress={() => router.replace('/profile' as any)}
       >
-        <Text style={styles.doneButtonText}>Готово</Text>
+        <Text style={styles.doneButtonText}>{t('songsImport.ok')}</Text>
       </Pressable>
     </View>
   );
