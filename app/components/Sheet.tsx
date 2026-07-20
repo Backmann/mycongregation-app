@@ -27,6 +27,7 @@ export function Sheet({
   footer,
   variant = 'full',
   action,
+  hideClose,
 }: {
   visible: boolean;
   title: string;
@@ -44,6 +45,12 @@ export function Sheet({
   variant?: 'full' | 'bottom';
   /** A second header action, e.g. "Reset". */
   action?: ReactNode;
+  /**
+   * Drops the close action from the header. Only for sheets that close with a
+   * single obvious button of their own — otherwise two controls do one job.
+   * The backdrop and the device back button still close the sheet.
+   */
+  hideClose?: boolean;
 }) {
   const { t } = useTranslation();
   if (variant === 'bottom') {
@@ -68,11 +75,13 @@ export function Sheet({
                 ) : null}
               </View>
               {action}
-              <Pressable onPress={onClose} hitSlop={10} style={styles.closeBtn}>
-                <Text style={styles.closeText}>
-                  {closeLabel ?? t('common.done')}
-                </Text>
-              </Pressable>
+              {hideClose ? null : (
+                <Pressable onPress={onClose} hitSlop={10} style={styles.closeBtn}>
+                  <Text style={styles.closeText}>
+                    {closeLabel ?? t('common.done')}
+                  </Text>
+                </Pressable>
+              )}
             </View>
             <ScrollView
               style={styles.bottomScroll}
@@ -98,9 +107,13 @@ export function Sheet({
             {subtitle ? <View style={styles.subtitle}>{subtitle}</View> : null}
           </View>
           {action}
-          <Pressable onPress={onClose} hitSlop={10} style={styles.closeBtn}>
-            <Text style={styles.closeText}>{closeLabel ?? t('common.done')}</Text>
-          </Pressable>
+          {hideClose ? null : (
+            <Pressable onPress={onClose} hitSlop={10} style={styles.closeBtn}>
+              <Text style={styles.closeText}>
+                {closeLabel ?? t('common.done')}
+              </Text>
+            </Pressable>
+          )}
         </View>
         <View style={styles.body}>{children}</View>
         {footer ? <View style={styles.footer}>{footer}</View> : null}

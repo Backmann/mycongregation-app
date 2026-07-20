@@ -436,9 +436,15 @@ function FilterSheet({
       variant="bottom"
       title={t('publishers.filter.title')}
       onClose={onClose}
+      hideClose
       action={
         <Pressable onPress={onReset} hitSlop={8}>
           <Text style={styles.resetText}>{t('publishers.filter.reset')}</Text>
+        </Pressable>
+      }
+      footer={
+        <Pressable style={styles.applyBtn} onPress={onClose}>
+          <Text style={styles.applyBtnText}>{t('publishers.filter.apply')}</Text>
         </Pressable>
       }
     >
@@ -561,10 +567,6 @@ function FilterSheet({
               />
             </View>
           </View>
-
-          <Pressable style={styles.applyBtn} onPress={onClose}>
-            <Text style={styles.applyBtnText}>{t('publishers.filter.apply')}</Text>
-          </Pressable>
             </Sheet>
   );
 }
@@ -726,7 +728,6 @@ const styles = StyleSheet.create({
   chipText: { fontSize: 14, color: '#475569', fontWeight: '500', fontFamily: 'Manrope_500Medium',},
   chipTextActive: { color: '#0369a1', fontWeight: '700', fontFamily: 'Manrope_700Bold',},
   applyBtn: {
-    marginTop: 20,
     paddingVertical: 14,
     borderRadius: 10,
     backgroundColor: '#0ea5e9',
