@@ -2,7 +2,6 @@ import { useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
-  Modal,
   Platform,
   Pressable,
   SafeAreaView,
@@ -18,6 +17,7 @@ import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 import { Hall, extractErrorMessage, hallsApi } from '../../../lib/api';
 import { useAuth } from '../../../lib/auth';
+import { Dialog } from '../../../components/Dialog';
 
 const QK = ['halls'] as const;
 
@@ -216,22 +216,18 @@ export default function HallsScreen() {
         </Pressable>
       </ScrollView>
 
-      <Modal
+      <Dialog
         visible={modalOpen}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setModalOpen(false)}
+        title={editing ? t('halls.editTitle') : t('halls.add')}
+        icon="business-outline"
+        cancelLabel={t('common.cancel')}
+        confirmLabel={t('halls.save')}
+        confirmDisabled={!canSave}
+        pending={pending}
+        onConfirm={() => void save()}
+        onCancel={() => setModalOpen(false)}
+        scroll
       >
-        <View style={styles.overlay}>
-          <Pressable
-            style={StyleSheet.absoluteFill}
-            onPress={() => setModalOpen(false)}
-            accessibilityRole="button"
-          />
-          <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>
-              {editing ? t('halls.editTitle') : t('halls.add')}
-            </Text>
 
             <Text style={styles.fieldLabel}>{t('halls.name')}</Text>
             <TextInput
@@ -257,28 +253,7 @@ export default function HallsScreen() {
               <Switch value={asDefault} onValueChange={setAsDefault} />
             </View>
 
-            <View style={styles.modalActions}>
-              <Pressable
-                style={styles.modalCancel}
-                onPress={() => setModalOpen(false)}
-                disabled={pending}
-              >
-                <Text style={styles.modalCancelText}>{t('common.cancel')}</Text>
-              </Pressable>
-              <Pressable
-                style={[
-                  styles.modalConfirm,
-                  (!canSave || pending) && styles.disabled,
-                ]}
-                onPress={() => void save()}
-                disabled={!canSave || pending}
-              >
-                <Text style={styles.modalConfirmText}>{t('halls.save')}</Text>
-              </Pressable>
-            </View>
-          </View>
-        </View>
-      </Modal>
+      </Dialog>
     </SafeAreaView>
   );
 }
@@ -333,19 +308,6 @@ const styles = StyleSheet.create({
   addBtnText: { fontSize: 14, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0369a1' },
   disabled: { opacity: 0.5 },
 
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(15,23,42,0.45)',
-    justifyContent: 'center',
-    paddingHorizontal: 24,
-  },
-  modalCard: {
-    backgroundColor: '#fff',
-    borderRadius: 14,
-    padding: 18,
-    gap: 10,
-  },
-  modalTitle: { fontSize: 16, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0f172a' },
   fieldLabel: { fontSize: 12, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#64748b', marginTop: 4 },
   input: {
     borderWidth: 1,
@@ -363,19 +325,4 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
   switchLabel: { fontSize: 14, color: '#0f172a' },
-  modalActions: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    gap: 10,
-    marginTop: 8,
-  },
-  modalCancel: { paddingVertical: 10, paddingHorizontal: 14 },
-  modalCancelText: { fontSize: 15, color: '#64748b', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
-  modalConfirm: {
-    paddingVertical: 10,
-    paddingHorizontal: 18,
-    borderRadius: 10,
-    backgroundColor: '#0ea5e9',
-  },
-  modalConfirmText: { fontSize: 15, color: '#fff', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
 });

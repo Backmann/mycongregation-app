@@ -2,7 +2,6 @@ import { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
-  Modal,
   Platform,
   Pressable,
   ScrollView,
@@ -22,6 +21,7 @@ import {
   extractErrorMessage,
 } from '../../../lib/api';
 import { usePermissions } from '../../../lib/permissions';
+import { Dialog } from '../../../components/Dialog';
 
 export default function CartLocationsScreen() {
   const { t } = useTranslation();
@@ -172,24 +172,24 @@ export default function CartLocationsScreen() {
         </ScrollView>
       )}
 
-      <Modal
+      <Dialog
         visible={modalOpen}
-        animationType="slide"
-        transparent
-        onRequestClose={() => setModalOpen(false)}
+        title={
+          editing ? t('cartLocations.editTitle') : t('cartLocations.addTitle')
+        }
+        icon="location-outline"
+        iconTint="#16a34a"
+        iconBg="#dcfce7"
+        cancelLabel={t('cartLocations.cancel')}
+        confirmLabel={t('cartLocations.save')}
+        confirmDisabled={!canSave}
+        pending={saveMutation.isPending}
+        extraLabel={editing ? t('cartLocations.delete') : undefined}
+        onExtra={editing ? confirmRemove : undefined}
+        onConfirm={() => saveMutation.mutate()}
+        onCancel={() => setModalOpen(false)}
+        scroll
       >
-        <View style={styles.modalBackdrop}>
-          <Pressable
-            style={StyleSheet.absoluteFill}
-            onPress={() => setModalOpen(false)}
-            accessibilityRole="button"
-          />
-          <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>
-              {editing
-                ? t('cartLocations.editTitle')
-                : t('cartLocations.addTitle')}
-            </Text>
 
             <Text style={styles.fieldLabel}>{t('cartLocations.name')}</Text>
             <TextInput
@@ -236,34 +236,7 @@ export default function CartLocationsScreen() {
               <Switch value={active} onValueChange={setActive} />
             </View>
 
-            <View style={styles.modalActions}>
-              {editing && (
-                <Pressable style={styles.deleteBtn} onPress={confirmRemove}>
-                  <Text style={styles.deleteBtnText}>
-                    {t('cartLocations.delete')}
-                  </Text>
-                </Pressable>
-              )}
-              <View style={{ flex: 1 }} />
-              <Pressable
-                style={styles.cancelBtn}
-                onPress={() => setModalOpen(false)}
-              >
-                <Text style={styles.cancelBtnText}>
-                  {t('cartLocations.cancel')}
-                </Text>
-              </Pressable>
-              <Pressable
-                style={[styles.saveBtn, !canSave && styles.saveBtnDisabled]}
-                disabled={!canSave}
-                onPress={() => saveMutation.mutate()}
-              >
-                <Text style={styles.saveBtnText}>{t('cartLocations.save')}</Text>
-              </Pressable>
-            </View>
-          </View>
-        </View>
-      </Modal>
+      </Dialog>
     </View>
   );
 }
@@ -309,24 +282,6 @@ const styles = StyleSheet.create({
   },
   kindBadgeText: { fontSize: 12, color: '#0369a1', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
   inactiveTag: { fontSize: 11, color: '#ef4444' },
-  modalBackdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(15,23,42,0.4)',
-    justifyContent: 'flex-end',
-  },
-  modalCard: {
-    backgroundColor: '#ffffff',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    padding: 20,
-    paddingBottom: 32,
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: '700', fontFamily: 'Manrope_700Bold',
-    color: '#0f172a',
-    marginBottom: 12,
-  },
   fieldLabel: {
     fontSize: 13,
     fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
@@ -361,22 +316,4 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginTop: 14,
   },
-  modalActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginTop: 20,
-  },
-  deleteBtn: { paddingVertical: 10, paddingHorizontal: 8 },
-  deleteBtnText: { color: '#ef4444', fontSize: 15, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
-  cancelBtn: { paddingVertical: 10, paddingHorizontal: 12 },
-  cancelBtnText: { color: '#475569', fontSize: 15, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
-  saveBtn: {
-    backgroundColor: '#0ea5e9',
-    borderRadius: 8,
-    paddingVertical: 10,
-    paddingHorizontal: 18,
-  },
-  saveBtnDisabled: { opacity: 0.5 },
-  saveBtnText: { color: '#ffffff', fontSize: 15, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
 });
