@@ -166,7 +166,13 @@ const styles = StyleSheet.create({
     fontFamily: 'Manrope_700Bold',
     color: '#0f172a',
   },
-  scrollBody: { flexGrow: 0 },
+  // The body must be allowed to shrink, not just refuse to grow: without
+  // flexShrink a long list ignored the card's maxHeight and pushed the action
+  // row off the bottom of the screen — the same defect the bottom Sheet had.
+  // A dialog whose body is NOT scroll={true} still can't shrink; give such a
+  // dialog the scroll prop rather than widening this style, or its content
+  // would be silently clipped instead of scrolled.
+  scrollBody: { flexGrow: 0, flexShrink: 1 },
   actions: {
     flexDirection: 'row',
     alignItems: 'center',
