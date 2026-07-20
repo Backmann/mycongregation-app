@@ -1229,7 +1229,7 @@ export default function CoScheduleScreen() {
           ) : null
         }
       >
-        <ScrollView contentContainerStyle={styles.modalContent}>
+        <View style={styles.modalContent}>
           {form ? (
             <>
               <Text style={styles.fieldLabel}>{t('coVisit.day')}</Text>
@@ -1643,7 +1643,7 @@ export default function CoScheduleScreen() {
 
             </>
           ) : null}
-        </ScrollView>
+        </View>
       </Sheet>
     </ScrollView>
   );

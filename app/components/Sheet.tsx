@@ -3,6 +3,7 @@ import {
   Modal,
   Pressable,
   SafeAreaView,
+  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -73,7 +74,13 @@ export function Sheet({
                 </Text>
               </Pressable>
             </View>
-            <View style={styles.bottomBody}>{children}</View>
+            <ScrollView
+              style={styles.bottomScroll}
+              contentContainerStyle={styles.bottomBody}
+              keyboardShouldPersistTaps="handled"
+            >
+              {children}
+            </ScrollView>
             {footer ? <View style={styles.footer}>{footer}</View> : null}
           </View>
         </View>
@@ -128,6 +135,12 @@ const styles = StyleSheet.create({
   // A bottom sheet holds a form or a short list, so its content sits on the
   // same 16px margin the rest of the app uses. Full-screen sheets hold lists
   // that manage their own padding, so they stay flush.
+  //
+  // The body scrolls and must be allowed to shrink: a View does not shrink by
+  // default in this flexbox, so a long form ignored the card's maxHeight and
+  // pushed the footer off the bottom of the screen. Because the shell scrolls,
+  // the content inside it must not bring its own scroller.
+  bottomScroll: { flexShrink: 1 },
   bottomBody: { paddingHorizontal: 16, paddingTop: 4, paddingBottom: 10 },
   header: {
     flexDirection: 'row',

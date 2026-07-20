@@ -4,7 +4,6 @@ import {
   FlatList,
   Pressable,
   RefreshControl,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -444,7 +443,7 @@ function FilterSheet({
       }
     >
 
-          <ScrollView style={{ maxHeight: 460 }}>
+          <View>
             <Text style={styles.filterSection}>{t('publishers.filter.groupSection')}</Text>
             <View style={styles.chipWrap}>
               {groups.map((g) => (
@@ -561,7 +560,7 @@ function FilterSheet({
                 onPress={() => set('departed', 'departed')}
               />
             </View>
-          </ScrollView>
+          </View>
 
           <Pressable style={styles.applyBtn} onPress={onClose}>
             <Text style={styles.applyBtnText}>{t('publishers.filter.apply')}</Text>

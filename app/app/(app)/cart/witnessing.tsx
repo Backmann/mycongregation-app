@@ -509,7 +509,7 @@ export default function WitnessingScreen() {
           </View>
         }
       >
-        <ScrollView>
+        <View>
 
           <Text style={styles.fieldLabel}>{t('witnessing.days')}</Text>
           <View style={styles.cellWrap}>
@@ -633,7 +633,7 @@ export default function WitnessingScreen() {
               </View>
           </>
 
-        </ScrollView>
+        </View>
       </Sheet>
 
       {/* Apply / withdraw modal */}
@@ -660,7 +660,7 @@ export default function WitnessingScreen() {
           setExtName('');
         }}
       >
-        <ScrollView>
+        <View>
           {distSlot && (
             <>
 
@@ -835,7 +835,7 @@ export default function WitnessingScreen() {
 
             </>
           )}
-        </ScrollView>
+        </View>
       </Sheet>
 
       <Sheet

@@ -244,7 +244,7 @@ export default function CircuitOverseerScreen() {
           </>
         }
       >
-        <ScrollView keyboardShouldPersistTaps="handled">
+        <View>
 
               <Text style={styles.fieldLabel}>
                 {t('circuitOverseer.firstName')}
@@ -299,7 +299,7 @@ export default function CircuitOverseerScreen() {
                 </Text>
               </Pressable>
 
-                      </ScrollView>
+                      </View>
       </Sheet>
     </View>
   );

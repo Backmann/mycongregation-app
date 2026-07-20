@@ -189,7 +189,7 @@ export default function ResponsibilitiesScreen() {
         closeLabel={t('common.cancel')}
         onClose={() => setPickerFor(null)}
       >
-            <ScrollView>
+            <View>
               {users.map((u) => (
                 <Pressable
                   key={u.id}
@@ -211,7 +211,7 @@ export default function ResponsibilitiesScreen() {
                   <Text style={styles.userEmail}>{u.email}</Text>
                 </Pressable>
               ))}
-            </ScrollView>
+            </View>
       </Sheet>
     </SafeAreaView>
   );
