@@ -1,9 +1,7 @@
 import { resolveHallAddress } from '../lib/hallAddress';
 import { useEffect, useMemo, useState } from 'react';
 import {
-  Modal,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -13,6 +11,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
+import { Dialog } from './Dialog';
 import {
   fieldServiceTemplateApi,
   hallsApi,
@@ -256,16 +255,20 @@ export function FieldServiceGenerateModal({
     ]);
 
   return (
-    <Modal
+    <Dialog
       visible={visible}
-      transparent
-      animationType="fade"
-      onRequestClose={onClose}
+      title={t('fieldService.generate.title')}
+      icon="sparkles-outline"
+      iconTint="#16a34a"
+      iconBg="#dcfce7"
+      cancelLabel={result ? t('common.done') : t('common.cancel')}
+      confirmLabel={result ? undefined : t('fieldService.generate.button')}
+      confirmDisabled={!slotsValid}
+      pending={generateM.isPending}
+      onConfirm={result ? undefined : () => generateM.mutate()}
+      onCancel={onClose}
+      scroll
     >
-      <View style={styles.overlay}>
-        <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
-        <View style={styles.card}>
-          <Text style={styles.title}>{t('fieldService.generate.title')}</Text>
 
           {result ? (
             <View style={styles.successBox}>
@@ -283,7 +286,7 @@ export function FieldServiceGenerateModal({
               </Text>
             </View>
           ) : (
-          <ScrollView style={styles.scroll} keyboardShouldPersistTaps="handled">
+          <View>
             {/* Start month */}
             <Text style={styles.label}>
               {t('fieldService.generate.startMonth')}
@@ -515,59 +518,14 @@ export function FieldServiceGenerateModal({
               )}
             </View>
 
-          </ScrollView>
+          </View>
           )}
 
-          <View style={styles.actions}>
-            <Pressable style={styles.cancel} onPress={onClose}>
-              <Text style={styles.cancelText}>
-                {result ? t('common.done') : t('common.cancel')}
-              </Text>
-            </Pressable>
-            {!result && (
-              <Pressable
-                style={[
-                  styles.generate,
-                  (!slotsValid || generateM.isPending) && styles.disabled,
-                ]}
-                onPress={() => generateM.mutate()}
-                disabled={!slotsValid || generateM.isPending}
-              >
-                <Text style={styles.generateText}>
-                  {generateM.isPending
-                    ? t('fieldService.generate.working')
-                    : t('fieldService.generate.button')}
-                </Text>
-              </Pressable>
-            )}
-          </View>
-        </View>
-      </View>
-    </Modal>
+    </Dialog>
   );
 }
 
 const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(15,23,42,0.45)',
-    justifyContent: 'center',
-    paddingHorizontal: 16,
-  },
-  card: {
-    backgroundColor: '#fff',
-    borderRadius: 18,
-    maxHeight: '88%',
-    overflow: 'hidden',
-  },
-  title: {
-    fontSize: 17,
-    fontWeight: '800', fontFamily: 'Manrope_800ExtraBold',
-    color: '#0f172a',
-    padding: 18,
-    paddingBottom: 10,
-  },
-  scroll: { paddingHorizontal: 18 },
   label: { fontSize: 13, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#334155', marginBottom: 8 },
   hint: { fontSize: 12, color: '#94a3b8', marginBottom: 10 },
   monthRow: {
@@ -762,22 +720,5 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   resultText: { fontSize: 14, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#15803d', flex: 1 },
-  actions: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    gap: 10,
-    padding: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#e2e8f0',
-  },
-  cancel: { paddingHorizontal: 16, paddingVertical: 11 },
-  cancelText: { fontSize: 14, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#64748b' },
-  generate: {
-    backgroundColor: '#0ea5e9',
-    borderRadius: 10,
-    paddingHorizontal: 20,
-    paddingVertical: 11,
-  },
-  generateText: { fontSize: 14, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#fff' },
   disabled: { opacity: 0.5 },
 });
