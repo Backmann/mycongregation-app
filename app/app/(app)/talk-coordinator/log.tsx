@@ -3,7 +3,6 @@ import {
   ActivityIndicator,
   Alert,
   Linking,
-  Modal,
   Platform,
   Pressable,
   SafeAreaView,
@@ -38,6 +37,8 @@ import {
   MeetingSettingsVersion,
   extractErrorMessage,
 } from '../../../lib/api';
+import { Dialog } from '../../../components/Dialog';
+import { Sheet } from '../../../components/Sheet';
 import { usePermissions } from '../../../lib/permissions';
 import {
   computeSpeakerStats,
@@ -841,23 +842,26 @@ export default function TalkExchangeYearScreen() {
       </ScrollView>
 
       {/* «Заменить докладчика»: обмен/перенос содержимого слота между неделями */}
-      <Modal
+      <Dialog
         visible={swapTarget !== null}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setSwapTarget(null)}
+        title={t('talkCoordinator.swap.title', {
+          date: swapTarget ? fmtDay(swapTarget.date) : '',
+        })}
+        icon="swap-horizontal"
+        onCancel={() => setSwapTarget(null)}
+        cancelLabel={t('common.cancel')}
+        confirmLabel={t(`talkCoordinator.swap.confirm.${swapMode}`)}
+        confirmDisabled={!swapSource}
+        pending={swapMutation.isPending}
+        onConfirm={() =>
+          swapMutation.mutate({
+            sourceWeekStartDate: swapSource!,
+            targetWeekStartDate: swapTarget!.monday,
+            mode: swapMode,
+          })
+        }
       >
-        <View style={styles.overlay}>
-          <Pressable
-            style={StyleSheet.absoluteFill}
-            onPress={() => setSwapTarget(null)}
-          />
-          <View style={styles.swapCard}>
-            <Text style={styles.swapTitle}>
-              {t('talkCoordinator.swap.title', {
-                date: swapTarget ? fmtDay(swapTarget.date) : '',
-              })}
-            </Text>
+        <View style={styles.swapBody}>
             <Text style={styles.swapHint}>{t('talkCoordinator.swap.hint')}</Text>
 
             <View style={styles.swapModeRow}>
@@ -887,443 +891,406 @@ export default function TalkExchangeYearScreen() {
               ))}
             </View>
 
-            <ScrollView style={styles.swapList}>
-              {weeksFlat
-                .filter(
-                  (w) =>
-                    w.monday !== swapTarget?.monday &&
-                    !!byWeek.get(w.monday)?.incoming,
-                )
-                .map((w) => {
-                  const inc = byWeek.get(w.monday)!.incoming!;
-                  const active = swapSource === w.monday;
-                  return (
-                    <Pressable
-                      key={w.monday}
-                      style={[styles.swapRow, active && styles.swapRowActive]}
-                      onPress={() => setSwapSource(w.monday)}
-                    >
-                      <View style={{ flex: 1 }}>
-                        <Text style={styles.swapRowDate}>{fmtDay(w.date)}</Text>
-                        <Text style={styles.swapRowName} numberOfLines={1}>
-                          {incomingName(inc) ??
-                            t('talkCoordinator.log.unknownSpeaker')}
-                        </Text>
-                        {talkLabel(inc.publicTalkId) ? (
-                          <Text style={styles.swapRowTalk} numberOfLines={1}>
-                            {talkLabel(inc.publicTalkId)}
-                          </Text>
-                        ) : null}
-                      </View>
-                      {active ? (
-                        <Ionicons
-                          name="checkmark-circle"
-                          size={20}
-                          color="#0284c7"
-                        />
-                      ) : null}
-                    </Pressable>
-                  );
-                })}
-            </ScrollView>
+        <ScrollView style={styles.swapList}>
+          {weeksFlat
+            .filter(
+              (w) =>
+                w.monday !== swapTarget?.monday &&
+                !!byWeek.get(w.monday)?.incoming,
+            )
+            .map((w) => {
+              const inc = byWeek.get(w.monday)!.incoming!;
+              const active = swapSource === w.monday;
+              return (
+                <Pressable
+                  key={w.monday}
+                  style={[styles.swapRow, active && styles.swapRowActive]}
+                  onPress={() => setSwapSource(w.monday)}
+                >
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.swapRowDate}>{fmtDay(w.date)}</Text>
+                    <Text style={styles.swapRowName} numberOfLines={1}>
+                      {incomingName(inc) ??
+                        t('talkCoordinator.log.unknownSpeaker')}
+                    </Text>
+                    {talkLabel(inc.publicTalkId) ? (
+                      <Text style={styles.swapRowTalk} numberOfLines={1}>
+                        {talkLabel(inc.publicTalkId)}
+                      </Text>
+                    ) : null}
+                  </View>
+                  {active ? (
+                    <Ionicons
+                      name="checkmark-circle"
+                      size={20}
+                      color="#0284c7"
+                    />
+                  ) : null}
+                </Pressable>
+              );
+            })}
+        </ScrollView>
 
             {swapError ? (
               <Text style={styles.swapError}>{swapError}</Text>
             ) : null}
-
-            <View style={styles.swapActions}>
-              <Pressable
-                style={styles.swapCancel}
-                onPress={() => setSwapTarget(null)}
-              >
-                <Text style={styles.swapCancelText}>{t('common.cancel')}</Text>
-              </Pressable>
-              <Pressable
-                style={[
-                  styles.swapConfirm,
-                  (!swapSource || swapMutation.isPending) &&
-                    styles.swapConfirmDisabled,
-                ]}
-                disabled={!swapSource || swapMutation.isPending}
-                onPress={() =>
-                  swapMutation.mutate({
-                    sourceWeekStartDate: swapSource!,
-                    targetWeekStartDate: swapTarget!.monday,
-                    mode: swapMode,
-                  })
-                }
-              >
-                <Text style={styles.swapConfirmText}>
-                  {t(`talkCoordinator.swap.confirm.${swapMode}`)}
-                </Text>
-              </Pressable>
-            </View>
-          </View>
         </View>
-      </Modal>
+      </Dialog>
 
-      <Modal visible={open} transparent animationType="fade" onRequestClose={() => setOpen(false)}>
-        <View style={styles.overlay}>
-          <Pressable
-            style={StyleSheet.absoluteFill}
-            onPress={() => setOpen(false)}
-            accessibilityRole="button"
-          />
-          <View style={styles.modalCard}>
-            <View style={styles.modalHeaderRow}>
-              <View style={styles.modalHeaderText}>
-                <Text style={styles.modalTitle}>
-                  {direction === 'incoming'
-                    ? t('talkCoordinator.log.filter.incoming')
-                    : t('talkCoordinator.log.filter.outgoing')}
-                </Text>
-                {date ? (
-                  <Text style={styles.editorDate}>
-                    {dayjs(date).locale(i18n.language).format('dd, D MMM YYYY')}
-                  </Text>
-                ) : null}
-              </View>
-              <Pressable style={styles.modalClose} onPress={() => setOpen(false)} hitSlop={8} accessibilityRole="button">
-                <Ionicons name="close" size={22} color="#94a3b8" />
+      <Sheet
+        visible={open}
+        title={
+          direction === 'incoming'
+            ? t('talkCoordinator.log.filter.incoming')
+            : t('talkCoordinator.log.filter.outgoing')
+        }
+        subtitle={
+          date ? (
+            <Text style={styles.editorDate}>
+              {dayjs(date).locale(i18n.language).format('dd, D MMM YYYY')}
+            </Text>
+          ) : undefined
+        }
+        onClose={() => setOpen(false)}
+        closeLabel={t('common.cancel')}
+        footer={
+          <View style={styles.modalActions}>
+            {editing ? (
+              <Pressable style={styles.deleteBtn} onPress={del} disabled={pending}>
+                <Ionicons name="trash-outline" size={18} color="#dc2626" />
               </Pressable>
-            </View>
-            <ScrollView keyboardShouldPersistTaps="handled">
+            ) : (
+              <View style={{ flex: 1 }} />
+            )}
+            <Pressable
+              style={[styles.modalConfirm, (!canSave || pending) && styles.disabled]}
+              onPress={() => void save()}
+              disabled={!canSave || pending}
+            >
+              <Text style={styles.modalConfirmText}>{t('common.save')}</Text>
+            </Pressable>
+          </View>
+        }
+      >
+        <ScrollView
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={styles.editorBody}
+        >
 
-              {direction === 'incoming' ? (
+          {direction === 'incoming' ? (
+            <>
+              {week && (week.time || week.address) ? (
+                <Text style={styles.infoLine}>
+                  {[week.time, week.address].filter(Boolean).join(' · ')}
+                </Text>
+              ) : null}
+
+              <Text style={styles.fieldLabel}>{t('talkCoordinator.log.speakerSource')}</Text>
+              <View style={styles.chipWrap}>
+                <Pressable
+                  style={[styles.pickChip, incomingMode === 'invited' && styles.pickChipActive]}
+                  onPress={() => {
+                    setIncomingMode('invited');
+                    setPublisherId(null);
+                  }}
+                >
+                  <Text style={[styles.pickChipText, incomingMode === 'invited' && styles.pickChipTextActive]}>
+                    {t('talkCoordinator.log.visiting')}
+                  </Text>
+                </Pressable>
+                <Pressable
+                  style={[styles.pickChip, incomingMode === 'local' && styles.pickChipActive]}
+                  onPress={() => {
+                    setIncomingMode('local');
+                    setVisitingSpeakerId(null);
+                    setSpeakerNameInput('');
+                    setSpeakerCongInput('');
+                  }}
+                >
+                  <Text style={[styles.pickChipText, incomingMode === 'local' && styles.pickChipTextActive]}>
+                    {t('talkCoordinator.log.ourBrother')}
+                  </Text>
+                </Pressable>
+              </View>
+
+              {incomingMode === 'local' && (
+                <View style={{ marginTop: 6 }}>{renderBrotherPicker()}</View>
+              )}
+
+              {incomingMode === 'invited' && (
                 <>
-                  {week && (week.time || week.address) ? (
-                    <Text style={styles.infoLine}>
-                      {[week.time, week.address].filter(Boolean).join(' · ')}
-                    </Text>
-                  ) : null}
-
-                  <Text style={styles.fieldLabel}>{t('talkCoordinator.log.speakerSource')}</Text>
-                  <View style={styles.chipWrap}>
-                    <Pressable
-                      style={[styles.pickChip, incomingMode === 'invited' && styles.pickChipActive]}
-                      onPress={() => {
-                        setIncomingMode('invited');
-                        setPublisherId(null);
-                      }}
-                    >
-                      <Text style={[styles.pickChipText, incomingMode === 'invited' && styles.pickChipTextActive]}>
-                        {t('talkCoordinator.log.visiting')}
-                      </Text>
-                    </Pressable>
-                    <Pressable
-                      style={[styles.pickChip, incomingMode === 'local' && styles.pickChipActive]}
-                      onPress={() => {
-                        setIncomingMode('local');
-                        setVisitingSpeakerId(null);
-                        setSpeakerNameInput('');
-                        setSpeakerCongInput('');
-                      }}
-                    >
-                      <Text style={[styles.pickChipText, incomingMode === 'local' && styles.pickChipTextActive]}>
-                        {t('talkCoordinator.log.ourBrother')}
-                      </Text>
-                    </Pressable>
-                  </View>
-
-                  {incomingMode === 'local' && (
-                    <View style={{ marginTop: 6 }}>{renderBrotherPicker()}</View>
-                  )}
-
-                  {incomingMode === 'invited' && (
-                    <>
-                  {(speakersQuery.data ?? []).length > 0 && (
-                    <>
-                      <Text style={styles.fieldLabel}>{t('talkCoordinator.log.fromDirectory')}</Text>
-                      <View style={styles.dirSearchRow}>
-                        <Ionicons name="search" size={15} color="#94a3b8" />
-                        <TextInput
-                          style={styles.dirSearchInput}
-                          value={speakerSearch}
-                          onChangeText={setSpeakerSearch}
-                          placeholder={t('talkCoordinator.log.speakerSearch')}
-                          placeholderTextColor="#94a3b8"
+              {(speakersQuery.data ?? []).length > 0 && (
+                <>
+                  <Text style={styles.fieldLabel}>{t('talkCoordinator.log.fromDirectory')}</Text>
+                  <View style={styles.dirSearchRow}>
+                    <Ionicons name="search" size={15} color="#94a3b8" />
+                    <TextInput
+                      style={styles.dirSearchInput}
+                      value={speakerSearch}
+                      onChangeText={setSpeakerSearch}
+                      placeholder={t('talkCoordinator.log.speakerSearch')}
+                      placeholderTextColor="#94a3b8"
+                    />
+                    {speakerSearch ? (
+                      <Pressable
+                        hitSlop={8}
+                        onPress={() => setSpeakerSearch('')}
+                      >
+                        <Ionicons
+                          name="close-circle"
+                          size={15}
+                          color="#cbd5e1"
                         />
-                        {speakerSearch ? (
-                          <Pressable
-                            hitSlop={8}
-                            onPress={() => setSpeakerSearch('')}
-                          >
-                            <Ionicons
-                              name="close-circle"
-                              size={15}
-                              color="#cbd5e1"
-                            />
-                          </Pressable>
-                        ) : null}
-                      </View>
-                      <View style={styles.dirList}>
-                        {visibleSpeakers.map((s) => {
-                          const sel = visitingSpeakerId === s.id;
-                          const st = statsById.get(s.id);
-                          const recent = st ? visitedRecently(st, today) : false;
-                          return (
-                            <Pressable
-                              key={s.id}
-                              style={[styles.dirRow, sel && styles.dirRowActive]}
-                              onPress={() => pickSpeaker(s.id)}
+                      </Pressable>
+                    ) : null}
+                  </View>
+                  <View style={styles.dirList}>
+                    {visibleSpeakers.map((s) => {
+                      const sel = visitingSpeakerId === s.id;
+                      const st = statsById.get(s.id);
+                      const recent = st ? visitedRecently(st, today) : false;
+                      return (
+                        <Pressable
+                          key={s.id}
+                          style={[styles.dirRow, sel && styles.dirRowActive]}
+                          onPress={() => pickSpeaker(s.id)}
+                        >
+                          <View style={{ flex: 1 }}>
+                            <Text
+                              style={[
+                                styles.dirName,
+                                sel && styles.dirNameActive,
+                              ]}
                             >
-                              <View style={{ flex: 1 }}>
+                              {[s.firstName, s.lastName]
+                                .filter(Boolean)
+                                .join(' ')}
+                            </Text>
+                            {s.externalCongregation ? (
+                              <Text style={styles.dirCong}>
+                                {s.externalCongregation.name}
+                              </Text>
+                            ) : null}
+                          </View>
+                          {st && (st.count > 0 || st.nextVisit) ? (
+                            <View style={styles.dirBadgeCol}>
+                              {st.count > 0 && st.lastVisit ? (
                                 <Text
                                   style={[
-                                    styles.dirName,
-                                    sel && styles.dirNameActive,
+                                    styles.dirBadge,
+                                    recent && styles.dirBadgeRecent,
                                   ]}
                                 >
-                                  {[s.firstName, s.lastName]
-                                    .filter(Boolean)
-                                    .join(' ')}
+                                  {t(
+                                    'talkCoordinator.speakers.status.lastSeen',
+                                    {
+                                      count: st.count,
+                                      rel: formatRelativeDay(
+                                        st.lastVisit.date,
+                                        today,
+                                        t,
+                                      ),
+                                    },
+                                  )}
                                 </Text>
-                                {s.externalCongregation ? (
-                                  <Text style={styles.dirCong}>
-                                    {s.externalCongregation.name}
-                                  </Text>
-                                ) : null}
-                              </View>
-                              {st && (st.count > 0 || st.nextVisit) ? (
-                                <View style={styles.dirBadgeCol}>
-                                  {st.count > 0 && st.lastVisit ? (
-                                    <Text
-                                      style={[
-                                        styles.dirBadge,
-                                        recent && styles.dirBadgeRecent,
-                                      ]}
-                                    >
-                                      {t(
-                                        'talkCoordinator.speakers.status.lastSeen',
-                                        {
-                                          count: st.count,
-                                          rel: formatRelativeDay(
-                                            st.lastVisit.date,
-                                            today,
-                                            t,
-                                          ),
-                                        },
-                                      )}
-                                    </Text>
-                                  ) : null}
-                                  {st.nextVisit ? (
-                                    <View style={styles.dirUpcoming}>
-                                      <Ionicons
-                                        name="airplane"
-                                        size={10}
-                                        color="#0369a1"
-                                      />
-                                      <Text style={styles.dirUpcomingText}>
-                                        {formatRelativeDay(
-                                          st.nextVisit.date,
-                                          today,
-                                          t,
-                                        )}
-                                      </Text>
-                                    </View>
-                                  ) : null}
-                                </View>
-                              ) : (
-                                <Text style={styles.dirNew}>
-                                  {t('talkCoordinator.speakers.status.never')}
-                                </Text>
-                              )}
-                              {sel ? (
-                                <Ionicons
-                                  name="checkmark-circle"
-                                  size={18}
-                                  color="#0ea5e9"
-                                />
                               ) : null}
-                            </Pressable>
-                          );
-                        })}
-                        {!speakerSearch && hiddenSpeakerCount > 0 ? (
-                          <Pressable
-                            onPress={() => setShowAllSpeakers(true)}
-                            style={styles.dirMoreBtn}
-                          >
-                            <Text style={styles.dirMore}>
-                              {t('talkCoordinator.log.moreSpeakers', {
-                                n: hiddenSpeakerCount,
-                              })}
-                            </Text>
-                          </Pressable>
-                        ) : null}
-                      </View>
-                    </>
-                  )}
-
-                  <Text style={styles.fieldLabel}>{t('talkCoordinator.log.speakerName')}</Text>
-                  <TextInput
-                    style={styles.input}
-                    value={speakerNameInput}
-                    onChangeText={(v) => {
-                      setSpeakerNameInput(v);
-                      setVisitingSpeakerId(null);
-                    }}
-                    placeholderTextColor="#94a3b8"
-                  />
-
-                  <Text style={styles.fieldLabel}>{t('talkCoordinator.log.speakerCong')}</Text>
-                  <TextInput
-                    style={styles.input}
-                    value={speakerCongInput}
-                    onChangeText={(v) => {
-                      setSpeakerCongInput(v);
-                      setVisitingSpeakerId(null);
-                    }}
-                    placeholderTextColor="#94a3b8"
-                  />
-
-                  {selSpeaker && (selSpeaker.phone || selSpeakerCong) ? (
-                    <View style={styles.spInfoBox}>
-                      {selSpeaker.phone ? (
-                        <Pressable onPress={() => selSpeaker.phone && Linking.openURL(`tel:${selSpeaker.phone}`)}>
-                          <Text style={styles.spInfoPhone}>
-                            {t('talkCoordinator.log.phone')}: {selSpeaker.phone}
-                          </Text>
-                        </Pressable>
-                      ) : null}
-                      {selSpeakerCong ? (
-                        <>
-                          <Text style={styles.spInfoText}>
-                            {[selSpeakerCong.name, selSpeakerCong.city].filter(Boolean).join(', ')}
-                          </Text>
-                          {(selSpeakerCong.contactName || selSpeakerCong.contactPhone) && (
-                            <Text style={styles.spInfoText}>
-                              {[selSpeakerCong.contactName, selSpeakerCong.contactPhone].filter(Boolean).join(' · ')}
+                              {st.nextVisit ? (
+                                <View style={styles.dirUpcoming}>
+                                  <Ionicons
+                                    name="airplane"
+                                    size={10}
+                                    color="#0369a1"
+                                  />
+                                  <Text style={styles.dirUpcomingText}>
+                                    {formatRelativeDay(
+                                      st.nextVisit.date,
+                                      today,
+                                      t,
+                                    )}
+                                  </Text>
+                                </View>
+                              ) : null}
+                            </View>
+                          ) : (
+                            <Text style={styles.dirNew}>
+                              {t('talkCoordinator.speakers.status.never')}
                             </Text>
                           )}
-                          {!!selSpeakerCong.address && (
-                            <Text style={styles.spInfoText}>{selSpeakerCong.address}</Text>
-                          )}
-                        </>
-                      ) : null}
-                    </View>
-                  ) : null}
-                    </>
-                  )}
-
-                  <View style={{ marginTop: 10 }}>
-                    <PublicTalkSelector
-                      label={t('talkCoordinator.log.talk')}
-                      value={publicTalkId}
-                      onChange={(talk) => setPublicTalkId(talk?.id ?? null)}
-                    />
-                  </View>
-                  {publicTalkId ? (
-                    <View style={styles.histBox}>
-                      <Text style={styles.histCount}>
-                        {t('talkCoordinator.log.givenTimes', { n: talkOccs.length })}
-                      </Text>
-                      {talkOccs.map((o) => (
-                        <Text key={o.id} style={styles.histItem} numberOfLines={1}>
-                          {fmtHist(o.date)} · {incomingName(o) ?? t('talkCoordinator.log.unknownSpeaker')}
-                        </Text>
-                      ))}
-                    </View>
-                  ) : null}
-                  <View style={{ marginTop: 10 }}>
-                    <PublisherSelector
-                      label={t('talkCoordinator.log.hospitality')}
-                      value={hospitalityPublisherId}
-                      onChange={setHospitalityPublisherId}
-                    />
-                  </View>
-                </>
-              ) : (
-                <>
-                  {renderBrotherPicker()}
-
-                  <Text style={styles.fieldLabel}>{t('talkCoordinator.log.hostCongregation')}</Text>
-                  <View style={styles.chipWrap}>
-                    {(congQuery.data ?? []).map((c) => {
-                      const sel = hostCongregationId === c.id;
-                      return (
-                        <Pressable
-                          key={c.id}
-                          style={[styles.pickChip, sel && styles.pickChipActive]}
-                          onPress={() => onPickHost(sel ? null : c.id)}
-                        >
-                          <Text style={[styles.pickChipText, sel && styles.pickChipTextActive]}>{c.name}</Text>
+                          {sel ? (
+                            <Ionicons
+                              name="checkmark-circle"
+                              size={18}
+                              color="#0ea5e9"
+                            />
+                          ) : null}
                         </Pressable>
                       );
                     })}
-                    {(congQuery.data ?? []).length === 0 && (
-                      <Text style={styles.muted}>{t('talkCoordinator.log.noCongregations')}</Text>
-                    )}
-                  </View>
-
-                  {!!host && (host.address || host.meetingTime || host.mapUrl) && (
-                    <View style={styles.hostBox}>
-                      {(host.meetingTime || host.address) && (
-                        <Text style={styles.hostInfo}>
-                          {[host.meetingTime, host.address].filter(Boolean).join(' · ')}
+                    {!speakerSearch && hiddenSpeakerCount > 0 ? (
+                      <Pressable
+                        onPress={() => setShowAllSpeakers(true)}
+                        style={styles.dirMoreBtn}
+                      >
+                        <Text style={styles.dirMore}>
+                          {t('talkCoordinator.log.moreSpeakers', {
+                            n: hiddenSpeakerCount,
+                          })}
                         </Text>
-                      )}
-                      {!!host.mapUrl && (
-                        <Pressable onPress={() => host.mapUrl && Linking.openURL(host.mapUrl)}>
-                          <Text style={styles.hostMap}>{t('talkCoordinator.log.openMap')}</Text>
-                        </Pressable>
-                      )}
-                    </View>
-                  )}
-
-                  <Text style={styles.fieldLabel}>{t('talkCoordinator.log.tripDate')}</Text>
-                  <View style={styles.chipWrap}>
-                    {weekendDays.map((d) => {
-                      const sel = date === d;
-                      return (
-                        <Pressable
-                          key={d}
-                          style={[styles.dayChip, sel && styles.pickChipActive]}
-                          onPress={() => setDate(d)}
-                        >
-                          <Text style={[styles.pickChipText, sel && styles.pickChipTextActive]}>
-                            {dayjs(d).locale(i18n.language).format('dddd, D MMM')}
-                          </Text>
-                        </Pressable>
-                      );
-                    })}
-                  </View>
-
-                  <View style={{ marginTop: 10 }}>
-                    <PublicTalkSelector
-                      label={t('talkCoordinator.log.talk')}
-                      value={publicTalkId}
-                      onChange={(talk) => setPublicTalkId(talk?.id ?? null)}
-                    />
+                      </Pressable>
+                    ) : null}
                   </View>
                 </>
               )}
 
-              <Text style={styles.fieldLabel}>{t('talkCoordinator.log.note')}</Text>
-              <TextInput style={styles.input} value={note} onChangeText={setNote} multiline placeholderTextColor="#94a3b8" />
+              <Text style={styles.fieldLabel}>{t('talkCoordinator.log.speakerName')}</Text>
+              <TextInput
+                style={styles.input}
+                value={speakerNameInput}
+                onChangeText={(v) => {
+                  setSpeakerNameInput(v);
+                  setVisitingSpeakerId(null);
+                }}
+                placeholderTextColor="#94a3b8"
+              />
 
-              <View style={styles.modalActions}>
-                {editing ? (
-                  <Pressable style={styles.deleteBtn} onPress={del} disabled={pending}>
-                    <Ionicons name="trash-outline" size={18} color="#dc2626" />
-                  </Pressable>
-                ) : (
-                  <View style={{ flex: 1 }} />
-                )}
-                <Pressable style={styles.modalCancel} onPress={() => setOpen(false)} disabled={pending}>
-                  <Text style={styles.modalCancelText}>{t('common.cancel')}</Text>
-                </Pressable>
-                <Pressable
-                  style={[styles.modalConfirm, (!canSave || pending) && styles.disabled]}
-                  onPress={() => void save()}
-                  disabled={!canSave || pending}
-                >
-                  <Text style={styles.modalConfirmText}>{t('common.save')}</Text>
-                </Pressable>
+              <Text style={styles.fieldLabel}>{t('talkCoordinator.log.speakerCong')}</Text>
+              <TextInput
+                style={styles.input}
+                value={speakerCongInput}
+                onChangeText={(v) => {
+                  setSpeakerCongInput(v);
+                  setVisitingSpeakerId(null);
+                }}
+                placeholderTextColor="#94a3b8"
+              />
+
+              {selSpeaker && (selSpeaker.phone || selSpeakerCong) ? (
+                <View style={styles.spInfoBox}>
+                  {selSpeaker.phone ? (
+                    <Pressable onPress={() => selSpeaker.phone && Linking.openURL(`tel:${selSpeaker.phone}`)}>
+                      <Text style={styles.spInfoPhone}>
+                        {t('talkCoordinator.log.phone')}: {selSpeaker.phone}
+                      </Text>
+                    </Pressable>
+                  ) : null}
+                  {selSpeakerCong ? (
+                    <>
+                      <Text style={styles.spInfoText}>
+                        {[selSpeakerCong.name, selSpeakerCong.city].filter(Boolean).join(', ')}
+                      </Text>
+                      {(selSpeakerCong.contactName || selSpeakerCong.contactPhone) && (
+                        <Text style={styles.spInfoText}>
+                          {[selSpeakerCong.contactName, selSpeakerCong.contactPhone].filter(Boolean).join(' · ')}
+                        </Text>
+                      )}
+                      {!!selSpeakerCong.address && (
+                        <Text style={styles.spInfoText}>{selSpeakerCong.address}</Text>
+                      )}
+                    </>
+                  ) : null}
+                </View>
+              ) : null}
+                </>
+              )}
+
+              <View style={{ marginTop: 10 }}>
+                <PublicTalkSelector
+                  label={t('talkCoordinator.log.talk')}
+                  value={publicTalkId}
+                  onChange={(talk) => setPublicTalkId(talk?.id ?? null)}
+                />
               </View>
-            </ScrollView>
-          </View>
-        </View>
-      </Modal>
+              {publicTalkId ? (
+                <View style={styles.histBox}>
+                  <Text style={styles.histCount}>
+                    {t('talkCoordinator.log.givenTimes', { n: talkOccs.length })}
+                  </Text>
+                  {talkOccs.map((o) => (
+                    <Text key={o.id} style={styles.histItem} numberOfLines={1}>
+                      {fmtHist(o.date)} · {incomingName(o) ?? t('talkCoordinator.log.unknownSpeaker')}
+                    </Text>
+                  ))}
+                </View>
+              ) : null}
+              <View style={{ marginTop: 10 }}>
+                <PublisherSelector
+                  label={t('talkCoordinator.log.hospitality')}
+                  value={hospitalityPublisherId}
+                  onChange={setHospitalityPublisherId}
+                />
+              </View>
+            </>
+          ) : (
+            <>
+              {renderBrotherPicker()}
+
+              <Text style={styles.fieldLabel}>{t('talkCoordinator.log.hostCongregation')}</Text>
+              <View style={styles.chipWrap}>
+                {(congQuery.data ?? []).map((c) => {
+                  const sel = hostCongregationId === c.id;
+                  return (
+                    <Pressable
+                      key={c.id}
+                      style={[styles.pickChip, sel && styles.pickChipActive]}
+                      onPress={() => onPickHost(sel ? null : c.id)}
+                    >
+                      <Text style={[styles.pickChipText, sel && styles.pickChipTextActive]}>{c.name}</Text>
+                    </Pressable>
+                  );
+                })}
+                {(congQuery.data ?? []).length === 0 && (
+                  <Text style={styles.muted}>{t('talkCoordinator.log.noCongregations')}</Text>
+                )}
+              </View>
+
+              {!!host && (host.address || host.meetingTime || host.mapUrl) && (
+                <View style={styles.hostBox}>
+                  {(host.meetingTime || host.address) && (
+                    <Text style={styles.hostInfo}>
+                      {[host.meetingTime, host.address].filter(Boolean).join(' · ')}
+                    </Text>
+                  )}
+                  {!!host.mapUrl && (
+                    <Pressable onPress={() => host.mapUrl && Linking.openURL(host.mapUrl)}>
+                      <Text style={styles.hostMap}>{t('talkCoordinator.log.openMap')}</Text>
+                    </Pressable>
+                  )}
+                </View>
+              )}
+
+              <Text style={styles.fieldLabel}>{t('talkCoordinator.log.tripDate')}</Text>
+              <View style={styles.chipWrap}>
+                {weekendDays.map((d) => {
+                  const sel = date === d;
+                  return (
+                    <Pressable
+                      key={d}
+                      style={[styles.dayChip, sel && styles.pickChipActive]}
+                      onPress={() => setDate(d)}
+                    >
+                      <Text style={[styles.pickChipText, sel && styles.pickChipTextActive]}>
+                        {dayjs(d).locale(i18n.language).format('dddd, D MMM')}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+
+              <View style={{ marginTop: 10 }}>
+                <PublicTalkSelector
+                  label={t('talkCoordinator.log.talk')}
+                  value={publicTalkId}
+                  onChange={(talk) => setPublicTalkId(talk?.id ?? null)}
+                />
+              </View>
+            </>
+          )}
+
+          <Text style={styles.fieldLabel}>{t('talkCoordinator.log.note')}</Text>
+          <TextInput style={styles.input} value={note} onChangeText={setNote} multiline placeholderTextColor="#94a3b8" />
+
+        </ScrollView>
+      </Sheet>
     </SafeAreaView>
   );
 }
@@ -1384,17 +1351,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   slotSwapBtn: { padding: 2 },
-  swapCard: {
-    backgroundColor: '#fff',
-    borderRadius: 18,
-    padding: 16,
-    gap: 10,
-    maxWidth: 440,
-    width: '92%',
-    maxHeight: '82%',
-    alignSelf: 'center',
-  },
-  swapTitle: { fontSize: 16, fontWeight: '800', fontFamily: 'Manrope_800ExtraBold', color: '#0f172a' },
+  swapBody: { gap: 10 },
   swapHint: { fontSize: 12.5, color: '#64748b' },
   swapModeRow: { flexDirection: 'row', gap: 8 },
   swapModeBtn: {
@@ -1423,22 +1380,6 @@ const styles = StyleSheet.create({
   swapRowName: { fontSize: 14, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0f172a' },
   swapRowTalk: { fontSize: 12, color: '#0369a1' },
   swapError: { fontSize: 12.5, color: '#b91c1c' },
-  swapActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 10 },
-  swapCancel: {
-    paddingVertical: 9,
-    paddingHorizontal: 14,
-    borderRadius: 10,
-    backgroundColor: '#f1f5f9',
-  },
-  swapCancelText: { fontSize: 13.5, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#334155' },
-  swapConfirm: {
-    paddingVertical: 9,
-    paddingHorizontal: 16,
-    borderRadius: 10,
-    backgroundColor: '#0284c7',
-  },
-  swapConfirmDisabled: { opacity: 0.45 },
-  swapConfirmText: { fontSize: 13.5, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#fff' },
   monthHeader: {
     fontSize: 13,
     fontWeight: '700', fontFamily: 'Manrope_700Bold',
@@ -1476,20 +1417,8 @@ const styles = StyleSheet.create({
   outSub: { fontSize: 11, color: '#475569', marginTop: 1 },
   outAdd: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingTop: 6 },
   outAddText: { fontSize: 12, color: '#b45309', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
-  overlay: { flex: 1, backgroundColor: 'rgba(15,23,42,0.45)', justifyContent: 'center', paddingHorizontal: 16 },
-  modalClose: { padding: 4, marginTop: -2 },
-  modalHeaderRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    gap: 8,
-    marginBottom: 10,
-  },
-  modalHeaderText: { flex: 1 },
   dirMoreBtn: { paddingVertical: 2 },
-  modalCard: { backgroundColor: '#fff', borderRadius: 14, padding: 18, maxHeight: '88%' },
-  editorHead: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between' },
-  modalTitle: { fontSize: 16, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0f172a' },
+  editorBody: { padding: 16, paddingBottom: 24 },
   editorDate: { fontSize: 13, color: '#0ea5e9', fontWeight: '600', fontFamily: 'Manrope_600SemiBold', textTransform: 'capitalize', marginTop: 2 },
   infoLine: { fontSize: 12, color: '#64748b', marginTop: 4 },
   histBox: { marginTop: 8, padding: 10, borderRadius: 10, backgroundColor: '#eff6ff', borderWidth: 1, borderColor: '#bfdbfe' },
@@ -1570,10 +1499,8 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#0f172a',
   },
-  modalActions: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 10, marginTop: 16 },
+  modalActions: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 10 },
   deleteBtn: { marginRight: 'auto', padding: 8, borderRadius: 8, backgroundColor: '#fef2f2' },
-  modalCancel: { paddingVertical: 10, paddingHorizontal: 14 },
-  modalCancelText: { fontSize: 15, color: '#64748b', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
   modalConfirm: { paddingVertical: 10, paddingHorizontal: 18, borderRadius: 10, backgroundColor: '#0ea5e9' },
   modalConfirmText: { fontSize: 15, color: '#fff', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
   disabled: { opacity: 0.5 },
