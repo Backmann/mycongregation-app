@@ -2,7 +2,6 @@ import React, { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
-  Modal,
   Platform,
   Pressable,
   SafeAreaView,
@@ -14,6 +13,7 @@ import {
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
+import { Sheet } from '../../../components/Sheet';
 import {
   PublicUser,
   Responsibility,
@@ -177,22 +177,19 @@ export default function ResponsibilitiesScreen() {
         </View>
       </ScrollView>
 
-      <Modal
+      <Sheet
         visible={pickerFor !== null}
-        animationType="slide"
-        transparent
-        onRequestClose={() => setPickerFor(null)}
+        variant="bottom"
+        title={pickerFor ? t(`responsibilities.types.${pickerFor}`) : ''}
+        subtitle={
+          <Text style={styles.sheetSubtitle}>
+            {t('responsibilities.pickUser')}
+          </Text>
+        }
+        closeLabel={t('common.cancel')}
+        onClose={() => setPickerFor(null)}
       >
-        <Pressable style={styles.backdrop} onPress={() => setPickerFor(null)}>
-          {/* Inner press is a no-op so taps inside the sheet do not close it */}
-          <Pressable style={styles.sheet} onPress={() => {}}>
-            <Text style={styles.sheetTitle}>
-              {pickerFor ? t(`responsibilities.types.${pickerFor}`) : ''}
-            </Text>
-            <Text style={styles.sheetSubtitle}>
-              {t('responsibilities.pickUser')}
-            </Text>
-            <ScrollView style={{ maxHeight: 380 }}>
+            <ScrollView>
               {users.map((u) => (
                 <Pressable
                   key={u.id}
@@ -215,15 +212,7 @@ export default function ResponsibilitiesScreen() {
                 </Pressable>
               ))}
             </ScrollView>
-            <Pressable
-              style={styles.cancelBtn}
-              onPress={() => setPickerFor(null)}
-            >
-              <Text style={styles.cancelText}>{t('common.cancel')}</Text>
-            </Pressable>
-          </Pressable>
-        </Pressable>
-      </Modal>
+      </Sheet>
     </SafeAreaView>
   );
 }
@@ -278,11 +267,6 @@ const styles = StyleSheet.create({
   },
   assignBtnPressed: { backgroundColor: '#bae6fd' },
   assignBtnText: { fontSize: 13, color: '#0369a1', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
-  backdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(15,23,42,0.45)',
-    justifyContent: 'flex-end',
-  },
   sheet: {
     backgroundColor: '#fff',
     borderTopLeftRadius: 16,
@@ -291,7 +275,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 28,
   },
-  sheetTitle: { fontSize: 17, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0f172a' },
   sheetSubtitle: {
     fontSize: 13,
     color: '#64748b',
@@ -308,12 +291,4 @@ const styles = StyleSheet.create({
   },
   userRowPressed: { backgroundColor: '#f1f5f9' },
   userEmail: { fontSize: 15, color: '#0f172a' },
-  cancelBtn: {
-    marginTop: 12,
-    paddingVertical: 13,
-    alignItems: 'center',
-    borderRadius: 10,
-    backgroundColor: '#f1f5f9',
-  },
-  cancelText: { fontSize: 15, color: '#475569', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
 });
