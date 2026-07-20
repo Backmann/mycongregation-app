@@ -5,7 +5,6 @@ import { useRouter } from 'expo-router';
 import {
   ActivityIndicator,
   Alert,
-  Modal,
   Platform,
   Pressable,
   ScrollView,
@@ -33,6 +32,8 @@ import {
 import { buildCoScheduleHtml } from '../../../lib/coSchedulePdf';
 import { exportHtmlAsPdf } from '../../../lib/pdf';
 import { CIRCUIT_OVERSEER_VISIT_TYPE } from '../../../components/SpecialEventForm';
+import { Dialog } from '../../../components/Dialog';
+import { Sheet } from '../../../components/Sheet';
 import { PublisherSelector } from '../../../components/PublisherSelector';
 import { TimeField } from '../../../components/TimeField';
 import { usePermissions } from '../../../lib/permissions';
@@ -1051,6 +1052,23 @@ export default function CoScheduleScreen() {
     );
   };
 
+  // The form's title used to sit inside the card; the shell wants it as a prop.
+  const formTitle = !form
+    ? ''
+    : form.kind === 'lunch'
+      ? t('coVisit.lunch')
+      : form.kind === 'lunch_box'
+        ? t('coVisit.lunchBoxTitle')
+        : form.kind === 'pastoral'
+          ? t('coVisit.pastoral')
+          : form.kind === 'pioneers'
+            ? t('coVisit.pioneers')
+            : form.kind === 'elders'
+              ? t('coVisit.elders')
+              : form.id
+                ? t('coVisit.editMeeting')
+                : t('coVisit.addMeeting');
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.card}>
@@ -1147,412 +1165,320 @@ export default function CoScheduleScreen() {
 
       {renderDayView()}
 
-      <Modal
+      <Dialog
         visible={!!kindPickerDay}
-        animationType="fade"
-        transparent
-        onRequestClose={() => setKindPickerDay(null)}
+        title={t('coVisit.pickKind')}
+        icon="add-circle-outline"
+        onCancel={() => setKindPickerDay(null)}
+        cancelLabel={t('coVisit.cancel')}
       >
-        <Pressable
-          style={{
-            flex: 1,
-            backgroundColor: 'rgba(15,23,42,0.4)',
-            justifyContent: 'center',
-            padding: 24,
-          }}
-          onPress={() => setKindPickerDay(null)}
-          accessibilityRole="button"
-        >
+        {addableKinds.map((k) => (
           <Pressable
-            style={{ backgroundColor: '#ffffff', borderRadius: 14, padding: 8 }}
+            key={k}
+            onPress={() => {
+              const d = kindPickerDay;
+              setKindPickerDay(null);
+              openCreate(k, d ?? undefined);
+            }}
+            style={({ pressed }) => [
+              styles.kindRow,
+              pressed && styles.kindRowPressed,
+            ]}
           >
-            <Text
-              style={{
-                fontSize: 15,
-                fontWeight: '700', fontFamily: 'Manrope_700Bold',
-                color: '#0f172a',
-                paddingHorizontal: 12,
-                paddingVertical: 10,
-              }}
-            >
-              {t('coVisit.pickKind')}
-            </Text>
-            {addableKinds.map((k) => (
-              <Pressable
-                key={k}
-                onPress={() => {
-                  const d = kindPickerDay;
-                  setKindPickerDay(null);
-                  openCreate(k, d ?? undefined);
-                }}
-                style={({ pressed }) => [
-                  {
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    paddingHorizontal: 12,
-                    paddingVertical: 12,
-                    borderRadius: 8,
-                  },
-                  pressed && { backgroundColor: '#f1f5f9' },
-                ]}
-              >
-                <Text style={{ fontSize: 15, color: '#0f172a' }}>
-                  {kindShort(k)}
-                </Text>
-                <Ionicons name="chevron-forward" size={16} color="#cbd5e1" />
-              </Pressable>
-            ))}
+            <Text style={styles.kindRowText}>{kindShort(k)}</Text>
+            <Ionicons name="chevron-forward" size={16} color="#cbd5e1" />
           </Pressable>
-        </Pressable>
-      </Modal>
+        ))}
+      </Dialog>
 
 
-      <Modal
+      <Sheet
         visible={!!form}
-        animationType="slide"
-        transparent
-        onRequestClose={() => setForm(null)}
+        variant="bottom"
+        title={formTitle}
+        onClose={() => setForm(null)}
+        closeLabel={t('coVisit.cancel')}
+        footer={
+          form ? (
+            <View style={styles.modalActions}>
+              {form.id ? (
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.deleteBtn,
+                    pressed && styles.pressed,
+                  ]}
+                  onPress={onDelete}
+                >
+                  <Text style={styles.deleteText}>{t('coVisit.delete')}</Text>
+                </Pressable>
+              ) : (
+                <View style={{ flex: 1 }} />
+              )}
+              <Pressable
+                style={({ pressed }) => [
+                  styles.saveBtn,
+                  pressed && styles.pressed,
+                  (createM.isPending || updateM.isPending) && styles.disabled,
+                ]}
+                onPress={submit}
+                disabled={createM.isPending || updateM.isPending}
+              >
+                <Text style={styles.saveText}>{t('coVisit.save')}</Text>
+              </Pressable>
+            </View>
+          ) : null
+        }
       >
-        <View style={styles.modalBackdrop}>
-          <Pressable
-            style={StyleSheet.absoluteFill}
-            onPress={() => setForm(null)}
-            accessibilityRole="button"
-          />
-          <View style={styles.modalCard}>
-            <ScrollView contentContainerStyle={styles.modalContent}>
-              {form ? (
-                <>
-                  <Text style={styles.modalTitle}>
-                    {form.kind === 'lunch'
-                      ? t('coVisit.lunch')
-                      : form.kind === 'lunch_box'
-                        ? t('coVisit.lunchBoxTitle')
-                        : form.kind === 'pastoral'
-                          ? t('coVisit.pastoral')
-                          : form.kind === 'pioneers'
-                            ? t('coVisit.pioneers')
-                            : form.kind === 'elders'
-                              ? t('coVisit.elders')
-                              : form.id
-                                ? t('coVisit.editMeeting')
-                                : t('coVisit.addMeeting')}
-                  </Text>
+        <ScrollView contentContainerStyle={styles.modalContent}>
+          {form ? (
+            <>
+              <Text style={styles.fieldLabel}>{t('coVisit.day')}</Text>
+              <View style={styles.chipRow}>
+                {days.map((day) => (
+                  <Pressable
+                    key={day}
+                    style={[
+                      styles.chip,
+                      form.itemDate === day && styles.chipActive,
+                    ]}
+                    onPress={() => setForm({ ...form, itemDate: day })}
+                  >
+                    <Text
+                      style={[
+                        styles.chipText,
+                        form.itemDate === day && styles.chipTextActive,
+                      ]}
+                    >
+                      {new Date(`${day}T00:00:00`).toLocaleDateString(loc, {
+                        weekday: 'short',
+                        day: 'numeric',
+                      })}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
 
-                  <Text style={styles.fieldLabel}>{t('coVisit.day')}</Text>
+              {form.kind !== 'lunch_box' ? (
+                <>
+                  <Text style={styles.fieldLabel}>{t('coVisit.time')}</Text>
+                  <TimeField
+                    value={form.startTime}
+                    onChange={(v) => setForm({ ...form, startTime: v })}
+                  />
+                </>
+              ) : null}
+
+              {form.kind === 'lunch_box' ? (
+                <>
+                  <Text style={styles.fieldLabel}>
+                    {t('coVisit.lunchBoxPublisher')}
+                  </Text>
+                  <PublisherSelector
+                    boxed
+                    label={t('coVisit.lunchBoxPublisher')}
+                    value={form.assigneePublisherId}
+                    onChange={(id) =>
+                      setForm({ ...form, assigneePublisherId: id })
+                    }
+                    {...hostMeta('lunch_box')}
+                  />
+                  {renderOrgPreview(form.assigneePublisherId)}
+                  <Text style={styles.fieldLabel}>
+                    {t('coVisit.organizerNote')}
+                  </Text>
+                  <Text style={styles.hintText}>
+                    {t('coVisit.organizerNoteHint')}
+                  </Text>
+                  <TextInput
+                    style={styles.input}
+                    value={form.note}
+                    onChangeText={(v) => setForm({ ...form, note: v })}
+                    placeholder={t('coVisit.organizerNote')}
+                    placeholderTextColor="#94a3b8"
+                  />
+                </>
+              ) : null}
+
+              {form.kind === 'field_service' ? (
+                <>
+                  <Text style={styles.fieldLabel}>{t('coVisit.place')}</Text>
                   <View style={styles.chipRow}>
-                    {days.map((day) => (
+                    {(
+                      [
+                        ['kingdom_hall', t('coVisit.kingdomHall')],
+                        ['custom', t('coVisit.placeOther')],
+                      ] as [PlaceKind, string][]
+                    ).map(([k, label]) => (
                       <Pressable
-                        key={day}
+                        key={k}
                         style={[
                           styles.chip,
-                          form.itemDate === day && styles.chipActive,
+                          form.placeKind === k && styles.chipActive,
                         ]}
-                        onPress={() => setForm({ ...form, itemDate: day })}
+                        onPress={() => setForm({ ...form, placeKind: k })}
                       >
                         <Text
                           style={[
                             styles.chipText,
-                            form.itemDate === day && styles.chipTextActive,
+                            form.placeKind === k && styles.chipTextActive,
                           ]}
                         >
-                          {new Date(`${day}T00:00:00`).toLocaleDateString(loc, {
-                            weekday: 'short',
-                            day: 'numeric',
-                          })}
+                          {label}
                         </Text>
                       </Pressable>
                     ))}
                   </View>
-
-                  {form.kind !== 'lunch_box' ? (
-                    <>
-                      <Text style={styles.fieldLabel}>{t('coVisit.time')}</Text>
-                      <TimeField
-                        value={form.startTime}
-                        onChange={(v) => setForm({ ...form, startTime: v })}
-                      />
-                    </>
-                  ) : null}
-
-                  {form.kind === 'lunch_box' ? (
-                    <>
-                      <Text style={styles.fieldLabel}>
-                        {t('coVisit.lunchBoxPublisher')}
-                      </Text>
-                      <PublisherSelector
-                        boxed
-                        label={t('coVisit.lunchBoxPublisher')}
-                        value={form.assigneePublisherId}
-                        onChange={(id) =>
-                          setForm({ ...form, assigneePublisherId: id })
-                        }
-                        {...hostMeta('lunch_box')}
-                      />
-                      {renderOrgPreview(form.assigneePublisherId)}
-                      <Text style={styles.fieldLabel}>
-                        {t('coVisit.organizerNote')}
-                      </Text>
-                      <Text style={styles.hintText}>
-                        {t('coVisit.organizerNoteHint')}
-                      </Text>
-                      <TextInput
-                        style={styles.input}
-                        value={form.note}
-                        onChangeText={(v) => setForm({ ...form, note: v })}
-                        placeholder={t('coVisit.organizerNote')}
-                        placeholderTextColor="#94a3b8"
-                      />
-                    </>
-                  ) : null}
-
-                  {form.kind === 'field_service' ? (
-                    <>
-                      <Text style={styles.fieldLabel}>{t('coVisit.place')}</Text>
-                      <View style={styles.chipRow}>
-                        {(
-                          [
-                            ['kingdom_hall', t('coVisit.kingdomHall')],
-                            ['custom', t('coVisit.placeOther')],
-                          ] as [PlaceKind, string][]
-                        ).map(([k, label]) => (
+                  {form.placeKind === 'kingdom_hall' &&
+                  hallOptions.length > 0 ? (
+                    <View style={styles.chipRow}>
+                      {hallOptions.map((opt) => {
+                        const active =
+                          form.placeText === opt.address ||
+                          (!form.placeText &&
+                            opt.address === defaultHallAddress);
+                        return (
                           <Pressable
-                            key={k}
+                            key={opt.id}
                             style={[
                               styles.chip,
-                              form.placeKind === k && styles.chipActive,
+                              active && styles.chipActive,
                             ]}
-                            onPress={() => setForm({ ...form, placeKind: k })}
+                            onPress={() =>
+                              setForm({ ...form, placeText: opt.address })
+                            }
                           >
                             <Text
                               style={[
                                 styles.chipText,
-                                form.placeKind === k && styles.chipTextActive,
+                                active && styles.chipTextActive,
                               ]}
                             >
-                              {label}
+                              {opt.address}
                             </Text>
                           </Pressable>
-                        ))}
-                      </View>
-                      {form.placeKind === 'kingdom_hall' &&
-                      hallOptions.length > 0 ? (
-                        <View style={styles.chipRow}>
-                          {hallOptions.map((opt) => {
-                            const active =
-                              form.placeText === opt.address ||
-                              (!form.placeText &&
-                                opt.address === defaultHallAddress);
-                            return (
-                              <Pressable
-                                key={opt.id}
-                                style={[
-                                  styles.chip,
-                                  active && styles.chipActive,
-                                ]}
-                                onPress={() =>
-                                  setForm({ ...form, placeText: opt.address })
-                                }
-                              >
-                                <Text
-                                  style={[
-                                    styles.chipText,
-                                    active && styles.chipTextActive,
-                                  ]}
-                                >
-                                  {opt.address}
-                                </Text>
-                              </Pressable>
-                            );
-                          })}
-                        </View>
-                      ) : null}
-                      {form.placeKind === 'cart_location' ? (
-                        <View style={styles.chipRow}>
-                          {(locations ?? []).map((l: CartLocation) => (
-                            <Pressable
-                              key={l.id}
-                              style={[
-                                styles.chip,
-                                form.cartLocationId === l.id &&
-                                  styles.chipActive,
-                              ]}
-                              onPress={() =>
-                                setForm({ ...form, cartLocationId: l.id })
-                              }
-                            >
-                              <Text
-                                style={[
-                                  styles.chipText,
-                                  form.cartLocationId === l.id &&
-                                    styles.chipTextActive,
-                                ]}
-                              >
-                                {l.name}
-                              </Text>
-                            </Pressable>
-                          ))}
-                        </View>
-                      ) : null}
-                      {form.placeKind === 'custom' ? (
-                        <TextInput
-                          style={styles.input}
-                          value={form.placeText}
-                          onChangeText={(v) =>
-                            setForm({ ...form, placeText: v })
-                          }
-                          placeholder={t('coVisit.placeOtherHint')}
-                          placeholderTextColor="#94a3b8"
-                        />
-                      ) : null}
-                      {/* ——— Overseer's section: HIS partner + HIS type of
-                          service, clearly attributed by name and colour. */}
-                      <View style={[styles.personBox, styles.personBoxCo]}>
-                        <View style={styles.personHead}>
-                          <View
-                            style={[styles.pairDot, styles.pairDotCo]}
-                          />
-                          <Text style={styles.personName}>
-                            {form.forWife
-                              ? visit.coWifeName || t('coVisit.wifeShort')
-                              : coName || t('coVisit.coShort')}
-                          </Text>
-                          <Text style={styles.personRole}>
-                            {form.forWife
-                              ? t('coVisit.wife')
-                              : t('coVisit.overseer')}
-                          </Text>
-                        </View>
-                        <PublisherSelector
-                          boxed
-                          label={t('coVisit.accompanying')}
-                          value={form.assigneePublisherId}
-                          genderFilter={form.forWife ? 'sister' : 'brother'}
-                          onChange={(id) =>
-                            setForm({ ...form, assigneePublisherId: id })
-                          }
-                        />
-                        <Text style={styles.fieldLabel}>
-                          {t('coVisit.serviceKind')}
-                        </Text>
-                        <TextInput
-                          style={styles.input}
-                          value={form.note}
-                          onChangeText={(v) => setForm({ ...form, note: v })}
-                          placeholder={t('coVisit.serviceKindHint')}
-                          placeholderTextColor="#94a3b8"
-                        />
-                      </View>
-
-                      {/* ——— Wife's section: her participation, and — when
-                          she serves separately — HER partner and HER type. */}
-                      {!form.forWife && visit.coWifeName ? (
-                        <View style={[styles.personBox, styles.personBoxWife]}>
-                          <View style={styles.personHead}>
-                            <View
-                              style={[styles.pairDot, styles.pairDotWife]}
-                            />
-                            <Text style={styles.personName}>
-                              {visit.coWifeName}
-                            </Text>
-                            <Text style={styles.personRole}>
-                              {t('coVisit.wife')}
-                            </Text>
-                          </View>
-                          <Text style={styles.fieldLabel}>
-                            {t('coVisit.participation')}
-                          </Text>
-                          <View style={styles.toggleRow}>
-                            {(
-                              [
-                                ['none', t('coVisit.spouseNone')],
-                                ['together', t('coVisit.spouseTogether')],
-                                ['separate', t('coVisit.spouseSeparate')],
-                              ] as [FormState['wifeMode'], string][]
-                            ).map(([m, label]) => (
-                              <Pressable
-                                key={m}
-                                style={[
-                                  styles.modeChip,
-                                  form.wifeMode === m &&
-                                    styles.modeChipActiveWife,
-                                ]}
-                                onPress={() =>
-                                  setForm({ ...form, wifeMode: m })
-                                }
-                              >
-                                <Text
-                                  style={[
-                                    styles.modeChipText,
-                                    form.wifeMode === m &&
-                                      styles.modeChipTextActive,
-                                  ]}
-                                >
-                                  {label}
-                                </Text>
-                              </Pressable>
-                            ))}
-                          </View>
-                          {form.wifeMode === 'together' ? (
-                            <Text style={styles.personHint}>
-                              {t('coVisit.togetherHint')}
-                            </Text>
-                          ) : null}
-                          {form.wifeMode === 'separate' ? (
-                            <>
-                              <PublisherSelector
-                                boxed
-                                label={t('coVisit.accompanying')}
-                                value={form.wifePartnerPublisherId}
-                                genderFilter="sister"
-                                onChange={(id) =>
-                                  setForm({
-                                    ...form,
-                                    wifePartnerPublisherId: id,
-                                  })
-                                }
-                              />
-                              <Text style={styles.fieldLabel}>
-                                {t('coVisit.serviceKind')}
-                              </Text>
-                              <TextInput
-                                style={styles.input}
-                                value={form.wifeNote}
-                                onChangeText={(v) =>
-                                  setForm({ ...form, wifeNote: v })
-                                }
-                                placeholder={t('coVisit.serviceKindHint')}
-                                placeholderTextColor="#94a3b8"
-                              />
-                            </>
-                          ) : null}
-                        </View>
-                      ) : null}
-                    </>
+                        );
+                      })}
+                    </View>
                   ) : null}
+                  {form.placeKind === 'cart_location' ? (
+                    <View style={styles.chipRow}>
+                      {(locations ?? []).map((l: CartLocation) => (
+                        <Pressable
+                          key={l.id}
+                          style={[
+                            styles.chip,
+                            form.cartLocationId === l.id &&
+                              styles.chipActive,
+                          ]}
+                          onPress={() =>
+                            setForm({ ...form, cartLocationId: l.id })
+                          }
+                        >
+                          <Text
+                            style={[
+                              styles.chipText,
+                              form.cartLocationId === l.id &&
+                                styles.chipTextActive,
+                            ]}
+                          >
+                            {l.name}
+                          </Text>
+                        </Pressable>
+                      ))}
+                    </View>
+                  ) : null}
+                  {form.placeKind === 'custom' ? (
+                    <TextInput
+                      style={styles.input}
+                      value={form.placeText}
+                      onChangeText={(v) =>
+                        setForm({ ...form, placeText: v })
+                      }
+                      placeholder={t('coVisit.placeOtherHint')}
+                      placeholderTextColor="#94a3b8"
+                    />
+                  ) : null}
+                  {/* ——— Overseer's section: HIS partner + HIS type of
+                      service, clearly attributed by name and colour. */}
+                  <View style={[styles.personBox, styles.personBoxCo]}>
+                    <View style={styles.personHead}>
+                      <View
+                        style={[styles.pairDot, styles.pairDotCo]}
+                      />
+                      <Text style={styles.personName}>
+                        {form.forWife
+                          ? visit.coWifeName || t('coVisit.wifeShort')
+                          : coName || t('coVisit.coShort')}
+                      </Text>
+                      <Text style={styles.personRole}>
+                        {form.forWife
+                          ? t('coVisit.wife')
+                          : t('coVisit.overseer')}
+                      </Text>
+                    </View>
+                    <PublisherSelector
+                      boxed
+                      label={t('coVisit.accompanying')}
+                      value={form.assigneePublisherId}
+                      genderFilter={form.forWife ? 'sister' : 'brother'}
+                      onChange={(id) =>
+                        setForm({ ...form, assigneePublisherId: id })
+                      }
+                    />
+                    <Text style={styles.fieldLabel}>
+                      {t('coVisit.serviceKind')}
+                    </Text>
+                    <TextInput
+                      style={styles.input}
+                      value={form.note}
+                      onChangeText={(v) => setForm({ ...form, note: v })}
+                      placeholder={t('coVisit.serviceKindHint')}
+                      placeholderTextColor="#94a3b8"
+                    />
+                  </View>
 
-                  {form.kind === 'lunch' ? (
-                    <>
+                  {/* ——— Wife's section: her participation, and — when
+                      she serves separately — HER partner and HER type. */}
+                  {!form.forWife && visit.coWifeName ? (
+                    <View style={[styles.personBox, styles.personBoxWife]}>
+                      <View style={styles.personHead}>
+                        <View
+                          style={[styles.pairDot, styles.pairDotWife]}
+                        />
+                        <Text style={styles.personName}>
+                          {visit.coWifeName}
+                        </Text>
+                        <Text style={styles.personRole}>
+                          {t('coVisit.wife')}
+                        </Text>
+                      </View>
+                      <Text style={styles.fieldLabel}>
+                        {t('coVisit.participation')}
+                      </Text>
                       <View style={styles.toggleRow}>
                         {(
                           [
-                            [false, t('coVisit.host')],
-                            [true, t('coVisit.hostOther')],
-                          ] as [boolean, string][]
-                        ).map(([v, label]) => (
+                            ['none', t('coVisit.spouseNone')],
+                            ['together', t('coVisit.spouseTogether')],
+                            ['separate', t('coVisit.spouseSeparate')],
+                          ] as [FormState['wifeMode'], string][]
+                        ).map(([m, label]) => (
                           <Pressable
-                            key={String(v)}
+                            key={m}
                             style={[
-                              styles.chip,
-                              form.hostOther === v && styles.chipActive,
+                              styles.modeChip,
+                              form.wifeMode === m &&
+                                styles.modeChipActiveWife,
                             ]}
-                            onPress={() => setForm({ ...form, hostOther: v })}
+                            onPress={() =>
+                              setForm({ ...form, wifeMode: m })
+                            }
                           >
                             <Text
                               style={[
-                                styles.chipText,
-                                form.hostOther === v && styles.chipTextActive,
+                                styles.modeChipText,
+                                form.wifeMode === m &&
+                                  styles.modeChipTextActive,
                               ]}
                             >
                               {label}
@@ -1560,139 +1486,165 @@ export default function CoScheduleScreen() {
                           </Pressable>
                         ))}
                       </View>
-                      {form.hostOther ? (
-                        <TextInput
-                          style={styles.input}
-                          value={form.assigneeText}
-                          onChangeText={(v) =>
-                            setForm({ ...form, assigneeText: v })
-                          }
-                          placeholder={t('coVisit.hostName')}
-                          placeholderTextColor="#94a3b8"
-                        />
-                      ) : (
-                        <PublisherSelector
-                          boxed
-                          label={t('coVisit.host')}
-                          value={form.assigneePublisherId}
-                          onChange={(id) =>
-                            setForm({ ...form, assigneePublisherId: id })
-                          }
-                          {...hostMeta('lunch')}
-                        />
-                      )}
-                      {!form.hostOther
-                        ? renderOrgPreview(form.assigneePublisherId)
-                        : null}
-                      <Text style={styles.fieldLabel}>
-                        {t('coVisit.organizerNote')}
-                      </Text>
-                      <Text style={styles.hintText}>
-                        {t('coVisit.organizerNoteHint')}
-                      </Text>
-                      <TextInput
-                        style={styles.input}
-                        value={form.note}
-                        onChangeText={(v) => setForm({ ...form, note: v })}
-                        placeholder={t('coVisit.organizerNote')}
-                        placeholderTextColor="#94a3b8"
-                      />
-                    </>
-                  ) : null}
-
-                  {form.kind === 'pastoral' ? (
-                    <>
-                      <Text style={styles.fieldLabel}>
-                        {t('coVisit.pastoralElder')}
-                      </Text>
-                      <PublisherSelector
-                        boxed
-                        label={t('coVisit.pastoralElder')}
-                        value={form.assigneePublisherId}
-                        appointmentFilter="elder"
-                        onChange={(id) =>
-                          setForm({ ...form, assigneePublisherId: id })
-                        }
-                      />
-                      <Text style={styles.fieldLabel}>
-                        {t('coVisit.pastoralTarget')}
-                      </Text>
-                      <TextInput
-                        style={styles.input}
-                        value={form.note}
-                        onChangeText={(v) => setForm({ ...form, note: v })}
-                        placeholder={t('coVisit.pastoralTarget')}
-                        placeholderTextColor="#94a3b8"
-                      />
-                    </>
-                  ) : null}
-
-                  {form.kind === 'pioneers' || form.kind === 'elders' ? (
-                    <>
-                      {renderHallPlaceField()}
-                      <Text style={styles.fieldLabel}>
-                        {form.kind === 'pioneers'
-                          ? t('coVisit.pioneersTheme')
-                          : t('coVisit.note')}
-                      </Text>
-                      <TextInput
-                        style={styles.input}
-                        value={form.note}
-                        onChangeText={(v) => setForm({ ...form, note: v })}
-                        placeholder={
-                          form.kind === 'pioneers'
-                            ? t('coVisit.pioneersTheme')
-                            : t('coVisit.note')
-                        }
-                        placeholderTextColor="#94a3b8"
-                      />
-                    </>
-                  ) : null}
-
-                  <View style={styles.modalActions}>
-                    {form.id ? (
-                      <Pressable
-                        style={({ pressed }) => [
-                          styles.deleteBtn,
-                          pressed && styles.pressed,
-                        ]}
-                        onPress={onDelete}
-                      >
-                        <Text style={styles.deleteText}>
-                          {t('coVisit.delete')}
+                      {form.wifeMode === 'together' ? (
+                        <Text style={styles.personHint}>
+                          {t('coVisit.togetherHint')}
                         </Text>
-                      </Pressable>
-                    ) : (
-                      <View style={{ flex: 1 }} />
-                    )}
-                    <Pressable
-                      style={({ pressed }) => [
-                        styles.cancelBtn,
-                        pressed && styles.pressed,
-                      ]}
-                      onPress={() => setForm(null)}
-                    >
-                      <Text style={styles.cancelText}>
-                        {t('coVisit.cancel')}
-                      </Text>
-                    </Pressable>
-                    <Pressable
-                      style={({ pressed }) => [
-                        styles.saveBtn,
-                        pressed && styles.pressed,
-                      ]}
-                      onPress={submit}
-                      disabled={createM.isPending || updateM.isPending}
-                    >
-                      <Text style={styles.saveText}>{t('coVisit.save')}</Text>
-                    </Pressable>
-                  </View>
+                      ) : null}
+                      {form.wifeMode === 'separate' ? (
+                        <>
+                          <PublisherSelector
+                            boxed
+                            label={t('coVisit.accompanying')}
+                            value={form.wifePartnerPublisherId}
+                            genderFilter="sister"
+                            onChange={(id) =>
+                              setForm({
+                                ...form,
+                                wifePartnerPublisherId: id,
+                              })
+                            }
+                          />
+                          <Text style={styles.fieldLabel}>
+                            {t('coVisit.serviceKind')}
+                          </Text>
+                          <TextInput
+                            style={styles.input}
+                            value={form.wifeNote}
+                            onChangeText={(v) =>
+                              setForm({ ...form, wifeNote: v })
+                            }
+                            placeholder={t('coVisit.serviceKindHint')}
+                            placeholderTextColor="#94a3b8"
+                          />
+                        </>
+                      ) : null}
+                    </View>
+                  ) : null}
                 </>
               ) : null}
-            </ScrollView>
-          </View>
-        </View>
-      </Modal>
+
+              {form.kind === 'lunch' ? (
+                <>
+                  <View style={styles.toggleRow}>
+                    {(
+                      [
+                        [false, t('coVisit.host')],
+                        [true, t('coVisit.hostOther')],
+                      ] as [boolean, string][]
+                    ).map(([v, label]) => (
+                      <Pressable
+                        key={String(v)}
+                        style={[
+                          styles.chip,
+                          form.hostOther === v && styles.chipActive,
+                        ]}
+                        onPress={() => setForm({ ...form, hostOther: v })}
+                      >
+                        <Text
+                          style={[
+                            styles.chipText,
+                            form.hostOther === v && styles.chipTextActive,
+                          ]}
+                        >
+                          {label}
+                        </Text>
+                      </Pressable>
+                    ))}
+                  </View>
+                  {form.hostOther ? (
+                    <TextInput
+                      style={styles.input}
+                      value={form.assigneeText}
+                      onChangeText={(v) =>
+                        setForm({ ...form, assigneeText: v })
+                      }
+                      placeholder={t('coVisit.hostName')}
+                      placeholderTextColor="#94a3b8"
+                    />
+                  ) : (
+                    <PublisherSelector
+                      boxed
+                      label={t('coVisit.host')}
+                      value={form.assigneePublisherId}
+                      onChange={(id) =>
+                        setForm({ ...form, assigneePublisherId: id })
+                      }
+                      {...hostMeta('lunch')}
+                    />
+                  )}
+                  {!form.hostOther
+                    ? renderOrgPreview(form.assigneePublisherId)
+                    : null}
+                  <Text style={styles.fieldLabel}>
+                    {t('coVisit.organizerNote')}
+                  </Text>
+                  <Text style={styles.hintText}>
+                    {t('coVisit.organizerNoteHint')}
+                  </Text>
+                  <TextInput
+                    style={styles.input}
+                    value={form.note}
+                    onChangeText={(v) => setForm({ ...form, note: v })}
+                    placeholder={t('coVisit.organizerNote')}
+                    placeholderTextColor="#94a3b8"
+                  />
+                </>
+              ) : null}
+
+              {form.kind === 'pastoral' ? (
+                <>
+                  <Text style={styles.fieldLabel}>
+                    {t('coVisit.pastoralElder')}
+                  </Text>
+                  <PublisherSelector
+                    boxed
+                    label={t('coVisit.pastoralElder')}
+                    value={form.assigneePublisherId}
+                    appointmentFilter="elder"
+                    onChange={(id) =>
+                      setForm({ ...form, assigneePublisherId: id })
+                    }
+                  />
+                  <Text style={styles.fieldLabel}>
+                    {t('coVisit.pastoralTarget')}
+                  </Text>
+                  <TextInput
+                    style={styles.input}
+                    value={form.note}
+                    onChangeText={(v) => setForm({ ...form, note: v })}
+                    placeholder={t('coVisit.pastoralTarget')}
+                    placeholderTextColor="#94a3b8"
+                  />
+                </>
+              ) : null}
+
+              {form.kind === 'pioneers' || form.kind === 'elders' ? (
+                <>
+                  {renderHallPlaceField()}
+                  <Text style={styles.fieldLabel}>
+                    {form.kind === 'pioneers'
+                      ? t('coVisit.pioneersTheme')
+                      : t('coVisit.note')}
+                  </Text>
+                  <TextInput
+                    style={styles.input}
+                    value={form.note}
+                    onChangeText={(v) => setForm({ ...form, note: v })}
+                    placeholder={
+                      form.kind === 'pioneers'
+                        ? t('coVisit.pioneersTheme')
+                        : t('coVisit.note')
+                    }
+                    placeholderTextColor="#94a3b8"
+                  />
+                </>
+              ) : null}
+
+            </>
+          ) : null}
+        </ScrollView>
+      </Sheet>
     </ScrollView>
   );
 }
@@ -1865,24 +1817,17 @@ const styles = StyleSheet.create({
   itemBody: { flex: 1 },
   itemPlace: { fontSize: 15, color: '#0f172a', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
   itemAssignee: { fontSize: 13, color: '#64748b', marginTop: 2 },
-  modalBackdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(15,23,42,0.4)',
-    justifyContent: 'flex-end',
+  modalContent: { gap: 8, paddingBottom: 8 },
+  kindRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 8,
+    paddingVertical: 12,
+    borderRadius: 8,
   },
-  modalCard: {
-    backgroundColor: '#f1f5f9',
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-    maxHeight: '90%',
-  },
-  modalContent: { padding: 16, gap: 8 },
-  modalTitle: {
-    fontSize: 17,
-    fontWeight: '700', fontFamily: 'Manrope_700Bold',
-    color: '#0f172a',
-    marginBottom: 4,
-  },
+  kindRowPressed: { backgroundColor: '#f1f5f9' },
+  kindRowText: { fontSize: 15, color: '#0f172a' },
   fieldLabel: {
     fontSize: 13,
     fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
@@ -1938,12 +1883,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    marginTop: 16,
   },
-  deleteBtn: { paddingVertical: 10, paddingHorizontal: 8 },
+  deleteBtn: { flex: 1, paddingVertical: 10, paddingHorizontal: 8 },
+  disabled: { opacity: 0.5 },
   deleteText: { color: '#dc2626', fontWeight: '600', fontFamily: 'Manrope_600SemiBold', fontSize: 15 },
-  cancelBtn: { marginLeft: 'auto', paddingVertical: 10, paddingHorizontal: 16 },
-  cancelText: { color: '#475569', fontWeight: '600', fontFamily: 'Manrope_600SemiBold', fontSize: 15 },
   saveBtn: {
     backgroundColor: '#0ea5e9',
     borderRadius: 10,
