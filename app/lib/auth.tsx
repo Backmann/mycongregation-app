@@ -12,6 +12,7 @@ import {
   authApi,
   AuthUser,
   TOKEN_KEY,
+  REFRESH_TOKEN_KEY,
   storeAuthTokens,
   clearAuthTokens,
   setOnAuthFailure,
@@ -79,6 +80,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signOut = useCallback(async () => {
+    // Tell the server first, so the session stops existing there too — a
+    // token cleared only on this device would stay usable for its full life.
+    const refreshToken = await storage.getItem(REFRESH_TOKEN_KEY);
+    if (refreshToken) {
+      await authApi.logout(refreshToken);
+    }
     await clearAuthTokens();
     setUser(null);
   }, []);

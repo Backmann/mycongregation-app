@@ -544,6 +544,22 @@ export const authApi = {
     const { data } = await api.post<LoginResponse>('/auth/login', { email, password });
     return data;
   },
+
+  /**
+   * Ends this device's session on the server. Best effort: if the call fails
+   * we still clear the tokens locally, because the person asked to sign out.
+   */
+  async logout(refreshToken: string): Promise<void> {
+    try {
+      await axios.post(
+        `${API_URL}/auth/logout`,
+        { refreshToken },
+        { timeout: 10_000 },
+      );
+    } catch {
+      // Offline or already expired — nothing more we can do from here.
+    }
+  },
   async me(): Promise<AuthUser> {
     const { data } = await api.get<AuthUser>('/auth/me');
     return data;
@@ -2413,12 +2429,17 @@ async function performRefresh(): Promise<string> {
     throw new Error('No refresh token available');
   }
   // Raw axios call (not `api`) to bypass our own interceptors and avoid recursion
-  const { data } = await axios.post<{ accessToken: string }>(
-    `${API_URL}/auth/refresh`,
-    { refreshToken },
-    { timeout: 10_000 },
-  );
+  const { data } = await axios.post<{
+    accessToken: string;
+    refreshToken?: string;
+  }>(`${API_URL}/auth/refresh`, { refreshToken }, { timeout: 10_000 });
   await storage.setItem(TOKEN_KEY, data.accessToken);
+  // The server rotates the refresh token on every use: the one we just sent is
+  // now spent, and sending it again is read as a stolen token and signs the
+  // account out everywhere. Storing the replacement is not optional.
+  if (data.refreshToken) {
+    await storage.setItem(REFRESH_TOKEN_KEY, data.refreshToken);
+  }
   return data.accessToken;
 }
 
