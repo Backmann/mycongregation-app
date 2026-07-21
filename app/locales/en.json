@@ -2300,5 +2300,47 @@
       "special": "Special pioneers",
       "missionary": "Missionaries"
     }
+  },
+  "journal": {
+    "title": "Change journal",
+    "rowTitle": "Change journal",
+    "rowSubtitle": "Who changed what in the congregation",
+    "noAccess": "The journal is available to administrators only.",
+    "empty": "Nothing recorded yet.",
+    "loadFailed": "Could not load the journal",
+    "loadMore": "Show more",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "system": "System",
+    "someone": "Someone",
+    "redacted": "Details removed at the person's request",
+    "filters": "Filter",
+    "filtersAll": "All",
+    "reset": "Reset",
+    "sections": {
+      "assignment": "Schedule",
+      "duty": "Duties",
+      "cleaning": "Cleaning",
+      "publisher": "Publishers",
+      "service_report": "Reports",
+      "congregation": "Settings",
+      "backup": "Backups",
+      "User": "Accounts"
+    },
+    "actions": {
+      "CREATE": "added",
+      "UPDATE": "changed",
+      "DELETE": "removed",
+      "VIEW": "opened",
+      "DOWNLOAD": "downloaded",
+      "DENY": "could not change"
+    },
+    "about": "about {{name}}",
+    "fields": "fields: {{list}}",
+    "bulk": "{{count}} at once",
+    "denyReason": {
+      "past_frozen": "the meeting has already taken place"
+    },
+    "s21": "the S-21 card"
   }
 }

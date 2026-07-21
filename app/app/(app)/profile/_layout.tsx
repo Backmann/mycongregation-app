@@ -72,6 +72,7 @@ export default function ProfileLayout() {
         name="circuit-overseer"
         options={{ title: t('profile.circuitOverseer') }}
       />
-    </Stack>
+          <Stack.Screen name="journal" options={{ title: t('journal.title') }} />
+</Stack>
   );
 }

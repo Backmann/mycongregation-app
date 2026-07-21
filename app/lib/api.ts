@@ -2725,3 +2725,50 @@ export const auxiliaryPioneersApi = {
     await api.delete(`/auxiliary-pioneers/${id}`);
   },
 };
+
+// ---------------------------------------------------------------- Журнал
+
+export interface JournalPerson {
+  id: string;
+  name: string | null;
+}
+
+export interface JournalEntry {
+  id: string;
+  occurredAt: string;
+  action: 'CREATE' | 'UPDATE' | 'DELETE' | 'VIEW' | 'DOWNLOAD' | 'DENY';
+  source: 'user' | 'system';
+  entityType: string;
+  entityId: string;
+  actor: JournalPerson | null;
+  subject: JournalPerson | null;
+  changedFields: string[];
+  detail: Record<string, unknown> | null;
+  /** Values cleared at the subject's request; the entry itself remains. */
+  redacted: boolean;
+}
+
+export interface JournalPage {
+  items: JournalEntry[];
+  nextCursor: string | null;
+}
+
+export interface JournalFilters {
+  limit?: number;
+  before?: string;
+  entityType?: string;
+  action?: string;
+  personId?: string;
+  actorUserId?: string;
+  from?: string;
+  to?: string;
+}
+
+export const journalApi = {
+  async list(filters: JournalFilters = {}): Promise<JournalPage> {
+    const { data } = await api.get<JournalPage>('/journal', {
+      params: filters,
+    });
+    return data;
+  },
+};

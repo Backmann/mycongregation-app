@@ -420,6 +420,26 @@ export default function ProfileScreen() {
                   styles.row,
                   pressed && styles.rowPressed,
                 ]}
+                onPress={() => router.push('/profile/journal' as any)}
+              >
+                <View style={styles.rowIcon}>
+                  <Ionicons name="time-outline" size={20} color="#0ea5e9" />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.rowTitle}>{t('journal.rowTitle')}</Text>
+                  <Text style={styles.rowSubtitle}>
+                    {t('journal.rowSubtitle')}
+                  </Text>
+                </View>
+                <Ionicons name="chevron-forward" size={18} color="#cbd5e1" />
+              </Pressable>
+            )}
+            {isFullAdmin && (
+              <Pressable
+                style={({ pressed }) => [
+                  styles.row,
+                  pressed && styles.rowPressed,
+                ]}
                 onPress={() => router.push('/profile/backups' as any)}
               >
                 <View style={styles.rowIcon}>

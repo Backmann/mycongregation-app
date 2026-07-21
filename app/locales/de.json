@@ -2300,5 +2300,47 @@
       "special": "Sonderpioniere",
       "missionary": "Missionare"
     }
+  },
+  "journal": {
+    "title": "Änderungsjournal",
+    "rowTitle": "Änderungsjournal",
+    "rowSubtitle": "Wer was in der Versammlung geändert hat",
+    "noAccess": "Das Journal ist nur für Administratoren zugänglich.",
+    "empty": "Noch nichts aufgezeichnet.",
+    "loadFailed": "Journal konnte nicht geladen werden",
+    "loadMore": "Mehr anzeigen",
+    "today": "Heute",
+    "yesterday": "Gestern",
+    "system": "System",
+    "someone": "Jemand",
+    "redacted": "Einzelheiten auf Wunsch der Person entfernt",
+    "filters": "Filter",
+    "filtersAll": "Alle",
+    "reset": "Zurücksetzen",
+    "sections": {
+      "assignment": "Programm",
+      "duty": "Aufgaben",
+      "cleaning": "Reinigung",
+      "publisher": "Verkündiger",
+      "service_report": "Berichte",
+      "congregation": "Einstellungen",
+      "backup": "Sicherungen",
+      "User": "Konten"
+    },
+    "actions": {
+      "CREATE": "hat hinzugefügt",
+      "UPDATE": "hat geändert",
+      "DELETE": "hat entfernt",
+      "VIEW": "hat geöffnet",
+      "DOWNLOAD": "hat heruntergeladen",
+      "DENY": "konnte nicht ändern"
+    },
+    "about": "zu {{name}}",
+    "fields": "Felder: {{list}}",
+    "bulk": "{{count}} auf einmal",
+    "denyReason": {
+      "past_frozen": "die Zusammenkunft hat bereits stattgefunden"
+    },
+    "s21": "die S-21-Karte"
   }
 }
