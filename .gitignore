@@ -16,3 +16,15 @@ Thumbs.db
 patch-*.cjs
 run-*.cjs
 commit-msg.txt
+
+# Build output of the Expo project.
+#
+# It is already ignored by app/.gitignore, and git honours that — but EAS Build
+# archives from the git root and reads the ignore file it finds THERE, so a
+# nested rule never reaches it. The 56 MB that `eas update` leaves in app/dist
+# was riding up with every build, turning a 4 MB upload into 19.6 MB. Stated
+# here it applies to both.
+#
+# The pattern has no leading slash, so it matches a dist directory at any depth.
+dist/
+.expo/
