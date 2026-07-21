@@ -14,7 +14,14 @@ import { meetingSettingsApi } from '../lib/api';
  * the wrong place to report a problem — the screen underneath already does
  * that, and an error strip where the brand should be looks like a broken app.
  */
-export function HeaderCongregation({ compact }: { compact?: boolean }) {
+export function HeaderCongregation({
+  compact,
+  size,
+}: {
+  compact?: boolean;
+  /** Matches the wordmark opposite it, so the row reads as one line. */
+  size: number;
+}) {
   const { data } = useQuery({
     queryKey: ['meeting-settings'],
     queryFn: () => meetingSettingsApi.getOverview(),
@@ -32,7 +39,7 @@ export function HeaderCongregation({ compact }: { compact?: boolean }) {
         paddingLeft: 8,
         // Never squeeze the wordmark: this side gives way first.
         flexShrink: 1,
-        maxWidth: compact ? 140 : 220,
+        maxWidth: compact ? 150 : 260,
       }}
     >
       <Text
@@ -40,12 +47,15 @@ export function HeaderCongregation({ compact }: { compact?: boolean }) {
         ellipsizeMode="tail"
         maxFontSizeMultiplier={1.2}
         style={{
+          // Same size as the wordmark across the row — a smaller size made the
+          // line look uneven rather than hierarchical. Weight and a touch of
+          // transparency carry the hierarchy instead, so the brand still leads
+          // while both ends of the row sit on the same optical baseline.
           fontFamily: 'Manrope_600SemiBold',
-          fontSize: compact ? 12 : 13,
+          fontSize: size,
+          letterSpacing: -0.3,
           textAlign: 'right',
-          // Deliberately quieter than the wordmark: it names the congregation
-          // without competing with the brand it sits next to.
-          color: 'rgba(255,255,255,0.82)',
+          color: 'rgba(255,255,255,0.9)',
         }}
       >
         {name}

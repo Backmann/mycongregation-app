@@ -20,6 +20,56 @@ type Props = {
  * MyCongregation brand lockup: the rounded "C" mark plus the two-tone
  * wordmark, rendered in the app font (not an image) so it stays crisp.
  */
+/**
+ * The mark itself. On a dark bar it is a white badge with the letter in brand
+ * colour: a white glyph laid straight on teal has no edge of its own and reads
+ * as nothing at all. Inverting it echoes the app icon — same rounded square,
+ * same proportions, colours swapped — and gives the logo a shape that stands
+ * apart from the bar it sits on.
+ *
+ * This lives in one place because it is needed twice: the mark alone in
+ * section headers, and the mark beside the wordmark on Home. It was written
+ * only for the first, so Home kept the old teal-on-teal tile and the badge
+ * appeared to do nothing there.
+ */
+function Mark({
+  size,
+  radius,
+  tone,
+}: {
+  size: number;
+  radius: number;
+  tone: Tone;
+}) {
+  if (tone !== 'dark') {
+    return (
+      <Image
+        source={require('../assets/images/icon.png')}
+        style={{ width: size, height: size, borderRadius: radius }}
+      />
+    );
+  }
+  const inner = Math.round(size * 0.62);
+  return (
+    <View
+      style={{
+        width: size,
+        height: size,
+        borderRadius: radius,
+        backgroundColor: '#ffffff',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <Image
+        source={require('../assets/images/brand-mark-teal.png')}
+        style={{ width: Math.round(inner * 0.86), height: inner }}
+        resizeMode="contain"
+      />
+    </View>
+  );
+}
+
 export default function BrandLockup({
   mark = 36,
   word,
@@ -34,44 +84,10 @@ export default function BrandLockup({
   const restColor = tone === 'dark' ? '#ffffff' : '#0f172a';
   const orgColor = tone === 'dark' ? '#bae6fd' : '#0e7490';
   if (markOnly) {
-    // On the teal header the tile is the same colour as the bar, so the mark
-    // used to dissolve into it and leave a small floating letter. On a dark
-    // background the glyph alone is the mark — no tile competing with the
-    // title beside it. Its aspect is taller than wide, so it is fitted rather
-    // than squeezed into a square.
-    if (tone === 'dark') {
-      // A white badge with the mark in brand colour. A white glyph straight on
-      // the teal bar still read as "nothing there": the mark had no edge of
-      // its own and merged with the background. Inverting it gives the logo a
-      // shape that stands apart from the bar, and echoes the app icon —
-      // rounded square, same proportions, colours swapped.
-      const inner = Math.round(mark * 0.62);
-      return (
-        <View
-          style={{
-            width: mark,
-            height: mark,
-            borderRadius: radius,
-            backgroundColor: '#ffffff',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-          accessibilityLabel="MyCongregation.org"
-        >
-          <Image
-            source={require('../assets/images/brand-mark-teal.png')}
-            style={{ width: Math.round(inner * 0.86), height: inner }}
-            resizeMode="contain"
-          />
-        </View>
-      );
-    }
     return (
-      <Image
-        source={require('../assets/images/icon.png')}
-        style={{ width: mark, height: mark, borderRadius: radius }}
-        accessibilityLabel="MyCongregation.org"
-      />
+      <View accessibilityLabel="MyCongregation.org">
+        <Mark size={mark} radius={radius} tone={tone} />
+      </View>
     );
   }
   return (
@@ -80,10 +96,7 @@ export default function BrandLockup({
       accessibilityRole="header"
       accessibilityLabel="MyCongregation.org"
     >
-      <Image
-        source={require('../assets/images/icon.png')}
-        style={{ width: mark, height: mark, borderRadius: radius }}
-      />
+      <Mark size={mark} radius={radius} tone={tone} />
       <Text
         style={[
           { fontSize: wordSize, fontWeight: '700', fontFamily: 'Manrope_700Bold', letterSpacing: -0.5 },

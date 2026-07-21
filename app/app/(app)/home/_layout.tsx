@@ -9,6 +9,7 @@ export default function HomeLayout() {
   const { t } = useTranslation();
   const { width } = useWindowDimensions();
   const compact = width < 430;
+  const wordSize = compact ? 16 : 18;
   return (
     <Stack screenOptions={headerOptions}>
       <Stack.Screen
@@ -19,12 +20,14 @@ export default function HomeLayout() {
           headerTitle: () => (
             <BrandLockup
               mark={HEADER_MARK}
-              word={compact ? 16 : 18}
+              word={wordSize}
               tone="dark"
             />
           ),
           // The congregation's own name sits at the right of the same row.
-          headerRight: () => <HeaderCongregation compact={compact} />,
+          headerRight: () => (
+            <HeaderCongregation compact={compact} size={wordSize} />
+          ),
         }}
       />
       <Stack.Screen
