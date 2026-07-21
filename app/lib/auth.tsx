@@ -15,6 +15,7 @@ import {
   REFRESH_TOKEN_KEY,
   storeAuthTokens,
   clearAuthTokens,
+  mayHaveSession,
   setOnAuthFailure,
 } from './api';
 
@@ -43,13 +44,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  // On mount: try to load current user from existing token.
-  // If access-token is expired, the interceptor will auto-refresh transparently.
+  // On mount: work out whether there is still a session.
+  //
+  // On a device a token is sitting in secure storage, so its absence means
+  // nobody is signed in. On the web there is deliberately nothing stored: the
+  // refresh token is in an httpOnly cookie we cannot see and the access token
+  // died with the last page. So we simply ask — the request carries the cookie
+  // if the browser still has one, and a 401 means there is no session. This is
+  // the round trip that the cookie switch costs us, and it is why the app
+  // shows a moment of loading after a reload.
   useEffect(() => {
     let alive = true;
     (async () => {
       const token = await storage.getItem(TOKEN_KEY);
-      if (!token) {
+      if (!token && !mayHaveSession()) {
         if (alive) setIsLoading(false);
         return;
       }
@@ -57,8 +65,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const me = await authApi.me();
         if (alive) setUser(me);
       } catch {
-        // Both access AND refresh failed (interceptor already cleared tokens
-        // and called onAuthFailure, but be defensive).
+        // Nothing usable: no cookie, or both it and the access token are dead.
         await clearAuthTokens();
       } finally {
         if (alive) setIsLoading(false);
@@ -82,9 +89,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signOut = useCallback(async () => {
     // Tell the server first, so the session stops existing there too — a
     // token cleared only on this device would stay usable for its full life.
+    // In cookie mode there is nothing to read here: the browser sends the
+    // cookie and the server clears it, so the call is made unconditionally.
     const refreshToken = await storage.getItem(REFRESH_TOKEN_KEY);
-    if (refreshToken) {
-      await authApi.logout(refreshToken);
+    if (refreshToken || mayHaveSession()) {
+      await authApi.logout(refreshToken ?? undefined);
     }
     await clearAuthTokens();
     setUser(null);

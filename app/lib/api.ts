@@ -1,4 +1,5 @@
 import axios, { AxiosError } from 'axios';
+import { Platform } from 'react-native';
 import { storage } from './storage';
 import type { ApplyParsedPayload } from './mwb-parser';
 
@@ -18,6 +19,42 @@ function resolveApiUrl(): string {
 }
 
 const API_URL = resolveApiUrl();
+
+/**
+ * Where the tokens live.
+ *
+ * On the web the refresh token is no longer kept here at all — it travels in an
+ * httpOnly cookie that the browser attaches to /api/auth by itself and that no
+ * script can read. The access token stays in a plain variable rather than
+ * localStorage: it lasts fifteen minutes and dies with the tab, so a cross-site
+ * script has a small window instead of a month-long key to the account.
+ *
+ * The price is that a page reload starts with no token at all, so the app has
+ * to exchange the cookie for a fresh one before it knows who you are — see the
+ * silent restore in lib/auth.tsx.
+ *
+ * On a device none of this applies: expo-secure-store puts both tokens in the
+ * Keychain/Keystore, which is stronger than any cookie, so that path is
+ * untouched.
+ */
+const USE_COOKIE_AUTH = Platform.OS === 'web';
+
+/** Web clients declare cookie mode; the server never has to guess. */
+const AUTH_MODE_HEADER = 'X-Auth-Mode';
+
+let memoryAccessToken: string | null = null;
+
+async function getAccessToken(): Promise<string | null> {
+  return USE_COOKIE_AUTH ? memoryAccessToken : storage.getItem(TOKEN_KEY);
+}
+
+async function setAccessToken(token: string): Promise<void> {
+  if (USE_COOKIE_AUTH) {
+    memoryAccessToken = token;
+    return;
+  }
+  await storage.setItem(TOKEN_KEY, token);
+}
 
 export const TOKEN_KEY = 'mycongregation.token';
 export const REFRESH_TOKEN_KEY = 'mycongregation.refresh_token';
@@ -44,10 +81,16 @@ function isTokenExpiringSoon(token: string, bufferSec = 180): boolean {
 export const api = axios.create({
   baseURL: API_URL,
   timeout: 60_000,
+  // Without this the browser would not attach the refresh cookie. It is
+  // scoped to /api/auth, so it rides along with nothing else.
+  withCredentials: USE_COOKIE_AUTH,
 });
 
 api.interceptors.request.use(async (config) => {
-  let token = await storage.getItem(TOKEN_KEY);
+  if (USE_COOKIE_AUTH && config.url?.includes('/auth/')) {
+    config.headers.set(AUTH_MODE_HEADER, 'cookie');
+  }
+  let token = await getAccessToken();
 
   // Proactive refresh: if AT is close to expiry, refresh BEFORE sending the
   // request. This avoids the 401-then-refresh-then-retry round-trip that
@@ -90,7 +133,8 @@ export interface AuthUser {
 
 export interface LoginResponse {
   accessToken: string;
-  refreshToken: string;
+  /** Absent in cookie mode — the server put it in an httpOnly cookie instead. */
+  refreshToken?: string;
   user: AuthUser;
 }
 
@@ -549,12 +593,22 @@ export const authApi = {
    * Ends this device's session on the server. Best effort: if the call fails
    * we still clear the tokens locally, because the person asked to sign out.
    */
-  async logout(refreshToken: string): Promise<void> {
+  async logout(refreshToken?: string): Promise<void> {
     try {
       await axios.post(
         `${API_URL}/auth/logout`,
-        { refreshToken },
-        { timeout: 10_000 },
+        refreshToken ? { refreshToken } : {},
+        {
+          timeout: 10_000,
+          // In cookie mode the browser carries the token and the server
+          // clears the cookie in its reply — so this call matters more here
+          // than it did before: without it the cookie would outlive the
+          // sign-out.
+          withCredentials: USE_COOKIE_AUTH,
+          headers: USE_COOKIE_AUTH
+            ? { [AUTH_MODE_HEADER]: 'cookie' }
+            : undefined,
+        },
       );
     } catch {
       // Offline or already expired — nothing more we can do from here.
@@ -2407,15 +2461,31 @@ export function setOnAuthFailure(callback: (() => void) | null) {
 // ---------- Token helpers ----------
 export async function storeAuthTokens(
   accessToken: string,
-  refreshToken: string,
+  refreshToken?: string,
 ): Promise<void> {
-  await storage.setItem(TOKEN_KEY, accessToken);
-  await storage.setItem(REFRESH_TOKEN_KEY, refreshToken);
+  await setAccessToken(accessToken);
+  // In cookie mode there is no refresh token to keep — that is the point.
+  if (!USE_COOKIE_AUTH && refreshToken) {
+    await storage.setItem(REFRESH_TOKEN_KEY, refreshToken);
+  }
 }
 
 export async function clearAuthTokens(): Promise<void> {
+  memoryAccessToken = null;
+  // Also wipe anything an older build of this app left in localStorage, so a
+  // token from before the cookie switch does not linger where scripts can
+  // reach it.
   await storage.removeItem(TOKEN_KEY);
   await storage.removeItem(REFRESH_TOKEN_KEY);
+}
+
+/**
+ * True when a session might be restorable without asking for a password: on
+ * the web that means "the browser may still hold the refresh cookie", which we
+ * cannot see from here, so the only way to find out is to try.
+ */
+export function mayHaveSession(): boolean {
+  return USE_COOKIE_AUTH;
 }
 
 // ---------- Refresh-token response interceptor ----------
@@ -2424,21 +2494,47 @@ export async function clearAuthTokens(): Promise<void> {
 let refreshPromise: Promise<string> | null = null;
 
 async function performRefresh(): Promise<string> {
-  const refreshToken = await storage.getItem(REFRESH_TOKEN_KEY);
-  if (!refreshToken) {
+  // On the web the token is not ours to send: the browser attaches the cookie.
+  // On a device we still hand it over explicitly from secure storage.
+  const refreshToken = USE_COOKIE_AUTH
+    ? undefined
+    : await storage.getItem(REFRESH_TOKEN_KEY);
+  if (!USE_COOKIE_AUTH && !refreshToken) {
     throw new Error('No refresh token available');
   }
   // Raw axios call (not `api`) to bypass our own interceptors and avoid recursion
   const { data } = await axios.post<{
     accessToken: string;
     refreshToken?: string;
-  }>(`${API_URL}/auth/refresh`, { refreshToken }, { timeout: 10_000 });
-  await storage.setItem(TOKEN_KEY, data.accessToken);
+  }>(
+    `${API_URL}/auth/refresh`,
+    refreshToken ? { refreshToken } : {},
+    {
+      timeout: 10_000,
+      withCredentials: USE_COOKIE_AUTH,
+      headers: USE_COOKIE_AUTH ? { [AUTH_MODE_HEADER]: 'cookie' } : undefined,
+    },
+  );
+  await setAccessToken(data.accessToken);
   // The server rotates the refresh token on every use: the one we just sent is
   // now spent, and sending it again is read as a stolen token and signs the
   // account out everywhere. Storing the replacement is not optional.
-  if (data.refreshToken) {
-    await storage.setItem(REFRESH_TOKEN_KEY, data.refreshToken);
+  // The rotated token comes back in the body only on a device; in cookie mode
+  // the server has already replaced the cookie and sends nothing here.
+  //
+  // The guard is on the mode, not on whether a token happens to be present. If
+  // something between us and the server ever dropped the X-Auth-Mode header,
+  // the reply would carry the token again and a plain presence check would
+  // quietly write it back into localStorage — undoing the whole change without
+  // a single visible symptom.
+  if (!USE_COOKIE_AUTH) {
+    if (data.refreshToken) {
+      await storage.setItem(REFRESH_TOKEN_KEY, data.refreshToken);
+    }
+  } else if (data.refreshToken) {
+    console.warn(
+      '[auth] server returned a refresh token in cookie mode — the X-Auth-Mode header is not reaching it',
+    );
   }
   return data.accessToken;
 }
