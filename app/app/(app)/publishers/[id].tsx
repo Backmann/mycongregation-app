@@ -434,8 +434,10 @@ export default function PublisherDetailScreen() {
             <Text style={styles.buttonEditText}>{t('publishers.actions.edit')}</Text>
           </Pressable>
         )}
+        {/* Hidden from native until there WAS a native app. exportHtmlAsPdf has
+            handled both since: a real PDF via expo-print plus the share sheet
+            on a device, the print pipeline in a browser. */}
         {!publisher.deletedAt &&
-          Platform.OS === 'web' &&
           canGenerateS21 &&
           publisher.appointment !== 'student' && (
           <Pressable

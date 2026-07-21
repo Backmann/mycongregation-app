@@ -9,6 +9,8 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import Constants from 'expo-constants';
+import * as Updates from 'expo-updates';
 import { router } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -26,10 +28,41 @@ import {
   WebPushStatus,
 } from '../../../lib/web-push';
 
+/**
+ * A single line naming the running code: app version, and — when an
+ * over-the-air update is in play — a short id for it plus when it was
+ * published. In the development client and on the web there is no update to
+ * name, so only the version shows.
+ */
+function useBuildLine(): string {
+  const version = Constants.expoConfig?.version ?? '?';
+  const parts = [`v${version}`];
+
+  // Updates.updateId is null when running the bundle that shipped inside the
+  // binary — i.e. no update has been applied yet.
+  if (Updates.isEmbeddedLaunch === false && Updates.updateId) {
+    parts.push(Updates.updateId.slice(0, 8));
+    if (Updates.createdAt) {
+      parts.push(
+        new Date(Updates.createdAt).toLocaleDateString(undefined, {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+        }),
+      );
+    }
+  } else if (Updates.isEmbeddedLaunch) {
+    parts.push('embedded');
+  }
+
+  return parts.join(' · ');
+}
+
 export default function ProfileScreen() {
   const { user, signOut } = useAuth();
   const { myPublisher } = useMyPublisher();
   const { t, i18n } = useTranslation();
+  const buildLine = useBuildLine();
   const [langModalVisible, setLangModalVisible] = useState(false);
   const currentLang = getCurrentLanguage();
   const [webPushStatus, setWebPushStatus] = useState<WebPushStatus | null>(null);
@@ -507,6 +540,14 @@ export default function ProfileScreen() {
           <Text style={styles.logoutText}>{t('profile.signOut')}</Text>
         </Pressable>
       </View>
+
+      {/* Which code is actually running. Without this there was no way to tell
+          whether an over-the-air update had arrived — we were reduced to
+          guessing from whether some layout fix looked applied. Also the first
+          thing to ask when someone reports a problem. */}
+      <Text style={styles.buildLine} selectable>
+        {buildLine}
+      </Text>
     </ScrollView>
     <LanguagePickerModal visible={langModalVisible} onClose={() => setLangModalVisible(false)} />
     </>
@@ -614,6 +655,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#fecaca',
     borderRadius: 10,
+  },
+  buildLine: {
+    textAlign: 'center',
+    color: '#94a3b8',
+    fontSize: 11,
+    marginTop: 4,
+    marginBottom: 24,
   },
   logoutText: { color: '#dc2626', fontSize: 16, fontWeight: '500', fontFamily: 'Manrope_500Medium',},
 });
