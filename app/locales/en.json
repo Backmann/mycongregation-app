@@ -2292,6 +2292,13 @@
     "activeCount": "Active",
     "averagesHint": "Average hours cover pioneers who reported; average studies cover everyone who reported. \"Reported\" is a share of the active; \"active\" is a share of everyone.",
     "totalHours": "Total hours",
-    "totalStudies": "Total studies"
+    "totalStudies": "Total studies",
+    "categories": {
+      "none": "Publishers",
+      "auxiliary": "Auxiliary pioneers",
+      "regular": "Regular pioneers",
+      "special": "Special pioneers",
+      "missionary": "Missionaries"
+    }
   }
 }

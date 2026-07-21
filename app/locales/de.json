@@ -2292,6 +2292,13 @@
     "activeCount": "Aktive",
     "averagesHint": "Durchschnittliche Stunden: Pioniere mit Bericht; Studien: alle mit Bericht. „Bericht abgegeben“ ist ein Anteil der Aktiven, „Aktive“ ein Anteil aller.",
     "totalHours": "Stunden gesamt",
-    "totalStudies": "Studien gesamt"
+    "totalStudies": "Studien gesamt",
+    "categories": {
+      "none": "Verkündiger",
+      "auxiliary": "Hilfspioniere",
+      "regular": "Allgemeine Pioniere",
+      "special": "Sonderpioniere",
+      "missionary": "Missionare"
+    }
   }
 }

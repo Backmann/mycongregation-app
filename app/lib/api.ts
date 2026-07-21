@@ -497,8 +497,15 @@ export interface GroupReportRow {
   canManage: boolean;
 }
 
+/**
+ * 'auxiliary' is not a PioneerType: auxiliary pioneering is a period a
+ * publisher serves, not a property of the publisher, so the server works it
+ * out per month. The field keeps its old name for compatibility.
+ */
+export type ServiceSummaryCategoryKey = 'auxiliary' | PioneerType;
+
 export interface ServiceReportSummaryCategory {
-  pioneerType: PioneerType;
+  pioneerType: ServiceSummaryCategoryKey;
   count: number;
   hours: number | null;
   bibleStudies: number;

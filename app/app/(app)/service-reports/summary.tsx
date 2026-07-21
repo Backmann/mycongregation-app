@@ -13,7 +13,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { Stack } from 'expo-router';
 import {
   extractErrorMessage,
-  PioneerType,
   serviceReportsApi,
 } from '../../../lib/api';
 import { usePermissions } from '../../../lib/permissions';
@@ -35,12 +34,7 @@ function shortMonthLabel(reportMonth: string): string {
   return `${mon} ${yr}`;
 }
 
-const CATEGORY_LABELS: Record<PioneerType, string> = {
-  none: 'Возвещатели',
-  regular: 'Общие пионеры',
-  special: 'Специальные пионеры',
-  missionary: 'Миссионеры',
-};
+
 
 function getRecentMonths(count: number): { value: string; label: string }[] {
   const now = new Date();
@@ -237,7 +231,9 @@ export default function ServiceSummaryScreen() {
         {data?.categories.map((cat) => (
           <View key={cat.pioneerType} style={styles.card}>
             <Text style={styles.cardTitle}>
-              {CATEGORY_LABELS[cat.pioneerType] ?? cat.pioneerType}
+              {t(`serviceSummary.categories.${cat.pioneerType}`, {
+                defaultValue: cat.pioneerType,
+              })}
             </Text>
             <View style={styles.statsRow}>
               <View style={styles.statBox}>
