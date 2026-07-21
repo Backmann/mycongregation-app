@@ -129,6 +129,13 @@ export interface AuthUser {
   role: UserRole;
   congregationId: string;
   canViewPrivateData: boolean;
+  /**
+   * Whether this account may reach the platform-level backups. Sent as a
+   * capability rather than as the underlying owner flag, which is deliberately
+   * invisible: the interface only needs to know whether to offer the screen.
+   * Absent on older responses, and absent means no.
+   */
+  canManageBackups?: boolean;
 }
 
 export interface LoginResponse {

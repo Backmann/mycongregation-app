@@ -434,7 +434,11 @@ export default function ProfileScreen() {
                 <Ionicons name="chevron-forward" size={18} color="#cbd5e1" />
               </Pressable>
             )}
-            {isFullAdmin && (
+            {/* The dump covers every congregation at once, so it belongs to
+                whoever runs the platform. Hiding the row rather than letting
+                an administrator tap into a refusal: a door that opens onto a
+                wall reads as a fault. */}
+            {user.canManageBackups && (
               <Pressable
                 style={({ pressed }) => [
                   styles.row,
