@@ -1,4 +1,5 @@
 import { Stack, router } from 'expo-router';
+import { headerOptions } from '../../../lib/header';
 import { Pressable, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
@@ -14,6 +15,7 @@ export default function ServiceReportsLayout() {
   return (
     <Stack
       screenOptions={{
+        ...headerOptions,
         headerLeft: () => <BackButton fallback="/service-reports" toParent />,
       }}
     >

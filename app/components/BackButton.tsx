@@ -39,7 +39,9 @@ export function BackButton({
       hitSlop={8}
       accessibilityRole="button"
     >
-      <Ionicons name="chevron-back" size={28} color={color ?? '#0ea5e9'} />
+      {/* The header is the brand colour now, so white is the default here.
+          This button lives only in headers — nothing else uses it. */}
+      <Ionicons name="chevron-back" size={28} color={color ?? '#ffffff'} />
     </Pressable>
   );
 }

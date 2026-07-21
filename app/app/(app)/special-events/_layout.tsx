@@ -1,4 +1,5 @@
 import { Stack, router } from 'expo-router';
+import { headerOptions } from '../../../lib/header';
 import { Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
@@ -9,7 +10,7 @@ export default function SpecialEventsLayout() {
   const { t } = useTranslation();
   const { canManageEvents } = usePermissions();
   return (
-    <Stack>
+    <Stack screenOptions={headerOptions}>
       <Stack.Screen
         name="index"
         options={{

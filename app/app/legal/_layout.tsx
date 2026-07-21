@@ -1,4 +1,5 @@
 import { Stack } from 'expo-router';
+import { headerOptions } from '../../lib/header';
 import { useTranslation } from 'react-i18next';
 import { BackButton } from '../../components/BackButton';
 
@@ -7,9 +8,7 @@ export default function LegalLayout() {
   return (
     <Stack
       screenOptions={{
-        headerStyle: { backgroundColor: '#0e7490' },
-        headerTintColor: '#ffffff',
-        headerTitleStyle: { fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
+        ...headerOptions,
         headerLeft: () => <BackButton fallback="/" color="#ffffff" />,
       }}
     >

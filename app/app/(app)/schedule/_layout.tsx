@@ -1,4 +1,5 @@
 import { Stack, router } from 'expo-router';
+import { headerOptions } from '../../../lib/header';
 import { Pressable, Text, View, useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
@@ -27,7 +28,7 @@ export default function ScheduleLayout() {
   const iconSize = compact ? 21 : 24;
   const iconPad = compact ? 5 : 8;
   return (
-    <Stack>
+    <Stack screenOptions={headerOptions}>
       <Stack.Screen
         name="index"
         options={{

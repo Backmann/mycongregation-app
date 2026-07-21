@@ -1,4 +1,5 @@
 import { Stack, router } from 'expo-router';
+import { headerOptions } from '../../../lib/header';
 import { Pressable, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
@@ -10,7 +11,7 @@ export default function PublishersLayout() {
   const { t } = useTranslation();
   const { canEditPublishers, canManageAbsences } = usePermissions();
   return (
-    <Stack>
+    <Stack screenOptions={headerOptions}>
       <Stack.Screen
         name="index"
         options={{

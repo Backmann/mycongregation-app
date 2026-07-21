@@ -1,4 +1,5 @@
 import { Stack } from 'expo-router';
+import { headerOptions } from '../../../lib/header';
 import { View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { BackButton } from '../../../components/BackButton';
@@ -9,6 +10,7 @@ export default function CartLayout() {
   return (
     <Stack
       screenOptions={{
+        ...headerOptions,
         headerLeft: () => <BackButton fallback="/cart" toParent />,
       }}
     >

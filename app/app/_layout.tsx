@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Platform } from 'react-native';
 import { Stack } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 import {
   MutationCache,
   QueryClient,
@@ -64,6 +65,11 @@ export default function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
+        {/* White icons everywhere: the header is the brand colour and the
+            login screen is dark. Before this the style followed the system,
+            so a phone in dark mode painted the icons white over what was then
+            a white header and they vanished. */}
+        <StatusBar style="light" />
         <Stack screenOptions={{ headerShown: false }} />
         <LanguagePickerModal
           visible={showLanguagePrompt}
