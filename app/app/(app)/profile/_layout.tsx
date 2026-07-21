@@ -1,5 +1,5 @@
 import { Stack } from 'expo-router';
-import { headerOptions } from '../../../lib/header';
+import { headerOptions, HEADER_MARK } from '../../../lib/header';
 import { View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { BackButton } from '../../../components/BackButton';
@@ -21,7 +21,7 @@ export default function ProfileLayout() {
           title: t('profile.title'),
           headerLeft: () => (
             <View style={{ paddingLeft: 12, paddingRight: 6 }}>
-              <BrandLockup mark={26} markOnly tone="dark" />
+              <BrandLockup mark={HEADER_MARK} markOnly tone="dark" />
             </View>
           ),
         }}

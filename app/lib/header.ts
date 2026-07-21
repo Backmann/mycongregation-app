@@ -27,6 +27,20 @@ export const BRAND = '#0e7490';
  */
 export const HEADER_ICON = '#ffffff';
 
+/**
+ * One mark size for every section, including Home. It used to vary — 22 on a
+ * narrow schedule screen, 26 elsewhere — which read as carelessness precisely
+ * where the eye lands first.
+ */
+export const HEADER_MARK = 28;
+
+/** The title, when a screen renders its own instead of taking `title`. */
+export const headerTitleText = {
+  fontFamily: 'Manrope_700Bold' as const,
+  fontSize: 18,
+  color: '#ffffff',
+};
+
 export const headerOptions: NativeStackNavigationOptions = {
   headerStyle: { backgroundColor: BRAND },
   headerTintColor: '#ffffff',

@@ -1,5 +1,5 @@
 import { Stack, router } from 'expo-router';
-import { headerOptions, HEADER_ICON } from '../../../lib/header';
+import { headerOptions, HEADER_ICON, HEADER_MARK } from '../../../lib/header';
 import { Pressable, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
@@ -18,7 +18,7 @@ export default function PublishersLayout() {
           title: t('publishers.title.list'),
           headerLeft: () => (
             <View style={{ paddingLeft: 12, paddingRight: 6 }}>
-              <BrandLockup mark={26} markOnly tone="dark" />
+              <BrandLockup mark={HEADER_MARK} markOnly tone="dark" />
             </View>
           ),
           headerRight: () => (

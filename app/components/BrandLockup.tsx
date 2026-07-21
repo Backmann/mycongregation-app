@@ -40,13 +40,30 @@ export default function BrandLockup({
     // title beside it. Its aspect is taller than wide, so it is fitted rather
     // than squeezed into a square.
     if (tone === 'dark') {
+      // A white badge with the mark in brand colour. A white glyph straight on
+      // the teal bar still read as "nothing there": the mark had no edge of
+      // its own and merged with the background. Inverting it gives the logo a
+      // shape that stands apart from the bar, and echoes the app icon —
+      // rounded square, same proportions, colours swapped.
+      const inner = Math.round(mark * 0.62);
       return (
-        <Image
-          source={require('../assets/images/brand-mark-light.png')}
-          style={{ width: Math.round(mark * 0.86), height: mark }}
-          resizeMode="contain"
+        <View
+          style={{
+            width: mark,
+            height: mark,
+            borderRadius: radius,
+            backgroundColor: '#ffffff',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
           accessibilityLabel="MyCongregation.org"
-        />
+        >
+          <Image
+            source={require('../assets/images/brand-mark-teal.png')}
+            style={{ width: Math.round(inner * 0.86), height: inner }}
+            resizeMode="contain"
+          />
+        </View>
       );
     }
     return (

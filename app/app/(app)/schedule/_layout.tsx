@@ -1,5 +1,10 @@
 import { Stack, router } from 'expo-router';
-import { headerOptions, HEADER_ICON } from '../../../lib/header';
+import {
+  headerOptions,
+  HEADER_ICON,
+  HEADER_MARK,
+  headerTitleText,
+} from '../../../lib/header';
 import { Pressable, Text, View, useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
@@ -37,11 +42,11 @@ export default function ScheduleLayout() {
             <Text
               numberOfLines={1}
               maxFontSizeMultiplier={1.2}
-              style={{
-                fontSize: compact ? 16 : 18,
-                fontWeight: '700',
-                color: '#0f172a',
-              }}
+              // This screen draws its own title to shrink it on narrow phones,
+              // which meant it also carried its own colour — slate on what is
+              // now a teal bar. Take the shared style and override only the
+              // size it actually needs to change.
+              style={[headerTitleText, { fontSize: compact ? 16 : 18 }]}
             >
               {children}
             </Text>
@@ -53,7 +58,7 @@ export default function ScheduleLayout() {
                 paddingRight: compact ? 2 : 6,
               }}
             >
-              <BrandLockup mark={compact ? 22 : 26} markOnly tone="dark" />
+              <BrandLockup mark={HEADER_MARK} markOnly tone="dark" />
             </View>
           ),
           headerRight: () => (
