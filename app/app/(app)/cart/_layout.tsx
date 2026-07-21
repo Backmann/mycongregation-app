@@ -20,7 +20,7 @@ export default function CartLayout() {
           title: t('service.hubTitle'),
           headerLeft: () => (
             <View style={{ paddingLeft: 12, paddingRight: 6 }}>
-              <BrandLockup mark={26} markOnly />
+              <BrandLockup mark={26} markOnly tone="dark" />
             </View>
           ),
         }}

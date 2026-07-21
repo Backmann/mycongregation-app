@@ -1,5 +1,5 @@
 import { Stack, router } from 'expo-router';
-import { headerOptions } from '../../../lib/header';
+import { headerOptions, HEADER_ICON } from '../../../lib/header';
 import { Pressable, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
@@ -35,7 +35,7 @@ export default function ServiceReportsLayout() {
                   <Ionicons
                     name="stats-chart-outline"
                     size={22}
-                    color="#0ea5e9"
+                    color={HEADER_ICON}
                   />
                 </Pressable>
               )}
@@ -45,7 +45,7 @@ export default function ServiceReportsLayout() {
                   style={{ paddingHorizontal: 8 }}
                   hitSlop={8}
                 >
-                  <Ionicons name="pulse-outline" size={24} color="#0ea5e9" />
+                  <Ionicons name="pulse-outline" size={24} color={HEADER_ICON} />
                 </Pressable>
               )}
               <Pressable
@@ -56,7 +56,7 @@ export default function ServiceReportsLayout() {
                 <Ionicons
                   name="people-outline"
                   size={24}
-                  color="#0ea5e9"
+                  color={HEADER_ICON}
                 />
               </Pressable>
               <Pressable
@@ -64,7 +64,7 @@ export default function ServiceReportsLayout() {
                 style={{ paddingHorizontal: 8 }}
                 hitSlop={8}
               >
-                <Ionicons name="add" size={28} color="#0ea5e9" />
+                <Ionicons name="add" size={28} color={HEADER_ICON} />
               </Pressable>
             </View>
           ),

@@ -1,5 +1,5 @@
 import { Stack, router } from 'expo-router';
-import { headerOptions } from '../../../lib/header';
+import { headerOptions, HEADER_ICON } from '../../../lib/header';
 import { Pressable, Text, View, useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
@@ -53,7 +53,7 @@ export default function ScheduleLayout() {
                 paddingRight: compact ? 2 : 6,
               }}
             >
-              <BrandLockup mark={compact ? 22 : 26} markOnly />
+              <BrandLockup mark={compact ? 22 : 26} markOnly tone="dark" />
             </View>
           ),
           headerRight: () => (
@@ -65,7 +65,7 @@ export default function ScheduleLayout() {
                   hitSlop={8}
                   accessibilityLabel={t('schedule.a11y.localNeeds')}
                 >
-                  <Ionicons name="bulb-outline" size={iconSize} color="#0ea5e9" />
+                  <Ionicons name="bulb-outline" size={iconSize} color={HEADER_ICON} />
                 </Pressable>
               )}
               {canCoordinatePublicTalks && (
@@ -75,7 +75,7 @@ export default function ScheduleLayout() {
                   hitSlop={8}
                   accessibilityLabel={t('schedule.a11y.talkCoordinator')}
                 >
-                  <Ionicons name="mic-outline" size={iconSize} color="#0ea5e9" />
+                  <Ionicons name="mic-outline" size={iconSize} color={HEADER_ICON} />
                 </Pressable>
               )}
               <Pressable
@@ -84,7 +84,7 @@ export default function ScheduleLayout() {
                 hitSlop={8}
                 accessibilityLabel={t('schedule.a11y.events')}
               >
-                <Ionicons name="megaphone-outline" size={iconSize} color="#0ea5e9" />
+                <Ionicons name="megaphone-outline" size={iconSize} color={HEADER_ICON} />
               </Pressable>
               {canImport && (
                 <Pressable
@@ -93,7 +93,7 @@ export default function ScheduleLayout() {
                   hitSlop={8}
                   accessibilityLabel={t('schedule.a11y.importEpub')}
                 >
-                  <Ionicons name="cloud-upload-outline" size={iconSize} color="#0ea5e9" />
+                  <Ionicons name="cloud-upload-outline" size={iconSize} color={HEADER_ICON} />
                 </Pressable>
               )}
               {canCreate && (
@@ -103,7 +103,7 @@ export default function ScheduleLayout() {
                   hitSlop={8}
                   accessibilityLabel={t('schedule.a11y.rules')}
                 >
-                  <Ionicons name="options-outline" size={iconSize} color="#0ea5e9" />
+                  <Ionicons name="options-outline" size={iconSize} color={HEADER_ICON} />
                 </Pressable>
               )}
               {canCreate && (
@@ -113,7 +113,7 @@ export default function ScheduleLayout() {
                   hitSlop={8}
                   accessibilityLabel={t('schedule.a11y.newAssignment')}
                 >
-                  <Ionicons name="add" size={iconSize} color="#0ea5e9" />
+                  <Ionicons name="add" size={iconSize} color={HEADER_ICON} />
                 </Pressable>
               )}
             </View>

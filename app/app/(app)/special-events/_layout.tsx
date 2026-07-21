@@ -1,5 +1,5 @@
 import { Stack, router } from 'expo-router';
-import { headerOptions } from '../../../lib/header';
+import { headerOptions, HEADER_ICON } from '../../../lib/header';
 import { Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
@@ -24,7 +24,7 @@ export default function SpecialEventsLayout() {
                   hitSlop={8}
                   accessibilityLabel={t('specialEvents.actions.create')}
                 >
-                  <Ionicons name="add" size={28} color="#0ea5e9" />
+                  <Ionicons name="add" size={28} color={HEADER_ICON} />
                 </Pressable>
               )
             : undefined,

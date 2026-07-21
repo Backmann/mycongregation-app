@@ -21,7 +21,7 @@ export default function ProfileLayout() {
           title: t('profile.title'),
           headerLeft: () => (
             <View style={{ paddingLeft: 12, paddingRight: 6 }}>
-              <BrandLockup mark={26} markOnly />
+              <BrandLockup mark={26} markOnly tone="dark" />
             </View>
           ),
         }}

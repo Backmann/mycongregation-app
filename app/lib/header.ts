@@ -19,6 +19,14 @@ import type { NativeStackNavigationOptions } from '@react-navigation/native-stac
  */
 export const BRAND = '#0e7490';
 
+/**
+ * Header action icons. They used to be the app's sky blue, which was right on
+ * a white bar and nearly invisible on the brand colour — the icons were there
+ * but you had to look for them. White is the only tone that carries at 21px
+ * over #0e7490.
+ */
+export const HEADER_ICON = '#ffffff';
+
 export const headerOptions: NativeStackNavigationOptions = {
   headerStyle: { backgroundColor: BRAND },
   headerTintColor: '#ffffff',

@@ -1,5 +1,5 @@
 import { Stack, router } from 'expo-router';
-import { headerOptions } from '../../../lib/header';
+import { headerOptions, HEADER_ICON } from '../../../lib/header';
 import { Pressable, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
@@ -18,7 +18,7 @@ export default function PublishersLayout() {
           title: t('publishers.title.list'),
           headerLeft: () => (
             <View style={{ paddingLeft: 12, paddingRight: 6 }}>
-              <BrandLockup mark={26} markOnly />
+              <BrandLockup mark={26} markOnly tone="dark" />
             </View>
           ),
           headerRight: () => (
@@ -29,7 +29,7 @@ export default function PublishersLayout() {
                 hitSlop={8}
                 accessibilityLabel={t('tabs.groups')}
               >
-                <Ionicons name="grid-outline" size={22} color="#0ea5e9" />
+                <Ionicons name="grid-outline" size={22} color={HEADER_ICON} />
               </Pressable>
               {canManageAbsences && (
                 <Pressable
@@ -38,7 +38,7 @@ export default function PublishersLayout() {
                   hitSlop={8}
                   accessibilityLabel={t('absences.title.list')}
                 >
-                  <Ionicons name="airplane-outline" size={22} color="#0ea5e9" />
+                  <Ionicons name="airplane-outline" size={22} color={HEADER_ICON} />
                 </Pressable>
               )}
               {canEditPublishers && (
@@ -47,7 +47,7 @@ export default function PublishersLayout() {
                   style={{ paddingHorizontal: 10 }}
                   hitSlop={8}
                 >
-                  <Ionicons name="add" size={28} color="#0ea5e9" />
+                  <Ionicons name="add" size={28} color={HEADER_ICON} />
                 </Pressable>
               )}
             </View>

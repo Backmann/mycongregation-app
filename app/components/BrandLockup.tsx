@@ -34,6 +34,21 @@ export default function BrandLockup({
   const restColor = tone === 'dark' ? '#ffffff' : '#0f172a';
   const orgColor = tone === 'dark' ? '#bae6fd' : '#0e7490';
   if (markOnly) {
+    // On the teal header the tile is the same colour as the bar, so the mark
+    // used to dissolve into it and leave a small floating letter. On a dark
+    // background the glyph alone is the mark — no tile competing with the
+    // title beside it. Its aspect is taller than wide, so it is fitted rather
+    // than squeezed into a square.
+    if (tone === 'dark') {
+      return (
+        <Image
+          source={require('../assets/images/brand-mark-light.png')}
+          style={{ width: Math.round(mark * 0.86), height: mark }}
+          resizeMode="contain"
+          accessibilityLabel="MyCongregation.org"
+        />
+      );
+    }
     return (
       <Image
         source={require('../assets/images/icon.png')}
