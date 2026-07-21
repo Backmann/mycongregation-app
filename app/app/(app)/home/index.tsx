@@ -868,7 +868,16 @@ export default function HomeScreen() {
               <View style={styles.actionCircle}>
                 <Ionicons name={x.icon} size={24} color="#0284c7" />
               </View>
-              <Text style={styles.actionLabel} numberOfLines={2}>
+              <Text
+                style={styles.actionLabel}
+                numberOfLines={2}
+                // Каждая плитка фиксированной ширины, поэтому системное
+                // увеличение шрифта рвало длинные подписи посреди слова
+                // («Возвещател/и»). Ограничиваем множитель, а не отключаем
+                // масштабирование совсем — иначе людям со слабым зрением
+                // подпись останется крошечной.
+                maxFontSizeMultiplier={1.2}
+              >
                 {x.label}
               </Text>
             </Pressable>
@@ -947,7 +956,7 @@ const styles = StyleSheet.create({
   auxBadgeText: { fontSize: 12, fontWeight: '600', color: '#0F6E56' },
   actionStrip: { marginHorizontal: -16, marginBottom: 4 },
   actionStripContent: { paddingHorizontal: 16, gap: 14 },
-  actionItem: { alignItems: 'center', width: 66 },
+  actionItem: { alignItems: 'center', width: 78 },
   actionCircle: {
     width: 54,
     height: 54,

@@ -4,6 +4,12 @@
     "slug": "mycongregation",
     "description": "Helper for organizing meetings and managing members in small organizations and groups.",
     "version": "1.0.0",
+    "runtimeVersion": {
+      "policy": "fingerprint"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/1a4221cf-fec6-4288-84b7-e58dad3d2292"
+    },
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "mycongregation",
