@@ -1,0 +1,49 @@
+# What EAS Build must NOT carry up with the project.
+#
+# Why this file exists at all: without it EAS falls back to .gitignore, and the
+# git repository root sits one level ABOVE this Expo project. That fallback did
+# not exclude dist/, so the 56 MB that `eas update` leaves behind rode along
+# with every build and turned a 3.7 MB upload into 19.6 MB. Stating the rules
+# here makes the exclusion explicit and independent of where the git root is.
+#
+# .easignore REPLACES .gitignore for build uploads rather than adding to it, so
+# everything that must stay behind has to be named here — not only the new
+# offender. Keep it in step with .gitignore.
+
+# dependencies — EAS installs its own
+node_modules/
+
+# local build output, the reason this file exists
+dist/
+web-build/
+web-dist.tar.gz
+.expo/
+expo-env.d.ts
+
+# secrets and signing material must never leave this machine
+.env
+.env*.local
+.env.production
+*.jks
+*.p8
+*.p12
+*.key
+*.pem
+*.mobileprovision
+
+# generated native folders — EAS generates them itself
+/ios
+/android
+.kotlin/
+
+# scratch and noise
+*.orig.*
+.metro-health-check*
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+*.tsbuildinfo
+.DS_Store
+app-example
+patch-*.cjs
+*.tar.gz
