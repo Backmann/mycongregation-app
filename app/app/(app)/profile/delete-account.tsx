@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -16,6 +15,7 @@ import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 import { extractErrorMessage, meApi } from '../../../lib/api';
 import { useAuth } from '../../../lib/auth';
+import { Dialog } from '../../../components/Dialog';
 
 /**
  * Self-service account erasure (GDPR Art. 17).
@@ -32,6 +32,7 @@ export default function DeleteAccountScreen() {
 
   const [password, setPassword] = useState('');
   const [serverError, setServerError] = useState<string | null>(null);
+  const [confirming, setConfirming] = useState(false);
 
   const mutation = useMutation({
     mutationFn: () => meApi.eraseAccount(password),
@@ -48,23 +49,19 @@ export default function DeleteAccountScreen() {
 
   const canSubmit = password.length > 0 && !mutation.isPending;
 
+  // A controlled Dialog rather than Alert.alert: erasing an account is
+  // irreversible, and Alert shows nothing on the web, so on the web the button
+  // did nothing at all — the one confirmation in the app with no web fallback,
+  // guarding the most final action there is.
   const handleSubmit = () => {
     if (!canSubmit) return;
-    Alert.alert(
-      t('deleteAccount.confirmTitle'),
-      t('deleteAccount.confirmBody'),
-      [
-        { text: t('common.cancel'), style: 'cancel' },
-        {
-          text: t('deleteAccount.confirmButton'),
-          style: 'destructive',
-          onPress: () => {
-            setServerError(null);
-            mutation.mutate();
-          },
-        },
-      ],
-    );
+    setConfirming(true);
+  };
+
+  const confirmErase = () => {
+    setConfirming(false);
+    setServerError(null);
+    mutation.mutate();
   };
 
   return (
@@ -132,6 +129,22 @@ export default function DeleteAccountScreen() {
 
         <Text style={styles.note}>{t('deleteAccount.note')}</Text>
       </ScrollView>
+
+      <Dialog
+        visible={confirming}
+        title={t('deleteAccount.confirmTitle')}
+        icon="warning"
+        iconTint="#dc2626"
+        iconBg="#fee2e2"
+        confirmLabel={t('deleteAccount.confirmButton')}
+        confirmDanger
+        onConfirm={confirmErase}
+        cancelLabel={t('common.cancel')}
+        onCancel={() => setConfirming(false)}
+        pending={mutation.isPending}
+      >
+        <Text style={styles.dialogBody}>{t('deleteAccount.confirmBody')}</Text>
+      </Dialog>
     </KeyboardAvoidingView>
   );
 }
@@ -200,4 +213,5 @@ const styles = StyleSheet.create({
     marginTop: 16,
     lineHeight: 18,
   },
+  dialogBody: { fontSize: 14.5, color: '#334155', lineHeight: 21 },
 });
