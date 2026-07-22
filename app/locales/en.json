@@ -2206,7 +2206,9 @@
       "regular": "Regular pioneer",
       "special": "Special pioneer",
       "missionary": "Missionary"
-    }
+    },
+    "currentMonth": "current",
+    "pastPeriodWarning": "This period is already in the past — check the year."
   },
   "weekDrawer": {
     "title": "Jump to a meeting",

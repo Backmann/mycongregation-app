@@ -2206,7 +2206,9 @@
       "regular": "Allgemeiner Pionier",
       "special": "Sonderpionier",
       "missionary": "Missionar"
-    }
+    },
+    "currentMonth": "aktuell",
+    "pastPeriodWarning": "Dieser Zeitraum liegt in der Vergangenheit — prüfe das Jahr."
   },
   "weekDrawer": {
     "title": "Zur Zusammenkunft",

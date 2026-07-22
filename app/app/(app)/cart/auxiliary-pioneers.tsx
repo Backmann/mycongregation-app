@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Modal,
@@ -407,10 +407,31 @@ export default function AuxiliaryPioneersScreen() {
               />
             </View>
             {addError ? <Text style={styles.error}>{addError}</Text> : null}
+
+            {/* Not a block — a distant past month is sometimes intended — but a
+                clear flag, because the real mistake caught here was picking the
+                right month in the wrong YEAR and not noticing. */}
+            {(() => {
+              const endForCheck = untilCancelled ? startMonthSel : endMonthSel;
+              const thisMonth = dayjs().format('YYYY-MM-01');
+              if (!untilCancelled && endForCheck < thisMonth) {
+                return (
+                  <View style={styles.pastWarn}>
+                    <Ionicons name="time-outline" size={16} color="#b45309" />
+                    <Text style={styles.pastWarnText}>
+                      {t('auxPioneer.pastPeriodWarning')}
+                    </Text>
+                  </View>
+                );
+              }
+              return null;
+            })()}
       </Dialog>
     </SafeAreaView>
   );
 }
+
+const PICKER_ROW_H = 45;
 
 function MonthPicker({
   value,
@@ -421,8 +442,23 @@ function MonthPicker({
   options: { value: string; label: string }[];
   onChange: (v: string) => void;
 }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
+  const scrollRef = useRef<ScrollView>(null);
   const selected = options.find((o) => o.value === value);
+  const thisMonth = dayjs().format('YYYY-MM-01');
+
+  // Open the list scrolled to the chosen month, centred, so it is instantly
+  // clear WHICH one is picked. Without this the list opened at the top — two
+  // years in the past — and it was easy to pick "August" in the wrong year.
+  const selectedIndex = options.findIndex((o) => o.value === value);
+  useEffect(() => {
+    if (!open || selectedIndex < 0) return;
+    const y = Math.max(0, selectedIndex * PICKER_ROW_H - 150);
+    const id = setTimeout(() => scrollRef.current?.scrollTo({ y, animated: false }), 0);
+    return () => clearTimeout(id);
+  }, [open, selectedIndex]);
+
   return (
     <>
       <Pressable style={styles.pickerBox} onPress={() => setOpen(true)}>
@@ -437,30 +473,50 @@ function MonthPicker({
       >
         <Pressable style={styles.pickerOverlay} onPress={() => setOpen(false)}>
           <View style={styles.pickerSheet}>
-            <ScrollView>
-              {options.map((o) => {
+            <ScrollView ref={scrollRef}>
+              {options.map((o, i) => {
                 const active = o.value === value;
+                const isNow = o.value === thisMonth;
+                // A year heading whenever the year changes, so August 2024 and
+                // August 2026 can never be mistaken for each other.
+                const year = o.value.slice(0, 4);
+                const prevYear = i > 0 ? options[i - 1].value.slice(0, 4) : null;
+                const showYear = year !== prevYear;
                 return (
-                  <Pressable
-                    key={o.value}
-                    style={[styles.pickerItem, active && styles.pickerItemActive]}
-                    onPress={() => {
-                      onChange(o.value);
-                      setOpen(false);
-                    }}
-                  >
-                    <Text
-                      style={[
-                        styles.pickerItemText,
-                        active && styles.pickerItemTextActive,
-                      ]}
-                    >
-                      {o.label}
-                    </Text>
-                    {active ? (
-                      <Ionicons name="checkmark" size={17} color="#0284c7" />
+                  <View key={o.value}>
+                    {showYear ? (
+                      <View style={styles.pickerYear}>
+                        <Text style={styles.pickerYearText}>{year}</Text>
+                      </View>
                     ) : null}
-                  </Pressable>
+                    <Pressable
+                      style={[
+                        styles.pickerItem,
+                        { height: PICKER_ROW_H },
+                        active && styles.pickerItemActive,
+                      ]}
+                      onPress={() => {
+                        onChange(o.value);
+                        setOpen(false);
+                      }}
+                    >
+                      <Text
+                        style={[
+                          styles.pickerItemText,
+                          active && styles.pickerItemTextActive,
+                        ]}
+                      >
+                        {o.label}
+                      </Text>
+                      {active ? (
+                        <Ionicons name="checkmark" size={17} color="#0284c7" />
+                      ) : isNow ? (
+                        <Text style={styles.pickerNow}>
+                          {t('auxPioneer.currentMonth')}
+                        </Text>
+                      ) : null}
+                    </Pressable>
+                  </View>
                 );
               })}
             </ScrollView>
@@ -743,6 +799,42 @@ const styles = StyleSheet.create({
     borderBottomColor: '#f1f5f9',
   },
   pickerItemActive: { backgroundColor: '#f0f9ff' },
+  pickerYear: {
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 4,
+    backgroundColor: '#f8fafc',
+  },
+  pickerYearText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#94a3b8',
+    letterSpacing: 1,
+  },
+  pastWarn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#fffbeb',
+    borderWidth: 1,
+    borderColor: '#fde68a',
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginTop: 4,
+    marginBottom: 4,
+  },
+  pastWarnText: { flex: 1, fontSize: 13, color: '#92400e', lineHeight: 18 },
+  pickerNow: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#0284c7',
+    backgroundColor: '#e0f2fe',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+    overflow: 'hidden',
+  },
   pickerItemText: {
     fontSize: 14,
     color: '#334155',
