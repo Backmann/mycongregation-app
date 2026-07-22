@@ -2208,7 +2208,8 @@
       "missionary": "Missionary"
     },
     "currentMonth": "current",
-    "pastPeriodWarning": "This period is already in the past — check the year."
+    "pastPeriodWarning": "This period is already in the past — check the year.",
+    "lateMonthWarning": "It is already the {{day}}th. The goal is a full 30 hours for a partial month. Is that right?"
   },
   "weekDrawer": {
     "title": "Jump to a meeting",

@@ -2208,7 +2208,8 @@
       "missionary": "Missionar"
     },
     "currentMonth": "aktuell",
-    "pastPeriodWarning": "Dieser Zeitraum liegt in der Vergangenheit — prüfe das Jahr."
+    "pastPeriodWarning": "Dieser Zeitraum liegt in der Vergangenheit — prüfe das Jahr.",
+    "lateMonthWarning": "Es ist bereits der {{day}}. Das Ziel sind volle 30 Stunden für einen angebrochenen Monat. Stimmt das?"
   },
   "weekDrawer": {
     "title": "Zur Zusammenkunft",

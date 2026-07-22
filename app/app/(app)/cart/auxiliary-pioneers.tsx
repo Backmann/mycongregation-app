@@ -413,13 +413,32 @@ export default function AuxiliaryPioneersScreen() {
                 right month in the wrong YEAR and not noticing. */}
             {(() => {
               const endForCheck = untilCancelled ? startMonthSel : endMonthSel;
-              const thisMonth = dayjs().format('YYYY-MM-01');
+              const now = dayjs();
+              const thisMonth = now.format('YYYY-MM-01');
+              // Whole period already past — the real trap was the wrong year.
               if (!untilCancelled && endForCheck < thisMonth) {
                 return (
                   <View style={styles.pastWarn}>
                     <Ionicons name="time-outline" size={16} color="#b45309" />
                     <Text style={styles.pastWarnText}>
                       {t('auxPioneer.pastPeriodWarning')}
+                    </Text>
+                  </View>
+                );
+              }
+              // Enrolling for the CURRENT month, but the month is already well
+              // under way (past the 10th). The hour goal is a fixed 30 (or 15),
+              // not prorated, so a mid-month enrolment quietly asks a lot for
+              // the days that remain. Not blocked — sometimes the paperwork is
+              // simply late — just surfaced so it is a deliberate choice.
+              if (startMonthSel === thisMonth && now.date() > 10) {
+                return (
+                  <View style={styles.pastWarn}>
+                    <Ionicons name="time-outline" size={16} color="#b45309" />
+                    <Text style={styles.pastWarnText}>
+                      {t('auxPioneer.lateMonthWarning', {
+                        day: now.date(),
+                      })}
                     </Text>
                   </View>
                 );
