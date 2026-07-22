@@ -1,5 +1,5 @@
 import {
-  Alert,
+  
   Platform,
   Pressable,
   ScrollView,
@@ -27,6 +27,7 @@ import {
   unsubscribeFromWebPush,
   WebPushStatus,
 } from '../../../lib/web-push';
+import { notify } from '../../../lib/error-bus';
 
 /**
  * A single line naming the running code: app version, and — when an
@@ -92,7 +93,7 @@ export default function ProfileScreen() {
         await Share.share({ message: json });
       }
     } catch (err) {
-      Alert.alert(t('common.error'), extractErrorMessage(err));
+      notify(t('common.error'), extractErrorMessage(err));
     } finally {
       setExporting(false);
     }
@@ -113,7 +114,7 @@ export default function ProfileScreen() {
       } else if (webPushStatus === 'granted' || webPushStatus === 'default') {
         await subscribeToWebPush();
       } else if (webPushStatus === 'denied') {
-        Alert.alert(
+        notify(
           t('profile.webPush.deniedTitle'),
           t('profile.webPush.deniedBody'),
         );

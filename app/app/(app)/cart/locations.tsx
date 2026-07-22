@@ -22,6 +22,7 @@ import {
 } from '../../../lib/api';
 import { usePermissions } from '../../../lib/permissions';
 import { Dialog } from '../../../components/Dialog';
+import { notify } from '../../../lib/error-bus';
 
 export default function CartLocationsScreen() {
   const { t } = useTranslation();
@@ -63,13 +64,13 @@ export default function CartLocationsScreen() {
       invalidate();
       setModalOpen(false);
     },
-    onError: (e) => Alert.alert(t('cartLocations.saveError'), extractErrorMessage(e)),
+    onError: (e) => notify(t('cartLocations.saveError'), extractErrorMessage(e)),
   });
 
   const removeMutation = useMutation({
     mutationFn: (id: string) => cartLocationsApi.remove(id),
     onSuccess: invalidate,
-    onError: (e) => Alert.alert(t('cartLocations.saveError'), extractErrorMessage(e)),
+    onError: (e) => notify(t('cartLocations.saveError'), extractErrorMessage(e)),
   });
 
   function openAdd() {

@@ -24,6 +24,7 @@ import {
 } from '../../../lib/api';
 import { usePermissions } from '../../../lib/permissions';
 import { Dialog } from '../../../components/Dialog';
+import { notify } from '../../../lib/error-bus';
 
 const QK = ['external-congregations'] as const;
 
@@ -54,7 +55,7 @@ export default function CongregationsScreen() {
   const showError = (e: unknown) => {
     const msg = extractErrorMessage(e);
     if (Platform.OS === 'web') window.alert(msg);
-    else Alert.alert(t('talkCoordinator.errorTitle'), msg);
+    else notify(t('talkCoordinator.errorTitle'), msg);
   };
 
   const createMutation = useMutation({

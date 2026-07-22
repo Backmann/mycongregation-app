@@ -31,6 +31,7 @@ import {
   visitedRecently,
 } from '../../../lib/speaker-stats';
 import { dayDiff, formatRelativeDay } from '../../../lib/relative-time';
+import { notify } from '../../../lib/error-bus';
 
 const QK = ['visiting-speakers'] as const;
 
@@ -146,7 +147,7 @@ export default function SpeakersScreen() {
   const showError = (e: unknown) => {
     const msg = extractErrorMessage(e);
     if (Platform.OS === 'web') window.alert(msg);
-    else Alert.alert(t('talkCoordinator.errorTitle'), msg);
+    else notify(t('talkCoordinator.errorTitle'), msg);
   };
 
   const createMutation = useMutation({

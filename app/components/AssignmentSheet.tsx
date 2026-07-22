@@ -19,6 +19,7 @@ import {
 } from '../lib/api';
 import { AssignmentForm, AssignmentFormCoPicker } from './AssignmentForm';
 import { SongPicker } from './SongPicker';
+import { notify } from '../lib/error-bus';
 
 interface Props {
   /** The assignment being edited, or null when the sheet is closed. */
@@ -114,7 +115,7 @@ export function AssignmentSheet({
         if (Platform.OS === 'web') {
           window.alert(msg);
         } else {
-          Alert.alert(t('rules.warn.title'), msg);
+          notify(t('rules.warn.title'), msg);
         }
       }
     },

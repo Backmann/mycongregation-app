@@ -40,7 +40,7 @@ import { usePermissions } from '../../../lib/permissions';
 import { formatDateISO, startOfWeekMonday } from '../../../lib/dates';
 import { meetingDate } from '../../../lib/meeting-schedule';
 import type { CoMeetingInfo } from '../../../lib/coSchedulePdf';
-import { reportError } from '../../../lib/error-bus';
+import { reportError, notify } from '../../../lib/error-bus';
 
 const WEEKDAY_ANCHOR = [
   '2024-01-01',
@@ -733,7 +733,7 @@ export default function CoScheduleScreen() {
       fileName: t('coVisit.visitTitle'),
     });
     if (!ok.ok && ok.reason === 'popup_blocked') {
-      Alert.alert(t('coVisit.printBlocked'));
+      notify(t('coVisit.printBlocked'));
     }
   };
 

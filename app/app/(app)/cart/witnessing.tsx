@@ -31,6 +31,7 @@ import {
   parseISODate,
   startOfWeekMonday,
 } from '../../../lib/dates';
+import { notify } from '../../../lib/error-bus';
 
 const TIME_OPTIONS: string[] = (() => {
   const out: string[] = [];
@@ -137,19 +138,19 @@ export default function WitnessingScreen() {
       setShowBuild(false);
       invalidateWeek();
     },
-    onError: (e) => Alert.alert(t('witnessing.buildError'), extractErrorMessage(e)),
+    onError: (e) => notify(t('witnessing.buildError'), extractErrorMessage(e)),
   });
 
   const openMutation = useMutation({
     mutationFn: (id: string) => cartWeeksApi.open(id),
     onSuccess: invalidateWeek,
-    onError: (e) => Alert.alert(t('witnessing.buildError'), extractErrorMessage(e)),
+    onError: (e) => notify(t('witnessing.buildError'), extractErrorMessage(e)),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => cartWeeksApi.remove(id),
     onSuccess: invalidateWeek,
-    onError: (e) => Alert.alert(t('witnessing.buildError'), extractErrorMessage(e)),
+    onError: (e) => notify(t('witnessing.buildError'), extractErrorMessage(e)),
   });
 
   const applyMutation = useMutation({
@@ -161,7 +162,7 @@ export default function WitnessingScreen() {
     },
     onError: (e: unknown) => {
       const status = (e as { response?: { status?: number } })?.response?.status;
-      Alert.alert(
+      notify(
         status === 403
           ? t('witnessing.notEligible')
           : t('witnessing.buildError'),
@@ -180,7 +181,7 @@ export default function WitnessingScreen() {
       invalidateWeek();
     },
     onError: (e) =>
-      Alert.alert(t('witnessing.assignError'), extractErrorMessage(e)),
+      notify(t('witnessing.assignError'), extractErrorMessage(e)),
   });
 
   const unassignMutation = useMutation({
@@ -188,14 +189,14 @@ export default function WitnessingScreen() {
       cartWeeksApi.unassign(v.slotId, v.assignmentId),
     onSuccess: () => invalidateWeek(),
     onError: (e) =>
-      Alert.alert(t('witnessing.assignError'), extractErrorMessage(e)),
+      notify(t('witnessing.assignError'), extractErrorMessage(e)),
   });
 
   const publishMutation = useMutation({
     mutationFn: (id: string) => cartWeeksApi.publish(id),
     onSuccess: () => invalidateWeek(),
     onError: (e) =>
-      Alert.alert(t('witnessing.publishError'), extractErrorMessage(e)),
+      notify(t('witnessing.publishError'), extractErrorMessage(e)),
   });
 
   const cancelMineMutation = useMutation({
@@ -205,7 +206,7 @@ export default function WitnessingScreen() {
       invalidateWeek();
     },
     onError: (e) =>
-      Alert.alert(t('witnessing.assignError'), extractErrorMessage(e)),
+      notify(t('witnessing.assignError'), extractErrorMessage(e)),
   });
 
   const withdrawMutation = useMutation({
@@ -214,7 +215,7 @@ export default function WitnessingScreen() {
       setSlotModal(null);
       invalidateWeek();
     },
-    onError: (e) => Alert.alert(t('witnessing.buildError'), extractErrorMessage(e)),
+    onError: (e) => notify(t('witnessing.buildError'), extractErrorMessage(e)),
   });
 
   function toggle<T>(arr: T[], v: T): T[] {

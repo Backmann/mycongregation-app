@@ -20,6 +20,7 @@ import {
   extractErrorMessage,
   meetingSettingsApi,
 } from '../../../lib/api';
+import { notify } from '../../../lib/error-bus';
 
 const QK = ['meeting-settings'] as const;
 const DOW = [1, 2, 3, 4, 5, 6, 7];
@@ -78,7 +79,7 @@ export default function MeetingSettingsScreen() {
   }, [query.data, hydrated]);
 
   const onError = (e: unknown) =>
-    Alert.alert(t('meetingSettings.errorTitle'), extractErrorMessage(e));
+    notify(t('meetingSettings.errorTitle'), extractErrorMessage(e));
 
   const nameMutation = useMutation({
     mutationFn: (n: string) => meetingSettingsApi.updateCongregation({ name: n }),

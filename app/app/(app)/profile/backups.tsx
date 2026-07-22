@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
+  
   Platform,
   Pressable,
   ScrollView,
@@ -13,6 +13,7 @@ import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
 import { backupsApi, extractErrorMessage } from '../../../lib/api';
+import { notify } from '../../../lib/error-bus';
 
 function formatBytes(n: number): string {
   if (n < 1024) return `${n} B`;
@@ -34,7 +35,7 @@ export default function BackupsScreen() {
   const handleDownload = async () => {
     if (!latest || downloading) return;
     if (Platform.OS !== 'web') {
-      Alert.alert(t('backups.title'), t('backups.webOnly'));
+      notify(t('backups.title'), t('backups.webOnly'));
       return;
     }
     setDownloading(true);
@@ -49,7 +50,7 @@ export default function BackupsScreen() {
       a.remove();
       URL.revokeObjectURL(url);
     } catch (err) {
-      Alert.alert(t('backups.title'), extractErrorMessage(err));
+      notify(t('backups.title'), extractErrorMessage(err));
     } finally {
       setDownloading(false);
     }

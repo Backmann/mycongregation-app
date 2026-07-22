@@ -34,7 +34,7 @@ import { useAuth } from '../../../lib/auth';
 import { usePermissions } from '../../../lib/permissions';
 import { contactsCheckLine } from '../../../lib/contacts-check';
 import { Dialog } from '../../../components/Dialog';
-import { reportError } from '../../../lib/error-bus';
+import { reportError, notify } from '../../../lib/error-bus';
 import { buildS21Html, availableServiceYears } from '../../../lib/s21';
 import { exportHtmlAsPdf, openPrintWindow } from '../../../lib/pdf';
 
@@ -163,7 +163,7 @@ export default function PublisherDetailScreen() {
       if (Platform.OS === 'web') {
         window.alert(body);
       } else {
-        Alert.alert(t('publishers.purge.title'), body);
+        notify(t('publishers.purge.title'), body);
       }
     },
   });

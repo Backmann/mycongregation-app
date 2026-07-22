@@ -22,6 +22,7 @@ import {
   responsibilitiesApi,
   usersApi,
 } from '../../../lib/api';
+import { notify } from '../../../lib/error-bus';
 
 // Display order: meeting roles, then service, then administrative.
 const RESPONSIBILITY_ORDER: ResponsibilityType[] = [
@@ -61,7 +62,7 @@ export default function ResponsibilitiesScreen() {
       setPickerFor(null);
     },
     onError: (e: unknown) =>
-      Alert.alert(t('responsibilities.errorTitle'), extractErrorMessage(e)),
+      notify(t('responsibilities.errorTitle'), extractErrorMessage(e)),
   });
 
   const revokeMutation = useMutation({
@@ -69,7 +70,7 @@ export default function ResponsibilitiesScreen() {
       responsibilitiesApi.revoke(vars.type, vars.userId),
     onSuccess: () => qc.invalidateQueries({ queryKey: QK_RESPONSIBILITIES }),
     onError: (e: unknown) =>
-      Alert.alert(t('responsibilities.errorTitle'), extractErrorMessage(e)),
+      notify(t('responsibilities.errorTitle'), extractErrorMessage(e)),
   });
 
   const byType = useMemo(() => {

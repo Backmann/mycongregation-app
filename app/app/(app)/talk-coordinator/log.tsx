@@ -52,6 +52,7 @@ import { formatRelativeDay } from '../../../lib/relative-time';
 import { PublisherSelector } from '../../../components/PublisherSelector';
 import { PublicTalkSelector } from '../../../components/PublicTalkSelector';
 import { startOfWeekMonday, addDays, formatDateISO } from '../../../lib/dates';
+import { notify } from '../../../lib/error-bus';
 
 const QK = ['talk-exchange'] as const;
 
@@ -389,7 +390,7 @@ export default function TalkExchangeYearScreen() {
   const showError = (e: unknown) => {
     const msg = extractErrorMessage(e);
     if (Platform.OS === 'web') window.alert(msg);
-    else Alert.alert(t('talkCoordinator.errorTitle'), msg);
+    else notify(t('talkCoordinator.errorTitle'), msg);
   };
   const createMutation = useMutation({
     mutationFn: (input: TalkExchangeInput) => talkExchangeApi.create(input),

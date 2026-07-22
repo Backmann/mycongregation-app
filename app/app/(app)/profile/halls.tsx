@@ -18,6 +18,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Hall, extractErrorMessage, hallsApi } from '../../../lib/api';
 import { useAuth } from '../../../lib/auth';
 import { Dialog } from '../../../components/Dialog';
+import { notify } from '../../../lib/error-bus';
 
 const QK = ['halls'] as const;
 
@@ -44,7 +45,7 @@ export default function HallsScreen() {
     if (Platform.OS === 'web') {
       window.alert(msg);
     } else {
-      Alert.alert(t('halls.errorTitle'), msg);
+      notify(t('halls.errorTitle'), msg);
     }
   };
 

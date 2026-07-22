@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
+  
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -23,6 +23,7 @@ import {
 } from '../../../lib/api';
 import { useTranslation } from 'react-i18next';
 import { formatMonthLabel } from '../../../lib/i18n';
+import { notify } from '../../../lib/error-bus';
 
 // formatMonth replaced by formatMonthLabel from lib/i18n.ts
 
@@ -207,13 +208,13 @@ export default function NewOrEditServiceReportScreen() {
   function handleSubmit() {
     if (!canSubmit()) {
       if (isDuplicateMonth()) {
-        Alert.alert(
+        notify(
           t('reports.alerts.alreadySubmittedTitle'),
           t('reports.alerts.alreadySubmittedBody', { month: formatMonthLabel(reportMonth) }),
         );
         return;
       }
-      Alert.alert(
+      notify(
         t('reports.alerts.validationTitle'),
         isPioneer
           ? t('reports.alerts.validationHours')

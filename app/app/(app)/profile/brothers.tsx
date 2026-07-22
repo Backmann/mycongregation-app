@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
+  
   Modal,
   Pressable,
   SafeAreaView,
@@ -22,6 +22,7 @@ import {
 } from '../../../lib/api';
 import { useAuth } from '../../../lib/auth';
 import { PublisherAccessContent } from '../../../components/PublisherAccessContent';
+import { notify } from '../../../lib/error-bus';
 
 // Same display order as the responsibilities screen.
 const RESPONSIBILITY_ORDER: ResponsibilityType[] = [
@@ -65,13 +66,13 @@ export default function BrothersScreen() {
     mutationFn: (v: { type: ResponsibilityType; userId: string }) =>
       responsibilitiesApi.assign(v),
     onSuccess: () => qc.invalidateQueries({ queryKey: QK_RESPONSIBILITIES }),
-    onError: (e: unknown) => Alert.alert('Ошибка', extractErrorMessage(e)),
+    onError: (e: unknown) => notify('Ошибка', extractErrorMessage(e)),
   });
   const revokeMutation = useMutation({
     mutationFn: (v: { type: ResponsibilityType; userId: string }) =>
       responsibilitiesApi.revoke(v.type, v.userId),
     onSuccess: () => qc.invalidateQueries({ queryKey: QK_RESPONSIBILITIES }),
-    onError: (e: unknown) => Alert.alert('Ошибка', extractErrorMessage(e)),
+    onError: (e: unknown) => notify('Ошибка', extractErrorMessage(e)),
   });
 
   const brothers = useMemo(() => brothersQuery.data ?? [], [brothersQuery.data]);

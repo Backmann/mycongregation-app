@@ -18,6 +18,7 @@ import { AssignmentForm } from '../../../components/AssignmentForm';
 import { SongPicker } from '../../../components/SongPicker';
 import { usePermissions } from '../../../lib/permissions';
 import { useTranslation } from 'react-i18next';
+import { notify } from '../../../lib/error-bus';
 
 export default function AssignmentDetailScreen() {
   const { t } = useTranslation();
@@ -54,7 +55,7 @@ export default function AssignmentDetailScreen() {
         if (Platform.OS === 'web') {
           window.alert(msg);
         } else {
-          Alert.alert(t('rules.warn.title'), msg);
+          notify(t('rules.warn.title'), msg);
         }
       }
     },

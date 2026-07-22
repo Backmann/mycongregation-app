@@ -38,6 +38,7 @@ import type { FsPdfMonth } from '../../../lib/fieldServicePdf';
 import { exportHtmlAsPdf } from '../../../lib/pdf';
 import { MyDot } from '../../../components/MyDot';
 import { MyGlowRow } from '../../../components/MyGlowRow';
+import { notify } from '../../../lib/error-bus';
 import { ChipRow, PersonChip } from '../../../components/PersonChip';
 import { parseISODate, addDays, formatDateISO } from '../../../lib/dates';
 import { LoadError } from '../../../components/LoadError';
@@ -351,7 +352,7 @@ export default function FieldServiceMeetingsScreen() {
       fileName: t('fieldService.pdf.title'),
     });
     if (!ok.ok && ok.reason === 'popup_blocked') {
-      Alert.alert(t('fieldService.pdf.blocked'));
+      notify(t('fieldService.pdf.blocked'));
     }
     setPdfOpen(false);
   };

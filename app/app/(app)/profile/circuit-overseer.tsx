@@ -21,6 +21,7 @@ import {
 } from '../../../lib/api';
 import { useAuth } from '../../../lib/auth';
 import { Sheet } from '../../../components/Sheet';
+import { notify } from '../../../lib/error-bus';
 
 type FormState = {
   id: string | null;
@@ -88,7 +89,7 @@ export default function CircuitOverseerScreen() {
     mutationFn: (id: string) => circuitOverseersApi.remove(id),
     onSuccess: invalidate,
     onError: (err: unknown) =>
-      Alert.alert(t('common.error'), extractErrorMessage(err)),
+      notify(t('common.error'), extractErrorMessage(err)),
   });
 
   const roleLabel = (role: CircuitOverseerRole) =>

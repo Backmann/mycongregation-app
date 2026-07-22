@@ -24,6 +24,7 @@ import {
 import { ServiceGroupForm } from '../../../components/ServiceGroupForm';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../../lib/auth';
+import { notify } from '../../../lib/error-bus';
 
 export default function ServiceGroupDetailScreen() {
   const { t } = useTranslation();
@@ -85,14 +86,14 @@ export default function ServiceGroupDetailScreen() {
       invalidateMembership();
       setAddOpen(false);
     },
-    onError: (e) => Alert.alert('', extractErrorMessage(e)),
+    onError: (e) => notify('', extractErrorMessage(e)),
   });
 
   const removeMemberMutation = useMutation({
     mutationFn: (publisherId: string) =>
       serviceGroupsApi.removePublisher(id!, publisherId),
     onSuccess: invalidateMembership,
-    onError: (e) => Alert.alert('', extractErrorMessage(e)),
+    onError: (e) => notify('', extractErrorMessage(e)),
   });
 
   const confirmRemove = () => {

@@ -32,3 +32,19 @@ export function onErrorReported(listener: (message: string) => void): () => void
     if (tone === 'error') listener(m);
   });
 }
+
+/**
+ * Notify from a former Alert.alert(title, body) call. React Native's Alert
+ * shows nothing on the web, so these messages used to vanish there entirely.
+ * On the strip there is one line, so title and body are joined when both carry
+ * weight; a bare title (an error heading with no detail) or a bare body shows
+ * alone.
+ */
+export function notify(title?: string, body?: string, tone: ToastTone = 'error'): void {
+  const t = (title ?? '').trim();
+  const b = (body ?? '').trim();
+  const text = t && b ? `${t}: ${b}` : t || b;
+  if (!text) return;
+  if (tone === 'success') reportSuccess(text);
+  else reportError(text);
+}

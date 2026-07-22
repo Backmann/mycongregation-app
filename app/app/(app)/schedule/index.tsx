@@ -9,7 +9,7 @@ import {
 } from 'react';
 import {
   ActivityIndicator,
-  Alert,
+  
   Animated,
   Platform,
   Pressable,
@@ -107,7 +107,7 @@ import { NotifyChangesDialog } from '../../../components/NotifyChangesDialog';
 import { useMyPublisher } from '../../../lib/useMyPublisher';
 import { MyDot } from '../../../components/MyDot';
 import { useMyGlow } from '../../../components/useMyGlow';
-import { reportError } from '../../../lib/error-bus';
+import { reportError, notify } from '../../../lib/error-bus';
 import { LoadError } from '../../../components/LoadError';
 import {
   CLEANING_SHADES,
@@ -324,7 +324,7 @@ export default function ScheduleIndexScreen() {
     if (Platform.OS === 'web') {
       window.alert(`${t('duties.warningsTitle')}\n\n${body}`);
     } else {
-      Alert.alert(t('duties.warningsTitle'), body);
+      notify(t('duties.warningsTitle'), body);
     }
   };
   const assignDutyMutation = useMutation({
