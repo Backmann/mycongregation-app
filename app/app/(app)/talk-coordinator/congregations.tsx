@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
+  
   Platform,
   Pressable,
   SafeAreaView,
@@ -25,6 +25,7 @@ import {
 import { usePermissions } from '../../../lib/permissions';
 import { Dialog } from '../../../components/Dialog';
 import { notify } from '../../../lib/error-bus';
+import { confirm } from '../../../components/ConfirmHost';
 
 const QK = ['external-congregations'] as const;
 
@@ -128,16 +129,17 @@ export default function CongregationsScreen() {
     setModalOpen(false);
   };
 
-  const confirmDelete = (c: ExternalCongregation) => {
-    const doDelete = () => removeMutation.mutate(c.id);
-    if (Platform.OS === 'web') {
-      if (window.confirm(`${t('talkCoordinator.congregations.deleteTitle')}\n\n${c.name}`)) doDelete();
-      return;
+  const confirmDelete = async (c: ExternalCongregation) => {
+    if (
+      await confirm({
+        title: t('talkCoordinator.congregations.deleteTitle'),
+        body: c.name,
+        confirmLabel: t('common.delete'),
+        danger: true,
+      })
+    ) {
+      removeMutation.mutate(c.id);
     }
-    Alert.alert(t('talkCoordinator.congregations.deleteTitle'), c.name, [
-      { text: t('common.cancel'), style: 'cancel' },
-      { text: t('common.delete'), style: 'destructive', onPress: doDelete },
-    ]);
   };
 
   if (!perms.canCoordinatePublicTalks) {

@@ -1,10 +1,10 @@
 import { useRef, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
+  
   Linking,
   Modal,
-  Platform,
+  
   Pressable,
   ScrollView,
   StyleSheet,
@@ -43,6 +43,7 @@ import { ChipRow, PersonChip } from '../../../components/PersonChip';
 import { parseISODate, addDays, formatDateISO } from '../../../lib/dates';
 import { LoadError } from '../../../components/LoadError';
 import { Dialog } from '../../../components/Dialog';
+import { confirm } from '../../../components/ConfirmHost';
 
 /** Actual calendar date (ISO) of a meeting, from its week + weekday. */
 function meetingDateISO(m: FieldServiceMeeting): string {
@@ -190,19 +191,16 @@ export default function FieldServiceMeetingsScreen() {
     onSuccess: () => invalidate(),
   });
 
-  const confirmRemove = (id: string) => {
-    const msg = t('fieldService.deleteConfirm');
-    if (Platform.OS === 'web') {
-      if (window.confirm(msg)) removeM.mutate(id);
-    } else {
-      Alert.alert('', msg, [
-        { text: t('common.cancel'), style: 'cancel' },
-        {
-          text: t('fieldService.delete'),
-          style: 'destructive',
-          onPress: () => removeM.mutate(id),
-        },
-      ]);
+  const confirmRemove = async (id: string) => {
+    if (
+      await confirm({
+        title: t('fieldService.delete'),
+        body: t('fieldService.deleteConfirm'),
+        confirmLabel: t('fieldService.delete'),
+        danger: true,
+      })
+    ) {
+      removeM.mutate(id);
     }
   };
 

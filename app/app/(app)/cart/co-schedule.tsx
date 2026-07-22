@@ -4,8 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
 import {
   ActivityIndicator,
-  Alert,
-  Platform,
+  
+  
   Pressable,
   ScrollView,
   StyleSheet,
@@ -41,6 +41,7 @@ import { formatDateISO, startOfWeekMonday } from '../../../lib/dates';
 import { meetingDate } from '../../../lib/meeting-schedule';
 import type { CoMeetingInfo } from '../../../lib/coSchedulePdf';
 import { reportError, notify } from '../../../lib/error-bus';
+import { confirm } from '../../../components/ConfirmHost';
 
 const WEEKDAY_ANCHOR = [
   '2024-01-01',
@@ -570,7 +571,7 @@ export default function CoScheduleScreen() {
     };
     pairM.mutate(run);
   };
-  const onDelete = () => {
+  const onDelete = async () => {
     if (!form?.id) return;
     const id = form.id;
     const pairId = form.wifePairId;
@@ -579,18 +580,16 @@ export default function CoScheduleScreen() {
         await coVisitItemsApi.remove(id);
         if (pairId) await coVisitItemsApi.remove(pairId);
       });
-    if (Platform.OS === 'web') {
-      if (window.confirm(t('coVisit.confirmDelete'))) doRemove();
-      return;
+    if (
+      await confirm({
+        title: t('coVisit.confirmDelete'),
+        confirmLabel: t('coVisit.delete'),
+        cancelLabel: t('coVisit.cancel'),
+        danger: true,
+      })
+    ) {
+      doRemove();
     }
-    Alert.alert(t('coVisit.confirmDelete'), '', [
-      { text: t('coVisit.cancel'), style: 'cancel' },
-      {
-        text: t('coVisit.delete'),
-        style: 'destructive',
-        onPress: () => doRemove(),
-      },
-    ]);
   };
 
   // Collect the congregation meetings (midweek/weekend) that fall inside the

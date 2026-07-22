@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
+  
   Modal,
-  Platform,
+  
   Pressable,
   ScrollView,
   StyleSheet,
@@ -25,6 +25,7 @@ import { ServiceGroupForm } from '../../../components/ServiceGroupForm';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../../lib/auth';
 import { notify } from '../../../lib/error-bus';
+import { confirm } from '../../../components/ConfirmHost';
 
 export default function ServiceGroupDetailScreen() {
   const { t } = useTranslation();
@@ -96,42 +97,30 @@ export default function ServiceGroupDetailScreen() {
     onError: (e) => notify('', extractErrorMessage(e)),
   });
 
-  const confirmRemove = () => {
-    if (Platform.OS === 'web') {
-      if (window.confirm(t('serviceGroups.removeConfirm.webMessage'))) {
-        removeMutation.mutate();
-      }
-      return;
+  const confirmRemove = async () => {
+    if (
+      await confirm({
+        title: t('serviceGroups.removeConfirm.title'),
+        body: t('serviceGroups.removeConfirm.body'),
+        confirmLabel: t('common.remove'),
+        danger: true,
+      })
+    ) {
+      removeMutation.mutate();
     }
-    Alert.alert(t('serviceGroups.removeConfirm.title'), t('serviceGroups.removeConfirm.body'), [
-      { text: t('common.cancel'), style: 'cancel' },
-      {
-        text: t('common.remove'),
-        onPress: () => removeMutation.mutate(),
-        style: 'destructive',
-      },
-    ]);
   };
 
-  const confirmRemoveMember = (p: Publisher) => {
-    if (Platform.OS === 'web') {
-      if (window.confirm(t('serviceGroups.removeMember.web', { name: p.displayName }))) {
-        removeMemberMutation.mutate(p.id);
-      }
-      return;
+  const confirmRemoveMember = async (p: Publisher) => {
+    if (
+      await confirm({
+        title: t('serviceGroups.removeMember.title'),
+        body: t('serviceGroups.removeMember.body', { name: p.displayName }),
+        confirmLabel: t('serviceGroups.removeMember.action'),
+        danger: true,
+      })
+    ) {
+      removeMemberMutation.mutate(p.id);
     }
-    Alert.alert(
-      t('serviceGroups.removeMember.title'),
-      t('serviceGroups.removeMember.body', { name: p.displayName }),
-      [
-        { text: t('common.cancel'), style: 'cancel' },
-        {
-          text: t('serviceGroups.removeMember.action'),
-          style: 'destructive',
-          onPress: () => removeMemberMutation.mutate(p.id),
-        },
-      ],
-    );
   };
 
   if (groupQuery.isLoading) {

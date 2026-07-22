@@ -10,6 +10,7 @@ import {
 import { extractErrorMessage } from '../lib/api';
 import { reportError } from '../lib/error-bus';
 import { ErrorToast } from '../components/ErrorToast';
+import { ConfirmHost } from '../components/ConfirmHost';
 import { AuthProvider } from '../lib/auth';
 import { initI18nFromStorage } from '../lib/i18n';
 import { LanguagePickerModal } from '../components/LanguagePicker';
@@ -77,6 +78,7 @@ export default function RootLayout() {
           required
         />
         <ErrorToast />
+        <ConfirmHost />
       </AuthProvider>
     </QueryClientProvider>
   );

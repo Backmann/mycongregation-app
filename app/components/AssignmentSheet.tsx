@@ -1,5 +1,5 @@
 import {
-  Alert,
+  
   Modal,
   Platform,
   Pressable,
@@ -20,6 +20,7 @@ import {
 import { AssignmentForm, AssignmentFormCoPicker } from './AssignmentForm';
 import { SongPicker } from './SongPicker';
 import { notify } from '../lib/error-bus';
+import { confirm } from '../components/ConfirmHost';
 
 interface Props {
   /** The assignment being edited, or null when the sheet is closed. */
@@ -172,21 +173,17 @@ export function AssignmentSheet({
     },
   });
 
-  const confirmDelete = () => {
-    if (Platform.OS === 'web') {
-      if (window.confirm(t('schedule.deletePart.confirm'))) {
-        removeMutation.mutate();
-      }
-      return;
+  const confirmDelete = async () => {
+    if (
+      await confirm({
+        title: t('schedule.deletePart.title'),
+        body: t('schedule.deletePart.confirm'),
+        confirmLabel: t('schedule.deletePart.button'),
+        danger: true,
+      })
+    ) {
+      removeMutation.mutate();
     }
-    Alert.alert(t('schedule.deletePart.title'), t('schedule.deletePart.confirm'), [
-      { text: t('common.cancel'), style: 'cancel' },
-      {
-        text: t('schedule.deletePart.button'),
-        style: 'destructive',
-        onPress: () => removeMutation.mutate(),
-      },
-    ]);
   };
 
   const isSong = !!active && SONG_KEYS.includes(active.partKey);

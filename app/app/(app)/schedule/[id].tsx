@@ -1,6 +1,6 @@
 import {
   ActivityIndicator,
-  Alert,
+  
   Platform,
   Pressable,
   StyleSheet,
@@ -19,6 +19,7 @@ import { SongPicker } from '../../../components/SongPicker';
 import { usePermissions } from '../../../lib/permissions';
 import { useTranslation } from 'react-i18next';
 import { notify } from '../../../lib/error-bus';
+import { confirm } from '../../../components/ConfirmHost';
 
 export default function AssignmentDetailScreen() {
   const { t } = useTranslation();
@@ -88,24 +89,16 @@ export default function AssignmentDetailScreen() {
     },
   });
 
-  const confirmUnassign = () => {
-    if (Platform.OS === 'web') {
-      if (window.confirm(t('schedule.unassign.confirmWebMessage'))) {
-        unassignMutation.mutate();
-      }
-      return;
+  const confirmUnassign = async () => {
+    if (
+      await confirm({
+        title: t('schedule.unassign.confirmTitle'),
+        body: t('schedule.unassign.confirmBody'),
+        confirmLabel: t('schedule.unassign.button'),
+      })
+    ) {
+      unassignMutation.mutate();
     }
-    Alert.alert(
-      t('schedule.unassign.confirmTitle'),
-      t('schedule.unassign.confirmBody'),
-      [
-        { text: t('common.cancel'), style: 'cancel' },
-        {
-          text: t('schedule.unassign.button'),
-          onPress: () => unassignMutation.mutate(),
-        },
-      ],
-    );
   };
 
   if (assignmentQuery.isLoading) {

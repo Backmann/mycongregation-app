@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
-  Platform,
+  
+  
   Pressable,
   ScrollView,
   StyleSheet,
@@ -23,6 +23,7 @@ import {
 import { usePermissions } from '../../../lib/permissions';
 import { Dialog } from '../../../components/Dialog';
 import { notify } from '../../../lib/error-bus';
+import { confirm } from '../../../components/ConfirmHost';
 
 export default function CartLocationsScreen() {
   const { t } = useTranslation();
@@ -91,21 +92,24 @@ export default function CartLocationsScreen() {
     setModalOpen(true);
   }
 
-  function confirmRemove() {
+  async function confirmRemove() {
     if (!editing) return;
     const id = editing.id;
     const doRemove = () => {
       removeMutation.mutate(id);
       setModalOpen(false);
     };
-    if (Platform.OS === 'web') {
-      if (window.confirm(t('cartLocations.removeWeb'))) doRemove();
-      return;
+    if (
+      await confirm({
+        title: t('cartLocations.removeTitle'),
+        body: t('cartLocations.removeBody'),
+        confirmLabel: t('cartLocations.delete'),
+        cancelLabel: t('cartLocations.cancel'),
+        danger: true,
+      })
+    ) {
+      doRemove();
     }
-    Alert.alert(t('cartLocations.removeTitle'), t('cartLocations.removeBody'), [
-      { text: t('cartLocations.cancel'), style: 'cancel' },
-      { text: t('cartLocations.delete'), style: 'destructive', onPress: doRemove },
-    ]);
   }
 
   const canSave = name.trim().length > 0 && !saveMutation.isPending;

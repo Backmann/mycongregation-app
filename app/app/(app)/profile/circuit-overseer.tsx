@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
-  Platform,
+  
+  
   Pressable,
   ScrollView,
   StyleSheet,
@@ -22,6 +22,7 @@ import {
 import { useAuth } from '../../../lib/auth';
 import { Sheet } from '../../../components/Sheet';
 import { notify } from '../../../lib/error-bus';
+import { confirm } from '../../../components/ConfirmHost';
 
 type FormState = {
   id: string | null;
@@ -116,21 +117,18 @@ export default function CircuitOverseerScreen() {
     setModalOpen(true);
   };
 
-  const confirmDelete = (c: CircuitOverseer) => {
+  const confirmDelete = async (c: CircuitOverseer) => {
     const name = `${c.firstName} ${c.lastName}`.trim();
-    const body = t('circuitOverseer.deleteConfirmBody', { name });
-    if (Platform.OS === 'web') {
-      if (window.confirm(body)) deleteMutation.mutate(c.id);
-      return;
+    if (
+      await confirm({
+        title: t('circuitOverseer.deleteConfirmTitle'),
+        body: t('circuitOverseer.deleteConfirmBody', { name }),
+        confirmLabel: t('common.delete'),
+        danger: true,
+      })
+    ) {
+      deleteMutation.mutate(c.id);
     }
-    Alert.alert(t('circuitOverseer.deleteConfirmTitle'), body, [
-      { text: t('common.cancel'), style: 'cancel' },
-      {
-        text: t('common.delete'),
-        style: 'destructive',
-        onPress: () => deleteMutation.mutate(c.id),
-      },
-    ]);
   };
 
   const canSubmit =

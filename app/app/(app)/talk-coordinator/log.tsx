@@ -1,7 +1,7 @@
 import { Fragment, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
+  
   Linking,
   Platform,
   Pressable,
@@ -40,6 +40,7 @@ import {
 import { Dialog } from '../../../components/Dialog';
 import { Sheet } from '../../../components/Sheet';
 import { usePermissions } from '../../../lib/permissions';
+import { confirm } from '../../../components/ConfirmHost';
 import {
   computeSpeakerStats,
   computeOutgoingStats,
@@ -107,16 +108,7 @@ function buildWeeks(
 }
 
 function confirmReplace(title: string, body: string, ok: string, cancel: string): Promise<boolean> {
-  return new Promise((resolve) => {
-    if (Platform.OS === 'web') {
-      resolve(window.confirm(`${title}\n\n${body}`));
-      return;
-    }
-    Alert.alert(title, body, [
-      { text: cancel, style: 'cancel', onPress: () => resolve(false) },
-      { text: ok, onPress: () => resolve(true) },
-    ]);
-  });
+  return confirm({ title, body, confirmLabel: ok, cancelLabel: cancel });
 }
 
 export default function TalkExchangeYearScreen() {
@@ -531,20 +523,19 @@ export default function TalkExchangeYearScreen() {
     setOpen(false);
   };
 
-  const del = () => {
+  const del = async () => {
     if (!editing) return;
-    const doDelete = async () => {
+    if (
+      await confirm({
+        title: t('talkCoordinator.log.deleteTitle'),
+        body: t('talkCoordinator.log.deleteBody'),
+        confirmLabel: t('common.delete'),
+        danger: true,
+      })
+    ) {
       await removeMutation.mutateAsync(editing.id);
       setOpen(false);
-    };
-    if (Platform.OS === 'web') {
-      if (window.confirm(t('talkCoordinator.log.deleteBody'))) void doDelete();
-      return;
     }
-    Alert.alert(t('talkCoordinator.log.deleteTitle'), t('talkCoordinator.log.deleteBody'), [
-      { text: t('common.cancel'), style: 'cancel' },
-      { text: t('common.delete'), style: 'destructive', onPress: () => void doDelete() },
-    ]);
   };
 
   if (!perms.canCoordinatePublicTalks) {

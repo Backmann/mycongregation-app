@@ -1,8 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
-  Platform,
+  
+  
   Pressable,
   SafeAreaView,
   ScrollView,
@@ -23,6 +23,7 @@ import {
   usersApi,
 } from '../../../lib/api';
 import { notify } from '../../../lib/error-bus';
+import { confirm } from '../../../components/ConfirmHost';
 
 // Display order: meeting roles, then service, then administrative.
 const RESPONSIBILITY_ORDER: ResponsibilityType[] = [
@@ -89,22 +90,18 @@ export default function ResponsibilitiesScreen() {
     return map;
   }, [usersQuery.data]);
 
-  const confirmRevoke = (type: ResponsibilityType, userId: string) => {
+  const confirmRevoke = async (type: ResponsibilityType, userId: string) => {
     const role = t(`responsibilities.types.${type}`);
-    const title = t('responsibilities.revokeConfirm.title');
-    const body = t('responsibilities.revokeConfirm.body', { role });
-    if (Platform.OS === 'web') {
-      if (window.confirm(body)) revokeMutation.mutate({ type, userId });
-      return;
+    if (
+      await confirm({
+        title: t('responsibilities.revokeConfirm.title'),
+        body: t('responsibilities.revokeConfirm.body', { role }),
+        confirmLabel: t('responsibilities.revokeConfirm.action'),
+        danger: true,
+      })
+    ) {
+      revokeMutation.mutate({ type, userId });
     }
-    Alert.alert(title, body, [
-      { text: t('common.cancel'), style: 'cancel' },
-      {
-        text: t('responsibilities.revokeConfirm.action'),
-        style: 'destructive',
-        onPress: () => revokeMutation.mutate({ type, userId }),
-      },
-    ]);
   };
 
   if (respQuery.isLoading || usersQuery.isLoading) {

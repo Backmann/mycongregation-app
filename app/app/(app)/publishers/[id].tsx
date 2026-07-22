@@ -2,7 +2,7 @@ import { Children, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Modal,
-  Alert,
+  
   Platform,
   Pressable,
   ScrollView,
@@ -37,6 +37,7 @@ import { Dialog } from '../../../components/Dialog';
 import { reportError, notify } from '../../../lib/error-bus';
 import { buildS21Html, availableServiceYears } from '../../../lib/s21';
 import { exportHtmlAsPdf, openPrintWindow } from '../../../lib/pdf';
+import { confirm } from '../../../components/ConfirmHost';
 
 function removalLabel(reason: RemovalReason): string {
   return i18n.t(`publishers.removal.${reason}`);
@@ -167,22 +168,17 @@ export default function PublisherDetailScreen() {
       }
     },
   });
-  const handlePurge = () => {
-    const msg = t('publishers.purge.confirm', {
-      name: publisher?.displayName ?? '',
-    });
-    if (Platform.OS === 'web') {
-      if (window.confirm(msg)) purgeMutation.mutate();
-      return;
+  const handlePurge = async () => {
+    if (
+      await confirm({
+        title: t('publishers.purge.title'),
+        body: t('publishers.purge.confirm', { name: publisher?.displayName ?? '' }),
+        confirmLabel: t('publishers.purge.action'),
+        danger: true,
+      })
+    ) {
+      purgeMutation.mutate();
     }
-    Alert.alert(t('publishers.purge.title'), msg, [
-      { text: t('common.cancel'), style: 'cancel' },
-      {
-        text: t('publishers.purge.action'),
-        style: 'destructive',
-        onPress: () => purgeMutation.mutate(),
-      },
-    ]);
   };
 
   if (isLoading) {

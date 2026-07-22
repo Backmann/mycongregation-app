@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
+  
   Platform,
   Pressable,
   SafeAreaView,
@@ -19,6 +19,7 @@ import { Hall, extractErrorMessage, hallsApi } from '../../../lib/api';
 import { useAuth } from '../../../lib/auth';
 import { Dialog } from '../../../components/Dialog';
 import { notify } from '../../../lib/error-bus';
+import { confirm } from '../../../components/ConfirmHost';
 
 const QK = ['halls'] as const;
 
@@ -107,18 +108,17 @@ export default function HallsScreen() {
     setModalOpen(false);
   };
 
-  const confirmDelete = (hall: Hall) => {
-    const doDelete = () => removeMutation.mutate(hall.id);
-    if (Platform.OS === 'web') {
-      if (window.confirm(`${t('halls.deleteTitle')}\n\n${t('halls.deleteBody')}`)) {
-        doDelete();
-      }
-      return;
+  const confirmDelete = async (hall: Hall) => {
+    if (
+      await confirm({
+        title: t('halls.deleteTitle'),
+        body: t('halls.deleteBody'),
+        confirmLabel: t('halls.deleteConfirm'),
+        danger: true,
+      })
+    ) {
+      removeMutation.mutate(hall.id);
     }
-    Alert.alert(t('halls.deleteTitle'), t('halls.deleteBody'), [
-      { text: t('common.cancel'), style: 'cancel' },
-      { text: t('halls.deleteConfirm'), style: 'destructive', onPress: doDelete },
-    ]);
   };
 
   if (!isAdmin) {

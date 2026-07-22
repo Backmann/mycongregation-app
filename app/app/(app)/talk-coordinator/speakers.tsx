@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
+  
   Platform,
   Pressable,
   SafeAreaView,
@@ -32,6 +32,7 @@ import {
 } from '../../../lib/speaker-stats';
 import { dayDiff, formatRelativeDay } from '../../../lib/relative-time';
 import { notify } from '../../../lib/error-bus';
+import { confirm } from '../../../components/ConfirmHost';
 
 const QK = ['visiting-speakers'] as const;
 
@@ -244,16 +245,17 @@ export default function SpeakersScreen() {
     setEditingId(null);
   };
 
-  const confirmDelete = (s: VisitingSpeaker) => {
-    const doDelete = () => removeMutation.mutate(s.id);
-    if (Platform.OS === 'web') {
-      if (window.confirm(`${t('talkCoordinator.speakers.deleteTitle')}\n\n${speakerName(s)}`)) doDelete();
-      return;
+  const confirmDelete = async (s: VisitingSpeaker) => {
+    if (
+      await confirm({
+        title: t('talkCoordinator.speakers.deleteTitle'),
+        body: speakerName(s),
+        confirmLabel: t('common.delete'),
+        danger: true,
+      })
+    ) {
+      removeMutation.mutate(s.id);
     }
-    Alert.alert(t('talkCoordinator.speakers.deleteTitle'), speakerName(s), [
-      { text: t('common.cancel'), style: 'cancel' },
-      { text: t('common.delete'), style: 'destructive', onPress: doDelete },
-    ]);
   };
 
   if (!perms.canCoordinatePublicTalks) {

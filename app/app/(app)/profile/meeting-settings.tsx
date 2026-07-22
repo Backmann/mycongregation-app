@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
-  Platform,
+  
+  
   Pressable,
   SafeAreaView,
   ScrollView,
@@ -21,6 +21,7 @@ import {
   meetingSettingsApi,
 } from '../../../lib/api';
 import { notify } from '../../../lib/error-bus';
+import { confirm } from '../../../components/ConfirmHost';
 
 const QK = ['meeting-settings'] as const;
 const DOW = [1, 2, 3, 4, 5, 6, 7];
@@ -117,22 +118,17 @@ export default function MeetingSettingsScreen() {
     });
   };
 
-  const confirmDelete = (v: MeetingSettingsVersion) => {
-    const body = t('meetingSettings.deleteConfirm.body', {
-      date: v.effectiveFrom,
-    });
-    if (Platform.OS === 'web') {
-      if (window.confirm(body)) deleteMutation.mutate(v.id);
-      return;
+  const confirmDelete = async (v: MeetingSettingsVersion) => {
+    if (
+      await confirm({
+        title: t('meetingSettings.deleteConfirm.title'),
+        body: t('meetingSettings.deleteConfirm.body', { date: v.effectiveFrom }),
+        confirmLabel: t('meetingSettings.deleteConfirm.action'),
+        danger: true,
+      })
+    ) {
+      deleteMutation.mutate(v.id);
     }
-    Alert.alert(t('meetingSettings.deleteConfirm.title'), body, [
-      { text: t('common.cancel'), style: 'cancel' },
-      {
-        text: t('meetingSettings.deleteConfirm.action'),
-        style: 'destructive',
-        onPress: () => deleteMutation.mutate(v.id),
-      },
-    ]);
   };
 
   if (query.isLoading) {

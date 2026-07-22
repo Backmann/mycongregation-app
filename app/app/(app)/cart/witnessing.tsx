@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
-  Platform,
+  
+  
   Pressable,
   ScrollView,
   StyleSheet,
@@ -32,6 +32,7 @@ import {
   startOfWeekMonday,
 } from '../../../lib/dates';
 import { notify } from '../../../lib/error-bus';
+import { confirm } from '../../../components/ConfirmHost';
 
 const TIME_OPTIONS: string[] = (() => {
   const out: string[] = [];
@@ -244,38 +245,35 @@ export default function WitnessingScreen() {
     return t('witnessing.statusDraft');
   }
 
-  function confirmDelete() {
+  async function confirmDelete() {
     if (!week) return;
     const id = week.id;
-    if (Platform.OS === 'web') {
-      if (window.confirm(t('witnessing.deleteWeekConfirm'))) deleteMutation.mutate(id);
-      return;
+    if (
+      await confirm({
+        title: t('witnessing.deleteWeek'),
+        body: t('witnessing.deleteWeekConfirm'),
+        confirmLabel: t('witnessing.deleteWeek'),
+        cancelLabel: t('witnessing.cancel'),
+        danger: true,
+      })
+    ) {
+      deleteMutation.mutate(id);
     }
-    Alert.alert('', t('witnessing.deleteWeekConfirm'), [
-      { text: t('witnessing.cancel'), style: 'cancel' },
-      {
-        text: t('witnessing.deleteWeek'),
-        style: 'destructive',
-        onPress: () => deleteMutation.mutate(id),
-      },
-    ]);
   }
 
-  function confirmPublish() {
+  async function confirmPublish() {
     if (!week) return;
     const id = week.id;
-    if (Platform.OS === 'web') {
-      if (window.confirm(t('witnessing.publishConfirm')))
-        publishMutation.mutate(id);
-      return;
+    if (
+      await confirm({
+        title: t('witnessing.publish'),
+        body: t('witnessing.publishConfirm'),
+        confirmLabel: t('witnessing.publish'),
+        cancelLabel: t('witnessing.cancel'),
+      })
+    ) {
+      publishMutation.mutate(id);
     }
-    Alert.alert('', t('witnessing.publishConfirm'), [
-      { text: t('witnessing.cancel'), style: 'cancel' },
-      {
-        text: t('witnessing.publish'),
-        onPress: () => publishMutation.mutate(id),
-      },
-    ]);
   }
 
   const byDay = useMemo(() => {
