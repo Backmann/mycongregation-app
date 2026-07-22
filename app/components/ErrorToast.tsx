@@ -7,24 +7,33 @@ import {
   Text,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { onErrorReported } from '../lib/error-bus';
+import { onToast, ToastTone } from '../lib/error-bus';
 
 const VISIBLE_MS = 6000;
 
 /**
- * A strip along the bottom of the screen saying what failed. Until now most
- * requests failed in silence — the screen simply did not change — so a person
- * could not tell a slow network from a refused action. Tapping dismisses it;
- * otherwise it fades away on its own.
+ * A strip along the bottom of the screen for transient messages.
+ *
+ * It began as errors only — most requests failed in silence, so a person could
+ * not tell a slow network from a refused action. It now also carries quiet
+ * successes: an action that works but changes nothing visible (a password
+ * changed, a setting saved) left people unsure it had happened, and on the web
+ * React Native's Alert does not show at all, so the confirmation these screens
+ * intended never appeared.
+ *
+ * One strip, two tones — never two at once. Tapping dismisses it; otherwise it
+ * fades on its own.
  */
-export function ErrorToast() {
+export function Toast() {
   const [message, setMessage] = useState<string | null>(null);
+  const [tone, setTone] = useState<ToastTone>('error');
   const opacity = useRef(new Animated.Value(0)).current;
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    return onErrorReported((m) => {
+    return onToast((m, t) => {
       setMessage(m);
+      setTone(t);
       if (timer.current) clearTimeout(timer.current);
       timer.current = setTimeout(() => setMessage(null), VISIBLE_MS);
     });
@@ -38,24 +47,43 @@ export function ErrorToast() {
     }).start();
   }, [message, opacity]);
 
-  useEffect(() => () => {
-    if (timer.current) clearTimeout(timer.current);
-  }, []);
+  useEffect(
+    () => () => {
+      if (timer.current) clearTimeout(timer.current);
+    },
+    [],
+  );
 
   if (!message) return null;
 
+  const success = tone === 'success';
+
   return (
     <Animated.View style={[styles.wrap, { opacity }]} pointerEvents="box-none">
-      <Pressable style={styles.toast} onPress={() => setMessage(null)}>
-        <Ionicons name="alert-circle" size={18} color="#fecaca" />
+      <Pressable
+        style={[styles.toast, success ? styles.success : styles.error]}
+        onPress={() => setMessage(null)}
+      >
+        <Ionicons
+          name={success ? 'checkmark-circle' : 'alert-circle'}
+          size={18}
+          color={success ? '#bbf7d0' : '#fecaca'}
+        />
         <Text style={styles.text} numberOfLines={3}>
           {message}
         </Text>
-        <Ionicons name="close" size={16} color="#fecaca" />
+        <Ionicons
+          name="close"
+          size={16}
+          color={success ? '#bbf7d0' : '#fecaca'}
+        />
       </Pressable>
     </Animated.View>
   );
 }
+
+/** @deprecated renamed to Toast; kept so the existing import keeps working. */
+export const ErrorToast = Toast;
 
 const styles = StyleSheet.create({
   wrap: {
@@ -73,7 +101,6 @@ const styles = StyleSheet.create({
     gap: 10,
     maxWidth: 520,
     width: '100%',
-    backgroundColor: '#7f1d1d',
     borderRadius: 14,
     paddingVertical: 12,
     paddingHorizontal: 14,
@@ -83,5 +110,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 6 },
     elevation: 6,
   },
+  error: { backgroundColor: '#7f1d1d' },
+  success: { backgroundColor: '#14532d' },
   text: { flex: 1, color: '#fff', fontSize: 13.5, lineHeight: 19 },
 });

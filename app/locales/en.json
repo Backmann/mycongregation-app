@@ -176,7 +176,8 @@
         "tooShort": "New password must be at least 8 characters",
         "sameAsCurrent": "New password must differ from current password",
         "mismatch": "Passwords don't match"
-      }
+      },
+      "successToast": "Password changed"
     },
     "title": "Profile",
     "publicTalksImport": "Bulk import",

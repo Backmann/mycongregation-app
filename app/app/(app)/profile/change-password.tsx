@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -16,6 +15,7 @@ import { useTranslation } from 'react-i18next';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { authApi, extractErrorMessage } from '../../../lib/api';
+import { reportSuccess } from '../../../lib/error-bus';
 
 /**
  * Self-service password change screen — all roles.
@@ -35,11 +35,12 @@ export default function ChangePasswordScreen() {
   const mutation = useMutation({
     mutationFn: () => authApi.changePassword(currentPassword, newPassword),
     onSuccess: () => {
-      Alert.alert(
-        t('profile.changePassword.successTitle'),
-        t('profile.changePassword.successBody'),
-        [{ text: t('common.ok'), onPress: () => router.back() }],
-      );
+      // Go straight back and confirm with a strip along the bottom. The old
+      // Alert never showed on the web at all, so the password changed with no
+      // sign of it; and even where Alert works, an extra "OK" tap to leave a
+      // screen that is already done is a step for nothing.
+      reportSuccess(t('profile.changePassword.successToast'));
+      router.back();
     },
     onError: (err: unknown) => {
       // Server returns 400 with a textual message (e.g. "Current password is
