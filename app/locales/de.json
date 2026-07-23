@@ -1045,7 +1045,8 @@
       "public_witnessing": "Aufseher für öffentliches Zeugnisgeben",
       "cleaning_coordinator": "Reinigungskoordinator",
       "duties_coordinator": "Aufgabenkoordinator",
-      "service_overseer_assistant": "Assistent des Dienstaufsehers"
+      "service_overseer_assistant": "Assistent des Dienstaufsehers",
+      "attendance_recorder": "Besuchszahlen"
     }
   },
   "meetingSettings": {
@@ -2434,5 +2435,11 @@
       "thorough": "gründlich",
       "general": "general"
     }
+  },
+  "attendance": {
+    "cardTitle": "Zusammenkunftsbesuch",
+    "placeholder": "Wie viele anwesend waren",
+    "notHeld": "Die Zusammenkunft fand nicht statt",
+    "saved": "Erfasst"
   }
 }

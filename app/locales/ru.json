@@ -1049,7 +1049,8 @@
       "public_witnessing": "Служение в общественных местах",
       "cleaning_coordinator": "Координатор уборки",
       "duties_coordinator": "Координатор обязанностей",
-      "service_overseer_assistant": "Помощник служебного старейшины"
+      "service_overseer_assistant": "Помощник служебного старейшины",
+      "attendance_recorder": "Учёт посещаемости"
     }
   },
   "meetingSettings": {
@@ -2438,5 +2439,11 @@
       "thorough": "тщательная",
       "general": "генеральная"
     }
+  },
+  "attendance": {
+    "cardTitle": "Посещаемость встречи",
+    "placeholder": "Сколько присутствовало",
+    "notHeld": "Встречи не было",
+    "saved": "Записано"
   }
 }

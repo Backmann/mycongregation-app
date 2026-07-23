@@ -1045,7 +1045,8 @@
       "public_witnessing": "Public Witnessing Overseer",
       "cleaning_coordinator": "Cleaning Coordinator",
       "duties_coordinator": "Duties coordinator",
-      "service_overseer_assistant": "Service overseer's assistant"
+      "service_overseer_assistant": "Service overseer's assistant",
+      "attendance_recorder": "Attendance record"
     }
   },
   "meetingSettings": {
@@ -2434,5 +2435,11 @@
       "thorough": "thorough",
       "general": "general"
     }
+  },
+  "attendance": {
+    "cardTitle": "Meeting attendance",
+    "placeholder": "How many were present",
+    "notHeld": "The meeting was not held",
+    "saved": "Recorded"
   }
 }

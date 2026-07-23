@@ -696,7 +696,8 @@ export type ResponsibilityType =
   | 'accounts_servant'
   | 'public_witnessing'
   | 'cleaning_coordinator'
-  | 'duties_coordinator';
+  | 'duties_coordinator'
+  | 'attendance_recorder';
 
 export interface Responsibility {
   id: string;
@@ -2791,5 +2792,61 @@ export const journalApi = {
       params: filters,
     });
     return data;
+  },
+};
+
+
+// ------------------------------------------------- Посещаемость встреч (S-3)
+
+export interface AttendanceRow {
+  date: string;
+  eventType: 'midweek' | 'weekend';
+  count: number | null;
+  notHeld: boolean;
+}
+
+export interface AttendanceMonth {
+  month: string;
+  midweek: AttendanceRow[];
+  weekend: AttendanceRow[];
+  midweekTotal: number;
+  midweekAverage: number | null;
+  weekendTotal: number;
+  weekendAverage: number | null;
+}
+
+export interface AttendanceYear {
+  startYear: number;
+  months: AttendanceMonth[];
+}
+
+/** A meeting already held with no figure yet. */
+export interface PendingMeeting {
+  date: string;
+  eventType: 'midweek' | 'weekend';
+}
+
+export const attendanceApi = {
+  async pending(): Promise<PendingMeeting[]> {
+    const { data } = await api.get<PendingMeeting[]>(
+      '/meeting-attendance/pending',
+    );
+    return data;
+  },
+  async serviceYear(startYear?: number): Promise<AttendanceYear> {
+    const { data } = await api.get<AttendanceYear>(
+      '/meeting-attendance/service-year',
+      { params: startYear ? { startYear } : undefined },
+    );
+    return data;
+  },
+  async record(input: {
+    date: string;
+    eventType: 'midweek' | 'weekend';
+    count?: number;
+    notHeld?: boolean;
+    note?: string;
+  }): Promise<void> {
+    await api.post('/meeting-attendance', input);
   },
 };

@@ -8,6 +8,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { AttendanceCard } from '../../../components/AttendanceCard';
 import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -883,6 +884,8 @@ export default function HomeScreen() {
             </Pressable>
           ))}
       </ScrollView>
+
+      <AttendanceCard />
 
       <MyTasksCard />
 

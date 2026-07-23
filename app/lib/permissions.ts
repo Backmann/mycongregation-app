@@ -31,6 +31,8 @@ export interface Permissions {
   canImportMidweekSchedule: boolean;
   canImportWeekendSchedule: boolean;
   canEditPublishers: boolean;
+  /** Record meeting attendance (form S-3). */
+  canRecordAttendance: boolean;
   canSubmitReportForOthers: boolean;
   /** S-21 record card — elders only (secretary is an elder too) + admin. */
   canGenerateS21: boolean;
@@ -123,6 +125,10 @@ export function usePermissions(): Permissions {
       canImportMidweekSchedule: isAdmin || isElder,
       canImportWeekendSchedule: isAdmin || isElder,
       canEditPublishers: isAdmin || holds('secretary'),
+      // Meeting attendance (form S-3): the secretary keeps it, and a brother
+      // may be given the attendance responsibility to enter the figures.
+      canRecordAttendance:
+        isAdmin || holds('secretary') || holds('attendance_recorder'),
       canSubmitReportForOthers: isAdmin || isElder,
       canGenerateS21: isAdmin || isElder,
 
