@@ -2333,7 +2333,6 @@
       "service_report": "Отчёты",
       "congregation": "Настройки",
       "backup": "Резервные копии",
-      "User": "Учётные записи",
       "field_service_meeting": "Проповедь",
       "talk_exchange": "Публичные речи",
       "visiting_speaker": "Докладчики",
@@ -2346,7 +2345,8 @@
       "circuit_overseer": "Районный надзиратель",
       "special_event": "Особые события",
       "local_need": "Местные нужды",
-      "cart_location": "Локации тележки"
+      "cart_location": "Локации тележки",
+      "user": "Учётные записи"
     },
     "actions": {
       "CREATE": "добавил",

@@ -51,7 +51,7 @@ const SECTION_TONE: Record<string, string> = {
   cart_location: '#22c55e',
   congregation: '#64748b',
   backup: '#64748b',
-  User: '#64748b',
+  user: '#64748b',
 };
 
 const SECTION_ICON: Record<string, keyof typeof Ionicons.glyphMap> = {
@@ -75,7 +75,7 @@ const SECTION_ICON: Record<string, keyof typeof Ionicons.glyphMap> = {
   cart_location: 'location-outline',
   congregation: 'settings-outline',
   backup: 'shield-checkmark-outline',
-  User: 'key-outline',
+  user: 'key-outline',
 };
 
 /**
@@ -299,6 +299,34 @@ function Row({
     defaultValue: entry.action,
   });
 
+  // Which item this concerns: the meeting, its date, the part. Without it a
+  // line says a publisher was replaced but never says on what.
+  const ctx = entry.context;
+  const contextBits: string[] = [];
+  if (ctx?.eventType) {
+    contextBits.push(
+      t(`assignments.eventTypeShort.${ctx.eventType}`, {
+        defaultValue: ctx.eventType,
+      }),
+    );
+  }
+  if (ctx?.date) {
+    contextBits.push(dayjs(ctx.date).locale(language).format('D MMMM'));
+  }
+  // A specific title beats a generic kind; fall back to the kind's own name.
+  const kindName = ctx?.kind
+    ? t(`parts.${ctx.kind}`, {
+        defaultValue: t(`duties.types.${ctx.kind}`, {
+          defaultValue: t(`cleaning.slots.${ctx.kind}`, {
+            defaultValue: '',
+          }),
+        }),
+      })
+    : '';
+  const what = ctx?.title || kindName;
+  if (what) contextBits.push(what);
+  const contextLine = contextBits.join(' · ');
+
   // The tail is what makes a line answer a question instead of merely
   // recording one: whom it concerned, which fields moved, why it was refused.
   const parts: string[] = [];
@@ -369,6 +397,9 @@ function Row({
           <Text style={styles.strong}>{actor}</Text>
           {` ${action} · ${section}`}
         </Text>
+        {contextLine ? (
+          <Text style={styles.context}>{contextLine}</Text>
+        ) : null}
         {parts.length > 0 ? (
           <Text style={[styles.tail, notable && styles.tailNotable]}>
             {parts.join(' · ')}
@@ -461,6 +492,14 @@ const styles = StyleSheet.create({
   sentence: { fontSize: 14.5, color: '#0f172a', lineHeight: 20 },
   strong: { fontFamily: 'Manrope_700Bold' },
   tail: { fontSize: 12.5, color: '#64748b', marginTop: 2, lineHeight: 17 },
+  // Which item — stated once, quietly, above the values that changed.
+  context: {
+    fontSize: 12.5,
+    color: '#475569',
+    marginTop: 2,
+    lineHeight: 17,
+    fontFamily: 'Manrope_600SemiBold',
+  },
   // A refusal, a look at someone's card, a database leaving the server: the
   // reason this screen exists, so they carry their own weight.
   tailNotable: { color: '#b45309', fontFamily: 'Manrope_600SemiBold' },

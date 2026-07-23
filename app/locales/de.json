@@ -2329,7 +2329,6 @@
       "service_report": "Berichte",
       "congregation": "Einstellungen",
       "backup": "Sicherungen",
-      "User": "Konten",
       "field_service_meeting": "Predigtdienst",
       "talk_exchange": "Öffentliche Vorträge",
       "visiting_speaker": "Redner",
@@ -2342,7 +2341,8 @@
       "circuit_overseer": "Kreisaufseher",
       "special_event": "Besondere Ereignisse",
       "local_need": "Örtliche Bedürfnisse",
-      "cart_location": "Trolley-Standorte"
+      "cart_location": "Trolley-Standorte",
+      "user": "Konten"
     },
     "actions": {
       "CREATE": "hat hinzugefügt",

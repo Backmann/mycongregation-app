@@ -2752,6 +2752,16 @@ export interface JournalEntry {
   changedFields: string[];
   /** Values as they were before the change; null for events with no history. */
   before: Record<string, unknown> | null;
+  /**
+   * Which item the entry is about — the meeting, the date, the part. Null when
+   * it cannot be resolved (usually because the item has since been deleted).
+   */
+  context: {
+    date?: string;
+    eventType?: string;
+    kind?: string;
+    title?: string;
+  } | null;
   detail: Record<string, unknown> | null;
   /** Values cleared at the subject's request; the entry itself remains. */
   redacted: boolean;

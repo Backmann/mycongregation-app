@@ -2329,7 +2329,6 @@
       "service_report": "Reports",
       "congregation": "Settings",
       "backup": "Backups",
-      "User": "Accounts",
       "field_service_meeting": "Field service",
       "talk_exchange": "Public talks",
       "visiting_speaker": "Speakers",
@@ -2342,7 +2341,8 @@
       "circuit_overseer": "Circuit overseer",
       "special_event": "Special events",
       "local_need": "Local needs",
-      "cart_location": "Cart locations"
+      "cart_location": "Cart locations",
+      "user": "Accounts"
     },
     "actions": {
       "CREATE": "added",
