@@ -21,52 +21,27 @@ type Props = {
  * wordmark, rendered in the app font (not an image) so it stays crisp.
  */
 /**
- * The mark itself. On a dark bar it is a white badge with the letter in brand
- * colour: a white glyph laid straight on teal has no edge of its own and reads
- * as nothing at all. Inverting it echoes the app icon — same rounded square,
- * same proportions, colours swapped — and gives the logo a shape that stands
- * apart from the bar it sits on.
+ * The mark itself: the app icon, the same one on the home screen and the
+ * store tile, at every size and on every background.
  *
- * This lives in one place because it is needed twice: the mark alone in
- * section headers, and the mark beside the wordmark on Home. It was written
- * only for the first, so Home kept the old teal-on-teal tile and the badge
- * appeared to do nothing there.
+ * It used to be a white badge with the letter inside on dark bars, because an
+ * older, flatter icon had no edge of its own against teal. The current icon
+ * carries a lighter gradient and a white letter, so it holds up directly on
+ * the bar, and using the real icon means there is exactly ONE brand mark in
+ * the product rather than a header variant that drifts whenever the icon is
+ * redrawn — which is precisely what had happened.
+ *
+ * The source is 1024px, so it stays sharp at 2x and 3x device densities; no
+ * extra corner radius is applied because the icon's own corners are already
+ * rounded and transparent, and rounding twice bites into the artwork.
  */
-function Mark({
-  size,
-  radius,
-  tone,
-}: {
-  size: number;
-  radius: number;
-  tone: Tone;
-}) {
-  if (tone !== 'dark') {
-    return (
-      <Image
-        source={require('../assets/images/icon.png')}
-        style={{ width: size, height: size, borderRadius: radius }}
-      />
-    );
-  }
-  const inner = Math.round(size * 0.62);
+function Mark({ size }: { size: number }) {
   return (
-    <View
-      style={{
-        width: size,
-        height: size,
-        borderRadius: radius,
-        backgroundColor: '#ffffff',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
-    >
-      <Image
-        source={require('../assets/images/brand-mark-teal.png')}
-        style={{ width: Math.round(inner * 0.86), height: inner }}
-        resizeMode="contain"
-      />
-    </View>
+    <Image
+      source={require('../assets/images/icon.png')}
+      style={{ width: size, height: size }}
+      resizeMode="contain"
+    />
   );
 }
 
@@ -78,7 +53,6 @@ export default function BrandLockup({
   markOnly = false,
 }: Props) {
   const wordSize = word ?? Math.round(mark * 0.6);
-  const radius = Math.round(mark * 0.28);
   const stacked = layout === 'stacked';
   const myColor = tone === 'dark' ? '#ffffff' : '#0e7490';
   const restColor = tone === 'dark' ? '#ffffff' : '#0f172a';
@@ -86,7 +60,7 @@ export default function BrandLockup({
   if (markOnly) {
     return (
       <View accessibilityLabel="MyCongregation.org">
-        <Mark size={mark} radius={radius} tone={tone} />
+        <Mark size={mark} />
       </View>
     );
   }
@@ -96,7 +70,7 @@ export default function BrandLockup({
       accessibilityRole="header"
       accessibilityLabel="MyCongregation.org"
     >
-      <Mark size={mark} radius={radius} tone={tone} />
+      <Mark size={mark} />
       <Text
         style={[
           { fontSize: wordSize, fontWeight: '700', fontFamily: 'Manrope_700Bold', letterSpacing: -0.5 },
