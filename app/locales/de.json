@@ -2337,7 +2337,12 @@
       "responsibility": "Aufgaben",
       "auxiliary_pioneer": "Hilfspioniere",
       "service_group": "Dienstgruppen",
-      "absence": "Abwesenheiten"
+      "absence": "Abwesenheiten",
+      "hall": "Säle",
+      "circuit_overseer": "Kreisaufseher",
+      "special_event": "Besondere Ereignisse",
+      "local_need": "Örtliche Bedürfnisse",
+      "cart_location": "Trolley-Standorte"
     },
     "actions": {
       "CREATE": "hat hinzugefügt",
@@ -2366,7 +2371,7 @@
       "notes": "Notizen",
       "name": "Name",
       "role": "Rolle",
-      "isActive": "Konto aktiv",
+      "isActive": "Aktiv",
       "canViewPrivateData": "Zugriff auf private Daten",
       "assignmentAutomationEnabled": "Automatische Zuweisung",
       "timezone": "Zeitzone",
@@ -2399,7 +2404,15 @@
       "untilCancelled": "Bis auf Widerruf",
       "overseerPublisherId": "Gruppenaufseher",
       "startDate": "Beginn",
-      "endDate": "Ende"
+      "endDate": "Ende",
+      "isDefault": "Standard",
+      "title": "Titel",
+      "time": "Startzeit",
+      "wifeName": "Name der Frau",
+      "isPrimary": "Primär",
+      "kind": "Art",
+      "usedWeek": "Verwendet in Woche",
+      "speakerPublisherId": "Redner"
     },
     "noValue": "leer"
   }

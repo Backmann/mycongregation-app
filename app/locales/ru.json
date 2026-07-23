@@ -2341,7 +2341,12 @@
       "responsibility": "Ответственности",
       "auxiliary_pioneer": "Подсобные пионеры",
       "service_group": "Служебные группы",
-      "absence": "Отсутствия"
+      "absence": "Отсутствия",
+      "hall": "Залы",
+      "circuit_overseer": "Районный надзиратель",
+      "special_event": "Особые события",
+      "local_need": "Местные нужды",
+      "cart_location": "Локации тележки"
     },
     "actions": {
       "CREATE": "добавил",
@@ -2370,7 +2375,7 @@
       "notes": "Заметки",
       "name": "Название",
       "role": "Роль",
-      "isActive": "Учётная запись активна",
+      "isActive": "Активна",
       "canViewPrivateData": "Доступ к личным данным",
       "assignmentAutomationEnabled": "Автоматическое назначение",
       "timezone": "Часовой пояс",
@@ -2403,7 +2408,15 @@
       "untilCancelled": "До отмены",
       "overseerPublisherId": "Надзиратель группы",
       "startDate": "Начало",
-      "endDate": "Окончание"
+      "endDate": "Окончание",
+      "isDefault": "Основной",
+      "title": "Название",
+      "time": "Время начала",
+      "wifeName": "Имя жены",
+      "isPrimary": "Основной",
+      "kind": "Вид",
+      "usedWeek": "Использована в неделю",
+      "speakerPublisherId": "Докладчик"
     },
     "noValue": "пусто"
   }

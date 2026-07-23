@@ -2337,7 +2337,12 @@
       "responsibility": "Responsibilities",
       "auxiliary_pioneer": "Auxiliary pioneers",
       "service_group": "Service groups",
-      "absence": "Absences"
+      "absence": "Absences",
+      "hall": "Halls",
+      "circuit_overseer": "Circuit overseer",
+      "special_event": "Special events",
+      "local_need": "Local needs",
+      "cart_location": "Cart locations"
     },
     "actions": {
       "CREATE": "added",
@@ -2366,7 +2371,7 @@
       "notes": "Notes",
       "name": "Name",
       "role": "Role",
-      "isActive": "Account active",
+      "isActive": "Active",
       "canViewPrivateData": "Access to private data",
       "assignmentAutomationEnabled": "Automatic assignment",
       "timezone": "Time zone",
@@ -2399,7 +2404,15 @@
       "untilCancelled": "Until cancelled",
       "overseerPublisherId": "Group overseer",
       "startDate": "Start",
-      "endDate": "End"
+      "endDate": "End",
+      "isDefault": "Default",
+      "title": "Title",
+      "time": "Start time",
+      "wifeName": "Wife's name",
+      "isPrimary": "Primary",
+      "kind": "Kind",
+      "usedWeek": "Used in week",
+      "speakerPublisherId": "Speaker"
     },
     "noValue": "empty"
   }
