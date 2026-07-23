@@ -2340,11 +2340,29 @@
       "DENY": "konnte nicht ändern"
     },
     "about": "zu {{name}}",
-    "fields": "Felder: {{list}}",
     "bulk": "{{count}} auf einmal",
     "denyReason": {
       "past_frozen": "die Zusammenkunft hat bereits stattgefunden"
     },
-    "s21": "die S-21-Karte"
+    "s21": "die S-21-Karte",
+    "fieldNames": {
+      "publisherId": "Zugewiesen an",
+      "assistantPublisherId": "Assistent",
+      "speakerName": "Redner",
+      "serviceGroupId": "Dienstgruppe",
+      "hoursReported": "Stunden",
+      "bibleStudies": "Bibelstudien",
+      "servedThisMonth": "Am Dienst beteiligt",
+      "status": "Status",
+      "statusManuallyOverridden": "Status manuell gesetzt",
+      "notes": "Notizen",
+      "name": "Name",
+      "role": "Rolle",
+      "isActive": "Konto aktiv",
+      "canViewPrivateData": "Zugriff auf private Daten",
+      "assignmentAutomationEnabled": "Automatische Zuweisung",
+      "timezone": "Zeitzone"
+    },
+    "noValue": "leer"
   }
 }

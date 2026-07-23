@@ -87,6 +87,16 @@ export default function JournalScreen() {
     enabled: user?.role === 'admin',
   });
 
+  // Names arrive per page; merge them so an entry rendered from page 3 can
+  // still name a person first seen on page 1.
+  const names = useMemo(() => {
+    const merged: Record<string, string> = {};
+    for (const page of query.data?.pages ?? []) {
+      Object.assign(merged, page.names ?? {});
+    }
+    return merged;
+  }, [query.data]);
+
   const days = useMemo(() => {
     const items = query.data?.pages.flatMap((p) => p.items) ?? [];
     const groups = new Map<string, JournalEntry[]>();
@@ -159,6 +169,7 @@ export default function JournalScreen() {
                   entry={entry}
                   first={index === 0}
                   language={i18n.language}
+                  names={names}
                 />
               ))}
             </View>
@@ -210,14 +221,32 @@ function Chip({
   );
 }
 
+/**
+ * A recorded value as a person should read it: an id becomes the name it
+ * belongs to, an empty value says "empty" rather than showing nothing, and a
+ * date or number is left as it is.
+ */
+function readValue(
+  v: unknown,
+  names: Record<string, string>,
+  t: (k: string, o?: Record<string, unknown>) => string,
+): string | null {
+  if (v === null || v === undefined || v === '') return t('journal.noValue');
+  if (typeof v === 'string') return names[v] ?? v;
+  if (typeof v === 'number' || typeof v === 'boolean') return String(v);
+  return null;
+}
+
 function Row({
   entry,
   first,
   language,
+  names,
 }: {
   entry: JournalEntry;
   first: boolean;
   language: string;
+  names: Record<string, string>;
 }) {
   const { t } = useTranslation();
   const tone = SECTION_TONE[entry.entityType] ?? '#64748b';
@@ -257,8 +286,19 @@ function Row({
   if (typeof entry.detail?.count === 'number') {
     parts.push(t('journal.bulk', { count: entry.detail.count }));
   }
-  if (!entry.redacted && entry.changedFields.length > 0) {
-    parts.push(t('journal.fields', { list: entry.changedFields.join(', ') }));
+  // Each changed field on its own line, "label: was → now". A bare list of
+  // field names answered nothing — the question is who replaced whom.
+  const changes: { label: string; was: string | null; now: string | null }[] =
+    [];
+  if (!entry.redacted) {
+    for (const field of entry.changedFields) {
+      const label = t(`journal.fieldNames.${field}`, { defaultValue: field });
+      changes.push({
+        label,
+        was: readValue(entry.before?.[field], names, t),
+        now: readValue(entry.detail?.[field], names, t),
+      });
+    }
   }
 
   return (
@@ -285,6 +325,16 @@ function Row({
             {parts.join(' · ')}
           </Text>
         ) : null}
+        {changes.map((c) => (
+          <View key={c.label} style={styles.change}>
+            <Text style={styles.changeLabel}>{c.label}</Text>
+            <Text style={styles.changeValue}>
+              {c.was !== null ? <Text style={styles.was}>{c.was}</Text> : null}
+              {c.was !== null && c.now !== null ? '  →  ' : ''}
+              {c.now !== null ? <Text style={styles.now}>{c.now}</Text> : null}
+            </Text>
+          </View>
+        ))}
         {entry.redacted ? (
           <Text style={styles.redacted}>{t('journal.redacted')}</Text>
         ) : null}
@@ -355,6 +405,19 @@ const styles = StyleSheet.create({
   // A refusal, a look at someone's card, a database leaving the server: the
   // reason this screen exists, so they carry their own weight.
   tailNotable: { color: '#b45309', fontFamily: 'Manrope_600SemiBold' },
+  change: { marginTop: 4 },
+  changeLabel: {
+    fontSize: 11,
+    color: '#94a3b8',
+    fontFamily: 'Manrope_600SemiBold',
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+  },
+  changeValue: { fontSize: 13, lineHeight: 19, color: '#334155' },
+  // The old value is stated quietly and struck through; the new one carries
+  // the weight, because that is what holds now.
+  was: { color: '#94a3b8', textDecorationLine: 'line-through' },
+  now: { color: '#0f172a', fontFamily: 'Manrope_600SemiBold' },
   redacted: { fontSize: 12, color: '#94a3b8', fontStyle: 'italic', marginTop: 2 },
 
   more: {

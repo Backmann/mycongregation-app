@@ -2344,11 +2344,29 @@
       "DENY": "не смог изменить"
     },
     "about": "о {{name}}",
-    "fields": "поля: {{list}}",
     "bulk": "сразу {{count}}",
     "denyReason": {
       "past_frozen": "встреча уже прошла"
     },
-    "s21": "карточку S-21"
+    "s21": "карточку S-21",
+    "fieldNames": {
+      "publisherId": "Кому назначено",
+      "assistantPublisherId": "Помощник",
+      "speakerName": "Докладчик",
+      "serviceGroupId": "Служебная группа",
+      "hoursReported": "Часы",
+      "bibleStudies": "Изучения Библии",
+      "servedThisMonth": "Участвовал в служении",
+      "status": "Статус",
+      "statusManuallyOverridden": "Статус задан вручную",
+      "notes": "Заметки",
+      "name": "Название",
+      "role": "Роль",
+      "isActive": "Учётная запись активна",
+      "canViewPrivateData": "Доступ к личным данным",
+      "assignmentAutomationEnabled": "Автоматическое назначение",
+      "timezone": "Часовой пояс"
+    },
+    "noValue": "пусто"
   }
 }

@@ -2750,6 +2750,8 @@ export interface JournalEntry {
   actor: JournalPerson | null;
   subject: JournalPerson | null;
   changedFields: string[];
+  /** Values as they were before the change; null for events with no history. */
+  before: Record<string, unknown> | null;
   detail: Record<string, unknown> | null;
   /** Values cleared at the subject's request; the entry itself remains. */
   redacted: boolean;
@@ -2758,6 +2760,8 @@ export interface JournalEntry {
 export interface JournalPage {
   items: JournalEntry[];
   nextCursor: string | null;
+  /** Ids mentioned anywhere on the page, mapped to readable names. */
+  names: Record<string, string>;
 }
 
 export interface JournalFilters {

@@ -2340,11 +2340,29 @@
       "DENY": "could not change"
     },
     "about": "about {{name}}",
-    "fields": "fields: {{list}}",
     "bulk": "{{count}} at once",
     "denyReason": {
       "past_frozen": "the meeting has already taken place"
     },
-    "s21": "the S-21 card"
+    "s21": "the S-21 card",
+    "fieldNames": {
+      "publisherId": "Assigned to",
+      "assistantPublisherId": "Assistant",
+      "speakerName": "Speaker",
+      "serviceGroupId": "Service group",
+      "hoursReported": "Hours",
+      "bibleStudies": "Bible studies",
+      "servedThisMonth": "Shared in the ministry",
+      "status": "Status",
+      "statusManuallyOverridden": "Status set manually",
+      "notes": "Notes",
+      "name": "Name",
+      "role": "Role",
+      "isActive": "Account active",
+      "canViewPrivateData": "Access to private data",
+      "assignmentAutomationEnabled": "Automatic assignment",
+      "timezone": "Time zone"
+    },
+    "noValue": "empty"
   }
 }
