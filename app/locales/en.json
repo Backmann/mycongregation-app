@@ -2450,6 +2450,9 @@
     "average": "average",
     "nothingYet": "Nothing recorded",
     "notHeldShort": "not held",
-    "yearAverageNote": "Yearly average over {{count}} months"
+    "yearAverageNote": "Yearly average over {{count}} months",
+    "notHeldConfirmTitle": "The meeting was not held?",
+    "notHeldConfirmBody": "Record that no meeting took place on {{date}}. You can correct this on the attendance page.",
+    "backlog": "{{count}} more not recorded"
   }
 }

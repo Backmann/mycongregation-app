@@ -11,9 +11,15 @@ import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
+// Locales are opt-in per file in dayjs: without these the dates come out in
+// English however the app is set, which is exactly what happened here.
+import 'dayjs/locale/ru';
+import 'dayjs/locale/de';
 import { attendanceApi, extractErrorMessage } from '../lib/api';
 import { usePermissions } from '../lib/permissions';
 import { reportError, reportSuccess } from '../lib/error-bus';
+import { confirm } from './ConfirmHost';
+import { router } from 'expo-router';
 
 /**
  * Recording attendance for a meeting that has just been held — form S-3.
@@ -70,19 +76,19 @@ export function AttendanceCard() {
         </View>
         <View style={{ flex: 1 }}>
           <Text style={styles.title}>{t('attendance.cardTitle')}</Text>
+          {/* Which meeting, said in full: the kind by its own name and the
+              weekday spelled out. "Выходные · 19 July" left a reader guessing
+              at both. */}
           <Text style={styles.subtitle}>
-            {t(`assignments.eventTypeShort.${meeting.eventType}`)}
-            {' · '}
-            {dayjs(meeting.date).locale(i18n.language).format('D MMMM')}
+            {t(`eventTypes.${meeting.eventType}`)}
+          </Text>
+          <Text style={styles.subtitleDate}>
+            {dayjs(meeting.date)
+              .locale(i18n.language)
+              .format('dddd, D MMMM')}
           </Text>
         </View>
-        {/* How many are still waiting, so nobody has to guess whether an older
-            meeting was missed. */}
-        {pending.data && pending.data.length > 1 ? (
-          <View style={styles.badge}>
-            <Text style={styles.badgeText}>{pending.data.length}</Text>
-          </View>
-        ) : null}
+
       </View>
 
       <View style={styles.row}>
@@ -115,14 +121,43 @@ export function AttendanceCard() {
       </View>
 
       {/* A meeting that did not happen is not a zero, and recording it as one
-          would drag every monthly average down. */}
+          would drag every monthly average down. Asked for confirmation because
+          it is easy to hit by accident and the card then moves on to the next
+          meeting, leaving no way back from here. */}
       <Pressable
-        onPress={() => save.mutate({ notHeld: true })}
+        onPress={async () => {
+          const ok = await confirm({
+            title: t('attendance.notHeldConfirmTitle'),
+            body: t('attendance.notHeldConfirmBody', {
+              date: dayjs(meeting.date)
+                .locale(i18n.language)
+                .format('D MMMM'),
+            }),
+            confirmLabel: t('attendance.notHeld'),
+          });
+          if (ok) save.mutate({ notHeld: true });
+        }}
         disabled={save.isPending}
         hitSlop={6}
       >
         <Text style={styles.notHeld}>{t('attendance.notHeld')}</Text>
       </Pressable>
+
+      {/* A bare number in the corner said nothing. On first use there IS a
+          backlog, and the honest answer is to name it and offer the page
+          where a whole year can be filled in at once. */}
+      {pending.data && pending.data.length > 1 ? (
+        <Pressable
+          onPress={() => router.push('/service-reports/attendance' as any)}
+          style={styles.backlog}
+          hitSlop={6}
+        >
+          <Text style={styles.backlogText}>
+            {t('attendance.backlog', { count: pending.data.length - 1 })}
+          </Text>
+          <Ionicons name="chevron-forward" size={14} color="#0e7490" />
+        </Pressable>
+      ) : null}
     </View>
   );
 }
@@ -150,20 +185,32 @@ const styles = StyleSheet.create({
     color: '#0f172a',
     fontFamily: 'Manrope_700Bold',
   },
-  subtitle: { fontSize: 12.5, color: '#64748b', marginTop: 1 },
-  badge: {
-    minWidth: 22,
-    height: 22,
-    borderRadius: 11,
-    paddingHorizontal: 6,
-    backgroundColor: '#fef3c7',
-    alignItems: 'center',
-    justifyContent: 'center',
+  subtitle: {
+    fontSize: 13.5,
+    color: '#0f172a',
+    marginTop: 1,
+    fontFamily: 'Manrope_600SemiBold',
   },
-  badgeText: {
-    fontSize: 12,
-    color: '#92400e',
-    fontFamily: 'Manrope_700Bold',
+  subtitleDate: {
+    fontSize: 12.5,
+    color: '#64748b',
+    marginTop: 1,
+    textTransform: 'capitalize',
+  },
+  backlog: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 10,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: '#f1f5f9',
+  },
+  backlogText: {
+    flex: 1,
+    fontSize: 13,
+    color: '#0e7490',
+    fontFamily: 'Manrope_600SemiBold',
   },
   row: { flexDirection: 'row', gap: 8, marginTop: 12 },
   input: {

@@ -12,6 +12,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
+// Locales are opt-in per file in dayjs: without these the dates come out in
+// English however the app is set, which is exactly what happened here.
+import 'dayjs/locale/ru';
+import 'dayjs/locale/de';
 import {
   AttendanceMonth,
   AttendanceRow,

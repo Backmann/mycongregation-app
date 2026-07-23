@@ -2450,6 +2450,9 @@
     "average": "Durchschnitt",
     "nothingYet": "Nichts erfasst",
     "notHeldShort": "fand nicht statt",
-    "yearAverageNote": "Jahresdurchschnitt über {{count}} Monate"
+    "yearAverageNote": "Jahresdurchschnitt über {{count}} Monate",
+    "notHeldConfirmTitle": "Die Zusammenkunft fand nicht statt?",
+    "notHeldConfirmBody": "Erfassen, dass am {{date}} keine Zusammenkunft stattfand. Das lässt sich auf der Besuchsseite korrigieren.",
+    "backlog": "Noch {{count}} ohne Eintrag"
   }
 }
