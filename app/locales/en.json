@@ -2329,7 +2329,11 @@
       "service_report": "Reports",
       "congregation": "Settings",
       "backup": "Backups",
-      "User": "Accounts"
+      "User": "Accounts",
+      "field_service_meeting": "Field service",
+      "talk_exchange": "Public talks",
+      "visiting_speaker": "Speakers",
+      "external_congregation": "Guest congregations"
     },
     "actions": {
       "CREATE": "added",
@@ -2361,7 +2365,29 @@
       "isActive": "Account active",
       "canViewPrivateData": "Access to private data",
       "assignmentAutomationEnabled": "Automatic assignment",
-      "timezone": "Time zone"
+      "timezone": "Time zone",
+      "dayOfWeek": "Day of week",
+      "startTime": "Time",
+      "address": "Place",
+      "conductorPublisherId": "Conductor",
+      "topic": "Topic",
+      "isGeneral": "General meeting",
+      "direction": "Direction",
+      "date": "Date",
+      "publicTalkId": "Talk",
+      "visitingSpeakerId": "Speaker",
+      "speakerCongregation": "Speaker's congregation",
+      "hospitalityPublisherId": "Hospitality",
+      "hostCongregationId": "Host congregation",
+      "firstName": "First name",
+      "lastName": "Last name",
+      "externalCongregationId": "Congregation",
+      "talkNumbers": "Talk numbers",
+      "phone": "Phone",
+      "city": "City",
+      "contactName": "Contact",
+      "contactPhone": "Contact phone",
+      "meetingDow": "Meeting day"
     },
     "noValue": "empty"
   }

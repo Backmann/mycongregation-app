@@ -2333,7 +2333,11 @@
       "service_report": "Отчёты",
       "congregation": "Настройки",
       "backup": "Резервные копии",
-      "User": "Учётные записи"
+      "User": "Учётные записи",
+      "field_service_meeting": "Проповедь",
+      "talk_exchange": "Публичные речи",
+      "visiting_speaker": "Докладчики",
+      "external_congregation": "Собрания-гости"
     },
     "actions": {
       "CREATE": "добавил",
@@ -2365,7 +2369,29 @@
       "isActive": "Учётная запись активна",
       "canViewPrivateData": "Доступ к личным данным",
       "assignmentAutomationEnabled": "Автоматическое назначение",
-      "timezone": "Часовой пояс"
+      "timezone": "Часовой пояс",
+      "dayOfWeek": "День недели",
+      "startTime": "Время",
+      "address": "Место",
+      "conductorPublisherId": "Ведущий",
+      "topic": "Тема",
+      "isGeneral": "Общая встреча",
+      "direction": "Направление",
+      "date": "Дата",
+      "publicTalkId": "Речь",
+      "visitingSpeakerId": "Докладчик",
+      "speakerCongregation": "Собрание докладчика",
+      "hospitalityPublisherId": "Гостеприимство",
+      "hostCongregationId": "Принимающее собрание",
+      "firstName": "Имя",
+      "lastName": "Фамилия",
+      "externalCongregationId": "Собрание",
+      "talkNumbers": "Номера речей",
+      "phone": "Телефон",
+      "city": "Город",
+      "contactName": "Контактное лицо",
+      "contactPhone": "Телефон контакта",
+      "meetingDow": "День встречи"
     },
     "noValue": "пусто"
   }

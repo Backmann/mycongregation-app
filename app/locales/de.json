@@ -2329,7 +2329,11 @@
       "service_report": "Berichte",
       "congregation": "Einstellungen",
       "backup": "Sicherungen",
-      "User": "Konten"
+      "User": "Konten",
+      "field_service_meeting": "Predigtdienst",
+      "talk_exchange": "Öffentliche Vorträge",
+      "visiting_speaker": "Redner",
+      "external_congregation": "Gastversammlungen"
     },
     "actions": {
       "CREATE": "hat hinzugefügt",
@@ -2361,7 +2365,29 @@
       "isActive": "Konto aktiv",
       "canViewPrivateData": "Zugriff auf private Daten",
       "assignmentAutomationEnabled": "Automatische Zuweisung",
-      "timezone": "Zeitzone"
+      "timezone": "Zeitzone",
+      "dayOfWeek": "Wochentag",
+      "startTime": "Uhrzeit",
+      "address": "Ort",
+      "conductorPublisherId": "Leiter",
+      "topic": "Thema",
+      "isGeneral": "Allgemeine Zusammenkunft",
+      "direction": "Richtung",
+      "date": "Datum",
+      "publicTalkId": "Vortrag",
+      "visitingSpeakerId": "Redner",
+      "speakerCongregation": "Versammlung des Redners",
+      "hospitalityPublisherId": "Gastfreundschaft",
+      "hostCongregationId": "Gastgebende Versammlung",
+      "firstName": "Vorname",
+      "lastName": "Nachname",
+      "externalCongregationId": "Versammlung",
+      "talkNumbers": "Vortragsnummern",
+      "phone": "Telefon",
+      "city": "Stadt",
+      "contactName": "Kontaktperson",
+      "contactPhone": "Telefon des Kontakts",
+      "meetingDow": "Zusammenkunftstag"
     },
     "noValue": "leer"
   }
