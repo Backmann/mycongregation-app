@@ -2361,7 +2361,7 @@
     "fieldNames": {
       "publisherId": "Zugewiesen an",
       "assistantPublisherId": "Assistent",
-      "speakerName": "Redner",
+      "speakerName": "Name des Redners",
       "serviceGroupId": "Dienstgruppe",
       "hoursReported": "Stunden",
       "bibleStudies": "Bibelstudien",
@@ -2384,7 +2384,7 @@
       "direction": "Richtung",
       "date": "Datum",
       "publicTalkId": "Vortrag",
-      "visitingSpeakerId": "Redner",
+      "visitingSpeakerId": "Gastredner",
       "speakerCongregation": "Versammlung des Redners",
       "hospitalityPublisherId": "Gastfreundschaft",
       "hostCongregationId": "Gastgebende Versammlung",
@@ -2414,9 +2414,18 @@
       "usedWeek": "Verwendet in Woche",
       "speakerPublisherId": "Redner",
       "mobilePhone": "Telefon",
-      "email": "E-Mail"
+      "email": "E-Mail",
+      "note": "Notiz"
     },
     "noValue": "leer",
-    "changedNoValues": "geändert (Werte werden nicht gespeichert)"
+    "changedNoValues": "geändert (Werte werden nicht gespeichert)",
+    "values": {
+      "incoming": "zu uns",
+      "outgoing": "von uns",
+      "confirmed": "bestätigt",
+      "tentative": "vorläufig",
+      "midweek": "unter der Woche",
+      "weekend": "Wochenende"
+    }
   }
 }

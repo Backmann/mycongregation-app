@@ -2365,7 +2365,7 @@
     "fieldNames": {
       "publisherId": "Кому назначено",
       "assistantPublisherId": "Помощник",
-      "speakerName": "Докладчик",
+      "speakerName": "Имя докладчика",
       "serviceGroupId": "Служебная группа",
       "hoursReported": "Часы",
       "bibleStudies": "Изучения Библии",
@@ -2388,7 +2388,7 @@
       "direction": "Направление",
       "date": "Дата",
       "publicTalkId": "Речь",
-      "visitingSpeakerId": "Докладчик",
+      "visitingSpeakerId": "Приезжий докладчик",
       "speakerCongregation": "Собрание докладчика",
       "hospitalityPublisherId": "Гостеприимство",
       "hostCongregationId": "Принимающее собрание",
@@ -2418,9 +2418,18 @@
       "usedWeek": "Использована в неделю",
       "speakerPublisherId": "Докладчик",
       "mobilePhone": "Телефон",
-      "email": "Электронная почта"
+      "email": "Электронная почта",
+      "note": "Заметка"
     },
     "noValue": "пусто",
-    "changedNoValues": "изменено (значения не сохраняются)"
+    "changedNoValues": "изменено (значения не сохраняются)",
+    "values": {
+      "incoming": "к нам",
+      "outgoing": "от нас",
+      "confirmed": "подтверждено",
+      "tentative": "предварительно",
+      "midweek": "будний день",
+      "weekend": "выходной"
+    }
   }
 }

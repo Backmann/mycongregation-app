@@ -267,7 +267,13 @@ function readValue(
   t: (k: string, o?: Record<string, unknown>) => string,
 ): string | null {
   if (v === null || v === undefined || v === '') return t('journal.noValue');
-  if (typeof v === 'string') return names[v] ?? v;
+  if (typeof v === 'string') {
+    // A name first, then a known code word — "incoming" and "confirmed" are
+    // for the machine, not for whoever opens the journal.
+    if (names[v]) return names[v];
+    const word = t(`journal.values.${v}`, { defaultValue: '' });
+    return word || v;
+  }
   if (typeof v === 'number' || typeof v === 'boolean') return String(v);
   return null;
 }
@@ -369,9 +375,12 @@ function Row({
       const label = t(`journal.fieldNames.${field}`, { defaultValue: field });
       const hadWas = entry.before !== null && field in entry.before;
       const hadNow = entry.detail !== null && field in entry.detail;
+      // A creation has no "before" — showing "empty → X" invents a history
+      // that never existed. State the value it was given.
+      const isCreate = entry.action === 'CREATE';
       changes.push({
         label,
-        was: readValue(entry.before?.[field], names, t),
+        was: isCreate ? null : readValue(entry.before?.[field], names, t),
         now: readValue(entry.detail?.[field], names, t),
         valuesKept: hadWas || hadNow,
       });

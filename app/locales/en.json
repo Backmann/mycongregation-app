@@ -2361,7 +2361,7 @@
     "fieldNames": {
       "publisherId": "Assigned to",
       "assistantPublisherId": "Assistant",
-      "speakerName": "Speaker",
+      "speakerName": "Speaker's name",
       "serviceGroupId": "Service group",
       "hoursReported": "Hours",
       "bibleStudies": "Bible studies",
@@ -2384,7 +2384,7 @@
       "direction": "Direction",
       "date": "Date",
       "publicTalkId": "Talk",
-      "visitingSpeakerId": "Speaker",
+      "visitingSpeakerId": "Visiting speaker",
       "speakerCongregation": "Speaker's congregation",
       "hospitalityPublisherId": "Hospitality",
       "hostCongregationId": "Host congregation",
@@ -2414,9 +2414,18 @@
       "usedWeek": "Used in week",
       "speakerPublisherId": "Speaker",
       "mobilePhone": "Phone",
-      "email": "E-mail"
+      "email": "E-mail",
+      "note": "Note"
     },
     "noValue": "empty",
-    "changedNoValues": "changed (values are not kept)"
+    "changedNoValues": "changed (values are not kept)",
+    "values": {
+      "incoming": "to us",
+      "outgoing": "from us",
+      "confirmed": "confirmed",
+      "tentative": "tentative",
+      "midweek": "midweek",
+      "weekend": "weekend"
+    }
   }
 }
