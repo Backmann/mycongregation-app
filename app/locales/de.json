@@ -2333,7 +2333,11 @@
       "field_service_meeting": "Predigtdienst",
       "talk_exchange": "Öffentliche Vorträge",
       "visiting_speaker": "Redner",
-      "external_congregation": "Gastversammlungen"
+      "external_congregation": "Gastversammlungen",
+      "responsibility": "Aufgaben",
+      "auxiliary_pioneer": "Hilfspioniere",
+      "service_group": "Dienstgruppen",
+      "absence": "Abwesenheiten"
     },
     "actions": {
       "CREATE": "hat hinzugefügt",
@@ -2387,7 +2391,15 @@
       "city": "Stadt",
       "contactName": "Kontaktperson",
       "contactPhone": "Telefon des Kontakts",
-      "meetingDow": "Zusammenkunftstag"
+      "meetingDow": "Zusammenkunftstag",
+      "type": "Art",
+      "userId": "Person",
+      "startMonth": "Ab Monat",
+      "endMonth": "Bis Monat",
+      "untilCancelled": "Bis auf Widerruf",
+      "overseerPublisherId": "Gruppenaufseher",
+      "startDate": "Beginn",
+      "endDate": "Ende"
     },
     "noValue": "leer"
   }

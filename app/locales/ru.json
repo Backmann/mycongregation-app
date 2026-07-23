@@ -2337,7 +2337,11 @@
       "field_service_meeting": "Проповедь",
       "talk_exchange": "Публичные речи",
       "visiting_speaker": "Докладчики",
-      "external_congregation": "Собрания-гости"
+      "external_congregation": "Собрания-гости",
+      "responsibility": "Ответственности",
+      "auxiliary_pioneer": "Подсобные пионеры",
+      "service_group": "Служебные группы",
+      "absence": "Отсутствия"
     },
     "actions": {
       "CREATE": "добавил",
@@ -2391,7 +2395,15 @@
       "city": "Город",
       "contactName": "Контактное лицо",
       "contactPhone": "Телефон контакта",
-      "meetingDow": "День встречи"
+      "meetingDow": "День встречи",
+      "type": "Вид",
+      "userId": "Кому",
+      "startMonth": "С месяца",
+      "endMonth": "По месяц",
+      "untilCancelled": "До отмены",
+      "overseerPublisherId": "Надзиратель группы",
+      "startDate": "Начало",
+      "endDate": "Окончание"
     },
     "noValue": "пусто"
   }

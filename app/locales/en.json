@@ -2333,7 +2333,11 @@
       "field_service_meeting": "Field service",
       "talk_exchange": "Public talks",
       "visiting_speaker": "Speakers",
-      "external_congregation": "Guest congregations"
+      "external_congregation": "Guest congregations",
+      "responsibility": "Responsibilities",
+      "auxiliary_pioneer": "Auxiliary pioneers",
+      "service_group": "Service groups",
+      "absence": "Absences"
     },
     "actions": {
       "CREATE": "added",
@@ -2387,7 +2391,15 @@
       "city": "City",
       "contactName": "Contact",
       "contactPhone": "Contact phone",
-      "meetingDow": "Meeting day"
+      "meetingDow": "Meeting day",
+      "type": "Kind",
+      "userId": "Person",
+      "startMonth": "From month",
+      "endMonth": "To month",
+      "untilCancelled": "Until cancelled",
+      "overseerPublisherId": "Group overseer",
+      "startDate": "Start",
+      "endDate": "End"
     },
     "noValue": "empty"
   }
