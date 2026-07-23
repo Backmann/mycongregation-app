@@ -39,6 +39,22 @@ export default function ServiceReportsLayout() {
                   />
                 </Pressable>
               )}
+              {/* The annual congregation report is the secretary's own
+                  document and names people, so it is not shown to everyone
+                  the way attendance is. */}
+              {canViewServiceSummary && (
+                <Pressable
+                  onPress={() => router.push('/service-reports/annual' as any)}
+                  style={{ paddingHorizontal: 8 }}
+                  hitSlop={8}
+                >
+                  <Ionicons
+                    name="clipboard-outline"
+                    size={22}
+                    color={HEADER_ICON}
+                  />
+                </Pressable>
+              )}
               {/* Attendance sits with the reports because it goes to the
                   circuit overseer like they do. Open to any member: the
                   figures are about the meeting, not about a person. */}
@@ -101,6 +117,10 @@ export default function ServiceReportsLayout() {
           <Stack.Screen
         name="attendance"
         options={{ title: t('attendance.pageTitle') }}
+      />
+      <Stack.Screen
+        name="annual"
+        options={{ title: t('annualReport.pageTitle') }}
       />
 </Stack>
   );

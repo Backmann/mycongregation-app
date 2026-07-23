@@ -2454,5 +2454,21 @@
     "notHeldConfirmTitle": "Die Zusammenkunft fand nicht statt?",
     "notHeldConfirmBody": "Erfassen, dass am {{date}} keine Zusammenkunft stattfand. Das lässt sich auf der Besuchsseite korrigieren.",
     "backlog": "Noch {{count}} ohne Eintrag"
+  },
+  "annualReport": {
+    "pageTitle": "Jahresbericht der Versammlung",
+    "noAccess": "Dieser Bericht ist für den Sekretär.",
+    "attendanceSection": "Durchschnittlicher Besuch",
+    "publishersSection": "Verkündiger",
+    "circumstancesSection": "Besondere Umstände",
+    "byHandSection": "Von Hand auszufüllen",
+    "active": "Aktiv",
+    "activeHint": "Mindestens einen Monat von März bis August berichtet",
+    "becameInactive": "Inaktiv geworden",
+    "becameInactiveHint": "Sechs Monate in Folge ohne Bericht in diesem Dienstjahr",
+    "reactivated": "Wieder aktiv",
+    "reactivatedHint": "Waren inaktiv und berichten wieder",
+    "missingMonths": "Für {{count}} Monate fehlen Besuchszahlen. Der Durchschnitt wird durch 12 geteilt und fällt daher zu niedrig aus — bitte ergänzen.",
+    "byHandNote": "Die App kennt keine Gebiete und kann nicht für die Versammlung über Hilfe vom Zweigbüro antworten — bitte selbst eintragen."
   }
 }

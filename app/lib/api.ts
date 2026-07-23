@@ -2861,3 +2861,32 @@ export const attendanceApi = {
     await api.post('/meeting-attendance', input);
   },
 };
+
+
+// ------------------------------------------- Годовой отчёт собрания (S-10)
+
+export interface CountedPublisher {
+  id: string;
+  name: string;
+  /** The month that put them in this group, where one applies. */
+  month?: string;
+}
+
+export interface AnnualFigures {
+  startYear: number;
+  active: CountedPublisher[];
+  becameInactive: CountedPublisher[];
+  reactivated: CountedPublisher[];
+  deaf: CountedPublisher[];
+  blind: CountedPublisher[];
+  imprisoned: CountedPublisher[];
+}
+
+export const annualReportApi = {
+  async figures(startYear?: number): Promise<AnnualFigures> {
+    const { data } = await api.get<AnnualFigures>('/annual-report', {
+      params: startYear ? { startYear } : undefined,
+    });
+    return data;
+  },
+};

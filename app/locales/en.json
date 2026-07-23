@@ -2454,5 +2454,21 @@
     "notHeldConfirmTitle": "The meeting was not held?",
     "notHeldConfirmBody": "Record that no meeting took place on {{date}}. You can correct this on the attendance page.",
     "backlog": "{{count}} more not recorded"
+  },
+  "annualReport": {
+    "pageTitle": "Annual congregation report",
+    "noAccess": "This report is for the secretary.",
+    "attendanceSection": "Average attendance",
+    "publishersSection": "Publishers",
+    "circumstancesSection": "Special circumstances",
+    "byHandSection": "To fill in by hand",
+    "active": "Active",
+    "activeHint": "Reported at least one month from March to August",
+    "becameInactive": "Became inactive",
+    "becameInactiveHint": "Six consecutive months without a report in this service year",
+    "reactivated": "Reactivated",
+    "reactivatedHint": "Were inactive and began reporting again",
+    "missingMonths": "{{count}} months have no attendance recorded. The average divides by 12, so it reads low — fill the gaps.",
+    "byHandNote": "The app has no territory record and cannot answer for the congregation about help from the branch — write those in yourself."
   }
 }
