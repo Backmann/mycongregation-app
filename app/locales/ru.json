@@ -2381,7 +2381,7 @@
       "timezone": "Часовой пояс",
       "dayOfWeek": "День недели",
       "startTime": "Время",
-      "address": "Место",
+      "address": "Адрес",
       "conductorPublisherId": "Ведущий",
       "topic": "Тема",
       "isGeneral": "Общая встреча",
@@ -2416,8 +2416,11 @@
       "isPrimary": "Основной",
       "kind": "Вид",
       "usedWeek": "Использована в неделю",
-      "speakerPublisherId": "Докладчик"
+      "speakerPublisherId": "Докладчик",
+      "mobilePhone": "Телефон",
+      "email": "Электронная почта"
     },
-    "noValue": "пусто"
+    "noValue": "пусто",
+    "changedNoValues": "изменено (значения не сохраняются)"
   }
 }

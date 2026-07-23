@@ -2377,7 +2377,7 @@
       "timezone": "Zeitzone",
       "dayOfWeek": "Wochentag",
       "startTime": "Uhrzeit",
-      "address": "Ort",
+      "address": "Adresse",
       "conductorPublisherId": "Leiter",
       "topic": "Thema",
       "isGeneral": "Allgemeine Zusammenkunft",
@@ -2412,8 +2412,11 @@
       "isPrimary": "Primär",
       "kind": "Art",
       "usedWeek": "Verwendet in Woche",
-      "speakerPublisherId": "Redner"
+      "speakerPublisherId": "Redner",
+      "mobilePhone": "Telefon",
+      "email": "E-Mail"
     },
-    "noValue": "leer"
+    "noValue": "leer",
+    "changedNoValues": "geändert (Werte werden nicht gespeichert)"
   }
 }

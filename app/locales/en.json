@@ -2377,7 +2377,7 @@
       "timezone": "Time zone",
       "dayOfWeek": "Day of week",
       "startTime": "Time",
-      "address": "Place",
+      "address": "Address",
       "conductorPublisherId": "Conductor",
       "topic": "Topic",
       "isGeneral": "General meeting",
@@ -2412,8 +2412,11 @@
       "isPrimary": "Primary",
       "kind": "Kind",
       "usedWeek": "Used in week",
-      "speakerPublisherId": "Speaker"
+      "speakerPublisherId": "Speaker",
+      "mobilePhone": "Phone",
+      "email": "E-mail"
     },
-    "noValue": "empty"
+    "noValue": "empty",
+    "changedNoValues": "changed (values are not kept)"
   }
 }

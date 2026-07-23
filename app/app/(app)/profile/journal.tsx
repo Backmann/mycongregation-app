@@ -323,15 +323,29 @@ function Row({
   }
   // Each changed field on its own line, "label: was → now". A bare list of
   // field names answered nothing — the question is who replaced whom.
-  const changes: { label: string; was: string | null; now: string | null }[] =
-    [];
+  //
+  // Some changes are recorded WITHOUT their values on purpose: a publisher's
+  // phone, e-mail and address are personal, so the journal keeps the fact that
+  // they changed and never the numbers. Those entries carry no before and no
+  // after at all, and rendering them through the usual path produced
+  // "empty → empty", which reads as a fault rather than as discretion. They
+  // now simply say the field was changed.
+  const changes: {
+    label: string;
+    was: string | null;
+    now: string | null;
+    valuesKept: boolean;
+  }[] = [];
   if (!entry.redacted) {
     for (const field of entry.changedFields) {
       const label = t(`journal.fieldNames.${field}`, { defaultValue: field });
+      const hadWas = entry.before !== null && field in entry.before;
+      const hadNow = entry.detail !== null && field in entry.detail;
       changes.push({
         label,
         was: readValue(entry.before?.[field], names, t),
         now: readValue(entry.detail?.[field], names, t),
+        valuesKept: hadWas || hadNow,
       });
     }
   }
@@ -363,11 +377,21 @@ function Row({
         {changes.map((c) => (
           <View key={c.label} style={styles.change}>
             <Text style={styles.changeLabel}>{c.label}</Text>
-            <Text style={styles.changeValue}>
-              {c.was !== null ? <Text style={styles.was}>{c.was}</Text> : null}
-              {c.was !== null && c.now !== null ? '  →  ' : ''}
-              {c.now !== null ? <Text style={styles.now}>{c.now}</Text> : null}
-            </Text>
+            {c.valuesKept ? (
+              <Text style={styles.changeValue}>
+                {c.was !== null ? (
+                  <Text style={styles.was}>{c.was}</Text>
+                ) : null}
+                {c.was !== null && c.now !== null ? '  →  ' : ''}
+                {c.now !== null ? (
+                  <Text style={styles.now}>{c.now}</Text>
+                ) : null}
+              </Text>
+            ) : (
+              <Text style={styles.changedOnly}>
+                {t('journal.changedNoValues')}
+              </Text>
+            )}
           </View>
         ))}
         {entry.redacted ? (
@@ -452,6 +476,8 @@ const styles = StyleSheet.create({
   // The old value is stated quietly and struck through; the new one carries
   // the weight, because that is what holds now.
   was: { color: '#94a3b8', textDecorationLine: 'line-through' },
+  // Values deliberately not kept — say so plainly instead of showing blanks.
+  changedOnly: { fontSize: 13, lineHeight: 19, color: '#64748b', fontStyle: 'italic' },
   now: { color: '#0f172a', fontFamily: 'Manrope_600SemiBold' },
   redacted: { fontSize: 12, color: '#94a3b8', fontStyle: 'italic', marginTop: 2 },
 
