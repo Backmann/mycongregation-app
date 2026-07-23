@@ -60,20 +60,30 @@ export function ConfirmHost() {
     setPending(null);
   };
 
+  // Mounted ONLY while a question is pending, and that is load-bearing on the
+  // web: react-native-web's Modal appends its own container to the end of the
+  // document when the COMPONENT mounts, not when it becomes visible, and those
+  // containers are position:fixed with no z-index — so whichever mounted last
+  // paints on top. A host mounted at app start therefore sat UNDER every sheet
+  // opened afterwards, and a delete confirmed from inside an editor opened
+  // behind it, invisible: the button appeared to do nothing. Mounting on demand
+  // puts the question last in the document, and so above whatever asked it.
+  if (!pending) return null;
+
   return (
     <Dialog
-      visible={pending !== null}
-      title={pending?.title ?? ''}
-      icon={pending?.danger ? 'warning' : 'help-circle'}
-      iconTint={pending?.danger ? '#dc2626' : '#0ea5e9'}
-      iconBg={pending?.danger ? '#fee2e2' : '#e0f2fe'}
-      confirmLabel={pending?.confirmLabel}
-      confirmDanger={pending?.danger}
+      visible
+      title={pending.title}
+      icon={pending.danger ? 'warning' : 'help-circle'}
+      iconTint={pending.danger ? '#dc2626' : '#0ea5e9'}
+      iconBg={pending.danger ? '#fee2e2' : '#e0f2fe'}
+      confirmLabel={pending.confirmLabel}
+      confirmDanger={pending.danger}
       onConfirm={() => close(true)}
-      cancelLabel={pending?.cancelLabel ?? t('common.cancel')}
+      cancelLabel={pending.cancelLabel ?? t('common.cancel')}
       onCancel={() => close(false)}
     >
-      {pending?.body ? <Text style={styles.body}>{pending.body}</Text> : null}
+      {pending.body ? <Text style={styles.body}>{pending.body}</Text> : null}
     </Dialog>
   );
 }
