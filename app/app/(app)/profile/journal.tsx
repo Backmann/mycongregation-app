@@ -86,6 +86,16 @@ const SECTION_ICON: Record<string, keyof typeof Ionicons.glyphMap> = {
  */
 const NOTABLE = new Set(['DENY', 'VIEW', 'DOWNLOAD']);
 
+/** Detail keys the tail already speaks; listing them again would stutter. */
+const HANDLED_DETAIL = new Set([
+  'reason',
+  'document',
+  'file',
+  'count',
+  'bulk',
+  'weeks',
+]);
+
 const FILTERS = [
   'assignment',
   'duty',
@@ -272,7 +282,10 @@ function readValue(
     // for the machine, not for whoever opens the journal.
     if (names[v]) return names[v];
     const word = t(`journal.values.${v}`, { defaultValue: '' });
-    return word || v;
+    if (word) return word;
+    // A bare ISO date reads better as a date.
+    if (/^\d{4}-\d{2}-\d{2}$/.test(v)) return dayjs(v).format('D MMMM YYYY');
+    return v;
   }
   if (typeof v === 'number' || typeof v === 'boolean') return String(v);
   return null;
@@ -384,6 +397,26 @@ function Row({
         now: readValue(entry.detail?.[field], names, t),
         valuesKept: hadWas || hadNow,
       });
+    }
+
+    // An event — a deletion, a view, a download — has no changed fields, but it
+    // DOES carry the facts recorded at the time: which talk, for which date,
+    // which speaker. They were being stored and never shown, so "deleted ·
+    // Public talks" said nothing about what was deleted.
+    if (entry.changedFields.length === 0 && entry.detail) {
+      for (const [key, value] of Object.entries(entry.detail)) {
+        // These are already spoken in the tail above; saying them twice reads
+        // as a stutter.
+        if (HANDLED_DETAIL.has(key)) continue;
+        const shown = readValue(value, names, t);
+        if (shown === null || shown === t('journal.noValue')) continue;
+        changes.push({
+          label: t(`journal.fieldNames.${key}`, { defaultValue: key }),
+          was: null,
+          now: shown,
+          valuesKept: true,
+        });
+      }
     }
   }
 

@@ -2419,7 +2419,11 @@
       "speakerPublisherId": "Докладчик",
       "mobilePhone": "Телефон",
       "email": "Электронная почта",
-      "note": "Заметка"
+      "note": "Заметка",
+      "weekStartDate": "Неделя",
+      "eventType": "Встреча",
+      "label": "Название",
+      "slotType": "Вид уборки"
     },
     "noValue": "пусто",
     "changedNoValues": "изменено (значения не сохраняются)",
@@ -2429,7 +2433,10 @@
       "confirmed": "подтверждено",
       "tentative": "предварительно",
       "midweek": "будний день",
-      "weekend": "выходной"
+      "weekend": "выходной",
+      "after_meeting": "после встречи",
+      "thorough": "тщательная",
+      "general": "генеральная"
     }
   }
 }

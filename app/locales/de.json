@@ -2415,7 +2415,11 @@
       "speakerPublisherId": "Redner",
       "mobilePhone": "Telefon",
       "email": "E-Mail",
-      "note": "Notiz"
+      "note": "Notiz",
+      "weekStartDate": "Woche",
+      "eventType": "Zusammenkunft",
+      "label": "Bezeichnung",
+      "slotType": "Reinigungsart"
     },
     "noValue": "leer",
     "changedNoValues": "geändert (Werte werden nicht gespeichert)",
@@ -2425,7 +2429,10 @@
       "confirmed": "bestätigt",
       "tentative": "vorläufig",
       "midweek": "unter der Woche",
-      "weekend": "Wochenende"
+      "weekend": "Wochenende",
+      "after_meeting": "nach der Zusammenkunft",
+      "thorough": "gründlich",
+      "general": "general"
     }
   }
 }

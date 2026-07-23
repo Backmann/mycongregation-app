@@ -2415,7 +2415,11 @@
       "speakerPublisherId": "Speaker",
       "mobilePhone": "Phone",
       "email": "E-mail",
-      "note": "Note"
+      "note": "Note",
+      "weekStartDate": "Week",
+      "eventType": "Meeting",
+      "label": "Label",
+      "slotType": "Cleaning kind"
     },
     "noValue": "empty",
     "changedNoValues": "changed (values are not kept)",
@@ -2425,7 +2429,10 @@
       "confirmed": "confirmed",
       "tentative": "tentative",
       "midweek": "midweek",
-      "weekend": "weekend"
+      "weekend": "weekend",
+      "after_meeting": "after the meeting",
+      "thorough": "thorough",
+      "general": "general"
     }
   }
 }
