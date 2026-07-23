@@ -21,6 +21,7 @@ import {
   PublisherActivity,
   publishersApi,
   meetingSettingsApi,
+  PublisherAppointment,
 } from '../lib/api';
 import { ActivitySummary, summarizeActivity } from '../lib/activity';
 import { effectiveVersionFor, meetingDate } from '../lib/meeting-schedule';
@@ -47,6 +48,13 @@ interface Props {
   genderFilter?: 'sister' | 'brother';
   /** If set, only publishers with this appointment are shown (hard filter). */
   appointmentFilter?: 'elder' | 'ministerial_servant';
+  /**
+   * Appointments that cannot be chosen here at all. Used where the privilege
+   * itself is not open to them — an auxiliary pioneer, for instance, must be a
+   * baptized publisher, so a student or an unbaptized publisher never appears
+   * in that list rather than being offered and then refused.
+   */
+  excludeAppointments?: PublisherAppointment[];
   /** Optional per-publisher recent activity, keyed by publisher id. */
   activityById?: Map<string, PublisherActivity>;
   /** Current week (Monday ISO) — flags "this meeting" activity. */
@@ -125,6 +133,7 @@ export function PublisherSelector({
   requiredCapability,
   genderFilter,
   appointmentFilter,
+  excludeAppointments,
   activityById,
   currentWeekStart,
   currentEventType,
@@ -266,6 +275,13 @@ export function PublisherSelector({
     if (excludeIds.includes(p.id)) return false;
     if (genderFilter && p.gender !== genderFilter) return false;
     if (appointmentFilter && p.appointment !== appointmentFilter) return false;
+    if (
+      excludeAppointments &&
+      p.appointment &&
+      excludeAppointments.includes(p.appointment)
+    ) {
+      return false;
+    }
     if (softGenderActive && p.gender !== matchGender) return false;
     if (softApptActive && p.appointment !== preferAppointment) return false;
     if (

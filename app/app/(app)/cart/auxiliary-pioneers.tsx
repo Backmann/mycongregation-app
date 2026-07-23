@@ -363,6 +363,10 @@ export default function AuxiliaryPioneersScreen() {
                 label={t('auxPioneer.publisher')}
                 value={newPublisher}
                 onChange={setNewPublisher}
+                /* Auxiliary pioneering is open to baptized publishers, so a
+                   student or an unbaptized publisher is not offered at all
+                   rather than chosen and then refused later. */
+                excludeAppointments={['student', 'unbaptized_publisher']}
                 boxed
               />
             )}
