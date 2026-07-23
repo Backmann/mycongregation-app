@@ -4,6 +4,7 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
+  Switch,
   Text,
   View,
 } from 'react-native';
@@ -22,6 +23,7 @@ import {
   extractErrorMessage,
 } from '../lib/api';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '../lib/auth';
 
 interface Props {
   initial?: Partial<CreatePublisherInput>;
@@ -41,6 +43,9 @@ export function PublisherForm({
   submitLabel,
 }: Props) {
   const { t } = useTranslation();
+  const { user } = useAuth();
+  // The same door the server uses: pastoral facts are for admins and elders.
+  const canSeePastoral = user?.role === 'admin' || user?.role === 'elder';
 
   const GENDER_OPTIONS: { value: Gender; label: string }[] = [
     { value: 'brother', label: t('publishers.gender.brother') },
@@ -324,6 +329,33 @@ export function PublisherForm({
         />
       </FormSection>
 
+      {/* What the annual congregation report asks about. Kept behind the same
+          door as the service status: these are pastoral facts, and the server
+          does not even send them to anyone else. Recorded here rather than
+          counted by hand each September, so the yearly figures come out right
+          on their own. */}
+      {canSeePastoral ? (
+        <FormSection title={t('publishers.sections.circumstances')}>
+          {(
+            [
+              ['isDeaf', 'publishers.fields.isDeaf'],
+              ['isBlind', 'publishers.fields.isBlind'],
+              ['isImprisoned', 'publishers.fields.isImprisoned'],
+            ] as const
+          ).map(([key, label]) => (
+            <View key={key} style={styles.circumstanceRow}>
+              <Text style={styles.circumstanceLabel}>{t(label)}</Text>
+              <Switch
+                value={form[key] === true}
+                onValueChange={(v) => update(key, v)}
+                trackColor={{ false: '#e2e8f0', true: '#7dd3fc' }}
+                thumbColor={form[key] === true ? '#0ea5e9' : '#f8fafc'}
+              />
+            </View>
+          ))}
+        </FormSection>
+      ) : null}
+
       <FormSection title={t('publishers.sections.notes')}>
         <FormField
           label={t('publishers.fields.generalNotes')}
@@ -370,6 +402,13 @@ export function PublisherForm({
 }
 
 const styles = StyleSheet.create({
+  circumstanceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 8,
+  },
+  circumstanceLabel: { flex: 1, fontSize: 14.5, color: '#0f172a' },
   container: { flex: 1, backgroundColor: '#f1f5f9' },
   content: {
     paddingBottom: 32,

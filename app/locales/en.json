@@ -238,7 +238,8 @@
       "specialNeeds": "Special needs",
       "status": "Status",
       "notes": "Notes",
-      "appAccess": "App access"
+      "appAccess": "App access",
+      "circumstances": "Special circumstances"
     },
     "fields": {
       "phone": "Phone",
@@ -261,7 +262,10 @@
       "mobilePhone": "Mobile phone",
       "generalNotes": "General notes",
       "status": "Status",
-      "spiritualStatus": "Spiritual status"
+      "spiritualStatus": "Spiritual status",
+      "isDeaf": "Deaf (needs sign language)",
+      "isBlind": "Blind",
+      "isImprisoned": "In prison"
     },
     "appointment": {
       "publisher": "Publisher",

@@ -238,7 +238,8 @@
       "specialNeeds": "Besondere Bedürfnisse",
       "status": "Status",
       "notes": "Notizen",
-      "appAccess": "App-Zugang"
+      "appAccess": "App-Zugang",
+      "circumstances": "Besondere Umstände"
     },
     "fields": {
       "phone": "Telefon",
@@ -261,7 +262,10 @@
       "mobilePhone": "Mobiltelefon",
       "generalNotes": "Allgemeine Notizen",
       "status": "Status",
-      "spiritualStatus": "Geistlicher Status"
+      "spiritualStatus": "Geistlicher Status",
+      "isDeaf": "Gehörlos (braucht Gebärdensprache)",
+      "isBlind": "Blind",
+      "isImprisoned": "In Haft"
     },
     "appointment": {
       "publisher": "Verkündiger",

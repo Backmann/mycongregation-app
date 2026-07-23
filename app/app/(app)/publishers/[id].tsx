@@ -259,6 +259,27 @@ export default function PublisherDetailScreen() {
         </View>
       )}
 
+      {/* Only shown when there is something to show, and only to those the
+          server sends it to: an empty section would tell a reader these facts
+          exist and were checked, which is itself more than they need. */}
+      {canSeeStatus &&
+      (publisher.isDeaf || publisher.isBlind || publisher.isImprisoned) ? (
+        <Section title={t('publishers.sections.circumstances')}>
+          {publisher.isDeaf ? (
+            <Field label={t('publishers.fields.isDeaf')} value={t('common.yes')} />
+          ) : null}
+          {publisher.isBlind ? (
+            <Field label={t('publishers.fields.isBlind')} value={t('common.yes')} />
+          ) : null}
+          {publisher.isImprisoned ? (
+            <Field
+              label={t('publishers.fields.isImprisoned')}
+              value={t('common.yes')}
+            />
+          ) : null}
+        </Section>
+      ) : null}
+
       <Section title={t('publishers.sections.contact')}>
         <Field label={t('publishers.fields.phone')} value={publisher.mobilePhone} />
         <Field label={t('publishers.fields.email')} value={publisher.email} />

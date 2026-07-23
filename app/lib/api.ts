@@ -206,6 +206,12 @@ export interface Publisher {
   isActive: boolean;
   /** Computed status — present only for admins/elders (pastoral information). */
   status?: PublisherStatus;
+
+  // Circumstances the annual report asks about — pastoral, so the server
+  // omits them entirely for anyone who is not an admin or an elder.
+  isDeaf?: boolean;
+  isBlind?: boolean;
+  isImprisoned?: boolean;
   appointment: PublisherAppointment;
   baptismDate: string | null;
   spiritualStatus: SpiritualStatus;
@@ -249,6 +255,11 @@ export interface CreatePublisherInput {
   pioneerType?: PioneerType;
   pioneerSince?: string;
   notes?: string;
+  // Circumstances the annual congregation report asks about. The server
+  // sends these only to admins and elders.
+  isDeaf?: boolean;
+  isBlind?: boolean;
+  isImprisoned?: boolean;
   capabilities?: Capabilities;
 }
 export type UpdatePublisherInput = Partial<CreatePublisherInput>;

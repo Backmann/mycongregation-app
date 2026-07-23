@@ -238,7 +238,8 @@
       "specialNeeds": "Особые потребности",
       "status": "Статус",
       "notes": "Заметки",
-      "appAccess": "Доступ к приложению"
+      "appAccess": "Доступ к приложению",
+      "circumstances": "Особые обстоятельства"
     },
     "fields": {
       "phone": "Телефон",
@@ -261,7 +262,10 @@
       "mobilePhone": "Мобильный телефон",
       "generalNotes": "Общие заметки",
       "status": "Статус",
-      "spiritualStatus": "Духовный статус"
+      "spiritualStatus": "Духовный статус",
+      "isDeaf": "Глухой (нужен жестовый язык)",
+      "isBlind": "Слепой",
+      "isImprisoned": "Находится в заключении"
     },
     "appointment": {
       "publisher": "Возвещатель",
