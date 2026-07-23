@@ -2448,6 +2448,12 @@
     "cardTitle": "Посещаемость встречи",
     "placeholder": "Сколько присутствовало",
     "notHeld": "Встречи не было",
-    "saved": "Записано"
+    "saved": "Записано",
+    "pageTitle": "Посещаемость встреч",
+    "serviceYear": "Служебный год {{from}}/{{to}}",
+    "average": "среднее",
+    "nothingYet": "Нет записей",
+    "notHeldShort": "не было",
+    "yearAverageNote": "Среднее за год по {{count}} мес."
   }
 }

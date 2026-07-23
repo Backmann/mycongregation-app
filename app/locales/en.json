@@ -2444,6 +2444,12 @@
     "cardTitle": "Meeting attendance",
     "placeholder": "How many were present",
     "notHeld": "The meeting was not held",
-    "saved": "Recorded"
+    "saved": "Recorded",
+    "pageTitle": "Meeting attendance",
+    "serviceYear": "Service year {{from}}/{{to}}",
+    "average": "average",
+    "nothingYet": "Nothing recorded",
+    "notHeldShort": "not held",
+    "yearAverageNote": "Yearly average over {{count}} months"
   }
 }

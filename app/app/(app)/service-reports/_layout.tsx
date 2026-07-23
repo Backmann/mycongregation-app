@@ -39,6 +39,22 @@ export default function ServiceReportsLayout() {
                   />
                 </Pressable>
               )}
+              {/* Attendance sits with the reports because it goes to the
+                  circuit overseer like they do. Open to any member: the
+                  figures are about the meeting, not about a person. */}
+              <Pressable
+                onPress={() =>
+                  router.push('/service-reports/attendance' as any)
+                }
+                style={{ paddingHorizontal: 8 }}
+                hitSlop={8}
+              >
+                <Ionicons
+                  name="people-circle-outline"
+                  size={24}
+                  color={HEADER_ICON}
+                />
+              </Pressable>
               {canViewActivityFeed && (
                 <Pressable
                   onPress={() => router.push('/service-reports/activity' as any)}
@@ -82,6 +98,10 @@ export default function ServiceReportsLayout() {
         name="activity"
         options={{ title: t('reports.title.activity') }}
       />
-    </Stack>
+          <Stack.Screen
+        name="attendance"
+        options={{ title: t('attendance.pageTitle') }}
+      />
+</Stack>
   );
 }
