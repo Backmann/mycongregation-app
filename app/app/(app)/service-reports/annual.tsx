@@ -18,6 +18,7 @@ import {
   CountedPublisher,
   annualReportApi,
   attendanceApi,
+  extractErrorMessage,
   meetingSettingsApi,
 } from '../../../lib/api';
 import { buildAnnualReportPdfHtml } from '../../../lib/annualReportPdf';
@@ -127,9 +128,20 @@ export default function AnnualReportScreen() {
   }
 
   if (figures.isError) {
+    // Blaming permissions for anything that went wrong sent us looking in the
+    // wrong place for an hour: the real cause was a failing query, and the
+    // screen insisted the report was not available. Only a refusal is called a
+    // refusal now; everything else says what actually happened.
+    const status = (figures.error as { response?: { status?: number } })
+      ?.response?.status;
+    const denied = status === 401 || status === 403;
     return (
       <View style={styles.centre}>
-        <Text style={styles.muted}>{t('annualReport.noAccess')}</Text>
+        <Text style={styles.muted}>
+          {denied
+            ? t('annualReport.noAccess')
+            : extractErrorMessage(figures.error)}
+        </Text>
       </View>
     );
   }
