@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -50,6 +50,16 @@ export default function AttendanceScreen() {
   // Before September the current service year began last calendar year.
   const currentStart = now.month() >= 8 ? now.year() : now.year() - 1;
   const [year, setYear] = useState(currentStart);
+
+  // Open at the month being lived in. A service year is twelve blocks long and
+  // the one that matters is somewhere in the middle, so landing on September
+  // meant scrolling past everything already done to reach it. Only for the
+  // CURRENT year: on a past one there is no "now" to jump to, and its
+  // beginning is the sensible place to start.
+  const scroller = useRef<ScrollView>(null);
+  const monthOffsets = useRef(new Map<string, number>());
+  const jumped = useRef<number | null>(null);
+  const thisMonth = now.format('YYYY-MM-01');
 
   const query = useQuery({
     queryKey: ['attendance', 'year', year],
@@ -114,10 +124,17 @@ export default function AttendanceScreen() {
   }
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+    <ScrollView
+      ref={scroller}
+      style={styles.screen}
+      contentContainerStyle={styles.content}
+    >
       <View style={styles.yearRow}>
         <Pressable
-          onPress={() => setYear(year - 1)}
+          onPress={() => {
+            setYear(year - 1);
+            scroller.current?.scrollTo({ y: 0, animated: false });
+          }}
           hitSlop={10}
           style={styles.yearBtn}
         >
@@ -130,7 +147,10 @@ export default function AttendanceScreen() {
           <Ionicons name="print-outline" size={20} color="#0e7490" />
         </Pressable>
         <Pressable
-          onPress={() => setYear(year + 1)}
+          onPress={() => {
+            setYear(year + 1);
+            scroller.current?.scrollTo({ y: 0, animated: false });
+          }}
           hitSlop={10}
           style={[styles.yearBtn, year >= currentStart && styles.yearBtnOff]}
           disabled={year >= currentStart}
@@ -165,6 +185,23 @@ export default function AttendanceScreen() {
         <MonthBlock
           key={month.month}
           month={month}
+          onMeasured={(y) => {
+            monthOffsets.current.set(month.month, y);
+            if (
+              year === currentStart &&
+              jumped.current !== year &&
+              month.month === thisMonth
+            ) {
+              jumped.current = year;
+              // A breath so the blocks above have reported their heights too,
+              // or the offset is measured against a shorter page than the one
+              // being scrolled.
+              setTimeout(
+                () => scroller.current?.scrollTo({ y, animated: false }),
+                0,
+              );
+            }
+          }}
           language={i18n.language}
           editable={perms.canRecordAttendance}
           onSaved={() => void qc.invalidateQueries({ queryKey: ['attendance'] })}
@@ -199,17 +236,22 @@ function MonthBlock({
   language,
   editable,
   onSaved,
+  onMeasured,
 }: {
   month: AttendanceMonth;
   language: string;
   editable: boolean;
   onSaved: () => void;
+  onMeasured: (y: number) => void;
 }) {
   const { t } = useTranslation();
   const empty = month.midweek.length === 0 && month.weekend.length === 0;
 
   return (
-    <View style={[styles.month, empty && styles.monthEmpty]}>
+    <View
+      style={[styles.month, empty && styles.monthEmpty]}
+      onLayout={(e) => onMeasured(e.nativeEvent.layout.y)}
+    >
       <View style={styles.monthHead}>
         <Text style={styles.monthName}>
           {dayjs(month.month).locale(language).format('MMMM YYYY')}
