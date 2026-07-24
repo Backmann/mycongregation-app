@@ -116,6 +116,9 @@ export default function NewOrEditServiceReportScreen() {
     queryKey: ['aux-pioneers', 'mine', reportMonth],
     queryFn: () => auxiliaryPioneersApi.mine(reportMonth),
     enabled: !isEditMode && !isOnBehalf && !!reportMonth,
+    // Эндпоинт отвечает положением целиком; форме нужен только ответ «да/нет».
+    // Ключ запроса общий с главной, поэтому и форма кэша должна быть одна.
+    select: (s) => s.serving,
   });
 
   const [servedThisMonth, setServedThisMonth] = useState<boolean | null>(null);

@@ -2196,6 +2196,8 @@
     "untilCancelledHint": "serves indefinitely until stopped",
     "singleMonthHint": "only for {{month}}",
     "youAreServing": "You serve as an auxiliary pioneer",
+    "badgeServing": "Auxiliary pioneer · {{period}}",
+    "badgeUpcoming": "Auxiliary pioneering from {{month}}",
     "servesAsAux": "Serves as an auxiliary pioneer",
     "addTitle2": "Add an auxiliary pioneer",
     "startMonth": "Start month",

@@ -32,6 +32,10 @@ import { effectiveVersionFor } from '../../../lib/meeting-schedule';
 import { addDays, formatDateISO, startOfWeekMonday } from '../../../lib/dates';
 import { useAuth } from '../../../lib/auth';
 import { useMyPublisher } from '../../../lib/useMyPublisher';
+import {
+  auxMonthSinceLabel,
+  auxPeriodLabel,
+} from '../../../lib/aux-pioneer-period';
 import { LoadError } from '../../../components/LoadError';
 import {
   refineMyTasks,
@@ -156,7 +160,7 @@ function GreetingHeader() {
   const { t, i18n } = useTranslation();
   const { myPublisher } = useMyPublisher();
   const currentMonth = `${new Date().toISOString().slice(0, 7)}-01`;
-  const { data: iAmAux } = useQuery({
+  const { data: auxStatus } = useQuery({
     queryKey: ['aux-pioneers', 'mine', currentMonth],
     queryFn: () => auxiliaryPioneersApi.mine(currentMonth),
   });
@@ -175,6 +179,35 @@ function GreetingHeader() {
     day: 'numeric',
     month: 'long',
   });
+
+  // Тип пионерского служения — это СОСТОЯНИЕ: месяцы к нему не относятся.
+  // Подсобное — это СРОК, и без срока значок почти ничего не сообщает.
+  const pioneerType = myPublisher?.pioneerType ?? 'none';
+  const namedPioneer = ['regular', 'special', 'missionary'].includes(
+    pioneerType,
+  );
+  const nowLabel = namedPioneer
+    ? t(`publishers.pioneer.detail.${pioneerType}`)
+    : auxStatus?.current
+      ? t('auxPioneer.badgeServing', {
+          period: auxPeriodLabel(t, i18n.language, auxStatus.current, {
+            hideCurrentYear: true,
+          }),
+        })
+      : null;
+  // Сейчас ничего, но период уже оформлен: знать в июле, что август назначен,
+  // — это и есть польза. Значок тише и с другим значком: это ещё не сейчас.
+  const aheadLabel =
+    !nowLabel && auxStatus?.upcoming
+      ? t('auxPioneer.badgeUpcoming', {
+          month: auxMonthSinceLabel(
+            i18n.language,
+            auxStatus.upcoming.startMonth,
+            { hideCurrentYear: true },
+          ),
+        })
+      : null;
+
   return (
     <View style={styles.greeting}>
       <Text style={styles.greetingText}>
@@ -182,11 +215,16 @@ function GreetingHeader() {
         {name ? `, ${name}` : ''}
       </Text>
       <Text style={styles.greetingDate}>{dateLine}</Text>
-      {iAmAux ? (
+      {nowLabel ? (
         <View style={styles.auxBadge}>
           <Ionicons name="infinite" size={13} color="#0F6E56" />
-          <Text style={styles.auxBadgeText}>
-            {t('auxPioneer.youAreServing')}
+          <Text style={styles.auxBadgeText}>{nowLabel}</Text>
+        </View>
+      ) : aheadLabel ? (
+        <View style={[styles.auxBadge, styles.auxBadgeAhead]}>
+          <Ionicons name="calendar-outline" size={13} color="#3F6C8F" />
+          <Text style={[styles.auxBadgeText, styles.auxBadgeAheadText]}>
+            {aheadLabel}
           </Text>
         </View>
       ) : null}
@@ -962,6 +1000,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#E1F5EE',
   },
   auxBadgeText: { fontSize: 12, fontWeight: '600', color: '#0F6E56' },
+  // Период ещё впереди — тот же значок, но приглушённый: это не «сейчас».
+  auxBadgeAhead: { backgroundColor: '#E8EFF6' },
+  auxBadgeAheadText: { color: '#3F6C8F' },
   actionStrip: { marginHorizontal: -16, marginBottom: 4 },
   actionStripContent: { paddingHorizontal: 16, gap: 14 },
   actionItem: { alignItems: 'center', width: 78 },

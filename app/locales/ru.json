@@ -2200,6 +2200,8 @@
     "untilCancelledHint": "служит бессрочно, пока не остановят",
     "singleMonthHint": "только за {{month}}",
     "youAreServing": "Вы служите подсобным пионером",
+    "badgeServing": "Подсобный пионер · {{period}}",
+    "badgeUpcoming": "Подсобное пионерское служение с {{month}}",
     "servesAsAux": "Служит подсобным пионером",
     "addTitle2": "Добавить подсобного пионера",
     "startMonth": "Месяц начала",

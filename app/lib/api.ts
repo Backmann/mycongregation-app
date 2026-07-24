@@ -2693,6 +2693,23 @@ export interface AuxPioneerJournalRow {
   currentPioneerType: PioneerType;
 }
 
+/** One own enrolment period. */
+export interface MyAuxPioneerPeriod {
+  startMonth: string;
+  endMonth: string | null;
+  untilCancelled: boolean;
+}
+
+/**
+ * The signed-in publisher's own standing around a month: the period covering
+ * it, and the next one that has not started yet.
+ */
+export interface MyAuxPioneerStatus {
+  serving: boolean;
+  current: MyAuxPioneerPeriod | null;
+  upcoming: MyAuxPioneerPeriod | null;
+}
+
 export const auxiliaryPioneersApi = {
   async listForMonth(monthIso: string): Promise<{
     month: string;
@@ -2710,13 +2727,16 @@ export const auxiliaryPioneersApi = {
     );
     return data;
   },
-  /** Whether the current user serves as an auxiliary pioneer in the month. */
-  async mine(monthIso: string): Promise<boolean> {
-    const { data } = await api.get<{ serving: boolean }>(
+  /**
+   * The caller's OWN standing in a month — never the roster: whether they
+   * serve in it, the period covering it, and the next one not yet started.
+   */
+  async mine(monthIso: string): Promise<MyAuxPioneerStatus> {
+    const { data } = await api.get<MyAuxPioneerStatus>(
       '/auxiliary-pioneers/mine',
       { params: { month: monthIso } },
     );
-    return data.serving;
+    return data;
   },
   async create(input: {
     publisherId: string;

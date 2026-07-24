@@ -22,6 +22,10 @@ import {
   AuxPioneerMonthRow,
 } from '../../../lib/api';
 import { usePermissions } from '../../../lib/permissions';
+import {
+  auxPeriodLabel,
+  type PeriodLike,
+} from '../../../lib/aux-pioneer-period';
 import { PublisherSelector } from '../../../components/PublisherSelector';
 import { Dialog } from '../../../components/Dialog';
 
@@ -155,48 +159,9 @@ export default function AuxiliaryPioneersScreen() {
   const reduced = (monthQuery.data?.hourGoal ?? 30) === 15;
   const rows = monthQuery.data?.rows ?? [];
 
-  const fmtMonth = (iso: string) =>
-    dayjs(iso).locale(i18n.language).format('MMMM YYYY');
-
-  // Russian needs the genitive case after "с" (since): "с июля", not "с июль".
-  const RU_GENITIVE = [
-    'января',
-    'февраля',
-    'марта',
-    'апреля',
-    'мая',
-    'июня',
-    'июля',
-    'августа',
-    'сентября',
-    'октября',
-    'ноября',
-    'декабря',
-  ];
-  const fmtMonthSince = (iso: string) => {
-    const d = dayjs(iso);
-    if (i18n.language === 'ru') {
-      return `${RU_GENITIVE[d.month()]} ${d.year()}`;
-    }
-    return fmtMonth(iso);
-  };
-
-  const periodLabel = (r: {
-    startMonth: string;
-    endMonth: string | null;
-    untilCancelled: boolean;
-  }) => {
-    if (r.untilCancelled)
-      return t('auxPioneer.untilCancelledSince', {
-        month: fmtMonthSince(r.startMonth),
-      });
-    if (r.endMonth && r.endMonth.slice(0, 7) === r.startMonth.slice(0, 7))
-      return t('auxPioneer.onlyMonth', { month: fmtMonth(r.startMonth) });
-    return t('auxPioneer.rangeMonths', {
-      from: fmtMonth(r.startMonth),
-      to: r.endMonth ? fmtMonth(r.endMonth) : '…',
-    });
-  };
+  // Формулировка живёт в lib/aux-pioneer-period.ts — теми же словами говорит
+  // значок на главной. Здесь год не скрываем: журнал тянется через годы.
+  const periodLabel = (r: PeriodLike) => auxPeriodLabel(t, i18n.language, r);
 
   return (
     <SafeAreaView style={styles.safe} edges={['bottom']}>
