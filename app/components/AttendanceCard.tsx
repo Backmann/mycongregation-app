@@ -51,7 +51,7 @@ export function AttendanceCard() {
     staleTime: 5 * 60 * 1000,
   });
 
-  const meeting = pending.data?.[0];
+  const meeting = pending.data?.meetings?.[0];
 
   const save = useMutation({
     mutationFn: (input: { count?: number; notHeld?: boolean }) =>
@@ -152,14 +152,16 @@ export function AttendanceCard() {
       {/* A bare number in the corner said nothing. On first use there IS a
           backlog, and the honest answer is to name it and offer the page
           where a whole year can be filled in at once. */}
-      {pending.data && pending.data.length > 1 ? (
+      {pending.data && pending.data.outstandingThisYear > 1 ? (
         <Pressable
           onPress={() => router.push('/service-reports/attendance' as any)}
           style={styles.backlog}
           hitSlop={6}
         >
           <Text style={styles.backlogText}>
-            {t('attendance.backlog', { count: pending.data.length - 1 })}
+            {t('attendance.backlog', {
+              count: pending.data.outstandingThisYear - 1,
+            })}
           </Text>
           <Ionicons name="chevron-forward" size={14} color="#0e7490" />
         </Pressable>

@@ -2457,7 +2457,7 @@
     "yearAverageNote": "Среднее за год по {{count}} мес.",
     "notHeldConfirmTitle": "Встречи не было?",
     "notHeldConfirmBody": "Записать, что встреча {{date}} не проводилась. Это можно поправить на странице посещаемости.",
-    "backlog": "Ещё {{count}} без записи",
+    "backlog": "Ещё {{count}} без записи за служебный год",
     "missing": "не внесено",
     "corrected": "изменено",
     "monthColumn": "Месяц",

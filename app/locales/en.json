@@ -2453,7 +2453,7 @@
     "yearAverageNote": "Yearly average over {{count}} months",
     "notHeldConfirmTitle": "The meeting was not held?",
     "notHeldConfirmBody": "Record that no meeting took place on {{date}}. You can correct this on the attendance page.",
-    "backlog": "{{count}} more not recorded",
+    "backlog": "{{count}} more unrecorded this service year",
     "missing": "not entered",
     "corrected": "corrected",
     "monthColumn": "Month",

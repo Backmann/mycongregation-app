@@ -2844,9 +2844,15 @@ export interface PendingMeeting {
   eventType: 'midweek' | 'weekend';
 }
 
+export interface PendingAttendance {
+  meetings: PendingMeeting[];
+  /** Everything still unrecorded in the current service year. */
+  outstandingThisYear: number;
+}
+
 export const attendanceApi = {
-  async pending(): Promise<PendingMeeting[]> {
-    const { data } = await api.get<PendingMeeting[]>(
+  async pending(): Promise<PendingAttendance> {
+    const { data } = await api.get<PendingAttendance>(
       '/meeting-attendance/pending',
     );
     return data;
