@@ -24,6 +24,8 @@ import {
   Publisher,
   SpecialEvent,
   Absence,
+  MyCoVisit,
+  MyCoVisitItem,
 } from './api';
 import { effectiveVersionFor } from './meeting-schedule';
 import { addDays, formatDateISO, startOfWeekMonday } from './dates';
@@ -79,7 +81,32 @@ export interface AbsenceEntry {
   absence: Absence;
 }
 
-export type TimelineEntry = MeetingEntry | EventEntry | TaskEntry | AbsenceEntry;
+/**
+ * The circuit-overseer visit — a whole special week, shown as a distinctive
+ * banner at its first day in the window rather than a generic event row.
+ */
+export interface VisitEntry {
+  type: 'visit';
+  key: string;
+  dateISO: string;
+  event: SpecialEvent;
+}
+
+/** One of my own items during a CO visit (hospitality, service with the CO…). */
+export interface CoVisitItemEntry {
+  type: 'co_visit';
+  key: string;
+  dateISO: string;
+  item: MyCoVisitItem;
+}
+
+export type TimelineEntry =
+  | MeetingEntry
+  | EventEntry
+  | TaskEntry
+  | AbsenceEntry
+  | VisitEntry
+  | CoVisitItemEntry;
 
 export interface DayGroup {
   dateISO: string;
@@ -93,6 +120,8 @@ export interface Timeline {
   far: RefinedTask[];
   /** My away-periods starting beyond the near window (any future date). */
   farAbsences: Absence[];
+  /** My CO-visit items dated beyond the near window. */
+  farCoVisit: MyCoVisitItem[];
 }
 
 export interface BuildTimelineInput {
@@ -102,6 +131,8 @@ export interface BuildTimelineInput {
   events: SpecialEvent[];
   /** The signed-in person's own away-periods. */
   absences: Absence[];
+  /** The signed-in person's own CO-visit items (and their visits). */
+  coVisits?: MyCoVisit[];
   myItems: MyAssignmentItem[];
   todayISO: string;
   /** Text for a field-service meeting the signed-in person conducts. */
@@ -152,6 +183,7 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
     publishersById,
     events,
     absences = [],
+    coVisits = [],
     myItems,
     todayISO,
     youConductLabel,
@@ -291,7 +323,13 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
       }
     }
     if (!placed) continue;
-    entries.push({ type: 'event', key: `ev-${e.id}`, dateISO: placed, event: e });
+    // The circuit-overseer visit is a whole special week — a distinctive
+    // banner, not a generic event row.
+    if (e.type === 'circuit_overseer_visit') {
+      entries.push({ type: 'visit', key: `visit-${e.id}`, dateISO: placed, event: e });
+    } else {
+      entries.push({ type: 'event', key: `ev-${e.id}`, dateISO: placed, event: e });
+    }
   }
 
   // ---- My own non-meeting tasks (cleaning, cart, outgoing talk, co-lunch) ----
@@ -318,17 +356,31 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
     entries.push({ type: 'absence', key: `abs-${a.id}`, dateISO: placed, absence: a });
   }
 
+  // ---- My own CO-visit items (personal, breathing) ----
+  const coVisitItems: MyCoVisitItem[] = coVisits.flatMap((v) => v.items);
+  for (const it of coVisitItems) {
+    if (!inNear(it.itemDate)) continue;
+    entries.push({
+      type: 'co_visit',
+      key: `cov-${it.id}`,
+      dateISO: it.itemDate,
+      item: it,
+    });
+  }
+
   // ---- Group the near window by day, ordered by date then time ----
-  // Absences carry no time and read as all-day context, so they sort to the
-  // top of their day, ahead of timed rows.
+  // The visit banner and absences carry no time and read as all-day context,
+  // so they sort to the top of their day, ahead of timed rows.
   const timeOf = (en: TimelineEntry): string =>
     en.type === 'meeting'
       ? en.time
       : en.type === 'event'
         ? en.event.time ?? '00:00'
-        : en.type === 'absence'
+        : en.type === 'absence' || en.type === 'visit'
           ? '00:00'
-          : en.task.item.time ?? en.task.meetingTime ?? '99:99';
+          : en.type === 'co_visit'
+            ? en.item.startTime ?? '99:99'
+            : en.task.item.time ?? en.task.meetingTime ?? '99:99';
 
   entries.sort(
     (a, b) => a.dateISO.localeCompare(b.dateISO) || timeOf(a).localeCompare(timeOf(b)),
@@ -352,5 +404,10 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
     .filter((a) => a.startDate > nearEndISO)
     .sort((x, y) => x.startDate.localeCompare(y.startDate));
 
-  return { near, far, farAbsences };
+  // ---- Far CO-visit items: my items dated beyond the near window ----
+  const farCoVisit = coVisitItems
+    .filter((it) => it.itemDate > nearEndISO)
+    .sort((x, y) => x.itemDate.localeCompare(y.itemDate));
+
+  return { near, far, farAbsences, farCoVisit };
 }

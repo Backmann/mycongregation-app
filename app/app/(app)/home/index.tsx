@@ -576,7 +576,120 @@ function TimelineRow({
   if (entry.type === 'absence') {
     return <AbsenceRow absence={entry.absence} />;
   }
+  if (entry.type === 'visit') {
+    return <VisitBanner event={entry.event} />;
+  }
+  if (entry.type === 'co_visit') {
+    return <CoVisitRow item={entry.item} />;
+  }
   return <EventRow event={entry.event} />;
+}
+
+/** kind → title for a CO-visit item (shared by the near row and the far row). */
+function coVisitKindLabel(kind: string, t: (k: string) => string): string {
+  switch (kind) {
+    case 'accommodation':
+      return t('coVisit.accTitle');
+    case 'field_service':
+      return t('coVisit.fieldServiceTitle');
+    case 'lunch':
+      return t('coVisit.lunchesTitle');
+    case 'lunch_box':
+      return t('coVisit.lunchBoxTitle');
+    case 'pastoral':
+      return t('coVisit.pastoralTitle');
+    case 'pioneers':
+      return t('coVisit.pioneersTitle');
+    default:
+      return t('coVisit.eldersTitle');
+  }
+}
+
+function coVisitWithLabel(
+  it: MyCoVisitItem,
+  t: (k: string) => string,
+): string | null {
+  if (it.kind === 'accommodation') return t('coVisit.accMine');
+  if (it.kind !== 'field_service' || !it.serviceWith) return null;
+  return it.serviceWith === 'wife'
+    ? t('coVisit.mineWithWife')
+    : it.serviceWith === 'joint'
+      ? t('coVisit.mineJoint')
+      : t('coVisit.mineWithCo');
+}
+
+function coVisitPlace(it: MyCoVisitItem): string {
+  return it.placeKind === 'cart_location'
+    ? (it.cartLocationName ?? '')
+    : (it.placeText ?? '');
+}
+
+/**
+ * The circuit-overseer visit — a distinctive teal banner naming the whole
+ * special week, so the days beneath it read as out of the ordinary.
+ */
+function VisitBanner({ event: e }: { event: SpecialEvent }) {
+  const { t, i18n } = useTranslation();
+  const start = new Date(`${e.date}T00:00:00`);
+  const range = e.endDate
+    ? rangeLabel(start, new Date(`${e.endDate}T00:00:00`), i18n.language)
+    : start.toLocaleDateString(i18n.language, { day: 'numeric', month: 'long' });
+  return (
+    <Pressable
+      style={({ pressed }) => [tl.visitBanner, pressed && { opacity: 0.7 }]}
+      onPress={() => router.push(`/special-events/${e.id}` as any)}
+    >
+      <Ionicons name="briefcase" size={18} color="#0e7490" />
+      <View style={{ flex: 1 }}>
+        <Text style={tl.visitTitle}>{t('coVisit.mineTitle')}</Text>
+        <Text style={tl.visitRange}>{range}</Text>
+      </View>
+    </Pressable>
+  );
+}
+
+/** One of my own CO-visit items — a personal, breathing row. */
+function CoVisitRow({ item: it }: { item: MyCoVisitItem }) {
+  const { t } = useTranslation();
+  const wl = coVisitWithLabel(it, t);
+  const place = coVisitPlace(it);
+  const kind: SectionKind =
+    it.kind === 'field_service' ? 'field_service' : 'meeting';
+  return (
+    <MyGlowRow kind={kind} radius={12} style={tl.mineRow}>
+      <View style={tl.mineHead}>
+        <MyDot size={8} kind={kind} />
+        <Text style={[tl.mineKind, { color: '#0e7490' }]}>
+          {coVisitKindLabel(it.kind, t)}
+        </Text>
+        {it.startTime ? (
+          <Text style={tl.mineMeta}> · {it.startTime}</Text>
+        ) : null}
+      </View>
+      {wl ? <Text style={tl.mineTitle}>{wl}</Text> : null}
+      {place ? <Text style={tl.mineMeta}>{place}</Text> : null}
+      {it.note ? <Text style={tl.coNote}>{it.note}</Text> : null}
+    </MyGlowRow>
+  );
+}
+
+/** A CO-visit item in the collapsed "further out" zone. */
+function FarCoVisitRow({ item: it }: { item: MyCoVisitItem }) {
+  const { t, i18n } = useTranslation();
+  const d = new Date(`${it.itemDate}T00:00:00`);
+  const date = d.toLocaleDateString(i18n.language, {
+    day: 'numeric',
+    month: 'short',
+  });
+  return (
+    <View style={tl.farRow}>
+      <Text style={tl.farDate}>{date}</Text>
+      <View style={[tl.farDot, { backgroundColor: '#0e7490' }]} />
+      <Text style={tl.farTitle} numberOfLines={1}>
+        {coVisitKindLabel(it.kind, t)}
+      </Text>
+    </View>
+  );
 }
 
 /** One compact line in the collapsed "further out" zone — my own items only. */
@@ -681,6 +794,11 @@ function HomeTimeline() {
     retry: false,
     staleTime: 60 * 1000,
   });
+  const coVisitQ = useQuery({
+    queryKey: ['co-visit-mine'],
+    queryFn: () => coVisitItemsApi.mine(),
+    staleTime: 60 * 1000,
+  });
 
   const timeline = useMemo(() => {
     const publishersById = new Map<string, Publisher>(
@@ -696,6 +814,7 @@ function HomeTimeline() {
       publishersById,
       events: eventsQ.data ?? [],
       absences: absencesQ.data ?? [],
+      coVisits: coVisitQ.data ?? [],
       myItems: tasksQ.data?.items ?? [],
       todayISO,
       youConductLabel: t('home.feed.youConduct'),
@@ -717,6 +836,7 @@ function HomeTimeline() {
     eventsQ.data,
     tasksQ.data,
     absencesQ.data,
+    coVisitQ.data,
     todayISO,
     i18n.language,
   ]);
@@ -777,7 +897,10 @@ function HomeTimeline() {
         ))
       )}
 
-      {timeline.far.length + timeline.farAbsences.length > 0 ? (
+      {timeline.far.length +
+        timeline.farAbsences.length +
+        timeline.farCoVisit.length >
+      0 ? (
         <>
           <Pressable
             style={tl.farToggle}
@@ -792,7 +915,10 @@ function HomeTimeline() {
             <Text style={tl.farToggleTitle}>{t('home.timeline.far')}</Text>
             <Text style={tl.farToggleHint}>
               {t('home.timeline.farHint', {
-                count: timeline.far.length + timeline.farAbsences.length,
+                count:
+                  timeline.far.length +
+                  timeline.farAbsences.length +
+                  timeline.farCoVisit.length,
               })}
             </Text>
           </Pressable>
@@ -800,6 +926,9 @@ function HomeTimeline() {
             <View style={{ marginTop: 2 }}>
               {timeline.far.map((r, idx) => (
                 <FarRow key={`far-${idx}-${r.dateISO}`} task={r} />
+              ))}
+              {timeline.farCoVisit.map((it) => (
+                <FarCoVisitRow key={`far-cov-${it.id}`} item={it} />
               ))}
               {timeline.farAbsences.map((a) => (
                 <FarAbsenceRow key={`far-abs-${a.id}`} absence={a} />
@@ -812,126 +941,7 @@ function HomeTimeline() {
   );
 }
 
-function CoVisitBlock() {
-  const { t, i18n } = useTranslation();
-  const { data } = useQuery({
-    queryKey: ['co-visit-mine'],
-    queryFn: () => coVisitItemsApi.mine(),
-    staleTime: 60 * 1000,
-  });
-  const visits = data ?? [];
-  if (visits.length === 0) return null;
 
-  const fmtDay = (iso: string) =>
-    new Date(`${iso}T00:00:00`).toLocaleDateString(i18n.language, {
-      weekday: 'short',
-      day: '2-digit',
-      month: '2-digit',
-    });
-  const kindName = (k: string) =>
-    k === 'accommodation'
-      ? t('coVisit.accTitle')
-      : k === 'field_service'
-      ? t('coVisit.fieldServiceTitle')
-      : k === 'lunch'
-        ? t('coVisit.lunchesTitle')
-        : k === 'lunch_box'
-          ? t('coVisit.lunchBoxTitle')
-          : k === 'pastoral'
-            ? t('coVisit.pastoralTitle')
-            : k === 'pioneers'
-              ? t('coVisit.pioneersTitle')
-              : t('coVisit.eldersTitle');
-  const place = (it: MyCoVisitItem) =>
-    it.placeKind === 'cart_location'
-      ? (it.cartLocationName ?? '')
-      : (it.placeText ?? '');
-  const withLabel = (it: MyCoVisitItem) =>
-    it.kind === 'accommodation'
-      ? t('coVisit.accMine')
-      : it.kind !== 'field_service' || !it.serviceWith
-      ? null
-      : it.serviceWith === 'wife'
-        ? t('coVisit.mineWithWife')
-        : it.serviceWith === 'joint'
-          ? t('coVisit.mineJoint')
-          : t('coVisit.mineWithCo');
-
-  return (
-    <>
-      {visits.map(({ visit, items }) => (
-        <View key={visit.id} style={coStyles.card}>
-          <View style={coStyles.head}>
-            <Ionicons name="briefcase-outline" size={18} color="#0e7490" />
-            <Text style={coStyles.title}>{t('coVisit.mineTitle')}</Text>
-            <Text style={coStyles.period}>
-              {fmtDay(visit.date)}
-              {visit.endDate && visit.endDate !== visit.date
-                ? ` – ${fmtDay(visit.endDate)}`
-                : ''}
-            </Text>
-          </View>
-          {items.map((it) => {
-            const wl = withLabel(it);
-            const key = k(it);
-            return (
-              <View key={key} style={coStyles.row}>
-                <View style={coStyles.when}>
-                  <Text style={coStyles.day}>{fmtDay(it.itemDate)}</Text>
-                  <Text style={coStyles.time}>{it.startTime ?? '—'}</Text>
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={coStyles.kind}>{kindName(it.kind)}</Text>
-                  {wl ? <Text style={coStyles.withText}>{wl}</Text> : null}
-                  {place(it) ? (
-                    <Text style={coStyles.meta}>{place(it)}</Text>
-                  ) : null}
-                  {it.note ? (
-                    <Text style={coStyles.note}>{it.note}</Text>
-                  ) : null}
-                </View>
-              </View>
-            );
-          })}
-        </View>
-      ))}
-    </>
-  );
-}
-const k = (it: MyCoVisitItem) => it.id;
-
-const coStyles = StyleSheet.create({
-  card: {
-    backgroundColor: '#ffffff',
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: '#a5f3fc',
-    padding: 14,
-    marginTop: 16,
-  },
-  head: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 8,
-  },
-  title: { fontSize: 15, fontWeight: '800', fontFamily: 'Manrope_800ExtraBold', color: '#0e7490', flex: 1 },
-  period: { fontSize: 12, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#64748b' },
-  row: {
-    flexDirection: 'row',
-    gap: 10,
-    paddingVertical: 8,
-    borderTopWidth: 1,
-    borderTopColor: '#f1f5f9',
-  },
-  when: { width: 74 },
-  day: { fontSize: 13, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0f172a' },
-  time: { fontSize: 13, color: '#64748b', marginTop: 1 },
-  kind: { fontSize: 14, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0f172a' },
-  withText: { fontSize: 12.5, color: '#0e7490', fontWeight: '600', fontFamily: 'Manrope_600SemiBold', marginTop: 1 },
-  meta: { fontSize: 13, color: '#475569', marginTop: 1 },
-  note: { fontSize: 13, color: '#7c3aed', fontWeight: '600', fontFamily: 'Manrope_600SemiBold', marginTop: 2 },
-});
 
 type Tile = {
   key: string;
@@ -1006,8 +1016,6 @@ export default function HomeScreen() {
       <AttendanceCard />
 
       <HomeTimeline />
-
-      <CoVisitBlock />
 
     </ScrollView>
   );
@@ -1095,6 +1103,30 @@ const tl = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  visitBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: '#ecfeff',
+    borderWidth: 1,
+    borderColor: '#a5f3fc',
+    borderRadius: 12,
+    paddingVertical: 11,
+    paddingHorizontal: 12,
+  },
+  visitTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
+    color: '#0e7490',
+  },
+  visitRange: { fontSize: 12.5, color: '#0891b2', marginTop: 1 },
+  coNote: {
+    fontSize: 12.5,
+    color: '#7c3aed',
+    fontFamily: 'Manrope_600SemiBold',
+    marginTop: 2,
   },
   absenceRow: {
     flexDirection: 'row',
