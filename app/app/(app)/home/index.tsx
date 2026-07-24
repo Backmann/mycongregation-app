@@ -580,7 +580,7 @@ function MyTasksCard() {
     return (
       <>
         <View style={[styles.sectionHeader, { marginTop: 24 }]}>
-          <Text style={styles.sectionTitle}>{t('home.myWeek')}</Text>
+          <Text style={styles.sectionTitle}>{t('home.myTasks')}</Text>
         </View>
         <SkeletonCard rows={2} />
       </>
@@ -591,26 +591,31 @@ function MyTasksCard() {
   if (tasksFailed && !data) {
     return <LoadError onRetry={() => refetchTasks()} />;
   }
-  if (!data || data.items.length === 0) return null;
-
-  const refined = refineMyTasks(data.items, versions, todayISO);
-  if (refined.length === 0) return null;
+  // Пустой список — это факт, а не причина исчезнуть: пропавший блок
+  // читается как сбой загрузки или как «раздела нет». Заголовок остаётся,
+  // карточка говорит прямо.
+  const refined = data ? refineMyTasks(data.items, versions, todayISO) : [];
   const top = refined.slice(0, 3);
 
   return (
     <>
       <View style={[styles.sectionHeader, { marginTop: 24 }]}>
-        <Text style={styles.sectionTitle}>{t('home.myWeek')}</Text>
-        <Pressable
-          onPress={() => router.push('/home/my-assignments' as any)}
-          hitSlop={8}
-        >
-          <Text style={styles.link}>
-            {t('home.allTasks', { count: refined.length })}
-          </Text>
-        </Pressable>
+        <Text style={styles.sectionTitle}>{t('home.myTasks')}</Text>
+        {refined.length > 0 ? (
+          <Pressable
+            onPress={() => router.push('/home/my-assignments' as any)}
+            hitSlop={8}
+          >
+            <Text style={styles.link}>
+              {t('home.allTasks', { count: refined.length })}
+            </Text>
+          </Pressable>
+        ) : null}
       </View>
       <View style={styles.card}>
+        {top.length === 0 ? (
+          <Text style={styles.muted}>{t('home.myTasksScreen.empty')}</Text>
+        ) : null}
         {top.map((r, idx) => {
           const v = taskVisual(r.item);
           return (
