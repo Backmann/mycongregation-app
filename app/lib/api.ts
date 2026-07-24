@@ -2816,6 +2816,11 @@ export interface AttendanceRow {
   notHeld: boolean;
   /** False when the meeting happened but no figure has been entered yet. */
   recorded: boolean;
+  /** Who entered the figure and when it was last written. */
+  recordedByName?: string | null;
+  recordedAt?: string | null;
+  /** True when the figure was changed after it was first entered. */
+  corrected?: boolean;
 }
 
 export interface AttendanceMonth {
@@ -2874,8 +2879,15 @@ export interface CountedPublisher {
   month?: string;
 }
 
+export interface MonthlyReporters {
+  month: string;
+  count: number;
+}
+
 export interface AnnualFigures {
   startYear: number;
+  /** Reports received per month — the shape of the year, not a judgement. */
+  monthlyReporters: MonthlyReporters[];
   active: CountedPublisher[];
   becameInactive: CountedPublisher[];
   reactivated: CountedPublisher[];

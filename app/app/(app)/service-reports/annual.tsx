@@ -138,6 +138,25 @@ export default function AnnualReportScreen() {
       <Text style={styles.sectionTitle}>
         {t('annualReport.publishersSection')}
       </Text>
+
+      {/* The shape of the year, stated plainly. The app cannot tell "did not
+          share" from "not collected yet", so it does not pretend to: a month
+          standing far below its neighbours says the data is not in, and the
+          secretary is the one who can tell which it is. */}
+      <View style={styles.monthsCard}>
+        <Text style={styles.monthsTitle}>{t('annualReport.reportsPerMonth')}</Text>
+        <View style={styles.monthsRow}>
+          {f.monthlyReporters.map((m) => (
+            <View key={m.month} style={styles.monthCell}>
+              <Text style={styles.monthCount}>{m.count}</Text>
+              <Text style={styles.monthName}>
+                {dayjs(m.month).locale(i18n.language).format('MMM')}
+              </Text>
+            </View>
+          ))}
+        </View>
+        <Text style={styles.monthsNote}>{t('annualReport.reportsPerMonthNote')}</Text>
+      </View>
       <Figure
         id="active"
         label={t('annualReport.active')}
@@ -330,6 +349,45 @@ const styles = StyleSheet.create({
   },
   warnText: { flex: 1, fontSize: 13, color: '#92400e', lineHeight: 18 },
 
+  monthsCard: {
+    backgroundColor: '#fff',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    padding: 12,
+    marginBottom: 8,
+  },
+  monthsTitle: {
+    fontSize: 13,
+    color: '#0f172a',
+    fontFamily: 'Manrope_600SemiBold',
+    marginBottom: 8,
+  },
+  monthsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 4 },
+  monthCell: {
+    minWidth: 44,
+    flexGrow: 1,
+    alignItems: 'center',
+    paddingVertical: 5,
+    borderRadius: 8,
+    backgroundColor: '#f8fafc',
+  },
+  monthCount: {
+    fontSize: 15,
+    color: '#0e7490',
+    fontFamily: 'Manrope_700Bold',
+  },
+  monthName: {
+    fontSize: 10.5,
+    color: '#94a3b8',
+    textTransform: 'capitalize',
+  },
+  monthsNote: {
+    fontSize: 11.5,
+    color: '#94a3b8',
+    marginTop: 8,
+    lineHeight: 16,
+  },
   figure: {
     backgroundColor: '#fff',
     borderRadius: 14,

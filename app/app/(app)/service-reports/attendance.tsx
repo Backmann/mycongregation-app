@@ -274,6 +274,7 @@ function MeetingRow({
   const valid = value.trim() !== '' && Number.isInteger(parsed) && parsed >= 0;
 
   return (
+    <View style={styles.rowWrap}>
     <View style={styles.row}>
       {/* Week by week, said plainly: the ordinal within the month is what the
           form's five columns mean, and seeing 1-2-3-4 run without a break is
@@ -343,6 +344,24 @@ function MeetingRow({
           )}
         </>
       )}
+    </View>
+
+    {/* Who put the figure there and when. A sheet that goes to the circuit
+        overseer should carry its own account of itself; a correction is
+        proper, but it should be visible rather than buried in the journal. */}
+    {row.recorded && !editing ? (
+      <Text style={styles.signature}>
+        {[
+          row.recordedByName,
+          row.recordedAt
+            ? dayjs(row.recordedAt).locale(language).format('D MMM, HH:mm')
+            : null,
+          row.corrected ? t('attendance.corrected') : null,
+        ]
+          .filter(Boolean)
+          .join(' · ')}
+      </Text>
+    ) : null}
     </View>
   );
 }
@@ -430,11 +449,19 @@ const styles = StyleSheet.create({
     fontFamily: 'Manrope_600SemiBold',
     marginBottom: 2,
   },
+  rowWrap: { paddingVertical: 2 },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 6,
     gap: 10,
+  },
+  signature: {
+    fontSize: 11.5,
+    color: '#94a3b8',
+    marginLeft: 76,
+    marginTop: -4,
+    marginBottom: 4,
   },
   rowWeek: {
     width: 18,
