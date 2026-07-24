@@ -27,6 +27,7 @@ import {
   coVisitItemsApi,
   MyCoVisitItem,
   auxiliaryPioneersApi,
+  serviceReportsApi,
 } from '../../../lib/api';
 import { effectiveVersionFor } from '../../../lib/meeting-schedule';
 import { addDays, formatDateISO, startOfWeekMonday } from '../../../lib/dates';
@@ -36,6 +37,7 @@ import {
   auxMonthSinceLabel,
   auxPeriodLabel,
 } from '../../../lib/aux-pioneer-period';
+import { monthLabel } from '../../../lib/month-label';
 import { LoadError } from '../../../components/LoadError';
 import {
   refineMyTasks,
@@ -229,6 +231,64 @@ function GreetingHeader() {
         </View>
       ) : null}
     </View>
+  );
+}
+
+/**
+ * Собственное состояние отчёта за прошлый месяц. Пустое место читается как
+ * поломка, поэтому «сдан» проговаривается так же явно, как «не сдан».
+ */
+function ReportStandingCard() {
+  const { t, i18n } = useTranslation();
+  const { data } = useQuery({
+    queryKey: ['reports', 'my-standing'],
+    queryFn: () => serviceReportsApi.myStanding(),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  if (!data || !data.applicable || !data.reportMonth) return null;
+
+  const month = monthLabel(i18n.language, data.reportMonth, {
+    hideCurrentYear: true,
+  });
+
+  if (data.submitted) {
+    return (
+      <Pressable
+        style={({ pressed }) => [
+          styles.reportCard,
+          styles.reportCardDone,
+          pressed && { opacity: 0.7 },
+        ]}
+        onPress={() => router.push('/service-reports' as any)}
+      >
+        <Ionicons name="checkmark-circle" size={20} color="#16794f" />
+        <Text style={[styles.reportText, styles.reportTextDone]}>
+          {t('home.report.submitted', { month })}
+        </Text>
+      </Pressable>
+    );
+  }
+
+  return (
+    <Pressable
+      style={({ pressed }) => [
+        styles.reportCard,
+        styles.reportCardDue,
+        pressed && { opacity: 0.7 },
+      ]}
+      onPress={() =>
+        router.push(
+          `/service-reports/new?reportMonth=${data.reportMonth}` as any,
+        )
+      }
+    >
+      <Ionicons name="document-text-outline" size={20} color="#b45309" />
+      <Text style={[styles.reportText, styles.reportTextDue]}>
+        {t('home.report.outstanding', { month })}
+      </Text>
+      <Ionicons name="chevron-forward" size={18} color="#b45309" />
+    </Pressable>
   );
 }
 
@@ -928,6 +988,8 @@ export default function HomeScreen() {
           ))}
       </ScrollView>
 
+      <ReportStandingCard />
+
       <AttendanceCard />
 
       <MyTasksCard />
@@ -1003,6 +1065,21 @@ const styles = StyleSheet.create({
   // Период ещё впереди — тот же значок, но приглушённый: это не «сейчас».
   auxBadgeAhead: { backgroundColor: '#E8EFF6' },
   auxBadgeAheadText: { color: '#3F6C8F' },
+  reportCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    marginTop: 16,
+  },
+  reportCardDue: { backgroundColor: '#fffbeb', borderColor: '#fde68a' },
+  reportCardDone: { backgroundColor: '#f0fdf4', borderColor: '#bbf7d0' },
+  reportText: { flex: 1, fontSize: 14, fontWeight: '600', fontFamily: 'Manrope_600SemiBold' },
+  reportTextDue: { color: '#92400e' },
+  reportTextDone: { color: '#166534' },
   actionStrip: { marginHorizontal: -16, marginBottom: 4 },
   actionStripContent: { paddingHorizontal: 16, gap: 14 },
   actionItem: { alignItems: 'center', width: 78 },

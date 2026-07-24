@@ -1796,6 +1796,10 @@
     },
     "myAbsences": "Meine Abwesenheiten",
     "myTasks": "Meine nächsten Aufgaben",
+    "report": {
+      "outstanding": "Bericht für {{month}} nicht abgegeben",
+      "submitted": "Bericht für {{month}} abgegeben"
+    },
     "weekOf": "Woche ab {{date}}",
     "kinds": {
       "meeting": "Zusammenkunft",

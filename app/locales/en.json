@@ -1796,6 +1796,10 @@
     },
     "myAbsences": "My absences",
     "myTasks": "My upcoming assignments",
+    "report": {
+      "outstanding": "The {{month}} report isn't submitted",
+      "submitted": "The {{month}} report is submitted"
+    },
     "weekOf": "Week of {{date}}",
     "kinds": {
       "meeting": "meeting",

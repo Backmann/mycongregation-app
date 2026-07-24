@@ -2383,6 +2383,18 @@ export const songsApi = {
   },
 };
 
+/**
+ * The signed-in publisher's own standing for the month they should be
+ * reporting now (the previous calendar month). `applicable` is false for
+ * anyone who does not submit reports; then the card shows nothing.
+ */
+export interface MyReportStanding {
+  applicable: boolean;
+  reportMonth: string | null;
+  submitted: boolean;
+  reportId: string | null;
+}
+
 export const serviceReportsApi = {
   async submit(input: SubmitServiceReportInput): Promise<ServiceReport> {
     const { data } = await api.post<ServiceReport>('/service-reports', cleanPayload(input));
@@ -2390,6 +2402,13 @@ export const serviceReportsApi = {
   },
   async listMy(): Promise<ServiceReport[]> {
     const { data } = await api.get<ServiceReport[]>('/service-reports/my');
+    return data;
+  },
+  /** The caller's own report standing for the previous month. */
+  async myStanding(): Promise<MyReportStanding> {
+    const { data } = await api.get<MyReportStanding>(
+      '/service-reports/my-standing',
+    );
     return data;
   },
   async getById(id: string): Promise<ServiceReport> {

@@ -1800,6 +1800,10 @@
     },
     "myAbsences": "Мои отсутствия",
     "myTasks": "Мои ближайшие задания",
+    "report": {
+      "outstanding": "Отчёт за {{month}} не сдан",
+      "submitted": "Отчёт за {{month}} сдан"
+    },
     "weekOf": "Неделя с {{date}}",
     "kinds": {
       "meeting": "встреча",
