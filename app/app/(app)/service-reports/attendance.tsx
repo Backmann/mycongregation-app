@@ -228,10 +228,11 @@ function MeetingList({
       <Text style={styles.kindLabel}>
         {t(`assignments.eventTypeShort.${kind}`)}
       </Text>
-      {rows.map((r) => (
+      {rows.map((r, i) => (
         <MeetingRow
           key={`${r.date}-${r.eventType}`}
           row={r}
+          index={i}
           language={language}
           editable={editable}
           onSaved={onSaved}
@@ -243,11 +244,13 @@ function MeetingList({
 
 function MeetingRow({
   row,
+  index,
   language,
   editable,
   onSaved,
 }: {
   row: AttendanceRow;
+  index: number;
   language: string;
   editable: boolean;
   onSaved: () => void;
@@ -272,6 +275,10 @@ function MeetingRow({
 
   return (
     <View style={styles.row}>
+      {/* Week by week, said plainly: the ordinal within the month is what the
+          form's five columns mean, and seeing 1-2-3-4 run without a break is
+          how a reader knows nothing was missed. */}
+      <Text style={styles.rowWeek}>{index + 1}</Text>
       <Text style={styles.rowDate}>
         {dayjs(row.date).locale(language).format('D MMM')}
       </Text>
@@ -305,11 +312,21 @@ function MeetingRow({
         </>
       ) : (
         <>
-          {/* A meeting that was not held is stated as such, never as a zero —
-              a zero would say nobody came. */}
-          <Text style={[styles.rowValue, row.notHeld && styles.rowNotHeld]}>
-            {row.notHeld ? t('attendance.notHeldShort') : row.count}
-          </Text>
+          {/* Three states, told apart on purpose. A meeting not held is said
+              in words, never as a zero — a zero would say nobody came. A
+              meeting nobody entered is shown as a gap, so the eye catches the
+              break in the run instead of sliding past a shorter list. */}
+          {row.notHeld ? (
+            <Text style={[styles.rowValue, styles.rowNotHeld]}>
+              {t('attendance.notHeldShort')}
+            </Text>
+          ) : !row.recorded ? (
+            <Text style={[styles.rowValue, styles.rowMissing]}>
+              {t('attendance.missing')}
+            </Text>
+          ) : (
+            <Text style={styles.rowValue}>{row.count}</Text>
+          )}
           {editable ? (
             <Pressable
               onPress={() => {
@@ -419,12 +436,25 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     gap: 10,
   },
-  rowDate: { width: 64, fontSize: 13.5, color: '#475569' },
+  rowWeek: {
+    width: 18,
+    fontSize: 11.5,
+    color: '#cbd5e1',
+    fontFamily: 'Manrope_700Bold',
+    textAlign: 'center',
+  },
+  rowDate: { width: 58, fontSize: 13.5, color: '#475569' },
   rowValue: {
     flex: 1,
     fontSize: 15,
     color: '#0f172a',
     fontFamily: 'Manrope_600SemiBold',
+  },
+  rowMissing: {
+    color: '#b45309',
+    fontStyle: 'italic',
+    fontFamily: undefined,
+    fontSize: 13,
   },
   rowNotHeld: {
     color: '#94a3b8',

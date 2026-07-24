@@ -2814,6 +2814,8 @@ export interface AttendanceRow {
   eventType: 'midweek' | 'weekend';
   count: number | null;
   notHeld: boolean;
+  /** False when the meeting happened but no figure has been entered yet. */
+  recorded: boolean;
 }
 
 export interface AttendanceMonth {

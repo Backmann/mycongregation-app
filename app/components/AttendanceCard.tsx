@@ -6,6 +6,7 @@ import {
   Text,
   TextInput,
   View,
+  useWindowDimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -35,6 +36,10 @@ import { router } from 'expo-router';
  */
 export function AttendanceCard() {
   const { t, i18n } = useTranslation();
+  // On a phone the field and the button crowded each other and the button lost
+  // its label to ellipsis. Below this width they stack instead.
+  const { width } = useWindowDimensions();
+  const narrow = width < 420;
   const perms = usePermissions();
   const qc = useQueryClient();
   const [value, setValue] = useState('');
@@ -91,7 +96,7 @@ export function AttendanceCard() {
 
       </View>
 
-      <View style={styles.row}>
+      <View style={[styles.row, narrow && styles.rowStacked]}>
         <TextInput
           style={styles.input}
           value={value}
@@ -106,6 +111,7 @@ export function AttendanceCard() {
         <Pressable
           style={({ pressed }) => [
             styles.save,
+            narrow && styles.saveWide,
             (!valid || save.isPending) && styles.saveOff,
             pressed && { opacity: 0.7 },
           ]}
@@ -213,6 +219,8 @@ const styles = StyleSheet.create({
     fontFamily: 'Manrope_600SemiBold',
   },
   row: { flexDirection: 'row', gap: 8, marginTop: 12 },
+  rowStacked: { flexDirection: 'column' },
+  saveWide: { paddingVertical: 12, alignItems: 'center' },
   input: {
     flex: 1,
     borderWidth: 1,
