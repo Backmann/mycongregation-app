@@ -23,6 +23,7 @@ import {
   MyAssignmentItem,
   Publisher,
   SpecialEvent,
+  Absence,
 } from './api';
 import { effectiveVersionFor } from './meeting-schedule';
 import { addDays, formatDateISO, startOfWeekMonday } from './dates';
@@ -70,7 +71,15 @@ export interface TaskEntry {
   task: RefinedTask;
 }
 
-export type TimelineEntry = MeetingEntry | EventEntry | TaskEntry;
+/** «Тебя нет» — an away-period of the signed-in person, quiet context. */
+export interface AbsenceEntry {
+  type: 'absence';
+  key: string;
+  dateISO: string;
+  absence: Absence;
+}
+
+export type TimelineEntry = MeetingEntry | EventEntry | TaskEntry | AbsenceEntry;
 
 export interface DayGroup {
   dateISO: string;
@@ -82,6 +91,8 @@ export interface Timeline {
   near: DayGroup[];
   /** My own assignments beyond the near window, up to `farDays`, flat. */
   far: RefinedTask[];
+  /** My away-periods starting beyond the near window (any future date). */
+  farAbsences: Absence[];
 }
 
 export interface BuildTimelineInput {
@@ -89,6 +100,8 @@ export interface BuildTimelineInput {
   fieldServiceMeetings: FieldServiceMeeting[];
   publishersById: Map<string, Publisher>;
   events: SpecialEvent[];
+  /** The signed-in person's own away-periods. */
+  absences: Absence[];
   myItems: MyAssignmentItem[];
   todayISO: string;
   /** Text for a field-service meeting the signed-in person conducts. */
@@ -138,6 +151,7 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
     fieldServiceMeetings,
     publishersById,
     events,
+    absences = [],
     myItems,
     todayISO,
     youConductLabel,
@@ -294,13 +308,27 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
     });
   }
 
+  // ---- My away-periods (quiet context, "тебя нет") ----
+  for (const a of absences) {
+    const end = a.endDate ?? a.startDate;
+    if (end < todayISO) continue; // already over
+    if (a.startDate > nearEndISO) continue; // future ones go to farAbsences
+    // Place on the first covered day within the window.
+    const placed = a.startDate < todayISO ? todayISO : a.startDate;
+    entries.push({ type: 'absence', key: `abs-${a.id}`, dateISO: placed, absence: a });
+  }
+
   // ---- Group the near window by day, ordered by date then time ----
+  // Absences carry no time and read as all-day context, so they sort to the
+  // top of their day, ahead of timed rows.
   const timeOf = (en: TimelineEntry): string =>
     en.type === 'meeting'
       ? en.time
       : en.type === 'event'
         ? en.event.time ?? '00:00'
-        : en.task.item.time ?? en.task.meetingTime ?? '99:99';
+        : en.type === 'absence'
+          ? '00:00'
+          : en.task.item.time ?? en.task.meetingTime ?? '99:99';
 
   entries.sort(
     (a, b) => a.dateISO.localeCompare(b.dateISO) || timeOf(a).localeCompare(timeOf(b)),
@@ -313,11 +341,16 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
     else near.push({ dateISO: en.dateISO, entries: [en] });
   }
 
-  // ---- Far zone: all my own assignments beyond the near window ----
+  // ---- Far zone: my own assignments beyond the near window ----
   const far = refined.filter((r) => {
     const iso = placementDate(r, todayISO);
     return iso > nearEndISO && iso <= farEndISO;
   });
 
-  return { near, far };
+  // ---- Far away-periods: any future absence starting beyond the window ----
+  const farAbsences = absences
+    .filter((a) => a.startDate > nearEndISO)
+    .sort((x, y) => x.startDate.localeCompare(y.startDate));
+
+  return { near, far, farAbsences };
 }

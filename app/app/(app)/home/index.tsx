@@ -537,6 +537,29 @@ function EventRow({ event: e }: { event: SpecialEvent }) {
   );
 }
 
+/**
+ * «Тебя нет» — a quiet away-period row. Not a task and not an event: a muted
+ * plane, the date range, no section dot and no chevron.
+ */
+function AbsenceRow({ absence: a }: { absence: Absence }) {
+  const { t, i18n } = useTranslation();
+  return (
+    <View style={tl.absenceRow}>
+      <Ionicons name="airplane-outline" size={16} color="#94a3b8" />
+      <View style={{ flex: 1 }}>
+        <Text style={tl.absenceText}>
+          {t('home.timeline.away')} · {absenceRangeLabel(a, i18n.language)}
+        </Text>
+        {a.note ? (
+          <Text style={tl.absenceNote} numberOfLines={1}>
+            {a.note}
+          </Text>
+        ) : null}
+      </View>
+    </View>
+  );
+}
+
 function TimelineRow({
   entry,
   todayISO,
@@ -549,6 +572,9 @@ function TimelineRow({
   }
   if (entry.type === 'task') {
     return <TaskRow task={entry.task} />;
+  }
+  if (entry.type === 'absence') {
+    return <AbsenceRow absence={entry.absence} />;
   }
   return <EventRow event={entry.event} />;
 }
@@ -574,6 +600,25 @@ function FarRow({ task: r }: { task: RefinedTask }) {
   );
 }
 
+/** A future away-period in the collapsed "further out" zone. */
+function FarAbsenceRow({ absence: a }: { absence: Absence }) {
+  const { t, i18n } = useTranslation();
+  const d = new Date(`${a.startDate}T00:00:00`);
+  const date = d.toLocaleDateString(i18n.language, {
+    day: 'numeric',
+    month: 'short',
+  });
+  return (
+    <View style={tl.farRow}>
+      <Text style={tl.farDate}>{date}</Text>
+      <Ionicons name="airplane-outline" size={13} color="#94a3b8" />
+      <Text style={tl.farTitle} numberOfLines={1}>
+        {t('home.timeline.away')} · {absenceRangeLabel(a, i18n.language)}
+      </Text>
+    </View>
+  );
+}
+
 /**
  * The single chronological stream — my assignments, meetings and events in one
  * timeline. Personal rows breathe and carry weight; the background stays quiet.
@@ -585,6 +630,7 @@ function FarRow({ task: r }: { task: RefinedTask }) {
 function HomeTimeline() {
   const { t, i18n } = useTranslation();
   const { user } = useAuth();
+  const { myPublisherId } = useMyPublisher();
   const [showFar, setShowFar] = useState(false);
   const todayISO = formatDateISO(new Date());
   const baseMonday = startOfWeekMonday(new Date());
@@ -628,6 +674,13 @@ function HomeTimeline() {
     retry: false,
     staleTime: 60 * 1000,
   });
+  const absencesQ = useQuery({
+    queryKey: ['absences', 'mine', myPublisherId],
+    queryFn: () => absencesApi.list({ publisherId: myPublisherId! }),
+    enabled: !!myPublisherId,
+    retry: false,
+    staleTime: 60 * 1000,
+  });
 
   const timeline = useMemo(() => {
     const publishersById = new Map<string, Publisher>(
@@ -642,6 +695,7 @@ function HomeTimeline() {
       ],
       publishersById,
       events: eventsQ.data ?? [],
+      absences: absencesQ.data ?? [],
       myItems: tasksQ.data?.items ?? [],
       todayISO,
       youConductLabel: t('home.feed.youConduct'),
@@ -662,6 +716,7 @@ function HomeTimeline() {
     publishersQ.data,
     eventsQ.data,
     tasksQ.data,
+    absencesQ.data,
     todayISO,
     i18n.language,
   ]);
@@ -722,7 +777,7 @@ function HomeTimeline() {
         ))
       )}
 
-      {timeline.far.length > 0 ? (
+      {timeline.far.length + timeline.farAbsences.length > 0 ? (
         <>
           <Pressable
             style={tl.farToggle}
@@ -736,13 +791,18 @@ function HomeTimeline() {
             />
             <Text style={tl.farToggleTitle}>{t('home.timeline.far')}</Text>
             <Text style={tl.farToggleHint}>
-              {t('home.timeline.farHint', { count: timeline.far.length })}
+              {t('home.timeline.farHint', {
+                count: timeline.far.length + timeline.farAbsences.length,
+              })}
             </Text>
           </Pressable>
           {showFar ? (
             <View style={{ marginTop: 2 }}>
               {timeline.far.map((r, idx) => (
                 <FarRow key={`far-${idx}-${r.dateISO}`} task={r} />
+              ))}
+              {timeline.farAbsences.map((a) => (
+                <FarAbsenceRow key={`far-abs-${a.id}`} absence={a} />
               ))}
             </View>
           ) : null}
@@ -751,60 +811,6 @@ function HomeTimeline() {
     </>
   );
 }
-
-function MyAbsencesBlock({ myPublisherId }: { myPublisherId: string | null }) {
-  const { t, i18n } = useTranslation();
-  const { data } = useQuery({
-    queryKey: ['absences', 'mine', myPublisherId],
-    queryFn: () => absencesApi.list({ publisherId: myPublisherId! }),
-    enabled: !!myPublisherId,
-    retry: false,
-    staleTime: 60 * 1000,
-  });
-  const mine = (data ?? []).slice(0, 3);
-  if (!myPublisherId || mine.length === 0) return null;
-
-  return (
-    <>
-      <Text style={[styles.sectionTitle, { marginTop: 24, marginBottom: 12 }]}>
-        {t('home.myAbsences')}
-      </Text>
-      <View style={styles.card}>
-        {mine.map((a, idx) => (
-          <View
-            key={a.id}
-            style={[styles.eventRow, idx > 0 && styles.eventRowBorder]}
-          >
-            <Ionicons
-              name="airplane-outline"
-              size={18}
-              color="#b45309"
-              style={{ marginRight: 10 }}
-            />
-            <View style={{ flex: 1 }}>
-              <Text style={styles.eventTitle}>
-                {absenceRangeLabel(a, i18n.language)}
-              </Text>
-              {a.note ? (
-                <Text style={styles.eventDate} numberOfLines={1}>
-                  {a.note}
-                </Text>
-              ) : null}
-            </View>
-          </View>
-        ))}
-      </View>
-    </>
-  );
-}
-
-type Tile = {
-  key: string;
-  label: string;
-  icon: keyof typeof Ionicons.glyphMap;
-  href: string;
-  show: boolean;
-};
 
 function CoVisitBlock() {
   const { t, i18n } = useTranslation();
@@ -927,10 +933,17 @@ const coStyles = StyleSheet.create({
   note: { fontSize: 13, color: '#7c3aed', fontWeight: '600', fontFamily: 'Manrope_600SemiBold', marginTop: 2 },
 });
 
+type Tile = {
+  key: string;
+  label: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  href: string;
+  show: boolean;
+};
+
 export default function HomeScreen() {
   const { t } = useTranslation();
   const { user } = useAuth();
-  const { myPublisherId } = useMyPublisher();
   const canSeeDirectory =
     user?.role === 'admin' ||
     user?.role === 'elder' ||
@@ -996,7 +1009,6 @@ export default function HomeScreen() {
 
       <CoVisitBlock />
 
-      <MyAbsencesBlock myPublisherId={myPublisherId} />
     </ScrollView>
   );
 }
@@ -1084,6 +1096,19 @@ const tl = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  absenceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 4,
+  },
+  absenceText: {
+    fontSize: 13.5,
+    color: '#64748b',
+    fontFamily: 'Manrope_500Medium',
+  },
+  absenceNote: { fontSize: 12.5, color: '#94a3b8', marginTop: 1 },
   farToggle: {
     flexDirection: 'row',
     alignItems: 'center',

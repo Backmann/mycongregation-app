@@ -1802,7 +1802,8 @@
       "tomorrow": "Tomorrow",
       "emptyNear": "Nothing scheduled for the next two weeks",
       "far": "Further out",
-      "farHint": "your assignments only · {{count}}"
+      "farHint": "your assignments only · {{count}}",
+      "away": "You're away"
     },
     "report": {
       "outstanding": "The {{month}} report isn't submitted",

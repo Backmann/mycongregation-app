@@ -1802,7 +1802,8 @@
       "tomorrow": "Morgen",
       "emptyNear": "Für die nächsten zwei Wochen ist nichts geplant",
       "far": "Später",
-      "farHint": "nur deine Aufgaben · {{count}}"
+      "farHint": "nur deine Aufgaben · {{count}}",
+      "away": "Du bist abwesend"
     },
     "report": {
       "outstanding": "Bericht für {{month}} nicht abgegeben",
