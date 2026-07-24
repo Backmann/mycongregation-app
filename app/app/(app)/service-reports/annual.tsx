@@ -61,15 +61,26 @@ export default function AnnualReportScreen() {
   // nothing recorded is instead reported as a gap to go and fill.
   const attendanceAverages = useMemo(() => {
     const months = attendance.data?.months ?? [];
-    const sum = (pick: (m: (typeof months)[number]) => number | null) =>
-      months.reduce((acc, m) => acc + (pick(m) ?? 0), 0);
-    const missing = months.filter(
+    // A month still ahead is not a gap, and dividing by twelve in the middle
+    // of a year turned a true average of ninety-six into fifty-six — a figure
+    // that looked like a fact. The form's "divide by twelve" is written for a
+    // finished year, where every month has a figure and the two agree anyway.
+    // So the divisor is the months that actually hold one.
+    const started = months.filter((m) => m.month <= dayjs().format('YYYY-MM-01'));
+    const avg = (pick: (m: (typeof months)[number]) => number | null) => {
+      const have = started.map(pick).filter((v): v is number => v !== null);
+      return have.length
+        ? Math.round(have.reduce((a, b) => a + b, 0) / have.length)
+        : null;
+    };
+    const missing = started.filter(
       (m) => m.midweekAverage === null && m.weekendAverage === null,
     ).length;
     return {
-      midweek: months.length ? Math.round(sum((m) => m.midweekAverage) / 12) : null,
-      weekend: months.length ? Math.round(sum((m) => m.weekendAverage) / 12) : null,
+      midweek: avg((m) => m.midweekAverage),
+      weekend: avg((m) => m.weekendAverage),
       missing,
+      counted: started.length - missing,
     };
   }, [attendance.data]);
 
@@ -186,8 +197,13 @@ export default function AnnualReportScreen() {
           value={attendanceAverages.weekend}
         />
       </View>
-      {/* The instruction divides by twelve, so a missing month drags the
-          average down. Better to say so than to hide it by dividing by fewer. */}
+      {/* Said plainly: how many months the figure rests on, and how many are
+          still to fill. A number without its footing invites being copied. */}
+      <Text style={styles.basis}>
+        {t('annualReport.averageBasis', {
+          count: attendanceAverages.counted,
+        })}
+      </Text>
       {attendanceAverages.missing > 0 ? (
         <View style={styles.warn}>
           <Ionicons name="alert-circle-outline" size={16} color="#b45309" />
@@ -400,6 +416,12 @@ const styles = StyleSheet.create({
     fontFamily: 'Manrope_700Bold',
   },
 
+  basis: {
+    fontSize: 11.5,
+    color: '#94a3b8',
+    marginTop: 6,
+    marginLeft: 4,
+  },
   warn: {
     flexDirection: 'row',
     alignItems: 'center',

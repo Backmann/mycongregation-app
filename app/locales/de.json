@@ -2476,13 +2476,14 @@
     "becameInactiveHint": "Sechs Monate in Folge ohne Bericht in diesem Dienstjahr",
     "reactivated": "Wieder aktiv",
     "reactivatedHint": "Waren inaktiv und berichten wieder",
-    "missingMonths": "Für {{count}} Monate fehlen Besuchszahlen. Der Durchschnitt wird durch 12 geteilt und fällt daher zu niedrig aus — bitte ergänzen.",
+    "missingMonths": "Für {{count}} Monate fehlen Besuchszahlen — bitte ergänzen, sonst bleibt das Formular unvollständig.",
     "byHandNote": "Die App kennt keine Gebiete und kann nicht für die Versammlung über Hilfe vom Zweigbüro antworten — bitte selbst eintragen.",
     "reportsPerMonth": "Berichte pro Monat",
     "reportsPerMonthNote": "Liegt der letzte Monat deutlich unter den anderen, sind die Daten noch nicht vollständig und die Zahlen unten fallen zu niedrig aus.",
     "draftNote": "Entwurf: die Zahlen berechnet die App — bitte vor der Übertragung prüfen.",
     "byHandTerritories": "Gesamtzahl der Gebiete",
     "byHandUnworked": "Nicht bearbeitete Gebiete im Jahr",
-    "byHandBranchHelp": "Bereit, Hilfe vom Zweigbüro anzunehmen"
+    "byHandBranchHelp": "Bereit, Hilfe vom Zweigbüro anzunehmen",
+    "averageBasis": "Durchschnitt über {{count}} Monate mit Einträgen"
   }
 }

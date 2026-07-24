@@ -2476,13 +2476,14 @@
     "becameInactiveHint": "Six consecutive months without a report in this service year",
     "reactivated": "Reactivated",
     "reactivatedHint": "Were inactive and began reporting again",
-    "missingMonths": "{{count}} months have no attendance recorded. The average divides by 12, so it reads low — fill the gaps.",
+    "missingMonths": "{{count}} months have no attendance recorded — fill the gaps or the sheet will be incomplete.",
     "byHandNote": "The app has no territory record and cannot answer for the congregation about help from the branch — write those in yourself.",
     "reportsPerMonth": "Reports per month",
     "reportsPerMonthNote": "If the last month stands well below the rest, the data is not in yet and the figures below will read low.",
     "draftNote": "A draft: the figures are worked out by the app — check them before copying to the form.",
     "byHandTerritories": "Total number of territories",
     "byHandUnworked": "Territories not covered this year",
-    "byHandBranchHelp": "Willing to accept help from the branch"
+    "byHandBranchHelp": "Willing to accept help from the branch",
+    "averageBasis": "Average over {{count}} months with records"
   }
 }
