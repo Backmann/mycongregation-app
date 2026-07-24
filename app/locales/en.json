@@ -1796,6 +1796,14 @@
     },
     "myAbsences": "My absences",
     "myTasks": "My upcoming assignments",
+    "timeline": {
+      "title": "Coming up",
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "emptyNear": "Nothing scheduled for the next two weeks",
+      "far": "Further out",
+      "farHint": "your assignments only · {{count}}"
+    },
     "report": {
       "outstanding": "The {{month}} report isn't submitted",
       "submitted": "The {{month}} report is submitted"

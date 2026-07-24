@@ -1796,6 +1796,14 @@
     },
     "myAbsences": "Meine Abwesenheiten",
     "myTasks": "Meine nächsten Aufgaben",
+    "timeline": {
+      "title": "Demnächst",
+      "today": "Heute",
+      "tomorrow": "Morgen",
+      "emptyNear": "Für die nächsten zwei Wochen ist nichts geplant",
+      "far": "Später",
+      "farHint": "nur deine Aufgaben · {{count}}"
+    },
     "report": {
       "outstanding": "Bericht für {{month}} nicht abgegeben",
       "submitted": "Bericht für {{month}} abgegeben"

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Animated,
   Linking,
@@ -12,7 +12,6 @@ import { AttendanceCard } from '../../../components/AttendanceCard';
 import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { RichText } from '../../../components/RichText';
 import { useTranslation } from 'react-i18next';
 import {
   Absence,
@@ -29,7 +28,6 @@ import {
   auxiliaryPioneersApi,
   serviceReportsApi,
 } from '../../../lib/api';
-import { effectiveVersionFor } from '../../../lib/meeting-schedule';
 import { addDays, formatDateISO, startOfWeekMonday } from '../../../lib/dates';
 import { useAuth } from '../../../lib/auth';
 import { useMyPublisher } from '../../../lib/useMyPublisher';
@@ -40,15 +38,21 @@ import {
 import { monthLabel } from '../../../lib/month-label';
 import { LoadError } from '../../../components/LoadError';
 import {
-  refineMyTasks,
+  RefinedTask,
   taskMeta,
   taskSubsectionLabel,
   taskTitle,
   taskVisual,
 } from '../../../lib/my-tasks';
+import {
+  buildTimeline,
+  MeetingEntry,
+  TimelineEntry,
+} from '../../../lib/home-timeline';
+import { MyDot } from '../../../components/MyDot';
+import { MyGlowRow } from '../../../components/MyGlowRow';
+import { SectionKind } from '../../../lib/section-colors';
 
-const pad = (n: number) => String(n).padStart(2, '0');
-const ddmm = (d: Date) => `${pad(d.getDate())}.${pad(d.getMonth() + 1)}`;
 
 function rangeLabel(start: Date, end: Date, loc: string): string {
   const sameYear = start.getFullYear() === end.getFullYear();
@@ -89,27 +93,6 @@ function absenceRangeLabel(a: Absence, loc: string): string {
   return `${s} \u2013 ${e}`;
 }
 
-type FeedEntry = {
-  key: string;
-  kind: 'midweek' | 'weekend' | 'field_service';
-  dateISO: string;
-  time: string;
-  address: string;
-  conductorName: string | null;
-  unassignedConductor: boolean;
-  topic: string | null;
-  sourceUrl: string | null;
-  replacedBy: SpecialEvent | null;
-  myParts: { section: string | null; title: string }[];
-};
-
-/**
- * Every meeting of the next 7 days — congregation meetings from the
- * meeting settings, field-service meetings of this and next week —
- * in one chronological feed. Cards with my assignments are highlighted;
- * an event flagged "replaces meeting" takes the meeting’s place.
- */
-/** Breathing gray placeholder bar for skeleton cards. */
 function SkeletonBar({ width, height = 14 }: { width: string; height?: number }) {
   const pulse = useRef(new Animated.Value(0.35)).current;
   useEffect(() => {
@@ -302,371 +285,343 @@ const FEED_ACCENT: Record<
   event: { color: '#d97706', bg: '#fffbeb', icon: 'megaphone-outline' },
 };
 
-function MeetingsFeed() {
-  const { t, i18n } = useTranslation();
-  const todayISO = formatDateISO(new Date());
-  const horizonISO = formatDateISO(
-    addDays(new Date(`${todayISO}T00:00:00`), 7),
-  );
-  const thisMonday = formatDateISO(startOfWeekMonday(new Date()));
-  const nextMonday = formatDateISO(
-    addDays(startOfWeekMonday(new Date()), 7),
-  );
+const NEAR_DAYS = 14;
+const FAR_DAYS = 56;
 
-  const {
-    data: overview,
-    isLoading,
-    isError: overviewFailed,
-    refetch: refetchOverview,
-  } = useQuery({
-    queryKey: ['meeting-settings'],
-    queryFn: () => meetingSettingsApi.getOverview(),
-    staleTime: 5 * 60 * 1000,
-  });
-  const versions = overview?.versions ?? [];
-
-  const weekA = useQuery({
-    queryKey: ['field-service', thisMonday],
-    queryFn: () => fieldServiceApi.list({ weekStart: thisMonday }),
-    staleTime: 60 * 1000,
-  });
-  const weekB = useQuery({
-    queryKey: ['field-service', nextMonday],
-    queryFn: () => fieldServiceApi.list({ weekStart: nextMonday }),
-    staleTime: 60 * 1000,
-  });
-  const publishersQuery = useQuery({
-    queryKey: ['publishers', 'roster'],
-    queryFn: () => publishersApi.roster(),
-    staleTime: 5 * 60 * 1000,
-  });
-  const eventsQuery = useQuery({
-    queryKey: ['special-events', 'home'],
-    queryFn: () => specialEventsApi.list(),
-  });
-  const myTasksQuery = useQuery({
-    queryKey: ['me', 'assignments'],
-    queryFn: () => meApi.assignments(),
-    retry: false,
-    staleTime: 60 * 1000,
-  });
-
-  const publishersById = new Map<string, Publisher>(
-    (publishersQuery.data?.data ?? []).map((p) => [p.id, p]),
-  );
-  const myItems = myTasksQuery.data?.items ?? [];
-  const events = eventsQuery.data ?? [];
-
-  const entries: FeedEntry[] = [];
-
-  for (const weekISO of [thisMonday, nextMonday]) {
-    const v = effectiveVersionFor(versions, weekISO);
-    if (!v) continue;
-    for (const kind of ['midweek', 'weekend'] as const) {
-      const dow = kind === 'midweek' ? v.midweekDow : v.weekendDow;
-      const time = kind === 'midweek' ? v.midweekTime : v.weekendTime;
-      if (!dow) continue;
-      const dateISO = formatDateISO(
-        addDays(new Date(`${weekISO}T00:00:00`), dow - 1),
-      );
-      if (dateISO < todayISO || dateISO > horizonISO) continue;
-      const replacedBy =
-        events.find((e) => {
-          const isCongress =
-            e.type === 'regional_convention' || e.type === 'circuit_assembly';
-          if (!e.replacesMeeting && !isCongress) return false;
-          const end = e.endDate ?? e.date;
-          if (kind === 'weekend') {
-            // A convention on either weekend day (Sat or Sun) cancels the weekend
-            // meeting, even if logged on only one of the two days.
-            const base = new Date(`${weekISO}T00:00:00`);
-            const sat = formatDateISO(addDays(base, 5));
-            const sun = formatDateISO(addDays(base, 6));
-            return e.date <= sun && sat <= end;
-          }
-          return e.date <= dateISO && dateISO <= end;
-        }) ?? null;
-      const myParts = myItems
-        .filter(
-          (it) =>
-            (it.kind === 'meeting' || it.kind === 'duty') &&
-            it.weekStartDate === weekISO &&
-            it.eventType === kind,
-        )
-        .sort((a, b) => (a.partOrder ?? 999) - (b.partOrder ?? 999))
-        .map((it) => ({
-          section: taskSubsectionLabel(it, t),
-          title: taskTitle(it, t),
-        }));
-      entries.push({
-        key: `${kind}-${dateISO}`,
-        kind,
-        dateISO,
-        time,
-        address: v.address,
-        conductorName: null,
-        unassignedConductor: false,
-        topic: null,
-        sourceUrl: null,
-        replacedBy,
-        myParts,
-      });
-    }
+/** Section hue for a personal task, by what the task is. */
+function taskGlowKind(kind: RefinedTask['item']['kind']): SectionKind {
+  switch (kind) {
+    case 'cleaning':
+      return 'cleaning';
+    case 'cart':
+    case 'field_service':
+      return 'field_service';
+    default:
+      return 'meeting';
   }
+}
 
-  for (const m of [...(weekA.data ?? []), ...(weekB.data ?? [])]) {
-    const dateISO = formatDateISO(
-      addDays(new Date(`${m.weekStartDate}T00:00:00`), m.dayOfWeek - 1),
-    );
-    if (dateISO < todayISO || dateISO > horizonISO) continue;
-    const conductor = m.conductorPublisherId
-      ? publishersById.get(m.conductorPublisherId) ?? null
-      : null;
-    const myParts = myItems
-      .filter(
-        (it) =>
-          it.kind === 'field_service' &&
-          it.weekStartDate === m.weekStartDate &&
-          it.dayOfWeek === m.dayOfWeek &&
-          (!it.time || it.time === m.startTime),
-      )
-      .map(() => ({ section: null, title: t('home.feed.youConduct') }));
-    entries.push({
-      key: `fs-${m.id}`,
-      kind: 'field_service',
-      dateISO,
-      time: m.startTime,
-      address: m.address,
-      conductorName: conductor ? conductor.displayName : null,
-      unassignedConductor: !conductor,
-      topic: m.topic,
-      sourceUrl: m.sourceUrl,
-      replacedBy: null,
-      myParts,
-    });
+/** Section hue for the personal glow/dot of a timeline entry. */
+function glowKindFor(en: TimelineEntry): SectionKind {
+  if (en.type === 'meeting') {
+    return en.kind === 'field_service' ? 'field_service' : 'meeting';
   }
+  if (en.type === 'task') return taskGlowKind(en.task.item.kind);
+  return 'meeting';
+}
 
-  entries.sort(
-    (a, b) =>
-      a.dateISO.localeCompare(b.dateISO) || a.time.localeCompare(b.time),
-  );
+/** «Сегодня» / «Завтра» / «пн, 28 июля» — the day header of a group. */
+function dayHeaderLabel(
+  dateISO: string,
+  todayISO: string,
+  t: (k: string) => string,
+  locale: string,
+): string {
+  const d = new Date(`${dateISO}T00:00:00`);
+  const tomorrow = formatDateISO(addDays(new Date(`${todayISO}T00:00:00`), 1));
+  if (dateISO === todayISO) return t('home.timeline.today');
+  if (dateISO === tomorrow) return t('home.timeline.tomorrow');
+  return d.toLocaleDateString(locale, {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'long',
+  });
+}
 
-  if (isLoading) {
-    return <SkeletonCard rows={3} />;
-  }
-  if (overviewFailed && !overview) {
-    return <LoadError onRetry={() => refetchOverview()} />;
-  }
-  if (entries.length === 0) {
-    return (
-      <View style={styles.card}>
-        <Text style={styles.muted}>{t('home.feed.empty')}</Text>
+/**
+ * One quiet background row — a meeting nobody has assigned me to, or an event.
+ * It is present but does not compete with my own rows for attention.
+ */
+function BackgroundRow({
+  icon,
+  accent,
+  kindLabel,
+  title,
+  meta,
+  extra,
+  onPress,
+}: {
+  icon: string;
+  accent: string;
+  kindLabel: string;
+  title: string;
+  meta: string | null;
+  extra?: React.ReactNode;
+  onPress?: () => void;
+}) {
+  const body = (
+    <View style={tl.bgRow}>
+      <View style={[tl.bgDot, { borderColor: accent }]} />
+      <View style={{ flex: 1 }}>
+        <View style={tl.bgHead}>
+          <Ionicons name={icon as never} size={14} color={accent} />
+          <Text style={[tl.bgKind, { color: accent }]}>{kindLabel}</Text>
+        </View>
+        <Text style={tl.bgTitle}>{title}</Text>
+        {meta ? <Text style={tl.bgMeta}>{meta}</Text> : null}
+        {extra}
       </View>
+      {onPress ? (
+        <Ionicons name="chevron-forward" size={17} color="#cbd5e1" />
+      ) : null}
+    </View>
+  );
+  return onPress ? (
+    <Pressable onPress={onPress} style={({ pressed }) => pressed && { opacity: 0.6 }}>
+      {body}
+    </Pressable>
+  ) : (
+    body
+  );
+}
+
+/** A meeting entry: quiet by default, breathing and detailed when it is mine. */
+function MeetingRow({
+  entry,
+  todayISO,
+}: {
+  entry: MeetingEntry;
+  todayISO: string;
+}) {
+  const { t, i18n } = useTranslation();
+  const dateLabel = new Date(`${entry.dateISO}T00:00:00`).toLocaleDateString(
+    i18n.language,
+    { weekday: 'long', day: 'numeric', month: 'long' },
+  );
+
+  // A convention/assembly cancelled this meeting: show the event in its place.
+  if (entry.replacedBy) {
+    const e = entry.replacedBy;
+    const typeLabel = e.type
+      ? t(`specialEvents.types.${e.type}`, e.type)
+      : t('home.kinds.meeting');
+    return (
+      <BackgroundRow
+        icon={FEED_ACCENT.event.icon}
+        accent={FEED_ACCENT.event.color}
+        kindLabel={typeLabel}
+        title={e.title}
+        meta={[dateLabel, e.time, e.address].filter(Boolean).join(' \u00b7 ')}
+        onPress={() => router.push(`/special-events/${e.id}` as any)}
+      />
     );
   }
 
-  return (
-    <View style={{ gap: 10 }}>
-      {entries.map((en) => {
-        const mine = en.myParts.length > 0;
-        const isToday = en.dateISO === todayISO;
-        const dateLabel = new Date(
-          `${en.dateISO}T00:00:00`,
-        ).toLocaleDateString(i18n.language, {
-          weekday: 'long',
-          day: 'numeric',
-          month: 'long',
-        });
+  const kindLabel =
+    entry.kind === 'field_service'
+      ? t('home.nextFieldService')
+      : t(`home.eventTypes.${entry.kind}`);
+  const ac = FEED_ACCENT[entry.kind] ?? FEED_ACCENT.midweek;
+  const meta = [entry.time, entry.address].filter(Boolean).join(' \u00b7 ');
 
-        if (en.replacedBy) {
-          const e = en.replacedBy;
-          const typeLabel = e.type
-            ? t(`specialEvents.types.${e.type}`, e.type)
-            : null;
-          const av = FEED_ACCENT.event;
-          return (
-            <Pressable
-              key={en.key}
-              style={[
-                styles.card,
-                styles.feedCard,
-                { borderLeftColor: av.color },
-              ]}
-              onPress={() => router.push(`/special-events/${e.id}` as any)}
-            >
-              <View style={styles.meetingHeader}>
-                <Ionicons name={av.icon as never} size={16} color={av.color} />
-                <Text style={[styles.meetingKind, { color: av.color }]}>
-                  {typeLabel ?? t('home.kinds.meeting')}
-                </Text>
-                {isToday ? (
-                  <Text style={styles.todayChip}>{t('home.feed.today')}</Text>
-                ) : null}
-              </View>
-              <Text style={styles.meetingDate}>{e.title}</Text>
-              <Text style={styles.meetingMeta}>
-                {dateLabel}
-                {e.time ? ` · ${e.time}` : ''}
-                {e.address ? ` · ${e.address}` : ''}
-              </Text>
-            </Pressable>
-          );
-        }
-
-        const kindLabel =
-          en.kind === 'field_service'
-            ? t('home.nextFieldService')
-            : t(`home.eventTypes.${en.kind}`);
-        const ac = FEED_ACCENT[en.kind] ?? FEED_ACCENT.midweek;
-        return (
-          <View
-            key={en.key}
-            style={[styles.card, styles.feedCard, { borderLeftColor: ac.color }]}
+  const fsExtra =
+    entry.kind === 'field_service' ? (
+      <>
+        <Text
+          style={[
+            tl.bgMeta,
+            entry.unassignedConductor && tl.fsUnassigned,
+          ]}
+        >
+          {t('fieldService.conductor')}:{' '}
+          {entry.conductorName ?? t('fieldService.unassigned')}
+        </Text>
+        {entry.topic ? <Text style={tl.fsTopic}>{entry.topic}</Text> : null}
+        {entry.sourceUrl ? (
+          <Pressable
+            onPress={() =>
+              Linking.openURL(entry.sourceUrl as string).catch(() => {})
+            }
+            hitSlop={6}
           >
-            <View style={styles.meetingHeader}>
-              <Ionicons name={ac.icon as never} size={16} color={ac.color} />
-              <Text style={[styles.meetingKind, { color: ac.color }]}>{kindLabel}</Text>
-              {isToday ? (
-                <Text style={styles.todayChip}>{t('home.feed.today')}</Text>
-              ) : null}
-            </View>
-            <Text style={styles.meetingDate}>{dateLabel}</Text>
-            <Text style={styles.meetingMeta}>
-              {en.time}
-              {en.address ? ` · ${en.address}` : ''}
+            <Text style={tl.fsLink} numberOfLines={1}>
+              {t('fieldService.openLink')}
             </Text>
-            {en.kind === 'field_service' ? (
-              <Text
-                style={[
-                  styles.meetingMeta,
-                  en.unassignedConductor && styles.fsUnassigned,
-                ]}
-              >
-                {t('fieldService.conductor')}:{' '}
-                {en.conductorName ?? t('fieldService.unassigned')}
+          </Pressable>
+        ) : null}
+      </>
+    ) : null;
+
+  // Not mine — a quiet background row.
+  if (entry.myParts.length === 0) {
+    return (
+      <BackgroundRow
+        icon={ac.icon}
+        accent={ac.color}
+        kindLabel={kindLabel}
+        title={dateLabel}
+        meta={meta || null}
+        extra={fsExtra}
+      />
+    );
+  }
+
+  // Mine — breathing glow, my parts spelled out.
+  return (
+    <MyGlowRow kind={glowKindFor(entry)} radius={12} style={tl.mineRow}>
+      <View style={tl.mineHead}>
+        <MyDot size={8} kind={glowKindFor(entry)} />
+        <Text style={[tl.mineKind, { color: ac.color }]}>{kindLabel}</Text>
+      </View>
+      <Text style={tl.mineTitle}>{dateLabel}</Text>
+      {meta ? <Text style={tl.mineMeta}>{meta}</Text> : null}
+      {fsExtra}
+      <View style={tl.partsBox}>
+        {entry.myParts.map((p, i) => (
+          <View key={i}>
+            {p.section && p.section !== entry.myParts[i - 1]?.section ? (
+              <Text style={tl.partSection} numberOfLines={1}>
+                {p.section}
               </Text>
             ) : null}
-            {!!en.topic && <Text style={styles.fsTopic}>{en.topic}</Text>}
-            {!!en.sourceUrl && (
-              <Pressable
-                onPress={() =>
-                  Linking.openURL(en.sourceUrl as string).catch(() => {})
-                }
-                hitSlop={6}
-              >
-                <Text style={styles.fsLink} numberOfLines={1}>
-                  {t('fieldService.openLink')}
-                </Text>
-              </Pressable>
-            )}
-            {mine ? (
-              <View style={[styles.partsBox, { backgroundColor: ac.bg }]}>
-                <Text style={[styles.partsTitle, { color: ac.color }]}>
-                  {t('home.meeting.myParts')}
-                </Text>
-                {en.myParts.map((p, i) => (
-                  <View key={i} style={styles.myPartItem}>
-                    {p.section && p.section !== en.myParts[i - 1]?.section ? (
-                      <Text style={styles.partSubsection} numberOfLines={1}>
-                        {p.section}
-                      </Text>
-                    ) : null}
-                    <Text style={styles.partRow} numberOfLines={2}>
-                      {'\u2022 '}
-                      {p.title}
-                    </Text>
-                  </View>
-                ))}
-              </View>
-            ) : null}
+            <Text style={tl.partRow} numberOfLines={2}>
+              {'\u2022 '}
+              {p.title}
+            </Text>
           </View>
-        );
-      })}
+        ))}
+      </View>
+    </MyGlowRow>
+  );
+}
+
+/** A personal non-meeting task (cleaning, cart, outgoing talk, co-lunch). */
+function TaskRow({ task: r }: { task: RefinedTask }) {
+  const { t, i18n } = useTranslation();
+  const v = taskVisual(r.item);
+  return (
+    <MyGlowRow kind={taskGlowKind(r.item.kind)} radius={12} style={tl.mineRow}>
+      <View style={tl.taskHead}>
+        <View style={[tl.kindChip, { backgroundColor: v.bg }]}>
+          <Ionicons name={v.icon as never} size={15} color={v.color} />
+        </View>
+        <View style={{ flex: 1 }}>
+          {taskSubsectionLabel(r.item, t) ? (
+            <Text style={tl.mineKind} numberOfLines={1}>
+              {taskSubsectionLabel(r.item, t)}
+            </Text>
+          ) : null}
+          <Text style={tl.mineTitle} numberOfLines={1}>
+            {taskTitle(r.item, t)}
+          </Text>
+          <Text style={tl.mineMeta} numberOfLines={2}>
+            {taskMeta(r, t, i18n.language)}
+          </Text>
+        </View>
+      </View>
+    </MyGlowRow>
+  );
+}
+
+/** An event nobody assigned — background, tappable to its page. */
+function EventRow({ event: e }: { event: SpecialEvent }) {
+  const { t, i18n } = useTranslation();
+  const start = new Date(`${e.date}T00:00:00`);
+  const typeLabel = e.type ? t(`specialEvents.types.${e.type}`, e.type) : null;
+  const dateLabel = e.endDate
+    ? rangeLabel(start, new Date(`${e.endDate}T00:00:00`), i18n.language)
+    : start.toLocaleDateString(i18n.language, {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+      });
+  return (
+    <BackgroundRow
+      icon={FEED_ACCENT.event.icon}
+      accent={FEED_ACCENT.event.color}
+      kindLabel={typeLabel ?? t('home.upcomingEvents')}
+      title={e.title}
+      meta={[dateLabel, e.time, e.address].filter(Boolean).join(' \u00b7 ')}
+      onPress={() => router.push(`/special-events/${e.id}` as any)}
+    />
+  );
+}
+
+function TimelineRow({
+  entry,
+  todayISO,
+}: {
+  entry: TimelineEntry;
+  todayISO: string;
+}) {
+  if (entry.type === 'meeting') {
+    return <MeetingRow entry={entry} todayISO={todayISO} />;
+  }
+  if (entry.type === 'task') {
+    return <TaskRow task={entry.task} />;
+  }
+  return <EventRow event={entry.event} />;
+}
+
+/** One compact line in the collapsed "further out" zone — my own items only. */
+function FarRow({ task: r }: { task: RefinedTask }) {
+  const { t, i18n } = useTranslation();
+  const v = taskVisual(r.item);
+  const d = new Date(`${r.dateISO}T00:00:00`);
+  const date = r.weekOnly
+    ? t('home.weekOf', {
+        date: d.toLocaleDateString(i18n.language, { day: 'numeric', month: 'short' }),
+      })
+    : d.toLocaleDateString(i18n.language, { day: 'numeric', month: 'short' });
+  return (
+    <View style={tl.farRow}>
+      <Text style={tl.farDate}>{date}</Text>
+      <View style={[tl.farDot, { backgroundColor: v.color }]} />
+      <Text style={tl.farTitle} numberOfLines={1}>
+        {taskTitle(r.item, t)}
+      </Text>
     </View>
   );
 }
 
-function EventHomeRow({
-  event: e,
-  first,
-}: {
-  event: SpecialEvent;
-  first: boolean;
-}) {
-  const { t, i18n } = useTranslation();
-  const start = new Date(`${e.date}T00:00:00`);
-  const end = e.endDate ? new Date(`${e.endDate}T00:00:00`) : null;
-  const typeLabel = e.type
-    ? t(`specialEvents.types.${e.type}`, e.type)
-    : null;
-  const meta = [e.time, e.address].filter(Boolean).join(' · ');
-  return (
-    <Pressable
-      style={[styles.eventRow, !first && styles.eventRowBorder]}
-      onPress={() => router.push(`/special-events/${e.id}` as any)}
-    >
-      {end ? (
-        <View style={[styles.evBadge, styles.evBadgeRange]}>
-          <Text style={styles.evRangeNum}>{ddmm(start)}</Text>
-          <Ionicons name="arrow-down" size={11} color="#0369a1" />
-          <Text style={styles.evRangeNum}>{ddmm(end)}</Text>
-        </View>
-      ) : (
-        <View style={styles.evBadge}>
-          <Text style={styles.evDay}>
-            {start.toLocaleDateString(i18n.language, { day: '2-digit' })}
-          </Text>
-          <Text style={styles.evMon}>
-            {start.toLocaleDateString(i18n.language, { month: 'short' })}
-          </Text>
-        </View>
-      )}
-      <View style={{ flex: 1, marginLeft: 10 }}>
-        {typeLabel ? (
-          <Text style={styles.evTypeTag}>{typeLabel}</Text>
-        ) : null}
-        <Text style={styles.eventTitle} numberOfLines={2}>
-          {e.title}
-        </Text>
-        {end ? (
-          <Text style={styles.evRange}>
-            {rangeLabel(start, end, i18n.language)}
-          </Text>
-        ) : null}
-        {meta ? (
-          <Text style={styles.evMeta} numberOfLines={1}>
-            {meta}
-          </Text>
-        ) : null}
-        {e.note ? (
-          <Text style={styles.evMeta} numberOfLines={1}>
-            <RichText text={e.note} />
-          </Text>
-        ) : null}
-      </View>
-      <Ionicons name="chevron-forward" size={18} color="#cbd5e1" />
-    </Pressable>
-  );
-}
-
-function MyTasksCard() {
+/**
+ * The single chronological stream — my assignments, meetings and events in one
+ * timeline. Personal rows breathe and carry weight; the background stays quiet.
+ * Two zones: the next 14 days mixed and grouped by day, then a collapsed list
+ * of my own assignments further out. Replaces the old My-tasks, Meetings and
+ * Events blocks; absences and the circuit-overseer visit are still their own
+ * blocks for now.
+ */
+function HomeTimeline() {
   const { t, i18n } = useTranslation();
   const { user } = useAuth();
+  const [showFar, setShowFar] = useState(false);
   const todayISO = formatDateISO(new Date());
+  const baseMonday = startOfWeekMonday(new Date());
+  const mon0 = formatDateISO(baseMonday);
+  const mon1 = formatDateISO(addDays(baseMonday, 7));
+  const mon2 = formatDateISO(addDays(baseMonday, 14));
 
-  const { data: overview } = useQuery({
+  const overviewQ = useQuery({
     queryKey: ['meeting-settings'],
     queryFn: () => meetingSettingsApi.getOverview(),
     staleTime: 5 * 60 * 1000,
   });
-  const versions = overview?.versions ?? [];
-
-  const {
-    data,
-    isLoading: tasksLoading,
-    isError: tasksFailed,
-    refetch: refetchTasks,
-  } = useQuery({
+  const fsA = useQuery({
+    queryKey: ['field-service', mon0],
+    queryFn: () => fieldServiceApi.list({ weekStart: mon0 }),
+    staleTime: 60 * 1000,
+  });
+  const fsB = useQuery({
+    queryKey: ['field-service', mon1],
+    queryFn: () => fieldServiceApi.list({ weekStart: mon1 }),
+    staleTime: 60 * 1000,
+  });
+  const fsC = useQuery({
+    queryKey: ['field-service', mon2],
+    queryFn: () => fieldServiceApi.list({ weekStart: mon2 }),
+    staleTime: 60 * 1000,
+  });
+  const publishersQ = useQuery({
+    queryKey: ['publishers', 'roster'],
+    queryFn: () => publishersApi.roster(),
+    staleTime: 5 * 60 * 1000,
+  });
+  const eventsQ = useQuery({
+    queryKey: ['special-events', 'home'],
+    queryFn: () => specialEventsApi.list(),
+  });
+  const tasksQ = useQuery({
     queryKey: ['me', 'assignments'],
     queryFn: () => meApi.assignments(),
     enabled: !!user,
@@ -674,73 +629,125 @@ function MyTasksCard() {
     staleTime: 60 * 1000,
   });
 
-  if (tasksLoading && !data) {
+  const timeline = useMemo(() => {
+    const publishersById = new Map<string, Publisher>(
+      (publishersQ.data?.data ?? []).map((p) => [p.id, p]),
+    );
+    return buildTimeline({
+      versions: overviewQ.data?.versions ?? [],
+      fieldServiceMeetings: [
+        ...(fsA.data ?? []),
+        ...(fsB.data ?? []),
+        ...(fsC.data ?? []),
+      ],
+      publishersById,
+      events: eventsQ.data ?? [],
+      myItems: tasksQ.data?.items ?? [],
+      todayISO,
+      youConductLabel: t('home.feed.youConduct'),
+      resolvePart: (it) => ({
+        section: taskSubsectionLabel(it, t),
+        title: taskTitle(it, t),
+      }),
+      nearDays: NEAR_DAYS,
+      farDays: FAR_DAYS,
+    });
+    // i18n.language is a dep so titles re-resolve on language change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    overviewQ.data,
+    fsA.data,
+    fsB.data,
+    fsC.data,
+    publishersQ.data,
+    eventsQ.data,
+    tasksQ.data,
+    todayISO,
+    i18n.language,
+  ]);
+
+  const header = (
+    <View style={[styles.sectionHeader, { marginTop: 24 }]}>
+      <Text style={styles.sectionTitle}>{t('home.timeline.title')}</Text>
+    </View>
+  );
+
+  if (
+    (overviewQ.isLoading && !overviewQ.data) ||
+    (tasksQ.isLoading && !tasksQ.data)
+  ) {
     return (
       <>
-        <View style={[styles.sectionHeader, { marginTop: 24 }]}>
-          <Text style={styles.sectionTitle}>{t('home.myTasks')}</Text>
-        </View>
-        <SkeletonCard rows={2} />
+        {header}
+        <SkeletonCard rows={4} />
       </>
     );
   }
-  // A failed load used to render nothing at all, which reads as "no
-  // assignments this week" — the opposite of what happened.
-  if (tasksFailed && !data) {
-    return <LoadError onRetry={() => refetchTasks()} />;
+  if (
+    (overviewQ.isError && !overviewQ.data) ||
+    (tasksQ.isError && !tasksQ.data)
+  ) {
+    return (
+      <>
+        {header}
+        <LoadError
+          onRetry={() => {
+            overviewQ.refetch();
+            tasksQ.refetch();
+          }}
+        />
+      </>
+    );
   }
-  // Пустой список — это факт, а не причина исчезнуть: пропавший блок
-  // читается как сбой загрузки или как «раздела нет». Заголовок остаётся,
-  // карточка говорит прямо.
-  const refined = data ? refineMyTasks(data.items, versions, todayISO) : [];
-  const top = refined.slice(0, 3);
 
   return (
     <>
-      <View style={[styles.sectionHeader, { marginTop: 24 }]}>
-        <Text style={styles.sectionTitle}>{t('home.myTasks')}</Text>
-        {refined.length > 0 ? (
-          <Pressable
-            onPress={() => router.push('/home/my-assignments' as any)}
-            hitSlop={8}
-          >
-            <Text style={styles.link}>
-              {t('home.allTasks', { count: refined.length })}
+      {header}
+      {timeline.near.length === 0 ? (
+        <View style={styles.card}>
+          <Text style={styles.muted}>{t('home.timeline.emptyNear')}</Text>
+        </View>
+      ) : (
+        timeline.near.map((group) => (
+          <View key={group.dateISO} style={{ marginBottom: 4 }}>
+            <Text style={tl.dayHeader}>
+              {dayHeaderLabel(group.dateISO, todayISO, t, i18n.language)}
             </Text>
-          </Pressable>
-        ) : null}
-      </View>
-      <View style={styles.card}>
-        {top.length === 0 ? (
-          <Text style={styles.muted}>{t('home.myTasksScreen.empty')}</Text>
-        ) : null}
-        {top.map((r, idx) => {
-          const v = taskVisual(r.item);
-          return (
-          <View
-            key={`${r.item.kind}-${idx}-${r.dateISO}`}
-            style={[styles.eventRow, idx > 0 && styles.eventRowBorder]}
-          >
-            <View style={[styles.kindChip, { backgroundColor: v.bg }]}>
-              <Ionicons name={v.icon as never} size={15} color={v.color} />
-            </View>
-            <View style={{ flex: 1 }}>
-              {taskSubsectionLabel(r.item, t) ? (
-                <Text style={styles.eventSubsection} numberOfLines={1}>
-                  {taskSubsectionLabel(r.item, t)}
-                </Text>
-              ) : null}
-              <Text style={styles.eventTitle} numberOfLines={1}>
-                {taskTitle(r.item, t)}
-              </Text>
-              <Text style={styles.eventDate} numberOfLines={2}>
-                {taskMeta(r, t, i18n.language)}
-              </Text>
+            <View style={{ gap: 6 }}>
+              {group.entries.map((en) => (
+                <TimelineRow key={en.key} entry={en} todayISO={todayISO} />
+              ))}
             </View>
           </View>
-          );
-        })}
-      </View>
+        ))
+      )}
+
+      {timeline.far.length > 0 ? (
+        <>
+          <Pressable
+            style={tl.farToggle}
+            onPress={() => setShowFar((v) => !v)}
+            hitSlop={6}
+          >
+            <Ionicons
+              name={showFar ? 'chevron-up' : 'chevron-down'}
+              size={18}
+              color="#64748b"
+            />
+            <Text style={tl.farToggleTitle}>{t('home.timeline.far')}</Text>
+            <Text style={tl.farToggleHint}>
+              {t('home.timeline.farHint', { count: timeline.far.length })}
+            </Text>
+          </Pressable>
+          {showFar ? (
+            <View style={{ marginTop: 2 }}>
+              {timeline.far.map((r, idx) => (
+                <FarRow key={`far-${idx}-${r.dateISO}`} task={r} />
+              ))}
+            </View>
+          ) : null}
+        </>
+      ) : null}
     </>
   );
 }
@@ -929,13 +936,6 @@ export default function HomeScreen() {
     user?.role === 'elder' ||
     user?.canViewPrivateData === true;
 
-  const { data: events, isLoading } = useQuery({
-    queryKey: ['special-events', 'home'],
-    queryFn: () => specialEventsApi.list(),
-    staleTime: 3 * 60 * 1000,
-  });
-  const upcoming = (events ?? []).slice(0, 3);
-
   const tiles: Tile[] = [
     { key: 'report', label: t('home.actions.report'), icon: 'document-text', href: '/service-reports', show: true },
     { key: 'events', label: t('home.actions.events'), icon: 'megaphone', href: '/special-events', show: true },
@@ -992,39 +992,126 @@ export default function HomeScreen() {
 
       <AttendanceCard />
 
-      <MyTasksCard />
+      <HomeTimeline />
 
       <CoVisitBlock />
-
-      <Text style={[styles.sectionTitle, { marginTop: 24, marginBottom: 12 }]}>
-        {t('home.nextMeetings')}
-      </Text>
-      <MeetingsFeed />
-
-      <View style={[styles.sectionHeader, { marginTop: 24 }]}>
-        <Text style={styles.sectionTitle}>{t('home.upcomingEvents')}</Text>
-        <Pressable onPress={() => router.push('/special-events' as any)} hitSlop={8}>
-          <Text style={styles.link}>{t('home.allEvents')}</Text>
-        </Pressable>
-      </View>
-      {isLoading && !events ? (
-        <SkeletonCard rows={2} />
-      ) : (
-        <View style={styles.card}>
-          {upcoming.length === 0 ? (
-            <Text style={styles.muted}>{t('home.noEvents')}</Text>
-          ) : (
-            upcoming.map((e, idx) => (
-              <EventHomeRow key={e.id} event={e} first={idx === 0} />
-            ))
-          )}
-        </View>
-      )}
 
       <MyAbsencesBlock myPublisherId={myPublisherId} />
     </ScrollView>
   );
 }
+
+const tl = StyleSheet.create({
+  dayHeader: {
+    fontSize: 13,
+    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
+    color: '#475569',
+    marginTop: 14,
+    marginBottom: 6,
+  },
+  bgRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 4,
+  },
+  bgDot: {
+    width: 9,
+    height: 9,
+    borderRadius: 5,
+    borderWidth: 1.5,
+    marginTop: 4,
+  },
+  bgHead: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    marginBottom: 1,
+  },
+  bgKind: { fontSize: 12, fontWeight: '700', fontFamily: 'Manrope_700Bold' },
+  bgTitle: { fontSize: 14, color: '#475569', fontFamily: 'Manrope_500Medium' },
+  bgMeta: { fontSize: 12.5, color: '#94a3b8', marginTop: 1 },
+  fsUnassigned: { color: '#dc2626' },
+  fsTopic: {
+    fontSize: 12.5,
+    color: '#475569',
+    marginTop: 2,
+    fontStyle: 'italic',
+  },
+  fsLink: {
+    fontSize: 12.5,
+    color: '#0ea5e9',
+    marginTop: 2,
+    fontWeight: '600',
+    fontFamily: 'Manrope_600SemiBold',
+  },
+  mineRow: { padding: 12 },
+  mineHead: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 3,
+  },
+  mineKind: {
+    fontSize: 12,
+    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
+    color: '#0f172a',
+  },
+  mineTitle: {
+    fontSize: 14.5,
+    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
+    color: '#0f172a',
+  },
+  mineMeta: { fontSize: 12.5, color: '#64748b', marginTop: 1 },
+  partsBox: { marginTop: 8, gap: 3 },
+  partSection: {
+    fontSize: 12,
+    fontWeight: '600',
+    fontFamily: 'Manrope_600SemiBold',
+    color: '#64748b',
+    marginTop: 3,
+  },
+  partRow: { fontSize: 13.5, color: '#0f172a' },
+  taskHead: { flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
+  kindChip: {
+    width: 30,
+    height: 30,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  farToggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 18,
+    paddingVertical: 8,
+    paddingHorizontal: 4,
+    borderTopWidth: 0.5,
+    borderTopColor: '#e2e8f0',
+  },
+  farToggleTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
+    color: '#0f172a',
+  },
+  farToggleHint: { fontSize: 12.5, color: '#94a3b8' },
+  farRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 4,
+  },
+  farDate: { width: 56, fontSize: 12, color: '#94a3b8' },
+  farDot: { width: 6, height: 6, borderRadius: 3 },
+  farTitle: { flex: 1, fontSize: 13.5, color: '#475569' },
+});
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f8fafc' },
