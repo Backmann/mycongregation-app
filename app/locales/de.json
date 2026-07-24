@@ -2455,7 +2455,13 @@
     "notHeldConfirmBody": "Erfassen, dass am {{date}} keine Zusammenkunft stattfand. Das lässt sich auf der Besuchsseite korrigieren.",
     "backlog": "Noch {{count}} ohne Eintrag",
     "missing": "nicht erfasst",
-    "corrected": "geändert"
+    "corrected": "geändert",
+    "monthColumn": "Monat",
+    "totalShort": "Gesamt",
+    "averageShort": "Durchschnitt",
+    "printLegend": "— fand nicht statt · gelbe Zelle — nicht erfasst",
+    "printedOn": "Gedruckt",
+    "yearAverageRow": "Durchschnitt des Dienstjahres"
   },
   "annualReport": {
     "pageTitle": "Jahresbericht der Versammlung",
@@ -2473,6 +2479,10 @@
     "missingMonths": "Für {{count}} Monate fehlen Besuchszahlen. Der Durchschnitt wird durch 12 geteilt und fällt daher zu niedrig aus — bitte ergänzen.",
     "byHandNote": "Die App kennt keine Gebiete und kann nicht für die Versammlung über Hilfe vom Zweigbüro antworten — bitte selbst eintragen.",
     "reportsPerMonth": "Berichte pro Monat",
-    "reportsPerMonthNote": "Liegt der letzte Monat deutlich unter den anderen, sind die Daten noch nicht vollständig und die Zahlen unten fallen zu niedrig aus."
+    "reportsPerMonthNote": "Liegt der letzte Monat deutlich unter den anderen, sind die Daten noch nicht vollständig und die Zahlen unten fallen zu niedrig aus.",
+    "draftNote": "Entwurf: die Zahlen berechnet die App — bitte vor der Übertragung prüfen.",
+    "byHandTerritories": "Gesamtzahl der Gebiete",
+    "byHandUnworked": "Nicht bearbeitete Gebiete im Jahr",
+    "byHandBranchHelp": "Bereit, Hilfe vom Zweigbüro anzunehmen"
   }
 }

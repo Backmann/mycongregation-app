@@ -18,7 +18,10 @@ import {
   CountedPublisher,
   annualReportApi,
   attendanceApi,
+  meetingSettingsApi,
 } from '../../../lib/api';
+import { buildAnnualReportPdfHtml } from '../../../lib/annualReportPdf';
+import { exportHtmlAsPdf, openPrintWindow } from '../../../lib/pdf';
 
 /**
  * A draft of the annual congregation report (S-10).
@@ -69,6 +72,52 @@ export default function AnnualReportScreen() {
     };
   }, [attendance.data]);
 
+  const overview = useQuery({
+    queryKey: ['meeting-settings', 'overview'],
+    queryFn: () => meetingSettingsApi.getOverview(),
+    staleTime: 10 * 60 * 1000,
+  });
+
+  const print = () => {
+    if (!figures.data) return;
+    const preopened = openPrintWindow();
+    const html = buildAnnualReportPdfHtml({
+      figures: figures.data,
+      attendance: {
+        midweek: attendanceAverages.midweek,
+        weekend: attendanceAverages.weekend,
+      },
+      congregationName: overview.data?.congregation?.name ?? '',
+      monthName: (m) => dayjs(m).locale(i18n.language).format('MMMM YYYY'),
+      printedOn: dayjs().locale(i18n.language).format('D MMMM YYYY'),
+      labels: {
+        title: t('annualReport.pageTitle'),
+        serviceYear: t('attendance.serviceYear', { from: year, to: year + 1 }),
+        attendanceSection: t('annualReport.attendanceSection'),
+        midweek: t('eventTypes.midweek'),
+        weekend: t('eventTypes.weekend'),
+        publishersSection: t('annualReport.publishersSection'),
+        active: t('annualReport.active'),
+        becameInactive: t('annualReport.becameInactive'),
+        reactivated: t('annualReport.reactivated'),
+        circumstancesSection: t('annualReport.circumstancesSection'),
+        deaf: t('publishers.fields.isDeaf'),
+        blind: t('publishers.fields.isBlind'),
+        imprisoned: t('publishers.fields.isImprisoned'),
+        byHandSection: t('annualReport.byHandSection'),
+        byHandItems: [
+          t('annualReport.byHandTerritories'),
+          t('annualReport.byHandUnworked'),
+          t('annualReport.byHandBranchHelp'),
+        ],
+        reportsPerMonth: t('annualReport.reportsPerMonth'),
+        printed: t('attendance.printedOn'),
+        draftNote: t('annualReport.draftNote'),
+      },
+    });
+    void exportHtmlAsPdf(html, { fileName: 'S-10', preopenedWindow: preopened });
+  };
+
   if (figures.isLoading || attendance.isLoading) {
     return (
       <View style={styles.centre}>
@@ -106,6 +155,9 @@ export default function AnnualReportScreen() {
             size={20}
             color={year >= currentStart ? '#cbd5e1' : '#0e7490'}
           />
+        </Pressable>
+        <Pressable onPress={print} hitSlop={10} style={{ padding: 6 }}>
+          <Ionicons name="print-outline" size={20} color="#0e7490" />
         </Pressable>
       </View>
 

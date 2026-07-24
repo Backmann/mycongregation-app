@@ -21,8 +21,11 @@ import {
   AttendanceRow,
   attendanceApi,
   extractErrorMessage,
+  meetingSettingsApi,
 } from '../../../lib/api';
 import { usePermissions } from '../../../lib/permissions';
+import { buildAttendancePdfHtml } from '../../../lib/attendancePdf';
+import { exportHtmlAsPdf, openPrintWindow } from '../../../lib/pdf';
 import { reportError, reportSuccess } from '../../../lib/error-bus';
 
 /**
@@ -52,6 +55,38 @@ export default function AttendanceScreen() {
     queryKey: ['attendance', 'year', year],
     queryFn: () => attendanceApi.serviceYear(year),
   });
+
+  const overview = useQuery({
+    queryKey: ['meeting-settings', 'overview'],
+    queryFn: () => meetingSettingsApi.getOverview(),
+    staleTime: 10 * 60 * 1000,
+  });
+
+  const print = () => {
+    const data = query.data;
+    if (!data) return;
+    // Opened inside the click so the browser does not treat it as a popup.
+    const preopened = openPrintWindow();
+    const html = buildAttendancePdfHtml({
+      year: data,
+      congregationName: overview.data?.congregation?.name ?? '',
+      monthName: (m) => dayjs(m).locale(i18n.language).format('MMMM YYYY'),
+      printedOn: dayjs().locale(i18n.language).format('D MMMM YYYY'),
+      labels: {
+        title: t('attendance.pageTitle'),
+        serviceYear: t('attendance.serviceYear', { from: year, to: year + 1 }),
+        month: t('attendance.monthColumn'),
+        total: t('attendance.totalShort'),
+        average: t('attendance.averageShort'),
+        midweek: t('eventTypes.midweek'),
+        weekend: t('eventTypes.weekend'),
+        notHeld: t('attendance.printLegend'),
+        printed: t('attendance.printedOn'),
+        yearAverage: t('attendance.yearAverageRow'),
+      },
+    });
+    void exportHtmlAsPdf(html, { fileName: 'S-3', preopenedWindow: preopened });
+  };
 
   const yearTotals = useMemo(() => {
     const months = query.data?.months ?? [];
@@ -91,6 +126,9 @@ export default function AttendanceScreen() {
         <Text style={styles.yearLabel}>
           {t('attendance.serviceYear', { from: year, to: year + 1 })}
         </Text>
+        <Pressable onPress={print} hitSlop={10} style={styles.printBtn}>
+          <Ionicons name="print-outline" size={20} color="#0e7490" />
+        </Pressable>
         <Pressable
           onPress={() => setYear(year + 1)}
           hitSlop={10}
@@ -379,6 +417,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   yearBtn: { padding: 6 },
+  printBtn: { padding: 6 },
   yearBtnOff: { opacity: 0.4 },
   yearLabel: {
     fontSize: 16,
