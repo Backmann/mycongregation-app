@@ -1805,7 +1805,8 @@
       "farHint": "nur deine Aufgaben · {{count}}",
       "away": "Du bist abwesend",
       "outgoingTalk": "Vortrag auswärts",
-      "cleaningAfterMeeting": "Eure Gruppe reinigt nach dieser Zusammenkunft"
+      "cleaningAfterMeeting": "Eure Gruppe reinigt nach dieser Zusammenkunft",
+      "openMap": "Karte öffnen"
     },
     "report": {
       "outstanding": "Bericht für {{month}} nicht abgegeben",

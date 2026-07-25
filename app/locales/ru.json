@@ -1809,7 +1809,8 @@
       "farHint": "только твои задания · {{count}}",
       "away": "Тебя нет",
       "outgoingTalk": "Доклад на выезде",
-      "cleaningAfterMeeting": "Уборка после встречи — ваша группа"
+      "cleaningAfterMeeting": "Уборка после встречи — ваша группа",
+      "openMap": "Открыть карту"
     },
     "report": {
       "outstanding": "Отчёт за {{month}} не сдан",

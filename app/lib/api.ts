@@ -1481,7 +1481,6 @@ export interface CoVisitFieldServiceMeeting {
   itemDate: string;
   startTime: string | null;
   place: string | null;
-  forWife: boolean;
 }
 
 export interface CoVisitFieldServiceWeek {

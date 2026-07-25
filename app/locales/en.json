@@ -1805,7 +1805,8 @@
       "farHint": "your assignments only · {{count}}",
       "away": "You're away",
       "outgoingTalk": "Talk away",
-      "cleaningAfterMeeting": "Your group cleans after this meeting"
+      "cleaningAfterMeeting": "Your group cleans after this meeting",
+      "openMap": "Open map"
     },
     "report": {
       "outstanding": "The {{month}} report isn't submitted",

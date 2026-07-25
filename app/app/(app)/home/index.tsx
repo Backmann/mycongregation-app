@@ -47,7 +47,6 @@ import {
 import {
   buildTimeline,
   MeetingEntry,
-  taskPlacementDate,
   OutgoingTalkEntry,
   TimelineEntry,
 } from '../../../lib/home-timeline';
@@ -289,7 +288,6 @@ const FEED_ACCENT: Record<
 };
 
 const NEAR_DAYS = 14;
-const FAR_DAYS = 56;
 
 /** Section hue for a personal task, by what the task is. */
 function taskGlowKind(kind: RefinedTask['item']['kind']): SectionKind {
@@ -457,8 +455,8 @@ function MeetingRow({
         icon={ac.icon}
         accent={ac.color}
         kindLabel={kindLabel}
-        title={dateLabel}
-        meta={meta || null}
+        title={meta || dateLabel}
+        meta={null}
         extra={fsExtra}
         cleaning={
           entry.weeklyCleaning ? t('home.timeline.cleaningAfterMeeting') : null
@@ -474,8 +472,7 @@ function MeetingRow({
         <MyDot size={8} kind={glowKindFor(entry)} />
         <Text style={[tl.mineKind, { color: ac.color }]}>{kindLabel}</Text>
       </View>
-      <Text style={tl.mineTitle}>{dateLabel}</Text>
-      {meta ? <Text style={tl.mineMeta}>{meta}</Text> : null}
+      {meta ? <Text style={tl.mineTitle}>{meta}</Text> : null}
       {fsExtra}
       {entry.weeklyCleaning ? (
         <Text style={tl.cleaningLine}>
@@ -592,10 +589,18 @@ function OutgoingTalkRow({ entry }: { entry: OutgoingTalkEntry }) {
         <Text style={[tl.mineKind, { color: '#7c3aed' }]}>
           {t('home.timeline.outgoingTalk')}
         </Text>
-        {it.time ? <Text style={tl.mineMeta}> \u00b7 {it.time}</Text> : null}
+        {it.time ? <Text style={tl.mineMeta}>{it.time}</Text> : null}
       </View>
       <Text style={tl.mineTitle}>{taskTitle(it, t)}</Text>
       {where ? <Text style={tl.mineMeta}>{where}</Text> : null}
+      {it.mapUrl ? (
+        <Pressable
+          onPress={() => Linking.openURL(it.mapUrl as string).catch(() => {})}
+          hitSlop={6}
+        >
+          <Text style={tl.fsLink}>{t('home.timeline.openMap')}</Text>
+        </Pressable>
+      ) : null}
       {entry.absence ? (
         <Text style={tl.talkAway}>
           {absenceRangeLabel(entry.absence, i18n.language)}
@@ -747,111 +752,6 @@ function CoVisitRow({ item: it }: { item: MyCoVisitItem }) {
 }
 
 /**
- * The collapsed «Дальше» zone. Rows there used to be one cryptic line each —
- * a bare kind with no subject, and several items on one day sat loose. Now the
- * zone is grouped by day like the near window, and every row names what the
- * thing actually is on top of what kind it is.
- */
-type FarItem =
-  | { kind: 'task'; dateISO: string; task: RefinedTask }
-  | { kind: 'co_visit'; dateISO: string; item: MyCoVisitItem }
-  | { kind: 'away'; dateISO: string; absence: Absence };
-
-function farDayLabel(dateISO: string, locale: string): string {
-  return new Date(`${dateISO}T00:00:00`).toLocaleDateString(locale, {
-    weekday: 'short',
-    day: 'numeric',
-    month: 'long',
-  });
-}
-
-/** One row: a coloured dot, what it is, and the context under it. */
-function FarLine({
-  color,
-  icon,
-  title,
-  detail,
-}: {
-  color: string;
-  icon?: string;
-  title: string;
-  detail: string | null;
-}) {
-  return (
-    <View style={tl.farRow}>
-      {icon ? (
-        <Ionicons name={icon as never} size={14} color={color} />
-      ) : (
-        <View style={[tl.farDot, { backgroundColor: color }]} />
-      )}
-      <View style={{ flex: 1 }}>
-        <Text style={tl.farTitle}>{title}</Text>
-        {detail ? <Text style={tl.farDetail}>{detail}</Text> : null}
-      </View>
-    </View>
-  );
-}
-
-function FarItemRow({ item }: { item: FarItem }) {
-  const { t, i18n } = useTranslation();
-
-  if (item.kind === 'away') {
-    // No «тебя нет» here: the words said nothing about why. The dates and the
-    // note the person wrote say it better.
-    return (
-      <FarLine
-        color="#94a3b8"
-        icon="airplane-outline"
-        title={absenceRangeLabel(item.absence, i18n.language)}
-        detail={item.absence.note ?? null}
-      />
-    );
-  }
-
-  if (item.kind === 'co_visit') {
-    return (
-      <FarLine
-        color="#0e7490"
-        title={coVisitKindLabel(item.item.kind, t)}
-        detail={
-          [t('coVisit.mineTitle'), item.item.startTime]
-            .filter(Boolean)
-            .join(' \u00b7 ') || null
-        }
-      />
-    );
-  }
-
-  const r = item.task;
-  const v = taskVisual(r.item);
-  // What kind of thing it is, plus the meeting it belongs to and its time —
-  // enough to recognise an assignment without opening it.
-  const bits = [
-    taskSubsectionLabel(r.item, t),
-    (r.item.kind === 'meeting' || r.item.kind === 'duty') &&
-    (r.item.eventType === 'midweek' || r.item.eventType === 'weekend')
-      ? t(`home.eventTypes.${r.item.eventType}`)
-      : t(`home.kinds.${r.item.kind}`, ''),
-    r.weekOnly
-      ? t('home.weekOf', {
-          date: new Date(`${item.dateISO}T00:00:00`).toLocaleDateString(
-            i18n.language,
-            { day: 'numeric', month: 'short' },
-          ),
-        })
-      : (r.item.time ?? r.meetingTime ?? null),
-  ].filter(Boolean);
-
-  return (
-    <FarLine
-      color={v.color}
-      title={taskTitle(r.item, t)}
-      detail={bits.join(' \u00b7 ') || null}
-    />
-  );
-}
-
-/**
  * The single chronological stream — my assignments, meetings and events in one
  * timeline. Personal rows breathe and carry weight; the background stays quiet.
  * Two zones: the next 14 days mixed and grouped by day, then a collapsed list
@@ -948,7 +848,6 @@ function HomeTimeline() {
         title: taskTitle(it, t),
       }),
       nearDays: NEAR_DAYS,
-      farDays: FAR_DAYS,
     });
     // i18n.language is a dep so titles re-resolve on language change.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -967,36 +866,7 @@ function HomeTimeline() {
     i18n.language,
   ]);
 
-  // «Дальше» is grouped by day too — several items on one date used to sit
-  // loose with no header, which is what made the zone hard to read.
-  const farGroups = useMemo(() => {
-    const items: FarItem[] = [
-      ...timeline.far.map((r) => ({
-        kind: 'task' as const,
-        dateISO: taskPlacementDate(r, todayISO),
-        task: r,
-      })),
-      ...timeline.farCoVisit.map((it) => ({
-        kind: 'co_visit' as const,
-        dateISO: it.itemDate,
-        item: it,
-      })),
-      ...timeline.farAbsences.map((a) => ({
-        kind: 'away' as const,
-        dateISO: a.startDate,
-        absence: a,
-      })),
-    ].sort((a, b) => a.dateISO.localeCompare(b.dateISO));
-
-    const groups: { dateISO: string; items: FarItem[] }[] = [];
-    for (const it of items) {
-      const last = groups[groups.length - 1];
-      if (last && last.dateISO === it.dateISO) last.items.push(it);
-      else groups.push({ dateISO: it.dateISO, items: [it] });
-    }
-    return groups;
-  }, [timeline, todayISO]);
-  const farCount = farGroups.reduce((n, g) => n + g.items.length, 0);
+  const farCount = timeline.far.reduce((n, g) => n + g.entries.length, 0);
 
   const header = (
     <View style={[styles.sectionHeader, { marginTop: 24 }]}>
@@ -1045,7 +915,7 @@ function HomeTimeline() {
             <Text style={tl.dayHeader}>
               {dayHeaderLabel(group.dateISO, todayISO, t, i18n.language)}
             </Text>
-            <View style={{ gap: 6 }}>
+            <View style={tl.dayBody}>
               {group.entries.map((en) => (
                 <TimelineRow key={en.key} entry={en} todayISO={todayISO} />
               ))}
@@ -1054,7 +924,7 @@ function HomeTimeline() {
         ))
       )}
 
-      {farGroups.length > 0 ? (
+      {timeline.far.length > 0 ? (
         <>
           <Pressable
             style={tl.farToggle}
@@ -1072,14 +942,16 @@ function HomeTimeline() {
             </Text>
           </Pressable>
           {showFar
-            ? farGroups.map((g) => (
-                <View key={`fg-${g.dateISO}`} style={{ marginTop: 6 }}>
-                  <Text style={tl.farDayHeader}>
-                    {farDayLabel(g.dateISO, i18n.language)}
+            ? timeline.far.map((group) => (
+                <View key={`far-${group.dateISO}`} style={{ marginBottom: 4 }}>
+                  <Text style={tl.dayHeader}>
+                    {dayHeaderLabel(group.dateISO, todayISO, t, i18n.language)}
                   </Text>
-                  {g.items.map((it, idx) => (
-                    <FarItemRow key={`fi-${g.dateISO}-${idx}`} item={it} />
-                  ))}
+                  <View style={tl.dayBody}>
+                    {group.entries.map((en) => (
+                      <TimelineRow key={en.key} entry={en} todayISO={todayISO} />
+                    ))}
+                  </View>
                 </View>
               ))
             : null}
@@ -1328,26 +1200,9 @@ const tl = StyleSheet.create({
     color: '#0f172a',
   },
   farToggleHint: { fontSize: 12.5, color: '#94a3b8' },
-  farRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    paddingVertical: 8,
-    paddingHorizontal: 4,
-  },
-  farDayHeader: {
-    fontSize: 12.5,
-    fontWeight: '700',
-    fontFamily: 'Manrope_700Bold',
-    color: '#64748b',
-    marginTop: 8,
-    marginBottom: 2,
-    paddingHorizontal: 4,
-  },
-  farDetail: { fontSize: 12, color: '#94a3b8', marginTop: 1 },
-  farDate: { width: 56, fontSize: 12, color: '#94a3b8' },
-  farDot: { width: 6, height: 6, borderRadius: 3 },
-  farTitle: { flex: 1, fontSize: 13.5, color: '#475569' },
+  // A day's rows sit slightly inset, so the eye sees they belong to the
+  // header above rather than floating on their own.
+  dayBody: { gap: 6, paddingLeft: 10 },
 });
 
 const styles = StyleSheet.create({

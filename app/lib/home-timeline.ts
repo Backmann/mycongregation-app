@@ -135,12 +135,12 @@ export interface DayGroup {
 export interface Timeline {
   /** Next `nearDays` days, everything mixed, grouped by day. */
   near: DayGroup[];
-  /** My own assignments beyond the near window, up to `farDays`, flat. */
-  far: RefinedTask[];
-  /** My away-periods starting beyond the near window (any future date). */
-  farAbsences: Absence[];
-  /** My CO-visit items dated beyond the near window. */
-  farCoVisit: MyCoVisitItem[];
+  /**
+   * Everything of MINE beyond that window, grouped by day exactly the same
+   * way — same rows, same detail. There is no upper cut: a talk arranged
+   * months ahead is precisely what this zone exists to show.
+   */
+  far: DayGroup[];
 }
 
 export interface BuildTimelineInput {
@@ -165,7 +165,6 @@ export interface BuildTimelineInput {
    */
   resolvePart: (item: MyAssignmentItem) => MyPartLine;
   nearDays?: number;
-  farDays?: number;
 }
 
 /** Meeting/duty tasks are shown inside their meeting row, not as own rows. */
@@ -225,14 +224,10 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
     youConductLabel,
     resolvePart,
     nearDays = 14,
-    farDays = 56,
   } = input;
 
   const nearEndISO = formatDateISO(
     addDays(new Date(`${todayISO}T00:00:00`), nearDays),
-  );
-  const farEndISO = formatDateISO(
-    addDays(new Date(`${todayISO}T00:00:00`), farDays),
   );
 
   const inNear = (iso: string) => iso >= todayISO && iso <= nearEndISO;
@@ -252,6 +247,16 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
   }
 
   const entries: TimelineEntry[] = [];
+  const farEntries: TimelineEntry[] = [];
+  /**
+   * Background (meetings, events) only ever belongs to the near window. My own
+   * items go wherever their date falls — near if inside the window, otherwise
+   * into the far zone, which has no far edge.
+   */
+  const pushMine = (en: TimelineEntry) => {
+    if (en.dateISO < todayISO) return;
+    (en.dateISO <= nearEndISO ? entries : farEntries).push(en);
+  };
   // Events already shown as a meeting's replacement are not repeated as their
   // own background row.
   const replacedEventIds = new Set<string>();
@@ -445,7 +450,6 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
     // The cleaning done after the meetings is spoken inside the meeting rows.
     if (r.item.kind === 'cleaning' && r.item.label === 'after_meeting') continue;
     const dateISO = taskPlacement(r);
-    if (!inNear(dateISO)) continue;
 
     if (r.item.kind === 'outgoing_talk') {
       // Fold in the away-period this trip explains, so the day carries one row
@@ -456,7 +460,7 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
             a.startDate <= dateISO && (a.endDate ?? a.startDate) >= dateISO,
         ) ?? null;
       if (away) consumedAbsenceIds.add(away.id);
-      entries.push({
+      pushMine({
         type: 'outgoing_talk',
         key: `talk-${dateISO}-${r.item.partKey ?? r.item.label}`,
         dateISO,
@@ -466,7 +470,7 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
       continue;
     }
 
-    entries.push({
+    pushMine({
       type: 'task',
       key: `task-${r.item.kind}-${dateISO}-${r.item.partKey ?? r.item.label}`,
       dateISO,
@@ -479,17 +483,16 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
     if (consumedAbsenceIds.has(a.id)) continue; // spoken by the talk row
     const end = a.endDate ?? a.startDate;
     if (end < todayISO) continue; // already over
-    if (a.startDate > nearEndISO) continue; // future ones go to farAbsences
-    // Place on the first covered day within the window.
+    // An away-period already under way is pinned to today so it is not pushed
+    // out of sight; a future one sits on its first day.
     const placed = a.startDate < todayISO ? todayISO : a.startDate;
-    entries.push({ type: 'absence', key: `abs-${a.id}`, dateISO: placed, absence: a });
+    pushMine({ type: 'absence', key: `abs-${a.id}`, dateISO: placed, absence: a });
   }
 
   // ---- My own CO-visit items (personal, breathing) ----
   const coVisitItems: MyCoVisitItem[] = coVisits.flatMap((v) => v.items);
   for (const it of coVisitItems) {
-    if (!inNear(it.itemDate)) continue;
-    entries.push({
+    pushMine({
       type: 'co_visit',
       key: `cov-${it.id}`,
       dateISO: it.itemDate,
@@ -513,32 +516,20 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
               ? en.task.item.time ?? '99:99'
               : en.task.item.time ?? en.task.meetingTime ?? '99:99';
 
-  entries.sort(
-    (a, b) => a.dateISO.localeCompare(b.dateISO) || timeOf(a).localeCompare(timeOf(b)),
-  );
+  const byDay = (list: TimelineEntry[]): DayGroup[] => {
+    list.sort(
+      (a, b) =>
+        a.dateISO.localeCompare(b.dateISO) ||
+        timeOf(a).localeCompare(timeOf(b)),
+    );
+    const groups: DayGroup[] = [];
+    for (const en of list) {
+      const last = groups[groups.length - 1];
+      if (last && last.dateISO === en.dateISO) last.entries.push(en);
+      else groups.push({ dateISO: en.dateISO, entries: [en] });
+    }
+    return groups;
+  };
 
-  const near: DayGroup[] = [];
-  for (const en of entries) {
-    const last = near[near.length - 1];
-    if (last && last.dateISO === en.dateISO) last.entries.push(en);
-    else near.push({ dateISO: en.dateISO, entries: [en] });
-  }
-
-  // ---- Far zone: my own assignments beyond the near window ----
-  const far = refined.filter((r) => {
-    const iso = taskPlacement(r);
-    return iso > nearEndISO && iso <= farEndISO;
-  });
-
-  // ---- Far away-periods: any future absence starting beyond the window ----
-  const farAbsences = absences
-    .filter((a) => !consumedAbsenceIds.has(a.id) && a.startDate > nearEndISO)
-    .sort((x, y) => x.startDate.localeCompare(y.startDate));
-
-  // ---- Far CO-visit items: my items dated beyond the near window ----
-  const farCoVisit = coVisitItems
-    .filter((it) => it.itemDate > nearEndISO)
-    .sort((x, y) => x.itemDate.localeCompare(y.itemDate));
-
-  return { near, far, farAbsences, farCoVisit };
+  return { near: byDay(entries), far: byDay(farEntries) };
 }
