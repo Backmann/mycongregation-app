@@ -398,8 +398,11 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
         time: m.startTime ?? '',
         kind: 'field_service',
         address: m.place,
-        conductorName: m.conductorName,
-        unassignedConductor: !m.conductorName,
+        // A visit item names the brother going out WITH the overseer, not a
+        // conductor. Saying «Ведущий: …» there stated something untrue, and
+        // «не назначен» would be just as wrong — so the line is left off.
+        conductorName: null,
+        unassignedConductor: false,
         topic: null,
         sourceUrl: null,
         replacedBy: null,

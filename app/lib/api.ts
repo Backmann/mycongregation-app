@@ -1473,14 +1473,14 @@ export interface CoHostStat {
  * everyone may see them. During a visit that week's field service is planned
  * in the visit schedule rather than the regular section, and the full item
  * list is elder-only (it also holds hosts, addresses and phones) — so the
- * server exposes just this: when, where, and who leads.
+ * server exposes just when and where. NOT who is assigned: on a visit item
+ * that is the brother going out in service WITH the overseer, not a conductor.
  */
 export interface CoVisitFieldServiceMeeting {
   id: string;
   itemDate: string;
   startTime: string | null;
   place: string | null;
-  conductorName: string | null;
   forWife: boolean;
 }
 

@@ -423,15 +423,17 @@ function MeetingRow({
   const fsExtra =
     entry.kind === 'field_service' ? (
       <>
-        <Text
-          style={[
-            tl.bgMeta,
-            entry.unassignedConductor && tl.fsUnassigned,
-          ]}
-        >
-          {t('fieldService.conductor')}:{' '}
-          {entry.conductorName ?? t('fieldService.unassigned')}
-        </Text>
+        {entry.conductorName || entry.unassignedConductor ? (
+          <Text
+            style={[
+              tl.bgMeta,
+              entry.unassignedConductor && tl.fsUnassigned,
+            ]}
+          >
+            {t('fieldService.conductor')}:{' '}
+            {entry.conductorName ?? t('fieldService.unassigned')}
+          </Text>
+        ) : null}
         {entry.topic ? <Text style={tl.fsTopic}>{entry.topic}</Text> : null}
         {entry.sourceUrl ? (
           <Pressable
