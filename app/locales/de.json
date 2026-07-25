@@ -1774,19 +1774,13 @@
   "home": {
     "title": "Start",
     "upcomingEvents": "Bevorstehende Ereignisse",
-    "noEvents": "Keine bevorstehenden Ereignisse",
-    "allEvents": "Alle Ereignisse",
-    "quickActions": "Schnellzugriff",
     "actions": {
-      "schedule": "Programm",
       "report": "Bericht abgeben",
       "events": "Ereignisse",
       "publishers": "Verkündiger",
       "absences": "Abwesenheiten",
-      "profile": "Profil",
       "myGroup": "Meine Gruppe"
     },
-    "nextMeeting": "Nächste Zusammenkunft",
     "meeting": {
       "midweek": "Zusammenkunft unter der Woche",
       "weekend": "Zusammenkunft am Wochenende",
@@ -1794,8 +1788,6 @@
       "asAssistant": "Assistent",
       "noParts": "Keine Aufgaben in dieser Woche"
     },
-    "myAbsences": "Meine Abwesenheiten",
-    "myTasks": "Meine nächsten Aufgaben",
     "timeline": {
       "title": "Demnächst",
       "today": "Heute",
@@ -1846,15 +1838,11 @@
       "leading": "Predigtdienst-Zusammenkunft — du leitest"
     },
     "nextFieldService": "Predigtdienst-Zusammenkunft",
-    "allTasks": "Alle ({{count}})",
     "myTasksScreen": {
       "title": "Meine Aufgaben",
       "empty": "Keine Aufgaben in den kommenden Wochen"
     },
-    "nextMeetings": "Nächste Zusammenkünfte",
     "feed": {
-      "empty": "Keine Zusammenkünfte in den nächsten 7 Tagen",
-      "today": "Heute",
       "youConduct": "Du leitest diese Zusammenkunft"
     },
     "coLunch": {

@@ -12,7 +12,8 @@
     "web": "expo start --web",
     "lint": "expo lint",
     "i18n:check": "node scripts/check-i18n-drift.mjs && node scripts/check-i18n-usage.mjs",
-    "i18n:usage": "node scripts/check-i18n-usage.mjs"
+    "i18n:usage": "node scripts/check-i18n-usage.mjs",
+    "i18n:unused": "node scripts/check-i18n-unused.mjs"
   },
   "dependencies": {
     "@expo-google-fonts/manrope": "^0.4.2",

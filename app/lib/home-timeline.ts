@@ -59,6 +59,8 @@ export interface MeetingEntry {
   myParts: MyPartLine[];
   /** My service group cleans the hall after this meeting. */
   weeklyCleaning: boolean;
+  /** A combined field-service meeting for the whole congregation. */
+  isGeneral: boolean;
 }
 
 /** A special event shown as background (never one that replaced a meeting). */
@@ -346,6 +348,7 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
         replacedBy,
         myParts,
         weeklyCleaning: cleanAfterMeetingWeeks.has(weekISO),
+        isGeneral: false,
       });
     }
   }
@@ -380,6 +383,7 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
       replacedBy: null,
       myParts: iConduct ? [{ section: null, title: youConductLabel }] : [],
       weeklyCleaning: false,
+      isGeneral: !!m.isGeneral,
     });
   }
 
@@ -413,6 +417,7 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
         replacedBy: null,
         myParts: [],
         weeklyCleaning: false,
+        isGeneral: false,
       });
     }
   }

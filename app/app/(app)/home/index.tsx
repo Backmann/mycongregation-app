@@ -418,9 +418,18 @@ function MeetingRow({
   const ac = FEED_ACCENT[entry.kind] ?? FEED_ACCENT.midweek;
   const meta = [entry.time, entry.address].filter(Boolean).join(' \u00b7 ');
 
+  const generalBadge =
+    entry.kind === 'field_service' && entry.isGeneral ? (
+      <View style={tl.generalBadge}>
+        <Ionicons name="people" size={12} color="#7c3aed" />
+        <Text style={tl.generalBadgeText}>{t('fieldService.generalBadge')}</Text>
+      </View>
+    ) : null;
+
   const fsExtra =
     entry.kind === 'field_service' ? (
       <>
+        {generalBadge}
         {entry.conductorName || entry.unassignedConductor ? (
           <Text
             style={[
@@ -471,6 +480,7 @@ function MeetingRow({
       <View style={tl.mineHead}>
         <MyDot size={8} kind={glowKindFor(entry)} />
         <Text style={[tl.mineKind, { color: ac.color }]}>{kindLabel}</Text>
+        {generalBadge}
       </View>
       {meta ? <Text style={tl.mineTitle}>{meta}</Text> : null}
       {fsExtra}
@@ -1203,6 +1213,23 @@ const tl = StyleSheet.create({
   // A day's rows sit slightly inset, so the eye sees they belong to the
   // header above rather than floating on their own.
   dayBody: { gap: 6, paddingLeft: 10 },
+  generalBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    gap: 4,
+    backgroundColor: '#f5f3ff',
+    borderRadius: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    marginTop: 3,
+  },
+  generalBadgeText: {
+    fontSize: 11.5,
+    color: '#7c3aed',
+    fontWeight: '600',
+    fontFamily: 'Manrope_600SemiBold',
+  },
 });
 
 const styles = StyleSheet.create({

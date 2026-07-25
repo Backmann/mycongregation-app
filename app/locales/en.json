@@ -1774,19 +1774,13 @@
   "home": {
     "title": "Home",
     "upcomingEvents": "Upcoming events",
-    "noEvents": "No upcoming events",
-    "allEvents": "All events",
-    "quickActions": "Quick actions",
     "actions": {
-      "schedule": "Schedule",
       "report": "Submit report",
       "events": "Events",
       "publishers": "Publishers",
       "absences": "Absences",
-      "profile": "Profile",
       "myGroup": "My group"
     },
-    "nextMeeting": "Next meeting",
     "meeting": {
       "midweek": "Midweek meeting",
       "weekend": "Weekend meeting",
@@ -1794,8 +1788,6 @@
       "asAssistant": "assistant",
       "noParts": "No assignments this week"
     },
-    "myAbsences": "My absences",
-    "myTasks": "My upcoming assignments",
     "timeline": {
       "title": "Coming up",
       "today": "Today",
@@ -1846,15 +1838,11 @@
       "leading": "Field service meeting — you conduct"
     },
     "nextFieldService": "Field service meeting",
-    "allTasks": "All ({{count}})",
     "myTasksScreen": {
       "title": "My assignments",
       "empty": "No assignments in the coming weeks"
     },
-    "nextMeetings": "Next meetings",
     "feed": {
-      "empty": "No meetings in the next 7 days",
-      "today": "Today",
       "youConduct": "You conduct this meeting"
     },
     "coLunch": {
