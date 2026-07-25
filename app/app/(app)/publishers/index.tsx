@@ -14,7 +14,7 @@ import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import i18n from '../../../lib/i18n';
 import { useAuth } from '../../../lib/auth';
-import { isActivePermanentPioneer } from '../../../lib/pioneer-status';
+import { publisherTags } from '../../../lib/publisher-tags';
 import {
   auxiliaryPioneersApi,
   extractErrorMessage,
@@ -234,6 +234,7 @@ export default function PublishersListScreen() {
               publisher={item}
               groupName={groupNameFor(item)}
               canOpenCard={privileged}
+              privileged={privileged}
               isAuxiliaryPioneer={activeAuxIds.has(item.id)}
             />
           )}
@@ -256,11 +257,13 @@ function PublisherRow({
   publisher,
   groupName,
   canOpenCard,
+  privileged,
   isAuxiliaryPioneer,
 }: {
   publisher: Publisher;
   groupName: string | null;
   canOpenCard: boolean;
+  privileged: boolean;
   isAuxiliaryPioneer: boolean;
 }) {
   const isRemoved = !!publisher.deletedAt;
@@ -268,26 +271,14 @@ function PublisherRow({
     ? i18n.t(`publishers.removal.${publisher.removalReason}`)
     : i18n.t('publishers.removedBadge');
 
-  const tags: string[] = [];
-  if (publisher.appointment === 'elder') tags.push(i18n.t('publishers.tags.elder'));
-  if (publisher.appointment === 'ministerial_servant') tags.push(i18n.t('publishers.tags.ms'));
-  const pioneerActive = isActivePermanentPioneer(
-    publisher.pioneerType,
-    publisher.pioneerSince,
-  );
-  if (pioneerActive && publisher.pioneerType === 'regular') tags.push(i18n.t('publishers.tags.regularPioneer'));
-  if (pioneerActive && publisher.pioneerType === 'special') tags.push(i18n.t('publishers.tags.specialPioneer'));
-  if (pioneerActive && publisher.pioneerType === 'missionary') tags.push(i18n.t('publishers.tags.missionary'));
-  // Auxiliary pioneer this month (from real service periods), shown when the
-  // person isn't already an active permanent pioneer.
-  if (isAuxiliaryPioneer && !pioneerActive) tags.push(i18n.t('publishers.tags.auxiliaryPioneer'));
-  if (!publisher.isActive) tags.push(i18n.t('publishers.tags.inactive'));
+  const tags = publisherTags(publisher, { privileged, isAuxiliaryPioneer });
 
   const initials =
     (publisher.firstName[0] ?? '') + (publisher.lastName[0] ?? '');
 
   // Overdue since 1 January; publishers who never confirmed count as overdue.
   const contactCheck = (() => {
+    if (!privileged) return null; // secretarial bookkeeping, not for everyone
     if (isRemoved) return null;
     const now = new Date();
     const yearStart = new Date(now.getFullYear(), 0, 1);

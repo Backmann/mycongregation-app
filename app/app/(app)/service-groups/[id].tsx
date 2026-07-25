@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   
@@ -15,6 +15,7 @@ import { useLocalSearchParams, router } from 'expo-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
 import {
+  auxiliaryPioneersApi,
   extractErrorMessage,
   Publisher,
   publishersApi,
@@ -24,6 +25,7 @@ import {
 import { ServiceGroupForm } from '../../../components/ServiceGroupForm';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../../lib/auth';
+import { publisherTags } from '../../../lib/publisher-tags';
 import { notify } from '../../../lib/error-bus';
 import { confirm } from '../../../components/ConfirmHost';
 
@@ -41,6 +43,21 @@ export default function ServiceGroupDetailScreen() {
     enabled: !!id,
   });
 
+  const auxQuery = useQuery({
+    queryKey: ['aux-pioneers', 'journal'],
+    queryFn: () => auxiliaryPioneersApi.journal(),
+    staleTime: 5 * 60 * 1000,
+  });
+  // Auxiliary pioneering comes from the real service periods, the same source
+  // the roster uses. Computed here, above any early return, so the hook order
+  // never changes.
+  const activeAuxIds = useMemo(() => {
+    const ids = new Set<string>();
+    for (const row of auxQuery.data ?? []) {
+      if (row.state === 'serving') ids.add(row.publisherId);
+    }
+    return ids;
+  }, [auxQuery.data]);
   const membersQuery = useQuery({
     queryKey: ['service-group', id, 'publishers'],
     queryFn: () => serviceGroupsApi.getPublishers(id!),
@@ -151,6 +168,11 @@ export default function ServiceGroupDetailScreen() {
     group.assistant ?? members.find((p) => p.id === group.assistantPublisherId);
   const isAdmin = user?.role === 'admin';
   const canManage = isAdmin && !group.deletedAt;
+  // Mirrors the server's private-access rule, as the roster does.
+  const privileged =
+    user?.role === 'admin' ||
+    user?.role === 'elder' ||
+    user?.canViewPrivateData === true;
   const memberIds = members.map((p) => p.id);
 
   if (editing) {
@@ -240,6 +262,8 @@ export default function ServiceGroupDetailScreen() {
                 key={p.id}
                 publisher={p}
                 role={role}
+                privileged={privileged}
+                isAuxiliaryPioneer={activeAuxIds.has(p.id)}
                 canRemove={canManage && role === null}
                 pending={removeMemberMutation.isPending}
                 onRemove={() => confirmRemoveMember(p)}
@@ -307,20 +331,26 @@ function MemberRow({
   role,
   canRemove,
   pending,
+  privileged,
+  isAuxiliaryPioneer,
   onRemove,
 }: {
   publisher: Publisher;
   role: 'overseer' | 'assistant' | null;
   canRemove: boolean;
   pending?: boolean;
+  privileged: boolean;
+  isAuxiliaryPioneer: boolean;
   onRemove: () => void;
 }) {
   const { t } = useTranslation();
+  const tags = publisherTags(publisher, { privileged, isAuxiliaryPioneer });
   const initials =
     (publisher.firstName[0] ?? '') + (publisher.lastName[0] ?? '');
   return (
     <Pressable
       style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
+      disabled={!privileged}
       onPress={() => router.push(`/publishers/${publisher.id}` as any)}
     >
       <View
@@ -334,9 +364,16 @@ function MemberRow({
       >
         <Text style={styles.avatarText}>{initials}</Text>
       </View>
-      <Text style={styles.name} numberOfLines={1}>
-        {publisher.displayName}
-      </Text>
+      <View style={{ flex: 1 }}>
+        <Text style={styles.name} numberOfLines={1}>
+          {publisher.displayName}
+        </Text>
+        {tags.length > 0 ? (
+          <Text style={styles.memberTags} numberOfLines={2}>
+            {tags.join(' \u00b7 ')}
+          </Text>
+        ) : null}
+      </View>
       {role && (
         <View style={styles.roleBadge}>
           <Text style={styles.roleBadgeText}>
@@ -353,9 +390,9 @@ function MemberRow({
         >
           <Ionicons name="close-circle" size={22} color="#cbd5e1" />
         </Pressable>
-      ) : (
+      ) : privileged ? (
         <Text style={styles.chevron}>›</Text>
-      )}
+      ) : null}
     </Pressable>
   );
 }
@@ -611,6 +648,7 @@ const styles = StyleSheet.create({
   },
   roleBadgeText: { color: '#7c3aed', fontSize: 11, fontWeight: '700', fontFamily: 'Manrope_700Bold',},
   removeBtn: { marginLeft: 8, padding: 2 },
+  memberTags: { fontSize: 12, color: '#64748b', marginTop: 1 },
   chevron: { color: '#cbd5e1', fontSize: 24, marginLeft: 8 },
 
   addBtn: {
