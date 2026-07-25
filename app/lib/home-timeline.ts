@@ -194,6 +194,20 @@ function eventCoversDay(e: SpecialEvent, dayISO: string): boolean {
   return e.date <= dayISO && dayISO <= end;
 }
 
+/**
+ * Where a task sits in the stream. The weekly cleaning is the exception: once
+ * the group has picked a day and time it belongs on THAT day, not on the
+ * Monday of its week, which read as "Monday is the cleaning day". Exported so
+ * the collapsed «Дальше» zone groups items by exactly the same date.
+ */
+export function taskPlacementDate(r: RefinedTask, todayISO: string): string {
+  return r.item.kind === 'cleaning' &&
+    r.item.label === 'thorough' &&
+    r.item.thoroughPlannedAt
+    ? String(r.item.thoroughPlannedAt).slice(0, 10)
+    : placementDate(r, todayISO);
+}
+
 export function buildTimeline(input: BuildTimelineInput): Timeline {
   const {
     versions,
@@ -254,17 +268,8 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
     (r) => !droppedByCongress(r),
   );
 
-  /**
-   * Where a task sits in the stream. The weekly cleaning is the exception:
-   * once the group has picked a day and time it belongs on THAT day, not on
-   * the Monday of its week, which read as "Monday is the cleaning day".
-   */
   const taskPlacement = (r: RefinedTask): string =>
-    r.item.kind === 'cleaning' &&
-    r.item.label === 'thorough' &&
-    r.item.thoroughPlannedAt
-      ? String(r.item.thoroughPlannedAt).slice(0, 10)
-      : placementDate(r, todayISO);
+    taskPlacementDate(r, todayISO);
 
   const outgoingTalkDates = new Set(
     refined
