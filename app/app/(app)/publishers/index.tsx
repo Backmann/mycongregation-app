@@ -86,6 +86,17 @@ export default function PublishersListScreen() {
     queryFn: () => serviceGroupsApi.list({}),
   });
   const groups = useMemo(() => groupsQuery.data?.data ?? [], [groupsQuery.data]);
+  // The roster has carried the groups all along and used only their names, so
+  // the two people a group is organised around went unnamed here while the
+  // group's own card spelled them out. One fact, one wording, both screens.
+  const groupRoleById = useMemo(() => {
+    const m = new Map<string, 'overseer' | 'assistant'>();
+    for (const g of groups) {
+      if (g.overseerPublisherId) m.set(g.overseerPublisherId, 'overseer');
+      if (g.assistantPublisherId) m.set(g.assistantPublisherId, 'assistant');
+    }
+    return m;
+  }, [groups]);
 
   // Active auxiliary pioneers (serving this month) — for the "auxiliary
   // pioneer" filter, which reflects real service periods, not a card field.
@@ -233,6 +244,7 @@ export default function PublishersListScreen() {
             <PublisherRow
               publisher={item}
               groupName={groupNameFor(item)}
+              groupRole={groupRoleById.get(item.id) ?? null}
               canOpenCard={privileged}
               privileged={privileged}
               isAuxiliaryPioneer={activeAuxIds.has(item.id)}
@@ -258,12 +270,14 @@ function PublisherRow({
   groupName,
   canOpenCard,
   privileged,
+  groupRole,
   isAuxiliaryPioneer,
 }: {
   publisher: Publisher;
   groupName: string | null;
   canOpenCard: boolean;
   privileged: boolean;
+  groupRole: 'overseer' | 'assistant' | null;
   isAuxiliaryPioneer: boolean;
 }) {
   const isRemoved = !!publisher.deletedAt;
@@ -319,6 +333,11 @@ function PublisherRow({
             </View>
           )}
         </View>
+        {groupRole ? (
+          <Text style={styles.groupRole}>
+            {i18n.t(`serviceGroups.${groupRole}`)}
+          </Text>
+        ) : null}
         {tags.length > 0 && (
           <View style={styles.tagsRow}>
             {tags.map((tag) => (
@@ -653,6 +672,13 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   removedBadgeText: { color: '#92400e', fontSize: 10, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
+  groupRole: {
+    fontSize: 12,
+    color: '#7c3aed',
+    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
+    marginTop: 2,
+  },
   tagsRow: { flexDirection: 'row', flexWrap: 'wrap', marginTop: 4, gap: 4 },
   tag: {
     backgroundColor: '#e0f2fe',

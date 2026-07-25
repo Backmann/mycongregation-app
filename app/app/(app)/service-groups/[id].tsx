@@ -39,7 +39,7 @@ export default function ServiceGroupDetailScreen() {
   const [addOpen, setAddOpen] = useState(false);
 
   const groupQuery = useQuery({
-    queryKey: ['service-group', id],
+    queryKey: ['service-groups', id],
     queryFn: () => serviceGroupsApi.getById(id!),
     enabled: !!id,
   });
@@ -60,25 +60,27 @@ export default function ServiceGroupDetailScreen() {
     return ids;
   }, [auxQuery.data]);
   const membersQuery = useQuery({
-    queryKey: ['service-group', id, 'publishers'],
+    queryKey: ['service-groups', id, 'publishers'],
     queryFn: () => serviceGroupsApi.getPublishers(id!),
     enabled: !!id && !editing,
   });
 
-  const invalidateMembership = () => {
-    queryClient.invalidateQueries({ queryKey: ['service-group', id, 'publishers'] });
-    queryClient.invalidateQueries({ queryKey: ['service-group', id] });
+  // Everything about groups now hangs off ONE key prefix — the lists, the
+  // names the roster reads, a single group and its members. Before this the
+  // card lived under a key of its own, so a change made anywhere else left it
+  // showing yesterday, and the screens disagreed until something happened to
+  // refetch. One invalidation now reaches all of them.
+  const invalidateGroups = () => {
     queryClient.invalidateQueries({ queryKey: ['service-groups'] });
     queryClient.invalidateQueries({ queryKey: ['publishers'] });
   };
+  const invalidateMembership = invalidateGroups;
 
   const updateMutation = useMutation({
     mutationFn: (input: UpdateServiceGroupInput) =>
       serviceGroupsApi.update(id!, input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['service-groups'] });
-      queryClient.invalidateQueries({ queryKey: ['service-group', id] });
-      queryClient.invalidateQueries({ queryKey: ['service-group', id, 'publishers'] });
+      invalidateGroups();
       setEditing(false);
     },
   });
@@ -86,7 +88,7 @@ export default function ServiceGroupDetailScreen() {
   const removeMutation = useMutation({
     mutationFn: () => serviceGroupsApi.remove(id!),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['service-groups'] });
+      invalidateGroups();
       router.back();
     },
   });
@@ -94,8 +96,7 @@ export default function ServiceGroupDetailScreen() {
   const restoreMutation = useMutation({
     mutationFn: () => serviceGroupsApi.restore(id!),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['service-groups'] });
-      queryClient.invalidateQueries({ queryKey: ['service-group', id] });
+      invalidateGroups();
     },
   });
 
