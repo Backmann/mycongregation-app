@@ -18,9 +18,6 @@ import { Dialog } from './Dialog';
 import { SECTION_COLORS } from '../lib/section-colors';
 import { ChipRow, PersonChip } from './PersonChip';
 
-/** Every duty icon wears the section's own colour — see the row below. */
-const DUTY_ICON_COLOR = SECTION_COLORS.duty.color;
-
 /** Icon + accent colour per duty type (role circle in the picker). */
 export const DUTY_ICONS: Record<
   string,
@@ -315,21 +312,16 @@ export function DutiesSection({
                       ]}
                     >
                       {di ? (
-                        // One colour for every duty, and it is the section's
-                        // own: colour says WHAT a thing is, and these are all
-                        // the same thing. A different hue per duty was noise
-                        // competing with the two marks that carry meaning —
-                        // "not assigned" and "this one is yours".
                         <View
                           style={[
                             styles.dutyIcon,
-                            locked && styles.dutyIconLocked,
+                            { backgroundColor: `${di.color}14` },
                           ]}
                         >
                           <Ionicons
                             name={di.icon}
                             size={17}
-                            color={locked ? '#94a3b8' : DUTY_ICON_COLOR}
+                            color={di.color}
                           />
                         </View>
                       ) : null}
@@ -419,9 +411,12 @@ export function DutiesSection({
                       <ChipRow>
                         {isMine ? <MyDot kind="duty" /> : null}
                         {publisher ? (
+                          // A past meeting is a record, not an offer: the name
+                          // goes pale so nobody mistakes it for this week's.
                           <PersonChip
                             label={publisher.displayName}
                             variant="main"
+                            muted
                           />
                         ) : (
                           <PersonChip
@@ -649,14 +644,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 5,
     marginVertical: 2,
   },
-  dutyIconLocked: { backgroundColor: '#f1f5f9' },
   dutyIcon: {
     width: 32,
     height: 32,
     borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#f5f7fa',
   },
   delBtn: { padding: 6 },
   // two-up on narrow screens: tighten horizontal padding/margins

@@ -18,7 +18,7 @@ const ICON: Record<ChipVariant, keyof typeof Ionicons.glyphMap> = {
 };
 
 const ICON_COLOR: Record<ChipVariant, string> = {
-  main: '#64748b',
+  main: '#0c4a6e',
   assistant: '#475569',
   group: '#3730a3',
   empty: '#94a3b8',
@@ -28,21 +28,26 @@ const ICON_COLOR: Record<ChipVariant, string> = {
  * A name "chip" used to display an assigned person (or service group) across
  * the schedule program, duties, field service and cleaning sections.
  *
- * The assigned name is deliberately QUIET: a pale surface with a hairline and
- * dark text, rather than the blue fill it used to have. A schedule is mostly
- * names, and colouring every one of them made the pages shout while saying
- * nothing — colour is reserved for what a thing IS and for the two marks that
- * carry meaning. Those two stay loud on purpose: an unassigned slot keeps its
- * dashed outline, and «this one is yours» keeps its breathing dot.
+ * Variants mirror the program chips: blue = main, gray = assistant/secondary,
+ * indigo = service group, dashed = unassigned.
+ *
+ * `muted` is for a row that is FROZEN — a meeting already past, which nobody
+ * may edit. There the chip loses its colour and goes pale, so a glance tells
+ * a brother whether he is looking at what is still to come or at a record of
+ * what already happened. Colour is left to the live rows precisely so that
+ * this contrast means something.
  */
 export function PersonChip({
   label,
   variant = 'main',
   icon,
+  muted = false,
 }: {
   label: string;
   variant?: ChipVariant;
   icon?: keyof typeof Ionicons.glyphMap;
+  /** Frozen row: the past is shown, not offered — so it wears no colour. */
+  muted?: boolean;
 }) {
   const bg =
     variant === 'main'
@@ -61,12 +66,16 @@ export function PersonChip({
           ? styles.groupText
           : styles.emptyText;
   return (
-    <View style={[styles.chip, bg]}>
-      <Ionicons name={icon ?? ICON[variant]} size={13} color={ICON_COLOR[variant]} />
+    <View style={[styles.chip, bg, muted && styles.mutedChip]}>
+      <Ionicons
+        name={icon ?? ICON[variant]}
+        size={13}
+        color={muted ? '#94a3b8' : ICON_COLOR[variant]}
+      />
       {/* One line, shortened with an ellipsis: a surname split across lines
           reads worse than a surname cut short, and letting the chip wrap was
           what squeezed the duty label into breaking mid-word. */}
-      <Text style={[styles.text, txt]} numberOfLines={1}>
+      <Text style={[styles.text, txt, muted && styles.mutedText]} numberOfLines={1}>
         {label}
       </Text>
     </View>
@@ -107,13 +116,15 @@ const styles = StyleSheet.create({
     fontFamily: 'Manrope_500Medium',
     flexShrink: 1,
   },
-  main: {
+  main: { backgroundColor: '#e0f2fe' },
+  mainText: { color: '#0c4a6e' },
+  mutedChip: {
     backgroundColor: '#f8fafc',
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: '#e8edf3',
     paddingVertical: 3,
   },
-  mainText: { color: '#0f172a' },
+  mutedText: { color: '#64748b' },
   assistant: { backgroundColor: '#f1f5f9' },
   assistantText: { color: '#475569' },
   group: { backgroundColor: '#e0e7ff' },
