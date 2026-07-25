@@ -98,6 +98,7 @@ import { CleaningSection } from '../../../components/CleaningSection';
 import { CongressWeekBanner } from '../../../components/CongressWeekBanner';
 import { usePermissions } from '../../../lib/permissions';
 import { SpecialEventsWeekBanner } from '../../../components/SpecialEventsWeekBanner';
+import { weekRules } from '../../../lib/week-rules';
 import { ReplacedMeetingNotice } from '../../../components/ReplacedMeetingNotice';
 import { CollapsibleMeetingBlock } from '../../../components/CollapsibleMeetingBlock';
 import { HospitalityZone } from '../../../components/HospitalityZone';
@@ -538,38 +539,18 @@ export default function ScheduleIndexScreen() {
     arr.sort((a, b) => a.partOrder - b.partOrder);
   }
 
-  // Circuit-overseer visit week: the overseer is surfaced for the assignment
-  // sheet (prayers/talks), and the midweek meeting often moves to another day
-  // (commonly Tuesday), stored per-visit on the event.
-  const coVisitEvent = weekEvents.find(
-    (e) => e.type === 'circuit_overseer_visit',
-  );
-  const dowFor = (kind: 'midweek' | 'weekend'): number | undefined => {
-    if (kind === 'weekend') return meetingVersion?.weekendDow;
-    if (coVisitEvent) return coVisitEvent.coMidweekDow ?? 2;
-    return meetingVersion?.midweekDow;
-  };
-  // v2: a replacesMeeting event covering a meeting's date replaces its section.
-  const replacedBy = (kind: 'midweek' | 'weekend') => {
-    if (!meetingVersion) return undefined;
-    const dow = dowFor(kind);
-    if (!dow) return undefined;
-    const dateISO = formatDateISO(addDays(weekStart, dow - 1));
-    const satISO = formatDateISO(addDays(weekStart, 5));
-    const sunISO = formatDateISO(addDays(weekStart, 6));
-    return weekEvents.find((e) => {
-      const isCongress =
-        e.type === 'regional_convention' || e.type === 'circuit_assembly';
-      if (!e.replacesMeeting && !isCongress) return false;
-      const end = e.endDate ?? e.date;
-      // A convention on either weekend day (Sat or Sun) cancels the weekend
-      // meeting; the midweek meeting only when an event covers its exact day.
-      if (kind === 'weekend') return e.date <= sunISO && satISO <= end;
-      return e.date <= dateISO && end >= dateISO;
-    });
-  };
-  const midweekReplacedBy = replacedBy('midweek');
-  const weekendReplacedBy = replacedBy('weekend');
+  // The week's rules (which day each meeting really falls on, what replaces it,
+  // whether the congregation meets at all) live in lib/week-rules so this
+  // screen and the home timeline cannot drift apart.
+  const rules = weekRules({
+    weekStartISO,
+    version: meetingVersion,
+    events: specialEventsQuery.data ?? [],
+  });
+  const coVisitEvent = rules.coVisit ?? undefined;
+  const dowFor = (kind: 'midweek' | 'weekend') => rules.dowOf(kind);
+  const midweekReplacedBy = rules.replacedBy('midweek');
+  const weekendReplacedBy = rules.replacedBy('weekend');
   // Absence visibility: publishers away on each meeting's actual calendar day.
   const mwDow = dowFor('midweek');
   const weDow = dowFor('weekend');
@@ -593,10 +574,7 @@ export default function ScheduleIndexScreen() {
   // A regional convention or circuit assembly means no congregation meetings
   // that week — both meetings, duties and cleaning are hidden (field-service
   // meetings stay, since they can still happen midweek).
-  const congressThisWeek = weekEvents.find(
-    (e) =>
-      e.type === 'regional_convention' || e.type === 'circuit_assembly',
-  );
+  const congressThisWeek = rules.congress ?? undefined;
 
   // Auto-fill duties so the editor is always ready to use (no "Generate" step).
   // The server generate is idempotent (orIgnore), so this only creates the empty

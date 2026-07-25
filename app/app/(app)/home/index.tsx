@@ -52,6 +52,7 @@ import {
 import { MyDot } from '../../../components/MyDot';
 import { MyGlowRow } from '../../../components/MyGlowRow';
 import { SectionKind } from '../../../lib/section-colors';
+import { isCongressEvent } from '../../../lib/week-rules';
 
 
 function rangeLabel(start: Date, end: Date, loc: string): string {
@@ -634,15 +635,40 @@ function VisitBanner({ event: e }: { event: SpecialEvent }) {
   const range = e.endDate
     ? rangeLabel(start, new Date(`${e.endDate}T00:00:00`), i18n.language)
     : start.toLocaleDateString(i18n.language, { day: 'numeric', month: 'long' });
+  const congress = isCongressEvent(e);
+  // A convention keeps its own title — the week is named after it, and the
+  // type line says what kind of week it is. A visit has a fixed name.
+  const title = congress
+    ? e.title
+    : t('coVisit.mineTitle');
+  const typeLabel =
+    congress && e.type ? t(`specialEvents.types.${e.type}`, e.type) : null;
   return (
     <Pressable
-      style={({ pressed }) => [tl.visitBanner, pressed && { opacity: 0.7 }]}
+      style={({ pressed }) => [
+        tl.visitBanner,
+        congress && tl.congressBanner,
+        pressed && { opacity: 0.7 },
+      ]}
       onPress={() => router.push(`/special-events/${e.id}` as any)}
     >
-      <Ionicons name="briefcase" size={18} color="#0e7490" />
+      <Ionicons
+        name={congress ? 'megaphone' : 'briefcase'}
+        size={18}
+        color={congress ? '#b45309' : '#0e7490'}
+      />
       <View style={{ flex: 1 }}>
-        <Text style={tl.visitTitle}>{t('coVisit.mineTitle')}</Text>
-        <Text style={tl.visitRange}>{range}</Text>
+        {typeLabel ? (
+          <Text style={[tl.visitType, congress && tl.congressText]}>
+            {typeLabel}
+          </Text>
+        ) : null}
+        <Text style={[tl.visitTitle, congress && tl.congressTitle]}>
+          {title}
+        </Text>
+        <Text style={[tl.visitRange, congress && tl.congressText]}>
+          {range}
+        </Text>
       </View>
     </Pressable>
   );
@@ -1122,6 +1148,16 @@ const tl = StyleSheet.create({
     color: '#0e7490',
   },
   visitRange: { fontSize: 12.5, color: '#0891b2', marginTop: 1 },
+  visitType: {
+    fontSize: 11.5,
+    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
+    color: '#0891b2',
+    marginBottom: 1,
+  },
+  congressBanner: { backgroundColor: '#fffbeb', borderColor: '#fde68a' },
+  congressTitle: { color: '#92400e' },
+  congressText: { color: '#b45309' },
   coNote: {
     fontSize: 12.5,
     color: '#7c3aed',

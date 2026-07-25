@@ -29,6 +29,7 @@ import {
 } from './api';
 import { effectiveVersionFor } from './meeting-schedule';
 import { addDays, formatDateISO, startOfWeekMonday } from './dates';
+import { isCongressEvent, weekRules } from './week-rules';
 import { refineMyTasks, RefinedTask } from './my-tasks';
 
 export type MeetingKind = 'midweek' | 'weekend' | 'field_service';
@@ -220,33 +221,22 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
   // own background row.
   const replacedEventIds = new Set<string>();
 
-  // ---- Regular meetings (midweek / weekend) from the effective settings ----
+  // ---- Regular meetings (midweek / weekend), per the week's rules ----
+  // Weeks with a convention hold no congregation meetings at all — the rules
+  // module is the single authority, shared with the schedule screen.
   for (const weekISO of weekMondays) {
     const v = effectiveVersionFor(versions, weekISO);
+    const rules = weekRules({ weekStartISO: weekISO, version: v, events });
+    if (rules.congress) continue;
     if (!v) continue;
     for (const kind of ['midweek', 'weekend'] as const) {
-      const dow = kind === 'midweek' ? v.midweekDow : v.weekendDow;
+      const dow = rules.dowOf(kind);
       const time = kind === 'midweek' ? v.midweekTime : v.weekendTime;
       if (!dow) continue;
-      const dateISO = formatDateISO(
-        addDays(new Date(`${weekISO}T00:00:00`), dow - 1),
-      );
-      if (!inNear(dateISO)) continue;
+      const dateISO = rules.dateOf(kind);
+      if (!dateISO || !inNear(dateISO)) continue;
 
-      const replacedBy =
-        events.find((e) => {
-          const isCongress =
-            e.type === 'regional_convention' || e.type === 'circuit_assembly';
-          if (!e.replacesMeeting && !isCongress) return false;
-          const end = e.endDate ?? e.date;
-          if (kind === 'weekend') {
-            const base = new Date(`${weekISO}T00:00:00`);
-            const sat = formatDateISO(addDays(base, 5));
-            const sun = formatDateISO(addDays(base, 6));
-            return e.date <= sun && sat <= end;
-          }
-          return e.date <= dateISO && dateISO <= end;
-        }) ?? null;
+      const replacedBy = rules.replacedBy(kind) ?? null;
       if (replacedBy) replacedEventIds.add(replacedBy.id);
 
       const myParts: MyPartLine[] = myItems
@@ -323,9 +313,11 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
       }
     }
     if (!placed) continue;
-    // The circuit-overseer visit is a whole special week — a distinctive
-    // banner, not a generic event row.
-    if (e.type === 'circuit_overseer_visit') {
+    // A circuit-overseer visit and a convention are whole special WEEKS, not
+    // points in time: each gets a banner carrying its full range, placed on
+    // the first day of the range. A convention used to be folded into the
+    // weekend meeting's slot, which collapsed Fri–Sun onto the Sunday.
+    if (e.type === 'circuit_overseer_visit' || isCongressEvent(e)) {
       entries.push({ type: 'visit', key: `visit-${e.id}`, dateISO: placed, event: e });
     } else {
       entries.push({ type: 'event', key: `ev-${e.id}`, dateISO: placed, event: e });
@@ -333,7 +325,19 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
   }
 
   // ---- My own non-meeting tasks (cleaning, cart, outgoing talk, co-lunch) ----
-  const refined = refineMyTasks(myItems, versions, todayISO);
+  // Cleaning happens after the meetings, so a convention week has none. Field
+  // service (cart) stays: it can still happen that week.
+  const droppedByCongress = (r: RefinedTask): boolean => {
+    if (r.item.kind !== 'cleaning') return false;
+    const monISO = formatDateISO(
+      startOfWeekMonday(new Date(`${placementDate(r, todayISO)}T00:00:00`)),
+    );
+    const v = effectiveVersionFor(versions, monISO);
+    return !!weekRules({ weekStartISO: monISO, version: v, events }).congress;
+  };
+  const refined = refineMyTasks(myItems, versions, todayISO).filter(
+    (r) => !droppedByCongress(r),
+  );
   for (const r of refined) {
     if (!OWN_ROW_TASK_KINDS.has(r.item.kind)) continue;
     const dateISO = placementDate(r, todayISO);
