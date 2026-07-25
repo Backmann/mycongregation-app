@@ -19,6 +19,7 @@ import {
   extractErrorMessage,
   Publisher,
   publishersApi,
+  ServiceGroup,
   serviceGroupsApi,
   UpdateServiceGroupInput,
 } from '../../../lib/api';
@@ -250,7 +251,12 @@ export default function ServiceGroupDetailScreen() {
         ) : members.length === 0 ? (
           <Text style={styles.empty}>{t('serviceGroups.noMembersYet')}</Text>
         ) : (
-          members.map((p) => {
+          // Whoever serves the group and his assistant come first: someone
+          // opening a group is usually looking for exactly those two, and
+          // finding them meant hunting through the list for a small badge.
+          [...members]
+            .sort((a, b) => roleRank(a, group) - roleRank(b, group))
+            .map((p) => {
             const role =
               p.id === group.overseerPublisherId
                 ? 'overseer'
@@ -326,6 +332,13 @@ export default function ServiceGroupDetailScreen() {
   );
 }
 
+/** Overseer first, then his assistant, then everyone else as they came. */
+function roleRank(p: Publisher, group: ServiceGroup): number {
+  if (p.id === group.overseerPublisherId) return 0;
+  if (p.id === group.assistantPublisherId) return 1;
+  return 2;
+}
+
 function MemberRow({
   publisher,
   role,
@@ -368,19 +381,20 @@ function MemberRow({
         <Text style={styles.name} numberOfLines={1}>
           {publisher.displayName}
         </Text>
+        {role ? (
+          // Said in full — «Ответственный за группу», not a three-letter chip
+          // that has to be decoded.
+          <Text style={styles.memberRole}>
+            {t(`serviceGroups.${role}`)}
+          </Text>
+        ) : null}
         {tags.length > 0 ? (
           <Text style={styles.memberTags} numberOfLines={2}>
             {tags.join(' \u00b7 ')}
           </Text>
         ) : null}
       </View>
-      {role && (
-        <View style={styles.roleBadge}>
-          <Text style={styles.roleBadgeText}>
-            {t(`serviceGroups.memberRole.${role}`)}
-          </Text>
-        </View>
-      )}
+
       {canRemove ? (
         <Pressable
           onPress={onRemove}
@@ -639,15 +653,14 @@ const styles = StyleSheet.create({
   },
   avatarText: { color: '#fff', fontWeight: '700', fontFamily: 'Manrope_700Bold', fontSize: 13 },
   name: { fontSize: 15, fontWeight: '500', fontFamily: 'Manrope_500Medium', color: '#0f172a', flex: 1 },
-  roleBadge: {
-    backgroundColor: '#f3e8ff',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 6,
-    marginLeft: 8,
-  },
-  roleBadgeText: { color: '#7c3aed', fontSize: 11, fontWeight: '700', fontFamily: 'Manrope_700Bold',},
   removeBtn: { marginLeft: 8, padding: 2 },
+  memberRole: {
+    fontSize: 12,
+    color: '#7c3aed',
+    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
+    marginTop: 1,
+  },
   memberTags: { fontSize: 12, color: '#64748b', marginTop: 1 },
   chevron: { color: '#cbd5e1', fontSize: 24, marginLeft: 8 },
 
