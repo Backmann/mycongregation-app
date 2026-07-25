@@ -114,6 +114,18 @@ function GroupRow({ group }: { group: ServiceGroup }) {
             📍 {group.meetingLocation}
           </Text>
         )}
+        {/* The servant of a group and his assistant are its point of contact;
+            having to open every group to learn who they are was the complaint. */}
+        {group.overseer && (
+          <Text style={styles.meta} numberOfLines={1}>
+            {t('serviceGroups.overseer')}: {group.overseer.displayName}
+          </Text>
+        )}
+        {group.assistant && (
+          <Text style={styles.meta} numberOfLines={1}>
+            {t('serviceGroups.assistant')}: {group.assistant.displayName}
+          </Text>
+        )}
       </View>
       <Text style={styles.chevron}>›</Text>
     </Pressable>

@@ -217,6 +217,12 @@ export interface Publisher {
   spiritualStatus: SpiritualStatus;
   ministryStartDate: string | null;
   pioneerType: PioneerType;
+  /**
+   * Whether a permanent pioneer's service has actually begun. Sent instead of
+   * pioneerSince (which is private) to callers who may not see personal dates,
+   * so a pioneer type starting next month is not read as "already serving".
+   */
+  pioneerActive?: boolean;
   pioneerSince: string | null;
   notes: string | null;
   capabilities: Capabilities;
