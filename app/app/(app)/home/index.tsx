@@ -47,6 +47,7 @@ import {
 import {
   buildTimeline,
   MeetingEntry,
+  OutgoingTalkEntry,
   TimelineEntry,
 } from '../../../lib/home-timeline';
 import { MyDot } from '../../../components/MyDot';
@@ -340,6 +341,7 @@ function BackgroundRow({
   title,
   meta,
   extra,
+  cleaning,
   onPress,
 }: {
   icon: string;
@@ -348,6 +350,7 @@ function BackgroundRow({
   title: string;
   meta: string | null;
   extra?: React.ReactNode;
+  cleaning?: string | null;
   onPress?: () => void;
 }) {
   const body = (
@@ -361,6 +364,7 @@ function BackgroundRow({
         <Text style={tl.bgTitle}>{title}</Text>
         {meta ? <Text style={tl.bgMeta}>{meta}</Text> : null}
         {extra}
+        {cleaning ? <Text style={tl.cleaningLine}>{cleaning}</Text> : null}
       </View>
       {onPress ? (
         <Ionicons name="chevron-forward" size={17} color="#cbd5e1" />
@@ -453,6 +457,9 @@ function MeetingRow({
         title={dateLabel}
         meta={meta || null}
         extra={fsExtra}
+        cleaning={
+          entry.weeklyCleaning ? t('home.timeline.cleaningAfterMeeting') : null
+        }
       />
     );
   }
@@ -467,6 +474,11 @@ function MeetingRow({
       <Text style={tl.mineTitle}>{dateLabel}</Text>
       {meta ? <Text style={tl.mineMeta}>{meta}</Text> : null}
       {fsExtra}
+      {entry.weeklyCleaning ? (
+        <Text style={tl.cleaningLine}>
+          {t('home.timeline.cleaningAfterMeeting')}
+        </Text>
+      ) : null}
       <View style={tl.partsBox}>
         {entry.myParts.map((p, i) => (
           <View key={i}>
@@ -561,6 +573,35 @@ function AbsenceRow({ absence: a }: { absence: Absence }) {
   );
 }
 
+/**
+ * A talk in another congregation: the trip, the away-period it causes and the
+ * home meeting being missed are one fact, so they are one row. The home
+ * meeting for that day is dropped by the builder.
+ */
+function OutgoingTalkRow({ entry }: { entry: OutgoingTalkEntry }) {
+  const { t, i18n } = useTranslation();
+  const it = entry.task.item;
+  const where = [it.congregationName, it.location].filter(Boolean).join(' \u00b7 ');
+  return (
+    <MyGlowRow kind="meeting" radius={12} style={tl.mineRow}>
+      <View style={tl.mineHead}>
+        <Ionicons name="megaphone-outline" size={15} color="#7c3aed" />
+        <Text style={[tl.mineKind, { color: '#7c3aed' }]}>
+          {t('home.timeline.outgoingTalk')}
+        </Text>
+        {it.time ? <Text style={tl.mineMeta}> \u00b7 {it.time}</Text> : null}
+      </View>
+      <Text style={tl.mineTitle}>{taskTitle(it, t)}</Text>
+      {where ? <Text style={tl.mineMeta}>{where}</Text> : null}
+      {entry.absence ? (
+        <Text style={tl.talkAway}>
+          {absenceRangeLabel(entry.absence, i18n.language)}
+        </Text>
+      ) : null}
+    </MyGlowRow>
+  );
+}
+
 function TimelineRow({
   entry,
   todayISO,
@@ -582,6 +623,9 @@ function TimelineRow({
   }
   if (entry.type === 'co_visit') {
     return <CoVisitRow item={entry.item} />;
+  }
+  if (entry.type === 'outgoing_talk') {
+    return <OutgoingTalkRow entry={entry} />;
   }
   return <EventRow event={entry.event} />;
 }
@@ -1148,6 +1192,18 @@ const tl = StyleSheet.create({
     color: '#0e7490',
   },
   visitRange: { fontSize: 12.5, color: '#0891b2', marginTop: 1 },
+  cleaningLine: {
+    fontSize: 12.5,
+    color: '#0d9488',
+    fontFamily: 'Manrope_600SemiBold',
+    marginTop: 3,
+  },
+  talkAway: {
+    fontSize: 12.5,
+    color: '#7c3aed',
+    marginTop: 3,
+    fontFamily: 'Manrope_500Medium',
+  },
   visitType: {
     fontSize: 11.5,
     fontWeight: '700',

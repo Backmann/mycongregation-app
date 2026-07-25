@@ -1803,7 +1803,9 @@
       "emptyNear": "Nothing scheduled for the next two weeks",
       "far": "Further out",
       "farHint": "your assignments only · {{count}}",
-      "away": "You're away"
+      "away": "You're away",
+      "outgoingTalk": "Talk away",
+      "cleaningAfterMeeting": "Your group cleans after this meeting"
     },
     "report": {
       "outstanding": "The {{month}} report isn't submitted",

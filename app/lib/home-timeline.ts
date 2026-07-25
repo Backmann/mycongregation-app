@@ -56,6 +56,8 @@ export interface MeetingEntry {
   replacedBy: SpecialEvent | null;
   /** My parts/duties in this meeting; non-empty ⇒ the row is mine. */
   myParts: MyPartLine[];
+  /** My service group cleans the hall after this meeting. */
+  weeklyCleaning: boolean;
 }
 
 /** A special event shown as background (never one that replaced a meeting). */
@@ -72,6 +74,20 @@ export interface TaskEntry {
   key: string;
   dateISO: string;
   task: RefinedTask;
+}
+
+/**
+ * A talk given in another congregation. The trip, the absence it causes and
+ * the home meeting being missed are ONE fact, so they are one row: the absence
+ * is folded in here and the home congregation's meeting that day is dropped.
+ */
+export interface OutgoingTalkEntry {
+  type: 'outgoing_talk';
+  key: string;
+  dateISO: string;
+  task: RefinedTask;
+  /** The away-period this trip explains, if one covers the day. */
+  absence: Absence | null;
 }
 
 /** «Тебя нет» — an away-period of the signed-in person, quiet context. */
@@ -107,7 +123,8 @@ export type TimelineEntry =
   | TaskEntry
   | AbsenceEntry
   | VisitEntry
-  | CoVisitItemEntry;
+  | CoVisitItemEntry
+  | OutgoingTalkEntry;
 
 export interface DayGroup {
   dateISO: string;
@@ -221,6 +238,55 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
   // own background row.
   const replacedEventIds = new Set<string>();
 
+  // ---- My own items, resolved up front: the meetings loop needs to know
+  // which days I am away giving a talk and which weeks my group cleans ----
+  // Cleaning happens after the meetings, so a convention week has none. Field
+  // service (cart) stays: it can still happen that week.
+  const droppedByCongress = (r: RefinedTask): boolean => {
+    if (r.item.kind !== 'cleaning') return false;
+    const monISO = formatDateISO(
+      startOfWeekMonday(new Date(`${placementDate(r, todayISO)}T00:00:00`)),
+    );
+    const v = effectiveVersionFor(versions, monISO);
+    return !!weekRules({ weekStartISO: monISO, version: v, events }).congress;
+  };
+  const refined = refineMyTasks(myItems, versions, todayISO).filter(
+    (r) => !droppedByCongress(r),
+  );
+
+  /**
+   * Where a task sits in the stream. The weekly cleaning is the exception:
+   * once the group has picked a day and time it belongs on THAT day, not on
+   * the Monday of its week, which read as "Monday is the cleaning day".
+   */
+  const taskPlacement = (r: RefinedTask): string =>
+    r.item.kind === 'cleaning' &&
+    r.item.label === 'thorough' &&
+    r.item.thoroughPlannedAt
+      ? String(r.item.thoroughPlannedAt).slice(0, 10)
+      : placementDate(r, todayISO);
+
+  const outgoingTalkDates = new Set(
+    refined
+      .filter((r) => r.item.kind === 'outgoing_talk')
+      .map((r) => taskPlacement(r)),
+  );
+  // Weeks where my group cleans after the meetings — shown inside the meeting
+  // rows rather than as a day of its own.
+  const cleanAfterMeetingWeeks = new Set(
+    refined
+      .filter(
+        (r) => r.item.kind === 'cleaning' && r.item.label === 'after_meeting',
+      )
+      .map(
+        (r) =>
+          r.item.weekStartDate ??
+          formatDateISO(
+            startOfWeekMonday(new Date(`${taskPlacement(r)}T00:00:00`)),
+          ),
+      ),
+  );
+
   // ---- Regular meetings (midweek / weekend), per the week's rules ----
   // Weeks with a convention hold no congregation meetings at all — the rules
   // module is the single authority, shared with the schedule screen.
@@ -235,6 +301,9 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
       if (!dow) continue;
       const dateISO = rules.dateOf(kind);
       if (!dateISO || !inNear(dateISO)) continue;
+      // He is giving a talk elsewhere that day — showing the meeting he will
+      // not attend was the confusing part.
+      if (outgoingTalkDates.has(dateISO)) continue;
 
       const replacedBy = rules.replacedBy(kind) ?? null;
       if (replacedBy) replacedEventIds.add(replacedBy.id);
@@ -262,6 +331,7 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
         sourceUrl: null,
         replacedBy,
         myParts,
+        weeklyCleaning: cleanAfterMeetingWeeks.has(weekISO),
       });
     }
   }
@@ -295,6 +365,7 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
       sourceUrl: m.sourceUrl,
       replacedBy: null,
       myParts: iConduct ? [{ section: null, title: youConductLabel }] : [],
+      weeklyCleaning: false,
     });
   }
 
@@ -325,23 +396,33 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
   }
 
   // ---- My own non-meeting tasks (cleaning, cart, outgoing talk, co-lunch) ----
-  // Cleaning happens after the meetings, so a convention week has none. Field
-  // service (cart) stays: it can still happen that week.
-  const droppedByCongress = (r: RefinedTask): boolean => {
-    if (r.item.kind !== 'cleaning') return false;
-    const monISO = formatDateISO(
-      startOfWeekMonday(new Date(`${placementDate(r, todayISO)}T00:00:00`)),
-    );
-    const v = effectiveVersionFor(versions, monISO);
-    return !!weekRules({ weekStartISO: monISO, version: v, events }).congress;
-  };
-  const refined = refineMyTasks(myItems, versions, todayISO).filter(
-    (r) => !droppedByCongress(r),
-  );
+  const consumedAbsenceIds = new Set<string>();
   for (const r of refined) {
     if (!OWN_ROW_TASK_KINDS.has(r.item.kind)) continue;
-    const dateISO = placementDate(r, todayISO);
+    // The cleaning done after the meetings is spoken inside the meeting rows.
+    if (r.item.kind === 'cleaning' && r.item.label === 'after_meeting') continue;
+    const dateISO = taskPlacement(r);
     if (!inNear(dateISO)) continue;
+
+    if (r.item.kind === 'outgoing_talk') {
+      // Fold in the away-period this trip explains, so the day carries one row
+      // instead of «тебя нет» plus a talk plus a meeting he will not attend.
+      const away =
+        absences.find(
+          (a) =>
+            a.startDate <= dateISO && (a.endDate ?? a.startDate) >= dateISO,
+        ) ?? null;
+      if (away) consumedAbsenceIds.add(away.id);
+      entries.push({
+        type: 'outgoing_talk',
+        key: `talk-${dateISO}-${r.item.partKey ?? r.item.label}`,
+        dateISO,
+        task: r,
+        absence: away,
+      });
+      continue;
+    }
+
     entries.push({
       type: 'task',
       key: `task-${r.item.kind}-${dateISO}-${r.item.partKey ?? r.item.label}`,
@@ -352,6 +433,7 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
 
   // ---- My away-periods (quiet context, "тебя нет") ----
   for (const a of absences) {
+    if (consumedAbsenceIds.has(a.id)) continue; // spoken by the talk row
     const end = a.endDate ?? a.startDate;
     if (end < todayISO) continue; // already over
     if (a.startDate > nearEndISO) continue; // future ones go to farAbsences
@@ -384,7 +466,9 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
           ? '00:00'
           : en.type === 'co_visit'
             ? en.item.startTime ?? '99:99'
-            : en.task.item.time ?? en.task.meetingTime ?? '99:99';
+            : en.type === 'outgoing_talk'
+              ? en.task.item.time ?? '99:99'
+              : en.task.item.time ?? en.task.meetingTime ?? '99:99';
 
   entries.sort(
     (a, b) => a.dateISO.localeCompare(b.dateISO) || timeOf(a).localeCompare(timeOf(b)),
@@ -399,13 +483,13 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
 
   // ---- Far zone: my own assignments beyond the near window ----
   const far = refined.filter((r) => {
-    const iso = placementDate(r, todayISO);
+    const iso = taskPlacement(r);
     return iso > nearEndISO && iso <= farEndISO;
   });
 
   // ---- Far away-periods: any future absence starting beyond the window ----
   const farAbsences = absences
-    .filter((a) => a.startDate > nearEndISO)
+    .filter((a) => !consumedAbsenceIds.has(a.id) && a.startDate > nearEndISO)
     .sort((x, y) => x.startDate.localeCompare(y.startDate));
 
   // ---- Far CO-visit items: my items dated beyond the near window ----

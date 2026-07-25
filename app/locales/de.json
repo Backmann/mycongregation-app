@@ -1803,7 +1803,9 @@
       "emptyNear": "Für die nächsten zwei Wochen ist nichts geplant",
       "far": "Später",
       "farHint": "nur deine Aufgaben · {{count}}",
-      "away": "Du bist abwesend"
+      "away": "Du bist abwesend",
+      "outgoingTalk": "Vortrag auswärts",
+      "cleaningAfterMeeting": "Eure Gruppe reinigt nach dieser Zusammenkunft"
     },
     "report": {
       "outstanding": "Bericht für {{month}} nicht abgegeben",
