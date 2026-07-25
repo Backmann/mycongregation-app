@@ -18,6 +18,9 @@ import { Dialog } from './Dialog';
 import { SECTION_COLORS } from '../lib/section-colors';
 import { ChipRow, PersonChip } from './PersonChip';
 
+/** Every duty icon wears the section's own colour — see the row below. */
+const DUTY_ICON_COLOR = SECTION_COLORS.duty.color;
+
 /** Icon + accent colour per duty type (role circle in the picker). */
 export const DUTY_ICONS: Record<
   string,
@@ -312,16 +315,21 @@ export function DutiesSection({
                       ]}
                     >
                       {di ? (
+                        // One colour for every duty, and it is the section's
+                        // own: colour says WHAT a thing is, and these are all
+                        // the same thing. A different hue per duty was noise
+                        // competing with the two marks that carry meaning —
+                        // "not assigned" and "this one is yours".
                         <View
                           style={[
                             styles.dutyIcon,
-                            { backgroundColor: `${di.color}14` },
+                            locked && styles.dutyIconLocked,
                           ]}
                         >
                           <Ionicons
                             name={di.icon}
                             size={17}
-                            color={di.color}
+                            color={locked ? '#94a3b8' : DUTY_ICON_COLOR}
                           />
                         </View>
                       ) : null}
@@ -611,7 +619,14 @@ const styles = StyleSheet.create({
     gap: 6,
     paddingVertical: 14,
   },
-  rowRight: { alignItems: 'flex-end', flexShrink: 0, maxWidth: '52%' },
+  // The chip yields before the label does: a name can be shortened with an
+  // ellipsis, a duty name broken mid-word cannot be read at all.
+  rowRight: {
+    alignItems: 'flex-end',
+    flexShrink: 1,
+    minWidth: 0,
+    maxWidth: '52%',
+  },
   roRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -634,12 +649,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 5,
     marginVertical: 2,
   },
+  dutyIconLocked: { backgroundColor: '#f1f5f9' },
   dutyIcon: {
     width: 32,
     height: 32,
     borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: '#f5f7fa',
   },
   delBtn: { padding: 6 },
   // two-up on narrow screens: tighten horizontal padding/margins
