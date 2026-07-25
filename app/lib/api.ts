@@ -1468,6 +1468,27 @@ export interface CoHostStat {
   nextDate: string | null;
 }
 
+/**
+ * The field-service meetings of an upcoming circuit-overseer visit, as
+ * everyone may see them. During a visit that week's field service is planned
+ * in the visit schedule rather than the regular section, and the full item
+ * list is elder-only (it also holds hosts, addresses and phones) — so the
+ * server exposes just this: when, where, and who leads.
+ */
+export interface CoVisitFieldServiceMeeting {
+  id: string;
+  itemDate: string;
+  startTime: string | null;
+  place: string | null;
+  conductorName: string | null;
+  forWife: boolean;
+}
+
+export interface CoVisitFieldServiceWeek {
+  visit: { id: string; title: string; date: string; endDate: string | null };
+  meetings: CoVisitFieldServiceMeeting[];
+}
+
 export const coVisitItemsApi = {
   /** Hosting rotation across all visits (lunches / lunch boxes). */
   async hostStats(): Promise<CoHostStat[]> {
@@ -1478,6 +1499,13 @@ export const coVisitItemsApi = {
   /** The signed-in member's own slice of upcoming CO visits (any role). */
   async mine(): Promise<MyCoVisit[]> {
     const { data } = await api.get<MyCoVisit[]>('/co-visit-items/mine');
+    return data;
+  },
+  /** Field-service meetings of upcoming visits — visible to everyone. */
+  async fieldService(): Promise<CoVisitFieldServiceWeek[]> {
+    const { data } = await api.get<CoVisitFieldServiceWeek[]>(
+      '/co-visit-items/field-service',
+    );
     return data;
   },
   async list(specialEventId: string): Promise<CoVisitItem[]> {

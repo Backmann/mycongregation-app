@@ -916,6 +916,11 @@ function HomeTimeline() {
     queryFn: () => coVisitItemsApi.mine(),
     staleTime: 60 * 1000,
   });
+  const coFieldServiceQ = useQuery({
+    queryKey: ['co-visit-field-service'],
+    queryFn: () => coVisitItemsApi.fieldService(),
+    staleTime: 5 * 60 * 1000,
+  });
 
   const timeline = useMemo(() => {
     const publishersById = new Map<string, Publisher>(
@@ -932,6 +937,7 @@ function HomeTimeline() {
       events: eventsQ.data ?? [],
       absences: absencesQ.data ?? [],
       coVisits: coVisitQ.data ?? [],
+      coFieldService: coFieldServiceQ.data ?? [],
       myItems: tasksQ.data?.items ?? [],
       todayISO,
       youConductLabel: t('home.feed.youConduct'),
@@ -954,6 +960,7 @@ function HomeTimeline() {
     tasksQ.data,
     absencesQ.data,
     coVisitQ.data,
+    coFieldServiceQ.data,
     todayISO,
     i18n.language,
   ]);

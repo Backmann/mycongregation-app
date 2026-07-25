@@ -26,6 +26,7 @@ import {
   Absence,
   MyCoVisit,
   MyCoVisitItem,
+  CoVisitFieldServiceWeek,
 } from './api';
 import { effectiveVersionFor } from './meeting-schedule';
 import { addDays, formatDateISO, startOfWeekMonday } from './dates';
@@ -151,6 +152,8 @@ export interface BuildTimelineInput {
   absences: Absence[];
   /** The signed-in person's own CO-visit items (and their visits). */
   coVisits?: MyCoVisit[];
+  /** Field-service meetings planned inside a visit — background, for everyone. */
+  coFieldService?: CoVisitFieldServiceWeek[];
   myItems: MyAssignmentItem[];
   todayISO: string;
   /** Text for a field-service meeting the signed-in person conducts. */
@@ -216,6 +219,7 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
     events,
     absences = [],
     coVisits = [],
+    coFieldService = [],
     myItems,
     todayISO,
     youConductLabel,
@@ -372,6 +376,37 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
       myParts: iConduct ? [{ section: null, title: youConductLabel }] : [],
       weeklyCleaning: false,
     });
+  }
+
+  // ---- Field-service meetings planned inside a circuit-overseer visit ----
+  // During a visit that week's field service is planned in the visit
+  // schedule, not the regular section, so without these the week looked
+  // empty. They are ordinary background rows like any other field service.
+  // One that is also MY own item is left to the personal row below, so the
+  // same meeting is never stated twice.
+  const myCoVisitItemIds = new Set(
+    coVisits.flatMap((v) => v.items).map((it) => it.id),
+  );
+  for (const week of coFieldService) {
+    for (const m of week.meetings) {
+      if (myCoVisitItemIds.has(m.id)) continue;
+      if (!inNear(m.itemDate)) continue;
+      entries.push({
+        type: 'meeting',
+        key: `covfs-${m.id}`,
+        dateISO: m.itemDate,
+        time: m.startTime ?? '',
+        kind: 'field_service',
+        address: m.place,
+        conductorName: m.conductorName,
+        unassignedConductor: !m.conductorName,
+        topic: null,
+        sourceUrl: null,
+        replacedBy: null,
+        myParts: [],
+        weeklyCleaning: false,
+      });
+    }
   }
 
   // ---- Background events (not the ones that replaced a meeting) ----
