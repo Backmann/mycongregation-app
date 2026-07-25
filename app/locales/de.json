@@ -1228,7 +1228,9 @@
       "date": "Datum",
       "time": "Zeit",
       "address": "Adresse"
-    }
+    },
+    "fromCoVisit": "Aus dem Besuchsplan des Kreisaufsehers",
+    "fromCoVisitHint": "Wird im Besuchsplan bearbeitet"
   },
   "cleaning": {
     "title": "Reinigung",

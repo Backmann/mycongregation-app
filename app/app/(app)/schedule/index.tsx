@@ -33,6 +33,7 @@ import {
   publishersApi,
   meetingSettingsApi,
   dutiesApi,
+  coVisitItemsApi,
   fieldServiceApi,
   cleaningApi,
   serviceGroupsApi,
@@ -355,6 +356,18 @@ export default function ScheduleIndexScreen() {
     queryFn: () => fieldServiceApi.list({ weekStart: weekStartISO }),
   });
   const fieldServiceMeetings = fieldServiceQuery.data ?? [];
+  // During a circuit-overseer visit the week's field service is planned in the
+  // visit schedule, not here, so this section stood empty exactly when there
+  // was the most going on. Shown, not edited: these belong to the visit.
+  const coVisitFieldServiceQuery = useQuery({
+    queryKey: ['co-visit-field-service'],
+    queryFn: () => coVisitItemsApi.fieldService(),
+    staleTime: 5 * 60 * 1000,
+  });
+  const weekEndISO = formatDateISO(addDays(weekStart, 6));
+  const visitFieldServiceMeetings = (coVisitFieldServiceQuery.data ?? [])
+    .flatMap((w) => w.meetings)
+    .filter((m) => m.itemDate >= weekStartISO && m.itemDate <= weekEndISO);
   const invalidateFieldService = () => {
     queryClient.invalidateQueries({
       queryKey: ['field-service'],
@@ -1780,6 +1793,7 @@ export default function ScheduleIndexScreen() {
             >
               <FieldServiceSection
                 meetings={fieldServiceMeetings}
+                visitMeetings={visitFieldServiceMeetings}
                 hideHeader
               publishersById={publishersById}
               canEdit={canEditFieldServiceMeetings}

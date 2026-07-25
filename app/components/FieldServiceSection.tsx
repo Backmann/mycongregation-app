@@ -18,6 +18,7 @@ import { MyDot } from './MyDot';
 import { MyGlowRow } from './MyGlowRow';
 import { ChipRow, PersonChip } from './PersonChip';
 import {
+  CoVisitFieldServiceMeeting,
   CreateFieldServiceMeetingInput,
   FieldServiceMeeting,
   Publisher,
@@ -52,12 +53,25 @@ function isoDow(dateISO: string): number {
 const TIME_RE = /^([01]\d|2[0-3]):[0-5]\d$/;
 const DAYS = [1, 2, 3, 4, 5, 6, 7] as const;
 
+/** ISO weekday (1 = Monday … 7 = Sunday) of a YYYY-MM-DD date. */
+function isoDayOf(dateISO: string): number {
+  const day = new Date(`${dateISO}T00:00:00`).getDay();
+  return day === 0 ? 7 : day;
+}
+
 function sortMeetings(a: FieldServiceMeeting, b: FieldServiceMeeting): number {
   return a.dayOfWeek - b.dayOfWeek || a.startTime.localeCompare(b.startTime);
 }
 
 type Props = {
   meetings: FieldServiceMeeting[];
+  /**
+   * Outings planned inside a circuit-overseer visit, already narrowed to this
+   * week by the caller. During a visit the week's field service lives in the
+   * visit schedule instead of here, which is why this section used to stand
+   * empty exactly when there was the most going on.
+   */
+  visitMeetings?: CoVisitFieldServiceMeeting[];
   publishersById: Map<string, Publisher>;
   canEdit: boolean;
   weekStartISO: string;
@@ -70,6 +84,7 @@ type Props = {
 
 export function FieldServiceSection({
   meetings,
+  visitMeetings = [],
   publishersById,
   canEdit,
   weekStartISO,
@@ -92,7 +107,8 @@ export function FieldServiceSection({
     null,
   );
 
-  if (meetings.length === 0 && !canEdit) return null;
+  if (meetings.length === 0 && visitMeetings.length === 0 && !canEdit)
+    return null;
 
   const list = meetings.slice().sort(sortMeetings);
 
@@ -109,7 +125,7 @@ export function FieldServiceSection({
         </View>
       ) : null}
 
-      {list.length === 0 ? (
+      {list.length === 0 && visitMeetings.length === 0 ? (
         <Text style={styles.empty}>{t('fieldService.empty')}</Text>
       ) : (
         <View style={styles.rows}>
@@ -201,6 +217,42 @@ export function FieldServiceSection({
           })}
         </View>
       )}
+
+      {visitMeetings.length > 0 ? (
+        <View style={styles.visitBlock}>
+          <View style={styles.visitHead}>
+            <Ionicons name="briefcase-outline" size={14} color="#0e7490" />
+            <Text style={styles.visitHeadText}>
+              {t('fieldService.fromCoVisit')}
+            </Text>
+          </View>
+          {[...visitMeetings]
+            .sort(
+              (a, b) =>
+                a.itemDate.localeCompare(b.itemDate) ||
+                (a.startTime ?? '').localeCompare(b.startTime ?? ''),
+            )
+            .map((m) => (
+              <View key={m.id} style={styles.visitRow}>
+                <Text style={styles.when}>
+                  {t(`fieldService.days.${isoDayOf(m.itemDate)}`)}
+                  {m.startTime ? ` \u00b7 ${m.startTime}` : ''}
+                </Text>
+                {m.place ? (
+                  <Text style={styles.address} numberOfLines={2}>
+                    {resolveHallAddress(m.place, sectionHalls)}
+                  </Text>
+                ) : null}
+              </View>
+            ))}
+          {/* No conductor line here on purpose: the visit's public view does
+              not carry one, and an empty «Ведущий» would read as "nobody is
+              leading it", which is not what the schedule says. */}
+          <Text style={styles.visitHint}>
+            {t('fieldService.fromCoVisitHint')}
+          </Text>
+        </View>
+      ) : null}
 
       {canEdit && (
         <Pressable
@@ -809,6 +861,25 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
 
+  visitBlock: {
+    marginHorizontal: 12,
+    marginTop: 10,
+    padding: 12,
+    borderRadius: 12,
+    backgroundColor: '#f0fdff',
+    borderWidth: 1,
+    borderColor: '#cff2f7',
+    gap: 8,
+  },
+  visitHead: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  visitHeadText: {
+    fontSize: 12,
+    color: '#0e7490',
+    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
+  },
+  visitRow: { gap: 2 },
+  visitHint: { fontSize: 12, color: '#64748b', fontStyle: 'italic' },
   rows: {
     backgroundColor: '#fff',
     borderTopWidth: 1,

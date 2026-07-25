@@ -1228,7 +1228,9 @@
       "date": "Date",
       "time": "Time",
       "address": "Address"
-    }
+    },
+    "fromCoVisit": "From the circuit overseer's visit schedule",
+    "fromCoVisitHint": "Edited in the visit schedule"
   },
   "cleaning": {
     "title": "Cleaning",
