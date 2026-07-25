@@ -6,6 +6,13 @@
  * deleted screens piled up quietly and the next person could not tell which
  * wording was still in use.
  *
+ * RUN IT AS `node scripts/check-i18n-unused.mjs` — deliberately NOT wired into
+ * package.json. The app's runtimeVersion policy is "fingerprint", and the
+ * fingerprint hashes package.json: adding a script there changes the runtime
+ * version, and an over-the-air update published under a new runtime never
+ * reaches the copies already installed. A reporting tool is not worth
+ * stranding everyone's app, so this one stays out of the manifest.
+ *
  * This REPORTS and always exits 0. It is deliberately not a gate: a key can be
  * assembled at run time in ways no scan can see (a value out of a variable, a
  * name built from data), so a hard failure here would block honest work over a
