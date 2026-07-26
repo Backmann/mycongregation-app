@@ -2512,6 +2512,17 @@
       "reports": "A reminder to submit your report",
       "admin": "For overseers and the secretary"
     },
-    "allOff": "You have turned everything off"
+    "allOff": "You have turned everything off",
+    "device": {
+      "title": "This device",
+      "idle": "Checking…",
+      "unsupported": "In a browser, notifications are set up by the browser itself",
+      "denied": "Notifications are blocked in the device settings",
+      "noToken": "The device would not issue a notification key",
+      "notRegistered": "The key was issued but the server did not accept it",
+      "registered": "This device receives notifications",
+      "reason": "Reason: {{error}}",
+      "androidHint": "On Android this usually means the build has no Firebase configuration. It takes a rebuild — an over-the-air update cannot fix it."
+    }
   }
 }

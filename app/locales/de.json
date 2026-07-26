@@ -2512,6 +2512,17 @@
       "reports": "Erinnerung an deinen Bericht",
       "admin": "Für Aufseher und den Sekretär"
     },
-    "allOff": "Du hast alles ausgeschaltet"
+    "allOff": "Du hast alles ausgeschaltet",
+    "device": {
+      "title": "Dieses Gerät",
+      "idle": "Wird geprüft…",
+      "unsupported": "Im Browser werden Benachrichtigungen vom Browser selbst eingestellt",
+      "denied": "Benachrichtigungen sind in den Geräteeinstellungen gesperrt",
+      "noToken": "Das Gerät hat keinen Benachrichtigungsschlüssel ausgegeben",
+      "notRegistered": "Der Schlüssel wurde ausgegeben, aber der Server hat ihn abgelehnt",
+      "registered": "Dieses Gerät erhält Benachrichtigungen",
+      "reason": "Grund: {{error}}",
+      "androidHint": "Unter Android fehlt dann meist die Firebase-Konfiguration im Build. Das erfordert einen neuen Build; ein Over-the-Air-Update hilft hier nicht."
+    }
   }
 }

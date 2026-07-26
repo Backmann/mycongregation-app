@@ -1,5 +1,12 @@
 import { useMemo } from 'react';
-import { ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import {
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  Text,
+  View,
+} from 'react-native';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
@@ -10,7 +17,62 @@ import {
   NotificationPreferences,
 } from '../../../lib/api';
 import { LoadError } from '../../../components/LoadError';
+import { PushState, usePushState } from '../../../lib/push-notifications';
 import { notify } from '../../../lib/error-bus';
+
+/**
+ * Whether this device is actually receiving anything.
+ *
+ * Both ways it can fail used to end in a console warning nobody sees, so
+ * «уведомления не приходят» carried no clue as to why. Now the screen says
+ * which step failed and what the device reported — the difference between
+ * guessing and knowing.
+ */
+function DeviceState() {
+  const { t } = useTranslation();
+  const state: PushState = usePushState();
+
+  const ok = state.kind === 'registered';
+  const line = {
+    idle: t('notificationPrefs.device.idle'),
+    unsupported: t('notificationPrefs.device.unsupported'),
+    denied: t('notificationPrefs.device.denied'),
+    no_token: t('notificationPrefs.device.noToken'),
+    not_registered: t('notificationPrefs.device.notRegistered'),
+    registered: t('notificationPrefs.device.registered'),
+  }[state.kind];
+
+  const error =
+    state.kind === 'no_token' || state.kind === 'not_registered'
+      ? state.error
+      : null;
+
+  return (
+    <View style={[styles.deviceCard, ok && styles.deviceCardOk]}>
+      <View style={styles.deviceHead}>
+        <Ionicons
+          name={ok ? 'checkmark-circle' : 'alert-circle-outline'}
+          size={17}
+          color={ok ? '#16a34a' : '#b45309'}
+        />
+        <Text style={styles.deviceTitle}>
+          {t('notificationPrefs.device.title')}
+        </Text>
+      </View>
+      <Text style={styles.deviceLine}>{line}</Text>
+      {error ? (
+        <Text style={styles.deviceReason}>
+          {t('notificationPrefs.device.reason', { error })}
+        </Text>
+      ) : null}
+      {state.kind === 'no_token' && Platform.OS === 'android' ? (
+        <Text style={styles.deviceReason}>
+          {t('notificationPrefs.device.androidHint')}
+        </Text>
+      ) : null}
+    </View>
+  );
+}
 
 const CATEGORIES: { key: NotificationCategory; icon: string }[] = [
   { key: 'assignments', icon: 'mic-outline' },
@@ -94,6 +156,8 @@ export default function NotificationPreferencesScreen() {
       contentContainerStyle={styles.content}
       keyboardShouldPersistTaps="handled"
     >
+      <DeviceState />
+
       <Text style={styles.hint}>{t('notificationPrefs.hint')}</Text>
 
       <View style={styles.card}>
@@ -135,6 +199,24 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f1f5f9' },
   content: { padding: 16, gap: 12 },
   hint: { fontSize: 13, color: '#64748b', lineHeight: 19 },
+  deviceCard: {
+    backgroundColor: '#fffbeb',
+    borderWidth: 1,
+    borderColor: '#fde68a',
+    borderRadius: 12,
+    padding: 12,
+    gap: 4,
+  },
+  deviceCardOk: { backgroundColor: '#f0fdf4', borderColor: '#bbf7d0' },
+  deviceHead: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  deviceTitle: {
+    fontSize: 12,
+    color: '#475569',
+    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
+  },
+  deviceLine: { fontSize: 13.5, color: '#0f172a' },
+  deviceReason: { fontSize: 12, color: '#64748b', lineHeight: 17 },
   card: {
     backgroundColor: '#fff',
     borderRadius: 14,

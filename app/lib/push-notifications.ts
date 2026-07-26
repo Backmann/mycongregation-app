@@ -1,9 +1,52 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useSyncExternalStore } from 'react';
 import { Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
+import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
 import { pushApi } from './api';
 import { useAuth } from './auth';
+
+/**
+ * Where this device stands with notifications.
+ *
+ * Both ways this can fail — the device refusing a token, and the server
+ * refusing the registration — used to end in a console warning, which in a
+ * real build nobody ever sees. «Уведомления не приходят» then gives not one
+ * clue as to why. The state is kept here so the settings screen can simply
+ * say what happened.
+ */
+export type PushState =
+  | { kind: 'idle' }
+  | { kind: 'unsupported' } // web: expo-notifications is native-only
+  | { kind: 'denied' } // the person said no, or the system did
+  | { kind: 'no_token'; error: string } // the device would not issue one
+  | { kind: 'not_registered'; error: string } // the server would not take it
+  | { kind: 'registered'; token: string };
+
+let pushState: PushState = { kind: 'idle' };
+const listeners = new Set<() => void>();
+
+function setPushState(next: PushState): void {
+  pushState = next;
+  for (const l of listeners) l();
+}
+
+/** Read the current state in a component; re-renders when it changes. */
+export function usePushState(): PushState {
+  return useSyncExternalStore(
+    (onChange) => {
+      listeners.add(onChange);
+      return () => listeners.delete(onChange);
+    },
+    () => pushState,
+    () => pushState,
+  );
+}
+
+function describe(err: unknown): string {
+  if (err instanceof Error) return err.message;
+  return String(err ?? 'unknown');
+}
 
 // Show notifications in foreground (banner + sound, no badge)
 Notifications.setNotificationHandler({
@@ -16,7 +59,10 @@ Notifications.setNotificationHandler({
 });
 
 async function getPushToken(): Promise<string | null> {
-  if (Platform.OS === 'web') return null;
+  if (Platform.OS === 'web') {
+    setPushState({ kind: 'unsupported' });
+    return null;
+  }
 
   const { status: existing } = await Notifications.getPermissionsAsync();
   let finalStatus = existing;
@@ -27,16 +73,27 @@ async function getPushToken(): Promise<string | null> {
   }
 
   if (finalStatus !== 'granted') {
-    console.warn('[Push] Permission not granted');
+    setPushState({ kind: 'denied' });
     return null;
   }
 
   try {
-    // In Expo Go and dev builds this works without projectId.
-    // For EAS production builds, set expo.extra.eas.projectId in app.json.
-    const tokenResponse = await Notifications.getExpoPushTokenAsync();
+    // The project is named explicitly. It can usually be read out of the
+    // manifest, but "usually" is how a build ends up silently without
+    // notifications, and the documented form costs nothing.
+    const projectId =
+      Constants.expoConfig?.extra?.eas?.projectId ??
+      (Constants as { easConfig?: { projectId?: string } }).easConfig
+        ?.projectId;
+    const tokenResponse = await Notifications.getExpoPushTokenAsync(
+      projectId ? { projectId } : undefined,
+    );
     return tokenResponse.data;
   } catch (err) {
+    // On Android this is where a build without Firebase configuration lands:
+    // the device cannot issue a token at all, so nothing is ever registered
+    // and nothing ever arrives.
+    setPushState({ kind: 'no_token', error: describe(err) });
     console.warn('[Push] getExpoPushTokenAsync failed:', err);
     return null;
   }
@@ -75,8 +132,9 @@ export function usePushNotifications() {
           osVersion: Platform.Version != null ? String(Platform.Version) : null,
         });
         registeredRef.current = token;
-        console.log('[Push] Token registered with backend');
+        setPushState({ kind: 'registered', token });
       } catch (err) {
+        setPushState({ kind: 'not_registered', error: describe(err) });
         console.warn('[Push] Backend registration failed:', err);
       }
     })();
