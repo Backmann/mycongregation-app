@@ -2049,7 +2049,8 @@
       "weekendMeeting": "Wochenendzusammenkunft",
       "moreFields": "Weitere Angaben",
       "meetingTime": "Versammlungszeit",
-      "mapUrl": "Kartenlink"
+      "mapUrl": "Kartenlink",
+      "speakerCount": "Redner: {{count}}"
     },
     "speakers": {
       "title": "Gastredner",
@@ -2150,6 +2151,13 @@
         "swap": "Tauschen",
         "move": "Verschieben"
       }
+    },
+    "congregationProfile": {
+      "title": "Versammlung",
+      "notFound": "Versammlung nicht gefunden",
+      "speakers": "Redner aus dieser Versammlung",
+      "noSpeakers": "Noch niemand eingetragen",
+      "addSpeaker": "Redner aus dieser Versammlung hinzufügen"
     }
   },
   "rules": {

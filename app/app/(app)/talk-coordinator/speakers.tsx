@@ -46,8 +46,10 @@ export default function SpeakersScreen() {
   const qc = useQueryClient();
 
   // editingId: a speaker id, or 'new' for the add form, or null
-  const { edit: editParam } = useLocalSearchParams<{ edit?: string }>();
+  const { edit: editParam, congregationId: congParam } =
+    useLocalSearchParams<{ edit?: string; congregationId?: string }>();
   const handledEditRef = useRef(false);
+  const handledCongRef = useRef(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -211,6 +213,22 @@ export default function SpeakersScreen() {
       startEdit(sp);
     }
   }, [editParam, listQuery.data]);
+
+  // Deep-link from a congregation's card: open the add form with that
+  // congregation already chosen. Picking it again by hand is how a speaker
+  // ends up filed under the wrong one.
+  useEffect(() => {
+    if (handledCongRef.current || !congParam) return;
+    handledCongRef.current = true;
+    setFirstName('');
+    setLastName('');
+    setCongId(congParam);
+    setPhone('');
+    setNote('');
+    setTalks([]);
+    setTalkInput('');
+    setEditingId('new');
+  }, [congParam]);
 
   const cancel = () => setEditingId(null);
 

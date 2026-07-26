@@ -2049,7 +2049,8 @@
       "weekendMeeting": "Weekend meeting",
       "moreFields": "More details",
       "meetingTime": "Meeting time",
-      "mapUrl": "Map link"
+      "mapUrl": "Map link",
+      "speakerCount": "Speakers: {{count}}"
     },
     "speakers": {
       "title": "Visiting speakers",
@@ -2150,6 +2151,13 @@
         "swap": "Swap",
         "move": "Move"
       }
+    },
+    "congregationProfile": {
+      "title": "Congregation",
+      "notFound": "Congregation not found",
+      "speakers": "Speakers from this congregation",
+      "noSpeakers": "Nobody listed yet",
+      "addSpeaker": "Add a speaker from this congregation"
     }
   },
   "rules": {

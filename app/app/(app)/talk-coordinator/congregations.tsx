@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
+import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ru';
@@ -20,6 +21,7 @@ import 'dayjs/locale/de';
 import {
   ExternalCongregation,
   externalCongregationsApi,
+  visitingSpeakersApi,
   extractErrorMessage,
 } from '../../../lib/api';
 import { usePermissions } from '../../../lib/permissions';
@@ -51,6 +53,11 @@ export default function CongregationsScreen() {
     dayjs('2024-01-01').add(dow - 1, 'day').locale(i18n.language).format('dd');
 
   const listQuery = useQuery({ queryKey: QK, queryFn: () => externalCongregationsApi.list() });
+  // Only to show how many speakers each holds; the card does the real work.
+  const speakersQuery = useQuery({
+    queryKey: ['visiting-speakers'],
+    queryFn: () => visitingSpeakersApi.list(),
+  });
 
   const invalidate = () => qc.invalidateQueries({ queryKey: QK });
   const showError = (e: unknown) => {
@@ -158,6 +165,10 @@ export default function CongregationsScreen() {
   }
 
   const rows = listQuery.data ?? [];
+  const speakerCount = (congregationId: string) =>
+    (speakersQuery.data ?? []).filter(
+      (s) => s.externalCongregationId === congregationId,
+    ).length;
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#f1f5f9' }}>
@@ -170,7 +181,17 @@ export default function CongregationsScreen() {
           ) : (
             rows.map((c) => (
               <View key={c.id} style={styles.row}>
-                <View style={{ flex: 1 }}>
+                <Pressable
+                  style={({ pressed }) => [
+                    { flex: 1 },
+                    pressed && styles.rowPressed,
+                  ]}
+                  onPress={() =>
+                    router.push(
+                      `/talk-coordinator/congregation-profile/${c.id}` as never,
+                    )
+                  }
+                >
                   <Text style={styles.name}>{c.name}</Text>
                   {!!c.city && <Text style={styles.sub}>{c.city}</Text>}
                   {(c.contactName || c.contactPhone) && (
@@ -189,7 +210,14 @@ export default function CongregationsScreen() {
                     </View>
                   )}
                   {!!c.address && <Text style={styles.subHall}>{c.address}</Text>}
-                </View>
+                  {speakerCount(c.id) > 0 ? (
+                    <Text style={styles.speakerCount}>
+                      {t('talkCoordinator.congregations.speakerCount', {
+                        count: speakerCount(c.id),
+                      })}
+                    </Text>
+                  ) : null}
+                </Pressable>
                 <Pressable hitSlop={8} onPress={() => openEdit(c)} style={styles.iconBtn} disabled={pending}>
                   <Ionicons name="create-outline" size={20} color="#0369a1" />
                 </Pressable>
@@ -311,6 +339,8 @@ export default function CongregationsScreen() {
 }
 
 const styles = StyleSheet.create({
+  rowPressed: { opacity: 0.6 },
+  speakerCount: { fontSize: 12, color: '#0369a1', marginTop: 4 },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 32 },
   muted: { color: '#64748b', fontSize: 15, textAlign: 'center' },
   container: { padding: 16, paddingBottom: 40 },
