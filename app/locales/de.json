@@ -2050,7 +2050,8 @@
       "moreFields": "Weitere Angaben",
       "meetingTime": "Versammlungszeit",
       "mapUrl": "Kartenlink",
-      "speakerCount": "Redner: {{count}}"
+      "speakerCount": "Redner: {{count}}",
+      "deleteOrphanWarning": "Redner in dieser Versammlung: {{count}}. Sie bleiben auf der Liste, aber ohne Versammlung."
     },
     "speakers": {
       "title": "Gastredner",
@@ -2087,7 +2088,11 @@
         "upcoming": "Bald",
         "overdue": "Lange her",
         "never": "Neu"
-      }
+      },
+      "noCongregationSection": "Ohne Versammlung",
+      "duplicateTitle": "Er ist vielleicht schon erfasst",
+      "duplicateBody": "{{name}} — {{congregation}} — steht bereits auf der Liste. Wenn das ein anderer Bruder mit demselben Namen ist, füge ihn hinzu.",
+      "duplicateConfirm": "Trotzdem hinzufügen"
     },
     "log": {
       "title": "Protokoll „Zu uns / Von uns“",

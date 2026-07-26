@@ -2054,7 +2054,8 @@
       "moreFields": "Дополнительно",
       "meetingTime": "Время встречи",
       "mapUrl": "Ссылка на карту",
-      "speakerCount": "Докладчиков: {{count}}"
+      "speakerCount": "Докладчиков: {{count}}",
+      "deleteOrphanWarning": "Докладчиков в этом собрании: {{count}}. Они останутся в списке, но без собрания."
     },
     "speakers": {
       "title": "Приезжие докладчики",
@@ -2091,7 +2092,11 @@
         "upcoming": "Скоро будет",
         "overdue": "Давно не было",
         "never": "Ещё не был"
-      }
+      },
+      "noCongregationSection": "Без собрания",
+      "duplicateTitle": "Возможно, он уже записан",
+      "duplicateBody": "{{name}} — {{congregation}} — уже есть в списке. Если это другой брат с тем же именем, добавляйте.",
+      "duplicateConfirm": "Всё равно добавить"
     },
     "log": {
       "title": "Журнал «К нам / От нас»",

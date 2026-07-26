@@ -2050,7 +2050,8 @@
       "moreFields": "More details",
       "meetingTime": "Meeting time",
       "mapUrl": "Map link",
-      "speakerCount": "Speakers: {{count}}"
+      "speakerCount": "Speakers: {{count}}",
+      "deleteOrphanWarning": "Speakers in this congregation: {{count}}. They stay on the list but without a congregation."
     },
     "speakers": {
       "title": "Visiting speakers",
@@ -2087,7 +2088,11 @@
         "upcoming": "Upcoming",
         "overdue": "Overdue",
         "never": "New"
-      }
+      },
+      "noCongregationSection": "No congregation",
+      "duplicateTitle": "He may already be listed",
+      "duplicateBody": "{{name}} — {{congregation}} — is already on the list. If this is a different brother with the same name, go ahead.",
+      "duplicateConfirm": "Add anyway"
     },
     "log": {
       "title": "Incoming / Outgoing log",

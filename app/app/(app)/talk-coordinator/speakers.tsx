@@ -146,6 +146,26 @@ export default function SpeakersScreen() {
     return list;
   }, [listQuery.data, search, filterMode, sortMode, statsById, today]);
 
+  /**
+   * When sorted by congregation, say where each block begins.
+   *
+   * This is the nested view Lionel was after, without giving up what the flat
+   * list is for: the filters and the ordering by how long since a visit answer
+   * questions that run ACROSS congregations, and those are the questions this
+   * screen exists for. Speakers with no congregation get their own heading
+   * rather than being buried at the end — deleting a congregation unlinks its
+   * speakers on purpose, and a purely nested view would hide them for good.
+   */
+  const headingFor = (index: number): string | null => {
+    if (sortMode !== 'congregation') return null;
+    const nameOf = (sp: VisitingSpeaker | undefined) =>
+      sp?.externalCongregation?.name ??
+      (sp ? t('talkCoordinator.speakers.noCongregationSection') : null);
+    const here = nameOf(rows[index]);
+    const before = index === 0 ? null : nameOf(rows[index - 1]);
+    return here !== before ? here : null;
+  };
+
   const invalidate = () => qc.invalidateQueries({ queryKey: QK });
   const showError = (e: unknown) => {
     const msg = extractErrorMessage(e);
@@ -244,6 +264,35 @@ export default function SpeakersScreen() {
 
   const save = async () => {
     if (!canSave) return;
+
+    // A soft warning, never a block: namesakes are ordinary, and two brothers
+    // called the same thing must both be enterable. But entering the same man
+    // twice splits his visit history in half without a word, and nothing on
+    // the list would show it — so ask once when a new name matches an existing
+    // one.
+    if (editingId === 'new') {
+      const typed = `${firstName.trim()} ${lastName.trim()}`
+        .toLowerCase()
+        .replace(/\s+/g, ' ')
+        .trim();
+      const twin = (listQuery.data ?? []).find(
+        (sp) => speakerName(sp).toLowerCase().replace(/\s+/g, ' ').trim() === typed,
+      );
+      if (twin) {
+        const proceed = await confirm({
+          title: t('talkCoordinator.speakers.duplicateTitle'),
+          body: t('talkCoordinator.speakers.duplicateBody', {
+            name: speakerName(twin),
+            congregation:
+              twin.externalCongregation?.name ??
+              t('talkCoordinator.speakers.noCongregation'),
+          }),
+          confirmLabel: t('talkCoordinator.speakers.duplicateConfirm'),
+        });
+        if (!proceed) return;
+      }
+    }
+
     let resolvedCongId = congId;
     if (addingCong && newCongName.trim()) {
       const created = await externalCongregationsApi.create({ name: newCongName.trim() });
@@ -492,11 +541,17 @@ export default function SpeakersScreen() {
               : t('talkCoordinator.speakers.empty')}
           </Text>
         ) : (
-          rows.map((s) =>
+          rows.map((s, index) =>
             editingId === s.id ? (
               editor(s.id)
             ) : (
-              <View key={s.id} style={styles.row}>
+              <View key={s.id}>
+                {headingFor(index) ? (
+                  <Text style={styles.sectionHeading}>
+                    {headingFor(index)}
+                  </Text>
+                ) : null}
+                <View style={styles.row}>
                 <Pressable
                   style={{ flex: 1 }}
                   onPress={() =>
@@ -558,6 +613,7 @@ export default function SpeakersScreen() {
                 <Pressable hitSlop={8} onPress={() => confirmDelete(s)} style={styles.iconBtn} disabled={pending}>
                   <Ionicons name="trash-outline" size={20} color="#dc2626" />
                 </Pressable>
+                </View>
               </View>
             ),
           )
@@ -568,6 +624,16 @@ export default function SpeakersScreen() {
 }
 
 const styles = StyleSheet.create({
+  sectionHeading: {
+    fontSize: 12,
+    color: '#0369a1',
+    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+    paddingTop: 14,
+    paddingBottom: 2,
+  },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 32 },
   muted: { color: '#64748b', fontSize: 15, textAlign: 'center' },
   container: { padding: 16, paddingBottom: 40 },

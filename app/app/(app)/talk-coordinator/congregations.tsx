@@ -58,6 +58,10 @@ export default function CongregationsScreen() {
     queryKey: ['visiting-speakers'],
     queryFn: () => visitingSpeakersApi.list(),
   });
+  const speakerCount = (congregationId: string) =>
+    (speakersQuery.data ?? []).filter(
+      (s) => s.externalCongregationId === congregationId,
+    ).length;
 
   const invalidate = () => qc.invalidateQueries({ queryKey: QK });
   const showError = (e: unknown) => {
@@ -140,7 +144,17 @@ export default function CongregationsScreen() {
     if (
       await confirm({
         title: t('talkCoordinator.congregations.deleteTitle'),
-        body: c.name,
+        // Deleting a congregation does not delete its speakers — it unlinks
+        // them, which is right, since the men and their visit history remain.
+        // But it happens silently, and someone who does not expect it is left
+        // wondering why a speaker suddenly has no congregation. Say it first.
+        body:
+          speakerCount(c.id) > 0
+            ? `${c.name}\n\n${t(
+                'talkCoordinator.congregations.deleteOrphanWarning',
+                { count: speakerCount(c.id) },
+              )}`
+            : c.name,
         confirmLabel: t('common.delete'),
         danger: true,
       })
@@ -165,10 +179,6 @@ export default function CongregationsScreen() {
   }
 
   const rows = listQuery.data ?? [];
-  const speakerCount = (congregationId: string) =>
-    (speakersQuery.data ?? []).filter(
-      (s) => s.externalCongregationId === congregationId,
-    ).length;
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#f1f5f9' }}>
