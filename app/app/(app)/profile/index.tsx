@@ -184,6 +184,33 @@ export default function ProfileScreen() {
         </View>
       </View>
 
+      <View style={styles.section}>
+        <Text style={styles.sectionLabel}>{t('notificationPrefs.title')}</Text>
+        <View style={styles.card}>
+          <Pressable
+            style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
+            onPress={() => router.push('/profile/notifications' as never)}
+          >
+            <View style={styles.rowIcon}>
+              <Ionicons
+                name="notifications-outline"
+                size={20}
+                color="#0ea5e9"
+              />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.rowTitle}>
+                {t('notificationPrefs.rowTitle')}
+              </Text>
+              <Text style={styles.rowSubtitle}>
+                {t('notificationPrefs.rowSubtitle')}
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color="#94a3b8" />
+          </Pressable>
+        </View>
+      </View>
+
       {myPublisher ? (
         <View style={styles.section}>
           <Text style={styles.sectionLabel}>{t('myContacts.title')}</Text>

@@ -2492,5 +2492,26 @@
     "byHandUnworked": "Territories not covered this year",
     "byHandBranchHelp": "Willing to accept help from the branch",
     "averageBasis": "Average over {{count}} months with records"
+  },
+  "notificationPrefs": {
+    "title": "Notifications",
+    "rowTitle": "Notifications",
+    "rowSubtitle": "Choose what to hear about",
+    "hint": "Everything is on until you turn it off. Nothing arrives at night — it waits until morning.",
+    "categories": {
+      "assignments": "My assignments",
+      "ministry": "Ministry",
+      "cleaning": "Cleaning",
+      "reports": "Report",
+      "admin": "Administrative"
+    },
+    "hints": {
+      "assignments": "What you were given at the meetings",
+      "ministry": "Field service meetings and the cart",
+      "cleaning": "When your group cleans",
+      "reports": "A reminder to submit your report",
+      "admin": "For overseers and the secretary"
+    },
+    "allOff": "You have turned everything off"
   }
 }

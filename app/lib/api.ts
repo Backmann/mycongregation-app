@@ -2011,7 +2011,34 @@ export interface MyWeekMarks {
   fieldService: boolean;
 }
 
+/** What a person hears about; every category is on unless switched off. */
+export interface NotificationPreferences {
+  assignments: boolean;
+  ministry: boolean;
+  cleaning: boolean;
+  reports: boolean;
+  admin: boolean;
+}
+
+export type NotificationCategory = keyof NotificationPreferences;
+
 export const meApi = {
+  async notificationPreferences(): Promise<NotificationPreferences> {
+    const { data } = await api.get<NotificationPreferences>(
+      '/me/notification-preferences',
+    );
+    return data;
+  },
+  async setNotificationPreference(
+    category: NotificationCategory,
+    enabled: boolean,
+  ): Promise<NotificationPreferences> {
+    const { data } = await api.patch<NotificationPreferences>(
+      '/me/notification-preferences',
+      { category, enabled },
+    );
+    return data;
+  },
   async weeks(): Promise<MyWeekMarks[]> {
     const { data } = await api.get<MyWeekMarks[]>('/me/weeks');
     return data;

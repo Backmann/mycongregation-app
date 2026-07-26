@@ -2492,5 +2492,26 @@
     "byHandUnworked": "Nicht bearbeitete Gebiete im Jahr",
     "byHandBranchHelp": "Bereit, Hilfe vom Zweigbüro anzunehmen",
     "averageBasis": "Durchschnitt über {{count}} Monate mit Einträgen"
+  },
+  "notificationPrefs": {
+    "title": "Benachrichtigungen",
+    "rowTitle": "Benachrichtigungen",
+    "rowSubtitle": "Wähle, worüber du informiert wirst",
+    "hint": "Alles ist an, bis du es ausschaltest. Nachts kommt nichts — es wartet bis zum Morgen.",
+    "categories": {
+      "assignments": "Meine Aufgaben",
+      "ministry": "Predigtdienst",
+      "cleaning": "Reinigung",
+      "reports": "Bericht",
+      "admin": "Verwaltung"
+    },
+    "hints": {
+      "assignments": "Was dir in den Zusammenkünften zugeteilt wurde",
+      "ministry": "Predigtdienst-Zusammenkünfte und Trolley",
+      "cleaning": "Wenn deine Gruppe reinigt",
+      "reports": "Erinnerung an deinen Bericht",
+      "admin": "Für Aufseher und den Sekretär"
+    },
+    "allOff": "Du hast alles ausgeschaltet"
   }
 }

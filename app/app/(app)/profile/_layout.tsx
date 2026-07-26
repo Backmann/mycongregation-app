@@ -30,6 +30,11 @@ export default function ProfileLayout() {
         name="contacts"
         options={{ title: t('myContacts.rowTitle') }}
       />
+
+      <Stack.Screen
+        name="notifications"
+        options={{ title: t('notificationPrefs.title') }}
+      />
       <Stack.Screen
         name="public-talks"
         options={{ title: t('profile.publicTalks') }}
