@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1022087023382",
+    "project_id": "mycongregation-49711",
+    "storage_bucket": "mycongregation-49711.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1022087023382:android:39bc555c1f6c1089249e37",
+        "android_client_info": {
+          "package_name": "com.backmann.mycongregation"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAD8x-BF0VcrL5V565IE4Z5wrVIYdyLoIw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

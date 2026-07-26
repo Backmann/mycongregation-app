@@ -27,7 +27,8 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.backmann.mycongregation"
+      "package": "com.backmann.mycongregation",
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "output": "static"
@@ -47,7 +48,14 @@
         }
       ],
       "expo-secure-store",
-      "expo-localization"
+      "expo-localization",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/android-icon-monochrome.png",
+          "color": "#0e7490"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
