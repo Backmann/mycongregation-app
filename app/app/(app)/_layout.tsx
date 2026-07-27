@@ -49,12 +49,17 @@ export default function AppLayout() {
           // mechanism, not a fight with it. 56 gives the label the few pixels
           // it was short of.
           //
-          // Only where the device has an inset: a desktop browser never had the
-          // problem, and restyling what already worked is the mistake that was
-          // made earlier today.
-          ...(insets.bottom > 0
-            ? { tabBarStyle: { height: 56 + insets.bottom } }
-            : {}),
+          // Asked for EVERYWHERE, not only where the device reports an inset.
+          // Chrome on Android reports none, so the guard kept the fix away
+          // from it and it went on clipping — the last place still cut after
+          // the iPad came right.
+          //
+          // Widening this is safe in a way the earlier attempt was not: that
+          // one set paddings alongside the height and so took room AWAY from
+          // the desktop, which never had the problem. This sets height alone,
+          // and 56 exceeds the library's 49 — every platform gets more room
+          // than before, none gets less.
+          tabBarStyle: { height: 56 + insets.bottom },
           // No height, no padding, no line height set here — on purpose.
           //
           // The tab bar ALREADY adds the device's bottom inset itself; the
