@@ -41,7 +41,13 @@ export default function AppLayout() {
         // in a desktop browser while Android was fine. Naming the line height
         // gives the glyphs the room they need without touching any
         // container's size, so the bar keeps sizing itself as it should.
-        tabBarLabelStyle: { lineHeight: 14 },
+        //
+        // 18, not 14: measured on a real iPad screenshot. The word is cut by a
+        // clean horizontal line while 114 device pixels of the bar sit EMPTY
+        // below it — so nothing is short of space, the text's own line box is
+        // simply narrower than the letters need. Raising it cannot push
+        // anything: the room is already there.
+        tabBarLabelStyle: { lineHeight: 18 },
         // No height, no padding, no line height set here — on purpose.
         //
         // The tab bar ALREADY adds the device's bottom inset itself; the
