@@ -224,6 +224,29 @@ export function AssignmentSheet({
           style={[
             styles.sheet,
             { marginBottom: bottomRoom },
+            // A REAL height for the card, not one it works out from its own
+            // content — this is what finally breaks the deadlock.
+            //
+            // Inside the card sits AssignmentForm, whose root is a ScrollView
+            // styled flex: 1. The card had only maxHeight: '90%', so it sized
+            // itself to its content. Content and container were therefore each
+            // waiting for the other: the scroller wanted a height to fill, the
+            // card wanted content to measure. Nobody gave, the scrollable area
+            // collapsed to nothing, and all that remained was the header and
+            // the button — exactly what the screen showed.
+            //
+            // On the web flex: 1 resolves differently and the form simply
+            // expands, which is why Chrome on the SAME phone was fine while
+            // the app was not, and why three earlier fixes — paddings, then
+            // flex: 1, then pixel sizes on the wrapper — all missed: every one
+            // of them added height OUTSIDE the card, while the deadlock sits
+            // one level in.
+            //
+            // Height, not maxHeight: a maximum is still a ceiling to grow up
+            // to, and there is nothing to grow from.
+            centered
+              ? { height: Math.round(height * 0.85) }
+              : { height: Math.round(height * 0.9) },
             centered ? styles.sheetCentered : styles.sheetBottom,
           ]}
         >
