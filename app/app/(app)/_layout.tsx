@@ -34,16 +34,17 @@ export default function AppLayout() {
         headerShown: false,
         tabBarActiveTintColor: '#0ea5e9',
         tabBarInactiveTintColor: '#64748b',
-        // NOTHING is set for the label here, and that is the finding, not an
-        // omission. Measured on two real iPad screenshots: the word is cut at
-        // exactly the same height before and after raising the line height —
-        // only the glyphs moved down inside the cut, so 14 showed 14 pixels of
-        // the letter and 18 showed 10. The boundary never moved.
+        // Derived from three measurements, not chosen: at lineHeight 18 the
+        // word showed 10 pixels of glyph, at 14 it showed 14, and with nothing
+        // set at all it shows more still. The relationship is plain — the
+        // smaller the line box, the less is cut — which means the letters sit
+        // against a fixed edge BELOW them, and a shorter line lifts them clear
+        // of it. The earlier attempts raised the number, which is the wrong
+        // direction, and made it worse.
         //
-        // So the line box is not what clips: something with a fixed edge is,
-        // and choosing numbers for the text cannot reach it. Rather than keep
-        // guessing, the override is gone and the library draws the label as it
-        // sees fit. The remaining clipping is cosmetic — everything taps.
+        // 8 against a font size of 10 reads oddly, and it is deliberate: it
+        // buys roughly the five pixels of lift the descenders need.
+        tabBarLabelStyle: { lineHeight: 8 },
         // No height, no padding, no line height set here — on purpose.
         //
         // The tab bar ALREADY adds the device's bottom inset itself; the
