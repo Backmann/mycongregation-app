@@ -48,11 +48,22 @@ export default function AppLayout() {
         // that is broken.
         ...(insets.bottom > 0
           ? {
+              // The bar has to clear the home indicator, and that strip is the
+              // device's, not ours — it cannot be reclaimed. What CAN be
+              // trimmed is the part above it, and the first attempt was
+              // needlessly generous: on a phone every millimetre of the list
+              // is the thing people came for. 50 leaves the icon and its
+              // label their room and nothing besides.
               tabBarStyle: {
-                height: 56 + insets.bottom,
-                paddingTop: 6,
+                height: 50 + insets.bottom,
+                paddingTop: 4,
                 paddingBottom: insets.bottom,
               },
+              // The tails of «р» and «у» in «Расписание» and «Служение» were
+              // shaved off: the default line box is tight enough that a
+              // Cyrillic descender falls outside it. Naming the line height
+              // gives them the room the letters actually take.
+              tabBarLabelStyle: { fontSize: 11, lineHeight: 14 },
             }
           : {}),
       }}
