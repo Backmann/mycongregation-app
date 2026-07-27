@@ -1,5 +1,4 @@
 import {
-  
   Modal,
   Platform,
   Pressable,
@@ -7,20 +6,21 @@ import {
   Text,
   useWindowDimensions,
   View,
-} from 'react-native';
-import { useEffect, useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useTranslation } from 'react-i18next';
+} from "react-native";
+import { useEffect, useState } from "react";
+import { useBottomRoom } from "./Sheet";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import {
   Assignment,
   assignmentsApi,
   CreateAssignmentInput,
   UpdateAssignmentInput,
-} from '../lib/api';
-import { AssignmentForm, AssignmentFormCoPicker } from './AssignmentForm';
-import { SongPicker } from './SongPicker';
-import { notify } from '../lib/error-bus';
-import { confirm } from '../components/ConfirmHost';
+} from "../lib/api";
+import { AssignmentForm, AssignmentFormCoPicker } from "./AssignmentForm";
+import { SongPicker } from "./SongPicker";
+import { notify } from "../lib/error-bus";
+import { confirm } from "../components/ConfirmHost";
 
 interface Props {
   /** The assignment being edited, or null when the sheet is closed. */
@@ -39,7 +39,7 @@ interface Props {
   coPicker?: AssignmentFormCoPicker | null;
 }
 
-const SONG_KEYS = ['mid_song', 'weekend_song', 'weekend_opening_song'];
+const SONG_KEYS = ["mid_song", "weekend_song", "weekend_opening_song"];
 
 /**
  * Bottom-sheet editor for a single assignment. Opens over the schedule so the
@@ -58,8 +58,11 @@ export function AssignmentSheet({
 }: Props) {
   const { t } = useTranslation();
   const { width } = useWindowDimensions();
+  // The same rule the other two shells use: room for the navigation bar, or
+  // for the keyboard while it is up. Android only — see useBottomRoom.
+  const bottomRoom = useBottomRoom();
   // Wide screens (desktop web) get a centered dialog; narrow stays a bottom sheet.
-  const centered = Platform.OS === 'web' && width >= 700;
+  const centered = Platform.OS === "web" && width >= 700;
   const queryClient = useQueryClient();
   const open = !!assignment;
   // Keep the last assignment mounted through the close animation so the
@@ -73,7 +76,7 @@ export function AssignmentSheet({
     const timer = setTimeout(() => setActive(null), 240);
     return () => clearTimeout(timer);
   }, [assignment]);
-  const queryKey = ['assignments', weekStartISO];
+  const queryKey = ["assignments", weekStartISO];
 
   const updateMutation = useMutation({
     mutationFn: (input: UpdateAssignmentInput) =>
@@ -100,36 +103,36 @@ export function AssignmentSheet({
       if (warnings && warnings.length) {
         const msg = warnings
           .map((w) =>
-            w.code === 'mic_taken'
-              ? t('rules.warn.micTaken')
-              : w.code === 'mic_capability_off'
-                ? t('rules.warn.micCapability', { name: w.publisherName })
-                : w.code === 'treasures_capability_missing'
-                  ? t('rules.warn.treasuresCapability', {
+            w.code === "mic_taken"
+              ? t("rules.warn.micTaken")
+              : w.code === "mic_capability_off"
+                ? t("rules.warn.micCapability", { name: w.publisherName })
+                : w.code === "treasures_capability_missing"
+                  ? t("rules.warn.treasuresCapability", {
                       name: w.publisherName,
                     })
-                  : t('rules.warn.prayerCapability', {
+                  : t("rules.warn.prayerCapability", {
                       name: w.publisherName,
                     }),
           )
-          .join('\n');
-        if (Platform.OS === 'web') {
+          .join("\n");
+        if (Platform.OS === "web") {
           window.alert(msg);
         } else {
-          notify(t('rules.warn.title'), msg);
+          notify(t("rules.warn.title"), msg);
         }
       }
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['assignments'] });
+      queryClient.invalidateQueries({ queryKey: ["assignments"] });
       if (assignment) {
         queryClient.invalidateQueries({
-          queryKey: ['assignment', assignment.id],
+          queryKey: ["assignment", assignment.id],
         });
       }
       // Treasures-talk speaker mirrors onto a microphone duty — refresh duties.
-      if (assignment?.partKey === 'treasures_talk') {
-        queryClient.invalidateQueries({ queryKey: ['duties'] });
+      if (assignment?.partKey === "treasures_talk") {
+        queryClient.invalidateQueries({ queryKey: ["duties"] });
       }
     },
   });
@@ -144,17 +147,17 @@ export function AssignmentSheet({
         publicTalkId: null,
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['assignments'] });
-      if (assignment?.partKey === 'treasures_talk') {
-        queryClient.invalidateQueries({ queryKey: ['duties'] });
+      queryClient.invalidateQueries({ queryKey: ["assignments"] });
+      if (assignment?.partKey === "treasures_talk") {
+        queryClient.invalidateQueries({ queryKey: ["duties"] });
       }
       onClose();
     },
   });
 
   const confirmUnassign = () => {
-    if (Platform.OS === 'web') {
-      if (window.confirm(t('schedule.unassign.confirmWebMessage'))) {
+    if (Platform.OS === "web") {
+      if (window.confirm(t("schedule.unassign.confirmWebMessage"))) {
         unassignMutation.mutate();
       }
       return;
@@ -164,11 +167,11 @@ export function AssignmentSheet({
 
   // Manually added Christian-Life parts can be removed entirely (imported
   // workbook parts cannot — they have no delete affordance).
-  const isExtraPart = !!active && active.partKey === 'living_christians_extra';
+  const isExtraPart = !!active && active.partKey === "living_christians_extra";
   const removeMutation = useMutation({
     mutationFn: () => assignmentsApi.remove(assignment!.id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['assignments'] });
+      queryClient.invalidateQueries({ queryKey: ["assignments"] });
       onClose();
     },
   });
@@ -176,9 +179,9 @@ export function AssignmentSheet({
   const confirmDelete = async () => {
     if (
       await confirm({
-        title: t('schedule.deletePart.title'),
-        body: t('schedule.deletePart.confirm'),
-        confirmLabel: t('schedule.deletePart.button'),
+        title: t("schedule.deletePart.title"),
+        body: t("schedule.deletePart.confirm"),
+        confirmLabel: t("schedule.deletePart.button"),
         danger: true,
       })
     ) {
@@ -192,7 +195,7 @@ export function AssignmentSheet({
     <Modal
       visible={open}
       transparent
-      animationType={centered ? 'fade' : 'slide'}
+      animationType={centered ? "fade" : "slide"}
       onRequestClose={onClose}
     >
       <Pressable style={styles.backdrop} onPress={onClose} />
@@ -203,111 +206,116 @@ export function AssignmentSheet({
         <View
           style={[
             styles.sheet,
+            { marginBottom: bottomRoom },
             centered ? styles.sheetCentered : styles.sheetBottom,
           ]}
         >
           {centered ? null : <View style={styles.handleBar} />}
-        <View style={styles.header}>
-          <Text style={styles.title} numberOfLines={1}>
-            {active ? active.partTitle || t('schedule.sheet.title') : ''}
-          </Text>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-            {onNext ? (
-              <Pressable onPress={onNext} hitSlop={8} style={styles.nextBtn}>
-                <Text style={styles.nextText}>{t('schedule.sheet.next')}</Text>
+          <View style={styles.header}>
+            <Text style={styles.title} numberOfLines={1}>
+              {active ? active.partTitle || t("schedule.sheet.title") : ""}
+            </Text>
+            <View
+              style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
+            >
+              {onNext ? (
+                <Pressable onPress={onNext} hitSlop={8} style={styles.nextBtn}>
+                  <Text style={styles.nextText}>
+                    {t("schedule.sheet.next")}
+                  </Text>
+                </Pressable>
+              ) : null}
+              <Pressable onPress={onClose} hitSlop={8} style={styles.closeBtn}>
+                <Text style={styles.closeText}>{t("common.close")}</Text>
               </Pressable>
-            ) : null}
-            <Pressable onPress={onClose} hitSlop={8} style={styles.closeBtn}>
-              <Text style={styles.closeText}>{t('common.close')}</Text>
-            </Pressable>
+            </View>
           </View>
-        </View>
 
-        {active ? (
-          isSong ? (
-            <SongPicker
-              key={active.id}
-              currentTitle={active.partTitle}
-              readOnly={!canEdit}
-              isSaving={updateMutation.isPending}
-              onSave={(pt) =>
-                updateMutation
-                  .mutateAsync({ partTitle: pt ?? '' })
-                  .then(() => onClose())
-              }
-            />
-          ) : (
-            <>
-              <AssignmentForm
+          {active ? (
+            isSong ? (
+              <SongPicker
                 key={active.id}
-                initial={{
-                  weekStartDate: active.weekStartDate,
-                  eventType: active.eventType,
-                  partKey: active.partKey,
-                  partOrder: active.partOrder,
-                  partTitle: active.partTitle ?? undefined,
-                  partDurationMin: active.partDurationMin ?? undefined,
-                  publisherId: active.publisherId,
-                  assistantPublisherId: active.assistantPublisherId,
-                  publicTalkId: active.publicTalkId ?? null,
-                  speakerName: active.speakerName ?? null,
-                  speakerCongregation: active.speakerCongregation ?? null,
-                  status: active.status,
-                  notes: active.notes ?? undefined,
-                }}
-                onSubmit={(data: CreateAssignmentInput) =>
-                  updateMutation.mutateAsync(data).then(() => onClose())
-                }
-                onInstantSave={
-                  canEdit
-                    ? (patch) => updateMutation.mutateAsync(patch)
-                    : undefined
-                }
-                onCancel={onClose}
-                isSubmitting={updateMutation.isPending}
-                lockIdentity
-                circuitOverseer={circuitOverseer}
-                coPicker={coPicker}
+                currentTitle={active.partTitle}
                 readOnly={!canEdit}
+                isSaving={updateMutation.isPending}
+                onSave={(pt) =>
+                  updateMutation
+                    .mutateAsync({ partTitle: pt ?? "" })
+                    .then(() => onClose())
+                }
               />
-              {canEdit && (
-                <Pressable
-                  style={({ pressed }) => [
-                    styles.unassignLink,
-                    pressed && styles.unassignLinkPressed,
-                    (unassignMutation.isPending || !active.publisherId) &&
-                      styles.unassignLinkDisabled,
-                  ]}
-                  onPress={confirmUnassign}
-                  disabled={unassignMutation.isPending || !active.publisherId}
-                >
-                  <Text style={styles.unassignLinkText}>
-                    {unassignMutation.isPending
-                      ? t('schedule.unassign.unassigning')
-                      : t('schedule.unassign.button')}
-                  </Text>
-                </Pressable>
-              )}
-              {canEdit && isExtraPart && (
-                <Pressable
-                  style={({ pressed }) => [
-                    styles.deletePartLink,
-                    pressed && styles.deletePartLinkPressed,
-                    removeMutation.isPending && styles.unassignLinkDisabled,
-                  ]}
-                  onPress={confirmDelete}
-                  disabled={removeMutation.isPending}
-                >
-                  <Text style={styles.deletePartLinkText}>
-                    {removeMutation.isPending
-                      ? t('schedule.deletePart.deleting')
-                      : t('schedule.deletePart.button')}
-                  </Text>
-                </Pressable>
-              )}
-            </>
-          )
-        ) : null}
+            ) : (
+              <>
+                <AssignmentForm
+                  key={active.id}
+                  initial={{
+                    weekStartDate: active.weekStartDate,
+                    eventType: active.eventType,
+                    partKey: active.partKey,
+                    partOrder: active.partOrder,
+                    partTitle: active.partTitle ?? undefined,
+                    partDurationMin: active.partDurationMin ?? undefined,
+                    publisherId: active.publisherId,
+                    assistantPublisherId: active.assistantPublisherId,
+                    publicTalkId: active.publicTalkId ?? null,
+                    speakerName: active.speakerName ?? null,
+                    speakerCongregation: active.speakerCongregation ?? null,
+                    status: active.status,
+                    notes: active.notes ?? undefined,
+                  }}
+                  onSubmit={(data: CreateAssignmentInput) =>
+                    updateMutation.mutateAsync(data).then(() => onClose())
+                  }
+                  onInstantSave={
+                    canEdit
+                      ? (patch) => updateMutation.mutateAsync(patch)
+                      : undefined
+                  }
+                  onCancel={onClose}
+                  isSubmitting={updateMutation.isPending}
+                  lockIdentity
+                  circuitOverseer={circuitOverseer}
+                  coPicker={coPicker}
+                  readOnly={!canEdit}
+                />
+                {canEdit && (
+                  <Pressable
+                    style={({ pressed }) => [
+                      styles.unassignLink,
+                      pressed && styles.unassignLinkPressed,
+                      (unassignMutation.isPending || !active.publisherId) &&
+                        styles.unassignLinkDisabled,
+                    ]}
+                    onPress={confirmUnassign}
+                    disabled={unassignMutation.isPending || !active.publisherId}
+                  >
+                    <Text style={styles.unassignLinkText}>
+                      {unassignMutation.isPending
+                        ? t("schedule.unassign.unassigning")
+                        : t("schedule.unassign.button")}
+                    </Text>
+                  </Pressable>
+                )}
+                {canEdit && isExtraPart && (
+                  <Pressable
+                    style={({ pressed }) => [
+                      styles.deletePartLink,
+                      pressed && styles.deletePartLinkPressed,
+                      removeMutation.isPending && styles.unassignLinkDisabled,
+                    ]}
+                    onPress={confirmDelete}
+                    disabled={removeMutation.isPending}
+                  >
+                    <Text style={styles.deletePartLinkText}>
+                      {removeMutation.isPending
+                        ? t("schedule.deletePart.deleting")
+                        : t("schedule.deletePart.button")}
+                    </Text>
+                  </Pressable>
+                )}
+              </>
+            )
+          ) : null}
         </View>
       </View>
     </Modal>
@@ -317,80 +325,116 @@ export function AssignmentSheet({
 const styles = StyleSheet.create({
   backdrop: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(15,23,42,0.45)',
+    backgroundColor: "rgba(15,23,42,0.45)",
   },
-  bottomWrap: { ...StyleSheet.absoluteFillObject, justifyContent: 'flex-end' },
+  // flex: 1, НЕ absoluteFillObject.
+  //
+  // Растянутый слой получает размеры от родителя, а на Android приложение
+  // работает «во весь экран», и внутри Modal такому слою растягиваться не от
+  // чего: он схлопывался до высоты содержимого, и окно превращалось в полоску
+  // из шапки и кнопки, прижатую книзу. На вебе и на iOS размеры приходили, и
+  // потому там всё выглядело правильно — включая Chrome на том же телефоне.
+  //
+  // Обычный блок на всю высоту решает и вторую половину: maxHeight 90% теперь
+  // есть от чего считать.
+  bottomWrap: { flex: 1, justifyContent: "flex-end" },
   centerWrap: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: 'center',
-    alignItems: 'center',
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
     padding: 16,
   },
-  sheet: { backgroundColor: '#f1f5f9', overflow: 'hidden' },
+  sheet: { backgroundColor: "#f1f5f9", overflow: "hidden" },
   sheetBottom: {
-    width: '100%',
-    maxHeight: '90%',
+    width: "100%",
+    maxHeight: "90%",
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
     paddingBottom: 8,
-    ...(Platform.OS === 'web'
-      ? { maxWidth: 680, alignSelf: 'center' as never }
+    ...(Platform.OS === "web"
+      ? { maxWidth: 680, alignSelf: "center" as never }
       : null),
   },
   sheetCentered: {
-    width: '100%',
+    width: "100%",
     maxWidth: 560,
-    maxHeight: '85%',
+    maxHeight: "85%",
     borderRadius: 16,
     paddingBottom: 8,
-    shadowColor: '#0f172a',
+    shadowColor: "#0f172a",
     shadowOpacity: 0.3,
     shadowRadius: 32,
     shadowOffset: { width: 0, height: 16 },
     elevation: 16,
   },
   handleBar: {
-    alignSelf: 'center',
+    alignSelf: "center",
     width: 40,
     height: 4,
     borderRadius: 2,
-    backgroundColor: '#cbd5e1',
+    backgroundColor: "#cbd5e1",
     marginTop: 8,
     marginBottom: 4,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
+    borderBottomColor: "#e2e8f0",
   },
-  title: { flex: 1, fontSize: 16, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0f172a' },
+  title: {
+    flex: 1,
+    fontSize: 16,
+    fontWeight: "700",
+    fontFamily: "Manrope_700Bold",
+    color: "#0f172a",
+  },
   closeBtn: { paddingHorizontal: 8, paddingVertical: 4 },
-  closeText: { color: '#0ea5e9', fontSize: 14, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
+  closeText: {
+    color: "#0ea5e9",
+    fontSize: 14,
+    fontWeight: "600",
+    fontFamily: "Manrope_600SemiBold",
+  },
   nextBtn: {
-    backgroundColor: '#0ea5e9',
+    backgroundColor: "#0ea5e9",
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 6,
   },
-  nextText: { color: '#fff', fontSize: 14, fontWeight: '700', fontFamily: 'Manrope_700Bold',},
+  nextText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "700",
+    fontFamily: "Manrope_700Bold",
+  },
   unassignLink: {
-    alignSelf: 'center',
+    alignSelf: "center",
     paddingVertical: 12,
     paddingHorizontal: 16,
   },
   unassignLinkPressed: { opacity: 0.6 },
   unassignLinkDisabled: { opacity: 0.35 },
-  unassignLinkText: { color: '#dc2626', fontSize: 14, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
+  unassignLinkText: {
+    color: "#dc2626",
+    fontSize: 14,
+    fontWeight: "600",
+    fontFamily: "Manrope_600SemiBold",
+  },
   deletePartLink: {
-    alignSelf: 'center',
+    alignSelf: "center",
     paddingVertical: 10,
     paddingHorizontal: 16,
     marginBottom: 4,
   },
   deletePartLinkPressed: { opacity: 0.6 },
-  deletePartLinkText: { color: '#b91c1c', fontSize: 13, fontWeight: '700', fontFamily: 'Manrope_700Bold',},
+  deletePartLinkText: {
+    color: "#b91c1c",
+    fontSize: 13,
+    fontWeight: "700",
+    fontFamily: "Manrope_700Bold",
+  },
 });
