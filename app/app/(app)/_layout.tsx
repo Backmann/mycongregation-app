@@ -34,20 +34,16 @@ export default function AppLayout() {
         headerShown: false,
         tabBarActiveTintColor: '#0ea5e9',
         tabBarInactiveTintColor: '#64748b',
-        // The ONLY thing set here, and only for the text itself: the library
-        // gives the label a font size and no line height, so the browser
-        // derives the line box from the font — and this app's font has tall
-        // descenders, which is why «р» and «у» lost their tails on iPad and
-        // in a desktop browser while Android was fine. Naming the line height
-        // gives the glyphs the room they need without touching any
-        // container's size, so the bar keeps sizing itself as it should.
+        // NOTHING is set for the label here, and that is the finding, not an
+        // omission. Measured on two real iPad screenshots: the word is cut at
+        // exactly the same height before and after raising the line height —
+        // only the glyphs moved down inside the cut, so 14 showed 14 pixels of
+        // the letter and 18 showed 10. The boundary never moved.
         //
-        // 18, not 14: measured on a real iPad screenshot. The word is cut by a
-        // clean horizontal line while 114 device pixels of the bar sit EMPTY
-        // below it — so nothing is short of space, the text's own line box is
-        // simply narrower than the letters need. Raising it cannot push
-        // anything: the room is already there.
-        tabBarLabelStyle: { lineHeight: 18 },
+        // So the line box is not what clips: something with a fixed edge is,
+        // and choosing numbers for the text cannot reach it. Rather than keep
+        // guessing, the override is gone and the library draws the label as it
+        // sees fit. The remaining clipping is cosmetic — everything taps.
         // No height, no padding, no line height set here — on purpose.
         //
         // The tab bar ALREADY adds the device's bottom inset itself; the
