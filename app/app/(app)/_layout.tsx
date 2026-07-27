@@ -36,18 +36,25 @@ export default function AppLayout() {
         headerShown: false,
         tabBarActiveTintColor: '#0ea5e9',
         tabBarInactiveTintColor: '#64748b',
-        // An iPhone reserves a strip at the bottom for the home indicator. The
-        // bar sat under it, so the labels were shaved off — readable enough to
-        // tap, wrong enough to notice. The inset is asked for rather than
-        // guessed: it differs between an iPhone with a notch, one with a
-        // button, and an iPad, and a hard-coded 34 would be wrong on two of
-        // the three. Where there is no inset nothing changes.
-        tabBarStyle: {
-          height: 56 + insets.bottom,
-          paddingBottom: insets.bottom > 0 ? insets.bottom : 6,
-          paddingTop: 6,
-        },
-        tabBarLabelStyle: { fontSize: 11, marginTop: -2 },
+        // An iPhone reserves a strip at the bottom for the home indicator, and
+        // the bar sat under it, shaving the labels. The inset is asked for
+        // rather than guessed — it differs between an iPhone with a notch, one
+        // with a button, and an iPad.
+        //
+        // Where there is NO inset the style is left alone entirely. The first
+        // attempt set a height in every case, and a desktop browser — which
+        // has no inset and was never the problem — lost room for its labels
+        // instead. Don't restyle what already worked: touch only the case
+        // that is broken.
+        ...(insets.bottom > 0
+          ? {
+              tabBarStyle: {
+                height: 56 + insets.bottom,
+                paddingTop: 6,
+                paddingBottom: insets.bottom,
+              },
+            }
+          : {}),
       }}
     >
       <Tabs.Screen
