@@ -1,4 +1,5 @@
 import { Redirect, Tabs } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ActivityIndicator, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
@@ -6,6 +7,7 @@ import { useAuth } from '../../lib/auth';
 import { usePushNotifications } from '../../lib/push-notifications';
 import { ContactsCheckPrompt } from '../../components/ContactsCheckPrompt';
 export default function AppLayout() {
+  const insets = useSafeAreaInsets();
   const { user, isLoading } = useAuth();
   const { t } = useTranslation();
   usePushNotifications();
@@ -34,6 +36,18 @@ export default function AppLayout() {
         headerShown: false,
         tabBarActiveTintColor: '#0ea5e9',
         tabBarInactiveTintColor: '#64748b',
+        // An iPhone reserves a strip at the bottom for the home indicator. The
+        // bar sat under it, so the labels were shaved off — readable enough to
+        // tap, wrong enough to notice. The inset is asked for rather than
+        // guessed: it differs between an iPhone with a notch, one with a
+        // button, and an iPad, and a hard-coded 34 would be wrong on two of
+        // the three. Where there is no inset nothing changes.
+        tabBarStyle: {
+          height: 56 + insets.bottom,
+          paddingBottom: insets.bottom > 0 ? insets.bottom : 6,
+          paddingTop: 6,
+        },
+        tabBarLabelStyle: { fontSize: 11, marginTop: -2 },
       }}
     >
       <Tabs.Screen
