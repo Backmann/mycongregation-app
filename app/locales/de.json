@@ -2377,7 +2377,7 @@
       "DOWNLOAD": "hat heruntergeladen",
       "DENY": "konnte nicht ändern"
     },
-    "about": "zu {{name}}",
+    "about": "betrifft: {{name}}",
     "bulk": "{{count}} auf einmal",
     "denyReason": {
       "past_frozen": "die Zusammenkunft hat bereits stattgefunden"

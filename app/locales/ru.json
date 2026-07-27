@@ -2381,7 +2381,7 @@
       "DOWNLOAD": "скачал",
       "DENY": "не смог изменить"
     },
-    "about": "о {{name}}",
+    "about": "касается: {{name}}",
     "bulk": "сразу {{count}}",
     "denyReason": {
       "past_frozen": "встреча уже прошла"

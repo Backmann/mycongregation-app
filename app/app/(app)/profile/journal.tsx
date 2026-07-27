@@ -279,6 +279,7 @@ function readValue(
   v: unknown,
   names: Record<string, string>,
   t: (k: string, o?: Record<string, unknown>) => string,
+  language: string,
 ): string | null {
   if (v === null || v === undefined || v === '') return t('journal.noValue');
   if (typeof v === 'string') {
@@ -287,8 +288,21 @@ function readValue(
     if (names[v]) return names[v];
     const word = t(`journal.values.${v}`, { defaultValue: '' });
     if (word) return word;
+    // The kinds of special event are already named for the screens that show
+    // them; the journal was printing the raw `circuit_overseer_visit` beside
+    // them. One dictionary, read from both places, rather than a second copy
+    // that drifts.
+    const eventKind = t(`specialEvents.types.${v}`, { defaultValue: '' });
+    if (eventKind) return eventKind;
     // A bare ISO date reads better as a date.
-    if (/^\d{4}-\d{2}-\d{2}$/.test(v)) return dayjs(v).format('D MMMM YYYY');
+    // Dates were coming out in English — «4 August 2026» in a Russian
+    // journal — because this one call never got the language the rest of the
+    // screen already uses.
+    if (/^\d{4}-\d{2}-\d{2}$/.test(v)) {
+      return dayjs(v).locale(language).format('D MMMM YYYY');
+    }
+    // 'HH:MM:SS' from a time column: the seconds are noise.
+    if (/^\d{2}:\d{2}(:\d{2})?$/.test(v)) return v.slice(0, 5);
     return v;
   }
   if (typeof v === 'number' || typeof v === 'boolean') return String(v);
@@ -397,8 +411,8 @@ function Row({
       const isCreate = entry.action === 'CREATE';
       changes.push({
         label,
-        was: isCreate ? null : readValue(entry.before?.[field], names, t),
-        now: readValue(entry.detail?.[field], names, t),
+        was: isCreate ? null : readValue(entry.before?.[field], names, t, language),
+        now: readValue(entry.detail?.[field], names, t, language),
         valuesKept: hadWas || hadNow,
       });
     }
@@ -412,7 +426,7 @@ function Row({
         // These are already spoken in the tail above; saying them twice reads
         // as a stutter.
         if (HANDLED_DETAIL.has(key)) continue;
-        const shown = readValue(value, names, t);
+        const shown = readValue(value, names, t, language);
         if (shown === null || shown === t('journal.noValue')) continue;
         changes.push({
           label: t(`journal.fieldNames.${key}`, { defaultValue: key }),
