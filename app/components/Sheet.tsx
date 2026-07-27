@@ -174,13 +174,29 @@ export function Sheet({
                 </Pressable>
               )}
             </View>
-            <ScrollView
-              style={[styles.bottomScroll, cardHeight ? { flex: 1 } : null]}
-              contentContainerStyle={styles.bottomBody}
-              keyboardShouldPersistTaps="handled"
-            >
-              {children}
-            </ScrollView>
+            {fills ? (
+              // NOT wrapped in a scroller.
+              //
+              // A caller that asks for `fills` brings its own scrolling
+              // content — the assignment form is a ScrollView itself. Wrapping
+              // one scroller in another repeats the very deadlock this prop
+              // exists to break, just a level deeper: the outer fills the
+              // card, and the inner then asks a scrolling content container
+              // for a height it does not have. The card renders, the body
+              // comes out empty. That is exactly what happened.
+              //
+              // So when the content scrolls itself, the shell only gives it
+              // the room.
+              <View style={styles.fillBody}>{children}</View>
+            ) : (
+              <ScrollView
+                style={styles.bottomScroll}
+                contentContainerStyle={styles.bottomBody}
+                keyboardShouldPersistTaps="handled"
+              >
+                {children}
+              </ScrollView>
+            )}
             {footer ? <View style={styles.footer}>{footer}</View> : null}
           </View>
         </View>
@@ -264,6 +280,7 @@ const styles = StyleSheet.create({
   // pushed the footer off the bottom of the screen. Because the shell scrolls,
   // the content inside it must not bring its own scroller.
   bottomScroll: { flexShrink: 1, flexGrow: 0 },
+  fillBody: { flex: 1 },
   bottomBody: { paddingHorizontal: 16, paddingTop: 4, paddingBottom: 10 },
   header: {
     flexDirection: "row",
