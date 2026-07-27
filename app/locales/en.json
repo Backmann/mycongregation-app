@@ -2555,7 +2555,8 @@
       "notRegistered": "The key was issued but the server did not accept it",
       "registered": "This device receives notifications",
       "reason": "Reason: {{error}}",
-      "androidHint": "On Android this usually means the build has no Firebase configuration. It takes a rebuild — an over-the-air update cannot fix it."
+      "androidHint": "On Android this usually means the build has no Firebase configuration. It takes a rebuild — an over-the-air update cannot fix it.",
+      "webWhere": "Turn them on in Profile → Notifications in the browser."
     }
   }
 }

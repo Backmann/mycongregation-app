@@ -2555,7 +2555,8 @@
       "notRegistered": "Der Schlüssel wurde ausgegeben, aber der Server hat ihn abgelehnt",
       "registered": "Dieses Gerät erhält Benachrichtigungen",
       "reason": "Grund: {{error}}",
-      "androidHint": "Unter Android fehlt dann meist die Firebase-Konfiguration im Build. Das erfordert einen neuen Build; ein Over-the-Air-Update hilft hier nicht."
+      "androidHint": "Unter Android fehlt dann meist die Firebase-Konfiguration im Build. Das erfordert einen neuen Build; ein Over-the-Air-Update hilft hier nicht.",
+      "webWhere": "Einschalten unter Profil → Benachrichtigungen im Browser."
     }
   }
 }

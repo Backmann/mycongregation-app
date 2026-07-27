@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   Platform,
   ScrollView,
@@ -18,6 +18,11 @@ import {
 } from '../../../lib/api';
 import { LoadError } from '../../../components/LoadError';
 import { PushState, usePushState } from '../../../lib/push-notifications';
+import {
+  getWebPushStatus,
+  isIosWithoutStandalone,
+  WebPushStatus,
+} from '../../../lib/web-push';
 import { notify } from '../../../lib/error-bus';
 
 /**
@@ -31,6 +36,65 @@ import { notify } from '../../../lib/error-bus';
 function DeviceState() {
   const { t } = useTranslation();
   const state: PushState = usePushState();
+
+  // On the web — which is what an iPhone or iPad runs, since the app there is
+  // the site added to the Home Screen — notifications travel a DIFFERENT road:
+  // a service worker and a browser subscription, not a device token. The
+  // banner only knew the native road, so it sat at «Проверяем…» for ever and
+  // told nobody anything. It now asks the road this device is actually on.
+  const [web, setWeb] = useState<WebPushStatus | null>(null);
+  useEffect(() => {
+    if (Platform.OS !== 'web') return;
+    let cancelled = false;
+    getWebPushStatus().then((s) => {
+      if (!cancelled) setWeb(s);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (Platform.OS === 'web') {
+    const iosNeedsHomeScreen = isIosWithoutStandalone();
+    const ok = web === 'subscribed';
+    const line =
+      web === null
+        ? t('notificationPrefs.device.idle')
+        : web === 'subscribed'
+          ? t('profile.webPush.enabled')
+          : web === 'denied'
+            ? t('profile.webPush.denied')
+            : web === 'unsupported'
+              ? t('profile.webPush.unsupported')
+              : web === 'unconfigured'
+                ? t('profile.webPush.unconfigured')
+                : t('profile.webPush.disabled');
+    return (
+      <View style={[styles.deviceCard, ok && styles.deviceCardOk]}>
+        <View style={styles.deviceHead}>
+          <Ionicons
+            name={ok ? 'checkmark-circle' : 'alert-circle-outline'}
+            size={17}
+            color={ok ? '#16a34a' : '#b45309'}
+          />
+          <Text style={styles.deviceTitle}>
+            {t('notificationPrefs.device.title')}
+          </Text>
+        </View>
+        <Text style={styles.deviceLine}>{line}</Text>
+        {/* On iOS this is not a preference but a precondition: Safari hands
+            push only to a site opened from the Home Screen. */}
+        {iosNeedsHomeScreen ? (
+          <Text style={styles.deviceReason}>{t('profile.webPush.iosHint')}</Text>
+        ) : null}
+        {!ok && web !== null && web !== 'unsupported' ? (
+          <Text style={styles.deviceReason}>
+            {t('notificationPrefs.device.webWhere')}
+          </Text>
+        ) : null}
+      </View>
+    );
+  }
 
   const ok = state.kind === 'registered';
   const line = {
