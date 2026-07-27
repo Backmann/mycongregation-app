@@ -72,8 +72,12 @@ export default function AppLayout() {
         name="home"
         options={{
           title: t('tabs.home'),
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="home" color={color} size={size} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons
+              name="home"
+              color={focused ? color : '#185FA5'}
+              size={size}
+            />
           ),
         }}
       />
@@ -81,8 +85,12 @@ export default function AppLayout() {
         name="schedule"
         options={{
           title: t('tabs.schedule'),
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="calendar" color={color} size={size} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons
+              name="calendar"
+              color={focused ? color : '#BA7517'}
+              size={size}
+            />
           ),
         }}
       />
@@ -91,8 +99,12 @@ export default function AppLayout() {
         options={{
           title: t('tabs.publishers'),
           href: canSeeDirectory ? undefined : null,
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="people" color={color} size={size} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons
+              name="people"
+              color={focused ? color : '#7F77DD'}
+              size={size}
+            />
           ),
         }}
       />
@@ -110,8 +122,12 @@ export default function AppLayout() {
         name="cart"
         options={{
           title: t('tabs.cart'),
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="navigate" color={color} size={size} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons
+              name="navigate"
+              color={focused ? color : '#1D9E75'}
+              size={size}
+            />
           ),
         }}
       />
