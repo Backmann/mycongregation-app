@@ -1537,7 +1537,21 @@
     "readinessTitle": "Ещё не назначено",
     "gapAccommodation": "жильё",
     "gapLunches": "обед не назначен на дней: {{count}}",
-    "gapPartners": "без напарника выходов: {{count}}"
+    "gapPartners": "без напарника выходов: {{count}}",
+    "never": {
+      "lunch": "ещё не принимал",
+      "lunch_box": "ещё не готовил",
+      "field_service": "ещё не служил",
+      "pastoral": "ещё не посещал",
+      "accommodation": "ещё не принимал"
+    },
+    "total": {
+      "lunch": "принимал: {{count}}",
+      "lunch_box": "готовил: {{count}}",
+      "field_service": "служил: {{count}}",
+      "pastoral": "посещал: {{count}}",
+      "accommodation": "принимал: {{count}}"
+    }
   },
   "witnessing": {
     "youAreAssigned": "Вы назначены на этот слот",

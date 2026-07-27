@@ -1533,7 +1533,21 @@
     "readinessTitle": "Noch offen",
     "gapAccommodation": "Unterkunft",
     "gapLunches": "Tage ohne Mittagessen: {{count}}",
-    "gapPartners": "Einsätze ohne Partner: {{count}}"
+    "gapPartners": "Einsätze ohne Partner: {{count}}",
+    "never": {
+      "lunch": "noch nie bewirtet",
+      "lunch_box": "noch nie vorbereitet",
+      "field_service": "noch nie mitgegangen",
+      "pastoral": "noch kein Besuch",
+      "accommodation": "noch nie beherbergt"
+    },
+    "total": {
+      "lunch": "bewirtet: {{count}}",
+      "lunch_box": "vorbereitet: {{count}}",
+      "field_service": "mitgegangen: {{count}}",
+      "pastoral": "Besuche: {{count}}",
+      "accommodation": "beherbergt: {{count}}"
+    }
   },
   "witnessing": {
     "youAreAssigned": "Sie sind diesem Slot zugeteilt",

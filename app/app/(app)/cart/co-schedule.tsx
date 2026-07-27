@@ -156,15 +156,29 @@ export default function CoScheduleScreen() {
     enabled: canEditCoSchedule,
     staleTime: 60 * 1000,
   });
-  const hostMeta = (kind: 'lunch' | 'lunch_box') => {
+  /**
+   * What this person has already done — of THIS kind, and no other.
+   *
+   * Hosting the overseer for lunch three times says nothing about whether
+   * anyone has gone out in the ministry with him, so the kinds are counted
+   * apart and shown apart. Whoever has not been asked for the longest rises to
+   * the top of the list.
+   *
+   * It informs, it does not forbid. Sometimes the same brother really is the
+   * right one — he lives by the hall, he is the one with a car — and the
+   * choice stays with whoever is planning the visit.
+   */
+  const hostMeta = (
+    kind: 'lunch' | 'lunch_box' | 'field_service' | 'pastoral' | 'accommodation',
+  ) => {
     const stats = hostStatsQuery.data ?? [];
     const of = (id: string): CoHostStat | undefined =>
       stats.find((h) => h.publisherId === id && h.kind === kind);
     return {
       rowMeta: (id: string) => {
         const st = of(id);
-        if (!st || st.total === 0) return t('coVisit.hostNever');
-        const bits = [t('coVisit.hostTotal', { count: st.total })];
+        if (!st || st.total === 0) return t(`coVisit.never.${kind}`);
+        const bits = [t(`coVisit.total.${kind}`, { count: st.total })];
         if (st.lastDate)
           bits.push(t('coVisit.hostLast', { date: fmtShort(st.lastDate) }));
         if (st.nextDate)
@@ -321,9 +335,14 @@ export default function CoScheduleScreen() {
       );
     }
 
+    // Going out together, husband and wife ARE each other's company — asking
+    // for a third name would invent a gap that does not exist. That is what
+    // withWife records, and it is why this line reported one missing partner
+    // for an outing that was fully arranged.
     const withoutPartner = list.filter(
       (i) =>
         i.kind === 'field_service' &&
+        !i.withWife &&
         !(i.assigneeName ?? i.assigneeText ?? '').trim(),
     ).length;
     if (withoutPartner > 0) {
@@ -1235,6 +1254,7 @@ export default function CoScheduleScreen() {
             <PublisherSelector
               boxed
               label={t('coVisit.accHost')}
+              {...hostMeta('accommodation')}
               value={visit.coAccommodationPublisherId}
               onChange={(id) =>
                 accM.mutate({
@@ -1557,6 +1577,7 @@ export default function CoScheduleScreen() {
                     <PublisherSelector
                       boxed
                       label={t('coVisit.accompanying')}
+                      {...hostMeta('field_service')}
                       value={form.assigneePublisherId}
                       genderFilter={form.forWife ? 'sister' : 'brother'}
                       onChange={(id) =>
@@ -1634,6 +1655,7 @@ export default function CoScheduleScreen() {
                           <PublisherSelector
                             boxed
                             label={t('coVisit.accompanying')}
+                            {...hostMeta('field_service')}
                             value={form.wifePartnerPublisherId}
                             genderFilter="sister"
                             onChange={(id) =>
@@ -1738,6 +1760,7 @@ export default function CoScheduleScreen() {
                   <PublisherSelector
                     boxed
                     label={t('coVisit.pastoralElder')}
+                    {...hostMeta('pastoral')}
                     value={form.assigneePublisherId}
                     appointmentFilter="elder"
                     onChange={(id) =>

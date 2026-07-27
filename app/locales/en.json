@@ -1533,7 +1533,21 @@
     "readinessTitle": "Still to arrange",
     "gapAccommodation": "accommodation",
     "gapLunches": "days without a lunch: {{count}}",
-    "gapPartners": "outings without a partner: {{count}}"
+    "gapPartners": "outings without a partner: {{count}}",
+    "never": {
+      "lunch": "has not hosted yet",
+      "lunch_box": "has not prepared one yet",
+      "field_service": "has not been out yet",
+      "pastoral": "has not called yet",
+      "accommodation": "has not put them up yet"
+    },
+    "total": {
+      "lunch": "hosted: {{count}}",
+      "lunch_box": "prepared: {{count}}",
+      "field_service": "been out: {{count}}",
+      "pastoral": "calls: {{count}}",
+      "accommodation": "put them up: {{count}}"
+    }
   },
   "witnessing": {
     "youAreAssigned": "You're assigned to this slot",
