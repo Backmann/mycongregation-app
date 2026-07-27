@@ -1416,7 +1416,7 @@
     "overseer": "Kreisaufseher",
     "wife": "Frau",
     "period": "Besuchszeitraum",
-    "midweekDay": "Versammlung unter der Woche",
+    "midweekDay": "Zusammenkunft unter der Woche",
     "openMeetingProgram": "Programm im Zeitplan",
     "fieldServiceTitle": "Zusammenkunft für den Predigtdienst",
     "addMeeting": "Treffen hinzufügen",
@@ -1527,7 +1527,9 @@
     "pageForOverseer": "Programm für den Kreisaufseher",
     "midweekMeeting": "Zusammenkunft (Woche)",
     "weekendMeeting": "Zusammenkunft (Wochenende)",
-    "partialLoad": "Einige Wochen konnten nicht geladen werden — Themen sind möglicherweise unvollständig."
+    "partialLoad": "Einige Wochen konnten nicht geladen werden — Themen sind möglicherweise unvollständig.",
+    "strandedTitle": "Außerhalb der Besuchstage",
+    "strandedHint": "Diese Punkte liegen an Tagen, die der Besuch nicht mehr umfasst — der Zeitraum wurde gekürzt. Sie erscheinen im PDF, sind im Plan aber unsichtbar. Öffne sie zum Verschieben oder Löschen."
   },
   "witnessing": {
     "youAreAssigned": "Sie sind diesem Slot zugeteilt",

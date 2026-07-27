@@ -1527,7 +1527,9 @@
     "pageForOverseer": "Program for the circuit overseer",
     "midweekMeeting": "Congregation meeting (midweek)",
     "weekendMeeting": "Congregation meeting (weekend)",
-    "partialLoad": "Some weeks failed to load — meeting themes may be incomplete."
+    "partialLoad": "Some weeks failed to load — meeting themes may be incomplete.",
+    "strandedTitle": "Outside the visit days",
+    "strandedHint": "These items sit on days the visit no longer covers — the period was shortened. They still reach the PDF but are invisible on the schedule. Open one to move or delete it."
   },
   "witnessing": {
     "youAreAssigned": "You're assigned to this slot",

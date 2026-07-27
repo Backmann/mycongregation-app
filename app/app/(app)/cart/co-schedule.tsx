@@ -272,6 +272,23 @@ export default function CoScheduleScreen() {
 
 
   const days = useMemo(() => (visit ? visitDays(visit) : []), [visit]);
+
+  // The congregation's own meetings during the visit. Built by the same
+  // function the PDF uses, so the screen and the printed programme can no
+  // longer disagree about the same visit.
+  const visitMeetingsQuery = useQuery({
+    queryKey: [
+      'co-visit-meetings',
+      visit?.id ?? null,
+      visit?.coMidweekDow ?? null,
+      settingsOverview?.effective?.midweekDow ?? null,
+    ],
+    queryFn: () => buildVisitMeetings(),
+    enabled: !!visit && !!settingsOverview?.effective,
+    staleTime: 5 * 60 * 1000,
+  });
+  const visitMeetings = visitMeetingsQuery.data ?? [];
+
   // The wife's schedule mirrors the overseer's joint field-service day, so
   // that day shows on both sides from a single source of truth (no dupes).
   const isSynced = (_it: CoVisitItem) => false;
@@ -594,6 +611,10 @@ export default function CoScheduleScreen() {
 
   // Collect the congregation meetings (midweek/weekend) that fall inside the
   // visit dates, with the CO's talk titles pulled from the week's schedule.
+  //
+  // This used to be built only when printing, so the PDF listed the meetings
+  // and the screen did not — the two disagreed about the same visit, and the
+  // day a brother gives the service talk looked empty on the phone.
   const buildVisitMeetings = async (): Promise<CoMeetingInfo[]> => {
     const eff = settingsOverview?.effective;
     if (!eff) return [];
@@ -961,6 +982,12 @@ export default function CoScheduleScreen() {
           a.sortOrder - b.sortOrder,
       );
     const activeDays = days; // show every day, even empty ones, while building
+    // Shortening a visit leaves items on days that are no longer shown. They
+    // stayed in the database and in the PDF while disappearing from the
+    // screen, so the programme printed things nobody could see or correct.
+    // They are gathered here instead of being silently dropped.
+    const dayset = new Set(days);
+    const stranded = all.filter((i) => !dayset.has(i.itemDate));
     return (
       <View style={styles.section}>
         {activeDays.length === 0 ? (
@@ -994,6 +1021,32 @@ export default function CoScheduleScreen() {
                   </Pressable>
                 ) : null}
               </View>
+              {/* Read-only: the meeting belongs to the congregation's
+                  schedule and is edited there, not here. */}
+              {visitMeetings
+                .filter((m) => m.date === day)
+                .map((m) => (
+                  <View key={`${m.kind}-${m.date}`} style={styles.meetingRow}>
+                    <Ionicons
+                      name="people-outline"
+                      size={15}
+                      color="#0369a1"
+                    />
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.meetingTitle}>
+                        {m.kind === 'midweek'
+                          ? t('coVisit.midweekMeeting')
+                          : t('coVisit.weekendMeeting')}
+                        {m.time ? ` · ${m.time}` : ''}
+                      </Text>
+                      {m.talks.length > 0 ? (
+                        <Text style={styles.meetingTalks}>
+                          {m.talks.join(' · ')}
+                        </Text>
+                      ) : null}
+                    </View>
+                  </View>
+                ))}
               {all
                 .filter((i) => i.itemDate === day)
                 .map((it) => (
@@ -1047,6 +1100,34 @@ export default function CoScheduleScreen() {
             </View>
           ))
         )}
+        {stranded.length > 0 ? (
+          <View style={styles.strandedCard}>
+            <View style={styles.strandedHead}>
+              <Ionicons name="alert-circle-outline" size={15} color="#b45309" />
+              <Text style={styles.strandedTitle}>
+                {t('coVisit.strandedTitle')}
+              </Text>
+            </View>
+            <Text style={styles.strandedHint}>{t('coVisit.strandedHint')}</Text>
+            {stranded.map((it) => (
+              <Pressable
+                key={it.id}
+                disabled={!canEditCoSchedule}
+                style={({ pressed }) => [
+                  styles.strandedRow,
+                  pressed && canEditCoSchedule && styles.pressed,
+                ]}
+                onPress={() => canEditCoSchedule && openEdit(it)}
+              >
+                <Text style={styles.strandedDate}>{fmt(it.itemDate)}</Text>
+                <Text style={styles.strandedWhat}>
+                  {t(`coVisit.short${it.kind === 'field_service' ? 'FieldService' : it.kind === 'lunch' ? 'Lunch' : it.kind === 'lunch_box' ? 'LunchBox' : it.kind === 'pastoral' ? 'Pastoral' : it.kind === 'pioneers' ? 'Pioneers' : it.kind === 'elders' ? 'Elders' : 'Docs'}`)}
+                  {it.startTime ? ` · ${it.startTime}` : ''}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -1649,6 +1730,48 @@ export default function CoScheduleScreen() {
 }
 
 const styles = StyleSheet.create({
+  meetingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 9,
+    paddingHorizontal: 10,
+    borderRadius: 10,
+    backgroundColor: '#f0f9ff',
+    marginBottom: 6,
+  },
+  meetingTitle: {
+    fontSize: 13.5,
+    color: '#0c4a6e',
+    fontWeight: '600',
+    fontFamily: 'Manrope_600SemiBold',
+  },
+  meetingTalks: { fontSize: 12, color: '#0369a1', marginTop: 1 },
+  strandedCard: {
+    marginTop: 12,
+    padding: 12,
+    borderRadius: 12,
+    backgroundColor: '#fffbeb',
+    borderWidth: 1,
+    borderColor: '#fde68a',
+    gap: 6,
+  },
+  strandedHead: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  strandedTitle: {
+    fontSize: 13,
+    color: '#b45309',
+    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
+  },
+  strandedHint: { fontSize: 12, color: '#92400e', lineHeight: 17 },
+  strandedRow: { paddingVertical: 6 },
+  strandedDate: { fontSize: 12, color: '#92400e' },
+  strandedWhat: {
+    fontSize: 13.5,
+    color: '#0f172a',
+    fontWeight: '600',
+    fontFamily: 'Manrope_600SemiBold',
+  },
   container: { flex: 1, backgroundColor: '#f1f5f9' },
   content: { padding: 16, gap: 12 },
   center: {
