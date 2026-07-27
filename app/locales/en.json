@@ -1529,7 +1529,11 @@
     "weekendMeeting": "Congregation meeting (weekend)",
     "partialLoad": "Some weeks failed to load — meeting themes may be incomplete.",
     "strandedTitle": "Outside the visit days",
-    "strandedHint": "These items sit on days the visit no longer covers — the period was shortened. They still reach the PDF but are invisible on the schedule. Open one to move or delete it."
+    "strandedHint": "These items sit on days the visit no longer covers — the period was shortened. They still reach the PDF but are invisible on the schedule. Open one to move or delete it.",
+    "readinessTitle": "Still to arrange",
+    "gapAccommodation": "accommodation",
+    "gapLunches": "days without a lunch: {{count}}",
+    "gapPartners": "outings without a partner: {{count}}"
   },
   "witnessing": {
     "youAreAssigned": "You're assigned to this slot",

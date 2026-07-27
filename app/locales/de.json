@@ -1529,7 +1529,11 @@
     "weekendMeeting": "Zusammenkunft (Wochenende)",
     "partialLoad": "Einige Wochen konnten nicht geladen werden — Themen sind möglicherweise unvollständig.",
     "strandedTitle": "Außerhalb der Besuchstage",
-    "strandedHint": "Diese Punkte liegen an Tagen, die der Besuch nicht mehr umfasst — der Zeitraum wurde gekürzt. Sie erscheinen im PDF, sind im Plan aber unsichtbar. Öffne sie zum Verschieben oder Löschen."
+    "strandedHint": "Diese Punkte liegen an Tagen, die der Besuch nicht mehr umfasst — der Zeitraum wurde gekürzt. Sie erscheinen im PDF, sind im Plan aber unsichtbar. Öffne sie zum Verschieben oder Löschen.",
+    "readinessTitle": "Noch offen",
+    "gapAccommodation": "Unterkunft",
+    "gapLunches": "Tage ohne Mittagessen: {{count}}",
+    "gapPartners": "Einsätze ohne Partner: {{count}}"
   },
   "witnessing": {
     "youAreAssigned": "Sie sind diesem Slot zugeteilt",

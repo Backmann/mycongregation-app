@@ -289,6 +289,50 @@ export default function CoScheduleScreen() {
   });
   const visitMeetings = visitMeetingsQuery.data ?? [];
 
+  /**
+   * What still has nobody's name on it.
+   *
+   * A visit schedule is ready when the overseer has somewhere to stay, every
+   * day has its lunch, and every outing has a partner. Until now the only way
+   * to know was to read the whole screen and hold it in your head — and a
+   * missing partner is exactly the kind of thing that is noticed on the day.
+   *
+   * Only facts, and only the ones this screen owns: nothing here scolds, and a
+   * visit with nothing outstanding says nothing at all.
+   */
+  const readiness = useMemo(() => {
+    const list = items ?? [];
+    const gaps: string[] = [];
+
+    const accommodationSet =
+      !!visit?.coAccommodationPublisherId ||
+      !!visit?.coAccommodationAddress?.trim();
+    if (!accommodationSet) gaps.push(t('coVisit.gapAccommodation'));
+
+    const lunchDays = new Set(
+      list
+        .filter((i) => i.kind === 'lunch' || i.kind === 'lunch_box')
+        .map((i) => i.itemDate),
+    );
+    const daysWithoutLunch = days.filter((d) => !lunchDays.has(d));
+    if (days.length > 0 && daysWithoutLunch.length > 0) {
+      gaps.push(
+        t('coVisit.gapLunches', { count: daysWithoutLunch.length }),
+      );
+    }
+
+    const withoutPartner = list.filter(
+      (i) =>
+        i.kind === 'field_service' &&
+        !(i.assigneeName ?? i.assigneeText ?? '').trim(),
+    ).length;
+    if (withoutPartner > 0) {
+      gaps.push(t('coVisit.gapPartners', { count: withoutPartner }));
+    }
+
+    return gaps;
+  }, [items, days, visit, t]);
+
   // The wife's schedule mirrors the overseer's joint field-service day, so
   // that day shows on both sides from a single source of truth (no dupes).
   const isSynced = (_it: CoVisitItem) => false;
@@ -1163,6 +1207,20 @@ export default function CoScheduleScreen() {
         />
       </View>
 
+      {/* Only for those who can actually close the gaps; for everyone else it
+          would be a list of other people's homework. */}
+      {canEditCoSchedule && readiness.length > 0 ? (
+        <View style={styles.readinessCard}>
+          <View style={styles.readinessHead}>
+            <Ionicons name="list-outline" size={15} color="#92400e" />
+            <Text style={styles.readinessTitle}>
+              {t('coVisit.readinessTitle')}
+            </Text>
+          </View>
+          <Text style={styles.readinessBody}>{readiness.join(' · ')}</Text>
+        </View>
+      ) : null}
+
       <View style={accStyles.card}>
         <View style={accStyles.head}>
           <Ionicons name="home-outline" size={17} color="#0e7490" />
@@ -1730,6 +1788,24 @@ export default function CoScheduleScreen() {
 }
 
 const styles = StyleSheet.create({
+  readinessCard: {
+    padding: 12,
+    borderRadius: 12,
+    backgroundColor: '#fffbeb',
+    borderWidth: 1,
+    borderColor: '#fde68a',
+    gap: 5,
+  },
+  readinessHead: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  readinessTitle: {
+    fontSize: 12,
+    color: '#92400e',
+    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
+    textTransform: 'uppercase',
+    letterSpacing: 0.3,
+  },
+  readinessBody: { fontSize: 13.5, color: '#78350f', lineHeight: 19 },
   meetingRow: {
     flexDirection: 'row',
     alignItems: 'center',
