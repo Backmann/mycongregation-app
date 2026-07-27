@@ -1963,6 +1963,8 @@ export interface MyPublisherLite {
   firstName: string;
   lastName: string;
   pioneerType: string | null;
+  /** Own appointment — not private; the roster shows it to everyone anyway. */
+  appointment: string | null;
   serviceGroupId: string | null;
   /** Own contacts — the publisher keeps these up to date themselves. */
   mobilePhone: string | null;

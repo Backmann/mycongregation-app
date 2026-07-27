@@ -167,6 +167,20 @@ function GreetingHeader() {
     month: 'long',
   });
 
+  // «До отмены» — единственный случай без конца, и только он заслуживает
+  // знака бесконечности.
+  const endlessAux = !!auxStatus?.current?.untilCancelled;
+
+  // Своё назначение, если оно есть. Только своё и только здесь: главная —
+  // это экран про себя, а не про собрание, и у сестёр тут просто ничего.
+  const appointment = myPublisher?.appointment ?? 'none';
+  const appointmentLabel =
+    appointment === 'elder'
+      ? t('publishers.tags.elder')
+      : appointment === 'ministerial_servant'
+        ? t('publishers.tags.ms')
+        : null;
+
   // Тип пионерского служения — это СОСТОЯНИЕ: месяцы к нему не относятся.
   // Подсобное — это СРОК, и без срока значок почти ничего не сообщает.
   const pioneerType = myPublisher?.pioneerType ?? 'none';
@@ -202,19 +216,38 @@ function GreetingHeader() {
         {name ? `, ${name}` : ''}
       </Text>
       <Text style={styles.greetingDate}>{dateLine}</Text>
-      {nowLabel ? (
-        <View style={styles.auxBadge}>
-          <Ionicons name="infinite" size={13} color="#0F6E56" />
-          <Text style={styles.auxBadgeText}>{nowLabel}</Text>
-        </View>
-      ) : aheadLabel ? (
-        <View style={[styles.auxBadge, styles.auxBadgeAhead]}>
-          <Ionicons name="calendar-outline" size={13} color="#3F6C8F" />
-          <Text style={[styles.auxBadgeText, styles.auxBadgeAheadText]}>
-            {aheadLabel}
-          </Text>
-        </View>
-      ) : null}
+      <View style={styles.badgeRow}>
+        {appointmentLabel ? (
+          <View style={[styles.auxBadge, styles.appointmentBadge]}>
+            <Ionicons name="ribbon-outline" size={13} color="#4C4088" />
+            <Text style={[styles.auxBadgeText, styles.appointmentBadgeText]}>
+              {appointmentLabel}
+            </Text>
+          </View>
+        ) : null}
+        {nowLabel ? (
+          <View style={styles.auxBadge}>
+            {/* Бесконечность — только там, где она правда что-то значит:
+                подсобное служение «до отмены» не имеет конца. У общего пионера
+                конца тоже нет, но он и не срок, а состояние; у подсобного со
+                сроком конец есть, и знак бесконечности рядом с ним просто
+                неправда. Раньше он стоял у всех сразу и не сообщал ничего. */}
+            <Ionicons
+              name={endlessAux ? 'infinite' : 'leaf-outline'}
+              size={13}
+              color="#0F6E56"
+            />
+            <Text style={styles.auxBadgeText}>{nowLabel}</Text>
+          </View>
+        ) : aheadLabel ? (
+          <View style={[styles.auxBadge, styles.auxBadgeAhead]}>
+            <Ionicons name="calendar-outline" size={13} color="#3F6C8F" />
+            <Text style={[styles.auxBadgeText, styles.auxBadgeAheadText]}>
+              {aheadLabel}
+            </Text>
+          </View>
+        ) : null}
+      </View>
     </View>
   );
 }
@@ -1256,18 +1289,22 @@ const styles = StyleSheet.create({
     marginTop: 2,
     textTransform: 'capitalize',
   },
+  // Два значка стоят рядом и переносятся на узком экране, а не жмутся.
+  badgeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 8 },
   auxBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     alignSelf: 'flex-start',
     gap: 5,
-    marginTop: 8,
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 999,
     backgroundColor: '#E1F5EE',
   },
   auxBadgeText: { fontSize: 12, fontWeight: '600', color: '#0F6E56' },
+  // Назначение — свой тихий цвет, чтобы не спорить с пионерским значком.
+  appointmentBadge: { backgroundColor: '#EDEAF7' },
+  appointmentBadgeText: { color: '#4C4088' },
   // Период ещё впереди — тот же значок, но приглушённый: это не «сейчас».
   auxBadgeAhead: { backgroundColor: '#E8EFF6' },
   auxBadgeAheadText: { color: '#3F6C8F' },
