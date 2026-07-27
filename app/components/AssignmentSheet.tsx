@@ -1,14 +1,12 @@
 import {
-  Modal,
   Platform,
   Pressable,
   StyleSheet,
   Text,
   useWindowDimensions,
-  View,
 } from "react-native";
 import { useEffect, useState } from "react";
-import { useBottomRoom } from "./Sheet";
+import { Sheet } from "./Sheet";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import {
@@ -57,10 +55,7 @@ export function AssignmentSheet({
   coPicker,
 }: Props) {
   const { t } = useTranslation();
-  const { width, height } = useWindowDimensions();
-  // The same rule the other two shells use: room for the navigation bar, or
-  // for the keyboard while it is up. Android only — see useBottomRoom.
-  const bottomRoom = useBottomRoom();
+  const { width } = useWindowDimensions();
   // Wide screens (desktop web) get a centered dialog; narrow stays a bottom sheet.
   const centered = Platform.OS === "web" && width >= 700;
   const queryClient = useQueryClient();
@@ -192,181 +187,115 @@ export function AssignmentSheet({
   const isSong = !!active && SONG_KEYS.includes(active.partKey);
 
   return (
-    <Modal
+    <Sheet
       visible={open}
-      transparent
-      animationType={centered ? "fade" : "slide"}
-      onRequestClose={onClose}
+      onClose={onClose}
+      // Its own Modal, backdrop, wrappers, header and card styles are gone:
+      // this was the THIRD hand-rolled shell in the app, and being third is
+      // exactly why fixes made to the other two never reached it. Now there is
+      // one place where a window is a window.
+      variant={centered ? "centered" : "bottom"}
+      fills
+      title={active ? active.partTitle || t("schedule.sheet.title") : ""}
+      closeLabel={t("common.close")}
+      action={
+        onNext ? (
+          <Pressable onPress={onNext} hitSlop={8} style={styles.nextBtn}>
+            <Text style={styles.nextText}>{t("schedule.sheet.next")}</Text>
+          </Pressable>
+        ) : null
+      }
     >
-      <Pressable style={styles.backdrop} onPress={onClose} />
-      <View
-        style={[
-          centered ? styles.centerWrap : styles.bottomWrap,
-          // Height and width in PIXELS, not flex and not percentages.
-          //
-          // Read out of react-native's own Modal source: its inner container
-          // is positioned absolutely with only `top` and `left` set, plus
-          // flex: 1 — no bottom, no height. It therefore inherits its size
-          // from the native modal host, and on Android running edge-to-edge
-          // that host reports none. Everything below it then has no height to
-          // share: flex: 1 stretched inside something of zero height, and
-          // maxHeight: '90%' had nothing to be ninety percent OF. That is why
-          // the sheet collapsed to a strip of header and button, and why two
-          // earlier fixes — paddings, then flex: 1 — could not reach it.
-          //
-          // Asking the window for its size sidesteps the whole chain: a number
-          // cannot fail to resolve.
-          { width, height },
-        ]}
-        pointerEvents="box-none"
-      >
-        <View
-          style={[
-            styles.sheet,
-            { marginBottom: bottomRoom },
-            // A REAL height for the card, not one it works out from its own
-            // content — this is what finally breaks the deadlock.
-            //
-            // Inside the card sits AssignmentForm, whose root is a ScrollView
-            // styled flex: 1. The card had only maxHeight: '90%', so it sized
-            // itself to its content. Content and container were therefore each
-            // waiting for the other: the scroller wanted a height to fill, the
-            // card wanted content to measure. Nobody gave, the scrollable area
-            // collapsed to nothing, and all that remained was the header and
-            // the button — exactly what the screen showed.
-            //
-            // On the web flex: 1 resolves differently and the form simply
-            // expands, which is why Chrome on the SAME phone was fine while
-            // the app was not, and why three earlier fixes — paddings, then
-            // flex: 1, then pixel sizes on the wrapper — all missed: every one
-            // of them added height OUTSIDE the card, while the deadlock sits
-            // one level in.
-            //
-            // Height, not maxHeight: a maximum is still a ceiling to grow up
-            // to, and there is nothing to grow from.
-            centered
-              ? { height: Math.round(height * 0.85) }
-              : { height: Math.round(height * 0.9) },
-            centered ? styles.sheetCentered : styles.sheetBottom,
-          ]}
-        >
-          {centered ? null : <View style={styles.handleBar} />}
-          <View style={styles.header}>
-            <Text style={styles.title} numberOfLines={1}>
-              {active ? active.partTitle || t("schedule.sheet.title") : ""}
-            </Text>
-            <View
-              style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
-            >
-              {onNext ? (
-                <Pressable onPress={onNext} hitSlop={8} style={styles.nextBtn}>
-                  <Text style={styles.nextText}>
-                    {t("schedule.sheet.next")}
-                  </Text>
-                </Pressable>
-              ) : null}
-              <Pressable onPress={onClose} hitSlop={8} style={styles.closeBtn}>
-                <Text style={styles.closeText}>{t("common.close")}</Text>
+      {active ? (
+        isSong ? (
+          <SongPicker
+            key={active.id}
+            currentTitle={active.partTitle}
+            readOnly={!canEdit}
+            isSaving={updateMutation.isPending}
+            onSave={(pt) =>
+              updateMutation
+                .mutateAsync({ partTitle: pt ?? "" })
+                .then(() => onClose())
+            }
+          />
+        ) : (
+          <>
+            <AssignmentForm
+              key={active.id}
+              initial={{
+                weekStartDate: active.weekStartDate,
+                eventType: active.eventType,
+                partKey: active.partKey,
+                partOrder: active.partOrder,
+                partTitle: active.partTitle ?? undefined,
+                partDurationMin: active.partDurationMin ?? undefined,
+                publisherId: active.publisherId,
+                assistantPublisherId: active.assistantPublisherId,
+                publicTalkId: active.publicTalkId ?? null,
+                speakerName: active.speakerName ?? null,
+                speakerCongregation: active.speakerCongregation ?? null,
+                status: active.status,
+                notes: active.notes ?? undefined,
+              }}
+              onSubmit={(data: CreateAssignmentInput) =>
+                updateMutation.mutateAsync(data).then(() => onClose())
+              }
+              onInstantSave={
+                canEdit
+                  ? (patch) => updateMutation.mutateAsync(patch)
+                  : undefined
+              }
+              onCancel={onClose}
+              isSubmitting={updateMutation.isPending}
+              lockIdentity
+              circuitOverseer={circuitOverseer}
+              coPicker={coPicker}
+              readOnly={!canEdit}
+            />
+            {canEdit && (
+              <Pressable
+                style={({ pressed }) => [
+                  styles.unassignLink,
+                  pressed && styles.unassignLinkPressed,
+                  (unassignMutation.isPending || !active.publisherId) &&
+                    styles.unassignLinkDisabled,
+                ]}
+                onPress={confirmUnassign}
+                disabled={unassignMutation.isPending || !active.publisherId}
+              >
+                <Text style={styles.unassignLinkText}>
+                  {unassignMutation.isPending
+                    ? t("schedule.unassign.unassigning")
+                    : t("schedule.unassign.button")}
+                </Text>
               </Pressable>
-            </View>
-          </View>
-
-          {active ? (
-            isSong ? (
-              <SongPicker
-                key={active.id}
-                currentTitle={active.partTitle}
-                readOnly={!canEdit}
-                isSaving={updateMutation.isPending}
-                onSave={(pt) =>
-                  updateMutation
-                    .mutateAsync({ partTitle: pt ?? "" })
-                    .then(() => onClose())
-                }
-              />
-            ) : (
-              <>
-                <AssignmentForm
-                  key={active.id}
-                  initial={{
-                    weekStartDate: active.weekStartDate,
-                    eventType: active.eventType,
-                    partKey: active.partKey,
-                    partOrder: active.partOrder,
-                    partTitle: active.partTitle ?? undefined,
-                    partDurationMin: active.partDurationMin ?? undefined,
-                    publisherId: active.publisherId,
-                    assistantPublisherId: active.assistantPublisherId,
-                    publicTalkId: active.publicTalkId ?? null,
-                    speakerName: active.speakerName ?? null,
-                    speakerCongregation: active.speakerCongregation ?? null,
-                    status: active.status,
-                    notes: active.notes ?? undefined,
-                  }}
-                  onSubmit={(data: CreateAssignmentInput) =>
-                    updateMutation.mutateAsync(data).then(() => onClose())
-                  }
-                  onInstantSave={
-                    canEdit
-                      ? (patch) => updateMutation.mutateAsync(patch)
-                      : undefined
-                  }
-                  onCancel={onClose}
-                  isSubmitting={updateMutation.isPending}
-                  lockIdentity
-                  circuitOverseer={circuitOverseer}
-                  coPicker={coPicker}
-                  readOnly={!canEdit}
-                />
-                {canEdit && (
-                  <Pressable
-                    style={({ pressed }) => [
-                      styles.unassignLink,
-                      pressed && styles.unassignLinkPressed,
-                      (unassignMutation.isPending || !active.publisherId) &&
-                        styles.unassignLinkDisabled,
-                    ]}
-                    onPress={confirmUnassign}
-                    disabled={unassignMutation.isPending || !active.publisherId}
-                  >
-                    <Text style={styles.unassignLinkText}>
-                      {unassignMutation.isPending
-                        ? t("schedule.unassign.unassigning")
-                        : t("schedule.unassign.button")}
-                    </Text>
-                  </Pressable>
-                )}
-                {canEdit && isExtraPart && (
-                  <Pressable
-                    style={({ pressed }) => [
-                      styles.deletePartLink,
-                      pressed && styles.deletePartLinkPressed,
-                      removeMutation.isPending && styles.unassignLinkDisabled,
-                    ]}
-                    onPress={confirmDelete}
-                    disabled={removeMutation.isPending}
-                  >
-                    <Text style={styles.deletePartLinkText}>
-                      {removeMutation.isPending
-                        ? t("schedule.deletePart.deleting")
-                        : t("schedule.deletePart.button")}
-                    </Text>
-                  </Pressable>
-                )}
-              </>
-            )
-          ) : null}
-        </View>
-      </View>
-    </Modal>
+            )}
+            {canEdit && isExtraPart && (
+              <Pressable
+                style={({ pressed }) => [
+                  styles.deletePartLink,
+                  pressed && styles.deletePartLinkPressed,
+                  removeMutation.isPending && styles.unassignLinkDisabled,
+                ]}
+                onPress={confirmDelete}
+                disabled={removeMutation.isPending}
+              >
+                <Text style={styles.deletePartLinkText}>
+                  {removeMutation.isPending
+                    ? t("schedule.deletePart.deleting")
+                    : t("schedule.deletePart.button")}
+                </Text>
+              </Pressable>
+            )}
+          </>
+        )
+      ) : null}
+    </Sheet>
   );
 }
 
 const styles = StyleSheet.create({
-  backdrop: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(15,23,42,0.45)",
-  },
   // flex: 1, НЕ absoluteFillObject.
   //
   // Растянутый слой получает размеры от родителя, а на Android приложение
@@ -377,68 +306,6 @@ const styles = StyleSheet.create({
   //
   // Обычный блок на всю высоту решает и вторую половину: maxHeight 90% теперь
   // есть от чего считать.
-  bottomWrap: { flex: 1, justifyContent: "flex-end" },
-  centerWrap: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 16,
-  },
-  sheet: { backgroundColor: "#f1f5f9", overflow: "hidden" },
-  sheetBottom: {
-    width: "100%",
-    maxHeight: "90%",
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-    paddingBottom: 8,
-    ...(Platform.OS === "web"
-      ? { maxWidth: 680, alignSelf: "center" as never }
-      : null),
-  },
-  sheetCentered: {
-    width: "100%",
-    maxWidth: 560,
-    maxHeight: "85%",
-    borderRadius: 16,
-    paddingBottom: 8,
-    shadowColor: "#0f172a",
-    shadowOpacity: 0.3,
-    shadowRadius: 32,
-    shadowOffset: { width: 0, height: 16 },
-    elevation: 16,
-  },
-  handleBar: {
-    alignSelf: "center",
-    width: 40,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: "#cbd5e1",
-    marginTop: 8,
-    marginBottom: 4,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: "#e2e8f0",
-  },
-  title: {
-    flex: 1,
-    fontSize: 16,
-    fontWeight: "700",
-    fontFamily: "Manrope_700Bold",
-    color: "#0f172a",
-  },
-  closeBtn: { paddingHorizontal: 8, paddingVertical: 4 },
-  closeText: {
-    color: "#0ea5e9",
-    fontSize: 14,
-    fontWeight: "600",
-    fontFamily: "Manrope_600SemiBold",
-  },
   nextBtn: {
     backgroundColor: "#0ea5e9",
     borderRadius: 8,

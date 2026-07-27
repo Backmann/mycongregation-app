@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useState } from 'react';
+import { ReactNode, useEffect, useState } from "react";
 import {
   Keyboard,
   Modal,
@@ -8,10 +8,11 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  useWindowDimensions,
   View,
-} from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useTranslation } from 'react-i18next';
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useTranslation } from "react-i18next";
 
 /**
  * How much room is taken at the BOTTOM of the screen on Android — by the
@@ -31,17 +32,17 @@ export function useBottomRoom() {
   const insets = useSafeAreaInsets();
   const [keyboard, setKeyboard] = useState(0);
   useEffect(() => {
-    if (Platform.OS !== 'android') return;
-    const show = Keyboard.addListener('keyboardDidShow', (e) =>
+    if (Platform.OS !== "android") return;
+    const show = Keyboard.addListener("keyboardDidShow", (e) =>
       setKeyboard(e.endCoordinates?.height ?? 0),
     );
-    const hide = Keyboard.addListener('keyboardDidHide', () => setKeyboard(0));
+    const hide = Keyboard.addListener("keyboardDidHide", () => setKeyboard(0));
     return () => {
       show.remove();
       hide.remove();
     };
   }, []);
-  if (Platform.OS !== 'android') return 0;
+  if (Platform.OS !== "android") return 0;
   return keyboard > 0 ? keyboard : insets.bottom;
 }
 
@@ -60,9 +61,10 @@ export function Sheet({
   closeLabel,
   children,
   footer,
-  variant = 'full',
+  variant = "full",
   action,
   hideClose,
+  fills,
 }: {
   visible: boolean;
   title: string;
@@ -75,9 +77,11 @@ export function Sheet({
   footer?: ReactNode;
   /**
    * 'full' takes the whole screen — for pickers and long forms. 'bottom' rises
-   * from the edge over the screen behind it, for short ones such as filters.
+   * from the edge over the screen behind it. 'centered' floats in the middle,
+   * which only suits a wide screen; a caller picks it by measuring, not by
+   * guessing the platform.
    */
-  variant?: 'full' | 'bottom';
+  variant?: "full" | "bottom" | "centered";
   /** A second header action, e.g. "Reset". */
   action?: ReactNode;
   /**
@@ -86,10 +90,42 @@ export function Sheet({
    * The backdrop and the device back button still close the sheet.
    */
   hideClose?: boolean;
+  /**
+   * The content fills the card rather than the card fitting the content.
+   *
+   * OFF by default, and that is the important part: seven short sheets — the
+   * filters, the pickers — are meant to be only as tall as what is in them,
+   * and forcing a height on those would stretch a two-line filter across the
+   * whole screen. A caller asks for this only when its content is itself a
+   * scroller styled flex: 1, which otherwise deadlocks with a card that sizes
+   * itself to content: each waits for the other and the scroller collapses to
+   * nothing. That took four attempts to find on the assignment sheet.
+   */
+  fills?: boolean;
 }) {
   const { t } = useTranslation();
   const bottomRoom = useBottomRoom();
-  if (variant === 'bottom') {
+  const { width: screenW, height: screenH } = useWindowDimensions();
+
+  /**
+   * A REAL height for the card, not one worked out from its content.
+   *
+   * If a caller puts a scroller styled flex: 1 inside — and the assignment
+   * form does exactly that — content and container deadlock: the scroller
+   * waits for a height to fill, the card waits for content to measure, and the
+   * scrollable area collapses to nothing, leaving only the header and footer.
+   * That cost four attempts to find on the assignment sheet, all of them
+   * spent adding height OUTSIDE the card while the deadlock sat inside it.
+   *
+   * Height, not maxHeight: a maximum is a ceiling to grow up to, and there is
+   * nothing to grow from.
+   */
+  const cardHeight =
+    fills || variant === "centered"
+      ? Math.round(screenH * (variant === "centered" ? 0.85 : 0.9))
+      : undefined;
+
+  if (variant === "centered" || variant === "bottom") {
     return (
       <Modal
         visible={visible}
@@ -97,10 +133,25 @@ export function Sheet({
         transparent
         onRequestClose={onClose}
       >
-        <View style={styles.bottomOverlay}>
+        <View
+          style={[
+            styles.bottomOverlay,
+            variant === "centered" && styles.centeredOverlay,
+            { width: screenW, height: screenH },
+          ]}
+        >
           <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
-          <View style={[styles.bottomCard, { paddingBottom: bottomRoom }]}>
-            <View style={styles.handle} />
+          <View
+            style={[
+              styles.bottomCard,
+              variant === "centered" && styles.centeredCard,
+              { paddingBottom: bottomRoom },
+              cardHeight
+                ? { height: cardHeight }
+                : { maxHeight: Math.round(screenH * 0.86) },
+            ]}
+          >
+            {variant === "centered" ? null : <View style={styles.handle} />}
             <View style={styles.header}>
               <View style={styles.headerText}>
                 <Text style={styles.title} numberOfLines={1}>
@@ -112,15 +163,19 @@ export function Sheet({
               </View>
               {action}
               {hideClose ? null : (
-                <Pressable onPress={onClose} hitSlop={10} style={styles.closeBtn}>
+                <Pressable
+                  onPress={onClose}
+                  hitSlop={10}
+                  style={styles.closeBtn}
+                >
                   <Text style={styles.closeText}>
-                    {closeLabel ?? t('common.done')}
+                    {closeLabel ?? t("common.done")}
                   </Text>
                 </Pressable>
               )}
             </View>
             <ScrollView
-              style={styles.bottomScroll}
+              style={[styles.bottomScroll, cardHeight ? { flex: 1 } : null]}
               contentContainerStyle={styles.bottomBody}
               keyboardShouldPersistTaps="handled"
             >
@@ -146,7 +201,7 @@ export function Sheet({
           {hideClose ? null : (
             <Pressable onPress={onClose} hitSlop={10} style={styles.closeBtn}>
               <Text style={styles.closeText}>
-                {closeLabel ?? t('common.done')}
+                {closeLabel ?? t("common.done")}
               </Text>
             </Pressable>
           )}
@@ -165,25 +220,38 @@ export function Sheet({
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#f1f5f9' },
+  screen: { flex: 1, backgroundColor: "#f1f5f9" },
   bottomOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(15,23,42,0.45)',
-    justifyContent: 'flex-end',
+    backgroundColor: "rgba(15,23,42,0.45)",
+    justifyContent: "flex-end",
   },
   bottomCard: {
-    backgroundColor: '#f1f5f9',
+    backgroundColor: "#f1f5f9",
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    maxHeight: '86%',
-    overflow: 'hidden',
+    overflow: "hidden",
+  },
+  // Centred: for a wide screen, where a sheet stuck to the bottom edge reads
+  // as a phone control on a desktop.
+  centeredOverlay: {
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 16,
+  },
+  centeredCard: {
+    width: "100%",
+    maxWidth: 560,
+    borderRadius: 16,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
   },
   handle: {
     width: 40,
     height: 4,
     borderRadius: 2,
-    backgroundColor: '#cbd5e1',
-    alignSelf: 'center',
+    backgroundColor: "#cbd5e1",
+    alignSelf: "center",
     marginTop: 8,
     marginBottom: 4,
   },
@@ -195,39 +263,39 @@ const styles = StyleSheet.create({
   // default in this flexbox, so a long form ignored the card's maxHeight and
   // pushed the footer off the bottom of the screen. Because the shell scrolls,
   // the content inside it must not bring its own scroller.
-  bottomScroll: { flexShrink: 1 },
+  bottomScroll: { flexShrink: 1, flexGrow: 0 },
   bottomBody: { paddingHorizontal: 16, paddingTop: 4, paddingBottom: 10 },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 12,
     paddingHorizontal: 16,
     paddingVertical: 13,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderBottomWidth: 1,
-    borderBottomColor: '#e8edf3',
+    borderBottomColor: "#e8edf3",
   },
   headerText: { flex: 1, minWidth: 0 },
   title: {
     fontSize: 16.5,
-    fontWeight: '700',
-    fontFamily: 'Manrope_700Bold',
-    color: '#0f172a',
+    fontWeight: "700",
+    fontFamily: "Manrope_700Bold",
+    color: "#0f172a",
   },
   subtitle: { marginTop: 2 },
   closeBtn: { paddingHorizontal: 4, paddingVertical: 2 },
   closeText: {
     fontSize: 15,
-    color: '#0ea5e9',
-    fontWeight: '700',
-    fontFamily: 'Manrope_700Bold',
+    color: "#0ea5e9",
+    fontWeight: "700",
+    fontFamily: "Manrope_700Bold",
   },
   body: { flex: 1 },
   footer: {
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderTopWidth: 1,
-    borderTopColor: '#e8edf3',
+    borderTopColor: "#e8edf3",
   },
 });
