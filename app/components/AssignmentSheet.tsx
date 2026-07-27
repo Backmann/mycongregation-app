@@ -57,7 +57,7 @@ export function AssignmentSheet({
   coPicker,
 }: Props) {
   const { t } = useTranslation();
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
   // The same rule the other two shells use: room for the navigation bar, or
   // for the keyboard while it is up. Android only — see useBottomRoom.
   const bottomRoom = useBottomRoom();
@@ -200,7 +200,24 @@ export function AssignmentSheet({
     >
       <Pressable style={styles.backdrop} onPress={onClose} />
       <View
-        style={centered ? styles.centerWrap : styles.bottomWrap}
+        style={[
+          centered ? styles.centerWrap : styles.bottomWrap,
+          // Height and width in PIXELS, not flex and not percentages.
+          //
+          // Read out of react-native's own Modal source: its inner container
+          // is positioned absolutely with only `top` and `left` set, plus
+          // flex: 1 — no bottom, no height. It therefore inherits its size
+          // from the native modal host, and on Android running edge-to-edge
+          // that host reports none. Everything below it then has no height to
+          // share: flex: 1 stretched inside something of zero height, and
+          // maxHeight: '90%' had nothing to be ninety percent OF. That is why
+          // the sheet collapsed to a strip of header and button, and why two
+          // earlier fixes — paddings, then flex: 1 — could not reach it.
+          //
+          // Asking the window for its size sidesteps the whole chain: a number
+          // cannot fail to resolve.
+          { width, height },
+        ]}
         pointerEvents="box-none"
       >
         <View
