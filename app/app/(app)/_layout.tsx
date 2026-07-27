@@ -34,6 +34,14 @@ export default function AppLayout() {
         headerShown: false,
         tabBarActiveTintColor: '#0ea5e9',
         tabBarInactiveTintColor: '#64748b',
+        // The ONLY thing set here, and only for the text itself: the library
+        // gives the label a font size and no line height, so the browser
+        // derives the line box from the font — and this app's font has tall
+        // descenders, which is why «р» and «у» lost their tails on iPad and
+        // in a desktop browser while Android was fine. Naming the line height
+        // gives the glyphs the room they need without touching any
+        // container's size, so the bar keeps sizing itself as it should.
+        tabBarLabelStyle: { lineHeight: 14 },
         // No height, no padding, no line height set here — on purpose.
         //
         // The tab bar ALREADY adds the device's bottom inset itself; the
