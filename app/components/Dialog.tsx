@@ -9,6 +9,7 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useBottomRoom } from './Sheet';
 
 /**
  * One shell for every dialog in the app. Before this each screen brought its
@@ -55,6 +56,10 @@ export function Dialog({
   scroll?: boolean;
 }) {
   const Body = scroll ? ScrollView : View;
+  // The dialog is centred, so the navigation bar never troubled it — but the
+  // keyboard does: a text field inside one sits in the middle of the screen
+  // and the keyboard covers it. Android only; iOS handles this itself.
+  const bottomRoom = useBottomRoom();
   return (
     <Modal
       visible={visible}
@@ -62,7 +67,7 @@ export function Dialog({
       animationType="fade"
       onRequestClose={onCancel}
     >
-      <View style={styles.backdrop}>
+      <View style={[styles.backdrop, { paddingBottom: bottomRoom }]}>
         <Pressable
           style={StyleSheet.absoluteFill}
           onPress={onCancel}

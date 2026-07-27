@@ -1,6 +1,8 @@
-import { ReactNode } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import {
+  Keyboard,
   Modal,
+  Platform,
   Pressable,
   SafeAreaView,
   ScrollView,
@@ -8,7 +10,40 @@ import {
   Text,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
+
+/**
+ * How much room is taken at the BOTTOM of the screen on Android — by the
+ * system navigation bar, or by the keyboard when it is up.
+ *
+ * Only Android. The app runs edge-to-edge there, so a Modal is drawn UNDER the
+ * navigation buttons and knows nothing about them: the foot of a sheet ended
+ * up behind them, and a field in the lower half was covered by the keyboard
+ * with no way to see what was being typed. On iPhone and iPad both already
+ * work, and today has twice shown what happens when a fix for one case is
+ * applied to a case that was never broken.
+ *
+ * The keyboard height WINS over the navigation inset rather than adding to it:
+ * while the keyboard is up it covers those buttons anyway.
+ */
+export function useBottomRoom() {
+  const insets = useSafeAreaInsets();
+  const [keyboard, setKeyboard] = useState(0);
+  useEffect(() => {
+    if (Platform.OS !== 'android') return;
+    const show = Keyboard.addListener('keyboardDidShow', (e) =>
+      setKeyboard(e.endCoordinates?.height ?? 0),
+    );
+    const hide = Keyboard.addListener('keyboardDidHide', () => setKeyboard(0));
+    return () => {
+      show.remove();
+      hide.remove();
+    };
+  }, []);
+  if (Platform.OS !== 'android') return 0;
+  return keyboard > 0 ? keyboard : insets.bottom;
+}
 
 /**
  * One shell for the sheets that slide up over a screen — pickers, editors and
@@ -53,6 +88,7 @@ export function Sheet({
   hideClose?: boolean;
 }) {
   const { t } = useTranslation();
+  const bottomRoom = useBottomRoom();
   if (variant === 'bottom') {
     return (
       <Modal
@@ -63,7 +99,7 @@ export function Sheet({
       >
         <View style={styles.bottomOverlay}>
           <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
-          <View style={styles.bottomCard}>
+          <View style={[styles.bottomCard, { paddingBottom: bottomRoom }]}>
             <View style={styles.handle} />
             <View style={styles.header}>
               <View style={styles.headerText}>
@@ -116,7 +152,13 @@ export function Sheet({
           )}
         </View>
         <View style={styles.body}>{children}</View>
-        {footer ? <View style={styles.footer}>{footer}</View> : null}
+        {footer ? (
+          <View style={[styles.footer, { paddingBottom: 12 + bottomRoom }]}>
+            {footer}
+          </View>
+        ) : (
+          <View style={{ height: bottomRoom }} />
+        )}
       </SafeAreaView>
     </Modal>
   );
