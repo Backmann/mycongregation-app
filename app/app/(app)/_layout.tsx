@@ -80,7 +80,7 @@ export default function AppLayout() {
             title: t("tabs.home"),
             tabBarIcon: ({ color, size, focused }) => (
               <Ionicons
-                name="home"
+                name={focused ? "home" : "home-outline"}
                 color={focused ? color : "#185FA5"}
                 size={size}
               />
@@ -93,7 +93,7 @@ export default function AppLayout() {
             title: t("tabs.schedule"),
             tabBarIcon: ({ color, size, focused }) => (
               <Ionicons
-                name="calendar"
+                name={focused ? "calendar" : "calendar-outline"}
                 color={focused ? color : "#BA7517"}
                 size={size}
               />
@@ -107,7 +107,7 @@ export default function AppLayout() {
             href: canSeeDirectory ? undefined : null,
             tabBarIcon: ({ color, size, focused }) => (
               <Ionicons
-                name="people"
+                name={focused ? "people" : "people-outline"}
                 color={focused ? color : "#7F77DD"}
                 size={size}
               />
@@ -130,7 +130,7 @@ export default function AppLayout() {
             title: t("tabs.cart"),
             tabBarIcon: ({ color, size, focused }) => (
               <Ionicons
-                name="navigate"
+                name={focused ? "navigate" : "navigate-outline"}
                 color={focused ? color : "#1D9E75"}
                 size={size}
               />
@@ -142,8 +142,12 @@ export default function AppLayout() {
           name="profile"
           options={{
             title: t("tabs.profile"),
-            tabBarIcon: ({ color, size }) => (
-              <Ionicons name="person-circle" color={color} size={size} />
+            tabBarIcon: ({ color, size, focused }) => (
+              <Ionicons
+                name={focused ? "person-circle" : "person-circle-outline"}
+                color={color}
+                size={size}
+              />
             ),
           }}
         />
