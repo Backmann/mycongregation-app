@@ -23,7 +23,6 @@ import {
   UpdateFieldServiceMeetingInput,
   fieldServiceApi,
   fieldServiceMonthThemeApi,
-  fieldServiceStatsApi,
   publishersApi,
   hallsApi,
   meetingSettingsApi,
@@ -72,6 +71,7 @@ export default function FieldServiceMeetingsScreen() {
 
   const scrollRef = useRef<ScrollView>(null);
   const monthOffsets = useRef<Record<string, number>>({});
+  const meetingOffsets = useRef<Record<string, number>>({});
   // Чип месяца подсвечивает БЛОК, видимый на экране (синхронизируется со
   // скроллом), а не календарный текущий месяц — иначе при прокрутке к
   // августу остаётся подсвечен июль и кажется, что фильтр сломан.
@@ -157,12 +157,7 @@ export default function FieldServiceMeetingsScreen() {
     | undefined
   >();
   const [genOpen, setGenOpen] = useState(false);
-  const [tab, setTab] = useState<'months' | 'conductors'>('months');
 
-  const conductorStatsQuery = useQuery({
-    queryKey: ['field-service-conductor-stats'],
-    queryFn: () => fieldServiceStatsApi.conductorStats(),
-  });
 
   const invalidate = () => {
     qc.invalidateQueries({ queryKey: ['field-service'] });
@@ -229,6 +224,13 @@ export default function FieldServiceMeetingsScreen() {
     else byMonth.set(k, [m]);
   }
   const currentMonthKey = dayjs().format('YYYY-MM');
+  // Monday of the current week, worked out with the helpers already in this
+  // file — dayjs's isoWeek needs a plugin that is not loaded here.
+  const currentWeekStart = (() => {
+    const now = new Date();
+    const dow = now.getDay() === 0 ? 7 : now.getDay();
+    return formatDateISO(addDays(now, 1 - dow));
+  })();
   let minK = currentMonthKey;
   let maxK = currentMonthKey;
   for (const k of byMonth.keys()) {
@@ -256,9 +258,25 @@ export default function FieldServiceMeetingsScreen() {
     }
   }
 
+  /**
+   * Open on THIS WEEK, not merely this month.
+   *
+   * Landing at the first of the month means scrolling past the weeks already
+   * gone every single time — and the week people come here for is almost
+   * always the one they are living in. The month is the fallback: at the very
+   * start of a month, or where this week holds no meeting, its own offset is
+   * all there is.
+   */
+  const currentWeekMeetingId =
+    months
+      .flatMap((m) => m.meetings)
+      .find((mt) => mt.weekStartDate === currentWeekStart)?.id ?? null;
+
   const scrollToCurrent = () => {
     if (didInitialScroll.current) return;
-    const off = monthOffsets.current[currentMonthKey];
+    const off =
+      meetingOffsets.current[currentWeekMeetingId ?? ''] ??
+      monthOffsets.current[currentMonthKey];
     if (off != null) {
       didInitialScroll.current = true;
       scrollRef.current?.scrollTo({ y: Math.max(off - 8, 0), animated: false });
@@ -363,22 +381,6 @@ export default function FieldServiceMeetingsScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.tabs}>
-        {(['months', 'conductors'] as const).map((tb) => (
-          <Pressable
-            key={tb}
-            style={[styles.tabItem, tab === tb && styles.tabItemOn]}
-            onPress={() => setTab(tb)}
-          >
-            <Text style={[styles.tabText, tab === tb && styles.tabTextOn]}>
-              {t(`fieldService.tabs.${tb}`)}
-            </Text>
-          </Pressable>
-        ))}
-      </View>
-
-      {tab === 'months' && (
-        <>
           {/* Month jump bar */}
           <View style={styles.monthBar}>
         <ScrollView
@@ -409,14 +411,26 @@ export default function FieldServiceMeetingsScreen() {
             </Pressable>
           ))}
         </ScrollView>
-        <Pressable style={styles.genBtn} onPress={() => setPdfOpen(true)}>
-          <Ionicons name="download-outline" size={15} color="#0369a1" />
-          <Text style={styles.genBtnText}>{t('fieldService.pdf.button')}</Text>
+      </View>
+
+      {/* Actions on their OWN row, not wedged into the month strip.
+          They were crowded there because they arrived one at a time, and the
+          strip — which is navigation, used constantly — ended up sharing its
+          width with two buttons pressed once a month. Now the months have the
+          full width to scroll in, and the two actions sit together where they
+          read as what they are: things done to the plan, not part of it. */}
+      <View style={styles.actionBar}>
+        <Pressable style={styles.action} onPress={() => setPdfOpen(true)}>
+          <Ionicons name="download-outline" size={16} color="#0369a1" />
+          <Text style={styles.actionText}>{t('fieldService.pdf.button')}</Text>
         </Pressable>
         {canEdit && (
-          <Pressable style={styles.genBtn} onPress={() => setGenOpen(true)}>
-            <Ionicons name="sparkles-outline" size={15} color="#0369a1" />
-            <Text style={styles.genBtnText}>
+          <Pressable
+            style={[styles.action, styles.actionPrimary]}
+            onPress={() => setGenOpen(true)}
+          >
+            <Ionicons name="sparkles-outline" size={16} color="#ffffff" />
+            <Text style={[styles.actionText, styles.actionTextPrimary]}>
               {t('fieldService.generate.button')}
             </Text>
           </Pressable>
@@ -495,7 +509,21 @@ export default function FieldServiceMeetingsScreen() {
                 const dISO = meetingDateISO(mt);
                 const RowWrap = isMine ? MyGlowRow : View;
                 return (
-                  <RowWrap key={mt.id} kind="field_service" style={[styles.card, isMine && styles.cardMineGlow]}>
+                  <RowWrap
+                    key={mt.id}
+                    kind="field_service"
+                    style={[styles.card, isMine && styles.cardMineGlow]}
+                    onLayout={(e: {
+                      nativeEvent: { layout: { y: number } };
+                    }) => {
+                      // Positions are relative to the month block, so the
+                      // month's own offset is added back in.
+                      meetingOffsets.current[mt.id] =
+                        (monthOffsets.current[m.key] ?? 0) +
+                        e.nativeEvent.layout.y;
+                      if (mt.id === currentWeekMeetingId) scrollToCurrent();
+                    }}
+                  >
                     <Pressable
                       style={styles.cardMain}
                       onPress={() => canEdit && setTarget(mt)}
@@ -578,59 +606,6 @@ export default function FieldServiceMeetingsScreen() {
           </View>
         ))}
       </ScrollView>
-        </>
-      )}
-
-      {tab === 'conductors' && (
-        <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 48 }}>
-          {(conductorStatsQuery.data ?? []).length === 0 ? (
-            <Text style={styles.emptyMonth}>
-              {t('fieldService.conductorsEmpty')}
-            </Text>
-          ) : (
-            (conductorStatsQuery.data ?? [])
-              .slice()
-              .sort((a, b) => {
-                // Free brothers first (never led, then longest-not-led);
-                // anyone with an upcoming meeting sinks to the bottom.
-                const rank = (c: (typeof a) & { nextDate: string | null }) =>
-                  c.nextDate
-                    ? 1e14 + Date.parse(c.nextDate)
-                    : c.lastDate
-                      ? Date.parse(c.lastDate)
-                      : 0;
-                return rank(a) - rank(b);
-              })
-              .map((c) => {
-                const pub = publishersById.get(c.conductorPublisherId);
-                return (
-                  <View key={c.conductorPublisherId} style={styles.condRow}>
-                    <Text style={styles.condName}>
-                      {pub?.displayName ?? '—'}
-                    </Text>
-                    <Text style={styles.condStat}>
-                      {[
-                        t('fieldService.stat.total', { count: c.total }),
-                        c.lastDate
-                          ? t('fieldService.stat.last', {
-                              date: c.lastDate.split('-').reverse().join('.'),
-                            })
-                          : t('fieldService.stat.never'),
-                        c.nextDate
-                          ? t('fieldService.stat.next', {
-                              date: c.nextDate.split('-').reverse().join('.'),
-                            })
-                          : null,
-                      ]
-                        .filter(Boolean)
-                        .join('  ·  ')}
-                    </Text>
-                  </View>
-                );
-              })
-          )}
-        </ScrollView>
-      )}
 
       <FieldServiceForm
         target={target}
@@ -840,6 +815,35 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   monthBarScroll: { flex: 1 },
+  actionBar: {
+    flexDirection: 'row',
+    gap: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    backgroundColor: '#ffffff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
+  },
+  action: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 9,
+    borderRadius: 10,
+    backgroundColor: '#e0f2fe',
+  },
+  // «Сгенерировать» is what this screen is FOR when a month is empty, so it
+  // carries the weight; the PDF is a quiet companion beside it.
+  actionPrimary: { backgroundColor: '#0e7490' },
+  actionText: {
+    fontSize: 13.5,
+    color: '#0369a1',
+    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
+  },
+  actionTextPrimary: { color: '#ffffff' },
   genBtn: {
     flexDirection: 'row',
     alignItems: 'center',

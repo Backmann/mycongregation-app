@@ -1204,10 +1204,6 @@
       "successTitle": "Встречи созданы",
       "working": "Генерируем…"
     },
-    "tabs": {
-      "months": "По месяцам",
-      "conductors": "Ведущие"
-    },
     "stat": {
       "total": "всего: {{count}}",
       "last": "последний: {{date}}",
@@ -1217,7 +1213,6 @@
     },
     "doubleWeek": "Уже ведёт встречу на этой неделе",
     "topicUsed": "Тема уже была: {{date}}",
-    "conductorsEmpty": "Пока нет назначенных ведущих",
     "duplicate": "Дублировать встречу",
     "pdf": {
       "button": "PDF",
