@@ -1234,7 +1234,13 @@
       "address": "Адрес"
     },
     "fromCoVisit": "Из расписания посещения районного старейшины",
-    "fromCoVisitHint": "Изменяется в расписании визита"
+    "fromCoVisitHint": "Изменяется в расписании визита",
+    "groupLabel": "Группа",
+    "groupNone": "Без группы",
+    "overseerVisit": "Визит служебного старейшины",
+    "overseerVisitHint": "Он проводит эту встречу и идёт в служение с группой",
+    "overseer": "Служебный старейшина",
+    "overseerAssistant": "Помощник"
   },
   "cleaning": {
     "title": "Уборка",

@@ -1150,6 +1150,12 @@ export interface FieldServiceMeeting {
   topic: string | null;
   sourceUrl: string | null;
   isGeneral: boolean;
+  /** Whose meeting this is; null when it belongs to no one group. */
+  serviceGroupId: string | null;
+  /** The service overseer is visiting this group's meeting. */
+  serviceOverseerVisit: boolean;
+  serviceOverseerPublisherId: string | null;
+  serviceOverseerAssistantId: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -1163,6 +1169,10 @@ export interface CreateFieldServiceMeetingInput {
   topic?: string | null;
   sourceUrl?: string | null;
   isGeneral?: boolean;
+  serviceGroupId?: string | null;
+  serviceOverseerVisit?: boolean;
+  serviceOverseerPublisherId?: string | null;
+  serviceOverseerAssistantId?: string | null;
   /** When false, the conductor is not push-notified about this change. */
   notifyConductor?: boolean;
 }
@@ -1771,6 +1781,28 @@ export const publishersApi = {
   },
 };
 
+
+export interface GroupVisitRow {
+  serviceGroupId: string;
+  name: string;
+  visitsThisYear: number;
+  lastVisitDate: string | null;
+  lastVisitBy: string | null;
+  nextVisitDate: string | null;
+}
+
+/** Which groups the service overseer has visited, and which still wait. */
+export const serviceOverseerApi = {
+  async groupVisits(serviceYear?: number) {
+    const { data } = await api.get<{
+      serviceYear: number;
+      groups: GroupVisitRow[];
+    }>('/service-overseer/group-visits', {
+      params: serviceYear ? { serviceYear } : undefined,
+    });
+    return data;
+  },
+};
 
 export const serviceGroupsApi = {
   async list(params?: { search?: string; includeRemoved?: boolean }): Promise<Paginated<ServiceGroup>> {

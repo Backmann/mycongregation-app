@@ -1230,7 +1230,13 @@
       "address": "Adresse"
     },
     "fromCoVisit": "Aus dem Besuchsplan des Kreisaufsehers",
-    "fromCoVisitHint": "Wird im Besuchsplan bearbeitet"
+    "fromCoVisitHint": "Wird im Besuchsplan bearbeitet",
+    "groupLabel": "Gruppe",
+    "groupNone": "Ohne Gruppe",
+    "overseerVisit": "Besuch des Dienstaufsehers",
+    "overseerVisitHint": "Er leitet diese Zusammenkunft und geht mit der Gruppe in den Dienst",
+    "overseer": "Dienstaufseher",
+    "overseerAssistant": "Assistent"
   },
   "cleaning": {
     "title": "Reinigung",

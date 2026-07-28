@@ -1230,7 +1230,13 @@
       "address": "Address"
     },
     "fromCoVisit": "From the circuit overseer's visit schedule",
-    "fromCoVisitHint": "Edited in the visit schedule"
+    "fromCoVisitHint": "Edited in the visit schedule",
+    "groupLabel": "Group",
+    "groupNone": "No group",
+    "overseerVisit": "Service overseer's visit",
+    "overseerVisitHint": "He conducts this meeting and goes out in the ministry with the group",
+    "overseer": "Service overseer",
+    "overseerAssistant": "Assistant"
   },
   "cleaning": {
     "title": "Cleaning",

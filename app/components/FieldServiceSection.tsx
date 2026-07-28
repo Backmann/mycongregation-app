@@ -28,6 +28,7 @@ import {
   specialEventsApi,
   publishersApi,
   absencesApi,
+  serviceGroupsApi,
 } from '../lib/api';
 import { resolveHallAddress } from '../lib/hallAddress';
 import { PublisherSelector } from './PublisherSelector';
@@ -320,6 +321,7 @@ export function FieldServiceForm({
     sourceUrl?: string;
     isGeneral?: boolean;
     conductorPublisherId?: string | null;
+    serviceGroupId?: string | null;
   };
   /** Default date (ISO) to preselect in date-pick mode. */
   defaultDate?: string;
@@ -332,6 +334,12 @@ export function FieldServiceForm({
   const { t, i18n } = useTranslation();
   const editing = target && target !== 'new' ? target : null;
   const visible = target !== null;
+
+  const groupsQuery = useQuery({
+    queryKey: ['service-groups'],
+    queryFn: () => serviceGroupsApi.list({}),
+  });
+  const groups = groupsQuery.data?.data ?? [];
 
   const hallsQuery = useQuery({
     queryKey: ['halls'],
@@ -360,6 +368,10 @@ export function FieldServiceForm({
   const [topic, setTopic] = useState('');
   const [sourceUrl, setSourceUrl] = useState('');
   const [isGeneral, setIsGeneral] = useState(false);
+  const [serviceGroupId, setServiceGroupId] = useState<string | null>(null);
+  const [overseerVisit, setOverseerVisit] = useState(false);
+  const [overseerId, setOverseerId] = useState<string | null>(null);
+  const [assistantId, setAssistantId] = useState<string | null>(null);
   const [notifyConductor, setNotifyConductor] = useState(true);
   const [pickedDate, setPickedDate] = useState<string>('');
 
@@ -372,6 +384,10 @@ export function FieldServiceForm({
       setTopic(prefill?.topic ?? '');
       setSourceUrl(prefill?.sourceUrl ?? '');
       setIsGeneral(prefill?.isGeneral ?? false);
+      setServiceGroupId(prefill?.serviceGroupId ?? null);
+      setOverseerVisit(false);
+      setOverseerId(null);
+      setAssistantId(null);
       setNotifyConductor(true);
       setPickedDate(defaultDate ?? '');
     } else if (target) {
@@ -382,6 +398,10 @@ export function FieldServiceForm({
       setTopic(target.topic ?? '');
       setSourceUrl(target.sourceUrl ?? '');
       setIsGeneral(target.isGeneral);
+      setServiceGroupId(target.serviceGroupId ?? null);
+      setOverseerVisit(target.serviceOverseerVisit ?? false);
+      setOverseerId(target.serviceOverseerPublisherId ?? null);
+      setAssistantId(target.serviceOverseerAssistantId ?? null);
       setNotifyConductor(true);
       setPickedDate('');
     }
@@ -523,6 +543,12 @@ export function FieldServiceForm({
       topic: topic.trim() || null,
       sourceUrl: sourceUrl.trim() || null,
       isGeneral,
+      // A meeting is either everyone's or one group's — the database refuses
+      // both at once, so the form must not send both either.
+      serviceGroupId: isGeneral ? null : serviceGroupId,
+      serviceOverseerVisit: !isGeneral && !!serviceGroupId && overseerVisit,
+      serviceOverseerPublisherId: overseerVisit ? overseerId : null,
+      serviceOverseerAssistantId: overseerVisit ? assistantId : null,
       notifyConductor,
     };
     if (editing) {
@@ -753,6 +779,100 @@ export function FieldServiceForm({
               maxLength={2000}
             />
 
+            {/* The group comes FIRST and «общая» after it: a group meeting is
+                the usual case here, so the ordinary path should read as the
+                default and the exception as the exception. */}
+            {!isGeneral ? (
+              <>
+                <Text style={styles.fieldLabel}>
+                  {t('fieldService.groupLabel')}
+                </Text>
+                <View style={styles.chipRow}>
+                  <Pressable
+                    onPress={() => setServiceGroupId(null)}
+                    style={[
+                      styles.chip,
+                      serviceGroupId === null && styles.chipOn,
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.chipText,
+                        serviceGroupId === null && styles.chipTextOn,
+                      ]}
+                    >
+                      {t('fieldService.groupNone')}
+                    </Text>
+                  </Pressable>
+                  {groups.map((g: { id: string; name: string }) => (
+                    <Pressable
+                      key={g.id}
+                      onPress={() => setServiceGroupId(g.id)}
+                      style={[
+                        styles.chip,
+                        serviceGroupId === g.id && styles.chipOn,
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.chipText,
+                          serviceGroupId === g.id && styles.chipTextOn,
+                        ]}
+                      >
+                        {g.name}
+                      </Text>
+                    </Pressable>
+                  ))}
+                </View>
+              </>
+            ) : null}
+
+            {/* The visit is offered only where it can mean something: it is a
+                visit TO A GROUP, and the database refuses one without a group.
+                Showing the switch anyway would let a person set it and lose
+                the setting on save with no explanation. */}
+            {!isGeneral && serviceGroupId ? (
+              <>
+                <View style={styles.toggleRow}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.toggleLabel}>
+                      {t('fieldService.overseerVisit')}
+                    </Text>
+                    <Text style={styles.toggleHint}>
+                      {t('fieldService.overseerVisitHint')}
+                    </Text>
+                  </View>
+                  <Switch
+                    value={overseerVisit}
+                    onValueChange={setOverseerVisit}
+                    trackColor={{ true: '#0ea5e9', false: '#cbd5e1' }}
+                  />
+                </View>
+                {overseerVisit ? (
+                  <>
+                    <Text style={styles.fieldLabel}>
+                      {t('fieldService.overseer')}
+                    </Text>
+                    <PublisherSelector
+                      boxed
+                      label={t('fieldService.overseer')}
+                      value={overseerId}
+                      onChange={setOverseerId}
+                    />
+                    <Text style={styles.fieldLabel}>
+                      {t('fieldService.overseerAssistant')}
+                    </Text>
+                    <PublisherSelector
+                      boxed
+                      label={t('fieldService.overseerAssistant')}
+                      value={assistantId}
+                      onChange={setAssistantId}
+                    />
+                  </>
+                ) : null}
+              </>
+            ) : null}
+
             <View style={styles.toggleRow}>
               <View style={{ flex: 1 }}>
                 <Text style={styles.toggleLabel}>
@@ -819,6 +939,21 @@ export function FieldServiceForm({
 }
 
 const styles = StyleSheet.create({
+  chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 4 },
+  chip: {
+    paddingVertical: 7,
+    paddingHorizontal: 12,
+    borderRadius: 999,
+    backgroundColor: '#e2e8f0',
+  },
+  chipOn: { backgroundColor: '#0e7490' },
+  chipText: {
+    fontSize: 13,
+    color: '#334155',
+    fontWeight: '600',
+    fontFamily: 'Manrope_600SemiBold',
+  },
+  chipTextOn: { color: '#ffffff' },
   hallChips: {
     flexDirection: 'row',
     flexWrap: 'wrap',
