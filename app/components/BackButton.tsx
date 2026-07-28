@@ -38,17 +38,19 @@ export function BackButton({
       onPress={() => {
         if (typeof from === 'string' && from) {
           router.navigate(from as any);
-        } else if (toParent && !router.canGoBack()) {
-          // The logical parent, but only when there is no history to return
-          // to. Going there ALWAYS was the old behaviour and it was wrong in
-          // the ordinary case: open a service group, tap a publisher, press
-          // back — and you landed in the whole congregation's roster instead
-          // of the group you came from.
+        } else if (toParent) {
+          // The logical parent, ALWAYS — and this is the point of the prop.
           //
-          // The rule the original comment was defending still holds: never
-          // dump the person on Home. That is what the fallback is for, and it
-          // is reached only when the stack really is empty — arriving from a
-          // notification, or a link opened cold.
+          // History cannot answer this question here: the app's stacks belong
+          // to tabs, so «back» from the journal leads not to Profile but to
+          // wherever the person was before Profile — the home screen. Profile
+          // meanwhile still holds the journal at the top of its own stack, so
+          // tapping the tab returns them straight back into it. That is a loop
+          // with no way out, and it is exactly what happened.
+          //
+          // The exception is declared by whoever navigated, through `from`
+          // above — the caller knows where the person came from, and nothing
+          // else does.
           router.navigate(fallback as any);
         } else if (router.canGoBack()) {
           router.back();
