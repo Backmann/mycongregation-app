@@ -2599,7 +2599,36 @@
       "assignee": "Zugewiesen an",
       "due": "Bis wann",
       "deleteTitle": "Aufgabe löschen?",
-      "deleteBody": "Der Eintrag wird entfernt und kann nicht wiederhergestellt werden."
+      "deleteBody": "Der Eintrag wird entfernt und kann nicht wiederhergestellt werden.",
+      "meeting": "Für welche Zusammenkunft",
+      "noMeeting": "Noch keine"
+    },
+    "agenda": {
+      "title": "Tagesordnung",
+      "open": "Tagesordnung",
+      "onAgenda": "Für diese Zusammenkunft",
+      "overdue": "Überfällig",
+      "dueSoon": "Wird vor der nächsten fällig",
+      "nothing": "Nichts",
+      "noMeeting": "Noch keine Zusammenkunft geplant",
+      "print": "Tagesordnung drucken",
+      "dueShort": "Frist"
+    },
+    "meeting": {
+      "new": "Neue Ältestenzusammenkunft",
+      "edit": "Ältestenzusammenkunft",
+      "date": "Datum",
+      "time": "Zeit",
+      "note": "Notiz",
+      "deleteTitle": "Zusammenkunft löschen?",
+      "deleteBody": "Zugeordnete Aufgaben bleiben bestehen — nur die Zuordnung entfällt."
+    },
+    "repeat": {
+      "title": "Aufgabe wiederholen?",
+      "hint": "In wie vielen Monaten steht sie wieder an?",
+      "months_one": "In {{count}} Monat",
+      "months_other": "In {{count}} Monaten",
+      "no": "Nicht wiederholen"
     }
   }
 }

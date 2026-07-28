@@ -11,6 +11,7 @@ import {
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
+import { router } from 'expo-router';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ru';
 import 'dayjs/locale/de';
@@ -79,12 +80,36 @@ export default function TasksScreen() {
   }, [publishersQuery.data]);
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ['tasks'] });
+  const [repeatFor, setRepeatFor] = useState<ElderTask | null>(null);
   const closeMut = useMutation({
     mutationFn: (task: ElderTask) =>
       tasksApi.update(task.id, {
         status: task.status === 'done' ? 'open' : 'done',
       }),
-    onSuccess: invalidate,
+    onSuccess: (_r, task) => {
+      invalidate();
+      // Asked only when the task HAD a date. Things that come round again —
+      // the audit of the accounts, a review — are the ones with dates on them;
+      // asking about every closed task would make the question noise, and
+      // noise gets dismissed without reading.
+      if (task.status === 'open' && task.dueDate) setRepeatFor(task);
+    },
+  });
+  const repeatMut = useMutation({
+    mutationFn: async ({ task, months }: { task: ElderTask; months: number }) =>
+      tasksApi.create({
+        title: task.title,
+        details: task.details,
+        area: task.area,
+        assigneePublisherId: task.assigneePublisherId,
+        dueDate: dayjs(task.dueDate ?? undefined)
+          .add(months, 'month')
+          .format('YYYY-MM-DD'),
+      }),
+    onSuccess: () => {
+      invalidate();
+      setRepeatFor(null);
+    },
   });
 
   const today = dayjs().format('YYYY-MM-DD');
@@ -185,9 +210,48 @@ export default function TasksScreen() {
           : null}
       </ScrollView>
 
+      <Pressable
+        style={styles.agendaBtn}
+        onPress={() => router.push('/tasks/agenda' as never)}
+      >
+        <Ionicons name="list-outline" size={16} color="#0369a1" />
+        <Text style={styles.agendaText}>{t('tasks.agenda.open')}</Text>
+      </Pressable>
+
       <Pressable style={styles.fab} onPress={() => setEditing('new')}>
         <Ionicons name="add" size={26} color="#ffffff" />
       </Pressable>
+
+      {/* No recurrence ENGINE: a schedule of repeats brings its own life of
+          exceptions and moved dates, and we would spend a week on «the repeat
+          fell on the congress». One question at the moment of closing gives
+          the same result. */}
+      <Sheet
+        visible={!!repeatFor}
+        onClose={() => setRepeatFor(null)}
+        variant="bottom"
+        title={t('tasks.repeat.title')}
+        closeLabel={t('tasks.repeat.no')}
+      >
+        <View style={styles.repeatBody}>
+          <Text style={styles.repeatHint}>{t('tasks.repeat.hint')}</Text>
+          <View style={styles.chipRow}>
+            {[1, 3, 6, 12].map((m) => (
+              <Pressable
+                key={m}
+                style={styles.repeatChip}
+                onPress={() =>
+                  repeatFor && repeatMut.mutate({ task: repeatFor, months: m })
+                }
+              >
+                <Text style={styles.repeatChipText}>
+                  {t('tasks.repeat.months', { count: m })}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+      </Sheet>
 
       <TaskForm
         target={editing}
@@ -219,7 +283,14 @@ function TaskForm({
   const [area, setArea] = useState<TaskArea>('other');
   const [assignee, setAssignee] = useState<string | null>(null);
   const [dueDate, setDueDate] = useState<string | null>(null);
+  const [meetingId, setMeetingId] = useState<string | null>(null);
   const [loadedFor, setLoadedFor] = useState<string | null>(null);
+
+  const meetingsQuery = useQuery({
+    queryKey: ['tasks', 'meetings'],
+    queryFn: () => tasksApi.meetings(),
+    enabled: visible,
+  });
 
   // Fill the form from whatever was opened, once per opening.
   const key = editing?.id ?? (target === 'new' ? 'new' : null);
@@ -230,6 +301,7 @@ function TaskForm({
     setArea(editing?.area ?? 'other');
     setAssignee(editing?.assigneePublisherId ?? null);
     setDueDate(editing?.dueDate ?? null);
+    setMeetingId(editing?.eldersMeetingId ?? null);
   }
   if (!visible && loadedFor !== null) setLoadedFor(null);
 
@@ -241,6 +313,7 @@ function TaskForm({
         area,
         assigneePublisherId: assignee,
         dueDate,
+        eldersMeetingId: meetingId,
       };
       return editing
         ? tasksApi.update(editing.id, input)
@@ -326,6 +399,39 @@ function TaskForm({
           absenceDate={dueDate ?? undefined}
         />
 
+        {/* Putting it on a meeting is what turns a note into work: the body
+            will look at this list that evening whether or not anyone
+            remembered. */}
+        <Text style={styles.label}>{t('tasks.form.meeting')}</Text>
+        <View style={styles.chipRow}>
+          <Pressable
+            onPress={() => setMeetingId(null)}
+            style={[styles.chip, meetingId === null && styles.chipOnTeal]}
+          >
+            <Text
+              style={[styles.chipText, meetingId === null && styles.chipTextOn]}
+            >
+              {t('tasks.form.noMeeting')}
+            </Text>
+          </Pressable>
+          {(meetingsQuery.data ?? []).map((m) => (
+            <Pressable
+              key={m.id}
+              onPress={() => setMeetingId(m.id)}
+              style={[styles.chip, meetingId === m.id && styles.chipOnTeal]}
+            >
+              <Text
+                style={[
+                  styles.chipText,
+                  meetingId === m.id && styles.chipTextOn,
+                ]}
+              >
+                {dayjs(m.date).format('DD.MM')}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+
         <Text style={styles.label}>{t('tasks.form.due')}</Text>
         <DateField
           value={dueDate ?? undefined}
@@ -409,6 +515,38 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  agendaBtn: {
+    position: 'absolute',
+    left: 18,
+    bottom: 30,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#e0f2fe',
+    borderRadius: 999,
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+  },
+  agendaText: {
+    fontSize: 13.5,
+    color: '#0369a1',
+    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
+  },
+  repeatBody: { padding: 16, gap: 12 },
+  repeatHint: { fontSize: 13.5, color: '#475569', lineHeight: 19 },
+  repeatChip: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 999,
+    backgroundColor: '#0e7490',
+  },
+  repeatChipText: {
+    fontSize: 13.5,
+    color: '#fff',
+    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
+  },
   formBody: { padding: 16, gap: 6, paddingBottom: 32 },
   label: {
     fontSize: 12,
@@ -436,6 +574,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#e2e8f0',
   },
   chipText: { fontSize: 13, color: '#334155', fontWeight: '600' },
+  chipOnTeal: { backgroundColor: '#0e7490' },
   chipTextOn: { color: '#fff' },
   save: {
     backgroundColor: '#0e7490',

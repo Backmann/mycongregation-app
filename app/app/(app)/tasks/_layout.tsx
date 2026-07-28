@@ -14,6 +14,13 @@ export default function TasksLayout() {
           headerLeft: () => <BackButton fallback="/home" toParent />,
         }}
       />
+      <Stack.Screen
+        name="agenda"
+        options={{
+          title: t('tasks.agenda.title'),
+          headerLeft: () => <BackButton fallback="/tasks" toParent />,
+        }}
+      />
     </Stack>
   );
 }

@@ -3078,6 +3078,23 @@ export interface UpsertTaskInput {
   status?: 'open' | 'done';
 }
 
+
+export interface EldersMeeting {
+  id: string;
+  date: string;
+  startTime: string | null;
+  note: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AgendaResult {
+  meeting: EldersMeeting | null;
+  onAgenda: ElderTask[];
+  overdue: ElderTask[];
+  dueSoon: ElderTask[];
+}
+
 /** Elders and admins only — the server refuses everyone else. */
 export const tasksApi = {
   async list(status?: 'open' | 'done') {
@@ -3096,5 +3113,38 @@ export const tasksApi = {
   },
   async remove(id: string) {
     await api.delete(`/tasks/${id}`);
+  },
+
+  async meetings() {
+    const { data } = await api.get<EldersMeeting[]>('/tasks/meetings');
+    return data;
+  },
+  async createMeeting(input: {
+    date: string;
+    startTime?: string | null;
+    note?: string | null;
+  }) {
+    const { data } = await api.post<EldersMeeting>('/tasks/meetings', input);
+    return data;
+  },
+  async updateMeeting(
+    id: string,
+    input: { date?: string; startTime?: string | null; note?: string | null },
+  ) {
+    const { data } = await api.patch<EldersMeeting>(
+      `/tasks/meetings/${id}`,
+      input,
+    );
+    return data;
+  },
+  async removeMeeting(id: string) {
+    await api.delete(`/tasks/meetings/${id}`);
+  },
+
+  async agenda(meetingId?: string) {
+    const { data } = await api.get<AgendaResult>('/tasks/agenda', {
+      params: meetingId ? { meetingId } : undefined,
+    });
+    return data;
   },
 };

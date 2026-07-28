@@ -2599,7 +2599,36 @@
       "assignee": "Assigned to",
       "due": "By when",
       "deleteTitle": "Delete this task?",
-      "deleteBody": "The record will be removed and cannot be brought back."
+      "deleteBody": "The record will be removed and cannot be brought back.",
+      "meeting": "On which elders’ meeting",
+      "noMeeting": "Not yet"
+    },
+    "agenda": {
+      "title": "Agenda",
+      "open": "Agenda",
+      "onAgenda": "Put on this meeting",
+      "overdue": "Overdue",
+      "dueSoon": "Falls due before the next meeting",
+      "nothing": "Nothing",
+      "noMeeting": "No meeting planned yet",
+      "print": "Print the agenda",
+      "dueShort": "due"
+    },
+    "meeting": {
+      "new": "New elders’ meeting",
+      "edit": "Elders’ meeting",
+      "date": "Date",
+      "time": "Time",
+      "note": "Note",
+      "deleteTitle": "Delete this meeting?",
+      "deleteBody": "Tasks put on it remain — they simply stop being tied to it."
+    },
+    "repeat": {
+      "title": "Repeat this task?",
+      "hint": "In how many months should it be done again?",
+      "months_one": "In {{count}} month",
+      "months_other": "In {{count}} months",
+      "no": "Do not repeat"
     }
   }
 }
