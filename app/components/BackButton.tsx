@@ -1,4 +1,4 @@
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -12,6 +12,17 @@ import { Ionicons } from '@expo/vector-icons';
  *   the schedule. Uses navigate() so the parent tab's stack is reused and the
  *   next back press behaves naturally instead of jumping to Home.
  */
+/**
+ * Where back should go, said by whoever opened the screen.
+ *
+ * A publisher card can be reached from the roster, from a service group, from
+ * a report — and those live in different stacks, so the router's own history
+ * is not a reliable answer: opening a publisher from a group switched stacks,
+ * and going "back" landed in the whole congregation's roster.
+ *
+ * So the caller passes `?from=` and is obeyed. Explicit beats clever here: the
+ * screen that navigated is the only one that knows where the person came from.
+ */
 export function BackButton({
   fallback,
   toParent,
@@ -21,10 +32,13 @@ export function BackButton({
   toParent?: boolean;
   color?: string;
 }) {
+  const { from } = useLocalSearchParams<{ from?: string }>();
   return (
     <Pressable
       onPress={() => {
-        if (toParent && !router.canGoBack()) {
+        if (typeof from === 'string' && from) {
+          router.navigate(from as any);
+        } else if (toParent && !router.canGoBack()) {
           // The logical parent, but only when there is no history to return
           // to. Going there ALWAYS was the old behaviour and it was wrong in
           // the ordinary case: open a service group, tap a publisher, press

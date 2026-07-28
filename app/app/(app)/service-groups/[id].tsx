@@ -215,7 +215,9 @@ export default function ServiceGroupDetailScreen() {
                 styles.leaderCard,
                 pressed && styles.rowPressed,
               ]}
-              onPress={() => router.push(`/publishers/${overseer.id}` as any)}
+              onPress={() => router.push(
+                  `/publishers/${overseer.id}?from=/service-groups/${id}` as any,
+                )}
             >
               <Text style={styles.leaderRole}>{t('serviceGroups.overseer')}</Text>
               <Text style={styles.leaderName}>{overseer.displayName}</Text>
@@ -227,7 +229,9 @@ export default function ServiceGroupDetailScreen() {
                 styles.leaderCard,
                 pressed && styles.rowPressed,
               ]}
-              onPress={() => router.push(`/publishers/${assistant.id}` as any)}
+              onPress={() => router.push(
+                  `/publishers/${assistant.id}?from=/service-groups/${id}` as any,
+                )}
             >
               <Text style={styles.leaderRole}>{t('serviceGroups.assistant')}</Text>
               <Text style={styles.leaderName}>{assistant.displayName}</Text>
@@ -274,6 +278,7 @@ export default function ServiceGroupDetailScreen() {
                 canRemove={canManage && role === null}
                 pending={removeMemberMutation.isPending}
                 onRemove={() => confirmRemoveMember(p)}
+                groupId={id}
               />
             );
           })
@@ -348,6 +353,7 @@ function MemberRow({
   privileged,
   isAuxiliaryPioneer,
   onRemove,
+  groupId,
 }: {
   publisher: Publisher;
   role: 'overseer' | 'assistant' | null;
@@ -356,6 +362,9 @@ function MemberRow({
   privileged: boolean;
   isAuxiliaryPioneer: boolean;
   onRemove: () => void;
+  /** Passed down rather than read from the route: this row is a component of
+   * its own and has no business knowing which screen mounted it. */
+  groupId: string;
 }) {
   const { t } = useTranslation();
   const tags = publisherTags(publisher, { privileged, isAuxiliaryPioneer });
@@ -365,7 +374,9 @@ function MemberRow({
     <Pressable
       style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
       disabled={!privileged}
-      onPress={() => router.push(`/publishers/${publisher.id}` as any)}
+      onPress={() => router.push(
+        `/publishers/${publisher.id}?from=/service-groups/${groupId}` as any,
+      )}
     >
       <View
         style={[

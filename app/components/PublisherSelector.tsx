@@ -59,6 +59,8 @@ interface Props {
   activityById?: Map<string, PublisherActivity>;
   /** Current week (Monday ISO) — flags "this meeting" activity. */
   currentWeekStart?: string;
+  /** Exact date the assignment falls on, when the caller knows it. */
+  absenceDate?: string;
   /** Current meeting type — flags "this meeting" activity. */
   currentEventType?: string;
   /** Part keys (incl. equivalents) to fetch "last done" history for. */
@@ -79,6 +81,16 @@ interface Props {
   emptyLabel?: string;
   /** Optional extra info line under each candidate (e.g. rotation stats). */
   rowMeta?: (publisherId: string) => string | null;
+  /**
+   * What the meta line MEANS, so it can be coloured.
+   *
+   * 'free' — available and long unused, the answer this list exists to give.
+   * 'busy' — already booked, a reason to read no further.
+   * Colour carries the same message as the words, for the glance before the
+   * reading; the words stay, because colour alone is no good to anyone who
+   * reads it poorly.
+   */
+  rowTone?: (publisherId: string) => 'free' | 'busy' | undefined;
   /** Optional explicit ordering: lower rank floats up. Absent candidates
    * still sink to the bottom. Overrides the built-in history sort. */
   sortRank?: (publisherId: string) => number;
@@ -136,6 +148,7 @@ export function PublisherSelector({
   excludeAppointments,
   activityById,
   currentWeekStart,
+  absenceDate,
   currentEventType,
   suggestionPartKeys,
   suggestionRole = 'primary',
@@ -146,6 +159,7 @@ export function PublisherSelector({
   variant = 'field',
   emptyLabel,
   rowMeta,
+  rowTone,
   sortRank,
 }: Props) {
   const { t, i18n } = useTranslation();
@@ -178,6 +192,12 @@ export function PublisherSelector({
   // Exact calendar date of the meeting being assigned (midweek vs weekend),
   // so an absence only warns on the day it actually covers.
   const meetingDayISO = useMemo(() => {
+    // An explicit date WINS over anything worked out from the congregation's
+    // settings. Those settings only know the midweek and weekend days, so a
+    // field-service meeting on a Saturday was being checked against the
+    // midweek day — and a brother away exactly on that Saturday showed up as
+    // free. The caller knows its own date; when it says so, believe it.
+    if (absenceDate) return absenceDate;
     if (!weekValid || !currentWeekStart) return null;
     const v = effectiveVersionFor(msOverview?.versions, currentWeekStart);
     if (!v) return null;
@@ -187,7 +207,7 @@ export function PublisherSelector({
     const mm = String(d.getMonth() + 1).padStart(2, '0');
     const dd = String(d.getDate()).padStart(2, '0');
     return `${d.getFullYear()}-${mm}-${dd}`;
-  }, [msOverview, currentWeekStart, currentEventType, weekValid]);
+  }, [absenceDate, msOverview, currentWeekStart, currentEventType, weekValid]);
   const absentThisWeek = useMemo(() => {
     const m = new Map<string, Absence>();
     if (!weekValid || !currentWeekStart || !weekAbsData) return m;
@@ -563,6 +583,7 @@ export function PublisherSelector({
                   )}
                   absence={absentThisWeek.get(p.id)}
                   meta={rowMeta?.(p.id) ?? undefined}
+                  metaTone={rowTone?.(p.id)}
                   showHistory={historyEnabled}
                   historyKind={scopeDutyType ? 'duty' : 'part'}
                   thisItemDates={itemDatesById.get(p.id) ?? []}
@@ -585,6 +606,7 @@ function PublisherOption({
   activity,
   absence,
   meta,
+  metaTone,
   showHistory,
   historyKind,
   thisItemDates,
@@ -600,6 +622,7 @@ function PublisherOption({
   absence?: Absence;
   /** Optional gray info line under the name (e.g. rotation stats). */
   meta?: string;
+  metaTone?: 'free' | 'busy';
   /** Whether to show the always-visible scoped-history block. */
   showHistory?: boolean;
   /** Whether the scoped item is a program part or a duty. */
@@ -644,7 +667,14 @@ function PublisherOption({
           )}
         </View>
         {meta ? (
-          <Text style={styles.optionMetaText} numberOfLines={1}>
+          <Text
+            style={[
+              styles.optionMetaText,
+              metaTone === 'free' && styles.optionMetaFree,
+              metaTone === 'busy' && styles.optionMetaBusy,
+            ]}
+            numberOfLines={1}
+          >
             {meta}
           </Text>
         ) : null}
@@ -734,6 +764,8 @@ function PublisherOption({
 }
 
 const styles = StyleSheet.create({
+  optionMetaFree: { color: '#15803d' },
+  optionMetaBusy: { color: '#b45309' },
   field: {
     paddingVertical: 8,
     paddingHorizontal: 20,

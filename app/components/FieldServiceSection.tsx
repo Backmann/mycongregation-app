@@ -706,7 +706,20 @@ export function FieldServiceForm({
               onChange={setConductorPublisherId}
               requiredCapability="fs_meeting_conductor"
               currentWeekStart={effectiveWeek}
+              // The field-service meeting has its own day — often a Saturday —
+              // and the congregation's settings only know the midweek and
+              // weekend ones. Without this, a brother away exactly on that
+              // Saturday was shown as free.
+              absenceDate={meetingDateISO}
               sortRank={conductorRank}
+              rowTone={(id) => {
+                const st = conductorStatsQuery.data?.find(
+                  (c) => c.conductorPublisherId === id,
+                );
+                if (st?.nextDate) return 'busy';
+                if (!st || st.total === 0) return 'free';
+                return undefined;
+              }}
               rowMeta={(id) => {
                 const st = conductorStatsQuery.data?.find(
                   (c) => c.conductorPublisherId === id,
