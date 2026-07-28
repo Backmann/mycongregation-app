@@ -1802,7 +1802,6 @@
     "actions": {
       "report": "Submit report",
       "events": "Events",
-      "publishers": "Publishers",
       "absences": "Absences",
       "myGroup": "My group"
     },

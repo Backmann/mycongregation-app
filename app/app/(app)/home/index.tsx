@@ -1026,7 +1026,12 @@ export default function HomeScreen() {
     { key: 'report', label: t('home.actions.report'), icon: 'document-text', href: '/service-reports', show: true },
     { key: 'events', label: t('home.actions.events'), icon: 'megaphone', href: '/special-events', show: true },
     { key: 'absences', label: t('home.actions.absences'), icon: 'airplane', href: '/absences', show: true },
-    { key: 'publishers', label: t('home.actions.publishers'), icon: 'people', href: '/publishers', show: canSeeDirectory },
+    // No «Возвещатели» tile for those who can browse the roster: the tab at
+    // the bottom already takes them there, and two doors into one room is one
+    // door too many on a screen meant for what needs doing today.
+    //
+    // «Моя группа» STAYS for everyone else, because for them it is not a
+    // duplicate — the tab is hidden and this is their only way in.
     { key: 'myGroup', label: t('home.actions.myGroup'), icon: 'people-circle', href: '/publishers', show: !canSeeDirectory },
   ];
 

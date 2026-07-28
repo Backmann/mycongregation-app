@@ -1806,7 +1806,6 @@
     "actions": {
       "report": "Сдать отчёт",
       "events": "События",
-      "publishers": "Возвещатели",
       "absences": "Отсутствия",
       "myGroup": "Моя группа"
     },
