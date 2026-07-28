@@ -1205,7 +1205,8 @@
       "never": "Noch nicht geleitet",
       "next": "Bereits eingeteilt für {{date}}",
       "firstTime": "noch nicht geleitet",
-      "led": "Geleitet {{count}} · zuletzt {{date}}"
+      "led": "Geleitet {{count}} · zuletzt {{date}}",
+      "ledOnly": "Geleitet {{count}}"
     },
     "doubleWeek": "Leitet bereits eine Zusammenkunft diese Woche",
     "topicUsed": "Thema schon verwendet: {{date}}",

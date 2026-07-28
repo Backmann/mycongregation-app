@@ -1205,7 +1205,8 @@
       "never": "Has not led yet",
       "next": "Already booked for {{date}}",
       "firstTime": "not led yet",
-      "led": "Led {{count}} · last {{date}}"
+      "led": "Led {{count}} · last {{date}}",
+      "ledOnly": "Led {{count}}"
     },
     "doubleWeek": "Already leads a meeting this week",
     "topicUsed": "Topic already used: {{date}}",

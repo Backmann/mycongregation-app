@@ -745,11 +745,16 @@ export function FieldServiceForm({
                 if (!st || st.total === 0) {
                   bits.push(t('fieldService.stat.never'));
                 } else {
+                  // Without a last date the sentence must not end in mid-air:
+                  // «Вёл 1 · последний » is what an empty slot looks like, and
+                  // it happens to everyone who has only a future booking.
                   bits.push(
-                    t('fieldService.stat.led', {
-                      count: st.total,
-                      date: st.lastDate ? fmtDayMonth(st.lastDate) : '',
-                    }),
+                    st.lastDate
+                      ? t('fieldService.stat.led', {
+                          count: st.total,
+                          date: fmtDayMonth(st.lastDate),
+                        })
+                      : t('fieldService.stat.ledOnly', { count: st.total }),
                   );
                 }
                 return bits.join(' · ');
@@ -778,12 +783,14 @@ export function FieldServiceForm({
                             })
                           : null,
                         selectedStat.total > 0
-                          ? t('fieldService.stat.led', {
-                              count: selectedStat.total,
-                              date: selectedStat.lastDate
-                                ? fmtDayMonth(selectedStat.lastDate)
-                                : '',
-                            })
+                          ? selectedStat.lastDate
+                            ? t('fieldService.stat.led', {
+                                count: selectedStat.total,
+                                date: fmtDayMonth(selectedStat.lastDate),
+                              })
+                            : t('fieldService.stat.ledOnly', {
+                                count: selectedStat.total,
+                              })
                           : t('fieldService.stat.never'),
                       ]
                         .filter(Boolean)
