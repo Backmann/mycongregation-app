@@ -912,6 +912,10 @@ export function FieldServiceForm({
                     </Text>
                     <PublisherSelector
                       boxed
+                      // He is coming to THIS meeting, so the same day decides
+                      // whether he is away — the conductor picker below had
+                      // this and these two did not.
+                      absenceDate={meetingDateISO}
                       label={t('fieldService.overseer')}
                       value={overseerId}
                       onChange={setOverseerId}
@@ -921,6 +925,7 @@ export function FieldServiceForm({
                     </Text>
                     <PublisherSelector
                       boxed
+                      absenceDate={meetingDateISO}
                       label={t('fieldService.overseerAssistant')}
                       value={assistantId}
                       onChange={setAssistantId}
