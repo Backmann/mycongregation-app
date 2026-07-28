@@ -3,7 +3,6 @@ import {
   ActivityIndicator,
   
   KeyboardAvoidingView,
-  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -268,7 +267,7 @@ export default function NewOrEditServiceReportScreen() {
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      behavior="padding"
       style={{ flex: 1, backgroundColor: '#f1f5f9' }}
     >
       <Stack.Screen options={{ title: screenTitle }} />

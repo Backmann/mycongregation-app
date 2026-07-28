@@ -2,7 +2,6 @@ import { useState } from 'react';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
-  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -53,7 +52,17 @@ export default function LoginScreen() {
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      // 'padding' on BOTH platforms, not iOS only.
+      //
+      // Read out of KeyboardAvoidingView's own source: the shift it applies is
+      // computed the same way everywhere — it listens for the keyboard and
+      // works out the overlap itself; the one platform-specific branch inside
+      // concerns iOS. Leaving Android without a behavior therefore disabled it
+      // for no reason. That was a habit from when Android's window resized
+      // itself around the keyboard; this app runs edge-to-edge, where it does
+      // not — which is why the e-mail field was comfortable and the password
+      // below it sat under the keyboard.
+      behavior="padding"
     >
       <ScrollView
         contentContainerStyle={styles.scrollContent}
