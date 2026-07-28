@@ -1236,7 +1236,8 @@
     "overseerVisit": "Besuch des Dienstaufsehers",
     "overseerVisitHint": "Er leitet diese Zusammenkunft und geht mit der Gruppe in den Dienst",
     "overseer": "Dienstaufseher",
-    "overseerAssistant": "Assistent"
+    "overseerAssistant": "Assistent",
+    "overseerVisitBadge": "Dienstaufseher"
   },
   "cleaning": {
     "title": "Reinigung",
@@ -2564,5 +2565,16 @@
       "androidHint": "Unter Android fehlt dann meist die Firebase-Konfiguration im Build. Das erfordert einen neuen Build; ein Over-the-Air-Update hilft hier nicht.",
       "webWhere": "Einschalten unter Profil → Benachrichtigungen im Browser."
     }
+  },
+  "serviceOverseer": {
+    "title": "Dienstaufseher",
+    "menuSubtitle": "Besuche der Dienstgruppen",
+    "waitingTitle": "In diesem Dienstjahr noch nicht besucht",
+    "yearLabel": "Dienstjahr {{year}}",
+    "last": "Letzter Besuch: {{date}} · {{who}}",
+    "never": "Noch nicht besucht",
+    "planned": "Geplant: {{date}}",
+    "noGroups": "Noch keine Gruppen",
+    "hint": "Ein Besuch wird an einer Zusammenkunft für den Dienst vermerkt — Gruppe wählen und «Besuch des Dienstaufsehers» einschalten."
   }
 }

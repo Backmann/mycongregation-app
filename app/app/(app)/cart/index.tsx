@@ -56,6 +56,13 @@ export default function ServiceHubScreen() {
       show: canViewCoSchedule,
     },
     {
+      family: 'ion',
+      icon: 'walk-outline',
+      title: t('serviceOverseer.title'),
+      subtitle: t('serviceOverseer.menuSubtitle'),
+      route: '/cart/service-overseer',
+    },
+    {
       family: 'mdi',
       icon: 'clock-plus-outline',
       title: t('auxPioneer.title'),

@@ -38,6 +38,10 @@ export default function CartLayout() {
         options={{ title: t('coVisit.title') }}
       />
       <Stack.Screen
+        name="service-overseer"
+        options={{ title: t('serviceOverseer.title') }}
+      />
+      <Stack.Screen
         name="field-service"
         options={{ title: t('fieldService.title') }}
       />

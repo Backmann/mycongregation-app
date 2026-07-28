@@ -1236,7 +1236,8 @@
     "overseerVisit": "Service overseer's visit",
     "overseerVisitHint": "He conducts this meeting and goes out in the ministry with the group",
     "overseer": "Service overseer",
-    "overseerAssistant": "Assistant"
+    "overseerAssistant": "Assistant",
+    "overseerVisitBadge": "Service overseer"
   },
   "cleaning": {
     "title": "Cleaning",
@@ -2564,5 +2565,16 @@
       "androidHint": "On Android this usually means the build has no Firebase configuration. It takes a rebuild — an over-the-air update cannot fix it.",
       "webWhere": "Turn them on in Profile → Notifications in the browser."
     }
+  },
+  "serviceOverseer": {
+    "title": "Service overseer",
+    "menuSubtitle": "Visits to the field-service groups",
+    "waitingTitle": "Not yet visited this service year",
+    "yearLabel": "Service year {{year}}",
+    "last": "Last visit: {{date}} · {{who}}",
+    "never": "Not visited yet",
+    "planned": "Planned: {{date}}",
+    "noGroups": "No groups yet",
+    "hint": "A visit is marked on a field-service meeting — choose the group and turn on «Service overseer's visit»."
   }
 }

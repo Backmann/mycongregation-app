@@ -155,6 +155,18 @@ export function FieldServiceSection({
                       </Text>
                     </View>
                   ) : null}
+                  {/* The group should know he is coming — Lionel asked for
+                      this to be visible to publishers, not kept among the
+                      elders. It sits on the meeting itself, where the group
+                      already looks to see where and when. */}
+                  {m.serviceOverseerVisit ? (
+                    <View style={styles.visitBadge}>
+                      <Ionicons name="walk" size={12} color="#0e7490" />
+                      <Text style={styles.visitBadgeText}>
+                        {t('fieldService.overseerVisitBadge')}
+                      </Text>
+                    </View>
+                  ) : null}
                   <ChipRow>
                     {isMine ? <MyDot kind="field_service" /> : null}
                     {conductor ? (
@@ -939,6 +951,21 @@ export function FieldServiceForm({
 }
 
 const styles = StyleSheet.create({
+  visitBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 999,
+    backgroundColor: '#cffafe',
+  },
+  visitBadgeText: {
+    fontSize: 11.5,
+    color: '#0e7490',
+    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
+  },
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 4 },
   chip: {
     paddingVertical: 7,
