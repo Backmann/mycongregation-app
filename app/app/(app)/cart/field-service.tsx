@@ -26,6 +26,7 @@ import {
   publishersApi,
   hallsApi,
   meetingSettingsApi,
+  serviceGroupsApi,
 } from '../../../lib/api';
 import { usePermissions } from '../../../lib/permissions';
 import { useMyPublisher } from '../../../lib/useMyPublisher';
@@ -102,6 +103,15 @@ export default function FieldServiceMeetingsScreen() {
     queryFn: () => meetingSettingsApi.getOverview(),
     staleTime: 5 * 60 * 1000,
   });
+  const groupsQuery = useQuery({
+    queryKey: ['service-groups'],
+    queryFn: () => serviceGroupsApi.list({}),
+  });
+  const groupName = (id: string) =>
+    (groupsQuery.data?.data ?? []).find(
+      (g: { id: string; name: string }) => g.id === id,
+    )?.name ?? '';
+
   const hallsQuery = useQuery({
     queryKey: ['halls'],
     queryFn: () => hallsApi.list(),
@@ -567,6 +577,24 @@ export default function FieldServiceMeetingsScreen() {
                           </Text>
                         </View>
                       ) : null}
+                      {/* The group and the visit belong HERE too.
+                          The badge was added to the other renderer of this
+                          same list and not to this one, so a saved visit
+                          looked like a visit that had not saved. Two places
+                          drawing one thing is how that keeps happening. */}
+                      {mt.serviceGroupId ? (
+                        <Text style={styles.groupName}>
+                          {groupName(mt.serviceGroupId)}
+                        </Text>
+                      ) : null}
+                      {mt.serviceOverseerVisit ? (
+                        <View style={styles.visitBadge}>
+                          <Ionicons name="walk" size={12} color="#0e7490" />
+                          <Text style={styles.visitBadgeText}>
+                            {t('fieldService.overseerVisitBadge')}
+                          </Text>
+                        </View>
+                      ) : null}
                       <ChipRow>
                         {isMine ? <MyDot kind="field_service" /> : null}
                         {conductor ? (
@@ -798,6 +826,28 @@ export default function FieldServiceMeetingsScreen() {
 }
 
 const styles = StyleSheet.create({
+  groupName: {
+    fontSize: 12.5,
+    color: '#0369a1',
+    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
+  },
+  visitBadge: {
+    flexDirection: 'row',
+    alignSelf: 'flex-start',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 999,
+    backgroundColor: '#cffafe',
+  },
+  visitBadgeText: {
+    fontSize: 11.5,
+    color: '#0e7490',
+    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
+  },
   container: { flex: 1, backgroundColor: '#f1f5f9' },
   tabs: {
     flexDirection: 'row',

@@ -2471,7 +2471,10 @@
       "weekStartDate": "Неделя",
       "eventType": "Встреча",
       "label": "Название",
-      "slotType": "Вид уборки"
+      "slotType": "Вид уборки",
+      "serviceOverseerVisit": "Визит служебного старейшины",
+      "serviceOverseerPublisherId": "Служебный старейшина",
+      "serviceOverseerAssistantId": "Помощник служебного"
     },
     "noValue": "пусто",
     "changedNoValues": "изменено (значения не сохраняются)",

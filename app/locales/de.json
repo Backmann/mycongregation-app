@@ -2467,7 +2467,10 @@
       "weekStartDate": "Woche",
       "eventType": "Zusammenkunft",
       "label": "Bezeichnung",
-      "slotType": "Reinigungsart"
+      "slotType": "Reinigungsart",
+      "serviceOverseerVisit": "Besuch des Dienstaufsehers",
+      "serviceOverseerPublisherId": "Dienstaufseher",
+      "serviceOverseerAssistantId": "Assistent des Dienstaufsehers"
     },
     "noValue": "leer",
     "changedNoValues": "geändert (Werte werden nicht gespeichert)",

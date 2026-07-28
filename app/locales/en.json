@@ -2467,7 +2467,10 @@
       "weekStartDate": "Week",
       "eventType": "Meeting",
       "label": "Label",
-      "slotType": "Cleaning kind"
+      "slotType": "Cleaning kind",
+      "serviceOverseerVisit": "Service overseer's visit",
+      "serviceOverseerPublisherId": "Service overseer",
+      "serviceOverseerAssistantId": "Overseer's assistant"
     },
     "noValue": "empty",
     "changedNoValues": "changed (values are not kept)",
