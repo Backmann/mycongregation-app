@@ -932,7 +932,18 @@ export function FieldServiceForm({
                       // The assistant is not filled in: he does not always
                       // come, and a name put there by the form would be read
                       // later as a record that he did.
-                      if (on && !overseerId) setOverseerId(holderOf('service_overseer'));
+                      if (on) {
+                        const holder = overseerId ?? holderOf('service_overseer');
+                        if (!overseerId) setOverseerId(holder);
+                        // And he CONDUCTS unless told otherwise. Leaving this
+                        // empty made the meeting read «не назначен» in every
+                        // list, which is exactly what a visit is not: the
+                        // choice below changes who, it does not decide whether
+                        // anybody was chosen at all.
+                        if (!conductorPublisherId && holder) {
+                          setConductorPublisherId(holder);
+                        }
+                      }
                     }}
                     trackColor={{ true: '#0ea5e9', false: '#cbd5e1' }}
                   />
@@ -950,7 +961,18 @@ export function FieldServiceForm({
                       absenceDate={meetingDateISO}
                       label={t('fieldService.overseer')}
                       value={overseerId}
-                      onChange={setOverseerId}
+                      onChange={(id) => {
+                        // The conductor follows him, unless the assistant was
+                        // deliberately put there: a name left behind after the
+                        // overseer changed would be a quiet mistake.
+                        if (
+                          conductorPublisherId === overseerId ||
+                          !conductorPublisherId
+                        ) {
+                          setConductorPublisherId(id);
+                        }
+                        setOverseerId(id);
+                      }}
                     />
                     <View style={styles.assistantHead}>
                       <Text style={styles.fieldLabel}>
