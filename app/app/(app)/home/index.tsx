@@ -1032,6 +1032,9 @@ export default function HomeScreen() {
     //
     // «Моя группа» STAYS for everyone else, because for them it is not a
     // duplicate — the tab is hidden and this is their only way in.
+    // Elders and admins only — the server refuses everyone else anyway, and a
+    // tile leading to a refusal is worse than no tile.
+    { key: 'tasks', label: t('home.actions.tasks'), icon: 'checkbox', href: '/tasks', show: canSeeDirectory },
     { key: 'myGroup', label: t('home.actions.myGroup'), icon: 'people-circle', href: '/publishers', show: !canSeeDirectory },
   ];
 

@@ -3043,3 +3043,58 @@ export const annualReportApi = {
     return data;
   },
 };
+
+// ---- Задачи совета старейшин ------------------------------------------
+
+export type TaskArea =
+  | 'ministry'
+  | 'teaching'
+  | 'care'
+  | 'organisation'
+  | 'accounts'
+  | 'other';
+
+export interface ElderTask {
+  id: string;
+  title: string;
+  details: string | null;
+  area: TaskArea;
+  assigneePublisherId: string | null;
+  dueDate: string | null;
+  status: 'open' | 'done';
+  doneAt: string | null;
+  eldersMeetingId: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UpsertTaskInput {
+  title?: string;
+  details?: string | null;
+  area?: TaskArea;
+  assigneePublisherId?: string | null;
+  dueDate?: string | null;
+  eldersMeetingId?: string | null;
+  status?: 'open' | 'done';
+}
+
+/** Elders and admins only — the server refuses everyone else. */
+export const tasksApi = {
+  async list(status?: 'open' | 'done') {
+    const { data } = await api.get<ElderTask[]>('/tasks', {
+      params: status ? { status } : undefined,
+    });
+    return data;
+  },
+  async create(input: UpsertTaskInput) {
+    const { data } = await api.post<ElderTask>('/tasks', input);
+    return data;
+  },
+  async update(id: string, input: UpsertTaskInput) {
+    const { data } = await api.patch<ElderTask>(`/tasks/${id}`, input);
+    return data;
+  },
+  async remove(id: string) {
+    await api.delete(`/tasks/${id}`);
+  },
+};

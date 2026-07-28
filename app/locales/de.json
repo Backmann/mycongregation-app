@@ -1803,7 +1803,8 @@
       "report": "Bericht abgeben",
       "events": "Ereignisse",
       "absences": "Abwesenheiten",
-      "myGroup": "Meine Gruppe"
+      "myGroup": "Meine Gruppe",
+      "tasks": "Aufgaben"
     },
     "meeting": {
       "midweek": "Zusammenkunft unter der Woche",
@@ -2571,5 +2572,34 @@
     "planned": "Geplant: {{date}}",
     "noGroups": "Noch keine Gruppen",
     "hint": "Ein Besuch wird an einer Zusammenkunft für den Dienst vermerkt — Gruppe wählen und «Besuch des Dienstaufsehers» einschalten."
+  },
+  "tasks": {
+    "title": "Aufgaben",
+    "empty": "Noch keine Aufgaben",
+    "doneSection": "Erledigt",
+    "due": "Frist: {{date}}",
+    "overdueSince": "Überfällig seit {{date}}",
+    "overdueCount": "Überfällig: {{count}}",
+    "areas": {
+      "ministry": "Dienst",
+      "teaching": "Schulung",
+      "care": "Fürsorge",
+      "organisation": "Organisation",
+      "accounts": "Konten",
+      "other": "Sonstiges"
+    },
+    "form": {
+      "new": "Neue Aufgabe",
+      "edit": "Aufgabe",
+      "title": "Was zu tun ist",
+      "titlePlaceholder": "Kurz und sachlich",
+      "area": "Bereich",
+      "details": "Einzelheiten",
+      "detailsPlaceholder": "Umstände, Beschlüsse",
+      "assignee": "Zugewiesen an",
+      "due": "Bis wann",
+      "deleteTitle": "Aufgabe löschen?",
+      "deleteBody": "Der Eintrag wird entfernt und kann nicht wiederhergestellt werden."
+    }
   }
 }

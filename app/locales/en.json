@@ -1803,7 +1803,8 @@
       "report": "Submit report",
       "events": "Events",
       "absences": "Absences",
-      "myGroup": "My group"
+      "myGroup": "My group",
+      "tasks": "Tasks"
     },
     "meeting": {
       "midweek": "Midweek meeting",
@@ -2571,5 +2572,34 @@
     "planned": "Planned: {{date}}",
     "noGroups": "No groups yet",
     "hint": "A visit is marked on a field-service meeting — choose the group and turn on «Service overseer's visit»."
+  },
+  "tasks": {
+    "title": "Tasks",
+    "empty": "No tasks yet",
+    "doneSection": "Done",
+    "due": "Due {{date}}",
+    "overdueSince": "Overdue since {{date}}",
+    "overdueCount": "Overdue: {{count}}",
+    "areas": {
+      "ministry": "Ministry",
+      "teaching": "Teaching",
+      "care": "Care",
+      "organisation": "Organisation",
+      "accounts": "Accounts",
+      "other": "Other"
+    },
+    "form": {
+      "new": "New task",
+      "edit": "Task",
+      "title": "What needs doing",
+      "titlePlaceholder": "Briefly and to the point",
+      "area": "Area",
+      "details": "Details",
+      "detailsPlaceholder": "Circumstances, decisions of the body",
+      "assignee": "Assigned to",
+      "due": "By when",
+      "deleteTitle": "Delete this task?",
+      "deleteBody": "The record will be removed and cannot be brought back."
+    }
   }
 }

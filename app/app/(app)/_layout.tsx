@@ -154,6 +154,7 @@ export default function AppLayout() {
         <Tabs.Screen name="special-events" options={{ href: null }} />
         <Tabs.Screen name="absences" options={{ href: null }} />
         <Tabs.Screen name="local-needs" options={{ href: null }} />
+        <Tabs.Screen name="tasks" options={{ href: null }} />
         <Tabs.Screen name="talk-coordinator" options={{ href: null }} />
         <Tabs.Screen name="cleaning" options={{ href: null }} />
       </Tabs>
