@@ -9,7 +9,74 @@ import * as Sharing from 'expo-sharing';
  */
 export function openPrintWindow(): Window | null {
   if (Platform.OS !== 'web' || typeof window === 'undefined') return null;
+  // Not on iOS, and not when the app was added to the Home Screen.
+  //
+  // A window opened from there has no address bar and no close button: Safari
+  // shows a bare viewer with nothing to press, and the person is stuck looking
+  // at their own PDF with no way back into the app. Those cases print from a
+  // hidden frame instead — see printViaFrame below.
+  if (printsInPlace()) return null;
   return window.open('', '_blank');
+}
+
+/**
+ * True where opening a second window traps the person.
+ *
+ * iOS Safari in any form, and any browser running the app from the Home Screen
+ * — a standalone window has no chrome of its own to close.
+ */
+function printsInPlace(): boolean {
+  if (Platform.OS !== 'web' || typeof navigator === 'undefined') return false;
+  const ua = navigator.userAgent || '';
+  const isIOS =
+    /iPad|iPhone|iPod/.test(ua) ||
+    (/Macintosh/.test(ua) && 'ontouchend' in document);
+  const standalone =
+    (window.matchMedia?.('(display-mode: standalone)').matches ?? false) ||
+    (navigator as { standalone?: boolean }).standalone === true;
+  return isIOS || standalone;
+}
+
+/**
+ * Print without leaving the page: a hidden frame holds the document, and the
+ * browser's print sheet appears over the app. Cancelling puts the person back
+ * exactly where they were, with nothing to close.
+ */
+function printViaFrame(html: string): Promise<{ ok: boolean; reason?: string }> {
+  return new Promise((resolve) => {
+    const frame = document.createElement('iframe');
+    frame.setAttribute('aria-hidden', 'true');
+    frame.style.position = 'fixed';
+    frame.style.right = '0';
+    frame.style.bottom = '0';
+    frame.style.width = '1px';
+    frame.style.height = '1px';
+    frame.style.opacity = '0';
+    frame.style.border = '0';
+    document.body.appendChild(frame);
+
+    const done = (ok: boolean, reason?: string) => {
+      // Removed on a delay: Safari needs the frame alive while its print sheet
+      // is up, and tearing it down early cancels the job.
+      setTimeout(() => frame.remove(), 60_000);
+      resolve({ ok, reason });
+    };
+
+    frame.onload = () => {
+      try {
+        const w = frame.contentWindow;
+        if (!w) return done(false, 'no_frame');
+        setTimeout(() => {
+          w.focus();
+          w.print();
+          done(true);
+        }, 300);
+      } catch (e) {
+        done(false, String(e));
+      }
+    };
+    frame.srcdoc = html;
+  });
 }
 
 /**
@@ -33,6 +100,13 @@ export async function exportHtmlAsPdf(
   opts?: { fileName?: string; preopenedWindow?: Window | null },
 ): Promise<{ ok: boolean; reason?: string }> {
   if (Platform.OS === 'web') {
+    if (printsInPlace()) {
+      const title = opts?.fileName ?? 'document';
+      const withTitle = html.includes('<title>')
+        ? html
+        : html.replace('<head>', `<head><title>${title}</title>`);
+      return printViaFrame(withTitle);
+    }
     const win = opts?.preopenedWindow ?? window.open('', '_blank');
     if (!win) return { ok: false, reason: 'popup_blocked' };
     const title = opts?.fileName ?? 'document';
