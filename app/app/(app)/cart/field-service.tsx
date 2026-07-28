@@ -280,14 +280,24 @@ export default function FieldServiceMeetingsScreen() {
       ? meetingOffsets.current[currentWeekMeetingId]
       : null;
     const monthOff = rel ? monthOffsets.current[rel.monthKey] : null;
-    const off =
-      rel && monthOff != null
-        ? monthOff + rel.y
-        : monthOffsets.current[currentMonthKey];
-    if (off != null) {
-      didInitialScroll.current = true;
-      scrollRef.current?.scrollTo({ y: Math.max(off - 8, 0), animated: false });
-    }
+    const precise = !!rel && monthOff != null;
+
+    // Give up the right to try again ONLY once the exact spot is known — or
+    // once it is clear there is nothing exact to find.
+    //
+    // The first attempt used to mark the job done whatever it managed, and on
+    // Android that attempt comes before both halves of the sum exist: it
+    // landed on the month and never corrected itself. In a browser the timing
+    // happened to be kinder, which is why this only showed in the app.
+    //
+    // Until then the month is a provisional resting place, so the screen is
+    // never left at the very top while waiting.
+    const off = precise
+      ? (monthOff as number) + (rel as { y: number }).y
+      : monthOffsets.current[currentMonthKey];
+    if (off == null) return;
+    if (precise || !currentWeekMeetingId) didInitialScroll.current = true;
+    scrollRef.current?.scrollTo({ y: Math.max(off - 8, 0), animated: false });
   };
   const scrollToMonth = (key: string) => {
     setActiveMonthKey(key);
@@ -537,6 +547,7 @@ export default function FieldServiceMeetingsScreen() {
                         monthKey: m.key,
                         y: e.nativeEvent.layout.y,
                       };
+                      if (mt.id === currentWeekMeetingId) scrollToCurrent();
                     }}
                   >
                     <Pressable
