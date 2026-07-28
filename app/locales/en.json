@@ -206,7 +206,7 @@
   },
   "publishers": {
     "title": {
-      "list": "Publishers",
+      "list": "Congregation",
       "detail": "Publisher",
       "new": "New Publisher"
     },
@@ -739,7 +739,7 @@
   },
   "schedule": {
     "title": {
-      "list": "Schedule",
+      "list": "Programme",
       "detail": "Assignment",
       "new": "New Assignment",
       "import": "Import MWB",
@@ -1201,11 +1201,11 @@
       "working": "Generating…"
     },
     "stat": {
-      "total": "total: {{count}}",
       "last": "last: {{date}}",
-      "never": "not yet",
-      "next": "next: {{date}}",
-      "firstTime": "not led yet"
+      "never": "Has not led yet",
+      "next": "Already booked for {{date}}",
+      "firstTime": "not led yet",
+      "led": "Led {{count}} · last {{date}}"
     },
     "doubleWeek": "Already leads a meeting this week",
     "topicUsed": "Topic already used: {{date}}",

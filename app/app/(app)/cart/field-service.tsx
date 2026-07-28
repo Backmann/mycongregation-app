@@ -71,7 +71,9 @@ export default function FieldServiceMeetingsScreen() {
 
   const scrollRef = useRef<ScrollView>(null);
   const monthOffsets = useRef<Record<string, number>>({});
-  const meetingOffsets = useRef<Record<string, number>>({});
+  const meetingOffsets = useRef<
+    Record<string, { monthKey: string; y: number }>
+  >({});
   // Чип месяца подсвечивает БЛОК, видимый на экране (синхронизируется со
   // скроллом), а не календарный текущий месяц — иначе при прокрутке к
   // августу остаётся подсвечен июль и кажется, что фильтр сломан.
@@ -274,9 +276,14 @@ export default function FieldServiceMeetingsScreen() {
 
   const scrollToCurrent = () => {
     if (didInitialScroll.current) return;
+    const rel = currentWeekMeetingId
+      ? meetingOffsets.current[currentWeekMeetingId]
+      : null;
+    const monthOff = rel ? monthOffsets.current[rel.monthKey] : null;
     const off =
-      meetingOffsets.current[currentWeekMeetingId ?? ''] ??
-      monthOffsets.current[currentMonthKey];
+      rel && monthOff != null
+        ? monthOff + rel.y
+        : monthOffsets.current[currentMonthKey];
     if (off != null) {
       didInitialScroll.current = true;
       scrollRef.current?.scrollTo({ y: Math.max(off - 8, 0), animated: false });
@@ -449,7 +456,9 @@ export default function FieldServiceMeetingsScreen() {
             key={m.key}
             onLayout={(e) => {
               monthOffsets.current[m.key] = e.nativeEvent.layout.y;
-              if (m.key === currentMonthKey) scrollToCurrent();
+              // The month is measured after its children, so this is the
+              // first moment both halves of the sum are known.
+              scrollToCurrent();
             }}
             style={styles.monthSection}
           >
@@ -516,12 +525,18 @@ export default function FieldServiceMeetingsScreen() {
                     onLayout={(e: {
                       nativeEvent: { layout: { y: number } };
                     }) => {
-                      // Positions are relative to the month block, so the
-                      // month's own offset is added back in.
-                      meetingOffsets.current[mt.id] =
-                        (monthOffsets.current[m.key] ?? 0) +
-                        e.nativeEvent.layout.y;
-                      if (mt.id === currentWeekMeetingId) scrollToCurrent();
+                      // Store the position RELATIVE to its month and add the
+                      // month's own offset only when scrolling.
+                      //
+                      // Adding it here was the bug: children are measured
+                      // BEFORE their parent, so the month's offset was still
+                      // zero and every meeting landed near the top of the
+                      // list — which is why the screen opened on June instead
+                      // of this week.
+                      meetingOffsets.current[mt.id] = {
+                        monthKey: m.key,
+                        y: e.nativeEvent.layout.y,
+                      };
                     }}
                   >
                     <Pressable

@@ -24,10 +24,17 @@ export function BackButton({
   return (
     <Pressable
       onPress={() => {
-        if (toParent) {
-          // Always go to the logical parent. navigate() (not replace) targets
-          // the parent tab reusing its existing stack, so a subsequent back
-          // press behaves naturally instead of jumping to Home.
+        if (toParent && !router.canGoBack()) {
+          // The logical parent, but only when there is no history to return
+          // to. Going there ALWAYS was the old behaviour and it was wrong in
+          // the ordinary case: open a service group, tap a publisher, press
+          // back — and you landed in the whole congregation's roster instead
+          // of the group you came from.
+          //
+          // The rule the original comment was defending still holds: never
+          // dump the person on Home. That is what the fallback is for, and it
+          // is reached only when the stack really is empty — arriving from a
+          // notification, or a link opened cold.
           router.navigate(fallback as any);
         } else if (router.canGoBack()) {
           router.back();

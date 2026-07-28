@@ -206,7 +206,7 @@
   },
   "publishers": {
     "title": {
-      "list": "Verkündiger",
+      "list": "Versammlung",
       "detail": "Verkündiger",
       "new": "Neuer Verkündiger"
     },
@@ -1201,11 +1201,11 @@
       "working": "Wird erstellt…"
     },
     "stat": {
-      "total": "gesamt: {{count}}",
       "last": "letzte: {{date}}",
-      "never": "noch nicht",
-      "next": "nächste: {{date}}",
-      "firstTime": "noch nicht geleitet"
+      "never": "Noch nicht geleitet",
+      "next": "Bereits eingeteilt für {{date}}",
+      "firstTime": "noch nicht geleitet",
+      "led": "Geleitet {{count}} · zuletzt {{date}}"
     },
     "doubleWeek": "Leitet bereits eine Zusammenkunft diese Woche",
     "topicUsed": "Thema schon verwendet: {{date}}",

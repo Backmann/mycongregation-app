@@ -12,6 +12,9 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
+import dayjs from 'dayjs';
+import 'dayjs/locale/ru';
+import 'dayjs/locale/de';
 import { useQuery } from '@tanstack/react-query';
 import { useMyPublisher } from '../lib/useMyPublisher';
 import { MyDot } from './MyDot';
@@ -444,6 +447,11 @@ export function FieldServiceForm({
     saveHints.push(t('fieldService.form.hintAddress'));
 
   // ---- Rotation / topic hints (advisory) ----
+  /** «11 июля» — a date a person reads, not one they decode. The year is
+   * left off: everything here is within a few months either way. */
+  const fmtDayMonth = (iso: string) =>
+    dayjs(iso).locale(i18n.language).format('D MMMM');
+
   const fmtDate = (iso: string) => iso.split('-').reverse().join('.');
   const effectiveWeek = editing
     ? editing.weekStartDate
@@ -703,19 +711,34 @@ export function FieldServiceForm({
                 const st = conductorStatsQuery.data?.find(
                   (c) => c.conductorPublisherId === id,
                 );
-                if (!st || st.total === 0)
-                  return t('fieldService.stat.never');
-                const bits = [
-                  t('fieldService.stat.total', { count: st.total }),
-                ];
-                if (st.lastDate)
+                // Said in words and in the order the answer is needed.
+                //
+                // It used to read «всего: 1 · последний: 30.05.2026» — three
+                // service words, dotted numerals, and no difference in weight
+                // between «has never led» and «led long ago», which is the one
+                // distinction this line exists to make.
+                //
+                // ALREADY TAKEN COMES FIRST when it applies: that is the
+                // reason NOT to choose this brother, and a reason to stop
+                // reading belongs at the start of the line, not the end.
+                const bits: string[] = [];
+                if (st?.nextDate) {
                   bits.push(
-                    t('fieldService.stat.last', { date: fmtDate(st.lastDate) }),
+                    t('fieldService.stat.next', {
+                      date: fmtDayMonth(st.nextDate),
+                    }),
                   );
-                if (st.nextDate)
+                }
+                if (!st || st.total === 0) {
+                  bits.push(t('fieldService.stat.never'));
+                } else {
                   bits.push(
-                    t('fieldService.stat.next', { date: fmtDate(st.nextDate) }),
+                    t('fieldService.stat.led', {
+                      count: st.total,
+                      date: st.lastDate ? fmtDayMonth(st.lastDate) : '',
+                    }),
                   );
+                }
                 return bits.join(' · ');
               }}
             />
@@ -732,21 +755,23 @@ export function FieldServiceForm({
             {conductorPublisherId ? (
               <>
                 <Text style={styles.statHint}>
+                  {/* The same words as in the list above: one fact must not
+                      be phrased two ways on one screen. */}
                   {selectedStat
                     ? [
-                        t('fieldService.stat.total', {
-                          count: selectedStat.total,
-                        }),
-                        selectedStat.lastDate
-                          ? t('fieldService.stat.last', {
-                              date: fmtDate(selectedStat.lastDate),
-                            })
-                          : t('fieldService.stat.never'),
                         selectedStat.nextDate
                           ? t('fieldService.stat.next', {
-                              date: fmtDate(selectedStat.nextDate),
+                              date: fmtDayMonth(selectedStat.nextDate),
                             })
                           : null,
+                        selectedStat.total > 0
+                          ? t('fieldService.stat.led', {
+                              count: selectedStat.total,
+                              date: selectedStat.lastDate
+                                ? fmtDayMonth(selectedStat.lastDate)
+                                : '',
+                            })
+                          : t('fieldService.stat.never'),
                       ]
                         .filter(Boolean)
                         .join('  ·  ')
