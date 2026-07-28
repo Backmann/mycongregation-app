@@ -1233,7 +1233,9 @@
     "overseerVisitHint": "He conducts this meeting and goes out in the ministry with the group",
     "overseer": "Service overseer",
     "overseerAssistant": "Assistant",
-    "overseerVisitBadge": "Service overseer"
+    "overseerVisitBadge": "Service overseer",
+    "whoConducts": "Who conducts the meeting",
+    "fillAssistant": "Fill in"
   },
   "cleaning": {
     "title": "Cleaning",

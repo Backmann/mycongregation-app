@@ -1237,7 +1237,9 @@
     "overseerVisitHint": "Он проводит эту встречу и идёт в служение с группой",
     "overseer": "Служебный старейшина",
     "overseerAssistant": "Помощник",
-    "overseerVisitBadge": "Служебный старейшина"
+    "overseerVisitBadge": "Служебный старейшина",
+    "whoConducts": "Кто проводит встречу",
+    "fillAssistant": "Подставить"
   },
   "cleaning": {
     "title": "Уборка",

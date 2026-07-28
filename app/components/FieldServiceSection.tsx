@@ -32,6 +32,7 @@ import {
   publishersApi,
   absencesApi,
   serviceGroupsApi,
+  responsibilitiesApi,
 } from '../lib/api';
 import { resolveHallAddress } from '../lib/hallAddress';
 import { PublisherSelector } from './PublisherSelector';
@@ -362,6 +363,22 @@ export function FieldServiceForm({
     enabled: visible,
   });
   const halls = hallsQuery.data ?? [];
+
+  // Who actually holds the appointments — the app already knows, and guessing
+  // would be worse than asking.
+  const respQuery = useQuery({
+    queryKey: ['responsibilities'],
+    queryFn: () => responsibilitiesApi.list(),
+    enabled: visible,
+  });
+  const holderOf = (type: string): string | null => {
+    const r = (respQuery.data ?? []).find((x) => x.type === type);
+    if (!r) return null;
+    const pub = (formPublishersQuery.data?.data ?? []).find(
+      (p) => p.userId === r.userId,
+    );
+    return pub?.id ?? null;
+  };
 
   const conductorStatsQuery = useQuery({
     queryKey: ['field-service-conductor-stats'],
@@ -700,6 +717,11 @@ export function FieldServiceForm({
               maxLength={255}
             />
 
+            {/* Hidden during a visit: the choice above already says who
+                conducts, and offering the whole congregation as well would
+                only invite an answer that contradicts it. */}
+            {!overseerVisit ? (
+              <>
             <PublisherSelector
               label={t('fieldService.conductor')}
               value={conductorPublisherId}
@@ -804,6 +826,8 @@ export function FieldServiceForm({
                 ) : null}
               </>
             ) : null}
+              </>
+            ) : null}
 
             <Text style={styles.fieldLabel}>{t('fieldService.topicLabel')}</Text>
             <TextInput
@@ -901,7 +925,15 @@ export function FieldServiceForm({
                   </View>
                   <Switch
                     value={overseerVisit}
-                    onValueChange={setOverseerVisit}
+                    onValueChange={(on) => {
+                      setOverseerVisit(on);
+                      // The overseer is ONE appointed brother, so filling him
+                      // in is not a guess — it is the only answer there is.
+                      // The assistant is not filled in: he does not always
+                      // come, and a name put there by the form would be read
+                      // later as a record that he did.
+                      if (on && !overseerId) setOverseerId(holderOf('service_overseer'));
+                    }}
                     trackColor={{ true: '#0ea5e9', false: '#cbd5e1' }}
                   />
                 </View>
@@ -920,9 +952,26 @@ export function FieldServiceForm({
                       value={overseerId}
                       onChange={setOverseerId}
                     />
-                    <Text style={styles.fieldLabel}>
-                      {t('fieldService.overseerAssistant')}
-                    </Text>
+                    <View style={styles.assistantHead}>
+                      <Text style={styles.fieldLabel}>
+                        {t('fieldService.overseerAssistant')}
+                      </Text>
+                      {/* One tap rather than a name put there by the form:
+                          he does not always come, and a prefilled name would
+                          later read as a record that he did. */}
+                      {!assistantId && holderOf('service_overseer_assistant') ? (
+                        <Pressable
+                          hitSlop={6}
+                          onPress={() =>
+                            setAssistantId(holderOf('service_overseer_assistant'))
+                          }
+                        >
+                          <Text style={styles.fillIn}>
+                            {t('fieldService.fillAssistant')}
+                          </Text>
+                        </Pressable>
+                      ) : null}
+                    </View>
                     <PublisherSelector
                       boxed
                       absenceDate={meetingDateISO}
@@ -930,6 +979,61 @@ export function FieldServiceForm({
                       value={assistantId}
                       onChange={setAssistantId}
                     />
+
+                    {/* Who conducts, instead of the ordinary conductor field.
+                        With a visit it is one of these two and nobody else,
+                        so a full picker would only invite a wrong answer —
+                        but the CONDUCTOR still has to be recorded, or the
+                        meeting shows as unassigned everywhere else: in the
+                        printed schedule, in his own assignments, in the
+                        rotation that says who has not led lately. */}
+                    <Text style={styles.fieldLabel}>
+                      {t('fieldService.whoConducts')}
+                    </Text>
+                    <View style={styles.chipRow}>
+                      <Pressable
+                        onPress={() => setConductorPublisherId(overseerId)}
+                        style={[
+                          styles.chip,
+                          conductorPublisherId === overseerId &&
+                            overseerId != null &&
+                            styles.chipOn,
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.chipText,
+                            conductorPublisherId === overseerId &&
+                              overseerId != null &&
+                              styles.chipTextOn,
+                          ]}
+                        >
+                          {t('fieldService.overseer')}
+                        </Text>
+                      </Pressable>
+                      <Pressable
+                        disabled={!assistantId}
+                        onPress={() => setConductorPublisherId(assistantId)}
+                        style={[
+                          styles.chip,
+                          !assistantId && styles.chipOff,
+                          conductorPublisherId === assistantId &&
+                            assistantId != null &&
+                            styles.chipOn,
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.chipText,
+                            conductorPublisherId === assistantId &&
+                              assistantId != null &&
+                              styles.chipTextOn,
+                          ]}
+                        >
+                          {t('fieldService.overseerAssistant')}
+                        </Text>
+                      </Pressable>
+                    </View>
                   </>
                 ) : null}
               </>
@@ -1001,6 +1105,18 @@ export function FieldServiceForm({
 }
 
 const styles = StyleSheet.create({
+  assistantHead: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  fillIn: {
+    fontSize: 12.5,
+    color: '#0369a1',
+    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
+  },
+  chipOff: { opacity: 0.45 },
   visitBadge: {
     flexDirection: 'row',
     alignItems: 'center',

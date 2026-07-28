@@ -1233,7 +1233,9 @@
     "overseerVisitHint": "Er leitet diese Zusammenkunft und geht mit der Gruppe in den Dienst",
     "overseer": "Dienstaufseher",
     "overseerAssistant": "Assistent",
-    "overseerVisitBadge": "Dienstaufseher"
+    "overseerVisitBadge": "Dienstaufseher",
+    "whoConducts": "Wer die Zusammenkunft leitet",
+    "fillAssistant": "Einsetzen"
   },
   "cleaning": {
     "title": "Reinigung",
