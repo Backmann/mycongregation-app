@@ -784,6 +784,9 @@ export default function WitnessingScreen() {
                   <PublisherSelector
                     label={t('witnessing.addPublisher')}
                     value={null}
+                    // The shift has a date of its own. Without it nothing
+                    // knew to warn that a brother is away that very day.
+                    absenceDate={distSlot.date}
                     requiredCapability="public_witnessing"
                     excludeIds={(distSlot.assignments ?? [])
                       .map((a) => a.publisherId)

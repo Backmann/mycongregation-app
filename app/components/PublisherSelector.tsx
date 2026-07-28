@@ -180,7 +180,11 @@ export function PublisherSelector({
   const { data: weekAbsData } = useQuery({
     queryKey: ['absences', 'week-warn'],
     queryFn: () => absencesApi.list(),
-    enabled: weekValid,
+    // Загружаются и когда недели нет: an explicit date is reason enough.
+    // Absences used to be fetched only for callers that pass a week, so the
+    // CO-visit schedule and the cart — which have real dates but no week —
+    // could never warn about anyone at all.
+    enabled: weekValid || !!absenceDate,
     staleTime: 5 * 60 * 1000,
   });
   const { data: msOverview } = useQuery({
@@ -210,7 +214,18 @@ export function PublisherSelector({
   }, [absenceDate, msOverview, currentWeekStart, currentEventType, weekValid]);
   const absentThisWeek = useMemo(() => {
     const m = new Map<string, Absence>();
-    if (!weekValid || !currentWeekStart || !weekAbsData) return m;
+    if (!weekAbsData) return m;
+    if (!weekValid || !currentWeekStart) {
+      // No week, but a date was named: that single day is the whole test.
+      if (!absenceDate) return m;
+      for (const a of weekAbsData) {
+        const end = a.endDate ?? a.startDate;
+        if (a.startDate <= absenceDate && absenceDate <= end) {
+          m.set(a.publisherId, a);
+        }
+      }
+      return m;
+    }
     const ws = currentWeekStart;
     const we = weekEndISO(ws);
     for (const a of weekAbsData) {
@@ -225,7 +240,7 @@ export function PublisherSelector({
       }
     }
     return m;
-  }, [weekAbsData, currentWeekStart, weekValid, meetingDayISO]);
+  }, [weekAbsData, currentWeekStart, weekValid, meetingDayISO, absenceDate]);
   const selectedAbsence = value ? absentThisWeek.get(value) : undefined;
   // ----------------------------------------------------------------------
 

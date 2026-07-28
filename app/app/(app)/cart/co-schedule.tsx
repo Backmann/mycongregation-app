@@ -1253,6 +1253,9 @@ export default function CoScheduleScreen() {
           <>
             <PublisherSelector
               boxed
+              // Accommodation is not one day's item: he stays for the whole
+              // visit, so the first day is what an absence has to clear.
+              absenceDate={visit.date}
               label={t('coVisit.accHost')}
               {...hostMeta('accommodation')}
               value={visit.coAccommodationPublisherId}
@@ -1433,6 +1436,7 @@ export default function CoScheduleScreen() {
                   </Text>
                   <PublisherSelector
                     boxed
+                    absenceDate={form.itemDate}
                     label={t('coVisit.lunchBoxPublisher')}
                     value={form.assigneePublisherId}
                     onChange={(id) =>
@@ -1576,6 +1580,7 @@ export default function CoScheduleScreen() {
                     </View>
                     <PublisherSelector
                       boxed
+                      absenceDate={form.itemDate}
                       label={t('coVisit.accompanying')}
                       {...hostMeta('field_service')}
                       value={form.assigneePublisherId}
@@ -1654,6 +1659,7 @@ export default function CoScheduleScreen() {
                         <>
                           <PublisherSelector
                             boxed
+                            absenceDate={form.itemDate}
                             label={t('coVisit.accompanying')}
                             {...hostMeta('field_service')}
                             value={form.wifePartnerPublisherId}
@@ -1725,6 +1731,7 @@ export default function CoScheduleScreen() {
                   ) : (
                     <PublisherSelector
                       boxed
+                      absenceDate={form.itemDate}
                       label={t('coVisit.host')}
                       value={form.assigneePublisherId}
                       onChange={(id) =>
@@ -1759,6 +1766,7 @@ export default function CoScheduleScreen() {
                   </Text>
                   <PublisherSelector
                     boxed
+                    absenceDate={form.itemDate}
                     label={t('coVisit.pastoralElder')}
                     {...hostMeta('pastoral')}
                     value={form.assigneePublisherId}
