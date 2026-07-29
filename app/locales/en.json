@@ -1813,7 +1813,8 @@
       "weekend": "Weekend meeting",
       "myParts": "My assignments",
       "asAssistant": "assistant",
-      "noParts": "No assignments this week"
+      "noParts": "No assignments this week",
+      "withPartner": "with {{name}}"
     },
     "timeline": {
       "title": "Coming up",
@@ -1862,7 +1863,8 @@
       "weekend": "Weekend meeting"
     },
     "fieldService": {
-      "leading": "Field service meeting — you conduct"
+      "leading": "Field service meeting — you conduct",
+      "asOverseerAssistant": "Visiting the group with the service overseer"
     },
     "nextFieldService": "Field service meeting",
     "myTasksScreen": {

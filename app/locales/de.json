@@ -1813,7 +1813,8 @@
       "weekend": "Zusammenkunft am Wochenende",
       "myParts": "Meine Aufgaben",
       "asAssistant": "Assistent",
-      "noParts": "Keine Aufgaben in dieser Woche"
+      "noParts": "Keine Aufgaben in dieser Woche",
+      "withPartner": "mit {{name}}"
     },
     "timeline": {
       "title": "Demnächst",
@@ -1862,7 +1863,8 @@
       "weekend": "Zusammenkunft am Wochenende"
     },
     "fieldService": {
-      "leading": "Predigtdienst-Zusammenkunft — du leitest"
+      "leading": "Predigtdienst-Zusammenkunft — du leitest",
+      "asOverseerAssistant": "Gruppenbesuch mit dem Dienstaufseher"
     },
     "nextFieldService": "Predigtdienst-Zusammenkunft",
     "myTasksScreen": {

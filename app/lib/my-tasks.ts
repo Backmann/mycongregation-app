@@ -226,13 +226,24 @@ export function taskTitle(item: MyAssignmentItem, t: TFunc): string {
       if (idx > 0) raw = raw.slice(0, idx);
     }
     const label = getPartLabel(raw);
+    // Who the pair is, not merely that there is one. «Оттачиваем навыки
+    // (напарник)» left the brother to guess whom he is helping, and the pair
+    // is half of what he needs to know before the meeting.
+    const withWhom = item.partnerName
+      ? ` · ${t('home.meeting.withPartner', { name: item.partnerName })}`
+      : '';
     return (
       label +
-      (item.asAssistant ? ` (${t('home.meeting.asAssistant')})` : '')
+      (item.asAssistant ? ` (${t('home.meeting.asAssistant')})` : '') +
+      withWhom
     );
   }
   if (item.kind === 'field_service') {
-    return t('home.fieldService.leading');
+    // The assistant is not leading it, and telling him he is would be worse
+    // than telling him nothing: he would arrive expecting to conduct.
+    return item.asOverseerAssistant
+      ? t('home.fieldService.asOverseerAssistant')
+      : t('home.fieldService.leading');
   }
   if (item.kind === 'co_lunch') {
     // A lunch and a lunch box are two different things to organise; the server

@@ -1979,6 +1979,10 @@ export interface MyAssignmentItem {
   mapUrl?: string;
   congregationName?: string;
   asAssistant?: boolean;
+  /** The other person in a pair, by name. */
+  partnerName?: string;
+  /** Field-service visit: he comes as the service overseer's assistant. */
+  asOverseerAssistant?: boolean;
   note?: string;
   partKey?: string;
   partOrder?: number;
