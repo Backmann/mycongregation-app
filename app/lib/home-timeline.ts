@@ -192,6 +192,16 @@ const OWN_ROW_TASK_KINDS = new Set<MyAssignmentItem['kind']>([
   'cart',
   'outgoing_talk',
   'co_lunch',
+  // A field-service meeting speaks inside its own background row — but that
+  // row exists only for the three weeks the home screen loads. Beyond them a
+  // meeting the person is recorded in fell between two rules: no background
+  // row to speak inside, and no right to a row of its own. A visit planned for
+  // September was invisible while its data was perfectly correct, which is
+  // what made it look, four times over, like a saving fault.
+  //
+  // Within those three weeks the background row still speaks it, and the guard
+  // below keeps the same meeting from being stated twice.
+  'field_service',
 ]);
 
 /**
@@ -263,6 +273,8 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
 
   const entries: TimelineEntry[] = [];
   const farEntries: TimelineEntry[] = [];
+  /** Field-service meetings already drawn as background rows. */
+  const spokenFieldService = new Set<string>();
   /**
    * Background (meetings, events) only ever belongs to the near window. My own
    * items go wherever their date falls — near if inside the window, otherwise
@@ -375,6 +387,9 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
     const conductor = m.conductorPublisherId
       ? publishersById.get(m.conductorPublisherId) ?? null
       : null;
+    // Remembered so the personal loop below does not repeat what this row
+    // already says.
+    spokenFieldService.add(`${m.weekStartDate}|${m.dayOfWeek}`);
     const iConduct = myItems.some(
       (it) =>
         it.kind === 'field_service' &&
@@ -469,6 +484,13 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
   const consumedAbsenceIds = new Set<string>();
   for (const r of refined) {
     if (!OWN_ROW_TASK_KINDS.has(r.item.kind)) continue;
+    // Said already by the meeting's own row — one thing, one line.
+    if (
+      r.item.kind === 'field_service' &&
+      spokenFieldService.has(`${r.item.weekStartDate}|${r.item.dayOfWeek}`)
+    ) {
+      continue;
+    }
     // The cleaning done after the meetings is spoken inside the meeting rows.
     if (r.item.kind === 'cleaning' && r.item.label === 'after_meeting') continue;
     const dateISO = taskPlacement(r);
