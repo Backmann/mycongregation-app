@@ -175,6 +175,12 @@ export default function FieldServiceMeetingsScreen() {
     qc.invalidateQueries({ queryKey: ['field-service'] });
     qc.invalidateQueries({ queryKey: ['field-service-conductor-stats'] });
     qc.invalidateQueries({ queryKey: ['field-service-topic-history'] });
+    // The service overseer's group counts are DERIVED from these very
+    // meetings: mark a visit here and «кого давно не посещали» changes there.
+    // Nothing else refreshes it, so the page would go on showing yesterday's
+    // numbers until the app happened to refetch — the same shape of fault as
+    // the microphone appearing late.
+    qc.invalidateQueries({ queryKey: ['service-overseer'] });
   };
 
   const createM = useMutation({

@@ -378,6 +378,10 @@ export default function ScheduleIndexScreen() {
     queryClient.invalidateQueries({
       queryKey: ['field-service-topic-history'],
     });
+    // Same reason as on the field-service screen: the overseer's group counts
+    // are derived from these meetings, and a meeting can be saved from here
+    // too. Two places save, so two places must refresh.
+    queryClient.invalidateQueries({ queryKey: ['service-overseer'] });
   };
   const createFieldServiceMutation = useMutation({
     mutationFn: (input: Parameters<typeof fieldServiceApi.create>[0]) =>
