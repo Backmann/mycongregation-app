@@ -39,9 +39,9 @@ export default function AssignmentDetailScreen() {
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['assignments'] });
       queryClient.invalidateQueries({ queryKey: ['assignment', id] });
-      if (result.partKey === 'treasures_talk') {
-        queryClient.invalidateQueries({ queryKey: ['duties'] });
-      }
+      // Both directions of the mirror rule rebuild the microphone duty, so
+      // this refresh must not be conditional on which part was edited.
+      queryClient.invalidateQueries({ queryKey: ['duties'] });
       const warnings = result.ruleWarnings;
       if (warnings && warnings.length) {
         const msg = warnings
@@ -74,9 +74,9 @@ export default function AssignmentDetailScreen() {
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['assignments'] });
       queryClient.invalidateQueries({ queryKey: ['assignment', id] });
-      if (result.partKey === 'treasures_talk') {
-        queryClient.invalidateQueries({ queryKey: ['duties'] });
-      }
+      // Both directions of the mirror rule rebuild the microphone duty, so
+      // this refresh must not be conditional on which part was edited.
+      queryClient.invalidateQueries({ queryKey: ['duties'] });
       router.back();
     },
   });

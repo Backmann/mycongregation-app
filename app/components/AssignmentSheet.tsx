@@ -125,10 +125,15 @@ export function AssignmentSheet({
           queryKey: ["assignment", assignment.id],
         });
       }
-      // Treasures-talk speaker mirrors onto a microphone duty — refresh duties.
-      if (assignment?.partKey === "treasures_talk") {
-        queryClient.invalidateQueries({ queryKey: ["duties"] });
-      }
+      // The mirror rule works BOTH WAYS — assign the Treasures talk OR the
+      // opening prayer and the other fills itself, rebuilding the microphone
+      // duty either way. Refreshing duties only after the talk left the app
+      // showing a stale microphone whenever the PRAYER was the part edited:
+      // the server had it right, the phone was reading its own saved copy.
+      // That is why a browser, with no copy to read, showed the truth first.
+      //
+      // One refetch is cheap; a screen that disagrees with the server is not.
+      queryClient.invalidateQueries({ queryKey: ["duties"] });
     },
   });
 
@@ -143,9 +148,9 @@ export function AssignmentSheet({
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["assignments"] });
-      if (assignment?.partKey === "treasures_talk") {
-        queryClient.invalidateQueries({ queryKey: ["duties"] });
-      }
+      // Both ways here too: clearing the prayer clears the auto-filled talk
+      // and its microphone.
+      queryClient.invalidateQueries({ queryKey: ["duties"] });
       onClose();
     },
   });
