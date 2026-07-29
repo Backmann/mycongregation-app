@@ -206,6 +206,18 @@ export default function MyAssignmentsScreen() {
                         <Text style={styles.title} numberOfLines={2}>
                           {taskTitle(r.item, t)}
                         </Text>
+                        {/* When and where — shown for a visit because that is
+                            what a man needs before setting off, and the screen
+                            gave neither. Only where the server sends them, so
+                            nothing else gains an empty line. */}
+                        {r.item.kind === 'field_service' &&
+                        (r.item.time || r.item.location) ? (
+                          <Text style={styles.whereWhen} numberOfLines={2}>
+                            {[r.item.time, r.item.location]
+                              .filter(Boolean)
+                              .join(' · ')}
+                          </Text>
+                        ) : null}
                         {r.item.kind === 'cleaning' ? (
                           <CleaningRowExtras
                             item={r.item}
@@ -408,6 +420,11 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 0.4,
     marginBottom: 2,
+  },
+  whereWhen: {
+    fontSize: 13,
+    color: '#475569',
+    marginTop: 2,
   },
   title: { fontSize: 15, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0f172a' },
   emptyBox: { alignItems: 'center', marginTop: 48, gap: 10 },

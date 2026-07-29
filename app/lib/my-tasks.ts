@@ -241,9 +241,20 @@ export function taskTitle(item: MyAssignmentItem, t: TFunc): string {
   if (item.kind === 'field_service') {
     // The assistant is not leading it, and telling him he is would be worse
     // than telling him nothing: he would arrive expecting to conduct.
-    return item.asOverseerAssistant
+    const base = item.asOverseerAssistant
       ? t('home.fieldService.asOverseerAssistant')
       : t('home.fieldService.leading');
+    // WHOSE group, and WITH WHOM. «Провожу встречу для проповеди» left both
+    // unanswered, and a visit is to a particular group with a particular
+    // brother — neither should have to be asked of somebody else.
+    const parts = [base];
+    if (item.groupName) {
+      parts.push(t('home.fieldService.forGroup', { name: item.groupName }));
+    }
+    if (item.visitWithName) {
+      parts.push(t('home.fieldService.withWhom', { name: item.visitWithName }));
+    }
+    return parts.join(' · ');
   }
   if (item.kind === 'co_lunch') {
     // A lunch and a lunch box are two different things to organise; the server

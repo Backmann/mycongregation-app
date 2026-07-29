@@ -1983,6 +1983,10 @@ export interface MyAssignmentItem {
   partnerName?: string;
   /** Field-service visit: he comes as the service overseer's assistant. */
   asOverseerAssistant?: boolean;
+  /** Field-service visit: whose group is being visited. */
+  groupName?: string;
+  /** Field-service visit: the other man of the pair, by name. */
+  visitWithName?: string;
   note?: string;
   partKey?: string;
   partOrder?: number;
