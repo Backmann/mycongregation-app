@@ -52,6 +52,16 @@ export interface MeetingEntry {
   conductorName: string | null;
   unassignedConductor: boolean;
   topic: string | null;
+  /**
+   * Field service: whose group, and whether the service overseer is coming.
+   *
+   * The home timeline is the THIRD place a field-service meeting is drawn —
+   * after the meetings screen and the schedule — and it was the one still
+   * silent about the visit. A visit shown in two places out of three reads as
+   * a visit that did not save.
+   */
+  groupName?: string | null;
+  serviceOverseerVisit?: boolean;
   sourceUrl: string | null;
   /** When a convention/assembly cancels this meeting, the event that did it. */
   replacedBy: SpecialEvent | null;
@@ -149,6 +159,8 @@ export interface BuildTimelineInput {
   versions: MeetingSettingsVersion[];
   fieldServiceMeetings: FieldServiceMeeting[];
   publishersById: Map<string, Publisher>;
+  /** Service-group names, so a visit can say whose group it is. */
+  groupNameById?: Map<string, string>;
   events: SpecialEvent[];
   /** The signed-in person's own away-periods. */
   absences: Absence[];
@@ -217,6 +229,7 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
     versions,
     fieldServiceMeetings,
     publishersById,
+    groupNameById,
     events,
     absences = [],
     coVisits = [],
@@ -381,6 +394,10 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
       topic: m.topic,
       sourceUrl: m.sourceUrl,
       replacedBy: null,
+      groupName: m.serviceGroupId
+        ? (groupNameById?.get(m.serviceGroupId) ?? null)
+        : null,
+      serviceOverseerVisit: !!m.serviceOverseerVisit,
       myParts: iConduct ? [{ section: null, title: youConductLabel }] : [],
       weeklyCleaning: false,
       isGeneral: !!m.isGeneral,

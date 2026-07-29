@@ -27,6 +27,7 @@ import {
   MyCoVisitItem,
   auxiliaryPioneersApi,
   serviceReportsApi,
+  serviceGroupsApi,
 } from '../../../lib/api';
 import { addDays, formatDateISO, startOfWeekMonday } from '../../../lib/dates';
 import { useAuth } from '../../../lib/auth';
@@ -463,6 +464,20 @@ function MeetingRow({
     entry.kind === 'field_service' ? (
       <>
         {generalBadge}
+        {/* The group and the visit, in the third and last place a
+            field-service meeting is drawn. Two out of three showing it made a
+            saved visit look unsaved. */}
+        {entry.groupName ? (
+          <Text style={tl.fsGroup}>{entry.groupName}</Text>
+        ) : null}
+        {entry.serviceOverseerVisit ? (
+          <View style={tl.fsVisitBadge}>
+            <Ionicons name="walk" size={12} color="#0e7490" />
+            <Text style={tl.fsVisitText}>
+              {t('fieldService.overseerVisitBadge')}
+            </Text>
+          </View>
+        ) : null}
         {entry.conductorName || entry.unassignedConductor ? (
           <Text
             style={[
@@ -838,6 +853,13 @@ function HomeTimeline() {
     queryFn: () => publishersApi.roster(),
     staleTime: 5 * 60 * 1000,
   });
+  // Group names for the field-service visit line — the timeline can only say
+  // «группа Ahlen» if somebody hands it the names.
+  const groupsQ = useQuery({
+    queryKey: ['service-groups'],
+    queryFn: () => serviceGroupsApi.list({}),
+    staleTime: 30 * 60 * 1000,
+  });
   const eventsQ = useQuery({
     queryKey: ['special-events', 'home'],
     queryFn: () => specialEventsApi.list(),
@@ -879,6 +901,12 @@ function HomeTimeline() {
         ...(fsC.data ?? []),
       ],
       publishersById,
+      groupNameById: new Map(
+        (groupsQ.data?.data ?? []).map((g: { id: string; name: string }) => [
+          g.id,
+          g.name,
+        ]),
+      ),
       events: eventsQ.data ?? [],
       absences: absencesQ.data ?? [],
       coVisits: coVisitQ.data ?? [],
@@ -896,6 +924,7 @@ function HomeTimeline() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     overviewQ.data,
+    groupsQ.data,
     fsA.data,
     fsB.data,
     fsC.data,
@@ -1124,6 +1153,30 @@ const tl = StyleSheet.create({
   bgKind: { fontSize: 12, fontWeight: '700', fontFamily: 'Manrope_700Bold' },
   bgTitle: { fontSize: 14, color: '#475569', fontFamily: 'Manrope_500Medium' },
   bgMeta: { fontSize: 12.5, color: '#94a3b8', marginTop: 1 },
+  fsGroup: {
+    fontSize: 12.5,
+    color: '#0369a1',
+    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
+    marginTop: 1,
+  },
+  fsVisitBadge: {
+    flexDirection: 'row',
+    alignSelf: 'flex-start',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 999,
+    backgroundColor: '#cffafe',
+    marginTop: 3,
+  },
+  fsVisitText: {
+    fontSize: 11.5,
+    color: '#0e7490',
+    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
+  },
   fsUnassigned: { color: '#dc2626' },
   fsTopic: {
     fontSize: 12.5,
