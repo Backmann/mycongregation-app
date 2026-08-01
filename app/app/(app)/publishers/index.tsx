@@ -101,7 +101,12 @@ export default function PublishersListScreen() {
   // Active auxiliary pioneers (serving this month) — for the "auxiliary
   // pioneer" filter, which reflects real service periods, not a card field.
   const auxJournalQuery = useQuery({
-    queryKey: ['auxiliary-pioneers', 'journal'],
+    // 'aux-pioneers', not 'auxiliary-pioneers'. The same data was read here
+    // under one name and refreshed elsewhere under another, so appointing or
+    // releasing an auxiliary pioneer left this filter showing yesterday's
+    // answer until the app happened to refetch. One letter apart, invisible
+    // to every check that exists.
+    queryKey: ['aux-pioneers', 'journal'],
     queryFn: () => auxiliaryPioneersApi.journal(),
   });
   const activeAuxIds = useMemo(() => {

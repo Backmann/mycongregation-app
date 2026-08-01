@@ -26,6 +26,23 @@ const queryClient = new QueryClient({
       if (mutation.meta?.inlineError) return;
       reportError(extractErrorMessage(error));
     },
+    /**
+     * «Мои задания» is refreshed after ANY successful change, in one place.
+     *
+     * That list is derived from nearly everything — meeting assignments,
+     * duties, field-service meetings, the CO visit, cleaning. Naming each
+     * source at each of the fifteen-odd places that save one is a game this
+     * project has already lost several times over: the microphone appeared
+     * late because one branch was forgotten, and the overseer's counts went
+     * stale because nobody thought to refresh them at all.
+     *
+     * One refetch of one small endpoint costs less than a screen that
+     * disagrees with the server — and unlike a list of sources, it cannot
+     * fall out of date.
+     */
+    onSuccess: (_data, _vars, _ctx, _mutation) => {
+      void queryClient.invalidateQueries({ queryKey: ['me', 'assignments'] });
+    },
   }),
   defaultOptions: {
     queries: {

@@ -1050,6 +1050,7 @@ export default function HomeScreen() {
     user?.role === 'admin' ||
     user?.role === 'elder' ||
     user?.canViewPrivateData === true;
+  const canManageTasks = user?.role === 'admin' || user?.role === 'elder';
 
   const tiles: Tile[] = [
     { key: 'report', label: t('home.actions.report'), icon: 'document-text', href: '/service-reports', show: true },
@@ -1063,7 +1064,11 @@ export default function HomeScreen() {
     // duplicate — the tab is hidden and this is their only way in.
     // Elders and admins only — the server refuses everyone else anyway, and a
     // tile leading to a refusal is worse than no tile.
-    { key: 'tasks', label: t('home.actions.tasks'), icon: 'checkbox', href: '/tasks', show: canSeeDirectory },
+    // Elders and admins ONLY — matching the server, which refuses everyone
+    // else. `canSeeDirectory` also lets in anyone granted access to private
+    // data, so a servant with that right saw the tile and was then turned
+    // away: a door that opens onto a refusal is worse than no door.
+    { key: 'tasks', label: t('home.actions.tasks'), icon: 'checkbox', href: '/tasks', show: canManageTasks },
     { key: 'myGroup', label: t('home.actions.myGroup'), icon: 'people-circle', href: '/publishers', show: !canSeeDirectory },
   ];
 
