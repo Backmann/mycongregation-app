@@ -1007,7 +1007,16 @@
         "confirmBody": "Für eine Versammlung genügen normalerweise 2 Administratoren (derzeit aktiv: {{count}}). Trotzdem einen weiteren zuweisen?",
         "confirmAction": "Zuweisen"
       },
-      "online": "online"
+      "online": "online",
+      "orphans": {
+        "title_one": "{{count}} Zugang ohne Verkündigerkarte",
+        "title_other": "{{count}} Zugänge ohne Verkündigerkarte",
+        "body": "Diese Person kann sich anmelden, aber keinen Bericht abgeben und sieht keine Zuteilungen: die App erkennt Personen über die Karte. Verknüpfen Sie den Zugang mit einer Karte.",
+        "badge": "Ohne Verkündigerkarte",
+        "fix": "Verknüpfen",
+        "sheetTitle": "Wem gehört dieses Konto?",
+        "sheetHint": "Wählen Sie den Verkündiger, dem der Zugang {{email}} gehört."
+      }
     }
   },
   "publicTalks": {

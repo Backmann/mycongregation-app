@@ -1007,7 +1007,16 @@
         "confirmBody": "Two administrators are usually enough for a congregation (currently active: {{count}}). Assign another one anyway?",
         "confirmAction": "Assign"
       },
-      "online": "online"
+      "online": "online",
+      "orphans": {
+        "title_one": "{{count}} login with no publisher card",
+        "title_other": "{{count}} logins with no publisher card",
+        "body": "Such a person can sign in but cannot submit a report and sees none of their assignments: the app recognises people by their card. Link the login to a card and everything opens.",
+        "badge": "No publisher card",
+        "fix": "Link",
+        "sheetTitle": "Whose account is this?",
+        "sheetHint": "Choose the publisher this login ({{email}}) belongs to."
+      }
     }
   },
   "publicTalks": {

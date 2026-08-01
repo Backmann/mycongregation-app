@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
+  Pressable,
   ActivityIndicator,
   RefreshControl,
   ScrollView,
@@ -7,11 +8,13 @@ import {
   Text,
   View,
 } from 'react-native';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../../lib/auth';
 import { PresenceDot } from '../../../components/PresenceDot';
+import { Sheet } from '../../../components/Sheet';
+import { PublisherSelector } from '../../../components/PublisherSelector';
 import {
   PublicUser,
   UserRole,
@@ -76,6 +79,22 @@ export default function AdminUsersScreen() {
   });
 
   const users = usersQuery.data ?? [];
+  // An account with no publisher card can sign in and then find every personal
+  // screen closed. Nobody could see who was in that state, so it surfaced one
+  // complaint at a time — which is exactly what this line prevents.
+  const orphans = users.filter((u) => !u.publisherId);
+
+  const qc = useQueryClient();
+  const [linkFor, setLinkFor] = useState<PublicUser | null>(null);
+  const linkMut = useMutation({
+    mutationFn: (publisherId: string) =>
+      usersApi.linkPublisher(linkFor!.id, publisherId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: QK_USERS });
+      qc.invalidateQueries({ queryKey: ['publishers'] });
+      setLinkFor(null);
+    },
+  });
 
   return (
     <View style={styles.container}>
@@ -108,6 +127,20 @@ export default function AdminUsersScreen() {
           </Text>
         </View>
 
+        {orphans.length > 0 && (
+          <View style={styles.orphanCard}>
+            <View style={styles.orphanHead}>
+              <Ionicons name="alert-circle" size={16} color="#92400e" />
+              <Text style={styles.orphanTitle}>
+                {t('admin.users.orphans.title', { count: orphans.length })}
+              </Text>
+            </View>
+            <Text style={styles.orphanBody}>
+              {t('admin.users.orphans.body')}
+            </Text>
+          </View>
+        )}
+
         {usersQuery.error && (
           <View style={styles.errorBox}>
             <Text style={styles.errorText}>
@@ -122,15 +155,56 @@ export default function AdminUsersScreen() {
           <Text style={styles.empty}>{t('admin.users.noUsers')}</Text>
         ) : (
           users.map((u) => (
-            <UserCard key={u.id} user={u} isSelf={u.id === currentUser?.id} />
+            <UserCard
+              key={u.id}
+              user={u}
+              isSelf={u.id === currentUser?.id}
+              onLink={() => setLinkFor(u)}
+            />
           ))
         )}
       </ScrollView>
+
+      <Sheet
+        visible={!!linkFor}
+        onClose={() => setLinkFor(null)}
+        variant="bottom"
+        fills
+        title={t('admin.users.orphans.sheetTitle')}
+        closeLabel={t('common.close')}
+      >
+        <View style={styles.linkBody}>
+          <Text style={styles.linkHint}>
+            {t('admin.users.orphans.sheetHint', { email: linkFor?.email ?? '' })}
+          </Text>
+          {linkMut.isError ? (
+            <Text style={styles.linkError}>
+              {extractErrorMessage(linkMut.error)}
+            </Text>
+          ) : null}
+          <PublisherSelector
+            boxed
+            label={t('admin.users.orphans.sheetTitle')}
+            value={null}
+            onChange={(id) => {
+              if (id) linkMut.mutate(id);
+            }}
+          />
+        </View>
+      </Sheet>
     </View>
   );
 }
 
-function UserCard({ user, isSelf }: { user: PublicUser; isSelf: boolean }) {
+function UserCard({
+  user,
+  isSelf,
+  onLink,
+}: {
+  user: PublicUser;
+  isSelf: boolean;
+  onLink: () => void;
+}) {
   const { t } = useTranslation();
   // The login role collapses unbaptized publishers, students and "none" all
   // into 'publisher'. On this list, show the real appointment for those so a
@@ -186,6 +260,21 @@ function UserCard({ user, isSelf }: { user: PublicUser; isSelf: boolean }) {
         </View>
       </View>
 
+      {/* Said on the row itself, not only in the summary above: a person
+          scanning the list should see which account is the broken one without
+          counting. */}
+      {!user.publisherId && (
+        <View style={styles.orphanRow}>
+          <Ionicons name="link-outline" size={14} color="#92400e" />
+          <Text style={styles.orphanRowText}>
+            {t('admin.users.orphans.badge')}
+          </Text>
+          <Pressable onPress={onLink} hitSlop={8}>
+            <Text style={styles.orphanFix}>{t('admin.users.orphans.fix')}</Text>
+          </Pressable>
+        </View>
+      )}
+
       {!user.isActive && (
         <View style={styles.inactiveBanner}>
           <Ionicons name="ban" size={14} color="#991b1b" />
@@ -199,6 +288,44 @@ function UserCard({ user, isSelf }: { user: PublicUser; isSelf: boolean }) {
 }
 
 const styles = StyleSheet.create({
+  orphanCard: {
+    marginHorizontal: 16,
+    marginBottom: 10,
+    padding: 12,
+    borderRadius: 12,
+    backgroundColor: '#fffbeb',
+    borderWidth: 1,
+    borderColor: '#fde68a',
+    gap: 5,
+  },
+  orphanHead: { flexDirection: 'row', alignItems: 'center', gap: 7 },
+  orphanTitle: {
+    flexShrink: 1,
+    fontSize: 13,
+    color: '#92400e',
+    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
+  },
+  orphanBody: { fontSize: 13, color: '#78350f', lineHeight: 18 },
+  orphanRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 7,
+    marginTop: 8,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#f1f5f9',
+  },
+  orphanRowText: { flex: 1, fontSize: 12.5, color: '#92400e' },
+  orphanFix: {
+    fontSize: 13,
+    color: '#0369a1',
+    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
+  },
+  linkBody: { padding: 16, gap: 10 },
+  linkHint: { fontSize: 13.5, color: '#475569', lineHeight: 19 },
+  linkError: { fontSize: 13, color: '#dc2626' },
   container: { flex: 1, backgroundColor: '#f1f5f9' },
   headerBar: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 8 },
   headerTitle: { fontSize: 22, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0f172a' },

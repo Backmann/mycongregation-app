@@ -162,6 +162,13 @@ export interface PublicUser {
   createdAt: string;
   updatedAt: string;
   appointment: PublisherAppointment | null;
+  /**
+   * The publisher card this account speaks for, or null.
+   *
+   * Null means the person can sign in and then find every personal screen
+   * closed — report, assignments, group all hang off the card.
+   */
+  publisherId: string | null;
 }
 
 export interface CreateUserInput {
@@ -697,6 +704,16 @@ export const usersApi = {
   },
   async resetPassword(id: string, password: string): Promise<void> {
     await api.post(`/users/${id}/reset-password`, { password });
+  },
+  /** Point an account at a publisher card, or clear the link with null. */
+  async linkPublisher(
+    id: string,
+    publisherId: string | null,
+  ): Promise<PublicUser> {
+    const { data } = await api.patch<PublicUser>(`/users/${id}/publisher`, {
+      publisherId,
+    });
+    return data;
   },
 };
 
