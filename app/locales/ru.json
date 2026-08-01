@@ -1870,7 +1870,8 @@
       "leading": "Встреча для проповеди — вы ведёте",
       "asOverseerAssistant": "Посещение группы вместе со служебным старейшиной",
       "forGroup": "группа {{name}}",
-      "withWhom": "вместе с {{name}}"
+      "withWhom": "вместе с {{name}}",
+      "overseerVisitTitle": "Посещение служебного старейшины"
     },
     "nextFieldService": "Встреча для проповеди",
     "myTasksScreen": {

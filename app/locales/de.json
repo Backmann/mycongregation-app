@@ -1866,7 +1866,8 @@
       "leading": "Predigtdienst-Zusammenkunft — du leitest",
       "asOverseerAssistant": "Gruppenbesuch mit dem Dienstaufseher",
       "forGroup": "Gruppe {{name}}",
-      "withWhom": "zusammen mit {{name}}"
+      "withWhom": "zusammen mit {{name}}",
+      "overseerVisitTitle": "Besuch des Dienstaufsehers"
     },
     "nextFieldService": "Predigtdienst-Zusammenkunft",
     "myTasksScreen": {

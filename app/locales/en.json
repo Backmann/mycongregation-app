@@ -1866,7 +1866,8 @@
       "leading": "Field service meeting — you conduct",
       "asOverseerAssistant": "Visiting the group with the service overseer",
       "forGroup": "group {{name}}",
-      "withWhom": "together with {{name}}"
+      "withWhom": "together with {{name}}",
+      "overseerVisitTitle": "Service overseer's visit"
     },
     "nextFieldService": "Field service meeting",
     "myTasksScreen": {

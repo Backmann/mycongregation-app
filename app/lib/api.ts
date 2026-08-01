@@ -1985,6 +1985,8 @@ export interface MyAssignmentItem {
   asOverseerAssistant?: boolean;
   /** Field-service visit: whose group is being visited. */
   groupName?: string;
+  /** This field-service meeting IS the service overseer's visit. */
+  serviceOverseerVisit?: boolean;
   /** Field-service visit: the other man of the pair, by name. */
   visitWithName?: string;
   note?: string;

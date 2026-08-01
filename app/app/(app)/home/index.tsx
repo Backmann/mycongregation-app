@@ -799,7 +799,7 @@ function CoVisitRow({ item: it }: { item: MyCoVisitItem }) {
           {coVisitKindLabel(it.kind, t)}
         </Text>
         {it.startTime ? (
-          <Text style={tl.mineMeta}> · {it.startTime}</Text>
+          <Text style={[tl.mineMeta, tl.mineTime]}> · {it.startTime}</Text>
         ) : null}
       </View>
       {wl ? <Text style={tl.mineTitle}>{wl}</Text> : null}
@@ -1199,6 +1199,11 @@ const tl = StyleSheet.create({
     marginBottom: 3,
   },
   mineKind: {
+    // flexShrink so a long name yields instead of pushing the time off the
+    // screen: «Встреча со старейшинами и помощниками собрания» ran past the
+    // right edge and took the time with it. Four kinds of row share this
+    // header, so the fix belongs to the style, not to any one of them.
+    flexShrink: 1,
     fontSize: 12,
     fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
@@ -1210,6 +1215,7 @@ const tl = StyleSheet.create({
     fontFamily: 'Manrope_700Bold',
     color: '#0f172a',
   },
+  mineTime: { flexShrink: 0 },
   mineMeta: { fontSize: 12.5, color: '#64748b', marginTop: 1 },
   partsBox: { marginTop: 8, gap: 3 },
   partSection: {

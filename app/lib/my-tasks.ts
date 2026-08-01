@@ -241,8 +241,12 @@ export function taskTitle(item: MyAssignmentItem, t: TFunc): string {
   if (item.kind === 'field_service') {
     // The assistant is not leading it, and telling him he is would be worse
     // than telling him nothing: he would arrive expecting to conduct.
-    const base = item.asOverseerAssistant
-      ? t('home.fieldService.asOverseerAssistant')
+    // A visit is named as a visit, whoever is reading it. «Встреча для
+    // проповеди — вы ведёте» described the mechanics and hid the occasion;
+    // the overseer and his assistant are going to the same thing, and one
+    // thing deserves one name.
+    const base = item.serviceOverseerVisit
+      ? t('home.fieldService.overseerVisitTitle')
       : t('home.fieldService.leading');
     // WHOSE group, and WITH WHOM. «Провожу встречу для проповеди» left both
     // unanswered, and a visit is to a particular group with a particular
