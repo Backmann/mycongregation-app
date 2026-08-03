@@ -627,7 +627,8 @@
     "monthDone": "сдан",
     "studiesMinus": "На одно изучение меньше",
     "studiesPlus": "На одно изучение больше",
-    "submitForMonth": "Сдать отчёт за {{month}}"
+    "submitForMonth": "Сдать отчёт за {{month}}",
+    "alreadySubmittedFor": "Отчёт за {{month}} уже сдан. Возможно, его внесли с другого устройства или это сделал старейшина. Список месяцев обновлён."
   },
   "serviceGroups": {
     "title": {

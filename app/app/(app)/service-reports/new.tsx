@@ -44,6 +44,21 @@ function getRecentMonths(): { value: string; label: string }[] {
   return months;
 }
 
+/**
+ * The server refusing a month it already holds.
+ *
+ * It answers 409 with a sentence written for a developer, in English — and
+ * that sentence was going straight onto the screen of a publisher filing a
+ * report. The status is the part worth reading; the wording belongs to us.
+ */
+function isAlreadySubmitted(error: unknown): boolean {
+  return (
+    !!error &&
+    typeof error === 'object' &&
+    (error as { response?: { status?: number } }).response?.status === 409
+  );
+}
+
 /** YYYY-MM-DD or YYYY-MM-01 → YYYY-MM */
 function toYearMonth(s: string): string {
   return s.slice(0, 7);
@@ -196,6 +211,9 @@ export default function NewOrEditServiceReportScreen() {
         iAmAuxThisMonth === true;
 
   const submitMutation = useMutation({
+    // Shown in place by this form — keep it out of the global error strip,
+    // which was repeating the very same sentence a second time.
+    meta: { inlineError: true },
     mutationFn: () =>
       serviceReportsApi.submit({
         reportMonth,
@@ -210,9 +228,21 @@ export default function NewOrEditServiceReportScreen() {
       queryClient.invalidateQueries({ queryKey: ['service-reports'] });
       setSubmitted(true);
     },
+    onError: (err) => {
+      // 409 means the month is already filed — most often because it was filed
+      // somewhere else: another device, another tab, or an elder entering it
+      // for this publisher. The screen's list of months was simply older than
+      // the truth, so it offered a month that is gone. Refetch, and the month
+      // marks itself «сдан» instead of leaving a red line the reader cannot
+      // act on.
+      if (isAlreadySubmitted(err)) {
+        void queryClient.invalidateQueries({ queryKey: ['service-reports'] });
+      }
+    },
   });
 
   const updateMutation = useMutation({
+    meta: { inlineError: true },
     mutationFn: () =>
       serviceReportsApi.update(editId!, {
         servedThisMonth:
@@ -612,13 +642,21 @@ export default function NewOrEditServiceReportScreen() {
           />
         </View>
 
-        {mutation.isError && (
-          <View style={styles.errorBox}>
-            <Text style={styles.errorText}>
-              {extractErrorMessage(mutation.error)}
-            </Text>
-          </View>
-        )}
+        {mutation.isError &&
+          (isAlreadySubmitted(mutation.error) ? (
+            <View style={styles.noticeBox}>
+              <Ionicons name="information-circle" size={18} color="#0369a1" />
+              <Text style={styles.noticeText}>
+                {t('reports.alreadySubmittedFor', { month: monthLabel })}
+              </Text>
+            </View>
+          ) : (
+            <View style={styles.errorBox}>
+              <Text style={styles.errorText}>
+                {extractErrorMessage(mutation.error)}
+              </Text>
+            </View>
+          ))}
 
         {isEditMode &&
           editId &&
@@ -834,6 +872,18 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   submitBtnPressed: { opacity: 0.9 },
+  noticeBox: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 8,
+    marginTop: 16,
+    padding: 12,
+    backgroundColor: '#f0f9ff',
+    borderColor: '#bae6fd',
+    borderWidth: 1,
+    borderRadius: 10,
+  },
+  noticeText: { flex: 1, color: '#0c4a6e', fontSize: 13.5, lineHeight: 19 },
   monthChipTaken2: {
     fontSize: 11,
     color: '#94a3b8',

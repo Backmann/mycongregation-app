@@ -621,7 +621,8 @@
     "monthDone": "abgegeben",
     "studiesMinus": "Ein Bibelstudium weniger",
     "studiesPlus": "Ein Bibelstudium mehr",
-    "submitForMonth": "Bericht für {{month}} abgeben"
+    "submitForMonth": "Bericht für {{month}} abgeben",
+    "alreadySubmittedFor": "Der Bericht für {{month}} wurde bereits abgegeben. Vielleicht wurde er auf einem anderen Gerät oder von einem Ältesten eingetragen. Die Monatsliste wurde aktualisiert."
   },
   "serviceGroups": {
     "title": {

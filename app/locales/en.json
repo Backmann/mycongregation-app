@@ -621,7 +621,8 @@
     "monthDone": "filed",
     "studiesMinus": "One study fewer",
     "studiesPlus": "One study more",
-    "submitForMonth": "Submit the report for {{month}}"
+    "submitForMonth": "Submit the report for {{month}}",
+    "alreadySubmittedFor": "The report for {{month}} has already been filed. It may have been entered on another device, or by an elder. The list of months has been refreshed."
   },
   "serviceGroups": {
     "title": {
