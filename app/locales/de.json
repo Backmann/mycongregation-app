@@ -577,6 +577,14 @@
       "onTrack": "Im Plan",
       "behind": "Im Rückstand",
       "detail": "{{hours}} Std. von {{goalToDate}} Std. bis diesen Monat · Jahresziel {{annualGoal}} Std."
+    },
+    "collection": {
+      "title": "Berichte für {{month}}",
+      "progress": "{{received}} von {{expected}} abgegeben",
+      "allIn": "Alle {{expected}} abgegeben",
+      "due": "Frist bis {{date}}",
+      "overdue": "Frist war am {{date}}",
+      "canClose": "Der Monat kann abgeschlossen werden"
     }
   },
   "serviceGroups": {

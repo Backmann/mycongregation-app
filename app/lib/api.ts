@@ -583,6 +583,17 @@ export interface ServiceYearSummary {
   }[];
 }
 
+/** Where the collection of the month's reports stands — the home card. */
+export interface ReportCollection {
+  reportMonth: string;
+  scope: 'congregation' | 'group';
+  expected: number;
+  received: number;
+  deadline: string;
+  pastDeadline: boolean;
+  closed: boolean;
+}
+
 export interface ServiceReportSummary {
   reportMonth: string;
   categories: ServiceReportSummaryCategory[];
@@ -2559,6 +2570,12 @@ export const serviceReportsApi = {
     const { data } = await api.get<PublisherHistoryResponse>(
       `/service-reports/by-publisher/${publisherId}`,
       { params: { months } },
+    );
+    return data;
+  },
+  async getCollection(): Promise<ReportCollection> {
+    const { data } = await api.get<ReportCollection>(
+      '/service-reports/collection',
     );
     return data;
   },

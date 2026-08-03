@@ -9,6 +9,7 @@ import {
   View,
 } from 'react-native';
 import { AttendanceCard } from '../../../components/AttendanceCard';
+import { ReportCollectionCard } from '../../../components/ReportCollectionCard';
 import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -1117,6 +1118,8 @@ export default function HomeScreen() {
       </ScrollView>
 
       <ReportStandingCard />
+
+      <ReportCollectionCard />
 
       <AttendanceCard />
 

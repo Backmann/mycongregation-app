@@ -577,6 +577,14 @@
       "onTrack": "On track",
       "behind": "Behind",
       "detail": "{{hours}} h of {{goalToDate}} h by this month · annual goal {{annualGoal}} h"
+    },
+    "collection": {
+      "title": "Reports for {{month}}",
+      "progress": "{{received}} of {{expected}} handed in",
+      "allIn": "All {{expected}} handed in",
+      "due": "Due by {{date}}",
+      "overdue": "Was due {{date}}",
+      "canClose": "The month can be closed"
     }
   },
   "serviceGroups": {

@@ -581,6 +581,14 @@
       "onTrack": "В графике",
       "behind": "Отстаёт",
       "detail": "{{hours}} ч из {{goalToDate}} ч к этому месяцу · годовая норма {{annualGoal}} ч"
+    },
+    "collection": {
+      "title": "Отчёты за {{month}}",
+      "progress": "Сдали {{received}} из {{expected}}",
+      "allIn": "Сдали все {{expected}}",
+      "due": "Срок — до {{date}}",
+      "overdue": "Срок прошёл {{date}}",
+      "canClose": "Месяц можно закрыть"
     }
   },
   "serviceGroups": {
