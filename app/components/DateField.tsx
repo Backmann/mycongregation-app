@@ -9,6 +9,9 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
+import dayjs from 'dayjs';
+import 'dayjs/locale/ru';
+import 'dayjs/locale/de';
 
 /** YYYY-MM-DD helpers (string-comparable, no timezone drift). */
 function pad(n: number): string {
@@ -22,21 +25,32 @@ function firstWeekday(year: number, month0: number): number {
   return (new Date(year, month0, 1).getDay() + 6) % 7;
 }
 
-const MONTHS_RU = [
-  'Январь',
-  'Февраль',
-  'Март',
-  'Апрель',
-  'Май',
-  'Июнь',
-  'Июль',
-  'Август',
-  'Сентябрь',
-  'Октябрь',
-  'Ноябрь',
-  'Декабрь',
-];
-const WEEKDAYS_RU = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+/**
+ * Month and weekday names come from the reader's own language.
+ *
+ * They used to be two Russian arrays in this file — and this picker opens
+ * from every date on every screen, so a German or English reader met a Russian
+ * calendar everywhere. The i18n check could not catch it either: it watches
+ * for missing KEYS, and there was no key to miss.
+ *
+ * Built from dayjs rather than from new translation keys: the names are
+ * already in its locales, correct and declined, and one more list of twelve
+ * words in three files is one more list to keep in step.
+ */
+/** A Monday, so the seven labels come out Monday-first. */
+const WEEK_ANCHOR = '2024-01-01';
+
+function monthNames(locale: string): string[] {
+  return Array.from({ length: 12 }, (_, m) =>
+    dayjs().locale(locale).month(m).date(1).format('MMMM'),
+  );
+}
+
+function weekdayNames(locale: string): string[] {
+  return Array.from({ length: 7 }, (_, i) =>
+    dayjs(WEEK_ANCHOR).add(i, 'day').locale(locale).format('dd'),
+  );
+}
 
 export function DateField({
   label,
@@ -49,8 +63,10 @@ export function DateField({
   onChange: (v: string) => void;
   placeholder?: string;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [open, setOpen] = useState(false);
+  const months = useMemo(() => monthNames(i18n.language), [i18n.language]);
+  const weekdays = useMemo(() => weekdayNames(i18n.language), [i18n.language]);
 
   const now = useMemo(() => new Date(), []);
   const parsed = useMemo(() => {
@@ -160,7 +176,7 @@ export function DateField({
                 onPress={() => setYearOpen((v) => !v)}
               >
                 <Text style={styles.monthYearText}>
-                  {MONTHS_RU[viewMonth]} {viewYear}
+                  {months[viewMonth]} {viewYear}
                 </Text>
                 <Ionicons
                   name={yearOpen ? 'chevron-up' : 'chevron-down'}
@@ -205,7 +221,7 @@ export function DateField({
             ) : (
               <>
                 <View style={styles.weekRow}>
-                  {WEEKDAYS_RU.map((w) => (
+                  {weekdays.map((w) => (
                     <Text key={w} style={styles.weekday}>
                       {w}
                     </Text>
@@ -314,7 +330,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 6,
   },
-  monthYearText: { fontSize: 16, fontWeight: '700', color: '#0f172a' },
+  // dayjs gives month names in lower case in Russian ("август"); the header
+  // read as a capital before, so it keeps reading as one.
+  monthYearText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#0f172a',
+    textTransform: 'capitalize',
+  },
   yearList: { maxHeight: 260 },
   yearRow: { paddingVertical: 10, alignItems: 'center', borderRadius: 8 },
   yearRowActive: { backgroundColor: '#e0f2fe' },
@@ -327,6 +350,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: '#94a3b8',
     fontWeight: '600',
+    textTransform: 'capitalize',
   },
   grid: { flexDirection: 'row', flexWrap: 'wrap' },
   cell: { width: `${100 / 7}%`, aspectRatio: 1, padding: 2 },

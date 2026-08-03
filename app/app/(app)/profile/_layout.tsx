@@ -45,7 +45,7 @@ export default function ProfileLayout() {
       />
       <Stack.Screen
         name="songs-import"
-        options={{ title: 'Импорт песен' }}
+        options={{ title: t('songsImport.title') }}
       />
       <Stack.Screen
         name="change-password"
@@ -64,7 +64,10 @@ export default function ProfileLayout() {
         name="responsibilities"
         options={{ title: t('responsibilities.title') }}
       />
-      <Stack.Screen name="brothers" options={{ title: 'Братья' }} />
+      <Stack.Screen
+        name="brothers"
+        options={{ title: t('profileExtra.brothers') }}
+      />
       <Stack.Screen
         name="meeting-settings"
         options={{ title: t('meetingSettings.title') }}

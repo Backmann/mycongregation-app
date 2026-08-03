@@ -97,9 +97,7 @@ export function SongPicker({
       {songsQuery.isLoading ? (
         <ActivityIndicator style={{ marginTop: 24 }} />
       ) : songs.length === 0 ? (
-        <Text style={styles.empty}>
-          Каталог песен пуст. Импортируйте песни в разделе Профиль → Песни.
-        </Text>
+        <Text style={styles.empty}>{t('songPicker.catalogEmpty')}</Text>
       ) : (
         <ScrollView
           style={styles.list}

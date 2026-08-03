@@ -136,7 +136,10 @@
     "today": "Today",
     "datePlaceholder": "YYYY-MM-DD",
     "loadFailed": "Could not load",
-    "loadFailedHint": "Check your connection and try again — the data may not have arrived."
+    "loadFailedHint": "Check your connection and try again — the data may not have arrived.",
+    "hourUnit": "h",
+    "boldShort": "B",
+    "italicShort": "I"
   },
   "profile": {
     "signedInAs": "Signed in as",
@@ -585,6 +588,16 @@
       "due": "Due by {{date}}",
       "overdue": "Was due {{date}}",
       "canClose": "The month can be closed"
+    },
+    "summary": {
+      "title": "Monthly summary",
+      "monthClosed": "Month closed",
+      "monthOpen": "Month open",
+      "closedHint": "Edits are frozen for everyone except the secretary and an administrator.",
+      "openHint": "Publishers and group overseers can enter reports within their window.",
+      "closureAffectsStatus": "Closing the month also settles the publishers’ statuses.",
+      "closeMonth": "Close month",
+      "reopenMonth": "Reopen month"
     }
   },
   "serviceGroups": {
@@ -651,7 +664,8 @@
     "weekend_closing_prayer": "Closing prayer",
     "co_service_talk": "Service talk (circuit overseer)",
     "co_concluding_talk": "Concluding talk",
-    "living_christians_extra": "Living as Christians"
+    "living_christians_extra": "Living as Christians",
+    "song": "Song"
   },
   "eventTypes": {
     "midweek": "Midweek meeting",
@@ -1024,7 +1038,8 @@
         "fix": "Link",
         "sheetTitle": "Whose account is this?",
         "sheetHint": "Choose the publisher this login ({{email}}) belongs to."
-      }
+      },
+      "readOnlyNote": "This list of logins is read-only. Grant or change a login under «Brothers»: that is where an account is tied to a person, and the role follows the appointment."
     }
   },
   "publicTalks": {
@@ -2329,13 +2344,17 @@
     "responsibilities": "Responsibilities",
     "error": "Error",
     "hasAccess": "Has access",
-    "noAccess": "No access"
+    "noAccess": "No access",
+    "responsibilityCount_one": "{{count}} responsibility",
+    "responsibilityCount_other": "{{count}} responsibilities",
+    "needsAccessFirst": "Grant a login first — responsibilities are assigned to a user account. After granting it, close the brother and open him again."
   },
   "songPicker": {
     "current": "Current song",
     "clear": "Remove the song",
     "search": "Search by number or title",
-    "none": "Not chosen"
+    "none": "Not chosen",
+    "catalogEmpty": "The song catalogue is empty. Import songs under Profile → Songs."
   },
   "songsImport": {
     "title": "Import songs",

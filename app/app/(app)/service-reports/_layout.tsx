@@ -104,7 +104,10 @@ export default function ServiceReportsLayout() {
       />
       <Stack.Screen name="new" options={{ title: t('reports.title.new') }} />
       <Stack.Screen name="group" options={{ title: t('reports.title.group') }} />
-      <Stack.Screen name="summary" options={{ title: 'Сводка за месяц' }} />
+      <Stack.Screen
+        name="summary"
+        options={{ title: t('reports.summary.title') }}
+      />
       <Stack.Screen name="audit-log" options={{ title: t('reports.title.editHistory') }} />
       <Stack.Screen
         name="publisher-history"

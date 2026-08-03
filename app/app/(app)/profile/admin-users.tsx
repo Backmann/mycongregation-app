@@ -121,9 +121,7 @@ export default function AdminUsersScreen() {
             color="#0369a1"
           />
           <Text style={styles.noteText}>
-            Список входов — только для просмотра. Выдать или изменить вход можно
-            в разделе «Братья»: там логин привязывается к человеку, а роль
-            ставится по его назначению.
+            {t('admin.users.readOnlyNote')}
           </Text>
         </View>
 

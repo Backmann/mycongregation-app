@@ -66,13 +66,13 @@ export default function BrothersScreen() {
     mutationFn: (v: { type: ResponsibilityType; userId: string }) =>
       responsibilitiesApi.assign(v),
     onSuccess: () => qc.invalidateQueries({ queryKey: QK_RESPONSIBILITIES }),
-    onError: (e: unknown) => notify('Ошибка', extractErrorMessage(e)),
+    onError: (e: unknown) => notify(t('brothers.error'), extractErrorMessage(e)),
   });
   const revokeMutation = useMutation({
     mutationFn: (v: { type: ResponsibilityType; userId: string }) =>
       responsibilitiesApi.revoke(v.type, v.userId),
     onSuccess: () => qc.invalidateQueries({ queryKey: QK_RESPONSIBILITIES }),
-    onError: (e: unknown) => notify('Ошибка', extractErrorMessage(e)),
+    onError: (e: unknown) => notify(t('brothers.error'), extractErrorMessage(e)),
   });
 
   const brothers = useMemo(() => brothersQuery.data ?? [], [brothersQuery.data]);
@@ -142,8 +142,12 @@ export default function BrothersScreen() {
                   <View style={{ flex: 1 }}>
                     <Text style={styles.name}>{b.displayName}</Text>
                     <Text style={styles.sub}>
-                      {b.userId ? 'Есть вход' : 'Нет входа'}
-                      {respCount > 0 ? ` · обязанностей: ${respCount}` : ''}
+                      {b.userId
+                        ? t('brothers.hasAccess')
+                        : t('brothers.noAccess')}
+                      {respCount > 0
+                        ? ` · ${t('brothers.responsibilityCount', { count: respCount })}`
+                        : ''}
                     </Text>
                   </View>
                   <Ionicons name="chevron-forward" size={18} color="#cbd5e1" />
@@ -182,8 +186,7 @@ export default function BrothersScreen() {
                 <View style={styles.block}>
                   {!selected.userId ? (
                     <Text style={styles.muted}>
-                      Сначала дайте вход — обязанности назначаются пользователю.
-                      После выдачи входа закройте и откройте брата заново.
+                      {t('brothers.needsAccessFirst')}
                     </Text>
                   ) : (
                     RESPONSIBILITY_ORDER.map((type, idx) => {

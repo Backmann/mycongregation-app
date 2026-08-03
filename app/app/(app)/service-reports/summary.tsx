@@ -23,7 +23,7 @@ import {
   TrendPoint,
 } from '../../../components/HistoryTrendChart';
 
-const SCREEN_TITLE = 'Сводка за месяц';
+
 
 /** Short axis label like "сен 25" for the year trend. */
 function shortMonthLabel(reportMonth: string): string {
@@ -104,7 +104,7 @@ export default function ServiceSummaryScreen() {
   if (!canViewServiceSummary) {
     return (
       <View style={styles.center}>
-        <Stack.Screen options={{ title: SCREEN_TITLE }} />
+        <Stack.Screen options={{ title: t('reports.summary.title') }} />
         <Ionicons name="lock-closed-outline" size={64} color="#cbd5e1" />
         <Text style={styles.errorTitle}>{t('serviceSummary.noAccessTitle')}</Text>
         <Text style={styles.errorText}>
@@ -117,7 +117,7 @@ export default function ServiceSummaryScreen() {
   if (isLoading) {
     return (
       <View style={styles.center}>
-        <Stack.Screen options={{ title: SCREEN_TITLE }} />
+        <Stack.Screen options={{ title: t('reports.summary.title') }} />
         <ActivityIndicator size="large" />
       </View>
     );
@@ -128,7 +128,7 @@ export default function ServiceSummaryScreen() {
     const isForbidden = /403|forbid|authoriz/i.test(message);
     return (
       <View style={styles.center}>
-        <Stack.Screen options={{ title: SCREEN_TITLE }} />
+        <Stack.Screen options={{ title: t('reports.summary.title') }} />
         <Ionicons
           name={isForbidden ? 'lock-closed-outline' : 'alert-circle-outline'}
           size={64}
@@ -146,7 +146,7 @@ export default function ServiceSummaryScreen() {
 
   return (
     <View style={styles.container}>
-      <Stack.Screen options={{ title: SCREEN_TITLE }} />
+      <Stack.Screen options={{ title: t('reports.summary.title') }} />
       <View style={styles.header}>
         <ScrollView
           horizontal
@@ -194,14 +194,23 @@ export default function ServiceSummaryScreen() {
               color={data?.closed ? '#b45309' : '#0ea5e9'}
             />
             <Text style={styles.closureTitle}>
-              {data?.closed ? 'Месяц закрыт' : 'Месяц открыт'}
+              {data?.closed
+                ? t('reports.summary.monthClosed')
+                : t('reports.summary.monthOpen')}
             </Text>
           </View>
           <Text style={styles.closureHint}>
             {data?.closed
-              ? 'Правки заморожены для всех, кроме секретаря и администратора.'
-              : 'Возвещатели и надзиратели групп могут вносить отчёты в своём окне.'}
+              ? t('reports.summary.closedHint')
+              : t('reports.summary.openHint')}
           </Text>
+          {/* Closing settles the statuses too, and does it at once. Said
+              before the click, not discovered after it. */}
+          {!data?.closed ? (
+            <Text style={styles.closureHint}>
+              {t('reports.summary.closureAffectsStatus')}
+            </Text>
+          ) : null}
           <Pressable
             onPress={() =>
               closureMutation.mutate(data?.closed ? 'reopen' : 'close')
@@ -215,10 +224,10 @@ export default function ServiceSummaryScreen() {
           >
             <Text style={styles.closureBtnText}>
               {closureMutation.isPending
-                ? 'Сохранение…'
+                ? t('common.saving')
                 : data?.closed
-                  ? 'Открыть месяц'
-                  : 'Закрыть месяц'}
+                  ? t('reports.summary.reopenMonth')
+                  : t('reports.summary.closeMonth')}
             </Text>
           </Pressable>
           {closureMutation.isError && (

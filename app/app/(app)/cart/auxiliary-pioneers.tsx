@@ -536,6 +536,7 @@ function ServingCard({
   stopLabel: string;
   removeLabel: string;
 }) {
+  const { t } = useTranslation();
   const [menu, setMenu] = useState(false);
   const openEnded = row.untilCancelled;
   const accent = openEnded ? '#1D9E75' : '#378ADD';
@@ -569,7 +570,7 @@ function ServingCard({
       <View style={{ alignItems: 'flex-end', gap: 4 }}>
         <Text style={styles.hourGoal}>
           {row.hourGoal}
-          <Text style={styles.hourUnit}> ч</Text>
+          <Text style={styles.hourUnit}> {t('common.hourUnit')}</Text>
         </Text>
         {canManage ? (
           <Pressable hitSlop={8} onPress={() => setMenu(true)}>

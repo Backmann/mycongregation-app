@@ -136,7 +136,10 @@
     "today": "Heute",
     "datePlaceholder": "JJJJ-MM-TT",
     "loadFailed": "Laden fehlgeschlagen",
-    "loadFailedHint": "Prüfe die Verbindung und versuche es erneut — die Daten kamen möglicherweise nicht an."
+    "loadFailedHint": "Prüfe die Verbindung und versuche es erneut — die Daten kamen möglicherweise nicht an.",
+    "hourUnit": "Std.",
+    "boldShort": "F",
+    "italicShort": "K"
   },
   "profile": {
     "signedInAs": "Angemeldet als",
@@ -585,6 +588,16 @@
       "due": "Frist bis {{date}}",
       "overdue": "Frist war am {{date}}",
       "canClose": "Der Monat kann abgeschlossen werden"
+    },
+    "summary": {
+      "title": "Monatsübersicht",
+      "monthClosed": "Monat abgeschlossen",
+      "monthOpen": "Monat offen",
+      "closedHint": "Änderungen sind für alle außer dem Sekretär und einem Administrator gesperrt.",
+      "openHint": "Verkündiger und Gruppenaufseher können Berichte in ihrem Zeitfenster eintragen.",
+      "closureAffectsStatus": "Mit dem Abschluss werden auch die Status der Verkündiger festgeschrieben.",
+      "closeMonth": "Monat abschließen",
+      "reopenMonth": "Monat öffnen"
     }
   },
   "serviceGroups": {
@@ -651,7 +664,8 @@
     "weekend_closing_prayer": "Schlussgebet",
     "co_service_talk": "Dienstvortrag des Kreisaufsehers",
     "co_concluding_talk": "Schlussvortrag",
-    "living_christians_extra": "Leben als Christ"
+    "living_christians_extra": "Leben als Christ",
+    "song": "Lied"
   },
   "eventTypes": {
     "midweek": "Zusammenkunft unter der Woche",
@@ -1024,7 +1038,8 @@
         "fix": "Verknüpfen",
         "sheetTitle": "Wem gehört dieses Konto?",
         "sheetHint": "Wählen Sie den Verkündiger, dem der Zugang {{email}} gehört."
-      }
+      },
+      "readOnlyNote": "Diese Liste der Zugänge dient nur der Ansicht. Einen Zugang erteilst oder änderst du unter «Brüder»: dort wird das Konto der Person zugeordnet, die Rolle folgt der Ernennung."
     }
   },
   "publicTalks": {
@@ -2329,13 +2344,17 @@
     "responsibilities": "Aufgaben",
     "error": "Fehler",
     "hasAccess": "Zugang vorhanden",
-    "noAccess": "Kein Zugang"
+    "noAccess": "Kein Zugang",
+    "responsibilityCount_one": "{{count}} Aufgabe",
+    "responsibilityCount_other": "{{count}} Aufgaben",
+    "needsAccessFirst": "Erteile zuerst einen Zugang — Aufgaben werden einem Benutzerkonto zugewiesen. Schließe den Bruder danach und öffne ihn erneut."
   },
   "songPicker": {
     "current": "Aktuelles Lied",
     "clear": "Lied entfernen",
     "search": "Nach Nummer oder Titel suchen",
-    "none": "Nicht gewählt"
+    "none": "Nicht gewählt",
+    "catalogEmpty": "Der Liederkatalog ist leer. Importiere Lieder unter Profil → Lieder."
   },
   "songsImport": {
     "title": "Lieder importieren",

@@ -50,14 +50,27 @@ function nthWeekdayISO(
   return `${date.getFullYear()}-${mm}-${dd}`;
 }
 
-/** Lionel's real default rota — shown when the saved template is empty. */
-const DEFAULT_TEMPLATE: EditSlot[] = [
-  { ordinal: 1, dayOfWeek: 6, startTime: '10:30', address: 'Зал Царства Hamm' },
-  { ordinal: 2, dayOfWeek: 6, startTime: '10:30', address: 'Зал Царства Hamm' },
-  { ordinal: 3, dayOfWeek: 6, startTime: '10:30', address: 'Зал Царства Ahlen' },
-  { ordinal: 4, dayOfWeek: 6, startTime: '10:30', address: 'Зал Царства Ahlen' },
-  { ordinal: 5, dayOfWeek: 6, startTime: '10:30', address: 'Зал Царства Ahlen' },
-];
+/**
+ * Shown when the congregation has no saved template yet.
+ *
+ * It used to hold one congregation's real rota — its own two Kingdom Halls by
+ * name, its Saturday, its half past ten. Every other congregation would have
+ * been handed somebody else's timetable to correct, and an address filled in
+ * for you is far easier to leave standing than an empty one is to ignore.
+ *
+ * Now it offers five weeks at the congregation's OWN default hall — the same
+ * seed «добавить слот» has always used. The saved template, once there is
+ * one, replaces this entirely.
+ */
+function defaultTemplate(halls: { address: string; isDefault?: boolean }[]): EditSlot[] {
+  const own = (halls.find((h) => h.isDefault) ?? halls[0])?.address ?? '';
+  return [1, 2, 3, 4, 5].map((ordinal) => ({
+    ordinal,
+    dayOfWeek: 6,
+    startTime: '10:30',
+    address: own,
+  }));
+}
 
 export function FieldServiceGenerateModal({
   visible,
@@ -111,12 +124,14 @@ export function FieldServiceGenerateModal({
     const resolveAddr = (addr: string) =>
       resolveHallAddress(addr, hallsQuery.data);
     setSlots(
-      (loaded.length ? loaded : DEFAULT_TEMPLATE).map((s) => ({
-        ordinal: s.ordinal,
-        dayOfWeek: s.dayOfWeek,
-        startTime: s.startTime,
-        address: resolveAddr(s.address),
-      })),
+      (loaded.length ? loaded : defaultTemplate(hallsQuery.data ?? [])).map(
+        (s) => ({
+          ordinal: s.ordinal,
+          dayOfWeek: s.dayOfWeek,
+          startTime: s.startTime,
+          address: resolveAddr(s.address),
+        }),
+      ),
     );
   }, [visible, templateQuery.data, hallsQuery.data]);
 

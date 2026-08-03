@@ -2206,7 +2206,7 @@ function partDisplay(
     partKey === 'weekend_song' ||
     partKey === 'weekend_opening_song'
   ) {
-    return { label: partTitle || 'Песня', subtitle: null };
+    return { label: partTitle || i18n.t('parts.song'), subtitle: null };
   }
   if (PRAYER_PARTS.has(partKey)) {
     return {

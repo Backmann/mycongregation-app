@@ -501,11 +501,11 @@ export function SpecialEventForm({
           keyboardShouldPersistTaps="always"
         >
           <Pressable style={styles.noteTool} onPress={() => wrapNote('**')}>
-            <Text style={[styles.noteToolText, { fontWeight: '800', fontFamily: 'Manrope_800ExtraBold',}]}>Ж</Text>
+            <Text style={[styles.noteToolText, { fontWeight: '800', fontFamily: 'Manrope_800ExtraBold',}]}>{t('common.boldShort')}</Text>
           </Pressable>
           <Pressable style={styles.noteTool} onPress={() => wrapNote('_')}>
             <Text style={[styles.noteToolText, { fontStyle: 'italic' }]}>
-              К
+              {t('common.italicShort')}
             </Text>
           </Pressable>
           <View style={styles.noteToolDivider} />
