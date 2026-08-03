@@ -192,3 +192,21 @@ if (problems.length > 0) {
 console.log(
   `OK: ${verified} static t() keys/prefixes resolve in ru.json (${scanned} files scanned).`,
 );
+
+// ---------------------------------------------------------------------------
+// The hardcoded-text check runs from here rather than as its own line in
+// package.json — and that is not a matter of taste.
+//
+// runtimeVersion uses the «fingerprint» policy, and one of the things the
+// fingerprint hashes is the SCRIPTS BLOCK of package.json. Adding a command
+// there changed the fingerprint, which changed the runtime version, which
+// meant every over-the-air update after it was published for a runtime no
+// installed APK has. The phones stopped receiving updates silently — nothing
+// failed, they simply kept the last build they could accept, for four
+// releases, including the one that fixed report submission.
+//
+// So: the gate keeps the check, and package.json keeps its hands off the
+// scripts block. A new command there is a native rebuild, whether or not it
+// touches anything native.
+// ---------------------------------------------------------------------------
+await import('./check-i18n-hardcoded.mjs');
