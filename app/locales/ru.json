@@ -602,7 +602,31 @@
       "closureAffectsStatus": "Закрытие месяца подводит итог и по статусам возвещателей.",
       "closeMonth": "Закрыть месяц",
       "reopenMonth": "Открыть месяц"
-    }
+    },
+    "done": {
+      "accepted": "Отчёт принят",
+      "updated": "Отчёт изменён",
+      "hours_one": "{{count}} час в служении",
+      "hours_few": "{{count}} часа в служении",
+      "hours_many": "{{count}} часов в служении",
+      "hours_other": "{{count}} часа в служении",
+      "shared": "Участвовал в служении",
+      "didNotShare": "В служении не участвовал"
+    },
+    "badge": {
+      "pioneer": "Пионер",
+      "auxPioneer": "Подсобный пионер"
+    },
+    "blocked": {
+      "hoursNeeded": "Укажите часы в служении — без них отчёт не примут.",
+      "hoursRange": "Часов не может быть больше 744 за месяц.",
+      "answerNeeded": "Ответьте, участвовали ли вы в служении."
+    },
+    "editingReport": "Правка отчёта",
+    "monthDone": "сдан",
+    "studiesMinus": "На одно изучение меньше",
+    "studiesPlus": "На одно изучение больше",
+    "submitForMonth": "Сдать отчёт за {{month}}"
   },
   "serviceGroups": {
     "title": {

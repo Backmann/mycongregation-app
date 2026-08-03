@@ -598,7 +598,29 @@
       "closureAffectsStatus": "Mit dem Abschluss werden auch die Status der Verkündiger festgeschrieben.",
       "closeMonth": "Monat abschließen",
       "reopenMonth": "Monat öffnen"
-    }
+    },
+    "done": {
+      "accepted": "Bericht angenommen",
+      "updated": "Bericht geändert",
+      "hours_one": "{{count}} Stunde im Predigtdienst",
+      "hours_other": "{{count}} Stunden im Predigtdienst",
+      "shared": "Am Predigtdienst teilgenommen",
+      "didNotShare": "Nicht am Predigtdienst teilgenommen"
+    },
+    "badge": {
+      "pioneer": "Pionier",
+      "auxPioneer": "Hilfspionier"
+    },
+    "blocked": {
+      "hoursNeeded": "Trage die Stunden ein — ohne sie kann der Bericht nicht abgegeben werden.",
+      "hoursRange": "Ein Monat hat höchstens 744 Stunden.",
+      "answerNeeded": "Beantworte, ob du am Predigtdienst teilgenommen hast."
+    },
+    "editingReport": "Bericht bearbeiten",
+    "monthDone": "abgegeben",
+    "studiesMinus": "Ein Bibelstudium weniger",
+    "studiesPlus": "Ein Bibelstudium mehr",
+    "submitForMonth": "Bericht für {{month}} abgeben"
   },
   "serviceGroups": {
     "title": {

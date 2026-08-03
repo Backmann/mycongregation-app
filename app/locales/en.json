@@ -598,7 +598,29 @@
       "closureAffectsStatus": "Closing the month also settles the publishers’ statuses.",
       "closeMonth": "Close month",
       "reopenMonth": "Reopen month"
-    }
+    },
+    "done": {
+      "accepted": "Report accepted",
+      "updated": "Report updated",
+      "hours_one": "{{count}} hour in the ministry",
+      "hours_other": "{{count}} hours in the ministry",
+      "shared": "Shared in the ministry",
+      "didNotShare": "Did not share in the ministry"
+    },
+    "badge": {
+      "pioneer": "Pioneer",
+      "auxPioneer": "Auxiliary pioneer"
+    },
+    "blocked": {
+      "hoursNeeded": "Enter the hours — the report cannot be filed without them.",
+      "hoursRange": "A month cannot hold more than 744 hours.",
+      "answerNeeded": "Answer whether you shared in the ministry."
+    },
+    "editingReport": "Editing a report",
+    "monthDone": "filed",
+    "studiesMinus": "One study fewer",
+    "studiesPlus": "One study more",
+    "submitForMonth": "Submit the report for {{month}}"
   },
   "serviceGroups": {
     "title": {
