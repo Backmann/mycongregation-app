@@ -1115,7 +1115,12 @@
       "5": "Fr",
       "6": "Sa",
       "7": "So"
-    }
+    },
+    "timezone": "Zeitzone der Versammlung",
+    "timezoneNow": "Dort ist es jetzt {{when}}",
+    "timezoneInvalid": "Diese Zeitzone gibt es nicht. Ein Name wie Europe/Berlin.",
+    "useDeviceTimezone": "Von diesem Gerät übernehmen",
+    "saveTimezone": "Zeitzone speichern"
   },
   "duties": {
     "title": "Aufgaben",

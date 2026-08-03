@@ -1115,7 +1115,12 @@
       "5": "Fri",
       "6": "Sat",
       "7": "Sun"
-    }
+    },
+    "timezone": "Congregation timezone",
+    "timezoneNow": "It is now {{when}} there",
+    "timezoneInvalid": "No such timezone. A name like Europe/Berlin.",
+    "useDeviceTimezone": "Take it from this device",
+    "saveTimezone": "Save timezone"
   },
   "duties": {
     "title": "Duties",

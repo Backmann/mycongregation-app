@@ -50,13 +50,49 @@ const EMPTY_DRAFT: Draft = {
   microphoneSlots: 2,
 };
 
+/** The timezone this device is in — the best first guess for a congregation. */
+function deviceTimezone(): string {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+  } catch {
+    return '';
+  }
+}
+
+/** Whether a string is a timezone the platform actually knows. */
+function isUsableTimezone(value: string): boolean {
+  if (!value) return false;
+  try {
+    new Intl.DateTimeFormat('en-CA', { timeZone: value }).format(new Date());
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** What the clock and the calendar read in that timezone right now. */
+function nowIn(timezone: string, locale: string): string {
+  try {
+    return new Intl.DateTimeFormat(locale, {
+      timeZone: timezone,
+      day: 'numeric',
+      month: 'long',
+      hour: '2-digit',
+      minute: '2-digit',
+    }).format(new Date());
+  } catch {
+    return '';
+  }
+}
+
 export default function MeetingSettingsScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const qc = useQueryClient();
 
   const query = useQuery({ queryKey: QK, queryFn: () => meetingSettingsApi.getOverview() });
 
   const [name, setName] = useState('');
+  const [timezone, setTimezone] = useState('');
   const [draft, setDraft] = useState<Draft>(EMPTY_DRAFT);
   const [hydrated, setHydrated] = useState(false);
 
@@ -64,6 +100,7 @@ export default function MeetingSettingsScreen() {
   useEffect(() => {
     if (!query.data || hydrated) return;
     setName(query.data.congregation.name);
+    setTimezone(query.data.congregation.timezone ?? deviceTimezone());
     const e = query.data.effective;
     if (e) {
       setDraft({
@@ -88,6 +125,13 @@ export default function MeetingSettingsScreen() {
     onError,
   });
 
+  const timezoneMutation = useMutation({
+    mutationFn: (tz: string) =>
+      meetingSettingsApi.updateCongregation({ timezone: tz }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: QK }),
+    onError,
+  });
+
   const versionMutation = useMutation({
     mutationFn: (input: UpsertMeetingSettingsInput) =>
       meetingSettingsApi.upsertVersion(input),
@@ -103,6 +147,17 @@ export default function MeetingSettingsScreen() {
 
   const effectiveId = query.data?.effective?.id;
   const nameChanged = !!query.data && name.trim() !== query.data.congregation.name;
+  const timezoneValid = isUsableTimezone(timezone.trim());
+  const timezoneChanged =
+    !!query.data &&
+    timezoneValid &&
+    timezone.trim() !== (query.data.congregation.timezone ?? '');
+  // Live proof that the value is the right one: a name is easy to mistype and
+  // the consequence — a day boundary in the wrong place — would otherwise only
+  // show up weeks later in a status or a frozen schedule.
+  const timezonePreview = timezoneValid
+    ? nowIn(timezone.trim(), i18n.language)
+    : null;
 
   const saveVersion = () => {
     versionMutation.mutate({
@@ -164,6 +219,53 @@ export default function MeetingSettingsScreen() {
             disabled={!nameChanged || nameMutation.isPending}
           >
             <Text style={styles.primaryBtnText}>{t('meetingSettings.saveName')}</Text>
+          </Pressable>
+        </View>
+
+        {/* Congregation timezone — every date rule in the app hangs off it:
+            which week has passed, when a report month closes, when the
+            attendance card shuts. It used to be assumed rather than asked. */}
+        <Text style={styles.sectionLabel}>
+          {t('meetingSettings.timezone')}
+        </Text>
+        <View style={styles.card}>
+          <TextInput
+            style={styles.input}
+            value={timezone}
+            onChangeText={setTimezone}
+            autoCapitalize="none"
+            autoCorrect={false}
+            placeholder="Europe/Berlin"
+            placeholderTextColor="#94a3b8"
+          />
+          <Text style={styles.hint}>
+            {timezonePreview
+              ? t('meetingSettings.timezoneNow', { when: timezonePreview })
+              : t('meetingSettings.timezoneInvalid')}
+          </Text>
+          <Pressable
+            onPress={() => setTimezone(deviceTimezone())}
+            hitSlop={6}
+          >
+            <Text style={styles.linkText}>
+              {t('meetingSettings.useDeviceTimezone')}
+            </Text>
+          </Pressable>
+          <Pressable
+            style={({ pressed }) => [
+              styles.primaryBtn,
+              (!timezoneChanged || timezoneMutation.isPending) &&
+                styles.btnDisabled,
+              pressed && timezoneChanged && styles.primaryBtnPressed,
+            ]}
+            onPress={() =>
+              timezoneChanged && timezoneMutation.mutate(timezone.trim())
+            }
+            disabled={!timezoneChanged || timezoneMutation.isPending}
+          >
+            <Text style={styles.primaryBtnText}>
+              {t('meetingSettings.saveTimezone')}
+            </Text>
           </Pressable>
         </View>
 
@@ -356,6 +458,12 @@ const styles = StyleSheet.create({
   },
   timeInput: { width: 120 },
   hint: { fontSize: 12, color: '#94a3b8', marginTop: 4 },
+  linkText: {
+    fontSize: 13,
+    color: '#0e7490',
+    marginTop: 8,
+    fontFamily: 'Manrope_600SemiBold',
+  },
   dayRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 8 },
   dayChip: {
     paddingHorizontal: 12,
