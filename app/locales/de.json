@@ -1988,7 +1988,8 @@
       "planned": "Geplant",
       "used": "Behandelt",
       "upcoming": "Eingeplant",
-      "past": "Vergangen"
+      "past": "Vergangen",
+      "archived": "Archiviert"
     },
     "noPlanned": "Alle Themen wurden behandelt.",
     "newTitle": "Neues Thema",
@@ -2001,16 +2002,28 @@
     "fields": {
       "title": "Thema",
       "notes": "Notizen",
-      "speaker": "Redner (optional)"
+      "speaker": "Redner (optional)",
+      "week": "Woche der Behandlung"
     },
     "placeholders": {
       "title": "z. B. Hinweis zur Reinigung des Königreichssaals",
-      "notes": "Notizen für den Redner…"
+      "notes": "Notizen für den Redner…",
+      "week": "Nicht gesetzt"
     },
     "insertCta": "Aus Örtlichen Bedürfnissen einfügen",
     "insertTitle": "Thema auswählen",
     "insertEmpty": "Keine geplanten Themen. Füge sie im Bildschirm „Örtliche Bedürfnisse“ hinzu (Glühbirne in der Kopfzeile des Programms).",
-    "noAccess": "Örtliche Bedürfnisse sind nur für Älteste verfügbar."
+    "noAccess": "Örtliche Bedürfnisse sind nur für Älteste verfügbar.",
+    "wasUsedOn": "Behandelt am {{week}}",
+    "scheduledFor": "Im Programm für {{week}}",
+    "archived": "Archiviert",
+    "restore": "Aus dem Archiv zurückholen",
+    "searchPlaceholder": "Themen und Notizen durchsuchen",
+    "noMatches": "Nichts gefunden",
+    "similarWarning": "Ein ähnliches Thema gab es schon:",
+    "insertSearch": "Themen suchen",
+    "insertPastGroup": "Schon behandelt",
+    "insertPlannedGroup": "Geplant"
   },
   "circuitOverseer": {
     "intro": "Diese Angaben füllen ein neues Ereignis „Besuch des Kreisaufsehers“ vor. Jeder Besuch behält seine eigene Namenskopie, daher ändert eine Bearbeitung hier keine vergangenen Besuche.",
@@ -2463,7 +2476,8 @@
       "DELETE": "hat entfernt",
       "VIEW": "hat geöffnet",
       "DOWNLOAD": "hat heruntergeladen",
-      "DENY": "konnte nicht ändern"
+      "DENY": "konnte nicht ändern",
+      "RESTORE": "wiederhergestellt"
     },
     "about": "betrifft: {{name}}",
     "bulk": "{{count}} auf einmal",

@@ -1988,7 +1988,8 @@
       "planned": "Planned",
       "used": "Covered",
       "upcoming": "Scheduled",
-      "past": "Past"
+      "past": "Past",
+      "archived": "Archived"
     },
     "noPlanned": "All topics have been covered.",
     "newTitle": "New topic",
@@ -2001,16 +2002,28 @@
     "fields": {
       "title": "Topic",
       "notes": "Notes",
-      "speaker": "Speaker (optional)"
+      "speaker": "Speaker (optional)",
+      "week": "Week it was covered"
     },
     "placeholders": {
       "title": "e.g. Reminder about cleaning the Kingdom Hall",
-      "notes": "Notes for the speaker…"
+      "notes": "Notes for the speaker…",
+      "week": "Not set"
     },
     "insertCta": "Insert from Local Needs",
     "insertTitle": "Choose a topic",
     "insertEmpty": "No planned topics. Add them on the Local Needs screen (the bulb icon in the schedule header).",
-    "noAccess": "Local Needs are available to elders only."
+    "noAccess": "Local Needs are available to elders only.",
+    "wasUsedOn": "Covered {{week}}",
+    "scheduledFor": "In the programme for {{week}}",
+    "archived": "Archived",
+    "restore": "Restore from the archive",
+    "searchPlaceholder": "Search topics and notes",
+    "noMatches": "Nothing found",
+    "similarWarning": "A similar topic has come up before:",
+    "insertSearch": "Search topics",
+    "insertPastGroup": "Already covered",
+    "insertPlannedGroup": "Planned"
   },
   "circuitOverseer": {
     "intro": "These details pre-fill a new circuit-overseer-visit event. Each visit keeps its own name snapshot, so editing here doesn't change past visits.",
@@ -2463,7 +2476,8 @@
       "DELETE": "removed",
       "VIEW": "opened",
       "DOWNLOAD": "downloaded",
-      "DENY": "could not change"
+      "DENY": "could not change",
+      "RESTORE": "restored"
     },
     "about": "about {{name}}",
     "bulk": "{{count}} at once",

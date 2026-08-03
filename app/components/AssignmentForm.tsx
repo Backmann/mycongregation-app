@@ -7,6 +7,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -39,6 +40,15 @@ import { useTranslation } from 'react-i18next';
 
 interface Props {
   initial?: Partial<CreateAssignmentInput>;
+  /**
+   * The id of the assignment being edited, when there is one.
+   *
+   * Passing it is what lets a local-needs topic remember WHICH part it became,
+   * so the app can release it by itself if the part is later changed to
+   * something else. On the "new" screen there is no id yet, and the topic is
+   * simply marked for the week.
+   */
+  assignmentId?: string;
   onSubmit: (data: CreateAssignmentInput) => Promise<unknown>;
   /** When set, edits save instantly (pickers) or debounced (text). */
   onInstantSave?: (patch: Partial<CreateAssignmentInput>) => Promise<unknown>;
@@ -70,6 +80,7 @@ export interface AssignmentFormCoPicker {
 
 export function AssignmentForm({
   initial,
+  assignmentId,
   onSubmit,
   onInstantSave,
   onCancel,
@@ -80,7 +91,7 @@ export function AssignmentForm({
   circuitOverseer,
   coPicker,
 }: Props) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const autosave = !!onInstantSave;
   const [instantSaving, setInstantSaving] = useState(false);
   const [instantSavedAt, setInstantSavedAt] = useState<number | null>(null);
@@ -181,14 +192,21 @@ export function AssignmentForm({
   const isLivingChristians = (form.partKey ?? '').startsWith(
     'living_christians',
   );
+  const [lnSearch, setLnSearch] = useState('');
   const lnQuery = useQuery({
-    queryKey: ['local-needs', 'planned'],
-    queryFn: () => localNeedsApi.list({ onlyPlanned: true }),
+    // Everything, not only the planned ones. The question a person has while
+    // choosing is «а не было ли уже такого» — and the answer used to be
+    // unavailable at exactly the moment it was needed.
+    queryKey: ['local-needs', 'picker'],
+    queryFn: () => localNeedsApi.list(),
     enabled: lnPickerOpen,
   });
   const markUsedMut = useMutation({
     mutationFn: (id: string) =>
-      localNeedsApi.update(id, { usedWeek: form.weekStartDate || null }),
+      localNeedsApi.markUsed(id, {
+        week: form.weekStartDate || undefined,
+        assignmentId,
+      }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['local-needs'] }),
   });
   const applyLocalNeed = (topic: LocalNeedsTopic) => {
@@ -536,16 +554,50 @@ export function AssignmentForm({
                 <Ionicons name="close" size={24} color="#64748b" />
               </Pressable>
             </View>
+            <View style={styles.lnSearchBox}>
+              <Ionicons name="search-outline" size={16} color="#94a3b8" />
+              <TextInput
+                style={styles.lnSearchInput}
+                value={lnSearch}
+                onChangeText={setLnSearch}
+                placeholder={t('localNeeds.insertSearch')}
+                placeholderTextColor="#94a3b8"
+                autoCapitalize="none"
+              />
+            </View>
             {lnQuery.isLoading ? (
               <ActivityIndicator style={{ marginVertical: 24 }} />
-            ) : (lnQuery.data ?? []).length === 0 ? (
-              <Text style={styles.lnEmpty}>{t('localNeeds.insertEmpty')}</Text>
             ) : (
-              <ScrollView style={{ maxHeight: 360 }}>
-                {(lnQuery.data ?? []).map((topic) => (
+              (() => {
+                const needle = lnSearch.trim().toLowerCase();
+                const rows = (lnQuery.data ?? []).filter(
+                  (r) =>
+                    !needle ||
+                    `${r.title} ${r.notes ?? ''}`
+                      .toLowerCase()
+                      .includes(needle),
+                );
+                const plannedRows = rows.filter((r) => !r.usedWeek);
+                // Shown, not offered: a subject already covered is exactly
+                // what the person is trying to remember, and hiding it was
+                // how the same topic came round twice.
+                const usedRows = rows
+                  .filter((r) => !!r.usedWeek)
+                  .sort((a, b) =>
+                    (b.usedWeek as string).localeCompare(a.usedWeek as string),
+                  )
+                  .slice(0, 20);
+                if (rows.length === 0) {
+                  return (
+                    <Text style={styles.lnEmpty}>
+                      {t('localNeeds.insertEmpty')}
+                    </Text>
+                  );
+                }
+                const row = (topic: LocalNeedsTopic, used: boolean) => (
                   <Pressable
                     key={topic.id}
-                    style={styles.lnRow}
+                    style={[styles.lnRow, used && { opacity: 0.7 }]}
                     onPress={() => applyLocalNeed(topic)}
                   >
                     <View style={{ flex: 1 }}>
@@ -555,7 +607,19 @@ export function AssignmentForm({
                           {topic.notes}
                         </Text>
                       ) : null}
-                      {topic.speaker ? (
+                      {used ? (
+                        <Text style={styles.lnRowUsed}>
+                          {t('localNeeds.wasUsedOn', {
+                            week: new Date(
+                              `${topic.usedWeek}T00:00:00`,
+                            ).toLocaleDateString(i18n.language, {
+                              day: 'numeric',
+                              month: 'long',
+                              year: 'numeric',
+                            }),
+                          })}
+                        </Text>
+                      ) : topic.speaker ? (
                         <Text style={styles.lnRowSpeaker}>
                           {topic.speaker.displayName}
                         </Text>
@@ -567,8 +631,28 @@ export function AssignmentForm({
                       color="#0ea5e9"
                     />
                   </Pressable>
-                ))}
-              </ScrollView>
+                );
+                return (
+                  <ScrollView style={{ maxHeight: 360 }}>
+                    {plannedRows.length > 0 ? (
+                      <>
+                        <Text style={styles.lnGroup}>
+                          {t('localNeeds.insertPlannedGroup')}
+                        </Text>
+                        {plannedRows.map((r) => row(r, false))}
+                      </>
+                    ) : null}
+                    {usedRows.length > 0 ? (
+                      <>
+                        <Text style={styles.lnGroup}>
+                          {t('localNeeds.insertPastGroup')}
+                        </Text>
+                        {usedRows.map((r) => row(r, true))}
+                      </>
+                    ) : null}
+                  </ScrollView>
+                );
+              })()
             )}
           </View>
         </View>
@@ -1030,6 +1114,28 @@ const styles = StyleSheet.create({
   },
   lnRowTitle: { fontSize: 15, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0f172a' },
   lnRowNotes: { fontSize: 13, color: '#64748b', marginTop: 2 },
+  lnSearchBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    marginBottom: 8,
+  },
+  lnSearchInput: { flex: 1, fontSize: 14, color: '#0f172a' },
+  lnGroup: {
+    fontSize: 11,
+    color: '#94a3b8',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginTop: 8,
+    marginBottom: 2,
+    fontFamily: 'Manrope_600SemiBold',
+  },
+  lnRowUsed: { fontSize: 12, color: '#047857', marginTop: 2 },
   lnRowSpeaker: {
     fontSize: 12,
     color: '#0369a1',

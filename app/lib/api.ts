@@ -2198,7 +2198,8 @@ export interface LocalNeedsTopic {
   notes: string | null;
   speakerPublisherId: string | null;
   usedWeek: string | null;
-  sortOrder: number;
+  /** The meeting part this topic became, when placed from the schedule. */
+  usedAssignmentId: string | null;
   createdById: string | null;
   createdAt: string;
   updatedAt: string;
@@ -2216,7 +2217,6 @@ export interface CreateLocalNeedsTopicInput {
   notes?: string | null;
   speakerPublisherId?: string | null;
   usedWeek?: string | null;
-  sortOrder?: number;
 }
 
 export type UpdateLocalNeedsTopicInput = Partial<CreateLocalNeedsTopicInput>;
@@ -2252,6 +2252,28 @@ export const localNeedsApi = {
     const { data } = await api.patch<LocalNeedsTopic>(
       `/local-needs/${id}`,
       cleanPayload(input),
+    );
+    return data;
+  },
+  /**
+   * Mark a topic as used. With no week the SERVER decides, from the
+   * congregation's own clock — the screen used to compute it from the device,
+   * which is a different week for a phone set to another timezone.
+   */
+  async markUsed(
+    id: string,
+    input?: { week?: string; assignmentId?: string },
+  ): Promise<LocalNeedsTopic> {
+    const { data } = await api.post<LocalNeedsTopic>(
+      `/local-needs/${id}/used`,
+      cleanPayload(input ?? {}),
+    );
+    return data;
+  },
+  /** Back to the plan: no week, and no part it belongs to. */
+  async markPlanned(id: string): Promise<LocalNeedsTopic> {
+    const { data } = await api.delete<LocalNeedsTopic>(
+      `/local-needs/${id}/used`,
     );
     return data;
   },

@@ -160,6 +160,7 @@ export default function AssignmentDetailScreen() {
         />
       ) : (
         <AssignmentForm
+          assignmentId={a.id}
           initial={{
             weekStartDate: a.weekStartDate,
             eventType: a.eventType,
