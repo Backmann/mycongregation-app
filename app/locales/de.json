@@ -139,7 +139,8 @@
     "loadFailedHint": "Prüfe die Verbindung und versuche es erneut — die Daten kamen möglicherweise nicht an.",
     "hourUnit": "Std.",
     "boldShort": "F",
-    "italicShort": "K"
+    "italicShort": "K",
+    "print": "Drucken"
   },
   "profile": {
     "signedInAs": "Angemeldet als",
@@ -2733,6 +2734,70 @@
       "months_one": "In {{count}} Monat",
       "months_other": "In {{count}} Monaten",
       "no": "Nicht wiederholen"
+    }
+  },
+  "pioneerSchool": {
+    "title": "Pionierschule",
+    "menuSubtitle": "Die Brüder, die während der Schule dienen",
+    "scheduleTitle": "Plan der Schule",
+    "defaultTitle": "Pionierdienstschule",
+    "intro": "Die Schule, ihre Tage und die Brüder, die an jedem Tag dienen. Der Plan lässt sich drucken und versenden.",
+    "empty": "Noch keine Schulen.",
+    "add": "Schule hinzufügen",
+    "newTitle": "Neue Schule",
+    "editTitle": "Schule",
+    "noAccess": "Dieser Bereich ist für Älteste.",
+    "unassigned": "Nicht zugeteilt",
+    "noTime": "Keine Zeit angegeben",
+    "dayTime": "Zeiten dieses Tages",
+    "dayTimeHint": "Leer lassen — dann gilt die Zeit der Schule. Format 09:00.",
+    "addRole": "Aufgabe hinzufügen",
+    "addRoleHint": "Zum Beispiel: Gäste empfangen",
+    "clearSlot": "Zuteilung entfernen",
+    "daysCount_one": "{{count}} Tag",
+    "daysCount_other": "{{count}} Tage",
+    "pickFromList": "Saal aus der Liste wählen",
+    "hallNameHint": "Name des Saals",
+    "hallAddressHint": "Adresse — damit klar ist, wohin zu fahren ist",
+    "notesHint": "Wichtiges für die Brüder: was mitzubringen ist, wo geparkt wird, wen man fragt…",
+    "notesPreview": "So wird es aussehen",
+    "roleColumn": "Aufgabe",
+    "personColumn": "Wer",
+    "roles": {
+      "av": "Audio/Video",
+      "microphone": "Mikrofon {{number}}",
+      "ventilation": "Lüften"
+    },
+    "warnings": {
+      "away": "Er ist an diesem Tag abwesend",
+      "busyAtMeeting": "In dieser Woche schon bei unserer Zusammenkunft eingeteilt",
+      "twoMicrophones": "Beide Mikrofone an einem Tag für einen Bruder"
+    },
+    "fields": {
+      "title": "Bezeichnung",
+      "startDate": "Beginn",
+      "endDate": "Ende",
+      "dates": "Termine",
+      "hall": "Königreichssaal",
+      "time": "Zeiten",
+      "microphones": "Wie viele Mikrofone",
+      "notes": "Hinweise"
+    },
+    "helpers": {
+      "title": "Brüder für die Schule",
+      "intro": "Aus dieser Liste werden die Aufgaben besetzt. Sie darf eigene Brüder und Brüder aus anderen Versammlungen enthalten.",
+      "add": "Bruder hinzufügen",
+      "newTitle": "Neuer Bruder",
+      "editTitle": "Bearbeiten",
+      "empty": "Die Liste ist leer.",
+      "search": "Nach Namen suchen",
+      "firstName": "Vorname",
+      "lastName": "Nachname",
+      "congregation": "Versammlung",
+      "congregationHint": "Wenn nicht aus unserer Versammlung",
+      "ours": "Unser",
+      "linkPublisher": "Mit Verkündigerkarte verknüpfen",
+      "linkHint": "Nur für eigene Brüder. Die Verknüpfung lässt die App Abwesenheiten und Aufgaben bei unseren Zusammenkünften sehen."
     }
   }
 }

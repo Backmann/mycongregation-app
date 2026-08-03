@@ -16,7 +16,7 @@ type Row = {
 export default function ServiceHubScreen() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { canViewCoSchedule, canManageAuxiliaryPioneers } = usePermissions();
+  const { canViewCoSchedule, canManageAuxiliaryPioneers, canViewPioneerSchool } = usePermissions();
 
   const rows: Row[] = [
     {
@@ -69,6 +69,14 @@ export default function ServiceHubScreen() {
       subtitle: t('auxPioneer.menuSubtitle'),
       route: '/cart/auxiliary-pioneers',
       show: canManageAuxiliaryPioneers,
+    },
+    {
+      family: 'ion',
+      icon: 'school-outline',
+      title: t('pioneerSchool.title'),
+      subtitle: t('pioneerSchool.menuSubtitle'),
+      route: '/pioneer-school',
+      show: canViewPioneerSchool,
     },
   ];
 

@@ -139,7 +139,8 @@
     "loadFailedHint": "Check your connection and try again — the data may not have arrived.",
     "hourUnit": "h",
     "boldShort": "B",
-    "italicShort": "I"
+    "italicShort": "I",
+    "print": "Print"
   },
   "profile": {
     "signedInAs": "Signed in as",
@@ -2733,6 +2734,70 @@
       "months_one": "In {{count}} month",
       "months_other": "In {{count}} months",
       "no": "Do not repeat"
+    }
+  },
+  "pioneerSchool": {
+    "title": "Pioneer school",
+    "menuSubtitle": "The brothers serving during the school",
+    "scheduleTitle": "School schedule",
+    "defaultTitle": "Pioneer Service School",
+    "intro": "The school, its days and the brothers serving each day. The schedule can be printed and sent out.",
+    "empty": "No schools yet.",
+    "add": "Add a school",
+    "newTitle": "New school",
+    "editTitle": "School",
+    "noAccess": "This section is for elders.",
+    "unassigned": "Not assigned",
+    "noTime": "No time set",
+    "dayTime": "This day's hours",
+    "dayTimeHint": "Leave empty to follow the school. Format 09:00.",
+    "addRole": "Add a duty",
+    "addRoleHint": "For example: welcoming guests",
+    "clearSlot": "Clear the assignment",
+    "daysCount_one": "{{count}} day",
+    "daysCount_other": "{{count}} days",
+    "pickFromList": "Pick a hall from the list",
+    "hallNameHint": "Name of the hall",
+    "hallAddressHint": "Address — so it is clear where to drive",
+    "notesHint": "What the brothers need to know: what to bring, where to park, whom to ask…",
+    "notesPreview": "How this will look",
+    "roleColumn": "Duty",
+    "personColumn": "Who",
+    "roles": {
+      "av": "Audio/Video",
+      "microphone": "Microphone {{number}}",
+      "ventilation": "Ventilation"
+    },
+    "warnings": {
+      "away": "He is away that day",
+      "busyAtMeeting": "Already on a duty at our meeting that week",
+      "twoMicrophones": "Both microphones in one day for one brother"
+    },
+    "fields": {
+      "title": "Title",
+      "startDate": "Starts",
+      "endDate": "Ends",
+      "dates": "Dates",
+      "hall": "Kingdom Hall",
+      "time": "Hours",
+      "microphones": "How many microphones",
+      "notes": "Notes"
+    },
+    "helpers": {
+      "title": "Brothers for the school",
+      "intro": "Duties are filled from this list. It may hold our own brothers and brothers from other congregations.",
+      "add": "Add a brother",
+      "newTitle": "New brother",
+      "editTitle": "Edit",
+      "empty": "The list is empty.",
+      "search": "Search by name",
+      "firstName": "First name",
+      "lastName": "Last name",
+      "congregation": "Congregation",
+      "congregationHint": "If not from our congregation",
+      "ours": "Ours",
+      "linkPublisher": "Link to a publisher card",
+      "linkHint": "For our own brothers only. The link is what lets the app see absences and duties at our meetings."
     }
   }
 }

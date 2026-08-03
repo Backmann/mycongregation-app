@@ -63,6 +63,8 @@ export interface Permissions {
 
   /** Local needs — visible to elders (read); managed by admin + L&M overseer. */
   canViewLocalNeeds: boolean;
+  canViewPioneerSchool: boolean;
+  canManagePioneerSchool: boolean;
   canManageLocalNeeds: boolean;
 
   /** Public talk coordinator — speaker exchange (incoming/outgoing) + directories. */
@@ -159,6 +161,9 @@ export function usePermissions(): Permissions {
         holds('life_ministry_overseer') ||
         holds('secretary'),
       canViewLocalNeeds: isAdmin || isElder,
+      canViewPioneerSchool: isAdmin || isElder,
+      // Only an administrator keeps the schedule — Lionel's decision.
+      canManagePioneerSchool: isAdmin,
       canManageLocalNeeds: isAdmin || holds('life_ministry_overseer'),
       canCoordinatePublicTalks: isAdmin || holds('public_talk_coordinator'),
       canViewServiceSummary: isAdmin || holds('secretary'),

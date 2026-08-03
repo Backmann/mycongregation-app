@@ -2288,6 +2288,143 @@ export const localNeedsApi = {
   },
 };
 
+// ---------- Pioneer Service School ----------
+
+export interface PioneerSchool {
+  id: string;
+  title: string;
+  startDate: string;
+  endDate: string;
+  hallName: string | null;
+  hallAddress: string | null;
+  startTime: string | null;
+  endTime: string | null;
+  microphoneSlots: number;
+  notes: string | null;
+}
+
+export interface PioneerSchoolHelper {
+  id: string;
+  firstName: string;
+  lastName: string;
+  congregationName: string | null;
+  publisherId: string | null;
+}
+
+export interface PioneerSchoolDuty {
+  id: string;
+  dutyType: 'av' | 'microphone' | 'ventilation' | 'custom';
+  slotIndex: number;
+  customLabel: string | null;
+  helperId: string | null;
+  helperName: string | null;
+  helperCongregation: string | null;
+  /** 'away' | 'busyAtMeeting' | 'twoMicrophones' — advice, never a refusal. */
+  warnings: string[];
+}
+
+export interface PioneerSchoolDay {
+  id: string;
+  date: string;
+  startTime: string | null;
+  endTime: string | null;
+  duties: PioneerSchoolDuty[];
+}
+
+export interface PioneerSchoolFull {
+  school: PioneerSchool;
+  days: PioneerSchoolDay[];
+}
+
+export const pioneerSchoolApi = {
+  async list(): Promise<PioneerSchool[]> {
+    const { data } = await api.get<PioneerSchool[]>('/pioneer-school');
+    return data;
+  },
+  async get(id: string): Promise<PioneerSchoolFull> {
+    const { data } = await api.get<PioneerSchoolFull>(`/pioneer-school/${id}`);
+    return data;
+  },
+  async create(input: Partial<PioneerSchool>): Promise<PioneerSchool> {
+    const { data } = await api.post<PioneerSchool>('/pioneer-school', input);
+    return data;
+  },
+  async update(
+    id: string,
+    input: Partial<PioneerSchool>,
+  ): Promise<PioneerSchool> {
+    const { data } = await api.patch<PioneerSchool>(
+      `/pioneer-school/${id}`,
+      input,
+    );
+    return data;
+  },
+  async remove(id: string): Promise<void> {
+    await api.delete(`/pioneer-school/${id}`);
+  },
+  async updateDay(
+    id: string,
+    dayId: string,
+    input: { startTime?: string | null; endTime?: string | null },
+  ): Promise<PioneerSchoolDay> {
+    const { data } = await api.patch<PioneerSchoolDay>(
+      `/pioneer-school/${id}/days/${dayId}`,
+      input,
+    );
+    return data;
+  },
+  async assignDuty(
+    id: string,
+    dutyId: string,
+    helperId: string | null,
+  ): Promise<void> {
+    await api.patch(`/pioneer-school/${id}/duties/${dutyId}`, { helperId });
+  },
+  async addCustomDuty(
+    id: string,
+    input: { dayId: string; customLabel: string },
+  ): Promise<void> {
+    await api.post(`/pioneer-school/${id}/duties`, input);
+  },
+  async removeCustomDuty(id: string, dutyId: string): Promise<void> {
+    await api.delete(`/pioneer-school/${id}/duties/${dutyId}`);
+  },
+  async load(id: string): Promise<Record<string, number>> {
+    const { data } = await api.get<Record<string, number>>(
+      `/pioneer-school/${id}/load`,
+    );
+    return data;
+  },
+  async listHelpers(): Promise<PioneerSchoolHelper[]> {
+    const { data } = await api.get<PioneerSchoolHelper[]>(
+      '/pioneer-school/helpers',
+    );
+    return data;
+  },
+  async createHelper(
+    input: Omit<PioneerSchoolHelper, 'id'>,
+  ): Promise<PioneerSchoolHelper> {
+    const { data } = await api.post<PioneerSchoolHelper>(
+      '/pioneer-school/helpers',
+      cleanPayload(input),
+    );
+    return data;
+  },
+  async updateHelper(
+    id: string,
+    input: Partial<PioneerSchoolHelper>,
+  ): Promise<PioneerSchoolHelper> {
+    const { data } = await api.patch<PioneerSchoolHelper>(
+      `/pioneer-school/helpers/${id}`,
+      input,
+    );
+    return data;
+  },
+  async removeHelper(id: string): Promise<void> {
+    await api.delete(`/pioneer-school/helpers/${id}`);
+  },
+};
+
 export const specialEventsApi = {
   async list(params?: {
     all?: boolean;
