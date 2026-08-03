@@ -21,6 +21,7 @@ import {
   auxiliaryPioneersApi,
 } from '../../../lib/api';
 import { useTranslation } from 'react-i18next';
+import { LoadFailure } from '../../../components/LoadFailure';
 import { formatMonthLabel } from '../../../lib/i18n';
 import { notify } from '../../../lib/error-bus';
 
@@ -90,6 +91,7 @@ export default function NewOrEditServiceReportScreen() {
     data: myPublisher,
     isLoading: isLoadingPublisher,
     error: myPublisherError,
+    refetch: refetchMyPublisher,
   } = useQuery({
     queryKey: ['me', 'publisher'],
     queryFn: async () => (await meApi.publisher()).publisher,
@@ -258,9 +260,7 @@ export default function NewOrEditServiceReportScreen() {
   if (!isOnBehalf && myPublisherError) {
     return (
       <View style={styles.center}>
-        <Text style={styles.errorText}>
-          {extractErrorMessage(myPublisherError)}
-        </Text>
+        <LoadFailure error={myPublisherError} onRetry={refetchMyPublisher} />
       </View>
     );
   }

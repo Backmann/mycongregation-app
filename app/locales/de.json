@@ -526,7 +526,7 @@
       "validationServedSelf": "Bitte gib an, ob du diesen Monat am Predigtdienst teilgenommen hast."
     },
     "errors": {
-      "notLinkedToPublisher": "Dein Konto ist nicht mit einem Verkündigereintrag verknüpft. Bitte wende dich an einen Ältesten oder Administrator.",
+      "notLinkedToPublisher": "Dein Zugang ist mit keiner Verkündigerkarte verknüpft, deshalb kann kein Bericht abgegeben werden. Bitte einen Ältesten oder Administrator, sie zu verknüpfen: Profil → Benutzer → «Verknüpfen».",
       "selfEditWindowClosed": "Dieser Bericht kann nicht mehr bearbeitet werden. Das Selbstbearbeitungsfenster (1.–10. des Folgemonats) ist geschlossen. Wende dich an einen Ältesten oder Administrator."
     },
     "pioneerInline": " · Pionier",
@@ -2354,7 +2354,7 @@
     "later": "Später",
     "saved": "Gespeichert",
     "empty": "nicht angegeben",
-    "noCard": "Mit deinem Konto ist keine Verkündigerkarte verknüpft. Bitte wende dich an den Sekretär.",
+    "noCard": "Dein Zugang ist mit keiner Verkündigerkarte verknüpft, deshalb gibt es hier nichts zu zeigen. Bitte einen Ältesten oder Administrator, sie zu verknüpfen: Profil → Benutzer → «Verknüpfen».",
     "confirmedAt": "Bestätigt am {{date}}",
     "neverConfirmed": "Noch nie bestätigt",
     "checkTitle": "Bitte Daten prüfen",

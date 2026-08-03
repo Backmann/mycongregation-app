@@ -15,6 +15,7 @@ import { FormField } from '../../../components/FormField';
 import { FormSection } from '../../../components/FormSection';
 import { extractErrorMessage, meApi } from '../../../lib/api';
 import { contactsCheckLine } from '../../../lib/contacts-check';
+import { LoadFailure } from '../../../components/LoadFailure';
 
 /**
  * "My contacts": the one part of their card a publisher keeps up to date
@@ -82,6 +83,15 @@ export default function MyContactsScreen() {
 
   if (query.isLoading) {
     return <ActivityIndicator size="large" style={{ marginTop: 32 }} />;
+  }
+  // The same distinction as on «Сдать отчёт»: a request that failed says
+  // nothing about whether this person has a card.
+  if (query.error) {
+    return (
+      <View style={styles.screen}>
+        <LoadFailure error={query.error} onRetry={query.refetch} />
+      </View>
+    );
   }
   if (!me) {
     return (
