@@ -42,13 +42,13 @@ export default function PublicTalksImportScreen() {
     >
       <View style={styles.intro}>
         <Ionicons name="cloud-upload-outline" size={40} color="#0ea5e9" />
-        <Text style={styles.title}>Bulk import public talks</Text>
+        <Text style={styles.title}>{t('publicTalks.import.title')}</Text>
         <Text style={styles.subtitle}>
-          Paste a list with one talk per line in the format:{'\n'}
-          <Text style={styles.code}>1. Хорошо ли вы знаете Бога?</Text>
+          {t('publicTalks.import.pasteHint')}
           {'\n'}
-          Existing talks (matched by number) will be updated; new ones
-          created.
+          <Text style={styles.code}>{t('publicTalks.import.sample')}</Text>
+          {'\n'}
+          {t('publicTalks.import.updateNote')}
         </Text>
       </View>
 
@@ -59,7 +59,7 @@ export default function PublicTalksImportScreen() {
             onChangeText={setText}
             multiline
             textAlignVertical="top"
-            placeholder={'1. Title\n2. Another title\n3. ...'}
+            placeholder={t('publicTalks.import.placeholder')}
             placeholderTextColor="#cbd5e1"
             style={styles.textarea}
             autoCapitalize="none"
@@ -67,7 +67,9 @@ export default function PublicTalksImportScreen() {
           />
           {lineCount > 0 && (
             <View style={styles.lineCounter}>
-              <Text style={styles.lineCounterText}>{lineCount} lines</Text>
+              <Text style={styles.lineCounterText}>
+                {t('publicTalks.import.lines', { count: lineCount })}
+              </Text>
             </View>
           )}
         </View>
@@ -84,7 +86,9 @@ export default function PublicTalksImportScreen() {
             {importMutation.isPending ? (
               <>
                 <ActivityIndicator color="#fff" />
-                <Text style={styles.importButtonText}>Importing…</Text>
+                <Text style={styles.importButtonText}>
+                  {t('publicTalks.import.importing')}
+                </Text>
               </>
             ) : (
               <>
@@ -123,17 +127,33 @@ function ResultSummary({ result }: { result: BulkImportResult }) {
       </View>
 
       <View style={styles.statsRow}>
-        <Stat label="Parsed" value={result.parsed} color="#0369a1" />
-        <Stat label="Created" value={result.created} color="#059669" />
-        <Stat label="Updated" value={result.updated} color="#d97706" />
-        <Stat label="Unchanged" value={result.unchanged} color="#64748b" />
+        <Stat
+          label={t('publicTalks.import.statParsed')}
+          value={result.parsed}
+          color="#0369a1"
+        />
+        <Stat
+          label={t('publicTalks.import.statCreated')}
+          value={result.created}
+          color="#059669"
+        />
+        <Stat
+          label={t('publicTalks.import.statUpdated')}
+          value={result.updated}
+          color="#d97706"
+        />
+        <Stat
+          label={t('publicTalks.import.statUnchanged')}
+          value={result.unchanged}
+          color="#64748b"
+        />
       </View>
 
       {result.invalid > 0 && (
         <View style={styles.warningBox}>
           <Text style={styles.warningText}>
-            ⚠ {result.invalid} line(s) looked like talk attempts but couldn't
-            be parsed. Expected format: "N. Title"
+            {'\u26a0 '}
+            {t('publicTalks.import.invalid', { count: result.invalid })}
           </Text>
         </View>
       )}

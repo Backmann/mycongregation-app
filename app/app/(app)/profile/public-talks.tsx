@@ -124,11 +124,15 @@ export default function PublicTalksScreen() {
           <View style={styles.empty}>
             <Ionicons name="megaphone-outline" size={48} color="#cbd5e1" />
             <Text style={styles.emptyTitle}>
-              {search ? 'No talks match your search' : 'No public talks yet'}
+              {search
+                ? t('publicTalks.emptySearch')
+                : t('publicTalks.emptyTitle')}
             </Text>
             {!search && (
               <Text style={styles.emptySub}>
-                Tap "Bulk import" to add the S-34 catalog
+                {t('publicTalks.emptyHint', {
+                  action: t('publicTalks.bulkImport'),
+                })}
               </Text>
             )}
           </View>

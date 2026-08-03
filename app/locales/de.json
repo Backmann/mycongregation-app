@@ -1051,8 +1051,25 @@
       "submitButton": "Importieren",
       "successTitle": "Import abgeschlossen",
       "firstImported": "Erste importierte Einträge",
-      "viewCatalog": "Katalog öffnen"
-    }
+      "viewCatalog": "Katalog öffnen",
+      "title": "Massenimport öffentlicher Vorträge",
+      "pasteHint": "Füge eine Liste ein — ein Vortrag pro Zeile, im Format:",
+      "sample": "1. Vortragstitel",
+      "updateNote": "Vorhandene Vorträge (nach Nummer) werden aktualisiert, neue angelegt.",
+      "placeholder": "1. Vortragstitel\n2. Ein weiterer Titel\n3. …",
+      "importing": "Import läuft…",
+      "lines_one": "{{count}} Zeile",
+      "lines_other": "{{count}} Zeilen",
+      "statParsed": "Erkannt",
+      "statCreated": "Angelegt",
+      "statUpdated": "Aktualisiert",
+      "statUnchanged": "Unverändert",
+      "invalid_one": "{{count}} Zeile sah nach einem Vortrag aus, konnte aber nicht gelesen werden. Erwartetes Format: «N. Titel».",
+      "invalid_other": "{{count}} Zeilen sahen nach Vorträgen aus, konnten aber nicht gelesen werden. Erwartetes Format: «N. Titel»."
+    },
+    "emptySearch": "Keine Vorträge gefunden",
+    "emptyTitle": "Noch keine öffentlichen Vorträge",
+    "emptyHint": "Tippe auf «{{action}}», um den S-34-Katalog hinzuzufügen"
   },
   "responsibilities": {
     "title": "Aufgaben",

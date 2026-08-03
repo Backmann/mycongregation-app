@@ -1051,8 +1051,25 @@
       "submitButton": "Import",
       "successTitle": "Import complete",
       "firstImported": "First imported items",
-      "viewCatalog": "View catalog"
-    }
+      "viewCatalog": "View catalog",
+      "title": "Bulk import public talks",
+      "pasteHint": "Paste a list with one talk per line, in the format:",
+      "sample": "1. Talk title",
+      "updateNote": "Existing talks (matched by number) are updated; new ones are created.",
+      "placeholder": "1. Talk title\n2. Another title\n3. …",
+      "importing": "Importing…",
+      "lines_one": "{{count}} line",
+      "lines_other": "{{count}} lines",
+      "statParsed": "Parsed",
+      "statCreated": "Created",
+      "statUpdated": "Updated",
+      "statUnchanged": "Unchanged",
+      "invalid_one": "{{count}} line looked like a talk but could not be parsed. Expected format: «N. Title».",
+      "invalid_other": "{{count}} lines looked like talks but could not be parsed. Expected format: «N. Title»."
+    },
+    "emptySearch": "No talks match your search",
+    "emptyTitle": "No public talks yet",
+    "emptyHint": "Tap «{{action}}» to add the S-34 catalogue"
   },
   "responsibilities": {
     "title": "Responsibilities",

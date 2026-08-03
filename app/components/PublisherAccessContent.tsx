@@ -143,7 +143,7 @@ export function PublisherAccessContent({ publisher }: { publisher: Publisher }) 
   return (
     <View>
       <View style={styles.row}>
-        <Text style={styles.rowLabel}>Email</Text>
+        <Text style={styles.rowLabel}>{t('publisherAccess.emailLabel')}</Text>
         <Pressable
           style={emailStyles.rowBtn}
           onPress={() => setEmailOpen(true)}
