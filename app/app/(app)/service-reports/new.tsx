@@ -16,7 +16,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../../lib/auth';
 import {
   extractErrorMessage,
-  publishersApi,
+  meApi,
   serviceReportsApi,
   auxiliaryPioneersApi,
 } from '../../../lib/api';
@@ -71,13 +71,28 @@ export default function NewOrEditServiceReportScreen() {
   const isOnBehalf = !!onBehalfPublisherId && !isEditMode;
 
   // Resolve current user's publisher (used for SELF submissions only).
-  const { data: myPublisher, isLoading: isLoadingPublisher } = useQuery({
-    queryKey: ['my-publisher', user?.id],
-    queryFn: async () => {
-      if (!user) return null;
-      const all = await publishersApi.list({ limit: 200 });
-      return all.data.find((p) => p.userId === user.id) ?? null;
-    },
+  /**
+   * Who am I, as a publisher.
+   *
+   * This used to pull the whole roster and look for the row whose userId
+   * matched the signed-in user. That row never comes back for an ordinary
+   * publisher: `userId` is one of the private fields the roster strips, so
+   * nobody could see who has a login and who has not. The search therefore
+   * always failed, and the screen concluded «Ваш аккаунт не привязан к записи
+   * возвещателя» — for every publisher in the congregation, at exactly the
+   * moment reports are due.
+   *
+   * /me/publisher answers the question directly, and is the endpoint that
+   * exists for it: the server knows which publisher the login belongs to and
+   * does not have to reveal that about anybody else.
+   */
+  const {
+    data: myPublisher,
+    isLoading: isLoadingPublisher,
+    error: myPublisherError,
+  } = useQuery({
+    queryKey: ['me', 'publisher'],
+    queryFn: async () => (await meApi.publisher()).publisher,
     enabled: !!user,
   });
 
@@ -152,7 +167,7 @@ export default function NewOrEditServiceReportScreen() {
     ? editingReport?.hoursReported != null
     : isOnBehalf
       ? onBehalfIsPioneer
-      : (myPublisher?.pioneerType !== undefined &&
+      : (myPublisher?.pioneerType != null &&
           myPublisher.pioneerType !== 'none') ||
         iAmAuxThisMonth === true;
 
@@ -233,6 +248,19 @@ export default function NewOrEditServiceReportScreen() {
     return (
       <View style={styles.center}>
         <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+  // A failed request is not the same as "you have no publisher record", and
+  // saying the second when the first happened sends the reader to an elder
+  // over a network error.
+  if (!isOnBehalf && myPublisherError) {
+    return (
+      <View style={styles.center}>
+        <Text style={styles.errorText}>
+          {extractErrorMessage(myPublisherError)}
+        </Text>
       </View>
     );
   }
