@@ -465,7 +465,8 @@
       "goToLogin": "Anmelden",
       "invalidLink": "Dieser Link ist ungültig oder abgelaufen.",
       "requestNew": "Neuen Link anfordern"
-    }
+    },
+    "wrongEmailOrPassword": "Falsche Adresse oder falsches Passwort. Wurde der Zugang gerade erst erstellt, bitte einen Administrator, ein Passwort zu setzen."
   },
   "months": {
     "january": "Januar",
@@ -1063,7 +1064,14 @@
         "sheetTitle": "Wem gehört dieses Konto?",
         "sheetHint": "Wählen Sie den Verkündiger, dem der Zugang {{email}} gehört."
       },
-      "readOnlyNote": "Diese Liste der Zugänge dient nur der Ansicht. Einen Zugang erteilst oder änderst du unter «Brüder»: dort wird das Konto der Person zugeordnet, die Rolle folgt der Ernennung."
+      "readOnlyNote": "Diese Liste der Zugänge dient nur der Ansicht. Einen Zugang erteilst oder änderst du unter «Brüder»: dort wird das Konto der Person zugeordnet, die Rolle folgt der Ernennung.",
+      "noPassword": {
+        "badge": "Kein Passwort gesetzt",
+        "fix": "Setzen",
+        "sheetTitle": "Passwort setzen",
+        "placeholder": "Mindestens 8 Zeichen",
+        "sheetHint": "Der Zugang {{email}} besteht, hat aber kein Passwort — so kann sich niemand anmelden. Setze eines und gib es persönlich weiter."
+      }
     }
   },
   "publicTalks": {

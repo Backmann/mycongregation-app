@@ -6,6 +6,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from 'react-native';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -86,6 +87,18 @@ export default function AdminUsersScreen() {
 
   const qc = useQueryClient();
   const [linkFor, setLinkFor] = useState<PublicUser | null>(null);
+  const [passFor, setPassFor] = useState<PublicUser | null>(null);
+  const [newPassword, setNewPassword] = useState('');
+
+  const passMutation = useMutation({
+    meta: { inlineError: true },
+    mutationFn: () => usersApi.resetPassword(passFor!.id, newPassword.trim()),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['users'] });
+      setPassFor(null);
+      setNewPassword('');
+    },
+  });
   const linkMut = useMutation({
     mutationFn: (publisherId: string) =>
       usersApi.linkPublisher(linkFor!.id, publisherId),
@@ -158,6 +171,10 @@ export default function AdminUsersScreen() {
               user={u}
               isSelf={u.id === currentUser?.id}
               onLink={() => setLinkFor(u)}
+              onSetPassword={() => {
+                setNewPassword('');
+                setPassFor(u);
+              }}
             />
           ))
         )}
@@ -190,6 +207,44 @@ export default function AdminUsersScreen() {
           />
         </View>
       </Sheet>
+
+      <Sheet
+        visible={!!passFor}
+        onClose={() => setPassFor(null)}
+        title={t('admin.users.noPassword.sheetTitle')}
+      >
+        <View style={{ gap: 12 }}>
+          <Text style={styles.sheetHint}>
+            {t('admin.users.noPassword.sheetHint', {
+              email: passFor?.email ?? '',
+            })}
+          </Text>
+          <TextInput
+            style={styles.passInput}
+            value={newPassword}
+            onChangeText={setNewPassword}
+            placeholder={t('admin.users.noPassword.placeholder')}
+            placeholderTextColor="#94a3b8"
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
+          {passMutation.isError ? (
+            <Text style={styles.errorText}>
+              {extractErrorMessage(passMutation.error)}
+            </Text>
+          ) : null}
+          <Pressable
+            style={[
+              styles.passBtn,
+              newPassword.trim().length < 8 && { opacity: 0.5 },
+            ]}
+            disabled={newPassword.trim().length < 8 || passMutation.isPending}
+            onPress={() => passMutation.mutate()}
+          >
+            <Text style={styles.passBtnText}>{t('common.save')}</Text>
+          </Pressable>
+        </View>
+      </Sheet>
     </View>
   );
 }
@@ -198,10 +253,12 @@ function UserCard({
   user,
   isSelf,
   onLink,
+  onSetPassword,
 }: {
   user: PublicUser;
   isSelf: boolean;
   onLink: () => void;
+  onSetPassword: () => void;
 }) {
   const { t } = useTranslation();
   // The login role collapses unbaptized publishers, students and "none" all
@@ -273,6 +330,23 @@ function UserCard({
         </View>
       )}
 
+      {/* The account exists, is switched on — and simply has no password. The
+          login page cannot say so without turning itself into a way of testing
+          addresses, so it is said here, to the one person who can fix it. */}
+      {!user.hasPassword && (
+        <View style={styles.noPassRow}>
+          <Ionicons name="key-outline" size={14} color="#92400e" />
+          <Text style={styles.orphanRowText}>
+            {t('admin.users.noPassword.badge')}
+          </Text>
+          <Pressable onPress={onSetPassword} hitSlop={8}>
+            <Text style={styles.orphanFix}>
+              {t('admin.users.noPassword.fix')}
+            </Text>
+          </Pressable>
+        </View>
+      )}
+
       {!user.isActive && (
         <View style={styles.inactiveBanner}>
           <Ionicons name="ban" size={14} color="#991b1b" />
@@ -286,6 +360,32 @@ function UserCard({
 }
 
 const styles = StyleSheet.create({
+  noPassRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 8,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#f1f5f9',
+  },
+  sheetHint: { fontSize: 13.5, color: '#475569', lineHeight: 19 },
+  passInput: {
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 15,
+    color: '#0f172a',
+  },
+  passBtn: {
+    backgroundColor: '#0ea5e9',
+    borderRadius: 12,
+    paddingVertical: 13,
+    alignItems: 'center',
+  },
+  passBtnText: { color: '#fff', fontSize: 15, fontFamily: 'Manrope_700Bold' },
   orphanCard: {
     marginHorizontal: 16,
     marginBottom: 10,

@@ -465,7 +465,8 @@
       "goToLogin": "Sign in",
       "invalidLink": "This link is invalid or has expired.",
       "requestNew": "Request a new link"
-    }
+    },
+    "wrongEmailOrPassword": "Wrong address or password. If the login was created recently, ask an administrator to set a password."
   },
   "months": {
     "january": "January",
@@ -1063,7 +1064,14 @@
         "sheetTitle": "Whose account is this?",
         "sheetHint": "Choose the publisher this login ({{email}}) belongs to."
       },
-      "readOnlyNote": "This list of logins is read-only. Grant or change a login under «Brothers»: that is where an account is tied to a person, and the role follows the appointment."
+      "readOnlyNote": "This list of logins is read-only. Grant or change a login under «Brothers»: that is where an account is tied to a person, and the role follows the appointment.",
+      "noPassword": {
+        "badge": "No password set",
+        "fix": "Set one",
+        "sheetTitle": "Set a password",
+        "placeholder": "At least 8 characters",
+        "sheetHint": "The login {{email}} exists but has no password, so nobody can sign in with it. Set one and pass it on in person."
+      }
     }
   },
   "publicTalks": {

@@ -43,7 +43,16 @@ export default function LoginScreen() {
       await signIn(email.trim(), password);
       router.replace('/(app)/home' as any);
     } catch (e) {
-      setError(extractErrorMessage(e));
+      // 401 is «no» and nothing more — deliberately, so this page cannot be
+      // used to find out whose address exists. But «Invalid credentials» is a
+      // sentence written for a developer, in English, and it was landing on a
+      // German screen. The status is ours to read; the words are ours to write.
+      const status = (e as { response?: { status?: number } })?.response?.status;
+      setError(
+        status === 401
+          ? t('auth.wrongEmailOrPassword')
+          : extractErrorMessage(e),
+      );
     } finally {
       setSubmitting(false);
     }

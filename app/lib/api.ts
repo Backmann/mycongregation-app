@@ -169,6 +169,14 @@ export interface PublicUser {
    * closed — report, assignments, group all hang off the card.
    */
   publisherId: string | null;
+  /**
+   * Whether a password has ever been set.
+   *
+   * An account can be created and invited, and the invitation link is what
+   * sets the password. Until then the person is told «Invalid credentials» —
+   * the same words as a wrong password — and nobody could tell the two apart.
+   */
+  hasPassword: boolean;
 }
 
 export interface CreateUserInput {
