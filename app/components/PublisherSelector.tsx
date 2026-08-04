@@ -27,6 +27,7 @@ import { ActivitySummary, summarizeActivity } from '../lib/activity';
 import { effectiveVersionFor, meetingDate } from '../lib/meeting-schedule';
 import { useTranslation } from 'react-i18next';
 import { Sheet } from './Sheet';
+import { isActivePermanentPioneer } from '../lib/pioneer-status';
 
 interface Props {
   label: string;
@@ -46,6 +47,15 @@ interface Props {
   requiredCapability?: string;
   /** If set, only publishers of this gender are shown. */
   genderFilter?: 'sister' | 'brother';
+  /**
+   * Only brothers serving as regular pioneers.
+   *
+   * A hard filter, unlike `preferAppointment`: at a Pioneer Service School the
+   * brothers who may help are regular pioneers and nobody else, so offering
+   * the rest would be offering a mistake. A pioneer whose service begins next
+   * month is not one yet — that is what pioneerActive/pioneerSince settle.
+   */
+  pioneerFilter?: 'regular';
   /** If set, only publishers with this appointment are shown (hard filter). */
   appointmentFilter?: 'elder' | 'ministerial_servant';
   /**
@@ -144,6 +154,7 @@ export function PublisherSelector({
   excludeIds = [],
   requiredCapability,
   genderFilter,
+  pioneerFilter,
   appointmentFilter,
   excludeAppointments,
   activityById,
@@ -309,6 +320,11 @@ export function PublisherSelector({
   const filtered = allPublishers.filter((p) => {
     if (excludeIds.includes(p.id)) return false;
     if (genderFilter && p.gender !== genderFilter) return false;
+    if (pioneerFilter === 'regular') {
+      if (p.pioneerType !== 'regular') return false;
+      if (p.pioneerActive === false) return false;
+      if (!isActivePermanentPioneer(p.pioneerType, p.pioneerSince)) return false;
+    }
     if (appointmentFilter && p.appointment !== appointmentFilter) return false;
     if (
       excludeAppointments &&

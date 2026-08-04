@@ -2798,7 +2798,12 @@
       "congregationHint": "Wenn nicht aus unserer Versammlung",
       "ours": "Unser",
       "linkPublisher": "Mit Verkündigerkarte verknüpfen",
-      "linkHint": "Nur für eigene Brüder. Die Verknüpfung lässt die App Abwesenheiten und Aufgaben bei unseren Zusammenkünften sehen."
-    }
+      "linkHint": "Nur für eigene Brüder. Die Verknüpfung lässt die App Abwesenheiten und Aufgaben bei unseren Zusammenkünften sehen.",
+      "countedFor": "Die Tage zählen für «{{school}}»"
+    },
+    "addAndAssign": "Hinzufügen und zuteilen",
+    "fromCongregations": "aus Versammlungen",
+    "noAddress": "keine Adresse hinterlegt",
+    "ourHall": "unser Saal"
   }
 }

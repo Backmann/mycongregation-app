@@ -65,6 +65,10 @@ export default function PioneerSchoolScreen() {
   const [dayTimeFor, setDayTimeFor] = useState<string | null>(null);
   const [customFor, setCustomFor] = useState<string | null>(null);
   const [customLabel, setCustomLabel] = useState('');
+  const [addingHelper, setAddingHelper] = useState(false);
+  const [newFirst, setNewFirst] = useState('');
+  const [newLast, setNewLast] = useState('');
+  const [newCong, setNewCong] = useState('');
 
   const assignMut = useMutation({
     mutationFn: (vars: { dutyId: string; helperId: string | null }) =>
@@ -74,6 +78,25 @@ export default function PioneerSchoolScreen() {
       setPicking(null);
     },
   });
+  const addHelperMut = useMutation({
+    mutationFn: async () => {
+      const helper = await pioneerSchoolApi.createHelper({
+        firstName: newFirst.trim(),
+        lastName: newLast.trim(),
+        congregationName: newCong.trim() || null,
+        publisherId: null,
+      });
+      // Added for a reason: put him straight into the role that was open.
+      if (picking) await pioneerSchoolApi.assignDuty(id, picking.id, helper.id);
+      return helper;
+    },
+    onSuccess: () => {
+      invalidate();
+      setAddingHelper(false);
+      setPicking(null);
+    },
+  });
+
   const customMut = useMutation({
     mutationFn: (vars: { dayId: string; label: string }) =>
       pioneerSchoolApi.addCustomDuty(id, {
@@ -335,6 +358,25 @@ export default function PioneerSchoolScreen() {
                   {t('pioneerSchool.clearSlot')}
                 </Text>
               </Pressable>
+              {/* The brother you need is often the one not on the list yet.
+                  Leaving the school to add him, then coming back and opening
+                  the role again, is four steps for one name. */}
+              {canManagePioneerSchool ? (
+                <Pressable
+                  style={styles.pickRow}
+                  onPress={() => {
+                    setNewFirst('');
+                    setNewLast('');
+                    setNewCong('');
+                    setAddingHelper(true);
+                  }}
+                >
+                  <Ionicons name="person-add-outline" size={17} color="#0ea5e9" />
+                  <Text style={styles.pickAdd}>
+                    {t('pioneerSchool.helpers.add')}
+                  </Text>
+                </Pressable>
+              ) : null}
               {pickList.map((h) => (
                 <Pressable
                   key={h.id}
@@ -411,6 +453,55 @@ export default function PioneerSchoolScreen() {
               }
             >
               <Text style={styles.primaryBtnText}>{t('common.add')}</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal visible={addingHelper} transparent animationType="slide">
+        <View style={styles.backdrop}>
+          <Pressable
+            style={StyleSheet.absoluteFill}
+            onPress={() => setAddingHelper(false)}
+          />
+          <View style={styles.sheet}>
+            <Text style={styles.sheetTitle}>
+              {t('pioneerSchool.helpers.newTitle')}
+            </Text>
+            <TextInput
+              style={styles.input}
+              value={newFirst}
+              onChangeText={setNewFirst}
+              placeholder={t('pioneerSchool.helpers.firstName')}
+              placeholderTextColor="#94a3b8"
+            />
+            <TextInput
+              style={[styles.input, { marginTop: 8 }]}
+              value={newLast}
+              onChangeText={setNewLast}
+              placeholder={t('pioneerSchool.helpers.lastName')}
+              placeholderTextColor="#94a3b8"
+            />
+            <TextInput
+              style={[styles.input, { marginTop: 8 }]}
+              value={newCong}
+              onChangeText={setNewCong}
+              placeholder={t('pioneerSchool.helpers.congregationHint')}
+              placeholderTextColor="#94a3b8"
+            />
+            <Pressable
+              style={[
+                styles.primaryBtn,
+                (!newFirst.trim() || !newLast.trim()) && styles.btnOff,
+              ]}
+              disabled={
+                !newFirst.trim() || !newLast.trim() || addHelperMut.isPending
+              }
+              onPress={() => addHelperMut.mutate()}
+            >
+              <Text style={styles.primaryBtnText}>
+                {t('pioneerSchool.addAndAssign')}
+              </Text>
             </Pressable>
           </View>
         </View>
@@ -548,14 +639,14 @@ function SchoolEditSheet({
       key: `hall-${h.id}`,
       name: h.name,
       address: h.address,
+      from: t('pioneerSchool.ourHall'),
     })),
-    ...(externals.data ?? [])
-      .filter((c) => c.address)
-      .map((c) => ({
-        key: `ext-${c.id}`,
-        name: c.name,
-        address: c.address as string,
-      })),
+    ...(externals.data ?? []).map((c) => ({
+      key: `ext-${c.id}`,
+      name: c.city ? `${c.name} · ${c.city}` : c.name,
+      address: c.address ?? '',
+      from: t('pioneerSchool.fromCongregations'),
+    })),
   ];
 
   return (
@@ -595,28 +686,49 @@ function SchoolEditSheet({
               placeholder={t('pioneerSchool.hallAddressHint')}
               placeholderTextColor="#94a3b8"
             />
+            {/* A button, not a line of small print: this is the way most
+                schools will be filled in, and it was reading as a footnote. */}
             <Pressable
               onPress={() => setHallsOpen((v) => !v)}
-              style={styles.linkRow}
+              style={styles.pickHallBtn}
             >
-              <Ionicons name="list-outline" size={15} color="#0ea5e9" />
-              <Text style={styles.linkText}>
+              <Ionicons name="list-outline" size={16} color="#0ea5e9" />
+              <Text style={styles.pickHallText}>
                 {t('pioneerSchool.pickFromList')}
               </Text>
+              <Ionicons
+                name={hallsOpen ? 'chevron-up' : 'chevron-down'}
+                size={15}
+                color="#0ea5e9"
+              />
             </Pressable>
             {hallsOpen
               ? options.map((o) => (
                   <Pressable
                     key={o.key}
                     style={styles.hallOption}
+                    disabled={!o.address}
                     onPress={() => {
                       setHallName(o.name);
                       setHallAddress(o.address);
                       setHallsOpen(false);
                     }}
                   >
-                    <Text style={styles.hallOptionName}>{o.name}</Text>
-                    <Text style={styles.hallOptionAddr}>{o.address}</Text>
+                    <View style={styles.hallOptionHead}>
+                      <Text style={styles.hallOptionName}>{o.name}</Text>
+                      <Text style={styles.hallOptionFrom}>{o.from}</Text>
+                    </View>
+                    {/* A congregation with no address on file used to vanish
+                        from this list, leaving no way to tell «not there» from
+                        «nothing filled in». */}
+                    <Text
+                      style={[
+                        styles.hallOptionAddr,
+                        !o.address && styles.hallOptionMissing,
+                      ]}
+                    >
+                      {o.address || t('pioneerSchool.noAddress')}
+                    </Text>
                   </Pressable>
                 ))
               : null}
@@ -908,6 +1020,37 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   linkRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 8 },
+  pickHallBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 11,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#bae6fd',
+    backgroundColor: '#f0f9ff',
+  },
+  pickHallText: {
+    flex: 1,
+    color: '#0ea5e9',
+    fontSize: 14,
+    fontFamily: 'Manrope_600SemiBold',
+  },
+  hallOptionHead: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
+  hallOptionFrom: { fontSize: 11.5, color: '#94a3b8' },
+  hallOptionMissing: { color: '#b45309', fontStyle: 'italic' },
+  pickAdd: {
+    fontSize: 14.5,
+    color: '#0ea5e9',
+    fontFamily: 'Manrope_600SemiBold',
+  },
   linkText: {
     color: '#0ea5e9',
     fontSize: 13,

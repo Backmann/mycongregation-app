@@ -17,6 +17,7 @@ import {
   PioneerSchoolHelper,
   extractErrorMessage,
   pioneerSchoolApi,
+  publishersApi,
 } from '../../../lib/api';
 import { usePermissions } from '../../../lib/permissions';
 import { PublisherSelector } from '../../../components/PublisherSelector';
@@ -41,6 +42,38 @@ export default function PioneerSchoolHelpersScreen() {
     queryFn: () => pioneerSchoolApi.listHelpers(),
     enabled: canViewPioneerSchool,
   });
+  const publishersQuery = useQuery({
+    queryKey: ['publishers', 'all'],
+    queryFn: () => publishersApi.list({ limit: 200 }),
+    enabled: canManagePioneerSchool,
+  });
+  const schoolsQuery = useQuery({
+    queryKey: ['pioneer-school'],
+    queryFn: () => pioneerSchoolApi.list(),
+    enabled: canViewPioneerSchool,
+  });
+
+  /**
+   * Which school the load figures are about.
+   *
+   * The nearest school still ahead, and the last one held when there is none:
+   * a count with no school attached to it means nothing, so the name is
+   * written above the list rather than left to be guessed.
+   */
+  const countedSchool = useMemo(() => {
+    const list = [...(schoolsQuery.data ?? [])].sort((a, b) =>
+      a.startDate.localeCompare(b.startDate),
+    );
+    const today = new Date().toISOString().slice(0, 10);
+    return list.find((s) => s.endDate >= today) ?? list[list.length - 1] ?? null;
+  }, [schoolsQuery.data]);
+
+  const loadQuery = useQuery({
+    queryKey: ['pioneer-school', countedSchool?.id, 'load'],
+    queryFn: () => pioneerSchoolApi.load(countedSchool!.id),
+    enabled: !!countedSchool,
+  });
+  const load = loadQuery.data ?? {};
 
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
@@ -123,6 +156,13 @@ export default function PioneerSchoolHelpersScreen() {
     <View style={styles.screen}>
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
         <Text style={styles.intro}>{t('pioneerSchool.helpers.intro')}</Text>
+        {countedSchool ? (
+          <Text style={styles.countedFor}>
+            {t('pioneerSchool.helpers.countedFor', {
+              school: countedSchool.title,
+            })}
+          </Text>
+        ) : null}
 
         {canManagePioneerSchool && (
           <Pressable style={styles.addBtn} onPress={openNew}>
@@ -159,6 +199,13 @@ export default function PioneerSchoolHelpersScreen() {
                 <View style={styles.metaRow}>
                   {h.congregationName ? (
                     <Text style={styles.meta}>{h.congregationName}</Text>
+                  ) : null}
+                  {load[h.id] ? (
+                    <View style={styles.loadChip}>
+                      <Text style={styles.loadText}>
+                        {t('pioneerSchool.daysCount', { count: load[h.id] })}
+                      </Text>
+                    </View>
                   ) : null}
                   {h.publisherId ? (
                     <View style={styles.oursChip}>
@@ -225,14 +272,32 @@ export default function PioneerSchoolHelpersScreen() {
                 placeholderTextColor="#94a3b8"
               />
 
-              <PublisherSelector
-                label={t('pioneerSchool.helpers.linkPublisher')}
-                value={publisherId}
-                onChange={setPublisherId}
-              />
-              <Text style={styles.hint}>
-                {t('pioneerSchool.helpers.linkHint')}
-              </Text>
+              {/* A brother from another congregation has no card here, so
+                  offering to link one is offering a dead end. */}
+              {congregationName.trim() ? null : (
+                <>
+                  <PublisherSelector
+                    label={t('pioneerSchool.helpers.linkPublisher')}
+                    value={publisherId}
+                    genderFilter="brother"
+                    pioneerFilter="regular"
+                    onChange={(id) => {
+                      setPublisherId(id);
+                      // Take the name from the card: one spelling, typed once.
+                      const card = (publishersQuery.data?.data ?? []).find(
+                        (p) => p.id === id,
+                      );
+                      if (card) {
+                        setFirstName(card.firstName ?? firstName);
+                        setLastName(card.lastName ?? lastName);
+                      }
+                    }}
+                  />
+                  <Text style={styles.hint}>
+                    {t('pioneerSchool.helpers.linkHint')}
+                  </Text>
+                </>
+              )}
 
               {saveMut.isError ? (
                 <Text style={styles.error}>
@@ -316,6 +381,14 @@ const styles = StyleSheet.create({
     fontFamily: 'Manrope_600SemiBold',
   },
   empty: { fontSize: 14, color: '#94a3b8', textAlign: 'center', marginTop: 24 },
+  countedFor: { fontSize: 12.5, color: '#94a3b8', marginBottom: 10 },
+  loadChip: {
+    backgroundColor: '#f1f5f9',
+    borderRadius: 999,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+  },
+  loadText: { fontSize: 11.5, color: '#64748b' },
   backdrop: {
     flex: 1,
     backgroundColor: 'rgba(15,23,42,0.4)',

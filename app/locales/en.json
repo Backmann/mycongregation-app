@@ -2798,7 +2798,12 @@
       "congregationHint": "If not from our congregation",
       "ours": "Ours",
       "linkPublisher": "Link to a publisher card",
-      "linkHint": "For our own brothers only. The link is what lets the app see absences and duties at our meetings."
-    }
+      "linkHint": "For our own brothers only. The link is what lets the app see absences and duties at our meetings.",
+      "countedFor": "Days are counted for «{{school}}»"
+    },
+    "addAndAssign": "Add and assign",
+    "fromCongregations": "from congregations",
+    "noAddress": "no address on file",
+    "ourHall": "our hall"
   }
 }

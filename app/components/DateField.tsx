@@ -308,7 +308,27 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 28,
   },
-  card: { backgroundColor: '#fff', borderRadius: 16, padding: 16 },
+  /**
+   * A width, at last.
+   *
+   * The card had none, so on a browser it stretched across the whole window
+   * and the day cells — sized as «one seventh of the width, square» — became
+   * enormous tiles. On a phone it looked fine, which is why it stood for so
+   * long. Capping the width fixes every date field in the app at once.
+   */
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 14,
+    width: '100%',
+    maxWidth: 330,
+    alignSelf: 'center',
+    shadowColor: '#0f172a',
+    shadowOpacity: 0.18,
+    shadowRadius: 24,
+    shadowOffset: { width: 0, height: 12 },
+    elevation: 8,
+  },
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
