@@ -1070,7 +1070,10 @@
         "fix": "Setzen",
         "sheetTitle": "Passwort setzen",
         "placeholder": "Mindestens 8 Zeichen",
-        "sheetHint": "Der Zugang {{email}} besteht, hat aber kein Passwort — so kann sich niemand anmelden. Setze eines und gib es persönlich weiter."
+        "sheetHint": "Der Zugang {{email}} besteht, hat aber kein Passwort — so kann sich niemand anmelden. Setze eines und gib es persönlich weiter.",
+        "invite": "Einladen",
+        "inviting": "Wird gesendet…",
+        "invited": "E-Mail gesendet"
       }
     }
   },

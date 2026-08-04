@@ -20,6 +20,7 @@ import {
   PublicUser,
   UserRole,
   extractErrorMessage,
+  publishersApi,
   usersApi,
 } from '../../../lib/api';
 
@@ -89,6 +90,20 @@ export default function AdminUsersScreen() {
   const [linkFor, setLinkFor] = useState<PublicUser | null>(null);
   const [passFor, setPassFor] = useState<PublicUser | null>(null);
   const [newPassword, setNewPassword] = useState('');
+
+  const [invitedIds, setInvitedIds] = useState<string[]>([]);
+  const inviteMutation = useMutation({
+    meta: { inlineError: true },
+    // The invitation belongs to the publisher's card — that is where the token
+    // and the letter are made. The users list simply asks for it, so there is
+    // one implementation and not two that drift.
+    mutationFn: (user: PublicUser) =>
+      publishersApi.resendInvite(user.publisherId as string),
+    onSuccess: (_data, user) => {
+      setInvitedIds((prev) => [...prev, user.id]);
+      qc.invalidateQueries({ queryKey: ['users'] });
+    },
+  });
 
   const passMutation = useMutation({
     meta: { inlineError: true },
@@ -175,6 +190,12 @@ export default function AdminUsersScreen() {
                 setNewPassword('');
                 setPassFor(u);
               }}
+              onInvite={() => inviteMutation.mutate(u)}
+              inviting={
+                inviteMutation.isPending &&
+                inviteMutation.variables?.id === u.id
+              }
+              invited={invitedIds.includes(u.id)}
             />
           ))
         )}
@@ -254,11 +275,17 @@ function UserCard({
   isSelf,
   onLink,
   onSetPassword,
+  onInvite,
+  inviting,
+  invited,
 }: {
   user: PublicUser;
   isSelf: boolean;
   onLink: () => void;
   onSetPassword: () => void;
+  onInvite: () => void;
+  inviting: boolean;
+  invited: boolean;
 }) {
   const { t } = useTranslation();
   // The login role collapses unbaptized publishers, students and "none" all
@@ -339,6 +366,20 @@ function UserCard({
           <Text style={styles.orphanRowText}>
             {t('admin.users.noPassword.badge')}
           </Text>
+          {/* Seen here, fixed here. The invitation used to live only on the
+              publisher's card, so the one place that showed the problem was
+              not the place that could solve it. */}
+          {user.publisherId ? (
+            <Pressable onPress={onInvite} hitSlop={8} disabled={inviting}>
+              <Text style={styles.orphanFix}>
+                {invited
+                  ? t('admin.users.noPassword.invited')
+                  : inviting
+                    ? t('admin.users.noPassword.inviting')
+                    : t('admin.users.noPassword.invite')}
+              </Text>
+            </Pressable>
+          ) : null}
           <Pressable onPress={onSetPassword} hitSlop={8}>
             <Text style={styles.orphanFix}>
               {t('admin.users.noPassword.fix')}

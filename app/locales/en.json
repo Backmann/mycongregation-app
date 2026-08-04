@@ -1070,7 +1070,10 @@
         "fix": "Set one",
         "sheetTitle": "Set a password",
         "placeholder": "At least 8 characters",
-        "sheetHint": "The login {{email}} exists but has no password, so nobody can sign in with it. Set one and pass it on in person."
+        "sheetHint": "The login {{email}} exists but has no password, so nobody can sign in with it. Set one and pass it on in person.",
+        "invite": "Invite",
+        "inviting": "Sending…",
+        "invited": "Letter sent"
       }
     }
   },
