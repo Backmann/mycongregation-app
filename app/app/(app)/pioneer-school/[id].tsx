@@ -168,6 +168,7 @@ export default function PioneerSchoolScreen() {
           label: roleLabel(r),
           name: r.helperName,
           congregation: r.helperCongregation,
+          removed: r.helperRemoved,
         })),
       })),
       labels: {
@@ -175,6 +176,7 @@ export default function PioneerSchoolScreen() {
         hall: t('pioneerSchool.fields.hall'),
         notes: t('pioneerSchool.fields.notes'),
         unassigned: t('pioneerSchool.unassigned'),
+        removed: t('pioneerSchool.helperRemoved'),
         role: t('pioneerSchool.roleColumn'),
         person: t('pioneerSchool.personColumn'),
       },
@@ -272,10 +274,23 @@ export default function PioneerSchoolScreen() {
                 <Text style={styles.dutyLabel}>{roleLabel(r)}</Text>
                 <View style={{ flex: 1 }}>
                   <Text
-                    style={[styles.dutyName, !r.helperName && styles.dutyEmpty]}
+                    style={[
+                      styles.dutyName,
+                      !r.helperName && styles.dutyEmpty,
+                      r.helperRemoved && styles.dutyRemoved,
+                    ]}
                   >
                     {r.helperName ?? t('pioneerSchool.unassigned')}
                   </Text>
+                  {/* Taking a brother off the list used to turn his rows into
+                      «не назначен» — as if nobody had ever been there. He is
+                      still on this day; the schedule just has to say that he
+                      is no longer on the list. */}
+                  {r.helperRemoved ? (
+                    <Text style={styles.dutyRemovedNote}>
+                      {t('pioneerSchool.helperRemoved')}
+                    </Text>
+                  ) : null}
                   {r.helperCongregation ? (
                     <Text style={styles.dutyCong}>{r.helperCongregation}</Text>
                   ) : null}
@@ -891,6 +906,8 @@ const styles = StyleSheet.create({
   dutyLabel: { width: 118, fontSize: 13, color: '#64748b' },
   dutyName: { fontSize: 14.5, color: '#0f172a' },
   dutyEmpty: { color: '#b45309' },
+  dutyRemoved: { color: '#94a3b8', textDecorationLine: 'line-through' },
+  dutyRemovedNote: { fontSize: 11.5, color: '#b45309', marginTop: 1 },
   dutyCong: { fontSize: 12, color: '#94a3b8', marginTop: 1 },
   warnRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 3 },
   warnText: { fontSize: 11.5, color: '#b45309' },

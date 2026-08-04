@@ -2492,7 +2492,9 @@
       "special_event": "Besondere Ereignisse",
       "local_need": "Örtliche Bedürfnisse",
       "cart_location": "Trolley-Standorte",
-      "user": "Konten"
+      "user": "Konten",
+      "pioneer_school": "Pionierschule",
+      "pioneer_school_duty": "Dienst an der Schule"
     },
     "actions": {
       "CREATE": "hat hinzugefügt",
@@ -2804,6 +2806,7 @@
     "addAndAssign": "Hinzufügen und zuteilen",
     "fromCongregations": "aus Versammlungen",
     "noAddress": "keine Adresse hinterlegt",
-    "ourHall": "unser Saal"
+    "ourHall": "unser Saal",
+    "helperRemoved": "von der Liste genommen"
   }
 }

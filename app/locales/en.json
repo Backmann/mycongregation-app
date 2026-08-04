@@ -2492,7 +2492,9 @@
       "special_event": "Special events",
       "local_need": "Local needs",
       "cart_location": "Cart locations",
-      "user": "Accounts"
+      "user": "Accounts",
+      "pioneer_school": "Pioneer school",
+      "pioneer_school_duty": "School duty"
     },
     "actions": {
       "CREATE": "added",
@@ -2804,6 +2806,7 @@
     "addAndAssign": "Add and assign",
     "fromCongregations": "from congregations",
     "noAddress": "no address on file",
-    "ourHall": "our hall"
+    "ourHall": "our hall",
+    "helperRemoved": "off the list"
   }
 }

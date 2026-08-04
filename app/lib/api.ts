@@ -2319,6 +2319,8 @@ export interface PioneerSchoolDuty {
   helperId: string | null;
   helperName: string | null;
   helperCongregation: string | null;
+  /** He is off the list of brothers, but still standing on this day. */
+  helperRemoved: boolean;
   /** 'away' | 'busyAtMeeting' | 'twoMicrophones' — advice, never a refusal. */
   warnings: string[];
 }

@@ -2506,7 +2506,9 @@
       "special_event": "Особые события",
       "local_need": "Местные нужды",
       "cart_location": "Локации тележки",
-      "user": "Учётные записи"
+      "user": "Учётные записи",
+      "pioneer_school": "Школа пионеров",
+      "pioneer_school_duty": "Дежурство на школе"
     },
     "actions": {
       "CREATE": "добавил",
@@ -2822,6 +2824,7 @@
     "addAndAssign": "Добавить и назначить",
     "fromCongregations": "из собраний",
     "noAddress": "адрес не указан",
-    "ourHall": "наш зал"
+    "ourHall": "наш зал",
+    "helperRemoved": "снят со списка"
   }
 }

@@ -14,6 +14,8 @@ export interface SchoolPdfDuty {
   label: string;
   name: string | null;
   congregation: string | null;
+  /** Off the list of brothers, but still standing on this day. */
+  removed?: boolean;
 }
 
 export interface SchoolPdfDay {
@@ -27,6 +29,7 @@ export interface SchoolPdfLabels {
   hall: string;
   notes: string;
   unassigned: string;
+  removed: string;
   role: string;
   person: string;
 }
@@ -76,6 +79,9 @@ export function buildPioneerSchoolPdfHtml(input: {
                     ? esc(r.name) +
                       (r.congregation
                         ? ` <span class="cong">(${esc(r.congregation)})</span>`
+                        : '') +
+                      (r.removed
+                        ? ` <span class="removed">${esc(labels.removed)}</span>`
                         : '')
                     : esc(labels.unassigned)
                 }</td>
@@ -123,6 +129,7 @@ export function buildPioneerSchoolPdfHtml(input: {
   td.role, th.role { width: 42%; color: #475569; }
   td.empty { color: #b45309; }
   .cong { color: #64748b; }
+  .removed { color: #b45309; }
   .notes { margin-top: 14px; padding-top: 10px; border-top: 1px solid #e2e8f0; }
   .notes h2 { font-size: 12px; color: #94a3b8; text-transform: uppercase;
     letter-spacing: .4px; margin: 0 0 6px; }
