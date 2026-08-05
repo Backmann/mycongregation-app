@@ -140,7 +140,9 @@
     "hourUnit": "Std.",
     "boldShort": "F",
     "italicShort": "K",
-    "print": "Drucken"
+    "print": "Drucken",
+    "undo": "Rückgängig",
+    "undoing": "Wird zurückgeholt…"
   },
   "profile": {
     "signedInAs": "Angemeldet als",
@@ -1641,7 +1643,8 @@
       "field_service": "mitgegangen: {{count}}",
       "pastoral": "Besuche: {{count}}",
       "accommodation": "beherbergt: {{count}}"
-    }
+    },
+    "deleted": "Punkt gelöscht"
   },
   "witnessing": {
     "youAreAssigned": "Sie sind diesem Slot zugeteilt",

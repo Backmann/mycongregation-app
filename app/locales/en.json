@@ -140,7 +140,9 @@
     "hourUnit": "h",
     "boldShort": "B",
     "italicShort": "I",
-    "print": "Print"
+    "print": "Print",
+    "undo": "Undo",
+    "undoing": "Restoring…"
   },
   "profile": {
     "signedInAs": "Signed in as",
@@ -1641,7 +1643,8 @@
       "field_service": "been out: {{count}}",
       "pastoral": "calls: {{count}}",
       "accommodation": "put them up: {{count}}"
-    }
+    },
+    "deleted": "Item removed"
   },
   "witnessing": {
     "youAreAssigned": "You're assigned to this slot",

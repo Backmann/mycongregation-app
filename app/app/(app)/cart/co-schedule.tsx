@@ -42,6 +42,7 @@ import { meetingDate } from '../../../lib/meeting-schedule';
 import type { CoMeetingInfo } from '../../../lib/coSchedulePdf';
 import { reportError, notify } from '../../../lib/error-bus';
 import { confirm } from '../../../components/ConfirmHost';
+import { UndoBar } from '../../../components/UndoBar';
 
 const WEEKDAY_ANCHOR = [
   '2024-01-01',
@@ -131,6 +132,8 @@ export default function CoScheduleScreen() {
 
   const [form, setForm] = useState<FormState | null>(null);
   const [kindPickerDay, setKindPickerDay] = useState<string | null>(null);
+  /** What was just removed and can still be brought back with one tap. */
+  const [undo, setUndo] = useState<{ ids: string[] } | null>(null);
 
   const { data: events, isLoading } = useQuery({
     queryKey: ['special-events', 'co-schedule'],
@@ -659,6 +662,10 @@ export default function CoScheduleScreen() {
       pairM.mutate(async () => {
         await coVisitItemsApi.remove(id);
         if (pairId) await coVisitItemsApi.remove(pairId);
+        // Removed, and for the next few seconds still recoverable in one tap.
+        // A pair (the item and its counterpart for the wife) goes back
+        // together, exactly as it went.
+        setUndo({ ids: pairId ? [id, pairId] : [id] });
       });
     if (
       await confirm({
@@ -1814,6 +1821,18 @@ export default function CoScheduleScreen() {
           ) : null}
         </View>
       </Sheet>
+
+      <UndoBar
+        visible={!!undo}
+        message={t('coVisit.deleted')}
+        onDismiss={() => setUndo(null)}
+        onUndo={async () => {
+          for (const id of undo?.ids ?? []) {
+            await coVisitItemsApi.restore(id);
+          }
+          await qc.invalidateQueries({ queryKey: ['co-visit-items'] });
+        }}
+      />
     </ScrollView>
   );
 }

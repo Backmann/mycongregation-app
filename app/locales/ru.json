@@ -140,7 +140,9 @@
     "hourUnit": "ч",
     "boldShort": "Ж",
     "italicShort": "К",
-    "print": "Печать"
+    "print": "Печать",
+    "undo": "Отменить",
+    "undoing": "Возвращаем…"
   },
   "profile": {
     "signedInAs": "Вход выполнен от",
@@ -1653,7 +1655,8 @@
       "field_service": "служил: {{count}}",
       "pastoral": "посещал: {{count}}",
       "accommodation": "принимал: {{count}}"
-    }
+    },
+    "deleted": "Пункт удалён"
   },
   "witnessing": {
     "youAreAssigned": "Вы назначены на этот слот",

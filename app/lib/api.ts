@@ -1576,6 +1576,10 @@ export const coVisitItemsApi = {
     );
     return data;
   },
+  /** Put a removed item back — the same right as removing it. */
+  async restore(id: string): Promise<void> {
+    await api.post(`/co-visit-items/${id}/restore`);
+  },
   async remove(id: string): Promise<void> {
     await api.delete(`/co-visit-items/${id}`);
   },
