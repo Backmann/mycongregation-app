@@ -21,12 +21,13 @@ export function UndoBar({
   message,
   onUndo,
   onDismiss,
-  seconds = 8,
+  seconds = 10,
 }: {
   visible: boolean;
   message: string;
   onUndo: () => void | Promise<void>;
   onDismiss: () => void;
+  /** Ten seconds: long enough to read the strip, notice, and reach it. */
   seconds?: number;
 }) {
   const { t } = useTranslation();
@@ -88,7 +89,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 12,
     right: 12,
-    bottom: 18,
+    // Above the tab bar, not under it.
+    bottom: 86,
     alignItems: 'center',
   },
   bar: {

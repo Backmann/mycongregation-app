@@ -1220,7 +1220,15 @@ export default function CoScheduleScreen() {
                 : t('coVisit.addMeeting');
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    // The undo strip has to be a SIBLING of the scroller, not a child of it.
+    // Absolute positioning inside a ScrollView is measured against the
+    // scrollable CONTENT, so the strip was quietly drawn at the very bottom of
+    // a page metres long — present, correct, and invisible.
+    <View style={styles.screen}>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.content}
+      >
       <View style={styles.card}>
         <Text style={styles.cardTitle}>{coName || t('coVisit.overseer')}</Text>
         {visit.coWifeName ? (
@@ -1821,6 +1829,7 @@ export default function CoScheduleScreen() {
           ) : null}
         </View>
       </Sheet>
+      </ScrollView>
 
       <UndoBar
         visible={!!undo}
@@ -1833,11 +1842,12 @@ export default function CoScheduleScreen() {
           await qc.invalidateQueries({ queryKey: ['co-visit-items'] });
         }}
       />
-    </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  screen: { flex: 1 },
   readinessCard: {
     padding: 12,
     borderRadius: 12,
