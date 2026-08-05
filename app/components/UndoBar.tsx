@@ -32,8 +32,17 @@ export function UndoBar({
 }) {
   const { t } = useTranslation();
   const [busy, setBusy] = useState(false);
+  /**
+   * Seconds left, shown as a number and as a draining line.
+   *
+   * A strip that vanishes on its own leaves the reader guessing whether it is
+   * about to: he starts reading, looks away, and it is gone. Counting down in
+   * plain sight turns «успею ли» into a fact he can see.
+   */
+  const [left, setLeft] = useState(seconds);
   const fade = useRef(new Animated.Value(0)).current;
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const tick = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     if (timer.current) clearTimeout(timer.current);
@@ -42,11 +51,17 @@ export function UndoBar({
       duration: 160,
       useNativeDriver: true,
     }).start();
+    if (tick.current) clearInterval(tick.current);
     if (visible) {
+      setLeft(seconds);
       timer.current = setTimeout(onDismiss, seconds * 1000);
+      tick.current = setInterval(() => {
+        setLeft((n) => (n > 0 ? n - 1 : 0));
+      }, 1000);
     }
     return () => {
       if (timer.current) clearTimeout(timer.current);
+      if (tick.current) clearInterval(tick.current);
     };
     // onDismiss is stable enough here; re-arming on every render would mean
     // the strip never times out while the screen is busy.
@@ -77,8 +92,18 @@ export function UndoBar({
         >
           <Text style={styles.action}>
             {busy ? t('common.undoing') : t('common.undo')}
+            {!busy && left > 0 ? ` · ${left}` : ''}
           </Text>
         </Pressable>
+      </View>
+      {/* The same countdown without numbers, for the corner of the eye. */}
+      <View style={styles.trackWrap}>
+        <View
+          style={[
+            styles.track,
+            { width: `${Math.max(0, (left / seconds) * 100)}%` },
+          ]}
+        />
       </View>
     </Animated.View>
   );
@@ -110,6 +135,17 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   text: { flex: 1, color: '#e2e8f0', fontSize: 13.5, lineHeight: 18 },
+  trackWrap: {
+    width: '100%',
+    maxWidth: 520,
+    height: 3,
+    marginTop: -3,
+    borderBottomLeftRadius: 12,
+    borderBottomRightRadius: 12,
+    overflow: 'hidden',
+    backgroundColor: 'rgba(148,163,184,0.25)',
+  },
+  track: { height: 3, backgroundColor: '#38bdf8' },
   action: {
     color: '#38bdf8',
     fontSize: 14,
