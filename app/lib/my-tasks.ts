@@ -2,11 +2,16 @@
  * Shared logic for "my assignments" rows — used by the Home card and the
  * full-list screen so the two never drift apart.
  */
-import { MeetingSettingsVersion, MyAssignmentItem } from './api';
+import {
+  MeetingSettingsVersion,
+  MyAssignmentItem,
+  SpecialEvent,
+} from './api';
 import { effectiveVersionFor } from './meeting-schedule';
 import { SECTION_COLORS } from './section-colors';
 import { addDays, formatDateISO } from './dates';
 import { getPartLabel, resolveSubsection, SUBSECTIONS } from './parts';
+import { weekRules } from './week-rules';
 
 type TFunc = (key: string, options?: any) => string;
 
@@ -25,6 +30,15 @@ export function refineMyTasks(
   items: MyAssignmentItem[],
   versions: MeetingSettingsVersion[],
   todayISO: string,
+  /**
+   * Special events of the weeks in question.
+   *
+   * Without them this worked out the day of a meeting from the settings alone
+   * — so on a week the circuit overseer visits, a brother saw his part on the
+   * ordinary Thursday while the meeting had moved to Tuesday. week-rules.ts
+   * has always known better; it simply was not asked here.
+   */
+  events: SpecialEvent[] = [],
 ): RefinedTask[] {
   const refined: RefinedTask[] = [];
   for (const item of items) {
@@ -47,13 +61,29 @@ export function refineMyTasks(
       (item.eventType === 'midweek' || item.eventType === 'weekend')
     ) {
       const v = effectiveVersionFor(versions, item.weekStartDate);
-      const dow = item.eventType === 'midweek' ? v?.midweekDow : v?.weekendDow;
-      if (v && dow) {
-        dateISO = formatDateISO(
-          addDays(new Date(`${item.weekStartDate}T00:00:00`), dow - 1),
-        );
+      // The same authority the rest of the app uses: it knows that a visit
+      // moves the midweek meeting, and that a congress week has none at all.
+      const rules = weekRules({
+        weekStartISO: item.weekStartDate,
+        version: v,
+        events,
+      });
+      const kind = item.eventType === 'midweek' ? 'midweek' : 'weekend';
+      const fromRules = rules.meetingsHeld ? rules.dateOf(kind) : null;
+      if (fromRules) {
+        dateISO = fromRules;
         meetingTime =
-          item.eventType === 'midweek' ? v.midweekTime : v.weekendTime;
+          item.eventType === 'midweek' ? v?.midweekTime : v?.weekendTime;
+      } else {
+        const dow =
+          item.eventType === 'midweek' ? v?.midweekDow : v?.weekendDow;
+        if (v && dow) {
+          dateISO = formatDateISO(
+            addDays(new Date(`${item.weekStartDate}T00:00:00`), dow - 1),
+          );
+          meetingTime =
+            item.eventType === 'midweek' ? v.midweekTime : v.weekendTime;
+        }
       }
     }
     if (!dateISO) {

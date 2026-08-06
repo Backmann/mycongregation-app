@@ -12,7 +12,12 @@ import { useQuery } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
-import { meApi, meetingSettingsApi, MyAssignmentItem } from '../../../lib/api';
+import {
+  meApi,
+  meetingSettingsApi,
+  MyAssignmentItem,
+  specialEventsApi,
+} from '../../../lib/api';
 import {
   RefinedTask,
   refineMyTasks,
@@ -100,6 +105,14 @@ export default function MyAssignmentsScreen() {
   });
   const versions = overviewQuery.data?.versions ?? [];
 
+  // Needed to place a meeting on the day it is actually held: a circuit visit
+  // moves the midweek one, and a convention week has none.
+  const eventsQuery = useQuery({
+    queryKey: ['special-events'],
+    queryFn: () => specialEventsApi.list(),
+    staleTime: 5 * 60 * 1000,
+  });
+
   const tasksQuery = useQuery({
     queryKey: ['me', 'assignments'],
     queryFn: () => meApi.assignments(),
@@ -118,6 +131,7 @@ export default function MyAssignmentsScreen() {
     tasksQuery.data?.items ?? [],
     versions,
     todayISO,
+    eventsQuery.data ?? [],
   );
   const weeks = buildWeeks(refined);
 

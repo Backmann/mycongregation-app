@@ -300,7 +300,9 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
     const v = effectiveVersionFor(versions, monISO);
     return !!weekRules({ weekStartISO: monISO, version: v, events }).congress;
   };
-  const refined = refineMyTasks(myItems, versions, todayISO).filter(
+  // Events go in so a visit week places a part on the day the meeting was
+  // actually moved to, rather than on the weekday the settings name.
+  const refined = refineMyTasks(myItems, versions, todayISO, events).filter(
     (r) => !droppedByCongress(r),
   );
 
