@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
-  Modal,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -22,6 +21,7 @@ import {
 import { usePermissions } from '../../../lib/permissions';
 import { PublisherSelector } from '../../../components/PublisherSelector';
 import { LoadFailure } from '../../../components/LoadFailure';
+import { Sheet } from '../../../components/Sheet';
 
 /**
  * The brothers who may serve at the school.
@@ -231,95 +231,83 @@ export default function PioneerSchoolHelpersScreen() {
         )}
       </ScrollView>
 
-      <Modal visible={open} transparent animationType="slide">
-        <View style={styles.backdrop}>
+      {/* The app's own sheet, not a hand-rolled Modal. It already rises above
+          the keyboard, knows about the Android navigation buttons, and keeps
+          the save button pinned — all three of which this form was missing. */}
+      <Sheet
+        visible={open}
+        onClose={() => setOpen(false)}
+        title={
+          editId
+            ? t('pioneerSchool.helpers.editTitle')
+            : t('pioneerSchool.helpers.newTitle')
+        }
+        footer={
           <Pressable
-            style={StyleSheet.absoluteFill}
-            onPress={() => setOpen(false)}
-          />
-          <View style={styles.sheet}>
-            <ScrollView keyboardShouldPersistTaps="handled">
-              <Text style={styles.sheetTitle}>
-                {editId
-                  ? t('pioneerSchool.helpers.editTitle')
-                  : t('pioneerSchool.helpers.newTitle')}
-              </Text>
+            style={[
+              styles.addBtn,
+              (!firstName.trim() || !lastName.trim()) && styles.btnOff,
+            ]}
+            disabled={!firstName.trim() || !lastName.trim() || saveMut.isPending}
+            onPress={() => saveMut.mutate()}
+          >
+            <Text style={styles.addBtnText}>{t('common.save')}</Text>
+          </Pressable>
+        }
+      >
+        <Text style={styles.label}>
+          {t('pioneerSchool.helpers.firstName')}
+        </Text>
+        <TextInput
+          style={styles.input}
+          value={firstName}
+          onChangeText={setFirstName}
+        />
+        <Text style={styles.label}>{t('pioneerSchool.helpers.lastName')}</Text>
+        <TextInput
+          style={styles.input}
+          value={lastName}
+          onChangeText={setLastName}
+        />
+        <Text style={styles.label}>
+          {t('pioneerSchool.helpers.congregation')}
+        </Text>
+        <TextInput
+          style={styles.input}
+          value={congregationName}
+          onChangeText={setCongregationName}
+          placeholder={t('pioneerSchool.helpers.congregationHint')}
+          placeholderTextColor="#94a3b8"
+        />
 
-              <Text style={styles.label}>
-                {t('pioneerSchool.helpers.firstName')}
-              </Text>
-              <TextInput
-                style={styles.input}
-                value={firstName}
-                onChangeText={setFirstName}
-              />
-              <Text style={styles.label}>
-                {t('pioneerSchool.helpers.lastName')}
-              </Text>
-              <TextInput
-                style={styles.input}
-                value={lastName}
-                onChangeText={setLastName}
-              />
-              <Text style={styles.label}>
-                {t('pioneerSchool.helpers.congregation')}
-              </Text>
-              <TextInput
-                style={styles.input}
-                value={congregationName}
-                onChangeText={setCongregationName}
-                placeholder={t('pioneerSchool.helpers.congregationHint')}
-                placeholderTextColor="#94a3b8"
-              />
-
-              {/* A brother from another congregation has no card here, so
-                  offering to link one is offering a dead end. */}
-              {congregationName.trim() ? null : (
-                <>
-                  <PublisherSelector
-                    label={t('pioneerSchool.helpers.linkPublisher')}
-                    value={publisherId}
-                    genderFilter="brother"
-                    pioneerFilter="regular"
-                    onChange={(id) => {
-                      setPublisherId(id);
-                      // Take the name from the card: one spelling, typed once.
-                      const card = (publishersQuery.data?.data ?? []).find(
-                        (p) => p.id === id,
-                      );
-                      if (card) {
-                        setFirstName(card.firstName ?? firstName);
-                        setLastName(card.lastName ?? lastName);
-                      }
-                    }}
-                  />
-                  <Text style={styles.hint}>
-                    {t('pioneerSchool.helpers.linkHint')}
-                  </Text>
-                </>
-              )}
-
-              {saveMut.isError ? (
-                <Text style={styles.error}>
-                  {extractErrorMessage(saveMut.error)}
-                </Text>
-              ) : null}
-              <Pressable
-                style={[
-                  styles.addBtn,
-                  (!firstName.trim() || !lastName.trim()) && styles.btnOff,
-                ]}
-                disabled={
-                  !firstName.trim() || !lastName.trim() || saveMut.isPending
+        {congregationName.trim() ? null : (
+          <>
+            <PublisherSelector
+              label={t('pioneerSchool.helpers.linkPublisher')}
+              value={publisherId}
+              genderFilter="brother"
+              pioneerFilter="regular"
+              onChange={(id) => {
+                setPublisherId(id);
+                const card = (publishersQuery.data?.data ?? []).find(
+                  (p) => p.id === id,
+                );
+                if (card) {
+                  setFirstName(card.firstName ?? firstName);
+                  setLastName(card.lastName ?? lastName);
                 }
-                onPress={() => saveMut.mutate()}
-              >
-                <Text style={styles.addBtnText}>{t('common.save')}</Text>
-              </Pressable>
-            </ScrollView>
-          </View>
-        </View>
-      </Modal>
+              }}
+            />
+            <Text style={styles.hint}>
+              {t('pioneerSchool.helpers.linkHint')}
+            </Text>
+          </>
+        )}
+
+        {saveMut.isError ? (
+          <Text style={styles.error}>{extractErrorMessage(saveMut.error)}</Text>
+        ) : null}
+      </Sheet>
     </View>
   );
 }
@@ -389,24 +377,6 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
   },
   loadText: { fontSize: 11.5, color: '#64748b' },
-  backdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(15,23,42,0.4)',
-    justifyContent: 'flex-end',
-  },
-  sheet: {
-    backgroundColor: '#fff',
-    borderTopLeftRadius: 18,
-    borderTopRightRadius: 18,
-    padding: 20,
-    maxHeight: '88%',
-  },
-  sheetTitle: {
-    fontSize: 17,
-    color: '#0f172a',
-    fontFamily: 'Manrope_700Bold',
-    marginBottom: 4,
-  },
   label: {
     fontSize: 13,
     color: '#475569',

@@ -27,6 +27,7 @@ import {
 import { usePermissions } from '../../../lib/permissions';
 import { LoadFailure } from '../../../components/LoadFailure';
 import { RichNote } from '../../../components/RichNote';
+import { useBottomRoom } from '../../../components/Sheet';
 import { DateField } from '../../../components/DateField';
 import { exportHtmlAsPdf, openPrintWindow } from '../../../lib/pdf';
 import { buildPioneerSchoolPdfHtml } from '../../../lib/pioneerSchoolPdf';
@@ -38,6 +39,16 @@ export default function PioneerSchoolScreen() {
   const params = useLocalSearchParams<{ id?: string }>();
   const id = typeof params.id === 'string' ? params.id : '';
   const { canManagePioneerSchool, canViewPioneerSchool } = usePermissions();
+  /**
+   * Room for the keyboard and the Android navigation buttons.
+   *
+   * These sheets were hand-rolled instead of using the app's Sheet, so they
+   * knew nothing about either: the keyboard covered the fields being typed
+   * into, and the save button sat below the bottom of the screen. The
+   * measurement itself is shared — there is one right answer to «how much
+   * room is left down there», and it already lives in Sheet.
+   */
+  const bottomRoom = useBottomRoom();
 
   const query = useQuery({
     queryKey: ['pioneer-school', id],
@@ -346,7 +357,7 @@ export default function PioneerSchoolScreen() {
             style={StyleSheet.absoluteFill}
             onPress={() => setPicking(null)}
           />
-          <View style={styles.sheet}>
+          <View style={[styles.sheet, { paddingBottom: 20 + bottomRoom }]}>
             <Text style={styles.sheetTitle}>
               {picking ? roleLabel(picking) : ''}
             </Text>
@@ -447,7 +458,7 @@ export default function PioneerSchoolScreen() {
             style={StyleSheet.absoluteFill}
             onPress={() => setCustomFor(null)}
           />
-          <View style={styles.sheet}>
+          <View style={[styles.sheet, { paddingBottom: 20 + bottomRoom }]}>
             <Text style={styles.sheetTitle}>{t('pioneerSchool.addRole')}</Text>
             <TextInput
               style={styles.input}
@@ -479,7 +490,7 @@ export default function PioneerSchoolScreen() {
             style={StyleSheet.absoluteFill}
             onPress={() => setAddingHelper(false)}
           />
-          <View style={styles.sheet}>
+          <View style={[styles.sheet, { paddingBottom: 20 + bottomRoom }]}>
             <Text style={styles.sheetTitle}>
               {t('pioneerSchool.helpers.newTitle')}
             </Text>
@@ -548,13 +559,14 @@ function DayTimeSheet({
   onSave: (start: string, end: string) => Promise<void>;
 }) {
   const { t } = useTranslation();
+  const bottomRoom = useBottomRoom();
   const [start, setStart] = useState('');
   const [end, setEnd] = useState('');
   return (
     <Modal visible={visible} transparent animationType="slide">
       <View style={styles.backdrop}>
         <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
-        <View style={styles.sheet}>
+        <View style={[styles.sheet, { paddingBottom: 20 + bottomRoom }]}>
           <Text style={styles.sheetTitle}>{t('pioneerSchool.dayTime')}</Text>
           <Text style={styles.hint}>{t('pioneerSchool.dayTimeHint')}</Text>
           <View style={{ flexDirection: 'row', gap: 10 }}>
@@ -608,6 +620,7 @@ function SchoolEditSheet({
   onSaved: () => void;
 }) {
   const { t } = useTranslation();
+  const bottomRoom = useBottomRoom();
   const [title, setTitle] = useState(initial.title);
   const [startDate, setStartDate] = useState(initial.startDate.slice(0, 10));
   const [endDate, setEndDate] = useState(initial.endDate.slice(0, 10));
@@ -668,7 +681,7 @@ function SchoolEditSheet({
     <Modal visible transparent animationType="slide">
       <View style={styles.backdrop}>
         <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
-        <View style={[styles.sheet, { maxHeight: '92%' }]}>
+        <View style={[styles.sheet, { maxHeight: '92%', paddingBottom: 20 + bottomRoom }]}>
           <ScrollView keyboardShouldPersistTaps="handled">
             <Text style={styles.sheetTitle}>{t('pioneerSchool.editTitle')}</Text>
 

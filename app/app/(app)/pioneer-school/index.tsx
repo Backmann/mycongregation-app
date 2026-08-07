@@ -21,6 +21,7 @@ import { PioneerSchool, extractErrorMessage, pioneerSchoolApi } from '../../../l
 import { usePermissions } from '../../../lib/permissions';
 import { DateField } from '../../../components/DateField';
 import { LoadFailure } from '../../../components/LoadFailure';
+import { useBottomRoom } from '../../../components/Sheet';
 
 /** «23–29 ноября 2026» — one line, no repeated month or year. */
 export function schoolDates(
@@ -44,6 +45,9 @@ export default function PioneerSchoolsScreen() {
   const { t, i18n } = useTranslation();
   const qc = useQueryClient();
   const { canViewPioneerSchool, canManagePioneerSchool } = usePermissions();
+  // Same reason as on the school's own screen: this sheet has a text field and
+  // a button, and both used to end up under the keyboard.
+  const bottomRoom = useBottomRoom();
 
   const query = useQuery({
     queryKey: ['pioneer-school'],
@@ -143,7 +147,7 @@ export default function PioneerSchoolsScreen() {
             style={StyleSheet.absoluteFill}
             onPress={() => setOpen(false)}
           />
-          <View style={styles.sheet}>
+          <View style={[styles.sheet, { paddingBottom: 20 + bottomRoom }]}>
             <Text style={styles.sheetTitle}>{t('pioneerSchool.newTitle')}</Text>
             <Text style={styles.label}>{t('pioneerSchool.fields.title')}</Text>
             <TextInput
