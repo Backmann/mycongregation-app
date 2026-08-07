@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
-  Modal,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -27,7 +26,7 @@ import {
 import { usePermissions } from '../../../lib/permissions';
 import { LoadFailure } from '../../../components/LoadFailure';
 import { RichNote } from '../../../components/RichNote';
-import { useBottomRoom } from '../../../components/Sheet';
+import { Sheet } from '../../../components/Sheet';
 import { DateField } from '../../../components/DateField';
 import { exportHtmlAsPdf, openPrintWindow } from '../../../lib/pdf';
 import { buildPioneerSchoolPdfHtml } from '../../../lib/pioneerSchoolPdf';
@@ -48,7 +47,6 @@ export default function PioneerSchoolScreen() {
    * measurement itself is shared — there is one right answer to «how much
    * room is left down there», and it already lives in Sheet.
    */
-  const bottomRoom = useBottomRoom();
 
   const query = useQuery({
     queryKey: ['pioneer-school', id],
@@ -351,90 +349,82 @@ export default function PioneerSchoolScreen() {
       </ScrollView>
 
       {/* Who serves */}
-      <Modal visible={!!picking} transparent animationType="slide">
-        <View style={styles.backdrop}>
-          <Pressable
-            style={StyleSheet.absoluteFill}
-            onPress={() => setPicking(null)}
-          />
-          <View style={[styles.sheet, { paddingBottom: 20 + bottomRoom }]}>
-            <Text style={styles.sheetTitle}>
-              {picking ? roleLabel(picking) : ''}
-            </Text>
-            <View style={styles.searchBox}>
-              <Ionicons name="search-outline" size={16} color="#94a3b8" />
-              <TextInput
-                style={styles.searchInput}
-                value={pickSearch}
-                onChangeText={setPickSearch}
-                placeholder={t('pioneerSchool.helpers.search')}
-                placeholderTextColor="#94a3b8"
-                autoCapitalize="none"
-              />
-            </View>
-            <ScrollView style={{ maxHeight: 360 }}>
+      <Sheet
+        visible={!!picking}
+        onClose={() => setPicking(null)}
+        variant="bottom"
+        fills
+        title={picking ? roleLabel(picking) : ''}
+      >
+        <View style={{ flex: 1, paddingHorizontal: 16 }}>
+          <View style={styles.searchBox}>
+            <Ionicons name="search-outline" size={16} color="#94a3b8" />
+            <TextInput
+              style={styles.searchInput}
+              value={pickSearch}
+              onChangeText={setPickSearch}
+              placeholder={t('pioneerSchool.helpers.search')}
+              placeholderTextColor="#94a3b8"
+              autoCapitalize="none"
+            />
+          </View>
+          <ScrollView keyboardShouldPersistTaps="handled">
+            <Pressable
+              style={styles.pickRow}
+              onPress={() =>
+                picking &&
+                assignMut.mutate({ dutyId: picking.id, helperId: null })
+              }
+            >
+              <Text style={styles.pickClear}>
+                {t('pioneerSchool.clearSlot')}
+              </Text>
+            </Pressable>
+            {canManagePioneerSchool ? (
               <Pressable
+                style={styles.pickRow}
+                onPress={() => {
+                  setNewFirst('');
+                  setNewLast('');
+                  setNewCong('');
+                  setAddingHelper(true);
+                }}
+              >
+                <Ionicons name="person-add-outline" size={17} color="#0ea5e9" />
+                <Text style={styles.pickAdd}>
+                  {t('pioneerSchool.helpers.add')}
+                </Text>
+              </Pressable>
+            ) : null}
+            {pickList.map((h) => (
+              <Pressable
+                key={h.id}
                 style={styles.pickRow}
                 onPress={() =>
                   picking &&
-                  assignMut.mutate({ dutyId: picking.id, helperId: null })
+                  assignMut.mutate({ dutyId: picking.id, helperId: h.id })
                 }
               >
-                <Text style={styles.pickClear}>
-                  {t('pioneerSchool.clearSlot')}
-                </Text>
-              </Pressable>
-              {/* The brother you need is often the one not on the list yet.
-                  Leaving the school to add him, then coming back and opening
-                  the role again, is four steps for one name. */}
-              {canManagePioneerSchool ? (
-                <Pressable
-                  style={styles.pickRow}
-                  onPress={() => {
-                    setNewFirst('');
-                    setNewLast('');
-                    setNewCong('');
-                    setAddingHelper(true);
-                  }}
-                >
-                  <Ionicons name="person-add-outline" size={17} color="#0ea5e9" />
-                  <Text style={styles.pickAdd}>
-                    {t('pioneerSchool.helpers.add')}
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.pickName}>
+                    {h.firstName} {h.lastName}
                   </Text>
-                </Pressable>
-              ) : null}
-              {pickList.map((h) => (
-                <Pressable
-                  key={h.id}
-                  style={styles.pickRow}
-                  onPress={() =>
-                    picking &&
-                    assignMut.mutate({ dutyId: picking.id, helperId: h.id })
-                  }
-                >
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.pickName}>
-                      {h.firstName} {h.lastName}
-                    </Text>
-                    {h.congregationName ? (
-                      <Text style={styles.pickCong}>{h.congregationName}</Text>
-                    ) : null}
-                  </View>
-                  {/* How many days he already holds — three reliable brothers
-                      quietly take the whole week otherwise. */}
-                  {load[h.id] ? (
-                    <View style={styles.loadChip}>
-                      <Text style={styles.loadText}>
-                        {t('pioneerSchool.daysCount', { count: load[h.id] })}
-                      </Text>
-                    </View>
+                  {h.congregationName ? (
+                    <Text style={styles.pickCong}>{h.congregationName}</Text>
                   ) : null}
-                </Pressable>
-              ))}
-            </ScrollView>
-          </View>
+                </View>
+                {load[h.id] ? (
+                  <View style={styles.loadChip}>
+                    <Text style={styles.loadText}>
+                      {t('pioneerSchool.daysCount', { count: load[h.id] })}
+                    </Text>
+                  </View>
+                ) : null}
+              </Pressable>
+            ))}
+          </ScrollView>
         </View>
-      </Modal>
+      </Sheet>
 
       {/* A day's own hours */}
       <DayTimeSheet
@@ -452,86 +442,77 @@ export default function PioneerSchoolScreen() {
       />
 
       {/* A role of this school's own */}
-      <Modal visible={!!customFor} transparent animationType="slide">
-        <View style={styles.backdrop}>
+      <Sheet
+        visible={!!customFor}
+        onClose={() => setCustomFor(null)}
+        variant="bottom"
+        title={t('pioneerSchool.addRole')}
+        footer={
           <Pressable
-            style={StyleSheet.absoluteFill}
-            onPress={() => setCustomFor(null)}
-          />
-          <View style={[styles.sheet, { paddingBottom: 20 + bottomRoom }]}>
-            <Text style={styles.sheetTitle}>{t('pioneerSchool.addRole')}</Text>
-            <TextInput
-              style={styles.input}
-              value={customLabel}
-              onChangeText={setCustomLabel}
-              placeholder={t('pioneerSchool.addRoleHint')}
-              placeholderTextColor="#94a3b8"
-            />
-            <Pressable
-              style={[styles.primaryBtn, !customLabel.trim() && styles.btnOff]}
-              disabled={!customLabel.trim()}
-              onPress={() =>
-                customFor &&
-                customMut.mutate({
-                  dayId: customFor,
-                  label: customLabel.trim(),
-                })
-              }
-            >
-              <Text style={styles.primaryBtnText}>{t('common.add')}</Text>
-            </Pressable>
-          </View>
-        </View>
-      </Modal>
+            style={[styles.primaryBtn, !customLabel.trim() && styles.btnOff]}
+            disabled={!customLabel.trim()}
+            onPress={() =>
+              customFor &&
+              customMut.mutate({ dayId: customFor, label: customLabel.trim() })
+            }
+          >
+            <Text style={styles.primaryBtnText}>{t('common.add')}</Text>
+          </Pressable>
+        }
+      >
+        <TextInput
+          style={styles.input}
+          value={customLabel}
+          onChangeText={setCustomLabel}
+          placeholder={t('pioneerSchool.addRoleHint')}
+          placeholderTextColor="#94a3b8"
+        />
+      </Sheet>
 
-      <Modal visible={addingHelper} transparent animationType="slide">
-        <View style={styles.backdrop}>
+      <Sheet
+        visible={addingHelper}
+        onClose={() => setAddingHelper(false)}
+        variant="bottom"
+        title={t('pioneerSchool.helpers.newTitle')}
+        footer={
           <Pressable
-            style={StyleSheet.absoluteFill}
-            onPress={() => setAddingHelper(false)}
-          />
-          <View style={[styles.sheet, { paddingBottom: 20 + bottomRoom }]}>
-            <Text style={styles.sheetTitle}>
-              {t('pioneerSchool.helpers.newTitle')}
+            style={[
+              styles.primaryBtn,
+              (!newFirst.trim() || !newLast.trim()) && styles.btnOff,
+            ]}
+            disabled={
+              !newFirst.trim() || !newLast.trim() || addHelperMut.isPending
+            }
+            onPress={() => addHelperMut.mutate()}
+          >
+            <Text style={styles.primaryBtnText}>
+              {t('pioneerSchool.addAndAssign')}
             </Text>
-            <TextInput
-              style={styles.input}
-              value={newFirst}
-              onChangeText={setNewFirst}
-              placeholder={t('pioneerSchool.helpers.firstName')}
-              placeholderTextColor="#94a3b8"
-            />
-            <TextInput
-              style={[styles.input, { marginTop: 8 }]}
-              value={newLast}
-              onChangeText={setNewLast}
-              placeholder={t('pioneerSchool.helpers.lastName')}
-              placeholderTextColor="#94a3b8"
-            />
-            <TextInput
-              style={[styles.input, { marginTop: 8 }]}
-              value={newCong}
-              onChangeText={setNewCong}
-              placeholder={t('pioneerSchool.helpers.congregationHint')}
-              placeholderTextColor="#94a3b8"
-            />
-            <Pressable
-              style={[
-                styles.primaryBtn,
-                (!newFirst.trim() || !newLast.trim()) && styles.btnOff,
-              ]}
-              disabled={
-                !newFirst.trim() || !newLast.trim() || addHelperMut.isPending
-              }
-              onPress={() => addHelperMut.mutate()}
-            >
-              <Text style={styles.primaryBtnText}>
-                {t('pioneerSchool.addAndAssign')}
-              </Text>
-            </Pressable>
-          </View>
-        </View>
-      </Modal>
+          </Pressable>
+        }
+      >
+        <TextInput
+          style={styles.input}
+          value={newFirst}
+          onChangeText={setNewFirst}
+          placeholder={t('pioneerSchool.helpers.firstName')}
+          placeholderTextColor="#94a3b8"
+        />
+        <TextInput
+          style={[styles.input, { marginTop: 8 }]}
+          value={newLast}
+          onChangeText={setNewLast}
+          placeholder={t('pioneerSchool.helpers.lastName')}
+          placeholderTextColor="#94a3b8"
+        />
+        <TextInput
+          style={[styles.input, { marginTop: 8 }]}
+          value={newCong}
+          onChangeText={setNewCong}
+          placeholder={t('pioneerSchool.helpers.congregationHint')}
+          placeholderTextColor="#94a3b8"
+        />
+      </Sheet>
 
       {editOpen ? (
         <SchoolEditSheet
@@ -559,41 +540,41 @@ function DayTimeSheet({
   onSave: (start: string, end: string) => Promise<void>;
 }) {
   const { t } = useTranslation();
-  const bottomRoom = useBottomRoom();
   const [start, setStart] = useState('');
   const [end, setEnd] = useState('');
   return (
-    <Modal visible={visible} transparent animationType="slide">
-      <View style={styles.backdrop}>
-        <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
-        <View style={[styles.sheet, { paddingBottom: 20 + bottomRoom }]}>
-          <Text style={styles.sheetTitle}>{t('pioneerSchool.dayTime')}</Text>
-          <Text style={styles.hint}>{t('pioneerSchool.dayTimeHint')}</Text>
-          <View style={{ flexDirection: 'row', gap: 10 }}>
-            <TextInput
-              style={[styles.input, { flex: 1 }]}
-              value={start}
-              onChangeText={setStart}
-              placeholder="09:00"
-              placeholderTextColor="#94a3b8"
-            />
-            <TextInput
-              style={[styles.input, { flex: 1 }]}
-              value={end}
-              onChangeText={setEnd}
-              placeholder="16:00"
-              placeholderTextColor="#94a3b8"
-            />
-          </View>
-          <Pressable
-            style={styles.primaryBtn}
-            onPress={() => void onSave(start.trim(), end.trim())}
-          >
-            <Text style={styles.primaryBtnText}>{t('common.save')}</Text>
-          </Pressable>
-        </View>
+    <Sheet
+      visible={visible}
+      onClose={onClose}
+      variant="bottom"
+      title={t('pioneerSchool.dayTime')}
+      footer={
+        <Pressable
+          style={styles.primaryBtn}
+          onPress={() => void onSave(start.trim(), end.trim())}
+        >
+          <Text style={styles.primaryBtnText}>{t('common.save')}</Text>
+        </Pressable>
+      }
+    >
+      <Text style={styles.hint}>{t('pioneerSchool.dayTimeHint')}</Text>
+      <View style={{ flexDirection: 'row', gap: 10 }}>
+        <TextInput
+          style={[styles.input, { flex: 1 }]}
+          value={start}
+          onChangeText={setStart}
+          placeholder="09:00"
+          placeholderTextColor="#94a3b8"
+        />
+        <TextInput
+          style={[styles.input, { flex: 1 }]}
+          value={end}
+          onChangeText={setEnd}
+          placeholder="16:00"
+          placeholderTextColor="#94a3b8"
+        />
       </View>
-    </Modal>
+    </Sheet>
   );
 }
 
@@ -620,7 +601,6 @@ function SchoolEditSheet({
   onSaved: () => void;
 }) {
   const { t } = useTranslation();
-  const bottomRoom = useBottomRoom();
   const [title, setTitle] = useState(initial.title);
   const [startDate, setStartDate] = useState(initial.startDate.slice(0, 10));
   const [endDate, setEndDate] = useState(initial.endDate.slice(0, 10));
@@ -678,13 +658,26 @@ function SchoolEditSheet({
   ];
 
   return (
-    <Modal visible transparent animationType="slide">
-      <View style={styles.backdrop}>
-        <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
-        <View style={[styles.sheet, { maxHeight: '92%', paddingBottom: 20 + bottomRoom }]}>
-          <ScrollView keyboardShouldPersistTaps="handled">
-            <Text style={styles.sheetTitle}>{t('pioneerSchool.editTitle')}</Text>
-
+    <Sheet
+      visible
+      onClose={onClose}
+      variant="bottom"
+      fills
+      title={t('pioneerSchool.editTitle')}
+      footer={
+        <Pressable
+          style={styles.primaryBtn}
+          disabled={saveMut.isPending}
+          onPress={() => saveMut.mutate()}
+        >
+          <Text style={styles.primaryBtnText}>{t('common.save')}</Text>
+        </Pressable>
+      }
+    >
+      <ScrollView
+        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 8 }}
+        keyboardShouldPersistTaps="handled"
+      >
             <Text style={styles.label}>{t('pioneerSchool.fields.title')}</Text>
             <TextInput style={styles.input} value={title} onChangeText={setTitle} />
 
@@ -824,22 +817,11 @@ function SchoolEditSheet({
               </View>
             ) : null}
 
-            {saveMut.isError ? (
-              <Text style={styles.error}>
-                {extractErrorMessage(saveMut.error)}
-              </Text>
-            ) : null}
-            <Pressable
-              style={styles.primaryBtn}
-              disabled={saveMut.isPending}
-              onPress={() => saveMut.mutate()}
-            >
-              <Text style={styles.primaryBtnText}>{t('common.save')}</Text>
-            </Pressable>
-          </ScrollView>
-        </View>
-      </View>
-    </Modal>
+        {saveMut.isError ? (
+          <Text style={styles.error}>{extractErrorMessage(saveMut.error)}</Text>
+        ) : null}
+      </ScrollView>
+    </Sheet>
   );
 }
 

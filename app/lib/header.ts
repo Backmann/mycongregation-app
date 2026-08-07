@@ -49,8 +49,15 @@ export const headerOptions: NativeStackNavigationOptions = {
     fontSize: 18,
     color: '#ffffff',
   },
-  // The stock hairline reads as a seam under a coloured bar; the colour change
-  // already separates header from content.
-  headerShadowVisible: false,
+  /**
+   * A shadow, not the stock hairline.
+   *
+   * The hairline was switched off for a good reason — under a coloured bar it
+   * reads as a seam. But with nothing at all the header sat flat against the
+   * content, and a list scrolling under it simply disappeared at the edge. An
+   * elevation shadow says the header is a layer above rather than a painted
+   * strip, and it is the platform's own, so it behaves like every other app.
+   */
+  headerShadowVisible: true,
   headerBackTitle: '',
 };

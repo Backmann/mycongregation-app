@@ -237,6 +237,11 @@ export default function PioneerSchoolHelpersScreen() {
       <Sheet
         visible={open}
         onClose={() => setOpen(false)}
+        // 'bottom', not the default full screen: a form is not a list. The
+        // full variant leaves the body flush to the edges on purpose — it is
+        // built for lists that pad themselves — so this form came out with its
+        // fields touching both edges and its header under the status bar.
+        variant="bottom"
         title={
           editId
             ? t('pioneerSchool.helpers.editTitle')

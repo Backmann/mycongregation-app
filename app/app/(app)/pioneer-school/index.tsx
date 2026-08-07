@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import {
   ActivityIndicator,
-  Modal,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -21,7 +20,7 @@ import { PioneerSchool, extractErrorMessage, pioneerSchoolApi } from '../../../l
 import { usePermissions } from '../../../lib/permissions';
 import { DateField } from '../../../components/DateField';
 import { LoadFailure } from '../../../components/LoadFailure';
-import { useBottomRoom } from '../../../components/Sheet';
+import { Sheet } from '../../../components/Sheet';
 
 /** «23–29 ноября 2026» — one line, no repeated month or year. */
 export function schoolDates(
@@ -45,9 +44,6 @@ export default function PioneerSchoolsScreen() {
   const { t, i18n } = useTranslation();
   const qc = useQueryClient();
   const { canViewPioneerSchool, canManagePioneerSchool } = usePermissions();
-  // Same reason as on the school's own screen: this sheet has a text field and
-  // a button, and both used to end up under the keyboard.
-  const bottomRoom = useBottomRoom();
 
   const query = useQuery({
     queryKey: ['pioneer-school'],
@@ -141,47 +137,45 @@ export default function PioneerSchoolsScreen() {
         )}
       </ScrollView>
 
-      <Modal visible={open} transparent animationType="slide">
-        <View style={styles.backdrop}>
+      <Sheet
+        visible={open}
+        onClose={() => setOpen(false)}
+        variant="bottom"
+        title={t('pioneerSchool.newTitle')}
+        footer={
           <Pressable
-            style={StyleSheet.absoluteFill}
-            onPress={() => setOpen(false)}
-          />
-          <View style={[styles.sheet, { paddingBottom: 20 + bottomRoom }]}>
-            <Text style={styles.sheetTitle}>{t('pioneerSchool.newTitle')}</Text>
-            <Text style={styles.label}>{t('pioneerSchool.fields.title')}</Text>
-            <TextInput
-              style={styles.input}
-              value={title}
-              onChangeText={setTitle}
-              placeholder={t('pioneerSchool.defaultTitle')}
-              placeholderTextColor="#94a3b8"
-            />
-            <DateField
-              label={t('pioneerSchool.fields.startDate')}
-              value={startDate}
-              onChange={setStartDate}
-            />
-            <DateField
-              label={t('pioneerSchool.fields.endDate')}
-              value={endDate}
-              onChange={setEndDate}
-            />
-            {createMut.isError ? (
-              <Text style={styles.error}>
-                {extractErrorMessage(createMut.error)}
-              </Text>
-            ) : null}
-            <Pressable
-              style={[styles.addBtn, !canCreate && styles.btnOff]}
-              disabled={!canCreate || createMut.isPending}
-              onPress={() => createMut.mutate()}
-            >
-              <Text style={styles.addBtnText}>{t('common.create')}</Text>
-            </Pressable>
-          </View>
-        </View>
-      </Modal>
+            style={[styles.addBtn, !canCreate && styles.btnOff]}
+            disabled={!canCreate || createMut.isPending}
+            onPress={() => createMut.mutate()}
+          >
+            <Text style={styles.addBtnText}>{t('common.create')}</Text>
+          </Pressable>
+        }
+      >
+        <Text style={styles.label}>{t('pioneerSchool.fields.title')}</Text>
+        <TextInput
+          style={styles.input}
+          value={title}
+          onChangeText={setTitle}
+          placeholder={t('pioneerSchool.defaultTitle')}
+          placeholderTextColor="#94a3b8"
+        />
+        <DateField
+          label={t('pioneerSchool.fields.startDate')}
+          value={startDate}
+          onChange={setStartDate}
+        />
+        <DateField
+          label={t('pioneerSchool.fields.endDate')}
+          value={endDate}
+          onChange={setEndDate}
+        />
+        {createMut.isError ? (
+          <Text style={styles.error}>
+            {extractErrorMessage(createMut.error)}
+          </Text>
+        ) : null}
+      </Sheet>
     </View>
   );
 }
@@ -235,20 +229,6 @@ const styles = StyleSheet.create({
   hallRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 },
   cardHall: { fontSize: 12.5, color: '#64748b' },
   empty: { fontSize: 14, color: '#94a3b8', textAlign: 'center', marginTop: 24 },
-  backdrop: { flex: 1, backgroundColor: 'rgba(15,23,42,0.4)', justifyContent: 'flex-end' },
-  sheet: {
-    backgroundColor: '#fff',
-    borderTopLeftRadius: 18,
-    borderTopRightRadius: 18,
-    padding: 20,
-    gap: 4,
-  },
-  sheetTitle: {
-    fontSize: 17,
-    color: '#0f172a',
-    fontFamily: 'Manrope_700Bold',
-    marginBottom: 8,
-  },
   label: {
     fontSize: 13,
     color: '#475569',

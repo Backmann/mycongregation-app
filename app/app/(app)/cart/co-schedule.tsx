@@ -2106,15 +2106,28 @@ const styles = StyleSheet.create({
   toggleRow: { flexDirection: 'row', gap: 8, marginTop: 8 },
   modeChip: {
     flex: 1,
-    paddingVertical: 10,
-    borderRadius: 10,
+    // A fixed minimum height and centred text, because one of the three
+    // labels wraps to two lines on a narrow phone: without it the whole row
+    // grew to fit the longest and read as ragged.
+    minHeight: 48,
+    paddingVertical: 8,
+    paddingHorizontal: 6,
+    borderRadius: 12,
     alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: '#ffffff',
     borderWidth: 1,
     borderColor: '#e2e8f0',
   },
   modeChipActive: { backgroundColor: '#0ea5e9', borderColor: '#0ea5e9' },
-  modeChipText: { fontSize: 14, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#334155' },
+  modeChipText: {
+    fontSize: 13.5,
+    fontWeight: '600',
+    fontFamily: 'Manrope_600SemiBold',
+    color: '#334155',
+    textAlign: 'center',
+    lineHeight: 17,
+  },
   modeChipTextActive: { color: '#ffffff' },
   chip: {
     paddingHorizontal: 12,
