@@ -302,6 +302,29 @@ export default function WitnessingScreen() {
       style={styles.container}
       contentContainerStyle={styles.content}
     >
+      {/* The places the carts stand on.
+          A bare pin in the header said nothing: an icon has to be recognised
+          AND guessed at, and this one was doing neither. A row with a name and
+          a line of explanation is read once and understood; it sits above the
+          week because setting up the places comes before planning with them. */}
+      {canManage && (
+        <Pressable
+          style={styles.placesRow}
+          onPress={() => router.push('/cart/locations' as never)}
+        >
+          <View style={styles.placesIcon}>
+            <Ionicons name="location-outline" size={18} color="#0369a1" />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.placesTitle}>{t('service.locations')}</Text>
+            <Text style={styles.placesSub}>
+              {t('service.locationsSubtitle')}
+            </Text>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color="#94a3b8" />
+        </Pressable>
+      )}
+
       {/* Week navigator */}
       <View style={styles.weekNav}>
         <Pressable
@@ -939,6 +962,32 @@ export default function WitnessingScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f1f5f9' },
   content: { padding: 16, paddingBottom: 40 },
+  placesRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: '#f0f9ff',
+    borderWidth: 1,
+    borderColor: '#bae6fd',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginBottom: 12,
+  },
+  placesIcon: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    backgroundColor: '#e0f2fe',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  placesTitle: {
+    fontSize: 14.5,
+    color: '#0c4a6e',
+    fontFamily: 'Manrope_600SemiBold',
+  },
+  placesSub: { fontSize: 12.5, color: '#0369a1', marginTop: 1 },
   weekNav: {
     flexDirection: 'row',
     alignItems: 'center',
