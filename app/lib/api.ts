@@ -3147,12 +3147,29 @@ export interface JournalFilters {
   to?: string;
 }
 
+export interface RevertPlan {
+  supported: boolean;
+  /** notAnEdit | redacted | entityNotSupported | nothingRevertable */
+  reason?: string;
+  fields: { field: string; from: unknown; to: unknown }[];
+  /** How many times the record was edited AFTER this entry. */
+  changedAfter: number;
+}
+
 export const journalApi = {
   async list(filters: JournalFilters = {}): Promise<JournalPage> {
     const { data } = await api.get<JournalPage>('/journal', {
       params: filters,
     });
     return data;
+  },
+  /** What a revert would change — asked before it is done. */
+  async revertPlan(id: string): Promise<RevertPlan> {
+    const { data } = await api.get<RevertPlan>(`/journal/${id}/revert`);
+    return data;
+  },
+  async revert(id: string): Promise<void> {
+    await api.post(`/journal/${id}/revert`);
   },
 };
 

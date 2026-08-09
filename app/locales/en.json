@@ -2603,6 +2603,16 @@
       "after_meeting": "after the meeting",
       "thorough": "thorough",
       "general": "general"
+    },
+    "revert": "Put it back",
+    "revertDo": "Put back",
+    "revertTouchedSince_one": "The record was edited {{count}} more time after this. Reverting undoes that edit too.",
+    "revertTouchedSince_other": "The record was edited {{count}} more times after this. Reverting undoes those edits too.",
+    "revertNo": {
+      "notAnEdit": "Only an edit can be put back — not an addition or a deletion.",
+      "redacted": "The contents of this entry were erased at a person’s request; there is nothing to put back.",
+      "entityNotSupported": "This kind of record cannot be put back. Open it and correct it by hand.",
+      "nothingRevertable": "This entry holds no field that can be put back."
     }
   },
   "attendance": {

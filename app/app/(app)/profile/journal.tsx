@@ -8,14 +8,24 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useInfiniteQuery } from '@tanstack/react-query';
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
 // Locales are opt-in per file in dayjs: without these the dates come out in
 // English however the app is set, which is exactly what happened here.
 import 'dayjs/locale/ru';
 import 'dayjs/locale/de';
-import { JournalEntry, journalApi } from '../../../lib/api';
+import {
+  JournalEntry,
+  extractErrorMessage,
+  journalApi,
+} from '../../../lib/api';
+import { Sheet } from '../../../components/Sheet';
 import { useAuth } from '../../../lib/auth';
 
 /**
@@ -121,6 +131,11 @@ const FILTERS = [
 export default function JournalScreen() {
   const { t, i18n } = useTranslation();
   const { user } = useAuth();
+  // Reverting is an ordinary edit made through the same services, so the right
+  // to it is the right to edit: elders and administrators. The server checks
+  // this too — the app simply stops offering what it would refuse.
+  const mayRevert = user?.role === 'admin' || user?.role === 'elder';
+  const [revertFor, setRevertFor] = useState<JournalEntry | null>(null);
   const [section, setSection] = useState<string | null>(null);
 
   const query = useInfiniteQuery({
@@ -219,12 +234,18 @@ export default function JournalScreen() {
                   first={index === 0}
                   language={i18n.language}
                   names={names}
+                  canRevert={mayRevert}
+                  onRevert={() => setRevertFor(entry)}
                 />
               ))}
             </View>
           </View>
         ))
       )}
+
+      {revertFor ? (
+        <RevertSheet entry={revertFor} onClose={() => setRevertFor(null)} />
+      ) : null}
 
       {query.hasNextPage ? (
         <Pressable
@@ -314,11 +335,15 @@ function Row({
   first,
   language,
   names,
+  canRevert,
+  onRevert,
 }: {
   entry: JournalEntry;
   first: boolean;
   language: string;
   names: Record<string, string>;
+  canRevert: boolean;
+  onRevert: () => void;
 }) {
   const { t } = useTranslation();
   const tone = SECTION_TONE[entry.entityType] ?? '#64748b';
@@ -488,12 +513,153 @@ function Row({
         {entry.redacted ? (
           <Text style={styles.redacted}>{t('journal.redacted')}</Text>
         ) : null}
+        {/* Only on edits, and only for those who could make that edit
+            themselves. An ordinary publisher would be refused by the server
+            anyway, and offering a button that always says no is worse than
+            offering nothing. */}
+        {canRevert && entry.action === 'UPDATE' && !entry.redacted ? (
+          <Pressable onPress={onRevert} hitSlop={6} style={styles.revertBtn}>
+            <Ionicons name="arrow-undo-outline" size={14} color="#0ea5e9" />
+            <Text style={styles.revertText}>{t('journal.revert')}</Text>
+          </Pressable>
+        ) : null}
       </View>
     </View>
   );
 }
 
+
+/**
+ * «Вернуть как было» — shown before it is done, never instead of.
+ *
+ * Two things the reader needs and only the server knows: what exactly would
+ * change, and whether anybody has edited the record since. The second is a
+ * warning and not a wall — the elder reading a week-old entry usually knows
+ * what stood there better than the app does, and that was Lionel's call.
+ */
+function RevertSheet({
+  entry,
+  onClose,
+}: {
+  entry: JournalEntry;
+  onClose: () => void;
+}) {
+  const { t } = useTranslation();
+  const qc = useQueryClient();
+  const plan = useQuery({
+    queryKey: ['journal', entry.id, 'revert'],
+    queryFn: () => journalApi.revertPlan(entry.id),
+  });
+  const apply = useMutation({
+    meta: { inlineError: true },
+    mutationFn: () => journalApi.revert(entry.id),
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: ['journal'] });
+      onClose();
+    },
+  });
+
+  const shown = (v: unknown) =>
+    v === null || v === undefined || v === ''
+      ? t('journal.noValue')
+      : String(v);
+
+  return (
+    <Sheet
+      visible
+      onClose={onClose}
+      variant="bottom"
+      title={t('journal.revert')}
+      footer={
+        plan.data?.supported ? (
+          <Pressable
+            style={styles.revertGo}
+            disabled={apply.isPending}
+            onPress={() => apply.mutate()}
+          >
+            <Text style={styles.revertGoText}>{t('journal.revertDo')}</Text>
+          </Pressable>
+        ) : null
+      }
+    >
+      {plan.isLoading ? (
+        <ActivityIndicator style={{ marginVertical: 20 }} />
+      ) : plan.error ? (
+        <Text style={styles.revertNo}>{extractErrorMessage(plan.error)}</Text>
+      ) : !plan.data?.supported ? (
+        <Text style={styles.revertNo}>
+          {t(`journal.revertNo.${plan.data?.reason ?? 'entityNotSupported'}`, {
+            defaultValue: t('journal.revertNo.entityNotSupported'),
+          })}
+        </Text>
+      ) : (
+        <>
+          {plan.data.changedAfter > 0 ? (
+            <View style={styles.revertWarn}>
+              <Ionicons name="alert-circle" size={16} color="#b45309" />
+              <Text style={styles.revertWarnText}>
+                {t('journal.revertTouchedSince', {
+                  count: plan.data.changedAfter,
+                })}
+              </Text>
+            </View>
+          ) : null}
+          {plan.data.fields.map((f) => (
+            <View key={f.field} style={styles.change}>
+              <Text style={styles.changeLabel}>
+                {t(`journal.fieldNames.${f.field}`, { defaultValue: f.field })}
+              </Text>
+              <Text style={styles.changeValue}>
+                <Text style={styles.was}>{shown(f.from)}</Text>
+                {'  →  '}
+                <Text style={styles.now}>{shown(f.to)}</Text>
+              </Text>
+            </View>
+          ))}
+          {apply.isError ? (
+            <Text style={styles.revertNo}>
+              {extractErrorMessage(apply.error)}
+            </Text>
+          ) : null}
+        </>
+      )}
+    </Sheet>
+  );
+}
+
 const styles = StyleSheet.create({
+  revertBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    marginTop: 6,
+    alignSelf: 'flex-start',
+  },
+  revertText: {
+    fontSize: 12.5,
+    color: '#0ea5e9',
+    fontFamily: 'Manrope_600SemiBold',
+  },
+  revertWarn: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 8,
+    backgroundColor: '#fffbeb',
+    borderColor: '#fde68a',
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 10,
+  },
+  revertWarnText: { flex: 1, fontSize: 13, color: '#92400e', lineHeight: 18 },
+  revertNo: { fontSize: 13.5, color: '#64748b', lineHeight: 19 },
+  revertGo: {
+    backgroundColor: '#0ea5e9',
+    borderRadius: 12,
+    paddingVertical: 13,
+    alignItems: 'center',
+  },
+  revertGoText: { color: '#fff', fontSize: 15, fontFamily: 'Manrope_700Bold' },
   screen: { flex: 1, backgroundColor: '#f8fafc' },
   content: { paddingBottom: 40 },
   centre: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },

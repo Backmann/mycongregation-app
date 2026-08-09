@@ -2603,6 +2603,16 @@
       "after_meeting": "nach der Zusammenkunft",
       "thorough": "gründlich",
       "general": "general"
+    },
+    "revert": "Zurücksetzen",
+    "revertDo": "Zurücksetzen",
+    "revertTouchedSince_one": "Der Eintrag wurde danach noch {{count}}-mal bearbeitet. Das Zurücksetzen nimmt auch diese Änderung zurück.",
+    "revertTouchedSince_other": "Der Eintrag wurde danach noch {{count}}-mal bearbeitet. Das Zurücksetzen nimmt auch diese Änderungen zurück.",
+    "revertNo": {
+      "notAnEdit": "Nur eine Änderung lässt sich zurücksetzen — kein Hinzufügen und kein Löschen.",
+      "redacted": "Der Inhalt dieses Eintrags wurde auf Wunsch gelöscht; es gibt nichts zurückzusetzen.",
+      "entityNotSupported": "Diese Art von Eintrag lässt sich nicht zurücksetzen. Öffne ihn und korrigiere ihn von Hand.",
+      "nothingRevertable": "Dieser Eintrag enthält kein Feld, das zurückgesetzt werden kann."
     }
   },
   "attendance": {
