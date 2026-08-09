@@ -513,11 +513,10 @@ function Row({
         {entry.redacted ? (
           <Text style={styles.redacted}>{t('journal.redacted')}</Text>
         ) : null}
-        {/* Only on edits, and only for those who could make that edit
-            themselves. An ordinary publisher would be refused by the server
-            anyway, and offering a button that always says no is worse than
-            offering nothing. */}
-        {canRevert && entry.action === 'UPDATE' && !entry.redacted ? (
+        {/* Two conditions, both from someone who knows: the server says this
+            entry can be put back, and the reader is someone who could have
+            made the edit himself. The app no longer guesses at either. */}
+        {canRevert && entry.canRevert ? (
           <Pressable onPress={onRevert} hitSlop={6} style={styles.revertBtn}>
             <Ionicons name="arrow-undo-outline" size={14} color="#0ea5e9" />
             <Text style={styles.revertText}>{t('journal.revert')}</Text>

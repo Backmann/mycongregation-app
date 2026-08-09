@@ -3115,6 +3115,13 @@ export interface JournalEntry {
   /** Values as they were before the change; null for events with no history. */
   before: Record<string, unknown> | null;
   /**
+   * Whether «вернуть как было» would work on this entry.
+   *
+   * Decided by the server, which owns the list of what can come back — the app
+   * used to show the button on every edit and let the sheet break the news.
+   */
+  canRevert?: boolean;
+  /**
    * Which item the entry is about — the meeting, the date, the part. Null when
    * it cannot be resolved (usually because the item has since been deleted).
    */
