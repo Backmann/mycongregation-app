@@ -131,10 +131,10 @@ const FILTERS = [
 export default function JournalScreen() {
   const { t, i18n } = useTranslation();
   const { user } = useAuth();
-  // Reverting is an ordinary edit made through the same services, so the right
-  // to it is the right to edit: elders and administrators. The server checks
-  // this too — the app simply stops offering what it would refuse.
-  const mayRevert = user?.role === 'admin' || user?.role === 'elder';
+  // The journal is an administrator's screen — the list itself is refused to
+  // anybody else — so the button that lives on its rows is an administrator's
+  // too. Offering it to an elder promised something he could never reach.
+  const mayRevert = user?.role === 'admin';
   const [revertFor, setRevertFor] = useState<JournalEntry | null>(null);
   const [section, setSection] = useState<string | null>(null);
 
