@@ -4,7 +4,7 @@ import { headerOptions, HEADER_MARK } from '../../../lib/header';
 import { useTranslation } from 'react-i18next';
 import BrandLockup from '../../../components/BrandLockup';
 import { HeaderCongregation } from '../../../components/HeaderCongregation';
-import { GlassHeader } from '../../../components/GlassHeader';
+import { AppHeader } from '../../../components/AppHeader';
 import { homeScroll } from '../../../lib/home-scroll';
 
 export default function HomeLayout() {
@@ -24,7 +24,7 @@ export default function HomeLayout() {
           // The screen pays for it with its own top padding.
           headerTransparent: true,
           header: () => (
-            <GlassHeader
+            <AppHeader
               large
               scrollY={homeScroll}
               title={

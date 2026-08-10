@@ -57,7 +57,7 @@ import { MyGlowRow } from '../../../components/MyGlowRow';
 import { SectionKind } from '../../../lib/section-colors';
 import { isCongressEvent } from '../../../lib/week-rules';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { GLASS_HEADER_LARGE } from '../../../components/GlassHeader';
+import { APP_HEADER_LARGE } from '../../../components/AppHeader';
 import { homeScroll } from '../../../lib/home-scroll';
 
 
@@ -1088,7 +1088,7 @@ export default function HomeScreen() {
         padding: 16,
         // The bar's TALL height: the list begins just below it, and what the
         // collapse frees goes to the content rather than to a gap.
-        paddingTop: GLASS_HEADER_LARGE + insets.top + 8,
+        paddingTop: APP_HEADER_LARGE + insets.top + 8,
         paddingBottom: 40,
       }}
       scrollEventThrottle={16}
