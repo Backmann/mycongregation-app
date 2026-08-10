@@ -5,26 +5,29 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BRAND } from '../lib/header';
 
 /**
- * A header that starts tall and gathers itself as the list moves.
+ * Frosted at rest, solid once the list is moving.
  *
- * The first attempt was tall and STAYED tall, and it read as a slab: ninety
- * points of brand colour holding two words, with a smear of half-seen content
- * above them. What was missing is the part that makes this shape work
- * elsewhere — the title is large only while there is nothing to read yet, and
- * shrinks into an ordinary bar the moment the list starts moving. Height is the
- * most expensive material on a phone and it belongs to the content.
+ * TWO FAULTS OF MINE, both fixed here, and worth naming because neither was a
+ * matter of taste:
  *
- * So: 74 points at rest, 50 once you have scrolled, continuous rather than a
- * jump.
+ *   1. On Android the blur is OFF unless it is asked for by name. Without
+ *      `experimentalBlurMethod` the component draws a plain colour, so on a
+ *      phone there was never any glass to look at — only a teal bar.
+ *   2. On the web the blur worked and I painted over it. The tint sat at 0.90,
+ *      which erases whatever is behind it. I had been treating the murk as too
+ *      MUCH transparency when it was too LITTLE blur.
  *
- * ON THE GLASS. Blur alone is not the effect; blur PLUS a strong tint is. At
- * 0.82 the passing content showed through as mud — sharp shapes ghosting behind
- * white letters, which is what made it look broken rather than frosted. The
- * tint now rests at 0.90 and closes to 0.97 as the bar collapses, so the
- * material reads as frosted and white text keeps its footing all the way down.
+ * AND THE CHOICE UNDER IT. True glass takes the colour of what passes beneath,
+ * which would mean giving up the brand-coloured bar and darkening the text and
+ * the status-bar icons with it. Lionel picked the middle: frosted brand while
+ * the list is at rest, closing to nearly solid as it moves. The material shows
+ * itself in motion — which is the only place it means anything — and the top of
+ * the app stays unmistakably ours when there is something to read.
  *
- * The shadow is a real one, cast outside the bar, and it arrives WITH the
- * collapse: at the top of a list there is nothing above to cast it.
+ * The shadow is four thin layers rather than one thick box. A single view with
+ * a shadow offset renders as a grey rib on the web, which is exactly what it
+ * looked like; stacked hairlines of falling opacity read as a soft edge on
+ * every platform and cost nothing.
  */
 
 export const GLASS_HEADER_LARGE = 74;
@@ -32,6 +35,14 @@ export const GLASS_HEADER_COMPACT = 50;
 
 /** How far the list travels before the bar is fully gathered. */
 export const COLLAPSE_DISTANCE = 56;
+
+/** Falling opacities: a soft edge built from hairlines. */
+const SHADOW_LAYERS = [
+  { height: 1, color: 'rgba(8,60,74,0.14)' },
+  { height: 2, color: 'rgba(8,60,74,0.08)' },
+  { height: 4, color: 'rgba(8,60,74,0.05)' },
+  { height: 7, color: 'rgba(8,60,74,0.025)' },
+];
 
 export function GlassHeader({
   title,
@@ -64,8 +75,10 @@ export function GlassHeader({
       })
     : new Animated.Value(GLASS_HEADER_COMPACT + insets.top);
 
+  // 0.62 leaves the blur visible; 0.95 gives white text a solid footing once
+  // there is content sliding underneath.
   const tint = large
-    ? progress.interpolate({ ...range, outputRange: [0.9, 0.97] })
+    ? progress.interpolate({ ...range, outputRange: [0.62, 0.95] })
     : new Animated.Value(0.95);
 
   const shadow = progress.interpolate({ ...range, outputRange: [0, 1] });
@@ -73,22 +86,32 @@ export function GlassHeader({
   return (
     <Animated.View style={[styles.wrap, { height }]} pointerEvents="box-none">
       <BlurView
-        intensity={Platform.OS === 'ios' ? 30 : 24}
+        intensity={Platform.OS === 'android' ? 55 : 45}
         tint="dark"
+        // Android draws nothing at all without this, which is why the phone
+        // showed a flat bar while the browser showed a blurred one.
+        experimentalBlurMethod="dimezisBlurView"
         style={StyleSheet.absoluteFill}
       />
       <Animated.View
         style={[StyleSheet.absoluteFill, styles.tint, { opacity: tint }]}
-      />
-      <Animated.View
-        style={[styles.shadow, { opacity: shadow }]}
-        pointerEvents="none"
       />
       <View style={[styles.row, { paddingTop: insets.top }]}>
         {left ? <View style={styles.side}>{left}</View> : null}
         <View style={styles.titleWrap}>{title}</View>
         {right ? <View style={styles.side}>{right}</View> : null}
       </View>
+      <Animated.View
+        style={[styles.shadowStack, { opacity: shadow }]}
+        pointerEvents="none"
+      >
+        {SHADOW_LAYERS.map((layer, i) => (
+          <View
+            key={i}
+            style={{ height: layer.height, backgroundColor: layer.color }}
+          />
+        ))}
+      </Animated.View>
     </Animated.View>
   );
 }
@@ -96,21 +119,12 @@ export function GlassHeader({
 const styles = StyleSheet.create({
   wrap: { position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 },
   tint: { backgroundColor: BRAND },
-  /**
-   * Cast downwards and OUTSIDE the bar. A shadow drawn inside its own box is a
-   * grey stripe; this one sits just below the edge and shows only what spills.
-   */
-  shadow: {
+  shadowStack: {
     position: 'absolute',
     left: 0,
     right: 0,
     bottom: -14,
     height: 14,
-    shadowColor: '#083c4a',
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: -3 },
-    elevation: 10,
   },
   row: {
     flex: 1,
