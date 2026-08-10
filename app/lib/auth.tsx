@@ -23,6 +23,11 @@ interface AuthContextValue {
   user: AuthUser | null;
   isLoading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
+  adoptSession: (
+    accessToken: string,
+    refreshToken: string | undefined,
+    user: AuthUser,
+  ) => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -86,6 +91,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(authUser);
   }, []);
 
+  /**
+   * Take up a session the server handed over outside the sign-in form.
+   *
+   * Today that is the invitation: the password screen finishes and the person
+   * is already inside. Deliberately the same two steps signIn takes — store
+   * the tokens, remember the user — so there is one way a session begins and
+   * not two that drift apart.
+   */
+  const adoptSession = useCallback(
+    async (
+      accessToken: string,
+      refreshToken: string | undefined,
+      authUser: AuthUser,
+    ) => {
+      await storeAuthTokens(accessToken, refreshToken);
+      setUser(authUser);
+    },
+    [],
+  );
+
   const signOut = useCallback(async () => {
     // Tell the server first, so the session stops existing there too — a
     // token cleared only on this device would stay usable for its full life.
@@ -100,7 +125,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, isLoading, signIn, adoptSession, signOut }}>
       {children}
     </AuthContext.Provider>
   );

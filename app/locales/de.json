@@ -466,7 +466,14 @@
       "success": "Passwort geändert. Sie können sich jetzt mit dem neuen Passwort anmelden.",
       "goToLogin": "Anmelden",
       "invalidLink": "Dieser Link ist ungültig oder abgelaufen.",
-      "requestNew": "Neuen Link anfordern"
+      "requestNew": "Neuen Link anfordern",
+      "rule": "Mindestens {{count}} Zeichen. Ein paar Wörter sind besser als eine kurze Zeichenfolge.",
+      "problem": {
+        "tooShort": "Zu kurz.",
+        "tooCommon": "Dieses Passwort wird als Erstes probiert — nimm ein anderes.",
+        "looksLikeEmail": "Das ist deine Adresse, kein Passwort.",
+        "tooRepetitive": "Immer dieselben Zeichen ergeben einen einzigen Rateversuch."
+      }
     },
     "wrongEmailOrPassword": "Falsche Adresse oder falsches Passwort. Wurde der Zugang gerade erst erstellt, bitte einen Administrator, ein Passwort zu setzen."
   },

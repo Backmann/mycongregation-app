@@ -466,7 +466,14 @@
       "success": "Password changed. You can sign in with the new password now.",
       "goToLogin": "Sign in",
       "invalidLink": "This link is invalid or has expired.",
-      "requestNew": "Request a new link"
+      "requestNew": "Request a new link",
+      "rule": "At least {{count}} characters. A few words beat a short string of symbols.",
+      "problem": {
+        "tooShort": "Too short.",
+        "tooCommon": "This is the first password an attacker tries — pick another.",
+        "looksLikeEmail": "That is your address, not a password.",
+        "tooRepetitive": "The same characters over and over amount to one guess."
+      }
     },
     "wrongEmailOrPassword": "Wrong address or password. If the login was created recently, ask an administrator to set a password."
   },

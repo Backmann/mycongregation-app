@@ -13,6 +13,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { authApi, extractErrorMessage } from '../../lib/api';
+import { useAuth } from '../../lib/auth';
+import { passwordProblem, PASSWORD_MIN_LENGTH } from '../../lib/password';
 
 const TOKEN_RE = /^[0-9a-f]{64}$/;
 
@@ -26,23 +28,27 @@ export default function ResetPasswordScreen() {
   const [confirm, setConfirm] = useState('');
   const [show, setShow] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const { adoptSession } = useAuth();
+  // Judged as you type, and by the same rules the server applies — so the
+  // refusal arrives before the button, not after it.
+  const problem = password ? passwordProblem(password) : null;
   const mismatch = confirm !== '' && confirm !== password;
   const canSubmit =
-    tokenValid &&
-    password.length >= 8 &&
-    password === confirm &&
-    !submitting;
+    tokenValid && !problem && password === confirm && !submitting;
 
   const submit = async () => {
     if (!canSubmit) return;
     setSubmitting(true);
     setError(null);
     try {
-      await authApi.resetPassword(token, password);
-      setDone(true);
+      const session = await authApi.resetPassword(token, password);
+      // Straight in. The server handed over a session because it knows who
+      // this is; asking for the address and the password again would be
+      // asking for what was typed ten seconds ago.
+      await adoptSession(session.accessToken, session.refreshToken, session.user);
+      router.replace('/(app)/home' as never);
     } catch (e) {
       setError(extractErrorMessage(e));
     } finally {
@@ -50,7 +56,6 @@ export default function ResetPasswordScreen() {
     }
   };
 
-  const toLogin = () => router.replace('/(auth)/login' as never);
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -77,25 +82,12 @@ export default function ResetPasswordScreen() {
                 </Text>
               </Pressable>
             </>
-          ) : done ? (
-            <>
-              <View style={styles.sentRow}>
-                <Ionicons
-                  name="checkmark-circle-outline"
-                  size={20}
-                  color="#15803d"
-                />
-                <Text style={styles.sentText}>{t('auth.reset.success')}</Text>
-              </View>
-              <Pressable style={styles.button} onPress={toLogin}>
-                <Text style={styles.buttonText}>
-                  {t('auth.reset.goToLogin')}
-                </Text>
-              </Pressable>
-            </>
           ) : (
             <>
               <Text style={styles.label}>{t('auth.reset.newPassword')}</Text>
+              <Text style={styles.rule}>
+                {t('auth.reset.rule', { count: PASSWORD_MIN_LENGTH })}
+              </Text>
               <View style={styles.inputWrap}>
                 <TextInput
                   style={styles.input}
@@ -139,6 +131,11 @@ export default function ResetPasswordScreen() {
                 editable={!submitting}
                 onSubmitEditing={() => void submit()}
               />
+              {problem && password ? (
+                <Text style={styles.problem}>
+                  {t(`auth.reset.problem.${problem}`)}
+                </Text>
+              ) : null}
               {mismatch && (
                 <Text style={styles.mismatch}>{t('auth.reset.mismatch')}</Text>
               )}
@@ -184,6 +181,8 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   title: { fontSize: 20, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0f172a' },
+  rule: { fontSize: 12.5, color: '#94a3b8', marginBottom: 6, lineHeight: 17 },
+  problem: { fontSize: 12.5, color: '#b45309', marginTop: 6, lineHeight: 17 },
   label: { fontSize: 13, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#475569', marginTop: 2 },
   inputWrap: {
     flexDirection: 'row',

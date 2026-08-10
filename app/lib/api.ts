@@ -691,8 +691,20 @@ export const authApi = {
     await api.post('/auth/forgot-password', { email });
   },
   /** Public: sets a new password using a token from the reset email. */
-  async resetPassword(token: string, password: string): Promise<void> {
-    await api.post('/auth/reset-password', { token, password });
+  /**
+   * Set a password from a link — and come back signed in.
+   *
+   * The server hands over a session here because it already knows who this
+   * is: the link came from the person's own mailbox and the password is the
+   * one he just chose. Sending him on to a sign-in form to type both again
+   * was the whole first impression of the app for an invited brother.
+   */
+  async resetPassword(token: string, password: string): Promise<LoginResponse> {
+    const { data } = await api.post<LoginResponse>('/auth/reset-password', {
+      token,
+      password,
+    });
+    return data;
   },
 };
 
