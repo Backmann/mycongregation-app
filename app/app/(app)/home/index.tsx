@@ -58,6 +58,7 @@ import { SectionKind } from '../../../lib/section-colors';
 import { isCongressEvent } from '../../../lib/week-rules';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GLASS_HEADER_LARGE } from '../../../components/GlassHeader';
+import { homeScroll } from '../../../lib/home-scroll';
 
 
 function rangeLabel(start: Date, end: Date, loc: string): string {
@@ -1048,9 +1049,8 @@ type Tile = {
 
 export default function HomeScreen() {
   const { t } = useTranslation();
-  // Shared with the header so its hairline appears only once something has
-  // actually gone under it.
-  const scrollY = useRef(new Animated.Value(0)).current;
+  // Shared with the header, which the navigator renders separately.
+  const scrollY = homeScroll;
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
   const canSeeDirectory =
@@ -1086,13 +1086,17 @@ export default function HomeScreen() {
       // top padding is what keeps the first card from starting underneath it.
       contentContainerStyle={{
         padding: 16,
-        paddingTop: GLASS_HEADER_LARGE + insets.top + 12,
+        // The bar's TALL height: the list begins just below it, and what the
+        // collapse frees goes to the content rather than to a gap.
+        paddingTop: GLASS_HEADER_LARGE + insets.top + 8,
         paddingBottom: 40,
       }}
       scrollEventThrottle={16}
       onScroll={Animated.event(
         [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-        { useNativeDriver: true },
+        // false: the bar's height collapses with this value, and height is
+        // beyond the native driver.
+        { useNativeDriver: false },
       )}
     >
       <GreetingHeader />

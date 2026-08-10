@@ -1,146 +1,124 @@
 import React from 'react';
-import {
-  Animated,
-  Platform,
-  StyleSheet,
-  Text,
-  View,
-  useWindowDimensions,
-} from 'react-native';
+import { Animated, Platform, StyleSheet, View } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BRAND } from '../lib/header';
 
 /**
- * A header the content passes UNDER, rather than stops at.
+ * A header that starts tall and gathers itself as the list moves.
  *
- * The bar has been flat and opaque since July: correct, brand-coloured, and
- * with a hard line where the list ended. What a reader loses to that is the
- * sense of a layer — a list scrolled to the top and a list scrolled halfway
- * look exactly alike at the top edge.
+ * The first attempt was tall and STAYED tall, and it read as a slab: ninety
+ * points of brand colour holding two words, with a smear of half-seen content
+ * above them. What was missing is the part that makes this shape work
+ * elsewhere — the title is large only while there is nothing to read yet, and
+ * shrinks into an ordinary bar the moment the list starts moving. Height is the
+ * most expensive material on a phone and it belongs to the content.
  *
- * So the content runs beneath a blurred bar of the same colour. Not a
- * decoration: the smear of whatever is passing underneath is what says «there
- * is more above», which a flat bar cannot say at all.
+ * So: 74 points at rest, 50 once you have scrolled, continuous rather than a
+ * jump.
  *
- * WHY THIS NEEDS A NEW BUILD: real blur is a native module. There is a JS trick
- * with a translucent colour, and it looks like a translucent colour — the
- * content behind stays sharp and the whole thing reads as a mistake rather than
- * as glass. Given that the build was happening anyway, the honest version won.
+ * ON THE GLASS. Blur alone is not the effect; blur PLUS a strong tint is. At
+ * 0.82 the passing content showed through as mud — sharp shapes ghosting behind
+ * white letters, which is what made it look broken rather than frosted. The
+ * tint now rests at 0.90 and closes to 0.97 as the bar collapses, so the
+ * material reads as frosted and white text keeps its footing all the way down.
  *
- * The LARGE TITLE lives here too, and only on the screens a person arrives at
- * from the tab bar. On a nested screen it would eat a centimetre of a list he
- * came to read; at the root, where the screen opens from nothing, it is the
- * heading of the page.
+ * The shadow is a real one, cast outside the bar, and it arrives WITH the
+ * collapse: at the top of a list there is nothing above to cast it.
  */
 
-/** Bar height without the status bar, in each of its two shapes. */
-export const GLASS_HEADER_COMPACT = 52;
-export const GLASS_HEADER_LARGE = 92;
+export const GLASS_HEADER_LARGE = 74;
+export const GLASS_HEADER_COMPACT = 50;
+
+/** How far the list travels before the bar is fully gathered. */
+export const COLLAPSE_DISTANCE = 56;
 
 export function GlassHeader({
   title,
   large,
   left,
   right,
-  /**
-   * How far the list beneath has travelled. The bar carries no shadow at the
-   * very top — there is nothing above yet, and a shadow there would be a
-   * promise of content that does not exist.
-   */
   scrollY,
 }: {
   title: React.ReactNode;
   large?: boolean;
   left?: React.ReactNode;
   right?: React.ReactNode;
+  /** Position of the list beneath; without it the bar simply sits collapsed. */
   scrollY?: Animated.Value;
 }) {
   const insets = useSafeAreaInsets();
-  const { width } = useWindowDimensions();
-  const height = (large ? GLASS_HEADER_LARGE : GLASS_HEADER_COMPACT) + insets.top;
+  const progress = scrollY ?? new Animated.Value(COLLAPSE_DISTANCE);
+  const range = {
+    inputRange: [0, COLLAPSE_DISTANCE],
+    extrapolate: 'clamp' as const,
+  };
 
-  const elevation = scrollY
-    ? scrollY.interpolate({
-        inputRange: [0, 24],
-        outputRange: [0, 1],
-        extrapolate: 'clamp',
+  const height = large
+    ? progress.interpolate({
+        ...range,
+        outputRange: [
+          GLASS_HEADER_LARGE + insets.top,
+          GLASS_HEADER_COMPACT + insets.top,
+        ],
       })
-    : new Animated.Value(1);
+    : new Animated.Value(GLASS_HEADER_COMPACT + insets.top);
+
+  const tint = large
+    ? progress.interpolate({ ...range, outputRange: [0.9, 0.97] })
+    : new Animated.Value(0.95);
+
+  const shadow = progress.interpolate({ ...range, outputRange: [0, 1] });
 
   return (
-    <View style={[styles.wrap, { height }]} pointerEvents="box-none">
+    <Animated.View style={[styles.wrap, { height }]} pointerEvents="box-none">
       <BlurView
-        intensity={Platform.OS === 'android' ? 60 : 40}
+        intensity={Platform.OS === 'ios' ? 30 : 24}
         tint="dark"
         style={StyleSheet.absoluteFill}
       />
-      {/* The brand colour over the blur, not instead of it: without the tint the
-          bar takes the colour of whatever scrolls beneath and stops being ours. */}
-      <View style={[StyleSheet.absoluteFill, styles.tint]} />
       <Animated.View
-        style={[styles.shadow, { opacity: elevation, width }]}
+        style={[StyleSheet.absoluteFill, styles.tint, { opacity: tint }]}
+      />
+      <Animated.View
+        style={[styles.shadow, { opacity: shadow }]}
         pointerEvents="none"
       />
-      <View style={[styles.row, { paddingTop: insets.top }, large && styles.rowLarge]}>
-        <View style={styles.side}>{left}</View>
-        <View style={large ? styles.titleLarge : styles.titleWrap}>
-          {typeof title === 'string' ? (
-            <Text
-              numberOfLines={1}
-              style={large ? styles.textLarge : styles.text}
-            >
-              {title}
-            </Text>
-          ) : (
-            title
-          )}
-        </View>
-        <View style={styles.side}>{right}</View>
+      <View style={[styles.row, { paddingTop: insets.top }]}>
+        {left ? <View style={styles.side}>{left}</View> : null}
+        <View style={styles.titleWrap}>{title}</View>
+        {right ? <View style={styles.side}>{right}</View> : null}
       </View>
-    </View>
+    </Animated.View>
   );
 }
 
 const styles = StyleSheet.create({
-  wrap: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 10,
-    overflow: 'hidden',
-  },
-  // 0.82 rather than solid: enough of the passing content shows through to read
-  // as glass, not so much that white text loses its footing.
-  tint: { backgroundColor: BRAND, opacity: 0.82 },
+  wrap: { position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 },
+  tint: { backgroundColor: BRAND },
+  /**
+   * Cast downwards and OUTSIDE the bar. A shadow drawn inside its own box is a
+   * grey stripe; this one sits just below the edge and shows only what spills.
+   */
   shadow: {
     position: 'absolute',
-    bottom: 0,
-    height: 1,
-    backgroundColor: 'rgba(8,60,74,0.45)',
+    left: 0,
+    right: 0,
+    bottom: -14,
+    height: 14,
+    shadowColor: '#083c4a',
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: -3 },
+    elevation: 10,
   },
   row: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    gap: 8,
+    paddingHorizontal: 14,
+    gap: 10,
   },
-  rowLarge: { alignItems: 'flex-end', paddingBottom: 14 },
-  side: { minWidth: 36, justifyContent: 'center' },
-  titleWrap: { flex: 1 },
-  titleLarge: { flex: 1, paddingBottom: 2 },
-  text: {
-    color: '#ffffff',
-    fontSize: 18,
-    fontFamily: 'Manrope_700Bold',
-    letterSpacing: -0.3,
-  },
-  textLarge: {
-    color: '#ffffff',
-    fontSize: 26,
-    fontFamily: 'Manrope_800ExtraBold',
-    letterSpacing: -0.6,
-  },
+  side: { justifyContent: 'center' },
+  titleWrap: { flex: 1, justifyContent: 'center' },
 });
