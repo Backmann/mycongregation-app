@@ -4,6 +4,7 @@ import { headerOptions, HEADER_MARK } from '../../../lib/header';
 import { useTranslation } from 'react-i18next';
 import BrandLockup from '../../../components/BrandLockup';
 import { HeaderCongregation } from '../../../components/HeaderCongregation';
+import { UpdateChip } from '../../../components/UpdateBanner';
 
 export default function HomeLayout() {
   const { t } = useTranslation();
@@ -31,6 +32,9 @@ export default function HomeLayout() {
               <HeaderCongregation size={wordSize} leading />
             </View>
           ),
+          // The invitation to update lives here now: in reach of a thumb, and
+          // absent entirely while the build is current.
+          headerRight: () => <UpdateChip />,
         }}
       />
       <Stack.Screen
