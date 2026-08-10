@@ -2863,6 +2863,10 @@
     "title": "Die App ist gesperrt",
     "prompt": "Bestätige, dass du es bist",
     "retry": "Fingerabdruck verwenden",
-    "usePassword": "Mit Passwort anmelden"
+    "usePassword": "Mit Passwort anmelden",
+    "rowTitleCode": "Mit Gerätecode entsperren",
+    "rowSubtitleCode": "Die App fragt beim Öffnen und nach fünf Minuten Abwesenheit nach dem Gerätecode. Richte einen Fingerabdruck in den Telefoneinstellungen ein, dann fragt sie danach.",
+    "promptCode": "Bestätige, dass du es bist",
+    "retryCode": "Code eingeben"
   }
 }

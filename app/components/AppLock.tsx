@@ -13,6 +13,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../lib/auth';
 import {
   askForFingerprint,
+  hasRealBiometrics,
   lockEnabled,
   RELOCK_AFTER_MS,
 } from '../lib/biometrics';
@@ -43,6 +44,7 @@ export function AppLock({ children }: { children: React.ReactNode }) {
   const { signOut } = useAuth();
 
   const [armed, setArmed] = useState<boolean | null>(null);
+  const [byFinger, setByFinger] = useState(true);
   const [locked, setLocked] = useState(false);
   const [asking, setAsking] = useState(false);
   const [covered, setCovered] = useState(false);
@@ -59,16 +61,19 @@ export function AppLock({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     void (async () => {
       const on = await readSetting();
+      setByFinger(await hasRealBiometrics());
       if (on) setLocked(true);
     })();
   }, [readSetting]);
 
   const unlock = useCallback(async () => {
     setAsking(true);
-    const ok = await askForFingerprint(t('lock.prompt'));
+    const ok = await askForFingerprint(
+      byFinger ? t('lock.prompt') : t('lock.promptCode'),
+    );
     setAsking(false);
     if (ok) setLocked(false);
-  }, [t]);
+  }, [t, byFinger]);
 
   // Ask as soon as the lock screen appears, so the usual case is one glance and
   // a thumb rather than a tap and then a thumb.
@@ -112,7 +117,9 @@ export function AppLock({ children }: { children: React.ReactNode }) {
                 <ActivityIndicator color="#e0f2fe" />
               ) : (
                 <Pressable style={styles.primary} onPress={() => void unlock()}>
-                  <Text style={styles.primaryText}>{t('lock.retry')}</Text>
+                  <Text style={styles.primaryText}>
+                    {byFinger ? t('lock.retry') : t('lock.retryCode')}
+                  </Text>
                 </Pressable>
               )}
               <Pressable onPress={() => void signOut()} hitSlop={8}>

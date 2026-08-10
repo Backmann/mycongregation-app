@@ -2863,6 +2863,10 @@
     "title": "The app is locked",
     "prompt": "Confirm it is you",
     "retry": "Use fingerprint",
-    "usePassword": "Sign in with a password"
+    "usePassword": "Sign in with a password",
+    "rowTitleCode": "Unlock with the phone code",
+    "rowSubtitleCode": "The app will ask for your device code on opening and after five minutes away. Enrol a fingerprint in your phone settings and it will ask for that instead.",
+    "promptCode": "Confirm it is you",
+    "retryCode": "Enter code"
   }
 }

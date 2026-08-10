@@ -30,6 +30,7 @@ import {
 import { notify } from '../../../lib/error-bus';
 import {
   biometricsAvailable,
+  hasRealBiometrics,
   lockEnabled,
   setLockEnabled,
 } from '../../../lib/biometrics';
@@ -69,10 +70,14 @@ export default function ProfileScreen() {
   // The lock is a property of THIS device, so its state is read from the device
   // rather than from the account.
   const [bioAvailable, setBioAvailable] = useState(false);
+  // Whether it will ask for a finger or for the phone's code — the wording
+  // should not promise a fingerprint to somebody who keeps only a PIN.
+  const [bioReal, setBioReal] = useState(false);
   const [bioOn, setBioOn] = useState(false);
   useEffect(() => {
     void (async () => {
       setBioAvailable(await biometricsAvailable());
+      setBioReal(await hasRealBiometrics());
       setBioOn(await lockEnabled());
     })();
   }, []);
@@ -213,9 +218,11 @@ export default function ProfileScreen() {
                 <Ionicons name="finger-print" size={20} color="#0ea5e9" />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={styles.rowTitle}>{t('lock.rowTitle')}</Text>
+                <Text style={styles.rowTitle}>
+                  {bioReal ? t('lock.rowTitle') : t('lock.rowTitleCode')}
+                </Text>
                 <Text style={styles.rowSubtitle}>
-                  {t('lock.rowSubtitle')}
+                  {bioReal ? t('lock.rowSubtitle') : t('lock.rowSubtitleCode')}
                   {privileged ? ` ${t('lock.rowPrivileged')}` : ''}
                 </Text>
               </View>

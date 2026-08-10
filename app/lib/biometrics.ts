@@ -24,12 +24,32 @@ export function biometricsPossible(): boolean {
   return Platform.OS === 'ios' || Platform.OS === 'android';
 }
 
-/** Whether this device can actually ask — hardware present AND enrolled. */
+/**
+ * Whether this device can ask AT ALL — by any means it has.
+ *
+ * The first version demanded an enrolled FINGERPRINT, and that was too strict
+ * by half: Lionel's own phone keeps only a PIN, so the setting vanished from a
+ * device perfectly able to lock the app. The system's prompt falls back to the
+ * PIN or pattern anyway — that fallback was in the code from the start as the
+ * escape route for a cut finger. Refusing the whole feature to somebody who
+ * has exactly that means was a mistake of my own making.
+ *
+ * SECRET (a PIN or a pattern) is therefore enough. NONE — a phone that unlocks
+ * with a swipe — is not: there would be nothing to ask, and a lock that opens
+ * to anybody is worse than no lock, because it looks like protection.
+ */
 export async function biometricsAvailable(): Promise<boolean> {
   if (!biometricsPossible()) return false;
-  const hardware = await LocalAuthentication.hasHardwareAsync();
-  if (!hardware) return false;
-  return LocalAuthentication.isEnrolledAsync();
+  const level = await LocalAuthentication.getEnrolledLevelAsync();
+  return level !== LocalAuthentication.SecurityLevel.NONE;
+}
+
+/** True when a finger or a face is enrolled, not merely a PIN. */
+export async function hasRealBiometrics(): Promise<boolean> {
+  if (!biometricsPossible()) return false;
+  const level = await LocalAuthentication.getEnrolledLevelAsync();
+  return level === LocalAuthentication.SecurityLevel.BIOMETRIC_STRONG ||
+    level === LocalAuthentication.SecurityLevel.BIOMETRIC_WEAK;
 }
 
 export async function lockEnabled(): Promise<boolean> {
