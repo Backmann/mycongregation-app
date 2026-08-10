@@ -56,9 +56,6 @@ import { MyDot } from '../../../components/MyDot';
 import { MyGlowRow } from '../../../components/MyGlowRow';
 import { SectionKind } from '../../../lib/section-colors';
 import { isCongressEvent } from '../../../lib/week-rules';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { APP_HEADER_LARGE } from '../../../components/AppHeader';
-import { homeScroll } from '../../../lib/home-scroll';
 
 
 function rangeLabel(start: Date, end: Date, loc: string): string {
@@ -1049,9 +1046,6 @@ type Tile = {
 
 export default function HomeScreen() {
   const { t } = useTranslation();
-  // Shared with the header, which the navigator renders separately.
-  const scrollY = homeScroll;
-  const insets = useSafeAreaInsets();
   const { user } = useAuth();
   const canSeeDirectory =
     user?.role === 'admin' ||
@@ -1080,24 +1074,9 @@ export default function HomeScreen() {
   ];
 
   return (
-    <Animated.ScrollView
+    <ScrollView
       style={styles.container}
-      // The header floats over this list rather than sitting above it, so the
-      // top padding is what keeps the first card from starting underneath it.
-      contentContainerStyle={{
-        padding: 16,
-        // The bar's TALL height: the list begins just below it, and what the
-        // collapse frees goes to the content rather than to a gap.
-        paddingTop: APP_HEADER_LARGE + insets.top + 8,
-        paddingBottom: 40,
-      }}
-      scrollEventThrottle={16}
-      onScroll={Animated.event(
-        [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-        // false: the bar's height collapses with this value, and height is
-        // beyond the native driver.
-        { useNativeDriver: false },
-      )}
+      contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
     >
       <GreetingHeader />
 
@@ -1146,7 +1125,7 @@ export default function HomeScreen() {
 
       <HomeTimeline />
 
-    </Animated.ScrollView>
+    </ScrollView>
   );
 }
 

@@ -4,8 +4,6 @@ import { headerOptions, HEADER_MARK } from '../../../lib/header';
 import { useTranslation } from 'react-i18next';
 import BrandLockup from '../../../components/BrandLockup';
 import { HeaderCongregation } from '../../../components/HeaderCongregation';
-import { AppHeader } from '../../../components/AppHeader';
-import { homeScroll } from '../../../lib/home-scroll';
 
 export default function HomeLayout() {
   const { t } = useTranslation();
@@ -19,23 +17,19 @@ export default function HomeLayout() {
         options={{
           title: t('home.title'),
           headerTitleAlign: 'left',
-          // The content passes UNDER this bar, which is what the blur is for:
-          // a smear of whatever is scrolling past says «there is more above».
-          // The screen pays for it with its own top padding.
-          headerTransparent: true,
-          header: () => (
-            <AppHeader
-              large
-              scrollY={homeScroll}
-              title={
-                <View
-                  style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}
-                >
-                  <BrandLockup mark={HEADER_MARK} markOnly tone="dark" />
-                  <HeaderCongregation size={wordSize} leading />
-                </View>
-              }
-            />
+          // The mark alone, and the congregation's name beside it.
+          //
+          // The full wordmark used to stand here and the congregation's name at
+          // the other end of the same row; on a narrow phone the two met in the
+          // middle and overlapped. And the name is what the reader needs: he
+          // knows perfectly well which app he opened. Every other section
+          // already shows the mark without the wordmark — this was the last
+          // place that did not.
+          headerTitle: () => (
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+              <BrandLockup mark={HEADER_MARK} markOnly tone="dark" />
+              <HeaderCongregation size={wordSize} leading />
+            </View>
           ),
         }}
       />
