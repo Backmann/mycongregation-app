@@ -1,33 +1,32 @@
 import React from 'react';
-import { Animated, Platform, StyleSheet, View } from 'react-native';
+import { Animated, StyleSheet, View } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BRAND } from '../lib/header';
 
 /**
- * Frosted at rest, solid once the list is moving.
+ * Frosted, and the same all the way down.
  *
- * TWO FAULTS OF MINE, both fixed here, and worth naming because neither was a
- * matter of taste:
+ * THE MISTAKE THIS REPLACES was mine and it was in the reasoning, not the
+ * numbers: I made the bar translucent AT REST and solid ONCE SCROLLED. But at
+ * rest there is nothing beneath it — the list starts below the bar, so what
+ * would be blurred is blank background. And the moment content does pass
+ * underneath, which is the only moment glass means anything, I was closing the
+ * material to 0.95. The effect could never appear, at any setting.
  *
- *   1. On Android the blur is OFF unless it is asked for by name. Without
- *      `experimentalBlurMethod` the component draws a plain colour, so on a
- *      phone there was never any glass to look at — only a teal bar.
- *   2. On the web the blur worked and I painted over it. The tint sat at 0.90,
- *      which erases whatever is behind it. I had been treating the murk as too
- *      MUCH transparency when it was too LITTLE blur.
+ * So the material is now CONSTANT, and legibility is bought with blur instead
+ * of with opacity. That is how it works on a tablet too: the veil is not very
+ * opaque, but the blur is strong enough that what passes below becomes a wash
+ * of colour rather than shapes, and white letters sit on it cleanly.
  *
- * AND THE CHOICE UNDER IT. True glass takes the colour of what passes beneath,
- * which would mean giving up the brand-coloured bar and darkening the text and
- * the status-bar icons with it. Lionel picked the middle: frosted brand while
- * the list is at rest, closing to nearly solid as it moves. The material shows
- * itself in motion — which is the only place it means anything — and the top of
- * the app stays unmistakably ours when there is something to read.
- *
- * The shadow is four thin layers rather than one thick box. A single view with
- * a shadow offset renders as a grey rib on the web, which is exactly what it
- * looked like; stacked hairlines of falling opacity read as a soft edge on
- * every platform and cost nothing.
+ * TWO THINGS THE MODULE DOES that had to be accounted for:
+ *   — on the web the blur radius is intensity × 0.2 pixels, so the 45 I had set
+ *     was nine pixels: enough to soften an edge, not enough to dissolve text.
+ *     It is at maximum now, twenty pixels.
+ *   — BlurView lays down a veil of its OWN, keyed to the tint. 'dark' is nearly
+ *     black at high intensity, which is what made the bar muddy under our teal.
+ *     'default' is a light one, so the brand colour stays a brand colour.
+ *   — on Android nothing blurs at all without experimentalBlurMethod.
  */
 
 export const GLASS_HEADER_LARGE = 74;
@@ -75,19 +74,21 @@ export function GlassHeader({
       })
     : new Animated.Value(GLASS_HEADER_COMPACT + insets.top);
 
-  // 0.62 leaves the blur visible; 0.95 gives white text a solid footing once
-  // there is content sliding underneath.
-  const tint = large
-    ? progress.interpolate({ ...range, outputRange: [0.62, 0.95] })
-    : new Animated.Value(0.95);
+  // Constant, and deliberately so — see the note above. 0.72 lets the blurred
+  // wash through; the strong blur is what keeps white text readable over it.
+  const tint = new Animated.Value(0.72);
 
   const shadow = progress.interpolate({ ...range, outputRange: [0, 1] });
 
   return (
     <Animated.View style={[styles.wrap, { height }]} pointerEvents="box-none">
       <BlurView
-        intensity={Platform.OS === 'android' ? 55 : 45}
-        tint="dark"
+        // Maximum: on the web this is the blur RADIUS in disguise (intensity ×
+        // 0.2 px), and anything less leaves shapes legible behind the letters.
+        intensity={100}
+        // 'default' is a light veil; 'dark' is nearly black at this strength
+        // and turned our teal to mud.
+        tint="default"
         // Android draws nothing at all without this, which is why the phone
         // showed a flat bar while the browser showed a blurred one.
         experimentalBlurMethod="dimezisBlurView"
