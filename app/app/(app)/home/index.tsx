@@ -56,6 +56,8 @@ import { MyDot } from '../../../components/MyDot';
 import { MyGlowRow } from '../../../components/MyGlowRow';
 import { SectionKind } from '../../../lib/section-colors';
 import { isCongressEvent } from '../../../lib/week-rules';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { GLASS_HEADER_LARGE } from '../../../components/GlassHeader';
 
 
 function rangeLabel(start: Date, end: Date, loc: string): string {
@@ -1046,6 +1048,10 @@ type Tile = {
 
 export default function HomeScreen() {
   const { t } = useTranslation();
+  // Shared with the header so its hairline appears only once something has
+  // actually gone under it.
+  const scrollY = useRef(new Animated.Value(0)).current;
+  const insets = useSafeAreaInsets();
   const { user } = useAuth();
   const canSeeDirectory =
     user?.role === 'admin' ||
@@ -1074,9 +1080,20 @@ export default function HomeScreen() {
   ];
 
   return (
-    <ScrollView
+    <Animated.ScrollView
       style={styles.container}
-      contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
+      // The header floats over this list rather than sitting above it, so the
+      // top padding is what keeps the first card from starting underneath it.
+      contentContainerStyle={{
+        padding: 16,
+        paddingTop: GLASS_HEADER_LARGE + insets.top + 12,
+        paddingBottom: 40,
+      }}
+      scrollEventThrottle={16}
+      onScroll={Animated.event(
+        [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+        { useNativeDriver: true },
+      )}
     >
       <GreetingHeader />
 
@@ -1125,7 +1142,7 @@ export default function HomeScreen() {
 
       <HomeTimeline />
 
-    </ScrollView>
+    </Animated.ScrollView>
   );
 }
 
