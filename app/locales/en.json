@@ -2852,6 +2852,7 @@
   "update": {
     "available": "A newer version of the app is out",
     "required": "This version is too old — update to continue",
-    "get": "Update"
+    "get": "Update",
+    "applying": "Updating…"
   }
 }

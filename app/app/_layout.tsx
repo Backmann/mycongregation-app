@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Platform } from 'react-native';
+import { ActivityIndicator, Platform, Text, View } from 'react-native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import {
@@ -12,9 +12,10 @@ import { reportError } from '../lib/error-bus';
 import { ErrorToast } from '../components/ErrorToast';
 import { ConfirmHost } from '../components/ConfirmHost';
 import { AuthProvider } from '../lib/auth';
-import { initI18nFromStorage } from '../lib/i18n';
+import i18n, { initI18nFromStorage } from '../lib/i18n';
 import { LanguagePickerModal } from '../components/LanguagePicker';
 import { useAppFonts } from '../lib/fonts';
+import { useSelfApplyingUpdate } from '../lib/self-update';
 
 const queryClient = new QueryClient({
   // Every failed change reports itself. Most requests used to fail in silence:
@@ -57,6 +58,7 @@ export default function RootLayout() {
   const [ready, setReady] = useState(false);
   const [showLanguagePrompt, setShowLanguagePrompt] = useState(false);
   const { fontsLoaded } = useAppFonts();
+  const { applying } = useSelfApplyingUpdate();
 
   useEffect(() => {
     (async () => {
@@ -79,6 +81,26 @@ export default function RootLayout() {
   }, []);
 
   if (!ready || !fontsLoaded) return null;
+  // A restart into a freshly fetched update, behind a word rather than a blank
+  // screen. The alternative was asking a hundred people to open the app twice.
+  if (applying) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 12,
+          backgroundColor: '#0e7490',
+        }}
+      >
+        <ActivityIndicator color="#ffffff" />
+        <Text style={{ color: '#e0f2fe', fontSize: 14 }}>
+          {i18n.t('update.applying')}
+        </Text>
+      </View>
+    );
+  }
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -87,6 +109,13 @@ export default function RootLayout() {
             login screen is dark. Before this the style followed the system,
             so a phone in dark mode painted the icons white over what was then
             a white header and they vanished. */}
+        {/* The build now follows the system's light-or-dark setting — that
+            line lives in app.json and cannot be changed without rebuilding, so
+            it goes in now, once. The app itself keeps rendering its own light
+            colours until the palette work is done: a half-dark app, with our
+            screens white and the system's dialogs black, would look broken
+            rather than unfinished. Removing this override is all a future dark
+            theme will need from the native side. */}
         <StatusBar style="light" />
         <Stack screenOptions={{ headerShown: false }} />
         <LanguagePickerModal
