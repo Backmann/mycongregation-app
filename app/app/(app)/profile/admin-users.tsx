@@ -360,6 +360,27 @@ function UserCard({
       {/* The account exists, is switched on — and simply has no password. The
           login page cannot say so without turning itself into a way of testing
           addresses, so it is said here, to the one person who can fix it. */}
+      {/* Not decoration: a brother on a browser gets no notifications and has
+          no build to update, and until now nothing on this screen said so. */}
+      {user.lastClient ? (
+        <View style={styles.clientRow}>
+          <Ionicons
+            name={
+              user.lastClient.kind === 'app'
+                ? 'phone-portrait-outline'
+                : 'globe-outline'
+            }
+            size={13}
+            color="#64748b"
+          />
+          <Text style={styles.clientText}>
+            {t(`admin.users.client.${user.lastClient.platform}`)}
+            {' · '}
+            {t(`admin.users.client.${user.lastClient.kind}`)}
+          </Text>
+        </View>
+      ) : null}
+
       {!user.hasPassword && (
         <View style={styles.noPassRow}>
           <Ionicons name="key-outline" size={14} color="#92400e" />
@@ -401,6 +422,13 @@ function UserCard({
 }
 
 const styles = StyleSheet.create({
+  clientRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    marginTop: 4,
+  },
+  clientText: { fontSize: 12, color: '#64748b' },
   noPassRow: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -177,6 +177,18 @@ export interface PublicUser {
    * the same words as a wrong password — and nobody could tell the two apart.
    */
   hasPassword: boolean;
+  /**
+   * What this person last signed in from — platform, app or browser, when.
+   *
+   * The question it answers is «кто ещё не поставил приложение»: on a browser
+   * no push notification reaches him. Null until he signs in again — older
+   * sessions never recorded it.
+   */
+  lastClient: {
+    platform: 'android' | 'ios' | 'windows' | 'mac' | 'other';
+    kind: 'app' | 'browser';
+    at: string | null;
+  } | null;
 }
 
 export interface CreateUserInput {
@@ -3174,6 +3186,21 @@ export interface RevertPlan {
   /** How many times the record was edited AFTER this entry. */
   changedAfter: number;
 }
+
+export interface AppVersionInfo {
+  /** The newest build handed out, or null when nothing is announced. */
+  current: string | null;
+  /** The oldest build still able to talk to this server. */
+  minimum: string | null;
+  downloadUrl: string;
+}
+
+export const appVersionApi = {
+  async get(): Promise<AppVersionInfo> {
+    const { data } = await api.get<AppVersionInfo>('/app-version');
+    return data;
+  },
+};
 
 export const journalApi = {
   async list(filters: JournalFilters = {}): Promise<JournalPage> {

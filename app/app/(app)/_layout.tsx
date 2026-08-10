@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { useAuth } from "../../lib/auth";
 import { usePushNotifications } from "../../lib/push-notifications";
 import { ContactsCheckPrompt } from "../../components/ContactsCheckPrompt";
+import { UpdateBanner } from '../../components/UpdateBanner';
 export default function AppLayout() {
   const insets = useSafeAreaInsets();
   const { user, isLoading } = useAuth();
@@ -30,6 +31,10 @@ export default function AppLayout() {
     user.canViewPrivateData === true;
   return (
     <>
+      {/* Above everything, because after the next native build every phone has
+          to install a new APK — and an app that says so itself saves telling
+          each brother by hand. */}
+      <UpdateBanner />
       <ContactsCheckPrompt />
       <Tabs
         screenOptions={{

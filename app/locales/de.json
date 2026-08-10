@@ -1083,6 +1083,15 @@
         "invite": "Einladen",
         "inviting": "Wird gesendet…",
         "invited": "E-Mail gesendet"
+      },
+      "client": {
+        "android": "Android",
+        "ios": "iPhone",
+        "windows": "Windows",
+        "mac": "Mac",
+        "other": "Unbekannt",
+        "app": "App",
+        "browser": "Browser"
       }
     }
   },
@@ -2839,5 +2848,10 @@
     "noAddress": "keine Adresse hinterlegt",
     "ourHall": "unser Saal",
     "helperRemoved": "von der Liste genommen"
+  },
+  "update": {
+    "available": "Eine neuere Version der App ist da",
+    "required": "Diese Version ist zu alt — bitte aktualisieren",
+    "get": "Aktualisieren"
   }
 }

@@ -1083,6 +1083,15 @@
         "invite": "Invite",
         "inviting": "Sending…",
         "invited": "Letter sent"
+      },
+      "client": {
+        "android": "Android",
+        "ios": "iPhone",
+        "windows": "Windows",
+        "mac": "Mac",
+        "other": "Unknown",
+        "app": "app",
+        "browser": "browser"
       }
     }
   },
@@ -2839,5 +2848,10 @@
     "noAddress": "no address on file",
     "ourHall": "our hall",
     "helperRemoved": "off the list"
+  },
+  "update": {
+    "available": "A newer version of the app is out",
+    "required": "This version is too old — update to continue",
+    "get": "Update"
   }
 }
