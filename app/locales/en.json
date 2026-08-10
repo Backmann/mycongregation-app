@@ -2854,5 +2854,15 @@
     "required": "This version is too old — update to continue",
     "get": "Update",
     "applying": "Updating…"
+  },
+  "lock": {
+    "sectionTitle": "Protection",
+    "rowTitle": "Unlock with a fingerprint",
+    "rowSubtitle": "The app will ask on opening and after five minutes away.",
+    "rowPrivileged": "You have the whole congregation on your screen — it is especially fitting here.",
+    "title": "The app is locked",
+    "prompt": "Confirm it is you",
+    "retry": "Use fingerprint",
+    "usePassword": "Sign in with a password"
   }
 }

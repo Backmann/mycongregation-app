@@ -2854,5 +2854,15 @@
     "required": "Diese Version ist zu alt — bitte aktualisieren",
     "get": "Aktualisieren",
     "applying": "Wird aktualisiert…"
+  },
+  "lock": {
+    "sectionTitle": "Schutz",
+    "rowTitle": "Mit Fingerabdruck entsperren",
+    "rowSubtitle": "Die App fragt beim Öffnen und nach fünf Minuten Abwesenheit.",
+    "rowPrivileged": "Du hast die ganze Versammlung auf dem Bildschirm — hier ist es besonders angebracht.",
+    "title": "Die App ist gesperrt",
+    "prompt": "Bestätige, dass du es bist",
+    "retry": "Fingerabdruck verwenden",
+    "usePassword": "Mit Passwort anmelden"
   }
 }

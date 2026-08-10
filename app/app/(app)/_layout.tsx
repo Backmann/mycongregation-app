@@ -7,6 +7,7 @@ import { useAuth } from "../../lib/auth";
 import { usePushNotifications } from "../../lib/push-notifications";
 import { ContactsCheckPrompt } from "../../components/ContactsCheckPrompt";
 import { UpdateBanner } from '../../components/UpdateBanner';
+import { AppLock } from '../../components/AppLock';
 export default function AppLayout() {
   const insets = useSafeAreaInsets();
   const { user, isLoading } = useAuth();
@@ -30,7 +31,7 @@ export default function AppLayout() {
     user.role === "elder" ||
     user.canViewPrivateData === true;
   return (
-    <>
+    <AppLock>
       {/* Above everything, because after the next native build every phone has
           to install a new APK — and an app that says so itself saves telling
           each brother by hand. */}
@@ -164,6 +165,6 @@ export default function AppLayout() {
         <Tabs.Screen name="talk-coordinator" options={{ href: null }} />
         <Tabs.Screen name="cleaning" options={{ href: null }} />
       </Tabs>
-    </>
+    </AppLock>
   );
 }

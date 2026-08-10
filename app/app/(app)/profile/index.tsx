@@ -1,10 +1,10 @@
 import {
-  
   Platform,
   Pressable,
   ScrollView,
   Share,
   StyleSheet,
+  Switch,
   Text,
   View,
 } from 'react-native';
@@ -28,6 +28,11 @@ import {
   WebPushStatus,
 } from '../../../lib/web-push';
 import { notify } from '../../../lib/error-bus';
+import {
+  biometricsAvailable,
+  lockEnabled,
+  setLockEnabled,
+} from '../../../lib/biometrics';
 
 /**
  * A single line naming the running code: app version, and — when an
@@ -61,6 +66,19 @@ function useBuildLine(): string {
 
 export default function ProfileScreen() {
   const { user, signOut } = useAuth();
+  // The lock is a property of THIS device, so its state is read from the device
+  // rather than from the account.
+  const [bioAvailable, setBioAvailable] = useState(false);
+  const [bioOn, setBioOn] = useState(false);
+  useEffect(() => {
+    void (async () => {
+      setBioAvailable(await biometricsAvailable());
+      setBioOn(await lockEnabled());
+    })();
+  }, []);
+  // Said, not enforced: a brother with an older phone and no scanner must not
+  // be shut out of the app because of the rights he holds.
+  const privileged = user?.role === 'admin' || user?.canViewPrivateData === true;
   const { myPublisher } = useMyPublisher();
   const { t, i18n } = useTranslation();
   const buildLine = useBuildLine();
@@ -183,6 +201,35 @@ export default function ProfileScreen() {
           </View>
         </View>
       </View>
+
+      {/* Only where there is a scanner to ask. On the web and on a home-screen
+          iPhone the switch is absent rather than present and dead. */}
+      {bioAvailable ? (
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>{t('lock.sectionTitle')}</Text>
+          <View style={styles.card}>
+            <View style={styles.row}>
+              <View style={styles.rowIcon}>
+                <Ionicons name="finger-print" size={20} color="#0ea5e9" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.rowTitle}>{t('lock.rowTitle')}</Text>
+                <Text style={styles.rowSubtitle}>
+                  {t('lock.rowSubtitle')}
+                  {privileged ? ` ${t('lock.rowPrivileged')}` : ''}
+                </Text>
+              </View>
+              <Switch
+                value={bioOn}
+                onValueChange={(next: boolean) => {
+                  setBioOn(next);
+                  void setLockEnabled(next);
+                }}
+              />
+            </View>
+          </View>
+        </View>
+      ) : null}
 
       <View style={styles.section}>
         <Text style={styles.sectionLabel}>{t('notificationPrefs.title')}</Text>
