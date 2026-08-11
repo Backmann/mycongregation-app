@@ -101,7 +101,7 @@ export const api = axios.create({
  * Nothing here identifies a device — no model, no serial, no advertising id.
  * A platform, its version, and our own build number.
  */
-const CLIENT_DESCRIPTION = [
+export const CLIENT_DESCRIPTION = [
   `platform=${
     Platform.OS === 'android'
       ? 'android'
@@ -2931,7 +2931,17 @@ async function performRefresh(): Promise<string> {
     {
       timeout: 10_000,
       withCredentials: USE_COOKIE_AUTH,
-      headers: USE_COOKIE_AUTH ? { [AUTH_MODE_HEADER]: 'cookie' } : undefined,
+      // X-Client belongs here above all. This call bypasses our interceptors
+      // on purpose (it would recurse through them), and it is ALSO the only
+      // moment a signed-in phone tells the server anything about itself: the
+      // session's client details are written on sign-in and on refresh, and
+      // nothing else. Without the header here, a phone that stays signed in
+      // never reports what it is — which is exactly why «Управление
+      // пользователями» kept showing «Неизвестно» for every phone.
+      headers: {
+        'X-Client': CLIENT_DESCRIPTION,
+        ...(USE_COOKIE_AUTH ? { [AUTH_MODE_HEADER]: 'cookie' } : {}),
+      },
     },
   );
   await setAccessToken(data.accessToken);
