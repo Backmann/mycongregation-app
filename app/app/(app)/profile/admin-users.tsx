@@ -23,6 +23,7 @@ import {
   publishersApi,
   usersApi,
 } from '../../../lib/api';
+import { androidVersionName } from '../../../lib/android-version';
 
 // Login accounts are created and managed per-person on the Братья screen
 // (role derived from appointment). This screen is a read-only audit list.
@@ -375,7 +376,15 @@ function UserCard({
           />
           <Text style={styles.clientText}>
             {t(`admin.users.client.${user.lastClient.platform}`)}
-            {user.lastClient.os ? ` ${user.lastClient.os}` : ''}
+            {/* Android reports an API level, not a version — «36» means
+                Android 16. A raw number here would be plausible and wrong. */}
+            {(() => {
+              const { platform, os } = user.lastClient;
+              if (!os) return '';
+              const shown =
+                platform === 'android' ? androidVersionName(os) : os;
+              return shown ? ` ${shown}` : '';
+            })()}
             {' · '}
             {t(`admin.users.client.${user.lastClient.kind}`)}
             {user.lastClient.appVersion ? ` ${user.lastClient.appVersion}` : ''}
