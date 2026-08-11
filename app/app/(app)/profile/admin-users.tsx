@@ -379,19 +379,28 @@ function UserCard({
             {/* Android reports an API level, not a version — «36» means
                 Android 16. A raw number here would be plausible and wrong. */}
             {(() => {
-              const { platform, os } = user.lastClient;
-              if (!os) return '';
-              const shown =
-                platform === 'android' ? androidVersionName(os) : os;
-              return shown ? ` ${shown}` : '';
+              const { platform, os, kind } = user.lastClient;
+              // A system version belongs to a phone with our app on it. A
+              // browser's own version is the BROWSER's, not the system's, and
+              // saying it here would answer a question nobody asked.
+              if (!os || kind !== 'app') return '';
+              if (platform === 'android') {
+                const name = androidVersionName(os);
+                return name ? ` ${name}` : '';
+              }
+              return platform === 'ios' ? ` ${os}` : '';
             })()}
             {' · '}
             {t(`admin.users.client.${user.lastClient.kind}`)}
-            {user.lastClient.appVersion ? ` ${user.lastClient.appVersion}` : ''}
+            {/* Only the installed app has a build to name; a browser is
+                always on the newest one by its nature. */}
+            {user.lastClient.kind === 'app' && user.lastClient.appVersion
+              ? ` ${user.lastClient.appVersion}`
+              : ''}
           </Text>
           {/* The reason for showing a version at all: this is the person to
               help, and now it takes a glance instead of a conversation. */}
-          {user.lastClient.outdated ? (
+          {user.lastClient.kind === 'app' && user.lastClient.outdated ? (
             <View style={styles.oldBuild}>
               <Text style={styles.oldBuildText}>
                 {t('admin.users.client.outdated')}

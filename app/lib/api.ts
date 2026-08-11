@@ -101,13 +101,18 @@ export const api = axios.create({
  * Nothing here identifies a device — no model, no serial, no advertising id.
  * A platform, its version, and our own build number.
  */
-export function clientDescription(): string {
-  const platform =
-    Platform.OS === 'android'
-      ? 'android'
-      : Platform.OS === 'ios'
-        ? 'ios'
-        : 'other';
+export function clientDescription(): string | null {
+  // Nothing on the web, and that is the right answer rather than a gap.
+  //
+  // A browser has no platform of its own to state, «version of the system» is
+  // «0.0.0» there, and «version of the app» means nothing when there is
+  // nothing installed — which is how a row came to read «Неизвестно 0.0.0 ·
+  // браузер 1.1.0». The user-agent, meanwhile, describes a browser honestly:
+  // Windows, iPhone, Mac. So the web says nothing and lets the server read the
+  // agent, which is the one client that string was always good for.
+  if (Platform.OS === 'web') return null;
+
+  const platform = Platform.OS === 'android' ? 'android' : 'ios';
 
   // Read at CALL time, not when this module loads. Computed once at load, the
   // description came out with «platform=android» and empty os and app — the
@@ -125,7 +130,7 @@ export function clientDescription(): string {
 
   return [
     `platform=${platform}`,
-    `kind=${Platform.OS === 'web' ? 'browser' : 'app'}`,
+    'kind=app',
     `os=${os}`,
     `app=${version}`,
   ].join('; ');
@@ -134,7 +139,8 @@ export function clientDescription(): string {
 api.interceptors.request.use(async (config) => {
   // Sent on every request, so a session started before this existed starts
   // describing itself the moment the app is opened again.
-  config.headers.set('X-Client', clientDescription());
+  const described = clientDescription();
+  if (described) config.headers.set('X-Client', described);
   if (USE_COOKIE_AUTH && config.url?.includes('/auth/')) {
     config.headers.set(AUTH_MODE_HEADER, 'cookie');
   }
@@ -2954,7 +2960,7 @@ async function performRefresh(): Promise<string> {
       // never reports what it is — which is exactly why «Управление
       // пользователями» kept showing «Неизвестно» for every phone.
       headers: {
-        'X-Client': clientDescription(),
+        ...(clientDescription() ? { 'X-Client': clientDescription()! } : {}),
         ...(USE_COOKIE_AUTH ? { [AUTH_MODE_HEADER]: 'cookie' } : {}),
       },
     },
