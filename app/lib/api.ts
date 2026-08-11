@@ -101,25 +101,40 @@ export const api = axios.create({
  * Nothing here identifies a device — no model, no serial, no advertising id.
  * A platform, its version, and our own build number.
  */
-export const CLIENT_DESCRIPTION = [
-  `platform=${
+export function clientDescription(): string {
+  const platform =
     Platform.OS === 'android'
       ? 'android'
       : Platform.OS === 'ios'
         ? 'ios'
-        : Platform.OS === 'web'
-          ? 'other'
-          : 'other'
-  }`,
-  `kind=${Platform.OS === 'web' ? 'browser' : 'app'}`,
-  `os=${String(Platform.Version ?? '')}`,
-  `app=${Constants.expoConfig?.version ?? ''}`,
-].join('; ');
+        : 'other';
+
+  // Read at CALL time, not when this module loads. Computed once at load, the
+  // description came out with «platform=android» and empty os and app — the
+  // platform is known from the first instant, the build's own details are not
+  // necessarily so. A function costs nothing per request and removes the
+  // question of what is ready when.
+  const os = Platform.Version == null ? '' : String(Platform.Version);
+  const version =
+    Constants.expoConfig?.version ??
+    // Older shapes of the same fact, for builds where expoConfig is not the
+    // one carrying it.
+    (Constants as { manifest?: { version?: string } }).manifest?.version ??
+    (Constants as { expoVersion?: string }).expoVersion ??
+    '';
+
+  return [
+    `platform=${platform}`,
+    `kind=${Platform.OS === 'web' ? 'browser' : 'app'}`,
+    `os=${os}`,
+    `app=${version}`,
+  ].join('; ');
+}
 
 api.interceptors.request.use(async (config) => {
   // Sent on every request, so a session started before this existed starts
   // describing itself the moment the app is opened again.
-  config.headers.set('X-Client', CLIENT_DESCRIPTION);
+  config.headers.set('X-Client', clientDescription());
   if (USE_COOKIE_AUTH && config.url?.includes('/auth/')) {
     config.headers.set(AUTH_MODE_HEADER, 'cookie');
   }
@@ -2939,7 +2954,7 @@ async function performRefresh(): Promise<string> {
       // never reports what it is — which is exactly why «Управление
       // пользователями» kept showing «Неизвестно» for every phone.
       headers: {
-        'X-Client': CLIENT_DESCRIPTION,
+        'X-Client': clientDescription(),
         ...(USE_COOKIE_AUTH ? { [AUTH_MODE_HEADER]: 'cookie' } : {}),
       },
     },
