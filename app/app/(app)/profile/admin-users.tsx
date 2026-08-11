@@ -375,9 +375,20 @@ function UserCard({
           />
           <Text style={styles.clientText}>
             {t(`admin.users.client.${user.lastClient.platform}`)}
+            {user.lastClient.os ? ` ${user.lastClient.os}` : ''}
             {' · '}
             {t(`admin.users.client.${user.lastClient.kind}`)}
+            {user.lastClient.appVersion ? ` ${user.lastClient.appVersion}` : ''}
           </Text>
+          {/* The reason for showing a version at all: this is the person to
+              help, and now it takes a glance instead of a conversation. */}
+          {user.lastClient.outdated ? (
+            <View style={styles.oldBuild}>
+              <Text style={styles.oldBuildText}>
+                {t('admin.users.client.outdated')}
+              </Text>
+            </View>
+          ) : null}
         </View>
       ) : null}
 
@@ -429,6 +440,15 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   clientText: { fontSize: 12, color: '#64748b' },
+  oldBuild: {
+    backgroundColor: '#fffbeb',
+    borderColor: '#fde68a',
+    borderWidth: 1,
+    borderRadius: 999,
+    paddingHorizontal: 7,
+    paddingVertical: 1,
+  },
+  oldBuildText: { fontSize: 11, color: '#92400e' },
   noPassRow: {
     flexDirection: 'row',
     alignItems: 'center',

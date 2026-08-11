@@ -1091,7 +1091,8 @@
         "mac": "Mac",
         "other": "Unbekannt",
         "app": "App",
-        "browser": "Browser"
+        "browser": "Browser",
+        "outdated": "alte Version"
       }
     }
   },

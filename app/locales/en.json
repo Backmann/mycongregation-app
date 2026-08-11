@@ -1091,7 +1091,8 @@
         "mac": "Mac",
         "other": "Unknown",
         "app": "app",
-        "browser": "browser"
+        "browser": "browser",
+        "outdated": "old build"
       }
     }
   },

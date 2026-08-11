@@ -1,5 +1,6 @@
 import axios, { AxiosError } from 'axios';
 import { Platform } from 'react-native';
+import Constants from 'expo-constants';
 import { storage } from './storage';
 import type { ApplyParsedPayload } from './mwb-parser';
 
@@ -86,7 +87,39 @@ export const api = axios.create({
   withCredentials: USE_COOKIE_AUTH,
 });
 
+/**
+ * Who we are, said outright instead of left to be guessed.
+ *
+ * A React Native app signs its requests `okhttp/4.x` and mentions no platform
+ * at all — which is why «Управление пользователями» showed «Неизвестно ·
+ * приложение» for every phone in the congregation. The server could not have
+ * done better with what it was given; the fact was never in the string.
+ *
+ * The app version is the useful half: an administrator can see who is still on
+ * an old build and needs help updating, rather than asking each brother.
+ *
+ * Nothing here identifies a device — no model, no serial, no advertising id.
+ * A platform, its version, and our own build number.
+ */
+const CLIENT_DESCRIPTION = [
+  `platform=${
+    Platform.OS === 'android'
+      ? 'android'
+      : Platform.OS === 'ios'
+        ? 'ios'
+        : Platform.OS === 'web'
+          ? 'other'
+          : 'other'
+  }`,
+  `kind=${Platform.OS === 'web' ? 'browser' : 'app'}`,
+  `os=${String(Platform.Version ?? '')}`,
+  `app=${Constants.expoConfig?.version ?? ''}`,
+].join('; ');
+
 api.interceptors.request.use(async (config) => {
+  // Sent on every request, so a session started before this existed starts
+  // describing itself the moment the app is opened again.
+  config.headers.set('X-Client', CLIENT_DESCRIPTION);
   if (USE_COOKIE_AUTH && config.url?.includes('/auth/')) {
     config.headers.set(AUTH_MODE_HEADER, 'cookie');
   }
@@ -187,6 +220,12 @@ export interface PublicUser {
   lastClient: {
     platform: 'android' | 'ios' | 'windows' | 'mac' | 'other';
     kind: 'app' | 'browser';
+    /** OS version as the client stated it; null when it did not say. */
+    os: string | null;
+    /** Which build of ours; null in a browser. */
+    appVersion: string | null;
+    /** Whether that build is behind the one being handed out. */
+    outdated: boolean | null;
     at: string | null;
   } | null;
 }
