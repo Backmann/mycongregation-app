@@ -692,6 +692,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 12,
     paddingBottom: 4,
+    maxWidth: 752,
+    width: '100%',
+    alignSelf: 'center',
   },
   tab: {
     flex: 1,
@@ -709,6 +712,9 @@ const styles = StyleSheet.create({
     color: '#64748b',
     marginTop: 6,
     marginBottom: 6,
+    maxWidth: 720,
+    width: '100%',
+    alignSelf: 'center',
   },
   groupLate: { color: '#A32D2D' },
   content: { padding: 16, paddingBottom: 96, gap: 10 },
@@ -730,7 +736,18 @@ const styles = StyleSheet.create({
   who: { fontSize: 13, color: '#64748b' },
   whoBody: { color: '#0369a1' },
   cardLate: { borderColor: '#F09595' },
-  card: { backgroundColor: '#fff', borderRadius: 12, padding: 14, gap: 5 },
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: '#e8edf3',
+    // A card on a wide browser window stretched the whole way and left the
+    // title alone on a line metres from its own chips.
+    maxWidth: 720,
+    width: '100%',
+    alignSelf: 'center',
+  },
   cardHead: { flexDirection: 'row', alignItems: 'center', gap: 9 },
   areaDot: { width: 9, height: 9, borderRadius: 999 },
   title: {
@@ -743,8 +760,11 @@ const styles = StyleSheet.create({
   titleDone: { color: '#94a3b8', textDecorationLine: 'line-through' },
   check: { paddingLeft: 4 },
   area: { fontSize: 12, color: '#64748b', marginLeft: 18 },
-  details: { fontSize: 13.5, color: '#475569', marginLeft: 18, lineHeight: 19 },
-  metaRow: { flexDirection: 'row', gap: 12, marginLeft: 18, flexWrap: 'wrap' },
+  // The 18pt indent belonged to the coloured dot that used to sit before the
+  // title. The dot became a labelled chip and the indent was left behind,
+  // holding the detail line out of line with everything above it.
+  details: { fontSize: 13.5, color: '#475569', lineHeight: 19, marginTop: 8 },
+  metaRow: { flexDirection: 'row', gap: 12, flexWrap: 'wrap' },
   meta: { fontSize: 12.5, color: '#475569' },
   metaLate: { color: '#b45309', fontWeight: '700' },
   empty: { fontSize: 14, color: '#64748b', textAlign: 'center', marginTop: 32 },
