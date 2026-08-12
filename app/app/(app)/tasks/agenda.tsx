@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
+  Linking,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -15,15 +16,20 @@ import dayjs from 'dayjs';
 import 'dayjs/locale/ru';
 import 'dayjs/locale/de';
 import {
-  tasksApi,
-  publishersApi,
+  AgendaItem,
+  ItemOutcome,
+  agendaApi,
+  extractErrorMessage,
   meetingSettingsApi,
+  publishersApi,
+  tasksApi,
   type ElderTask,
   type EldersMeeting,
 } from '../../../lib/api';
 import { buildAgendaHtml } from '../../../lib/agendaPdf';
 import { exportHtmlAsPdf, openPrintWindow } from '../../../lib/pdf';
 import { Sheet } from '../../../components/Sheet';
+import { PublisherSelector } from '../../../components/PublisherSelector';
 import { DateField } from '../../../components/DateField';
 import { TimeField } from '../../../components/TimeField';
 import { confirm } from '../../../components/ConfirmHost';
@@ -55,6 +61,69 @@ export default function AgendaScreen() {
     queryKey: ['publishers', 'all'],
     queryFn: () => publishersApi.list({}),
   });
+  /**
+   * The items, and what this person may do with them.
+   *
+   * The rights are asked of the SERVER rather than worked out here: three
+   * different ones live behind this screen — building the agenda is the
+   * coordinator's, recording what was decided belongs to the brother the
+   * meeting names, and reading is every elder's once it is approved. A screen
+   * that guessed would offer buttons that fail.
+   */
+  const currentId = meetingId ?? agendaQuery.data?.meeting?.id ?? null;
+  const itemsQuery = useQuery({
+    queryKey: ['agenda-items', currentId],
+    queryFn: () => agendaApi.items(currentId as string),
+    enabled: !!currentId,
+  });
+  const rightsQuery = useQuery({
+    queryKey: ['agenda-rights', currentId],
+    queryFn: () => agendaApi.rights(currentId as string),
+    enabled: !!currentId,
+  });
+  const mayBuild = rightsQuery.data?.mayBuild ?? false;
+  const mayRecord = rightsQuery.data?.mayRecord ?? false;
+
+  const [editingItem, setEditingItem] = useState<AgendaItem | 'new' | null>(
+    null,
+  );
+
+  const items = itemsQuery.data ?? [];
+  /**
+   * «Повестка на 95 минут» — the only reason to record minutes at all.
+   *
+   * The point is seeing that an evening does not fit BEFORE it starts, not at
+   * eleven o'clock when it has already overrun.
+   */
+  const totalMinutes = items.reduce((sum, i) => sum + (i.minutes ?? 0), 0);
+
+  const invalidateItems = () => {
+    void qc.invalidateQueries({ queryKey: ['agenda-items', currentId] });
+    void qc.invalidateQueries({ queryKey: ['tasks'] });
+  };
+
+  const moveMut = useMutation({
+    mutationFn: (v: { id: string; direction: 'up' | 'down' }) =>
+      agendaApi.move(v.id, v.direction),
+    onSuccess: invalidateItems,
+  });
+  const outcomeMut = useMutation({
+    mutationFn: (v: { id: string; outcome: ItemOutcome | null }) =>
+      agendaApi.update(v.id, { outcome: v.outcome }),
+    onSuccess: invalidateItems,
+  });
+  const removeItemMut = useMutation({
+    mutationFn: (id: string) => agendaApi.remove(id),
+    onSuccess: invalidateItems,
+  });
+  const approveMut = useMutation({
+    mutationFn: (id: string) => agendaApi.approve(id),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['agenda'] });
+      void qc.invalidateQueries({ queryKey: ['tasks', 'meetings'] });
+    },
+  });
+
   const congQuery = useQuery({
     queryKey: ['meeting-settings'],
     queryFn: () => meetingSettingsApi.getOverview(),
@@ -178,6 +247,193 @@ export default function AgendaScreen() {
               ) : null}
             </Pressable>
 
+            {/* The questions brought TO the meeting, before the work carried
+                INTO it. An agenda is a sequence, so they are numbered and can
+                be moved; the total says whether the evening fits. */}
+            <View style={styles.group}>
+              <View style={styles.groupHead}>
+                <Text style={styles.groupTitle}>{t('agenda.items.title')}</Text>
+                {items.length > 0 ? (
+                  <Text style={styles.total}>
+                    {t('agenda.items.total', { count: totalMinutes })}
+                  </Text>
+                ) : null}
+              </View>
+
+              {!agenda.meeting.approvedAt && !mayBuild ? (
+                // Silent, not «hidden»: an elder sees a meeting is planned and
+                // simply no items yet. «Hidden» invites the question what is
+                // being hidden.
+                <Text style={styles.nothing}>{t('agenda.items.notYet')}</Text>
+              ) : items.length === 0 ? (
+                <Text style={styles.nothing}>{t('agenda.items.none')}</Text>
+              ) : (
+                items.map((item, i) => (
+                  <View key={item.id} style={styles.item}>
+                    <View style={styles.itemHead}>
+                      <Text style={styles.itemNo}>{i + 1}.</Text>
+                      <Pressable
+                        style={{ flex: 1 }}
+                        onPress={() => mayRecord && setEditingItem(item)}
+                      >
+                        <Text style={styles.itemTitle}>{item.title}</Text>
+                      </Pressable>
+                      <Text style={styles.itemMinutes}>
+                        {t('agenda.items.minutes', { count: item.minutes })}
+                      </Text>
+                    </View>
+
+                    <View style={styles.itemMetaRow}>
+                      {item.presenterPublisherId ? (
+                        <Text style={styles.itemMeta}>
+                          {nameOf(item.presenterPublisherId)}
+                        </Text>
+                      ) : null}
+                      {item.sourceText ? (
+                        <Text style={styles.itemMeta}>{item.sourceText}</Text>
+                      ) : null}
+                      {item.sourceUrl ? (
+                        <Pressable
+                          onPress={() => void Linking.openURL(item.sourceUrl!)}
+                        >
+                          <Text style={styles.itemLink}>
+                            {t('agenda.items.source')}
+                          </Text>
+                        </Pressable>
+                      ) : null}
+                    </View>
+
+                    {item.outcome ? (
+                      <View style={styles.outcomeChip}>
+                        <Ionicons
+                          name={
+                            item.outcome === 'task'
+                              ? 'arrow-forward-circle-outline'
+                              : item.outcome === 'carried'
+                                ? 'time-outline'
+                                : 'checkmark-circle-outline'
+                          }
+                          size={14}
+                          color="#0369a1"
+                        />
+                        <Text style={styles.outcomeText}>
+                          {t(`agenda.items.outcome.${item.outcome}`)}
+                        </Text>
+                      </View>
+                    ) : null}
+
+                    {/* Marking what became of an item is the recorder's, and
+                        only his: two people writing at once overwrite each
+                        other and the second finds his words gone. */}
+                    {mayRecord ? (
+                      <View style={styles.itemActions}>
+                        {(['reviewed', 'carried'] as const).map((o) => (
+                          <Pressable
+                            key={o}
+                            style={[
+                              styles.act,
+                              item.outcome === o && styles.actOn,
+                            ]}
+                            onPress={() =>
+                              outcomeMut.mutate({
+                                id: item.id,
+                                outcome: item.outcome === o ? null : o,
+                              })
+                            }
+                          >
+                            <Text
+                              style={[
+                                styles.actText,
+                                item.outcome === o && styles.actTextOn,
+                              ]}
+                            >
+                              {t(`agenda.items.outcome.${o}`)}
+                            </Text>
+                          </Pressable>
+                        ))}
+                        {mayBuild ? (
+                          <>
+                            <Pressable
+                              style={styles.actIcon}
+                              onPress={() =>
+                                moveMut.mutate({
+                                  id: item.id,
+                                  direction: 'up',
+                                })
+                              }
+                            >
+                              <Ionicons
+                                name="chevron-up"
+                                size={16}
+                                color="#64748b"
+                              />
+                            </Pressable>
+                            <Pressable
+                              style={styles.actIcon}
+                              onPress={() =>
+                                moveMut.mutate({
+                                  id: item.id,
+                                  direction: 'down',
+                                })
+                              }
+                            >
+                              <Ionicons
+                                name="chevron-down"
+                                size={16}
+                                color="#64748b"
+                              />
+                            </Pressable>
+                            <Pressable
+                              style={styles.actIcon}
+                              onPress={() => removeItemMut.mutate(item.id)}
+                            >
+                              <Ionicons
+                                name="trash-outline"
+                                size={16}
+                                color="#b91c1c"
+                              />
+                            </Pressable>
+                          </>
+                        ) : null}
+                      </View>
+                    ) : null}
+                  </View>
+                ))
+              )}
+
+              {mayRecord ? (
+                <Pressable
+                  style={styles.addItem}
+                  onPress={() => setEditingItem('new')}
+                >
+                  <Ionicons name="add" size={16} color="#0369a1" />
+                  <Text style={styles.addItemText}>
+                    {t('agenda.items.add')}
+                  </Text>
+                </Pressable>
+              ) : null}
+            </View>
+
+            {/* Approving is the one act that turns a draft into an agenda:
+                from here every elder sees the items, and word goes out with
+                the day, the hour and the place — never with the items. */}
+            {mayBuild && !agenda.meeting.approvedAt && items.length > 0 ? (
+              <Pressable
+                style={styles.approve}
+                disabled={approveMut.isPending}
+                onPress={() => approveMut.mutate(agenda.meeting!.id)}
+              >
+                <Ionicons name="send-outline" size={16} color="#fff" />
+                <Text style={styles.approveText}>{t('agenda.approve')}</Text>
+              </Pressable>
+            ) : null}
+            {agenda.meeting.approvedAt ? (
+              <View style={styles.approvedRow}>
+                <Ionicons name="checkmark-circle" size={15} color="#15803d" />
+                <Text style={styles.approvedText}>{t('agenda.approved')}</Text>
+              </View>
+            ) : null}
+
             {group(t('tasks.agenda.onAgenda'), agenda.onAgenda)}
             {group(t('tasks.agenda.overdue'), agenda.overdue)}
             {group(t('tasks.agenda.dueSoon'), agenda.dueSoon)}
@@ -189,6 +445,18 @@ export default function AgendaScreen() {
           </>
         )}
       </ScrollView>
+
+      {editingItem ? (
+        <ItemSheet
+          item={editingItem === 'new' ? null : editingItem}
+          meetingId={currentId as string}
+          onClose={() => setEditingItem(null)}
+          onSaved={() => {
+            setEditingItem(null);
+            invalidateItems();
+          }}
+        />
+      ) : null}
 
       <MeetingForm
         target={editingMeeting}
@@ -323,6 +591,72 @@ const styles = StyleSheet.create({
     fontFamily: 'Manrope_700Bold',
   },
   meetingNote: { fontSize: 13.5, color: '#475569', lineHeight: 19 },
+  groupHead: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  total: { fontSize: 12.5, color: '#64748b' },
+  itemHead: { flexDirection: 'row', alignItems: 'flex-start', gap: 8 },
+  itemNo: { fontSize: 14, color: '#94a3b8', fontFamily: 'Manrope_600SemiBold' },
+  itemMinutes: { fontSize: 12.5, color: '#64748b' },
+  itemMetaRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+    marginTop: 6,
+    marginLeft: 20,
+  },
+  itemLink: { fontSize: 12.5, color: '#0369a1', textDecorationLine: 'underline' },
+  outcomeChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    marginTop: 8,
+    marginLeft: 20,
+  },
+  outcomeText: { fontSize: 12.5, color: '#0369a1' },
+  itemActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 10,
+    marginLeft: 20,
+    flexWrap: 'wrap',
+  },
+  act: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  actOn: { backgroundColor: '#0e7490', borderColor: '#0e7490' },
+  actText: { fontSize: 12.5, color: '#475569' },
+  actTextOn: { color: '#fff' },
+  actIcon: { padding: 5 },
+  addItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 10,
+    alignSelf: 'flex-start',
+  },
+  addItemText: { fontSize: 13.5, color: '#0369a1' },
+  approve: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#0e7490',
+    borderRadius: 12,
+    paddingVertical: 13,
+  },
+  approveText: { color: '#fff', fontSize: 15, fontFamily: 'Manrope_700Bold' },
+  approvedRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  approvedText: { fontSize: 13, color: '#15803d' },
+  error: { fontSize: 13, color: '#b91c1c', marginTop: 8 },
   group: { gap: 6 },
   groupTitle: {
     fontSize: 12,
@@ -392,3 +726,109 @@ const styles = StyleSheet.create({
   delete: { marginTop: 22, alignItems: 'center', paddingVertical: 12 },
   deleteText: { color: '#dc2626', fontSize: 14, fontWeight: '600' },
 });
+
+/**
+ * A question on the agenda: what it is, where it comes from, who presents it,
+ * how long it should take.
+ *
+ * THE PRESENTER IS CHOSEN FROM ELDERS ONLY — unlike a task, which can go to any
+ * brother. A question at the body's own meeting is presented by one of its
+ * members, and offering the whole roster would be offering a wrong answer.
+ */
+function ItemSheet({
+  item,
+  meetingId,
+  onClose,
+  onSaved,
+}: {
+  item: AgendaItem | null;
+  meetingId: string;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const { t } = useTranslation();
+  const [title, setTitle] = useState(item?.title ?? '');
+  const [sourceText, setSourceText] = useState(item?.sourceText ?? '');
+  const [sourceUrl, setSourceUrl] = useState(item?.sourceUrl ?? '');
+  const [presenter, setPresenter] = useState<string | null>(
+    item?.presenterPublisherId ?? null,
+  );
+  const [minutes, setMinutes] = useState(String(item?.minutes ?? 10));
+
+  const save = useMutation({
+    meta: { inlineError: true },
+    mutationFn: () => {
+      const input = {
+        title: title.trim(),
+        sourceText: sourceText.trim() || null,
+        sourceUrl: sourceUrl.trim() || null,
+        presenterPublisherId: presenter,
+        minutes: Math.max(1, parseInt(minutes, 10) || 10),
+      };
+      return item
+        ? agendaApi.update(item.id, input)
+        : agendaApi.create(meetingId, input);
+    },
+    onSuccess: onSaved,
+  });
+
+  return (
+    <Sheet
+      visible
+      onClose={onClose}
+      variant="bottom"
+      title={t(item ? 'agenda.items.form.edit' : 'agenda.items.form.new')}
+      footer={
+        <Pressable
+          style={[styles.approve, !title.trim() && { opacity: 0.5 }]}
+          disabled={!title.trim() || save.isPending}
+          onPress={() => save.mutate()}
+        >
+          <Text style={styles.approveText}>{t('common.save')}</Text>
+        </Pressable>
+      }
+    >
+      <Text style={styles.label}>{t('agenda.items.form.titleLabel')}</Text>
+      <TextInput style={styles.input} value={title} onChangeText={setTitle} />
+
+      <Text style={styles.label}>{t('agenda.items.form.sourceText')}</Text>
+      <TextInput
+        style={styles.input}
+        value={sourceText}
+        onChangeText={setSourceText}
+        placeholder={t('agenda.items.form.sourceHint')}
+        placeholderTextColor="#94a3b8"
+      />
+
+      <Text style={styles.label}>{t('agenda.items.form.sourceUrl')}</Text>
+      <TextInput
+        style={styles.input}
+        value={sourceUrl}
+        onChangeText={setSourceUrl}
+        autoCapitalize="none"
+        keyboardType="url"
+      />
+
+      <PublisherSelector
+        boxed
+        label={t('agenda.items.form.presenter')}
+        value={presenter}
+        genderFilter="brother"
+        appointmentFilter="elder"
+        onChange={setPresenter}
+      />
+
+      <Text style={styles.label}>{t('agenda.items.form.minutes')}</Text>
+      <TextInput
+        style={styles.input}
+        value={minutes}
+        onChangeText={setMinutes}
+        keyboardType="number-pad"
+      />
+
+      {save.isError ? (
+        <Text style={styles.error}>{extractErrorMessage(save.error)}</Text>
+      ) : null}
+    </Sheet>
+  );
+}

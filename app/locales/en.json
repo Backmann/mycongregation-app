@@ -2921,5 +2921,35 @@
     "rowSubtitleCode": "The app will ask for your device code on opening and after five minutes away. Enrol a fingerprint in your phone settings and it will ask for that instead.",
     "promptCode": "Confirm it is you",
     "retryCode": "Enter code"
+  },
+  "agenda": {
+    "approve": "Approve the agenda",
+    "approved": "Approved — every elder can see it",
+    "items": {
+      "title": "Questions to discuss",
+      "add": "Add a question",
+      "none": "No questions yet",
+      "notYet": "The agenda is still being put together",
+      "source": "Source",
+      "minutes_one": "{{count}} min",
+      "minutes_other": "{{count}} min",
+      "total_one": "{{count}} minute in all",
+      "total_other": "{{count}} minutes in all",
+      "outcome": {
+        "reviewed": "Reviewed",
+        "carried": "Carried over",
+        "task": "Became a task"
+      },
+      "form": {
+        "new": "New question",
+        "edit": "Question",
+        "titleLabel": "What it is about",
+        "sourceText": "Source (e.g. km 3/24, p. 5)",
+        "sourceUrl": "Link",
+        "presenter": "Who presents it",
+        "minutes": "How many minutes",
+        "sourceHint": "km 3/24, p. 5"
+      }
+    }
   }
 }

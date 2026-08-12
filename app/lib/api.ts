@@ -3298,6 +3298,95 @@ export const taskRulesApi = {
   },
 };
 
+/** What became of an item once it was discussed. */
+export type ItemOutcome = 'reviewed' | 'carried' | 'task';
+
+export interface AgendaItem {
+  id: string;
+  meetingId: string | null;
+  position: number;
+  title: string;
+  /** «km 3/24, стр. 5» — as written. */
+  sourceText: string | null;
+  sourceUrl: string | null;
+  presenterPublisherId: string | null;
+  minutes: number;
+  outcome: ItemOutcome | null;
+  outcomeNote: string | null;
+  /** The task it became; deleting that task does not erase this record. */
+  taskId: string | null;
+}
+
+export interface UpsertAgendaItem {
+  title?: string;
+  sourceText?: string | null;
+  sourceUrl?: string | null;
+  presenterPublisherId?: string | null;
+  minutes?: number;
+  outcome?: ItemOutcome | null;
+  outcomeNote?: string | null;
+  taskId?: string | null;
+}
+
+/**
+ * Whether THIS person may build the agenda or record what was decided.
+ *
+ * Asked once per meeting so the screen shows only the buttons that will work.
+ * Three different rights live behind it: building is the coordinator's,
+ * recording belongs to the brother the meeting names, and reading is every
+ * elder's once it has been approved.
+ */
+export interface AgendaRights {
+  mayBuild: boolean;
+  mayRecord: boolean;
+}
+
+export const agendaApi = {
+  async items(meetingId: string): Promise<AgendaItem[]> {
+    const { data } = await api.get<AgendaItem[]>(
+      `/tasks/meetings/${meetingId}/items`,
+    );
+    return data;
+  },
+  async rights(meetingId: string): Promise<AgendaRights> {
+    const { data } = await api.get<AgendaRights>(
+      `/tasks/meetings/${meetingId}/rights`,
+    );
+    return data;
+  },
+  async create(meetingId: string, input: UpsertAgendaItem): Promise<AgendaItem> {
+    const { data } = await api.post<AgendaItem>(
+      `/tasks/meetings/${meetingId}/items`,
+      input,
+    );
+    return data;
+  },
+  async update(itemId: string, input: UpsertAgendaItem): Promise<AgendaItem> {
+    const { data } = await api.patch<AgendaItem>(
+      `/tasks/items/${itemId}`,
+      input,
+    );
+    return data;
+  },
+  async move(itemId: string, direction: 'up' | 'down'): Promise<void> {
+    await api.post(`/tasks/items/${itemId}/move`, { direction });
+  },
+  async remove(itemId: string): Promise<void> {
+    await api.delete(`/tasks/items/${itemId}`);
+  },
+  /** Opens the items to the body and sends word — once, however often called. */
+  async approve(meetingId: string): Promise<EldersMeeting> {
+    const { data } = await api.post<EldersMeeting>(
+      `/tasks/meetings/${meetingId}/approve`,
+    );
+    return data;
+  },
+  /** Closes it: whatever has no outcome travels to the next meeting. */
+  async close(meetingId: string, toMeetingId?: string | null): Promise<void> {
+    await api.post(`/tasks/meetings/${meetingId}/close`, { toMeetingId });
+  },
+};
+
 export const journalApi = {
   async list(filters: JournalFilters = {}): Promise<JournalPage> {
     const { data } = await api.get<JournalPage>('/journal', {
@@ -3488,6 +3577,14 @@ export interface EldersMeeting {
   date: string;
   startTime: string | null;
   note: string | null;
+  /** A hall from the list, OR a line of one's own — often it is somebody's home. */
+  hallId: string | null;
+  placeText: string | null;
+  /** Who keeps the record — the secretary unless another is named. */
+  minuteTakerPublisherId: string | null;
+  /** Until this is set the agenda is the coordinator's alone. */
+  approvedAt: string | null;
+  approvedById: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -3527,13 +3624,23 @@ export const tasksApi = {
     date: string;
     startTime?: string | null;
     note?: string | null;
+    hallId?: string | null;
+    placeText?: string | null;
+    minuteTakerPublisherId?: string | null;
   }) {
     const { data } = await api.post<EldersMeeting>('/tasks/meetings', input);
     return data;
   },
   async updateMeeting(
     id: string,
-    input: { date?: string; startTime?: string | null; note?: string | null },
+    input: {
+      date?: string;
+      startTime?: string | null;
+      note?: string | null;
+      hallId?: string | null;
+      placeText?: string | null;
+      minuteTakerPublisherId?: string | null;
+    },
   ) {
     const { data } = await api.patch<EldersMeeting>(
       `/tasks/meetings/${id}`,

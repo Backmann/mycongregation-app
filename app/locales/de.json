@@ -2921,5 +2921,35 @@
     "rowSubtitleCode": "Die App fragt beim Öffnen und nach fünf Minuten Abwesenheit nach dem Gerätecode. Richte einen Fingerabdruck in den Telefoneinstellungen ein, dann fragt sie danach.",
     "promptCode": "Bestätige, dass du es bist",
     "retryCode": "Code eingeben"
+  },
+  "agenda": {
+    "approve": "Tagesordnung freigeben",
+    "approved": "Freigegeben — alle Ältesten sehen sie",
+    "items": {
+      "title": "Zu besprechende Fragen",
+      "add": "Frage hinzufügen",
+      "none": "Noch keine Fragen",
+      "notYet": "Die Tagesordnung wird noch erstellt",
+      "source": "Quelle",
+      "minutes_one": "{{count}} Min.",
+      "minutes_other": "{{count}} Min.",
+      "total_one": "Insgesamt {{count}} Minute",
+      "total_other": "Insgesamt {{count}} Minuten",
+      "outcome": {
+        "reviewed": "Besprochen",
+        "carried": "Verschoben",
+        "task": "Wurde Aufgabe"
+      },
+      "form": {
+        "new": "Neue Frage",
+        "edit": "Frage",
+        "titleLabel": "Worum es geht",
+        "sourceText": "Quelle (z. B. km 3/24, S. 5)",
+        "sourceUrl": "Link",
+        "presenter": "Wer sie vorstellt",
+        "minutes": "Wie viele Minuten",
+        "sourceHint": "km 3/24, S. 5"
+      }
+    }
   }
 }
