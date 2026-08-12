@@ -1160,12 +1160,19 @@
       "adviser": "Брат, дающий советы",
       "secretary": "Секретарь",
       "service_overseer": "Служебный старейшина",
-      "accounts_servant": "Счетовод",
+      "accounts_servant": "Ответственный за счета",
       "public_witnessing": "Служение в общественных местах",
       "cleaning_coordinator": "Координатор уборки",
       "duties_coordinator": "Координатор обязанностей",
       "service_overseer_assistant": "Помощник служебного старейшины",
-      "attendance_recorder": "Учёт посещаемости"
+      "attendance_recorder": "Учёт посещаемости",
+      "body_coordinator_assistant": "Помощник координатора совета старейшин"
+    },
+    "groups": {
+      "body": "Совет старейшин",
+      "meeting": "Встречи",
+      "service": "Служение",
+      "house": "Хозяйство и счета"
     }
   },
   "meetingSettings": {

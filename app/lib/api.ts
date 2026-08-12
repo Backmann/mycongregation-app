@@ -822,6 +822,7 @@ export const usersApi = {
 
 export type ResponsibilityType =
   | 'body_coordinator'
+  | 'body_coordinator_assistant'
   | 'life_ministry_overseer'
   | 'wt_study_conductor'
   | 'wt_study_conductor_backup'

@@ -25,19 +25,48 @@ import {
 import { notify } from '../../../lib/error-bus';
 import { confirm } from '../../../components/ConfirmHost';
 
-// Display order: meeting roles, then service, then administrative.
-const RESPONSIBILITY_ORDER: ResponsibilityType[] = [
-  'body_coordinator',
-  'life_ministry_overseer',
-  'public_talk_coordinator',
-  'service_overseer',
-  'service_overseer_assistant',
-  'public_witnessing',
-  'cleaning_coordinator',
-  'duties_coordinator',
-  'attendance_recorder',
-  'secretary',
+/**
+ * The order they are shown in, and it is not the order they were written in.
+ *
+ * Grouped the way the body itself is: who leads, then the meeting, then the
+ * ministry, then what is kept and counted. A brother looking for one of them
+ * scans a group of three rather than a list of twelve.
+ *
+ * KEPT BY HAND, and that is the trap it fell into: two responsibilities were
+ * added to the server and this list was not, so they existed everywhere except
+ * where somebody could assign them. Anything added to ResponsibilityType
+ * belongs here too.
+ */
+const RESPONSIBILITY_GROUPS: {
+  key: string;
+  types: ResponsibilityType[];
+}[] = [
+  {
+    key: 'body',
+    types: ['body_coordinator', 'body_coordinator_assistant', 'secretary'],
+  },
+  {
+    key: 'meeting',
+    types: [
+      'life_ministry_overseer',
+      'public_talk_coordinator',
+      'attendance_recorder',
+    ],
+  },
+  {
+    key: 'service',
+    types: [
+      'service_overseer',
+      'service_overseer_assistant',
+      'public_witnessing',
+    ],
+  },
+  {
+    key: 'house',
+    types: ['accounts_servant', 'cleaning_coordinator', 'duties_coordinator'],
+  },
 ];
+
 
 const QK_RESPONSIBILITIES = ['responsibilities'] as const;
 const QK_USERS = ['users'] as const;
@@ -120,60 +149,77 @@ export default function ResponsibilitiesScreen() {
       <ScrollView contentContainerStyle={{ paddingBottom: 32 }}>
         <Text style={styles.intro}>{t('responsibilities.subtitle')}</Text>
 
-        <View style={styles.card}>
-          {RESPONSIBILITY_ORDER.map((type, i) => {
-            const holders = byType.get(type) ?? [];
-            return (
-              <View key={type} style={[styles.row, i > 0 && styles.rowBorder]}>
-                <View style={styles.rowMain}>
-                  <Text style={styles.roleTitle}>
-                    {t(`responsibilities.types.${type}`)}
-                  </Text>
-                  {holders.length === 0 ? (
-                    <Text style={[styles.holder, styles.holderUnassigned]}>
-                      {t('responsibilities.unassigned')}
-                    </Text>
-                  ) : (
-                    holders.map((h) => {
-                      const u = userById.get(h.userId);
-                      return (
-                        <View key={h.userId} style={styles.holderRow}>
-                          <Text style={styles.holder}>
-                            {u ? u.email : t('responsibilities.unknownUser')}
-                          </Text>
-                          <Pressable
-                            onPress={() => confirmRevoke(type, h.userId)}
-                            style={styles.revokeBtn}
-                            hitSlop={8}
-                            disabled={revokeMutation.isPending}
-                          >
-                            <Ionicons
-                              name="close-circle"
-                              size={20}
-                              color="#dc2626"
-                            />
-                          </Pressable>
-                        </View>
-                      );
-                    })
-                  )}
-                </View>
+        {/* Grouped, and each row on ONE line with its holders under it.
+            Before, the name sat on the left, its remove cross beside it, and
+            the assign button away at the right edge — three things on three
+            different lines of sight, with nothing to tie them together. */}
+        {RESPONSIBILITY_GROUPS.map((group) => (
+          <View key={group.key} style={styles.group}>
+            <Text style={styles.groupLabel}>
+              {t(`responsibilities.groups.${group.key}`)}
+            </Text>
+            <View style={styles.card}>
+              {group.types.map((type, i) => {
+                const holders = byType.get(type) ?? [];
+                return (
+                  <View
+                    key={type}
+                    style={[styles.row, i > 0 && styles.rowBorder]}
+                  >
+                    <View style={styles.rowTop}>
+                      <Text style={styles.roleTitle}>
+                        {t(`responsibilities.types.${type}`)}
+                      </Text>
+                      <Pressable
+                        onPress={() => setPickerFor(type)}
+                        style={({ pressed }) => [
+                          styles.assignBtn,
+                          pressed && styles.assignBtnPressed,
+                        ]}
+                      >
+                        <Ionicons name="add" size={15} color="#0369a1" />
+                        <Text style={styles.assignBtnText}>
+                          {t('responsibilities.assign')}
+                        </Text>
+                      </Pressable>
+                    </View>
 
-                <Pressable
-                  onPress={() => setPickerFor(type)}
-                  style={({ pressed }) => [
-                    styles.assignBtn,
-                    pressed && styles.assignBtnPressed,
-                  ]}
-                >
-                  <Text style={styles.assignBtnText}>
-                    {t('responsibilities.assign')}
-                  </Text>
-                </Pressable>
-              </View>
-            );
-          })}
-        </View>
+                    {holders.length === 0 ? (
+                      <Text style={styles.holderUnassigned}>
+                        {t('responsibilities.unassigned')}
+                      </Text>
+                    ) : (
+                      <View style={styles.holderWrap}>
+                        {holders.map((h) => {
+                          const u = userById.get(h.userId);
+                          return (
+                            <View key={h.userId} style={styles.holderChip}>
+                              <Text style={styles.holder} numberOfLines={1}>
+                                {u ? u.email : t('responsibilities.unknownUser')}
+                              </Text>
+                              <Pressable
+                                onPress={() => confirmRevoke(type, h.userId)}
+                                hitSlop={8}
+                                disabled={revokeMutation.isPending}
+                              >
+                                <Ionicons
+                                  name="close"
+                                  size={15}
+                                  color="#94a3b8"
+                                />
+                              </Pressable>
+                            </View>
+                          );
+                        })}
+                      </View>
+                    )}
+                  </View>
+                );
+              })}
+            </View>
+          </View>
+        ))}
+
       </ScrollView>
 
       <Sheet
@@ -232,6 +278,32 @@ const styles = StyleSheet.create({
     paddingBottom: 4,
     lineHeight: 19,
   },
+  group: { marginTop: 4 },
+  groupLabel: {
+    fontSize: 12,
+    color: '#64748b',
+    marginLeft: 16,
+    marginTop: 14,
+    marginBottom: 6,
+  },
+  rowTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 10,
+  },
+  holderWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 8 },
+  holderChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#f1f5f9',
+    borderRadius: 999,
+    paddingLeft: 11,
+    paddingRight: 8,
+    paddingVertical: 5,
+    maxWidth: '100%',
+  },
   card: {
     backgroundColor: '#fff',
     borderTopWidth: 1,
@@ -248,9 +320,19 @@ const styles = StyleSheet.create({
   },
   rowBorder: { borderTopWidth: 1, borderTopColor: '#f1f5f9' },
   rowMain: { flex: 1 },
-  roleTitle: { fontSize: 15, color: '#0f172a', fontWeight: '500', fontFamily: 'Manrope_500Medium',},
-  holder: { fontSize: 12, color: '#0369a1', marginTop: 2 },
-  holderUnassigned: { color: '#94a3b8', fontStyle: 'italic' },
+  roleTitle: {
+    flex: 1,
+    fontSize: 14.5,
+    color: '#0f172a',
+    fontFamily: 'Manrope_600SemiBold',
+  },
+  holder: { fontSize: 12.5, color: '#334155', flexShrink: 1 },
+  holderUnassigned: {
+    fontSize: 12.5,
+    color: '#94a3b8',
+    fontStyle: 'italic',
+    marginTop: 8,
+  },
   holderRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -259,9 +341,13 @@ const styles = StyleSheet.create({
   },
   revokeBtn: { padding: 4 },
   assignBtn: {
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    paddingLeft: 8,
+    paddingRight: 11,
+    paddingVertical: 6,
+    borderRadius: 999,
     backgroundColor: '#e0f2fe',
   },
   assignBtnPressed: { backgroundColor: '#bae6fd' },

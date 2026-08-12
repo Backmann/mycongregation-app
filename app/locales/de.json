@@ -1153,7 +1153,14 @@
       "cleaning_coordinator": "Reinigungskoordinator",
       "duties_coordinator": "Aufgabenkoordinator",
       "service_overseer_assistant": "Assistent des Dienstaufsehers",
-      "attendance_recorder": "Besuchszahlen"
+      "attendance_recorder": "Besuchszahlen",
+      "body_coordinator_assistant": "Assistent des Koordinators"
+    },
+    "groups": {
+      "body": "Ältestenschaft",
+      "meeting": "Zusammenkünfte",
+      "service": "Dienst",
+      "house": "Haus und Konten"
     }
   },
   "meetingSettings": {

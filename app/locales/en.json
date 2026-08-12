@@ -1148,12 +1148,19 @@
       "adviser": "Adviser",
       "secretary": "Secretary",
       "service_overseer": "Service Overseer",
-      "accounts_servant": "Accounts Servant",
+      "accounts_servant": "Accounts servant",
       "public_witnessing": "Public Witnessing Overseer",
       "cleaning_coordinator": "Cleaning Coordinator",
       "duties_coordinator": "Duties coordinator",
       "service_overseer_assistant": "Service overseer's assistant",
-      "attendance_recorder": "Attendance record"
+      "attendance_recorder": "Attendance record",
+      "body_coordinator_assistant": "Assistant to the body coordinator"
+    },
+    "groups": {
+      "body": "Body of elders",
+      "meeting": "Meetings",
+      "service": "Ministry",
+      "house": "Upkeep and accounts"
     }
   },
   "meetingSettings": {
