@@ -181,11 +181,9 @@ export default function TasksScreen() {
       .map((p) => nameOf(p.id))
       .filter(Boolean);
     if (names.length === 0) return nameOf(task.assigneePublisherId) ?? '';
-    if (names.length === 1) return names[0] as string;
-    return t('tasks.assignee.andMore', {
-      name: names[0],
-      count: names.length - 1,
-    });
+    // All of them, named. «и ещё 1» saves a line and costs the reader the one
+    // thing he came for: who is doing this. The row wraps if it must.
+    return names.join(', ');
   };
 
   const chip = (text: string, bg: string, fg: string, key: string) => (
@@ -312,7 +310,19 @@ export default function TasksScreen() {
         key: 'later',
         items: list.filter((x) => !x.dueDate || x.dueDate > weekEnd),
       },
-    ].filter((g) => g.items.length > 0);
+    ]
+      .map((g) => ({
+        ...g,
+        // In date order inside each group, and undated last: a list a person
+        // reads top to bottom should run the way time does.
+        items: [...g.items].sort((a, b) => {
+          if (!a.dueDate && !b.dueDate) return 0;
+          if (!a.dueDate) return 1;
+          if (!b.dueDate) return -1;
+          return a.dueDate.localeCompare(b.dueDate);
+        }),
+      }))
+      .filter((g) => g.items.length > 0);
   };
 
   const mine = open.filter((x) => {
@@ -771,7 +781,7 @@ const styles = StyleSheet.create({
   tag: { borderRadius: 999, paddingHorizontal: 9, paddingVertical: 3 },
   tagText: { fontSize: 12 },
   whoRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 9 },
-  who: { fontSize: 13, color: '#64748b' },
+  who: { fontSize: 13, color: '#64748b', flex: 1 },
   whoBody: { color: '#0369a1' },
   cardLate: { borderColor: '#F09595' },
   card: {
