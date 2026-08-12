@@ -2735,7 +2735,8 @@
       "care": "Fürsorge",
       "organisation": "Organisation",
       "accounts": "Konten",
-      "other": "Sonstiges"
+      "other": "Sonstiges",
+      "announcements": "Bekanntmachungen"
     },
     "form": {
       "new": "Neue Aufgabe",
@@ -2750,7 +2751,9 @@
       "deleteTitle": "Aufgabe löschen?",
       "deleteBody": "Der Eintrag wird entfernt und kann nicht wiederhergestellt werden.",
       "meeting": "Für welche Zusammenkunft",
-      "noMeeting": "Noch keine"
+      "noMeeting": "Noch keine",
+      "assigneePeople": "Brüder",
+      "bodyHint": "Die Mitglieder ergeben sich aus den aktuellen Zuweisungen: Wechselt der Sekretär, geht die Aufgabe mit dem Amt über."
     },
     "agenda": {
       "title": "Tagesordnung",
@@ -2778,6 +2781,32 @@
       "months_one": "In {{count}} Monat",
       "months_other": "In {{count}} Monaten",
       "no": "Nicht wiederholen"
+    },
+    "newShort": "Aufgabe",
+    "recurring": "Wiederkehrend",
+    "dueToday": "Heute",
+    "dueTomorrow": "Morgen",
+    "dueInDays_one": "In {{count}} Tag",
+    "dueInDays_other": "In {{count}} Tagen",
+    "lateByDays_one": "{{count}} Tag überfällig",
+    "lateByDays_other": "{{count}} Tage überfällig",
+    "noneDone": "Noch nichts erledigt",
+    "noneMine": "Auf dich ist nichts eingetragen",
+    "tabs": {
+      "open": "Offen",
+      "mine": "Meine",
+      "done": "Erledigt"
+    },
+    "groups": {
+      "overdue": "Überfällig",
+      "soon": "Diese Woche",
+      "later": "Später"
+    },
+    "assignee": {
+      "serviceCommittee": "Dienstkomitee",
+      "bodyOfElders": "Ältestenschaft",
+      "andMore_one": "{{name}} und {{count}} weitere",
+      "andMore_other": "{{name}} und {{count}} weitere"
     }
   },
   "pioneerSchool": {

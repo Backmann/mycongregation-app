@@ -3401,8 +3401,21 @@ export type TaskArea =
   | 'teaching'
   | 'care'
   | 'organisation'
+  | 'announcements'
   | 'accounts'
   | 'other';
+
+/**
+ * Whom a task is for.
+ *
+ * The two bodies carry no names: the server resolves their members from
+ * current responsibilities every time, so a task follows the office rather
+ * than the brother who held it when it was written.
+ */
+export type TaskAssigneeKind =
+  | 'people'
+  | 'service_committee'
+  | 'body_of_elders';
 
 export interface ElderTask {
   id: string;
@@ -3410,7 +3423,16 @@ export interface ElderTask {
   details: string | null;
   area: TaskArea;
   assigneePublisherId: string | null;
+  assigneeKind: TaskAssigneeKind;
+  /** Named brothers — empty for the two bodies, which are looked up. */
+  assignees?: { id: string; firstName?: string; lastName?: string }[];
+  /** Who it actually reaches, resolved by the server for the bodies too. */
+  members?: { id: string; firstName?: string; lastName?: string }[];
   dueDate: string | null;
+  /** «19:00» — what «two hours before» counts back from. */
+  dueTime: string | null;
+  /** Set only on the recurring things the app creates itself. */
+  kind: 'accounts_audit' | 'pioneer_service_review' | 'service_year_review' | null;
   status: 'open' | 'done';
   doneAt: string | null;
   eldersMeetingId: string | null;
@@ -3423,7 +3445,13 @@ export interface UpsertTaskInput {
   details?: string | null;
   area?: TaskArea;
   assigneePublisherId?: string | null;
+  assigneeKind?: TaskAssigneeKind;
+  assigneePublisherIds?: string[];
   dueDate?: string | null;
+  dueTime?: string | null;
+  /** A period instead of a date; the server turns it into one on save. */
+  dueInDays?: number;
+  dueInMonths?: number;
   eldersMeetingId?: string | null;
   status?: 'open' | 'done';
 }

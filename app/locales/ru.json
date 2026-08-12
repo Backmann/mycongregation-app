@@ -2751,7 +2751,8 @@
       "care": "Забота",
       "organisation": "Организация",
       "accounts": "Счета",
-      "other": "Прочее"
+      "other": "Прочее",
+      "announcements": "Объявления"
     },
     "form": {
       "new": "Новая задача",
@@ -2766,7 +2767,9 @@
       "deleteTitle": "Удалить задачу?",
       "deleteBody": "Запись будет удалена без возможности вернуть.",
       "meeting": "На какую встречу совета",
-      "noMeeting": "Пока никуда"
+      "noMeeting": "Пока никуда",
+      "assigneePeople": "Братья",
+      "bodyHint": "Состав берётся из назначений на текущий момент: сменится секретарь — задача перейдёт к новому."
     },
     "agenda": {
       "title": "Повестка",
@@ -2796,6 +2799,38 @@
       "months_many": "Через {{count}} месяцев",
       "months_other": "Через {{count}} месяцев",
       "no": "Не повторять"
+    },
+    "newShort": "Задача",
+    "recurring": "Повторяется",
+    "dueToday": "Сегодня",
+    "dueTomorrow": "Завтра",
+    "dueInDays_one": "Через {{count}} день",
+    "dueInDays_few": "Через {{count}} дня",
+    "dueInDays_many": "Через {{count}} дней",
+    "dueInDays_other": "Через {{count}} дня",
+    "lateByDays_one": "Просрочено на {{count}} день",
+    "lateByDays_few": "Просрочено на {{count}} дня",
+    "lateByDays_many": "Просрочено на {{count}} дней",
+    "lateByDays_other": "Просрочено на {{count}} дня",
+    "noneDone": "Пока ничего не сделано",
+    "noneMine": "На вас ничего не записано",
+    "tabs": {
+      "open": "Открытые",
+      "mine": "Мои",
+      "done": "Сделанные"
+    },
+    "groups": {
+      "overdue": "Просрочено",
+      "soon": "На этой неделе",
+      "later": "Позже"
+    },
+    "assignee": {
+      "serviceCommittee": "Служебный комитет",
+      "bodyOfElders": "Совет старейшин",
+      "andMore_one": "{{name}} и ещё {{count}}",
+      "andMore_few": "{{name}} и ещё {{count}}",
+      "andMore_many": "{{name}} и ещё {{count}}",
+      "andMore_other": "{{name}} и ещё {{count}}"
     }
   },
   "pioneerSchool": {

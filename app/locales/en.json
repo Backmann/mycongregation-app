@@ -2735,7 +2735,8 @@
       "care": "Care",
       "organisation": "Organisation",
       "accounts": "Accounts",
-      "other": "Other"
+      "other": "Other",
+      "announcements": "Announcements"
     },
     "form": {
       "new": "New task",
@@ -2750,7 +2751,9 @@
       "deleteTitle": "Delete this task?",
       "deleteBody": "The record will be removed and cannot be brought back.",
       "meeting": "On which elders’ meeting",
-      "noMeeting": "Not yet"
+      "noMeeting": "Not yet",
+      "assigneePeople": "Brothers",
+      "bodyHint": "The members are read from current assignments: replace the secretary and the task moves with the office."
     },
     "agenda": {
       "title": "Agenda",
@@ -2778,6 +2781,32 @@
       "months_one": "In {{count}} month",
       "months_other": "In {{count}} months",
       "no": "Do not repeat"
+    },
+    "newShort": "Task",
+    "recurring": "Recurring",
+    "dueToday": "Today",
+    "dueTomorrow": "Tomorrow",
+    "dueInDays_one": "In {{count}} day",
+    "dueInDays_other": "In {{count}} days",
+    "lateByDays_one": "{{count}} day late",
+    "lateByDays_other": "{{count}} days late",
+    "noneDone": "Nothing done yet",
+    "noneMine": "Nothing is on you",
+    "tabs": {
+      "open": "Open",
+      "mine": "Mine",
+      "done": "Done"
+    },
+    "groups": {
+      "overdue": "Overdue",
+      "soon": "This week",
+      "later": "Later"
+    },
+    "assignee": {
+      "serviceCommittee": "Service committee",
+      "bodyOfElders": "Body of elders",
+      "andMore_one": "{{name}} and {{count}} more",
+      "andMore_other": "{{name}} and {{count}} more"
     }
   },
   "pioneerSchool": {

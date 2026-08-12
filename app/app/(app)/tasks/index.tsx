@@ -11,13 +11,14 @@ import {
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import { router } from 'expo-router';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ru';
 import 'dayjs/locale/de';
 import {
-  tasksApi,
+  TaskAssigneeKind,
+  meApi,
   publishersApi,
+  tasksApi,
   type ElderTask,
   type TaskArea,
 } from '../../../lib/api';
@@ -31,6 +32,7 @@ const AREAS: TaskArea[] = [
   'teaching',
   'care',
   'organisation',
+  'announcements',
   'accounts',
   'other',
 ];
@@ -41,8 +43,29 @@ const AREA_TINT: Record<TaskArea, string> = {
   teaching: '#BA7517',
   care: '#7F77DD',
   organisation: '#185FA5',
+  announcements: '#378ADD',
   accounts: '#0e7490',
   other: '#64748b',
+};
+
+/** The same seven, as a soft ground and a legible ink for a label. */
+const AREA_BG: Record<TaskArea, string> = {
+  ministry: '#E1F5EE',
+  teaching: '#EEEDFE',
+  care: '#FBEAF0',
+  organisation: '#FAEEDA',
+  announcements: '#E6F1FB',
+  accounts: '#EAF3DE',
+  other: '#f1f5f9',
+};
+const AREA_FG: Record<TaskArea, string> = {
+  ministry: '#0F6E56',
+  teaching: '#534AB7',
+  care: '#993556',
+  organisation: '#854F0B',
+  announcements: '#0C447C',
+  accounts: '#3B6D11',
+  other: '#475569',
 };
 
 /**
@@ -57,7 +80,7 @@ export default function TasksScreen() {
   const { t, i18n } = useTranslation();
   const qc = useQueryClient();
   const [editing, setEditing] = useState<ElderTask | 'new' | null>(null);
-  const [showDone, setShowDone] = useState(false);
+  const [tab, setTab] = useState<'open' | 'mine' | 'done'>('open');
 
   const openQuery = useQuery({
     queryKey: ['tasks', 'open'],
@@ -66,8 +89,19 @@ export default function TasksScreen() {
   const doneQuery = useQuery({
     queryKey: ['tasks', 'done'],
     queryFn: () => tasksApi.list('done'),
-    enabled: showDone,
+    // Not fetched until the tab is opened: the done list is the long one and
+    // most visits never look at it.
+    enabled: tab === 'done',
   });
+  // Which card is mine — needed for «Мои». /me/publisher is the one honest
+  // way to ask: the roster hides userId from anybody without rights.
+  const meQuery = useQuery({
+    queryKey: ['me', 'publisher'],
+    queryFn: () => meApi.publisher(),
+    retry: false,
+  });
+  const myPublisherId = meQuery.data?.publisher?.id ?? null;
+
   const publishersQuery = useQuery({
     queryKey: ['publishers', 'all'],
     queryFn: () => publishersApi.list({}),
@@ -116,21 +150,60 @@ export default function TasksScreen() {
   const fmt = (iso: string) => dayjs(iso).locale(i18n.language).format('D MMMM');
 
   const open = openQuery.data ?? [];
-  const overdue = open.filter((x) => !!x.dueDate && x.dueDate < today);
+
+  /**
+   * How far off a deadline is, in words.
+   *
+   * «Срок: 12 августа» asks the reader to work out what that means today. The
+   * distance is the thing he actually wants, so the distance is what is
+   * written; the date itself is still there for anybody who needs it.
+   */
+  const whenLabel = (task: ElderTask): string => {
+    if (!task.dueDate) return '';
+    const days = dayjs(task.dueDate).diff(dayjs(today), 'day');
+    if (days < 0) return t('tasks.lateByDays', { count: -days });
+    if (days === 0) return t('tasks.dueToday');
+    if (days === 1) return t('tasks.dueTomorrow');
+    if (days <= 7) return t('tasks.dueInDays', { count: days });
+    return fmt(task.dueDate) + (task.dueTime ? ` · ${task.dueTime}` : '');
+  };
+
+  /** Whom it reaches, said the way a person would say it. */
+  const whoLabel = (task: ElderTask): string => {
+    if (task.assigneeKind === 'service_committee') {
+      return t('tasks.assignee.serviceCommittee');
+    }
+    if (task.assigneeKind === 'body_of_elders') {
+      return t('tasks.assignee.bodyOfElders');
+    }
+    const names = (task.assignees ?? [])
+      .map((p) => nameOf(p.id))
+      .filter(Boolean);
+    if (names.length === 0) return nameOf(task.assigneePublisherId) ?? '';
+    if (names.length === 1) return names[0] as string;
+    return t('tasks.assignee.andMore', {
+      name: names[0],
+      count: names.length - 1,
+    });
+  };
+
+  const chip = (text: string, bg: string, fg: string, key: string) => (
+    <View key={key} style={[styles.tag, { backgroundColor: bg }]}>
+      <Text style={[styles.tagText, { color: fg }]}>{text}</Text>
+    </View>
+  );
 
   const row = (task: ElderTask) => {
     const late = !!task.dueDate && task.dueDate < today && task.status === 'open';
-    const who = nameOf(task.assigneePublisherId);
+    const who = whoLabel(task);
+    const when = whenLabel(task);
     return (
       <Pressable
         key={task.id}
-        style={styles.card}
+        style={[styles.card, late && styles.cardLate]}
         onPress={() => setEditing(task)}
       >
         <View style={styles.cardHead}>
-          <View
-            style={[styles.areaDot, { backgroundColor: AREA_TINT[task.area] }]}
-          />
           <Text
             style={[styles.title, task.status === 'done' && styles.titleDone]}
           >
@@ -149,77 +222,155 @@ export default function TasksScreen() {
           </Pressable>
         </View>
 
-        <Text style={styles.area}>{t(`tasks.areas.${task.area}`)}</Text>
+        {/* The area was a pale word under the title and got lost. A tinted
+            label is read before the sentence is. */}
+        <View style={styles.tagRow}>
+          {chip(
+            t(`tasks.areas.${task.area}`),
+            AREA_BG[task.area],
+            AREA_FG[task.area],
+            'area',
+          )}
+          {when
+            ? chip(
+                when,
+                late ? '#FCEBEB' : '#f1f5f9',
+                late ? '#A32D2D' : '#475569',
+                'when',
+              )
+            : null}
+          {task.kind
+            ? chip(t('tasks.recurring'), '#f1f5f9', '#475569', 'kind')
+            : null}
+        </View>
 
         {task.details ? (
-          <Text style={styles.details} numberOfLines={3}>
+          <Text style={styles.details} numberOfLines={2}>
             {task.details}
           </Text>
         ) : null}
 
-        <View style={styles.metaRow}>
-          {task.dueDate ? (
-            <Text style={[styles.meta, late && styles.metaLate]}>
-              {late
-                ? t('tasks.overdueSince', { date: fmt(task.dueDate) })
-                : t('tasks.due', { date: fmt(task.dueDate) })}
+        {who ? (
+          <View style={styles.whoRow}>
+            <Ionicons
+              name={task.assigneeKind === 'people' ? 'person-outline' : 'people-outline'}
+              size={14}
+              color={task.assigneeKind === 'people' ? '#64748b' : '#0369a1'}
+            />
+            <Text
+              style={[
+                styles.who,
+                task.assigneeKind !== 'people' && styles.whoBody,
+              ]}
+            >
+              {who}
             </Text>
-          ) : null}
-          {who ? <Text style={styles.meta}>{who}</Text> : null}
-        </View>
+          </View>
+        ) : null}
       </Pressable>
     );
   };
 
+  /**
+   * Three groups, in the order a person worries about them.
+   *
+   * A flat list makes the reader compare dates himself; a heading answers
+   * «when» before he starts. Empty groups are left out — here a heading with
+   * nothing under it would say nothing, unlike the agenda, where «nothing is
+   * overdue» is worth reading.
+   */
+  const groups = (list: ElderTask[]) => {
+    const weekEnd = dayjs(today).add(7, 'day').format('YYYY-MM-DD');
+    return [
+      {
+        key: 'overdue',
+        items: list.filter((x) => !!x.dueDate && x.dueDate < today),
+      },
+      {
+        key: 'soon',
+        items: list.filter(
+          (x) => !!x.dueDate && x.dueDate >= today && x.dueDate <= weekEnd,
+        ),
+      },
+      {
+        key: 'later',
+        items: list.filter((x) => !x.dueDate || x.dueDate > weekEnd),
+      },
+    ].filter((g) => g.items.length > 0);
+  };
+
+  const mine = open.filter((x) => {
+    if (!myPublisherId) return false;
+    if (x.assigneeKind === 'people') {
+      return (
+        x.assignees?.some((p) => p.id === myPublisherId) ||
+        x.assigneePublisherId === myPublisherId
+      );
+    }
+    return x.members?.some((p) => p.id === myPublisherId) ?? false;
+  });
+
+  const shown = tab === 'mine' ? mine : open;
+
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.content}>
-        {/* Facts, no scolding — and gone entirely when nothing is late. */}
-        {overdue.length > 0 ? (
-          <View style={styles.lateCard}>
-            <Ionicons name="alert-circle-outline" size={15} color="#92400e" />
-            <Text style={styles.lateText}>
-              {t('tasks.overdueCount', { count: overdue.length })}
+      {/* Was a collapsed «Сделанные» at the foot of the page, over an area
+          that looked empty whether it was empty or merely shut. Three counts
+          at the top answer the question the header only posed. */}
+      <View style={styles.tabs}>
+        {(['open', 'mine', 'done'] as const).map((k) => (
+          <Pressable
+            key={k}
+            style={[styles.tab, tab === k && styles.tabOn]}
+            onPress={() => setTab(k)}
+          >
+            <Text style={[styles.tabText, tab === k && styles.tabTextOn]}>
+              {t(`tasks.tabs.${k}`)}
+              {k === 'open' && open.length > 0 ? ` ${open.length}` : ''}
+              {k === 'mine' && mine.length > 0 ? ` ${mine.length}` : ''}
             </Text>
-          </View>
-        ) : null}
+          </Pressable>
+        ))}
+      </View>
 
-        {openQuery.isLoading ? (
+      <ScrollView contentContainerStyle={styles.content}>
+        {tab === 'done' ? (
+          doneQuery.isLoading ? (
+            <ActivityIndicator style={{ marginTop: 32 }} />
+          ) : (doneQuery.data ?? []).length === 0 ? (
+            <Text style={styles.empty}>{t('tasks.noneDone')}</Text>
+          ) : (
+            (doneQuery.data ?? []).map(row)
+          )
+        ) : openQuery.isLoading ? (
           <ActivityIndicator style={{ marginTop: 32 }} />
-        ) : open.length === 0 ? (
-          <Text style={styles.empty}>{t('tasks.empty')}</Text>
+        ) : shown.length === 0 ? (
+          <Text style={styles.empty}>
+            {tab === 'mine' ? t('tasks.noneMine') : t('tasks.empty')}
+          </Text>
         ) : (
-          open.map(row)
+          groups(shown).map((g) => (
+            <View key={g.key}>
+              <Text
+                style={[
+                  styles.groupLabel,
+                  g.key === 'overdue' && styles.groupLate,
+                ]}
+              >
+                {t(`tasks.groups.${g.key}`)}
+              </Text>
+              {g.items.map(row)}
+            </View>
+          ))
         )}
 
-        <Pressable
-          style={styles.doneToggle}
-          onPress={() => setShowDone((v) => !v)}
-        >
-          <Ionicons
-            name={showDone ? 'chevron-up' : 'chevron-down'}
-            size={16}
-            color="#0369a1"
-          />
-          <Text style={styles.doneToggleText}>{t('tasks.doneSection')}</Text>
-        </Pressable>
-        {showDone
-          ? doneQuery.isLoading
-            ? <ActivityIndicator />
-            : (doneQuery.data ?? []).map(row)
-          : null}
       </ScrollView>
 
-      <Pressable
-        style={styles.agendaBtn}
-        onPress={() => router.push('/tasks/agenda' as never)}
-      >
-        <Ionicons name="list-outline" size={16} color="#0369a1" />
-        <Text style={styles.agendaText}>{t('tasks.agenda.open')}</Text>
-      </Pressable>
-
+      {/* A bare plus does not say what it makes, and two floating buttons at
+          the same corner compete. The agenda moves to the header. */}
       <Pressable style={styles.fab} onPress={() => setEditing('new')}>
-        <Ionicons name="add" size={26} color="#ffffff" />
+        <Ionicons name="add" size={20} color="#ffffff" />
+        <Text style={styles.fabText}>{t('tasks.newShort')}</Text>
       </Pressable>
 
       {/* No recurrence ENGINE: a schedule of repeats brings its own life of
@@ -281,10 +432,13 @@ function TaskForm({
   const [title, setTitle] = useState('');
   const [details, setDetails] = useState('');
   const [area, setArea] = useState<TaskArea>('other');
-  const [assignee, setAssignee] = useState<string | null>(null);
+  const [kind, setKind] = useState<TaskAssigneeKind>('people');
+  const [people, setPeople] = useState<string[]>([]);
   const [dueDate, setDueDate] = useState<string | null>(null);
+  const [dueTime, setDueTime] = useState<string>('');
   const [meetingId, setMeetingId] = useState<string | null>(null);
   const [loadedFor, setLoadedFor] = useState<string | null>(null);
+
 
   const meetingsQuery = useQuery({
     queryKey: ['tasks', 'meetings'],
@@ -299,7 +453,15 @@ function TaskForm({
     setTitle(editing?.title ?? '');
     setDetails(editing?.details ?? '');
     setArea(editing?.area ?? 'other');
-    setAssignee(editing?.assigneePublisherId ?? null);
+    setKind(editing?.assigneeKind ?? 'people');
+    setPeople(
+      editing?.assignees?.length
+        ? editing.assignees.map((p) => p.id)
+        : editing?.assigneePublisherId
+          ? [editing.assigneePublisherId]
+          : [],
+    );
+    setDueTime(editing?.dueTime ?? '');
     setDueDate(editing?.dueDate ?? null);
     setMeetingId(editing?.eldersMeetingId ?? null);
   }
@@ -311,7 +473,9 @@ function TaskForm({
         title: title.trim(),
         details: details.trim() || null,
         area,
-        assigneePublisherId: assignee,
+        assigneeKind: kind,
+        assigneePublisherIds: kind === 'people' ? people : [],
+        dueTime: dueTime.trim() || null,
         dueDate,
         eldersMeetingId: meetingId,
       };
@@ -391,13 +555,74 @@ function TaskForm({
             rather than by a person, and demanding a name at the moment of
             writing breeds assignments made only to satisfy the form. */}
         <Text style={styles.label}>{t('tasks.form.assignee')}</Text>
-        <PublisherSelector
-          boxed
-          label={t('tasks.form.assignee')}
-          value={assignee}
-          onChange={setAssignee}
-          absenceDate={dueDate ?? undefined}
-        />
+        {/* Whom it is for, in the three shapes a task actually takes.
+            The two bodies carry no names on purpose: their members are read
+            from current assignments each time, so replacing the secretary
+            moves the task with the office rather than leaving it on the
+            brother who happened to hold it in May. */}
+        <Text style={styles.label}>{t('tasks.form.assignee')}</Text>
+        <View style={styles.chipRow}>
+          {(['people', 'service_committee', 'body_of_elders'] as const).map(
+            (k) => (
+              <Pressable
+                key={k}
+                style={[styles.chip, kind === k && styles.chipOnTeal]}
+                onPress={() => setKind(k)}
+              >
+                <Text
+                  style={[styles.chipText, kind === k && styles.chipTextOn]}
+                >
+                  {k === 'people'
+                    ? t('tasks.form.assigneePeople')
+                    : t(
+                        `tasks.assignee.${
+                          k === 'service_committee'
+                            ? 'serviceCommittee'
+                            : 'bodyOfElders'
+                        }`,
+                      )}
+                </Text>
+              </Pressable>
+            ),
+          )}
+        </View>
+
+        {kind === 'people' ? (
+          <>
+            {people.map((id, i) => (
+              <PublisherSelector
+                key={`${id}-${i}`}
+                boxed
+                label=""
+                value={id}
+                genderFilter="brother"
+                onChange={(next) =>
+                  setPeople((list) =>
+                    next
+                      ? list.map((v, j) => (j === i ? next : v))
+                      : list.filter((_, j) => j !== i),
+                  )
+                }
+                absenceDate={dueDate ?? undefined}
+              />
+            ))}
+            {/* One more slot, empty, rather than a count to set first: adding
+                a brother is the common act and it should take one tap. */}
+            <PublisherSelector
+              key={`add-${people.length}`}
+              boxed
+              label=""
+              value={null}
+              genderFilter="brother"
+              onChange={(next) =>
+                next && setPeople((list) => [...list, next])
+              }
+              absenceDate={dueDate ?? undefined}
+            />
+          </>
+        ) : (
+          <Text style={styles.hint}>{t('tasks.form.bodyHint')}</Text>
+        )}
 
         {/* Putting it on a meeting is what turns a note into work: the body
             will look at this list that evening whether or not anyone
@@ -461,6 +686,31 @@ function TaskForm({
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f1f5f9' },
+  tabs: {
+    flexDirection: 'row',
+    gap: 6,
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 4,
+  },
+  tab: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 7,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  tabOn: { backgroundColor: '#0e7490', borderColor: '#0e7490' },
+  tabText: { fontSize: 13, color: '#64748b' },
+  tabTextOn: { color: '#fff', fontFamily: 'Manrope_600SemiBold' },
+  groupLabel: {
+    fontSize: 12,
+    color: '#64748b',
+    marginTop: 6,
+    marginBottom: 6,
+  },
+  groupLate: { color: '#A32D2D' },
   content: { padding: 16, paddingBottom: 96, gap: 10 },
   lateCard: {
     flexDirection: 'row',
@@ -473,6 +723,13 @@ const styles = StyleSheet.create({
     borderColor: '#fde68a',
   },
   lateText: { fontSize: 13.5, color: '#78350f', fontWeight: '600' },
+  tagRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 8 },
+  tag: { borderRadius: 999, paddingHorizontal: 9, paddingVertical: 3 },
+  tagText: { fontSize: 12 },
+  whoRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 9 },
+  who: { fontSize: 13, color: '#64748b' },
+  whoBody: { color: '#0369a1' },
+  cardLate: { borderColor: '#F09595' },
   card: { backgroundColor: '#fff', borderRadius: 12, padding: 14, gap: 5 },
   cardHead: { flexDirection: 'row', alignItems: 'center', gap: 9 },
   areaDot: { width: 9, height: 9, borderRadius: 999 },
@@ -508,13 +765,15 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 18,
     bottom: 22,
-    width: 54,
-    height: 54,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 7,
+    paddingHorizontal: 18,
+    paddingVertical: 13,
     borderRadius: 999,
     backgroundColor: '#0e7490',
-    alignItems: 'center',
-    justifyContent: 'center',
   },
+  fabText: { color: '#fff', fontSize: 14, fontFamily: 'Manrope_600SemiBold' },
   agendaBtn: {
     position: 'absolute',
     left: 18,
@@ -548,6 +807,18 @@ const styles = StyleSheet.create({
     fontFamily: 'Manrope_700Bold',
   },
   formBody: { padding: 16, gap: 6, paddingBottom: 32 },
+  warn: {
+    fontSize: 13,
+    color: '#92400e',
+    backgroundColor: '#fffbeb',
+    borderColor: '#fde68a',
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 10,
+    marginTop: 8,
+    lineHeight: 18,
+  },
+  hint: { fontSize: 13, color: '#64748b', marginTop: 6, lineHeight: 18 },
   label: {
     fontSize: 12,
     color: '#64748b',
