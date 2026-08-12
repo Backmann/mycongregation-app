@@ -2232,6 +2232,11 @@ export const meApi = {
     );
     return data;
   },
+  /** The open tasks put on ME — the tasks section itself stays with elders. */
+  async tasks(): Promise<ElderTask[]> {
+    const { data } = await api.get<ElderTask[]>('/me/tasks');
+    return data;
+  },
   async publisher(): Promise<MyPublisherIdentityResponse> {
     const { data } =
       await api.get<MyPublisherIdentityResponse>('/me/publisher');
@@ -3268,6 +3273,26 @@ export interface AppVersionInfo {
 export const appVersionApi = {
   async get(): Promise<AppVersionInfo> {
     const { data } = await api.get<AppVersionInfo>('/app-version');
+    return data;
+  },
+};
+
+/**
+ * Why a brother must not audit the accounts, per brother.
+ *
+ * Asked as the choice is made, so the answer arrives before the save rather
+ * than as a refusal after it. Two of the three are refusals and one is advice.
+ */
+export const taskRulesApi = {
+  async auditObjections(
+    publisherIds: string[],
+  ): Promise<Record<string, 'isSecretary' | 'keepsAccounts' | 'didPrevious'>> {
+    if (publisherIds.length === 0) return {};
+    const { data } = await api.get<
+      Record<string, 'isSecretary' | 'keepsAccounts' | 'didPrevious'>
+    >('/tasks/audit-objections', {
+      params: { publisherIds: publisherIds.join(',') },
+    });
     return data;
   },
 };

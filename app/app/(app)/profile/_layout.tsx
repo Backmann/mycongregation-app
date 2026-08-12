@@ -36,6 +36,10 @@ export default function ProfileLayout() {
         options={{ title: t('notificationPrefs.title') }}
       />
       <Stack.Screen
+        name="my-tasks"
+        options={{ title: t('tasks.mine.title') }}
+      />
+      <Stack.Screen
         name="public-talks"
         options={{ title: t('profile.publicTalks') }}
       />

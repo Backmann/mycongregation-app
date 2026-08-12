@@ -2753,7 +2753,12 @@
       "meeting": "On which elders’ meeting",
       "noMeeting": "Not yet",
       "assigneePeople": "Brothers",
-      "bodyHint": "The members are read from current assignments: replace the secretary and the task moves with the office."
+      "bodyHint": "The members are read from current assignments: replace the secretary and the task moves with the office.",
+      "audit": {
+        "isSecretary": "The secretary must not audit the accounts. Choose another brother.",
+        "keepsAccounts": "The brother who keeps the accounts must not audit them. Choose another.",
+        "didPrevious": "He did the previous check. Two running is best avoided — but if there is nobody else, leave it."
+      }
     },
     "agenda": {
       "title": "Agenda",
@@ -2807,6 +2812,17 @@
       "bodyOfElders": "Body of elders",
       "andMore_one": "{{name}} and {{count}} more",
       "andMore_other": "{{name}} and {{count}} more"
+    },
+    "calendar": {
+      "accounts_audit": "Accounts check",
+      "pioneer_service_review": "Review of the pioneers’ ministry",
+      "service_year_review": "End of the service year"
+    },
+    "mine": {
+      "title": "My tasks",
+      "count_one": "{{count}} task",
+      "count_other": "{{count}} tasks",
+      "readOnly": "The body of elders marks these done — this is a view only."
     }
   },
   "pioneerSchool": {

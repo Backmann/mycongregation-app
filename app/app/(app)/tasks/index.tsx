@@ -18,6 +18,7 @@ import {
   TaskAssigneeKind,
   meApi,
   publishersApi,
+  taskRulesApi,
   tasksApi,
   type ElderTask,
   type TaskArea,
@@ -193,6 +194,21 @@ export default function TasksScreen() {
     </View>
   );
 
+  /**
+   * What a task is called.
+   *
+   * The recurring ones carry no title of their own: the app creates them by
+   * itself, and a congregation may read German. Storing a Russian sentence
+   * would have been wrong for them and unfixable afterwards, so what is stored
+   * is the KIND and the reader's own app writes the words.
+   */
+  const titleOf = (task: ElderTask): string =>
+    task.kind
+      ? t(`tasks.calendar.${task.kind}`, {
+          period: task.dueDate ? dayjs(task.dueDate).format('YYYY') : '',
+        })
+      : task.title;
+
   const row = (task: ElderTask) => {
     const late = !!task.dueDate && task.dueDate < today && task.status === 'open';
     const who = whoLabel(task);
@@ -207,7 +223,7 @@ export default function TasksScreen() {
           <Text
             style={[styles.title, task.status === 'done' && styles.titleDone]}
           >
-            {task.title}
+            {titleOf(task)}
           </Text>
           <Pressable
             hitSlop={10}
@@ -439,6 +455,25 @@ function TaskForm({
   const [meetingId, setMeetingId] = useState<string | null>(null);
   const [loadedFor, setLoadedFor] = useState<string | null>(null);
 
+  /**
+   * Why a chosen brother must not audit the accounts.
+   *
+   * Asked as the choice is made rather than at save time — a refusal after the
+   * fact makes a person redo work he had no way of knowing was wrong. Two of
+   * the three are refusals and one is advice, and the wording says which:
+   * sometimes there is nobody else to ask, and the body decides.
+   */
+  const objectionsQuery = useQuery({
+    queryKey: ['tasks', 'audit-objections', people.join(',')],
+    queryFn: () => taskRulesApi.auditObjections(people),
+    enabled: area === 'accounts' && people.length > 0,
+  });
+  const auditWarning = (() => {
+    const found = objectionsQuery.data ?? {};
+    const first = people.find((id) => found[id]);
+    return first ? t(`tasks.form.audit.${found[first]}`) : null;
+  })();
+
 
   const meetingsQuery = useQuery({
     queryKey: ['tasks', 'meetings'],
@@ -608,6 +643,9 @@ function TaskForm({
             ))}
             {/* One more slot, empty, rather than a count to set first: adding
                 a brother is the common act and it should take one tap. */}
+            {auditWarning ? (
+              <Text style={styles.warn}>{auditWarning}</Text>
+            ) : null}
             <PublisherSelector
               key={`add-${people.length}`}
               boxed

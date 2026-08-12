@@ -34,6 +34,7 @@ import {
   lockEnabled,
   setLockEnabled,
 } from '../../../lib/biometrics';
+import { useQuery } from '@tanstack/react-query';
 
 /**
  * A single line naming the running code: app version, and — when an
@@ -84,6 +85,15 @@ export default function ProfileScreen() {
   // Said, not enforced: a brother with an older phone and no scanner must not
   // be shut out of the app because of the rights he holds.
   const privileged = user?.role === 'admin' || user?.canViewPrivateData === true;
+  // An elder already has the whole section; this row is for everybody else.
+  const isElder = user?.role === 'admin' || user?.role === 'elder';
+  const myTasksQuery = useQuery({
+    queryKey: ['me', 'tasks'],
+    queryFn: () => meApi.tasks(),
+    enabled: !isElder,
+    retry: false,
+  });
+  const myTasks = myTasksQuery.data ?? [];
   const { myPublisher } = useMyPublisher();
   const { t, i18n } = useTranslation();
   const buildLine = useBuildLine();
@@ -207,7 +217,33 @@ export default function ProfileScreen() {
         </View>
       </View>
 
-      {/* Only where there is a scanner to ask. On the web and on a home-screen
+      {/* The tasks section belongs to the elders, and stays there. But a task
+          given to a brother and invisible to him is not a task — it is a
+          telephone call somebody still has to make. This is his own, and only
+          his own; it appears when there is something on him and not before. */}
+      {!isElder && myTasks.length > 0 ? (
+        <View style={styles.section}>
+          <View style={styles.card}>
+            <Pressable
+              style={styles.row}
+              onPress={() => router.push('/profile/my-tasks' as never)}
+            >
+              <View style={styles.rowIcon}>
+                <Ionicons name="checkbox-outline" size={20} color="#0ea5e9" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.rowTitle}>{t('tasks.mine.title')}</Text>
+                <Text style={styles.rowSubtitle}>
+                  {t('tasks.mine.count', { count: myTasks.length })}
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color="#94a3b8" />
+            </Pressable>
+          </View>
+        </View>
+      ) : null}
+
+            {/* Only where there is a scanner to ask. On the web and on a home-screen
           iPhone the switch is absent rather than present and dead. */}
       {bioAvailable ? (
         <View style={styles.section}>

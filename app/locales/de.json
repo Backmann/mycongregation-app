@@ -2753,7 +2753,12 @@
       "meeting": "Für welche Zusammenkunft",
       "noMeeting": "Noch keine",
       "assigneePeople": "Brüder",
-      "bodyHint": "Die Mitglieder ergeben sich aus den aktuellen Zuweisungen: Wechselt der Sekretär, geht die Aufgabe mit dem Amt über."
+      "bodyHint": "Die Mitglieder ergeben sich aus den aktuellen Zuweisungen: Wechselt der Sekretär, geht die Aufgabe mit dem Amt über.",
+      "audit": {
+        "isSecretary": "Der Sekretär darf die Konten nicht prüfen. Wähle einen anderen Bruder.",
+        "keepsAccounts": "Der Rechnungsführer darf die Konten nicht prüfen. Wähle einen anderen.",
+        "didPrevious": "Er hat die vorige Prüfung gemacht. Zwei hintereinander sind unerwünscht — wenn es niemanden sonst gibt, lass es so."
+      }
     },
     "agenda": {
       "title": "Tagesordnung",
@@ -2807,6 +2812,17 @@
       "bodyOfElders": "Ältestenschaft",
       "andMore_one": "{{name}} und {{count}} weitere",
       "andMore_other": "{{name}} und {{count}} weitere"
+    },
+    "calendar": {
+      "accounts_audit": "Kontenprüfung",
+      "pioneer_service_review": "Überblick über den Dienst der Pioniere",
+      "service_year_review": "Ende des Dienstjahres"
+    },
+    "mine": {
+      "title": "Meine Aufgaben",
+      "count_one": "{{count}} Aufgabe",
+      "count_other": "{{count}} Aufgaben",
+      "readOnly": "Die Ältestenschaft trägt die Erledigung ein — hier nur zur Ansicht."
     }
   },
   "pioneerSchool": {
