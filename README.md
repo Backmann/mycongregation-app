@@ -6,7 +6,8 @@
 A modern, privacy-first web and mobile platform for organizing recurring
 meetings and coordinating members in communities and groups.
 
-Live: **https://mycongregation.org**
+Live: **https://mycongregation.org** — in a browser, or as an Android app
+installed from the same site.
 
 > ⚠️ This is an unofficial, community-built tool. Not affiliated with or endorsed by any organization.
 
@@ -27,17 +28,44 @@ ciphertext fails closed rather than returning corrupted data.
 per-section capability grants, email invitations with a passwordless
 set-up flow, and a sliding-window login rate limiter.
 
-## Features
+**Nothing disappears quietly.** A removal can be taken back on the spot,
+and what was removed is written to a change journal along with the values
+it replaced. An administrator can put an edit back the way it was —
+through the same rules an ordinary edit obeys, so an undo cannot become a
+way around them.
+
+## What it does
 
 - 👥 **Members** — directory with roles, status tracking, and soft-delete
 - 👨‍👩‍👧 **Families** — household management with member linking
 - 🤝 **Groups** — weekly group organization and coordination
-- 📋 **Assignments** — plan recurring meeting parts with a focused planning mode, including auto-advance through unfilled slots
-- 🧹 **Duties & cleaning** — assign responsibilities and cleaning slots to people and groups
-- 🎤 **Talks catalog** — searchable catalog with bulk import and speaker history
-- 📅 **Schedule import** — parse program EPUBs into editable schedules, **client-side** (see Privacy above), with drag-and-drop on web
-- 🔔 **Notifications** — web push (VAPID) plus an in-app notification center
-- 🌍 **Localization** — full UI in English, Russian, and German, with proper `<html lang>` and document title handling
+- 📋 **Assignments** — plan the parts of a recurring meeting, with per-section
+  editing rights, a focused planning mode, and a past that freezes once the
+  meeting has happened
+- 🧹 **Duties & cleaning** — responsibilities and cleaning slots for people and
+  groups, with reminders timed to the meeting actually being held
+- ✈️ **Absences** — who is away and when, consulted wherever somebody is being
+  scheduled
+- 📊 **Monthly reports** — submission, reminders, activity-derived status, and
+  a closing date that settles the month
+- 🎤 **Talks catalog** — searchable catalog, visiting and outgoing speakers,
+  and history
+- 🗓️ **Visits & events** — a visiting coordinator's schedule, and events that
+  displace ordinary meetings
+- 🎓 **Courses** — a multi-day event with its own rota of helpers, clash
+  warnings, and a printable sheet
+- 📅 **Schedule import** — parse programme EPUBs into editable schedules,
+  **client-side** (see Privacy above), with drag-and-drop on web
+- 📓 **Change journal** — who changed what and what it was before, with a
+  supervised undo that obeys the same rules an ordinary edit does
+- ↩️ **Undo** — a removal can be taken back on the spot; nothing a person typed
+  disappears without a trace
+- 🔔 **Notifications** — push to phones and browsers, per-category preferences,
+  and quiet hours
+- 🔒 **Device lock** — optional fingerprint or device code on opening, with the
+  content covered while the app sits in the task list
+- 🌍 **Localization** — full UI in English, Russian, and German, with proper
+  `<html lang>` and document title handling
 
 ## Tech stack
 
