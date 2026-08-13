@@ -2787,13 +2787,6 @@
       "deleteTitle": "Delete this meeting?",
       "deleteBody": "Tasks put on it remain — they simply stop being tied to it."
     },
-    "repeat": {
-      "title": "Repeat this task?",
-      "hint": "In how many months should it be done again?",
-      "months_one": "In {{count}} month",
-      "months_other": "In {{count}} months",
-      "no": "Do not repeat"
-    },
     "newShort": "Task",
     "recurring": "Recurring",
     "dueToday": "Today",

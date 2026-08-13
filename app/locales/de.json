@@ -2787,13 +2787,6 @@
       "deleteTitle": "Zusammenkunft löschen?",
       "deleteBody": "Zugeordnete Aufgaben bleiben bestehen — nur die Zuordnung entfällt."
     },
-    "repeat": {
-      "title": "Aufgabe wiederholen?",
-      "hint": "In wie vielen Monaten steht sie wieder an?",
-      "months_one": "In {{count}} Monat",
-      "months_other": "In {{count}} Monaten",
-      "no": "Nicht wiederholen"
-    },
     "newShort": "Aufgabe",
     "recurring": "Wiederkehrend",
     "dueToday": "Heute",

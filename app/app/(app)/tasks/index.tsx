@@ -96,7 +96,6 @@ export default function TasksScreen() {
   }, [publishersQuery.data]);
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ['tasks'] });
-  const [repeatFor, setRepeatFor] = useState<ElderTask | null>(null);
   const closeMut = useMutation({
     mutationFn: (task: ElderTask) =>
       tasksApi.update(task.id, {
@@ -115,27 +114,18 @@ export default function TasksScreen() {
       } else {
         setJustDone(null);
       }
-      // Asked only when the task HAD a date. Things that come round again —
-      // the audit of the accounts, a review — are the ones with dates on them;
-      // asking about every closed task would make the question noise, and
-      // noise gets dismissed without reading.
-      if (task.status === 'open' && task.dueDate) setRepeatFor(task);
-    },
-  });
-  const repeatMut = useMutation({
-    mutationFn: async ({ task, months }: { task: ElderTask; months: number }) =>
-      tasksApi.create({
-        title: task.title,
-        details: task.details,
-        area: task.area,
-        assigneePublisherId: task.assigneePublisherId,
-        dueDate: dayjs(task.dueDate ?? undefined)
-          .add(months, 'month')
-          .format('YYYY-MM-DD'),
-      }),
-    onSuccess: () => {
-      invalidate();
-      setRepeatFor(null);
+      // NO QUESTION HERE ANY MORE.
+      //
+      // Closing used to raise «повторить через сколько месяцев?». It was a
+      // fair idea when nothing repeated by itself — but the things that truly
+      // come round are now on the calendar and return without being asked,
+      // and offering to copy one of THOSE produces two identical tasks, one
+      // by hand and one by the app. For everything else the question arrived
+      // at the worst possible moment: over the undo strip, exactly where a
+      // person who had just ticked something by mistake was reaching.
+      //
+      // So closing a task is one act, and the only thing it raises is the way
+      // back.
     },
   });
 
@@ -208,7 +198,13 @@ export default function TasksScreen() {
     return (
       <Pressable
         key={task.id}
-        style={[styles.card, late && styles.cardLate]}
+        style={[
+          styles.card,
+          late && styles.cardLate,
+          // A row on its way out steps back: quieter than the live ones, and
+          // still perfectly readable while the strip below offers it back.
+          task.status === 'done' && styles.cardDone,
+        ]}
         onPress={() => setEditing(task)}
       >
         <View style={styles.cardHead}>
@@ -217,16 +213,22 @@ export default function TasksScreen() {
           >
             {titleOf(task)}
           </Text>
+          {/* The tick is the whole act, so it is given room to be one: a
+              circle that fills rather than a glyph that swaps. */}
           <Pressable
-            hitSlop={10}
+            hitSlop={12}
             onPress={() => closeMut.mutate(task)}
-            style={styles.check}
+            style={({ pressed }) => [
+              styles.check,
+              task.status === 'done' && styles.checkOn,
+              pressed && styles.checkPressed,
+            ]}
+            accessibilityRole="checkbox"
+            accessibilityState={{ checked: task.status === 'done' }}
           >
-            <Ionicons
-              name={task.status === 'done' ? 'checkmark-circle' : 'ellipse-outline'}
-              size={24}
-              color={task.status === 'done' ? '#15803d' : '#94a3b8'}
-            />
+            {task.status === 'done' ? (
+              <Ionicons name="checkmark" size={17} color="#ffffff" />
+            ) : null}
           </Pressable>
         </View>
 
@@ -422,37 +424,6 @@ export default function TasksScreen() {
         <Ionicons name="add" size={20} color="#ffffff" />
         <Text style={styles.fabText}>{t('tasks.newShort')}</Text>
       </Pressable>
-
-      {/* No recurrence ENGINE: a schedule of repeats brings its own life of
-          exceptions and moved dates, and we would spend a week on «the repeat
-          fell on the congress». One question at the moment of closing gives
-          the same result. */}
-      <Sheet
-        visible={!!repeatFor}
-        onClose={() => setRepeatFor(null)}
-        variant="bottom"
-        title={t('tasks.repeat.title')}
-        closeLabel={t('tasks.repeat.no')}
-      >
-        <View style={styles.repeatBody}>
-          <Text style={styles.repeatHint}>{t('tasks.repeat.hint')}</Text>
-          <View style={styles.chipRow}>
-            {[1, 3, 6, 12].map((m) => (
-              <Pressable
-                key={m}
-                style={styles.repeatChip}
-                onPress={() =>
-                  repeatFor && repeatMut.mutate({ task: repeatFor, months: m })
-                }
-              >
-                <Text style={styles.repeatChipText}>
-                  {t('tasks.repeat.months', { count: m })}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
-        </View>
-      </Sheet>
 
       <TaskForm
         target={editing}
@@ -830,7 +801,19 @@ const styles = StyleSheet.create({
     fontFamily: 'Manrope_700Bold',
   },
   titleDone: { color: '#94a3b8', textDecorationLine: 'line-through' },
-  check: { paddingLeft: 4 },
+  check: {
+    width: 26,
+    height: 26,
+    borderRadius: 999,
+    borderWidth: 1.5,
+    borderColor: '#cbd5e1',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  /** Filled and green: done is a state, not a different picture. */
+  checkOn: { backgroundColor: '#15803d', borderColor: '#15803d' },
+  checkPressed: { opacity: 0.6, transform: [{ scale: 0.92 }] },
+  cardDone: { backgroundColor: '#fbfdfc', borderColor: '#d7e6dd' },
   area: { fontSize: 12, color: '#64748b', marginLeft: 18 },
   // The 18pt indent belonged to the coloured dot that used to sit before the
   // title. The dot became a labelled chip and the indent was left behind,
@@ -881,20 +864,6 @@ const styles = StyleSheet.create({
   agendaText: {
     fontSize: 13.5,
     color: '#0369a1',
-    fontWeight: '700',
-    fontFamily: 'Manrope_700Bold',
-  },
-  repeatBody: { padding: 16, gap: 12 },
-  repeatHint: { fontSize: 13.5, color: '#475569', lineHeight: 19 },
-  repeatChip: {
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 999,
-    backgroundColor: '#0e7490',
-  },
-  repeatChipText: {
-    fontSize: 13.5,
-    color: '#fff',
     fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
   },
