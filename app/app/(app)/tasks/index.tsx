@@ -27,16 +27,8 @@ import { Sheet } from '../../../components/Sheet';
 import { PublisherSelector } from '../../../components/PublisherSelector';
 import { DateField } from '../../../components/DateField';
 import { confirm } from '../../../components/ConfirmHost';
+import { AREA_BG, AREA_FG, AREAS } from '../../../lib/task-areas';
 
-const AREAS: TaskArea[] = [
-  'ministry',
-  'teaching',
-  'care',
-  'organisation',
-  'announcements',
-  'accounts',
-  'other',
-];
 
 /** One colour per area — the glance before the reading. */
 const AREA_TINT: Record<TaskArea, string> = {
@@ -49,25 +41,6 @@ const AREA_TINT: Record<TaskArea, string> = {
   other: '#64748b',
 };
 
-/** The same seven, as a soft ground and a legible ink for a label. */
-const AREA_BG: Record<TaskArea, string> = {
-  ministry: '#E1F5EE',
-  teaching: '#EEEDFE',
-  care: '#FBEAF0',
-  organisation: '#FAEEDA',
-  announcements: '#E6F1FB',
-  accounts: '#EAF3DE',
-  other: '#f1f5f9',
-};
-const AREA_FG: Record<TaskArea, string> = {
-  ministry: '#0F6E56',
-  teaching: '#534AB7',
-  care: '#993556',
-  organisation: '#854F0B',
-  announcements: '#0C447C',
-  accounts: '#3B6D11',
-  other: '#475569',
-};
 
 /**
  * Tasks the body of elders has undertaken.

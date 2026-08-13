@@ -3306,6 +3306,8 @@ export interface AgendaItem {
   meetingId: string | null;
   position: number;
   title: string;
+  /** What it is about — and what the task inherits when it becomes one. */
+  area: TaskArea;
   /** «km 3/24, стр. 5» — as written. */
   sourceText: string | null;
   sourceUrl: string | null;
@@ -3319,6 +3321,7 @@ export interface AgendaItem {
 
 export interface UpsertAgendaItem {
   title?: string;
+  area?: TaskArea;
   sourceText?: string | null;
   sourceUrl?: string | null;
   presenterPublisherId?: string | null;
@@ -3378,6 +3381,28 @@ export const agendaApi = {
   async approve(meetingId: string): Promise<EldersMeeting> {
     const { data } = await api.post<EldersMeeting>(
       `/tasks/meetings/${meetingId}/approve`,
+    );
+    return data;
+  },
+  /**
+   * Turn a question into work.
+   *
+   * Title, details and area come from the question itself; only «whom» and
+   * «by when» are asked, because those are the two facts a question does not
+   * carry.
+   */
+  async makeTask(
+    itemId: string,
+    input: {
+      assigneePublisherIds?: string[];
+      assigneeKind?: TaskAssigneeKind;
+      dueDate?: string | null;
+      details?: string | null;
+    },
+  ): Promise<AgendaItem> {
+    const { data } = await api.post<AgendaItem>(
+      `/tasks/items/${itemId}/make-task`,
+      input,
     );
     return data;
   },

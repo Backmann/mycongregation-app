@@ -2949,7 +2949,8 @@
         "presenter": "Who presents it",
         "minutes": "How many minutes",
         "sourceHint": "km 3/24, p. 5"
-      }
+      },
+      "makeTask": "Create the task"
     },
     "homeRow": "Elders’ meeting"
   }

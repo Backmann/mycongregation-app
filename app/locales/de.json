@@ -2949,7 +2949,8 @@
         "presenter": "Wer sie vorstellt",
         "minutes": "Wie viele Minuten",
         "sourceHint": "km 3/24, S. 5"
-      }
+      },
+      "makeTask": "Aufgabe erstellen"
     },
     "homeRow": "Ältestenzusammenkunft"
   }

@@ -18,6 +18,7 @@ import 'dayjs/locale/de';
 import {
   AgendaItem,
   ItemOutcome,
+  TaskArea,
   agendaApi,
   extractErrorMessage,
   meetingSettingsApi,
@@ -33,6 +34,7 @@ import { PublisherSelector } from '../../../components/PublisherSelector';
 import { DateField } from '../../../components/DateField';
 import { TimeField } from '../../../components/TimeField';
 import { confirm } from '../../../components/ConfirmHost';
+import { AREA_BG, AREA_FG, AREAS } from '../../../lib/task-areas';
 
 /**
  * The agenda of an elders' meeting.
@@ -87,6 +89,7 @@ export default function AgendaScreen() {
   const [editingItem, setEditingItem] = useState<AgendaItem | 'new' | null>(
     null,
   );
+  const [makingTask, setMakingTask] = useState<AgendaItem | null>(null);
 
   const items = itemsQuery.data ?? [];
   /**
@@ -300,6 +303,20 @@ export default function AgendaScreen() {
                     </View>
 
                     <View style={styles.itemMetaRow}>
+                      {/* Says whether a question is about accounts or about
+                          somebody's care — a bare title never did. */}
+                      <View
+                        style={[
+                          styles.areaTag,
+                          { backgroundColor: AREA_BG[item.area] },
+                        ]}
+                      >
+                        <Text
+                          style={[styles.areaTagText, { color: AREA_FG[item.area] }]}
+                        >
+                          {t(`tasks.areas.${item.area}`)}
+                        </Text>
+                      </View>
                       {item.presenterPublisherId ? (
                         <Text style={styles.itemMeta}>
                           {nameOf(item.presenterPublisherId)}
@@ -343,6 +360,23 @@ export default function AgendaScreen() {
                         other and the second finds his words gone. */}
                     {mayRecord ? (
                       <View style={styles.itemActions}>
+                        <Pressable
+                          style={[
+                            styles.act,
+                            item.outcome === 'task' && styles.actOn,
+                          ]}
+                          onPress={() => setMakingTask(item)}
+                          disabled={item.outcome === 'task'}
+                        >
+                          <Text
+                            style={[
+                              styles.actText,
+                              item.outcome === 'task' && styles.actTextOn,
+                            ]}
+                          >
+                            {t('agenda.items.outcome.task')}
+                          </Text>
+                        </Pressable>
                         {(['reviewed', 'carried'] as const).map((o) => (
                           <Pressable
                             key={o}
@@ -461,6 +495,17 @@ export default function AgendaScreen() {
           </>
         )}
       </ScrollView>
+
+      {makingTask ? (
+        <MakeTaskSheet
+          item={makingTask}
+          onClose={() => setMakingTask(null)}
+          onSaved={() => {
+            setMakingTask(null);
+            invalidateItems();
+          }}
+        />
+      ) : null}
 
       {editingItem ? (
         <ItemSheet
@@ -673,6 +718,17 @@ const styles = StyleSheet.create({
   approvedRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   approvedText: { fontSize: 13, color: '#15803d' },
   error: { fontSize: 13, color: '#b91c1c', marginTop: 8 },
+  areaTag: { borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 },
+  areaTagText: { fontSize: 11.5 },
+  areaRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  areaPick: {
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    paddingHorizontal: 11,
+    paddingVertical: 6,
+  },
+  areaPickText: { fontSize: 13 },
   group: { gap: 6 },
   groupTitle: {
     fontSize: 12,
@@ -770,12 +826,14 @@ function ItemSheet({
     item?.presenterPublisherId ?? null,
   );
   const [minutes, setMinutes] = useState(String(item?.minutes ?? 10));
+  const [area, setArea] = useState<TaskArea>(item?.area ?? 'other');
 
   const save = useMutation({
     meta: { inlineError: true },
     mutationFn: () => {
       const input = {
         title: title.trim(),
+        area,
         sourceText: sourceText.trim() || null,
         sourceUrl: sourceUrl.trim() || null,
         presenterPublisherId: presenter,
@@ -806,6 +864,32 @@ function ItemSheet({
     >
       <Text style={styles.label}>{t('agenda.items.form.titleLabel')}</Text>
       <TextInput style={styles.input} value={title} onChangeText={setTitle} />
+
+      {/* The area lives on the question so that it travels into the task by
+          itself — and so the agenda shows what each question is about. */}
+      <Text style={styles.label}>{t('tasks.form.area')}</Text>
+      <View style={styles.areaRow}>
+        {AREAS.map((a) => (
+          <Pressable
+            key={a}
+            onPress={() => setArea(a)}
+            style={[
+              styles.areaPick,
+              { backgroundColor: area === a ? AREA_BG[a] : '#f8fafc' },
+              area === a && { borderColor: AREA_FG[a] },
+            ]}
+          >
+            <Text
+              style={[
+                styles.areaPickText,
+                { color: area === a ? AREA_FG[a] : '#64748b' },
+              ]}
+            >
+              {t(`tasks.areas.${a}`)}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
 
       <Text style={styles.label}>{t('agenda.items.form.sourceText')}</Text>
       <TextInput
@@ -840,6 +924,95 @@ function ItemSheet({
         value={minutes}
         onChangeText={setMinutes}
         keyboardType="number-pad"
+      />
+
+      {save.isError ? (
+        <Text style={styles.error}>{extractErrorMessage(save.error)}</Text>
+      ) : null}
+    </Sheet>
+  );
+}
+
+/**
+ * «Стал задачей» — the outcome that leaves the meeting with work in hand.
+ *
+ * Two fields, and only two: whom, and by when. The title, the details and the
+ * area come from the question itself — asking again for what is already known
+ * is how a good idea becomes a form nobody fills in.
+ */
+function MakeTaskSheet({
+  item,
+  onClose,
+  onSaved,
+}: {
+  item: AgendaItem;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const { t } = useTranslation();
+  const [people, setPeople] = useState<string[]>([]);
+  const [dueDate, setDueDate] = useState<string | null>(null);
+
+  const save = useMutation({
+    meta: { inlineError: true },
+    mutationFn: () =>
+      agendaApi.makeTask(item.id, {
+        assigneeKind: 'people',
+        assigneePublisherIds: people,
+        dueDate,
+      }),
+    onSuccess: onSaved,
+  });
+
+  return (
+    <Sheet
+      visible
+      onClose={onClose}
+      variant="bottom"
+      title={t('agenda.items.outcome.task')}
+      footer={
+        <Pressable
+          style={[styles.approve, people.length === 0 && { opacity: 0.5 }]}
+          disabled={people.length === 0 || save.isPending}
+          onPress={() => save.mutate()}
+        >
+          <Text style={styles.approveText}>{t('agenda.items.makeTask')}</Text>
+        </Pressable>
+      }
+    >
+      {/* What it will be called, so nobody has to remember which question
+          this was. Read-only: the wording belongs to the agenda. */}
+      <Text style={styles.label}>{item.title}</Text>
+
+      {people.map((id, i) => (
+        <PublisherSelector
+          key={`${id}-${i}`}
+          boxed
+          label=""
+          value={id}
+          genderFilter="brother"
+          onChange={(next) =>
+            setPeople((list) =>
+              next
+                ? list.map((v, j) => (j === i ? next : v))
+                : list.filter((_, j) => j !== i),
+            )
+          }
+        />
+      ))}
+      <PublisherSelector
+        key={`add-${people.length}`}
+        boxed
+        label={people.length === 0 ? t('tasks.form.assignee') : ''}
+        value={null}
+        genderFilter="brother"
+        onChange={(next) => next && setPeople((list) => [...list, next])}
+      />
+
+      <DateField
+        label={t('tasks.form.due')}
+        value={dueDate ?? undefined}
+        onChange={(v) => setDueDate(v ?? null)}
       />
 
       {save.isError ? (
