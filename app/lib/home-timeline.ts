@@ -74,6 +74,22 @@ export interface MeetingEntry {
 }
 
 /** A special event shown as background (never one that replaced a meeting). */
+/**
+ * The body's own meeting, for the elders it concerns.
+ *
+ * Only once the agenda is APPROVED: before that it is still being put
+ * together, and a date that may still move has no business taking room on
+ * anybody's home screen. Only the day, the hour and the place travel here —
+ * the questions live behind the sign-in, as they do in every notification.
+ */
+export interface EldersMeetingEntry {
+  type: 'elders_meeting';
+  key: string;
+  dateISO: string;
+  time: string | null;
+  place: string | null;
+}
+
 export interface EventEntry {
   type: 'event';
   key: string;
@@ -137,6 +153,7 @@ export type TimelineEntry =
   | AbsenceEntry
   | VisitEntry
   | CoVisitItemEntry
+  | EldersMeetingEntry
   | OutgoingTalkEntry;
 
 export interface DayGroup {
@@ -162,6 +179,14 @@ export interface BuildTimelineInput {
   /** Service-group names, so a visit can say whose group it is. */
   groupNameById?: Map<string, string>;
   events: SpecialEvent[];
+  /** Approved meetings of the body; empty for anybody who is not an elder. */
+  eldersMeetings?: {
+    id: string;
+    date: string;
+    startTime: string | null;
+    placeText: string | null;
+    approvedAt: string | null;
+  }[];
   /** The signed-in person's own away-periods. */
   absences: Absence[];
   /** The signed-in person's own CO-visit items (and their visits). */
@@ -241,6 +266,7 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
     publishersById,
     groupNameById,
     events,
+    eldersMeetings = [],
     absences = [],
     coVisits = [],
     coFieldService = [],
@@ -457,6 +483,19 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
   }
 
   // ---- Background events (not the ones that replaced a meeting) ----
+  // The body's own meeting, and only once its agenda is settled.
+  for (const m of eldersMeetings) {
+    if (!m.approvedAt) continue;
+    if (m.date < todayISO) continue;
+    entries.push({
+      type: 'elders_meeting',
+      key: `em-${m.id}`,
+      dateISO: m.date,
+      time: m.startTime,
+      place: m.placeText,
+    });
+  }
+
   for (const e of events) {
     if (replacedEventIds.has(e.id)) continue;
     // Place the event on the first day of its range that falls in the window.
@@ -560,7 +599,9 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
             ? en.item.startTime ?? '99:99'
             : en.type === 'outgoing_talk'
               ? en.task.item.time ?? '99:99'
-              : en.task.item.time ?? en.task.meetingTime ?? '99:99';
+              : en.type === 'elders_meeting'
+                ? en.time ?? '99:99'
+                : en.task.item.time ?? en.task.meetingTime ?? '99:99';
 
   const byDay = (list: TimelineEntry[]): DayGroup[] => {
     list.sort(

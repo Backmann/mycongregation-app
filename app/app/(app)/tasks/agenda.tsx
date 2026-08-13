@@ -144,6 +144,15 @@ export default function AgendaScreen() {
     const preopened = openPrintWindow();
     const html = buildAgendaHtml({
       meeting: agenda.meeting,
+      // Flattened here: the sheet resolves nothing, it only prints.
+      items: items.map((i) => ({
+        title: i.title,
+        presenterName: nameOf(i.presenterPublisherId),
+        sourceText: i.sourceText,
+        minutes: i.minutes,
+        outcome: i.outcome,
+        outcomeNote: i.outcomeNote,
+      })),
       onAgenda: agenda.onAgenda,
       overdue: agenda.overdue,
       dueSoon: agenda.dueSoon,
@@ -153,6 +162,13 @@ export default function AgendaScreen() {
       formatDate: fmt,
       labels: {
         title: t('tasks.agenda.title'),
+        items: t('agenda.items.title'),
+        presenter: t('agenda.items.form.presenter'),
+        outcomes: {
+          reviewed: t('agenda.items.outcome.reviewed'),
+          carried: t('agenda.items.outcome.carried'),
+          task: t('agenda.items.outcome.task'),
+        },
         onAgenda: t('tasks.agenda.onAgenda'),
         overdue: t('tasks.agenda.overdue'),
         dueSoon: t('tasks.agenda.dueSoon'),

@@ -16,19 +16,20 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import {
   Absence,
+  MyCoVisitItem,
+  Publisher,
+  SpecialEvent,
   absencesApi,
+  auxiliaryPioneersApi,
+  coVisitItemsApi,
   fieldServiceApi,
   meApi,
   meetingSettingsApi,
-  Publisher,
   publishersApi,
-  SpecialEvent,
-  specialEventsApi,
-  coVisitItemsApi,
-  MyCoVisitItem,
-  auxiliaryPioneersApi,
-  serviceReportsApi,
   serviceGroupsApi,
+  serviceReportsApi,
+  specialEventsApi,
+  tasksApi,
 } from '../../../lib/api';
 import { addDays, formatDateISO, startOfWeekMonday } from '../../../lib/dates';
 import { useAuth } from '../../../lib/auth';
@@ -47,10 +48,11 @@ import {
   taskVisual,
 } from '../../../lib/my-tasks';
 import {
-  buildTimeline,
+  EldersMeetingEntry,
   MeetingEntry,
   OutgoingTalkEntry,
   TimelineEntry,
+  buildTimeline,
 } from '../../../lib/home-timeline';
 import { MyDot } from '../../../components/MyDot';
 import { MyGlowRow } from '../../../components/MyGlowRow';
@@ -694,7 +696,34 @@ function TimelineRow({
   if (entry.type === 'outgoing_talk') {
     return <OutgoingTalkRow entry={entry} />;
   }
+  if (entry.type === 'elders_meeting') {
+    return <EldersMeetingRow entry={entry} />;
+  }
   return <EventRow event={entry.event} />;
+}
+
+/**
+ * The body's own meeting on the home screen.
+ *
+ * Three facts and no more: the hour, the place, and that it is the body
+ * meeting. What will be discussed is behind the sign-in — a home screen is
+ * read over somebody's shoulder more often than anything else in the app.
+ */
+function EldersMeetingRow({ entry }: { entry: EldersMeetingEntry }) {
+  const { t } = useTranslation();
+  return (
+    <View style={tl.bgRow}>
+      <View style={[tl.kindChip, { backgroundColor: '#EEEDFE' }]}>
+        <Ionicons name="people-outline" size={15} color="#534AB7" />
+      </View>
+      <View style={{ flex: 1 }}>
+        <Text style={tl.bgTitle}>{t('agenda.homeRow')}</Text>
+        <Text style={tl.bgMeta}>
+          {[entry.time, entry.place].filter(Boolean).join(' · ')}
+        </Text>
+      </View>
+    </View>
+  );
 }
 
 /** kind → title for a CO-visit item (shared by the near row and the far row). */
@@ -879,6 +908,15 @@ function HomeTimeline() {
     retry: false,
     staleTime: 60 * 1000,
   });
+  // The body's own meetings — asked for only by those they concern, and shown
+  // only once the agenda has been approved (the builder checks that).
+  const eldersMeetingsQ = useQuery({
+    queryKey: ['tasks', 'meetings'],
+    queryFn: () => tasksApi.meetings(),
+    enabled: user?.role === 'admin' || user?.role === 'elder',
+    retry: false,
+  });
+
   const coVisitQ = useQuery({
     queryKey: ['co-visit-mine'],
     queryFn: () => coVisitItemsApi.mine(),
@@ -909,6 +947,7 @@ function HomeTimeline() {
         ]),
       ),
       events: eventsQ.data ?? [],
+      eldersMeetings: eldersMeetingsQ.data ?? [],
       absences: absencesQ.data ?? [],
       coVisits: coVisitQ.data ?? [],
       coFieldService: coFieldServiceQ.data ?? [],

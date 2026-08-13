@@ -13,8 +13,28 @@ import type { ElderTask, EldersMeeting } from './api';
  * heading that vanished says only that something is missing, and the reader
  * cannot tell which.
  */
+/** One question, flattened for the sheet — names resolved, nothing to look up. */
+export interface AgendaPrintItem {
+  title: string;
+  presenterName: string | null;
+  sourceText: string | null;
+  minutes: number;
+  outcome: string | null;
+  outcomeNote: string | null;
+}
+
 export function buildAgendaHtml(opts: {
   meeting: EldersMeeting | null;
+  /**
+   * The questions brought to the meeting.
+   *
+   * They print in one of TWO shapes, and the sheet chooses by itself: while
+   * nothing has an outcome it is a sheet for the table, with a line to write
+   * on under each question; once outcomes exist it is a record of what was
+   * decided, and the lines give way to the decisions. Nobody has to pick a
+   * mode — the state of the meeting already says which it is.
+   */
+  items?: AgendaPrintItem[];
   onAgenda: ElderTask[];
   overdue: ElderTask[];
   dueSoon: ElderTask[];
@@ -24,6 +44,9 @@ export function buildAgendaHtml(opts: {
   formatDate: (iso: string) => string;
   labels: {
     title: string;
+    items: string;
+    presenter: string;
+    outcomes: Record<string, string>;
     onAgenda: string;
     overdue: string;
     dueSoon: string;
@@ -35,6 +58,7 @@ export function buildAgendaHtml(opts: {
 }): string {
   const {
     meeting,
+    items = [],
     onAgenda,
     overdue,
     dueSoon,
@@ -70,6 +94,42 @@ export function buildAgendaHtml(opts: {
       ${task.details ? `<div class="d">${esc(task.details)}</div>` : ''}
       <div class="box"></div>
     </li>`;
+  };
+
+  /**
+   * The questions, numbered, with room to write or with what was decided.
+   *
+   * `dotted` is the whole difference between a sheet taken TO a meeting and a
+   * record kept OF one.
+   */
+  const itemsSection = (rows: AgendaPrintItem[]): string => {
+    if (rows.length === 0) return '';
+    const settled = rows.some((r) => r.outcome);
+    return `
+    <div class="sect">
+      <div class="sh">${esc(labels.items)}</div>
+      <ol>${rows
+        .map((r) => {
+          const meta = [
+            r.presenterName ? `${esc(labels.presenter)}: ${esc(r.presenterName)}` : '',
+            r.sourceText ? esc(r.sourceText) : '',
+            r.minutes ? `${r.minutes}′` : '',
+          ]
+            .filter(Boolean)
+            .join(' · ');
+          const decided = r.outcome
+            ? `<div class="d">${esc(labels.outcomes[r.outcome] ?? r.outcome)}${
+                r.outcomeNote ? ` — ${esc(r.outcomeNote)}` : ''
+              }</div>`
+            : '';
+          // Two lines to write on, but only while there is nothing written.
+          const room = settled ? '' : '<div class="box"></div><div class="box"></div>';
+          return `<li><div class="t">${esc(r.title)}</div>${
+            meta ? `<div class="m">${meta}</div>` : ''
+          }${decided}${room}</li>`;
+        })
+        .join('')}</ol>
+    </div>`;
   };
 
   const section = (heading: string, rows: ElderTask[]) => `
@@ -118,6 +178,7 @@ export function buildAgendaHtml(opts: {
       <div class="h1">${esc(labels.title)}</div>
       <div class="sub">${esc(congregationName)}${when ? ` · ${esc(when)}` : ''}</div>
     </div>
+    ${itemsSection(items)}
     ${section(labels.onAgenda, onAgenda)}
     ${section(labels.overdue, overdue)}
     ${section(labels.dueSoon, dueSoon)}
