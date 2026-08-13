@@ -2952,6 +2952,11 @@
       },
       "makeTask": "Create the task"
     },
-    "homeRow": "Elders’ meeting"
+    "homeRow": "Elders’ meeting",
+    "meeting": {
+      "place": "Where it is held",
+      "placeHint": "Or write an address",
+      "minuteTaker": "Who keeps the record"
+    }
   }
 }

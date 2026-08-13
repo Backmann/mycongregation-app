@@ -21,6 +21,7 @@ import {
   TaskArea,
   agendaApi,
   extractErrorMessage,
+  hallsApi,
   meetingSettingsApi,
   publishersApi,
   tasksApi,
@@ -548,7 +549,18 @@ function MeetingForm({
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
   const [note, setNote] = useState('');
+  const [hallId, setHallId] = useState<string | null>(null);
+  const [placeText, setPlaceText] = useState('');
+  const [minuteTaker, setMinuteTaker] = useState<string | null>(null);
   const [loadedFor, setLoadedFor] = useState<string | null>(null);
+
+  // The halls already entered — a meeting is often in one of them, and often
+  // in somebody's home instead, so both ways are offered.
+  const hallsQuery = useQuery({
+    queryKey: ['halls'],
+    queryFn: () => hallsApi.list(),
+    staleTime: 60 * 60 * 1000,
+  });
 
   const key = editing?.id ?? (target === 'new' ? 'new' : null);
   if (visible && key !== loadedFor) {
@@ -556,12 +568,24 @@ function MeetingForm({
     setDate(editing?.date ?? '');
     setTime(editing?.startTime ?? '');
     setNote(editing?.note ?? '');
+    setHallId(editing?.hallId ?? null);
+    setPlaceText(editing?.placeText ?? '');
+    setMinuteTaker(editing?.minuteTakerPublisherId ?? null);
   }
   if (!visible && loadedFor !== null) setLoadedFor(null);
 
   const saveMut = useMutation({
     mutationFn: async () => {
-      const input = { date, startTime: time || null, note: note.trim() || null };
+      const input = {
+        date,
+        startTime: time || null,
+        note: note.trim() || null,
+        hallId,
+        // One or the other: choosing a hall clears the written line, so the
+        // sheet never shows two answers to «where».
+        placeText: hallId ? null : placeText.trim() || null,
+        minuteTakerPublisherId: minuteTaker,
+      };
       return editing
         ? tasksApi.updateMeeting(editing.id, input)
         : tasksApi.createMeeting(input);
@@ -597,6 +621,48 @@ function MeetingForm({
 
         <Text style={styles.label}>{t('tasks.meeting.time')}</Text>
         <TimeField value={time} onChange={setTime} />
+
+        {/* Where. A hall from the list OR a line of one's own — the body meets
+            at the hall as often as at somebody's table. */}
+        <Text style={styles.label}>{t('agenda.meeting.place')}</Text>
+        <View style={styles.areaRow}>
+          {(hallsQuery.data ?? []).map((h) => (
+            <Pressable
+              key={h.id}
+              onPress={() => setHallId(hallId === h.id ? null : h.id)}
+              style={[styles.areaPick, hallId === h.id && styles.hallOn]}
+            >
+              <Text
+                style={[
+                  styles.areaPickText,
+                  hallId === h.id && styles.hallOnText,
+                ]}
+              >
+                {h.name}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+        {!hallId ? (
+          <TextInput
+            style={styles.input}
+            value={placeText}
+            onChangeText={setPlaceText}
+            placeholder={t('agenda.meeting.placeHint')}
+            placeholderTextColor="#94a3b8"
+          />
+        ) : null}
+
+        {/* Who keeps the record — and with it, who may mark what was decided.
+            The secretary unless somebody else is named. */}
+        <PublisherSelector
+          boxed
+          label={t('agenda.meeting.minuteTaker')}
+          value={minuteTaker}
+          genderFilter="brother"
+          appointmentFilter="elder"
+          onChange={setMinuteTaker}
+        />
 
         <Text style={styles.label}>{t('tasks.meeting.note')}</Text>
         <TextInput
@@ -729,6 +795,8 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   areaPickText: { fontSize: 13 },
+  hallOn: { backgroundColor: '#0e7490', borderColor: '#0e7490' },
+  hallOnText: { color: '#fff' },
   group: { gap: 6 },
   groupTitle: {
     fontSize: 12,

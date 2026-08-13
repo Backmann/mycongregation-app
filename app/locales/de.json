@@ -2952,6 +2952,11 @@
       },
       "makeTask": "Aufgabe erstellen"
     },
-    "homeRow": "Ältestenzusammenkunft"
+    "homeRow": "Ältestenzusammenkunft",
+    "meeting": {
+      "place": "Wo sie stattfindet",
+      "placeHint": "Oder eine Adresse eintragen",
+      "minuteTaker": "Wer das Protokoll führt"
+    }
   }
 }
