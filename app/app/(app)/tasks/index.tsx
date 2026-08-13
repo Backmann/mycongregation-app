@@ -33,6 +33,7 @@ import {
   AREAS,
   quarterLabel,
 } from '../../../lib/task-areas';
+import { UndoBar } from '../../../components/UndoBar';
 
 
 /** One colour per area — the glance before the reading. */
@@ -60,6 +61,8 @@ export default function TasksScreen() {
   const qc = useQueryClient();
   const [editing, setEditing] = useState<ElderTask | 'new' | null>(null);
   const [tab, setTab] = useState<'open' | 'mine' | 'done'>('open');
+  /** The one just ticked — held so it can be put back, and so it can linger. */
+  const [justDone, setJustDone] = useState<ElderTask | null>(null);
 
   const openQuery = useQuery({
     queryKey: ['tasks', 'open'],
@@ -68,9 +71,9 @@ export default function TasksScreen() {
   const doneQuery = useQuery({
     queryKey: ['tasks', 'done'],
     queryFn: () => tasksApi.list('done'),
-    // Not fetched until the tab is opened: the done list is the long one and
-    // most visits never look at it.
-    enabled: tab === 'done',
+    // Fetched always now, because the tab shows a count — and a count that
+    // only appears once you have opened the tab is no help at all.
+    staleTime: 60 * 1000,
   });
   // Which card is mine — needed for «Мои». /me/publisher is the one honest
   // way to ask: the roster hides userId from anybody without rights.
@@ -101,6 +104,17 @@ export default function TasksScreen() {
       }),
     onSuccess: (_r, task) => {
       invalidate();
+      // Marked done? Then say so, and offer the way back.
+      //
+      // The row simply vanished before, and people were frightened by it —
+      // rightly. What matters at that moment is not that the task is safe but
+      // that the act LOOKED irreversible and left no trace. The strip is the
+      // same one the circuit schedule uses; nothing new had to be written.
+      if (task.status === 'open') {
+        setJustDone(task);
+      } else {
+        setJustDone(null);
+      }
       // Asked only when the task HAD a date. Things that come round again —
       // the audit of the accounts, a review — are the ones with dates on them;
       // asking about every closed task would make the question noise, and
@@ -316,7 +330,18 @@ export default function TasksScreen() {
     return x.members?.some((p) => p.id === myPublisherId) ?? false;
   });
 
-  const shown = tab === 'mine' ? mine : open;
+  /**
+   * The row it has just left stays a moment longer, ticked and struck through.
+   *
+   * A second and a half is the whole difference between «пропало» and «ушло
+   * вот туда»: the eye follows it out. Without that the list simply jumps, and
+   * a jump is what people read as loss.
+   */
+  const shown = (tab === 'mine' ? mine : open).concat(
+    justDone && !open.some((x) => x.id === justDone.id)
+      ? [{ ...justDone, status: 'done' as const }]
+      : [],
+  );
 
   return (
     <View style={styles.container}>
@@ -334,6 +359,11 @@ export default function TasksScreen() {
               {t(`tasks.tabs.${k}`)}
               {k === 'open' && open.length > 0 ? ` ${open.length}` : ''}
               {k === 'mine' && mine.length > 0 ? ` ${mine.length}` : ''}
+              {/* One number falls, another rises: the place a task went to
+                  stops being invisible. */}
+              {k === 'done' && (doneQuery.data ?? []).length > 0
+                ? ` ${(doneQuery.data ?? []).length}`
+                : ''}
             </Text>
           </Pressable>
         ))}
@@ -371,6 +401,20 @@ export default function TasksScreen() {
         )}
 
       </ScrollView>
+
+      {/* Beside the scroller, never inside it: a strip that lives inside a
+          list appears at the foot of its CONTENT, metres below the screen. */}
+      <UndoBar
+        visible={!!justDone}
+        message={t('tasks.markedDone')}
+        onUndo={async () => {
+          if (!justDone) return;
+          await tasksApi.update(justDone.id, { status: 'open' });
+          setJustDone(null);
+          invalidate();
+        }}
+        onDismiss={() => setJustDone(null)}
+      />
 
       {/* A bare plus does not say what it makes, and two floating buttons at
           the same corner compete. The agenda moves to the header. */}

@@ -2836,7 +2836,8 @@
       "count_one": "{{count}} task",
       "count_other": "{{count}} tasks",
       "readOnly": "The body of elders marks these done — this is a view only."
-    }
+    },
+    "markedDone": "Marked done"
   },
   "pioneerSchool": {
     "title": "Pioneer school",

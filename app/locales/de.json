@@ -2836,7 +2836,8 @@
       "count_one": "{{count}} Aufgabe",
       "count_other": "{{count}} Aufgaben",
       "readOnly": "Die Ältestenschaft trägt die Erledigung ein — hier nur zur Ansicht."
-    }
+    },
+    "markedDone": "Als erledigt markiert"
   },
   "pioneerSchool": {
     "title": "Pionierschule",
