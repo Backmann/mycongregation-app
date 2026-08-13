@@ -3573,6 +3573,8 @@ export interface ElderTask {
   dueTime: string | null;
   /** Set only on the recurring things the app creates itself. */
   kind: 'accounts_audit' | 'pioneer_service_review' | 'service_year_review' | null;
+  /** Which turn of it — «2026-Q3», «2026». Two audits a year need telling apart. */
+  kindPeriod: string | null;
   status: 'open' | 'done';
   doneAt: string | null;
   eldersMeetingId: string | null;

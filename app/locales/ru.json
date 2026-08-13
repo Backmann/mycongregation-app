@@ -2847,7 +2847,13 @@
     "calendar": {
       "accounts_audit": "Проверка счетов",
       "pioneer_service_review": "Обзор служения общих пионеров",
-      "service_year_review": "Итоги служебного года"
+      "service_year_review": "Итоги служебного года",
+      "quarters": {
+        "sepNov": "сентябрь — ноябрь",
+        "decFeb": "декабрь — февраль",
+        "marMay": "март — май",
+        "junAug": "июнь — август"
+      }
     },
     "mine": {
       "title": "Мои задачи",

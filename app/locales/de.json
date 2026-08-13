@@ -2823,7 +2823,13 @@
     "calendar": {
       "accounts_audit": "Kontenprüfung",
       "pioneer_service_review": "Überblick über den Dienst der Pioniere",
-      "service_year_review": "Ende des Dienstjahres"
+      "service_year_review": "Ende des Dienstjahres",
+      "quarters": {
+        "sepNov": "September–November",
+        "decFeb": "Dezember–Februar",
+        "marMay": "März–Mai",
+        "junAug": "Juni–August"
+      }
     },
     "mine": {
       "title": "Meine Aufgaben",

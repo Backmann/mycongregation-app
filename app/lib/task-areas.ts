@@ -39,3 +39,28 @@ export const AREAS: TaskArea[] = [
   'accounts',
   'other',
 ];
+
+/**
+ * Which quarter an accounts check covers, said in months.
+ *
+ * Periods are stored as «2026-Q3» — exact and unreadable — and these quarters
+ * do not line up with the calendar's: they run September to November, December
+ * to February, and so on. Two checks can stand open at once, and «Проверка
+ * счетов» twice over tells nobody which is which.
+ */
+const QUARTER_KEY: Record<string, string> = {
+  Q1: 'sepNov',
+  Q2: 'decFeb',
+  Q3: 'marMay',
+  Q4: 'junAug',
+};
+
+export function quarterLabel(
+  period: string | null,
+  t: (key: string) => string,
+): string | null {
+  if (!period) return null;
+  const q = period.split('-')[1];
+  const key = q ? QUARTER_KEY[q] : undefined;
+  return key ? t(`tasks.calendar.quarters.${key}`) : null;
+}

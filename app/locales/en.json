@@ -2823,7 +2823,13 @@
     "calendar": {
       "accounts_audit": "Accounts check",
       "pioneer_service_review": "Review of the pioneers’ ministry",
-      "service_year_review": "End of the service year"
+      "service_year_review": "End of the service year",
+      "quarters": {
+        "sepNov": "September–November",
+        "decFeb": "December–February",
+        "marMay": "March–May",
+        "junAug": "June–August"
+      }
     },
     "mine": {
       "title": "My tasks",

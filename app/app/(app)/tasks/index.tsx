@@ -27,7 +27,12 @@ import { Sheet } from '../../../components/Sheet';
 import { PublisherSelector } from '../../../components/PublisherSelector';
 import { DateField } from '../../../components/DateField';
 import { confirm } from '../../../components/ConfirmHost';
-import { AREA_BG, AREA_FG, AREAS } from '../../../lib/task-areas';
+import {
+  AREA_BG,
+  AREA_FG,
+  AREAS,
+  quarterLabel,
+} from '../../../lib/task-areas';
 
 
 /** One colour per area — the glance before the reading. */
@@ -173,12 +178,14 @@ export default function TasksScreen() {
    * would have been wrong for them and unfixable afterwards, so what is stored
    * is the KIND and the reader's own app writes the words.
    */
-  const titleOf = (task: ElderTask): string =>
-    task.kind
-      ? t(`tasks.calendar.${task.kind}`, {
-          period: task.dueDate ? dayjs(task.dueDate).format('YYYY') : '',
-        })
-      : task.title;
+  const titleOf = (task: ElderTask): string => {
+    if (!task.kind) return task.title;
+    const name = t(`tasks.calendar.${task.kind}`);
+    // Two audits can stand open at once, and «Проверка счетов» twice over says
+    // nothing about which quarter is which. The period is part of the name.
+    const quarter = quarterLabel(task.kindPeriod, t);
+    return quarter ? `${name} · ${quarter}` : name;
+  };
 
   const row = (task: ElderTask) => {
     const late = !!task.dueDate && task.dueDate < today && task.status === 'open';
