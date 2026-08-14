@@ -9,10 +9,6 @@ import {
   Text,
   View,
 } from 'react-native';
-import {
-  SafeAreaView,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -42,7 +38,6 @@ const STATE_DOT: Record<string, string> = {
 };
 
 export default function AuxiliaryPioneersScreen() {
-  const insets = useSafeAreaInsets();
   const { t, i18n } = useTranslation();
   const qc = useQueryClient();
   const { canManageAuxiliaryPioneers } = usePermissions();
@@ -168,15 +163,19 @@ export default function AuxiliaryPioneersScreen() {
   const periodLabel = (r: PeriodLike) => auxPeriodLabel(t, i18n.language, r);
 
   return (
-    <SafeAreaView style={styles.safe} edges={['bottom']}>
+    // A plain View, and deliberately.
+    //
+    // This was a SafeAreaView with edges={['bottom']}, which reserves the
+    // phone's gesture bar INSIDE the screen — while the tab bar above it
+    // already reserves the very same strip, being 56 points plus that inset
+    // tall. The space was taken twice: the list ended a gesture-bar's height
+    // short of the tab bar and could not be scrolled any further, however
+    // large the bottom padding grew. On the web the inset is zero, which is
+    // why raising the padding appeared to fix it there and changed nothing on
+    // a phone.
+    <View style={styles.safe}>
       <ScrollView
-        contentContainerStyle={[
-          styles.content,
-          // The phone's own gesture bar sits UNDER the tab bar, and a fixed
-          // number cannot know how tall it is. On the web there is none, which
-          // is why raising the number fixed it there and not on a phone.
-          { paddingBottom: 96 + insets.bottom },
-        ]}
+        contentContainerStyle={styles.content}
       >
         {/* Month selector */}
         <View style={styles.monthBar}>
@@ -427,7 +426,7 @@ export default function AuxiliaryPioneersScreen() {
               return null;
             })()}
       </Dialog>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -644,9 +643,9 @@ function ServingCard({
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: '#f1f5f9' },
-  // 96, not 40: the tab bar is 56 points plus the phone's own inset, so the
-  // last card was ending underneath it with no way to scroll past.
-  content: { padding: 14, paddingBottom: 96 },
+  // Room to breathe at the end of the list, no more: the tab bar reserves its
+  // own space, and this screen no longer reserves it a second time.
+  content: { padding: 14, paddingBottom: 28 },
   monthBar: {
     flexDirection: 'row',
     alignItems: 'center',
