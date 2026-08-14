@@ -2944,7 +2944,8 @@
         "sourceUrl": "Link",
         "presenter": "Who presents it",
         "minutes": "How many minutes",
-        "sourceHint": "km 3/24, p. 5"
+        "sourceHint": "km 3/24, p. 5",
+        "titlePlaceholder": "Briefly, in one line"
       },
       "makeTask": "Create the task",
       "totalShort": "In all",
@@ -2959,6 +2960,10 @@
       "closingPrayer": "Closing prayer",
       "minuteTakerShort": "record",
       "prayerShort": "prayer"
+    },
+    "approveConfirm": {
+      "title": "Approve the agenda?",
+      "message": "Every elder will see the questions and be told about the meeting. You can still edit it afterwards."
     }
   }
 }

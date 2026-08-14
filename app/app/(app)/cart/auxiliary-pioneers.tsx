@@ -9,7 +9,10 @@ import {
   Text,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -39,6 +42,7 @@ const STATE_DOT: Record<string, string> = {
 };
 
 export default function AuxiliaryPioneersScreen() {
+  const insets = useSafeAreaInsets();
   const { t, i18n } = useTranslation();
   const qc = useQueryClient();
   const { canManageAuxiliaryPioneers } = usePermissions();
@@ -165,7 +169,15 @@ export default function AuxiliaryPioneersScreen() {
 
   return (
     <SafeAreaView style={styles.safe} edges={['bottom']}>
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView
+        contentContainerStyle={[
+          styles.content,
+          // The phone's own gesture bar sits UNDER the tab bar, and a fixed
+          // number cannot know how tall it is. On the web there is none, which
+          // is why raising the number fixed it there and not on a phone.
+          { paddingBottom: 96 + insets.bottom },
+        ]}
+      >
         {/* Month selector */}
         <View style={styles.monthBar}>
           <Pressable

@@ -540,11 +540,21 @@ export default function AgendaScreen() {
             {/* Approving is the one act that turns a draft into an agenda:
                 from here every elder sees the items, and word goes out with
                 the day, the hour and the place — never with the items. */}
+            {/* Approving stands apart from «добавить вопрос»: they were
+                neighbours, and the one that summons five people is not a
+                button to hit by accident. */}
             {mayBuild && !agenda.meeting.approvedAt && items.length > 0 ? (
               <Pressable
-                style={styles.approve}
+                style={[styles.approve, styles.approveApart]}
                 disabled={approveMut.isPending}
-                onPress={() => approveMut.mutate(agenda.meeting!.id)}
+                onPress={async () => {
+                  const ok = await confirm({
+                    title: t('agenda.approveConfirm.title'),
+                    body: t('agenda.approveConfirm.message'),
+                    confirmLabel: t('agenda.approve'),
+                  });
+                  if (ok) approveMut.mutate(agenda.meeting!.id);
+                }}
               >
                 <Ionicons name="send-outline" size={16} color="#fff" />
                 <Text style={styles.approveText}>{t('agenda.approve')}</Text>
@@ -883,6 +893,7 @@ const styles = StyleSheet.create({
     paddingVertical: 13,
   },
   approveText: { color: '#fff', fontSize: 15, fontFamily: 'Manrope_700Bold' },
+  approveApart: { marginTop: 22 },
   approvedRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   approvedText: { fontSize: 13, color: '#15803d' },
   error: { fontSize: 13, color: '#b91c1c', marginTop: 8 },
@@ -897,6 +908,41 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   areaPickText: { fontSize: 13 },
+  inputTitle: { minHeight: 52, fontSize: 16, textAlignVertical: 'top' },
+  stepper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    paddingHorizontal: 6,
+    paddingVertical: 6,
+  },
+  stepBtn: {
+    width: 44,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 10,
+    backgroundColor: '#f1f5f9',
+  },
+  stepValue: { flexDirection: 'row', alignItems: 'baseline', gap: 5 },
+  stepNumber: { fontSize: 22, color: '#0f172a', fontFamily: 'Manrope_700Bold' },
+  stepUnit: { fontSize: 13, color: '#64748b' },
+  presetRow: { flexDirection: 'row', gap: 6, marginTop: 8 },
+  preset: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 7,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  presetOn: { backgroundColor: '#0e7490', borderColor: '#0e7490' },
+  presetText: { fontSize: 13, color: '#475569' },
+  presetTextOn: { color: '#fff', fontFamily: 'Manrope_600SemiBold' },
   hallOn: { backgroundColor: '#0e7490', borderColor: '#0e7490' },
   hallOnText: { color: '#fff' },
   group: { gap: 6 },
@@ -995,7 +1041,7 @@ function ItemSheet({
   const [presenter, setPresenter] = useState<string | null>(
     item?.presenterPublisherId ?? null,
   );
-  const [minutes, setMinutes] = useState(String(item?.minutes ?? 10));
+  const [minutes, setMinutes] = useState<number>(item?.minutes ?? 10);
   const [area, setArea] = useState<TaskArea>(item?.area ?? 'other');
 
   const save = useMutation({
@@ -1007,7 +1053,7 @@ function ItemSheet({
         sourceText: sourceText.trim() || null,
         sourceUrl: sourceUrl.trim() || null,
         presenterPublisherId: presenter,
-        minutes: Math.max(1, parseInt(minutes, 10) || 10),
+        minutes,
       };
       return item
         ? agendaApi.update(item.id, input)
@@ -1033,7 +1079,14 @@ function ItemSheet({
       }
     >
       <Text style={styles.label}>{t('agenda.items.form.titleLabel')}</Text>
-      <TextInput style={styles.input} value={title} onChangeText={setTitle} />
+      <TextInput
+        style={[styles.input, styles.inputTitle]}
+        value={title}
+        onChangeText={setTitle}
+        placeholder={t('agenda.items.form.titlePlaceholder')}
+        placeholderTextColor="#94a3b8"
+        multiline
+      />
 
       {/* The area lives on the question so that it travels into the task by
           itself — and so the agenda shows what each question is about. */}
@@ -1088,13 +1141,53 @@ function ItemSheet({
         onChange={setPresenter}
       />
 
+      {/* A stepper, not a keypad. Nobody needs 37 minutes: the useful
+          answers are a handful of round numbers, and reaching them by tapping
+          beats summoning a keyboard to type two digits and dismiss it. */}
       <Text style={styles.label}>{t('agenda.items.form.minutes')}</Text>
-      <TextInput
-        style={styles.input}
-        value={minutes}
-        onChangeText={setMinutes}
-        keyboardType="number-pad"
-      />
+      <View style={styles.stepper}>
+        <Pressable
+          style={styles.stepBtn}
+          onPress={() => setMinutes((m) => Math.max(5, m - 5))}
+          disabled={minutes <= 5}
+        >
+          <Ionicons
+            name="remove"
+            size={20}
+            color={minutes <= 5 ? '#cbd5e1' : '#0369a1'}
+          />
+        </Pressable>
+        <View style={styles.stepValue}>
+          <Text style={styles.stepNumber}>{minutes}</Text>
+          <Text style={styles.stepUnit}>{t('agenda.items.minShort')}</Text>
+        </View>
+        <Pressable
+          style={styles.stepBtn}
+          onPress={() => setMinutes((m) => Math.min(180, m + 5))}
+          disabled={minutes >= 180}
+        >
+          <Ionicons
+            name="add"
+            size={20}
+            color={minutes >= 180 ? '#cbd5e1' : '#0369a1'}
+          />
+        </Pressable>
+      </View>
+      <View style={styles.presetRow}>
+        {[5, 10, 15, 30].map((m) => (
+          <Pressable
+            key={m}
+            style={[styles.preset, minutes === m && styles.presetOn]}
+            onPress={() => setMinutes(m)}
+          >
+            <Text
+              style={[styles.presetText, minutes === m && styles.presetTextOn]}
+            >
+              {m}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
 
       {save.isError ? (
         <Text style={styles.error}>{extractErrorMessage(save.error)}</Text>

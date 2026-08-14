@@ -2944,7 +2944,8 @@
         "sourceUrl": "Link",
         "presenter": "Wer sie vorstellt",
         "minutes": "Wie viele Minuten",
-        "sourceHint": "km 3/24, S. 5"
+        "sourceHint": "km 3/24, S. 5",
+        "titlePlaceholder": "Kurz, in einer Zeile"
       },
       "makeTask": "Aufgabe erstellen",
       "totalShort": "Insgesamt",
@@ -2959,6 +2960,10 @@
       "closingPrayer": "Schlussgebet",
       "minuteTakerShort": "Protokoll",
       "prayerShort": "Gebet"
+    },
+    "approveConfirm": {
+      "title": "Tagesordnung freigeben?",
+      "message": "Alle Ältesten sehen die Fragen und werden über die Zusammenkunft benachrichtigt. Ändern kannst du sie danach weiterhin."
     }
   }
 }
