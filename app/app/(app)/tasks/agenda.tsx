@@ -36,6 +36,7 @@ import { DateField } from '../../../components/DateField';
 import { TimeField } from '../../../components/TimeField';
 import { confirm } from '../../../components/ConfirmHost';
 import { AREA_BG, AREA_FG, AREAS } from '../../../lib/task-areas';
+import { router, useLocalSearchParams } from 'expo-router';
 
 /**
  * The agenda of an elders' meeting.
@@ -47,7 +48,11 @@ import { AREA_BG, AREA_FG, AREAS } from '../../../lib/task-areas';
 export default function AgendaScreen() {
   const { t, i18n } = useTranslation();
   const qc = useQueryClient();
-  const [meetingId, setMeetingId] = useState<string | undefined>(undefined);
+  // A meeting can be named in the link — that is how the archive opens one.
+  const params = useLocalSearchParams<{ meetingId?: string }>();
+  const [meetingId, setMeetingId] = useState<string | undefined>(
+    typeof params.meetingId === 'string' ? params.meetingId : undefined,
+  );
   const [editingMeeting, setEditingMeeting] = useState<
     EldersMeeting | 'new' | null
   >(null);
@@ -267,6 +272,16 @@ export default function AgendaScreen() {
 
   return (
     <View style={styles.container}>
+      {/* The way back through what has been held. The chip row above is for
+          choosing what to work on next; looking BACK is a different act. */}
+      <Pressable
+        style={styles.archiveLink}
+        onPress={() => router.push('/tasks/archive' as never)}
+      >
+        <Ionicons name="albums-outline" size={15} color="#0369a1" />
+        <Text style={styles.archiveLinkText}>{t('agenda.archive.open')}</Text>
+      </Pressable>
+
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.meetingBar}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -894,6 +909,14 @@ const styles = StyleSheet.create({
   },
   approveText: { color: '#fff', fontSize: 15, fontFamily: 'Manrope_700Bold' },
   approveApart: { marginTop: 22 },
+  archiveLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 16,
+    paddingTop: 12,
+  },
+  archiveLinkText: { fontSize: 13.5, color: '#0369a1' },
   approvedRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   approvedText: { fontSize: 13, color: '#15803d' },
   error: { fontSize: 13, color: '#b91c1c', marginTop: 8 },

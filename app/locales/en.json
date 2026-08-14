@@ -2964,6 +2964,14 @@
     "approveConfirm": {
       "title": "Approve the agenda?",
       "message": "Every elder will see the questions and be told about the meeting. You can still edit it afterwards."
+    },
+    "archive": {
+      "title": "Agenda archive",
+      "open": "Past meetings",
+      "empty": "No past meetings yet",
+      "noPlace": "place not given",
+      "count_one": "{{count}} meeting",
+      "count_other": "{{count}} meetings"
     }
   }
 }

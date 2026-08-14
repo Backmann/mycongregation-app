@@ -33,6 +33,10 @@ export default function TasksLayout() {
         }}
       />
       <Stack.Screen
+        name="archive"
+        options={{ title: t('agenda.archive.title') }}
+      />
+      <Stack.Screen
         name="agenda"
         options={{
           title: t('tasks.agenda.title'),

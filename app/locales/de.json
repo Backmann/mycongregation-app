@@ -2964,6 +2964,14 @@
     "approveConfirm": {
       "title": "Tagesordnung freigeben?",
       "message": "Alle Ältesten sehen die Fragen und werden über die Zusammenkunft benachrichtigt. Ändern kannst du sie danach weiterhin."
+    },
+    "archive": {
+      "title": "Archiv der Tagesordnungen",
+      "open": "Vergangene Zusammenkünfte",
+      "empty": "Noch keine vergangenen Zusammenkünfte",
+      "noPlace": "Ort nicht angegeben",
+      "count_one": "{{count}} Zusammenkunft",
+      "count_other": "{{count}} Zusammenkünfte"
     }
   }
 }
