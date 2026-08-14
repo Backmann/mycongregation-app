@@ -2957,14 +2957,6 @@
       "none": "Вопросов пока нет",
       "notYet": "Повестка ещё составляется",
       "source": "Источник",
-      "minutes_one": "{{count}} мин",
-      "minutes_few": "{{count}} мин",
-      "minutes_many": "{{count}} мин",
-      "minutes_other": "{{count}} мин",
-      "total_one": "Всего {{count}} минута",
-      "total_few": "Всего {{count}} минуты",
-      "total_many": "Всего {{count}} минут",
-      "total_other": "Всего {{count}} минуты",
       "outcome": {
         "reviewed": "Рассмотрен",
         "carried": "Перенесён",
@@ -2980,13 +2972,19 @@
         "minutes": "Сколько минут",
         "sourceHint": "km 3/24, стр. 5"
       },
-      "makeTask": "Создать задачу"
+      "makeTask": "Создать задачу",
+      "totalShort": "Всего",
+      "minShort": "мин"
     },
     "homeRow": "Встреча совета старейшин",
     "meeting": {
       "place": "Где проходит",
       "placeHint": "Или укажите адрес",
-      "minuteTaker": "Кто ведёт протокол"
+      "minuteTaker": "Кто ведёт протокол",
+      "openingPrayer": "Вступительная молитва",
+      "closingPrayer": "Заключительная молитва",
+      "minuteTakerShort": "протокол",
+      "prayerShort": "молитва"
     }
   }
 }

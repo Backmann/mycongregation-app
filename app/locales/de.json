@@ -2931,10 +2931,6 @@
       "none": "Noch keine Fragen",
       "notYet": "Die Tagesordnung wird noch erstellt",
       "source": "Quelle",
-      "minutes_one": "{{count}} Min.",
-      "minutes_other": "{{count}} Min.",
-      "total_one": "Insgesamt {{count}} Minute",
-      "total_other": "Insgesamt {{count}} Minuten",
       "outcome": {
         "reviewed": "Besprochen",
         "carried": "Verschoben",
@@ -2950,13 +2946,19 @@
         "minutes": "Wie viele Minuten",
         "sourceHint": "km 3/24, S. 5"
       },
-      "makeTask": "Aufgabe erstellen"
+      "makeTask": "Aufgabe erstellen",
+      "totalShort": "Insgesamt",
+      "minShort": "Min."
     },
     "homeRow": "Ältestenzusammenkunft",
     "meeting": {
       "place": "Wo sie stattfindet",
       "placeHint": "Oder eine Adresse eintragen",
-      "minuteTaker": "Wer das Protokoll führt"
+      "minuteTaker": "Wer das Protokoll führt",
+      "openingPrayer": "Anfangsgebet",
+      "closingPrayer": "Schlussgebet",
+      "minuteTakerShort": "Protokoll",
+      "prayerShort": "Gebet"
     }
   }
 }

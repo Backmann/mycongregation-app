@@ -2931,10 +2931,6 @@
       "none": "No questions yet",
       "notYet": "The agenda is still being put together",
       "source": "Source",
-      "minutes_one": "{{count}} min",
-      "minutes_other": "{{count}} min",
-      "total_one": "{{count}} minute in all",
-      "total_other": "{{count}} minutes in all",
       "outcome": {
         "reviewed": "Reviewed",
         "carried": "Carried over",
@@ -2950,13 +2946,19 @@
         "minutes": "How many minutes",
         "sourceHint": "km 3/24, p. 5"
       },
-      "makeTask": "Create the task"
+      "makeTask": "Create the task",
+      "totalShort": "In all",
+      "minShort": "min"
     },
     "homeRow": "Elders’ meeting",
     "meeting": {
       "place": "Where it is held",
       "placeHint": "Or write an address",
-      "minuteTaker": "Who keeps the record"
+      "minuteTaker": "Who keeps the record",
+      "openingPrayer": "Opening prayer",
+      "closingPrayer": "Closing prayer",
+      "minuteTakerShort": "record",
+      "prayerShort": "prayer"
     }
   }
 }

@@ -60,6 +60,13 @@ export default function AgendaScreen() {
     queryKey: ['tasks', 'agenda', meetingId ?? 'next'],
     queryFn: () => tasksApi.agenda(meetingId),
   });
+  // The halls, so the meeting card can name the one that was chosen.
+  const screenHallsQuery = useQuery({
+    queryKey: ['halls'],
+    queryFn: () => hallsApi.list(),
+    staleTime: 60 * 60 * 1000,
+  });
+
   const publishersQuery = useQuery({
     queryKey: ['publishers', 'all'],
     queryFn: () => publishersApi.list({}),
@@ -93,6 +100,7 @@ export default function AgendaScreen() {
   const [makingTask, setMakingTask] = useState<AgendaItem | null>(null);
 
   const items = itemsQuery.data ?? [];
+
   /**
    * «Повестка на 95 минут» — the only reason to record minutes at all.
    *
@@ -139,6 +147,22 @@ export default function AgendaScreen() {
     for (const p of publishersQuery.data?.data ?? []) m.set(p.id, p.displayName);
     return (id: string | null) => (id ? (m.get(id) ?? null) : null);
   }, [publishersQuery.data]);
+
+  /** Place, recorder and the two prayers — set on the meeting, shown on it. */
+  const meetingLines = (() => {
+    const m = agendaQuery.data?.meeting;
+    if (!m) return [] as string[];
+    const hall = (screenHallsQuery.data ?? []).find((h) => h.id === m.hallId);
+    return [
+      hall?.name ?? m.placeText,
+      m.minuteTakerPublisherId
+        ? `${t('agenda.meeting.minuteTakerShort')}: ${nameOf(m.minuteTakerPublisherId)}`
+        : null,
+      m.openingPrayerPublisherId
+        ? `${t('agenda.meeting.prayerShort')}: ${nameOf(m.openingPrayerPublisherId)}`
+        : null,
+    ].filter(Boolean) as string[];
+  })();
 
   const fmt = (iso: string) => dayjs(iso).locale(i18n.language).format('D MMMM YYYY');
   const agenda = agendaQuery.data;
@@ -258,10 +282,24 @@ export default function AgendaScreen() {
               style={styles.meetingCard}
               onPress={() => setEditingMeeting(agenda.meeting)}
             >
-              <Text style={styles.meetingWhen}>
-                {fmt(agenda.meeting.date)}
-                {agenda.meeting.startTime ? ` · ${agenda.meeting.startTime}` : ''}
-              </Text>
+              <View style={styles.meetingHead}>
+                <Text style={styles.meetingWhen}>
+                  {fmt(agenda.meeting.date)}
+                  {agenda.meeting.startTime
+                    ? ` · ${agenda.meeting.startTime}`
+                    : ''}
+                </Text>
+                {/* The card always opened the form — silently. A pencil says
+                    so, and with it the way to change the date or remove the
+                    meeting altogether. */}
+                <Ionicons name="create-outline" size={18} color="#0369a1" />
+              </View>
+
+              {meetingLines.length > 0 ? (
+                <Text style={styles.meetingNote}>
+                  {meetingLines.join(' · ')}
+                </Text>
+              ) : null}
               {agenda.meeting.note ? (
                 <Text style={styles.meetingNote}>{agenda.meeting.note}</Text>
               ) : null}
@@ -273,9 +311,14 @@ export default function AgendaScreen() {
             <View style={styles.group}>
               <View style={styles.groupHead}>
                 <Text style={styles.groupTitle}>{t('agenda.items.title')}</Text>
+                {/* «Всего · 45 мин», not a declined sentence: «5 минуты»
+                    appeared on the real screen, and a form with no ending to
+                    get wrong cannot be got wrong. */}
                 {items.length > 0 ? (
                   <Text style={styles.total}>
-                    {t('agenda.items.total', { count: totalMinutes })}
+                    {`${t('agenda.items.totalShort')} · ${totalMinutes} ${t(
+                      'agenda.items.minShort',
+                    )}`}
                   </Text>
                 ) : null}
               </View>
@@ -299,7 +342,7 @@ export default function AgendaScreen() {
                         <Text style={styles.itemTitle}>{item.title}</Text>
                       </Pressable>
                       <Text style={styles.itemMinutes}>
-                        {t('agenda.items.minutes', { count: item.minutes })}
+                        {`${item.minutes} ${t('agenda.items.minShort')}`}
                       </Text>
                     </View>
 
@@ -552,6 +595,8 @@ function MeetingForm({
   const [hallId, setHallId] = useState<string | null>(null);
   const [placeText, setPlaceText] = useState('');
   const [minuteTaker, setMinuteTaker] = useState<string | null>(null);
+  const [openPrayer, setOpenPrayer] = useState<string | null>(null);
+  const [closePrayer, setClosePrayer] = useState<string | null>(null);
   const [loadedFor, setLoadedFor] = useState<string | null>(null);
 
   // The halls already entered — a meeting is often in one of them, and often
@@ -571,6 +616,8 @@ function MeetingForm({
     setHallId(editing?.hallId ?? null);
     setPlaceText(editing?.placeText ?? '');
     setMinuteTaker(editing?.minuteTakerPublisherId ?? null);
+    setOpenPrayer(editing?.openingPrayerPublisherId ?? null);
+    setClosePrayer(editing?.closingPrayerPublisherId ?? null);
   }
   if (!visible && loadedFor !== null) setLoadedFor(null);
 
@@ -585,6 +632,8 @@ function MeetingForm({
         // sheet never shows two answers to «where».
         placeText: hallId ? null : placeText.trim() || null,
         minuteTakerPublisherId: minuteTaker,
+        openingPrayerPublisherId: openPrayer,
+        closingPrayerPublisherId: closePrayer,
       };
       return editing
         ? tasksApi.updateMeeting(editing.id, input)
@@ -664,6 +713,24 @@ function MeetingForm({
           onChange={setMinuteTaker}
         />
 
+        {/* Named before the meeting, so nobody is asked at the door. */}
+        <PublisherSelector
+          boxed
+          label={t('agenda.meeting.openingPrayer')}
+          value={openPrayer}
+          genderFilter="brother"
+          appointmentFilter="elder"
+          onChange={setOpenPrayer}
+        />
+        <PublisherSelector
+          boxed
+          label={t('agenda.meeting.closingPrayer')}
+          value={closePrayer}
+          genderFilter="brother"
+          appointmentFilter="elder"
+          onChange={setClosePrayer}
+        />
+
         <Text style={styles.label}>{t('tasks.meeting.note')}</Text>
         <TextInput
           style={styles.input}
@@ -710,6 +777,12 @@ const styles = StyleSheet.create({
   chipAdd: { backgroundColor: '#e0f2fe' },
   chipText: { fontSize: 13, color: '#334155', fontWeight: '600' },
   chipTextOn: { color: '#fff' },
+  meetingHead: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 10,
+  },
   meetingCard: { backgroundColor: '#fff', borderRadius: 12, padding: 14, gap: 4 },
   meetingWhen: {
     fontSize: 15,

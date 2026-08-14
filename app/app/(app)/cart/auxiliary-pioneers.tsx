@@ -632,7 +632,9 @@ function ServingCard({
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: '#f1f5f9' },
-  content: { padding: 14, paddingBottom: 40 },
+  // 96, not 40: the tab bar is 56 points plus the phone's own inset, so the
+  // last card was ending underneath it with no way to scroll past.
+  content: { padding: 14, paddingBottom: 96 },
   monthBar: {
     flexDirection: 'row',
     alignItems: 'center',

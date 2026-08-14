@@ -3609,6 +3609,9 @@ export interface EldersMeeting {
   placeText: string | null;
   /** Who keeps the record — the secretary unless another is named. */
   minuteTakerPublisherId: string | null;
+  /** Who prays, so nobody is asked at the door. */
+  openingPrayerPublisherId: string | null;
+  closingPrayerPublisherId: string | null;
   /** Until this is set the agenda is the coordinator's alone. */
   approvedAt: string | null;
   approvedById: string | null;
@@ -3667,6 +3670,8 @@ export const tasksApi = {
       hallId?: string | null;
       placeText?: string | null;
       minuteTakerPublisherId?: string | null;
+      openingPrayerPublisherId?: string | null;
+      closingPrayerPublisherId?: string | null;
     },
   ) {
     const { data } = await api.patch<EldersMeeting>(
