@@ -35,6 +35,11 @@ export function buildAgendaHtml(opts: {
    * mode — the state of the meeting already says which it is.
    */
   items?: AgendaPrintItem[];
+  /** Where it is held, in full — the hall's address when the hall is known. */
+  place?: string | null;
+  minuteTakerName?: string | null;
+  openingPrayerName?: string | null;
+  closingPrayerName?: string | null;
   onAgenda: ElderTask[];
   overdue: ElderTask[];
   dueSoon: ElderTask[];
@@ -45,6 +50,9 @@ export function buildAgendaHtml(opts: {
   labels: {
     title: string;
     items: string;
+    minuteTaker: string;
+    openingPrayer: string;
+    closingPrayer: string;
     presenter: string;
     outcomes: Record<string, string>;
     onAgenda: string;
@@ -59,6 +67,10 @@ export function buildAgendaHtml(opts: {
   const {
     meeting,
     items = [],
+    place = null,
+    minuteTakerName = null,
+    openingPrayerName = null,
+    closingPrayerName = null,
     onAgenda,
     overdue,
     dueSoon,
@@ -146,6 +158,30 @@ export function buildAgendaHtml(opts: {
     ? formatDate(meeting.date) + (meeting.startTime ? ` · ${meeting.startTime}` : '')
     : '';
 
+  /**
+   * The three facts under the date: where, who keeps the record, who prays.
+   *
+   * The address is spelled out rather than the hall merely named — a sheet
+   * carried by somebody who has not been there should not need a second
+   * enquiry.
+   */
+  const whoWhere = [
+    place,
+    minuteTakerName ? `${labels.minuteTaker}: ${minuteTakerName}` : '',
+    openingPrayerName ? `${labels.openingPrayer}: ${openingPrayerName}` : '',
+    closingPrayerName ? `${labels.closingPrayer}: ${closingPrayerName}` : '',
+  ]
+    .filter(Boolean)
+    .map((x) => esc(String(x)))
+    .join(' · ');
+
+  // Built here rather than nested inside the page template: a template inside
+  // a template inside a placeholder is exactly the sort of line that parses
+  // for one tool and not for the next.
+  const whoWhereHtml = whoWhere
+    ? '<div class="sub">' + whoWhere + '</div>'
+    : '';
+
   return `<!doctype html><html><head><meta charset="utf-8"><style>
   html, body { margin: 0; padding: 0; }
   body {
@@ -177,6 +213,7 @@ export function buildAgendaHtml(opts: {
     <div class="head">
       <div class="h1">${esc(labels.title)}</div>
       <div class="sub">${esc(congregationName)}${when ? ` · ${esc(when)}` : ''}</div>
+      ${whoWhereHtml}
     </div>
     ${itemsSection(items)}
     ${section(labels.onAgenda, onAgenda)}

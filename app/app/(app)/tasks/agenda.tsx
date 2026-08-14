@@ -148,13 +148,28 @@ export default function AgendaScreen() {
     return (id: string | null) => (id ? (m.get(id) ?? null) : null);
   }, [publishersQuery.data]);
 
+  /** Where it is held, in full — the hall's own address if it is a known one. */
+  const meetingPlace = (() => {
+    const m = agendaQuery.data?.meeting;
+    if (!m) return null;
+    const hall = (screenHallsQuery.data ?? []).find((h) => h.id === m.hallId);
+    return hall
+      ? [hall.name, hall.address].filter(Boolean).join(', ')
+      : (m.placeText ?? null);
+  })();
+
   /** Place, recorder and the two prayers — set on the meeting, shown on it. */
   const meetingLines = (() => {
     const m = agendaQuery.data?.meeting;
     if (!m) return [] as string[];
     const hall = (screenHallsQuery.data ?? []).find((h) => h.id === m.hallId);
+    // The name alone is no use to somebody who has not been there. If the
+    // hall is one the app knows, its address is known too — so it is said.
+    const where = hall
+      ? [hall.name, hall.address].filter(Boolean).join(', ')
+      : m.placeText;
     return [
-      hall?.name ?? m.placeText,
+      where,
       m.minuteTakerPublisherId
         ? `${t('agenda.meeting.minuteTakerShort')}: ${nameOf(m.minuteTakerPublisherId)}`
         : null,
@@ -172,6 +187,17 @@ export default function AgendaScreen() {
     const preopened = openPrintWindow();
     const html = buildAgendaHtml({
       meeting: agenda.meeting,
+      // Flattened for the sheet: it prints, it does not look anything up.
+      place: meetingPlace,
+      minuteTakerName: agenda.meeting?.minuteTakerPublisherId
+        ? nameOf(agenda.meeting.minuteTakerPublisherId)
+        : null,
+      openingPrayerName: agenda.meeting?.openingPrayerPublisherId
+        ? nameOf(agenda.meeting.openingPrayerPublisherId)
+        : null,
+      closingPrayerName: agenda.meeting?.closingPrayerPublisherId
+        ? nameOf(agenda.meeting.closingPrayerPublisherId)
+        : null,
       // Flattened here: the sheet resolves nothing, it only prints.
       items: items.map((i) => ({
         title: i.title,
@@ -191,6 +217,9 @@ export default function AgendaScreen() {
       labels: {
         title: t('tasks.agenda.title'),
         items: t('agenda.items.title'),
+        minuteTaker: t('agenda.meeting.minuteTakerShort'),
+        openingPrayer: t('agenda.meeting.openingPrayer'),
+        closingPrayer: t('agenda.meeting.closingPrayer'),
         presenter: t('agenda.items.form.presenter'),
         outcomes: {
           reviewed: t('agenda.items.outcome.reviewed'),
