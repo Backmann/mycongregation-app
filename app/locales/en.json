@@ -374,7 +374,25 @@
       "title": "Delete permanently",
       "action": "Delete permanently",
       "confirm": "Permanently delete the record for {{name}}? This cannot be undone.",
-      "hasHistory": "This publisher has history (reports or assignments). Permanent deletion is blocked — use \"Mark as departed\" instead."
+      "hasHistory": "This publisher has history (reports or assignments). Permanent deletion is blocked — use \"Mark as departed\" instead.",
+      "hasHistoryNamed": "This publisher has history — permanent deletion is blocked. Held by: {{holders}}. Clear those, or use \"Mark as departed\" instead.",
+      "holders": {
+        "absences": "absences",
+        "assignments": "meeting assignments",
+        "auxiliary_pioneers": "auxiliary pioneer service",
+        "cart_assignments": "cart shifts",
+        "cart_requests": "cart requests",
+        "co_visit_items": "circuit overseer visit items",
+        "duties": "duties",
+        "elder_task_assignees": "body of elders tasks",
+        "elders_meeting_items": "agenda items",
+        "elders_meetings": "elders meetings",
+        "field_service_meetings": "field service meetings",
+        "local_needs_topics": "local needs topics",
+        "pioneer_school_helpers": "pioneer service school",
+        "service_reports": "field service reports",
+        "talk_exchange": "talk exchange"
+      }
     },
     "departedCount": "{{count}} departed",
     "myGroupOnly": "Showing publishers from your service group",

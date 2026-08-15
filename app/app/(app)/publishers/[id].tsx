@@ -43,6 +43,35 @@ function removalLabel(reason: RemovalReason): string {
   return i18n.t(`publishers.removal.${reason}`);
 }
 
+/**
+ * Turns the server's «publisher_has_history: service_reports=4, duties=1» into
+ * «отчёты о служении (4), обязанности (1)», or '' when there is no detail —
+ * an older server, or a refusal that carried no list.
+ *
+ * A table we have no word for is shown by its own name rather than dropped:
+ * the server asks the schema, so a table added later is refused correctly long
+ * before anyone here has a translation for it, and «cart_shifts (2)» is a far
+ * better answer than silence about what is in the way.
+ */
+function describePurgeHolders(
+  raw: string,
+  t: (key: string, opts?: Record<string, unknown>) => string,
+): string {
+  const detail = raw.split('publisher_has_history:')[1];
+  if (!detail) return '';
+  const parts: string[] = [];
+  for (const chunk of detail.split(',')) {
+    const [table, count] = chunk.trim().split('=');
+    if (!table) continue;
+    const key = `publishers.purge.holders.${table.trim()}`;
+    const label = t(key);
+    const name = label === key ? table.trim() : label;
+    const n = Number(count);
+    parts.push(Number.isFinite(n) && n > 0 ? `${name} (${n})` : name);
+  }
+  return parts.join(', ');
+}
+
 export default function PublisherDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { t } = useTranslation();
@@ -158,8 +187,11 @@ export default function PublisherDetailScreen() {
     },
     onError: (e: unknown) => {
       const raw = extractErrorMessage(e);
+      const holders = describePurgeHolders(raw, t);
       const body = raw.includes('publisher_has_history')
-        ? t('publishers.purge.hasHistory')
+        ? holders
+          ? t('publishers.purge.hasHistoryNamed', { holders })
+          : t('publishers.purge.hasHistory')
         : raw;
       if (Platform.OS === 'web') {
         window.alert(body);

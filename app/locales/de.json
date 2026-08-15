@@ -374,7 +374,25 @@
       "title": "Endgültig löschen",
       "action": "Endgültig löschen",
       "confirm": "Den Eintrag für {{name}} endgültig löschen? Das kann nicht rückgängig gemacht werden.",
-      "hasHistory": "Dieser Verkündiger hat Verlaufsdaten (Berichte oder Zuteilungen). Endgültiges Löschen ist gesperrt — bitte \"Als ausgeschieden markieren\" verwenden."
+      "hasHistory": "Dieser Verkündiger hat Verlaufsdaten (Berichte oder Zuteilungen). Endgültiges Löschen ist gesperrt — bitte \"Als ausgeschieden markieren\" verwenden.",
+      "hasHistoryNamed": "Dieser Verkündiger hat Verlaufsdaten — endgültiges Löschen ist gesperrt. Gehalten von: {{holders}}. Bitte diese entfernen oder \"Als ausgeschieden markieren\" verwenden.",
+      "holders": {
+        "absences": "Abwesenheiten",
+        "assignments": "Zuteilungen",
+        "auxiliary_pioneers": "Hilfspionierdienst",
+        "cart_assignments": "Trolley-Schichten",
+        "cart_requests": "Trolley-Anfragen",
+        "co_visit_items": "Punkte des Kreisaufseherbesuchs",
+        "duties": "Aufgaben",
+        "elder_task_assignees": "Aufgaben der Ältestenschaft",
+        "elders_meeting_items": "Tagesordnungspunkte",
+        "elders_meetings": "Ältestenversammlungen",
+        "field_service_meetings": "Zusammenkünfte für den Predigtdienst",
+        "local_needs_topics": "Themen für örtliche Bedürfnisse",
+        "pioneer_school_helpers": "Pionierdienstschule",
+        "service_reports": "Predigtdienstberichte",
+        "talk_exchange": "Vortragsaustausch"
+      }
     },
     "departedCount": "{{count}} ausgeschieden",
     "myGroupOnly": "Angezeigt werden Verkündiger deiner Gruppe",
