@@ -108,6 +108,22 @@ export default function LoginScreen() {
             <Text style={styles.subtitle}>{t('auth.subtitle')}</Text>
           </View>
 
+          <Pressable
+            onPress={() => router.push('/(auth)/invite' as never)}
+            style={styles.inviteCard}
+          >
+            <Ionicons name="mail-open-outline" size={20} color="#0e7490" />
+            <View style={{ flex: 1 }}>
+              <Text style={styles.inviteCardTitle}>
+                {t('auth.invite.entryTitle')}
+              </Text>
+              <Text style={styles.inviteCardHint}>
+                {t('auth.invite.entryHint')}
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color="#94a3b8" />
+          </Pressable>
+
           <Text style={styles.label}>{t('auth.email')}</Text>
           <View style={styles.inputWrap}>
             <Ionicons
@@ -195,19 +211,6 @@ export default function LoginScreen() {
               <Text style={styles.hintText}>{t('auth.noAccountHint')}</Text>
             </View>
             <Pressable
-              onPress={() => router.push('/(auth)/invite' as never)}
-              hitSlop={6}
-            >
-              <Text
-                style={[
-                  styles.forgotText,
-                  { color: '#0369a1', fontWeight: '600' },
-                ]}
-              >
-                {t('auth.invite.iWasInvited')}
-              </Text>
-            </Pressable>
-            <Pressable
               onPress={() => router.push('/(auth)/forgot-password' as never)}
               hitSlop={6}
             >
@@ -245,6 +248,24 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 24,
   },
+  inviteCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: '#ecfeff',
+    borderWidth: 1,
+    borderColor: '#a5f3fc',
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 18,
+  },
+  inviteCardTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#0e7490',
+    marginBottom: 2,
+  },
+  inviteCardHint: { fontSize: 12.5, color: '#0891b2', lineHeight: 17 },
   card: {
     backgroundColor: '#fff',
     borderRadius: 20,

@@ -463,7 +463,7 @@
     "password": "Passwort",
     "emailPlaceholder": "du@beispiel.de",
     "signIn": "Anmelden",
-    "noAccountHint": "Konten werden vom Administrator der Versammlung erstellt. Noch kein Zugang? Wenden Sie sich an ihn.",
+    "noAccountHint": "Konten legt der Versammlungsadministrator an. Kam keine Einladung an, wenden Sie sich an ihn.",
     "forgotPasswordHint": "Passwort vergessen? Wenden Sie sich an den Administrator der Versammlung.",
     "showPassword": "Passwort anzeigen",
     "hidePassword": "Passwort verbergen",
@@ -495,7 +495,7 @@
         "tooRepetitive": "Immer dieselben Zeichen ergeben einen einzigen Rateversuch."
       }
     },
-    "wrongEmailOrPassword": "Falsche Adresse oder falsches Passwort. Wurde der Zugang gerade erst erstellt, bitte einen Administrator, ein Passwort zu setzen.",
+    "wrongEmailOrPassword": "Falsche Adresse oder falsches Passwort. Wenn Sie eingeladen wurden und noch kein Passwort haben, gehen Sie zurück und tippen Sie auf «Wurden Sie eingeladen?».",
     "invite": {
       "iWasInvited": "Ich wurde eingeladen",
       "title": "Einladung",
@@ -510,7 +510,10 @@
       "wrongCode_other": "Der Code stimmt nicht. Noch {{count}} Versuche.",
       "spent": "Dieser Code gilt nicht mehr. Bitte einen Ältesten, die Einladung erneut zu senden.",
       "invalid": "Der Code stimmt nicht. Möglicherweise ist er abgelaufen oder wurde bereits verwendet — bitte um eine neue Einladung.",
-      "backToLogin": "Ich habe bereits ein Passwort — anmelden"
+      "backToLogin": "Ich habe bereits ein Passwort — anmelden",
+      "entryTitle": "Wurden Sie eingeladen? Hier starten",
+      "entryHint": "Code aus der E-Mail eingeben — das Passwort wählen Sie selbst",
+      "newestLetter": "Bei mehreren E-Mails die neueste öffnen: ältere Codes gelten nicht mehr."
     }
   },
   "months": {

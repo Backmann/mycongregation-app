@@ -463,7 +463,7 @@
     "password": "Password",
     "emailPlaceholder": "you@example.com",
     "signIn": "Sign in",
-    "noAccountHint": "Accounts are created by your congregation administrator. No access yet? Reach out to them.",
+    "noAccountHint": "Accounts are created by the congregation administrator. If no invitation arrived, ask them.",
     "forgotPasswordHint": "Forgot your password? Contact your congregation administrator.",
     "showPassword": "Show password",
     "hidePassword": "Hide password",
@@ -495,7 +495,7 @@
         "tooRepetitive": "The same characters over and over amount to one guess."
       }
     },
-    "wrongEmailOrPassword": "Wrong address or password. If the login was created recently, ask an administrator to set a password.",
+    "wrongEmailOrPassword": "Wrong address or password. If you were invited and have no password yet, go back and tap «Were you invited?».",
     "invite": {
       "iWasInvited": "I was invited",
       "title": "Invitation",
@@ -510,7 +510,10 @@
       "wrongCode_other": "That code did not match. {{count}} attempts left.",
       "spent": "This code no longer works. Ask an elder to send the invitation again.",
       "invalid": "That code did not match. It may have expired or already been used — ask for the invitation to be sent again.",
-      "backToLogin": "I already have a password — sign in"
+      "backToLogin": "I already have a password — sign in",
+      "entryTitle": "Were you invited? Start here",
+      "entryHint": "Enter the code from the letter — you choose the password",
+      "newestLetter": "If there are several letters, open the newest: older codes stop working."
     }
   },
   "months": {

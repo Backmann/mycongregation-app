@@ -91,7 +91,9 @@ export default function InviteScreen() {
         // strict and a form that seems broken.
         if (refusal.attemptsLeft > 0) {
           setError(
-            t('auth.invite.wrongCode', { count: refusal.attemptsLeft }),
+            t('auth.invite.wrongCode', { count: refusal.attemptsLeft }) +
+              ' ' +
+              t('auth.invite.newestLetter'),
           );
         } else {
           setSpent(true);
@@ -142,6 +144,9 @@ export default function InviteScreen() {
             editable={!submitting && !spent}
           />
           <Text style={styles.hint}>{t('auth.invite.codeHint')}</Text>
+          <Text style={styles.hint}>
+            {t('auth.invite.newestLetter')}
+          </Text>
 
           <Text style={styles.label}>{t('auth.reset.newPassword')}</Text>
           <View style={styles.inputWrap}>
