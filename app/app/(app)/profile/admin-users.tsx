@@ -23,7 +23,10 @@ import {
   publishersApi,
   usersApi,
 } from '../../../lib/api';
-import { passwordProblem } from '../../../lib/password';
+import {
+  passwordProblem,
+  PASSWORD_MIN_LENGTH,
+} from '../../../lib/password';
 import { PasswordRules } from '../../../components/PasswordRules';
 import { androidVersionName } from '../../../lib/android-version';
 
@@ -247,7 +250,9 @@ export default function AdminUsersScreen() {
             style={styles.passInput}
             value={newPassword}
             onChangeText={setNewPassword}
-            placeholder={t('admin.users.noPassword.placeholder')}
+            placeholder={t('admin.users.noPassword.placeholder', {
+              count: PASSWORD_MIN_LENGTH,
+            })}
             placeholderTextColor="#94a3b8"
             autoCapitalize="none"
             autoCorrect={false}

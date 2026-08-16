@@ -14,7 +14,10 @@ import { useTranslation } from 'react-i18next';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { authApi, extractErrorMessage } from '../../../lib/api';
-import { passwordProblem } from '../../../lib/password';
+import {
+  passwordProblem,
+  PASSWORD_MIN_LENGTH,
+} from '../../../lib/password';
 import { PasswordRules } from '../../../components/PasswordRules';
 import { reportSuccess } from '../../../lib/error-bus';
 
@@ -94,7 +97,7 @@ export default function ChangePasswordScreen() {
         contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
         keyboardShouldPersistTaps="handled"
       >
-        <Text style={styles.intro}>{t('profile.changePassword.intro')}</Text>
+        <Text style={styles.intro}>{t('profile.changePassword.intro', { count: PASSWORD_MIN_LENGTH })}</Text>
 
         {serverError && (
           <View style={styles.errorBox}>

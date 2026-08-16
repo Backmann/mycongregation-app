@@ -12,7 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { extractErrorMessage, publishersApi } from '../lib/api';
-import { passwordProblem } from '../lib/password';
+import { passwordProblem, PASSWORD_MIN_LENGTH } from '../lib/password';
 import { PasswordRules } from './PasswordRules';
 import { Dialog } from './Dialog';
 import type { GrantAccessInput, Publisher } from '../lib/api';
@@ -517,7 +517,9 @@ function GrantModal({
                   autoCapitalize="none"
                   autoCorrect={false}
                   textContentType="newPassword"
-                  placeholder={t('publisherAccess.passwordPlaceholder')}
+                  placeholder={t('publisherAccess.passwordPlaceholder', {
+              count: PASSWORD_MIN_LENGTH,
+            })}
                   placeholderTextColor="#94a3b8"
                 />
                 <Pressable
@@ -603,7 +605,9 @@ function ResetModal({
             value={password}
             onChangeText={setPassword}
             secureTextEntry
-            placeholder={t('publisherAccess.passwordPlaceholder')}
+            placeholder={t('publisherAccess.passwordPlaceholder', {
+              count: PASSWORD_MIN_LENGTH,
+            })}
           />
           <PasswordRules password={password} />
 
