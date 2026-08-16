@@ -12,6 +12,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { extractErrorMessage, publishersApi } from '../lib/api';
+import { passwordProblem } from '../lib/password';
+import { PasswordRules } from './PasswordRules';
 import { Dialog } from './Dialog';
 import type { GrantAccessInput, Publisher } from '../lib/api';
 import i18n from '../lib/i18n';
@@ -448,7 +450,7 @@ function GrantModal({
   // ignored it unless an invitation was being sent, and an empty or malformed
   // address only failed once the server answered.
   const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
-  const passwordOk = password.length >= 8;
+  const passwordOk = !passwordProblem(password);
   const canSubmit = !pending && emailOk && (sendInvite || passwordOk);
 
   return (
@@ -515,7 +517,7 @@ function GrantModal({
                   autoCapitalize="none"
                   autoCorrect={false}
                   textContentType="newPassword"
-                  placeholder={t('publisherAccess.min8')}
+                  placeholder={t('publisherAccess.passwordPlaceholder')}
                   placeholderTextColor="#94a3b8"
                 />
                 <Pressable
@@ -530,11 +532,7 @@ function GrantModal({
                   />
                 </Pressable>
               </View>
-              {password.length > 0 && !passwordOk ? (
-                <Text style={grantStyles.fieldHint}>
-                  {t('publisherAccess.min8')}
-                </Text>
-              ) : null}
+              <PasswordRules password={password} />
             </>
           )}
 
@@ -584,7 +582,7 @@ function ResetModal({
     if (visible) setPassword('');
   }, [visible]);
 
-  const canSubmit = password.length >= 8 && !pending;
+  const canSubmit = !passwordProblem(password) && !pending;
 
   return (
     <Dialog
@@ -605,8 +603,9 @@ function ResetModal({
             value={password}
             onChangeText={setPassword}
             secureTextEntry
-            placeholder={t('publisherAccess.min8')}
+            placeholder={t('publisherAccess.passwordPlaceholder')}
           />
+          <PasswordRules password={password} />
 
           <Text style={styles.hint}>{t('publisherAccess.resetHint')}</Text>
 

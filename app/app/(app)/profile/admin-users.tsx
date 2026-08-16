@@ -23,6 +23,8 @@ import {
   publishersApi,
   usersApi,
 } from '../../../lib/api';
+import { passwordProblem } from '../../../lib/password';
+import { PasswordRules } from '../../../components/PasswordRules';
 import { androidVersionName } from '../../../lib/android-version';
 
 // Login accounts are created and managed per-person on the Братья screen
@@ -255,12 +257,15 @@ export default function AdminUsersScreen() {
               {extractErrorMessage(passMutation.error)}
             </Text>
           ) : null}
+          <PasswordRules password={newPassword} />
           <Pressable
             style={[
               styles.passBtn,
-              newPassword.trim().length < 8 && { opacity: 0.5 },
+              !!passwordProblem(newPassword.trim()) && { opacity: 0.5 },
             ]}
-            disabled={newPassword.trim().length < 8 || passMutation.isPending}
+            disabled={
+              !!passwordProblem(newPassword.trim()) || passMutation.isPending
+            }
             onPress={() => passMutation.mutate()}
           >
             <Text style={styles.passBtnText}>{t('common.save')}</Text>

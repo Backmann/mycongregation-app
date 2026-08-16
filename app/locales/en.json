@@ -78,7 +78,9 @@
     "emailLabel": "E-mail",
     "emailInvalid": "That address looks wrong",
     "roleHint": "The role normally follows the appointment — turn this on only if administrator rights are needed.",
-    "disableConfirmYes": "Disable"
+    "disableConfirmYes": "Disable",
+    "passwordHint": "At least {{count}} characters",
+    "passwordPlaceholder": "At least {{count}} characters"
   },
   "tabs": {
     "schedule": "Programme",
@@ -169,17 +171,17 @@
     "changePassword": {
       "rowTitle": "Change password",
       "rowSubtitle": "Change your account password",
-      "intro": "Enter your current password, then a new one. At least 8 characters. Your current session stays signed in after the change.",
+      "intro": "Enter your current password, then a new one. At least {{count}} characters. You stay signed in after the change.",
       "currentPassword": "Current password",
       "newPassword": "New password",
       "confirmPassword": "Confirm new password",
-      "minLength": "At least 8 characters",
+      "minLength": "At least {{count}} characters",
       "submit": "Change password",
       "successTitle": "Password changed",
       "successBody": "Your password has been updated. Existing sessions on this device stay signed in.",
       "note": "Tip: if you forgot your current password, ask an administrator to reset it via User management.",
       "errors": {
-        "tooShort": "New password must be at least 8 characters",
+        "tooShort": "New password must be at least {{count}} characters",
         "sameAsCurrent": "New password must differ from current password",
         "mismatch": "Passwords don't match"
       },
@@ -478,7 +480,7 @@
       "title": "New password",
       "newPassword": "New password",
       "confirmPassword": "Repeat the password",
-      "minLength": "At least 8 characters",
+      "minLength": "At least {{count}} characters",
       "mismatch": "Passwords do not match",
       "submit": "Save the password",
       "success": "Password changed. You can sign in with the new password now.",
@@ -1046,7 +1048,7 @@
         "title": "New user",
         "email": "Email",
         "password": "Initial password",
-        "passwordHint": "At least 8 characters. Share with the user out-of-band — the password is not shown again here.",
+        "passwordHint": "At least {{count}} characters. Share it with the user out-of-band — the password is not shown again here.",
         "role": "Role",
         "submit": "Create"
       },
@@ -1061,7 +1063,7 @@
         "title": "Reset password",
         "subtitle": "Set a new password for {{email}}. Share it with the user out-of-band.",
         "password": "New password",
-        "passwordHint": "At least 8 characters.",
+        "passwordHint": "At least {{count}} characters.",
         "submit": "Reset",
         "successMessage": "Password for {{email}} updated."
       },
@@ -1096,7 +1098,7 @@
         "badge": "No password set",
         "fix": "Set one",
         "sheetTitle": "Set a password",
-        "placeholder": "At least 8 characters",
+        "placeholder": "At least {{count}} characters",
         "sheetHint": "The login {{email}} exists but has no password, so nobody can sign in with it. Set one and pass it on in person.",
         "invite": "Invite",
         "inviting": "Sending…",
@@ -2991,5 +2993,16 @@
       "count_one": "{{count}} meeting",
       "count_other": "{{count}} meetings"
     }
+  },
+  "password": {
+    "intro": "Any characters will do — letters, digits, spaces. Capitals and symbols are not required. Three or four ordinary words are easiest to remember and hardest to guess.",
+    "checks": {
+      "length": "At least {{count}} characters",
+      "notCommon": "Not one of the first ones tried",
+      "notRepetitive": "Not the same character over and over"
+    },
+    "suggest": "Suggest one for me",
+    "show": "Show password",
+    "hide": "Hide password"
   }
 }

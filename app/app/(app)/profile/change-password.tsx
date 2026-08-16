@@ -14,6 +14,8 @@ import { useTranslation } from 'react-i18next';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { authApi, extractErrorMessage } from '../../../lib/api';
+import { passwordProblem } from '../../../lib/password';
+import { PasswordRules } from '../../../components/PasswordRules';
 import { reportSuccess } from '../../../lib/error-bus';
 
 /**
@@ -49,7 +51,8 @@ export default function ChangePasswordScreen() {
   });
 
   // Client-side validation flags
-  const newLengthOk = newPassword.length >= 8;
+  const newProblem = passwordProblem(newPassword);
+  const newLengthOk = !newProblem;
   const confirmOk = confirmPassword === newPassword;
   const newDiffersFromCurrent =
     newPassword.length === 0 || newPassword !== currentPassword;
@@ -134,16 +137,14 @@ export default function ChangePasswordScreen() {
         />
         {showLengthError ? (
           <Text style={styles.fieldError}>
-            {t('profile.changePassword.errors.tooShort')}
+            {t(`auth.reset.problem.${newProblem ?? 'tooShort'}`)}
           </Text>
         ) : showSameAsCurrentError ? (
           <Text style={styles.fieldError}>
             {t('profile.changePassword.errors.sameAsCurrent')}
           </Text>
         ) : (
-          <Text style={styles.fieldHint}>
-            {t('profile.changePassword.minLength')}
-          </Text>
+          <PasswordRules password={newPassword} />
         )}
 
         <Text style={styles.fieldLabel}>

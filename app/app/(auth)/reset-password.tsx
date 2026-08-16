@@ -14,7 +14,13 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { authApi, extractErrorMessage } from '../../lib/api';
 import { useAuth } from '../../lib/auth';
-import { passwordProblem, PASSWORD_MIN_LENGTH } from '../../lib/password';
+import {
+  passwordProblem,
+  suggestPassword,
+  weakPasswordProblem,
+  PASSWORD_MIN_LENGTH,
+} from '../../lib/password';
+import { PasswordRules } from '../../components/PasswordRules';
 
 const TOKEN_RE = /^[0-9a-f]{64}$/;
 
@@ -26,7 +32,7 @@ export default function ResetPasswordScreen() {
 
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
-  const [show, setShow] = useState(false);
+  const [show, setShow] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -50,7 +56,10 @@ export default function ResetPasswordScreen() {
       await adoptSession(session.accessToken, session.refreshToken, session.user);
       router.replace('/(app)/home' as never);
     } catch (e) {
-      setError(extractErrorMessage(e));
+      const weak = weakPasswordProblem(e);
+      setError(
+        weak ? t(`auth.reset.problem.${weak}`) : extractErrorMessage(e),
+      );
     } finally {
       setSubmitting(false);
     }
@@ -113,7 +122,18 @@ export default function ResetPasswordScreen() {
                   />
                 </Pressable>
               </View>
-              <Text style={styles.hint}>{t('auth.reset.minLength')}</Text>
+              <PasswordRules password={password} />
+              <Pressable
+                onPress={() => {
+                  const made = suggestPassword();
+                  setPassword(made);
+                  setConfirm(made);
+                  setShow(true);
+                }}
+                hitSlop={6}
+              >
+                <Text style={styles.suggest}>{t('password.suggest')}</Text>
+              </Pressable>
 
               <Text style={styles.label}>
                 {t('auth.reset.confirmPassword')}
@@ -131,11 +151,6 @@ export default function ResetPasswordScreen() {
                 editable={!submitting}
                 onSubmitEditing={() => void submit()}
               />
-              {problem && password ? (
-                <Text style={styles.problem}>
-                  {t(`auth.reset.problem.${problem}`)}
-                </Text>
-              ) : null}
               {mismatch && (
                 <Text style={styles.mismatch}>{t('auth.reset.mismatch')}</Text>
               )}
@@ -145,6 +160,13 @@ export default function ResetPasswordScreen() {
                   <Text style={styles.errorText}>{error}</Text>
                 </View>
               )}
+              {!canSubmit && (problem || mismatch) ? (
+                <Text style={styles.why}>
+                  {mismatch
+                    ? t('auth.reset.mismatch')
+                    : t(`auth.reset.problem.${problem}`)}
+                </Text>
+              ) : null}
               <Pressable
                 style={[styles.button, !canSubmit && styles.buttonDisabled]}
                 onPress={() => void submit()}
@@ -167,6 +189,18 @@ export default function ResetPasswordScreen() {
 }
 
 const styles = StyleSheet.create({
+  suggest: {
+    fontSize: 13,
+    color: '#2563eb',
+    marginTop: 6,
+    marginBottom: 2,
+  },
+  why: {
+    fontSize: 13,
+    color: '#b45309',
+    marginTop: 10,
+    textAlign: 'center',
+  },
   safe: { flex: 1, backgroundColor: '#f1f5f9' },
   container: { flexGrow: 1, justifyContent: 'center', padding: 20 },
   card: {
