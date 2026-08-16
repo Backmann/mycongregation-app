@@ -495,7 +495,23 @@
         "tooRepetitive": "The same characters over and over amount to one guess."
       }
     },
-    "wrongEmailOrPassword": "Wrong address or password. If the login was created recently, ask an administrator to set a password."
+    "wrongEmailOrPassword": "Wrong address or password. If the login was created recently, ask an administrator to set a password.",
+    "invite": {
+      "iWasInvited": "I was invited",
+      "title": "Invitation",
+      "intro": "Enter the address and the code from the letter, choose a password, and you are in. No separate sign-in.",
+      "code": "Code from the letter",
+      "codePlaceholder": "XXXX-XXXX",
+      "codeHint": "Eight characters, like XXXX-XXXX. Case and the hyphen do not matter — type it however is easiest.",
+      "submit": "Sign in",
+      "needEmail": "Enter the address the letter was sent to.",
+      "needCode": "The code is eight characters long.",
+      "wrongCode_one": "That code did not match. {{count}} attempt left.",
+      "wrongCode_other": "That code did not match. {{count}} attempts left.",
+      "spent": "This code no longer works. Ask an elder to send the invitation again.",
+      "invalid": "That code did not match. It may have expired or already been used — ask for the invitation to be sent again.",
+      "backToLogin": "I already have a password — sign in"
+    }
   },
   "months": {
     "january": "January",

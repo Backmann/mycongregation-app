@@ -161,3 +161,27 @@ export function weakPasswordProblem(error: unknown): PasswordProblem | null {
     ? (data.problem as PasswordProblem)
     : 'tooShort';
 }
+
+export type InviteRefusal =
+  | { kind: 'wrongCode'; attemptsLeft: number }
+  | { kind: 'invalid' }
+  | null;
+
+/**
+ * Reads the server's refusal of an invitation code.
+ *
+ * Same rule as WEAK_PASSWORD and the duplicate-report 409 before it: the code
+ * is ours to read, the words are ours to write. A body reaching the reader
+ * untranslated is how "Invalid credentials" and "A report for 2026-07-01 has
+ * already been submitted" both ended up on screen in the past.
+ */
+export function inviteRefusal(error: unknown): InviteRefusal {
+  const body = (error as { response?: { data?: unknown } })?.response?.data;
+  const data = (body ?? error) as { code?: string; attemptsLeft?: number };
+  if (data?.code === 'INVITE_WRONG_CODE') {
+    const left = Number(data.attemptsLeft);
+    return { kind: 'wrongCode', attemptsLeft: Number.isFinite(left) ? left : 0 };
+  }
+  if (data?.code === 'INVITE_INVALID') return { kind: 'invalid' };
+  return null;
+}

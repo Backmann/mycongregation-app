@@ -495,7 +495,23 @@
         "tooRepetitive": "Immer dieselben Zeichen ergeben einen einzigen Rateversuch."
       }
     },
-    "wrongEmailOrPassword": "Falsche Adresse oder falsches Passwort. Wurde der Zugang gerade erst erstellt, bitte einen Administrator, ein Passwort zu setzen."
+    "wrongEmailOrPassword": "Falsche Adresse oder falsches Passwort. Wurde der Zugang gerade erst erstellt, bitte einen Administrator, ein Passwort zu setzen.",
+    "invite": {
+      "iWasInvited": "Ich wurde eingeladen",
+      "title": "Einladung",
+      "intro": "Gib die Adresse und den Code aus der E-Mail ein, wähle ein Passwort — und du bist drin. Eine separate Anmeldung entfällt.",
+      "code": "Code aus der E-Mail",
+      "codePlaceholder": "XXXX-XXXX",
+      "codeHint": "Acht Zeichen, zum Beispiel XXXX-XXXX. Groß- und Kleinschreibung und der Bindestrich spielen keine Rolle.",
+      "submit": "Anmelden",
+      "needEmail": "Gib die Adresse ein, an die die E-Mail ging.",
+      "needCode": "Der Code besteht aus acht Zeichen.",
+      "wrongCode_one": "Der Code stimmt nicht. Noch {{count}} Versuch.",
+      "wrongCode_other": "Der Code stimmt nicht. Noch {{count}} Versuche.",
+      "spent": "Dieser Code gilt nicht mehr. Bitte einen Ältesten, die Einladung erneut zu senden.",
+      "invalid": "Der Code stimmt nicht. Möglicherweise ist er abgelaufen oder wurde bereits verwendet — bitte um eine neue Einladung.",
+      "backToLogin": "Ich habe bereits ein Passwort — anmelden"
+    }
   },
   "months": {
     "january": "Januar",

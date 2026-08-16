@@ -778,6 +778,27 @@ export const authApi = {
     });
     return data;
   },
+
+  /**
+   * Finish an invitation from inside the app.
+   *
+   * Answers with a session for the same reason resetPassword does: the code
+   * came out of the person's own mailbox, and the password is the one just
+   * chosen. Sending him to a sign-in form to type both again is exactly the
+   * step this whole path exists to remove.
+   */
+  async redeemInvite(
+    email: string,
+    code: string,
+    password: string,
+  ): Promise<LoginResponse> {
+    const { data } = await api.post<LoginResponse>('/auth/invite/redeem', {
+      email,
+      code,
+      password,
+    });
+    return data;
+  },
 };
 
 /**
