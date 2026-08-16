@@ -513,7 +513,10 @@
       "backToLogin": "I already have a password — sign in",
       "entryTitle": "Were you invited? Start here",
       "entryHint": "Enter the code from the letter — you choose the password",
-      "newestLetter": "If there are several letters, open the newest: older codes stop working."
+      "newestLetter": "If there are several letters, open the newest: older codes stop working.",
+      "resend": "Send me a new code",
+      "resending": "Sending…",
+      "resent": "If we know that address, a letter with a new code is on its way. The previous code no longer works."
     }
   },
   "months": {

@@ -513,7 +513,10 @@
       "backToLogin": "Ich habe bereits ein Passwort — anmelden",
       "entryTitle": "Wurden Sie eingeladen? Hier starten",
       "entryHint": "Code aus der E-Mail eingeben — das Passwort wählen Sie selbst",
-      "newestLetter": "Bei mehreren E-Mails die neueste öffnen: ältere Codes gelten nicht mehr."
+      "newestLetter": "Bei mehreren E-Mails die neueste öffnen: ältere Codes gelten nicht mehr.",
+      "resend": "Neuen Code senden",
+      "resending": "Wird gesendet…",
+      "resent": "Falls uns diese Adresse bekannt ist, wurde eine E-Mail mit einem neuen Code gesendet. Der bisherige Code gilt nicht mehr."
     }
   },
   "months": {

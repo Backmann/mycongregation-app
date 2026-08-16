@@ -44,6 +44,8 @@ export default function InviteScreen() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [spent, setSpent] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [resent, setResent] = useState(false);
 
   const bareCode = code.replace(/-/g, '');
   const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
@@ -66,6 +68,24 @@ export default function InviteScreen() {
         : problem
           ? t(`auth.reset.problem.${problem}`)
           : null;
+
+  const resend = async () => {
+    if (!emailOk || resending) return;
+    setResending(true);
+    setError(null);
+    try {
+      await authApi.resendInvite(email.trim());
+      // The same sentence either way: the server will not say whether
+      // the address is known, and neither may this screen.
+      setResent(true);
+      setSpent(false);
+      setCode('');
+    } catch (e) {
+      setError(extractErrorMessage(e));
+    } finally {
+      setResending(false);
+    }
+  };
 
   const submit = async () => {
     if (!canSubmit) return;
@@ -147,6 +167,16 @@ export default function InviteScreen() {
           <Text style={styles.hint}>
             {t('auth.invite.newestLetter')}
           </Text>
+          <Pressable onPress={() => void resend()} hitSlop={6}>
+            <Text style={styles.suggest}>
+              {resending
+                ? t('auth.invite.resending')
+                : t('auth.invite.resend')}
+            </Text>
+          </Pressable>
+          {resent ? (
+            <Text style={styles.resent}>{t('auth.invite.resent')}</Text>
+          ) : null}
 
           <Text style={styles.label}>{t('auth.reset.newPassword')}</Text>
           <View style={styles.inputWrap}>
@@ -285,6 +315,7 @@ const styles = StyleSheet.create({
   inputWrap: { flexDirection: 'row', alignItems: 'center' },
   eyeBtn: { position: 'absolute', right: 10, padding: 4 },
   hint: { fontSize: 12, color: '#94a3b8', marginTop: 6, lineHeight: 17 },
+  resent: { fontSize: 12.5, color: '#15803d', marginTop: 6, lineHeight: 17 },
   suggest: { fontSize: 13, color: '#2563eb', marginTop: 6 },
   errorBox: {
     flexDirection: 'row',

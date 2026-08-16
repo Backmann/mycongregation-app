@@ -799,6 +799,17 @@ export const authApi = {
     });
     return data;
   },
+
+  /**
+   * Ask for a fresh invitation code.
+   *
+   * Resolves the same way whether or not the address is known — the server
+   * will not say, and neither should this. A fresh code also returns the five
+   * attempts that were spent, which is the point for whoever needs it.
+   */
+  async resendInvite(email: string): Promise<void> {
+    await api.post('/auth/invite/resend', { email });
+  },
 };
 
 /**
