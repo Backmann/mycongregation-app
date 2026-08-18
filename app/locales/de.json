@@ -80,7 +80,30 @@
     "roleHint": "Die Rolle ergibt sich normalerweise aus der Ernennung — nur einschalten, wenn Administratorrechte nötig sind.",
     "disableConfirmYes": "Deaktivieren",
     "passwordHint": "Mindestens {{count}} Zeichen",
-    "passwordPlaceholder": "Mindestens {{count}} Zeichen"
+    "passwordPlaceholder": "Mindestens {{count}} Zeichen",
+    "loginNameRow": "Anmeldename",
+    "loginNameLabel": "Name für die Anmeldung",
+    "loginNameHint": "Damit meldet sich die Person an. Korrigiere die Schreibweise JETZT — sobald du den Namen weitergegeben hast, funktioniert der alte bei einer Änderung sofort nicht mehr.",
+    "changeLoginName": "Name für die Anmeldung",
+    "changeLoginNameDesc": "Der alte Name funktioniert sofort nicht mehr. Wenn die Person ihren Namen schon kennt, sag ihr Bescheid.",
+    "noEmail": "keine",
+    "deliveryLabel": "Wie der Code ankommt",
+    "deliveryOwn": "Per E-Mail an {{email}}",
+    "deliveryOwnMissing": "Per E-Mail an die eigene Adresse",
+    "deliveryOwnHint": "Die Adresse aus der Verkündigerkarte.",
+    "deliveryOther": "Per E-Mail an eine andere Adresse",
+    "deliveryOtherHint": "Zum Beispiel an das Postfach des Ehepartners. Im Brief steht, für wen er ist.",
+    "deliveryInPerson": "Ich gebe den Code persönlich weiter",
+    "deliveryInPersonHint": "Keine E-Mail nötig. Der Code erscheint auf dem Bildschirm — vorlesen oder weiterleiten.",
+    "inviteReadyTitle": "Code für die Anmeldung",
+    "inviteSentTo": "Eine E-Mail ging an {{email}}. Den Code kannst du auch direkt weitergeben:",
+    "inviteNotSent": "Es wurde keine E-Mail verschickt — gib den Code selbst weiter:",
+    "inviteUntil": "Gültig bis {{until}}",
+    "inviteShare": "Als Nachricht senden",
+    "inviteOnlyOnce": "Der Code wird einmal angezeigt: gespeichert ist nur sein Fingerabdruck. Geht er verloren, gib einen neuen aus — der alte funktioniert dann nicht mehr.",
+    "inviteMessage": "{{name}}, hier ist dein Code für die App: {{code}} (gültig bis {{until}}). Die App gibt es unter {{url}}, dort auf „Ich wurde eingeladen“ tippen.",
+    "newCode": "Neuen Code ausgeben",
+    "newCodeHint": "Der bisherige Code funktioniert dann nicht mehr."
   },
   "tabs": {
     "schedule": "Programm",
@@ -1135,6 +1158,10 @@
         "app": "App",
         "browser": "Browser",
         "outdated": "alte Version"
+      },
+      "loginName": {
+        "sheetTitle": "Name für die Anmeldung",
+        "sheetHint": "Damit meldet sich die Person an. Der alte Name funktioniert sofort nicht mehr — wenn sie ihn schon kennt, sag ihr Bescheid."
       }
     }
   },
@@ -3026,5 +3053,14 @@
     "suggest": "Vorschlag machen",
     "show": "Passwort anzeigen",
     "hide": "Passwort verbergen"
+  },
+  "loginName": {
+    "taken": "Dieser Name ist schon vergeben — wähle einen anderen.",
+    "problem": {
+      "tooShort": "Zu kurz: mindestens {{min}} Zeichen.",
+      "tooLong": "Zu lang: höchstens {{max}} Zeichen.",
+      "badCharacters": "Nur lateinische Buchstaben, Ziffern und ein Punkt. Keine Leerzeichen, kein @.",
+      "edgeDot": "Ein Punkt darf nur im Namen stehen, und nie zwei hintereinander."
+    }
   }
 }

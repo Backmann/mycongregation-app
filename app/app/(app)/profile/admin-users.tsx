@@ -28,6 +28,12 @@ import {
   PASSWORD_MIN_LENGTH,
 } from '../../../lib/password';
 import { PasswordRules } from '../../../components/PasswordRules';
+import {
+  loginNameProblem,
+  loginNameRefusal,
+  LOGIN_NAME_MAX,
+  LOGIN_NAME_MIN,
+} from '../../../lib/login-name';
 import { androidVersionName } from '../../../lib/android-version';
 
 // Login accounts are created and managed per-person on the Братья screen
@@ -96,6 +102,8 @@ export default function AdminUsersScreen() {
   const [linkFor, setLinkFor] = useState<PublicUser | null>(null);
   const [passFor, setPassFor] = useState<PublicUser | null>(null);
   const [newPassword, setNewPassword] = useState('');
+  const [nameFor, setNameFor] = useState<PublicUser | null>(null);
+  const [newLoginName, setNewLoginName] = useState('');
 
   const [invitedIds, setInvitedIds] = useState<string[]>([]);
   const inviteMutation = useMutation({
@@ -108,6 +116,20 @@ export default function AdminUsersScreen() {
     onSuccess: (_data, user) => {
       setInvitedIds((prev) => [...prev, user.id]);
       qc.invalidateQueries({ queryKey: ['users'] });
+    },
+  });
+
+  const nameMutation = useMutation({
+    meta: { inlineError: true },
+    // The same endpoint the publisher's card uses. One implementation, two
+    // doors: two implementations is how «Дать доступ» and this screen came to
+    // behave differently in the first place.
+    mutationFn: () =>
+      usersApi.changeLoginName(nameFor!.id, newLoginName.trim().toLowerCase()),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: QK_USERS });
+      setNameFor(null);
+      setNewLoginName('');
     },
   });
 
@@ -196,6 +218,11 @@ export default function AdminUsersScreen() {
                 setNewPassword('');
                 setPassFor(u);
               }}
+              onEditName={() => {
+                nameMutation.reset();
+                setNewLoginName(u.loginName ?? '');
+                setNameFor(u);
+              }}
               onInvite={() => inviteMutation.mutate(u)}
               inviting={
                 inviteMutation.isPending &&
@@ -232,6 +259,54 @@ export default function AdminUsersScreen() {
               if (id) linkMut.mutate(id);
             }}
           />
+        </View>
+      </Sheet>
+
+      <Sheet
+        visible={!!nameFor}
+        onClose={() => setNameFor(null)}
+        title={t('admin.users.loginName.sheetTitle')}
+      >
+        <View style={{ gap: 12 }}>
+          <Text style={styles.sheetHint}>
+            {t('admin.users.loginName.sheetHint')}
+          </Text>
+          <TextInput
+            style={styles.passInput}
+            value={newLoginName}
+            onChangeText={setNewLoginName}
+            placeholder={nameFor?.loginName ?? ''}
+            placeholderTextColor="#94a3b8"
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
+          {loginNameProblem(newLoginName) ? (
+            <Text style={styles.errorText}>
+              {t(`loginName.problem.${loginNameProblem(newLoginName)}`, {
+                min: LOGIN_NAME_MIN,
+                max: LOGIN_NAME_MAX,
+              })}
+            </Text>
+          ) : null}
+          {nameMutation.isError ? (
+            <Text style={styles.errorText}>
+              {loginNameRefusal(nameMutation.error, t) ??
+                extractErrorMessage(nameMutation.error)}
+            </Text>
+          ) : null}
+          <Pressable
+            style={[
+              styles.sheetBtn,
+              (!!loginNameProblem(newLoginName) || nameMutation.isPending) &&
+                styles.sheetBtnOff,
+            ]}
+            disabled={
+              !!loginNameProblem(newLoginName) || nameMutation.isPending
+            }
+            onPress={() => nameMutation.mutate()}
+          >
+            <Text style={styles.sheetBtnText}>{t('common.save')}</Text>
+          </Pressable>
         </View>
       </Sheet>
 
@@ -286,6 +361,7 @@ function UserCard({
   isSelf,
   onLink,
   onSetPassword,
+  onEditName,
   onInvite,
   inviting,
   invited,
@@ -294,6 +370,7 @@ function UserCard({
   isSelf: boolean;
   onLink: () => void;
   onSetPassword: () => void;
+  onEditName: () => void;
   onInvite: () => void;
   inviting: boolean;
   invited: boolean;
@@ -322,13 +399,20 @@ function UserCard({
       <View style={styles.userCardHeader}>
         <View style={{ flex: 1 }}>
           <View style={styles.emailRow}>
-            <Text
-              style={styles.userEmail}
-              numberOfLines={1}
-              ellipsizeMode="middle"
+            <Pressable
+              onPress={onEditName}
+              hitSlop={6}
+              style={styles.nameBtn}
             >
-              {user.email}
-            </Text>
+              <Text
+                style={styles.userEmail}
+                numberOfLines={1}
+                ellipsizeMode="middle"
+              >
+                {user.loginName ?? user.email ?? '—'}
+              </Text>
+              <Ionicons name="pencil-outline" size={13} color="#0369a1" />
+            </Pressable>
             {isSelf && (
               <View style={styles.selfBadge}>
                 <Text style={styles.selfBadgeText}>{t('admin.users.you')}</Text>
@@ -487,6 +571,20 @@ const styles = StyleSheet.create({
     borderTopColor: '#f1f5f9',
   },
   sheetHint: { fontSize: 13.5, color: '#475569', lineHeight: 19 },
+  nameBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, flexShrink: 1 },
+  sheetBtn: {
+    backgroundColor: '#2563eb',
+    borderRadius: 10,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  sheetBtnOff: { opacity: 0.5 },
+  sheetBtnText: {
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: '600',
+    fontFamily: 'Manrope_600SemiBold',
+  },
   passInput: {
     borderWidth: 1,
     borderColor: '#e2e8f0',

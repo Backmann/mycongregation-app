@@ -80,7 +80,30 @@
     "roleHint": "The role normally follows the appointment — turn this on only if administrator rights are needed.",
     "disableConfirmYes": "Disable",
     "passwordHint": "At least {{count}} characters",
-    "passwordPlaceholder": "At least {{count}} characters"
+    "passwordPlaceholder": "At least {{count}} characters",
+    "loginNameRow": "Login name",
+    "loginNameLabel": "Name to sign in with",
+    "loginNameHint": "This is what the person types to sign in. Correct the spelling NOW — once you have told them their name, changing it stops the old one working immediately.",
+    "changeLoginName": "Name to sign in with",
+    "changeLoginNameDesc": "The old name stops working at once. If the person already knows their name, tell them.",
+    "noEmail": "none",
+    "deliveryLabel": "How to pass on the code",
+    "deliveryOwn": "By letter to {{email}}",
+    "deliveryOwnMissing": "By letter to their own address",
+    "deliveryOwnHint": "The address from the publisher card.",
+    "deliveryOther": "By letter to another address",
+    "deliveryOtherHint": "A husband’s or wife’s mailbox, for instance. The letter says who it is for.",
+    "deliveryInPerson": "I will pass the code on myself",
+    "deliveryInPersonHint": "No address needed. The code appears on screen — read it out or forward it.",
+    "inviteReadyTitle": "Code to sign in",
+    "inviteSentTo": "A letter went to {{email}}. The code can also be passed on directly:",
+    "inviteNotSent": "No letter was sent — pass the code on yourself:",
+    "inviteUntil": "Valid until {{until}}",
+    "inviteShare": "Send in a message",
+    "inviteOnlyOnce": "The code is shown once: only its fingerprint is stored. If it is lost, issue a new one — but the old one then stops working.",
+    "inviteMessage": "{{name}}, here is your code for the app: {{code}} (valid until {{until}}). Get the app at {{url}} and tap “I was invited”.",
+    "newCode": "Issue a new code",
+    "newCodeHint": "The previous code stops working."
   },
   "tabs": {
     "schedule": "Programme",
@@ -1135,6 +1158,10 @@
         "app": "app",
         "browser": "browser",
         "outdated": "old build"
+      },
+      "loginName": {
+        "sheetTitle": "Name to sign in with",
+        "sheetHint": "This is what the person types to sign in. The old name stops working at once — if they already know it, tell them."
       }
     }
   },
@@ -3026,5 +3053,14 @@
     "suggest": "Suggest one for me",
     "show": "Show password",
     "hide": "Hide password"
+  },
+  "loginName": {
+    "taken": "That name is already taken — choose another.",
+    "problem": {
+      "tooShort": "Too short: at least {{min}} characters.",
+      "tooLong": "Too long: at most {{max}} characters.",
+      "badCharacters": "Latin letters, digits and a dot only. No spaces and no @.",
+      "edgeDot": "A dot may only sit inside the name, and never two in a row."
+    }
   }
 }

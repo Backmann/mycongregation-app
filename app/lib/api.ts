@@ -206,7 +206,10 @@ export interface LoginResponse {
  */
 export interface PublicUser {
   id: string;
-  email: string;
+  /** Where letters go, or null — most of this congregation has no address. */
+  email: string | null;
+  /** What this person types to sign in. */
+  loginName: string | null;
   role: UserRole;
   isActive: boolean;
   uiLanguage: string;
@@ -839,6 +842,18 @@ export const usersApi = {
   },
   async resetPassword(id: string, password: string): Promise<void> {
     await api.post(`/users/${id}/reset-password`, { password });
+  },
+  /**
+   * Correct what somebody types to sign in.
+   *
+   * The old name stops working at once, so this belongs BEFORE the person has
+   * been told what their name is — the screen says as much.
+   */
+  async changeLoginName(id: string, loginName: string): Promise<PublicUser> {
+    const { data } = await api.patch<PublicUser>(`/users/${id}/login-name`, {
+      loginName,
+    });
+    return data;
   },
   /** Point an account at a publisher card, or clear the link with null. */
   async linkPublisher(
@@ -1824,14 +1839,29 @@ export type PublisherStatus = 'active' | 'irregular' | 'inactive';
 export interface AccessSummary {
   hasAccess: boolean;
   email: string | null;
-  role: 'admin' | 'elder' | 'ministerial_servant' | 'publisher' | null;
+  /** What this person types to sign in. */
+  loginName: string | null;
+  /** What it would be if generated from the card now — the starting point. */
+  suggestedLoginName: string;
   isActive: boolean | null;
+  role: 'admin' | 'elder' | 'ministerial_servant' | 'publisher' | null;
   lastLoginAt: string | null;
   canViewPrivateData: boolean | null;
+  /**
+   * Present ONLY in the answer to granting access or asking for a fresh code —
+   * never when simply reading the card. Only a hash of it is stored, so this
+   * is the one moment it can be shown.
+   */
+  inviteCode?: string;
+  /** Where the letter went, or null when there was nowhere to send it. */
+  inviteSentTo?: string | null;
+  inviteExpiresAt?: string;
 }
 
 export interface GrantAccessInput {
   email?: string;
+  /** Correct the generated name before anybody is told what it is. */
+  loginName?: string;
   password?: string;
   isAdmin?: boolean;
   /** When true, create the account without a password and email an
@@ -1840,8 +1870,10 @@ export interface GrantAccessInput {
 }
 
 export interface UpdateAccessInput {
-  /** New login email — e.g. to fix a typo. Must be unique. */
+  /** Where letters go — may be an address another account also uses. */
   email?: string;
+  /** What this person types to sign in. The old name stops working at once. */
+  loginName?: string;
   password?: string;
   isAdmin?: boolean;
   isActive?: boolean;

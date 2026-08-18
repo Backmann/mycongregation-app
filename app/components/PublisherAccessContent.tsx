@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
+  Share,
   StyleSheet,
   Switch,
   Text,
@@ -13,9 +14,15 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { extractErrorMessage, publishersApi } from '../lib/api';
 import { passwordProblem, PASSWORD_MIN_LENGTH } from '../lib/password';
+import {
+  loginNameProblem,
+  loginNameRefusal,
+  LOGIN_NAME_MAX,
+  LOGIN_NAME_MIN,
+} from '../lib/login-name';
 import { PasswordRules } from './PasswordRules';
 import { Dialog } from './Dialog';
-import type { GrantAccessInput, Publisher } from '../lib/api';
+import type { AccessSummary, GrantAccessInput, Publisher } from '../lib/api';
 import i18n from '../lib/i18n';
 
 function formatLastLogin(iso: string | null): string | null {
@@ -36,7 +43,13 @@ export function PublisherAccessContent({ publisher }: { publisher: Publisher }) 
   const [resetOpen, setResetOpen] = useState(false);
   const [disableConfirm, setDisableConfirm] = useState(false);
   const [emailOpen, setEmailOpen] = useState(false);
-  const [inviteSent, setInviteSent] = useState(false);
+  const [loginNameOpen, setLoginNameOpen] = useState(false);
+  /**
+   * The code lives here and nowhere else: the server stores only its hash, so
+   * once this is cleared it cannot be shown again — a new one has to be issued,
+   * which kills this one. The dialog says so.
+   */
+  const [issued, setIssued] = useState<AccessSummary | null>(null);
 
   const accessQuery = useQuery({
     queryKey: ['publisher-access', publisher.id],
@@ -55,8 +68,9 @@ export function PublisherAccessContent({ publisher }: { publisher: Publisher }) 
     meta: { inlineError: true },
     mutationFn: (input: GrantAccessInput) =>
       publishersApi.grantAccess(publisher.id, input),
-    onSuccess: () => {
+    onSuccess: (summary) => {
       setGrantOpen(false);
+      setIssued(summary);
       invalidate();
     },
   });
@@ -66,15 +80,16 @@ export function PublisherAccessContent({ publisher }: { publisher: Publisher }) 
     meta: { inlineError: true },
     mutationFn: (input: {
       email?: string;
+      loginName?: string;
       password?: string;
       isAdmin?: boolean;
-      sendInvite?: boolean;
       isActive?: boolean;
       canViewPrivateData?: boolean;
     }) => publishersApi.updateAccess(publisher.id, input),
     onSuccess: () => {
       setResetOpen(false);
       setEmailOpen(false);
+      setLoginNameOpen(false);
       setDisableConfirm(false);
       invalidate();
     },
@@ -84,8 +99,8 @@ export function PublisherAccessContent({ publisher }: { publisher: Publisher }) 
     // Shown in place by this form — keep it out of the error strip.
     meta: { inlineError: true },
     mutationFn: () => publishersApi.resendInvite(publisher.id),
-    onSuccess: () => {
-      setInviteSent(true);
+    onSuccess: (summary) => {
+      setIssued(summary);
       invalidate();
     },
   });
@@ -115,20 +130,29 @@ export function PublisherAccessContent({ publisher }: { publisher: Publisher }) 
         <GrantModal
           visible={grantOpen}
           defaultEmail={publisher.email ?? ''}
+          suggestedLoginName={access?.suggestedLoginName ?? ''}
           pending={grantMutation.isPending}
-          error={grantMutation.isError ? extractErrorMessage(grantMutation.error) : null}
+          error={
+            grantMutation.isError
+              ? (loginNameRefusal(grantMutation.error, t) ??
+                extractErrorMessage(grantMutation.error))
+              : null
+          }
           onCancel={() => {
             grantMutation.reset();
             setGrantOpen(false);
           }}
-          onSubmit={(email, password, isAdmin, sendInvite) =>
-            grantMutation.mutate({
-              email: email || undefined,
-              password: sendInvite ? undefined : password,
-              isAdmin,
-              sendInvite,
-            })
+          onSubmit={(input) =>
+            grantMutation.mutate({ ...input, sendInvite: true })
           }
+        />
+        <InviteResultDialog
+          visible={issued !== null}
+          name={publisher.displayName}
+          code={issued?.inviteCode ?? null}
+          sentTo={issued?.inviteSentTo ?? null}
+          expiresAt={issued?.inviteExpiresAt ?? null}
+          onClose={() => setIssued(null)}
         />
       </View>
     );
@@ -145,13 +169,30 @@ export function PublisherAccessContent({ publisher }: { publisher: Publisher }) 
   return (
     <View>
       <View style={styles.row}>
+        <Text style={styles.rowLabel}>
+          {t('publisherAccess.loginNameRow')}
+        </Text>
+        <Pressable
+          style={emailStyles.rowBtn}
+          onPress={() => setLoginNameOpen(true)}
+          hitSlop={6}
+        >
+          <Text style={styles.rowValue} selectable>
+            {access.loginName ?? '—'}
+          </Text>
+          <Text style={emailStyles.pencil}>✎</Text>
+        </Pressable>
+      </View>
+      <View style={styles.row}>
         <Text style={styles.rowLabel}>{t('publisherAccess.emailLabel')}</Text>
         <Pressable
           style={emailStyles.rowBtn}
           onPress={() => setEmailOpen(true)}
           hitSlop={6}
         >
-          <Text style={styles.rowValue}>{access.email}</Text>
+          <Text style={styles.rowValue}>
+            {access.email ?? t('publisherAccess.noEmail')}
+          </Text>
           <Text style={emailStyles.pencil}>✎</Text>
         </Pressable>
       </View>
@@ -218,10 +259,11 @@ export function PublisherAccessContent({ publisher }: { publisher: Publisher }) 
           </View>
         ) : (
           <Text style={styles.secondaryBtnText}>
-            {t('publisherAccess.resendInvite')}
+            {t('publisherAccess.newCode')}
           </Text>
         )}
       </Pressable>
+      <Text style={styles.hint}>{t('publisherAccess.newCodeHint')}</Text>
 
       <Pressable
         style={styles.secondaryBtn}
@@ -242,6 +284,23 @@ export function PublisherAccessContent({ publisher }: { publisher: Publisher }) 
         </Text>
       </Pressable>
 
+      <LoginNameModal
+        visible={loginNameOpen}
+        current={access.loginName}
+        suggestion={access.suggestedLoginName}
+        pending={updateMutation.isPending}
+        error={
+          updateMutation.isError
+            ? (loginNameRefusal(updateMutation.error, t) ??
+              extractErrorMessage(updateMutation.error))
+            : null
+        }
+        onCancel={() => {
+          updateMutation.reset();
+          setLoginNameOpen(false);
+        }}
+        onSubmit={(loginName) => updateMutation.mutate({ loginName })}
+      />
       <EmailModal
         visible={emailOpen}
         current={access.email}
@@ -269,20 +328,14 @@ export function PublisherAccessContent({ publisher }: { publisher: Publisher }) 
         onSubmit={(password) => updateMutation.mutate({ password })}
       />
 
-      <Dialog
-        visible={inviteSent}
-        title={t('publisherAccess.resendInviteTitle')}
-        icon="checkmark-circle-outline"
-        iconTint="#16a34a"
-        iconBg="#dcfce7"
-        confirmLabel={t('common.done')}
-        onConfirm={() => setInviteSent(false)}
-        onCancel={() => setInviteSent(false)}
-      >
-        <Text style={dialogText.body}>
-          {t('publisherAccess.resendInviteBody', { email: access.email })}
-        </Text>
-      </Dialog>
+      <InviteResultDialog
+        visible={issued !== null}
+        name={publisher.displayName}
+        code={issued?.inviteCode ?? null}
+        sentTo={issued?.inviteSentTo ?? null}
+        expiresAt={issued?.inviteExpiresAt ?? null}
+        onClose={() => setIssued(null)}
+      />
 
       <Dialog
         visible={disableConfirm}
@@ -407,9 +460,26 @@ const emailStyles = StyleSheet.create({
   suggestText: { fontSize: 13, color: '#0369a1', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
 });
 
+/**
+ * Handing somebody the way in.
+ *
+ * Rebuilt around what the invitation actually is now: a code. An address is
+ * one way to deliver that code and no longer the thing that identifies the
+ * person, so the form asks two separate questions instead of one confused one
+ * — what shall this person be called, and where (if anywhere) shall the code
+ * be sent.
+ *
+ * The «set a password yourself» path is gone from here on purpose. It existed
+ * because invitations did not work, and it is what led to one man's own
+ * password being handed round the congregation. Setting a password by hand is
+ * still possible afterwards, on the card, where it reads as the repair it is.
+ */
+type Delivery = 'own' | 'other' | 'inPerson';
+
 function GrantModal({
   visible,
   defaultEmail,
+  suggestedLoginName,
   pending,
   error,
   onCancel,
@@ -417,41 +487,64 @@ function GrantModal({
 }: {
   visible: boolean;
   defaultEmail: string;
+  suggestedLoginName: string;
   pending: boolean;
   error: string | null;
   onCancel: () => void;
-  onSubmit: (
-    email: string,
-    password: string,
-    isAdmin: boolean,
-    sendInvite: boolean,
-  ) => void;
+  onSubmit: (input: {
+    email?: string;
+    loginName: string;
+    isAdmin: boolean;
+  }) => void;
 }) {
   const { t } = useTranslation();
-  const [email, setEmail] = useState(defaultEmail);
-  const [password, setPassword] = useState('');
+  const hasOwnAddress = defaultEmail.trim() !== '';
+  const [delivery, setDelivery] = useState<Delivery>(
+    hasOwnAddress ? 'own' : 'inPerson',
+  );
+  const [email, setEmail] = useState('');
+  const [loginName, setLoginName] = useState(suggestedLoginName);
   const [isAdmin, setIsAdmin] = useState(false);
-  // Inviting by e-mail is the better default: the person sets their own
-  // password and nobody has to pass one along by hand.
-  const [sendInvite, setSendInvite] = useState(true);
-  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     if (visible) {
-      setEmail(defaultEmail);
-      setPassword('');
+      setDelivery(hasOwnAddress ? 'own' : 'inPerson');
+      setEmail('');
+      setLoginName(suggestedLoginName);
       setIsAdmin(false);
-      setSendInvite(true);
-      setShowPassword(false);
     }
-  }, [visible, defaultEmail]);
+  }, [visible, hasOwnAddress, suggestedLoginName]);
 
-  // The address is the login, so it is required either way — the old check
-  // ignored it unless an invitation was being sent, and an empty or malformed
-  // address only failed once the server answered.
-  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
-  const passwordOk = !passwordProblem(password);
-  const canSubmit = !pending && emailOk && (sendInvite || passwordOk);
+  const address =
+    delivery === 'own'
+      ? defaultEmail.trim()
+      : delivery === 'other'
+        ? email.trim()
+        : '';
+  const addressOk =
+    delivery === 'inPerson' || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(address);
+  const nameProblem = loginNameProblem(loginName);
+  const canSubmit = !pending && addressOk && !nameProblem;
+
+  const options: { key: Delivery; title: string; hint: string }[] = [
+    {
+      key: 'own',
+      title: hasOwnAddress
+        ? t('publisherAccess.deliveryOwn', { email: defaultEmail.trim() })
+        : t('publisherAccess.deliveryOwnMissing'),
+      hint: t('publisherAccess.deliveryOwnHint'),
+    },
+    {
+      key: 'other',
+      title: t('publisherAccess.deliveryOther'),
+      hint: t('publisherAccess.deliveryOtherHint'),
+    },
+    {
+      key: 'inPerson',
+      title: t('publisherAccess.deliveryInPerson'),
+      hint: t('publisherAccess.deliveryInPersonHint'),
+    },
+  ];
 
   return (
     <Dialog
@@ -459,107 +552,279 @@ function GrantModal({
       title={t('publisherAccess.grant')}
       icon="key-outline"
       cancelLabel={t('publisherAccess.cancel')}
-      confirmLabel={
-        sendInvite ? t('publisherAccess.invite') : t('publisherAccess.create')
-      }
+      confirmLabel={t('publisherAccess.invite')}
       confirmDisabled={!canSubmit}
       pending={pending}
-      onConfirm={() => onSubmit(email.trim(), password, isAdmin, sendInvite)}
+      onConfirm={() =>
+        onSubmit({
+          email: address === '' ? undefined : address,
+          loginName: loginName.trim().toLowerCase(),
+          isAdmin,
+        })
+      }
       onCancel={onCancel}
       scroll
     >
-                <Text style={grantStyles.label}>{t('publisherAccess.emailLabel')}</Text>
-          <TextInput
-            style={[grantStyles.input, email.length > 0 && !emailOk && grantStyles.inputBad]}
-            value={email}
-            onChangeText={setEmail}
-            autoCapitalize="none"
-            autoCorrect={false}
-            keyboardType="email-address"
-            textContentType="emailAddress"
-            placeholder="name@example.org"
-            placeholderTextColor="#94a3b8"
-          />
-          {email.length > 0 && !emailOk ? (
-            <Text style={grantStyles.fieldHint}>
-              {t('publisherAccess.emailInvalid')}
-            </Text>
-          ) : null}
+      <Text style={grantStyles.label}>
+        {t('publisherAccess.loginNameLabel')}
+      </Text>
+      <TextInput
+        style={[grantStyles.input, !!nameProblem && grantStyles.inputBad]}
+        value={loginName}
+        onChangeText={setLoginName}
+        autoCapitalize="none"
+        autoCorrect={false}
+        placeholder={suggestedLoginName}
+        placeholderTextColor="#94a3b8"
+      />
+      {nameProblem ? (
+        <Text style={grantStyles.fieldHint}>
+          {t(`loginName.problem.${nameProblem}`, {
+            min: LOGIN_NAME_MIN,
+            max: LOGIN_NAME_MAX,
+          })}
+        </Text>
+      ) : (
+        <Text style={grantStyles.optionHint}>
+          {t('publisherAccess.loginNameHint')}
+        </Text>
+      )}
 
+      <Text style={[grantStyles.label, grantStyles.sectionLabel]}>
+        {t('publisherAccess.deliveryLabel')}
+      </Text>
+      {options.map((o) => {
+        const chosen = delivery === o.key;
+        const unavailable = o.key === 'own' && !hasOwnAddress;
+        return (
           <Pressable
-            style={grantStyles.optionRow}
-            onPress={() => setSendInvite((v) => !v)}
+            key={o.key}
+            style={[
+              grantStyles.choiceRow,
+              chosen && grantStyles.choiceRowOn,
+              unavailable && grantStyles.choiceRowOff,
+            ]}
+            disabled={unavailable}
+            onPress={() => setDelivery(o.key)}
           >
+            <Ionicons
+              name={chosen ? 'radio-button-on' : 'radio-button-off'}
+              size={18}
+              color={chosen ? '#2563eb' : '#94a3b8'}
+            />
             <View style={{ flex: 1 }}>
-              <Text style={grantStyles.optionTitle}>
-                {t('publisherAccess.sendInvite')}
-              </Text>
-              <Text style={grantStyles.optionHint}>
-                {sendInvite
-                  ? t('publisherAccess.inviteHint')
-                  : t('publisherAccess.manualHint')}
-              </Text>
+              <Text style={grantStyles.optionTitle}>{o.title}</Text>
+              <Text style={grantStyles.optionHint}>{o.hint}</Text>
             </View>
-            <Switch value={sendInvite} onValueChange={setSendInvite} />
           </Pressable>
+        );
+      })}
 
-          {sendInvite ? null : (
-            <>
-              <Text style={grantStyles.label}>
-                {t('publisherAccess.password')}
-              </Text>
-              <View style={grantStyles.passwordWrap}>
-                <TextInput
-                  style={grantStyles.passwordInput}
-                  value={password}
-                  onChangeText={setPassword}
-                  secureTextEntry={!showPassword}
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  textContentType="newPassword"
-                  placeholder={t('publisherAccess.passwordPlaceholder', {
-              count: PASSWORD_MIN_LENGTH,
-            })}
-                  placeholderTextColor="#94a3b8"
-                />
-                <Pressable
-                  onPress={() => setShowPassword((v) => !v)}
-                  hitSlop={8}
-                  style={grantStyles.eyeBtn}
-                >
-                  <Ionicons
-                    name={showPassword ? 'eye-off-outline' : 'eye-outline'}
-                    size={18}
-                    color="#64748b"
-                  />
-                </Pressable>
-              </View>
-              <PasswordRules password={password} />
-            </>
-          )}
+      {delivery === 'other' ? (
+        <TextInput
+          style={[
+            grantStyles.input,
+            grantStyles.otherInput,
+            email.length > 0 && !addressOk && grantStyles.inputBad,
+          ]}
+          value={email}
+          onChangeText={setEmail}
+          autoCapitalize="none"
+          autoCorrect={false}
+          keyboardType="email-address"
+          textContentType="emailAddress"
+          placeholder="name@example.org"
+          placeholderTextColor="#94a3b8"
+        />
+      ) : null}
 
-          <Pressable
-            style={grantStyles.optionRow}
-            onPress={() => setIsAdmin((v) => !v)}
-          >
-            <View style={{ flex: 1 }}>
-              <Text style={grantStyles.optionTitle}>
-                {t('publisherAccess.makeAdmin')}
-              </Text>
-              <Text style={grantStyles.optionHint}>
-                {t('publisherAccess.roleHint')}
-              </Text>
-            </View>
-            <Switch value={isAdmin} onValueChange={setIsAdmin} />
-          </Pressable>
+      <Pressable
+        style={grantStyles.optionRow}
+        onPress={() => setIsAdmin((v) => !v)}
+      >
+        <View style={{ flex: 1 }}>
+          <Text style={grantStyles.optionTitle}>
+            {t('publisherAccess.makeAdmin')}
+          </Text>
+          <Text style={grantStyles.optionHint}>
+            {t('publisherAccess.roleHint')}
+          </Text>
+        </View>
+        <Switch value={isAdmin} onValueChange={setIsAdmin} />
+      </Pressable>
 
-          {error ? (
-            <View style={grantStyles.errorBox}>
-              <Ionicons name="alert-circle-outline" size={15} color="#991b1b" />
-              <Text style={grantStyles.errorText}>{error}</Text>
-            </View>
-          ) : null}
+      {error ? (
+        <View style={grantStyles.errorBox}>
+          <Ionicons name="alert-circle-outline" size={15} color="#991b1b" />
+          <Text style={grantStyles.errorText}>{error}</Text>
+        </View>
+      ) : null}
+    </Dialog>
+  );
+}
 
+/**
+ * The code, at the one moment it can be shown.
+ *
+ * Only a hash of it is stored, so this dialog is not a view of something that
+ * can be looked at again — it is the single sight of it. Which is why the way
+ * onward is «send it now», through the sheet the phone already has, rather
+ * than «copy» and hope it is still on the clipboard later.
+ */
+function InviteResultDialog({
+  visible,
+  name,
+  code,
+  sentTo,
+  expiresAt,
+  onClose,
+}: {
+  visible: boolean;
+  name: string;
+  code: string | null;
+  sentTo: string | null;
+  expiresAt: string | null;
+  onClose: () => void;
+}) {
+  const { t } = useTranslation();
+  if (!code) return null;
+
+  const until = expiresAt
+    ? new Date(expiresAt).toLocaleDateString(i18n.language, {
+        day: 'numeric',
+        month: 'long',
+      })
+    : null;
+
+  const message = t('publisherAccess.inviteMessage', {
+    name,
+    code,
+    until: until ?? '',
+    url: 'mycongregation.org/app/',
+  });
+
+  return (
+    <Dialog
+      visible={visible}
+      title={t('publisherAccess.inviteReadyTitle')}
+      icon="key-outline"
+      iconTint="#0369a1"
+      iconBg="#e0f2fe"
+      confirmLabel={t('common.done')}
+      onConfirm={onClose}
+      onCancel={onClose}
+      scroll
+    >
+      <Text style={dialogText.body}>
+        {sentTo
+          ? t('publisherAccess.inviteSentTo', { email: sentTo })
+          : t('publisherAccess.inviteNotSent')}
+      </Text>
+
+      <View style={codeStyles.codeBox}>
+        <Text style={codeStyles.code} selectable>
+          {code}
+        </Text>
+      </View>
+      {until ? (
+        <Text style={codeStyles.until}>
+          {t('publisherAccess.inviteUntil', { until })}
+        </Text>
+      ) : null}
+
+      <Pressable
+        style={codeStyles.shareBtn}
+        onPress={() => {
+          void Share.share({ message });
+        }}
+      >
+        <Ionicons name="paper-plane-outline" size={16} color="#fff" />
+        <Text style={codeStyles.shareText}>
+          {t('publisherAccess.inviteShare')}
+        </Text>
+      </Pressable>
+
+      <Text style={codeStyles.warning}>
+        {t('publisherAccess.inviteOnlyOnce')}
+      </Text>
+    </Dialog>
+  );
+}
+
+/** Correcting the name — the same rule and the same endpoint as the users screen. */
+function LoginNameModal({
+  visible,
+  current,
+  suggestion,
+  pending,
+  error,
+  onCancel,
+  onSubmit,
+}: {
+  visible: boolean;
+  current: string | null;
+  suggestion: string;
+  pending: boolean;
+  error: string | null;
+  onCancel: () => void;
+  onSubmit: (loginName: string) => void;
+}) {
+  const { t } = useTranslation();
+  const [value, setValue] = useState(current ?? suggestion);
+
+  useEffect(() => {
+    if (visible) setValue(current ?? suggestion);
+  }, [visible, current, suggestion]);
+
+  const problem = loginNameProblem(value);
+  const canSave =
+    !problem && value.trim().toLowerCase() !== (current ?? '').toLowerCase();
+
+  return (
+    <Dialog
+      visible={visible}
+      title={t('publisherAccess.changeLoginName')}
+      icon="person-outline"
+      cancelLabel={t('publisherAccess.cancel')}
+      confirmLabel={t('publisherAccess.save')}
+      confirmDisabled={!canSave}
+      pending={pending}
+      onConfirm={() => onSubmit(value.trim().toLowerCase())}
+      onCancel={onCancel}
+    >
+      <Text style={dialogText.body}>
+        {t('publisherAccess.changeLoginNameDesc')}
+      </Text>
+      <TextInput
+        style={[grantStyles.input, !!problem && grantStyles.inputBad]}
+        value={value}
+        onChangeText={setValue}
+        autoCapitalize="none"
+        autoCorrect={false}
+        placeholder={suggestion}
+        placeholderTextColor="#94a3b8"
+      />
+      {problem ? (
+        <Text style={grantStyles.fieldHint}>
+          {t(`loginName.problem.${problem}`, {
+            min: LOGIN_NAME_MIN,
+            max: LOGIN_NAME_MAX,
+          })}
+        </Text>
+      ) : null}
+      {suggestion !== '' &&
+      suggestion !== (current ?? '') &&
+      suggestion !== value ? (
+        <Pressable
+          style={emailStyles.suggestBtn}
+          onPress={() => setValue(suggestion)}
+        >
+          <Text style={emailStyles.suggestText}>
+            {t('publisherAccess.fromCard', { value: suggestion })}
+          </Text>
+        </Pressable>
+      ) : null}
+      {error ? <Text style={emailStyles.error}>{error}</Text> : null}
     </Dialog>
   );
 }
@@ -703,6 +968,70 @@ const grantStyles = StyleSheet.create({
     marginTop: 14,
   },
   errorText: { flex: 1, fontSize: 12.5, color: '#991b1b', lineHeight: 17 },
+  sectionLabel: { marginTop: 18 },
+  choiceRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+    backgroundColor: '#f8fafc',
+    borderWidth: 1,
+    borderColor: '#e8edf3',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 11,
+    marginBottom: 8,
+  },
+  choiceRowOn: { borderColor: '#bfdbfe', backgroundColor: '#eff6ff' },
+  choiceRowOff: { opacity: 0.45 },
+  otherInput: { marginTop: 2 },
+});
+
+/** The code itself: large, spaced, and impossible to mistake for body text. */
+const codeStyles = StyleSheet.create({
+  codeBox: {
+    marginTop: 14,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#bae6fd',
+    backgroundColor: '#f0f9ff',
+    paddingVertical: 18,
+    alignItems: 'center',
+  },
+  code: {
+    fontSize: 30,
+    letterSpacing: 3,
+    color: '#0c4a6e',
+    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
+  },
+  until: {
+    marginTop: 8,
+    fontSize: 12.5,
+    color: '#64748b',
+    textAlign: 'center',
+  },
+  shareBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    marginTop: 14,
+    backgroundColor: '#2563eb',
+    borderRadius: 12,
+    paddingVertical: 12,
+  },
+  shareText: {
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: '600',
+    fontFamily: 'Manrope_600SemiBold',
+  },
+  warning: {
+    marginTop: 12,
+    fontSize: 12.5,
+    color: '#b45309',
+    lineHeight: 18,
+  },
 });
 
 /** Body text inside a dialog. */
