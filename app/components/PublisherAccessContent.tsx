@@ -479,8 +479,6 @@ const emailStyles = StyleSheet.create({
  * password being handed round the congregation. Setting a password by hand is
  * still possible afterwards, on the card, where it reads as the repair it is.
  */
-type Delivery = 'own' | 'other' | 'inPerson';
-
 function GrantModal({
   visible,
   defaultEmail,
@@ -504,63 +502,43 @@ function GrantModal({
   }) => void;
 }) {
   const { t } = useTranslation();
-  const hasOwnAddress = defaultEmail.trim() !== '';
-  const [delivery, setDelivery] = useState<Delivery>(
-    hasOwnAddress ? 'own' : 'inPerson',
-  );
-  const [email, setEmail] = useState('');
+  const cardEmail = defaultEmail.trim();
+  const hasCardEmail = cardEmail !== '';
+
+  /**
+   * Two ways, not three.
+   *
+   * It used to offer «his own address», «another address» and «in person», and
+   * the first two differed only in a caption — what actually matters is where
+   * the letter goes and whether that address belongs on the card. Worse, the
+   * first was greyed out for anybody whose card holds no address, which is
+   * most of this congregation: the form then opened on «in person», quietly
+   * recommending the fallback. A letter is the ordinary way, so a letter is
+   * what this opens on, with the field ready to be typed into.
+   */
+  const [byMail, setByMail] = useState(true);
+  const [email, setEmail] = useState(cardEmail);
   const [loginName, setLoginName] = useState(suggestedLoginName);
   const [isAdmin, setIsAdmin] = useState(false);
-  /**
-   * Whether the address typed here also belongs on the publisher's card.
-   *
-   * On by default only when the card is empty — filling a blank is helpful,
-   * replacing somebody's contact address behind their back is not. And when
-   * the letter is going to a borrowed mailbox, this is exactly the switch the
-   * elder wants to turn off.
-   */
   const [saveToCard, setSaveToCard] = useState(true);
 
   useEffect(() => {
     if (visible) {
-      setDelivery(hasOwnAddress ? 'own' : 'inPerson');
-      setEmail('');
+      setByMail(true);
+      setEmail(cardEmail);
       setLoginName(suggestedLoginName);
       setIsAdmin(false);
-      setSaveToCard(!hasOwnAddress);
+      setSaveToCard(!hasCardEmail);
     }
-  }, [visible, hasOwnAddress, suggestedLoginName]);
+  }, [visible, cardEmail, hasCardEmail, suggestedLoginName]);
 
-  const address =
-    delivery === 'own'
-      ? defaultEmail.trim()
-      : delivery === 'other'
-        ? email.trim()
-        : '';
-  const addressOk =
-    delivery === 'inPerson' || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(address);
+  const address = email.trim();
+  const addressOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(address);
   const nameProblem = loginNameProblem(loginName);
-  const canSubmit = !pending && addressOk && !nameProblem;
-
-  const options: { key: Delivery; title: string; hint: string }[] = [
-    {
-      key: 'own',
-      title: hasOwnAddress
-        ? t('publisherAccess.deliveryOwn', { email: defaultEmail.trim() })
-        : t('publisherAccess.deliveryOwnMissing'),
-      hint: t('publisherAccess.deliveryOwnHint'),
-    },
-    {
-      key: 'other',
-      title: t('publisherAccess.deliveryOther'),
-      hint: t('publisherAccess.deliveryOtherHint'),
-    },
-    {
-      key: 'inPerson',
-      title: t('publisherAccess.deliveryInPerson'),
-      hint: t('publisherAccess.deliveryInPersonHint'),
-    },
-  ];
+  const canSubmit = !pending && !nameProblem && (!byMail || addressOk);
+  // Only ever offered for an empty card: replacing somebody's contact address
+  // behind their back is not a thing a checkbox should do quietly.
+  const offerSave = byMail && !hasCardEmail && addressOk;
 
   return (
     <Dialog
@@ -573,20 +551,18 @@ function GrantModal({
       pending={pending}
       onConfirm={() =>
         onSubmit({
-          email: address === '' ? undefined : address,
+          email: byMail ? address : undefined,
           loginName: loginName.trim().toLowerCase(),
           isAdmin,
-          saveEmailToCard: delivery === 'other' && saveToCard,
+          saveEmailToCard: offerSave && saveToCard,
         })
       }
       onCancel={onCancel}
       scroll
     >
-      <Text style={grantStyles.label}>
-        {t('publisherAccess.loginNameLabel')}
-      </Text>
+      <Text style={g.sectionLabel}>{t('publisherAccess.loginNameLabel')}</Text>
       <TextInput
-        style={[grantStyles.input, !!nameProblem && grantStyles.inputBad]}
+        style={[g.input, !!nameProblem && g.inputBad]}
         value={loginName}
         onChangeText={setLoginName}
         autoCapitalize="none"
@@ -595,110 +571,119 @@ function GrantModal({
         placeholderTextColor="#94a3b8"
       />
       {nameProblem ? (
-        <Text style={grantStyles.fieldHint}>
-          {t(`loginName.problem.${nameProblem}`, {
-            min: LOGIN_NAME_MIN,
-            max: LOGIN_NAME_MAX,
-          })}
-        </Text>
+        <View style={g.warnRow}>
+          <Ionicons name="alert-circle-outline" size={14} color="#b45309" />
+          <Text style={g.warnText}>
+            {t(`loginName.problem.${nameProblem}`, {
+              min: LOGIN_NAME_MIN,
+              max: LOGIN_NAME_MAX,
+            })}
+          </Text>
+        </View>
       ) : (
-        <Text style={grantStyles.optionHint}>
-          {t('publisherAccess.loginNameHint')}
-        </Text>
+        <Text style={g.hint}>{t('publisherAccess.loginNameHint')}</Text>
       )}
 
-      <Text style={[grantStyles.label, grantStyles.sectionLabel]}>
+      <Text style={[g.sectionLabel, g.sectionGap]}>
         {t('publisherAccess.deliveryLabel')}
       </Text>
-      {options.map((o) => {
-        const chosen = delivery === o.key;
-        const unavailable = o.key === 'own' && !hasOwnAddress;
-        return (
-          <Pressable
-            key={o.key}
-            style={[
-              grantStyles.choiceRow,
-              chosen && grantStyles.choiceRowOn,
-              unavailable && grantStyles.choiceRowOff,
-            ]}
-            disabled={unavailable}
-            onPress={() => setDelivery(o.key)}
-          >
-            <Ionicons
-              name={chosen ? 'radio-button-on' : 'radio-button-off'}
-              size={18}
-              color={chosen ? '#2563eb' : '#94a3b8'}
-            />
-            <View style={{ flex: 1 }}>
-              <Text style={grantStyles.optionTitle}>{o.title}</Text>
-              <Text style={grantStyles.optionHint}>{o.hint}</Text>
-            </View>
-          </Pressable>
-        );
-      })}
-
-      {delivery === 'other' ? (
-        <>
-          <TextInput
-            style={[
-              grantStyles.input,
-              grantStyles.otherInput,
-              email.length > 0 && !addressOk && grantStyles.inputBad,
-            ]}
-            value={email}
-            onChangeText={setEmail}
-            autoCapitalize="none"
-            autoCorrect={false}
-            keyboardType="email-address"
-            textContentType="emailAddress"
-            placeholder="name@example.org"
-            placeholderTextColor="#94a3b8"
-          />
-          <Pressable
-            style={grantStyles.choiceRow}
-            onPress={() => setSaveToCard((v) => !v)}
-            disabled={hasOwnAddress}
-          >
-            <Ionicons
-              name={saveToCard ? 'checkbox' : 'square-outline'}
-              size={18}
-              color={saveToCard ? '#2563eb' : '#94a3b8'}
-            />
-            <View style={{ flex: 1 }}>
-              <Text style={grantStyles.optionTitle}>
-                {t('publisherAccess.saveToCard')}
-              </Text>
-              <Text style={grantStyles.optionHint}>
-                {hasOwnAddress
-                  ? t('publisherAccess.saveToCardBusy', {
-                      email: defaultEmail.trim(),
-                    })
-                  : t('publisherAccess.saveToCardHint')}
-              </Text>
-            </View>
-          </Pressable>
-        </>
-      ) : null}
 
       <Pressable
-        style={grantStyles.optionRow}
-        onPress={() => setIsAdmin((v) => !v)}
+        style={[g.choice, byMail && g.choiceOn]}
+        onPress={() => setByMail(true)}
       >
+        <View style={g.choiceHead}>
+          <Ionicons
+            name={byMail ? 'radio-button-on' : 'radio-button-off'}
+            size={18}
+            color={byMail ? '#2563eb' : '#94a3b8'}
+          />
+          <View style={{ flex: 1 }}>
+            <Text style={g.choiceTitle}>
+              {t('publisherAccess.deliveryByMail')}
+            </Text>
+            <Text style={g.choiceHint}>
+              {t('publisherAccess.deliveryByMailHint')}
+            </Text>
+          </View>
+        </View>
+
+        {byMail ? (
+          <View style={g.choiceBody}>
+            <TextInput
+              style={[
+                g.input,
+                address !== '' && !addressOk && g.inputBad,
+              ]}
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+              autoCorrect={false}
+              keyboardType="email-address"
+              textContentType="emailAddress"
+              placeholder="name@example.org"
+              placeholderTextColor="#94a3b8"
+            />
+            {hasCardEmail ? (
+              <Text style={g.hint}>{t('publisherAccess.fromCardNote')}</Text>
+            ) : (
+              <Text style={g.hint}>{t('publisherAccess.notOnCardNote')}</Text>
+            )}
+
+            {offerSave ? (
+              <Pressable style={g.check} onPress={() => setSaveToCard((v) => !v)}>
+                <Ionicons
+                  name={saveToCard ? 'checkbox' : 'square-outline'}
+                  size={18}
+                  color={saveToCard ? '#2563eb' : '#94a3b8'}
+                />
+                <View style={{ flex: 1 }}>
+                  <Text style={g.checkTitle}>
+                    {t('publisherAccess.saveToCard')}
+                  </Text>
+                  <Text style={g.choiceHint}>
+                    {t('publisherAccess.saveToCardHint')}
+                  </Text>
+                </View>
+              </Pressable>
+            ) : null}
+          </View>
+        ) : null}
+      </Pressable>
+
+      <Pressable
+        style={[g.choice, !byMail && g.choiceOn]}
+        onPress={() => setByMail(false)}
+      >
+        <View style={g.choiceHead}>
+          <Ionicons
+            name={!byMail ? 'radio-button-on' : 'radio-button-off'}
+            size={18}
+            color={!byMail ? '#2563eb' : '#94a3b8'}
+          />
+          <View style={{ flex: 1 }}>
+            <Text style={g.choiceTitle}>
+              {t('publisherAccess.deliveryInPerson')}
+            </Text>
+            <Text style={g.choiceHint}>
+              {t('publisherAccess.deliveryInPersonHint')}
+            </Text>
+          </View>
+        </View>
+      </Pressable>
+
+      <Pressable style={g.adminRow} onPress={() => setIsAdmin((v) => !v)}>
         <View style={{ flex: 1 }}>
-          <Text style={grantStyles.optionTitle}>
-            {t('publisherAccess.makeAdmin')}
-          </Text>
-          <Text style={grantStyles.optionHint}>
-            {t('publisherAccess.roleHint')}
-          </Text>
+          <Text style={g.choiceTitle}>{t('publisherAccess.makeAdmin')}</Text>
+          <Text style={g.choiceHint}>{t('publisherAccess.roleHint')}</Text>
         </View>
         <Switch value={isAdmin} onValueChange={setIsAdmin} />
       </Pressable>
 
       {error ? (
-        <View style={grantStyles.errorBox}>
+        <View style={g.errorBox}>
           <Ionicons name="alert-circle-outline" size={15} color="#991b1b" />
-          <Text style={grantStyles.errorText}>{error}</Text>
+          <Text style={g.errorText}>{error}</Text>
         </View>
       ) : null}
     </Dialog>
@@ -706,13 +691,91 @@ function GrantModal({
 }
 
 /**
- * The code, at the one moment it can be shown.
- *
- * Only a hash of it is stored, so this dialog is not a view of something that
- * can be looked at again — it is the single sight of it. Which is why the way
- * onward is «send it now», through the sheet the phone already has, rather
- * than «copy» and hope it is still on the clipboard later.
+ * The grant dialog's own shapes. Sections announce themselves in small caps,
+ * each choice is a card that holds its own fields when chosen, and hints sit
+ * under what they explain rather than at the foot of the form.
  */
+const g = StyleSheet.create({
+  sectionLabel: {
+    fontSize: 11,
+    letterSpacing: 0.7,
+    textTransform: 'uppercase',
+    color: '#94a3b8',
+    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
+    marginBottom: 8,
+  },
+  sectionGap: { marginTop: 22 },
+  input: {
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderRadius: 12,
+    paddingHorizontal: 13,
+    paddingVertical: 12,
+    fontSize: 15,
+    color: '#0f172a',
+    backgroundColor: '#fff',
+  },
+  inputBad: { borderColor: '#fca5a5', backgroundColor: '#fff7f7' },
+  hint: { fontSize: 12, color: '#94a3b8', lineHeight: 17, marginTop: 7 },
+  warnRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 6, marginTop: 7 },
+  warnText: { flex: 1, fontSize: 12, color: '#b45309', lineHeight: 17 },
+  choice: {
+    borderWidth: 1,
+    borderColor: '#e8edf3',
+    backgroundColor: '#f8fafc',
+    borderRadius: 14,
+    padding: 13,
+    marginBottom: 10,
+  },
+  choiceOn: { borderColor: '#bfdbfe', backgroundColor: '#eff6ff' },
+  choiceHead: { flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
+  choiceTitle: {
+    fontSize: 14.5,
+    color: '#0f172a',
+    fontWeight: '600',
+    fontFamily: 'Manrope_600SemiBold',
+  },
+  choiceHint: { fontSize: 12, color: '#64748b', lineHeight: 17, marginTop: 3 },
+  choiceBody: { marginTop: 12, gap: 0 },
+  check: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#dbeafe',
+  },
+  checkTitle: {
+    fontSize: 13.5,
+    color: '#0f172a',
+    fontWeight: '600',
+    fontFamily: 'Manrope_600SemiBold',
+  },
+  adminRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#eef2f6',
+    paddingTop: 16,
+    marginTop: 12,
+  },
+  errorBox: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 7,
+    backgroundColor: '#fef2f2',
+    borderColor: '#fecaca',
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 11,
+    marginTop: 16,
+  },
+  errorText: { flex: 1, fontSize: 12.5, color: '#991b1b', lineHeight: 17 },
+});
+
 function InviteResultDialog({
   visible,
   name,
@@ -838,7 +901,7 @@ function LoginNameModal({
         {t('publisherAccess.changeLoginNameDesc')}
       </Text>
       <TextInput
-        style={[grantStyles.input, !!problem && grantStyles.inputBad]}
+        style={[g.input, !!problem && g.inputBad]}
         value={value}
         onChangeText={setValue}
         autoCapitalize="none"
@@ -847,7 +910,7 @@ function LoginNameModal({
         placeholderTextColor="#94a3b8"
       />
       {problem ? (
-        <Text style={grantStyles.fieldHint}>
+        <Text style={g.warnText}>
           {t(`loginName.problem.${problem}`, {
             min: LOGIN_NAME_MIN,
             max: LOGIN_NAME_MAX,
@@ -925,108 +988,6 @@ function ResetModal({
     </Dialog>
   );
 }
-
-/** The grant-access dialog: same shapes as the app's forms — bordered inputs,
- *  13px labels, options as rows that explain themselves. */
-const grantStyles = StyleSheet.create({
-  card: { padding: 18, borderRadius: 18, gap: 0 },
-  head: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 14 },
-  headIcon: {
-    width: 34,
-    height: 34,
-    borderRadius: 11,
-    backgroundColor: '#e0f2fe',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  title: {
-    flex: 1,
-    fontSize: 17,
-    fontWeight: '700',
-    fontFamily: 'Manrope_700Bold',
-    color: '#0f172a',
-  },
-  label: {
-    fontSize: 13,
-    color: '#475569',
-    fontWeight: '600',
-    fontFamily: 'Manrope_600SemiBold',
-    marginBottom: 6,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 11,
-    fontSize: 15,
-    color: '#0f172a',
-    backgroundColor: '#fff',
-  },
-  inputBad: { borderColor: '#fca5a5' },
-  fieldHint: { fontSize: 12, color: '#b45309', marginTop: 5 },
-  passwordWrap: { position: 'relative', justifyContent: 'center' },
-  passwordInput: {
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    borderRadius: 10,
-    paddingLeft: 12,
-    paddingRight: 42,
-    paddingVertical: 11,
-    fontSize: 15,
-    color: '#0f172a',
-    backgroundColor: '#fff',
-  },
-  eyeBtn: { position: 'absolute', right: 12 },
-  optionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    backgroundColor: '#f8fafc',
-    borderWidth: 1,
-    borderColor: '#e8edf3',
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 11,
-    marginTop: 14,
-    marginBottom: 2,
-  },
-  optionTitle: {
-    fontSize: 14,
-    color: '#0f172a',
-    fontWeight: '600',
-    fontFamily: 'Manrope_600SemiBold',
-  },
-  optionHint: { fontSize: 12, color: '#64748b', lineHeight: 17, marginTop: 3 },
-  errorBox: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 7,
-    backgroundColor: '#fef2f2',
-    borderColor: '#fecaca',
-    borderWidth: 1,
-    borderRadius: 12,
-    padding: 11,
-    marginTop: 14,
-  },
-  errorText: { flex: 1, fontSize: 12.5, color: '#991b1b', lineHeight: 17 },
-  sectionLabel: { marginTop: 18 },
-  choiceRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 10,
-    backgroundColor: '#f8fafc',
-    borderWidth: 1,
-    borderColor: '#e8edf3',
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 11,
-    marginBottom: 8,
-  },
-  choiceRowOn: { borderColor: '#bfdbfe', backgroundColor: '#eff6ff' },
-  choiceRowOff: { opacity: 0.45 },
-  otherInput: { marginTop: 2 },
-});
 
 /** The code itself: large, spaced, and impossible to mistake for body text. */
 const codeStyles = StyleSheet.create({
