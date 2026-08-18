@@ -877,6 +877,20 @@ export const usersApi = {
     });
     return data;
   },
+  /**
+   * Who else already signs in with this address.
+   *
+   * Asked by the grant-access form while the elder types, so it can say what
+   * granting access here will do to somebody ELSE before it does it.
+   */
+  async whoElseUsesEmail(
+    email: string,
+  ): Promise<{ loginName: string | null; displayName: string | null }[]> {
+    const { data } = await api.get<
+      { loginName: string | null; displayName: string | null }[]
+    >('/users/email-in-use', { params: { email } });
+    return data;
+  },
   /** Point an account at a publisher card, or clear the link with null. */
   async linkPublisher(
     id: string,

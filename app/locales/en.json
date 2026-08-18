@@ -96,7 +96,7 @@
     "inviteUntil": "Valid until {{until}}",
     "inviteShare": "Send in a message",
     "inviteOnlyOnce": "The code is shown once: only its fingerprint is stored. If it is lost, issue a new one — but the old one then stops working.",
-    "inviteMessage": "{{name}}, here is your code for the app: {{code}} (valid until {{until}}). Get the app at {{url}} and tap “I was invited”.",
+    "inviteMessage": "{{name}}, here is your code for the app: {{code}} (valid until {{until}}). Your name for signing in: {{loginName}}. Get the app at {{url}} and tap “I was invited”.",
     "newCode": "Issue a new code",
     "newCodeHint": "The previous code stops working.",
     "saveToCard": "Also write this address on the card",
@@ -105,7 +105,14 @@
     "deliveryByMail": "By letter to an address",
     "deliveryByMailHint": "The ordinary way: they receive a letter with the code and their own login name.",
     "fromCardNote": "The address from the publisher card. You may replace it — with a husband’s or wife’s mailbox, for instance.",
-    "notOnCardNote": "The card holds no e-mail — type the address the letter should go to."
+    "notOnCardNote": "The card holds no e-mail — type the address the letter should go to.",
+    "howEntryWorks": "A publisher signs in with a NAME, not an e-mail address. That is what lets one mailbox serve two people — a husband and wife, for instance.",
+    "changeIt": "Change",
+    "addressInUse": "{{who}} already signs in with this address. Keep it and they will no longer be able to sign in by address — only by the name {{loginName}}. Do tell them.",
+    "addressInUseWayOut": "To leave them untouched, choose “I will pass the code on myself” — the address then stays theirs alone.",
+    "anotherLogin": "another account",
+    "andTheirLoginName": "Name to sign in with",
+    "inviteMessageNoName": "{{name}}, here is your code for the app: {{code}} (valid until {{until}}). Get the app at {{url}} and tap “I was invited”."
   },
   "tabs": {
     "schedule": "Programme",

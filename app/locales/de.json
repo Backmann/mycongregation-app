@@ -96,7 +96,7 @@
     "inviteUntil": "Gültig bis {{until}}",
     "inviteShare": "Als Nachricht senden",
     "inviteOnlyOnce": "Der Code wird einmal angezeigt: gespeichert ist nur sein Fingerabdruck. Geht er verloren, gib einen neuen aus — der alte funktioniert dann nicht mehr.",
-    "inviteMessage": "{{name}}, hier ist dein Code für die App: {{code}} (gültig bis {{until}}). Die App gibt es unter {{url}}, dort auf „Ich wurde eingeladen“ tippen.",
+    "inviteMessage": "{{name}}, hier ist dein Code für die App: {{code}} (gültig bis {{until}}). Dein Anmeldename: {{loginName}}. Die App gibt es unter {{url}}, dort auf „Ich wurde eingeladen“ tippen.",
     "newCode": "Neuen Code ausgeben",
     "newCodeHint": "Der bisherige Code funktioniert dann nicht mehr.",
     "saveToCard": "Diese Adresse auch auf der Karte speichern",
@@ -105,7 +105,14 @@
     "deliveryByMail": "Per E-Mail an eine Adresse",
     "deliveryByMailHint": "Der übliche Weg: die Person bekommt eine E-Mail mit dem Code und ihrem Anmeldenamen.",
     "fromCardNote": "Die Adresse aus der Verkündigerkarte. Du kannst sie ersetzen — etwa durch das Postfach des Ehepartners.",
-    "notOnCardNote": "Auf der Karte steht keine E-Mail — trage die Adresse ein, an die der Brief gehen soll."
+    "notOnCardNote": "Auf der Karte steht keine E-Mail — trage die Adresse ein, an die der Brief gehen soll.",
+    "howEntryWorks": "Ein Verkündiger meldet sich mit einem NAMEN an, nicht mit einer E-Mail-Adresse. Deshalb kann ein Postfach gleich zwei Personen dienen — etwa Mann und Frau.",
+    "changeIt": "Ändern",
+    "addressInUse": "Mit dieser Adresse meldet sich bereits {{who}} an. Bleibt sie stehen, kann sich diese Person nicht mehr per Adresse anmelden — nur noch mit dem Namen {{loginName}}. Sag ihr Bescheid.",
+    "addressInUseWayOut": "Damit sich für sie nichts ändert, wähle „Ich gebe den Code persönlich weiter“ — dann bleibt die Adresse allein ihre.",
+    "anotherLogin": "ein anderes Konto",
+    "andTheirLoginName": "Name für die Anmeldung",
+    "inviteMessageNoName": "{{name}}, hier ist dein Code für die App: {{code}} (gültig bis {{until}}). Die App gibt es unter {{url}}, dort auf „Ich wurde eingeladen“ tippen."
   },
   "tabs": {
     "schedule": "Programm",

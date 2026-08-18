@@ -12,7 +12,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { extractErrorMessage, publishersApi } from '../lib/api';
+import { extractErrorMessage, publishersApi, usersApi } from '../lib/api';
 import { passwordProblem, PASSWORD_MIN_LENGTH } from '../lib/password';
 import {
   loginNameProblem,
@@ -149,6 +149,7 @@ export function PublisherAccessContent({ publisher }: { publisher: Publisher }) 
         <InviteResultDialog
           visible={issued !== null}
           name={publisher.displayName}
+          loginName={issued?.loginName ?? null}
           code={issued?.inviteCode ?? null}
           sentTo={issued?.inviteSentTo ?? null}
           expiresAt={issued?.inviteExpiresAt ?? null}
@@ -331,6 +332,7 @@ export function PublisherAccessContent({ publisher }: { publisher: Publisher }) 
       <InviteResultDialog
         visible={issued !== null}
         name={publisher.displayName}
+        loginName={issued?.loginName ?? null}
         code={issued?.inviteCode ?? null}
         sentTo={issued?.inviteSentTo ?? null}
         expiresAt={issued?.inviteExpiresAt ?? null}
@@ -521,6 +523,19 @@ function GrantModal({
   const [loginName, setLoginName] = useState(suggestedLoginName);
   const [isAdmin, setIsAdmin] = useState(false);
   const [saveToCard, setSaveToCard] = useState(true);
+  /** Whether the login name is being edited, or merely shown as settled. */
+  const [editingName, setEditingName] = useState(false);
+  /**
+   * Who ALREADY signs in with the address being typed.
+   *
+   * The moment this address serves two logins, the person who has been using
+   * it stops being able to sign in by address at all. That is worth knowing
+   * while there is still a choice — not after they write to say they are
+   * locked out.
+   */
+  const [holders, setHolders] = useState<
+    { loginName: string | null; displayName: string | null }[]
+  >([]);
 
   useEffect(() => {
     if (visible) {
@@ -529,11 +544,39 @@ function GrantModal({
       setLoginName(suggestedLoginName);
       setIsAdmin(false);
       setSaveToCard(!hasCardEmail);
+      setEditingName(false);
+      setHolders([]);
     }
   }, [visible, cardEmail, hasCardEmail, suggestedLoginName]);
 
   const address = email.trim();
   const addressOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(address);
+
+  // Asked a moment after typing stops, so the question follows the reader
+  // rather than every keystroke.
+  useEffect(() => {
+    if (!visible || !byMail || !addressOk) {
+      setHolders([]);
+      return;
+    }
+    let alive = true;
+    const timer = setTimeout(() => {
+      usersApi
+        .whoElseUsesEmail(address)
+        .then((found) => {
+          if (alive) setHolders(found);
+        })
+        .catch(() => {
+          // A silent miss is right: this only ever ADDS a warning, and failing
+          // to fetch it must not stand in the way of granting access.
+          if (alive) setHolders([]);
+        });
+    }, 400);
+    return () => {
+      alive = false;
+      clearTimeout(timer);
+    };
+  }, [visible, byMail, addressOk, address]);
   const nameProblem = loginNameProblem(loginName);
   const canSubmit = !pending && !nameProblem && (!byMail || addressOk);
   // Only ever offered for an empty card: replacing somebody's contact address
@@ -560,28 +603,49 @@ function GrantModal({
       onCancel={onCancel}
       scroll
     >
+      {/* Said once, at the top: the whole form makes sense only if you know
+          that a publisher signs in by NAME now, and that this is what lets one
+          mailbox serve two people. Nothing else on the screen says it. */}
+      <View style={g.lede}>
+        <Ionicons name="information-circle-outline" size={16} color="#0369a1" />
+        <Text style={g.ledeText}>{t('publisherAccess.howEntryWorks')}</Text>
+      </View>
+
       <Text style={g.sectionLabel}>{t('publisherAccess.loginNameLabel')}</Text>
-      <TextInput
-        style={[g.input, !!nameProblem && g.inputBad]}
-        value={loginName}
-        onChangeText={setLoginName}
-        autoCapitalize="none"
-        autoCorrect={false}
-        placeholder={suggestedLoginName}
-        placeholderTextColor="#94a3b8"
-      />
-      {nameProblem ? (
-        <View style={g.warnRow}>
-          <Ionicons name="alert-circle-outline" size={14} color="#b45309" />
-          <Text style={g.warnText}>
-            {t(`loginName.problem.${nameProblem}`, {
-              min: LOGIN_NAME_MIN,
-              max: LOGIN_NAME_MAX,
-            })}
-          </Text>
-        </View>
+      {editingName ? (
+        <>
+          <TextInput
+            style={[g.input, !!nameProblem && g.inputBad]}
+            value={loginName}
+            onChangeText={setLoginName}
+            autoCapitalize="none"
+            autoCorrect={false}
+            autoFocus
+            placeholder={suggestedLoginName}
+            placeholderTextColor="#94a3b8"
+          />
+          {nameProblem ? (
+            <View style={g.warnRow}>
+              <Ionicons name="alert-circle-outline" size={14} color="#b45309" />
+              <Text style={g.warnText}>
+                {t(`loginName.problem.${nameProblem}`, {
+                  min: LOGIN_NAME_MIN,
+                  max: LOGIN_NAME_MAX,
+                })}
+              </Text>
+            </View>
+          ) : (
+            <Text style={g.hint}>{t('publisherAccess.loginNameHint')}</Text>
+          )}
+        </>
       ) : (
-        <Text style={g.hint}>{t('publisherAccess.loginNameHint')}</Text>
+        /* A settled fact, not a question. The name is already built from the
+           card; asking for it in an empty-looking field made every elder stop
+           and wonder what was wanted of him. */
+        <Pressable style={g.nameRow} onPress={() => setEditingName(true)}>
+          <Text style={g.nameValue}>{loginName}</Text>
+          <Text style={g.nameEdit}>{t('publisherAccess.changeIt')}</Text>
+        </Pressable>
       )}
 
       <Text style={[g.sectionLabel, g.sectionGap]}>
@@ -629,6 +693,26 @@ function GrantModal({
             ) : (
               <Text style={g.hint}>{t('publisherAccess.notOnCardNote')}</Text>
             )}
+
+            {holders.length > 0 ? (
+              <View style={g.warnBox}>
+                <Ionicons name="warning-outline" size={15} color="#92400e" />
+                <View style={{ flex: 1 }}>
+                  <Text style={g.warnBoxText}>
+                    {t('publisherAccess.addressInUse', {
+                      who:
+                        holders[0].displayName ??
+                        holders[0].loginName ??
+                        t('publisherAccess.anotherLogin'),
+                      loginName: holders[0].loginName ?? '',
+                    })}
+                  </Text>
+                  <Text style={g.warnBoxHint}>
+                    {t('publisherAccess.addressInUseWayOut')}
+                  </Text>
+                </View>
+              </View>
+            ) : null}
 
             {offerSave ? (
               <Pressable style={g.check} onPress={() => setSaveToCard((v) => !v)}>
@@ -706,6 +790,60 @@ const g = StyleSheet.create({
     marginBottom: 8,
   },
   sectionGap: { marginTop: 22 },
+  lede: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 8,
+    backgroundColor: '#f0f9ff',
+    borderWidth: 1,
+    borderColor: '#bae6fd',
+    borderRadius: 12,
+    padding: 11,
+    marginBottom: 18,
+  },
+  ledeText: { flex: 1, fontSize: 12.5, color: '#075985', lineHeight: 18 },
+  nameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderRadius: 12,
+    paddingHorizontal: 13,
+    paddingVertical: 12,
+    backgroundColor: '#fff',
+  },
+  nameValue: {
+    flex: 1,
+    fontSize: 15.5,
+    color: '#0f172a',
+    fontWeight: '600',
+    fontFamily: 'Manrope_600SemiBold',
+  },
+  nameEdit: {
+    fontSize: 13,
+    color: '#0369a1',
+    fontWeight: '600',
+    fontFamily: 'Manrope_600SemiBold',
+  },
+  warnBox: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 8,
+    backgroundColor: '#fffbeb',
+    borderWidth: 1,
+    borderColor: '#fde68a',
+    borderRadius: 12,
+    padding: 11,
+    marginTop: 12,
+  },
+  warnBoxText: { fontSize: 12.5, color: '#92400e', lineHeight: 18 },
+  warnBoxHint: {
+    fontSize: 12,
+    color: '#a16207',
+    lineHeight: 17,
+    marginTop: 5,
+  },
   input: {
     borderWidth: 1,
     borderColor: '#e2e8f0',
@@ -779,6 +917,7 @@ const g = StyleSheet.create({
 function InviteResultDialog({
   visible,
   name,
+  loginName,
   code,
   sentTo,
   expiresAt,
@@ -786,6 +925,8 @@ function InviteResultDialog({
 }: {
   visible: boolean;
   name: string;
+  /** What they will type to sign in — useless in a drawer, vital in the message. */
+  loginName: string | null;
   code: string | null;
   sentTo: string | null;
   expiresAt: string | null;
@@ -801,12 +942,21 @@ function InviteResultDialog({
       })
     : null;
 
-  const message = t('publisherAccess.inviteMessage', {
-    name,
-    code,
-    until: until ?? '',
-    url: 'mycongregation.org/app/',
-  });
+  // The letter carries the login name; a code read out loud carried nothing.
+  // Somebody invited in person learned their own name only after signing in —
+  // and needed it again the first time they signed out.
+  const message = t(
+    loginName
+      ? 'publisherAccess.inviteMessage'
+      : 'publisherAccess.inviteMessageNoName',
+    {
+      name,
+      loginName: loginName ?? '',
+      code,
+      until: until ?? '',
+      url: 'mycongregation.org/app/',
+    },
+  );
 
   return (
     <Dialog
@@ -835,6 +985,17 @@ function InviteResultDialog({
         <Text style={codeStyles.until}>
           {t('publisherAccess.inviteUntil', { until })}
         </Text>
+      ) : null}
+
+      {loginName ? (
+        <View style={codeStyles.nameRow}>
+          <Text style={codeStyles.nameLabel}>
+            {t('publisherAccess.andTheirLoginName')}
+          </Text>
+          <Text style={codeStyles.nameValue} selectable>
+            {loginName}
+          </Text>
+        </View>
       ) : null}
 
       <Pressable
@@ -1004,6 +1165,24 @@ const codeStyles = StyleSheet.create({
     fontSize: 30,
     letterSpacing: 3,
     color: '#0c4a6e',
+    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
+  },
+  nameRow: {
+    marginTop: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    backgroundColor: '#f8fafc',
+    paddingVertical: 11,
+    paddingHorizontal: 13,
+    alignItems: 'center',
+  },
+  nameLabel: { fontSize: 12, color: '#64748b' },
+  nameValue: {
+    marginTop: 3,
+    fontSize: 16,
+    color: '#0f172a',
     fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
   },
