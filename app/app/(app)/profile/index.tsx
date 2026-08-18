@@ -184,7 +184,7 @@ export default function ProfileScreen() {
   const initials =
     (myPublisher
       ? `${myPublisher.firstName?.[0] ?? ''}${myPublisher.lastName?.[0] ?? ''}`
-      : (user.email[0] ?? '')
+      : (user.loginName?.[0] ?? user.email?.[0] ?? '')
     ).toUpperCase() || '?';
 
   return (
@@ -206,7 +206,27 @@ export default function ProfileScreen() {
                   {myPublisher.displayName}
                 </Text>
               ) : null}
-              <Text style={styles.identityEmail}>{user.email}</Text>
+              {/* The login name first, and the address under it as what it
+                  now is — a delivery address, which may be absent entirely.
+                  Somebody who signs out and comes back needs the name, and
+                  this is the only place they can read it. */}
+              <Text style={styles.identityEmail} selectable>
+                {user.loginName ?? user.email ?? ''}
+              </Text>
+              <Text style={styles.identityHint}>
+                {user.loginName
+                  ? t('profile.loginNameHint')
+                  : t('profile.noLoginName')}
+              </Text>
+              {user.email ? (
+                <Text style={styles.identityHint} selectable>
+                  {t('profile.deliveryEmail', { email: user.email })}
+                </Text>
+              ) : (
+                <Text style={styles.identityHint}>
+                  {t('profile.noEmail')}
+                </Text>
+              )}
               <View style={styles.identityBadge}>
                 <Text style={styles.identityBadgeText}>
                   {t(`profile.roles.${user.role}`, { defaultValue: user.role })}
@@ -730,6 +750,12 @@ const styles = StyleSheet.create({
   avatarText: { color: '#ffffff', fontSize: 16, fontWeight: '700', fontFamily: 'Manrope_700Bold',},
   identityCol: { flex: 1, gap: 2 },
   identityName: { fontSize: 17, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0f172a' },
+  identityHint: {
+    fontSize: 12,
+    color: '#64748b',
+    marginTop: 2,
+    lineHeight: 17,
+  },
   identityEmail: { fontSize: 13, color: '#64748b' },
   identityBadge: {
     alignSelf: 'flex-start',

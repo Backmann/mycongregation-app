@@ -14,21 +14,21 @@ import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { authApi } from '../../lib/api';
 
-const EMAIL_RE = /.+@.+\..+/;
-
 export default function ForgotPasswordScreen() {
   const { t } = useTranslation();
-  const [email, setEmail] = useState('');
+  // A login name or an address: the person may remember either, and after
+  // this month they are two different things.
+  const [login, setLogin] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [sent, setSent] = useState(false);
 
-  const canSubmit = EMAIL_RE.test(email.trim()) && !submitting;
+  const canSubmit = login.trim().length >= 3 && !submitting;
 
   const submit = async () => {
     if (!canSubmit) return;
     setSubmitting(true);
     try {
-      await authApi.forgotPassword(email.trim());
+      await authApi.forgotPassword(login.trim());
     } catch {
       // Same outcome either way — the server answer is intentionally generic.
     } finally {
@@ -55,20 +55,22 @@ export default function ForgotPasswordScreen() {
                 <Text style={styles.sentText}>{t('auth.forgot.sent')}</Text>
               </View>
               <Text style={styles.hint}>{t('auth.forgot.checkSpam')}</Text>
+              {/* Said here rather than nowhere: most of this congregation has
+                  no address at all, and for them a letter is not coming. */}
+              <Text style={styles.hint}>{t('auth.forgot.noEmailHint')}</Text>
             </>
           ) : (
             <>
               <Text style={styles.subtitle}>{t('auth.forgot.subtitle')}</Text>
-              <Text style={styles.label}>{t('auth.email')}</Text>
+              <Text style={styles.label}>{t('auth.loginOrEmail')}</Text>
               <TextInput
                 style={styles.input}
-                value={email}
-                onChangeText={setEmail}
+                value={login}
+                onChangeText={setLogin}
                 autoCapitalize="none"
                 autoCorrect={false}
-                autoComplete="email"
-                keyboardType="email-address"
-                placeholder="email@example.com"
+                autoComplete="username"
+                placeholder={t('auth.loginPlaceholder')}
                 placeholderTextColor="#cbd5e1"
                 editable={!submitting}
                 onSubmitEditing={() => void submit()}

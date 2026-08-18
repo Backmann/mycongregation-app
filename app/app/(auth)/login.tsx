@@ -26,21 +26,23 @@ const LANGUAGES: { code: SupportedLanguage; label: string }[] = [
 export default function LoginScreen() {
   const { t, i18n } = useTranslation();
   const { signIn } = useAuth();
-  const [email, setEmail] = useState('');
+  // A login name or an address — one field, because a person should not have
+  // to know which kind of thing they hold before they can type it.
+  const [login, setLogin] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const current = (i18n.language?.split('-')[0] ?? 'en') as SupportedLanguage;
-  const canSubmit = email.trim() !== '' && password !== '' && !submitting;
+  const canSubmit = login.trim() !== '' && password !== '' && !submitting;
 
   const handleSubmit = async () => {
-    if (email.trim() === '' || password === '') return;
+    if (login.trim() === '' || password === '') return;
     setSubmitting(true);
     setError(null);
     try {
-      await signIn(email.trim(), password);
+      await signIn(login.trim(), password);
       router.replace('/(app)/home' as any);
     } catch (e) {
       // 401 is «no» and nothing more — deliberately, so this page cannot be
@@ -48,10 +50,18 @@ export default function LoginScreen() {
       // sentence written for a developer, in English, and it was landing on a
       // German screen. The status is ours to read; the words are ours to write.
       const status = (e as { response?: { status?: number } })?.response?.status;
+      const code = (e as { response?: { data?: { code?: string } } })?.response
+        ?.data?.code;
       setError(
-        status === 401
-          ? t('auth.wrongEmailOrPassword')
-          : extractErrorMessage(e),
+        // The one refusal that says something specific, because it is the one
+        // the reader can act on: a family mailbox cannot say which of them is
+        // signing in. Without this they read «wrong password» and change a
+        // password that was never wrong.
+        code === 'LOGIN_SHARED_EMAIL'
+          ? t('auth.sharedEmail')
+          : status === 401
+            ? t('auth.wrongEmailOrPassword')
+            : extractErrorMessage(e),
       );
     } finally {
       setSubmitting(false);
@@ -124,22 +134,26 @@ export default function LoginScreen() {
             <Ionicons name="chevron-forward" size={18} color="#94a3b8" />
           </Pressable>
 
-          <Text style={styles.label}>{t('auth.email')}</Text>
+          <Text style={styles.label}>{t('auth.loginOrEmail')}</Text>
           <View style={styles.inputWrap}>
             <Ionicons
-              name="mail-outline"
+              name="person-outline"
               size={18}
               color="#94a3b8"
               style={styles.inputIcon}
             />
             <TextInput
               style={styles.input}
-              value={email}
-              onChangeText={setEmail}
+              value={login}
+              onChangeText={setLogin}
               autoCapitalize="none"
               autoCorrect={false}
-              autoComplete="email"
-              keyboardType="email-address"
+              // Not autoComplete="email" and not the e-mail keyboard any more:
+              // the field takes a login name too, and a keyboard built around
+              // the @ key is a small lie about what belongs here.
+              autoComplete="username"
+              placeholder={t('auth.loginPlaceholder')}
+              placeholderTextColor="#cbd5e1"
               editable={!submitting}
             />
           </View>

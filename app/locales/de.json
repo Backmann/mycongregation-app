@@ -92,7 +92,7 @@
     "deliveryOwnMissing": "Per E-Mail an die eigene Adresse",
     "deliveryOwnHint": "Die Adresse aus der Verkündigerkarte.",
     "deliveryOther": "Per E-Mail an eine andere Adresse",
-    "deliveryOtherHint": "Zum Beispiel an das Postfach des Ehepartners. Im Brief steht, für wen er ist.",
+    "deliveryOtherHint": "Eine Adresse, die nicht auf der Karte steht, oder das Postfach des Ehepartners. Im Brief steht, für wen er ist.",
     "deliveryInPerson": "Ich gebe den Code persönlich weiter",
     "deliveryInPersonHint": "Keine E-Mail nötig. Der Code erscheint auf dem Bildschirm — vorlesen oder weiterleiten.",
     "inviteReadyTitle": "Code für die Anmeldung",
@@ -103,7 +103,11 @@
     "inviteOnlyOnce": "Der Code wird einmal angezeigt: gespeichert ist nur sein Fingerabdruck. Geht er verloren, gib einen neuen aus — der alte funktioniert dann nicht mehr.",
     "inviteMessage": "{{name}}, hier ist dein Code für die App: {{code}} (gültig bis {{until}}). Die App gibt es unter {{url}}, dort auf „Ich wurde eingeladen“ tippen.",
     "newCode": "Neuen Code ausgeben",
-    "newCodeHint": "Der bisherige Code funktioniert dann nicht mehr."
+    "newCodeHint": "Der bisherige Code funktioniert dann nicht mehr.",
+    "saveToCard": "Diese Adresse auch auf der Karte speichern",
+    "saveToCardHint": "Auf der Verkündigerkarte steht keine E-Mail. Die Ältesten sehen die Adresse, und beim nächsten Mal steht sie schon da.",
+    "saveToCardBusy": "Auf der Karte steht bereits {{email}} — sie wird nicht ersetzt.",
+    "emailMayBeEmpty": "Sie können das Feld leer lassen — dann hat das Konto keine Adresse: die Person meldet sich mit dem Namen an, ein Passwort setzen Sie bei Bedarf."
   },
   "tabs": {
     "schedule": "Programm",
@@ -225,7 +229,11 @@
     "halls": "Königreichssäle",
     "hallsDescription": "Adressen für Zusammenkünfte und Predigtdienst",
     "circuitOverseer": "Kreisaufseher",
-    "circuitOverseerDescription": "Standardname für den Besuch"
+    "circuitOverseerDescription": "Standardname für den Besuch",
+    "loginNameHint": "Das ist Ihr Name für die Anmeldung.",
+    "noLoginName": "Kein Anmeldename gesetzt — fragen Sie Ihren Administrator.",
+    "deliveryEmail": "Post geht an: {{email}}",
+    "noEmail": "Keine E-Mail-Adresse. Ein vergessenes Passwort setzt der Versammlungsadministrator zurück."
   },
   "language": {
     "title": "Sprache",
@@ -493,11 +501,12 @@
     "forgotPassword": "Passwort vergessen?",
     "forgot": {
       "title": "Passwort wiederherstellen",
-      "subtitle": "Geben Sie die E-Mail-Adresse ein, mit der Sie sich anmelden — wir senden einen Link zum Festlegen eines neuen Passworts.",
+      "subtitle": "Geben Sie Ihren Anmeldenamen oder Ihre E-Mail-Adresse ein — ist eine Adresse hinterlegt, senden wir einen Link zum Ändern des Passworts.",
       "submit": "Link senden",
-      "sent": "Falls diese Adresse registriert ist, haben wir eine E-Mail mit einem Link gesendet. Der Link ist 1 Stunde gültig.",
+      "sent": "Wenn es ein solches Konto gibt und eine Adresse hinterlegt ist, wurde eine E-Mail mit einem Link verschickt. Der Link gilt 1 Stunde.",
       "checkSpam": "Keine E-Mail? Prüfen Sie den Spam-Ordner.",
-      "backToLogin": "Zurück zur Anmeldung"
+      "backToLogin": "Zurück zur Anmeldung",
+      "noEmailHint": "Ohne E-Mail-Adresse gibt es nichts zu senden — bitten Sie den Versammlungsadministrator, Ihnen ein neues Passwort zu setzen."
     },
     "reset": {
       "title": "Neues Passwort",
@@ -518,29 +527,31 @@
         "tooRepetitive": "Immer dieselben Zeichen ergeben einen einzigen Rateversuch."
       }
     },
-    "wrongEmailOrPassword": "Falsche Adresse oder falsches Passwort. Wenn Sie eingeladen wurden und noch kein Passwort haben, gehen Sie zurück und tippen Sie auf «Wurden Sie eingeladen?».",
+    "wrongEmailOrPassword": "Anmeldename (oder Adresse) und Passwort passen nicht zusammen. Wenn Sie eingeladen wurden und noch kein Passwort haben, gehen Sie zurück und tippen Sie auf «Wurden Sie eingeladen?».",
     "invite": {
       "iWasInvited": "Ich wurde eingeladen",
       "title": "Einladung",
-      "intro": "Gib die Adresse und den Code aus der E-Mail ein, wähle ein Passwort — und du bist drin. Eine separate Anmeldung entfällt.",
-      "code": "Code aus der E-Mail",
+      "intro": "Geben Sie den Code ein, den Sie erhalten haben, und wählen Sie ein Passwort — Sie sind dann sofort drin. Eine separate Anmeldung ist nicht nötig.",
+      "code": "Einladungscode",
       "codePlaceholder": "XXXX-XXXX",
-      "codeHint": "Acht Zeichen, zum Beispiel XXXX-XXXX. Groß- und Kleinschreibung und der Bindestrich spielen keine Rolle.",
+      "codeHint": "Acht Zeichen, z. B. XXXX-XXXX. Groß- und Kleinschreibung und der Bindestrich spielen keine Rolle.",
       "submit": "Anmelden",
-      "needEmail": "Gib die Adresse ein, an die die E-Mail ging.",
       "needCode": "Der Code besteht aus acht Zeichen.",
-      "wrongCode_one": "Der Code stimmt nicht. Noch {{count}} Versuch.",
-      "wrongCode_other": "Der Code stimmt nicht. Noch {{count}} Versuche.",
-      "spent": "Dieser Code gilt nicht mehr. Bitte einen Ältesten, die Einladung erneut zu senden.",
-      "invalid": "Der Code stimmt nicht. Möglicherweise ist er abgelaufen oder wurde bereits verwendet — bitte um eine neue Einladung.",
+      "invalid": "Der Code hat nicht funktioniert. Möglicherweise ist er abgelaufen oder wurde schon benutzt — bitten Sie um einen neuen.",
       "backToLogin": "Ich habe bereits ein Passwort — anmelden",
       "entryTitle": "Wurden Sie eingeladen? Hier starten",
-      "entryHint": "Code aus der E-Mail eingeben — das Passwort wählen Sie selbst",
+      "entryHint": "Geben Sie den erhaltenen Code ein — das Passwort wählen Sie selbst",
       "newestLetter": "Bei mehreren E-Mails die neueste öffnen: ältere Codes gelten nicht mehr.",
-      "resend": "Neuen Code senden",
-      "resending": "Wird gesendet…",
-      "resent": "Falls uns diese Adresse bekannt ist, wurde eine E-Mail mit einem neuen Code gesendet. Der bisherige Code gilt nicht mehr."
-    }
+      "noCodeAsk": "Kein Code, oder er funktioniert nicht mehr? Bitten Sie den Versammlungsadministrator um einen neuen.",
+      "welcomeTitle": "Fertig, Sie sind dabei",
+      "welcomeIntro": "Ihr Passwort ist gespeichert. Merken Sie sich den Namen, mit dem Sie sich künftig anmelden:",
+      "yourLoginName": "Ihr Name für die Anmeldung",
+      "yourLoginNameHint": "Geben Sie diesen ein, nicht die E-Mail-Adresse. Er steht jederzeit in Ihrem Profil.",
+      "welcomeGo": "Zur App"
+    },
+    "loginOrEmail": "Anmeldename oder E-Mail",
+    "loginPlaceholder": "ivanov.petr oder you@example.com",
+    "sharedEmail": "Diese Adresse gehört zu mehreren Zugängen — melden Sie sich mit Ihrem Anmeldenamen an. Wenn Sie ihn nicht wissen, fragen Sie den Versammlungsadministrator."
   },
   "months": {
     "january": "Januar",

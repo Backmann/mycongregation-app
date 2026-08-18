@@ -179,7 +179,14 @@ export type UserRole = 'admin' | 'elder' | 'ministerial_servant' | 'publisher';
 
 export interface AuthUser {
   id: string;
-  email: string;
+  /** Where letters go, or null — an account need not have an address. */
+  email: string | null;
+  /**
+   * What this person types to sign in. Shown to them, because until now the
+   * app had no way of telling anybody their own name — and on the day they
+   * sign out or change phone, it is the one thing they need.
+   */
+  loginName: string | null;
   role: UserRole;
   congregationId: string;
   canViewPrivateData: boolean;
@@ -716,8 +723,20 @@ function cleanPayload<T extends Record<string, any>>(input: T): Partial<T> {
 // ---------- Endpoints ----------
 
 export const authApi = {
-  async login(email: string, password: string): Promise<LoginResponse> {
-    const { data } = await api.post<LoginResponse>('/auth/login', { email, password });
+  /**
+   * Sign in with a login name OR an address — the field on screen takes both,
+   * and the server tells them apart by the @.
+   *
+   * `email` is sent alongside for one release only: a server that has not yet
+   * learned the new field still reads it, so nobody is locked out during the
+   * hour between the two deploys.
+   */
+  async login(login: string, password: string): Promise<LoginResponse> {
+    const { data } = await api.post<LoginResponse>('/auth/login', {
+      login,
+      email: login,
+      password,
+    });
     return data;
   },
 
@@ -762,8 +781,9 @@ export const authApi = {
     await api.patch('/auth/me/password', { currentPassword, newPassword });
   },
   /** Public: always resolves OK regardless of whether the email exists. */
-  async forgotPassword(email: string): Promise<void> {
-    await api.post('/auth/forgot-password', { email });
+  /** Takes a login name or an address — a person may remember either. */
+  async forgotPassword(login: string): Promise<void> {
+    await api.post('/auth/forgot-password', { login, email: login });
   },
   /** Public: sets a new password using a token from the reset email. */
   /**
@@ -790,13 +810,15 @@ export const authApi = {
    * chosen. Sending him to a sign-in form to type both again is exactly the
    * step this whole path exists to remove.
    */
-  async redeemInvite(
-    email: string,
-    code: string,
-    password: string,
-  ): Promise<LoginResponse> {
+  /**
+   * Finish an invitation with the code and nothing else.
+   *
+   * The address used to be required — and for the people this door was built
+   * for, the ones with no address at all, that made it unusable. The code
+   * identifies the account on its own.
+   */
+  async redeemInvite(code: string, password: string): Promise<LoginResponse> {
     const { data } = await api.post<LoginResponse>('/auth/invite/redeem', {
-      email,
       code,
       password,
     });
@@ -1862,6 +1884,12 @@ export interface GrantAccessInput {
   email?: string;
   /** Correct the generated name before anybody is told what it is. */
   loginName?: string;
+  /**
+   * Also write this address onto the publisher's card — asked for, never
+   * assumed: a mailbox borrowed for one letter is not somebody's contact
+   * address, and the card's address is what the elders read as one.
+   */
+  saveEmailToCard?: boolean;
   password?: string;
   isAdmin?: boolean;
   /** When true, create the account without a password and email an

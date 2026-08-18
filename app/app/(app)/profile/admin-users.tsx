@@ -111,8 +111,11 @@ export default function AdminUsersScreen() {
     // The invitation belongs to the publisher's card — that is where the token
     // and the letter are made. The users list simply asks for it, so there is
     // one implementation and not two that drift.
-    mutationFn: (user: PublicUser) =>
-      publishersApi.resendInvite(user.publisherId as string),
+    // Takes an account that DEMONSTRABLY has a card. `as string` used to hide
+    // the other case entirely: an account without one would have asked the
+    // server for «/publishers/null/...». The type now refuses to compile it.
+    mutationFn: (user: PublicUser & { publisherId: string }) =>
+      publishersApi.resendInvite(user.publisherId),
     onSuccess: (_data, user) => {
       setInvitedIds((prev) => [...prev, user.id]);
       qc.invalidateQueries({ queryKey: ['users'] });
@@ -223,7 +226,11 @@ export default function AdminUsersScreen() {
                 setNewLoginName(u.loginName ?? '');
                 setNameFor(u);
               }}
-              onInvite={() => inviteMutation.mutate(u)}
+              onInvite={() => {
+                if (u.publisherId) {
+                  inviteMutation.mutate({ ...u, publisherId: u.publisherId });
+                }
+              }}
               inviting={
                 inviteMutation.isPending &&
                 inviteMutation.variables?.id === u.id

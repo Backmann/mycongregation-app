@@ -387,8 +387,10 @@ function EmailModal({
   }, [visible, current]);
 
   const trimmed = email.trim();
+  // An empty field removes the address, which is a real thing to ask for now
+  // that an account does not need one.
   const canSave =
-    /.+@.+\..+/.test(trimmed) &&
+    (trimmed === '' || /.+@.+\..+/.test(trimmed)) &&
     trimmed.toLowerCase() !== (current ?? '').toLowerCase();
 
   return (
@@ -405,6 +407,9 @@ function EmailModal({
     >
           <Text style={emailStyles.hint}>
             {t('publisherAccess.changeEmailDesc')}
+          </Text>
+          <Text style={emailStyles.hint}>
+            {t('publisherAccess.emailMayBeEmpty')}
           </Text>
           <TextInput
             style={emailStyles.input}
@@ -495,6 +500,7 @@ function GrantModal({
     email?: string;
     loginName: string;
     isAdmin: boolean;
+    saveEmailToCard?: boolean;
   }) => void;
 }) {
   const { t } = useTranslation();
@@ -505,6 +511,15 @@ function GrantModal({
   const [email, setEmail] = useState('');
   const [loginName, setLoginName] = useState(suggestedLoginName);
   const [isAdmin, setIsAdmin] = useState(false);
+  /**
+   * Whether the address typed here also belongs on the publisher's card.
+   *
+   * On by default only when the card is empty — filling a blank is helpful,
+   * replacing somebody's contact address behind their back is not. And when
+   * the letter is going to a borrowed mailbox, this is exactly the switch the
+   * elder wants to turn off.
+   */
+  const [saveToCard, setSaveToCard] = useState(true);
 
   useEffect(() => {
     if (visible) {
@@ -512,6 +527,7 @@ function GrantModal({
       setEmail('');
       setLoginName(suggestedLoginName);
       setIsAdmin(false);
+      setSaveToCard(!hasOwnAddress);
     }
   }, [visible, hasOwnAddress, suggestedLoginName]);
 
@@ -560,6 +576,7 @@ function GrantModal({
           email: address === '' ? undefined : address,
           loginName: loginName.trim().toLowerCase(),
           isAdmin,
+          saveEmailToCard: delivery === 'other' && saveToCard,
         })
       }
       onCancel={onCancel}
@@ -621,21 +638,46 @@ function GrantModal({
       })}
 
       {delivery === 'other' ? (
-        <TextInput
-          style={[
-            grantStyles.input,
-            grantStyles.otherInput,
-            email.length > 0 && !addressOk && grantStyles.inputBad,
-          ]}
-          value={email}
-          onChangeText={setEmail}
-          autoCapitalize="none"
-          autoCorrect={false}
-          keyboardType="email-address"
-          textContentType="emailAddress"
-          placeholder="name@example.org"
-          placeholderTextColor="#94a3b8"
-        />
+        <>
+          <TextInput
+            style={[
+              grantStyles.input,
+              grantStyles.otherInput,
+              email.length > 0 && !addressOk && grantStyles.inputBad,
+            ]}
+            value={email}
+            onChangeText={setEmail}
+            autoCapitalize="none"
+            autoCorrect={false}
+            keyboardType="email-address"
+            textContentType="emailAddress"
+            placeholder="name@example.org"
+            placeholderTextColor="#94a3b8"
+          />
+          <Pressable
+            style={grantStyles.choiceRow}
+            onPress={() => setSaveToCard((v) => !v)}
+            disabled={hasOwnAddress}
+          >
+            <Ionicons
+              name={saveToCard ? 'checkbox' : 'square-outline'}
+              size={18}
+              color={saveToCard ? '#2563eb' : '#94a3b8'}
+            />
+            <View style={{ flex: 1 }}>
+              <Text style={grantStyles.optionTitle}>
+                {t('publisherAccess.saveToCard')}
+              </Text>
+              <Text style={grantStyles.optionHint}>
+                {hasOwnAddress
+                  ? t('publisherAccess.saveToCardBusy', {
+                      email: defaultEmail.trim(),
+                    })
+                  : t('publisherAccess.saveToCardHint')}
+              </Text>
+            </View>
+          </Pressable>
+        </>
       ) : null}
 
       <Pressable

@@ -92,7 +92,7 @@
     "deliveryOwnMissing": "By letter to their own address",
     "deliveryOwnHint": "The address from the publisher card.",
     "deliveryOther": "By letter to another address",
-    "deliveryOtherHint": "A husband’s or wife’s mailbox, for instance. The letter says who it is for.",
+    "deliveryOtherHint": "An address that is not on the card, or a husband’s or wife’s mailbox. The letter says who it is for.",
     "deliveryInPerson": "I will pass the code on myself",
     "deliveryInPersonHint": "No address needed. The code appears on screen — read it out or forward it.",
     "inviteReadyTitle": "Code to sign in",
@@ -103,7 +103,11 @@
     "inviteOnlyOnce": "The code is shown once: only its fingerprint is stored. If it is lost, issue a new one — but the old one then stops working.",
     "inviteMessage": "{{name}}, here is your code for the app: {{code}} (valid until {{until}}). Get the app at {{url}} and tap “I was invited”.",
     "newCode": "Issue a new code",
-    "newCodeHint": "The previous code stops working."
+    "newCodeHint": "The previous code stops working.",
+    "saveToCard": "Also write this address on the card",
+    "saveToCardHint": "The publisher card has no e-mail. Elders will see the address, and next time it fills itself in.",
+    "saveToCardBusy": "The card already holds {{email}} — it will not be replaced.",
+    "emailMayBeEmpty": "You may leave this empty — the account then has no address: the person signs in by name, and you set a password if one is needed."
   },
   "tabs": {
     "schedule": "Programme",
@@ -225,7 +229,11 @@
     "halls": "Kingdom Halls",
     "hallsDescription": "Addresses for meetings and field service",
     "circuitOverseer": "Circuit overseer",
-    "circuitOverseerDescription": "Default name for the CO visit"
+    "circuitOverseerDescription": "Default name for the CO visit",
+    "loginNameHint": "This is your name for signing in.",
+    "noLoginName": "No login name set — ask your administrator.",
+    "deliveryEmail": "Letters go to: {{email}}",
+    "noEmail": "No e-mail address. A forgotten password is reset by the congregation administrator."
   },
   "language": {
     "title": "Language",
@@ -493,11 +501,12 @@
     "forgotPassword": "Forgot password?",
     "forgot": {
       "title": "Password recovery",
-      "subtitle": "Enter the email you sign in with — we will send a link to set a new password.",
+      "subtitle": "Enter your login name or e-mail address — if an address is attached, we will send a link to change your password.",
       "submit": "Send the link",
-      "sent": "If this address is registered, we have sent it an email with a link. The link is valid for 1 hour.",
+      "sent": "If such an account exists and has an address attached, a letter with a link is on its way. The link is valid for 1 hour.",
       "checkSpam": "No email? Check your spam folder.",
-      "backToLogin": "Back to sign in"
+      "backToLogin": "Back to sign in",
+      "noEmailHint": "If you have no e-mail address, there is nowhere to send it — ask the congregation administrator to set you a new password."
     },
     "reset": {
       "title": "New password",
@@ -518,29 +527,31 @@
         "tooRepetitive": "The same characters over and over amount to one guess."
       }
     },
-    "wrongEmailOrPassword": "Wrong address or password. If you were invited and have no password yet, go back and tap «Were you invited?».",
+    "wrongEmailOrPassword": "That login name (or address) and password did not match. If you were invited and have no password yet, go back and tap «Were you invited?».",
     "invite": {
       "iWasInvited": "I was invited",
       "title": "Invitation",
-      "intro": "Enter the address and the code from the letter, choose a password, and you are in. No separate sign-in.",
-      "code": "Code from the letter",
+      "intro": "Enter the code you were given and choose a password — you will be taken straight in. No separate sign-in needed.",
+      "code": "Invitation code",
       "codePlaceholder": "XXXX-XXXX",
-      "codeHint": "Eight characters, like XXXX-XXXX. Case and the hyphen do not matter — type it however is easiest.",
+      "codeHint": "Eight characters, e.g. XXXX-XXXX. Case and the hyphen do not matter.",
       "submit": "Sign in",
-      "needEmail": "Enter the address the letter was sent to.",
       "needCode": "The code is eight characters long.",
-      "wrongCode_one": "That code did not match. {{count}} attempt left.",
-      "wrongCode_other": "That code did not match. {{count}} attempts left.",
-      "spent": "This code no longer works. Ask an elder to send the invitation again.",
-      "invalid": "That code did not match. It may have expired or already been used — ask for the invitation to be sent again.",
+      "invalid": "That code did not work. It may have expired or been used already — ask the administrator for a new one.",
       "backToLogin": "I already have a password — sign in",
       "entryTitle": "Were you invited? Start here",
-      "entryHint": "Enter the code from the letter — you choose the password",
+      "entryHint": "Enter the code you were given — you choose the password yourself",
       "newestLetter": "If there are several letters, open the newest: older codes stop working.",
-      "resend": "Send me a new code",
-      "resending": "Sending…",
-      "resent": "If we know that address, a letter with a new code is on its way. The previous code no longer works."
-    }
+      "noCodeAsk": "No code, or it no longer works? Ask the congregation administrator to issue a new one.",
+      "welcomeTitle": "You are in",
+      "welcomeIntro": "Your password is saved. Remember the name you will sign in with from now on:",
+      "yourLoginName": "Your name for signing in",
+      "yourLoginNameHint": "Type this, not an e-mail address. It is always in your Profile if you forget.",
+      "welcomeGo": "Go to the app"
+    },
+    "loginOrEmail": "Login name or e-mail",
+    "loginPlaceholder": "ivanov.petr or you@example.com",
+    "sharedEmail": "This address belongs to more than one login — sign in with your login name. If you cannot remember it, ask the congregation administrator."
   },
   "months": {
     "january": "January",

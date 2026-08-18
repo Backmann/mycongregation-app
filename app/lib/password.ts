@@ -162,10 +162,7 @@ export function weakPasswordProblem(error: unknown): PasswordProblem | null {
     : 'tooShort';
 }
 
-export type InviteRefusal =
-  | { kind: 'wrongCode'; attemptsLeft: number }
-  | { kind: 'invalid' }
-  | null;
+export type InviteRefusal = { kind: 'invalid' } | null;
 
 /**
  * Reads the server's refusal of an invitation code.
@@ -177,11 +174,11 @@ export type InviteRefusal =
  */
 export function inviteRefusal(error: unknown): InviteRefusal {
   const body = (error as { response?: { data?: unknown } })?.response?.data;
-  const data = (body ?? error) as { code?: string; attemptsLeft?: number };
-  if (data?.code === 'INVITE_WRONG_CODE') {
-    const left = Number(data.attemptsLeft);
-    return { kind: 'wrongCode', attemptsLeft: Number.isFinite(left) ? left : 0 };
-  }
+  const data = (body ?? error) as { code?: string };
+  // INVITE_WRONG_CODE is gone, and so is the countdown it carried. A wrong
+  // code now belongs to no account — the code alone says who is signing in —
+  // so there is nothing to count attempts against. Guessing is limited by
+  // source instead, on the server.
   if (data?.code === 'INVITE_INVALID') return { kind: 'invalid' };
   return null;
 }

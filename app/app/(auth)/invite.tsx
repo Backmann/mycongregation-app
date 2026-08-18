@@ -13,6 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { authApi, extractErrorMessage } from '../../lib/api';
+import type { LoginResponse } from '../../lib/api';
 import { useAuth } from '../../lib/auth';
 import {
   passwordProblem,
@@ -36,32 +37,30 @@ export default function InviteScreen() {
   const { t } = useTranslation();
   const { adoptSession } = useAuth();
 
-  const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [show, setShow] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [spent, setSpent] = useState(false);
-  const [resending, setResending] = useState(false);
-  const [resent, setResent] = useState(false);
+  /**
+   * The name this person will sign in with from now on, learned from the
+   * session the code just bought. Shown before anything else — it is the one
+   * thing they cannot look up anywhere and will need the day they sign out.
+   */
+  const [loginName, setLoginName] = useState<string | null>(null);
+  const [session, setSession] = useState<LoginResponse | null>(null);
 
   const bareCode = code.replace(/-/g, '');
-  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
   const problem = password ? passwordProblem(password) : null;
   const mismatch = confirm !== '' && confirm !== password;
   const canSubmit =
-    emailOk &&
     bareCode.length === 8 &&
     !problem &&
     password === confirm &&
-    !submitting &&
-    !spent;
+    !submitting;
 
-  const why = !emailOk
-    ? t('auth.invite.needEmail')
-    : bareCode.length !== 8
+  const why = bareCode.length !== 8
       ? t('auth.invite.needCode')
       : mismatch
         ? t('auth.reset.mismatch')
@@ -69,57 +68,20 @@ export default function InviteScreen() {
           ? t(`auth.reset.problem.${problem}`)
           : null;
 
-  const resend = async () => {
-    if (!emailOk || resending) return;
-    setResending(true);
-    setError(null);
-    try {
-      await authApi.resendInvite(email.trim());
-      // The same sentence either way: the server will not say whether
-      // the address is known, and neither may this screen.
-      setResent(true);
-      setSpent(false);
-      setCode('');
-    } catch (e) {
-      setError(extractErrorMessage(e));
-    } finally {
-      setResending(false);
-    }
-  };
-
   const submit = async () => {
     if (!canSubmit) return;
     setSubmitting(true);
     setError(null);
     try {
-      const session = await authApi.redeemInvite(
-        email.trim(),
-        bareCode,
-        password,
-      );
-      await adoptSession(
-        session.accessToken,
-        session.refreshToken,
-        session.user,
-      );
-      router.replace('/(app)/home' as never);
+      const session = await authApi.redeemInvite(bareCode, password);
+      // The name first, the app second: adopting the session immediately would
+      // sweep them into the home screen with their own name unread.
+      setLoginName(session.user.loginName ?? null);
+      setSession(session);
     } catch (e) {
       const refusal = inviteRefusal(e);
       const weak = weakPasswordProblem(e);
-      if (refusal?.kind === 'wrongCode') {
-        // Counting down out loud is the difference between a form that is
-        // strict and a form that seems broken.
-        if (refusal.attemptsLeft > 0) {
-          setError(
-            t('auth.invite.wrongCode', { count: refusal.attemptsLeft }) +
-              ' ' +
-              t('auth.invite.newestLetter'),
-          );
-        } else {
-          setSpent(true);
-          setError(t('auth.invite.spent'));
-        }
-      } else if (refusal?.kind === 'invalid') {
+      if (refusal?.kind === 'invalid') {
         // One message for four causes, on purpose — see the server.
         setError(t('auth.invite.invalid'));
       } else if (weak) {
@@ -132,25 +94,64 @@ export default function InviteScreen() {
     }
   };
 
+  /**
+   * One step between the code and the app, and it exists for one sentence:
+   * this is your name for signing in.
+   *
+   * Nothing else in the app ever said it. Someone who signs out, or picks up a
+   * new phone, would otherwise stand at the sign-in screen knowing a password
+   * and nothing to put above it.
+   */
+  if (session) {
+    return (
+      <SafeAreaView style={styles.safe}>
+        <ScrollView contentContainerStyle={styles.container}>
+          <View style={styles.card}>
+            <Text style={styles.title}>{t('auth.invite.welcomeTitle')}</Text>
+            <Text style={styles.intro}>{t('auth.invite.welcomeIntro')}</Text>
+
+            {loginName ? (
+              <>
+                <Text style={styles.label}>
+                  {t('auth.invite.yourLoginName')}
+                </Text>
+                <View style={styles.nameBox}>
+                  <Text style={styles.nameText} selectable>
+                    {loginName}
+                  </Text>
+                </View>
+                <Text style={styles.hint}>
+                  {t('auth.invite.yourLoginNameHint')}
+                </Text>
+              </>
+            ) : null}
+
+            <Pressable
+              style={styles.button}
+              onPress={() => {
+                void adoptSession(
+                  session.accessToken,
+                  session.refreshToken,
+                  session.user,
+                ).then(() => router.replace('/(app)/home' as never));
+              }}
+            >
+              <Text style={styles.buttonText}>
+                {t('auth.invite.welcomeGo')}
+              </Text>
+            </Pressable>
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.card}>
           <Text style={styles.title}>{t('auth.invite.title')}</Text>
           <Text style={styles.intro}>{t('auth.invite.intro')}</Text>
-
-          <Text style={styles.label}>{t('auth.email')}</Text>
-          <TextInput
-            style={styles.input}
-            value={email}
-            onChangeText={setEmail}
-            autoCapitalize="none"
-            autoCorrect={false}
-            keyboardType="email-address"
-            placeholder="name@example.com"
-            placeholderTextColor="#cbd5e1"
-            editable={!submitting}
-          />
 
           <Text style={styles.label}>{t('auth.invite.code')}</Text>
           <TextInput
@@ -161,23 +162,11 @@ export default function InviteScreen() {
             autoCorrect={false}
             placeholder={t('auth.invite.codePlaceholder')}
             placeholderTextColor="#cbd5e1"
-            editable={!submitting && !spent}
+            editable={!submitting}
           />
           <Text style={styles.hint}>{t('auth.invite.codeHint')}</Text>
-          <Text style={styles.hint}>
-            {t('auth.invite.newestLetter')}
-          </Text>
-          <Pressable onPress={() => void resend()} hitSlop={6}>
-            <Text style={styles.suggest}>
-              {resending
-                ? t('auth.invite.resending')
-                : t('auth.invite.resend')}
-            </Text>
-          </Pressable>
-          {resent ? (
-            <Text style={styles.resent}>{t('auth.invite.resent')}</Text>
-          ) : null}
-
+          <Text style={styles.hint}>{t('auth.invite.newestLetter')}</Text>
+          <Text style={styles.hint}>{t('auth.invite.noCodeAsk')}</Text>
           <Text style={styles.label}>{t('auth.reset.newPassword')}</Text>
           <View style={styles.inputWrap}>
             <TextInput
@@ -241,7 +230,7 @@ export default function InviteScreen() {
 
           {/* A disabled button that says nothing is how the last one looked
               broken. */}
-          {!canSubmit && why && !spent ? (
+          {!canSubmit && why ? (
             <Text style={styles.why}>{why}</Text>
           ) : null}
 
@@ -311,6 +300,22 @@ const styles = StyleSheet.create({
     letterSpacing: 3,
     textAlign: 'center',
     fontVariant: ['tabular-nums'],
+  },
+  nameBox: {
+    marginTop: 6,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#bae6fd',
+    backgroundColor: '#f0f9ff',
+    paddingVertical: 16,
+    alignItems: 'center',
+  },
+  nameText: {
+    fontSize: 22,
+    letterSpacing: 1,
+    color: '#0c4a6e',
+    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
   },
   inputWrap: { flexDirection: 'row', alignItems: 'center' },
   eyeBtn: { position: 'absolute', right: 10, padding: 4 },
