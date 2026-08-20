@@ -21,15 +21,29 @@ import {
 } from '../../../lib/api';
 import { AbsenceForm } from '../../../components/AbsenceForm';
 import { usePermissions } from '../../../lib/permissions';
+import { useMyPublisher } from '../../../lib/useMyPublisher';
 
 export default function AbsenceDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { t, i18n } = useTranslation();
   const { canManageAbsences } = usePermissions();
+  const { myPublisherId } = useMyPublisher();
   const qc = useQueryClient();
   const [editing, setEditing] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
+  /**
+   * Who may change this absence.
+   *
+   * The server has always allowed a publisher to edit and remove their OWN
+   * absence — assertCanWrite lets managers touch anybody and everybody else
+   * only themselves. The screen was stricter than the server: it hid both
+   * buttons behind the manager permission, so a brother could enter that he
+   * would be away and then had no way to correct the dates or take it back.
+   *
+   * `mine` is deliberately not «has no manager permission»: an elder looking
+   * at his own absence is both, and must see the buttons too.
+   */
   const { data, isLoading, error } = useQuery({
     queryKey: ['absences', 'detail', id],
     queryFn: () => absencesApi.getById(id),
@@ -56,6 +70,9 @@ export default function AbsenceDetailScreen() {
     mutationFn: () => absencesApi.restore(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['absences'] }),
   });
+
+  const mine = !!myPublisherId && data?.publisherId === myPublisherId;
+  const canWrite = canManageAbsences || mine;
 
   if (isLoading) {
     return <ActivityIndicator size="large" style={{ marginTop: 48 }} />;
@@ -124,7 +141,7 @@ export default function AbsenceDetailScreen() {
         </>
       ) : null}
 
-      {canManageAbsences ? (
+      {canWrite ? (
         <View style={styles.actions}>
           {removed ? (
             <Pressable
