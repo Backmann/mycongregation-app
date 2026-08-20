@@ -114,7 +114,10 @@
     "andTheirLoginName": "Name für die Anmeldung",
     "inviteMessageNoName": "{{name}}, hier ist dein Code für die App: {{code}} (gültig bis {{until}}). Die App gibt es unter {{url}}, dort auf „Ich wurde eingeladen“ tippen.",
     "wayBackIn": "Wenn der Verkündiger sich nicht anmelden kann",
-    "resetPasswordHint": "Für den Fall, dass niemand einen Code eingeben kann — die Person steht vor dir oder hat kein Telefon dabei. Du musst das Passwort laut sagen, also kennst du es auch. Alle offenen Sitzungen auf ihren Geräten werden beendet, und sie bekommt eine E-Mail, falls eine Adresse hinterlegt ist."
+    "resetPasswordHint": "Für den Fall, dass niemand einen Code eingeben kann — die Person steht vor dir oder hat kein Telefon dabei. Du musst das Passwort laut sagen, also kennst du es auch. Alle offenen Sitzungen auf ihren Geräten werden beendet, und sie bekommt eine E-Mail, falls eine Adresse hinterlegt ist.",
+    "invitePending": "Eine Einladung wurde verschickt und noch nicht genutzt. Der Code gilt bis {{until}}.",
+    "revokeInvite": "Einladung zurückziehen",
+    "revokingInvite": "Wird zurückgezogen…"
   },
   "tabs": {
     "schedule": "Programm",

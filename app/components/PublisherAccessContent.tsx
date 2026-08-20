@@ -95,6 +95,11 @@ export function PublisherAccessContent({ publisher }: { publisher: Publisher }) 
     },
   });
 
+  const revokeMutation = useMutation({
+    mutationFn: () => publishersApi.revokeInvite(publisher.id),
+    onSuccess: () => invalidate(),
+  });
+
   const resendMutation = useMutation({
     // Shown in place by this form — keep it out of the error strip.
     meta: { inlineError: true },
@@ -238,6 +243,36 @@ export function PublisherAccessContent({ publisher }: { publisher: Publisher }) 
       {updateMutation.isError && (
         <Text style={styles.error}>{extractErrorMessage(updateMutation.error)}</Text>
       )}
+
+      {/* A code that is out there and unused: the elder can see it, and call
+          it back. Until now the only way to kill a code was to issue another,
+          which leaves a live one either way. */}
+      {access.invitePendingUntil && !access.hasPassword ? (
+        <View style={styles.pendingBox}>
+          <Ionicons name="time-outline" size={16} color="#92400e" />
+          <View style={{ flex: 1 }}>
+            <Text style={styles.pendingText}>
+              {t('publisherAccess.invitePending', {
+                until: new Date(access.invitePendingUntil).toLocaleDateString(
+                  i18n.language,
+                  { day: 'numeric', month: 'long' },
+                ),
+              })}
+            </Text>
+            <Pressable
+              onPress={() => revokeMutation.mutate()}
+              disabled={revokeMutation.isPending}
+              hitSlop={6}
+            >
+              <Text style={styles.pendingAction}>
+                {revokeMutation.isPending
+                  ? t('publisherAccess.revokingInvite')
+                  : t('publisherAccess.revokeInvite')}
+              </Text>
+            </Pressable>
+          </View>
+        </View>
+      ) : null}
 
       {/* Two ways back in, and the difference is who ends up knowing the
           password. The code comes first because it is the better one: the
@@ -1229,6 +1264,25 @@ const dialogText = StyleSheet.create({
 });
 
 const styles = StyleSheet.create({
+  pendingBox: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 8,
+    backgroundColor: '#fffbeb',
+    borderWidth: 1,
+    borderColor: '#fde68a',
+    borderRadius: 12,
+    padding: 11,
+    marginTop: 16,
+  },
+  pendingText: { fontSize: 12.5, color: '#92400e', lineHeight: 18 },
+  pendingAction: {
+    fontSize: 13,
+    color: '#b45309',
+    fontWeight: '600',
+    fontFamily: 'Manrope_600SemiBold',
+    marginTop: 6,
+  },
   /** Announces what the two buttons below are for, before either is read. */
   groupLabel: {
     fontSize: 11,

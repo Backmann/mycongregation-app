@@ -1892,6 +1892,16 @@ export interface AccessSummary {
   /** Where the letter went, or null when there was nowhere to send it. */
   inviteSentTo?: string | null;
   inviteExpiresAt?: string;
+  /**
+   * An invitation still waiting to be used, if any — present every time the
+   * card is read, unlike inviteCode.
+   *
+   * «Invited yesterday, not got round to it» and «the code expired, issue
+   * another» used to look identical from here: an account with no last login.
+   */
+  invitePendingUntil?: string | null;
+  /** Whether a password has ever been set — i.e. whether they ever got in. */
+  hasPassword?: boolean;
 }
 
 export interface GrantAccessInput {
@@ -2001,6 +2011,13 @@ export const publishersApi = {
     const { data } = await api.patch<AccessSummary>(
       `/publishers/${id}/access`,
       input,
+    );
+    return data;
+  },
+  /** Call back an invitation that has not been used, without issuing another. */
+  async revokeInvite(id: string): Promise<AccessSummary> {
+    const { data } = await api.post<AccessSummary>(
+      `/publishers/${id}/access/revoke-invite`,
     );
     return data;
   },

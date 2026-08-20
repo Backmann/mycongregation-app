@@ -114,7 +114,10 @@
     "andTheirLoginName": "Name to sign in with",
     "inviteMessageNoName": "{{name}}, here is your code for the app: {{code}} (valid until {{until}}). Get the app at {{url}} and tap “I was invited”.",
     "wayBackIn": "If the publisher cannot sign in",
-    "resetPasswordHint": "For when nobody can type a code — they are standing here, or have no phone to hand. You will have to say the password out loud, so you will know it too. Every open session on their devices is ended, and they get a letter if there is an address."
+    "resetPasswordHint": "For when nobody can type a code — they are standing here, or have no phone to hand. You will have to say the password out loud, so you will know it too. Every open session on their devices is ended, and they get a letter if there is an address.",
+    "invitePending": "An invitation was sent and has not been used yet. The code is valid until {{until}}.",
+    "revokeInvite": "Call the invitation back",
+    "revokingInvite": "Calling back…"
   },
   "tabs": {
     "schedule": "Programme",
