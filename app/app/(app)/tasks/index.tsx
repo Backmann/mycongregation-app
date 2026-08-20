@@ -589,13 +589,30 @@ function TaskForm({
     >
       <ScrollView contentContainerStyle={styles.formBody}>
         <Text style={styles.label}>{t('tasks.form.title')}</Text>
-        <TextInput
-          style={styles.input}
-          value={title}
-          onChangeText={setTitle}
-          placeholder={t('tasks.form.titlePlaceholder')}
-          placeholderTextColor="#94a3b8"
-        />
+        {editing?.kind ? (
+          /* A calendar task is named by the app, in the reader's own language,
+             from its `kind`. The stored title is a placeholder — and the form
+             showed it raw, so «Обзор служения общих пионеров» opened as
+             «service_year_review». Editing it changed nothing either: the list
+             draws the translated name regardless. So it is shown as the settled
+             fact it is. */
+          <View style={styles.lockedTitle}>
+            <Text style={styles.lockedTitleText}>
+              {t(`tasks.calendar.${editing.kind}`)}
+            </Text>
+            <Text style={styles.lockedTitleHint}>
+              {t('tasks.form.calendarTitleLocked')}
+            </Text>
+          </View>
+        ) : (
+          <TextInput
+            style={styles.input}
+            value={title}
+            onChangeText={setTitle}
+            placeholder={t('tasks.form.titlePlaceholder')}
+            placeholderTextColor="#94a3b8"
+          />
+        )}
 
         <Text style={styles.label}>{t('tasks.form.area')}</Text>
         <View style={styles.chipRow}>
@@ -856,6 +873,26 @@ const styles = StyleSheet.create({
   // holding the detail line out of line with everything above it.
   details: { fontSize: 13.5, color: '#475569', lineHeight: 19, marginTop: 8 },
   closedBy: { fontSize: 12.5, color: '#64748b', marginTop: 8 },
+  lockedTitle: {
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    backgroundColor: '#f8fafc',
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 11,
+  },
+  lockedTitleText: {
+    fontSize: 15,
+    color: '#0f172a',
+    fontWeight: '600',
+    fontFamily: 'Manrope_600SemiBold',
+  },
+  lockedTitleHint: {
+    fontSize: 12,
+    color: '#94a3b8',
+    lineHeight: 17,
+    marginTop: 4,
+  },
   openScreen: {
     fontSize: 13.5,
     color: '#0369a1',

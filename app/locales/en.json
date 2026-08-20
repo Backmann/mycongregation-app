@@ -2856,7 +2856,8 @@
         "isSecretary": "The secretary must not audit the accounts. Choose another brother.",
         "keepsAccounts": "The brother who keeps the accounts must not audit them. Choose another.",
         "didPrevious": "He did the previous check. Two running is best avoided — but if there is nobody else, leave it."
-      }
+      },
+      "calendarTitleLocked": "The app names this task and translates it for each reader — there is nothing to change here."
     },
     "agenda": {
       "title": "Agenda",
@@ -3102,6 +3103,7 @@
     "sinceOnly": "Pioneer since {{month}} — the year’s measure does not apply",
     "shortCount": "Below 560: {{count}} of {{total}}",
     "allFine": "All {{count}} are above 560",
-    "nobody": "There are no regular pioneers in the congregation"
+    "nobody": "There are no regular pioneers in the congregation",
+    "checkSince": "Hours for only {{count}} of {{of}} months, and the card gives no date of appointment — check from which month he has been pioneering."
   }
 }

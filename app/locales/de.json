@@ -2856,7 +2856,8 @@
         "isSecretary": "Der Sekretär darf die Konten nicht prüfen. Wähle einen anderen Bruder.",
         "keepsAccounts": "Der Rechnungsführer darf die Konten nicht prüfen. Wähle einen anderen.",
         "didPrevious": "Er hat die vorige Prüfung gemacht. Zwei hintereinander sind unerwünscht — wenn es niemanden sonst gibt, lass es so."
-      }
+      },
+      "calendarTitleLocked": "Diese Aufgabe benennt die App und übersetzt sie für jeden Leser — hier gibt es nichts zu ändern."
     },
     "agenda": {
       "title": "Tagesordnung",
@@ -3102,6 +3103,7 @@
     "sinceOnly": "Pionier seit {{month}} — der Jahresmaßstab gilt hier nicht",
     "shortCount": "Unter 560: {{count}} von {{total}}",
     "allFine": "Alle {{count}} liegen über 560",
-    "nobody": "In der Versammlung gibt es keine allgemeinen Pioniere"
+    "nobody": "In der Versammlung gibt es keine allgemeinen Pioniere",
+    "checkSince": "Stunden nur für {{count}} von {{of}} Monaten, und auf der Karte fehlt das Datum des Pionierdienstbeginns — prüfe, seit wann er Pionier ist."
   }
 }

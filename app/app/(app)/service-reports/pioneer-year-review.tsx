@@ -36,8 +36,21 @@ export default function PioneerYearReviewScreen() {
     queryFn: () => serviceReportsApi.getPioneerYearReview(),
   });
 
-  const monthName = (iso: string) =>
-    dayjs(iso).locale(i18n.language).format('MMMM');
+  /**
+   * The month in the case a sentence needs: «Пионер с августа», not «с август».
+   *
+   * Russian declines it, and `format('MMMM')` gives the dictionary form. The
+   * day-and-month format is the one every locale writes correctly, so it is
+   * asked for and the day dropped — one line instead of a table of endings.
+   */
+  const monthName = (iso: string) => {
+    const full = dayjs(iso).locale(i18n.language).format('D MMMM');
+    return full.split(' ').slice(1).join(' ') || full;
+  };
+
+  /** With the year, because a service year spans two of them. */
+  const monthWithYear = (iso: string) =>
+    `${monthName(iso)} ${iso.slice(0, 4)}`;
 
   if (isLoading) {
     return <ActivityIndicator size="large" style={{ marginTop: 48 }} />;
@@ -88,6 +101,22 @@ export default function PioneerYearReviewScreen() {
         </View>
       )}
 
+      {/* Hours for only a few months, and no date of appointment on the card.
+          Then the low total may mean «he became a pioneer in May», and the
+          screen must not quietly present it as a shortfall. We do not guess —
+          we say what is missing and let the brothers check. */}
+      {!row.startedMidYear &&
+      !row.pioneerSince &&
+      row.monthsReported > 0 &&
+      row.monthsReported < data.monthsElapsed - 1 ? (
+        <Text style={styles.unknownSince}>
+          {t('pioneerReview.checkSince', {
+            count: row.monthsReported,
+            of: data.monthsElapsed,
+          })}
+        </Text>
+      ) : null}
+
       {/* The pace, which the total hides: half a year at 60 and a whole year
           at 30 add up the same and mean opposite things. */}
       {row.pace !== null ? (
@@ -104,7 +133,9 @@ export default function PioneerYearReviewScreen() {
       {/* Where credit hours are written, in the pioneer's own words. */}
       {row.notes.map((n) => (
         <View key={n.reportMonth} style={styles.note}>
-          <Text style={styles.noteMonth}>{monthName(n.reportMonth)}</Text>
+          <Text style={styles.noteMonth}>
+            {monthWithYear(n.reportMonth)}
+          </Text>
           <Text style={styles.noteText}>{n.note}</Text>
         </View>
       ))}
@@ -211,6 +242,12 @@ const styles = StyleSheet.create({
   meets: { fontSize: 13, color: '#15803d' },
   toGoal: { fontSize: 13, color: '#64748b' },
   since: { fontSize: 13, color: '#475569', marginTop: 6 },
+  unknownSince: {
+    fontSize: 12.5,
+    color: '#b45309',
+    lineHeight: 18,
+    marginTop: 6,
+  },
   pace: { fontSize: 12.5, color: '#64748b', marginTop: 8 },
   note: {
     marginTop: 8,
