@@ -606,7 +606,16 @@ function GrantModal({
       usersApi
         .whoElseUsesEmail(address)
         .then((found) => {
-          if (alive) setHolders(found);
+          if (!alive) return;
+          setHolders(found);
+          // An address somebody else already signs in with is, by definition,
+          // not this publisher's own — so it does not go on their card unless
+          // the elder deliberately says otherwise. This is not only about
+          // tidiness: the card is what tells the letter whether the mailbox
+          // belongs to the reader, and a letter to one's own mailbox carries
+          // a sign-in LINK. Ticked by default here, it would quietly hand the
+          // husband a way into his wife's account.
+          if (found.length > 0) setSaveToCard(false);
         })
         .catch(() => {
           // A silent miss is right: this only ever ADDS a warning, and failing
@@ -767,8 +776,12 @@ function GrantModal({
                   <Text style={g.checkTitle}>
                     {t('publisherAccess.saveToCard')}
                   </Text>
-                  <Text style={g.choiceHint}>
-                    {t('publisherAccess.saveToCardHint')}
+                  <Text
+                    style={holders.length > 0 ? g.checkWarn : g.choiceHint}
+                  >
+                    {holders.length > 0
+                      ? t('publisherAccess.saveToCardShared')
+                      : t('publisherAccess.saveToCardHint')}
                   </Text>
                 </View>
               </Pressable>
@@ -927,6 +940,7 @@ const g = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#dbeafe',
   },
+  checkWarn: { fontSize: 12, color: '#92400e', lineHeight: 17, marginTop: 3 },
   checkTitle: {
     fontSize: 13.5,
     color: '#0f172a',
