@@ -239,12 +239,12 @@ export function PublisherAccessContent({ publisher }: { publisher: Publisher }) 
         <Text style={styles.error}>{extractErrorMessage(updateMutation.error)}</Text>
       )}
 
-      <Pressable
-        style={styles.secondaryBtn}
-        onPress={() => setResetOpen(true)}
-      >
-        <Text style={styles.secondaryBtnText}>{t('publisherAccess.resetPassword')}</Text>
-      </Pressable>
+      {/* Two ways back in, and the difference is who ends up knowing the
+          password. The code comes first because it is the better one: the
+          publisher chooses a password only they know. Setting it by hand is
+          for the case where nobody can type a code — no phone to hand, or the
+          person is standing right here. */}
+      <Text style={styles.groupLabel}>{t('publisherAccess.wayBackIn')}</Text>
 
       <Pressable
         style={styles.secondaryBtn}
@@ -265,6 +265,13 @@ export function PublisherAccessContent({ publisher }: { publisher: Publisher }) 
         )}
       </Pressable>
       <Text style={styles.hint}>{t('publisherAccess.newCodeHint')}</Text>
+
+      <Pressable style={styles.secondaryBtn} onPress={() => setResetOpen(true)}>
+        <Text style={styles.secondaryBtnText}>
+          {t('publisherAccess.resetPassword')}
+        </Text>
+      </Pressable>
+      <Text style={styles.hint}>{t('publisherAccess.resetPasswordHint')}</Text>
 
       <Pressable
         style={styles.secondaryBtn}
@@ -1222,6 +1229,17 @@ const dialogText = StyleSheet.create({
 });
 
 const styles = StyleSheet.create({
+  /** Announces what the two buttons below are for, before either is read. */
+  groupLabel: {
+    fontSize: 11,
+    letterSpacing: 0.7,
+    textTransform: 'uppercase',
+    color: '#94a3b8',
+    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
+    marginTop: 20,
+    marginBottom: 10,
+  },
   loading: {
     paddingVertical: 16,
     alignItems: 'flex-start',
