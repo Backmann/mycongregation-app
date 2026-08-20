@@ -1655,6 +1655,10 @@ export interface CoVisitItem {
   sortOrder: number;
 }
 
+/**
+ * Creating a co-visit row. `specialEventId` says which visit it belongs to —
+ * meaningful once, at creation.
+ */
 export interface CoVisitItemInput {
   specialEventId?: string;
   kind?: string;
@@ -1670,6 +1674,15 @@ export interface CoVisitItemInput {
   note?: string | null;
   sortOrder?: number;
 }
+
+/**
+ * Changing an existing row — everything except which visit it belongs to.
+ *
+ * A separate type on purpose: the server refuses `specialEventId` here, and
+ * refuses the WHOLE request when it arrives. One shared type let the screens
+ * send it without anything noticing until a button silently stopped working.
+ */
+export type CoVisitItemUpdate = Omit<CoVisitItemInput, 'specialEventId'>;
 
 export interface MyCoVisitItem extends CoVisitItem {
   serviceWith?: 'co' | 'wife' | 'joint';
@@ -1737,7 +1750,7 @@ export const coVisitItemsApi = {
     const { data } = await api.post<CoVisitItem>('/co-visit-items', input);
     return data;
   },
-  async update(id: string, input: CoVisitItemInput): Promise<CoVisitItem> {
+  async update(id: string, input: CoVisitItemUpdate): Promise<CoVisitItem> {
     const { data } = await api.patch<CoVisitItem>(
       `/co-visit-items/${id}`,
       input,
@@ -2528,6 +2541,17 @@ export interface PioneerSchool {
   notes: string | null;
 }
 
+/**
+ * What may be SENT about a school — never the whole entity.
+ *
+ * `Partial<PioneerSchool>` stood here, and that is the type of what the server
+ * RETURNS: it carries `id`. Hand a fetched school straight back and the server
+ * refuses the request whole, because `id` is not a field it accepts in a body.
+ */
+export type PioneerSchoolInput = Partial<
+  Omit<PioneerSchool, 'id'>
+>;
+
 export interface PioneerSchoolHelper {
   id: string;
   firstName: string;
@@ -2549,6 +2573,11 @@ export interface PioneerSchoolDuty {
   /** 'away' | 'busyAtMeeting' | 'twoMicrophones' — advice, never a refusal. */
   warnings: string[];
 }
+
+/** Same reasoning as PioneerSchoolInput: a body is not an entity. */
+export type PioneerSchoolHelperInput = Partial<
+  Omit<PioneerSchoolHelper, 'id'>
+>;
 
 export interface PioneerSchoolDay {
   id: string;
@@ -2572,13 +2601,13 @@ export const pioneerSchoolApi = {
     const { data } = await api.get<PioneerSchoolFull>(`/pioneer-school/${id}`);
     return data;
   },
-  async create(input: Partial<PioneerSchool>): Promise<PioneerSchool> {
+  async create(input: PioneerSchoolInput): Promise<PioneerSchool> {
     const { data } = await api.post<PioneerSchool>('/pioneer-school', input);
     return data;
   },
   async update(
     id: string,
-    input: Partial<PioneerSchool>,
+    input: PioneerSchoolInput,
   ): Promise<PioneerSchool> {
     const { data } = await api.patch<PioneerSchool>(
       `/pioneer-school/${id}`,
@@ -2639,7 +2668,7 @@ export const pioneerSchoolApi = {
   },
   async updateHelper(
     id: string,
-    input: Partial<PioneerSchoolHelper>,
+    input: PioneerSchoolHelperInput,
   ): Promise<PioneerSchoolHelper> {
     const { data } = await api.patch<PioneerSchoolHelper>(
       `/pioneer-school/helpers/${id}`,
