@@ -2907,7 +2907,7 @@
     "calendar": {
       "accounts_audit": "Kontenprüfung",
       "pioneer_service_review": "Überblick über den Dienst der Pioniere",
-      "service_year_review": "Ende des Dienstjahres",
+      "service_year_review": "Überblick über den Dienst der allgemeinen Pioniere",
       "quarters": {
         "sepNov": "September–November",
         "decFeb": "Dezember–Februar",
@@ -2921,7 +2921,9 @@
       "count_other": "{{count}} Aufgaben",
       "readOnly": "Die Ältestenschaft trägt die Erledigung ein — hier nur zur Ansicht."
     },
-    "markedDone": "Als erledigt markiert"
+    "markedDone": "Als erledigt markiert",
+    "doneOn": "Erledigt am {{date}}, {{time}}",
+    "closedBy": "Abgehakt von {{name}}"
   },
   "pioneerSchool": {
     "title": "Pionierschule",
@@ -3084,5 +3086,22 @@
       "badCharacters": "Nur lateinische Buchstaben, Ziffern und ein Punkt. Keine Leerzeichen, kein @.",
       "edgeDot": "Ein Punkt darf nur im Namen stehen, und nie zwei hintereinander."
     }
+  },
+  "pioneerReview": {
+    "title": "Überblick über den Pionierdienst",
+    "openFromTask": "Überblick über den Pionierdienst öffnen →",
+    "counted": "Berücksichtigte Monate: {{count}} von 12.",
+    "collecting": "Die Berichte für {{month}} kommen noch — die Summen wachsen noch.",
+    "rule": "Das Jahresziel sind 600 Stunden. Weiter Pionier sein kann, wer mit angerechneten Stunden mindestens 560 erreicht.",
+    "hours": "{{count}} Std.",
+    "toMinimum": "{{count}} Std. bis 560",
+    "toGoal": "{{count}} Std. bis zum Ziel 600",
+    "meets": "Über 560",
+    "pace": "Im Schnitt {{pace}} Std. pro Monat ({{count}} Monate mit Stunden)",
+    "noReports": "Für dieses Jahr liegen noch keine Berichte vor",
+    "sinceOnly": "Pionier seit {{month}} — der Jahresmaßstab gilt hier nicht",
+    "shortCount": "Unter 560: {{count}} von {{total}}",
+    "allFine": "Alle {{count}} liegen über 560",
+    "nobody": "In der Versammlung gibt es keine allgemeinen Pioniere"
   }
 }

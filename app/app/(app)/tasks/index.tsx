@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ru';
@@ -142,6 +143,18 @@ export default function TasksScreen() {
    * written; the date itself is still there for anybody who needs it.
    */
   const whenLabel = (task: ElderTask): string => {
+    // A finished task is not «late»: the deadline stopped being the question
+    // the moment the work was done. What the reader wants then is when it was
+    // closed — and the card said «Просрочено на 8 дней» about work already
+    // behind them, which reads as a reproach for nothing.
+    if (task.status === 'done') {
+      return task.doneAt
+        ? t('tasks.doneOn', {
+            date: dayjs(task.doneAt).locale(i18n.language).format('D MMMM'),
+            time: dayjs(task.doneAt).format('HH:mm'),
+          })
+        : '';
+    }
     if (!task.dueDate) return '';
     const days = dayjs(task.dueDate).diff(dayjs(today), 'day');
     if (days < 0) return t('tasks.lateByDays', { count: -days });
@@ -253,6 +266,29 @@ export default function TasksScreen() {
             ? chip(t('tasks.recurring'), '#f1f5f9', '#475569', 'kind')
             : null}
         </View>
+
+        {/* A calendar task that has a screen behind it says so. The brothers
+            open the task, not the reports section — this is where they are. */}
+        {task.kind === 'service_year_review' ? (
+          <Pressable
+            onPress={() =>
+              router.push('/service-reports/pioneer-year-review' as never)
+            }
+            hitSlop={6}
+          >
+            <Text style={styles.openScreen}>
+              {t('pioneerReview.openFromTask')}
+            </Text>
+          </Pressable>
+        ) : null}
+
+        {/* Who closed it. The columns were there from the first day and the
+            screen never showed them, so «сделано» named no one. */}
+        {task.status === 'done' && task.doneByName ? (
+          <Text style={styles.closedBy}>
+            {t('tasks.closedBy', { name: task.doneByName })}
+          </Text>
+        ) : null}
 
         {task.details ? (
           <Text style={styles.details} numberOfLines={2}>
@@ -819,6 +855,14 @@ const styles = StyleSheet.create({
   // title. The dot became a labelled chip and the indent was left behind,
   // holding the detail line out of line with everything above it.
   details: { fontSize: 13.5, color: '#475569', lineHeight: 19, marginTop: 8 },
+  closedBy: { fontSize: 12.5, color: '#64748b', marginTop: 8 },
+  openScreen: {
+    fontSize: 13.5,
+    color: '#0369a1',
+    fontWeight: '600',
+    fontFamily: 'Manrope_600SemiBold',
+    marginTop: 10,
+  },
   metaRow: { flexDirection: 'row', gap: 12, flexWrap: 'wrap' },
   meta: { fontSize: 12.5, color: '#475569' },
   metaLate: { color: '#b45309', fontWeight: '700' },

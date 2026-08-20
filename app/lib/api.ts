@@ -2942,6 +2942,34 @@ export interface MyReportStanding {
   reportId: string | null;
 }
 
+/** Where one regular pioneer stands in the service year. */
+export interface PioneerYearRow {
+  publisherId: string;
+  displayName: string;
+  pioneerSince: string | null;
+  /** Became a pioneer after the year began — the year's numbers do not apply. */
+  startedMidYear: boolean;
+  hours: number;
+  monthsReported: number;
+  /** Hours per reported month — the tendency the total hides. */
+  pace: number | null;
+  toGoal: number | null;
+  toMinimum: number | null;
+  short: boolean;
+  /** Only months where something was written — credit hours live there. */
+  notes: { reportMonth: string; note: string }[];
+}
+
+export interface PioneerYearReview {
+  serviceYear: number;
+  firstMonth: string;
+  lastMonth: string;
+  monthsElapsed: number;
+  /** The month still being collected, or null once the year is over. */
+  collectingMonth: string | null;
+  rows: PioneerYearRow[];
+}
+
 export const serviceReportsApi = {
   async submit(input: SubmitServiceReportInput): Promise<ServiceReport> {
     const { data } = await api.post<ServiceReport>('/service-reports', cleanPayload(input));
@@ -2998,6 +3026,14 @@ export const serviceReportsApi = {
     const { data } = await api.get<ServiceReportSummary>(
       '/service-reports/summary',
       { params: { reportMonth } },
+    );
+    return data;
+  },
+  /** The pioneers' standing in a service year — for the calendar task. */
+  async getPioneerYearReview(year?: number): Promise<PioneerYearReview> {
+    const { data } = await api.get<PioneerYearReview>(
+      '/service-reports/pioneer-year-review',
+      { params: year ? { year } : {} },
     );
     return data;
   },
@@ -3729,6 +3765,11 @@ export interface ElderTask {
   kindPeriod: string | null;
   status: 'open' | 'done';
   doneAt: string | null;
+  /**
+   * Who closed it — resolved by the server from their publisher card, null for
+   * an account with no card.
+   */
+  doneByName?: string | null;
   eldersMeetingId: string | null;
   createdAt: string;
   updatedAt: string;

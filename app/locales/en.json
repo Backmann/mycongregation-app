@@ -2907,7 +2907,7 @@
     "calendar": {
       "accounts_audit": "Accounts check",
       "pioneer_service_review": "Review of the pioneers’ ministry",
-      "service_year_review": "End of the service year",
+      "service_year_review": "Review of the regular pioneers’ service",
       "quarters": {
         "sepNov": "September–November",
         "decFeb": "December–February",
@@ -2921,7 +2921,9 @@
       "count_other": "{{count}} tasks",
       "readOnly": "The body of elders marks these done — this is a view only."
     },
-    "markedDone": "Marked done"
+    "markedDone": "Marked done",
+    "doneOn": "Done {{date}}, {{time}}",
+    "closedBy": "Marked by {{name}}"
   },
   "pioneerSchool": {
     "title": "Pioneer school",
@@ -3084,5 +3086,22 @@
       "badCharacters": "Latin letters, digits and a dot only. No spaces and no @.",
       "edgeDot": "A dot may only sit inside the name, and never two in a row."
     }
+  },
+  "pioneerReview": {
+    "title": "Pioneer service review",
+    "openFromTask": "Open the pioneer service review →",
+    "counted": "Months counted: {{count}} of 12.",
+    "collecting": "Reports for {{month}} are still coming in — the totals will grow.",
+    "rule": "The year’s goal is 600 hours. A pioneer may continue if, with any credited hours, he has at least 560.",
+    "hours": "{{count}} h",
+    "toMinimum": "{{count}} h short of 560",
+    "toGoal": "{{count}} h from the 600 goal",
+    "meets": "Above 560",
+    "pace": "Averaging {{pace}} h a month ({{count}} months with hours)",
+    "noReports": "No reports yet this year",
+    "sinceOnly": "Pioneer since {{month}} — the year’s measure does not apply",
+    "shortCount": "Below 560: {{count}} of {{total}}",
+    "allFine": "All {{count}} are above 560",
+    "nobody": "There are no regular pioneers in the congregation"
   }
 }

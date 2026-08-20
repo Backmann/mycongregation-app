@@ -125,6 +125,10 @@ export default function ServiceReportsLayout() {
         name="annual"
         options={{ title: t('annualReport.pageTitle') }}
       />
+      <Stack.Screen
+        name="pioneer-year-review"
+        options={{ title: t('pioneerReview.title') }}
+      />
 </Stack>
   );
 }
