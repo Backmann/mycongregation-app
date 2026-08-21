@@ -282,6 +282,20 @@ export default function TasksScreen() {
           </Pressable>
         ) : null}
 
+        {/* The task says there is something to plan; the page says which
+            groups. The names cannot be in the task itself — its words are
+            written from `kind` in the reader's own language. */}
+        {task.kind === 'service_overseer_visits' ? (
+          <Pressable
+            onPress={() => router.push('/cart/service-overseer' as never)}
+            hitSlop={6}
+          >
+            <Text style={styles.openScreen}>
+              {t('serviceOverseer.openFromTask')}
+            </Text>
+          </Pressable>
+        ) : null}
+
         {/* Who closed it. The columns were there from the first day and the
             screen never showed them, so «сделано» named no one. */}
         {task.status === 'done' && task.doneByName ? (

@@ -2819,7 +2819,8 @@
     "never": "Not visited yet",
     "planned": "Planned: {{date}}",
     "noGroups": "No groups yet",
-    "hint": "A visit is marked on a field-service meeting — choose the group and turn on «Service overseer's visit»."
+    "hint": "A visit is marked on a field-service meeting — choose the group and turn on «Service overseer's visit».",
+    "openFromTask": "Open the group visits →"
   },
   "tasks": {
     "title": "Tasks",
@@ -2915,7 +2916,8 @@
         "decFeb": "December–February",
         "marMay": "March–May",
         "junAug": "June–August"
-      }
+      },
+      "service_overseer_visits": "Plan the visits to the groups"
     },
     "mine": {
       "title": "My tasks",

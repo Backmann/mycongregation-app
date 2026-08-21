@@ -3764,7 +3764,17 @@ export interface ElderTask {
   /** «19:00» — what «two hours before» counts back from. */
   dueTime: string | null;
   /** Set only on the recurring things the app creates itself. */
-  kind: 'accounts_audit' | 'pioneer_service_review' | 'service_year_review' | null;
+  /**
+   * Set only on tasks the app itself raised; null on everything a person
+   * wrote. The words are written from this, in the reader's own language —
+   * which is why a calendar task can never carry a name in its title.
+   */
+  kind:
+    | 'accounts_audit'
+    | 'pioneer_service_review'
+    | 'service_year_review'
+    | 'service_overseer_visits'
+    | null;
   /** Which turn of it — «2026-Q3», «2026». Two audits a year need telling apart. */
   kindPeriod: string | null;
   status: 'open' | 'done';

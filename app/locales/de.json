@@ -2819,7 +2819,8 @@
     "never": "Noch nicht besucht",
     "planned": "Geplant: {{date}}",
     "noGroups": "Noch keine Gruppen",
-    "hint": "Ein Besuch wird an einer Zusammenkunft für den Dienst vermerkt — Gruppe wählen und «Besuch des Dienstaufsehers» einschalten."
+    "hint": "Ein Besuch wird an einer Zusammenkunft für den Dienst vermerkt — Gruppe wählen und «Besuch des Dienstaufsehers» einschalten.",
+    "openFromTask": "Gruppenbesuche öffnen →"
   },
   "tasks": {
     "title": "Aufgaben",
@@ -2915,7 +2916,8 @@
         "decFeb": "Dezember–Februar",
         "marMay": "März–Mai",
         "junAug": "Juni–August"
-      }
+      },
+      "service_overseer_visits": "Besuche der Gruppen planen"
     },
     "mine": {
       "title": "Meine Aufgaben",
