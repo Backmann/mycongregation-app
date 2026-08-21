@@ -2679,6 +2679,10 @@ export const pioneerSchoolApi = {
   async removeHelper(id: string): Promise<void> {
     await api.delete(`/pioneer-school/helpers/${id}`);
   },
+  /** Take back a removal — the row was only hidden, so nothing is rebuilt. */
+  async restoreHelper(id: string): Promise<void> {
+    await api.post(`/pioneer-school/helpers/${id}/restore`);
+  },
 };
 
 export const specialEventsApi = {

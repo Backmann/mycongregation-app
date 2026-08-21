@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
+import { UndoBar } from '../../../components/UndoBar';
 import { Ionicons } from '@expo/vector-icons';
 
 import {
@@ -103,9 +104,14 @@ export default function PioneerSchoolHelpersScreen() {
       setOpen(false);
     },
   });
+  /** The helper just removed, so «Отменить» has something to bring back. */
+  const [justRemoved, setJustRemoved] = useState<string | null>(null);
   const removeMut = useMutation({
     mutationFn: (id: string) => pioneerSchoolApi.removeHelper(id),
-    onSuccess: invalidate,
+    onSuccess: (_r, id) => {
+      invalidate();
+      setJustRemoved(id);
+    },
   });
 
   const rows = useMemo(() => {
@@ -313,6 +319,21 @@ export default function PioneerSchoolHelpersScreen() {
           <Text style={styles.error}>{extractErrorMessage(saveMut.error)}</Text>
         ) : null}
       </Sheet>
+
+      {/* A sibling of the list, never a child of a scroll view: inside one it
+          is positioned against the CONTENT and ends up several screens down,
+          which is exactly how it went missing the first time. */}
+      <UndoBar
+        visible={!!justRemoved}
+        message={t('pioneerSchool.helpers.removed')}
+        onUndo={async () => {
+          if (!justRemoved) return;
+          await pioneerSchoolApi.restoreHelper(justRemoved);
+          setJustRemoved(null);
+          invalidate();
+        }}
+        onDismiss={() => setJustRemoved(null)}
+      />
     </View>
   );
 }

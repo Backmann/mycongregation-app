@@ -66,6 +66,7 @@ import {
   SUBSECTIONS,
 } from '../../../lib/parts';
 import { Ionicons } from '@expo/vector-icons';
+import { UndoBar } from '../../../components/UndoBar';
 import { useTranslation } from 'react-i18next';
 import { WeekNavigator } from '../../../components/WeekNavigator';
 import { WeekDrawer } from '../../../components/WeekDrawer';
@@ -424,9 +425,34 @@ export default function ScheduleIndexScreen() {
       }),
     onSuccess: () => invalidateCleaning(),
   });
+  /**
+   * The cleaning slot just cleared, kept whole so it can be put back.
+   *
+   * Nothing to «restore» here: clearing deletes the row outright, and the
+   * server keeps only a journal note of who was cleaning. But the week, the
+   * slot and the group describe it completely — so undo is simply the same
+   * assignment made again, which is why the group and the windows are read
+   * BEFORE the row goes.
+   */
+  const [clearedSlot, setClearedSlot] = useState<{
+    slotType: Parameters<typeof cleaningApi.setSlot>[0]['slotType'];
+    serviceGroupId: string | null;
+    windows: number[] | null;
+  } | null>(null);
   const clearCleaningSlotMutation = useMutation({
-    mutationFn: (slotType: Parameters<typeof cleaningApi.clearSlot>[1]) =>
-      cleaningApi.clearSlot(weekStartISO, slotType),
+    mutationFn: (slotType: Parameters<typeof cleaningApi.clearSlot>[1]) => {
+      const was = cleaningWeek.assignments.find((a) => a.slotType === slotType);
+      setClearedSlot(
+        was
+          ? {
+              slotType,
+              serviceGroupId: was.serviceGroupId,
+              windows: was.windows,
+            }
+          : null,
+      );
+      return cleaningApi.clearSlot(weekStartISO, slotType);
+    },
     onSuccess: () => invalidateCleaning(),
   });
 
@@ -1891,6 +1917,25 @@ export default function ScheduleIndexScreen() {
           </>
         )}
       </ScrollView>
+
+      {/* Sibling of the scroll view, not its child — inside one the strip is
+          positioned against the content and lands screens below the fold. */}
+      <UndoBar
+        visible={!!clearedSlot}
+        message={t('cleaning.cleared')}
+        onUndo={async () => {
+          if (!clearedSlot) return;
+          await cleaningApi.setSlot({
+            weekStartDate: weekStartISO,
+            slotType: clearedSlot.slotType,
+            serviceGroupId: clearedSlot.serviceGroupId,
+            windows: clearedSlot.windows,
+          });
+          setClearedSlot(null);
+          invalidateCleaning();
+        }}
+        onDismiss={() => setClearedSlot(null)}
+      />
     </View>
     </AutoAssignedContext.Provider>
   );

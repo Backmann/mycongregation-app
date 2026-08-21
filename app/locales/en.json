@@ -1494,7 +1494,8 @@
       "weekly": "Guide: weekly cleaning",
       "yearly": "Guide: general cleaning"
     },
-    "slotColumn": "Cleaning"
+    "slotColumn": "Cleaning",
+    "cleared": "The week’s cleaning was cleared"
   },
   "cleaningGuide": {
     "title": "How to clean",
@@ -2176,7 +2177,8 @@
     "similarWarning": "A similar topic has come up before:",
     "insertSearch": "Search topics",
     "insertPastGroup": "Already covered",
-    "insertPlannedGroup": "Planned"
+    "insertPlannedGroup": "Planned",
+    "deleted": "Topic deleted"
   },
   "circuitOverseer": {
     "intro": "These details pre-fill a new circuit-overseer-visit event. Each visit keeps its own name snapshot, so editing here doesn't change past visits.",
@@ -2988,7 +2990,8 @@
       "ours": "Ours",
       "linkPublisher": "Link to a publisher card",
       "linkHint": "For our own brothers only. The link is what lets the app see absences and duties at our meetings.",
-      "countedFor": "Days are counted for «{{school}}»"
+      "countedFor": "Days are counted for «{{school}}»",
+      "removed": "Helper removed from the list"
     },
     "addAndAssign": "Add and assign",
     "fromCongregations": "from congregations",

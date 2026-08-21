@@ -1494,7 +1494,8 @@
       "weekly": "Anleitung: wöchentliche Reinigung",
       "yearly": "Anleitung: Grundreinigung"
     },
-    "slotColumn": "Reinigung"
+    "slotColumn": "Reinigung",
+    "cleared": "Reinigung für die Woche entfernt"
   },
   "cleaningGuide": {
     "title": "Richtig reinigen",
@@ -2176,7 +2177,8 @@
     "similarWarning": "Ein ähnliches Thema gab es schon:",
     "insertSearch": "Themen suchen",
     "insertPastGroup": "Schon behandelt",
-    "insertPlannedGroup": "Geplant"
+    "insertPlannedGroup": "Geplant",
+    "deleted": "Thema gelöscht"
   },
   "circuitOverseer": {
     "intro": "Diese Angaben füllen ein neues Ereignis „Besuch des Kreisaufsehers“ vor. Jeder Besuch behält seine eigene Namenskopie, daher ändert eine Bearbeitung hier keine vergangenen Besuche.",
@@ -2988,7 +2990,8 @@
       "ours": "Unser",
       "linkPublisher": "Mit Verkündigerkarte verknüpfen",
       "linkHint": "Nur für eigene Brüder. Die Verknüpfung lässt die App Abwesenheiten und Aufgaben bei unseren Zusammenkünften sehen.",
-      "countedFor": "Die Tage zählen für «{{school}}»"
+      "countedFor": "Die Tage zählen für «{{school}}»",
+      "removed": "Helfer aus der Liste entfernt"
     },
     "addAndAssign": "Hinzufügen und zuteilen",
     "fromCongregations": "aus Versammlungen",

@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
+import { UndoBar } from '../../../components/UndoBar';
 import { Ionicons } from '@expo/vector-icons';
 import {
   CreateLocalNeedsTopicInput,
@@ -89,11 +90,20 @@ export default function LocalNeedsScreen() {
       closeModal();
     },
   });
+  /**
+   * The topic just deleted, so the strip can offer it back.
+   *
+   * Deleting a topic is soft and the archive holds it, but finding it there
+   * means leaving the screen and knowing the archive exists. A tap on
+   * «Отменить» in the same second costs neither.
+   */
+  const [justDeleted, setJustDeleted] = useState<string | null>(null);
   const removeMut = useMutation({
     mutationFn: (id: string) => localNeedsApi.remove(id),
-    onSuccess: () => {
+    onSuccess: (_r, id) => {
       invalidate();
       setConfirmDeleteId(null);
+      setJustDeleted(id);
     },
   });
   const usedMut = useMutation({
@@ -641,6 +651,18 @@ export default function LocalNeedsScreen() {
           </View>
         </View>
       </Modal>
+
+      <UndoBar
+        visible={!!justDeleted}
+        message={t('localNeeds.deleted')}
+        onUndo={async () => {
+          if (!justDeleted) return;
+          await localNeedsApi.restore(justDeleted);
+          setJustDeleted(null);
+          invalidate();
+        }}
+        onDismiss={() => setJustDeleted(null)}
+      />
     </View>
   );
 }
