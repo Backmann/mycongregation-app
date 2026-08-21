@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.backmann.mycongregation",
+      "sha256_cert_fingerprints": [
+        "1E:7C:B7:80:0C:AB:21:B0:76:2A:E7:DE:2F:C2:C6:98:8C:1A:FA:96:03:1B:7E:19:73:9A:78:A4:42:91:B5:08"
+      ]
+    }
+  }
+]
