@@ -63,7 +63,14 @@ export default function LocalNeedsScreen() {
   const [title, setTitle] = useState('');
   const [notes, setNotes] = useState('');
   const [speakerId, setSpeakerId] = useState<string | null>(null);
-  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  /*
+   * No «точно удалить?» here any more.
+   *
+   * A dialog asks everybody, every time, about a thing they almost always
+   * meant — the price is paid on every correct deletion. The strip is paid
+   * only by the person who erred, and only for a moment. That was the reason
+   * the strip was built; keeping both meant paying both.
+   */
   const [search, setSearch] = useState('');
   const [expandedNotes, setExpandedNotes] = useState<Record<string, boolean>>(
     {},
@@ -102,7 +109,6 @@ export default function LocalNeedsScreen() {
     mutationFn: (id: string) => localNeedsApi.remove(id),
     onSuccess: (_r, id) => {
       invalidate();
-      setConfirmDeleteId(null);
       setJustDeleted(id);
     },
   });
@@ -347,7 +353,7 @@ export default function LocalNeedsScreen() {
                   <Ionicons name="create-outline" size={20} color="#0ea5e9" />
                 </Pressable>
                 <Pressable
-                  onPress={() => setConfirmDeleteId(item.id)}
+                  onPress={() => removeMut.mutate(item.id)}
                   hitSlop={6}
                   style={styles.actionBtn}
                   accessibilityLabel={t('localNeeds.delete')}
@@ -608,44 +614,6 @@ export default function LocalNeedsScreen() {
                 <Text style={styles.saveBtnText}>
                   {saving ? t('common.saving') : t('common.save')}
                 </Text>
-              </Pressable>
-            </View>
-          </View>
-        </View>
-      </Modal>
-
-      {/* Delete confirm */}
-      <Modal
-        visible={!!confirmDeleteId}
-        animationType="fade"
-        transparent
-        onRequestClose={() => setConfirmDeleteId(null)}
-      >
-        <View style={styles.modalBackdrop}>
-          <Pressable
-            style={StyleSheet.absoluteFill}
-            onPress={() => setConfirmDeleteId(null)}
-            accessibilityRole="button"
-          />
-          <View style={styles.confirmCard}>
-            <Text style={styles.confirmText}>
-              {t('localNeeds.confirmDelete')}
-            </Text>
-            <View style={styles.modalActions}>
-              <Pressable
-                style={[styles.modalBtn, styles.cancelBtn]}
-                onPress={() => setConfirmDeleteId(null)}
-              >
-                <Text style={styles.cancelBtnText}>{t('common.cancel')}</Text>
-              </Pressable>
-              <Pressable
-                style={[styles.modalBtn, styles.deleteBtn]}
-                onPress={() =>
-                  confirmDeleteId && removeMut.mutate(confirmDeleteId)
-                }
-                disabled={removeMut.isPending}
-              >
-                <Text style={styles.saveBtnText}>{t('localNeeds.delete')}</Text>
               </Pressable>
             </View>
           </View>

@@ -2150,7 +2150,6 @@
     "editTitle": "Edit topic",
     "edit": "Edit",
     "delete": "Delete",
-    "confirmDelete": "Delete this topic?",
     "markUsed": "Mark as covered",
     "markPlanned": "Move back to planned",
     "fields": {
