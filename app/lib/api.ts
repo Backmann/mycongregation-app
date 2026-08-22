@@ -920,7 +920,8 @@ export type ResponsibilityType =
   | 'public_witnessing'
   | 'cleaning_coordinator'
   | 'duties_coordinator'
-  | 'attendance_recorder';
+  | 'attendance_recorder'
+  | 'attendance_recorder_assistant';
 
 export interface Responsibility {
   id: string;

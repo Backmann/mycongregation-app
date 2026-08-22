@@ -1256,7 +1256,8 @@
       "duties_coordinator": "Координатор обязанностей",
       "service_overseer_assistant": "Помощник служебного старейшины",
       "attendance_recorder": "Учёт посещаемости",
-      "body_coordinator_assistant": "Помощник координатора совета старейшин"
+      "body_coordinator_assistant": "Помощник координатора совета старейшин",
+      "attendance_recorder_assistant": "Помощник по учёту посещаемости"
     },
     "groups": {
       "meeting": "Встречи",

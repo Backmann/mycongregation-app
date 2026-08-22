@@ -1244,7 +1244,8 @@
       "duties_coordinator": "Aufgabenkoordinator",
       "service_overseer_assistant": "Assistent des Dienstaufsehers",
       "attendance_recorder": "Besuchszahlen",
-      "body_coordinator_assistant": "Assistent des Koordinators"
+      "body_coordinator_assistant": "Assistent des Koordinators",
+      "attendance_recorder_assistant": "Helfer für die Anwesenheitszählung"
     },
     "groups": {
       "meeting": "Zusammenkünfte",

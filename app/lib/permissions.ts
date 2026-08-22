@@ -130,7 +130,12 @@ export function usePermissions(): Permissions {
       // Meeting attendance (form S-3): the secretary keeps it, and a brother
       // may be given the attendance responsibility to enter the figures.
       canRecordAttendance:
-        isAdmin || holds('secretary') || holds('attendance_recorder'),
+        isAdmin ||
+        holds('secretary') ||
+        holds('attendance_recorder') ||
+        // The figure is entered while it is still in somebody's hand; one
+        // brother away on a Thursday should not cost the week its record.
+        holds('attendance_recorder_assistant'),
       canSubmitReportForOthers: isAdmin || isElder,
       canGenerateS21: isAdmin || isElder,
 

@@ -1244,7 +1244,8 @@
       "duties_coordinator": "Duties coordinator",
       "service_overseer_assistant": "Service overseer's assistant",
       "attendance_recorder": "Attendance record",
-      "body_coordinator_assistant": "Assistant to the body coordinator"
+      "body_coordinator_assistant": "Assistant to the body coordinator",
+      "attendance_recorder_assistant": "Assistant attendance recorder"
     },
     "groups": {
       "meeting": "Meetings",
