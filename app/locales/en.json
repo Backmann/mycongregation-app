@@ -1218,12 +1218,11 @@
   },
   "responsibilities": {
     "title": "Responsibilities",
-    "subtitle": "Assign the brothers responsible for schedule sections. The assigned brother will be able to edit his section.",
+    "subtitle": "Who is responsible for what. An appointment opens that brother’s part of the schedule, and for some duties brings tasks and reminders too.",
     "unassigned": "Unassigned",
     "unknownUser": "Unknown user",
     "assign": "Assign",
-    "change": "Change",
-    "pickUser": "Select a user",
+    "pickUser": "Whom to appoint",
     "errorTitle": "Error",
     "revokeConfirm": {
       "title": "Remove responsibility?",
@@ -1234,7 +1233,7 @@
       "body_coordinator": "Coordinator of the Body of Elders",
       "life_ministry_overseer": "Life and Ministry Meeting Overseer",
       "wt_study_conductor": "Watchtower Study Conductor",
-      "wt_study_conductor_backup": "Watchtower Study Conductor (Backup)",
+      "wt_study_conductor_backup": "Assistant to the Watchtower Study conductor",
       "public_talk_coordinator": "Public Talk Coordinator",
       "adviser": "Adviser",
       "secretary": "Secretary",
@@ -1248,11 +1247,16 @@
       "body_coordinator_assistant": "Assistant to the body coordinator"
     },
     "groups": {
-      "body": "Body of elders",
       "meeting": "Meetings",
       "service": "Ministry",
-      "house": "Upkeep and accounts"
-    }
+      "house": "Hall and accounts",
+      "committee": "Service committee"
+    },
+    "assignAnother": "Add an assistant",
+    "replace": "Replace",
+    "assignedByOn": "Assigned by {{name}} · {{date}}",
+    "assignedOn": "Assigned {{date}}",
+    "alreadyHolds": "Already holds: {{list}}"
   },
   "meetingSettings": {
     "title": "Meeting time & place",

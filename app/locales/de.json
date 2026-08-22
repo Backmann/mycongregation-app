@@ -1218,12 +1218,11 @@
   },
   "responsibilities": {
     "title": "Aufgaben",
-    "subtitle": "Weisen Sie die Brüder zu, die für die Programmbereiche verantwortlich sind. Der zugewiesene Bruder kann seinen Bereich bearbeiten.",
+    "subtitle": "Wer wofür zuständig ist. Eine Ernennung öffnet dem Bruder seinen Teil des Plans, bei manchen Aufgaben kommen Aufgaben und Erinnerungen dazu.",
     "unassigned": "Nicht zugewiesen",
     "unknownUser": "Unbekannter Benutzer",
-    "assign": "Zuweisen",
-    "change": "Ändern",
-    "pickUser": "Benutzer auswählen",
+    "assign": "Ernennen",
+    "pickUser": "Wem übertragen",
     "errorTitle": "Fehler",
     "revokeConfirm": {
       "title": "Aufgabe entfernen?",
@@ -1234,7 +1233,7 @@
       "body_coordinator": "Koordinator der Ältestenschaft",
       "life_ministry_overseer": "Aufseher für „Leben und Dienst“",
       "wt_study_conductor": "Leiter des Wachtturm-Studiums",
-      "wt_study_conductor_backup": "Leiter des Wachtturm-Studiums (Vertretung)",
+      "wt_study_conductor_backup": "Helfer des Leiters des Wachtturm-Studiums",
       "public_talk_coordinator": "Koordinator für öffentliche Vorträge",
       "adviser": "Berater",
       "secretary": "Sekretär",
@@ -1248,11 +1247,16 @@
       "body_coordinator_assistant": "Assistent des Koordinators"
     },
     "groups": {
-      "body": "Ältestenschaft",
       "meeting": "Zusammenkünfte",
       "service": "Dienst",
-      "house": "Haus und Konten"
-    }
+      "house": "Saal und Konten",
+      "committee": "Dienstkomitee"
+    },
+    "assignAnother": "Helfer hinzufügen",
+    "replace": "Ersetzen",
+    "assignedByOn": "Ernannt von {{name}} · {{date}}",
+    "assignedOn": "Ernannt am {{date}}",
+    "alreadyHolds": "Hat bereits: {{list}}"
   },
   "meetingSettings": {
     "title": "Zeit & Ort der Zusammenkünfte",

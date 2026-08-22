@@ -23,6 +23,7 @@ import {
   usersApi,
 } from '../../../lib/api';
 import { notify } from '../../../lib/error-bus';
+import i18n from '../../../lib/i18n';
 import { confirm } from '../../../components/ConfirmHost';
 
 /**
@@ -42,37 +43,89 @@ const RESPONSIBILITY_GROUPS: {
   types: ResponsibilityType[];
 }[] = [
   {
-    key: 'body',
-    types: ['body_coordinator', 'body_coordinator_assistant', 'secretary'],
+    // The service committee first, because it is the body's working core and
+    // the first thing anybody comes here to check. Their assistants stand with
+    // them: formally the committee is three, but a man looking for «кто вместо
+    // секретаря» looks here, not two screens down.
+    key: 'committee',
+    types: [
+      'body_coordinator',
+      'body_coordinator_assistant',
+      'secretary',
+      'service_overseer',
+      'service_overseer_assistant',
+    ],
   },
   {
     key: 'meeting',
     types: [
       'life_ministry_overseer',
+      'wt_study_conductor',
+      'wt_study_conductor_backup',
       'public_talk_coordinator',
+      'adviser',
       'attendance_recorder',
     ],
   },
-  {
-    key: 'service',
-    types: [
-      'service_overseer',
-      'service_overseer_assistant',
-      'public_witnessing',
-    ],
-  },
+  { key: 'service', types: ['public_witnessing'] },
   {
     key: 'house',
     types: ['accounts_servant', 'cleaning_coordinator', 'duties_coordinator'],
   },
 ];
 
+/**
+ * Every responsibility appears somewhere — checked by the compiler.
+ *
+ * The list above is kept by hand, and it fell into exactly the trap that
+ * invites: two responsibilities were added to the server and not here, so they
+ * existed everywhere except where somebody could assign them. This map has one
+ * entry per ResponsibilityType, so leaving one out no longer builds.
+ */
+const GROUP_OF: Record<ResponsibilityType, string> = {
+  body_coordinator: 'committee',
+  body_coordinator_assistant: 'committee',
+  secretary: 'committee',
+  service_overseer: 'committee',
+  service_overseer_assistant: 'committee',
+  life_ministry_overseer: 'meeting',
+  wt_study_conductor: 'meeting',
+  wt_study_conductor_backup: 'meeting',
+  public_talk_coordinator: 'meeting',
+  adviser: 'meeting',
+  attendance_recorder: 'meeting',
+  public_witnessing: 'service',
+  accounts_servant: 'house',
+  cleaning_coordinator: 'house',
+  duties_coordinator: 'house',
+};
+void GROUP_OF;
+
+/**
+ * The one duty several brothers may hold at once — mirrored from the server's
+ * MULTI_HOLDER, and the reason this screen cannot simply say «Заменить»
+ * everywhere: a congregation keeps a couple of men able to stand in for the
+ * study conductor, and both are genuinely appointed.
+ */
+const MULTI_HOLDER: ResponsibilityType[] = ['wt_study_conductor_backup'];
 
 const QK_RESPONSIBILITIES = ['responsibilities'] as const;
 const QK_USERS = ['users'] as const;
 
 export default function ResponsibilitiesScreen() {
   const { t } = useTranslation();
+  /** Day, month and time — enough to place it, short enough to read at a glance. */
+  const fmtDate = (iso: string) =>
+    new Date(iso).toLocaleDateString(i18n.language, {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    }) +
+    ', ' +
+    new Date(iso).toLocaleTimeString(i18n.language, {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
   const qc = useQueryClient();
   const [pickerFor, setPickerFor] = useState<ResponsibilityType | null>(null);
 
@@ -114,6 +167,13 @@ export default function ResponsibilitiesScreen() {
     return map;
   }, [respQuery.data]);
 
+  /**
+   * A name for an account, from the responsibilities the server already
+   * resolved — the users list itself carries only the login name and address.
+   */
+  const publisherNameOf = (u: PublicUser): string | null =>
+    (respQuery.data ?? []).find((r) => r.userId === u.id)?.holderName ?? null;
+
   const userById = useMemo(() => {
     const map = new Map<string, PublicUser>();
     for (const u of usersQuery.data ?? []) map.set(u.id, u);
@@ -149,10 +209,6 @@ export default function ResponsibilitiesScreen() {
       <ScrollView contentContainerStyle={{ paddingBottom: 32 }}>
         <Text style={styles.intro}>{t('responsibilities.subtitle')}</Text>
 
-        {/* Grouped, and each row on ONE line with its holders under it.
-            Before, the name sat on the left, its remove cross beside it, and
-            the assign button away at the right edge — three things on three
-            different lines of sight, with nothing to tie them together. */}
         {RESPONSIBILITY_GROUPS.map((group) => (
           <View key={group.key} style={styles.group}>
             <Text style={styles.groupLabel}>
@@ -161,58 +217,87 @@ export default function ResponsibilitiesScreen() {
             <View style={styles.card}>
               {group.types.map((type, i) => {
                 const holders = byType.get(type) ?? [];
+                const many = MULTI_HOLDER.includes(type);
+                /* One holder: the button REPLACES him, and says so. Several
+                   allowed: it adds another. The old screen offered «Назначить»
+                   either way and quietly ended up with two secretaries. */
+                const action =
+                  holders.length === 0
+                    ? t('responsibilities.assign')
+                    : many
+                      ? t('responsibilities.assignAnother')
+                      : t('responsibilities.replace');
+
                 return (
                   <View
                     key={type}
                     style={[styles.row, i > 0 && styles.rowBorder]}
                   >
-                    <View style={styles.rowTop}>
-                      <Text style={styles.roleTitle}>
-                        {t(`responsibilities.types.${type}`)}
-                      </Text>
-                      <Pressable
-                        onPress={() => setPickerFor(type)}
-                        style={({ pressed }) => [
-                          styles.assignBtn,
-                          pressed && styles.assignBtnPressed,
-                        ]}
-                      >
-                        <Ionicons name="add" size={15} color="#0369a1" />
-                        <Text style={styles.assignBtnText}>
-                          {t('responsibilities.assign')}
-                        </Text>
-                      </Pressable>
-                    </View>
+                    {/* The title has a whole line to itself. It used to share
+                        one with the button, and «Помощник координатора совета
+                        старейшин» pushed everything past the right edge of the
+                        phone — the name was there, just off the screen. */}
+                    <Text style={styles.roleTitle}>
+                      {t(`responsibilities.types.${type}`)}
+                    </Text>
 
                     {holders.length === 0 ? (
                       <Text style={styles.holderUnassigned}>
                         {t('responsibilities.unassigned')}
                       </Text>
                     ) : (
-                      <View style={styles.holderWrap}>
-                        {holders.map((h) => {
-                          const u = userById.get(h.userId);
-                          return (
-                            <View key={h.userId} style={styles.holderChip}>
-                              <Text style={styles.holder} numberOfLines={1}>
-                                {u ? u.email : t('responsibilities.unknownUser')}
-                              </Text>
-                              <Pressable
-                                onPress={() => confirmRevoke(type, h.userId)}
-                                hitSlop={8}
-                                disabled={revokeMutation.isPending}
-                              >
-                                <Ionicons
-                                  name="close"
-                                  size={15}
-                                  color="#94a3b8"
-                                />
-                              </Pressable>
-                            </View>
-                          );
-                        })}
-                      </View>
+                      holders.map((h) => (
+                        <View key={h.userId} style={styles.holder}>
+                          <View style={styles.holderMain}>
+                            <Text style={styles.holderName}>
+                              {h.holderName ??
+                                userById.get(h.userId)?.loginName ??
+                                t('responsibilities.unknownUser')}
+                            </Text>
+                            {/* Recorded since the table was created and never
+                                shown: «кто и когда» was written down and
+                                unreadable, which is the same as not written. */}
+                            <Text style={styles.holderMeta}>
+                              {h.assignedByName
+                                ? t('responsibilities.assignedByOn', {
+                                    name: h.assignedByName,
+                                    date: fmtDate(h.assignedAt),
+                                  })
+                                : t('responsibilities.assignedOn', {
+                                    date: fmtDate(h.assignedAt),
+                                  })}
+                            </Text>
+                          </View>
+                          <Pressable
+                            onPress={() => confirmRevoke(type, h.userId)}
+                            hitSlop={8}
+                            disabled={revokeMutation.isPending}
+                            style={styles.removeBtn}
+                          >
+                            <Ionicons
+                              name="close"
+                              size={16}
+                              color="#94a3b8"
+                            />
+                          </Pressable>
+                        </View>
+                      ))
                     )}
+
+                    <Pressable
+                      onPress={() => setPickerFor(type)}
+                      style={({ pressed }) => [
+                        styles.assignBtn,
+                        pressed && styles.assignBtnPressed,
+                      ]}
+                    >
+                      <Ionicons
+                        name={holders.length === 0 || many ? 'add' : 'swap-horizontal'}
+                        size={15}
+                        color="#0369a1"
+                      />
+                      <Text style={styles.assignBtnText}>{action}</Text>
+                    </Pressable>
                   </View>
                 );
               })}
@@ -235,27 +320,49 @@ export default function ResponsibilitiesScreen() {
         onClose={() => setPickerFor(null)}
       >
             <View>
-              {users.map((u) => (
-                <Pressable
-                  key={u.id}
-                  style={({ pressed }) => [
-                    styles.userRow,
-                    pressed && styles.userRowPressed,
-                  ]}
-                  onPress={() =>
-                    pickerFor &&
-                    assignMutation.mutate({ type: pickerFor, userId: u.id })
-                  }
-                  disabled={assignMutation.isPending}
-                >
-                  <Ionicons
-                    name="person-circle-outline"
-                    size={22}
-                    color="#0ea5e9"
-                  />
-                  <Text style={styles.userEmail}>{u.email}</Text>
-                </Pressable>
-              ))}
+              {users.map((u) => {
+                /* What he already carries, said in the moment it matters. The
+                   body distributes work by looking at exactly this, and the
+                   picker used to offer a column of e-mail addresses. */
+                const already = (respQuery.data ?? [])
+                  .filter((r) => r.userId === u.id)
+                  .map((r) => t(`responsibilities.types.${r.type}`));
+
+                return (
+                  <Pressable
+                    key={u.id}
+                    style={({ pressed }) => [
+                      styles.userRow,
+                      pressed && styles.userRowPressed,
+                    ]}
+                    onPress={() =>
+                      pickerFor &&
+                      assignMutation.mutate({ type: pickerFor, userId: u.id })
+                    }
+                    disabled={assignMutation.isPending}
+                  >
+                    <Ionicons
+                      name="person-circle-outline"
+                      size={24}
+                      color="#0ea5e9"
+                    />
+                    <View style={styles.userMain}>
+                      <Text style={styles.userName}>
+                        {publisherNameOf(u) ??
+                          u.loginName ??
+                          t('responsibilities.unknownUser')}
+                      </Text>
+                      {already.length > 0 ? (
+                        <Text style={styles.userHolds} numberOfLines={2}>
+                          {t('responsibilities.alreadyHolds', {
+                            list: already.join(', '),
+                          })}
+                        </Text>
+                      ) : null}
+                    </View>
+                  </Pressable>
+                );
+              })}
             </View>
       </Sheet>
     </SafeAreaView>
@@ -272,93 +379,88 @@ const styles = StyleSheet.create({
   },
   intro: {
     fontSize: 13,
-    color: '#64748b',
+    color: '#475569',
     paddingHorizontal: 20,
     paddingTop: 16,
-    paddingBottom: 4,
+    paddingBottom: 2,
     lineHeight: 19,
   },
-  group: { marginTop: 4 },
+  group: { marginTop: 18, paddingHorizontal: 14 },
   groupLabel: {
-    fontSize: 12,
-    color: '#64748b',
-    marginLeft: 16,
-    marginTop: 14,
-    marginBottom: 6,
+    fontSize: 11,
+    letterSpacing: 0.7,
+    textTransform: 'uppercase',
+    color: '#94a3b8',
+    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
+    marginLeft: 4,
+    marginBottom: 8,
   },
-  rowTop: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 10,
-  },
-  holderWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 8 },
-  holderChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: '#f1f5f9',
-    borderRadius: 999,
-    paddingLeft: 11,
-    paddingRight: 8,
-    paddingVertical: 5,
-    maxWidth: '100%',
-  },
+  /* A card with its own edge and a soft shadow, rather than a strip pinned to
+     the window edges — the page is read as a set of groups, not one long list. */
   card: {
     backgroundColor: '#fff',
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
-    borderColor: '#e2e8f0',
-    marginTop: 8,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#e8edf3',
+    overflow: 'hidden',
   },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    gap: 8,
-  },
+  /* Column, not row: every long title has a line of its own, and nothing can
+     be pushed past the right edge of a phone. */
+  row: { paddingVertical: 14, paddingHorizontal: 14 },
   rowBorder: { borderTopWidth: 1, borderTopColor: '#f1f5f9' },
-  rowMain: { flex: 1 },
   roleTitle: {
-    flex: 1,
+    fontSize: 15,
+    color: '#0f172a',
+    fontWeight: '600',
+    fontFamily: 'Manrope_600SemiBold',
+    lineHeight: 21,
+  },
+  holder: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+    backgroundColor: '#f8fafc',
+    borderWidth: 1,
+    borderColor: '#eef2f6',
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    marginTop: 10,
+  },
+  holderMain: { flex: 1 },
+  holderName: {
     fontSize: 14.5,
     color: '#0f172a',
+    fontWeight: '600',
     fontFamily: 'Manrope_600SemiBold',
   },
-  holder: { fontSize: 12.5, color: '#334155', flexShrink: 1 },
+  holderMeta: { fontSize: 12, color: '#94a3b8', lineHeight: 17, marginTop: 3 },
+  removeBtn: { padding: 2 },
   holderUnassigned: {
-    fontSize: 12.5,
+    fontSize: 13,
     color: '#94a3b8',
     fontStyle: 'italic',
     marginTop: 8,
   },
-  holderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: 2,
-  },
-  revokeBtn: { padding: 4 },
   assignBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 3,
-    paddingLeft: 8,
-    paddingRight: 11,
-    paddingVertical: 6,
+    alignSelf: 'flex-start',
+    gap: 5,
+    paddingLeft: 10,
+    paddingRight: 13,
+    paddingVertical: 7,
     borderRadius: 999,
     backgroundColor: '#e0f2fe',
+    marginTop: 10,
   },
   assignBtnPressed: { backgroundColor: '#bae6fd' },
-  assignBtnText: { fontSize: 13, color: '#0369a1', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
-  sheet: {
-    backgroundColor: '#fff',
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-    paddingTop: 20,
-    paddingHorizontal: 20,
-    paddingBottom: 28,
+  assignBtnText: {
+    fontSize: 13,
+    color: '#0369a1',
+    fontWeight: '600',
+    fontFamily: 'Manrope_600SemiBold',
   },
   sheetSubtitle: {
     fontSize: 13,
@@ -370,10 +472,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    paddingVertical: 12,
-    paddingHorizontal: 8,
-    borderRadius: 8,
+    paddingVertical: 11,
+    paddingHorizontal: 10,
+    borderRadius: 12,
   },
   userRowPressed: { backgroundColor: '#f1f5f9' },
-  userEmail: { fontSize: 15, color: '#0f172a' },
+  userMain: { flex: 1 },
+  userName: {
+    fontSize: 15,
+    color: '#0f172a',
+    fontWeight: '600',
+    fontFamily: 'Manrope_600SemiBold',
+  },
+  /* What he already carries. The body distributes work by looking at this, and
+     the picker used to show twelve e-mail addresses and nothing else. */
+  userHolds: { fontSize: 12, color: '#94a3b8', lineHeight: 17, marginTop: 2 },
 });

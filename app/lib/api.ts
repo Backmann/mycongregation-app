@@ -927,6 +927,10 @@ export interface Responsibility {
   userId: string;
   assignedBy: string | null;
   assignedAt: string;
+  /** The holder's name — his card's, or his login name if he has no card. */
+  holderName: string | null;
+  /** Who granted it. Null for records written before this was shown. */
+  assignedByName: string | null;
 }
 
 export const responsibilitiesApi = {
