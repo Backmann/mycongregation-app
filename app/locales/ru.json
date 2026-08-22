@@ -2538,25 +2538,8 @@
     "listNoAccount": "Нет учётной записи — подтверждает секретарь"
   },
   "profileExtra": {
-    "brothers": "Братья",
-    "brothersSub": "Доступ и обязанности",
     "songs": "Песни",
     "songsSub": "Импорт песенника собрания"
-  },
-  "brothers": {
-    "noRights": "Недостаточно прав.",
-    "intro": "Доступ в приложение и обязанности братьев собрания.",
-    "empty": "Список братьев пуст.",
-    "appAccess": "Вход в приложение",
-    "responsibilities": "Обязанности",
-    "error": "Ошибка",
-    "hasAccess": "Есть вход",
-    "noAccess": "Нет входа",
-    "responsibilityCount_one": "{{count}} обязанность",
-    "responsibilityCount_few": "{{count}} обязанности",
-    "responsibilityCount_many": "{{count}} обязанностей",
-    "responsibilityCount_other": "{{count}} обязанности",
-    "needsAccessFirst": "Сначала дайте вход — обязанности назначаются пользователю. После выдачи входа закройте и откройте брата заново."
   },
   "songPicker": {
     "current": "Текущая песня",

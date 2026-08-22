@@ -69,10 +69,6 @@ export default function ProfileLayout() {
         options={{ title: t('responsibilities.title') }}
       />
       <Stack.Screen
-        name="brothers"
-        options={{ title: t('profileExtra.brothers') }}
-      />
-      <Stack.Screen
         name="meeting-settings"
         options={{ title: t('meetingSettings.title') }}
       />

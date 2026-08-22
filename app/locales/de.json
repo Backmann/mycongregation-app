@@ -2526,23 +2526,8 @@
     "listNoAccount": "Kein Konto — der Sekretär bestätigt"
   },
   "profileExtra": {
-    "brothers": "Brüder",
-    "brothersSub": "Zugang und Aufgaben",
     "songs": "Lieder",
     "songsSub": "Liederbuch importieren"
-  },
-  "brothers": {
-    "noRights": "Nicht genügend Rechte.",
-    "intro": "App-Zugang und Aufgaben der Brüder in der Versammlung.",
-    "empty": "Keine Brüder vorhanden.",
-    "appAccess": "App-Zugang",
-    "responsibilities": "Aufgaben",
-    "error": "Fehler",
-    "hasAccess": "Zugang vorhanden",
-    "noAccess": "Kein Zugang",
-    "responsibilityCount_one": "{{count}} Aufgabe",
-    "responsibilityCount_other": "{{count}} Aufgaben",
-    "needsAccessFirst": "Erteile zuerst einen Zugang — Aufgaben werden einem Benutzerkonto zugewiesen. Schließe den Bruder danach und öffne ihn erneut."
   },
   "songPicker": {
     "current": "Aktuelles Lied",

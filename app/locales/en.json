@@ -2526,23 +2526,8 @@
     "listNoAccount": "No account — the secretary confirms"
   },
   "profileExtra": {
-    "brothers": "Brothers",
-    "brothersSub": "App access and responsibilities",
     "songs": "Songs",
     "songsSub": "Import the congregation songbook"
-  },
-  "brothers": {
-    "noRights": "You do not have the necessary rights.",
-    "intro": "App access and responsibilities of the brothers in the congregation.",
-    "empty": "No brothers listed.",
-    "appAccess": "App access",
-    "responsibilities": "Responsibilities",
-    "error": "Error",
-    "hasAccess": "Has access",
-    "noAccess": "No access",
-    "responsibilityCount_one": "{{count}} responsibility",
-    "responsibilityCount_other": "{{count}} responsibilities",
-    "needsAccessFirst": "Grant a login first — responsibilities are assigned to a user account. After granting it, close the brother and open him again."
   },
   "songPicker": {
     "current": "Current song",
