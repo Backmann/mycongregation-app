@@ -2556,7 +2556,13 @@
     "parsed": "Recognised",
     "created": "Added",
     "updated": "Updated",
-    "unchanged": "Unchanged"
+    "unchanged": "Unchanged",
+    "notRecognised": "{{count}} lines were not recognised. Expected «SONG N» with the title on the next line.",
+    "renamedTitle": "Titles that changed",
+    "addedTitle": "Songs added: {{numbers}}",
+    "andMore": "and {{count}} more",
+    "missingTitle": "Songs the congregation has that this list does not mention: {{count}}",
+    "missingHint": "An import never removes anything. If these songs are no longer used, switch them off in the song catalogue yourself."
   },
   "serviceSummary": {
     "noAccessTitle": "Access restricted",

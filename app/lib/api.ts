@@ -548,6 +548,18 @@ export interface BulkImportResult {
   unchanged: number;
   invalid: number;
   examples: Array<{ number: number; title: string }>;
+  /** The numbers that were not there before. */
+  addedNumbers: number[];
+  /** Both wordings, so a rename can be checked rather than trusted. */
+  renamed: Array<{ number: number; from: string; to: string }>;
+  /**
+   * Songs the congregation has that the pasted list never mentions — an import
+   * never removes anything, so a songbook that dropped a song used to leave it
+   * standing and say nothing.
+   */
+  missingNumbers: number[];
+  /** The lines that could not be read, not merely how many. */
+  invalidLines: string[];
 }
 
 // ---------- Service report types ----------

@@ -124,18 +124,80 @@ function ResultSummary({ result }: { result: BulkImportResult }) {
         <Stat label={t('songsImport.unchanged')} value={result.unchanged} color="#64748b" />
       </View>
 
+      {/* The lines themselves, not just how many. A count is the same silence
+          that hid a missing week of December for a year: something was wrong
+          and there was no way to see what. */}
       {result.invalid > 0 && (
         <View style={styles.warningBox}>
           <Text style={styles.warningText}>
-            ⚠ Строк не распознано: {result.invalid}. Ожидаемый формат: «ПЕСНЯ N»,
-            затем название на следующей строке.
+            {t('songsImport.notRecognised', { count: result.invalid })}
+          </Text>
+          {result.invalidLines.slice(0, 5).map((line, i) => (
+            <Text key={i} style={styles.badLine} numberOfLines={1}>
+              {line}
+            </Text>
+          ))}
+        </View>
+      )}
+
+      {result.renamed.length > 0 && (
+        <>
+          <Text style={styles.examplesHeader}>
+            {t('songsImport.renamedTitle')}
+          </Text>
+          <View style={styles.examplesList}>
+            {result.renamed.slice(0, 8).map((r) => (
+              <View key={r.number} style={styles.renamedRow}>
+                <View style={styles.numberBadge}>
+                  <Text style={styles.numberText}>{r.number}</Text>
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.renamedFrom} numberOfLines={1}>
+                    {r.from}
+                  </Text>
+                  <Text style={styles.exampleTitle} numberOfLines={1}>
+                    {r.to}
+                  </Text>
+                </View>
+              </View>
+            ))}
+            {result.renamed.length > 8 ? (
+              <Text style={styles.andMore}>
+                {t('songsImport.andMore', { count: result.renamed.length - 8 })}
+              </Text>
+            ) : null}
+          </View>
+        </>
+      )}
+
+      {/* Nothing is removed by an import — so the songs a new songbook no
+          longer lists are named, and the decision is left to the reader. */}
+      {result.missingNumbers.length > 0 && (
+        <View style={styles.missingBox}>
+          <Text style={styles.missingTitle}>
+            {t('songsImport.missingTitle', {
+              count: result.missingNumbers.length,
+            })}
+          </Text>
+          <Text style={styles.missingNumbers}>
+            {result.missingNumbers.slice(0, 30).join(', ')}
+            {result.missingNumbers.length > 30 ? ' …' : ''}
+          </Text>
+          <Text style={styles.missingHint}>
+            {t('songsImport.missingHint')}
           </Text>
         </View>
       )}
 
       {result.examples.length > 0 && (
         <>
-          <Text style={styles.examplesHeader}>{t('songsImport.firstAdded')}</Text>
+          <Text style={styles.examplesHeader}>
+            {result.addedNumbers.length > 0
+              ? t('songsImport.addedTitle', {
+                  numbers: result.addedNumbers.slice(0, 12).join(', '),
+                })
+              : t('songsImport.firstAdded')}
+          </Text>
           <View style={styles.examplesList}>
             {result.examples.map((ex) => (
               <View key={ex.number} style={styles.exampleRow}>
@@ -179,6 +241,42 @@ function Stat({
 }
 
 const styles = StyleSheet.create({
+  /** The offending line, shown as pasted — monospace so spaces are visible. */
+  badLine: {
+    fontFamily: 'monospace',
+    fontSize: 12,
+    color: '#92400e',
+    marginTop: 4,
+  },
+  renamedRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingVertical: 8,
+  },
+  /** Struck through: this is what the song used to be called. */
+  renamedFrom: {
+    fontSize: 12.5,
+    color: '#94a3b8',
+    textDecorationLine: 'line-through',
+  },
+  andMore: { fontSize: 12.5, color: '#94a3b8', marginTop: 6 },
+  missingBox: {
+    backgroundColor: '#fffbeb',
+    borderWidth: 1,
+    borderColor: '#fde68a',
+    borderRadius: 12,
+    padding: 12,
+    marginTop: 16,
+  },
+  missingTitle: {
+    fontSize: 13.5,
+    color: '#92400e',
+    fontWeight: '600',
+    fontFamily: 'Manrope_600SemiBold',
+  },
+  missingNumbers: { fontSize: 13, color: '#92400e', marginTop: 6, lineHeight: 19 },
+  missingHint: { fontSize: 12, color: '#a16207', marginTop: 6, lineHeight: 17 },
   intro: {
     backgroundColor: '#fff',
     paddingTop: 24,

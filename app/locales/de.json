@@ -2556,7 +2556,13 @@
     "parsed": "Erkannt",
     "created": "Hinzugefügt",
     "updated": "Aktualisiert",
-    "unchanged": "Unverändert"
+    "unchanged": "Unverändert",
+    "notRecognised": "{{count}} Zeilen wurden nicht erkannt. Erwartet wird «LIED N» und der Titel in der nächsten Zeile.",
+    "renamedTitle": "Geänderte Titel",
+    "addedTitle": "Hinzugefügte Lieder: {{numbers}}",
+    "andMore": "und {{count}} weitere",
+    "missingTitle": "Lieder der Versammlung, die in dieser Liste fehlen: {{count}}",
+    "missingHint": "Ein Import löscht nichts. Werden diese Lieder nicht mehr benutzt, schalte sie im Liederkatalog selbst ab."
   },
   "serviceSummary": {
     "noAccessTitle": "Zugriff beschränkt",
