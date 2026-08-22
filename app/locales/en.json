@@ -889,7 +889,6 @@
       "rules": "Congregation rules"
     },
     "a11y": {
-      "importEpub": "Import EPUB",
       "newAssignment": "New assignment",
       "events": "Events",
       "localNeeds": "Local Needs",
@@ -937,9 +936,10 @@
         "unclassified": "{{count}} part(s) could not be classified",
         "warningsTitle": "Warnings:",
         "moreWarnings": "… and {{count}} more",
-        "importedWeeks": "Imported weeks"
+        "importedWeeks": "Imported weeks",
+        "openSchedule": "Open the schedule and assign the brothers"
       },
-      "privacyNote": "The file is parsed right in your browser and is never uploaded to the server — only part titles and durations go into the schedule.",
+      "privacyNote": "The file is read on this screen, in the browser, and is not sent anywhere — only part titles and durations reach the schedule.",
       "parsing": "Parsing the file…",
       "applying": "Importing…",
       "applyButton": "Import ({{count}} wk)",
@@ -949,7 +949,13 @@
         "unclassifiedTitle": "Unrecognized parts: {{count}} (will be skipped)"
       },
       "dropHint": "or drag an .epub file here",
-      "dropRelease": "Release to load"
+      "dropRelease": "Release to load",
+      "have": {
+        "title": "Already loaded",
+        "weeks_one": "{{count}} week",
+        "weeks_other": "{{count}} weeks"
+      },
+      "noRights": "Importing the meeting programme is for the administrator and the elders."
     },
     "unassign": {
       "button": "Unassign publisher",
@@ -2527,7 +2533,9 @@
   },
   "profileExtra": {
     "songs": "Songs",
-    "songsSub": "Import the congregation songbook"
+    "songsSub": "Import the congregation songbook",
+    "mwbImport": "Schedule import",
+    "mwbImportSub": "Meeting programme from the publications (EPUB)"
   },
   "songPicker": {
     "current": "Current song",

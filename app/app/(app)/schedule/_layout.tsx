@@ -15,14 +15,11 @@ import { usePermissions } from '../../../lib/permissions';
 export default function ScheduleLayout() {
   const { t } = useTranslation();
   const {
-    canImportMidweekSchedule,
-    canImportWeekendSchedule,
     canEditMidweekSchedule,
     canEditWeekendSchedule,
     canViewLocalNeeds,
     canCoordinatePublicTalks,
   } = usePermissions();
-  const canImport = canImportMidweekSchedule || canImportWeekendSchedule;
   const canCreate = canEditMidweekSchedule || canEditWeekendSchedule;
   // A full admin gets six header actions. On a narrow viewport (a phone with a
   // larger display-size setting, or a zoomed-in browser) they leave too little
@@ -91,16 +88,6 @@ export default function ScheduleLayout() {
               >
                 <Ionicons name="megaphone-outline" size={iconSize} color={HEADER_ICON} />
               </Pressable>
-              {canImport && (
-                <Pressable
-                  onPress={() => router.push('/schedule/import' as any)}
-                  style={{ paddingHorizontal: iconPad }}
-                  hitSlop={8}
-                  accessibilityLabel={t('schedule.a11y.importEpub')}
-                >
-                  <Ionicons name="cloud-upload-outline" size={iconSize} color={HEADER_ICON} />
-                </Pressable>
-              )}
               {canCreate && (
                 <Pressable
                   onPress={() => router.push('/schedule/rules' as any)}

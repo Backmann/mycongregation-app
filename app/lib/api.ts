@@ -2870,7 +2870,27 @@ export const assignmentsApi = {
   },
 };
 
+/** What the congregation already has, month by month. */
+export interface ImportCoverageMonth {
+  /** `YYYY-MM` — the month each week's Monday falls in. */
+  month: string;
+  weeks: number;
+  parts: number;
+  firstWeek: string;
+  lastWeek: string;
+}
+
 export const scheduleImportApi = {
+  /**
+   * Which months are already loaded — asked before a file is chosen, so the
+   * screen can say «сентябрь есть, октября нет» instead of nothing at all.
+   */
+  async coverage(): Promise<ImportCoverageMonth[]> {
+    const { data } = await api.get<ImportCoverageMonth[]>(
+      '/mwb-import/coverage',
+    );
+    return data;
+  },
   /**
    * Применяет программу, разобранную НА КЛИЕНТЕ: файл публикации
    * не загружается — отправляются только готовые назначения.

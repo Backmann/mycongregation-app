@@ -598,6 +598,31 @@ export default function ProfileScreen() {
               </View>
               <Ionicons name="chevron-forward" size={18} color="#cbd5e1" />
             </Pressable>
+            {/* Importing a workbook is a monthly errand, not a daily one, so
+                it lives with the other rare settings rather than in the header
+                of a screen used every day. */}
+            <Pressable
+              style={({ pressed }) => [
+                styles.row,
+                pressed && styles.rowPressed,
+              ]}
+              onPress={() => router.push('/schedule/import' as any)}
+            >
+              <View style={styles.rowIcon}>
+                <Ionicons
+                  name="cloud-upload-outline"
+                  size={20}
+                  color="#0ea5e9"
+                />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.rowTitle}>{t('profileExtra.mwbImport')}</Text>
+                <Text style={styles.rowSubtitle}>
+                  {t('profileExtra.mwbImportSub')}
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color="#cbd5e1" />
+            </Pressable>
             <Pressable
               style={({ pressed }) => [
                 styles.row,

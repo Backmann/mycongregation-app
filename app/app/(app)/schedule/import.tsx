@@ -10,7 +10,9 @@ import {
 import * as DocumentPicker from 'expo-document-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import i18n from '../../../lib/i18n';
+import { usePermissions } from '../../../lib/permissions';
 import {
   extractErrorMessage,
   ImportResult,
@@ -37,6 +39,18 @@ interface PickedFile {
 
 export default function ImportEpubScreen() {
   const { t } = useTranslation();
+  /**
+   * The screen guards itself now.
+   *
+   * It never had to: the only way in was a button in the schedule header that
+   * was hidden from everybody else. Moved to the profile, the old guard moved
+   * with it — and a screen whose only protection is that nobody links to it is
+   * not protected. The server refuses the work either way; this is so the
+   * refusal reads as a sentence rather than as a failed request.
+   */
+  const { canImportMidweekSchedule, canImportWeekendSchedule } =
+    usePermissions();
+  const mayImport = canImportMidweekSchedule || canImportWeekendSchedule;
   const queryClient = useQueryClient();
   const [picked, setPicked] = useState<PickedFile | null>(null);
   const [pickError, setPickError] = useState<string | null>(null);
@@ -107,6 +121,20 @@ export default function ImportEpubScreen() {
     );
   };
 
+  /** Which months the congregation already has — asked once, on opening. */
+  const coverageQuery = useQuery({
+    queryKey: ['import-coverage'],
+    queryFn: () => scheduleImportApi.coverage(),
+  });
+  const coverage = coverageQuery.data ?? [];
+
+  /** «2026-09» → «сентябрь 2026», in the reader's own language. */
+  const monthName = (ym: string) =>
+    new Date(`${ym}-01T00:00:00`).toLocaleDateString(i18n.language, {
+      month: 'long',
+      year: 'numeric',
+    });
+
   const handlePick = async () => {
     setPickError(null);
     setParseError(null);
@@ -150,6 +178,17 @@ export default function ImportEpubScreen() {
   const detectedType = picked ? detectFileType(picked.name) : null;
   const unclassified = parsed ? collectUnclassified(parsed) : [];
 
+  if (!mayImport) {
+    return (
+      <View style={styles.noRights}>
+        <Ionicons name="lock-closed-outline" size={28} color="#94a3b8" />
+        <Text style={styles.noRightsText}>
+          {t('schedule.import.noRights')}
+        </Text>
+      </View>
+    );
+  }
+
   return (
     <ScrollView
       style={styles.container}
@@ -166,6 +205,32 @@ export default function ImportEpubScreen() {
           </Text>
         </View>
       </View>
+
+      {/* What is already loaded, before a file is even chosen. The screen used
+          to look identical whether September was in or nothing was. */}
+      {coverage.length > 0 ? (
+        <View style={styles.section}>
+          <Text style={styles.haveTitle}>
+            {t('schedule.import.have.title')}
+          </Text>
+          <View style={styles.haveRow}>
+            {coverage.slice(-6).map((m) => (
+              <Pressable
+                key={m.month}
+                style={styles.haveChip}
+                onPress={() =>
+                  router.push(`/schedule?week=${m.firstWeek}` as never)
+                }
+              >
+                <Text style={styles.haveChipMonth}>{monthName(m.month)}</Text>
+                <Text style={styles.haveChipWeeks}>
+                  {t('schedule.import.have.weeks', { count: m.weeks })}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+      ) : null}
 
       <View style={styles.section}>
         <DropZone onFile={handleDropped} disabled={parsing}>
@@ -355,6 +420,15 @@ function detectFileType(filename: string): 'mwb' | 'watchtower' | 'unknown' {
 
 function ResultSummary({ result }: { result: ImportResult }) {
   const { t } = useTranslation();
+  /**
+   * The first week of what was just loaded.
+   *
+   * Import gives the SKELETON — parts with titles and durations and nobody in
+   * them: the server writes every row as a draft. So the useful next step is
+   * not «done», it is «now go and put brothers in it», and the link saves
+   * paging through the schedule to find the week that was just filled.
+   */
+  const firstWeek = result.weeks[0]?.weekStartDate;
   return (
     <View style={styles.section}>
       <View style={styles.successHeader}>
@@ -416,6 +490,20 @@ function ResultSummary({ result }: { result: ImportResult }) {
           )}
         </View>
       )}
+
+      {firstWeek ? (
+        <Pressable
+          style={styles.openWeek}
+          onPress={() =>
+            router.push(`/schedule?week=${firstWeek}` as never)
+          }
+        >
+          <Ionicons name="calendar-outline" size={16} color="#0369a1" />
+          <Text style={styles.openWeekText}>
+            {t('schedule.import.result.openSchedule')}
+          </Text>
+        </Pressable>
+      ) : null}
 
       <Text style={styles.weeksHeader}>
         {t('schedule.import.result.importedWeeks')}
@@ -482,6 +570,63 @@ function Stat({
 }
 
 const styles = StyleSheet.create({
+  noRights: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    padding: 32,
+    backgroundColor: '#f1f5f9',
+  },
+  noRightsText: {
+    fontSize: 14,
+    color: '#64748b',
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  haveTitle: {
+    fontSize: 11,
+    letterSpacing: 0.7,
+    textTransform: 'uppercase',
+    color: '#94a3b8',
+    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
+    marginBottom: 10,
+  },
+  haveRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  /* Tappable: the month is not just a fact, it is the way into those weeks. */
+  haveChip: {
+    borderWidth: 1,
+    borderColor: '#bae6fd',
+    backgroundColor: '#f0f9ff',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  haveChipMonth: {
+    fontSize: 13.5,
+    color: '#0c4a6e',
+    fontWeight: '600',
+    fontFamily: 'Manrope_600SemiBold',
+  },
+  haveChipWeeks: { fontSize: 11.5, color: '#0369a1', marginTop: 1 },
+  openWeek: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    gap: 6,
+    marginTop: 14,
+    paddingHorizontal: 13,
+    paddingVertical: 9,
+    borderRadius: 999,
+    backgroundColor: '#e0f2fe',
+  },
+  openWeekText: {
+    fontSize: 13.5,
+    color: '#0369a1',
+    fontWeight: '600',
+    fontFamily: 'Manrope_600SemiBold',
+  },
   container: { flex: 1, backgroundColor: '#f1f5f9' },
   intro: {
     backgroundColor: '#fff',

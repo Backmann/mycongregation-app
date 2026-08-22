@@ -889,7 +889,6 @@
       "rules": "Versammlungsregeln"
     },
     "a11y": {
-      "importEpub": "EPUB importieren",
       "newAssignment": "Neue Zuteilung",
       "events": "Termine",
       "localNeeds": "Örtliche Bedürfnisse",
@@ -937,9 +936,10 @@
         "unclassified": "{{count}} Programmpunkt(e) konnten nicht klassifiziert werden",
         "warningsTitle": "Warnungen:",
         "moreWarnings": "… und {{count}} weitere",
-        "importedWeeks": "Importierte Wochen"
+        "importedWeeks": "Importierte Wochen",
+        "openSchedule": "Plan öffnen und Brüder eintragen"
       },
-      "privacyNote": "Die Datei wird direkt im Browser ausgewertet und nie auf den Server hochgeladen — in den Plan gelangen nur Titel und Dauer der Programmpunkte.",
+      "privacyNote": "Die Datei wird auf diesem Bildschirm im Browser gelesen und nirgendwohin gesendet — in den Plan gelangen nur Titel und Dauer der Programmpunkte.",
       "parsing": "Datei wird ausgewertet…",
       "applying": "Importiere…",
       "applyButton": "Importieren ({{count}} Wo.)",
@@ -949,7 +949,13 @@
         "unclassifiedTitle": "Nicht erkannte Punkte: {{count}} (werden übersprungen)"
       },
       "dropHint": "oder eine .epub-Datei hierher ziehen",
-      "dropRelease": "Zum Laden loslassen"
+      "dropRelease": "Zum Laden loslassen",
+      "have": {
+        "title": "Bereits geladen",
+        "weeks_one": "{{count}} Woche",
+        "weeks_other": "{{count}} Wochen"
+      },
+      "noRights": "Das Zusammenkunftsprogramm importieren dürfen der Administrator und die Ältesten."
     },
     "unassign": {
       "button": "Zuteilung aufheben",
@@ -2527,7 +2533,9 @@
   },
   "profileExtra": {
     "songs": "Lieder",
-    "songsSub": "Liederbuch importieren"
+    "songsSub": "Liederbuch importieren",
+    "mwbImport": "Programm-Import",
+    "mwbImportSub": "Zusammenkunftsprogramm aus den Publikationen (EPUB)"
   },
   "songPicker": {
     "current": "Aktuelles Lied",
