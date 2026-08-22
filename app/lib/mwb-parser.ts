@@ -95,7 +95,36 @@ export function parseWeekRange(
     .replace(/\s+/g, ' ')
     .trim();
 
+  /**
+   * The week that crosses into the new year, written out in full:
+   * «28 ДЕКАБРЯ 2026 ГОДА — 3 ЯНВАРЯ 2027 ГОДА».
+   *
+   * Every other week is short — «21—27 ДЕКАБРЯ» — so this one matched nothing
+   * and was dropped in silence: once a year the last week of December failed
+   * to import and the schedule showed an empty week with no explanation.
+   *
+   * Years come from the TEXT, not from the file name: the publication says
+   * where the week ends, and that beats arithmetic on a name.
+   *
+   * Kept 1:1 with server/src/mwb-import/mwb-parser.ts, where the same fault
+   * lived — this copy is the one that actually runs, and only that one has
+   * tests, which is a debt worth remembering.
+   */
   let m = normalized.match(
+    /^(\d+)\s+([А-Яа-яё]+)\s+(\d{4})\s*(?:года?|г\.?)?\s*-\s*(\d+)\s+([А-Яа-яё]+)\s+(\d{4})\s*(?:года?|г\.?)?$/iu,
+  );
+  if (m) {
+    const [, sd, sm, sy, ed, em, ey] = m;
+    const startMonth = MONTHS_RU[sm];
+    const endMonth = MONTHS_RU[em];
+    if (!startMonth || !endMonth) return null;
+    return {
+      start: formatISO(parseInt(sy, 10), startMonth, parseInt(sd, 10)),
+      end: formatISO(parseInt(ey, 10), endMonth, parseInt(ed, 10)),
+    };
+  }
+
+  m = normalized.match(
     /^(\d+)\s+([А-Яа-яё]+)\s*-\s*(\d+)\s+([А-Яа-яё]+)$/u,
   );
   if (m) {
