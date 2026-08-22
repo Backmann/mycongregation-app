@@ -179,9 +179,20 @@ export default function LocalNeedsScreen() {
     queryFn: () => meetingSettingsApi.getOverview(),
     staleTime: 10 * 60 * 1000,
   });
+  /**
+   * Events from a year back, not every one ever recorded.
+   *
+   * They are here for one reason — a circuit overseer's visit moves the
+   * midweek meeting, and that decides whether a topic has already been
+   * covered. A year covers every topic this screen shows; asking for all of
+   * them was a list that grows for ever to answer a question about last month.
+   */
+  const sinceISO = new Date(Date.now() - 400 * 24 * 3600 * 1000)
+    .toISOString()
+    .slice(0, 10);
   const eventsQuery = useQuery({
-    queryKey: ['special-events', 'all'],
-    queryFn: () => specialEventsApi.list({ all: true }),
+    queryKey: ['special-events', 'since', sinceISO],
+    queryFn: () => specialEventsApi.list({ since: sinceISO }),
     staleTime: 10 * 60 * 1000,
   });
 

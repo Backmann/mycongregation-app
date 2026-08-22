@@ -154,6 +154,30 @@ api.interceptors.request.use(async (config) => {
     config.url?.includes('/auth/login') ||
     config.url?.includes('/auth/bootstrap');
 
+  /**
+   * On the web the access token lives in MEMORY, so a page reload starts with
+   * none at all — while the refresh cookie is still perfectly good. The very
+   * first request therefore went out bare, earned a 401, and only then got
+   * refreshed and retried. It worked; it just announced a failure in the
+   * console of every reload, and taught whoever opened the console to ignore
+   * red lines.
+   *
+   * So: no token, but a session that can be revived — revive it first.
+   */
+  if (!token && !isAuthEndpoint && USE_COOKIE_AUTH && mayHaveSession()) {
+    if (!refreshPromise) {
+      refreshPromise = performRefresh().finally(() => {
+        refreshPromise = null;
+      });
+    }
+    try {
+      token = await refreshPromise;
+    } catch {
+      // No usable session after all — let the request go and be refused
+      // properly, the way a signed-out visitor should be.
+    }
+  }
+
   if (token && !isAuthEndpoint && isTokenExpiringSoon(token)) {
     if (!refreshPromise) {
       refreshPromise = performRefresh().finally(() => {
@@ -2693,14 +2717,20 @@ export const pioneerSchoolApi = {
 };
 
 export const specialEventsApi = {
+  /**
+   * Upcoming events by default; `all` for everything ever recorded; `since`
+   * for a window — some of the past without the whole of it.
+   */
   async list(params?: {
     all?: boolean;
     includeRemoved?: boolean;
+    since?: string;
   }): Promise<SpecialEvent[]> {
     const { data } = await api.get<SpecialEvent[]>('/special-events', {
       params: {
         all: params?.all ? 'true' : undefined,
         includeRemoved: params?.includeRemoved ? 'true' : undefined,
+        since: params?.since,
       },
     });
     return data;
