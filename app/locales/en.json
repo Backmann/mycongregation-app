@@ -2148,7 +2148,8 @@
       "used": "Covered",
       "upcoming": "Scheduled",
       "past": "Past",
-      "archived": "Archived"
+      "archived": "Archived",
+      "today": "At tonight’s meeting"
     },
     "noPlanned": "All topics have been covered.",
     "newTitle": "New topic",

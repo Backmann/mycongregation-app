@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Modal,
@@ -17,13 +17,48 @@ import { Ionicons } from '@expo/vector-icons';
 import {
   CreateLocalNeedsTopicInput,
   LocalNeedsTopic,
+  MeetingSettingsVersion,
+  SpecialEvent,
   UpdateLocalNeedsTopicInput,
   extractErrorMessage,
   localNeedsApi,
+  meetingSettingsApi,
+  specialEventsApi,
 } from '../../../lib/api';
 import { PublisherSelector } from '../../../components/PublisherSelector';
 import { DateField } from '../../../components/DateField';
 import { usePermissions } from '../../../lib/permissions';
+import { weekRules } from '../../../lib/week-rules';
+import { effectiveVersionFor } from '../../../lib/meeting-schedule';
+
+/**
+ * The day a week's midweek meeting actually falls on.
+ *
+ * A topic stores the WEEK it was used in, not a date — so «прошла» was being
+ * decided by comparing Mondays, and a subject covered on Thursday went on
+ * calling itself upcoming until the following Monday. Reading the list on
+ * Friday, the next three subjects were not the next three.
+ *
+ * The day comes from lib/week-rules, the one authority on what happens in a
+ * week: it knows the congregation's midweek day and moves it for a circuit
+ * overseer's visit, so «the meeting has been held» stays true in a week when
+ * the meeting was on Tuesday.
+ */
+function meetingDayOf(
+  weekISO: string,
+  version: MeetingSettingsVersion | null | undefined,
+  events: SpecialEvent[],
+): string | null {
+  return weekRules({ weekStartISO: weekISO, version, events }).dateOf('midweek');
+}
+
+/** Today as YYYY-MM-DD, on the device's clock. */
+function todayLocalISO(): string {
+  const d = new Date();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${d.getFullYear()}-${m}-${dd}`;
+}
 
 /** Monday (YYYY-MM-DD) of the current week, in local time. */
 function thisMonday(): string {
@@ -134,9 +169,52 @@ export default function LocalNeedsScreen() {
       .replace(/\s+/g, ' ')
       .trim();
 
-  const { planned, upcoming, past, archived, all } = useMemo(() => {
+  /**
+   * What the congregation's week looks like — the same two sources the
+   * schedule screen reads, so the two cannot disagree about which day the
+   * meeting is on.
+   */
+  const settingsQuery = useQuery({
+    queryKey: ['meeting-settings'],
+    queryFn: () => meetingSettingsApi.getOverview(),
+    staleTime: 10 * 60 * 1000,
+  });
+  const eventsQuery = useQuery({
+    queryKey: ['special-events', 'all'],
+    queryFn: () => specialEventsApi.list({ all: true }),
+    staleTime: 10 * 60 * 1000,
+  });
+
+  /**
+   * The one answer to «has that meeting happened yet», used by the grouping
+   * AND by the chip on each row.
+   *
+   * Two copies of this rule is how the list and the label drift apart: the
+   * section would say «прошедшие» while the row still said «в программе».
+   */
+  const versions = settingsQuery.data?.versions;
+  const events = useMemo(() => eventsQuery.data ?? [], [eventsQuery.data]);
+  const meetingHeld = useCallback(
+    (weekISO: string): boolean => {
+      const day = meetingDayOf(
+        weekISO,
+        effectiveVersionFor(versions, weekISO),
+        events,
+      );
+      // No settings yet: fall back to the old rule rather than guessing.
+      if (!day) return weekISO < thisMonday();
+      return day < todayLocalISO();
+    },
+    [versions, events],
+  );
+
+  const { planned, upcoming, today, past, archived, all } = useMemo(() => {
     const rows = data ?? [];
     const monday = thisMonday();
+    const todayISO = todayLocalISO();
+
+    const held = meetingHeld;
+    void monday;
     const needle = normalise(search);
     const matches = (r: LocalNeedsTopic) =>
       !needle ||
@@ -146,16 +224,36 @@ export default function LocalNeedsScreen() {
     return {
       all: rows,
       planned: live.filter((r) => !r.usedWeek).filter(matches),
-      // Placed in the schedule, the meeting is still ahead (or this week).
+      // On the schedule and the meeting is still ahead.
       upcoming: withWeek
-        .filter((r) => (r.usedWeek as string) >= monday)
+        .filter((r) => !held(r.usedWeek as string))
+        .filter(
+          (r) =>
+            meetingDayOf(
+              r.usedWeek as string,
+              effectiveVersionFor(versions, r.usedWeek as string),
+              events,
+            ) !== todayISO,
+        )
         .filter(matches)
         .sort((a, b) =>
           (a.usedWeek as string).localeCompare(b.usedWeek as string),
         ),
-      // The meeting has already passed — this is the history.
+      /* Its own line, because «на этой неделе» and «сегодня вечером» are
+         different answers to the question the elder is actually asking. */
+      today: withWeek
+        .filter(
+          (r) =>
+            meetingDayOf(
+              r.usedWeek as string,
+              effectiveVersionFor(versions, r.usedWeek as string),
+              events,
+            ) === todayISO,
+        )
+        .filter(matches),
+      // The meeting has already been held — this is the history.
       past: withWeek
-        .filter((r) => (r.usedWeek as string) < monday)
+        .filter((r) => held(r.usedWeek as string))
         .filter(matches)
         .sort((a, b) =>
           (b.usedWeek as string).localeCompare(a.usedWeek as string),
@@ -167,7 +265,7 @@ export default function LocalNeedsScreen() {
         .filter(matches)
         .sort((a, b) => (b.deletedAt as string).localeCompare(a.deletedAt ?? '')),
     };
-  }, [data, search]);
+  }, [data, search, meetingHeld, versions, events]);
 
   /**
    * A subject that has come up before, whatever state it is in now.
@@ -242,7 +340,7 @@ export default function LocalNeedsScreen() {
   function renderRow(item: LocalNeedsTopic) {
     const isArchived = !!item.deletedAt;
     const isUsed = !!item.usedWeek;
-    const isPast = isUsed && (item.usedWeek as string) < thisMonday();
+    const isPast = isUsed && meetingHeld(item.usedWeek as string);
     const notesOpen = !!expandedNotes[item.id];
     return (
       <View key={item.id} style={[styles.row, isArchived && styles.rowArchived]}>
@@ -435,6 +533,17 @@ export default function LocalNeedsScreen() {
               </Text>
             ) : (
               planned.map(renderRow)
+            )}
+
+            {/* Above «запланированы», because tonight is nearer than next
+                month and the eye should meet it first. */}
+            {today.length > 0 && (
+              <>
+                <Text style={[styles.sectionLabel, { marginTop: 18 }]}>
+                  {t('localNeeds.section.today')} · {today.length}
+                </Text>
+                {today.map(renderRow)}
+              </>
             )}
 
             {upcoming.length > 0 && (

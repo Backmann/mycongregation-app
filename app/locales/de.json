@@ -2148,7 +2148,8 @@
       "used": "Behandelt",
       "upcoming": "Eingeplant",
       "past": "Vergangen",
-      "archived": "Archiviert"
+      "archived": "Archiviert",
+      "today": "Bei der Zusammenkunft heute"
     },
     "noPlanned": "Alle Themen wurden behandelt.",
     "newTitle": "Neues Thema",
