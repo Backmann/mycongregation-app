@@ -226,6 +226,8 @@ export interface PublicUser {
   createdAt: string;
   updatedAt: string;
   appointment: PublisherAppointment | null;
+  /** Of the linked card, or null when the account has none. */
+  gender: Gender | null;
   /**
    * The publisher card this account speaks for, or null.
    *

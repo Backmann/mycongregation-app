@@ -202,7 +202,25 @@ export default function ResponsibilitiesScreen() {
     );
   }
 
-  const users = usersQuery.data ?? [];
+  /**
+   * Whom a congregational responsibility can be given to.
+   *
+   * The picker offered every account there is — sisters with a login among
+   * them, and administrators with no publisher card at all. These duties are
+   * carried by brothers: elders, ministerial servants, and baptised brothers.
+   *
+   * The filter is on the CARD, not on the account: an account without one is
+   * not a member of this congregation as far as privileges go, whatever it can
+   * do in the app. A student or an unbaptised publisher is left out for the
+   * same reason — the list should not offer what cannot be appointed.
+   */
+  const users = (usersQuery.data ?? []).filter(
+    (u) =>
+      u.gender === 'brother' &&
+      (u.appointment === 'elder' ||
+        u.appointment === 'ministerial_servant' ||
+        u.appointment === 'publisher'),
+  );
 
   return (
     <SafeAreaView style={styles.container}>
