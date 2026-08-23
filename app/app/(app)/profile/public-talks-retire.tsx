@@ -376,7 +376,11 @@ export default function RetireTalksScreen() {
           coordinator that a previous instruction was in fact carried out. */}
       {history.length > 0 ? (
         <>
-          <Text style={styles.listHeader}>
+          {/* A rule and real air above it: the history is a different subject
+              from the button that precedes it, and pressed against it the two
+              read as one block. */}
+          <View style={styles.historyDivider} />
+          <Text style={[styles.listHeader, styles.historyHeader]}>
             {t('publicTalks.retire.historyTitle')}
           </Text>
           <View style={styles.card}>
@@ -490,6 +494,13 @@ const styles = StyleSheet.create({
     fontFamily: 'Manrope_600SemiBold',
   },
   modeTextOn: { color: '#fff' },
+  historyDivider: {
+    height: 1,
+    backgroundColor: '#e2e8f0',
+    marginTop: 28,
+    marginBottom: 18,
+  },
+  historyHeader: { marginBottom: 10 },
   historyRow: {
     paddingVertical: 10,
     borderTopWidth: 1,
@@ -632,9 +643,16 @@ const styles = StyleSheet.create({
   retireBtn: {
     backgroundColor: '#b45309',
     borderRadius: 12,
-    paddingVertical: 14,
+    paddingVertical: 15,
     alignItems: 'center',
-    marginTop: 4,
+    marginTop: 8,
+    // Room beneath it, so nothing crowds the one irreversible button here.
+    marginBottom: 4,
+    shadowColor: '#b45309',
+    shadowOpacity: 0.18,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
   },
   retireBtnDone: { backgroundColor: '#15803d' },
   retireBtnText: {

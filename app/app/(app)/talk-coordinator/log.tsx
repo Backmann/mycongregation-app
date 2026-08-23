@@ -200,6 +200,7 @@ export default function TalkExchangeYearScreen() {
         title: string;
         isActive: boolean;
         retiredFrom: string | null;
+        retiredUntil: string | null;
       }
     >();
     for (const pt of talksQuery.data?.data ?? [])
@@ -208,6 +209,7 @@ export default function TalkExchangeYearScreen() {
         title: pt.title,
         isActive: pt.isActive,
         retiredFrom: pt.retiredFrom ?? null,
+        retiredUntil: pt.retiredUntil ?? null,
       });
     return m;
   }, [talksQuery.data]);
@@ -372,14 +374,34 @@ export default function TalkExchangeYearScreen() {
   const currentMonthKey = dayjs().format('YYYY-MM');
   const currentWeekMonday = mondayISO(dayjs().format('YYYY-MM-DD'));
 
-  // On open, scroll to the current week row (fires as soon as that row lays out).
+  /**
+   * Open on the current week.
+   *
+   * The catch is WHEN to stop trying. The weeks are built from the meeting
+   * settings, so they lay out at once — while the entries are still on their
+   * way. Scroll then, mark it done, and every row above the current week
+   * afterwards grows a card taller: the page ends up somewhere in the past and
+   * never corrects itself. On the web the entries usually arrive first, which
+   * is why this only ever showed on Android.
+   *
+   * So the position is fixed on every content-size change until the data is
+   * actually in, and only then locked.
+   */
   const scrollToCurrentWeek = () => {
     if (didInitialScroll.current) return;
-    const off = weekOffsets.current[currentWeekMonday] ?? monthOffsets.current[currentMonthKey];
-    if (off != null) {
-      didInitialScroll.current = true;
-      scrollRef.current?.scrollTo({ y: Math.max(off - 8, 0), animated: false });
-    }
+    const off =
+      weekOffsets.current[currentWeekMonday] ??
+      monthOffsets.current[currentMonthKey];
+    if (off == null) return;
+
+    scrollRef.current?.scrollTo({ y: Math.max(off - 8, 0), animated: false });
+
+    // Locked only once there is nothing left to arrive and shift things.
+    const settled =
+      !listQuery.isLoading &&
+      !settingsQuery.isLoading &&
+      weekOffsets.current[currentWeekMonday] != null;
+    if (settled) didInitialScroll.current = true;
   };
 
   const scrollToMonth = (key: string) => {
@@ -579,17 +601,47 @@ export default function TalkExchangeYearScreen() {
      * retired talk looks exactly like any other unless it is named. Better a
      * line he reads while planning than a telephone call the week before.
      */
-    const retired = !tk.isActive
-      ? tk.retiredFrom
-        ? ` · ${t('publicTalks.retiredFrom', {
-            date: new Date(`${tk.retiredFrom}T00:00:00`).toLocaleDateString(
-              i18n.language,
-              { day: 'numeric', month: 'long', year: 'numeric' },
-            ),
-          })}`
-        : ` · ${t('publicTalks.retiredPlain')}`
-      : '';
-    return `№${tk.number}. ${tk.title}${retired}`;
+    return `№${tk.number}. ${tk.title}`;
+  };
+
+  /**
+   * The words about a restriction, kept OUT of the title.
+   *
+   * Buried at the end of a grey line, «снята с 1 сентября» read like part of
+   * the talk's name and was missed. It is the one thing on this screen that
+   * has to stop somebody, so it is rendered as a badge of its own.
+   */
+  const talkRestriction = (id: string | null): string | null => {
+    if (!id) return null;
+    const tk = talkById.get(id);
+    if (!tk || tk.isActive) return null;
+    const day = (iso: string) =>
+      new Date(`${iso}T00:00:00`).toLocaleDateString(i18n.language, {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      });
+    if (!tk.retiredFrom) return t('publicTalks.retiredPlain');
+    return tk.retiredUntil
+      ? t('publicTalks.pausedBetween', {
+          from: day(tk.retiredFrom),
+          until: day(tk.retiredUntil),
+        })
+      : t('publicTalks.retiredFrom', { date: day(tk.retiredFrom) });
+  };
+
+  /** The badge itself — same shape wherever a talk is named. */
+  const RestrictionBadge = ({ id }: { id: string | null }) => {
+    const words = talkRestriction(id);
+    if (!words) return null;
+    return (
+      <View style={styles.restrictBadge}>
+        <Ionicons name="close-circle" size={12} color="#b45309" />
+        <Text style={styles.restrictText} numberOfLines={2}>
+          {words}
+        </Text>
+      </View>
+    );
   };
   const incomingName = (e: TalkExchange): string | null =>
     e.publisherId
@@ -823,6 +875,9 @@ export default function TalkExchangeYearScreen() {
                                 {talkLabel(slot.incoming.publicTalkId)}
                               </Text>
                             )}
+                            <RestrictionBadge
+                              id={slot.incoming.publicTalkId}
+                            />
                           </>
                         ) : null}
                       </Slot>
@@ -848,6 +903,9 @@ export default function TalkExchangeYearScreen() {
                             {o.date !== w.date && talkLabel(o.publicTalkId) ? ' · ' : ''}
                             {talkLabel(o.publicTalkId) ?? ''}
                           </Text>
+                          {/* Our own brother travelling with it — the case
+                              that costs a telephone call if it is missed. */}
+                          <RestrictionBadge id={o.publicTalkId} />
                           {!o.publicTalkId && (
                             <Text style={styles.outHint}>{t('talkCoordinator.log.noTalk')}</Text>
                           )}
@@ -943,6 +1001,9 @@ export default function TalkExchangeYearScreen() {
                         {talkLabel(inc.publicTalkId)}
                       </Text>
                     ) : null}
+                    {/* Also where a speaker is being swapped in: the moment a
+                        restricted talk would otherwise be chosen. */}
+                    <RestrictionBadge id={inc.publicTalkId} />
                   </View>
                   {active ? (
                     <Ionicons
@@ -1361,6 +1422,28 @@ function Slot({
 }
 
 const styles = StyleSheet.create({
+  /* Amber, boxed and with a mark: this is the one line on the screen that has
+     to stop the reader before he telephones anybody. */
+  restrictBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    alignSelf: 'flex-start',
+    backgroundColor: '#fef3c7',
+    borderWidth: 1,
+    borderColor: '#fcd34d',
+    borderRadius: 8,
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+    marginTop: 4,
+  },
+  restrictText: {
+    fontSize: 11.5,
+    color: '#b45309',
+    fontWeight: '600',
+    fontFamily: 'Manrope_600SemiBold',
+    flexShrink: 1,
+  },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 32 },
   muted: { color: '#64748b', fontSize: 13 },
   monthBar: { backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#e2e8f0' },
