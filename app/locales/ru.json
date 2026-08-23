@@ -1275,7 +1275,21 @@
       "reasonLabel": "На основании чего",
       "reasonPlaceholder": "Объявления и напоминания, май 2026",
       "lastDone": "В прошлый раз снято речей: {{count}} · {{date}} · {{name}}",
-      "lastReason": "Основание: {{reason}}"
+      "lastReason": "Основание: {{reason}}",
+      "mode": {
+        "retire": "Снять речи",
+        "lift": "Вернуть речи"
+      },
+      "historyTitle": "История решений",
+      "historyFrom": "с {{date}}",
+      "history": {
+        "retire": "Сняты речи: {{count}}",
+        "lift": "Возвращены речи: {{count}}",
+        "import": "Загружен каталог: {{count}}"
+      },
+      "willLift": "Будет возвращено речей: {{count}}",
+      "confirmLift": "Вернуть эти речи",
+      "liftDone": "Возвращено речей: {{count}}"
     },
     "showMore": "Показать ещё · {{shown}} из {{total}}",
     "loading": "Загружаем…",

@@ -1261,7 +1261,21 @@
       "reasonLabel": "Auf welcher Grundlage",
       "reasonPlaceholder": "Bekanntmachungen und Hinweise, Mai 2026",
       "lastDone": "Zuletzt abgesetzt: {{count}} Vorträge · {{date}} · {{name}}",
-      "lastReason": "Grundlage: {{reason}}"
+      "lastReason": "Grundlage: {{reason}}",
+      "mode": {
+        "retire": "Vorträge absetzen",
+        "lift": "Vorträge zurückholen"
+      },
+      "historyTitle": "Verlauf der Entscheidungen",
+      "historyFrom": "ab {{date}}",
+      "history": {
+        "retire": "Abgesetzte Vorträge: {{count}}",
+        "lift": "Zurückgeholte Vorträge: {{count}}",
+        "import": "Katalog importiert: {{count}}"
+      },
+      "willLift": "Zurückzuholende Vorträge: {{count}}",
+      "confirmLift": "Diese Vorträge zurückholen",
+      "liftDone": "Zurückgeholte Vorträge: {{count}}"
     },
     "showMore": "Mehr anzeigen · {{shown}} von {{total}}",
     "loading": "Wird geladen…",

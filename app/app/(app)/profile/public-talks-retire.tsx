@@ -36,6 +36,14 @@ export default function RetireTalksScreen() {
   const queryClient = useQueryClient();
   const { canCoordinatePublicTalks } = usePermissions();
 
+  /**
+   * Which of the two the coordinator is doing.
+   *
+   * Both come the same way — a letter naming numbers and giving grounds — so
+   * they belong on one screen, not two. What differs is the direction and the
+   * dates, and a talk lifted needs no dates at all.
+   */
+  const [mode, setMode] = useState<'retire' | 'lift'>('retire');
   const [text, setText] = useState('');
   const [from, setFrom] = useState('');
   /**
@@ -54,25 +62,42 @@ export default function RetireTalksScreen() {
    * form, with no sign that anything ever happened, is how somebody does it
    * twice — or decides it never worked and stops trusting the screen.
    */
-  const lastQuery = useQuery({
-    queryKey: ['public-talks', 'last-retirement'],
-    queryFn: () => publicTalksApi.lastRetirement(),
+  /**
+   * Every decision, newest first — not merely the last one.
+   *
+   * «В прошлый раз» is not the question a coordinator asks. He asks «на
+   * основании чего речь 92 снята», and only a list, each line naming its own
+   * letter, answers that.
+   */
+  const historyQuery = useQuery({
+    queryKey: ['public-talks', 'history'],
+    queryFn: () => publicTalksApi.history(),
   });
-  const last = lastQuery.data;
+  const history = historyQuery.data ?? [];
 
   const previewMutation = useMutation({
-    mutationFn: () => publicTalksApi.retirementPreview({ text, from }),
+    mutationFn: () =>
+      publicTalksApi.retirementPreview({
+        text,
+        // A lifting has no date of its own; the preview only needs one to
+        // decide which promises are still ahead, so today serves.
+        from: mode === 'lift' ? new Date().toISOString().slice(0, 10) : from,
+      }),
     onSuccess: (data) => setPreview(data),
   });
 
   const retireMutation = useMutation({
     mutationFn: (numbers: number[]) =>
-      publicTalksApi.retireMissing({
-        numbers,
-        from,
-        until: until.trim() || undefined,
-        reason: reason.trim() || undefined,
-      }),
+      mode === 'lift'
+        ? publicTalksApi
+            .liftRestriction({ numbers, reason: reason.trim() || undefined })
+            .then((r) => ({ retired: r.lifted }))
+        : publicTalksApi.retireMissing({
+            numbers,
+            from,
+            until: until.trim() || undefined,
+            reason: reason.trim() || undefined,
+          }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['public-talks'] });
     },
@@ -94,7 +119,8 @@ export default function RetireTalksScreen() {
     );
   }
 
-  const ready = from.trim() !== '' && text.trim() !== '';
+  const ready =
+    text.trim() !== '' && (mode === 'lift' || from.trim() !== '');
   const scheduledCount = preview?.scheduled.length ?? 0;
 
   return (
@@ -111,41 +137,45 @@ export default function RetireTalksScreen() {
         <Text style={styles.subtitle}>{t('publicTalks.retire.subtitle')}</Text>
       </View>
 
-      {last ? (
-        <View style={styles.lastBox}>
-          <Ionicons name="time-outline" size={15} color="#0369a1" />
-          <View style={{ flex: 1 }}>
-            <Text style={styles.lastText}>
-              {t('publicTalks.retire.lastDone', {
-                count: Number(last.detail?.retired ?? 0),
-                date: new Date(last.at).toLocaleDateString(i18n.language, {
-                  day: 'numeric',
-                  month: 'long',
-                  year: 'numeric',
-                }),
-                name: last.actorName ?? '—',
-              })}
+      {/* Which of the two acts. Both arrive as a letter naming numbers and
+          giving grounds, so they share a screen; only the dates differ. */}
+      <View style={styles.modeRow}>
+        {(['retire', 'lift'] as const).map((m) => (
+          <Pressable
+            key={m}
+            style={[styles.modeChip, mode === m && styles.modeChipOn]}
+            onPress={() => {
+              setMode(m);
+              setPreview(null);
+            }}
+          >
+            <Text
+              style={[styles.modeText, mode === m && styles.modeTextOn]}
+            >
+              {t(`publicTalks.retire.mode.${m}`)}
             </Text>
-            {last.detail?.reason ? (
-              <Text style={styles.lastReason}>
-                {t('publicTalks.retire.lastReason', {
-                  reason: String(last.detail.reason),
-                })}
-              </Text>
-            ) : null}
-          </View>
-        </View>
-      ) : null}
+          </Pressable>
+        ))}
+      </View>
 
       <View style={styles.card}>
-        <Text style={styles.label}>{t('publicTalks.retire.fromLabel')}</Text>
-        <DateField value={from} onChange={setFrom} />
+        {/* A lifted talk needs no dates: it simply returns. */}
+        {mode === 'retire' ? (
+          <>
+            <Text style={styles.label}>
+              {t('publicTalks.retire.fromLabel')}
+            </Text>
+            <DateField value={from} onChange={setFrom} />
 
-        <Text style={[styles.label, { marginTop: 16 }]}>
-          {t('publicTalks.retire.untilLabel')}
-        </Text>
-        <DateField value={until} onChange={setUntil} />
-        <Text style={styles.fieldHint}>{t('publicTalks.retire.untilHint')}</Text>
+            <Text style={[styles.label, { marginTop: 16 }]}>
+              {t('publicTalks.retire.untilLabel')}
+            </Text>
+            <DateField value={until} onChange={setUntil} />
+            <Text style={styles.fieldHint}>
+              {t('publicTalks.retire.untilHint')}
+            </Text>
+          </>
+        ) : null}
 
         <Text style={[styles.label, { marginTop: 16 }]}>
           {t('publicTalks.retire.reasonLabel')}
@@ -263,9 +293,14 @@ export default function RetireTalksScreen() {
           ) : null}
 
           <Text style={styles.listHeader}>
-            {t('publicTalks.retire.willRetire', {
-              count: preview.talks.filter((tk) => !tk.alreadyRetired).length,
-            })}
+            {mode === 'lift'
+              ? t('publicTalks.retire.willLift', {
+                  count: preview.talks.length,
+                })
+              : t('publicTalks.retire.willRetire', {
+                  count: preview.talks.filter((tk) => !tk.alreadyRetired)
+                    .length,
+                })}
           </Text>
           <View style={styles.card}>
             {preview.talks.map((tk) => (
@@ -309,10 +344,17 @@ export default function RetireTalksScreen() {
           >
             <Text style={styles.retireBtnText}>
               {retireMutation.isSuccess
-                ? t('publicTalks.retire.done', {
-                    count: retireMutation.data?.retired ?? 0,
-                  })
-                : t('publicTalks.retire.confirm', { date: from ? fmtDate(from) : '' })}
+                ? t(
+                    mode === 'lift'
+                      ? 'publicTalks.retire.liftDone'
+                      : 'publicTalks.retire.done',
+                    { count: retireMutation.data?.retired ?? 0 },
+                  )
+                : mode === 'lift'
+                  ? t('publicTalks.retire.confirmLift')
+                  : t('publicTalks.retire.confirm', {
+                      date: from ? fmtDate(from) : '',
+                    })}
             </Text>
           </Pressable>
 
@@ -326,6 +368,51 @@ export default function RetireTalksScreen() {
               </Text>
             </Pressable>
           ) : null}
+        </>
+      ) : null}
+
+      {/* Every decision, each line naming its own letter. This is what answers
+          «на основании чего речь 92 снята» a year later — and what tells the
+          coordinator that a previous instruction was in fact carried out. */}
+      {history.length > 0 ? (
+        <>
+          <Text style={styles.listHeader}>
+            {t('publicTalks.retire.historyTitle')}
+          </Text>
+          <View style={styles.card}>
+            {history.slice(0, 12).map((e, i) => (
+              <View
+                key={`${e.at}-${i}`}
+                style={[styles.historyRow, i === 0 && { borderTopWidth: 0 }]}
+              >
+                <Text style={styles.historyHead}>
+                  {t(`publicTalks.retire.history.${e.kind}`, {
+                    count: e.count,
+                  })}
+                  {e.from
+                    ? ` · ${t('publicTalks.retire.historyFrom', {
+                        date: fmtDate(e.from),
+                      })}`
+                    : ''}
+                  {e.until ? ` — ${fmtDate(e.until)}` : ''}
+                </Text>
+                <Text style={styles.historyMeta}>
+                  {fmtDate(e.at.slice(0, 10))}
+                  {e.actorName ? ` · ${e.actorName}` : ''}
+                  {e.numbers.length > 0
+                    ? ` · ${e.numbers.slice(0, 12).join(', ')}${
+                        e.numbers.length > 12 ? '…' : ''
+                      }`
+                    : ''}
+                </Text>
+                {e.reason ? (
+                  <Text style={styles.historyReason}>
+                    {t('publicTalks.retire.lastReason', { reason: e.reason })}
+                  </Text>
+                ) : null}
+              </View>
+            ))}
+          </View>
         </>
       ) : null}
     </ScrollView>
@@ -385,6 +472,37 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   fieldHint: { fontSize: 12, color: '#94a3b8', marginTop: 5, lineHeight: 17 },
+  modeRow: { flexDirection: 'row', gap: 8, marginBottom: 14 },
+  modeChip: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    backgroundColor: '#fff',
+    alignItems: 'center',
+  },
+  modeChipOn: { backgroundColor: '#0ea5e9', borderColor: '#0ea5e9' },
+  modeText: {
+    fontSize: 13.5,
+    color: '#475569',
+    fontWeight: '600',
+    fontFamily: 'Manrope_600SemiBold',
+  },
+  modeTextOn: { color: '#fff' },
+  historyRow: {
+    paddingVertical: 10,
+    borderTopWidth: 1,
+    borderTopColor: '#eef2f6',
+  },
+  historyHead: {
+    fontSize: 13.5,
+    color: '#0f172a',
+    fontWeight: '600',
+    fontFamily: 'Manrope_600SemiBold',
+  },
+  historyMeta: { fontSize: 12, color: '#94a3b8', marginTop: 2, lineHeight: 17 },
+  historyReason: { fontSize: 12.5, color: '#0369a1', marginTop: 3 },
   lastBox: {
     flexDirection: 'row',
     alignItems: 'flex-start',

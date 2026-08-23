@@ -1261,7 +1261,21 @@
       "reasonLabel": "On what grounds",
       "reasonPlaceholder": "Announcements and reminders, May 2026",
       "lastDone": "Last time: {{count}} talks · {{date}} · {{name}}",
-      "lastReason": "Grounds: {{reason}}"
+      "lastReason": "Grounds: {{reason}}",
+      "mode": {
+        "retire": "Retire talks",
+        "lift": "Bring talks back"
+      },
+      "historyTitle": "History of decisions",
+      "historyFrom": "from {{date}}",
+      "history": {
+        "retire": "Talks retired: {{count}}",
+        "lift": "Talks brought back: {{count}}",
+        "import": "Catalogue imported: {{count}}"
+      },
+      "willLift": "Talks to bring back: {{count}}",
+      "confirmLift": "Bring these talks back",
+      "liftDone": "Talks brought back: {{count}}"
     },
     "showMore": "Show more · {{shown}} of {{total}}",
     "loading": "Loading…",

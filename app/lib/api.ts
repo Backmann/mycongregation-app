@@ -584,6 +584,18 @@ export interface RetirementPreview {
   scheduled: ScheduledUse[];
 }
 
+/** One decision about the catalogue: an import, a retirement, or a lifting. */
+export interface CatalogueEvent {
+  at: string;
+  actorName: string | null;
+  kind: 'import' | 'retire' | 'lift';
+  numbers: number[];
+  count: number;
+  from: string | null;
+  until: string | null;
+  reason: string | null;
+}
+
 /** Who ran the last import of a catalogue, and when. */
 export interface LastImport {
   at: string;
@@ -3046,6 +3058,25 @@ export const publicTalksApi = {
       '/public-talks/retire-missing',
       input,
     );
+    return data;
+  },
+  /**
+   * Lift a restriction because a letter said so — with the letter named, the
+   * same way it was named when the talks were set aside.
+   */
+  async liftRestriction(input: {
+    numbers: number[];
+    reason?: string;
+  }): Promise<{ lifted: number }> {
+    const { data } = await api.post<{ lifted: number }>(
+      '/public-talks/lift-restriction',
+      input,
+    );
+    return data;
+  },
+  /** Every decision about the catalogue, newest first. */
+  async history(): Promise<CatalogueEvent[]> {
+    const { data } = await api.get<CatalogueEvent[]>('/public-talks/history');
     return data;
   },
   /** The last time talks were set aside, and on what grounds. */
