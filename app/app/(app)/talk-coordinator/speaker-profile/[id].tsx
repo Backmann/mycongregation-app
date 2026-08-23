@@ -46,6 +46,24 @@ export default function SpeakerProfileScreen() {
 
   const speaker = (speakersQuery.data ?? []).find((s) => s.id === id) ?? null;
 
+  /**
+   * Which of his talks are no longer to be given — from the query this screen
+   * already makes, rather than a second one for the same rows.
+   *
+   * His repertoire is a list of bare numbers, so a retired talk looked exactly
+   * like any other, and inviting a brother with a talk that must not be given
+   * is a telephone call nobody wants to make twice.
+   */
+  const retired = useMemo(
+    () =>
+      new Map(
+        (talksQuery.data?.data ?? [])
+          .filter((tk) => !tk.isActive)
+          .map((tk) => [tk.number, tk.retiredFrom ?? null]),
+      ),
+    [talksQuery.data],
+  );
+
   const talkById = useMemo(() => {
     const m = new Map<string, PublicTalk>();
     for (const tk of talksQuery.data?.data ?? []) m.set(tk.id, tk);
@@ -227,11 +245,23 @@ export default function SpeakerProfileScreen() {
                 .sort((a, b) => a - b)
                 .map((n) => {
                   const given = stats.givenTalkNumbers.has(n);
+                  const isRetired = retired.has(n);
                   return (
                     <View
                       key={n}
-                      style={[styles.talkChip, given && styles.talkChipGiven]}
+                      style={[
+                        styles.talkChip,
+                        given && styles.talkChipGiven,
+                        isRetired && styles.talkChipRetired,
+                      ]}
                     >
+                      {isRetired ? (
+                        <Ionicons
+                          name="close-circle"
+                          size={12}
+                          color="#b45309"
+                        />
+                      ) : null}
                       {given ? (
                         <Ionicons
                           name="checkmark"
@@ -243,6 +273,7 @@ export default function SpeakerProfileScreen() {
                         style={[
                           styles.talkChipText,
                           given && styles.talkChipTextGiven,
+                          isRetired && styles.talkChipTextRetired,
                         ]}
                       >
                         №{n}
@@ -256,6 +287,19 @@ export default function SpeakerProfileScreen() {
                 fresh: stats.freshTalkNumbers.length,
               })}
             </Text>
+            {/* Named, not merely coloured: colour is for the glance, words for
+                whoever reads colour poorly — and for whoever is about to ring
+                this brother up. */}
+            {[...speaker.talkNumbers].some((n) => retired.has(n)) ? (
+              <Text style={styles.retiredLegend}>
+                {t('talkCoordinator.speakerProfile.retiredInRepertoire', {
+                  numbers: [...speaker.talkNumbers]
+                    .filter((n) => retired.has(n))
+                    .sort((a, b) => a - b)
+                    .join(', '),
+                })}
+              </Text>
+            ) : null}
           </View>
         </>
       ) : null}
@@ -277,6 +321,20 @@ export default function SpeakerProfileScreen() {
 }
 
 const styles = StyleSheet.create({
+  talkChipRetired: {
+    backgroundColor: '#fef3c7',
+    borderColor: '#fcd34d',
+  },
+  talkChipTextRetired: {
+    color: '#b45309',
+    textDecorationLine: 'line-through',
+  },
+  retiredLegend: {
+    fontSize: 12,
+    color: '#b45309',
+    marginTop: 6,
+    lineHeight: 17,
+  },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 32 },
   muted: { color: '#64748b', fontSize: 15, textAlign: 'center' },
   container: { padding: 16, paddingBottom: 48 },

@@ -40,15 +40,24 @@ export function PublicTalkSelector({ label, value, onChange }: Props) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
 
+  /**
+   * Retired talks are ASKED FOR, not hidden.
+   *
+   * Two reasons, and the first is a plain fault: a talk already chosen for a
+   * week and later retired would vanish from this list, and the field would go
+   * blank — the assignment still holds it, the screen simply could not name
+   * it. The second is Lionel's decision: warn rather than forbid, because the
+   * coordinator may know something the catalogue does not.
+   */
   const { data, isLoading } = useQuery({
     queryKey: ['public-talks', 'all-for-picker'],
-    queryFn: () => publicTalksApi.list({ limit: 500 }),
+    queryFn: () => publicTalksApi.list({ limit: 500, includeInactive: true }),
   });
 
   const allTalks = data?.data ?? [];
   const selectedTalk = allTalks.find((t) => t.id === value);
 
-  const filtered = allTalks.filter((t) => {
+  const matches = allTalks.filter((t) => {
     if (search.trim() === '') return true;
     const s = search.trim().toLowerCase();
     return (
@@ -56,6 +65,13 @@ export function PublicTalkSelector({ label, value, onChange }: Props) {
       t.number.toString().startsWith(s)
     );
   });
+
+  // Still-given talks first; the retired ones stay reachable at the end, where
+  // they cannot be picked by a careless tap.
+  const filtered = [
+    ...matches.filter((t) => t.isActive),
+    ...matches.filter((t) => !t.isActive),
+  ];
 
   return (
     <>
@@ -78,7 +94,14 @@ export function PublicTalkSelector({ label, value, onChange }: Props) {
           </Text>
           <Ionicons name="chevron-forward" size={18} color="#cbd5e1" />
         </View>
+        {/* On the closed field too: a talk chosen months ago and retired since
+            must say so where the week is being read, not only where it is
+            being picked. */}
+        {selectedTalk && !selectedTalk.isActive ? (
+          <RetiredHint talk={selectedTalk} inline />
+        ) : null}
         {selectedTalk &&
+          selectedTalk.isActive &&
           (selectedTalk.lastGivenAt || selectedTalk.nextGivenAt) && (
             <RecencyHint talk={selectedTalk} inline />
           )}
@@ -165,17 +188,56 @@ function TalkOption({
       style={({ pressed }) => [styles.option, pressed && styles.optionPressed]}
       onPress={onPress}
     >
-      <View style={styles.numberBadge}>
-        <Text style={styles.numberText}>{talk.number}</Text>
+      <View style={[styles.numberBadge, !talk.isActive && styles.numberBadgeRetired]}>
+        <Text style={[styles.numberText, !talk.isActive && styles.numberTextRetired]}>
+          {talk.number}
+        </Text>
       </View>
       <View style={{ flex: 1 }}>
-        <Text style={styles.optionTitle} numberOfLines={2}>
+        <Text
+          style={[styles.optionTitle, !talk.isActive && styles.optionTitleRetired]}
+          numberOfLines={2}
+        >
           {talk.title}
         </Text>
-        {(talk.lastGivenAt || talk.nextGivenAt) && <RecencyHint talk={talk} />}
+        {/* Said in the moment of choosing, which is the only moment it can
+            prevent anything. */}
+        {!talk.isActive ? <RetiredHint talk={talk} /> : null}
+        {talk.isActive && (talk.lastGivenAt || talk.nextGivenAt) ? (
+          <RecencyHint talk={talk} />
+        ) : null}
       </View>
       {isSelected && <Ionicons name="checkmark" size={20} color="#0ea5e9" />}
     </Pressable>
+  );
+}
+
+/**
+ * «Снята с 1 сентября 2026 г.» — or just «снята» for one retired by hand
+ * before the date was recorded.
+ */
+export function RetiredHint({
+  talk,
+  inline,
+}: {
+  talk: PublicTalk;
+  inline?: boolean;
+}) {
+  const { t } = useTranslation();
+  return (
+    <View style={[styles.retiredRow, inline && styles.retiredRowInline]}>
+      <Ionicons name="close-circle" size={13} color="#b45309" />
+      <Text style={styles.retiredText} numberOfLines={1}>
+        {talk.retiredFrom
+          ? t('publicTalks.retiredFrom', {
+              date: new Date(`${talk.retiredFrom}T00:00:00`).toLocaleDateString(
+                i18n.language,
+                { day: 'numeric', month: 'long', year: 'numeric' },
+              ),
+            })
+          : t('publicTalks.retiredPlain')}
+      </Text>
+    </View>
   );
 }
 
@@ -225,6 +287,13 @@ function RecencyHint({ talk, inline }: { talk: PublicTalk; inline?: boolean }) {
 }
 
 const styles = StyleSheet.create({
+  numberBadgeRetired: { backgroundColor: '#fef3c7' },
+  numberTextRetired: { color: '#b45309' },
+  /* Struck through: the talk exists, it is simply not to be given. */
+  optionTitleRetired: { color: '#94a3b8', textDecorationLine: 'line-through' },
+  retiredRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 3 },
+  retiredRowInline: { marginTop: 0 },
+  retiredText: { fontSize: 12, color: '#b45309', flexShrink: 1 },
   field: {
     paddingVertical: 10,
     paddingHorizontal: 20,

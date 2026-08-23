@@ -88,6 +88,18 @@ export default function PublicTalksScreen() {
 
         <View style={{ flex: 1 }} />
 
+        {/* Two acts, two buttons: loading a catalogue, and striking out the
+            talks an instruction says are no longer to be given. */}
+        <Pressable
+          style={styles.retireButton}
+          onPress={() => router.push('/profile/public-talks-retire' as any)}
+        >
+          <Ionicons name="close-circle-outline" size={16} color="#b45309" />
+          <Text style={styles.retireButtonText}>
+            {t('publicTalks.retire.button')}
+          </Text>
+        </Pressable>
+
         <Pressable
           style={styles.importButton}
           onPress={() => router.push('/profile/public-talks-import' as any)}
@@ -189,9 +201,21 @@ function TalkRow({ talk }: { talk: PublicTalk }) {
         >
           {talk.title}
         </Text>
+        {/* With the date when there is one: «снята» tells the coordinator
+            nothing about whether it may still be given this Sunday. */}
         {!talk.isActive && (
           <Text style={styles.retiredLabel}>
-            {t('publicTalks.retiredBadge')}
+            {talk.retiredFrom
+              ? t('publicTalks.retiredFrom', {
+                  date: new Date(
+                    `${talk.retiredFrom}T00:00:00`,
+                  ).toLocaleDateString(i18n.language, {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric',
+                  }),
+                })
+              : t('publicTalks.retiredBadge')}
           </Text>
         )}
       </View>
@@ -200,6 +224,26 @@ function TalkRow({ talk }: { talk: PublicTalk }) {
 }
 
 const styles = StyleSheet.create({
+  retireButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    borderRadius: 10,
+    backgroundColor: '#fef3c7',
+    borderWidth: 1,
+    borderColor: '#fcd34d',
+    marginRight: 8,
+  },
+  retireButtonText: {
+    fontSize: 13,
+    color: '#b45309',
+    fontWeight: '600',
+    fontFamily: 'Manrope_600SemiBold',
+  },
+  numberBadgeRetired: { backgroundColor: '#fef3c7' },
+  numberTextRetired: { color: '#b45309' },
   lastImportText: {
     fontSize: 12,
     color: '#94a3b8',

@@ -1230,7 +1230,28 @@
     "totalCount": "Vorträge im Katalog: {{count}}",
     "foundCount": "{{count}} gefunden für «{{search}}»",
     "lastImport": "Letzter Import: {{date}}, {{time}} · {{name}}",
-    "someoneUnknown": "von unbekannt"
+    "someoneUnknown": "von unbekannt",
+    "retiredFrom": "Abgesetzt ab {{date}}",
+    "retiredPlain": "Abgesetzt",
+    "retire": {
+      "button": "Vorträge absetzen",
+      "pageTitle": "Vorträge absetzen",
+      "title": "Vorträge, die nicht mehr verwendet werden",
+      "subtitle": "Füge die ganze Anweisung ein — die Nummern liest die App selbst heraus. Es wird nichts abgesetzt, bis du bestätigst.",
+      "fromLabel": "Nicht mehr halten ab",
+      "textLabel": "Text der Anweisung",
+      "placeholder": "…sollen ab dem 1. September 2026 nicht mehr gehalten werden: 84, 85, 87…",
+      "check": "Prüfen",
+      "willRetire": "Abzusetzende Vorträge: {{count}}",
+      "already": "bereits abgesetzt",
+      "unknown": "Diese Nummern gibt es im Katalog nicht: {{numbers}}. Prüfe die Liste oder importiere den Katalog erneut.",
+      "scheduledTitle": "Diese Vorträge sind nach diesem Datum bereits eingeplant: {{count}}",
+      "scheduledHint": "Am Plan wird nichts geändert. Tippe eine Zeile an, um die Woche zu öffnen und einen anderen Vortrag zu wählen.",
+      "confirm": "Diese Vorträge ab {{date}} absetzen",
+      "done": "Abgesetzte Vorträge: {{count}}",
+      "backToCatalogue": "Zurück zum Katalog",
+      "noRights": "Vorträge absetzen darf der Koordinator für öffentliche Vorträge oder ein Administrator."
+    }
   },
   "responsibilities": {
     "title": "Aufgaben",
@@ -2255,7 +2276,8 @@
       "tentative": "vorläufig",
       "repertoire": "Repertoire",
       "repertoireLegend": "✓ — schon gehalten · hervorgehoben — noch nicht ({{fresh}})",
-      "edit": "Redner bearbeiten"
+      "edit": "Redner bearbeiten",
+      "retiredInRepertoire": "Nicht mehr verwendet: {{numbers}} — damit sollte er nicht eingeladen werden."
     },
     "ourSpeakerProfile": {
       "title": "Unser Redner",

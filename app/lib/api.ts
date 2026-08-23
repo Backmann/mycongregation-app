@@ -500,6 +500,11 @@ export interface ImportResult {
 // ---------- Public talks types ----------
 
 export interface PublicTalk {
+  /**
+   * The date from which this talk is no longer to be given, or null while it
+   * is still in use. A talk retired by hand before this existed has none.
+   */
+  retiredFrom?: string | null;
   id: string;
   number: number;
   title: string;
@@ -548,6 +553,27 @@ export interface TalkImportResult extends BulkImportResult {
   /** Active talks the pasted list never mentions — nothing is retired for you. */
   missing: Array<{ number: number; title: string }>;
   invalidLines: string[];
+}
+
+/** One week where a talk is still planned after it stops being given. */
+export interface ScheduledUse {
+  publicTalkId: string;
+  weekStartDate: string;
+  speakerName: string | null;
+  speakerCongregation: string | null;
+}
+
+/** What retiring a list of numbers would mean, before it is done. */
+export interface RetirementPreview {
+  talks: Array<{
+    number: number;
+    title: string;
+    alreadyRetired: boolean;
+    scheduled: ScheduledUse[];
+  }>;
+  /** Numbers the catalogue has never heard of — a typo, or a stale catalogue. */
+  unknownNumbers: number[];
+  scheduled: ScheduledUse[];
 }
 
 /** Who ran the last import of a catalogue, and when. */
@@ -3000,10 +3026,28 @@ export const publicTalksApi = {
    * Strike the listed talks out of the catalogue — a deliberate act, separate
    * from importing, because it answers «какие речи больше не говорим».
    */
-  async retireMissing(numbers: number[]): Promise<{ retired: number }> {
+  async retireMissing(
+    numbers: number[],
+    from?: string,
+  ): Promise<{ retired: number }> {
     const { data } = await api.post<{ retired: number }>(
       '/public-talks/retire-missing',
-      { numbers },
+      { numbers, from },
+    );
+    return data;
+  },
+  /**
+   * What retiring these talks would mean — titles, and the weeks where they
+   * are still promised. Asking changes nothing.
+   */
+  async retirementPreview(input: {
+    text?: string;
+    numbers?: number[];
+    from: string;
+  }): Promise<RetirementPreview> {
+    const { data } = await api.post<RetirementPreview>(
+      '/public-talks/retirement-preview',
+      input,
     );
     return data;
   },

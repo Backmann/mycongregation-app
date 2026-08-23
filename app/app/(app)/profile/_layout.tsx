@@ -44,6 +44,10 @@ export default function ProfileLayout() {
         options={{ title: t('profile.publicTalks') }}
       />
       <Stack.Screen
+        name="public-talks-retire"
+        options={{ title: t('publicTalks.retire.pageTitle') }}
+      />
+      <Stack.Screen
         name="public-talks-import"
         options={{ title: t('profile.publicTalksImport') }}
       />

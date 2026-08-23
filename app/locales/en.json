@@ -1230,7 +1230,28 @@
     "totalCount": "Talks in the catalogue: {{count}}",
     "foundCount": "Found {{count}} for «{{search}}»",
     "lastImport": "Last import: {{date}}, {{time}} · {{name}}",
-    "someoneUnknown": "by somebody unknown"
+    "someoneUnknown": "by somebody unknown",
+    "retiredFrom": "Retired from {{date}}",
+    "retiredPlain": "Retired",
+    "retire": {
+      "button": "Retire talks",
+      "pageTitle": "Retiring talks",
+      "title": "Talks that are no longer used",
+      "subtitle": "Paste the whole instruction — the numbers are read out of it. Nothing is retired until you confirm.",
+      "fromLabel": "Not to be given from",
+      "textLabel": "The instruction",
+      "placeholder": "…are not to be presented, beginning 1 September 2026: 84, 85, 87…",
+      "check": "Check",
+      "willRetire": "Talks to retire: {{count}}",
+      "already": "already retired",
+      "unknown": "The catalogue has no such numbers: {{numbers}}. Check the list or import the catalogue again.",
+      "scheduledTitle": "These talks are already scheduled after that date: {{count}}",
+      "scheduledHint": "Nothing in the schedule is changed for you. Tap a line to open that week and choose another talk.",
+      "confirm": "Retire these talks from {{date}}",
+      "done": "Talks retired: {{count}}",
+      "backToCatalogue": "Back to the catalogue",
+      "noRights": "Retiring talks is for the public talk coordinator or an administrator."
+    }
   },
   "responsibilities": {
     "title": "Responsibilities",
@@ -2255,7 +2276,8 @@
       "tentative": "tentative",
       "repertoire": "Repertoire",
       "repertoireLegend": "✓ — already given here · highlighted — not yet ({{fresh}})",
-      "edit": "Edit speaker"
+      "edit": "Edit speaker",
+      "retiredInRepertoire": "No longer used: {{numbers}} — do not invite him with these."
     },
     "ourSpeakerProfile": {
       "title": "Our speaker",
