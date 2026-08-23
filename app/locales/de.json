@@ -1250,8 +1250,15 @@
       "confirm": "Diese Vorträge ab {{date}} absetzen",
       "done": "Abgesetzte Vorträge: {{count}}",
       "backToCatalogue": "Zurück zum Katalog",
-      "noRights": "Vorträge absetzen darf der Koordinator für öffentliche Vorträge oder ein Administrator."
-    }
+      "noRights": "Vorträge absetzen darf der Koordinator für öffentliche Vorträge oder ein Administrator.",
+      "source": {
+        "programme": "Im Wochenendprogramm",
+        "incoming": "Auswärtiger Redner — Journal «zu uns»",
+        "outgoing": "Ein Bruder von uns hält ihn — Journal «von uns»"
+      }
+    },
+    "showMore": "Mehr anzeigen · {{shown}} von {{total}}",
+    "loading": "Wird geladen…"
   },
   "responsibilities": {
     "title": "Aufgaben",

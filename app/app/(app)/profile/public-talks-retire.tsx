@@ -158,12 +158,19 @@ export default function RetireTalksScreen() {
                         <Text style={styles.scheduledTalk} numberOfLines={1}>
                           №{tk.number}. {tk.title}
                         </Text>
+                        {/* The date of the meeting itself. A week is filed
+                            under its Monday, and «26 октября» for a talk given
+                            on the 1st of November matches nothing the
+                            coordinator knows. */}
                         <Text style={styles.scheduledWhen}>
-                          {fmtDate(use.weekStartDate)}
+                          {fmtDate(use.meetingDate)}
                           {use.speakerName ? ` · ${use.speakerName}` : ''}
                           {use.speakerCongregation
                             ? `, ${use.speakerCongregation}`
                             : ''}
+                        </Text>
+                        <Text style={styles.scheduledSource}>
+                          {t(`publicTalks.retire.source.${use.source}`)}
                         </Text>
                       </View>
                       <Ionicons
@@ -366,6 +373,9 @@ const styles = StyleSheet.create({
     fontFamily: 'Manrope_600SemiBold',
   },
   scheduledWhen: { fontSize: 12, color: '#a16207', marginTop: 2 },
+  /* Where it came from: the programme, or the coordinator's log — a talk one
+     of our brothers is taking away needs a different telephone call. */
+  scheduledSource: { fontSize: 11.5, color: '#b45309', marginTop: 2 },
   warnBox: {
     backgroundColor: '#fff7ed',
     borderWidth: 1,

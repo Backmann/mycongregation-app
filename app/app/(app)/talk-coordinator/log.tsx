@@ -192,8 +192,23 @@ export default function TalkExchangeYearScreen() {
     return m;
   }, [publishersQuery.data]);
   const talkById = useMemo(() => {
-    const m = new Map<string, { number: number; title: string }>();
-    for (const pt of talksQuery.data?.data ?? []) m.set(pt.id, { number: pt.number, title: pt.title });
+    // Whether it is still given travels with it now — the label says so.
+    const m = new Map<
+      string,
+      {
+        number: number;
+        title: string;
+        isActive: boolean;
+        retiredFrom: string | null;
+      }
+    >();
+    for (const pt of talksQuery.data?.data ?? [])
+      m.set(pt.id, {
+        number: pt.number,
+        title: pt.title,
+        isActive: pt.isActive,
+        retiredFrom: pt.retiredFrom ?? null,
+      });
     return m;
   }, [talksQuery.data]);
 
@@ -556,7 +571,25 @@ export default function TalkExchangeYearScreen() {
   const talkLabel = (id: string | null): string | null => {
     if (!id) return null;
     const tk = talkById.get(id);
-    return tk ? `№${tk.number}. ${tk.title}` : null;
+    if (!tk) return null;
+    /**
+     * A talk no longer used says so, right here in the log.
+     *
+     * This is where the coordinator arranges who comes and who goes — and a
+     * retired talk looks exactly like any other unless it is named. Better a
+     * line he reads while planning than a telephone call the week before.
+     */
+    const retired = !tk.isActive
+      ? tk.retiredFrom
+        ? ` · ${t('publicTalks.retiredFrom', {
+            date: new Date(`${tk.retiredFrom}T00:00:00`).toLocaleDateString(
+              i18n.language,
+              { day: 'numeric', month: 'long', year: 'numeric' },
+            ),
+          })}`
+        : ` · ${t('publicTalks.retiredPlain')}`
+      : '';
+    return `№${tk.number}. ${tk.title}${retired}`;
   };
   const incomingName = (e: TalkExchange): string | null =>
     e.publisherId

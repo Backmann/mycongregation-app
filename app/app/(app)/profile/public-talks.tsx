@@ -26,14 +26,25 @@ export default function PublicTalksScreen() {
   const [search, setSearch] = useState('');
   const [showInactive, setShowInactive] = useState(false);
 
+  /**
+   * How many rows have been asked for so far.
+   *
+   * The screen used to ask for a fixed five hundred and show whatever came
+   * back — with no sign that anything was left. A catalogue that outgrows the
+   * number simply loses its tail in silence, which is the same fault as the
+   * week of December that vanished without a word.
+   */
+  const [limit, setLimit] = useState(200);
+
   const query = useQuery({
-    queryKey: ['public-talks', { search, includeInactive: showInactive }],
+    queryKey: ['public-talks', { search, includeInactive: showInactive, limit }],
     queryFn: () =>
       publicTalksApi.list({
         search: search.trim() || undefined,
         includeInactive: showInactive,
-        limit: 500,
+        limit,
       }),
+    placeholderData: (prev) => prev,
   });
 
   useFocusEffect(
@@ -50,6 +61,7 @@ export default function PublicTalksScreen() {
   const lastImport = lastImportQuery.data;
 
   const talks = query.data?.data ?? [];
+  const hasMore = talks.length < (query.data?.total ?? 0);
   const total = query.data?.total ?? 0;
 
   return (
@@ -172,6 +184,25 @@ export default function PublicTalksScreen() {
             {talks.map((talk) => (
               <TalkRow key={talk.id} talk={talk} />
             ))}
+
+            {/* Says how many are shown of how many there are, and offers the
+                rest. Before, the tail simply was not there. */}
+            {hasMore ? (
+              <Pressable
+                style={styles.moreBtn}
+                onPress={() => setLimit((n) => n + 200)}
+                disabled={query.isFetching}
+              >
+                <Text style={styles.moreBtnText}>
+                  {query.isFetching
+                    ? t('publicTalks.loading')
+                    : t('publicTalks.showMore', {
+                        shown: talks.length,
+                        total,
+                      })}
+                </Text>
+              </Pressable>
+            ) : null}
           </View>
         )}
       </ScrollView>
@@ -224,6 +255,20 @@ function TalkRow({ talk }: { talk: PublicTalk }) {
 }
 
 const styles = StyleSheet.create({
+  moreBtn: {
+    alignSelf: 'center',
+    marginTop: 14,
+    paddingHorizontal: 18,
+    paddingVertical: 11,
+    borderRadius: 999,
+    backgroundColor: '#e0f2fe',
+  },
+  moreBtnText: {
+    fontSize: 13.5,
+    color: '#0369a1',
+    fontWeight: '600',
+    fontFamily: 'Manrope_600SemiBold',
+  },
   retireButton: {
     flexDirection: 'row',
     alignItems: 'center',

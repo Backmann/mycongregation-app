@@ -559,8 +559,12 @@ export interface TalkImportResult extends BulkImportResult {
 export interface ScheduledUse {
   publicTalkId: string;
   weekStartDate: string;
+  /** The day the talk is actually given — the Sunday, not the week's Monday. */
+  meetingDate: string;
   speakerName: string | null;
   speakerCongregation: string | null;
+  /** The weekend programme, a speaker coming to us, or one of ours going out. */
+  source: 'programme' | 'incoming' | 'outgoing';
 }
 
 /** What retiring a list of numbers would mean, before it is done. */

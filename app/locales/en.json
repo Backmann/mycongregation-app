@@ -1250,8 +1250,15 @@
       "confirm": "Retire these talks from {{date}}",
       "done": "Talks retired: {{count}}",
       "backToCatalogue": "Back to the catalogue",
-      "noRights": "Retiring talks is for the public talk coordinator or an administrator."
-    }
+      "noRights": "Retiring talks is for the public talk coordinator or an administrator.",
+      "source": {
+        "programme": "In the weekend programme",
+        "incoming": "A visiting speaker — the «to us» log",
+        "outgoing": "One of ours is taking it — the «from us» log"
+      }
+    },
+    "showMore": "Show more · {{shown}} of {{total}}",
+    "loading": "Loading…"
   },
   "responsibilities": {
     "title": "Responsibilities",
