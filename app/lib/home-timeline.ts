@@ -564,10 +564,23 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
   }
 
   // ---- My away-periods (quiet context, "тебя нет") ----
+  /**
+   * One row per away-period, however many records describe it.
+   *
+   * The pioneer school wrote an absence per DUTY, so a brother holding two on
+   * the same evening had two records for one fact — and his home screen said
+   * «Тебя нет» twice under the same date. The source now writes one; this is
+   * the belt to that pair of braces, and it also covers a person who entered
+   * the same days twice by hand.
+   */
+  const seenAway = new Set<string>();
   for (const a of absences) {
     if (consumedAbsenceIds.has(a.id)) continue; // spoken by the talk row
     const end = a.endDate ?? a.startDate;
     if (end < todayISO) continue; // already over
+    const sameFact = `${a.startDate}|${end}|${a.note ?? ''}`;
+    if (seenAway.has(sameFact)) continue;
+    seenAway.add(sameFact);
     // An away-period already under way is pinned to today so it is not pushed
     // out of sight; a future one sits on its first day.
     const placed = a.startDate < todayISO ? todayISO : a.startDate;
