@@ -3022,7 +3022,9 @@
     },
     "markedDone": "Отмечено сделанным",
     "doneOn": "Сделано {{date}}, {{time}}",
-    "closedBy": "Отметил: {{name}}"
+    "closedBy": "Отметил: {{name}}",
+    "expandDetails": "Показать полностью",
+    "collapseDetails": "Свернуть"
   },
   "pioneerSchool": {
     "title": "Школа пионеров",

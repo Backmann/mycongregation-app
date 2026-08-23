@@ -2998,7 +2998,9 @@
     },
     "markedDone": "Als erledigt markiert",
     "doneOn": "Erledigt am {{date}}, {{time}}",
-    "closedBy": "Abgehakt von {{name}}"
+    "closedBy": "Abgehakt von {{name}}",
+    "expandDetails": "Vollständig anzeigen",
+    "collapseDetails": "Einklappen"
   },
   "pioneerSchool": {
     "title": "Pionierschule",

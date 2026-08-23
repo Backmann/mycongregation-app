@@ -64,6 +64,10 @@ export default function TasksScreen() {
   const [tab, setTab] = useState<'open' | 'mine' | 'done'>('open');
   /** The one just ticked — held so it can be put back, and so it can linger. */
   const [justDone, setJustDone] = useState<ElderTask | null>(null);
+  /** Which cards are showing their details in full. */
+  const [expandedDetails, setExpandedDetails] = useState<
+    Record<string, boolean>
+  >({});
 
   const openQuery = useQuery({
     queryKey: ['tasks', 'open'],
@@ -304,10 +308,36 @@ export default function TasksScreen() {
           </Text>
         ) : null}
 
+        {/* Two lines on the card, and the whole of it a tap away. A quoted
+            instruction runs to a paragraph, and the card is a list, not a
+            reading page — but «…» with no way to finish the sentence is worse
+            than either. */}
         {task.details ? (
-          <Text style={styles.details} numberOfLines={2}>
-            {task.details}
-          </Text>
+          <>
+            <Text
+              style={styles.details}
+              numberOfLines={expandedDetails[task.id] ? undefined : 2}
+            >
+              {task.details}
+            </Text>
+            {task.details.length > 110 ? (
+              <Pressable
+                onPress={() =>
+                  setExpandedDetails((m) => ({
+                    ...m,
+                    [task.id]: !m[task.id],
+                  }))
+                }
+                hitSlop={6}
+              >
+                <Text style={styles.detailsToggle}>
+                  {expandedDetails[task.id]
+                    ? t('tasks.collapseDetails')
+                    : t('tasks.expandDetails')}
+                </Text>
+              </Pressable>
+            ) : null}
+          </>
         ) : null}
 
         {who ? (
@@ -658,15 +688,15 @@ function TaskForm({
           placeholderTextColor="#94a3b8"
         />
 
-        {/* Both optional, and deliberately so: much is decided by the body
-            rather than by a person, and demanding a name at the moment of
-            writing breeds assignments made only to satisfy the form. */}
-        <Text style={styles.label}>{t('tasks.form.assignee')}</Text>
-        {/* Whom it is for, in the three shapes a task actually takes.
-            The two bodies carry no names on purpose: their members are read
-            from current assignments each time, so replacing the secretary
-            moves the task with the office rather than leaving it on the
-            brother who happened to hold it in May. */}
+        {/* Whom it is for, in the three shapes a task actually takes. The two
+            bodies carry no names on purpose: their members are read from
+            current assignments each time, so replacing the secretary moves the
+            task with the office rather than leaving it on the brother who
+            happened to hold it in May.
+
+            The heading stood here TWICE — two edits made months apart, each
+            adding its own, and nobody reads a form closely enough to notice a
+            word repeated when it is the word they expect. */}
         <Text style={styles.label}>{t('tasks.form.assignee')}</Text>
         <View style={styles.chipRow}>
           {(['people', 'service_committee', 'body_of_elders'] as const).map(
@@ -885,7 +915,14 @@ const styles = StyleSheet.create({
   // The 18pt indent belonged to the coloured dot that used to sit before the
   // title. The dot became a labelled chip and the indent was left behind,
   // holding the detail line out of line with everything above it.
-  details: { fontSize: 13.5, color: '#475569', lineHeight: 19, marginTop: 8 },
+  details: { fontSize: 13.5, color: '#475569', lineHeight: 20, marginTop: 8 },
+  detailsToggle: {
+    fontSize: 12.5,
+    color: '#0369a1',
+    fontWeight: '600',
+    fontFamily: 'Manrope_600SemiBold',
+    marginTop: 4,
+  },
   closedBy: { fontSize: 12.5, color: '#64748b', marginTop: 8 },
   lockedTitle: {
     borderWidth: 1,
@@ -962,7 +999,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
   },
-  formBody: { padding: 16, gap: 6, paddingBottom: 32 },
+  formBody: { padding: 16, gap: 6, paddingBottom: 40 },
   warn: {
     fontSize: 13,
     color: '#92400e',
@@ -976,13 +1013,16 @@ const styles = StyleSheet.create({
   },
   hint: { fontSize: 13, color: '#64748b', marginTop: 6, lineHeight: 18 },
   label: {
-    fontSize: 12,
-    color: '#64748b',
+    fontSize: 11.5,
+    color: '#94a3b8',
     fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
     textTransform: 'uppercase',
-    letterSpacing: 0.3,
-    marginTop: 10,
+    letterSpacing: 0.6,
+    // Air above each heading rather than an even trickle between everything:
+    // it is what turns eight fields into four readable sections.
+    marginTop: 20,
+    marginBottom: 6,
   },
   input: {
     backgroundColor: '#fff',
@@ -992,7 +1032,16 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#0f172a',
   },
-  inputMulti: { minHeight: 90, textAlignVertical: 'top' },
+  /* Long details are the norm here, not the exception: an instruction quoted
+     in full runs to a paragraph, and reading it four lines at a time through a
+     scrolling window is how a detail gets missed. */
+  inputMulti: {
+    minHeight: 150,
+    maxHeight: 320,
+    textAlignVertical: 'top',
+    lineHeight: 21,
+    fontSize: 14.5,
+  },
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 7 },
   chip: {
     paddingVertical: 7,

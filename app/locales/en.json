@@ -2998,7 +2998,9 @@
     },
     "markedDone": "Marked done",
     "doneOn": "Done {{date}}, {{time}}",
-    "closedBy": "Marked by {{name}}"
+    "closedBy": "Marked by {{name}}",
+    "expandDetails": "Show in full",
+    "collapseDetails": "Collapse"
   },
   "pioneerSchool": {
     "title": "Pioneer school",
