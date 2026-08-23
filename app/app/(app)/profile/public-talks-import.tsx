@@ -13,7 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import {
-  BulkImportResult,
+  TalkImportResult,
   extractErrorMessage,
   publicTalksApi,
 } from '../../../lib/api';
@@ -23,7 +23,15 @@ export default function PublicTalksImportScreen() {
   const queryClient = useQueryClient();
   const [text, setText] = useState('');
 
-  const importMutation = useMutation<BulkImportResult, unknown, string>({
+  /** Striking talks out is a second, deliberate press — never part of the import. */
+  const retireMutation = useMutation({
+    mutationFn: (numbers: number[]) => publicTalksApi.retireMissing(numbers),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['public-talks'] });
+    },
+  });
+
+  const importMutation = useMutation<TalkImportResult, unknown, string>({
     mutationFn: (txt) => publicTalksApi.bulkImport(txt),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['public-talks'] });
@@ -110,12 +118,32 @@ export default function PublicTalksImportScreen() {
         )}
       </View>
 
-      {result && <ResultSummary result={result} />}
+      {result && (
+        <ResultSummary
+          result={result}
+          onRetire={(numbers) => retireMutation.mutate(numbers)}
+          retiring={retireMutation.isPending}
+          retiredCount={
+            retireMutation.isSuccess ? (retireMutation.data?.retired ?? 0) : null
+          }
+        />
+      )}
     </ScrollView>
   );
 }
 
-function ResultSummary({ result }: { result: BulkImportResult }) {
+function ResultSummary({
+  result,
+  onRetire,
+  retiring,
+  retiredCount,
+}: {
+  result: TalkImportResult;
+  onRetire: (numbers: number[]) => void;
+  retiring: boolean;
+  /** Null until the talks have been struck out; then how many were. */
+  retiredCount: number | null;
+}) {
   const { t } = useTranslation();
   return (
     <View style={styles.section}>
@@ -155,6 +183,81 @@ function ResultSummary({ result }: { result: BulkImportResult }) {
             {'\u26a0 '}
             {t('publicTalks.import.invalid', { count: result.invalid })}
           </Text>
+        </View>
+      )}
+
+      {/* The lines themselves, so a refusal can be acted on. */}
+      {result.invalidLines?.length > 0 && (
+        <View style={styles.warningBox}>
+          {result.invalidLines.slice(0, 5).map((line, i) => (
+            <Text key={i} style={styles.badLine} numberOfLines={1}>
+              {line}
+            </Text>
+          ))}
+        </View>
+      )}
+
+      {result.renamed?.length > 0 && (
+        <>
+          <Text style={styles.examplesHeader}>
+            {t('publicTalks.import.renamed')}
+          </Text>
+          <View style={styles.examplesList}>
+            {result.renamed.slice(0, 8).map((r) => (
+              <View key={r.number} style={styles.exampleRow}>
+                <View style={styles.numberBadge}>
+                  <Text style={styles.numberText}>{r.number}</Text>
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.renamedFrom} numberOfLines={1}>
+                    {r.from}
+                  </Text>
+                  <Text style={styles.exampleTitle} numberOfLines={1}>
+                    {r.to}
+                  </Text>
+                </View>
+              </View>
+            ))}
+          </View>
+        </>
+      )}
+
+      {/* The answer to «какие речи больше не говорим». Nothing was retired for
+          you: a partial paste would otherwise strike out the whole catalogue,
+          and that is not a thing to do by accident. */}
+      {result.missing?.length > 0 && (
+        <View style={styles.missingBox}>
+          <Text style={styles.missingTitle}>
+            {t('publicTalks.import.missingTitle', {
+              count: result.missing.length,
+            })}
+          </Text>
+          {result.missing.slice(0, 10).map((m) => (
+            <Text key={m.number} style={styles.missingRow} numberOfLines={1}>
+              {m.number}. {m.title}
+            </Text>
+          ))}
+          {result.missing.length > 10 ? (
+            <Text style={styles.missingRow}>
+              {t('publicTalks.import.andMore', {
+                count: result.missing.length - 10,
+              })}
+            </Text>
+          ) : null}
+          <Text style={styles.missingHint}>
+            {t('publicTalks.import.missingHint')}
+          </Text>
+          <Pressable
+            style={styles.retireButton}
+            onPress={() => onRetire(result.missing.map((m) => m.number))}
+            disabled={retiring || retiredCount !== null}
+          >
+            <Text style={styles.retireButtonText}>
+              {retiredCount !== null
+                ? t('publicTalks.import.retired', { count: retiredCount })
+                : t('publicTalks.import.retireAction')}
+            </Text>
+          </Pressable>
         </View>
       )}
 
@@ -208,6 +311,51 @@ function Stat({
 }
 
 const styles = StyleSheet.create({
+  /** The offending line as pasted — monospace, so stray spaces are visible. */
+  badLine: {
+    fontFamily: 'monospace',
+    fontSize: 12,
+    color: '#92400e',
+    marginTop: 4,
+  },
+  renamedFrom: {
+    fontSize: 12.5,
+    color: '#94a3b8',
+    textDecorationLine: 'line-through',
+  },
+  missingBox: {
+    backgroundColor: '#fffbeb',
+    borderWidth: 1,
+    borderColor: '#fde68a',
+    borderRadius: 12,
+    padding: 13,
+    marginTop: 16,
+  },
+  missingTitle: {
+    fontSize: 13.5,
+    color: '#92400e',
+    fontWeight: '600',
+    fontFamily: 'Manrope_600SemiBold',
+    marginBottom: 6,
+  },
+  missingRow: { fontSize: 13, color: '#92400e', lineHeight: 19 },
+  missingHint: { fontSize: 12, color: '#a16207', marginTop: 8, lineHeight: 17 },
+  retireButton: {
+    marginTop: 10,
+    alignSelf: 'flex-start',
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+    borderRadius: 999,
+    backgroundColor: '#fef3c7',
+    borderWidth: 1,
+    borderColor: '#fcd34d',
+  },
+  retireButtonText: {
+    fontSize: 13,
+    color: '#92400e',
+    fontWeight: '600',
+    fontFamily: 'Manrope_600SemiBold',
+  },
   intro: {
     backgroundColor: '#fff',
     paddingTop: 24,

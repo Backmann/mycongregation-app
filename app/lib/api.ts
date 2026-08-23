@@ -541,6 +541,22 @@ export interface CreateSongInput {
 }
 export type UpdateSongInput = Partial<CreateSongInput>;
 
+/** What a catalogue import changed. */
+export interface TalkImportResult extends BulkImportResult {
+  added: Array<{ number: number; title: string }>;
+  renamed: Array<{ number: number; from: string; to: string }>;
+  /** Active talks the pasted list never mentions — nothing is retired for you. */
+  missing: Array<{ number: number; title: string }>;
+  invalidLines: string[];
+}
+
+/** Who ran the last import of a catalogue, and when. */
+export interface LastImport {
+  at: string;
+  actorName: string | null;
+  detail: Record<string, unknown> | null;
+}
+
 export interface BulkImportResult {
   parsed: number;
   created: number;
@@ -2973,8 +2989,29 @@ export const publicTalksApi = {
     const { data } = await api.post<PublicTalk>(`/public-talks/${id}/reactivate`);
     return data;
   },
-  async bulkImport(text: string): Promise<BulkImportResult> {
-    const { data } = await api.post<BulkImportResult>('/public-talks/bulk-import', { text });
+  async bulkImport(text: string): Promise<TalkImportResult> {
+    const { data } = await api.post<TalkImportResult>(
+      '/public-talks/bulk-import',
+      { text },
+    );
+    return data;
+  },
+  /**
+   * Strike the listed talks out of the catalogue — a deliberate act, separate
+   * from importing, because it answers «какие речи больше не говорим».
+   */
+  async retireMissing(numbers: number[]): Promise<{ retired: number }> {
+    const { data } = await api.post<{ retired: number }>(
+      '/public-talks/retire-missing',
+      { numbers },
+    );
+    return data;
+  },
+  /** When the catalogue was last imported, and by whom. */
+  async lastImport(): Promise<LastImport | null> {
+    const { data } = await api.get<LastImport | null>(
+      '/public-talks/last-import',
+    );
     return data;
   },
 };

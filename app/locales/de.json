@@ -1216,11 +1216,21 @@
       "statUpdated": "Aktualisiert",
       "statUnchanged": "Unverändert",
       "invalid_one": "{{count}} Zeile sah nach einem Vortrag aus, konnte aber nicht gelesen werden. Erwartetes Format: «N. Titel».",
-      "invalid_other": "{{count}} Zeilen sahen nach Vorträgen aus, konnten aber nicht gelesen werden. Erwartetes Format: «N. Titel»."
+      "invalid_other": "{{count}} Zeilen sahen nach Vorträgen aus, konnten aber nicht gelesen werden. Erwartetes Format: «N. Titel».",
+      "renamed": "Geänderte Titel",
+      "missingTitle": "Diese Vorträge fehlen in der neuen Liste: {{count}}",
+      "andMore": "…und {{count}} weitere",
+      "missingHint": "Ein Import setzt von selbst nichts ab. Fehlen diese Vorträge in der Liste, setze sie ab — sie bleiben im Katalog als «abgesetzt» und lassen sich mit einem Druck zurückholen.",
+      "retireAction": "Diese Vorträge absetzen",
+      "retired": "Abgesetzte Vorträge: {{count}}"
     },
     "emptySearch": "Keine Vorträge gefunden",
     "emptyTitle": "Noch keine öffentlichen Vorträge",
-    "emptyHint": "Tippe auf «{{action}}», um den S-34-Katalog hinzuzufügen"
+    "emptyHint": "Tippe auf «{{action}}», um den S-34-Katalog hinzuzufügen",
+    "totalCount": "Vorträge im Katalog: {{count}}",
+    "foundCount": "{{count}} gefunden für «{{search}}»",
+    "lastImport": "Letzter Import: {{date}}, {{time}} · {{name}}",
+    "someoneUnknown": "von unbekannt"
   },
   "responsibilities": {
     "title": "Aufgaben",

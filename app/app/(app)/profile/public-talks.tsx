@@ -13,23 +13,12 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useFocusEffect } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import i18n from '../../../lib/i18n';
 import {
   extractErrorMessage,
   PublicTalk,
   publicTalksApi,
 } from '../../../lib/api';
-
-type Recency = 'recent' | 'caution' | 'ok' | 'never';
-
-function getRecency(lastGivenAt: string | null): Recency {
-  if (!lastGivenAt) return 'never';
-  const monthsAgo =
-    (Date.now() - new Date(lastGivenAt).getTime()) /
-    (1000 * 60 * 60 * 24 * 30);
-  if (monthsAgo < 3) return 'recent';
-  if (monthsAgo < 6) return 'caution';
-  return 'ok';
-}
 
 export default function PublicTalksScreen() {
   const { t } = useTranslation();
@@ -52,6 +41,13 @@ export default function PublicTalksScreen() {
       queryClient.invalidateQueries({ queryKey: ['public-talks'] });
     }, [queryClient]),
   );
+
+  /** «Кто и когда» — read from the journal, which has recorded it all along. */
+  const lastImportQuery = useQuery({
+    queryKey: ['public-talks', 'last-import'],
+    queryFn: () => publicTalksApi.lastImport(),
+  });
+  const lastImport = lastImportQuery.data;
 
   const talks = query.data?.data ?? [];
   const total = query.data?.total ?? 0;
@@ -138,9 +134,28 @@ export default function PublicTalksScreen() {
           </View>
         ) : (
           <View style={styles.list}>
+            {/* Was «190 talks» — English, written straight into the code, so
+                it read the same in every language. */}
+            {lastImport ? (
+              <Text style={styles.lastImportText}>
+                {t('publicTalks.lastImport', {
+                  date: new Date(lastImport.at).toLocaleDateString(
+                    i18n.language,
+                    { day: 'numeric', month: 'long', year: 'numeric' },
+                  ),
+                  time: new Date(lastImport.at).toLocaleTimeString(
+                    i18n.language,
+                    { hour: '2-digit', minute: '2-digit' },
+                  ),
+                  name:
+                    lastImport.actorName ?? t('publicTalks.someoneUnknown'),
+                })}
+              </Text>
+            ) : null}
             <Text style={styles.totalText}>
-              {total} {total === 1 ? 'talk' : 'talks'}
-              {search ? ` matching "${search}"` : ''}
+              {search
+                ? t('publicTalks.foundCount', { count: total, search })
+                : t('publicTalks.totalCount', { count: total })}
             </Text>
             {talks.map((talk) => (
               <TalkRow key={talk.id} talk={talk} />
@@ -152,21 +167,15 @@ export default function PublicTalksScreen() {
   );
 }
 
+/**
+ * One talk, as the catalogue sees it: a number and a title.
+ *
+ * «Last given …» used to sit under the title. It belonged to the schedule, not
+ * here — this screen answers «какие речи существуют», and the history of who
+ * gave what turned a reference list into a report nobody asked it for.
+ */
 function TalkRow({ talk }: { talk: PublicTalk }) {
   const { t } = useTranslation();
-  const recency = getRecency(talk.lastGivenAt);
-  const recencyColor: Record<Recency, string> = {
-    recent: '#dc2626',
-    caution: '#d97706',
-    ok: '#94a3b8',
-    never: '#cbd5e1',
-  };
-  const recencyIcon: Record<Recency, any> = {
-    recent: 'warning',
-    caution: 'warning-outline',
-    ok: 'time-outline',
-    never: 'time-outline',
-  };
 
   return (
     <View style={[styles.row, !talk.isActive && styles.rowInactive]}>
@@ -185,25 +194,18 @@ function TalkRow({ talk }: { talk: PublicTalk }) {
             {t('publicTalks.retiredBadge')}
           </Text>
         )}
-        {talk.lastGivenAt && (
-          <View style={styles.hintRow}>
-            <Ionicons
-              name={recencyIcon[recency]}
-              size={11}
-              color={recencyColor[recency]}
-            />
-            <Text style={[styles.hintText, { color: recencyColor[recency] }]}>
-              Last given {talk.lastGivenAt}
-              {talk.lastGivenBy ? ` · ${talk.lastGivenBy}` : ''}
-            </Text>
-          </View>
-        )}
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  lastImportText: {
+    fontSize: 12,
+    color: '#94a3b8',
+    marginBottom: 6,
+    lineHeight: 17,
+  },
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',

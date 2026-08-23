@@ -1216,11 +1216,21 @@
       "statUpdated": "Updated",
       "statUnchanged": "Unchanged",
       "invalid_one": "{{count}} line looked like a talk but could not be parsed. Expected format: «N. Title».",
-      "invalid_other": "{{count}} lines looked like talks but could not be parsed. Expected format: «N. Title»."
+      "invalid_other": "{{count}} lines looked like talks but could not be parsed. Expected format: «N. Title».",
+      "renamed": "Titles that changed",
+      "missingTitle": "Talks that are not in the new list: {{count}}",
+      "andMore": "…and {{count}} more",
+      "missingHint": "An import never retires anything itself. If these talks are no longer in the outline list, retire them — they stay in the catalogue marked «retired» and can be brought back in one press.",
+      "retireAction": "Retire these talks",
+      "retired": "Talks retired: {{count}}"
     },
     "emptySearch": "No talks match your search",
     "emptyTitle": "No public talks yet",
-    "emptyHint": "Tap «{{action}}» to add the S-34 catalogue"
+    "emptyHint": "Tap «{{action}}» to add the S-34 catalogue",
+    "totalCount": "Talks in the catalogue: {{count}}",
+    "foundCount": "Found {{count}} for «{{search}}»",
+    "lastImport": "Last import: {{date}}, {{time}} · {{name}}",
+    "someoneUnknown": "by somebody unknown"
   },
   "responsibilities": {
     "title": "Responsibilities",
