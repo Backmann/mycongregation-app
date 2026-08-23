@@ -8,7 +8,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -38,7 +38,27 @@ export default function RetireTalksScreen() {
 
   const [text, setText] = useState('');
   const [from, setFrom] = useState('');
+  /**
+   * Empty means «for good» — the ordinary instruction. Filled means the talk
+   * comes back by itself the day after, and nobody has to remember it.
+   */
+  const [until, setUntil] = useState('');
+  /** «Объявления и напоминания, май 2026» — the grounds, kept with the fact. */
+  const [reason, setReason] = useState('');
   const [preview, setPreview] = useState<RetirementPreview | null>(null);
+
+  /**
+   * What was done last time, and on what grounds.
+   *
+   * Setting talks aside happens once or twice a year. Coming back to a blank
+   * form, with no sign that anything ever happened, is how somebody does it
+   * twice — or decides it never worked and stops trusting the screen.
+   */
+  const lastQuery = useQuery({
+    queryKey: ['public-talks', 'last-retirement'],
+    queryFn: () => publicTalksApi.lastRetirement(),
+  });
+  const last = lastQuery.data;
 
   const previewMutation = useMutation({
     mutationFn: () => publicTalksApi.retirementPreview({ text, from }),
@@ -47,7 +67,12 @@ export default function RetireTalksScreen() {
 
   const retireMutation = useMutation({
     mutationFn: (numbers: number[]) =>
-      publicTalksApi.retireMissing(numbers, from),
+      publicTalksApi.retireMissing({
+        numbers,
+        from,
+        until: until.trim() || undefined,
+        reason: reason.trim() || undefined,
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['public-talks'] });
     },
@@ -86,9 +111,52 @@ export default function RetireTalksScreen() {
         <Text style={styles.subtitle}>{t('publicTalks.retire.subtitle')}</Text>
       </View>
 
+      {last ? (
+        <View style={styles.lastBox}>
+          <Ionicons name="time-outline" size={15} color="#0369a1" />
+          <View style={{ flex: 1 }}>
+            <Text style={styles.lastText}>
+              {t('publicTalks.retire.lastDone', {
+                count: Number(last.detail?.retired ?? 0),
+                date: new Date(last.at).toLocaleDateString(i18n.language, {
+                  day: 'numeric',
+                  month: 'long',
+                  year: 'numeric',
+                }),
+                name: last.actorName ?? '—',
+              })}
+            </Text>
+            {last.detail?.reason ? (
+              <Text style={styles.lastReason}>
+                {t('publicTalks.retire.lastReason', {
+                  reason: String(last.detail.reason),
+                })}
+              </Text>
+            ) : null}
+          </View>
+        </View>
+      ) : null}
+
       <View style={styles.card}>
         <Text style={styles.label}>{t('publicTalks.retire.fromLabel')}</Text>
         <DateField value={from} onChange={setFrom} />
+
+        <Text style={[styles.label, { marginTop: 16 }]}>
+          {t('publicTalks.retire.untilLabel')}
+        </Text>
+        <DateField value={until} onChange={setUntil} />
+        <Text style={styles.fieldHint}>{t('publicTalks.retire.untilHint')}</Text>
+
+        <Text style={[styles.label, { marginTop: 16 }]}>
+          {t('publicTalks.retire.reasonLabel')}
+        </Text>
+        <TextInput
+          style={styles.reasonInput}
+          value={reason}
+          onChangeText={setReason}
+          placeholder={t('publicTalks.retire.reasonPlaceholder')}
+          placeholderTextColor="#94a3b8"
+        />
 
         <Text style={[styles.label, { marginTop: 16 }]}>
           {t('publicTalks.retire.textLabel')}
@@ -315,6 +383,30 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
     marginBottom: 8,
+  },
+  fieldHint: { fontSize: 12, color: '#94a3b8', marginTop: 5, lineHeight: 17 },
+  lastBox: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 8,
+    backgroundColor: '#f0f9ff',
+    borderWidth: 1,
+    borderColor: '#bae6fd',
+    borderRadius: 12,
+    padding: 11,
+    marginBottom: 14,
+  },
+  lastText: { fontSize: 12.5, color: '#075985', lineHeight: 18 },
+  lastReason: { fontSize: 12, color: '#0369a1', lineHeight: 17, marginTop: 3 },
+  reasonInput: {
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 11,
+    fontSize: 14,
+    color: '#0f172a',
+    backgroundColor: '#f8fafc',
   },
   input: {
     borderWidth: 1,

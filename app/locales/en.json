@@ -1255,10 +1255,17 @@
         "programme": "In the weekend programme",
         "incoming": "A visiting speaker — the «to us» log",
         "outgoing": "One of ours is taking it — the «from us» log"
-      }
+      },
+      "untilLabel": "Until (if only for a while)",
+      "untilHint": "Leave empty when the talk goes for good. Given a date, the talk returns by itself the next day.",
+      "reasonLabel": "On what grounds",
+      "reasonPlaceholder": "Announcements and reminders, May 2026",
+      "lastDone": "Last time: {{count}} talks · {{date}} · {{name}}",
+      "lastReason": "Grounds: {{reason}}"
     },
     "showMore": "Show more · {{shown}} of {{total}}",
-    "loading": "Loading…"
+    "loading": "Loading…",
+    "pausedBetween": "Not to be given from {{from}} to {{until}}"
   },
   "responsibilities": {
     "title": "Responsibilities",

@@ -1255,10 +1255,17 @@
         "programme": "Im Wochenendprogramm",
         "incoming": "Auswärtiger Redner — Journal «zu uns»",
         "outgoing": "Ein Bruder von uns hält ihn — Journal «von uns»"
-      }
+      },
+      "untilLabel": "Bis wann (falls nur vorübergehend)",
+      "untilHint": "Leer lassen, wenn der Vortrag endgültig entfällt. Mit Datum kommt er am Tag danach von selbst zurück.",
+      "reasonLabel": "Auf welcher Grundlage",
+      "reasonPlaceholder": "Bekanntmachungen und Hinweise, Mai 2026",
+      "lastDone": "Zuletzt abgesetzt: {{count}} Vorträge · {{date}} · {{name}}",
+      "lastReason": "Grundlage: {{reason}}"
     },
     "showMore": "Mehr anzeigen · {{shown}} von {{total}}",
-    "loading": "Wird geladen…"
+    "loading": "Wird geladen…",
+    "pausedBetween": "Nicht halten von {{from}} bis {{until}}"
   },
   "responsibilities": {
     "title": "Aufgaben",

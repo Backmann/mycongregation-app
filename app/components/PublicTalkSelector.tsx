@@ -224,18 +224,29 @@ export function RetiredHint({
   inline?: boolean;
 }) {
   const { t } = useTranslation();
+  const fmtDay = (iso: string) =>
+    new Date(`${iso}T00:00:00`).toLocaleDateString(i18n.language, {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
   return (
     <View style={[styles.retiredRow, inline && styles.retiredRowInline]}>
       <Ionicons name="close-circle" size={13} color="#b45309" />
-      <Text style={styles.retiredText} numberOfLines={1}>
-        {talk.retiredFrom
-          ? t('publicTalks.retiredFrom', {
-              date: new Date(`${talk.retiredFrom}T00:00:00`).toLocaleDateString(
-                i18n.language,
-                { day: 'numeric', month: 'long', year: 'numeric' },
-              ),
-            })
-          : t('publicTalks.retiredPlain')}
+      {/* Three states, and the third is the one that matters: a talk set aside
+          only for a period comes back on its own, so saying «снята» would send
+          the coordinator looking for a talk that is perfectly usable in
+          January. */}
+      <Text style={styles.retiredText} numberOfLines={2}>
+        {!talk.retiredFrom
+          ? t('publicTalks.retiredPlain')
+          : talk.retiredUntil
+            ? t('publicTalks.pausedBetween', {
+                from: fmtDay(talk.retiredFrom),
+                until: fmtDay(talk.retiredUntil),
+              })
+            : t('publicTalks.retiredFrom', { date: fmtDay(talk.retiredFrom) })}
+        {talk.retiredReason ? ` · ${talk.retiredReason}` : ''}
       </Text>
     </View>
   );

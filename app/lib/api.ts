@@ -505,6 +505,10 @@ export interface PublicTalk {
    * is still in use. A talk retired by hand before this existed has none.
    */
   retiredFrom?: string | null;
+  /** The last day of a temporary restriction, or null when it is for good. */
+  retiredUntil?: string | null;
+  /** The announcement or letter this came from. */
+  retiredReason?: string | null;
   id: string;
   number: number;
   title: string;
@@ -3030,13 +3034,24 @@ export const publicTalksApi = {
    * Strike the listed talks out of the catalogue — a deliberate act, separate
    * from importing, because it answers «какие речи больше не говорим».
    */
-  async retireMissing(
-    numbers: number[],
-    from?: string,
-  ): Promise<{ retired: number }> {
+  async retireMissing(input: {
+    numbers: number[];
+    from?: string;
+    /** Set for a temporary pause; omitted when the talks go for good. */
+    until?: string;
+    /** «Объявления и напоминания, май 2026» — the grounds. */
+    reason?: string;
+  }): Promise<{ retired: number }> {
     const { data } = await api.post<{ retired: number }>(
       '/public-talks/retire-missing',
-      { numbers, from },
+      input,
+    );
+    return data;
+  },
+  /** The last time talks were set aside, and on what grounds. */
+  async lastRetirement(): Promise<LastImport | null> {
+    const { data } = await api.get<LastImport | null>(
+      '/public-talks/last-retirement',
     );
     return data;
   },

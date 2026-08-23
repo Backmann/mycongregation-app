@@ -25,7 +25,7 @@ export default function PublicTalksImportScreen() {
 
   /** Striking talks out is a second, deliberate press — never part of the import. */
   const retireMutation = useMutation({
-    mutationFn: (numbers: number[]) => publicTalksApi.retireMissing(numbers),
+    mutationFn: (numbers: number[]) => publicTalksApi.retireMissing({ numbers }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['public-talks'] });
     },
