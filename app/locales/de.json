@@ -1275,7 +1275,13 @@
       },
       "willLift": "Zurückzuholende Vorträge: {{count}}",
       "confirmLift": "Diese Vorträge zurückholen",
-      "liftDone": "Zurückgeholte Vorträge: {{count}}"
+      "liftDone": "Zurückgeholte Vorträge: {{count}}",
+      "askTitle": "{{count}} Vorträge ab {{date}} absetzen?",
+      "askBody": "Prüfe, ob die Liste stimmt. Sie lassen sich später zurückholen — Reiter «Vorträge zurückholen».",
+      "askLiftTitle": "{{count}} Vorträge zurückholen?",
+      "askLiftBody": "Die Sperre wird aufgehoben und die Vorträge können wieder eingeplant werden.",
+      "confirmShort": "Absetzen",
+      "historyMore": "Weitere {{count}} Entscheidungen anzeigen"
     },
     "showMore": "Mehr anzeigen · {{shown}} von {{total}}",
     "loading": "Wird geladen…",

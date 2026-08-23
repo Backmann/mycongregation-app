@@ -16,6 +16,7 @@ import { RetirementPreview, extractErrorMessage, publicTalksApi } from '../../..
 import { DateField } from '../../../components/DateField';
 import i18n from '../../../lib/i18n';
 import { usePermissions } from '../../../lib/permissions';
+import { confirm } from '../../../components/ConfirmHost';
 
 /**
  * «Планы речей, которые больше не используются.»
@@ -44,6 +45,8 @@ export default function RetireTalksScreen() {
    * dates, and a talk lifted needs no dates at all.
    */
   const [mode, setMode] = useState<'retire' | 'lift'>('retire');
+  /** How many decisions are on screen; the rest are a press away. */
+  const [historyShown, setHistoryShown] = useState(12);
   const [text, setText] = useState('');
   const [from, setFrom] = useState('');
   /**
@@ -102,6 +105,40 @@ export default function RetireTalksScreen() {
       queryClient.invalidateQueries({ queryKey: ['public-talks'] });
     },
   });
+
+  /**
+   * Ask before applying — for both acts.
+   *
+   * Setting talks aside is recoverable by bringing them back; LIFTING is not
+   * so obviously so, because it removes a restriction a brother may not know
+   * about. Neither had a question at all: the list was shown, and the next
+   * press did it. One question, naming the number and the date, costs a second
+   * and saves the wrong list going through.
+   */
+  const askThenApply = async () => {
+    if (!preview) return;
+    const numbers = preview.talks.map((tk) => tk.number);
+    const ok = await confirm({
+      title:
+        mode === 'lift'
+          ? t('publicTalks.retire.askLiftTitle', { count: numbers.length })
+          : t('publicTalks.retire.askTitle', {
+              count: numbers.length,
+              date: from ? fmtDate(from) : '',
+            }),
+      body:
+        mode === 'lift'
+          ? t('publicTalks.retire.askLiftBody')
+          : t('publicTalks.retire.askBody'),
+      confirmLabel:
+        mode === 'lift'
+          ? t('publicTalks.retire.confirmLift')
+          : t('publicTalks.retire.confirmShort'),
+      cancelLabel: t('common.cancel'),
+      danger: mode !== 'lift',
+    });
+    if (ok) retireMutation.mutate(numbers);
+  };
 
   const fmtDate = (iso: string) =>
     new Date(`${iso}T00:00:00`).toLocaleDateString(i18n.language, {
@@ -338,9 +375,7 @@ export default function RetireTalksScreen() {
               retireMutation.isSuccess && styles.retireBtnDone,
             ]}
             disabled={retireMutation.isPending || retireMutation.isSuccess}
-            onPress={() =>
-              retireMutation.mutate(preview.talks.map((tk) => tk.number))
-            }
+            onPress={() => void askThenApply()}
           >
             <Text style={styles.retireBtnText}>
               {retireMutation.isSuccess
@@ -384,7 +419,7 @@ export default function RetireTalksScreen() {
             {t('publicTalks.retire.historyTitle')}
           </Text>
           <View style={styles.card}>
-            {history.slice(0, 12).map((e, i) => (
+            {history.slice(0, historyShown).map((e, i) => (
               <View
                 key={`${e.at}-${i}`}
                 style={[styles.historyRow, i === 0 && { borderTopWidth: 0 }]}
@@ -403,11 +438,15 @@ export default function RetireTalksScreen() {
                 <Text style={styles.historyMeta}>
                   {fmtDate(e.at.slice(0, 10))}
                   {e.actorName ? ` · ${e.actorName}` : ''}
-                  {e.numbers.length > 0
-                    ? ` · ${e.numbers.slice(0, 12).join(', ')}${
-                        e.numbers.length > 12 ? '…' : ''
-                      }`
-                    : ''}
+                </Text>
+                {/* All of them. Twelve numbers of thirty answered «сколько»
+                    and not «какие», which is the question actually asked. */}
+                {e.numbers.length > 0 ? (
+                  <Text style={styles.historyNumbers}>
+                    {e.numbers.join(', ')}
+                  </Text>
+                ) : null}
+                <Text style={styles.historyMetaTail}>
                 </Text>
                 {e.reason ? (
                   <Text style={styles.historyReason}>
@@ -416,6 +455,18 @@ export default function RetireTalksScreen() {
                 ) : null}
               </View>
             ))}
+            {history.length > historyShown ? (
+              <Pressable
+                style={styles.historyMore}
+                onPress={() => setHistoryShown((n) => n + 12)}
+              >
+                <Text style={styles.historyMoreText}>
+                  {t('publicTalks.retire.historyMore', {
+                    count: history.length - historyShown,
+                  })}
+                </Text>
+              </Pressable>
+            ) : null}
           </View>
         </>
       ) : null}
@@ -513,6 +564,20 @@ const styles = StyleSheet.create({
     fontFamily: 'Manrope_600SemiBold',
   },
   historyMeta: { fontSize: 12, color: '#94a3b8', marginTop: 2, lineHeight: 17 },
+  historyMetaTail: { fontSize: 12, color: '#94a3b8', lineHeight: 17 },
+  historyNumbers: {
+    fontSize: 12.5,
+    color: '#475569',
+    lineHeight: 18,
+    marginTop: 3,
+  },
+  historyMore: { alignSelf: 'flex-start', paddingVertical: 10 },
+  historyMoreText: {
+    fontSize: 13,
+    color: '#0369a1',
+    fontWeight: '600',
+    fontFamily: 'Manrope_600SemiBold',
+  },
   historyReason: { fontSize: 12.5, color: '#0369a1', marginTop: 3 },
   lastBox: {
     flexDirection: 'row',

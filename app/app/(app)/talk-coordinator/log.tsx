@@ -372,6 +372,14 @@ export default function TalkExchangeYearScreen() {
   );
 
   const currentMonthKey = dayjs().format('YYYY-MM');
+  /**
+   * The month the reader is actually looking at.
+   *
+   * The bar used to highlight the CALENDAR month for ever, so it said «Авг.
+   * 26» while November was on the screen — and pressing the highlighted chip
+   * appeared to do nothing, since it was not where you were.
+   */
+  const [visibleMonth, setVisibleMonth] = useState(currentMonthKey);
   const currentWeekMonday = mondayISO(dayjs().format('YYYY-MM-DD'));
 
   /**
@@ -389,12 +397,22 @@ export default function TalkExchangeYearScreen() {
    */
   const scrollToCurrentWeek = () => {
     if (didInitialScroll.current) return;
-    const off =
-      weekOffsets.current[currentWeekMonday] ??
-      monthOffsets.current[currentMonthKey];
+    const week = weekOffsets.current[currentWeekMonday];
+    const month = monthOffsets.current[currentMonthKey];
+    const off = week ?? month;
     if (off == null) return;
 
-    scrollRef.current?.scrollTo({ y: Math.max(off - 8, 0), animated: false });
+    /**
+     * The month heading of the current week, when it is close above.
+     *
+     * Landing exactly on the week row leaves the reader in the middle of a
+     * month with no idea which one — the heading is just off the top. Taking
+     * the heading instead, when it is within a screen, gives the week context
+     * and still puts it near the top.
+     */
+    const target =
+      month != null && week != null && week - month < 260 ? month : off;
+    scrollRef.current?.scrollTo({ y: Math.max(target - 8, 0), animated: false });
 
     // Locked only once there is nothing left to arrive and shift things.
     const settled =
@@ -791,10 +809,18 @@ export default function TalkExchangeYearScreen() {
           {months.map((m) => (
             <Pressable
               key={m.key}
-              style={[styles.monthChip, m.key === currentMonthKey && styles.monthChipCurrent]}
+              style={[
+                styles.monthChip,
+                m.key === visibleMonth && styles.monthChipCurrent,
+              ]}
               onPress={() => scrollToMonth(m.key)}
             >
-              <Text style={[styles.monthChipText, m.key === currentMonthKey && styles.monthChipTextCurrent]}>
+              <Text
+                style={[
+                  styles.monthChipText,
+                  m.key === visibleMonth && styles.monthChipTextCurrent,
+                ]}
+              >
                 {dayjs(`${m.key}-01`).locale(i18n.language).format('MMM YY')}
               </Text>
             </Pressable>
@@ -806,6 +832,15 @@ export default function TalkExchangeYearScreen() {
         ref={scrollRef}
         contentContainerStyle={styles.container}
         onContentSizeChange={scrollToCurrentWeek}
+        scrollEventThrottle={64}
+        onScroll={(e) => {
+          const y = e.nativeEvent.contentOffset.y + 12;
+          let seen = visibleMonth;
+          for (const [key, off] of Object.entries(monthOffsets.current)) {
+            if (off <= y) seen = key;
+          }
+          if (seen !== visibleMonth) setVisibleMonth(seen);
+        }}
       >
         {months.map((m) => (
           <Fragment key={m.key}>

@@ -1275,7 +1275,13 @@
       },
       "willLift": "Talks to bring back: {{count}}",
       "confirmLift": "Bring these talks back",
-      "liftDone": "Talks brought back: {{count}}"
+      "liftDone": "Talks brought back: {{count}}",
+      "askTitle": "Retire {{count}} talks from {{date}}?",
+      "askBody": "Check the list is right. They can be brought back later — the «Bring talks back» tab on this screen.",
+      "askLiftTitle": "Bring back {{count}} talks?",
+      "askLiftBody": "The restriction will be lifted and the talks can be scheduled again.",
+      "confirmShort": "Retire talks",
+      "historyMore": "Show {{count}} more decisions"
     },
     "showMore": "Show more · {{shown}} of {{total}}",
     "loading": "Loading…",
