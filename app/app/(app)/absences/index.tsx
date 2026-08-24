@@ -63,23 +63,18 @@ export default function AbsencesListScreen() {
 
   return (
     <View style={styles.container}>
-      <Pressable
-        style={styles.addBtn}
-        onPress={() => router.push('/absences/new' as any)}
-      >
-        <Ionicons name="add" size={20} color="#fff" />
-        <Text style={styles.addBtnText}>{t('absences.add')}</Text>
-      </Pressable>
       <FilterToggle
         label={t('absences.showPast')}
         value={showPast}
         onValueChange={setShowPast}
       />
-      <FilterToggle
-        label={t('common.showRemoved')}
-        value={showRemoved}
-        onValueChange={setShowRemoved}
-      />
+      {canManageAbsences ? (
+        <FilterToggle
+          label={t('common.showRemoved')}
+          value={showRemoved}
+          onValueChange={setShowRemoved}
+        />
+      ) : null}
 
       {error && (
         <View style={styles.errorBox}>
@@ -98,7 +93,22 @@ export default function AbsencesListScreen() {
             <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
           }
           ListEmptyComponent={
-            <Text style={styles.empty}>{t('absences.empty')}</Text>
+            // The button lives HERE and nowhere else. Every other list in the
+            // app offers its plus in the header only; this screen also carried
+            // a full-width button above the list, so the same action had two
+            // doors. But a publisher opens this page once before a holiday and
+            // would meet an empty screen with a small plus in the corner — so
+            // the invitation stays for exactly the case that needs it.
+            <View style={styles.emptyBox}>
+              <Text style={styles.empty}>{t('absences.empty')}</Text>
+              <Pressable
+                style={styles.addBtn}
+                onPress={() => router.push('/absences/new' as any)}
+              >
+                <Ionicons name="add" size={20} color="#fff" />
+                <Text style={styles.addBtnText}>{t('absences.add')}</Text>
+              </Pressable>
+            </View>
           }
           renderItem={({ item }) => {
             const removed = !!item.deletedAt;
@@ -139,6 +149,7 @@ export default function AbsencesListScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16, backgroundColor: '#f8fafc' },
+  emptyBox: { alignItems: 'center', marginTop: 32, gap: 16 },
   addBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -146,11 +157,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#0ea5e9',
     borderRadius: 10,
     paddingVertical: 12,
-    marginBottom: 12,
+    paddingHorizontal: 20,
     gap: 6,
   },
   addBtnText: { color: '#fff', fontSize: 15, fontWeight: '700', fontFamily: 'Manrope_700Bold',},
-  empty: { textAlign: 'center', color: '#64748b', marginTop: 32 },
+  empty: { textAlign: 'center', color: '#64748b' },
   errorBox: {
     backgroundColor: '#fee2e2',
     borderRadius: 8,
