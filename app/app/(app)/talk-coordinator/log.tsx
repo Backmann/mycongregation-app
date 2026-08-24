@@ -28,7 +28,6 @@ import {
   visitingSpeakersApi,
   assignmentsApi,
   externalCongregationsApi,
-  publishersApi,
   publicTalksApi,
   PublicTalk,
   VisitingSpeaker,
@@ -54,6 +53,7 @@ import { PublisherSelector } from '../../../components/PublisherSelector';
 import { PublicTalkSelector } from '../../../components/PublicTalkSelector';
 import { startOfWeekMonday, addDays, formatDateISO } from '../../../lib/dates';
 import { notify } from '../../../lib/error-bus';
+import { useAllPublishers } from '../../../lib/useAllPublishers';
 
 const QK = ['talk-exchange'] as const;
 
@@ -162,10 +162,7 @@ export default function TalkExchangeYearScreen() {
     queryKey: ['external-congregations'],
     queryFn: () => externalCongregationsApi.list(),
   });
-  const publishersQuery = useQuery({
-    queryKey: ['publishers', 'all'],
-    queryFn: () => publishersApi.list({ limit: 200 }),
-  });
+  const publishersQuery = useAllPublishers();
   const talksQuery = useQuery({
     queryKey: ['public-talks', 'all'],
     queryFn: () => publicTalksApi.list({ includeInactive: true, limit: 300 }),

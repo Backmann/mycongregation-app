@@ -18,7 +18,6 @@ import {
   auxiliaryPioneersApi,
   extractErrorMessage,
   Publisher,
-  publishersApi,
   ServiceGroup,
   serviceGroupsApi,
   UpdateServiceGroupInput,
@@ -29,6 +28,7 @@ import { useAuth } from '../../../lib/auth';
 import { publisherTags } from '../../../lib/publisher-tags';
 import { notify } from '../../../lib/error-bus';
 import { confirm } from '../../../components/ConfirmHost';
+import { useAllPublishers } from '../../../lib/useAllPublishers';
 
 export default function ServiceGroupDetailScreen() {
   const { t } = useTranslation();
@@ -447,11 +447,7 @@ function AddMembersModal({
     }
   }, [visible]);
 
-  const publishersQuery = useQuery({
-    queryKey: ['publishers', 'all'],
-    queryFn: () => publishersApi.list({ limit: 200 }),
-    enabled: visible,
-  });
+  const publishersQuery = useAllPublishers({ enabled: visible });
   const groupsQuery = useQuery({
     queryKey: ['service-groups', 'names'],
     queryFn: () => serviceGroupsApi.list({}),

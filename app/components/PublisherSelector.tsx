@@ -19,7 +19,6 @@ import {
   ActivityItem,
   Publisher,
   PublisherActivity,
-  publishersApi,
   meetingSettingsApi,
   PublisherAppointment,
 } from '../lib/api';
@@ -28,6 +27,7 @@ import { effectiveVersionFor, meetingDate } from '../lib/meeting-schedule';
 import { useTranslation } from 'react-i18next';
 import { Sheet } from './Sheet';
 import { isActivePermanentPioneer } from '../lib/pioneer-status';
+import { useAllPublishers } from '../lib/useAllPublishers';
 
 interface Props {
   label: string;
@@ -178,10 +178,7 @@ export function PublisherSelector({
   const [search, setSearch] = useState('');
   const [showAll, setShowAll] = useState(false);
 
-  const { data, isLoading } = useQuery({
-    queryKey: ['publishers', 'all'],
-    queryFn: () => publishersApi.list({ limit: 200 }),
-  });
+  const { data, isLoading } = useAllPublishers();
 
   const allPublishers = data?.data ?? [];
   const selectedPublisher = allPublishers.find((p) => p.id === value);

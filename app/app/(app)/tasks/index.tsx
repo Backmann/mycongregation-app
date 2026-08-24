@@ -18,7 +18,6 @@ import 'dayjs/locale/de';
 import {
   TaskAssigneeKind,
   meApi,
-  publishersApi,
   taskRulesApi,
   tasksApi,
   type ElderTask,
@@ -35,6 +34,7 @@ import {
   quarterLabel,
 } from '../../../lib/task-areas';
 import { UndoBar } from '../../../components/UndoBar';
+import { useAllPublishers } from '../../../lib/useAllPublishers';
 
 
 /** One colour per area — the glance before the reading. */
@@ -89,10 +89,7 @@ export default function TasksScreen() {
   });
   const myPublisherId = meQuery.data?.publisher?.id ?? null;
 
-  const publishersQuery = useQuery({
-    queryKey: ['publishers', 'all'],
-    queryFn: () => publishersApi.list({}),
-  });
+  const publishersQuery = useAllPublishers();
 
   const nameOf = useMemo(() => {
     const m = new Map<string, string>();

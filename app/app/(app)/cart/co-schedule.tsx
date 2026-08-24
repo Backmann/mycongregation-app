@@ -20,7 +20,6 @@ import {
   assignmentsApi,
   hallsApi,
   meetingSettingsApi,
-  publishersApi,
   specialEventsApi,
   type CartLocation,
   type CoVisitItem,
@@ -43,6 +42,7 @@ import type { CoMeetingInfo } from '../../../lib/coSchedulePdf';
 import { reportError, notify } from '../../../lib/error-bus';
 import { confirm } from '../../../components/ConfirmHost';
 import { UndoBar } from '../../../components/UndoBar';
+import { useAllPublishers } from '../../../lib/useAllPublishers';
 
 const WEEKDAY_ANCHOR = [
   '2024-01-01',
@@ -218,11 +218,9 @@ export default function CoScheduleScreen() {
     queryFn: () => hallsApi.list(),
     enabled: canViewCoSchedule,
   });
-  const { data: pubList } = useQuery({
-    queryKey: ['publishers', 'co-org-preview'],
-    queryFn: () => publishersApi.list({ limit: 200 }),
-    enabled: canViewCoSchedule,
-  });
+  // The same roster as every other screen, under the shared key: a second key
+  // over the same endpoint is a second answer waiting to disagree.
+  const { data: pubList } = useAllPublishers({ enabled: canViewCoSchedule });
   // Show the chosen organizer's address/phone straight from their card.
   const renderOrgPreview = (id: string | null): ReactNode => {
     const p = id

@@ -12,7 +12,8 @@ import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ru';
 import 'dayjs/locale/de';
-import { serviceOverseerApi, publishersApi } from '../../../lib/api';
+import { serviceOverseerApi } from '../../../lib/api';
+import { useAllPublishers } from '../../../lib/useAllPublishers';
 
 /**
  * Which groups the service overseer has visited this service year, and which
@@ -31,10 +32,7 @@ export default function ServiceOverseerScreen() {
     queryKey: ['service-overseer', 'group-visits'],
     queryFn: () => serviceOverseerApi.groupVisits(),
   });
-  const publishersQuery = useQuery({
-    queryKey: ['publishers', 'all'],
-    queryFn: () => publishersApi.list({}),
-  });
+  const publishersQuery = useAllPublishers();
 
   const nameOf = useMemo(() => {
     const map = new Map<string, string>();

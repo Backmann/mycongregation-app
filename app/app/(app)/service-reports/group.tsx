@@ -23,6 +23,7 @@ import {
 import { useAuth } from '../../../lib/auth';
 import { useTranslation } from 'react-i18next';
 import { formatMonthLabel } from '../../../lib/i18n';
+import { useAllPublishers } from '../../../lib/useAllPublishers';
 
 /** Compact date like "8 июл." for the who/when byline. */
 function formatByline(iso: string): string {
@@ -96,12 +97,12 @@ export default function GroupReportsScreen() {
   // Threshold (months in a row without a report) for the "missed" flag.
   const [missedThreshold, setMissedThreshold] = useState(3);
 
-  // Fetch all publishers separately to get status + statusManuallyOverridden.
-  // The group endpoint doesn't include these fields, so we merge client-side.
-  const publishersQuery = useQuery({
-    queryKey: ['publishers', 'list', 'for-status'],
-    queryFn: () => publishersApi.list({ limit: 500 }),
-  });
+  // The group endpoint carries no status or statusManuallyOverridden, so the
+  // roster is fetched and merged in here. It used to be asked for under a key
+  // of its own with limit 500 — past the server's cap of 200, so the request
+  // was refused outright and every badge quietly vanished. Same roster as
+  // everywhere else, same cache entry.
+  const publishersQuery = useAllPublishers();
 
   const statusMap = useMemo(() => {
     const m = new Map<

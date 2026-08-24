@@ -19,7 +19,6 @@ import {
   PublicTalk,
   externalCongregationsApi,
   publicTalksApi,
-  publishersApi,
   talkExchangeApi,
 } from '../../../lib/api';
 import { usePermissions } from '../../../lib/permissions';
@@ -29,6 +28,7 @@ import {
   wentOutRecently,
 } from '../../../lib/speaker-stats';
 import { dayDiff, formatRelativeDay } from '../../../lib/relative-time';
+import { useAllPublishers } from '../../../lib/useAllPublishers';
 
 const OVERDUE_DAYS = 120;
 
@@ -44,10 +44,7 @@ export default function OurSpeakersScreen() {
     'all' | 'upcoming' | 'overdue' | 'never'
   >('all');
 
-  const publishersQuery = useQuery({
-    queryKey: ['publishers', 'all'],
-    queryFn: () => publishersApi.list({ limit: 200 }),
-  });
+  const publishersQuery = useAllPublishers();
   const congQuery = useQuery({
     queryKey: ['external-congregations'],
     queryFn: () => externalCongregationsApi.list(),

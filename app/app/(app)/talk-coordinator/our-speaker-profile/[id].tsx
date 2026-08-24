@@ -17,7 +17,6 @@ import {
   PublicTalk,
   externalCongregationsApi,
   publicTalksApi,
-  publishersApi,
   talkExchangeApi,
 } from '../../../../lib/api';
 import {
@@ -26,6 +25,7 @@ import {
   wentOutRecently,
 } from '../../../../lib/speaker-stats';
 import { formatRelativeDay } from '../../../../lib/relative-time';
+import { useAllPublishers } from '../../../../lib/useAllPublishers';
 
 const todayISO = () => new Date().toLocaleDateString('en-CA');
 
@@ -33,10 +33,7 @@ export default function OurSpeakerProfileScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { t, i18n } = useTranslation();
 
-  const publishersQuery = useQuery({
-    queryKey: ['publishers', 'all'],
-    queryFn: () => publishersApi.list({ limit: 200 }),
-  });
+  const publishersQuery = useAllPublishers();
   const congQuery = useQuery({
     queryKey: ['external-congregations'],
     queryFn: () => externalCongregationsApi.list(),

@@ -29,7 +29,6 @@ import {
   hallsApi,
   fieldServiceStatsApi,
   specialEventsApi,
-  publishersApi,
   absencesApi,
   serviceGroupsApi,
   responsibilitiesApi,
@@ -44,6 +43,7 @@ import {
   parseISODate,
   addDays,
 } from '../lib/dates';
+import { useAllPublishers } from '../lib/useAllPublishers';
 
 /** Monday (ISO) of the week containing the given date. */
 function mondayOf(dateISO: string): string {
@@ -491,12 +491,7 @@ export function FieldServiceForm({
     (e) => e.date <= meetingDateISO && meetingDateISO <= (e.endDate ?? e.date),
   );
   // Candidates + absences: power the "suggest" button and picker ordering.
-  const formPublishersQuery = useQuery({
-    queryKey: ['publishers', 'all'],
-    queryFn: () => publishersApi.list({ limit: 200 }),
-    enabled: visible,
-    staleTime: 60 * 1000,
-  });
+  const formPublishersQuery = useAllPublishers({ enabled: visible });
   const formAbsencesQuery = useQuery({
     queryKey: ['absences', 'week-warn'],
     queryFn: () => absencesApi.list(),

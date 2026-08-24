@@ -17,12 +17,12 @@ import {
   PioneerSchoolHelper,
   extractErrorMessage,
   pioneerSchoolApi,
-  publishersApi,
 } from '../../../lib/api';
 import { usePermissions } from '../../../lib/permissions';
 import { PublisherSelector } from '../../../components/PublisherSelector';
 import { LoadFailure } from '../../../components/LoadFailure';
 import { Sheet } from '../../../components/Sheet';
+import { useAllPublishers } from '../../../lib/useAllPublishers';
 
 /**
  * The brothers who may serve at the school.
@@ -43,11 +43,7 @@ export default function PioneerSchoolHelpersScreen() {
     queryFn: () => pioneerSchoolApi.listHelpers(),
     enabled: canViewPioneerSchool,
   });
-  const publishersQuery = useQuery({
-    queryKey: ['publishers', 'all'],
-    queryFn: () => publishersApi.list({ limit: 200 }),
-    enabled: canManagePioneerSchool,
-  });
+  const publishersQuery = useAllPublishers({ enabled: canManagePioneerSchool });
   const schoolsQuery = useQuery({
     queryKey: ['pioneer-school'],
     queryFn: () => pioneerSchoolApi.list(),

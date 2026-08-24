@@ -23,7 +23,6 @@ import {
   extractErrorMessage,
   hallsApi,
   meetingSettingsApi,
-  publishersApi,
   tasksApi,
   type ElderTask,
   type EldersMeeting,
@@ -37,6 +36,7 @@ import { TimeField } from '../../../components/TimeField';
 import { confirm } from '../../../components/ConfirmHost';
 import { AREA_BG, AREA_FG, AREAS } from '../../../lib/task-areas';
 import { router, useLocalSearchParams } from 'expo-router';
+import { useAllPublishers } from '../../../lib/useAllPublishers';
 
 /**
  * The agenda of an elders' meeting.
@@ -72,10 +72,7 @@ export default function AgendaScreen() {
     staleTime: 60 * 60 * 1000,
   });
 
-  const publishersQuery = useQuery({
-    queryKey: ['publishers', 'all'],
-    queryFn: () => publishersApi.list({}),
-  });
+  const publishersQuery = useAllPublishers();
   /**
    * The items, and what this person may do with them.
    *
