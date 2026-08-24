@@ -1387,6 +1387,22 @@ export interface TalkExchangeInput {
 }
 
 export const talkExchangeApi = {
+  /**
+   * Rebuild the journal from the weekend programme, from a date onwards.
+   *
+   * For the weeks before the two-way sync existed: the programme knows who
+   * came, the journal does not, and only one of them can be believed.
+   */
+  async rebuildFromProgramme(from: string): Promise<{
+    weeks: number;
+    created: number;
+  }> {
+    const { data } = await api.post<{ weeks: number; created: number }>(
+      '/talk-exchange/rebuild-from-programme',
+      { from },
+    );
+    return data;
+  },
   async list(): Promise<TalkExchange[]> {
     const { data } = await api.get<TalkExchange[]>('/talk-exchange');
     return data;

@@ -305,6 +305,38 @@ export default function TalkExchangeYearScreen() {
   const hiddenPubCount =
     pubSearch.trim() || showAllPubs ? 0 : Math.max(0, sortedPubs.length - 6);
 
+  /**
+   * Rebuild the journal from the programme.
+   *
+   * The two-way sync began on 23 June 2026; speakers entered before that day
+   * never reached the journal. Offered as a deliberate act rather than done
+   * quietly on open: it writes entries, and writing without being asked is how
+   * an app loses the coordinator's trust.
+   */
+  const rebuildMutation = useMutation({
+    mutationFn: (from: string) => talkExchangeApi.rebuildFromProgramme(from),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['talk-exchange'] });
+    },
+  });
+
+  const askRebuild = async () => {
+    const from = `${dayjs().year()}-01-01`;
+    const ok = await confirm({
+      title: t('talkCoordinator.log.rebuildTitle'),
+      body: t('talkCoordinator.log.rebuildBody'),
+      confirmLabel: t('talkCoordinator.log.rebuildAction'),
+      cancelLabel: t('common.cancel'),
+    });
+    if (!ok) return;
+    const res = await rebuildMutation.mutateAsync(from);
+    await confirm({
+      title: t('talkCoordinator.log.rebuildDone', { count: res.created }),
+      body: t('talkCoordinator.log.rebuildDoneBody', { weeks: res.weeks }),
+      confirmLabel: t('common.ok'),
+    });
+  };
+
   const byWeek = useMemo(() => {
     const m = new Map<string, SlotState>();
     for (const e of listQuery.data ?? []) {
@@ -804,6 +836,15 @@ export default function TalkExchangeYearScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#f1f5f9' }}>
+      <Pressable style={styles.rebuildRow} onPress={() => void askRebuild()}>
+        <Ionicons name="sync-outline" size={15} color="#0369a1" />
+        <Text style={styles.rebuildText}>
+          {rebuildMutation.isPending
+            ? t('talkCoordinator.log.rebuilding')
+            : t('talkCoordinator.log.rebuild')}
+        </Text>
+      </Pressable>
+
       <View style={styles.monthBar}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.monthBarInner}>
           {months.map((m) => (
@@ -1459,6 +1500,22 @@ function Slot({
 const styles = StyleSheet.create({
   /* Amber, boxed and with a mark: this is the one line on the screen that has
      to stop the reader before he telephones anybody. */
+  rebuildRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 9,
+    backgroundColor: '#f0f9ff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0f2fe',
+  },
+  rebuildText: {
+    fontSize: 12.5,
+    color: '#0369a1',
+    fontWeight: '600',
+    fontFamily: 'Manrope_600SemiBold',
+  },
   restrictBadge: {
     flexDirection: 'row',
     alignItems: 'center',

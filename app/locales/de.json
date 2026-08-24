@@ -2471,7 +2471,14 @@
       "givenTimes": "Gehalten: {{n}}×",
       "upcoming": "Geplant",
       "noTalk": "Kein Vortrag gewählt",
-      "phone": "Telefon"
+      "phone": "Telefon",
+      "rebuild": "Journal aus dem Plan wiederherstellen",
+      "rebuilding": "Wird wiederhergestellt…",
+      "rebuildTitle": "Einträge aus dem Plan wiederherstellen?",
+      "rebuildBody": "Die App geht die Wochen dieses Jahres durch und legt einen «zu uns»-Eintrag an, wo der Plan einen Redner hat und das Journal keinen. Es wird nichts gelöscht, vorhandene Einträge bleiben unverändert.",
+      "rebuildAction": "Wiederherstellen",
+      "rebuildDone": "Hinzugefügte Einträge: {{count}}",
+      "rebuildDoneBody": "Geprüfte Wochen: {{weeks}}. Nichts hinzugefügt heißt: Journal und Plan stimmen bereits überein."
     },
     "swap": {
       "action": "Redner ersetzen",
