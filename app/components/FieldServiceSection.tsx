@@ -629,6 +629,7 @@ export function FieldServiceForm({
                   {t('fieldService.form.dateLabel')}
                 </Text>
                 <MonthCalendar
+                  compact
                   mode="single"
                   start={pickedDate || null}
                   end={null}

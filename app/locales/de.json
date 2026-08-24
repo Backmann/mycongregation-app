@@ -2048,8 +2048,6 @@
     },
     "empty": "Noch keine Abwesenheiten",
     "showPast": "Vergangene anzeigen",
-    "inactive": "inaktiv",
-    "noMatches": "Keine Treffer",
     "deleted": "Gelöscht",
     "confirmDelete": "Wirklich löschen?",
     "fields": {
@@ -2058,7 +2056,6 @@
       "note": "Notiz"
     },
     "placeholders": {
-      "search": "Verkündiger suchen…",
       "note": "z. B. Urlaub, Dienstreise"
     },
     "form": {
@@ -2066,7 +2063,6 @@
       "pickDate": "Datum",
       "pickStart": "Beginn",
       "pickEnd": "Ende",
-      "change": "Ändern",
       "needPublisher": "Wählen Sie einen Verkündiger",
       "needDate": "Wählen Sie ein Datum",
       "needEndDate": "Wählen Sie ein Enddatum"

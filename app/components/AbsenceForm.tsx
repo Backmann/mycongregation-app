@@ -11,17 +11,14 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { MonthCalendar } from './MonthCalendar';
+import { PublisherSelector } from './PublisherSelector';
 import { Ionicons } from '@expo/vector-icons';
 import {
   Absence,
   absencesApi,
   CreateAbsenceInput,
   extractErrorMessage,
-  Publisher,
-  publishersApi,
 } from '../lib/api';
-
-type Paginatedish<T> = { items?: T[]; data?: T[]; results?: T[] };
 
 function fmtRange(a: Absence, loc: string): string {
   const start = new Date(`${a.startDate}T00:00:00`);
@@ -57,16 +54,6 @@ export function AbsenceForm({
   const [publisherId, setPublisherId] = useState<string | null>(
     lockedPublisher?.id ?? initial?.publisherId ?? defaultPublisher?.id ?? null,
   );
-  const [publisherLabel, setPublisherLabel] = useState<string>(
-    lockedPublisher?.label ??
-      initial?.publisher?.displayName ??
-      defaultPublisher?.label ??
-      '',
-  );
-  const [pickerOpen, setPickerOpen] = useState(
-    !initial && !lockedPublisher && !defaultPublisher,
-  );
-  const [search, setSearch] = useState('');
 
   const [multiDay, setMultiDay] = useState<boolean>(!!initial?.endDate);
   const [startDate, setStartDate] = useState<string | null>(
@@ -76,23 +63,6 @@ export function AbsenceForm({
     initial?.endDate ?? null,
   );
   const [note, setNote] = useState<string>(initial?.note ?? '');
-
-  const { data: pubData, isLoading: pubLoading } = useQuery({
-    queryKey: ['publishers', 'for-absence'],
-    queryFn: () => publishersApi.list({ limit: 1000 }),
-    staleTime: 5 * 60 * 1000,
-    enabled: !lockedPublisher,
-  });
-
-  const publishers = useMemo<Publisher[]>(() => {
-    const res = pubData as unknown as Paginatedish<Publisher>;
-    const items = res?.items ?? res?.data ?? res?.results ?? [];
-    const q = search.trim().toLowerCase();
-    const filtered = q
-      ? items.filter((p) => p.displayName.toLowerCase().includes(q))
-      : items;
-    return filtered.slice(0, 60);
-  }, [pubData, search]);
 
   const { data: existingAbsences } = useQuery({
     queryKey: ['absences', 'overlap', publisherId],
@@ -128,63 +98,27 @@ export function AbsenceForm({
 
   return (
     <View>
-      {/* ---- Publisher ---- */}
-      <Text style={styles.label}>{t('absences.fields.publisher')}</Text>
+      {/* ---- Publisher ----
+          The same picker as the other fourteen places that choose a person,
+          rather than a list of its own. The list of its own asked the server
+          for a thousand rows; the server allows two hundred, refused the whole
+          request, and — since nothing reports a failed READ — the refusal
+          arrived as an empty list under the words «нет совпадений». */}
       {lockedPublisher ? (
-        <View style={styles.selectedRow}>
-          <Text style={styles.selectedName}>{lockedPublisher.label}</Text>
-        </View>
-      ) : publisherId && !pickerOpen ? (
-        <Pressable
-          style={styles.selectedRow}
-          onPress={() => setPickerOpen(true)}
-        >
-          <Text style={styles.selectedName}>{publisherLabel}</Text>
-          <Text style={styles.changeLink}>{t('absences.form.change')}</Text>
-        </Pressable>
+        <>
+          <Text style={styles.label}>{t('absences.fields.publisher')}</Text>
+          <View style={styles.selectedRow}>
+            <Text style={styles.selectedName}>{lockedPublisher.label}</Text>
+          </View>
+        </>
       ) : (
-        <View style={styles.pickerBox}>
-          <TextInput
-            value={search}
-            onChangeText={setSearch}
-            placeholder={t('absences.placeholders.search')}
-            placeholderTextColor="#94a3b8"
-            style={styles.searchInput}
-            autoCorrect={false}
+        <View style={styles.selectorSlot}>
+          <PublisherSelector
+            boxed
+            label={t('absences.fields.publisher')}
+            value={publisherId}
+            onChange={setPublisherId}
           />
-          {pubLoading ? (
-            <ActivityIndicator style={{ marginVertical: 12 }} />
-          ) : (
-            <View>
-              {publishers.map((p) => {
-                return (
-                  <Pressable
-                    key={p.id}
-                    style={[
-                      styles.pubRow,
-                      p.id === publisherId && styles.pubRowActive,
-                    ]}
-                    onPress={() => {
-                      setPublisherId(p.id);
-                      setPublisherLabel(p.displayName);
-                      setPickerOpen(false);
-                      setSearch('');
-                    }}
-                  >
-                    <Text style={styles.pubName}>{p.displayName}</Text>
-                    {!p.isActive ? (
-                      <Text style={styles.inactiveTag}>
-                        {t('absences.inactive')}
-                      </Text>
-                    ) : null}
-                  </Pressable>
-                );
-              })}
-              {publishers.length === 0 ? (
-                <Text style={styles.muted}>{t('absences.noMatches')}</Text>
-              ) : null}
-            </View>
-          )}
         </View>
       )}
 
@@ -208,6 +142,7 @@ export function AbsenceForm({
             : t('absences.form.pickDate')}
         </Text>
         <MonthCalendar
+          compact
           mode={multiDay ? 'range' : 'single'}
           start={startDate}
           end={endDate}
@@ -302,36 +237,9 @@ const styles = StyleSheet.create({
     padding: 12,
   },
   selectedName: { fontSize: 16, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0369a1' },
-  changeLink: { fontSize: 13, color: '#0284c7' },
-  pickerBox: {
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    padding: 8,
-  },
-  searchInput: {
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    fontSize: 15,
-    color: '#0f172a',
-    marginBottom: 6,
-  },
-  pubRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 10,
-    paddingHorizontal: 8,
-    borderRadius: 6,
-  },
-  pubRowActive: { backgroundColor: '#e0f2fe' },
-  pubName: { fontSize: 15, color: '#0f172a' },
-  inactiveTag: { fontSize: 11, color: '#94a3b8' },
-  muted: { color: '#94a3b8', textAlign: 'center', paddingVertical: 12 },
+  /** The selector brings its own label and spacing; this only sets it apart
+   *  from the switch below it, the way `label` does for the other fields. */
+  selectorSlot: { marginTop: 16 },
   switchRow: {
     flexDirection: 'row',
     alignItems: 'center',

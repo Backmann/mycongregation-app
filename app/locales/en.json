@@ -2048,8 +2048,6 @@
     },
     "empty": "No absences yet",
     "showPast": "Show past",
-    "inactive": "inactive",
-    "noMatches": "No matches",
     "deleted": "Deleted",
     "confirmDelete": "Confirm delete?",
     "fields": {
@@ -2058,7 +2056,6 @@
       "note": "Note"
     },
     "placeholders": {
-      "search": "Search publisher…",
       "note": "e.g. vacation, business trip"
     },
     "form": {
@@ -2066,7 +2063,6 @@
       "pickDate": "Date",
       "pickStart": "Start",
       "pickEnd": "End",
-      "change": "Change",
       "needPublisher": "Select a publisher",
       "needDate": "Select a date",
       "needEndDate": "Select an end date"
