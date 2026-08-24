@@ -412,6 +412,15 @@ export default function TalkExchangeYearScreen() {
    * appeared to do nothing, since it was not where you were.
    */
   const [visibleMonth, setVisibleMonth] = useState(currentMonthKey);
+  const monthBarRef = useRef<ScrollView>(null);
+  const chipOffsets = useRef<Record<string, number>>({});
+
+  /** Bring a month's chip into view, a little in from the left edge. */
+  const showChip = (key: string) => {
+    const x = chipOffsets.current[key];
+    if (x == null) return;
+    monthBarRef.current?.scrollTo({ x: Math.max(x - 16, 0), animated: false });
+  };
   const currentWeekMonday = mondayISO(dayjs().format('YYYY-MM-DD'));
 
   /**
@@ -427,31 +436,51 @@ export default function TalkExchangeYearScreen() {
    * So the position is fixed on every content-size change until the data is
    * actually in, and only then locked.
    */
-  const scrollToCurrentWeek = () => {
+  /**
+   * Put the current week at the very top, and keep it there while the page
+   * settles.
+   *
+   * Two things move underneath this. The rows are laid out before the entries
+   * arrive, so every card that gains a speaker grows and pushes the week down;
+   * and `onLayout` for those rows fires AFTER `onContentSizeChange`, so the
+   * offsets are one beat stale exactly when we read them. One scroll, however
+   * well timed, therefore lands a week or two early — which is what Android
+   * kept showing.
+   *
+   * So it is not one scroll: it repeats on a few frames after the data is in,
+   * each time with fresher offsets, and only stops when two attempts agree.
+   */
+  const lastTarget = useRef<number>(-1);
+
+  const placeCurrentWeek = () => {
     if (didInitialScroll.current) return;
     const week = weekOffsets.current[currentWeekMonday];
-    const month = monthOffsets.current[currentMonthKey];
-    const off = week ?? month;
-    if (off == null) return;
+    if (week == null) {
+      const month = monthOffsets.current[currentMonthKey];
+      if (month != null) {
+        scrollRef.current?.scrollTo({ y: Math.max(month - 8, 0), animated: false });
+      }
+      return;
+    }
 
-    /**
-     * The month heading of the current week, when it is close above.
-     *
-     * Landing exactly on the week row leaves the reader in the middle of a
-     * month with no idea which one — the heading is just off the top. Taking
-     * the heading instead, when it is within a screen, gives the week context
-     * and still puts it near the top.
-     */
-    const target =
-      month != null && week != null && week - month < 260 ? month : off;
-    scrollRef.current?.scrollTo({ y: Math.max(target - 8, 0), animated: false });
+    const target = Math.max(week - 8, 0);
+    scrollRef.current?.scrollTo({ y: target, animated: false });
+    setVisibleMonth(currentMonthKey);
+    showChip(currentMonthKey);
 
-    // Locked only once there is nothing left to arrive and shift things.
-    const settled =
-      !listQuery.isLoading &&
-      !settingsQuery.isLoading &&
-      weekOffsets.current[currentWeekMonday] != null;
-    if (settled) didInitialScroll.current = true;
+    const dataIn = !listQuery.isLoading && !settingsQuery.isLoading;
+    if (dataIn && lastTarget.current === target) {
+      // Twice in a row at the same place: nothing is moving any more.
+      didInitialScroll.current = true;
+    }
+    lastTarget.current = target;
+  };
+
+  const scrollToCurrentWeek = () => {
+    placeCurrentWeek();
+    // A few more passes as the cards fill out; cheap, and they stop as soon as
+    // two land identically.
+    [0, 60, 200, 500].forEach((ms) => setTimeout(placeCurrentWeek, ms));
   };
 
   const scrollToMonth = (key: string) => {
@@ -846,10 +875,22 @@ export default function TalkExchangeYearScreen() {
       </Pressable>
 
       <View style={styles.monthBar}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.monthBarInner}>
+        {/* The bar scrolls itself. It never did — so on opening it sat on
+            «Янв. 26» while August was on screen, and the highlighted chip was
+            off to the left where nobody would look for it. */}
+        <ScrollView
+          ref={monthBarRef}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.monthBarInner}
+        >
           {months.map((m) => (
             <Pressable
               key={m.key}
+              onLayout={(e) => {
+                chipOffsets.current[m.key] = e.nativeEvent.layout.x;
+                if (m.key === visibleMonth) showChip(m.key);
+              }}
               style={[
                 styles.monthChip,
                 m.key === visibleMonth && styles.monthChipCurrent,
@@ -880,7 +921,10 @@ export default function TalkExchangeYearScreen() {
           for (const [key, off] of Object.entries(monthOffsets.current)) {
             if (off <= y) seen = key;
           }
-          if (seen !== visibleMonth) setVisibleMonth(seen);
+          if (seen !== visibleMonth) {
+            setVisibleMonth(seen);
+            showChip(seen);
+          }
         }}
       >
         {months.map((m) => (
@@ -903,7 +947,9 @@ export default function TalkExchangeYearScreen() {
                   style={[styles.weekendRow, !upcoming && styles.weekendPast]}
                   onLayout={(e) => {
                     weekOffsets.current[w.monday] = e.nativeEvent.layout.y;
-                    if (w.monday === currentWeekMonday) scrollToCurrentWeek();
+                    // The row's own layout is the freshest word on where it
+                    // is; every time it moves, put it back at the top.
+                    if (w.monday === currentWeekMonday) placeCurrentWeek();
                   }}
                 >
                   <Text style={styles.weekendDate}>{fmtDay(w.date)}</Text>
