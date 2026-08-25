@@ -17,6 +17,39 @@ import { LanguagePickerModal } from '../components/LanguagePicker';
 import { useAppFonts } from '../lib/fonts';
 import { useSelfApplyingUpdate } from '../lib/self-update';
 
+/**
+ * Small SUMMARY endpoints that read a fact somebody else writes.
+ *
+ * Each of these had the same failure: the screen that saves invalidates the
+ * keys IT knows about, while the same fact is read on another screen under a
+ * different root. So the CO visit was assigned and the person's home screen
+ * kept the old picture for five minutes; the report was filed and the home
+ * card still said it was not; the pair went out and the tally did not move.
+ * Every one of them was found by sweeping the code, not by anyone noticing —
+ * which is exactly the kind of fault that survives.
+ *
+ * The alternative is naming the sources at every place that saves. This
+ * project has lost that game repeatedly, so the list lives HERE, applies to
+ * every mutation, and cannot fall out of step with any particular screen.
+ *
+ * The cost is bounded: invalidateQueries refetches only the queries with a
+ * mounted observer and merely marks the rest stale, so a key nobody is
+ * looking at costs nothing until it is looked at.
+ *
+ * What belongs here: a small, cheap, DERIVED endpoint with readers that are
+ * not the writer. What does not: full lists (they have their own owners), and
+ * anything a single screen both writes and reads — that one refreshes itself.
+ */
+const DERIVED_SUMMARY_KEYS = [
+  ['me', 'assignments'],
+  ['reports', 'my-standing'],
+  ['co-visit-mine'],
+  ['co-visit-field-service'],
+  ['co-visit-meetings'],
+  ['co-host-stats'],
+  ['cart-pairings'],
+] as const;
+
 const queryClient = new QueryClient({
   // Every failed change reports itself. Most requests used to fail in silence:
   // the screen just did not move, which reads as a broken app. A screen that
@@ -42,7 +75,9 @@ const queryClient = new QueryClient({
      * fall out of date.
      */
     onSuccess: (_data, _vars, _ctx, _mutation) => {
-      void queryClient.invalidateQueries({ queryKey: ['me', 'assignments'] });
+      for (const key of DERIVED_SUMMARY_KEYS) {
+        void queryClient.invalidateQueries({ queryKey: key });
+      }
     },
   }),
   defaultOptions: {

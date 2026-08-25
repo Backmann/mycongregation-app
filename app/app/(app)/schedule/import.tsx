@@ -62,6 +62,9 @@ export default function ImportEpubScreen() {
     mutationFn: (wb) => scheduleImportApi.apply(toApplyPayload(wb)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['assignments'] });
+      // The coverage figure on this very screen is what the import changes;
+      // it was left reading the state from before the file was applied.
+      queryClient.invalidateQueries({ queryKey: ['import-coverage'] });
     },
   });
 

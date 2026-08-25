@@ -132,8 +132,11 @@ export default function AgendaScreen() {
   });
   const approveMut = useMutation({
     mutationFn: (id: string) => agendaApi.approve(id),
+    // This used to refresh ['agenda'] — a key no query in the app uses. Every
+    // other change on this screen goes through invalidateItems; approve was
+    // the one that went its own way, so approving left the list untouched.
     onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: ['agenda'] });
+      invalidateItems();
       void qc.invalidateQueries({ queryKey: ['tasks', 'meetings'] });
     },
   });
