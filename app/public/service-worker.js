@@ -16,13 +16,31 @@ self.addEventListener('push', (event) => {
   const body = payload.body || '';
   const data = payload.data || {};
 
+  // A tag GROUPS notifications: a new one whose tag is already on screen
+  // REPLACES it. That is what should happen when the same announcement is
+  // repeated, and never otherwise — but everything without a publisherId
+  // shared the tag 'notification', so a cleaning reminder followed by a task
+  // assignment left only the task, and the first was gone before it was read.
+  //
+  // The server's own dedupe key is exactly the right name: 'task-assigned:12'
+  // replaces itself and collides with nothing else. It arrives as
+  // notificationKey. The fallbacks cover what does not travel through the
+  // outbox — a publisher status change is sent on its own path and carries no
+  // key, and the type at least keeps different KINDS apart.
+  const tag =
+    data.notificationKey || data.publisherId || data.type || 'notification';
+
   event.waitUntil(
     self.registration.showNotification(title, {
       body,
       data,
       icon: '/icon-192.png',
       badge: '/icon-mono-96.png',
-      tag: data.publisherId || 'notification',
+      tag,
+      // A genuine repeat should draw attention again rather than swap itself
+      // in silently — otherwise a second reminder for the same thing looks
+      // like nothing happened.
+      renotify: true,
     })
   );
 });
