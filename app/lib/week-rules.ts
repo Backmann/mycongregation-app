@@ -12,7 +12,10 @@
  *     снимаются. Встречи для проповеди при этом остаются — они могут быть.
  *  2. Визит районного надзирателя ⇒ встреча в будний день переезжает; день
  *     хранится на самом событии (coMidweekDow, по умолчанию вторник).
- *  3. Событие с replacesMeeting, накрывающее день встречи, встаёт на её место.
+ *  3. Событие с replacesMeeting, НАКРЫВАЮЩЕЕ ДЕНЬ встречи, встаёт на её место.
+ *     Именно накрывающее день, а не «выходные вообще»: особая речь в субботу —
+ *     событие субботы, и воскресную встречу она не заменяет. Сервер судит этот
+ *     флаг ровно так же — common/week-rules.ts, правило 4.
  *
  * Модуль чистый: ни i18n, ни React, ни запросов — только даты и правила.
  */
@@ -86,14 +89,19 @@ export function weekRules(input: {
     if (!version) return undefined;
     const dateISO = dateOf(kind);
     if (!dateISO) return undefined;
-    const satISO = formatDateISO(addDays(weekStart, 5));
-    const sunISO = formatDateISO(addDays(weekStart, 6));
+    // BY THE COVERED DAY, for both kinds alike. The weekend used to be judged
+    // by whether the event touched the Saturday-Sunday pair at all, which is
+    // right for the Memorial and wrong for everything else: a special talk on
+    // a Saturday is an event of that Saturday, not of "the weekend in
+    // general", and it cannot stand in for a Sunday meeting.
+    //
+    // The Memorial is deliberately NOT handled here. It replaces a meeting by
+    // the KIND OF DAY it falls on, and it is becoming a section of its own —
+    // see [[mycongregation]]. Until then it simply is not one of these.
     return events.find((e) => {
       if (!e.replacesMeeting && !isCongressEvent(e)) return false;
+      if (e.type === 'memorial') return false;
       const end = e.endDate ?? e.date;
-      // A convention on either weekend day cancels the weekend meeting; the
-      // midweek meeting only when an event covers its exact day.
-      if (kind === 'weekend') return e.date <= sunISO && satISO <= end;
       return e.date <= dateISO && end >= dateISO;
     });
   };
