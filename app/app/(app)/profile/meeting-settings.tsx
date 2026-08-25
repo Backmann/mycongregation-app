@@ -22,12 +22,17 @@ import {
 } from '../../../lib/api';
 import { notify } from '../../../lib/error-bus';
 import { confirm } from '../../../components/ConfirmHost';
+import { formatDateISO } from '../../../lib/dates';
 
 const QK = ['meeting-settings'] as const;
 const DOW = [1, 2, 3, 4, 5, 6, 7];
 
 function todayISO(): string {
-  return new Date().toISOString().slice(0, 10);
+  // The DEVICE's day, not UTC. This is the default effectiveFrom of a new
+  // settings version: between midnight and 02:00 in a German summer the UTC
+  // date is still yesterday, and a version that starts yesterday changes
+  // retroactively which day last night's meeting was on.
+  return formatDateISO(new Date());
 }
 
 interface Draft {

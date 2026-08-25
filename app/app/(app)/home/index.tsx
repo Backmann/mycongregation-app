@@ -150,7 +150,7 @@ function SkeletonCard({ rows = 3 }: { rows?: number }) {
 function GreetingHeader() {
   const { t, i18n } = useTranslation();
   const { myPublisher } = useMyPublisher();
-  const currentMonth = `${new Date().toISOString().slice(0, 7)}-01`;
+  const currentMonth = `${formatDateISO(new Date()).slice(0, 7)}-01`;
   const { data: auxStatus } = useQuery({
     queryKey: ['aux-pioneers', 'mine', currentMonth],
     queryFn: () => auxiliaryPioneersApi.mine(currentMonth),

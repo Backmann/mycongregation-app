@@ -40,6 +40,9 @@ jobs:
       - name: i18n drift check
         working-directory: app
         run: npm run i18n:check
+      - name: UTC date check
+        working-directory: app
+        run: node scripts/check-dates.mjs
       # The three checks above never start the bundler, and the bundler has
       # its own failures: a broken import path, a missing asset, a module that
       # resolves for the type checker and not for Metro. EXPO_PUBLIC_API_URL is

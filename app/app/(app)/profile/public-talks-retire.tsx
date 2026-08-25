@@ -17,6 +17,7 @@ import { DateField } from '../../../components/DateField';
 import i18n from '../../../lib/i18n';
 import { usePermissions } from '../../../lib/permissions';
 import { confirm } from '../../../components/ConfirmHost';
+import { formatDateISO } from '../../../lib/dates';
 
 /**
  * «Планы речей, которые больше не используются.»
@@ -84,7 +85,7 @@ export default function RetireTalksScreen() {
         text,
         // A lifting has no date of its own; the preview only needs one to
         // decide which promises are still ahead, so today serves.
-        from: mode === 'lift' ? new Date().toISOString().slice(0, 10) : from,
+        from: mode === 'lift' ? formatDateISO(new Date()) : from,
       }),
     onSuccess: (data) => setPreview(data),
   });

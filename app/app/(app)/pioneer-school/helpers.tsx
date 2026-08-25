@@ -23,6 +23,7 @@ import { PublisherSelector } from '../../../components/PublisherSelector';
 import { LoadFailure } from '../../../components/LoadFailure';
 import { Sheet } from '../../../components/Sheet';
 import { useAllPublishers } from '../../../lib/useAllPublishers';
+import { formatDateISO } from '../../../lib/dates';
 
 /**
  * The brothers who may serve at the school.
@@ -61,7 +62,7 @@ export default function PioneerSchoolHelpersScreen() {
     const list = [...(schoolsQuery.data ?? [])].sort((a, b) =>
       a.startDate.localeCompare(b.startDate),
     );
-    const today = new Date().toISOString().slice(0, 10);
+    const today = formatDateISO(new Date());
     return list.find((s) => s.endDate >= today) ?? list[list.length - 1] ?? null;
   }, [schoolsQuery.data]);
 
