@@ -31,12 +31,27 @@ jobs:
       # after it goes to a runtime no installed app has. That cost four
       # releases in a row on 3 August — they published successfully and
       # reached nobody.
+      # Route types first: app.json turns typedRoutes on, but the declarations
+      # live in .expo/types (gitignored) and nothing here produced them, so
+      # every route string was an error and every navigation carries a cast.
+      # `expo export` does not write them either — only the dev server does.
+      - name: Route types
+        working-directory: app
+        run: node scripts/gen-route-types.mjs
       - name: Types
         working-directory: app
         run: npx tsc --noEmit
       - name: Lint
         working-directory: app
         run: npm run lint
+      # `expo lint` walks only /src, /app and /components. The whole of lib/ —
+      # api.ts, auth.tsx, permissions.ts, week-rules.ts, home-timeline.ts, both
+      # parsers, every PDF builder — plus scripts/ and public/ was never
+      # linted at all. Proved by experiment: a conditional hook, which is an
+      # ERROR rule, sat in lib/ and `npm run lint` exited 0.
+      - name: Lint everything else
+        working-directory: app
+        run: npx eslint .
       - name: i18n drift check
         working-directory: app
         run: npm run i18n:check

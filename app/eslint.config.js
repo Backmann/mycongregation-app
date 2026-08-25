@@ -5,7 +5,10 @@ const expoConfig = require('eslint-config-expo/flat');
 module.exports = defineConfig([
   expoConfig,
   {
-    ignores: ['dist/*'],
+    // `.expo` holds generated route declarations — written by
+    // scripts/gen-route-types.mjs before the type check, gitignored, and not
+    // ours to lint.
+    ignores: ['dist/*', '.expo/*'],
   },
   {
     rules: {
