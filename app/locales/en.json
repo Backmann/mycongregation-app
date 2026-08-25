@@ -1505,7 +1505,8 @@
       "generated": "Generated",
       "date": "Date",
       "time": "Time",
-      "address": "Address"
+      "address": "Address",
+      "groupVisit": "Visit to group"
     },
     "fromCoVisit": "From the circuit overseer's visit schedule",
     "fromCoVisitHint": "Edited in the visit schedule",

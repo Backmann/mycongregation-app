@@ -370,6 +370,16 @@ export default function FieldServiceMeetingsScreen() {
                 null)
               : null,
             isGeneral: m.isGeneral,
+            groupName: m.serviceGroupId ? groupName(m.serviceGroupId) : null,
+            isOverseerVisit: !!m.serviceOverseerVisit,
+            overseerName: m.serviceOverseerPublisherId
+              ? (publishersById.get(m.serviceOverseerPublisherId)
+                  ?.displayName ?? null)
+              : null,
+            assistantName: m.serviceOverseerAssistantId
+              ? (publishersById.get(m.serviceOverseerAssistantId)
+                  ?.displayName ?? null)
+              : null,
           };
         }),
       });
@@ -393,6 +403,9 @@ export default function FieldServiceMeetingsScreen() {
         address: t('fieldService.pdf.address'),
         conductor: t('fieldService.conductor'),
         general: t('fieldService.generalBadge'),
+        overseerVisit: t('fieldService.overseerVisitBadge'),
+        groupVisit: t('fieldService.pdf.groupVisit'),
+        assistant: t('fieldService.overseerAssistant'),
         monthTheme: t('fieldService.pdf.monthTheme'),
         generated: t('fieldService.pdf.generated'),
       },

@@ -1505,7 +1505,8 @@
       "generated": "Erstellt",
       "date": "Datum",
       "time": "Zeit",
-      "address": "Adresse"
+      "address": "Adresse",
+      "groupVisit": "Besuch der Gruppe"
     },
     "fromCoVisit": "Aus dem Besuchsplan des Kreisaufsehers",
     "fromCoVisitHint": "Wird im Besuchsplan bearbeitet",
