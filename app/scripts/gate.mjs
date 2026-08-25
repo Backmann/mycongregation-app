@@ -42,6 +42,10 @@ const STEPS = [
   ['eslint (всё остальное)', 'npx', ['eslint', '.']],
   ['Переводы', 'npm', ['run', 'i18n:check']],
   ['Даты без UTC', 'node', ['scripts/check-dates.mjs']],
+  // The client and the server both answer "which meetings does this week
+  // hold". They have drifted apart three times now, and every time it was
+  // found by reading the code months later.
+  ['Правила недели', 'node', ['scripts/check-week-rules.mjs']],
 ];
 
 let failed = null;

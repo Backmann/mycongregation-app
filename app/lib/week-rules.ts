@@ -12,10 +12,16 @@
  *     снимаются. Встречи для проповеди при этом остаются — они могут быть.
  *  2. Визит районного надзирателя ⇒ встреча в будний день переезжает; день
  *     хранится на самом событии (coMidweekDow, по умолчанию вторник).
- *  3. Событие с replacesMeeting, НАКРЫВАЮЩЕЕ ДЕНЬ встречи, встаёт на её место.
+ *  3. Вечеря ⇒ уступает ОДНА встреча, по РОДУ ДНЯ: в будний день уступает
+ *     будняя, в выходной — выходная. Не «встреча того же дня»: Вечеря во
+ *     вторник при встрече в четверг уносит именно четверговую.
+ *  4. Событие с replacesMeeting, НАКРЫВАЮЩЕЕ ДЕНЬ встречи, встаёт на её место.
  *     Именно накрывающее день, а не «выходные вообще»: особая речь в субботу —
- *     событие субботы, и воскресную встречу она не заменяет. Сервер судит этот
- *     флаг ровно так же — common/week-rules.ts, правило 4.
+ *     событие субботы, и воскресную встречу она не заменяет.
+ *
+ * Правила 1–4 — то же самое и в том же порядке, что на сервере
+ * (common/week-rules.ts). События заводятся в одном разделе, все виды подряд,
+ * поэтому и разбирать их обе стороны должны одинаково.
  *
  * Модуль чистый: ни i18n, ни React, ни запросов — только даты и правила.
  */
@@ -37,8 +43,14 @@ export interface WeekRules {
   dowOf: (kind: MeetingKind) => number | undefined;
   /** Actual calendar date of a meeting, or null when it has no day. */
   dateOf: (kind: MeetingKind) => string | null;
+  /** The Memorial falling inside this week, if any. */
+  memorial: SpecialEvent | null;
+  /** Which meeting the Memorial takes, or null when there is no Memorial. */
+  memorialTakes: MeetingKind | null;
   /** The event standing in for a meeting, if one covers its day. */
   replacedBy: (kind: MeetingKind) => SpecialEvent | undefined;
+  /** True when this meeting is not held at all — for any of the reasons. */
+  isTakenAway: (kind: MeetingKind) => boolean;
 }
 
 /** A convention or a circuit assembly — both cancel the week's meetings. */
@@ -57,6 +69,12 @@ export function eventsOfWeek(
   return events.filter(
     (e) => e.date < nextWeekISO && (e.endDate ?? e.date) >= weekStartISO,
   );
+}
+
+/** ISO day of week: 1 = Monday … 7 = Sunday. */
+function isoDowOf(iso: string): number {
+  const d = new Date(`${iso}T00:00:00Z`).getUTCDay();
+  return d === 0 ? 7 : d;
 }
 
 export function weekRules(input: {
@@ -85,8 +103,36 @@ export function weekRules(input: {
     return dow ? formatDateISO(addDays(weekStart, dow - 1)) : null;
   };
 
+  // The Memorial takes ONE meeting, chosen by the KIND OF DAY it falls on —
+  // the same rule the server applies, word for word. It lives here because the
+  // events screen enters every kind side by side, so both sides must read them
+  // the same way.
+  //
+  // This was missing for a few hours today and it cost something real: the
+  // flag rule below learned to leave the Memorial alone (correctly — it does
+  // not go by the covered day), but nothing took its place, so a Memorial week
+  // showed the meeting as ordinary while the server had already stopped
+  // counting it.
+  const weekEndISO = formatDateISO(addDays(weekStart, 6));
+  const memorial =
+    events.find(
+      (e) =>
+        e.type === 'memorial' && e.date >= weekStartISO && e.date <= weekEndISO,
+    ) ?? null;
+  const memorialTakes: MeetingKind | null = memorial
+    ? isoDowOf(memorial.date) >= 6
+      ? 'weekend'
+      : 'midweek'
+    : null;
+
   const replacedBy = (kind: MeetingKind): SpecialEvent | undefined => {
     if (!version) return undefined;
+    // The Memorial stands in for the meeting it takes — the home timeline and
+    // the schedule already draw whatever this returns IN PLACE OF the meeting,
+    // which is exactly right for it. Only the choice of WHICH meeting differs:
+    // by the kind of day, not by the day it covers, so it is answered above
+    // and returned here.
+    if (memorialTakes === kind) return memorial ?? undefined;
     const dateISO = dateOf(kind);
     if (!dateISO) return undefined;
     // BY THE COVERED DAY, for both kinds alike. The weekend used to be judged
@@ -106,13 +152,23 @@ export function weekRules(input: {
     });
   };
 
+  // One question, one answer: "is this meeting held this week at all". Every
+  // caller that skips a meeting should ask THIS rather than assemble its own
+  // combination of congress + memorial + flag, which is how they drifted apart
+  // in the first place.
+  const isTakenAway = (kind: MeetingKind): boolean =>
+    !!congress || !!replacedBy(kind);
+
   return {
     weekStartISO,
     coVisit,
     congress,
+    memorial,
+    memorialTakes,
     meetingsHeld: !congress,
     dowOf,
     dateOf,
     replacedBy,
+    isTakenAway,
   };
 }

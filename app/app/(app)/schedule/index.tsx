@@ -628,8 +628,12 @@ export default function ScheduleIndexScreen() {
     if (dutiesQuery.isLoading || generateDutiesMutation.isPending) return;
     const meetings: ('midweek' | 'weekend')[] = ['midweek', 'weekend'];
     for (const m of meetings) {
-      const replaced = m === 'midweek' ? midweekReplacedBy : weekendReplacedBy;
-      if (replaced) continue;
+      // ONE question: is this meeting held at all. It used to be assembled
+      // here from congress + the flag, and the Memorial was in neither — so
+      // the screen quietly asked the server for duties on a meeting the server
+      // had already taken away, and the refusal came back as a red strip to
+      // somebody who had merely opened the page.
+      if (rules.isTakenAway(m)) continue;
       // Past meetings are frozen — generating there would only be rejected.
       if (meetingLocked(m)) continue;
       const has = duties.some((d) => d.eventType === m);
