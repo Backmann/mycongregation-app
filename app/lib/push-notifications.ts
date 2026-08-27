@@ -110,6 +110,85 @@ async function getPushToken(): Promise<string | null> {
  * No-op on web (expo-notifications is native-only).
  * Hook order is unconditional; the *effects* are gated.
  */
+/** Whatever the server put in `data`; every field is optional by nature. */
+type NotificationData = Record<string, string | undefined>;
+
+interface NotificationRoute {
+  path: string;
+  params: Record<string, string>;
+}
+
+/**
+ * Where a notification leads when it is tapped.
+ *
+ * Only ONE of the thirteen kinds was answered here — a publisher status
+ * change — and everything else opened wherever the app happened to be, so a
+ * reminder about a task, a duty, cleaning or a visiting speaker took the
+ * reader nowhere in particular.
+ */
+function routeForNotification(
+  data: NotificationData,
+): NotificationRoute | null {
+  // <<< NOTIFICATION ROUTES — one table, two copies. The service worker is
+  // loaded by the browser on its own and cannot import from lib/, so this
+  // block is duplicated on purpose; scripts/check-notification-routes.mjs
+  // compares the two and fails the gate if they ever drift apart.
+  switch (data.type) {
+    // The history explains WHY the status changed — which months were
+    // missed — and that is what the reader of this notification wants. The
+    // card shows the person as a whole, most of which is beside the point.
+    case 'publisher_status_change':
+      return data.publisherId
+        ? {
+            path: '/service-reports/publisher-history',
+            params: { publisherId: data.publisherId },
+          }
+        : null;
+    // taskId travels with these, but there is no screen that opens one task
+    // by id. His own list is the closest true answer.
+    case 'task_assigned':
+    case 'task_soon':
+    case 'task_overdue':
+      return { path: '/profile/my-tasks', params: {} };
+    case 'agenda_approved':
+    case 'elders_meeting_tomorrow':
+      return {
+        path: '/tasks/agenda',
+        params: data.meetingId ? { meetingId: data.meetingId } : {},
+      };
+    case 'report_reminder':
+      if (data.scope === 'overseer')
+        return { path: '/service-reports/group', params: {} };
+      if (data.scope === 'secretary')
+        return { path: '/service-reports', params: {} };
+      return {
+        path: '/service-reports/new',
+        params: data.reportMonth ? { reportMonth: data.reportMonth } : {},
+      };
+    case 'schedule_published':
+    case 'schedule_changed':
+      return {
+        path: '/schedule',
+        params: data.weekStartDate ? { week: data.weekStartDate } : {},
+      };
+    case 'field_service_meeting':
+      return { path: '/cart/field-service', params: {} };
+    // Cleaning has no screen of its own — the assignments live inside the
+    // schedule week, so that is where the reminder leads.
+    case 'cleaning_after_meeting':
+    case 'cleaning_weekly_monday':
+    case 'cleaning_weekly_planned':
+    case 'cleaning_general_planned':
+      return {
+        path: '/schedule',
+        params: data.weekStart ? { week: data.weekStart } : {},
+      };
+    default:
+      return null;
+  }
+  // >>> NOTIFICATION ROUTES
+}
+
 export function usePushNotifications() {
   const { user } = useAuth();
   const router = useRouter();
@@ -150,13 +229,14 @@ export function usePushNotifications() {
 
     const subscription = Notifications.addNotificationResponseReceivedListener((response) => {
       const data = response.notification.request.content.data as
-        | { type?: string; publisherId?: string }
+        | NotificationData
         | undefined;
 
-      if (data?.type === 'publisher_status_change' && data?.publisherId) {
+      const route = routeForNotification(data ?? {});
+      if (route) {
         router.push({
-          pathname: '/service-reports/publisher-history' as any,
-          params: { publisherId: String(data.publisherId) },
+          pathname: route.path as any,
+          params: route.params,
         });
       }
     });

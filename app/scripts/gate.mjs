@@ -46,6 +46,9 @@ const STEPS = [
   // hold". They have drifted apart three times now, and every time it was
   // found by reading the code months later.
   ['Правила недели', 'node', ['scripts/check-week-rules.mjs']],
+  // Where a tapped notification leads is written twice — the service worker
+  // cannot import from lib/ — so the two copies are compared here.
+  ['Маршруты уведомлений', 'node', ['scripts/check-notification-routes.mjs']],
 ];
 
 let failed = null;
