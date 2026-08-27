@@ -86,10 +86,24 @@ interface FormState {
   wifePairId: string | null;
 }
 
-function pickVisit(events: SpecialEvent[]): SpecialEvent | null {
-  const visits = events
+/**
+ * Every visit the congregation has had or has ahead, newest first.
+ *
+ * The programme of a past visit was never lost — each line is tied to its own
+ * event and deletion is soft — and hostStats already counts across ALL of them
+ * to say who has hosted and when. But there was no way to READ an earlier one:
+ * the screen chose a single visit by itself and the choice could not be
+ * changed. The data existed with no door to it.
+ */
+function allVisits(events: SpecialEvent[]): SpecialEvent[] {
+  return events
     .filter((e) => e.type === CIRCUIT_OVERSEER_VISIT_TYPE)
-    .sort((a, b) => a.date.localeCompare(b.date));
+    .sort((a, b) => b.date.localeCompare(a.date));
+}
+
+/** The one to open when the screen is first shown. */
+function pickVisit(events: SpecialEvent[]): SpecialEvent | null {
+  const visits = allVisits(events).slice().reverse();
   if (visits.length === 0) return null;
   const today = formatDateISO(new Date());
   const active = visits.find(
@@ -141,7 +155,14 @@ export default function CoScheduleScreen() {
     enabled: canViewCoSchedule,
   });
 
-  const visit = events ? pickVisit(events) : null;
+  const visits = events ? allVisits(events) : [];
+  // null until the person picks one; the default is worked out below so that a
+  // freshly opened screen still lands on the visit that matters now.
+  const [chosenVisitId, setChosenVisitId] = useState<string | null>(null);
+  const defaultVisit = events ? pickVisit(events) : null;
+  const visit =
+    (chosenVisitId ? visits.find((v) => v.id === chosenVisitId) : null) ??
+    defaultVisit;
 
   const accM = useMutation({
     mutationFn: (input: {
@@ -392,6 +413,20 @@ export default function CoScheduleScreen() {
       day: 'numeric',
       month: 'long',
     });
+  /**
+   * Month and YEAR, for the strip of visits.
+   *
+   * `fmt` above says "вторник, 23 февраля" — no year at all, which is the one
+   * thing that tells two visits apart when they are years apart. The day is
+   * dropped in exchange: a congregation gets one visit every few months, so
+   * the month names it unambiguously and the chips stay narrow enough to see
+   * several at once.
+   */
+  const fmtVisitChip = (iso: string) =>
+    new Date(`${iso}T00:00:00`).toLocaleDateString(loc, {
+      month: 'short',
+      year: 'numeric',
+    });
   const weekdayName = (dow: number | null) => {
     const d = dow && dow >= 1 && dow <= 7 ? dow : 2;
     return new Date(`${WEEKDAY_ANCHOR[d - 1]}T00:00:00`).toLocaleDateString(
@@ -505,6 +540,7 @@ export default function CoScheduleScreen() {
   const weekMonday = formatDateISO(
     startOfWeekMonday(new Date(`${visit.date}T00:00:00`)),
   );
+  const todayISO = formatDateISO(new Date());
 
   const openCreate = (kind: ItemKind, day?: string) =>
     setForm({
@@ -1223,6 +1259,41 @@ export default function CoScheduleScreen() {
     // scrollable CONTENT, so the strip was quietly drawn at the very bottom of
     // a page metres long — present, correct, and invisible.
     <View style={styles.screen}>
+      {/* The visits, newest first — the same strip the field-service screen
+          uses for months, so the way to move between periods is the same
+          gesture in both places. Shown only when there is more than one:
+          a lone chip is furniture, not navigation. */}
+      {visits.length > 1 ? (
+        <View style={styles.visitBar}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.visitBarInner}
+          >
+            {visits.map((v) => {
+              const chosen = v.id === visit.id;
+              const past = (v.endDate ?? v.date) < todayISO;
+              return (
+                <Pressable
+                  key={v.id}
+                  style={[styles.visitChip, chosen && styles.visitChipCurrent]}
+                  onPress={() => setChosenVisitId(v.id)}
+                >
+                  <Text
+                    style={[
+                      styles.visitChipText,
+                      past && styles.visitChipTextPast,
+                      chosen && styles.visitChipTextCurrent,
+                    ]}
+                  >
+                    {fmtVisitChip(v.date)}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </ScrollView>
+        </View>
+      ) : null}
       <ScrollView
         style={styles.container}
         contentContainerStyle={styles.content}
@@ -1917,6 +1988,30 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   muted: { fontSize: 15, color: '#64748b' },
+  // The same strip as the months on the field-service screen: one gesture for
+  // "move to another period", wherever you are.
+  visitBar: {
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
+  },
+  visitBarInner: { paddingHorizontal: 12, paddingVertical: 8, gap: 6 },
+  visitChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 999,
+    backgroundColor: '#f1f5f9',
+  },
+  visitChipCurrent: { backgroundColor: '#0ea5e9' },
+  visitChipText: {
+    fontSize: 13,
+    fontWeight: '600',
+    fontFamily: 'Manrope_600SemiBold',
+    color: '#475569',
+  },
+  // A visit already over reads quieter than one still ahead.
+  visitChipTextPast: { color: '#94a3b8' },
+  visitChipTextCurrent: { color: '#fff' },
   card: { backgroundColor: '#ffffff', borderRadius: 12, padding: 16, gap: 10 },
   cardTitle: { fontSize: 18, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0f172a' },
   kv: { flexDirection: 'row', justifyContent: 'space-between', gap: 12 },
