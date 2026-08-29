@@ -1385,6 +1385,43 @@ export default function CoScheduleScreen() {
                 <Text style={styles.fieldLabel}>
                   {t('coVisit.accAddressLabel')}
                 </Text>
+                {/* The Kingdom Halls, offered the same way they already are
+                    when a visit item is placed. An overseer sometimes stays at
+                    the hall itself, and typing the address by hand for
+                    something the congregation has on file is work nobody
+                    should be asked to do twice. Tapping one fills the field —
+                    it stays editable, so a room number or an entrance can be
+                    added after. */}
+                {hallOptions.length > 0 ? (
+                  <View style={styles.chipRow}>
+                    {hallOptions.map((opt) => {
+                      const shown =
+                        accAddressDraft ?? visit.coAccommodationAddress ?? '';
+                      const active = shown === opt.address;
+                      return (
+                        <Pressable
+                          key={opt.id}
+                          style={[styles.chip, active && styles.chipActive]}
+                          onPress={() => {
+                            setAccAddressDraft(opt.address);
+                            accM.mutate({
+                              coAccommodationAddress: opt.address,
+                            });
+                          }}
+                        >
+                          <Text
+                            style={[
+                              styles.chipText,
+                              active && styles.chipTextActive,
+                            ]}
+                          >
+                            {opt.address}
+                          </Text>
+                        </Pressable>
+                      );
+                    })}
+                  </View>
+                ) : null}
                 <TextInput
                   style={styles.input}
                   value={accAddressDraft ?? visit.coAccommodationAddress ?? ''}
