@@ -427,6 +427,23 @@ export default function CoScheduleScreen() {
       month: 'short',
       year: 'numeric',
     });
+  /**
+   * Who came — the thing that actually tells two visits apart.
+   *
+   * A deputy comes INSTEAD of the circuit overseer, not as well, so both are
+   * the same kind of week to the congregation and the event type cannot
+   * separate them. Circuit overseers change every three years besides. In a
+   * year's time «авг. 2026» and «февр. 2027» say nothing; «Ойген Прехель» and
+   * «Самуэле Кристодаро» say everything.
+   *
+   * The title of the event would name the OFFICE — «Посещение заместителя» —
+   * and the office is not what anyone needs to remember.
+   *
+   * Empty when the name was never filled in; the chip then falls back to the
+   * month alone rather than announcing that something is missing.
+   */
+  const visitorName = (e: SpecialEvent) =>
+    [e.coFirstName, e.coLastName].filter(Boolean).join(' ').trim();
   const weekdayName = (dow: number | null) => {
     const d = dow && dow >= 1 && dow <= 7 ? dow : 2;
     return new Date(`${WEEKDAY_ANCHOR[d - 1]}T00:00:00`).toLocaleDateString(
@@ -1286,8 +1303,19 @@ export default function CoScheduleScreen() {
                       chosen && styles.visitChipTextCurrent,
                     ]}
                   >
-                    {fmtVisitChip(v.date)}
+                    {visitorName(v) || fmtVisitChip(v.date)}
                   </Text>
+                  {visitorName(v) ? (
+                    <Text
+                      style={[
+                        styles.visitChipWhen,
+                        past && styles.visitChipTextPast,
+                        chosen && styles.visitChipTextCurrent,
+                      ]}
+                    >
+                      {fmtVisitChip(v.date)}
+                    </Text>
+                  ) : null}
                 </Pressable>
               );
             })}
@@ -1996,18 +2024,27 @@ const styles = StyleSheet.create({
     borderBottomColor: '#e2e8f0',
   },
   visitBarInner: { paddingHorizontal: 12, paddingVertical: 8, gap: 6 },
+  visitChipCurrent: { backgroundColor: '#0ea5e9' },
   visitChip: {
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 999,
     backgroundColor: '#f1f5f9',
+    alignItems: 'center',
   },
-  visitChipCurrent: { backgroundColor: '#0ea5e9' },
   visitChipText: {
     fontSize: 13,
     fontWeight: '600',
     fontFamily: 'Manrope_600SemiBold',
     color: '#475569',
+  },
+  // The period reads UNDER the name, quieter: which visit it is comes first,
+  // when it was comes second.
+  visitChipWhen: {
+    fontSize: 11,
+    fontFamily: 'Manrope_500Medium',
+    color: '#64748b',
+    marginTop: 1,
   },
   // A visit already over reads quieter than one still ahead.
   visitChipTextPast: { color: '#94a3b8' },
