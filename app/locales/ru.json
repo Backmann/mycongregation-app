@@ -1851,7 +1851,8 @@
       "pastoral": "посещал: {{count}}",
       "accommodation": "принимал: {{count}}"
     },
-    "deleted": "Пункт удалён"
+    "deleted": "Пункт удалён",
+    "accHallLabel": "Или в Зале Царства"
   },
   "witnessing": {
     "youAreAssigned": "Вы назначены на этот слот",

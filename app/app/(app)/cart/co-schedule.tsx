@@ -262,14 +262,16 @@ export default function CoScheduleScreen() {
   // Kingdom Hall addresses to choose from: the configured halls (profile) plus
   // the meeting-settings address, so it works whether or not named halls exist.
   const settingsHallAddress = settingsOverview?.effective?.address ?? null;
-  const hallOptions: { id: string; address: string }[] = (halls ?? []).map(
-    (h: Hall) => ({ id: h.id, address: h.address }),
-  );
+  const hallOptions: { id: string; name: string | null; address: string }[] = (
+    halls ?? []
+  ).map((h: Hall) => ({ id: h.id, name: h.name, address: h.address }));
   if (
     settingsHallAddress &&
     !hallOptions.some((o) => o.address === settingsHallAddress)
   ) {
-    hallOptions.push({ id: 'settings', address: settingsHallAddress });
+    // The address recorded in the meeting settings, for a congregation that
+    // never named its halls. It has no name to show — only the address.
+    hallOptions.push({ id: 'settings', name: null, address: settingsHallAddress });
   }
   const defaultHallAddress =
     (halls ?? []).find((h: Hall) => h.isDefault)?.address ??
@@ -1382,46 +1384,68 @@ export default function CoScheduleScreen() {
               renderOrgPreview(visit.coAccommodationPublisherId)
             ) : (
               <>
-                <Text style={styles.fieldLabel}>
+                {/* THREE ways to house him, each named for what it is.
+                    The halls used to sit under «Или адрес вручную», which read
+                    as if a Kingdom Hall were a kind of hand-typed address, and
+                    the chips showed a bare street with nothing to say it was a
+                    hall at all. Now they are their own step, between the two
+                    they were wedged between. */}
+                {hallOptions.length > 0 ? (
+                  <>
+                    <Text style={accStyles.stepLabel}>
+                      {t('coVisit.accHallLabel')}
+                    </Text>
+                    <View style={accStyles.hallRow}>
+                      {hallOptions.map((opt) => {
+                        const shown =
+                          accAddressDraft ?? visit.coAccommodationAddress ?? '';
+                        const active = shown === opt.address;
+                        return (
+                          <Pressable
+                            key={opt.id}
+                            style={[
+                              accStyles.hallCard,
+                              active && accStyles.hallCardActive,
+                            ]}
+                            onPress={() => {
+                              setAccAddressDraft(opt.address);
+                              accM.mutate({
+                                coAccommodationAddress: opt.address,
+                              });
+                            }}
+                          >
+                            <View style={accStyles.hallHead}>
+                              <Ionicons
+                                name="business-outline"
+                                size={13}
+                                color={active ? '#0e7490' : '#64748b'}
+                              />
+                              <Text
+                                style={[
+                                  accStyles.hallName,
+                                  active && accStyles.hallNameActive,
+                                ]}
+                              >
+                                {opt.name || t('coVisit.kingdomHall')}
+                              </Text>
+                            </View>
+                            <Text
+                              style={[
+                                accStyles.hallAddress,
+                                active && accStyles.hallAddressActive,
+                              ]}
+                            >
+                              {opt.address}
+                            </Text>
+                          </Pressable>
+                        );
+                      })}
+                    </View>
+                  </>
+                ) : null}
+                <Text style={accStyles.stepLabel}>
                   {t('coVisit.accAddressLabel')}
                 </Text>
-                {/* The Kingdom Halls, offered the same way they already are
-                    when a visit item is placed. An overseer sometimes stays at
-                    the hall itself, and typing the address by hand for
-                    something the congregation has on file is work nobody
-                    should be asked to do twice. Tapping one fills the field —
-                    it stays editable, so a room number or an entrance can be
-                    added after. */}
-                {hallOptions.length > 0 ? (
-                  <View style={styles.chipRow}>
-                    {hallOptions.map((opt) => {
-                      const shown =
-                        accAddressDraft ?? visit.coAccommodationAddress ?? '';
-                      const active = shown === opt.address;
-                      return (
-                        <Pressable
-                          key={opt.id}
-                          style={[styles.chip, active && styles.chipActive]}
-                          onPress={() => {
-                            setAccAddressDraft(opt.address);
-                            accM.mutate({
-                              coAccommodationAddress: opt.address,
-                            });
-                          }}
-                        >
-                          <Text
-                            style={[
-                              styles.chipText,
-                              active && styles.chipTextActive,
-                            ]}
-                          >
-                            {opt.address}
-                          </Text>
-                        </Pressable>
-                      );
-                    })}
-                  </View>
-                ) : null}
                 <TextInput
                   style={styles.input}
                   value={accAddressDraft ?? visit.coAccommodationAddress ?? ''}
@@ -2361,4 +2385,45 @@ const accStyles = StyleSheet.create({
     overflow: 'hidden',
   },
   readonly: { fontSize: 14, color: '#0f172a' },
+
+  /** Each way of housing him is a named step, not a run-on of controls. */
+  stepLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
+    color: '#64748b',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginTop: 14,
+    marginBottom: 6,
+  },
+  hallRow: { gap: 8 },
+  // A card rather than a pill: a hall has a NAME and an address, and the name
+  // is what tells one from another. The bare street the chips used to show
+  // said nothing about whose door it was.
+  hallCard: {
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    backgroundColor: '#f8fafc',
+    borderRadius: 10,
+    paddingVertical: 9,
+    paddingHorizontal: 12,
+  },
+  hallCardActive: { borderColor: '#0e7490', backgroundColor: '#ecfeff' },
+  hallHead: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  hallName: {
+    fontSize: 13,
+    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
+    color: '#334155',
+  },
+  hallNameActive: { color: '#0e7490' },
+  hallAddress: {
+    fontSize: 12,
+    fontFamily: 'Manrope_500Medium',
+    color: '#64748b',
+    marginTop: 2,
+    marginLeft: 19,
+  },
+  hallAddressActive: { color: '#0e7490' },
 });

@@ -1837,7 +1837,8 @@
       "pastoral": "calls: {{count}}",
       "accommodation": "put them up: {{count}}"
     },
-    "deleted": "Item removed"
+    "deleted": "Item removed",
+    "accHallLabel": "Or at a Kingdom Hall"
   },
   "witnessing": {
     "youAreAssigned": "You're assigned to this slot",

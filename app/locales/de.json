@@ -1837,7 +1837,8 @@
       "pastoral": "Besuche: {{count}}",
       "accommodation": "beherbergt: {{count}}"
     },
-    "deleted": "Punkt gelöscht"
+    "deleted": "Punkt gelöscht",
+    "accHallLabel": "Oder im Königreichssaal"
   },
   "witnessing": {
     "youAreAssigned": "Sie sind diesem Slot zugeteilt",
