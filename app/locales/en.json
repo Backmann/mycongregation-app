@@ -1838,7 +1838,8 @@
       "accommodation": "put them up: {{count}}"
     },
     "deleted": "Item removed",
-    "accHallLabel": "Or at a Kingdom Hall"
+    "accHallLabel": "Or at a Kingdom Hall",
+    "pastReadOnly": "The visit is over — its programme is read-only"
   },
   "witnessing": {
     "youAreAssigned": "You're assigned to this slot",

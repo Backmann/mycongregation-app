@@ -560,6 +560,17 @@ export default function CoScheduleScreen() {
     startOfWeekMonday(new Date(`${visit.date}T00:00:00`)),
   );
   const todayISO = formatDateISO(new Date());
+  /**
+   * A visit already over is a record, not a plan.
+   *
+   * The strip opens earlier visits for reading — which is what it is for — and
+   * until now it opened them for writing just as much. The server refuses
+   * those writes; this is so nobody meets that refusal by surprise. Judged by
+   * the END of the visit: it runs several days and is over only when the last
+   * has passed.
+   */
+  const visitIsOver = (visit.endDate ?? visit.date) < todayISO;
+  const canEditVisit = canEditCoSchedule && !visitIsOver;
 
   const openCreate = (kind: ItemKind, day?: string) =>
     setForm({
@@ -1131,7 +1142,7 @@ export default function CoScheduleScreen() {
                   </View>
                   <Text style={styles.dayHeader}>{fmt(day)}</Text>
                 </View>
-                {canEditCoSchedule ? (
+                {canEditVisit ? (
                   <Pressable
                     style={({ pressed }) => [
                       styles.addBtn,
@@ -1175,7 +1186,7 @@ export default function CoScheduleScreen() {
                 .map((it) => (
                   <Pressable
                     key={it.id}
-                    disabled={!canEditCoSchedule || isSynced(it)}
+                    disabled={!canEditVisit || isSynced(it)}
                     style={({ pressed }) => [
                       styles.itemRow,
                       (it.kind === 'pioneers' || it.kind === 'elders') && [
@@ -1183,12 +1194,12 @@ export default function CoScheduleScreen() {
                         { borderLeftColor: kindColor(it.kind).fg },
                       ],
                       pressed &&
-                        canEditCoSchedule &&
+                        canEditVisit &&
                         !isSynced(it) &&
                         styles.pressed,
                     ]}
                     onPress={() =>
-                      canEditCoSchedule && !isSynced(it) && openEdit(it)
+                      canEditVisit && !isSynced(it) && openEdit(it)
                     }
                   >
                     <Text style={styles.itemTime}>{it.startTime ?? '—'}</Text>
@@ -1211,7 +1222,7 @@ export default function CoScheduleScreen() {
                       </View>
                       {renderBody(it)}
                     </View>
-                    {canEditCoSchedule && !isSynced(it) ? (
+                    {canEditVisit && !isSynced(it) ? (
                       <Ionicons
                         name="chevron-forward"
                         size={16}
@@ -1235,12 +1246,12 @@ export default function CoScheduleScreen() {
             {stranded.map((it) => (
               <Pressable
                 key={it.id}
-                disabled={!canEditCoSchedule}
+                disabled={!canEditVisit}
                 style={({ pressed }) => [
                   styles.strandedRow,
-                  pressed && canEditCoSchedule && styles.pressed,
+                  pressed && canEditVisit && styles.pressed,
                 ]}
-                onPress={() => canEditCoSchedule && openEdit(it)}
+                onPress={() => canEditVisit && openEdit(it)}
               >
                 <Text style={styles.strandedDate}>{fmt(it.itemDate)}</Text>
                 <Text style={styles.strandedWhat}>
@@ -1338,11 +1349,20 @@ export default function CoScheduleScreen() {
           label={t('coVisit.midweekDay')}
           value={weekdayName(visit.coMidweekDow)}
         />
+        {/* Said plainly, once, at the top: everything below is readable and
+            nothing below is editable. Better than a row of dead buttons that
+            leave the reader wondering what is wrong with his account. */}
+        {visitIsOver ? (
+          <View style={styles.pastNote}>
+            <Ionicons name="lock-closed-outline" size={13} color="#64748b" />
+            <Text style={styles.pastNoteText}>{t('coVisit.pastReadOnly')}</Text>
+          </View>
+        ) : null}
       </View>
 
       {/* Only for those who can actually close the gaps; for everyone else it
           would be a list of other people's homework. */}
-      {canEditCoSchedule && readiness.length > 0 ? (
+      {canEditVisit && readiness.length > 0 ? (
         <View style={styles.readinessCard}>
           <View style={styles.readinessHead}>
             <Ionicons name="list-outline" size={15} color="#92400e" />
@@ -1363,7 +1383,7 @@ export default function CoScheduleScreen() {
             <Text style={accStyles.neededBadge}>{t('coVisit.accNeeded')}</Text>
           ) : null}
         </View>
-        {canEditCoSchedule ? (
+        {canEditVisit ? (
           <>
             <PublisherSelector
               boxed
@@ -2111,6 +2131,21 @@ const styles = StyleSheet.create({
   visitChipTextPast: { color: '#94a3b8' },
   visitChipTextCurrent: { color: '#fff' },
   card: { backgroundColor: '#ffffff', borderRadius: 12, padding: 16, gap: 10 },
+  pastNote: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 4,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#f1f5f9',
+  },
+  pastNoteText: {
+    fontSize: 12,
+    fontFamily: 'Manrope_500Medium',
+    color: '#64748b',
+    flex: 1,
+  },
   cardTitle: { fontSize: 18, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0f172a' },
   kv: { flexDirection: 'row', justifyContent: 'space-between', gap: 12 },
   kvLabel: { fontSize: 14, color: '#64748b' },

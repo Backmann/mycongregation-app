@@ -1838,7 +1838,8 @@
       "accommodation": "beherbergt: {{count}}"
     },
     "deleted": "Punkt gelöscht",
-    "accHallLabel": "Oder im Königreichssaal"
+    "accHallLabel": "Oder im Königreichssaal",
+    "pastReadOnly": "Der Besuch ist vorbei — das Programm ist schreibgeschützt"
   },
   "witnessing": {
     "youAreAssigned": "Sie sind diesem Slot zugeteilt",

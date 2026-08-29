@@ -1852,7 +1852,8 @@
       "accommodation": "принимал: {{count}}"
     },
     "deleted": "Пункт удалён",
-    "accHallLabel": "Или в Зале Царства"
+    "accHallLabel": "Или в Зале Царства",
+    "pastReadOnly": "Визит завершён — программа доступна только для чтения"
   },
   "witnessing": {
     "youAreAssigned": "Вы назначены на этот слот",
