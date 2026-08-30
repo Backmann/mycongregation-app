@@ -49,6 +49,8 @@ const STEPS = [
   // Where a tapped notification leads is written twice — the service worker
   // cannot import from lib/ — so the two copies are compared here.
   ['Маршруты уведомлений', 'node', ['scripts/check-notification-routes.mjs']],
+  // A folder nobody names in the tab layout becomes a tab. Silently.
+  ['Вкладки', 'node', ['scripts/check-tabs.mjs']],
 ];
 
 let failed = null;

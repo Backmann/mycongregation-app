@@ -164,6 +164,10 @@ export default function AppLayout() {
         <Tabs.Screen name="pioneer-school" options={{ href: null }} />
         <Tabs.Screen name="talk-coordinator" options={{ href: null }} />
         <Tabs.Screen name="cleaning" options={{ href: null }} />
+        {/* Reached from the event that holds it, never from the tab bar.
+            Without this line expo-router adds any unlisted folder as a tab of
+            its own, and «memorial» duly appeared at the bottom of the screen. */}
+        <Tabs.Screen name="memorial" options={{ href: null }} />
       </Tabs>
     </AppLock>
   );
