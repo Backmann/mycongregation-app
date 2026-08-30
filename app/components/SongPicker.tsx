@@ -26,14 +26,30 @@ function currentNumberFromTitle(title: string | null | undefined): number | null
  */
 export function SongPicker({
   currentTitle,
+  currentNumber,
   readOnly,
   isSaving,
   onSave,
+  onSaveNumber,
 }: {
-  currentTitle: string | null;
+  currentTitle?: string | null;
+  /**
+   * The number, for callers that store a number.
+   *
+   * The schedule stores a TITLE because everything around it — «Песня 1 и
+   * молитва | Вступительные слова: …» — is text lifted from the workbook, in
+   * whatever language the publication is. A Russian congregation's schedule is
+   * Russian throughout, and a song line reading «Песня 20» sits right at home
+   * among them.
+   *
+   * The Memorial has no workbook behind it, so its sheet keeps the number and
+   * nothing else: a number reads the same in every language.
+   */
+  currentNumber?: number | null;
   readOnly?: boolean;
   isSaving?: boolean;
-  onSave: (partTitle: string | null) => void;
+  onSave?: (partTitle: string | null) => void;
+  onSaveNumber?: (songNumber: number | null) => void;
 }) {
   const { t } = useTranslation();
   const [search, setSearch] = useState('');
@@ -47,7 +63,12 @@ export function SongPicker({
     () => songsQuery.data?.data ?? [],
     [songsQuery.data],
   );
-  const current = currentNumberFromTitle(currentTitle);
+  // Whichever the caller speaks. Number wins when both are given.
+  const current = currentNumber ?? currentNumberFromTitle(currentTitle);
+  const emit = (n: number | null) => {
+    if (onSaveNumber) onSaveNumber(n);
+    else onSave?.(n === null ? null : `Песня ${n}`);
+  };
   const currentSong = songs.find((s) => s.number === current);
 
   const filtered = useMemo(() => {
@@ -84,7 +105,7 @@ export function SongPicker({
           {current != null && (
             <Pressable
               style={styles.clearRow}
-              onPress={() => onSave(null)}
+              onPress={() => emit(null)}
               disabled={isSaving}
             >
               <Ionicons name="close-circle-outline" size={18} color="#dc2626" />
@@ -114,7 +135,7 @@ export function SongPicker({
                   active && styles.rowActive,
                   pressed && !readOnly && styles.rowPressed,
                 ]}
-                onPress={readOnly ? undefined : () => onSave(`Песня ${s.number}`)}
+                onPress={readOnly ? undefined : () => emit(s.number)}
                 disabled={readOnly || isSaving}
               >
                 <View style={[styles.badge, active && styles.badgeActive]}>

@@ -1842,6 +1842,130 @@ export interface CoVisitFieldServiceWeek {
   meetings: CoVisitFieldServiceMeeting[];
 }
 
+/**
+ * The Memorial programme.
+ *
+ * One row type covers the whole sheet — the fixed parts, the brothers passing
+ * the emblems, the attendants — because a line is a label, a person and a note
+ * in all three. Which group it belongs to is `section`.
+ */
+export type MemorialSection = 'programme' | 'emblems' | 'duty';
+
+export interface MemorialItem {
+  id: string;
+  specialEventId: string;
+  section: MemorialSection;
+  /** Set only on the fixed programme parts; null for zones and duties. */
+  partKey: string | null;
+  /** What the sheet says: «Молитва за хлеб», «Левый ряд», «Стоянка». */
+  label: string;
+  sortOrder: number;
+  publisherId: string | null;
+  /** A speaker from another congregation, written by hand. */
+  personText: string | null;
+  /** A NUMBER, not «Песня N»: the sheet is read in whatever language. */
+  songNumber: number | null;
+  note: string | null;
+  deletedAt: string | null;
+}
+
+export interface MemorialSheet {
+  event: {
+    id: string;
+    date: string;
+    time: string | null;
+    address: string | null;
+    theme: string | null;
+    themeUrl: string | null;
+    /** Null while the programme is a draft and nobody has been told. */
+    publishedAt: string | null;
+  };
+  items: MemorialItem[];
+  /** False once the evening has passed: read it, do not rewrite it. */
+  editable: boolean;
+}
+
+export const memorialApi = {
+  /** Every Memorial on record, newest first. */
+  async list(): Promise<SpecialEvent[]> {
+    const { data } = await api.get<SpecialEvent[]>('/memorial');
+    return data;
+  },
+  async sheet(id: string): Promise<MemorialSheet> {
+    const { data } = await api.get<MemorialSheet>(`/memorial/${id}`);
+    return data;
+  },
+  /** Fill an empty Memorial from last year's, or from the template. */
+  async prepare(id: string): Promise<MemorialSheet> {
+    const { data } = await api.post<MemorialSheet>(`/memorial/${id}/prepare`);
+    return data;
+  },
+  async addLine(
+    id: string,
+    input: {
+      section: MemorialSection;
+      label: string;
+      partKey?: string | null;
+      note?: string | null;
+    },
+  ): Promise<MemorialItem> {
+    const { data } = await api.post<MemorialItem>(
+      `/memorial/${id}/lines`,
+      input,
+    );
+    return data;
+  },
+  async updateLine(
+    lineId: string,
+    input: {
+      label?: string;
+      publisherId?: string | null;
+      personText?: string | null;
+      songNumber?: number | null;
+      note?: string | null;
+    },
+  ): Promise<MemorialItem> {
+    const { data } = await api.patch<MemorialItem>(
+      `/memorial/lines/${lineId}`,
+      input,
+    );
+    return data;
+  },
+  async reorder(
+    id: string,
+    section: MemorialSection,
+    orderedIds: string[],
+  ): Promise<MemorialItem[]> {
+    const { data } = await api.post<MemorialItem[]>(`/memorial/${id}/reorder`, {
+      section,
+      orderedIds,
+    });
+    return data;
+  },
+  async removeLine(lineId: string): Promise<void> {
+    await api.delete(`/memorial/lines/${lineId}`);
+  },
+  async restoreLine(lineId: string): Promise<void> {
+    await api.post(`/memorial/lines/${lineId}/restore`);
+  },
+  async setTheme(
+    id: string,
+    theme: string | null,
+    themeUrl: string | null,
+  ): Promise<MemorialSheet> {
+    const { data } = await api.patch<MemorialSheet>(`/memorial/${id}/theme`, {
+      theme,
+      themeUrl,
+    });
+    return data;
+  },
+  /** Say the sheet is ready — the one moment everyone learns at once. */
+  async publish(id: string): Promise<MemorialSheet> {
+    const { data } = await api.post<MemorialSheet>(`/memorial/${id}/publish`);
+    return data;
+  },
+};
+
 export const coVisitItemsApi = {
   /** Hosting rotation across all visits (lunches / lunch boxes). */
   async hostStats(): Promise<CoHostStat[]> {

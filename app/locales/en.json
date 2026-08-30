@@ -3188,5 +3188,28 @@
     "allFine": "All {{count}} are above 560",
     "nobody": "There are no regular pioneers in the congregation",
     "checkSince": "Hours for only {{count}} of {{of}} months, and the card gives no date of appointment — check from which month he has been pioneering."
+  },
+  "memorial": {
+    "title": "Memorial",
+    "programmeLink": "Memorial programme",
+    "programmeLinkHint": "Chairman, talk, prayers, emblems and duties",
+    "sections": {
+      "programme": "Programme",
+      "emblems": "Passing the emblems",
+      "duty": "Duties"
+    },
+    "theme": "Theme of the talk",
+    "themePlaceholder": "Theme title",
+    "themeUrlPlaceholder": "Link to the theme (optional)",
+    "draft": "Draft — nobody has been told yet",
+    "published": "Programme published",
+    "publish": "Publish",
+    "pastReadOnly": "The Memorial is over — its programme is read-only",
+    "empty": "The programme has not been drawn up yet",
+    "prepare": "Draw up the programme",
+    "prepareHint": "Taken from last year's Memorial: labels, order, songs and theme. People are assigned afresh.",
+    "noTime": "No time set",
+    "addNote": "Add a note",
+    "notePlaceholder": "What to know beforehand"
   }
 }

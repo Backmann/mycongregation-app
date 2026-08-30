@@ -3188,5 +3188,28 @@
     "allFine": "Alle {{count}} liegen über 560",
     "nobody": "In der Versammlung gibt es keine allgemeinen Pioniere",
     "checkSince": "Stunden nur für {{count}} von {{of}} Monaten, und auf der Karte fehlt das Datum des Pionierdienstbeginns — prüfe, seit wann er Pionier ist."
+  },
+  "memorial": {
+    "title": "Gedächtnismahl",
+    "programmeLink": "Programm des Gedächtnismahls",
+    "programmeLinkHint": "Vorsitz, Vortrag, Gebete, Symbole und Aufgaben",
+    "sections": {
+      "programme": "Programm",
+      "emblems": "Weiterreichen der Symbole",
+      "duty": "Aufgaben"
+    },
+    "theme": "Thema des Vortrags",
+    "themePlaceholder": "Titel des Themas",
+    "themeUrlPlaceholder": "Link zum Thema (optional)",
+    "draft": "Entwurf — noch wurde niemand benachrichtigt",
+    "published": "Programm veröffentlicht",
+    "publish": "Veröffentlichen",
+    "pastReadOnly": "Das Gedächtnismahl ist vorbei — das Programm ist schreibgeschützt",
+    "empty": "Das Programm wurde noch nicht erstellt",
+    "prepare": "Programm erstellen",
+    "prepareHint": "Wird vom letztjährigen Gedächtnismahl übernommen: Bezeichnungen, Reihenfolge, Lieder und Thema. Personen werden neu eingeteilt.",
+    "noTime": "Keine Zeit angegeben",
+    "addNote": "Notiz hinzufügen",
+    "notePlaceholder": "Was man vorher wissen muss"
   }
 }
