@@ -102,6 +102,7 @@ import { usePermissions } from '../../../lib/permissions';
 import { SpecialEventsWeekBanner } from '../../../components/SpecialEventsWeekBanner';
 import { weekRules } from '../../../lib/week-rules';
 import { ReplacedMeetingNotice } from '../../../components/ReplacedMeetingNotice';
+import { MemorialMeetingBlock } from '../../../components/MemorialMeetingBlock';
 import { CollapsibleMeetingBlock } from '../../../components/CollapsibleMeetingBlock';
 import { HospitalityZone } from '../../../components/HospitalityZone';
 import { AssignmentSheet } from '../../../components/AssignmentSheet';
@@ -1552,6 +1553,24 @@ export default function ScheduleIndexScreen() {
                 (eventType === 'midweek' || eventType === 'weekend')
               ) {
                 return null;
+              }
+              // BEFORE the emptiness check on purpose: on a Memorial week
+              // there are no assignments for the meeting it takes — the
+              // workbook has not been imported that far ahead — and the block
+              // must still appear. It is the meeting of that week.
+              if (
+                rules.memorialTakes === eventType &&
+                rules.memorial &&
+                !congressThisWeek
+              ) {
+                return (
+                  <MemorialMeetingBlock
+                    key="memorial"
+                    event={rules.memorial}
+                    canEdit={perms.isAdmin || perms.isElder}
+                    hiddenCount={items.length}
+                  />
+                );
               }
               if (items.length === 0) return null;
               const numbers = buildPartNumbers(items);

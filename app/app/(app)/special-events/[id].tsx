@@ -12,7 +12,6 @@ import { useLocalSearchParams, router } from 'expo-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
-import { Ionicons } from '@expo/vector-icons';
 import { RichText } from '../../../components/RichText';
 import {
   circuitOverseersApi,
@@ -118,9 +117,6 @@ export default function SpecialEventDetailScreen() {
   });
 
   const isCoVisit = event?.type === CIRCUIT_OVERSEER_VISIT_TYPE;
-  // The Memorial is entered here like any other event, so this is where its
-  // programme is reached from — the same road the circuit visit takes.
-  const isMemorial = event?.type === 'memorial';
 
   // Circuit overseers the manager can switch the visit to, right from the
   // event. Loaded only for a CO visit and only for managers (the picker is
@@ -230,24 +226,6 @@ export default function SpecialEventDetailScreen() {
       ) : null}
       {event.replacesMeeting ? (
         <Text style={styles.hint}>{t('specialEvents.replacesMeetingHint')}</Text>
-      ) : null}
-
-      {isMemorial ? (
-        <Pressable
-          style={styles.memorialLink}
-          onPress={() => router.push(`/memorial/${id}` as any)}
-        >
-          <Ionicons name="list-outline" size={18} color="#0e7490" />
-          <View style={{ flex: 1 }}>
-            <Text style={styles.memorialLinkTitle}>
-              {t('memorial.programmeLink')}
-            </Text>
-            <Text style={styles.memorialLinkHint}>
-              {t('memorial.programmeLinkHint')}
-            </Text>
-          </View>
-          <Ionicons name="chevron-forward" size={18} color="#94a3b8" />
-        </Pressable>
       ) : null}
 
       {isCoVisit ? (
@@ -458,29 +436,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   deleteText: { color: '#ef4444', fontSize: 16, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
-  memorialLink: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    backgroundColor: '#ecfeff',
-    borderWidth: 1,
-    borderColor: '#a5f3fc',
-    borderRadius: 12,
-    padding: 14,
-    marginTop: 12,
-  },
-  memorialLinkTitle: {
-    fontSize: 15,
-    fontWeight: '700',
-    fontFamily: 'Manrope_700Bold',
-    color: '#0e7490',
-  },
-  memorialLinkHint: {
-    fontSize: 12,
-    fontFamily: 'Manrope_500Medium',
-    color: '#0891b2',
-    marginTop: 2,
-  },
   coBlock: {
     marginTop: 16,
     backgroundColor: '#fff',
