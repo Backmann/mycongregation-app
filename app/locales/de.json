@@ -3210,6 +3210,8 @@
     "prepareHint": "Wird vom letztjährigen Gedächtnismahl übernommen: Bezeichnungen, Reihenfolge, Lieder und Thema. Personen werden neu eingeteilt.",
     "noTime": "Keine Zeit angegeben",
     "addNote": "Notiz hinzufügen",
-    "notePlaceholder": "Was man vorher wissen muss"
+    "notePlaceholder": "Was man vorher wissen muss",
+    "openInSchedule": "Im Programm öffnen",
+    "openInScheduleHint": "Programm, Aufgaben und Weiterreichen der Symbole"
   }
 }

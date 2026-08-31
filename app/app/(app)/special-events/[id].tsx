@@ -12,7 +12,9 @@ import { useLocalSearchParams, router } from 'expo-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
+import { Ionicons } from '@expo/vector-icons';
 import { RichText } from '../../../components/RichText';
+import { formatDateISO, startOfWeekMonday } from '../../../lib/dates';
 import {
   circuitOverseersApi,
   CircuitOverseer,
@@ -117,6 +119,11 @@ export default function SpecialEventDetailScreen() {
   });
 
   const isCoVisit = event?.type === CIRCUIT_OVERSEER_VISIT_TYPE;
+  // The Memorial's programme lives on the week's schedule, in the place of the
+  // meeting it takes — one place, not two. This is the way TO it, which is
+  // what a past Memorial was missing: everything about it is kept, and there
+  // was no door to go and read it.
+  const isMemorial = event?.type === 'memorial';
 
   // Circuit overseers the manager can switch the visit to, right from the
   // event. Loaded only for a CO visit and only for managers (the picker is
@@ -230,6 +237,30 @@ export default function SpecialEventDetailScreen() {
           really is otherwise free. */}
       {event.replacesMeeting && event.type !== 'memorial' ? (
         <Text style={styles.hint}>{t('specialEvents.replacesMeetingHint')}</Text>
+      ) : null}
+
+      {isMemorial ? (
+        <Pressable
+          style={styles.weekLink}
+          onPress={() =>
+            router.push(
+              `/schedule?week=${formatDateISO(
+                startOfWeekMonday(new Date(`${event!.date}T00:00:00`)),
+              )}` as any,
+            )
+          }
+        >
+          <Ionicons name="calendar-outline" size={18} color="#0e7490" />
+          <View style={{ flex: 1 }}>
+            <Text style={styles.weekLinkTitle}>
+              {t('memorial.openInSchedule')}
+            </Text>
+            <Text style={styles.weekLinkHint}>
+              {t('memorial.openInScheduleHint')}
+            </Text>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color="#94a3b8" />
+        </Pressable>
       ) : null}
 
       {isCoVisit ? (
@@ -440,6 +471,29 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   deleteText: { color: '#ef4444', fontSize: 16, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
+  weekLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: '#ecfeff',
+    borderWidth: 1,
+    borderColor: '#a5f3fc',
+    borderRadius: 12,
+    padding: 14,
+    marginTop: 12,
+  },
+  weekLinkTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
+    color: '#0e7490',
+  },
+  weekLinkHint: {
+    fontSize: 12,
+    fontFamily: 'Manrope_500Medium',
+    color: '#0891b2',
+    marginTop: 2,
+  },
   coBlock: {
     marginTop: 16,
     backgroundColor: '#fff',

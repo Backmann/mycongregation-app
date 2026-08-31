@@ -3210,6 +3210,8 @@
     "prepareHint": "Taken from last year's Memorial: labels, order, songs and theme. People are assigned afresh.",
     "noTime": "No time set",
     "addNote": "Add a note",
-    "notePlaceholder": "What to know beforehand"
+    "notePlaceholder": "What to know beforehand",
+    "openInSchedule": "Open in the schedule",
+    "openInScheduleHint": "The programme, the duties and the passing of the emblems"
   }
 }
