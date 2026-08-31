@@ -148,7 +148,8 @@ function EventRow({ event }: { event: SpecialEvent }) {
             {meta}
           </Text>
         ) : null}
-        {isCongress || event.replacesMeeting ? (
+        {isCongress ||
+        (event.replacesMeeting && event.type !== 'memorial') ? (
           <Text style={styles.hint}>
             {t(
               isCongress

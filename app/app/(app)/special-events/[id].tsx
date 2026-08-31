@@ -224,7 +224,11 @@ export default function SpecialEventDetailScreen() {
       {isRemoved ? (
         <Text style={styles.removedBadge}>{t('common.showRemoved')}</Text>
       ) : null}
-      {event.replacesMeeting ? (
+      {/* Not for the Memorial: it does not leave the meeting's place empty,
+          it STANDS in it, with a programme of its own on the week's schedule.
+          The phrase is right for any other flagged event, where the evening
+          really is otherwise free. */}
+      {event.replacesMeeting && event.type !== 'memorial' ? (
         <Text style={styles.hint}>{t('specialEvents.replacesMeetingHint')}</Text>
       ) : null}
 

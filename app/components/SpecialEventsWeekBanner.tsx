@@ -57,7 +57,11 @@ export function SpecialEventsWeekBanner({ events }: { events: SpecialEvent[] }) 
                       : ''}
                   </Text>
                 ) : null}
-                {isCongress || e.replacesMeeting ? (
+                {/* The Memorial is excluded: it stands IN the meeting's
+                    place with a programme of its own, so saying the evening is
+                    free would be plainly wrong. */}
+                {isCongress ||
+                (e.replacesMeeting && e.type !== 'memorial') ? (
                   <View style={styles.noMeeting}>
                     <Ionicons
                       name="alert-circle-outline"
