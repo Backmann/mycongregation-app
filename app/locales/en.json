@@ -3212,6 +3212,9 @@
     "addNote": "Add a note",
     "notePlaceholder": "What to know beforehand",
     "openInSchedule": "Open in the schedule",
-    "openInScheduleHint": "The programme, the duties and the passing of the emblems"
+    "openInScheduleHint": "The programme, the duties and the passing of the emblems",
+    "dutiesTitle": "Memorial",
+    "sectionEmpty": "Nothing here yet",
+    "sectionPrepare": "Use the starting list"
   }
 }

@@ -19,8 +19,10 @@ import {
 } from '../lib/api';
 import { CollapsibleMeetingBlock } from './CollapsibleMeetingBlock';
 import { PublisherSelector } from './PublisherSelector';
+import { MemorialDutiesCard } from './MemorialDutiesCard';
 import { Sheet } from './Sheet';
 import { useAllPublishers } from '../lib/useAllPublishers';
+import { memorialKey, useMemorialSheet } from '../lib/useMemorialSheet';
 
 /**
  * The Memorial, where the meeting it replaces would have been.
@@ -57,14 +59,14 @@ export function MemorialMeetingBlock({
   const { t } = useTranslation();
   const qc = useQueryClient();
 
-  const { data, isLoading } = useQuery({
-    queryKey: ['memorial', event.id],
-    queryFn: () => memorialApi.sheet(event.id),
-  });
+  // The shared hook, not a useQuery of its own: the duties section reads the
+  // same sheet, and two readers with two functions behind one key is how they
+  // drift apart.
+  const { data, isLoading } = useMemorialSheet(event.id);
   const { data: publishers } = useAllPublishers();
 
   const invalidate = () => {
-    void qc.invalidateQueries({ queryKey: ['memorial', event.id] });
+    void qc.invalidateQueries({ queryKey: memorialKey(event.id) });
   };
   const prepareM = useMutation({
     mutationFn: () => memorialApi.prepare(event.id),
@@ -188,6 +190,19 @@ export function MemorialMeetingBlock({
               />
             ))
           )}
+
+          {/* The places the emblems pass, under the programme: they belong to
+              the evening's order, not to the duties of the door. The duties
+              themselves are in the «Обязанности» section, where whoever looks
+              for them expects them. */}
+          {programme.length > 0 ? (
+            <MemorialDutiesCard
+              event={event}
+              canEdit={canEdit}
+              section="emblems"
+              title={t('memorial.sections.emblems')}
+            />
+          ) : null}
 
           {/* Assignments entered for the meeting the Memorial takes are not
               deleted, only hidden — so they can be re-homed rather than lost. */}

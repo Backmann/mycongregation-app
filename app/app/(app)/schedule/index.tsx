@@ -103,6 +103,7 @@ import { SpecialEventsWeekBanner } from '../../../components/SpecialEventsWeekBa
 import { weekRules } from '../../../lib/week-rules';
 import { ReplacedMeetingNotice } from '../../../components/ReplacedMeetingNotice';
 import { MemorialMeetingBlock } from '../../../components/MemorialMeetingBlock';
+import { MemorialDutiesCard } from '../../../components/MemorialDutiesCard';
 import { CollapsibleMeetingBlock } from '../../../components/CollapsibleMeetingBlock';
 import { HospitalityZone } from '../../../components/HospitalityZone';
 import { AssignmentSheet } from '../../../components/AssignmentSheet';
@@ -1800,6 +1801,14 @@ export default function ScheduleIndexScreen() {
               >
               <DutiesSection
                 only={meeting}
+                // The section already knew how to hide a meeting an event took
+                // away — nobody was telling it which. Without this the midweek
+                // column on a Memorial week sat promising «сейчас заполнится»
+                // for duties that will never be created: the server refuses
+                // them and the effect skips them.
+                replacedEventTypes={
+                  rules.memorialTakes ? [rules.memorialTakes] : undefined
+                }
                 dateLabel={meetingDateLabel(meeting)}
                 locked={meetingLocked(meeting)}
                 nextUp={nextDutyMeeting === meeting}
@@ -1831,6 +1840,21 @@ export default function ScheduleIndexScreen() {
               />
               </View>
               ))}
+              {/* The Memorial's own duties, beside the ordinary ones —
+                  Lionel's decision, and the plain one: whoever opens this
+                  section wants to see who is at the door and at the
+                  microphone, without having to know that this week the answer
+                  lives in another table. */}
+              {rules.memorial && !congressThisWeek ? (
+                <View style={dutiesNarrow ? undefined : styles.dutiesCol}>
+                  <MemorialDutiesCard
+                    event={rules.memorial}
+                    canEdit={perms.isAdmin || perms.isElder}
+                    section="duty"
+                    title={t('memorial.dutiesTitle')}
+                  />
+                </View>
+              ) : null}
               </View>
             </CollapsibleMeetingBlock>
             )}

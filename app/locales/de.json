@@ -3212,6 +3212,9 @@
     "addNote": "Notiz hinzufügen",
     "notePlaceholder": "Was man vorher wissen muss",
     "openInSchedule": "Im Programm öffnen",
-    "openInScheduleHint": "Programm, Aufgaben und Weiterreichen der Symbole"
+    "openInScheduleHint": "Programm, Aufgaben und Weiterreichen der Symbole",
+    "dutiesTitle": "Gedächtnismahl",
+    "sectionEmpty": "Noch nichts eingetragen",
+    "sectionPrepare": "Vorlage übernehmen"
   }
 }
