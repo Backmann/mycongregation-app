@@ -126,6 +126,10 @@ type Props = {
   onAssign: (dutyId: string, publisherId: string | null) => void;
   onAddCustom: (eventType: Meeting, customLabel: string) => void;
   onRemoveDuty: (dutyId: string) => void;
+  /** Rename a PLACE — all of its rows at once. Own places only. */
+  onRenamePlace?: (dutyId: string, customLabel: string) => void;
+  /** Remove a place with everybody at it; the bin takes off one person. */
+  onRemovePlace?: (dutyId: string) => void;
   activityById?: Map<string, PublisherActivity>;
   weekStartISO?: string;
   pending?: boolean;
@@ -157,6 +161,8 @@ export function DutiesSection({
   onAssign,
   onAddCustom,
   onRemoveDuty,
+  onRenamePlace,
+  onRemovePlace,
   activityById,
   weekStartISO,
   pending,
@@ -174,6 +180,9 @@ export function DutiesSection({
   const { myPublisherId } = useMyPublisher();
   const [customFor, setCustomFor] = useState<Meeting | null>(null);
   const [customLabel, setCustomLabel] = useState('');
+  const [renameFor, setRenameFor] = useState<string | null>(null);
+  const [renameLabel, setRenameLabel] = useState('');
+  const [removeFor, setRemoveFor] = useState<Duty | null>(null);
 
   if (duties.length === 0 && !canEdit) return null;
 
@@ -460,6 +469,42 @@ export function DutiesSection({
                             </Text>
                           ) : null}
                         </View>
+                        {/* Only a place the congregation named itself: a
+                            predefined duty takes its name from the
+                            translations, and writing over it would break the
+                            language for everybody else. The same line the bin
+                            on a row already draws. */}
+                        {group[0].dutyType === 'custom' && onRenamePlace ? (
+                          <Pressable
+                            hitSlop={8}
+                            disabled={pending}
+                            style={styles.placeBtn}
+                            onPress={() => {
+                              setRenameFor(group[0].id);
+                              setRenameLabel(groupLabel(group[0], t));
+                            }}
+                          >
+                            <Ionicons
+                              name="pencil-outline"
+                              size={17}
+                              color="#0369a1"
+                            />
+                          </Pressable>
+                        ) : null}
+                        {group[0].dutyType === 'custom' && onRemovePlace ? (
+                          <Pressable
+                            hitSlop={8}
+                            disabled={pending}
+                            style={styles.placeBtn}
+                            onPress={() => setRemoveFor(group[0])}
+                          >
+                            <Ionicons
+                              name="trash-outline"
+                              size={17}
+                              color="#dc2626"
+                            />
+                          </Pressable>
+                        ) : null}
                       </View>
                       {group.map((d, i) => (
                         <View key={d.id} style={styles.groupRow}>
@@ -587,6 +632,58 @@ export function DutiesSection({
           </View>
         );
       })}
+
+      {/* Renaming a place: the name is what the congregation calls it, and it
+          changes for every row of the place at once. */}
+      <Dialog
+        visible={renameFor !== null}
+        title={t('duties.renamePlace')}
+        icon="pencil-outline"
+        iconTint="#0369a1"
+        iconBg="#e0f2fe"
+        cancelLabel={t('common.cancel')}
+        confirmLabel={t('common.save')}
+        confirmDisabled={!renameLabel.trim()}
+        pending={pending}
+        onConfirm={() => {
+          const label = renameLabel.trim();
+          if (renameFor && label) onRenamePlace?.(renameFor, label);
+          setRenameFor(null);
+        }}
+        onCancel={() => setRenameFor(null)}
+      >
+        <TextInput
+          style={styles.modalInput}
+          value={renameLabel}
+          onChangeText={setRenameLabel}
+          autoFocus
+          maxLength={60}
+        />
+      </Dialog>
+
+      {/* Removing a place takes everybody off it at once, and a duty is not
+          soft-deleted — so it is asked first, with the name in the question. */}
+      <Dialog
+        visible={removeFor !== null}
+        title={t('duties.removePlace')}
+        icon="trash-outline"
+        iconTint="#dc2626"
+        iconBg="#fee2e2"
+        cancelLabel={t('common.cancel')}
+        confirmLabel={t('common.delete')}
+        pending={pending}
+        onConfirm={() => {
+          if (removeFor) onRemovePlace?.(removeFor.id);
+          setRemoveFor(null);
+        }}
+        onCancel={() => setRemoveFor(null)}
+      >
+        <Text style={styles.dialogText}>
+          {removeFor
+            ? t('duties.removePlaceAsk', { label: groupLabel(removeFor, t) })
+            : ''}
+        </Text>
+      </Dialog>
 
       {/* Custom duty label modal */}
       <Dialog
@@ -844,6 +941,8 @@ const styles = StyleSheet.create({
     fontFamily: 'Manrope_600SemiBold',
     color: '#0369a1',
   },
+  placeBtn: { padding: 4 },
+  dialogText: { fontSize: 15, color: '#0f172a', lineHeight: 21 },
   delBtn: { padding: 6 },
   // two-up on narrow screens: tighten horizontal padding/margins
   hPadCompact: { paddingHorizontal: 8 },

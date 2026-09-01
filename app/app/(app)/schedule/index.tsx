@@ -301,6 +301,19 @@ export default function ScheduleIndexScreen() {
       dutiesApi.list({ weekStart: weekStartISO, weekEnd: nextWeekISO }),
   });
   const duties = dutiesQuery.data ?? [];
+  const renamePlaceMutation = useMutation({
+    mutationFn: (v: { id: string; customLabel: string }) =>
+      dutiesApi.renamePlace(v.id, v.customLabel),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['duties', weekStartISO] });
+    },
+  });
+  const removePlaceMutation = useMutation({
+    mutationFn: (id: string) => dutiesApi.removePlace(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['duties', weekStartISO] });
+    },
+  });
   const generateDutiesMutation = useMutation({
     mutationFn: (eventType: EventType) =>
       dutiesApi.generate({ weekStartDate: weekStartISO, eventType }),
@@ -1880,6 +1893,8 @@ export default function ScheduleIndexScreen() {
                 canEdit={canEditDuties && !meetingLocked(meeting)}
                 compact={dutiesNarrow}
                 pending={
+                  renamePlaceMutation.isPending ||
+                  removePlaceMutation.isPending ||
                   generateDutiesMutation.isPending ||
                   assignDutyMutation.isPending ||
                   createCustomDutyMutation.isPending ||
@@ -1896,6 +1911,10 @@ export default function ScheduleIndexScreen() {
                   createCustomDutyMutation.mutate({ eventType, customLabel })
                 }
                 onRemoveDuty={(id) => removeDutyMutation.mutate(id)}
+                onRenamePlace={(id, customLabel) =>
+                  renamePlaceMutation.mutate({ id, customLabel })
+                }
+                onRemovePlace={(id) => removePlaceMutation.mutate(id)}
                 activityById={activityById}
                 weekStartISO={weekStartISO}
               />

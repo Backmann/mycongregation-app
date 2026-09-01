@@ -1464,6 +1464,24 @@ export const dutiesApi = {
   async removeDuty(id: string): Promise<void> {
     await api.delete(`/duties/${id}`);
   },
+  /**
+   * Rename a PLACE — every row of it.
+   *
+   * «Стоянка» is three rows sharing a label; renaming one would split the
+   * group in two. Own places only: a predefined duty takes its name from the
+   * translations, and writing over it would break the language for everybody
+   * else.
+   */
+  async renamePlace(id: string, customLabel: string): Promise<Duty[]> {
+    const { data } = await api.patch<Duty[]>(`/duties/${id}/label`, {
+      customLabel,
+    });
+    return data;
+  },
+  /** Remove a place with everybody at it — the bin takes off one person. */
+  async removePlace(id: string): Promise<void> {
+    await api.delete(`/duties/${id}/place`);
+  },
 };
 
 export interface FieldServiceMeeting {

@@ -1421,7 +1421,10 @@
     "today": "Сегодня",
     "nextUp": "Ближайшая",
     "past": "Прошедшая",
-    "addAnother": "Ещё брат"
+    "addAnother": "Ещё брат",
+    "renamePlace": "Переименовать",
+    "removePlace": "Удалить обязанность",
+    "removePlaceAsk": "Убрать «{{label}}» вместе со всеми, кто на неё назначен?"
   },
   "publisherActivity": {
     "thisMeeting": "На этой встрече:",

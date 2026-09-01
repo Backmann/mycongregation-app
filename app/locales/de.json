@@ -1407,7 +1407,10 @@
     "today": "Heute",
     "nextUp": "Als Nächstes",
     "past": "Vergangen",
-    "addAnother": "Noch einer"
+    "addAnother": "Noch einer",
+    "renamePlace": "Umbenennen",
+    "removePlace": "Aufgabe entfernen",
+    "removePlaceAsk": "«{{label}}» mitsamt allen Zugeteilten entfernen?"
   },
   "publisherActivity": {
     "thisMeeting": "Dieses Treffen:",

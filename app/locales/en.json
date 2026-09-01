@@ -1407,7 +1407,10 @@
     "today": "Today",
     "nextUp": "Next",
     "past": "Past",
-    "addAnother": "One more"
+    "addAnother": "One more",
+    "renamePlace": "Rename",
+    "removePlace": "Remove duty",
+    "removePlaceAsk": "Remove «{{label}}» along with everyone assigned to it?"
   },
   "publisherActivity": {
     "thisMeeting": "This meeting:",
