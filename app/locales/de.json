@@ -1406,7 +1406,8 @@
     "dutyColumn": "Aufgabe",
     "today": "Heute",
     "nextUp": "Als Nächstes",
-    "past": "Vergangen"
+    "past": "Vergangen",
+    "addAnother": "Noch einer"
   },
   "publisherActivity": {
     "thisMeeting": "Dieses Treffen:",

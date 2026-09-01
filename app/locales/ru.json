@@ -1420,7 +1420,8 @@
     "dutyColumn": "Обязанность",
     "today": "Сегодня",
     "nextUp": "Ближайшая",
-    "past": "Прошедшая"
+    "past": "Прошедшая",
+    "addAnother": "Ещё брат"
   },
   "publisherActivity": {
     "thisMeeting": "На этой встрече:",

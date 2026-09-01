@@ -1406,7 +1406,8 @@
     "dutyColumn": "Duty",
     "today": "Today",
     "nextUp": "Next",
-    "past": "Past"
+    "past": "Past",
+    "addAnother": "One more"
   },
   "publisherActivity": {
     "thisMeeting": "This meeting:",

@@ -59,6 +59,39 @@ function orderIndex(t: DutyType): number {
   return i === -1 ? DUTY_TYPE_ORDER.length : i;
 }
 
+/**
+ * The label a place is known by, WITHOUT the ordinal.
+ *
+ * `dutyLabel` gives «Микрофон 1» and «Микрофон 2», which is what a row shows;
+ * for grouping we need the thing they have in common.
+ */
+function groupKeyOf(d: Duty): string {
+  return d.dutyType === 'custom'
+    ? `custom:${d.customLabel ?? ''}`
+    : d.dutyType;
+}
+
+/**
+ * Rows that stand at the SAME place, gathered.
+ *
+ * Several brothers at one place are several rows sharing a label — that is how
+ * the microphones have always worked, and it is what lets one of the three at
+ * the parking be replaced without editing inside a field. Repeating «Стоянка»
+ * three times is true about the rows and false about the sheet, so the rows
+ * are gathered for reading.
+ *
+ * The list is already sorted, so members of a group are adjacent.
+ */
+function groupsOf(list: Duty[]): Duty[][] {
+  const groups: Duty[][] = [];
+  for (const d of list) {
+    const last = groups[groups.length - 1];
+    if (last && groupKeyOf(last[0]) === groupKeyOf(d)) last.push(d);
+    else groups.push([d]);
+  }
+  return groups;
+}
+
 function sortDuties(a: Duty, b: Duty): number {
   return orderIndex(a.dutyType) - orderIndex(b.dutyType) || a.slotIndex - b.slotIndex;
 }
@@ -69,6 +102,14 @@ export function dutyLabel(duty: Duty, t: (k: string) => string): string {
   }
   if (duty.dutyType === 'microphone') {
     return `${t('duties.types.microphone')} ${duty.slotIndex + 1}`;
+  }
+  return t(`duties.types.${duty.dutyType}`);
+}
+
+/** The group's own name: «Микрофон», not «Микрофон 2». */
+function groupLabel(duty: Duty, t: (k: string) => string): string {
+  if (duty.dutyType === 'custom') {
+    return duty.customLabel || t('duties.types.custom');
   }
   return t(`duties.types.${duty.dutyType}`);
 }
@@ -297,18 +338,9 @@ export function DutiesSection({
           );
         }
 
-        return (
-          <View key={meeting} style={[styles.card, locked && styles.cardLocked]}>
-            {cardHead(
-              meeting,
-              meetingLabel,
-              list.filter((d) => d.publisherId).length,
-              list.length,
-            )}
-
-            {canEdit ? (
-              <View style={styles.cardBody}>
-                {list.map((d) => {
+                // The one-person case, unchanged: icon, name, chip, bin on a
+                // single line. Only places with several people are gathered.
+                const SingleRow = ({ d }: { d: Duty }) => {
                   const di = DUTY_ICONS[d.dutyType];
                   const isMine =
                     !!myPublisherId && d.publisherId === myPublisherId;
@@ -380,8 +412,111 @@ export function DutiesSection({
                       )}
                     </RowWrap>
                   );
-                })}
+                };
+        return (
+          <View key={meeting} style={[styles.card, locked && styles.cardLocked]}>
+            {cardHead(
+              meeting,
+              meetingLabel,
+              list.filter((d) => d.publisherId).length,
+              list.length,
+            )}
 
+            {canEdit ? (
+              <View style={styles.cardBody}>
+                {groupsOf(list).map((group) =>
+                  group.length > 1 ? (
+                    // A place several brothers stand at: the name once, the
+                    // people under it. A single-person place is left exactly as
+                    // it was — the common case must not change shape.
+                    <View key={group[0].id} style={styles.group}>
+                      <View style={styles.groupHead}>
+                        {DUTY_ICONS[group[0].dutyType] ? (
+                          <View
+                            style={[
+                              styles.dutyIcon,
+                              {
+                                backgroundColor: `${DUTY_ICONS[group[0].dutyType].color}14`,
+                              },
+                            ]}
+                          >
+                            <Ionicons
+                              name={DUTY_ICONS[group[0].dutyType].icon}
+                              size={17}
+                              color={DUTY_ICONS[group[0].dutyType].color}
+                            />
+                          </View>
+                        ) : null}
+                        <View style={{ flex: 1 }}>
+                          <Text style={styles.dutyLabel}>
+                            {groupLabel(group[0], t)}
+                          </Text>
+                          {/* What the assignee has to know before the evening —
+                              «светоотражающие жилетки». It was written on the
+                              row and shown nowhere. */}
+                          {group[0].notes ? (
+                            <Text style={styles.dutyNote}>
+                              {group[0].notes}
+                            </Text>
+                          ) : null}
+                        </View>
+                      </View>
+                      {group.map((d, i) => (
+                        <View key={d.id} style={styles.groupRow}>
+                          <Text style={styles.groupOrdinal}>{i + 1}</Text>
+                          <View style={styles.rowRight}>
+                            <PublisherSelector
+                              variant="chip"
+                              emptyLabel={t('duties.unassigned')}
+                              label={dutyLabel(d, t)}
+                              value={d.publisherId}
+                              onChange={(id) => onAssign(d.id, id)}
+                              requiredCapability={capabilityFor(d)}
+                              activityById={activityById}
+                              scopeDutyType={d.dutyType}
+                              currentWeekStart={weekStartISO}
+                              currentEventType={meeting}
+                            />
+                          </View>
+                          {d.dutyType === 'custom' && (
+                            <Pressable
+                              onPress={() => onRemoveDuty(d.id)}
+                              hitSlop={8}
+                              style={styles.delBtn}
+                              disabled={pending}
+                            >
+                              <Ionicons
+                                name="trash-outline"
+                                size={20}
+                                color="#dc2626"
+                              />
+                            </Pressable>
+                          )}
+                        </View>
+                      ))}
+                      {/* One more pair of hands at the SAME place: the server
+                          gives the new row the next slot by itself, so this is
+                          the ordinary «add a duty» with the name already
+                          filled in. */}
+                      {group[0].dutyType === 'custom' ? (
+                        <Pressable
+                          style={styles.groupAdd}
+                          disabled={pending}
+                          onPress={() =>
+                            onAddCustom(meeting, groupLabel(group[0], t))
+                          }
+                        >
+                          <Ionicons name="add" size={14} color="#0369a1" />
+                          <Text style={styles.groupAddText}>
+                            {t('duties.addAnother')}
+                          </Text>
+                        </Pressable>
+                      ) : null}
+                    </View>
+                  ) : (
+                    <SingleRow key={group[0].id} d={group[0]} />
+                  ),
+                )}
                 <Pressable
                   style={({ pressed }) => [
                     styles.addCustomBtn,
@@ -416,9 +551,17 @@ export function DutiesSection({
                         isMine && styles.rowMineGlow,
                       ]}
                     >
-                      <Text style={styles.dutyLabel} numberOfLines={2}>
-                        {dutyLabel(d, t)}
-                      </Text>
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.dutyLabel} numberOfLines={2}>
+                          {dutyLabel(d, t)}
+                        </Text>
+                        {/* «Светоотражающие жилетки» — what the assignee has
+                            to know before the evening. It was written on the
+                            row and shown nowhere. */}
+                        {d.notes ? (
+                          <Text style={styles.dutyNote}>{d.notes}</Text>
+                        ) : null}
+                      </View>
                       <ChipRow>
                         {isMine ? <MyDot kind="duty" /> : null}
                         {publisher ? (
@@ -661,6 +804,45 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  // A place several brothers stand at, gathered: the name once, the people
+  // under it. Boxed lightly so the group reads as one thing without shouting.
+  group: {
+    borderWidth: 1,
+    borderColor: '#eef2f6',
+    borderRadius: 12,
+    padding: 8,
+    gap: 6,
+    backgroundColor: '#fbfcfd',
+  },
+  groupHead: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  dutyNote: {
+    fontSize: 11,
+    fontFamily: 'Manrope_500Medium',
+    color: '#b45309',
+    marginTop: 2,
+  },
+  groupRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  groupOrdinal: {
+    width: 18,
+    textAlign: 'center',
+    fontSize: 11,
+    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
+    color: '#94a3b8',
+  },
+  groupAdd: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+    paddingVertical: 6,
+  },
+  groupAddText: {
+    fontSize: 12,
+    fontWeight: '600',
+    fontFamily: 'Manrope_600SemiBold',
+    color: '#0369a1',
   },
   delBtn: { padding: 6 },
   // two-up on narrow screens: tighten horizontal padding/margins
