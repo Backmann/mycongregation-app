@@ -139,7 +139,12 @@ export function DutiesSection({
   const byMeeting = new Map<Meeting, Duty[]>();
   for (const d of duties) {
     const m = d.eventType as Meeting;
-    if (m !== 'midweek' && m !== 'weekend') continue;
+    // Asks the LIST above, instead of naming the kinds again. Naming them here
+    // is what kept the Memorial's duties out of the screen after everything
+    // else had learned about it: the line compares VALUES, so extending the
+    // type said nothing to it and the type checker had nothing to object to.
+    // The same shape of mistake as the three server forms an hour earlier.
+    if (!MEETINGS.includes(m)) continue;
     const arr = byMeeting.get(m) ?? [];
     arr.push(d);
     byMeeting.set(m, arr);
