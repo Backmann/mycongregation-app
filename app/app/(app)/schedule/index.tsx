@@ -103,7 +103,6 @@ import { SpecialEventsWeekBanner } from '../../../components/SpecialEventsWeekBa
 import { weekRules } from '../../../lib/week-rules';
 import { ReplacedMeetingNotice } from '../../../components/ReplacedMeetingNotice';
 import { MemorialMeetingBlock } from '../../../components/MemorialMeetingBlock';
-import { MemorialDutiesCard } from '../../../components/MemorialDutiesCard';
 import { CollapsibleMeetingBlock } from '../../../components/CollapsibleMeetingBlock';
 import { HospitalityZone } from '../../../components/HospitalityZone';
 import { AssignmentSheet } from '../../../components/AssignmentSheet';
@@ -695,7 +694,16 @@ export default function ScheduleIndexScreen() {
     badgeParts(list).filter(
       (x) => x.publisherId && x.status !== 'cancelled',
     ).length;
-  const meetingDateLabel = (kind: 'midweek' | 'weekend'): string | null => {
+  const meetingDateLabel = (kind: DutyMeeting): string | null => {
+    if (kind === 'memorial') {
+      const iso = rules.memorial?.date;
+      if (!iso) return null;
+      const when = new Date(`${iso}T00:00:00`).toLocaleDateString(
+        i18n.language,
+        { weekday: 'long', day: 'numeric', month: 'long' },
+      );
+      return rules.memorial?.time ? `${when} · ${rules.memorial.time}` : when;
+    }
     if (!meetingVersion) return null;
     const dow = dowFor(kind);
     if (!dow) return null;
@@ -722,15 +730,31 @@ export default function ScheduleIndexScreen() {
   // filling in the wrong meeting. A meeting counts as "ahead" for the whole of
   // its day, so the cards don't swap places during the meeting itself. Wide
   // screens keep the two columns in their familiar order.
-  const meetingDateISO = (kind: 'midweek' | 'weekend'): string | null => {
+  type DutyMeeting = 'midweek' | 'weekend' | 'memorial';
+  const meetingDateISO = (kind: DutyMeeting): string | null => {
+    // The Memorial keeps its OWN date on the event: it does not follow the
+    // congregation's meeting days, and asking the settings for it would give
+    // the day of a meeting that is not being held.
+    if (kind === 'memorial') return rules.memorial?.date ?? null;
     const dow = dowFor(kind);
     return dow ? formatDateISO(addDays(weekStart, dow - 1)) : null;
   };
   const todayISO = formatDateISO(new Date());
-  const dutyOrder = useMemo<('midweek' | 'weekend')[]>(() => {
-    const base: ('midweek' | 'weekend')[] = ['midweek', 'weekend'];
+  const dutyOrder = useMemo<DutyMeeting[]>(() => {
+    // A meeting an event took away has no duties and gets no column: the
+    // server refuses to create them and the effect skips them, so a column
+    // there could only ever promise «сейчас заполнится» for ever. The Memorial
+    // takes its place — as a column of its own, and only on the week it
+    // actually falls in.
+    const base: DutyMeeting[] = (
+      ['midweek', 'weekend'] as const
+    ).filter((m) => rules.memorialTakes !== m);
+    if (rules.memorial && !congressThisWeek) base.push('memorial');
     if (!dutiesNarrow) return base;
-    const dated = base.map((m) => ({ m, iso: meetingDateISO(m) }));
+    const dated = base.map((m) => ({
+      m,
+      iso: m === 'memorial' ? (rules.memorial?.date ?? null) : meetingDateISO(m),
+    }));
     if (dated.some((d) => !d.iso)) return base;
     return dated
       .sort((a, b) => {
@@ -752,7 +776,7 @@ export default function ScheduleIndexScreen() {
   })();
   // A meeting's duties are history from midnight after its own day: the server
   // refuses changes, so the UI must not offer them either.
-  const meetingLocked = (kind: 'midweek' | 'weekend'): boolean => {
+  const meetingLocked = (kind: DutyMeeting): boolean => {
     const iso = meetingDateISO(kind);
     return !!iso && iso < todayISO;
   };
@@ -1801,14 +1825,6 @@ export default function ScheduleIndexScreen() {
               >
               <DutiesSection
                 only={meeting}
-                // The section already knew how to hide a meeting an event took
-                // away — nobody was telling it which. Without this the midweek
-                // column on a Memorial week sat promising «сейчас заполнится»
-                // for duties that will never be created: the server refuses
-                // them and the effect skips them.
-                replacedEventTypes={
-                  rules.memorialTakes ? [rules.memorialTakes] : undefined
-                }
                 dateLabel={meetingDateLabel(meeting)}
                 locked={meetingLocked(meeting)}
                 nextUp={nextDutyMeeting === meeting}
@@ -1840,21 +1856,6 @@ export default function ScheduleIndexScreen() {
               />
               </View>
               ))}
-              {/* The Memorial's own duties, beside the ordinary ones —
-                  Lionel's decision, and the plain one: whoever opens this
-                  section wants to see who is at the door and at the
-                  microphone, without having to know that this week the answer
-                  lives in another table. */}
-              {rules.memorial && !congressThisWeek ? (
-                <View style={dutiesNarrow ? undefined : styles.dutiesCol}>
-                  <MemorialDutiesCard
-                    event={rules.memorial}
-                    canEdit={perms.isAdmin || perms.isElder}
-                    section="duty"
-                    title={t('memorial.dutiesTitle')}
-                  />
-                </View>
-              ) : null}
               </View>
             </CollapsibleMeetingBlock>
             )}

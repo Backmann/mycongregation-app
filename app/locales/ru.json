@@ -799,7 +799,8 @@
     "weekend": "Встреча в выходной день",
     "cleaning": "Уборка",
     "av_duty": "Аудио/Видео",
-    "public_witnessing": "Публичное служение"
+    "public_witnessing": "Публичное служение",
+    "memorial": "Вечеря воспоминания"
   },
   "assignments": {
     "eventTypeShort": {

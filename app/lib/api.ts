@@ -422,6 +422,8 @@ export type UpdateServiceGroupInput = Partial<CreateServiceGroupInput>;
 export type EventType =
   | 'midweek'
   | 'weekend'
+  /** The Memorial — a meeting like the other two, and treated as one. */
+  | 'memorial'
   | 'cleaning'
   | 'av_duty'
   | 'public_witnessing';
@@ -1898,22 +1900,6 @@ export const memorialApi = {
   /** Fill an empty Memorial from last year's, or from the template. */
   async prepare(id: string): Promise<MemorialSheet> {
     const { data } = await api.post<MemorialSheet>(`/memorial/${id}/prepare`);
-    return data;
-  },
-  /**
-   * Lay out ONE empty part from the template — asked for, never automatic.
-   *
-   * A congregation meeting in a rented room may have deleted the places on
-   * purpose; putting them back unbidden would be the same fault as an undo
-   * that undoes a decision.
-   */
-  async prepareSection(
-    id: string,
-    section: MemorialSection,
-  ): Promise<MemorialSheet> {
-    const { data } = await api.post<MemorialSheet>(
-      `/memorial/${id}/prepare/${section}`,
-    );
     return data;
   },
   async addLine(

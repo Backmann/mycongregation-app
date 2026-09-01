@@ -290,6 +290,10 @@ export const WEEKEND_PARTS: PartDef[] = [
 export const PARTS_BY_EVENT: Record<EventType, PartDef[]> = {
   midweek: MIDWEEK_PARTS,
   weekend: WEEKEND_PARTS,
+  // The Memorial's order of service is not made of workbook parts: it is nine
+  // fixed lines kept in `memorial_items` and edited in the Memorial block, so
+  // there is nothing for the assignment editor to offer here.
+  memorial: [],
   cleaning: [],
   av_duty: [],
   public_witnessing: [],

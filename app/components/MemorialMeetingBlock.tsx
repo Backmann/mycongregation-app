@@ -19,7 +19,6 @@ import {
 } from '../lib/api';
 import { CollapsibleMeetingBlock } from './CollapsibleMeetingBlock';
 import { PublisherSelector } from './PublisherSelector';
-import { MemorialDutiesCard } from './MemorialDutiesCard';
 import { Sheet } from './Sheet';
 import { useAllPublishers } from '../lib/useAllPublishers';
 import { memorialKey, useMemorialSheet } from '../lib/useMemorialSheet';
@@ -190,19 +189,6 @@ export function MemorialMeetingBlock({
               />
             ))
           )}
-
-          {/* The places the emblems pass, under the programme: they belong to
-              the evening's order, not to the duties of the door. The duties
-              themselves are in the «Обязанности» section, where whoever looks
-              for them expects them. */}
-          {programme.length > 0 ? (
-            <MemorialDutiesCard
-              event={event}
-              canEdit={canEdit}
-              section="emblems"
-              title={t('memorial.sections.emblems')}
-            />
-          ) : null}
 
           {/* Assignments entered for the meeting the Memorial takes are not
               deleted, only hidden — so they can be re-homed rather than lost. */}

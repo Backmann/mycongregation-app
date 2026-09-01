@@ -33,9 +33,15 @@ export const DUTY_ICONS: Record<
   custom: { icon: 'ellipsis-horizontal-circle-outline', color: '#64748b' },
 };
 
-type Meeting = 'midweek' | 'weekend';
+/**
+ * The Memorial is a third kind of meeting, so its duties are ordinary duties
+ * and this section shows them like any other — with the same add, remove,
+ * counters and printing. That is why it was made a kind rather than given
+ * machinery of its own.
+ */
+type Meeting = 'midweek' | 'weekend' | 'memorial';
 
-const MEETINGS: Meeting[] = ['midweek', 'weekend'];
+const MEETINGS: Meeting[] = ['midweek', 'weekend', 'memorial'];
 
 const DUTY_TYPE_ORDER: DutyType[] = [
   'security',

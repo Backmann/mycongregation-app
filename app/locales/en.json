@@ -793,7 +793,8 @@
     "weekend": "Weekend meeting",
     "cleaning": "Cleaning",
     "av_duty": "A/V duty",
-    "public_witnessing": "Public witnessing"
+    "public_witnessing": "Public witnessing",
+    "memorial": "Memorial"
   },
   "assignments": {
     "eventTypeShort": {
