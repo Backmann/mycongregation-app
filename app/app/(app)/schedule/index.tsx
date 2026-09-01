@@ -766,10 +766,22 @@ export default function ScheduleIndexScreen() {
     // there could only ever promise «сейчас заполнится» for ever. The Memorial
     // takes its place — as a column of its own, and only on the week it
     // actually falls in.
-    const base: DutyMeeting[] = (
-      ['midweek', 'weekend'] as const
-    ).filter((m) => rules.memorialTakes !== m);
-    if (rules.memorial && !congressThisWeek) base.push('memorial');
+    // The Memorial stands IN THE PLACE of the meeting it takes, not after
+    // them both: on a weekday it belongs on the left where the midweek
+    // meeting was, at a weekend on the right. Appending it always put it on
+    // the right, which reads wrong for a Monday evening.
+    const show = rules.memorial && !congressThisWeek;
+    const base: DutyMeeting[] = [];
+    for (const m of ['midweek', 'weekend'] as const) {
+      if (rules.memorialTakes === m) {
+        if (show) base.push('memorial');
+        continue; // the meeting itself is not held, so it gets no column
+      }
+      base.push(m);
+    }
+    // A Memorial that takes neither — it cannot happen while the rules stand,
+    // but a column is better than silence if it ever does.
+    if (show && !base.includes('memorial')) base.push('memorial');
     if (!dutiesNarrow) return base;
     const dated = base.map((m) => ({
       m,
