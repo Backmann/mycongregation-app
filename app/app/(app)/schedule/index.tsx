@@ -586,11 +586,22 @@ export default function ScheduleIndexScreen() {
   // The week's rules (which day each meeting really falls on, what replaces it,
   // whether the congregation meets at all) live in lib/week-rules so this
   // screen and the home timeline cannot drift apart.
-  const rules = weekRules({
-    weekStartISO,
-    version: meetingVersion,
-    events: specialEventsQuery.data ?? [],
-  });
+  //
+  // MEMOISED, and that is not a nicety. Several effects and lists below depend
+  // on the rules, and `weekRules` builds a fresh object every call: an
+  // unmemoised one is a new value on every render, so an effect listing it
+  // would fire on every render for ever. Now it changes only when its three
+  // inputs do.
+  const specialEvents = specialEventsQuery.data;
+  const rules = useMemo(
+    () =>
+      weekRules({
+        weekStartISO,
+        version: meetingVersion,
+        events: specialEvents ?? [],
+      }),
+    [weekStartISO, meetingVersion, specialEvents],
+  );
   const coVisitEvent = rules.coVisit ?? undefined;
   const dowFor = (kind: 'midweek' | 'weekend') => rules.dowOf(kind);
   const midweekReplacedBy = rules.replacedBy('midweek');
@@ -627,14 +638,19 @@ export default function ScheduleIndexScreen() {
   useEffect(() => {
     if (!canEditDuties || congressThisWeek) return;
     if (dutiesQuery.isLoading || generateDutiesMutation.isPending) return;
-    const meetings: ('midweek' | 'weekend')[] = ['midweek', 'weekend'];
+    // The Memorial is one of them: its duties are ordinary duties of a third
+    // kind of meeting, and without it here the column would sit empty for
+    // ever — nothing else creates them.
+    const meetings: DutyMeeting[] = ['midweek', 'weekend'];
+    if (rules.memorial) meetings.push('memorial');
     for (const m of meetings) {
       // ONE question: is this meeting held at all. It used to be assembled
       // here from congress + the flag, and the Memorial was in neither — so
       // the screen quietly asked the server for duties on a meeting the server
       // had already taken away, and the refusal came back as a red strip to
       // somebody who had merely opened the page.
-      if (rules.isTakenAway(m)) continue;
+      // The Memorial is never «taken away» — it IS the event that takes.
+      if (m !== 'memorial' && rules.isTakenAway(m)) continue;
       // Past meetings are frozen — generating there would only be rejected.
       if (meetingLocked(m)) continue;
       const has = duties.some((d) => d.eventType === m);
@@ -650,8 +666,12 @@ export default function ScheduleIndexScreen() {
     duties,
     canEditDuties,
     congressThisWeek,
-    midweekReplacedBy,
-    weekendReplacedBy,
+    // `rules` itself, not two values picked out of it. Listing pieces was
+    // already a hair's breadth from wrong — it happened to cover everything
+    // read — and it stopped covering it the moment the Memorial was read here
+    // too. The whole object is cheap and cannot fall behind what the body
+    // uses.
+    rules,
     dutiesQuery.isLoading,
   ]);
   // Circuit overseer display name (for the assignment sheet).
@@ -764,7 +784,20 @@ export default function ScheduleIndexScreen() {
       })
       .map((d) => d.m);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dutiesNarrow, todayISO, weekStartISO, meetingVersion, coVisitEvent]);
+  }, [
+    dutiesNarrow,
+    todayISO,
+    weekStartISO,
+    meetingVersion,
+    coVisitEvent,
+    // WITHOUT THIS the list was computed once, before the events had loaded,
+    // and never again: `rules.memorial` was still null then, so the Memorial
+    // got no column and the meeting it takes kept one. The block above read
+    // the rules directly and showed the Memorial, which is how the screen came
+    // to disagree with itself.
+    rules,
+    congressThisWeek,
+  ]);
   // Which meeting is still ahead — computed on its own, not from the order, so
   // the marker is right in the two-column layout too.
   const nextDutyMeeting = ((): 'midweek' | 'weekend' | null => {
