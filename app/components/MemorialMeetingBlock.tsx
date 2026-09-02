@@ -12,8 +12,10 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 import {
+  Duty,
   memorialApi,
   MemorialItem,
+  Publisher,
   songsApi,
   SpecialEvent,
 } from '../lib/api';
@@ -22,6 +24,9 @@ import { PublisherSelector } from './PublisherSelector';
 import { Sheet } from './Sheet';
 import { useAllPublishers } from '../lib/useAllPublishers';
 import { memorialKey, useMemorialSheet } from '../lib/useMemorialSheet';
+import { buildMemorialPdfHtml, MemorialPdfPlace } from '../lib/memorialPdf';
+import { exportHtmlAsPdf, openPrintWindow } from '../lib/pdf';
+import { dutyLabel } from './DutiesSection';
 
 /**
  * The Memorial, where the meeting it replaces would have been.
@@ -42,20 +47,30 @@ import { memorialKey, useMemorialSheet } from '../lib/useMemorialSheet';
  */
 
 const NOT_BAPTIZED = ['student', 'unbaptized_publisher'] as const;
+
 const SONG_PARTS = new Set(['song_opening', 'song_closing']);
 
 export function MemorialMeetingBlock({
   event,
   canEdit,
   hiddenCount,
+  duties,
+  publishersById,
 }: {
   event: SpecialEvent;
   /** Elders and admins settle the programme; everyone else reads it. */
   canEdit: boolean;
   /** Assignments already entered for the meeting the Memorial takes. */
   hiddenCount: number;
+  /**
+   * The evening's duties — ordinary duties of the third kind of meeting. Read
+   * from what the schedule already fetched rather than asked for again: the
+   * printed sheet must say exactly what the screen says.
+   */
+  duties: Duty[];
+  publishersById: Map<string, Publisher>;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const qc = useQueryClient();
 
   // The shared hook, not a useQuery of its own: the duties section reads the
@@ -99,6 +114,83 @@ export function MemorialMeetingBlock({
       (!SONG_PARTS.has(l.partKey ?? '') && (l.publisherId || l.personText)),
   ).length;
 
+  /**
+   * The whole evening on one sheet — Lionel asked for «абсолютно всё».
+   *
+   * Built from what is ALREADY on screen: the programme from the sheet query,
+   * the places and duties from the week's duties the schedule fetched. Asking
+   * again would risk printing something the reader is not looking at.
+   */
+  const print = async () => {
+    const win = openPrintWindow();
+    try {
+      /**
+       * Every place of the evening, in the order the congregation put them.
+       *
+       * NOT split into «emblems» and «duties»: when the Memorial became a kind
+       * of meeting, both became ordinary duties of it, and nothing in a row
+       * tells one from the other any more. Guessing from the name would put
+       * «Главный зал» among the emblem rows because it contains «зал» — a
+       * wrong answer dressed as a clever one. The order on the sheet is the
+       * congregation's own and says it better than any guess.
+       */
+      const places = (): MemorialPdfPlace[] => {
+        const out: MemorialPdfPlace[] = [];
+        for (const d of duties.filter((x) => x.eventType === 'memorial')) {
+          const label = dutyLabel(d, t);
+          const last = out[out.length - 1];
+          const name = d.publisherId
+            ? (publishersById.get(d.publisherId)?.displayName ?? null)
+            : null;
+          if (last && last.label === label) last.names.push(name);
+          else out.push({ label, names: [name], note: d.notes ?? null });
+        }
+        return out;
+      };
+
+      const html = buildMemorialPdfHtml({
+        congregationName: '',
+        dateLabel: new Date(`${event.date}T00:00:00`).toLocaleDateString(
+          i18n.language,
+          { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' },
+        ),
+        time: event.time ?? null,
+        address: event.address ?? null,
+        theme: data?.event.theme ?? null,
+        programme: programme.map((l) => ({
+          label: l.label,
+          name: nameOf(l),
+          songNumber: l.songNumber,
+          note: l.note,
+        })),
+        duties: places(),
+        printedOn: new Date().toLocaleDateString(i18n.language, {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+        }),
+        labels: {
+          title: t('memorial.title'),
+          programme: t('memorial.sections.programme'),
+          duties: t('memorial.sections.duty'),
+          theme: t('memorial.theme'),
+          // The word a song line is labelled with. Its own key rather than
+          // reusing a label from elsewhere: on the sheet it stands before a
+          // number — «Песня 20» — and nothing else in the app reads that way.
+          song: t('memorial.songWord'),
+          unassigned: t('duties.unassigned'),
+          printed: t('attendance.printedOn'),
+        },
+      });
+      await exportHtmlAsPdf(html, {
+        fileName: t('memorial.title'),
+        preopenedWindow: win,
+      });
+    } catch {
+      win?.close();
+    }
+  };
+
   const nameOf = (line: MemorialItem): string | null =>
     line.personText ??
     (line.publisherId
@@ -116,6 +208,7 @@ export function MemorialMeetingBlock({
       assigned={filled}
       total={programme.length}
       showBadge={programme.length > 0}
+      onPrint={programme.length > 0 ? print : undefined}
       actionLabel={
         canWrite && !published && programme.length > 0
           ? t('memorial.publish')

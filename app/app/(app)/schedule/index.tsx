@@ -1659,6 +1659,8 @@ export default function ScheduleIndexScreen() {
                     event={rules.memorial}
                     canEdit={perms.isAdmin || perms.isElder}
                     hiddenCount={items.length}
+                    duties={duties}
+                    publishersById={publishersById}
                   />
                 );
               }
