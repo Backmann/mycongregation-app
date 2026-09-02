@@ -167,6 +167,11 @@ function routeForNotification(
       };
     case 'schedule_published':
     case 'schedule_changed':
+    // The Memorial has no screen of its own on purpose: its programme opens
+    // in the week, in the place of the meeting it took away. So both of its
+    // notices lead exactly where the schedule's do.
+    case 'memorial_published':
+    case 'memorial_tomorrow':
       return {
         path: '/schedule',
         params: data.weekStartDate ? { week: data.weekStartDate } : {},

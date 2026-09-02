@@ -331,7 +331,9 @@ export function taskMeta(r: RefinedTask, t: TFunc, locale: string): string {
   }
   if (
     (r.item.kind === 'meeting' || r.item.kind === 'duty') &&
-    (r.item.eventType === 'midweek' || r.item.eventType === 'weekend')
+    (r.item.eventType === 'midweek' ||
+      r.item.eventType === 'weekend' ||
+      r.item.eventType === 'memorial')
   ) {
     bits.push(t(`home.eventTypes.${r.item.eventType}`));
   } else if (r.item.kind === 'co_lunch') {
@@ -349,6 +351,12 @@ export function taskMeta(r: RefinedTask, t: TFunc, locale: string): string {
   if (r.item.kind === 'outgoing_talk') {
     if (r.item.congregationName) bits.push(r.item.congregationName);
     if (r.item.location) bits.push(r.item.location);
+  }
+  // The Memorial names WHERE. It is the one meeting that may be held outside
+  // the Kingdom Hall — a rented room, sometimes shared with another
+  // congregation — so «the usual place» is not a safe thing to assume.
+  if (r.item.eventType === 'memorial' && r.item.location) {
+    bits.push(r.item.location);
   }
   if (r.item.kind === 'co_lunch' && r.item.note) {
     bits.push(r.item.note);

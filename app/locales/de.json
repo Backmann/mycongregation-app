@@ -2149,7 +2149,8 @@
     },
     "eventTypes": {
       "midweek": "Zusammenkunft unter der Woche",
-      "weekend": "Zusammenkunft am Wochenende"
+      "weekend": "Zusammenkunft am Wochenende",
+      "memorial": "Gedächtnismahl"
     },
     "fieldService": {
       "leading": "Predigtdienst-Zusammenkunft — du leitest",

@@ -2149,7 +2149,8 @@
     },
     "eventTypes": {
       "midweek": "Midweek meeting",
-      "weekend": "Weekend meeting"
+      "weekend": "Weekend meeting",
+      "memorial": "Memorial"
     },
     "fieldService": {
       "leading": "Field service meeting — you conduct",
