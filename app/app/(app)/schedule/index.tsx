@@ -308,6 +308,13 @@ export default function ScheduleIndexScreen() {
       queryClient.invalidateQueries({ queryKey: ['duties', weekStartISO] });
     },
   });
+  const movePlaceMutation = useMutation({
+    mutationFn: (v: { id: string; direction: 'up' | 'down' }) =>
+      dutiesApi.movePlace(v.id, v.direction),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['duties', weekStartISO] });
+    },
+  });
   const removePlaceMutation = useMutation({
     mutationFn: (id: string) => dutiesApi.removePlace(id),
     onSuccess: () => {
@@ -1894,6 +1901,7 @@ export default function ScheduleIndexScreen() {
                 compact={dutiesNarrow}
                 pending={
                   renamePlaceMutation.isPending ||
+                  movePlaceMutation.isPending ||
                   removePlaceMutation.isPending ||
                   generateDutiesMutation.isPending ||
                   assignDutyMutation.isPending ||
@@ -1915,6 +1923,9 @@ export default function ScheduleIndexScreen() {
                   renamePlaceMutation.mutate({ id, customLabel })
                 }
                 onRemovePlace={(id) => removePlaceMutation.mutate(id)}
+                onMovePlace={(id, direction) =>
+                  movePlaceMutation.mutate({ id, direction })
+                }
                 activityById={activityById}
                 weekStartISO={weekStartISO}
               />

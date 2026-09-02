@@ -1137,6 +1137,13 @@ export interface Duty {
   eventType: EventType;
   dutyType: DutyType;
   slotIndex: number;
+  /**
+   * Where this duty sits on the sheet — moved by hand, kept on the server.
+   *
+   * Rows of ONE place share it: «Стоянка» is three rows and they move
+   * together, because the number inside a place means nothing to anybody.
+   */
+  sortOrder: number;
   customLabel: string | null;
   publisherId: string | null;
   notes: string | null;
@@ -1475,6 +1482,13 @@ export const dutiesApi = {
   async renamePlace(id: string, customLabel: string): Promise<Duty[]> {
     const { data } = await api.patch<Duty[]>(`/duties/${id}/label`, {
       customLabel,
+    });
+    return data;
+  },
+  /** Move a PLACE up or down the sheet; its rows move together. */
+  async movePlace(id: string, direction: 'up' | 'down'): Promise<Duty[]> {
+    const { data } = await api.patch<Duty[]>(`/duties/${id}/move`, {
+      direction,
     });
     return data;
   },

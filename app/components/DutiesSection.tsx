@@ -92,8 +92,23 @@ function groupsOf(list: Duty[]): Duty[][] {
   return groups;
 }
 
+/**
+ * The order the congregation put the sheet in.
+ *
+ * `sortOrder` is kept on the server and moved by the arrows. The old rule —
+ * kind of duty, then slot — stays behind it as a tie-break: rows written
+ * before the column existed all carry zero, and without it they would come out
+ * in whatever order the database felt like.
+ *
+ * `slotIndex` still separates the rows INSIDE a place, so «Микрофон 1» comes
+ * before «Микрофон 2».
+ */
 function sortDuties(a: Duty, b: Duty): number {
-  return orderIndex(a.dutyType) - orderIndex(b.dutyType) || a.slotIndex - b.slotIndex;
+  return (
+    (a.sortOrder ?? 0) - (b.sortOrder ?? 0) ||
+    orderIndex(a.dutyType) - orderIndex(b.dutyType) ||
+    a.slotIndex - b.slotIndex
+  );
 }
 
 export function dutyLabel(duty: Duty, t: (k: string) => string): string {
@@ -130,6 +145,8 @@ type Props = {
   onRenamePlace?: (dutyId: string, customLabel: string) => void;
   /** Remove a place with everybody at it; the bin takes off one person. */
   onRemovePlace?: (dutyId: string) => void;
+  /** Move a PLACE up or down the sheet; its rows move together. */
+  onMovePlace?: (dutyId: string, direction: 'up' | 'down') => void;
   activityById?: Map<string, PublisherActivity>;
   weekStartISO?: string;
   pending?: boolean;
@@ -163,6 +180,7 @@ export function DutiesSection({
   onRemoveDuty,
   onRenamePlace,
   onRemovePlace,
+  onMovePlace,
   activityById,
   weekStartISO,
   pending,
@@ -349,7 +367,88 @@ export function DutiesSection({
 
                 // The one-person case, unchanged: icon, name, chip, bin on a
                 // single line. Only places with several people are gathered.
-                const SingleRow = ({ d }: { d: Duty }) => {
+                /**
+                 * What can be done to a PLACE: rename it, move it, take it
+                 * away. The same buttons wherever the place is drawn — as a
+                 * group of several people or as a single row — because they
+                 * act on the place, and a place with one person is still a
+                 * place.
+                 *
+                 * The arrows are here rather than a drag handle: dragging is
+                 * fiddly on a phone, would pull another library into the Expo
+                 * fingerprint, and cannot be checked by a test.
+                 */
+                const PlaceActions = ({
+                  d,
+                  first,
+                  last,
+                }: {
+                  d: Duty;
+                  first: boolean;
+                  last: boolean;
+                }) => (
+                  <>
+                    {onMovePlace ? (
+                      <>
+                        <Pressable
+                          hitSlop={6}
+                          disabled={pending || first}
+                          style={styles.placeBtn}
+                          onPress={() => onMovePlace(d.id, 'up')}
+                        >
+                          <Ionicons
+                            name="chevron-up"
+                            size={16}
+                            color={first ? '#e2e8f0' : '#64748b'}
+                          />
+                        </Pressable>
+                        <Pressable
+                          hitSlop={6}
+                          disabled={pending || last}
+                          style={styles.placeBtn}
+                          onPress={() => onMovePlace(d.id, 'down')}
+                        >
+                          <Ionicons
+                            name="chevron-down"
+                            size={16}
+                            color={last ? '#e2e8f0' : '#64748b'}
+                          />
+                        </Pressable>
+                      </>
+                    ) : null}
+                    {/* Only a place the congregation named itself: a
+                        predefined duty takes its name from the translations,
+                        and writing over it would break the language for
+                        everybody else. */}
+                    {d.dutyType === 'custom' && onRenamePlace ? (
+                      <Pressable
+                        hitSlop={6}
+                        disabled={pending}
+                        style={styles.placeBtn}
+                        onPress={() => {
+                          setRenameFor(d.id);
+                          setRenameLabel(groupLabel(d, t));
+                        }}
+                      >
+                        <Ionicons
+                          name="pencil-outline"
+                          size={16}
+                          color="#0369a1"
+                        />
+                      </Pressable>
+                    ) : null}
+                  </>
+                );
+
+                const SingleRow = ({
+                  d,
+                  first,
+                  last,
+                }: {
+                  d: Duty;
+                  first: boolean;
+                  last: boolean;
+                }) => {
                   const di = DUTY_ICONS[d.dutyType];
                   const isMine =
                     !!myPublisherId && d.publisherId === myPublisherId;
@@ -405,6 +504,7 @@ export function DutiesSection({
                           currentEventType={meeting}
                         />
                       </View>
+                      <PlaceActions d={d} first={first} last={last} />
                       {d.dutyType === 'custom' && (
                         <Pressable
                           onPress={() => onRemoveDuty(d.id)}
@@ -433,7 +533,7 @@ export function DutiesSection({
 
             {canEdit ? (
               <View style={styles.cardBody}>
-                {groupsOf(list).map((group) =>
+                {groupsOf(list).map((group, gi, all) =>
                   group.length > 1 ? (
                     // A place several brothers stand at: the name once, the
                     // people under it. A single-person place is left exactly as
@@ -469,28 +569,11 @@ export function DutiesSection({
                             </Text>
                           ) : null}
                         </View>
-                        {/* Only a place the congregation named itself: a
-                            predefined duty takes its name from the
-                            translations, and writing over it would break the
-                            language for everybody else. The same line the bin
-                            on a row already draws. */}
-                        {group[0].dutyType === 'custom' && onRenamePlace ? (
-                          <Pressable
-                            hitSlop={8}
-                            disabled={pending}
-                            style={styles.placeBtn}
-                            onPress={() => {
-                              setRenameFor(group[0].id);
-                              setRenameLabel(groupLabel(group[0], t));
-                            }}
-                          >
-                            <Ionicons
-                              name="pencil-outline"
-                              size={17}
-                              color="#0369a1"
-                            />
-                          </Pressable>
-                        ) : null}
+                        <PlaceActions
+                          d={group[0]}
+                          first={gi === 0}
+                          last={gi === all.length - 1}
+                        />
                         {group[0].dutyType === 'custom' && onRemovePlace ? (
                           <Pressable
                             hitSlop={8}
@@ -559,7 +642,12 @@ export function DutiesSection({
                       ) : null}
                     </View>
                   ) : (
-                    <SingleRow key={group[0].id} d={group[0]} />
+                    <SingleRow
+                      key={group[0].id}
+                      d={group[0]}
+                      first={gi === 0}
+                      last={gi === all.length - 1}
+                    />
                   ),
                 )}
                 <Pressable
