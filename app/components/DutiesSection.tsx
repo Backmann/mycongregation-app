@@ -440,88 +440,6 @@ export function DutiesSection({
                   </>
                 );
 
-                const SingleRow = ({
-                  d,
-                  first,
-                  last,
-                }: {
-                  d: Duty;
-                  first: boolean;
-                  last: boolean;
-                }) => {
-                  const di = DUTY_ICONS[d.dutyType];
-                  const isMine =
-                    !!myPublisherId && d.publisherId === myPublisherId;
-                  const RowWrap = isMine ? MyGlowRow : View;
-                  return (
-                    <RowWrap
-                      key={d.id}
-                      kind="duty"
-                      style={[
-                        styles.editRow,
-                        isMine && styles.editRowMine,
-                      ]}
-                    >
-                      {di ? (
-                        <View
-                          style={[
-                            styles.dutyIcon,
-                            { backgroundColor: `${di.color}14` },
-                          ]}
-                        >
-                          <Ionicons
-                            name={di.icon}
-                            size={17}
-                            color={di.color}
-                          />
-                        </View>
-                      ) : null}
-                      <View style={styles.dutyLabelRow}>
-                        {isMine ? <MyDot kind="duty" /> : null}
-                        <Text style={styles.dutyLabel} numberOfLines={2}>
-                          {dutyLabel(d, t)}
-                        </Text>
-                        {autoDutyIds?.has(d.id) ? (
-                          <View style={styles.autoBadge}>
-                            <Ionicons name="flash" size={10} color="#0369a1" />
-                            <Text style={styles.autoBadgeText}>
-                              {t('schedule.autoBadge')}
-                            </Text>
-                          </View>
-                        ) : null}
-                      </View>
-                      <View style={styles.rowRight}>
-                        <PublisherSelector
-                          variant="chip"
-                          emptyLabel={t('duties.unassigned')}
-                          label={dutyLabel(d, t)}
-                          value={d.publisherId}
-                          onChange={(id) => onAssign(d.id, id)}
-                          requiredCapability={capabilityFor(d)}
-                          activityById={activityById}
-                          scopeDutyType={d.dutyType}
-                          currentWeekStart={weekStartISO}
-                          currentEventType={meeting}
-                        />
-                      </View>
-                      <PlaceActions d={d} first={first} last={last} />
-                      {d.dutyType === 'custom' && (
-                        <Pressable
-                          onPress={() => onRemoveDuty(d.id)}
-                          hitSlop={8}
-                          style={styles.delBtn}
-                          disabled={pending}
-                        >
-                          <Ionicons
-                            name="trash-outline"
-                            size={20}
-                            color="#dc2626"
-                          />
-                        </Pressable>
-                      )}
-                    </RowWrap>
-                  );
-                };
         return (
           <View key={meeting} style={[styles.card, locked && styles.cardLocked]}>
             {cardHead(
@@ -533,8 +451,13 @@ export function DutiesSection({
 
             {canEdit ? (
               <View style={styles.cardBody}>
-                {groupsOf(list).map((group, gi, all) =>
-                  group.length > 1 ? (
+                {/* EVERY place is drawn the same way: the name on its own
+                    line with the buttons beside it, the people underneath.
+                    The compact one-line row could not carry them — four
+                    buttons squeezed the name to nothing on a narrow column,
+                    and truncated it («Распоряди тель у …») on a wide one. One
+                    layout also means one thing to keep right. */}
+                {groupsOf(list).map((group, gi, all) => (
                     // A place several brothers stand at: the name once, the
                     // people under it. A single-person place is left exactly as
                     // it was — the common case must not change shape.
@@ -591,7 +514,12 @@ export function DutiesSection({
                       </View>
                       {group.map((d, i) => (
                         <View key={d.id} style={styles.groupRow}>
-                          <Text style={styles.groupOrdinal}>{i + 1}</Text>
+                          {/* The number only means something when there are
+                              several: «Микрофон 1» and «Микрофон 2» are two
+                              microphones, but a lone place is just itself. */}
+                          {group.length > 1 ? (
+                            <Text style={styles.groupOrdinal}>{i + 1}</Text>
+                          ) : null}
                           <View style={styles.rowRight}>
                             <PublisherSelector
                               variant="chip"
@@ -641,13 +569,6 @@ export function DutiesSection({
                         </Pressable>
                       ) : null}
                     </View>
-                  ) : (
-                    <SingleRow
-                      key={group[0].id}
-                      d={group[0]}
-                      first={gi === 0}
-                      last={gi === all.length - 1}
-                    />
                   ),
                 )}
                 <Pressable
