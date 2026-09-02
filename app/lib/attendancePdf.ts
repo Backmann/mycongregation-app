@@ -29,6 +29,8 @@ export function buildAttendancePdfHtml(opts: {
     midweek: string;
     weekend: string;
     notHeld: string;
+    /** «Вечеря воспоминания» — the one line under the two tables. */
+    memorial: string;
     printed: string;
     yearAverage: string;
   };
@@ -93,6 +95,26 @@ export function buildAttendancePdfHtml(opts: {
     </div>`;
   };
 
+  /**
+   * The Memorial — ONE line, not a third table.
+   *
+   * It happens once a year, so a table of twelve months with eleven empty
+   * would say nothing and take a third of the page. Printed only when there is
+   * something to print.
+   */
+  const memorialLine = () => {
+    const found = year.months
+      .flatMap((m) => m.memorial ?? [])
+      .filter((r) => r.recorded && !r.notHeld);
+    if (found.length === 0) return '';
+    const parts = found
+      .map((r) => `${esc(r.date)} — <b>${r.count}</b>`)
+      .join(' · ');
+    return `<div class="memorial"><span class="ml">${esc(
+      labels.memorial,
+    )}</span> ${parts}</div>`;
+  };
+
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${esc(
     labels.title,
   )}</title>
@@ -137,6 +159,14 @@ export function buildAttendancePdfHtml(opts: {
   tfoot td { border-top: 2px solid #e2e8f0; border-bottom: none; padding-top: 7px; }
   td.yl { text-align: right; font-size: 9px; color: #64748b; font-weight: 700; text-transform: none; }
   td.yv { font-size: 12px; }
+  .memorial {
+    margin-top: 9px; padding: 7px 10px; border: 1px solid #e2e8f0;
+    border-radius: 7px; background: #fbfcfd; font-size: 8.5pt; color: #0f172a;
+  }
+  .ml {
+    font-weight: 700; text-transform: uppercase; letter-spacing: .5px;
+    font-size: 7.5pt; color: #64748b; margin-right: 7px;
+  }
   .foot {
     margin-top: 10px; padding-top: 7px; border-top: 1px solid #eef2f6;
     font-size: 9px; color: #94a3b8; display: flex; justify-content: space-between;
@@ -151,6 +181,7 @@ export function buildAttendancePdfHtml(opts: {
     </div>
     ${block('midweek')}
     ${block('weekend')}
+    ${memorialLine()}
     <div class="foot">
       <span>${esc(labels.notHeld)}</span>
       <span>${esc(labels.printed)} ${esc(printedOn)}</span>

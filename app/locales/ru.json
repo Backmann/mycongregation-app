@@ -808,7 +808,8 @@
       "weekend": "Выходные",
       "cleaning": "Уборка",
       "av_duty": "А/В",
-      "public_witnessing": "Публ. служ."
+      "public_witnessing": "Публ. служ.",
+      "memorial": "Вечеря"
     },
     "status": {
       "draft": "Черновик",

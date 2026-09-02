@@ -91,6 +91,7 @@ export default function AttendanceScreen() {
         midweek: t('eventTypes.midweek'),
         weekend: t('eventTypes.weekend'),
         notHeld: t('attendance.printLegend'),
+        memorial: t('eventTypes.memorial'),
         printed: t('attendance.printedOn'),
         yearAverage: t('attendance.yearAverageRow'),
       },
@@ -245,7 +246,10 @@ function MonthBlock({
   onMeasured: (y: number) => void;
 }) {
   const { t } = useTranslation();
-  const empty = month.midweek.length === 0 && month.weekend.length === 0;
+  const empty =
+    month.midweek.length === 0 &&
+    month.weekend.length === 0 &&
+    (month.memorial?.length ?? 0) === 0;
 
   return (
     <View
@@ -282,6 +286,17 @@ function MonthBlock({
             editable={editable}
             onSaved={onSaved}
           />
+          {/* A line of its own, under the two, and only in the month it falls
+              in — a third column would stand empty for eleven months. */}
+          {month.memorial?.length ? (
+            <MeetingList
+              rows={month.memorial}
+              kind="memorial"
+              language={language}
+              editable={editable}
+              onSaved={onSaved}
+            />
+          ) : null}
         </>
       )}
     </View>
@@ -296,7 +311,7 @@ function MeetingList({
   onSaved,
 }: {
   rows: AttendanceRow[];
-  kind: 'midweek' | 'weekend';
+  kind: 'midweek' | 'weekend' | 'memorial';
   language: string;
   editable: boolean;
   onSaved: () => void;

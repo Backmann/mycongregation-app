@@ -802,7 +802,8 @@
       "weekend": "Weekend",
       "cleaning": "Cleaning",
       "av_duty": "A/V",
-      "public_witnessing": "Public W."
+      "public_witnessing": "Public W.",
+      "memorial": "Memorial"
     },
     "status": {
       "draft": "Draft",

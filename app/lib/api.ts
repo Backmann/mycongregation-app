@@ -4020,6 +4020,13 @@ export interface AttendanceMonth {
   midweekAverage: number | null;
   weekendTotal: number;
   weekendAverage: number | null;
+  /**
+   * The Memorial, kept apart from the two — a line of its own, not a third
+   * column: it happens once a year, and a column would stand empty for eleven
+   * months. No average: one evening has nothing to be averaged against.
+   */
+  memorial: AttendanceRow[];
+  memorialTotal: number;
 }
 
 export interface AttendanceYear {
