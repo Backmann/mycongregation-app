@@ -27,6 +27,10 @@ import { memorialKey, useMemorialSheet } from '../lib/useMemorialSheet';
 import { buildMemorialPdfHtml, MemorialPdfPlace } from '../lib/memorialPdf';
 import { exportHtmlAsPdf, openPrintWindow } from '../lib/pdf';
 import { dutyLabel } from './DutiesSection';
+import {
+  MEMORIAL_GENDER,
+  MEMORIAL_NOT_BAPTIZED,
+} from '../lib/memorial-people';
 
 /**
  * The Memorial, where the meeting it replaces would have been.
@@ -39,14 +43,11 @@ import { dutyLabel } from './DutiesSection';
  *
  * Opens in place, like any other meeting block.
  *
- * The parts that carry a person are for BAPTIZED BROTHERS, told by the
- * APPOINTMENT rather than the baptism date: of twenty-seven brothers in this
- * congregation three have a date recorded, so that filter would leave three
- * men in the picker. «unbaptized_publisher» and «student» are the two
- * appointments that are not baptized, and everyone carries one.
+ * The parts that carry a person are for BAPTIZED BROTHERS. WHO exactly that
+ * is now lives in lib/memorial-people.ts: the places of the evening ask the
+ * very same question, and two copies of an answer are two answers waiting to
+ * drift apart.
  */
-
-const NOT_BAPTIZED = ['student', 'unbaptized_publisher'] as const;
 
 const SONG_PARTS = new Set(['song_opening', 'song_closing']);
 
@@ -404,8 +405,8 @@ function Line({
           label={line.label}
           value={line.publisherId}
           onChange={(pid) => onChange({ publisherId: pid })}
-          genderFilter="brother"
-          excludeAppointments={[...NOT_BAPTIZED]}
+          genderFilter={MEMORIAL_GENDER}
+          excludeAppointments={MEMORIAL_NOT_BAPTIZED}
           absenceDate={memorialDate}
         />
       ) : (

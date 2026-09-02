@@ -17,6 +17,10 @@ import { MyGlowRow } from './MyGlowRow';
 import { Dialog } from './Dialog';
 import { SECTION_COLORS } from '../lib/section-colors';
 import { ChipRow, PersonChip } from './PersonChip';
+import {
+  MEMORIAL_GENDER,
+  MEMORIAL_NOT_BAPTIZED,
+} from '../lib/memorial-people';
 
 /** Icon + accent colour per duty type (role circle in the picker). */
 export const DUTY_ICONS: Record<
@@ -166,6 +170,14 @@ type Props = {
   nextUp?: boolean;
   /** The upcoming meeting is today (changes the marker wording). */
   nextUpToday?: boolean;
+  /**
+   * The day the Memorial falls on. Absences are checked against THIS date at
+   * its places: the picker otherwise works the day out of the midweek and
+   * weekend settings, and the Memorial is neither — so a brother away that
+   * very evening came up free, while a brother away on the Thursday came up
+   * busy. The caller knows its own date; it says so.
+   */
+  memorialDateISO?: string;
   /** Duty ids auto-filled by a congregation rule (shows an "авто" badge). */
   autoDutyIds?: Set<string>;
 };
@@ -192,6 +204,7 @@ export function DutiesSection({
   dateLabel,
   nextUp,
   nextUpToday,
+  memorialDateISO,
   autoDutyIds,
 }: Props) {
   const { t } = useTranslation();
@@ -528,6 +541,21 @@ export function DutiesSection({
                               value={d.publisherId}
                               onChange={(id) => onAssign(d.id, id)}
                               requiredCapability={capabilityFor(d)}
+                              genderFilter={
+                                meeting === 'memorial'
+                                  ? MEMORIAL_GENDER
+                                  : undefined
+                              }
+                              excludeAppointments={
+                                meeting === 'memorial'
+                                  ? MEMORIAL_NOT_BAPTIZED
+                                  : undefined
+                              }
+                              absenceDate={
+                                meeting === 'memorial'
+                                  ? memorialDateISO
+                                  : undefined
+                              }
                               activityById={activityById}
                               scopeDutyType={d.dutyType}
                               currentWeekStart={weekStartISO}

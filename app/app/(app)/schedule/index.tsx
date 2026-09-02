@@ -1930,6 +1930,7 @@ export default function ScheduleIndexScreen() {
                 }
                 activityById={activityById}
                 weekStartISO={weekStartISO}
+                memorialDateISO={rules.memorial?.date}
               />
               </View>
               ))}
