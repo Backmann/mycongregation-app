@@ -65,6 +65,15 @@ export interface MeetingEntry {
   sourceUrl: string | null;
   /** When a convention/assembly cancels this meeting, the event that did it. */
   replacedBy: SpecialEvent | null;
+  /**
+   * The Memorial, when it is THIS row's meeting — it takes one of the two and
+   * stands in its place. Set here so the row can carry the evening's own day,
+   * hour and address instead of the settings', and lead where its programme
+   * is read.
+   */
+  memorial?: SpecialEvent | null;
+  /** Monday of the row's week, for opening the schedule at it. */
+  weekStartISO?: string;
   /** My parts/duties in this meeting; non-empty ⇒ the row is mine. */
   myParts: MyPartLine[];
   /** My service group cleans the hall after this meeting. */
@@ -366,10 +375,21 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
     if (!v) continue;
     for (const kind of ['midweek', 'weekend'] as const) {
       const dow = rules.dowOf(kind);
-      const time = kind === 'midweek' ? v.midweekTime : v.weekendTime;
       if (!dow) continue;
-      const dateISO = rules.dateOf(kind);
-      if (!dateISO || !inNear(dateISO)) continue;
+      const settingsDateISO = rules.dateOf(kind);
+      if (!settingsDateISO) continue;
+      // The Memorial takes this meeting and is held on ITS OWN day, which the
+      // settings know nothing about: the evening is fixed by the calendar, the
+      // meeting by the congregation. Mixing the two put the Memorial's hour
+      // and address on the weekday of a meeting that is not taking place.
+      const memorial = rules.memorialTakes === kind ? rules.memorial : null;
+      const dateISO = memorial ? memorial.date : settingsDateISO;
+      const time = memorial
+        ? (memorial.time ?? '')
+        : kind === 'midweek'
+          ? v.midweekTime
+          : v.weekendTime;
+      if (!inNear(dateISO)) continue;
       // He is giving a talk elsewhere that day — showing the meeting he will
       // not attend was the confusing part.
       if (outgoingTalkDates.has(dateISO)) continue;
@@ -377,12 +397,16 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
       const replacedBy = rules.replacedBy(kind) ?? null;
       if (replacedBy) replacedEventIds.add(replacedBy.id);
 
+      // On a Memorial week MY part is a part of the Memorial: gathering by
+      // midweek/weekend only left the brother saying a prayer, and the brother
+      // on the parking, with nothing on the home screen at all.
+      const myEventType = memorial ? 'memorial' : kind;
       const myParts: MyPartLine[] = myItems
         .filter(
           (it) =>
             (it.kind === 'meeting' || it.kind === 'duty') &&
             it.weekStartDate === weekISO &&
-            it.eventType === kind,
+            it.eventType === myEventType,
         )
         .sort((a, b) => (a.partOrder ?? 999) - (b.partOrder ?? 999))
         .map((it) => resolvePart(it));
@@ -393,7 +417,9 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
         dateISO,
         time,
         kind,
-        address: v.address,
+        address: memorial ? (memorial.address ?? v.address) : v.address,
+        memorial,
+        weekStartISO: weekISO,
         conductorName: null,
         unassignedConductor: false,
         topic: null,

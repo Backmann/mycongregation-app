@@ -15,7 +15,12 @@ import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ru';
 import 'dayjs/locale/de';
-import { assignmentsApi, meApi, type MyWeekMarks } from '../lib/api';
+import {
+  assignmentsApi,
+  meApi,
+  type MyWeekMarks,
+  type PublishedWeek,
+} from '../lib/api';
 import { MyDot } from './MyDot';
 import { SECTION_COLORS } from '../lib/section-colors';
 import { isSameWeek, startOfWeekMonday } from '../lib/dates';
@@ -39,17 +44,13 @@ interface Props {
 
 const PANEL_WIDTH = 250;
 
-interface WeekRow {
-  weekStartDate: string;
-  hasMidweek: boolean;
-  hasWeekend: boolean;
-}
-
 /** One entry of the list: a meeting, with its real date. */
 interface MeetingEntry {
   weekStartDate: string;
   date: dayjs.Dayjs;
   coVisit: boolean;
+  /** True when the Memorial is the meeting of that week. */
+  memorial: boolean;
 }
 
 export function WeekDrawer({
@@ -94,20 +95,29 @@ export function WeekDrawer({
   // Turn published weeks into a list of meetings of the selected kind: the
   // current week on top, the rest grouped by the month the meeting falls in.
   const { currentEntry, groups } = useMemo(() => {
-    const rows: WeekRow[] = weeksQuery.data ?? [];
+    const rows: PublishedWeek[] = weeksQuery.data ?? [];
     let current: MeetingEntry | null = null;
     const out: { key: string; label: string; entries: MeetingEntry[] }[] = [];
     for (const r of rows) {
       if (kind === 'midweek' ? !r.hasMidweek : !r.hasWeekend) continue;
-      const dow = dowForWeek(r.weekStartDate, kind);
-      if (!dow) continue;
-      const date = dayjs(r.weekStartDate)
-        .locale(i18n.language)
-        .add(dow - 1, 'day');
+      // The Memorial has a day of its own, fixed by the calendar and not by
+      // the congregation's settings — so the entry shows the evening, not the
+      // weekday of the meeting it took away.
+      let date: dayjs.Dayjs;
+      if (r.memorialDate) {
+        date = dayjs(r.memorialDate).locale(i18n.language);
+      } else {
+        const dow = dowForWeek(r.weekStartDate, kind);
+        if (!dow) continue;
+        date = dayjs(r.weekStartDate)
+          .locale(i18n.language)
+          .add(dow - 1, 'day');
+      }
       const entry: MeetingEntry = {
         weekStartDate: r.weekStartDate,
         date,
         coVisit: kind === 'midweek' && !!isCoVisitWeek?.(r.weekStartDate),
+        memorial: !!r.memorialDate,
       };
       if (isSameWeek(new Date(r.weekStartDate), currentWeekStart)) {
         current = entry;
@@ -196,7 +206,13 @@ export function WeekDrawer({
         </Text>
         <Text style={styles.rowWeek}>{weekRange(e.weekStartDate)}</Text>
       </View>
-      {e.coVisit ? (
+      {e.memorial ? (
+        <View style={styles.memorialBadge}>
+          <Text style={styles.memorialBadgeText}>
+            {t('weekDrawer.memorialShort')}
+          </Text>
+        </View>
+      ) : e.coVisit ? (
         <View style={styles.coBadge}>
           <Text style={styles.coBadgeText}>{t('weekDrawer.coShort')}</Text>
         </View>
@@ -401,6 +417,13 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
   },
   coBadgeText: { fontSize: 9.5, fontWeight: '700', color: '#0e7490' },
+  memorialBadge: {
+    backgroundColor: '#fef2f2',
+    borderRadius: 999,
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+  },
+  memorialBadgeText: { fontSize: 9.5, fontWeight: '700', color: '#b91c1c' },
   collar: {
     position: 'absolute',
     left: PANEL_WIDTH,

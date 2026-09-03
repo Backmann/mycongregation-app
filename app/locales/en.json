@@ -2584,7 +2584,8 @@
     "thisWeek": "This week",
     "midweek": "Midweek",
     "weekend": "Weekend",
-    "coShort": "CO"
+    "coShort": "CO",
+    "memorialShort": "Memorial"
   },
   "activityFeed": {
     "noAccess": "The activity feed is available to elders and congregation administrators."

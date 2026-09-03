@@ -430,8 +430,32 @@ function MeetingRow({
     { weekday: 'long', day: 'numeric', month: 'long' },
   );
 
+  // The Memorial IS this week's meeting, so it is drawn as one and not as an
+  // event that cancelled something: its own day, hour and address, and the
+  // person's own part spelled out below when he has one. A tap opens the WEEK
+  // — the programme is read in the schedule, and the button to it was taken
+  // off the event card on purpose.
+  if (entry.memorial && entry.myParts.length === 0) {
+    const e = entry.memorial;
+    return (
+      <BackgroundRow
+        icon={FEED_ACCENT.event.icon}
+        accent={FEED_ACCENT.event.color}
+        kindLabel={t('home.eventTypes.memorial')}
+        title={e.title}
+        meta={[dateLabel, e.time, e.address].filter(Boolean).join(' \u00b7 ')}
+        onPress={() =>
+          router.push({
+            pathname: '/schedule',
+            params: entry.weekStartISO ? { week: entry.weekStartISO } : {},
+          } as never)
+        }
+      />
+    );
+  }
+
   // A convention/assembly cancelled this meeting: show the event in its place.
-  if (entry.replacedBy) {
+  if (entry.replacedBy && !entry.memorial) {
     const e = entry.replacedBy;
     const typeLabel = e.type
       ? t(`specialEvents.types.${e.type}`, e.type)
@@ -448,8 +472,9 @@ function MeetingRow({
     );
   }
 
-  const kindLabel =
-    entry.kind === 'field_service'
+  const kindLabel = entry.memorial
+    ? t('home.eventTypes.memorial')
+    : entry.kind === 'field_service'
       ? t('home.nextFieldService')
       : t(`home.eventTypes.${entry.kind}`);
   const ac = FEED_ACCENT[entry.kind] ?? FEED_ACCENT.midweek;

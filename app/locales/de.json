@@ -2584,7 +2584,8 @@
     "thisWeek": "Diese Woche",
     "midweek": "Wochenmitte",
     "weekend": "Wochenende",
-    "coShort": "KA"
+    "coShort": "KA",
+    "memorialShort": "Gedächtnis"
   },
   "activityFeed": {
     "noAccess": "Die Ereignisliste steht Ältesten und Administratoren der Versammlung zur Verfügung."

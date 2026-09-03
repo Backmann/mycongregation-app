@@ -2598,7 +2598,8 @@
     "thisWeek": "Эта неделя",
     "midweek": "Будни",
     "weekend": "Выходной",
-    "coShort": "РС"
+    "coShort": "РС",
+    "memorialShort": "Вечеря"
   },
   "activityFeed": {
     "noAccess": "Лента событий доступна старейшинам и администраторам собрания."

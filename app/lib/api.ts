@@ -3054,13 +3054,22 @@ export const circuitOverseerApi = {
   },
 };
 
+/** A week the schedule can be opened at, as the week drawer lists them. */
+export interface PublishedWeek {
+  weekStartDate: string;
+  hasMidweek: boolean;
+  hasWeekend: boolean;
+  /**
+   * The evening, when a published Memorial takes one of the two meetings that
+   * week. The list shows THIS day rather than the weekday of a meeting that is
+   * not being held.
+   */
+  memorialDate: string | null;
+}
+
 export const assignmentsApi = {
-  async publishedWeeks(): Promise<
-    { weekStartDate: string; hasMidweek: boolean; hasWeekend: boolean }[]
-  > {
-    const { data } = await api.get<
-      { weekStartDate: string; hasMidweek: boolean; hasWeekend: boolean }[]
-    >('/assignments/weeks');
+  async publishedWeeks(): Promise<PublishedWeek[]> {
+    const { data } = await api.get<PublishedWeek[]>('/assignments/weeks');
     return data;
   },
   async list(params?: {
