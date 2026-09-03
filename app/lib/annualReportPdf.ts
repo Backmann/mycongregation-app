@@ -5,10 +5,18 @@ import { AnnualFigures } from './api';
  *
  * A draft, not a substitute for the form: the figures the app can work out are
  * printed with the people behind each one listed underneath, and the parts it
- * cannot know are printed as empty ruled lines to be filled in by hand. Naming
- * the people matters on paper for the same reason it matters on screen — the
+ * cannot know are printed as ruled lines to be filled in by hand. Naming the
+ * people matters on paper for the same reason it matters on screen — the
  * secretary checks a figure by recognising who is in it, and once the sheet is
  * away from the app that is the only way left to check.
+ *
+ * The sheet is laid out the way the form is read rather than the way the data
+ * happens to be shaped: what goes ON the form comes first, in the form's own
+ * order, and everything the app offers BESIDE it — who is inactive as things
+ * stand, and whom it cannot judge — sits below a rule, marked as not for the
+ * form. That separation is the whole point of the page. It was learned the
+ * hard way: the secretary read the app's «became inactive» as «how many are
+ * inactive», answered the form with it, and the two questions are different.
  */
 export function buildAnnualReportPdfHtml(opts: {
   figures: AnnualFigures;
@@ -33,6 +41,12 @@ export function buildAnnualReportPdfHtml(opts: {
     reportsPerMonth: string;
     printed: string;
     draftNote: string;
+    /** The block below the rule: what the app knows but the form does not ask. */
+    asideSection: string;
+    inactiveNow: string;
+    inactiveNowHint: string;
+    lapseUnknown: string;
+    lapseUnknownHint: string;
   };
   monthName: (isoMonth: string) => string;
   printedOn: string;
@@ -46,24 +60,30 @@ export function buildAnnualReportPdfHtml(opts: {
     printedOn,
   } = opts;
 
+  const names = (people: { id: string; name: string; month?: string }[]) =>
+    people.length
+      ? `<tr class="names"><td colspan="2">${people
+          .map(
+            (p) =>
+              esc(p.name) +
+              (p.month
+                ? ` <span class="mo">${esc(monthName(p.month))}</span>`
+                : ''),
+          )
+          .join('<span class="sep">·</span>')}</td></tr>`
+      : '';
+
   const figure = (
     label: string,
     people: { id: string; name: string; month?: string }[],
+    hint?: string,
   ) => `<tr>
-      <td class="lbl">${esc(label)}</td>
+      <td class="lbl">${esc(label)}${
+        hint ? `<div class="hint">${esc(hint)}</div>` : ''
+      }</td>
       <td class="val">${people.length}</td>
     </tr>
-    ${
-      people.length
-        ? `<tr class="names"><td colspan="2">${people
-            .map(
-              (p) =>
-                esc(p.name) +
-                (p.month ? ` <span class="mo">(${esc(monthName(p.month))})</span>` : ''),
-            )
-            .join(' · ')}</td></tr>`
-        : ''
-    }`;
+    ${names(people)}`;
 
   const monthsRow = f.monthlyReporters
     .map(
@@ -74,6 +94,27 @@ export function buildAnnualReportPdfHtml(opts: {
     )
     .join('');
 
+  // Only when there is something to say. An empty aside on a form draft is a
+  // question mark where none is needed.
+  const aside =
+    f.inactiveNow.length > 0 || f.lapseUnknown.length > 0
+      ? `<section class="aside">
+      <h2>${esc(labels.asideSection)}</h2>
+      <table>
+        ${figure(labels.inactiveNow, f.inactiveNow, labels.inactiveNowHint)}
+        ${
+          f.lapseUnknown.length > 0
+            ? figure(
+                labels.lapseUnknown,
+                f.lapseUnknown,
+                labels.lapseUnknownHint,
+              )
+            : ''
+        }
+      </table>
+    </section>`
+      : '';
+
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${esc(
     labels.title,
   )}</title>
@@ -81,59 +122,94 @@ export function buildAnnualReportPdfHtml(opts: {
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
   body {
-    font-family: -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
-    color: #0f172a;
+    /* Georgia sets the figures on a printed sheet the way a ledger does:
+       numerals with a baseline of their own, which reads as a record rather
+       than as a screen printed out. */
+    font-family: Georgia, 'Times New Roman', serif;
+    color: #1c1917;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
-  .page { padding: 14px 16px 16px; }
-  .pagehead { border-bottom: 3px solid #0e7490; padding-bottom: 7px; margin-bottom: 8px; }
-  .pagehead h1 { font-size: 16px; margin: 0; color: #0e7490; letter-spacing: -0.2px; }
-  .pagehead .sub { font-size: 10px; color: #64748b; margin-top: 2px; }
+  .page { padding: 0 4mm; }
+
+  .masthead {
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 16px; padding-bottom: 6px; border-bottom: 2px solid #1c1917;
+  }
+  .masthead h1 {
+    font-size: 17px; font-weight: 400; margin: 0; letter-spacing: 0.01em;
+  }
+  .masthead .who { font-size: 10.5px; color: #57534e; text-align: right; }
+  .masthead .who b { font-weight: 400; color: #1c1917; }
+
   .draft {
-    font-size: 9px; color: #92400e; background: #fffbeb;
-    border: 1px solid #fde68a; border-radius: 6px; padding: 5px 8px; margin-bottom: 12px;
+    font-size: 9.5px; color: #57534e; font-style: italic;
+    padding: 7px 0 0; margin-bottom: 14px;
   }
-  .sect { margin-bottom: 14px; }
-  .slabel {
-    display: inline-block; font-size: 12px; font-weight: 700; color: #fff;
-    background: #0e7490; border-radius: 999px; padding: 4px 13px; margin-bottom: 6px;
+
+  section { margin-bottom: 16px; break-inside: avoid; }
+  h2 {
+    font-size: 10px; font-weight: 700; margin: 0 0 4px;
+    letter-spacing: 0.04em; color: #78716c;
   }
+
   table { width: 100%; border-collapse: collapse; }
-  td.lbl { font-size: 10.5px; padding: 6px 8px; border-bottom: 1px solid #f1f5f9; }
+  td.lbl {
+    font-size: 11px; padding: 7px 0 6px; vertical-align: baseline;
+    border-bottom: 1px solid #e7e5e4;
+  }
   td.val {
-    font-size: 13px; font-weight: 700; color: #0e7490; text-align: right;
-    width: 60px; padding: 6px 8px; border-bottom: 1px solid #f1f5f9;
+    font-size: 15px; text-align: right; width: 56px;
+    padding: 7px 0 6px; border-bottom: 1px solid #e7e5e4;
+    font-variant-numeric: tabular-nums;
+  }
+  .hint {
+    font-size: 8.5px; color: #78716c; font-style: italic;
+    line-height: 1.45; margin-top: 2px; max-width: 128mm;
   }
   tr.names td {
-    font-size: 8.5px; color: #64748b; padding: 0 8px 6px;
-    border-bottom: 1px solid #f1f5f9; line-height: 1.5;
+    font-size: 9px; color: #44403c; padding: 0 0 7px;
+    border-bottom: 1px solid #e7e5e4; line-height: 1.6;
   }
-  .mo { color: #94a3b8; }
-  table.months { table-layout: fixed; }
-  table.months td { text-align: center; padding: 3px 1px; }
-  .mc { font-size: 11px; font-weight: 700; color: #0e7490; }
-  .mn { font-size: 7.5px; color: #94a3b8; text-transform: capitalize; }
-  .byhand div {
-    border-bottom: 1px solid #cbd5e1; font-size: 10px; color: #334155;
-    padding: 10px 4px 3px; margin-bottom: 4px;
+  .mo { color: #a8a29e; }
+  .sep { color: #d6d3d1; padding: 0 5px; }
+
+  table.months { table-layout: fixed; margin-top: 3px; }
+  table.months td { text-align: center; padding: 2px 1px; }
+  .mc { font-size: 12px; font-variant-numeric: tabular-nums; }
+  .mn { font-size: 7.5px; color: #a8a29e; text-transform: lowercase; }
+
+  .byhand .line {
+    border-bottom: 1px solid #a8a29e; font-size: 10.5px;
+    padding: 12px 0 3px; margin-bottom: 3px;
   }
+
+  /* Below the rule: everything the app knows that the form does not ask for.
+     A double rule, not a colour — this has to survive a black-and-white
+     printer, which is what a Kingdom Hall office has. */
+  .aside {
+    border-top: 3px double #1c1917; padding-top: 9px; margin-top: 20px;
+  }
+
   .foot {
-    margin-top: 10px; padding-top: 7px; border-top: 1px solid #eef2f6;
-    font-size: 9px; color: #94a3b8; text-align: right;
+    margin-top: 14px; padding-top: 6px; border-top: 1px solid #e7e5e4;
+    font-size: 8.5px; color: #a8a29e; display: flex;
+    justify-content: space-between;
   }
-  @page { size: A4 portrait; margin: 10mm; }
+  @page { size: A4 portrait; margin: 12mm; }
 </style></head>
 <body>
-  <section class="page">
-    <div class="pagehead">
+  <div class="page">
+    <div class="masthead">
       <h1>${esc(labels.title)}</h1>
-      <div class="sub">${esc(congregationName)} · ${esc(labels.serviceYear)}</div>
+      <div class="who"><b>${esc(congregationName)}</b><br>${esc(
+        labels.serviceYear,
+      )}</div>
     </div>
     <div class="draft">${esc(labels.draftNote)}</div>
 
-    <div class="sect">
-      <div class="slabel">${esc(labels.attendanceSection)}</div>
+    <section>
+      <h2>${esc(labels.attendanceSection)}</h2>
       <table>
         <tr><td class="lbl">${esc(labels.midweek)}</td><td class="val">${
           attendance.midweek ?? ''
@@ -142,39 +218,42 @@ export function buildAnnualReportPdfHtml(opts: {
           attendance.weekend ?? ''
         }</td></tr>
       </table>
-    </div>
+    </section>
 
-    <div class="sect">
-      <div class="slabel">${esc(labels.publishersSection)}</div>
+    <section>
+      <h2>${esc(labels.publishersSection)}</h2>
       <table>
         ${figure(labels.active, f.active)}
         ${figure(labels.becameInactive, f.becameInactive)}
         ${figure(labels.reactivated, f.reactivated)}
       </table>
-      <div style="margin-top:8px">
-        <div class="mn" style="font-size:8.5px;color:#64748b;margin-bottom:2px">${esc(
-          labels.reportsPerMonth,
-        )}</div>
+      <div style="margin-top:9px">
+        <h2 style="margin-bottom:1px">${esc(labels.reportsPerMonth)}</h2>
         <table class="months"><tr>${monthsRow}</tr></table>
       </div>
-    </div>
+    </section>
 
-    <div class="sect">
-      <div class="slabel">${esc(labels.circumstancesSection)}</div>
+    <section>
+      <h2>${esc(labels.circumstancesSection)}</h2>
       <table>
         ${figure(labels.deaf, f.deaf)}
         ${figure(labels.blind, f.blind)}
         ${figure(labels.imprisoned, f.imprisoned)}
       </table>
-    </div>
+    </section>
 
-    <div class="sect byhand">
-      <div class="slabel">${esc(labels.byHandSection)}</div>
-      ${labels.byHandItems.map((i) => `<div>${esc(i)}</div>`).join('')}
-    </div>
+    <section class="byhand">
+      <h2>${esc(labels.byHandSection)}</h2>
+      ${labels.byHandItems.map((i) => `<div class="line">${esc(i)}</div>`).join('')}
+    </section>
 
-    <div class="foot">${esc(labels.printed)} ${esc(printedOn)}</div>
-  </section>
+    ${aside}
+
+    <div class="foot">
+      <span>${esc(congregationName)}</span>
+      <span>${esc(labels.printed)} ${esc(printedOn)}</span>
+    </div>
+  </div>
 </body></html>`;
 }
 
