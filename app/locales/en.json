@@ -633,7 +633,7 @@
     "group": {
       "scopeCongregation": "Congregation",
       "ofReported": "of {{total}} reported",
-      "active": "active",
+      "shared": "shared in the ministry",
       "pending": "pending",
       "noPublishersInScope": "No publishers in scope",
       "noReportYet": "No report yet",
@@ -660,6 +660,7 @@
       "last12Months": "Last 12 months",
       "noHistory": "No history",
       "self": "(self)",
+      "someoneElse": "someone else",
       "submittedBy": "Submitted by {{name}}",
       "editedBy": "edited by {{name}}",
       "trendTitle": "Service trend",

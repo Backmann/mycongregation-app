@@ -637,7 +637,7 @@
     "group": {
       "scopeCongregation": "Собрание",
       "ofReported": "из {{total}} сдали отчёт",
-      "active": "активных",
+      "shared": "участвовали в служении",
       "pending": "ожидают",
       "noPublishersInScope": "Возвещателей нет",
       "noReportYet": "Отчёта пока нет",
@@ -664,6 +664,7 @@
       "last12Months": "Последние 12 месяцев",
       "noHistory": "История пуста",
       "self": "(сам)",
+      "someoneElse": "кто-то другой",
       "submittedBy": "Подал: {{name}}",
       "editedBy": "изменил: {{name}}",
       "trendTitle": "Тенденция служения",

@@ -633,7 +633,7 @@
     "group": {
       "scopeCongregation": "Versammlung",
       "ofReported": "von {{total}} eingereicht",
-      "active": "aktiv",
+      "shared": "im Dienst beteiligt",
       "pending": "ausstehend",
       "noPublishersInScope": "Keine Verkündiger im Bereich",
       "noReportYet": "Noch kein Bericht",
@@ -660,6 +660,7 @@
       "last12Months": "Letzte 12 Monate",
       "noHistory": "Kein Verlauf",
       "self": "(selbst)",
+      "someoneElse": "jemand anderes",
       "submittedBy": "Eingereicht von {{name}}",
       "editedBy": "bearbeitet von {{name}}",
       "trendTitle": "Diensttrend",

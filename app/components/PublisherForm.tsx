@@ -154,7 +154,9 @@ export function PublisherForm({
     form.appointment === 'ministerial_servant' ||
     form.appointment === 'elder';
   const showBaptismDate = isBaptized;
-  const showMinistryStart = isUnbaptized;
+  // Shown to the baptized as well: it is where their reporting began, it is
+  // read by the status, and once cleared there was nowhere to put it back.
+  const showMinistryStart = isUnbaptized || isBaptized;
   const showSpiritualStatus = isUnbaptized || isBaptized;
   // Only baptized publishers may be pioneers; unbaptized publishers can only
   // report field service (the "served" checkbox).
@@ -263,10 +265,14 @@ export function PublisherForm({
                 next.baptismDate = '';
                 next.pioneerType = 'none';
                 next.pioneerSince = '';
-              } else {
-                // Baptized: no ministry-start date.
-                next.ministryStartDate = '';
               }
+              // A baptized publisher KEEPS his ministry start. This used to
+              // clear it, on the reasoning that the date belongs to the
+              // unbaptized stage — and it does, but that stage is exactly when
+              // the man began handing in reports. Wiping it told the service
+              // status that his reporting life began at baptism, and a brother
+              // with a year of reports behind him turned «неактивный» the
+              // night his baptism date was entered.
               return next;
             })
           }

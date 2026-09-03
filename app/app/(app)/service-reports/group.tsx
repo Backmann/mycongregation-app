@@ -333,7 +333,11 @@ export default function GroupReportsScreen() {
             <Text style={[styles.statBig, styles.statActive]}>
               {aggregate.served}
             </Text>
-            <Text style={styles.statLabel}>{t('reports.group.active')}</Text>
+            {/* NOT the service status: this counts the reports handed in for
+                THIS month that say the publisher shared in the ministry. The
+                badges beside each name mean the rolling six-month standing,
+                and one word was doing both jobs on one screen. */}
+            <Text style={styles.statLabel}>{t('reports.group.shared')}</Text>
           </View>
           <View style={styles.statBox}>
             <Text style={[styles.statBig, styles.statPending]}>

@@ -112,8 +112,15 @@ function TimelineEntryCard({
   }
 
   const { summary, served } = describeReport(entry.report);
-  const submittedByName =
-    entry.report.submittedOnBehalfOf ?? i18n.t('reports.publisherHistory.self');
+  // WHO handed it in. `submittedOnBehalfOf` is a yes/no — was this entered by
+  // somebody else — and it was being printed straight into a line that asks
+  // for a name, so the card read «Подал: true». The name lives in its own
+  // field; when the publisher entered it himself there is none, and the line
+  // says so.
+  const submittedByName = entry.report.submittedOnBehalfOf
+    ? (entry.report.submittedByName ??
+      i18n.t('reports.publisherHistory.someoneElse'))
+    : i18n.t('reports.publisherHistory.self');
   const editLabel =
     entry.report.lastEditedAt && entry.report.lastEditedByName
       ? i18n.t('reports.publisherHistory.editedBy', { name: entry.report.lastEditedByName })
