@@ -291,6 +291,10 @@
       "appAccess": "App-Zugang",
       "circumstances": "Besondere Umstände"
     },
+    "hints": {
+      "isDeaf": "Braucht Gebärdensprache",
+      "isImprisoned": "Untersuchungshaft, Gefängnis, psychiatrische Klinik oder Suchtklinik"
+    },
     "fields": {
       "phone": "Telefon",
       "email": "E-Mail",

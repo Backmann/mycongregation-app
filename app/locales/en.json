@@ -291,6 +291,10 @@
       "appAccess": "App access",
       "circumstances": "Special circumstances"
     },
+    "hints": {
+      "isDeaf": "Needs sign-language interpretation",
+      "isImprisoned": "Remand centre, prison, psychiatric hospital or drug-treatment clinic"
+    },
     "fields": {
       "phone": "Phone",
       "email": "Email",

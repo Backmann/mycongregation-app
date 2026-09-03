@@ -342,15 +342,29 @@ export function PublisherForm({
           on their own. */}
       {canSeePastoral ? (
         <FormSection title={t('publishers.sections.circumstances')}>
+          {/* These three switches ARE the S-10 figures, so each says what the
+              form asks rather than a short version of it. «Находится в
+              заключении» reads as prison alone, while the form counts a
+              psychiatric hospital and a drug-treatment clinic too — an elder
+              who does not know that leaves the figure short. */}
           {(
             [
-              ['isDeaf', 'publishers.fields.isDeaf'],
-              ['isBlind', 'publishers.fields.isBlind'],
-              ['isImprisoned', 'publishers.fields.isImprisoned'],
+              ['isDeaf', 'publishers.fields.isDeaf', 'publishers.hints.isDeaf'],
+              ['isBlind', 'publishers.fields.isBlind', null],
+              [
+                'isImprisoned',
+                'publishers.fields.isImprisoned',
+                'publishers.hints.isImprisoned',
+              ],
             ] as const
-          ).map(([key, label]) => (
+          ).map(([key, label, hint]) => (
             <View key={key} style={styles.circumstanceRow}>
-              <Text style={styles.circumstanceLabel}>{t(label)}</Text>
+              <View style={styles.circumstanceText}>
+                <Text style={styles.circumstanceLabel}>{t(label)}</Text>
+                {hint ? (
+                  <Text style={styles.circumstanceHint}>{t(hint)}</Text>
+                ) : null}
+              </View>
               <Switch
                 value={form[key] === true}
                 onValueChange={(v) => update(key, v)}
@@ -414,7 +428,14 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 8,
   },
-  circumstanceLabel: { flex: 1, fontSize: 14.5, color: '#0f172a' },
+  circumstanceText: { flex: 1, paddingRight: 12 },
+  circumstanceLabel: { fontSize: 14.5, color: '#0f172a' },
+  circumstanceHint: {
+    fontSize: 12,
+    color: '#64748b',
+    marginTop: 2,
+    lineHeight: 16,
+  },
   container: { flex: 1, backgroundColor: '#f1f5f9' },
   content: {
     paddingBottom: 32,
