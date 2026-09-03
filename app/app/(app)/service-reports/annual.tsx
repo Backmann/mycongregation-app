@@ -264,6 +264,20 @@ export default function AnnualReportScreen() {
         setOpen={setOpen}
         language={i18n.language}
       />
+      {/* Deliberately below the three form figures and marked as not going on
+          it. The form asks whose sixth silent month fell inside the year and
+          says not to count anyone who lapsed earlier and is still lapsed; the
+          elders ask who is inactive now. Two questions, and answering one with
+          the other is how a form gets filled in wrongly. */}
+      <Figure
+        id="inactiveNow"
+        label={t('annualReport.inactiveNow')}
+        hint={t('annualReport.inactiveNowHint')}
+        people={f.inactiveNow}
+        open={open}
+        setOpen={setOpen}
+        language={i18n.language}
+      />
 
       <Text style={styles.sectionTitle}>
         {t('annualReport.circumstancesSection')}
