@@ -625,7 +625,7 @@
     },
     "errors": {
       "notLinkedToPublisher": "Dein Zugang ist mit keiner Verkündigerkarte verknüpft, deshalb kann kein Bericht abgegeben werden. Bitte einen Ältesten oder Administrator, sie zu verknüpfen: Profil → Benutzer → «Verknüpfen».",
-      "selfEditWindowClosed": "Dieser Bericht kann nicht mehr bearbeitet werden. Das Selbstbearbeitungsfenster (1.–10. des Folgemonats) ist geschlossen. Wende dich an einen Ältesten oder Administrator."
+      "selfEditWindowClosed": "Dieser Bericht lässt sich nicht mehr ändern: der Monat ist abgeschlossen. Korrigieren kann man, solange der Monat gesammelt wird — bis zum 20. des Folgemonats. Wende dich an den Sekretär oder einen Admin."
     },
     "pioneerInline": " · Pionier",
     "hoursLong_one": "{{count}} Stunde",
