@@ -278,6 +278,21 @@ export default function AnnualReportScreen() {
         setOpen={setOpen}
         language={i18n.language}
       />
+      {/* Not a figure at all — a question. The form's line runs through the
+          month their break began, and for these people that month is on paper,
+          from before the app kept reports. Answering it here either way would
+          put a wrong number on a signed form. */}
+      {f.lapseUnknown.length > 0 && (
+        <Figure
+          id="lapseUnknown"
+          label={t('annualReport.lapseUnknown')}
+          hint={t('annualReport.lapseUnknownHint')}
+          people={f.lapseUnknown}
+          open={open}
+          setOpen={setOpen}
+          language={i18n.language}
+        />
+      )}
 
       <Text style={styles.sectionTitle}>
         {t('annualReport.circumstancesSection')}

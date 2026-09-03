@@ -2855,6 +2855,8 @@
     "reactivatedHint": "Were inactive and began reporting again",
     "inactiveNow": "Inactive as things stand (not for the form)",
     "inactiveNowHint": "Six closed months in a row without a report, as of today. For the elders; the form takes the figure above",
+    "lapseUnknown": "The app cannot tell — decide yourself",
+    "lapseUnknownHint": "Silent since the first month the app holds records for. When their break began is only on paper: if it fell inside this year, add them to «became inactive» by hand",
     "missingMonths": "{{count}} months have no attendance recorded — fill the gaps or the sheet will be incomplete.",
     "byHandNote": "The app has no territory record and cannot answer for the congregation about help from the branch — write those in yourself.",
     "reportsPerMonth": "Reports per month",

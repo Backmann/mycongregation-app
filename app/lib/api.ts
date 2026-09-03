@@ -4104,6 +4104,8 @@ export interface AnnualFigures {
   reactivated: CountedPublisher[];
   /** Inactive as things stand — NOT the figure the form asks for. */
   inactiveNow: CountedPublisher[];
+  /** Silent since the records begin: when their break started is on paper. */
+  lapseUnknown: CountedPublisher[];
   deaf: CountedPublisher[];
   blind: CountedPublisher[];
   imprisoned: CountedPublisher[];

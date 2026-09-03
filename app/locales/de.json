@@ -2855,6 +2855,8 @@
     "reactivatedHint": "Waren inaktiv und berichten wieder",
     "inactiveNow": "Zurzeit inaktiv (nicht für das Formular)",
     "inactiveNowHint": "Sechs abgeschlossene Monate in Folge ohne Bericht, Stand heute. Für die Ältesten; ins Formular geht die Zeile darüber",
+    "lapseUnknown": "Die App weiß es nicht — bitte selbst entscheiden",
+    "lapseUnknownHint": "Seit dem ersten erfassten Monat ohne Bericht. Wann die Unterbrechung begann, steht nur auf Papier: fiel sie in dieses Jahr, trage sie selbst bei «inaktiv geworden» ein",
     "missingMonths": "Für {{count}} Monate fehlen Besuchszahlen — bitte ergänzen, sonst bleibt das Formular unvollständig.",
     "byHandNote": "Die App kennt keine Gebiete und kann nicht für die Versammlung über Hilfe vom Zweigbüro antworten — bitte selbst eintragen.",
     "reportsPerMonth": "Berichte pro Monat",
