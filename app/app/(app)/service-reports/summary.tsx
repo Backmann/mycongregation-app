@@ -14,11 +14,15 @@ import { Stack } from 'expo-router';
 import {
   extractErrorMessage,
   attendanceApi,
+  meetingSettingsApi,
   serviceReportsApi,
 } from '../../../lib/api';
 import { usePermissions } from '../../../lib/permissions';
 import { useTranslation } from 'react-i18next';
 import { formatMonthLabel } from '../../../lib/i18n';
+import { exportHtmlAsPdf, openPrintWindow } from '../../../lib/pdf';
+import { buildMonthlyReportPdfHtml } from '../../../lib/monthlyReportPdf';
+import { HEADER_ICON } from '../../../lib/header';
 
 
 
@@ -59,6 +63,12 @@ export default function ServiceSummaryScreen() {
     enabled: canViewServiceSummary,
   });
 
+  const overview = useQuery({
+    queryKey: ['meeting-settings', 'overview'],
+    queryFn: () => meetingSettingsApi.getOverview(),
+    staleTime: 10 * 60 * 1000,
+  });
+
   // The S-3 figures for the year this month belongs to; the month's own two
   // averages are read out of it below.
   const attendanceYear = useQuery({
@@ -76,6 +86,60 @@ export default function ServiceSummaryScreen() {
       ) ?? null,
     [attendanceYear.data, reportMonth],
   );
+
+  // Who has NOT handed a report in — the reason to print on the 15th rather
+  // than the 20th: there is still time to ask them.
+  const groupRows = useQuery({
+    queryKey: ['group-reports', reportMonth],
+    queryFn: () => serviceReportsApi.findGroup(reportMonth),
+    enabled: canViewServiceSummary,
+  });
+
+  const print = () => {
+    if (!data) return;
+    const preopened = openPrintWindow();
+    const html = buildMonthlyReportPdfHtml({
+      summary: data,
+      attendance: {
+        weekend: monthAttendance?.weekendAverage ?? null,
+        midweek: monthAttendance?.midweekAverage ?? null,
+      },
+      missing: (groupRows.data?.publishers ?? [])
+        .filter((p) => !p.report)
+        .map((p) => p.displayName),
+      congregationName: overview.data?.congregation?.name ?? '',
+      monthLabel: formatMonthLabel(reportMonth),
+      printedOn: new Date().toLocaleDateString(i18nInstance.language, {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      }),
+      labels: {
+        title: t('serviceSummary.printTitle'),
+        allActive: t('serviceSummary.allActive'),
+        weekendAverage: t('serviceSummary.weekendAverage'),
+        midweekAverage: t('serviceSummary.midweekAverage'),
+        notForForm: t('serviceSummary.notForForm'),
+        categories: {
+          none: t('serviceSummary.categories.none'),
+          auxiliary: t('serviceSummary.categories.auxiliary'),
+          regular: t('serviceSummary.categories.regular'),
+          special: t('serviceSummary.categories.special'),
+          missionary: t('serviceSummary.categories.missionary'),
+        },
+        count: t('serviceSummary.count'),
+        hours: t('serviceSummary.hours'),
+        studies: t('serviceSummary.studies'),
+        missingTitle: t('serviceSummary.missingTitle'),
+        printed: t('serviceSummary.printedOn'),
+        draftNote: t('serviceSummary.printDraftNote'),
+      },
+    });
+    void exportHtmlAsPdf(html, {
+      fileName: 'S-1',
+      preopenedWindow: preopened,
+    });
+  };
 
   const queryClient = useQueryClient();
   const closureMutation = useMutation({
@@ -138,7 +202,16 @@ export default function ServiceSummaryScreen() {
 
   return (
     <View style={styles.container}>
-      <Stack.Screen options={{ title: t('reports.summary.title') }} />
+      <Stack.Screen
+        options={{
+          title: t('reports.summary.title'),
+          headerRight: () => (
+            <Pressable onPress={print} style={{ paddingHorizontal: 8 }} hitSlop={8}>
+              <Ionicons name="print-outline" size={22} color={HEADER_ICON} />
+            </Pressable>
+          ),
+        }}
+      />
       <View style={styles.header}>
         <ScrollView
           horizontal
