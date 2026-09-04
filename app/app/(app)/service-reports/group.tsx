@@ -213,9 +213,27 @@ export default function GroupReportsScreen() {
     // Fill rows only for expanded groups; collapsed groups keep just the header.
     for (const sec of out) {
       sec.collapsed = collapsedGroups.has(sec.groupKey);
+      const mine = rows.filter(
+        (r) => (r.groupId ?? '__none__') === sec.groupKey,
+      );
+      // Those who have missed enough months rise to the top of their group.
+      //
+      // The flag used to only paint a badge, leaving the overseer to hunt for
+      // it down eighty-eight rows — a filter that filters nothing. Sorting
+      // rather than hiding: the group stays whole, and the people who need a
+      // visit are the first names in it. Ties keep the server's order, which
+      // is alphabetical, so the list is stable between openings.
       sec.data = sec.collapsed
         ? []
-        : rows.filter((r) => (r.groupId ?? '__none__') === sec.groupKey);
+        : missedThreshold > 0
+          ? [...mine].sort((a, b) => {
+              const aFlag = a.consecutiveMissing >= missedThreshold ? 1 : 0;
+              const bFlag = b.consecutiveMissing >= missedThreshold ? 1 : 0;
+              if (aFlag !== bFlag) return bFlag - aFlag;
+              if (aFlag === 1) return b.consecutiveMissing - a.consecutiveMissing;
+              return 0;
+            })
+          : mine;
     }
     // Ungrouped section (if any) goes last.
     return out.sort((a, b) => {
@@ -223,7 +241,7 @@ export default function GroupReportsScreen() {
       if (b.groupId === null) return -1;
       return 0;
     });
-  }, [data, t, collapsedGroups]);
+  }, [data, t, collapsedGroups, missedThreshold]);
 
   // Initialize collapse state once data arrives: collapse everything except
   // the caller's own group.
