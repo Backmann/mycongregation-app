@@ -583,6 +583,14 @@
     "december": "December"
   },
   "reports": {
+    "reasons": {
+          "window": "Closed months weighed, {{from}} — {{to}}: ministry in {{served}} of {{expected}}",
+          "nothingClosed": "No closed month yet — nothing has been asked of him",
+          "countsFrom": "Counting begins at {{month}}",
+          "restarted": "Counting began afresh at {{month}}, after his return",
+          "sixth": "If the silence continues, the sixth month is {{month}}, service year {{from}}/{{to}}",
+          "manual": "Set by hand: the recompute leaves it alone"
+    },
     "remove": {
           "action": "Take the report back",
           "title": "Take the report back?",

@@ -583,6 +583,14 @@
     "december": "Dezember"
   },
   "reports": {
+    "reasons": {
+          "window": "Gewertete abgeschlossene Monate {{from}} — {{to}}: Dienst in {{served}} von {{expected}}",
+          "nothingClosed": "Noch kein abgeschlossener Monat — es wurde nichts verlangt",
+          "countsFrom": "Gezählt wird ab {{month}}",
+          "restarted": "Neu gezählt ab {{month}}, nach der Rückkehr",
+          "sixth": "Bleibt es still, ist der sechste Monat {{month}}, Dienstjahr {{from}}/{{to}}",
+          "manual": "Von Hand gesetzt: die Neuberechnung ändert ihn nicht"
+    },
     "remove": {
           "action": "Bericht zurücknehmen",
           "title": "Bericht zurücknehmen?",

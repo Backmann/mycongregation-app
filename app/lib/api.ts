@@ -2239,6 +2239,23 @@ export interface UpdateAccessInput {
   canViewPrivateData?: boolean;
 }
 
+/**
+ * WHY a badge says what it says — worked out beside the rule itself, so the
+ * explanation cannot drift from the decision.
+ */
+export interface StatusReasons {
+  status: PublisherStatus;
+  windowFrom: string | null;
+  windowTo: string | null;
+  expected: number;
+  served: number;
+  startMonth: string | null;
+  restarted: boolean;
+  sixthSilentMonth: string | null;
+  sixthSilentServiceYear: number | null;
+  manuallyOverridden: boolean;
+}
+
 export const publishersApi = {
   /** "These contacts are still correct" — for a publisher who doesn't use the app. */
   async confirmContacts(id: string): Promise<Publisher> {
@@ -2260,6 +2277,12 @@ export const publishersApi = {
   },
   async getById(id: string): Promise<Publisher> {
     const { data } = await api.get<Publisher>(`/publishers/${id}`);
+    return data;
+  },
+  async explainStatus(id: string): Promise<StatusReasons> {
+    const { data } = await api.get<StatusReasons>(
+      `/publishers/${id}/status-explained`,
+    );
     return data;
   },
   async create(input: CreatePublisherInput): Promise<Publisher> {

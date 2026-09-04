@@ -96,6 +96,7 @@ export default function GroupReportsScreen() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const canOverride = user?.role === 'admin' || user?.role === 'elder';
+  const [explainFor, setExplainFor] = useState<GroupReportRow | null>(null);
   const [overrideTarget, setOverrideTarget] = useState<{
     publisherId: string;
     displayName: string;
@@ -495,6 +496,7 @@ export default function GroupReportsScreen() {
                 : undefined
             }
             onRestore={(reportId) => restore.mutate(reportId)}
+            onExplainStatus={canOverride ? (r) => setExplainFor(r) : undefined}
             onEdit={
               item.canManage && item.report
                 ? () =>
@@ -535,6 +537,10 @@ export default function GroupReportsScreen() {
           overrideMutation.isPending || clearOverrideMutation.isPending
         }
       />
+      <StatusReasonsModal
+        target={explainFor}
+        onClose={() => setExplainFor(null)}
+      />
     </View>
   );
 }
@@ -548,6 +554,7 @@ function PublisherRow({
   onAddOnBehalf,
   onEdit,
   onRestore,
+  onExplainStatus,
   missedThreshold,
 }: {
   row: GroupReportRow;
@@ -561,6 +568,7 @@ function PublisherRow({
   onAddOnBehalf?: (row: GroupReportRow) => void;
   onEdit?: () => void;
   onRestore?: (reportId: string) => void;
+  onExplainStatus?: (row: GroupReportRow) => void;
   missedThreshold: number;
 }) {
   const { t } = useTranslation();
@@ -610,8 +618,16 @@ function PublisherRow({
               <Text style={styles.pioneerTag}>{t('reports.pioneerInline')}</Text>
             )}
           </Text>
+          {/* The badge answers for itself now. A grey «неактивный» is a
+              conclusion with the reasoning thrown away, and that cost a day of
+              searching on 3 September — the months it weighed were never on
+              screen. */}
           {statusInfo && statusInfo.status && (
-            <View
+            <Pressable
+              onPress={
+                onExplainStatus ? () => onExplainStatus(row) : undefined
+              }
+              disabled={!onExplainStatus}
               style={[
                 styles.statusBadge,
                 statusInfo.status === 'active' && styles.badgeActive,
@@ -628,7 +644,7 @@ function PublisherRow({
                   style={{ marginLeft: 3 }}
                 />
               )}
-            </View>
+            </Pressable>
           )}
           {row.consecutiveMissing >= missedThreshold &&
           missedThreshold > 0 ? (
@@ -717,6 +733,89 @@ function PublisherRow({
         </Pressable>
       )}
     </View>
+  );
+}
+
+/**
+ * WHY the badge says what it says.
+ *
+ * Four facts, in the order a person asks them: what was weighed, from when he
+ * is counted, when a sixth silent month would fall — with its service year,
+ * because that is the question the annual report asks — and whether the status
+ * was set by hand at all.
+ */
+function StatusReasonsModal({
+  target,
+  onClose,
+}: {
+  target: GroupReportRow | null;
+  onClose: () => void;
+}) {
+  const { t } = useTranslation();
+  const { data, isLoading } = useQuery({
+    queryKey: ['status-explained', target?.publisherId],
+    queryFn: () => publishersApi.explainStatus(target!.publisherId),
+    enabled: !!target,
+  });
+
+  const month = (m: string | null) =>
+    m ? formatMonthLabel(`${m}-01`) : '—';
+
+  return (
+    <Modal
+      visible={!!target}
+      transparent
+      animationType="fade"
+      onRequestClose={onClose}
+    >
+      <Pressable style={modalStyles.backdrop} onPress={onClose}>
+        <Pressable style={styles.reasonsCard} onPress={(e) => e.stopPropagation()}>
+          <Text style={styles.reasonsName}>{target?.displayName}</Text>
+          {isLoading || !data ? (
+            <ActivityIndicator style={{ marginTop: 16 }} />
+          ) : (
+            <View style={{ marginTop: 10, gap: 9 }}>
+              <Text style={styles.reasonsLine}>
+                {data.windowFrom
+                  ? t('reports.reasons.window', {
+                      from: month(data.windowFrom),
+                      to: month(data.windowTo),
+                      served: data.served,
+                      expected: data.expected,
+                    })
+                  : t('reports.reasons.nothingClosed')}
+              </Text>
+              <Text style={styles.reasonsLine}>
+                {data.restarted
+                  ? t('reports.reasons.restarted', {
+                      month: month(data.startMonth),
+                    })
+                  : t('reports.reasons.countsFrom', {
+                      month: month(data.startMonth),
+                    })}
+              </Text>
+              {data.sixthSilentMonth ? (
+                <Text style={styles.reasonsLine}>
+                  {t('reports.reasons.sixth', {
+                    month: month(data.sixthSilentMonth),
+                    from: data.sixthSilentServiceYear,
+                    to: (data.sixthSilentServiceYear ?? 0) + 1,
+                  })}
+                </Text>
+              ) : null}
+              {data.manuallyOverridden ? (
+                <Text style={styles.reasonsWarn}>
+                  {t('reports.reasons.manual')}
+                </Text>
+              ) : null}
+            </View>
+          )}
+          <Pressable style={styles.reasonsClose} onPress={onClose}>
+            <Text style={styles.reasonsCloseText}>{t('common.close')}</Text>
+          </Pressable>
+        </Pressable>
+      </Pressable>
+    </Modal>
   );
 }
 
@@ -1060,6 +1159,33 @@ const styles = StyleSheet.create({
     flexShrink: 1,
   },
   pioneerTag: { fontSize: 12, color: '#0ea5e9', fontWeight: '500', fontFamily: 'Manrope_500Medium',},
+  reasonsCard: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 18,
+    width: '100%',
+    maxWidth: 420,
+  },
+  reasonsName: {
+    fontSize: 17,
+    color: '#0f172a',
+    fontWeight: '800',
+    fontFamily: 'Manrope_800ExtraBold',
+  },
+  reasonsLine: { fontSize: 14, color: '#334155', lineHeight: 20 },
+  reasonsWarn: { fontSize: 14, color: '#b45309', lineHeight: 20 },
+  reasonsClose: {
+    marginTop: 16,
+    alignSelf: 'flex-end',
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+  },
+  reasonsCloseText: {
+    color: '#0e7490',
+    fontSize: 15,
+    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
+  },
   statusBadge: {
     flexDirection: 'row',
     alignItems: 'center',
