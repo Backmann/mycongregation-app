@@ -66,6 +66,18 @@ function getReportableMonths(): { value: string; label: string }[] {
   return months;
 }
 
+/**
+ * Where the back button should land from anything this screen opens.
+ *
+ * Every screen in the section carries one back button, aimed at «Мои отчёты»
+ * — right for the one screen with a single way in, wrong for every other. The
+ * escape hatch was built long ago and described in BackButton: whoever
+ * navigates says where the person came from, because nothing else knows. This
+ * screen never said it, so a tap on a publisher led into his history and the
+ * way back led to the reader's own reports.
+ */
+const FROM = encodeURIComponent('/service-reports/group');
+
 export default function GroupReportsScreen() {
   const { t, i18n: i18nInstance } = useTranslation();
   // formatMonthLabel reads global i18next state — re-memoize when language changes
@@ -436,7 +448,7 @@ export default function GroupReportsScreen() {
             }
             onTapHistory={() =>
               router.push(
-                `/service-reports/publisher-history?publisherId=${item.publisherId}&displayName=${encodeURIComponent(item.displayName)}` as any,
+                `/service-reports/publisher-history?publisherId=${item.publisherId}&displayName=${encodeURIComponent(item.displayName)}&from=${FROM}` as any,
               )
             }
             onAddOnBehalf={
@@ -449,6 +461,7 @@ export default function GroupReportsScreen() {
                         onBehalfName: row.displayName,
                         onBehalfIsPioneer: row.isPioneer ? '1' : '0',
                         reportMonth,
+                        from: '/service-reports/group',
                       },
                     } as any)
                 : undefined
@@ -457,7 +470,7 @@ export default function GroupReportsScreen() {
               item.canManage && item.report
                 ? () =>
                     router.push(
-                      `/service-reports/new?id=${item.report!.id}` as any,
+                      `/service-reports/new?id=${item.report!.id}&from=${FROM}` as any,
                     )
                 : undefined
             }

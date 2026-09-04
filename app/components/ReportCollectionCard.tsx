@@ -45,7 +45,11 @@ export function ReportCollectionCard() {
   return (
     <Pressable
       style={({ pressed }) => [styles.card, pressed && { opacity: 0.85 }]}
-      onPress={() => router.push('/service-reports/summary' as any)}
+      onPress={() =>
+        router.push(
+          `/service-reports/summary?from=${encodeURIComponent('/home')}` as any,
+        )
+      }
     >
       <View style={styles.head}>
         <View style={styles.icon}>

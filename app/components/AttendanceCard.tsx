@@ -154,7 +154,11 @@ export function AttendanceCard() {
           where a whole year can be filled in at once. */}
       {pending.data && pending.data.outstandingThisYear > 1 ? (
         <Pressable
-          onPress={() => router.push('/service-reports/attendance' as any)}
+          onPress={() =>
+          router.push(
+            `/service-reports/attendance?from=${encodeURIComponent('/home')}` as any,
+          )
+        }
           style={styles.backlog}
           hitSlop={6}
         >

@@ -663,7 +663,11 @@ export default function NewOrEditServiceReportScreen() {
           (user?.role === 'admin' || user?.role === 'elder') && (
             <Pressable
               onPress={() =>
-                router.push(`/service-reports/audit-log?id=${editId}` as any)
+                router.push(
+                  `/service-reports/audit-log?id=${editId}&from=${encodeURIComponent(
+                    `/service-reports/new?id=${editId}`,
+                  )}` as any,
+                )
               }
               style={styles.historyBtn}
               hitSlop={8}

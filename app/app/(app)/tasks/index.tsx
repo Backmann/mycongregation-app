@@ -273,7 +273,9 @@ export default function TasksScreen() {
         {task.kind === 'service_year_review' ? (
           <Pressable
             onPress={() =>
-              router.push('/service-reports/pioneer-year-review' as never)
+              router.push(
+                    `/service-reports/pioneer-year-review?from=${encodeURIComponent('/tasks')}` as never,
+                  )
             }
             hitSlop={6}
           >

@@ -346,7 +346,13 @@ export default function PublisherHistoryScreen() {
               item.report
                 ? () =>
                     router.push(
-                      `/service-reports/new?editId=${item.report!.id}` as any,
+                      // `id`, not `editId`: the form reads `id`, so this
+                      // opened a BLANK form for the reader's own current
+                      // month — a screen away from the man whose history was
+                      // being read, with no sign that anything had gone wrong.
+                      `/service-reports/new?id=${item.report!.id}&from=${encodeURIComponent(
+                        `/service-reports/publisher-history?publisherId=${publisherId}&displayName=${encodeURIComponent(initialDisplayName)}`,
+                      )}` as any,
                     )
                 : undefined
             }
