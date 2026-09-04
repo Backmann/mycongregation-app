@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -21,6 +21,8 @@ import { useTranslation } from 'react-i18next';
 import i18n, { formatMonthLabel } from '../../../lib/i18n';
 import { pioneerProgress } from '../../../lib/pioneer-goal';
 import { isActivePermanentPioneer } from '../../../lib/pioneer-status';
+import { usePermissions } from '../../../lib/permissions';
+import { StatusReasonsModal } from '../../../components/StatusReasonsModal';
 import {
   HistoryTrendChart,
   TrendPoint,
@@ -63,13 +65,17 @@ function describeReport(report: NonNullable<PublisherHistoryEntry['report']>): {
 function StatusBadge({
   status,
   isOverridden,
+  onPress,
 }: {
   status: PublisherStatus | null;
   isOverridden: boolean;
+  onPress?: () => void;
 }) {
   if (!status) return null;
   return (
-    <View
+    <Pressable
+      onPress={onPress}
+      disabled={!onPress}
       style={[
         styles.badge,
         status === 'active' && styles.badgeActive,
@@ -86,7 +92,7 @@ function StatusBadge({
           style={{ marginLeft: 4 }}
         />
       )}
-    </View>
+    </Pressable>
   );
 }
 
@@ -199,6 +205,9 @@ export default function PublisherHistoryScreen() {
     typeof params.publisherId === 'string' ? params.publisherId : undefined;
   const initialDisplayName =
     typeof params.displayName === 'string' ? params.displayName : '';
+  const { isAdmin, isElder } = usePermissions();
+  const canSeeStatuses = isAdmin || isElder;
+  const [explain, setExplain] = useState(false);
 
   const { data, isLoading, isRefetching, refetch, error } = useQuery({
     queryKey: ['publisher-history', publisherId],
@@ -284,10 +293,18 @@ export default function PublisherHistoryScreen() {
               <Text style={styles.pioneerTag}>{t('reports.pioneerInline')}</Text>
             )}
           </Text>
+          {/* The history is where somebody comes to work out why a person
+              stands where he does — so the badge answers here too, not only on
+              the group screen. */}
           {data && (
             <StatusBadge
               status={data.publisher.status}
               isOverridden={data.publisher.statusManuallyOverridden}
+              onPress={
+                canSeeStatuses && publisherId
+                  ? () => setExplain(true)
+                  : undefined
+              }
             />
           )}
         </View>
@@ -379,6 +396,14 @@ export default function PublisherHistoryScreen() {
             }
           />
         )}
+      />
+      <StatusReasonsModal
+        target={
+          explain && publisherId
+            ? { publisherId, displayName: initialDisplayName }
+            : null
+        }
+        onClose={() => setExplain(false)}
       />
     </View>
   );
