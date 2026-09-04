@@ -17,6 +17,7 @@ import {
 } from '../../../lib/api';
 import { useTranslation } from 'react-i18next';
 import i18n, { formatMonthLabel } from '../../../lib/i18n';
+import { usePermissions } from '../../../lib/permissions';
 
 // formatMonth now lives in lib/i18n.ts as formatMonthLabel
 
@@ -37,8 +38,109 @@ function formatEditedTime(iso: string): string {
   });
 }
 
+/**
+ * The way into the section, and the one card most of the congregation needs.
+ *
+ * Eighty-eight people come here to hand in one report. They used to meet a
+ * list of their own past months and a row of SIX unlabelled icons in the
+ * header — two of which were people, and people-in-a-circle. Everything the
+ * elders reach for is now a named line on the page, in plain words, shown only
+ * to those it belongs to; the header keeps the plus and nothing else.
+ *
+ * Above all of it stands this month: whether it is handed in, and how long
+ * there is. The line CALLS rather than permits — «месяц закончился, можно
+ * сдавать», then a count of days, and only at the end the date itself. Said
+ * the other way round, a deadline three weeks off reads as permission to
+ * forget.
+ */
+function MonthCard() {
+  const { t } = useTranslation();
+  const { data } = useQuery({
+    queryKey: ['my-report-standing'],
+    queryFn: () => serviceReportsApi.myStanding(),
+  });
+  if (!data?.applicable || !data.reportMonth) return null;
+
+  const days = data.daysLeft;
+  const closed = days !== null && days < 0;
+  const monthLabel = formatMonthLabel(data.reportMonth);
+  const closesLabel = data.closesOn
+    ? new Date(`${data.closesOn}T12:00:00`).toLocaleDateString(i18n.language, {
+        day: 'numeric',
+        month: 'long',
+      })
+    : '';
+
+  const call = data.submitted
+    ? closed
+      ? t('reports.entry.doneClosed')
+      : t('reports.entry.doneEditable', { date: closesLabel })
+    : closed
+      ? t('reports.entry.missed')
+      : days !== null && days <= 4
+        ? t('reports.entry.lastDays', { date: closesLabel })
+        : days !== null && days <= 11
+          ? t('reports.entry.daysLeft', { count: days })
+          : t('reports.entry.open');
+
+  return (
+    <View style={[styles.monthCard, data.submitted && styles.monthCardDone]}>
+      <Text style={styles.monthKicker}>{t('reports.entry.myReport')}</Text>
+      <Text style={styles.monthBig}>{monthLabel}</Text>
+      <Text
+        style={[
+          styles.monthCall,
+          !data.submitted && !closed && days !== null && days <= 4
+            ? styles.monthCallUrgent
+            : null,
+        ]}
+      >
+        {call}
+      </Text>
+      {!closed ? (
+        <Pressable
+          style={styles.monthBtn}
+          onPress={() =>
+            router.push(
+              data.submitted && data.reportId
+                ? (`/service-reports/new?id=${data.reportId}` as any)
+                : ('/service-reports/new' as any),
+            )
+          }
+        >
+          <Text style={styles.monthBtnText}>
+            {data.submitted
+              ? t('reports.entry.change')
+              : t('reports.entry.submit')}
+          </Text>
+        </Pressable>
+      ) : null}
+    </View>
+  );
+}
+
+function SectionRow({
+  icon,
+  label,
+  onPress,
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  label: string;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable style={styles.sectionRow} onPress={onPress}>
+      <Ionicons name={icon} size={20} color="#0e7490" />
+      <Text style={styles.sectionLabel}>{label}</Text>
+      <Ionicons name="chevron-forward" size={18} color="#cbd5e1" />
+    </Pressable>
+  );
+}
+
 export default function ServiceReportsListScreen() {
   const { t } = useTranslation();
+  const { canViewServiceSummary, isAdmin, isElder } = usePermissions();
+  const canViewActivityFeed = isAdmin || isElder;
   const { data, isLoading, isRefetching, refetch, error } = useQuery({
     queryKey: ['service-reports', 'my'],
     queryFn: () => serviceReportsApi.listMy(),
@@ -74,6 +176,53 @@ export default function ServiceReportsListScreen() {
         contentContainerStyle={{ paddingBottom: 32 }}
         refreshControl={
           <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
+        }
+        ListHeaderComponent={
+          <View>
+            <MonthCard />
+            <SectionRow
+              icon="people-outline"
+              label={t('reports.title.group')}
+              onPress={() =>
+                router.push('/service-reports/group' as any)
+              }
+            />
+            <SectionRow
+              icon="people-circle-outline"
+              label={t('attendance.pageTitle')}
+              onPress={() =>
+                router.push('/service-reports/attendance' as any)
+              }
+            />
+            {canViewServiceSummary ? (
+              <>
+                <SectionRow
+                  icon="stats-chart-outline"
+                  label={t('reports.summary.title')}
+                  onPress={() =>
+                    router.push('/service-reports/summary' as any)
+                  }
+                />
+                <SectionRow
+                  icon="clipboard-outline"
+                  label={t('annualReport.pageTitle')}
+                  onPress={() =>
+                    router.push('/service-reports/annual' as any)
+                  }
+                />
+              </>
+            ) : null}
+            {canViewActivityFeed ? (
+              <SectionRow
+                icon="pulse-outline"
+                label={t('reports.title.activity')}
+                onPress={() =>
+                  router.push('/service-reports/activity' as any)
+                }
+              />
+            ) : null}
+            <Text style={styles.listHeading}>{t('reports.entry.myMonths')}</Text>
+          </View>
         }
         ListEmptyComponent={
           <View style={styles.emptyState}>
@@ -133,6 +282,77 @@ function ReportRow({ report }: { report: ServiceReport }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f1f5f9' },
+  monthCard: {
+    backgroundColor: '#fff',
+    margin: 12,
+    marginBottom: 8,
+    padding: 16,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  monthCardDone: { borderColor: '#bbf7d0', backgroundColor: '#f7fefa' },
+  monthKicker: {
+    fontSize: 11,
+    letterSpacing: 0.4,
+    textTransform: 'uppercase',
+    color: '#94a3b8',
+    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
+  },
+  monthBig: {
+    fontSize: 20,
+    marginTop: 2,
+    color: '#0f172a',
+    fontWeight: '800',
+    fontFamily: 'Manrope_800ExtraBold',
+  },
+  monthCall: { fontSize: 13.5, color: '#475569', marginTop: 4, lineHeight: 19 },
+  monthCallUrgent: { color: '#b45309', fontWeight: '700' },
+  monthBtn: {
+    marginTop: 12,
+    backgroundColor: '#0e7490',
+    borderRadius: 10,
+    paddingVertical: 11,
+    alignItems: 'center',
+  },
+  monthBtnText: {
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
+  },
+  sectionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: '#fff',
+    marginHorizontal: 12,
+    marginBottom: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 13,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  sectionLabel: {
+    flex: 1,
+    fontSize: 15,
+    color: '#0f172a',
+    fontWeight: '600',
+    fontFamily: 'Manrope_600SemiBold',
+  },
+  listHeading: {
+    fontSize: 11,
+    letterSpacing: 0.4,
+    textTransform: 'uppercase',
+    color: '#94a3b8',
+    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
+    paddingHorizontal: 20,
+    paddingTop: 14,
+    paddingBottom: 6,
+  },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   row: {
     flexDirection: 'row',

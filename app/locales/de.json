@@ -583,6 +583,19 @@
     "december": "Dezember"
   },
   "reports": {
+    "entry": {
+          "myReport": "Mein Bericht",
+          "open": "Der Monat ist zu Ende — du kannst deinen Bericht abgeben",
+          "daysLeft_one": "Noch {{count}} Tag",
+          "daysLeft_other": "Noch {{count}} Tage",
+          "lastDays": "Letzte Tage: der Monat schließt am {{date}}",
+          "missed": "Der Monat ist abgeschlossen — wende dich an den Sekretär",
+          "doneEditable": "Abgegeben. Änderbar bis {{date}}",
+          "doneClosed": "Abgegeben; der Monat ist abgeschlossen",
+          "submit": "Bericht abgeben",
+          "change": "Ändern",
+          "myMonths": "Meine Monate"
+    },
     "title": {
       "list": "Berichte",
       "new": "Bericht abgeben",

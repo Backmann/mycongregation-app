@@ -3327,6 +3327,14 @@ export interface MyReportStanding {
   reportMonth: string | null;
   submitted: boolean;
   reportId: string | null;
+  /**
+   * The last day this month can still be handed in or corrected, YYYY-MM-DD.
+   * Answered by the server: the deadline has one authority over there, and a
+   * second copy of it here is how the 10th and the 20th once disagreed.
+   */
+  closesOn: string | null;
+  /** Days from today to `closesOn`; 0 on the last day, negative once past. */
+  daysLeft: number | null;
 }
 
 /** Where one regular pioneer stands in the service year. */
