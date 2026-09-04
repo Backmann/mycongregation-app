@@ -13,27 +13,16 @@ import { Ionicons } from '@expo/vector-icons';
 import { Stack } from 'expo-router';
 import {
   extractErrorMessage,
+  attendanceApi,
   serviceReportsApi,
 } from '../../../lib/api';
 import { usePermissions } from '../../../lib/permissions';
 import { useTranslation } from 'react-i18next';
 import { formatMonthLabel } from '../../../lib/i18n';
-import {
-  HistoryTrendChart,
-  TrendPoint,
-} from '../../../components/HistoryTrendChart';
 
 
 
 /** Short axis label like "сен 25" for the year trend. */
-function shortMonthLabel(reportMonth: string): string {
-  const full = formatMonthLabel(reportMonth);
-  const parts = full.split(' ');
-  const mon = parts[0]?.slice(0, 3).toLowerCase() ?? '';
-  const yr = parts[1]?.slice(2) ?? '';
-  return `${mon} ${yr}`;
-}
-
 
 
 function getRecentMonths(count: number): { value: string; label: string }[] {
@@ -70,38 +59,23 @@ export default function ServiceSummaryScreen() {
     enabled: canViewServiceSummary,
   });
 
-  // The service year of the month ON SCREEN, not of today.
-  //
-  // It used to ask for «the current service year», so on 4 September — three
-  // days into a new one — the page showed August 2026 above a total of zero
-  // hours for September 2026 – August 2027, and a trend chart of twelve empty
-  // columns. August belongs to the year BEFORE. The year the reader is looking
-  // at is the year he is looking at.
-  //
-  // The server labels a service year by the year it ENDS in, so August 2026
-  // asks for 2026 and September 2026 asks for 2027.
-  const selectedServiceYear = useMemo(() => {
-    const [y, m] = reportMonth.slice(0, 7).split('-').map(Number);
-    return m >= 9 ? y + 1 : y;
-  }, [reportMonth]);
-
-  const yearQuery = useQuery({
-    queryKey: ['service-reports', 'year-summary', selectedServiceYear],
-    queryFn: () => serviceReportsApi.getYearSummary(selectedServiceYear),
+  // The S-3 figures for the year this month belongs to; the month's own two
+  // averages are read out of it below.
+  const attendanceYear = useQuery({
+    queryKey: ['attendance', 'year', reportMonth.slice(0, 7)],
+    queryFn: () => {
+      const [y, m] = reportMonth.slice(0, 7).split('-').map(Number);
+      return attendanceApi.serviceYear(m >= 9 ? y : y - 1);
+    },
     enabled: canViewServiceSummary,
   });
-
-  const yearTrendPoints = useMemo<TrendPoint[]>(() => {
-    const monthly = yearQuery.data?.monthly ?? [];
-    const points = monthly.map((m) => ({
-      monthLabel: shortMonthLabel(m.reportMonth),
-      hours: m.hours,
-      studies: m.studies,
-    }));
-    // A year with nothing in it yet drew twelve empty columns down a quarter of
-    // the screen and said nothing at all. A chart with no data is not a chart.
-    return points.some((p) => p.hours > 0 || p.studies > 0) ? points : [];
-  }, [yearQuery.data]);
+  const monthAttendance = useMemo(
+    () =>
+      (attendanceYear.data?.months ?? []).find(
+        (m) => m.month.slice(0, 7) === reportMonth.slice(0, 7),
+      ) ?? null,
+    [attendanceYear.data, reportMonth],
+  );
 
   const queryClient = useQueryClient();
   const closureMutation = useMutation({
@@ -300,85 +274,43 @@ export default function ServiceSummaryScreen() {
           <Text style={styles.totalsHint}>{t('serviceSummary.sizeHint')}</Text>
         </View>
 
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>{t('serviceSummary.averagesTitle')}</Text>
+        {/* Two averages, from the S-3 sheet, where the secretary copies them.
+            The monthly form asks only for the WEEKEND one; the midweek is
+            wanted a year later, on S-10. Both are shown, each said plainly to
+            belong where it belongs — the alternative is two screens for one
+            form, which is how a figure gets copied from the wrong line.
+
+            What stood here before — averages per pioneer, percentages, the
+            year-to-date total and a trend chart — goes into no form at all.
+            «65% сдали отчёт» on the 4th read as alarm, and the year total
+            repeated the annual report in a different wording of the year. */}
+        <View style={[styles.card, styles.totalsCard]}>
+          <Text style={styles.cardTitle}>
+            {t('serviceSummary.attendanceTitle')}
+          </Text>
           <View style={styles.statsRow}>
             <View style={styles.statBox}>
-              <Text style={styles.statBig}>
-                {data?.averages.pioneerHours ?? 0}
-              </Text>
-              <Text style={styles.statLabel}>{t('serviceSummary.hoursPioneers')}</Text>
-            </View>
-            <View style={styles.statBox}>
-              <Text style={styles.statBig}>
-                {data?.averages.bibleStudies ?? 0}
-              </Text>
-              <Text style={styles.statLabel}>{t('serviceSummary.studies')}</Text>
-            </View>
-          </View>
-          <View style={[styles.statsRow, { marginTop: 12 }]}>
-            <View style={styles.statBox}>
               <Text style={[styles.statBig, styles.statActive]}>
-                {data?.averages.submittedPct ?? 0}%
+                {monthAttendance?.weekendAverage ?? '—'}
               </Text>
-              <Text style={styles.statLabel}>{t('serviceSummary.reported')}</Text>
+              <Text style={styles.statLabel}>
+                {t('serviceSummary.weekendAverage')}
+              </Text>
             </View>
             <View style={styles.statBox}>
-              <Text style={[styles.statBig, styles.statActive]}>
-                {data?.averages.activePct ?? 0}%
+              <Text style={styles.statBig}>
+                {monthAttendance?.midweekAverage ?? '—'}
               </Text>
-              <Text style={styles.statLabel}>{t('serviceSummary.activeCount')}</Text>
+              <Text style={styles.statLabel}>
+                {t('serviceSummary.midweekAverage')}
+              </Text>
             </View>
           </View>
           <Text style={styles.totalsHint}>
-            {t('serviceSummary.averagesHint')}
+            {t('serviceSummary.attendanceHint')}
           </Text>
-          {/* «65% сдали отчёт» on the 4th is arithmetic, not alarm: the month
-              is open and the rest are simply not late yet. Said here so the
-              figure is not read as a congregation falling behind. */}
-          {!data?.closed ? (
-            <Text style={styles.totalsHint}>
-              {t('serviceSummary.stillCollecting')}
-            </Text>
-          ) : null}
         </View>
 
-        {yearQuery.data ? (
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>
-              {/* Written as the form writes it — «2025/2026». The server
-                  names a year by the one it ends in, the annual report names it
-                  by the one it starts in, and a secretary reading both screens
-                  should not have to work out that «2027» and «2026/2027» are
-                  the same twelve months. */}
-              {t('serviceSummary.yearTotalTitle', {
-                from: yearQuery.data.serviceYear - 1,
-                to: yearQuery.data.serviceYear,
-              })}
-            </Text>
-            <Text style={styles.yearRange}>
-              {formatMonthLabel(yearQuery.data.firstMonth)} —{' '}
-              {formatMonthLabel(yearQuery.data.lastMonth)}
-            </Text>
-            <View style={styles.statsRow}>
-              <View style={styles.statBox}>
-                <Text style={styles.statBig}>{yearQuery.data.totalHours}</Text>
-                <Text style={styles.statLabel}>{t('serviceSummary.totalHours')}</Text>
-              </View>
-              <View style={styles.statBox}>
-                <Text style={styles.statBig}>
-                  {yearQuery.data.totalStudies}
-                </Text>
-                <Text style={styles.statLabel}>{t('serviceSummary.totalStudies')}</Text>
-              </View>
-            </View>
-            {yearTrendPoints.length >= 2 ? (
-              <View style={{ marginTop: 14 }}>
-                <HistoryTrendChart points={yearTrendPoints} />
-              </View>
-            ) : null}
-          </View>
-        ) : null}
       </ScrollView>
     </View>
   );
