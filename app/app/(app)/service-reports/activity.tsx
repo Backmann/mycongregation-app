@@ -51,11 +51,18 @@ function ActivityCard({ item }: { item: ActivityFeedEntry }) {
   const onTap = () => {
     if (item.targetType === 'publisher') {
       router.push(
-        `/service-reports/publisher-history?publisherId=${item.targetId}` as any,
+        // The seventh door into that screen, and the one missed when the other
+        // six learned to say where they came from. Without it the back button
+        // falls to «Мои отчёты», which is not where anybody was.
+        `/service-reports/publisher-history?publisherId=${item.targetId}&from=${FROM}` as any,
       );
     } else if (item.targetType === 'service_report') {
       router.push(
-        `/service-reports/new?editId=${item.targetId}` as any,
+        // `id`, not `editId` — the SAME typo the publisher history had, and it
+        // does the same thing here: the form ignores the unknown parameter and
+        // opens a blank one for the reader's own month, a screen away from the
+        // report the feed was pointing at.
+        `/service-reports/new?id=${item.targetId}&from=${FROM}` as any,
       );
     }
   };
@@ -79,6 +86,8 @@ function ActivityCard({ item }: { item: ActivityFeedEntry }) {
     </Pressable>
   );
 }
+
+const FROM = encodeURIComponent('/service-reports/activity');
 
 export default function ActivityFeedScreen() {
   const query = useInfiniteQuery({
