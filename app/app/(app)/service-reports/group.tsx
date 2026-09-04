@@ -130,6 +130,16 @@ export default function GroupReportsScreen() {
     return m;
   }, [publishersQuery.data]);
 
+  // Putting back a report taken away by mistake. Journalled on the server,
+  // like the taking away.
+  const restore = useMutation({
+    mutationFn: (reportId: string) => serviceReportsApi.restore(reportId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['group-reports'] });
+      queryClient.invalidateQueries({ queryKey: ['publishers'] });
+    },
+  });
+
   const overrideMutation = useMutation({
     mutationFn: ({
       publisherId,
@@ -466,6 +476,7 @@ export default function GroupReportsScreen() {
                     } as any)
                 : undefined
             }
+            onRestore={(reportId) => restore.mutate(reportId)}
             onEdit={
               item.canManage && item.report
                 ? () =>
@@ -518,6 +529,7 @@ function PublisherRow({
   onTapHistory,
   onAddOnBehalf,
   onEdit,
+  onRestore,
   missedThreshold,
 }: {
   row: GroupReportRow;
@@ -530,6 +542,7 @@ function PublisherRow({
   onTapHistory?: () => void;
   onAddOnBehalf?: (row: GroupReportRow) => void;
   onEdit?: () => void;
+  onRestore?: (reportId: string) => void;
   missedThreshold: number;
 }) {
   const { t } = useTranslation();
@@ -620,6 +633,33 @@ function PublisherRow({
             </Text>
           )}
         </Text>
+        {/* A month whose report was taken back is NOT a month never handed
+            in, and the row has to say which. Shown where the mistake was made,
+            with the way back beside it. */}
+        {!report && row.removedReport ? (
+          <View style={styles.removedRow}>
+            <Text style={styles.removedText} numberOfLines={1}>
+              {row.removedReport.removedByName
+                ? t('reports.remove.removedBy', {
+                    name: row.removedReport.removedByName,
+                    date: formatByline(row.removedReport.removedAt),
+                  })
+                : t('reports.remove.removedUnknown', {
+                    date: formatByline(row.removedReport.removedAt),
+                  })}
+            </Text>
+            {row.canManage && onRestore ? (
+              <Pressable
+                onPress={() => onRestore(row.removedReport!.id)}
+                hitSlop={8}
+              >
+                <Text style={styles.restoreText}>
+                  {t('reports.remove.restore')}
+                </Text>
+              </Pressable>
+            ) : null}
+          </View>
+        ) : null}
         {report && (report.submittedByName || report.lastEditedByName) ? (
           <Text style={styles.byline} numberOfLines={1}>
             {report.lastEditedByName && report.lastEditedAt
@@ -900,6 +940,19 @@ const styles = StyleSheet.create({
   monthChipActive: { backgroundColor: '#0ea5e9', borderColor: '#0ea5e9' },
   monthChipText: { fontSize: 13, color: '#0f172a' },
   monthChipTextActive: { color: '#fff', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
+  removedRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 3,
+  },
+  removedText: { flex: 1, fontSize: 11.5, color: '#b45309' },
+  restoreText: {
+    fontSize: 11.5,
+    color: '#0e7490',
+    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
+  },
   missedBadge: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -100,12 +100,33 @@ function TimelineEntryCard({
   const monthLabel = formatMonthLabel(entry.reportMonth);
 
   if (!entry.report) {
+    // The history is exactly where somebody looks to answer «why is this month
+    // empty», so a month whose report was TAKEN BACK must not read like a
+    // month never handed in.
+    const removed = entry.removedReport;
     return (
       <View style={[styles.card, styles.cardEmpty]}>
         <Text style={styles.monthLabel}>{monthLabel}</Text>
         <View style={styles.row}>
           <View style={[styles.dot, styles.dotPending]} />
-          <Text style={styles.emptyText}>{i18n.t('reports.publisherHistory.notSubmitted')}</Text>
+          <Text style={styles.emptyText}>
+            {removed
+              ? removed.removedByName
+                ? i18n.t('reports.remove.removedBy', {
+                    name: removed.removedByName,
+                    date: new Date(removed.removedAt).toLocaleDateString(
+                      i18n.language,
+                      { day: 'numeric', month: 'short' },
+                    ),
+                  })
+                : i18n.t('reports.remove.removedUnknown', {
+                    date: new Date(removed.removedAt).toLocaleDateString(
+                      i18n.language,
+                      { day: 'numeric', month: 'short' },
+                    ),
+                  })
+              : i18n.t('reports.publisherHistory.notSubmitted')}
+          </Text>
         </View>
       </View>
     );

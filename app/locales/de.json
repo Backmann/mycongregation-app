@@ -583,6 +583,15 @@
     "december": "Dezember"
   },
   "reports": {
+    "remove": {
+          "action": "Bericht zurücknehmen",
+          "title": "Bericht zurücknehmen?",
+          "body": "Der Bericht von {{name}} für {{month}} zählt nicht mehr. Er bleibt sichtbar und kann zurückgeholt werden.",
+          "confirm": "Zurücknehmen",
+          "removedBy": "Zurückgenommen · {{name}} · {{date}}",
+          "removedUnknown": "Zurückgenommen · {{date}}",
+          "restore": "Zurückholen"
+    },
     "entry": {
           "myReport": "Mein Bericht",
           "open": "Der Monat ist zu Ende — du kannst deinen Bericht abgeben",

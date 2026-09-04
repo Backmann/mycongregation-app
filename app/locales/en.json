@@ -583,6 +583,15 @@
     "december": "December"
   },
   "reports": {
+    "remove": {
+          "action": "Take the report back",
+          "title": "Take the report back?",
+          "body": "{{name}}'s report for {{month}} will stop counting. It stays visible and can be put back.",
+          "confirm": "Take back",
+          "removedBy": "Taken back · {{name}} · {{date}}",
+          "removedUnknown": "Taken back · {{date}}",
+          "restore": "Put back"
+    },
     "entry": {
           "myReport": "My report",
           "open": "The month has ended — you can hand in your report",

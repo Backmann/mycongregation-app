@@ -681,11 +681,25 @@ export interface AuditLogEntry {
   createdAt: string;
 }
 
+/**
+ * A report that was TAKEN BACK, and who took it.
+ *
+ * A softly removed row drops out of an ordinary query without a word, so a
+ * corrected mistake read exactly like «не сдавал» — different facts. The
+ * mistake is shown where it was made, with a way to put it back.
+ */
+export interface RemovedReportMark {
+  id: string;
+  removedAt: string;
+  removedByName: string | null;
+}
+
 export interface PublisherHistoryEntry {
   reportMonth: string;
   report:
     | (ServiceReport & { canEdit: boolean; lastEditedByName: string | null })
     | null;
+  removedReport: RemovedReportMark | null;
 }
 
 export interface PublisherHistoryResponse {
@@ -717,6 +731,7 @@ export interface GroupReportRow {
   isPioneer: boolean;
   consecutiveMissing: number;
   report: ServiceReport | null;
+  removedReport: RemovedReportMark | null;
   canManage: boolean;
 }
 
@@ -3392,6 +3407,14 @@ export const serviceReportsApi = {
       '/service-reports/my-standing',
     );
     return data;
+  },
+  /** Take a mistaken report back. Soft: it can be restored. */
+  async remove(id: string): Promise<void> {
+    await api.delete(`/service-reports/${id}`);
+  },
+  /** Put back a report taken away by mistake. */
+  async restore(id: string): Promise<void> {
+    await api.post(`/service-reports/${id}/restore`);
   },
   async getById(id: string): Promise<ReportWithOwner> {
     const { data } = await api.get<ReportWithOwner>(`/service-reports/${id}`);

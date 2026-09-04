@@ -11,6 +11,7 @@ import {
   View,
 } from 'react-native';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { confirm } from '../../../components/ConfirmHost';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../../lib/auth';
@@ -701,6 +702,37 @@ export default function NewOrEditServiceReportScreen() {
             </Pressable>
           )}
 
+        {/* Taking a report back, where it can be checked before it is done.
+            An overseer ticking the wrong line used to be uncorrectable by
+            anybody: the app had editing and no removing, so a mistaken row
+            counted for ever — in who handed in, in the status, in the annual
+            report. Soft, journalled, and reversible. */}
+        {isEditMode && editingReport?.canEdit ? (
+          <Pressable
+            onPress={async () => {
+              const ok = await confirm({
+                title: t('reports.remove.title'),
+                body: t('reports.remove.body', {
+                  name: personName,
+                  month: monthLabel,
+                }),
+                confirmLabel: t('reports.remove.confirm'),
+              });
+              if (!ok) return;
+              await serviceReportsApi.remove(editingReport.id);
+              queryClient.invalidateQueries({ queryKey: ['service-reports'] });
+              queryClient.invalidateQueries({ queryKey: ['group-reports'] });
+              queryClient.invalidateQueries({ queryKey: ['publisher-history'] });
+              queryClient.invalidateQueries({ queryKey: ['my-report-standing'] });
+              router.back();
+            }}
+            style={styles.removeBtn}
+          >
+            <Ionicons name="trash-outline" size={17} color="#b91c1c" />
+            <Text style={styles.removeBtnText}>{t('reports.remove.action')}</Text>
+          </Pressable>
+        ) : null}
+
         <Pressable
           onPress={handleSubmit}
           disabled={!canSubmit()}
@@ -988,6 +1020,24 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: 'center',
     marginTop: 24,
+  },
+  removeBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 7,
+    marginTop: 10,
+    paddingVertical: 11,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#fecaca',
+    backgroundColor: '#fef2f2',
+  },
+  removeBtnText: {
+    color: '#b91c1c',
+    fontSize: 14.5,
+    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
   },
   historyBtn: {
     flexDirection: 'row',
