@@ -3357,6 +3357,18 @@ export interface PioneerYearReview {
   rows: PioneerYearRow[];
 }
 
+/**
+ * A report together with WHOSE it is.
+ *
+ * The edit form used to fill its header from the reader's own card, so
+ * somebody else's month appeared under the reader's name and pioneer badge.
+ * The owner travels with the report now.
+ */
+export interface ReportWithOwner extends ServiceReport {
+  publisherName: string | null;
+  publisherIsPioneer: boolean;
+}
+
 export const serviceReportsApi = {
   async submit(input: SubmitServiceReportInput): Promise<ServiceReport> {
     const { data } = await api.post<ServiceReport>('/service-reports', cleanPayload(input));
@@ -3373,8 +3385,8 @@ export const serviceReportsApi = {
     );
     return data;
   },
-  async getById(id: string): Promise<ServiceReport> {
-    const { data } = await api.get<ServiceReport>(`/service-reports/${id}`);
+  async getById(id: string): Promise<ReportWithOwner> {
+    const { data } = await api.get<ReportWithOwner>(`/service-reports/${id}`);
     return data;
   },
   async update(id: string, input: UpdateServiceReportInput): Promise<ServiceReport> {

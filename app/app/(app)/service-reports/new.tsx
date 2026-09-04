@@ -365,9 +365,24 @@ export default function NewOrEditServiceReportScreen() {
       ? t('reports.title.onBehalf')
       : t('reports.title.new');
 
-  const personName = isOnBehalf
-    ? (onBehalfName ?? t('reports.publisher'))
-    : (myPublisher?.displayName ?? '');
+  // WHOSE report is on the screen.
+  //
+  // In edit mode this used to fall through to «my own card», because
+  // `isOnBehalf` is deliberately false while editing. So opening Наталья's
+  // month from her history put the READER's name and pioneer badge at the top
+  // of her report — and it looked, convincingly, like your own. The report
+  // itself now says who it belongs to.
+  const personName = isEditMode
+    ? (editingReport?.publisherName ?? myPublisher?.displayName ?? '')
+    : isOnBehalf
+      ? (onBehalfName ?? t('reports.publisher'))
+      : (myPublisher?.displayName ?? '');
+  /** True when this is somebody else's report — the header must say so. */
+  const editingSomebodyElse =
+    isEditMode &&
+    !!editingReport?.publisherId &&
+    !!myPublisher?.id &&
+    editingReport.publisherId !== myPublisher.id;
   const monthLabel = formatMonthLabel(reportMonth);
   const reason = blockedReason();
 
@@ -430,7 +445,11 @@ export default function NewOrEditServiceReportScreen() {
               {t('reports.submittingOnBehalfOf')}
             </Text>
           ) : isEditMode ? (
-            <Text style={styles.headKicker}>{t('reports.editingReport')}</Text>
+            <Text style={styles.headKicker}>
+              {editingSomebodyElse
+                ? t('reports.editingSomebodyElse')
+                : t('reports.editingReport')}
+            </Text>
           ) : null}
           <Text style={styles.headName}>{personName}</Text>
           <View style={styles.badgeRow}>
@@ -438,7 +457,10 @@ export default function NewOrEditServiceReportScreen() {
               <View style={styles.badge}>
                 <Ionicons name="infinite" size={13} color="#0F6E56" />
                 <Text style={styles.badgeText}>
-                  {iAmAuxThisMonth && !isOnBehalf
+                  {/* «I am an auxiliary pioneer this month» is a fact about
+                      the READER, so it has no business on somebody else's
+                      report — it was labelling their month by your standing. */}
+                  {iAmAuxThisMonth && !isOnBehalf && !isEditMode
                     ? t('reports.badge.auxPioneer')
                     : t('reports.badge.pioneer')}
                 </Text>
