@@ -613,7 +613,9 @@
           "doneClosed": "Отчёт сдан, месяц закрыт",
           "submit": "Сдать отчёт",
           "change": "Изменить",
-          "myMonths": "Мои месяцы"
+          "myMonths": "Мои месяцы",
+      "collected": "Сдали {{received}} из {{expected}} · {{month}}",
+      "serviceYear": "Служебный год {{from}}/{{to}}"
     },
     "title": {
       "list": "Отчёты",

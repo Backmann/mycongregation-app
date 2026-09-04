@@ -711,6 +711,8 @@ export interface PublisherHistoryResponse {
     isPioneer: boolean;
     pioneerType: PioneerType;
     pioneerSince: string | null;
+    /** May the reader file a report for this person. */
+    canManage: boolean;
   };
   timeline: PublisherHistoryEntry[];
 }

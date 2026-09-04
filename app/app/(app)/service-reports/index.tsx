@@ -122,16 +122,22 @@ function MonthCard() {
 function SectionRow({
   icon,
   label,
+  value,
   onPress,
 }: {
   icon: keyof typeof Ionicons.glyphMap;
   label: string;
+  /** What the section would tell you if you opened it. */
+  value?: string;
   onPress: () => void;
 }) {
   return (
     <Pressable style={styles.sectionRow} onPress={onPress}>
       <Ionicons name={icon} size={20} color="#0e7490" />
-      <Text style={styles.sectionLabel}>{label}</Text>
+      <View style={{ flex: 1 }}>
+        <Text style={styles.sectionLabel}>{label}</Text>
+        {value ? <Text style={styles.sectionValue}>{value}</Text> : null}
+      </View>
       <Ionicons name="chevron-forward" size={18} color="#cbd5e1" />
     </Pressable>
   );
@@ -140,10 +146,23 @@ function SectionRow({
 export default function ServiceReportsListScreen() {
   const { t } = useTranslation();
   const { canViewServiceSummary, isAdmin, isElder } = usePermissions();
+  const now = new Date();
+  const serviceYearNow =
+    now.getMonth() >= 8 ? now.getFullYear() : now.getFullYear() - 1;
   const canViewActivityFeed = isAdmin || isElder;
   const { data, isLoading, isRefetching, refetch, error } = useQuery({
     queryKey: ['service-reports', 'my'],
     queryFn: () => serviceReportsApi.listMy(),
+  });
+  // A section line that says its own number answers the question before it is
+  // opened, and half the visits here stop being necessary. Only ONE extra
+  // request, and one the app already makes elsewhere: «сдали столько-то из
+  // стольких-то» is precisely what the collection card holds. The other
+  // sections stay unlabelled rather than cost four more round trips on a phone
+  // in a Kingdom Hall with poor signal.
+  const collection = useQuery({
+    queryKey: ['report-collection'],
+    queryFn: () => serviceReportsApi.getCollection(),
   });
 
   if (isLoading) {
@@ -183,6 +202,15 @@ export default function ServiceReportsListScreen() {
             <SectionRow
               icon="people-outline"
               label={t('reports.title.group')}
+              value={
+                collection.data
+                  ? t('reports.entry.collected', {
+                      received: collection.data.received,
+                      expected: collection.data.expected,
+                      month: formatMonthLabel(collection.data.reportMonth),
+                    })
+                  : undefined
+              }
               onPress={() =>
                 router.push('/service-reports/group' as any)
               }
@@ -206,6 +234,12 @@ export default function ServiceReportsListScreen() {
                 <SectionRow
                   icon="clipboard-outline"
                   label={t('annualReport.pageTitle')}
+                  // No request for this one: which service year we are in is
+                  // arithmetic, and September starts the next.
+                  value={t('reports.entry.serviceYear', {
+                    from: serviceYearNow,
+                    to: serviceYearNow + 1,
+                  })}
                   onPress={() =>
                     router.push('/service-reports/annual' as any)
                   }
@@ -335,8 +369,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#e2e8f0',
   },
+  sectionValue: { fontSize: 12.5, color: '#64748b', marginTop: 1 },
   sectionLabel: {
-    flex: 1,
     fontSize: 15,
     color: '#0f172a',
     fontWeight: '600',

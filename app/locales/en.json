@@ -611,7 +611,9 @@
           "doneClosed": "Handed in; the month has closed",
           "submit": "Hand in the report",
           "change": "Change",
-          "myMonths": "My months"
+          "myMonths": "My months",
+      "collected": "{{received}} of {{expected}} handed in · {{month}}",
+      "serviceYear": "Service year {{from}}/{{to}}"
     },
     "title": {
       "list": "Reports",

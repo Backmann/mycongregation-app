@@ -214,6 +214,7 @@ export default function PublisherHistoryScreen() {
     queryFn: () => serviceReportsApi.getHistoryForPublisher(publisherId!, 120),
     enabled: !!publisherId,
   });
+  const canManage = data?.publisher.canManage === true;
 
   // Trend points, oldest → newest (timeline is newest-first). Only months that
   // have a report contribute; empty months are skipped so the trend isn't all
@@ -381,8 +382,31 @@ export default function PublisherHistoryScreen() {
           <TimelineEntryCard
             entry={item}
             onPress={
-              item.report
-                ? () =>
+              !item.report
+                ? // A gap is noticed HERE, and until now noticing was all one
+                  // could do: closing it meant leaving for the group screen,
+                  // switching the month and finding the man again among
+                  // eighty-eight names. Only for whoever may file for him, and
+                  // only while the month is open — the closing rule is not to
+                  // be walked around through a new door.
+                  canManage && !item.removedReport
+                  ? () =>
+                      router.push({
+                        pathname: '/service-reports/new',
+                        params: {
+                          publisherId,
+                          onBehalfName: initialDisplayName,
+                          onBehalfIsPioneer: data?.publisher.isPioneer
+                            ? '1'
+                            : '0',
+                          reportMonth: item.reportMonth,
+                          from: `/service-reports/publisher-history?publisherId=${publisherId}&displayName=${encodeURIComponent(
+                            initialDisplayName,
+                          )}`,
+                        },
+                      } as never)
+                  : undefined
+                : () =>
                     router.push(
                       // `id`, not `editId`: the form reads `id`, so this
                       // opened a BLANK form for the reader's own current
@@ -392,7 +416,6 @@ export default function PublisherHistoryScreen() {
                         `/service-reports/publisher-history?publisherId=${publisherId}&displayName=${encodeURIComponent(initialDisplayName)}`,
                       )}` as any,
                     )
-                : undefined
             }
           />
         )}

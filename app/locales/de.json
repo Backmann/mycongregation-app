@@ -611,7 +611,9 @@
           "doneClosed": "Abgegeben; der Monat ist abgeschlossen",
           "submit": "Bericht abgeben",
           "change": "Ändern",
-          "myMonths": "Meine Monate"
+          "myMonths": "Meine Monate",
+      "collected": "{{received}} von {{expected}} abgegeben · {{month}}",
+      "serviceYear": "Dienstjahr {{from}}/{{to}}"
     },
     "title": {
       "list": "Berichte",
