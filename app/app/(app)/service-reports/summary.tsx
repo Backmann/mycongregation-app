@@ -70,19 +70,37 @@ export default function ServiceSummaryScreen() {
     enabled: canViewServiceSummary,
   });
 
+  // The service year of the month ON SCREEN, not of today.
+  //
+  // It used to ask for «the current service year», so on 4 September — three
+  // days into a new one — the page showed August 2026 above a total of zero
+  // hours for September 2026 – August 2027, and a trend chart of twelve empty
+  // columns. August belongs to the year BEFORE. The year the reader is looking
+  // at is the year he is looking at.
+  //
+  // The server labels a service year by the year it ENDS in, so August 2026
+  // asks for 2026 and September 2026 asks for 2027.
+  const selectedServiceYear = useMemo(() => {
+    const [y, m] = reportMonth.slice(0, 7).split('-').map(Number);
+    return m >= 9 ? y + 1 : y;
+  }, [reportMonth]);
+
   const yearQuery = useQuery({
-    queryKey: ['service-reports', 'year-summary'],
-    queryFn: () => serviceReportsApi.getYearSummary(),
+    queryKey: ['service-reports', 'year-summary', selectedServiceYear],
+    queryFn: () => serviceReportsApi.getYearSummary(selectedServiceYear),
     enabled: canViewServiceSummary,
   });
 
   const yearTrendPoints = useMemo<TrendPoint[]>(() => {
     const monthly = yearQuery.data?.monthly ?? [];
-    return monthly.map((m) => ({
+    const points = monthly.map((m) => ({
       monthLabel: shortMonthLabel(m.reportMonth),
       hours: m.hours,
       studies: m.studies,
     }));
+    // A year with nothing in it yet drew twelve empty columns down a quarter of
+    // the screen and said nothing at all. A chart with no data is not a chart.
+    return points.some((p) => p.hours > 0 || p.studies > 0) ? points : [];
   }, [yearQuery.data]);
 
   const queryClient = useQueryClient();
@@ -315,12 +333,28 @@ export default function ServiceSummaryScreen() {
           <Text style={styles.totalsHint}>
             {t('serviceSummary.averagesHint')}
           </Text>
+          {/* «65% сдали отчёт» on the 4th is arithmetic, not alarm: the month
+              is open and the rest are simply not late yet. Said here so the
+              figure is not read as a congregation falling behind. */}
+          {!data?.closed ? (
+            <Text style={styles.totalsHint}>
+              {t('serviceSummary.stillCollecting')}
+            </Text>
+          ) : null}
         </View>
 
         {yearQuery.data ? (
           <View style={styles.card}>
             <Text style={styles.cardTitle}>
-              Итог за служебный год {yearQuery.data.serviceYear}
+              {/* Written as the form writes it — «2025/2026». The server
+                  names a year by the one it ends in, the annual report names it
+                  by the one it starts in, and a secretary reading both screens
+                  should not have to work out that «2027» and «2026/2027» are
+                  the same twelve months. */}
+              {t('serviceSummary.yearTotalTitle', {
+                from: yearQuery.data.serviceYear - 1,
+                to: yearQuery.data.serviceYear,
+              })}
             </Text>
             <Text style={styles.yearRange}>
               {formatMonthLabel(yearQuery.data.firstMonth)} —{' '}

@@ -2694,6 +2694,8 @@
     "inactive": "Inaktive",
     "sizeHint": "„Alle aktiven“ zählt aktive und unregelmäßige Verkündiger. Inaktive werden getrennt gezählt und sind hier nicht enthalten.",
     "averagesTitle": "Durchschnitt",
+    "yearTotalTitle": "Dienstjahr {{from}}/{{to}} bisher",
+    "stillCollecting": "Der Monat wird noch gesammelt — einige Berichte fehlen noch",
     "hoursPioneers": "Stunden (Pioniere)",
     "reported": "Bericht abgegeben",
     "activeCount": "Aktive",

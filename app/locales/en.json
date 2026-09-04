@@ -2694,6 +2694,8 @@
     "inactive": "Inactive",
     "sizeHint": "\"All active\" counts active and irregular publishers. Inactive ones are counted separately and are not included here.",
     "averagesTitle": "Averages",
+    "yearTotalTitle": "Service year {{from}}/{{to}} so far",
+    "stillCollecting": "The month is still being collected — some reports are not in yet",
     "hoursPioneers": "Hours (pioneers)",
     "reported": "Reported",
     "activeCount": "Active",
