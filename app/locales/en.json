@@ -583,6 +583,17 @@
     "december": "December"
   },
   "reports": {
+    "fill": {
+          "action": "Fill in",
+          "hours": "Hours",
+          "studies": "Studies",
+          "save": "Save",
+          "saving": "{{done}} of {{total}} saved",
+          "leaveTitle": "Leave filling?",
+          "leaveBody": "{{count}} months filled in. Unsaved work will be lost.",
+          "leaveConfirm": "Leave",
+          "hint": "Work down the paper card. An empty month is skipped."
+    },
     "reasons": {
           "window": "Closed months weighed, {{from}} — {{to}}: ministry in {{served}} of {{expected}}",
           "nothingClosed": "No closed month yet — nothing has been asked of him",

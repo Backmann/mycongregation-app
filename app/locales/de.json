@@ -583,6 +583,17 @@
     "december": "Dezember"
   },
   "reports": {
+    "fill": {
+          "action": "Ausfüllen",
+          "hours": "Stunden",
+          "studies": "Studien",
+          "save": "Speichern",
+          "saving": "{{done}} von {{total}} gespeichert",
+          "leaveTitle": "Ausfüllen beenden?",
+          "leaveBody": "{{count}} Monate ausgefüllt. Nicht Gespeichertes geht verloren.",
+          "leaveConfirm": "Beenden",
+          "hint": "Arbeite die Papierkarte von oben nach unten ab. Ein leerer Monat wird übersprungen."
+    },
     "reasons": {
           "window": "Gewertete abgeschlossene Monate {{from}} — {{to}}: Dienst in {{served}} von {{expected}}",
           "nothingClosed": "Noch kein abgeschlossener Monat — es wurde nichts verlangt",

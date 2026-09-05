@@ -700,6 +700,14 @@ export interface PublisherHistoryEntry {
     | (ServiceReport & { canEdit: boolean; lastEditedByName: string | null })
     | null;
   removedReport: RemovedReportMark | null;
+  /**
+   * Which form THIS month wants: hours, or «did he share».
+   *
+   * Answered per month by the server, because today's card is the wrong place
+   * to ask — a sister who became a regular pioneer in March needs the plain
+   * question for February and hours for March.
+   */
+  wantsHours: boolean;
 }
 
 export interface PublisherHistoryResponse {

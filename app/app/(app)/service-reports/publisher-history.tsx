@@ -6,6 +6,7 @@ import {
   RefreshControl,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
@@ -22,6 +23,7 @@ import i18n, { formatMonthLabel } from '../../../lib/i18n';
 import { pioneerProgress } from '../../../lib/pioneer-goal';
 import { isActivePermanentPioneer } from '../../../lib/pioneer-status';
 import { usePermissions } from '../../../lib/permissions';
+import { confirm } from '../../../components/ConfirmHost';
 import { StatusReasonsModal } from '../../../components/StatusReasonsModal';
 import {
   HistoryTrendChart,
@@ -93,6 +95,109 @@ function StatusBadge({
         />
       )}
     </Pressable>
+  );
+}
+
+/**
+ * One month of a paper card, as a row you can type into.
+ *
+ * Which field appears is answered per month by the server — a sister who
+ * became a regular pioneer in March needs the plain question for February and
+ * hours for March, and today's card is the wrong place to ask. An empty row is
+ * skipped when saving: «no data» and «did not share» are different answers,
+ * and confusing them is how a status gets computed from invention.
+ */
+function FillRow({
+  entry,
+  value,
+  error,
+  onChange,
+}: {
+  entry: PublisherHistoryEntry;
+  value: { served?: boolean; hours?: string; studies?: string };
+  error?: string;
+  onChange: (v: {
+    served?: boolean;
+    hours?: string;
+    studies?: string;
+  }) => void;
+}) {
+  const { t } = useTranslation();
+  const monthLabel = formatMonthLabel(entry.reportMonth);
+  return (
+    <View style={[styles.fillRow, error ? styles.fillRowFailed : null]}>
+      <Text style={styles.fillMonth}>{monthLabel}</Text>
+      <View style={styles.fillFields}>
+        {entry.wantsHours ? (
+          <TextInput
+            style={styles.fillInput}
+            value={value.hours ?? ''}
+            onChangeText={(v) =>
+              onChange({ ...value, hours: v.replace(/[^0-9]/g, '') })
+            }
+            keyboardType="number-pad"
+            placeholder={t('reports.fill.hours')}
+            placeholderTextColor="#94a3b8"
+          />
+        ) : (
+          <View style={styles.fillChoice}>
+            <Pressable
+              onPress={() =>
+                onChange({
+                  ...value,
+                  served: value.served === true ? undefined : true,
+                })
+              }
+              style={[
+                styles.fillPill,
+                value.served === true ? styles.fillPillYes : null,
+              ]}
+            >
+              <Text
+                style={[
+                  styles.fillPillText,
+                  value.served === true ? styles.fillPillTextOn : null,
+                ]}
+              >
+                {t('reports.served')}
+              </Text>
+            </Pressable>
+            <Pressable
+              onPress={() =>
+                onChange({
+                  ...value,
+                  served: value.served === false ? undefined : false,
+                })
+              }
+              style={[
+                styles.fillPill,
+                value.served === false ? styles.fillPillNo : null,
+              ]}
+            >
+              <Text
+                style={[
+                  styles.fillPillText,
+                  value.served === false ? styles.fillPillTextOn : null,
+                ]}
+              >
+                {t('reports.didNotServe')}
+              </Text>
+            </Pressable>
+          </View>
+        )}
+        <TextInput
+          style={[styles.fillInput, styles.fillStudies]}
+          value={value.studies ?? ''}
+          onChangeText={(v) =>
+            onChange({ ...value, studies: v.replace(/[^0-9]/g, '') })
+          }
+          keyboardType="number-pad"
+          placeholder={t('reports.fill.studies')}
+          placeholderTextColor="#94a3b8"
+        />
+      </View>
+      {error ? <Text style={styles.fillError}>{error}</Text> : null}
+    </View>
   );
 }
 
@@ -215,6 +320,64 @@ export default function PublisherHistoryScreen() {
     enabled: !!publisherId,
   });
   const canManage = data?.publisher.canManage === true;
+  // Filling a paper S-21 card into the app, month by month.
+  //
+  // A new congregation arrives with years of history on cards written by hand.
+  // Without it the app judges by emptiness: statuses, the annual report and
+  // «приложение не знает» all rest on months nobody ever entered. Going month
+  // by month through the form meant leaving and coming back twelve times per
+  // person; here the card is read straight down, in the order it is written.
+  const [filling, setFilling] = useState(false);
+  const [draft, setDraft] = useState<
+    Record<string, { served?: boolean; hours?: string; studies?: string }>
+  >({});
+  const [saving, setSaving] = useState<{ done: number; total: number } | null>(
+    null,
+  );
+  const [failed, setFailed] = useState<Record<string, string>>({});
+  const filledCount = Object.values(draft).filter(
+    (d) => d.served !== undefined || (d.hours ?? '') !== '',
+  ).length;
+
+  const saveDraft = async () => {
+    const months = Object.keys(draft).filter((m) => {
+      const d = draft[m];
+      // An empty field means «skip», never «enter a zero». Months nobody has
+      // data for must stay empty, or a status gets computed from invention.
+      return d.served !== undefined || (d.hours ?? '') !== '';
+    });
+    if (months.length === 0 || !publisherId) return;
+    setSaving({ done: 0, total: months.length });
+    const errors: Record<string, string> = {};
+    let done = 0;
+    // One at a time, on purpose: each carries its own permission check and its
+    // own status recompute, and one refusal must not roll the others back.
+    for (const month of months) {
+      const d = draft[month];
+      try {
+        await serviceReportsApi.submit({
+          reportMonth: month,
+          publisherId,
+          ...(d.hours !== undefined && d.hours !== ''
+            ? { hoursReported: Number(d.hours) }
+            : { servedThisMonth: d.served === true }),
+          ...(d.studies ? { bibleStudies: Number(d.studies) } : {}),
+        });
+        setDraft((prev) => {
+          const next = { ...prev };
+          delete next[month];
+          return next;
+        });
+      } catch (e) {
+        errors[month] = extractErrorMessage(e);
+      }
+      done += 1;
+      setSaving({ done, total: months.length });
+    }
+    setFailed(errors);
+    setSaving(null);
+    await refetch();
+  };
 
   // Trend points, oldest → newest (timeline is newest-first). Only months that
   // have a report contribute; empty months are skipped so the trend isn't all
@@ -284,7 +447,36 @@ export default function PublisherHistoryScreen() {
   return (
     <View style={styles.container}>
       <Stack.Screen
-        options={{ title: t('reports.title.publisherHistory') }}
+        options={{
+          title: t('reports.title.publisherHistory'),
+          headerRight: canManage
+            ? () => (
+                <Pressable
+                  onPress={async () => {
+                    if (filling && filledCount > 0) {
+                      const ok = await confirm({
+                        title: t('reports.fill.leaveTitle'),
+                        body: t('reports.fill.leaveBody', {
+                          count: filledCount,
+                        }),
+                        confirmLabel: t('reports.fill.leaveConfirm'),
+                      });
+                      if (!ok) return;
+                      setDraft({});
+                    }
+                    setFailed({});
+                    setFilling((v) => !v);
+                  }}
+                  style={{ paddingHorizontal: 8 }}
+                  hitSlop={8}
+                >
+                  <Text style={styles.fillToggle}>
+                    {filling ? t('common.cancel') : t('reports.fill.action')}
+                  </Text>
+                </Pressable>
+              )
+            : undefined,
+        }}
       />
       <View style={styles.header}>
         <View style={styles.headerRow}>
@@ -378,7 +570,17 @@ export default function PublisherHistoryScreen() {
             <Text style={styles.emptyStateTitle}>{t('reports.publisherHistory.noHistory')}</Text>
           </View>
         }
-        renderItem={({ item }) => (
+        renderItem={({ item }) =>
+          filling && !item.report && !item.removedReport ? (
+            <FillRow
+              entry={item}
+              value={draft[item.reportMonth] ?? {}}
+              error={failed[item.reportMonth]}
+              onChange={(v) =>
+                setDraft((prev) => ({ ...prev, [item.reportMonth]: v }))
+              }
+            />
+          ) : (
           <TimelineEntryCard
             entry={item}
             onPress={
@@ -418,8 +620,34 @@ export default function PublisherHistoryScreen() {
                     )
             }
           />
-        )}
+          )
+        }
       />
+      {filling ? (
+        <View style={styles.fillBar}>
+          <Text style={styles.fillHint} numberOfLines={2}>
+            {saving
+              ? t('reports.fill.saving', {
+                  done: saving.done,
+                  total: saving.total,
+                })
+              : t('reports.fill.hint')}
+          </Text>
+          <Pressable
+            style={[
+              styles.fillSave,
+              filledCount === 0 || saving ? styles.fillSaveOff : null,
+            ]}
+            onPress={saveDraft}
+            disabled={filledCount === 0 || !!saving}
+          >
+            <Text style={styles.fillSaveText}>
+              {t('reports.fill.save')}
+              {filledCount > 0 ? ` (${filledCount})` : ''}
+            </Text>
+          </Pressable>
+        </View>
+      ) : null}
       <StatusReasonsModal
         target={
           explain && publisherId
@@ -434,6 +662,82 @@ export default function PublisherHistoryScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f1f5f9' },
+  fillBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    padding: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#e2e8f0',
+    backgroundColor: '#fff',
+  },
+  fillHint: { flex: 1, fontSize: 12, color: '#64748b', lineHeight: 16 },
+  fillSave: {
+    backgroundColor: '#0e7490',
+    borderRadius: 10,
+    paddingHorizontal: 18,
+    paddingVertical: 11,
+  },
+  fillSaveOff: { backgroundColor: '#cbd5e1' },
+  fillSaveText: {
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
+  },
+  fillToggle: {
+    color: '#fff',
+    fontSize: 14.5,
+    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
+  },
+  fillRow: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    padding: 12,
+    marginBottom: 8,
+  },
+  fillRowFailed: { borderColor: '#fecaca', backgroundColor: '#fef2f2' },
+  fillMonth: {
+    fontSize: 13,
+    color: '#0f172a',
+    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
+    marginBottom: 8,
+  },
+  fillFields: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  fillChoice: { flexDirection: 'row', gap: 6, flex: 1 },
+  fillPill: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 9,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    backgroundColor: '#f8fafc',
+  },
+  fillPillYes: { backgroundColor: '#dcfce7', borderColor: '#86efac' },
+  fillPillNo: { backgroundColor: '#f1f5f9', borderColor: '#cbd5e1' },
+  fillPillText: { fontSize: 13, color: '#475569' },
+  fillPillTextOn: {
+    color: '#0f172a',
+    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
+  },
+  fillInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderRadius: 9,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    fontSize: 14,
+    color: '#0f172a',
+    backgroundColor: '#f8fafc',
+  },
+  fillStudies: { maxWidth: 110 },
+  fillError: { fontSize: 11.5, color: '#b91c1c', marginTop: 6 },
   goalCard: {
     backgroundColor: '#fff',
     borderRadius: 12,
