@@ -316,7 +316,11 @@ export default function PublisherHistoryScreen() {
 
   const { data, isLoading, isRefetching, refetch, error } = useQuery({
     queryKey: ['publisher-history', publisherId],
-    queryFn: () => serviceReportsApi.getHistoryForPublisher(publisherId!, 120),
+    // Two years. Nothing in the app looks further back — a status weighs six
+    // closed months, the annual report twelve — and asking for ten years meant
+    // a publisher with no reports and no dates on his card came back as a
+    // hundred and twenty empty rows. The server caps this at 24 as well.
+    queryFn: () => serviceReportsApi.getHistoryForPublisher(publisherId!, 24),
     enabled: !!publisherId,
   });
   const canManage = data?.publisher.canManage === true;
