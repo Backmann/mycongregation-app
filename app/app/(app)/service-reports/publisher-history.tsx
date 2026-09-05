@@ -339,6 +339,12 @@ export default function PublisherHistoryScreen() {
     null,
   );
   const [failed, setFailed] = useState<Record<string, string>>({});
+  const visibleTimeline = useMemo(() => {
+    const all = data?.timeline ?? [];
+    if (filling || !data?.startsFrom) return all;
+    return all.filter((e) => e.reportMonth.slice(0, 7) >= data.startsFrom!);
+  }, [data, filling]);
+
   const filledCount = Object.values(draft).filter(
     (d) => d.served !== undefined || (d.hours ?? '') !== '',
   ).length;
@@ -509,7 +515,12 @@ export default function PublisherHistoryScreen() {
       </View>
 
       <FlatList
-        data={data?.timeline ?? []}
+        // Reading: months before this person was a publisher are noise — a man
+        // who joined last autumn had a year of «отчёта нет» behind him for
+        // months nobody ever asked about. FILLING: the whole window, because
+        // the months worth entering are exactly the ones before his first
+        // report in the app, and hiding them closed the circle.
+        data={visibleTimeline}
         keyExtractor={(item) => item.reportMonth}
         contentContainerStyle={{ padding: 16, gap: 10 }}
         ListHeaderComponent={

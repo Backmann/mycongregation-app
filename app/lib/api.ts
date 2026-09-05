@@ -722,6 +722,8 @@ export interface PublisherHistoryResponse {
     /** May the reader file a report for this person. */
     canManage: boolean;
   };
+  /** The month this person's history begins at; earlier months read as blank. */
+  startsFrom: string | null;
   timeline: PublisherHistoryEntry[];
 }
 
