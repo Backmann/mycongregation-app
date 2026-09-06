@@ -96,6 +96,8 @@
     "inviteUntil": "Gültig bis {{until}}",
     "inviteShare": "Als Nachricht senden",
       "inviteCopy": "Nachricht kopieren",
+      "inviteMail": "E-Mail schreiben",
+      "inviteMailSubject": "Einladung in die Versammlungs-App",
       "inviteCopied": "Kopiert — in den Chat einfügen",
     "inviteOnlyOnce": "Der Code wird einmal angezeigt: gespeichert ist nur sein Fingerabdruck. Geht er verloren, gib einen neuen aus — der alte funktioniert dann nicht mehr.",
     "inviteMessage": "{{name}}, hier ist dein Code für die App: {{code}} (gültig bis {{until}}). Dein Anmeldename: {{loginName}}. Die App gibt es unter {{url}}, dort auf „Ich wurde eingeladen“ tippen.",

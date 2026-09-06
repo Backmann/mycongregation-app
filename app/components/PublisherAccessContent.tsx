@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Linking,
   Platform,
   Pressable,
   Share,
@@ -1108,6 +1109,34 @@ function InviteResultDialog({
         </Text>
       </Pressable>
 
+      {/*
+        A letter, opened directly rather than through whatever the operating
+        system feels like offering.
+
+        The share sheet is fine for picking a chat, but on both Windows and
+        Android it answers «send this by e-mail» with a list of programs to
+        choose from, and the elder standing there with a code in his hand had
+        no way through it. A mailto link goes straight into the mail app with
+        the subject and the whole message already written; the address is
+        filled in when we know it, and left for the reader to type when we do
+        not.
+      */}
+      <Pressable
+        style={codeStyles.mailBtn}
+        onPress={() => {
+          const url =
+            `mailto:${sentTo ?? ''}` +
+            `?subject=${encodeURIComponent(t('publisherAccess.inviteMailSubject'))}` +
+            `&body=${encodeURIComponent(message)}`;
+          void Linking.openURL(url);
+        }}
+      >
+        <Ionicons name="mail-outline" size={16} color="#0f172a" />
+        <Text style={codeStyles.mailText}>
+          {t('publisherAccess.inviteMail')}
+        </Text>
+      </Pressable>
+
       <Text style={codeStyles.warning}>
         {t('publisherAccess.inviteOnlyOnce')}
       </Text>
@@ -1303,6 +1332,24 @@ const codeStyles = StyleSheet.create({
   shareText: {
     color: '#fff',
     fontSize: 15,
+    fontWeight: '600',
+    fontFamily: 'Manrope_600SemiBold',
+  },
+  mailBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    marginTop: 8,
+    paddingVertical: 11,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#cbd5e1',
+    backgroundColor: '#f8fafc',
+  },
+  mailText: {
+    color: '#0f172a',
+    fontSize: 14,
     fontWeight: '600',
     fontFamily: 'Manrope_600SemiBold',
   },
