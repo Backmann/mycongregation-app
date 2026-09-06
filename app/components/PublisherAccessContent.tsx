@@ -400,6 +400,15 @@ export function PublisherAccessContent({
         onSubmit={(password) => updateMutation.mutate({ password })}
       />
 
+      {/*
+        Two ways for one code, shown the way this project already shows a
+        choice — the same cards as «Дать доступ», so the second time somebody
+        meets this question it looks like the first.
+
+        Two stacked buttons and a third one in the corner read as three
+        commands of equal weight; a card carries its own explanation, which is
+        what the reader actually needs: what will happen, and to whom.
+      */}
       <Dialog
         visible={howToSend}
         title={t("publisherAccess.howSendTitle")}
@@ -409,30 +418,64 @@ export function PublisherAccessContent({
         cancelLabel={t("publisherAccess.cancel")}
         onCancel={() => setHowToSend(false)}
       >
-        <Text style={dialogText.body}>
-          {t("publisherAccess.howSendBody", { email: access.email ?? "" })}
-        </Text>
         <Pressable
-          style={styles.primaryBtn}
+          style={[g.choice, g.choiceOn]}
           disabled={resendMutation.isPending}
           onPress={() => resendMutation.mutate(true)}
         >
-          <Text style={styles.primaryBtnText}>
-            {t("publisherAccess.howSendByMail")}
-          </Text>
+          <View style={g.choiceHead}>
+            <Ionicons name="mail-outline" size={19} color="#2563eb" />
+            <View style={{ flex: 1 }}>
+              <Text style={g.choiceTitle}>
+                {t("publisherAccess.howSendByMail")}
+              </Text>
+              <Text style={g.choiceHint}>
+                {t("publisherAccess.howSendByMailHint", {
+                  email: access.email ?? "",
+                })}
+              </Text>
+            </View>
+            {resendMutation.isPending && resendMutation.variables === true ? (
+              <ActivityIndicator size="small" color="#2563eb" />
+            ) : (
+              <Ionicons name="chevron-forward" size={18} color="#93c5fd" />
+            )}
+          </View>
         </Pressable>
+
         <Pressable
-          style={styles.secondaryBtn}
+          style={g.choice}
           disabled={resendMutation.isPending}
           onPress={() => resendMutation.mutate(false)}
         >
-          <Text style={styles.secondaryBtnText}>
-            {t("publisherAccess.howSendInPerson")}
-          </Text>
+          <View style={g.choiceHead}>
+            <Ionicons name="person-outline" size={19} color="#64748b" />
+            <View style={{ flex: 1 }}>
+              <Text style={g.choiceTitle}>
+                {t("publisherAccess.howSendInPerson")}
+              </Text>
+              <Text style={g.choiceHint}>
+                {t("publisherAccess.howSendInPersonHint")}
+              </Text>
+            </View>
+            {resendMutation.isPending && resendMutation.variables === false ? (
+              <ActivityIndicator size="small" color="#64748b" />
+            ) : (
+              <Ionicons name="chevron-forward" size={18} color="#cbd5e1" />
+            )}
+          </View>
         </Pressable>
-        <Text style={styles.mutedSmall}>
-          {t("publisherAccess.howSendHint")}
-        </Text>
+
+        {/* True whichever card is chosen, so it sits under both rather than
+            inside either. */}
+        <View style={g.lede}>
+          <Ionicons
+            name="information-circle-outline"
+            size={16}
+            color="#0369a1"
+          />
+          <Text style={g.ledeText}>{t("publisherAccess.howSendHint")}</Text>
+        </View>
       </Dialog>
 
       <InviteResultDialog
@@ -1507,13 +1550,6 @@ const styles = StyleSheet.create({
     color: "#b45309",
     marginTop: 4,
     marginBottom: 4,
-  },
-  /** The quiet line under a choice: what happens either way. */
-  mutedSmall: {
-    fontSize: 12.5,
-    color: "#64748b",
-    lineHeight: 18,
-    marginTop: 4,
   },
   primaryBtn: {
     backgroundColor: "#2563eb",
