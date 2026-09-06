@@ -268,6 +268,15 @@ export interface PublicUser {
    */
   hasPassword: boolean;
   /**
+   * When the outstanding invitation code stops working, or null when there is
+   * none.
+   *
+   * «Пароль не задан» alone could not say whether the person is waiting on a
+   * code that still works or on one that died three weeks ago — and five
+   * people were in the second state with nothing on screen to show it.
+   */
+  inviteExpiresAt: string | null;
+  /**
    * What this person last signed in from — platform, app or browser, when.
    *
    * The question it answers is «кто ещё не поставил приложение»: on a browser

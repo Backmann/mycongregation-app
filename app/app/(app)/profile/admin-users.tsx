@@ -35,6 +35,7 @@ import {
   LOGIN_NAME_MIN,
 } from '../../../lib/login-name';
 import { androidVersionName } from '../../../lib/android-version';
+import i18n from '../../../lib/i18n';
 
 // Login accounts are created and managed per-person on the Братья screen
 // (role derived from appointment). This screen is a read-only audit list.
@@ -56,6 +57,28 @@ const APPOINTMENT_OVERRIDE: Record<
   student: { bg: '#fef3c7', fg: '#92400e' },
   none: { bg: '#f1f5f9', fg: '#475569' },
 };
+
+/**
+ * What the badge on an account with no password should say.
+ *
+ * Three different situations wore one label. Which of the three it is decides
+ * what the elder does next: nothing, hand over the code again, or send a first
+ * invitation at all.
+ */
+function inviteState(
+  user: PublicUser,
+  t: (key: string, opts?: Record<string, unknown>) => string,
+): string {
+  const until = user.inviteExpiresAt ? new Date(user.inviteExpiresAt) : null;
+  if (!until) return t('admin.users.noPassword.neverInvited');
+  const day = until.toLocaleDateString(i18n.language, {
+    day: 'numeric',
+    month: 'long',
+  });
+  return until.getTime() > Date.now()
+    ? t('admin.users.noPassword.codeLivesUntil', { date: day })
+    : t('admin.users.noPassword.codeExpired', { date: day });
+}
 
 const QK_USERS = ['users'] as const;
 
@@ -515,7 +538,11 @@ function UserCard({
         <View style={styles.noPassRow}>
           <Ionicons name="key-outline" size={14} color="#92400e" />
           <Text style={styles.orphanRowText}>
-            {t('admin.users.noPassword.badge')}
+            {/* «Пароль не задан» on its own could not say whether this person
+                is waiting on a code that still works or on one that died
+                three weeks ago — and it was the second case for five people
+                here, with nothing on any screen to show it. */}
+            {inviteState(user, t)}
           </Text>
           {/* Seen here, fixed here. The invitation used to live only on the
               publisher's card, so the one place that showed the problem was
