@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useRef } from "react";
 import { useNavigation } from "expo-router";
 import type { NativeSyntheticEvent, NativeScrollEvent } from "react-native";
 
