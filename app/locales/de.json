@@ -592,7 +592,9 @@
           "leaveTitle": "Ausfüllen beenden?",
           "leaveBody": "{{count}} Monate ausgefüllt. Nicht Gespeichertes geht verloren.",
           "leaveConfirm": "Beenden",
-          "hint": "Arbeite die Papierkarte von oben nach unten ab. Ein leerer Monat wird übersprungen."
+          "hint": "Arbeite die Papierkarte von oben nach unten ab. Ein leerer Monat wird übersprungen. Markiere einen Monat mit Hilfspionierdienst — dann erscheint das Stundenfeld.",
+          "auxiliary": "Hilfspionier",
+          "auxiliaryLocked": "Nur der Sekretär oder der Dienstaufseher darf Hilfspionierdienst eintragen"
     },
     "reasons": {
           "window": "Gewertete abgeschlossene Monate {{from}} — {{to}}: Dienst in {{served}} von {{expected}}",

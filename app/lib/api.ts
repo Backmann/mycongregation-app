@@ -661,6 +661,17 @@ export interface SubmitServiceReportInput {
   hoursReported?: number;
   bibleStudies?: number;
   notes?: string;
+  /**
+   * «В этом месяце он был подсобным пионером» — set only while filling a paper
+   * S-21 card into the app.
+   *
+   * The server refuses hours for a month with no auxiliary service behind it,
+   * and the month a paper card tells you about is exactly the one the app has
+   * never heard of. Sending the two apart would let the connection break
+   * between them and leave a month of pioneer service with no report in it, so
+   * the mark travels with the hours and the server writes both or neither.
+   */
+  auxiliaryPioneerThisMonth?: boolean;
 }
 
 export interface UpdateServiceReportInput {
@@ -724,6 +735,14 @@ export interface PublisherHistoryResponse {
   };
   /** The month this person's history begins at; earlier months read as blank. */
   startsFrom: string | null;
+  /**
+   * May THIS reader mark a month as auxiliary-pioneer service while filling.
+   *
+   * Filling a card is open to a group overseer as well; appointing auxiliary
+   * pioneers is not. He sees the mark greyed instead of meeting a refusal at
+   * the end of a column of typing.
+   */
+  canMarkAuxiliary: boolean;
   timeline: PublisherHistoryEntry[];
 }
 

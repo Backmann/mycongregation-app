@@ -111,24 +111,89 @@ function FillRow({
   entry,
   value,
   error,
+  canMarkAuxiliary,
   onChange,
 }: {
   entry: PublisherHistoryEntry;
-  value: { served?: boolean; hours?: string; studies?: string };
+  value: { served?: boolean; hours?: string; studies?: string; aux?: boolean };
   error?: string;
+  /** May this reader set the auxiliary-pioneer mark at all. */
+  canMarkAuxiliary: boolean;
   onChange: (v: {
     served?: boolean;
     hours?: string;
     studies?: string;
+    aux?: boolean;
   }) => void;
 }) {
   const { t } = useTranslation();
   const monthLabel = formatMonthLabel(entry.reportMonth);
+  // The mark belongs beside the month, the way it stands on the paper card:
+  // the card is read straight down, and the person copying it should not have
+  // to leave for the auxiliary-pioneer section and come back for one April.
+  //
+  // A month the app already knows as pioneer service asks for hours by itself,
+  // so the mark would be an offer to state what is already stated — it is not
+  // drawn there at all.
+  const wantsHours = entry.wantsHours || value.aux === true;
+  const showAux = !entry.wantsHours;
   return (
     <View style={[styles.fillRow, error ? styles.fillRowFailed : null]}>
-      <Text style={styles.fillMonth}>{monthLabel}</Text>
+      <View style={styles.fillHead}>
+        <Text style={styles.fillMonth}>{monthLabel}</Text>
+        {showAux ? (
+          <Pressable
+            onPress={() =>
+              canMarkAuxiliary &&
+              onChange({
+                ...value,
+                aux: value.aux === true ? undefined : true,
+                // Turning the mark off takes the hours with it: the field it
+                // was typed into is going away, and a number left behind in
+                // the draft would be sent for a month that no longer asks for
+                // one — the server would refuse the row and the person would
+                // read a refusal about a field he cannot see.
+                hours: value.aux === true ? undefined : value.hours,
+                served: value.aux === true ? value.served : undefined,
+              })
+            }
+            disabled={!canMarkAuxiliary}
+            style={[
+              styles.fillAux,
+              value.aux === true ? styles.fillAuxOn : null,
+              !canMarkAuxiliary ? styles.fillAuxOff : null,
+            ]}
+          >
+            <Ionicons
+              name={value.aux === true ? 'checkbox' : 'square-outline'}
+              size={15}
+              color={
+                !canMarkAuxiliary
+                  ? '#cbd5e1'
+                  : value.aux === true
+                    ? '#0f172a'
+                    : '#94a3b8'
+              }
+            />
+            <Text
+              style={[
+                styles.fillAuxText,
+                value.aux === true ? styles.fillAuxTextOn : null,
+                !canMarkAuxiliary ? styles.fillAuxTextOff : null,
+              ]}
+            >
+              {t('reports.fill.auxiliary')}
+            </Text>
+          </Pressable>
+        ) : null}
+      </View>
+      {showAux && !canMarkAuxiliary ? (
+        <Text style={styles.fillAuxNote}>
+          {t('reports.fill.auxiliaryLocked')}
+        </Text>
+      ) : null}
       <View style={styles.fillFields}>
-        {entry.wantsHours ? (
+        {wantsHours ? (
           <TextInput
             style={styles.fillInput}
             value={value.hours ?? ''}
@@ -333,7 +398,10 @@ export default function PublisherHistoryScreen() {
   // person; here the card is read straight down, in the order it is written.
   const [filling, setFilling] = useState(false);
   const [draft, setDraft] = useState<
-    Record<string, { served?: boolean; hours?: string; studies?: string }>
+    Record<
+      string,
+      { served?: boolean; hours?: string; studies?: string; aux?: boolean }
+    >
   >({});
   const [saving, setSaving] = useState<{ done: number; total: number } | null>(
     null,
@@ -371,7 +439,14 @@ export default function PublisherHistoryScreen() {
           ...(d.hours !== undefined && d.hours !== ''
             ? { hoursReported: Number(d.hours) }
             : { servedThisMonth: d.served === true }),
-          ...(d.studies ? { bibleStudies: Number(d.studies) } : {}),
+          // Always a number, never left out. The field is required by the
+          // server, and an empty cell on a paper card means none — which is
+          // what the ordinary report form has always sent. Omitting it made
+          // every month without studies come back refused.
+          bibleStudies: Number(d.studies || 0),
+          // The mark goes only where the app does not already know the month
+          // as pioneer service; the server ignores it in that case anyway.
+          ...(d.aux === true ? { auxiliaryPioneerThisMonth: true } : {}),
         });
         setDraft((prev) => {
           const next = { ...prev };
@@ -591,6 +666,7 @@ export default function PublisherHistoryScreen() {
               entry={item}
               value={draft[item.reportMonth] ?? {}}
               error={failed[item.reportMonth]}
+              canMarkAuxiliary={data?.canMarkAuxiliary === true}
               onChange={(v) =>
                 setDraft((prev) => ({ ...prev, [item.reportMonth]: v }))
               }
@@ -715,13 +791,40 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   fillRowFailed: { borderColor: '#fecaca', backgroundColor: '#fef2f2' },
+  fillHead: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
+    marginBottom: 8,
+  },
   fillMonth: {
     fontSize: 13,
     color: '#0f172a',
     fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
-    marginBottom: 8,
   },
+  fillAux: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    backgroundColor: '#f8fafc',
+  },
+  fillAuxOn: { backgroundColor: '#e0e7ff', borderColor: '#a5b4fc' },
+  fillAuxOff: { backgroundColor: '#f8fafc', borderColor: '#f1f5f9' },
+  fillAuxText: { fontSize: 12, color: '#475569' },
+  fillAuxTextOn: {
+    color: '#0f172a',
+    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
+  },
+  fillAuxTextOff: { color: '#cbd5e1' },
+  fillAuxNote: { fontSize: 11.5, color: '#94a3b8', marginBottom: 8 },
   fillFields: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   fillChoice: { flexDirection: 'row', gap: 6, flex: 1 },
   fillPill: {

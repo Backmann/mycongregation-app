@@ -592,7 +592,9 @@
           "leaveTitle": "Leave filling?",
           "leaveBody": "{{count}} months filled in. Unsaved work will be lost.",
           "leaveConfirm": "Leave",
-          "hint": "Work down the paper card. An empty month is skipped."
+          "hint": "Work down the paper card. An empty month is skipped. Tick a month of auxiliary pioneer service and the hours field appears.",
+          "auxiliary": "Auxiliary pioneer",
+          "auxiliaryLocked": "Only the secretary or the service overseer may mark auxiliary service"
     },
     "reasons": {
           "window": "Closed months weighed, {{from}} — {{to}}: ministry in {{served}} of {{expected}}",
