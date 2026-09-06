@@ -2393,9 +2393,15 @@ export const publishersApi = {
     );
     return data;
   },
-  async resendInvite(id: string): Promise<AccessSummary> {
+  /**
+   * Issue a fresh code — and say whether a letter should go with it.
+   *
+   * `post` omitted means yes, which is what every older caller expects.
+   */
+  async resendInvite(id: string, post?: boolean): Promise<AccessSummary> {
     const { data } = await api.post<AccessSummary>(
       `/publishers/${id}/access/resend-invite`,
+      post === undefined ? {} : { post },
     );
     return data;
   },
