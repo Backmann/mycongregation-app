@@ -95,6 +95,8 @@
     "inviteNotSent": "No letter was sent — pass the code on yourself:",
     "inviteUntil": "Valid until {{until}}",
     "inviteShare": "Send in a message",
+      "inviteCopy": "Copy the message",
+      "inviteCopied": "Copied — paste it into a chat",
     "inviteOnlyOnce": "The code is shown once: only its fingerprint is stored. If it is lost, issue a new one — but the old one then stops working.",
     "inviteMessage": "{{name}}, here is your code for the app: {{code}} (valid until {{until}}). Your name for signing in: {{loginName}}. Get the app at {{url}} and tap “I was invited”.",
     "newCode": "Issue a code — they choose the password",

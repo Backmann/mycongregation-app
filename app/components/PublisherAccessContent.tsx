@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Platform,
   Pressable,
   Share,
   StyleSheet,
@@ -989,6 +990,7 @@ function InviteResultDialog({
   onClose: () => void;
 }) {
   const { t } = useTranslation();
+  const [copied, setCopied] = useState(false);
   if (!code) return null;
 
   const until = expiresAt
@@ -1054,15 +1056,55 @@ function InviteResultDialog({
         </View>
       ) : null}
 
+      {/*
+        Two different things wear one button, because the platforms mean
+        different things by «send this to somebody».
+
+        On a phone, asking the system to share opens the list of chats and the
+        elder picks one — which is the whole point. On a desktop browser the
+        same call opens the Windows share panel, and there is no way through it
+        to a message: it offers Outlook and Teams and stops. The elder stood
+        there unable to send the code he had just issued.
+
+        So the web copies instead. The clipboard is what a computer actually
+        uses to move a line into WhatsApp, and what gets copied is the whole
+        message — name, code, deadline, where to go — not the eight characters
+        that would leave the reader guessing.
+      */}
       <Pressable
         style={codeStyles.shareBtn}
         onPress={() => {
+          if (Platform.OS === 'web') {
+            void navigator.clipboard
+              ?.writeText(message)
+              .then(() => setCopied(true))
+              // No clipboard (an insecure origin, an old browser): fall back
+              // to the share sheet rather than doing nothing at all.
+              .catch(() => {
+                void Share.share({ message });
+              });
+            return;
+          }
           void Share.share({ message });
         }}
       >
-        <Ionicons name="paper-plane-outline" size={16} color="#fff" />
+        <Ionicons
+          name={
+            Platform.OS === 'web'
+              ? copied
+                ? 'checkmark'
+                : 'copy-outline'
+              : 'paper-plane-outline'
+          }
+          size={16}
+          color="#fff"
+        />
         <Text style={codeStyles.shareText}>
-          {t('publisherAccess.inviteShare')}
+          {Platform.OS === 'web'
+            ? copied
+              ? t('publisherAccess.inviteCopied')
+              : t('publisherAccess.inviteCopy')
+            : t('publisherAccess.inviteShare')}
         </Text>
       </Pressable>
 
