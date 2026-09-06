@@ -81,7 +81,14 @@ export default function InviteScreen() {
     } catch (e) {
       const refusal = inviteRefusal(e);
       const weak = weakPasswordProblem(e);
-      if (refusal?.kind === 'invalid') {
+      const status = (e as { response?: { status?: number } })?.response
+        ?.status;
+      if (status === 429) {
+        // Somebody has been typing codes from this address — often the elder
+        // helping the person before this one. Saying «the code did not fit»
+        // here would send them looking for a new code they do not need.
+        setError(t('auth.tooMany'));
+      } else if (refusal?.kind === 'invalid') {
         // One message for four causes, on purpose — see the server.
         setError(t('auth.invite.invalid'));
       } else if (weak) {

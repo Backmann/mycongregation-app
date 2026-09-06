@@ -59,9 +59,14 @@ export default function LoginScreen() {
         // password that was never wrong.
         code === 'LOGIN_SHARED_EMAIL'
           ? t('auth.sharedEmail')
-          : status === 401
-            ? t('auth.wrongEmailOrPassword')
-            : extractErrorMessage(e),
+          : // Too many tries, ours or somebody else's. It says to WAIT, which
+            // is the only useful thing here — the reader who reads «wrong
+            // password» instead starts changing a password that was right.
+            status === 429
+            ? t('auth.tooMany')
+            : status === 401
+              ? t('auth.wrongEmailOrPassword')
+              : extractErrorMessage(e),
       );
     } finally {
       setSubmitting(false);

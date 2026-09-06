@@ -566,7 +566,8 @@
     },
     "loginOrEmail": "Anmeldename oder E-Mail",
     "loginPlaceholder": "ivanov.petr oder you@example.com",
-    "sharedEmail": "Diese Adresse gehört zu mehreren Zugängen — melden Sie sich mit Ihrem Anmeldenamen an. Wenn Sie ihn nicht wissen, fragen Sie den Versammlungsadministrator."
+    "tooMany": "Zu viele Versuche in kurzer Zeit — warte eine Viertelstunde und versuche es erneut. Am Passwort liegt es nicht.",
+      "sharedEmail": "Diese Adresse gehört zu mehreren Zugängen — melden Sie sich mit Ihrem Anmeldenamen an. Wenn Sie ihn nicht wissen, fragen Sie den Versammlungsadministrator."
   },
   "months": {
     "january": "Januar",

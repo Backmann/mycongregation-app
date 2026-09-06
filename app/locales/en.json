@@ -566,7 +566,8 @@
     },
     "loginOrEmail": "Login name or e-mail",
     "loginPlaceholder": "ivanov.petr or you@example.com",
-    "sharedEmail": "This address belongs to more than one login — sign in with your login name. If you cannot remember it, ask the congregation administrator."
+    "tooMany": "Too many attempts in a short time — wait a quarter of an hour and try again. Nothing is wrong with your password.",
+      "sharedEmail": "This address belongs to more than one login — sign in with your login name. If you cannot remember it, ask the congregation administrator."
   },
   "months": {
     "january": "January",
