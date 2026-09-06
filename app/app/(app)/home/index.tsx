@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Animated,
   Linking,
@@ -7,13 +7,13 @@ import {
   StyleSheet,
   Text,
   View,
-} from 'react-native';
-import { AttendanceCard } from '../../../components/AttendanceCard';
-import { ReportCollectionCard } from '../../../components/ReportCollectionCard';
-import { useQuery } from '@tanstack/react-query';
-import { router } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { useTranslation } from 'react-i18next';
+} from "react-native";
+import { AttendanceCard } from "../../../components/AttendanceCard";
+import { ReportCollectionCard } from "../../../components/ReportCollectionCard";
+import { useQuery } from "@tanstack/react-query";
+import { router } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import {
   Absence,
   MyCoVisitItem,
@@ -30,47 +30,47 @@ import {
   serviceReportsApi,
   specialEventsApi,
   tasksApi,
-} from '../../../lib/api';
-import { addDays, formatDateISO, startOfWeekMonday } from '../../../lib/dates';
-import { useAuth } from '../../../lib/auth';
-import { useMyPublisher } from '../../../lib/useMyPublisher';
+} from "../../../lib/api";
+import { addDays, formatDateISO, startOfWeekMonday } from "../../../lib/dates";
+import { useHeaderLift } from "../../../lib/header-lift";
+import { useAuth } from "../../../lib/auth";
+import { useMyPublisher } from "../../../lib/useMyPublisher";
 import {
   auxMonthSinceLabel,
   auxPeriodLabel,
-} from '../../../lib/aux-pioneer-period';
-import { monthLabel } from '../../../lib/month-label';
-import { LoadError } from '../../../components/LoadError';
+} from "../../../lib/aux-pioneer-period";
+import { monthLabel } from "../../../lib/month-label";
+import { LoadError } from "../../../components/LoadError";
 import {
   RefinedTask,
   taskMeta,
   taskSubsectionLabel,
   taskTitle,
   taskVisual,
-} from '../../../lib/my-tasks';
+} from "../../../lib/my-tasks";
 import {
   EldersMeetingEntry,
   MeetingEntry,
   OutgoingTalkEntry,
   TimelineEntry,
   buildTimeline,
-} from '../../../lib/home-timeline';
-import { MyDot } from '../../../components/MyDot';
-import { MyGlowRow } from '../../../components/MyGlowRow';
-import { SectionKind } from '../../../lib/section-colors';
-import { isCongressEvent } from '../../../lib/week-rules';
-
+} from "../../../lib/home-timeline";
+import { MyDot } from "../../../components/MyDot";
+import { MyGlowRow } from "../../../components/MyGlowRow";
+import { SectionKind } from "../../../lib/section-colors";
+import { isCongressEvent } from "../../../lib/week-rules";
 
 function rangeLabel(start: Date, end: Date, loc: string): string {
   const sameYear = start.getFullYear() === end.getFullYear();
   const startStr = start.toLocaleDateString(loc, {
-    day: 'numeric',
-    month: 'long',
-    ...(sameYear ? {} : { year: 'numeric' }),
+    day: "numeric",
+    month: "long",
+    ...(sameYear ? {} : { year: "numeric" }),
   });
   const endStr = end.toLocaleDateString(loc, {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
+    day: "numeric",
+    month: "long",
+    year: "numeric",
   });
   return `${startStr} \u2013 ${endStr}`;
 }
@@ -79,27 +79,33 @@ function absenceRangeLabel(a: Absence, loc: string): string {
   const start = new Date(`${a.startDate}T00:00:00`);
   if (!a.endDate) {
     return start.toLocaleDateString(loc, {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
+      day: "numeric",
+      month: "long",
+      year: "numeric",
     });
   }
   const end = new Date(`${a.endDate}T00:00:00`);
   const sameYear = start.getFullYear() === end.getFullYear();
   const s = start.toLocaleDateString(loc, {
-    day: 'numeric',
-    month: 'long',
-    ...(sameYear ? {} : { year: 'numeric' }),
+    day: "numeric",
+    month: "long",
+    ...(sameYear ? {} : { year: "numeric" }),
   });
   const e = end.toLocaleDateString(loc, {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
+    day: "numeric",
+    month: "long",
+    year: "numeric",
   });
   return `${s} \u2013 ${e}`;
 }
 
-function SkeletonBar({ width, height = 14 }: { width: string; height?: number }) {
+function SkeletonBar({
+  width,
+  height = 14,
+}: {
+  width: string;
+  height?: number;
+}) {
   const pulse = useRef(new Animated.Value(0.35)).current;
   useEffect(() => {
     const loop = Animated.loop(
@@ -125,7 +131,7 @@ function SkeletonBar({ width, height = 14 }: { width: string; height?: number })
         width: width as never,
         height,
         borderRadius: 7,
-        backgroundColor: '#cbd5e1',
+        backgroundColor: "#cbd5e1",
         opacity: pulse,
       }}
     />
@@ -138,7 +144,7 @@ function SkeletonCard({ rows = 3 }: { rows?: number }) {
     <View style={[styles.card, { paddingVertical: 14, gap: 12 }]}>
       {Array.from({ length: rows }, (_, i) => (
         <View key={i} style={{ gap: 6 }}>
-          <SkeletonBar width={i % 2 ? '55%' : '70%'} />
+          <SkeletonBar width={i % 2 ? "55%" : "70%"} />
           <SkeletonBar width="38%" height={10} />
         </View>
       ))}
@@ -152,23 +158,23 @@ function GreetingHeader() {
   const { myPublisher } = useMyPublisher();
   const currentMonth = `${formatDateISO(new Date()).slice(0, 7)}-01`;
   const { data: auxStatus } = useQuery({
-    queryKey: ['aux-pioneers', 'mine', currentMonth],
+    queryKey: ["aux-pioneers", "mine", currentMonth],
     queryFn: () => auxiliaryPioneersApi.mine(currentMonth),
   });
   const hour = new Date().getHours();
   const key =
     hour >= 5 && hour < 11
-      ? 'morning'
+      ? "morning"
       : hour >= 11 && hour < 17
-        ? 'day'
+        ? "day"
         : hour >= 17 && hour < 23
-          ? 'evening'
-          : 'night';
-  const name = myPublisher?.firstName ?? '';
+          ? "evening"
+          : "night";
+  const name = myPublisher?.firstName ?? "";
   const dateLine = new Date().toLocaleDateString(i18n.language, {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
+    weekday: "long",
+    day: "numeric",
+    month: "long",
   });
 
   // «До отмены» — единственный случай без конца, и только он заслуживает
@@ -177,24 +183,24 @@ function GreetingHeader() {
 
   // Своё назначение, если оно есть. Только своё и только здесь: главная —
   // это экран про себя, а не про собрание, и у сестёр тут просто ничего.
-  const appointment = myPublisher?.appointment ?? 'none';
+  const appointment = myPublisher?.appointment ?? "none";
   const appointmentLabel =
-    appointment === 'elder'
-      ? t('publishers.tags.elder')
-      : appointment === 'ministerial_servant'
-        ? t('publishers.tags.ms')
+    appointment === "elder"
+      ? t("publishers.tags.elder")
+      : appointment === "ministerial_servant"
+        ? t("publishers.tags.ms")
         : null;
 
   // Тип пионерского служения — это СОСТОЯНИЕ: месяцы к нему не относятся.
   // Подсобное — это СРОК, и без срока значок почти ничего не сообщает.
-  const pioneerType = myPublisher?.pioneerType ?? 'none';
-  const namedPioneer = ['regular', 'special', 'missionary'].includes(
+  const pioneerType = myPublisher?.pioneerType ?? "none";
+  const namedPioneer = ["regular", "special", "missionary"].includes(
     pioneerType,
   );
   const nowLabel = namedPioneer
     ? t(`publishers.pioneer.detail.${pioneerType}`)
     : auxStatus?.current
-      ? t('auxPioneer.badgeServing', {
+      ? t("auxPioneer.badgeServing", {
           period: auxPeriodLabel(t, i18n.language, auxStatus.current, {
             hideCurrentYear: true,
           }),
@@ -204,7 +210,7 @@ function GreetingHeader() {
   // — это и есть польза. Значок тише и с другим значком: это ещё не сейчас.
   const aheadLabel =
     !nowLabel && auxStatus?.upcoming
-      ? t('auxPioneer.badgeUpcoming', {
+      ? t("auxPioneer.badgeUpcoming", {
           month: auxMonthSinceLabel(
             i18n.language,
             auxStatus.upcoming.startMonth,
@@ -217,7 +223,7 @@ function GreetingHeader() {
     <View style={styles.greeting}>
       <Text style={styles.greetingText}>
         {t(`home.greeting.${key}`)}
-        {name ? `, ${name}` : ''}
+        {name ? `, ${name}` : ""}
       </Text>
       <Text style={styles.greetingDate}>{dateLine}</Text>
       <View style={styles.badgeRow}>
@@ -237,7 +243,7 @@ function GreetingHeader() {
                 сроком конец есть, и знак бесконечности рядом с ним просто
                 неправда. Раньше он стоял у всех сразу и не сообщал ничего. */}
             <Ionicons
-              name={endlessAux ? 'infinite' : 'leaf-outline'}
+              name={endlessAux ? "infinite" : "leaf-outline"}
               size={13}
               color="#0F6E56"
             />
@@ -263,7 +269,7 @@ function GreetingHeader() {
 function ReportStandingCard() {
   const { t, i18n } = useTranslation();
   const { data } = useQuery({
-    queryKey: ['reports', 'my-standing'],
+    queryKey: ["reports", "my-standing"],
     queryFn: () => serviceReportsApi.myStanding(),
     staleTime: 5 * 60 * 1000,
   });
@@ -282,11 +288,11 @@ function ReportStandingCard() {
           styles.reportCardDone,
           pressed && { opacity: 0.7 },
         ]}
-        onPress={() => router.push('/service-reports' as any)}
+        onPress={() => router.push("/service-reports" as any)}
       >
         <Ionicons name="checkmark-circle" size={20} color="#16794f" />
         <Text style={[styles.reportText, styles.reportTextDone]}>
-          {t('home.report.submitted', { month })}
+          {t("home.report.submitted", { month })}
         </Text>
       </Pressable>
     );
@@ -307,45 +313,43 @@ function ReportStandingCard() {
     >
       <Ionicons name="document-text-outline" size={20} color="#b45309" />
       <Text style={[styles.reportText, styles.reportTextDue]}>
-        {t('home.report.outstanding', { month })}
+        {t("home.report.outstanding", { month })}
       </Text>
       <Ionicons name="chevron-forward" size={18} color="#b45309" />
     </Pressable>
   );
 }
 
-const FEED_ACCENT: Record<
-  string,
-  { color: string; bg: string; icon: string }
-> = {
-  weekend: { color: '#7c3aed', bg: '#f5f3ff', icon: 'people-outline' },
-  midweek: { color: '#2563eb', bg: '#eff6ff', icon: 'book-outline' },
-  field_service: { color: '#16a34a', bg: '#f0fdf4', icon: 'walk-outline' },
-  event: { color: '#d97706', bg: '#fffbeb', icon: 'megaphone-outline' },
-};
+const FEED_ACCENT: Record<string, { color: string; bg: string; icon: string }> =
+  {
+    weekend: { color: "#7c3aed", bg: "#f5f3ff", icon: "people-outline" },
+    midweek: { color: "#2563eb", bg: "#eff6ff", icon: "book-outline" },
+    field_service: { color: "#16a34a", bg: "#f0fdf4", icon: "walk-outline" },
+    event: { color: "#d97706", bg: "#fffbeb", icon: "megaphone-outline" },
+  };
 
 const NEAR_DAYS = 14;
 
 /** Section hue for a personal task, by what the task is. */
-function taskGlowKind(kind: RefinedTask['item']['kind']): SectionKind {
+function taskGlowKind(kind: RefinedTask["item"]["kind"]): SectionKind {
   switch (kind) {
-    case 'cleaning':
-      return 'cleaning';
-    case 'cart':
-    case 'field_service':
-      return 'field_service';
+    case "cleaning":
+      return "cleaning";
+    case "cart":
+    case "field_service":
+      return "field_service";
     default:
-      return 'meeting';
+      return "meeting";
   }
 }
 
 /** Section hue for the personal glow/dot of a timeline entry. */
 function glowKindFor(en: TimelineEntry): SectionKind {
-  if (en.type === 'meeting') {
-    return en.kind === 'field_service' ? 'field_service' : 'meeting';
+  if (en.type === "meeting") {
+    return en.kind === "field_service" ? "field_service" : "meeting";
   }
-  if (en.type === 'task') return taskGlowKind(en.task.item.kind);
-  return 'meeting';
+  if (en.type === "task") return taskGlowKind(en.task.item.kind);
+  return "meeting";
 }
 
 /** «Сегодня» / «Завтра» / «пн, 28 июля» — the day header of a group. */
@@ -357,12 +361,12 @@ function dayHeaderLabel(
 ): string {
   const d = new Date(`${dateISO}T00:00:00`);
   const tomorrow = formatDateISO(addDays(new Date(`${todayISO}T00:00:00`), 1));
-  if (dateISO === todayISO) return t('home.timeline.today');
-  if (dateISO === tomorrow) return t('home.timeline.tomorrow');
+  if (dateISO === todayISO) return t("home.timeline.today");
+  if (dateISO === tomorrow) return t("home.timeline.tomorrow");
   return d.toLocaleDateString(locale, {
-    weekday: 'short',
-    day: 'numeric',
-    month: 'long',
+    weekday: "short",
+    day: "numeric",
+    month: "long",
   });
 }
 
@@ -408,7 +412,10 @@ function BackgroundRow({
     </View>
   );
   return onPress ? (
-    <Pressable onPress={onPress} style={({ pressed }) => pressed && { opacity: 0.6 }}>
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => pressed && { opacity: 0.6 }}
+    >
       {body}
     </Pressable>
   ) : (
@@ -427,7 +434,7 @@ function MeetingRow({
   const { t, i18n } = useTranslation();
   const dateLabel = new Date(`${entry.dateISO}T00:00:00`).toLocaleDateString(
     i18n.language,
-    { weekday: 'long', day: 'numeric', month: 'long' },
+    { weekday: "long", day: "numeric", month: "long" },
   );
 
   // The Memorial IS this week's meeting, so it is drawn as one and not as an
@@ -441,12 +448,12 @@ function MeetingRow({
       <BackgroundRow
         icon={FEED_ACCENT.event.icon}
         accent={FEED_ACCENT.event.color}
-        kindLabel={t('home.eventTypes.memorial')}
+        kindLabel={t("home.eventTypes.memorial")}
         title={e.title}
-        meta={[dateLabel, e.time, e.address].filter(Boolean).join(' \u00b7 ')}
+        meta={[dateLabel, e.time, e.address].filter(Boolean).join(" \u00b7 ")}
         onPress={() =>
           router.push({
-            pathname: '/schedule',
+            pathname: "/schedule",
             params: entry.weekStartISO ? { week: entry.weekStartISO } : {},
           } as never)
         }
@@ -459,37 +466,39 @@ function MeetingRow({
     const e = entry.replacedBy;
     const typeLabel = e.type
       ? t(`specialEvents.types.${e.type}`, e.type)
-      : t('home.kinds.meeting');
+      : t("home.kinds.meeting");
     return (
       <BackgroundRow
         icon={FEED_ACCENT.event.icon}
         accent={FEED_ACCENT.event.color}
         kindLabel={typeLabel}
         title={e.title}
-        meta={[dateLabel, e.time, e.address].filter(Boolean).join(' \u00b7 ')}
+        meta={[dateLabel, e.time, e.address].filter(Boolean).join(" \u00b7 ")}
         onPress={() => router.push(`/special-events/${e.id}` as any)}
       />
     );
   }
 
   const kindLabel = entry.memorial
-    ? t('home.eventTypes.memorial')
-    : entry.kind === 'field_service'
-      ? t('home.nextFieldService')
+    ? t("home.eventTypes.memorial")
+    : entry.kind === "field_service"
+      ? t("home.nextFieldService")
       : t(`home.eventTypes.${entry.kind}`);
   const ac = FEED_ACCENT[entry.kind] ?? FEED_ACCENT.midweek;
-  const meta = [entry.time, entry.address].filter(Boolean).join(' \u00b7 ');
+  const meta = [entry.time, entry.address].filter(Boolean).join(" \u00b7 ");
 
   const generalBadge =
-    entry.kind === 'field_service' && entry.isGeneral ? (
+    entry.kind === "field_service" && entry.isGeneral ? (
       <View style={tl.generalBadge}>
         <Ionicons name="people" size={12} color="#7c3aed" />
-        <Text style={tl.generalBadgeText}>{t('fieldService.generalBadge')}</Text>
+        <Text style={tl.generalBadgeText}>
+          {t("fieldService.generalBadge")}
+        </Text>
       </View>
     ) : null;
 
   const fsExtra =
-    entry.kind === 'field_service' ? (
+    entry.kind === "field_service" ? (
       <>
         {generalBadge}
         {/* The group and the visit, in the third and last place a
@@ -502,19 +511,16 @@ function MeetingRow({
           <View style={tl.fsVisitBadge}>
             <Ionicons name="walk" size={12} color="#0e7490" />
             <Text style={tl.fsVisitText}>
-              {t('fieldService.overseerVisitBadge')}
+              {t("fieldService.overseerVisitBadge")}
             </Text>
           </View>
         ) : null}
         {entry.conductorName || entry.unassignedConductor ? (
           <Text
-            style={[
-              tl.bgMeta,
-              entry.unassignedConductor && tl.fsUnassigned,
-            ]}
+            style={[tl.bgMeta, entry.unassignedConductor && tl.fsUnassigned]}
           >
-            {t('fieldService.conductor')}:{' '}
-            {entry.conductorName ?? t('fieldService.unassigned')}
+            {t("fieldService.conductor")}:{" "}
+            {entry.conductorName ?? t("fieldService.unassigned")}
           </Text>
         ) : null}
         {entry.topic ? <Text style={tl.fsTopic}>{entry.topic}</Text> : null}
@@ -525,9 +531,7 @@ function MeetingRow({
             }
             hitSlop={6}
           >
-            <Text style={tl.fsLink}>
-              {t('fieldService.openLink')}
-            </Text>
+            <Text style={tl.fsLink}>{t("fieldService.openLink")}</Text>
           </Pressable>
         ) : null}
       </>
@@ -544,7 +548,7 @@ function MeetingRow({
         meta={null}
         extra={fsExtra}
         cleaning={
-          entry.weeklyCleaning ? t('home.timeline.cleaningAfterMeeting') : null
+          entry.weeklyCleaning ? t("home.timeline.cleaningAfterMeeting") : null
         }
       />
     );
@@ -562,19 +566,17 @@ function MeetingRow({
       {fsExtra}
       {entry.weeklyCleaning ? (
         <Text style={tl.cleaningLine}>
-          {t('home.timeline.cleaningAfterMeeting')}
+          {t("home.timeline.cleaningAfterMeeting")}
         </Text>
       ) : null}
       <View style={tl.partsBox}>
         {entry.myParts.map((p, i) => (
           <View key={i}>
             {p.section && p.section !== entry.myParts[i - 1]?.section ? (
-              <Text style={tl.partSection}>
-                {p.section}
-              </Text>
+              <Text style={tl.partSection}>{p.section}</Text>
             ) : null}
             <Text style={tl.partRow}>
-              {'\u2022 '}
+              {"\u2022 "}
               {p.title}
             </Text>
           </View>
@@ -596,16 +598,10 @@ function TaskRow({ task: r }: { task: RefinedTask }) {
         </View>
         <View style={{ flex: 1 }}>
           {taskSubsectionLabel(r.item, t) ? (
-            <Text style={tl.mineKind}>
-              {taskSubsectionLabel(r.item, t)}
-            </Text>
+            <Text style={tl.mineKind}>{taskSubsectionLabel(r.item, t)}</Text>
           ) : null}
-          <Text style={tl.mineTitle}>
-            {taskTitle(r.item, t)}
-          </Text>
-          <Text style={tl.mineMeta}>
-            {taskMeta(r, t, i18n.language)}
-          </Text>
+          <Text style={tl.mineTitle}>{taskTitle(r.item, t)}</Text>
+          <Text style={tl.mineMeta}>{taskMeta(r, t, i18n.language)}</Text>
         </View>
       </View>
     </MyGlowRow>
@@ -620,17 +616,17 @@ function EventRow({ event: e }: { event: SpecialEvent }) {
   const dateLabel = e.endDate
     ? rangeLabel(start, new Date(`${e.endDate}T00:00:00`), i18n.language)
     : start.toLocaleDateString(i18n.language, {
-        weekday: 'long',
-        day: 'numeric',
-        month: 'long',
+        weekday: "long",
+        day: "numeric",
+        month: "long",
       });
   return (
     <BackgroundRow
       icon={FEED_ACCENT.event.icon}
       accent={FEED_ACCENT.event.color}
-      kindLabel={typeLabel ?? t('home.upcomingEvents')}
+      kindLabel={typeLabel ?? t("home.upcomingEvents")}
       title={e.title}
-      meta={[dateLabel, e.time, e.address].filter(Boolean).join(' \u00b7 ')}
+      meta={[dateLabel, e.time, e.address].filter(Boolean).join(" \u00b7 ")}
       onPress={() => router.push(`/special-events/${e.id}` as any)}
     />
   );
@@ -647,13 +643,9 @@ function AbsenceRow({ absence: a }: { absence: Absence }) {
       <Ionicons name="airplane-outline" size={16} color="#94a3b8" />
       <View style={{ flex: 1 }}>
         <Text style={tl.absenceText}>
-          {t('home.timeline.away')} · {absenceRangeLabel(a, i18n.language)}
+          {t("home.timeline.away")} · {absenceRangeLabel(a, i18n.language)}
         </Text>
-        {a.note ? (
-          <Text style={tl.absenceNote}>
-            {a.note}
-          </Text>
-        ) : null}
+        {a.note ? <Text style={tl.absenceNote}>{a.note}</Text> : null}
       </View>
     </View>
   );
@@ -667,13 +659,15 @@ function AbsenceRow({ absence: a }: { absence: Absence }) {
 function OutgoingTalkRow({ entry }: { entry: OutgoingTalkEntry }) {
   const { t, i18n } = useTranslation();
   const it = entry.task.item;
-  const where = [it.congregationName, it.location].filter(Boolean).join(' \u00b7 ');
+  const where = [it.congregationName, it.location]
+    .filter(Boolean)
+    .join(" \u00b7 ");
   return (
     <MyGlowRow kind="meeting" radius={12} style={tl.mineRow}>
       <View style={tl.mineHead}>
         <Ionicons name="megaphone-outline" size={15} color="#7c3aed" />
-        <Text style={[tl.mineKind, { color: '#7c3aed' }]}>
-          {t('home.timeline.outgoingTalk')}
+        <Text style={[tl.mineKind, { color: "#7c3aed" }]}>
+          {t("home.timeline.outgoingTalk")}
         </Text>
         {it.time ? <Text style={tl.mineMeta}>{it.time}</Text> : null}
       </View>
@@ -684,7 +678,7 @@ function OutgoingTalkRow({ entry }: { entry: OutgoingTalkEntry }) {
           onPress={() => Linking.openURL(it.mapUrl as string).catch(() => {})}
           hitSlop={6}
         >
-          <Text style={tl.fsLink}>{t('home.timeline.openMap')}</Text>
+          <Text style={tl.fsLink}>{t("home.timeline.openMap")}</Text>
         </Pressable>
       ) : null}
       {entry.absence ? (
@@ -703,25 +697,25 @@ function TimelineRow({
   entry: TimelineEntry;
   todayISO: string;
 }) {
-  if (entry.type === 'meeting') {
+  if (entry.type === "meeting") {
     return <MeetingRow entry={entry} todayISO={todayISO} />;
   }
-  if (entry.type === 'task') {
+  if (entry.type === "task") {
     return <TaskRow task={entry.task} />;
   }
-  if (entry.type === 'absence') {
+  if (entry.type === "absence") {
     return <AbsenceRow absence={entry.absence} />;
   }
-  if (entry.type === 'visit') {
+  if (entry.type === "visit") {
     return <VisitBanner event={entry.event} />;
   }
-  if (entry.type === 'co_visit') {
+  if (entry.type === "co_visit") {
     return <CoVisitRow item={entry.item} />;
   }
-  if (entry.type === 'outgoing_talk') {
+  if (entry.type === "outgoing_talk") {
     return <OutgoingTalkRow entry={entry} />;
   }
-  if (entry.type === 'elders_meeting') {
+  if (entry.type === "elders_meeting") {
     return <EldersMeetingRow entry={entry} />;
   }
   return <EventRow event={entry.event} />;
@@ -738,13 +732,13 @@ function EldersMeetingRow({ entry }: { entry: EldersMeetingEntry }) {
   const { t } = useTranslation();
   return (
     <View style={tl.bgRow}>
-      <View style={[tl.kindChip, { backgroundColor: '#EEEDFE' }]}>
+      <View style={[tl.kindChip, { backgroundColor: "#EEEDFE" }]}>
         <Ionicons name="people-outline" size={15} color="#534AB7" />
       </View>
       <View style={{ flex: 1 }}>
-        <Text style={tl.bgTitle}>{t('agenda.homeRow')}</Text>
+        <Text style={tl.bgTitle}>{t("agenda.homeRow")}</Text>
         <Text style={tl.bgMeta}>
-          {[entry.time, entry.place].filter(Boolean).join(' · ')}
+          {[entry.time, entry.place].filter(Boolean).join(" · ")}
         </Text>
       </View>
     </View>
@@ -754,20 +748,20 @@ function EldersMeetingRow({ entry }: { entry: EldersMeetingEntry }) {
 /** kind → title for a CO-visit item (shared by the near row and the far row). */
 function coVisitKindLabel(kind: string, t: (k: string) => string): string {
   switch (kind) {
-    case 'accommodation':
-      return t('coVisit.accTitle');
-    case 'field_service':
-      return t('coVisit.fieldServiceTitle');
-    case 'lunch':
-      return t('coVisit.lunchesTitle');
-    case 'lunch_box':
-      return t('coVisit.lunchBoxTitle');
-    case 'pastoral':
-      return t('coVisit.pastoralTitle');
-    case 'pioneers':
-      return t('coVisit.pioneersTitle');
+    case "accommodation":
+      return t("coVisit.accTitle");
+    case "field_service":
+      return t("coVisit.fieldServiceTitle");
+    case "lunch":
+      return t("coVisit.lunchesTitle");
+    case "lunch_box":
+      return t("coVisit.lunchBoxTitle");
+    case "pastoral":
+      return t("coVisit.pastoralTitle");
+    case "pioneers":
+      return t("coVisit.pioneersTitle");
     default:
-      return t('coVisit.eldersTitle');
+      return t("coVisit.eldersTitle");
   }
 }
 
@@ -775,19 +769,19 @@ function coVisitWithLabel(
   it: MyCoVisitItem,
   t: (k: string) => string,
 ): string | null {
-  if (it.kind === 'accommodation') return t('coVisit.accMine');
-  if (it.kind !== 'field_service' || !it.serviceWith) return null;
-  return it.serviceWith === 'wife'
-    ? t('coVisit.mineWithWife')
-    : it.serviceWith === 'joint'
-      ? t('coVisit.mineJoint')
-      : t('coVisit.mineWithCo');
+  if (it.kind === "accommodation") return t("coVisit.accMine");
+  if (it.kind !== "field_service" || !it.serviceWith) return null;
+  return it.serviceWith === "wife"
+    ? t("coVisit.mineWithWife")
+    : it.serviceWith === "joint"
+      ? t("coVisit.mineJoint")
+      : t("coVisit.mineWithCo");
 }
 
 function coVisitPlace(it: MyCoVisitItem): string {
-  return it.placeKind === 'cart_location'
-    ? (it.cartLocationName ?? '')
-    : (it.placeText ?? '');
+  return it.placeKind === "cart_location"
+    ? (it.cartLocationName ?? "")
+    : (it.placeText ?? "");
 }
 
 /**
@@ -799,13 +793,14 @@ function VisitBanner({ event: e }: { event: SpecialEvent }) {
   const start = new Date(`${e.date}T00:00:00`);
   const range = e.endDate
     ? rangeLabel(start, new Date(`${e.endDate}T00:00:00`), i18n.language)
-    : start.toLocaleDateString(i18n.language, { day: 'numeric', month: 'long' });
+    : start.toLocaleDateString(i18n.language, {
+        day: "numeric",
+        month: "long",
+      });
   const congress = isCongressEvent(e);
   // A convention keeps its own title — the week is named after it, and the
   // type line says what kind of week it is. A visit has a fixed name.
-  const title = congress
-    ? e.title
-    : t('coVisit.mineTitle');
+  const title = congress ? e.title : t("coVisit.mineTitle");
   const typeLabel =
     congress && e.type ? t(`specialEvents.types.${e.type}`, e.type) : null;
   return (
@@ -818,9 +813,9 @@ function VisitBanner({ event: e }: { event: SpecialEvent }) {
       onPress={() => router.push(`/special-events/${e.id}` as any)}
     >
       <Ionicons
-        name={congress ? 'megaphone' : 'briefcase'}
+        name={congress ? "megaphone" : "briefcase"}
         size={18}
-        color={congress ? '#b45309' : '#0e7490'}
+        color={congress ? "#b45309" : "#0e7490"}
       />
       <View style={{ flex: 1 }}>
         {typeLabel ? (
@@ -845,12 +840,12 @@ function CoVisitRow({ item: it }: { item: MyCoVisitItem }) {
   const wl = coVisitWithLabel(it, t);
   const place = coVisitPlace(it);
   const kind: SectionKind =
-    it.kind === 'field_service' ? 'field_service' : 'meeting';
+    it.kind === "field_service" ? "field_service" : "meeting";
   return (
     <MyGlowRow kind={kind} radius={12} style={tl.mineRow}>
       <View style={tl.mineHead}>
         <MyDot size={8} kind={kind} />
-        <Text style={[tl.mineKind, { color: '#0e7490' }]}>
+        <Text style={[tl.mineKind, { color: "#0e7490" }]}>
           {coVisitKindLabel(it.kind, t)}
         </Text>
         {it.startTime ? (
@@ -884,50 +879,50 @@ function HomeTimeline() {
   const mon2 = formatDateISO(addDays(baseMonday, 14));
 
   const overviewQ = useQuery({
-    queryKey: ['meeting-settings'],
+    queryKey: ["meeting-settings"],
     queryFn: () => meetingSettingsApi.getOverview(),
     staleTime: 5 * 60 * 1000,
   });
   const fsA = useQuery({
-    queryKey: ['field-service', mon0],
+    queryKey: ["field-service", mon0],
     queryFn: () => fieldServiceApi.list({ weekStart: mon0 }),
     staleTime: 60 * 1000,
   });
   const fsB = useQuery({
-    queryKey: ['field-service', mon1],
+    queryKey: ["field-service", mon1],
     queryFn: () => fieldServiceApi.list({ weekStart: mon1 }),
     staleTime: 60 * 1000,
   });
   const fsC = useQuery({
-    queryKey: ['field-service', mon2],
+    queryKey: ["field-service", mon2],
     queryFn: () => fieldServiceApi.list({ weekStart: mon2 }),
     staleTime: 60 * 1000,
   });
   const publishersQ = useQuery({
-    queryKey: ['publishers', 'roster'],
+    queryKey: ["publishers", "roster"],
     queryFn: () => publishersApi.roster(),
     staleTime: 5 * 60 * 1000,
   });
   // Group names for the field-service visit line — the timeline can only say
   // «группа Ahlen» if somebody hands it the names.
   const groupsQ = useQuery({
-    queryKey: ['service-groups'],
+    queryKey: ["service-groups"],
     queryFn: () => serviceGroupsApi.list({}),
     staleTime: 30 * 60 * 1000,
   });
   const eventsQ = useQuery({
-    queryKey: ['special-events', 'home'],
+    queryKey: ["special-events", "home"],
     queryFn: () => specialEventsApi.list(),
   });
   const tasksQ = useQuery({
-    queryKey: ['me', 'assignments'],
+    queryKey: ["me", "assignments"],
     queryFn: () => meApi.assignments(),
     enabled: !!user,
     retry: false,
     staleTime: 60 * 1000,
   });
   const absencesQ = useQuery({
-    queryKey: ['absences', 'mine', myPublisherId],
+    queryKey: ["absences", "mine", myPublisherId],
     queryFn: () => absencesApi.list({ publisherId: myPublisherId! }),
     enabled: !!myPublisherId,
     retry: false,
@@ -936,19 +931,19 @@ function HomeTimeline() {
   // The body's own meetings — asked for only by those they concern, and shown
   // only once the agenda has been approved (the builder checks that).
   const eldersMeetingsQ = useQuery({
-    queryKey: ['tasks', 'meetings'],
+    queryKey: ["tasks", "meetings"],
     queryFn: () => tasksApi.meetings(),
-    enabled: user?.role === 'admin' || user?.role === 'elder',
+    enabled: user?.role === "admin" || user?.role === "elder",
     retry: false,
   });
 
   const coVisitQ = useQuery({
-    queryKey: ['co-visit-mine'],
+    queryKey: ["co-visit-mine"],
     queryFn: () => coVisitItemsApi.mine(),
     staleTime: 60 * 1000,
   });
   const coFieldServiceQ = useQuery({
-    queryKey: ['co-visit-field-service'],
+    queryKey: ["co-visit-field-service"],
     queryFn: () => coVisitItemsApi.fieldService(),
     staleTime: 5 * 60 * 1000,
   });
@@ -978,7 +973,7 @@ function HomeTimeline() {
       coFieldService: coFieldServiceQ.data ?? [],
       myItems: tasksQ.data?.items ?? [],
       todayISO,
-      youConductLabel: t('home.feed.youConduct'),
+      youConductLabel: t("home.feed.youConduct"),
       resolvePart: (it) => ({
         section: taskSubsectionLabel(it, t),
         title: taskTitle(it, t),
@@ -1007,7 +1002,7 @@ function HomeTimeline() {
 
   const header = (
     <View style={[styles.sectionHeader, { marginTop: 24 }]}>
-      <Text style={styles.sectionTitle}>{t('home.timeline.title')}</Text>
+      <Text style={styles.sectionTitle}>{t("home.timeline.title")}</Text>
     </View>
   );
 
@@ -1044,7 +1039,7 @@ function HomeTimeline() {
       {header}
       {timeline.near.length === 0 ? (
         <View style={styles.card}>
-          <Text style={styles.muted}>{t('home.timeline.emptyNear')}</Text>
+          <Text style={styles.muted}>{t("home.timeline.emptyNear")}</Text>
         </View>
       ) : (
         timeline.near.map((group) => (
@@ -1069,13 +1064,13 @@ function HomeTimeline() {
             hitSlop={6}
           >
             <Ionicons
-              name={showFar ? 'chevron-up' : 'chevron-down'}
+              name={showFar ? "chevron-up" : "chevron-down"}
               size={18}
               color="#64748b"
             />
-            <Text style={tl.farToggleTitle}>{t('home.timeline.far')}</Text>
+            <Text style={tl.farToggleTitle}>{t("home.timeline.far")}</Text>
             <Text style={tl.farToggleHint}>
-              {t('home.timeline.farHint', { count: farCount })}
+              {t("home.timeline.farHint", { count: farCount })}
             </Text>
           </Pressable>
           {showFar
@@ -1086,7 +1081,11 @@ function HomeTimeline() {
                   </Text>
                   <View style={tl.dayBody}>
                     {group.entries.map((en) => (
-                      <TimelineRow key={en.key} entry={en} todayISO={todayISO} />
+                      <TimelineRow
+                        key={en.key}
+                        entry={en}
+                        todayISO={todayISO}
+                      />
                     ))}
                   </View>
                 </View>
@@ -1098,8 +1097,6 @@ function HomeTimeline() {
   );
 }
 
-
-
 type Tile = {
   key: string;
   label: string;
@@ -1109,18 +1106,38 @@ type Tile = {
 };
 
 export default function HomeScreen() {
+  // Тень у шапки появляется, когда список уезжает под неё.
+  const lift = useHeaderLift();
   const { t } = useTranslation();
   const { user } = useAuth();
   const canSeeDirectory =
-    user?.role === 'admin' ||
-    user?.role === 'elder' ||
+    user?.role === "admin" ||
+    user?.role === "elder" ||
     user?.canViewPrivateData === true;
-  const canManageTasks = user?.role === 'admin' || user?.role === 'elder';
+  const canManageTasks = user?.role === "admin" || user?.role === "elder";
 
   const tiles: Tile[] = [
-    { key: 'report', label: t('home.actions.report'), icon: 'document-text', href: '/service-reports', show: true },
-    { key: 'events', label: t('home.actions.events'), icon: 'megaphone', href: '/special-events', show: true },
-    { key: 'absences', label: t('home.actions.absences'), icon: 'airplane', href: '/absences', show: true },
+    {
+      key: "report",
+      label: t("home.actions.report"),
+      icon: "document-text",
+      href: "/service-reports",
+      show: true,
+    },
+    {
+      key: "events",
+      label: t("home.actions.events"),
+      icon: "megaphone",
+      href: "/special-events",
+      show: true,
+    },
+    {
+      key: "absences",
+      label: t("home.actions.absences"),
+      icon: "airplane",
+      href: "/absences",
+      show: true,
+    },
     // No «Возвещатели» tile for those who can browse the roster: the tab at
     // the bottom already takes them there, and two doors into one room is one
     // door too many on a screen meant for what needs doing today.
@@ -1133,14 +1150,28 @@ export default function HomeScreen() {
     // else. `canSeeDirectory` also lets in anyone granted access to private
     // data, so a servant with that right saw the tile and was then turned
     // away: a door that opens onto a refusal is worse than no door.
-    { key: 'tasks', label: t('home.actions.tasks'), icon: 'checkbox', href: '/tasks', show: canManageTasks },
-    { key: 'myGroup', label: t('home.actions.myGroup'), icon: 'people-circle', href: '/publishers', show: !canSeeDirectory },
+    {
+      key: "tasks",
+      label: t("home.actions.tasks"),
+      icon: "checkbox",
+      href: "/tasks",
+      show: canManageTasks,
+    },
+    {
+      key: "myGroup",
+      label: t("home.actions.myGroup"),
+      icon: "people-circle",
+      href: "/publishers",
+      show: !canSeeDirectory,
+    },
   ];
 
   return (
     <ScrollView
       style={styles.container}
       contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
+      onScroll={lift.onScroll}
+      scrollEventThrottle={lift.scrollEventThrottle}
     >
       <GreetingHeader />
 
@@ -1188,7 +1219,6 @@ export default function HomeScreen() {
       <AttendanceCard />
 
       <HomeTimeline />
-
     </ScrollView>
   );
 }
@@ -1196,15 +1226,15 @@ export default function HomeScreen() {
 const tl = StyleSheet.create({
   dayHeader: {
     fontSize: 13,
-    fontWeight: '700',
-    fontFamily: 'Manrope_700Bold',
-    color: '#475569',
+    fontWeight: "700",
+    fontFamily: "Manrope_700Bold",
+    color: "#475569",
     marginTop: 14,
     marginBottom: 6,
   },
   bgRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
+    flexDirection: "row",
+    alignItems: "flex-start",
     gap: 10,
     paddingVertical: 8,
     paddingHorizontal: 4,
@@ -1217,56 +1247,56 @@ const tl = StyleSheet.create({
     marginTop: 4,
   },
   bgHead: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 5,
     marginBottom: 1,
   },
-  bgKind: { fontSize: 12, fontWeight: '700', fontFamily: 'Manrope_700Bold' },
-  bgTitle: { fontSize: 14, color: '#475569', fontFamily: 'Manrope_500Medium' },
-  bgMeta: { fontSize: 12.5, color: '#94a3b8', marginTop: 1 },
+  bgKind: { fontSize: 12, fontWeight: "700", fontFamily: "Manrope_700Bold" },
+  bgTitle: { fontSize: 14, color: "#475569", fontFamily: "Manrope_500Medium" },
+  bgMeta: { fontSize: 12.5, color: "#94a3b8", marginTop: 1 },
   fsGroup: {
     fontSize: 12.5,
-    color: '#0369a1',
-    fontWeight: '700',
-    fontFamily: 'Manrope_700Bold',
+    color: "#0369a1",
+    fontWeight: "700",
+    fontFamily: "Manrope_700Bold",
     marginTop: 1,
   },
   fsVisitBadge: {
-    flexDirection: 'row',
-    alignSelf: 'flex-start',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignSelf: "flex-start",
+    alignItems: "center",
     gap: 4,
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 999,
-    backgroundColor: '#cffafe',
+    backgroundColor: "#cffafe",
     marginTop: 3,
   },
   fsVisitText: {
     fontSize: 11.5,
-    color: '#0e7490',
-    fontWeight: '700',
-    fontFamily: 'Manrope_700Bold',
+    color: "#0e7490",
+    fontWeight: "700",
+    fontFamily: "Manrope_700Bold",
   },
-  fsUnassigned: { color: '#dc2626' },
+  fsUnassigned: { color: "#dc2626" },
   fsTopic: {
     fontSize: 12.5,
-    color: '#475569',
+    color: "#475569",
     marginTop: 2,
-    fontStyle: 'italic',
+    fontStyle: "italic",
   },
   fsLink: {
     fontSize: 12.5,
-    color: '#0ea5e9',
+    color: "#0ea5e9",
     marginTop: 2,
-    fontWeight: '600',
-    fontFamily: 'Manrope_600SemiBold',
+    fontWeight: "600",
+    fontFamily: "Manrope_600SemiBold",
   },
   mineRow: { padding: 12 },
   mineHead: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 6,
     marginBottom: 3,
   },
@@ -1277,120 +1307,120 @@ const tl = StyleSheet.create({
     // header, so the fix belongs to the style, not to any one of them.
     flexShrink: 1,
     fontSize: 12,
-    fontWeight: '700',
-    fontFamily: 'Manrope_700Bold',
-    color: '#0f172a',
+    fontWeight: "700",
+    fontFamily: "Manrope_700Bold",
+    color: "#0f172a",
   },
   mineTitle: {
     fontSize: 14.5,
-    fontWeight: '700',
-    fontFamily: 'Manrope_700Bold',
-    color: '#0f172a',
+    fontWeight: "700",
+    fontFamily: "Manrope_700Bold",
+    color: "#0f172a",
   },
   mineTime: { flexShrink: 0 },
-  mineMeta: { fontSize: 12.5, color: '#64748b', marginTop: 1 },
+  mineMeta: { fontSize: 12.5, color: "#64748b", marginTop: 1 },
   partsBox: { marginTop: 8, gap: 3 },
   partSection: {
     fontSize: 12,
-    fontWeight: '600',
-    fontFamily: 'Manrope_600SemiBold',
-    color: '#64748b',
+    fontWeight: "600",
+    fontFamily: "Manrope_600SemiBold",
+    color: "#64748b",
     marginTop: 3,
   },
-  partRow: { fontSize: 13.5, color: '#0f172a' },
-  taskHead: { flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
+  partRow: { fontSize: 13.5, color: "#0f172a" },
+  taskHead: { flexDirection: "row", alignItems: "flex-start", gap: 10 },
   kindChip: {
     width: 30,
     height: 30,
     borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   visitBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 10,
-    backgroundColor: '#ecfeff',
+    backgroundColor: "#ecfeff",
     borderWidth: 1,
-    borderColor: '#a5f3fc',
+    borderColor: "#a5f3fc",
     borderRadius: 12,
     paddingVertical: 11,
     paddingHorizontal: 12,
   },
   visitTitle: {
     fontSize: 14,
-    fontWeight: '700',
-    fontFamily: 'Manrope_700Bold',
-    color: '#0e7490',
+    fontWeight: "700",
+    fontFamily: "Manrope_700Bold",
+    color: "#0e7490",
   },
-  visitRange: { fontSize: 12.5, color: '#0891b2', marginTop: 1 },
+  visitRange: { fontSize: 12.5, color: "#0891b2", marginTop: 1 },
   cleaningLine: {
     fontSize: 12.5,
-    color: '#0d9488',
-    fontFamily: 'Manrope_600SemiBold',
+    color: "#0d9488",
+    fontFamily: "Manrope_600SemiBold",
     marginTop: 3,
   },
   talkAway: {
     fontSize: 12.5,
-    color: '#7c3aed',
+    color: "#7c3aed",
     marginTop: 3,
-    fontFamily: 'Manrope_500Medium',
+    fontFamily: "Manrope_500Medium",
   },
   visitType: {
     fontSize: 11.5,
-    fontWeight: '700',
-    fontFamily: 'Manrope_700Bold',
-    color: '#0891b2',
+    fontWeight: "700",
+    fontFamily: "Manrope_700Bold",
+    color: "#0891b2",
     marginBottom: 1,
   },
-  congressBanner: { backgroundColor: '#fffbeb', borderColor: '#fde68a' },
-  congressTitle: { color: '#92400e' },
-  congressText: { color: '#b45309' },
+  congressBanner: { backgroundColor: "#fffbeb", borderColor: "#fde68a" },
+  congressTitle: { color: "#92400e" },
+  congressText: { color: "#b45309" },
   coNote: {
     fontSize: 12.5,
-    color: '#7c3aed',
-    fontFamily: 'Manrope_600SemiBold',
+    color: "#7c3aed",
+    fontFamily: "Manrope_600SemiBold",
     marginTop: 2,
   },
   absenceRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 10,
     paddingVertical: 8,
     paddingHorizontal: 4,
   },
   absenceText: {
     fontSize: 13.5,
-    color: '#64748b',
-    fontFamily: 'Manrope_500Medium',
+    color: "#64748b",
+    fontFamily: "Manrope_500Medium",
   },
-  absenceNote: { fontSize: 12.5, color: '#94a3b8', marginTop: 1 },
+  absenceNote: { fontSize: 12.5, color: "#94a3b8", marginTop: 1 },
   farToggle: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 8,
     marginTop: 18,
     paddingVertical: 8,
     paddingHorizontal: 4,
     borderTopWidth: 0.5,
-    borderTopColor: '#e2e8f0',
+    borderTopColor: "#e2e8f0",
   },
   farToggleTitle: {
     fontSize: 15,
-    fontWeight: '700',
-    fontFamily: 'Manrope_700Bold',
-    color: '#0f172a',
+    fontWeight: "700",
+    fontFamily: "Manrope_700Bold",
+    color: "#0f172a",
   },
-  farToggleHint: { fontSize: 12.5, color: '#94a3b8' },
+  farToggleHint: { fontSize: 12.5, color: "#94a3b8" },
   // A day's rows sit slightly inset, so the eye sees they belong to the
   // header above rather than floating on their own.
   dayBody: { gap: 6, paddingLeft: 10 },
   generalBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    alignSelf: 'flex-start',
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-start",
     gap: 4,
-    backgroundColor: '#f5f3ff',
+    backgroundColor: "#f5f3ff",
     borderRadius: 6,
     paddingHorizontal: 6,
     paddingVertical: 2,
@@ -1398,58 +1428,63 @@ const tl = StyleSheet.create({
   },
   generalBadgeText: {
     fontSize: 11.5,
-    color: '#7c3aed',
-    fontWeight: '600',
-    fontFamily: 'Manrope_600SemiBold',
+    color: "#7c3aed",
+    fontWeight: "600",
+    fontFamily: "Manrope_600SemiBold",
   },
 });
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f8fafc' },
+  container: { flex: 1, backgroundColor: "#f8fafc" },
   greeting: { marginBottom: 14 },
   kindChip: {
     width: 30,
     height: 30,
     borderRadius: 9,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     marginRight: 10,
   },
   feedCard: {
     paddingVertical: 14,
     borderLeftWidth: 4,
     borderRadius: 14,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
-  greetingText: { fontSize: 22, fontWeight: '800', fontFamily: 'Manrope_800ExtraBold', color: '#0f172a' },
+  greetingText: {
+    fontSize: 22,
+    fontWeight: "800",
+    fontFamily: "Manrope_800ExtraBold",
+    color: "#0f172a",
+  },
   greetingDate: {
     fontSize: 13,
-    color: '#94a3b8',
+    color: "#94a3b8",
     marginTop: 2,
-    textTransform: 'capitalize',
+    textTransform: "capitalize",
   },
   // Два значка стоят рядом и переносятся на узком экране, а не жмутся.
-  badgeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 8 },
+  badgeRow: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 8 },
   auxBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    alignSelf: 'flex-start',
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-start",
     gap: 5,
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 999,
-    backgroundColor: '#E1F5EE',
+    backgroundColor: "#E1F5EE",
   },
-  auxBadgeText: { fontSize: 12, fontWeight: '600', color: '#0F6E56' },
+  auxBadgeText: { fontSize: 12, fontWeight: "600", color: "#0F6E56" },
   // Назначение — свой тихий цвет, чтобы не спорить с пионерским значком.
-  appointmentBadge: { backgroundColor: '#EDEAF7' },
-  appointmentBadgeText: { color: '#4C4088' },
+  appointmentBadge: { backgroundColor: "#EDEAF7" },
+  appointmentBadgeText: { color: "#4C4088" },
   // Период ещё впереди — тот же значок, но приглушённый: это не «сейчас».
-  auxBadgeAhead: { backgroundColor: '#E8EFF6' },
-  auxBadgeAheadText: { color: '#3F6C8F' },
+  auxBadgeAhead: { backgroundColor: "#E8EFF6" },
+  auxBadgeAheadText: { color: "#3F6C8F" },
   reportCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 10,
     borderRadius: 12,
     borderWidth: 1,
@@ -1457,156 +1492,216 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     marginTop: 16,
   },
-  reportCardDue: { backgroundColor: '#fffbeb', borderColor: '#fde68a' },
-  reportCardDone: { backgroundColor: '#f0fdf4', borderColor: '#bbf7d0' },
-  reportText: { flex: 1, fontSize: 14, fontWeight: '600', fontFamily: 'Manrope_600SemiBold' },
-  reportTextDue: { color: '#92400e' },
-  reportTextDone: { color: '#166534' },
+  reportCardDue: { backgroundColor: "#fffbeb", borderColor: "#fde68a" },
+  reportCardDone: { backgroundColor: "#f0fdf4", borderColor: "#bbf7d0" },
+  reportText: {
+    flex: 1,
+    fontSize: 14,
+    fontWeight: "600",
+    fontFamily: "Manrope_600SemiBold",
+  },
+  reportTextDue: { color: "#92400e" },
+  reportTextDone: { color: "#166534" },
   actionStrip: { marginHorizontal: -16, marginBottom: 4 },
   actionStripContent: { paddingHorizontal: 16, gap: 14 },
-  actionItem: { alignItems: 'center', width: 78 },
+  actionItem: { alignItems: "center", width: 78 },
   actionCircle: {
     width: 54,
     height: 54,
     borderRadius: 27,
-    backgroundColor: '#e0f2fe',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#e0f2fe",
+    alignItems: "center",
+    justifyContent: "center",
     marginBottom: 5,
   },
   actionLabel: {
     fontSize: 10.5,
-    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
-    color: '#334155',
-    textAlign: 'center',
+    fontWeight: "600",
+    fontFamily: "Manrope_600SemiBold",
+    color: "#334155",
+    textAlign: "center",
     lineHeight: 13,
   },
   sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     marginBottom: 12,
   },
-  sectionTitle: { fontSize: 18, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0f172a' },
-  link: { fontSize: 14, color: '#0ea5e9', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    fontFamily: "Manrope_700Bold",
+    color: "#0f172a",
+  },
+  link: {
+    fontSize: 14,
+    color: "#0ea5e9",
+    fontWeight: "600",
+    fontFamily: "Manrope_600SemiBold",
+  },
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderRadius: 12,
     paddingHorizontal: 14,
   },
-  muted: { color: '#94a3b8', textAlign: 'center', paddingVertical: 20 },
-  meetingHeader: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  feedMine: { borderLeftWidth: 3, borderLeftColor: '#0ea5e9' },
+  muted: { color: "#94a3b8", textAlign: "center", paddingVertical: 20 },
+  meetingHeader: { flexDirection: "row", alignItems: "center", gap: 6 },
+  feedMine: { borderLeftWidth: 3, borderLeftColor: "#0ea5e9" },
   todayChip: {
-    marginLeft: 'auto',
+    marginLeft: "auto",
     fontSize: 10,
-    fontWeight: '700', fontFamily: 'Manrope_700Bold',
-    color: '#0369a1',
-    backgroundColor: '#e0f2fe',
+    fontWeight: "700",
+    fontFamily: "Manrope_700Bold",
+    color: "#0369a1",
+    backgroundColor: "#e0f2fe",
     borderRadius: 8,
     paddingHorizontal: 8,
     paddingVertical: 2,
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
     letterSpacing: 0.4,
   },
   meetingKind: {
     fontSize: 12,
-    fontWeight: '700', fontFamily: 'Manrope_700Bold',
-    color: '#0369a1',
-    textTransform: 'uppercase',
+    fontWeight: "700",
+    fontFamily: "Manrope_700Bold",
+    color: "#0369a1",
+    textTransform: "uppercase",
     letterSpacing: 0.4,
   },
   meetingDate: {
     fontSize: 17,
-    fontWeight: '700', fontFamily: 'Manrope_700Bold',
-    color: '#0f172a',
+    fontWeight: "700",
+    fontFamily: "Manrope_700Bold",
+    color: "#0f172a",
     marginTop: 6,
-    textTransform: 'capitalize',
+    textTransform: "capitalize",
   },
-  meetingMeta: { fontSize: 14, color: '#64748b', marginTop: 2 },
+  meetingMeta: { fontSize: 14, color: "#64748b", marginTop: 2 },
   partsBox: {
     marginTop: 10,
-    backgroundColor: '#f0f9ff',
+    backgroundColor: "#f0f9ff",
     borderRadius: 8,
     padding: 10,
   },
-  partsTitle: { fontSize: 12, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0369a1', marginBottom: 4 },
-  partRow: { fontSize: 14, color: '#0f172a', marginTop: 2 },
+  partsTitle: {
+    fontSize: 12,
+    fontWeight: "700",
+    fontFamily: "Manrope_700Bold",
+    color: "#0369a1",
+    marginBottom: 4,
+  },
+  partRow: { fontSize: 14, color: "#0f172a", marginTop: 2 },
   myPartItem: { marginTop: 6 },
   partSubsection: {
     fontSize: 10,
-    fontWeight: '700', fontFamily: 'Manrope_700Bold',
-    color: '#64748b',
-    textTransform: 'uppercase',
+    fontWeight: "700",
+    fontFamily: "Manrope_700Bold",
+    color: "#64748b",
+    textTransform: "uppercase",
     letterSpacing: 0.4,
     marginBottom: 1,
   },
-  noParts: { fontSize: 13, color: '#94a3b8', marginTop: 10 },
+  noParts: { fontSize: 13, color: "#94a3b8", marginTop: 10 },
   eventRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingVertical: 14,
   },
-  eventRowBorder: { borderTopWidth: 1, borderTopColor: '#f1f5f9' },
-  eventTitle: { fontSize: 15, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0f172a' },
+  eventRowBorder: { borderTopWidth: 1, borderTopColor: "#f1f5f9" },
+  eventTitle: {
+    fontSize: 15,
+    fontWeight: "600",
+    fontFamily: "Manrope_600SemiBold",
+    color: "#0f172a",
+  },
   eventSubsection: {
     fontSize: 11,
-    fontWeight: '700', fontFamily: 'Manrope_700Bold',
-    color: '#64748b',
-    textTransform: 'uppercase',
+    fontWeight: "700",
+    fontFamily: "Manrope_700Bold",
+    color: "#64748b",
+    textTransform: "uppercase",
     letterSpacing: 0.4,
     marginBottom: 2,
   },
-  eventDate: { fontSize: 13, color: '#0369a1', marginTop: 2 },
+  eventDate: { fontSize: 13, color: "#0369a1", marginTop: 2 },
   evBadge: {
     width: 56,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#e0f2fe',
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#e0f2fe",
     borderRadius: 8,
     paddingVertical: 8,
   },
   evBadgeRange: { paddingVertical: 10 },
-  evDay: { fontSize: 20, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0369a1' },
+  evDay: {
+    fontSize: 20,
+    fontWeight: "700",
+    fontFamily: "Manrope_700Bold",
+    color: "#0369a1",
+  },
   evMon: {
     fontSize: 11,
-    color: '#0369a1',
-    textTransform: 'uppercase',
+    color: "#0369a1",
+    textTransform: "uppercase",
     marginTop: 1,
   },
-  evRangeNum: { fontSize: 14, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0369a1' },
+  evRangeNum: {
+    fontSize: 14,
+    fontWeight: "700",
+    fontFamily: "Manrope_700Bold",
+    color: "#0369a1",
+  },
   evTypeTag: {
     fontSize: 11,
-    fontWeight: '700', fontFamily: 'Manrope_700Bold',
-    color: '#0369a1',
-    textTransform: 'uppercase',
+    fontWeight: "700",
+    fontFamily: "Manrope_700Bold",
+    color: "#0369a1",
+    textTransform: "uppercase",
     letterSpacing: 0.4,
     marginBottom: 2,
   },
-  evRange: { fontSize: 13, color: '#0369a1', fontWeight: '500', fontFamily: 'Manrope_500Medium', marginTop: 2 },
-  evMeta: { fontSize: 12, color: '#64748b', marginTop: 2 },
-  fsUnassigned: { color: '#cbd5e1' },
+  evRange: {
+    fontSize: 13,
+    color: "#0369a1",
+    fontWeight: "500",
+    fontFamily: "Manrope_500Medium",
+    marginTop: 2,
+  },
+  evMeta: { fontSize: 12, color: "#64748b", marginTop: 2 },
+  fsUnassigned: { color: "#cbd5e1" },
   fsTopic: {
     fontSize: 13,
-    color: '#64748b',
-    fontStyle: 'italic',
+    color: "#64748b",
+    fontStyle: "italic",
     marginTop: 4,
   },
-  fsLink: { fontSize: 13, color: '#0369a1', fontWeight: '600', fontFamily: 'Manrope_600SemiBold', marginTop: 6 },
+  fsLink: {
+    fontSize: 13,
+    color: "#0369a1",
+    fontWeight: "600",
+    fontFamily: "Manrope_600SemiBold",
+    marginTop: 6,
+  },
   tiles: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
     rowGap: 12,
   },
   tile: {
-    width: '48%',
-    backgroundColor: '#fff',
+    width: "48%",
+    backgroundColor: "#fff",
     borderRadius: 12,
     paddingVertical: 22,
-    alignItems: 'center',
+    alignItems: "center",
     gap: 8,
   },
-  tilePressed: { backgroundColor: '#f1f5f9' },
-  tileLabel: { fontSize: 14, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0f172a' },
+  tilePressed: { backgroundColor: "#f1f5f9" },
+  tileLabel: {
+    fontSize: 14,
+    fontWeight: "600",
+    fontFamily: "Manrope_600SemiBold",
+    color: "#0f172a",
+  },
 });

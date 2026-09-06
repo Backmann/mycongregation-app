@@ -6,10 +6,9 @@ import {
   useState,
   useEffect,
   useRef,
-} from 'react';
+} from "react";
 import {
   ActivityIndicator,
-  
   Animated,
   Platform,
   Pressable,
@@ -19,9 +18,9 @@ import {
   Text,
   useWindowDimensions,
   View,
-} from 'react-native';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { router, useLocalSearchParams } from 'expo-router';
+} from "react-native";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { router, useLocalSearchParams } from "expo-router";
 import {
   Assignment,
   assignmentsApi,
@@ -42,15 +41,16 @@ import {
   specialEventsApi,
   circuitOverseersApi,
   CircuitOverseer,
-} from '../../../lib/api';
+} from "../../../lib/api";
 import {
   addDays,
   addWeeks,
   formatDateISO,
   startOfWeekMonday,
-} from '../../../lib/dates';
-import { useSongsMap, enrichSongRef } from '../../../lib/songs';
-import i18n from '../../../lib/i18n';
+} from "../../../lib/dates";
+import { useSongsMap, enrichSongRef } from "../../../lib/songs";
+import { useHeaderLift } from "../../../lib/header-lift";
+import i18n from "../../../lib/i18n";
 import {
   getEventTypeLabel,
   getPartLabel,
@@ -64,66 +64,63 @@ import {
   type PartInterval,
   Subsection,
   SUBSECTIONS,
-} from '../../../lib/parts';
-import { Ionicons } from '@expo/vector-icons';
-import { UndoBar } from '../../../components/UndoBar';
-import { useTranslation } from 'react-i18next';
-import { WeekNavigator } from '../../../components/WeekNavigator';
-import { WeekDrawer } from '../../../components/WeekDrawer';
+} from "../../../lib/parts";
+import { Ionicons } from "@expo/vector-icons";
+import { UndoBar } from "../../../components/UndoBar";
+import { useTranslation } from "react-i18next";
+import { WeekNavigator } from "../../../components/WeekNavigator";
+import { WeekDrawer } from "../../../components/WeekDrawer";
 import {
   effectiveVersionFor,
   meetingDate,
-} from '../../../lib/meeting-schedule';
-import { exportHtmlAsPdf, openPrintWindow } from '../../../lib/pdf';
+} from "../../../lib/meeting-schedule";
+import { exportHtmlAsPdf, openPrintWindow } from "../../../lib/pdf";
 import {
   buildMeetingSchedulePdfHtml,
   type MeetingPdfWeek,
-} from '../../../lib/meetingSchedulePdf';
+} from "../../../lib/meetingSchedulePdf";
 import {
   buildDutiesSchedulePdfHtml,
   type DutiesPdfSection,
   type DutiesPdfWeek,
   type DutiesPdfRow,
-} from '../../../lib/dutiesSchedulePdf';
+} from "../../../lib/dutiesSchedulePdf";
 import {
   buildCleaningSchedulePdfHtml,
   type CleaningPdfWeek,
   type CleaningPdfRow,
-} from '../../../lib/cleaningSchedulePdf';
+} from "../../../lib/cleaningSchedulePdf";
 import {
   DutiesSection,
   DUTY_ICONS,
   dutyLabel,
-} from '../../../components/DutiesSection';
-import { FieldServiceSection } from '../../../components/FieldServiceSection';
-import { CleaningSection } from '../../../components/CleaningSection';
-import { CongressWeekBanner } from '../../../components/CongressWeekBanner';
-import { usePermissions } from '../../../lib/permissions';
-import { SpecialEventsWeekBanner } from '../../../components/SpecialEventsWeekBanner';
-import { weekRules } from '../../../lib/week-rules';
-import { ReplacedMeetingNotice } from '../../../components/ReplacedMeetingNotice';
-import { MemorialMeetingBlock } from '../../../components/MemorialMeetingBlock';
-import { CollapsibleMeetingBlock } from '../../../components/CollapsibleMeetingBlock';
-import { HospitalityZone } from '../../../components/HospitalityZone';
-import { AssignmentSheet } from '../../../components/AssignmentSheet';
-import { PublishDialog } from '../../../components/PublishDialog';
-import { NotifyChangesDialog } from '../../../components/NotifyChangesDialog';
-import { useMyPublisher } from '../../../lib/useMyPublisher';
-import { MyDot } from '../../../components/MyDot';
-import { useMyGlow } from '../../../components/useMyGlow';
-import { reportError, notify } from '../../../lib/error-bus';
-import { LoadError } from '../../../components/LoadError';
-import {
-  CLEANING_SHADES,
-  SECTION_COLORS,
-} from '../../../lib/section-colors';
+} from "../../../components/DutiesSection";
+import { FieldServiceSection } from "../../../components/FieldServiceSection";
+import { CleaningSection } from "../../../components/CleaningSection";
+import { CongressWeekBanner } from "../../../components/CongressWeekBanner";
+import { usePermissions } from "../../../lib/permissions";
+import { SpecialEventsWeekBanner } from "../../../components/SpecialEventsWeekBanner";
+import { weekRules } from "../../../lib/week-rules";
+import { ReplacedMeetingNotice } from "../../../components/ReplacedMeetingNotice";
+import { MemorialMeetingBlock } from "../../../components/MemorialMeetingBlock";
+import { CollapsibleMeetingBlock } from "../../../components/CollapsibleMeetingBlock";
+import { HospitalityZone } from "../../../components/HospitalityZone";
+import { AssignmentSheet } from "../../../components/AssignmentSheet";
+import { PublishDialog } from "../../../components/PublishDialog";
+import { NotifyChangesDialog } from "../../../components/NotifyChangesDialog";
+import { useMyPublisher } from "../../../lib/useMyPublisher";
+import { MyDot } from "../../../components/MyDot";
+import { useMyGlow } from "../../../components/useMyGlow";
+import { reportError, notify } from "../../../lib/error-bus";
+import { LoadError } from "../../../components/LoadError";
+import { CLEANING_SHADES, SECTION_COLORS } from "../../../lib/section-colors";
 
 const EVENT_TYPE_ORDER: EventType[] = [
-  'midweek',
-  'weekend',
-  'cleaning',
-  'av_duty',
-  'public_witnessing',
+  "midweek",
+  "weekend",
+  "cleaning",
+  "av_duty",
+  "public_witnessing",
 ];
 
 /** Parse ?week=YYYY-MM-DD into a Monday; fall back to current week. */
@@ -140,6 +137,8 @@ function weekFromParam(raw: string | string[] | undefined): Date {
 const AutoAssignedContext = createContext<Set<string>>(new Set());
 
 export default function ScheduleIndexScreen() {
+  // Тень у шапки появляется, когда список уезжает под неё.
+  const lift = useHeaderLift();
   const { t, i18n } = useTranslation();
   const { width } = useWindowDimensions();
   const dutiesNarrow = width < 720;
@@ -151,11 +150,11 @@ export default function ScheduleIndexScreen() {
   const params = useLocalSearchParams<{ week?: string }>();
   const [editing, setEditing] = useState<Assignment | null>(null);
   const [publishPrompt, setPublishPrompt] = useState<{
-    eventType: 'midweek' | 'weekend';
+    eventType: "midweek" | "weekend";
     weekStartDate: string;
   } | null>(null);
   const [notifyPrompt, setNotifyPrompt] = useState<{
-    eventType: 'midweek' | 'weekend';
+    eventType: "midweek" | "weekend";
     weekStartDate: string;
   } | null>(null);
   const weekStart = weekFromParam(params.week);
@@ -166,7 +165,7 @@ export default function ScheduleIndexScreen() {
   const nextWeekISO = formatDateISO(addWeeks(weekStart, 1));
 
   const assignmentsQuery = useQuery({
-    queryKey: ['assignments', weekStartISO],
+    queryKey: ["assignments", weekStartISO],
     queryFn: () =>
       assignmentsApi.list({
         weekStart: weekStartISO,
@@ -175,12 +174,12 @@ export default function ScheduleIndexScreen() {
   });
 
   const specialEventsQuery = useQuery({
-    queryKey: ['special-events', 'all'],
+    queryKey: ["special-events", "all"],
     queryFn: () => specialEventsApi.list({ all: true }),
   });
 
   const circuitOverseersQuery = useQuery({
-    queryKey: ['circuit-overseers'],
+    queryKey: ["circuit-overseers"],
     queryFn: () => circuitOverseersApi.list(),
     enabled: perms.canManageEvents,
   });
@@ -193,10 +192,7 @@ export default function ScheduleIndexScreen() {
       eventId: string;
       c: CircuitOverseer;
     }) => {
-      const coName = [c.firstName, c.lastName]
-        .filter(Boolean)
-        .join(' ')
-        .trim();
+      const coName = [c.firstName, c.lastName].filter(Boolean).join(" ").trim();
       await specialEventsApi.update(eventId, {
         coFirstName: c.firstName,
         coLastName: c.lastName,
@@ -207,9 +203,9 @@ export default function ScheduleIndexScreen() {
       // already loaded here, so the schedule reflects the pick immediately and
       // reliably (independent of any server-side week matching).
       const coKeys = [
-        'co_service_talk',
-        'co_concluding_talk',
-        'public_talk_speaker',
+        "co_service_talk",
+        "co_concluding_talk",
+        "public_talk_speaker",
       ];
       const coParts = (assignmentsQuery.data?.data ?? []).filter(
         (a) => coKeys.includes(a.partKey) && a.speakerName !== coName,
@@ -224,16 +220,16 @@ export default function ScheduleIndexScreen() {
       );
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['special-events'] });
-      queryClient.invalidateQueries({ queryKey: ['assignments'] });
+      queryClient.invalidateQueries({ queryKey: ["special-events"] });
+      queryClient.invalidateQueries({ queryKey: ["assignments"] });
     },
   });
   const publishersQuery = useQuery({
-    queryKey: ['publishers', 'roster'],
+    queryKey: ["publishers", "roster"],
     queryFn: () => publishersApi.roster(),
   });
   const meetingSettingsQuery = useQuery({
-    queryKey: ['meeting-settings'],
+    queryKey: ["meeting-settings"],
     queryFn: () => meetingSettingsApi.getOverview(),
   });
   const meetingVersion = effectiveVersionFor(
@@ -251,7 +247,7 @@ export default function ScheduleIndexScreen() {
       const sunISO = formatDateISO(addDays(new Date(weekStartISO2), 6));
       return (allSpecialEvents ?? []).find(
         (e) =>
-          e.type === 'circuit_overseer_visit' &&
+          e.type === "circuit_overseer_visit" &&
           e.date <= sunISO &&
           (e.endDate ?? e.date) >= weekStartISO2,
       );
@@ -259,9 +255,9 @@ export default function ScheduleIndexScreen() {
     [allSpecialEvents],
   );
   const drawerDowForWeek = useCallback(
-    (weekStartISO2: string, k: 'midweek' | 'weekend'): number | null => {
+    (weekStartISO2: string, k: "midweek" | "weekend"): number | null => {
       const v = effectiveVersionFor(settingsVersions, weekStartISO2);
-      if (k === 'weekend') return v?.weekendDow ?? null;
+      if (k === "weekend") return v?.weekendDow ?? null;
       const visit = coVisitForWeek(weekStartISO2);
       if (visit) return visit.coMidweekDow ?? 2;
       return v?.midweekDow ?? null;
@@ -277,15 +273,15 @@ export default function ScheduleIndexScreen() {
   // week loads — on remount `initiallyOpen` reopens the right one, and the
   // counter handles the case where the sections stay mounted.
   const [meetingFocus, setMeetingFocus] = useState<{
-    kind: 'midweek' | 'weekend';
+    kind: "midweek" | "weekend";
     weekISO: string;
     n: number;
   } | null>(null);
-  const focusOn = (k: 'midweek' | 'weekend') =>
+  const focusOn = (k: "midweek" | "weekend") =>
     meetingFocus?.kind === k && meetingFocus.weekISO === weekStartISO;
 
   const absencesQuery = useQuery({
-    queryKey: ['absences', 'schedule'],
+    queryKey: ["absences", "schedule"],
     queryFn: () => absencesApi.list(),
   });
   const {
@@ -296,7 +292,7 @@ export default function ScheduleIndexScreen() {
     canEditWeekendSchedule,
   } = usePermissions();
   const dutiesQuery = useQuery({
-    queryKey: ['duties', weekStartISO],
+    queryKey: ["duties", weekStartISO],
     queryFn: () =>
       dutiesApi.list({ weekStart: weekStartISO, weekEnd: nextWeekISO }),
   });
@@ -305,31 +301,31 @@ export default function ScheduleIndexScreen() {
     mutationFn: (v: { id: string; customLabel: string }) =>
       dutiesApi.renamePlace(v.id, v.customLabel),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['duties', weekStartISO] });
+      queryClient.invalidateQueries({ queryKey: ["duties", weekStartISO] });
     },
   });
   const movePlaceMutation = useMutation({
-    mutationFn: (v: { id: string; direction: 'up' | 'down' }) =>
+    mutationFn: (v: { id: string; direction: "up" | "down" }) =>
       dutiesApi.movePlace(v.id, v.direction),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['duties', weekStartISO] });
+      queryClient.invalidateQueries({ queryKey: ["duties", weekStartISO] });
     },
   });
   const removePlaceMutation = useMutation({
     mutationFn: (id: string) => dutiesApi.removePlace(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['duties', weekStartISO] });
+      queryClient.invalidateQueries({ queryKey: ["duties", weekStartISO] });
     },
   });
   const generateDutiesMutation = useMutation({
     mutationFn: (eventType: EventType) =>
       dutiesApi.generate({ weekStartDate: weekStartISO, eventType }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['duties', weekStartISO] });
+      queryClient.invalidateQueries({ queryKey: ["duties", weekStartISO] });
     },
   });
   const activityQuery = useQuery({
-    queryKey: ['publisher-activity', weekStartISO],
+    queryKey: ["publisher-activity", weekStartISO],
     queryFn: () =>
       publisherActivityApi.getActivity({ weekStart: weekStartISO, weeks: 13 }),
   });
@@ -337,18 +333,18 @@ export default function ScheduleIndexScreen() {
   for (const a of activityQuery.data ?? []) activityById.set(a.publisherId, a);
 
   const invalidateDuties = () => {
-    queryClient.invalidateQueries({ queryKey: ['duties', weekStartISO] });
+    queryClient.invalidateQueries({ queryKey: ["duties", weekStartISO] });
     queryClient.invalidateQueries({
-      queryKey: ['publisher-activity', weekStartISO],
+      queryKey: ["publisher-activity", weekStartISO],
     });
   };
   const showDutyWarnings = (warnings: string[]) => {
     if (warnings.length === 0) return;
-    const body = warnings.map((w) => t(`duties.warnings.${w}`)).join('\n');
-    if (Platform.OS === 'web') {
-      window.alert(`${t('duties.warningsTitle')}\n\n${body}`);
+    const body = warnings.map((w) => t(`duties.warnings.${w}`)).join("\n");
+    if (Platform.OS === "web") {
+      window.alert(`${t("duties.warningsTitle")}\n\n${body}`);
     } else {
-      notify(t('duties.warningsTitle'), body);
+      notify(t("duties.warningsTitle"), body);
     }
   };
   const assignDutyMutation = useMutation({
@@ -374,7 +370,7 @@ export default function ScheduleIndexScreen() {
   });
 
   const fieldServiceQuery = useQuery({
-    queryKey: ['field-service', weekStartISO],
+    queryKey: ["field-service", weekStartISO],
     queryFn: () => fieldServiceApi.list({ weekStart: weekStartISO }),
   });
   const fieldServiceMeetings = fieldServiceQuery.data ?? [];
@@ -382,7 +378,7 @@ export default function ScheduleIndexScreen() {
   // visit schedule, not here, so this section stood empty exactly when there
   // was the most going on. Shown, not edited: these belong to the visit.
   const coVisitFieldServiceQuery = useQuery({
-    queryKey: ['co-visit-field-service'],
+    queryKey: ["co-visit-field-service"],
     queryFn: () => coVisitItemsApi.fieldService(),
     staleTime: 5 * 60 * 1000,
   });
@@ -392,18 +388,18 @@ export default function ScheduleIndexScreen() {
     .filter((m) => m.itemDate >= weekStartISO && m.itemDate <= weekEndISO);
   const invalidateFieldService = () => {
     queryClient.invalidateQueries({
-      queryKey: ['field-service'],
+      queryKey: ["field-service"],
     });
     queryClient.invalidateQueries({
-      queryKey: ['field-service-conductor-stats'],
+      queryKey: ["field-service-conductor-stats"],
     });
     queryClient.invalidateQueries({
-      queryKey: ['field-service-topic-history'],
+      queryKey: ["field-service-topic-history"],
     });
     // Same reason as on the field-service screen: the overseer's group counts
     // are derived from these meetings, and a meeting can be saved from here
     // too. Two places save, so two places must refresh.
-    queryClient.invalidateQueries({ queryKey: ['service-overseer'] });
+    queryClient.invalidateQueries({ queryKey: ["service-overseer"] });
   };
   const createFieldServiceMutation = useMutation({
     mutationFn: (input: Parameters<typeof fieldServiceApi.create>[0]) =>
@@ -423,7 +419,7 @@ export default function ScheduleIndexScreen() {
   });
 
   const cleaningQuery = useQuery({
-    queryKey: ['cleaning', weekStartISO],
+    queryKey: ["cleaning", weekStartISO],
     queryFn: () => cleaningApi.getWeek(weekStartISO),
   });
   const cleaningWeek = cleaningQuery.data ?? {
@@ -431,10 +427,10 @@ export default function ScheduleIndexScreen() {
     suggestedAfterMeetingGroupId: null,
   };
   const invalidateCleaning = () =>
-    queryClient.invalidateQueries({ queryKey: ['cleaning', weekStartISO] });
+    queryClient.invalidateQueries({ queryKey: ["cleaning", weekStartISO] });
   const setCleaningSlotMutation = useMutation({
     mutationFn: (vars: {
-      slotType: Parameters<typeof cleaningApi.setSlot>[0]['slotType'];
+      slotType: Parameters<typeof cleaningApi.setSlot>[0]["slotType"];
       serviceGroupId: string | null;
       windows?: number[] | null;
     }) =>
@@ -456,7 +452,7 @@ export default function ScheduleIndexScreen() {
    * BEFORE the row goes.
    */
   const [clearedSlot, setClearedSlot] = useState<{
-    slotType: Parameters<typeof cleaningApi.setSlot>[0]['slotType'];
+    slotType: Parameters<typeof cleaningApi.setSlot>[0]["slotType"];
     serviceGroupId: string | null;
     windows: number[] | null;
   } | null>(null);
@@ -486,12 +482,14 @@ export default function ScheduleIndexScreen() {
         partKey: p.key,
         partOrder: p.defaultOrder,
         partDurationMin: p.defaultDurationMin || undefined,
-        status: 'draft',
+        status: "draft",
       }));
       return assignmentsApi.bulkCreate(inputs);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['assignments', weekStartISO] });
+      queryClient.invalidateQueries({
+        queryKey: ["assignments", weekStartISO],
+      });
     },
   });
 
@@ -501,20 +499,23 @@ export default function ScheduleIndexScreen() {
   const addChristianLifeMut = useMutation({
     mutationFn: async () => {
       const cache = queryClient.getQueryData<{ data: Assignment[] }>([
-        'assignments',
+        "assignments",
         weekStartISO,
       ]);
       const midweek = (cache?.data ?? []).filter(
-        (a) => a.eventType === 'midweek',
+        (a) => a.eventType === "midweek",
       );
       const cl = midweek.filter(
-        (a) => resolveSubsection(a.partKey) === 'christian_life',
+        (a) => resolveSubsection(a.partKey) === "christian_life",
       );
-      const living = cl.filter((a) => a.partKey.startsWith('living_christians'));
-      const cbs = cl.filter((a) => a.partKey.startsWith('cbs'));
+      const living = cl.filter((a) =>
+        a.partKey.startsWith("living_christians"),
+      );
+      const cbs = cl.filter((a) => a.partKey.startsWith("cbs"));
       let anchor: number;
       if (living.length) anchor = Math.max(...living.map((a) => a.partOrder));
-      else if (cbs.length) anchor = Math.min(...cbs.map((a) => a.partOrder)) - 1;
+      else if (cbs.length)
+        anchor = Math.min(...cbs.map((a) => a.partOrder)) - 1;
       else if (cl.length) anchor = Math.max(...cl.map((a) => a.partOrder));
       else anchor = 10;
       const newOrder = anchor + 1;
@@ -526,16 +527,16 @@ export default function ScheduleIndexScreen() {
       }
       return assignmentsApi.create({
         weekStartDate: weekStartISO,
-        eventType: 'midweek',
-        partKey: 'living_christians_extra',
+        eventType: "midweek",
+        partKey: "living_christians_extra",
         partOrder: newOrder,
-        partTitle: '',
+        partTitle: "",
         partDurationMin: 5,
-        status: 'draft',
+        status: "draft",
       });
     },
     onSuccess: (created) => {
-      queryClient.invalidateQueries({ queryKey: ['assignments'] });
+      queryClient.invalidateQueries({ queryKey: ["assignments"] });
       setEditing(created);
     },
   });
@@ -546,20 +547,24 @@ export default function ScheduleIndexScreen() {
   const assignments = assignmentsQuery.data?.data ?? [];
   // Prayer slots that currently mirror the chairman (rule on) -> "авто" badge.
   const automationOn =
-    meetingSettingsQuery.data?.congregation.assignmentAutomationEnabled ?? false;
+    meetingSettingsQuery.data?.congregation.assignmentAutomationEnabled ??
+    false;
   const autoAssignedIds: Set<string> = (() => {
     const ids = new Set<string>();
     if (!automationOn) return ids;
     const chairmen = new Map<string, string | null>();
     for (const a of assignments) {
-      if (a.partKey === 'midweek_chairman' || a.partKey === 'weekend_chairman') {
+      if (
+        a.partKey === "midweek_chairman" ||
+        a.partKey === "weekend_chairman"
+      ) {
         chairmen.set(`${a.weekStartDate}|${a.eventType}`, a.publisherId);
       }
     }
     for (const a of assignments) {
       const isPrayer =
-        a.partKey === 'midweek_closing_prayer' ||
-        a.partKey === 'weekend_opening_prayer';
+        a.partKey === "midweek_closing_prayer" ||
+        a.partKey === "weekend_opening_prayer";
       if (!isPrayer || !a.publisherId) continue;
       const chair = chairmen.get(`${a.weekStartDate}|${a.eventType}`);
       if (chair && a.publisherId === chair) ids.add(a.id);
@@ -572,15 +577,15 @@ export default function ScheduleIndexScreen() {
     if (!automationOn) return ids;
     const treasuresByWeek = new Map<string, string | null>();
     for (const a of assignments) {
-      if (a.partKey === 'treasures_talk' && a.eventType === 'midweek') {
+      if (a.partKey === "treasures_talk" && a.eventType === "midweek") {
         treasuresByWeek.set(a.weekStartDate, a.publisherId);
       }
     }
     for (const d of duties) {
       if (
-        d.dutyType === 'microphone' &&
+        d.dutyType === "microphone" &&
         d.slotIndex === 0 &&
-        d.eventType === 'midweek' &&
+        d.eventType === "midweek" &&
         d.publisherId &&
         treasuresByWeek.get(d.weekStartDate) === d.publisherId
       ) {
@@ -623,12 +628,12 @@ export default function ScheduleIndexScreen() {
     [weekStartISO, meetingVersion, specialEvents],
   );
   const coVisitEvent = rules.coVisit ?? undefined;
-  const dowFor = (kind: 'midweek' | 'weekend') => rules.dowOf(kind);
-  const midweekReplacedBy = rules.replacedBy('midweek');
-  const weekendReplacedBy = rules.replacedBy('weekend');
+  const dowFor = (kind: "midweek" | "weekend") => rules.dowOf(kind);
+  const midweekReplacedBy = rules.replacedBy("midweek");
+  const weekendReplacedBy = rules.replacedBy("weekend");
   // Absence visibility: publishers away on each meeting's actual calendar day.
-  const mwDow = dowFor('midweek');
-  const weDow = dowFor('weekend');
+  const mwDow = dowFor("midweek");
+  const weDow = dowFor("weekend");
   const midweekDateISO = mwDow
     ? formatDateISO(addDays(weekStart, mwDow - 1))
     : null;
@@ -661,8 +666,8 @@ export default function ScheduleIndexScreen() {
     // The Memorial is one of them: its duties are ordinary duties of a third
     // kind of meeting, and without it here the column would sit empty for
     // ever — nothing else creates them.
-    const meetings: DutyMeeting[] = ['midweek', 'weekend'];
-    if (rules.memorial) meetings.push('memorial');
+    const meetings: DutyMeeting[] = ["midweek", "weekend"];
+    if (rules.memorial) meetings.push("memorial");
     for (const m of meetings) {
       // ONE question: is this meeting held at all. It used to be assembled
       // here from congress + the flag, and the Memorial was in neither — so
@@ -670,7 +675,7 @@ export default function ScheduleIndexScreen() {
       // had already taken away, and the refusal came back as a red strip to
       // somebody who had merely opened the page.
       // The Memorial is never «taken away» — it IS the event that takes.
-      if (m !== 'memorial' && rules.isTakenAway(m)) continue;
+      if (m !== "memorial" && rules.isTakenAway(m)) continue;
       // Past meetings are frozen — generating there would only be rejected.
       if (meetingLocked(m)) continue;
       const has = duties.some((d) => d.eventType === m);
@@ -699,9 +704,9 @@ export default function ScheduleIndexScreen() {
     ? {
         displayName: [coVisitEvent.coFirstName, coVisitEvent.coLastName]
           .filter(Boolean)
-          .join(' ')
+          .join(" ")
           .trim(),
-        role: coVisitEvent.coRole ?? 'overseer',
+        role: coVisitEvent.coRole ?? "overseer",
       }
     : null;
 
@@ -713,8 +718,8 @@ export default function ScheduleIndexScreen() {
       ? {
           overseers: circuitOverseersQuery.data,
           current: {
-            firstName: coVisitEvent.coFirstName ?? '',
-            lastName: coVisitEvent.coLastName ?? '',
+            firstName: coVisitEvent.coFirstName ?? "",
+            lastName: coVisitEvent.coLastName ?? "",
           },
           pending: coPickMutation.isPending,
           onPick: (c: CircuitOverseer) =>
@@ -724,23 +729,22 @@ export default function ScheduleIndexScreen() {
   // Songs are not assigned to a person, so they must not count toward the
   // progress badge (otherwise meetings always look under-filled).
   const BADGE_SONG_KEYS = new Set<string>([
-    'mid_song',
-    'weekend_song',
-    'weekend_opening_song',
+    "mid_song",
+    "weekend_song",
+    "weekend_opening_song",
   ]);
   const badgeParts = (list: Assignment[]) =>
     list.filter((x) => !BADGE_SONG_KEYS.has(x.partKey));
   const assignedCount = (list: Assignment[]) =>
-    badgeParts(list).filter(
-      (x) => x.publisherId && x.status !== 'cancelled',
-    ).length;
+    badgeParts(list).filter((x) => x.publisherId && x.status !== "cancelled")
+      .length;
   const meetingDateLabel = (kind: DutyMeeting): string | null => {
-    if (kind === 'memorial') {
+    if (kind === "memorial") {
       const iso = rules.memorial?.date;
       if (!iso) return null;
       const when = new Date(`${iso}T00:00:00`).toLocaleDateString(
         i18n.language,
-        { weekday: 'long', day: 'numeric', month: 'long' },
+        { weekday: "long", day: "numeric", month: "long" },
       );
       return rules.memorial?.time ? `${when} · ${rules.memorial.time}` : when;
     }
@@ -750,32 +754,31 @@ export default function ScheduleIndexScreen() {
     const dateStr = addDays(weekStart, dow - 1).toLocaleDateString(
       i18n.language,
       {
-        weekday: 'long',
-        day: 'numeric',
-        month: 'long',
+        weekday: "long",
+        day: "numeric",
+        month: "long",
       },
     );
     const rawTime =
-      kind === 'midweek'
+      kind === "midweek"
         ? meetingVersion.midweekTime
         : meetingVersion.weekendTime;
-    const time = (rawTime || '').slice(0, 5);
+    const time = (rawTime || "").slice(0, 5);
     return time ? `${dateStr} · ${time}` : dateStr;
   };
-  const meetingAddress = (): string | null =>
-    meetingVersion?.address || null;
+  const meetingAddress = (): string | null => meetingVersion?.address || null;
 
   // Duties on a phone are stacked, so whichever meeting is still ahead goes on
   // top — a brother opening the section lands on the one he needs instead of
   // filling in the wrong meeting. A meeting counts as "ahead" for the whole of
   // its day, so the cards don't swap places during the meeting itself. Wide
   // screens keep the two columns in their familiar order.
-  type DutyMeeting = 'midweek' | 'weekend' | 'memorial';
+  type DutyMeeting = "midweek" | "weekend" | "memorial";
   const meetingDateISO = (kind: DutyMeeting): string | null => {
     // The Memorial keeps its OWN date on the event: it does not follow the
     // congregation's meeting days, and asking the settings for it would give
     // the day of a meeting that is not being held.
-    if (kind === 'memorial') return rules.memorial?.date ?? null;
+    if (kind === "memorial") return rules.memorial?.date ?? null;
     const dow = dowFor(kind);
     return dow ? formatDateISO(addDays(weekStart, dow - 1)) : null;
   };
@@ -792,20 +795,21 @@ export default function ScheduleIndexScreen() {
     // the right, which reads wrong for a Monday evening.
     const show = rules.memorial && !congressThisWeek;
     const base: DutyMeeting[] = [];
-    for (const m of ['midweek', 'weekend'] as const) {
+    for (const m of ["midweek", "weekend"] as const) {
       if (rules.memorialTakes === m) {
-        if (show) base.push('memorial');
+        if (show) base.push("memorial");
         continue; // the meeting itself is not held, so it gets no column
       }
       base.push(m);
     }
     // A Memorial that takes neither — it cannot happen while the rules stand,
     // but a column is better than silence if it ever does.
-    if (show && !base.includes('memorial')) base.push('memorial');
+    if (show && !base.includes("memorial")) base.push("memorial");
     if (!dutiesNarrow) return base;
     const dated = base.map((m) => ({
       m,
-      iso: m === 'memorial' ? (rules.memorial?.date ?? null) : meetingDateISO(m),
+      iso:
+        m === "memorial" ? (rules.memorial?.date ?? null) : meetingDateISO(m),
     }));
     if (dated.some((d) => !d.iso)) return base;
     return dated
@@ -832,8 +836,8 @@ export default function ScheduleIndexScreen() {
   ]);
   // Which meeting is still ahead — computed on its own, not from the order, so
   // the marker is right in the two-column layout too.
-  const nextDutyMeeting = ((): 'midweek' | 'weekend' | null => {
-    const ahead = (['midweek', 'weekend'] as const)
+  const nextDutyMeeting = ((): "midweek" | "weekend" | null => {
+    const ahead = (["midweek", "weekend"] as const)
       .map((m) => ({ m, iso: meetingDateISO(m) }))
       .filter((x) => !!x.iso && x.iso >= todayISO)
       .sort((a, b) => a.iso!.localeCompare(b.iso!));
@@ -852,10 +856,10 @@ export default function ScheduleIndexScreen() {
   // (parts × weeks) for the congregation notice board. Uses the month that the
   // currently viewed week belongs to.
   const [printingMonth, setPrintingMonth] = useState(false);
-  const printMonthMeeting = async (kind: 'midweek' | 'weekend') => {
+  const printMonthMeeting = async (kind: "midweek" | "weekend") => {
     if (!meetingVersion) return;
     const dow =
-      kind === 'midweek'
+      kind === "midweek"
         ? meetingVersion.midweekDow
         : meetingVersion.weekendDow;
     if (!dow) return;
@@ -891,7 +895,7 @@ export default function ScheduleIndexScreen() {
         const satISO = formatDateISO(addDays(mon, 5));
         const sunISO = formatDateISO(addDays(mon, 6));
         return events.find((e) => {
-          if (e.type !== 'regional_convention' && e.type !== 'circuit_assembly')
+          if (e.type !== "regional_convention" && e.type !== "circuit_assembly")
             return false;
           const end = e.endDate ?? e.date;
           // Covers the meeting day, or (for the weekend) the Sat/Sun span.
@@ -904,13 +908,16 @@ export default function ScheduleIndexScreen() {
       const fmtRange = (start: string, end: string | null): string => {
         const s = new Date(`${start}T00:00:00`).toLocaleDateString(
           i18n.language,
-          { day: 'numeric', month: 'long' },
+          { day: "numeric", month: "long" },
         );
         if (!end || end === start) return s;
-        const e = new Date(`${end}T00:00:00`).toLocaleDateString(i18n.language, {
-          day: 'numeric',
-          month: 'long',
-        });
+        const e = new Date(`${end}T00:00:00`).toLocaleDateString(
+          i18n.language,
+          {
+            day: "numeric",
+            month: "long",
+          },
+        );
         return `${s} — ${e}`;
       };
 
@@ -921,13 +928,13 @@ export default function ScheduleIndexScreen() {
         const monISO = formatDateISO(mon);
         const sunISO = formatDateISO(addDays(mon, 6));
         return events.find((e) => {
-          if (e.type !== 'circuit_overseer_visit') return false;
+          if (e.type !== "circuit_overseer_visit") return false;
           const end = e.endDate ?? e.date;
           return e.date <= sunISO && end >= monISO; // visit overlaps this week
         });
       };
       const dowForWeek = (mon: Date): number => {
-        if (kind !== 'midweek') return dow;
+        if (kind !== "midweek") return dow;
         const visit = visitForWeek(mon);
         if (visit) return visit.coMidweekDow ?? 2; // default Tuesday
         return dow;
@@ -936,15 +943,15 @@ export default function ScheduleIndexScreen() {
       const weeks: MeetingPdfWeek[] = mondays.map((mon) => {
         const congress = congressForWeek(mon);
         const weekDow = dowForWeek(mon);
-        const visit = kind === 'midweek' ? visitForWeek(mon) : undefined;
+        const visit = kind === "midweek" ? visitForWeek(mon) : undefined;
         return {
           weekStartDate: formatDateISO(mon),
           meetingDateLabel: meetingDate(mon, weekDow).toLocaleDateString(
             i18n.language,
-            { day: 'numeric', month: 'long' },
+            { day: "numeric", month: "long" },
           ),
           headerNote:
-            visit && !congress ? t('schedule.print.coVisitNote') : null,
+            visit && !congress ? t("schedule.print.coVisitNote") : null,
           event: congress
             ? {
                 typeLabel: t(`specialEvents.types.${congress.type}`),
@@ -982,7 +989,7 @@ export default function ScheduleIndexScreen() {
       // timeline the on-screen schedule shows (chairman, middle song and the
       // CBS reader deliberately get none, but still consume their minutes).
       const timeById = new Map<string, string>();
-      if (kind === 'midweek') {
+      if (kind === "midweek") {
         for (const w of weeks) {
           const items = rows
             .filter((a) => a.weekStartDate === w.weekStartDate)
@@ -1005,35 +1012,38 @@ export default function ScheduleIndexScreen() {
       // always use the generic label; only workbook parts (talks, apply-yourself
       // assignments, living-as-Christians) take their real name from partTitle.
       const FIXED_NAME_PARTS = new Set<string>([
-        'midweek_chairman',
-        'midweek_opening_prayer',
-        'midweek_closing_prayer',
-        'bible_reading',
-        'cbs_conductor',
-        'cbs_reader',
-        'co_service_talk',
-        'weekend_chairman',
-        'weekend_opening_prayer',
-        'weekend_closing_prayer',
+        "midweek_chairman",
+        "midweek_opening_prayer",
+        "midweek_closing_prayer",
+        "bible_reading",
+        "cbs_conductor",
+        "cbs_reader",
+        "co_service_talk",
+        "weekend_chairman",
+        "weekend_opening_prayer",
+        "weekend_closing_prayer",
       ]);
-      const realPartName = (partKey: string, partTitle: string | null): string => {
+      const realPartName = (
+        partKey: string,
+        partTitle: string | null,
+      ): string => {
         // Watchtower reader shows just "Чтец"; the conductor's theme is prefixed
         // with "Сторожевая Башня:" so the board reader knows what it belongs to.
-        if (partKey === 'watchtower_reader') {
-          return t('schedule.weekend.reader');
+        if (partKey === "watchtower_reader") {
+          return t("schedule.weekend.reader");
         }
-        if (partKey === 'watchtower_conductor') {
+        if (partKey === "watchtower_conductor") {
           const theme = partTitle
-            ? partTitle.indexOf(': ') > 0
-              ? partTitle.slice(partTitle.indexOf(': ') + 2)
+            ? partTitle.indexOf(": ") > 0
+              ? partTitle.slice(partTitle.indexOf(": ") + 2)
               : partTitle
             : null;
-          const prefix = t('schedule.print.watchtowerPrefix');
+          const prefix = t("schedule.print.watchtowerPrefix");
           return theme ? `${prefix}: ${theme}` : prefix;
         }
         if (FIXED_NAME_PARTS.has(partKey)) return getPartLabel(partKey);
         if (partTitle) {
-          const idx = partTitle.indexOf(': ');
+          const idx = partTitle.indexOf(": ");
           if (idx > 0) return partTitle.slice(0, idx);
           return partTitle;
         }
@@ -1043,9 +1053,15 @@ export default function ScheduleIndexScreen() {
       // Sections in display order with their accent colors and part keys.
       const partDefs = PARTS_BY_EVENT[kind] ?? [];
       const order: string[] =
-        kind === 'midweek'
-          ? ['opening', 'treasures', 'apply_yourself', 'christian_life']
-          : ['opening', 'public_talk', 'watchtower', 'concluding_talk', 'closing'];
+        kind === "midweek"
+          ? ["opening", "treasures", "apply_yourself", "christian_life"]
+          : [
+              "opening",
+              "public_talk",
+              "watchtower",
+              "concluding_talk",
+              "closing",
+            ];
       const keysBySection = new Map<string, string[]>();
       for (const p of partDefs) {
         const sub = resolveSubsection(p.key);
@@ -1087,13 +1103,13 @@ export default function ScheduleIndexScreen() {
       };
 
       const monthLabel = viewedMeeting.toLocaleDateString(i18n.language, {
-        month: 'long',
-        year: 'numeric',
+        month: "long",
+        year: "numeric",
       });
       const time = (
-        (kind === 'midweek'
+        (kind === "midweek"
           ? meetingVersion.midweekTime
-          : meetingVersion.weekendTime) || ''
+          : meetingVersion.weekendTime) || ""
       ).slice(0, 5);
       const html = buildMeetingSchedulePdfHtml({
         eventType: kind,
@@ -1110,23 +1126,23 @@ export default function ScheduleIndexScreen() {
         compact: weeks.length >= 5,
         labels: {
           title:
-            kind === 'midweek'
-              ? t('schedule.print.midweekTitle')
-              : t('schedule.print.weekendTitle'),
+            kind === "midweek"
+              ? t("schedule.print.midweekTitle")
+              : t("schedule.print.weekendTitle"),
           subtitleDow:
             mondays.length > 0
               ? meetingDate(mondays[0], dow).toLocaleDateString(i18n.language, {
-                  weekday: 'long',
+                  weekday: "long",
                 })
-              : '',
-          emptyCell: '—',
+              : "",
+          emptyCell: "—",
         },
       });
       await exportHtmlAsPdf(html, {
         fileName:
-          kind === 'midweek'
-            ? t('schedule.print.midweekTitle')
-            : t('schedule.print.weekendTitle'),
+          kind === "midweek"
+            ? t("schedule.print.midweekTitle")
+            : t("schedule.print.weekendTitle"),
         preopenedWindow: win,
       });
     } catch (e) {
@@ -1171,7 +1187,7 @@ export default function ScheduleIndexScreen() {
         const sunISO = formatDateISO(addDays(mon, 6));
         const midISO = formatDateISO(addDays(mon, 3));
         const c = events.find((e) => {
-          if (e.type !== 'regional_convention' && e.type !== 'circuit_assembly')
+          if (e.type !== "regional_convention" && e.type !== "circuit_assembly")
             return false;
           const end = e.endDate ?? e.date;
           return (
@@ -1192,23 +1208,23 @@ export default function ScheduleIndexScreen() {
         id ? (publishersById.get(id)?.displayName ?? null) : null;
 
       const dutyColorOf = (dutyType: string): string =>
-        DUTY_ICONS[dutyType]?.color ?? '#64748b';
+        DUTY_ICONS[dutyType]?.color ?? "#64748b";
 
       // Build one section (midweek/weekend).
       const buildSection = (
-        kind: 'midweek' | 'weekend',
+        kind: "midweek" | "weekend",
         title: string,
         accent: string,
       ): DutiesPdfSection => {
         const dow =
-          kind === 'midweek'
+          kind === "midweek"
             ? meetingVersion.midweekDow
             : meetingVersion.weekendDow;
         const weeks: DutiesPdfWeek[] = mondays.map((mon) => ({
           weekStartDate: formatDateISO(mon),
           label: meetingDate(mon, dow ?? 3).toLocaleDateString(i18n.language, {
-            day: 'numeric',
-            month: 'short',
+            day: "numeric",
+            month: "short",
           }),
           note: congressNote(mon),
         }));
@@ -1232,18 +1248,18 @@ export default function ScheduleIndexScreen() {
         }
         // Sort rows by duty order then slot for a stable layout.
         const order = [
-          'security',
-          'attendant',
-          'microphone',
-          'av',
-          'zoom',
-          'stage',
-          'ventilation',
-          'custom',
+          "security",
+          "attendant",
+          "microphone",
+          "av",
+          "zoom",
+          "stage",
+          "ventilation",
+          "custom",
         ];
         rowOrder.sort((a, b) => {
-          const [ta, sa] = a.split('|');
-          const [tb, sb] = b.split('|');
+          const [ta, sa] = a.split("|");
+          const [tb, sb] = b.split("|");
           const oa = order.indexOf(ta);
           const ob = order.indexOf(tb);
           return (
@@ -1261,13 +1277,13 @@ export default function ScheduleIndexScreen() {
 
       const sections: DutiesPdfSection[] = [
         buildSection(
-          'midweek',
-          getEventTypeLabel('midweek'),
+          "midweek",
+          getEventTypeLabel("midweek"),
           SECTION_COLORS.duty.color,
         ),
         buildSection(
-          'weekend',
-          getEventTypeLabel('weekend'),
+          "weekend",
+          getEventTypeLabel("weekend"),
           SECTION_COLORS.duty.color,
         ),
       ].filter((s) => s.rows.length > 0);
@@ -1278,8 +1294,8 @@ export default function ScheduleIndexScreen() {
       }
 
       const monthLabel = firstOfMonth.toLocaleDateString(i18n.language, {
-        month: 'long',
-        year: 'numeric',
+        month: "long",
+        year: "numeric",
       });
       const html = buildDutiesSchedulePdfHtml({
         sections,
@@ -1288,13 +1304,13 @@ export default function ScheduleIndexScreen() {
         monthLabel,
         locale: i18n.language,
         labels: {
-          title: t('schedule.tabs.duties'),
-          dutyColumn: t('duties.dutyColumn'),
-          emptyCell: '—',
+          title: t("schedule.tabs.duties"),
+          dutyColumn: t("duties.dutyColumn"),
+          emptyCell: "—",
         },
       });
       await exportHtmlAsPdf(html, {
-        fileName: t('schedule.tabs.duties'),
+        fileName: t("schedule.tabs.duties"),
         preopenedWindow: win,
       });
     } catch (e) {
@@ -1332,7 +1348,7 @@ export default function ScheduleIndexScreen() {
         const sunISO = formatDateISO(addDays(mon, 6));
         const midISO = formatDateISO(addDays(mon, 3));
         const c = events.find((e) => {
-          if (e.type !== 'regional_convention' && e.type !== 'circuit_assembly')
+          if (e.type !== "regional_convention" && e.type !== "circuit_assembly")
             return false;
           const end = e.endDate ?? e.date;
           return (
@@ -1374,9 +1390,9 @@ export default function ScheduleIndexScreen() {
       });
 
       const slotDefs: { slot: string; color: string }[] = [
-        { slot: 'after_meeting', color: CLEANING_SHADES.after_meeting },
-        { slot: 'thorough', color: CLEANING_SHADES.thorough },
-        { slot: 'general', color: CLEANING_SHADES.general },
+        { slot: "after_meeting", color: CLEANING_SHADES.after_meeting },
+        { slot: "thorough", color: CLEANING_SHADES.thorough },
+        { slot: "general", color: CLEANING_SHADES.general },
       ];
 
       const months = monthsInQuarter.map((monthIdx) => {
@@ -1384,10 +1400,10 @@ export default function ScheduleIndexScreen() {
         const weeks: CleaningPdfWeek[] = mondays.map((mon) => {
           const sun = addDays(mon, 6);
           const label = `${mon.toLocaleDateString(i18n.language, {
-            day: 'numeric',
+            day: "numeric",
           })}–${sun.toLocaleDateString(i18n.language, {
-            day: 'numeric',
-            month: 'short',
+            day: "numeric",
+            month: "short",
           })}`;
           return {
             weekStartDate: formatDateISO(mon),
@@ -1403,8 +1419,8 @@ export default function ScheduleIndexScreen() {
             const a = (wk?.assignments ?? []).find((x) => x.slotType === slot);
             if (!a) {
               valueByWeek[iso] = null;
-            } else if (slot === 'general') {
-              valueByWeek[iso] = t('cleaning.allCongregation');
+            } else if (slot === "general") {
+              valueByWeek[iso] = t("cleaning.allCongregation");
             } else {
               const g = a.serviceGroupId
                 ? groupsById.get(a.serviceGroupId)
@@ -1417,7 +1433,7 @@ export default function ScheduleIndexScreen() {
         return {
           monthLabel: new Date(year, monthIdx, 1).toLocaleDateString(
             i18n.language,
-            { month: 'long', year: 'numeric' },
+            { month: "long", year: "numeric" },
           ),
           weeks,
           rows,
@@ -1427,12 +1443,13 @@ export default function ScheduleIndexScreen() {
       // Period label, e.g. "Август — Октябрь 2026".
       const startName = new Date(year, quarterStartMonth, 1).toLocaleDateString(
         i18n.language,
-        { month: 'long' },
+        { month: "long" },
       );
-      const endName = new Date(year, quarterStartMonth + 2, 1).toLocaleDateString(
-        i18n.language,
-        { month: 'long' },
-      );
+      const endName = new Date(
+        year,
+        quarterStartMonth + 2,
+        1,
+      ).toLocaleDateString(i18n.language, { month: "long" });
       const periodLabel = `${startName} — ${endName} ${year}`;
 
       const html = buildCleaningSchedulePdfHtml({
@@ -1442,13 +1459,13 @@ export default function ScheduleIndexScreen() {
         periodLabel,
         locale: i18n.language,
         labels: {
-          title: t('cleaning.title'),
-          slotColumn: t('cleaning.slotColumn'),
-          emptyCell: '—',
+          title: t("cleaning.title"),
+          slotColumn: t("cleaning.slotColumn"),
+          emptyCell: "—",
         },
       });
       await exportHtmlAsPdf(html, {
-        fileName: t('cleaning.title'),
+        fileName: t("cleaning.title"),
         preopenedWindow: win,
       });
     } catch (e) {
@@ -1460,21 +1477,21 @@ export default function ScheduleIndexScreen() {
     }
   };
   const draftCount = (list: Assignment[]) =>
-    list.filter((x) => String(x.status) === 'draft').length;
+    list.filter((x) => String(x.status) === "draft").length;
   const changedCount = (list: Assignment[]) =>
     list.filter((x) => x.changedSincePublish).length;
   const publishMeetingNow = async (
-    eventType: 'midweek' | 'weekend',
+    eventType: "midweek" | "weekend",
     weekStartDate: string,
     notify = true,
   ) => {
     setPublishingType(eventType);
     try {
       await assignmentsApi.publish({ weekStartDate, eventType, notify });
-      await queryClient.invalidateQueries({ queryKey: ['assignments'] });
+      await queryClient.invalidateQueries({ queryKey: ["assignments"] });
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
-      if (typeof window !== 'undefined' && typeof window.alert === 'function') {
+      if (typeof window !== "undefined" && typeof window.alert === "function") {
         window.alert(msg);
       }
     } finally {
@@ -1482,16 +1499,16 @@ export default function ScheduleIndexScreen() {
     }
   };
   const notifyChangesNow = async (
-    eventType: 'midweek' | 'weekend',
+    eventType: "midweek" | "weekend",
     weekStartDate: string,
   ) => {
     setNotifyingType(eventType);
     try {
       await assignmentsApi.notifyChanges({ weekStartDate, eventType });
-      await queryClient.invalidateQueries({ queryKey: ['assignments'] });
+      await queryClient.invalidateQueries({ queryKey: ["assignments"] });
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
-      if (typeof window !== 'undefined' && typeof window.alert === 'function') {
+      if (typeof window !== "undefined" && typeof window.alert === "function") {
         window.alert(msg);
       }
     } finally {
@@ -1509,569 +1526,584 @@ export default function ScheduleIndexScreen() {
         ? assignmentsApi.update(v.existing.id, { publisherId: v.publisherId })
         : assignmentsApi.create({
             weekStartDate: v.weekStartDate,
-            eventType: 'weekend',
-            partKey: 'weekend_hospitality',
+            eventType: "weekend",
+            partKey: "weekend_hospitality",
             partOrder: 99,
-            partTitle: 'Гостеприимство',
+            partTitle: "Гостеприимство",
             publisherId: v.publisherId,
-            status: 'draft',
+            status: "draft",
           }),
     onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: ['assignments'] }),
+      queryClient.invalidateQueries({ queryKey: ["assignments"] }),
   });
 
-  const hasMidweek = (grouped.get('midweek')?.length ?? 0) > 0;
-  const hasWeekend = (grouped.get('weekend')?.length ?? 0) > 0;
+  const hasMidweek = (grouped.get("midweek")?.length ?? 0) > 0;
+  const hasWeekend = (grouped.get("weekend")?.length ?? 0) > 0;
   const isEmpty = assignments.length === 0;
   const canEditEditing =
     editing == null
       ? false
-      : editing.eventType === 'weekend'
+      : editing.eventType === "weekend"
         ? canEditWeekendSchedule
-        : editing.eventType === 'midweek'
+        : editing.eventType === "midweek"
           ? canEditMidweekSchedule
           : perms.isAdmin;
-
 
   return (
     <AutoAssignedContext.Provider value={autoAssignedIds}>
       <View style={styles.container}>
-      <WeekNavigator
-        weekStart={weekStart}
-        onChange={setWeekStart}
-        onOpenDrawer={() => setDrawerOpen(true)}
-      />
-      <WeekDrawer
-        visible={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
-        currentWeekStart={weekStart}
-        onPick={(ws, k) => {
-          setWeekStart(ws);
-          setMeetingFocus({
-            kind: k,
-            weekISO: formatDateISO(ws),
-            n: Date.now(),
-          });
-        }}
-        dowForWeek={drawerDowForWeek}
-        isCoVisitWeek={drawerIsCoVisitWeek}
-      />
-      <AssignmentSheet
-        assignment={editing}
-        weekStartISO={weekStartISO}
-        canEdit={canEditEditing}
-        circuitOverseer={circuitOverseer}
-        coPicker={coPicker}
-        onClose={() => setEditing(null)}
-      />
-      <PublishDialog
-        open={!!publishPrompt}
-        busy={publishingType === publishPrompt?.eventType}
-        onPublish={(notify) => {
-          if (publishPrompt) {
-            void publishMeetingNow(
-              publishPrompt.eventType,
-              publishPrompt.weekStartDate,
-              notify,
-            );
-          }
-          setPublishPrompt(null);
-        }}
-        onCancel={() => setPublishPrompt(null)}
-      />
-      <NotifyChangesDialog
-        open={!!notifyPrompt}
-        busy={
-          notifyingType === notifyPrompt?.eventType ||
-          publishingType === notifyPrompt?.eventType
-        }
-        onConfirm={(notify) => {
-          if (notifyPrompt) {
-            if (notify) {
-              void notifyChangesNow(
-                notifyPrompt.eventType,
-                notifyPrompt.weekStartDate,
-              );
-            } else {
-              // Silent: a no-notify re-publish clears the "changed since
-              // publish" flags without sending any push.
+        <WeekNavigator
+          weekStart={weekStart}
+          onChange={setWeekStart}
+          onOpenDrawer={() => setDrawerOpen(true)}
+        />
+        <WeekDrawer
+          visible={drawerOpen}
+          onClose={() => setDrawerOpen(false)}
+          currentWeekStart={weekStart}
+          onPick={(ws, k) => {
+            setWeekStart(ws);
+            setMeetingFocus({
+              kind: k,
+              weekISO: formatDateISO(ws),
+              n: Date.now(),
+            });
+          }}
+          dowForWeek={drawerDowForWeek}
+          isCoVisitWeek={drawerIsCoVisitWeek}
+        />
+        <AssignmentSheet
+          assignment={editing}
+          weekStartISO={weekStartISO}
+          canEdit={canEditEditing}
+          circuitOverseer={circuitOverseer}
+          coPicker={coPicker}
+          onClose={() => setEditing(null)}
+        />
+        <PublishDialog
+          open={!!publishPrompt}
+          busy={publishingType === publishPrompt?.eventType}
+          onPublish={(notify) => {
+            if (publishPrompt) {
               void publishMeetingNow(
-                notifyPrompt.eventType,
-                notifyPrompt.weekStartDate,
-                false,
+                publishPrompt.eventType,
+                publishPrompt.weekStartDate,
+                notify,
               );
             }
+            setPublishPrompt(null);
+          }}
+          onCancel={() => setPublishPrompt(null)}
+        />
+        <NotifyChangesDialog
+          open={!!notifyPrompt}
+          busy={
+            notifyingType === notifyPrompt?.eventType ||
+            publishingType === notifyPrompt?.eventType
           }
-          setNotifyPrompt(null);
-        }}
-        onCancel={() => setNotifyPrompt(null)}
-      />
-
-      <ScrollView
-        contentContainerStyle={{ paddingBottom: 32 }}
-        refreshControl={
-          <RefreshControl
-            refreshing={assignmentsQuery.isRefetching}
-            onRefresh={() => assignmentsQuery.refetch()}
-          />
-        }
-      >
-        {assignmentsQuery.error && (
-          <View style={styles.errorBox}>
-            <Text style={styles.errorText}>
-              {extractErrorMessage(assignmentsQuery.error)}
-            </Text>
-          </View>
-        )}
-
-        {assignmentsQuery.isLoading ? (
-          <ActivityIndicator size="large" style={{ marginTop: 32 }} />
-        ) : assignmentsQuery.isError ? (
-          // Without this the week simply looked empty — as if nothing had been
-          // scheduled — when in fact the data never arrived.
-          <LoadError onRetry={() => assignmentsQuery.refetch()} />
-        ) : (
-          <>
-            <SpecialEventsWeekBanner events={weekEvents} />
-            {congressThisWeek && (
-              <CongressWeekBanner event={congressThisWeek} />
-            )}
-            {EVENT_TYPE_ORDER.map((eventType) => {
-              const items = grouped.get(eventType) ?? [];
-              if (
-                congressThisWeek &&
-                (eventType === 'midweek' || eventType === 'weekend')
-              ) {
-                return null;
-              }
-              // BEFORE the emptiness check on purpose: on a Memorial week
-              // there are no assignments for the meeting it takes — the
-              // workbook has not been imported that far ahead — and the block
-              // must still appear. It is the meeting of that week.
-              if (
-                rules.memorialTakes === eventType &&
-                rules.memorial &&
-                !congressThisWeek
-              ) {
-                return (
-                  <MemorialMeetingBlock
-                    key="memorial"
-                    event={rules.memorial}
-                    canEdit={perms.isAdmin || perms.isElder}
-                    hiddenCount={items.length}
-                    duties={duties}
-                    publishersById={publishersById}
-                  />
+          onConfirm={(notify) => {
+            if (notifyPrompt) {
+              if (notify) {
+                void notifyChangesNow(
+                  notifyPrompt.eventType,
+                  notifyPrompt.weekStartDate,
+                );
+              } else {
+                // Silent: a no-notify re-publish clears the "changed since
+                // publish" flags without sending any push.
+                void publishMeetingNow(
+                  notifyPrompt.eventType,
+                  notifyPrompt.weekStartDate,
+                  false,
                 );
               }
-              if (items.length === 0) return null;
-              const numbers = buildPartNumbers(items);
-              const partTimes =
-                eventType === 'midweek'
-                  ? buildMidweekPartTimes(
-                      items,
-                      meetingSettingsQuery.data?.effective?.midweekTime,
-                    )
-                  : eventType === 'weekend'
-                    ? buildWeekendPartTimes(
+            }
+            setNotifyPrompt(null);
+          }}
+          onCancel={() => setNotifyPrompt(null)}
+        />
+
+        <ScrollView
+          contentContainerStyle={{ paddingBottom: 32 }}
+          onScroll={lift.onScroll}
+          scrollEventThrottle={lift.scrollEventThrottle}
+          refreshControl={
+            <RefreshControl
+              refreshing={assignmentsQuery.isRefetching}
+              onRefresh={() => assignmentsQuery.refetch()}
+            />
+          }
+        >
+          {assignmentsQuery.error && (
+            <View style={styles.errorBox}>
+              <Text style={styles.errorText}>
+                {extractErrorMessage(assignmentsQuery.error)}
+              </Text>
+            </View>
+          )}
+
+          {assignmentsQuery.isLoading ? (
+            <ActivityIndicator size="large" style={{ marginTop: 32 }} />
+          ) : assignmentsQuery.isError ? (
+            // Without this the week simply looked empty — as if nothing had been
+            // scheduled — when in fact the data never arrived.
+            <LoadError onRetry={() => assignmentsQuery.refetch()} />
+          ) : (
+            <>
+              <SpecialEventsWeekBanner events={weekEvents} />
+              {congressThisWeek && (
+                <CongressWeekBanner event={congressThisWeek} />
+              )}
+              {EVENT_TYPE_ORDER.map((eventType) => {
+                const items = grouped.get(eventType) ?? [];
+                if (
+                  congressThisWeek &&
+                  (eventType === "midweek" || eventType === "weekend")
+                ) {
+                  return null;
+                }
+                // BEFORE the emptiness check on purpose: on a Memorial week
+                // there are no assignments for the meeting it takes — the
+                // workbook has not been imported that far ahead — and the block
+                // must still appear. It is the meeting of that week.
+                if (
+                  rules.memorialTakes === eventType &&
+                  rules.memorial &&
+                  !congressThisWeek
+                ) {
+                  return (
+                    <MemorialMeetingBlock
+                      key="memorial"
+                      event={rules.memorial}
+                      canEdit={perms.isAdmin || perms.isElder}
+                      hiddenCount={items.length}
+                      duties={duties}
+                      publishersById={publishersById}
+                    />
+                  );
+                }
+                if (items.length === 0) return null;
+                const numbers = buildPartNumbers(items);
+                const partTimes =
+                  eventType === "midweek"
+                    ? buildMidweekPartTimes(
                         items,
-                        meetingSettingsQuery.data?.effective?.weekendTime,
+                        meetingSettingsQuery.data?.effective?.midweekTime,
                       )
-                    : null;
-              if (eventType === 'midweek' && midweekReplacedBy) {
-                return (
-                  <ReplacedMeetingNotice
-                    key="midweek"
-                    event={midweekReplacedBy}
-                    eventType="midweek"
-                    hiddenCount={items.length}
-                  />
-                );
-              }
-              if (eventType === 'weekend' && weekendReplacedBy) {
-                return (
-                  <ReplacedMeetingNotice
-                    key="weekend"
-                    event={weekendReplacedBy}
-                    eventType="weekend"
-                    hiddenCount={items.length}
-                  />
-                );
-              }
-              if (eventType === 'midweek') {
-                return (
-                  <CollapsibleMeetingBlock
-                    key="midweek"
-                    initiallyOpen={focusOn('midweek')}
-                    openSignal={focusOn('midweek') ? meetingFocus?.n : undefined}
-                    accent={SECTION_COLORS.meeting.color}
-                    icon="calendar-outline"
-                    title={getEventTypeLabel('midweek')}
-                    meta={meetingDateLabel('midweek')}
-                    metaAddress={meetingAddress()}
-                    onPrint={
-                      perms.isElder || perms.isAdmin
-                        ? () => printMonthMeeting('midweek')
-                        : undefined
-                    }
-                    printBusy={printingMonth}
-                    assigned={assignedCount(items)}
-                    total={badgeParts(items).length}
-                    actionLabel={
-                      !perms.canEditMidweekSchedule
-                        ? undefined
-                        : draftCount(items) > 0
-                          ? t('schedule.publish.button')
-                          : changedCount(items) > 0
-                            ? t('schedule.notifyChanges.button')
-                            : undefined
-                    }
-                    actionBusy={
-                      publishingType === 'midweek' ||
-                      notifyingType === 'midweek'
-                    }
-                    onAction={() =>
-                      draftCount(items) > 0
-                        ? setPublishPrompt({
-                            eventType: 'midweek',
-                            weekStartDate: items[0].weekStartDate,
-                          })
-                        : setNotifyPrompt({
-                            eventType: 'midweek',
-                            weekStartDate: items[0].weekStartDate,
-                          })
-                    }
-                  >
-                    <MidweekSections
-                      canEdit={perms.canEditMidweekSchedule}
-                      onEdit={setEditing}
-                      onAddChristianLife={() => addChristianLifeMut.mutate()}
-                      addingChristianLife={addChristianLifeMut.isPending}
-                      items={items}
-                      numbers={numbers}
-                      times={partTimes}
-                      publishersById={publishersById}
-                      absentIds={midweekAbsentIds}
+                    : eventType === "weekend"
+                      ? buildWeekendPartTimes(
+                          items,
+                          meetingSettingsQuery.data?.effective?.weekendTime,
+                        )
+                      : null;
+                if (eventType === "midweek" && midweekReplacedBy) {
+                  return (
+                    <ReplacedMeetingNotice
+                      key="midweek"
+                      event={midweekReplacedBy}
+                      eventType="midweek"
+                      hiddenCount={items.length}
                     />
-                  </CollapsibleMeetingBlock>
-                );
-              }
-              if (eventType === 'weekend') {
-                const hospitality =
-                  items.find((a) => a.partKey === 'weekend_hospitality') ??
-                  null;
-                const programItems = items.filter(
-                  (a) => a.partKey !== 'weekend_hospitality',
-                );
-                return (
-                  <CollapsibleMeetingBlock
-                    key="weekend"
-                    initiallyOpen={focusOn('weekend')}
-                    openSignal={focusOn('weekend') ? meetingFocus?.n : undefined}
-                    accent={SECTION_COLORS.meeting.color}
-                    icon="calendar-outline"
-                    title={getEventTypeLabel('weekend')}
-                    meta={meetingDateLabel('weekend')}
-                    metaAddress={meetingAddress()}
-                    onPrint={
-                      perms.isElder || perms.isAdmin
-                        ? () => printMonthMeeting('weekend')
-                        : undefined
-                    }
-                    printBusy={printingMonth}
-                    assigned={assignedCount(programItems)}
-                    total={badgeParts(programItems).length}
-                    actionLabel={
-                      !perms.canEditWeekendSchedule
-                        ? undefined
-                        : draftCount(items) > 0
-                          ? t('schedule.publish.button')
-                          : changedCount(items) > 0
-                            ? t('schedule.notifyChanges.button')
-                            : undefined
-                    }
-                    actionBusy={
-                      publishingType === 'weekend' ||
-                      notifyingType === 'weekend'
-                    }
-                    onAction={() =>
-                      draftCount(items) > 0
-                        ? setPublishPrompt({
-                            eventType: 'weekend',
-                            weekStartDate: items[0].weekStartDate,
-                          })
-                        : setNotifyPrompt({
-                            eventType: 'weekend',
-                            weekStartDate: items[0].weekStartDate,
-                          })
-                    }
-                  >
-                    <WeekendSections
-                      canEdit={perms.canEditWeekendSchedule}
-                      items={programItems}
-                      numbers={numbers}
-                      times={partTimes}
-                      publishersById={publishersById}
-                      onEdit={setEditing}
-                      absentIds={weekendAbsentIds}
+                  );
+                }
+                if (eventType === "weekend" && weekendReplacedBy) {
+                  return (
+                    <ReplacedMeetingNotice
+                      key="weekend"
+                      event={weekendReplacedBy}
+                      eventType="weekend"
+                      hiddenCount={items.length}
                     />
-                    <HospitalityZone
-                      hospitality={hospitality}
-                      canEdit={perms.canEditWeekendSchedule}
-                      publishersById={publishersById}
-                      activityById={activityById}
-                      weekStartISO={weekStartISO}
-                      onChange={(publisherId) =>
-                        hospitalityMutation.mutate({
-                          existing: hospitality,
-                          publisherId,
-                          weekStartDate: items[0].weekStartDate,
-                        })
+                  );
+                }
+                if (eventType === "midweek") {
+                  return (
+                    <CollapsibleMeetingBlock
+                      key="midweek"
+                      initiallyOpen={focusOn("midweek")}
+                      openSignal={
+                        focusOn("midweek") ? meetingFocus?.n : undefined
                       }
-                    />
-                  </CollapsibleMeetingBlock>
-                );
-              }
-              return (
-                <View key={eventType} style={styles.section}>
-                  <Text style={styles.sectionTitle}>
-                    {getEventTypeLabel(eventType)} ({items.length})
-                  </Text>
-                  <View style={styles.sectionBody}>
-                    {items.map((a) => (
-                      <AssignmentRow
-                        key={a.id}
-                        assignment={a}
+                      accent={SECTION_COLORS.meeting.color}
+                      icon="calendar-outline"
+                      title={getEventTypeLabel("midweek")}
+                      meta={meetingDateLabel("midweek")}
+                      metaAddress={meetingAddress()}
+                      onPrint={
+                        perms.isElder || perms.isAdmin
+                          ? () => printMonthMeeting("midweek")
+                          : undefined
+                      }
+                      printBusy={printingMonth}
+                      assigned={assignedCount(items)}
+                      total={badgeParts(items).length}
+                      actionLabel={
+                        !perms.canEditMidweekSchedule
+                          ? undefined
+                          : draftCount(items) > 0
+                            ? t("schedule.publish.button")
+                            : changedCount(items) > 0
+                              ? t("schedule.notifyChanges.button")
+                              : undefined
+                      }
+                      actionBusy={
+                        publishingType === "midweek" ||
+                        notifyingType === "midweek"
+                      }
+                      onAction={() =>
+                        draftCount(items) > 0
+                          ? setPublishPrompt({
+                              eventType: "midweek",
+                              weekStartDate: items[0].weekStartDate,
+                            })
+                          : setNotifyPrompt({
+                              eventType: "midweek",
+                              weekStartDate: items[0].weekStartDate,
+                            })
+                      }
+                    >
+                      <MidweekSections
+                        canEdit={perms.canEditMidweekSchedule}
                         onEdit={setEditing}
-                        canEdit={perms.isAdmin}
-                        publisher={
-                          a.publisherId
-                            ? publishersById.get(a.publisherId) ?? null
-                            : null
-                        }
-                        assistant={
-                          a.assistantPublisherId
-                            ? publishersById.get(a.assistantPublisherId) ?? null
-                            : null
-                        }
-                        displayNumber={numbers.get(a.id) ?? null}
+                        onAddChristianLife={() => addChristianLifeMut.mutate()}
+                        addingChristianLife={addChristianLifeMut.isPending}
+                        items={items}
+                        numbers={numbers}
+                        times={partTimes}
+                        publishersById={publishersById}
+                        absentIds={midweekAbsentIds}
                       />
+                    </CollapsibleMeetingBlock>
+                  );
+                }
+                if (eventType === "weekend") {
+                  const hospitality =
+                    items.find((a) => a.partKey === "weekend_hospitality") ??
+                    null;
+                  const programItems = items.filter(
+                    (a) => a.partKey !== "weekend_hospitality",
+                  );
+                  return (
+                    <CollapsibleMeetingBlock
+                      key="weekend"
+                      initiallyOpen={focusOn("weekend")}
+                      openSignal={
+                        focusOn("weekend") ? meetingFocus?.n : undefined
+                      }
+                      accent={SECTION_COLORS.meeting.color}
+                      icon="calendar-outline"
+                      title={getEventTypeLabel("weekend")}
+                      meta={meetingDateLabel("weekend")}
+                      metaAddress={meetingAddress()}
+                      onPrint={
+                        perms.isElder || perms.isAdmin
+                          ? () => printMonthMeeting("weekend")
+                          : undefined
+                      }
+                      printBusy={printingMonth}
+                      assigned={assignedCount(programItems)}
+                      total={badgeParts(programItems).length}
+                      actionLabel={
+                        !perms.canEditWeekendSchedule
+                          ? undefined
+                          : draftCount(items) > 0
+                            ? t("schedule.publish.button")
+                            : changedCount(items) > 0
+                              ? t("schedule.notifyChanges.button")
+                              : undefined
+                      }
+                      actionBusy={
+                        publishingType === "weekend" ||
+                        notifyingType === "weekend"
+                      }
+                      onAction={() =>
+                        draftCount(items) > 0
+                          ? setPublishPrompt({
+                              eventType: "weekend",
+                              weekStartDate: items[0].weekStartDate,
+                            })
+                          : setNotifyPrompt({
+                              eventType: "weekend",
+                              weekStartDate: items[0].weekStartDate,
+                            })
+                      }
+                    >
+                      <WeekendSections
+                        canEdit={perms.canEditWeekendSchedule}
+                        items={programItems}
+                        numbers={numbers}
+                        times={partTimes}
+                        publishersById={publishersById}
+                        onEdit={setEditing}
+                        absentIds={weekendAbsentIds}
+                      />
+                      <HospitalityZone
+                        hospitality={hospitality}
+                        canEdit={perms.canEditWeekendSchedule}
+                        publishersById={publishersById}
+                        activityById={activityById}
+                        weekStartISO={weekStartISO}
+                        onChange={(publisherId) =>
+                          hospitalityMutation.mutate({
+                            existing: hospitality,
+                            publisherId,
+                            weekStartDate: items[0].weekStartDate,
+                          })
+                        }
+                      />
+                    </CollapsibleMeetingBlock>
+                  );
+                }
+                return (
+                  <View key={eventType} style={styles.section}>
+                    <Text style={styles.sectionTitle}>
+                      {getEventTypeLabel(eventType)} ({items.length})
+                    </Text>
+                    <View style={styles.sectionBody}>
+                      {items.map((a) => (
+                        <AssignmentRow
+                          key={a.id}
+                          assignment={a}
+                          onEdit={setEditing}
+                          canEdit={perms.isAdmin}
+                          publisher={
+                            a.publisherId
+                              ? (publishersById.get(a.publisherId) ?? null)
+                              : null
+                          }
+                          assistant={
+                            a.assistantPublisherId
+                              ? (publishersById.get(a.assistantPublisherId) ??
+                                null)
+                              : null
+                          }
+                          displayNumber={numbers.get(a.id) ?? null}
+                        />
+                      ))}
+                    </View>
+                  </View>
+                );
+              })}
+
+              {/* dutiesAccordion: обязанности отдельной разворачивающейся секцией */}
+              {!congressThisWeek && (
+                <CollapsibleMeetingBlock
+                  accent={SECTION_COLORS.duty.color}
+                  icon="people-outline"
+                  title={t("schedule.tabs.duties")}
+                  onPrint={
+                    perms.isElder || perms.isAdmin
+                      ? () => printMonthDuties()
+                      : undefined
+                  }
+                  printBusy={printingDuties}
+                  assigned={0}
+                  total={0}
+                  showBadge={false}
+                >
+                  <View
+                    style={[
+                      styles.dutiesRow,
+                      dutiesNarrow && styles.dutiesRowNarrow,
+                    ]}
+                  >
+                    {dutyOrder.map((meeting) => (
+                      <View
+                        key={meeting}
+                        style={[
+                          styles.dutiesCol,
+                          dutiesNarrow && styles.dutiesColNarrow,
+                        ]}
+                      >
+                        <DutiesSection
+                          only={meeting}
+                          dateLabel={meetingDateLabel(meeting)}
+                          locked={meetingLocked(meeting)}
+                          nextUp={nextDutyMeeting === meeting}
+                          nextUpToday={nextDutyIsToday}
+                          duties={duties}
+                          autoDutyIds={autoDutyIds}
+                          publishersById={publishersById}
+                          canEdit={canEditDuties && !meetingLocked(meeting)}
+                          compact={dutiesNarrow}
+                          pending={
+                            renamePlaceMutation.isPending ||
+                            movePlaceMutation.isPending ||
+                            removePlaceMutation.isPending ||
+                            generateDutiesMutation.isPending ||
+                            assignDutyMutation.isPending ||
+                            createCustomDutyMutation.isPending ||
+                            removeDutyMutation.isPending
+                          }
+                          hideHeader
+                          onGenerate={(eventType) =>
+                            generateDutiesMutation.mutate(eventType)
+                          }
+                          onAssign={(id, publisherId) =>
+                            assignDutyMutation.mutate({ id, publisherId })
+                          }
+                          onAddCustom={(eventType, customLabel) =>
+                            createCustomDutyMutation.mutate({
+                              eventType,
+                              customLabel,
+                            })
+                          }
+                          onRemoveDuty={(id) => removeDutyMutation.mutate(id)}
+                          onRenamePlace={(id, customLabel) =>
+                            renamePlaceMutation.mutate({ id, customLabel })
+                          }
+                          onRemovePlace={(id) => removePlaceMutation.mutate(id)}
+                          onMovePlace={(id, direction) =>
+                            movePlaceMutation.mutate({ id, direction })
+                          }
+                          activityById={activityById}
+                          weekStartISO={weekStartISO}
+                          memorialDateISO={rules.memorial?.date}
+                        />
+                      </View>
                     ))}
                   </View>
-                </View>
-              );
-            })}
-
-
-            {/* dutiesAccordion: обязанности отдельной разворачивающейся секцией */}
-            {!congressThisWeek && (
-            <CollapsibleMeetingBlock
-              accent={SECTION_COLORS.duty.color}
-              icon="people-outline"
-              title={t('schedule.tabs.duties')}
-              onPrint={
-                perms.isElder || perms.isAdmin
-                  ? () => printMonthDuties()
-                  : undefined
-              }
-              printBusy={printingDuties}
-              assigned={0}
-              total={0}
-              showBadge={false}
-            >
-              <View
-                style={[styles.dutiesRow, dutiesNarrow && styles.dutiesRowNarrow]}
-              >
-              {dutyOrder.map((meeting) => (
-              <View
-                key={meeting}
-                style={[
-                  styles.dutiesCol,
-                  dutiesNarrow && styles.dutiesColNarrow,
-                ]}
-              >
-              <DutiesSection
-                only={meeting}
-                dateLabel={meetingDateLabel(meeting)}
-                locked={meetingLocked(meeting)}
-                nextUp={nextDutyMeeting === meeting}
-                nextUpToday={nextDutyIsToday}
-                duties={duties}
-                autoDutyIds={autoDutyIds}
-                publishersById={publishersById}
-                canEdit={canEditDuties && !meetingLocked(meeting)}
-                compact={dutiesNarrow}
-                pending={
-                  renamePlaceMutation.isPending ||
-                  movePlaceMutation.isPending ||
-                  removePlaceMutation.isPending ||
-                  generateDutiesMutation.isPending ||
-                  assignDutyMutation.isPending ||
-                  createCustomDutyMutation.isPending ||
-                  removeDutyMutation.isPending
-                }
-                hideHeader
-                onGenerate={(eventType) =>
-                  generateDutiesMutation.mutate(eventType)
-                }
-                onAssign={(id, publisherId) =>
-                  assignDutyMutation.mutate({ id, publisherId })
-                }
-                onAddCustom={(eventType, customLabel) =>
-                  createCustomDutyMutation.mutate({ eventType, customLabel })
-                }
-                onRemoveDuty={(id) => removeDutyMutation.mutate(id)}
-                onRenamePlace={(id, customLabel) =>
-                  renamePlaceMutation.mutate({ id, customLabel })
-                }
-                onRemovePlace={(id) => removePlaceMutation.mutate(id)}
-                onMovePlace={(id, direction) =>
-                  movePlaceMutation.mutate({ id, direction })
-                }
-                activityById={activityById}
-                weekStartISO={weekStartISO}
-                memorialDateISO={rules.memorial?.date}
-              />
-              </View>
-              ))}
-              </View>
-            </CollapsibleMeetingBlock>
-            )}
-
-            {/* Встречи для проповеди — разворачивающаяся секция */}
-            <CollapsibleMeetingBlock
-              accent={SECTION_COLORS.field_service.color}
-              icon="navigate-outline"
-              title={t('fieldService.title')}
-              assigned={0}
-              total={0}
-              showBadge={false}
-            >
-              <FieldServiceSection
-                meetings={fieldServiceMeetings}
-                visitMeetings={visitFieldServiceMeetings}
-                hideHeader
-              publishersById={publishersById}
-              canEdit={canEditFieldServiceMeetings}
-              weekStartISO={weekStartISO}
-              onCreate={(input) => createFieldServiceMutation.mutate(input)}
-              onUpdate={(id, input) =>
-                updateFieldServiceMutation.mutate({ id, input })
-              }
-              onRemove={(id) => removeFieldServiceMutation.mutate(id)}
-              pending={
-                createFieldServiceMutation.isPending ||
-                updateFieldServiceMutation.isPending ||
-                removeFieldServiceMutation.isPending
-              }
-              />
-            </CollapsibleMeetingBlock>
-
-            {/* Уборка — разворачивающаяся секция */}
-            {!congressThisWeek && (
-            <CollapsibleMeetingBlock
-              accent={SECTION_COLORS.cleaning.color}
-              icon="sparkles-outline"
-              title={t('cleaning.title')}
-              onPrint={
-                perms.isElder || perms.isAdmin
-                  ? () => printMonthCleaning()
-                  : undefined
-              }
-              printBusy={printingCleaning}
-              assigned={0}
-              total={0}
-              showBadge={false}
-            >
-              <CleaningSection
-                assignments={cleaningWeek.assignments}
-                hideHeader
-              publishersById={publishersById}
-              canEdit={canEditCleaning}
-              weekStart={weekStartISO}
-              pending={
-                setCleaningSlotMutation.isPending ||
-                clearCleaningSlotMutation.isPending
-              }
-              onSetSlot={(slotType, serviceGroupId, windows) =>
-                setCleaningSlotMutation.mutate({
-                  slotType,
-                  serviceGroupId,
-                  windows,
-                })
-              }
-                onClearSlot={(slotType) =>
-                  clearCleaningSlotMutation.mutate(slotType)
-                }
-              />
-            </CollapsibleMeetingBlock>
-            )}
-
-            {isEmpty && (
-              <Text style={styles.emptyHint}>
-                {t('schedule.noAssignments')}
-              </Text>
-            )}
-
-            {/* Create buttons — show one per missing event type that has a template */}
-            <View style={styles.createButtons}>
-              {!hasMidweek && canEditMidweekSchedule && (
-                <CreateButton
-                  label={t('schedule.createEmptyMidweek', { count: PARTS_BY_EVENT.midweek.length })}
-                  primary={isEmpty}
-                  onPress={() => createWeekMutation.mutate('midweek')}
-                  disabled={createWeekMutation.isPending}
-                />
+                </CollapsibleMeetingBlock>
               )}
-              {!hasWeekend && canEditWeekendSchedule && (
-                <CreateButton
-                  label={t('schedule.createEmptyWeekend', { count: PARTS_BY_EVENT.weekend.length })}
-                  primary={isEmpty && !PARTS_BY_EVENT.midweek.length}
-                  onPress={() => createWeekMutation.mutate('weekend')}
-                  disabled={createWeekMutation.isPending}
-                />
-              )}
-            </View>
 
-            {createWeekMutation.error && (
-              <View style={styles.errorBox}>
-                <Text style={styles.errorText}>
-                  {extractErrorMessage(createWeekMutation.error)}
+              {/* Встречи для проповеди — разворачивающаяся секция */}
+              <CollapsibleMeetingBlock
+                accent={SECTION_COLORS.field_service.color}
+                icon="navigate-outline"
+                title={t("fieldService.title")}
+                assigned={0}
+                total={0}
+                showBadge={false}
+              >
+                <FieldServiceSection
+                  meetings={fieldServiceMeetings}
+                  visitMeetings={visitFieldServiceMeetings}
+                  hideHeader
+                  publishersById={publishersById}
+                  canEdit={canEditFieldServiceMeetings}
+                  weekStartISO={weekStartISO}
+                  onCreate={(input) => createFieldServiceMutation.mutate(input)}
+                  onUpdate={(id, input) =>
+                    updateFieldServiceMutation.mutate({ id, input })
+                  }
+                  onRemove={(id) => removeFieldServiceMutation.mutate(id)}
+                  pending={
+                    createFieldServiceMutation.isPending ||
+                    updateFieldServiceMutation.isPending ||
+                    removeFieldServiceMutation.isPending
+                  }
+                />
+              </CollapsibleMeetingBlock>
+
+              {/* Уборка — разворачивающаяся секция */}
+              {!congressThisWeek && (
+                <CollapsibleMeetingBlock
+                  accent={SECTION_COLORS.cleaning.color}
+                  icon="sparkles-outline"
+                  title={t("cleaning.title")}
+                  onPrint={
+                    perms.isElder || perms.isAdmin
+                      ? () => printMonthCleaning()
+                      : undefined
+                  }
+                  printBusy={printingCleaning}
+                  assigned={0}
+                  total={0}
+                  showBadge={false}
+                >
+                  <CleaningSection
+                    assignments={cleaningWeek.assignments}
+                    hideHeader
+                    publishersById={publishersById}
+                    canEdit={canEditCleaning}
+                    weekStart={weekStartISO}
+                    pending={
+                      setCleaningSlotMutation.isPending ||
+                      clearCleaningSlotMutation.isPending
+                    }
+                    onSetSlot={(slotType, serviceGroupId, windows) =>
+                      setCleaningSlotMutation.mutate({
+                        slotType,
+                        serviceGroupId,
+                        windows,
+                      })
+                    }
+                    onClearSlot={(slotType) =>
+                      clearCleaningSlotMutation.mutate(slotType)
+                    }
+                  />
+                </CollapsibleMeetingBlock>
+              )}
+
+              {isEmpty && (
+                <Text style={styles.emptyHint}>
+                  {t("schedule.noAssignments")}
                 </Text>
-              </View>
-            )}
-          </>
-        )}
-      </ScrollView>
+              )}
 
-      {/* Sibling of the scroll view, not its child — inside one the strip is
+              {/* Create buttons — show one per missing event type that has a template */}
+              <View style={styles.createButtons}>
+                {!hasMidweek && canEditMidweekSchedule && (
+                  <CreateButton
+                    label={t("schedule.createEmptyMidweek", {
+                      count: PARTS_BY_EVENT.midweek.length,
+                    })}
+                    primary={isEmpty}
+                    onPress={() => createWeekMutation.mutate("midweek")}
+                    disabled={createWeekMutation.isPending}
+                  />
+                )}
+                {!hasWeekend && canEditWeekendSchedule && (
+                  <CreateButton
+                    label={t("schedule.createEmptyWeekend", {
+                      count: PARTS_BY_EVENT.weekend.length,
+                    })}
+                    primary={isEmpty && !PARTS_BY_EVENT.midweek.length}
+                    onPress={() => createWeekMutation.mutate("weekend")}
+                    disabled={createWeekMutation.isPending}
+                  />
+                )}
+              </View>
+
+              {createWeekMutation.error && (
+                <View style={styles.errorBox}>
+                  <Text style={styles.errorText}>
+                    {extractErrorMessage(createWeekMutation.error)}
+                  </Text>
+                </View>
+              )}
+            </>
+          )}
+        </ScrollView>
+
+        {/* Sibling of the scroll view, not its child — inside one the strip is
           positioned against the content and lands screens below the fold. */}
-      <UndoBar
-        visible={!!clearedSlot}
-        message={t('cleaning.cleared')}
-        onUndo={async () => {
-          if (!clearedSlot) return;
-          await cleaningApi.setSlot({
-            weekStartDate: weekStartISO,
-            slotType: clearedSlot.slotType,
-            serviceGroupId: clearedSlot.serviceGroupId,
-            windows: clearedSlot.windows,
-          });
-          setClearedSlot(null);
-          invalidateCleaning();
-        }}
-        onDismiss={() => setClearedSlot(null)}
-      />
-    </View>
+        <UndoBar
+          visible={!!clearedSlot}
+          message={t("cleaning.cleared")}
+          onUndo={async () => {
+            if (!clearedSlot) return;
+            await cleaningApi.setSlot({
+              weekStartDate: weekStartISO,
+              slotType: clearedSlot.slotType,
+              serviceGroupId: clearedSlot.serviceGroupId,
+              windows: clearedSlot.windows,
+            });
+            setClearedSlot(null);
+            invalidateCleaning();
+          }}
+          onDismiss={() => setClearedSlot(null)}
+        />
+      </View>
     </AutoAssignedContext.Provider>
   );
 }
 
 const SUBSECTION_ORDER: Subsection[] = [
-  'opening',
-  'treasures',
-  'apply_yourself',
-  'christian_life',
+  "opening",
+  "treasures",
+  "apply_yourself",
+  "christian_life",
 ];
 
 function MidweekSections({
@@ -2123,17 +2155,21 @@ function MidweekSections({
               ]}
             >
               <View style={styles.weekendCardIcon}>
-                <Ionicons name={meta.icon as any} size={15} color={meta.color} />
+                <Ionicons
+                  name={meta.icon as any}
+                  size={15}
+                  color={meta.color}
+                />
               </View>
               <Text style={[styles.weekendCardTitle, { color: meta.color }]}>
                 {t(meta.i18nKey)}
               </Text>
-              {canEdit && sub === 'christian_life' && onAddChristianLife ? (
+              {canEdit && sub === "christian_life" && onAddChristianLife ? (
                 <Pressable
                   onPress={onAddChristianLife}
                   disabled={addingChristianLife}
                   hitSlop={8}
-                  accessibilityLabel={t('schedule.addChristianLife')}
+                  accessibilityLabel={t("schedule.addChristianLife")}
                 >
                   {addingChristianLife ? (
                     <ActivityIndicator size="small" color={meta.color} />
@@ -2152,12 +2188,12 @@ function MidweekSections({
                   onEdit={onEdit}
                   publisher={
                     a.publisherId
-                      ? publishersById.get(a.publisherId) ?? null
+                      ? (publishersById.get(a.publisherId) ?? null)
                       : null
                   }
                   assistant={
                     a.assistantPublisherId
-                      ? publishersById.get(a.assistantPublisherId) ?? null
+                      ? (publishersById.get(a.assistantPublisherId) ?? null)
                       : null
                   }
                   displayNumber={numbers.get(a.id) ?? null}
@@ -2175,20 +2211,20 @@ function MidweekSections({
 }
 
 const WEEKEND_SUBSECTION_ORDER: Subsection[] = [
-  'opening',
-  'public_talk',
-  'watchtower',
-  'concluding_talk',
-  'closing',
+  "opening",
+  "public_talk",
+  "watchtower",
+  "concluding_talk",
+  "closing",
 ];
 
 // Only the two main parts get a colored, labeled section card. The opening
 // rows (chairman / song / prayer) and the closing prayer render as plain rows
 // without a banner — the weekend program has no "opening"/"closing" headings.
 const WEEKEND_BANNER_SUBSECTIONS = new Set<Subsection>([
-  'public_talk',
-  'watchtower',
-  'concluding_talk',
+  "public_talk",
+  "watchtower",
+  "concluding_talk",
 ]);
 
 function WeekendSections({
@@ -2212,7 +2248,7 @@ function WeekendSections({
 
   const bySubsection = new Map<Subsection, Assignment[]>();
   const concludingOrder = items.find(
-    (a) => a.partKey === 'co_concluding_talk',
+    (a) => a.partKey === "co_concluding_talk",
   )?.partOrder;
   for (const a of items) {
     let sub = resolveSubsection(a.partKey);
@@ -2220,11 +2256,11 @@ function WeekendSections({
     // before the closing prayer. Group it with the closing prayer (above it),
     // not with the pre-study song in the Watchtower section.
     if (
-      a.partKey === 'weekend_song' &&
+      a.partKey === "weekend_song" &&
       concludingOrder != null &&
       a.partOrder >= concludingOrder
     ) {
-      sub = 'closing';
+      sub = "closing";
     }
     const arr = bySubsection.get(sub) ?? [];
     arr.push(a);
@@ -2239,11 +2275,11 @@ function WeekendSections({
         partTime={times?.get(a.id) ?? null}
         onEdit={onEdit}
         publisher={
-          a.publisherId ? publishersById.get(a.publisherId) ?? null : null
+          a.publisherId ? (publishersById.get(a.publisherId) ?? null) : null
         }
         assistant={
           a.assistantPublisherId
-            ? publishersById.get(a.assistantPublisherId) ?? null
+            ? (publishersById.get(a.assistantPublisherId) ?? null)
             : null
         }
         displayNumber={numbers.get(a.id) ?? null}
@@ -2332,12 +2368,11 @@ function CreateButton({
   );
 }
 
-
 const PRAYER_PARTS = new Set<string>([
-  'midweek_opening_prayer',
-  'midweek_closing_prayer',
-  'weekend_opening_prayer',
-  'weekend_closing_prayer',
+  "midweek_opening_prayer",
+  "midweek_closing_prayer",
+  "weekend_opening_prayer",
+  "weekend_closing_prayer",
 ]);
 
 /** Extracts just the song reference (e.g. "Песня 44") from a prayer title. */
@@ -2357,27 +2392,27 @@ function partDisplay(
 ): { label: string; subtitle: string | null; overline?: string } {
   // Weekend: show the part role as an overline above the EPUB topic, so it
   // is clear what the topic belongs to. The reader's long label is shortened.
-  if (partKey === 'public_talk_speaker') {
+  if (partKey === "public_talk_speaker") {
     return {
-      label: partTitle || getPartLabel('public_talk_speaker'),
+      label: partTitle || getPartLabel("public_talk_speaker"),
       subtitle: null,
     };
   }
-  if (partKey === 'watchtower_conductor') {
+  if (partKey === "watchtower_conductor") {
     return {
-      label: partTitle || getPartLabel('watchtower_conductor'),
+      label: partTitle || getPartLabel("watchtower_conductor"),
       subtitle: null,
     };
   }
-  if (partKey === 'watchtower_reader') {
-    return { label: i18n.t('schedule.weekend.reader'), subtitle: null };
+  if (partKey === "watchtower_reader") {
+    return { label: i18n.t("schedule.weekend.reader"), subtitle: null };
   }
   if (
-    partKey === 'mid_song' ||
-    partKey === 'weekend_song' ||
-    partKey === 'weekend_opening_song'
+    partKey === "mid_song" ||
+    partKey === "weekend_song" ||
+    partKey === "weekend_opening_song"
   ) {
-    return { label: partTitle || i18n.t('parts.song'), subtitle: null };
+    return { label: partTitle || i18n.t("parts.song"), subtitle: null };
   }
   if (PRAYER_PARTS.has(partKey)) {
     return {
@@ -2388,11 +2423,11 @@ function partDisplay(
   // EPUB/override title is always the heading when present; the generic
   // part label is only a fallback for untitled parts.
   if (partTitle) {
-    const idx = partTitle.indexOf(': ');
+    const idx = partTitle.indexOf(": ");
     if (idx > 0) {
       // treasures_talk: topic only — hide the enriched detail note for
       // the opening "Treasures" talk; other parts keep their subtitle.
-      const isTreasuresTalk = partKey === 'treasures_talk';
+      const isTreasuresTalk = partKey === "treasures_talk";
       return {
         label: partTitle.slice(0, idx),
         subtitle: isTreasuresTalk
@@ -2437,7 +2472,7 @@ function AssignmentRow({
     !!myPublisherId &&
     (assignment.publisherId === myPublisherId ||
       assignment.assistantPublisherId === myPublisherId);
-  const glow = useMyGlow(isMine, 'meeting');
+  const glow = useMyGlow(isMine, "meeting");
   const {
     label: rawPartLabel,
     subtitle: rawSubtitle,
@@ -2446,14 +2481,14 @@ function AssignmentRow({
   const songTitles = useSongsMap();
   const isStudentTalkRow =
     !!getPartDef(assignment.partKey)?.hasAssistant &&
-    skillCapabilityFromTitle(assignment.partTitle) === 'fs_talk';
+    skillCapabilityFromTitle(assignment.partTitle) === "fs_talk";
   const durationSuffix =
     assignment.partDurationMin != null &&
-    ['treasures', 'apply_yourself', 'christian_life'].includes(
+    ["treasures", "apply_yourself", "christian_life"].includes(
       resolveSubsection(assignment.partKey) as string,
     )
-      ? ` (${assignment.partDurationMin} ${t('schedule.minShort')})`
-      : '';
+      ? ` (${assignment.partDurationMin} ${t("schedule.minShort")})`
+      : "";
   const partLabel =
     (enrichSongRef(rawPartLabel, songTitles) ?? rawPartLabel) + durationSuffix;
   const subtitle = enrichSongRef(rawSubtitle, songTitles);
@@ -2463,11 +2498,11 @@ function AssignmentRow({
 
   // Songs (e.g. the middle song) are informational — no assignment, no editing.
   const isSong =
-    assignment.partKey === 'mid_song' ||
-    assignment.partKey === 'weekend_song' ||
-    assignment.partKey === 'weekend_opening_song';
+    assignment.partKey === "mid_song" ||
+    assignment.partKey === "weekend_song" ||
+    assignment.partKey === "weekend_opening_song";
   if (isSong) {
-    const hasSongNumber = /\d/.test(assignment.partTitle ?? '');
+    const hasSongNumber = /\d/.test(assignment.partTitle ?? "");
     return (
       <Pressable
         style={({ pressed }) => [
@@ -2488,7 +2523,7 @@ function AssignmentRow({
         <View style={{ flex: 1 }}>
           <Text style={styles.partLabel}>{partLabel}</Text>
           {hasSongNumber ? null : (
-            <Text style={styles.songHint}>{t('schedule.songHint')}</Text>
+            <Text style={styles.songHint}>{t("schedule.songHint")}</Text>
           )}
         </View>
         {canEdit ? <Text style={styles.chevron}>›</Text> : null}
@@ -2500,7 +2535,9 @@ function AssignmentRow({
     <Pressable
       style={({ pressed }) => [
         styles.row,
-        accentColor ? { borderLeftWidth: 3, borderLeftColor: accentColor } : null,
+        accentColor
+          ? { borderLeftWidth: 3, borderLeftColor: accentColor }
+          : null,
         pressed && styles.rowPressed,
       ]}
       onPress={canEdit ? () => onEdit(assignment) : undefined}
@@ -2511,7 +2548,7 @@ function AssignmentRow({
           style={[
             styles.orderBadge,
             (accentTint ?? accentColor)
-              ? { backgroundColor: (accentTint ?? accentColor) + '1A' }
+              ? { backgroundColor: (accentTint ?? accentColor) + "1A" }
               : null,
             displayNumber == null && styles.orderBadgeInfo,
           ]}
@@ -2524,7 +2561,7 @@ function AssignmentRow({
                 : null,
             ]}
           >
-            {displayNumber ?? '·'}
+            {displayNumber ?? "·"}
           </Text>
         </View>
         {partTime ? (
@@ -2553,7 +2590,9 @@ function AssignmentRow({
           {isAuto ? (
             <View style={styles.autoBadge}>
               <Ionicons name="flash" size={10} color="#0369a1" />
-              <Text style={styles.autoBadgeText}>{t('schedule.autoBadge')}</Text>
+              <Text style={styles.autoBadgeText}>
+                {t("schedule.autoBadge")}
+              </Text>
             </View>
           ) : null}
         </View>
@@ -2582,7 +2621,7 @@ function AssignmentRow({
                 {assignment.speakerName}
                 {assignment.speakerCongregation ? (
                   <Text style={styles.chipSpeakerCong}>
-                    {' · '}
+                    {" · "}
                     {assignment.speakerCongregation}
                   </Text>
                 ) : null}
@@ -2592,7 +2631,7 @@ function AssignmentRow({
             <View style={[styles.chip, styles.chipEmpty]}>
               <Ionicons name="person-add-outline" size={13} color="#94a3b8" />
               <Text style={styles.chipEmptyText}>
-                {t('schedule.unassigned')}
+                {t("schedule.unassigned")}
               </Text>
             </View>
           )}
@@ -2613,18 +2652,18 @@ function AssignmentRow({
             </View>
           )}
         </View>
-        {assignment.status === 'cancelled' ? (
+        {assignment.status === "cancelled" ? (
           <View style={styles.statusDotRow}>
             <View style={[styles.statusDot, styles.statusDotCancelled]} />
             <Text style={[styles.statusDotLabel, styles.statusDotLabelCancel]}>
-              {t('assignments.status.cancelled')}
+              {t("assignments.status.cancelled")}
             </Text>
           </View>
         ) : assignment.changedSincePublish ? (
           <View style={styles.statusDotRow}>
             <View style={[styles.statusDot, styles.statusDotChanged]} />
             <Text style={[styles.statusDotLabel, styles.statusDotLabelChanged]}>
-              {t('schedule.notifyChanges.badge')}
+              {t("schedule.notifyChanges.badge")}
             </Text>
           </View>
         ) : null}
@@ -2637,7 +2676,10 @@ function AssignmentRow({
       <Animated.View
         style={[
           styles.rowMineGlow,
-          { backgroundColor: glow.backgroundColor, borderColor: glow.borderColor },
+          {
+            backgroundColor: glow.backgroundColor,
+            borderColor: glow.borderColor,
+          },
         ]}
       >
         {inner}
@@ -2648,13 +2690,13 @@ function AssignmentRow({
 }
 
 const styles = StyleSheet.create({
-  dutiesRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 16 },
+  dutiesRow: { flexDirection: "row", alignItems: "flex-start", gap: 16 },
   // On phones the two meetings stack instead of sharing the width: side by side
   // each block gets ~166px, which breaks labels and squeezes the selectors.
   // 'stretch' matters: once the direction flips to a column, the row's
   // 'flex-start' would start governing the horizontal axis and each card would
   // shrink to its content and hug the left edge instead of filling the width.
-  dutiesRowNarrow: { flexDirection: 'column', alignItems: 'stretch', gap: 0 },
+  dutiesRowNarrow: { flexDirection: "column", alignItems: "stretch", gap: 0 },
   dutiesCol: { flex: 1, minWidth: 0 },
   // Stacked, the column must size to its content: keeping flex:1 would make the
   // two cards share the available height, and the taller one lost its bottom
@@ -2662,22 +2704,23 @@ const styles = StyleSheet.create({
   dutiesColNarrow: {
     flexGrow: 0,
     flexShrink: 0,
-    flexBasis: 'auto',
-    width: '100%',
+    flexBasis: "auto",
+    width: "100%",
   },
-  container: { flex: 1, backgroundColor: '#f1f5f9' },
+  container: { flex: 1, backgroundColor: "#f1f5f9" },
   overline: {
     fontSize: 11,
-    fontWeight: '700', fontFamily: 'Manrope_700Bold',
-    color: '#7c3aed',
-    textTransform: 'uppercase',
+    fontWeight: "700",
+    fontFamily: "Manrope_700Bold",
+    color: "#7c3aed",
+    textTransform: "uppercase",
     letterSpacing: 0.5,
     marginBottom: 2,
   },
   emptyHint: {
     fontSize: 14,
-    color: '#64748b',
-    textAlign: 'center',
+    color: "#64748b",
+    textAlign: "center",
     marginTop: 32,
     marginBottom: 8,
   },
@@ -2686,37 +2729,41 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 20,
     borderRadius: 10,
-    alignItems: 'center',
+    alignItems: "center",
   },
-  createPrimary: { backgroundColor: '#0ea5e9' },
+  createPrimary: { backgroundColor: "#0ea5e9" },
   createSecondary: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderWidth: 1,
-    borderColor: '#0ea5e9',
+    borderColor: "#0ea5e9",
   },
-  createButtonText: { fontSize: 14, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
-  createPrimaryText: { color: '#fff' },
-  createSecondaryText: { color: '#0ea5e9' },
+  createButtonText: {
+    fontSize: 14,
+    fontWeight: "600",
+    fontFamily: "Manrope_600SemiBold",
+  },
+  createPrimaryText: { color: "#fff" },
+  createSecondaryText: { color: "#0ea5e9" },
 
   section: { marginTop: 16 },
   weekendCard: {
     marginTop: 14,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderRadius: 14,
-    overflow: 'hidden',
+    overflow: "hidden",
     borderLeftWidth: 4,
-    borderLeftColor: '#7c3aed',
+    borderLeftColor: "#7c3aed",
     borderWidth: 0.5,
-    borderColor: '#e2e8f0',
-    shadowColor: '#0f172a',
+    borderColor: "#e2e8f0",
+    shadowColor: "#0f172a",
     shadowOpacity: 0.05,
     shadowRadius: 6,
     shadowOffset: { width: 0, height: 2 },
     elevation: 1,
   },
   weekendCardHead: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingHorizontal: 14,
     paddingTop: 12,
     paddingBottom: 8,
@@ -2726,12 +2773,13 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   weekendCardTitle: {
     fontSize: 13,
-    fontWeight: '800', fontFamily: 'Manrope_800ExtraBold',
+    fontWeight: "800",
+    fontFamily: "Manrope_800ExtraBold",
     letterSpacing: 0.3,
     flex: 1,
   },
@@ -2739,23 +2787,24 @@ const styles = StyleSheet.create({
     paddingBottom: 2,
   },
   subsectionBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingHorizontal: 16,
     paddingVertical: 10,
     gap: 8,
   },
   subsectionBannerText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 13,
-    fontWeight: '700', fontFamily: 'Manrope_700Bold',
-    textTransform: 'uppercase',
+    fontWeight: "700",
+    fontFamily: "Manrope_700Bold",
+    textTransform: "uppercase",
     letterSpacing: 0.6,
     flex: 1,
   },
   subsectionBannerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 8,
     flex: 1,
   },
@@ -2763,136 +2812,174 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.18)',
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(255,255,255,0.18)",
   },
   sectionTitle: {
     fontSize: 12,
-    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
-    color: '#64748b',
-    textTransform: 'uppercase',
+    fontWeight: "600",
+    fontFamily: "Manrope_600SemiBold",
+    color: "#64748b",
+    textTransform: "uppercase",
     paddingHorizontal: 20,
     marginBottom: 6,
     letterSpacing: 0.5,
   },
   sectionBody: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderTopWidth: 1,
     borderBottomWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: "#e2e8f0",
   },
   row: {
-    flexDirection: 'row',
+    flexDirection: "row",
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#eef2f7',
-    alignItems: 'center',
+    borderBottomColor: "#eef2f7",
+    alignItems: "center",
   },
-  rowPressed: { backgroundColor: '#f8fafc' },
+  rowPressed: { backgroundColor: "#f8fafc" },
   badgeCol: {
     width: 56,
     marginRight: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   timePill: {
     marginTop: 3,
-    alignSelf: 'stretch',
-    alignItems: 'center',
-    backgroundColor: '#f8fafc',
+    alignSelf: "stretch",
+    alignItems: "center",
+    backgroundColor: "#f8fafc",
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: "#e2e8f0",
     borderRadius: 9,
     paddingVertical: 3,
     paddingHorizontal: 4,
   },
   timePillStart: {
     fontSize: 12.5,
-    fontWeight: '800', fontFamily: 'Manrope_800ExtraBold',
-    color: '#475569',
+    fontWeight: "800",
+    fontFamily: "Manrope_800ExtraBold",
+    color: "#475569",
     lineHeight: 15,
   },
   timePillEnd: {
     fontSize: 11,
-    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
-    color: '#94a3b8',
+    fontWeight: "600",
+    fontFamily: "Manrope_600SemiBold",
+    color: "#94a3b8",
     lineHeight: 13,
   },
   orderBadge: {
     width: 30,
     height: 30,
     borderRadius: 15,
-    backgroundColor: '#e0f2fe',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "#e0f2fe",
+    justifyContent: "center",
+    alignItems: "center",
   },
-  orderText: { color: '#0369a1', fontWeight: '700', fontFamily: 'Manrope_700Bold', fontSize: 13 },
-  orderBadgeInfo: { backgroundColor: '#f1f5f9' },
-  partLabel: { fontSize: 15, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0f172a' },
-  partLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  orderText: {
+    color: "#0369a1",
+    fontWeight: "700",
+    fontFamily: "Manrope_700Bold",
+    fontSize: 13,
+  },
+  orderBadgeInfo: { backgroundColor: "#f1f5f9" },
+  partLabel: {
+    fontSize: 15,
+    fontWeight: "600",
+    fontFamily: "Manrope_600SemiBold",
+    color: "#0f172a",
+  },
+  partLabelRow: { flexDirection: "row", alignItems: "center", gap: 6 },
   autoBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 2,
-    backgroundColor: '#e0f2fe',
+    backgroundColor: "#e0f2fe",
     borderRadius: 8,
     paddingHorizontal: 6,
     paddingVertical: 1,
   },
-  autoBadgeText: { fontSize: 10, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0369a1' },
+  autoBadgeText: {
+    fontSize: 10,
+    fontWeight: "700",
+    fontFamily: "Manrope_700Bold",
+    color: "#0369a1",
+  },
   rowMineGlow: {
     borderWidth: 1,
     borderRadius: 12,
     marginVertical: 2,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   songHint: {
     fontSize: 13,
-    color: '#94a3b8',
-    fontStyle: 'italic',
+    color: "#94a3b8",
+    fontStyle: "italic",
     marginTop: 2,
   },
   partTitle: {
     fontSize: 13,
-    color: '#475569',
+    color: "#475569",
     marginTop: 2,
-    fontStyle: 'italic',
+    fontStyle: "italic",
   },
   pairRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    alignItems: 'center',
+    flexDirection: "row",
+    flexWrap: "wrap",
+    alignItems: "center",
     gap: 6,
     marginTop: 6,
   },
   chip: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 5,
     paddingVertical: 4,
     paddingHorizontal: 10,
     borderRadius: 14,
   },
-  chipMain: { backgroundColor: '#e0f2fe' },
-  chipMainText: { fontSize: 13, color: '#0c4a6e', fontWeight: '500', fontFamily: 'Manrope_500Medium',},
-  chipAssistant: { backgroundColor: '#f1f5f9' },
-  chipAssistantText: { fontSize: 13, color: '#475569', fontWeight: '500', fontFamily: 'Manrope_500Medium',},
-  chipSpeaker: { backgroundColor: '#ede9fe' },
-  chipSpeakerText: { fontSize: 13, color: '#6d28d9', fontWeight: '500', fontFamily: 'Manrope_500Medium',},
-  chipSpeakerCong: { fontSize: 13, color: '#9b7fd4', fontWeight: '400', fontFamily: 'Manrope_400Regular',},
+  chipMain: { backgroundColor: "#e0f2fe" },
+  chipMainText: {
+    fontSize: 13,
+    color: "#0c4a6e",
+    fontWeight: "500",
+    fontFamily: "Manrope_500Medium",
+  },
+  chipAssistant: { backgroundColor: "#f1f5f9" },
+  chipAssistantText: {
+    fontSize: 13,
+    color: "#475569",
+    fontWeight: "500",
+    fontFamily: "Manrope_500Medium",
+  },
+  chipSpeaker: { backgroundColor: "#ede9fe" },
+  chipSpeakerText: {
+    fontSize: 13,
+    color: "#6d28d9",
+    fontWeight: "500",
+    fontFamily: "Manrope_500Medium",
+  },
+  chipSpeakerCong: {
+    fontSize: 13,
+    color: "#9b7fd4",
+    fontWeight: "400",
+    fontFamily: "Manrope_400Regular",
+  },
   chipEmpty: {
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
     borderWidth: 1,
-    borderStyle: 'dashed',
-    borderColor: '#cbd5e1',
+    borderStyle: "dashed",
+    borderColor: "#cbd5e1",
     paddingVertical: 3,
   },
-  chipEmptyText: { fontSize: 13, color: '#94a3b8', fontStyle: 'italic' },
+  chipEmptyText: { fontSize: 13, color: "#94a3b8", fontStyle: "italic" },
   statusDotRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 5,
     marginTop: 5,
   },
@@ -2901,22 +2988,23 @@ const styles = StyleSheet.create({
     height: 6,
     borderRadius: 3,
   },
-  statusDotChanged: { backgroundColor: '#d97706' },
-  statusDotCancelled: { backgroundColor: '#dc2626' },
+  statusDotChanged: { backgroundColor: "#d97706" },
+  statusDotCancelled: { backgroundColor: "#dc2626" },
   statusDotLabel: {
     fontSize: 11,
-    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
+    fontWeight: "600",
+    fontFamily: "Manrope_600SemiBold",
   },
-  statusDotLabelChanged: { color: '#b45309' },
-  statusDotLabelCancel: { color: '#b91c1c' },
-  chevron: { color: '#cbd5e1', fontSize: 24, marginLeft: 8 },
+  statusDotLabelChanged: { color: "#b45309" },
+  statusDotLabelCancel: { color: "#b91c1c" },
+  chevron: { color: "#cbd5e1", fontSize: 24, marginLeft: 8 },
   errorBox: {
     margin: 16,
     padding: 12,
-    backgroundColor: '#fef2f2',
-    borderColor: '#fecaca',
+    backgroundColor: "#fef2f2",
+    borderColor: "#fecaca",
     borderWidth: 1,
     borderRadius: 8,
   },
-  errorText: { color: '#dc2626', fontSize: 14 },
+  errorText: { color: "#dc2626", fontSize: 14 },
 });

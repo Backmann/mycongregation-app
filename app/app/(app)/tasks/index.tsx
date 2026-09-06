@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -7,14 +7,14 @@ import {
   Text,
   TextInput,
   View,
-} from 'react-native';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
-import { useTranslation } from 'react-i18next';
-import dayjs from 'dayjs';
-import 'dayjs/locale/ru';
-import 'dayjs/locale/de';
+} from "react-native";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
+import { useTranslation } from "react-i18next";
+import dayjs from "dayjs";
+import "dayjs/locale/ru";
+import "dayjs/locale/de";
 import {
   TaskAssigneeKind,
   meApi,
@@ -22,32 +22,26 @@ import {
   tasksApi,
   type ElderTask,
   type TaskArea,
-} from '../../../lib/api';
-import { Sheet } from '../../../components/Sheet';
-import { PublisherSelector } from '../../../components/PublisherSelector';
-import { DateField } from '../../../components/DateField';
-import { confirm } from '../../../components/ConfirmHost';
-import {
-  AREA_BG,
-  AREA_FG,
-  AREAS,
-  quarterLabel,
-} from '../../../lib/task-areas';
-import { UndoBar } from '../../../components/UndoBar';
-import { useAllPublishers } from '../../../lib/useAllPublishers';
-
+} from "../../../lib/api";
+import { Sheet } from "../../../components/Sheet";
+import { PublisherSelector } from "../../../components/PublisherSelector";
+import { DateField } from "../../../components/DateField";
+import { confirm } from "../../../components/ConfirmHost";
+import { AREA_BG, AREA_FG, AREAS, quarterLabel } from "../../../lib/task-areas";
+import { UndoBar } from "../../../components/UndoBar";
+import { useAllPublishers } from "../../../lib/useAllPublishers";
+import { useHeaderLift } from "../../../lib/header-lift";
 
 /** One colour per area — the glance before the reading. */
 const AREA_TINT: Record<TaskArea, string> = {
-  ministry: '#1D9E75',
-  teaching: '#BA7517',
-  care: '#7F77DD',
-  organisation: '#185FA5',
-  announcements: '#378ADD',
-  accounts: '#0e7490',
-  other: '#64748b',
+  ministry: "#1D9E75",
+  teaching: "#BA7517",
+  care: "#7F77DD",
+  organisation: "#185FA5",
+  announcements: "#378ADD",
+  accounts: "#0e7490",
+  other: "#64748b",
 };
-
 
 /**
  * Tasks the body of elders has undertaken.
@@ -59,9 +53,11 @@ const AREA_TINT: Record<TaskArea, string> = {
  */
 export default function TasksScreen() {
   const { t, i18n } = useTranslation();
+  // Тень у шапки появляется, когда список уезжает под неё.
+  const lift = useHeaderLift();
   const qc = useQueryClient();
-  const [editing, setEditing] = useState<ElderTask | 'new' | null>(null);
-  const [tab, setTab] = useState<'open' | 'mine' | 'done'>('open');
+  const [editing, setEditing] = useState<ElderTask | "new" | null>(null);
+  const [tab, setTab] = useState<"open" | "mine" | "done">("open");
   /** The one just ticked — held so it can be put back, and so it can linger. */
   const [justDone, setJustDone] = useState<ElderTask | null>(null);
   /** Which cards are showing their details in full. */
@@ -70,12 +66,12 @@ export default function TasksScreen() {
   >({});
 
   const openQuery = useQuery({
-    queryKey: ['tasks', 'open'],
-    queryFn: () => tasksApi.list('open'),
+    queryKey: ["tasks", "open"],
+    queryFn: () => tasksApi.list("open"),
   });
   const doneQuery = useQuery({
-    queryKey: ['tasks', 'done'],
-    queryFn: () => tasksApi.list('done'),
+    queryKey: ["tasks", "done"],
+    queryFn: () => tasksApi.list("done"),
     // Fetched always now, because the tab shows a count — and a count that
     // only appears once you have opened the tab is no help at all.
     staleTime: 60 * 1000,
@@ -83,7 +79,7 @@ export default function TasksScreen() {
   // Which card is mine — needed for «Мои». /me/publisher is the one honest
   // way to ask: the roster hides userId from anybody without rights.
   const meQuery = useQuery({
-    queryKey: ['me', 'publisher'],
+    queryKey: ["me", "publisher"],
     queryFn: () => meApi.publisher(),
     retry: false,
   });
@@ -93,15 +89,16 @@ export default function TasksScreen() {
 
   const nameOf = useMemo(() => {
     const m = new Map<string, string>();
-    for (const p of publishersQuery.data?.data ?? []) m.set(p.id, p.displayName);
+    for (const p of publishersQuery.data?.data ?? [])
+      m.set(p.id, p.displayName);
     return (id: string | null) => (id ? (m.get(id) ?? null) : null);
   }, [publishersQuery.data]);
 
-  const invalidate = () => qc.invalidateQueries({ queryKey: ['tasks'] });
+  const invalidate = () => qc.invalidateQueries({ queryKey: ["tasks"] });
   const closeMut = useMutation({
     mutationFn: (task: ElderTask) =>
       tasksApi.update(task.id, {
-        status: task.status === 'done' ? 'open' : 'done',
+        status: task.status === "done" ? "open" : "done",
       }),
     onSuccess: (_r, task) => {
       invalidate();
@@ -111,7 +108,7 @@ export default function TasksScreen() {
       // rightly. What matters at that moment is not that the task is safe but
       // that the act LOOKED irreversible and left no trace. The strip is the
       // same one the circuit schedule uses; nothing new had to be written.
-      if (task.status === 'open') {
+      if (task.status === "open") {
         setJustDone(task);
       } else {
         setJustDone(null);
@@ -131,8 +128,9 @@ export default function TasksScreen() {
     },
   });
 
-  const today = dayjs().format('YYYY-MM-DD');
-  const fmt = (iso: string) => dayjs(iso).locale(i18n.language).format('D MMMM');
+  const today = dayjs().format("YYYY-MM-DD");
+  const fmt = (iso: string) =>
+    dayjs(iso).locale(i18n.language).format("D MMMM");
 
   const open = openQuery.data ?? [];
 
@@ -148,38 +146,38 @@ export default function TasksScreen() {
     // the moment the work was done. What the reader wants then is when it was
     // closed — and the card said «Просрочено на 8 дней» about work already
     // behind them, which reads as a reproach for nothing.
-    if (task.status === 'done') {
+    if (task.status === "done") {
       return task.doneAt
-        ? t('tasks.doneOn', {
-            date: dayjs(task.doneAt).locale(i18n.language).format('D MMMM'),
-            time: dayjs(task.doneAt).format('HH:mm'),
+        ? t("tasks.doneOn", {
+            date: dayjs(task.doneAt).locale(i18n.language).format("D MMMM"),
+            time: dayjs(task.doneAt).format("HH:mm"),
           })
-        : '';
+        : "";
     }
-    if (!task.dueDate) return '';
-    const days = dayjs(task.dueDate).diff(dayjs(today), 'day');
-    if (days < 0) return t('tasks.lateByDays', { count: -days });
-    if (days === 0) return t('tasks.dueToday');
-    if (days === 1) return t('tasks.dueTomorrow');
-    if (days <= 7) return t('tasks.dueInDays', { count: days });
-    return fmt(task.dueDate) + (task.dueTime ? ` · ${task.dueTime}` : '');
+    if (!task.dueDate) return "";
+    const days = dayjs(task.dueDate).diff(dayjs(today), "day");
+    if (days < 0) return t("tasks.lateByDays", { count: -days });
+    if (days === 0) return t("tasks.dueToday");
+    if (days === 1) return t("tasks.dueTomorrow");
+    if (days <= 7) return t("tasks.dueInDays", { count: days });
+    return fmt(task.dueDate) + (task.dueTime ? ` · ${task.dueTime}` : "");
   };
 
   /** Whom it reaches, said the way a person would say it. */
   const whoLabel = (task: ElderTask): string => {
-    if (task.assigneeKind === 'service_committee') {
-      return t('tasks.assignee.serviceCommittee');
+    if (task.assigneeKind === "service_committee") {
+      return t("tasks.assignee.serviceCommittee");
     }
-    if (task.assigneeKind === 'body_of_elders') {
-      return t('tasks.assignee.bodyOfElders');
+    if (task.assigneeKind === "body_of_elders") {
+      return t("tasks.assignee.bodyOfElders");
     }
     const names = (task.assignees ?? [])
       .map((p) => nameOf(p.id))
       .filter(Boolean);
-    if (names.length === 0) return nameOf(task.assigneePublisherId) ?? '';
+    if (names.length === 0) return nameOf(task.assigneePublisherId) ?? "";
     // All of them, named. «и ещё 1» saves a line and costs the reader the one
     // thing he came for: who is doing this. The row wraps if it must.
-    return names.join(', ');
+    return names.join(", ");
   };
 
   const chip = (text: string, bg: string, fg: string, key: string) => (
@@ -206,7 +204,8 @@ export default function TasksScreen() {
   };
 
   const row = (task: ElderTask) => {
-    const late = !!task.dueDate && task.dueDate < today && task.status === 'open';
+    const late =
+      !!task.dueDate && task.dueDate < today && task.status === "open";
     const who = whoLabel(task);
     const when = whenLabel(task);
     return (
@@ -217,13 +216,13 @@ export default function TasksScreen() {
           late && styles.cardLate,
           // A row on its way out steps back: quieter than the live ones, and
           // still perfectly readable while the strip below offers it back.
-          task.status === 'done' && styles.cardDone,
+          task.status === "done" && styles.cardDone,
         ]}
         onPress={() => setEditing(task)}
       >
         <View style={styles.cardHead}>
           <Text
-            style={[styles.title, task.status === 'done' && styles.titleDone]}
+            style={[styles.title, task.status === "done" && styles.titleDone]}
           >
             {titleOf(task)}
           </Text>
@@ -234,13 +233,13 @@ export default function TasksScreen() {
             onPress={() => closeMut.mutate(task)}
             style={({ pressed }) => [
               styles.check,
-              task.status === 'done' && styles.checkOn,
+              task.status === "done" && styles.checkOn,
               pressed && styles.checkPressed,
             ]}
             accessibilityRole="checkbox"
-            accessibilityState={{ checked: task.status === 'done' }}
+            accessibilityState={{ checked: task.status === "done" }}
           >
-            {task.status === 'done' ? (
+            {task.status === "done" ? (
               <Ionicons name="checkmark" size={17} color="#ffffff" />
             ) : null}
           </Pressable>
@@ -253,34 +252,34 @@ export default function TasksScreen() {
             t(`tasks.areas.${task.area}`),
             AREA_BG[task.area],
             AREA_FG[task.area],
-            'area',
+            "area",
           )}
           {when
             ? chip(
                 when,
-                late ? '#FCEBEB' : '#f1f5f9',
-                late ? '#A32D2D' : '#475569',
-                'when',
+                late ? "#FCEBEB" : "#f1f5f9",
+                late ? "#A32D2D" : "#475569",
+                "when",
               )
             : null}
           {task.kind
-            ? chip(t('tasks.recurring'), '#f1f5f9', '#475569', 'kind')
+            ? chip(t("tasks.recurring"), "#f1f5f9", "#475569", "kind")
             : null}
         </View>
 
         {/* A calendar task that has a screen behind it says so. The brothers
             open the task, not the reports section — this is where they are. */}
-        {task.kind === 'service_year_review' ? (
+        {task.kind === "service_year_review" ? (
           <Pressable
             onPress={() =>
               router.push(
-                    `/service-reports/pioneer-year-review?from=${encodeURIComponent('/tasks')}` as never,
-                  )
+                `/service-reports/pioneer-year-review?from=${encodeURIComponent("/tasks")}` as never,
+              )
             }
             hitSlop={6}
           >
             <Text style={styles.openScreen}>
-              {t('pioneerReview.openFromTask')}
+              {t("pioneerReview.openFromTask")}
             </Text>
           </Pressable>
         ) : null}
@@ -288,22 +287,22 @@ export default function TasksScreen() {
         {/* The task says there is something to plan; the page says which
             groups. The names cannot be in the task itself — its words are
             written from `kind` in the reader's own language. */}
-        {task.kind === 'service_overseer_visits' ? (
+        {task.kind === "service_overseer_visits" ? (
           <Pressable
-            onPress={() => router.push('/cart/service-overseer' as never)}
+            onPress={() => router.push("/cart/service-overseer" as never)}
             hitSlop={6}
           >
             <Text style={styles.openScreen}>
-              {t('serviceOverseer.openFromTask')}
+              {t("serviceOverseer.openFromTask")}
             </Text>
           </Pressable>
         ) : null}
 
         {/* Who closed it. The columns were there from the first day and the
             screen never showed them, so «сделано» named no one. */}
-        {task.status === 'done' && task.doneByName ? (
+        {task.status === "done" && task.doneByName ? (
           <Text style={styles.closedBy}>
-            {t('tasks.closedBy', { name: task.doneByName })}
+            {t("tasks.closedBy", { name: task.doneByName })}
           </Text>
         ) : null}
 
@@ -331,8 +330,8 @@ export default function TasksScreen() {
               >
                 <Text style={styles.detailsToggle}>
                   {expandedDetails[task.id]
-                    ? t('tasks.collapseDetails')
-                    : t('tasks.expandDetails')}
+                    ? t("tasks.collapseDetails")
+                    : t("tasks.expandDetails")}
                 </Text>
               </Pressable>
             ) : null}
@@ -342,14 +341,18 @@ export default function TasksScreen() {
         {who ? (
           <View style={styles.whoRow}>
             <Ionicons
-              name={task.assigneeKind === 'people' ? 'person-outline' : 'people-outline'}
+              name={
+                task.assigneeKind === "people"
+                  ? "person-outline"
+                  : "people-outline"
+              }
               size={14}
-              color={task.assigneeKind === 'people' ? '#64748b' : '#0369a1'}
+              color={task.assigneeKind === "people" ? "#64748b" : "#0369a1"}
             />
             <Text
               style={[
                 styles.who,
-                task.assigneeKind !== 'people' && styles.whoBody,
+                task.assigneeKind !== "people" && styles.whoBody,
               ]}
             >
               {who}
@@ -369,20 +372,20 @@ export default function TasksScreen() {
    * overdue» is worth reading.
    */
   const groups = (list: ElderTask[]) => {
-    const weekEnd = dayjs(today).add(7, 'day').format('YYYY-MM-DD');
+    const weekEnd = dayjs(today).add(7, "day").format("YYYY-MM-DD");
     return [
       {
-        key: 'overdue',
+        key: "overdue",
         items: list.filter((x) => !!x.dueDate && x.dueDate < today),
       },
       {
-        key: 'soon',
+        key: "soon",
         items: list.filter(
           (x) => !!x.dueDate && x.dueDate >= today && x.dueDate <= weekEnd,
         ),
       },
       {
-        key: 'later',
+        key: "later",
         items: list.filter((x) => !x.dueDate || x.dueDate > weekEnd),
       },
     ]
@@ -402,7 +405,7 @@ export default function TasksScreen() {
 
   const mine = open.filter((x) => {
     if (!myPublisherId) return false;
-    if (x.assigneeKind === 'people') {
+    if (x.assigneeKind === "people") {
       return (
         x.assignees?.some((p) => p.id === myPublisherId) ||
         x.assigneePublisherId === myPublisherId
@@ -418,9 +421,9 @@ export default function TasksScreen() {
    * вот туда»: the eye follows it out. Without that the list simply jumps, and
    * a jump is what people read as loss.
    */
-  const shown = (tab === 'mine' ? mine : open).concat(
+  const shown = (tab === "mine" ? mine : open).concat(
     justDone && !open.some((x) => x.id === justDone.id)
-      ? [{ ...justDone, status: 'done' as const }]
+      ? [{ ...justDone, status: "done" as const }]
       : [],
   );
 
@@ -430,7 +433,7 @@ export default function TasksScreen() {
           that looked empty whether it was empty or merely shut. Three counts
           at the top answer the question the header only posed. */}
       <View style={styles.tabs}>
-        {(['open', 'mine', 'done'] as const).map((k) => (
+        {(["open", "mine", "done"] as const).map((k) => (
           <Pressable
             key={k}
             style={[styles.tab, tab === k && styles.tabOn]}
@@ -438,24 +441,28 @@ export default function TasksScreen() {
           >
             <Text style={[styles.tabText, tab === k && styles.tabTextOn]}>
               {t(`tasks.tabs.${k}`)}
-              {k === 'open' && open.length > 0 ? ` ${open.length}` : ''}
-              {k === 'mine' && mine.length > 0 ? ` ${mine.length}` : ''}
+              {k === "open" && open.length > 0 ? ` ${open.length}` : ""}
+              {k === "mine" && mine.length > 0 ? ` ${mine.length}` : ""}
               {/* One number falls, another rises: the place a task went to
                   stops being invisible. */}
-              {k === 'done' && (doneQuery.data ?? []).length > 0
+              {k === "done" && (doneQuery.data ?? []).length > 0
                 ? ` ${(doneQuery.data ?? []).length}`
-                : ''}
+                : ""}
             </Text>
           </Pressable>
         ))}
       </View>
 
-      <ScrollView contentContainerStyle={styles.content}>
-        {tab === 'done' ? (
+      <ScrollView
+        contentContainerStyle={styles.content}
+        onScroll={lift.onScroll}
+        scrollEventThrottle={lift.scrollEventThrottle}
+      >
+        {tab === "done" ? (
           doneQuery.isLoading ? (
             <ActivityIndicator style={{ marginTop: 32 }} />
           ) : (doneQuery.data ?? []).length === 0 ? (
-            <Text style={styles.empty}>{t('tasks.noneDone')}</Text>
+            <Text style={styles.empty}>{t("tasks.noneDone")}</Text>
           ) : (
             (doneQuery.data ?? []).map(row)
           )
@@ -463,7 +470,7 @@ export default function TasksScreen() {
           <ActivityIndicator style={{ marginTop: 32 }} />
         ) : shown.length === 0 ? (
           <Text style={styles.empty}>
-            {tab === 'mine' ? t('tasks.noneMine') : t('tasks.empty')}
+            {tab === "mine" ? t("tasks.noneMine") : t("tasks.empty")}
           </Text>
         ) : (
           groups(shown).map((g) => (
@@ -471,7 +478,7 @@ export default function TasksScreen() {
               <Text
                 style={[
                   styles.groupLabel,
-                  g.key === 'overdue' && styles.groupLate,
+                  g.key === "overdue" && styles.groupLate,
                 ]}
               >
                 {t(`tasks.groups.${g.key}`)}
@@ -480,17 +487,16 @@ export default function TasksScreen() {
             </View>
           ))
         )}
-
       </ScrollView>
 
       {/* Beside the scroller, never inside it: a strip that lives inside a
           list appears at the foot of its CONTENT, metres below the screen. */}
       <UndoBar
         visible={!!justDone}
-        message={t('tasks.markedDone')}
+        message={t("tasks.markedDone")}
         onUndo={async () => {
           if (!justDone) return;
-          await tasksApi.update(justDone.id, { status: 'open' });
+          await tasksApi.update(justDone.id, { status: "open" });
           setJustDone(null);
           invalidate();
         }}
@@ -499,9 +505,9 @@ export default function TasksScreen() {
 
       {/* A bare plus does not say what it makes, and two floating buttons at
           the same corner compete. The agenda moves to the header. */}
-      <Pressable style={styles.fab} onPress={() => setEditing('new')}>
+      <Pressable style={styles.fab} onPress={() => setEditing("new")}>
         <Ionicons name="add" size={20} color="#ffffff" />
-        <Text style={styles.fabText}>{t('tasks.newShort')}</Text>
+        <Text style={styles.fabText}>{t("tasks.newShort")}</Text>
       </Pressable>
 
       <TaskForm
@@ -521,21 +527,21 @@ function TaskForm({
   onClose,
   onSaved,
 }: {
-  target: ElderTask | 'new' | null;
+  target: ElderTask | "new" | null;
   onClose: () => void;
   onSaved: () => void;
 }) {
   const { t } = useTranslation();
-  const editing = target && target !== 'new' ? target : null;
+  const editing = target && target !== "new" ? target : null;
   const visible = target !== null;
 
-  const [title, setTitle] = useState('');
-  const [details, setDetails] = useState('');
-  const [area, setArea] = useState<TaskArea>('other');
-  const [kind, setKind] = useState<TaskAssigneeKind>('people');
+  const [title, setTitle] = useState("");
+  const [details, setDetails] = useState("");
+  const [area, setArea] = useState<TaskArea>("other");
+  const [kind, setKind] = useState<TaskAssigneeKind>("people");
   const [people, setPeople] = useState<string[]>([]);
   const [dueDate, setDueDate] = useState<string | null>(null);
-  const [dueTime, setDueTime] = useState<string>('');
+  const [dueTime, setDueTime] = useState<string>("");
   const [meetingId, setMeetingId] = useState<string | null>(null);
   const [loadedFor, setLoadedFor] = useState<string | null>(null);
 
@@ -548,9 +554,9 @@ function TaskForm({
    * sometimes there is nobody else to ask, and the body decides.
    */
   const objectionsQuery = useQuery({
-    queryKey: ['tasks', 'audit-objections', people.join(',')],
+    queryKey: ["tasks", "audit-objections", people.join(",")],
     queryFn: () => taskRulesApi.auditObjections(people),
-    enabled: area === 'accounts' && people.length > 0,
+    enabled: area === "accounts" && people.length > 0,
   });
   const auditWarning = (() => {
     const found = objectionsQuery.data ?? {};
@@ -558,21 +564,20 @@ function TaskForm({
     return first ? t(`tasks.form.audit.${found[first]}`) : null;
   })();
 
-
   const meetingsQuery = useQuery({
-    queryKey: ['tasks', 'meetings'],
+    queryKey: ["tasks", "meetings"],
     queryFn: () => tasksApi.meetings(),
     enabled: visible,
   });
 
   // Fill the form from whatever was opened, once per opening.
-  const key = editing?.id ?? (target === 'new' ? 'new' : null);
+  const key = editing?.id ?? (target === "new" ? "new" : null);
   if (visible && key !== loadedFor) {
     setLoadedFor(key);
-    setTitle(editing?.title ?? '');
-    setDetails(editing?.details ?? '');
-    setArea(editing?.area ?? 'other');
-    setKind(editing?.assigneeKind ?? 'people');
+    setTitle(editing?.title ?? "");
+    setDetails(editing?.details ?? "");
+    setArea(editing?.area ?? "other");
+    setKind(editing?.assigneeKind ?? "people");
     setPeople(
       editing?.assignees?.length
         ? editing.assignees.map((p) => p.id)
@@ -580,7 +585,7 @@ function TaskForm({
           ? [editing.assigneePublisherId]
           : [],
     );
-    setDueTime(editing?.dueTime ?? '');
+    setDueTime(editing?.dueTime ?? "");
     setDueDate(editing?.dueDate ?? null);
     setMeetingId(editing?.eldersMeetingId ?? null);
   }
@@ -593,7 +598,7 @@ function TaskForm({
         details: details.trim() || null,
         area,
         assigneeKind: kind,
-        assigneePublisherIds: kind === 'people' ? people : [],
+        assigneePublisherIds: kind === "people" ? people : [],
         dueTime: dueTime.trim() || null,
         dueDate,
         eldersMeetingId: meetingId,
@@ -618,20 +623,20 @@ function TaskForm({
       onClose={onClose}
       variant="bottom"
       fills
-      title={editing ? t('tasks.form.edit') : t('tasks.form.new')}
-      closeLabel={t('common.close')}
+      title={editing ? t("tasks.form.edit") : t("tasks.form.new")}
+      closeLabel={t("common.close")}
       footer={
         <Pressable
           style={[styles.save, !canSave && styles.saveOff]}
           disabled={!canSave}
           onPress={() => saveMut.mutate()}
         >
-          <Text style={styles.saveText}>{t('common.save')}</Text>
+          <Text style={styles.saveText}>{t("common.save")}</Text>
         </Pressable>
       }
     >
       <ScrollView contentContainerStyle={styles.formBody}>
-        <Text style={styles.label}>{t('tasks.form.title')}</Text>
+        <Text style={styles.label}>{t("tasks.form.title")}</Text>
         {editing?.kind ? (
           /* A calendar task is named by the app, in the reader's own language,
              from its `kind`. The stored title is a placeholder — and the form
@@ -644,7 +649,7 @@ function TaskForm({
               {t(`tasks.calendar.${editing.kind}`)}
             </Text>
             <Text style={styles.lockedTitleHint}>
-              {t('tasks.form.calendarTitleLocked')}
+              {t("tasks.form.calendarTitleLocked")}
             </Text>
           </View>
         ) : (
@@ -652,12 +657,12 @@ function TaskForm({
             style={styles.input}
             value={title}
             onChangeText={setTitle}
-            placeholder={t('tasks.form.titlePlaceholder')}
+            placeholder={t("tasks.form.titlePlaceholder")}
             placeholderTextColor="#94a3b8"
           />
         )}
 
-        <Text style={styles.label}>{t('tasks.form.area')}</Text>
+        <Text style={styles.label}>{t("tasks.form.area")}</Text>
         <View style={styles.chipRow}>
           {AREAS.map((a) => (
             <Pressable
@@ -668,22 +673,20 @@ function TaskForm({
                 area === a && { backgroundColor: AREA_TINT[a] },
               ]}
             >
-              <Text
-                style={[styles.chipText, area === a && styles.chipTextOn]}
-              >
+              <Text style={[styles.chipText, area === a && styles.chipTextOn]}>
                 {t(`tasks.areas.${a}`)}
               </Text>
             </Pressable>
           ))}
         </View>
 
-        <Text style={styles.label}>{t('tasks.form.details')}</Text>
+        <Text style={styles.label}>{t("tasks.form.details")}</Text>
         <TextInput
           style={[styles.input, styles.inputMulti]}
           value={details}
           onChangeText={setDetails}
           multiline
-          placeholder={t('tasks.form.detailsPlaceholder')}
+          placeholder={t("tasks.form.detailsPlaceholder")}
           placeholderTextColor="#94a3b8"
         />
 
@@ -696,9 +699,9 @@ function TaskForm({
             The heading stood here TWICE — two edits made months apart, each
             adding its own, and nobody reads a form closely enough to notice a
             word repeated when it is the word they expect. */}
-        <Text style={styles.label}>{t('tasks.form.assignee')}</Text>
+        <Text style={styles.label}>{t("tasks.form.assignee")}</Text>
         <View style={styles.chipRow}>
-          {(['people', 'service_committee', 'body_of_elders'] as const).map(
+          {(["people", "service_committee", "body_of_elders"] as const).map(
             (k) => (
               <Pressable
                 key={k}
@@ -708,13 +711,13 @@ function TaskForm({
                 <Text
                   style={[styles.chipText, kind === k && styles.chipTextOn]}
                 >
-                  {k === 'people'
-                    ? t('tasks.form.assigneePeople')
+                  {k === "people"
+                    ? t("tasks.form.assigneePeople")
                     : t(
                         `tasks.assignee.${
-                          k === 'service_committee'
-                            ? 'serviceCommittee'
-                            : 'bodyOfElders'
+                          k === "service_committee"
+                            ? "serviceCommittee"
+                            : "bodyOfElders"
                         }`,
                       )}
                 </Text>
@@ -723,7 +726,7 @@ function TaskForm({
           )}
         </View>
 
-        {kind === 'people' ? (
+        {kind === "people" ? (
           <>
             {people.map((id, i) => (
               <PublisherSelector
@@ -753,20 +756,18 @@ function TaskForm({
               label=""
               value={null}
               genderFilter="brother"
-              onChange={(next) =>
-                next && setPeople((list) => [...list, next])
-              }
+              onChange={(next) => next && setPeople((list) => [...list, next])}
               absenceDate={dueDate ?? undefined}
             />
           </>
         ) : (
-          <Text style={styles.hint}>{t('tasks.form.bodyHint')}</Text>
+          <Text style={styles.hint}>{t("tasks.form.bodyHint")}</Text>
         )}
 
         {/* Putting it on a meeting is what turns a note into work: the body
             will look at this list that evening whether or not anyone
             remembered. */}
-        <Text style={styles.label}>{t('tasks.form.meeting')}</Text>
+        <Text style={styles.label}>{t("tasks.form.meeting")}</Text>
         <View style={styles.chipRow}>
           <Pressable
             onPress={() => setMeetingId(null)}
@@ -775,7 +776,7 @@ function TaskForm({
             <Text
               style={[styles.chipText, meetingId === null && styles.chipTextOn]}
             >
-              {t('tasks.form.noMeeting')}
+              {t("tasks.form.noMeeting")}
             </Text>
           </Pressable>
           {(meetingsQuery.data ?? []).map((m) => (
@@ -790,13 +791,13 @@ function TaskForm({
                   meetingId === m.id && styles.chipTextOn,
                 ]}
               >
-                {dayjs(m.date).format('DD.MM')}
+                {dayjs(m.date).format("DD.MM")}
               </Text>
             </Pressable>
           ))}
         </View>
 
-        <Text style={styles.label}>{t('tasks.form.due')}</Text>
+        <Text style={styles.label}>{t("tasks.form.due")}</Text>
         <DateField
           value={dueDate ?? undefined}
           onChange={(v) => setDueDate(v || null)}
@@ -807,15 +808,15 @@ function TaskForm({
             style={styles.delete}
             onPress={async () => {
               const ok = await confirm({
-                title: t('tasks.form.deleteTitle'),
-                body: t('tasks.form.deleteBody'),
-                confirmLabel: t('common.delete'),
+                title: t("tasks.form.deleteTitle"),
+                body: t("tasks.form.deleteBody"),
+                confirmLabel: t("common.delete"),
                 danger: true,
               });
               if (ok) removeMut.mutate();
             }}
           >
-            <Text style={styles.deleteText}>{t('common.delete')}</Text>
+            <Text style={styles.deleteText}>{t("common.delete")}</Text>
           </Pressable>
         ) : null}
       </ScrollView>
@@ -824,199 +825,199 @@ function TaskForm({
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f1f5f9' },
+  container: { flex: 1, backgroundColor: "#f1f5f9" },
   tabs: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 6,
     paddingHorizontal: 16,
     paddingTop: 12,
     paddingBottom: 4,
     maxWidth: 752,
-    width: '100%',
-    alignSelf: 'center',
+    width: "100%",
+    alignSelf: "center",
   },
   tab: {
     flex: 1,
-    alignItems: 'center',
+    alignItems: "center",
     paddingVertical: 7,
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: "#e2e8f0",
   },
-  tabOn: { backgroundColor: '#0e7490', borderColor: '#0e7490' },
-  tabText: { fontSize: 13, color: '#64748b' },
-  tabTextOn: { color: '#fff', fontFamily: 'Manrope_600SemiBold' },
+  tabOn: { backgroundColor: "#0e7490", borderColor: "#0e7490" },
+  tabText: { fontSize: 13, color: "#64748b" },
+  tabTextOn: { color: "#fff", fontFamily: "Manrope_600SemiBold" },
   groupLabel: {
     fontSize: 12,
-    color: '#64748b',
+    color: "#64748b",
     marginTop: 6,
     marginBottom: 6,
     maxWidth: 720,
-    width: '100%',
-    alignSelf: 'center',
+    width: "100%",
+    alignSelf: "center",
   },
-  groupLate: { color: '#A32D2D' },
+  groupLate: { color: "#A32D2D" },
   content: { padding: 16, paddingBottom: 96, gap: 10 },
   lateCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 7,
     padding: 11,
     borderRadius: 12,
-    backgroundColor: '#fffbeb',
+    backgroundColor: "#fffbeb",
     borderWidth: 1,
-    borderColor: '#fde68a',
+    borderColor: "#fde68a",
   },
-  lateText: { fontSize: 13.5, color: '#78350f', fontWeight: '600' },
-  tagRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 8 },
+  lateText: { fontSize: 13.5, color: "#78350f", fontWeight: "600" },
+  tagRow: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 8 },
   tag: { borderRadius: 999, paddingHorizontal: 9, paddingVertical: 3 },
   tagText: { fontSize: 12 },
-  whoRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 9 },
-  who: { fontSize: 13, color: '#64748b', flex: 1 },
-  whoBody: { color: '#0369a1' },
-  cardLate: { borderColor: '#F09595' },
+  whoRow: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: 9 },
+  who: { fontSize: 13, color: "#64748b", flex: 1 },
+  whoBody: { color: "#0369a1" },
+  cardLate: { borderColor: "#F09595" },
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderRadius: 12,
     padding: 14,
     borderWidth: 1,
-    borderColor: '#e8edf3',
+    borderColor: "#e8edf3",
     // A card on a wide browser window stretched the whole way and left the
     // title alone on a line metres from its own chips.
     maxWidth: 720,
-    width: '100%',
-    alignSelf: 'center',
+    width: "100%",
+    alignSelf: "center",
   },
-  cardHead: { flexDirection: 'row', alignItems: 'center', gap: 9 },
+  cardHead: { flexDirection: "row", alignItems: "center", gap: 9 },
   areaDot: { width: 9, height: 9, borderRadius: 999 },
   title: {
     flex: 1,
     fontSize: 15,
-    color: '#0f172a',
-    fontWeight: '700',
-    fontFamily: 'Manrope_700Bold',
+    color: "#0f172a",
+    fontWeight: "700",
+    fontFamily: "Manrope_700Bold",
   },
-  titleDone: { color: '#94a3b8', textDecorationLine: 'line-through' },
+  titleDone: { color: "#94a3b8", textDecorationLine: "line-through" },
   check: {
     width: 26,
     height: 26,
     borderRadius: 999,
     borderWidth: 1.5,
-    borderColor: '#cbd5e1',
-    alignItems: 'center',
-    justifyContent: 'center',
+    borderColor: "#cbd5e1",
+    alignItems: "center",
+    justifyContent: "center",
   },
   /** Filled and green: done is a state, not a different picture. */
-  checkOn: { backgroundColor: '#15803d', borderColor: '#15803d' },
+  checkOn: { backgroundColor: "#15803d", borderColor: "#15803d" },
   checkPressed: { opacity: 0.6, transform: [{ scale: 0.92 }] },
-  cardDone: { backgroundColor: '#fbfdfc', borderColor: '#d7e6dd' },
-  area: { fontSize: 12, color: '#64748b', marginLeft: 18 },
+  cardDone: { backgroundColor: "#fbfdfc", borderColor: "#d7e6dd" },
+  area: { fontSize: 12, color: "#64748b", marginLeft: 18 },
   // The 18pt indent belonged to the coloured dot that used to sit before the
   // title. The dot became a labelled chip and the indent was left behind,
   // holding the detail line out of line with everything above it.
-  details: { fontSize: 13.5, color: '#475569', lineHeight: 20, marginTop: 8 },
+  details: { fontSize: 13.5, color: "#475569", lineHeight: 20, marginTop: 8 },
   detailsToggle: {
     fontSize: 12.5,
-    color: '#0369a1',
-    fontWeight: '600',
-    fontFamily: 'Manrope_600SemiBold',
+    color: "#0369a1",
+    fontWeight: "600",
+    fontFamily: "Manrope_600SemiBold",
     marginTop: 4,
   },
-  closedBy: { fontSize: 12.5, color: '#64748b', marginTop: 8 },
+  closedBy: { fontSize: 12.5, color: "#64748b", marginTop: 8 },
   lockedTitle: {
     borderWidth: 1,
-    borderColor: '#e2e8f0',
-    backgroundColor: '#f8fafc',
+    borderColor: "#e2e8f0",
+    backgroundColor: "#f8fafc",
     borderRadius: 10,
     paddingHorizontal: 12,
     paddingVertical: 11,
   },
   lockedTitleText: {
     fontSize: 15,
-    color: '#0f172a',
-    fontWeight: '600',
-    fontFamily: 'Manrope_600SemiBold',
+    color: "#0f172a",
+    fontWeight: "600",
+    fontFamily: "Manrope_600SemiBold",
   },
   lockedTitleHint: {
     fontSize: 12,
-    color: '#94a3b8',
+    color: "#94a3b8",
     lineHeight: 17,
     marginTop: 4,
   },
   openScreen: {
     fontSize: 13.5,
-    color: '#0369a1',
-    fontWeight: '600',
-    fontFamily: 'Manrope_600SemiBold',
+    color: "#0369a1",
+    fontWeight: "600",
+    fontFamily: "Manrope_600SemiBold",
     marginTop: 10,
   },
-  metaRow: { flexDirection: 'row', gap: 12, flexWrap: 'wrap' },
-  meta: { fontSize: 12.5, color: '#475569' },
-  metaLate: { color: '#b45309', fontWeight: '700' },
-  empty: { fontSize: 14, color: '#64748b', textAlign: 'center', marginTop: 32 },
+  metaRow: { flexDirection: "row", gap: 12, flexWrap: "wrap" },
+  meta: { fontSize: 12.5, color: "#475569" },
+  metaLate: { color: "#b45309", fontWeight: "700" },
+  empty: { fontSize: 14, color: "#64748b", textAlign: "center", marginTop: 32 },
   doneToggle: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 6,
     paddingVertical: 12,
     marginTop: 6,
   },
   doneToggleText: {
     fontSize: 13.5,
-    color: '#0369a1',
-    fontWeight: '700',
-    fontFamily: 'Manrope_700Bold',
+    color: "#0369a1",
+    fontWeight: "700",
+    fontFamily: "Manrope_700Bold",
   },
   fab: {
-    position: 'absolute',
+    position: "absolute",
     right: 18,
     bottom: 22,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 7,
     paddingHorizontal: 18,
     paddingVertical: 13,
     borderRadius: 999,
-    backgroundColor: '#0e7490',
+    backgroundColor: "#0e7490",
   },
-  fabText: { color: '#fff', fontSize: 14, fontFamily: 'Manrope_600SemiBold' },
+  fabText: { color: "#fff", fontSize: 14, fontFamily: "Manrope_600SemiBold" },
   agendaBtn: {
-    position: 'absolute',
+    position: "absolute",
     left: 18,
     bottom: 30,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 6,
-    backgroundColor: '#e0f2fe',
+    backgroundColor: "#e0f2fe",
     borderRadius: 999,
     paddingVertical: 10,
     paddingHorizontal: 15,
   },
   agendaText: {
     fontSize: 13.5,
-    color: '#0369a1',
-    fontWeight: '700',
-    fontFamily: 'Manrope_700Bold',
+    color: "#0369a1",
+    fontWeight: "700",
+    fontFamily: "Manrope_700Bold",
   },
   formBody: { padding: 16, gap: 6, paddingBottom: 40 },
   warn: {
     fontSize: 13,
-    color: '#92400e',
-    backgroundColor: '#fffbeb',
-    borderColor: '#fde68a',
+    color: "#92400e",
+    backgroundColor: "#fffbeb",
+    borderColor: "#fde68a",
     borderWidth: 1,
     borderRadius: 10,
     padding: 10,
     marginTop: 8,
     lineHeight: 18,
   },
-  hint: { fontSize: 13, color: '#64748b', marginTop: 6, lineHeight: 18 },
+  hint: { fontSize: 13, color: "#64748b", marginTop: 6, lineHeight: 18 },
   label: {
     fontSize: 11.5,
-    color: '#94a3b8',
-    fontWeight: '700',
-    fontFamily: 'Manrope_700Bold',
-    textTransform: 'uppercase',
+    color: "#94a3b8",
+    fontWeight: "700",
+    fontFamily: "Manrope_700Bold",
+    textTransform: "uppercase",
     letterSpacing: 0.6,
     // Air above each heading rather than an even trickle between everything:
     // it is what turns eight fields into four readable sections.
@@ -1024,12 +1025,12 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   input: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderRadius: 10,
     paddingHorizontal: 12,
     paddingVertical: 11,
     fontSize: 15,
-    color: '#0f172a',
+    color: "#0f172a",
   },
   /* Long details are the norm here, not the exception: an instruction quoted
      in full runs to a paragraph, and reading it four lines at a time through a
@@ -1037,33 +1038,33 @@ const styles = StyleSheet.create({
   inputMulti: {
     minHeight: 150,
     maxHeight: 320,
-    textAlignVertical: 'top',
+    textAlignVertical: "top",
     lineHeight: 21,
     fontSize: 14.5,
   },
-  chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 7 },
+  chipRow: { flexDirection: "row", flexWrap: "wrap", gap: 7 },
   chip: {
     paddingVertical: 7,
     paddingHorizontal: 12,
     borderRadius: 999,
-    backgroundColor: '#e2e8f0',
+    backgroundColor: "#e2e8f0",
   },
-  chipText: { fontSize: 13, color: '#334155', fontWeight: '600' },
-  chipOnTeal: { backgroundColor: '#0e7490' },
-  chipTextOn: { color: '#fff' },
+  chipText: { fontSize: 13, color: "#334155", fontWeight: "600" },
+  chipOnTeal: { backgroundColor: "#0e7490" },
+  chipTextOn: { color: "#fff" },
   save: {
-    backgroundColor: '#0e7490',
+    backgroundColor: "#0e7490",
     borderRadius: 12,
     paddingVertical: 13,
-    alignItems: 'center',
+    alignItems: "center",
   },
-  saveOff: { backgroundColor: '#cbd5e1' },
+  saveOff: { backgroundColor: "#cbd5e1" },
   saveText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 15,
-    fontWeight: '700',
-    fontFamily: 'Manrope_700Bold',
+    fontWeight: "700",
+    fontFamily: "Manrope_700Bold",
   },
-  delete: { marginTop: 22, alignItems: 'center', paddingVertical: 12 },
-  deleteText: { color: '#dc2626', fontSize: 14, fontWeight: '600' },
+  delete: { marginTop: 22, alignItems: "center", paddingVertical: 12 },
+  deleteText: { color: "#dc2626", fontSize: 14, fontWeight: "600" },
 });

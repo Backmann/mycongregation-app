@@ -1,4 +1,4 @@
-import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
+import type { NativeStackNavigationOptions } from "@react-navigation/native-stack";
 
 /**
  * The one header used everywhere.
@@ -17,7 +17,7 @@ import type { NativeStackNavigationOptions } from '@react-navigation/native-stac
  * bar for good — white icons on teal read cleanly, which is why the root
  * layout can simply ask for the light style everywhere.
  */
-export const BRAND = '#0e7490';
+export const BRAND = "#0e7490";
 
 /**
  * Header action icons. They used to be the app's sky blue, which was right on
@@ -25,7 +25,7 @@ export const BRAND = '#0e7490';
  * but you had to look for them. White is the only tone that carries at 21px
  * over #0e7490.
  */
-export const HEADER_ICON = '#ffffff';
+export const HEADER_ICON = "#ffffff";
 
 /**
  * One mark size for every section, including Home. It used to vary — 22 on a
@@ -36,28 +36,36 @@ export const HEADER_MARK = 28;
 
 /** The title, when a screen renders its own instead of taking `title`. */
 export const headerTitleText = {
-  fontFamily: 'Manrope_700Bold' as const,
+  fontFamily: "Manrope_700Bold" as const,
   fontSize: 18,
-  color: '#ffffff',
+  color: "#ffffff",
 };
 
 export const headerOptions: NativeStackNavigationOptions = {
   headerStyle: { backgroundColor: BRAND },
-  headerTintColor: '#ffffff',
+  headerTintColor: "#ffffff",
   headerTitleStyle: {
-    fontFamily: 'Manrope_700Bold',
+    fontFamily: "Manrope_700Bold",
     fontSize: 18,
-    color: '#ffffff',
+    color: "#ffffff",
   },
   /**
-   * A shadow, not the stock hairline.
+   * A shadow, and only when it means something.
    *
    * The hairline was switched off for a good reason — under a coloured bar it
-   * reads as a seam. But with nothing at all the header sat flat against the
-   * content, and a list scrolling under it simply disappeared at the edge. An
-   * elevation shadow says the header is a layer above rather than a painted
-   * strip, and it is the platform's own, so it behaves like every other app.
+   * reads as a seam. A shadow says the header is a layer above rather than a
+   * painted strip. But drawn permanently it said that at the top of a list as
+   * loudly as in the middle of one, which is to say it said nothing: a flat
+   * bar over a flat list.
+   *
+   * So it starts absent and appears the moment content passes underneath —
+   * see lib/header-lift.ts. The screen tells the header it has moved; the
+   * header answers by lifting. That is depth from behaviour rather than from
+   * an effect, and it costs no library and no rebuild.
+   *
+   * Screens that do not scroll keep a flat header for ever, which is correct:
+   * there is nothing under it to be above.
    */
-  headerShadowVisible: true,
-  headerBackTitle: '',
+  headerShadowVisible: false,
+  headerBackTitle: "",
 };
