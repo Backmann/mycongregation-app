@@ -1,21 +1,22 @@
-import { useEffect, useState } from 'react';
-import { ActivityIndicator, Platform, Text, View } from 'react-native';
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
+import { useEffect, useState } from "react";
+import { ActivityIndicator, Platform, Text, View } from "react-native";
+import { Stack } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 import {
   MutationCache,
   QueryClient,
   QueryClientProvider,
-} from '@tanstack/react-query';
-import { extractErrorMessage } from '../lib/api';
-import { reportError } from '../lib/error-bus';
-import { ErrorToast } from '../components/ErrorToast';
-import { ConfirmHost } from '../components/ConfirmHost';
-import { AuthProvider } from '../lib/auth';
-import i18n, { initI18nFromStorage } from '../lib/i18n';
-import { LanguagePickerModal } from '../components/LanguagePicker';
-import { useAppFonts } from '../lib/fonts';
-import { useSelfApplyingUpdate } from '../lib/self-update';
+} from "@tanstack/react-query";
+import { extractErrorMessage } from "../lib/api";
+import { reportError } from "../lib/error-bus";
+import { ErrorToast } from "../components/ErrorToast";
+import { ConfirmHost } from "../components/ConfirmHost";
+import { AuthProvider } from "../lib/auth";
+import i18n, { initI18nFromStorage } from "../lib/i18n";
+import { LanguagePickerModal } from "../components/LanguagePicker";
+import { useAppFonts } from "../lib/fonts";
+import { useSelfApplyingUpdate } from "../lib/self-update";
+import { tapRefused, tapSaved } from "../lib/haptics";
 
 /**
  * Small SUMMARY endpoints that read a fact somebody else writes.
@@ -41,13 +42,13 @@ import { useSelfApplyingUpdate } from '../lib/self-update';
  * anything a single screen both writes and reads — that one refreshes itself.
  */
 const DERIVED_SUMMARY_KEYS = [
-  ['me', 'assignments'],
-  ['reports', 'my-standing'],
-  ['co-visit-mine'],
-  ['co-visit-field-service'],
-  ['co-visit-meetings'],
-  ['co-host-stats'],
-  ['cart-pairings'],
+  ["me", "assignments"],
+  ["reports", "my-standing"],
+  ["co-visit-mine"],
+  ["co-visit-field-service"],
+  ["co-visit-meetings"],
+  ["co-host-stats"],
+  ["cart-pairings"],
 ] as const;
 
 const queryClient = new QueryClient({
@@ -57,6 +58,10 @@ const queryClient = new QueryClient({
   // out of the strip, so nothing is said twice.
   mutationCache: new MutationCache({
     onError: (error, _vars, _ctx, mutation) => {
+      // Рукой раньше, чем глазом: отказ отзывается своим рисунком, и человек
+      // знает, что сохранения не было, ещё до того, как найдёт строку с
+      // причиной. Даже когда причина показана прямо в форме.
+      tapRefused();
       if (mutation.meta?.inlineError) return;
       reportError(extractErrorMessage(error));
     },
@@ -75,6 +80,10 @@ const queryClient = new QueryClient({
      * fall out of date.
      */
     onSuccess: (_data, _vars, _ctx, _mutation) => {
+      // Короткий толчок на каждое сохранившееся изменение — см. lib/haptics.ts.
+      // Здесь, а не в двухстах местах, по той же причине, что и обновление
+      // сводок ниже: список мест устаревает, а этот обработчик — нет.
+      tapSaved();
       for (const key of DERIVED_SUMMARY_KEYS) {
         void queryClient.invalidateQueries({ queryKey: key });
       }
@@ -106,13 +115,13 @@ export default function RootLayout() {
   // Service Worker registration for Web Push (web-only). Failures are
   // non-fatal — the app keeps working without push.
   useEffect(() => {
-    if (Platform.OS !== 'web') return;
-    if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) {
+    if (Platform.OS !== "web") return;
+    if (typeof navigator === "undefined" || !("serviceWorker" in navigator)) {
       return;
     }
     navigator.serviceWorker
-      .register('/service-worker.js')
-      .catch((err) => console.warn('SW registration failed:', err));
+      .register("/service-worker.js")
+      .catch((err) => console.warn("SW registration failed:", err));
   }, []);
 
   if (!ready || !fontsLoaded) return null;
@@ -123,15 +132,15 @@ export default function RootLayout() {
       <View
         style={{
           flex: 1,
-          alignItems: 'center',
-          justifyContent: 'center',
+          alignItems: "center",
+          justifyContent: "center",
           gap: 12,
-          backgroundColor: '#0e7490',
+          backgroundColor: "#0e7490",
         }}
       >
         <ActivityIndicator color="#ffffff" />
-        <Text style={{ color: '#e0f2fe', fontSize: 14 }}>
-          {i18n.t('update.applying')}
+        <Text style={{ color: "#e0f2fe", fontSize: 14 }}>
+          {i18n.t("update.applying")}
         </Text>
       </View>
     );
