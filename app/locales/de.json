@@ -1223,6 +1223,9 @@
       "readOnlyNote": "Diese Liste der Zugänge dient nur der Ansicht. Einen Zugang erteilst oder änderst du unter «Brüder»: dort wird das Konto der Person zugeordnet, die Rolle folgt der Ernennung.",
       "noPassword": {
         "badge": "Kein Passwort gesetzt",
+          "neverInvited": "Es wurde keine Einladung verschickt",
+          "codeLivesUntil": "Eingeladen — der Code gilt bis {{date}}",
+          "codeExpired": "Der Einladungscode ist am {{date}} abgelaufen — neuen ausstellen",
         "fix": "Setzen",
         "sheetTitle": "Passwort setzen",
         "placeholder": "Mindestens {{count}} Zeichen",

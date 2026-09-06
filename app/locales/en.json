@@ -1223,6 +1223,9 @@
       "readOnlyNote": "This list of logins is read-only. Grant or change a login under «Brothers»: that is where an account is tied to a person, and the role follows the appointment.",
       "noPassword": {
         "badge": "No password set",
+          "neverInvited": "No invitation has been sent",
+          "codeLivesUntil": "Invited — the code works until {{date}}",
+          "codeExpired": "The invitation code expired on {{date}} — issue a new one",
         "fix": "Set one",
         "sheetTitle": "Set a password",
         "placeholder": "At least {{count}} characters",
