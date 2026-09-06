@@ -21,6 +21,18 @@ export default function ForgotPasswordScreen() {
   const [login, setLogin] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [sent, setSent] = useState(false);
+  /**
+   * Has this person an address at all — asked FIRST, before anything else.
+   *
+   * Most of this congregation has none: forty-four of ninety-two when the
+   * address stopped being an identity. For them the old screen took a name,
+   * said «мы отправили письмо», and left them waiting for something that was
+   * never coming — the truthful line sat in small print underneath, read after
+   * the button had already been pressed.
+   *
+   * null means the question has not been answered yet.
+   */
+  const [hasEmail, setHasEmail] = useState<boolean | null>(null);
 
   const canSubmit = login.trim().length >= 3 && !submitting;
 
@@ -55,8 +67,32 @@ export default function ForgotPasswordScreen() {
                 <Text style={styles.sentText}>{t('auth.forgot.sent')}</Text>
               </View>
               <Text style={styles.hint}>{t('auth.forgot.checkSpam')}</Text>
-              {/* Said here rather than nowhere: most of this congregation has
-                  no address at all, and for them a letter is not coming. */}
+            </>
+          ) : hasEmail === null ? (
+            /* The question that decides whether this screen can help at all. */
+            <>
+              <Text style={styles.subtitle}>{t('auth.forgot.askEmail')}</Text>
+              <Pressable
+                style={styles.button}
+                onPress={() => setHasEmail(true)}
+              >
+                <Text style={styles.buttonText}>
+                  {t('auth.forgot.haveEmail')}
+                </Text>
+              </Pressable>
+              <Pressable
+                style={styles.secondaryButton}
+                onPress={() => setHasEmail(false)}
+              >
+                <Text style={styles.secondaryButtonText}>
+                  {t('auth.forgot.noEmail')}
+                </Text>
+              </Pressable>
+            </>
+          ) : hasEmail === false ? (
+            /* No letter is coming, and saying so is more use than a form. */
+            <>
+              <Text style={styles.subtitle}>{t('auth.forgot.noEmailWhat')}</Text>
               <Text style={styles.hint}>{t('auth.forgot.noEmailHint')}</Text>
             </>
           ) : (
@@ -140,6 +176,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 4,
   },
+  secondaryButton: {
+    borderRadius: 10,
+    paddingVertical: 12,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#cbd5e1',
+    backgroundColor: '#f8fafc',
+  },
+  secondaryButtonText: { color: '#0f172a', fontSize: 15, fontWeight: '600' },
   buttonDisabled: { opacity: 0.5 },
   buttonText: { color: '#fff', fontSize: 15, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
   sentRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },

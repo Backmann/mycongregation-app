@@ -50,6 +50,18 @@ export default function InviteScreen() {
    */
   const [loginName, setLoginName] = useState<string | null>(null);
   const [session, setSession] = useState<LoginResponse | null>(null);
+  /**
+   * Asking for a new code, without an elder.
+   *
+   * A code lives thirty days and then it is gone, and until now the only way
+   * to get another was to reach the person who issued it. The letter prints
+   * the login name in a box and says to keep it — so that is what is asked
+   * for here, with the address accepted too for anybody who has one.
+   */
+  const [asking, setAsking] = useState(false);
+  const [who, setWho] = useState('');
+  const [asked, setAsked] = useState(false);
+  const [askPending, setAskPending] = useState(false);
 
   const bareCode = code.replace(/-/g, '');
   const problem = password ? passwordProblem(password) : null;
@@ -173,7 +185,66 @@ export default function InviteScreen() {
           />
           <Text style={styles.hint}>{t('auth.invite.codeHint')}</Text>
           <Text style={styles.hint}>{t('auth.invite.newestLetter')}</Text>
-          <Text style={styles.hint}>{t('auth.invite.noCodeAsk')}</Text>
+          {asking ? (
+            <View style={styles.askBox}>
+              {asked ? (
+                <>
+                  <Text style={styles.askDone}>{t('auth.invite.askSent')}</Text>
+                  {/* Said plainly, because for most of this congregation it is
+                      the true answer: there is no address on their account and
+                      no letter is coming. */}
+                  <Text style={styles.hint}>{t('auth.invite.askNoEmail')}</Text>
+                </>
+              ) : (
+                <>
+                  <Text style={styles.askLead}>{t('auth.invite.askLead')}</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={who}
+                    onChangeText={setWho}
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    autoComplete="username"
+                    placeholder={t('auth.loginPlaceholder')}
+                    placeholderTextColor="#cbd5e1"
+                    editable={!askPending}
+                  />
+                  <Pressable
+                    style={[
+                      styles.askBtn,
+                      (askPending || who.trim().length < 3) &&
+                        styles.buttonDisabled,
+                    ]}
+                    disabled={askPending || who.trim().length < 3}
+                    onPress={() => {
+                      setAskPending(true);
+                      void authApi
+                        .resendInvite(who.trim())
+                        // The same ending either way — the server will not say
+                        // whether that name exists, and neither may this.
+                        .catch(() => undefined)
+                        .finally(() => {
+                          setAsked(true);
+                          setAskPending(false);
+                        });
+                    }}
+                  >
+                    {askPending ? (
+                      <ActivityIndicator color="#fff" />
+                    ) : (
+                      <Text style={styles.askBtnText}>
+                        {t('auth.invite.askSubmit')}
+                      </Text>
+                    )}
+                  </Pressable>
+                </>
+              )}
+            </View>
+          ) : (
+            <Pressable onPress={() => setAsking(true)} hitSlop={6}>
+              <Text style={styles.askLink}>{t('auth.invite.noCodeAsk')}</Text>
+            </Pressable>
+          )}
           <Text style={styles.label}>{t('auth.reset.newPassword')}</Text>
           <View style={styles.inputWrap}>
             <TextInput
@@ -282,6 +353,30 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   intro: { fontSize: 14, color: '#64748b', lineHeight: 20, marginBottom: 16 },
+  askLink: {
+    fontSize: 13,
+    color: '#0369a1',
+    fontWeight: '600',
+    marginTop: 6,
+  },
+  askBox: {
+    marginTop: 10,
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#bae6fd',
+    backgroundColor: '#f0f9ff',
+    gap: 8,
+  },
+  askLead: { fontSize: 13, color: '#0c4a6e', lineHeight: 19 },
+  askDone: { fontSize: 14, color: '#0c4a6e', fontWeight: '600' },
+  askBtn: {
+    backgroundColor: '#0ea5e9',
+    borderRadius: 10,
+    paddingVertical: 11,
+    alignItems: 'center',
+  },
+  askBtnText: { color: '#fff', fontSize: 14, fontWeight: '700' },
   label: {
     fontSize: 13,
     fontWeight: '600',

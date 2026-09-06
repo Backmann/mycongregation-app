@@ -989,8 +989,10 @@ export const authApi = {
    * will not say, and neither should this. A fresh code also returns the five
    * attempts that were spent, which is the point for whoever needs it.
    */
-  async resendInvite(email: string): Promise<void> {
-    await api.post('/auth/invite/resend', { email });
+  async resendInvite(login: string): Promise<void> {
+    // Both fields, same value: the server tells a name from an address by the
+    // @, and an older server that only understands `email` still gets one.
+    await api.post('/auth/invite/resend', { login, email: login });
   },
 };
 
