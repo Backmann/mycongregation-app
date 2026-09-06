@@ -1,5 +1,6 @@
-import { useCallback, useRef } from "react";
+import { createElement, useCallback, useRef } from "react";
 import { useNavigation } from "expo-router";
+import { HeaderSurface } from "../components/HeaderSurface";
 import type { NativeSyntheticEvent, NativeScrollEvent } from "react-native";
 
 /**
@@ -35,7 +36,18 @@ export function useHeaderLift(): {
       const next = e.nativeEvent.contentOffset.y > LIFT_AT;
       if (next === liftedRef.current) return;
       liftedRef.current = next;
-      navigation.setOptions({ headerShadowVisible: next });
+      // Своя подложка, а не `headerShadowVisible`: у той настройки в браузере
+      // нет тени вовсе — только нижняя граница цветом темы, неразличимая на
+      // бирюзовом. См. components/HeaderSurface.tsx.
+      //
+      // createElement, а не JSX, чтобы этот файл остался обычным .ts: одна
+      // строка здесь дешевле переименования файла, который читают семнадцать
+      // мест.
+      navigation.setOptions({
+        headerBackground: next
+          ? () => createElement(HeaderSurface, { lifted: true })
+          : undefined,
+      });
     },
     [navigation],
   );

@@ -67,5 +67,9 @@ export const headerOptions: NativeStackNavigationOptions = {
    * there is nothing under it to be above.
    */
   headerShadowVisible: false,
+  // Пока экран не сообщил, что содержимое уехало под шапку, подложка обычная —
+  // цвет берётся из headerStyle выше. Тень появляется вместе с собственной
+  // подложкой; см. lib/header-lift.ts и components/HeaderSurface.tsx.
+  headerBackground: undefined,
   headerBackTitle: "",
 };
