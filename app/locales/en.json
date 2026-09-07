@@ -2527,6 +2527,11 @@
       "duplicateConfirm": "Add anyway"
     },
     "log": {
+      "changeSpeaker": "Change",
+      "orTypeName": "Or type a speaker who is not in the directory:",
+      "longestAgoFirst": "Those away the longest come first",
+      "needSpeaker": "Pick a speaker or type a name",
+      "needBrother": "Pick a brother",
       "undoReplacement": "Undo",
       "undoTitle": "He came after all?",
       "undoBody": "{{name}} becomes this week\u2019s speaker again: the «did not come» mark goes, the programme returns to him, and the replacement entry is removed.",

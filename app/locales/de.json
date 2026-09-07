@@ -2527,6 +2527,11 @@
       "duplicateConfirm": "Trotzdem hinzufügen"
     },
     "log": {
+      "changeSpeaker": "Ändern",
+      "orTypeName": "Oder einen Redner eintragen, der nicht im Verzeichnis steht:",
+      "longestAgoFirst": "Oben stehen die, die am längsten nicht da waren",
+      "needSpeaker": "Redner wählen oder Namen eintragen",
+      "needBrother": "Bruder wählen",
       "undoReplacement": "Zurücknehmen",
       "undoTitle": "Er ist doch gekommen?",
       "undoBody": "{{name}} ist wieder der Redner dieser Woche: der Vermerk «nicht gekommen» verschwindet, der Plan kehrt zu ihm zurück, und der Eintrag des Ersatzredners wird entfernt.",

@@ -1367,16 +1367,30 @@ export default function TalkExchangeYearScreen() {
             ) : (
               <View style={{ flex: 1 }} />
             )}
-            <Pressable
-              style={[
-                styles.modalConfirm,
-                (!canSave || pending) && styles.disabled,
-              ]}
-              onPress={() => void save()}
-              disabled={!canSave || pending}
-            >
-              <Text style={styles.modalConfirmText}>{t("common.save")}</Text>
-            </Pressable>
+            <View style={{ alignItems: "flex-end", gap: 4 }}>
+              {/* Бледная кнопка молчала о том, чего ждёт. Форма при этом
+                  выглядит заполненной — дата и адрес на месте, — и человек
+                  ищет ошибку там, где её нет. */}
+              {!canSave ? (
+                <Text style={styles.needText}>
+                  {direction === "incoming"
+                    ? incomingMode === "local"
+                      ? t("talkCoordinator.log.needBrother")
+                      : t("talkCoordinator.log.needSpeaker")
+                    : t("talkCoordinator.log.needBrother")}
+                </Text>
+              ) : null}
+              <Pressable
+                style={[
+                  styles.modalConfirm,
+                  (!canSave || pending) && styles.disabled,
+                ]}
+                onPress={() => void save()}
+                disabled={!canSave || pending}
+              >
+                <Text style={styles.modalConfirmText}>{t("common.save")}</Text>
+              </Pressable>
+            </View>
           </View>
         }
       >
@@ -1449,6 +1463,15 @@ export default function TalkExchangeYearScreen() {
                       <Text style={styles.fieldLabel}>
                         {t("talkCoordinator.log.fromDirectory")}
                       </Text>
+                      {/* Шестеро наверху — не первые попавшиеся: список
+                          отсортирован по давности визита, и наверху те, кого
+                          дольше всего не было. Стоит это сказать, иначе выбор
+                          выглядит случайным. */}
+                      {!speakerSearch.trim() && !showAllSpeakers ? (
+                        <Text style={styles.dirCaption}>
+                          {t("talkCoordinator.log.longestAgoFirst")}
+                        </Text>
+                      ) : null}
                       <View style={styles.dirSearchRow}>
                         <Ionicons name="search" size={15} color="#94a3b8" />
                         <TextInput
@@ -1574,31 +1597,71 @@ export default function TalkExchangeYearScreen() {
                     </>
                   )}
 
-                  <Text style={styles.fieldLabel}>
-                    {t("talkCoordinator.log.speakerName")}
-                  </Text>
-                  <TextInput
-                    style={styles.input}
-                    value={speakerNameInput}
-                    onChangeText={(v) => {
-                      setSpeakerNameInput(v);
-                      setVisitingSpeakerId(null);
-                    }}
-                    placeholderTextColor="#94a3b8"
-                  />
+                  {/*
+                    Два пути назвать докладчика — по очереди, а не разом.
 
-                  <Text style={styles.fieldLabel}>
-                    {t("talkCoordinator.log.speakerCong")}
-                  </Text>
-                  <TextInput
-                    style={styles.input}
-                    value={speakerCongInput}
-                    onChangeText={(v) => {
-                      setSpeakerCongInput(v);
-                      setVisitingSpeakerId(null);
-                    }}
-                    placeholderTextColor="#94a3b8"
-                  />
+                    Раньше список и поля имени стояли одновременно и спорили:
+                    выбор из справочника заполнял поля, а правка любого из них
+                    молча СНИМАЛА выбор — вместе со связью, на которой держится
+                    история визита. Человек поправлял опечатку в собрании и
+                    терял привязку, не получив об этом ни слова.
+
+                    Теперь выбранный виден строкой, а поля показываются только
+                    когда никого не выбрали: гостя, которого нет в справочнике,
+                    по-прежнему вписывают руками — этот путь нужен и остаётся.
+                  */}
+                  {visitingSpeakerId ? (
+                    <View style={styles.chosenRow}>
+                      <Ionicons
+                        name="person-circle-outline"
+                        size={18}
+                        color="#0369a1"
+                      />
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.chosenName}>
+                          {speakerNameInput}
+                        </Text>
+                        {speakerCongInput ? (
+                          <Text style={styles.chosenCong}>
+                            {speakerCongInput}
+                          </Text>
+                        ) : null}
+                      </View>
+                      <Pressable
+                        hitSlop={8}
+                        onPress={() => setVisitingSpeakerId(null)}
+                      >
+                        <Text style={styles.chosenChange}>
+                          {t("talkCoordinator.log.changeSpeaker")}
+                        </Text>
+                      </Pressable>
+                    </View>
+                  ) : (
+                    <>
+                      <Text style={styles.orTypeIt}>
+                        {t("talkCoordinator.log.orTypeName")}
+                      </Text>
+                      <Text style={styles.fieldLabel}>
+                        {t("talkCoordinator.log.speakerName")}
+                      </Text>
+                      <TextInput
+                        style={styles.input}
+                        value={speakerNameInput}
+                        onChangeText={setSpeakerNameInput}
+                        placeholderTextColor="#94a3b8"
+                      />
+
+                      <Text style={styles.fieldLabel}>
+                        {t("talkCoordinator.log.speakerCong")}
+                      </Text>
+                      <TextInput
+                        style={styles.input}
+                        value={speakerCongInput}
+                        onChangeText={setSpeakerCongInput}
+                        placeholderTextColor="#94a3b8"
+                      />
+                    </>
+                  )}
 
                   {selSpeaker && (selSpeaker.phone || selSpeakerCong) ? (
                     <View style={styles.spInfoBox}>
@@ -2132,6 +2195,28 @@ const styles = StyleSheet.create({
     color: "#0f172a",
   },
   dirNameActive: { color: "#0369a1" },
+  chosenRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    padding: 11,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#bae6fd",
+    backgroundColor: "#f0f9ff",
+    marginTop: 8,
+  },
+  chosenName: { fontSize: 15, fontWeight: "700", color: "#0f172a" },
+  chosenCong: { fontSize: 13, color: "#64748b", marginTop: 1 },
+  chosenChange: { fontSize: 13, color: "#0369a1", fontWeight: "600" },
+  orTypeIt: {
+    fontSize: 13,
+    color: "#64748b",
+    marginTop: 12,
+    marginBottom: 2,
+  },
+  dirCaption: { fontSize: 12, color: "#94a3b8", marginBottom: 4 },
+  needText: { fontSize: 12.5, color: "#b45309" },
   dirCong: { fontSize: 12, color: "#64748b", marginTop: 1 },
   dirBadgeCol: { alignItems: "flex-end", gap: 2 },
   dirBadge: { fontSize: 12, color: "#64748b" },
