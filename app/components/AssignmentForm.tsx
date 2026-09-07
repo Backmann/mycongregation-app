@@ -208,6 +208,18 @@ export function AssignmentForm({
   const [replaceCong, setReplaceCong] = useState("");
   const [replaceReason, setReplaceReason] = useState("");
   const [replaceSpeakerId, setReplaceSpeakerId] = useState<string | null>(null);
+  const [replaceSearch, setReplaceSearch] = useState("");
+  /**
+   * Речь заменяющего.
+   *
+   * Приезжает другой брат — как правило, со СВОЕЙ речью, и до сих пор об этом
+   * никто не спрашивал: слот сохранял прежний номер, а новому записывалось то,
+   * чего он не произносил. Пусто — значит остаётся прежняя, и это законный
+   * случай: тот же доклад читает другой.
+   */
+  const [replaceTalkId, setReplaceTalkId] = useState<string | null>(null);
+  /** Заменить может и свой брат — так бывает чаще, чем приезд второго гостя. */
+  const [replaceLocalId, setReplaceLocalId] = useState<string | null>(null);
 
   const speakersQuery = useQuery({
     queryKey: ["visiting-speakers"],
@@ -216,22 +228,61 @@ export function AssignmentForm({
     enabled: replaceOpen || form.partKey === "public_talk_speaker",
   });
 
+  /**
+   * Кого предлагать в замену — по набранному, а не «первые шесть».
+   *
+   * В справочнике тридцать карточек и будет больше; шесть первых — это шесть
+   * случайных. Пока не набрано двух букв, показываем тех, кто ездил недавно:
+   * их и зовут чаще всего.
+   */
+  const replaceCandidates = (() => {
+    const all = (speakersQuery.data ?? []).map((sp) => ({
+      id: sp.id,
+      name: [sp.firstName, sp.lastName].filter(Boolean).join(" "),
+      cong: sp.externalCongregation?.name ?? null,
+    }));
+    // Тот, кто уже стоит в неделе, в списке не нужен: заменять им же самим
+    // нечего, и сервер такую замену отвергает.
+    const others = all.filter(
+      (x) => x.name !== (form.speakerName ?? "").trim(),
+    );
+    const typed = replaceSearch.trim().toLowerCase();
+    if (typed.length < 2) return others.slice(0, 5);
+    return others
+      .filter(
+        (x) =>
+          x.name.toLowerCase().includes(typed) ||
+          (x.cong ?? "").toLowerCase().includes(typed),
+      )
+      .slice(0, 6);
+  })();
+
+  /** Замена готова, когда названо, КТО говорит. Речь необязательна. */
+  const replaceReady =
+    !!replaceSpeakerId || !!replaceLocalId || replaceName.trim().length >= 2;
+
   const replaceMutation = useMutation({
     meta: { inlineError: true },
     mutationFn: () =>
       talkExchangeApi.replaceSpeaker({
         weekStartDate: form.weekStartDate,
-        ...(replaceSpeakerId
-          ? { visitingSpeakerId: replaceSpeakerId }
-          : {
-              speakerName: replaceName.trim(),
-              speakerCongregation: replaceCong.trim() || undefined,
-            }),
+        ...(replaceLocalId
+          ? { publisherId: replaceLocalId }
+          : replaceSpeakerId
+            ? { visitingSpeakerId: replaceSpeakerId }
+            : {
+                speakerName: replaceName.trim(),
+                speakerCongregation: replaceCong.trim() || undefined,
+              }),
+        ...(replaceTalkId ? { publicTalkId: replaceTalkId } : {}),
         reason: replaceReason.trim() || undefined,
       }),
     onSuccess: () => {
       setReplaceOpen(false);
       setReplaceSpeakerId(null);
+      setReplaceLocalId(null);
+      setReplaceTalkId(null);
+      setReplaceSearch("");
       setReplaceName("");
       setReplaceCong("");
       setReplaceReason("");
@@ -911,31 +962,93 @@ export function AssignmentForm({
                 ) : null}
                 {replaceOpen ? (
                   <View style={rp.box}>
+                    <View style={rp.head}>
+                      <Ionicons
+                        name="swap-horizontal"
+                        size={16}
+                        color="#0369a1"
+                      />
+                      <Text style={rp.title}>
+                        {t("assignments.replaceSpeaker.title")}
+                      </Text>
+                    </View>
                     <Text style={rp.lead}>
                       {t("assignments.replaceSpeaker.lead")}
                     </Text>
-                    {(speakersQuery.data ?? []).slice(0, 6).map((sp) => {
-                      const label = [sp.firstName, sp.lastName]
-                        .filter(Boolean)
-                        .join(" ");
+
+                    {/* Шаг первый: кто. Поиск, а не первые шесть карточек:
+                        справочник вырос, и «первые шесть» — это случайные
+                        шесть. */}
+                    <Text style={rp.step}>
+                      {t("assignments.replaceSpeaker.stepWho")}
+                    </Text>
+                    <TextInput
+                      style={rp.search}
+                      value={replaceSearch}
+                      onChangeText={setReplaceSearch}
+                      placeholder={t("assignments.replaceSpeaker.searchHint")}
+                      placeholderTextColor="#94a3b8"
+                    />
+                    {replaceCandidates.map((sp) => {
                       const on = replaceSpeakerId === sp.id;
                       return (
                         <Pressable
                           key={sp.id}
                           style={[rp.row, on ? rp.rowOn : null]}
-                          onPress={() => setReplaceSpeakerId(on ? null : sp.id)}
+                          onPress={() => {
+                            setReplaceSpeakerId(on ? null : sp.id);
+                            setReplaceLocalId(null);
+                          }}
                         >
-                          <Text style={rp.rowName}>{label}</Text>
-                          {sp.externalCongregation ? (
-                            <Text style={rp.rowCong}>
-                              {sp.externalCongregation.name}
-                            </Text>
+                          <View style={{ flex: 1 }}>
+                            <Text style={rp.rowName}>{sp.name}</Text>
+                            {sp.cong ? (
+                              <Text style={rp.rowCong}>{sp.cong}</Text>
+                            ) : null}
+                          </View>
+                          {on ? (
+                            <Ionicons
+                              name="checkmark-circle"
+                              size={18}
+                              color="#0284c7"
+                            />
                           ) : null}
                         </Pressable>
                       );
                     })}
+                    {replaceSearch.trim().length >= 2 &&
+                    replaceCandidates.length === 0 ? (
+                      <Text style={rp.none}>
+                        {t("assignments.replaceSpeaker.noMatches")}
+                      </Text>
+                    ) : null}
+
+                    {/* Свой брат — случай не реже приезда второго гостя. */}
                     {replaceSpeakerId ? null : (
                       <>
+                        <Text style={rp.step}>
+                          {t("assignments.replaceSpeaker.stepLocal")}
+                        </Text>
+                        <PublisherSelector
+                          label=""
+                          value={replaceLocalId}
+                          onChange={(id) => {
+                            setReplaceLocalId(id);
+                            if (id) setReplaceSpeakerId(null);
+                          }}
+                          requiredCapability={requiredCap}
+                          currentWeekStart={form.weekStartDate}
+                          currentEventType={form.eventType}
+                        />
+                      </>
+                    )}
+
+                    {/* Или просто имя — для гостя, которого незачем заводить. */}
+                    {replaceSpeakerId || replaceLocalId ? null : (
+                      <>
+                        <Text style={rp.step}>
+                          {t("assignments.replaceSpeaker.stepByName")}
+                        </Text>
                         <FormField
                           label={t("assignments.form.field.speakerName")}
                           value={replaceName}
@@ -954,6 +1067,21 @@ export function AssignmentForm({
                         />
                       </>
                     )}
+
+                    {/* Шаг второй: что он говорит. Раньше об этом не
+                        спрашивали, и новому доставалась чужая речь. */}
+                    <Text style={rp.step}>
+                      {t("assignments.replaceSpeaker.stepTalk")}
+                    </Text>
+                    <PublicTalkSelector
+                      label=""
+                      value={replaceTalkId}
+                      onChange={(talk) => setReplaceTalkId(talk?.id ?? null)}
+                    />
+                    <Text style={rp.note}>
+                      {t("assignments.replaceSpeaker.talkKeepHint")}
+                    </Text>
+
                     <FormField
                       label={t("assignments.replaceSpeaker.reason")}
                       value={replaceReason}
@@ -964,16 +1092,8 @@ export function AssignmentForm({
                       {t("assignments.replaceSpeaker.note")}
                     </Text>
                     <Pressable
-                      style={[
-                        rp.confirm,
-                        !replaceSpeakerId && replaceName.trim().length < 2
-                          ? rp.confirmOff
-                          : null,
-                      ]}
-                      disabled={
-                        replaceMutation.isPending ||
-                        (!replaceSpeakerId && replaceName.trim().length < 2)
-                      }
+                      style={[rp.confirm, !replaceReady ? rp.confirmOff : null]}
+                      disabled={replaceMutation.isPending || !replaceReady}
                       onPress={() => replaceMutation.mutate()}
                     >
                       {replaceMutation.isPending ? (
@@ -1429,6 +1549,29 @@ const styles = StyleSheet.create({
  * было видно целиком, не листая файл на тысячу строк.
  */
 const rp = StyleSheet.create({
+  /** Шапка окна: значок и название, чтобы панель читалась как отдельное дело. */
+  head: { flexDirection: "row", alignItems: "center", gap: 7, marginBottom: 2 },
+  title: { fontSize: 14.5, fontWeight: "700", color: "#0c4a6e" },
+  /** Подпись ступени: «кто», «что говорит». */
+  step: {
+    fontSize: 11.5,
+    fontWeight: "700",
+    color: "#0369a1",
+    letterSpacing: 0.3,
+    textTransform: "uppercase",
+    marginTop: 6,
+  },
+  search: {
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+    backgroundColor: "#ffffff",
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    fontSize: 14,
+    color: "#0f172a",
+  },
+  none: { fontSize: 12.5, color: "#64748b", paddingVertical: 2 },
   link: {
     flexDirection: "row",
     alignItems: "center",

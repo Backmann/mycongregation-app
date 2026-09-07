@@ -884,6 +884,14 @@
       "lead": "Aus dem Verzeichnis — auswählen, damit der Name genau gleich geschrieben wird"
     },
     "replaceSpeaker": {
+      "title": "Ein anderer Redner ist gekommen",
+      "stepWho": "Wer spricht heute",
+      "searchHint": "Suche nach Name oder Versammlung",
+      "noMatches": "Niemand gefunden. Namen unten eintragen — die Karte entsteht von selbst.",
+      "stepLocal": "Oder ein Bruder von uns",
+      "stepByName": "Oder Namen eintragen",
+      "stepTalk": "Welchen Vortrag er hält",
+      "talkKeepHint": "Nichts wählen — der bisherige Vortrag bleibt.",
       "action": "Ein anderer Redner ist gekommen",
       "lead": "Wer spricht heute? Der bisherige Besuch bleibt in der Geschichte als nicht stattgefunden — daran sieht man später, wer eingeladen war und nicht kam.",
       "reason": "Grund (optional)",

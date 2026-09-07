@@ -884,6 +884,14 @@
       "lead": "From the directory — pick one so the name is written exactly the same"
     },
     "replaceSpeaker": {
+      "title": "A different speaker came",
+      "stepWho": "Who is speaking today",
+      "searchHint": "Search by name or congregation",
+      "noMatches": "Nobody found. Type the name below — a card will be created.",
+      "stepLocal": "Or one of our brothers",
+      "stepByName": "Or type a name",
+      "stepTalk": "Which talk he gives",
+      "talkKeepHint": "Leave unset to keep the talk as it is.",
       "action": "A different speaker came",
       "lead": "Who is speaking today? The previous visit stays in the history as one that did not happen — that is how you later see who was invited and did not come.",
       "reason": "Reason (optional)",
