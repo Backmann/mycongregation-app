@@ -936,7 +936,10 @@
         "requiredSkill": "Required skill",
         "talkThemeManual": "Theme (manual)"
       },
-      "placeholder": {
+      "hint": {
+          "talkThemeManual": "Fill this in when the talk is not in the catalogue: a special talk, a visitor’s subject, a theme announced differently."
+        },
+        "placeholder": {
         "weekStart": "2026-05-04",
         "partKey": "bible_reading",
         "partTitleOverride": "e.g. Numbers 1:1-19",

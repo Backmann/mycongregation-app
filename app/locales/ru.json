@@ -944,7 +944,10 @@
         "requiredSkill": "Требуемый навык",
         "talkThemeManual": "Тема (вручную)"
       },
-      "placeholder": {
+      "hint": {
+          "talkThemeManual": "Заполняйте, когда речи нет в каталоге: специальная речь, доклад приезжего, тема, объявленная иначе."
+        },
+        "placeholder": {
         "weekStart": "2026-05-04",
         "partKey": "bible_reading",
         "partTitleOverride": "напр., Числа 1:1—19",

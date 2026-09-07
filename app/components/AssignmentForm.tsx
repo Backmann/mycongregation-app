@@ -831,19 +831,30 @@ export function AssignmentForm({
               value={form.publicTalkId}
               onChange={handleTalkSelect}
             />
-            {isCoWeek && (
-              <FormField
-                label={t("assignments.form.field.talkThemeManual")}
-                value={form.partTitle ?? ""}
-                onChangeText={(v) => {
-                  update("partTitle", v);
-                  queueInstant({ partTitle: v });
-                }}
-                onBlur={flushInstant}
-                placeholder={t("assignments.form.placeholder.talkThemeManual")}
-                multiline
-              />
-            )}
+            {/*
+              Тема вручную — на ЛЮБОЙ неделе, а не только при визите районного.
+
+              Условие стояло с тех пор, когда «речь не из каталога» считалась
+              случаем районного. На деле их больше: специальная речь, доклад
+              приезжего, которого нет в каталоге, тема, объявленная иначе. У
+              собрания такая речь уже стоит в программе — а вписать её через
+              приложение было нельзя: поле показывалось только на неделе
+              визита, и человек упирался в выбор из каталога, где нужного нет.
+            */}
+            <FormField
+              label={t("assignments.form.field.talkThemeManual")}
+              value={form.partTitle ?? ""}
+              onChangeText={(v) => {
+                update("partTitle", v);
+                queueInstant({ partTitle: v });
+              }}
+              onBlur={flushInstant}
+              placeholder={t("assignments.form.placeholder.talkThemeManual")}
+              multiline
+            />
+            <Text style={rp.note}>
+              {t("assignments.form.hint.talkThemeManual")}
+            </Text>
             {isCoWeek ? coNoteBlock : null}
             {isCoWeek ? coPickerBlock : null}
           </FormSection>

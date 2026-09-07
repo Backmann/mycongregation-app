@@ -936,7 +936,10 @@
         "requiredSkill": "Erforderliche Fähigkeit",
         "talkThemeManual": "Thema (manuell)"
       },
-      "placeholder": {
+      "hint": {
+          "talkThemeManual": "Ausfüllen, wenn der Vortrag nicht im Katalog steht: Sondervortrag, Thema eines Gastes, anders angekündigtes Thema."
+        },
+        "placeholder": {
         "weekStart": "2026-05-04",
         "partKey": "bible_reading",
         "partTitleOverride": "z. B. 4. Mose 1:1–19",
