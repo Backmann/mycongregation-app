@@ -233,6 +233,20 @@ export default function SpeakerProfileScreen() {
         )}
       </View>
 
+      {/*
+        Назначался и не приехал.
+        Отдельной полосой, а не вперемешку с визитами: в счёт это не идёт, но
+        и молчать нельзя — по этому решают, звать ли снова.
+      */}
+      {stats.missedVisits.length > 0 ? (
+        <>
+          <Text style={styles.sectionTitle}>
+            {t('talkCoordinator.speakerProfile.missed')}
+          </Text>
+          <View style={styles.card}>{stats.missedVisits.map(renderVisit)}</View>
+        </>
+      ) : null}
+
       {/* Repertoire */}
       {speaker.talkNumbers.length > 0 ? (
         <>

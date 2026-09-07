@@ -73,7 +73,19 @@ const PLANNER_EVENT_TYPES = new Set([
 
 type WeekRow = { monday: string; date: string; time: string | null; address: string | null };
 type MonthBlock = { key: string; title: string; rows: WeekRow[] };
-type SlotState = { incoming?: TalkExchange; outgoing: TalkExchange[] };
+type SlotState = {
+  incoming?: TalkExchange;
+  /**
+   * Визиты этой недели, которые не состоялись.
+   *
+   * После замены в неделе живут ДВЕ записи «К нам»: тот, кого ждали, и тот,
+   * кто приехал. Держать их в одном поле нельзя — кто-то один вытеснит
+   * другого, и в карточке недели окажется человек, которого на встрече не
+   * было.
+   */
+  missed: TalkExchange[];
+  outgoing: TalkExchange[];
+};
 
 function mondayISO(dateISO: string): string {
   return formatDateISO(startOfWeekMonday(new Date(`${dateISO}T00:00:00`)));
@@ -344,9 +356,15 @@ export default function TalkExchangeYearScreen() {
     const m = new Map<string, SlotState>();
     for (const e of listQuery.data ?? []) {
       const k = mondayISO(e.date);
-      const slot = m.get(k) ?? { outgoing: [] };
-      if (e.direction === 'incoming') slot.incoming = e;
-      else slot.outgoing.push(e);
+      const slot = m.get(k) ?? { missed: [], outgoing: [] };
+      if (e.direction === 'incoming') {
+        // Состоявшийся визит — тот, что стоит в неделе. Несостоявшиеся живут
+        // рядом и подписаны, а не подменяют его: до сих пор в поле оставался
+        // последний пришедший из ответа, то есть иногда именно тот, кого на
+        // встрече не было.
+        if (e.status === 'did_not_happen') slot.missed.push(e);
+        else slot.incoming = e;
+      } else slot.outgoing.push(e);
       m.set(k, slot);
     }
     // sort each week's outgoing by date then brother
@@ -360,7 +378,14 @@ export default function TalkExchangeYearScreen() {
   const incomingByTalk = useMemo(() => {
     const m = new Map<string, TalkExchange[]>();
     for (const e of listQuery.data ?? []) {
-      if (e.direction !== 'incoming' || !e.publicTalkId) continue;
+      // Речь, которую не произнесли, у нас не звучала: иначе подсказка «эта
+      // речь у нас уже была» отговаривала бы от темы, которой никто не слышал.
+      if (
+        e.direction !== 'incoming' ||
+        !e.publicTalkId ||
+        e.status === 'did_not_happen'
+      )
+        continue;
       const arr = m.get(e.publicTalkId) ?? [];
       arr.push(e);
       m.set(e.publicTalkId, arr);
@@ -941,7 +966,7 @@ export default function TalkExchangeYearScreen() {
               {m.title}
             </Text>
             {m.rows.map((w) => {
-              const slot = byWeek.get(w.monday) ?? { outgoing: [] };
+              const slot = byWeek.get(w.monday) ?? { missed: [], outgoing: [] };
               const upcoming = w.date >= todayISO;
               const events = eventsForWeekend(w.monday);
               return (
@@ -971,6 +996,28 @@ export default function TalkExchangeYearScreen() {
                         </Text>
                       </View>
                     ) : (
+                      <>
+                      {slot.missed.length > 0 ? (
+                        <View style={styles.missedBox}>
+                          {slot.missed.map((mv) => (
+                            <View key={mv.id} style={styles.missedRow}>
+                              <Ionicons
+                                name="close-circle-outline"
+                                size={13}
+                                color="#b45309"
+                              />
+                              <Text style={styles.missedText}>
+                                {t('talkCoordinator.log.didNotCome', {
+                                  name:
+                                    incomingName(mv) ??
+                                    t('talkCoordinator.log.unknownSpeaker'),
+                                })}
+                                {mv.note ? ` · ${mv.note}` : ''}
+                              </Text>
+                            </View>
+                          ))}
+                        </View>
+                      ) : null}
                       <Slot
                         label={t('talkCoordinator.log.filter.incoming')}
                         accent="#0369a1"
@@ -1006,6 +1053,7 @@ export default function TalkExchangeYearScreen() {
                           </>
                         ) : null}
                       </Slot>
+                      </>
                     )}
                     <View style={styles.outCol}>
                       <Text style={[styles.slotLabel, { color: '#b45309', marginBottom: 4 }]}>
@@ -1658,6 +1706,9 @@ const styles = StyleSheet.create({
   slotLabel: { fontSize: 10, fontWeight: '700', fontFamily: 'Manrope_700Bold', textTransform: 'uppercase', letterSpacing: 0.4 },
   slotMain: { fontSize: 13, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0f172a', marginTop: 3 },
   slotSub: { fontSize: 11, color: '#475569', marginTop: 1 },
+  missedBox: { marginBottom: 6, gap: 4 },
+  missedRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  missedText: { flex: 1, fontSize: 12, color: '#b45309', lineHeight: 17 },
   slotCong: { fontSize: 11, color: '#64748b', marginTop: 1 },
   slotAdd: { fontSize: 12, color: '#94a3b8', marginTop: 4 },
   outCol: { flex: 1, borderRadius: 10, padding: 8, backgroundColor: '#fffbeb', minHeight: 56 },

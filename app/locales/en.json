@@ -2382,6 +2382,7 @@
   },
   "talkCoordinator": {
     "speakerProfile": {
+      "missed": "Scheduled, did not come",
       "title": "Speaker",
       "notFound": "Speaker not found",
       "never": "not yet",
@@ -2511,6 +2512,7 @@
       "duplicateConfirm": "Add anyway"
     },
     "log": {
+      "didNotCome": "{{name}} — was scheduled, did not come",
       "title": "Incoming / Outgoing log",
       "subtitle": "Visiting and outgoing talks in one list",
       "add": "Add entry",
