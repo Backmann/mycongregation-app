@@ -2523,6 +2523,9 @@
       "duplicateConfirm": "Trotzdem hinzufügen"
     },
     "log": {
+      "undoReplacement": "Zurücknehmen",
+      "undoTitle": "Er ist doch gekommen?",
+      "undoBody": "{{name}} ist wieder der Redner dieser Woche: der Vermerk «nicht gekommen» verschwindet, der Plan kehrt zu ihm zurück, und der Eintrag des Ersatzredners wird entfernt.",
       "didNotCome": "{{name}} — war eingeplant, kam nicht",
       "title": "Protokoll „Zu uns / Von uns“",
       "subtitle": "Eingehende und ausgehende Vorträge in einer Liste",

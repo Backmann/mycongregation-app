@@ -2523,6 +2523,9 @@
       "duplicateConfirm": "Add anyway"
     },
     "log": {
+      "undoReplacement": "Undo",
+      "undoTitle": "He came after all?",
+      "undoBody": "{{name}} becomes this week\u2019s speaker again: the «did not come» mark goes, the programme returns to him, and the replacement entry is removed.",
       "didNotCome": "{{name}} — was scheduled, did not come",
       "title": "Incoming / Outgoing log",
       "subtitle": "Visiting and outgoing talks in one list",

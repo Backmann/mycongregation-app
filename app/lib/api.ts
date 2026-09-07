@@ -1,21 +1,21 @@
-import axios, { AxiosError } from 'axios';
-import { Platform } from 'react-native';
-import Constants from 'expo-constants';
-import { storage } from './storage';
-import type { ApplyParsedPayload } from './mwb-parser';
+import axios, { AxiosError } from "axios";
+import { Platform } from "react-native";
+import Constants from "expo-constants";
+import { storage } from "./storage";
+import type { ApplyParsedPayload } from "./mwb-parser";
 
 function resolveApiUrl(): string {
   const url = process.env.EXPO_PUBLIC_API_URL;
   if (url) return url;
   if (__DEV__) {
     console.warn(
-      '[api] EXPO_PUBLIC_API_URL not set; using http://localhost:3000/api (dev only)',
+      "[api] EXPO_PUBLIC_API_URL not set; using http://localhost:3000/api (dev only)",
     );
-    return 'http://localhost:3000/api';
+    return "http://localhost:3000/api";
   }
   throw new Error(
-    'EXPO_PUBLIC_API_URL must be set for production builds. ' +
-      'Add it to .env.production before running expo export.',
+    "EXPO_PUBLIC_API_URL must be set for production builds. " +
+      "Add it to .env.production before running expo export.",
   );
 }
 
@@ -38,10 +38,10 @@ const API_URL = resolveApiUrl();
  * Keychain/Keystore, which is stronger than any cookie, so that path is
  * untouched.
  */
-const USE_COOKIE_AUTH = Platform.OS === 'web';
+const USE_COOKIE_AUTH = Platform.OS === "web";
 
 /** Web clients declare cookie mode; the server never has to guess. */
-const AUTH_MODE_HEADER = 'X-Auth-Mode';
+const AUTH_MODE_HEADER = "X-Auth-Mode";
 
 let memoryAccessToken: string | null = null;
 
@@ -57,8 +57,8 @@ async function setAccessToken(token: string): Promise<void> {
   await storage.setItem(TOKEN_KEY, token);
 }
 
-export const TOKEN_KEY = 'mycongregation.token';
-export const REFRESH_TOKEN_KEY = 'mycongregation.refresh_token';
+export const TOKEN_KEY = "mycongregation.token";
+export const REFRESH_TOKEN_KEY = "mycongregation.refresh_token";
 
 /**
  * Decode JWT payload (no signature verification) to check if the token is
@@ -67,12 +67,12 @@ export const REFRESH_TOKEN_KEY = 'mycongregation.refresh_token';
  */
 function isTokenExpiringSoon(token: string, bufferSec = 180): boolean {
   try {
-    const parts = token.split('.');
+    const parts = token.split(".");
     if (parts.length !== 3) return true;
-    const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
-    const padded = base64 + '='.repeat((4 - (base64.length % 4)) % 4);
+    const base64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+    const padded = base64 + "=".repeat((4 - (base64.length % 4)) % 4);
     const payload = JSON.parse(atob(padded));
-    if (typeof payload.exp !== 'number') return false;
+    if (typeof payload.exp !== "number") return false;
     return Date.now() >= payload.exp * 1000 - bufferSec * 1000;
   } catch {
     return true;
@@ -110,39 +110,39 @@ export function clientDescription(): string | null {
   // браузер 1.1.0». The user-agent, meanwhile, describes a browser honestly:
   // Windows, iPhone, Mac. So the web says nothing and lets the server read the
   // agent, which is the one client that string was always good for.
-  if (Platform.OS === 'web') return null;
+  if (Platform.OS === "web") return null;
 
-  const platform = Platform.OS === 'android' ? 'android' : 'ios';
+  const platform = Platform.OS === "android" ? "android" : "ios";
 
   // Read at CALL time, not when this module loads. Computed once at load, the
   // description came out with «platform=android» and empty os and app — the
   // platform is known from the first instant, the build's own details are not
   // necessarily so. A function costs nothing per request and removes the
   // question of what is ready when.
-  const os = Platform.Version == null ? '' : String(Platform.Version);
+  const os = Platform.Version == null ? "" : String(Platform.Version);
   const version =
     Constants.expoConfig?.version ??
     // Older shapes of the same fact, for builds where expoConfig is not the
     // one carrying it.
     (Constants as { manifest?: { version?: string } }).manifest?.version ??
     (Constants as { expoVersion?: string }).expoVersion ??
-    '';
+    "";
 
   return [
     `platform=${platform}`,
-    'kind=app',
+    "kind=app",
     `os=${os}`,
     `app=${version}`,
-  ].join('; ');
+  ].join("; ");
 }
 
 api.interceptors.request.use(async (config) => {
   // Sent on every request, so a session started before this existed starts
   // describing itself the moment the app is opened again.
   const described = clientDescription();
-  if (described) config.headers.set('X-Client', described);
-  if (USE_COOKIE_AUTH && config.url?.includes('/auth/')) {
-    config.headers.set(AUTH_MODE_HEADER, 'cookie');
+  if (described) config.headers.set("X-Client", described);
+  if (USE_COOKIE_AUTH && config.url?.includes("/auth/")) {
+    config.headers.set(AUTH_MODE_HEADER, "cookie");
   }
   let token = await getAccessToken();
 
@@ -150,9 +150,9 @@ api.interceptors.request.use(async (config) => {
   // request. This avoids the 401-then-refresh-then-retry round-trip that
   // causes brief UI flashes. Excludes /auth/* endpoints to avoid recursion.
   const isAuthEndpoint =
-    config.url?.includes('/auth/refresh') ||
-    config.url?.includes('/auth/login') ||
-    config.url?.includes('/auth/bootstrap');
+    config.url?.includes("/auth/refresh") ||
+    config.url?.includes("/auth/login") ||
+    config.url?.includes("/auth/bootstrap");
 
   /**
    * On the web the access token lives in MEMORY, so a page reload starts with
@@ -199,7 +199,7 @@ api.interceptors.request.use(async (config) => {
 
 // ---------- Types ----------
 
-export type UserRole = 'admin' | 'elder' | 'ministerial_servant' | 'publisher';
+export type UserRole = "admin" | "elder" | "ministerial_servant" | "publisher";
 
 export interface AuthUser {
   id: string;
@@ -284,8 +284,8 @@ export interface PublicUser {
    * sessions never recorded it.
    */
   lastClient: {
-    platform: 'android' | 'ios' | 'windows' | 'mac' | 'other';
-    kind: 'app' | 'browser';
+    platform: "android" | "ios" | "windows" | "mac" | "other";
+    kind: "app" | "browser";
     /** OS version as the client stated it; null when it did not say. */
     os: string | null;
     /** Which build of ours; null in a browser. */
@@ -303,21 +303,17 @@ export interface CreateUserInput {
   uiLanguage?: string;
 }
 
-export type Gender = 'brother' | 'sister';
+export type Gender = "brother" | "sister";
 export type PublisherAppointment =
-  | 'elder'
-  | 'ministerial_servant'
-  | 'publisher'
-  | 'unbaptized_publisher'
-  | 'student'
-  | 'none';
-export type SpiritualStatus = 'other_sheep' | 'anointed' | 'unknown';
-export type PioneerType =
-  | 'none'
-  | 'regular'
-  | 'special'
-  | 'missionary';
-export type RemovalReason = 'moved' | 'disfellowshipped' | 'died' | 'other';
+  | "elder"
+  | "ministerial_servant"
+  | "publisher"
+  | "unbaptized_publisher"
+  | "student"
+  | "none";
+export type SpiritualStatus = "other_sheep" | "anointed" | "unknown";
+export type PioneerType = "none" | "regular" | "special" | "missionary";
+export type RemovalReason = "moved" | "disfellowshipped" | "died" | "other";
 
 export type Capabilities = Record<string, boolean>;
 
@@ -429,15 +425,15 @@ export type UpdateServiceGroupInput = Partial<CreateServiceGroupInput>;
 // ---------- Assignment types ----------
 
 export type EventType =
-  | 'midweek'
-  | 'weekend'
+  | "midweek"
+  | "weekend"
   /** The Memorial — a meeting like the other two, and treated as one. */
-  | 'memorial'
-  | 'cleaning'
-  | 'av_duty'
-  | 'public_witnessing';
+  | "memorial"
+  | "cleaning"
+  | "av_duty"
+  | "public_witnessing";
 
-export type AssignmentStatus = 'draft' | 'published' | 'cancelled';
+export type AssignmentStatus = "draft" | "published" | "cancelled";
 
 export interface Assignment {
   id: string;
@@ -579,7 +575,7 @@ export interface ScheduledUse {
   speakerName: string | null;
   speakerCongregation: string | null;
   /** The weekend programme, a speaker coming to us, or one of ours going out. */
-  source: 'programme' | 'incoming' | 'outgoing';
+  source: "programme" | "incoming" | "outgoing";
 }
 
 /** What retiring a list of numbers would mean, before it is done. */
@@ -599,7 +595,7 @@ export interface RetirementPreview {
 export interface CatalogueEvent {
   at: string;
   actorName: string | null;
-  kind: 'import' | 'retire' | 'lift';
+  kind: "import" | "retire" | "lift";
   numbers: number[];
   count: number;
   from: string | null;
@@ -641,7 +637,7 @@ export interface ServiceReport {
   id: string;
   congregationId: string;
   publisherId: string;
-  reportMonth: string;            // ISO date, always YYYY-MM-01
+  reportMonth: string; // ISO date, always YYYY-MM-01
   servedThisMonth: boolean | null;
   hoursReported: number | null;
   bibleStudies: number;
@@ -660,7 +656,7 @@ export interface ServiceReport {
 }
 
 export interface SubmitServiceReportInput {
-  reportMonth: string;            // YYYY-MM or YYYY-MM-DD
+  reportMonth: string; // YYYY-MM or YYYY-MM-DD
   /**
    * Optional: when an admin/elder submits on behalf of another publisher.
    * Omit (or set to caller's own publisher id) for self-submission.
@@ -692,7 +688,7 @@ export interface UpdateServiceReportInput {
 
 export interface AuditLogEntry {
   id: string;
-  action: 'UPDATE' | 'CREATE' | 'DELETE';
+  action: "UPDATE" | "CREATE" | "DELETE";
   actorUserId: string;
   actorName: string | null;
   changedFields: string[];
@@ -780,7 +776,7 @@ export interface GroupReportRow {
  * publisher serves, not a property of the publisher, so the server works it
  * out per month. The field keeps its old name for compatibility.
  */
-export type ServiceSummaryCategoryKey = 'auxiliary' | PioneerType;
+export type ServiceSummaryCategoryKey = "auxiliary" | PioneerType;
 
 export interface ServiceReportSummaryCategory {
   pioneerType: ServiceSummaryCategoryKey;
@@ -833,7 +829,7 @@ export interface ServiceYearSummary {
 /** Where the collection of the month's reports stands — the home card. */
 export interface ReportCollection {
   reportMonth: string;
-  scope: 'congregation' | 'group';
+  scope: "congregation" | "group";
   expected: number;
   received: number;
   deadline: string;
@@ -873,7 +869,7 @@ export interface Paginated<T> {
 
 function cleanPayload<T extends Record<string, any>>(input: T): Partial<T> {
   return Object.fromEntries(
-    Object.entries(input).filter(([_, v]) => v !== '' && v !== undefined),
+    Object.entries(input).filter(([_, v]) => v !== "" && v !== undefined),
   ) as Partial<T>;
 }
 
@@ -889,7 +885,7 @@ export const authApi = {
    * hour between the two deploys.
    */
   async login(login: string, password: string): Promise<LoginResponse> {
-    const { data } = await api.post<LoginResponse>('/auth/login', {
+    const { data } = await api.post<LoginResponse>("/auth/login", {
       login,
       email: login,
       password,
@@ -914,7 +910,7 @@ export const authApi = {
           // sign-out.
           withCredentials: USE_COOKIE_AUTH,
           headers: USE_COOKIE_AUTH
-            ? { [AUTH_MODE_HEADER]: 'cookie' }
+            ? { [AUTH_MODE_HEADER]: "cookie" }
             : undefined,
         },
       );
@@ -923,7 +919,7 @@ export const authApi = {
     }
   },
   async me(): Promise<AuthUser> {
-    const { data } = await api.get<AuthUser>('/auth/me');
+    const { data } = await api.get<AuthUser>("/auth/me");
     return data;
   },
   /**
@@ -935,12 +931,12 @@ export const authApi = {
     currentPassword: string,
     newPassword: string,
   ): Promise<void> {
-    await api.patch('/auth/me/password', { currentPassword, newPassword });
+    await api.patch("/auth/me/password", { currentPassword, newPassword });
   },
   /** Public: always resolves OK regardless of whether the email exists. */
   /** Takes a login name or an address — a person may remember either. */
   async forgotPassword(login: string): Promise<void> {
-    await api.post('/auth/forgot-password', { login, email: login });
+    await api.post("/auth/forgot-password", { login, email: login });
   },
   /** Public: sets a new password using a token from the reset email. */
   /**
@@ -952,7 +948,7 @@ export const authApi = {
    * was the whole first impression of the app for an invited brother.
    */
   async resetPassword(token: string, password: string): Promise<LoginResponse> {
-    const { data } = await api.post<LoginResponse>('/auth/reset-password', {
+    const { data } = await api.post<LoginResponse>("/auth/reset-password", {
       token,
       password,
     });
@@ -975,7 +971,7 @@ export const authApi = {
    * identifies the account on its own.
    */
   async redeemInvite(code: string, password: string): Promise<LoginResponse> {
-    const { data } = await api.post<LoginResponse>('/auth/invite/redeem', {
+    const { data } = await api.post<LoginResponse>("/auth/invite/redeem", {
       code,
       password,
     });
@@ -992,7 +988,7 @@ export const authApi = {
   async resendInvite(login: string): Promise<void> {
     // Both fields, same value: the server tells a name from an address by the
     // @, and an older server that only understands `email` still gets one.
-    await api.post('/auth/invite/resend', { login, email: login });
+    await api.post("/auth/invite/resend", { login, email: login });
   },
 };
 
@@ -1002,11 +998,11 @@ export const authApi = {
  */
 export const usersApi = {
   async list(): Promise<PublicUser[]> {
-    const { data } = await api.get<PublicUser[]>('/users');
+    const { data } = await api.get<PublicUser[]>("/users");
     return data;
   },
   async create(input: CreateUserInput): Promise<PublicUser> {
-    const { data } = await api.post<PublicUser>('/users', cleanPayload(input));
+    const { data } = await api.post<PublicUser>("/users", cleanPayload(input));
     return data;
   },
   async updateRole(id: string, role: UserRole): Promise<PublicUser> {
@@ -1047,7 +1043,7 @@ export const usersApi = {
   ): Promise<{ loginName: string | null; displayName: string | null }[]> {
     const { data } = await api.get<
       { loginName: string | null; displayName: string | null }[]
-    >('/users/email-in-use', { params: { email } });
+    >("/users/email-in-use", { params: { email } });
     return data;
   },
   /** Point an account at a publisher card, or clear the link with null. */
@@ -1063,22 +1059,22 @@ export const usersApi = {
 };
 
 export type ResponsibilityType =
-  | 'body_coordinator'
-  | 'body_coordinator_assistant'
-  | 'life_ministry_overseer'
-  | 'wt_study_conductor'
-  | 'wt_study_conductor_backup'
-  | 'public_talk_coordinator'
-  | 'adviser'
-  | 'secretary'
-  | 'service_overseer'
-  | 'service_overseer_assistant'
-  | 'accounts_servant'
-  | 'public_witnessing'
-  | 'cleaning_coordinator'
-  | 'duties_coordinator'
-  | 'attendance_recorder'
-  | 'attendance_recorder_assistant';
+  | "body_coordinator"
+  | "body_coordinator_assistant"
+  | "life_ministry_overseer"
+  | "wt_study_conductor"
+  | "wt_study_conductor_backup"
+  | "public_talk_coordinator"
+  | "adviser"
+  | "secretary"
+  | "service_overseer"
+  | "service_overseer_assistant"
+  | "accounts_servant"
+  | "public_witnessing"
+  | "cleaning_coordinator"
+  | "duties_coordinator"
+  | "attendance_recorder"
+  | "attendance_recorder_assistant";
 
 export interface Responsibility {
   id: string;
@@ -1095,17 +1091,14 @@ export interface Responsibility {
 
 export const responsibilitiesApi = {
   async list(): Promise<Responsibility[]> {
-    const { data } = await api.get<Responsibility[]>('/responsibilities');
+    const { data } = await api.get<Responsibility[]>("/responsibilities");
     return data;
   },
   async assign(input: {
     type: ResponsibilityType;
     userId: string;
   }): Promise<Responsibility> {
-    const { data } = await api.post<Responsibility>(
-      '/responsibilities',
-      input,
-    );
+    const { data } = await api.post<Responsibility>("/responsibilities", input);
     return data;
   },
   async revoke(type: ResponsibilityType, userId: string): Promise<void> {
@@ -1148,7 +1141,8 @@ export interface UpsertMeetingSettingsInput {
 
 export const meetingSettingsApi = {
   async getOverview(): Promise<MeetingSettingsOverview> {
-    const { data } = await api.get<MeetingSettingsOverview>('/meeting-settings');
+    const { data } =
+      await api.get<MeetingSettingsOverview>("/meeting-settings");
     return data;
   },
   async updateCongregation(input: {
@@ -1156,13 +1150,13 @@ export const meetingSettingsApi = {
     timezone?: string;
     assignmentAutomationEnabled?: boolean;
   }): Promise<void> {
-    await api.patch('/meeting-settings/congregation', input);
+    await api.patch("/meeting-settings/congregation", input);
   },
   async upsertVersion(
     input: UpsertMeetingSettingsInput,
   ): Promise<MeetingSettingsVersion> {
     const { data } = await api.post<MeetingSettingsVersion>(
-      '/meeting-settings',
+      "/meeting-settings",
       input,
     );
     return data;
@@ -1173,19 +1167,17 @@ export const meetingSettingsApi = {
 };
 
 export type DutyType =
-  | 'security'
-  | 'attendant'
-  | 'microphone'
-  | 'av'
-  | 'zoom'
-  | 'stage'
-  | 'ventilation'
-  | 'custom';
+  | "security"
+  | "attendant"
+  | "microphone"
+  | "av"
+  | "zoom"
+  | "stage"
+  | "ventilation"
+  | "custom";
 
 export type DutyWarning =
-  | 'already_on_duty'
-  | 'has_program_part'
-  | 'capability_off';
+  "already_on_duty" | "has_program_part" | "capability_off";
 
 export interface Duty {
   id: string;
@@ -1214,10 +1206,10 @@ export interface DutyWithWarnings {
 export interface ActivityItem {
   weekStartDate: string;
   eventType: string;
-  kind: 'part' | 'duty';
+  kind: "part" | "duty";
   partKey?: string;
   partTitle?: string | null;
-  role?: 'primary' | 'assistant';
+  role?: "primary" | "assistant";
   dutyType?: string;
   slotIndex?: number;
   customLabel?: string | null;
@@ -1243,7 +1235,7 @@ export const publisherActivityApi = {
     weekStart: string;
     weeks?: number;
   }): Promise<PublisherActivity[]> {
-    const { data } = await api.get('/publisher-activity', { params });
+    const { data } = await api.get("/publisher-activity", { params });
     return data;
   },
   async getSuggestions(params: {
@@ -1251,10 +1243,10 @@ export const publisherActivityApi = {
     partKeys: string[];
     weeks?: number;
   }): Promise<PartSuggestion[]> {
-    const { data } = await api.get('/publisher-activity/suggestions', {
+    const { data } = await api.get("/publisher-activity/suggestions", {
       params: {
         weekStart: params.weekStart,
-        partKeys: params.partKeys.join(','),
+        partKeys: params.partKeys.join(","),
         weeks: params.weeks,
       },
     });
@@ -1271,7 +1263,7 @@ export interface Hall {
 
 export const hallsApi = {
   async list(): Promise<Hall[]> {
-    const { data } = await api.get<Hall[]>('/halls');
+    const { data } = await api.get<Hall[]>("/halls");
     return data;
   },
   async create(input: {
@@ -1279,7 +1271,7 @@ export const hallsApi = {
     address: string;
     isDefault?: boolean;
   }): Promise<Hall> {
-    const { data } = await api.post<Hall>('/halls', input);
+    const { data } = await api.post<Hall>("/halls", input);
     return data;
   },
   async update(
@@ -1326,7 +1318,7 @@ export interface VisitingSpeaker {
 export const externalCongregationsApi = {
   async list(): Promise<ExternalCongregation[]> {
     const { data } = await api.get<ExternalCongregation[]>(
-      '/external-congregations',
+      "/external-congregations",
     );
     return data;
   },
@@ -1342,7 +1334,7 @@ export const externalCongregationsApi = {
     mapUrl?: string | null;
   }): Promise<ExternalCongregation> {
     const { data } = await api.post<ExternalCongregation>(
-      '/external-congregations',
+      "/external-congregations",
       input,
     );
     return data;
@@ -1374,7 +1366,7 @@ export const externalCongregationsApi = {
 
 export const visitingSpeakersApi = {
   async list(): Promise<VisitingSpeaker[]> {
-    const { data } = await api.get<VisitingSpeaker[]>('/visiting-speakers');
+    const { data } = await api.get<VisitingSpeaker[]>("/visiting-speakers");
     return data;
   },
   async create(input: {
@@ -1386,7 +1378,7 @@ export const visitingSpeakersApi = {
     talkNumbers?: number[];
   }): Promise<VisitingSpeaker> {
     const { data } = await api.post<VisitingSpeaker>(
-      '/visiting-speakers',
+      "/visiting-speakers",
       input,
     );
     return data;
@@ -1414,14 +1406,14 @@ export const visitingSpeakersApi = {
 };
 
 // ---- Public talk exchange log (incoming + outgoing) ----
-export type TalkExchangeDirection = 'incoming' | 'outgoing';
+export type TalkExchangeDirection = "incoming" | "outgoing";
 /**
  * `did_not_happen` — визит, который был назначен и не состоялся.
  *
  * Не считается в «когда был последний раз» и в среднем промежутке, но остаётся
  * видимым: по нему решают, звать ли брата снова.
  */
-export type TalkExchangeStatus = 'tentative' | 'confirmed' | 'did_not_happen';
+export type TalkExchangeStatus = "tentative" | "confirmed" | "did_not_happen";
 
 export interface TalkExchange {
   id: string;
@@ -1483,7 +1475,23 @@ export const talkExchangeApi = {
     const { data } = await api.post<{
       closed: string | null;
       entry: TalkExchange | null;
-    }>('/talk-exchange/replace-speaker', input);
+    }>("/talk-exchange/replace-speaker", input);
+    return data;
+  },
+
+  /**
+   * Он всё-таки приехал — или на кнопку нажали по ошибке.
+   *
+   * Возвращает закрытый визит и убирает запись заменившего, если та не несёт
+   * собственной работы координатора.
+   */
+  async undoReplacement(
+    id: string,
+  ): Promise<{ restored: string; removed: string | null }> {
+    const { data } = await api.post<{
+      restored: string;
+      removed: string | null;
+    }>(`/talk-exchange/${id}/undo-replacement`);
     return data;
   },
 
@@ -1497,25 +1505,25 @@ export const talkExchangeApi = {
       weeks: number;
       created: number;
       linked: number;
-    }>(
-      '/talk-exchange/rebuild-from-programme',
-      { from },
-    );
+    }>("/talk-exchange/rebuild-from-programme", { from });
     return data;
   },
   async list(): Promise<TalkExchange[]> {
-    const { data } = await api.get<TalkExchange[]>('/talk-exchange');
+    const { data } = await api.get<TalkExchange[]>("/talk-exchange");
     return data;
   },
   async create(input: TalkExchangeInput): Promise<TalkExchange> {
-    const { data } = await api.post<TalkExchange>('/talk-exchange', input);
+    const { data } = await api.post<TalkExchange>("/talk-exchange", input);
     return data;
   },
   async update(
     id: string,
     input: Partial<TalkExchangeInput>,
   ): Promise<TalkExchange> {
-    const { data } = await api.patch<TalkExchange>(`/talk-exchange/${id}`, input);
+    const { data } = await api.patch<TalkExchange>(
+      `/talk-exchange/${id}`,
+      input,
+    );
     return data;
   },
   async remove(id: string): Promise<void> {
@@ -1525,19 +1533,23 @@ export const talkExchangeApi = {
 
 export const dutiesApi = {
   async setMicrophoneSlots(microphoneSlots: number): Promise<void> {
-    await api.patch('/duties/microphone-slots', { microphoneSlots });
+    await api.patch("/duties/microphone-slots", { microphoneSlots });
   },
   async list(
-    params: { weekStart?: string; weekEnd?: string; eventType?: EventType } = {},
+    params: {
+      weekStart?: string;
+      weekEnd?: string;
+      eventType?: EventType;
+    } = {},
   ): Promise<Duty[]> {
-    const { data } = await api.get<Duty[]>('/duties', { params });
+    const { data } = await api.get<Duty[]>("/duties", { params });
     return data;
   },
   async generate(input: {
     weekStartDate: string;
     eventType: EventType;
   }): Promise<Duty[]> {
-    const { data } = await api.post<Duty[]>('/duties/generate', input);
+    const { data } = await api.post<Duty[]>("/duties/generate", input);
     return data;
   },
   async assign(
@@ -1556,7 +1568,7 @@ export const dutiesApi = {
     customLabel: string;
     publisherId?: string | null;
   }): Promise<DutyWithWarnings> {
-    const { data } = await api.post<DutyWithWarnings>('/duties/custom', input);
+    const { data } = await api.post<DutyWithWarnings>("/duties/custom", input);
     return data;
   },
   async removeDuty(id: string): Promise<void> {
@@ -1577,7 +1589,7 @@ export const dutiesApi = {
     return data;
   },
   /** Move a PLACE up or down the sheet; its rows move together. */
-  async movePlace(id: string, direction: 'up' | 'down'): Promise<Duty[]> {
+  async movePlace(id: string, direction: "up" | "down"): Promise<Duty[]> {
     const { data } = await api.patch<Duty[]>(`/duties/${id}/move`, {
       direction,
     });
@@ -1628,7 +1640,7 @@ export interface CreateFieldServiceMeetingInput {
 }
 
 export type UpdateFieldServiceMeetingInput = Partial<
-  Omit<CreateFieldServiceMeetingInput, 'weekStartDate'>
+  Omit<CreateFieldServiceMeetingInput, "weekStartDate">
 >;
 
 export const fieldServiceApi = {
@@ -1636,7 +1648,7 @@ export const fieldServiceApi = {
     params: { weekStart?: string } = {},
   ): Promise<FieldServiceMeeting[]> {
     const { data } = await api.get<FieldServiceMeeting[]>(
-      '/field-service-meetings',
+      "/field-service-meetings",
       { params },
     );
     return data;
@@ -1645,7 +1657,7 @@ export const fieldServiceApi = {
     input: CreateFieldServiceMeetingInput,
   ): Promise<FieldServiceMeeting> {
     const { data } = await api.post<FieldServiceMeeting>(
-      '/field-service-meetings',
+      "/field-service-meetings",
       input,
     );
     return data;
@@ -1680,13 +1692,13 @@ export interface TopicHistoryEntry {
 export const fieldServiceStatsApi = {
   async conductorStats(): Promise<ConductorStat[]> {
     const { data } = await api.get<ConductorStat[]>(
-      '/field-service-meetings/conductor-stats',
+      "/field-service-meetings/conductor-stats",
     );
     return data;
   },
   async topicHistory(): Promise<TopicHistoryEntry[]> {
     const { data } = await api.get<TopicHistoryEntry[]>(
-      '/field-service-meetings/topic-history',
+      "/field-service-meetings/topic-history",
     );
     return data;
   },
@@ -1703,7 +1715,7 @@ export interface FieldServiceMonthTheme {
 export const fieldServiceMonthThemeApi = {
   async list(): Promise<FieldServiceMonthTheme[]> {
     const { data } = await api.get<FieldServiceMonthTheme[]>(
-      '/field-service-month-themes',
+      "/field-service-month-themes",
     );
     return data;
   },
@@ -1713,7 +1725,7 @@ export const fieldServiceMonthThemeApi = {
     theme: string;
   }): Promise<FieldServiceMonthTheme | null> {
     const { data } = await api.put<FieldServiceMonthTheme | null>(
-      '/field-service-month-themes',
+      "/field-service-month-themes",
       input,
     );
     return data;
@@ -1740,7 +1752,7 @@ export interface TemplateSlotInput {
 export const fieldServiceTemplateApi = {
   async getSlots(): Promise<FieldServiceTemplateSlot[]> {
     const { data } = await api.get<FieldServiceTemplateSlot[]>(
-      '/field-service-template',
+      "/field-service-template",
     );
     return data;
   },
@@ -1748,7 +1760,7 @@ export const fieldServiceTemplateApi = {
     slots: TemplateSlotInput[],
   ): Promise<FieldServiceTemplateSlot[]> {
     const { data } = await api.put<FieldServiceTemplateSlot[]>(
-      '/field-service-template',
+      "/field-service-template",
       { slots },
     );
     return data;
@@ -1759,14 +1771,14 @@ export const fieldServiceTemplateApi = {
     months: number;
   }): Promise<{ created: number; skipped: number }> {
     const { data } = await api.post<{ created: number; skipped: number }>(
-      '/field-service-template/generate',
+      "/field-service-template/generate",
       input,
     );
     return data;
   },
 };
 
-export type CleaningSlotType = 'after_meeting' | 'thorough' | 'general';
+export type CleaningSlotType = "after_meeting" | "thorough" | "general";
 
 export interface CleaningAssignment {
   id: string;
@@ -1789,7 +1801,7 @@ export interface CleaningWeek {
 
 export const cleaningApi = {
   async getWeek(weekStart: string): Promise<CleaningWeek> {
-    const { data } = await api.get<CleaningWeek>('/cleaning', {
+    const { data } = await api.get<CleaningWeek>("/cleaning", {
       params: { weekStart },
     });
     return data;
@@ -1800,7 +1812,7 @@ export const cleaningApi = {
     serviceGroupId?: string | null;
     windows?: number[] | null;
   }): Promise<CleaningAssignment> {
-    const { data } = await api.put<CleaningAssignment>('/cleaning', input);
+    const { data } = await api.put<CleaningAssignment>("/cleaning", input);
     return data;
   },
   /** Set (or clear with null) the day the group plans the thorough cleaning. */
@@ -1809,7 +1821,7 @@ export const cleaningApi = {
     plannedAt: string | null;
   }): Promise<CleaningAssignment> {
     const { data } = await api.patch<CleaningAssignment>(
-      '/cleaning/thorough-plan',
+      "/cleaning/thorough-plan",
       input,
     );
     return data;
@@ -1820,7 +1832,7 @@ export const cleaningApi = {
     plannedAt: string | null;
   }): Promise<CleaningAssignment> {
     const { data } = await api.patch<CleaningAssignment>(
-      '/cleaning/general-plan',
+      "/cleaning/general-plan",
       input,
     );
     return data;
@@ -1829,11 +1841,11 @@ export const cleaningApi = {
     weekStartDate: string,
     slotType: CleaningSlotType,
   ): Promise<void> {
-    await api.delete('/cleaning', { params: { weekStartDate, slotType } });
+    await api.delete("/cleaning", { params: { weekStartDate, slotType } });
   },
 };
 
-export type CartLocationKind = 'cart' | 'stand';
+export type CartLocationKind = "cart" | "stand";
 
 export interface CartLocation {
   id: string;
@@ -1857,13 +1869,13 @@ export type UpdateCartLocationInput = Partial<CreateCartLocationInput>;
 
 export const cartLocationsApi = {
   async list(includeInactive = false): Promise<CartLocation[]> {
-    const { data } = await api.get<CartLocation[]>('/cart-locations', {
-      params: includeInactive ? { includeInactive: 'true' } : {},
+    const { data } = await api.get<CartLocation[]>("/cart-locations", {
+      params: includeInactive ? { includeInactive: "true" } : {},
     });
     return data;
   },
   async create(input: CreateCartLocationInput): Promise<CartLocation> {
-    const { data } = await api.post<CartLocation>('/cart-locations', input);
+    const { data } = await api.post<CartLocation>("/cart-locations", input);
     return data;
   },
   async update(
@@ -1928,10 +1940,10 @@ export interface CoVisitItemInput {
  * refuses the WHOLE request when it arrives. One shared type let the screens
  * send it without anything noticing until a button silently stopped working.
  */
-export type CoVisitItemUpdate = Omit<CoVisitItemInput, 'specialEventId'>;
+export type CoVisitItemUpdate = Omit<CoVisitItemInput, "specialEventId">;
 
 export interface MyCoVisitItem extends CoVisitItem {
-  serviceWith?: 'co' | 'wife' | 'joint';
+  serviceWith?: "co" | "wife" | "joint";
 }
 
 export interface MyCoVisit {
@@ -1974,7 +1986,7 @@ export interface CoVisitFieldServiceWeek {
  * the emblems, the attendants — because a line is a label, a person and a note
  * in all three. Which group it belongs to is `section`.
  */
-export type MemorialSection = 'programme' | 'emblems' | 'duty';
+export type MemorialSection = "programme" | "emblems" | "duty";
 
 export interface MemorialItem {
   id: string;
@@ -2013,7 +2025,7 @@ export interface MemorialSheet {
 export const memorialApi = {
   /** Every Memorial on record, newest first. */
   async list(): Promise<SpecialEvent[]> {
-    const { data } = await api.get<SpecialEvent[]>('/memorial');
+    const { data } = await api.get<SpecialEvent[]>("/memorial");
     return data;
   },
   async sheet(id: string): Promise<MemorialSheet> {
@@ -2094,30 +2106,30 @@ export const memorialApi = {
 export const coVisitItemsApi = {
   /** Hosting rotation across all visits (lunches / lunch boxes). */
   async hostStats(): Promise<CoHostStat[]> {
-    const { data } = await api.get<CoHostStat[]>('/co-visit-items/host-stats');
+    const { data } = await api.get<CoHostStat[]>("/co-visit-items/host-stats");
     return data;
   },
 
   /** The signed-in member's own slice of upcoming CO visits (any role). */
   async mine(): Promise<MyCoVisit[]> {
-    const { data } = await api.get<MyCoVisit[]>('/co-visit-items/mine');
+    const { data } = await api.get<MyCoVisit[]>("/co-visit-items/mine");
     return data;
   },
   /** Field-service meetings of upcoming visits — visible to everyone. */
   async fieldService(): Promise<CoVisitFieldServiceWeek[]> {
     const { data } = await api.get<CoVisitFieldServiceWeek[]>(
-      '/co-visit-items/field-service',
+      "/co-visit-items/field-service",
     );
     return data;
   },
   async list(specialEventId: string): Promise<CoVisitItem[]> {
-    const { data } = await api.get<CoVisitItem[]>('/co-visit-items', {
+    const { data } = await api.get<CoVisitItem[]>("/co-visit-items", {
       params: { specialEventId },
     });
     return data;
   },
   async create(input: CoVisitItemInput): Promise<CoVisitItem> {
-    const { data } = await api.post<CoVisitItem>('/co-visit-items', input);
+    const { data } = await api.post<CoVisitItem>("/co-visit-items", input);
     return data;
   },
   async update(id: string, input: CoVisitItemUpdate): Promise<CoVisitItem> {
@@ -2136,8 +2148,7 @@ export const coVisitItemsApi = {
   },
 };
 
-
-export type CartWeekStatus = 'draft' | 'collecting' | 'published';
+export type CartWeekStatus = "draft" | "collecting" | "published";
 
 export interface PartnerHint {
   partnerId: string;
@@ -2205,13 +2216,13 @@ export interface BuildCartWeekInput {
 
 export const cartWeeksApi = {
   async getWeek(weekStart: string): Promise<CartWeekView | null> {
-    const { data } = await api.get<CartWeekView | null>('/cart-weeks', {
+    const { data } = await api.get<CartWeekView | null>("/cart-weeks", {
       params: { weekStart },
     });
     return data || null;
   },
   async build(input: BuildCartWeekInput): Promise<{ id: string }> {
-    const { data } = await api.post<{ id: string }>('/cart-weeks', input);
+    const { data } = await api.post<{ id: string }>("/cart-weeks", input);
     return data;
   },
   async open(id: string): Promise<void> {
@@ -2243,7 +2254,7 @@ export const cartWeeksApi = {
   },
   async pairings(weeks?: number): Promise<Record<string, PartnerHint[]>> {
     const { data } = await api.get<Record<string, PartnerHint[]>>(
-      '/cart-weeks/pairings',
+      "/cart-weeks/pairings",
       { params: weeks ? { weeks } : {} },
     );
     return data;
@@ -2253,7 +2264,7 @@ export const cartWeeksApi = {
   },
 };
 
-export type PublisherStatus = 'active' | 'irregular' | 'inactive';
+export type PublisherStatus = "active" | "irregular" | "inactive";
 
 export interface AccessSummary {
   hasAccess: boolean;
@@ -2263,7 +2274,7 @@ export interface AccessSummary {
   /** What it would be if generated from the card now — the starting point. */
   suggestedLoginName: string;
   isActive: boolean | null;
-  role: 'admin' | 'elder' | 'ministerial_servant' | 'publisher' | null;
+  role: "admin" | "elder" | "ministerial_servant" | "publisher" | null;
   lastLoginAt: string | null;
   canViewPrivateData: boolean | null;
   /**
@@ -2335,11 +2346,20 @@ export interface StatusReasons {
 export const publishersApi = {
   /** "These contacts are still correct" — for a publisher who doesn't use the app. */
   async confirmContacts(id: string): Promise<Publisher> {
-    const { data } = await api.post<Publisher>(`/publishers/${id}/contacts/confirm`);
+    const { data } = await api.post<Publisher>(
+      `/publishers/${id}/contacts/confirm`,
+    );
     return data;
   },
-  async list(params?: { search?: string; limit?: number; offset?: number; includeRemoved?: boolean }): Promise<Paginated<Publisher>> {
-    const { data } = await api.get<Paginated<Publisher>>('/publishers', { params });
+  async list(params?: {
+    search?: string;
+    limit?: number;
+    offset?: number;
+    includeRemoved?: boolean;
+  }): Promise<Paginated<Publisher>> {
+    const { data } = await api.get<Paginated<Publisher>>("/publishers", {
+      params,
+    });
     return data;
   },
   /**
@@ -2348,7 +2368,7 @@ export const publishersApi = {
    * though they are typed as Publisher for drop-in use in name maps.
    */
   async roster(): Promise<{ data: Publisher[] }> {
-    const { data } = await api.get<{ data: Publisher[] }>('/publishers/roster');
+    const { data } = await api.get<{ data: Publisher[] }>("/publishers/roster");
     return data;
   },
   async getById(id: string): Promise<Publisher> {
@@ -2362,15 +2382,27 @@ export const publishersApi = {
     return data;
   },
   async create(input: CreatePublisherInput): Promise<Publisher> {
-    const { data } = await api.post<Publisher>('/publishers', cleanPayload(input));
+    const { data } = await api.post<Publisher>(
+      "/publishers",
+      cleanPayload(input),
+    );
     return data;
   },
   async update(id: string, input: UpdatePublisherInput): Promise<Publisher> {
-    const { data } = await api.patch<Publisher>(`/publishers/${id}`, cleanPayload(input));
+    const { data } = await api.patch<Publisher>(
+      `/publishers/${id}`,
+      cleanPayload(input),
+    );
     return data;
   },
-  async remove(id: string, body: { reason: RemovalReason; date?: string; note?: string }): Promise<Publisher> {
-    const { data } = await api.post<Publisher>(`/publishers/${id}/remove`, body);
+  async remove(
+    id: string,
+    body: { reason: RemovalReason; date?: string; note?: string },
+  ): Promise<Publisher> {
+    const { data } = await api.post<Publisher>(
+      `/publishers/${id}/remove`,
+      body,
+    );
     return data;
   },
   async restore(id: string): Promise<Publisher> {
@@ -2384,10 +2416,9 @@ export const publishersApi = {
     id: string,
     status: PublisherStatus,
   ): Promise<Publisher> {
-    const { data } = await api.patch<Publisher>(
-      `/publishers/${id}/status`,
-      { status },
-    );
+    const { data } = await api.patch<Publisher>(`/publishers/${id}/status`, {
+      status,
+    });
     return data;
   },
   async clearOverride(id: string): Promise<Publisher> {
@@ -2441,7 +2472,6 @@ export const publishersApi = {
   },
 };
 
-
 export interface GroupVisitRow {
   serviceGroupId: string;
   name: string;
@@ -2457,7 +2487,7 @@ export const serviceOverseerApi = {
     const { data } = await api.get<{
       serviceYear: number;
       groups: GroupVisitRow[];
-    }>('/service-overseer/group-visits', {
+    }>("/service-overseer/group-visits", {
       params: serviceYear ? { serviceYear } : undefined,
     });
     return data;
@@ -2465,8 +2495,13 @@ export const serviceOverseerApi = {
 };
 
 export const serviceGroupsApi = {
-  async list(params?: { search?: string; includeRemoved?: boolean }): Promise<Paginated<ServiceGroup>> {
-    const { data } = await api.get<Paginated<ServiceGroup>>('/service-groups', { params });
+  async list(params?: {
+    search?: string;
+    includeRemoved?: boolean;
+  }): Promise<Paginated<ServiceGroup>> {
+    const { data } = await api.get<Paginated<ServiceGroup>>("/service-groups", {
+      params,
+    });
     return data;
   },
   async getById(id: string): Promise<ServiceGroup> {
@@ -2474,7 +2509,9 @@ export const serviceGroupsApi = {
     return data;
   },
   async getPublishers(id: string): Promise<Paginated<Publisher>> {
-    const { data } = await api.get<Paginated<Publisher>>(`/service-groups/${id}/publishers`);
+    const { data } = await api.get<Paginated<Publisher>>(
+      `/service-groups/${id}/publishers`,
+    );
     return data;
   },
   async addPublishers(id: string, publisherIds: string[]): Promise<void> {
@@ -2484,18 +2521,29 @@ export const serviceGroupsApi = {
     await api.delete(`/service-groups/${id}/publishers/${publisherId}`);
   },
   async create(input: CreateServiceGroupInput): Promise<ServiceGroup> {
-    const { data } = await api.post<ServiceGroup>('/service-groups', cleanPayload(input));
+    const { data } = await api.post<ServiceGroup>(
+      "/service-groups",
+      cleanPayload(input),
+    );
     return data;
   },
-  async update(id: string, input: UpdateServiceGroupInput): Promise<ServiceGroup> {
-    const { data } = await api.patch<ServiceGroup>(`/service-groups/${id}`, cleanPayload(input));
+  async update(
+    id: string,
+    input: UpdateServiceGroupInput,
+  ): Promise<ServiceGroup> {
+    const { data } = await api.patch<ServiceGroup>(
+      `/service-groups/${id}`,
+      cleanPayload(input),
+    );
     return data;
   },
   async remove(id: string): Promise<void> {
     await api.delete(`/service-groups/${id}`);
   },
   async restore(id: string): Promise<ServiceGroup> {
-    const { data } = await api.post<ServiceGroup>(`/service-groups/${id}/restore`);
+    const { data } = await api.post<ServiceGroup>(
+      `/service-groups/${id}/restore`,
+    );
     return data;
   },
 };
@@ -2551,7 +2599,7 @@ export interface CreateSpecialEventInput {
 
 export type UpdateSpecialEventInput = Partial<CreateSpecialEventInput>;
 
-export type CircuitOverseerRole = 'overseer' | 'substitute';
+export type CircuitOverseerRole = "overseer" | "substitute";
 
 export interface CircuitOverseer {
   id: string;
@@ -2579,7 +2627,7 @@ function cleanEventPayload(
   input: CreateSpecialEventInput | UpdateSpecialEventInput,
 ): Record<string, unknown> {
   return Object.fromEntries(
-    Object.entries(input).filter(([, v]) => v !== '' && v !== undefined),
+    Object.entries(input).filter(([, v]) => v !== "" && v !== undefined),
   );
 }
 
@@ -2612,13 +2660,13 @@ export interface CreateAbsenceInput {
 export type UpdateAbsenceInput = Partial<CreateAbsenceInput>;
 
 export type MyAssignmentKind =
-  | 'meeting'
-  | 'duty'
-  | 'cleaning'
-  | 'cart'
-  | 'field_service'
-  | 'outgoing_talk'
-  | 'co_lunch';
+  | "meeting"
+  | "duty"
+  | "cleaning"
+  | "cart"
+  | "field_service"
+  | "outgoing_talk"
+  | "co_lunch";
 
 export interface MyAssignmentItem {
   kind: MyAssignmentKind;
@@ -2691,14 +2739,14 @@ export interface BackupStatus {
 export const backupsApi = {
   /** Admin only — status of the encrypted DB backups produced by the cron. */
   async status(): Promise<BackupStatus> {
-    const { data } = await api.get<BackupStatus>('/admin/backups');
+    const { data } = await api.get<BackupStatus>("/admin/backups");
     return data;
   },
   /** Admin only — fetch one encrypted backup file as a Blob (web download). */
   async download(name: string): Promise<Blob> {
     const { data } = await api.get(
       `/admin/backups/${encodeURIComponent(name)}`,
-      { responseType: 'blob' },
+      { responseType: "blob" },
     );
     return data as Blob;
   },
@@ -2729,7 +2777,7 @@ export type NotificationCategory = keyof NotificationPreferences;
 export const meApi = {
   async notificationPreferences(): Promise<NotificationPreferences> {
     const { data } = await api.get<NotificationPreferences>(
-      '/me/notification-preferences',
+      "/me/notification-preferences",
     );
     return data;
   },
@@ -2738,17 +2786,17 @@ export const meApi = {
     enabled: boolean,
   ): Promise<NotificationPreferences> {
     const { data } = await api.patch<NotificationPreferences>(
-      '/me/notification-preferences',
+      "/me/notification-preferences",
       { category, enabled },
     );
     return data;
   },
   async weeks(): Promise<MyWeekMarks[]> {
-    const { data } = await api.get<MyWeekMarks[]>('/me/weeks');
+    const { data } = await api.get<MyWeekMarks[]>("/me/weeks");
     return data;
   },
   async assignments(): Promise<MyAssignmentsResponse> {
-    const { data } = await api.get<MyAssignmentsResponse>('/me/assignments');
+    const { data } = await api.get<MyAssignmentsResponse>("/me/assignments");
     return data;
   },
   async updateContacts(input: {
@@ -2757,35 +2805,35 @@ export const meApi = {
     address?: string | null;
   }): Promise<MyPublisherIdentityResponse> {
     const { data } = await api.patch<MyPublisherIdentityResponse>(
-      '/me/publisher/contacts',
+      "/me/publisher/contacts",
       input,
     );
     return data;
   },
   async confirmContacts(): Promise<MyPublisherIdentityResponse> {
     const { data } = await api.post<MyPublisherIdentityResponse>(
-      '/me/publisher/contacts/confirm',
+      "/me/publisher/contacts/confirm",
     );
     return data;
   },
   /** The open tasks put on ME — the tasks section itself stays with elders. */
   async tasks(): Promise<ElderTask[]> {
-    const { data } = await api.get<ElderTask[]>('/me/tasks');
+    const { data } = await api.get<ElderTask[]>("/me/tasks");
     return data;
   },
   async publisher(): Promise<MyPublisherIdentityResponse> {
     const { data } =
-      await api.get<MyPublisherIdentityResponse>('/me/publisher');
+      await api.get<MyPublisherIdentityResponse>("/me/publisher");
     return data;
   },
   /** GDPR Art. 15/20 — download the signed-in user's own data as JSON. */
   async exportData(): Promise<unknown> {
-    const { data } = await api.get<unknown>('/me/export');
+    const { data } = await api.get<unknown>("/me/export");
     return data;
   },
   /** GDPR Art. 17 — erase own account (anonymises the publisher record). */
   async eraseAccount(password: string): Promise<void> {
-    await api.post('/me/erase', { password });
+    await api.post("/me/erase", { password });
   },
 };
 
@@ -2795,11 +2843,11 @@ export const absencesApi = {
     all?: boolean;
     includeRemoved?: boolean;
   }): Promise<Absence[]> {
-    const { data } = await api.get<Absence[]>('/absences', {
+    const { data } = await api.get<Absence[]>("/absences", {
       params: {
         publisherId: params?.publisherId || undefined,
-        all: params?.all ? 'true' : undefined,
-        includeRemoved: params?.includeRemoved ? 'true' : undefined,
+        all: params?.all ? "true" : undefined,
+        includeRemoved: params?.includeRemoved ? "true" : undefined,
       },
     });
     return data;
@@ -2809,7 +2857,7 @@ export const absencesApi = {
     return data;
   },
   async create(input: CreateAbsenceInput): Promise<Absence> {
-    const { data } = await api.post<Absence>('/absences', cleanPayload(input));
+    const { data } = await api.post<Absence>("/absences", cleanPayload(input));
     return data;
   },
   async update(id: string, input: UpdateAbsenceInput): Promise<Absence> {
@@ -2863,10 +2911,10 @@ export const localNeedsApi = {
     onlyPlanned?: boolean;
     includeRemoved?: boolean;
   }): Promise<LocalNeedsTopic[]> {
-    const { data } = await api.get<LocalNeedsTopic[]>('/local-needs', {
+    const { data } = await api.get<LocalNeedsTopic[]>("/local-needs", {
       params: {
-        onlyPlanned: params?.onlyPlanned ? 'true' : undefined,
-        includeRemoved: params?.includeRemoved ? 'true' : undefined,
+        onlyPlanned: params?.onlyPlanned ? "true" : undefined,
+        includeRemoved: params?.includeRemoved ? "true" : undefined,
       },
     });
     return data;
@@ -2877,7 +2925,7 @@ export const localNeedsApi = {
   },
   async create(input: CreateLocalNeedsTopicInput): Promise<LocalNeedsTopic> {
     const { data } = await api.post<LocalNeedsTopic>(
-      '/local-needs',
+      "/local-needs",
       cleanPayload(input),
     );
     return data;
@@ -2947,9 +2995,7 @@ export interface PioneerSchool {
  * RETURNS: it carries `id`. Hand a fetched school straight back and the server
  * refuses the request whole, because `id` is not a field it accepts in a body.
  */
-export type PioneerSchoolInput = Partial<
-  Omit<PioneerSchool, 'id'>
->;
+export type PioneerSchoolInput = Partial<Omit<PioneerSchool, "id">>;
 
 export interface PioneerSchoolHelper {
   id: string;
@@ -2961,7 +3007,7 @@ export interface PioneerSchoolHelper {
 
 export interface PioneerSchoolDuty {
   id: string;
-  dutyType: 'av' | 'microphone' | 'ventilation' | 'custom';
+  dutyType: "av" | "microphone" | "ventilation" | "custom";
   slotIndex: number;
   customLabel: string | null;
   helperId: string | null;
@@ -2974,9 +3020,7 @@ export interface PioneerSchoolDuty {
 }
 
 /** Same reasoning as PioneerSchoolInput: a body is not an entity. */
-export type PioneerSchoolHelperInput = Partial<
-  Omit<PioneerSchoolHelper, 'id'>
->;
+export type PioneerSchoolHelperInput = Partial<Omit<PioneerSchoolHelper, "id">>;
 
 export interface PioneerSchoolDay {
   id: string;
@@ -2993,7 +3037,7 @@ export interface PioneerSchoolFull {
 
 export const pioneerSchoolApi = {
   async list(): Promise<PioneerSchool[]> {
-    const { data } = await api.get<PioneerSchool[]>('/pioneer-school');
+    const { data } = await api.get<PioneerSchool[]>("/pioneer-school");
     return data;
   },
   async get(id: string): Promise<PioneerSchoolFull> {
@@ -3001,13 +3045,10 @@ export const pioneerSchoolApi = {
     return data;
   },
   async create(input: PioneerSchoolInput): Promise<PioneerSchool> {
-    const { data } = await api.post<PioneerSchool>('/pioneer-school', input);
+    const { data } = await api.post<PioneerSchool>("/pioneer-school", input);
     return data;
   },
-  async update(
-    id: string,
-    input: PioneerSchoolInput,
-  ): Promise<PioneerSchool> {
+  async update(id: string, input: PioneerSchoolInput): Promise<PioneerSchool> {
     const { data } = await api.patch<PioneerSchool>(
       `/pioneer-school/${id}`,
       input,
@@ -3052,15 +3093,15 @@ export const pioneerSchoolApi = {
   },
   async listHelpers(): Promise<PioneerSchoolHelper[]> {
     const { data } = await api.get<PioneerSchoolHelper[]>(
-      '/pioneer-school/helpers',
+      "/pioneer-school/helpers",
     );
     return data;
   },
   async createHelper(
-    input: Omit<PioneerSchoolHelper, 'id'>,
+    input: Omit<PioneerSchoolHelper, "id">,
   ): Promise<PioneerSchoolHelper> {
     const { data } = await api.post<PioneerSchoolHelper>(
-      '/pioneer-school/helpers',
+      "/pioneer-school/helpers",
       cleanPayload(input),
     );
     return data;
@@ -3094,10 +3135,10 @@ export const specialEventsApi = {
     includeRemoved?: boolean;
     since?: string;
   }): Promise<SpecialEvent[]> {
-    const { data } = await api.get<SpecialEvent[]>('/special-events', {
+    const { data } = await api.get<SpecialEvent[]>("/special-events", {
       params: {
-        all: params?.all ? 'true' : undefined,
-        includeRemoved: params?.includeRemoved ? 'true' : undefined,
+        all: params?.all ? "true" : undefined,
+        includeRemoved: params?.includeRemoved ? "true" : undefined,
         since: params?.since,
       },
     });
@@ -3109,7 +3150,7 @@ export const specialEventsApi = {
   },
   async create(input: CreateSpecialEventInput): Promise<SpecialEvent> {
     const { data } = await api.post<SpecialEvent>(
-      '/special-events',
+      "/special-events",
       cleanEventPayload(input),
     );
     return data;
@@ -3137,15 +3178,15 @@ export const specialEventsApi = {
 
 export const circuitOverseersApi = {
   async list(): Promise<CircuitOverseer[]> {
-    const { data } = await api.get<CircuitOverseer[]>('/circuit-overseers');
+    const { data } = await api.get<CircuitOverseer[]>("/circuit-overseers");
     return data;
   },
   async create(input: CreateCircuitOverseerInput): Promise<CircuitOverseer> {
-    const { data } = await api.post<CircuitOverseer>('/circuit-overseers', {
+    const { data } = await api.post<CircuitOverseer>("/circuit-overseers", {
       firstName: input.firstName,
       lastName: input.lastName,
       wifeName: input.wifeName ?? null,
-      role: input.role ?? 'overseer',
+      role: input.role ?? "overseer",
       isPrimary: input.isPrimary ?? false,
     });
     return data;
@@ -3189,7 +3230,7 @@ export interface PublishedWeek {
 
 export const assignmentsApi = {
   async publishedWeeks(): Promise<PublishedWeek[]> {
-    const { data } = await api.get<PublishedWeek[]>('/assignments/weeks');
+    const { data } = await api.get<PublishedWeek[]>("/assignments/weeks");
     return data;
   },
   async list(params?: {
@@ -3203,7 +3244,9 @@ export const assignmentsApi = {
     limit?: number;
     offset?: number;
   }): Promise<Paginated<Assignment>> {
-    const { data } = await api.get<Paginated<Assignment>>('/assignments', { params });
+    const { data } = await api.get<Paginated<Assignment>>("/assignments", {
+      params,
+    });
     return data;
   },
   async getById(id: string): Promise<Assignment> {
@@ -3219,20 +3262,23 @@ export const assignmentsApi = {
   async swapPublicTalk(input: {
     sourceWeekStartDate: string;
     targetWeekStartDate: string;
-    mode: 'swap' | 'move';
+    mode: "swap" | "move";
   }): Promise<{ source: Assignment; target: Assignment }> {
     const { data } = await api.post<{ source: Assignment; target: Assignment }>(
-      '/assignments/public-talk/swap',
-      { eventType: 'weekend', ...input },
+      "/assignments/public-talk/swap",
+      { eventType: "weekend", ...input },
     );
     return data;
   },
   async create(input: CreateAssignmentInput): Promise<Assignment> {
-    const { data } = await api.post<Assignment>('/assignments', cleanPayload(input));
+    const { data } = await api.post<Assignment>(
+      "/assignments",
+      cleanPayload(input),
+    );
     return data;
   },
   async bulkCreate(inputs: CreateAssignmentInput[]): Promise<Assignment[]> {
-    const { data } = await api.post<Assignment[]>('/assignments/bulk', {
+    const { data } = await api.post<Assignment[]>("/assignments/bulk", {
       assignments: inputs.map(cleanPayload),
     });
     return data;
@@ -3244,7 +3290,7 @@ export const assignmentsApi = {
     notify?: boolean;
   }): Promise<{ published: number }> {
     const { data } = await api.post<{ published: number }>(
-      '/assignments/publish',
+      "/assignments/publish",
       input,
     );
     return data;
@@ -3254,7 +3300,7 @@ export const assignmentsApi = {
     eventType: EventType;
   }): Promise<{ notified: number }> {
     const { data } = await api.post<{ notified: number }>(
-      '/assignments/notify-changes',
+      "/assignments/notify-changes",
       input,
     );
     return data;
@@ -3294,7 +3340,7 @@ export const scheduleImportApi = {
    */
   async coverage(): Promise<ImportCoverageMonth[]> {
     const { data } = await api.get<ImportCoverageMonth[]>(
-      '/mwb-import/coverage',
+      "/mwb-import/coverage",
     );
     return data;
   },
@@ -3303,7 +3349,7 @@ export const scheduleImportApi = {
    * не загружается — отправляются только готовые назначения.
    */
   async apply(payload: ApplyParsedPayload): Promise<ImportResult> {
-    const { data } = await api.post<ImportResult>('/mwb-import/apply', payload);
+    const { data } = await api.post<ImportResult>("/mwb-import/apply", payload);
     return data;
   },
 };
@@ -3315,7 +3361,9 @@ export const publicTalksApi = {
     limit?: number;
     offset?: number;
   }): Promise<Paginated<PublicTalk>> {
-    const { data } = await api.get<Paginated<PublicTalk>>('/public-talks', { params });
+    const { data } = await api.get<Paginated<PublicTalk>>("/public-talks", {
+      params,
+    });
     return data;
   },
   async getById(id: string): Promise<PublicTalk> {
@@ -3323,11 +3371,14 @@ export const publicTalksApi = {
     return data;
   },
   async create(input: CreatePublicTalkInput): Promise<PublicTalk> {
-    const { data } = await api.post<PublicTalk>('/public-talks', input);
+    const { data } = await api.post<PublicTalk>("/public-talks", input);
     return data;
   },
   async update(id: string, input: UpdatePublicTalkInput): Promise<PublicTalk> {
-    const { data } = await api.patch<PublicTalk>(`/public-talks/${id}`, cleanPayload(input));
+    const { data } = await api.patch<PublicTalk>(
+      `/public-talks/${id}`,
+      cleanPayload(input),
+    );
     return data;
   },
   async deactivate(id: string): Promise<PublicTalk> {
@@ -3335,12 +3386,14 @@ export const publicTalksApi = {
     return data;
   },
   async reactivate(id: string): Promise<PublicTalk> {
-    const { data } = await api.post<PublicTalk>(`/public-talks/${id}/reactivate`);
+    const { data } = await api.post<PublicTalk>(
+      `/public-talks/${id}/reactivate`,
+    );
     return data;
   },
   async bulkImport(text: string): Promise<TalkImportResult> {
     const { data } = await api.post<TalkImportResult>(
-      '/public-talks/bulk-import',
+      "/public-talks/bulk-import",
       { text },
     );
     return data;
@@ -3358,7 +3411,7 @@ export const publicTalksApi = {
     reason?: string;
   }): Promise<{ retired: number }> {
     const { data } = await api.post<{ retired: number }>(
-      '/public-talks/retire-missing',
+      "/public-talks/retire-missing",
       input,
     );
     return data;
@@ -3372,20 +3425,20 @@ export const publicTalksApi = {
     reason?: string;
   }): Promise<{ lifted: number }> {
     const { data } = await api.post<{ lifted: number }>(
-      '/public-talks/lift-restriction',
+      "/public-talks/lift-restriction",
       input,
     );
     return data;
   },
   /** Every decision about the catalogue, newest first. */
   async history(): Promise<CatalogueEvent[]> {
-    const { data } = await api.get<CatalogueEvent[]>('/public-talks/history');
+    const { data } = await api.get<CatalogueEvent[]>("/public-talks/history");
     return data;
   },
   /** The last time talks were set aside, and on what grounds. */
   async lastRetirement(): Promise<LastImport | null> {
     const { data } = await api.get<LastImport | null>(
-      '/public-talks/last-retirement',
+      "/public-talks/last-retirement",
     );
     return data;
   },
@@ -3399,7 +3452,7 @@ export const publicTalksApi = {
     from: string;
   }): Promise<RetirementPreview> {
     const { data } = await api.post<RetirementPreview>(
-      '/public-talks/retirement-preview',
+      "/public-talks/retirement-preview",
       input,
     );
     return data;
@@ -3407,7 +3460,7 @@ export const publicTalksApi = {
   /** When the catalogue was last imported, and by whom. */
   async lastImport(): Promise<LastImport | null> {
     const { data } = await api.get<LastImport | null>(
-      '/public-talks/last-import',
+      "/public-talks/last-import",
     );
     return data;
   },
@@ -3420,11 +3473,11 @@ export const songsApi = {
     limit?: number;
     offset?: number;
   }): Promise<Paginated<Song>> {
-    const { data } = await api.get<Paginated<Song>>('/songs', { params });
+    const { data } = await api.get<Paginated<Song>>("/songs", { params });
     return data;
   },
   async create(input: CreateSongInput): Promise<Song> {
-    const { data } = await api.post<Song>('/songs', input);
+    const { data } = await api.post<Song>("/songs", input);
     return data;
   },
   async update(id: string, input: UpdateSongInput): Promise<Song> {
@@ -3432,7 +3485,9 @@ export const songsApi = {
     return data;
   },
   async bulkImport(text: string): Promise<BulkImportResult> {
-    const { data } = await api.post<BulkImportResult>('/songs/bulk-import', { text });
+    const { data } = await api.post<BulkImportResult>("/songs/bulk-import", {
+      text,
+    });
     return data;
   },
 };
@@ -3499,17 +3554,20 @@ export interface ReportWithOwner extends ServiceReport {
 
 export const serviceReportsApi = {
   async submit(input: SubmitServiceReportInput): Promise<ServiceReport> {
-    const { data } = await api.post<ServiceReport>('/service-reports', cleanPayload(input));
+    const { data } = await api.post<ServiceReport>(
+      "/service-reports",
+      cleanPayload(input),
+    );
     return data;
   },
   async listMy(): Promise<ServiceReport[]> {
-    const { data } = await api.get<ServiceReport[]>('/service-reports/my');
+    const { data } = await api.get<ServiceReport[]>("/service-reports/my");
     return data;
   },
   /** The caller's own report standing for the previous month. */
   async myStanding(): Promise<MyReportStanding> {
     const { data } = await api.get<MyReportStanding>(
-      '/service-reports/my-standing',
+      "/service-reports/my-standing",
     );
     return data;
   },
@@ -3525,14 +3583,23 @@ export const serviceReportsApi = {
     const { data } = await api.get<ReportWithOwner>(`/service-reports/${id}`);
     return data;
   },
-  async update(id: string, input: UpdateServiceReportInput): Promise<ServiceReport> {
-    const { data } = await api.patch<ServiceReport>(`/service-reports/${id}`, cleanPayload(input));
+  async update(
+    id: string,
+    input: UpdateServiceReportInput,
+  ): Promise<ServiceReport> {
+    const { data } = await api.patch<ServiceReport>(
+      `/service-reports/${id}`,
+      cleanPayload(input),
+    );
     return data;
   },
   async findGroup(reportMonth: string): Promise<GroupReportsResponse> {
-    const { data } = await api.get<GroupReportsResponse>('/service-reports/group', {
-      params: { reportMonth },
-    });
+    const { data } = await api.get<GroupReportsResponse>(
+      "/service-reports/group",
+      {
+        params: { reportMonth },
+      },
+    );
     return data;
   },
   async getAuditLog(reportId: string): Promise<AuditLogEntry[]> {
@@ -3553,13 +3620,13 @@ export const serviceReportsApi = {
   },
   async getCollection(): Promise<ReportCollection> {
     const { data } = await api.get<ReportCollection>(
-      '/service-reports/collection',
+      "/service-reports/collection",
     );
     return data;
   },
   async getSummary(reportMonth: string): Promise<ServiceReportSummary> {
     const { data } = await api.get<ServiceReportSummary>(
-      '/service-reports/summary',
+      "/service-reports/summary",
       { params: { reportMonth } },
     );
     return data;
@@ -3567,19 +3634,22 @@ export const serviceReportsApi = {
   /** The pioneers' standing in a service year — for the calendar task. */
   async getPioneerYearReview(year?: number): Promise<PioneerYearReview> {
     const { data } = await api.get<PioneerYearReview>(
-      '/service-reports/pioneer-year-review',
+      "/service-reports/pioneer-year-review",
       { params: year ? { year } : {} },
     );
     return data;
   },
   async getYearSummary(year?: number): Promise<ServiceYearSummary> {
     const { data } = await api.get<ServiceYearSummary>(
-      '/service-reports/year-summary',
+      "/service-reports/year-summary",
       { params: year ? { year } : {} },
     );
     return data;
   },
-  async getS21Data(publisherId: string, year?: number): Promise<S21DataResponse> {
+  async getS21Data(
+    publisherId: string,
+    year?: number,
+  ): Promise<S21DataResponse> {
     const { data } = await api.get<S21DataResponse>(
       `/service-reports/s21/${publisherId}`,
       { params: year ? { year } : {} },
@@ -3587,20 +3657,19 @@ export const serviceReportsApi = {
     return data;
   },
   async getClosureStatus(reportMonth: string): Promise<ClosureStatus> {
-    const { data } = await api.get<ClosureStatus>(
-      '/service-reports/closure',
-      { params: { reportMonth } },
-    );
+    const { data } = await api.get<ClosureStatus>("/service-reports/closure", {
+      params: { reportMonth },
+    });
     return data;
   },
   async closeMonth(reportMonth: string): Promise<ClosureStatus> {
-    const { data } = await api.post<ClosureStatus>('/service-reports/close', {
+    const { data } = await api.post<ClosureStatus>("/service-reports/close", {
       reportMonth,
     });
     return data;
   },
   async reopenMonth(reportMonth: string): Promise<ClosureStatus> {
-    const { data } = await api.post<ClosureStatus>('/service-reports/reopen', {
+    const { data } = await api.post<ClosureStatus>("/service-reports/reopen", {
       reportMonth,
     });
     return data;
@@ -3610,12 +3679,12 @@ export const serviceReportsApi = {
 export function extractErrorMessage(error: unknown): string {
   if (error instanceof AxiosError) {
     const msg = error.response?.data?.message;
-    if (Array.isArray(msg)) return msg.join(', ');
-    if (typeof msg === 'string') return msg;
+    if (Array.isArray(msg)) return msg.join(", ");
+    if (typeof msg === "string") return msg;
     return error.message;
   }
   if (error instanceof Error) return error.message;
-  return 'Unknown error';
+  return "Unknown error";
 }
 
 // ---------- Auth failure callback ----------
@@ -3669,31 +3738,27 @@ async function performRefresh(): Promise<string> {
     ? undefined
     : await storage.getItem(REFRESH_TOKEN_KEY);
   if (!USE_COOKIE_AUTH && !refreshToken) {
-    throw new Error('No refresh token available');
+    throw new Error("No refresh token available");
   }
   // Raw axios call (not `api`) to bypass our own interceptors and avoid recursion
   const { data } = await axios.post<{
     accessToken: string;
     refreshToken?: string;
-  }>(
-    `${API_URL}/auth/refresh`,
-    refreshToken ? { refreshToken } : {},
-    {
-      timeout: 10_000,
-      withCredentials: USE_COOKIE_AUTH,
-      // X-Client belongs here above all. This call bypasses our interceptors
-      // on purpose (it would recurse through them), and it is ALSO the only
-      // moment a signed-in phone tells the server anything about itself: the
-      // session's client details are written on sign-in and on refresh, and
-      // nothing else. Without the header here, a phone that stays signed in
-      // never reports what it is — which is exactly why «Управление
-      // пользователями» kept showing «Неизвестно» for every phone.
-      headers: {
-        ...(clientDescription() ? { 'X-Client': clientDescription()! } : {}),
-        ...(USE_COOKIE_AUTH ? { [AUTH_MODE_HEADER]: 'cookie' } : {}),
-      },
+  }>(`${API_URL}/auth/refresh`, refreshToken ? { refreshToken } : {}, {
+    timeout: 10_000,
+    withCredentials: USE_COOKIE_AUTH,
+    // X-Client belongs here above all. This call bypasses our interceptors
+    // on purpose (it would recurse through them), and it is ALSO the only
+    // moment a signed-in phone tells the server anything about itself: the
+    // session's client details are written on sign-in and on refresh, and
+    // nothing else. Without the header here, a phone that stays signed in
+    // never reports what it is — which is exactly why «Управление
+    // пользователями» kept showing «Неизвестно» for every phone.
+    headers: {
+      ...(clientDescription() ? { "X-Client": clientDescription()! } : {}),
+      ...(USE_COOKIE_AUTH ? { [AUTH_MODE_HEADER]: "cookie" } : {}),
     },
-  );
+  });
   await setAccessToken(data.accessToken);
   // The server rotates the refresh token on every use: the one we just sent is
   // now spent, and sending it again is read as a stolen token and signs the
@@ -3712,7 +3777,7 @@ async function performRefresh(): Promise<string> {
     }
   } else if (data.refreshToken) {
     console.warn(
-      '[auth] server returned a refresh token in cookie mode — the X-Auth-Mode header is not reaching it',
+      "[auth] server returned a refresh token in cookie mode — the X-Auth-Mode header is not reaching it",
     );
   }
   return data.accessToken;
@@ -3726,9 +3791,9 @@ api.interceptors.response.use(
 
     const is401 = error.response?.status === 401;
     const isAuthEndpoint =
-      original?.url?.includes('/auth/refresh') ||
-      original?.url?.includes('/auth/login') ||
-      original?.url?.includes('/auth/bootstrap');
+      original?.url?.includes("/auth/refresh") ||
+      original?.url?.includes("/auth/login") ||
+      original?.url?.includes("/auth/bootstrap");
 
     if (is401 && original && !original._retry && !isAuthEndpoint) {
       original._retry = true;
@@ -3757,7 +3822,6 @@ api.interceptors.response.use(
   },
 );
 
-
 // =============================================================
 // Push notifications (Phase G)
 // =============================================================
@@ -3768,33 +3832,35 @@ export interface PushDeviceInfo {
 }
 
 export const pushApi = {
-  register: async (token: string, deviceInfo: PushDeviceInfo): Promise<void> => {
-    await api.post('/push-tokens', { token, deviceInfo });
+  register: async (
+    token: string,
+    deviceInfo: PushDeviceInfo,
+  ): Promise<void> => {
+    await api.post("/push-tokens", { token, deviceInfo });
   },
   unregister: async (token: string): Promise<void> => {
-    await api.delete('/push-tokens', { data: { token } });
+    await api.delete("/push-tokens", { data: { token } });
   },
 };
-
 
 // =============================================================
 // Activity feed (Phase H)
 // =============================================================
 
 export type ActivityFeedEntryType =
-  | 'status_change'
-  | 'report_submitted'
-  | 'report_updated'
-  | 'override_applied'
-  | 'override_cleared'
-  | 'other';
+  | "status_change"
+  | "report_submitted"
+  | "report_updated"
+  | "override_applied"
+  | "override_cleared"
+  | "other";
 
 export interface ActivityFeedEntry {
   id: string;
   type: ActivityFeedEntryType;
   occurredAt: string;
   actorName: string | null;
-  targetType: 'publisher' | 'service_report' | 'other';
+  targetType: "publisher" | "service_report" | "other";
   targetId: string;
   summary: string;
   publisherName?: string;
@@ -3816,7 +3882,7 @@ export const activityApi = {
     const params: Record<string, any> = {};
     if (opts.limit != null) params.limit = opts.limit;
     if (opts.before != null) params.before = opts.before;
-    const { data } = await api.get<ActivityFeedResponse>('/activity-feed', {
+    const { data } = await api.get<ActivityFeedResponse>("/activity-feed", {
       params,
     });
     return data;
@@ -3842,7 +3908,7 @@ export interface AuxPioneerJournalRow {
   startMonth: string;
   endMonth: string | null;
   untilCancelled: boolean;
-  state: 'upcoming' | 'serving' | 'finished';
+  state: "upcoming" | "serving" | "finished";
   currentPioneerType: PioneerType;
 }
 
@@ -3869,14 +3935,14 @@ export const auxiliaryPioneersApi = {
     hourGoal: number;
     rows: AuxPioneerMonthRow[];
   }> {
-    const { data } = await api.get('/auxiliary-pioneers', {
+    const { data } = await api.get("/auxiliary-pioneers", {
       params: { month: monthIso },
     });
     return data;
   },
   async journal(): Promise<AuxPioneerJournalRow[]> {
     const { data } = await api.get<AuxPioneerJournalRow[]>(
-      '/auxiliary-pioneers/journal',
+      "/auxiliary-pioneers/journal",
     );
     return data;
   },
@@ -3886,7 +3952,7 @@ export const auxiliaryPioneersApi = {
    */
   async mine(monthIso: string): Promise<MyAuxPioneerStatus> {
     const { data } = await api.get<MyAuxPioneerStatus>(
-      '/auxiliary-pioneers/mine',
+      "/auxiliary-pioneers/mine",
       { params: { month: monthIso } },
     );
     return data;
@@ -3898,7 +3964,7 @@ export const auxiliaryPioneersApi = {
     untilCancelled?: boolean;
     note?: string;
   }): Promise<void> {
-    await api.post('/auxiliary-pioneers', input);
+    await api.post("/auxiliary-pioneers", input);
   },
   async stop(id: string, endMonth?: string): Promise<void> {
     await api.patch(`/auxiliary-pioneers/${id}/stop`, { endMonth });
@@ -3928,8 +3994,8 @@ export interface JournalPerson {
 export interface JournalEntry {
   id: string;
   occurredAt: string;
-  action: 'CREATE' | 'UPDATE' | 'DELETE' | 'VIEW' | 'DOWNLOAD' | 'DENY';
-  source: 'user' | 'system';
+  action: "CREATE" | "UPDATE" | "DELETE" | "VIEW" | "DOWNLOAD" | "DENY";
+  source: "user" | "system";
   entityType: string;
   entityId: string;
   actor: JournalPerson | null;
@@ -3996,7 +4062,7 @@ export interface AppVersionInfo {
 
 export const appVersionApi = {
   async get(): Promise<AppVersionInfo> {
-    const { data } = await api.get<AppVersionInfo>('/app-version');
+    const { data } = await api.get<AppVersionInfo>("/app-version");
     return data;
   },
 };
@@ -4010,19 +4076,19 @@ export const appVersionApi = {
 export const taskRulesApi = {
   async auditObjections(
     publisherIds: string[],
-  ): Promise<Record<string, 'isSecretary' | 'keepsAccounts' | 'didPrevious'>> {
+  ): Promise<Record<string, "isSecretary" | "keepsAccounts" | "didPrevious">> {
     if (publisherIds.length === 0) return {};
     const { data } = await api.get<
-      Record<string, 'isSecretary' | 'keepsAccounts' | 'didPrevious'>
-    >('/tasks/audit-objections', {
-      params: { publisherIds: publisherIds.join(',') },
+      Record<string, "isSecretary" | "keepsAccounts" | "didPrevious">
+    >("/tasks/audit-objections", {
+      params: { publisherIds: publisherIds.join(",") },
     });
     return data;
   },
 };
 
 /** What became of an item once it was discussed. */
-export type ItemOutcome = 'reviewed' | 'carried' | 'task';
+export type ItemOutcome = "reviewed" | "carried" | "task";
 
 export interface AgendaItem {
   id: string;
@@ -4080,7 +4146,10 @@ export const agendaApi = {
     );
     return data;
   },
-  async create(meetingId: string, input: UpsertAgendaItem): Promise<AgendaItem> {
+  async create(
+    meetingId: string,
+    input: UpsertAgendaItem,
+  ): Promise<AgendaItem> {
     const { data } = await api.post<AgendaItem>(
       `/tasks/meetings/${meetingId}/items`,
       input,
@@ -4094,7 +4163,7 @@ export const agendaApi = {
     );
     return data;
   },
-  async move(itemId: string, direction: 'up' | 'down'): Promise<void> {
+  async move(itemId: string, direction: "up" | "down"): Promise<void> {
     await api.post(`/tasks/items/${itemId}/move`, { direction });
   },
   async remove(itemId: string): Promise<void> {
@@ -4137,7 +4206,7 @@ export const agendaApi = {
 
 export const journalApi = {
   async list(filters: JournalFilters = {}): Promise<JournalPage> {
-    const { data } = await api.get<JournalPage>('/journal', {
+    const { data } = await api.get<JournalPage>("/journal", {
       params: filters,
     });
     return data;
@@ -4152,12 +4221,11 @@ export const journalApi = {
   },
 };
 
-
 // ------------------------------------------------- Посещаемость встреч (S-3)
 
 export interface AttendanceRow {
   date: string;
-  eventType: 'midweek' | 'weekend';
+  eventType: "midweek" | "weekend";
   count: number | null;
   notHeld: boolean;
   /** False when the meeting happened but no figure has been entered yet. */
@@ -4194,7 +4262,7 @@ export interface AttendanceYear {
 /** A meeting already held with no figure yet. */
 export interface PendingMeeting {
   date: string;
-  eventType: 'midweek' | 'weekend';
+  eventType: "midweek" | "weekend";
 }
 
 export interface PendingAttendance {
@@ -4206,28 +4274,27 @@ export interface PendingAttendance {
 export const attendanceApi = {
   async pending(): Promise<PendingAttendance> {
     const { data } = await api.get<PendingAttendance>(
-      '/meeting-attendance/pending',
+      "/meeting-attendance/pending",
     );
     return data;
   },
   async serviceYear(startYear?: number): Promise<AttendanceYear> {
     const { data } = await api.get<AttendanceYear>(
-      '/meeting-attendance/service-year',
+      "/meeting-attendance/service-year",
       { params: startYear ? { startYear } : undefined },
     );
     return data;
   },
   async record(input: {
     date: string;
-    eventType: 'midweek' | 'weekend';
+    eventType: "midweek" | "weekend";
     count?: number;
     notHeld?: boolean;
     note?: string;
   }): Promise<void> {
-    await api.post('/meeting-attendance', input);
+    await api.post("/meeting-attendance", input);
   },
 };
-
 
 // ------------------------------------------- Годовой отчёт собрания (S-10)
 
@@ -4261,7 +4328,7 @@ export interface AnnualFigures {
 
 export const annualReportApi = {
   async figures(startYear?: number): Promise<AnnualFigures> {
-    const { data } = await api.get<AnnualFigures>('/annual-report', {
+    const { data } = await api.get<AnnualFigures>("/annual-report", {
       params: startYear ? { startYear } : undefined,
     });
     return data;
@@ -4271,13 +4338,13 @@ export const annualReportApi = {
 // ---- Задачи совета старейшин ------------------------------------------
 
 export type TaskArea =
-  | 'ministry'
-  | 'teaching'
-  | 'care'
-  | 'organisation'
-  | 'announcements'
-  | 'accounts'
-  | 'other';
+  | "ministry"
+  | "teaching"
+  | "care"
+  | "organisation"
+  | "announcements"
+  | "accounts"
+  | "other";
 
 /**
  * Whom a task is for.
@@ -4287,9 +4354,7 @@ export type TaskArea =
  * than the brother who held it when it was written.
  */
 export type TaskAssigneeKind =
-  | 'people'
-  | 'service_committee'
-  | 'body_of_elders';
+  "people" | "service_committee" | "body_of_elders";
 
 export interface ElderTask {
   id: string;
@@ -4312,14 +4377,14 @@ export interface ElderTask {
    * which is why a calendar task can never carry a name in its title.
    */
   kind:
-    | 'accounts_audit'
-    | 'pioneer_service_review'
-    | 'service_year_review'
-    | 'service_overseer_visits'
+    | "accounts_audit"
+    | "pioneer_service_review"
+    | "service_year_review"
+    | "service_overseer_visits"
     | null;
   /** Which turn of it — «2026-Q3», «2026». Two audits a year need telling apart. */
   kindPeriod: string | null;
-  status: 'open' | 'done';
+  status: "open" | "done";
   doneAt: string | null;
   /**
    * Who closed it — resolved by the server from their publisher card, null for
@@ -4344,9 +4409,8 @@ export interface UpsertTaskInput {
   dueInDays?: number;
   dueInMonths?: number;
   eldersMeetingId?: string | null;
-  status?: 'open' | 'done';
+  status?: "open" | "done";
 }
-
 
 export interface EldersMeeting {
   id: string;
@@ -4377,14 +4441,14 @@ export interface AgendaResult {
 
 /** Elders and admins only — the server refuses everyone else. */
 export const tasksApi = {
-  async list(status?: 'open' | 'done') {
-    const { data } = await api.get<ElderTask[]>('/tasks', {
+  async list(status?: "open" | "done") {
+    const { data } = await api.get<ElderTask[]>("/tasks", {
       params: status ? { status } : undefined,
     });
     return data;
   },
   async create(input: UpsertTaskInput) {
-    const { data } = await api.post<ElderTask>('/tasks', input);
+    const { data } = await api.post<ElderTask>("/tasks", input);
     return data;
   },
   async update(id: string, input: UpsertTaskInput) {
@@ -4396,7 +4460,7 @@ export const tasksApi = {
   },
 
   async meetings() {
-    const { data } = await api.get<EldersMeeting[]>('/tasks/meetings');
+    const { data } = await api.get<EldersMeeting[]>("/tasks/meetings");
     return data;
   },
   async createMeeting(input: {
@@ -4407,7 +4471,7 @@ export const tasksApi = {
     placeText?: string | null;
     minuteTakerPublisherId?: string | null;
   }) {
-    const { data } = await api.post<EldersMeeting>('/tasks/meetings', input);
+    const { data } = await api.post<EldersMeeting>("/tasks/meetings", input);
     return data;
   },
   async updateMeeting(
@@ -4434,7 +4498,7 @@ export const tasksApi = {
   },
 
   async agenda(meetingId?: string) {
-    const { data } = await api.get<AgendaResult>('/tasks/agenda', {
+    const { data } = await api.get<AgendaResult>("/tasks/agenda", {
       params: meetingId ? { meetingId } : undefined,
     });
     return data;
