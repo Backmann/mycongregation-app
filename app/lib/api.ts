@@ -1415,7 +1415,13 @@ export const visitingSpeakersApi = {
 
 // ---- Public talk exchange log (incoming + outgoing) ----
 export type TalkExchangeDirection = 'incoming' | 'outgoing';
-export type TalkExchangeStatus = 'tentative' | 'confirmed';
+/**
+ * `did_not_happen` — визит, который был назначен и не состоялся.
+ *
+ * Не считается в «когда был последний раз» и в среднем промежутке, но остаётся
+ * видимым: по нему решают, звать ли брата снова.
+ */
+export type TalkExchangeStatus = 'tentative' | 'confirmed' | 'did_not_happen';
 
 export interface TalkExchange {
   id: string;
@@ -1459,11 +1465,39 @@ export const talkExchangeApi = {
    * For the weeks before the two-way sync existed: the programme knows who
    * came, the journal does not, and only one of them can be believed.
    */
+  /**
+   * Приехал другой брат.
+   *
+   * Одно действие: прежний визит закрывается как несостоявшийся и остаётся в
+   * истории, новый занимает слот программы немедленно — председатель читает со
+   * сцены то, что там написано.
+   */
+  async replaceSpeaker(input: {
+    weekStartDate: string;
+    visitingSpeakerId?: string;
+    publisherId?: string;
+    speakerName?: string;
+    speakerCongregation?: string;
+    reason?: string;
+  }): Promise<{ closed: string | null; entry: TalkExchange | null }> {
+    const { data } = await api.post<{
+      closed: string | null;
+      entry: TalkExchange | null;
+    }>('/talk-exchange/replace-speaker', input);
+    return data;
+  },
+
   async rebuildFromProgramme(from: string): Promise<{
     weeks: number;
     created: number;
+    /** Визиты, впервые обретшие хозяина: запись была, связи с карточкой не было. */
+    linked: number;
   }> {
-    const { data } = await api.post<{ weeks: number; created: number }>(
+    const { data } = await api.post<{
+      weeks: number;
+      created: number;
+      linked: number;
+    }>(
       '/talk-exchange/rebuild-from-programme',
       { from },
     );

@@ -23,6 +23,13 @@ export interface SpeakerVisit {
 export interface SpeakerStats {
   /** Past visits, most-recent first. */
   pastVisits: SpeakerVisit[];
+  /**
+   * Назначенные визиты, которые не состоялись — новейшие первыми.
+   *
+   * В счёт не идут: он не приезжал, значит его очередь не сдвинулась. Но и
+   * молчать о них нельзя — это ровно то, по чему решают, звать ли снова.
+   */
+  missedVisits: SpeakerVisit[];
   /** Today + future visits, soonest first. */
   futureVisits: SpeakerVisit[];
   /** Number of past visits. */
@@ -48,17 +55,24 @@ export function computeSpeakerStats(
 ): SpeakerStats {
   const today = day(todayISO);
   const visits: SpeakerVisit[] = [];
+  const missedVisits: SpeakerVisit[] = [];
   for (const e of entries) {
     if (e.direction !== 'incoming' || e.visitingSpeakerId !== speaker.id) continue;
     const talk = e.publicTalkId ? talkById.get(e.publicTalkId) ?? null : null;
-    visits.push({
+    const visit = {
       id: e.id,
       date: day(e.date),
       talkNumber: talk?.number ?? null,
       talkTitle: talk?.title ?? null,
       tentative: e.status === 'tentative',
-    });
+    };
+    // Несостоявшийся визит не считается ни в «когда был последний раз», ни в
+    // промежутке, ни в списке произнесённых речей: он не приезжал и речи не
+    // говорил. Иначе его очередь молча отодвинулась бы на полгода.
+    if (e.status === 'did_not_happen') missedVisits.push(visit);
+    else visits.push(visit);
   }
+  missedVisits.sort((a, b) => b.date.localeCompare(a.date));
 
   const pastVisits = visits
     .filter((v) => v.date < today)
@@ -88,6 +102,7 @@ export function computeSpeakerStats(
 
   return {
     pastVisits,
+    missedVisits,
     futureVisits,
     count: pastVisits.length,
     lastVisit: pastVisits[0] ?? null,
@@ -162,6 +177,8 @@ export function computeOutgoingStats(
   const visits: OutgoingVisit[] = [];
   for (const e of entries) {
     if (e.publisherId !== publisherId) continue;
+    // Поездка, которая не состоялась, не считается поездкой.
+    if (e.status === 'did_not_happen') continue;
     const talk = e.publicTalkId ? talkById.get(e.publicTalkId) ?? null : null;
     const cong = e.hostCongregationId
       ? congById.get(e.hostCongregationId) ?? null

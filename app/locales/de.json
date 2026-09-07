@@ -880,6 +880,14 @@
       "published": "Veröffentlicht",
       "cancelled": "Abgesagt"
     },
+    "replaceSpeaker": {
+      "action": "Ein anderer Redner ist gekommen",
+      "lead": "Wer spricht heute? Der bisherige Besuch bleibt in der Geschichte als nicht stattgefunden — daran sieht man später, wer eingeladen war und nicht kam.",
+      "reason": "Grund (optional)",
+      "reasonHint": "krank, nicht gekommen…",
+      "note": "Der Plan wird sofort aktualisiert — der Vorsitzende liest den richtigen Namen.",
+      "confirm": "Redner ersetzen"
+    },
     "speakerType": {
       "local": "Örtlicher Verkündiger",
       "invited": "Eingeladener Redner"
@@ -2557,7 +2565,7 @@
       "rebuildBody": "Die App geht die Wochen dieses Jahres durch und legt einen «zu uns»-Eintrag an, wo der Plan einen Redner hat und das Journal keinen. Es wird nichts gelöscht, vorhandene Einträge bleiben unverändert.",
       "rebuildAction": "Wiederherstellen",
       "rebuildDone": "Hinzugefügte Einträge: {{count}}",
-      "rebuildDoneBody": "Geprüfte Wochen: {{weeks}}. Nichts hinzugefügt heißt: Journal und Plan stimmen bereits überein."
+      "rebuildDoneBody": "Geprüfte Wochen: {{weeks}}. Besuche mit einer Rednerkarte verknüpft: {{linked}}."
     },
     "swap": {
       "action": "Redner ersetzen",

@@ -327,9 +327,15 @@ export default function TalkExchangeYearScreen() {
     });
     if (!ok) return;
     const res = await rebuildMutation.mutateAsync(from);
+    // Два разных исхода, а не один. Прошлый прогон сказал «добавлено 0» и
+    // подписал это словами «значит уже совпадают» — а на деле связал четыре
+    // визита с их братьями, и узнать об этом было неоткуда.
     await confirm({
       title: t('talkCoordinator.log.rebuildDone', { count: res.created }),
-      body: t('talkCoordinator.log.rebuildDoneBody', { weeks: res.weeks }),
+      body: t('talkCoordinator.log.rebuildDoneBody', {
+        weeks: res.weeks,
+        linked: res.linked,
+      }),
       confirmLabel: t('common.ok'),
     });
   };

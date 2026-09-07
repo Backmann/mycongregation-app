@@ -29,6 +29,8 @@ import {
   PublicTalk,
   PublisherActivity,
   publisherActivityApi,
+  talkExchangeApi,
+  visitingSpeakersApi,
 } from '../lib/api';
 import {
   getPartDef,
@@ -187,6 +189,53 @@ export function AssignmentForm({
 
   // ---- Local Needs: insert a planned topic into a "Living as Christians" part ----
   const qc = useQueryClient();
+
+  /**
+   * «Приехал другой» — действие дня встречи, а не правка записи.
+   *
+   * Переписать имя в поле было бы быстрее всего, и именно так делали до сих
+   * пор: тогда брат, которого ждали, исчезал бесследно, а по этому следу
+   * решают, звать ли снова. Здесь замена — два факта сразу, и делает их
+   * сервер: прежний визит закрывается как несостоявшийся и остаётся в истории,
+   * новый занимает слот немедленно, потому что со сцены читают программу.
+   */
+  const [replaceOpen, setReplaceOpen] = useState(false);
+  const [replaceName, setReplaceName] = useState('');
+  const [replaceCong, setReplaceCong] = useState('');
+  const [replaceReason, setReplaceReason] = useState('');
+  const [replaceSpeakerId, setReplaceSpeakerId] = useState<string | null>(null);
+
+  const speakersQuery = useQuery({
+    queryKey: ['visiting-speakers'],
+    queryFn: () => visitingSpeakersApi.list(),
+    enabled: replaceOpen,
+  });
+
+  const replaceMutation = useMutation({
+    meta: { inlineError: true },
+    mutationFn: () =>
+      talkExchangeApi.replaceSpeaker({
+        weekStartDate: form.weekStartDate,
+        ...(replaceSpeakerId
+          ? { visitingSpeakerId: replaceSpeakerId }
+          : {
+              speakerName: replaceName.trim(),
+              speakerCongregation: replaceCong.trim() || undefined,
+            }),
+        reason: replaceReason.trim() || undefined,
+      }),
+    onSuccess: () => {
+      setReplaceOpen(false);
+      setReplaceSpeakerId(null);
+      setReplaceName('');
+      setReplaceCong('');
+      setReplaceReason('');
+      void qc.invalidateQueries({ queryKey: ['assignments'] });
+      void qc.invalidateQueries({ queryKey: ['talk-exchange'] });
+      onCancel?.();
+    },
+  });
+
   const { canManageLocalNeeds } = usePermissions();
   const [lnPickerOpen, setLnPickerOpen] = useState(false);
   const isLivingChristians = (form.partKey ?? '').startsWith(
@@ -762,6 +811,100 @@ export function AssignmentForm({
                 />
               </>
             )}
+            {/* Виден только когда докладчик уже назначен: заменять некого,
+                пока никто не назначен. */}
+            {(form.publisherId || form.speakerName) && !replaceOpen ? (
+              <Pressable
+                style={rp.link}
+                onPress={() => setReplaceOpen(true)}
+                hitSlop={6}
+              >
+                <Ionicons name="swap-horizontal" size={15} color="#0369a1" />
+                <Text style={rp.linkText}>
+                  {t('assignments.replaceSpeaker.action')}
+                </Text>
+              </Pressable>
+            ) : null}
+            {replaceOpen ? (
+              <View style={rp.box}>
+                <Text style={rp.lead}>
+                  {t('assignments.replaceSpeaker.lead')}
+                </Text>
+                {(speakersQuery.data ?? []).slice(0, 6).map((sp) => {
+                  const label = [sp.firstName, sp.lastName]
+                    .filter(Boolean)
+                    .join(' ');
+                  const on = replaceSpeakerId === sp.id;
+                  return (
+                    <Pressable
+                      key={sp.id}
+                      style={[rp.row, on ? rp.rowOn : null]}
+                      onPress={() => setReplaceSpeakerId(on ? null : sp.id)}
+                    >
+                      <Text style={rp.rowName}>{label}</Text>
+                      {sp.externalCongregation ? (
+                        <Text style={rp.rowCong}>
+                          {sp.externalCongregation.name}
+                        </Text>
+                      ) : null}
+                    </Pressable>
+                  );
+                })}
+                {replaceSpeakerId ? null : (
+                  <>
+                    <FormField
+                      label={t('assignments.form.field.speakerName')}
+                      value={replaceName}
+                      onChangeText={setReplaceName}
+                      placeholder={t(
+                        'assignments.form.placeholder.speakerName',
+                      )}
+                    />
+                    <FormField
+                      label={t('assignments.form.field.fromCongregation')}
+                      value={replaceCong}
+                      onChangeText={setReplaceCong}
+                      placeholder={t(
+                        'assignments.form.placeholder.fromCongregation',
+                      )}
+                    />
+                  </>
+                )}
+                <FormField
+                  label={t('assignments.replaceSpeaker.reason')}
+                  value={replaceReason}
+                  onChangeText={setReplaceReason}
+                  placeholder={t('assignments.replaceSpeaker.reasonHint')}
+                />
+                <Text style={rp.note}>
+                  {t('assignments.replaceSpeaker.note')}
+                </Text>
+                <Pressable
+                  style={[
+                    rp.confirm,
+                    !replaceSpeakerId && replaceName.trim().length < 2
+                      ? rp.confirmOff
+                      : null,
+                  ]}
+                  disabled={
+                    replaceMutation.isPending ||
+                    (!replaceSpeakerId && replaceName.trim().length < 2)
+                  }
+                  onPress={() => replaceMutation.mutate()}
+                >
+                  {replaceMutation.isPending ? (
+                    <ActivityIndicator color="#fff" />
+                  ) : (
+                    <Text style={rp.confirmText}>
+                      {t('assignments.replaceSpeaker.confirm')}
+                    </Text>
+                  )}
+                </Pressable>
+                <Pressable onPress={() => setReplaceOpen(false)} hitSlop={6}>
+                  <Text style={rp.cancel}>{t('common.cancel')}</Text>
+                </Pressable>
+              </View>
+            ) : null}
           </>
         ) : isPrayer && isCoWeek ? (
           <>
@@ -1142,4 +1285,49 @@ const styles = StyleSheet.create({
     fontWeight: '500', fontFamily: 'Manrope_500Medium',
     marginTop: 3,
   },
+});
+
+/**
+ * Замена докладчика: отдельный лист стилей рядом с самим действием, чтобы его
+ * было видно целиком, не листая файл на тысячу строк.
+ */
+const rp = StyleSheet.create({
+  link: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 10,
+  },
+  linkText: { color: '#0369a1', fontSize: 13, fontWeight: '600' },
+  box: {
+    marginTop: 10,
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#bae6fd',
+    backgroundColor: '#f0f9ff',
+    gap: 8,
+  },
+  lead: { fontSize: 13, color: '#0c4a6e', lineHeight: 19 },
+  row: {
+    paddingVertical: 9,
+    paddingHorizontal: 10,
+    borderRadius: 9,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    backgroundColor: '#ffffff',
+  },
+  rowOn: { borderColor: '#0ea5e9', backgroundColor: '#e0f2fe' },
+  rowName: { fontSize: 14, color: '#0f172a', fontWeight: '600' },
+  rowCong: { fontSize: 12, color: '#64748b', marginTop: 2 },
+  note: { fontSize: 12, color: '#64748b', lineHeight: 17 },
+  confirm: {
+    backgroundColor: '#0ea5e9',
+    borderRadius: 10,
+    paddingVertical: 11,
+    alignItems: 'center',
+  },
+  confirmOff: { opacity: 0.5 },
+  confirmText: { color: '#fff', fontSize: 14, fontWeight: '700' },
+  cancel: { textAlign: 'center', color: '#64748b', fontSize: 13, paddingTop: 4 },
 });
