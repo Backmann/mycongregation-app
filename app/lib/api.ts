@@ -1065,6 +1065,7 @@ export type ResponsibilityType =
   | "wt_study_conductor"
   | "wt_study_conductor_backup"
   | "public_talk_coordinator"
+  | "public_talk_coordinator_assistant"
   | "adviser"
   | "secretary"
   | "service_overseer"

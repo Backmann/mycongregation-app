@@ -1,8 +1,8 @@
-import { useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { useAuth } from './auth';
-import { responsibilitiesApi } from './api';
-import type { ResponsibilityType, UserRole } from './api';
+import { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "./auth";
+import { responsibilitiesApi } from "./api";
+import type { ResponsibilityType, UserRole } from "./api";
 
 /**
  * UI-side permission flags derived from the current user's role and their
@@ -89,7 +89,7 @@ export function usePermissions(): Permissions {
   // All responsibilities in the congregation, fetched once and shared across
   // every usePermissions() consumer via react-query's cache.
   const { data: allResponsibilities } = useQuery({
-    queryKey: ['responsibilities'],
+    queryKey: ["responsibilities"],
     queryFn: () => responsibilitiesApi.list(),
     enabled: !!user,
     staleTime: 5 * 60 * 1000,
@@ -108,15 +108,15 @@ export function usePermissions(): Permissions {
   }, [allResponsibilities, user?.id]);
 
   return useMemo<Permissions>(() => {
-    const isAdmin = role === 'admin';
-    const isElder = role === 'elder';
+    const isAdmin = role === "admin";
+    const isElder = role === "elder";
     const holds = (t: ResponsibilityType) => mine.has(t);
 
     return {
       isAdmin,
       isElder,
-      isMinisterialServant: role === 'ministerial_servant',
-      isPublisher: role === 'publisher',
+      isMinisterialServant: role === "ministerial_servant",
+      isPublisher: role === "publisher",
 
       // Admin-only
       canManageUsers: isAdmin,
@@ -126,58 +126,63 @@ export function usePermissions(): Permissions {
       canManagePublicTalks: isAdmin || isElder,
       canImportMidweekSchedule: isAdmin || isElder,
       canImportWeekendSchedule: isAdmin || isElder,
-      canEditPublishers: isAdmin || holds('secretary'),
+      canEditPublishers: isAdmin || holds("secretary"),
       // Meeting attendance (form S-3): the secretary keeps it, and a brother
       // may be given the attendance responsibility to enter the figures.
       canRecordAttendance:
         isAdmin ||
-        holds('secretary') ||
-        holds('attendance_recorder') ||
+        holds("secretary") ||
+        holds("attendance_recorder") ||
         // The figure is entered while it is still in somebody's hand; one
         // brother away on a Thursday should not cost the week its record.
-        holds('attendance_recorder_assistant'),
+        holds("attendance_recorder_assistant"),
       canSubmitReportForOthers: isAdmin || isElder,
       canGenerateS21: isAdmin || isElder,
 
       // Responsibility-aware (Phase 2): admin OR specific responsibility.
-      canEditMidweekSchedule: isAdmin || holds('life_ministry_overseer'),
-      canEditWeekendSchedule: isAdmin || holds('body_coordinator'),
-      canEditCleaning: isAdmin || holds('cleaning_coordinator'),
-      canEditCartWitnessing: isAdmin || holds('public_witnessing'),
+      canEditMidweekSchedule: isAdmin || holds("life_ministry_overseer"),
+      canEditWeekendSchedule: isAdmin || holds("body_coordinator"),
+      canEditCleaning: isAdmin || holds("cleaning_coordinator"),
+      canEditCartWitnessing: isAdmin || holds("public_witnessing"),
       canEditFieldServiceMeetings:
         isAdmin ||
-        holds('service_overseer') ||
-        holds('service_overseer_assistant'),
+        holds("service_overseer") ||
+        holds("service_overseer_assistant"),
       canEditDuties:
-        isAdmin || holds('duties_coordinator') || holds('body_coordinator'),
+        isAdmin || holds("duties_coordinator") || holds("body_coordinator"),
 
       // Auxiliary pioneers — admin, body coordinator, secretary, service overseer.
       canManageAuxiliaryPioneers:
         isAdmin ||
-        holds('body_coordinator') ||
-        holds('secretary') ||
-        holds('service_overseer'),
+        holds("body_coordinator") ||
+        holds("secretary") ||
+        holds("service_overseer"),
 
       // Secretary + admin only.
-      canManageEvents: isAdmin || holds('body_coordinator'),
+      canManageEvents: isAdmin || holds("body_coordinator"),
       canManageAbsences:
         isAdmin ||
-        holds('body_coordinator') ||
-        holds('life_ministry_overseer') ||
-        holds('secretary'),
+        holds("body_coordinator") ||
+        holds("life_ministry_overseer") ||
+        holds("secretary"),
       canViewLocalNeeds: isAdmin || isElder,
       canViewPioneerSchool: isAdmin || isElder,
       // Only an administrator keeps the schedule — Lionel's decision.
       canManagePioneerSchool: isAdmin,
-      canManageLocalNeeds: isAdmin || holds('life_ministry_overseer'),
-      canCoordinatePublicTalks: isAdmin || holds('public_talk_coordinator'),
-      canViewServiceSummary: isAdmin || holds('secretary'),
+      canManageLocalNeeds: isAdmin || holds("life_ministry_overseer"),
+      // Помощник имеет те же права: замену делают перед встречей, и
+      // координатора может не быть рядом.
+      canCoordinatePublicTalks:
+        isAdmin ||
+        holds("public_talk_coordinator") ||
+        holds("public_talk_coordinator_assistant"),
+      canViewServiceSummary: isAdmin || holds("secretary"),
       canViewCoSchedule: isAdmin || isElder,
       canEditCoSchedule:
         isAdmin ||
-        holds('service_overseer') ||
-        holds('service_overseer_assistant') ||
-        holds('body_coordinator'),
+        holds("service_overseer") ||
+        holds("service_overseer_assistant") ||
+        holds("body_coordinator"),
 
       responsibilities: mine,
     };
