@@ -2570,6 +2570,8 @@
       "rebuildDoneBody": "Geprüfte Wochen: {{weeks}}. Besuche mit einer Rednerkarte verknüpft: {{linked}}."
     },
     "swap": {
+      "pastRefused": "Diese Woche ist vorbei. Der Bruder hat gesprochen und sein Name wurde von der Bühne genannt — verschieben lässt sich nur, was noch nicht war.",
+      "noneAvailable": "Kein Tausch möglich: keine kommende Woche hat einen Redner.",
       "action": "Redner ersetzen",
       "title": "Ersetzen · {{date}}",
       "hint": "Wähle die Woche, aus der der Redner übernommen wird. „Tauschen\" tauscht beide Wochen, „Verschieben\" leert die Quellwoche.",

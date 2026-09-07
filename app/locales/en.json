@@ -2570,6 +2570,8 @@
       "rebuildDoneBody": "Weeks examined: {{weeks}}. Visits linked to a speaker's card: {{linked}}."
     },
     "swap": {
+      "pastRefused": "That week is over. The brother has spoken and his name was read from the stage — only what has not happened yet can be moved.",
+      "noneAvailable": "Nothing to swap with: no upcoming week has a speaker assigned.",
       "action": "Replace speaker",
       "title": "Replace · {{date}}",
       "hint": "Pick the week to take the speaker from. \"Swap\" exchanges both weeks, \"Move\" clears the source week.",

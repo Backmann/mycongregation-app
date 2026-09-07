@@ -560,8 +560,34 @@ export default function TalkExchangeYearScreen() {
       setSwapSource(null);
       setSwapError(null);
     },
-    onError: (e) => setSwapError(extractErrorMessage(e)),
+    onError: (e) => {
+      /**
+       * Отказ по прошедшей неделе объясняется словами, а не кодом.
+       *
+       * Сервер отвечает `WEEK_ALREADY_PAST`, и без этой ветки человек увидел
+       * бы английскую строку про недели — то же самое, что уже случалось с
+       * «слишком много попыток» на входе. Смысл отказа простой и стоит того,
+       * чтобы быть сказанным: тот брат уже выступил, его имя назвали со сцены.
+       */
+      const code = (
+        e as { response?: { data?: { code?: string } } }
+      )?.response?.data?.code;
+      setSwapError(
+        code === 'WEEK_ALREADY_PAST'
+          ? t('talkCoordinator.swap.pastRefused')
+          : extractErrorMessage(e),
+      );
+    },
   });
+
+  /**
+   * Кончилась ли неделя — по её последнему дню, как судит сервер.
+   *
+   * Понедельник плюс шесть: в воскресенье утром неделя ещё идёт, и обменять
+   * её можно.
+   */
+  const weekIsOver = (monday: string): boolean =>
+    formatDateISO(addDays(new Date(`${monday}T00:00:00`), 6)) < todayISO;
 
   const openSwap = (w: WeekRow) => {
     setSwapTarget(w);
@@ -1152,7 +1178,12 @@ export default function TalkExchangeYearScreen() {
             .filter(
               (w) =>
                 w.monday !== swapTarget?.monday &&
-                !!byWeek.get(w.monday)?.incoming,
+                !!byWeek.get(w.monday)?.incoming &&
+                // Прошедшие недели не предлагаются вовсе. Сервер их и так
+                // отвергнет, но список, показывающий невозможное, заставляет
+                // человека выяснять правила на отказах — а правило простое:
+                // передвинуть можно то, чего ещё не было.
+                !weekIsOver(w.monday),
             )
             .map((w) => {
               const inc = byWeek.get(w.monday)!.incoming!;
@@ -1189,6 +1220,17 @@ export default function TalkExchangeYearScreen() {
               );
             })}
         </ScrollView>
+
+            {weeksFlat.filter(
+              (w) =>
+                w.monday !== swapTarget?.monday &&
+                !!byWeek.get(w.monday)?.incoming &&
+                !weekIsOver(w.monday),
+            ).length === 0 ? (
+              <Text style={styles.swapEmpty}>
+                {t('talkCoordinator.swap.noneAvailable')}
+              </Text>
+            ) : null}
 
             {swapError ? (
               <Text style={styles.swapError}>{swapError}</Text>
@@ -1676,6 +1718,13 @@ const styles = StyleSheet.create({
   swapRowDate: { fontSize: 12, color: '#64748b', textTransform: 'capitalize' },
   swapRowName: { fontSize: 14, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0f172a' },
   swapRowTalk: { fontSize: 12, color: '#0369a1' },
+  swapEmpty: {
+    fontSize: 13,
+    color: '#64748b',
+    lineHeight: 19,
+    paddingHorizontal: 4,
+    paddingTop: 8,
+  },
   swapError: { fontSize: 12.5, color: '#b91c1c' },
   monthHeader: {
     fontSize: 13,
