@@ -1403,30 +1403,27 @@ export default function TalkExchangeYearScreen() {
             ) : (
               <View style={{ flex: 1 }} />
             )}
-            <View style={{ alignItems: "flex-end", gap: 4 }}>
-              {/* Бледная кнопка молчала о том, чего ждёт. Форма при этом
-                  выглядит заполненной — дата и адрес на месте, — и человек
-                  ищет ошибку там, где её нет. */}
-              {!canSave ? (
-                <Text style={styles.needText}>
-                  {direction === "incoming"
-                    ? incomingMode === "local"
-                      ? t("talkCoordinator.log.needBrother")
-                      : t("talkCoordinator.log.needSpeaker")
-                    : t("talkCoordinator.log.needBrother")}
-                </Text>
-              ) : null}
-              <Pressable
-                style={[
-                  styles.modalConfirm,
-                  (!canSave || pending) && styles.disabled,
-                ]}
-                onPress={() => void save()}
-                disabled={!canSave || pending}
-              >
-                <Text style={styles.modalConfirmText}>{t("common.save")}</Text>
-              </Pressable>
-            </View>
+            {/* Подсказка слева от кнопки, а не над ней: строкой выше она
+                делала подвал вдвое толще, а сказать нужно немного. */}
+            {!canSave ? (
+              <Text style={styles.needText} numberOfLines={2}>
+                {direction === "incoming"
+                  ? incomingMode === "local"
+                    ? t("talkCoordinator.log.needBrother")
+                    : t("talkCoordinator.log.needSpeaker")
+                  : t("talkCoordinator.log.needBrother")}
+              </Text>
+            ) : null}
+            <Pressable
+              style={[
+                styles.modalConfirm,
+                (!canSave || pending) && styles.disabled,
+              ]}
+              onPress={() => void save()}
+              disabled={!canSave || pending}
+            >
+              <Text style={styles.modalConfirmText}>{t("common.save")}</Text>
+            </Pressable>
           </View>
         }
       >
@@ -1666,132 +1663,150 @@ export default function TalkExchangeYearScreen() {
                     когда никого не выбрали: гостя, которого нет в справочнике,
                     по-прежнему вписывают руками — этот путь нужен и остаётся.
                   */}
-                  {visitingSpeakerId ? (
-                    <View style={styles.chosenRow}>
-                      <Ionicons
-                        name="person-circle-outline"
-                        size={18}
-                        color="#0369a1"
-                      />
-                      <View style={{ flex: 1 }}>
-                        <Text style={styles.chosenName}>
-                          {speakerNameInput}
-                        </Text>
-                        {speakerCongInput ? (
-                          <Text style={styles.chosenCong}>
-                            {speakerCongInput}
+                  {/*
+                    Нижняя половина формы — на белом листе.
+
+                    Оболочка окна залита серым, и наверху это незаметно: там
+                    белые карточки списка. Ниже же поля прозрачные, и всё
+                    ложилось прямо на серое, читаясь как одно бесформенное
+                    пятно. Лист даёт этой части ту же плотность, что и списку.
+                  */}
+                  <View style={styles.formCard}>
+                    {visitingSpeakerId ? (
+                      <View style={styles.chosenRow}>
+                        <Ionicons
+                          name="person-circle-outline"
+                          size={18}
+                          color="#0369a1"
+                        />
+                        <View style={{ flex: 1 }}>
+                          <Text style={styles.chosenName}>
+                            {speakerNameInput}
                           </Text>
-                        ) : null}
-                      </View>
-                      <Pressable
-                        hitSlop={8}
-                        onPress={() => setVisitingSpeakerId(null)}
-                      >
-                        <Text style={styles.chosenChange}>
-                          {t("talkCoordinator.log.changeSpeaker")}
-                        </Text>
-                      </Pressable>
-                    </View>
-                  ) : (
-                    <>
-                      <Text style={styles.orTypeIt}>
-                        {t("talkCoordinator.log.orTypeName")}
-                      </Text>
-                      <Text style={styles.fieldLabel}>
-                        {t("talkCoordinator.log.speakerName")}
-                      </Text>
-                      <TextInput
-                        style={styles.input}
-                        value={speakerNameInput}
-                        onChangeText={setSpeakerNameInput}
-                        placeholderTextColor="#94a3b8"
-                      />
-
-                      <Text style={styles.fieldLabel}>
-                        {t("talkCoordinator.log.speakerCong")}
-                      </Text>
-                      <TextInput
-                        style={styles.input}
-                        value={speakerCongInput}
-                        onChangeText={setSpeakerCongInput}
-                        placeholderTextColor="#94a3b8"
-                      />
-                    </>
-                  )}
-
-                  {selSpeaker && (selSpeaker.phone || selSpeakerCong) ? (
-                    <View style={styles.spInfoBox}>
-                      {selSpeaker.phone ? (
+                          {speakerCongInput ? (
+                            <Text style={styles.chosenCong}>
+                              {speakerCongInput}
+                            </Text>
+                          ) : null}
+                        </View>
                         <Pressable
-                          onPress={() =>
-                            selSpeaker.phone &&
-                            Linking.openURL(`tel:${selSpeaker.phone}`)
-                          }
+                          hitSlop={8}
+                          onPress={() => setVisitingSpeakerId(null)}
                         >
-                          <Text style={styles.spInfoPhone}>
-                            {t("talkCoordinator.log.phone")}: {selSpeaker.phone}
+                          <Text style={styles.chosenChange}>
+                            {t("talkCoordinator.log.changeSpeaker")}
                           </Text>
                         </Pressable>
-                      ) : null}
-                      {selSpeakerCong ? (
-                        <>
-                          <Text style={styles.spInfoText}>
-                            {[selSpeakerCong.name, selSpeakerCong.city]
-                              .filter(Boolean)
-                              .join(", ")}
-                          </Text>
-                          {(selSpeakerCong.contactName ||
-                            selSpeakerCong.contactPhone) && (
+                      </View>
+                    ) : (
+                      <>
+                        <Text style={styles.orTypeIt}>
+                          {t("talkCoordinator.log.orTypeName")}
+                        </Text>
+                        <Text style={styles.fieldLabel}>
+                          {t("talkCoordinator.log.speakerName")}
+                        </Text>
+                        <TextInput
+                          style={styles.input}
+                          value={speakerNameInput}
+                          onChangeText={setSpeakerNameInput}
+                          placeholderTextColor="#94a3b8"
+                        />
+
+                        <Text style={styles.fieldLabel}>
+                          {t("talkCoordinator.log.speakerCong")}
+                        </Text>
+                        <TextInput
+                          style={styles.input}
+                          value={speakerCongInput}
+                          onChangeText={setSpeakerCongInput}
+                          placeholderTextColor="#94a3b8"
+                        />
+                      </>
+                    )}
+
+                    {selSpeaker && (selSpeaker.phone || selSpeakerCong) ? (
+                      <View style={styles.spInfoBox}>
+                        {selSpeaker.phone ? (
+                          <Pressable
+                            onPress={() =>
+                              selSpeaker.phone &&
+                              Linking.openURL(`tel:${selSpeaker.phone}`)
+                            }
+                          >
+                            <Text style={styles.spInfoPhone}>
+                              {t("talkCoordinator.log.phone")}:{" "}
+                              {selSpeaker.phone}
+                            </Text>
+                          </Pressable>
+                        ) : null}
+                        {selSpeakerCong ? (
+                          <>
                             <Text style={styles.spInfoText}>
-                              {[
-                                selSpeakerCong.contactName,
-                                selSpeakerCong.contactPhone,
-                              ]
+                              {[selSpeakerCong.name, selSpeakerCong.city]
                                 .filter(Boolean)
-                                .join(" · ")}
+                                .join(", ")}
                             </Text>
-                          )}
-                          {!!selSpeakerCong.address && (
-                            <Text style={styles.spInfoText}>
-                              {selSpeakerCong.address}
-                            </Text>
-                          )}
-                        </>
-                      ) : null}
-                    </View>
-                  ) : null}
+                            {(selSpeakerCong.contactName ||
+                              selSpeakerCong.contactPhone) && (
+                              <Text style={styles.spInfoText}>
+                                {[
+                                  selSpeakerCong.contactName,
+                                  selSpeakerCong.contactPhone,
+                                ]
+                                  .filter(Boolean)
+                                  .join(" · ")}
+                              </Text>
+                            )}
+                            {!!selSpeakerCong.address && (
+                              <Text style={styles.spInfoText}>
+                                {selSpeakerCong.address}
+                              </Text>
+                            )}
+                          </>
+                        ) : null}
+                      </View>
+                    ) : null}
+                  </View>
                 </>
               )}
 
-              <View style={{ marginTop: 10 }}>
-                <PublicTalkSelector
-                  label={t("talkCoordinator.log.talk")}
-                  value={publicTalkId}
-                  onChange={(talk) => setPublicTalkId(talk?.id ?? null)}
-                />
-              </View>
-              {publicTalkId ? (
-                <View style={styles.histBox}>
-                  <Text style={styles.histCount}>
-                    {t("talkCoordinator.log.givenTimes", {
-                      n: talkOccs.length,
-                    })}
-                  </Text>
-                  {talkOccs.map((o) => (
-                    <Text key={o.id} style={styles.histItem} numberOfLines={1}>
-                      {fmtHist(o.date)} ·{" "}
-                      {incomingName(o) ??
-                        t("talkCoordinator.log.unknownSpeaker")}
-                    </Text>
-                  ))}
+              {/* Лист 2: что и кем сопровождается — речь, приём, заметка. */}
+              <View style={styles.formCard}>
+                <View style={{ marginTop: 2 }}>
+                  <PublicTalkSelector
+                    label={t("talkCoordinator.log.talk")}
+                    value={publicTalkId}
+                    onChange={(talk) => setPublicTalkId(talk?.id ?? null)}
+                  />
                 </View>
-              ) : null}
-              <View style={{ marginTop: 10 }}>
-                <PublisherSelector
-                  label={t("talkCoordinator.log.hospitality")}
-                  value={hospitalityPublisherId}
-                  onChange={setHospitalityPublisherId}
-                />
+                {publicTalkId ? (
+                  <View style={styles.histBox}>
+                    <Text style={styles.histCount}>
+                      {t("talkCoordinator.log.givenTimes", {
+                        n: talkOccs.length,
+                      })}
+                    </Text>
+                    {talkOccs.map((o) => (
+                      <Text
+                        key={o.id}
+                        style={styles.histItem}
+                        numberOfLines={1}
+                      >
+                        {fmtHist(o.date)} ·{" "}
+                        {incomingName(o) ??
+                          t("talkCoordinator.log.unknownSpeaker")}
+                      </Text>
+                    ))}
+                  </View>
+                ) : null}
+                <View style={{ marginTop: 10 }}>
+                  <PublisherSelector
+                    label={t("talkCoordinator.log.hospitality")}
+                    value={hospitalityPublisherId}
+                    onChange={setHospitalityPublisherId}
+                  />
+                </View>
               </View>
             </>
           ) : (
@@ -2267,6 +2282,14 @@ const styles = StyleSheet.create({
     color: "#0c4a6e",
     lineHeight: 18,
   },
+  formCard: {
+    backgroundColor: "#ffffff",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+    padding: 12,
+    marginTop: 12,
+  },
   grpHead: {
     paddingHorizontal: 10,
     paddingVertical: 6,
@@ -2311,7 +2334,13 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   dirCaption: { fontSize: 12, color: "#94a3b8", marginBottom: 4 },
-  needText: { fontSize: 12.5, color: "#b45309" },
+  needText: {
+    flex: 1,
+    fontSize: 12.5,
+    color: "#b45309",
+    lineHeight: 17,
+    marginRight: 4,
+  },
   dirCong: { fontSize: 12, color: "#64748b", marginTop: 1 },
   dirBadgeCol: { alignItems: "flex-end", gap: 2 },
   dirBadge: { fontSize: 12, color: "#64748b" },
@@ -2393,7 +2422,8 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: "#cbd5e1",
+    borderColor: "#e2e8f0",
+    backgroundColor: "#f8fafc",
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 10,
