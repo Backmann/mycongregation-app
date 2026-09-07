@@ -22,6 +22,21 @@ import type { NativeSyntheticEvent, NativeScrollEvent } from "react-native";
  */
 const LIFT_AT = 12;
 
+/**
+ * Как часто спрашивать положение списка — и почему НЕ 16.
+ *
+ * У ScrollView сказано прямым текстом: значение 16 и меньше ОТКЛЮЧАЕТ
+ * ограничение. То есть привычное «раз в 16 мс» на деле означает «каждый кадр»,
+ * и главная начала дёргаться на Android: шестьдесят переходов в JS в секунду
+ * ради одного сравнения числа с двенадцатью. До этого обработчика прокрутки на
+ * экране не было вовсе, поэтому цена появилась сразу и вся.
+ *
+ * Ста миллисекунд хватает с запасом: мы ловим не движение, а ПЕРЕСЕЧЕНИЕ
+ * порога, и тень, опоздавшая на одну десятую секунды, неотличима от
+ * мгновенной. Дёрганье — отличимо.
+ */
+const SCROLL_EVERY_MS = 100;
+
 export function useHeaderLift(): {
   onScroll: (e: NativeSyntheticEvent<NativeScrollEvent>) => void;
   scrollEventThrottle: number;
@@ -52,5 +67,5 @@ export function useHeaderLift(): {
     [navigation],
   );
 
-  return { onScroll, scrollEventThrottle: 16 };
+  return { onScroll, scrollEventThrottle: SCROLL_EVERY_MS };
 }
