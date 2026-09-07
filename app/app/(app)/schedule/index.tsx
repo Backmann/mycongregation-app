@@ -49,7 +49,6 @@ import {
   startOfWeekMonday,
 } from "../../../lib/dates";
 import { useSongsMap, enrichSongRef } from "../../../lib/songs";
-import { useHeaderLift } from "../../../lib/header-lift";
 import i18n from "../../../lib/i18n";
 import {
   getEventTypeLabel,
@@ -137,8 +136,6 @@ function weekFromParam(raw: string | string[] | undefined): Date {
 const AutoAssignedContext = createContext<Set<string>>(new Set());
 
 export default function ScheduleIndexScreen() {
-  // Тень у шапки появляется, когда список уезжает под неё.
-  const lift = useHeaderLift();
   const { t, i18n } = useTranslation();
   const { width } = useWindowDimensions();
   const dutiesNarrow = width < 720;
@@ -1625,8 +1622,6 @@ export default function ScheduleIndexScreen() {
 
         <ScrollView
           contentContainerStyle={{ paddingBottom: 32 }}
-          onScroll={lift.onScroll}
-          scrollEventThrottle={lift.scrollEventThrottle}
           refreshControl={
             <RefreshControl
               refreshing={assignmentsQuery.isRefetching}

@@ -30,7 +30,6 @@ import { confirm } from "../../../components/ConfirmHost";
 import { AREA_BG, AREA_FG, AREAS, quarterLabel } from "../../../lib/task-areas";
 import { UndoBar } from "../../../components/UndoBar";
 import { useAllPublishers } from "../../../lib/useAllPublishers";
-import { useHeaderLift } from "../../../lib/header-lift";
 
 /** One colour per area — the glance before the reading. */
 const AREA_TINT: Record<TaskArea, string> = {
@@ -53,8 +52,6 @@ const AREA_TINT: Record<TaskArea, string> = {
  */
 export default function TasksScreen() {
   const { t, i18n } = useTranslation();
-  // Тень у шапки появляется, когда список уезжает под неё.
-  const lift = useHeaderLift();
   const qc = useQueryClient();
   const [editing, setEditing] = useState<ElderTask | "new" | null>(null);
   const [tab, setTab] = useState<"open" | "mine" | "done">("open");
@@ -453,11 +450,7 @@ export default function TasksScreen() {
         ))}
       </View>
 
-      <ScrollView
-        contentContainerStyle={styles.content}
-        onScroll={lift.onScroll}
-        scrollEventThrottle={lift.scrollEventThrottle}
-      >
+      <ScrollView contentContainerStyle={styles.content}>
         {tab === "done" ? (
           doneQuery.isLoading ? (
             <ActivityIndicator style={{ marginTop: 32 }} />

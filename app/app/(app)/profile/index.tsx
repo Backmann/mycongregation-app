@@ -15,7 +15,6 @@ import { router } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../../../lib/auth";
-import { useHeaderLift } from "../../../lib/header-lift";
 import { useMyPublisher } from "../../../lib/useMyPublisher";
 import { LanguagePickerModal } from "../../../components/LanguagePicker";
 import { getCurrentLanguage } from "../../../lib/i18n";
@@ -98,8 +97,6 @@ export default function ProfileScreen() {
   const myTasks = myTasksQuery.data ?? [];
   const { myPublisher } = useMyPublisher();
   const { t, i18n } = useTranslation();
-  // Тень у шапки появляется, когда список уезжает под неё.
-  const lift = useHeaderLift();
   const buildLine = useBuildLine();
   const [langModalVisible, setLangModalVisible] = useState(false);
   const currentLang = getCurrentLanguage();
@@ -198,8 +195,6 @@ export default function ProfileScreen() {
       <ScrollView
         style={{ flex: 1, backgroundColor: "#f1f5f9" }}
         contentContainerStyle={{ paddingBottom: 32 }}
-        onScroll={lift.onScroll}
-        scrollEventThrottle={lift.scrollEventThrottle}
       >
         <View style={styles.section}>
           <Text style={styles.sectionLabel}>{t("profile.signedInAs")}</Text>

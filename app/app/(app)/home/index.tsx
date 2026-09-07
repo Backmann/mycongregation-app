@@ -32,7 +32,6 @@ import {
   tasksApi,
 } from "../../../lib/api";
 import { addDays, formatDateISO, startOfWeekMonday } from "../../../lib/dates";
-import { useHeaderLift } from "../../../lib/header-lift";
 import { useAuth } from "../../../lib/auth";
 import { useMyPublisher } from "../../../lib/useMyPublisher";
 import {
@@ -1106,8 +1105,6 @@ type Tile = {
 };
 
 export default function HomeScreen() {
-  // Тень у шапки появляется, когда список уезжает под неё.
-  const lift = useHeaderLift();
   const { t } = useTranslation();
   const { user } = useAuth();
   const canSeeDirectory =
@@ -1170,8 +1167,6 @@ export default function HomeScreen() {
     <ScrollView
       style={styles.container}
       contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
-      onScroll={lift.onScroll}
-      scrollEventThrottle={lift.scrollEventThrottle}
     >
       <GreetingHeader />
 

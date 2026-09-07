@@ -3,7 +3,6 @@ import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import { useRouter } from "expo-router";
 import { usePermissions } from "../../../lib/permissions";
-import { useHeaderLift } from "../../../lib/header-lift";
 
 type Row = {
   family: "ion" | "mdi";
@@ -16,8 +15,6 @@ type Row = {
 
 export default function ServiceHubScreen() {
   const { t } = useTranslation();
-  // Тень у шапки появляется, когда список уезжает под неё.
-  const lift = useHeaderLift();
   const router = useRouter();
   const {
     canViewCoSchedule,
@@ -81,12 +78,7 @@ export default function ServiceHubScreen() {
   ];
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.content}
-      onScroll={lift.onScroll}
-      scrollEventThrottle={lift.scrollEventThrottle}
-    >
+    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       {rows
         .filter((r) => r.show !== false)
         .map((r) => (

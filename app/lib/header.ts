@@ -1,3 +1,5 @@
+import { createElement } from "react";
+import { HeaderSurface } from "../components/HeaderSurface";
 import type { NativeStackNavigationOptions } from "@react-navigation/native-stack";
 
 /**
@@ -50,26 +52,29 @@ export const headerOptions: NativeStackNavigationOptions = {
     color: "#ffffff",
   },
   /**
-   * A shadow, and only when it means something.
+   * Штатная тень выключена — вместо неё своя, ниже.
    *
-   * The hairline was switched off for a good reason — under a coloured bar it
-   * reads as a seam. A shadow says the header is a layer above rather than a
-   * painted strip. But drawn permanently it said that at the top of a list as
-   * loudly as in the middle of one, which is to say it said nothing: a flat
-   * bar over a flat list.
-   *
-   * So it starts absent and appears the moment content passes underneath —
-   * see lib/header-lift.ts. The screen tells the header it has moved; the
-   * header answers by lifting. That is depth from behaviour rather than from
-   * an effect, and it costs no library and no rebuild.
-   *
-   * Screens that do not scroll keep a flat header for ever, which is correct:
-   * there is nothing under it to be above.
+   * Эта настройка выглядит как одна вещь, а означает три: elevation на
+   * Android, полоску толщиной в волос на iOS и вовсе не тень, а нижнюю границу
+   * цветом темы в браузере. На бирюзовой шапке последнее неразличимо.
    */
   headerShadowVisible: false,
-  // Пока экран не сообщил, что содержимое уехало под шапку, подложка обычная —
-  // цвет берётся из headerStyle выше. Тень появляется вместе с собственной
-  // подложкой; см. lib/header-lift.ts и components/HeaderSurface.tsx.
-  headerBackground: undefined,
+  /**
+   * Своя подложка с тенью — постоянной.
+   *
+   * Тень пробовали зажигать по движению: плоско наверху списка, с тенью, когда
+   * содержимое уехало под шапку. Замысел верный, цена оказалась неверной — на
+   * Android прокрутка задёргалась, и опыт это подтвердил: убрали обработчик
+   * целиком, рывки ушли. Сделать то же самое без единого захода в JavaScript
+   * можно, но для этого надо обернуть каждый экран и заменить списки на
+   * анимированные, а этот проект уже терял при таком переносе то, что держала
+   * старая рамка.
+   *
+   * Постоянная тень отдаёт лишь разницу между «наверху» и «прокручено» —
+   * и оставляет главное: шапка читается как слой НАД содержимым. В браузере
+   * это к тому же чистая прибавка: там штатной тени нет вовсе, только
+   * невидимая на бирюзовом граница.
+   */
+  headerBackground: () => createElement(HeaderSurface, { lifted: true }),
   headerBackTitle: "",
 };
