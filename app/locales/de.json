@@ -880,6 +880,9 @@
       "published": "Veröffentlicht",
       "cancelled": "Abgesagt"
     },
+    "speakerHints": {
+      "lead": "Aus dem Verzeichnis — auswählen, damit der Name genau gleich geschrieben wird"
+    },
     "replaceSpeaker": {
       "action": "Ein anderer Redner ist gekommen",
       "lead": "Wer spricht heute? Der bisherige Besuch bleibt in der Geschichte als nicht stattgefunden — daran sieht man später, wer eingeladen war und nicht kam.",

@@ -880,6 +880,9 @@
       "published": "Published",
       "cancelled": "Cancelled"
     },
+    "speakerHints": {
+      "lead": "From the directory — pick one so the name is written exactly the same"
+    },
     "replaceSpeaker": {
       "action": "A different speaker came",
       "lead": "Who is speaking today? The previous visit stays in the history as one that did not happen — that is how you later see who was invited and did not come.",
