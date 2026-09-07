@@ -2527,6 +2527,14 @@
       "duplicateConfirm": "Trotzdem hinzufügen"
     },
     "log": {
+      "group": {
+        "longAgo": "Am längsten nicht da",
+        "never": "Noch nie da gewesen",
+        "recent": "Kürzlich da",
+        "upcoming": "Kommt bereits"
+      },
+      "willCome": "kommt am {{date}}",
+      "wasHere": "war {{rel}}, insgesamt: {{count}}",
       "alsoFillsProgramme": "Der Eintrag erscheint im Journal und füllt das Zusammenkunftsprogramm.",
       "changeSpeaker": "Ändern",
       "orTypeName": "Oder einen Redner eintragen, der nicht im Verzeichnis steht:",

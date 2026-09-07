@@ -298,6 +298,42 @@ export default function TalkExchangeYearScreen() {
   }, [sortedSpeakers, speakerSearch, visitingSpeakerId, showAllSpeakers]);
   const hiddenSpeakerCount = sortedSpeakers.length - visibleSpeakers.length;
 
+  /**
+   * Список разложен по смыслу, а не по одному столбцу справа.
+   *
+   * Раньше в правой колонке стояли ДВЕ разные вещи: «через 2 мес.» — это
+   * будущее, брат уже назначен к нам, и «1× · 3 мес. назад» — прошлое, он
+   * приезжал однажды. Глаз читал их как один ряд чисел и не понимал, о чём
+   * речь; отсюда и вопрос «через сколько времени?».
+   *
+   * Порядок разделов — по делу координатора: сперва те, кого пора звать,
+   * потом никогда не приезжавшие, потом те, кто был недавно и кого звать
+   * рано, и в самом конце уже назначенные. Их видно, но приглушённо: знать,
+   * что человек занят, нужно, а звать его — нет.
+   */
+  const speakerGroups = useMemo(() => {
+    const upcoming: typeof visibleSpeakers = [];
+    const recent: typeof visibleSpeakers = [];
+    const never: typeof visibleSpeakers = [];
+    const longAgo: typeof visibleSpeakers = [];
+    for (const sp of visibleSpeakers) {
+      const st = statsById.get(sp.id);
+      if (st?.nextVisit) upcoming.push(sp);
+      // visitedRecently — про приезжих; wentOutRecently про наших в поездках.
+      // Перепутать легко, и типы это ловят.
+      else if (st && st.count > 0 && visitedRecently(st, today))
+        recent.push(sp);
+      else if (!st || st.count === 0) never.push(sp);
+      else longAgo.push(sp);
+    }
+    return [
+      { key: "longAgo", tone: "ok" as const, items: longAgo },
+      { key: "never", tone: "neutral" as const, items: never },
+      { key: "recent", tone: "warn" as const, items: recent },
+      { key: "upcoming", tone: "busy" as const, items: upcoming },
+    ].filter((g) => g.items.length > 0);
+  }, [visibleSpeakers, statsById, today]);
+
   // --- "From us": our outgoing speakers + recency, for the outgoing picker ---
   const ourPubs = useMemo(() => {
     const withTalk = new Set<string>();
@@ -1514,92 +1550,93 @@ export default function TalkExchangeYearScreen() {
                         ) : null}
                       </View>
                       <View style={styles.dirList}>
-                        {visibleSpeakers.map((s) => {
-                          const sel = visitingSpeakerId === s.id;
-                          const st = statsById.get(s.id);
-                          const recent = st
-                            ? visitedRecently(st, today)
-                            : false;
-                          return (
-                            <Pressable
-                              key={s.id}
+                        {speakerGroups.map((group) => (
+                          <View key={group.key}>
+                            <View
                               style={[
-                                styles.dirRow,
-                                sel && styles.dirRowActive,
+                                styles.grpHead,
+                                group.tone === "ok" && styles.grpOk,
+                                group.tone === "warn" && styles.grpWarn,
+                                group.tone === "busy" && styles.grpBusy,
                               ]}
-                              onPress={() => pickSpeaker(s.id)}
                             >
-                              <View style={{ flex: 1 }}>
-                                <Text
+                              <Text
+                                style={[
+                                  styles.grpTitle,
+                                  group.tone === "ok" && styles.grpTitleOk,
+                                  group.tone === "warn" && styles.grpTitleWarn,
+                                  group.tone === "busy" && styles.grpTitleBusy,
+                                ]}
+                              >
+                                {t(`talkCoordinator.log.group.${group.key}`)}
+                              </Text>
+                            </View>
+                            {group.items.map((sp) => {
+                              const sel = visitingSpeakerId === sp.id;
+                              const st = statsById.get(sp.id);
+                              /**
+                               * Одна фраза вместо кода.
+                               *
+                               * «1× · 3 мес. назад» экономило четыре знака и
+                               * стоило секунды непонимания: звёздочка читается
+                               * как код, а не как «раз». Будущий визит теперь
+                               * назван датой — координатор сверяется с
+                               * программой числами месяца, а не «через шесть
+                               * дней».
+                               */
+                              const line = st?.nextVisit
+                                ? t("talkCoordinator.log.willCome", {
+                                    date: fmtDay(st.nextVisit.date),
+                                  })
+                                : st && st.count > 0 && st.lastVisit
+                                  ? t("talkCoordinator.log.wasHere", {
+                                      rel: formatRelativeDay(
+                                        st.lastVisit.date,
+                                        today,
+                                        t,
+                                      ),
+                                      count: st.count,
+                                    })
+                                  : null;
+                              return (
+                                <Pressable
+                                  key={sp.id}
                                   style={[
-                                    styles.dirName,
-                                    sel && styles.dirNameActive,
+                                    styles.dirRow,
+                                    sel && styles.dirRowActive,
+                                    group.tone === "busy" && styles.dirRowBusy,
                                   ]}
+                                  onPress={() => pickSpeaker(sp.id)}
                                 >
-                                  {[s.firstName, s.lastName]
-                                    .filter(Boolean)
-                                    .join(" ")}
-                                </Text>
-                                {s.externalCongregation ? (
-                                  <Text style={styles.dirCong}>
-                                    {s.externalCongregation.name}
-                                  </Text>
-                                ) : null}
-                              </View>
-                              {st && (st.count > 0 || st.nextVisit) ? (
-                                <View style={styles.dirBadgeCol}>
-                                  {st.count > 0 && st.lastVisit ? (
+                                  <View style={{ flex: 1 }}>
                                     <Text
                                       style={[
-                                        styles.dirBadge,
-                                        recent && styles.dirBadgeRecent,
+                                        styles.dirName,
+                                        sel && styles.dirNameActive,
                                       ]}
                                     >
-                                      {t(
-                                        "talkCoordinator.speakers.status.lastSeen",
-                                        {
-                                          count: st.count,
-                                          rel: formatRelativeDay(
-                                            st.lastVisit.date,
-                                            today,
-                                            t,
-                                          ),
-                                        },
-                                      )}
+                                      {[sp.firstName, sp.lastName]
+                                        .filter(Boolean)
+                                        .join(" ")}
                                     </Text>
+                                    <Text style={styles.dirSub}>
+                                      {[sp.externalCongregation?.name, line]
+                                        .filter(Boolean)
+                                        .join(" · ")}
+                                    </Text>
+                                  </View>
+                                  {sel ? (
+                                    <Ionicons
+                                      name="checkmark-circle"
+                                      size={18}
+                                      color="#0ea5e9"
+                                    />
                                   ) : null}
-                                  {st.nextVisit ? (
-                                    <View style={styles.dirUpcoming}>
-                                      <Ionicons
-                                        name="airplane"
-                                        size={10}
-                                        color="#0369a1"
-                                      />
-                                      <Text style={styles.dirUpcomingText}>
-                                        {formatRelativeDay(
-                                          st.nextVisit.date,
-                                          today,
-                                          t,
-                                        )}
-                                      </Text>
-                                    </View>
-                                  ) : null}
-                                </View>
-                              ) : (
-                                <Text style={styles.dirNew}>
-                                  {t("talkCoordinator.speakers.status.never")}
-                                </Text>
-                              )}
-                              {sel ? (
-                                <Ionicons
-                                  name="checkmark-circle"
-                                  size={18}
-                                  color="#0ea5e9"
-                                />
-                              ) : null}
-                            </Pressable>
-                          );
-                        })}
+                                </Pressable>
+                              );
+                            })}
+                          </View>
+                        ))}
                         {!speakerSearch && hiddenSpeakerCount > 0 ? (
                           <Pressable
                             onPress={() => setShowAllSpeakers(true)}
@@ -2230,6 +2267,29 @@ const styles = StyleSheet.create({
     color: "#0c4a6e",
     lineHeight: 18,
   },
+  grpHead: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    marginTop: 8,
+    borderRadius: 8,
+    backgroundColor: "#f1f5f9",
+  },
+  grpOk: { backgroundColor: "#ecfdf5" },
+  grpWarn: { backgroundColor: "#fffbeb" },
+  grpBusy: { backgroundColor: "#eff6ff" },
+  grpTitle: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#475569",
+    textTransform: "uppercase",
+    letterSpacing: 0.3,
+  },
+  grpTitleOk: { color: "#047857" },
+  grpTitleWarn: { color: "#b45309" },
+  grpTitleBusy: { color: "#1d4ed8" },
+  /** Уже назначенные приглушены: знать о них надо, звать — нет. */
+  dirRowBusy: { opacity: 0.6 },
+  dirSub: { fontSize: 12.5, color: "#64748b", marginTop: 2 },
   chosenRow: {
     flexDirection: "row",
     alignItems: "center",

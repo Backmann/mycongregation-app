@@ -2527,6 +2527,14 @@
       "duplicateConfirm": "Add anyway"
     },
     "log": {
+      "group": {
+        "longAgo": "Away the longest",
+        "never": "Never been here",
+        "recent": "Here recently",
+        "upcoming": "Already coming"
+      },
+      "willCome": "coming {{date}}",
+      "wasHere": "here {{rel}}, times in all: {{count}}",
       "alsoFillsProgramme": "This goes into the journal and fills the meeting programme.",
       "changeSpeaker": "Change",
       "orTypeName": "Or type a speaker who is not in the directory:",
