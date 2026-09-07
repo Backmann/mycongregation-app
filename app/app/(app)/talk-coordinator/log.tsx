@@ -1452,6 +1452,25 @@ export default function TalkExchangeYearScreen() {
                 </Pressable>
               </View>
 
+              {/*
+                Что произойдёт после сохранения.
+
+                Заголовок говорит «К нам», а последствий два: запись в журнале
+                И заполненная программа встречи — та самая, которую председатель
+                читает со сцены. Об этом нигде не сказано, и человек не знает,
+                нужно ли идти в программу отдельно.
+              */}
+              <View style={styles.consequence}>
+                <Ionicons
+                  name="information-circle-outline"
+                  size={15}
+                  color="#0369a1"
+                />
+                <Text style={styles.consequenceText}>
+                  {t("talkCoordinator.log.alsoFillsProgramme")}
+                </Text>
+              </View>
+
               {incomingMode === "local" && (
                 <View style={{ marginTop: 6 }}>{renderBrotherPicker()}</View>
               )}
@@ -2195,6 +2214,22 @@ const styles = StyleSheet.create({
     color: "#0f172a",
   },
   dirNameActive: { color: "#0369a1" },
+  consequence: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 7,
+    marginTop: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    borderRadius: 9,
+    backgroundColor: "#f0f9ff",
+  },
+  consequenceText: {
+    flex: 1,
+    fontSize: 12.5,
+    color: "#0c4a6e",
+    lineHeight: 18,
+  },
   chosenRow: {
     flexDirection: "row",
     alignItems: "center",

@@ -2527,6 +2527,7 @@
       "duplicateConfirm": "Trotzdem hinzufügen"
     },
     "log": {
+      "alsoFillsProgramme": "Der Eintrag erscheint im Journal und füllt das Zusammenkunftsprogramm.",
       "changeSpeaker": "Ändern",
       "orTypeName": "Oder einen Redner eintragen, der nicht im Verzeichnis steht:",
       "longestAgoFirst": "Oben stehen die, die am längsten nicht da waren",

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Platform,
@@ -9,10 +9,10 @@ import {
   Text,
   TextInput,
   View,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useQuery } from '@tanstack/react-query';
-import { PersonChip } from './PersonChip';
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useQuery } from "@tanstack/react-query";
+import { PersonChip } from "./PersonChip";
 import {
   Absence,
   absencesApi,
@@ -21,13 +21,13 @@ import {
   PublisherActivity,
   meetingSettingsApi,
   PublisherAppointment,
-} from '../lib/api';
-import { ActivitySummary, summarizeActivity } from '../lib/activity';
-import { effectiveVersionFor, meetingDate } from '../lib/meeting-schedule';
-import { useTranslation } from 'react-i18next';
-import { Sheet } from './Sheet';
-import { isActivePermanentPioneer } from '../lib/pioneer-status';
-import { useAllPublishers } from '../lib/useAllPublishers';
+} from "../lib/api";
+import { ActivitySummary, summarizeActivity } from "../lib/activity";
+import { effectiveVersionFor, meetingDate } from "../lib/meeting-schedule";
+import { useTranslation } from "react-i18next";
+import { Sheet } from "./Sheet";
+import { isActivePermanentPioneer } from "../lib/pioneer-status";
+import { useAllPublishers } from "../lib/useAllPublishers";
 
 interface Props {
   label: string;
@@ -46,7 +46,7 @@ interface Props {
    */
   requiredCapability?: string;
   /** If set, only publishers of this gender are shown. */
-  genderFilter?: 'sister' | 'brother';
+  genderFilter?: "sister" | "brother";
   /**
    * Only brothers serving as regular pioneers.
    *
@@ -55,9 +55,9 @@ interface Props {
    * the rest would be offering a mistake. A pioneer whose service begins next
    * month is not one yet — that is what pioneerActive/pioneerSince settle.
    */
-  pioneerFilter?: 'regular';
+  pioneerFilter?: "regular";
   /** If set, only publishers with this appointment are shown (hard filter). */
-  appointmentFilter?: 'elder' | 'ministerial_servant';
+  appointmentFilter?: "elder" | "ministerial_servant";
   /**
    * Appointments that cannot be chosen here at all. Used where the privilege
    * itself is not open to them — an auxiliary pioneer, for instance, must be a
@@ -76,7 +76,7 @@ interface Props {
   /** Part keys (incl. equivalents) to fetch "last done" history for. */
   suggestionPartKeys?: string[];
   /** Which side this picker selects — affects the shown date and sorting. */
-  suggestionRole?: 'primary' | 'assistant';
+  suggestionRole?: "primary" | "assistant";
   /** For assistant pickers: the primary publisher whose recent partners to mark. */
   partnerOfPublisherId?: string | null;
   /** For assistant pickers: soft-filter to the same gender as this publisher; "Show all" reveals others (e.g. family). */
@@ -84,9 +84,9 @@ interface Props {
   /** When set, scoped history shows this duty type (instead of part keys). */
   scopeDutyType?: string;
   /** Soft-filter to this appointment (e.g. 'elder'); "Show all" reveals others. */
-  preferAppointment?: 'elder' | 'ministerial_servant';
+  preferAppointment?: "elder" | "ministerial_servant";
   /** Resting trigger style: 'field' (bordered, default) or 'chip' (program-style). */
-  variant?: 'field' | 'chip';
+  variant?: "field" | "chip";
   /** Label for the empty chip in chip variant. Defaults to common.none. */
   emptyLabel?: string;
   /** Optional extra info line under each candidate (e.g. rotation stats). */
@@ -100,7 +100,7 @@ interface Props {
    * reading; the words stay, because colour alone is no good to anyone who
    * reads it poorly.
    */
-  rowTone?: (publisherId: string) => 'free' | 'busy' | undefined;
+  rowTone?: (publisherId: string) => "free" | "busy" | undefined;
   /** Optional explicit ordering: lower rank floats up. Absent candidates
    * still sink to the bottom. Overrides the built-in history sort. */
   sortRank?: (publisherId: string) => number;
@@ -113,8 +113,8 @@ function weekEndISO(weekStartISO: string): string {
   const d = new Date(`${weekStartISO}T00:00:00`);
   d.setDate(d.getDate() + 6);
   const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
   return `${y}-${m}-${day}`;
 }
 
@@ -122,7 +122,7 @@ function weekEndISO(weekStartISO: string): string {
 function absenceRangeLabel(a: Absence, loc: string): string {
   const start = new Date(`${a.startDate}T00:00:00`);
   if (!a.endDate) {
-    return start.toLocaleDateString(loc, { day: 'numeric', month: 'long' });
+    return start.toLocaleDateString(loc, { day: "numeric", month: "long" });
   }
   const end = new Date(`${a.endDate}T00:00:00`);
   const sameMonth =
@@ -130,12 +130,12 @@ function absenceRangeLabel(a: Absence, loc: string): string {
     start.getFullYear() === end.getFullYear();
   if (sameMonth) {
     return `${start.getDate()}\u2013${end.toLocaleDateString(loc, {
-      day: 'numeric',
-      month: 'long',
+      day: "numeric",
+      month: "long",
     })}`;
   }
-  const s = start.toLocaleDateString(loc, { day: 'numeric', month: 'long' });
-  const e = end.toLocaleDateString(loc, { day: 'numeric', month: 'long' });
+  const s = start.toLocaleDateString(loc, { day: "numeric", month: "long" });
+  const e = end.toLocaleDateString(loc, { day: "numeric", month: "long" });
   return `${s} \u2013 ${e}`;
 }
 
@@ -162,12 +162,12 @@ export function PublisherSelector({
   absenceDate,
   currentEventType,
   suggestionPartKeys,
-  suggestionRole = 'primary',
+  suggestionRole = "primary",
   partnerOfPublisherId,
   matchGenderOfPublisherId,
   scopeDutyType,
   preferAppointment,
-  variant = 'field',
+  variant = "field",
   emptyLabel,
   rowMeta,
   rowTone,
@@ -175,7 +175,7 @@ export function PublisherSelector({
 }: Props) {
   const { t, i18n } = useTranslation();
   const [open, setOpen] = useState(false);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState("");
   const [showAll, setShowAll] = useState(false);
 
   const { data, isLoading } = useAllPublishers();
@@ -186,7 +186,7 @@ export function PublisherSelector({
   // --- Absence awareness (advisory) -------------------------------------
   const weekValid = !!currentWeekStart && ISO_RE.test(currentWeekStart);
   const { data: weekAbsData } = useQuery({
-    queryKey: ['absences', 'week-warn'],
+    queryKey: ["absences", "week-warn"],
     queryFn: () => absencesApi.list(),
     // Загружаются и когда недели нет: an explicit date is reason enough.
     // Absences used to be fetched only for callers that pass a week, so the
@@ -196,7 +196,7 @@ export function PublisherSelector({
     staleTime: 5 * 60 * 1000,
   });
   const { data: msOverview } = useQuery({
-    queryKey: ['meeting-settings', 'overview'],
+    queryKey: ["meeting-settings", "overview"],
     queryFn: () => meetingSettingsApi.getOverview(),
     enabled: weekValid,
     staleTime: 10 * 60 * 1000,
@@ -213,11 +213,11 @@ export function PublisherSelector({
     if (!weekValid || !currentWeekStart) return null;
     const v = effectiveVersionFor(msOverview?.versions, currentWeekStart);
     if (!v) return null;
-    const dow = currentEventType === 'weekend' ? v.weekendDow : v.midweekDow;
+    const dow = currentEventType === "weekend" ? v.weekendDow : v.midweekDow;
     if (!dow) return null;
     const d = meetingDate(new Date(`${currentWeekStart}T00:00:00`), dow);
-    const mm = String(d.getMonth() + 1).padStart(2, '0');
-    const dd = String(d.getDate()).padStart(2, '0');
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
     return `${d.getFullYear()}-${mm}-${dd}`;
   }, [absenceDate, msOverview, currentWeekStart, currentEventType, weekValid]);
   const absentThisWeek = useMemo(() => {
@@ -265,7 +265,7 @@ export function PublisherSelector({
     ? (activityById?.get(partnerOfPublisherId)?.items ?? [])
     : [];
   const inScopePart = (it: ActivityItem) =>
-    it.kind === 'part' && !!it.partKey && scopeKeySet.has(it.partKey);
+    it.kind === "part" && !!it.partKey && scopeKeySet.has(it.partKey);
 
   // Distinct ISO weeks (newest first) the candidate did this exact part/duty.
   const thisItemDatesFor = (pubId: string): string[] => {
@@ -273,7 +273,7 @@ export function PublisherSelector({
     const weeks = items
       .filter((it) =>
         scopeDutyType
-          ? it.kind === 'duty' && it.dutyType === scopeDutyType
+          ? it.kind === "duty" && it.dutyType === scopeDutyType
           : inScopePart(it) && it.role === suggestionRole,
       )
       .map((it) => it.weekStartDate);
@@ -312,15 +312,16 @@ export function PublisherSelector({
   const filterByCapability = !!requiredCapability && !showAll;
   const capabilityLabel = requiredCapability
     ? t(`capabilities.items.${requiredCapability}`)
-    : '';
+    : "";
 
   const filtered = allPublishers.filter((p) => {
     if (excludeIds.includes(p.id)) return false;
     if (genderFilter && p.gender !== genderFilter) return false;
-    if (pioneerFilter === 'regular') {
-      if (p.pioneerType !== 'regular') return false;
+    if (pioneerFilter === "regular") {
+      if (p.pioneerType !== "regular") return false;
       if (p.pioneerActive === false) return false;
-      if (!isActivePermanentPioneer(p.pioneerType, p.pioneerSince)) return false;
+      if (!isActivePermanentPioneer(p.pioneerType, p.pioneerSince))
+        return false;
     }
     if (appointmentFilter && p.appointment !== appointmentFilter) return false;
     if (
@@ -333,7 +334,7 @@ export function PublisherSelector({
     if (softGenderActive && p.gender !== matchGender) return false;
     if (softApptActive && p.appointment !== preferAppointment) return false;
     if (
-      search !== '' &&
+      search !== "" &&
       !p.displayName.toLowerCase().includes(search.toLowerCase())
     )
       return false;
@@ -379,37 +380,37 @@ export function PublisherSelector({
         return a.displayName.localeCompare(b.displayName);
       })
     : historyEnabled
-    ? [...filtered].sort((a, b) => {
-        const aAbsent = absentThisWeek.has(a.id) ? 1 : 0;
-        const bAbsent = absentThisWeek.has(b.id) ? 1 : 0;
-        if (aAbsent !== bAbsent) return aAbsent - bAbsent;
-        const aBusy = busyThisMeeting.has(a.id) ? 1 : 0;
-        const bBusy = busyThisMeeting.has(b.id) ? 1 : 0;
-        if (aBusy !== bBusy) return aBusy - bBusy;
-        if (partnerOfPublisherId) {
-          const pa = pairDatesById.get(a.id)?.[0];
-          const pb = pairDatesById.get(b.id)?.[0];
-          if (pa !== pb) {
-            if (!pa) return -1;
-            if (!pb) return 1;
-            return pa.localeCompare(pb);
+      ? [...filtered].sort((a, b) => {
+          const aAbsent = absentThisWeek.has(a.id) ? 1 : 0;
+          const bAbsent = absentThisWeek.has(b.id) ? 1 : 0;
+          if (aAbsent !== bAbsent) return aAbsent - bAbsent;
+          const aBusy = busyThisMeeting.has(a.id) ? 1 : 0;
+          const bBusy = busyThisMeeting.has(b.id) ? 1 : 0;
+          if (aBusy !== bBusy) return aBusy - bBusy;
+          if (partnerOfPublisherId) {
+            const pa = pairDatesById.get(a.id)?.[0];
+            const pb = pairDatesById.get(b.id)?.[0];
+            if (pa !== pb) {
+              if (!pa) return -1;
+              if (!pb) return 1;
+              return pa.localeCompare(pb);
+            }
           }
-        }
-        const da = itemDatesById.get(a.id)?.[0] ?? null;
-        const db = itemDatesById.get(b.id)?.[0] ?? null;
-        if (da === db) return a.displayName.localeCompare(b.displayName);
-        if (da === null) return -1;
-        if (db === null) return 1;
-        return da.localeCompare(db);
-      })
-    : filtered;
+          const da = itemDatesById.get(a.id)?.[0] ?? null;
+          const db = itemDatesById.get(b.id)?.[0] ?? null;
+          if (da === db) return a.displayName.localeCompare(b.displayName);
+          if (da === null) return -1;
+          if (db === null) return 1;
+          return da.localeCompare(db);
+        })
+      : filtered;
 
   // Hidden count = those filtered out only because of capability mismatch
   const hiddenByCapability = filterByCapability
     ? allPublishers.filter(
         (p) =>
           !excludeIds.includes(p.id) &&
-          (search === '' ||
+          (search === "" ||
             p.displayName.toLowerCase().includes(search.toLowerCase())) &&
           !p.capabilities?.[requiredCapability!],
       ).length
@@ -423,7 +424,7 @@ export function PublisherSelector({
           <View style={styles.warningRow}>
             <Ionicons name="warning" size={12} color="#dc2626" />
             <Text style={styles.warningText}>
-              {t('pickers.missingCapability', { capability: capabilityLabel })}
+              {t("pickers.missingCapability", { capability: capabilityLabel })}
             </Text>
           </View>
         )}
@@ -431,7 +432,7 @@ export function PublisherSelector({
         <View style={styles.absenceRow}>
           <Ionicons name="airplane" size={12} color="#b45309" />
           <Text style={styles.absenceText}>
-            {t('absences.warnAway', {
+            {t("absences.warnAway", {
               range: absenceRangeLabel(selectedAbsence, i18n.language),
             })}
           </Text>
@@ -442,7 +443,7 @@ export function PublisherSelector({
 
   return (
     <>
-      {variant === 'chip' ? (
+      {variant === "chip" ? (
         <Pressable
           style={({ pressed }) => [
             styles.chipTrigger,
@@ -453,7 +454,10 @@ export function PublisherSelector({
           {selectedPublisher ? (
             <PersonChip label={selectedPublisher.displayName} variant="main" />
           ) : (
-            <PersonChip label={emptyLabel ?? t('common.none')} variant="empty" />
+            <PersonChip
+              label={emptyLabel ?? t("common.none")}
+              variant="empty"
+            />
           )}
           {warnings}
         </Pressable>
@@ -471,10 +475,14 @@ export function PublisherSelector({
             <View
               style={[
                 styles.roleIconWrap,
-                { backgroundColor: `${roleColor ?? '#0d9488'}22` },
+                { backgroundColor: `${roleColor ?? "#0d9488"}22` },
               ]}
             >
-              <Ionicons name={roleIcon} size={18} color={roleColor ?? '#0d9488'} />
+              <Ionicons
+                name={roleIcon}
+                size={18}
+                color={roleColor ?? "#0d9488"}
+              />
             </View>
           ) : null}
           <View style={styles.fieldMain}>
@@ -486,9 +494,11 @@ export function PublisherSelector({
                   !selectedPublisher && styles.valuePlaceholder,
                 ]}
               >
-                {selectedPublisher ? selectedPublisher.displayName : t('common.none')}
+                {selectedPublisher
+                  ? selectedPublisher.displayName
+                  : t("common.none")}
               </Text>
-              <Ionicons name="chevron-forward" size={18} color="#cbd5e1" />
+              <Ionicons name="chevron-forward" size={18} color="#94a3b8" />
             </View>
             {warnings}
           </View>
@@ -501,127 +511,123 @@ export function PublisherSelector({
         subtitle={
           requiredCapability ? (
             <Text style={styles.modalSubtitle}>
-              {t('pickers.filteredByCapability')}{' '}
+              {t("pickers.filteredByCapability")}{" "}
               <Text style={styles.modalCapName}>{capabilityLabel}</Text>
             </Text>
           ) : undefined
         }
         onClose={() => setOpen(false)}
       >
-          {(requiredCapability || matchGender || preferAppointment) && (
-            <Pressable
-              style={styles.toggleRow}
-              onPress={() => setShowAll((v) => !v)}
-            >
-              <View style={{ flex: 1 }}>
-                <Text style={styles.toggleLabel}>
-                  {t('pickers.showAllOverride')}
-                </Text>
-                <Text style={styles.toggleHint}>
-                  {showAll
-                    ? t('pickers.showingAllNoFilter')
-                    : preferAppointment && !requiredCapability && !matchGender
-                      ? t('pickers.showingElders')
-                      : t('pickers.hiddenByCapability', {
-                          count: hiddenByCapability,
-                        })}
-                </Text>
-              </View>
-              <Switch
-                value={showAll}
-                onValueChange={setShowAll}
-                trackColor={{ false: '#e2e8f0', true: '#fde68a' }}
-                thumbColor={showAll ? '#d97706' : '#f8fafc'}
-              />
-            </Pressable>
-          )}
-
-          <TextInput
-            style={styles.search}
-            value={search}
-            onChangeText={setSearch}
-            placeholder={t('pickers.search')}
-            placeholderTextColor="#cbd5e1"
-            autoCapitalize="none"
-            autoCorrect={false}
-          />
-
-          {historyEnabled && (
-            <View style={styles.histScopeNote}>
-              <Ionicons name="calendar-outline" size={13} color="#64748b" />
-              <Text style={styles.histScopeText}>
-                {t('pickers.historyScope')}
+        {(requiredCapability || matchGender || preferAppointment) && (
+          <Pressable
+            style={styles.toggleRow}
+            onPress={() => setShowAll((v) => !v)}
+          >
+            <View style={{ flex: 1 }}>
+              <Text style={styles.toggleLabel}>
+                {t("pickers.showAllOverride")}
+              </Text>
+              <Text style={styles.toggleHint}>
+                {showAll
+                  ? t("pickers.showingAllNoFilter")
+                  : preferAppointment && !requiredCapability && !matchGender
+                    ? t("pickers.showingElders")
+                    : t("pickers.hiddenByCapability", {
+                        count: hiddenByCapability,
+                      })}
               </Text>
             </View>
-          )}
+            <Switch
+              value={showAll}
+              onValueChange={setShowAll}
+              trackColor={{ false: "#e2e8f0", true: "#fde68a" }}
+              thumbColor={showAll ? "#d97706" : "#f8fafc"}
+            />
+          </Pressable>
+        )}
 
-          {isLoading ? (
-            <ActivityIndicator size="large" style={{ marginTop: 32 }} />
-          ) : (
-            <ScrollView
-              style={styles.list}
-              keyboardShouldPersistTaps="handled"
+        <TextInput
+          style={styles.search}
+          value={search}
+          onChangeText={setSearch}
+          placeholder={t("pickers.search")}
+          placeholderTextColor="#cbd5e1"
+          autoCapitalize="none"
+          autoCorrect={false}
+        />
+
+        {historyEnabled && (
+          <View style={styles.histScopeNote}>
+            <Ionicons name="calendar-outline" size={13} color="#64748b" />
+            <Text style={styles.histScopeText}>
+              {t("pickers.historyScope")}
+            </Text>
+          </View>
+        )}
+
+        {isLoading ? (
+          <ActivityIndicator size="large" style={{ marginTop: 32 }} />
+        ) : (
+          <ScrollView style={styles.list} keyboardShouldPersistTaps="handled">
+            <Pressable
+              style={({ pressed }) => [
+                styles.option,
+                pressed && styles.optionPressed,
+              ]}
+              onPress={() => {
+                onChange(null);
+                setOpen(false);
+              }}
             >
-              <Pressable
-                style={({ pressed }) => [
-                  styles.option,
-                  pressed && styles.optionPressed,
-                ]}
+              <Text style={styles.optionText}>{t("common.none")}</Text>
+              {value == null && (
+                <Ionicons name="checkmark" size={20} color="#0ea5e9" />
+              )}
+            </Pressable>
+
+            {filtered.length === 0 && (
+              <Text style={styles.empty}>
+                {search !== ""
+                  ? t("pickers.noMatches")
+                  : filterByCapability
+                    ? t("pickers.noPublishersWithCapability", {
+                        capability: capabilityLabel,
+                      })
+                    : t("pickers.noPublishers")}
+              </Text>
+            )}
+
+            {sorted.map((p) => (
+              <PublisherOption
+                key={p.id}
+                publisher={p}
+                isSelected={value === p.id}
+                hasCapability={
+                  !requiredCapability || !!p.capabilities?.[requiredCapability]
+                }
+                showCapabilityWarning={!!requiredCapability && showAll}
                 onPress={() => {
-                  onChange(null);
+                  onChange(p.id);
                   setOpen(false);
                 }}
-              >
-                <Text style={styles.optionText}>{t('common.none')}</Text>
-                {value == null && (
-                  <Ionicons name="checkmark" size={20} color="#0ea5e9" />
+                activity={summarizeActivity(
+                  activityById?.get(p.id),
+                  currentWeekStart,
+                  currentEventType,
                 )}
-              </Pressable>
-
-              {filtered.length === 0 && (
-                <Text style={styles.empty}>
-                  {search !== ''
-                    ? t('pickers.noMatches')
-                    : filterByCapability
-                    ? t('pickers.noPublishersWithCapability', { capability: capabilityLabel })
-                    : t('pickers.noPublishers')}
-                </Text>
-              )}
-
-              {sorted.map((p) => (
-                <PublisherOption
-                  key={p.id}
-                  publisher={p}
-                  isSelected={value === p.id}
-                  hasCapability={
-                    !requiredCapability ||
-                    !!p.capabilities?.[requiredCapability]
-                  }
-                  showCapabilityWarning={
-                    !!requiredCapability && showAll
-                  }
-                  onPress={() => {
-                    onChange(p.id);
-                    setOpen(false);
-                  }}
-                  activity={summarizeActivity(
-                    activityById?.get(p.id),
-                    currentWeekStart,
-                    currentEventType,
-                  )}
-                  absence={absentThisWeek.get(p.id)}
-                  meta={rowMeta?.(p.id) ?? undefined}
-                  metaTone={rowTone?.(p.id)}
-                  showHistory={historyEnabled}
-                  historyKind={scopeDutyType ? 'duty' : 'part'}
-                  thisItemDates={itemDatesById.get(p.id) ?? []}
-                  pairDates={pairDatesById.get(p.id) ?? []}
-                  pairWithName={partnerName}
-                />
-              ))}
-            </ScrollView>
-          )}
-              </Sheet>
+                absence={absentThisWeek.get(p.id)}
+                meta={rowMeta?.(p.id) ?? undefined}
+                metaTone={rowTone?.(p.id)}
+                showHistory={historyEnabled}
+                historyKind={scopeDutyType ? "duty" : "part"}
+                thisItemDates={itemDatesById.get(p.id) ?? []}
+                pairDates={pairDatesById.get(p.id) ?? []}
+                pairWithName={partnerName}
+              />
+            ))}
+          </ScrollView>
+        )}
+      </Sheet>
     </>
   );
 }
@@ -650,11 +656,11 @@ function PublisherOption({
   absence?: Absence;
   /** Optional gray info line under the name (e.g. rotation stats). */
   meta?: string;
-  metaTone?: 'free' | 'busy';
+  metaTone?: "free" | "busy";
   /** Whether to show the always-visible scoped-history block. */
   showHistory?: boolean;
   /** Whether the scoped item is a program part or a duty. */
-  historyKind?: 'part' | 'duty';
+  historyKind?: "part" | "duty";
   /** ISO weeks the candidate did this exact part/duty (~3 months, newest first). */
   thisItemDates?: string[];
   /** ISO weeks the candidate was paired with the primary (~3 months). */
@@ -683,7 +689,7 @@ function PublisherOption({
               styles.dot,
               {
                 backgroundColor:
-                  publisher.gender === 'brother' ? '#0ea5e9' : '#ec4899',
+                  publisher.gender === "brother" ? "#0ea5e9" : "#ec4899",
               },
             ]}
           />
@@ -698,8 +704,8 @@ function PublisherOption({
           <Text
             style={[
               styles.optionMetaText,
-              metaTone === 'free' && styles.optionMetaFree,
-              metaTone === 'busy' && styles.optionMetaBusy,
+              metaTone === "free" && styles.optionMetaFree,
+              metaTone === "busy" && styles.optionMetaBusy,
             ]}
             numberOfLines={1}
           >
@@ -708,8 +714,8 @@ function PublisherOption({
         ) : null}
         {absence && (
           <Text style={styles.optionAbsentText} numberOfLines={1}>
-            {'\u2708 '}
-            {t('absences.warnAway', {
+            {"\u2708 "}
+            {t("absences.warnAway", {
               range: absenceRangeLabel(absence, i18n.language),
             })}
           </Text>
@@ -725,9 +731,9 @@ function PublisherOption({
             <View style={styles.chipsWrap}>
               <Text style={styles.histLabel}>
                 {t(
-                  historyKind === 'duty'
-                    ? 'pickers.histThisDuty'
-                    : 'pickers.histThisPart',
+                  historyKind === "duty"
+                    ? "pickers.histThisDuty"
+                    : "pickers.histThisPart",
                 )}
               </Text>
               {itemDates.length > 0 ? (
@@ -740,7 +746,7 @@ function PublisherOption({
                 <View style={[styles.chip, styles.chipFresh]}>
                   <Ionicons name="checkmark" size={10} color="#0F6E56" />
                   <Text style={styles.chipFreshText}>
-                    {t('pickers.histNever')}
+                    {t("pickers.histNever")}
                   </Text>
                 </View>
               )}
@@ -757,7 +763,7 @@ function PublisherOption({
             />
             <View style={styles.chipsWrap}>
               <Text style={styles.histLabel}>
-                {t('pickers.histPairWith', { name: pairWithName })}
+                {t("pickers.histPairWith", { name: pairWithName })}
               </Text>
               {pdates.length > 0 ? (
                 pdates.map((d) => (
@@ -769,7 +775,7 @@ function PublisherOption({
                 <View style={[styles.chip, styles.chipFresh]}>
                   <Ionicons name="checkmark" size={10} color="#0F6E56" />
                   <Text style={styles.chipFreshText}>
-                    {t('pickers.histNever')}
+                    {t("pickers.histNever")}
                   </Text>
                 </View>
               )}
@@ -780,8 +786,8 @@ function PublisherOption({
           <View style={styles.busyChipRow}>
             <Ionicons name="time" size={11} color="#b45309" />
             <Text style={styles.busyChipText}>
-              {t('publisherActivity.thisMeeting')}{' '}
-              {activity!.thisMeeting.join(', ')}
+              {t("publisherActivity.thisMeeting")}{" "}
+              {activity!.thisMeeting.join(", ")}
             </Text>
           </View>
         )}
@@ -792,27 +798,27 @@ function PublisherOption({
 }
 
 const styles = StyleSheet.create({
-  optionMetaFree: { color: '#15803d' },
-  optionMetaBusy: { color: '#b45309' },
+  optionMetaFree: { color: "#15803d" },
+  optionMetaBusy: { color: "#b45309" },
   field: {
     paddingVertical: 8,
     paddingHorizontal: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
+    borderBottomColor: "#f1f5f9",
   },
   fieldBoxed: {
-    backgroundColor: '#ffffff',
+    backgroundColor: "#ffffff",
     borderWidth: 1,
-    borderColor: '#cbd5e1',
-    borderBottomColor: '#cbd5e1',
+    borderColor: "#cbd5e1",
+    borderBottomColor: "#cbd5e1",
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 10,
     marginTop: 2,
   },
   fieldWithIcon: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 12,
   },
   fieldMain: { flex: 1 },
@@ -820,86 +826,102 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
-  fieldPressed: { backgroundColor: '#f8fafc' },
-  chipTrigger: { alignSelf: 'flex-start', gap: 4 },
+  fieldPressed: { backgroundColor: "#f8fafc" },
+  chipTrigger: { alignSelf: "flex-start", gap: 4 },
   chipPressed: { opacity: 0.6 },
   label: {
     fontSize: 12,
-    color: '#64748b',
+    color: "#64748b",
     marginBottom: 4,
-    fontWeight: '500', fontFamily: 'Manrope_500Medium',
+    fontWeight: "500",
+    fontFamily: "Manrope_500Medium",
   },
   row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
-  value: { fontSize: 16, color: '#0f172a' },
-  valuePlaceholder: { color: '#cbd5e1' },
+  value: { fontSize: 16, color: "#0f172a" },
+  /**
+   * Пустое поле — не выключенное.
+   *
+   * Было `#cbd5e1` — самый светлый серый в приложении, тот, которым помечают
+   * недоступное. «Тема · Не выбрано» читалось как «сюда нельзя», хотя поле
+   * работает всегда, и человек просто не нажимал. Обычный приглушённый цвет
+   * говорит верно: значения нет, но выбрать можно.
+   */
+  valuePlaceholder: { color: "#64748b" },
   warningRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 4,
     marginTop: 4,
   },
-  warningText: { fontSize: 11, color: '#dc2626' },
+  warningText: { fontSize: 11, color: "#dc2626" },
   absenceRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 4,
     marginTop: 4,
   },
-  absenceText: { fontSize: 11, color: '#b45309', flex: 1 },
-  optionLastDone: { fontSize: 11, color: '#0369a1', marginTop: 2 },
-  optionPartner: { fontSize: 11, color: '#7c3aed', marginTop: 2 },
+  absenceText: { fontSize: 11, color: "#b45309", flex: 1 },
+  optionLastDone: { fontSize: 11, color: "#0369a1", marginTop: 2 },
+  optionPartner: { fontSize: 11, color: "#7c3aed", marginTop: 2 },
   busyChipRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
+    flexDirection: "row",
+    alignItems: "flex-start",
     gap: 4,
-    alignSelf: 'flex-start',
-    backgroundColor: '#fef3c7',
+    alignSelf: "flex-start",
+    backgroundColor: "#fef3c7",
     borderRadius: 6,
     paddingHorizontal: 6,
     paddingVertical: 2,
     marginTop: 3,
   },
-  busyChipText: { fontSize: 11, color: '#92400e', flexShrink: 1, lineHeight: 15 },
-  optionBusy: { backgroundColor: '#f0f9ff' },
+  busyChipText: {
+    fontSize: 11,
+    color: "#92400e",
+    flexShrink: 1,
+    lineHeight: 15,
+  },
+  optionBusy: { backgroundColor: "#f0f9ff" },
   optionBusyText: {
     fontSize: 12,
-    color: '#0369a1',
-    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
+    color: "#0369a1",
+    fontWeight: "600",
+    fontFamily: "Manrope_600SemiBold",
     marginLeft: 16,
     marginTop: 2,
   },
   optionAbsentText: {
     fontSize: 12,
-    color: '#b45309',
-    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
+    color: "#b45309",
+    fontWeight: "600",
+    fontFamily: "Manrope_600SemiBold",
     marginLeft: 16,
     marginTop: 2,
   },
   optionMetaText: {
     fontSize: 12,
-    color: '#64748b',
+    color: "#64748b",
     marginTop: 2,
     marginLeft: 18,
   },
-  optionRecentText: { fontSize: 12, color: '#94a3b8' },
+  optionRecentText: { fontSize: 12, color: "#94a3b8" },
   recentToggle: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 4,
     marginLeft: 16,
     marginTop: 2,
   },
-  historyRow: { fontSize: 11, color: '#64748b', marginLeft: 16, marginTop: 2 },
+  historyRow: { fontSize: 11, color: "#64748b", marginLeft: 16, marginTop: 2 },
   histRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
+    flexDirection: "row",
+    alignItems: "flex-start",
     gap: 5,
     marginTop: 3,
     marginLeft: 16,
@@ -907,95 +929,104 @@ const styles = StyleSheet.create({
   histIcon: { marginTop: 1 },
   chipsWrap: {
     flex: 1,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    alignItems: 'center',
+    flexDirection: "row",
+    flexWrap: "wrap",
+    alignItems: "center",
     gap: 6,
   },
-  histLabel: { fontSize: 11, color: '#94a3b8' },
+  histLabel: { fontSize: 11, color: "#94a3b8" },
   chip: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 2,
     borderRadius: 10,
     paddingHorizontal: 7,
     paddingVertical: 1,
   },
-  chipBusy: { backgroundColor: '#faeeda' },
-  chipBusyText: { fontSize: 11, color: '#854f0b' },
-  chipPair: { backgroundColor: '#eeedfe' },
-  chipPairText: { fontSize: 11, color: '#3c3489' },
-  chipFresh: { backgroundColor: '#e1f5ee' },
-  chipFreshText: { fontSize: 11, color: '#0f6e56' },
+  chipBusy: { backgroundColor: "#faeeda" },
+  chipBusyText: { fontSize: 11, color: "#854f0b" },
+  chipPair: { backgroundColor: "#eeedfe" },
+  chipPairText: { fontSize: 11, color: "#3c3489" },
+  chipFresh: { backgroundColor: "#e1f5ee" },
+  chipFreshText: { fontSize: 11, color: "#0f6e56" },
   histScopeNote: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 6,
     paddingHorizontal: 20,
     paddingBottom: 8,
     marginTop: -4,
   },
-  histScopeText: { fontSize: 11, color: '#64748b' },
+  histScopeText: { fontSize: 11, color: "#64748b" },
 
   modal: {
     flex: 1,
-    backgroundColor: '#f1f5f9',
-    ...(Platform.OS === 'web' && { paddingTop: 0 }),
+    backgroundColor: "#f1f5f9",
+    ...(Platform.OS === "web" && { paddingTop: 0 }),
   },
-  modalSubtitle: { fontSize: 12, color: '#64748b', marginTop: 2 },
-  modalCapName: { color: '#0369a1', fontWeight: '500', fontFamily: 'Manrope_500Medium',},
+  modalSubtitle: { fontSize: 12, color: "#64748b", marginTop: 2 },
+  modalCapName: {
+    color: "#0369a1",
+    fontWeight: "500",
+    fontFamily: "Manrope_500Medium",
+  },
 
   toggleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingVertical: 10,
     paddingHorizontal: 20,
-    backgroundColor: '#fffbeb',
+    backgroundColor: "#fffbeb",
     borderBottomWidth: 1,
-    borderBottomColor: '#fde68a',
+    borderBottomColor: "#fde68a",
   },
-  toggleLabel: { fontSize: 13, color: '#78350f', fontWeight: '500', fontFamily: 'Manrope_500Medium',},
-  toggleHint: { fontSize: 11, color: '#92400e', marginTop: 2 },
+  toggleLabel: {
+    fontSize: 13,
+    color: "#78350f",
+    fontWeight: "500",
+    fontFamily: "Manrope_500Medium",
+  },
+  toggleHint: { fontSize: 11, color: "#92400e", marginTop: 2 },
 
   search: {
     margin: 16,
     paddingHorizontal: 14,
     paddingVertical: 10,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderRadius: 10,
     fontSize: 16,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: "#e2e8f0",
   },
 
-  list: { flex: 1, backgroundColor: '#fff' },
+  list: { flex: 1, backgroundColor: "#fff" },
   option: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingVertical: 14,
     paddingHorizontal: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
+    borderBottomColor: "#f1f5f9",
   },
-  optionPressed: { backgroundColor: '#f8fafc' },
+  optionPressed: { backgroundColor: "#f8fafc" },
   optionMain: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     flex: 1,
     gap: 6,
   },
   dot: { width: 10, height: 10, borderRadius: 5, marginRight: 6 },
-  optionText: { fontSize: 15, color: '#0f172a' },
+  optionText: { fontSize: 15, color: "#0f172a" },
   optionWarn: {
-    backgroundColor: '#fef2f2',
+    backgroundColor: "#fef2f2",
     paddingHorizontal: 4,
     paddingVertical: 2,
     borderRadius: 4,
   },
   empty: {
-    textAlign: 'center',
-    color: '#94a3b8',
+    textAlign: "center",
+    color: "#94a3b8",
     padding: 32,
     fontSize: 14,
   },

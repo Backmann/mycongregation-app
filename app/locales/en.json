@@ -2527,6 +2527,7 @@
       "duplicateConfirm": "Add anyway"
     },
     "log": {
+      "alsoFillsProgramme": "This goes into the journal and fills the meeting programme.",
       "changeSpeaker": "Change",
       "orTypeName": "Or type a speaker who is not in the directory:",
       "longestAgoFirst": "Those away the longest come first",

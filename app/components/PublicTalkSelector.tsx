@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState } from "react";
 import {
   ActivityIndicator,
   Platform,
@@ -8,13 +8,13 @@ import {
   Text,
   TextInput,
   View,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useQuery } from '@tanstack/react-query';
-import { PublicTalk, publicTalksApi } from '../lib/api';
-import { useTranslation } from 'react-i18next';
-import i18n from '../lib/i18n';
-import { Sheet } from './Sheet';
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useQuery } from "@tanstack/react-query";
+import { PublicTalk, publicTalksApi } from "../lib/api";
+import { useTranslation } from "react-i18next";
+import i18n from "../lib/i18n";
+import { Sheet } from "./Sheet";
 
 interface Props {
   label: string;
@@ -23,22 +23,21 @@ interface Props {
   onChange: (talk: PublicTalk | null) => void;
 }
 
-type Recency = 'recent' | 'caution' | 'ok' | 'never';
+type Recency = "recent" | "caution" | "ok" | "never";
 
 function getRecency(lastGivenAt: string | null): Recency {
-  if (!lastGivenAt) return 'never';
+  if (!lastGivenAt) return "never";
   const monthsAgo =
-    (Date.now() - new Date(lastGivenAt).getTime()) /
-    (1000 * 60 * 60 * 24 * 30);
-  if (monthsAgo < 3) return 'recent';
-  if (monthsAgo < 6) return 'caution';
-  return 'ok';
+    (Date.now() - new Date(lastGivenAt).getTime()) / (1000 * 60 * 60 * 24 * 30);
+  if (monthsAgo < 3) return "recent";
+  if (monthsAgo < 6) return "caution";
+  return "ok";
 }
 
 export function PublicTalkSelector({ label, value, onChange }: Props) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState("");
 
   /**
    * Retired talks are ASKED FOR, not hidden.
@@ -50,7 +49,7 @@ export function PublicTalkSelector({ label, value, onChange }: Props) {
    * coordinator may know something the catalogue does not.
    */
   const { data, isLoading } = useQuery({
-    queryKey: ['public-talks', 'all-for-picker'],
+    queryKey: ["public-talks", "all-for-picker"],
     queryFn: () => publicTalksApi.list({ limit: 500, includeInactive: true }),
   });
 
@@ -58,11 +57,10 @@ export function PublicTalkSelector({ label, value, onChange }: Props) {
   const selectedTalk = allTalks.find((t) => t.id === value);
 
   const matches = allTalks.filter((t) => {
-    if (search.trim() === '') return true;
+    if (search.trim() === "") return true;
     const s = search.trim().toLowerCase();
     return (
-      t.title.toLowerCase().includes(s) ||
-      t.number.toString().startsWith(s)
+      t.title.toLowerCase().includes(s) || t.number.toString().startsWith(s)
     );
   });
 
@@ -90,9 +88,9 @@ export function PublicTalkSelector({ label, value, onChange }: Props) {
           >
             {selectedTalk
               ? `№${selectedTalk.number}. ${selectedTalk.title}`
-              : t('common.none')}
+              : t("common.none")}
           </Text>
-          <Ionicons name="chevron-forward" size={18} color="#cbd5e1" />
+          <Ionicons name="chevron-forward" size={18} color="#94a3b8" />
         </View>
         {/* On the closed field too: a talk chosen months ago and retired since
             must say so where the week is being read, not only where it is
@@ -107,69 +105,67 @@ export function PublicTalkSelector({ label, value, onChange }: Props) {
           )}
       </Pressable>
 
-      <Sheet
-        visible={open}
-        title={label}
-        onClose={() => setOpen(false)}
-      >
-          <View style={styles.searchBar}>
-            <Ionicons name="search" size={18} color="#94a3b8" />
-            <TextInput
-              style={styles.searchInput}
-              value={search}
-              onChangeText={setSearch}
-              placeholder={t('pickers.searchByNumberOrTitle')}
-              placeholderTextColor="#cbd5e1"
-              autoCapitalize="none"
-              autoCorrect={false}
-            />
-            {search.length > 0 && (
-              <Pressable onPress={() => setSearch('')} hitSlop={8}>
-                <Ionicons name="close-circle" size={18} color="#cbd5e1" />
-              </Pressable>
-            )}
-          </View>
+      <Sheet visible={open} title={label} onClose={() => setOpen(false)}>
+        <View style={styles.searchBar}>
+          <Ionicons name="search" size={18} color="#94a3b8" />
+          <TextInput
+            style={styles.searchInput}
+            value={search}
+            onChangeText={setSearch}
+            placeholder={t("pickers.searchByNumberOrTitle")}
+            placeholderTextColor="#cbd5e1"
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
+          {search.length > 0 && (
+            <Pressable onPress={() => setSearch("")} hitSlop={8}>
+              <Ionicons name="close-circle" size={18} color="#cbd5e1" />
+            </Pressable>
+          )}
+        </View>
 
-          {isLoading ? (
-            <ActivityIndicator size="large" style={{ marginTop: 32 }} />
-          ) : (
-            <ScrollView style={styles.list} keyboardShouldPersistTaps="handled">
-              <Pressable
-                style={({ pressed }) => [
-                  styles.option,
-                  pressed && styles.optionPressed,
-                ]}
+        {isLoading ? (
+          <ActivityIndicator size="large" style={{ marginTop: 32 }} />
+        ) : (
+          <ScrollView style={styles.list} keyboardShouldPersistTaps="handled">
+            <Pressable
+              style={({ pressed }) => [
+                styles.option,
+                pressed && styles.optionPressed,
+              ]}
+              onPress={() => {
+                onChange(null);
+                setOpen(false);
+              }}
+            >
+              <Text style={styles.optionText}>{t("common.none")}</Text>
+              {value == null && (
+                <Ionicons name="checkmark" size={20} color="#0ea5e9" />
+              )}
+            </Pressable>
+
+            {filtered.length === 0 && (
+              <Text style={styles.empty}>
+                {search
+                  ? t("pickers.noMatches")
+                  : t("pickers.noTalksInCatalog")}
+              </Text>
+            )}
+
+            {filtered.map((talk) => (
+              <TalkOption
+                key={talk.id}
+                talk={talk}
+                isSelected={value === talk.id}
                 onPress={() => {
-                  onChange(null);
+                  onChange(talk);
                   setOpen(false);
                 }}
-              >
-                <Text style={styles.optionText}>{t('common.none')}</Text>
-                {value == null && (
-                  <Ionicons name="checkmark" size={20} color="#0ea5e9" />
-                )}
-              </Pressable>
-
-              {filtered.length === 0 && (
-                <Text style={styles.empty}>
-                  {search ? t('pickers.noMatches') : t('pickers.noTalksInCatalog')}
-                </Text>
-              )}
-
-              {filtered.map((talk) => (
-                <TalkOption
-                  key={talk.id}
-                  talk={talk}
-                  isSelected={value === talk.id}
-                  onPress={() => {
-                    onChange(talk);
-                    setOpen(false);
-                  }}
-                />
-              ))}
-            </ScrollView>
-          )}
-              </Sheet>
+              />
+            ))}
+          </ScrollView>
+        )}
+      </Sheet>
     </>
   );
 }
@@ -188,14 +184,27 @@ function TalkOption({
       style={({ pressed }) => [styles.option, pressed && styles.optionPressed]}
       onPress={onPress}
     >
-      <View style={[styles.numberBadge, !talk.isActive && styles.numberBadgeRetired]}>
-        <Text style={[styles.numberText, !talk.isActive && styles.numberTextRetired]}>
+      <View
+        style={[
+          styles.numberBadge,
+          !talk.isActive && styles.numberBadgeRetired,
+        ]}
+      >
+        <Text
+          style={[
+            styles.numberText,
+            !talk.isActive && styles.numberTextRetired,
+          ]}
+        >
           {talk.number}
         </Text>
       </View>
       <View style={{ flex: 1 }}>
         <Text
-          style={[styles.optionTitle, !talk.isActive && styles.optionTitleRetired]}
+          style={[
+            styles.optionTitle,
+            !talk.isActive && styles.optionTitleRetired,
+          ]}
           numberOfLines={2}
         >
           {talk.title}
@@ -226,9 +235,9 @@ export function RetiredHint({
   const { t } = useTranslation();
   const fmtDay = (iso: string) =>
     new Date(`${iso}T00:00:00`).toLocaleDateString(i18n.language, {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
+      day: "numeric",
+      month: "long",
+      year: "numeric",
     });
   return (
     <View style={[styles.retiredRow, inline && styles.retiredRowInline]}>
@@ -239,14 +248,14 @@ export function RetiredHint({
           January. */}
       <Text style={styles.retiredText} numberOfLines={2}>
         {!talk.retiredFrom
-          ? t('publicTalks.retiredPlain')
+          ? t("publicTalks.retiredPlain")
           : talk.retiredUntil
-            ? t('publicTalks.pausedBetween', {
+            ? t("publicTalks.pausedBetween", {
                 from: fmtDay(talk.retiredFrom),
                 until: fmtDay(talk.retiredUntil),
               })
-            : t('publicTalks.retiredFrom', { date: fmtDay(talk.retiredFrom) })}
-        {talk.retiredReason ? ` · ${talk.retiredReason}` : ''}
+            : t("publicTalks.retiredFrom", { date: fmtDay(talk.retiredFrom) })}
+        {talk.retiredReason ? ` · ${talk.retiredReason}` : ""}
       </Text>
     </View>
   );
@@ -254,22 +263,23 @@ export function RetiredHint({
 
 function RecencyHint({ talk, inline }: { talk: PublicTalk; inline?: boolean }) {
   const colors: Record<Recency, string> = {
-    recent: '#dc2626',
-    caution: '#d97706',
-    ok: '#94a3b8',
-    never: '#cbd5e1',
+    recent: "#dc2626",
+    caution: "#d97706",
+    ok: "#94a3b8",
+    never: "#cbd5e1",
   };
-  const icon: Record<Recency, 'warning' | 'warning-outline' | 'time-outline'> = {
-    recent: 'warning',
-    caution: 'warning-outline',
-    ok: 'time-outline',
-    never: 'time-outline',
-  };
+  const icon: Record<Recency, "warning" | "warning-outline" | "time-outline"> =
+    {
+      recent: "warning",
+      caution: "warning-outline",
+      ok: "time-outline",
+      never: "time-outline",
+    };
   const fmt = (d: string) =>
     new Date(d).toLocaleDateString(i18n.language, {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
+      year: "numeric",
+      month: "short",
+      day: "numeric",
     });
   const recency = getRecency(talk.lastGivenAt);
   const rowStyle = [styles.hintRow, inline && { marginTop: 4 }];
@@ -278,9 +288,9 @@ function RecencyHint({ talk, inline }: { talk: PublicTalk; inline?: boolean }) {
       {talk.nextGivenAt ? (
         <View style={rowStyle}>
           <Ionicons name="calendar-outline" size={11} color="#0369a1" />
-          <Text style={[styles.hintText, { color: '#0369a1' }]}>
-            {i18n.t('pickers.upcoming', { date: fmt(talk.nextGivenAt) })}
-            {talk.nextGivenBy ? ` · ${talk.nextGivenBy}` : ''}
+          <Text style={[styles.hintText, { color: "#0369a1" }]}>
+            {i18n.t("pickers.upcoming", { date: fmt(talk.nextGivenAt) })}
+            {talk.nextGivenBy ? ` · ${talk.nextGivenBy}` : ""}
           </Text>
         </View>
       ) : null}
@@ -288,8 +298,8 @@ function RecencyHint({ talk, inline }: { talk: PublicTalk; inline?: boolean }) {
         <View style={rowStyle}>
           <Ionicons name={icon[recency]} size={11} color={colors[recency]} />
           <Text style={[styles.hintText, { color: colors[recency] }]}>
-            {i18n.t('pickers.lastGiven', { date: fmt(talk.lastGivenAt) })}
-            {talk.lastGivenBy ? ` · ${talk.lastGivenBy}` : ''}
+            {i18n.t("pickers.lastGiven", { date: fmt(talk.lastGivenAt) })}
+            {talk.lastGivenBy ? ` · ${talk.lastGivenBy}` : ""}
           </Text>
         </View>
       ) : null}
@@ -298,90 +308,102 @@ function RecencyHint({ talk, inline }: { talk: PublicTalk; inline?: boolean }) {
 }
 
 const styles = StyleSheet.create({
-  numberBadgeRetired: { backgroundColor: '#fef3c7' },
-  numberTextRetired: { color: '#b45309' },
+  numberBadgeRetired: { backgroundColor: "#fef3c7" },
+  numberTextRetired: { color: "#b45309" },
   /* Struck through: the talk exists, it is simply not to be given. */
-  optionTitleRetired: { color: '#94a3b8', textDecorationLine: 'line-through' },
-  retiredRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 3 },
+  optionTitleRetired: { color: "#94a3b8", textDecorationLine: "line-through" },
+  retiredRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    marginTop: 3,
+  },
   retiredRowInline: { marginTop: 0 },
-  retiredText: { fontSize: 12, color: '#b45309', flexShrink: 1 },
+  retiredText: { fontSize: 12, color: "#b45309", flexShrink: 1 },
   field: {
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
+    borderBottomColor: "#f1f5f9",
   },
-  fieldPressed: { backgroundColor: '#f8fafc' },
+  fieldPressed: { backgroundColor: "#f8fafc" },
   fieldLabel: {
     fontSize: 12,
-    color: '#64748b',
+    color: "#64748b",
     marginBottom: 4,
-    fontWeight: '500', fontFamily: 'Manrope_500Medium',
+    fontWeight: "500",
+    fontFamily: "Manrope_500Medium",
   },
   fieldRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
-  fieldValue: { fontSize: 15, color: '#0f172a', flex: 1, marginRight: 8 },
-  fieldValuePlaceholder: { color: '#cbd5e1' },
+  fieldValue: { fontSize: 15, color: "#0f172a", flex: 1, marginRight: 8 },
+  /** Пустое — не выключенное; см. PublisherSelector. */
+  fieldValuePlaceholder: { color: "#64748b" },
 
   modal: {
     flex: 1,
-    backgroundColor: '#f1f5f9',
-    ...(Platform.OS === 'web' && { paddingTop: 0 }),
+    backgroundColor: "#f1f5f9",
+    ...(Platform.OS === "web" && { paddingTop: 0 }),
   },
 
   searchBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fff',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#fff",
     margin: 16,
     paddingHorizontal: 14,
     paddingVertical: 10,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: "#e2e8f0",
     gap: 8,
   },
-  searchInput: { flex: 1, fontSize: 15, color: '#0f172a' },
+  searchInput: { flex: 1, fontSize: 15, color: "#0f172a" },
 
-  list: { flex: 1, backgroundColor: '#fff' },
+  list: { flex: 1, backgroundColor: "#fff" },
   option: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
+    flexDirection: "row",
+    alignItems: "flex-start",
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
+    borderBottomColor: "#f1f5f9",
   },
-  optionPressed: { backgroundColor: '#f8fafc' },
-  optionText: { fontSize: 15, color: '#0f172a', flex: 1 },
-  optionTitle: { fontSize: 14, color: '#0f172a', lineHeight: 20 },
+  optionPressed: { backgroundColor: "#f8fafc" },
+  optionText: { fontSize: 15, color: "#0f172a", flex: 1 },
+  optionTitle: { fontSize: 14, color: "#0f172a", lineHeight: 20 },
   numberBadge: {
     minWidth: 36,
     height: 28,
     paddingHorizontal: 8,
     borderRadius: 6,
-    backgroundColor: '#e0f2fe',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "#e0f2fe",
+    justifyContent: "center",
+    alignItems: "center",
     marginRight: 12,
     marginTop: 1,
   },
-  numberText: { fontSize: 13, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0369a1' },
+  numberText: {
+    fontSize: 13,
+    fontWeight: "700",
+    fontFamily: "Manrope_700Bold",
+    color: "#0369a1",
+  },
 
   hintRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 4,
     marginTop: 3,
   },
   hintText: { fontSize: 11 },
 
   empty: {
-    textAlign: 'center',
-    color: '#94a3b8',
+    textAlign: "center",
+    color: "#94a3b8",
     padding: 32,
     fontSize: 14,
   },
