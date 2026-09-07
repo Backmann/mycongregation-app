@@ -37,17 +37,35 @@ const LIFT_AT = 12;
  */
 const SCROLL_EVERY_MS = 100;
 
+/** Опыт: снять подъём шапки целиком и посмотреть, останутся ли рывки. */
+const EXPERIMENT_HEADER_LIFT_OFF = true;
+
 export function useHeaderLift(): {
-  onScroll: (e: NativeSyntheticEvent<NativeScrollEvent>) => void;
-  scrollEventThrottle: number;
+  onScroll?: (e: NativeSyntheticEvent<NativeScrollEvent>) => void;
+  scrollEventThrottle?: number;
 } {
   const navigation = useNavigation();
   // Ref, а не состояние: экран перерисовывать незачем — меняется только
   // настройка шапки, и обработчик не должен пересоздаваться на каждом кадре.
   const liftedRef = useRef(false);
 
+  /**
+   * ВРЕМЕННО ОТКЛЮЧЕНО — опыт, а не решение.
+   *
+   * После появления этого хука прокрутка на Android стала дёргаться. Первое
+   * объяснение (событие на каждом кадре) оказалось верным по факту, но рывки
+   * от его починки не ушли — значит либо причина не в нём одном, либо не в нём
+   * вовсе, и продолжать крутить числа значило бы гадать.
+   *
+   * Обработчик здесь превращён в пустой: экраны по-прежнему его передают, но
+   * при прокрутке НЕ происходит ничего — ни события в JS, ни setOptions, ни
+   * перерисовки. Если рывки останутся, причина не в шапке, и искать надо в
+   * весе самих экранов. Если уйдут — вернём тень так, чтобы она жила целиком
+   * на нативной стороне и в JS не заходила вовсе.
+   */
   const onScroll = useCallback(
     (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+      if (EXPERIMENT_HEADER_LIFT_OFF) return;
       const next = e.nativeEvent.contentOffset.y > LIFT_AT;
       if (next === liftedRef.current) return;
       liftedRef.current = next;
@@ -67,5 +85,12 @@ export function useHeaderLift(): {
     [navigation],
   );
 
-  return { onScroll, scrollEventThrottle: SCROLL_EVERY_MS };
+  // При отключённом опыте обработчик НЕ ПЕРЕДАЁТСЯ вовсе — тогда ScrollView не
+  // заказывает событий и прокрутка целиком остаётся на нативной стороне.
+  //
+  // Не «нулевая частота»: ноль тоже меньше шестнадцати, то есть означал бы
+  // «слать всегда» — ровно та ловушка, из-за которой всё и началось.
+  return EXPERIMENT_HEADER_LIFT_OFF
+    ? { onScroll: undefined, scrollEventThrottle: undefined }
+    : { onScroll, scrollEventThrottle: SCROLL_EVERY_MS };
 }
