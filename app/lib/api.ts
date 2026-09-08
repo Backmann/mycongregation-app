@@ -1366,6 +1366,19 @@ export const externalCongregationsApi = {
 };
 
 export const visitingSpeakersApi = {
+  /**
+   * Два имени — один брат.
+   *
+   * `keepId` остаётся, `mergeId` становится следом со ссылкой на него: визиты
+   * и слоты программы переезжают, репертуар складывается. Какая карточка
+   * остаётся — решает человек: тёзки бывают.
+   */
+  async merge(keepId: string, mergeId: string): Promise<VisitingSpeaker> {
+    const { data } = await api.post<VisitingSpeaker>(
+      `/visiting-speakers/${keepId}/merge/${mergeId}`,
+    );
+    return data;
+  },
   async list(): Promise<VisitingSpeaker[]> {
     const { data } = await api.get<VisitingSpeaker[]>("/visiting-speakers");
     return data;

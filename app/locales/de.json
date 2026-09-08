@@ -2396,6 +2396,17 @@
     "y": "{{n}} J."
   },
   "talkCoordinator": {
+      "merge": {
+        "action": "Mit einer anderen Karte zusammenführen",
+        "title": "Zwei Namen, ein Bruder",
+        "lead": "Diese Karte ({{name}}) bleibt. Wähle die andere — ihre Besuche, Vorträge und Angaben ziehen hierher um.",
+        "searchHint": "Suche nach Name oder Versammlung",
+        "noMatches": "Niemand gefunden.",
+        "visits": "Besuche: {{n}}",
+        "noVisits": "noch nie da gewesen",
+        "note": "Die andere Karte wird nicht gelöscht: sie bleibt mit einem Verweis hierher, damit die Zusammenführung rückgängig gemacht werden kann.",
+        "confirm": "Zusammenführen"
+      },
     "speakerProfile": {
       "missed": "Eingeplant, nicht gekommen",
       "title": "Redner",

@@ -2396,6 +2396,17 @@
     "y": "{{n}}y"
   },
   "talkCoordinator": {
+      "merge": {
+        "action": "Merge with another card",
+        "title": "Two names, one brother",
+        "lead": "This card ({{name}}) stays. Pick the other one — its visits, talks and details move here.",
+        "searchHint": "Search by name or congregation",
+        "noMatches": "Nobody found.",
+        "visits": "visits: {{n}}",
+        "noVisits": "never been here",
+        "note": "The other card is not deleted: it stays, pointing here, so the merge can be undone.",
+        "confirm": "Merge"
+      },
     "speakerProfile": {
       "missed": "Scheduled, did not come",
       "title": "Speaker",
