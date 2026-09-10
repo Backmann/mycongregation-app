@@ -270,7 +270,18 @@ export default function TasksScreen() {
           <Pressable
             onPress={() =>
               router.push(
-                `/service-reports/pioneer-year-review?from=${encodeURIComponent("/tasks")}` as never,
+                /**
+                 * Год передаётся ЯВНО — тот, что в задаче.
+                 *
+                 * Задача про год, КОТОРЫЙ ЗАКОНЧИЛСЯ, а экран без года
+                 * открывает текущий: с сентября это уже НАЧАВШИЙСЯ год, где
+                 * отчётов ещё нет. 10 сентября так и вышло — «учтено месяцев:
+                 * 0 из 12» и нули у всех десяти пионеров, хотя год они
+                 * отслужили.
+                 */
+                `/service-reports/pioneer-year-review?year=${encodeURIComponent(
+                  task.kindPeriod ?? "",
+                )}&from=${encodeURIComponent("/tasks")}` as never,
               )
             }
             hitSlop={6}

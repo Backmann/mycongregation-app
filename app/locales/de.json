@@ -3328,6 +3328,7 @@
     }
   },
   "pioneerReview": {
+      "forYear": "Dienstjahr: {{from}} — {{to}}",
     "title": "Überblick über den Pionierdienst",
     "openFromTask": "Überblick über den Pionierdienst öffnen →",
     "counted": "Berücksichtigte Monate: {{count}} von 12.",

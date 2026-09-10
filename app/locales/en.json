@@ -3328,6 +3328,7 @@
     }
   },
   "pioneerReview": {
+      "forYear": "Service year: {{from}} — {{to}}",
     "title": "Pioneer service review",
     "openFromTask": "Open the pioneer service review →",
     "counted": "Months counted: {{count}} of 12.",
