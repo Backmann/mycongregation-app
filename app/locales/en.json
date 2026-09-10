@@ -2620,7 +2620,8 @@
       "rebuildDone": "Entries added: {{count}}",
       "rebuildDoneBody": "Weeks examined: {{weeks}}. Visits linked to a speaker's card: {{linked}}.",
       "spokeAway": "spoke {{rel}}, times in all: {{count}}",
-      "awayThisDay": "that day he is at another congregation"
+      "awayThisDay": "that day he is at another congregation",
+      "upcomingFrom": "Upcoming"
     },
     "swap": {
       "pastRefused": "That week is over. The brother has spoken and his name was read from the stage — only what has not happened yet can be moved.",

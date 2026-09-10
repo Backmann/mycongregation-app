@@ -2620,7 +2620,8 @@
       "rebuildDone": "Hinzugefügte Einträge: {{count}}",
       "rebuildDoneBody": "Geprüfte Wochen: {{weeks}}. Besuche mit einer Rednerkarte verknüpft: {{linked}}.",
       "spokeAway": "sprach {{rel}}, insgesamt: {{count}}",
-      "awayThisDay": "an diesem Tag ist er in einer anderen Versammlung"
+      "awayThisDay": "an diesem Tag ist er in einer anderen Versammlung",
+      "upcomingFrom": "Bevorstehend"
     },
     "swap": {
       "pastRefused": "Diese Woche ist vorbei. Der Bruder hat gesprochen und sein Name wurde von der Bühne genannt — verschieben lässt sich nur, was noch nicht war.",

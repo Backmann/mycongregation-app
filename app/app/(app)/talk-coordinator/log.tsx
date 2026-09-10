@@ -576,6 +576,21 @@ export default function TalkExchangeYearScreen() {
     }));
   }, [settingsQuery.data, i18n.language]);
 
+  /**
+   * Первая неделя, которая ещё впереди — у неё и ставится черта.
+   *
+   * Считается один раз по всему списку, а не в каждой карточке: иначе черта
+   * появлялась бы в каждом месяце заново. День берётся здесь же: этот расчёт
+   * стоит выше, чем `todayISO`, а переносить объявления ради одной строки —
+   * лишний повод что-нибудь сдвинуть.
+   */
+  const firstUpcomingWeek = useMemo(() => {
+    const today = dayjs().format("YYYY-MM-DD");
+    for (const m of months)
+      for (const w of m.rows) if (w.date >= today) return w.monday;
+    return null;
+  }, [months]);
+
   // Плоский список недель для модалки «Заменить докладчика».
   const weeksFlat = useMemo<WeekRow[]>(
     () => months.flatMap((mb) => mb.rows),
@@ -1011,6 +1026,7 @@ export default function TalkExchangeYearScreen() {
   const fmtDay = (d: string) =>
     dayjs(d).locale(i18n.language).format("dd, D MMM");
   const todayISO = dayjs().format("YYYY-MM-DD");
+
   const host = hostCongregationId
     ? (congById.get(hostCongregationId) ?? null)
     : null;
@@ -1224,34 +1240,73 @@ export default function TalkExchangeYearScreen() {
               const slot = byWeek.get(w.monday) ?? { missed: [], outgoing: [] };
               const upcoming = w.date >= todayISO;
               const events = eventsForWeekend(w.monday);
+              /**
+               * Где кончается прошлое.
+               *
+               * Приглушение было, но при беглом взгляде прошлая неделя от
+               * будущей почти не отличалась — а смысл разный: прошлую менять
+               * нельзя, будущую надо заполнять. Черта ставится один раз, у
+               * первой будущей недели, и только если выше неё что-то было.
+               */
+              const firstUpcoming = upcoming && w.monday === firstUpcomingWeek;
+              /**
+               * Неделя без докладчика — работа, а не ошибка.
+               *
+               * «К нам» без записи это дыра в программе: неделя есть, речи
+               * нет, и кто-то должен её закрыть. «От нас» без записи — обычное
+               * дело, наши братья ездят не каждую неделю. Обе половины
+               * показывались одинаковым бледным «+ Добавить», и глаз не
+               * отличал недоделанное от нормального.
+               *
+               * Только для БУДУЩИХ недель и только там, где неделю не накрыло
+               * событие: в прошлом пометка бессмысленна — его не исправляют, а
+               * под событием речи и не должно быть.
+               */
+              const needsSpeaker =
+                upcoming &&
+                events.length === 0 &&
+                !byWeek.get(w.monday)?.incoming;
               return (
-                <View
-                  key={w.monday}
-                  style={[styles.weekendRow, !upcoming && styles.weekendPast]}
-                  onLayout={(e) => {
-                    weekOffsets.current[w.monday] = e.nativeEvent.layout.y;
-                    // The row's own layout is the freshest word on where it
-                    // is; every time it moves, put it back at the top.
-                    if (w.monday === currentWeekMonday) placeCurrentWeek();
-                  }}
-                >
-                  <Text style={styles.weekendDate}>{fmtDay(w.date)}</Text>
-                  <View style={styles.slots}>
-                    {events.length > 0 ? (
-                      <View style={[styles.slot, styles.eventSlot]}>
-                        <Text style={styles.eventLabel}>
-                          {t("talkCoordinator.log.event")}
-                        </Text>
-                        <Text style={styles.eventTitle} numberOfLines={2}>
-                          {events
-                            .map((ev) =>
-                              t(`specialEvents.types.${ev.type}`, {
-                                defaultValue: ev.title ?? ev.type ?? "",
-                              }),
-                            )
-                            .join(" · ")}
-                        </Text>
-                        {/*
+                <Fragment key={w.monday}>
+                  {firstUpcoming ? (
+                    <View style={styles.pastLine}>
+                      <View style={styles.pastRule} />
+                      <Text style={styles.pastLabel}>
+                        {t("talkCoordinator.log.upcomingFrom")}
+                      </Text>
+                      <View style={styles.pastRule} />
+                    </View>
+                  ) : null}
+                  <View
+                    style={[
+                      styles.weekendRow,
+                      !upcoming && styles.weekendPast,
+                      needsSpeaker && styles.weekendNeeds,
+                    ]}
+                    onLayout={(e) => {
+                      weekOffsets.current[w.monday] = e.nativeEvent.layout.y;
+                      // The row's own layout is the freshest word on where it
+                      // is; every time it moves, put it back at the top.
+                      if (w.monday === currentWeekMonday) placeCurrentWeek();
+                    }}
+                  >
+                    <Text style={styles.weekendDate}>{fmtDay(w.date)}</Text>
+                    <View style={styles.slots}>
+                      {events.length > 0 ? (
+                        <View style={[styles.slot, styles.eventSlot]}>
+                          <Text style={styles.eventLabel}>
+                            {t("talkCoordinator.log.event")}
+                          </Text>
+                          <Text style={styles.eventTitle} numberOfLines={2}>
+                            {events
+                              .map((ev) =>
+                                t(`specialEvents.types.${ev.type}`, {
+                                  defaultValue: ev.title ?? ev.type ?? "",
+                                }),
+                              )
+                              .join(" · ")}
+                          </Text>
+                          {/*
                           Специальная речь — это тоже речь: у неё есть тема и
                           докладчик, и координатору они нужны так же, как в
                           обычную неделю. Раньше здесь стояло одно название
@@ -1259,163 +1314,166 @@ export default function TalkExchangeYearScreen() {
 
                           Берётся из программы встречи — там она и назначается.
                         */}
-                        {(() => {
-                          const slotOf = talkSlotByWeek.get(w.monday);
-                          if (!slotOf) return null;
-                          const who =
-                            slotOf.speakerName ??
-                            (slotOf.publisherId
-                              ? (pubById.get(slotOf.publisherId) ?? null)
-                              : null);
-                          const theme =
-                            talkLabel(slotOf.publicTalkId) ||
-                            slotOf.partTitle ||
-                            null;
-                          if (!who && !theme) return null;
-                          return (
-                            <>
-                              {who ? (
-                                <Text style={styles.eventWho}>{who}</Text>
-                              ) : null}
-                              {theme ? (
-                                <Text
-                                  style={styles.eventTheme}
-                                  numberOfLines={2}
-                                >
-                                  {theme}
-                                </Text>
-                              ) : null}
-                            </>
-                          );
-                        })()}
-                      </View>
-                    ) : (
-                      <>
-                        {slot.missed.length > 0 ? (
-                          <View style={styles.missedBox}>
-                            {slot.missed.map((mv) => (
-                              <View key={mv.id} style={styles.missedRow}>
-                                <Ionicons
-                                  name="close-circle-outline"
-                                  size={13}
-                                  color="#b45309"
-                                />
-                                <Text style={styles.missedText}>
-                                  {t("talkCoordinator.log.didNotCome", {
-                                    name:
-                                      incomingName(mv) ??
-                                      t("talkCoordinator.log.unknownSpeaker"),
-                                  })}
-                                  {mv.note ? ` · ${mv.note}` : ""}
-                                </Text>
-                                {/* Отметка «не приехал» верна ровно пока она
+                          {(() => {
+                            const slotOf = talkSlotByWeek.get(w.monday);
+                            if (!slotOf) return null;
+                            const who =
+                              slotOf.speakerName ??
+                              (slotOf.publisherId
+                                ? (pubById.get(slotOf.publisherId) ?? null)
+                                : null);
+                            const theme =
+                              talkLabel(slotOf.publicTalkId) ||
+                              slotOf.partTitle ||
+                              null;
+                            if (!who && !theme) return null;
+                            return (
+                              <>
+                                {who ? (
+                                  <Text style={styles.eventWho}>{who}</Text>
+                                ) : null}
+                                {theme ? (
+                                  <Text
+                                    style={styles.eventTheme}
+                                    numberOfLines={2}
+                                  >
+                                    {theme}
+                                  </Text>
+                                ) : null}
+                              </>
+                            );
+                          })()}
+                        </View>
+                      ) : (
+                        <>
+                          {slot.missed.length > 0 ? (
+                            <View style={styles.missedBox}>
+                              {slot.missed.map((mv) => (
+                                <View key={mv.id} style={styles.missedRow}>
+                                  <Ionicons
+                                    name="close-circle-outline"
+                                    size={13}
+                                    color="#b45309"
+                                  />
+                                  <Text style={styles.missedText}>
+                                    {t("talkCoordinator.log.didNotCome", {
+                                      name:
+                                        incomingName(mv) ??
+                                        t("talkCoordinator.log.unknownSpeaker"),
+                                    })}
+                                    {mv.note ? ` · ${mv.note}` : ""}
+                                  </Text>
+                                  {/* Отметка «не приехал» верна ровно пока она
                                   правда. Замену делают в спешке перед
                                   встречей, и ошибиться легко — а стереть
                                   ложное пятно было нечем. */}
-                                <Pressable
-                                  hitSlop={8}
-                                  disabled={undoMutation.isPending}
-                                  onPress={() => askUndo(mv)}
-                                >
-                                  <Text style={styles.missedUndo}>
-                                    {t("talkCoordinator.log.undoReplacement")}
-                                  </Text>
-                                </Pressable>
-                              </View>
-                            ))}
-                          </View>
-                        ) : null}
-                        <Slot
-                          label={t("talkCoordinator.log.filter.incoming")}
-                          accent="#0369a1"
-                          bg="#e0f2fe"
-                          entry={slot.incoming}
-                          onPress={() => openSlot(w, "incoming", slot.incoming)}
-                          onSwap={() => openSwap(w)}
-                          swapHint={t("talkCoordinator.swap.action")}
-                        >
-                          {slot.incoming ? (
-                            <>
-                              <Text style={styles.slotMain}>
-                                {incomingName(slot.incoming) ??
-                                  t("talkCoordinator.log.unknownSpeaker")}
-                              </Text>
-                              {!!incomingCong(slot.incoming) && (
-                                <Text style={styles.slotCong}>
-                                  {incomingCong(slot.incoming)}
-                                </Text>
-                              )}
-                              {!!incomingPhone(slot.incoming) && (
-                                <Text style={styles.slotCong}>
-                                  {t("talkCoordinator.log.phone")}:{" "}
-                                  {incomingPhone(slot.incoming)}
-                                </Text>
-                              )}
-                              {!!talkLabel(slot.incoming.publicTalkId) && (
-                                <Text style={styles.slotSub}>
-                                  {talkLabel(slot.incoming.publicTalkId)}
-                                </Text>
-                              )}
-                              <RestrictionBadge
-                                id={slot.incoming.publicTalkId}
-                              />
-                            </>
+                                  <Pressable
+                                    hitSlop={8}
+                                    disabled={undoMutation.isPending}
+                                    onPress={() => askUndo(mv)}
+                                  >
+                                    <Text style={styles.missedUndo}>
+                                      {t("talkCoordinator.log.undoReplacement")}
+                                    </Text>
+                                  </Pressable>
+                                </View>
+                              ))}
+                            </View>
                           ) : null}
-                        </Slot>
-                      </>
-                    )}
-                    <View style={styles.outCol}>
-                      <Text
-                        style={[
-                          styles.slotLabel,
-                          { color: "#b45309", marginBottom: 4 },
-                        ]}
-                      >
-                        {t("talkCoordinator.log.filter.outgoing")}
-                      </Text>
-                      {slot.outgoing.map((o) => (
-                        <Pressable
-                          key={o.id}
-                          style={styles.outItem}
-                          onPress={() => openSlot(w, "outgoing", o)}
+                          <Slot
+                            label={t("talkCoordinator.log.filter.incoming")}
+                            accent="#0369a1"
+                            bg="#e0f2fe"
+                            entry={slot.incoming}
+                            onPress={() =>
+                              openSlot(w, "incoming", slot.incoming)
+                            }
+                            onSwap={() => openSwap(w)}
+                            swapHint={t("talkCoordinator.swap.action")}
+                          >
+                            {slot.incoming ? (
+                              <>
+                                <Text style={styles.slotMain}>
+                                  {incomingName(slot.incoming) ??
+                                    t("talkCoordinator.log.unknownSpeaker")}
+                                </Text>
+                                {!!incomingCong(slot.incoming) && (
+                                  <Text style={styles.slotCong}>
+                                    {incomingCong(slot.incoming)}
+                                  </Text>
+                                )}
+                                {!!incomingPhone(slot.incoming) && (
+                                  <Text style={styles.slotCong}>
+                                    {t("talkCoordinator.log.phone")}:{" "}
+                                    {incomingPhone(slot.incoming)}
+                                  </Text>
+                                )}
+                                {!!talkLabel(slot.incoming.publicTalkId) && (
+                                  <Text style={styles.slotSub}>
+                                    {talkLabel(slot.incoming.publicTalkId)}
+                                  </Text>
+                                )}
+                                <RestrictionBadge
+                                  id={slot.incoming.publicTalkId}
+                                />
+                              </>
+                            ) : null}
+                          </Slot>
+                        </>
+                      )}
+                      <View style={styles.outCol}>
+                        <Text
+                          style={[
+                            styles.slotLabel,
+                            { color: "#b45309", marginBottom: 4 },
+                          ]}
                         >
-                          <Text style={styles.outMain}>
-                            {o.publisherId
-                              ? (pubById.get(o.publisherId) ?? "—")
-                              : "—"}
-                            {o.hostCongregationId
-                              ? ` → ${congById.get(o.hostCongregationId)?.name ?? ""}`
-                              : ""}
-                          </Text>
-                          <Text style={styles.outSub}>
-                            {o.date !== w.date ? `${fmtDay(o.date)}` : ""}
-                            {o.date !== w.date && talkLabel(o.publicTalkId)
-                              ? " · "
-                              : ""}
-                            {talkLabel(o.publicTalkId) ?? ""}
-                          </Text>
-                          {/* Our own brother travelling with it — the case
-                              that costs a telephone call if it is missed. */}
-                          <RestrictionBadge id={o.publicTalkId} />
-                          {!o.publicTalkId && (
-                            <Text style={styles.outHint}>
-                              {t("talkCoordinator.log.noTalk")}
-                            </Text>
-                          )}
-                        </Pressable>
-                      ))}
-                      <Pressable
-                        style={styles.outAdd}
-                        onPress={() => openSlot(w, "outgoing", undefined)}
-                      >
-                        <Ionicons name="add" size={14} color="#b45309" />
-                        <Text style={styles.outAddText}>
-                          {t("talkCoordinator.log.addSlot")}
+                          {t("talkCoordinator.log.filter.outgoing")}
                         </Text>
-                      </Pressable>
+                        {slot.outgoing.map((o) => (
+                          <Pressable
+                            key={o.id}
+                            style={styles.outItem}
+                            onPress={() => openSlot(w, "outgoing", o)}
+                          >
+                            <Text style={styles.outMain}>
+                              {o.publisherId
+                                ? (pubById.get(o.publisherId) ?? "—")
+                                : "—"}
+                              {o.hostCongregationId
+                                ? ` → ${congById.get(o.hostCongregationId)?.name ?? ""}`
+                                : ""}
+                            </Text>
+                            <Text style={styles.outSub}>
+                              {o.date !== w.date ? `${fmtDay(o.date)}` : ""}
+                              {o.date !== w.date && talkLabel(o.publicTalkId)
+                                ? " · "
+                                : ""}
+                              {talkLabel(o.publicTalkId) ?? ""}
+                            </Text>
+                            {/* Our own brother travelling with it — the case
+                              that costs a telephone call if it is missed. */}
+                            <RestrictionBadge id={o.publicTalkId} />
+                            {!o.publicTalkId && (
+                              <Text style={styles.outHint}>
+                                {t("talkCoordinator.log.noTalk")}
+                              </Text>
+                            )}
+                          </Pressable>
+                        ))}
+                        <Pressable
+                          style={styles.outAdd}
+                          onPress={() => openSlot(w, "outgoing", undefined)}
+                        >
+                          <Ionicons name="add" size={14} color="#b45309" />
+                          <Text style={styles.outAddText}>
+                            {t("talkCoordinator.log.addSlot")}
+                          </Text>
+                        </Pressable>
+                      </View>
                     </View>
                   </View>
-                </View>
+                </Fragment>
               );
             })}
           </Fragment>
@@ -2273,6 +2331,21 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   weekendPast: { opacity: 0.55 },
+  /** Неделя, у которой ещё нет докладчика: работа, а не ошибка. */
+  weekendNeeds: { borderLeftWidth: 3, borderLeftColor: "#f59e0b" },
+  pastLine: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    marginVertical: 10,
+  },
+  pastRule: { flex: 1, height: 1, backgroundColor: "#cbd5e1" },
+  pastLabel: {
+    fontSize: 11.5,
+    color: "#64748b",
+    textTransform: "uppercase",
+    letterSpacing: 0.3,
+  },
   weekendDate: {
     fontSize: 13,
     fontWeight: "700",
