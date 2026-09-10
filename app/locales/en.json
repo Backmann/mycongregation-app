@@ -95,10 +95,10 @@
     "inviteNotSent": "No letter was sent — pass the code on yourself:",
     "inviteUntil": "Valid until {{until}}",
     "inviteShare": "Send in a message",
-      "inviteCopy": "Copy the message",
-      "inviteMail": "Write an e-mail",
-      "inviteMailSubject": "Invitation to the congregation app",
-      "inviteCopied": "Copied — paste it into a chat",
+    "inviteCopy": "Copy the message",
+    "inviteMail": "Write an e-mail",
+    "inviteMailSubject": "Invitation to the congregation app",
+    "inviteCopied": "Copied — paste it into a chat",
     "inviteOnlyOnce": "The code is shown once: only its fingerprint is stored. If it is lost, issue a new one — but the old one then stops working.",
     "inviteMessage": "{{name}}, here is your code for the app: {{code}} (valid until {{until}}). Your name for signing in: {{loginName}}. Get the app at {{url}} and tap “I was invited”.",
     "newCode": "Issue a code — they choose the password",
@@ -572,10 +572,10 @@
       "entryHint": "Enter the code you were given — you choose the password yourself",
       "newestLetter": "If there are several letters, open the newest: older codes stop working.",
       "noCodeAsk": "No code, or it no longer works?",
-        "askLead": "Enter your login name — it is printed in the invitation letter. If your account has an address, a new code goes there.",
-        "askSubmit": "Send me a new code",
-        "askSent": "If that account exists and has an address, a letter with a new code has been sent.",
-        "askNoEmail": "If you have no address, there is nowhere to send it — ask the congregation administrator to hand you a code.",
+      "askLead": "Enter your login name — it is printed in the invitation letter. If your account has an address, a new code goes there.",
+      "askSubmit": "Send me a new code",
+      "askSent": "If that account exists and has an address, a letter with a new code has been sent.",
+      "askNoEmail": "If you have no address, there is nowhere to send it — ask the congregation administrator to hand you a code.",
       "welcomeTitle": "You are in",
       "welcomeIntro": "Your password is saved. Remember the name you will sign in with from now on:",
       "yourLoginName": "Your name for signing in",
@@ -585,7 +585,7 @@
     "loginOrEmail": "Login name or e-mail",
     "loginPlaceholder": "ivanov.petr or you@example.com",
     "tooMany": "Too many attempts in a short time — wait a quarter of an hour and try again. Nothing is wrong with your password.",
-      "sharedEmail": "This address belongs to more than one login — sign in with your login name. If you cannot remember it, ask the congregation administrator."
+    "sharedEmail": "This address belongs to more than one login — sign in with your login name. If you cannot remember it, ask the congregation administrator."
   },
   "months": {
     "january": "January",
@@ -603,47 +603,47 @@
   },
   "reports": {
     "fill": {
-          "action": "Fill in",
-          "hours": "Hours",
-          "studies": "Studies",
-          "save": "Save",
-          "saving": "{{done}} of {{total}} saved",
-          "leaveTitle": "Leave filling?",
-          "leaveBody": "{{count}} months filled in. Unsaved work will be lost.",
-          "leaveConfirm": "Leave",
-          "hint": "Work down the paper card. An empty month is skipped. Tick a month of auxiliary pioneer service and the hours field appears.",
-          "auxiliary": "Auxiliary pioneer",
-          "auxiliaryLocked": "Only the secretary or the service overseer may mark auxiliary service"
+      "action": "Fill in",
+      "hours": "Hours",
+      "studies": "Studies",
+      "save": "Save",
+      "saving": "{{done}} of {{total}} saved",
+      "leaveTitle": "Leave filling?",
+      "leaveBody": "{{count}} months filled in. Unsaved work will be lost.",
+      "leaveConfirm": "Leave",
+      "hint": "Work down the paper card. An empty month is skipped. Tick a month of auxiliary pioneer service and the hours field appears.",
+      "auxiliary": "Auxiliary pioneer",
+      "auxiliaryLocked": "Only the secretary or the service overseer may mark auxiliary service"
     },
     "reasons": {
-          "window": "Closed months weighed, {{from}} — {{to}}: ministry in {{served}} of {{expected}}",
-          "nothingClosed": "No closed month yet — nothing has been asked of him",
-          "countsFrom": "Counting begins at {{month}}",
-          "restarted": "Counting began afresh at {{month}}, after his return",
-          "sixth": "If the silence continues, the sixth month is {{month}}, service year {{from}}/{{to}}",
-          "manual": "Set by hand: the recompute leaves it alone"
+      "window": "Closed months weighed, {{from}} — {{to}}: ministry in {{served}} of {{expected}}",
+      "nothingClosed": "No closed month yet — nothing has been asked of him",
+      "countsFrom": "Counting begins at {{month}}",
+      "restarted": "Counting began afresh at {{month}}, after his return",
+      "sixth": "If the silence continues, the sixth month is {{month}}, service year {{from}}/{{to}}",
+      "manual": "Set by hand: the recompute leaves it alone"
     },
     "remove": {
-          "action": "Take the report back",
-          "title": "Take the report back?",
-          "body": "{{name}}'s report for {{month}} will stop counting. It stays visible and can be put back.",
-          "confirm": "Take back",
-          "removedBy": "Taken back · {{name}} · {{date}}",
-          "removedUnknown": "Taken back · {{date}}",
-          "restore": "Put back"
+      "action": "Take the report back",
+      "title": "Take the report back?",
+      "body": "{{name}}'s report for {{month}} will stop counting. It stays visible and can be put back.",
+      "confirm": "Take back",
+      "removedBy": "Taken back · {{name}} · {{date}}",
+      "removedUnknown": "Taken back · {{date}}",
+      "restore": "Put back"
     },
     "entry": {
-          "myReport": "My report",
-          "open": "The month has ended — you can hand in your report",
-          "daysLeft_one": "{{count}} day left",
-          "daysLeft_other": "{{count}} days left",
-          "lastDays": "Last days: the month closes on {{date}}",
-          "missed": "The month has closed — ask the secretary",
-          "doneEditable": "Handed in. You can change it until {{date}}",
-          "doneClosed": "Handed in; the month has closed",
-          "submit": "Hand in the report",
-          "change": "Change",
-          "myMonths": "My months",
+      "myReport": "My report",
+      "open": "The month has ended — you can hand in your report",
+      "daysLeft_one": "{{count}} day left",
+      "daysLeft_other": "{{count}} days left",
+      "lastDays": "Last days: the month closes on {{date}}",
+      "missed": "The month has closed — ask the secretary",
+      "doneEditable": "Handed in. You can change it until {{date}}",
+      "doneClosed": "Handed in; the month has closed",
+      "submit": "Hand in the report",
+      "change": "Change",
+      "myMonths": "My months",
       "collected": "{{received}} of {{expected}} handed in · {{month}}",
       "serviceYear": "Service year {{from}}/{{to}}"
     },
@@ -937,9 +937,9 @@
         "talkThemeManual": "Theme (manual)"
       },
       "hint": {
-          "talkThemeManual": "Fill this in when the talk is not in the catalogue: a special talk, a visitor’s subject, a theme announced differently."
-        },
-        "placeholder": {
+        "talkThemeManual": "Fill this in when the talk is not in the catalogue: a special talk, a visitor’s subject, a theme announced differently."
+      },
+      "placeholder": {
         "weekStart": "2026-05-04",
         "partKey": "bible_reading",
         "partTitleOverride": "e.g. Numbers 1:1-19",
@@ -1263,9 +1263,9 @@
       "readOnlyNote": "This list of logins is read-only. Grant or change a login under «Brothers»: that is where an account is tied to a person, and the role follows the appointment.",
       "noPassword": {
         "badge": "No password set",
-          "neverInvited": "No invitation has been sent",
-          "codeLivesUntil": "Invited — the code works until {{date}}",
-          "codeExpired": "The invitation code expired on {{date}} — issue a new one",
+        "neverInvited": "No invitation has been sent",
+        "codeLivesUntil": "Invited — the code works until {{date}}",
+        "codeExpired": "The invitation code expired on {{date}} — issue a new one",
         "fix": "Set one",
         "sheetTitle": "Set a password",
         "placeholder": "At least {{count}} characters",
@@ -2145,10 +2145,10 @@
     "nextWeek": "Next week"
   },
   "absences": {
-      "fromTrip": {
-        "title": "Created by a trip",
-        "body": "He is giving a talk at another congregation that day. This absence cannot be removed on its own — the talk coordinator cancels the trip."
-      },
+    "fromTrip": {
+      "title": "Created by a trip",
+      "body": "He is giving a talk at another congregation that day. This absence cannot be removed on its own — the talk coordinator cancels the trip."
+    },
     "overlapWarning": "This person already has an absence:",
     "title": {
       "list": "Absences",
@@ -2400,17 +2400,17 @@
     "y": "{{n}}y"
   },
   "talkCoordinator": {
-      "merge": {
-        "action": "Merge with another card",
-        "title": "Two names, one brother",
-        "lead": "This card ({{name}}) stays. Pick the other one — its visits, talks and details move here.",
-        "searchHint": "Search by name or congregation",
-        "noMatches": "Nobody found.",
-        "visits": "visits: {{n}}",
-        "noVisits": "never been here",
-        "note": "The other card is not deleted: it stays, pointing here, so the merge can be undone.",
-        "confirm": "Merge"
-      },
+    "merge": {
+      "action": "Merge with another card",
+      "title": "Two names, one brother",
+      "lead": "This card ({{name}}) stays. Pick the other one — its visits, talks and details move here.",
+      "searchHint": "Search by name or congregation",
+      "noMatches": "Nobody found.",
+      "visits": "visits: {{n}}",
+      "noVisits": "never been here",
+      "note": "The other card is not deleted: it stays, pointing here, so the merge can be undone.",
+      "confirm": "Merge"
+    },
     "speakerProfile": {
       "missed": "Scheduled, did not come",
       "title": "Speaker",
@@ -2546,7 +2546,11 @@
         "longAgo": "Away the longest",
         "never": "Never been here",
         "recent": "Here recently",
-        "upcoming": "Already coming"
+        "upcoming": "Already coming",
+        "longAgoOut": "Away the longest",
+        "neverOut": "Has not spoken yet",
+        "recentOut": "Spoke recently",
+        "awayThatDay": "Travelling that day"
       },
       "willCome": "coming {{date}}",
       "wasHere": "here {{rel}}, times in all: {{count}}",
@@ -2554,11 +2558,11 @@
       "changeSpeaker": "Change",
       "orTypeName": "Or type a speaker who is not in the directory:",
       "longestAgoFirst": "Those away the longest come first",
-      "needSpeaker": "Pick a speaker or type a name",
+      "needSpeaker": "Pick a speaker",
       "needBrother": "Pick a brother",
       "undoReplacement": "Undo",
       "undoTitle": "He came after all?",
-      "undoBody": "{{name}} becomes this week\u2019s speaker again: the «did not come» mark goes, the programme returns to him, and the replacement entry is removed.",
+      "undoBody": "{{name}} becomes this week’s speaker again: the «did not come» mark goes, the programme returns to him, and the replacement entry is removed.",
       "didNotCome": "{{name}} — was scheduled, did not come",
       "title": "Incoming / Outgoing log",
       "subtitle": "Visiting and outgoing talks in one list",
@@ -2614,7 +2618,9 @@
       "rebuildBody": "The app walks this year’s weeks and creates a «to us» entry wherever the programme has a speaker and the journal has none. Nothing is deleted and existing entries are left as they are.",
       "rebuildAction": "Rebuild",
       "rebuildDone": "Entries added: {{count}}",
-      "rebuildDoneBody": "Weeks examined: {{weeks}}. Visits linked to a speaker's card: {{linked}}."
+      "rebuildDoneBody": "Weeks examined: {{weeks}}. Visits linked to a speaker's card: {{linked}}.",
+      "spokeAway": "spoke {{rel}}, times in all: {{count}}",
+      "awayThisDay": "that day he is at another congregation"
     },
     "swap": {
       "pastRefused": "That week is over. The brother has spoken and his name was read from the stage — only what has not happened yet can be moved.",
@@ -3328,9 +3334,9 @@
     }
   },
   "pioneerReview": {
-      "missing": "No report for {{months}} — the year is not complete yet",
-      "notesCount": "Notes this year: {{count}}",
-      "forYear": "Service year: {{from}} — {{to}}",
+    "missing": "No report for {{months}} — the year is not complete yet",
+    "notesCount": "Notes this year: {{count}}",
+    "forYear": "Service year: {{from}} — {{to}}",
     "title": "Pioneer service review",
     "openFromTask": "Open the pioneer service review →",
     "counted": "Months counted: {{count}} of 12.",

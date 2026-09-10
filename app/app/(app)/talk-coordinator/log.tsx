@@ -289,13 +289,33 @@ export default function TalkExchangeYearScreen() {
   }, [speakersQuery.data, speakerSearch, statsById]);
   const visibleSpeakers = useMemo(() => {
     if (speakerSearch.trim() || showAllSpeakers) return sortedSpeakers;
-    const top = sortedSpeakers.slice(0, 6);
+    /**
+     * В свёрнутом виде — только те, кого МОЖНО позвать.
+     *
+     * Шесть мест уходило на тех, кто уже едет к нам: они стоят в списке по
+     * давности визита, а раз визит впереди, давность у них наибольшая. Человек
+     * открывал список и видел четверых занятых из шести. Занятые никуда не
+     * деваются — они в своём разделе, но при раскрытии.
+     */
+    const free = sortedSpeakers.filter(
+      (sp) => !statsById.get(sp.id)?.nextVisit,
+    );
+    // Если свободных нет вовсе — показываем как есть: пустой список хуже
+    // списка занятых.
+    const pool = free.length > 0 ? free : sortedSpeakers;
+    const top = pool.slice(0, 6);
     if (visitingSpeakerId && !top.some((sp) => sp.id === visitingSpeakerId)) {
       const sel = sortedSpeakers.find((sp) => sp.id === visitingSpeakerId);
       if (sel) return [sel, ...top];
     }
     return top;
-  }, [sortedSpeakers, speakerSearch, visitingSpeakerId, showAllSpeakers]);
+  }, [
+    sortedSpeakers,
+    speakerSearch,
+    visitingSpeakerId,
+    showAllSpeakers,
+    statsById,
+  ]);
   const hiddenSpeakerCount = sortedSpeakers.length - visibleSpeakers.length;
 
   /**
@@ -387,6 +407,43 @@ export default function TalkExchangeYearScreen() {
   }, [sortedPubs, pubSearch, publisherId, publishersQuery.data, showAllPubs]);
   const hiddenPubCount =
     pubSearch.trim() || showAllPubs ? 0 : Math.max(0, sortedPubs.length - 6);
+
+  /**
+   * Наши братья — по тому же правилу, что и приезжие.
+   *
+   * Здесь стояли те же две беды: «1×» вместо слов и один столбец справа, где
+   * «через 6 нед.» (он уезжает) и «4 мес. назад» (он выступал) читались как
+   * однородные числа. И третья, своя: самолётик показывал ЛЮБУЮ ближайшую
+   * поездку, а решает только одна — та, что совпадает с этим самым днём. Брат,
+   * уезжающий 6 декабря, не может в этот день говорить у нас, и об этом надо
+   * сказать прямо, а не оставлять «через 3 дн.» на сообразительность.
+   */
+  const brotherGroups = useMemo(() => {
+    const busy: typeof visiblePubs = [];
+    const recent: typeof visiblePubs = [];
+    const never: typeof visiblePubs = [];
+    const longAgo: typeof visiblePubs = [];
+    for (const p of visiblePubs) {
+      const st = outStatsById.get(p.id);
+      const awayToday = (listQuery.data ?? []).some(
+        (e) =>
+          e.direction === "outgoing" &&
+          e.publisherId === p.id &&
+          e.status !== "did_not_happen" &&
+          e.date.slice(0, 10) === date,
+      );
+      if (awayToday) busy.push(p);
+      else if (st && st.count > 0 && wentOutRecently(st, today)) recent.push(p);
+      else if (!st || st.count === 0) never.push(p);
+      else longAgo.push(p);
+    }
+    return [
+      { key: "longAgoOut", tone: "ok" as const, items: longAgo },
+      { key: "neverOut", tone: "neutral" as const, items: never },
+      { key: "recentOut", tone: "warn" as const, items: recent },
+      { key: "awayThatDay", tone: "busy" as const, items: busy },
+    ].filter((g) => g.items.length > 0);
+  }, [visiblePubs, outStatsById, listQuery.data, date, today]);
 
   /**
    * Rebuild the journal from the programme.
@@ -912,6 +969,10 @@ export default function TalkExchangeYearScreen() {
     e.visitingSpeakerId
       ? (speakerById.get(e.visitingSpeakerId)?.phone ?? null)
       : null;
+  /** Заглавной только первое слово: месяц в русском со строчной. */
+  const capitalizeFirst = (x: string) =>
+    x.length > 0 ? x[0].toUpperCase() + x.slice(1) : x;
+
   const fmtDay = (d: string) =>
     dayjs(d).locale(i18n.language).format("dd, D MMM");
   const todayISO = dayjs().format("YYYY-MM-DD");
@@ -959,53 +1020,69 @@ export default function TalkExchangeYearScreen() {
         ) : null}
       </View>
       <View style={styles.dirList}>
-        {visiblePubs.map((p) => {
-          const sel = publisherId === p.id;
-          const st = outStatsById.get(p.id);
-          const recent = st ? wentOutRecently(st, today) : false;
-          return (
-            <Pressable
-              key={p.id}
-              style={[styles.dirRow, sel && styles.dirRowActive]}
-              onPress={() => setPublisherId(sel ? null : p.id)}
+        {brotherGroups.map((group) => (
+          <View key={group.key}>
+            <View
+              style={[
+                styles.grpHead,
+                group.tone === "ok" && styles.grpOk,
+                group.tone === "warn" && styles.grpWarn,
+                group.tone === "busy" && styles.grpBusy,
+              ]}
             >
-              <View style={{ flex: 1 }}>
-                <Text style={[styles.dirName, sel && styles.dirNameActive]}>
-                  {p.displayName}
-                </Text>
-              </View>
-              {st && (st.count > 0 || st.nextVisit) ? (
-                <View style={styles.dirBadgeCol}>
-                  {st.count > 0 && st.lastVisit ? (
-                    <Text
-                      style={[styles.dirBadge, recent && styles.dirBadgeRecent]}
-                    >
-                      {t("talkCoordinator.ourSpeakers.status.lastSeen", {
-                        count: st.count,
+              <Text
+                style={[
+                  styles.grpTitle,
+                  group.tone === "ok" && styles.grpTitleOk,
+                  group.tone === "warn" && styles.grpTitleWarn,
+                  group.tone === "busy" && styles.grpTitleBusy,
+                ]}
+              >
+                {t(`talkCoordinator.log.group.${group.key}`)}
+              </Text>
+            </View>
+            {group.items.map((p) => {
+              const sel = publisherId === p.id;
+              const st = outStatsById.get(p.id);
+              // Одна фраза вместо кода: «1×» читается как код, а не как «раз».
+              const line =
+                group.key === "awayThatDay"
+                  ? t("talkCoordinator.log.awayThisDay")
+                  : st && st.count > 0 && st.lastVisit
+                    ? t("talkCoordinator.log.spokeAway", {
                         rel: formatRelativeDay(st.lastVisit.date, today, t),
-                      })}
+                        count: st.count,
+                      })
+                    : null;
+              return (
+                <Pressable
+                  key={p.id}
+                  style={[
+                    styles.dirRow,
+                    sel && styles.dirRowActive,
+                    group.tone === "busy" && styles.dirRowBusy,
+                  ]}
+                  onPress={() => setPublisherId(sel ? null : p.id)}
+                >
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.dirName, sel && styles.dirNameActive]}>
+                      {p.displayName}
                     </Text>
+                    {line ? <Text style={styles.dirSub}>{line}</Text> : null}
+                  </View>
+                  {sel ? (
+                    <Ionicons
+                      name="checkmark-circle"
+                      size={18}
+                      color="#0ea5e9"
+                    />
                   ) : null}
-                  {st.nextVisit ? (
-                    <View style={styles.dirUpcoming}>
-                      <Ionicons name="airplane" size={10} color="#0369a1" />
-                      <Text style={styles.dirUpcomingText}>
-                        {formatRelativeDay(st.nextVisit.date, today, t)}
-                      </Text>
-                    </View>
-                  ) : null}
-                </View>
-              ) : (
-                <Text style={styles.dirNew}>
-                  {t("talkCoordinator.ourSpeakers.status.never")}
-                </Text>
-              )}
-              {sel ? (
-                <Ionicons name="checkmark-circle" size={18} color="#0ea5e9" />
-              ) : null}
-            </Pressable>
-          );
-        })}
+                </Pressable>
+              );
+            })}
+          </View>
+        ))}
+
         {hiddenPubCount > 0 ? (
           <Pressable
             onPress={() => setShowAllPubs(true)}
@@ -1384,7 +1461,18 @@ export default function TalkExchangeYearScreen() {
         subtitle={
           date ? (
             <Text style={styles.editorDate}>
-              {dayjs(date).locale(i18n.language).format("dd, D MMM YYYY")}
+              {/*
+                Первая буква, а не каждое слово.
+
+                Стоял `textTransform: 'capitalize'`, а он поднимает КАЖДОЕ
+                слово: «Вс, 6 Дек. 2026». В русском месяц со строчной, и такая
+                строка читается как чужая. Месяц целиком, а не «дек.»: в шапке
+                места хватает, а сокращение экономит четыре знака и стоит
+                секунды.
+              */}
+              {capitalizeFirst(
+                dayjs(date).locale(i18n.language).format("dd, D MMMM YYYY"),
+              )}
             </Text>
           ) : undefined
         }
@@ -2199,7 +2287,6 @@ const styles = StyleSheet.create({
     color: "#0ea5e9",
     fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
-    textTransform: "capitalize",
     marginTop: 2,
   },
   infoLine: { fontSize: 12, color: "#64748b", marginTop: 4 },

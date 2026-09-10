@@ -95,10 +95,10 @@
     "inviteNotSent": "Es wurde keine E-Mail verschickt — gib den Code selbst weiter:",
     "inviteUntil": "Gültig bis {{until}}",
     "inviteShare": "Als Nachricht senden",
-      "inviteCopy": "Nachricht kopieren",
-      "inviteMail": "E-Mail schreiben",
-      "inviteMailSubject": "Einladung in die Versammlungs-App",
-      "inviteCopied": "Kopiert — in den Chat einfügen",
+    "inviteCopy": "Nachricht kopieren",
+    "inviteMail": "E-Mail schreiben",
+    "inviteMailSubject": "Einladung in die Versammlungs-App",
+    "inviteCopied": "Kopiert — in den Chat einfügen",
     "inviteOnlyOnce": "Der Code wird einmal angezeigt: gespeichert ist nur sein Fingerabdruck. Geht er verloren, gib einen neuen aus — der alte funktioniert dann nicht mehr.",
     "inviteMessage": "{{name}}, hier ist dein Code für die App: {{code}} (gültig bis {{until}}). Dein Anmeldename: {{loginName}}. Die App gibt es unter {{url}}, dort auf „Ich wurde eingeladen“ tippen.",
     "newCode": "Code ausgeben — Passwort wählt er selbst",
@@ -572,10 +572,10 @@
       "entryHint": "Geben Sie den erhaltenen Code ein — das Passwort wählen Sie selbst",
       "newestLetter": "Bei mehreren E-Mails die neueste öffnen: ältere Codes gelten nicht mehr.",
       "noCodeAsk": "Kein Code, oder er funktioniert nicht mehr?",
-        "askLead": "Geben Sie Ihren Anmeldenamen ein — er steht im Einladungsbrief. Ist zu Ihrem Konto eine Adresse hinterlegt, geht der neue Code dorthin.",
-        "askSubmit": "Neuen Code schicken",
-        "askSent": "Wenn es dieses Konto gibt und eine Adresse hinterlegt ist, wurde ein Brief mit einem neuen Code verschickt.",
-        "askNoEmail": "Ohne Adresse gibt es keinen Empfänger — bitten Sie den Versammlungsadministrator, Ihnen den Code persönlich zu geben.",
+      "askLead": "Geben Sie Ihren Anmeldenamen ein — er steht im Einladungsbrief. Ist zu Ihrem Konto eine Adresse hinterlegt, geht der neue Code dorthin.",
+      "askSubmit": "Neuen Code schicken",
+      "askSent": "Wenn es dieses Konto gibt und eine Adresse hinterlegt ist, wurde ein Brief mit einem neuen Code verschickt.",
+      "askNoEmail": "Ohne Adresse gibt es keinen Empfänger — bitten Sie den Versammlungsadministrator, Ihnen den Code persönlich zu geben.",
       "welcomeTitle": "Fertig, Sie sind dabei",
       "welcomeIntro": "Ihr Passwort ist gespeichert. Merken Sie sich den Namen, mit dem Sie sich künftig anmelden:",
       "yourLoginName": "Ihr Name für die Anmeldung",
@@ -585,7 +585,7 @@
     "loginOrEmail": "Anmeldename oder E-Mail",
     "loginPlaceholder": "ivanov.petr oder you@example.com",
     "tooMany": "Zu viele Versuche in kurzer Zeit — warte eine Viertelstunde und versuche es erneut. Am Passwort liegt es nicht.",
-      "sharedEmail": "Diese Adresse gehört zu mehreren Zugängen — melden Sie sich mit Ihrem Anmeldenamen an. Wenn Sie ihn nicht wissen, fragen Sie den Versammlungsadministrator."
+    "sharedEmail": "Diese Adresse gehört zu mehreren Zugängen — melden Sie sich mit Ihrem Anmeldenamen an. Wenn Sie ihn nicht wissen, fragen Sie den Versammlungsadministrator."
   },
   "months": {
     "january": "Januar",
@@ -603,47 +603,47 @@
   },
   "reports": {
     "fill": {
-          "action": "Ausfüllen",
-          "hours": "Stunden",
-          "studies": "Studien",
-          "save": "Speichern",
-          "saving": "{{done}} von {{total}} gespeichert",
-          "leaveTitle": "Ausfüllen beenden?",
-          "leaveBody": "{{count}} Monate ausgefüllt. Nicht Gespeichertes geht verloren.",
-          "leaveConfirm": "Beenden",
-          "hint": "Arbeite die Papierkarte von oben nach unten ab. Ein leerer Monat wird übersprungen. Markiere einen Monat mit Hilfspionierdienst — dann erscheint das Stundenfeld.",
-          "auxiliary": "Hilfspionier",
-          "auxiliaryLocked": "Nur der Sekretär oder der Dienstaufseher darf Hilfspionierdienst eintragen"
+      "action": "Ausfüllen",
+      "hours": "Stunden",
+      "studies": "Studien",
+      "save": "Speichern",
+      "saving": "{{done}} von {{total}} gespeichert",
+      "leaveTitle": "Ausfüllen beenden?",
+      "leaveBody": "{{count}} Monate ausgefüllt. Nicht Gespeichertes geht verloren.",
+      "leaveConfirm": "Beenden",
+      "hint": "Arbeite die Papierkarte von oben nach unten ab. Ein leerer Monat wird übersprungen. Markiere einen Monat mit Hilfspionierdienst — dann erscheint das Stundenfeld.",
+      "auxiliary": "Hilfspionier",
+      "auxiliaryLocked": "Nur der Sekretär oder der Dienstaufseher darf Hilfspionierdienst eintragen"
     },
     "reasons": {
-          "window": "Gewertete abgeschlossene Monate {{from}} — {{to}}: Dienst in {{served}} von {{expected}}",
-          "nothingClosed": "Noch kein abgeschlossener Monat — es wurde nichts verlangt",
-          "countsFrom": "Gezählt wird ab {{month}}",
-          "restarted": "Neu gezählt ab {{month}}, nach der Rückkehr",
-          "sixth": "Bleibt es still, ist der sechste Monat {{month}}, Dienstjahr {{from}}/{{to}}",
-          "manual": "Von Hand gesetzt: die Neuberechnung ändert ihn nicht"
+      "window": "Gewertete abgeschlossene Monate {{from}} — {{to}}: Dienst in {{served}} von {{expected}}",
+      "nothingClosed": "Noch kein abgeschlossener Monat — es wurde nichts verlangt",
+      "countsFrom": "Gezählt wird ab {{month}}",
+      "restarted": "Neu gezählt ab {{month}}, nach der Rückkehr",
+      "sixth": "Bleibt es still, ist der sechste Monat {{month}}, Dienstjahr {{from}}/{{to}}",
+      "manual": "Von Hand gesetzt: die Neuberechnung ändert ihn nicht"
     },
     "remove": {
-          "action": "Bericht zurücknehmen",
-          "title": "Bericht zurücknehmen?",
-          "body": "Der Bericht von {{name}} für {{month}} zählt nicht mehr. Er bleibt sichtbar und kann zurückgeholt werden.",
-          "confirm": "Zurücknehmen",
-          "removedBy": "Zurückgenommen · {{name}} · {{date}}",
-          "removedUnknown": "Zurückgenommen · {{date}}",
-          "restore": "Zurückholen"
+      "action": "Bericht zurücknehmen",
+      "title": "Bericht zurücknehmen?",
+      "body": "Der Bericht von {{name}} für {{month}} zählt nicht mehr. Er bleibt sichtbar und kann zurückgeholt werden.",
+      "confirm": "Zurücknehmen",
+      "removedBy": "Zurückgenommen · {{name}} · {{date}}",
+      "removedUnknown": "Zurückgenommen · {{date}}",
+      "restore": "Zurückholen"
     },
     "entry": {
-          "myReport": "Mein Bericht",
-          "open": "Der Monat ist zu Ende — du kannst deinen Bericht abgeben",
-          "daysLeft_one": "Noch {{count}} Tag",
-          "daysLeft_other": "Noch {{count}} Tage",
-          "lastDays": "Letzte Tage: der Monat schließt am {{date}}",
-          "missed": "Der Monat ist abgeschlossen — wende dich an den Sekretär",
-          "doneEditable": "Abgegeben. Änderbar bis {{date}}",
-          "doneClosed": "Abgegeben; der Monat ist abgeschlossen",
-          "submit": "Bericht abgeben",
-          "change": "Ändern",
-          "myMonths": "Meine Monate",
+      "myReport": "Mein Bericht",
+      "open": "Der Monat ist zu Ende — du kannst deinen Bericht abgeben",
+      "daysLeft_one": "Noch {{count}} Tag",
+      "daysLeft_other": "Noch {{count}} Tage",
+      "lastDays": "Letzte Tage: der Monat schließt am {{date}}",
+      "missed": "Der Monat ist abgeschlossen — wende dich an den Sekretär",
+      "doneEditable": "Abgegeben. Änderbar bis {{date}}",
+      "doneClosed": "Abgegeben; der Monat ist abgeschlossen",
+      "submit": "Bericht abgeben",
+      "change": "Ändern",
+      "myMonths": "Meine Monate",
       "collected": "{{received}} von {{expected}} abgegeben · {{month}}",
       "serviceYear": "Dienstjahr {{from}}/{{to}}"
     },
@@ -937,9 +937,9 @@
         "talkThemeManual": "Thema (manuell)"
       },
       "hint": {
-          "talkThemeManual": "Ausfüllen, wenn der Vortrag nicht im Katalog steht: Sondervortrag, Thema eines Gastes, anders angekündigtes Thema."
-        },
-        "placeholder": {
+        "talkThemeManual": "Ausfüllen, wenn der Vortrag nicht im Katalog steht: Sondervortrag, Thema eines Gastes, anders angekündigtes Thema."
+      },
+      "placeholder": {
         "weekStart": "2026-05-04",
         "partKey": "bible_reading",
         "partTitleOverride": "z. B. 4. Mose 1:1–19",
@@ -1263,9 +1263,9 @@
       "readOnlyNote": "Diese Liste der Zugänge dient nur der Ansicht. Einen Zugang erteilst oder änderst du unter «Brüder»: dort wird das Konto der Person zugeordnet, die Rolle folgt der Ernennung.",
       "noPassword": {
         "badge": "Kein Passwort gesetzt",
-          "neverInvited": "Es wurde keine Einladung verschickt",
-          "codeLivesUntil": "Eingeladen — der Code gilt bis {{date}}",
-          "codeExpired": "Der Einladungscode ist am {{date}} abgelaufen — neuen ausstellen",
+        "neverInvited": "Es wurde keine Einladung verschickt",
+        "codeLivesUntil": "Eingeladen — der Code gilt bis {{date}}",
+        "codeExpired": "Der Einladungscode ist am {{date}} abgelaufen — neuen ausstellen",
         "fix": "Setzen",
         "sheetTitle": "Passwort setzen",
         "placeholder": "Mindestens {{count}} Zeichen",
@@ -2145,10 +2145,10 @@
     "nextWeek": "Nächste Woche"
   },
   "absences": {
-      "fromTrip": {
-        "title": "Durch eine Reise entstanden",
-        "body": "Der Bruder hält an diesem Tag einen Vortrag in einer anderen Versammlung. Diese Abwesenheit lässt sich nicht einzeln entfernen — die Reise storniert der Vortragskoordinator."
-      },
+    "fromTrip": {
+      "title": "Durch eine Reise entstanden",
+      "body": "Der Bruder hält an diesem Tag einen Vortrag in einer anderen Versammlung. Diese Abwesenheit lässt sich nicht einzeln entfernen — die Reise storniert der Vortragskoordinator."
+    },
     "overlapWarning": "Diese Person hat bereits eine Abwesenheit:",
     "title": {
       "list": "Abwesenheiten",
@@ -2400,17 +2400,17 @@
     "y": "{{n}} J."
   },
   "talkCoordinator": {
-      "merge": {
-        "action": "Mit einer anderen Karte zusammenführen",
-        "title": "Zwei Namen, ein Bruder",
-        "lead": "Diese Karte ({{name}}) bleibt. Wähle die andere — ihre Besuche, Vorträge und Angaben ziehen hierher um.",
-        "searchHint": "Suche nach Name oder Versammlung",
-        "noMatches": "Niemand gefunden.",
-        "visits": "Besuche: {{n}}",
-        "noVisits": "noch nie da gewesen",
-        "note": "Die andere Karte wird nicht gelöscht: sie bleibt mit einem Verweis hierher, damit die Zusammenführung rückgängig gemacht werden kann.",
-        "confirm": "Zusammenführen"
-      },
+    "merge": {
+      "action": "Mit einer anderen Karte zusammenführen",
+      "title": "Zwei Namen, ein Bruder",
+      "lead": "Diese Karte ({{name}}) bleibt. Wähle die andere — ihre Besuche, Vorträge und Angaben ziehen hierher um.",
+      "searchHint": "Suche nach Name oder Versammlung",
+      "noMatches": "Niemand gefunden.",
+      "visits": "Besuche: {{n}}",
+      "noVisits": "noch nie da gewesen",
+      "note": "Die andere Karte wird nicht gelöscht: sie bleibt mit einem Verweis hierher, damit die Zusammenführung rückgängig gemacht werden kann.",
+      "confirm": "Zusammenführen"
+    },
     "speakerProfile": {
       "missed": "Eingeplant, nicht gekommen",
       "title": "Redner",
@@ -2546,7 +2546,11 @@
         "longAgo": "Am längsten nicht da",
         "never": "Noch nie da gewesen",
         "recent": "Kürzlich da",
-        "upcoming": "Kommt bereits"
+        "upcoming": "Kommt bereits",
+        "longAgoOut": "Am längsten nicht dran",
+        "neverOut": "Hat noch nicht gesprochen",
+        "recentOut": "Kürzlich gesprochen",
+        "awayThatDay": "An diesem Tag unterwegs"
       },
       "willCome": "kommt am {{date}}",
       "wasHere": "war {{rel}}, insgesamt: {{count}}",
@@ -2554,7 +2558,7 @@
       "changeSpeaker": "Ändern",
       "orTypeName": "Oder einen Redner eintragen, der nicht im Verzeichnis steht:",
       "longestAgoFirst": "Oben stehen die, die am längsten nicht da waren",
-      "needSpeaker": "Redner wählen oder Namen eintragen",
+      "needSpeaker": "Redner wählen",
       "needBrother": "Bruder wählen",
       "undoReplacement": "Zurücknehmen",
       "undoTitle": "Er ist doch gekommen?",
@@ -2614,7 +2618,9 @@
       "rebuildBody": "Die App geht die Wochen dieses Jahres durch und legt einen «zu uns»-Eintrag an, wo der Plan einen Redner hat und das Journal keinen. Es wird nichts gelöscht, vorhandene Einträge bleiben unverändert.",
       "rebuildAction": "Wiederherstellen",
       "rebuildDone": "Hinzugefügte Einträge: {{count}}",
-      "rebuildDoneBody": "Geprüfte Wochen: {{weeks}}. Besuche mit einer Rednerkarte verknüpft: {{linked}}."
+      "rebuildDoneBody": "Geprüfte Wochen: {{weeks}}. Besuche mit einer Rednerkarte verknüpft: {{linked}}.",
+      "spokeAway": "sprach {{rel}}, insgesamt: {{count}}",
+      "awayThisDay": "an diesem Tag ist er in einer anderen Versammlung"
     },
     "swap": {
       "pastRefused": "Diese Woche ist vorbei. Der Bruder hat gesprochen und sein Name wurde von der Bühne genannt — verschieben lässt sich nur, was noch nicht war.",
@@ -3328,9 +3334,9 @@
     }
   },
   "pioneerReview": {
-      "missing": "Kein Bericht für {{months}} — das Jahr ist noch nicht vollständig",
-      "notesCount": "Notizen im Jahr: {{count}}",
-      "forYear": "Dienstjahr: {{from}} — {{to}}",
+    "missing": "Kein Bericht für {{months}} — das Jahr ist noch nicht vollständig",
+    "notesCount": "Notizen im Jahr: {{count}}",
+    "forYear": "Dienstjahr: {{from}} — {{to}}",
     "title": "Überblick über den Pionierdienst",
     "openFromTask": "Überblick über den Pionierdienst öffnen →",
     "counted": "Berücksichtigte Monate: {{count}} von 12.",
