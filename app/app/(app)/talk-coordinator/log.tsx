@@ -210,6 +210,23 @@ export default function TalkExchangeYearScreen() {
     queryKey: ["public-talks", "all"],
     queryFn: () => publicTalksApi.list({ includeInactive: true, limit: 300 }),
   });
+  /**
+   * Слоты публичной речи из программы — ради недель, накрытых событием.
+   *
+   * В обычную неделю журнал знает докладчика из своей записи. В неделю
+   * специальной речи записи нет, а речь есть: она назначена в программе. Без
+   * этого запроса такая неделя выглядела пустой, хотя всё известно.
+   */
+  const talkSlotsQuery = useQuery({
+    queryKey: ["assignments", "public-talk-slots"],
+    queryFn: () => assignmentsApi.list({ partKey: "public_talk_speaker" }),
+  });
+  const talkSlotByWeek = useMemo(() => {
+    const rows = talkSlotsQuery.data?.data ?? [];
+    const m = new Map<string, (typeof rows)[number]>();
+    for (const a of rows) m.set(a.weekStartDate, a);
+    return m;
+  }, [talkSlotsQuery.data]);
 
   const speakerById = useMemo(() => {
     const m = new Map<
@@ -609,13 +626,32 @@ export default function TalkExchangeYearScreen() {
    * well timed, therefore lands a week or two early — which is what Android
    * kept showing.
    *
-   * So it is not one scroll: it repeats on a few frames after the data is in,
-   * each time with fresher offsets, and only stops when two attempts agree.
+   * So it is not one scroll: it repeats while the page settles, each time with
+   * fresher offsets.
+   *
+   * ОТКУДА БРАЛСЯ ПРОМАХ НА ANDROID. Прежде оно останавливалось, когда два
+   * прохода подряд давали одно и то же место. Записи чаще всего лежат в
+   * памяти, поэтому «данные пришли» становится правдой мгновенно, и два ранних
+   * прохода совпадали ДО того, как карточки выросли: замок защёлкивался на
+   * стылом месте и больше не открывался. В браузере записи успевали
+   * отрисоваться раньше — там и промаха не было.
+   *
+   * Теперь останавливает не совпадение, а ЧЕЛОВЕК: как только он тронул
+   * список, положение принадлежит ему. Плюс общий срок в три секунды, чтобы
+   * страница не подпрыгивала вечно, если что-то продолжает шевелиться.
    */
   const lastTarget = useRef<number>(-1);
 
+  /** Когда экран открылся — по этому судим, не пора ли перестать поправлять. */
+  const openedAt = useRef<number>(Date.now());
+
   const placeCurrentWeek = () => {
     if (didInitialScroll.current) return;
+    // Три секунды на укладку — дальше страница живёт сама.
+    if (Date.now() - openedAt.current > 3000) {
+      didInitialScroll.current = true;
+      return;
+    }
     const week = weekOffsets.current[currentWeekMonday];
     if (week == null) {
       const month = monthOffsets.current[currentMonthKey];
@@ -633,11 +669,6 @@ export default function TalkExchangeYearScreen() {
     setVisibleMonth(currentMonthKey);
     showChip(currentMonthKey);
 
-    const dataIn = !listQuery.isLoading && !settingsQuery.isLoading;
-    if (dataIn && lastTarget.current === target) {
-      // Twice in a row at the same place: nothing is moving any more.
-      didInitialScroll.current = true;
-    }
     lastTarget.current = target;
   };
 
@@ -645,7 +676,11 @@ export default function TalkExchangeYearScreen() {
     placeCurrentWeek();
     // A few more passes as the cards fill out; cheap, and they stop as soon as
     // two land identically.
-    [0, 60, 200, 500].forEach((ms) => setTimeout(placeCurrentWeek, ms));
+    // Проходы гуще и дольше: на телефоне карточки дорастают позже, чем в
+    // браузере, и последний проход должен прийтись уже на выросшие.
+    [0, 60, 200, 500, 900, 1500, 2500].forEach((ms) =>
+      setTimeout(placeCurrentWeek, ms),
+    );
   };
 
   const scrollToMonth = (key: string) => {
@@ -1148,6 +1183,18 @@ export default function TalkExchangeYearScreen() {
 
       <ScrollView
         ref={scrollRef}
+        {...{
+          /**
+           * Тронул список — значит место выбрал он.
+           *
+           * Это и есть замок: не догадка о том, что вёрстка улеглась, а
+           * действие человека. Пока он не притронулся, экран вправе поправлять
+           * себя; как только притронулся — молчит.
+           */
+          onScrollBeginDrag: () => {
+            didInitialScroll.current = true;
+          },
+        }}
         contentContainerStyle={styles.container}
         onContentSizeChange={scrollToCurrentWeek}
         scrollEventThrottle={64}
@@ -1204,6 +1251,43 @@ export default function TalkExchangeYearScreen() {
                             )
                             .join(" · ")}
                         </Text>
+                        {/*
+                          Специальная речь — это тоже речь: у неё есть тема и
+                          докладчик, и координатору они нужны так же, как в
+                          обычную неделю. Раньше здесь стояло одно название
+                          рода события, и неделя выглядела пустой.
+
+                          Берётся из программы встречи — там она и назначается.
+                        */}
+                        {(() => {
+                          const slotOf = talkSlotByWeek.get(w.monday);
+                          if (!slotOf) return null;
+                          const who =
+                            slotOf.speakerName ??
+                            (slotOf.publisherId
+                              ? (pubById.get(slotOf.publisherId) ?? null)
+                              : null);
+                          const theme =
+                            talkLabel(slotOf.publicTalkId) ||
+                            slotOf.partTitle ||
+                            null;
+                          if (!who && !theme) return null;
+                          return (
+                            <>
+                              {who ? (
+                                <Text style={styles.eventWho}>{who}</Text>
+                              ) : null}
+                              {theme ? (
+                                <Text
+                                  style={styles.eventTheme}
+                                  numberOfLines={2}
+                                >
+                                  {theme}
+                                </Text>
+                              ) : null}
+                            </>
+                          );
+                        })()}
                       </View>
                     ) : (
                       <>
@@ -2225,6 +2309,13 @@ const styles = StyleSheet.create({
     color: "#6d28d9",
     textTransform: "uppercase",
     letterSpacing: 0.4,
+  },
+  eventWho: { fontSize: 14, color: "#0f172a", fontWeight: "600", marginTop: 4 },
+  eventTheme: {
+    fontSize: 12.5,
+    color: "#64748b",
+    marginTop: 2,
+    lineHeight: 17,
   },
   eventTitle: {
     fontSize: 13,
