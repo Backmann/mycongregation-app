@@ -3328,6 +3328,8 @@
     }
   },
   "pioneerReview": {
+      "missing": "Kein Bericht für {{months}} — das Jahr ist noch nicht vollständig",
+      "notesCount": "Notizen im Jahr: {{count}}",
       "forYear": "Dienstjahr: {{from}} — {{to}}",
     "title": "Überblick über den Pionierdienst",
     "openFromTask": "Überblick über den Pionierdienst öffnen →",

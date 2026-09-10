@@ -1,5 +1,7 @@
+import { useState } from "react";
 import {
   ActivityIndicator,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -45,6 +47,16 @@ export default function PioneerYearReviewScreen() {
     ? parseInt(String(yearParam), 10) || undefined
     : undefined;
 
+  /** Чьи заметки раскрыты — по одному человеку, не все разом. */
+  const [openNotes, setOpenNotes] = useState<Set<string>>(new Set());
+  const toggleNotes = (id: string) =>
+    setOpenNotes((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["pioneer-year-review", year ?? "current"],
     queryFn: () => serviceReportsApi.getPioneerYearReview(year),
@@ -77,7 +89,11 @@ export default function PioneerYearReviewScreen() {
   const card = (row: PioneerYearRow) => (
     <View
       key={row.publisherId}
-      style={[styles.card, row.short && styles.cardShort]}
+      style={[
+        styles.card,
+        row.short && styles.cardShort,
+        row.shortSoFar && styles.cardPending,
+      ]}
     >
       <View style={styles.head}>
         <Text style={styles.name}>{row.displayName}</Text>
@@ -85,6 +101,61 @@ export default function PioneerYearReviewScreen() {
           {t("pioneerReview.hours", { count: row.hours })}
         </Text>
       </View>
+
+      {/*
+        Темп — наверх.
+
+        Он отвечает на вопрос, ради которого экран открывают: дотянет ли. 47
+        часов в месяц дают 564 за год, и это видно сразу; сумма же одинакова у
+        того, кто идёт ровно, и у того, кто остановился в мае.
+      */}
+      {row.pace !== null ? (
+        <Text style={styles.paceLead}>
+          {t("pioneerReview.pace", {
+            pace: row.pace,
+            count: row.monthsReported,
+          })}
+        </Text>
+      ) : (
+        <Text style={styles.paceLead}>{t("pioneerReview.noReports")}</Text>
+      )}
+
+      {/*
+        Одна полоса с двумя отметками вместо двух вычитаний.
+
+        «До 560 не хватает 285» и «до цели 600 — 305» читались как два разных
+        требования. На полосе видно одно: где он и куда идёт.
+      */}
+      {!row.startedMidYear ? (
+        <View style={styles.bar}>
+          <View
+            style={[
+              styles.barFill,
+              {
+                width: `${Math.min(100, (row.hours / 600) * 100)}%`,
+              },
+              row.short && styles.barFillShort,
+            ]}
+          />
+          <View style={[styles.barMark, { left: `${(560 / 600) * 100}%` }]} />
+        </View>
+      ) : null}
+
+      {/*
+        Месяцы без отчёта названы вслух.
+
+        Обзор читают, пока август досдают, и месяц без отчёта прежде был
+        неотличим от месяца с нулём: человек, отслуживший год, выглядел
+        недобравшим полсотни часов — ровно тогда, когда по этой цифре решают.
+      */}
+      {row.missingMonths.length > 0 ? (
+        <Text style={styles.missing}>
+          {t("pioneerReview.missing", {
+            months: row.missingMonths.map(monthName).join(", "),
+            count: row.missingMonths.length,
+          })}
+        </Text>
+      ) : null}
 
       {row.startedMidYear ? (
         /* No target for him, and no highlight: he was not a pioneer for the
@@ -128,26 +199,41 @@ export default function PioneerYearReviewScreen() {
         </Text>
       ) : null}
 
-      {/* The pace, which the total hides: half a year at 60 and a whole year
-          at 30 add up the same and mean opposite things. */}
-      {row.pace !== null ? (
-        <Text style={styles.pace}>
-          {t("pioneerReview.pace", {
-            pace: row.pace,
-            count: row.monthsReported,
-          })}
-        </Text>
-      ) : (
-        <Text style={styles.pace}>{t("pioneerReview.noReports")}</Text>
-      )}
+      {/*
+        Заметки — под свёрткой.
 
-      {/* Where credit hours are written, in the pioneer's own words. */}
-      {row.notes.map((n) => (
-        <View key={n.reportMonth} style={styles.note}>
-          <Text style={styles.noteMonth}>{monthWithYear(n.reportMonth)}</Text>
-          <Text style={styles.noteText}>{n.note}</Text>
-        </View>
-      ))}
+        Здесь пишут засчитанные часы, и читать их нужно. Но развёрнутые они
+        занимали почти всю карточку: восемь строк слов против одной строки
+        чисел, и числа терялись.
+      */}
+      {row.notes.length > 0 ? (
+        <Pressable
+          onPress={() => toggleNotes(row.publisherId)}
+          hitSlop={6}
+          style={styles.notesToggle}
+        >
+          <Ionicons
+            name={
+              openNotes.has(row.publisherId) ? "chevron-up" : "chevron-down"
+            }
+            size={14}
+            color="#0369a1"
+          />
+          <Text style={styles.notesToggleText}>
+            {t("pioneerReview.notesCount", { count: row.notes.length })}
+          </Text>
+        </Pressable>
+      ) : null}
+      {openNotes.has(row.publisherId)
+        ? row.notes.map((n) => (
+            <View key={n.reportMonth} style={styles.note}>
+              <Text style={styles.noteMonth}>
+                {monthWithYear(n.reportMonth)}
+              </Text>
+              <Text style={styles.noteText}>{n.note}</Text>
+            </View>
+          ))
+        : null}
     </View>
   );
 
@@ -284,6 +370,40 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     marginTop: 6,
   },
+  /** Тень статуса, когда год ещё не собран: не обвинение, а вопрос. */
+  cardPending: { borderColor: "#fcd34d", backgroundColor: "#fffdf5" },
+  paceLead: { fontSize: 14, color: "#0f172a", fontWeight: "600", marginTop: 2 },
+  /** Полоса: где он и куда идёт. Отметка — порог 560 внутри цели 600. */
+  bar: {
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: "#e2e8f0",
+    marginTop: 8,
+    overflow: "hidden",
+    position: "relative",
+  },
+  barFill: { height: 8, borderRadius: 4, backgroundColor: "#0ea5e9" },
+  barFillShort: { backgroundColor: "#f59e0b" },
+  barMark: {
+    position: "absolute",
+    top: 0,
+    width: 2,
+    height: 8,
+    backgroundColor: "#475569",
+  },
+  missing: {
+    fontSize: 13,
+    color: "#b45309",
+    marginTop: 8,
+    lineHeight: 18,
+  },
+  notesToggle: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginTop: 10,
+  },
+  notesToggleText: { fontSize: 13, color: "#0369a1", fontWeight: "600" },
   pace: { fontSize: 12.5, color: "#64748b", marginTop: 8 },
   note: {
     marginTop: 8,

@@ -3547,7 +3547,12 @@ export interface PioneerYearRow {
   pace: number | null;
   toGoal: number | null;
   toMinimum: number | null;
+  /** Месяцы года без отчёта — не то же самое, что месяцы с нулём. */
+  missingMonths: string[];
+  /** Ниже порога ОКОНЧАТЕЛЬНО: год собран целиком. */
   short: boolean;
+  /** Ниже порога по сданному, но год ещё не полон. */
+  shortSoFar: boolean;
   /** Only months where something was written — credit hours live there. */
   notes: { reportMonth: string; note: string }[];
 }

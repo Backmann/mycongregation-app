@@ -3328,6 +3328,8 @@
     }
   },
   "pioneerReview": {
+      "missing": "No report for {{months}} — the year is not complete yet",
+      "notesCount": "Notes this year: {{count}}",
       "forYear": "Service year: {{from}} — {{to}}",
     "title": "Pioneer service review",
     "openFromTask": "Open the pioneer service review →",
