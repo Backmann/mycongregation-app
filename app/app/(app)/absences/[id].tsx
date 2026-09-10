@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -6,22 +6,19 @@ import {
   StyleSheet,
   Text,
   View,
-} from 'react-native';
-import { useLocalSearchParams, router } from 'expo-router';
-import {
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from '@tanstack/react-query';
-import { useTranslation } from 'react-i18next';
+} from "react-native";
+import { useLocalSearchParams, router } from "expo-router";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
+import { Ionicons } from "@expo/vector-icons";
 import {
   absencesApi,
   extractErrorMessage,
   UpdateAbsenceInput,
-} from '../../../lib/api';
-import { AbsenceForm } from '../../../components/AbsenceForm';
-import { usePermissions } from '../../../lib/permissions';
-import { useMyPublisher } from '../../../lib/useMyPublisher';
+} from "../../../lib/api";
+import { AbsenceForm } from "../../../components/AbsenceForm";
+import { usePermissions } from "../../../lib/permissions";
+import { useMyPublisher } from "../../../lib/useMyPublisher";
 
 export default function AbsenceDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -45,7 +42,7 @@ export default function AbsenceDetailScreen() {
    * at his own absence is both, and must see the buttons too.
    */
   const { data, isLoading, error } = useQuery({
-    queryKey: ['absences', 'detail', id],
+    queryKey: ["absences", "detail", id],
     queryFn: () => absencesApi.getById(id),
     enabled: !!id,
   });
@@ -53,7 +50,7 @@ export default function AbsenceDetailScreen() {
   const update = useMutation({
     mutationFn: (input: UpdateAbsenceInput) => absencesApi.update(id, input),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['absences'] });
+      qc.invalidateQueries({ queryKey: ["absences"] });
       setEditing(false);
     },
   });
@@ -61,14 +58,14 @@ export default function AbsenceDetailScreen() {
   const remove = useMutation({
     mutationFn: () => absencesApi.remove(id),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['absences'] });
-      router.replace('/absences' as any);
+      qc.invalidateQueries({ queryKey: ["absences"] });
+      router.replace("/absences" as any);
     },
   });
 
   const restore = useMutation({
     mutationFn: () => absencesApi.restore(id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['absences'] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["absences"] }),
   });
 
   const mine = !!myPublisherId && data?.publisherId === myPublisherId;
@@ -81,19 +78,21 @@ export default function AbsenceDetailScreen() {
     return (
       <View style={styles.container}>
         <Text style={styles.errorText}>
-          {error ? extractErrorMessage(error) : t('absences.empty')}
+          {error ? extractErrorMessage(error) : t("absences.empty")}
         </Text>
       </View>
     );
   }
 
   const removed = !!data.deletedAt;
+  /** Идёт из поездки — значит принадлежит ей, а не этому экрану. */
+  const fromTrip = !!data.talkExchangeId;
 
   const fmt = (iso: string) =>
     new Date(`${iso}T00:00:00`).toLocaleDateString(i18n.language, {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
+      day: "numeric",
+      month: "long",
+      year: "numeric",
     });
 
   if (editing) {
@@ -122,12 +121,12 @@ export default function AbsenceDetailScreen() {
 
   return (
     <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 48 }}>
-      <Text style={styles.name}>{data.publisher?.displayName ?? '—'}</Text>
+      <Text style={styles.name}>{data.publisher?.displayName ?? "—"}</Text>
       {removed ? (
-        <Text style={styles.removedBadge}>{t('absences.deleted')}</Text>
+        <Text style={styles.removedBadge}>{t("absences.deleted")}</Text>
       ) : null}
 
-      <Text style={styles.fieldLabel}>{t('absences.fields.dates')}</Text>
+      <Text style={styles.fieldLabel}>{t("absences.fields.dates")}</Text>
       <Text style={styles.fieldValue}>
         {data.endDate
           ? `${fmt(data.startDate)} – ${fmt(data.endDate)}`
@@ -136,12 +135,35 @@ export default function AbsenceDetailScreen() {
 
       {data.note ? (
         <>
-          <Text style={styles.fieldLabel}>{t('absences.fields.note')}</Text>
+          <Text style={styles.fieldLabel}>{t("absences.fields.note")}</Text>
           <Text style={styles.fieldValue}>{data.note}</Text>
         </>
       ) : null}
 
-      {canWrite ? (
+      {/*
+        Откуда это отсутствие.
+
+        Оно выглядело обычным, заведённым человеком, — и брат его убирал, а
+        приложение при следующем сохранении поездки возвращало запись. Спор, в
+        котором ни один из двоих не видит другого. Теперь причина написана, а
+        кнопки удаления у такой записи нет вовсе: сервер её всё равно не
+        примет, и предлагать несбыточное — хуже, чем не предлагать.
+      */}
+      {fromTrip ? (
+        <View style={styles.fromTrip}>
+          <Ionicons name="airplane-outline" size={16} color="#0369a1" />
+          <View style={{ flex: 1 }}>
+            <Text style={styles.fromTripTitle}>
+              {t("absences.fromTrip.title")}
+            </Text>
+            <Text style={styles.fromTripText}>
+              {t("absences.fromTrip.body")}
+            </Text>
+          </View>
+        </View>
+      ) : null}
+
+      {canWrite && !fromTrip ? (
         <View style={styles.actions}>
           {removed ? (
             <Pressable
@@ -150,7 +172,7 @@ export default function AbsenceDetailScreen() {
               disabled={restore.isPending}
             >
               <Text style={styles.btnPrimaryText}>
-                {t('absences.actions.restore')}
+                {t("absences.actions.restore")}
               </Text>
             </Pressable>
           ) : confirmDelete ? (
@@ -161,7 +183,7 @@ export default function AbsenceDetailScreen() {
                 disabled={remove.isPending}
               >
                 <Text style={styles.btnGhostText}>
-                  {t('absences.actions.cancel')}
+                  {t("absences.actions.cancel")}
                 </Text>
               </Pressable>
               <Pressable
@@ -170,7 +192,7 @@ export default function AbsenceDetailScreen() {
                 disabled={remove.isPending}
               >
                 <Text style={styles.btnDangerText}>
-                  {t('absences.confirmDelete')}
+                  {t("absences.confirmDelete")}
                 </Text>
               </Pressable>
             </>
@@ -181,7 +203,7 @@ export default function AbsenceDetailScreen() {
                 onPress={() => setEditing(true)}
               >
                 <Text style={styles.btnGhostText}>
-                  {t('absences.actions.edit')}
+                  {t("absences.actions.edit")}
                 </Text>
               </Pressable>
               <Pressable
@@ -189,7 +211,7 @@ export default function AbsenceDetailScreen() {
                 onPress={() => setConfirmDelete(true)}
               >
                 <Text style={styles.btnDangerText}>
-                  {t('absences.actions.delete')}
+                  {t("absences.actions.delete")}
                 </Text>
               </Pressable>
             </>
@@ -202,13 +224,19 @@ export default function AbsenceDetailScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16 },
-  name: { fontSize: 22, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0f172a' },
+  name: {
+    fontSize: 22,
+    fontWeight: "700",
+    fontFamily: "Manrope_700Bold",
+    color: "#0f172a",
+  },
   removedBadge: {
-    alignSelf: 'flex-start',
-    backgroundColor: '#fee2e2',
-    color: '#b91c1c',
+    alignSelf: "flex-start",
+    backgroundColor: "#fee2e2",
+    color: "#b91c1c",
     fontSize: 12,
-    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
+    fontWeight: "600",
+    fontFamily: "Manrope_600SemiBold",
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 6,
@@ -216,23 +244,56 @@ const styles = StyleSheet.create({
   },
   fieldLabel: {
     fontSize: 13,
-    color: '#64748b',
+    color: "#64748b",
     marginTop: 18,
     marginBottom: 2,
   },
-  fieldValue: { fontSize: 16, color: '#0f172a' },
-  errorText: { color: '#b91c1c' },
-  actions: { flexDirection: 'row', gap: 10, marginTop: 28 },
+  fieldValue: { fontSize: 16, color: "#0f172a" },
+  errorText: { color: "#b91c1c" },
+  fromTrip: {
+    flexDirection: "row",
+    gap: 10,
+    alignItems: "flex-start",
+    marginTop: 18,
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#bae6fd",
+    backgroundColor: "#f0f9ff",
+  },
+  fromTripTitle: { fontSize: 14, fontWeight: "600", color: "#0c4a6e" },
+  fromTripText: {
+    fontSize: 13,
+    color: "#334155",
+    lineHeight: 19,
+    marginTop: 3,
+  },
+  actions: { flexDirection: "row", gap: 10, marginTop: 28 },
   btn: {
     flex: 1,
     borderRadius: 8,
     paddingVertical: 14,
-    alignItems: 'center',
+    alignItems: "center",
   },
-  btnPrimary: { backgroundColor: '#0ea5e9' },
-  btnPrimaryText: { color: '#fff', fontWeight: '700', fontFamily: 'Manrope_700Bold', fontSize: 16 },
-  btnGhost: { backgroundColor: '#f1f5f9' },
-  btnGhostText: { color: '#475569', fontWeight: '600', fontFamily: 'Manrope_600SemiBold', fontSize: 16 },
-  btnDanger: { backgroundColor: '#fee2e2' },
-  btnDangerText: { color: '#b91c1c', fontWeight: '700', fontFamily: 'Manrope_700Bold', fontSize: 16 },
+  btnPrimary: { backgroundColor: "#0ea5e9" },
+  btnPrimaryText: {
+    color: "#fff",
+    fontWeight: "700",
+    fontFamily: "Manrope_700Bold",
+    fontSize: 16,
+  },
+  btnGhost: { backgroundColor: "#f1f5f9" },
+  btnGhostText: {
+    color: "#475569",
+    fontWeight: "600",
+    fontFamily: "Manrope_600SemiBold",
+    fontSize: 16,
+  },
+  btnDanger: { backgroundColor: "#fee2e2" },
+  btnDangerText: {
+    color: "#b91c1c",
+    fontWeight: "700",
+    fontFamily: "Manrope_700Bold",
+    fontSize: 16,
+  },
 });

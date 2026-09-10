@@ -2145,6 +2145,10 @@
     "nextWeek": "Nächste Woche"
   },
   "absences": {
+      "fromTrip": {
+        "title": "Durch eine Reise entstanden",
+        "body": "Der Bruder hält an diesem Tag einen Vortrag in einer anderen Versammlung. Diese Abwesenheit lässt sich nicht einzeln entfernen — die Reise storniert der Vortragskoordinator."
+      },
     "overlapWarning": "Diese Person hat bereits eine Abwesenheit:",
     "title": {
       "list": "Abwesenheiten",

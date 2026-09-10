@@ -2145,6 +2145,10 @@
     "nextWeek": "Next week"
   },
   "absences": {
+      "fromTrip": {
+        "title": "Created by a trip",
+        "body": "He is giving a talk at another congregation that day. This absence cannot be removed on its own — the talk coordinator cancels the trip."
+      },
     "overlapWarning": "This person already has an absence:",
     "title": {
       "list": "Absences",

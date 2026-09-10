@@ -2649,6 +2649,14 @@ export interface Absence {
   id: string;
   congregationId: string;
   publisherId: string;
+  /**
+   * Поездка «От нас», из которой следует это отсутствие.
+   *
+   * Null — человек завёл его сам. Номер поездки означает, что убрать его
+   * отдельно нельзя: брат в этот день у чужого собрания, и отменять надо
+   * поездку.
+   */
+  talkExchangeId?: string | null;
   startDate: string;
   endDate: string | null;
   note: string | null;
