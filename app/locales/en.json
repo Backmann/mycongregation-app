@@ -2453,24 +2453,20 @@
     "ourSpeakers": {
       "title": "Our speakers",
       "subtitle": "Our brothers who give public talks",
-      "hint": "Brothers who give public talks (here and away). Sort and filter with the buttons below.",
+      "hint": "Brothers who give public talks here and away. «Whose turn» shows those with no trip scheduled.",
       "searchPlaceholder": "Search by name",
       "noResults": "No matches",
       "empty": "No speakers yet",
-      "sort": {
-        "recency": "Recency",
-        "trips": "Talks",
-        "name": "Name"
-      },
-      "filter": {
-        "all": "All",
-        "upcoming": "Scheduled",
-        "overdue": "Overdue",
-        "never": "No talks"
-      },
       "status": {
         "never": "no talks yet",
-        "lastSeen": "times: {{count}} · {{rel}}"
+        "lastSeen": "times: {{count}} · {{rel}}",
+        "recentHint": "was away recently"
+      },
+      "view": {
+        "due": "Whose turn",
+        "planned": "Planned",
+        "never": "Not yet",
+        "all": "All"
       }
     },
     "title": "Talk coordinator",
