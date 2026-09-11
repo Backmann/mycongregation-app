@@ -2434,9 +2434,9 @@
     "ourSpeakerProfile": {
       "title": "Unser Redner",
       "notFound": "Redner nicht gefunden",
-      "timesOut": "Vorträge",
+      "timesOut": "Reisen",
       "lastTime": "zuletzt",
-      "congregations": "Versammlungen",
+      "congregations": "Versammlungen besucht",
       "never": "noch keine Vorträge",
       "upcoming": "Anstehend",
       "noUpcoming": "Keine geplanten Vorträge",
@@ -2446,9 +2446,10 @@
       "here": "bei uns",
       "noTalk": "Kein Vortrag gewählt",
       "tentative": "vorläufig",
-      "repertoire": "Repertoire (aus Verlauf)",
-      "repertoireHint": "Vorträge im Repertoire: {{n}}",
-      "sameTalkThere": "Diesen Vortrag hat er dort schon gehalten"
+      "repertoire": "Repertoire",
+      "repertoireHint": "Vorträge im Repertoire: {{n}} — gehaltene und geplante",
+      "sameTalkThere": "Diesen Vortrag hat er dort schon gehalten",
+      "plannedMark": "· geplant"
     },
     "ourSpeakers": {
       "title": "Unsere Redner",

@@ -2434,9 +2434,9 @@
     "ourSpeakerProfile": {
       "title": "Our speaker",
       "notFound": "Speaker not found",
-      "timesOut": "talks",
+      "timesOut": "trips",
       "lastTime": "last time",
-      "congregations": "congregations",
+      "congregations": "congregations visited",
       "never": "no talks yet",
       "upcoming": "Upcoming",
       "noUpcoming": "No scheduled talks",
@@ -2446,9 +2446,10 @@
       "here": "at our hall",
       "noTalk": "No talk selected",
       "tentative": "tentative",
-      "repertoire": "Repertoire (from history)",
-      "repertoireHint": "Talks in repertoire: {{n}}",
-      "sameTalkThere": "He has already taken this talk to that congregation"
+      "repertoire": "Repertoire",
+      "repertoireHint": "Talks in the repertoire: {{n}} — both given and scheduled",
+      "sameTalkThere": "He has already taken this talk to that congregation",
+      "plannedMark": "· scheduled"
     },
     "ourSpeakers": {
       "title": "Our speakers",

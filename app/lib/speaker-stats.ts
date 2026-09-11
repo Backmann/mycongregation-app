@@ -9,7 +9,7 @@ import {
   PublicTalk,
   TalkExchange,
   VisitingSpeaker,
-} from './api';
+} from "./api";
 
 /** A single incoming visit by this speaker, with the talk resolved. */
 export interface SpeakerVisit {
@@ -48,7 +48,7 @@ const DAY = 86_400_000;
 const day = (iso: string) => iso.slice(0, 10);
 
 export function computeSpeakerStats(
-  speaker: Pick<VisitingSpeaker, 'id' | 'talkNumbers'>,
+  speaker: Pick<VisitingSpeaker, "id" | "talkNumbers">,
   entries: TalkExchange[],
   talkById: Map<string, PublicTalk>,
   todayISO: string,
@@ -57,19 +57,20 @@ export function computeSpeakerStats(
   const visits: SpeakerVisit[] = [];
   const missedVisits: SpeakerVisit[] = [];
   for (const e of entries) {
-    if (e.direction !== 'incoming' || e.visitingSpeakerId !== speaker.id) continue;
-    const talk = e.publicTalkId ? talkById.get(e.publicTalkId) ?? null : null;
+    if (e.direction !== "incoming" || e.visitingSpeakerId !== speaker.id)
+      continue;
+    const talk = e.publicTalkId ? (talkById.get(e.publicTalkId) ?? null) : null;
     const visit = {
       id: e.id,
       date: day(e.date),
       talkNumber: talk?.number ?? null,
       talkTitle: talk?.title ?? null,
-      tentative: e.status === 'tentative',
+      tentative: e.status === "tentative",
     };
     // Несостоявшийся визит не считается ни в «когда был последний раз», ни в
     // промежутке, ни в списке произнесённых речей: он не приезжал и речи не
     // говорил. Иначе его очередь молча отодвинулась бы на полгода.
-    if (e.status === 'did_not_happen') missedVisits.push(visit);
+    if (e.status === "did_not_happen") missedVisits.push(visit);
     else visits.push(visit);
   }
   missedVisits.sort((a, b) => b.date.localeCompare(a.date));
@@ -82,7 +83,8 @@ export function computeSpeakerStats(
     .sort((a, b) => a.date.localeCompare(b.date));
 
   const givenTalkNumbers = new Set<number>();
-  for (const v of visits) if (v.talkNumber != null) givenTalkNumbers.add(v.talkNumber);
+  for (const v of visits)
+    if (v.talkNumber != null) givenTalkNumbers.add(v.talkNumber);
   const freshTalkNumbers = (speaker.talkNumbers ?? []).filter(
     (n) => !givenTalkNumbers.has(n),
   );
@@ -145,10 +147,22 @@ export interface OutgoingVisit {
   tentative: boolean;
 }
 
-/** A talk in the brother's derived repertoire (from his trip history). */
+/**
+ * Речь в репертуаре брата — и та, что он говорил, и та, что повезёт.
+ *
+ * Решение Лионеля 11 сентября: репертуар отвечает на оба вопроса сразу — что
+ * он говорил и что умеет. Но складывать их в одно число нельзя: у речи,
+ * прочитанной один раз и назначенной ещё раз, выходило «×2», будто он уже
+ * говорил её дважды.
+ */
 export interface OutgoingRepertoireItem {
   talkNumber: number;
   title: string | null;
+  /** Сколько раз уже произнёс. */
+  given: number;
+  /** Сколько раз назначен впереди. */
+  planned: number;
+  /** Всего упоминаний — для порядка в списке. */
   count: number;
   lastDate: string; // YYYY-MM-DD
 }
@@ -178,10 +192,10 @@ export function computeOutgoingStats(
   for (const e of entries) {
     if (e.publisherId !== publisherId) continue;
     // Поездка, которая не состоялась, не считается поездкой.
-    if (e.status === 'did_not_happen') continue;
-    const talk = e.publicTalkId ? talkById.get(e.publicTalkId) ?? null : null;
+    if (e.status === "did_not_happen") continue;
+    const talk = e.publicTalkId ? (talkById.get(e.publicTalkId) ?? null) : null;
     const cong = e.hostCongregationId
-      ? congById.get(e.hostCongregationId) ?? null
+      ? (congById.get(e.hostCongregationId) ?? null)
       : null;
     visits.push({
       id: e.id,
@@ -190,8 +204,8 @@ export function computeOutgoingStats(
       talkTitle: talk?.title ?? null,
       hostCongregationId: e.hostCongregationId ?? null,
       hostCongregation: cong?.name ?? null,
-      local: e.direction === 'incoming',
-      tentative: e.status === 'tentative',
+      local: e.direction === "incoming",
+      tentative: e.status === "tentative",
     });
   }
 
@@ -206,15 +220,20 @@ export function computeOutgoingStats(
   const repMap = new Map<number, OutgoingRepertoireItem>();
   for (const v of visits) {
     if (v.talkNumber == null) continue;
+    const ahead = v.date >= today;
     const cur = repMap.get(v.talkNumber);
     if (cur) {
       cur.count += 1;
+      if (ahead) cur.planned += 1;
+      else cur.given += 1;
       if (v.date > cur.lastDate) cur.lastDate = v.date;
       if (!cur.title && v.talkTitle) cur.title = v.talkTitle;
     } else {
       repMap.set(v.talkNumber, {
         talkNumber: v.talkNumber,
         title: v.talkTitle,
+        given: ahead ? 0 : 1,
+        planned: ahead ? 1 : 0,
         count: 1,
         lastDate: v.date,
       });
@@ -228,9 +247,7 @@ export function computeOutgoingStats(
   );
 
   const distinctCongregations = new Set(
-    pastVisits
-      .map((v) => v.hostCongregationId)
-      .filter((x): x is string => !!x),
+    pastVisits.map((v) => v.hostCongregationId).filter((x): x is string => !!x),
   ).size;
 
   let avgIntervalDays: number | null = null;
@@ -271,4 +288,3 @@ export function wentOutRecently(
     DAY;
   return diff <= withinDays;
 }
-

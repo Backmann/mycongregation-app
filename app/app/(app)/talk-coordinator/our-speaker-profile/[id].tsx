@@ -289,10 +289,29 @@ export default function OurSpeakerProfileScreen() {
           <View style={styles.card}>
             <View style={styles.chipWrap}>
               {stats.repertoire.map((r) => (
-                <View key={r.talkNumber} style={styles.talkChip}>
+                /**
+                 * Сказанное и назначенное — врозь.
+                 *
+                 * «×2» складывало одну прочитанную речь с одной назначенной,
+                 * будто он уже говорил её дважды. Теперь число — только
+                 * произнесённые разы, а назначенная впереди помечается точкой
+                 * и подписывается словом.
+                 */
+                <View
+                  key={r.talkNumber}
+                  style={[
+                    styles.talkChip,
+                    r.given === 0 && styles.talkChipPlanned,
+                  ]}
+                >
                   <Text style={styles.talkChipText}>№{r.talkNumber}</Text>
-                  {r.count > 1 ? (
-                    <Text style={styles.talkChipCount}>×{r.count}</Text>
+                  {r.given > 1 ? (
+                    <Text style={styles.talkChipCount}>×{r.given}</Text>
+                  ) : null}
+                  {r.planned > 0 ? (
+                    <Text style={styles.talkChipPlannedMark}>
+                      {t("talkCoordinator.ourSpeakerProfile.plannedMark")}
+                    </Text>
                   ) : null}
                 </View>
               ))}
@@ -368,7 +387,6 @@ const styles = StyleSheet.create({
   },
   statLabel: { fontSize: 11, color: "#94a3b8", textAlign: "center" },
 
-
   sectionTitle: {
     fontSize: 13,
     fontWeight: "600",
@@ -439,6 +457,9 @@ const styles = StyleSheet.create({
     fontFamily: "Manrope_600SemiBold",
     color: "#0369a1",
   },
+  /** Речь, которую он ещё не говорил, но повезёт. */
+  talkChipPlanned: { borderColor: "#bae6fd", backgroundColor: "#f0f9ff" },
+  talkChipPlannedMark: { fontSize: 11, color: "#0369a1", marginLeft: 4 },
   talkChipCount: {
     fontSize: 12,
     fontWeight: "700",
