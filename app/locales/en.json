@@ -2470,7 +2470,7 @@
       },
       "status": {
         "never": "no talks yet",
-        "lastSeen": "{{count}}× · {{rel}}"
+        "lastSeen": "times: {{count}} · {{rel}}"
       }
     },
     "title": "Talk coordinator",
@@ -2523,7 +2523,7 @@
       "noResults": "No matches",
       "status": {
         "never": "not visited yet",
-        "lastSeen": "{{count}}× · {{rel}}"
+        "lastSeen": "times: {{count}} · {{rel}}"
       },
       "sort": {
         "recency": "By recency",
@@ -2539,7 +2539,10 @@
       "noCongregationSection": "No congregation",
       "duplicateTitle": "He may already be listed",
       "duplicateBody": "{{name}} — {{congregation}} — is already on the list. If this is a different brother with the same name, go ahead.",
-      "duplicateConfirm": "Add anyway"
+      "duplicateConfirm": "Add anyway",
+      "autoCreated": "Created by the app",
+      "autoCreatedHint": "Nothing filled in: congregation, phone, talks",
+      "mergedAway": "This card was merged into another one — its history moved there."
     },
     "log": {
       "group": {

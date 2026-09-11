@@ -2486,7 +2486,7 @@
       },
       "status": {
         "never": "ещё не выступал",
-        "lastSeen": "{{count}}× · {{rel}}"
+        "lastSeen": "раз: {{count}} · {{rel}}"
       }
     },
     "title": "Координатор речей",
@@ -2539,7 +2539,7 @@
       "noResults": "Никого не найдено",
       "status": {
         "never": "ещё не приезжал",
-        "lastSeen": "{{count}}× · {{rel}}"
+        "lastSeen": "раз: {{count}} · {{rel}}"
       },
       "sort": {
         "recency": "По давности",
@@ -2555,7 +2555,10 @@
       "noCongregationSection": "Без собрания",
       "duplicateTitle": "Возможно, он уже записан",
       "duplicateBody": "{{name}} — {{congregation}} — уже есть в списке. Если это другой брат с тем же именем, добавляйте.",
-      "duplicateConfirm": "Всё равно добавить"
+      "duplicateConfirm": "Всё равно добавить",
+      "autoCreated": "Заведена приложением",
+      "autoCreatedHint": "Нет сведений: собрание, телефон, речи",
+      "mergedAway": "Эта карточка объединена с другой — история перенесена туда."
     },
     "log": {
       "spokeAway": "выступал {{rel}}, всего раз: {{count}}",

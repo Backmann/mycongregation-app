@@ -1,7 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
-  
   Platform,
   Pressable,
   SafeAreaView,
@@ -10,11 +9,11 @@ import {
   Text,
   TextInput,
   View,
-} from 'react-native';
-import { router, useLocalSearchParams } from 'expo-router';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useTranslation } from 'react-i18next';
-import { Ionicons } from '@expo/vector-icons';
+} from "react-native";
+import { router, useLocalSearchParams } from "expo-router";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
+import { Ionicons } from "@expo/vector-icons";
 import {
   VisitingSpeaker,
   visitingSpeakersApi,
@@ -23,21 +22,24 @@ import {
   talkExchangeApi,
   PublicTalk,
   extractErrorMessage,
-} from '../../../lib/api';
-import { usePermissions } from '../../../lib/permissions';
+} from "../../../lib/api";
+import { usePermissions } from "../../../lib/permissions";
 import {
   computeSpeakerStats,
   SpeakerStats,
   visitedRecently,
-} from '../../../lib/speaker-stats';
-import { dayDiff, formatRelativeDay } from '../../../lib/relative-time';
-import { notify } from '../../../lib/error-bus';
-import { confirm } from '../../../components/ConfirmHost';
+} from "../../../lib/speaker-stats";
+import { dayDiff, formatRelativeDay } from "../../../lib/relative-time";
+import { notify } from "../../../lib/error-bus";
+import { confirm } from "../../../components/ConfirmHost";
 
-const QK = ['visiting-speakers'] as const;
+const QK = ["visiting-speakers"] as const;
 
-function speakerName(s: { firstName: string; lastName: string | null }): string {
-  return [s.firstName, s.lastName].filter(Boolean).join(' ');
+function speakerName(s: {
+  firstName: string;
+  lastName: string | null;
+}): string {
+  return [s.firstName, s.lastName].filter(Boolean).join(" ");
 }
 
 export default function SpeakersScreen() {
@@ -46,32 +48,37 @@ export default function SpeakersScreen() {
   const qc = useQueryClient();
 
   // editingId: a speaker id, or 'new' for the add form, or null
-  const { edit: editParam, congregationId: congParam } =
-    useLocalSearchParams<{ edit?: string; congregationId?: string }>();
+  const { edit: editParam, congregationId: congParam } = useLocalSearchParams<{
+    edit?: string;
+    congregationId?: string;
+  }>();
   const handledEditRef = useRef(false);
   const handledCongRef = useRef(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [congId, setCongId] = useState<string | null>(null);
   const [addingCong, setAddingCong] = useState(false);
-  const [newCongName, setNewCongName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [note, setNote] = useState('');
+  const [newCongName, setNewCongName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [note, setNote] = useState("");
   const [talks, setTalks] = useState<number[]>([]);
-  const [talkInput, setTalkInput] = useState('');
+  const [talkInput, setTalkInput] = useState("");
 
-  const listQuery = useQuery({ queryKey: QK, queryFn: () => visitingSpeakersApi.list() });
+  const listQuery = useQuery({
+    queryKey: QK,
+    queryFn: () => visitingSpeakersApi.list(),
+  });
   const congQuery = useQuery({
-    queryKey: ['external-congregations'],
+    queryKey: ["external-congregations"],
     queryFn: () => externalCongregationsApi.list(),
   });
   const talksQuery = useQuery({
-    queryKey: ['public-talks', 'all'],
+    queryKey: ["public-talks", "all"],
     queryFn: () => publicTalksApi.list({ includeInactive: true, limit: 300 }),
   });
   const entriesQuery = useQuery({
-    queryKey: ['talk-exchange'],
+    queryKey: ["talk-exchange"],
     queryFn: () => talkExchangeApi.list(),
   });
 
@@ -81,14 +88,14 @@ export default function SpeakersScreen() {
     return map;
   }, [talksQuery.data]);
 
-  const [search, setSearch] = useState('');
-  const [sortMode, setSortMode] = useState<
-    'recency' | 'congregation' | 'name'
-  >('recency');
+  const [search, setSearch] = useState("");
+  const [sortMode, setSortMode] = useState<"recency" | "congregation" | "name">(
+    "recency",
+  );
   const [filterMode, setFilterMode] = useState<
-    'all' | 'upcoming' | 'overdue' | 'never'
-  >('all');
-  const today = new Date().toLocaleDateString('en-CA');
+    "all" | "upcoming" | "overdue" | "never"
+  >("all");
+  const today = new Date().toLocaleDateString("en-CA");
   const talkById = useMemo(() => {
     const m = new Map<string, PublicTalk>();
     for (const tk of talksQuery.data?.data ?? []) m.set(tk.id, tk);
@@ -108,14 +115,14 @@ export default function SpeakersScreen() {
       list = list.filter(
         (sp) =>
           speakerName(sp).toLowerCase().includes(q) ||
-          (sp.externalCongregation?.name ?? '').toLowerCase().includes(q),
+          (sp.externalCongregation?.name ?? "").toLowerCase().includes(q),
       );
-    if (filterMode !== 'all')
+    if (filterMode !== "all")
       list = list.filter((sp) => {
         const st = statsById.get(sp.id);
         if (!st) return false;
-        if (filterMode === 'upcoming') return !!st.nextVisit;
-        if (filterMode === 'never') return st.count === 0 && !st.nextVisit;
+        if (filterMode === "upcoming") return !!st.nextVisit;
+        if (filterMode === "never") return st.count === 0 && !st.nextVisit;
         return (
           !!st.lastVisit &&
           !st.nextVisit &&
@@ -123,19 +130,19 @@ export default function SpeakersScreen() {
         );
       });
     const nameKey = (sp: VisitingSpeaker) =>
-      `${sp.lastName ?? ''} ${sp.firstName}`.toLowerCase().trim();
+      `${sp.lastName ?? ""} ${sp.firstName}`.toLowerCase().trim();
     const recencyKey = (sp: VisitingSpeaker) => {
       const st = statsById.get(sp.id);
       if (st?.lastVisit) return `1_${st.lastVisit.date}`;
       // First-timers: order by nearest upcoming visit (soonest first);
       // unscheduled ones fall after the scheduled.
-      return `0_${st?.nextVisit?.date ?? '9999-99-99'}`;
+      return `0_${st?.nextVisit?.date ?? "9999-99-99"}`;
     };
     list.sort((a, b) => {
-      if (sortMode === 'name') return nameKey(a).localeCompare(nameKey(b));
-      if (sortMode === 'congregation') {
-        const ca = a.externalCongregation?.name ?? '\uffff';
-        const cb = b.externalCongregation?.name ?? '\uffff';
+      if (sortMode === "name") return nameKey(a).localeCompare(nameKey(b));
+      if (sortMode === "congregation") {
+        const ca = a.externalCongregation?.name ?? "\uffff";
+        const cb = b.externalCongregation?.name ?? "\uffff";
         return ca.localeCompare(cb) || nameKey(a).localeCompare(nameKey(b));
       }
       return (
@@ -157,10 +164,10 @@ export default function SpeakersScreen() {
    * speakers on purpose, and a purely nested view would hide them for good.
    */
   const headingFor = (index: number): string | null => {
-    if (sortMode !== 'congregation') return null;
+    if (sortMode !== "congregation") return null;
     const nameOf = (sp: VisitingSpeaker | undefined) =>
       sp?.externalCongregation?.name ??
-      (sp ? t('talkCoordinator.speakers.noCongregationSection') : null);
+      (sp ? t("talkCoordinator.speakers.noCongregationSection") : null);
     const here = nameOf(rows[index]);
     const before = index === 0 ? null : nameOf(rows[index - 1]);
     return here !== before ? here : null;
@@ -169,8 +176,8 @@ export default function SpeakersScreen() {
   const invalidate = () => qc.invalidateQueries({ queryKey: QK });
   const showError = (e: unknown) => {
     const msg = extractErrorMessage(e);
-    if (Platform.OS === 'web') window.alert(msg);
-    else notify(t('talkCoordinator.errorTitle'), msg);
+    if (Platform.OS === "web") window.alert(msg);
+    else notify(t("talkCoordinator.errorTitle"), msg);
   };
 
   const createMutation = useMutation({
@@ -179,8 +186,10 @@ export default function SpeakersScreen() {
     onError: showError,
   });
   const updateMutation = useMutation({
-    mutationFn: (v: { id: string; input: Parameters<typeof visitingSpeakersApi.update>[1] }) =>
-      visitingSpeakersApi.update(v.id, v.input),
+    mutationFn: (v: {
+      id: string;
+      input: Parameters<typeof visitingSpeakersApi.update>[1];
+    }) => visitingSpeakersApi.update(v.id, v.input),
     onSuccess: invalidate,
     onError: showError,
   });
@@ -191,35 +200,37 @@ export default function SpeakersScreen() {
   });
 
   const pending =
-    createMutation.isPending || updateMutation.isPending || removeMutation.isPending;
+    createMutation.isPending ||
+    updateMutation.isPending ||
+    removeMutation.isPending;
 
   const resetFields = () => {
-    setFirstName('');
-    setLastName('');
+    setFirstName("");
+    setLastName("");
     setCongId(null);
     setAddingCong(false);
-    setNewCongName('');
-    setPhone('');
-    setNote('');
+    setNewCongName("");
+    setPhone("");
+    setNote("");
     setTalks([]);
-    setTalkInput('');
+    setTalkInput("");
   };
 
   const startAdd = () => {
     resetFields();
-    setEditingId('new');
+    setEditingId("new");
   };
 
   const startEdit = (s: VisitingSpeaker) => {
     setFirstName(s.firstName);
-    setLastName(s.lastName ?? '');
+    setLastName(s.lastName ?? "");
     setCongId(s.externalCongregationId);
     setAddingCong(false);
-    setNewCongName('');
-    setPhone(s.phone ?? '');
-    setNote(s.note ?? '');
+    setNewCongName("");
+    setPhone(s.phone ?? "");
+    setNote(s.note ?? "");
     setTalks([...s.talkNumbers].sort((a, b) => a - b));
-    setTalkInput('');
+    setTalkInput("");
     setEditingId(s.id);
   };
 
@@ -240,14 +251,14 @@ export default function SpeakersScreen() {
   useEffect(() => {
     if (handledCongRef.current || !congParam) return;
     handledCongRef.current = true;
-    setFirstName('');
-    setLastName('');
+    setFirstName("");
+    setLastName("");
     setCongId(congParam);
-    setPhone('');
-    setNote('');
+    setPhone("");
+    setNote("");
     setTalks([]);
-    setTalkInput('');
-    setEditingId('new');
+    setTalkInput("");
+    setEditingId("new");
   }, [congParam]);
 
   const cancel = () => setEditingId(null);
@@ -256,7 +267,7 @@ export default function SpeakersScreen() {
     const n = parseInt(talkInput.trim(), 10);
     if (!Number.isFinite(n) || n < 1 || n > 300) return;
     if (!talks.includes(n)) setTalks([...talks, n].sort((a, b) => a - b));
-    setTalkInput('');
+    setTalkInput("");
   };
   const removeTalk = (n: number) => setTalks(talks.filter((x) => x !== n));
 
@@ -270,24 +281,25 @@ export default function SpeakersScreen() {
     // twice splits his visit history in half without a word, and nothing on
     // the list would show it — so ask once when a new name matches an existing
     // one.
-    if (editingId === 'new') {
+    if (editingId === "new") {
       const typed = `${firstName.trim()} ${lastName.trim()}`
         .toLowerCase()
-        .replace(/\s+/g, ' ')
+        .replace(/\s+/g, " ")
         .trim();
       const twin = (listQuery.data ?? []).find(
-        (sp) => speakerName(sp).toLowerCase().replace(/\s+/g, ' ').trim() === typed,
+        (sp) =>
+          speakerName(sp).toLowerCase().replace(/\s+/g, " ").trim() === typed,
       );
       if (twin) {
         const proceed = await confirm({
-          title: t('talkCoordinator.speakers.duplicateTitle'),
-          body: t('talkCoordinator.speakers.duplicateBody', {
+          title: t("talkCoordinator.speakers.duplicateTitle"),
+          body: t("talkCoordinator.speakers.duplicateBody", {
             name: speakerName(twin),
             congregation:
               twin.externalCongregation?.name ??
-              t('talkCoordinator.speakers.noCongregation'),
+              t("talkCoordinator.speakers.noCongregation"),
           }),
-          confirmLabel: t('talkCoordinator.speakers.duplicateConfirm'),
+          confirmLabel: t("talkCoordinator.speakers.duplicateConfirm"),
         });
         if (!proceed) return;
       }
@@ -295,8 +307,10 @@ export default function SpeakersScreen() {
 
     let resolvedCongId = congId;
     if (addingCong && newCongName.trim()) {
-      const created = await externalCongregationsApi.create({ name: newCongName.trim() });
-      qc.invalidateQueries({ queryKey: ['external-congregations'] });
+      const created = await externalCongregationsApi.create({
+        name: newCongName.trim(),
+      });
+      qc.invalidateQueries({ queryKey: ["external-congregations"] });
       resolvedCongId = created.id;
     }
     const input = {
@@ -307,7 +321,8 @@ export default function SpeakersScreen() {
       note: note.trim() || null,
       talkNumbers: talks,
     };
-    if (editingId && editingId !== 'new') await updateMutation.mutateAsync({ id: editingId, input });
+    if (editingId && editingId !== "new")
+      await updateMutation.mutateAsync({ id: editingId, input });
     else await createMutation.mutateAsync(input);
     setEditingId(null);
   };
@@ -315,9 +330,9 @@ export default function SpeakersScreen() {
   const confirmDelete = async (s: VisitingSpeaker) => {
     if (
       await confirm({
-        title: t('talkCoordinator.speakers.deleteTitle'),
+        title: t("talkCoordinator.speakers.deleteTitle"),
         body: speakerName(s),
-        confirmLabel: t('common.delete'),
+        confirmLabel: t("common.delete"),
         danger: true,
       })
     ) {
@@ -328,7 +343,7 @@ export default function SpeakersScreen() {
   if (!perms.canCoordinatePublicTalks) {
     return (
       <View style={styles.center}>
-        <Text style={styles.muted}>{t('talkCoordinator.noAccess')}</Text>
+        <Text style={styles.muted}>{t("talkCoordinator.noAccess")}</Text>
       </View>
     );
   }
@@ -344,49 +359,95 @@ export default function SpeakersScreen() {
 
   const editor = (key: string) => (
     <View key={key} style={styles.editorCard}>
-      <Text style={styles.fieldLabel}>{t('talkCoordinator.speakers.firstName')}</Text>
-      <TextInput style={styles.input} value={firstName} onChangeText={setFirstName} placeholderTextColor="#94a3b8" autoFocus />
+      <Text style={styles.fieldLabel}>
+        {t("talkCoordinator.speakers.firstName")}
+      </Text>
+      <TextInput
+        style={styles.input}
+        value={firstName}
+        onChangeText={setFirstName}
+        placeholderTextColor="#94a3b8"
+        autoFocus
+      />
 
-      <Text style={styles.fieldLabel}>{t('talkCoordinator.speakers.lastName')}</Text>
-      <TextInput style={styles.input} value={lastName} onChangeText={setLastName} placeholderTextColor="#94a3b8" />
+      <Text style={styles.fieldLabel}>
+        {t("talkCoordinator.speakers.lastName")}
+      </Text>
+      <TextInput
+        style={styles.input}
+        value={lastName}
+        onChangeText={setLastName}
+        placeholderTextColor="#94a3b8"
+      />
 
-      <Text style={styles.fieldLabel}>{t('talkCoordinator.speakers.congregation')}</Text>
+      <Text style={styles.fieldLabel}>
+        {t("talkCoordinator.speakers.congregation")}
+      </Text>
       <View style={styles.chipWrap}>
         <Pressable
-          style={[styles.pickChip, congId === null && !addingCong && styles.pickChipActive]}
+          style={[
+            styles.pickChip,
+            congId === null && !addingCong && styles.pickChipActive,
+          ]}
           onPress={() => {
             setCongId(null);
             setAddingCong(false);
           }}
         >
-          <Text style={[styles.pickChipText, congId === null && !addingCong && styles.pickChipTextActive]}>
-            {t('talkCoordinator.speakers.noCongregation')}
+          <Text
+            style={[
+              styles.pickChipText,
+              congId === null && !addingCong && styles.pickChipTextActive,
+            ]}
+          >
+            {t("talkCoordinator.speakers.noCongregation")}
           </Text>
         </Pressable>
         {congregations.map((c) => (
           <Pressable
             key={c.id}
-            style={[styles.pickChip, congId === c.id && !addingCong && styles.pickChipActive]}
+            style={[
+              styles.pickChip,
+              congId === c.id && !addingCong && styles.pickChipActive,
+            ]}
             onPress={() => {
               setCongId(c.id);
               setAddingCong(false);
             }}
           >
-            <Text style={[styles.pickChipText, congId === c.id && !addingCong && styles.pickChipTextActive]}>
+            <Text
+              style={[
+                styles.pickChipText,
+                congId === c.id && !addingCong && styles.pickChipTextActive,
+              ]}
+            >
               {c.name}
             </Text>
           </Pressable>
         ))}
         <Pressable
-          style={[styles.pickChip, styles.newChip, addingCong && styles.pickChipActive]}
+          style={[
+            styles.pickChip,
+            styles.newChip,
+            addingCong && styles.pickChipActive,
+          ]}
           onPress={() => {
             setAddingCong(true);
             setCongId(null);
           }}
         >
-          <Ionicons name="add" size={14} color={addingCong ? '#0369a1' : '#475569'} />
-          <Text style={[styles.pickChipText, addingCong && styles.pickChipTextActive]}>
-            {t('talkCoordinator.speakers.newCongregation')}
+          <Ionicons
+            name="add"
+            size={14}
+            color={addingCong ? "#0369a1" : "#475569"}
+          />
+          <Text
+            style={[
+              styles.pickChipText,
+              addingCong && styles.pickChipTextActive,
+            ]}
+          >
+            {t("talkCoordinator.speakers.newCongregation")}
           </Text>
         </Pressable>
       </View>
@@ -395,13 +456,15 @@ export default function SpeakersScreen() {
           style={styles.input}
           value={newCongName}
           onChangeText={setNewCongName}
-          placeholder={t('talkCoordinator.speakers.newCongregationPlaceholder')}
+          placeholder={t("talkCoordinator.speakers.newCongregationPlaceholder")}
           placeholderTextColor="#94a3b8"
           autoFocus
         />
       )}
 
-      <Text style={styles.fieldLabel}>{t('talkCoordinator.speakers.phone')}</Text>
+      <Text style={styles.fieldLabel}>
+        {t("talkCoordinator.speakers.phone")}
+      </Text>
       <TextInput
         style={styles.input}
         value={phone}
@@ -410,14 +473,16 @@ export default function SpeakersScreen() {
         placeholderTextColor="#94a3b8"
       />
 
-      <Text style={styles.fieldLabel}>{t('talkCoordinator.speakers.repertoire')}</Text>
+      <Text style={styles.fieldLabel}>
+        {t("talkCoordinator.speakers.repertoire")}
+      </Text>
       <View style={styles.talkAddRow}>
         <TextInput
           style={[styles.input, { flex: 1 }]}
           value={talkInput}
           onChangeText={setTalkInput}
           keyboardType="number-pad"
-          placeholder={t('talkCoordinator.speakers.talkNumberPlaceholder')}
+          placeholder={t("talkCoordinator.speakers.talkNumberPlaceholder")}
           placeholderTextColor="#94a3b8"
           onSubmitEditing={addTalk}
         />
@@ -428,10 +493,14 @@ export default function SpeakersScreen() {
       {talks.length > 0 && (
         <View style={styles.chipWrap}>
           {talks.map((n) => (
-            <Pressable key={n} style={styles.talkChip} onPress={() => removeTalk(n)}>
+            <Pressable
+              key={n}
+              style={styles.talkChip}
+              onPress={() => removeTalk(n)}
+            >
               <Text style={styles.talkChipText} numberOfLines={1}>
                 №{n}
-                {titleByNumber.get(n) ? ` · ${titleByNumber.get(n)}` : ''}
+                {titleByNumber.get(n) ? ` · ${titleByNumber.get(n)}` : ""}
               </Text>
               <Ionicons name="close" size={14} color="#6d28d9" />
             </Pressable>
@@ -439,39 +508,56 @@ export default function SpeakersScreen() {
         </View>
       )}
 
-      <Text style={styles.fieldLabel}>{t('talkCoordinator.speakers.note')}</Text>
-      <TextInput style={styles.input} value={note} onChangeText={setNote} multiline placeholderTextColor="#94a3b8" />
+      <Text style={styles.fieldLabel}>
+        {t("talkCoordinator.speakers.note")}
+      </Text>
+      <TextInput
+        style={styles.input}
+        value={note}
+        onChangeText={setNote}
+        multiline
+        placeholderTextColor="#94a3b8"
+      />
 
       <View style={styles.editorActions}>
         <Pressable style={styles.cancelBtn} onPress={cancel} disabled={pending}>
-          <Text style={styles.cancelText}>{t('common.cancel')}</Text>
+          <Text style={styles.cancelText}>{t("common.cancel")}</Text>
         </Pressable>
         <Pressable
           style={[styles.saveBtn, (!canSave || pending) && styles.disabled]}
           onPress={() => void save()}
           disabled={!canSave || pending}
         >
-          <Text style={styles.saveText}>{t('common.save')}</Text>
+          <Text style={styles.saveText}>{t("common.save")}</Text>
         </Pressable>
       </View>
     </View>
   );
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#f1f5f9' }}>
-      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-        <Text style={styles.hint}>{t('talkCoordinator.speakers.hint')}</Text>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#f1f5f9" }}>
+      <ScrollView
+        contentContainerStyle={styles.container}
+        keyboardShouldPersistTaps="handled"
+      >
+        <Text style={styles.hint}>{t("talkCoordinator.speakers.hint")}</Text>
 
-        {editingId === 'new' ? (
-          editor('new')
+        {editingId === "new" ? (
+          editor("new")
         ) : (
           <Pressable
-            style={({ pressed }) => [styles.addBtn, pressed && styles.addBtnPressed, pending && styles.disabled]}
+            style={({ pressed }) => [
+              styles.addBtn,
+              pressed && styles.addBtnPressed,
+              pending && styles.disabled,
+            ]}
             onPress={startAdd}
             disabled={pending}
           >
             <Ionicons name="add-circle-outline" size={18} color="#0369a1" />
-            <Text style={styles.addBtnText}>{t('talkCoordinator.speakers.add')}</Text>
+            <Text style={styles.addBtnText}>
+              {t("talkCoordinator.speakers.add")}
+            </Text>
           </Pressable>
         )}
 
@@ -483,20 +569,23 @@ export default function SpeakersScreen() {
                 style={styles.searchInput}
                 value={search}
                 onChangeText={setSearch}
-                placeholder={t('talkCoordinator.speakers.searchPlaceholder')}
+                placeholder={t("talkCoordinator.speakers.searchPlaceholder")}
                 placeholderTextColor="#94a3b8"
               />
               {search ? (
-                <Pressable hitSlop={8} onPress={() => setSearch('')}>
+                <Pressable hitSlop={8} onPress={() => setSearch("")}>
                   <Ionicons name="close-circle" size={16} color="#cbd5e1" />
                 </Pressable>
               ) : null}
             </View>
             <View style={styles.segmentRow}>
-              {(['recency', 'congregation', 'name'] as const).map((m) => (
+              {(["recency", "congregation", "name"] as const).map((m) => (
                 <Pressable
                   key={m}
-                  style={[styles.segment, sortMode === m && styles.segmentActive]}
+                  style={[
+                    styles.segment,
+                    sortMode === m && styles.segmentActive,
+                  ]}
                   onPress={() => setSortMode(m)}
                 >
                   <Text
@@ -511,7 +600,7 @@ export default function SpeakersScreen() {
               ))}
             </View>
             <View style={styles.filterRow}>
-              {(['all', 'upcoming', 'overdue', 'never'] as const).map((m) => (
+              {(["all", "upcoming", "overdue", "never"] as const).map((m) => (
                 <Pressable
                   key={m}
                   style={[
@@ -534,11 +623,11 @@ export default function SpeakersScreen() {
           </View>
         ) : null}
 
-        {rows.length === 0 && editingId !== 'new' ? (
+        {rows.length === 0 && editingId !== "new" ? (
           <Text style={styles.empty}>
-            {search || filterMode !== 'all'
-              ? t('talkCoordinator.speakers.noResults')
-              : t('talkCoordinator.speakers.empty')}
+            {search || filterMode !== "all"
+              ? t("talkCoordinator.speakers.noResults")
+              : t("talkCoordinator.speakers.empty")}
           </Text>
         ) : (
           rows.map((s, index) =>
@@ -547,72 +636,105 @@ export default function SpeakersScreen() {
             ) : (
               <View key={s.id}>
                 {headingFor(index) ? (
-                  <Text style={styles.sectionHeading}>
-                    {headingFor(index)}
-                  </Text>
+                  <Text style={styles.sectionHeading}>{headingFor(index)}</Text>
                 ) : null}
                 <View style={styles.row}>
-                <Pressable
-                  style={{ flex: 1 }}
-                  onPress={() =>
-                    router.push(
-                      `/talk-coordinator/speaker-profile/${s.id}` as any,
-                    )
-                  }
-                  disabled={pending}
-                >
-                  <Text style={styles.name}>{speakerName(s)}</Text>
-                  {!!s.externalCongregation && (
-                    <Text style={styles.sub}>
-                      {s.externalCongregation.name}
-                    </Text>
-                  )}
-                  {(() => {
-                    const st = statsById.get(s.id);
-                    if (!st || (st.count === 0 && !st.nextVisit))
-                      return (
-                        <Text style={styles.statusNever}>
-                          {t('talkCoordinator.speakers.status.never')}
+                  <Pressable
+                    style={{ flex: 1 }}
+                    onPress={() =>
+                      router.push(
+                        `/talk-coordinator/speaker-profile/${s.id}` as any,
+                      )
+                    }
+                    disabled={pending}
+                  >
+                    <Text style={styles.name}>{speakerName(s)}</Text>
+                    {!!s.externalCongregation && (
+                      <Text style={styles.sub}>
+                        {s.externalCongregation.name}
+                      </Text>
+                    )}
+                    {/*
+                    Карточка, заведённая приложением.
+
+                    Она появляется сама, когда координатор впервые вписывает
+                    имя в программу: визит обязан попасть в историю брата,
+                    значит карточка должна существовать. Но в ней пусто —
+                    ни собрания, ни телефона, ни репертуара, — и без пометки
+                    справочник выглядит заполненным, хотя это не так.
+                  */}
+                    {s.autoCreated ? (
+                      <View style={styles.autoRow}>
+                        <Ionicons
+                          name="sparkles-outline"
+                          size={12}
+                          color="#7c3aed"
+                        />
+                        <Text style={styles.autoText}>
+                          {t("talkCoordinator.speakers.autoCreatedHint")}
                         </Text>
-                      );
-                    const recent = visitedRecently(st, today);
-                    return (
-                      <View style={styles.statusRow}>
-                        {st.count > 0 && st.lastVisit ? (
-                          <Text
-                            style={[
-                              styles.statusText,
-                              recent && styles.statusRecent,
-                            ]}
-                          >
-                            {t('talkCoordinator.speakers.status.lastSeen', {
-                              count: st.count,
-                              rel: formatRelativeDay(st.lastVisit.date, today, t),
-                            })}
-                          </Text>
-                        ) : null}
-                        {st.nextVisit ? (
-                          <View style={styles.upcomingTag}>
-                            <Ionicons
-                              name="airplane"
-                              size={11}
-                              color="#0369a1"
-                            />
-                            <Text style={styles.upcomingText}>
-                              {formatRelativeDay(st.nextVisit.date, today, t)}
-                            </Text>
-                          </View>
-                        ) : null}
                       </View>
-                    );
-                  })()}
-                </Pressable>
-                <Pressable hitSlop={8} onPress={() => startEdit(s)} style={styles.iconBtn} disabled={pending}>
-                  <Ionicons name="create-outline" size={20} color="#0369a1" />
-                </Pressable>
-                <Pressable hitSlop={8} onPress={() => confirmDelete(s)} style={styles.iconBtn} disabled={pending}>
-                  <Ionicons name="trash-outline" size={20} color="#dc2626" />
-                </Pressable>
+                    ) : null}
+                    {(() => {
+                      const st = statsById.get(s.id);
+                      if (!st || (st.count === 0 && !st.nextVisit))
+                        return (
+                          <Text style={styles.statusNever}>
+                            {t("talkCoordinator.speakers.status.never")}
+                          </Text>
+                        );
+                      const recent = visitedRecently(st, today);
+                      return (
+                        <View style={styles.statusRow}>
+                          {st.count > 0 && st.lastVisit ? (
+                            <Text
+                              style={[
+                                styles.statusText,
+                                recent && styles.statusRecent,
+                              ]}
+                            >
+                              {t("talkCoordinator.speakers.status.lastSeen", {
+                                count: st.count,
+                                rel: formatRelativeDay(
+                                  st.lastVisit.date,
+                                  today,
+                                  t,
+                                ),
+                              })}
+                            </Text>
+                          ) : null}
+                          {st.nextVisit ? (
+                            <View style={styles.upcomingTag}>
+                              <Ionicons
+                                name="airplane"
+                                size={11}
+                                color="#0369a1"
+                              />
+                              <Text style={styles.upcomingText}>
+                                {formatRelativeDay(st.nextVisit.date, today, t)}
+                              </Text>
+                            </View>
+                          ) : null}
+                        </View>
+                      );
+                    })()}
+                  </Pressable>
+                  <Pressable
+                    hitSlop={8}
+                    onPress={() => startEdit(s)}
+                    style={styles.iconBtn}
+                    disabled={pending}
+                  >
+                    <Ionicons name="create-outline" size={20} color="#0369a1" />
+                  </Pressable>
+                  <Pressable
+                    hitSlop={8}
+                    onPress={() => confirmDelete(s)}
+                    style={styles.iconBtn}
+                    disabled={pending}
+                  >
+                    <Ionicons name="trash-outline" size={20} color="#dc2626" />
+                  </Pressable>
                 </View>
               </View>
             ),
@@ -626,155 +748,246 @@ export default function SpeakersScreen() {
 const styles = StyleSheet.create({
   sectionHeading: {
     fontSize: 12,
-    color: '#0369a1',
-    fontWeight: '700',
-    fontFamily: 'Manrope_700Bold',
-    textTransform: 'uppercase',
+    color: "#0369a1",
+    fontWeight: "700",
+    fontFamily: "Manrope_700Bold",
+    textTransform: "uppercase",
     letterSpacing: 0.4,
     paddingTop: 14,
     paddingBottom: 2,
   },
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 32 },
-  muted: { color: '#64748b', fontSize: 15, textAlign: 'center' },
+  center: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 32,
+  },
+  muted: { color: "#64748b", fontSize: 15, textAlign: "center" },
   container: { padding: 16, paddingBottom: 40 },
-  hint: { fontSize: 13, color: '#64748b', marginBottom: 12, lineHeight: 18 },
-  empty: { padding: 18, color: '#94a3b8', fontSize: 14, textAlign: 'center' },
+  hint: { fontSize: 13, color: "#64748b", marginBottom: 12, lineHeight: 18 },
+  empty: { padding: 18, color: "#94a3b8", fontSize: 14, textAlign: "center" },
   row: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 10,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: "#e2e8f0",
     paddingHorizontal: 14,
     paddingVertical: 12,
     marginBottom: 8,
   },
-  name: { fontSize: 15, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0f172a' },
-  sub: { fontSize: 13, color: '#475569', marginTop: 1 },
+  name: {
+    fontSize: 15,
+    fontWeight: "600",
+    fontFamily: "Manrope_600SemiBold",
+    color: "#0f172a",
+  },
+  sub: { fontSize: 13, color: "#475569", marginTop: 1 },
   toolbar: { marginBottom: 12, gap: 8 },
   searchRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 8,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: "#e2e8f0",
     paddingHorizontal: 12,
     paddingVertical: 8,
   },
-  searchInput: { flex: 1, fontSize: 15, color: '#0f172a', paddingVertical: 0 },
+  searchInput: { flex: 1, fontSize: 15, color: "#0f172a", paddingVertical: 0 },
   segmentRow: {
-    flexDirection: 'row',
-    backgroundColor: '#e2e8f0',
+    flexDirection: "row",
+    backgroundColor: "#e2e8f0",
     borderRadius: 10,
     padding: 2,
   },
-  segment: { flex: 1, paddingVertical: 7, borderRadius: 8, alignItems: 'center' },
-  segmentActive: { backgroundColor: '#fff' },
-  segmentText: { fontSize: 13, color: '#64748b', fontWeight: '500', fontFamily: 'Manrope_500Medium',},
-  segmentTextActive: { color: '#0f172a', fontWeight: '700', fontFamily: 'Manrope_700Bold',},
-  filterRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  segment: {
+    flex: 1,
+    paddingVertical: 7,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  segmentActive: { backgroundColor: "#fff" },
+  segmentText: {
+    fontSize: 13,
+    color: "#64748b",
+    fontWeight: "500",
+    fontFamily: "Manrope_500Medium",
+  },
+  segmentTextActive: {
+    color: "#0f172a",
+    fontWeight: "700",
+    fontFamily: "Manrope_700Bold",
+  },
+  filterRow: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
   filterChip: {
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
-    backgroundColor: '#fff',
+    borderColor: "#e2e8f0",
+    backgroundColor: "#fff",
   },
-  filterChipActive: { backgroundColor: '#0ea5e9', borderColor: '#0ea5e9' },
-  filterChipText: { fontSize: 13, color: '#475569' },
-  filterChipTextActive: { color: '#fff', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
+  filterChipActive: { backgroundColor: "#0ea5e9", borderColor: "#0ea5e9" },
+  filterChipText: { fontSize: 13, color: "#475569" },
+  filterChipTextActive: {
+    color: "#fff",
+    fontWeight: "600",
+    fontFamily: "Manrope_600SemiBold",
+  },
   statusRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    alignItems: "center",
+    flexWrap: "wrap",
     gap: 8,
     marginTop: 3,
   },
-  statusText: { fontSize: 13, color: '#64748b' },
-  statusRecent: { color: '#b45309', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
-  statusNever: { fontSize: 13, color: '#94a3b8', fontStyle: 'italic', marginTop: 3 },
-  upcomingTag: { flexDirection: 'row', alignItems: 'center', gap: 3 },
-  upcomingText: { fontSize: 13, color: '#0369a1', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
+  statusText: { fontSize: 13, color: "#64748b" },
+  statusRecent: {
+    color: "#b45309",
+    fontWeight: "600",
+    fontFamily: "Manrope_600SemiBold",
+  },
+  autoRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    marginTop: 3,
+  },
+  autoText: { fontSize: 12, color: "#7c3aed" },
+  statusNever: {
+    fontSize: 13,
+    color: "#94a3b8",
+    fontStyle: "italic",
+    marginTop: 3,
+  },
+  upcomingTag: { flexDirection: "row", alignItems: "center", gap: 3 },
+  upcomingText: {
+    fontSize: 13,
+    color: "#0369a1",
+    fontWeight: "600",
+    fontFamily: "Manrope_600SemiBold",
+  },
   iconBtn: { padding: 6 },
   addBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     gap: 6,
     marginBottom: 12,
     paddingVertical: 12,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#bae6fd',
-    backgroundColor: '#f0f9ff',
+    borderColor: "#bae6fd",
+    backgroundColor: "#f0f9ff",
   },
-  addBtnPressed: { backgroundColor: '#e0f2fe' },
-  addBtnText: { fontSize: 14, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0369a1' },
+  addBtnPressed: { backgroundColor: "#e0f2fe" },
+  addBtnText: {
+    fontSize: 14,
+    fontWeight: "600",
+    fontFamily: "Manrope_600SemiBold",
+    color: "#0369a1",
+  },
   disabled: { opacity: 0.5 },
   editorCard: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#bae6fd',
+    borderColor: "#bae6fd",
     padding: 14,
     marginBottom: 8,
   },
-  fieldLabel: { fontSize: 12, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#64748b', marginTop: 10, marginBottom: 4 },
+  fieldLabel: {
+    fontSize: 12,
+    fontWeight: "600",
+    fontFamily: "Manrope_600SemiBold",
+    color: "#64748b",
+    marginTop: 10,
+    marginBottom: 4,
+  },
   input: {
     borderWidth: 1,
-    borderColor: '#cbd5e1',
+    borderColor: "#cbd5e1",
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontSize: 15,
-    color: '#0f172a',
+    color: "#0f172a",
   },
-  chipWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  chipWrap: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
   pickChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 4,
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#cbd5e1',
-    backgroundColor: '#fff',
+    borderColor: "#cbd5e1",
+    backgroundColor: "#fff",
   },
-  pickChipActive: { backgroundColor: '#e0f2fe', borderColor: '#0ea5e9' },
-  pickChipText: { fontSize: 13, color: '#475569' },
-  pickChipTextActive: { color: '#0369a1', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
-  newChip: { borderStyle: 'dashed' },
-  talkAddRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  pickChipActive: { backgroundColor: "#e0f2fe", borderColor: "#0ea5e9" },
+  pickChipText: { fontSize: 13, color: "#475569" },
+  pickChipTextActive: {
+    color: "#0369a1",
+    fontWeight: "600",
+    fontFamily: "Manrope_600SemiBold",
+  },
+  newChip: { borderStyle: "dashed" },
+  talkAddRow: { flexDirection: "row", alignItems: "center", gap: 8 },
   talkAddBtn: {
     width: 40,
     height: 40,
     borderRadius: 8,
-    backgroundColor: '#f0f9ff',
+    backgroundColor: "#f0f9ff",
     borderWidth: 1,
-    borderColor: '#bae6fd',
-    justifyContent: 'center',
-    alignItems: 'center',
+    borderColor: "#bae6fd",
+    justifyContent: "center",
+    alignItems: "center",
   },
   talkChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 6,
-    maxWidth: '100%',
+    maxWidth: "100%",
     paddingVertical: 5,
     paddingHorizontal: 10,
     borderRadius: 14,
-    backgroundColor: '#ede9fe',
+    backgroundColor: "#ede9fe",
   },
-  talkChipText: { fontSize: 12, color: '#6d28d9', fontWeight: '500', fontFamily: 'Manrope_500Medium', flexShrink: 1 },
-  editorActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 10, marginTop: 14 },
+  talkChipText: {
+    fontSize: 12,
+    color: "#6d28d9",
+    fontWeight: "500",
+    fontFamily: "Manrope_500Medium",
+    flexShrink: 1,
+  },
+  editorActions: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    gap: 10,
+    marginTop: 14,
+  },
   cancelBtn: { paddingVertical: 10, paddingHorizontal: 14 },
-  cancelText: { fontSize: 15, color: '#64748b', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
-  saveBtn: { paddingVertical: 10, paddingHorizontal: 18, borderRadius: 10, backgroundColor: '#0ea5e9' },
-  saveText: { fontSize: 15, color: '#fff', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
+  cancelText: {
+    fontSize: 15,
+    color: "#64748b",
+    fontWeight: "600",
+    fontFamily: "Manrope_600SemiBold",
+  },
+  saveBtn: {
+    paddingVertical: 10,
+    paddingHorizontal: 18,
+    borderRadius: 10,
+    backgroundColor: "#0ea5e9",
+  },
+  saveText: {
+    fontSize: 15,
+    color: "#fff",
+    fontWeight: "600",
+    fontFamily: "Manrope_600SemiBold",
+  },
 });

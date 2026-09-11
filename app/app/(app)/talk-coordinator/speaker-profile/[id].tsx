@@ -220,6 +220,31 @@ export default function SpeakerProfileScreen() {
           </Pressable>
         ) : null}
         {speaker.note ? <Text style={styles.note}>{speaker.note}</Text> : null}
+
+        {/*
+          Откуда взялась эта карточка и цела ли она.
+
+          Заведённую приложением надо дополнить: у неё нет ни собрания, ни
+          телефона, ни репертуара, и без этой строки справочник выглядит
+          заполненным. Объединённая же не должна притворяться живой: её
+          история переехала, и открывший старую ссылку должен это знать.
+        */}
+        {speaker.mergedIntoId ? (
+          <View style={[styles.originRow, styles.originMerged]}>
+            <Ionicons name="git-merge-outline" size={14} color="#7c3aed" />
+            <Text style={styles.originText}>
+              {t("talkCoordinator.speakers.mergedAway")}
+            </Text>
+          </View>
+        ) : speaker.autoCreated ? (
+          <View style={styles.originRow}>
+            <Ionicons name="sparkles-outline" size={14} color="#7c3aed" />
+            <Text style={styles.originText}>
+              {t("talkCoordinator.speakers.autoCreated")} ·{" "}
+              {t("talkCoordinator.speakers.autoCreatedHint")}
+            </Text>
+          </View>
+        ) : null}
       </View>
 
       {/* Stats band */}
@@ -513,6 +538,18 @@ const styles = StyleSheet.create({
     fontFamily: "Manrope_700Bold",
     color: "#0f172a",
   },
+  originRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 7,
+    marginTop: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    borderRadius: 9,
+    backgroundColor: "#faf5ff",
+  },
+  originMerged: { backgroundColor: "#f5f3ff" },
+  originText: { flex: 1, fontSize: 12.5, color: "#5b21b6", lineHeight: 18 },
   cong: { fontSize: 14, color: "#475569", marginTop: 2 },
   phoneRow: {
     flexDirection: "row",
