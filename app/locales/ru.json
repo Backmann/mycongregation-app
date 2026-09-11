@@ -2473,17 +2473,22 @@
       "searchPlaceholder": "Поиск по имени",
       "noResults": "Никого не найдено",
       "empty": "Пока нет наших докладчиков",
-      "status": {
-        "never": "ещё не выступал",
-        "lastSeen": "раз: {{count}} · {{rel}}",
-        "recentHint": "ездил недавно"
-      },
       "view": {
         "due": "Кому пора",
         "planned": "Запланированы",
         "never": "Ещё не выступал",
         "all": "Все"
-      }
+      },
+      "goesOn": "едет {{date}}",
+      "neverWent": "ещё не ездил",
+      "sinceLast": "ездил {{rel}}",
+      "lastTrip": "Был {{date}} в {{where}}, всего поездок: {{count}}",
+      "inCongregations": "в {{count}} собрания",
+      "nextTrip": "Едет {{date}} в {{where}}",
+      "withTalk": "речь №{{n}}",
+      "sameAgain": "Едет туда же, в {{where}}",
+      "repertoire": "Речей наготове: {{count}}",
+      "unknownPlace": "собрание не указано"
     },
     "title": "Координатор речей",
     "intro": "Ведите приезжих и уходящих докладчиков, их речи и справочники. Журнал «К нам / От нас» появится здесь.",

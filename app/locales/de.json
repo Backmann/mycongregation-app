@@ -2457,17 +2457,22 @@
       "searchPlaceholder": "Nach Name suchen",
       "noResults": "Keine Treffer",
       "empty": "Noch keine Redner",
-      "status": {
-        "never": "noch keine Vorträge",
-        "lastSeen": "Mal: {{count}} · {{rel}}",
-        "recentHint": "war kürzlich unterwegs"
-      },
       "view": {
         "due": "Wer dran ist",
         "planned": "Geplant",
         "never": "Noch nicht",
         "all": "Alle"
-      }
+      },
+      "goesOn": "unterwegs {{date}}",
+      "neverWent": "war noch nicht unterwegs",
+      "sinceLast": "war {{rel}} unterwegs",
+      "lastTrip": "War am {{date}} in {{where}}, Reisen insgesamt: {{count}}",
+      "inCongregations": "in {{count}} Versammlungen",
+      "nextTrip": "Fährt am {{date}} nach {{where}}",
+      "withTalk": "Vortrag Nr. {{n}}",
+      "sameAgain": "Fährt wieder nach {{where}}",
+      "repertoire": "Vorträge bereit: {{count}}",
+      "unknownPlace": "Versammlung nicht angegeben"
     },
     "title": "Redner-Koordinator",
     "intro": "Verwalte eingehende und ausgehende Redner, ihre Vorträge und die Verzeichnisse. Das Protokoll „Zu uns / Von uns“ erscheint hier.",

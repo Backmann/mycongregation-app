@@ -2457,17 +2457,22 @@
       "searchPlaceholder": "Search by name",
       "noResults": "No matches",
       "empty": "No speakers yet",
-      "status": {
-        "never": "no talks yet",
-        "lastSeen": "times: {{count}} · {{rel}}",
-        "recentHint": "was away recently"
-      },
       "view": {
         "due": "Whose turn",
         "planned": "Planned",
         "never": "Not yet",
         "all": "All"
-      }
+      },
+      "goesOn": "away {{date}}",
+      "neverWent": "has not been away yet",
+      "sinceLast": "was away {{rel}}",
+      "lastTrip": "Was at {{where}} on {{date}}, trips in all: {{count}}",
+      "inCongregations": "to {{count}} congregations",
+      "nextTrip": "Going to {{where}} on {{date}}",
+      "withTalk": "talk no. {{n}}",
+      "sameAgain": "Going to {{where}} again",
+      "repertoire": "Talks ready: {{count}}",
+      "unknownPlace": "congregation not given"
     },
     "title": "Talk coordinator",
     "intro": "Keep incoming and outgoing speakers, their talks and the directories. The “Incoming / Outgoing” log will live here.",

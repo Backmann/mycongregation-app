@@ -25,13 +25,12 @@ import { usePermissions } from "../../../lib/permissions";
 import {
   computeOutgoingStats,
   OutgoingStats,
-  wentOutRecently,
 } from "../../../lib/speaker-stats";
 import { formatRelativeDay } from "../../../lib/relative-time";
 import { useAllPublishers } from "../../../lib/useAllPublishers";
 
 export default function OurSpeakersScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const perms = usePermissions();
 
   const [search, setSearch] = useState("");
@@ -102,7 +101,23 @@ export default function OurSpeakersScreen() {
   const rows = useMemo(() => {
     let list = [...ourSpeakers];
     const q = search.trim().toLowerCase();
-    if (q) list = list.filter((p) => p.displayName.toLowerCase().includes(q));
+    if (q)
+      list = list.filter((p) => {
+        if (p.displayName.toLowerCase().includes(q)) return true;
+        /**
+         * Ищем и по собранию.
+         *
+         * «Soest» — второй по частоте вопрос после имени: кто туда ездил и кто
+         * едет. Прежде поле искало строго по имени, и ответить на него можно
+         * было только перебором глазами.
+         */
+        const x = statsById.get(p.id);
+        const where = [
+          ...(x?.pastVisits ?? []).map((v) => v.hostCongregation ?? ""),
+          ...(x?.futureVisits ?? []).map((v) => v.hostCongregation ?? ""),
+        ];
+        return where.some((c) => c.toLowerCase().includes(q));
+      });
 
     const st = (p: Publisher) => statsById.get(p.id);
     const nameKey = (p: Publisher) =>
@@ -155,6 +170,22 @@ export default function OurSpeakersScreen() {
     return list;
   }, [ourSpeakers, search, view, statsById]);
 
+  /**
+   * Сколько людей в каждом виде — прямо на кнопке.
+   *
+   * Иначе, чтобы узнать, есть ли вообще работа, надо переключиться и
+   * посмотреть. Число на кнопке отвечает, не открывая её.
+   */
+  const viewCounts = useMemo(() => {
+    const has = (p: Publisher) => statsById.get(p.id);
+    return {
+      due: ourSpeakers.filter((p) => !has(p)?.nextVisit).length,
+      planned: ourSpeakers.filter((p) => !!has(p)?.nextVisit).length,
+      never: ourSpeakers.filter((p) => (has(p)?.count ?? 0) === 0).length,
+      all: ourSpeakers.length,
+    };
+  }, [ourSpeakers, statsById]);
+
   if (!perms.canCoordinatePublicTalks) {
     return (
       <View style={styles.center}>
@@ -168,6 +199,19 @@ export default function OurSpeakersScreen() {
     entriesQuery.isLoading ||
     talksQuery.isLoading ||
     congQuery.isLoading;
+
+  /** «14 сент.» — коротко, для метки в углу. */
+  const shortDate = (iso: string) =>
+    new Date(`${iso}T00:00:00`).toLocaleDateString(i18n.language, {
+      day: "numeric",
+      month: "short",
+    });
+  /** «14 сентября» — в строке, где место есть и месяц лучше читать целиком. */
+  const longDate = (iso: string) =>
+    new Date(`${iso}T00:00:00`).toLocaleDateString(i18n.language, {
+      day: "numeric",
+      month: "long",
+    });
 
   const appointmentLabel = (p: Publisher) =>
     p.appointment === "elder" || p.appointment === "ministerial_servant"
@@ -214,7 +258,7 @@ export default function OurSpeakersScreen() {
                     view === m && styles.filterChipTextActive,
                   ]}
                 >
-                  {t(`talkCoordinator.ourSpeakers.view.${m}`)}
+                  {t(`talkCoordinator.ourSpeakers.view.${m}`)} {viewCounts[m]}
                 </Text>
               </Pressable>
             ))}
@@ -247,45 +291,112 @@ export default function OurSpeakersScreen() {
                 }
               >
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.name}>{p.displayName}</Text>
-                  {apt ? <Text style={styles.sub}>{apt}</Text> : null}
-                  {!st || (st.count === 0 && !st.nextVisit) ? (
-                    <Text style={styles.statusNever}>
-                      {t("talkCoordinator.ourSpeakers.status.never")}
+                  <View style={styles.headRow}>
+                    <Text style={styles.name}>{p.displayName}</Text>
+                    {/*
+                      Метка — про одно: занят он или нет.
+
+                      Раньше в строке стояли вперемешку счётчик, давность,
+                      ярлык «ездил недавно» и стрелка с «через 2 дн.» — четыре
+                      разных смысла подряд, и глаз читал их как один ряд
+                      сокращений. Теперь в углу ровно один ответ, а подробности
+                      идут фразами ниже.
+
+                      Свободному метка не нужна: её отсутствие и есть «свободен».
+                    */}
+                    {st?.nextVisit ? (
+                      <Text style={styles.badge}>
+                        {t("talkCoordinator.ourSpeakers.goesOn", {
+                          date: shortDate(st.nextVisit.date),
+                        })}
+                      </Text>
+                    ) : null}
+                  </View>
+
+                  {/*
+                    Первая фраза начинается с того, по чему список упорядочен:
+                    сколько он не ездил. Тогда порядок и текст говорят одно.
+                  */}
+                  <Text style={styles.line}>
+                    {[
+                      apt,
+                      !st || st.count === 0
+                        ? t("talkCoordinator.ourSpeakers.neverWent")
+                        : t("talkCoordinator.ourSpeakers.sinceLast", {
+                            rel: formatRelativeDay(
+                              st.lastVisit!.date,
+                              today,
+                              t,
+                            ),
+                          }),
+                    ]
+                      .filter(Boolean)
+                      .join(" · ")}
+                  </Text>
+
+                  {/* Где он был и сколько всего — одной фразой, с собранием:
+                      «когда» без «куда» отвечает на половину вопроса. */}
+                  {st && st.count > 0 && st.lastVisit ? (
+                    <Text style={styles.line}>
+                      {t("talkCoordinator.ourSpeakers.lastTrip", {
+                        date: shortDate(st.lastVisit.date),
+                        where:
+                          st.lastVisit.hostCongregation ??
+                          t("talkCoordinator.ourSpeakers.unknownPlace"),
+                        count: st.count,
+                      })}
+                      {st.distinctCongregations > 1
+                        ? " " +
+                          t("talkCoordinator.ourSpeakers.inCongregations", {
+                            count: st.distinctCongregations,
+                          })
+                        : ""}
                     </Text>
-                  ) : (
-                    <View style={styles.statusRow}>
-                      {st.count > 0 && st.lastVisit ? (
-                        <Text
-                          style={[
-                            styles.statusText,
-                            wentOutRecently(st, today) && styles.statusRecent,
-                          ]}
-                        >
-                          {t("talkCoordinator.ourSpeakers.status.lastSeen", {
-                            count: st.count,
-                            rel: formatRelativeDay(st.lastVisit.date, today, t),
-                          })}
-                          {/* Оранжевый значил «ездил недавно, посылать рано»,
-                              и это было известно только тому, кто писал код.
-                              Цвет без слова — загадка. */}
-                          {wentOutRecently(st, today)
-                            ? ` · ${t("talkCoordinator.ourSpeakers.status.recentHint")}`
-                            : ""}
-                        </Text>
-                      ) : null}
-                      {st.nextVisit ? (
-                        <View style={styles.upcomingTag}>
-                          <Ionicons name="airplane" size={11} color="#0369a1" />
-                          <Text style={styles.upcomingText}>
-                            {formatRelativeDay(st.nextVisit.date, today, t)}
-                          </Text>
-                        </View>
-                      ) : null}
-                    </View>
-                  )}
+                  ) : null}
+
+                  {/* Куда и с какой речью едет. Номер речи виден сразу — по
+                      нему и замечают, что в то же собрание везут то же самое. */}
+                  {st?.nextVisit ? (
+                    <Text style={styles.line}>
+                      {t("talkCoordinator.ourSpeakers.nextTrip", {
+                        date: longDate(st.nextVisit.date),
+                        where:
+                          st.nextVisit.hostCongregation ??
+                          t("talkCoordinator.ourSpeakers.unknownPlace"),
+                      })}
+                      {st.nextVisit.talkNumber
+                        ? ", " +
+                          t("talkCoordinator.ourSpeakers.withTalk", {
+                            n: st.nextVisit.talkNumber,
+                          })
+                        : ""}
+                    </Text>
+                  ) : null}
+
+                  {/* Тот же приход второй раз подряд — сказано спокойно, без
+                      цвета: заметит тот, кто смотрит на этого брата. */}
+                  {st?.nextVisit &&
+                  st.lastVisit &&
+                  st.nextVisit.hostCongregationId &&
+                  st.nextVisit.hostCongregationId ===
+                    st.lastVisit.hostCongregationId ? (
+                    <Text style={styles.line}>
+                      {t("talkCoordinator.ourSpeakers.sameAgain", {
+                        where: st.nextVisit.hostCongregation ?? "",
+                      })}
+                    </Text>
+                  ) : null}
+
+                  {/* Сколько речей у него наготове — отвечает на просьбу
+                      принимающего собрания «а по такой теме есть?». */}
+                  {st && st.repertoire.length > 0 ? (
+                    <Text style={styles.lineMuted}>
+                      {t("talkCoordinator.ourSpeakers.repertoire", {
+                        count: st.repertoire.length,
+                      })}
+                    </Text>
+                  ) : null}
                 </View>
-                <Ionicons name="chevron-forward" size={18} color="#cbd5e1" />
               </Pressable>
             );
           })
@@ -393,6 +504,18 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
   },
+  headRow: { flexDirection: "row", alignItems: "center", gap: 8 },
+  badge: {
+    fontSize: 12,
+    color: "#0369a1",
+    backgroundColor: "#e0f2fe",
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+    overflow: "hidden",
+  },
+  line: { fontSize: 13, color: "#475569", lineHeight: 18, marginTop: 2 },
+  lineMuted: { fontSize: 12.5, color: "#94a3b8", marginTop: 2 },
   statusNever: {
     fontSize: 13,
     color: "#94a3b8",
