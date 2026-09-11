@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo } from "react";
 import {
   ActivityIndicator,
   Linking,
@@ -7,27 +7,26 @@ import {
   StyleSheet,
   Text,
   View,
-} from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
-import { useQuery } from '@tanstack/react-query';
-import { useTranslation } from 'react-i18next';
-import { Ionicons } from '@expo/vector-icons';
+} from "react-native";
+import { useLocalSearchParams } from "expo-router";
+import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
+import { Ionicons } from "@expo/vector-icons";
 import {
   ExternalCongregation,
   PublicTalk,
   externalCongregationsApi,
   publicTalksApi,
   talkExchangeApi,
-} from '../../../../lib/api';
+} from "../../../../lib/api";
 import {
   computeOutgoingStats,
   OutgoingVisit,
-  wentOutRecently,
-} from '../../../../lib/speaker-stats';
-import { formatRelativeDay } from '../../../../lib/relative-time';
-import { useAllPublishers } from '../../../../lib/useAllPublishers';
+} from "../../../../lib/speaker-stats";
+import { formatRelativeDay } from "../../../../lib/relative-time";
+import { useAllPublishers } from "../../../../lib/useAllPublishers";
 
-const todayISO = () => new Date().toLocaleDateString('en-CA');
+const todayISO = () => new Date().toLocaleDateString("en-CA");
 
 export default function OurSpeakerProfileScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -35,15 +34,15 @@ export default function OurSpeakerProfileScreen() {
 
   const publishersQuery = useAllPublishers();
   const congQuery = useQuery({
-    queryKey: ['external-congregations'],
+    queryKey: ["external-congregations"],
     queryFn: () => externalCongregationsApi.list(),
   });
   const entriesQuery = useQuery({
-    queryKey: ['talk-exchange'],
+    queryKey: ["talk-exchange"],
     queryFn: () => talkExchangeApi.list(),
   });
   const talksQuery = useQuery({
-    queryKey: ['public-talks', 'all'],
+    queryKey: ["public-talks", "all"],
     queryFn: () => publicTalksApi.list({ includeInactive: true, limit: 300 }),
   });
 
@@ -93,53 +92,104 @@ export default function OurSpeakerProfileScreen() {
     return (
       <View style={styles.center}>
         <Text style={styles.muted}>
-          {t('talkCoordinator.ourSpeakerProfile.notFound')}
+          {t("talkCoordinator.ourSpeakerProfile.notFound")}
         </Text>
       </View>
     );
   }
 
-  const recent = wentOutRecently(stats, today);
   const phone = publisher.mobilePhone;
   const appointmentLabel =
-    publisher.appointment === 'elder' ||
-    publisher.appointment === 'ministerial_servant'
+    publisher.appointment === "elder" ||
+    publisher.appointment === "ministerial_servant"
       ? t(`publishers.appointment.${publisher.appointment}`)
       : null;
 
   const fmtDate = (iso: string) =>
     new Date(`${iso}T00:00:00`).toLocaleDateString(i18n.language, {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
+      day: "numeric",
+      month: "short",
+      year: "numeric",
     });
 
-  const renderVisit = (v: OutgoingVisit) => (
+  /**
+   * Снятая речь — сказать прямо, и теми же словами, что в журнале.
+   *
+   * Карточка о снятии не знала ничего: у брата в предстоящей поездке могла
+   * стоять речь, которую больше не преподносят, и заметить это было неоткуда.
+   * Слова взяты готовые — чтобы одно и то же в двух местах не называлось
+   * по-разному.
+   */
+  const talkRestriction = (talkNumber: number | null): string | null => {
+    if (talkNumber == null) return null;
+    const tk = [...talkById.values()].find((x) => x.number === talkNumber);
+    if (!tk || tk.isActive) return null;
+    const day = (iso: string) =>
+      new Date(`${iso}T00:00:00`).toLocaleDateString(i18n.language, {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      });
+    if (!tk.retiredFrom) return t("publicTalks.retiredPlain");
+    return tk.retiredUntil
+      ? t("publicTalks.pausedBetween", {
+          from: day(tk.retiredFrom),
+          until: day(tk.retiredUntil),
+        })
+      : t("publicTalks.retiredFrom", { date: day(tk.retiredFrom) });
+  };
+
+  /**
+   * Ту же речь — в то же собрание.
+   *
+   * Проверяется только для предстоящих: в прошлом это уже факт, и говорить о
+   * нём поздно. Сведения для проверки лежали рядом и не использовались.
+   */
+  const repeatsHere = (v: OutgoingVisit): boolean =>
+    !!v.talkNumber &&
+    !!v.hostCongregationId &&
+    stats.pastVisits.some(
+      (x) =>
+        x.talkNumber === v.talkNumber &&
+        x.hostCongregationId === v.hostCongregationId,
+    );
+
+  const renderVisit = (v: OutgoingVisit, upcoming = false) => (
     <View key={v.id} style={styles.visitRow}>
       <View style={styles.visitDateCol}>
         <Text style={styles.visitDate}>{fmtDate(v.date)}</Text>
-        <Text style={styles.visitRel}>{formatRelativeDay(v.date, today, t)}</Text>
+        <Text style={styles.visitRel}>
+          {formatRelativeDay(v.date, today, t)}
+        </Text>
       </View>
       <View style={styles.visitTalkCol}>
         <Text style={styles.visitHost} numberOfLines={1}>
           {v.local
-            ? t('talkCoordinator.ourSpeakerProfile.here')
+            ? t("talkCoordinator.ourSpeakerProfile.here")
             : (v.hostCongregation ??
-              t('talkCoordinator.ourSpeakerProfile.noCongregation'))}
+              t("talkCoordinator.ourSpeakerProfile.noCongregation"))}
         </Text>
         {v.talkNumber != null ? (
           <Text style={styles.visitTalk} numberOfLines={2}>
             <Text style={styles.visitNum}>№{v.talkNumber}</Text>
-            {v.talkTitle ? ` — ${v.talkTitle}` : ''}
+            {v.talkTitle ? ` — ${v.talkTitle}` : ""}
           </Text>
         ) : (
           <Text style={styles.visitTalkMuted}>
-            {t('talkCoordinator.ourSpeakerProfile.noTalk')}
+            {t("talkCoordinator.ourSpeakerProfile.noTalk")}
           </Text>
         )}
+        {talkRestriction(v.talkNumber) ? (
+          <Text style={styles.visitWarn}>{talkRestriction(v.talkNumber)}</Text>
+        ) : null}
+        {upcoming && repeatsHere(v) ? (
+          <Text style={styles.visitNote}>
+            {t("talkCoordinator.ourSpeakerProfile.sameTalkThere")}
+          </Text>
+        ) : null}
         {v.tentative ? (
           <Text style={styles.tentative}>
-            {t('talkCoordinator.ourSpeakerProfile.tentative')}
+            {t("talkCoordinator.ourSpeakerProfile.tentative")}
           </Text>
         ) : null}
       </View>
@@ -166,22 +216,27 @@ export default function OurSpeakerProfileScreen() {
       </View>
 
       {/* Stats band */}
-      <View style={[styles.statsBand, recent && styles.statsBandRecent]}>
+      {/*
+        Жёлтая рамка ушла вместе с полосой «недавно выступал»: решение Лионеля
+        11 сентября — такого предупреждения не нужно вовсе. Числа остаются
+        числами и ни о чём не просят.
+      */}
+      <View style={styles.statsBand}>
         <View style={styles.stat}>
           <Text style={styles.statNum}>{stats.count}</Text>
           <Text style={styles.statLabel}>
-            {t('talkCoordinator.ourSpeakerProfile.timesOut')}
+            {t("talkCoordinator.ourSpeakerProfile.timesOut")}
           </Text>
         </View>
         <View style={styles.statDivider} />
         <View style={styles.stat}>
-          <Text style={[styles.statText, recent && styles.statTextRecent]}>
+          <Text style={styles.statText}>
             {stats.lastVisit
               ? formatRelativeDay(stats.lastVisit.date, today, t)
-              : t('talkCoordinator.ourSpeakerProfile.never')}
+              : t("talkCoordinator.ourSpeakerProfile.never")}
           </Text>
           <Text style={styles.statLabel}>
-            {t('talkCoordinator.ourSpeakerProfile.lastTime')}
+            {t("talkCoordinator.ourSpeakerProfile.lastTime")}
           </Text>
         </View>
         {stats.distinctCongregations > 0 ? (
@@ -190,46 +245,38 @@ export default function OurSpeakerProfileScreen() {
             <View style={styles.stat}>
               <Text style={styles.statNum}>{stats.distinctCongregations}</Text>
               <Text style={styles.statLabel}>
-                {t('talkCoordinator.ourSpeakerProfile.congregations')}
+                {t("talkCoordinator.ourSpeakerProfile.congregations")}
               </Text>
             </View>
           </>
         ) : null}
       </View>
-      {recent ? (
-        <View style={styles.recentWarn}>
-          <Ionicons name="alert-circle-outline" size={16} color="#b45309" />
-          <Text style={styles.recentWarnText}>
-            {t('talkCoordinator.ourSpeakerProfile.recentWarning')}
-          </Text>
-        </View>
-      ) : null}
 
       {/* Upcoming */}
       <Text style={styles.sectionTitle}>
-        {t('talkCoordinator.ourSpeakerProfile.upcoming')}
+        {t("talkCoordinator.ourSpeakerProfile.upcoming")}
       </Text>
       <View style={styles.card}>
         {stats.futureVisits.length === 0 ? (
           <Text style={styles.sectionEmpty}>
-            {t('talkCoordinator.ourSpeakerProfile.noUpcoming')}
+            {t("talkCoordinator.ourSpeakerProfile.noUpcoming")}
           </Text>
         ) : (
-          stats.futureVisits.map(renderVisit)
+          stats.futureVisits.map((v) => renderVisit(v, true))
         )}
       </View>
 
       {/* History */}
       <Text style={styles.sectionTitle}>
-        {t('talkCoordinator.ourSpeakerProfile.history')}
+        {t("talkCoordinator.ourSpeakerProfile.history")}
       </Text>
       <View style={styles.card}>
         {stats.pastVisits.length === 0 ? (
           <Text style={styles.sectionEmpty}>
-            {t('talkCoordinator.ourSpeakerProfile.noHistory')}
+            {t("talkCoordinator.ourSpeakerProfile.noHistory")}
           </Text>
         ) : (
-          stats.pastVisits.map(renderVisit)
+          stats.pastVisits.map((v) => renderVisit(v))
         )}
       </View>
 
@@ -237,7 +284,7 @@ export default function OurSpeakerProfileScreen() {
       {stats.repertoire.length > 0 ? (
         <>
           <Text style={styles.sectionTitle}>
-            {t('talkCoordinator.ourSpeakerProfile.repertoire')}
+            {t("talkCoordinator.ourSpeakerProfile.repertoire")}
           </Text>
           <View style={styles.card}>
             <View style={styles.chipWrap}>
@@ -251,7 +298,7 @@ export default function OurSpeakerProfileScreen() {
               ))}
             </View>
             <Text style={styles.repertoireLegend}>
-              {t('talkCoordinator.ourSpeakerProfile.repertoireHint', {
+              {t("talkCoordinator.ourSpeakerProfile.repertoireHint", {
                 n: stats.repertoire.length,
               })}
             </Text>
@@ -263,93 +310,140 @@ export default function OurSpeakerProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 32 },
-  muted: { color: '#64748b', fontSize: 15, textAlign: 'center' },
+  center: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 32,
+  },
+  muted: { color: "#64748b", fontSize: 15, textAlign: "center" },
   container: { padding: 16, paddingBottom: 48 },
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: "#e2e8f0",
     padding: 14,
     marginBottom: 14,
   },
-  name: { fontSize: 20, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0f172a' },
-  cong: { fontSize: 14, color: '#475569', marginTop: 2 },
-  phoneRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 10 },
-  phone: { fontSize: 15, color: '#0369a1' },
+  name: {
+    fontSize: 20,
+    fontWeight: "700",
+    fontFamily: "Manrope_700Bold",
+    color: "#0f172a",
+  },
+  cong: { fontSize: 14, color: "#475569", marginTop: 2 },
+  phoneRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginTop: 10,
+  },
+  phone: { fontSize: 15, color: "#0369a1" },
 
   statsBand: {
-    flexDirection: 'row',
-    alignItems: 'stretch',
-    backgroundColor: '#fff',
+    flexDirection: "row",
+    alignItems: "stretch",
+    backgroundColor: "#fff",
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: "#e2e8f0",
     paddingVertical: 12,
     marginBottom: 14,
   },
-  statsBandRecent: { borderColor: '#fcd34d', backgroundColor: '#fffbeb' },
-  stat: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 2 },
-  statDivider: { width: 1, backgroundColor: '#e2e8f0' },
-  statNum: { fontSize: 20, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0f172a' },
-  statText: { fontSize: 14, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0f172a', textAlign: 'center' },
-  statTextRecent: { color: '#b45309' },
-  statLabel: { fontSize: 11, color: '#94a3b8', textAlign: 'center' },
-
-  recentWarn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: '#fef3c7',
-    borderRadius: 8,
-    padding: 10,
-    marginTop: -4,
-    marginBottom: 14,
+  stat: { flex: 1, alignItems: "center", justifyContent: "center", gap: 2 },
+  statDivider: { width: 1, backgroundColor: "#e2e8f0" },
+  statNum: {
+    fontSize: 20,
+    fontWeight: "700",
+    fontFamily: "Manrope_700Bold",
+    color: "#0f172a",
   },
-  recentWarnText: { flex: 1, fontSize: 13, color: '#92400e' },
+  statText: {
+    fontSize: 14,
+    fontWeight: "600",
+    fontFamily: "Manrope_600SemiBold",
+    color: "#0f172a",
+    textAlign: "center",
+  },
+  statLabel: { fontSize: 11, color: "#94a3b8", textAlign: "center" },
+
 
   sectionTitle: {
     fontSize: 13,
-    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
-    color: '#64748b',
-    textTransform: 'uppercase',
+    fontWeight: "600",
+    fontFamily: "Manrope_600SemiBold",
+    color: "#64748b",
+    textTransform: "uppercase",
     letterSpacing: 0.3,
     marginBottom: 8,
     marginLeft: 2,
   },
-  sectionEmpty: { fontSize: 14, color: '#94a3b8' },
+  sectionEmpty: { fontSize: 14, color: "#94a3b8" },
 
   visitRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 12,
     paddingVertical: 9,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#f1f5f9',
+    borderBottomColor: "#f1f5f9",
   },
   visitDateCol: { width: 96 },
-  visitDate: { fontSize: 14, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0f172a' },
-  visitRel: { fontSize: 12, color: '#94a3b8', marginTop: 1 },
+  visitDate: {
+    fontSize: 14,
+    fontWeight: "600",
+    fontFamily: "Manrope_600SemiBold",
+    color: "#0f172a",
+  },
+  visitRel: { fontSize: 12, color: "#94a3b8", marginTop: 1 },
   visitTalkCol: { flex: 1 },
-  visitHost: { fontSize: 14, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0f172a' },
-  visitTalk: { fontSize: 13, color: '#475569', lineHeight: 18, marginTop: 1 },
-  visitNum: { fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0369a1' },
-  visitTalkMuted: { fontSize: 13, color: '#94a3b8', fontStyle: 'italic', marginTop: 1 },
-  tentative: { fontSize: 11, color: '#b45309', marginTop: 2 },
+  visitHost: {
+    fontSize: 14,
+    fontWeight: "600",
+    fontFamily: "Manrope_600SemiBold",
+    color: "#0f172a",
+  },
+  visitTalk: { fontSize: 13, color: "#475569", lineHeight: 18, marginTop: 1 },
+  visitNum: {
+    fontWeight: "700",
+    fontFamily: "Manrope_700Bold",
+    color: "#0369a1",
+  },
+  /** Снятая речь — предупреждение, его надо увидеть. */
+  visitWarn: { fontSize: 12.5, color: "#b45309", marginTop: 3, lineHeight: 17 },
+  /** Повтор темы в то же собрание — сведение, сказанное спокойно. */
+  visitNote: { fontSize: 12.5, color: "#64748b", marginTop: 3, lineHeight: 17 },
+  visitTalkMuted: {
+    fontSize: 13,
+    color: "#94a3b8",
+    fontStyle: "italic",
+    marginTop: 1,
+  },
+  tentative: { fontSize: 11, color: "#b45309", marginTop: 2 },
 
-  chipWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  chipWrap: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
   talkChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 3,
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#0369a1',
-    backgroundColor: '#eff6ff',
+    borderColor: "#0369a1",
+    backgroundColor: "#eff6ff",
   },
-  talkChipText: { fontSize: 13, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0369a1' },
-  talkChipCount: { fontSize: 12, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#64748b' },
-  repertoireLegend: { fontSize: 12, color: '#94a3b8', marginTop: 10 },
+  talkChipText: {
+    fontSize: 13,
+    fontWeight: "600",
+    fontFamily: "Manrope_600SemiBold",
+    color: "#0369a1",
+  },
+  talkChipCount: {
+    fontSize: 12,
+    fontWeight: "700",
+    fontFamily: "Manrope_700Bold",
+    color: "#64748b",
+  },
+  repertoireLegend: { fontSize: 12, color: "#94a3b8", marginTop: 10 },
 });

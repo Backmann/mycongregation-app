@@ -45,7 +45,14 @@ export default function OurSpeakersScreen() {
    * Теперь вид называет задачу, а порядок внутри него — единственно разумный,
    * и выбирать его отдельно не нужно.
    */
-  const [view, setView] = useState<"due" | "planned" | "never" | "all">("due");
+  /**
+   * Открывается на «Все» — решение Лионеля 11 сентября.
+   *
+   * «Кому пора» отвечает на самый частый вопрос, но не на единственный: в
+   * справочник заходят и просто посмотреть человека, а отфильтрованный при
+   * входе список выглядит неполным — половины братьев нет, и непонятно почему.
+   */
+  const [view, setView] = useState<"due" | "planned" | "never" | "all">("all");
 
   const publishersQuery = useAllPublishers();
   const congQuery = useQuery({

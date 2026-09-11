@@ -2438,7 +2438,6 @@
       "lastTime": "zuletzt",
       "congregations": "Versammlungen",
       "never": "noch keine Vorträge",
-      "recentWarning": "Dieser Bruder hat kürzlich gesprochen — vielleicht andere an die Reihe kommen lassen.",
       "upcoming": "Anstehend",
       "noUpcoming": "Keine geplanten Vorträge",
       "history": "Vortragsverlauf",
@@ -2448,7 +2447,8 @@
       "noTalk": "Kein Vortrag gewählt",
       "tentative": "vorläufig",
       "repertoire": "Repertoire (aus Verlauf)",
-      "repertoireHint": "Vorträge im Repertoire: {{n}}"
+      "repertoireHint": "Vorträge im Repertoire: {{n}}",
+      "sameTalkThere": "Diesen Vortrag hat er dort schon gehalten"
     },
     "ourSpeakers": {
       "title": "Unsere Redner",
