@@ -1,4 +1,4 @@
-import { Fragment, useMemo, useRef, useState } from "react";
+import { Fragment, useMemo, useRef, useState, useEffect } from "react";
 import {
   ActivityIndicator,
   Linking,
@@ -12,8 +12,10 @@ import {
   View,
 } from "react-native";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useNavigation } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { Ionicons } from "@expo/vector-icons";
+import { HEADER_ICON } from "../../../lib/header";
 import dayjs from "dayjs";
 import "dayjs/locale/ru";
 import "dayjs/locale/de";
@@ -145,6 +147,7 @@ function confirmReplace(
 
 export default function TalkExchangeYearScreen() {
   const { t, i18n } = useTranslation();
+  const navigation = useNavigation();
   const perms = usePermissions();
   const qc = useQueryClient();
 
@@ -476,6 +479,44 @@ export default function TalkExchangeYearScreen() {
       qc.invalidateQueries({ queryKey: ["talk-exchange"] });
     },
   });
+
+  /**
+   * Сверка журнала с программой — в шапку, а не первой строкой экрана.
+   *
+   * Это ремонт: он нужен, когда данные правили мимо приложения, когда
+   * изменились правила (последний прогон связал четыре визита, не добавив ни
+   * одной записи) или после разбора чужого импорта. В обычной жизни зеркало
+   * держит журнал и программу вместе само — оно вызывается из семи мест.
+   *
+   * Раз в год — и занимало самое видное место, выше всего содержимого. Имя
+   * тоже сменилось: «восстановить» звучит как спасение после беды, а речь о
+   * сверке.
+   *
+   * Ставится отсюда, а не из раскладки экранов: действию нужны и запрос, и
+   * окно подтверждения, которые живут здесь.
+   */
+  useEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <Pressable
+          onPress={() => void askRebuild()}
+          style={{ paddingHorizontal: 10 }}
+          hitSlop={8}
+          disabled={rebuildMutation.isPending}
+          accessibilityLabel={t("talkCoordinator.log.rebuild")}
+        >
+          {rebuildMutation.isPending ? (
+            <ActivityIndicator size="small" color={HEADER_ICON} />
+          ) : (
+            <Ionicons name="sync-outline" size={22} color={HEADER_ICON} />
+          )}
+        </Pressable>
+      ),
+    });
+    // askRebuild пересоздаётся каждый раз; в зависимостях только то, от чего
+    // вид кнопки действительно меняется.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [navigation, rebuildMutation.isPending, t]);
 
   const askRebuild = async () => {
     const from = `${dayjs().year()}-01-01`;
@@ -1152,15 +1193,6 @@ export default function TalkExchangeYearScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#f1f5f9" }}>
-      <Pressable style={styles.rebuildRow} onPress={() => void askRebuild()}>
-        <Ionicons name="sync-outline" size={15} color="#0369a1" />
-        <Text style={styles.rebuildText}>
-          {rebuildMutation.isPending
-            ? t("talkCoordinator.log.rebuilding")
-            : t("talkCoordinator.log.rebuild")}
-        </Text>
-      </Pressable>
-
       <View style={styles.monthBar}>
         {/* The bar scrolls itself. It never did — so on opening it sat on
             «Янв. 26» while August was on screen, and the highlighted chip was
@@ -2195,22 +2227,6 @@ function Slot({
 const styles = StyleSheet.create({
   /* Amber, boxed and with a mark: this is the one line on the screen that has
      to stop the reader before he telephones anybody. */
-  rebuildRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 6,
-    paddingVertical: 9,
-    backgroundColor: "#f0f9ff",
-    borderBottomWidth: 1,
-    borderBottomColor: "#e0f2fe",
-  },
-  rebuildText: {
-    fontSize: 12.5,
-    color: "#0369a1",
-    fontWeight: "600",
-    fontFamily: "Manrope_600SemiBold",
-  },
   restrictBadge: {
     flexDirection: "row",
     alignItems: "center",

@@ -2612,7 +2612,7 @@
       "upcoming": "Upcoming",
       "noTalk": "No talk selected",
       "phone": "Phone",
-      "rebuild": "Rebuild the journal from the programme",
+      "rebuild": "Check against the programme",
       "rebuilding": "Rebuilding…",
       "rebuildTitle": "Rebuild entries from the programme?",
       "rebuildBody": "The app walks this year’s weeks and creates a «to us» entry wherever the programme has a speaker and the journal has none. Nothing is deleted and existing entries are left as they are.",
