@@ -390,9 +390,28 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
           ? v.midweekTime
           : v.weekendTime;
       if (!inNear(dateISO)) continue;
-      // He is giving a talk elsewhere that day — showing the meeting he will
-      // not attend was the confusing part.
-      if (outgoingTalkDates.has(dateISO)) continue;
+
+      /**
+       * Поездка скрывает встречу — но только ту, в которой у него ничего нет.
+       *
+       * Замысел был верный: показывать встречу, на которой его не будет, и
+       * правда сбивало. Но правило оказалось грубее жизни. У брата в один день
+       * бывает и речь у себя, и поездка в другое собрание — в программе это
+       * законное сочетание, а главная показывала только выезд, и своя часть
+       * пропадала с экрана целиком.
+       *
+       * Поэтому судим не по дню, а по тому, есть ли у него СВОЯ часть: если
+       * есть, встреча остаётся, и в ленте видны оба дела.
+       */
+      const myEventTypeForDay =
+        rules.memorialTakes === kind ? 'memorial' : kind;
+      const hasMyPartHere = myItems.some(
+        (it) =>
+          (it.kind === 'meeting' || it.kind === 'duty') &&
+          it.weekStartDate === weekISO &&
+          it.eventType === myEventTypeForDay,
+      );
+      if (outgoingTalkDates.has(dateISO) && !hasMyPartHere) continue;
 
       const replacedBy = rules.replacedBy(kind) ?? null;
       if (replacedBy) replacedEventIds.add(replacedBy.id);
