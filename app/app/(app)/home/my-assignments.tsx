@@ -8,6 +8,7 @@ import {
   View,
 } from 'react-native';
 import { useState } from 'react';
+import { capitalizeFirst } from '../../../lib/relative-time';
 import { useQuery } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
@@ -293,11 +294,14 @@ function CleaningRowExtras({
     <View style={styles.cleaningExtras}>
       {item.label === 'general' && planned ? (
         <Text style={styles.cleaningPlanned}>
-          {new Date(planned).toLocaleDateString(locale, {
-            weekday: 'short',
-            day: 'numeric',
-            month: 'short',
-          })}
+          {/* Первая буква, а не каждое слово: месяц стоит не первым. */}
+          {capitalizeFirst(
+            new Date(planned).toLocaleDateString(locale, {
+              weekday: 'short',
+              day: 'numeric',
+              month: 'short',
+            }),
+          )}
           {', '}
           {new Date(planned).toLocaleTimeString(locale, {
             hour: '2-digit',
@@ -340,7 +344,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '700', fontFamily: 'Manrope_700Bold',
     color: '#0f172a',
-    textTransform: 'capitalize',
   },
   cleaningLinks: { flexDirection: 'row', flexWrap: 'wrap', gap: 14 },
   cleaningLink: { flexDirection: 'row', alignItems: 'center', gap: 5 },

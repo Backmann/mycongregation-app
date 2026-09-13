@@ -873,7 +873,6 @@ const styles = StyleSheet.create({
     fontSize: 10.5,
     color: '#64748b',
     marginTop: 1,
-    textTransform: 'capitalize',
   },
   nextChip: { borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 },
   nextChipText: {

@@ -49,7 +49,10 @@ import {
   visitedRecently,
   wentOutRecently,
 } from "../../../lib/speaker-stats";
-import { formatRelativeDay } from "../../../lib/relative-time";
+import {
+  capitalizeFirst,
+  formatRelativeDay,
+} from "../../../lib/relative-time";
 import { PublisherSelector } from "../../../components/PublisherSelector";
 import { PublicTalkSelector } from "../../../components/PublicTalkSelector";
 import { startOfWeekMonday, addDays, formatDateISO } from "../../../lib/dates";
@@ -1060,12 +1063,9 @@ export default function TalkExchangeYearScreen() {
     e.visitingSpeakerId
       ? (speakerById.get(e.visitingSpeakerId)?.phone ?? null)
       : null;
-  /** Заглавной только первое слово: месяц в русском со строчной. */
-  const capitalizeFirst = (x: string) =>
-    x.length > 0 ? x[0].toUpperCase() + x.slice(1) : x;
-
   const fmtDay = (d: string) =>
-    dayjs(d).locale(i18n.language).format("dd, D MMM");
+    // Первая буква, а не каждое слово: месяц стоит не первым, и «13 Сентября» — не по-русски.
+    capitalizeFirst(dayjs(d).locale(i18n.language).format("dd, D MMM"));
   const todayISO = dayjs().format("YYYY-MM-DD");
 
   const host = hostCongregationId
@@ -2312,7 +2312,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   swapRowActive: { backgroundColor: "#f0f9ff" },
-  swapRowDate: { fontSize: 12, color: "#64748b", textTransform: "capitalize" },
+  swapRowDate: { fontSize: 12, color: "#64748b" },
   swapRowName: {
     fontSize: 14,
     fontWeight: "700",
@@ -2367,7 +2367,6 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     fontFamily: "Manrope_700Bold",
     color: "#0f172a",
-    textTransform: "capitalize",
     marginBottom: 6,
   },
   outHint: {

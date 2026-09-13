@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { capitalizeFirst } from "../../../lib/relative-time";
 import {
   ActivityIndicator,
   Pressable,
@@ -250,10 +251,12 @@ export default function PioneerYearReviewScreen() {
         начавшийся год с нулями у всех, и понять это было неоткуда.
       */}
       <Text style={styles.yearLine}>
-        {t("pioneerReview.forYear", {
+        {capitalizeFirst(
+          t("pioneerReview.forYear", {
           from: monthWithYear(data.firstMonth),
           to: monthWithYear(data.lastMonth),
-        })}
+        }),
+        )}
       </Text>
 
       <View style={styles.lede}>
@@ -304,7 +307,6 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: "#0f172a",
     marginBottom: 10,
-    textTransform: "capitalize",
   },
   lede: {
     flexDirection: "row",

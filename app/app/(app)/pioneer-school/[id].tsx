@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { capitalizeFirst } from '../../../lib/relative-time';
 import {
   ActivityIndicator,
   Pressable,
@@ -132,7 +133,9 @@ export default function PioneerSchoolScreen() {
   };
 
   const dayTitle = (date: string) =>
-    dayjs(date).locale(i18n.language).format('dddd, D MMMM');
+    capitalizeFirst(
+      dayjs(date).locale(i18n.language).format('dddd, D MMMM'),
+    );
 
   const timeOf = (start: string | null, end: string | null): string | null => {
     const s = start ?? query.data?.school.startTime ?? null;
@@ -886,7 +889,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#0f172a',
     fontFamily: 'Manrope_700Bold',
-    textTransform: 'capitalize',
   },
   dayTime: { fontSize: 13, color: '#94a3b8' },
   dayTimeOwn: { color: '#0369a1', fontFamily: 'Manrope_600SemiBold' },

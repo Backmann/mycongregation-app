@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { capitalizeFirst } from '../lib/relative-time';
 import {
   Animated,
   Modal,
@@ -202,7 +203,7 @@ export function WeekDrawer({
       </View>
       <View style={styles.rowMain}>
         <Text style={[styles.rowDate, isCurrent && styles.rowDateCurrent]}>
-          {e.date.format('D MMMM')}
+          {capitalizeFirst(e.date.format('D MMMM'))}
         </Text>
         <Text style={styles.rowWeek}>{weekRange(e.weekStartDate)}</Text>
       </View>
@@ -405,7 +406,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '700',
     color: '#0f172a',
-    textTransform: 'capitalize',
   },
   rowDateCurrent: { color: '#0C447C' },
   rowWeek: { fontSize: 10.5, color: '#94a3b8', marginTop: 1 },

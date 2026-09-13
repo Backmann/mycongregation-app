@@ -20,6 +20,7 @@ import {
   View,
 } from "react-native";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { capitalizeFirst } from "../../../lib/relative-time";
 import { router, useLocalSearchParams } from "expo-router";
 import {
   Assignment,
@@ -1912,7 +1913,9 @@ export default function ScheduleIndexScreen() {
                       >
                         <DutiesSection
                           only={meeting}
-                          dateLabel={meetingDateLabel(meeting)}
+                          dateLabel={capitalizeFirst(
+                            meetingDateLabel(meeting) ?? "",
+                          )}
                           locked={meetingLocked(meeting)}
                           nextUp={nextDutyMeeting === meeting}
                           nextUpToday={nextDutyIsToday}
