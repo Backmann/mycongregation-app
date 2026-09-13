@@ -29,3 +29,14 @@ export function formatRelativeDay(
   else value = t('relative.y', { n: Math.max(1, Math.round(abs / 365.25)) });
   return d < 0 ? t('relative.ago', { value }) : t('relative.in', { value });
 }
+
+/**
+ * Заглавной — первая буква, а не каждое слово.
+ *
+ * `textTransform: 'capitalize'` в стилях поднимает КАЖДОЕ слово: «Отчёты За
+ * Август», «Воскресенье, 13 Сентября». В русском так не пишут. Правило языка
+ * стилями не выражается, поэтому строка готовится здесь, а не в вёрстке.
+ */
+export function capitalizeFirst(value: string): string {
+  return value.length > 0 ? value[0].toUpperCase() + value.slice(1) : value;
+}

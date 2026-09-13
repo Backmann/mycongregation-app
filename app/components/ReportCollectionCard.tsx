@@ -3,6 +3,7 @@ import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
+import { capitalizeFirst } from '../lib/relative-time';
 import { router } from 'expo-router';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ru';
@@ -57,7 +58,8 @@ export function ReportCollectionCard() {
         </View>
         <View style={{ flex: 1 }}>
           <Text style={styles.title}>
-            {t('reports.collection.title', { month })}
+            {/* Первая буква, а не каждое слово: выходило «Отчёты За Август». */}
+            {capitalizeFirst(t('reports.collection.title', { month }))}
           </Text>
           <Text style={styles.subtitle}>
             {allIn
@@ -108,7 +110,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#0f172a',
     fontFamily: 'Manrope_700Bold',
-    textTransform: 'capitalize',
   },
   subtitle: {
     fontSize: 13.5,

@@ -8,6 +8,7 @@ import {
   Text,
   View,
 } from "react-native";
+import { capitalizeFirst } from "../../../lib/relative-time";
 import { AttendanceCard } from "../../../components/AttendanceCard";
 import { ReportCollectionCard } from "../../../components/ReportCollectionCard";
 import { useQuery } from "@tanstack/react-query";
@@ -224,7 +225,7 @@ function GreetingHeader() {
         {t(`home.greeting.${key}`)}
         {name ? `, ${name}` : ""}
       </Text>
-      <Text style={styles.greetingDate}>{dateLine}</Text>
+      <Text style={styles.greetingDate}>{capitalizeFirst(dateLine)}</Text>
       <View style={styles.badgeRow}>
         {appointmentLabel ? (
           <View style={[styles.auxBadge, styles.appointmentBadge]}>
@@ -1456,7 +1457,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: "#94a3b8",
     marginTop: 2,
-    textTransform: "capitalize",
   },
   // Два значка стоят рядом и переносятся на узком экране, а не жмутся.
   badgeRow: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 8 },
@@ -1563,14 +1563,6 @@ const styles = StyleSheet.create({
     color: "#0369a1",
     textTransform: "uppercase",
     letterSpacing: 0.4,
-  },
-  meetingDate: {
-    fontSize: 17,
-    fontWeight: "700",
-    fontFamily: "Manrope_700Bold",
-    color: "#0f172a",
-    marginTop: 6,
-    textTransform: "capitalize",
   },
   meetingMeta: { fontSize: 14, color: "#64748b", marginTop: 2 },
   partsBox: {
