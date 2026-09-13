@@ -11,6 +11,7 @@ import {
 import { capitalizeFirst } from "../../../lib/relative-time";
 import { AttendanceCard } from "../../../components/AttendanceCard";
 import { ReportCollectionCard } from "../../../components/ReportCollectionCard";
+import { usePermissions } from "../../../lib/permissions";
 import { useQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -268,13 +269,35 @@ function GreetingHeader() {
  */
 function ReportStandingCard() {
   const { t, i18n } = useTranslation();
+  const { canViewServiceSummary } = usePermissions();
   const { data } = useQuery({
     queryKey: ["reports", "my-standing"],
     queryFn: () => serviceReportsApi.myStanding(),
     staleTime: 5 * 60 * 1000,
   });
+  /**
+   * Кто собирает отчёты, видит ниже карточку собрания — и в ней уже есть он
+   * сам.
+   *
+   * Две строки подряд начинались одинаково и говорили об одном: «Отчёт за
+   * август сдан» и «Отчёты за август · сдали 87 из 88». Для собирающего это
+   * повтор, и место наверху экрана дорого. Для всех остальных карточки нет, и
+   * полоса остаётся единственным ответом на вопрос «сдал ли я».
+   *
+   * Скрывается ТОЛЬКО зелёная полоса «сдан». Напоминание о несданном
+   * остаётся при любых правах: это дело, а не сведение.
+   */
+  const collection = useQuery({
+    queryKey: ["service-reports", "collection"],
+    queryFn: () => serviceReportsApi.getCollection(),
+    enabled: canViewServiceSummary,
+    staleTime: 5 * 60 * 1000,
+  });
+  const collectionShown =
+    canViewServiceSummary && !!collection.data && !collection.data.closed;
 
   if (!data || !data.applicable || !data.reportMonth) return null;
+  if (data.submitted && collectionShown) return null;
 
   const month = monthLabel(i18n.language, data.reportMonth, {
     hideCurrentYear: true,

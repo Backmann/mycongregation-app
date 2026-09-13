@@ -2206,7 +2206,7 @@
       "withPartner": "with {{name}}"
     },
     "timeline": {
-      "title": "Coming up",
+      "title": "The next two weeks",
       "today": "Today",
       "tomorrow": "Tomorrow",
       "emptyNear": "Nothing scheduled for the next two weeks",

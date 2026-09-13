@@ -2206,7 +2206,7 @@
       "withPartner": "mit {{name}}"
     },
     "timeline": {
-      "title": "Demnächst",
+      "title": "Die nächsten zwei Wochen",
       "today": "Heute",
       "tomorrow": "Morgen",
       "emptyNear": "Für die nächsten zwei Wochen ist nichts geplant",
