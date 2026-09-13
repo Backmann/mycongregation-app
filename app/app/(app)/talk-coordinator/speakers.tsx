@@ -24,12 +24,8 @@ import {
   extractErrorMessage,
 } from "../../../lib/api";
 import { usePermissions } from "../../../lib/permissions";
-import {
-  computeSpeakerStats,
-  SpeakerStats,
-  visitedRecently,
-} from "../../../lib/speaker-stats";
-import { dayDiff, formatRelativeDay } from "../../../lib/relative-time";
+import { computeSpeakerStats, SpeakerStats } from "../../../lib/speaker-stats";
+import { formatRelativeDay } from "../../../lib/relative-time";
 import { notify } from "../../../lib/error-bus";
 import { confirm } from "../../../components/ConfirmHost";
 
@@ -43,7 +39,7 @@ function speakerName(s: {
 }
 
 export default function SpeakersScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const perms = usePermissions();
   const qc = useQueryClient();
 
@@ -89,11 +85,18 @@ export default function SpeakersScreen() {
   }, [talksQuery.data]);
 
   const [search, setSearch] = useState("");
-  const [sortMode, setSortMode] = useState<"recency" | "congregation" | "name">(
-    "recency",
-  );
-  const [filterMode, setFilterMode] = useState<
-    "all" | "upcoming" | "overdue" | "never"
+  /**
+   * Виды вместо двух рядов кнопок — как в «Наших докладчиках».
+   *
+   * Было семь: три сортировки и четыре отбора, без подписи, какой ряд за что.
+   * В одном разделе два экрана говорили на разных языках.
+   *
+   * «По собранию» осталось видом, а не пропало вместе с сортировкой: это не
+   * порядок, а группировка с заголовками, и она отвечает на свой вопрос —
+   * кого мы зовём из такого-то собрания.
+   */
+  const [view, setView] = useState<
+    "all" | "due" | "planned" | "never" | "byCongregation"
   >("all");
   const today = new Date().toLocaleDateString("en-CA");
   const talkById = useMemo(() => {
@@ -117,41 +120,76 @@ export default function SpeakersScreen() {
           speakerName(sp).toLowerCase().includes(q) ||
           (sp.externalCongregation?.name ?? "").toLowerCase().includes(q),
       );
-    if (filterMode !== "all")
-      list = list.filter((sp) => {
-        const st = statsById.get(sp.id);
-        if (!st) return false;
-        if (filterMode === "upcoming") return !!st.nextVisit;
-        if (filterMode === "never") return st.count === 0 && !st.nextVisit;
-        return (
-          !!st.lastVisit &&
-          !st.nextVisit &&
-          Math.abs(dayDiff(st.lastVisit.date, today)) > 120
-        );
-      });
+
+    const st = (sp: VisitingSpeaker) => statsById.get(sp.id);
     const nameKey = (sp: VisitingSpeaker) =>
       `${sp.lastName ?? ""} ${sp.firstName}`.toLowerCase().trim();
-    const recencyKey = (sp: VisitingSpeaker) => {
-      const st = statsById.get(sp.id);
-      if (st?.lastVisit) return `1_${st.lastVisit.date}`;
-      // First-timers: order by nearest upcoming visit (soonest first);
-      // unscheduled ones fall after the scheduled.
-      return `0_${st?.nextVisit?.date ?? "9999-99-99"}`;
-    };
-    list.sort((a, b) => {
-      if (sortMode === "name") return nameKey(a).localeCompare(nameKey(b));
-      if (sortMode === "congregation") {
+
+    if (view === "planned") {
+      list = list.filter((sp) => !!st(sp)?.nextVisit);
+      list.sort(
+        (a, b) =>
+          (st(a)!.nextVisit!.date ?? "").localeCompare(
+            st(b)!.nextVisit!.date ?? "",
+          ) || nameKey(a).localeCompare(nameKey(b)),
+      );
+      return list;
+    }
+
+    if (view === "never") {
+      list = list.filter((sp) => (st(sp)?.count ?? 0) === 0);
+      list.sort((a, b) => nameKey(a).localeCompare(nameKey(b)));
+      return list;
+    }
+
+    if (view === "byCongregation") {
+      list.sort((a, b) => {
         const ca = a.externalCongregation?.name ?? "\uffff";
         const cb = b.externalCongregation?.name ?? "\uffff";
         return ca.localeCompare(cb) || nameKey(a).localeCompare(nameKey(b));
-      }
-      return (
-        recencyKey(a).localeCompare(recencyKey(b)) ||
-        nameKey(a).localeCompare(nameKey(b))
+      });
+      return list;
+    }
+
+    if (view === "due") {
+      /**
+       * «Кого позвать» — те, у кого приезд не назначен: сперва ни разу не
+       * бывшие, потом по давности. Уже назначенные сюда не попадают: им очередь
+       * дана, а прежде они стояли в самом верху, потому что «давность» у
+       * будущего визита наибольшая.
+       */
+      list = list.filter((sp) => !st(sp)?.nextVisit);
+      const key = (sp: VisitingSpeaker) => {
+        const x = st(sp);
+        if (!x || x.count === 0) return "0_";
+        return `1_${x.lastVisit?.date ?? ""}`;
+      };
+      list.sort(
+        (a, b) =>
+          key(a).localeCompare(key(b)) || nameKey(a).localeCompare(nameKey(b)),
       );
-    });
+      return list;
+    }
+
+    list.sort((a, b) => nameKey(a).localeCompare(nameKey(b)));
     return list;
-  }, [listQuery.data, search, filterMode, sortMode, statsById, today]);
+  }, [listQuery.data, search, view, statsById]);
+
+  /**
+   * Сколько людей в каждом виде — прямо на кнопке, чтобы не открывать её ради
+   * ответа «есть ли там вообще кто-нибудь».
+   */
+  const viewCounts = useMemo(() => {
+    const all = listQuery.data ?? [];
+    const st = (sp: VisitingSpeaker) => statsById.get(sp.id);
+    return {
+      all: all.length,
+      due: all.filter((sp) => !st(sp)?.nextVisit).length,
+      planned: all.filter((sp) => !!st(sp)?.nextVisit).length,
+      never: all.filter((sp) => (st(sp)?.count ?? 0) === 0).length,
+      byCongregation: all.length,
+    };
+  }, [listQuery.data, statsById]);
 
   /**
    * When sorted by congregation, say where each block begins.
@@ -164,7 +202,7 @@ export default function SpeakersScreen() {
    * speakers on purpose, and a purely nested view would hide them for good.
    */
   const headingFor = (index: number): string | null => {
-    if (sortMode !== "congregation") return null;
+    if (view !== "byCongregation") return null;
     const nameOf = (sp: VisitingSpeaker | undefined) =>
       sp?.externalCongregation?.name ??
       (sp ? t("talkCoordinator.speakers.noCongregationSection") : null);
@@ -172,6 +210,13 @@ export default function SpeakersScreen() {
     const before = index === 0 ? null : nameOf(rows[index - 1]);
     return here !== before ? here : null;
   };
+
+  /** «13 сентября» — координатор сверяется с программой числами месяца. */
+  const longDate = (iso: string) =>
+    new Date(`${iso}T00:00:00`).toLocaleDateString(i18n.language, {
+      day: "numeric",
+      month: "long",
+    });
 
   const invalidate = () => qc.invalidateQueries({ queryKey: QK });
   const showError = (e: unknown) => {
@@ -327,11 +372,33 @@ export default function SpeakersScreen() {
     setEditingId(null);
   };
 
+  /**
+   * Удаление называет свою цену.
+   *
+   * Спрашивалось «Удалить докладчика?» и показывалось имя — и всё. А удаление
+   * уносит историю: внешний ключ обнуляет связь у записей журнала и у слотов
+   * программы, визиты остаются, но перестают принадлежать человеку — ровно та
+   * потеря, которую мы чинили неделю. Корзина при этом стоит в строке, рядом с
+   * карандашом, и попадает под палец мимоходом.
+   *
+   * Чаще всего удаляют двойника — поэтому при наличии визитов согласие
+   * напоминает, что двойников объединяют, а не удаляют.
+   */
   const confirmDelete = async (s: VisitingSpeaker) => {
+    const st = statsById.get(s.id);
+    const visits = st?.count ?? 0;
+    const upcoming = st?.nextVisit ? 1 : 0;
+    const body =
+      visits + upcoming > 0
+        ? t("talkCoordinator.speakers.deleteBodyWithHistory", {
+            name: speakerName(s),
+            count: visits,
+          })
+        : speakerName(s);
     if (
       await confirm({
         title: t("talkCoordinator.speakers.deleteTitle"),
-        body: speakerName(s),
+        body,
         confirmLabel: t("common.delete"),
         danger: true,
       })
@@ -578,44 +645,26 @@ export default function SpeakersScreen() {
                 </Pressable>
               ) : null}
             </View>
-            <View style={styles.segmentRow}>
-              {(["recency", "congregation", "name"] as const).map((m) => (
-                <Pressable
-                  key={m}
-                  style={[
-                    styles.segment,
-                    sortMode === m && styles.segmentActive,
-                  ]}
-                  onPress={() => setSortMode(m)}
-                >
-                  <Text
-                    style={[
-                      styles.segmentText,
-                      sortMode === m && styles.segmentTextActive,
-                    ]}
-                  >
-                    {t(`talkCoordinator.speakers.sort.${m}`)}
-                  </Text>
-                </Pressable>
-              ))}
-            </View>
+            {/* Один ряд видов: каждый называет задачу и несёт число. */}
             <View style={styles.filterRow}>
-              {(["all", "upcoming", "overdue", "never"] as const).map((m) => (
+              {(
+                ["all", "due", "planned", "never", "byCongregation"] as const
+              ).map((m) => (
                 <Pressable
                   key={m}
                   style={[
                     styles.filterChip,
-                    filterMode === m && styles.filterChipActive,
+                    view === m && styles.filterChipActive,
                   ]}
-                  onPress={() => setFilterMode(m)}
+                  onPress={() => setView(m)}
                 >
                   <Text
                     style={[
                       styles.filterChipText,
-                      filterMode === m && styles.filterChipTextActive,
+                      view === m && styles.filterChipTextActive,
                     ]}
                   >
-                    {t(`talkCoordinator.speakers.filter.${m}`)}
+                    {t(`talkCoordinator.speakers.view.${m}`)} {viewCounts[m]}
                   </Text>
                 </Pressable>
               ))}
@@ -625,7 +674,7 @@ export default function SpeakersScreen() {
 
         {rows.length === 0 && editingId !== "new" ? (
           <Text style={styles.empty}>
-            {search || filterMode !== "all"
+            {search || view !== "all"
               ? t("talkCoordinator.speakers.noResults")
               : t("talkCoordinator.speakers.empty")}
           </Text>
@@ -677,45 +726,46 @@ export default function SpeakersScreen() {
                     ) : null}
                     {(() => {
                       const st = statsById.get(s.id);
-                      if (!st || (st.count === 0 && !st.nextVisit))
-                        return (
-                          <Text style={styles.statusNever}>
-                            {t("talkCoordinator.speakers.status.never")}
-                          </Text>
+                      /**
+                       * Фразами, как в «Наших докладчиках».
+                       *
+                       * Здесь читалось «раз: 1 · 3 мес. назад» и «через 2 мес.» —
+                       * тот самый язык сокращений, от которого мы ушли на
+                       * соседнем экране. И молчало главное: когда именно приедет
+                       * и с какой речью, хотя и то и другое известно.
+                       */
+                      const lines: string[] = [];
+                      if (!st || (st.count === 0 && !st.nextVisit)) {
+                        lines.push(t("talkCoordinator.speakers.neverCame"));
+                      } else if (st.count > 0 && st.lastVisit) {
+                        lines.push(
+                          t("talkCoordinator.speakers.wasHereLine", {
+                            rel: formatRelativeDay(st.lastVisit.date, today, t),
+                            count: st.count,
+                          }),
                         );
-                      const recent = visitedRecently(st, today);
+                      }
                       return (
-                        <View style={styles.statusRow}>
-                          {st.count > 0 && st.lastVisit ? (
-                            <Text
-                              style={[
-                                styles.statusText,
-                                recent && styles.statusRecent,
-                              ]}
-                            >
-                              {t("talkCoordinator.speakers.status.lastSeen", {
-                                count: st.count,
-                                rel: formatRelativeDay(
-                                  st.lastVisit.date,
-                                  today,
-                                  t,
-                                ),
+                        <>
+                          {lines.map((line) => (
+                            <Text key={line} style={styles.statusText}>
+                              {line}
+                            </Text>
+                          ))}
+                          {st?.nextVisit ? (
+                            <Text style={styles.comingLine}>
+                              {t("talkCoordinator.speakers.comingLine", {
+                                date: longDate(st.nextVisit.date),
                               })}
+                              {st.nextVisit.talkNumber
+                                ? ", " +
+                                  t("talkCoordinator.speakers.withTalk", {
+                                    n: st.nextVisit.talkNumber,
+                                  })
+                                : ""}
                             </Text>
                           ) : null}
-                          {st.nextVisit ? (
-                            <View style={styles.upcomingTag}>
-                              <Ionicons
-                                name="airplane"
-                                size={11}
-                                color="#0369a1"
-                              />
-                              <Text style={styles.upcomingText}>
-                                {formatRelativeDay(st.nextVisit.date, today, t)}
-                              </Text>
-                            </View>
-                          ) : null}
-                        </View>
+                        </>
                       );
                     })()}
                   </Pressable>
@@ -858,6 +908,8 @@ const styles = StyleSheet.create({
     marginTop: 3,
   },
   autoText: { fontSize: 12, color: "#7c3aed" },
+  /** Ближайший приезд — то, ради чего строку и читают. */
+  comingLine: { fontSize: 13, color: "#0369a1", marginTop: 2, lineHeight: 18 },
   statusNever: {
     fontSize: 13,
     color: "#94a3b8",

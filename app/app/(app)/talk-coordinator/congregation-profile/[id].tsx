@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo } from "react";
 import {
   ActivityIndicator,
   Linking,
@@ -7,27 +7,24 @@ import {
   StyleSheet,
   Text,
   View,
-} from 'react-native';
-import { useLocalSearchParams, router } from 'expo-router';
-import { useQuery } from '@tanstack/react-query';
-import { useTranslation } from 'react-i18next';
-import { Ionicons } from '@expo/vector-icons';
-import dayjs from 'dayjs';
+} from "react-native";
+import { useLocalSearchParams, router } from "expo-router";
+import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
+import { Ionicons } from "@expo/vector-icons";
+import dayjs from "dayjs";
 import {
   externalCongregationsApi,
   PublicTalk,
   publicTalksApi,
   talkExchangeApi,
   visitingSpeakersApi,
-} from '../../../../lib/api';
-import {
-  computeSpeakerStats,
-  visitedRecently,
-} from '../../../../lib/speaker-stats';
-import { formatRelativeDay } from '../../../../lib/relative-time';
-import { LoadError } from '../../../../components/LoadError';
+} from "../../../../lib/api";
+import { computeSpeakerStats } from "../../../../lib/speaker-stats";
+import { formatRelativeDay } from "../../../../lib/relative-time";
+import { LoadError } from "../../../../components/LoadError";
 
-const todayISO = () => new Date().toLocaleDateString('en-CA');
+const todayISO = () => new Date().toLocaleDateString("en-CA");
 
 /**
  * One congregation, and the speakers who belong to it.
@@ -49,19 +46,19 @@ export default function CongregationProfileScreen() {
   const today = todayISO();
 
   const congQuery = useQuery({
-    queryKey: ['external-congregations'],
+    queryKey: ["external-congregations"],
     queryFn: () => externalCongregationsApi.list(),
   });
   const speakersQuery = useQuery({
-    queryKey: ['visiting-speakers'],
+    queryKey: ["visiting-speakers"],
     queryFn: () => visitingSpeakersApi.list(),
   });
   const entriesQuery = useQuery({
-    queryKey: ['talk-exchange'],
+    queryKey: ["talk-exchange"],
     queryFn: () => talkExchangeApi.list(),
   });
   const talksQuery = useQuery({
-    queryKey: ['public-talks'],
+    queryKey: ["public-talks"],
     queryFn: () => publicTalksApi.list({ limit: 200 }),
   });
 
@@ -89,11 +86,11 @@ export default function CongregationProfileScreen() {
         stats: computeSpeakerStats(s, entries, talkById, today),
       }))
       .sort((a, b) => {
-        const ka = a.stats.lastVisit?.date ?? '';
-        const kb = b.stats.lastVisit?.date ?? '';
+        const ka = a.stats.lastVisit?.date ?? "";
+        const kb = b.stats.lastVisit?.date ?? "";
         if (ka !== kb) return kb.localeCompare(ka);
-        return `${a.speaker.lastName ?? ''} ${a.speaker.firstName}`.localeCompare(
-          `${b.speaker.lastName ?? ''} ${b.speaker.firstName}`,
+        return `${a.speaker.lastName ?? ""} ${a.speaker.firstName}`.localeCompare(
+          `${b.speaker.lastName ?? ""} ${b.speaker.firstName}`,
         );
       });
   }, [speakersQuery.data, entriesQuery.data, talkById, id, today]);
@@ -115,28 +112,28 @@ export default function CongregationProfileScreen() {
     return (
       <View style={styles.center}>
         <Text style={styles.empty}>
-          {t('talkCoordinator.congregationProfile.notFound')}
+          {t("talkCoordinator.congregationProfile.notFound")}
         </Text>
       </View>
     );
   }
 
   const dayLabel = (dow: number) =>
-    dayjs('2024-01-01')
-      .add(dow - 1, 'day')
+    dayjs("2024-01-01")
+      .add(dow - 1, "day")
       .locale(i18n.language)
-      .format('dd');
+      .format("dd");
 
   const meeting = [
     congregation.meetingDow ? dayLabel(congregation.meetingDow) : null,
     congregation.meetingTime,
   ]
     .filter(Boolean)
-    .join(' ');
+    .join(" ");
 
   return (
     <ScrollView
-      style={{ flex: 1, backgroundColor: '#f1f5f9' }}
+      style={{ flex: 1, backgroundColor: "#f1f5f9" }}
       contentContainerStyle={styles.container}
     >
       <View style={styles.card}>
@@ -166,7 +163,7 @@ export default function CongregationProfileScreen() {
             >
               {[congregation.contactName, congregation.contactPhone]
                 .filter(Boolean)
-                .join(' · ')}
+                .join(" · ")}
             </Text>
           </Pressable>
         )}
@@ -176,18 +173,17 @@ export default function CongregationProfileScreen() {
       </View>
 
       <Text style={styles.sectionLabel}>
-        {t('talkCoordinator.congregationProfile.speakers')}
+        {t("talkCoordinator.congregationProfile.speakers")}
       </Text>
 
       <View style={styles.card}>
         {speakers.length === 0 ? (
           <Text style={styles.empty}>
-            {t('talkCoordinator.congregationProfile.noSpeakers')}
+            {t("talkCoordinator.congregationProfile.noSpeakers")}
           </Text>
         ) : (
           speakers.map(({ speaker, stats }, idx) => {
             const never = stats.count === 0 && !stats.nextVisit;
-            const recent = visitedRecently(stats, today);
             return (
               <Pressable
                 key={speaker.id}
@@ -206,22 +202,19 @@ export default function CongregationProfileScreen() {
                   <Text style={styles.speakerName}>
                     {[speaker.firstName, speaker.lastName]
                       .filter(Boolean)
-                      .join(' ')}
+                      .join(" ")}
                   </Text>
                   {never ? (
                     <Text style={styles.statusNever}>
-                      {t('talkCoordinator.speakers.status.never')}
+                      {t("talkCoordinator.speakers.neverCame")}
                     </Text>
                   ) : (
                     <View style={styles.statusRow}>
                       {stats.count > 0 && stats.lastVisit ? (
-                        <Text
-                          style={[
-                            styles.statusText,
-                            recent && styles.statusRecent,
-                          ]}
-                        >
-                          {t('talkCoordinator.speakers.status.lastSeen', {
+                        <Text style={styles.statusText}>
+                          {/* Те же слова, что в справочнике: одно и то же
+                              сведение не должно называться по-разному. */}
+                          {t("talkCoordinator.speakers.wasHereLine", {
                             count: stats.count,
                             rel: formatRelativeDay(
                               stats.lastVisit.date,
@@ -253,7 +246,10 @@ export default function CongregationProfileScreen() {
           already known, and choosing it by hand is how a speaker ends up
           filed under the wrong one. */}
       <Pressable
-        style={({ pressed }) => [styles.addBtn, pressed && styles.addBtnPressed]}
+        style={({ pressed }) => [
+          styles.addBtn,
+          pressed && styles.addBtnPressed,
+        ]}
         onPress={() =>
           router.push(
             `/talk-coordinator/speakers?congregationId=${congregation.id}` as never,
@@ -262,7 +258,7 @@ export default function CongregationProfileScreen() {
       >
         <Ionicons name="person-add-outline" size={18} color="#0369a1" />
         <Text style={styles.addBtnText}>
-          {t('talkCoordinator.congregationProfile.addSpeaker')}
+          {t("talkCoordinator.congregationProfile.addSpeaker")}
         </Text>
       </Pressable>
     </ScrollView>
@@ -270,25 +266,25 @@ export default function CongregationProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  center: { flex: 1, alignItems: "center", justifyContent: "center" },
   container: { padding: 16, gap: 12, paddingBottom: 32 },
-  card: { backgroundColor: '#fff', borderRadius: 14, padding: 14, gap: 4 },
+  card: { backgroundColor: "#fff", borderRadius: 14, padding: 14, gap: 4 },
   name: {
     fontSize: 18,
-    color: '#0f172a',
-    fontWeight: '700',
-    fontFamily: 'Manrope_700Bold',
+    color: "#0f172a",
+    fontWeight: "700",
+    fontFamily: "Manrope_700Bold",
   },
-  sub: { fontSize: 13, color: '#64748b' },
-  line: { fontSize: 13.5, color: '#334155', marginTop: 2 },
-  link: { color: '#0369a1' },
-  note: { fontSize: 13, color: '#64748b', fontStyle: 'italic', marginTop: 4 },
+  sub: { fontSize: 13, color: "#64748b" },
+  line: { fontSize: 13.5, color: "#334155", marginTop: 2 },
+  link: { color: "#0369a1" },
+  note: { fontSize: 13, color: "#64748b", fontStyle: "italic", marginTop: 4 },
   dayBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 4,
-    alignSelf: 'flex-start',
-    backgroundColor: '#e0f2fe',
+    alignSelf: "flex-start",
+    backgroundColor: "#e0f2fe",
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 8,
@@ -296,76 +292,75 @@ const styles = StyleSheet.create({
   },
   dayBadgeText: {
     fontSize: 11.5,
-    color: '#0369a1',
-    fontWeight: '700',
-    fontFamily: 'Manrope_700Bold',
+    color: "#0369a1",
+    fontWeight: "700",
+    fontFamily: "Manrope_700Bold",
   },
   sectionLabel: {
     fontSize: 12,
-    color: '#64748b',
-    fontWeight: '600',
-    fontFamily: 'Manrope_600SemiBold',
-    textTransform: 'uppercase',
+    color: "#64748b",
+    fontWeight: "600",
+    fontFamily: "Manrope_600SemiBold",
+    textTransform: "uppercase",
     letterSpacing: 0.4,
     paddingHorizontal: 4,
   },
   row: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 10,
     paddingVertical: 11,
   },
   rowDivided: {
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#e2e8f0',
+    borderTopColor: "#e2e8f0",
   },
   rowPressed: { opacity: 0.6 },
   speakerName: {
     fontSize: 15,
-    color: '#0f172a',
-    fontWeight: '600',
-    fontFamily: 'Manrope_600SemiBold',
+    color: "#0f172a",
+    fontWeight: "600",
+    fontFamily: "Manrope_600SemiBold",
   },
   statusRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 8,
-    flexWrap: 'wrap',
+    flexWrap: "wrap",
     marginTop: 2,
   },
-  statusText: { fontSize: 12, color: '#64748b' },
-  statusRecent: { color: '#15803d' },
-  statusNever: { fontSize: 12, color: '#b45309', marginTop: 2 },
+  statusText: { fontSize: 12, color: "#64748b" },
+  statusNever: { fontSize: 12, color: "#b45309", marginTop: 2 },
   upcomingTag: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 3,
-    backgroundColor: '#e0f2fe',
+    backgroundColor: "#e0f2fe",
     paddingHorizontal: 7,
     paddingVertical: 2,
     borderRadius: 7,
   },
   upcomingText: {
     fontSize: 11,
-    color: '#0369a1',
-    fontWeight: '700',
-    fontFamily: 'Manrope_700Bold',
+    color: "#0369a1",
+    fontWeight: "700",
+    fontFamily: "Manrope_700Bold",
   },
-  empty: { fontSize: 13.5, color: '#94a3b8', paddingVertical: 6 },
+  empty: { fontSize: 13.5, color: "#94a3b8", paddingVertical: 6 },
   addBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     gap: 8,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderRadius: 12,
     paddingVertical: 13,
   },
   addBtnPressed: { opacity: 0.7 },
   addBtnText: {
     fontSize: 14.5,
-    color: '#0369a1',
-    fontWeight: '700',
-    fontFamily: 'Manrope_700Bold',
+    color: "#0369a1",
+    fontWeight: "700",
+    fontFamily: "Manrope_700Bold",
   },
 });

@@ -2523,28 +2523,25 @@
       "newCongregationPlaceholder": "Versammlungsname",
       "searchPlaceholder": "Nach Name oder Versammlung suchen",
       "noResults": "Keine Treffer",
-      "status": {
-        "never": "noch nicht da gewesen",
-        "lastSeen": "Mal: {{count}} · {{rel}}"
-      },
-      "sort": {
-        "recency": "Nach Aktualität",
-        "congregation": "Nach Versammlung",
-        "name": "Nach Name"
-      },
-      "filter": {
-        "all": "Alle",
-        "upcoming": "Bald",
-        "overdue": "Lange her",
-        "never": "Neu"
-      },
       "noCongregationSection": "Ohne Versammlung",
       "duplicateTitle": "Er ist vielleicht schon erfasst",
       "duplicateBody": "{{name}} — {{congregation}} — steht bereits auf der Liste. Wenn das ein anderer Bruder mit demselben Namen ist, füge ihn hinzu.",
       "duplicateConfirm": "Trotzdem hinzufügen",
       "autoCreated": "Von der App angelegt",
       "autoCreatedHint": "Nichts ausgefüllt: Versammlung, Telefon, Vorträge",
-      "mergedAway": "Diese Karte wurde mit einer anderen zusammengeführt — ihre Geschichte ist dort."
+      "mergedAway": "Diese Karte wurde mit einer anderen zusammengeführt — ihre Geschichte ist dort.",
+      "view": {
+        "all": "Alle",
+        "due": "Wen einladen",
+        "planned": "Kommt bald",
+        "never": "Noch nicht",
+        "byCongregation": "Nach Versammlung"
+      },
+      "neverCame": "war noch nicht da",
+      "wasHereLine": "War {{rel}} da, insgesamt: {{count}}",
+      "comingLine": "Kommt am {{date}}",
+      "withTalk": "Vortrag Nr. {{n}}",
+      "deleteBodyWithHistory": "{{name}} — verzeichnete Besuche: {{count}}. Nach dem Löschen bleiben sie im Journal, gehören ihm aber nicht mehr. Ist das ein Doppel, führe die Karten zusammen, statt zu löschen."
     },
     "log": {
       "group": {

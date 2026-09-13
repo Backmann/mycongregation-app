@@ -2523,28 +2523,25 @@
       "newCongregationPlaceholder": "Congregation name",
       "searchPlaceholder": "Search by name or congregation",
       "noResults": "No matches",
-      "status": {
-        "never": "not visited yet",
-        "lastSeen": "times: {{count}} · {{rel}}"
-      },
-      "sort": {
-        "recency": "By recency",
-        "congregation": "By congregation",
-        "name": "By name"
-      },
-      "filter": {
-        "all": "All",
-        "upcoming": "Upcoming",
-        "overdue": "Overdue",
-        "never": "New"
-      },
       "noCongregationSection": "No congregation",
       "duplicateTitle": "He may already be listed",
       "duplicateBody": "{{name}} — {{congregation}} — is already on the list. If this is a different brother with the same name, go ahead.",
       "duplicateConfirm": "Add anyway",
       "autoCreated": "Created by the app",
       "autoCreatedHint": "Nothing filled in: congregation, phone, talks",
-      "mergedAway": "This card was merged into another one — its history moved there."
+      "mergedAway": "This card was merged into another one — its history moved there.",
+      "view": {
+        "all": "All",
+        "due": "Whom to invite",
+        "planned": "Coming soon",
+        "never": "Not yet",
+        "byCongregation": "By congregation"
+      },
+      "neverCame": "has not been here yet",
+      "wasHereLine": "Was here {{rel}}, times in all: {{count}}",
+      "comingLine": "Coming on {{date}}",
+      "withTalk": "talk no. {{n}}",
+      "deleteBodyWithHistory": "{{name}} — visits on record: {{count}}. After deletion they stay in the journal but stop belonging to him. If this is a duplicate, merge it with the other card instead of deleting."
     },
     "log": {
       "group": {
