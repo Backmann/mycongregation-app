@@ -11,6 +11,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
+import { capitalizeFirst } from '../lib/relative-time';
 import dayjs from 'dayjs';
 // Locales are opt-in per file in dayjs: without these the dates come out in
 // English however the app is set, which is exactly what happened here.
@@ -88,9 +89,11 @@ export function AttendanceCard() {
             {t(`eventTypes.${meeting.eventType}`)}
           </Text>
           <Text style={styles.subtitleDate}>
-            {dayjs(meeting.date)
-              .locale(i18n.language)
-              .format('dddd, D MMMM')}
+            {/* Первая буква, а не каждое слово: выходило «Воскресенье, 13
+                Сентября». Та же ошибка, что в шапке главной. */}
+            {capitalizeFirst(
+              dayjs(meeting.date).locale(i18n.language).format('dddd, D MMMM'),
+            )}
           </Text>
         </View>
 
@@ -207,7 +210,6 @@ const styles = StyleSheet.create({
     fontSize: 12.5,
     color: '#64748b',
     marginTop: 1,
-    textTransform: 'capitalize',
   },
   backlog: {
     flexDirection: 'row',
