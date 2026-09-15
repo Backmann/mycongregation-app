@@ -254,7 +254,15 @@
     "loginNameHint": "This is your name for signing in.",
     "noLoginName": "No login name set — ask your administrator.",
     "deliveryEmail": "Letters go to: {{email}}",
-    "noEmail": "No e-mail address. A forgotten password is reset by the congregation administrator."
+    "noEmail": "No e-mail address. A forgotten password is reset by the congregation administrator.",
+    "devPreview": {
+      "title": "Unfinished screens",
+      "hint": "Visible on this device only. The congregation uses the app as before.",
+      "area": {
+        "congregationIndex": "Congregation — index",
+        "programmeFeed": "Programme — feed of days"
+      }
+    }
   },
   "language": {
     "title": "Language",

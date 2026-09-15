@@ -14,6 +14,10 @@ import * as Updates from "expo-updates";
 import { router } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import {
+  DEV_PREVIEW_AREAS,
+  useDevPreview,
+} from "../../../lib/dev-preview";
 import { useAuth } from "../../../lib/auth";
 import { useMyPublisher } from "../../../lib/useMyPublisher";
 import { LanguagePickerModal } from "../../../components/LanguagePicker";
@@ -98,6 +102,10 @@ export default function ProfileScreen() {
   const { myPublisher } = useMyPublisher();
   const { t, i18n } = useTranslation();
   const buildLine = useBuildLine();
+  // Вход к незаконченному: открывается долгим нажатием на строку версии и
+  // закрывается сам, когда экран покидают.
+  const [devOpen, setDevOpen] = useState(false);
+  const devPreview = useDevPreview();
   const [langModalVisible, setLangModalVisible] = useState(false);
   const currentLang = getCurrentLanguage();
   const [webPushStatus, setWebPushStatus] = useState<WebPushStatus | null>(
@@ -800,13 +808,46 @@ export default function ProfileScreen() {
           </Pressable>
         </View>
 
-        {/* Which code is actually running. Without this there was no way to tell
-          whether an over-the-air update had arrived — we were reduced to
-          guessing from whether some layout fix looked applied. Also the first
-          thing to ask when someone reports a problem. */}
-        <Text style={styles.buildLine} selectable>
-          {buildLine}
-        </Text>
+        {/*
+          Строка версии — и вход к незаконченному.
+
+          Долгое нажатие открывает выключатели новых экранов. Спрятано
+          намеренно: приложением пользуются шестьдесят человек, и новое не
+          должно попадаться им на глаза, пока не готово. Выключатели хранятся
+          на устройстве, поэтому включивший видит новое только у себя.
+        */}
+        <Pressable onLongPress={() => setDevOpen((v) => !v)} delayLongPress={800}>
+          <Text style={styles.buildLine} selectable>
+            {buildLine}
+          </Text>
+        </Pressable>
+
+        {devOpen && devPreview.ready ? (
+          <View style={styles.devBox}>
+            <Text style={styles.devTitle}>
+              {t("profile.devPreview.title")}
+            </Text>
+            <Text style={styles.devHint}>{t("profile.devPreview.hint")}</Text>
+            {DEV_PREVIEW_AREAS.map((area) => (
+              <Pressable
+                key={area}
+                style={styles.devRow}
+                onPress={() => void devPreview.toggle(area)}
+              >
+                <Text style={styles.devRowText}>
+                  {t(`profile.devPreview.area.${area}`)}
+                </Text>
+                <Ionicons
+                  name={
+                    devPreview.enabled(area) ? "toggle" : "toggle-outline"
+                  }
+                  size={26}
+                  color={devPreview.enabled(area) ? "#0ea5e9" : "#94a3b8"}
+                />
+              </Pressable>
+            ))}
+          </View>
+        ) : null}
       </ScrollView>
       <LanguagePickerModal
         visible={langModalVisible}
@@ -943,6 +984,27 @@ const styles = StyleSheet.create({
     borderColor: "#fecaca",
     borderRadius: 10,
   },
+  devBox: {
+    marginTop: 12,
+    marginHorizontal: 16,
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#ddd6fe",
+    backgroundColor: "#faf5ff",
+  },
+  devTitle: { fontSize: 14, fontWeight: "700", color: "#5b21b6" },
+  devHint: { fontSize: 12, color: "#7c3aed", marginTop: 2, lineHeight: 17 },
+  devRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: 9,
+    marginTop: 4,
+    borderTopWidth: 1,
+    borderTopColor: "#ede9fe",
+  },
+  devRowText: { fontSize: 14, color: "#0f172a" },
   buildLine: {
     textAlign: "center",
     color: "#94a3b8",
