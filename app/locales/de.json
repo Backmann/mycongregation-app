@@ -261,7 +261,10 @@
       "area": {
         "congregationIndex": "Versammlung — Übersicht",
         "programmeFeed": "Programm — Tagesliste"
-      }
+      },
+      "on": "an",
+      "off": "aus",
+      "nothingYet": "Dahinter ist noch nichts — die Bildschirme kommen nach und nach."
     }
   },
   "language": {

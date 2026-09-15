@@ -828,6 +828,12 @@ export default function ProfileScreen() {
               {t("profile.devPreview.title")}
             </Text>
             <Text style={styles.devHint}>{t("profile.devPreview.hint")}</Text>
+            {/* Пока за выключателями пусто — сказать об этом прямо, иначе
+                включивший решит, что сломано. Строка уйдёт, когда появятся
+                первые экраны. */}
+            <Text style={styles.devHint}>
+              {t("profile.devPreview.nothingYet")}
+            </Text>
             {DEV_PREVIEW_AREAS.map((area) => (
               <Pressable
                 key={area}
@@ -837,13 +843,25 @@ export default function ProfileScreen() {
                 <Text style={styles.devRowText}>
                   {t(`profile.devPreview.area.${area}`)}
                 </Text>
-                <Ionicons
-                  name={
-                    devPreview.enabled(area) ? "toggle" : "toggle-outline"
-                  }
-                  size={26}
-                  color={devPreview.enabled(area) ? "#0ea5e9" : "#94a3b8"}
-                />
+                {/* Значок без слова — такая же загадка, как цвет без подписи:
+                    приходится всматриваться, сплошной он или контурный. */}
+                <View style={styles.devState}>
+                  <Text
+                    style={[
+                      styles.devStateText,
+                      devPreview.enabled(area) && styles.devStateOn,
+                    ]}
+                  >
+                    {devPreview.enabled(area)
+                      ? t("profile.devPreview.on")
+                      : t("profile.devPreview.off")}
+                  </Text>
+                  <Ionicons
+                    name={devPreview.enabled(area) ? "toggle" : "toggle-outline"}
+                    size={26}
+                    color={devPreview.enabled(area) ? "#0ea5e9" : "#94a3b8"}
+                  />
+                </View>
               </Pressable>
             ))}
           </View>
@@ -1004,7 +1022,10 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: "#ede9fe",
   },
-  devRowText: { fontSize: 14, color: "#0f172a" },
+  devRowText: { flex: 1, fontSize: 14, color: "#0f172a" },
+  devState: { flexDirection: "row", alignItems: "center", gap: 7 },
+  devStateText: { fontSize: 12.5, color: "#94a3b8" },
+  devStateOn: { color: "#0ea5e9", fontWeight: "600" },
   buildLine: {
     textAlign: "center",
     color: "#94a3b8",

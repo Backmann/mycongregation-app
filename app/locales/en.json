@@ -261,7 +261,10 @@
       "area": {
         "congregationIndex": "Congregation — index",
         "programmeFeed": "Programme — feed of days"
-      }
+      },
+      "on": "on",
+      "off": "off",
+      "nothingYet": "Nothing behind them yet — screens will appear as they are built."
     }
   },
   "language": {
