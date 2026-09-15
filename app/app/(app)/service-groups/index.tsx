@@ -19,9 +19,14 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { FilterToggle } from '../../../components/FilterToggle';
 import { useTranslation } from 'react-i18next';
+import { usePermissions } from '../../../lib/permissions';
 
 export default function ServiceGroupsListScreen() {
   const { t } = useTranslation();
+  // Кто видит личные данные, тот открывает любую группу: правило то же, что
+  // на сервере, и второго правила заводить незачем.
+  const { isAdmin, isElder } = usePermissions();
+  const canSeeEveryGroup = isAdmin || isElder;
   const [search, setSearch] = useState('');
   const [showRemoved, setShowRemoved] = useState(false);
 
@@ -75,14 +80,31 @@ export default function ServiceGroupsListScreen() {
           ListHeaderComponent={
             data ? <Text style={styles.count}>{t('common.totalCount', { count: data.total })}</Text> : null
           }
-          renderItem={({ item }) => <GroupRow group={item} />}
+          /**
+           * Состав чужой группы обычному возвещателю не открывается, и строка
+           * об этом говорит заранее. Прежде она была нажимаемой и приводила к
+           * отказу без объяснения — человек не понимал, поломка это или так
+           * задумано.
+           */
+          renderItem={({ item }) => (
+            <GroupRow
+              group={item}
+              openable={canSeeEveryGroup || item.mine === true}
+            />
+          )}
         />
       )}
     </View>
   );
 }
 
-function GroupRow({ group }: { group: ServiceGroup }) {
+function GroupRow({
+  group,
+  openable,
+}: {
+  group: ServiceGroup;
+  openable: boolean;
+}) {
   const { t } = useTranslation();
   const isRemoved = !!group.deletedAt;
 
@@ -90,9 +112,11 @@ function GroupRow({ group }: { group: ServiceGroup }) {
     <Pressable
       style={({ pressed }) => [
         styles.row,
-        pressed && styles.rowPressed,
+        pressed && openable && styles.rowPressed,
         isRemoved && styles.rowRemoved,
+        !openable && styles.rowClosed,
       ]}
+      disabled={!openable}
       onPress={() => router.push(`/service-groups/${group.id}` as any)}
     >
       <View style={styles.icon}>
@@ -103,12 +127,25 @@ function GroupRow({ group }: { group: ServiceGroup }) {
           <Text style={[styles.name, isRemoved && styles.nameRemoved]}>
             {group.name}
           </Text>
+          {/* «Твоя» — ответ на первый вопрос к списку групп: а я где. */}
+          {group.mine ? (
+            <View style={styles.mineBadge}>
+              <Text style={styles.mineBadgeText}>
+                {t('serviceGroups.mine')}
+              </Text>
+            </View>
+          ) : null}
           {isRemoved && (
             <View style={styles.removedBadge}>
               <Text style={styles.removedBadgeText}>{t('common.removed')}</Text>
             </View>
           )}
         </View>
+        {!openable ? (
+          <Text style={styles.closedHint}>
+            {t('serviceGroups.otherGroupClosed')}
+          </Text>
+        ) : null}
         {group.meetingLocation && (
           <Text style={styles.meta} numberOfLines={1}>
             📍 {group.meetingLocation}
@@ -161,6 +198,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   rowPressed: { backgroundColor: '#f8fafc' },
+  /** Чужая группа: строка видна, но не нажимается. */
+  rowClosed: { opacity: 0.55 },
+  mineBadge: {
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 8,
+    backgroundColor: '#e0f2fe',
+  },
+  mineBadgeText: { fontSize: 11.5, color: '#0369a1', fontWeight: '600' },
+  closedHint: { fontSize: 12.5, color: '#94a3b8', marginTop: 2 },
   rowRemoved: { opacity: 0.55 },
   icon: {
     width: 40,

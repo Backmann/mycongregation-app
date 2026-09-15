@@ -830,7 +830,9 @@
       "body": "{{name}} will be removed from the group.",
       "web": "Remove {{name}} from the group?",
       "action": "Remove"
-    }
+    },
+    "mine": "yours",
+    "otherGroupClosed": "Members are visible in your own group only"
   },
   "parts": {
     "midweek_chairman": "Chairman",

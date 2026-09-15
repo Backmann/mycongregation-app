@@ -409,6 +409,15 @@ export interface ServiceGroup {
   assistant?: Publisher | null;
   meetingLocation: string | null;
   notes: string | null;
+  /**
+   * Твоя ли это группа.
+   *
+   * Считает сервер: своя группа известна ему по карточке возвещателя,
+   * привязанной ко входу. Приложение без этого признака не отличало свою от
+   * чужой — и обычный возвещатель тыкался в чужую, получая отказ без
+   * объяснения.
+   */
+  mine?: boolean;
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;
