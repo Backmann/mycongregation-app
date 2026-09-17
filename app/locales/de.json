@@ -254,18 +254,7 @@
     "loginNameHint": "Das ist Ihr Name für die Anmeldung.",
     "noLoginName": "Kein Anmeldename gesetzt — fragen Sie Ihren Administrator.",
     "deliveryEmail": "Post geht an: {{email}}",
-    "noEmail": "Keine E-Mail-Adresse. Ein vergessenes Passwort setzt der Versammlungsadministrator zurück.",
-    "devPreview": {
-      "title": "Unfertige Bildschirme",
-      "hint": "Nur auf diesem Gerät sichtbar. Die Versammlung nutzt die App wie bisher.",
-      "area": {
-        "congregationIndex": "Versammlung — Übersicht",
-        "programmeFeed": "Programm — Tagesliste"
-      },
-      "on": "an",
-      "off": "aus",
-      "nothingYet": "Dahinter ist noch nichts — die Bildschirme kommen nach und nach."
-    }
+    "noEmail": "Keine E-Mail-Adresse. Ein vergessenes Passwort setzt der Versammlungsadministrator zurück."
   },
   "language": {
     "title": "Sprache",
