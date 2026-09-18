@@ -104,6 +104,7 @@ import { weekRules } from "../../../lib/week-rules";
 import { ReplacedMeetingNotice } from "../../../components/ReplacedMeetingNotice";
 import { MemorialMeetingBlock } from "../../../components/MemorialMeetingBlock";
 import { CollapsibleMeetingBlock } from "../../../components/CollapsibleMeetingBlock";
+import { ConductEntry } from "../../../components/ConductEntry";
 import { HospitalityZone } from "../../../components/HospitalityZone";
 import { AssignmentSheet } from "../../../components/AssignmentSheet";
 import { PublishDialog } from "../../../components/PublishDialog";
@@ -1758,6 +1759,13 @@ export default function ScheduleIndexScreen() {
                             })
                       }
                     >
+                      <ConductEntry
+                        week={items[0].weekStartDate}
+                        chairmanPublisherId={
+                          items.find((a) => a.partKey === "midweek_chairman")
+                            ?.publisherId ?? null
+                        }
+                      />
                       <MidweekSections
                         canEdit={perms.canEditMidweekSchedule}
                         onEdit={setEditing}
