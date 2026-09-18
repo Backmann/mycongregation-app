@@ -3387,5 +3387,29 @@
     "sectionEmpty": "Noch nichts eingetragen",
     "sectionPrepare": "Vorlage übernehmen",
     "songWord": "Lied"
+  },
+  "conduct": {
+    "title": "Zusammenkunft leiten",
+    "open": "Zusammenkunft leiten",
+    "noWeek": "Keine Woche angegeben",
+    "noProgramme": "Für diese Woche gibt es kein Programm",
+    "noChairman": "Kein Vorsitzender zugeteilt — es gibt nichts zu leiten",
+    "toSchedule": "Zurück zum Programm",
+    "notChairman": "Nur der Vorsitzende dieser Woche kann die Zusammenkunft leiten",
+    "now": "Jetzt",
+    "next": "Danach",
+    "finished": "Zusammenkunft beendet",
+    "summary": "Dauerte {{minutes}} Min · {{drift}}",
+    "planned": "geplant {{minutes}} Min",
+    "start": "Zusammenkunft beginnen",
+    "nextPart": "Nächster Teil",
+    "finish": "Beenden",
+    "pause": "Pause",
+    "resume": "Fortsetzen",
+    "again": "Neu beginnen",
+    "runSheet": "Ablauf",
+    "onTime": "im Plan",
+    "ahead": "{{minutes}} Min voraus",
+    "behind": "{{minutes}} Min im Rückstand"
   }
 }

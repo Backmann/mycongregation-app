@@ -3387,5 +3387,29 @@
     "sectionEmpty": "Nothing here yet",
     "sectionPrepare": "Use the starting list",
     "songWord": "Song"
+  },
+  "conduct": {
+    "title": "Conducting the meeting",
+    "open": "Conduct the meeting",
+    "noWeek": "No week given",
+    "noProgramme": "There is no programme for this week",
+    "noChairman": "No chairman is assigned — there is nothing to conduct",
+    "toSchedule": "Back to the schedule",
+    "notChairman": "Only this week's chairman can conduct the meeting",
+    "now": "Now",
+    "next": "Next",
+    "finished": "Meeting finished",
+    "summary": "Took {{minutes}} min · {{drift}}",
+    "planned": "{{minutes}} min planned",
+    "start": "Start the meeting",
+    "nextPart": "Next part",
+    "finish": "Finish",
+    "pause": "Pause",
+    "resume": "Resume",
+    "again": "Start again",
+    "runSheet": "Run sheet",
+    "onTime": "on time",
+    "ahead": "{{minutes}} min ahead",
+    "behind": "{{minutes}} min behind"
   }
 }

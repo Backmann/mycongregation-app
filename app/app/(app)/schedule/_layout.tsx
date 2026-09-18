@@ -127,6 +127,13 @@ export default function ScheduleLayout() {
         }}
       />
       <Stack.Screen
+        name="conduct"
+        options={{
+          title: t('conduct.title'),
+          headerLeft: () => <BackButton fallback="/schedule" toParent />,
+        }}
+      />
+      <Stack.Screen
         name="rules"
         options={{
           title: t('schedule.title.rules'),
