@@ -220,7 +220,16 @@ export default function ConductScreen() {
     .slice(0, state.index)
     .reduce((sum, s) => sum + s.minutes * 60, 0);
   const actualSoFar = state.spent.reduce((sum, s) => sum + s, 0);
-  const driftSec = Math.round(actualSoFar - plannedSoFar);
+  /**
+   * Перерасход ТЕКУЩЕЙ части входит в отставание, её опережение — нет. Пока
+   * часть идёт, сэкономленное может уйти обратно; просроченное не вернётся, и
+   * председателю надо видеть, как оно набегает, а не узнавать об этом скачком
+   * при переходе к следующей.
+   */
+  const currentOverrun = current
+    ? Math.max(0, currentElapsed - current.minutes * 60)
+    : 0;
+  const driftSec = Math.round(actualSoFar - plannedSoFar + currentOverrun);
 
   const start = () => apply({ ...state, startedAt: Date.now() });
   const pause = () =>
@@ -337,7 +346,7 @@ export default function ConductScreen() {
         </Pressable>
       ) : null}
 
-      {state.index > 0 ? (
+      {state.index > 0 || state.startedAt !== null || state.carried > 0 ? (
         <Text style={[styles.drift, driftStyle(driftSec)]}>
           {driftLabel(driftSec, t)}
         </Text>
