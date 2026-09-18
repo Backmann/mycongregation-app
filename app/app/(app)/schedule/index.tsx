@@ -50,7 +50,6 @@ import {
   startOfWeekMonday,
 } from "../../../lib/dates";
 import { useSongsMap, enrichSongRef } from "../../../lib/songs";
-import i18n from "../../../lib/i18n";
 import {
   getEventTypeLabel,
   getPartLabel,
@@ -68,6 +67,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { UndoBar } from "../../../components/UndoBar";
 import { useTranslation } from "react-i18next";
+import { partDisplay } from "../../../lib/part-display";
 import { WeekNavigator } from "../../../components/WeekNavigator";
 import { WeekDrawer } from "../../../components/WeekDrawer";
 import {
@@ -2366,77 +2366,6 @@ function CreateButton({
   );
 }
 
-const PRAYER_PARTS = new Set<string>([
-  "midweek_opening_prayer",
-  "midweek_closing_prayer",
-  "weekend_opening_prayer",
-  "weekend_closing_prayer",
-]);
-
-/** Extracts just the song reference (e.g. "Песня 44") from a prayer title. */
-function songFromTitle(title: string): string | null {
-  const m = title.match(/(?:Песня|Song|Lied)\s*№?\s*\d+/i);
-  return m ? m[0] : null;
-}
-
-/**
- * Bold label + subtitle for an assignment. For parts whose imported title is
- * "<MWB part name>: <description>", show the real MWB name as the bold label and
- * the rest as the subtitle; otherwise use the generic part label + full title.
- */
-function partDisplay(
-  partKey: string,
-  partTitle: string | null | undefined,
-): { label: string; subtitle: string | null; overline?: string } {
-  // Weekend: show the part role as an overline above the EPUB topic, so it
-  // is clear what the topic belongs to. The reader's long label is shortened.
-  if (partKey === "public_talk_speaker") {
-    return {
-      label: partTitle || getPartLabel("public_talk_speaker"),
-      subtitle: null,
-    };
-  }
-  if (partKey === "watchtower_conductor") {
-    return {
-      label: partTitle || getPartLabel("watchtower_conductor"),
-      subtitle: null,
-    };
-  }
-  if (partKey === "watchtower_reader") {
-    return { label: i18n.t("schedule.weekend.reader"), subtitle: null };
-  }
-  if (
-    partKey === "mid_song" ||
-    partKey === "weekend_song" ||
-    partKey === "weekend_opening_song"
-  ) {
-    return { label: partTitle || i18n.t("parts.song"), subtitle: null };
-  }
-  if (PRAYER_PARTS.has(partKey)) {
-    return {
-      label: getPartLabel(partKey),
-      subtitle: partTitle ? songFromTitle(partTitle) : null,
-    };
-  }
-  // EPUB/override title is always the heading when present; the generic
-  // part label is only a fallback for untitled parts.
-  if (partTitle) {
-    const idx = partTitle.indexOf(": ");
-    if (idx > 0) {
-      // treasures_talk: topic only — hide the enriched detail note for
-      // the opening "Treasures" talk; other parts keep their subtitle.
-      const isTreasuresTalk = partKey === "treasures_talk";
-      return {
-        label: partTitle.slice(0, idx),
-        subtitle: isTreasuresTalk
-          ? null
-          : partTitle.slice(idx + 2).trim() || null,
-      };
-    }
-    return { label: partTitle, subtitle: null };
-  }
-  return { label: getPartLabel(partKey), subtitle: null };
-}
 
 function AssignmentRow({
   assignment,
