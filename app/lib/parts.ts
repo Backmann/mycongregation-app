@@ -1,5 +1,6 @@
 import { EventType } from './api';
 import i18n from './i18n';
+import { buildMidweekRunOrder } from './run-order';
 
 export type Subsection =
   | 'opening'
@@ -384,23 +385,21 @@ export function buildPartNumbers(
   return map;
 }
 
-/**
- * Computed time INTERVAL ("start – end") for the timed midweek parts,
- * walking the canonical meeting flow from the congregation's midweek start
- * time (105 minutes total): song+prayer 5 → chairman's opening words 1 →
- * treasures (EPUB minutes) → gems → Bible reading +1 counsel → each ministry
- * part +1 counsel → middle song 5 → Christian-life parts (unknowns share the
- * 15-min block) → CBS 30 → closing words 3 → prayer.
- *
- * Only parts a person needs to time get an interval. The chairman, the middle
- * song and the CBS reader are intentionally excluded — they carry no useful
- * timing of their own. Missing parts still consume their default minutes so
- * the following intervals stay correct.
- */
+/** A time range shown on one row of the schedule sheet. */
 export interface PartInterval {
   start: string;
   end: string;
 }
+/**
+ * Clock times for the timed midweek parts, walked from the congregation's
+ * midweek start time.
+ *
+ * WHAT the walk is — which segments there are and how long each runs — lives
+ * in lib/run-order.ts, because conduct mode needs the same figures as
+ * durations and two separate walks would have drifted. Which rows carry a
+ * range and which do not is decided there as well: the chairman, the middle
+ * song and the CBS reader carry none.
+ */
 export function buildMidweekPartTimes(
   items: {
     id: string;
@@ -409,64 +408,25 @@ export function buildMidweekPartTimes(
   }[],
   startTime: string | null | undefined,
 ): Map<string, PartInterval> {
+  // Раскладка живёт в lib/run-order.ts — там же, откуда её берёт режим
+  // ведения встречи. Здесь остаются только часы: время начала плюс минуты
+  // отрезков по порядку. Двух разных выкладок одних и тех же минут больше
+  // нет, и разойтись им негде.
   const m = /^(\d{1,2}):(\d{2})$/.exec(startTime ?? '');
   let t = m ? parseInt(m[1], 10) * 60 + parseInt(m[2], 10) : 19 * 60;
   const fmt = (min: number) =>
     `${String(Math.floor(min / 60)).padStart(2, '0')}:${String(
       min % 60,
     ).padStart(2, '0')}`;
-  const first = (key: string) => items.find((i) => i.partKey === key) ?? null;
   const map = new Map<string, PartInterval>();
-  /** Stamp [t, t+span] on the part and advance the clock by span. */
-  const span = (it: { id: string } | null, minutes: number) => {
-    if (it) map.set(it.id, { start: fmt(t), end: fmt(t + minutes) });
-    t += minutes;
-  };
-  const dur = (
-    it: { partDurationMin: number | null } | null,
-    fallback: number,
-  ) => it?.partDurationMin ?? fallback;
-
-  // Opening song + prayer (5) + chairman's opening words (1): shown as one
-  // interval on the prayer row (e.g. 19:00 – 19:06), since together they are
-  // the run-up before the first numbered part.
-  span(first('midweek_opening_prayer'), 6);
-  span(first('treasures_talk'), dur(first('treasures_talk'), 10));
-  span(first('spiritual_gems'), dur(first('spiritual_gems'), 10));
-  span(first('bible_reading'), dur(first('bible_reading'), 4) + 1);
-  for (const key of [
-    'apply_yourself_1',
-    'apply_yourself_2',
-    'apply_yourself_3',
-    'apply_yourself_4',
-  ]) {
-    const p = first(key);
-    if (!p) continue;
-    span(p, dur(p, 4) + 1);
+  for (const seg of buildMidweekRunOrder(items)) {
+    // Часы ставятся не на каждом отрезке: у средней песни их намеренно нет,
+    // хотя свои пять минут она занимает.
+    if (seg.showInterval && seg.assignmentId) {
+      map.set(seg.assignmentId, { start: fmt(t), end: fmt(t + seg.minutes) });
+    }
+    t += seg.minutes;
   }
-  // Middle song (5) — advance only, no interval shown.
-  t += 5;
-  const living = [
-    'living_christians_1',
-    'living_christians_2',
-    'living_christians_3',
-  ]
-    .map(first)
-    .filter((x): x is NonNullable<typeof x> => !!x);
-  const known = living.reduce((s2, p) => s2 + (p.partDurationMin ?? 0), 0);
-  const unknownCount = living.filter((p) => p.partDurationMin == null).length;
-  const shareMin =
-    unknownCount > 0
-      ? Math.max(1, Math.round((15 - known) / unknownCount))
-      : 0;
-  for (const p of living) {
-    span(p, p.partDurationMin ?? shareMin);
-  }
-  // CBS conductor (30). The reader deliberately gets no interval.
-  span(first('cbs_conductor'), dur(first('cbs_conductor'), 30));
-  // Final block: chairman's concluding words (3) + song & prayer — shown as a
-  // single interval on the closing-prayer row (e.g. 20:36 – 20:45).
-  span(first('midweek_closing_prayer'), 3 + 6);
   return map;
 }
 

@@ -48,6 +48,10 @@ const STEPS = [
   ['Правила недели', 'node', ['scripts/check-week-rules.mjs']],
   // Where a tapped notification leads is written twice — the service worker
   // cannot import from lib/ — so the two copies are compared here.
+  // Сколько длится каждый отрезок будней встречи. Лист программы берёт
+  // отсюда часы, режим ведения — обратный отсчёт; сдвиг на минуту менял бы
+  // и то и другое молча.
+  ['Порядок ведения', 'node', ['scripts/check-run-order.mjs']],
   ['Маршруты уведомлений', 'node', ['scripts/check-notification-routes.mjs']],
   // A folder nobody names in the tab layout becomes a tab. Silently.
   ['Вкладки', 'node', ['scripts/check-tabs.mjs']],
