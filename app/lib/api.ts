@@ -1679,7 +1679,8 @@ export type UpdateFieldServiceMeetingInput = Partial<
 
 export const fieldServiceApi = {
   async list(
-    params: { weekStart?: string } = {},
+    /** `weekEnd` is EXCLUSIVE; given with weekStart it reads as a span. */
+    params: { weekStart?: string; weekEnd?: string } = {},
   ): Promise<FieldServiceMeeting[]> {
     const { data } = await api.get<FieldServiceMeeting[]>(
       "/field-service-meetings",

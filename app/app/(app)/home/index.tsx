@@ -898,27 +898,21 @@ function HomeTimeline() {
   const todayISO = formatDateISO(new Date());
   const baseMonday = startOfWeekMonday(new Date());
   const mon0 = formatDateISO(baseMonday);
-  const mon1 = formatDateISO(addDays(baseMonday, 7));
-  const mon2 = formatDateISO(addDays(baseMonday, 14));
 
   const overviewQ = useQuery({
     queryKey: ["meeting-settings"],
     queryFn: () => meetingSettingsApi.getOverview(),
     staleTime: 5 * 60 * 1000,
   });
-  const fsA = useQuery({
-    queryKey: ["field-service", mon0],
-    queryFn: () => fieldServiceApi.list({ weekStart: mon0 }),
-    staleTime: 60 * 1000,
-  });
-  const fsB = useQuery({
-    queryKey: ["field-service", mon1],
-    queryFn: () => fieldServiceApi.list({ weekStart: mon1 }),
-    staleTime: 60 * 1000,
-  });
-  const fsC = useQuery({
-    queryKey: ["field-service", mon2],
-    queryFn: () => fieldServiceApi.list({ weekStart: mon2 }),
+  // Three weeks in ONE request. The end bound is exclusive, so the Monday
+  // AFTER the third week closes the span — three weeks on from the first.
+  const fieldServiceQ = useQuery({
+    queryKey: ["field-service", "range", mon0],
+    queryFn: () =>
+      fieldServiceApi.list({
+        weekStart: mon0,
+        weekEnd: formatDateISO(addDays(baseMonday, 21)),
+      }),
     staleTime: 60 * 1000,
   });
   const publishersQ = useQuery({
@@ -978,9 +972,7 @@ function HomeTimeline() {
     return buildTimeline({
       versions: overviewQ.data?.versions ?? [],
       fieldServiceMeetings: [
-        ...(fsA.data ?? []),
-        ...(fsB.data ?? []),
-        ...(fsC.data ?? []),
+        ...(fieldServiceQ.data ?? []),
       ],
       publishersById,
       groupNameById: new Map(
@@ -1008,9 +1000,7 @@ function HomeTimeline() {
   }, [
     overviewQ.data,
     groupsQ.data,
-    fsA.data,
-    fsB.data,
-    fsC.data,
+    fieldServiceQ.data,
     publishersQ.data,
     eventsQ.data,
     tasksQ.data,
