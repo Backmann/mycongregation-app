@@ -33,6 +33,7 @@ import {
   publishersApi,
   meetingSettingsApi,
   dutiesApi,
+  readinessApi,
   coVisitItemsApi,
   fieldServiceApi,
   cleaningApi,
@@ -290,6 +291,19 @@ export default function ScheduleIndexScreen() {
     canEditMidweekSchedule,
     canEditWeekendSchedule,
   } = usePermissions();
+  // The badge figures, as the server counts them. Asked for only by the
+  // people the endpoint answers — the same three responsibilities its guard
+  // checks — so that nobody else collects a 403 on every screen load.
+  const canSeeReadiness =
+    perms.canEditMidweekSchedule ||
+    perms.canEditWeekendSchedule ||
+    perms.canEditDuties;
+  const readinessQuery = useQuery({
+    queryKey: ["readiness", weekStartISO],
+    queryFn: () => readinessApi.list(weekStartISO, nextWeekISO),
+    enabled: canSeeReadiness,
+  });
+
   const dutiesQuery = useQuery({
     queryKey: ["duties", weekStartISO],
     queryFn: () =>
@@ -734,6 +748,31 @@ export default function ScheduleIndexScreen() {
   ]);
   const badgeParts = (list: Assignment[]) =>
     list.filter((x) => !BADGE_SONG_KEYS.has(x.partKey));
+  /**
+   * The badge, preferring the server's count.
+   *
+   * The client count below cannot know that the circuit overseer's service
+   * talk has nobody to be assigned to, so a visit week reads «10 из 11» and
+   * can never be complete. Where the server answers, its figures win; where
+   * it does not — a reader without the responsibility, a week still
+   * loading — the old count stands, and for such a reader it gives the same
+   * answer anyway.
+   */
+  const badgeOf = (
+    kind: "midweek" | "weekend",
+    list: Assignment[],
+  ): { assigned: number; total: number } => {
+    const fromServer = readinessQuery.data
+      ?.find((w) => w.weekStart === weekStartISO)
+      ?.meetings.find((m) => m.kind === kind);
+    if (fromServer?.programme.loaded) {
+      return {
+        assigned: fromServer.programme.assigned,
+        total: fromServer.programme.total,
+      };
+    }
+    return { assigned: assignedCount(list), total: badgeParts(list).length };
+  };
   const assignedCount = (list: Assignment[]) =>
     badgeParts(list).filter((x) => x.publisherId && x.status !== "cancelled")
       .length;
@@ -1732,8 +1771,8 @@ export default function ScheduleIndexScreen() {
                           : undefined
                       }
                       printBusy={printingMonth}
-                      assigned={assignedCount(items)}
-                      total={badgeParts(items).length}
+                      assigned={badgeOf("midweek", items).assigned}
+                      total={badgeOf("midweek", items).total}
                       actionLabel={
                         !perms.canEditMidweekSchedule
                           ? undefined
@@ -1805,8 +1844,8 @@ export default function ScheduleIndexScreen() {
                           : undefined
                       }
                       printBusy={printingMonth}
-                      assigned={assignedCount(programItems)}
-                      total={badgeParts(programItems).length}
+                      assigned={badgeOf("weekend", programItems).assigned}
+                      total={badgeOf("weekend", programItems).total}
                       actionLabel={
                         !perms.canEditWeekendSchedule
                           ? undefined

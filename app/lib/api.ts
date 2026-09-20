@@ -1833,6 +1833,51 @@ export interface CleaningWeek {
   suggestedAfterMeetingGroupId: string | null;
 }
 
+/**
+ * How far along a meeting's programme is, as the SERVER counts it.
+ *
+ * Open only to those who assemble the programme; anyone else gets a 403, so
+ * ask for it only when the permissions say the door will answer.
+ */
+export interface ReadinessProgramme {
+  /** False when no programme has been imported for this meeting at all. */
+  loaded: boolean;
+  assigned: number;
+  total: number;
+  /** Part keys still without a person — name them with getPartLabel. */
+  missing: string[];
+}
+
+export interface ReadinessDuties {
+  /** False when the week's duties have not been generated yet. */
+  created: boolean;
+  assigned: number;
+  total: number;
+}
+
+export interface ReadinessMeeting {
+  date: string;
+  kind: "midweek" | "weekend";
+  programme: ReadinessProgramme;
+  duties: ReadinessDuties;
+}
+
+export interface ReadinessWeek {
+  weekStart: string;
+  /** Empty in a convention week: the congregation holds no meetings. */
+  meetings: ReadinessMeeting[];
+}
+
+export const readinessApi = {
+  /** `weekEnd` is EXCLUSIVE, as in every other range here. */
+  async list(weekStart: string, weekEnd: string): Promise<ReadinessWeek[]> {
+    const { data } = await api.get<ReadinessWeek[]>("/readiness", {
+      params: { weekStart, weekEnd },
+    });
+    return data;
+  },
+};
+
 export const cleaningApi = {
   async getWeek(weekStart: string): Promise<CleaningWeek> {
     const { data } = await api.get<CleaningWeek>("/cleaning", {
