@@ -181,6 +181,20 @@ export default function MeetingFeedScreen() {
       month: "long",
     });
 
+  // «21 — 27 сентября» within a month, «28 сентября — 4 октября» across two:
+  // the month once, where once is enough.
+  const weekRangeLabel = (week: string) => {
+    const a = new Date(`${week}T00:00:00`);
+    const b = addDays(a, 6);
+    const sameMonth = a.getMonth() === b.getMonth();
+    return t("feed.weekRange", {
+      from: sameMonth
+        ? a.toLocaleDateString(lang, { day: "numeric" })
+        : dayMonth(week),
+      to: dayMonth(formatDateISO(b)),
+    });
+  };
+
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <View style={styles.column}>
@@ -199,10 +213,7 @@ export default function MeetingFeedScreen() {
             <View key={week} style={styles.week}>
               <View style={styles.weekHead}>
                 <Text style={styles.weekRange}>
-                  {t("feed.weekRange", {
-                    from: dayMonth(week),
-                    to: dayMonth(formatDateISO(addDays(new Date(`${week}T00:00:00`), 6))),
-                  })}
+                  {weekRangeLabel(week)}
                 </Text>
                 <View style={styles.weekRule} />
                 {week === from ? (
@@ -317,12 +328,23 @@ function MeetingCard({
     const p = readiness.programme;
     if (!p.loaded) status = { tone: "muted", text: t("feed.notLoaded") };
     else if (p.missing.length === 0) status = { tone: "ok", text: t("feed.ready") };
-    else
+    // Nobody at all is not a hole but a week not started yet — for a week a
+    // month ahead that is the ordinary course of work, and painting it amber
+    // would turn the feed into one long alarm.
+    else if (p.assigned === 0) status = { tone: "muted", text: t("feed.noneYet") };
+    // Naming the gaps helps while there are a few; fourteen names in a row say
+    // nothing a count would not.
+    else if (p.missing.length <= 3)
       status = {
         tone: "warn",
         text: t("feed.missing", {
           parts: p.missing.map((k) => partDisplay(k, null).label).join(", "),
         }),
+      };
+    else
+      status = {
+        tone: "warn",
+        text: t("feed.missingCount", { count: p.missing.length, total: p.total }),
       };
   }
 
