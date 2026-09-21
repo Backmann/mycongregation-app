@@ -3424,6 +3424,24 @@
     "sectionPrepare": "Взять заготовку",
     "songWord": "Песня"
   },
+  "feed": {
+    "title": "Лента встреч",
+    "thisWeek": "Эта неделя",
+    "weekRange": "{{from}} — {{to}}",
+    "ready": "Программа собрана",
+    "noneYet": "Никто ещё не назначен",
+    "missingCount": "Не назначено {{count}} из {{total}}",
+    "missing": "Не хватает: {{parts}}",
+    "notLoaded": "Программа ещё не загружена",
+    "showProgramme": "Показать программу",
+    "hideProgramme": "Свернуть программу",
+    "duties": "Обязанности",
+    "dutiesCount": "{{assigned}} из {{total}}",
+    "noMeetings": "Встреч в собрании на этой неделе нет",
+    "movedByVisit": "перенесена из-за визита",
+    "unassigned": "не назначен",
+    "timeAt": "{{day}} · {{time}}"
+  },
   "conduct": {
     "title": "Ведение встречи",
     "open": "Вести встречу",

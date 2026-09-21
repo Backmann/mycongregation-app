@@ -3394,6 +3394,24 @@
     "sectionPrepare": "Use the starting list",
     "songWord": "Song"
   },
+  "feed": {
+    "title": "Meetings",
+    "thisWeek": "This week",
+    "weekRange": "{{from}} — {{to}}",
+    "ready": "Programme complete",
+    "noneYet": "Nobody assigned yet",
+    "missingCount": "{{count}} of {{total}} not assigned",
+    "missing": "Missing: {{parts}}",
+    "notLoaded": "Programme not loaded yet",
+    "showProgramme": "Show programme",
+    "hideProgramme": "Hide programme",
+    "duties": "Duties",
+    "dutiesCount": "{{assigned}} of {{total}}",
+    "noMeetings": "No congregation meetings this week",
+    "movedByVisit": "moved for the circuit overseer's visit",
+    "unassigned": "not assigned",
+    "timeAt": "{{day}} · {{time}}"
+  },
   "conduct": {
     "title": "Conducting the meeting",
     "open": "Conduct the meeting",

@@ -3394,6 +3394,24 @@
     "sectionPrepare": "Vorlage übernehmen",
     "songWord": "Lied"
   },
+  "feed": {
+    "title": "Zusammenkünfte",
+    "thisWeek": "Diese Woche",
+    "weekRange": "{{from}} — {{to}}",
+    "ready": "Programm vollständig",
+    "noneYet": "Noch niemand zugeteilt",
+    "missingCount": "{{count}} von {{total}} nicht zugeteilt",
+    "missing": "Es fehlt: {{parts}}",
+    "notLoaded": "Programm noch nicht geladen",
+    "showProgramme": "Programm anzeigen",
+    "hideProgramme": "Programm ausblenden",
+    "duties": "Dienste",
+    "dutiesCount": "{{assigned}} von {{total}}",
+    "noMeetings": "Diese Woche keine Zusammenkünfte der Versammlung",
+    "movedByVisit": "verlegt wegen des Kreisaufseherbesuchs",
+    "unassigned": "nicht zugeteilt",
+    "timeAt": "{{day}} · {{time}}"
+  },
   "conduct": {
     "title": "Zusammenkunft leiten",
     "open": "Zusammenkunft leiten",
