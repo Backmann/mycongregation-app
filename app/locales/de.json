@@ -3410,7 +3410,13 @@
     "noMeetings": "Diese Woche keine Zusammenkünfte der Versammlung",
     "movedByVisit": "verlegt wegen des Kreisaufseherbesuchs",
     "unassigned": "nicht zugeteilt",
-    "timeAt": "{{day}} · {{time}}"
+    "timeAt": "{{day}} · {{time}}",
+    "cleaningLine": "{{slot}} — {{group}}",
+    "fieldService": "Treffpunkte für den Predigtdienst · {{count}}",
+    "conductor": "Leitung: {{name}}",
+    "memorial": "Gedächtnismahl",
+    "memorialInsteadMidweek": "Statt der Zusammenkunft unter der Woche",
+    "memorialInsteadWeekend": "Statt der Zusammenkunft am Wochenende"
   },
   "conduct": {
     "title": "Zusammenkunft leiten",

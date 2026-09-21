@@ -3440,7 +3440,13 @@
     "noMeetings": "Встреч в собрании на этой неделе нет",
     "movedByVisit": "перенесена из-за визита",
     "unassigned": "не назначен",
-    "timeAt": "{{day}} · {{time}}"
+    "timeAt": "{{day}} · {{time}}",
+    "cleaningLine": "{{slot}} — {{group}}",
+    "fieldService": "Встречи для проповеди · {{count}}",
+    "conductor": "Ведущий: {{name}}",
+    "memorial": "Вечеря воспоминания",
+    "memorialInsteadMidweek": "Вместо встречи в будний день",
+    "memorialInsteadWeekend": "Вместо встречи в выходные"
   },
   "conduct": {
     "title": "Ведение встречи",

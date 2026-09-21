@@ -5,12 +5,21 @@ import { useTranslation } from "react-i18next";
 import { Ionicons } from "@expo/vector-icons";
 import {
   assignmentsApi,
+  cleaningApi,
+  fieldServiceApi,
   meetingSettingsApi,
   publishersApi,
   readinessApi,
+  serviceGroupsApi,
   specialEventsApi,
 } from "../../../lib/api";
-import type { Assignment, ReadinessMeeting } from "../../../lib/api";
+import type {
+  Assignment,
+  CleaningAssignment,
+  FieldServiceMeeting,
+  ReadinessMeeting,
+  SpecialEvent,
+} from "../../../lib/api";
 import { usePermissions } from "../../../lib/permissions";
 import { weekRules } from "../../../lib/week-rules";
 import { effectiveVersionFor } from "../../../lib/meeting-schedule";
@@ -38,9 +47,16 @@ import { buildMidweekPartTimes } from "../../../lib/parts";
  * a convention week holds none, a visit moves the midweek meeting, the Memorial
  * takes one by the kind of day it falls on.
  *
- * FIRST STEP of four. Cleaning and field-ministry meetings come next; then the
- * special weeks in full, scrolling back to the start of the service year, and
- * each row leading to its own door.
+ * CLEANING BELONGS TO THE WEEK, not to a day: one group cleans after both
+ * meetings, so it is a line under the week, never inside a card — where it
+ * would appear twice. Its words are the cleaning section's own
+ * (cleaning.slots.*), so the feed says it exactly as the place it is edited.
+ *
+ * THE MEMORIAL is a card of its own, not a meeting with a missing programme:
+ * its order of service lives elsewhere, and readiness does not count it.
+ *
+ * SECOND STEP of four. Still to come: scrolling back to the start of the
+ * service year, and each row leading to its own door.
  */
 
 /** How far ahead the first step reaches. */
@@ -97,6 +113,49 @@ export default function MeetingFeedScreen() {
     enabled: canSeeReadiness,
   });
 
+  const cleaningQ = useQuery({
+    queryKey: ["cleaning", "range", from, to],
+    queryFn: () => cleaningApi.range(from, to),
+  });
+  // Same key as the home screen — the group names are the same list.
+  const groupsQ = useQuery({
+    queryKey: ["service-groups"],
+    queryFn: () => serviceGroupsApi.list({}),
+    staleTime: 30 * 60 * 1000,
+  });
+  const fieldQ = useQuery({
+    queryKey: ["field-service", "range", from, to],
+    queryFn: () => fieldServiceApi.list({ weekStart: from, weekEnd: to }),
+  });
+
+  const groupName = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const g of groupsQ.data?.data ?? []) m.set(g.id, g.name);
+    return m;
+  }, [groupsQ.data]);
+
+  const cleaningOf = useMemo(() => {
+    const m = new Map<string, CleaningAssignment[]>();
+    for (const c of cleaningQ.data ?? []) {
+      const arr = m.get(c.weekStartDate) ?? [];
+      arr.push(c);
+      m.set(c.weekStartDate, arr);
+    }
+    return m;
+  }, [cleaningQ.data]);
+
+  const fieldOf = useMemo(() => {
+    const m = new Map<string, FieldServiceMeeting[]>();
+    for (const f of fieldQ.data ?? []) {
+      const arr = m.get(f.weekStartDate) ?? [];
+      arr.push(f);
+      m.set(f.weekStartDate, arr);
+    }
+    for (const arr of m.values())
+      arr.sort((a, b) => a.dayOfWeek - b.dayOfWeek || a.startTime.localeCompare(b.startTime));
+    return m;
+  }, [fieldQ.data]);
+
   const nameOf = useMemo(() => {
     const m = new Map<string, string>();
     for (const p of publishersQ.data?.data ?? []) m.set(p.id, p.displayName);
@@ -122,20 +181,6 @@ export default function MeetingFeedScreen() {
       month: "long",
     });
 
-  // «21 — 27 сентября» within a month, «28 сентября — 4 октября» across two:
-  // the month once, where once is enough.
-  const weekRangeLabel = (week: string) => {
-    const a = new Date(`${week}T00:00:00`);
-    const b = addDays(a, 6);
-    const sameMonth = a.getMonth() === b.getMonth();
-    return t("feed.weekRange", {
-      from: sameMonth
-        ? a.toLocaleDateString(lang, { day: "numeric" })
-        : dayMonth(week),
-      to: dayMonth(formatDateISO(b)),
-    });
-  };
-
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <View style={styles.column}>
@@ -154,7 +199,10 @@ export default function MeetingFeedScreen() {
             <View key={week} style={styles.week}>
               <View style={styles.weekHead}>
                 <Text style={styles.weekRange}>
-                  {weekRangeLabel(week)}
+                  {t("feed.weekRange", {
+                    from: dayMonth(week),
+                    to: dayMonth(formatDateISO(addDays(new Date(`${week}T00:00:00`), 6))),
+                  })}
                 </Text>
                 <View style={styles.weekRule} />
                 {week === from ? (
@@ -168,6 +216,28 @@ export default function MeetingFeedScreen() {
                     {t("feed.noMeetings")}
                   </Text>
                 </View>
+              ) : null}
+
+              {(cleaningOf.get(week) ?? [])
+                .filter((c) => !!c.serviceGroupId)
+                .sort((a, b) => SLOT_ORDER.indexOf(a.slotType) - SLOT_ORDER.indexOf(b.slotType))
+                .map((c) => (
+                  <View key={c.id} style={styles.cleaning}>
+                    <Ionicons name="home-outline" size={16} color="#475569" />
+                    <Text style={styles.cleaningText}>
+                      {t("feed.cleaningLine", {
+                        slot: t(`cleaning.slots.${c.slotType}`),
+                        group: groupName.get(c.serviceGroupId as string) ?? "",
+                      })}
+                    </Text>
+                  </View>
+                ))}
+
+              {rules.memorial && rules.memorialTakes ? (
+                <MemorialCard
+                  event={rules.memorial}
+                  takes={rules.memorialTakes}
+                />
               ) : null}
 
               {kinds.map((kind) => {
@@ -191,6 +261,15 @@ export default function MeetingFeedScreen() {
                   />
                 );
               })}
+
+              {(fieldOf.get(week) ?? []).length > 0 ? (
+                <FieldServiceRow
+                  week={week}
+                  meetings={fieldOf.get(week) ?? []}
+                  groupName={groupName}
+                  nameOf={nameOf}
+                />
+              ) : null}
             </View>
           );
         })}
@@ -225,6 +304,9 @@ function MeetingCard({
   const day = at.toLocaleDateString(lang, { day: "numeric", month: "long" });
 
   const rows = items.filter((a) => !SONG_KEYS.has(a.partKey));
+  // A meeting nobody has started on: its rows speak in the same calm voice as
+  // the card, not in amber one by one.
+  const notStarted = rows.length > 0 && rows.every((a) => !a.publisherId);
   const times =
     kind === "midweek" && time ? buildMidweekPartTimes(items, time) : null;
 
@@ -235,23 +317,12 @@ function MeetingCard({
     const p = readiness.programme;
     if (!p.loaded) status = { tone: "muted", text: t("feed.notLoaded") };
     else if (p.missing.length === 0) status = { tone: "ok", text: t("feed.ready") };
-    // Nobody at all is not a hole but a week not started yet — for a week a
-    // month ahead that is the ordinary course of work, and painting it amber
-    // would turn the feed into one long alarm.
-    else if (p.assigned === 0) status = { tone: "muted", text: t("feed.noneYet") };
-    // Naming the gaps helps while there are a few; fourteen names in a row say
-    // nothing a count would not.
-    else if (p.missing.length <= 3)
+    else
       status = {
         tone: "warn",
         text: t("feed.missing", {
           parts: p.missing.map((k) => partDisplay(k, null).label).join(", "),
         }),
-      };
-    else
-      status = {
-        tone: "warn",
-        text: t("feed.missingCount", { count: p.missing.length, total: p.total }),
       };
   }
 
@@ -322,7 +393,12 @@ function MeetingCard({
                 <Text style={styles.rowTime}>{start ?? ""}</Text>
                 <View style={styles.rowBody}>
                   <Text style={styles.rowLabel}>{shown.label}</Text>
-                  <Text style={[styles.rowPeople, !people && styles.rowNobody]}>
+                  <Text
+                    style={[
+                      styles.rowPeople,
+                      !people && !notStarted && styles.rowNobody,
+                    ]}
+                  >
                     {people || t("feed.unassigned")}
                   </Text>
                 </View>
@@ -342,6 +418,102 @@ function MeetingCard({
           </Text>
         </View>
       ) : null}
+    </View>
+  );
+}
+
+/** The order the cleaning section itself lists its slots in. */
+const SLOT_ORDER = ["after_meeting", "thorough", "general"];
+
+function MemorialCard({
+  event,
+  takes,
+}: {
+  event: SpecialEvent;
+  takes: Kind;
+}) {
+  const { t, i18n } = useTranslation();
+  const at = new Date(`${event.date}T00:00:00`);
+  const weekday = at.toLocaleDateString(i18n.language, { weekday: "long" });
+  const day = at.toLocaleDateString(i18n.language, { day: "numeric", month: "long" });
+  return (
+    <View style={[styles.card, styles.cardMemorial]}>
+      <View style={styles.memorialTag}>
+        <Text style={styles.memorialTagText}>{t("feed.memorial")}</Text>
+      </View>
+      <View style={styles.cardHead}>
+        <Text style={styles.weekday}>
+          {weekday.charAt(0).toUpperCase() + weekday.slice(1)}
+        </Text>
+        <Text style={styles.dayTime}>
+          {event.time ? t("feed.timeAt", { day, time: event.time }) : day}
+        </Text>
+      </View>
+      <Text style={styles.memorialNote}>
+        {takes === "midweek"
+          ? t("feed.memorialInsteadMidweek")
+          : t("feed.memorialInsteadWeekend")}
+      </Text>
+    </View>
+  );
+}
+
+/**
+ * Field-ministry meetings, folded into one line per week: they are many and
+ * short, and a reader wants to know that they are there before wanting to see
+ * each of them.
+ */
+function FieldServiceRow({
+  week,
+  meetings,
+  groupName,
+  nameOf,
+}: {
+  week: string;
+  meetings: FieldServiceMeeting[];
+  groupName: Map<string, string>;
+  nameOf: Map<string, string>;
+}) {
+  const { t, i18n } = useTranslation();
+  const [open, setOpen] = useState(false);
+  return (
+    <View style={styles.field}>
+      <Pressable
+        style={({ pressed }) => [styles.fieldHead, pressed && styles.pressed]}
+        onPress={() => setOpen((v) => !v)}
+        accessibilityRole="button"
+        accessibilityState={{ expanded: open }}
+      >
+        <Ionicons name="navigate-outline" size={16} color="#6d28d9" />
+        <Text style={styles.fieldTitle}>
+          {t("feed.fieldService", { count: meetings.length })}
+        </Text>
+        <Ionicons name={open ? "chevron-up" : "chevron-down"} size={16} color="#6d28d9" />
+      </Pressable>
+      {open
+        ? meetings.map((m) => {
+            const date = formatDateISO(addDays(new Date(`${week}T00:00:00`), m.dayOfWeek - 1));
+            const weekday = new Date(`${date}T00:00:00`).toLocaleDateString(i18n.language, {
+              weekday: "short",
+              day: "numeric",
+            });
+            const group = m.serviceGroupId ? groupName.get(m.serviceGroupId) : undefined;
+            const conductor = m.conductorPublisherId ? nameOf.get(m.conductorPublisherId) : undefined;
+            return (
+              <View key={m.id} style={styles.fieldRow}>
+                <Text style={styles.fieldWhen}>
+                  {t("feed.timeAt", { day: weekday, time: m.startTime })}
+                </Text>
+                <Text style={styles.fieldWhere}>
+                  {[group, m.address].filter(Boolean).join(" · ")}
+                </Text>
+                {conductor ? (
+                  <Text style={styles.fieldWho}>{t("feed.conductor", { name: conductor })}</Text>
+                ) : null}
+              </View>
+            );
+          })
+        : null}
     </View>
   );
 }
@@ -414,4 +586,37 @@ const styles = StyleSheet.create({
   },
   dutiesLabel: { flex: 1, fontSize: 14, color: "#475569" },
   dutiesCount: { fontSize: 14, fontWeight: "600", color: "#0f172a" },
+  cleaning: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 9,
+    backgroundColor: "#e8eef3",
+    borderRadius: 11,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
+  cleaningText: { flex: 1, fontSize: 14, color: "#334155" },
+  cardMemorial: { borderColor: "#c4b5fd" },
+  memorialTag: {
+    alignSelf: "flex-start",
+    backgroundColor: "#ede9fe",
+    borderRadius: 7,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  memorialTagText: { fontSize: 12, fontWeight: "700", color: "#5b21b6" },
+  memorialNote: { fontSize: 14, color: "#64748b" },
+  field: {
+    backgroundColor: "#ffffff",
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+    borderRadius: 12,
+    paddingHorizontal: 14,
+  },
+  fieldHead: { flexDirection: "row", alignItems: "center", gap: 9, minHeight: 44 },
+  fieldTitle: { flex: 1, fontSize: 14, fontWeight: "600", color: "#0f172a" },
+  fieldRow: { borderTopWidth: 1, borderTopColor: "#f1f5f9", paddingVertical: 9 },
+  fieldWhen: { fontSize: 14, fontWeight: "600", color: "#0f172a" },
+  fieldWhere: { fontSize: 13, color: "#64748b", marginTop: 1 },
+  fieldWho: { fontSize: 13, color: "#64748b", marginTop: 1 },
 });

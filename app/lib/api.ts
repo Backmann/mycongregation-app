@@ -1880,6 +1880,16 @@ export const readinessApi = {
 };
 
 export const cleaningApi = {
+  /**
+   * Many weeks at once — rows only, no round-robin hint (that is for whoever
+   * assigns a group to ONE week). `weekEnd` is exclusive.
+   */
+  async range(weekStart: string, weekEnd: string): Promise<CleaningAssignment[]> {
+    const { data } = await api.get<CleaningAssignment[]>("/cleaning/range", {
+      params: { weekStart, weekEnd },
+    });
+    return data;
+  },
   async getWeek(weekStart: string): Promise<CleaningWeek> {
     const { data } = await api.get<CleaningWeek>("/cleaning", {
       params: { weekStart },

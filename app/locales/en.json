@@ -3410,7 +3410,13 @@
     "noMeetings": "No congregation meetings this week",
     "movedByVisit": "moved for the circuit overseer's visit",
     "unassigned": "not assigned",
-    "timeAt": "{{day}} · {{time}}"
+    "timeAt": "{{day}} · {{time}}",
+    "cleaningLine": "{{slot}} — {{group}}",
+    "fieldService": "Field ministry meetings · {{count}}",
+    "conductor": "Conductor: {{name}}",
+    "memorial": "Memorial of Christ's death",
+    "memorialInsteadMidweek": "Instead of the midweek meeting",
+    "memorialInsteadWeekend": "Instead of the weekend meeting"
   },
   "conduct": {
     "title": "Conducting the meeting",
