@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { FONT } from '../lib/typography';
@@ -46,21 +46,33 @@ function Person({
   name,
   extra,
   mine,
+  left,
 }: {
   name?: string | null;
   extra?: string | null;
   mine?: boolean;
+  /** Under the title on a narrow screen, so read from the left. */
+  left?: boolean;
 }) {
   const { t } = useTranslation();
+  const align = left ? styles.alignLeft : null;
   if (mine) return <Text style={styles.you}>{t('feed.you')}</Text>;
-  if (!name) return <Text style={styles.nobody}>{t('feed.unassigned')}</Text>;
+  if (!name) return <Text style={[styles.nobody, align]}>{t('feed.unassigned')}</Text>;
   return (
-    <View style={styles.personCol}>
-      <Text style={styles.person}>{name}</Text>
-      {extra ? <Text style={styles.personExtra}>{extra}</Text> : null}
+    <View style={left ? styles.personColLeft : styles.personCol}>
+      <Text style={[styles.person, align]}>{name}</Text>
+      {extra ? <Text style={[styles.personExtra, align]}>{extra}</Text> : null}
     </View>
   );
 }
+
+/**
+ * Below this width a title beside a column of names is squeezed into a
+ * narrow strip — «Иегова поддерживает тех, кто предан его Царству» took four
+ * lines on a phone. There the person goes under the title; the printed
+ * sheet's two columns come back where there is room for them.
+ */
+const STACK_BELOW = 440;
 
 /** One part: the time, what it is, and who — the person on the right. */
 export function PartLine({
@@ -78,6 +90,21 @@ export function PartLine({
   extra?: string | null;
   mine?: boolean;
 }) {
+  const { width } = useWindowDimensions();
+  if (width < STACK_BELOW) {
+    return (
+      <View style={styles.partRow}>
+        <Text style={[styles.time, NUM]}>{time ?? ''}</Text>
+        <View style={styles.partBody}>
+          <Text style={styles.partTitle}>{title}</Text>
+          {subtitle ? <Text style={styles.partSub}>{subtitle}</Text> : null}
+          <View style={styles.stackedPerson}>
+            <Person name={name} extra={extra} mine={mine} left />
+          </View>
+        </View>
+      </View>
+    );
+  }
   return (
     <View style={styles.partRow}>
       <Text style={[styles.time, NUM]}>{time ?? ''}</Text>
@@ -156,6 +183,9 @@ const styles = StyleSheet.create({
   partSub: { fontSize: 13, fontFamily: FONT.medium, color: SOFT, marginTop: 1 },
   personSlot: { width: 128, alignItems: 'flex-end' },
   personCol: { alignItems: 'flex-end' },
+  personColLeft: { alignItems: 'flex-start' },
+  stackedPerson: { marginTop: 3, flexDirection: 'row' },
+  alignLeft: { textAlign: 'left' },
   person: { fontSize: 14, lineHeight: 19, fontFamily: FONT.semibold, color: INK, textAlign: 'right' },
   personExtra: { fontSize: 13, fontFamily: FONT.medium, color: SOFT, textAlign: 'right', marginTop: 1 },
   you: {
