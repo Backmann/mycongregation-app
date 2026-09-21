@@ -1,6 +1,6 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { useQuery } from "@tanstack/react-query";
+import { useQueries, useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { Ionicons } from "@expo/vector-icons";
 import {
@@ -55,17 +55,41 @@ import { buildMidweekPartTimes } from "../../../lib/parts";
  * THE MEMORIAL is a card of its own, not a meeting with a missing programme:
  * its order of service lives elsewhere, and readiness does not count it.
  *
- * SECOND STEP of four. Still to come: scrolling back to the start of the
- * service year, and each row leading to its own door.
+ * FROM THE START OF THE SERVICE YEAR, OPENED ON THIS WEEK. The feed reaches
+ * back to the week holding 1 September and no further — earlier than that the
+ * question is history, not the programme. It opens on the current week and,
+ * once it has put itself there, never moves again on its own: the moment a
+ * person scrolls, or asks for more, the place is theirs.
+ *
+ * AHEAD BY A BUTTON, IN PIECES. «Show more» adds eight weeks as a request of
+ * its own, rather than asking again for everything already on screen — which
+ * would also run into the 500 assignments one answer may carry. A button and
+ * not loading on scroll: on the web a scroll-triggered load fires unpredictably
+ * and can hit the server several times at once.
+ *
+ * THE END IS WHERE THE WORKBOOKS END. When the last piece ends in a week with
+ * no programme at all, the feed stops at the last week that has one and says
+ * so, rather than trailing off into empty meetings.
+ *
+ * THIRD STEP of four. Still to come: each row leading to its own door.
  */
 
-/** How far ahead the first step reaches. */
-const WEEKS = 8;
+/** How many weeks one «show more» brings. */
+const CHUNK = 8;
 
 /** Songs carry no person, so they are not rows a reader looks for. */
 const SONG_KEYS = new Set(["mid_song", "weekend_song", "weekend_opening_song"]);
 
 type Kind = "midweek" | "weekend";
+
+/**
+ * Monday of the week that holds 1 September of the current service year. It
+ * runs September to August, so before September it began last autumn.
+ */
+function serviceYearMonday(today: Date): Date {
+  const year = today.getMonth() >= 8 ? today.getFullYear() : today.getFullYear() - 1;
+  return startOfWeekMonday(new Date(year, 8, 1));
+}
 
 export default function MeetingFeedScreen() {
   const { t, i18n } = useTranslation();
@@ -77,23 +101,53 @@ export default function MeetingFeedScreen() {
     perms.canEditWeekendSchedule ||
     perms.canEditDuties;
 
-  const firstMonday = useMemo(() => startOfWeekMonday(new Date()), []);
-  const from = formatDateISO(firstMonday);
-  // Exclusive, as every range in this API reads it.
-  const to = formatDateISO(addDays(firstMonday, WEEKS * 7));
-  const weeks = useMemo(
-    () =>
-      Array.from({ length: WEEKS }, (_, i) =>
-        formatDateISO(addDays(firstMonday, i * 7)),
-      ),
-    [firstMonday],
-  );
+  const currentMonday = useMemo(() => startOfWeekMonday(new Date()), []);
+  const firstMonday = useMemo(() => serviceYearMonday(new Date()), []);
+  const thisWeek = formatDateISO(currentMonday);
+  const startWeek = formatDateISO(firstMonday);
+  const hasPast = startWeek < thisWeek;
+  const [chunks, setChunks] = useState(1);
 
-  const assignmentsQ = useQuery({
-    queryKey: ["assignments", "range", from, to],
-    queryFn: () =>
-      assignmentsApi.list({ weekStart: from, weekEnd: to, limit: 500 }),
+  // The past of the service year as one piece, then eight weeks at a time.
+  // Every range is exclusive at its end, as everywhere in this API.
+  const spans = useMemo(() => {
+    const out: { from: string; to: string }[] = [];
+    if (hasPast) out.push({ from: startWeek, to: thisWeek });
+    for (let i = 0; i < chunks; i++)
+      out.push({
+        from: formatDateISO(addDays(currentMonday, i * CHUNK * 7)),
+        to: formatDateISO(addDays(currentMonday, (i + 1) * CHUNK * 7)),
+      });
+    return out;
+  }, [hasPast, startWeek, thisWeek, currentMonday, chunks]);
+
+  const assignmentsQs = useQueries({
+    queries: spans.map((sp) => ({
+      queryKey: ["assignments", "range", sp.from, sp.to],
+      queryFn: () =>
+        assignmentsApi.list({ weekStart: sp.from, weekEnd: sp.to, limit: 500 }),
+    })),
   });
+  const readinessQs = useQueries({
+    queries: spans.map((sp) => ({
+      queryKey: ["readiness", "range", sp.from, sp.to],
+      queryFn: () => readinessApi.list(sp.from, sp.to),
+      enabled: canSeeReadiness,
+    })),
+  });
+  const cleaningQs = useQueries({
+    queries: spans.map((sp) => ({
+      queryKey: ["cleaning", "range", sp.from, sp.to],
+      queryFn: () => cleaningApi.range(sp.from, sp.to),
+    })),
+  });
+  const fieldQs = useQueries({
+    queries: spans.map((sp) => ({
+      queryKey: ["field-service", "range", sp.from, sp.to],
+      queryFn: () => fieldServiceApi.list({ weekStart: sp.from, weekEnd: sp.to }),
+    })),
+  });
+
   // Same keys as the schedule screen, so the cache is shared.
   const eventsQ = useQuery({
     queryKey: ["special-events", "all"],
@@ -107,72 +161,116 @@ export default function MeetingFeedScreen() {
     queryKey: ["publishers", "roster"],
     queryFn: () => publishersApi.roster(),
   });
-  const readinessQ = useQuery({
-    queryKey: ["readiness", "range", from, to],
-    queryFn: () => readinessApi.list(from, to),
-    enabled: canSeeReadiness,
-  });
-
-  const cleaningQ = useQuery({
-    queryKey: ["cleaning", "range", from, to],
-    queryFn: () => cleaningApi.range(from, to),
-  });
   // Same key as the home screen — the group names are the same list.
   const groupsQ = useQuery({
     queryKey: ["service-groups"],
     queryFn: () => serviceGroupsApi.list({}),
     staleTime: 30 * 60 * 1000,
   });
-  const fieldQ = useQuery({
-    queryKey: ["field-service", "range", from, to],
-    queryFn: () => fieldServiceApi.list({ weekStart: from, weekEnd: to }),
-  });
 
-  const groupName = useMemo(() => {
-    const m = new Map<string, string>();
-    for (const g of groupsQ.data?.data ?? []) m.set(g.id, g.name);
-    return m;
-  }, [groupsQ.data]);
+  const allAssignments = assignmentsQs.flatMap((q) => q.data?.data ?? []);
+  const allReadiness = readinessQs.flatMap((q) => q.data ?? []);
+  const allCleaning = cleaningQs.flatMap((q) => q.data ?? []);
+  const allField = fieldQs.flatMap((q) => q.data ?? []);
 
-  const cleaningOf = useMemo(() => {
-    const m = new Map<string, CleaningAssignment[]>();
-    for (const c of cleaningQ.data ?? []) {
-      const arr = m.get(c.weekStartDate) ?? [];
-      arr.push(c);
-      m.set(c.weekStartDate, arr);
-    }
-    return m;
-  }, [cleaningQ.data]);
+  const groupName = new Map<string, string>();
+  for (const g of groupsQ.data?.data ?? []) groupName.set(g.id, g.name);
 
-  const fieldOf = useMemo(() => {
-    const m = new Map<string, FieldServiceMeeting[]>();
-    for (const f of fieldQ.data ?? []) {
-      const arr = m.get(f.weekStartDate) ?? [];
-      arr.push(f);
-      m.set(f.weekStartDate, arr);
-    }
-    for (const arr of m.values())
-      arr.sort((a, b) => a.dayOfWeek - b.dayOfWeek || a.startTime.localeCompare(b.startTime));
-    return m;
-  }, [fieldQ.data]);
+  const cleaningOf = new Map<string, CleaningAssignment[]>();
+  for (const c of allCleaning) {
+    const arr = cleaningOf.get(c.weekStartDate) ?? [];
+    arr.push(c);
+    cleaningOf.set(c.weekStartDate, arr);
+  }
 
-  const nameOf = useMemo(() => {
-    const m = new Map<string, string>();
-    for (const p of publishersQ.data?.data ?? []) m.set(p.id, p.displayName);
-    return m;
-  }, [publishersQ.data]);
+  const fieldOf = new Map<string, FieldServiceMeeting[]>();
+  for (const f of allField) {
+    const arr = fieldOf.get(f.weekStartDate) ?? [];
+    arr.push(f);
+    fieldOf.set(f.weekStartDate, arr);
+  }
+  for (const arr of fieldOf.values())
+    arr.sort((a, b) => a.dayOfWeek - b.dayOfWeek || a.startTime.localeCompare(b.startTime));
 
-  const partsOf = useMemo(() => {
-    const m = new Map<string, Assignment[]>();
-    for (const a of assignmentsQ.data?.data ?? []) {
-      const k = `${a.weekStartDate}|${a.eventType}`;
-      const arr = m.get(k) ?? [];
-      arr.push(a);
-      m.set(k, arr);
-    }
-    for (const arr of m.values()) arr.sort((a, b) => a.partOrder - b.partOrder);
-    return m;
-  }, [assignmentsQ.data]);
+  const nameOf = new Map<string, string>();
+  for (const p of publishersQ.data?.data ?? []) nameOf.set(p.id, p.displayName);
+
+  const partsOf = new Map<string, Assignment[]>();
+  for (const a of allAssignments) {
+    const k = `${a.weekStartDate}|${a.eventType}`;
+    const arr = partsOf.get(k) ?? [];
+    arr.push(a);
+    partsOf.set(k, arr);
+  }
+  for (const arr of partsOf.values()) arr.sort((a, b) => a.partOrder - b.partOrder);
+
+  // Where the workbooks end. Imported weeks run without gaps, so if the last
+  // piece ends in a week with no programme at all, the programme ended inside
+  // it — and a «show more» would only bring empty weeks.
+  const lastSpan = spans[spans.length - 1];
+  const lastSpanWeek = formatDateISO(addDays(new Date(`${lastSpan.to}T00:00:00`), -7));
+  const lastLoaded = !!assignmentsQs[assignmentsQs.length - 1]?.data;
+  const lastProgrammeWeek = allAssignments.reduce<string | null>(
+    (m, a) => (!m || a.weekStartDate > m ? a.weekStartDate : m),
+    null,
+  );
+  const reachedEnd =
+    lastLoaded && !allAssignments.some((a) => a.weekStartDate === lastSpanWeek);
+  const endWeek = reachedEnd
+    ? lastProgrammeWeek && lastProgrammeWeek > thisWeek
+      ? lastProgrammeWeek
+      : thisWeek
+    : lastSpanWeek;
+
+  const weeks: string[] = [];
+  for (
+    let w = firstMonday;
+    formatDateISO(w) <= endWeek;
+    w = addDays(w, 7)
+  )
+    weeks.push(formatDateISO(w));
+
+  // OPEN ON THIS WEEK, ONCE. Everything above it must have arrived first, or
+  // the place is measured before the weeks that push it down; then the screen
+  // puts itself there and never again — the first scroll, the first «show
+  // more», and the place belongs to the person.
+  const scrollRef = useRef<ScrollView>(null);
+  const placed = useRef(false);
+  const thisWeekY = useRef<number | null>(null);
+  const aboveSettled =
+    !eventsQ.isLoading &&
+    !settingsQ.isLoading &&
+    (!hasPast ||
+      [assignmentsQs[0], readinessQs[0], cleaningQs[0], fieldQs[0]].every(
+        (q) => !q.isLoading,
+      ));
+  // Placed only once the layout has gone quiet. On the web a week reports its
+  // new position AFTER the effect that would read it has run, so placing at
+  // once used the position from before the weeks above had arrived — and
+  // locked the feed a week too high. Every new report pushes the move back a
+  // little; when nothing has moved for a moment, the position is the real one.
+  const placeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const placeOnThisWeek = () => {
+    if (placed.current || !aboveSettled) return;
+    if (placeTimer.current) clearTimeout(placeTimer.current);
+    placeTimer.current = setTimeout(() => {
+      if (placed.current || thisWeekY.current === null) return;
+      // Measured inside the column; the content's padding lies above it, less a
+      // little air so the heading does not sit flush against the bar.
+      scrollRef.current?.scrollTo({
+        y: Math.max(0, thisWeekY.current + 6),
+        animated: false,
+      });
+      placed.current = true;
+    }, 150);
+  };
+  useEffect(placeOnThisWeek);
+  useEffect(
+    () => () => {
+      if (placeTimer.current) clearTimeout(placeTimer.current);
+    },
+    [],
+  );
 
   const lang = i18n.language;
   const dayMonth = (iso: string) =>
@@ -196,8 +294,21 @@ export default function MeetingFeedScreen() {
   };
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+    <ScrollView
+      ref={scrollRef}
+      style={styles.screen}
+      contentContainerStyle={styles.content}
+      onScrollBeginDrag={() => {
+        placed.current = true;
+      }}
+      onContentSizeChange={placeOnThisWeek}
+    >
       <View style={styles.column}>
+        <View style={styles.yearStart}>
+          <View style={styles.weekRule} />
+          <Text style={styles.yearStartText}>{t("feed.serviceYearStart")}</Text>
+          <View style={styles.weekRule} />
+        </View>
         {weeks.map((week) => {
           const version = effectiveVersionFor(settingsQ.data?.versions, week);
           const rules = weekRules({
@@ -210,13 +321,24 @@ export default function MeetingFeedScreen() {
           );
 
           return (
-            <View key={week} style={styles.week}>
+            <View
+              key={week}
+              style={styles.week}
+              onLayout={
+                week === thisWeek
+                  ? (e) => {
+                      thisWeekY.current = e.nativeEvent.layout.y;
+                      placeOnThisWeek();
+                    }
+                  : undefined
+              }
+            >
               <View style={styles.weekHead}>
                 <Text style={styles.weekRange}>
                   {weekRangeLabel(week)}
                 </Text>
                 <View style={styles.weekRule} />
-                {week === from ? (
+                {week === thisWeek ? (
                   <Text style={styles.thisWeek}>{t("feed.thisWeek")}</Text>
                 ) : null}
               </View>
@@ -256,8 +378,8 @@ export default function MeetingFeedScreen() {
                 const time =
                   (kind === "midweek" ? version?.midweekTime : version?.weekendTime) ??
                   null;
-                const readiness = readinessQ.data
-                  ?.find((w) => w.weekStart === week)
+                const readiness = allReadiness
+                  .find((w) => w.weekStart === week)
                   ?.meetings.find((m) => m.kind === kind);
                 return (
                   <MeetingCard
@@ -284,6 +406,33 @@ export default function MeetingFeedScreen() {
             </View>
           );
         })}
+
+        {reachedEnd ? (
+          <View style={styles.end}>
+            <Text style={styles.endTitle}>{t("feed.end")}</Text>
+            {lastProgrammeWeek ? (
+              <Text style={styles.endNote}>
+                {t("feed.endLoadedTo", {
+                  date: dayMonth(
+                    formatDateISO(addDays(new Date(`${lastProgrammeWeek}T00:00:00`), 6)),
+                  ),
+                })}
+              </Text>
+            ) : null}
+          </View>
+        ) : (
+          <Pressable
+            style={({ pressed }) => [styles.more, pressed && styles.pressed]}
+            onPress={() => {
+              // Asking for more is choosing a place: never jump back after it.
+              placed.current = true;
+              setChunks((c) => c + 1);
+            }}
+            accessibilityRole="button"
+          >
+            <Text style={styles.moreText}>{t("feed.loadMore")}</Text>
+          </Pressable>
+        )}
       </View>
     </ScrollView>
   );
@@ -608,6 +757,31 @@ const styles = StyleSheet.create({
   },
   dutiesLabel: { flex: 1, fontSize: 14, color: "#475569" },
   dutiesCount: { fontSize: 14, fontWeight: "600", color: "#0f172a" },
+  yearStart: { flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 4 },
+  yearStartText: { fontSize: 12, fontWeight: "600", color: "#94a3b8" },
+  end: {
+    backgroundColor: "#ffffff",
+    borderWidth: 1,
+    borderStyle: "dashed",
+    borderColor: "#cbd5e1",
+    borderRadius: 14,
+    padding: 20,
+    alignItems: "center",
+    gap: 5,
+  },
+  endTitle: { fontSize: 15, fontWeight: "600", color: "#475569" },
+  endNote: { fontSize: 14, color: "#64748b" },
+  more: {
+    alignSelf: "center",
+    borderWidth: 1,
+    borderColor: "#cbd5e1",
+    borderRadius: 12,
+    backgroundColor: "#ffffff",
+    paddingHorizontal: 20,
+    minHeight: 44,
+    justifyContent: "center",
+  },
+  moreText: { fontSize: 14, fontWeight: "600", color: "#0369a1" },
   cleaning: {
     flexDirection: "row",
     alignItems: "center",

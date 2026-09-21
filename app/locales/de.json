@@ -3416,7 +3416,11 @@
     "conductor": "Leitung: {{name}}",
     "memorial": "Gedächtnismahl",
     "memorialInsteadMidweek": "Statt der Zusammenkunft unter der Woche",
-    "memorialInsteadWeekend": "Statt der Zusammenkunft am Wochenende"
+    "memorialInsteadWeekend": "Statt der Zusammenkunft am Wochenende",
+    "loadMore": "Mehr anzeigen",
+    "end": "Weiter reicht das Programm nicht",
+    "endLoadedTo": "Programm bis {{date}}",
+    "serviceYearStart": "Beginn des Dienstjahres"
   },
   "conduct": {
     "title": "Zusammenkunft leiten",

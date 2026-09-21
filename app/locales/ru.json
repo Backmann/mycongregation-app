@@ -3446,7 +3446,11 @@
     "conductor": "Ведущий: {{name}}",
     "memorial": "Вечеря воспоминания",
     "memorialInsteadMidweek": "Вместо встречи в будний день",
-    "memorialInsteadWeekend": "Вместо встречи в выходные"
+    "memorialInsteadWeekend": "Вместо встречи в выходные",
+    "loadMore": "Показать ещё",
+    "end": "Дальше программы нет",
+    "endLoadedTo": "Программа есть по {{date}}",
+    "serviceYearStart": "Начало служебного года"
   },
   "conduct": {
     "title": "Ведение встречи",

@@ -3416,7 +3416,11 @@
     "conductor": "Conductor: {{name}}",
     "memorial": "Memorial of Christ's death",
     "memorialInsteadMidweek": "Instead of the midweek meeting",
-    "memorialInsteadWeekend": "Instead of the weekend meeting"
+    "memorialInsteadWeekend": "Instead of the weekend meeting",
+    "loadMore": "Show more",
+    "end": "No programme beyond this",
+    "endLoadedTo": "Programme up to {{date}}",
+    "serviceYearStart": "Start of the service year"
   },
   "conduct": {
     "title": "Conducting the meeting",
