@@ -3420,7 +3420,8 @@
     "loadMore": "Mehr anzeigen",
     "end": "Weiter reicht das Programm nicht",
     "endLoadedTo": "Programm bis {{date}}",
-    "serviceYearStart": "Beginn des Dienstjahres"
+    "serviceYearStart": "Beginn des Dienstjahres",
+    "you": "Sie"
   },
   "conduct": {
     "title": "Zusammenkunft leiten",

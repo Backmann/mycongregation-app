@@ -3420,7 +3420,8 @@
     "loadMore": "Show more",
     "end": "No programme beyond this",
     "endLoadedTo": "Programme up to {{date}}",
-    "serviceYearStart": "Start of the service year"
+    "serviceYearStart": "Start of the service year",
+    "you": "You"
   },
   "conduct": {
     "title": "Conducting the meeting",
