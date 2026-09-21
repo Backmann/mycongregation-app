@@ -12,7 +12,8 @@
     "web": "expo start --web",
     "lint": "expo lint",
     "i18n:check": "node scripts/check-i18n-drift.mjs && node scripts/check-i18n-usage.mjs",
-    "i18n:usage": "node scripts/check-i18n-usage.mjs"
+    "i18n:usage": "node scripts/check-i18n-usage.mjs",
+    "screens": "node scripts/screens.mjs"
   },
   "dependencies": {
     "@expo-google-fonts/manrope": "^0.4.2",
@@ -62,6 +63,7 @@
     "@types/react": "~19.1.0",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~10.0.0",
+    "playwright": "^1.63.0",
     "typescript": "~5.9.2"
   },
   "private": true

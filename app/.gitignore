@@ -46,3 +46,4 @@ app-example
 web-dist.tar.gz
 .env.production
 .env
+.screens/
