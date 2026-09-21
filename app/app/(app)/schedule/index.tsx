@@ -147,7 +147,7 @@ export default function ScheduleIndexScreen() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [notifyingType, setNotifyingType] = useState<string | null>(null);
   const queryClient = useQueryClient();
-  const params = useLocalSearchParams<{ week?: string }>();
+  const params = useLocalSearchParams<{ week?: string; meeting?: string }>();
   const [editing, setEditing] = useState<Assignment | null>(null);
   const [publishPrompt, setPublishPrompt] = useState<{
     eventType: "midweek" | "weekend";
@@ -279,6 +279,16 @@ export default function ScheduleIndexScreen() {
   } | null>(null);
   const focusOn = (k: "midweek" | "weekend") =>
     meetingFocus?.kind === k && meetingFocus.weekISO === weekStartISO;
+
+  // A link may name the meeting it is about — the meeting feed does, so that
+  // tapping a Wednesday opens the Wednesday rather than the whole week. This is
+  // the same focus the week drawer sets; the address only asks for it.
+  useEffect(() => {
+    const m = params.meeting;
+    if (m !== "midweek" && m !== "weekend") return;
+    setMeetingFocus({ kind: m, weekISO: weekStartISO, n: Date.now() });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params.meeting, params.week]);
 
   const absencesQuery = useQuery({
     queryKey: ["absences", "schedule"],

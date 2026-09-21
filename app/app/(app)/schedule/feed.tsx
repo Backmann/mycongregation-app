@@ -3,6 +3,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useQueries, useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
 import {
   assignmentsApi,
   cleaningApi,
@@ -71,7 +72,14 @@ import { buildMidweekPartTimes } from "../../../lib/parts";
  * no programme at all, the feed stops at the last week that has one and says
  * so, rather than trailing off into empty meetings.
  *
- * THIRD STEP of four. Still to come: each row leading to its own door.
+ * EACH ROW LEADS TO WHERE IT IS EDITED. For now that is the schedule screen,
+ * on the right week — and for a meeting, opened on that meeting, through the
+ * same focus the week drawer sets. Duties, cleaning and field ministry lead to
+ * the week only: they have no focus of their own on that screen, and building
+ * one into a screen the plan retires would be spending on the way out. When
+ * the doors in «Собрание» exist, each will get its own address. Without the
+ * rights to edit, the schedule screen already shows the programme read-only,
+ * so the same link serves everybody. The Memorial has no door yet.
  */
 
 /** How many weeks one «show more» brings. */
@@ -355,7 +363,12 @@ export default function MeetingFeedScreen() {
                 .filter((c) => !!c.serviceGroupId)
                 .sort((a, b) => SLOT_ORDER.indexOf(a.slotType) - SLOT_ORDER.indexOf(b.slotType))
                 .map((c) => (
-                  <View key={c.id} style={styles.cleaning}>
+                  <Pressable
+                    key={c.id}
+                    style={({ pressed }) => [styles.cleaning, pressed && styles.pressed]}
+                    onPress={() => router.push(`/schedule?week=${week}` as never)}
+                    accessibilityRole="link"
+                  >
                     <Ionicons name="home-outline" size={16} color="#475569" />
                     <Text style={styles.cleaningText}>
                       {t("feed.cleaningLine", {
@@ -363,7 +376,8 @@ export default function MeetingFeedScreen() {
                         group: groupName.get(c.serviceGroupId as string) ?? "",
                       })}
                     </Text>
-                  </View>
+                    <Ionicons name="chevron-forward" size={16} color="#94a3b8" />
+                  </Pressable>
                 ))}
 
               {rules.memorial && rules.memorialTakes ? (
@@ -391,6 +405,7 @@ export default function MeetingFeedScreen() {
                     readiness={canSeeReadiness ? readiness : undefined}
                     nameOf={nameOf}
                     movedByVisit={kind === "midweek" && !!rules.coVisit}
+                    week={week}
                   />
                 );
               })}
@@ -446,6 +461,7 @@ function MeetingCard({
   readiness,
   nameOf,
   movedByVisit,
+  week,
 }: {
   kind: Kind;
   date: string;
@@ -454,6 +470,8 @@ function MeetingCard({
   readiness?: ReadinessMeeting;
   nameOf: Map<string, string>;
   movedByVisit: boolean;
+  /** Monday of the week this meeting belongs to — where its link leads. */
+  week: string;
 }) {
   const { t, i18n } = useTranslation();
   const [open, setOpen] = useState(false);
@@ -499,6 +517,13 @@ function MeetingCard({
 
   return (
     <View style={[styles.card, status?.tone === "warn" && styles.cardWarn]}>
+      <Pressable
+        style={({ pressed }) => [styles.cardLink, pressed && styles.pressed]}
+        onPress={() =>
+          router.push(`/schedule?week=${week}&meeting=${kind}` as never)
+        }
+        accessibilityRole="link"
+      >
       <View style={styles.cardHead}>
         <Text style={styles.weekday}>
           {weekday.charAt(0).toUpperCase() + weekday.slice(1)}
@@ -506,6 +531,7 @@ function MeetingCard({
         <Text style={styles.dayTime}>
           {time ? t("feed.timeAt", { day, time }) : day}
         </Text>
+        <Ionicons name="chevron-forward" size={16} color="#94a3b8" style={styles.cardChevron} />
       </View>
 
       {movedByVisit ? (
@@ -532,6 +558,7 @@ function MeetingCard({
           </Text>
         </View>
       ) : null}
+      </Pressable>
 
       {rows.length > 0 ? (
         <Pressable
@@ -579,7 +606,11 @@ function MeetingCard({
         : null}
 
       {readiness ? (
-        <View style={styles.duties}>
+        <Pressable
+          style={({ pressed }) => [styles.duties, pressed && styles.pressed]}
+          onPress={() => router.push(`/schedule?week=${week}` as never)}
+          accessibilityRole="link"
+        >
           <Text style={styles.dutiesLabel}>{t("feed.duties")}</Text>
           <Text style={styles.dutiesCount}>
             {t("feed.dutiesCount", {
@@ -587,7 +618,8 @@ function MeetingCard({
               total: readiness.duties.total,
             })}
           </Text>
-        </View>
+          <Ionicons name="chevron-forward" size={16} color="#94a3b8" />
+        </Pressable>
       ) : null}
     </View>
   );
@@ -671,7 +703,12 @@ function FieldServiceRow({
             const group = m.serviceGroupId ? groupName.get(m.serviceGroupId) : undefined;
             const conductor = m.conductorPublisherId ? nameOf.get(m.conductorPublisherId) : undefined;
             return (
-              <View key={m.id} style={styles.fieldRow}>
+              <Pressable
+                key={m.id}
+                style={({ pressed }) => [styles.fieldRow, pressed && styles.pressed]}
+                onPress={() => router.push(`/schedule?week=${week}` as never)}
+                accessibilityRole="link"
+              >
                 <Text style={styles.fieldWhen}>
                   {t("feed.timeAt", { day: weekday, time: m.startTime })}
                 </Text>
@@ -681,7 +718,7 @@ function FieldServiceRow({
                 {conductor ? (
                   <Text style={styles.fieldWho}>{t("feed.conductor", { name: conductor })}</Text>
                 ) : null}
-              </View>
+              </Pressable>
             );
           })
         : null}
@@ -720,6 +757,9 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   cardWarn: { borderColor: "#fcd9a4" },
+  // The head of a card is its link; it keeps the card's own spacing inside.
+  cardLink: { gap: 10 },
+  cardChevron: { marginLeft: "auto", alignSelf: "center" },
   cardHead: { flexDirection: "row", alignItems: "baseline", gap: 9, flexWrap: "wrap" },
   weekday: { fontSize: 18, fontWeight: "700", color: "#0f172a" },
   dayTime: { fontSize: 15, color: "#64748b" },
