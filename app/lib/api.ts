@@ -2862,7 +2862,31 @@ export interface NotificationPreferences {
 
 export type NotificationCategory = keyof NotificationPreferences;
 
+/**
+ * What is waiting for the signed-in person — contacts to confirm, tasks that
+ * are due. Not to be confused with PendingAttendance, which is about meetings
+ * whose figure has not been entered. The report is NOT here: it has a card of
+ * its own on the home screen. A task carries the title a brother gave it.
+ */
+export interface MePendingItem {
+  kind: "contacts" | "task";
+  id?: string;
+  title?: string;
+  dueOn: string | null;
+  overdue: boolean;
+}
+
+export interface MePending {
+  items: MePendingItem[];
+  /** How many did not fit under the server's ceiling. */
+  more: number;
+}
+
 export const meApi = {
+  async pending(): Promise<MePending> {
+    const { data } = await api.get<MePending>("/me/pending");
+    return data;
+  },
   async notificationPreferences(): Promise<NotificationPreferences> {
     const { data } = await api.get<NotificationPreferences>(
       "/me/notification-preferences",

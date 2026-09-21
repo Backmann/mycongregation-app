@@ -2239,6 +2239,12 @@
       "outstanding": "Отчёт за {{month}} не сдан",
       "submitted": "Отчёт за {{month}} сдан"
     },
+    "pending": {
+      "contacts": "Проверьте свои контакты",
+      "taskDue": "{{title}} · до {{date}}",
+      "taskOverdue": "{{title}} · просрочено с {{date}}",
+      "more": "Ещё {{count}} в моих задачах"
+    },
     "weekOf": "Неделя с {{date}}",
     "kinds": {
       "meeting": "встреча",

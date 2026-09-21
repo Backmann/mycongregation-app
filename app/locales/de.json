@@ -2223,6 +2223,12 @@
       "outstanding": "Bericht für {{month}} nicht abgegeben",
       "submitted": "Bericht für {{month}} abgegeben"
     },
+    "pending": {
+      "contacts": "Kontaktdaten prüfen",
+      "taskDue": "{{title}} · bis {{date}}",
+      "taskOverdue": "{{title}} · überfällig seit {{date}}",
+      "more": "{{count}} weitere in meinen Aufgaben"
+    },
     "weekOf": "Woche ab {{date}}",
     "kinds": {
       "meeting": "Zusammenkunft",

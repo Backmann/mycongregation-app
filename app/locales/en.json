@@ -2223,6 +2223,12 @@
       "outstanding": "The {{month}} report isn't submitted",
       "submitted": "The {{month}} report is submitted"
     },
+    "pending": {
+      "contacts": "Check your contact details",
+      "taskDue": "{{title}} · due {{date}}",
+      "taskOverdue": "{{title}} · overdue since {{date}}",
+      "more": "{{count}} more in my tasks"
+    },
     "weekOf": "Week of {{date}}",
     "kinds": {
       "meeting": "meeting",

@@ -264,6 +264,93 @@ function GreetingHeader() {
 }
 
 /**
+ * What is waiting for this person — as STRIPS, the same kind as the report's.
+ *
+ * The report above is shown as a coloured strip that says what it is; a block
+ * of a different shape beside it would give the screen two ways of saying the
+ * same thing — «here is something to do». So contacts and tasks come as more
+ * strips of that kind, in the report card's own styles.
+ *
+ * Nothing waiting — nothing drawn. The report is not among them: it has its
+ * own card, which says «handed in» as plainly as «not handed in».
+ */
+function PendingStrips() {
+  const { t, i18n } = useTranslation();
+  const { data } = useQuery({
+    queryKey: ["me", "pending"],
+    queryFn: () => meApi.pending(),
+    staleTime: 5 * 60 * 1000,
+  });
+  if (!data || data.items.length === 0) return null;
+
+  // The date as the congregation reads it — built from the calendar string at
+  // local midnight, never cut out of a UTC timestamp.
+  const dayMonth = (iso: string) =>
+    new Date(`${iso}T00:00:00`).toLocaleDateString(i18n.language, {
+      day: "numeric",
+      month: "long",
+    });
+
+  return (
+    <>
+      {data.items.map((item) => {
+        const isTask = item.kind === "task";
+        const label = isTask
+          ? item.dueOn
+            ? t(item.overdue ? "home.pending.taskOverdue" : "home.pending.taskDue", {
+                title: item.title ?? "",
+                date: dayMonth(item.dueOn),
+              })
+            : item.title ?? ""
+          : t("home.pending.contacts");
+        return (
+          <Pressable
+            key={item.id ?? item.kind}
+            style={({ pressed }) => [
+              styles.reportCard,
+              styles.reportCardDue,
+              pressed && { opacity: 0.7 },
+            ]}
+            onPress={() =>
+              // There is no screen for one task — «my tasks» is the nearest.
+              router.push(
+                (isTask ? "/profile/my-tasks" : "/profile/contacts") as any,
+              )
+            }
+          >
+            <Ionicons
+              name={isTask ? "checkbox-outline" : "call-outline"}
+              size={20}
+              color="#b45309"
+            />
+            <Text style={[styles.reportText, styles.reportTextDue]}>
+              {label}
+            </Text>
+            <Ionicons name="chevron-forward" size={18} color="#b45309" />
+          </Pressable>
+        );
+      })}
+      {data.more > 0 ? (
+        <Pressable
+          style={({ pressed }) => [
+            styles.reportCard,
+            styles.reportCardDue,
+            pressed && { opacity: 0.7 },
+          ]}
+          onPress={() => router.push("/profile/my-tasks" as any)}
+        >
+          <Ionicons name="ellipsis-horizontal" size={20} color="#b45309" />
+          <Text style={[styles.reportText, styles.reportTextDue]}>
+            {t("home.pending.more", { count: data.more })}
+          </Text>
+          <Ionicons name="chevron-forward" size={18} color="#b45309" />
+        </Pressable>
+      ) : null}
+    </>
+  );
+}
+
+/**
  * Собственное состояние отчёта за прошлый месяц. Пустое место читается как
  * поломка, поэтому «сдан» проговаривается так же явно, как «не сдан».
  */
@@ -1222,6 +1309,8 @@ export default function HomeScreen() {
       </ScrollView>
 
       <ReportStandingCard />
+
+      <PendingStrips />
 
       <ReportCollectionCard />
 
