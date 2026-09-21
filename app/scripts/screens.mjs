@@ -22,7 +22,7 @@
  * кнопки видит на странице, — чтобы поправить его за один заход.
  */
 import { chromium } from 'playwright';
-import { mkdirSync } from 'node:fs';
+import { existsSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 
 const BASE = process.env.APP_URL || 'http://localhost:8081';
@@ -40,6 +40,17 @@ mkdirSync(OUT, { recursive: true });
 
 const PHONE = { width: 390, height: 5200 }; // tall: the whole list fits, no inner scrolling
 const DESKTOP = { width: 1280, height: 900 };
+const REAL_PHONE = { width: 390, height: 844 };
+
+/** Does the feed open on «today»? A real-size window, where it has to scroll. */
+async function landing(page, name) {
+  await page.waitForTimeout(1500);
+  const box = await page.getByText(/^Сегодня ·/).first().boundingBox();
+  const vp = page.viewportSize();
+  const ok = !!box && box.y >= 0 && box.y < vp.height * 0.5;
+  console.log(`· посадка на «Сегодня» (${name}): ${ok ? 'да' : 'НЕТ'}${box ? ` — черта на ${Math.round(box.y)} из ${vp.height}` : ' — черты не видно'}`);
+  return ok;
+}
 
 async function fail(page, what) {
   const file = join(OUT, 'ERROR.png');
@@ -65,16 +76,65 @@ async function login(page, email) {
   } catch {
     await fail(page, `вход (${email}): не видно поля пароля`);
   }
+  // The language question can stand over the sign-in page too; a key press
+  // went through its layer, a click does not — so answer it first.
+  await answerLanguage(page);
   await page.locator('input:not([type="password"])').first().fill(email);
   await pw.fill(PASSWORD);
-  const button = page.getByRole('button', { name: /войти|log in|sign in|anmelden/i }).first();
-  if (await button.count()) await button.click();
+  // The sign-in button has no button role, so it is found by its label. The
+  // server's answer is printed: it tells a refusal, the limiter (6 tries per
+  // name in 15 minutes) and a request that never left apart.
+  const answer = page
+    .waitForResponse((r) => /\/auth\/login/.test(r.url()) && r.request().method() === 'POST', { timeout: 15000 })
+    .catch(() => null);
+  const submit = page.getByText(/^(Войти|Log in|Sign in|Anmelden)$/).last();
+  if (await submit.count()) await submit.click();
   else await pw.press('Enter');
+  const res = await answer;
+  console.log(`· вход (${email}): ${res ? 'сервер ответил ' + res.status() : 'запрос входа не ушёл'}`);
   try {
     await pw.waitFor({ state: 'detached', timeout: 30000 });
   } catch {
+    // Whatever the sign-in page says — a wrong password, too many attempts.
+    const said = await page
+      .getByText(/попыт|слишком|неверн|ошиб|подожд|attempt|too many|wrong|error/i)
+      .allInnerTexts()
+      .catch(() => []);
+    if (said.length) console.error(`страница входа говорит: «${said.join(' | ').replace(/\s+/g, ' ').trim()}»`);
     await fail(page, `вход (${email}): страница входа не ушла`);
   }
+}
+
+/**
+ * A signed-in window, signing in only when there is no living session.
+ *
+ * The server limits how often one may sign in, so the script keeps the session
+ * after the first sign-in (in .screens/, which git ignores) and opens the app
+ * already signed in on every later run. A session that has expired is replaced.
+ */
+async function signedIn(browser, email, viewport) {
+  mkdirSync(join(process.cwd(), '.screens'), { recursive: true });
+  const file = join(process.cwd(), '.screens', `.session-${email.replace(/[^a-z0-9]/gi, '_')}.json`);
+  if (existsSync(file)) {
+    const ctx = await browser.newContext({ viewport, locale: 'ru-RU', storageState: file });
+    const page = await ctx.newPage();
+    await page.goto(BASE);
+    // The app shows the sign-in page for a moment while it restores a session,
+    // so wait for a sign of being inside rather than judging at first sight.
+    const inside = page.getByText(/^Главная$/).first();
+    const alive = await inside.waitFor({ timeout: 15000 }).then(() => true).catch(() => false);
+    if (alive) {
+      console.log(`· вход (${email}): сохранённая сессия`);
+      return { ctx, page };
+    }
+    await ctx.close();
+  }
+  const ctx = await browser.newContext({ viewport, locale: 'ru-RU' });
+  const page = await ctx.newPage();
+  await login(page, email);
+  await ctx.storageState({ path: file });
+  console.log(`· вход (${email}): новый, сессия сохранена`);
+  return { ctx, page };
 }
 
 /**
@@ -166,9 +226,7 @@ async function click(page, locator, what) {
 const browser = await chromium.launch();
 try {
   // --- Администратор, телефон ---
-  const admin = await browser.newContext({ viewport: PHONE, locale: 'ru-RU' });
-  const a = await admin.newPage();
-  await login(a, ADMIN);
+  const { ctx: admin, page: a } = await signedIn(browser, ADMIN, PHONE);
   await openFeed(a);
 
   const today = a.getByText(/^Сегодня ·/).first();
@@ -191,25 +249,31 @@ try {
   const past = a.getByText(/^Прошли$/i).first();
   if (await past.count()) await around(a, past, '06-past.png', { above: 60, height: 1600 });
   else console.log('· 06-past.png — пропущено: прошедших нет');
+
+  // --- Тот же вход, окна настоящих размеров: где лента встаёт ---
+  // One sign-in for all of these: the server limits how often one may sign in,
+  // and a fourth sign-in within a minute was refused.
+  const landings = [];
+  await a.setViewportSize(DESKTOP);
+  await openFeed(a);
+  landings.push(await landing(a, 'ноутбук'));
+  await a.screenshot({ path: join(OUT, '08-desktop.png') });
+  console.log('· 08-desktop.png');
+
+  await a.setViewportSize(REAL_PHONE);
+  await openFeed(a);
+  landings.push(await landing(a, 'телефон'));
+  await a.screenshot({ path: join(OUT, '09-phone-landing.png') });
+  console.log('· 09-phone-landing.png');
   await admin.close();
 
   // --- Возвещатель, телефон ---
-  const pub = await browser.newContext({ viewport: PHONE, locale: 'ru-RU' });
-  const p = await pub.newPage();
-  await login(p, PUBLISHER);
+  const { ctx: pub, page: p } = await signedIn(browser, PUBLISHER, PHONE);
   await openFeed(p);
   await around(p, p.getByText(/^Сегодня ·/).first(), '07-publisher.png', { above: 20, height: 1800 });
   await pub.close();
 
-  // --- Администратор, широкий экран ---
-  const wide = await browser.newContext({ viewport: DESKTOP, locale: 'ru-RU' });
-  const w = await wide.newPage();
-  await login(w, ADMIN);
-  await openFeed(w);
-  await w.screenshot({ path: join(OUT, '08-desktop.png') });
-  console.log('· 08-desktop.png');
-  await wide.close();
-
+  if (landings.includes(false)) console.log('\nВНИМАНИЕ: лента открылась не на «Сегодня» — см. строки «посадка» выше');
   console.log(`\nГотово: ${OUT}`);
 } finally {
   await browser.close();
