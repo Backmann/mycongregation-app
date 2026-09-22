@@ -212,6 +212,44 @@ async function programmeSections(page) {
   await around(page, cleaning, '15-programme-cleaning.png', { above: 20, height: 1100 });
 }
 
+/** Words that must stand and words that must not — the check of rights. */
+async function words(page, name, expect, forbid, labels = { must: [], mustNot: [] }) {
+  const bad = [];
+  for (const w of expect) if (!(await page.getByText(new RegExp('^' + w + '$')).count())) bad.push('нет «' + w + '»');
+  for (const w of forbid) if (await page.getByText(new RegExp('^' + w + '$')).count()) bad.push('лишнее «' + w + '»');
+  for (const l of labels.must) if (!(await page.getByLabel(l).count())) bad.push('нет кнопки «' + l + '»');
+  for (const l of labels.mustNot) if (await page.getByLabel(l).count()) bad.push('лишняя кнопка «' + l + '»');
+  console.log('· ' + name + ' — ' + (bad.length ? 'НЕ ТАК: ' + bad.join(', ') : 'как положено'));
+}
+
+/** «Hall cleaning»: the list of weeks, and (for the first account) one week opened. */
+async function cleaningFrames(page, name, expect, forbid, labels, weekFrame) {
+  await page.goto(`${BASE}/publishers/cleaning`);
+  await page.getByText(/^Эта неделя$/).first().waitFor({ timeout: 30000 }).catch(() => {});
+  await answerLanguage(page);
+  await page.waitForTimeout(1200);
+  const vp = page.viewportSize();
+  await page.screenshot({ path: join(OUT, name), clip: { x: 0, y: 0, width: vp.width, height: Math.min(vp.height, 900) } });
+  await words(page, name, expect, forbid, labels);
+  if (!weekFrame) return;
+  const first = page.getByText(/^После встреч — /).first();
+  if (!(await first.count())) { console.log('· ' + weekFrame + ' — пропущено: нет недели с группой'); return; }
+  await first.click();
+  await page.getByText(/^Уборка после встреч$/).first().waitFor({ timeout: 30000 }).catch(() => {});
+  await page.waitForTimeout(1200);
+  await page.screenshot({ path: join(OUT, weekFrame), clip: { x: 0, y: 0, width: vp.width, height: Math.min(vp.height, 1100) } });
+  await words(page, weekFrame, ['Уборка после встреч', 'Еженедельная уборка'], []);
+}
+
+/** The cleaning list on a laptop: weeks on the left, this week's editor on the right. */
+async function cleaningWide(page) {
+  await page.goto(`${BASE}/publishers/cleaning`);
+  await page.getByText(/^Эта неделя$/).first().waitFor({ timeout: 30000 }).catch(() => {});
+  await page.waitForTimeout(1500);
+  await page.screenshot({ path: join(OUT, '19-cleaning-desktop.png') });
+  await words(page, '19-cleaning-desktop.png', ['Эта неделя', 'Уборка после встреч', 'Еженедельная уборка'], []);
+}
+
 async function openFeed(page) {
   await page.goto(`${BASE}/schedule/feed`);
   try {
@@ -305,9 +343,14 @@ try {
 
   await hub(a, '12-congregation-admin.png',
     ['Люди', 'Возвещатели', 'Группы служения', 'Отсутствия', 'Встречи', 'Составление программы',
-     'Координатор речей', 'Совет старейшин', 'Задачи совета старейшин', 'Школа пионеров'],
+     'Координатор речей', 'Совет старейшин', 'Задачи совета старейшин', 'Школа пионеров',
+     'Зал Царства', 'Уборка зала'],
     ['Моя группа', 'Мои отсутствия']);
   await programmeSections(a);
+  await cleaningFrames(a, '16-cleaning-admin.png',
+    ['Эта неделя', 'После встреч — Hamm-Werries', 'Уборка после встреч не назначена',
+     'Убирает ваша группа — после встреч', 'Как убирать'],
+    [], { must: ['Распечатать график уборки'], mustNot: [] }, '17-cleaning-week.png');
 
   // --- Тот же вход, окна настоящих размеров: где лента встаёт ---
   // One sign-in for all of these: the server limits how often one may sign in,
@@ -328,6 +371,7 @@ try {
     const right = await a.getByText(/^Не прекращайте узнавать Иегову$/).count();
     console.log(`· 11-desktop-sunday.png — справа воскресенье: ${right ? 'да' : 'НЕТ'}`);
   } else console.log('· 11-desktop-sunday.png — пропущено: воскресенья 27-го нет в списке');
+  await cleaningWide(a);
 
   await a.setViewportSize(REAL_PHONE);
   await openFeed(a);
@@ -357,8 +401,11 @@ try {
   await openFeed(p);
   await around(p, p.getByText(/^Сегодня ·/).first(), '07-publisher.png', { above: 20, height: 1800 });
   await hub(p, '13-congregation-publisher.png',
-    ['Моя группа', 'Группы служения', 'Мои отсутствия'],
+    ['Моя группа', 'Группы служения', 'Мои отсутствия', 'Уборка зала'],
     ['Люди', 'Возвещатели', 'Составление программы', 'Задачи совета старейшин', 'Отсутствия']);
+  await cleaningFrames(p, '18-cleaning-publisher.png',
+    ['Эта неделя', 'Убирает ваша группа — после встреч', 'Как убирать'],
+    [], { must: [], mustNot: ['Распечатать график уборки'] }, null);
   await pub.close();
 
   if (landings.includes(false)) console.log('\nВНИМАНИЕ: лента открылась не на «Сегодня» — см. строки «посадка» выше');

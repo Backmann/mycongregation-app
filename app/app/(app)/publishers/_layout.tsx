@@ -51,6 +51,19 @@ export default function PublishersLayout() {
         }}
       />
       <Stack.Screen
+        name="cleaning"
+        options={{
+          title: t('congregationHub.cleaning'),
+          headerLeft: () => <BackButton fallback="/publishers" toParent />,
+        }}
+      />
+      <Stack.Screen
+        name="cleaning-week"
+        options={{
+          headerLeft: () => <BackButton fallback="/publishers/cleaning" toParent />,
+        }}
+      />
+      <Stack.Screen
         name="[id]"
         options={{
           title: t('publishers.title.detail'),

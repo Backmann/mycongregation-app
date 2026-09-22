@@ -178,14 +178,13 @@ function routeForNotification(
       };
     case 'field_service_meeting':
       return { path: '/cart/field-service', params: {} };
-    // Cleaning has no screen of its own — the assignments live inside the
-    // schedule week, so that is where the reminder leads.
+    // Cleaning has its own screen: the reminder opens the week it is about.
     case 'cleaning_after_meeting':
     case 'cleaning_weekly_monday':
     case 'cleaning_weekly_planned':
     case 'cleaning_general_planned':
       return {
-        path: '/schedule',
+        path: '/publishers/cleaning-week',
         params: data.weekStart ? { week: data.weekStart } : {},
       };
     default:

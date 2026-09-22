@@ -87,6 +87,15 @@ export default function CongregationScreen() {
     });
   }
 
+  // Hall cleaning — read by everyone: when one's own group cleans is every
+  // publisher's question. Editing inside is decided by the cleaning detail itself.
+  const cleaning: Door = {
+    key: 'cleaning',
+    title: t('congregationHub.cleaning'),
+    subtitle: t('congregationHub.sub.cleaning'),
+    href: '/publishers/cleaning',
+  };
+
   const sections: Section[] = privileged
     ? [
         {
@@ -105,6 +114,7 @@ export default function CongregationScreen() {
         },
         { key: 'meetings', label: t('congregationHub.sections.meetings'), doors: meetings },
         { key: 'elders', label: t('congregationHub.sections.elders'), doors: elders },
+        { key: 'hall', label: t('congregationHub.sections.hall'), doors: [cleaning] },
       ]
     : [
         {
@@ -122,6 +132,7 @@ export default function CongregationScreen() {
             },
             groups,
             absences,
+            cleaning,
           ],
         },
       ];

@@ -3470,7 +3470,8 @@
     "sections": {
       "people": "Personen",
       "meetings": "Zusammenkünfte",
-      "elders": "Ältestenschaft"
+      "elders": "Ältestenschaft",
+      "hall": "Königreichssaal"
     },
     "programme": "Programmplanung",
     "sub": {
@@ -3483,7 +3484,27 @@
       "programmeImport": "Programm importieren",
       "talks": "Gastredner und unsere eigenen",
       "tasks": "Aufgaben und Tagesordnung der Ältestensitzung",
-      "school": "Schulplan und Brüder dafür"
-    }
+      "school": "Schulplan und Brüder dafür",
+      "cleaning": "Reinigungsplan und wie man reinigt"
+    },
+    "cleaning": "Saalreinigung"
+  },
+  "cleaningHall": {
+    "thisWeek": "Diese Woche",
+    "after": "Nach den Zusammenkünften — {{group}}",
+    "afterMissing": "Reinigung nach den Zusammenkünften nicht eingeteilt",
+    "weekly": "Wöchentlich — {{group}} · {{when}}",
+    "dayNotSet": "Tag nicht festgelegt",
+    "weeklyMissing": "Wöchentliche Reinigung nicht eingeteilt",
+    "general": "Grundreinigung — {{when}}",
+    "dateTbd": "Datum folgt",
+    "mineAfter": "Eure Gruppe reinigt — nach den Zusammenkünften",
+    "mineWeekly": "Eure Gruppe — wöchentliche Reinigung",
+    "mineWeeklyPlan": "Eure Gruppe — wöchentlich · Tag festlegen",
+    "congressWeek": "{{event}} — keine Reinigung",
+    "emptyWeek": "Für diese Woche ist keine Reinigung eingeteilt",
+    "showMore": "Mehr anzeigen",
+    "guideSection": "Anleitung",
+    "print": "Reinigungsplan drucken"
   }
 }

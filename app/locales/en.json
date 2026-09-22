@@ -3470,7 +3470,8 @@
     "sections": {
       "people": "People",
       "meetings": "Meetings",
-      "elders": "Body of elders"
+      "elders": "Body of elders",
+      "hall": "Kingdom Hall"
     },
     "programme": "Programme planning",
     "sub": {
@@ -3483,7 +3484,27 @@
       "programmeImport": "Import the programme",
       "talks": "Visiting speakers and our own",
       "tasks": "Tasks and the elders' meeting agenda",
-      "school": "School schedule and the brothers for it"
-    }
+      "school": "School schedule and the brothers for it",
+      "cleaning": "Cleaning schedule and how to clean"
+    },
+    "cleaning": "Hall cleaning"
+  },
+  "cleaningHall": {
+    "thisWeek": "This week",
+    "after": "After meetings — {{group}}",
+    "afterMissing": "After-meeting cleaning not assigned",
+    "weekly": "Weekly — {{group}} · {{when}}",
+    "dayNotSet": "day not set",
+    "weeklyMissing": "Weekly cleaning not assigned",
+    "general": "General cleaning — {{when}}",
+    "dateTbd": "date to be set",
+    "mineAfter": "Your group cleans — after meetings",
+    "mineWeekly": "Your group — weekly cleaning",
+    "mineWeeklyPlan": "Your group — weekly · set the day",
+    "congressWeek": "{{event}} — no cleaning",
+    "emptyWeek": "No cleaning assigned for this week",
+    "showMore": "Show more",
+    "guideSection": "Guide",
+    "print": "Print the cleaning schedule"
   }
 }
