@@ -3485,9 +3485,11 @@
       "talks": "Visiting speakers and our own",
       "tasks": "Tasks and the elders' meeting agenda",
       "school": "School schedule and the brothers for it",
-      "cleaning": "Cleaning schedule and how to clean"
+      "cleaning": "Cleaning schedule and how to clean",
+      "duties": "Who is at which place at the coming meetings"
     },
-    "cleaning": "Hall cleaning"
+    "cleaning": "Hall cleaning",
+    "duties": "Meeting duties"
   },
   "cleaningHall": {
     "thisWeek": "This week",
@@ -3506,5 +3508,12 @@
     "showMore": "Show more",
     "guideSection": "Guide",
     "print": "Print the cleaning schedule"
+  },
+  "dutiesScreen": {
+    "noAccess": "Meeting duties are assigned by the duties coordinator and the coordinator of the body of elders.",
+    "congress": "{{event}} — no meetings",
+    "notHeld": "This meeting is not held",
+    "showMore": "Show more",
+    "print": "Print the month's duties"
   }
 }

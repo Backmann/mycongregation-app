@@ -64,6 +64,19 @@ export default function PublishersLayout() {
         }}
       />
       <Stack.Screen
+        name="duties"
+        options={{
+          title: t('congregationHub.duties'),
+          headerLeft: () => <BackButton fallback="/publishers" toParent />,
+        }}
+      />
+      <Stack.Screen
+        name="duties-meeting"
+        options={{
+          headerLeft: () => <BackButton fallback="/publishers/duties" toParent />,
+        }}
+      />
+      <Stack.Screen
         name="[id]"
         options={{
           title: t('publishers.title.detail'),

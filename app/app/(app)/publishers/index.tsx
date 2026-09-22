@@ -65,6 +65,17 @@ export default function CongregationScreen() {
       href: '/schedule',
     });
   }
+  // Meeting duties — the same right that edits them (lib/permissions
+  // canEditDuties: admin, duties coordinator, body coordinator). A ministerial
+  // servant keeping the duties gets this as his first row.
+  if (perms.canEditDuties) {
+    meetings.push({
+      key: 'duties',
+      title: t('congregationHub.duties'),
+      subtitle: t('congregationHub.sub.duties'),
+      href: '/publishers/duties',
+    });
+  }
   if (perms.canCoordinatePublicTalks) {
     meetings.push({
       key: 'talks',

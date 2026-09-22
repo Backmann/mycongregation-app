@@ -3485,9 +3485,11 @@
       "talks": "Gastredner und unsere eigenen",
       "tasks": "Aufgaben und Tagesordnung der Ältestensitzung",
       "school": "Schulplan und Brüder dafür",
-      "cleaning": "Reinigungsplan und wie man reinigt"
+      "cleaning": "Reinigungsplan und wie man reinigt",
+      "duties": "Wer bei den nächsten Zusammenkünften welchen Platz hat"
     },
-    "cleaning": "Saalreinigung"
+    "cleaning": "Saalreinigung",
+    "duties": "Dienste bei Zusammenkünften"
   },
   "cleaningHall": {
     "thisWeek": "Diese Woche",
@@ -3506,5 +3508,12 @@
     "showMore": "Mehr anzeigen",
     "guideSection": "Anleitung",
     "print": "Reinigungsplan drucken"
+  },
+  "dutiesScreen": {
+    "noAccess": "Die Dienste teilen der Koordinator für Dienste und der Koordinator der Ältestenschaft ein.",
+    "congress": "{{event}} — keine Zusammenkünfte",
+    "notHeld": "Diese Zusammenkunft findet nicht statt",
+    "showMore": "Mehr anzeigen",
+    "print": "Dienste des Monats drucken"
   }
 }

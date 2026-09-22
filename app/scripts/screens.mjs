@@ -250,6 +250,35 @@ async function cleaningWide(page) {
   await words(page, '19-cleaning-desktop.png', ['Эта неделя', 'Уборка после встреч', 'Еженедельная уборка'], []);
 }
 
+// «1 из 8» carries no-break spaces, so «0 из 8» never splits across lines.
+const NB = '\u00a0';
+
+/** «Meeting duties»: the list of meetings, and (for the first account) one opened. */
+async function dutiesFrames(page, name, expect, forbid, labels, meetingFrame) {
+  await page.goto(`${BASE}/publishers/duties`);
+  await page.getByText(/^(Встреча в будний день|Обязанности на встречах распределяют.*)$/).first().waitFor({ timeout: 30000 }).catch(() => {});
+  await answerLanguage(page);
+  await page.waitForTimeout(1200);
+  const vp = page.viewportSize();
+  await page.screenshot({ path: join(OUT, name), clip: { x: 0, y: 0, width: vp.width, height: Math.min(vp.height, 900) } });
+  await words(page, name, expect, forbid, labels);
+  if (!meetingFrame) return;
+  await page.getByText(/^Встреча в будний день$/).first().click();
+  await page.getByText(/^Распорядитель у входа$/).first().waitFor({ timeout: 30000 }).catch(() => {});
+  await page.waitForTimeout(1200);
+  await page.screenshot({ path: join(OUT, meetingFrame), clip: { x: 0, y: 0, width: vp.width, height: Math.min(vp.height, 1400) } });
+  await words(page, meetingFrame, ['Распорядитель у входа', 'Микрофон', 'Добавить обязанность'], []);
+}
+
+/** The duties list on a laptop: meetings on the left, the first one's sheet on the right. */
+async function dutiesWide(page) {
+  await page.goto(`${BASE}/publishers/duties`);
+  await page.getByText(/^Распорядитель у входа$/).first().waitFor({ timeout: 30000 }).catch(() => {});
+  await page.waitForTimeout(1500);
+  await page.screenshot({ path: join(OUT, '22-duties-desktop.png') });
+  await words(page, '22-duties-desktop.png', ['Встреча в будний день', 'Распорядитель у входа'], []);
+}
+
 async function openFeed(page) {
   await page.goto(`${BASE}/schedule/feed`);
   try {
@@ -344,13 +373,16 @@ try {
   await hub(a, '12-congregation-admin.png',
     ['Люди', 'Возвещатели', 'Группы служения', 'Отсутствия', 'Встречи', 'Составление программы',
      'Координатор речей', 'Совет старейшин', 'Задачи совета старейшин', 'Школа пионеров',
-     'Зал Царства', 'Уборка зала'],
+     'Зал Царства', 'Уборка зала', 'Обязанности на встречах'],
     ['Моя группа', 'Мои отсутствия']);
   await programmeSections(a);
   await cleaningFrames(a, '16-cleaning-admin.png',
     ['Эта неделя', 'После встреч — Hamm-Werries', 'Уборка после встреч не назначена',
      'Убирает ваша группа — после встреч', 'Как убирать'],
     [], { must: ['Распечатать график уборки'], mustNot: [] }, '17-cleaning-week.png');
+  await dutiesFrames(a, '20-duties-admin.png',
+    ['Встреча в будний день', 'Встреча в выходной день', `обязанности 1${NB}из${NB}8`],
+    [], { must: ['Распечатать обязанности на месяц'], mustNot: [] }, '21-duties-meeting.png');
 
   // --- Тот же вход, окна настоящих размеров: где лента встаёт ---
   // One sign-in for all of these: the server limits how often one may sign in,
@@ -372,6 +404,7 @@ try {
     console.log(`· 11-desktop-sunday.png — справа воскресенье: ${right ? 'да' : 'НЕТ'}`);
   } else console.log('· 11-desktop-sunday.png — пропущено: воскресенья 27-го нет в списке');
   await cleaningWide(a);
+  await dutiesWide(a);
 
   await a.setViewportSize(REAL_PHONE);
   await openFeed(a);
@@ -402,10 +435,13 @@ try {
   await around(p, p.getByText(/^Сегодня ·/).first(), '07-publisher.png', { above: 20, height: 1800 });
   await hub(p, '13-congregation-publisher.png',
     ['Моя группа', 'Группы служения', 'Мои отсутствия', 'Уборка зала'],
-    ['Люди', 'Возвещатели', 'Составление программы', 'Задачи совета старейшин', 'Отсутствия']);
+    ['Люди', 'Возвещатели', 'Составление программы', 'Задачи совета старейшин', 'Отсутствия', 'Обязанности на встречах']);
   await cleaningFrames(p, '18-cleaning-publisher.png',
     ['Эта неделя', 'Убирает ваша группа — после встреч', 'Как убирать'],
     [], { must: [], mustNot: ['Распечатать график уборки'] }, null);
+  await dutiesFrames(p, '23-duties-publisher.png',
+    ['Обязанности на встречах распределяют координатор обязанностей и координатор совета старейшин.'],
+    ['Встреча в будний день'], { must: [], mustNot: ['Распечатать обязанности на месяц'] }, null);
   await pub.close();
 
   if (landings.includes(false)) console.log('\nВНИМАНИЕ: лента открылась не на «Сегодня» — см. строки «посадка» выше');
