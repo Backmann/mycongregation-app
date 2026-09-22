@@ -258,7 +258,10 @@ async function cleaningFrames(page, name, expect, forbid, labels, weekFrame, pla
     // Around the plan itself: in the tall window it opens mid-screen, far
     // below the top 900 points the other frames take.
     await around(page, page.getByText(/^Окна недели$/).first(), planFrame, { above: 60, height: 900 });
-    await words(page, planFrame, ['Окна недели', 'Закрыть'], []);
+    // Rooms named inside the rooms, the choice in words under the plan, and
+    // the toilets' signs named for a screen reader (the bar carries the label).
+    await words(page, planFrame, ['Окна недели', 'Закрыть', 'Фойе', 'Кухня', 'Класс', 'Окна: 5'], [],
+      { must: ['Окна: 9 · Муж. туалет', 'Окна: 9 · Туалет (инв.)'], mustNot: [] });
     // The proof the frame is steady, not a hope: two shots of the screen,
     // longer apart than half a breath, must be the same byte for byte.
     const first = await page.screenshot();

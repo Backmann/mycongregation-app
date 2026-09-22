@@ -1652,6 +1652,7 @@
       "labels": {
         "foyer": "Foyer",
         "kitchen": "Küche",
+        "classroom": "Klassenraum",
         "wcMen": "Herren-WC",
         "wcWomen": "Damen-WC",
         "wcAccessible": "Barrierefreies WC"

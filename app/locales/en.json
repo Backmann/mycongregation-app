@@ -1652,6 +1652,7 @@
       "labels": {
         "foyer": "Foyer",
         "kitchen": "Kitchen",
+        "classroom": "Classroom",
         "wcMen": "Men's WC",
         "wcWomen": "Women's WC",
         "wcAccessible": "Accessible WC"

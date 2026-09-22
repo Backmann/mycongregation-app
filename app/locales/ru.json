@@ -1668,6 +1668,7 @@
       "labels": {
         "foyer": "Фойе",
         "kitchen": "Кухня",
+        "classroom": "Класс",
         "wcMen": "Муж. туалет",
         "wcWomen": "Жен. туалет",
         "wcAccessible": "Туалет (инв.)"
