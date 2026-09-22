@@ -198,31 +198,31 @@ async function hub(page, name, expect, forbid) {
 }
 
 /**
- * The old programme screen, this week, with «Duties» and «Cleaning» opened —
- * the sections whose wiring moves to shared modules. Taken before and after a
- * change and compared pixel by pixel, they prove the move changed nothing.
+ * The programme screen after duties and cleaning moved out: where the two
+ * sections were stand two doors naming where they went, the section titles
+ * are gone, and the cleaning door opens this week's cleaning.
  */
 async function programmeSections(page) {
   await page.goto(`${BASE}/schedule`);
-  const duties = page.getByText(/^Обязанности$/).first();
-  await duties.waitFor({ timeout: 30000 }).catch(() => {});
+  const door = page.getByText(/^Уборка зала$/).first();
+  await door.waitFor({ timeout: 30000 }).catch(() => {});
   await answerLanguage(page);
-  if (!(await duties.count())) {
-    console.log('· 14/15 — пропущено: на экране программы нет раздела «Обязанности»');
+  if (!(await door.count())) {
+    console.log('· 14/15 — НЕ ТАК: на экране программы нет двери «Уборка зала»');
     return;
   }
-  await page.waitForTimeout(1500);
-  await duties.click();
-  await page.waitForTimeout(1500);
-  await around(page, duties, '14-programme-duties.png', { above: 20, height: 1500 });
-  const cleaning = page.getByText(/^Уборка$/).first();
-  if (!(await cleaning.count())) {
-    console.log('· 15 — пропущено: нет раздела «Уборка»');
-    return;
-  }
-  await cleaning.click();
-  await page.waitForTimeout(1500);
-  await around(page, cleaning, '15-programme-cleaning.png', { above: 20, height: 1100 });
+  await page.waitForTimeout(1200);
+  await around(page, door, '14-programme-moved.png', { above: 160, height: 500 });
+  await words(page, '14-programme-moved.png',
+    ['Обязанности на встречах', 'Уборка зала',
+     'Теперь в своём экране: Собрание → Встречи', 'Теперь в своём экране: Собрание → Зал Царства'],
+    ['Обязанности', 'Уборка']);
+  await door.click();
+  await page.getByText(/^Уборка после встреч$/).first().waitFor({ timeout: 30000 }).catch(() => {});
+  await page.waitForTimeout(1200);
+  const vp = page.viewportSize();
+  await page.screenshot({ path: join(OUT, '15-programme-to-cleaning.png'), clip: { x: 0, y: 0, width: vp.width, height: Math.min(vp.height, 900) } });
+  await words(page, '15-programme-to-cleaning.png', ['Уборка после встреч', 'Еженедельная уборка'], []);
 }
 
 /** Words that must stand and words that must not — the check of rights. */

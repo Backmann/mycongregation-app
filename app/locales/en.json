@@ -1128,7 +1128,8 @@
       "coVisitNote": "Circuit overseer visit",
       "weekendTitle": "Weekend Meeting",
       "watchtowerPrefix": "Watchtower"
-    }
+    },
+    "movedTo": "Now a screen of its own: {{path}}"
   },
   "audit": {
     "noReportId": "No report id supplied.",

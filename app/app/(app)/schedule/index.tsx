@@ -5,7 +5,6 @@ import {
   useContext,
   useState,
   useEffect,
-  useRef,
 } from "react";
 import {
   ActivityIndicator,
@@ -15,11 +14,9 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  useWindowDimensions,
   View,
 } from "react-native";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { capitalizeFirst } from "../../../lib/relative-time";
 import { router, useLocalSearchParams } from "expo-router";
 import {
   Assignment,
@@ -60,7 +57,6 @@ import {
   SUBSECTIONS,
 } from "../../../lib/parts";
 import { Ionicons } from "@expo/vector-icons";
-import { UndoBar } from "../../../components/UndoBar";
 import { useTranslation } from "react-i18next";
 import { partDisplay } from "../../../lib/part-display";
 import { WeekNavigator } from "../../../components/WeekNavigator";
@@ -74,9 +70,7 @@ import {
   buildMeetingSchedulePdfHtml,
   type MeetingPdfWeek,
 } from "../../../lib/meetingSchedulePdf";
-import { DutiesSection } from "../../../components/DutiesSection";
 import { FieldServiceSection } from "../../../components/FieldServiceSection";
-import { CleaningSection } from "../../../components/CleaningSection";
 import { CongressWeekBanner } from "../../../components/CongressWeekBanner";
 import { usePermissions } from "../../../lib/permissions";
 import { SpecialEventsWeekBanner } from "../../../components/SpecialEventsWeekBanner";
@@ -96,10 +90,6 @@ import { reportError } from "../../../lib/error-bus";
 import { LoadError } from "../../../components/LoadError";
 import { SECTION_COLORS } from "../../../lib/section-colors";
 import { useDutiesWeek } from "../../../lib/useDutiesWeek";
-import { useCleaningWeek } from "../../../lib/useCleaningWeek";
-import { printDutiesMonth } from "../../../lib/print-duties-month";
-import { printCleaningQuarter } from "../../../lib/print-cleaning-quarter";
-import { autoDutyIdsOf } from "../../../lib/auto-duty-ids";
 
 const EVENT_TYPE_ORDER: EventType[] = [
   "midweek",
@@ -124,8 +114,6 @@ const AutoAssignedContext = createContext<Set<string>>(new Set());
 
 export default function ScheduleIndexScreen() {
   const { t, i18n } = useTranslation();
-  const { width } = useWindowDimensions();
-  const dutiesNarrow = width < 720;
   const perms = usePermissions();
   const [publishingType, setPublishingType] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -279,9 +267,7 @@ export default function ScheduleIndexScreen() {
     queryFn: () => absencesApi.list(),
   });
   const {
-    canEditDuties,
     canEditFieldServiceMeetings,
-    canEditCleaning,
     canEditMidweekSchedule,
     canEditWeekendSchedule,
   } = usePermissions();
@@ -298,19 +284,10 @@ export default function ScheduleIndexScreen() {
     enabled: canSeeReadiness,
   });
 
-  // The week's duties — lib/useDutiesWeek, shared with the duties screen.
-  const {
-    dutiesQuery,
-    duties,
-    activityById,
-    renamePlaceMutation,
-    movePlaceMutation,
-    removePlaceMutation,
-    generateDutiesMutation,
-    assignDutyMutation,
-    createCustomDutyMutation,
-    removeDutyMutation,
-  } = useDutiesWeek(weekStartISO, nextWeekISO);
+  // Read only, from the shared module: the Memorial block lists who serves
+  // that evening, and the hospitality zone weighs helpers' load. Editing duties
+  // lives in «Meeting duties».
+  const { duties, activityById } = useDutiesWeek(weekStartISO, nextWeekISO);
 
   const fieldServiceQuery = useQuery({
     queryKey: ["field-service", weekStartISO],
@@ -361,15 +338,6 @@ export default function ScheduleIndexScreen() {
     onSuccess: () => invalidateFieldService(),
   });
 
-  // The week's cleaning — lib/useCleaningWeek, shared with the cleaning screen.
-  const {
-    cleaningWeek,
-    setCleaningSlotMutation,
-    clearedSlot,
-    setClearedSlot,
-    clearCleaningSlotMutation,
-    undoClearedSlot,
-  } = useCleaningWeek(weekStartISO);
 
   const createWeekMutation = useMutation({
     mutationFn: (eventType: EventType) => {
@@ -469,8 +437,6 @@ export default function ScheduleIndexScreen() {
     }
     return ids;
   })();
-  // Microphone slot 0 that currently mirrors the Treasures-talk speaker.
-  const autoDutyIds: Set<string> = autoDutyIdsOf(automationOn, assignments, duties);
   const publishersById = new Map<string, Publisher>(
     (publishersQuery.data?.data ?? []).map((p) => [p.id, p]),
   );
@@ -529,53 +495,10 @@ export default function ScheduleIndexScreen() {
   const midweekAbsentIds = absentIdsFor(midweekDateISO);
   const weekendAbsentIds = absentIdsFor(weekendDateISO);
   // A regional convention or circuit assembly means no congregation meetings
-  // that week — both meetings, duties and cleaning are hidden (field-service
-  // meetings stay, since they can still happen midweek).
+  // that week — both meetings are hidden, and so are the doors to duties and
+  // cleaning (field-service meetings stay, since they can still happen midweek).
   const congressThisWeek = rules.congress ?? undefined;
 
-  // Auto-fill duties so the editor is always ready to use (no "Generate" step).
-  // The server generate is idempotent (orIgnore), so this only creates the empty
-  // slots once per meeting; skipped when the meeting is replaced by an event.
-  const autoGenTriedRef = useRef<Set<string>>(new Set());
-  useEffect(() => {
-    if (!canEditDuties || congressThisWeek) return;
-    if (dutiesQuery.isLoading || generateDutiesMutation.isPending) return;
-    // The Memorial is one of them: its duties are ordinary duties of a third
-    // kind of meeting, and without it here the column would sit empty for
-    // ever — nothing else creates them.
-    const meetings: DutyMeeting[] = ["midweek", "weekend"];
-    if (rules.memorial) meetings.push("memorial");
-    for (const m of meetings) {
-      // ONE question: is this meeting held at all. It used to be assembled
-      // here from congress + the flag, and the Memorial was in neither — so
-      // the screen quietly asked the server for duties on a meeting the server
-      // had already taken away, and the refusal came back as a red strip to
-      // somebody who had merely opened the page.
-      // The Memorial is never «taken away» — it IS the event that takes.
-      if (m !== "memorial" && rules.isTakenAway(m)) continue;
-      // Past meetings are frozen — generating there would only be rejected.
-      if (meetingLocked(m)) continue;
-      const has = duties.some((d) => d.eventType === m);
-      const key = `${weekStartISO}|${m}`;
-      if (!has && !autoGenTriedRef.current.has(key)) {
-        autoGenTriedRef.current.add(key);
-        generateDutiesMutation.mutate(m);
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    weekStartISO,
-    duties,
-    canEditDuties,
-    congressThisWeek,
-    // `rules` itself, not two values picked out of it. Listing pieces was
-    // already a hair's breadth from wrong — it happened to cover everything
-    // read — and it stopped covering it the moment the Memorial was read here
-    // too. The whole object is cheap and cannot fall behind what the body
-    // uses.
-    rules,
-    dutiesQuery.isLoading,
-  ]);
   // Circuit overseer display name (for the assignment sheet).
   const circuitOverseer = coVisitEvent
     ? {
@@ -670,89 +593,7 @@ export default function ScheduleIndexScreen() {
   };
   const meetingAddress = (): string | null => meetingVersion?.address || null;
 
-  // Duties on a phone are stacked, so whichever meeting is still ahead goes on
-  // top — a brother opening the section lands on the one he needs instead of
-  // filling in the wrong meeting. A meeting counts as "ahead" for the whole of
-  // its day, so the cards don't swap places during the meeting itself. Wide
-  // screens keep the two columns in their familiar order.
   type DutyMeeting = "midweek" | "weekend" | "memorial";
-  const meetingDateISO = (kind: DutyMeeting): string | null => {
-    // The Memorial keeps its OWN date on the event: it does not follow the
-    // congregation's meeting days, and asking the settings for it would give
-    // the day of a meeting that is not being held.
-    if (kind === "memorial") return rules.memorial?.date ?? null;
-    const dow = dowFor(kind);
-    return dow ? formatDateISO(addDays(weekStart, dow - 1)) : null;
-  };
-  const todayISO = formatDateISO(new Date());
-  const dutyOrder = useMemo<DutyMeeting[]>(() => {
-    // A meeting an event took away has no duties and gets no column: the
-    // server refuses to create them and the effect skips them, so a column
-    // there could only ever promise «сейчас заполнится» for ever. The Memorial
-    // takes its place — as a column of its own, and only on the week it
-    // actually falls in.
-    // The Memorial stands IN THE PLACE of the meeting it takes, not after
-    // them both: on a weekday it belongs on the left where the midweek
-    // meeting was, at a weekend on the right. Appending it always put it on
-    // the right, which reads wrong for a Monday evening.
-    const show = rules.memorial && !congressThisWeek;
-    const base: DutyMeeting[] = [];
-    for (const m of ["midweek", "weekend"] as const) {
-      if (rules.memorialTakes === m) {
-        if (show) base.push("memorial");
-        continue; // the meeting itself is not held, so it gets no column
-      }
-      base.push(m);
-    }
-    // A Memorial that takes neither — it cannot happen while the rules stand,
-    // but a column is better than silence if it ever does.
-    if (show && !base.includes("memorial")) base.push("memorial");
-    if (!dutiesNarrow) return base;
-    const dated = base.map((m) => ({
-      m,
-      iso:
-        m === "memorial" ? (rules.memorial?.date ?? null) : meetingDateISO(m),
-    }));
-    if (dated.some((d) => !d.iso)) return base;
-    return dated
-      .sort((a, b) => {
-        const aAhead = a.iso! >= todayISO ? 0 : 1;
-        const bAhead = b.iso! >= todayISO ? 0 : 1;
-        return aAhead - bAhead || a.iso!.localeCompare(b.iso!);
-      })
-      .map((d) => d.m);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    dutiesNarrow,
-    todayISO,
-    weekStartISO,
-    meetingVersion,
-    coVisitEvent,
-    // WITHOUT THIS the list was computed once, before the events had loaded,
-    // and never again: `rules.memorial` was still null then, so the Memorial
-    // got no column and the meeting it takes kept one. The block above read
-    // the rules directly and showed the Memorial, which is how the screen came
-    // to disagree with itself.
-    rules,
-    congressThisWeek,
-  ]);
-  // Which meeting is still ahead — computed on its own, not from the order, so
-  // the marker is right in the two-column layout too.
-  const nextDutyMeeting = ((): "midweek" | "weekend" | null => {
-    const ahead = (["midweek", "weekend"] as const)
-      .map((m) => ({ m, iso: meetingDateISO(m) }))
-      .filter((x) => !!x.iso && x.iso >= todayISO)
-      .sort((a, b) => a.iso!.localeCompare(b.iso!));
-    return ahead[0]?.m ?? null;
-  })();
-  // A meeting's duties are history from midnight after its own day: the server
-  // refuses changes, so the UI must not offer them either.
-  const meetingLocked = (kind: DutyMeeting): boolean => {
-    const iso = meetingDateISO(kind);
-    return !!iso && iso < todayISO;
-  };
-  const nextDutyIsToday =
-    !!nextDutyMeeting && meetingDateISO(nextDutyMeeting) === todayISO;
 
   // Print the whole month's midweek meeting programme as a one-page A4 grid
   // (parts × weeks) for the congregation notice board. Uses the month that the
@@ -1056,33 +897,6 @@ export default function ScheduleIndexScreen() {
     }
   };
 
-  // Monthly duties PDF — lib/print-duties-month, shared with the duties screen.
-  const [printingDuties, setPrintingDuties] = useState(false);
-  const printMonthDuties = () =>
-    printDutiesMonth({
-      weekStart,
-      meetingVersion,
-      events: specialEventsQuery.data ?? [],
-      publishersById,
-      congregationName: meetingSettingsQuery.data?.congregation.name ?? null,
-      t,
-      lang: i18n.language,
-      onBusy: setPrintingDuties,
-    });
-
-  // Quarterly cleaning PDF — lib/print-cleaning-quarter, shared with the
-  // cleaning screen.
-  const [printingCleaning, setPrintingCleaning] = useState(false);
-  const printMonthCleaning = () =>
-    printCleaningQuarter({
-      weekStart,
-      meetingVersion,
-      events: specialEventsQuery.data ?? [],
-      congregationName: meetingSettingsQuery.data?.congregation.name ?? null,
-      t,
-      lang: i18n.language,
-      onBusy: setPrintingCleaning,
-    });
   const draftCount = (list: Assignment[]) =>
     list.filter((x) => String(x.status) === "draft").length;
   const changedCount = (list: Assignment[]) =>
@@ -1497,87 +1311,28 @@ export default function ScheduleIndexScreen() {
                 );
               })}
 
-              {/* dutiesAccordion: обязанности отдельной разворачивающейся секцией */}
+              {/* Duties and cleaning moved to screens of their own (Congregation →
+                  Meetings, Kingdom Hall). Two doors stand where the sections were,
+                  so whoever looks for them here learns where they went. */}
               {!congressThisWeek && (
-                <CollapsibleMeetingBlock
-                  accent={SECTION_COLORS.duty.color}
-                  icon="people-outline"
-                  title={t("schedule.tabs.duties")}
-                  onPrint={
-                    perms.isElder || perms.isAdmin
-                      ? () => printMonthDuties()
-                      : undefined
-                  }
-                  printBusy={printingDuties}
-                  assigned={0}
-                  total={0}
-                  showBadge={false}
-                >
-                  <View
-                    style={[
-                      styles.dutiesRow,
-                      dutiesNarrow && styles.dutiesRowNarrow,
-                    ]}
-                  >
-                    {dutyOrder.map((meeting) => (
-                      <View
-                        key={meeting}
-                        style={[
-                          styles.dutiesCol,
-                          dutiesNarrow && styles.dutiesColNarrow,
-                        ]}
-                      >
-                        <DutiesSection
-                          only={meeting}
-                          dateLabel={capitalizeFirst(
-                            meetingDateLabel(meeting) ?? "",
-                          )}
-                          locked={meetingLocked(meeting)}
-                          nextUp={nextDutyMeeting === meeting}
-                          nextUpToday={nextDutyIsToday}
-                          duties={duties}
-                          autoDutyIds={autoDutyIds}
-                          publishersById={publishersById}
-                          canEdit={canEditDuties && !meetingLocked(meeting)}
-                          compact={dutiesNarrow}
-                          pending={
-                            renamePlaceMutation.isPending ||
-                            movePlaceMutation.isPending ||
-                            removePlaceMutation.isPending ||
-                            generateDutiesMutation.isPending ||
-                            assignDutyMutation.isPending ||
-                            createCustomDutyMutation.isPending ||
-                            removeDutyMutation.isPending
-                          }
-                          hideHeader
-                          onGenerate={(eventType) =>
-                            generateDutiesMutation.mutate(eventType)
-                          }
-                          onAssign={(id, publisherId) =>
-                            assignDutyMutation.mutate({ id, publisherId })
-                          }
-                          onAddCustom={(eventType, customLabel) =>
-                            createCustomDutyMutation.mutate({
-                              eventType,
-                              customLabel,
-                            })
-                          }
-                          onRemoveDuty={(id) => removeDutyMutation.mutate(id)}
-                          onRenamePlace={(id, customLabel) =>
-                            renamePlaceMutation.mutate({ id, customLabel })
-                          }
-                          onRemovePlace={(id) => removePlaceMutation.mutate(id)}
-                          onMovePlace={(id, direction) =>
-                            movePlaceMutation.mutate({ id, direction })
-                          }
-                          activityById={activityById}
-                          weekStartISO={weekStartISO}
-                          memorialDateISO={rules.memorial?.date}
-                        />
-                      </View>
-                    ))}
-                  </View>
-                </CollapsibleMeetingBlock>
+                <View style={styles.movedDoors}>
+                  {perms.canEditDuties || perms.isElder || perms.isAdmin ? (
+                    <MovedDoor
+                      icon="people-outline"
+                      color={SECTION_COLORS.duty.color}
+                      title={t("congregationHub.duties")}
+                      subtitle={t("schedule.movedTo", { path: `${t("tabs.publishers")} → ${t("congregationHub.sections.meetings")}` })}
+                      onPress={() => router.push("/publishers/duties" as never)}
+                    />
+                  ) : null}
+                  <MovedDoor
+                    icon="sparkles-outline"
+                    color={SECTION_COLORS.cleaning.color}
+                    title={t("congregationHub.cleaning")}
+                    subtitle={t("schedule.movedTo", { path: `${t("tabs.publishers")} → ${t("congregationHub.sections.hall")}` })}
+                    onPress={() => router.push(`/publishers/cleaning-week?week=${weekStartISO}` as never)}
+                  />
+                </View>
               )}
 
               {/* Встречи для проповеди — разворачивающаяся секция */}
@@ -1609,45 +1364,6 @@ export default function ScheduleIndexScreen() {
                 />
               </CollapsibleMeetingBlock>
 
-              {/* Уборка — разворачивающаяся секция */}
-              {!congressThisWeek && (
-                <CollapsibleMeetingBlock
-                  accent={SECTION_COLORS.cleaning.color}
-                  icon="sparkles-outline"
-                  title={t("cleaning.title")}
-                  onPrint={
-                    perms.isElder || perms.isAdmin
-                      ? () => printMonthCleaning()
-                      : undefined
-                  }
-                  printBusy={printingCleaning}
-                  assigned={0}
-                  total={0}
-                  showBadge={false}
-                >
-                  <CleaningSection
-                    assignments={cleaningWeek.assignments}
-                    hideHeader
-                    publishersById={publishersById}
-                    canEdit={canEditCleaning}
-                    weekStart={weekStartISO}
-                    pending={
-                      setCleaningSlotMutation.isPending ||
-                      clearCleaningSlotMutation.isPending
-                    }
-                    onSetSlot={(slotType, serviceGroupId, windows) =>
-                      setCleaningSlotMutation.mutate({
-                        slotType,
-                        serviceGroupId,
-                        windows,
-                      })
-                    }
-                    onClearSlot={(slotType) =>
-                      clearCleaningSlotMutation.mutate(slotType)
-                    }
-                  />
-                </CollapsibleMeetingBlock>
-              )}
 
               {isEmpty && (
                 <Text style={styles.emptyHint}>
@@ -1690,16 +1406,40 @@ export default function ScheduleIndexScreen() {
           )}
         </ScrollView>
 
-        {/* Sibling of the scroll view, not its child — inside one the strip is
-          positioned against the content and lands screens below the fold. */}
-        <UndoBar
-          visible={!!clearedSlot}
-          message={t("cleaning.cleared")}
-          onUndo={undoClearedSlot}
-          onDismiss={() => setClearedSlot(null)}
-        />
       </View>
     </AutoAssignedContext.Provider>
+  );
+}
+
+/** A door to where a section moved: its icon, its name, where it lives now. */
+function MovedDoor({
+  icon,
+  color,
+  title,
+  subtitle,
+  onPress,
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  color: string;
+  title: string;
+  subtitle: string;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => [styles.movedDoor, pressed && { opacity: 0.7 }]}
+      accessibilityRole="button"
+    >
+      <View style={[styles.movedIcon, { backgroundColor: `${color}14` }]}>
+        <Ionicons name={icon} size={18} color={color} />
+      </View>
+      <View style={styles.movedBody}>
+        <Text style={styles.movedTitle}>{title}</Text>
+        <Text style={styles.movedSub}>{subtitle}</Text>
+      </View>
+      <Ionicons name="chevron-forward" size={18} color="#94a3b8" />
+    </Pressable>
   );
 }
 
@@ -2223,23 +1963,29 @@ function AssignmentRow({
 }
 
 const styles = StyleSheet.create({
-  dutiesRow: { flexDirection: "row", alignItems: "flex-start", gap: 16 },
+  movedDoors: { gap: 8, marginTop: 12 },
+  movedDoor: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    padding: 14,
+    borderRadius: 14,
+    backgroundColor: "#ffffff",
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+  },
+  movedIcon: { width: 34, height: 34, borderRadius: 10, alignItems: "center", justifyContent: "center" },
+  movedBody: { flex: 1, minWidth: 0 },
+  movedTitle: { fontSize: 15.5, fontFamily: "Manrope_700Bold", color: "#0f172a" },
+  movedSub: { fontSize: 13, fontFamily: "Manrope_500Medium", color: "#64748b", marginTop: 2 },
   // On phones the two meetings stack instead of sharing the width: side by side
   // each block gets ~166px, which breaks labels and squeezes the selectors.
   // 'stretch' matters: once the direction flips to a column, the row's
   // 'flex-start' would start governing the horizontal axis and each card would
   // shrink to its content and hug the left edge instead of filling the width.
-  dutiesRowNarrow: { flexDirection: "column", alignItems: "stretch", gap: 0 },
-  dutiesCol: { flex: 1, minWidth: 0 },
   // Stacked, the column must size to its content: keeping flex:1 would make the
   // two cards share the available height, and the taller one lost its bottom
   // rows and the "add duty" button.
-  dutiesColNarrow: {
-    flexGrow: 0,
-    flexShrink: 0,
-    flexBasis: "auto",
-    width: "100%",
-  },
   container: { flex: 1, backgroundColor: "#f1f5f9" },
   overline: {
     fontSize: 11,

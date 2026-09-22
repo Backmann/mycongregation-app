@@ -1128,7 +1128,8 @@
       "coVisitNote": "Besuch des Kreisaufsehers",
       "weekendTitle": "Zusammenkunft am Wochenende",
       "watchtowerPrefix": "Wachtturm"
-    }
+    },
+    "movedTo": "Jetzt eine eigene Seite: {{path}}"
   },
   "audit": {
     "noReportId": "Keine Bericht-ID angegeben.",
