@@ -117,8 +117,16 @@ async function login(page, email) {
  * A signed-in window, signing in only when there is no living session.
  *
  * The server limits how often one may sign in, so the script keeps the session
- * after the first sign-in (in .screens/, which git ignores) and opens the app
- * already signed in on every later run. A session that has expired is replaced.
+ * (in .screens/, which git ignores) and opens the app already signed in on
+ * every later run. A session that has expired is replaced.
+ *
+ * The session is kept at the END of the window's work — keep() — not right
+ * after signing in. The page renews its refresh token as it runs, and the
+ * server rotates it on every use and reads a token presented twice as stolen:
+ * it revokes the whole family (auth, refresh_sessions). A file written right
+ * after sign-in held a token the page had already spent, so the next run
+ * presented it, the server revoked it, and every run signed in anew. Kept at
+ * the end, the file holds the token nobody has used yet.
  */
 async function signedIn(browser, email, viewport) {
   mkdirSync(join(process.cwd(), '.screens'), { recursive: true });
@@ -133,16 +141,21 @@ async function signedIn(browser, email, viewport) {
     const alive = await inside.waitFor({ timeout: 15000 }).then(() => true).catch(() => false);
     if (alive) {
       console.log(`· вход (${email}): сохранённая сессия`);
-      return { ctx, page };
+      return { ctx, page, keep: () => keep(ctx, file, email) };
     }
     await ctx.close();
   }
   const ctx = await browser.newContext({ viewport, locale: 'ru-RU' });
   const page = await ctx.newPage();
   await login(page, email);
+  console.log(`· вход (${email}): новый`);
+  return { ctx, page, keep: () => keep(ctx, file, email) };
+}
+
+/** Write the window's session to its file — the last refresh token it holds. */
+async function keep(ctx, file, email) {
   await ctx.storageState({ path: file });
-  console.log(`· вход (${email}): новый, сессия сохранена`);
-  return { ctx, page };
+  console.log(`· сессия (${email}) сохранена в конце работы окна`);
 }
 
 /**
@@ -346,7 +359,7 @@ async function click(page, locator, what) {
 const browser = await chromium.launch();
 try {
   // --- Администратор, телефон ---
-  const { ctx: admin, page: a } = await signedIn(browser, ADMIN, PHONE);
+  const { ctx: admin, page: a, keep: keepAdmin } = await signedIn(browser, ADMIN, PHONE);
   await openFeed(a);
 
   const today = a.getByText(/^Сегодня ·/).first();
@@ -427,10 +440,11 @@ try {
     const aheadRows = await a.getByText(/^Впереди$/).count();
     console.log(`· 10-ahead.png — «Впереди» ${aheadRows ? 'есть' : 'НЕТ'}`);
   } else console.log('· 10-ahead.png — пропущено: конец программы не показался');
+  await keepAdmin();
   await admin.close();
 
   // --- Возвещатель, телефон ---
-  const { ctx: pub, page: p } = await signedIn(browser, PUBLISHER, PHONE);
+  const { ctx: pub, page: p, keep: keepPub } = await signedIn(browser, PUBLISHER, PHONE);
   await openFeed(p);
   await around(p, p.getByText(/^Сегодня ·/).first(), '07-publisher.png', { above: 20, height: 1800 });
   await hub(p, '13-congregation-publisher.png',
@@ -442,6 +456,7 @@ try {
   await dutiesFrames(p, '23-duties-publisher.png',
     ['Обязанности на встречах распределяют координатор обязанностей и координатор совета старейшин.'],
     ['Встреча в будний день'], { must: [], mustNot: ['Распечатать обязанности на месяц'] }, null);
+  await keepPub();
   await pub.close();
 
   if (landings.includes(false)) console.log('\nВНИМАНИЕ: лента открылась не на «Сегодня» — см. строки «посадка» выше');

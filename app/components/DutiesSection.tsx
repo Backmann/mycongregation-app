@@ -255,7 +255,6 @@ export function DutiesSection({
     // a small lock replaces the "next up" marker.
     // Colour says "duty" — which meeting it is, the title and date already say.
     const accent = locked ? '#94a3b8' : SECTION_COLORS.duty.color;
-    const done = total > 0 && assigned === total;
     return (
       <View style={[styles.cardHead, locked && styles.cardHeadLocked]}>
         <View style={[styles.cardDot, { backgroundColor: accent }]} />
@@ -289,18 +288,19 @@ export function DutiesSection({
             style={[
               styles.cardCount,
               {
-                backgroundColor: locked
-                  ? '#f1f5f9'
-                  : done
-                    ? '#dcfce7'
-                    : `${accent}14`,
+                // Counted, not judged (decided 20 September): some places —
+                // the ventilation — are filled one week and not the next, so a
+                // colour for «all filled» would stay unlit on most meetings and
+                // teach the coordinator to stop looking. The dot keeps the
+                // section's colour; the count stays grey.
+                backgroundColor: '#f1f5f9',
               },
             ]}
           >
             <Text
               style={[
                 styles.cardCountText,
-                { color: locked ? '#64748b' : done ? '#166534' : accent },
+                { color: '#64748b' },
               ]}
             >
               {assigned}/{total}
@@ -332,17 +332,13 @@ export function DutiesSection({
           <View
             style={[
               styles.countBadge,
-              onlyAssigned === onlyList.length
-                ? styles.countBadgeDone
-                : styles.countBadgeOpen,
+              styles.countBadgeNeutral,
             ]}
           >
             <Text
               style={[
                 styles.countBadgeText,
-                onlyAssigned === onlyList.length
-                  ? styles.countTextDone
-                  : styles.countTextOpen,
+                styles.countTextNeutral,
               ]}
             >
               {onlyAssigned}/{onlyList.length}
@@ -771,11 +767,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 2,
   },
-  countBadgeOpen: { backgroundColor: '#fef3c7' },
-  countBadgeDone: { backgroundColor: '#dcfce7' },
+  // One neutral look for the count, full or not — see the card count above.
+  countBadgeNeutral: { backgroundColor: '#f1f5f9' },
   countBadgeText: { fontSize: 11, fontWeight: '700', fontFamily: 'Manrope_700Bold',},
-  countTextOpen: { color: '#92400e' },
-  countTextDone: { color: '#166534' },
+  countTextNeutral: { color: '#64748b' },
   section: { marginTop: 16 },
   header: {
     flexDirection: 'row',
