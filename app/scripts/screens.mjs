@@ -265,6 +265,22 @@ try {
   landings.push(await landing(a, 'телефон'));
   await a.screenshot({ path: join(OUT, '09-phone-landing.png') });
   console.log('· 09-phone-landing.png');
+
+  // --- «Впереди»: «Показать ещё» до конца программы, затем то, что за ним ---
+  for (let i = 0; i < 12; i++) {
+    const more = a.getByText(/^Показать ещё$/);
+    if (!(await more.count())) break;
+    await more.first().click();
+    await a.waitForTimeout(1500);
+  }
+  const end = a.getByText(/^Дальше программы нет$/).first();
+  if (await end.count()) {
+    await end.scrollIntoViewIfNeeded();
+    await a.waitForTimeout(300);
+    await a.screenshot({ path: join(OUT, '10-ahead.png') });
+    const aheadRows = await a.getByText(/^Впереди$/).count();
+    console.log(`· 10-ahead.png — «Впереди» ${aheadRows ? 'есть' : 'НЕТ'}`);
+  } else console.log('· 10-ahead.png — пропущено: конец программы не показался');
   await admin.close();
 
   // --- Возвещатель, телефон ---

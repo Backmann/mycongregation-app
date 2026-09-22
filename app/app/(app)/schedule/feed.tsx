@@ -22,9 +22,10 @@ import type {
   Duty,
   FieldServiceMeeting,
   ReadinessMeeting,
+  SpecialEvent,
 } from "../../../lib/api";
 import { usePermissions } from "../../../lib/permissions";
-import { weekRules } from "../../../lib/week-rules";
+import { isCongressEvent, weekRules } from "../../../lib/week-rules";
 import { effectiveVersionFor } from "../../../lib/meeting-schedule";
 import { addDays, formatDateISO, startOfWeekMonday } from "../../../lib/dates";
 import { partDisplay } from "../../../lib/part-display";
@@ -119,6 +120,11 @@ function serviceYearMonday(today: Date): Date {
   return startOfWeekMonday(new Date(year, 8, 1));
 }
 const atMidnight = (iso: string) => new Date(`${iso}T00:00:00`);
+/** 31 August that closes the current service year (it runs September to August). */
+function serviceYearEndISO(today: Date): string {
+  const start = today.getMonth() >= 8 ? today.getFullYear() : today.getFullYear() - 1;
+  return `${start + 1}-08-31`;
+}
 
 type MeetingItem = { type: "meeting"; id: string; date: string; week: string; kind: Kind; time: string | null; movedByVisit: boolean };
 type FieldItem = { type: "field"; id: string; date: string; week: string; meetings: FieldServiceMeeting[] };
@@ -296,6 +302,59 @@ export default function ProgrammeFeedScreen() {
   }
   items.sort((a, b) => a.date.localeCompare(b.date) || (a.type === "field" ? -1 : 1));
 
+  // AHEAD — what lies beyond the programme, to the end of the service year: a
+  // visit, a convention, the Memorial. The congregation needs these before the
+  // workbook for their week is loaded, and the feed stops where the workbooks
+  // stop. Each line says what the week's own rules say about it — the same
+  // rules as everywhere else here — so «Ahead» cannot disagree with what the
+  // feed will show once the programme reaches that week.
+  const shownUntil = formatDateISO(addDays(atMidnight(endWeek), 6));
+  const yearEnd = serviceYearEndISO(new Date());
+  const ahead: SpecialEvent[] = reachedEnd
+    ? (eventsQ.data ?? [])
+        .filter(
+          (e) =>
+            (e.type === "circuit_overseer_visit" || e.type === "memorial" || isCongressEvent(e)) &&
+            e.date > shownUntil &&
+            e.date <= yearEnd,
+        )
+        .sort((a, b) => a.date.localeCompare(b.date))
+    : [];
+  const dm = (iso: string) => atMidnight(iso).toLocaleDateString(lang, { day: "numeric", month: "long" });
+  const aheadTitle = (e: SpecialEvent) =>
+    e.type === "memorial" ? t("eventTypes.memorial") : t(`specialEvents.types.${e.type}`);
+  const aheadLine = (e: SpecialEvent) => {
+    const week = formatDateISO(startOfWeekMonday(atMidnight(e.date)));
+    const rules = weekRules({
+      weekStartISO: week,
+      version: effectiveVersionFor(settingsQ.data?.versions, week),
+      events: eventsQ.data ?? [],
+    });
+    // «23 — 28 февраля» within a month, as the week labels once were: the month once.
+    const sameMonth = !!e.endDate && e.endDate.slice(0, 7) === e.date.slice(0, 7);
+    const span =
+      e.endDate && e.endDate !== e.date
+        ? t("feed.dateRange", {
+            from: sameMonth ? atMidnight(e.date).toLocaleDateString(lang, { day: "numeric" }) : dm(e.date),
+            to: dm(e.endDate),
+          })
+        : dm(e.date);
+    let effect = "";
+    if (e.type === "memorial") {
+      effect = rules.memorialTakes === "weekend" ? t("feed.memorialInsteadWeekend") : t("feed.memorialInsteadMidweek");
+    } else if (isCongressEvent(e)) {
+      effect = t("feed.noMeetings");
+    } else {
+      const d = rules.dateOf("midweek");
+      if (d) effect = t("feed.visitMidweekOn", { day: atMidnight(d).toLocaleDateString(lang, { weekday: "long" }) });
+    }
+    // After the date the effect reads as the rest of one sentence. These are
+    // the app's own set phrases, with no names in them, so the first letter can
+    // go down safely.
+    const tail = effect ? effect.charAt(0).toLocaleLowerCase(lang) + effect.slice(1) : "";
+    return [span, tail].filter(Boolean).join(" · ");
+  };
+
   const past = items.filter((x) => x.date < today);
   const coming = items.filter((x) => x.date >= today);
   // The nearest meeting opens by itself — readable without a tap.
@@ -454,6 +513,7 @@ export default function ProgrammeFeedScreen() {
         {coming.flatMap((x, i) => render(x, coming[i - 1], false))}
 
         {reachedEnd ? (
+          <>
           <View style={styles.end}>
             <Text style={styles.endTitle}>{t("feed.end")}</Text>
             {lastProgrammeWeek ? (
@@ -467,6 +527,18 @@ export default function ProgrammeFeedScreen() {
               </Text>
             ) : null}
           </View>
+          {ahead.length > 0 ? <Text style={styles.label}>{t("feed.ahead")}</Text> : null}
+          {ahead.map((e) => (
+            <Row
+              key={`ahead|${e.id}`}
+              date={e.date}
+              title={aheadTitle(e)}
+              line={aheadLine(e)}
+              color={KIND_COLOR.special}
+              past={false}
+            />
+          ))}
+          </>
         ) : (
           <Pressable
             style={({ pressed }) => [styles.more, pressed && styles.pressed]}
@@ -634,10 +706,10 @@ function Meeting({
           : p.missing.length <= 3
             ? { c: WARN, s: t("feed.missing", { parts: p.missing.map((k) => partDisplay(k, null).label).join(", ") }) }
             : { c: WARN, s: t("feed.missingCount", { count: p.missing.length, total: p.total }) };
-    status = {
-      color: prog.c,
-      text: `${prog.s} · ${t("feed.dutiesShort", { assigned: readiness.duties.assigned, total: readiness.duties.total })}`,
-    };
+    const duties = t("feed.dutiesShort", { assigned: readiness.duties.assigned, total: readiness.duties.total });
+    // «Not loaded» is already the row's own line; saying it again here was a
+    // repeat, so only the duties count remains.
+    status = !p.loaded ? { color: SOFT, text: duties } : { color: prog.c, text: `${prog.s} · ${duties}` };
   }
 
   const mineInProgramme = myParts.length > 0;

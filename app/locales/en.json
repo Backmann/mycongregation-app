@@ -3435,7 +3435,10 @@
     "tabProgramme": "Programme",
     "tabDuties": "Duties",
     "tabCleaning": "Cleaning",
-    "fieldServiceOne": "Field ministry meeting"
+    "fieldServiceOne": "Field ministry meeting",
+    "ahead": "Ahead",
+    "dateRange": "{{from}} — {{to}}",
+    "visitMidweekOn": "midweek meeting on {{day}}"
   },
   "conduct": {
     "title": "Conducting the meeting",

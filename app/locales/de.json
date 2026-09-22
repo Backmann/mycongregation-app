@@ -3435,7 +3435,10 @@
     "tabProgramme": "Programm",
     "tabDuties": "Dienste",
     "tabCleaning": "Reinigung",
-    "fieldServiceOne": "Treffpunkt für den Predigtdienst"
+    "fieldServiceOne": "Treffpunkt für den Predigtdienst",
+    "ahead": "Demnächst",
+    "dateRange": "{{from}} — {{to}}",
+    "visitMidweekOn": "Zusammenkunft unter der Woche am {{day}}"
   },
   "conduct": {
     "title": "Zusammenkunft leiten",

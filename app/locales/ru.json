@@ -3465,7 +3465,10 @@
     "tabProgramme": "Программа",
     "tabDuties": "Обязанности",
     "tabCleaning": "Уборка",
-    "fieldServiceOne": "Встреча для проповеди"
+    "fieldServiceOne": "Встреча для проповеди",
+    "ahead": "Впереди",
+    "dateRange": "{{from}} — {{to}}",
+    "visitMidweekOn": "встреча в будний день — {{day}}"
   },
   "conduct": {
     "title": "Ведение встречи",
