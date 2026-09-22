@@ -47,7 +47,7 @@ export default function DutiesMeetingScreen() {
   return (
     <>
       <Stack.Screen options={{ title }} />
-      {perms.canEditDuties ? (
+      {perms.canEditDuties || perms.isElder || perms.isAdmin ? (
         <DutiesMeetingEditor key={`${week}|${meeting}`} weekStartISO={week} meeting={meeting} />
       ) : (
         <Text style={{ padding: 16, fontSize: 15, fontFamily: FONT.medium, color: '#64748b' }}>

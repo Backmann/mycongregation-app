@@ -28,8 +28,7 @@ import {
   taskVisual,
 } from '../../../lib/my-tasks';
 import { addDays, formatDateISO, startOfWeekMonday } from '../../../lib/dates';
-import { HallPlan } from '../../../components/HallPlan';
-import { Dialog } from '../../../components/Dialog';
+import { WindowsPlanDialog } from '../../../components/WindowsPlan';
 
 function weekHeaderLabel(weekStartISO: string, locale: string): string {
   const start = new Date(`${weekStartISO}T00:00:00`);
@@ -250,18 +249,7 @@ export default function MyAssignmentsScreen() {
         )}
       </ScrollView>
 
-      <Dialog
-        visible={planWindows !== null}
-        title={t('cleaning.windows.title')}
-        icon="grid-outline"
-        iconTint="#0284c7"
-        iconBg="#e0f2fe"
-        cancelLabel={t('common.close')}
-        onCancel={() => setPlanWindows(null)}
-        scroll
-      >
-        <HallPlan selected={planWindows ?? []} />
-      </Dialog>
+      <WindowsPlanDialog windows={planWindows} onClose={() => setPlanWindows(null)} />
     </View>
   );
 }

@@ -40,9 +40,10 @@ type Row =
  * counted, not judged (Lionel's decision of 20 September). A tap opens that
  * meeting's sheet; on a wide screen it opens on the right.
  *
- * Only those who edit duties open this screen — the row in the contents is
- * theirs alone — and the screen checks the right itself, since an address can
- * be typed. Everyone else reads the duties in the feed.
+ * Those who edit duties edit here; elders and admins read and print here too,
+ * as they could in the programme screen before duties left it. The screen
+ * checks the right itself, since an address can be typed. Everyone else reads
+ * the duties in the feed.
  *
  * Which meetings a week holds is the week rules' answer: a convention takes
  * both, the Memorial stands in the place of the meeting it takes.
@@ -54,6 +55,10 @@ export default function DutiesScreen() {
   const queryClient = useQueryClient();
   const { width } = useWindowDimensions();
   const wide = width >= 900;
+  // Reading and printing: whoever edits duties, and every elder and admin —
+  // the programme screen printed duties for elders, and moving must not take
+  // that away. Editing inside a sheet stays canEditDuties.
+  const canView = perms.canEditDuties || perms.isElder || perms.isAdmin;
 
   const thisMonday = formatDateISO(startOfWeekMonday(new Date()));
   const todayISO = formatDateISO(new Date());
@@ -68,7 +73,7 @@ export default function DutiesScreen() {
   const dutiesQ = useQuery({
     queryKey: ['duties', 'range', thisMonday, endISO],
     queryFn: () => dutiesApi.list({ weekStart: thisMonday, weekEnd: endISO }),
-    enabled: perms.canEditDuties,
+    enabled: canView,
   });
   const eventsQ = useQuery({ queryKey: ['special-events', 'all'], queryFn: () => specialEventsApi.list({ all: true }) });
   const settingsQ = useQuery({ queryKey: ['meeting-settings'], queryFn: () => meetingSettingsApi.getOverview() });
@@ -137,7 +142,7 @@ export default function DutiesScreen() {
       onBusy: () => {},
     });
 
-  if (!perms.canEditDuties) {
+  if (!canView) {
     return (
       <View style={styles.screen}>
         <Text style={styles.note}>{t('dutiesScreen.noAccess')}</Text>

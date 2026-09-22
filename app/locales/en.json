@@ -3440,7 +3440,8 @@
     "fieldServiceOne": "Field ministry meeting",
     "ahead": "Ahead",
     "dateRange": "{{from}} — {{to}}",
-    "visitMidweekOn": "midweek meeting on {{day}}"
+    "visitMidweekOn": "midweek meeting on {{day}}",
+    "editCleaning": "Edit cleaning"
   },
   "conduct": {
     "title": "Conducting the meeting",
@@ -3507,7 +3508,10 @@
     "emptyWeek": "No cleaning assigned for this week",
     "showMore": "Show more",
     "guideSection": "Guide",
-    "print": "Print the cleaning schedule"
+    "print": "Print the cleaning schedule",
+    "windows": "Windows: {{list}}",
+    "past": "Past",
+    "showPast": "Show past weeks"
   },
   "dutiesScreen": {
     "noAccess": "Meeting duties are assigned by the duties coordinator and the coordinator of the body of elders.",

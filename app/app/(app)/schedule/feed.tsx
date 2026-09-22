@@ -26,6 +26,7 @@ import type {
 } from "../../../lib/api";
 import { usePermissions } from "../../../lib/permissions";
 import { isCongressEvent, weekRules } from "../../../lib/week-rules";
+import { WindowsLine, WindowsPlanDialog } from "../../../components/WindowsPlan";
 import { effectiveVersionFor } from "../../../lib/meeting-schedule";
 import { addDays, formatDateISO, startOfWeekMonday } from "../../../lib/dates";
 import { partDisplay } from "../../../lib/part-display";
@@ -449,6 +450,7 @@ export default function ProgrammeFeedScreen() {
     groupName,
     canEditProgramme: x.kind === "midweek" ? perms.canEditMidweekSchedule : perms.canEditWeekendSchedule,
     canEditDuties: perms.canEditDuties,
+    canEditCleaning: perms.canEditCleaning,
   });
 
   const render = (x: Item, prev: Item | undefined, isPast: boolean) => {
@@ -727,6 +729,7 @@ function Meeting({
   groupName,
   canEditProgramme,
   canEditDuties,
+  canEditCleaning,
 }: {
   item: MeetingItem;
   past: boolean;
@@ -743,9 +746,11 @@ function Meeting({
   groupName: Map<string, string>;
   canEditProgramme: boolean;
   canEditDuties: boolean;
+  canEditCleaning: boolean;
 }) {
   const { t, i18n } = useTranslation();
   const [tab, setTab] = useState<Tab>("programme");
+  const [planWindows, setPlanWindows] = useState<number[] | null>(null);
   const name = (id: string | null) => (id ? nameOf.get(id) ?? null : null);
 
   const micCount = duties.filter((d) => d.dutyType === "microphone").length;
@@ -863,8 +868,8 @@ function Meeting({
                 .filter((c) => c.serviceGroupId)
                 .sort((a, b) => SLOT_ORDER.indexOf(a.slotType) - SLOT_ORDER.indexOf(b.slotType))
                 .map((c) => (
+                  <View key={c.id}>
                   <PairLine
-                    key={c.id}
                     label={t(`cleaning.slots.${c.slotType}`)}
                     name={groupName.get(c.serviceGroupId as string) ?? null}
                     extra={
@@ -879,6 +884,13 @@ function Meeting({
                         : null
                     }
                   />
+                  {/* The windows this week, and one tap to where they are. */}
+                  {c.slotType === "thorough" && c.windows?.length ? (
+                    <View style={styles.windowsIndent}>
+                      <WindowsLine windows={c.windows} onOpen={() => setPlanWindows(c.windows)} />
+                    </View>
+                  ) : null}
+                  </View>
                 ))
             ) : (
               <Text style={styles.empty}>{t("feed.noCleaning")}</Text>
@@ -891,8 +903,20 @@ function Meeting({
             />
           ) : null}
           {!past && tab === "duties" && canEditDuties ? (
-            <EditLink label={t("feed.editDuties")} onPress={() => router.push(`/schedule?week=${item.week}` as never)} />
+            // Straight to this meeting's sheet — duties live in their own screen
+            // now, not in the programme screen.
+            <EditLink
+              label={t("feed.editDuties")}
+              onPress={() => router.push(`/publishers/duties-meeting?week=${item.week}&meeting=${item.kind}` as never)}
+            />
           ) : null}
+          {!past && tab === "cleaning" && canEditCleaning ? (
+            <EditLink
+              label={t("feed.editCleaning")}
+              onPress={() => router.push(`/publishers/cleaning-week?week=${item.week}` as never)}
+            />
+          ) : null}
+          <WindowsPlanDialog windows={planWindows} onClose={() => setPlanWindows(null)} />
         </View>
       ) : null}
     </View>
@@ -1064,6 +1088,7 @@ function EditLink({ label, onPress }: { label: string; onPress: () => void }) {
 }
 
 const styles = StyleSheet.create({
+  windowsIndent: { marginTop: -2, marginBottom: 8 },
   screen: { flex: 1, backgroundColor: "#ffffff" },
   content: { paddingBottom: 40, alignItems: "center" },
   column: { width: "100%", maxWidth: 720 },

@@ -3440,7 +3440,8 @@
     "fieldServiceOne": "Treffpunkt für den Predigtdienst",
     "ahead": "Demnächst",
     "dateRange": "{{from}} — {{to}}",
-    "visitMidweekOn": "Zusammenkunft unter der Woche am {{day}}"
+    "visitMidweekOn": "Zusammenkunft unter der Woche am {{day}}",
+    "editCleaning": "Reinigung bearbeiten"
   },
   "conduct": {
     "title": "Zusammenkunft leiten",
@@ -3507,7 +3508,10 @@
     "emptyWeek": "Für diese Woche ist keine Reinigung eingeteilt",
     "showMore": "Mehr anzeigen",
     "guideSection": "Anleitung",
-    "print": "Reinigungsplan drucken"
+    "print": "Reinigungsplan drucken",
+    "windows": "Fenster: {{list}}",
+    "past": "Vergangen",
+    "showPast": "Vergangene Wochen anzeigen"
   },
   "dutiesScreen": {
     "noAccess": "Die Dienste teilen der Koordinator für Dienste und der Koordinator der Ältestenschaft ein.",

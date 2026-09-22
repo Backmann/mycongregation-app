@@ -65,10 +65,11 @@ export default function CongregationScreen() {
       href: '/schedule',
     });
   }
-  // Meeting duties — the same right that edits them (lib/permissions
-  // canEditDuties: admin, duties coordinator, body coordinator). A ministerial
-  // servant keeping the duties gets this as his first row.
-  if (perms.canEditDuties) {
+  // Meeting duties — whoever edits them (lib/permissions canEditDuties: admin,
+  // duties coordinator, body coordinator), and every elder to read and print,
+  // as the programme screen let them. A ministerial servant keeping the duties
+  // gets this as his first row.
+  if (perms.canEditDuties || perms.isElder || perms.isAdmin) {
     meetings.push({
       key: 'duties',
       title: t('congregationHub.duties'),

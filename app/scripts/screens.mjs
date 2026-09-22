@@ -236,7 +236,7 @@ async function words(page, name, expect, forbid, labels = { must: [], mustNot: [
 }
 
 /** «Hall cleaning»: the list of weeks, and (for the first account) one week opened. */
-async function cleaningFrames(page, name, expect, forbid, labels, weekFrame) {
+async function cleaningFrames(page, name, expect, forbid, labels, weekFrame, planFrame) {
   await page.goto(`${BASE}/publishers/cleaning`);
   await page.getByText(/^Эта неделя$/).first().waitFor({ timeout: 30000 }).catch(() => {});
   await answerLanguage(page);
@@ -244,6 +244,16 @@ async function cleaningFrames(page, name, expect, forbid, labels, weekFrame) {
   const vp = page.viewportSize();
   await page.screenshot({ path: join(OUT, name), clip: { x: 0, y: 0, width: vp.width, height: Math.min(vp.height, 900) } });
   await words(page, name, expect, forbid, labels);
+  if (planFrame) {
+    // The windows' plan must open in one tap for anyone — a publisher included.
+    await page.getByText(/^На плане$/).first().click();
+    await page.getByText(/^Окна недели$/).first().waitFor({ timeout: 15000 }).catch(() => {});
+    await page.waitForTimeout(800);
+    await page.screenshot({ path: join(OUT, planFrame), clip: { x: 0, y: 0, width: vp.width, height: Math.min(vp.height, 900) } });
+    await words(page, planFrame, ['Окна недели', 'Закрыть'], []);
+    await page.getByText(/^Закрыть$/).first().click();
+    await page.waitForTimeout(400);
+  }
   if (!weekFrame) return;
   const first = page.getByText(/^После встреч — /).first();
   if (!(await first.count())) { console.log('· ' + weekFrame + ' — пропущено: нет недели с группой'); return; }
@@ -370,6 +380,7 @@ try {
 
   await click(a, a.getByRole('tab', { name: /Уборка/ }), 'вкладка «Уборка»');
   await around(a, a.getByRole('tablist').first(), '03-cleaning.png', { above: 200, height: 600 });
+  await words(a, '03-cleaning.png', ['Править уборку', 'Окна: 5', 'На плане'], []);
 
   const sunday = a.getByRole('button', { name: /Как Библия может вам помочь/ });
   await click(a, sunday, 'воскресенье 27-го');
@@ -391,7 +402,7 @@ try {
   await programmeSections(a);
   await cleaningFrames(a, '16-cleaning-admin.png',
     ['Эта неделя', 'После встреч — Hamm-Werries', 'Уборка после встреч не назначена',
-     'Убирает ваша группа — после встреч', 'Как убирать'],
+     'Убирает ваша группа — после встреч', 'Как убирать', 'Показать прошедшие недели', 'Окна: 5'],
     [], { must: ['Распечатать график уборки'], mustNot: [] }, '17-cleaning-week.png');
   await dutiesFrames(a, '20-duties-admin.png',
     ['Встреча в будний день', 'Встреча в выходной день', `обязанности 1${NB}из${NB}8`],
@@ -451,8 +462,8 @@ try {
     ['Моя группа', 'Группы служения', 'Мои отсутствия', 'Уборка зала'],
     ['Люди', 'Возвещатели', 'Составление программы', 'Задачи совета старейшин', 'Отсутствия', 'Обязанности на встречах']);
   await cleaningFrames(p, '18-cleaning-publisher.png',
-    ['Эта неделя', 'Убирает ваша группа — после встреч', 'Как убирать'],
-    [], { must: [], mustNot: ['Распечатать график уборки'] }, null);
+    ['Эта неделя', 'Убирает ваша группа — после встреч', 'Как убирать', 'Окна: 5'],
+    [], { must: [], mustNot: ['Распечатать график уборки'] }, null, '24-windows-plan.png');
   await dutiesFrames(p, '23-duties-publisher.png',
     ['Обязанности на встречах распределяют координатор обязанностей и координатор совета старейшин.'],
     ['Встреча в будний день'], { must: [], mustNot: ['Распечатать обязанности на месяц'] }, null);

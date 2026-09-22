@@ -21,6 +21,7 @@ import { formatWeekRange } from '../../../lib/week-range';
 import { FONT } from '../../../lib/typography';
 import { HEADER_ICON } from '../../../lib/header';
 import { CleaningWeekEditor } from '../../../components/CleaningWeekEditor';
+import { WindowsLine, WindowsPlanDialog } from '../../../components/WindowsPlan';
 
 const INK = '#0f172a';
 const SOFT = '#64748b';
@@ -29,6 +30,8 @@ const WARN = '#b45309';
 const LINE = '#eef2f6';
 const FIRST = 12;
 const MORE = 8;
+/** Weeks brought back per tap of «show past weeks». */
+const PAST_STEP = 8;
 
 const atMidnight = (iso: string) => new Date(`${iso}T00:00:00`);
 
@@ -61,16 +64,21 @@ export default function CleaningScreen() {
 
   const thisMonday = formatDateISO(startOfWeekMonday(new Date()));
   const [count, setCount] = useState(FIRST);
+  // Past weeks on request: the programme screen let a coordinator page back
+  // and correct who actually cleaned, and this list must not take that away.
+  const [pastCount, setPastCount] = useState(0);
   const [chosen, setChosen] = useState(thisMonday);
+  const [planWindows, setPlanWindows] = useState<number[] | null>(null);
+  const startISO = formatDateISO(addWeeks(atMidnight(thisMonday), -pastCount));
   const weeks = useMemo(
-    () => Array.from({ length: count }, (_, i) => formatDateISO(addWeeks(atMidnight(thisMonday), i))),
-    [count, thisMonday],
+    () => Array.from({ length: pastCount + count }, (_, i) => formatDateISO(addWeeks(atMidnight(startISO), i))),
+    [count, pastCount, startISO],
   );
   const endISO = formatDateISO(addWeeks(atMidnight(thisMonday), count));
 
   const rangeQ = useQuery({
-    queryKey: ['cleaning', 'range', thisMonday, endISO],
-    queryFn: () => cleaningApi.range(thisMonday, endISO),
+    queryKey: ['cleaning', 'range', startISO, endISO],
+    queryFn: () => cleaningApi.range(startISO, endISO),
   });
   const groupsQ = useQuery({ queryKey: ['service-groups'], queryFn: () => serviceGroupsApi.list({}) });
   const eventsQ = useQuery({ queryKey: ['special-events', 'all'], queryFn: () => specialEventsApi.list({ all: true }) });
@@ -128,14 +136,20 @@ export default function CleaningScreen() {
     const monday = atMidnight(week);
     const sunday = addDays(monday, 6);
     const out: ReactNode[] = [];
-    if (i === 0) {
+    if (i === 0 && pastCount > 0) {
+      out.push(
+        <Text key="past" style={styles.label}>
+          {t('cleaningHall.past')}
+        </Text>,
+      );
+    } else if (week === thisMonday) {
       out.push(
         <View key="now" style={styles.nowRow}>
           <Text style={styles.nowText}>{t('cleaningHall.thisWeek')}</Text>
           <View style={styles.nowRule} />
         </View>,
       );
-    } else if (monday.getMonth() !== lastMonth) {
+    } else if (i > 0 && monday.getMonth() !== lastMonth) {
       out.push(
         <Text key={`m${week}`} style={styles.label}>
           {monday.toLocaleDateString(lang, { month: 'long' })}
@@ -206,11 +220,17 @@ export default function CleaningScreen() {
         <View style={styles.body}>
           <Text style={titleStyle}>{title}</Text>
           {lines.map((l, k) => (
-            // Two lines: one cut «day not se…» off — the very thing the line
-            // is there to say.
-            <Text key={k} style={l.style} numberOfLines={2}>
-              {l.text}
-            </Text>
+            <View key={k}>
+              {/* Two lines: one cut «day not se…» off — the very thing the
+                  line is there to say. */}
+              <Text style={l.style} numberOfLines={2}>
+                {l.text}
+              </Text>
+              {/* The weekly line comes first; its windows go right under it. */}
+              {k === 0 && weekly?.windows?.length ? (
+                <WindowsLine windows={weekly.windows} onOpen={() => setPlanWindows(weekly.windows)} />
+              ) : null}
+            </View>
           ))}
         </View>
         <Ionicons name="chevron-forward" size={18} color="#94a3b8" />
@@ -222,6 +242,13 @@ export default function CleaningScreen() {
   const list = (
     <ScrollView style={wide ? styles.listPane : styles.screen} contentContainerStyle={styles.content}>
       <View style={styles.column}>
+        <Pressable
+          style={({ pressed }) => [styles.more, pressed && styles.pressed]}
+          onPress={() => setPastCount((n) => n + PAST_STEP)}
+          accessibilityRole="button"
+        >
+          <Text style={styles.moreText}>{t('cleaningHall.showPast')}</Text>
+        </Pressable>
         {rows}
         <Pressable
           style={({ pressed }) => [styles.more, pressed && styles.pressed]}
@@ -267,6 +294,7 @@ export default function CleaningScreen() {
             : undefined,
         }}
       />
+      <WindowsPlanDialog windows={planWindows} onClose={() => setPlanWindows(null)} />
       {wide ? (
         <View style={styles.split}>
           {list}
