@@ -81,7 +81,7 @@ const [la = 'before', lb = 'after'] = process.argv.slice(2);
 const A = pick(la), B = pick(lb);
 console.log(`Сравниваю .screens/${A}  ↔  .screens/${B}\n`);
 const names = readdirSync(join(ROOT, A)).filter((n) => n.endsWith('.png') && n !== 'ERROR.png').sort();
-let bad = 0;
+let bad = 0, noise = 0;
 for (const n of names) {
   const fb = join(ROOT, B, n);
   if (!existsSync(fb)) { console.log(`· ${n} — НЕТ во втором прогоне`); bad++; continue; }
@@ -104,10 +104,11 @@ for (const n of names) {
   }
   const where = `${diff} пикс., область x ${x0}–${x1}, y ${y0}–${y1}`;
   if (diff === 0) console.log(`· ${n} — совпадает до пикселя`);
-  else if (step <= NOISE) console.log(`· ${n} — шум сглаживания: ${where}, оттенок не больше ±${step} из 255`);
+  else if (step <= NOISE) { console.log(`· ${n} — шум сглаживания: ${where}, оттенок не больше ±${step} из 255`); noise++; }
   else { console.log(`· ${n} — РАЗЛИЧАЕТСЯ: ${where}, оттенок до ±${step}`); bad++; }
 }
 for (const n of readdirSync(join(ROOT, B)).filter((n) => n.endsWith('.png') && n !== 'ERROR.png'))
   if (!names.includes(n)) { console.log(`· ${n} — есть только во втором прогоне`); bad++; }
-console.log(bad ? `\nРАЗЛИЧИЙ: ${bad}` : '\nВсе снимки совпадают до пикселя.');
+// «Match to the pixel» only when that is literally true; noise is said aloud.
+console.log(bad ? `\nРАЗЛИЧИЙ: ${bad}` : noise ? `\nРазличий нет; шум сглаживания в ${noise} — не в счёт.` : '\nВсе снимки совпадают до пикселя.');
 process.exit(bad ? 1 : 0);

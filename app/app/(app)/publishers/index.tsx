@@ -162,6 +162,18 @@ export default function CongregationScreen() {
       href: '/publishers/circuit-overseer',
     });
   }
+  // Meeting times and the halls — one screen since step 3b, a full admin's
+  // door as both Profile rows were.
+  const meetingPlace: Door[] = fullAdmin
+    ? [
+        {
+          key: 'meetingPlace',
+          title: t('meetingSettings.title'),
+          subtitle: t('congregationHub.sub.meetingPlace'),
+          href: '/publishers/meeting-settings',
+        },
+      ]
+    : [];
   // Who keeps which area — a full admin's door, as it was in the Profile.
   const responsibilities: Door[] = fullAdmin
     ? [
@@ -193,7 +205,7 @@ export default function CongregationScreen() {
         },
         { key: 'meetings', label: t('congregationHub.sections.meetings'), doors: meetings },
         { key: 'elders', label: t('congregationHub.sections.elders'), doors: elders },
-        { key: 'hall', label: t('congregationHub.sections.hall'), doors: [cleaning] },
+        { key: 'hall', label: t('congregationHub.sections.hall'), doors: [cleaning, ...meetingPlace] },
         // Empty for someone who sees the roster but holds none of these rights
         // (the private-data flag alone) — and an empty section is not drawn.
         { key: 'management', label: t('congregationHub.sections.management'), doors: management },

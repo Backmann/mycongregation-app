@@ -214,6 +214,43 @@ async function profileFrame(page, name, expect, forbid) {
   const vp = page.viewportSize();
   await page.screenshot({ path: join(OUT, name), clip: { x: 0, y: 0, width: vp.width, height: Math.min(vp.height, 2600) } });
   await words(page, name, expect, forbid);
+  // Step 3b merged the two «Уведомления» and the two «Мои данные» sections.
+  // Counted as HEADINGS: «Уведомления» is also the title of the row under its
+  // own heading, and counting text read that as a second section (22 Sept).
+  const twice = [];
+  for (const w of ['Мои данные', 'Уведомления']) {
+    const n = await page.getByRole('heading', { name: w, exact: true }).count();
+    if (n > 1) twice.push(`«${w}» ${n} раза`);
+  }
+  const headings = await page.getByRole('heading').count();
+  console.log(`· ${name} — разделы без повторов: ${twice.length ? 'НЕТ, ' + twice.join(', ') : 'да'} (заголовков разделов: ${headings})`);
+}
+
+/**
+ * «Время и место встреч» — one screen since step 3b: what is in force, the
+ * history, the halls, the congregation; then the schedule window, opened
+ * and closed with «Отмена» so nothing is saved.
+ */
+async function meetingPlace(page) {
+  await page.goto(`${BASE}/publishers/meeting-settings`);
+  await page.getByText(/^Сейчас действует$/).first().waitFor({ timeout: 30000 }).catch(() => {});
+  await answerLanguage(page);
+  await page.waitForTimeout(1000);
+  const vp = page.viewportSize();
+  await page.screenshot({ path: join(OUT, '28-meeting-place.png'), clip: { x: 0, y: 0, width: vp.width, height: Math.min(vp.height, 1800) } });
+  await words(page, '28-meeting-place.png',
+    ['Сейчас действует', 'Изменить расписание', 'Залы Царства', 'Добавить зал', 'Собрание', 'Название собрания', 'Часовой пояс собрания'], []);
+  const change = page.getByText(/^Изменить расписание$/).first();
+  if (!(await change.count())) return;
+  await change.click();
+  const title = page.getByRole('dialog').getByText(/^Изменить расписание$/).first();
+  await title.waitFor({ timeout: 15000 }).catch(() => {});
+  await page.waitForTimeout(600);
+  await around(page, title, '29-meeting-schedule-window.png', { above: 40, height: 900 });
+  await words(page, '29-meeting-schedule-window.png',
+    ['Встреча в будний день', 'Встреча в выходной день', 'Адрес Зала Царства', 'Действует с'], []);
+  await page.getByRole('dialog').getByText(/^Отмена$/).first().click();
+  await page.waitForTimeout(400);
 }
 
 /**
@@ -221,9 +258,14 @@ async function profileFrame(page, name, expect, forbid) {
  * stack — for bookmarks and anything else that kept the old path.
  */
 async function redirectCheck(page) {
-  await page.goto(`${BASE}/profile/journal`);
-  const ok = await page.waitForURL(/\/publishers\/journal/, { timeout: 15000 }).then(() => true).catch(() => false);
-  console.log(`· переадресация /profile/journal → /publishers/journal: ${ok ? 'да' : 'НЕТ, адрес ' + page.url()}`);
+  for (const [from, to] of [
+    ['/profile/journal', '/publishers/journal'],
+    ['/profile/halls', '/publishers/meeting-settings'],
+  ]) {
+    await page.goto(`${BASE}${from}`);
+    const ok = await page.waitForURL((url) => url.pathname === to, { timeout: 15000 }).then(() => true).catch(() => false);
+    console.log(`· переадресация ${from} → ${to}: ${ok ? 'да' : 'НЕТ, адрес ' + page.url()}`);
+  }
 }
 
 async function hub(page, name, expect, forbid) {
@@ -483,12 +525,13 @@ try {
   await hub(a, '12-congregation-admin.png',
     ['Люди', 'Возвещатели', 'Группы служения', 'Отсутствия', 'Ответственные', 'Встречи', 'Составление программы',
      'Координатор речей', 'Совет старейшин', 'Задачи совета старейшин', 'Школа пионеров',
-     'Зал Царства', 'Уборка зала', 'Обязанности на встречах'],
+     'Зал Царства', 'Уборка зала', 'Время и место встреч', 'Обязанности на встречах'],
     ['Моя группа', 'Мои отсутствия']);
   await management(a);
+  await meetingPlace(a);
   await profileFrame(a, '26-profile-admin.png',
-    ['Время и место встреч', 'Залы Царства', 'Импорт расписания', 'Удалить учётную запись и данные'],
-    MOVED_OUT_OF_PROFILE);
+    ['Импорт расписания', 'Удалить учётную запись и данные'],
+    [...MOVED_OUT_OF_PROFILE, 'Время и место встреч', 'Залы Царства']);
   await redirectCheck(a);
   await programmeSections(a);
   await cleaningFrames(a, '16-cleaning-admin.png',
@@ -552,7 +595,7 @@ try {
   await hub(p, '13-congregation-publisher.png',
     ['Моя группа', 'Группы служения', 'Мои отсутствия', 'Уборка зала'],
     ['Люди', 'Возвещатели', 'Составление программы', 'Задачи совета старейшин', 'Отсутствия', 'Обязанности на встречах',
-     'Ответственные', 'Управление', 'Журнал изменений', 'Каталог публичных речей']);
+     'Ответственные', 'Управление', 'Журнал изменений', 'Каталог публичных речей', 'Время и место встреч']);
   await cleaningFrames(p, '18-cleaning-publisher.png',
     ['Эта неделя', 'Убирает ваша группа — после встреч', 'Как убирать', 'Окна: 5'],
     [], { must: [], mustNot: ['Распечатать график уборки'] }, null, '24-windows-plan.png');

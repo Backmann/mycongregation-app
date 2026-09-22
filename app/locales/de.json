@@ -201,7 +201,6 @@
     "settings": "Einstellungen",
     "language": "Sprache",
     "signOut": "Abmelden",
-    "notifications": "Benachrichtigungen",
     "webPush": {
       "title": "Browser-Benachrichtigungen",
       "enabled": "Aktiviert",
@@ -236,16 +235,12 @@
     "title": "Profil",
     "publicTalksImport": "Massenimport",
     "responsibilitiesDescription": "Bereichskoordinatoren zuweisen",
-    "meetingSettings": "Zeit & Ort der Zusammenkünfte",
-    "meetingSettingsDescription": "Tag, Uhrzeit und Adresse der Zusammenkünfte",
     "roles": {
       "admin": "Administrator",
       "elder": "Ältester",
       "secretary": "Sekretär",
       "publisher": "Verkündiger"
     },
-    "halls": "Königreichssäle",
-    "hallsDescription": "Adressen für Zusammenkünfte und Predigtdienst",
     "circuitOverseer": "Kreisaufseher",
     "circuitOverseerDescription": "Standardname für den Besuch",
     "loginNameHint": "Das ist Ihr Name für die Anmeldung.",
@@ -1431,17 +1426,20 @@
   },
   "meetingSettings": {
     "title": "Zeit & Ort der Zusammenkünfte",
+    "now": "Aktuell gültig",
+    "since": "Gültig seit {{date}}",
+    "change": "Zeitplan ändern",
+    "historySince": "ab {{date}}",
+    "congregation": "Versammlung",
+    "fromHalls": "Aus der Liste:",
+    "effectiveFromLabel": "Gültig ab",
     "congregationName": "Name der Versammlung",
-    "saveName": "Namen speichern",
-    "editTitle": "Zusammenkunftsplan",
     "midweek": "Zusammenkunft unter der Woche",
     "weekend": "Zusammenkunft am Wochenende",
     "address": "Adresse des Königreichssaals",
     "addressPlaceholder": "Straße, PLZ, Stadt",
     "microphoneSlots": "Mikrofon-Plätze",
-    "effectiveFrom": "Gültig ab (JJJJ-MM-TT)",
     "effectiveFromHint": "Beim Speichern wird ab diesem Datum eine neue Version erstellt. Vergangene Wochen behalten ihren bisherigen Tag und ihre Uhrzeit.",
-    "saveVersion": "Plan speichern",
     "history": "Änderungsverlauf",
     "effectiveNow": "Aktuell gültig",
     "noVersions": "Noch keine Versionen",
@@ -1463,8 +1461,7 @@
     "timezone": "Zeitzone der Versammlung",
     "timezoneNow": "Dort ist es jetzt {{when}}",
     "timezoneInvalid": "Diese Zeitzone gibt es nicht. Ein Name wie Europe/Berlin.",
-    "useDeviceTimezone": "Von diesem Gerät übernehmen",
-    "saveTimezone": "Zeitzone speichern"
+    "useDeviceTimezone": "Von diesem Gerät übernehmen"
   },
   "duties": {
     "title": "Aufgaben",
@@ -2310,8 +2307,7 @@
     "deleteBody": "Bestehende Termine behalten ihre Adresse.",
     "deleteConfirm": "Löschen",
     "empty": "Noch keine Säle hinzugefügt",
-    "adminOnly": "Nur für Administratoren",
-    "errorTitle": "Fehler"
+    "adminOnly": "Nur für Administratoren"
   },
   "hospitality": {
     "title": "Gastfreundschaft",
@@ -2739,7 +2735,6 @@
     "noAccess": "Die Ereignisliste steht Ältesten und Administratoren der Versammlung zur Verfügung."
   },
   "myContacts": {
-    "title": "Meine Daten",
     "rowTitle": "Meine Kontaktdaten",
     "intro": "Telefon, E-Mail und Adresse pflegst du selbst. Den Namen ändert ein Administrator der Versammlung — er wird in Plänen, Berichten und Ausdrucken verwendet.",
     "confirm": "Angaben stimmen",
@@ -3484,7 +3479,8 @@
       "school": "Schulplan und Brüder dafür",
       "cleaning": "Reinigungsplan und wie man reinigt",
       "duties": "Wer bei den nächsten Zusammenkünften welchen Platz hat",
-      "users": "Zugänge, Rollen und Passwörter"
+      "users": "Zugänge, Rollen und Passwörter",
+      "meetingPlace": "Tage, Zeiten, Säle"
     },
     "cleaning": "Saalreinigung",
     "duties": "Dienste bei Zusammenkünften"

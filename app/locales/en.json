@@ -201,7 +201,6 @@
     "settings": "Settings",
     "language": "Language",
     "signOut": "Sign out",
-    "notifications": "Notifications",
     "webPush": {
       "title": "Browser notifications",
       "enabled": "Enabled",
@@ -236,16 +235,12 @@
     "title": "Profile",
     "publicTalksImport": "Bulk import",
     "responsibilitiesDescription": "Assign section coordinators",
-    "meetingSettings": "Meeting time & place",
-    "meetingSettingsDescription": "Day, time and address of the meetings",
     "roles": {
       "admin": "Administrator",
       "elder": "Elder",
       "secretary": "Secretary",
       "publisher": "Publisher"
     },
-    "halls": "Kingdom Halls",
-    "hallsDescription": "Addresses for meetings and field service",
     "circuitOverseer": "Circuit overseer",
     "circuitOverseerDescription": "Default name for the CO visit",
     "loginNameHint": "This is your name for signing in.",
@@ -1431,17 +1426,20 @@
   },
   "meetingSettings": {
     "title": "Meeting time & place",
+    "now": "In force now",
+    "since": "In force since {{date}}",
+    "change": "Change the schedule",
+    "historySince": "from {{date}}",
+    "congregation": "Congregation",
+    "fromHalls": "From the list:",
+    "effectiveFromLabel": "In force from",
     "congregationName": "Congregation name",
-    "saveName": "Save name",
-    "editTitle": "Meeting schedule",
     "midweek": "Midweek meeting",
     "weekend": "Weekend meeting",
     "address": "Kingdom Hall address",
     "addressPlaceholder": "Street, postcode, city",
     "microphoneSlots": "Microphone slots",
-    "effectiveFrom": "Effective from (YYYY-MM-DD)",
     "effectiveFromHint": "Saving creates a new schedule version from this date. Past weeks keep their previous day and time.",
-    "saveVersion": "Save schedule",
     "history": "Change history",
     "effectiveNow": "In effect now",
     "noVersions": "No schedule versions yet",
@@ -1463,8 +1461,7 @@
     "timezone": "Congregation timezone",
     "timezoneNow": "It is now {{when}} there",
     "timezoneInvalid": "No such timezone. A name like Europe/Berlin.",
-    "useDeviceTimezone": "Take it from this device",
-    "saveTimezone": "Save timezone"
+    "useDeviceTimezone": "Take it from this device"
   },
   "duties": {
     "title": "Duties",
@@ -2310,8 +2307,7 @@
     "deleteBody": "Existing meetings keep their address.",
     "deleteConfirm": "Delete",
     "empty": "No halls added yet",
-    "adminOnly": "Admins only",
-    "errorTitle": "Error"
+    "adminOnly": "Admins only"
   },
   "hospitality": {
     "title": "Hospitality",
@@ -2739,7 +2735,6 @@
     "noAccess": "The activity feed is available to elders and congregation administrators."
   },
   "myContacts": {
-    "title": "My details",
     "rowTitle": "My contacts",
     "intro": "You keep your phone, e-mail and address up to date yourself. The name is changed by a congregation administrator — it is used in schedules, reports and printed sheets.",
     "confirm": "These are correct",
@@ -3484,7 +3479,8 @@
       "school": "School schedule and the brothers for it",
       "cleaning": "Cleaning schedule and how to clean",
       "duties": "Who is at which place at the coming meetings",
-      "users": "Sign-ins, roles and passwords"
+      "users": "Sign-ins, roles and passwords",
+      "meetingPlace": "Days, times, halls"
     },
     "cleaning": "Hall cleaning",
     "duties": "Meeting duties"

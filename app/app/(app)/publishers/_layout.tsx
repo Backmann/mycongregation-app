@@ -136,6 +136,14 @@ export default function PublishersLayout() {
           headerLeft: () => <BackButton fallback="/publishers" toParent />,
         }}
       />
+      {/* Meeting times and the halls, one screen since step 3b. */}
+      <Stack.Screen
+        name="meeting-settings"
+        options={{
+          title: t('meetingSettings.title'),
+          headerLeft: () => <BackButton fallback="/publishers" toParent />,
+        }}
+      />
       <Stack.Screen
         name="circuit-overseer"
         options={{

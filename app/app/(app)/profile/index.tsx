@@ -182,8 +182,9 @@ export default function ProfileScreen() {
 
   if (!user) return null;
 
+  // Admins and elders alike — the one row left under it (the programme
+  // import) is theirs; the full-admin rows moved to the Congregation tab.
   const isAdmin = user.role === "admin" || user.role === "elder";
-  const isFullAdmin = user.role === "admin";
   const initials =
     (myPublisher
       ? `${myPublisher.firstName?.[0] ?? ""}${myPublisher.lastName?.[0] ?? ""}`
@@ -197,7 +198,7 @@ export default function ProfileScreen() {
         contentContainerStyle={{ paddingBottom: 32 }}
       >
         <View style={styles.section}>
-          <Text style={styles.sectionLabel}>{t("profile.signedInAs")}</Text>
+          <Text style={styles.sectionLabel} accessibilityRole="header">{t("profile.signedInAs")}</Text>
           <View style={styles.card}>
             <View style={styles.identityRow}>
               <View style={styles.avatar}>
@@ -272,7 +273,7 @@ export default function ProfileScreen() {
           iPhone the switch is absent rather than present and dead. */}
         {bioAvailable ? (
           <View style={styles.section}>
-            <Text style={styles.sectionLabel}>{t("lock.sectionTitle")}</Text>
+            <Text style={styles.sectionLabel} accessibilityRole="header">{t("lock.sectionTitle")}</Text>
             <View style={styles.card}>
               <View style={styles.row}>
                 <View style={styles.rowIcon}>
@@ -302,7 +303,7 @@ export default function ProfileScreen() {
         ) : null}
 
         <View style={styles.section}>
-          <Text style={styles.sectionLabel}>
+          <Text style={styles.sectionLabel} accessibilityRole="header">
             {t("notificationPrefs.title")}
           </Text>
           <View style={styles.card}>
@@ -330,44 +331,112 @@ export default function ProfileScreen() {
               </View>
               <Ionicons name="chevron-forward" size={18} color="#94a3b8" />
             </Pressable>
+            {/* The browser's own switch, in the same section — it used to
+                stand alone under a second «Уведомления» heading. */}
+            {Platform.OS === "web" && webPushStatus !== null ? (
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.row,
+                    pressed && !webPushDisabled && styles.rowPressed,
+                    webPushDisabled && { opacity: 0.6 },
+                  ]}
+                  onPress={handleWebPushToggle}
+                  disabled={webPushDisabled}
+                >
+                  <View style={styles.rowIcon}>
+                    <Ionicons
+                      name={
+                        webPushStatus === "subscribed"
+                          ? "notifications"
+                          : "notifications-outline"
+                      }
+                      size={20}
+                      color="#0ea5e9"
+                    />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.rowTitle}>
+                      {t("profile.webPush.title")}
+                    </Text>
+                    <Text style={styles.rowSubtitle}>
+                      {t(webPushSubtitleKey)}
+                    </Text>
+                  </View>
+                  {webPushStatus === "subscribed" && (
+                    <Ionicons name="checkmark-circle" size={20} color="#10b981" />
+                  )}
+                </Pressable>
+            ) : null}
           </View>
         </View>
 
-        {myPublisher ? (
-          <View style={styles.section}>
-            <Text style={styles.sectionLabel}>{t("myContacts.title")}</Text>
-            <View style={styles.card}>
-              <Pressable
-                style={({ pressed }) => [
-                  styles.row,
-                  pressed && styles.rowPressed,
-                ]}
-                onPress={() => router.push("/profile/contacts" as never)}
-              >
-                <View style={styles.rowIcon}>
-                  <Ionicons name="call-outline" size={20} color="#0ea5e9" />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.rowTitle}>
-                    {t("myContacts.rowTitle")}
-                  </Text>
-                  <Text style={styles.rowSubtitle}>
-                    {contactsCheckLine(
-                      t,
-                      i18n.language,
-                      myPublisher.contactsConfirmedAt,
-                      myPublisher.contactsConfirmedByName,
-                    )}
-                  </Text>
-                </View>
-                <Ionicons name="chevron-forward" size={18} color="#94a3b8" />
-              </Pressable>
-            </View>
-          </View>
-        ) : null}
-
+        {/* One «Мои данные» section: the contacts and what one may do with
+            one's own data used to be two sections under the same heading. */}
         <View style={styles.section}>
-          <Text style={styles.sectionLabel}>{t("profile.settings")}</Text>
+          <Text style={styles.sectionLabel} accessibilityRole="header">{t("dataRights.sectionLabel")}</Text>
+          <View style={styles.card}>
+            {myPublisher ? (
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.row,
+                    pressed && styles.rowPressed,
+                  ]}
+                  onPress={() => router.push("/profile/contacts" as never)}
+                >
+                  <View style={styles.rowIcon}>
+                    <Ionicons name="call-outline" size={20} color="#0ea5e9" />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.rowTitle}>
+                      {t("myContacts.rowTitle")}
+                    </Text>
+                    <Text style={styles.rowSubtitle}>
+                      {contactsCheckLine(
+                        t,
+                        i18n.language,
+                        myPublisher.contactsConfirmedAt,
+                        myPublisher.contactsConfirmedByName,
+                      )}
+                    </Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={18} color="#94a3b8" />
+                </Pressable>
+            ) : null}
+          <Pressable
+            style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
+            onPress={handleExport}
+            disabled={exporting}
+          >
+            <View style={styles.rowIcon}>
+              <Ionicons name="download-outline" size={20} color="#0ea5e9" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.rowTitle}>{t("dataRights.export")}</Text>
+              <Text style={styles.rowSubtitle}>
+                {t("dataRights.exportHint")}
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color="#cbd5e1" />
+          </Pressable>
+          <Pressable
+            style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
+            onPress={() => router.push("/profile/delete-account" as any)}
+          >
+            <View style={styles.rowIcon}>
+              <Ionicons name="trash-outline" size={20} color="#dc2626" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.rowTitle}>{t("dataRights.delete")}</Text>
+              <Text style={styles.rowSubtitle}>
+                {t("dataRights.deleteHint")}
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color="#cbd5e1" />
+          </Pressable>
+          </View>
+        </View>
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel} accessibilityRole="header">{t("profile.settings")}</Text>
           <View style={styles.card}>
             <Pressable
               style={({ pressed }) => [
@@ -412,100 +481,10 @@ export default function ProfileScreen() {
           </View>
         </View>
 
-        {Platform.OS === "web" && webPushStatus !== null && (
-          <View style={styles.section}>
-            <Text style={styles.sectionLabel}>
-              {t("profile.notifications")}
-            </Text>
-            <View style={styles.card}>
-              <Pressable
-                style={({ pressed }) => [
-                  styles.row,
-                  pressed && !webPushDisabled && styles.rowPressed,
-                  webPushDisabled && { opacity: 0.6 },
-                ]}
-                onPress={handleWebPushToggle}
-                disabled={webPushDisabled}
-              >
-                <View style={styles.rowIcon}>
-                  <Ionicons
-                    name={
-                      webPushStatus === "subscribed"
-                        ? "notifications"
-                        : "notifications-outline"
-                    }
-                    size={20}
-                    color="#0ea5e9"
-                  />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.rowTitle}>
-                    {t("profile.webPush.title")}
-                  </Text>
-                  <Text style={styles.rowSubtitle}>
-                    {t(webPushSubtitleKey)}
-                  </Text>
-                </View>
-                {webPushStatus === "subscribed" && (
-                  <Ionicons name="checkmark-circle" size={20} color="#10b981" />
-                )}
-              </Pressable>
-            </View>
-          </View>
-        )}
-
         {isAdmin && (
           <View style={styles.section}>
-            <Text style={styles.sectionLabel}>{t("profile.adminTools")}</Text>
+            <Text style={styles.sectionLabel} accessibilityRole="header">{t("profile.adminTools")}</Text>
             <View style={styles.card}>
-              {isFullAdmin && (
-                <Pressable
-                  style={({ pressed }) => [
-                    styles.row,
-                    pressed && styles.rowPressed,
-                  ]}
-                  onPress={() =>
-                    router.push("/profile/meeting-settings" as any)
-                  }
-                >
-                  <View style={styles.rowIcon}>
-                    <Ionicons name="time-outline" size={20} color="#0ea5e9" />
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.rowTitle}>
-                      {t("profile.meetingSettings")}
-                    </Text>
-                    <Text style={styles.rowSubtitle}>
-                      {t("profile.meetingSettingsDescription")}
-                    </Text>
-                  </View>
-                  <Ionicons name="chevron-forward" size={18} color="#cbd5e1" />
-                </Pressable>
-              )}
-              {isFullAdmin && (
-                <Pressable
-                  style={({ pressed }) => [
-                    styles.row,
-                    pressed && styles.rowPressed,
-                  ]}
-                  onPress={() => router.push("/profile/halls" as any)}
-                >
-                  <View style={styles.rowIcon}>
-                    <Ionicons
-                      name="business-outline"
-                      size={20}
-                      color="#0ea5e9"
-                    />
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.rowTitle}>{t("profile.halls")}</Text>
-                    <Text style={styles.rowSubtitle}>
-                      {t("profile.hallsDescription")}
-                    </Text>
-                  </View>
-                  <Ionicons name="chevron-forward" size={18} color="#cbd5e1" />
-                </Pressable>
-              )}
               {/* Importing a workbook is a monthly errand, not a daily one, so
                 it lives with the other rare settings rather than in the header
                 of a screen used every day. */}
@@ -538,44 +517,7 @@ export default function ProfileScreen() {
         )}
 
         <View style={styles.section}>
-          <Text style={styles.sectionLabel}>
-            {t("dataRights.sectionLabel")}
-          </Text>
-          <Pressable
-            style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
-            onPress={handleExport}
-            disabled={exporting}
-          >
-            <View style={styles.rowIcon}>
-              <Ionicons name="download-outline" size={20} color="#0ea5e9" />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.rowTitle}>{t("dataRights.export")}</Text>
-              <Text style={styles.rowSubtitle}>
-                {t("dataRights.exportHint")}
-              </Text>
-            </View>
-            <Ionicons name="chevron-forward" size={18} color="#cbd5e1" />
-          </Pressable>
-          <Pressable
-            style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
-            onPress={() => router.push("/profile/delete-account" as any)}
-          >
-            <View style={styles.rowIcon}>
-              <Ionicons name="trash-outline" size={20} color="#dc2626" />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.rowTitle}>{t("dataRights.delete")}</Text>
-              <Text style={styles.rowSubtitle}>
-                {t("dataRights.deleteHint")}
-              </Text>
-            </View>
-            <Ionicons name="chevron-forward" size={18} color="#cbd5e1" />
-          </Pressable>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionLabel}>{t("legal.sectionLabel")}</Text>
+          <Text style={styles.sectionLabel} accessibilityRole="header">{t("legal.sectionLabel")}</Text>
           <Pressable
             style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
             onPress={() => router.push("/legal" as any)}
@@ -626,6 +568,9 @@ export default function ProfileScreen() {
 
 const styles = StyleSheet.create({
   section: { marginTop: 16 },
+  // Every section label carries accessibilityRole="header": a screen reader
+  // announces it as a heading, and the screenshot script counts headings, not
+  // any text — «Уведомления» is both a heading and the title of its first row.
   sectionLabel: {
     fontSize: 12,
     fontWeight: "600",
