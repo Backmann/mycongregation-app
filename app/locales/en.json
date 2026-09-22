@@ -183,7 +183,7 @@
     "saving": "Saving…",
     "add": "Add",
     "today": "Today",
-    "datePlaceholder": "YYYY-MM-DD",
+    "datePlaceholder": "Choose a date",
     "loadFailed": "Could not load",
     "loadFailedHint": "Check your connection and try again — the data may not have arrived.",
     "hourUnit": "h",
@@ -393,7 +393,7 @@
       "firstName": "John",
       "middleName": "James",
       "lastName": "Smith",
-      "date": "YYYY-MM-DD",
+      "date": "Choose a date",
       "phone": "+49 170 1234567",
       "email": "john@example.com"
     },

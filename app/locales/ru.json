@@ -183,7 +183,7 @@
     "saving": "Сохранение…",
     "add": "Добавить",
     "today": "Сегодня",
-    "datePlaceholder": "ГГГГ-ММ-ДД",
+    "datePlaceholder": "Выбрать дату",
     "loadFailed": "Не удалось загрузить",
     "loadFailedHint": "Проверьте связь и попробуйте ещё раз — данные могли не прийти.",
     "hourUnit": "ч",
@@ -393,7 +393,7 @@
       "firstName": "Иван",
       "middleName": "Иванович",
       "lastName": "Иванов",
-      "date": "ГГГГ-ММ-ДД",
+      "date": "Выбрать дату",
       "phone": "+49 170 1234567",
       "email": "ivan@example.com"
     },

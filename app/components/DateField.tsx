@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
+import { formatLongDate } from '../lib/dates';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ru';
 import 'dayjs/locale/de';
@@ -143,7 +144,9 @@ export function DateField({
       <Pressable style={styles.field} onPress={openPicker}>
         <Ionicons name="calendar-outline" size={17} color="#0369a1" />
         <Text style={[styles.value, !value && styles.placeholder]}>
-          {value || placeholder || t('common.datePlaceholder')}
+          {/* The date in words, not the stored 2026-09-22 (22 September): the
+              value handed to onChange is still YYYY-MM-DD. */}
+          {value ? formatLongDate(value, i18n.language) : placeholder || t('common.datePlaceholder')}
         </Text>
         {value ? (
           <Pressable hitSlop={8} onPress={() => onChange('')}>

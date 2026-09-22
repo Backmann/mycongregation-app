@@ -28,7 +28,7 @@ import { confirm } from '../../../components/ConfirmHost';
 import { Dialog } from '../../../components/Dialog';
 import { DateField } from '../../../components/DateField';
 import { TimeField } from '../../../components/TimeField';
-import { formatDateISO } from '../../../lib/dates';
+import { formatDateISO, formatLongDate } from '../../../lib/dates';
 
 /**
  * Meeting times and places — one screen (step 3b, 22 September).
@@ -121,7 +121,8 @@ export default function MeetingPlaceScreen() {
     () => (dow: number) => dayjs(WEEK_ANCHOR).add(dow - 1, 'day').locale(lang).format('dddd'),
     [lang],
   );
-  const longDate = (iso: string) => dayjs(iso).locale(lang).format('D MMMM YYYY');
+  // The same words as every date field in the app (lib/dates formatLongDate).
+  const longDate = (iso: string) => formatLongDate(iso, lang);
 
   const onError = (e: unknown) => notify(t('meetingSettings.errorTitle'), extractErrorMessage(e));
   const refresh = () => qc.invalidateQueries({ queryKey: QK });

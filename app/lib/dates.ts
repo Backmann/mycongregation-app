@@ -19,6 +19,17 @@ export function parseISODate(s: string): Date {
   const [y, m, d] = s.split('-').map(Number);
   return new Date(y, m - 1, d);
 }
+
+/**
+ * 'YYYY-MM-DD' as a person reads it, in their language: «22 сентября 2026 г.»,
+ * «22. September 2026», «September 22, 2026» — the same Intl words the
+ * contacts line and the absences already use. Anything that is not such a
+ * date comes back unchanged, so a half-typed value is never hidden.
+ */
+export function formatLongDate(iso: string, locale: string): string {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return iso;
+  return parseISODate(iso).toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric' });
+}
 export function addDays(date: Date, n: number): Date {
   const d = new Date(date);
   d.setDate(d.getDate() + n);

@@ -183,7 +183,7 @@
     "saving": "Speichern…",
     "add": "Hinzufügen",
     "today": "Heute",
-    "datePlaceholder": "JJJJ-MM-TT",
+    "datePlaceholder": "Datum wählen",
     "loadFailed": "Laden fehlgeschlagen",
     "loadFailedHint": "Prüfe die Verbindung und versuche es erneut — die Daten kamen möglicherweise nicht an.",
     "hourUnit": "Std.",
@@ -393,7 +393,7 @@
       "firstName": "Hans",
       "middleName": "Karl",
       "lastName": "Müller",
-      "date": "JJJJ-MM-TT",
+      "date": "Datum wählen",
       "phone": "+49 170 1234567",
       "email": "hans@example.com"
     },

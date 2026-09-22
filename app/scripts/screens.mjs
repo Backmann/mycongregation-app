@@ -237,7 +237,14 @@ async function meetingPlace(page) {
   await answerLanguage(page);
   await page.waitForTimeout(1000);
   const vp = page.viewportSize();
-  await page.screenshot({ path: join(OUT, '28-meeting-place.png'), clip: { x: 0, y: 0, width: vp.width, height: Math.min(vp.height, 1800) } });
+  // «Сейчас там: 22 сентября в 22:02» is a live clock — two runs ten minutes
+  // apart differed there (22 September). Masked, so the frame compares what
+  // the screen is, not what time it is.
+  await page.screenshot({
+    path: join(OUT, '28-meeting-place.png'),
+    clip: { x: 0, y: 0, width: vp.width, height: Math.min(vp.height, 1800) },
+    mask: [page.getByText(/Сейчас там:/)],
+  });
   await words(page, '28-meeting-place.png',
     ['Сейчас действует', 'Изменить расписание', 'Залы Царства', 'Добавить зал', 'Собрание', 'Название собрания', 'Часовой пояс собрания'], []);
   const change = page.getByText(/^Изменить расписание$/).first();
