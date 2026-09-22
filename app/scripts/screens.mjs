@@ -14,7 +14,12 @@
  *     npm i -D playwright
  *     npx playwright install chromium
  * Запуск (сервер и Expo web должны работать):
- *     npm run screens
+ *     node scripts/screens.mjs [before|after]
+ *
+ * Called directly, NOT as an npm script: the "scripts" block of package.json is
+ * part of the Expo fingerprint (runtimeVersion policy "fingerprint"), and a new
+ * line there changes it — updates published over the air then no longer reach
+ * the APK already installed on phones.
  *
  * Можно переопределить: APP_URL, ADMIN, PUBLISHER, PASSWORD.
  *
@@ -35,7 +40,10 @@ const PASSWORD = process.env.PASSWORD || 'local12345';
 const now = new Date();
 const pad = (n) => String(n).padStart(2, '0');
 const stamp = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}_${pad(now.getHours())}-${pad(now.getMinutes())}`;
-const OUT = join(process.cwd(), '.screens', stamp);
+// An optional label — «before», «after» — so two runs in the same minute do
+// not land in one folder, and a comparison can find them by name.
+const LABEL = (process.argv[2] || '').replace(/[^a-z0-9-]/gi, '');
+const OUT = join(process.cwd(), '.screens', LABEL ? `${stamp}_${LABEL}` : stamp);
 mkdirSync(OUT, { recursive: true });
 
 const PHONE = { width: 390, height: 5200 }; // tall: the whole list fits, no inner scrolling
@@ -176,6 +184,34 @@ async function hub(page, name, expect, forbid) {
   console.log('· ' + name + ' — ' + (bad.length ? 'НЕ ТАК: ' + bad.join(', ') : 'строки как положено'));
 }
 
+/**
+ * The old programme screen, this week, with «Duties» and «Cleaning» opened —
+ * the sections whose wiring moves to shared modules. Taken before and after a
+ * change and compared pixel by pixel, they prove the move changed nothing.
+ */
+async function programmeSections(page) {
+  await page.goto(`${BASE}/schedule`);
+  const duties = page.getByText(/^Обязанности$/).first();
+  await duties.waitFor({ timeout: 30000 }).catch(() => {});
+  await answerLanguage(page);
+  if (!(await duties.count())) {
+    console.log('· 14/15 — пропущено: на экране программы нет раздела «Обязанности»');
+    return;
+  }
+  await page.waitForTimeout(1500);
+  await duties.click();
+  await page.waitForTimeout(1500);
+  await around(page, duties, '14-programme-duties.png', { above: 20, height: 1500 });
+  const cleaning = page.getByText(/^Уборка$/).first();
+  if (!(await cleaning.count())) {
+    console.log('· 15 — пропущено: нет раздела «Уборка»');
+    return;
+  }
+  await cleaning.click();
+  await page.waitForTimeout(1500);
+  await around(page, cleaning, '15-programme-cleaning.png', { above: 20, height: 1100 });
+}
+
 async function openFeed(page) {
   await page.goto(`${BASE}/schedule/feed`);
   try {
@@ -271,6 +307,7 @@ try {
     ['Люди', 'Возвещатели', 'Группы служения', 'Отсутствия', 'Встречи', 'Составление программы',
      'Координатор речей', 'Совет старейшин', 'Задачи совета старейшин', 'Школа пионеров'],
     ['Моя группа', 'Мои отсутствия']);
+  await programmeSections(a);
 
   // --- Тот же вход, окна настоящих размеров: где лента встаёт ---
   // One sign-in for all of these: the server limits how often one may sign in,
