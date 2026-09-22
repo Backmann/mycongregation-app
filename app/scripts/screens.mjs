@@ -249,7 +249,9 @@ async function cleaningFrames(page, name, expect, forbid, labels, weekFrame, pla
     await page.getByText(/^На плане$/).first().click();
     await page.getByText(/^Окна недели$/).first().waitFor({ timeout: 15000 }).catch(() => {});
     await page.waitForTimeout(800);
-    await page.screenshot({ path: join(OUT, planFrame), clip: { x: 0, y: 0, width: vp.width, height: Math.min(vp.height, 900) } });
+    // Around the plan itself: in the tall window it opens mid-screen, far
+    // below the top 900 points the other frames take.
+    await around(page, page.getByText(/^Окна недели$/).first(), planFrame, { above: 60, height: 900 });
     await words(page, planFrame, ['Окна недели', 'Закрыть'], []);
     await page.getByText(/^Закрыть$/).first().click();
     await page.waitForTimeout(400);
@@ -300,6 +302,31 @@ async function dutiesWide(page) {
   await page.waitForTimeout(1500);
   await page.screenshot({ path: join(OUT, '22-duties-desktop.png') });
   await words(page, '22-duties-desktop.png', ['Встреча в будний день', 'Распорядитель у входа'], []);
+}
+
+/**
+ * Wait for Expo to finish bundling before anything is measured.
+ *
+ * After a change Expo rebuilds the app, which took minutes on a cold start;
+ * the first page then waited its 30 seconds and the whole run died on a
+ * timeout that said nothing about why. Now the first load gets five minutes
+ * and the run says what it is waiting for — and a server that is down fails
+ * here, with that said, instead of somewhere in the middle.
+ */
+async function warmUp(browser) {
+  const started = Date.now();
+  console.log('· жду сборку Expo…');
+  const ctx = await browser.newContext({ viewport: REAL_PHONE, locale: 'ru-RU' });
+  const page = await ctx.newPage();
+  try {
+    await page.goto(BASE, { timeout: 300000 });
+  } catch (e) {
+    console.error(`Expo не ответил за 5 минут: ${e.message.split('\n')[0]}`);
+    console.error('Проверь окно, где запущен npx expo start --web: не упал ли он (heap out of memory) и идёт ли сборка.');
+    process.exit(1);
+  }
+  await ctx.close();
+  console.log(`· Expo готов — ${Math.round((Date.now() - started) / 1000)} с`);
 }
 
 async function openFeed(page) {
@@ -367,6 +394,7 @@ async function click(page, locator, what) {
 }
 
 const browser = await chromium.launch();
+await warmUp(browser);
 try {
   // --- Администратор, телефон ---
   const { ctx: admin, page: a, keep: keepAdmin } = await signedIn(browser, ADMIN, PHONE);
