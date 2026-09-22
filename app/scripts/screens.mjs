@@ -245,6 +245,12 @@ async function cleaningFrames(page, name, expect, forbid, labels, weekFrame, pla
   await page.screenshot({ path: join(OUT, name), clip: { x: 0, y: 0, width: vp.width, height: Math.min(vp.height, 900) } });
   await words(page, name, expect, forbid, labels);
   if (planFrame) {
+    // The halo round the week's windows breathes on a 2.3-second loop, so a
+    // frame taken at a fixed delay caught it at a different point on every
+    // run: two runs of the same code differed inside the halo alone. With
+    // «reduce motion» the plan holds it still. Asked for this frame only —
+    // every other frame stays as a person sees it.
+    await page.emulateMedia({ reducedMotion: 'reduce' });
     // The windows' plan must open in one tap for anyone — a publisher included.
     await page.getByText(/^На плане$/).first().click();
     await page.getByText(/^Окна недели$/).first().waitFor({ timeout: 15000 }).catch(() => {});
@@ -253,8 +259,15 @@ async function cleaningFrames(page, name, expect, forbid, labels, weekFrame, pla
     // below the top 900 points the other frames take.
     await around(page, page.getByText(/^Окна недели$/).first(), planFrame, { above: 60, height: 900 });
     await words(page, planFrame, ['Окна недели', 'Закрыть'], []);
+    // The proof the frame is steady, not a hope: two shots of the screen,
+    // longer apart than half a breath, must be the same byte for byte.
+    const first = await page.screenshot();
+    await page.waitForTimeout(1300);
+    const second = await page.screenshot();
+    console.log(`· ${planFrame} — ореол стоит: ${first.equals(second) ? 'да' : 'НЕТ, кадр будет плавать'}`);
     await page.getByText(/^Закрыть$/).first().click();
     await page.waitForTimeout(400);
+    await page.emulateMedia({ reducedMotion: null });
   }
   if (!weekFrame) return;
   const first = page.getByText(/^После встреч — /).first();

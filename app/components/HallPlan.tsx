@@ -1,5 +1,6 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
+  AccessibilityInfo,
   Animated,
   Easing,
   Pressable,
@@ -24,7 +25,8 @@ import { useTranslation } from 'react-i18next';
  *  - Top wall: 8 foyer, 8 foyer, 8 kitchen — identical length.
  *
  * Selecting a window lights the whole bar plus a breathing amber halo, and its
- * number chip (which sits just OUTSIDE the window) turns amber in sync.
+ * number chip (which sits just OUTSIDE the window) turns amber in sync. With
+ * «reduce motion» on, the halo holds still halfway through its breath.
  * Numbers 8 and 9 are groups of physical windows that toggle together.
  */
 
@@ -84,9 +86,47 @@ const WALLS: { x: number; y: number; w: number; h: number }[] = [
   { x: 62, y: 58, w: 38, h: WT },
 ];
 
+/**
+ * The device's «reduce motion» setting, followed as it changes.
+ *
+ * Read through AccessibilityInfo rather than once at start-up: on the web it
+ * is the `prefers-reduced-motion` media query, and the screenshot script turns
+ * it on for the plan's frame only, while the page is already running.
+ */
+function useReduceMotion(): boolean {
+  const [on, setOn] = useState(false);
+  useEffect(() => {
+    let alive = true;
+    AccessibilityInfo.isReduceMotionEnabled()
+      .then((value) => {
+        if (alive) setOn(value);
+      })
+      .catch(() => {});
+    const sub = AccessibilityInfo.addEventListener('reduceMotionChanged', setOn);
+    return () => {
+      alive = false;
+      // react-native-web returns nothing when the browser has no matchMedia.
+      sub?.remove();
+    };
+  }, []);
+  return on;
+}
+
 function WindowHalo({ vertical }: { vertical: boolean }) {
   const pulse = useRef(new Animated.Value(0)).current;
+  /**
+   * The halo breathes on a 2.3-second loop. A person who asked their device
+   * for less motion gets it standing still — and so does the screenshot
+   * script: a frame taken at a fixed delay caught the loop at a different
+   * point on every run, and 24-windows-plan differed between two runs of the
+   * same code, only inside this halo (22 September).
+   */
+  const still = useReduceMotion();
   useEffect(() => {
+    if (still) {
+      pulse.setValue(0.5);
+      return;
+    }
     const loop = Animated.loop(
       Animated.sequence([
         Animated.timing(pulse, {
@@ -105,7 +145,7 @@ function WindowHalo({ vertical }: { vertical: boolean }) {
     );
     loop.start();
     return () => loop.stop();
-  }, [pulse]);
+  }, [pulse, still]);
 
   return (
     <Animated.View
