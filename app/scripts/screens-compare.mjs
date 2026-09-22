@@ -9,6 +9,16 @@
  * the PNG and compares every pixel. Reports each picture as identical or as
  * differing — with how many pixels and the rectangle they lie in.
  *
+ * SHADE NOISE. Chromium does not always rasterise a soft card shadow the same
+ * way twice: on 22 September frames 14 and 19 differed between two runs of
+ * the same code in 32 and 69 pixels — all on card edges, and no channel by
+ * more than 1 of 255. Counted as a difference, that raised a false alarm on
+ * every comparison, and a false alarm every time teaches one to stop reading
+ * the report. So a picture whose every channel is within NOISE of the other
+ * is reported on its own line as noise — pixel count and area still printed,
+ * nothing hidden — and does not count among the differences. Anything
+ * stronger than that, even one pixel, is a difference as before.
+ *
  * No dependencies: PNG is decoded with Node's own zlib (8-bit RGB/RGBA,
  * non-interlaced — what Chromium writes). Run from the app folder.
  */
@@ -18,6 +28,8 @@ import { inflateSync } from 'node:zlib';
 import { Buffer } from 'node:buffer';
 
 const ROOT = join(process.cwd(), '.screens');
+/** The largest per-channel step still read as rasterising noise (measured: 1). */
+const NOISE = 2;
 function pick(label) {
   if (existsSync(join(ROOT, label))) return label;
   const all = readdirSync(ROOT).filter((n) => n.endsWith(`_${label}`)).sort();
@@ -77,15 +89,23 @@ for (const n of names) {
   if (a.width !== b.width || a.height !== b.height) {
     console.log(`· ${n} — РАЗНЫЙ РАЗМЕР: ${a.width}×${a.height} и ${b.width}×${b.height}`); bad++; continue;
   }
-  let diff = 0, x0 = a.width, y0 = a.height, x1 = -1, y1 = -1;
+  let diff = 0, step = 0, x0 = a.width, y0 = a.height, x1 = -1, y1 = -1;
   for (let y = 0; y < a.height; y++) for (let x = 0; x < a.width; x++) {
     const ia = (y * a.width + x) * a.bpp, ib = (y * b.width + x) * b.bpp;
-    if (a.px[ia] !== b.px[ib] || a.px[ia + 1] !== b.px[ib + 1] || a.px[ia + 2] !== b.px[ib + 2]) {
-      diff++; if (x < x0) x0 = x; if (y < y0) y0 = y; if (x > x1) x1 = x; if (y > y1) y1 = y;
+    const d = Math.max(
+      Math.abs(a.px[ia] - b.px[ib]),
+      Math.abs(a.px[ia + 1] - b.px[ib + 1]),
+      Math.abs(a.px[ia + 2] - b.px[ib + 2]),
+    );
+    if (d > 0) {
+      diff++; if (d > step) step = d;
+      if (x < x0) x0 = x; if (y < y0) y0 = y; if (x > x1) x1 = x; if (y > y1) y1 = y;
     }
   }
+  const where = `${diff} пикс., область x ${x0}–${x1}, y ${y0}–${y1}`;
   if (diff === 0) console.log(`· ${n} — совпадает до пикселя`);
-  else { console.log(`· ${n} — РАЗЛИЧАЕТСЯ: ${diff} пикс., область x ${x0}–${x1}, y ${y0}–${y1}`); bad++; }
+  else if (step <= NOISE) console.log(`· ${n} — шум сглаживания: ${where}, оттенок не больше ±${step} из 255`);
+  else { console.log(`· ${n} — РАЗЛИЧАЕТСЯ: ${where}, оттенок до ±${step}`); bad++; }
 }
 for (const n of readdirSync(join(ROOT, B)).filter((n) => n.endsWith('.png') && n !== 'ERROR.png'))
   if (!names.includes(n)) { console.log(`· ${n} — есть только во втором прогоне`); bad++; }
