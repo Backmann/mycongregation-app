@@ -108,6 +108,72 @@ export default function CongregationScreen() {
     href: '/publishers/cleaning',
   };
 
+  // Administration — moved from the Profile (step 3a, 22 September), each row
+  // behind the same condition it had there: the Profile's section showed for
+  // admins and elders (its `isAdmin` meant both), and inside it users,
+  // responsibilities, the circuit overseer and the journal only for a full
+  // admin, backups for whoever holds that right, the talks catalogue and the
+  // song import for admins and elders alike. Nobody gains or loses a door.
+  const fullAdmin = user?.role === 'admin';
+  const management: Door[] = [];
+  if (fullAdmin) {
+    management.push({
+      key: 'users',
+      title: t('profile.userManagement'),
+      subtitle: t('congregationHub.sub.users'),
+      href: '/publishers/admin-users',
+    });
+    management.push({
+      key: 'journal',
+      title: t('journal.title'),
+      subtitle: t('journal.rowSubtitle'),
+      href: '/publishers/journal',
+    });
+  }
+  // The dump covers every congregation at once, so it belongs to whoever runs
+  // the platform — hidden rather than a door onto a refusal.
+  if (user?.canManageBackups) {
+    management.push({
+      key: 'backups',
+      title: t('backups.title'),
+      subtitle: t('backups.rowSubtitle'),
+      href: '/publishers/backups',
+    });
+  }
+  if (elderOrAdmin) {
+    management.push({
+      key: 'publicTalks',
+      title: t('profile.publicTalks'),
+      subtitle: t('profile.publicTalksDescription'),
+      href: '/publishers/public-talks',
+    });
+    management.push({
+      key: 'songs',
+      title: t('songsImport.title'),
+      subtitle: t('profileExtra.songsSub'),
+      href: '/publishers/songs-import',
+    });
+  }
+  if (fullAdmin) {
+    management.push({
+      key: 'circuitOverseer',
+      title: t('profile.circuitOverseer'),
+      subtitle: t('profile.circuitOverseerDescription'),
+      href: '/publishers/circuit-overseer',
+    });
+  }
+  // Who keeps which area — a full admin's door, as it was in the Profile.
+  const responsibilities: Door[] = fullAdmin
+    ? [
+        {
+          key: 'responsibilities',
+          title: t('responsibilities.title'),
+          subtitle: t('profile.responsibilitiesDescription'),
+          href: '/publishers/responsibilities',
+        },
+      ]
+    : [];
+
   const sections: Section[] = privileged
     ? [
         {
@@ -122,11 +188,15 @@ export default function CongregationScreen() {
             },
             groups,
             absences,
+            ...responsibilities,
           ],
         },
         { key: 'meetings', label: t('congregationHub.sections.meetings'), doors: meetings },
         { key: 'elders', label: t('congregationHub.sections.elders'), doors: elders },
         { key: 'hall', label: t('congregationHub.sections.hall'), doors: [cleaning] },
+        // Empty for someone who sees the roster but holds none of these rights
+        // (the private-data flag alone) — and an empty section is not drawn.
+        { key: 'management', label: t('congregationHub.sections.management'), doors: management },
       ]
     : [
         {

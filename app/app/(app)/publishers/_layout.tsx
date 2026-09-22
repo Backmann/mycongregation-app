@@ -76,6 +76,73 @@ export default function PublishersLayout() {
           headerLeft: () => <BackButton fallback="/publishers/duties" toParent />,
         }}
       />
+      {/* Moved from the Profile (step 3a, 22 September). The old /profile/…
+          addresses forward here. Titles are the ones they had there, except
+          «Ответственные», renamed so it no longer shares a word with the
+          meeting duties. */}
+      <Stack.Screen
+        name="responsibilities"
+        options={{
+          title: t('responsibilities.title'),
+          headerLeft: () => <BackButton fallback="/publishers" toParent />,
+        }}
+      />
+      <Stack.Screen
+        name="admin-users"
+        options={{
+          title: t('profile.userManagement'),
+          headerLeft: () => <BackButton fallback="/publishers" toParent />,
+        }}
+      />
+      <Stack.Screen
+        name="journal"
+        options={{
+          title: t('journal.title'),
+          headerLeft: () => <BackButton fallback="/publishers" toParent />,
+        }}
+      />
+      <Stack.Screen
+        name="backups"
+        options={{
+          title: t('backups.title'),
+          headerLeft: () => <BackButton fallback="/publishers" toParent />,
+        }}
+      />
+      <Stack.Screen
+        name="public-talks"
+        options={{
+          title: t('profile.publicTalks'),
+          headerLeft: () => <BackButton fallback="/publishers" toParent />,
+        }}
+      />
+      <Stack.Screen
+        name="public-talks-retire"
+        options={{
+          title: t('publicTalks.retire.pageTitle'),
+          headerLeft: () => <BackButton fallback="/publishers/public-talks" toParent />,
+        }}
+      />
+      <Stack.Screen
+        name="public-talks-import"
+        options={{
+          title: t('profile.publicTalksImport'),
+          headerLeft: () => <BackButton fallback="/publishers/public-talks" toParent />,
+        }}
+      />
+      <Stack.Screen
+        name="songs-import"
+        options={{
+          title: t('songsImport.title'),
+          headerLeft: () => <BackButton fallback="/publishers" toParent />,
+        }}
+      />
+      <Stack.Screen
+        name="circuit-overseer"
+        options={{
+          title: t('profile.circuitOverseer'),
+          headerLeft: () => <BackButton fallback="/publishers" toParent />,
+        }}
+      />
       <Stack.Screen
         name="[id]"
         options={{

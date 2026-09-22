@@ -85,7 +85,7 @@ const ALLOW = [
   ['locales/', 'the translation files themselves'],
   ['scripts/', 'the checks, including this one'],
   [
-    'app/(app)/profile/songs-import.tsx',
+    'app/(app)/publishers/songs-import.tsx',
     'the placeholder IS the Russian import format being pasted',
   ],
   ['app/+html.tsx', 'static web shell, rendered before any language is known'],

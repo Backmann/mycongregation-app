@@ -412,34 +412,6 @@ export default function ProfileScreen() {
           </View>
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionLabel}>
-            {t("cleaningGuide.sectionLabel")}
-          </Text>
-          <View style={styles.card}>
-            <Pressable
-              style={({ pressed }) => [
-                styles.row,
-                pressed && styles.rowPressed,
-              ]}
-              onPress={() => router.push("/cleaning/guide" as any)}
-            >
-              <View style={styles.rowIcon}>
-                <Ionicons name="sparkles-outline" size={20} color="#0ea5e9" />
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.rowTitle}>
-                  {t("cleaningGuide.rowTitle")}
-                </Text>
-                <Text style={styles.rowSubtitle}>
-                  {t("cleaningGuide.rowSubtitle")}
-                </Text>
-              </View>
-              <Ionicons name="chevron-forward" size={18} color="#cbd5e1" />
-            </Pressable>
-          </View>
-        </View>
-
         {Platform.OS === "web" && webPushStatus !== null && (
           <View style={styles.section}>
             <Text style={styles.sectionLabel}>
@@ -492,52 +464,6 @@ export default function ProfileScreen() {
                     styles.row,
                     pressed && styles.rowPressed,
                   ]}
-                  onPress={() => router.push("/profile/admin-users" as any)}
-                >
-                  <View style={styles.rowIcon}>
-                    <Ionicons name="people-outline" size={20} color="#0ea5e9" />
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.rowTitle}>
-                      {t("profile.userManagement")}
-                    </Text>
-                    <Text style={styles.rowSubtitle}>
-                      {t("profile.userManagementDescription")}
-                    </Text>
-                  </View>
-                  <Ionicons name="chevron-forward" size={18} color="#cbd5e1" />
-                </Pressable>
-              )}
-              {isFullAdmin && (
-                <Pressable
-                  style={({ pressed }) => [
-                    styles.row,
-                    pressed && styles.rowPressed,
-                  ]}
-                  onPress={() =>
-                    router.push("/profile/responsibilities" as any)
-                  }
-                >
-                  <View style={styles.rowIcon}>
-                    <Ionicons name="ribbon-outline" size={20} color="#0ea5e9" />
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.rowTitle}>
-                      {t("profile.responsibilities")}
-                    </Text>
-                    <Text style={styles.rowSubtitle}>
-                      {t("profile.responsibilitiesDescription")}
-                    </Text>
-                  </View>
-                  <Ionicons name="chevron-forward" size={18} color="#cbd5e1" />
-                </Pressable>
-              )}
-              {isFullAdmin && (
-                <Pressable
-                  style={({ pressed }) => [
-                    styles.row,
-                    pressed && styles.rowPressed,
-                  ]}
                   onPress={() =>
                     router.push("/profile/meeting-settings" as any)
                   }
@@ -580,102 +506,6 @@ export default function ProfileScreen() {
                   <Ionicons name="chevron-forward" size={18} color="#cbd5e1" />
                 </Pressable>
               )}
-              {isFullAdmin && (
-                <Pressable
-                  style={({ pressed }) => [
-                    styles.row,
-                    pressed && styles.rowPressed,
-                  ]}
-                  onPress={() =>
-                    router.push("/profile/circuit-overseer" as any)
-                  }
-                >
-                  <View style={styles.rowIcon}>
-                    <Ionicons name="walk-outline" size={20} color="#0ea5e9" />
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.rowTitle}>
-                      {t("profile.circuitOverseer")}
-                    </Text>
-                    <Text style={styles.rowSubtitle}>
-                      {t("profile.circuitOverseerDescription")}
-                    </Text>
-                  </View>
-                  <Ionicons name="chevron-forward" size={18} color="#cbd5e1" />
-                </Pressable>
-              )}
-              {isFullAdmin && (
-                <Pressable
-                  style={({ pressed }) => [
-                    styles.row,
-                    pressed && styles.rowPressed,
-                  ]}
-                  onPress={() => router.push("/profile/journal" as any)}
-                >
-                  <View style={styles.rowIcon}>
-                    <Ionicons name="time-outline" size={20} color="#0ea5e9" />
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.rowTitle}>{t("journal.rowTitle")}</Text>
-                    <Text style={styles.rowSubtitle}>
-                      {t("journal.rowSubtitle")}
-                    </Text>
-                  </View>
-                  <Ionicons name="chevron-forward" size={18} color="#cbd5e1" />
-                </Pressable>
-              )}
-              {/* The dump covers every congregation at once, so it belongs to
-                whoever runs the platform. Hiding the row rather than letting
-                an administrator tap into a refusal: a door that opens onto a
-                wall reads as a fault. */}
-              {user.canManageBackups && (
-                <Pressable
-                  style={({ pressed }) => [
-                    styles.row,
-                    pressed && styles.rowPressed,
-                  ]}
-                  onPress={() => router.push("/profile/backups" as any)}
-                >
-                  <View style={styles.rowIcon}>
-                    <Ionicons
-                      name="shield-checkmark-outline"
-                      size={20}
-                      color="#0ea5e9"
-                    />
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.rowTitle}>{t("backups.rowTitle")}</Text>
-                    <Text style={styles.rowSubtitle}>
-                      {t("backups.rowSubtitle")}
-                    </Text>
-                  </View>
-                  <Ionicons name="chevron-forward" size={18} color="#cbd5e1" />
-                </Pressable>
-              )}
-              <Pressable
-                style={({ pressed }) => [
-                  styles.row,
-                  pressed && styles.rowPressed,
-                ]}
-                onPress={() => router.push("/profile/public-talks" as any)}
-              >
-                <View style={styles.rowIcon}>
-                  <Ionicons
-                    name="megaphone-outline"
-                    size={20}
-                    color="#0ea5e9"
-                  />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.rowTitle}>
-                    {t("profile.publicTalks")}
-                  </Text>
-                  <Text style={styles.rowSubtitle}>
-                    {t("profile.publicTalksDescription")}
-                  </Text>
-                </View>
-                <Ionicons name="chevron-forward" size={18} color="#cbd5e1" />
-              </Pressable>
               {/* Importing a workbook is a monthly errand, not a daily one, so
                 it lives with the other rare settings rather than in the header
                 of a screen used every day. */}
@@ -699,28 +529,6 @@ export default function ProfileScreen() {
                   </Text>
                   <Text style={styles.rowSubtitle}>
                     {t("profileExtra.mwbImportSub")}
-                  </Text>
-                </View>
-                <Ionicons name="chevron-forward" size={18} color="#cbd5e1" />
-              </Pressable>
-              <Pressable
-                style={({ pressed }) => [
-                  styles.row,
-                  pressed && styles.rowPressed,
-                ]}
-                onPress={() => router.push("/profile/songs-import" as any)}
-              >
-                <View style={styles.rowIcon}>
-                  <Ionicons
-                    name="musical-notes-outline"
-                    size={20}
-                    color="#0ea5e9"
-                  />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.rowTitle}>{t("profileExtra.songs")}</Text>
-                  <Text style={styles.rowSubtitle}>
-                    {t("profileExtra.songsSub")}
                   </Text>
                 </View>
                 <Ionicons name="chevron-forward" size={18} color="#cbd5e1" />

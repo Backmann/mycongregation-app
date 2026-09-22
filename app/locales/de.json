@@ -1,6 +1,5 @@
 {
   "backups": {
-    "rowTitle": "Sicherungen",
     "rowSubtitle": "Status und verschlüsselte Kopie herunterladen",
     "title": "Sicherungen",
     "statusOk": "Letzte Sicherung: {{date}}",
@@ -215,7 +214,6 @@
       "deniedBody": "Öffnen Sie die Browser-Einstellungen und erlauben Sie Benachrichtigungen für diese Website."
     },
     "userManagement": "Benutzerverwaltung",
-    "userManagementDescription": "Benutzer anlegen, Rollen ändern, aktivieren, Passwörter zurücksetzen",
     "changePassword": {
       "rowTitle": "Passwort ändern",
       "rowSubtitle": "Kontopasswort ändern",
@@ -237,7 +235,6 @@
     },
     "title": "Profil",
     "publicTalksImport": "Massenimport",
-    "responsibilities": "Aufgaben",
     "responsibilitiesDescription": "Bereichskoordinatoren zuweisen",
     "meetingSettings": "Zeit & Ort der Zusammenkünfte",
     "meetingSettingsDescription": "Tag, Uhrzeit und Adresse der Zusammenkünfte",
@@ -1389,7 +1386,7 @@
     "pausedBetween": "Nicht halten von {{from}} bis {{until}}"
   },
   "responsibilities": {
-    "title": "Aufgaben",
+    "title": "Zuständigkeiten",
     "subtitle": "Wer wofür zuständig ist. Eine Ernennung öffnet dem Bruder seinen Teil des Plans, bei manchen Aufgaben kommen Aufgaben und Erinnerungen dazu.",
     "unassigned": "Nicht zugewiesen",
     "unknownUser": "Unbekannter Benutzer",
@@ -1786,8 +1783,6 @@
         "weekly3": "Fliesenspiegel und Arbeitsflächen waschen"
       }
     },
-    "sectionLabel": "Königreichssaal reinigen",
-    "rowTitle": "Anleitung zur Saalreinigung",
     "rowSubtitle": "Wie und wo reinigen: Karten, Technik, Sicherheit",
     "showingFor": "Angezeigt: {{freq}}",
     "showAll": "Ganzer Leitfaden",
@@ -2765,7 +2760,6 @@
     "listNoAccount": "Kein Konto — der Sekretär bestätigt"
   },
   "profileExtra": {
-    "songs": "Lieder",
     "songsSub": "Liederbuch importieren",
     "mwbImport": "Programm-Import",
     "mwbImportSub": "Zusammenkunftsprogramm aus den Publikationen (EPUB)"
@@ -2836,7 +2830,6 @@
   },
   "journal": {
     "title": "Änderungsjournal",
-    "rowTitle": "Änderungsjournal",
     "rowSubtitle": "Wer was in der Versammlung geändert hat",
     "noAccess": "Das Journal ist nur für Administratoren zugänglich.",
     "empty": "Noch nichts aufgezeichnet.",
@@ -3474,7 +3467,8 @@
       "people": "Personen",
       "meetings": "Zusammenkünfte",
       "elders": "Ältestenschaft",
-      "hall": "Königreichssaal"
+      "hall": "Königreichssaal",
+      "management": "Verwaltung"
     },
     "programme": "Programmplanung",
     "sub": {
@@ -3489,7 +3483,8 @@
       "tasks": "Aufgaben und Tagesordnung der Ältestensitzung",
       "school": "Schulplan und Brüder dafür",
       "cleaning": "Reinigungsplan und wie man reinigt",
-      "duties": "Wer bei den nächsten Zusammenkünften welchen Platz hat"
+      "duties": "Wer bei den nächsten Zusammenkünften welchen Platz hat",
+      "users": "Zugänge, Rollen und Passwörter"
     },
     "cleaning": "Saalreinigung",
     "duties": "Dienste bei Zusammenkünften"

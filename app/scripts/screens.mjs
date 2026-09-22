@@ -184,6 +184,48 @@ async function answerLanguage(page) {
  * The congregation's contents, as one person sees them. Which rows stand is
  * the check of rights: each word that must be there, each that must not.
  */
+/**
+ * Rows that left the Profile in step 3a (22 September) — none may be there for
+ * anyone, the admin included; the old delete-account wording neither.
+ */
+const MOVED_OUT_OF_PROFILE = [
+  'Управление пользователями', 'Ответственные', 'Обязанности', 'Районный старейшина',
+  'Журнал изменений', 'Резервные копии', 'Каталог публичных речей', 'Песни', 'Импорт песен',
+  'Инструкция по уборке зала Царства', 'Удалить аккаунт и данные',
+];
+
+/** The admin's «Administration» section — the rows that came from the Profile. */
+async function management(page) {
+  const label = page.getByText(/^Управление$/).first();
+  if (!(await label.count())) { console.log('· 25-congregation-management.png — НЕ ТАК: нет раздела «Управление»'); return; }
+  await label.scrollIntoViewIfNeeded();
+  await page.waitForTimeout(300);
+  await around(page, label, '25-congregation-management.png', { above: 40, height: 700 });
+  await words(page, '25-congregation-management.png',
+    ['Управление пользователями', 'Журнал изменений', 'Каталог публичных речей', 'Импорт песен', 'Районный старейшина'], []);
+}
+
+/** The Profile, whole: what must stay, and what must have left. */
+async function profileFrame(page, name, expect, forbid) {
+  await page.goto(`${BASE}/profile`);
+  await page.getByText(/^Язык$/).first().waitFor({ timeout: 30000 }).catch(() => {});
+  await answerLanguage(page);
+  await page.waitForTimeout(1000);
+  const vp = page.viewportSize();
+  await page.screenshot({ path: join(OUT, name), clip: { x: 0, y: 0, width: vp.width, height: Math.min(vp.height, 2600) } });
+  await words(page, name, expect, forbid);
+}
+
+/**
+ * An old Profile address still leads to the screen, now in the Congregation
+ * stack — for bookmarks and anything else that kept the old path.
+ */
+async function redirectCheck(page) {
+  await page.goto(`${BASE}/profile/journal`);
+  const ok = await page.waitForURL(/\/publishers\/journal/, { timeout: 15000 }).then(() => true).catch(() => false);
+  console.log(`· переадресация /profile/journal → /publishers/journal: ${ok ? 'да' : 'НЕТ, адрес ' + page.url()}`);
+}
+
 async function hub(page, name, expect, forbid) {
   await page.goto(`${BASE}/publishers`);
   await page.getByText(/^(Люди|Моя группа)$/).first().waitFor({ timeout: 30000 }).catch(() => {});
@@ -439,10 +481,15 @@ try {
   else console.log('· 06-past.png — пропущено: прошедших нет');
 
   await hub(a, '12-congregation-admin.png',
-    ['Люди', 'Возвещатели', 'Группы служения', 'Отсутствия', 'Встречи', 'Составление программы',
+    ['Люди', 'Возвещатели', 'Группы служения', 'Отсутствия', 'Ответственные', 'Встречи', 'Составление программы',
      'Координатор речей', 'Совет старейшин', 'Задачи совета старейшин', 'Школа пионеров',
      'Зал Царства', 'Уборка зала', 'Обязанности на встречах'],
     ['Моя группа', 'Мои отсутствия']);
+  await management(a);
+  await profileFrame(a, '26-profile-admin.png',
+    ['Время и место встреч', 'Залы Царства', 'Импорт расписания', 'Удалить учётную запись и данные'],
+    MOVED_OUT_OF_PROFILE);
+  await redirectCheck(a);
   await programmeSections(a);
   await cleaningFrames(a, '16-cleaning-admin.png',
     ['Эта неделя', 'После встреч — Hamm-Werries', 'Уборка после встреч не назначена',
@@ -504,10 +551,14 @@ try {
   await around(p, p.getByText(/^Сегодня ·/).first(), '07-publisher.png', { above: 20, height: 1800 });
   await hub(p, '13-congregation-publisher.png',
     ['Моя группа', 'Группы служения', 'Мои отсутствия', 'Уборка зала'],
-    ['Люди', 'Возвещатели', 'Составление программы', 'Задачи совета старейшин', 'Отсутствия', 'Обязанности на встречах']);
+    ['Люди', 'Возвещатели', 'Составление программы', 'Задачи совета старейшин', 'Отсутствия', 'Обязанности на встречах',
+     'Ответственные', 'Управление', 'Журнал изменений', 'Каталог публичных речей']);
   await cleaningFrames(p, '18-cleaning-publisher.png',
     ['Эта неделя', 'Убирает ваша группа — после встреч', 'Как убирать', 'Окна: 5'],
     [], { must: [], mustNot: ['Распечатать график уборки'] }, null, '24-windows-plan.png');
+  await profileFrame(p, '27-profile-publisher.png',
+    ['Мои контакты', 'Уведомления', 'Язык', 'Удалить учётную запись и данные'],
+    [...MOVED_OUT_OF_PROFILE, 'Инструменты администратора', 'Время и место встреч', 'Импорт расписания']);
   await dutiesFrames(p, '23-duties-publisher.png',
     ['Обязанности на встречах распределяют координатор обязанностей и координатор совета старейшин.'],
     ['Встреча в будний день'], { must: [], mustNot: ['Распечатать обязанности на месяц'] }, null);

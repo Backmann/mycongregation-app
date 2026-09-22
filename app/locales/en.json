@@ -1,6 +1,5 @@
 {
   "backups": {
-    "rowTitle": "Backups",
     "rowSubtitle": "Status and download of the encrypted copy",
     "title": "Backups",
     "statusOk": "Latest backup: {{date}}",
@@ -215,7 +214,6 @@
       "deniedBody": "Open browser settings and allow notifications for this site."
     },
     "userManagement": "User management",
-    "userManagementDescription": "Create users, change roles, activate, reset passwords",
     "changePassword": {
       "rowTitle": "Change password",
       "rowSubtitle": "Change your account password",
@@ -237,7 +235,6 @@
     },
     "title": "Profile",
     "publicTalksImport": "Bulk import",
-    "responsibilities": "Responsibilities",
     "responsibilitiesDescription": "Assign section coordinators",
     "meetingSettings": "Meeting time & place",
     "meetingSettingsDescription": "Day, time and address of the meetings",
@@ -1786,8 +1783,6 @@
         "weekly3": "Wash the splashback and worktops"
       }
     },
-    "sectionLabel": "Kingdom Hall cleaning",
-    "rowTitle": "Kingdom Hall cleaning guide",
     "rowSubtitle": "How and where to clean: cards, technique, safety",
     "showingFor": "Showing: {{freq}}",
     "showAll": "Whole guide",
@@ -2765,7 +2760,6 @@
     "listNoAccount": "No account — the secretary confirms"
   },
   "profileExtra": {
-    "songs": "Songs",
     "songsSub": "Import the congregation songbook",
     "mwbImport": "Schedule import",
     "mwbImportSub": "Meeting programme from the publications (EPUB)"
@@ -2836,7 +2830,6 @@
   },
   "journal": {
     "title": "Change journal",
-    "rowTitle": "Change journal",
     "rowSubtitle": "Who changed what in the congregation",
     "noAccess": "The journal is available to administrators only.",
     "empty": "Nothing recorded yet.",
@@ -3474,7 +3467,8 @@
       "people": "People",
       "meetings": "Meetings",
       "elders": "Body of elders",
-      "hall": "Kingdom Hall"
+      "hall": "Kingdom Hall",
+      "management": "Administration"
     },
     "programme": "Programme planning",
     "sub": {
@@ -3489,7 +3483,8 @@
       "tasks": "Tasks and the elders' meeting agenda",
       "school": "School schedule and the brothers for it",
       "cleaning": "Cleaning schedule and how to clean",
-      "duties": "Who is at which place at the coming meetings"
+      "duties": "Who is at which place at the coming meetings",
+      "users": "Sign-ins, roles and passwords"
     },
     "cleaning": "Hall cleaning",
     "duties": "Meeting duties"
