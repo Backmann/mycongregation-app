@@ -23,13 +23,6 @@ export default function AppLayout() {
   if (!user) {
     return <Redirect href="/(auth)/login" />;
   }
-  // The publishers directory carries personal data; only admins and elders
-  // browse it. Everyone else finds people through Groups, so the tab is
-  // hidden for them (the route still redacts server-side if reached directly).
-  const canSeeDirectory =
-    user.role === "admin" ||
-    user.role === "elder" ||
-    user.canViewPrivateData === true;
   return (
     <AppLock>
       {/* Above everything, because after the next native build every phone has
@@ -110,7 +103,8 @@ export default function AppLayout() {
           name="publishers"
           options={{
             title: t("tabs.publishers"),
-            href: canSeeDirectory ? undefined : null,
+            // Shown to everyone: behind it are the congregation's contents, each
+            // door shown by its own right. The roster stays as closed as it was.
             tabBarIcon: ({ color, size, focused }) => (
               <Ionicons
                 name={focused ? "people" : "people-outline"}

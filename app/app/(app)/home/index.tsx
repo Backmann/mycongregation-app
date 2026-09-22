@@ -1259,7 +1259,7 @@ export default function HomeScreen() {
       key: "myGroup",
       label: t("home.actions.myGroup"),
       icon: "people-circle",
-      href: "/publishers",
+      href: "/publishers/list",
       show: !canSeeDirectory,
     },
   ];

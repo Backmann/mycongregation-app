@@ -6,12 +6,21 @@ import { useTranslation } from 'react-i18next';
 import { BackButton } from '../../../components/BackButton';
 import BrandLockup from '../../../components/BrandLockup';
 import { usePermissions } from '../../../lib/permissions';
+import { useAuth } from '../../../lib/auth';
 
 export default function PublishersLayout() {
   const { t } = useTranslation();
-  const { canEditPublishers, canManageAbsences } = usePermissions();
+  const { canEditPublishers } = usePermissions();
+  const { user } = useAuth();
+  // The list screen shows the roster to those who may browse it and, to
+  // everyone else, only their own group — the server sends nothing more. Its
+  // title says which of the two a person is looking at.
+  const privileged =
+    user?.role === 'admin' || user?.role === 'elder' || user?.canViewPrivateData === true;
   return (
     <Stack screenOptions={headerOptions}>
+      {/* The congregation's contents. Groups and absences used to be icons in
+          this header; they are rows of the contents now. */}
       <Stack.Screen
         name="index"
         options={{
@@ -21,27 +30,15 @@ export default function PublishersLayout() {
               <BrandLockup mark={HEADER_MARK} markOnly tone="dark" />
             </View>
           ),
-          headerRight: () => (
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Pressable
-                onPress={() => router.push('/service-groups' as any)}
-                style={{ paddingHorizontal: 10 }}
-                hitSlop={8}
-                accessibilityLabel={t('tabs.groups')}
-              >
-                <Ionicons name="grid-outline" size={22} color={HEADER_ICON} />
-              </Pressable>
-              {canManageAbsences && (
-                <Pressable
-                  onPress={() => router.push('/absences' as any)}
-                  style={{ paddingHorizontal: 10 }}
-                  hitSlop={8}
-                  accessibilityLabel={t('absences.title.list')}
-                >
-                  <Ionicons name="airplane-outline" size={22} color={HEADER_ICON} />
-                </Pressable>
-              )}
-              {canEditPublishers && (
+        }}
+      />
+      <Stack.Screen
+        name="list"
+        options={{
+          title: privileged ? t('publishers.title.roster') : t('home.actions.myGroup'),
+          headerLeft: () => <BackButton fallback="/publishers" toParent />,
+          headerRight: canEditPublishers
+            ? () => (
                 <Pressable
                   onPress={() => router.push('/publishers/new' as any)}
                   style={{ paddingHorizontal: 10 }}
@@ -49,20 +46,22 @@ export default function PublishersLayout() {
                 >
                   <Ionicons name="add" size={28} color={HEADER_ICON} />
                 </Pressable>
-              )}
-            </View>
-          ),
+              )
+            : undefined,
         }}
       />
-      <Stack.Screen name="[id]" options={{
+      <Stack.Screen
+        name="[id]"
+        options={{
           title: t('publishers.title.detail'),
-          headerLeft: () => <BackButton fallback="/publishers" toParent />,
-        }} />
+          headerLeft: () => <BackButton fallback="/publishers/list" toParent />,
+        }}
+      />
       <Stack.Screen
         name="new"
         options={{
           title: t('publishers.title.new'),
-          headerLeft: () => <BackButton fallback="/publishers" toParent />,
+          headerLeft: () => <BackButton fallback="/publishers/list" toParent />,
         }}
       />
     </Stack>

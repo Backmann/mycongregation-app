@@ -268,7 +268,8 @@
     "title": {
       "list": "Versammlung",
       "detail": "Verkündiger",
-      "new": "Neuer Verkündiger"
+      "new": "Neuer Verkündiger",
+      "roster": "Verkündiger"
     },
     "search": "Suche nach Namen…",
     "showRemoved": "Entfernte anzeigen",
@@ -2155,7 +2156,8 @@
     "title": {
       "list": "Abwesenheiten",
       "detail": "Abwesenheit",
-      "new": "Neue Abwesenheit"
+      "new": "Neue Abwesenheit",
+      "mine": "Meine Abwesenheiten"
     },
     "empty": "Noch keine Abwesenheiten",
     "showPast": "Vergangene anzeigen",
@@ -3073,7 +3075,7 @@
     "openFromTask": "Gruppenbesuche öffnen →"
   },
   "tasks": {
-    "title": "Aufgaben",
+    "title": "Aufgaben der Ältestenschaft",
     "empty": "Noch keine Aufgaben",
     "doneSection": "Erledigt",
     "due": "Frist: {{date}}",
@@ -3463,5 +3465,25 @@
     "onTime": "im Plan",
     "ahead": "{{minutes}} Min voraus",
     "behind": "{{minutes}} Min im Rückstand"
+  },
+  "congregationHub": {
+    "sections": {
+      "people": "Personen",
+      "meetings": "Zusammenkünfte",
+      "elders": "Ältestenschaft"
+    },
+    "programme": "Programmplanung",
+    "sub": {
+      "myGroup": "Wer in der Gruppe ist und ihr Aufseher",
+      "groups": "Alle Gruppen der Versammlung",
+      "absencesMine": "Wann ich weg bin — damit ich nicht eingeteilt werde",
+      "absencesAll": "Wer wann weg ist",
+      "publishers": "Liste und Karten",
+      "programme": "Das Programm Woche für Woche",
+      "programmeImport": "Programm importieren",
+      "talks": "Gastredner und unsere eigenen",
+      "tasks": "Aufgaben und Tagesordnung der Ältestensitzung",
+      "school": "Schulplan und Brüder dafür"
+    }
   }
 }

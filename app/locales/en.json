@@ -268,7 +268,8 @@
     "title": {
       "list": "Congregation",
       "detail": "Publisher",
-      "new": "New Publisher"
+      "new": "New Publisher",
+      "roster": "Publishers"
     },
     "search": "Search by name…",
     "showRemoved": "Show removed",
@@ -2155,7 +2156,8 @@
     "title": {
       "list": "Absences",
       "detail": "Absence",
-      "new": "New absence"
+      "new": "New absence",
+      "mine": "My absences"
     },
     "empty": "No absences yet",
     "showPast": "Show past",
@@ -3073,7 +3075,7 @@
     "openFromTask": "Open the group visits →"
   },
   "tasks": {
-    "title": "Tasks",
+    "title": "Body of elders' tasks",
     "empty": "No tasks yet",
     "doneSection": "Done",
     "due": "Due {{date}}",
@@ -3463,5 +3465,25 @@
     "onTime": "on time",
     "ahead": "{{minutes}} min ahead",
     "behind": "{{minutes}} min behind"
+  },
+  "congregationHub": {
+    "sections": {
+      "people": "People",
+      "meetings": "Meetings",
+      "elders": "Body of elders"
+    },
+    "programme": "Programme planning",
+    "sub": {
+      "myGroup": "Who is in the group and its overseer",
+      "groups": "All the groups of the congregation",
+      "absencesMine": "When I will be away — so I am not assigned",
+      "absencesAll": "Who is away and when",
+      "publishers": "List and cards",
+      "programme": "The meeting programme week by week",
+      "programmeImport": "Import the programme",
+      "talks": "Visiting speakers and our own",
+      "tasks": "Tasks and the elders' meeting agenda",
+      "school": "School schedule and the brothers for it"
+    }
   }
 }

@@ -159,6 +159,23 @@ async function answerLanguage(page) {
   console.log('· язык выбран: русский');
 }
 
+/**
+ * The congregation's contents, as one person sees them. Which rows stand is
+ * the check of rights: each word that must be there, each that must not.
+ */
+async function hub(page, name, expect, forbid) {
+  await page.goto(`${BASE}/publishers`);
+  await page.getByText(/^(Люди|Моя группа)$/).first().waitFor({ timeout: 30000 }).catch(() => {});
+  await answerLanguage(page);
+  await page.waitForTimeout(800);
+  const vp = page.viewportSize();
+  await page.screenshot({ path: join(OUT, name), clip: { x: 0, y: 0, width: vp.width, height: Math.min(vp.height, 900) } });
+  const bad = [];
+  for (const w of expect) if (!(await page.getByText(new RegExp('^' + w + '$')).count())) bad.push('нет «' + w + '»');
+  for (const w of forbid) if (await page.getByText(new RegExp('^' + w + '$')).count()) bad.push('лишнее «' + w + '»');
+  console.log('· ' + name + ' — ' + (bad.length ? 'НЕ ТАК: ' + bad.join(', ') : 'строки как положено'));
+}
+
 async function openFeed(page) {
   await page.goto(`${BASE}/schedule/feed`);
   try {
@@ -250,6 +267,11 @@ try {
   if (await past.count()) await around(a, past, '06-past.png', { above: 60, height: 1600 });
   else console.log('· 06-past.png — пропущено: прошедших нет');
 
+  await hub(a, '12-congregation-admin.png',
+    ['Люди', 'Возвещатели', 'Группы служения', 'Отсутствия', 'Встречи', 'Составление программы',
+     'Координатор речей', 'Совет старейшин', 'Задачи совета старейшин', 'Школа пионеров'],
+    ['Моя группа', 'Мои отсутствия']);
+
   // --- Тот же вход, окна настоящих размеров: где лента встаёт ---
   // One sign-in for all of these: the server limits how often one may sign in,
   // and a fourth sign-in within a minute was refused.
@@ -297,6 +319,9 @@ try {
   const { ctx: pub, page: p } = await signedIn(browser, PUBLISHER, PHONE);
   await openFeed(p);
   await around(p, p.getByText(/^Сегодня ·/).first(), '07-publisher.png', { above: 20, height: 1800 });
+  await hub(p, '13-congregation-publisher.png',
+    ['Моя группа', 'Группы служения', 'Мои отсутствия'],
+    ['Люди', 'Возвещатели', 'Составление программы', 'Задачи совета старейшин', 'Отсутствия']);
   await pub.close();
 
   if (landings.includes(false)) console.log('\nВНИМАНИЕ: лента открылась не на «Сегодня» — см. строки «посадка» выше');

@@ -4,15 +4,19 @@ import { Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { BackButton } from '../../../components/BackButton';
+import { usePermissions } from '../../../lib/permissions';
 
 export default function AbsencesLayout() {
   const { t } = useTranslation();
+  // Without the right to keep others' absences the list shows only one's own
+  // — the screen already does that; now its title says so.
+  const { canManageAbsences } = usePermissions();
   return (
     <Stack screenOptions={headerOptions}>
       <Stack.Screen
         name="index"
         options={{
-          title: t('absences.title.list'),
+          title: canManageAbsences ? t('absences.title.list') : t('absences.title.mine'),
           headerLeft: () => <BackButton fallback="/publishers" toParent />,
           // Shown to EVERYONE. Anyone may file their own absence — the form
           // locks the publisher to himself for those who may not file for
