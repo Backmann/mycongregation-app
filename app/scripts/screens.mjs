@@ -260,6 +260,16 @@ try {
   await a.screenshot({ path: join(OUT, '08-desktop.png') });
   console.log('· 08-desktop.png');
 
+  // На широком экране строка не раскрывается, а выбирает: справа — выбранная встреча.
+  const sundayWide = a.getByRole('button', { name: /Как Библия может вам помочь/ });
+  if (await sundayWide.count()) {
+    await sundayWide.first().click();
+    await a.waitForTimeout(700);
+    await a.screenshot({ path: join(OUT, '11-desktop-sunday.png') });
+    const right = await a.getByText(/^Не прекращайте узнавать Иегову$/).count();
+    console.log(`· 11-desktop-sunday.png — справа воскресенье: ${right ? 'да' : 'НЕТ'}`);
+  } else console.log('· 11-desktop-sunday.png — пропущено: воскресенья 27-го нет в списке');
+
   await a.setViewportSize(REAL_PHONE);
   await openFeed(a);
   landings.push(await landing(a, 'телефон'));

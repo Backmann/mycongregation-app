@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
-import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Platform, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { useQueries, useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { Ionicons } from "@expo/vector-icons";
@@ -423,6 +423,34 @@ export default function ProgrammeFeedScreen() {
       ...(iso.slice(0, 4) !== today.slice(0, 4) ? { year: "numeric" } : {}),
     });
 
+  // WIDE: from 900 points the feed becomes two columns — the list of dates on
+  // the left, the chosen meeting whole on the right. The same list, the same
+  // «today» line and holding; a tap chooses a meeting instead of opening it in
+  // place, and the nearest one is chosen to begin with, as on a phone it opens
+  // by itself. One meeting component in three forms — open in place, a list
+  // row, the whole right side — not a second copy that one change would miss.
+  const { width } = useWindowDimensions();
+  const wide = width >= 900;
+  const choose = (id: string) => {
+    release();
+    setOpenChoice(id);
+  };
+  const meetingProps = (x: MeetingItem) => ({
+    item: x,
+    past: x.date < today,
+    me,
+    parts: partsOf.get(`${x.week}|${x.kind}`) ?? [],
+    duties: dutiesOf.get(`${x.week}|${x.kind}`) ?? [],
+    cleaning: cleaningOf.get(x.week) ?? [],
+    readiness: canSeeReadiness
+      ? allReadiness.find((w) => w.weekStart === x.week)?.meetings.find((m) => m.kind === x.kind)
+      : undefined,
+    nameOf,
+    groupName,
+    canEditProgramme: x.kind === "midweek" ? perms.canEditMidweekSchedule : perms.canEditWeekendSchedule,
+    canEditDuties: perms.canEditDuties,
+  });
+
   const render = (x: Item, prev: Item | undefined, isPast: boolean) => {
     const monthLabel =
       prev && prev.date.slice(0, 7) !== x.date.slice(0, 7) ? (
@@ -440,7 +468,8 @@ export default function ProgrammeFeedScreen() {
           item={x}
           past={isPast}
           open={openId === x.id}
-          onToggle={() => toggle(x.id)}
+          onToggle={() => (wide ? choose(x.id) : toggle(x.id))}
+          mode={wide ? "row" : "inline"}
           me={me}
           nameOf={nameOf}
           groupName={groupName}
@@ -450,23 +479,10 @@ export default function ProgrammeFeedScreen() {
       body = (
         <Meeting
           key={x.id}
-          item={x}
-          past={isPast}
+          {...meetingProps(x)}
           open={openId === x.id}
-          onToggle={() => toggle(x.id)}
-          me={me}
-          parts={partsOf.get(`${x.week}|${x.kind}`) ?? []}
-          duties={dutiesOf.get(`${x.week}|${x.kind}`) ?? []}
-          cleaning={cleaningOf.get(x.week) ?? []}
-          readiness={
-            canSeeReadiness
-              ? allReadiness.find((w) => w.weekStart === x.week)?.meetings.find((m) => m.kind === x.kind)
-              : undefined
-          }
-          nameOf={nameOf}
-          groupName={groupName}
-          canEditProgramme={x.kind === "midweek" ? perms.canEditMidweekSchedule : perms.canEditWeekendSchedule}
-          canEditDuties={perms.canEditDuties}
+          onToggle={() => (wide ? choose(x.id) : toggle(x.id))}
+          mode={wide ? "row" : "inline"}
         />
       );
     }
@@ -479,14 +495,7 @@ export default function ProgrammeFeedScreen() {
     month: "long",
   });
 
-  return (
-    <ScrollView
-      ref={scrollRef}
-      style={styles.screen}
-      contentContainerStyle={styles.content}
-      onScrollBeginDrag={release}
-      onContentSizeChange={anchor}
-    >
+  const list = (
       <View style={styles.column}>
         <View
           onLayout={(e) => {
@@ -552,7 +561,79 @@ export default function ProgrammeFeedScreen() {
           </Pressable>
         )}
       </View>
+  );
+
+  const listScroll = (
+    <ScrollView
+      ref={scrollRef}
+      style={wide ? styles.listPane : styles.screen}
+      contentContainerStyle={wide ? styles.listContent : styles.content}
+      onScrollBeginDrag={release}
+      onContentSizeChange={anchor}
+    >
+      {list}
     </ScrollView>
+  );
+  if (!wide) return listScroll;
+
+  const chosen = items.find((x) => x.id === openId);
+  const detail = !chosen ? null : chosen.type === "meeting" ? (
+    <Meeting key={chosen.id} {...meetingProps(chosen)} open onToggle={() => {}} mode="detail" />
+  ) : chosen.type === "field" ? (
+    <FieldDay
+      key={chosen.id}
+      item={chosen}
+      past={chosen.date < today}
+      open
+      onToggle={() => {}}
+      mode="detail"
+      me={me}
+      nameOf={nameOf}
+      groupName={groupName}
+    />
+  ) : null;
+
+  return (
+    <View style={styles.split}>
+      {listScroll}
+      <ScrollView style={styles.detailPane} contentContainerStyle={styles.detailContent}>
+        <View style={styles.detailColumn}>{detail}</View>
+      </ScrollView>
+    </View>
+  );
+}
+
+/** The large head of a meeting shown whole on the right of a wide screen. */
+function DetailHead({
+  date,
+  time,
+  kind,
+  line,
+  mine,
+  status,
+}: {
+  date: string;
+  time?: string | null;
+  kind: string;
+  line?: string | null;
+  mine?: string | null;
+  status?: { color: string; text: string } | null;
+}) {
+  const { i18n } = useTranslation();
+  const d = atMidnight(date).toLocaleDateString(i18n.language, { weekday: "long", day: "numeric", month: "long" });
+  const head = d.charAt(0).toLocaleUpperCase(i18n.language) + d.slice(1);
+  return (
+    <View style={styles.detailHead}>
+      <Text style={styles.detailTitle}>{time ? `${head} · ${time}` : head}</Text>
+      <Text style={styles.detailSub}>{[kind, line].filter(Boolean).join(" · ")}</Text>
+      {mine ? <Text style={styles.detailMine}>{mine}</Text> : null}
+      {status ? (
+        <View style={[styles.statusRow, styles.detailStatus]}>
+          <View style={[styles.statusDot, { backgroundColor: status.color }]} />
+          <Text style={styles.status}>{status.text}</Text>
+        </View>
+      ) : null}
+    </View>
   );
 }
 
@@ -568,6 +649,7 @@ function Row({
   color,
   past,
   open,
+  select,
   onPress,
 }: {
   date: string;
@@ -580,6 +662,8 @@ function Row({
   color: string;
   past: boolean;
   open?: boolean;
+  /** A list row on a wide screen: a tap chooses the meeting instead of opening it here. */
+  select?: boolean;
   onPress?: () => void;
 }) {
   const { i18n } = useTranslation();
@@ -610,16 +694,16 @@ function Row({
         {tag ? <Text style={styles.tag}>{tag}</Text> : null}
       </View>
       {onPress ? (
-        <Ionicons name={open ? "chevron-up" : "chevron-down"} size={18} color={SOFT} style={styles.chev} />
+        <Ionicons name={select ? "chevron-forward" : open ? "chevron-up" : "chevron-down"} size={18} color={SOFT} style={styles.chev} />
       ) : null}
     </>
   );
   return onPress ? (
     <Pressable
       onPress={onPress}
-      style={({ pressed }) => [styles.row, open && styles.rowOpen, pressed && styles.pressed]}
+      style={({ pressed }) => [styles.row, open && !select && styles.rowOpen, open && select && styles.rowSelected, pressed && styles.pressed]}
       accessibilityRole="button"
-      accessibilityState={{ expanded: !!open }}
+      accessibilityState={select ? { selected: !!open } : { expanded: !!open }}
     >
       {content}
     </Pressable>
@@ -633,6 +717,7 @@ function Meeting({
   past,
   open,
   onToggle,
+  mode = "inline",
   me,
   parts,
   duties,
@@ -647,6 +732,8 @@ function Meeting({
   past: boolean;
   open: boolean;
   onToggle: () => void;
+  /** Open in place (phone), a list row (wide, left), or whole (wide, right). */
+  mode?: "inline" | "row" | "detail";
   me: string | null;
   parts: Assignment[];
   duties: Duty[];
@@ -715,11 +802,13 @@ function Meeting({
   const mineInProgramme = myParts.length > 0;
   const mineInDuties = myDuties.length > 0;
 
+  const kindTitle = item.kind === "midweek" ? t("eventTypes.midweek") : t("eventTypes.weekend");
   return (
     <View>
+      {mode !== "detail" ? (
       <Row
         date={item.date}
-        title={item.kind === "midweek" ? t("eventTypes.midweek") : t("eventTypes.weekend")}
+        title={kindTitle}
         time={item.time}
         line={line}
         mine={mine}
@@ -728,10 +817,14 @@ function Meeting({
         color={KIND_COLOR.meeting}
         past={past}
         open={open}
+        select={mode === "row"}
         onPress={onToggle}
       />
-      {open ? (
-        <View style={styles.inset}>
+      ) : (
+        <DetailHead date={item.date} time={item.time} kind={kindTitle} line={line} mine={mine} status={status} />
+      )}
+      {(mode === "inline" && open) || mode === "detail" ? (
+        <View style={[styles.inset, mode === "detail" && styles.insetDetail]}>
           {tab === "programme" && mineInDuties && !mineInProgramme ? (
             <Pressable
               style={({ pressed }) => [styles.strip, pressed && styles.pressed]}
@@ -903,6 +996,7 @@ function FieldDay({
   past,
   open,
   onToggle,
+  mode = "inline",
   me,
   nameOf,
   groupName,
@@ -911,6 +1005,7 @@ function FieldDay({
   past: boolean;
   open: boolean;
   onToggle: () => void;
+  mode?: "inline" | "row" | "detail";
   me: string | null;
   nameOf: Map<string, string>;
   groupName: Map<string, string>;
@@ -919,21 +1014,29 @@ function FieldDay({
   const what = (m: FieldServiceMeeting) =>
     (m.serviceGroupId ? groupName.get(m.serviceGroupId) : null) ?? t("fieldService.generalBadge");
   const mineAt = item.meetings.find((m) => !!me && m.conductorPublisherId === me);
+  const title = item.meetings.length > 1 ? t("feed.fieldService") : t("feed.fieldServiceOne");
+  const line = item.meetings.map((m) => t("feed.fieldAt", { what: what(m), time: m.startTime })).join(" · ");
+  const mine = mineAt ? t("feed.youLead", { time: mineAt.startTime }) : null;
   return (
     <View>
-      <Row
-        date={item.date}
-        title={item.meetings.length > 1 ? t("feed.fieldService") : t("feed.fieldServiceOne")}
-        time={item.meetings[0]?.startTime ?? null}
-        line={item.meetings.map((m) => t("feed.fieldAt", { what: what(m), time: m.startTime })).join(" · ")}
-        mine={mineAt ? t("feed.youLead", { time: mineAt.startTime }) : null}
-        color={KIND_COLOR.field}
-        past={past}
-        open={open}
-        onPress={onToggle}
-      />
-      {open ? (
-        <View style={styles.inset}>
+      {mode !== "detail" ? (
+        <Row
+          date={item.date}
+          title={title}
+          time={item.meetings[0]?.startTime ?? null}
+          line={line}
+          mine={mine}
+          color={KIND_COLOR.field}
+          past={past}
+          open={open}
+          select={mode === "row"}
+          onPress={onToggle}
+        />
+      ) : (
+        <DetailHead date={item.date} kind={title} line={line} mine={mine} />
+      )}
+      {(mode === "inline" && open) || mode === "detail" ? (
+        <View style={[styles.inset, mode === "detail" && styles.insetDetail]}>
           <View style={[styles.card, styles.cardFirst]}>
             {item.meetings.map((m) => (
               <PartLine
@@ -993,6 +1096,19 @@ const styles = StyleSheet.create({
     borderBottomColor: "#f1f5f9",
   },
   rowOpen: { borderBottomWidth: 0 },
+  rowSelected: { backgroundColor: "#f0f9ff" },
+  split: { flex: 1, flexDirection: "row", backgroundColor: "#ffffff" },
+  listPane: { width: 440, flexGrow: 0, borderRightWidth: 1, borderRightColor: "#e2e8f0" },
+  listContent: { paddingBottom: 40 },
+  detailPane: { flex: 1, backgroundColor: "#f6f8fb" },
+  detailContent: { padding: 24, alignItems: "center" },
+  detailColumn: { width: "100%", maxWidth: 760 },
+  insetDetail: { backgroundColor: "transparent", paddingHorizontal: 0, borderBottomWidth: 0 },
+  detailHead: { paddingBottom: 12 },
+  detailTitle: { fontSize: 24, fontFamily: FONT.extrabold, color: INK, letterSpacing: -0.3 },
+  detailSub: { fontSize: 15, fontFamily: FONT.medium, color: SOFT, marginTop: 4 },
+  detailMine: { fontSize: 14, fontFamily: FONT.bold, color: ACC, marginTop: 8 },
+  detailStatus: { paddingLeft: 0 },
   dateCol: { width: 40, alignItems: "center", paddingTop: 1 },
   day: { fontSize: 25, lineHeight: 27, fontFamily: FONT.extrabold, color: INK, fontVariant: ["tabular-nums"] },
   dow: { fontSize: 11, fontFamily: FONT.bold, letterSpacing: 0.9, color: SOFT, marginTop: 3 },
