@@ -10,7 +10,6 @@ import {
 import {
   ActivityIndicator,
   Animated,
-  Platform,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -32,14 +31,9 @@ import {
   Publisher,
   publishersApi,
   meetingSettingsApi,
-  dutiesApi,
   readinessApi,
   coVisitItemsApi,
   fieldServiceApi,
-  cleaningApi,
-  serviceGroupsApi,
-  publisherActivityApi,
-  PublisherActivity,
   specialEventsApi,
   circuitOverseersApi,
   CircuitOverseer,
@@ -80,22 +74,7 @@ import {
   buildMeetingSchedulePdfHtml,
   type MeetingPdfWeek,
 } from "../../../lib/meetingSchedulePdf";
-import {
-  buildDutiesSchedulePdfHtml,
-  type DutiesPdfSection,
-  type DutiesPdfWeek,
-  type DutiesPdfRow,
-} from "../../../lib/dutiesSchedulePdf";
-import {
-  buildCleaningSchedulePdfHtml,
-  type CleaningPdfWeek,
-  type CleaningPdfRow,
-} from "../../../lib/cleaningSchedulePdf";
-import {
-  DutiesSection,
-  DUTY_ICONS,
-  dutyLabel,
-} from "../../../components/DutiesSection";
+import { DutiesSection } from "../../../components/DutiesSection";
 import { FieldServiceSection } from "../../../components/FieldServiceSection";
 import { CleaningSection } from "../../../components/CleaningSection";
 import { CongressWeekBanner } from "../../../components/CongressWeekBanner";
@@ -113,9 +92,13 @@ import { NotifyChangesDialog } from "../../../components/NotifyChangesDialog";
 import { useMyPublisher } from "../../../lib/useMyPublisher";
 import { MyDot } from "../../../components/MyDot";
 import { useMyGlow } from "../../../components/useMyGlow";
-import { reportError, notify } from "../../../lib/error-bus";
+import { reportError } from "../../../lib/error-bus";
 import { LoadError } from "../../../components/LoadError";
-import { CLEANING_SHADES, SECTION_COLORS } from "../../../lib/section-colors";
+import { SECTION_COLORS } from "../../../lib/section-colors";
+import { useDutiesWeek } from "../../../lib/useDutiesWeek";
+import { useCleaningWeek } from "../../../lib/useCleaningWeek";
+import { printDutiesMonth } from "../../../lib/print-duties-month";
+import { printCleaningQuarter } from "../../../lib/print-cleaning-quarter";
 
 const EVENT_TYPE_ORDER: EventType[] = [
   "midweek",
@@ -314,83 +297,19 @@ export default function ScheduleIndexScreen() {
     enabled: canSeeReadiness,
   });
 
-  const dutiesQuery = useQuery({
-    queryKey: ["duties", weekStartISO],
-    queryFn: () =>
-      dutiesApi.list({ weekStart: weekStartISO, weekEnd: nextWeekISO }),
-  });
-  const duties = dutiesQuery.data ?? [];
-  const renamePlaceMutation = useMutation({
-    mutationFn: (v: { id: string; customLabel: string }) =>
-      dutiesApi.renamePlace(v.id, v.customLabel),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["duties", weekStartISO] });
-    },
-  });
-  const movePlaceMutation = useMutation({
-    mutationFn: (v: { id: string; direction: "up" | "down" }) =>
-      dutiesApi.movePlace(v.id, v.direction),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["duties", weekStartISO] });
-    },
-  });
-  const removePlaceMutation = useMutation({
-    mutationFn: (id: string) => dutiesApi.removePlace(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["duties", weekStartISO] });
-    },
-  });
-  const generateDutiesMutation = useMutation({
-    mutationFn: (eventType: EventType) =>
-      dutiesApi.generate({ weekStartDate: weekStartISO, eventType }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["duties", weekStartISO] });
-    },
-  });
-  const activityQuery = useQuery({
-    queryKey: ["publisher-activity", weekStartISO],
-    queryFn: () =>
-      publisherActivityApi.getActivity({ weekStart: weekStartISO, weeks: 13 }),
-  });
-  const activityById = new Map<string, PublisherActivity>();
-  for (const a of activityQuery.data ?? []) activityById.set(a.publisherId, a);
-
-  const invalidateDuties = () => {
-    queryClient.invalidateQueries({ queryKey: ["duties", weekStartISO] });
-    queryClient.invalidateQueries({
-      queryKey: ["publisher-activity", weekStartISO],
-    });
-  };
-  const showDutyWarnings = (warnings: string[]) => {
-    if (warnings.length === 0) return;
-    const body = warnings.map((w) => t(`duties.warnings.${w}`)).join("\n");
-    if (Platform.OS === "web") {
-      window.alert(`${t("duties.warningsTitle")}\n\n${body}`);
-    } else {
-      notify(t("duties.warningsTitle"), body);
-    }
-  };
-  const assignDutyMutation = useMutation({
-    mutationFn: (vars: { id: string; publisherId: string | null }) =>
-      dutiesApi.assign(vars.id, { publisherId: vars.publisherId }),
-    onSuccess: (res) => {
-      invalidateDuties();
-      showDutyWarnings(res.warnings);
-    },
-  });
-  const createCustomDutyMutation = useMutation({
-    mutationFn: (vars: { eventType: EventType; customLabel: string }) =>
-      dutiesApi.createCustom({
-        weekStartDate: weekStartISO,
-        eventType: vars.eventType,
-        customLabel: vars.customLabel,
-      }),
-    onSuccess: () => invalidateDuties(),
-  });
-  const removeDutyMutation = useMutation({
-    mutationFn: (id: string) => dutiesApi.removeDuty(id),
-    onSuccess: () => invalidateDuties(),
-  });
+  // The week's duties — lib/useDutiesWeek, shared with the duties screen.
+  const {
+    dutiesQuery,
+    duties,
+    activityById,
+    renamePlaceMutation,
+    movePlaceMutation,
+    removePlaceMutation,
+    generateDutiesMutation,
+    assignDutyMutation,
+    createCustomDutyMutation,
+    removeDutyMutation,
+  } = useDutiesWeek(weekStartISO, nextWeekISO);
 
   const fieldServiceQuery = useQuery({
     queryKey: ["field-service", weekStartISO],
@@ -441,60 +360,15 @@ export default function ScheduleIndexScreen() {
     onSuccess: () => invalidateFieldService(),
   });
 
-  const cleaningQuery = useQuery({
-    queryKey: ["cleaning", weekStartISO],
-    queryFn: () => cleaningApi.getWeek(weekStartISO),
-  });
-  const cleaningWeek = cleaningQuery.data ?? {
-    assignments: [],
-    suggestedAfterMeetingGroupId: null,
-  };
-  const invalidateCleaning = () =>
-    queryClient.invalidateQueries({ queryKey: ["cleaning", weekStartISO] });
-  const setCleaningSlotMutation = useMutation({
-    mutationFn: (vars: {
-      slotType: Parameters<typeof cleaningApi.setSlot>[0]["slotType"];
-      serviceGroupId: string | null;
-      windows?: number[] | null;
-    }) =>
-      cleaningApi.setSlot({
-        weekStartDate: weekStartISO,
-        slotType: vars.slotType,
-        serviceGroupId: vars.serviceGroupId,
-        windows: vars.windows,
-      }),
-    onSuccess: () => invalidateCleaning(),
-  });
-  /**
-   * The cleaning slot just cleared, kept whole so it can be put back.
-   *
-   * Nothing to «restore» here: clearing deletes the row outright, and the
-   * server keeps only a journal note of who was cleaning. But the week, the
-   * slot and the group describe it completely — so undo is simply the same
-   * assignment made again, which is why the group and the windows are read
-   * BEFORE the row goes.
-   */
-  const [clearedSlot, setClearedSlot] = useState<{
-    slotType: Parameters<typeof cleaningApi.setSlot>[0]["slotType"];
-    serviceGroupId: string | null;
-    windows: number[] | null;
-  } | null>(null);
-  const clearCleaningSlotMutation = useMutation({
-    mutationFn: (slotType: Parameters<typeof cleaningApi.clearSlot>[1]) => {
-      const was = cleaningWeek.assignments.find((a) => a.slotType === slotType);
-      setClearedSlot(
-        was
-          ? {
-              slotType,
-              serviceGroupId: was.serviceGroupId,
-              windows: was.windows,
-            }
-          : null,
-      );
-      return cleaningApi.clearSlot(weekStartISO, slotType);
-    },
-    onSuccess: () => invalidateCleaning(),
-  });
+  // The week's cleaning — lib/useCleaningWeek, shared with the cleaning screen.
+  const {
+    cleaningWeek,
+    setCleaningSlotMutation,
+    clearedSlot,
+    setClearedSlot,
+    clearCleaningSlotMutation,
+    undoClearedSlot,
+  } = useCleaningWeek(weekStartISO);
 
   const createWeekMutation = useMutation({
     mutationFn: (eventType: EventType) => {
@@ -1202,328 +1076,33 @@ export default function ScheduleIndexScreen() {
     }
   };
 
-  // Monthly duties PDF: one page, midweek section on top, weekend below, each a
-  // grid of duty types (rows) x weeks (columns). A week belongs to the month of
-  // its Monday (same rule as the meeting PDF). Convention weeks show "Конгресс".
+  // Monthly duties PDF — lib/print-duties-month, shared with the duties screen.
   const [printingDuties, setPrintingDuties] = useState(false);
-  const printMonthDuties = async () => {
-    if (!meetingVersion) return;
-    const win = openPrintWindow();
-    setPrintingDuties(true);
-    try {
-      const month = weekStart.getMonth();
-      const year = weekStart.getFullYear();
-      const firstOfMonth = new Date(year, month, 1);
-      let m = startOfWeekMonday(firstOfMonth);
-      const mondays: Date[] = [];
-      for (let i = 0; i < 6; i++) {
-        if (m.getMonth() === month && m.getFullYear() === year) {
-          mondays.push(new Date(m));
-        }
-        m = addWeeks(m, 1);
-      }
-      if (mondays.length === 0) {
-        win?.close();
-        return;
-      }
-      const lastMonday = mondays[mondays.length - 1];
-      const events = specialEventsQuery.data ?? [];
+  const printMonthDuties = () =>
+    printDutiesMonth({
+      weekStart,
+      meetingVersion,
+      events: specialEventsQuery.data ?? [],
+      publishersById,
+      congregationName: meetingSettingsQuery.data?.congregation.name ?? null,
+      t,
+      lang: i18n.language,
+      onBusy: setPrintingDuties,
+    });
 
-      // A convention covering a week -> that week has no duties ("Конгресс").
-      const congressNote = (mon: Date): string | null => {
-        const satISO = formatDateISO(addDays(mon, 5));
-        const sunISO = formatDateISO(addDays(mon, 6));
-        const midISO = formatDateISO(addDays(mon, 3));
-        const c = events.find((e) => {
-          if (e.type !== "regional_convention" && e.type !== "circuit_assembly")
-            return false;
-          const end = e.endDate ?? e.date;
-          return (
-            (e.date <= sunISO && satISO <= end) ||
-            (e.date <= midISO && end >= midISO)
-          );
-        });
-        return c ? t(`specialEvents.types.${c.type}`) : null;
-      };
-
-      // Load the month's duties once (server filters weekStartDate < weekEnd).
-      const res = await dutiesApi.list({
-        weekStart: formatDateISO(mondays[0]),
-        weekEnd: formatDateISO(addWeeks(lastMonday, 1)),
-      });
-      const rows = res ?? [];
-      const nameOf = (id: string | null): string | null =>
-        id ? (publishersById.get(id)?.displayName ?? null) : null;
-
-      const dutyColorOf = (dutyType: string): string =>
-        DUTY_ICONS[dutyType]?.color ?? "#64748b";
-
-      // Build one section (midweek/weekend).
-      const buildSection = (
-        kind: "midweek" | "weekend",
-        title: string,
-        accent: string,
-      ): DutiesPdfSection => {
-        const dow =
-          kind === "midweek"
-            ? meetingVersion.midweekDow
-            : meetingVersion.weekendDow;
-        const weeks: DutiesPdfWeek[] = mondays.map((mon) => ({
-          weekStartDate: formatDateISO(mon),
-          label: meetingDate(mon, dow ?? 3).toLocaleDateString(i18n.language, {
-            day: "numeric",
-            month: "short",
-          }),
-          note: congressNote(mon),
-        }));
-
-        // Group this section's duties by a stable row key (type + slot), in the
-        // canonical order, collecting the assignee per week.
-        const forKind = rows.filter((d) => d.eventType === kind);
-        const rowMap = new Map<string, DutiesPdfRow>();
-        const rowOrder: string[] = [];
-        for (const d of forKind) {
-          const key = `${d.dutyType}|${d.slotIndex}`;
-          if (!rowMap.has(key)) {
-            rowMap.set(key, {
-              label: dutyLabel(d, t),
-              color: dutyColorOf(d.dutyType),
-              nameByWeek: {},
-            });
-            rowOrder.push(key);
-          }
-          rowMap.get(key)!.nameByWeek[d.weekStartDate] = nameOf(d.publisherId);
-        }
-        // Sort rows by duty order then slot for a stable layout.
-        const order = [
-          "security",
-          "attendant",
-          "microphone",
-          "av",
-          "zoom",
-          "stage",
-          "ventilation",
-          "custom",
-        ];
-        rowOrder.sort((a, b) => {
-          const [ta, sa] = a.split("|");
-          const [tb, sb] = b.split("|");
-          const oa = order.indexOf(ta);
-          const ob = order.indexOf(tb);
-          return (
-            (oa === -1 ? order.length : oa) - (ob === -1 ? order.length : ob) ||
-            Number(sa) - Number(sb)
-          );
-        });
-        return {
-          title,
-          accent,
-          weeks,
-          rows: rowOrder.map((k) => rowMap.get(k)!),
-        };
-      };
-
-      const sections: DutiesPdfSection[] = [
-        buildSection(
-          "midweek",
-          getEventTypeLabel("midweek"),
-          SECTION_COLORS.duty.color,
-        ),
-        buildSection(
-          "weekend",
-          getEventTypeLabel("weekend"),
-          SECTION_COLORS.duty.color,
-        ),
-      ].filter((s) => s.rows.length > 0);
-
-      if (sections.length === 0) {
-        win?.close();
-        return;
-      }
-
-      const monthLabel = firstOfMonth.toLocaleDateString(i18n.language, {
-        month: "long",
-        year: "numeric",
-      });
-      const html = buildDutiesSchedulePdfHtml({
-        sections,
-        congregationName: meetingSettingsQuery.data?.congregation.name ?? null,
-        hallAddress: meetingVersion.address ?? null,
-        monthLabel,
-        locale: i18n.language,
-        labels: {
-          title: t("schedule.tabs.duties"),
-          dutyColumn: t("duties.dutyColumn"),
-          emptyCell: "—",
-        },
-      });
-      await exportHtmlAsPdf(html, {
-        fileName: t("schedule.tabs.duties"),
-        preopenedWindow: win,
-      });
-    } catch (e) {
-      // Printing used to fail in silence: the print window just vanished.
-      win?.close();
-      reportError(extractErrorMessage(e));
-    } finally {
-      setPrintingDuties(false);
-    }
-  };
-
-  // Monthly cleaning PDF: a grid of cleaning slots (rows) x weeks (columns) with
-  // the assigned service group per cell. Weeks grouped by Monday. Loads each
-  // week's cleaning assignments (getWeek is per-week) plus the service groups.
+  // Quarterly cleaning PDF — lib/print-cleaning-quarter, shared with the
+  // cleaning screen.
   const [printingCleaning, setPrintingCleaning] = useState(false);
-  const printMonthCleaning = async () => {
-    const win = openPrintWindow();
-    setPrintingCleaning(true);
-    try {
-      // Print the calendar quarter (3 months) that the viewed week falls in:
-      // Q1 Jan–Mar, Q2 Apr–Jun, Q3 Jul–Sep, Q4 Oct–Dec. Each month is its own
-      // block. Weeks belong to the month of their Monday.
-      const viewedMonth = weekStart.getMonth();
-      const year = weekStart.getFullYear();
-      const quarterStartMonth = Math.floor(viewedMonth / 3) * 3;
-      const monthsInQuarter = [
-        quarterStartMonth,
-        quarterStartMonth + 1,
-        quarterStartMonth + 2,
-      ];
-
-      const events = specialEventsQuery.data ?? [];
-      const congressNote = (mon: Date): string | null => {
-        const satISO = formatDateISO(addDays(mon, 5));
-        const sunISO = formatDateISO(addDays(mon, 6));
-        const midISO = formatDateISO(addDays(mon, 3));
-        const c = events.find((e) => {
-          if (e.type !== "regional_convention" && e.type !== "circuit_assembly")
-            return false;
-          const end = e.endDate ?? e.date;
-          return (
-            (e.date <= sunISO && satISO <= end) ||
-            (e.date <= midISO && end >= midISO)
-          );
-        });
-        return c ? t(`specialEvents.types.${c.type}`) : null;
-      };
-
-      // Mondays of a given month (a week belongs to the month of its Monday).
-      const mondaysOfMonth = (monthIdx: number): Date[] => {
-        const first = new Date(year, monthIdx, 1);
-        let m = startOfWeekMonday(first);
-        const out: Date[] = [];
-        for (let i = 0; i < 6; i++) {
-          if (m.getMonth() === monthIdx && m.getFullYear() === year) {
-            out.push(new Date(m));
-          }
-          m = addWeeks(m, 1);
-        }
-        return out;
-      };
-
-      // Collect every Monday across the quarter, load groups + weeks in parallel.
-      const allMondays: Date[] = monthsInQuarter.flatMap(mondaysOfMonth);
-      if (allMondays.length === 0) {
-        win?.close();
-        return;
-      }
-      const [groupsRes, ...weekData] = await Promise.all([
-        serviceGroupsApi.list(),
-        ...allMondays.map((mon) => cleaningApi.getWeek(formatDateISO(mon))),
-      ]);
-      const groupsById = new Map((groupsRes.data ?? []).map((g) => [g.id, g]));
-      const weekByISO = new Map<string, (typeof weekData)[number]>();
-      allMondays.forEach((mon, idx) => {
-        weekByISO.set(formatDateISO(mon), weekData[idx]);
-      });
-
-      const slotDefs: { slot: string; color: string }[] = [
-        { slot: "after_meeting", color: CLEANING_SHADES.after_meeting },
-        { slot: "thorough", color: CLEANING_SHADES.thorough },
-        { slot: "general", color: CLEANING_SHADES.general },
-      ];
-
-      const months = monthsInQuarter.map((monthIdx) => {
-        const mondays = mondaysOfMonth(monthIdx);
-        const weeks: CleaningPdfWeek[] = mondays.map((mon) => {
-          const sun = addDays(mon, 6);
-          const label = `${mon.toLocaleDateString(i18n.language, {
-            day: "numeric",
-          })}–${sun.toLocaleDateString(i18n.language, {
-            day: "numeric",
-            month: "short",
-          })}`;
-          return {
-            weekStartDate: formatDateISO(mon),
-            label,
-            note: congressNote(mon),
-          };
-        });
-        const rows: CleaningPdfRow[] = slotDefs.map(({ slot, color }) => {
-          const valueByWeek: Record<string, string | null> = {};
-          mondays.forEach((mon) => {
-            const iso = formatDateISO(mon);
-            const wk = weekByISO.get(iso);
-            const a = (wk?.assignments ?? []).find((x) => x.slotType === slot);
-            if (!a) {
-              valueByWeek[iso] = null;
-            } else if (slot === "general") {
-              valueByWeek[iso] = t("cleaning.allCongregation");
-            } else {
-              const g = a.serviceGroupId
-                ? groupsById.get(a.serviceGroupId)
-                : null;
-              valueByWeek[iso] = g?.name ?? null;
-            }
-          });
-          return { label: t(`cleaning.slots.${slot}`), color, valueByWeek };
-        });
-        return {
-          monthLabel: new Date(year, monthIdx, 1).toLocaleDateString(
-            i18n.language,
-            { month: "long", year: "numeric" },
-          ),
-          weeks,
-          rows,
-        };
-      });
-
-      // Period label, e.g. "Август — Октябрь 2026".
-      const startName = new Date(year, quarterStartMonth, 1).toLocaleDateString(
-        i18n.language,
-        { month: "long" },
-      );
-      const endName = new Date(
-        year,
-        quarterStartMonth + 2,
-        1,
-      ).toLocaleDateString(i18n.language, { month: "long" });
-      const periodLabel = `${startName} — ${endName} ${year}`;
-
-      const html = buildCleaningSchedulePdfHtml({
-        months,
-        congregationName: meetingSettingsQuery.data?.congregation.name ?? null,
-        hallAddress: meetingVersion?.address ?? null,
-        periodLabel,
-        locale: i18n.language,
-        labels: {
-          title: t("cleaning.title"),
-          slotColumn: t("cleaning.slotColumn"),
-          emptyCell: "—",
-        },
-      });
-      await exportHtmlAsPdf(html, {
-        fileName: t("cleaning.title"),
-        preopenedWindow: win,
-      });
-    } catch (e) {
-      // Printing used to fail in silence: the print window just vanished.
-      win?.close();
-      reportError(extractErrorMessage(e));
-    } finally {
-      setPrintingCleaning(false);
-    }
-  };
+  const printMonthCleaning = () =>
+    printCleaningQuarter({
+      weekStart,
+      meetingVersion,
+      events: specialEventsQuery.data ?? [],
+      congregationName: meetingSettingsQuery.data?.congregation.name ?? null,
+      t,
+      lang: i18n.language,
+      onBusy: setPrintingCleaning,
+    });
   const draftCount = (list: Assignment[]) =>
     list.filter((x) => String(x.status) === "draft").length;
   const changedCount = (list: Assignment[]) =>
@@ -2136,17 +1715,7 @@ export default function ScheduleIndexScreen() {
         <UndoBar
           visible={!!clearedSlot}
           message={t("cleaning.cleared")}
-          onUndo={async () => {
-            if (!clearedSlot) return;
-            await cleaningApi.setSlot({
-              weekStartDate: weekStartISO,
-              slotType: clearedSlot.slotType,
-              serviceGroupId: clearedSlot.serviceGroupId,
-              windows: clearedSlot.windows,
-            });
-            setClearedSlot(null);
-            invalidateCleaning();
-          }}
+          onUndo={undoClearedSlot}
           onDismiss={() => setClearedSlot(null)}
         />
       </View>
