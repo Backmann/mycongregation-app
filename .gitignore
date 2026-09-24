@@ -28,3 +28,4 @@ commit-msg.txt
 # The pattern has no leading slash, so it matches a dist directory at any depth.
 dist/
 .expo/
+app/.screens/
