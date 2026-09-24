@@ -203,13 +203,23 @@ export default function CleaningScreen() {
     }
 
     const selected = wide && week === chosen;
+    // A row that holds «На плане» must not itself be a button: on the web a
+    // button role renders a <button>, and a button inside a button is invalid
+    // HTML — the browser rewrites it while parsing, taps can land on the wrong
+    // one, and screen readers read the pair as one (found by the screen audit,
+    // 24 September, on every role). Such a row stays pressable; the windows,
+    // read out as part of its label, are the one thing its role gave up.
+    const hasPlan = !!weekly?.windows?.length;
+    const rowLabel = `${monday.toLocaleDateString(lang, { day: 'numeric', month: 'long' })} — ${sunday.toLocaleDateString(lang, { day: 'numeric', month: 'long' })}. ${title}`;
     out.push(
       <Pressable
         key={week}
         onPress={() => open(week)}
         style={({ pressed }) => [styles.row, selected && styles.rowSelected, pressed && styles.pressed]}
-        accessibilityRole="button"
-        accessibilityLabel={`${monday.toLocaleDateString(lang, { day: 'numeric', month: 'long' })} — ${sunday.toLocaleDateString(lang, { day: 'numeric', month: 'long' })}. ${title}`}
+        accessibilityRole={hasPlan ? undefined : 'button'}
+        accessibilityLabel={
+          hasPlan ? `${rowLabel}. ${t('cleaningHall.windows', { list: weekly!.windows!.join(', ') })}` : rowLabel
+        }
       >
         <View style={styles.dateCol}>
           <Text style={styles.day}>{monday.getDate()}</Text>
