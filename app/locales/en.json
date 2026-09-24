@@ -684,7 +684,7 @@
       "validationServedSelf": "Please indicate whether you served this month."
     },
     "errors": {
-      "notLinkedToPublisher": "Your login is not linked to a publisher record, so a report cannot be submitted. Ask an elder or an administrator to link them: Profile → Users → «Link».",
+      "notLinkedToPublisher": "Your login is not linked to a publisher record, so a report cannot be submitted. Ask an elder or an administrator to link them: Congregation → Administration → User management → «Link».",
       "selfEditWindowClosed": "This report can no longer be changed: its month has closed. A report can be corrected while its month is still being collected — up to the 20th of the following month. Ask the secretary or an admin."
     },
     "pioneerInline": " · pioneer",
@@ -2744,7 +2744,7 @@
     "later": "Later",
     "saved": "Saved",
     "empty": "not set",
-    "noCard": "Your login is not linked to a publisher record, so there is nothing to show here. Ask an elder or an administrator to link them: Profile → Users → «Link».",
+    "noCard": "Your login is not linked to a publisher record, so there is nothing to show here. Ask an elder or an administrator to link them: Congregation → Administration → User management → «Link».",
     "confirmedAt": "Confirmed {{date}}",
     "neverConfirmed": "Never confirmed yet",
     "checkTitle": "Check your details",

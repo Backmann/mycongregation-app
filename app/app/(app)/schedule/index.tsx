@@ -288,11 +288,18 @@ export default function ProgrammeFeedScreen() {
     null,
   );
   const reachedEnd = lastLoaded && !allAssignments.some((a) => a.weekStartDate === lastSpanWeek);
-  const endWeek = reachedEnd
+  const programmeEnd = reachedEnd
     ? lastProgrammeWeek && lastProgrammeWeek > thisWeek
       ? lastProgrammeWeek
       : thisWeek
     : lastSpanWeek;
+  // A week asked for by the address is shown even past the programme's end
+  // (24 September). The Memorial is the case: its programme is published
+  // before the workbooks for its week are imported, and «the Memorial
+  // programme is out» led to a feed that stopped short of it — the week sat
+  // only in «Впереди», with nothing to open. The old screen had the same trap
+  // and drew the block anyway; so does the feed now, for the week sent to.
+  const endWeek = targetWeek && targetWeek > programmeEnd ? targetWeek : programmeEnd;
 
   // Every dated thing the weeks hold, in date order.
   const items: Item[] = [];

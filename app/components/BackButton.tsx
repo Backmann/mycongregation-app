@@ -1,6 +1,7 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 
 /**
  * Header back button that never gets stuck.
@@ -33,8 +34,13 @@ export function BackButton({
   color?: string;
 }) {
   const { from } = useLocalSearchParams<{ from?: string }>();
+  const { t } = useTranslation();
   return (
     <Pressable
+      // Named, so a screen reader says what it is — and the walkthrough script
+      // presses THIS back, not the browser's, which follows tab history.
+      accessibilityRole="button"
+      accessibilityLabel={t('common.back')}
       onPress={() => {
         if (typeof from === 'string' && from) {
           router.navigate(from as any);
@@ -60,7 +66,6 @@ export function BackButton({
       }}
       style={{ paddingHorizontal: 12 }}
       hitSlop={8}
-      accessibilityRole="button"
     >
       {/* The header is the brand colour now, so white is the default here.
           This button lives only in headers — nothing else uses it. */}
