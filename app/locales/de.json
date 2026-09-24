@@ -195,7 +195,6 @@
   },
   "profile": {
     "signedInAs": "Angemeldet als",
-    "adminTools": "Administrator-Werkzeuge",
     "publicTalks": "Verzeichnis öffentlicher Vorträge",
     "publicTalksDescription": "S-34-Vortragsliste verwalten",
     "settings": "Einstellungen",
@@ -971,18 +970,20 @@
   },
   "schedule": {
     "title": {
-      "list": "Programm",
       "detail": "Zuteilung",
       "new": "Neue Zuteilung",
-      "import": "MWB importieren",
+      "import": "Programm-Import",
       "rules": "Versammlungsregeln"
     },
     "a11y": {
       "newAssignment": "Neue Zuteilung",
-      "events": "Termine",
-      "localNeeds": "Örtliche Bedürfnisse",
-      "talkCoordinator": "Redner-Koordinator",
-      "rules": "Regeln"
+      "localNeeds": "Örtliche Bedürfnisse"
+    },
+    "menu": {
+      "more": "Mehr",
+      "eventsSub": "Kongresse, Gedächtnismahl, Besuch des Kreisaufsehers",
+      "rulesSub": "Automatische Zuteilungen: Gebete und Mikrofone",
+      "localNeedsSub": "Themen für «Unser Leben als Christ»"
     },
     "noAssignments": "Keine Zuteilungen für diese Woche.",
     "unassigned": "Nicht zugeteilt",
@@ -2756,7 +2757,6 @@
   },
   "profileExtra": {
     "songsSub": "Liederbuch importieren",
-    "mwbImport": "Programm-Import",
     "mwbImportSub": "Zusammenkunftsprogramm aus den Publikationen (EPUB)"
   },
   "songPicker": {
@@ -2796,7 +2796,7 @@
     "sizeTitle": "Größe der Versammlung",
     "allActive": "Alle aktiven",
     "inactive": "Inaktive",
-    "sizeHint": "„Alle aktiven“ zählt aktive und unregelmäßige Verkündiger. Inaktive werden getrennt gezählt und sind hier nicht enthalten.",
+    "sizeHint": "„Alle aktiven“: alle, die am Monatsende zur Versammlung gehörten und in den letzten sechs Monaten mindestens einmal im Dienst tätig waren. Ein Bericht mit „nein“ zählt nicht. Inaktive werden getrennt gezählt.",
     "attendanceTitle": "Zusammenkunftsbesuch",
     "weekendAverage": "Durchschnitt, Wochenende",
     "midweekAverage": "Durchschnitt, Wochenmitte",
@@ -3387,7 +3387,6 @@
     "songWord": "Lied"
   },
   "feed": {
-    "title": "Zusammenkünfte",
     "ready": "Programm vollständig",
     "noneYet": "Noch niemand zugeteilt",
     "missingCount": "{{count}} von {{total}} nicht zugeteilt",

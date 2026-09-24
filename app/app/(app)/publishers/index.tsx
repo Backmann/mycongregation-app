@@ -62,7 +62,7 @@ export default function CongregationScreen() {
       // An elder with no programme responsibility may only import; the row says
       // so, rather than promising editing he will not find there.
       subtitle: editsProgramme ? t('congregationHub.sub.programme') : t('congregationHub.sub.programmeImport'),
-      href: '/schedule',
+      href: '/schedule/edit',
     });
   }
   // Meeting duties — whoever edits them (lib/permissions canEditDuties: admin,

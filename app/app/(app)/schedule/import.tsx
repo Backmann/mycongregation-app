@@ -222,7 +222,7 @@ export default function ImportEpubScreen() {
                 key={m.month}
                 style={styles.haveChip}
                 onPress={() =>
-                  router.push(`/schedule?week=${m.firstWeek}` as never)
+                  router.push(`/schedule/edit?week=${m.firstWeek}` as never)
                 }
               >
                 <Text style={styles.haveChipMonth}>{monthName(m.month)}</Text>
@@ -498,7 +498,7 @@ function ResultSummary({ result }: { result: ImportResult }) {
         <Pressable
           style={styles.openWeek}
           onPress={() =>
-            router.push(`/schedule?week=${firstWeek}` as never)
+            router.push(`/schedule/edit?week=${firstWeek}` as never)
           }
         >
           <Ionicons name="calendar-outline" size={16} color="#0369a1" />
@@ -545,7 +545,7 @@ function ResultSummary({ result }: { result: ImportResult }) {
 
       <Pressable
         style={styles.doneButton}
-        onPress={() => router.replace('/schedule' as any)}
+        onPress={() => router.replace('/schedule/edit' as any)}
       >
         <Text style={styles.doneButtonText}>
           {t('schedule.import.openSchedule')}

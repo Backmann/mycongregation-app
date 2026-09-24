@@ -195,7 +195,6 @@
   },
   "profile": {
     "signedInAs": "Signed in as",
-    "adminTools": "Admin tools",
     "publicTalks": "Public talks catalog",
     "publicTalksDescription": "Manage S-34 talks list",
     "settings": "Settings",
@@ -971,18 +970,20 @@
   },
   "schedule": {
     "title": {
-      "list": "Programme",
       "detail": "Assignment",
       "new": "New Assignment",
-      "import": "Import MWB",
+      "import": "Programme import",
       "rules": "Congregation rules"
     },
     "a11y": {
       "newAssignment": "New assignment",
-      "events": "Events",
-      "localNeeds": "Local Needs",
-      "talkCoordinator": "Talk coordinator",
-      "rules": "Rules"
+      "localNeeds": "Local Needs"
+    },
+    "menu": {
+      "more": "More",
+      "eventsSub": "Conventions, the Memorial, the circuit overseer's visit",
+      "rulesSub": "Automatic assignments: prayers and microphones",
+      "localNeedsSub": "Topics for «Living as Christians»"
     },
     "noAssignments": "No assignments for this week.",
     "unassigned": "Unassigned",
@@ -2756,7 +2757,6 @@
   },
   "profileExtra": {
     "songsSub": "Import the congregation songbook",
-    "mwbImport": "Schedule import",
     "mwbImportSub": "Meeting programme from the publications (EPUB)"
   },
   "songPicker": {
@@ -2796,7 +2796,7 @@
     "sizeTitle": "Congregation size",
     "allActive": "All active",
     "inactive": "Inactive",
-    "sizeHint": "\"All active\" counts active and irregular publishers. Inactive ones are counted separately and are not included here.",
+    "sizeHint": "\"All active\": everyone in the congregation at the end of the month who shared in the ministry at least once in the last six months. A report saying \"no\" does not count. Inactive publishers are counted separately.",
     "attendanceTitle": "Meeting attendance",
     "weekendAverage": "Weekend average",
     "midweekAverage": "Midweek average",
@@ -3387,7 +3387,6 @@
     "songWord": "Song"
   },
   "feed": {
-    "title": "Meetings",
     "ready": "Programme complete",
     "noneYet": "Nobody assigned yet",
     "missingCount": "{{count}} of {{total}} not assigned",

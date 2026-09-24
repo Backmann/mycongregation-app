@@ -182,9 +182,6 @@ export default function ProfileScreen() {
 
   if (!user) return null;
 
-  // Admins and elders alike — the one row left under it (the programme
-  // import) is theirs; the full-admin rows moved to the Congregation tab.
-  const isAdmin = user.role === "admin" || user.role === "elder";
   const initials =
     (myPublisher
       ? `${myPublisher.firstName?.[0] ?? ""}${myPublisher.lastName?.[0] ?? ""}`
@@ -480,41 +477,6 @@ export default function ProfileScreen() {
             </Pressable>
           </View>
         </View>
-
-        {isAdmin && (
-          <View style={styles.section}>
-            <Text style={styles.sectionLabel} accessibilityRole="header">{t("profile.adminTools")}</Text>
-            <View style={styles.card}>
-              {/* Importing a workbook is a monthly errand, not a daily one, so
-                it lives with the other rare settings rather than in the header
-                of a screen used every day. */}
-              <Pressable
-                style={({ pressed }) => [
-                  styles.row,
-                  pressed && styles.rowPressed,
-                ]}
-                onPress={() => router.push("/schedule/import" as any)}
-              >
-                <View style={styles.rowIcon}>
-                  <Ionicons
-                    name="cloud-upload-outline"
-                    size={20}
-                    color="#0ea5e9"
-                  />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.rowTitle}>
-                    {t("profileExtra.mwbImport")}
-                  </Text>
-                  <Text style={styles.rowSubtitle}>
-                    {t("profileExtra.mwbImportSub")}
-                  </Text>
-                </View>
-                <Ionicons name="chevron-forward" size={18} color="#cbd5e1" />
-              </Pressable>
-            </View>
-          </View>
-        )}
 
         <View style={styles.section}>
           <Text style={styles.sectionLabel} accessibilityRole="header">{t("legal.sectionLabel")}</Text>

@@ -11,7 +11,7 @@ export default function LocalNeedsLayout() {
         name="index"
         options={{
           title: t('localNeeds.title.list'),
-          headerLeft: () => <BackButton fallback="/schedule" toParent />,
+          headerLeft: () => <BackButton fallback="/schedule/edit" toParent />,
         }}
       />
     </Stack>

@@ -2,7 +2,7 @@
 /**
  * Снимки ленты программы — одной командой, без рук.
  *
- * Входит под администратором, открывает /schedule/feed, щёлкает вкладки
+ * Входит под администратором, открывает /schedule (ленту), щёлкает вкладки
  * раскрытой встречи, раскрывает воскресенье и день проповеди, снимает
  * прошедшие; потом входит под возвещателем; потом открывает ленту на широком
  * экране. Всё — в папку .screens/<дата-время>/.
@@ -268,6 +268,7 @@ async function redirectCheck(page) {
   for (const [from, to] of [
     ['/profile/journal', '/publishers/journal'],
     ['/profile/halls', '/publishers/meeting-settings'],
+    ['/schedule/feed', '/schedule'],
   ]) {
     await page.goto(`${BASE}${from}`);
     const ok = await page.waitForURL((url) => url.pathname === to, { timeout: 15000 }).then(() => true).catch(() => false);
@@ -294,7 +295,9 @@ async function hub(page, name, expect, forbid) {
  * are gone, and the cleaning door opens this week's cleaning.
  */
 async function programmeSections(page) {
-  await page.goto(`${BASE}/schedule`);
+  // «Составление программы» — the old programme screen, at /schedule/edit
+  // since the feed became the tab (23 September).
+  await page.goto(`${BASE}/schedule/edit`);
   const door = page.getByText(/^Уборка зала$/).first();
   await door.waitFor({ timeout: 30000 }).catch(() => {});
   await answerLanguage(page);
@@ -314,6 +317,72 @@ async function programmeSections(page) {
   const vp = page.viewportSize();
   await page.screenshot({ path: join(OUT, '15-programme-to-cleaning.png'), clip: { x: 0, y: 0, width: vp.width, height: Math.min(vp.height, 900) } });
   await words(page, '15-programme-to-cleaning.png', ['Уборка после встреч', 'Еженедельная уборка'], []);
+}
+
+/**
+ * The Programme tab's header and «Составление программы»'s (23 September):
+ * «…» opens a sheet of rows. Each sheet is photographed open and closed again
+ * with its own «Готово», so nothing is chosen.
+ */
+async function programmeMenus(page) {
+  await openFeed(page);
+  await words(page, '30-programme-menu.png', ['Программа'], ['Лента встреч'], { must: ['Ещё'], mustNot: ['События'] });
+  await page.getByLabel('Ещё').first().click();
+  const eventsRow = page.getByText(/^События$/).first();
+  await eventsRow.waitFor({ timeout: 15000 }).catch(() => {});
+  await page.waitForTimeout(700);
+  await around(page, eventsRow, '30-programme-menu.png', { above: 120, height: 400 });
+  await words(page, '30-programme-menu.png', ['События', 'Составление программы'], []);
+  await page.getByText(/^Готово$/).last().click();
+  await page.waitForTimeout(500);
+
+  await page.goto(`${BASE}/schedule/edit`);
+  await page.getByText(/^Уборка зала$/).first().waitFor({ timeout: 30000 }).catch(() => {});
+  await answerLanguage(page);
+  await page.waitForTimeout(800);
+  // The talk coordinator and the events left this header; «+» stayed.
+  await words(page, '32-edit-menu.png', ['Составление программы'], [],
+    { must: ['Новое назначение', 'Ещё'], mustNot: ['Координатор речей', 'События', 'Местные потребности'] });
+  await page.getByLabel('Ещё').first().click();
+  const rulesRow = page.getByText(/^Правила собрания$/).first();
+  await rulesRow.waitFor({ timeout: 15000 }).catch(() => {});
+  await page.waitForTimeout(700);
+  await around(page, rulesRow, '32-edit-menu.png', { above: 120, height: 460 });
+  await words(page, '32-edit-menu.png', ['Правила собрания', 'Импорт программы', 'Местные потребности'], []);
+  await page.getByText(/^Готово$/).last().click();
+  await page.waitForTimeout(500);
+}
+
+/**
+ * A publisher has one action here — the events — and gets it as its own icon,
+ * not a menu of one (23 September).
+ */
+async function publisherProgrammeHeader(page) {
+  await openFeed(page);
+  const vp = page.viewportSize();
+  await page.screenshot({ path: join(OUT, '31-programme-publisher.png'), clip: { x: 0, y: 0, width: vp.width, height: 140 } });
+  await words(page, '31-programme-publisher.png', ['Программа'], [], { must: ['События'], mustNot: ['Ещё'] });
+}
+
+/**
+ * «Look at that week» lands on it (23 September): a link with ?week= opens the
+ * feed with that week's meeting near the top, not on today. Three weeks ahead,
+ * the weekend meeting, as a notification would send it.
+ */
+async function weekLanding(page) {
+  const d = new Date();
+  const monday = new Date(d.getFullYear(), d.getMonth(), d.getDate() - ((d.getDay() + 6) % 7) + 21);
+  const iso = `${monday.getFullYear()}-${String(monday.getMonth() + 1).padStart(2, '0')}-${String(monday.getDate()).padStart(2, '0')}`;
+  await page.goto(`${BASE}/schedule?week=${iso}&meeting=weekend`);
+  const card = page.getByTestId(`meeting-${iso}-weekend`);
+  await card.waitFor({ timeout: 30000 }).catch(() => {});
+  await answerLanguage(page);
+  await page.waitForTimeout(2500); // the rows above arrive; the hold must keep the week in place
+  const box = await card.boundingBox();
+  const ok = !!box && box.y >= 0 && box.y < 260;
+  console.log(`· посадка на неделю ${iso} (выходная): ${ok ? 'да' : 'НЕТ'} — ${box ? 'карточка на ' + Math.round(box.y) : 'карточки нет'}`);
+  const vp = page.viewportSize();
+  await page.screenshot({ path: join(OUT, '33-feed-week.png'), clip: { x: 0, y: 0, width: vp.width, height: Math.min(vp.height, 900) } });
 }
 
 /** Words that must stand and words that must not — the check of rights. */
@@ -437,7 +506,7 @@ async function warmUp(browser) {
 }
 
 async function openFeed(page) {
-  await page.goto(`${BASE}/schedule/feed`);
+  await page.goto(`${BASE}/schedule`);
   try {
     await page.getByText(/^Сегодня ·/).first().waitFor({ timeout: 30000 });
   } catch {
@@ -537,9 +606,11 @@ try {
   await management(a);
   await meetingPlace(a);
   await profileFrame(a, '26-profile-admin.png',
-    ['Импорт расписания', 'Удалить учётную запись и данные'],
-    [...MOVED_OUT_OF_PROFILE, 'Время и место встреч', 'Залы Царства']);
+    ['Удалить учётную запись и данные'],
+    [...MOVED_OUT_OF_PROFILE, 'Время и место встреч', 'Залы Царства', 'Импорт расписания', 'Импорт программы',
+     'Инструменты администратора']);
   await redirectCheck(a);
+  await programmeMenus(a);
   await programmeSections(a);
   await cleaningFrames(a, '16-cleaning-admin.png',
     ['Эта неделя', 'После встреч — Hamm-Werries', 'Уборка после встреч не назначена',
@@ -576,6 +647,9 @@ try {
   landings.push(await landing(a, 'телефон'));
   await a.screenshot({ path: join(OUT, '09-phone-landing.png') });
   console.log('· 09-phone-landing.png');
+  // A link to a week, on a phone of real size — where holding matters.
+  await weekLanding(a);
+  await openFeed(a); // back to the plain feed, as frame 10 was always taken
 
   // --- «Впереди»: «Показать ещё» до конца программы, затем то, что за ним ---
   for (let i = 0; i < 12; i++) {
@@ -606,6 +680,7 @@ try {
   await cleaningFrames(p, '18-cleaning-publisher.png',
     ['Эта неделя', 'Убирает ваша группа — после встреч', 'Как убирать', 'Окна: 5'],
     [], { must: [], mustNot: ['Распечатать график уборки'] }, null, '24-windows-plan.png');
+  await publisherProgrammeHeader(p);
   await profileFrame(p, '27-profile-publisher.png',
     ['Мои контакты', 'Уведомления', 'Язык', 'Удалить учётную запись и данные'],
     [...MOVED_OUT_OF_PROFILE, 'Инструменты администратора', 'Время и место встреч', 'Импорт расписания']);
