@@ -25,6 +25,21 @@ export function LoadFailure({
   onRetry?: () => void;
 }) {
   const { t } = useTranslation();
+  // A refusal is not a failure (24 September). The screen audit found screens
+  // opened by address — the elders' task archive, the pioneer's year review —
+  // telling a publisher «could not load, try again» over a plain 403: nothing
+  // had failed, and trying again could never help. The server's «no» is said
+  // as a «no», with no retry and no technical line.
+  const status = (error as { response?: { status?: number } } | null)?.response?.status;
+  if (status === 403) {
+    return (
+      <View style={styles.box}>
+        <Ionicons name="lock-closed-outline" size={28} color="#94a3b8" />
+        <Text style={styles.title}>{t('common.noAccessTitle')}</Text>
+        <Text style={styles.hint}>{t('common.noAccessHint')}</Text>
+      </View>
+    );
+  }
   const detail = extractErrorMessage(error);
   return (
     <View style={styles.box}>

@@ -191,7 +191,9 @@
     "italicShort": "I",
     "print": "Print",
     "undo": "Undo",
-    "undoing": "Restoring…"
+    "undoing": "Restoring…",
+    "noAccessTitle": "No access",
+    "noAccessHint": "This section is open to those assigned to it. If you need it, please ask the elders."
   },
   "profile": {
     "signedInAs": "Signed in as",

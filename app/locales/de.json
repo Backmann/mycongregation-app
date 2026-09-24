@@ -191,7 +191,9 @@
     "italicShort": "K",
     "print": "Drucken",
     "undo": "Rückgängig",
-    "undoing": "Wird zurückgeholt…"
+    "undoing": "Wird zurückgeholt…",
+    "noAccessTitle": "Kein Zugriff",
+    "noAccessHint": "Dieser Bereich ist für diejenigen geöffnet, die dafür eingeteilt sind. Wenn Sie ihn brauchen, wenden Sie sich bitte an die Ältesten."
   },
   "profile": {
     "signedInAs": "Angemeldet als",
