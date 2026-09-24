@@ -1101,9 +1101,22 @@ function HomeTimeline() {
 
   const farCount = timeline.far.reduce((n, g) => n + g.entries.length, 0);
 
+  // «Все мои задания» continues this list past its two weeks: every part,
+  // duty and cleaning of one's own, months ahead. The screen was built and
+  // worked, but since the Home rework no button led to it (found by the
+  // screen audit, 24 September; decided to bring it back the same day).
   const header = (
     <View style={[styles.sectionHeader, { marginTop: 24 }]}>
       <Text style={styles.sectionTitle}>{t("home.timeline.title")}</Text>
+      <Pressable
+        onPress={() => router.push("/home/my-assignments" as never)}
+        hitSlop={8}
+        style={({ pressed }) => [styles.allMine, pressed && { opacity: 0.6 }]}
+        accessibilityRole="link"
+      >
+        <Text style={styles.allMineText}>{t("home.timeline.allMine")}</Text>
+        <Ionicons name="chevron-forward" size={15} color="#0369a1" />
+      </Pressable>
     </View>
   );
 
@@ -1626,6 +1639,8 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginBottom: 12,
   },
+  allMine: { flexDirection: "row", alignItems: "center", gap: 2, marginLeft: "auto", paddingVertical: 4 },
+  allMineText: { fontSize: 14, color: "#0369a1", fontFamily: "Manrope_600SemiBold", fontWeight: "600" },
   sectionTitle: {
     fontSize: 18,
     fontWeight: "700",

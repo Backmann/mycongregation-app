@@ -135,23 +135,8 @@ export default function MyAssignmentsScreen() {
   );
   const weeks = buildWeeks(refined);
 
-  const router = useRouter();
-  const goBack = () => {
-    if (router.canGoBack()) router.back();
-    else router.replace('/home' as any);
-  };
-
   return (
     <View style={styles.screen}>
-      <View style={styles.header}>
-        <Pressable onPress={goBack} hitSlop={10} style={styles.backBtn}>
-          <Ionicons name="chevron-back" size={24} color="#0ea5e9" />
-        </Pressable>
-        <Text style={styles.headerTitle} numberOfLines={1}>
-          {t('home.myTasksScreen.title')}
-        </Text>
-        <View style={styles.backBtn} />
-      </View>
       <ScrollView
         style={styles.container}
         contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
@@ -360,23 +345,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#f1f5f9',
   },
   modalCloseText: { fontSize: 13.5, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#334155' },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 8,
-    paddingVertical: 10,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
-  },
-  backBtn: { width: 40, alignItems: 'center' },
-  headerTitle: {
-    flex: 1,
-    textAlign: 'center',
-    fontSize: 17,
-    fontWeight: '700', fontFamily: 'Manrope_700Bold',
-    color: '#0f172a',
-  },
   container: { flex: 1, backgroundColor: '#f8fafc' },
   weekBlock: { marginBottom: 18 },
   weekHeader: {

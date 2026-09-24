@@ -2230,7 +2230,8 @@
       "away": "Тебя нет",
       "outgoingTalk": "Доклад на выезде",
       "cleaningAfterMeeting": "Уборка после встречи — ваша группа",
-      "openMap": "Открыть карту"
+      "openMap": "Открыть карту",
+      "allMine": "Все мои задания"
     },
     "report": {
       "outstanding": "Отчёт за {{month}} не сдан",

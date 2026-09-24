@@ -2214,7 +2214,8 @@
       "away": "You're away",
       "outgoingTalk": "Talk away",
       "cleaningAfterMeeting": "Your group cleans after this meeting",
-      "openMap": "Open map"
+      "openMap": "Open map",
+      "allMine": "All my assignments"
     },
     "report": {
       "outstanding": "The {{month}} report isn't submitted",

@@ -2214,7 +2214,8 @@
       "away": "Du bist abwesend",
       "outgoingTalk": "Vortrag auswärts",
       "cleaningAfterMeeting": "Eure Gruppe reinigt nach dieser Zusammenkunft",
-      "openMap": "Karte öffnen"
+      "openMap": "Karte öffnen",
+      "allMine": "Alle meine Aufgaben"
     },
     "report": {
       "outstanding": "Bericht für {{month}} nicht abgegeben",

@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import BrandLockup from '../../../components/BrandLockup';
 import { HeaderCongregation } from '../../../components/HeaderCongregation';
 import { UpdateChip } from '../../../components/UpdateBanner';
+import { BackButton } from '../../../components/BackButton';
 
 export default function HomeLayout() {
   const { t } = useTranslation();
@@ -37,9 +38,15 @@ export default function HomeLayout() {
           headerRight: () => <UpdateChip />,
         }}
       />
+      {/* One header: this one, with the app's own back. The screen used to
+          draw a second one of its own under it — the title twice, two backs
+          (found by the screen audit, 24 September). */}
       <Stack.Screen
         name="my-assignments"
-        options={{ title: t('home.myTasksScreen.title') }}
+        options={{
+          title: t('home.myTasksScreen.title'),
+          headerLeft: () => <BackButton fallback="/home" toParent />,
+        }}
       />
     </Stack>
   );

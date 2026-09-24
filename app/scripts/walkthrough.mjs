@@ -523,6 +523,19 @@ let memorialWeek = null; // found as the admin, reused by the others
     return 'язык возвращён на русский';
   });
 
+  await check(page, 'A21', 'Главная → «Все мои задания» → одна шапка → назад на Главную', async () => {
+    await go(page, '/home', 'Ближайшие две недели');
+    await tap(page, 'Все мои задания');
+    await atPath(page, '/home/my-assignments');
+    await page.waitForTimeout(1500);
+    // One header — the screen once drew a second one under the stack's.
+    const titles = await page.getByText(/^Мои задания$/).filter({ visible: true }).count();
+    if (titles !== 1) throw new Error(`заголовок «Мои задания» виден ${titles} раз(а)`);
+    await snap(page, 'A21-мои-задания');
+    await back(page);
+    await atPath(page, '/home');
+  });
+
   await keep();
   await ctx.close();
 }
