@@ -100,7 +100,7 @@ function routeForNotification(data) {
     case 'memorial_tomorrow':
       return {
         path: '/schedule',
-        params: data.weekStartDate ? { week: data.weekStartDate } : {},
+        params: data.weekStartDate ? { week: data.weekStartDate, meeting: 'memorial' } : {},
       };
     case 'field_service_meeting':
       return { path: '/cart/field-service', params: {} };

@@ -40,6 +40,7 @@ import {
 import { useMyPublisher } from "../../../lib/useMyPublisher";
 import { FONT } from "../../../lib/typography";
 import { SegmentedControl } from "../../../components/SegmentedControl";
+import { MemorialMeetingBlock } from "../../../components/MemorialMeetingBlock";
 import {
   PairLine,
   PartLine,
@@ -130,7 +131,22 @@ function serviceYearEndISO(today: Date): string {
 type MeetingItem = { type: "meeting"; id: string; date: string; week: string; kind: Kind; time: string | null; movedByVisit: boolean };
 type FieldItem = { type: "field"; id: string; date: string; week: string; meetings: FieldServiceMeeting[] };
 type SpecialItem = { type: "special"; id: string; date: string; title: string; line: string };
-type Item = MeetingItem | FieldItem | SpecialItem;
+/**
+ * The Memorial — a meeting of its own kind, opened like one (23 September).
+ * Its programme once lived only on the old screen; with the feed as the
+ * Programme tab, a notification «the Memorial programme is out» would have
+ * led to a row that could not open.
+ */
+type MemorialItem = {
+  type: "memorial";
+  id: string;
+  date: string;
+  week: string;
+  takes: Kind;
+  event: SpecialEvent;
+  line: string;
+};
+type Item = MeetingItem | FieldItem | SpecialItem | MemorialItem;
 
 export default function ProgrammeFeedScreen() {
   const { t, i18n } = useTranslation();
@@ -162,8 +178,10 @@ export default function ProgrammeFeedScreen() {
     const monday = formatDateISO(startOfWeekMonday(parseISODate(w)));
     return monday >= startWeek ? monday : null;
   }, [params.week, startWeek]);
-  const targetKind: Kind | null =
-    params.meeting === "midweek" || params.meeting === "weekend" ? params.meeting : null;
+  const targetKind: Kind | "memorial" | null =
+    params.meeting === "midweek" || params.meeting === "weekend" || params.meeting === "memorial"
+      ? params.meeting
+      : null;
   // Load far enough ahead to hold the week asked for.
   const chunksFor = (week: string | null) =>
     week && week > thisWeek
@@ -293,10 +311,12 @@ export default function ProgrammeFeedScreen() {
     }
     if (rules.memorial && rules.memorialTakes) {
       items.push({
-        type: "special",
+        type: "memorial",
         id: `memorial|${week}`,
         date: rules.memorial.date,
-        title: t("eventTypes.memorial"),
+        week,
+        takes: rules.memorialTakes,
+        event: rules.memorial,
         line:
           rules.memorialTakes === "midweek"
             ? t("feed.memorialInsteadMidweek")
@@ -383,10 +403,18 @@ export default function ProgrammeFeedScreen() {
   const coming = items.filter((x) => x.date >= today);
   // The nearest meeting opens by itself — readable without a tap. Sent to a
   // week, it is that week's meeting: the one named, else its first.
-  const inTarget = targetWeek ? items.filter((x) => x.type === "meeting" && x.week === targetWeek) : [];
-  const targetOpen =
-    (targetKind && inTarget.find((x) => x.type === "meeting" && x.kind === targetKind)?.id) || inTarget[0]?.id || null;
-  const defaultOpen = targetWeek ? targetOpen : (coming.find((x) => x.type === "meeting")?.id ?? null);
+  // The Memorial opens like a meeting, and is found by the kind it takes too:
+  // «?meeting=memorial» names it, and so does the kind it replaced.
+  const inTarget = targetWeek
+    ? items.filter((x) => (x.type === "meeting" || x.type === "memorial") && x.week === targetWeek)
+    : [];
+  const isTarget = (x: Item) =>
+    (x.type === "meeting" && x.kind === targetKind) ||
+    (x.type === "memorial" && (targetKind === "memorial" || x.takes === targetKind));
+  const targetOpen = (targetKind && inTarget.find(isTarget)?.id) || inTarget[0]?.id || null;
+  const defaultOpen = targetWeek
+    ? targetOpen
+    : (coming.find((x) => x.type === "meeting" || x.type === "memorial")?.id ?? null);
   const [openChoice, setOpenChoice] = useState<string | null | undefined>(undefined);
   const openId = openChoice === undefined ? defaultOpen : openChoice;
   // OPEN ON TODAY — AND HOLD IT THERE UNTIL THE PERSON MOVES.
@@ -500,6 +528,19 @@ export default function ProgrammeFeedScreen() {
     let body: ReactNode = null;
     if (x.type === "special") {
       body = <Row key={x.id} date={x.date} title={x.title} line={x.line} color={KIND_COLOR.special} past={isPast} />;
+    } else if (x.type === "memorial") {
+      body = (
+        <MemorialDay
+          key={x.id}
+          item={x}
+          past={isPast}
+          open={openId === x.id}
+          onToggle={() => (wide ? choose(x.id) : toggle(x.id))}
+          mode={wide ? "row" : "inline"}
+          duties={dutiesOf.get(`${x.week}|memorial`) ?? []}
+          canEdit={perms.isAdmin || perms.isElder}
+        />
+      );
     } else if (x.type === "field") {
       body = (
         <FieldDay
@@ -644,6 +685,17 @@ export default function ProgrammeFeedScreen() {
   const chosen = items.find((x) => x.id === openId);
   const detail = !chosen ? null : chosen.type === "meeting" ? (
     <Meeting key={chosen.id} {...meetingProps(chosen)} open onToggle={() => {}} mode="detail" />
+  ) : chosen.type === "memorial" ? (
+    <MemorialDay
+      key={chosen.id}
+      item={chosen}
+      past={chosen.date < today}
+      open
+      onToggle={() => {}}
+      mode="detail"
+      duties={dutiesOf.get(`${chosen.week}|memorial`) ?? []}
+      canEdit={perms.isAdmin || perms.isElder}
+    />
   ) : chosen.type === "field" ? (
     <FieldDay
       key={chosen.id}
@@ -1138,6 +1190,66 @@ function FieldDay({
               />
             ))}
           </View>
+        </View>
+      ) : null}
+    </View>
+  );
+}
+
+/**
+ * The Memorial in the feed: a row like a meeting's, and open, its programme —
+ * the very block the old screen shows, read-only here (editing is done in
+ * «Составление программы», where the edit link leads, as for any meeting).
+ * The whole programme is for the whole congregation (decided 31 August).
+ */
+function MemorialDay({
+  item,
+  past,
+  open,
+  onToggle,
+  mode = "inline",
+  duties,
+  canEdit,
+}: {
+  item: MemorialItem;
+  past: boolean;
+  open: boolean;
+  onToggle: () => void;
+  mode?: "inline" | "row" | "detail";
+  duties: Duty[];
+  canEdit: boolean;
+}) {
+  const { t } = useTranslation();
+  const title = t("eventTypes.memorial");
+  const line = [item.event.address, item.line].filter(Boolean).join(" · ");
+  return (
+    <View testID={mode === "detail" ? undefined : `memorial-${item.week}`}>
+      {mode !== "detail" ? (
+        <Row
+          date={item.date}
+          title={title}
+          time={item.event.time ?? null}
+          line={line}
+          color={KIND_COLOR.special}
+          past={past}
+          open={open}
+          select={mode === "row"}
+          onPress={onToggle}
+        />
+      ) : (
+        <DetailHead date={item.date} time={item.event.time ?? null} kind={title} line={line} />
+      )}
+      {(mode === "inline" && open) || mode === "detail" ? (
+        <View style={[styles.inset, mode === "detail" && styles.insetDetail]}>
+          <View style={[styles.card, styles.cardFirst]}>
+            <MemorialMeetingBlock bare event={item.event} canEdit={false} hiddenCount={0} duties={duties} />
+          </View>
+          {canEdit ? (
+            <EditLink
+              label={t("feed.editProgramme")}
+              onPress={() => router.push(`/schedule/edit?week=${item.week}&meeting=${item.takes}` as never)}
+            />
+          ) : null}
         </View>
       ) : null}
     </View>

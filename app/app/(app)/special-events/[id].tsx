@@ -246,7 +246,7 @@ export default function SpecialEventDetailScreen() {
             router.push(
               `/schedule?week=${formatDateISO(
                 startOfWeekMonday(new Date(`${event!.date}T00:00:00`)),
-              )}` as any,
+              )}&meeting=memorial` as any,
             )
           }
         >

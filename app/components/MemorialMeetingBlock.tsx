@@ -57,6 +57,7 @@ export function MemorialMeetingBlock({
   hiddenCount,
   duties,
   publishersById,
+  bare = false,
 }: {
   event: SpecialEvent;
   /** Elders and admins settle the programme; everyone else reads it. */
@@ -69,7 +70,17 @@ export function MemorialMeetingBlock({
    * printed sheet must say exactly what the screen says.
    */
   duties: Duty[];
-  publishersById: Map<string, Publisher>;
+  /** Omitted by the feed, which has no full cards: names then come from the
+   *  same list the programme lines are named from. */
+  publishersById?: Map<string, Publisher>;
+  /**
+   * The feed's reading of the Memorial (23 September): no header of its own —
+   * the feed's row is the header — the programme at once, and printing as a
+   * plain line, since the Programme tab became the feed and the old screen
+   * «Составление программы». Everyone reads it there; editing stays on the
+   * old screen, so the feed passes canEdit={false}.
+   */
+  bare?: boolean;
 }) {
   const { t, i18n } = useTranslation();
   const qc = useQueryClient();
@@ -141,7 +152,10 @@ export function MemorialMeetingBlock({
           const label = dutyLabel(d, t);
           const last = out[out.length - 1];
           const name = d.publisherId
-            ? (publishersById.get(d.publisherId)?.displayName ?? null)
+            ? (publishersById?.get(d.publisherId)?.displayName ??
+              publishers?.data.find((p) => p.id === d.publisherId)
+                ?.displayName ??
+              null)
             : null;
           if (last && last.label === label) last.names.push(name);
           else out.push({ label, names: [name], note: d.notes ?? null });
@@ -199,25 +213,8 @@ export function MemorialMeetingBlock({
         null)
       : null);
 
-  return (
-    <CollapsibleMeetingBlock
-      accent="#7c3aed"
-      icon="wine-outline"
-      title={t('memorial.title')}
-      meta={memorialMeta(event)}
-      metaAddress={event.address ?? undefined}
-      assigned={filled}
-      total={programme.length}
-      showBadge={programme.length > 0}
-      onPrint={programme.length > 0 ? print : undefined}
-      actionLabel={
-        canWrite && !published && programme.length > 0
-          ? t('memorial.publish')
-          : undefined
-      }
-      actionBusy={publishM.isPending}
-      onAction={() => publishM.mutate()}
-    >
+  const body = (
+    <>
       {isLoading ? (
         <ActivityIndicator style={{ marginVertical: 16 }} />
       ) : (
@@ -293,6 +290,47 @@ export function MemorialMeetingBlock({
           ) : null}
         </View>
       )}
+    </>
+  );
+
+  if (bare) {
+    return (
+      <View>
+        {programme.length > 0 ? (
+          <Pressable
+            onPress={() => void print()}
+            style={({ pressed }) => [styles.bareprint, pressed && { opacity: 0.6 }]}
+            accessibilityRole="button"
+          >
+            <Ionicons name="print-outline" size={16} color="#6d28d9" />
+            <Text style={styles.bareprintText}>{t('common.print')}</Text>
+          </Pressable>
+        ) : null}
+        {body}
+      </View>
+    );
+  }
+
+  return (
+    <CollapsibleMeetingBlock
+      accent="#7c3aed"
+      icon="wine-outline"
+      title={t('memorial.title')}
+      meta={memorialMeta(event)}
+      metaAddress={event.address ?? undefined}
+      assigned={filled}
+      total={programme.length}
+      showBadge={programme.length > 0}
+      onPrint={programme.length > 0 ? print : undefined}
+      actionLabel={
+        canWrite && !published && programme.length > 0
+          ? t('memorial.publish')
+          : undefined
+      }
+      actionBusy={publishM.isPending}
+      onAction={() => publishM.mutate()}
+    >
+      {body}
     </CollapsibleMeetingBlock>
   );
 }
@@ -558,6 +596,16 @@ function SongRow({
 }
 
 const styles = StyleSheet.create({
+  bareprint: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    alignSelf: 'flex-end',
+    paddingVertical: 4,
+    paddingHorizontal: 2,
+    marginBottom: 4,
+  },
+  bareprintText: { fontSize: 13, color: '#6d28d9', fontWeight: '600' },
   body: { gap: 10, paddingHorizontal: 16, paddingBottom: 16 },
   stateDraft: {
     flexDirection: 'row',

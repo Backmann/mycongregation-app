@@ -564,7 +564,8 @@ function MeetingRow({
         onPress={() =>
           router.push({
             pathname: "/schedule",
-            params: entry.weekStartISO ? { week: entry.weekStartISO } : {},
+            // The feed opens the Memorial itself, not the week's first row.
+            params: entry.weekStartISO ? { week: entry.weekStartISO, meeting: "memorial" } : {},
           } as never)
         }
       />
