@@ -572,13 +572,20 @@ try {
     await atPath(page, '/special-events');
   });
   if (memorialWeek) {
-    await check(page, 'C02', 'Неделя Вечери: программа и «Печать» есть, «Править» нет', async () => {
+    await check(page, 'C02', 'Неделя Вечери: черновик — «готовится», опубликована — программа и «Печать»; «Править» нет', async () => {
       await go(page, `/schedule?week=${memorialWeek}&meeting=memorial`);
       const card = page.getByTestId(`memorial-${memorialWeek}`);
       await card.waitFor({ timeout: 30000 });
       await page.waitForTimeout(2500);
       if (await card.getByText(/^Править программу$/).count()) throw new Error('есть «Править программу»');
-      if (!(await card.getByText(/^Печать$/).count())) throw new Error('нет «Печать»');
+      // A draft is for those who prepare it (24 September).
+      if (await card.getByText(/^Программа Вечери готовится$/).count()) {
+        if (await card.getByText(/^Печать$/).count()) throw new Error('черновик, а «Печать» есть');
+        if (await card.getByText(/Черновик/).count()) throw new Error('возвещателю видна плашка черновика');
+        return 'черновик: «Программа Вечери готовится», печати нет';
+      }
+      if (!(await card.getByText(/^Печать$/).count())) throw new Error('опубликована, а «Печать» нет');
+      return 'опубликована: программа и «Печать»';
     });
   } else skip('C02', 'Неделя Вечери у возвещателя', 'нет Вечери (см. A08)');
   await check(page, 'C03', 'Собрание: нет «Управления», «Ответственных», «Составления»', async () => {

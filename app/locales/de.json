@@ -3359,6 +3359,7 @@
   },
   "memorial": {
     "title": "Gedächtnismahl",
+    "preparing": "Das Programm für das Gedächtnismahl wird vorbereitet",
     "programmeLink": "Programm des Gedächtnismahls",
     "programmeLinkHint": "Vorsitz, Vortrag, Gebete, Symbole und Aufgaben",
     "sections": {

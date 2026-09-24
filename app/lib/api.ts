@@ -2108,6 +2108,11 @@ export interface MemorialSheet {
     publishedAt: string | null;
   };
   items: MemorialItem[];
+  /**
+   * True for a reader who does not prepare it while it is a draft: no lines,
+   * no theme — «the programme is being prepared» (24 September).
+   */
+  preparing?: boolean;
   /** False once the evening has passed: read it, do not rewrite it. */
   editable: boolean;
 }

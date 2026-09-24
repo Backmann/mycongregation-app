@@ -213,10 +213,15 @@ export function MemorialMeetingBlock({
         null)
       : null);
 
+  // A draft is not for the whole congregation yet: the server sends a reader
+  // who does not prepare it only that it is being prepared (24 September).
+  const preparing = !!data?.preparing;
   const body = (
     <>
       {isLoading ? (
         <ActivityIndicator style={{ marginVertical: 16 }} />
+      ) : preparing ? (
+        <Text style={styles.preparing}>{t('memorial.preparing')}</Text>
       ) : (
         <View style={styles.body}>
           {/* Draft or ready, said once — it decides whether anybody has been
@@ -296,7 +301,7 @@ export function MemorialMeetingBlock({
   if (bare) {
     return (
       <View>
-        {programme.length > 0 ? (
+        {programme.length > 0 && !preparing ? (
           <Pressable
             onPress={() => void print()}
             style={({ pressed }) => [styles.bareprint, pressed && { opacity: 0.6 }]}
@@ -596,6 +601,7 @@ function SongRow({
 }
 
 const styles = StyleSheet.create({
+  preparing: { fontSize: 14, color: '#6d28d9', fontStyle: 'italic', paddingVertical: 10 },
   bareprint: {
     flexDirection: 'row',
     alignItems: 'center',
