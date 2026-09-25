@@ -596,8 +596,11 @@ export default function ScheduleIndexScreen() {
     return { assigned: assignedCount(list), total: badgeParts(list).length };
   };
   const assignedCount = (list: Assignment[]) =>
-    badgeParts(list).filter((x) => x.publisherId && x.status !== "cancelled")
-      .length;
+    // A visiting speaker is written by name, with no card of ours: filled all
+    // the same (25 September; the server counts him since then too).
+    badgeParts(list).filter(
+      (x) => (x.publisherId || x.speakerName?.trim()) && x.status !== "cancelled",
+    ).length;
   const meetingDateLabel = (kind: DutyMeeting): string | null => {
     if (kind === "memorial") {
       const iso = rules.memorial?.date;

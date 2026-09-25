@@ -3439,7 +3439,31 @@
     "ahead": "Ahead",
     "dateRange": "{{from}} — {{to}}",
     "visitMidweekOn": "midweek meeting on {{day}}",
-    "editCleaning": "Edit cleaning"
+    "editCleaning": "Edit cleaning",
+    "kindMidweek": "Midweek",
+    "kindWeekend": "Weekend",
+    "kindField": "Field service",
+    "kindMemorial": "Special meeting",
+    "kindSpecial": "Event",
+    "filter": {
+      "all": "All",
+      "midweek": "Midweek",
+      "weekend": "Weekend",
+      "field": "Field service"
+    },
+    "onlyShown": {
+      "midweek": "Only midweek meetings are shown",
+      "weekend": "Only weekend meetings are shown",
+      "field": "Only meetings for field service are shown"
+    },
+    "showAll": "Show all",
+    "pastShow_one": "Past · {{month}} · {{count}} meeting",
+    "pastShow_other": "Past · {{month}} · {{count}} meetings",
+    "pastEarlier": "Earlier: {{month}}",
+    "pastHide": "Hide",
+    "speakerUnassigned": "no speaker yet",
+    "minutesOnly": "{{n}} min",
+    "youLeadShort": "lead at {{time}}"
   },
   "conduct": {
     "title": "Conducting the meeting",

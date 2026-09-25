@@ -681,53 +681,113 @@ try {
     await page.waitForTimeout(2500);
     await notSee(page, 'Отчёты по группе');
   });
-  // 25 September: opening a meeting used to close the one open above it, and
-  // the tapped row flew off the screen by that card's whole height. Now cards
-  // open on their own — the tapped row must not move, and the card above
-  // must stay open.
-  await check(page, 'C08', 'Программа: нажатая плашка остаётся на месте, открытая выше не закрывается', async () => {
-    await go(page, '/schedule', /^Сегодня ·/);
-    await page.waitForTimeout(2500);
-    // The open card is the tallest row; the row after it is the one to tap.
-    const target = await page.evaluate(() => {
-      const rows = [...document.querySelectorAll('[data-testid^="meeting-"]')];
-      let open = -1, h = 0;
-      rows.forEach((el, i) => { const r = el.getBoundingClientRect().height; if (r > h) { h = r; open = i; } });
-      const next = rows[open + 1];
-      return open >= 0 && next && h > 300 ? next.getAttribute('data-testid') : null;
-    });
-    if (!target) return 'нет открытой встречи с плашкой после неё — нечего проверять';
-    await page.evaluate((id) => {
-      const el = document.querySelector(`[data-testid="${id}"]`);
-      let sc = el.parentElement;
-      while (sc && !/(auto|scroll)/.test(getComputedStyle(sc).overflowY)) sc = sc.parentElement;
-      sc.scrollTop += el.getBoundingClientRect().top - 420;
-    }, target);
-    await page.waitForTimeout(600);
-    const box = await page.evaluate((id) => {
-      const r = document.querySelector(`[data-testid="${id}"]`).getBoundingClientRect();
-      return { x: r.x + 60, y: r.y + 25, top: Math.round(r.top) };
-    }, target);
-    // Every frame, not every so often: one frame in the wrong place is a jump.
-    await page.evaluate((id) => {
-      window.__tops = [];
-      const tick = () => {
-        const el = document.querySelector(`[data-testid="${id}"]`);
-        window.__tops.push(el ? Math.round(el.getBoundingClientRect().top) : null);
-        if (window.__tops.length < 60) requestAnimationFrame(tick);
+  // 25 September: one meeting open at a time (Lionel), and the tapped row once
+  // flew off the screen by the height of the card that closed above it. Two
+  // cases, each watched on every frame — one frame in the wrong place is a
+  // jump:
+  //  1. the open card above is still partly on screen: the tapped row stays
+  //     put and opens, the card above stays open; scrolled on until it has
+  //     left the screen, it closes — and what is on screen does not move;
+  //  2. the open card above is already out of sight: it closes at once and
+  //     the tapped row stays put.
+  await check(page, 'C08', 'Программа: нажатая плашка остаётся на месте, открыта одна', async () => {
+    const helpers = () => {
+      window.__sc = (el) => {
+        let sc = el.parentElement;
+        while (sc && !/(auto|scroll)/.test(getComputedStyle(sc).overflowY)) sc = sc.parentElement;
+        return sc;
       };
-      requestAnimationFrame(tick);
-    }, target);
-    await page.mouse.click(box.x, box.y);
-    await page.waitForTimeout(1500);
-    const tops = await page.evaluate(() => window.__tops);
-    const moved = [...new Set(tops)].filter((t) => t !== box.top);
-    if (moved.length) throw new Error(`плашка ${target} сдвигалась: ${box.top} → ${moved.join(', ')}`);
-    const stillOpen = await page.evaluate(() =>
-      [...document.querySelectorAll('[data-testid^="meeting-"]')].filter((el) => el.getBoundingClientRect().height > 300).length,
-    );
-    if (stillOpen < 2) throw new Error(`после нажатия открыта ${stillOpen} встреча, а должны две`);
-    return `${target} на месте, ${box.top} точек от верха`;
+      window.__open = () =>
+        [...document.querySelectorAll('[data-testid^="meeting-"]')]
+          .filter((el) => el.getBoundingClientRect().height > 300)
+          .map((el) => el.getAttribute('data-testid'));
+      window.__watch = (id, n) => {
+        window.__tops = [];
+        const tick = () => {
+          const el = document.querySelector(`[data-testid="${id}"]`);
+          window.__tops.push(el ? Math.round(el.getBoundingClientRect().top) : null);
+          if (window.__tops.length < n) requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+      };
+    };
+    const land = async () => {
+      await go(page, '/schedule', /^Сегодня ·/);
+      await page.waitForTimeout(2500);
+      await page.evaluate(helpers);
+      // The open card is the tallest row; the row after it is the one to tap.
+      return page.evaluate(() => {
+        const rows = [...document.querySelectorAll('[data-testid^="meeting-"]')];
+        let open = -1, h = 0;
+        rows.forEach((el, i) => { const r = el.getBoundingClientRect().height; if (r > h) { h = r; open = i; } });
+        const next = rows[open + 1];
+        return open >= 0 && next && h > 300
+          ? { upper: rows[open].getAttribute('data-testid'), target: next.getAttribute('data-testid') }
+          : null;
+      });
+    };
+    const placeAt = (id, y) =>
+      page.evaluate(([id, y]) => {
+        const el = document.querySelector(`[data-testid="${id}"]`);
+        const sc = window.__sc(el);
+        const want = y === 'top' ? sc.getBoundingClientRect().top : y;
+        sc.scrollTop += el.getBoundingClientRect().top - want;
+      }, [id, y]);
+    const topOf = (id) =>
+      page.evaluate((id) => Math.round(document.querySelector(`[data-testid="${id}"]`).getBoundingClientRect().top), id);
+    const tapWatch = async (id) => {
+      const before = await topOf(id);
+      await page.evaluate((id) => window.__watch(id, 60), id);
+      await page.mouse.click(200, before + 25);
+      await page.waitForTimeout(1500);
+      const tops = await page.evaluate(() => window.__tops);
+      const moved = [...new Set(tops)].filter((t) => t !== before);
+      if (moved.length) throw new Error(`плашка ${id} сдвигалась: ${before} → ${moved.join(', ')}`);
+      return before;
+    };
+
+    // 1 — the card above still partly on screen.
+    let pair = await land();
+    if (!pair) return 'нет открытой встречи с плашкой после неё — нечего проверять';
+    await placeAt(pair.target, 420);
+    await page.waitForTimeout(600);
+    const y1 = await tapWatch(pair.target);
+    let open = await page.evaluate(() => window.__open());
+    if (!open.includes(pair.target)) throw new Error(`нажатая ${pair.target} не открылась`);
+    if (!open.includes(pair.upper)) throw new Error(`${pair.upper} ещё видна, но закрылась — плашка под ней должна была уехать`);
+    // Scroll on, 40 points at a time, until the card above has left; watch the
+    // tapped one on screen — it moves by the 40 points of each step and by
+    // nothing else, also in the step where the card above closes (the list's
+    // own position may change then: that is the correction, not a move).
+    const drift = await page.evaluate(async ([id, upper]) => {
+      const el = () => document.querySelector(`[data-testid="${id}"]`);
+      const sc = window.__sc(el());
+      const bad = [];
+      for (let i = 0; i < 40; i++) {
+        if (sc.scrollTop + sc.clientHeight >= sc.scrollHeight - 41) break;
+        const t0 = el().getBoundingClientRect().top;
+        sc.scrollTop += 40;
+        await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+        const moved = el().getBoundingClientRect().top - t0;
+        if (Math.abs(moved + 40) > 1) bad.push(`${Math.round(moved)} вместо −40`);
+        const u = document.querySelector(`[data-testid="${upper}"]`);
+        if (u && u.getBoundingClientRect().height < 300) break;
+      }
+      return bad;
+    }, [pair.target, pair.upper]);
+    if (drift.length) throw new Error(`при закрытии верхней плашка ${pair.target} дёрнулась: ${drift.join('; ')}`);
+    open = await page.evaluate(() => window.__open());
+    if (open.includes(pair.upper)) throw new Error(`${pair.upper} ушла с экрана, но не закрылась`);
+
+    // 2 — the card above already out of sight.
+    pair = await land();
+    await placeAt(pair.target, 'top');
+    await page.waitForTimeout(600);
+    const y2 = await tapWatch(pair.target);
+    open = await page.evaluate(() => window.__open());
+    if (open.length !== 1 || open[0] !== pair.target)
+      throw new Error(`после нажатия открыты: ${open.join(', ') || 'никакие'} — должна одна ${pair.target}`);
+    return `${pair.target} на месте (${y1} и ${y2} точек), верхняя закрылась, когда ушла`;
   });
   // The chairman heads the programme card, weekday and weekend alike.
   for (const kind of ['midweek', 'weekend']) {

@@ -3439,7 +3439,31 @@
     "ahead": "Demnächst",
     "dateRange": "{{from}} — {{to}}",
     "visitMidweekOn": "Zusammenkunft unter der Woche am {{day}}",
-    "editCleaning": "Reinigung bearbeiten"
+    "editCleaning": "Reinigung bearbeiten",
+    "kindMidweek": "Wochentag",
+    "kindWeekend": "Wochenende",
+    "kindField": "Predigtdienst",
+    "kindMemorial": "Besondere Zusammenkunft",
+    "kindSpecial": "Ereignis",
+    "filter": {
+      "all": "Alle",
+      "midweek": "Wochentag",
+      "weekend": "Wochenende",
+      "field": "Predigtdienst"
+    },
+    "onlyShown": {
+      "midweek": "Nur Zusammenkünfte unter der Woche werden gezeigt",
+      "weekend": "Nur Zusammenkünfte am Wochenende werden gezeigt",
+      "field": "Nur Treffpunkte für den Predigtdienst werden gezeigt"
+    },
+    "showAll": "Alle zeigen",
+    "pastShow_one": "Vergangen · {{month}} · {{count}} Zusammenkunft",
+    "pastShow_other": "Vergangen · {{month}} · {{count}} Zusammenkünfte",
+    "pastEarlier": "Früher: {{month}}",
+    "pastHide": "Ausblenden",
+    "speakerUnassigned": "noch kein Redner",
+    "minutesOnly": "{{n}} Min.",
+    "youLeadShort": "leiten um {{time}}"
   },
   "conduct": {
     "title": "Zusammenkunft leiten",

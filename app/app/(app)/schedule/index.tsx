@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import {
   ActivityIndicator,
@@ -56,6 +56,7 @@ import {
   ChairLine,
   PairLine,
   PartLine,
+  PrayerLine,
   SectionChip,
   SongLine,
   Topic,
@@ -93,6 +94,7 @@ import {
 const CHUNK = 8;
 type Kind = "midweek" | "weekend";
 type Tab = "programme" | "duties" | "cleaning";
+type Filter = "all" | "midweek" | "weekend" | "field";
 
 const SONG_KEYS = new Set(["mid_song", "weekend_song", "weekend_opening_song"]);
 const PRAYER_KEYS = new Set([
@@ -116,8 +118,20 @@ const READER_KEYS = new Set(Object.values(READER_OF));
 const ROLE_KEYS = new Set(["public_talk_speaker", "watchtower_conductor", "watchtower_reader", "cbs_reader"]);
 /** Sections that carry a label; opening and closing are plain rows (as in SUBSECTIONS). */
 const LABELLED = new Set(["treasures", "apply_yourself", "christian_life", "public_talk", "watchtower"]);
-/** Same values as lib/section-colors.ts: meeting, duty, cleaning, field ministry. */
-const KIND_COLOR = { meeting: "#f59e0b", field: "#16a34a", special: "#7c3aed", past: "#cbd5e1" };
+/**
+ * EACH KIND OF MEETING ITS OWN COLOUR AND SIGN (25 September). Weekday and
+ * weekend were one amber dot, told apart only by reading the title. The
+ * weekday takes the colour of its first section («Сокровища», #0e7490), the
+ * weekend that of the public talk; field ministry keeps its green and the
+ * paper plane of the «Служение» tab. They differ in lightness as well as hue.
+ */
+const KIND = {
+  midweek: { color: "#0e7490", icon: "book-outline" },
+  weekend: { color: "#6d28d9", icon: "sunny-outline" },
+  field: { color: "#15803d", icon: "paper-plane-outline" },
+  special: { color: "#b45309", icon: "star-outline" },
+} as const;
+const PAST_COLOR = "#94a3b8";
 const TAB_DOT: Record<Tab, string> = { programme: "#f59e0b", duties: "#dc2626", cleaning: "#0ea5e9" };
 const SLOT_ORDER = ["after_meeting", "thorough", "general"];
 
@@ -134,6 +148,13 @@ function serviceYearMonday(today: Date): Date {
   return startOfWeekMonday(new Date(year, 8, 1));
 }
 const atMidnight = (iso: string) => new Date(`${iso}T00:00:00`);
+/** «2026-09» → «2026-10». */
+function nextMonth(ym: string): string {
+  const [y, m] = ym.split("-").map(Number);
+  return m === 12 ? `${y + 1}-01` : `${y}-${String(m + 1).padStart(2, "0")}`;
+}
+const maxISO = (a: string, b: string) => (a > b ? a : b);
+const minISO = (a: string, b: string) => (a < b ? a : b);
 /** 31 August that closes the current service year (it runs September to August). */
 function serviceYearEndISO(today: Date): string {
   const start = today.getMonth() >= 8 ? today.getFullYear() : today.getFullYear() - 1;
@@ -201,17 +222,36 @@ export default function ProgrammeFeedScreen() {
       : 1;
   const [chunks, setChunks] = useState(() => chunksFor(targetWeek));
 
-  // The past of the service year as one piece, then eight weeks at a time.
+  // PAST MEETINGS ARE ASKED FOR, A MONTH AT A TIME (25 September). The whole
+  // service year behind «today» used to be read and drawn on every opening —
+  // in August almost a year of programme, above a line nobody looks past. Now
+  // the feed opens with none of it; «Прошедшие · сентябрь» shows that month,
+  // «Раньше» the one before, back to the start of the service year. Nothing
+  // is fetched for a month until it is shown. `pastFrom` is the earliest
+  // month shown (YYYY-MM), or null for none. A link to a past week shows the
+  // months back to it, so the week asked for is there to land on.
+  const pastFromFor = (week: string | null) => (week && week < thisWeek ? week.slice(0, 7) : null);
+  const [pastFrom, setPastFrom] = useState<string | null>(() => pastFromFor(targetWeek));
+  const [filter, setFilter] = useState<Filter>("all");
+
+  // The past months shown, one piece each (they never overlap: a month's piece
+  // ends on the Monday the next one starts), then eight weeks at a time ahead.
   const spans = useMemo(() => {
     const out: { from: string; to: string }[] = [];
-    if (hasPast) out.push({ from: startWeek, to: thisWeek });
+    if (hasPast && pastFrom) {
+      for (let m = pastFrom; m <= thisWeek.slice(0, 7); m = nextMonth(m)) {
+        const from = maxISO(startWeek, formatDateISO(startOfWeekMonday(atMidnight(`${m}-01`))));
+        const to = minISO(thisWeek, formatDateISO(startOfWeekMonday(atMidnight(`${nextMonth(m)}-01`))));
+        if (from < to) out.push({ from, to });
+      }
+    }
     for (let i = 0; i < chunks; i++)
       out.push({
         from: formatDateISO(addDays(currentMonday, i * CHUNK * 7)),
         to: formatDateISO(addDays(currentMonday, (i + 1) * CHUNK * 7)),
       });
     return out;
-  }, [hasPast, startWeek, thisWeek, currentMonday, chunks]);
+  }, [hasPast, pastFrom, startWeek, thisWeek, currentMonday, chunks]);
 
   const assignmentsQs = useQueries({
     queries: spans.map((sp) => ({
@@ -457,8 +497,23 @@ export default function ProgrammeFeedScreen() {
     return [span, tail].filter(Boolean).join(" · ");
   };
 
-  const past = items.filter((x) => x.date < today);
-  const coming = items.filter((x) => x.date >= today);
+  // WHAT THE CHIPS ABOVE THE FEED LEAVE IN (25 September): the three kinds of
+  // meeting apart, in date order still. A convention or the Memorial is part
+  // of «all» only — it is neither a weekday nor a weekend meeting.
+  const keep = (x: Item) =>
+    filter === "all" ||
+    (filter === "field" ? x.type === "field" : x.type === "meeting" && x.kind === filter);
+  const shownItems = items.filter(keep);
+  const pastAll = shownItems.filter((x) => x.date < today);
+  const past = pastFrom ? pastAll.filter((x) => x.date.slice(0, 7) >= pastFrom) : [];
+  const coming = shownItems.filter((x) => x.date >= today);
+  // The month «Раньше» / «Прошедшие» would show next, and how many meetings
+  // it holds (from the week rules, so known before anything is fetched).
+  const pastMonths = [...new Set(pastAll.map((x) => x.date.slice(0, 7)))].sort();
+  const nextPastMonth = [...pastMonths].reverse().find((m) => !pastFrom || m < pastFrom) ?? null;
+  const nextPastCount = nextPastMonth
+    ? pastAll.filter((x) => x.date.slice(0, 7) === nextPastMonth && x.type !== "field").length
+    : 0;
   // The nearest meeting opens by itself — readable without a tap. Sent to a
   // week, it is that week's meeting: the one named, else its first.
   // The Memorial opens like a meeting, and is found by the kind it takes too:
@@ -473,65 +528,69 @@ export default function ProgrammeFeedScreen() {
   const defaultOpen = targetWeek
     ? targetOpen
     : (coming.find((x) => x.type === "meeting" || x.type === "memorial")?.id ?? null);
-  // WIDE: one meeting is chosen and shown whole on the right.
+  // ONE MEETING OPEN AT A TIME — AND THE ONE TAPPED STAYS UNDER THE FINGER
+  // (25 September, Lionel's choice). Opening a meeting closes the one open
+  // before it. When that one stands ABOVE, everything below it moves up by its
+  // height; how that is kept from showing differs by platform, and each way is
+  // proved on its own platform (walkthrough C08 frame by frame on the web,
+  // scripts/android-check.mjs on the phone):
+  //  - WEB: the tapped row's place on screen is read before the change and
+  //    after it, before the browser paints, and the list is scrolled by the
+  //    difference (see the layout effect below). The DOM answers both reads at
+  //    once, so nothing is left to timing.
+  //  - ANDROID / iOS: the ScrollView keeps its first visible child where it
+  //    was when the content above it changes (maintainVisibleContentPosition,
+  //    done natively in the same mount pass). That child is the first one whose
+  //    BOTTOM is below the top of the list (MaintainVisibleScrollPositionHelper).
+  //  - BOTH: a card above that is still partly on screen does not close at
+  //    once. It cannot: closing it takes its height out from above the tapped
+  //    row, and when less than that height has been scrolled, no scrolling can
+  //    put the row back (on the stand: 586 points scrolled, 670 to take back —
+  //    the row went from 420 to 338 whatever was done). And on the phone that
+  //    card would itself be the child kept in place. So it stays open until it
+  //    has left the screen upwards (`lingering`), and closes then; a card
+  //    already out of sight closes at once. Either way, nothing on screen
+  //    moves.
   const [openChoice, setOpenChoice] = useState<string | null | undefined>(undefined);
   const openId = openChoice === undefined ? defaultOpen : openChoice;
-  // PHONE: each card opens and closes on its own (25 September). With one open
-  // at a time, opening a card closed the one before it — and when that one
-  // stood ABOVE, everything below moved up by its whole height: Lionel opened
-  // the weekend, scrolled on, tapped the weekday, and the weekday flew off the
-  // screen (on the stand from 420 points to -204). Correcting the scroll
-  // afterwards depends on when each platform lets a position be read, and
-  // cannot be proved the same on Android as on the web. Letting cards stay
-  // open needs no correction at all: nothing above a tapped row ever changes,
-  // on any platform, so the row cannot move.
-  const [openSet, setOpenSet] = useState<ReadonlySet<string> | undefined>(undefined);
-  const openIds: ReadonlySet<string> = openSet ?? new Set(defaultOpen ? [defaultOpen] : []);
+  const [lingering, setLingering] = useState<string | null>(null);
   // OPEN ON TODAY — AND HOLD IT THERE UNTIL THE PERSON MOVES.
   //
   // A one-off placement is not enough here. The rows above «today» grow after
-  // the first paint: the chairman's name arrives with the roster, «yours» once
-  // it is known who you are, readiness a moment later. A placement made before
-  // that measured «today» near the top, scrolled almost nowhere, locked — and
-  // the growing rows pushed «today» out of sight. The feed opened at the start
-  // of the service year.
+  // the first paint: names arrive with the roster, «yours» once it is known
+  // who you are, readiness a moment later. So the feed keeps «today» at the
+  // top while things arrive, and lets go the moment the person acts: a
+  // finger, the wheel, a key, a mouse press, a tap on a row, «show more».
   //
-  // So the feed keeps «today» at the top while things arrive, and lets go the
-  // moment the person acts: a finger, the wheel, a key, a mouse press, a tap on
-  // a row, «show more».
-  //
-  // WHERE «today» IS is measured as the height of everything ABOVE it, in one
-  // block. The line itself cannot tell: on the web onLayout comes from a
-  // ResizeObserver, which reports a change of SIZE, not of position — the line
-  // never changes size, so it never reported being pushed down. The block above
-  // grows with every row that arrives, and reports every time.
+  // WHERE A ROW IS is the sum of the HEIGHTS of everything above it. Every
+  // piece of the feed reports its height; positions are not trusted, because
+  // on the web onLayout comes from a ResizeObserver, which reports a change of
+  // SIZE and never a row being pushed down. Heights are reported every time,
+  // on every platform, and the pieces are the ScrollView's own children, in
+  // order, with nothing between them.
   //
   // Movement is caught as the person's ACT, not guessed from where the screen
   // stands: the browser itself shifts the scroll when content above grows
   // (scroll anchoring), which a position check would take for a person.
   const scrollRef = useRef<ScrollView>(null);
   const released = useRef(false);
-  const todayY = useRef<number | null>(null);
   const target = useRef<number | null>(null);
+  const heights = useRef(new Map<string, number>());
+  const scrollY = useRef(0);
   const release = () => {
     released.current = true;
   };
-  const anchor = () => {
-    if (released.current || todayY.current === null) return;
-    const y = Math.max(0, todayY.current - 4);
-    if (target.current === y) return;
-    target.current = y;
-    scrollRef.current?.scrollTo({ y, animated: false });
-  };
-  useEffect(anchor);
   // A new week in the address while the feed is already open (a notification
   // tapped with the tab showing) is a new landing: hold again, open afresh.
   useEffect(() => {
     released.current = false;
     target.current = null;
-    todayY.current = null;
     setOpenChoice(undefined);
-    setOpenSet(undefined);
+    setLingering(null);
+    setPastFrom((p) => {
+      const need = pastFromFor(targetWeek);
+      return need && (!p || need < p) ? need : p;
+    });
     setChunks((c) => Math.max(c, chunksFor(targetWeek)));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [targetWeek, targetKind]);
@@ -549,21 +608,12 @@ export default function ProgrammeFeedScreen() {
       for (const a of acts) w.removeEventListener?.(a, release);
     };
   }, []);
-  const toggle = (id: string) => {
-    release();
-    setOpenSet((prev) => {
-      const next = new Set(prev ?? (defaultOpen ? [defaultOpen] : []));
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
 
-  const monthOf = (iso: string) =>
-    atMidnight(iso).toLocaleDateString(lang, {
-      month: "long",
-      ...(iso.slice(0, 4) !== today.slice(0, 4) ? { year: "numeric" } : {}),
-    });
+  const monthOf = (ym: string) => {
+    const name = atMidnight(`${ym}-01`).toLocaleDateString(lang, { month: "long" });
+    return name.charAt(0).toLocaleUpperCase(lang) + name.slice(1);
+  };
+  const monthYear = (ym: string) => `${monthOf(ym)} ${ym.slice(0, 4)}`;
 
   // WIDE: from 900 points the feed becomes two columns — the list of dates on
   // the left, the chosen meeting whole on the right. The same list, the same
@@ -573,7 +623,7 @@ export default function ProgrammeFeedScreen() {
   // row, the whole right side — not a second copy that one change would miss.
   const { width } = useWindowDimensions();
   const wide = width >= 900;
-  const isOpen = (id: string) => (wide ? openId === id : openIds.has(id));
+  const isOpen = (id: string) => openId === id || (!wide && lingering === id);
   const choose = (id: string) => {
     release();
     setOpenChoice(id);
@@ -595,25 +645,50 @@ export default function ProgrammeFeedScreen() {
     canEditCleaning: perms.canEditCleaning,
   });
 
-  const render = (x: Item, prev: Item | undefined, isPast: boolean) => {
-    const monthLabel =
-      prev && prev.date.slice(0, 7) !== x.date.slice(0, 7) ? (
-        <Text key={`m${x.id}`} style={styles.label}>
-          {monthOf(x.date)}
-        </Text>
-      ) : null;
-    let body: ReactNode = null;
+  // THE FEED AS A FLAT LIST OF PIECES, top to bottom. Flat because the native
+  // ScrollView keeps its first visible CHILD in place (see «one meeting open»
+  // above): with the rows wrapped in one column, that child would be the whole
+  // column, which never moves. Each piece carries the month of its row (for the
+  // month at the top) and the id of its item (to find a tapped row).
+  type Piece = { key: string; node: ReactNode; month?: string; itemId?: string; isToday?: boolean; date?: string };
+  const pieces: Piece[] = [];
+  const pushItem = (x: Item, isPast: boolean, prevMonth: string | null) => {
+    const month = x.date.slice(0, 7);
+    if (month !== prevMonth) {
+      pieces.push({
+        key: `m|${x.id}`,
+        month,
+        date: x.date,
+        node: (
+          <View style={styles.monthRow}>
+            <Text style={styles.monthText}>{monthYear(month)}</Text>
+          </View>
+        ),
+      });
+    }
+    const onToggle = () => (wide ? choose(x.id) : toggle(x.id));
+    const mode = wide ? ("row" as const) : ("inline" as const);
+    let body: ReactNode;
     if (x.type === "special") {
-      body = <Row key={x.id} date={x.date} title={x.title} line={x.line} color={KIND_COLOR.special} past={isPast} />;
+      body = (
+        <Row
+          date={x.date}
+          kindLabel={t("feed.kindSpecial")}
+          icon="star-outline"
+          title={x.title}
+          line={x.line}
+          color={KIND.special.color}
+          past={isPast}
+        />
+      );
     } else if (x.type === "memorial") {
       body = (
         <MemorialDay
-          key={x.id}
           item={x}
           past={isPast}
           open={isOpen(x.id)}
-          onToggle={() => (wide ? choose(x.id) : toggle(x.id))}
-          mode={wide ? "row" : "inline"}
+          onToggle={onToggle}
+          mode={mode}
           duties={dutiesOf.get(`${x.week}|memorial`) ?? []}
           canEdit={perms.isAdmin || perms.isElder}
         />
@@ -621,142 +696,329 @@ export default function ProgrammeFeedScreen() {
     } else if (x.type === "field") {
       body = (
         <FieldDay
-          key={x.id}
           item={x}
           past={isPast}
           open={isOpen(x.id)}
-          onToggle={() => (wide ? choose(x.id) : toggle(x.id))}
-          mode={wide ? "row" : "inline"}
+          onToggle={onToggle}
+          mode={mode}
           me={me}
           nameOf={nameOf}
           groupName={groupName}
         />
       );
     } else {
-      body = (
-        <Meeting
-          key={x.id}
-          {...meetingProps(x)}
-          open={isOpen(x.id)}
-          onToggle={() => (wide ? choose(x.id) : toggle(x.id))}
-          mode={wide ? "row" : "inline"}
-        />
-      );
+      body = <Meeting {...meetingProps(x)} open={isOpen(x.id)} onToggle={onToggle} mode={mode} />;
     }
-    return monthLabel ? [monthLabel, body] : [body];
+    pieces.push({ key: x.id, node: body, month, itemId: x.id, date: x.date });
   };
 
-  const todayLabel = atMidnight(today).toLocaleDateString(lang, {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
+  // Past: one line that asks for them, and once shown, the months shown.
+  if (pastAll.length > 0) {
+    pieces.push({
+      key: "pastHead",
+      node: (
+        <PastHead
+          shown={!!pastFrom}
+          next={nextPastMonth ? { month: monthOf(nextPastMonth), count: nextPastCount } : null}
+          onMore={() => {
+            release();
+            if (nextPastMonth) setPastFrom(nextPastMonth);
+          }}
+          onHide={() => {
+            release();
+            setPastFrom(null);
+          }}
+        />
+      ),
+    });
+    // The start of the service year, once the feed shows all the way back to it.
+    if (pastFrom && !nextPastMonth) {
+      pieces.push({
+        key: "yearStart",
+        node: (
+          <View style={styles.yearStart}>
+            <View style={styles.rule} />
+            <Text style={styles.yearStartText}>{t("feed.serviceYearStart")}</Text>
+            <View style={styles.rule} />
+          </View>
+        ),
+      });
+    }
+    let prev: string | null = null;
+    for (const x of past) {
+      pushItem(x, true, prev === null ? (x.date.slice(0, 7) === today.slice(0, 7) ? today.slice(0, 7) : null) : prev);
+      prev = x.date.slice(0, 7);
+    }
+  }
+  const todayLabel = atMidnight(today).toLocaleDateString(lang, { weekday: "long", day: "numeric", month: "long" });
+  pieces.push({
+    key: "today",
+    isToday: true,
+    month: today.slice(0, 7),
+    node: (
+      <View style={styles.today}>
+        <Text style={styles.todayText}>{t("feed.today", { date: todayLabel })}</Text>
+        <View style={styles.todayRule} />
+      </View>
+    ),
+  });
+  {
+    // The month heading comes where the month changes; the month of «today»
+    // needs none — the line at the top already says it.
+    let prev: string | null = today.slice(0, 7);
+    for (const x of coming) {
+      pushItem(x, false, prev);
+      prev = x.date.slice(0, 7);
+    }
+  }
+  pieces.push({
+    key: "tail",
+    node: reachedEnd ? (
+      <>
+        <View style={styles.end}>
+          <Text style={styles.endTitle}>{t("feed.end")}</Text>
+          {lastProgrammeWeek ? (
+            <Text style={styles.endNote}>
+              {t("feed.endLoadedTo", {
+                date: atMidnight(formatDateISO(addDays(atMidnight(lastProgrammeWeek), 6))).toLocaleDateString(lang, {
+                  day: "numeric",
+                  month: "long",
+                }),
+              })}
+            </Text>
+          ) : null}
+        </View>
+        {filter === "all" && ahead.length > 0 ? <Text style={styles.label}>{t("feed.ahead")}</Text> : null}
+        {filter === "all"
+          ? ahead.map((e) => (
+              <Row
+                key={`ahead|${e.id}`}
+                date={e.date}
+                kindLabel={t("feed.kindSpecial")}
+                icon="star-outline"
+                title={aheadTitle(e)}
+                line={aheadLine(e)}
+                color={KIND.special.color}
+                past={false}
+              />
+            ))
+          : null}
+        {filter !== "all" ? (
+          <View style={styles.filtered}>
+            <Text style={styles.filteredText}>{t(`feed.onlyShown.${filter}`)}</Text>
+            <Pressable
+              style={({ pressed }) => [styles.filteredAll, pressed && styles.pressed]}
+              onPress={() => pickFilter("all")}
+              accessibilityRole="button"
+            >
+              <Text style={styles.filteredAllText}>{t("feed.showAll")}</Text>
+            </Pressable>
+          </View>
+        ) : null}
+      </>
+    ) : (
+      <Pressable
+        style={({ pressed }) => [styles.more, pressed && styles.pressed]}
+        onPress={() => {
+          release();
+          setChunks((c) => c + 1);
+        }}
+        accessibilityRole="button"
+      >
+        <Text style={styles.moreText}>{t("feed.loadMore")}</Text>
+      </Pressable>
+    ),
   });
 
-  // The whole flow top to bottom, then cut in two where the feed should
-  // land: everything above the cut is ONE measured block (see «OPEN ON
-  // TODAY» above for why a block and not a line). Without a week the cut is
-  // the «today» line, as it always was; with a week, before that week's first
-  // row — in the past or ahead of today alike.
-  const flow: { node: ReactNode; date?: string; isToday?: boolean }[] = [
-    {
-      node: (
-        <View key="yearStart" style={styles.yearStart}>
-          <View style={styles.rule} />
-          <Text style={styles.yearStartText}>{t("feed.serviceYearStart")}</Text>
-          <View style={styles.rule} />
-        </View>
-      ),
-    },
-    ...(past.length > 0 ? [{ node: <Text key="pastLabel" style={styles.label}>{t("feed.past")}</Text> }] : []),
-    ...past.flatMap((x, i) => render(x, past[i - 1], true).map((node) => ({ node, date: x.date }))),
-    {
-      isToday: true,
-      node: (
-        <View key="today" style={styles.today}>
-          <Text style={styles.todayText}>{t("feed.today", { date: todayLabel })}</Text>
-          <View style={styles.todayRule} />
-        </View>
-      ),
-    },
-    ...coming.flatMap((x, i) => render(x, coming[i - 1], false).map((node) => ({ node, date: x.date }))),
-  ];
+  // Where the feed lands: «today», or the first row of the week asked for (with
+  // its month heading, which belongs to it).
   const cutAt = (() => {
-    if (!targetWeek) return flow.findIndex((f) => f.isToday);
-    // A month label belongs to the row after it, so the cut goes before the
-    // label too: the week lands with its month heading above it.
-    let i = flow.findIndex((f) => f.date !== undefined && f.date >= targetWeek);
-    if (i < 0) return flow.length;
-    while (i > 0 && flow[i - 1].date === flow[i].date) i--;
+    if (!targetWeek) return pieces.findIndex((f) => f.isToday);
+    let i = pieces.findIndex((f) => f.date !== undefined && f.date >= targetWeek);
+    if (i < 0) return pieces.findIndex((f) => f.isToday);
+    while (i > 0 && pieces[i - 1].key.startsWith("m|") && pieces[i - 1].date === pieces[i].date) i--;
     return i;
   })();
+  const topOf = (index: number) => {
+    let y = 0;
+    for (let i = 0; i < index; i++) {
+      const h = heights.current.get(pieces[i].key);
+      if (h === undefined) return null;
+      y += h;
+    }
+    return y;
+  };
+  const indexOfItem = (id: string) => pieces.findIndex((f) => f.itemId === id);
 
-  const list = (
-      <View style={styles.column}>
-        <View
-          onLayout={(e) => {
-            const { y, height } = e.nativeEvent.layout;
-            todayY.current = y + height;
-            anchor();
-          }}
-        >
-          {flow.slice(0, cutAt).map((f) => f.node)}
-        </View>
+  const anchor = () => {
+    if (released.current) return;
+    const y = topOf(cutAt);
+    if (y === null || target.current === y) return;
+    target.current = y;
+    scrollRef.current?.scrollTo({ y, animated: false });
+    scrollY.current = y;
+    updateMonth();
+  };
+  useEffect(anchor);
 
-        {flow.slice(cutAt).map((f) => f.node)}
+  // THE MONTH AT THE TOP: the month of the first row not yet scrolled past.
+  const [barMonth, setBarMonth] = useState(today.slice(0, 7));
+  const updateMonth = () => {
+    let y = 0;
+    for (const f of pieces) {
+      const h = heights.current.get(f.key) ?? 0;
+      if (f.month && y + h > scrollY.current + 1) {
+        if (f.month !== barMonth) setBarMonth(f.month);
+        return;
+      }
+      y += h;
+    }
+  };
+  const onScroll = (y: number) => {
+    scrollY.current = y;
+    updateMonth();
+    // A card left open above the tapped one (native, see above) closes once it
+    // is out of sight upwards — then the ScrollView keeps what is on screen.
+    if (lingering) {
+      const i = indexOfItem(lingering);
+      const top = i >= 0 ? topOf(i) : null;
+      const h = i >= 0 ? heights.current.get(pieces[i].key) : undefined;
+      if (i < 0 || (top !== null && h !== undefined && top + h <= y + 1)) {
+        // On the web, hold the first piece on screen where it is.
+        let at = 0;
+        for (let j = 0; j < pieces.length; j++) {
+          const hj = heights.current.get(pieces[j].key) ?? 0;
+          if (at + hj > y) {
+            holdOnWeb(pieces[j].key);
+            break;
+          }
+          at += hj;
+        }
+        setLingering(null);
+      }
+    }
+  };
 
-        {reachedEnd ? (
-          <>
-          <View style={styles.end}>
-            <Text style={styles.endTitle}>{t("feed.end")}</Text>
-            {lastProgrammeWeek ? (
-              <Text style={styles.endNote}>
-                {t("feed.endLoadedTo", {
-                  date: atMidnight(formatDateISO(addDays(atMidnight(lastProgrammeWeek), 6))).toLocaleDateString(lang, {
-                    day: "numeric",
-                    month: "long",
-                  }),
-                })}
-              </Text>
-            ) : null}
-          </View>
-          {ahead.length > 0 ? <Text style={styles.label}>{t("feed.ahead")}</Text> : null}
-          {ahead.map((e) => (
-            <Row
-              key={`ahead|${e.id}`}
-              date={e.date}
-              title={aheadTitle(e)}
-              line={aheadLine(e)}
-              color={KIND_COLOR.special}
-              past={false}
-            />
-          ))}
-          </>
-        ) : (
-          <Pressable
-            style={({ pressed }) => [styles.more, pressed && styles.pressed]}
-            onPress={() => {
-              release();
-              setChunks((c) => c + 1);
-            }}
-            accessibilityRole="button"
-          >
-            <Text style={styles.moreText}>{t("feed.loadMore")}</Text>
-          </Pressable>
-        )}
-      </View>
+  // WEB: keep the tapped row where it was (see «one meeting open» above).
+  const els = useRef(new Map<string, { getBoundingClientRect?: () => { top: number } }>());
+  const keepInPlace = useRef<{ key: string; top: number } | null>(null);
+  useLayoutEffect(() => {
+    const k = keepInPlace.current;
+    if (!k || Platform.OS !== "web") return;
+    keepInPlace.current = null;
+    const now = els.current.get(k.key)?.getBoundingClientRect?.().top;
+    const node = (scrollRef.current as unknown as { getScrollableNode?: () => { scrollTop: number } } | null)
+      ?.getScrollableNode?.();
+    if (now === undefined || !node) return;
+    const d = now - k.top;
+    if (Math.abs(d) >= 0.5) node.scrollTop += d;
+  });
+
+  const toggle = (id: string) => {
+    release();
+    if (openId === id) {
+      setOpenChoice(null);
+      return;
+    }
+    if (lingering === id) {
+      // The card still showing above came back into use: it is the open one
+      // now, and the one below it closes (below — nothing above moves).
+      setLingering(null);
+      setOpenChoice(id);
+      return;
+    }
+    const iPrev = openId ? indexOfItem(openId) : -1;
+    const iNew = indexOfItem(id);
+    if (openId && iPrev >= 0 && iPrev < iNew) {
+      const top = topOf(iPrev);
+      const h = heights.current.get(pieces[iPrev].key);
+      // Still partly on screen: close it once it has left (see above).
+      // (A point of slack: heights are fractional, the scroll position whole.)
+      if (top === null || h === undefined || top + h > scrollY.current + 1) setLingering(openId);
+      else holdOnWeb(pieces[iNew].key);
+    }
+    setOpenChoice(id);
+  };
+  /** WEB: remember where a piece is on screen now, to keep it there after the change. */
+  const holdOnWeb = (key: string) => {
+    if (Platform.OS !== "web") return;
+    const top = els.current.get(key)?.getBoundingClientRect?.().top;
+    if (top !== undefined) keepInPlace.current = { key, top };
+  };
+  const pickFilter = (f: Filter) => {
+    setFilter(f);
+    // A new filter is a new landing: back to «today», held until touched.
+    released.current = false;
+    target.current = null;
+  };
+
+  const bar = (
+    <View style={styles.bar}>
+      <Text style={styles.barMonth} accessibilityRole="header">
+        {monthYear(barMonth)}
+      </Text>
+      {/* One line, whatever the language: «Predigtdienst» is long. */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.chips}
+        style={styles.chipsScroll}
+      >
+        {(["all", "midweek", "weekend", "field"] as Filter[]).map((f) => {
+          const on = filter === f;
+          const color = f === "all" ? INK : KIND[f].color;
+          return (
+            <Pressable
+              key={f}
+              onPress={() => pickFilter(f)}
+              style={({ pressed }) => [
+                styles.chip,
+                on ? { backgroundColor: color, borderColor: color } : null,
+                pressed && styles.pressed,
+              ]}
+              accessibilityRole="button"
+              accessibilityState={{ selected: on }}
+            >
+              <Text style={[styles.chipText, { color: on ? "#ffffff" : color }]}>{t(`feed.filter.${f}`)}</Text>
+            </Pressable>
+          );
+        })}
+      </ScrollView>
+    </View>
   );
 
   const listScroll = (
     <View style={wide ? styles.listPane : styles.screen}>
+      {bar}
       <Animated.View style={[styles.fill, { opacity: fade }]}>
         <ScrollView
           ref={scrollRef}
           style={styles.fill}
-          contentContainerStyle={wide ? styles.listContent : styles.content}
+          contentContainerStyle={styles.content}
           onScrollBeginDrag={release}
+          onScroll={(e) => onScroll(e.nativeEvent.contentOffset.y)}
+          scrollEventThrottle={16}
           onContentSizeChange={anchor}
+          maintainVisibleContentPosition={Platform.OS === "web" ? undefined : { minIndexForVisible: 0 }}
         >
-          {list}
+          {pieces.map((f) => (
+            <View
+              key={f.key}
+              testID={f.itemId ? `piece-${f.itemId}` : undefined}
+              ref={(el) => {
+                if (el) els.current.set(f.key, el as never);
+                else els.current.delete(f.key);
+              }}
+              style={wide ? styles.pieceWide : styles.piece}
+              onLayout={(e) => {
+                heights.current.set(f.key, e.nativeEvent.layout.height);
+                anchor();
+                updateMonth();
+              }}
+            >
+              {f.node}
+            </View>
+          ))}
         </ScrollView>
       </Animated.View>
       {!shown ? (
@@ -806,6 +1068,63 @@ export default function ProgrammeFeedScreen() {
   );
 }
 
+/**
+ * The line above «today» that asks for past meetings, and — once they are
+ * shown — heads them. Both states are ONE row of one height, so the tap that
+ * turns one into the other moves nothing: the months shown appear BELOW it,
+ * and an earlier month («Раньше») below it again, above the one shown before.
+ */
+function PastHead({
+  shown,
+  next,
+  onMore,
+  onHide,
+}: {
+  shown: boolean;
+  next: { month: string; count: number } | null;
+  onMore: () => void;
+  onHide: () => void;
+}) {
+  const { t } = useTranslation();
+  if (!shown) {
+    return (
+      <View style={styles.pastHead}>
+        <Pressable
+          style={({ pressed }) => [styles.pastAsk, pressed && styles.pressed]}
+          onPress={onMore}
+          accessibilityRole="button"
+        >
+          <Ionicons name="chevron-up" size={16} color={MUTE} />
+          <Text style={styles.pastAskText}>
+            {next ? t("feed.pastShow", { month: next.month, count: next.count }) : t("feed.past")}
+          </Text>
+        </Pressable>
+      </View>
+    );
+  }
+  return (
+    <View style={styles.pastHead}>
+      <Text style={styles.pastLabel}>{t("feed.past")}</Text>
+      {next ? (
+        <Pressable
+          style={({ pressed }) => [styles.pastBtn, pressed && styles.pressed]}
+          onPress={onMore}
+          accessibilityRole="button"
+        >
+          <Text style={styles.pastBtnText}>{t("feed.pastEarlier", { month: next.month })}</Text>
+        </Pressable>
+      ) : null}
+      <Pressable
+        style={({ pressed }) => [styles.pastBtn, pressed && styles.pressed]}
+        onPress={onHide}
+        accessibilityRole="button"
+      >
+        <Text style={styles.pastBtnText}>{t("feed.pastHide")}</Text>
+      </Pressable>
+    </View>
+  );
+}
+
 /** The large head of a meeting shown whole on the right of a wide screen. */
 function DetailHead({
   date,
@@ -843,6 +1162,8 @@ function DetailHead({
 /** The collapsed row every dated thing shares. */
 function Row({
   date,
+  kindLabel,
+  icon,
   title,
   time,
   line,
@@ -856,9 +1177,14 @@ function Row({
   onPress,
 }: {
   date: string;
+  /** Which kind of meeting, small and in its colour, above the title. */
+  kindLabel: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  /** The main line: what the meeting is about. */
   title: string;
   time?: string | null;
   line?: string | null;
+  /** What is yours in it — shown with a «Вы» mark. */
   mine?: string | null;
   status?: { color: string; text: string } | null;
   tag?: string | null;
@@ -869,9 +1195,10 @@ function Row({
   select?: boolean;
   onPress?: () => void;
 }) {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const d = atMidnight(date);
   const dow = d.toLocaleDateString(i18n.language, { weekday: "short" }).replace(".", "").toUpperCase();
+  const tone = past ? PAST_COLOR : color;
   const content = (
     <>
       <View style={styles.dateCol}>
@@ -880,14 +1207,19 @@ function Row({
       </View>
       <View style={styles.rowBody}>
         <View style={styles.rowTop}>
-          <View style={[styles.kindDot, { backgroundColor: past ? KIND_COLOR.past : color }]} />
-          <Text style={[styles.title, past && styles.pastTitle]} numberOfLines={2}>
-            {title}
-          </Text>
-          {time ? <Text style={styles.time}>{time}</Text> : null}
+          <Ionicons name={icon} size={14} color={tone} />
+          <Text style={[styles.kind, { color: tone }]}>{time ? `${kindLabel} · ${time}` : kindLabel}</Text>
         </View>
+        <Text style={[styles.title, past && styles.pastTitle]} numberOfLines={2}>
+          {title}
+        </Text>
         {line ? <Text style={styles.line}>{line}</Text> : null}
-        {mine ? <Text style={[styles.mine, past && styles.minePast]}>{mine}</Text> : null}
+        {mine ? (
+          <View style={styles.mineRow}>
+            <Text style={[styles.minePill, past && styles.minePillPast]}>{t("feed.you")}</Text>
+            <Text style={[styles.mine, past && styles.minePast]}>{mine}</Text>
+          </View>
+        ) : null}
         {status ? (
           <View style={styles.statusRow}>
             <View style={[styles.statusDot, { backgroundColor: status.color }]} />
@@ -953,6 +1285,16 @@ function Meeting({
   const [tab, setTab] = useState<Tab>("programme");
   const [planWindows, setPlanWindows] = useState<number[] | null>(null);
   const name = (id: string | null) => (id ? nameOf.get(id) ?? null : null);
+  // Who takes a part. A speaker from another congregation — and the circuit
+  // overseer — is written into the programme BY NAME, with no card of ours
+  // behind it (speakerName, no publisherId); the feed looked only at the card
+  // and showed «докладчик не назначен» for every visiting speaker (25
+  // September, Lionel: «в выходной день нет докладчиков»). The planning screen
+  // has always read both; so does the feed now.
+  const who = (p: Assignment | undefined) =>
+    !p ? null : p.speakerName?.trim() ? p.speakerName.trim() : name(p.publisherId);
+  const whoFrom = (p: Assignment | undefined) =>
+    p && !p.publisherId && p.speakerName?.trim() ? p.speakerCongregation?.trim() || null : null;
 
   const micCount = duties.filter((d) => d.dutyType === "microphone").length;
   const dutyLabel = (d: Duty) =>
@@ -961,18 +1303,31 @@ function Meeting({
       : t(`duties.types.${d.dutyType}`) +
         (d.dutyType === "microphone" && micCount > 1 ? ` ${d.slotIndex + 1}` : "");
 
-  // The main line: who chairs a weekday, which talk at the weekend.
+  // THE ROW SAYS WHAT THE MEETING IS ABOUT (25 September): the weekday by its
+  // first talk, the weekend by its public talk; the line under it says who —
+  // the chairman on a weekday, the speaker (and where he comes from) at the
+  // weekend. Before, the row's big words were «Встреча в будний день» on
+  // every other row, and what mattered sat grey below.
+  const kindTitle = item.kind === "midweek" ? t("eventTypes.midweek") : t("eventTypes.weekend");
   const chair = parts.find((p) => CHAIR_KEYS.has(p.partKey));
   const talk = parts.find((p) => p.partKey === "public_talk_speaker");
+  const firstTalk = parts.find((p) => p.partKey === "treasures_talk");
+  let title = kindTitle;
   let line: string;
   if (parts.length === 0) line = t("feed.notLoaded");
   else if (item.kind === "weekend" && talk) {
-    const title = partDisplay(talk.partKey, talk.partTitle).label;
-    const speaker = name(talk.publisherId);
-    line = speaker ? t("feed.talkLine", { title, name: speaker }) : t("feed.talkNoSpeaker", { title });
-  } else if (chair?.publisherId) {
-    line = chair.publisherId === me ? t("feed.chairmanYou") : t("feed.chairman", { name: name(chair.publisherId) ?? "" });
-  } else line = t("feed.chairman", { name: t("feed.unassigned") });
+    title = partDisplay(talk.partKey, talk.partTitle).label;
+    const speaker = who(talk);
+    const from = whoFrom(talk);
+    line = speaker ? (from ? `${speaker} · ${from}` : speaker) : t("feed.speakerUnassigned");
+  } else {
+    if (item.kind === "midweek" && firstTalk) title = partDisplay(firstTalk.partKey, firstTalk.partTitle).label;
+    line = chair?.publisherId
+      ? chair.publisherId === me
+        ? t("feed.chairmanYou")
+        : t("feed.chairman", { name: name(chair.publisherId) ?? "" })
+      : t("feed.chairman", { name: t("feed.unassigned") });
+  }
 
   // What is yours — parts (not chairing: the line above already says it) and duties.
   const myParts = parts
@@ -982,9 +1337,7 @@ function Meeting({
   // Case as the app writes it. Lowering the first letter would be wrong for a
   // topic that starts with a name («Иегова поддерживает…»).
   const mineList = [...myParts, ...myDuties];
-  const mine = me && mineList.length
-    ? t(past ? "feed.minePast" : "feed.mine", { list: mineList.join(", ") })
-    : null;
+  const mine = me && mineList.length ? mineList.join(", ") : null;
 
   // Readiness — only to those who assemble, only ahead.
   let status: { color: string; text: string } | null = null;
@@ -1008,7 +1361,6 @@ function Meeting({
   const mineInProgramme = myParts.length > 0;
   const mineInDuties = myDuties.length > 0;
 
-  const kindTitle = item.kind === "midweek" ? t("eventTypes.midweek") : t("eventTypes.weekend");
   return (
     // The screenshot script finds a meeting by week and kind to check that a
     // link to a week lands on it (data-testid on the web; nothing visible).
@@ -1016,20 +1368,29 @@ function Meeting({
       {mode !== "detail" ? (
       <Row
         date={item.date}
-        title={kindTitle}
+        kindLabel={item.kind === "midweek" ? t("feed.kindMidweek") : t("feed.kindWeekend")}
+        icon={KIND[item.kind].icon}
+        title={title}
         time={item.time}
         line={line}
         mine={mine}
         status={status}
         tag={item.movedByVisit ? t("feed.movedByVisit") : null}
-        color={KIND_COLOR.meeting}
+        color={KIND[item.kind].color}
         past={past}
         open={open}
         select={mode === "row"}
         onPress={onToggle}
       />
       ) : (
-        <DetailHead date={item.date} time={item.time} kind={kindTitle} line={line} mine={mine} status={status} />
+        <DetailHead
+          date={item.date}
+          time={item.time}
+          kind={title === kindTitle ? kindTitle : `${kindTitle} · ${title}`}
+          line={line}
+          mine={mine ? t(past ? "feed.minePast" : "feed.mine", { list: mine }) : null}
+          status={status}
+        />
       )}
       {(mode === "inline" && open) || mode === "detail" ? (
         <View style={[styles.inset, mode === "detail" && styles.insetDetail]}>
@@ -1057,7 +1418,7 @@ function Meeting({
           />
           <View style={styles.card}>
             {tab === "programme" ? (
-              <Programme parts={parts} kind={item.kind} time={item.time} me={me} name={name} />
+              <Programme parts={parts} kind={item.kind} time={item.time} me={me} name={name} who={who} whoFrom={whoFrom} />
             ) : tab === "duties" ? (
               duties.length ? (
                 duties.map((d) => (
@@ -1133,12 +1494,18 @@ function Programme({
   time,
   me,
   name,
+  who,
+  whoFrom,
 }: {
   parts: Assignment[];
   kind: Kind;
   time: string | null;
   me: string | null;
   name: (id: string | null) => string | null;
+  /** The person of a part — a publisher, or a guest written by name. */
+  who: (p: Assignment | undefined) => string | null;
+  /** A guest's congregation, when the part is his. */
+  whoFrom: (p: Assignment | undefined) => string | null;
 }) {
   const { t } = useTranslation();
   if (parts.length === 0) return <Text style={styles.empty}>{t("feed.notLoaded")}</Text>;
@@ -1159,6 +1526,9 @@ function Programme({
     );
   }
   let lastSub: string | null = null;
+  // The colour of the section a part is in: its people are written in it, so
+  // the eye finds the names down the sheet (25 September).
+  let tone = INK;
   // Songs get no interval of their own from the schedule screen's counter; a
   // song starts where the part before it ends — the same minute, no new rule.
   let lastEnd: string | null = null;
@@ -1174,55 +1544,60 @@ function Programme({
       if (LABELLED.has(sub)) {
         const meta = SUBSECTIONS[sub];
         out.push(<SectionChip key={`s${p.id}`} label={t(meta.i18nKey)} color={meta.color} soft={meta.colorMuted} />);
-      }
+        tone = meta.color;
+      } else tone = INK;
       lastSub = sub;
     }
     const interval = times.get(p.id);
     const start = interval?.start ?? (SONG_KEYS.has(p.partKey) ? lastEnd : null);
     if (interval?.end) lastEnd = interval.end;
     const shown = partDisplay(p.partKey, p.partTitle);
-    const who = name(p.publisherId);
+    const person = who(p);
     const mine = !!me && p.publisherId === me;
+    const minutes = p.partDurationMin ? t("feed.minutesOnly", { n: p.partDurationMin }) : null;
     if (SONG_KEYS.has(p.partKey)) {
       out.push(<SongLine key={p.id} time={start} text={p.partTitle || shown.label} />);
     } else if (PRAYER_KEYS.has(p.partKey)) {
       const text = [shown.subtitle, shown.label].filter(Boolean).join(" · ");
-      out.push(<SongLine key={p.id} time={start} text={`${text} — ${mine ? t("feed.you") : who ?? t("feed.unassigned")}`} />);
-    } else if (p.partKey === "public_talk_speaker") {
+      out.push(<PrayerLine key={p.id} time={start} label={text} name={person} mine={mine} />);
+    } else if (p.partKey === "public_talk_speaker" || p.partKey === "co_concluding_talk") {
       out.push(
         <Topic key={p.id} meta={t("feed.minutes", { time: start ?? "", n: p.partDurationMin ?? 30 })} title={shown.label}>
-          <PairLine label={t("feed.speaker")} name={who} mine={mine} />
+          <PairLine label={t("feed.speaker")} name={person} extra={whoFrom(p)} mine={mine} tone={tone} />
         </Topic>,
       );
     } else if (p.partKey === "watchtower_conductor") {
       const reader = parts.find((x) => x.partKey === "watchtower_reader");
       out.push(
         <Topic key={p.id} meta={t("feed.minutes", { time: start ?? "", n: p.partDurationMin ?? 60 })} title={shown.label}>
-          <PairLine label={t("feed.lead")} name={who} mine={mine} />
+          <PairLine label={t("feed.lead")} name={person} mine={mine} tone={tone} />
           <PairLine
             label={t("schedule.weekend.reader")}
-            name={reader ? name(reader.publisherId) : null}
+            name={who(reader)}
             mine={!!me && reader?.publisherId === me}
+            tone={tone}
           />
         </Topic>,
       );
     } else {
       const readerKey = READER_OF[p.partKey];
       const reader = readerKey ? parts.find((x) => x.partKey === readerKey) : undefined;
-      const readerName = reader ? name(reader.publisherId) : null;
+      const readerName = who(reader);
       const extra = p.assistantPublisherId
         ? name(p.assistantPublisherId)
         : readerName
           ? t("feed.readerName", { name: readerName })
-          : null;
+          : whoFrom(p);
       out.push(
         <PartLine
           key={p.id}
           time={start}
+          minutes={minutes}
           title={shown.label}
-          name={who}
+          name={person}
           extra={extra}
           mine={mine || (!!me && p.assistantPublisherId === me)}
+          tone={tone}
         />,
       );
     }
@@ -1256,24 +1631,26 @@ function FieldDay({
   const mineAt = item.meetings.find((m) => !!me && m.conductorPublisherId === me);
   const title = item.meetings.length > 1 ? t("feed.fieldService") : t("feed.fieldServiceOne");
   const line = item.meetings.map((m) => t("feed.fieldAt", { what: what(m), time: m.startTime })).join(" · ");
-  const mine = mineAt ? t("feed.youLead", { time: mineAt.startTime }) : null;
+  const mine = mineAt ? t("feed.youLeadShort", { time: mineAt.startTime }) : null;
   return (
     <View>
       {mode !== "detail" ? (
         <Row
           date={item.date}
+          kindLabel={t("feed.kindField")}
+          icon={KIND.field.icon}
           title={title}
           time={item.meetings[0]?.startTime ?? null}
           line={line}
           mine={mine}
-          color={KIND_COLOR.field}
+          color={KIND.field.color}
           past={past}
           open={open}
           select={mode === "row"}
           onPress={onToggle}
         />
       ) : (
-        <DetailHead date={item.date} kind={title} line={line} mine={mine} />
+        <DetailHead date={item.date} kind={title} line={line} mine={mineAt ? t("feed.youLead", { time: mineAt.startTime }) : null} />
       )}
       {(mode === "inline" && open) || mode === "detail" ? (
         <View style={[styles.inset, mode === "detail" && styles.insetDetail]}>
@@ -1326,10 +1703,12 @@ function MemorialDay({
       {mode !== "detail" ? (
         <Row
           date={item.date}
+          kindLabel={t("feed.kindMemorial")}
+          icon="flame-outline"
           title={title}
           time={item.event.time ?? null}
           line={line}
-          color={KIND_COLOR.special}
+          color={KIND.special.color}
           past={past}
           open={open}
           select={mode === "row"}
@@ -1368,8 +1747,104 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: "#ffffff" },
   fill: { flex: 1 },
   veil: { ...StyleSheet.absoluteFillObject, alignItems: "center", paddingTop: 96 },
-  content: { paddingBottom: 40, alignItems: "center" },
-  column: { width: "100%", maxWidth: 720 },
+  content: { paddingBottom: 40 },
+  // Every piece of the feed is a child of the ScrollView itself (see «the feed
+  // as a flat list»), so the column's width is set on each piece.
+  piece: { width: "100%", maxWidth: 720, alignSelf: "center" },
+  pieceWide: { width: "100%" },
+  bar: {
+    backgroundColor: "#ffffff",
+    borderBottomWidth: 1,
+    borderBottomColor: "#e2e8f0",
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 10,
+    gap: 8,
+    zIndex: 1,
+  },
+  barMonth: { fontSize: 18, fontFamily: FONT.extrabold, color: INK, letterSpacing: -0.2 },
+  chipsScroll: { marginHorizontal: -16, flexGrow: 0 },
+  chips: { flexDirection: "row", gap: 8, paddingHorizontal: 16 },
+  chip: {
+    minHeight: 36,
+    paddingHorizontal: 12,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: "#cbd5e1",
+    backgroundColor: "#ffffff",
+    justifyContent: "center",
+  },
+  chipText: { fontSize: 14, fontFamily: FONT.bold },
+  monthRow: {
+    backgroundColor: "#f1f5f9",
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: "#e2e8f0",
+    paddingHorizontal: 16,
+    paddingVertical: 9,
+  },
+  monthText: { fontSize: 16, fontFamily: FONT.extrabold, color: INK },
+  pastHead: {
+    minHeight: 56,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+  },
+  pastAsk: {
+    flex: 1,
+    minHeight: 44,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderStyle: "dashed",
+    borderColor: "#94a3b8",
+    backgroundColor: "#ffffff",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    paddingHorizontal: 12,
+  },
+  pastAskText: { fontSize: 14, fontFamily: FONT.bold, color: "#334155" },
+  pastLabel: {
+    flex: 1,
+    fontSize: 12,
+    fontFamily: FONT.bold,
+    letterSpacing: 1.2,
+    color: SOFT,
+    textTransform: "uppercase",
+  },
+  pastBtn: {
+    minHeight: 36,
+    paddingHorizontal: 12,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: "#cbd5e1",
+    backgroundColor: "#ffffff",
+    justifyContent: "center",
+  },
+  pastBtnText: { fontSize: 13, fontFamily: FONT.bold, color: "#334155" },
+  filtered: {
+    margin: 16,
+    marginTop: 0,
+    padding: 14,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderStyle: "dashed",
+    borderColor: "#cbd5e1",
+    alignItems: "center",
+    gap: 10,
+  },
+  filteredText: { fontSize: 14, fontFamily: FONT.semibold, color: MUTE, textAlign: "center" },
+  filteredAll: {
+    minHeight: 40,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    backgroundColor: INK,
+    justifyContent: "center",
+  },
+  filteredAllText: { fontSize: 14, fontFamily: FONT.bold, color: "#ffffff" },
   pressed: { opacity: 0.7 },
   yearStart: { flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 16, paddingTop: 16 },
   yearStartText: { fontSize: 12, fontFamily: FONT.semibold, color: SOFT },
@@ -1417,21 +1892,35 @@ const styles = StyleSheet.create({
   dow: { fontSize: 11, fontFamily: FONT.bold, letterSpacing: 0.9, color: SOFT, marginTop: 3 },
   pastText: { color: SOFT },
   rowBody: { flex: 1, minWidth: 0 },
-  rowTop: { flexDirection: "row", alignItems: "center", gap: 7 },
-  kindDot: { width: 7, height: 7, borderRadius: 4 },
-  title: { flex: 1, fontSize: 16, fontFamily: FONT.bold, color: INK },
+  rowTop: { flexDirection: "row", alignItems: "center", gap: 6 },
+  kind: { fontSize: 13, fontFamily: FONT.bold, fontVariant: ["tabular-nums"] },
+  title: { fontSize: 16, lineHeight: 21, fontFamily: FONT.bold, color: INK, marginTop: 3 },
   pastTitle: { color: MUTE },
-  time: { fontSize: 15, fontFamily: FONT.semibold, color: SOFT, fontVariant: ["tabular-nums"] },
-  line: { fontSize: 14, fontFamily: FONT.medium, color: SOFT, marginTop: 3, paddingLeft: 14 },
-  mine: { fontSize: 13, fontFamily: FONT.bold, color: ACC, marginTop: 6, paddingLeft: 14 },
+  line: { fontSize: 14, fontFamily: FONT.medium, color: MUTE, marginTop: 2 },
+  mineRow: { flexDirection: "row", alignItems: "flex-start", gap: 6, marginTop: 6 },
+  minePill: {
+    flexShrink: 0,
+    marginTop: 1,
+    fontSize: 11,
+    fontFamily: FONT.extrabold,
+    letterSpacing: 0.4,
+    textTransform: "uppercase",
+    color: ACC,
+    backgroundColor: ACC_BG,
+    borderRadius: 6,
+    overflow: "hidden",
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+  },
+  minePillPast: { color: SOFT, backgroundColor: "#f1f5f9" },
+  mine: { flexShrink: 1, fontSize: 14, fontFamily: FONT.semibold, color: ACC },
   minePast: { color: SOFT },
-  statusRow: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: 6, paddingLeft: 14 },
+  statusRow: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: 6 },
   statusDot: { width: 6, height: 6, borderRadius: 3 },
   status: { fontSize: 12, fontFamily: FONT.medium, color: SOFT, flexShrink: 1 },
   tag: {
     alignSelf: "flex-start",
     marginTop: 6,
-    marginLeft: 14,
     fontSize: 12,
     fontFamily: FONT.bold,
     color: "#5b21b6",
@@ -1467,6 +1956,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#e8edf3",
     borderRadius: 16,
+    // The chairman's block and the section bands reach the card's edges.
+    overflow: "hidden",
     paddingHorizontal: 14,
     paddingTop: 6,
     paddingBottom: 12,

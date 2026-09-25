@@ -3469,7 +3469,33 @@
     "ahead": "Впереди",
     "dateRange": "{{from}} — {{to}}",
     "visitMidweekOn": "встреча в будний день — {{day}}",
-    "editCleaning": "Править уборку"
+    "editCleaning": "Править уборку",
+    "kindMidweek": "Будний",
+    "kindWeekend": "Выходной",
+    "kindField": "Проповедь",
+    "kindMemorial": "Особая встреча",
+    "kindSpecial": "Событие",
+    "filter": {
+      "all": "Все",
+      "midweek": "Будние",
+      "weekend": "Выходные",
+      "field": "Проповедь"
+    },
+    "onlyShown": {
+      "midweek": "Показаны только будние встречи",
+      "weekend": "Показаны только выходные встречи",
+      "field": "Показаны только встречи для проповеди"
+    },
+    "showAll": "Показать все",
+    "pastShow_one": "Прошедшие · {{month}} · {{count}} встреча",
+    "pastShow_few": "Прошедшие · {{month}} · {{count}} встречи",
+    "pastShow_many": "Прошедшие · {{month}} · {{count}} встреч",
+    "pastShow_other": "Прошедшие · {{month}} · {{count}} встречи",
+    "pastEarlier": "Раньше: {{month}}",
+    "pastHide": "Скрыть",
+    "speakerUnassigned": "докладчик не назначен",
+    "minutesOnly": "{{n}} мин",
+    "youLeadShort": "ведёте в {{time}}"
   },
   "conduct": {
     "title": "Ведение встречи",

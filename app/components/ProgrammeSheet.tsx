@@ -11,24 +11,35 @@ import { FONT } from '../lib/typography';
  * a change after publishing, an automatic assignment, where to tap); none of
  * that is here. These pieces set down what a reader wants: when, what, who.
  *
+ * READ AT A GLANCE (25 September, Lionel: the sheet should read easily, above
+ * all its main parts). The part is the largest line, the person the next and
+ * in the colour of the section, the time and length quiet on the left; the
+ * sections are bands across the card, as on the printed sheet; nothing a
+ * person has to read is smaller than 14 points or grey.
+ *
  * No words of their own: labels arrive from the caller or from translations,
  * so the hard-coded-text check has nothing to find.
  */
 
 const INK = '#0f172a';
+const MUTE = '#475569';
 const SOFT = '#64748b';
+const TIME = '#334155';
 const ACC = '#0369a1';
 const ACC_BG = '#e0f2fe';
 /** The meeting's own colour (lib/section-colors.ts), a shade darker for an icon. */
 const CHAIR = '#b45309';
 const CHAIR_BG = '#fef3c7';
+const CHAIR_ROW = '#fffbeb';
 const NUM = { fontVariant: ['tabular-nums' as const] };
+/** The card's own side padding — a band reaches past it to both edges. */
+export const SHEET_PAD = 14;
 
-/** A section of the meeting — a label on its soft tone, not a slab of colour. */
-export function SectionChip({ label, color, soft }: { label: string; color: string; soft: string }) {
+/** A section of the meeting — a band of its colour across the card. */
+export function SectionChip({ label, color }: { label: string; color: string; soft?: string }) {
   return (
-    <View style={styles.chipRow}>
-      <Text style={[styles.chip, { color, backgroundColor: soft }]}>{label}</Text>
+    <View style={[styles.band, { backgroundColor: color }]}>
+      <Text style={styles.bandText}>{label}</Text>
     </View>
   );
 }
@@ -38,8 +49,36 @@ export function SongLine({ time, text }: { time?: string | null; text: string })
   return (
     <View style={styles.songRow}>
       <Text style={[styles.time, NUM]}>{time ?? ''}</Text>
-      <Ionicons name="musical-notes-outline" size={13} color={SOFT} />
+      <Ionicons name="musical-notes-outline" size={14} color={SOFT} />
       <Text style={styles.songText}>{text}</Text>
+    </View>
+  );
+}
+
+/**
+ * A prayer — its song and name small, the brother who prays on a line of his
+ * own: the chairman announces him, so he is read, not skimmed.
+ */
+export function PrayerLine({
+  time,
+  label,
+  name,
+  mine,
+}: {
+  time?: string | null;
+  label: string;
+  name?: string | null;
+  mine?: boolean;
+}) {
+  return (
+    <View style={styles.partRow}>
+      <Text style={[styles.time, NUM]}>{time ?? ''}</Text>
+      <View style={styles.partBody}>
+        <Text style={styles.prayerLabel}>{label}</Text>
+        <View style={styles.stackedPerson}>
+          <Person name={name} mine={mine} left />
+        </View>
+      </View>
     </View>
   );
 }
@@ -50,20 +89,29 @@ function Person({
   extra,
   mine,
   left,
+  tone = INK,
 }: {
   name?: string | null;
   extra?: string | null;
   mine?: boolean;
   /** Under the title on a narrow screen, so read from the left. */
   left?: boolean;
+  /** The section's colour. */
+  tone?: string;
 }) {
   const { t } = useTranslation();
   const align = left ? styles.alignLeft : null;
-  if (mine) return <Text style={styles.you}>{t('feed.you')}</Text>;
+  if (mine)
+    return (
+      <View style={left ? styles.personColLeft : styles.personCol}>
+        <Text style={styles.you}>{t('feed.you')}</Text>
+        {extra ? <Text style={[styles.personExtra, align]}>{extra}</Text> : null}
+      </View>
+    );
   if (!name) return <Text style={[styles.nobody, align]}>{t('feed.unassigned')}</Text>;
   return (
     <View style={left ? styles.personColLeft : styles.personCol}>
-      <Text style={[styles.person, align]}>{name}</Text>
+      <Text style={[styles.person, { color: tone }, align]}>{name}</Text>
       {extra ? <Text style={[styles.personExtra, align]}>{extra}</Text> : null}
     </View>
   );
@@ -77,32 +125,47 @@ function Person({
  */
 const STACK_BELOW = 440;
 
-/** One part: the time, what it is, and who — the person on the right. */
+/** When a part starts, and how long it is — the left column. */
+function When({ time, minutes }: { time?: string | null; minutes?: string | null }) {
+  return (
+    <View style={styles.when}>
+      <Text style={[styles.time, NUM]}>{time ?? ''}</Text>
+      {minutes ? <Text style={[styles.minutes, NUM]}>{minutes}</Text> : null}
+    </View>
+  );
+}
+
+/** One part: the time, what it is, and who. */
 export function PartLine({
   time,
+  minutes,
   title,
   subtitle,
   name,
   extra,
   mine,
+  tone,
 }: {
   time?: string | null;
+  /** «10 мин» — under the time. */
+  minutes?: string | null;
   title: string;
   subtitle?: string | null;
   name?: string | null;
   extra?: string | null;
   mine?: boolean;
+  tone?: string;
 }) {
   const { width } = useWindowDimensions();
   if (width < STACK_BELOW) {
     return (
       <View style={styles.partRow}>
-        <Text style={[styles.time, NUM]}>{time ?? ''}</Text>
+        <When time={time} minutes={minutes} />
         <View style={styles.partBody}>
           <Text style={styles.partTitle}>{title}</Text>
           {subtitle ? <Text style={styles.partSub}>{subtitle}</Text> : null}
           <View style={styles.stackedPerson}>
-            <Person name={name} extra={extra} mine={mine} left />
+            <Person name={name} extra={extra} mine={mine} tone={tone} left />
           </View>
         </View>
       </View>
@@ -110,13 +173,13 @@ export function PartLine({
   }
   return (
     <View style={styles.partRow}>
-      <Text style={[styles.time, NUM]}>{time ?? ''}</Text>
+      <When time={time} minutes={minutes} />
       <View style={styles.partBody}>
         <Text style={styles.partTitle}>{title}</Text>
         {subtitle ? <Text style={styles.partSub}>{subtitle}</Text> : null}
       </View>
       <View style={styles.personSlot}>
-        <Person name={name} extra={extra} mine={mine} />
+        <Person name={name} extra={extra} mine={mine} tone={tone} />
       </View>
     </View>
   );
@@ -128,26 +191,28 @@ export function PairLine({
   name,
   extra,
   mine,
+  tone,
 }: {
   label: string;
   name?: string | null;
   extra?: string | null;
   mine?: boolean;
+  tone?: string;
 }) {
   return (
     <View style={styles.pairRow}>
       <Text style={styles.pairLabel}>{label}</Text>
       <View style={styles.pairPerson}>
-        <Person name={name} extra={extra} mine={mine} />
+        <Person name={name} extra={extra} mine={mine} tone={tone} />
       </View>
     </View>
   );
 }
 
 /**
- * Who chairs the meeting — the first line of the programme, set apart from
- * the parts below it: he opens, links and closes the whole meeting rather
- * than taking one part of it. The label comes from the caller.
+ * Who chairs the meeting — the head of the programme, set apart from the
+ * parts below it: he opens, links and closes the whole meeting rather than
+ * taking one part of it. The label comes from the caller.
  */
 export function ChairLine({
   label,
@@ -158,15 +223,21 @@ export function ChairLine({
   name?: string | null;
   mine?: boolean;
 }) {
+  const { t } = useTranslation();
   return (
     <View style={styles.chairRow}>
       <View style={styles.chairIcon}>
-        <Ionicons name="mic-outline" size={15} color={CHAIR} />
+        <Ionicons name="mic-outline" size={17} color={CHAIR} />
       </View>
-      <Text style={styles.chairLabel}>{label}</Text>
-      <View style={styles.pairPerson}>
-        <Person name={name} mine={mine} />
+      <View style={styles.chairBody}>
+        <Text style={styles.chairLabel}>{label}</Text>
+        {name ? (
+          <Text style={styles.chairName}>{name}</Text>
+        ) : (
+          <Text style={styles.nobodyLeft}>{t('feed.unassigned')}</Text>
+        )}
       </View>
+      {mine ? <Text style={styles.you}>{t('feed.you')}</Text> : null}
     </View>
   );
 }
@@ -194,30 +265,31 @@ export function Topic({
 }
 
 const styles = StyleSheet.create({
-  chipRow: { flexDirection: 'row', marginTop: 16, marginBottom: 4 },
-  chip: {
-    fontSize: 12,
+  band: { marginHorizontal: -SHEET_PAD, marginTop: 10, marginBottom: 2, paddingHorizontal: SHEET_PAD, paddingVertical: 8 },
+  bandText: {
+    fontSize: 13,
     fontFamily: FONT.extrabold,
-    letterSpacing: 0.3,
-    borderRadius: 8,
-    overflow: 'hidden',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
+    letterSpacing: 0.6,
+    color: '#ffffff',
+    textTransform: 'uppercase',
   },
-  songRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 6 },
-  songText: { fontSize: 13, fontFamily: FONT.medium, color: SOFT, flexShrink: 1 },
-  time: { width: 44, fontSize: 13, fontFamily: FONT.semibold, color: SOFT },
-  partRow: { flexDirection: 'row', gap: 10, paddingVertical: 8 },
+  songRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 8 },
+  songText: { fontSize: 14, fontFamily: FONT.semibold, color: MUTE, flexShrink: 1 },
+  when: { width: 48 },
+  time: { width: 48, fontSize: 14, fontFamily: FONT.bold, color: TIME },
+  minutes: { fontSize: 12, fontFamily: FONT.semibold, color: SOFT, marginTop: 1 },
+  partRow: { flexDirection: 'row', gap: 10, paddingVertical: 10 },
   partBody: { flex: 1, minWidth: 0 },
-  partTitle: { fontSize: 15, lineHeight: 21, fontFamily: FONT.medium, color: INK },
-  partSub: { fontSize: 13, fontFamily: FONT.medium, color: SOFT, marginTop: 1 },
-  personSlot: { width: 128, alignItems: 'flex-end' },
+  partTitle: { fontSize: 17, lineHeight: 22, fontFamily: FONT.bold, color: INK },
+  partSub: { fontSize: 14, fontFamily: FONT.medium, color: MUTE, marginTop: 2 },
+  prayerLabel: { fontSize: 14, fontFamily: FONT.semibold, color: MUTE },
+  personSlot: { width: 140, alignItems: 'flex-end' },
   personCol: { alignItems: 'flex-end' },
   personColLeft: { alignItems: 'flex-start' },
-  stackedPerson: { marginTop: 3, flexDirection: 'row' },
+  stackedPerson: { marginTop: 4, flexDirection: 'row' },
   alignLeft: { textAlign: 'left' },
-  person: { fontSize: 14, lineHeight: 19, fontFamily: FONT.semibold, color: INK, textAlign: 'right' },
-  personExtra: { fontSize: 13, fontFamily: FONT.medium, color: SOFT, textAlign: 'right', marginTop: 1 },
+  person: { fontSize: 16, lineHeight: 21, fontFamily: FONT.bold, color: INK, textAlign: 'right' },
+  personExtra: { fontSize: 14, fontFamily: FONT.medium, color: MUTE, textAlign: 'right', marginTop: 2 },
   you: {
     fontSize: 14,
     fontFamily: FONT.extrabold,
@@ -228,30 +300,43 @@ const styles = StyleSheet.create({
     paddingHorizontal: 9,
     paddingVertical: 2,
   },
-  nobody: { fontSize: 14, fontFamily: FONT.medium, color: SOFT, textAlign: 'right' },
-  pairRow: { flexDirection: 'row', justifyContent: 'space-between', gap: 12, paddingVertical: 8 },
-  pairLabel: { fontSize: 14, fontFamily: FONT.medium, color: SOFT, flexShrink: 1 },
-  pairPerson: { alignItems: 'flex-end', maxWidth: '60%' },
+  nobody: { fontSize: 15, fontFamily: FONT.medium, color: SOFT, textAlign: 'right' },
+  nobodyLeft: { fontSize: 15, fontFamily: FONT.medium, color: SOFT },
+  pairRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', gap: 12, paddingVertical: 8 },
+  pairLabel: { fontSize: 14, fontFamily: FONT.semibold, color: SOFT, flexShrink: 1 },
+  pairPerson: { alignItems: 'flex-end', maxWidth: '62%' },
   chairRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-    paddingBottom: 10,
+    gap: 12,
+    marginHorizontal: -SHEET_PAD,
+    marginTop: -6,
     marginBottom: 4,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#e2e8f0',
+    paddingHorizontal: SHEET_PAD,
+    paddingVertical: 12,
+    backgroundColor: CHAIR_ROW,
+    borderBottomWidth: 1,
+    borderBottomColor: '#fde68a',
   },
   chairIcon: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     backgroundColor: CHAIR_BG,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  chairLabel: { flex: 1, fontSize: 14, fontFamily: FONT.semibold, color: INK },
-  topic: { paddingTop: 2, paddingBottom: 4 },
-  topicMeta: { fontSize: 12, fontFamily: FONT.semibold, color: SOFT },
-  topicTitle: { fontSize: 19, lineHeight: 25, fontFamily: FONT.bold, color: INK, letterSpacing: -0.2, marginTop: 3 },
-  topicPeople: { marginTop: 8 },
+  chairBody: { flex: 1, minWidth: 0 },
+  chairLabel: {
+    fontSize: 12,
+    fontFamily: FONT.bold,
+    letterSpacing: 0.5,
+    color: '#92400e',
+    textTransform: 'uppercase',
+  },
+  chairName: { fontSize: 17, lineHeight: 22, fontFamily: FONT.extrabold, color: INK, marginTop: 1 },
+  topic: { paddingTop: 10, paddingBottom: 6 },
+  topicMeta: { fontSize: 13, fontFamily: FONT.bold, color: TIME },
+  topicTitle: { fontSize: 20, lineHeight: 26, fontFamily: FONT.extrabold, color: INK, letterSpacing: -0.2, marginTop: 4 },
+  topicPeople: { marginTop: 6 },
 });
