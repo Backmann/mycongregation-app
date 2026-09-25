@@ -567,8 +567,9 @@ try {
       if (!(await card.getByText(/^Править программу$/).count())) throw new Error('нет «Править программу»');
     });
   } else skip('B03', 'Неделя Вечери у старейшины', 'нет Вечери (см. A08)');
-  await check(page, 'B04', 'Служение: старейшина видит «Посещаемость встреч», лист открывается', async () => {
+  await check(page, 'B04', 'Служение: старейшина видит «Отчёты по группе» и «Посещаемость встреч», лист открывается', async () => {
     await go(page, '/service-reports');
+    await see(page, 'Отчёты по группе');
     await tap(page, 'Посещаемость встреч');
     await atPath(page, '/service-reports/attendance');
     await page.waitForTimeout(2000);
@@ -619,6 +620,11 @@ try {
     await notSee(page, 'Посещаемость встреч');
     await go(page, '/service-reports/attendance');
     await see(page, 'Нет доступа');
+  });
+  await check(page, 'C07', 'Служение: нет «Отчёты по группе» (он не надзиратель группы)', async () => {
+    await go(page, '/service-reports');
+    await page.waitForTimeout(2500);
+    await notSee(page, 'Отчёты по группе');
   });
   // The chairman heads the programme card, weekday and weekend alike.
   for (const kind of ['midweek', 'weekend']) {

@@ -13,8 +13,10 @@ import { router } from 'expo-router';
 import {
   extractErrorMessage,
   ServiceReport,
+  serviceGroupsApi,
   serviceReportsApi,
 } from '../../../lib/api';
+import { useMyPublisher } from '../../../lib/useMyPublisher';
 import { useTranslation } from 'react-i18next';
 import i18n, { formatMonthLabel } from '../../../lib/i18n';
 import { usePermissions } from '../../../lib/permissions';
@@ -145,7 +147,9 @@ function SectionRow({
 
 export default function ServiceReportsListScreen() {
   const { t } = useTranslation();
-  const { canViewServiceSummary, canViewAttendance, isAdmin, isElder } = usePermissions();
+  const { canViewServiceSummary, canViewAttendance, isAdmin, isElder, responsibilities } =
+    usePermissions();
+  const { myPublisherId } = useMyPublisher();
   const now = new Date();
   const serviceYearNow =
     now.getMonth() >= 8 ? now.getFullYear() : now.getFullYear() - 1;
@@ -160,9 +164,31 @@ export default function ServiceReportsListScreen() {
   // стольких-то» is precisely what the collection card holds. The other
   // sections stay unlabelled rather than cost four more round trips on a phone
   // in a Kingdom Hall with poor signal.
+  // «Отчёты по группе» opens for those the server lets in (findGroupReports):
+  // administrators, elders and the secretary see the whole congregation; the
+  // overseer of a group and his assistant see their groups. For anybody else
+  // the row led to «Нет доступа» (audit, 25 September) — so it is not shown.
+  // The groups list is the one Home already keeps in its cache.
+  const secretary = responsibilities.has('secretary');
+  const groups = useQuery({
+    queryKey: ['service-groups'],
+    queryFn: () => serviceGroupsApi.list({}),
+    staleTime: 30 * 60 * 1000,
+    enabled: !isAdmin && !isElder && !secretary && !!myPublisherId,
+  });
+  const oversees =
+    !!myPublisherId &&
+    (groups.data?.data ?? []).some(
+      (g) => g.overseerPublisherId === myPublisherId || g.assistantPublisherId === myPublisherId,
+    );
+  const canViewGroupReports = isAdmin || isElder || secretary || oversees;
+  // The count of the collection is the server's for the administrator, the
+  // secretary and a group overseer only; an elder is refused it, so he is not
+  // sent to ask.
   const collection = useQuery({
     queryKey: ['report-collection'],
     queryFn: () => serviceReportsApi.getCollection(),
+    enabled: isAdmin || secretary || oversees,
   });
 
   if (isLoading) {
@@ -199,22 +225,24 @@ export default function ServiceReportsListScreen() {
         ListHeaderComponent={
           <View>
             <MonthCard />
-            <SectionRow
-              icon="people-outline"
-              label={t('reports.title.group')}
-              value={
-                collection.data
-                  ? t('reports.entry.collected', {
-                      received: collection.data.received,
-                      expected: collection.data.expected,
-                      month: formatMonthLabel(collection.data.reportMonth),
-                    })
-                  : undefined
-              }
-              onPress={() =>
-                router.push('/service-reports/group' as any)
-              }
-            />
+            {canViewGroupReports ? (
+              <SectionRow
+                icon="people-outline"
+                label={t('reports.title.group')}
+                value={
+                  collection.data
+                    ? t('reports.entry.collected', {
+                        received: collection.data.received,
+                        expected: collection.data.expected,
+                        month: formatMonthLabel(collection.data.reportMonth),
+                      })
+                    : undefined
+                }
+                onPress={() =>
+                  router.push('/service-reports/group' as any)
+                }
+              />
+            ) : null}
             {/* The attendance sheet is for the elders and for those who
                 count at the meeting — not a publisher's errand. */}
             {canViewAttendance ? (
