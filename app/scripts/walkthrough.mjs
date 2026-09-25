@@ -655,6 +655,54 @@ try {
     await page.waitForTimeout(2500);
     await notSee(page, 'Отчёты по группе');
   });
+  // 25 September: opening a meeting used to close the one open above it, and
+  // the tapped row flew off the screen by that card's whole height. Now cards
+  // open on their own — the tapped row must not move, and the card above
+  // must stay open.
+  await check(page, 'C08', 'Программа: нажатая плашка остаётся на месте, открытая выше не закрывается', async () => {
+    await go(page, '/schedule', /^Сегодня ·/);
+    await page.waitForTimeout(2500);
+    // The open card is the tallest row; the row after it is the one to tap.
+    const target = await page.evaluate(() => {
+      const rows = [...document.querySelectorAll('[data-testid^="meeting-"]')];
+      let open = -1, h = 0;
+      rows.forEach((el, i) => { const r = el.getBoundingClientRect().height; if (r > h) { h = r; open = i; } });
+      const next = rows[open + 1];
+      return open >= 0 && next && h > 300 ? next.getAttribute('data-testid') : null;
+    });
+    if (!target) return 'нет открытой встречи с плашкой после неё — нечего проверять';
+    await page.evaluate((id) => {
+      const el = document.querySelector(`[data-testid="${id}"]`);
+      let sc = el.parentElement;
+      while (sc && !/(auto|scroll)/.test(getComputedStyle(sc).overflowY)) sc = sc.parentElement;
+      sc.scrollTop += el.getBoundingClientRect().top - 420;
+    }, target);
+    await page.waitForTimeout(600);
+    const box = await page.evaluate((id) => {
+      const r = document.querySelector(`[data-testid="${id}"]`).getBoundingClientRect();
+      return { x: r.x + 60, y: r.y + 25, top: Math.round(r.top) };
+    }, target);
+    // Every frame, not every so often: one frame in the wrong place is a jump.
+    await page.evaluate((id) => {
+      window.__tops = [];
+      const tick = () => {
+        const el = document.querySelector(`[data-testid="${id}"]`);
+        window.__tops.push(el ? Math.round(el.getBoundingClientRect().top) : null);
+        if (window.__tops.length < 60) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    }, target);
+    await page.mouse.click(box.x, box.y);
+    await page.waitForTimeout(1500);
+    const tops = await page.evaluate(() => window.__tops);
+    const moved = [...new Set(tops)].filter((t) => t !== box.top);
+    if (moved.length) throw new Error(`плашка ${target} сдвигалась: ${box.top} → ${moved.join(', ')}`);
+    const stillOpen = await page.evaluate(() =>
+      [...document.querySelectorAll('[data-testid^="meeting-"]')].filter((el) => el.getBoundingClientRect().height > 300).length,
+    );
+    if (stillOpen < 2) throw new Error(`после нажатия открыта ${stillOpen} встреча, а должны две`);
+    return `${target} на месте, ${box.top} точек от верха`;
+  });
   // The chairman heads the programme card, weekday and weekend alike.
   for (const kind of ['midweek', 'weekend']) {
     const id = kind === 'midweek' ? 'C05' : 'C06';

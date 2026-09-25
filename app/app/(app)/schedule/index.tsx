@@ -473,8 +473,20 @@ export default function ProgrammeFeedScreen() {
   const defaultOpen = targetWeek
     ? targetOpen
     : (coming.find((x) => x.type === "meeting" || x.type === "memorial")?.id ?? null);
+  // WIDE: one meeting is chosen and shown whole on the right.
   const [openChoice, setOpenChoice] = useState<string | null | undefined>(undefined);
   const openId = openChoice === undefined ? defaultOpen : openChoice;
+  // PHONE: each card opens and closes on its own (25 September). With one open
+  // at a time, opening a card closed the one before it — and when that one
+  // stood ABOVE, everything below moved up by its whole height: Lionel opened
+  // the weekend, scrolled on, tapped the weekday, and the weekday flew off the
+  // screen (on the stand from 420 points to -204). Correcting the scroll
+  // afterwards depends on when each platform lets a position be read, and
+  // cannot be proved the same on Android as on the web. Letting cards stay
+  // open needs no correction at all: nothing above a tapped row ever changes,
+  // on any platform, so the row cannot move.
+  const [openSet, setOpenSet] = useState<ReadonlySet<string> | undefined>(undefined);
+  const openIds: ReadonlySet<string> = openSet ?? new Set(defaultOpen ? [defaultOpen] : []);
   // OPEN ON TODAY — AND HOLD IT THERE UNTIL THE PERSON MOVES.
   //
   // A one-off placement is not enough here. The rows above «today» grow after
@@ -519,6 +531,7 @@ export default function ProgrammeFeedScreen() {
     target.current = null;
     todayY.current = null;
     setOpenChoice(undefined);
+    setOpenSet(undefined);
     setChunks((c) => Math.max(c, chunksFor(targetWeek)));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [targetWeek, targetKind]);
@@ -538,7 +551,12 @@ export default function ProgrammeFeedScreen() {
   }, []);
   const toggle = (id: string) => {
     release();
-    setOpenChoice(openId === id ? null : id);
+    setOpenSet((prev) => {
+      const next = new Set(prev ?? (defaultOpen ? [defaultOpen] : []));
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
   };
 
   const monthOf = (iso: string) =>
@@ -555,6 +573,7 @@ export default function ProgrammeFeedScreen() {
   // row, the whole right side — not a second copy that one change would miss.
   const { width } = useWindowDimensions();
   const wide = width >= 900;
+  const isOpen = (id: string) => (wide ? openId === id : openIds.has(id));
   const choose = (id: string) => {
     release();
     setOpenChoice(id);
@@ -592,7 +611,7 @@ export default function ProgrammeFeedScreen() {
           key={x.id}
           item={x}
           past={isPast}
-          open={openId === x.id}
+          open={isOpen(x.id)}
           onToggle={() => (wide ? choose(x.id) : toggle(x.id))}
           mode={wide ? "row" : "inline"}
           duties={dutiesOf.get(`${x.week}|memorial`) ?? []}
@@ -605,7 +624,7 @@ export default function ProgrammeFeedScreen() {
           key={x.id}
           item={x}
           past={isPast}
-          open={openId === x.id}
+          open={isOpen(x.id)}
           onToggle={() => (wide ? choose(x.id) : toggle(x.id))}
           mode={wide ? "row" : "inline"}
           me={me}
@@ -618,7 +637,7 @@ export default function ProgrammeFeedScreen() {
         <Meeting
           key={x.id}
           {...meetingProps(x)}
-          open={openId === x.id}
+          open={isOpen(x.id)}
           onToggle={() => (wide ? choose(x.id) : toggle(x.id))}
           mode={wide ? "row" : "inline"}
         />
