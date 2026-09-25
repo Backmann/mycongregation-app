@@ -47,7 +47,11 @@ if (!/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?\//.test(api))
 
 if (!process.argv.includes('--serve')) {
   console.log(`· собираю веб в ${OUT} (сервер: ${api}) — несколько минут…`);
-  const r = spawnSync('npx', ['expo', 'export', '--platform', 'web', '--output-dir', OUT], {
+  // --clear: Metro keeps compiled modules between runs, and a module compiled
+  // for `eas update` carries the LIVE address baked in — reused here, it put
+  // api.mycongregation.org into a build meant for this computer (25 September,
+  // first run on the laptop). Starting clean costs a minute and removes that.
+  const r = spawnSync('npx', ['expo', 'export', '--platform', 'web', '--clear', '--output-dir', OUT], {
     stdio: 'inherit',
     shell: true,
     env: {
@@ -66,7 +70,12 @@ if (!existsSync(jsDir)) fail(`нет сборки в ${OUT} — запусти �
 let hasLocal = false;
 for (const f of readdirSync(jsDir).filter((n) => n.endsWith('.js'))) {
   const text = readFileSync(join(jsDir, f), 'utf8');
-  if (text.includes(LIVE)) fail(`в сборке есть адрес боевого сервера (${LIVE}) — не запускаю.`);
+  const at = text.indexOf(LIVE);
+  if (at >= 0) {
+    // Where it sits, so the reason can be found rather than guessed.
+    const around = text.slice(Math.max(0, at - 120), at + 60).replace(/\s+/g, ' ');
+    fail(`в сборке есть адрес боевого сервера (${LIVE}) — не запускаю.\n  файл: ${f}\n  рядом: …${around}…`);
+  }
   if (text.includes(api)) hasLocal = true;
 }
 if (!hasLocal) fail(`в сборке нет адреса ${api} — не понимаю, куда она пойдёт; не запускаю.`);
