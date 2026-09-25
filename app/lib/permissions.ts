@@ -33,6 +33,12 @@ export interface Permissions {
   canEditPublishers: boolean;
   /** Record meeting attendance (form S-3). */
   canRecordAttendance: boolean;
+  /**
+   * Read the attendance sheet (form S-3): the elders, and whoever may record
+   * it. A publisher has no task that needs the figures. Mirrors the server's
+   * AttendanceReadGuard.
+   */
+  canViewAttendance: boolean;
   canSubmitReportForOthers: boolean;
   /** S-21 record card — elders only (secretary is an elder too) + admin. */
   canGenerateS21: boolean;
@@ -135,6 +141,12 @@ export function usePermissions(): Permissions {
         holds("attendance_recorder") ||
         // The figure is entered while it is still in somebody's hand; one
         // brother away on a Thursday should not cost the week its record.
+        holds("attendance_recorder_assistant"),
+      canViewAttendance:
+        isAdmin ||
+        isElder ||
+        holds("secretary") ||
+        holds("attendance_recorder") ||
         holds("attendance_recorder_assistant"),
       canSubmitReportForOthers: isAdmin || isElder,
       canGenerateS21: isAdmin || isElder,

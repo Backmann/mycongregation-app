@@ -24,6 +24,7 @@ import {
   meetingSettingsApi,
 } from '../../../lib/api';
 import { usePermissions } from '../../../lib/permissions';
+import { LoadFailure } from '../../../components/LoadFailure';
 import { buildAttendancePdfHtml } from '../../../lib/attendancePdf';
 import { exportHtmlAsPdf, openPrintWindow } from '../../../lib/pdf';
 import { reportError, reportSuccess } from '../../../lib/error-bus';
@@ -120,6 +121,17 @@ export default function AttendanceScreen() {
     return (
       <View style={styles.centre}>
         <ActivityIndicator />
+      </View>
+    );
+  }
+
+  // Opened by address without the right to it, the server says no (the sheet
+  // is for the elders and those who record it); said as a «no», not as an
+  // empty year.
+  if (query.error) {
+    return (
+      <View style={styles.screen}>
+        <LoadFailure error={query.error} onRetry={() => void query.refetch()} />
       </View>
     );
   }

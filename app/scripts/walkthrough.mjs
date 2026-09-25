@@ -567,6 +567,13 @@ try {
       if (!(await card.getByText(/^Править программу$/).count())) throw new Error('нет «Править программу»');
     });
   } else skip('B03', 'Неделя Вечери у старейшины', 'нет Вечери (см. A08)');
+  await check(page, 'B04', 'Служение: старейшина видит «Посещаемость встреч», лист открывается', async () => {
+    await go(page, '/service-reports');
+    await tap(page, 'Посещаемость встреч');
+    await atPath(page, '/service-reports/attendance');
+    await page.waitForTimeout(2000);
+    await notSee(page, 'Нет доступа');
+  });
   await keep();
   await ctx.close();
 } catch (e) {
@@ -606,6 +613,27 @@ try {
     await page.waitForTimeout(1500);
     for (const w of ['Управление', 'Ответственные', 'Составление программы']) await notSee(page, w);
   });
+  await check(page, 'C04', 'Служение: нет «Посещаемость встреч»; по адресу — «Нет доступа»', async () => {
+    await go(page, '/service-reports');
+    await page.waitForTimeout(2000);
+    await notSee(page, 'Посещаемость встреч');
+    await go(page, '/service-reports/attendance');
+    await see(page, 'Нет доступа');
+  });
+  // The chairman heads the programme card, weekday and weekend alike.
+  for (const kind of ['midweek', 'weekend']) {
+    const id = kind === 'midweek' ? 'C05' : 'C06';
+    await check(page, id, `Программа: у ${kind === 'midweek' ? 'будней' : 'выходной'} встречи строка «Председатель» в карточке`, async () => {
+      const week = mondayPlus(1);
+      await go(page, `/schedule?week=${week}&meeting=${kind}`);
+      const card = page.getByTestId(`meeting-${week}-${kind}`);
+      await card.waitFor({ timeout: 30000 });
+      await page.waitForTimeout(2000);
+      if (!(await card.getByText(/^Председатель$/).filter({ visible: true }).count()))
+        throw new Error(`нет строки «Председатель» на неделе ${week}`);
+      return `неделя ${week}`;
+    });
+  }
   await keep();
   await ctx.close();
 } catch (e) {

@@ -42,6 +42,7 @@ import { FONT } from "../../../lib/typography";
 import { SegmentedControl } from "../../../components/SegmentedControl";
 import { MemorialMeetingBlock } from "../../../components/MemorialMeetingBlock";
 import {
+  ChairLine,
   PairLine,
   PartLine,
   SectionChip,
@@ -1065,14 +1066,27 @@ function Programme({
   if (parts.length === 0) return <Text style={styles.empty}>{t("feed.notLoaded")}</Text>;
   const times = kind === "midweek" ? buildMidweekPartTimes(parts, time) : buildWeekendPartTimes(parts, time);
   const out: ReactNode[] = [];
+  // The chairman heads the programme, weekday and weekend alike — the planning
+  // screen has him, and a programme without him left a reader asking who leads
+  // (25 September). Shown even when not yet named: an empty chair is news too.
+  const chair = parts.find((p) => CHAIR_KEYS.has(p.partKey));
+  if (chair) {
+    out.push(
+      <ChairLine
+        key={`chair-${chair.id}`}
+        label={t("feed.chairmanLabel")}
+        name={name(chair.publisherId)}
+        mine={!!me && chair.publisherId === me}
+      />,
+    );
+  }
   let lastSub: string | null = null;
   // Songs get no interval of their own from the schedule screen's counter; a
   // song starts where the part before it ends — the same minute, no new rule.
   let lastEnd: string | null = null;
   for (const p of parts) {
     if (READER_KEYS.has(p.partKey)) continue;
-    // The chairman is already named on the row above; a line for him here said
-    // it a second time.
+    // The chairman is set at the head of the programme, above.
     if (CHAIR_KEYS.has(p.partKey)) continue;
     // A weekend opening song with no number is a line of one word; the prayer
     // right below carries the moment.

@@ -145,7 +145,7 @@ function SectionRow({
 
 export default function ServiceReportsListScreen() {
   const { t } = useTranslation();
-  const { canViewServiceSummary, isAdmin, isElder } = usePermissions();
+  const { canViewServiceSummary, canViewAttendance, isAdmin, isElder } = usePermissions();
   const now = new Date();
   const serviceYearNow =
     now.getMonth() >= 8 ? now.getFullYear() : now.getFullYear() - 1;
@@ -215,13 +215,17 @@ export default function ServiceReportsListScreen() {
                 router.push('/service-reports/group' as any)
               }
             />
-            <SectionRow
-              icon="people-circle-outline"
-              label={t('attendance.pageTitle')}
-              onPress={() =>
-                router.push('/service-reports/attendance' as any)
-              }
-            />
+            {/* The attendance sheet is for the elders and for those who
+                count at the meeting — not a publisher's errand. */}
+            {canViewAttendance ? (
+              <SectionRow
+                icon="people-circle-outline"
+                label={t('attendance.pageTitle')}
+                onPress={() =>
+                  router.push('/service-reports/attendance' as any)
+                }
+              />
+            ) : null}
             {canViewServiceSummary ? (
               <>
                 <SectionRow

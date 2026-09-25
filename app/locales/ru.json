@@ -3441,6 +3441,7 @@
     "today": "Сегодня · {{date}}",
     "chairman": "Председатель: {{name}}",
     "chairmanYou": "Председатель: вы",
+    "chairmanLabel": "Председатель",
     "talkLine": "{{title}} · {{name}}",
     "talkNoSpeaker": "{{title}} · докладчик не назначен",
     "mine": "Ваше: {{list}}",

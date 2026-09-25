@@ -19,6 +19,9 @@ const INK = '#0f172a';
 const SOFT = '#64748b';
 const ACC = '#0369a1';
 const ACC_BG = '#e0f2fe';
+/** The meeting's own colour (lib/section-colors.ts), a shade darker for an icon. */
+const CHAIR = '#b45309';
+const CHAIR_BG = '#fef3c7';
 const NUM = { fontVariant: ['tabular-nums' as const] };
 
 /** A section of the meeting — a label on its soft tone, not a slab of colour. */
@@ -142,6 +145,33 @@ export function PairLine({
 }
 
 /**
+ * Who chairs the meeting — the first line of the programme, set apart from
+ * the parts below it: he opens, links and closes the whole meeting rather
+ * than taking one part of it. The label comes from the caller.
+ */
+export function ChairLine({
+  label,
+  name,
+  mine,
+}: {
+  label: string;
+  name?: string | null;
+  mine?: boolean;
+}) {
+  return (
+    <View style={styles.chairRow}>
+      <View style={styles.chairIcon}>
+        <Ionicons name="mic-outline" size={15} color={CHAIR} />
+      </View>
+      <Text style={styles.chairLabel}>{label}</Text>
+      <View style={styles.pairPerson}>
+        <Person name={name} mine={mine} />
+      </View>
+    </View>
+  );
+}
+
+/**
  * A weekend topic — the talk or the Watchtower article — set large: at the
  * weekend the titles ARE the meeting, and they read as such.
  */
@@ -202,6 +232,24 @@ const styles = StyleSheet.create({
   pairRow: { flexDirection: 'row', justifyContent: 'space-between', gap: 12, paddingVertical: 8 },
   pairLabel: { fontSize: 14, fontFamily: FONT.medium, color: SOFT, flexShrink: 1 },
   pairPerson: { alignItems: 'flex-end', maxWidth: '60%' },
+  chairRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingBottom: 10,
+    marginBottom: 4,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#e2e8f0',
+  },
+  chairIcon: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: CHAIR_BG,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  chairLabel: { flex: 1, fontSize: 14, fontFamily: FONT.semibold, color: INK },
   topic: { paddingTop: 2, paddingBottom: 4 },
   topicMeta: { fontSize: 12, fontFamily: FONT.semibold, color: SOFT },
   topicTitle: { fontSize: 19, lineHeight: 25, fontFamily: FONT.bold, color: INK, letterSpacing: -0.2, marginTop: 3 },

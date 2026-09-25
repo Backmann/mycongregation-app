@@ -3411,6 +3411,7 @@
     "today": "Today · {{date}}",
     "chairman": "Chairman: {{name}}",
     "chairmanYou": "Chairman: you",
+    "chairmanLabel": "Chairman",
     "talkLine": "{{title}} · {{name}}",
     "talkNoSpeaker": "{{title}} · no speaker yet",
     "mine": "Yours: {{list}}",
