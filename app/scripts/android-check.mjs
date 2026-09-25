@@ -29,7 +29,8 @@ import { join, resolve } from 'node:path';
 
 const PKG = process.env.PKG || 'com.backmann.mycongregation';
 const LINK = process.env.LINK || 'mycongregation://schedule';
-const ADB = process.env.ADB || 'adb';
+// Git Bash writes /c/platform-tools/adb.exe; Node on Windows needs C:/….
+const ADB = process.platform === 'win32' ? (process.env.ADB || 'adb').replace(/^\/([a-zA-Z])\//, '$1:/') : process.env.ADB || 'adb';
 
 const now = new Date();
 const pad = (n) => String(n).padStart(2, '0');
@@ -118,31 +119,42 @@ if (meetings(nodes).length === 0) {
   fail('на экране не найдено ни одной встречи (meeting-…). Снимок и разметка — no-meetings.png/.xml: пришлите их.');
 }
 
-// The open card is the tallest meeting row; the one to tap is the next.
-const pickTarget = (ns) => {
-  const ms = meetings(ns);
-  const open = ms.reduce((a, b) => (b.h > a.h ? b : a), ms[0]);
-  const i = ms.indexOf(open);
-  return { open, next: ms[i + 1] };
-};
-let { open, next } = pickTarget(nodes);
-if (!next) fail(`под открытой встречей (${open.id}) нет следующей плашки на экране.`);
+// The open card is the tallest meeting row; the one to tap is the meeting
+// right after it. On a tall phone the open card can fill the whole screen
+// (S24 Ultra, 25 September: the next one was below the edge), so the next is
+// found by its id — the ids sort in date order, weekday before weekend —
+// scrolling down until it shows.
+const ms0 = meetings(nodes);
+const open = ms0.reduce((a, b) => (b.h > a.h ? b : a), ms0[0]);
 const openId = open.id;
-const targetId = next.id;
-say(`Открыта: ${openId} (высота ${open.h}), нажимаю: ${targetId}`);
+const after0 = (ns) => meetings(ns).map((n) => n.id).filter((id) => id > openId).sort()[0];
+let targetId = after0(nodes);
+const x = Math.round(W / 2);
+const swipe = async (d) => {
+  // Slow and short: a flick would keep the list gliding after the finger lifts.
+  const y0 = Math.round(H * 0.55 + d / 2);
+  adb(['shell', 'input', 'swipe', String(x), String(y0), String(x), String(Math.round(y0 - d)), '900']);
+  await sleep(1200);
+  nodes = dump();
+};
+for (let i = 0; !targetId && i < 8; i++) {
+  await swipe(H * 0.35);
+  targetId = after0(nodes);
+}
+if (!targetId) {
+  dump('no-next');
+  shot('no-next');
+  fail(`под открытой встречей (${openId}) не нашлось следующей и после прокрутки. Снимок — no-next.png.`);
+}
+say(`Открыта: ${openId}, нажимаю следующую: ${targetId}`);
 
-// Bring the target to the middle of the screen: slow swipes, no fling.
+// Bring the target to the middle of the screen.
 const want = Math.round(H * 0.45);
 for (let i = 0; i < 8; i++) {
   const t = find(nodes, targetId);
   if (t && Math.abs(t.y1 - want) < H * 0.08) break;
   const from = t ? t.y1 : H * 0.8;
-  const d = Math.max(-H * 0.4, Math.min(H * 0.4, from - want));
-  const x = Math.round(W / 2);
-  const y0 = Math.round(H * 0.55 + d / 2);
-  adb(['shell', 'input', 'swipe', String(x), String(y0), String(x), String(Math.round(y0 - d)), '900']);
-  await sleep(1200);
-  nodes = dump();
+  await swipe(Math.max(-H * 0.4, Math.min(H * 0.4, from - want)));
 }
 nodes = dump('before');
 const before = find(nodes, targetId);
