@@ -11,7 +11,8 @@
  *
  * ЧТО ОН МЕНЯЕТ В ЛОКАЛЬНОЙ БАЗЕ — и возвращает:
  *  - «Время и место встреч»: сохраняет версию расписания С ТЕМИ ЖЕ днями,
- *    временем и адресом, что действуют, датой сегодня — и тут же удаляет её.
+ *    временем и адресом, что действуют, с 1-го числа этого месяца будущего
+ *    года — и тут же удаляет её (удалить можно только будущую).
  *  - язык админа: переключает на немецкий и обратно на русский.
  * Ничего не назначает и не снимает: окно назначения открывается и
  * закрывается. Боевую базу не трогает никогда — адрес только localhost.
@@ -420,36 +421,61 @@ let memorialWeek = null; // found as the admin, reused by the others
     return `«${before}» → «${after}», отменено`;
   });
 
-  await check(page, 'A15', '«Время и место встреч»: сохранить версию и удалить её', async () => {
+  // 25 September: only a version that has not started may be deleted — past
+  // weeks are counted by the one in force then. So the check saves a version
+  // starting on the 1st of this month NEXT year, deletes it, and makes sure
+  // the version in force has no trash at all.
+  await check(page, 'A15', '«Время и место встреч»: будущую версию можно удалить, действующую — нет', async () => {
     await go(page, '/publishers/meeting-settings', 'Сейчас действует');
-    // Today's version, in the words the history uses («с 24 сентября 2026 г.»).
-    const today = new Date().toLocaleDateString('ru', { day: 'numeric', month: 'long', year: 'numeric' });
-    const todayRow = () => page.getByText(new RegExp('^с ' + today.replace(/\./g, '\\.') + '$'));
-    // A version dated today already there would be overwritten by the save
-    // and then deleted by this check — so then nothing is touched at all.
-    if (await todayRow().count()) return 'версия с сегодняшней датой уже есть — сохранение и удаление пропущены, ничего не менялось';
-    const count = () => page.getByLabel('Удалить версию?', { exact: true }).count();
-    const before = await count();
+    const trash = () => page.getByLabel('Удалить версию?', { exact: true });
+    // Every trash belongs to a version marked «Ещё не действует», and none
+    // to the one in force.
+    const upcoming = () => page.getByText('Ещё не действует', { exact: true });
+    const trashMatches = async () => {
+      const [t, u] = [await trash().count(), await upcoming().count()];
+      if (t !== u) throw new Error(`корзинок ${t}, а будущих версий ${u} — корзинка есть у действующей или прошлой`);
+    };
+    await see(page, 'Действует сейчас');
+    await trashMatches();
+    await see(page, /^Удалить можно только версию, которая ещё не начала действовать/);
+    const now = new Date();
+    const future = new Date(now.getFullYear() + 1, now.getMonth(), 1);
+    const words = future.toLocaleDateString('ru', { day: 'numeric', month: 'long', year: 'numeric' });
+    const futureRow = () => page.getByText(new RegExp('^с ' + words.replace(/\./g, '\\.') + '$'));
+    // A real version on that date would be overwritten by the save and then
+    // deleted by this check — so then nothing is touched at all.
+    if (await futureRow().count()) return `версия с ${words} уже есть — сохранение и удаление пропущены, ничего не менялось`;
+    const before = await trash().count();
     await tap(page, 'Изменить расписание');
     await see(page, 'Действует с');
+    const dialog = page.locator('[role="dialog"]').last();
+    // The date field shows today in words; the calendar opens on this month.
+    await dialog.getByText(/^\d{1,2} [а-яё]+ \d{4} г\.$/).first().click();
+    await page.waitForTimeout(600);
+    await page.getByText(new RegExp(`^[а-яё]+ ${now.getFullYear()}$`)).last().click();
+    await page.getByText(new RegExp(`^${future.getFullYear()}$`)).last().click();
+    await page.getByText(/^1$/).last().click();
+    await page.waitForTimeout(600);
+    await see(page, new RegExp('^' + words.replace(/\./g, '\\.') + '$'));
     await snap(page, 'A15-окно');
-    // Same days, time and address as in force; the date is today's.
-    await page.locator('[role="dialog"]').last().getByText(/^Сохранить$/).first().click();
-    await todayRow().first().waitFor({ timeout: 15000 }).catch(() => {
-      throw new Error('новая версия с сегодняшней датой не появилась в истории');
+    await dialog.getByText(/^Сохранить$/).first().click();
+    await futureRow().first().waitFor({ timeout: 15000 }).catch(() => {
+      throw new Error(`версия с ${words} не появилась в истории`);
     });
     await page.waitForTimeout(1000);
-    const mid = await count();
+    const row = futureRow().first().locator('xpath=ancestor::*[.//*[@aria-label="Удалить версию?"]][1]');
+    if (!(await row.getByText('Ещё не действует', { exact: true }).count()))
+      throw new Error('у будущей версии нет пометки «Ещё не действует»');
+    const mid = await trash().count();
     await snap(page, 'A15-добавлена');
-    // Delete exactly that row: its own trash, found from its own date line.
-    const row = todayRow().first().locator('xpath=ancestor::*[.//*[@aria-label="Удалить версию?"]][1]');
     await row.getByLabel('Удалить версию?', { exact: true }).first().click();
     await page.getByText(/^Удалить$/).last().click();
     await page.waitForTimeout(2000);
-    if (await todayRow().count()) throw new Error('версия с сегодняшней датой осталась — УДАЛИ ЕЁ РУКАМИ');
-    const after = await count();
-    if (after !== before) throw new Error(`версий было ${before}, после удаления ${after} — ПРОВЕРЬ ИСТОРИЮ РУКАМИ`);
-    return `версий было ${before}, стало ${mid}, снова ${after}`;
+    if (await futureRow().count()) throw new Error(`версия с ${words} осталась — УДАЛИ ЕЁ РУКАМИ`);
+    const after = await trash().count();
+    await trashMatches();
+    if (after !== before) throw new Error(`корзинок было ${before}, после удаления ${after} — ПРОВЕРЬ ИСТОРИЮ РУКАМИ`);
+    return `с ${words}: корзинок было ${before}, стало ${mid}, снова ${after}; у действующей корзинки нет`;
   });
 
   await check(page, 'A16', '«Время и место встреч»: окно зала, «Отмена»', async () => {

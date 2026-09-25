@@ -282,6 +282,13 @@ export default function MeetingPlaceScreen() {
           <View style={styles.card}>
             {versions.map((v, i) => {
               const now = v.id === effective?.id;
+              // Only a version that has not started may be deleted (agreed
+              // 25 September): past weeks are counted by the one in force
+              // then, and the server refuses the rest. «Not started» is read
+              // from the server's own answer — `effective` is the latest
+              // version on or before the congregation's today — so the two
+              // cannot disagree about which day it is.
+              const upcoming = !effective || v.effectiveFrom > effective.effectiveFrom;
               return (
                 <View key={v.id} style={[styles.row, i > 0 && styles.rowLine]}>
                   <View style={{ flex: 1 }}>
@@ -294,6 +301,11 @@ export default function MeetingPlaceScreen() {
                           <Text style={styles.nowBadgeText}>{t('meetingSettings.effectiveNow')}</Text>
                         </View>
                       ) : null}
+                      {upcoming ? (
+                        <View style={styles.upcomingBadge}>
+                          <Text style={styles.upcomingBadgeText}>{t('meetingSettings.upcoming')}</Text>
+                        </View>
+                      ) : null}
                     </View>
                     <Text style={styles.rowSubtitle}>
                       {t(`meetingSettings.dow.${v.midweekDow}`)} {v.midweekTime} · {t(`meetingSettings.dow.${v.weekendDow}`)}{' '}
@@ -301,20 +313,23 @@ export default function MeetingPlaceScreen() {
                       {v.address ? ` · ${v.address}` : ''}
                     </Text>
                   </View>
-                  <Pressable
-                    onPress={() => void confirmDeleteVersion(v)}
-                    hitSlop={8}
-                    style={styles.iconBtn}
-                    disabled={deleteMutation.isPending}
-                    accessibilityRole="button"
-                    accessibilityLabel={t('meetingSettings.deleteConfirm.title')}
-                  >
-                    <Ionicons name="trash-outline" size={19} color="#dc2626" />
-                  </Pressable>
+                  {upcoming ? (
+                    <Pressable
+                      onPress={() => void confirmDeleteVersion(v)}
+                      hitSlop={8}
+                      style={styles.iconBtn}
+                      disabled={deleteMutation.isPending}
+                      accessibilityRole="button"
+                      accessibilityLabel={t('meetingSettings.deleteConfirm.title')}
+                    >
+                      <Ionicons name="trash-outline" size={19} color="#dc2626" />
+                    </Pressable>
+                  ) : null}
                 </View>
               );
             })}
           </View>
+          {effective ? <Text style={styles.note}>{t('meetingSettings.historyLocked')}</Text> : null}
         </>
       ) : null}
 
@@ -654,6 +669,8 @@ const styles = StyleSheet.create({
   histHead: { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
   nowBadge: { backgroundColor: '#dcfce7', borderRadius: 9, paddingHorizontal: 7, paddingVertical: 1 },
   nowBadgeText: { fontSize: 11, color: '#15803d', fontFamily: 'Manrope_700Bold', fontWeight: '700' },
+  upcomingBadge: { backgroundColor: '#e0f2fe', borderRadius: 9, paddingHorizontal: 7, paddingVertical: 1 },
+  upcomingBadgeText: { fontSize: 11, color: '#0369a1', fontFamily: 'Manrope_700Bold', fontWeight: '700' },
   iconBtn: { padding: 6, marginLeft: 6 },
   fieldLabel: {
     fontSize: 11.5,

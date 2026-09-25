@@ -1447,6 +1447,8 @@
     "effectiveFromHint": "Beim Speichern wird ab diesem Datum eine neue Version erstellt. Vergangene Wochen behalten ihren bisherigen Tag und ihre Uhrzeit.",
     "history": "Änderungsverlauf",
     "effectiveNow": "Aktuell gültig",
+    "upcoming": "Noch nicht gültig",
+    "historyLocked": "Löschen lässt sich nur eine Version, die noch nicht gilt. Nach der aktuellen und den früheren sind die vergangenen Wochen gezählt — einen Fehler darin korrigiert man, indem man den Plan mit demselben Datum erneut speichert.",
     "noVersions": "Noch keine Versionen",
     "errorTitle": "Fehler",
     "deleteConfirm": {

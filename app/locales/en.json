@@ -1447,6 +1447,8 @@
     "effectiveFromHint": "Saving creates a new schedule version from this date. Past weeks keep their previous day and time.",
     "history": "Change history",
     "effectiveNow": "In effect now",
+    "upcoming": "Not yet in force",
+    "historyLocked": "Only a version that has not started yet can be deleted. Past weeks are counted by the current and earlier versions — to correct one, save the schedule again with the same date.",
     "noVersions": "No schedule versions yet",
     "errorTitle": "Error",
     "deleteConfirm": {
