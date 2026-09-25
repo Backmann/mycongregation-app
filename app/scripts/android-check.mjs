@@ -274,11 +274,16 @@ say('— Случай 2: открытая встреча выше уже ушл�
   // First near the top of the list, then in small steps until the card above
   // is entirely out of sight. The target's top is then hidden too (the two
   // touch), so its place is read from the BOTTOM of its header.
-  await place(target, top + 80, 60);
+  await place(target, top + 200, 80);
+  // Just enough each time to take off what is still seen of the card above
+  // (its bottom edge down to the top of the list), plus the finger's slack.
+  // A swipe by the card's whole height would carry the target away too
+  // (25 September, S24: the header ended up above the list).
   for (let i = 0; i < 14; i++) {
     const u = find(nodes, upper);
-    if (!u || u.h <= 1) break;
-    await swipe(Math.round(Math.max(60, u.h + 40)));
+    const l = listOf(nodes);
+    if (!u || u.h <= 1 || !l) break;
+    await swipe(Math.max(60, Math.min(u.y2 - l.y1 + 40, Math.round(H * 0.2))));
   }
   list = listOf(nodes);
   const upSeen = find(nodes, upper);
