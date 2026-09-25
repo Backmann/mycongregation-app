@@ -1,6 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
-import { Platform, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import {
+  ActivityIndicator,
+  Animated,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+  useWindowDimensions,
+} from "react-native";
 import { useQueries, useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { Ionicons } from "@expo/vector-icons";
@@ -10,6 +20,7 @@ import {
   cleaningApi,
   dutiesApi,
   fieldServiceApi,
+  meApi,
   meetingSettingsApi,
   publishersApi,
   readinessApi,
@@ -250,6 +261,45 @@ export default function ProgrammeFeedScreen() {
     queryFn: () => serviceGroupsApi.list({}),
     staleTime: 30 * 60 * 1000,
   });
+
+  // THE FIRST SECOND WITHOUT JUMPS (25 September). The feed used to paint as
+  // each request came back — first the bare rows, then the names, «yours»,
+  // readiness — and kept «today» at the top by scrolling after every growth.
+  // On a phone that was a visible twitch: «today» at the top, pushed down,
+  // pulled back. Now the feed is laid out and placed on «today» out of sight,
+  // and shown once what it was waiting for has arrived — or after a few
+  // seconds regardless, so a slow or failed request never keeps it hidden.
+  // Only the first landing is veiled; «show more» later appends in view.
+  // The same key and request as useMyPublisher: one fetch, read in two places.
+  const meQ = useQuery({
+    queryKey: ["me-publisher"],
+    queryFn: () => meApi.publisher(),
+    staleTime: 5 * 60 * 1000,
+  });
+  const waitingFor = [
+    ...assignmentsQs,
+    ...dutiesQs,
+    ...cleaningQs,
+    ...fieldQs,
+    ...(canSeeReadiness ? readinessQs : []),
+    eventsQ,
+    settingsQ,
+    publishersQ,
+    groupsQ,
+    meQ,
+  ].some((q) => q.isPending && q.fetchStatus !== "idle");
+  const [shown, setShown] = useState(false);
+  const fade = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    if (shown) return;
+    // One beat after the last answer, so the placement on «today» (made in
+    // onLayout) is done before anyone sees the list.
+    const t = setTimeout(() => setShown(true), waitingFor ? 5000 : 80);
+    return () => clearTimeout(t);
+  }, [waitingFor, shown]);
+  useEffect(() => {
+    if (shown) Animated.timing(fade, { toValue: 1, duration: 160, useNativeDriver: true }).start();
+  }, [shown, fade]);
 
   const allAssignments = assignmentsQs.flatMap((q) => q.data?.data ?? []);
   const allReadiness = readinessQs.flatMap((q) => q.data ?? []);
@@ -678,15 +728,24 @@ export default function ProgrammeFeedScreen() {
   );
 
   const listScroll = (
-    <ScrollView
-      ref={scrollRef}
-      style={wide ? styles.listPane : styles.screen}
-      contentContainerStyle={wide ? styles.listContent : styles.content}
-      onScrollBeginDrag={release}
-      onContentSizeChange={anchor}
-    >
-      {list}
-    </ScrollView>
+    <View style={wide ? styles.listPane : styles.screen}>
+      <Animated.View style={[styles.fill, { opacity: fade }]}>
+        <ScrollView
+          ref={scrollRef}
+          style={styles.fill}
+          contentContainerStyle={wide ? styles.listContent : styles.content}
+          onScrollBeginDrag={release}
+          onContentSizeChange={anchor}
+        >
+          {list}
+        </ScrollView>
+      </Animated.View>
+      {!shown ? (
+        <View style={styles.veil} pointerEvents="none">
+          <ActivityIndicator size="large" color="#94a3b8" />
+        </View>
+      ) : null}
+    </View>
   );
   if (!wide) return listScroll;
 
@@ -1288,6 +1347,8 @@ function EditLink({ label, onPress }: { label: string; onPress: () => void }) {
 const styles = StyleSheet.create({
   windowsIndent: { marginTop: -2, marginBottom: 8 },
   screen: { flex: 1, backgroundColor: "#ffffff" },
+  fill: { flex: 1 },
+  veil: { ...StyleSheet.absoluteFillObject, alignItems: "center", paddingTop: 96 },
   content: { paddingBottom: 40, alignItems: "center" },
   column: { width: "100%", maxWidth: 720 },
   pressed: { opacity: 0.7 },

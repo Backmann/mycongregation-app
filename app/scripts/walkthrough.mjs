@@ -535,6 +535,35 @@ let memorialWeek = null; // found as the admin, reused by the others
     await back(page);
     await atPath(page, '/home');
   });
+  // 25 September: an arrow used to empty the screen to a spinner and refill it
+  // piece by piece. Now the week being left stays, dimmed, until the next one
+  // is in hand — so the meeting cards must never disappear, and must end up
+  // where they were.
+  await check(page, 'A22', 'Составление: стрелки недель — карточки встреч не пропадают и не прыгают', async () => {
+    await go(page, `/schedule/edit?week=${mondayPlus(0)}`, /^Встреча в (будний|выходной) день$/);
+    await page.waitForTimeout(1500);
+    const cardsTop = () =>
+      page.evaluate(() => {
+        const el = [...document.querySelectorAll('div')].find(
+          (d) => d.childElementCount === 0 && /^Встреча в (будний|выходной) день$/.test(d.textContent || ''),
+        );
+        return el && el.offsetParent !== null ? Math.round(el.getBoundingClientRect().top) : null;
+      });
+    const before = await cardsTop();
+    for (const label of ['Следующая неделя', 'Предыдущая неделя']) {
+      await page.getByLabel(label, { exact: true }).first().click();
+      const seen = new Set();
+      for (let i = 0; i < 30; i++) {
+        seen.add(await cardsTop());
+        await page.waitForTimeout(50);
+      }
+      if (seen.has(null)) throw new Error(`после «${label}» карточки встреч пропадали`);
+      if (seen.size > 1) throw new Error(`после «${label}» карточки прыгали: ${[...seen].join(' → ')}`);
+    }
+    const after = await cardsTop();
+    if (after !== before) throw new Error(`карточки сдвинулись: ${before} → ${after}`);
+    return `на месте, ${before} точек от верха`;
+  });
 
   await keep();
   await ctx.close();

@@ -1068,7 +1068,9 @@
     },
     "weekNav": {
       "thisWeek": "Эта неделя",
-      "jumpToToday": "К текущей неделе"
+      "jumpToToday": "К текущей неделе",
+      "previous": "Предыдущая неделя",
+      "next": "Следующая неделя"
     },
     "subsection": {
       "opening": "Вступление",

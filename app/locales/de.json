@@ -1058,7 +1058,9 @@
     },
     "weekNav": {
       "thisWeek": "Diese Woche",
-      "jumpToToday": "Zur aktuellen Woche"
+      "jumpToToday": "Zur aktuellen Woche",
+      "previous": "Vorherige Woche",
+      "next": "Nächste Woche"
     },
     "subsection": {
       "opening": "Eröffnung",

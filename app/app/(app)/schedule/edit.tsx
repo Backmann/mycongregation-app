@@ -16,7 +16,12 @@ import {
   Text,
   View,
 } from "react-native";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { router, useLocalSearchParams } from "expo-router";
 import {
   Assignment,
@@ -136,6 +141,12 @@ export default function ScheduleIndexScreen() {
   };
   const nextWeekISO = formatDateISO(addWeeks(weekStart, 1));
 
+  // SWITCHING WEEKS WITHOUT THE PAGE JUMPING (25 September). A new week used
+  // to empty the screen to a spinner and refill it a second later, piece by
+  // piece — Lionel saw the layout twitch on every arrow. Now the week being
+  // left stays on screen, dimmed and untouchable, until the new one has
+  // arrived; and the weeks on either side are fetched ahead, so an arrow
+  // usually lands on data already in hand.
   const assignmentsQuery = useQuery({
     queryKey: ["assignments", weekStartISO],
     queryFn: () =>
@@ -143,7 +154,11 @@ export default function ScheduleIndexScreen() {
         weekStart: weekStartISO,
         weekEnd: nextWeekISO,
       }),
+    placeholderData: keepPreviousData,
   });
+  // The previous week's rows under the new week's date: shown only dimmed,
+  // and not pressable — an edit must never land on a week not on screen.
+  const showingPreviousWeek = assignmentsQuery.isPlaceholderData;
 
   const specialEventsQuery = useQuery({
     queryKey: ["special-events", "all"],
@@ -282,7 +297,26 @@ export default function ScheduleIndexScreen() {
     queryKey: ["readiness", weekStartISO],
     queryFn: () => readinessApi.list(weekStartISO, nextWeekISO),
     enabled: canSeeReadiness,
+    placeholderData: keepPreviousData,
   });
+  // The neighbouring weeks, fetched ahead with the very same keys and
+  // requests as above, so the next arrow finds them in the cache.
+  useEffect(() => {
+    for (const d of [addWeeks(weekStart, -1), addWeeks(weekStart, 1)]) {
+      const from = formatDateISO(d);
+      const to = formatDateISO(addWeeks(d, 1));
+      void queryClient.prefetchQuery({
+        queryKey: ["assignments", from],
+        queryFn: () => assignmentsApi.list({ weekStart: from, weekEnd: to }),
+      });
+      if (canSeeReadiness)
+        void queryClient.prefetchQuery({
+          queryKey: ["readiness", from],
+          queryFn: () => readinessApi.list(from, to),
+        });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [weekStartISO, canSeeReadiness]);
 
   // Read only, from the shared module: the Memorial block lists who serves
   // that evening, and the hospitality zone weighs helpers' load. Editing duties
@@ -292,6 +326,7 @@ export default function ScheduleIndexScreen() {
   const fieldServiceQuery = useQuery({
     queryKey: ["field-service", weekStartISO],
     queryFn: () => fieldServiceApi.list({ weekStart: weekStartISO }),
+    placeholderData: keepPreviousData,
   });
   const fieldServiceMeetings = fieldServiceQuery.data ?? [];
   // During a circuit-overseer visit the week's field service is planned in the
@@ -1061,14 +1096,23 @@ export default function ScheduleIndexScreen() {
             </View>
           )}
 
-          {assignmentsQuery.isLoading ? (
+          {/* The meeting's date, time and address come from the settings, the
+              names from the roster: drawn before those arrive, each card got
+              its date line a moment later and its title slid up by a line.
+              Wait for all three once — later weeks find them in the cache. */}
+          {assignmentsQuery.isLoading ||
+          meetingSettingsQuery.isPending ||
+          publishersQuery.isPending ? (
             <ActivityIndicator size="large" style={{ marginTop: 32 }} />
           ) : assignmentsQuery.isError ? (
             // Without this the week simply looked empty — as if nothing had been
             // scheduled — when in fact the data never arrived.
             <LoadError onRetry={() => assignmentsQuery.refetch()} />
           ) : (
-            <>
+            <View
+              style={showingPreviousWeek ? styles.previousWeek : undefined}
+              pointerEvents={showingPreviousWeek ? "none" : "auto"}
+            >
               <SpecialEventsWeekBanner events={weekEvents} />
               {congressThisWeek && (
                 <CongressWeekBanner event={congressThisWeek} />
@@ -1402,7 +1446,7 @@ export default function ScheduleIndexScreen() {
                   </Text>
                 </View>
               )}
-            </>
+            </View>
           )}
         </ScrollView>
 
@@ -1963,6 +2007,7 @@ function AssignmentRow({
 }
 
 const styles = StyleSheet.create({
+  previousWeek: { opacity: 0.45 },
   movedDoors: { gap: 8, marginTop: 12 },
   movedDoor: {
     flexDirection: "row",

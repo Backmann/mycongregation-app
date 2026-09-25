@@ -35,6 +35,8 @@ export function WeekNavigator({
         style={({ pressed }) => [styles.arrow, pressed && styles.arrowPressed]}
         onPress={() => onChange(addWeeks(weekStart, -1))}
         hitSlop={8}
+        accessibilityRole="button"
+        accessibilityLabel={t('schedule.weekNav.previous')}
       >
         <Ionicons name="chevron-back" size={20} color="#0ea5e9" />
       </Pressable>
@@ -63,6 +65,8 @@ export function WeekNavigator({
         style={({ pressed }) => [styles.arrow, pressed && styles.arrowPressed]}
         onPress={() => onChange(addWeeks(weekStart, 1))}
         hitSlop={8}
+        accessibilityRole="button"
+        accessibilityLabel={t('schedule.weekNav.next')}
       >
         <Ionicons name="chevron-forward" size={20} color="#0ea5e9" />
       </Pressable>
