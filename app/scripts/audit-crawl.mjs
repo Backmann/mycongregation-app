@@ -56,13 +56,49 @@ const ROUTES = [
   // old addresses that must forward
   '/profile/journal', '/profile/halls', '/profile/meeting-settings', '/schedule/feed',
 ];
-// From a list screen, the first row that opens a card: [list, row text pattern].
-const DYNAMIC = [
-  ['/publishers/list', 'publisher card'],
-  ['/special-events', 'event'],
-  ['/service-groups', 'group'],
-  ['/talk-coordinator/speakers', 'speaker'],
-];
+// Cards ([id] screens) are opened by their ids, taken from the lists the
+// admin's pass loads — clicking rows found nothing reliable (24 September).
+const ids = { publisher: [], event: [], group: [], speaker: [] };
+function collectIds(url, json) {
+  const rows = Array.isArray(json) ? json : Array.isArray(json?.items) ? json.items : Array.isArray(json?.data) ? json.data : null;
+  if (!rows) return;
+  const take = (key) => {
+    for (const r of rows) if (r && typeof r.id === 'string' && !ids[key].includes(r.id) && ids[key].length < 3) ids[key].push(r.id);
+  };
+  const path = url.replace(/^.*\/api/, '').split('?')[0];
+  if (path === '/publishers') take('publisher');
+  else if (path === '/special-events') take('event');
+  else if (path === '/service-groups') take('group');
+  else if (path === '/visiting-speakers') take('speaker');
+}
+/**
+ * Personal fields of a publisher that the server strips for anyone not
+ * entitled to them (server publisher-privacy.ts). For the ordinary publisher
+ * the audit reads every answer about people and reports any that still
+ * carries one — hidden on the screen is not the same as not sent.
+ */
+const PRIVATE = ['mobilePhone', 'email', 'address', 'notes', 'removedNote', 'birthDate', 'baptismDate',
+  'ministryStartDate', 'pioneerSince', 'removalReason', 'removedAt', 'isDeaf', 'isBlind', 'isImprisoned',
+  'contactsConfirmedAt', 'userId'];
+function leaks(json, selfUserId) {
+  const found = new Set();
+  const walk = (o) => {
+    if (!o || typeof o !== 'object') return;
+    if (Array.isArray(o)) return o.forEach(walk);
+    // A person's own row may carry their own details.
+    const isPerson = typeof o.id === 'string' && ('lastName' in o || 'firstName' in o);
+    if (isPerson && !(selfUserId && o.userId === selfUserId)) {
+      for (const f of PRIVATE) {
+        const v = o[f];
+        if (v !== undefined && v !== null && v !== '' && v !== false) found.add(f);
+      }
+    }
+    Object.values(o).forEach(walk);
+  };
+  walk(json);
+  return [...found];
+}
+
 
 const now = new Date();
 const pad = (n) => String(n).padStart(2, '0');
@@ -164,6 +200,30 @@ async function visit(page, role, path, name) {
     const u = r.url();
     if (!u.includes('/api/')) return;
     const s = r.status();
+    if (s === 200 && r.request().method() === 'GET') {
+      const path = u.replace(/^.*\/api/, '').split('?')[0];
+      // Who is looking: their own card may carry their own details.
+      if (path === '/auth/me') {
+        r.json()
+          .then((me) => {
+            // /auth/me carries the account id; one's own card is the row whose
+            // userId it is (a field sent only on one's own row).
+            page.__selfUserId = me?.id ?? page.__selfUserId;
+          })
+          .catch(() => {});
+      }
+      if (role === 'admin' || (role === 'publisher' && /^\/(publishers|service-groups|special-events|visiting-speakers)(\/|$)/.test(path))) {
+        r.json()
+          .then((json) => {
+            if (role === 'admin') collectIds(u, json);
+            else {
+              const f = leaks(json, page.__selfUserId);
+              if (f.length) errors.push({ kind: 'leak', text: `${path}: возвещателю пришли личные поля чужих людей — ${f.join(', ')}` });
+            }
+          })
+          .catch(() => {});
+      }
+    }
     // 401 on /auth/me before a refresh is the normal wake-up (see infrastructure notes).
     if (s >= 400 && !(s === 401 && /\/auth\/(me|refresh)/.test(u))) errors.push({ kind: 'http', status: s, method: r.request().method(), url: u.replace(/^.*\/api/, '/api') });
   };
@@ -226,38 +286,20 @@ for (const [role, email] of ROLES) {
     const flag = r.broken || r.errors.length ? '❗' : '·';
     console.log(`${flag} ${path}${r.landed !== path ? ' → ' + r.landed : ''}${r.broken ? ' «' + r.broken + '»' : ''}${r.errors.length ? ' — ' + r.errors.map((e) => e.status || e.kind).join(',') : ''}`);
   }
-  // Cards from their lists: the first row that leads somewhere deeper.
-  for (const [list, what] of DYNAMIC) {
-    try {
-      await s.page.goto(`${BASE}${list}`);
-      await answerContactsCheck(s.page);
-      await s.page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
-      const before = new URL(s.page.url()).pathname;
-      const rows = s.page.locator('[role="button"], a').filter({ visible: true });
-      const n = await rows.count();
-      let opened = null;
-      for (let i = 0; i < Math.min(n, 40) && !opened; i++) {
-        const el = rows.nth(i);
-        const box = await el.boundingBox().catch(() => null);
-        if (!box || box.y < 70 || box.height < 40) continue; // header buttons, chips
-        await el.click({ timeout: 3000 }).catch(() => {});
-        await s.page.waitForTimeout(900);
-        const now = new URL(s.page.url()).pathname;
-        if (now !== before && now.startsWith(list.split('/').slice(0, 2).join('/'))) opened = now;
-        else if (now !== before) await s.page.goBack().catch(() => {});
-      }
-      if (!opened) {
-        console.log(`· ${what}: в списке ${list} не нашёл строки, ведущей в карточку`);
-        continue;
-      }
-      const r = await visit(s.page, role, opened, `card_${what.replace(/\s/g, '-')}`);
-      r.from = list;
-      all.push(r);
-      const flag = r.broken || r.errors.length ? '❗' : '·';
-      console.log(`${flag} ${opened} (${what})${r.broken ? ' «' + r.broken + '»' : ''}${r.errors.length ? ' — ' + r.errors.map((e) => e.status || e.kind).join(',') : ''}`);
-    } catch (e) {
-      console.log(`· ${what}: ${String(e.message || e).slice(0, 120)}`);
-    }
+  // Cards, by id (collected on the admin's pass).
+  const cardPaths = [
+    ...ids.publisher.slice(1, 2).map((id) => [`/publishers/${id}`, 'карточка-возвещателя']),
+    ...ids.event.slice(0, 1).map((id) => [`/special-events/${id}`, 'карточка-события']),
+    ...ids.group.slice(0, 1).map((id) => [`/service-groups/${id}`, 'карточка-группы']),
+    ...ids.speaker.slice(0, 1).map((id) => [`/talk-coordinator/speaker-profile/${id}`, 'карточка-докладчика']),
+  ];
+  if (!cardPaths.length) console.log('· карточки: номеров нет — они собираются на проходе админа (запусти без ONLY или с ONLY=admin,…)');
+  for (const [path, name] of cardPaths) {
+    const r = await visit(s.page, role, path, name);
+    r.from = 'card';
+    all.push(r);
+    const flag = r.broken || r.errors.length ? '❗' : '·';
+    console.log(`${flag} ${path} (${name})${r.broken ? ' «' + r.broken + '»' : ''}${r.errors.length ? ' — ' + r.errors.map((e) => e.status || e.kind).join(',') : ''}`);
   }
   await s.ctx.storageState({ path: s.file }).catch(() => {});
   await s.ctx.close();
