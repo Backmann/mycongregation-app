@@ -83,16 +83,26 @@ export function PrayerLine({
   );
 }
 
-/** Who takes a part: «You» as a mark, a name, or a plain «not assigned». */
+/** The second person of a part — an assistant or a reader — and whether it is you. */
+export type Helper = { label: string; name?: string | null; mine?: boolean };
+
+/**
+ * Who takes a part: «You» as a mark, a name, or a plain «not assigned»; under
+ * it, quieter, the one who helps («Помощник: …»). Each line answers for its
+ * own person — «You» on the helper's line when you help, never in the place
+ * of the one who takes the part.
+ */
 function Person({
   name,
   extra,
+  helper,
   mine,
   left,
   tone = INK,
 }: {
   name?: string | null;
   extra?: string | null;
+  helper?: Helper | null;
   mine?: boolean;
   /** Under the title on a narrow screen, so read from the left. */
   left?: boolean;
@@ -101,18 +111,28 @@ function Person({
 }) {
   const { t } = useTranslation();
   const align = left ? styles.alignLeft : null;
-  if (mine)
-    return (
-      <View style={left ? styles.personColLeft : styles.personCol}>
-        <Text style={styles.you}>{t('feed.you')}</Text>
-        {extra ? <Text style={[styles.personExtra, align]}>{extra}</Text> : null}
-      </View>
-    );
-  if (!name) return <Text style={[styles.nobody, align]}>{t('feed.unassigned')}</Text>;
+  const col = left ? styles.personColLeft : styles.personCol;
+  const main = mine ? (
+    <Text style={styles.you}>{t('feed.you')}</Text>
+  ) : name ? (
+    <Text style={[styles.person, { color: tone }, align]}>{name}</Text>
+  ) : (
+    <Text style={[styles.nobody, align]}>{t('feed.unassigned')}</Text>
+  );
   return (
-    <View style={left ? styles.personColLeft : styles.personCol}>
-      <Text style={[styles.person, { color: tone }, align]}>{name}</Text>
+    <View style={col}>
+      {main}
       {extra ? <Text style={[styles.personExtra, align]}>{extra}</Text> : null}
+      {helper ? (
+        <View style={[styles.helperRow, left ? null : styles.helperRowRight]}>
+          <Text style={styles.helperLabel}>{`${helper.label}:`}</Text>
+          {helper.mine ? (
+            <Text style={styles.youSmall}>{t('feed.you')}</Text>
+          ) : (
+            <Text style={[styles.helperName, align]}>{helper.name ?? t('feed.unassigned')}</Text>
+          )}
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -143,6 +163,7 @@ export function PartLine({
   subtitle,
   name,
   extra,
+  helper,
   mine,
   tone,
 }: {
@@ -153,6 +174,7 @@ export function PartLine({
   subtitle?: string | null;
   name?: string | null;
   extra?: string | null;
+  helper?: Helper | null;
   mine?: boolean;
   tone?: string;
 }) {
@@ -165,7 +187,7 @@ export function PartLine({
           <Text style={styles.partTitle}>{title}</Text>
           {subtitle ? <Text style={styles.partSub}>{subtitle}</Text> : null}
           <View style={styles.stackedPerson}>
-            <Person name={name} extra={extra} mine={mine} tone={tone} left />
+            <Person name={name} extra={extra} helper={helper} mine={mine} tone={tone} left />
           </View>
         </View>
       </View>
@@ -179,7 +201,7 @@ export function PartLine({
         {subtitle ? <Text style={styles.partSub}>{subtitle}</Text> : null}
       </View>
       <View style={styles.personSlot}>
-        <Person name={name} extra={extra} mine={mine} tone={tone} />
+        <Person name={name} extra={extra} helper={helper} mine={mine} tone={tone} />
       </View>
     </View>
   );
@@ -301,6 +323,20 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
   },
   nobody: { fontSize: 15, fontFamily: FONT.medium, color: SOFT, textAlign: 'right' },
+  helperRow: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 6, marginTop: 4 },
+  helperRowRight: { justifyContent: 'flex-end' },
+  helperLabel: { fontSize: 14, fontFamily: FONT.medium, color: SOFT },
+  helperName: { fontSize: 15, fontFamily: FONT.semibold, color: MUTE },
+  youSmall: {
+    fontSize: 13,
+    fontFamily: FONT.extrabold,
+    color: ACC,
+    backgroundColor: ACC_BG,
+    borderRadius: 6,
+    overflow: 'hidden',
+    paddingHorizontal: 7,
+    paddingVertical: 1,
+  },
   nobodyLeft: { fontSize: 15, fontFamily: FONT.medium, color: SOFT },
   pairRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', gap: 12, paddingVertical: 8 },
   pairLabel: { fontSize: 14, fontFamily: FONT.semibold, color: SOFT, flexShrink: 1 },

@@ -3425,7 +3425,6 @@
     "dutiesShort": "Dienste {{assigned}} von {{total}}",
     "speaker": "Redner",
     "lead": "Leiter",
-    "readerName": "Leser {{name}}",
     "minutes": "{{time}} · {{n}} Min.",
     "editProgramme": "Programm bearbeiten",
     "editDuties": "Dienste bearbeiten",
@@ -3463,7 +3462,10 @@
     "pastHide": "Ausblenden",
     "speakerUnassigned": "noch kein Redner",
     "minutesOnly": "{{n}} Min.",
-    "youLeadShort": "leiten um {{time}}"
+    "youLeadShort": "leiten um {{time}}",
+    "assistantLabel": "Gehilfe",
+    "readerLabel": "Leser",
+    "mineAsAssistant": "{{part}} — als Gehilfe"
   },
   "conduct": {
     "title": "Zusammenkunft leiten",

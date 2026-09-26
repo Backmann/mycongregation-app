@@ -1332,7 +1332,11 @@ function Meeting({
   // What is yours — parts (not chairing: the line above already says it) and duties.
   const myParts = parts
     .filter((p) => !CHAIR_KEYS.has(p.partKey) && (p.publisherId === me || p.assistantPublisherId === me))
-    .map((p) => (ROLE_KEYS.has(p.partKey) ? getPartLabel(p.partKey) : partDisplay(p.partKey, p.partTitle).label));
+    .map((p) => {
+      const label = ROLE_KEYS.has(p.partKey) ? getPartLabel(p.partKey) : partDisplay(p.partKey, p.partTitle).label;
+      // Helping is not taking the part: say so, as Home does.
+      return p.publisherId !== me ? t("feed.mineAsAssistant", { part: label }) : label;
+    });
   const myDuties = duties.filter((d) => d.publisherId === me).map(dutyLabel);
   // Case as the app writes it. Lowering the first letter would be wrong for a
   // topic that starts with a name («Иегова поддерживает…»).
@@ -1582,12 +1586,18 @@ function Programme({
     } else {
       const readerKey = READER_OF[p.partKey];
       const reader = readerKey ? parts.find((x) => x.partKey === readerKey) : undefined;
-      const readerName = who(reader);
-      const extra = p.assistantPublisherId
-        ? name(p.assistantPublisherId)
-        : readerName
-          ? t("feed.readerName", { name: readerName })
-          : whoFrom(p);
+      // The second person of a part — the assistant, or the reader of the
+      // Bible study — on a line of his own, NAMED AS WHAT HE IS. «Вы» marks
+      // the line that is yours and no other: an assistant looking at the
+      // sheet once saw «Вы» in the student's place and his own name under it
+      // as though he were the partner (25 September, Lionel: the part is
+      // Irina Benz's, Dina Backmann helps — the sheet said «Вы · Бакманн
+      // Дина»).
+      const helper = p.assistantPublisherId
+        ? { label: t("feed.assistantLabel"), name: name(p.assistantPublisherId), mine: !!me && p.assistantPublisherId === me }
+        : reader
+          ? { label: t("feed.readerLabel"), name: who(reader), mine: !!me && reader.publisherId === me }
+          : null;
       out.push(
         <PartLine
           key={p.id}
@@ -1595,8 +1605,9 @@ function Programme({
           minutes={minutes}
           title={shown.label}
           name={person}
-          extra={extra}
-          mine={mine || (!!me && p.assistantPublisherId === me)}
+          extra={helper ? null : whoFrom(p)}
+          helper={helper}
+          mine={mine}
           tone={tone}
         />,
       );

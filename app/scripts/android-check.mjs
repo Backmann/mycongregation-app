@@ -93,10 +93,16 @@ function dump(name) {
 const meetings = (nodes) =>
   nodes.filter((n) => /^meeting-\d{4}-\d{2}-\d{2}-/.test(n.id)).sort((a, b) => a.y1 - b.y1);
 const find = (nodes, id) => nodes.find((n) => n.id === id);
-// The header of a meeting row: the topmost pressable inside it.
+// The header of a meeting row: the topmost pressable inside it that is on
+// screen. A pressable scrolled out of sight is still in the dump, with its
+// bounds turned inside out (on the S24, 25 September: the «Править
+// программу» of the card above as [681][609]) — it must not be taken.
 const headerOf = (nodes, row) =>
   nodes
-    .filter((n) => n.clickable && n.y1 >= row.y1 && n.y2 <= row.y2 && n.x1 >= row.x1 && n.x2 <= row.x2)
+    .filter(
+      (n) =>
+        n.clickable && n.h > 0 && n.x2 > n.x1 && n.y1 >= row.y1 && n.y2 <= row.y2 && n.x1 >= row.x1 && n.x2 <= row.x2,
+    )
     .sort((a, b) => a.y1 - b.y1)[0];
 // The feed's list: the tallest vertical scroller on screen.
 const listOf = (nodes) =>

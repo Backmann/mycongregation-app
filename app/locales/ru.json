@@ -3455,7 +3455,6 @@
     "dutiesShort": "обязанности {{assigned}} из {{total}}",
     "speaker": "Докладчик",
     "lead": "Ведущий",
-    "readerName": "чтец {{name}}",
     "minutes": "{{time}} · {{n}} мин",
     "editProgramme": "Править программу",
     "editDuties": "Править обязанности",
@@ -3495,7 +3494,10 @@
     "pastHide": "Скрыть",
     "speakerUnassigned": "докладчик не назначен",
     "minutesOnly": "{{n}} мин",
-    "youLeadShort": "ведёте в {{time}}"
+    "youLeadShort": "ведёте в {{time}}",
+    "assistantLabel": "Помощник",
+    "readerLabel": "Чтец",
+    "mineAsAssistant": "{{part}} — помощник"
   },
   "conduct": {
     "title": "Ведение встречи",

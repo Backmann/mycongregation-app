@@ -3425,7 +3425,6 @@
     "dutiesShort": "duties {{assigned}} of {{total}}",
     "speaker": "Speaker",
     "lead": "Conductor",
-    "readerName": "reader {{name}}",
     "minutes": "{{time}} · {{n}} min",
     "editProgramme": "Edit programme",
     "editDuties": "Edit duties",
@@ -3463,7 +3462,10 @@
     "pastHide": "Hide",
     "speakerUnassigned": "no speaker yet",
     "minutesOnly": "{{n}} min",
-    "youLeadShort": "lead at {{time}}"
+    "youLeadShort": "lead at {{time}}",
+    "assistantLabel": "Assistant",
+    "readerLabel": "Reader",
+    "mineAsAssistant": "{{part}} — assistant"
   },
   "conduct": {
     "title": "Conducting the meeting",
