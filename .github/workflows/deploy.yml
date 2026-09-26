@@ -98,6 +98,16 @@ jobs:
             exit 1
           fi
           echo "Bundle verification passed"
+      # What is live, said by the site itself: the commit, and the fingerprint
+      # of the app's source — the same number the walkthrough prints, so a
+      # green run on a laptop can be matched to what the site serves.
+      - name: Stamp the build
+        working-directory: app
+        run: |
+          APP_HASH="$(node scripts/code-fingerprint.mjs)"
+          printf '{"commit":"%s","run":%s,"app":{"hash":"%s"},"builtAt":"%s"}\n' \
+            "$GITHUB_SHA" "$GITHUB_RUN_NUMBER" "$APP_HASH" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > dist/build-info.json
+          cat dist/build-info.json
       - name: Create tarball
         working-directory: app
         run: |
@@ -136,6 +146,21 @@ jobs:
           echo "=== Done ==="
           ls -la | head -10
           ENDSSH
+      # Done when the LIVE site serves this build, not when the copy returned.
+      # The query string keeps any cache between here and the files out of it.
+      - name: Confirm the live site serves this build
+        run: |
+          for i in $(seq 1 12); do
+            BODY="$(curl -fsS "https://mycongregation.org/build-info.json?v=$GITHUB_SHA" || true)"
+            if echo "$BODY" | grep -q "\"commit\":\"$GITHUB_SHA\""; then
+              echo "Live: $BODY"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "The live site does not serve $GITHUB_SHA after 60s. Last answer:"
+          echo "$BODY" | head -c 300
+          exit 1
       - name: Cleanup local
         if: always()
         run: rm -f ~/.ssh/deploy_key ~/.ssh/known_hosts ~/.ssh/config web-dist.tar.gz

@@ -20,6 +20,7 @@ import { Buffer } from 'node:buffer';
 import { createHash } from 'node:crypto';
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 /** What goes into the web build. Not scripts/ — the checks themselves. */
 export const APP_INPUTS = {
@@ -87,4 +88,14 @@ export function describeChanges(list, max = 4) {
   if (list.length === 0) return '';
   const shown = list.slice(0, max).join(', ');
   return list.length > max ? `${shown} и ещё ${list.length - max}` : shown;
+}
+
+/*
+ * From the command line — the deploy workflow stamps the live site with it:
+ *   node scripts/code-fingerprint.mjs            → the app's fingerprint
+ *   node scripts/code-fingerprint.mjs <server>   → a server folder's
+ */
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
+  const dir = process.argv[2];
+  console.log(dir ? serverFingerprint(dir).hash : appFingerprint(process.cwd()).hash);
 }
