@@ -1147,9 +1147,40 @@ export interface UpsertMeetingSettingsInput {
   weekendTime: string;
   address: string;
   microphoneSlots?: number;
+  /** Seen what this does to weeks already begun, and agreed (server past-impact). */
+  confirmPast?: boolean;
+}
+
+/** What saving a schedule version would change in weeks already begun. */
+export interface SchedulePastImpact {
+  weeks: number;
+  from: string | null;
+  to: string | null;
+  changes: {
+    field:
+      | "midweekDow"
+      | "midweekTime"
+      | "weekendDow"
+      | "weekendTime"
+      | "address"
+      | "microphoneSlots";
+    was: string;
+    becomes: string;
+  }[];
+  /** Attendance already recorded on a weekday the meeting moves away from. */
+  attendanceOnMovedDays: number;
 }
 
 export const meetingSettingsApi = {
+  async impactOfVersion(
+    input: UpsertMeetingSettingsInput,
+  ): Promise<SchedulePastImpact> {
+    const { data } = await api.post<SchedulePastImpact>(
+      "/meeting-settings/impact",
+      input,
+    );
+    return data;
+  },
   async getOverview(): Promise<MeetingSettingsOverview> {
     const { data } =
       await api.get<MeetingSettingsOverview>("/meeting-settings");

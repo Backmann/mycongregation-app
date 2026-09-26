@@ -164,6 +164,7 @@ export default function ServiceGroupDetailScreen() {
 
   const group = groupQuery.data;
   const members = membersQuery.data?.data ?? [];
+  const studentsHere = members.filter((m) => m.appointment === 'student').length;
   const overseer =
     group.overseer ?? members.find((p) => p.id === group.overseerPublisherId);
   const assistant =
@@ -247,7 +248,14 @@ export default function ServiceGroupDetailScreen() {
       )}
 
       <Text style={styles.sectionTitle}>
-        {t('serviceGroups.membersCount', { count: membersQuery.data?.total ?? 0 })}
+        {/* Students are not publishers: the congregation's list leaves them
+            out of its total, and so does this one — they are named apart. */}
+        {studentsHere > 0
+          ? t('serviceGroups.membersWithStudents', {
+              count: (membersQuery.data?.total ?? 0) - studentsHere,
+              students: studentsHere,
+            })
+          : t('serviceGroups.membersCount', { count: membersQuery.data?.total ?? 0 })}
       </Text>
 
       <View style={styles.list}>

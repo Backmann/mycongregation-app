@@ -28,6 +28,13 @@ export function publisherTags(
   if (publisher.appointment === 'ministerial_servant') {
     tags.push(i18n.t('publishers.tags.ms'));
   }
+  // A student gives student parts without being a publisher. Elders see
+  // them (they assign the parts and look after them) — and until 26 September
+  // nothing on the row said who among a group was one. Publishers never
+  // receive students at all (server publicRosterPage).
+  if (opts.privileged && publisher.appointment === 'student') {
+    tags.push(i18n.t('publishers.tags.student'));
+  }
 
   // pioneerSince is private, so an ordinary publisher never receives it — and
   // a missing date read locally as "already serving", which showed an

@@ -18,6 +18,7 @@ import 'dayjs/locale/de';
 import {
   Hall,
   MeetingSettingsVersion,
+  SchedulePastImpact,
   extractErrorMessage,
   hallsApi,
   meetingSettingsApi,
@@ -138,9 +139,19 @@ export default function MeetingPlaceScreen() {
     onSuccess: refresh,
     onError,
   });
+  const versionInput = (d: Draft) => ({
+    effectiveFrom: d.effectiveFrom.trim(),
+    midweekDow: d.midweekDow,
+    midweekTime: d.midweekTime.trim(),
+    weekendDow: d.weekendDow,
+    weekendTime: d.weekendTime.trim(),
+    address: d.address.trim(),
+    microphoneSlots: d.microphoneSlots,
+  });
   const versionMutation = useMutation({
-    mutationFn: (d: Draft) =>
+    mutationFn: ({ d, confirmPast }: { d: Draft; confirmPast: boolean }) =>
       meetingSettingsApi.upsertVersion({
+        confirmPast,
         effectiveFrom: d.effectiveFrom.trim(),
         midweekDow: d.midweekDow,
         midweekTime: d.midweekTime.trim(),
@@ -177,7 +188,16 @@ export default function MeetingPlaceScreen() {
   });
 
   // --- the windows -------------------------------------------------------
-  const [draft, setDraft] = useState<Draft | null>(null);
+  const [draft, setDraftRaw] = useState<Draft | null>(null);
+  // What the save would change in weeks already begun (26 September). Asked
+  // of the server when the start date is today or earlier; shown in this
+  // same window, and the second press saves. Any edit asks again.
+  const [pastImpact, setPastImpact] = useState<SchedulePastImpact | null>(null);
+  const [checkingPast, setCheckingPast] = useState(false);
+  const setDraft = (d: Draft | null) => {
+    setPastImpact(null);
+    setDraftRaw(d);
+  };
   const [nameDraft, setNameDraft] = useState<string | null>(null);
   const [tzDraft, setTzDraft] = useState<string | null>(null);
   const [hallDraft, setHallDraft] = useState<{ hall: Hall | null; name: string; address: string; isDefault: boolean } | null>(null);
@@ -388,12 +408,30 @@ export default function MeetingPlaceScreen() {
         iconTint="#0284c7"
         iconBg="#e0f2fe"
         cancelLabel={t('common.cancel')}
-        confirmLabel={t('common.save')}
         confirmDisabled={!draftValid}
-        pending={versionMutation.isPending}
-        onConfirm={() => {
+        confirmLabel={pastImpact ? t('meetingSettings.past.confirm') : t('common.save')}
+        pending={versionMutation.isPending || checkingPast}
+        onConfirm={async () => {
           if (!draft || !draftValid) return;
-          versionMutation.mutate(draft, { onSuccess: () => setDraft(null) });
+          if (!pastImpact && draft.effectiveFrom.trim() <= todayISO()) {
+            setCheckingPast(true);
+            try {
+              const impact = await meetingSettingsApi.impactOfVersion(versionInput(draft));
+              if (impact.weeks > 0) {
+                setPastImpact(impact);
+                return;
+              }
+            } catch (e) {
+              onError(e);
+              return;
+            } finally {
+              setCheckingPast(false);
+            }
+          }
+          versionMutation.mutate(
+            { d: draft, confirmPast: !!pastImpact },
+            { onSuccess: () => setDraft(null) },
+          );
         }}
         onCancel={() => setDraft(null)}
         scroll
@@ -442,6 +480,35 @@ export default function MeetingPlaceScreen() {
             <Text style={[styles.fieldLabel, styles.gap]}>{t('meetingSettings.effectiveFromLabel')}</Text>
             <DateField value={draft.effectiveFrom} onChange={(v) => setDraft({ ...draft, effectiveFrom: v })} />
             <Text style={styles.hint}>{t('meetingSettings.effectiveFromHint')}</Text>
+            {pastImpact ? (
+              <View style={styles.pastBox} testID="schedule-past-impact">
+                <Text style={styles.pastTitle}>{t('meetingSettings.past.title')}</Text>
+                <Text style={styles.pastLine}>
+                  {pastImpact.from === pastImpact.to
+                    ? t('meetingSettings.past.oneWeek', { from: longDate(pastImpact.from as string) })
+                    : t('meetingSettings.past.weeks', {
+                        count: pastImpact.weeks,
+                        from: longDate(pastImpact.from as string),
+                        to: longDate(pastImpact.to as string),
+                      })}
+                </Text>
+                {pastImpact.changes.map((c) => {
+                  const show = (v: string) =>
+                    c.field === 'midweekDow' || c.field === 'weekendDow' ? day(Number(v)) : v || '—';
+                  return (
+                    <Text key={`${c.field}|${c.was}|${c.becomes}`} style={styles.pastLine}>
+                      {'• '}
+                      {t(`meetingSettings.past.field.${c.field}`)}: {show(c.was)} → {show(c.becomes)}
+                    </Text>
+                  );
+                })}
+                {pastImpact.attendanceOnMovedDays > 0 ? (
+                  <Text style={styles.pastDanger}>
+                    {t('meetingSettings.past.attendance', { count: pastImpact.attendanceOnMovedDays })}
+                  </Text>
+                ) : null}
+              </View>
+            ) : null}
           </View>
         ) : null}
       </Dialog>
@@ -692,6 +759,18 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   hint: { fontSize: 12, color: SOFT, lineHeight: 17, marginTop: 2 },
+  pastBox: {
+    marginTop: 12,
+    padding: 12,
+    borderRadius: 10,
+    backgroundColor: '#fffbeb',
+    borderWidth: 1,
+    borderColor: '#fcd34d',
+    gap: 4,
+  },
+  pastTitle: { fontSize: 14, color: '#92400e', fontFamily: 'Manrope_700Bold', fontWeight: '700' },
+  pastLine: { fontSize: 13, color: '#78350f', lineHeight: 18 },
+  pastDanger: { fontSize: 13, color: '#b91c1c', lineHeight: 18, fontFamily: 'Manrope_700Bold', fontWeight: '700', marginTop: 4 },
   link: { fontSize: 13.5, color: '#0369a1', fontFamily: 'Manrope_700Bold', fontWeight: '700' },
   dayRow: { flexDirection: 'row', gap: 6 },
   dayChip: {

@@ -282,7 +282,8 @@
       "missionary": "Missionary",
       "anointed": "Anointed",
       "inactive": "Inactive",
-      "auxiliaryPioneer": "Auxiliary pioneer"
+      "auxiliaryPioneer": "Auxiliary pioneer",
+      "student": "Student"
     },
     "sections": {
       "contact": "Contact",
@@ -826,7 +827,8 @@
       "action": "Remove"
     },
     "mine": "yours",
-    "otherGroupClosed": "Members are visible in your own group only"
+    "otherGroupClosed": "Members are visible in your own group only",
+    "membersWithStudents": "Members ({{count}}) · students: {{students}}"
   },
   "parts": {
     "midweek_chairman": "Chairman",
@@ -1444,7 +1446,7 @@
     "address": "Kingdom Hall address",
     "addressPlaceholder": "Street, postcode, city",
     "microphoneSlots": "Microphone slots",
-    "effectiveFromHint": "Saving creates a new schedule version from this date. Past weeks keep their previous day and time.",
+    "effectiveFromHint": "Saving creates a new schedule version from this date. Weeks before it keep their previous day and time.",
     "history": "Change history",
     "effectiveNow": "In effect now",
     "upcoming": "Not yet in force",
@@ -1468,7 +1470,24 @@
     "timezone": "Congregation timezone",
     "timezoneNow": "It is now {{when}} there",
     "timezoneInvalid": "No such timezone. A name like Europe/Berlin.",
-    "useDeviceTimezone": "Take it from this device"
+    "useDeviceTimezone": "Take it from this device",
+    "past": {
+      "title": "This changes weeks that have already begun",
+      "oneWeek": "The week of {{from}}.",
+      "weeks_one": "{{count}} week — from {{from}} to the week of {{to}}.",
+      "weeks_other": "{{count}} weeks — from {{from}} to the week of {{to}}.",
+      "field": {
+        "midweekDow": "Midweek meeting day",
+        "midweekTime": "Midweek meeting time",
+        "weekendDow": "Weekend meeting day",
+        "weekendTime": "Weekend meeting time",
+        "address": "Address",
+        "microphoneSlots": "Microphones"
+      },
+      "attendance_one": "Attendance for {{count}} meeting is already recorded on the old day. After saving it sits on a day with no meeting and has to be entered again on the new day.",
+      "attendance_other": "Attendance for {{count}} meetings is already recorded on the old day. After saving it sits on days with no meeting and has to be entered again on the new days.",
+      "confirm": "Yes, save"
+    }
   },
   "duties": {
     "title": "Duties",

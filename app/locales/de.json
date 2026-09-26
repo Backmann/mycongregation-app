@@ -282,7 +282,8 @@
       "missionary": "Missionar",
       "anointed": "Gesalbter",
       "inactive": "Inaktiv",
-      "auxiliaryPioneer": "Hilfspionier"
+      "auxiliaryPioneer": "Hilfspionier",
+      "student": "Schüler"
     },
     "sections": {
       "contact": "Kontakt",
@@ -826,7 +827,8 @@
       "action": "Entfernen"
     },
     "mine": "deine",
-    "otherGroupClosed": "Mitglieder sind nur in der eigenen Gruppe sichtbar"
+    "otherGroupClosed": "Mitglieder sind nur in der eigenen Gruppe sichtbar",
+    "membersWithStudents": "Mitglieder ({{count}}) · Schüler: {{students}}"
   },
   "parts": {
     "midweek_chairman": "Vorsitzender",
@@ -1444,7 +1446,7 @@
     "address": "Adresse des Königreichssaals",
     "addressPlaceholder": "Straße, PLZ, Stadt",
     "microphoneSlots": "Mikrofon-Plätze",
-    "effectiveFromHint": "Beim Speichern wird ab diesem Datum eine neue Version erstellt. Vergangene Wochen behalten ihren bisherigen Tag und ihre Uhrzeit.",
+    "effectiveFromHint": "Beim Speichern wird ab diesem Datum eine neue Version erstellt. Wochen davor behalten ihren bisherigen Tag und ihre Uhrzeit.",
     "history": "Änderungsverlauf",
     "effectiveNow": "Aktuell gültig",
     "upcoming": "Noch nicht gültig",
@@ -1468,7 +1470,24 @@
     "timezone": "Zeitzone der Versammlung",
     "timezoneNow": "Dort ist es jetzt {{when}}",
     "timezoneInvalid": "Diese Zeitzone gibt es nicht. Ein Name wie Europe/Berlin.",
-    "useDeviceTimezone": "Von diesem Gerät übernehmen"
+    "useDeviceTimezone": "Von diesem Gerät übernehmen",
+    "past": {
+      "title": "Das ändert bereits begonnene Wochen",
+      "oneWeek": "Die Woche vom {{from}}.",
+      "weeks_one": "{{count}} Woche — vom {{from}} bis zur Woche vom {{to}}.",
+      "weeks_other": "{{count}} Wochen — vom {{from}} bis zur Woche vom {{to}}.",
+      "field": {
+        "midweekDow": "Tag der Zusammenkunft unter der Woche",
+        "midweekTime": "Uhrzeit unter der Woche",
+        "weekendDow": "Tag der Zusammenkunft am Wochenende",
+        "weekendTime": "Uhrzeit am Wochenende",
+        "address": "Adresse",
+        "microphoneSlots": "Mikrofone"
+      },
+      "attendance_one": "Die Anwesenheit von {{count}} Zusammenkunft ist bereits am alten Tag eingetragen. Nach dem Speichern steht sie an einem Tag ohne Zusammenkunft und muss am neuen Tag erneut eingetragen werden.",
+      "attendance_other": "Die Anwesenheit von {{count}} Zusammenkünften ist bereits am alten Tag eingetragen. Nach dem Speichern steht sie an Tagen ohne Zusammenkunft und muss an den neuen Tagen erneut eingetragen werden.",
+      "confirm": "Ja, speichern"
+    }
   },
   "duties": {
     "title": "Aufgaben",
