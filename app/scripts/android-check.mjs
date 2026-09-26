@@ -4,6 +4,11 @@
  * проверяет в браузере, здесь смотрится на самом приложении.
  *
  *   node scripts/android-check.mjs            проверка C08 (плашки «Программы»)
+ *   node scripts/android-check.mjs --version  только: стоит ли на телефоне
+ *                                             последнее обновление
+ *
+ * Сначала всегда сверяет, что на телефоне последнее опубликованное обновление
+ * (нужен вход в Expo — тот же, что для eas update), иначе не проверяет.
  *
  * Что нужно: телефон подключён кабелем, включена «Отладка по USB», на
  * компьютере есть adb (`adb devices` показывает телефон как device), на
@@ -76,13 +81,14 @@ function dump(name) {
   if (name) writeFileSync(join(OUT, `${name}.xml`), xml);
   const nodes = [];
   for (const m of xml.matchAll(/<node\b([^>]*)>?/g)) {
-    const attr = (k) => (m[1].match(new RegExp(`\\b${k}="([^"]*)"`)) || [])[1] ?? '';
+    const attr = (k) => (m[1].match(new RegExp(`(?:^|\\s)${k}="([^"]*)"`)) || [])[1] ?? '';
     const b = attr('bounds').match(/\[(-?\d+),(-?\d+)\]\[(-?\d+),(-?\d+)\]/);
     if (!b) continue;
     const [x1, y1, x2, y2] = b.slice(1).map(Number);
     nodes.push({
       id: attr('resource-id').replace(/^.*:id\//, ''),
       cls: attr('class'),
+      text: attr('text'),
       clickable: attr('clickable') === 'true',
       scrollable: attr('scrollable') === 'true',
       x1, y1, x2, y2, h: y2 - y1,
@@ -138,6 +144,102 @@ say('');
 
 const x = Math.round(W / 2);
 let nodes = [];
+// ---- is the phone running the newest update? --------------------------------
+/*
+ * 25 September: the check ran on a phone that had not yet taken the update,
+ * and a fault already fixed was reported as found («сдвиг −857 px»). So,
+ * before anything is judged, the phone must be on the last update published
+ * for Android — asked of Expo itself (`eas update:list` / `update:view`, the
+ * same login `eas update` uses) and read from the phone's own Profile, where
+ * the build line names the update it runs («v1.0.0 · 01a0de50 · 26.09.2026»).
+ *
+ * The app takes a waiting update at a cold start (lib/self-update.ts), so a
+ * phone one step behind is simply started again — up to three times — before
+ * the check gives up. No «check anyway»: a verdict on old code is not one.
+ *
+ *   node scripts/android-check.mjs --version   only this, nothing else
+ */
+const EAS = process.env.EAS || 'npx eas';
+const BRANCH = process.env.BRANCH || 'preview';
+const PROFILE = process.env.PROFILE_LINK || 'mycongregation://profile';
+
+function eas(args) {
+  const r = spawnSync(`${EAS} ${args.join(' ')}`, { shell: true, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 });
+  const text = `${r.stdout || ''}`;
+  if (r.status !== 0) {
+    const why = `${r.stderr || ''}\n${text}`.trim().split('\n').filter(Boolean).slice(-2).join(' ');
+    return { error: why || `код ${r.status}` };
+  }
+  const at = text.search(/[[{]/);
+  try {
+    return { json: JSON.parse(text.slice(at)) };
+  } catch {
+    return { error: `непонятный ответ: ${text.slice(0, 160)}` };
+  }
+}
+
+function latestAndroidUpdate() {
+  const list = eas(['update:list', '--branch', BRANCH, '--platform', 'android', '--json', '--non-interactive', '--limit', '1']);
+  if (list.error) fail(`не могу узнать у Expo последнее обновление для Android: ${list.error}\n   Нужен вход в Expo (тот же, что для eas update): npx eas login`);
+  const group = list.json?.currentPage?.[0]?.group;
+  if (!group) fail(`на ветке ${BRANCH} нет ни одного обновления для Android.`);
+  const view = eas(['update:view', group, '--json']);
+  if (view.error) fail(`не могу прочитать обновление ${group}: ${view.error}`);
+  const all = Array.isArray(view.json) ? view.json : view.json?.updates || [];
+  const u = all.find((x) => x.platform === 'android');
+  if (!u) fail(`в обновлении ${group} нет Android.`);
+  return u;
+}
+
+/** The build line from the phone's Profile, or null. */
+async function phoneBuildLine() {
+  adb(['shell', 'am', 'force-stop', PKG]);
+  await sleep(800);
+  adb(['shell', 'am', 'start', '-a', 'android.intent.action.VIEW', '-d', PROFILE, PKG]);
+  // A waiting update is applied at this start: «Обновляем…», then a reload.
+  await sleep(12000);
+  for (let i = 0; i < 5; i++) {
+    const ns = dump();
+    const line = ns.map((n) => n.text).find((s) => /^v\S+ · /.test(s));
+    if (line) return line;
+    // The yearly contacts window stands over everything; a person answers
+    // «Позже», so does the check.
+    const later = ns.find((n) => n.text === 'Позже' && n.h > 0);
+    if (later) adb(['shell', 'input', 'tap', String(Math.round((later.x1 + later.x2) / 2)), String(Math.round((later.y1 + later.y2) / 2))]);
+    else adb(['shell', 'input', 'swipe', String(x), String(Math.round(H * 0.8)), String(x), String(Math.round(H * 0.3)), '400']);
+    await sleep(1500);
+  }
+  return null;
+}
+
+async function requireNewestUpdate() {
+  const want = latestAndroidUpdate();
+  const wantShort = want.id.slice(0, 8);
+  const when = want.createdAt ? new Date(want.createdAt).toLocaleString('ru-RU') : '?';
+  say(`Последнее обновление для Android: ${wantShort} от ${when}${want.gitCommitHash ? `, коммит ${want.gitCommitHash.slice(0, 7)}` : ''}${want.message ? ` — «${want.message}»` : ''}`);
+  let line = null;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    line = await phoneBuildLine();
+    const has = line?.match(/· ([0-9a-f]{8})\b/)?.[1] ?? null;
+    if (has === wantShort) {
+      say(`✅ На телефоне оно же: ${line}`);
+      return;
+    }
+    say(`· на телефоне: ${line ?? 'строка версии в Профиле не найдена'} — перезапускаю приложение (${attempt} из 3)`);
+  }
+  dump('version');
+  shot('version');
+  fail(
+    `телефон так и не взял последнее обновление (${wantShort}); на нём: ${line ?? 'не прочитано'}.\n` +
+      '   Проверка на старом коде ничего не скажет — не запускаю. Откройте приложение на телефоне с интернетом и подождите\n' +
+      '   «Обновляем…»; если номер не меняется, а обновлению нужна новая сборка APK (другая runtime-версия), — его не будет без APK.',
+  );
+}
+
+await requireNewestUpdate();
+if (process.argv.includes('--version')) finish(0);
+say('');
+
 // Slow and short: a flick would keep the list gliding after the finger lifts.
 async function swipe(d) {
   const y0 = Math.round(H * 0.6 + d / 2);
