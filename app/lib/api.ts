@@ -2571,6 +2571,8 @@ export interface GroupVisitRow {
   serviceGroupId: string;
   name: string;
   visitsThisYear: number;
+  /** Already made — planned ones excluded. Absent from an older server. */
+  madeThisYear?: number;
   lastVisitDate: string | null;
   lastVisitBy: string | null;
   nextVisitDate: string | null;

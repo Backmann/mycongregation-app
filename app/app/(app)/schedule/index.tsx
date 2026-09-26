@@ -41,7 +41,7 @@ import { WindowsLine, WindowsPlanDialog } from "../../../components/WindowsPlan"
 import { effectiveVersionFor } from "../../../lib/meeting-schedule";
 import { addDays, formatDateISO, parseISODate, startOfWeekMonday } from "../../../lib/dates";
 import { partDisplay } from "../../../lib/part-display";
-import { arrangeFieldDay } from "../../../lib/field-audience";
+import { arrangeFieldDay, noteForPlace } from "../../../lib/field-audience";
 import type { FieldPlace } from "../../../lib/field-audience";
 import {
   SUBSECTIONS,
@@ -1672,14 +1672,21 @@ function FieldDay({
             : t("feed.fieldOpen");
     return p.own ? `${base} ${t("feed.fieldYours")}` : base;
   };
-  const noteOf = (p: FieldPlace) =>
-    p.notForMyGroupToday
+  const noteOf = (p: FieldPlace) => {
+    const n = noteForPlace(p, myGroupId);
+    if (!n) return null;
+    const g = n.kind === "notForYourGroup" ? "" : groupName.get(n.groupId) ?? "";
+    return n.kind === "notForYourGroup"
       ? t("feed.fieldNotForYourGroup")
-      : p.audience === "visit" && !p.own
-        ? t("feed.fieldOnlyFor", { group: group(p.meeting) })
-        : null;
+      : n.kind === "awayOnVisit"
+        ? t("feed.fieldAwayOnVisit", { group: g })
+        : t("feed.fieldOnlyFor", { group: g });
+  };
 
+  // Conducting first; then going to a visit as the service overseer or his
+  // assistant without conducting it — he goes, and the row should say so.
   const mineAt = item.meetings.find((m) => !!me && m.conductorPublisherId === me);
+  const helpingAt = mineAt ? undefined : day.shown.find((p) => p.mine)?.meeting;
   const ownVisit = day.shown.find((p) => p.audience === "visit" && p.own);
   const title = ownVisit
     ? t("feed.fieldVisitTitle")
@@ -1692,7 +1699,11 @@ function FieldDay({
         ...day.shown.map((p) => `${p.meeting.startTime} ${labelOf(p)}`),
         ...(day.others.length ? [t("feed.fieldOthers", { count: day.others.length })] : []),
       ].join(" · ");
-  const mine = mineAt ? t("feed.youLeadShort", { time: mineAt.startTime }) : null;
+  const mine = mineAt
+    ? t("feed.youLeadShort", { time: mineAt.startTime })
+    : helpingAt
+      ? t("feed.youGoShort", { time: helpingAt.startTime })
+      : null;
   const firstTime = (day.shown[0] ?? day.others[0])?.meeting.startTime ?? null;
 
   const lineOf = (p: FieldPlace) => {
@@ -1743,7 +1754,7 @@ function FieldDay({
           onPress={onToggle}
         />
       ) : (
-        <DetailHead date={item.date} kind={title} line={line} mine={mineAt ? t("feed.youLead", { time: mineAt.startTime }) : null} />
+        <DetailHead date={item.date} kind={title} line={line} mine={mineAt ? t("feed.youLead", { time: mineAt.startTime }) : helpingAt ? t("feed.youGo", { time: helpingAt.startTime }) : null} />
       )}
       {(mode === "inline" && open) || mode === "detail" ? (
         <View style={[styles.inset, mode === "detail" && styles.insetDetail]}>

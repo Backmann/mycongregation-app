@@ -1625,7 +1625,8 @@
     "sameDayAsVisit": "Group {{group}} has the service overseer's visit at {{time}} that day and will not come to this meeting.",
     "overseer": "Service overseer",
     "overseerAssistant": "Assistant",
-    "overseerVisitBadge": "Service overseer",
+    "overseerVisitBadge": "Service overseer's visit",
+    "overseerVisitBadgeShort": "Service overseer",
     "whoConducts": "Who conducts the meeting",
     "fillAssistant": "Fill in"
   },
@@ -2279,7 +2280,9 @@
       "empty": "No assignments in the coming weeks"
     },
     "feed": {
-      "youConduct": "You conduct this meeting"
+      "youConduct": "You conduct this meeting",
+      "youVisitAsOverseer": "You go on this visit as the service overseer",
+      "youVisitAsAssistant": "You go on this visit as the assistant"
     },
     "coLunch": {
       "lunch": "Organising lunch (CO visit)",
@@ -3069,6 +3072,7 @@
     "last": "Last visit: {{date}} · {{who}}",
     "never": "Not visited yet",
     "planned": "Planned: {{date}}",
+    "plannedShort": "planned {{date}}",
     "noGroups": "No groups yet",
     "hint": "A visit is marked on a field-service meeting — choose the group and turn on «Service overseer's visit».",
     "openFromTask": "Open the group visits →"
@@ -3463,6 +3467,8 @@
     "speakerUnassigned": "no speaker yet",
     "minutesOnly": "{{n}} min",
     "youLeadShort": "lead at {{time}}",
+    "youGo": "You go on the visit at {{time}}",
+    "youGoShort": "visit at {{time}}",
     "assistantLabel": "Assistant",
     "readerLabel": "Reader",
     "mineAsAssistant": "{{part}} — assistant",
@@ -3472,6 +3478,7 @@
     "fieldOpen": "Meeting for field service",
     "fieldYours": "(yours)",
     "fieldNotForYourGroup": "your group is on the visit that day",
+    "fieldAwayOnVisit": "you are on the visit to group {{group}} that day",
     "fieldOnlyFor": "for group {{group}} only",
     "fieldVisitTitle": "Service overseer's visit",
     "fieldVisitLine": "{{time}} · your group {{group}}",

@@ -17,6 +17,7 @@ import 'dayjs/locale/ru';
 import 'dayjs/locale/de';
 import { useQuery } from '@tanstack/react-query';
 import { useMyPublisher } from '../lib/useMyPublisher';
+import { VisitPeopleChips, FieldNoteLine, useFieldListViewer } from './FieldListBits';
 import { MyDot } from './MyDot';
 import { MyGlowRow } from './MyGlowRow';
 import { ChipRow, PersonChip } from './PersonChip';
@@ -109,6 +110,14 @@ export function FieldServiceSection({
     staleTime: 5 * 60 * 1000,
   });
   const sectionHalls = sectionHallsQuery.data ?? [];
+  const sectionGroupsQuery = useQuery({
+    queryKey: ['service-groups'],
+    queryFn: () => serviceGroupsApi.list({}),
+    staleTime: 5 * 60 * 1000,
+  });
+  const sectionGroupName = (id: string) =>
+    (sectionGroupsQuery.data?.data ?? []).find((g) => g.id === id)?.name ?? '';
+  const viewer = useFieldListViewer(meetings);
   const [formFor, setFormFor] = useState<FieldServiceMeeting | 'new' | null>(
     null,
   );
@@ -139,8 +148,7 @@ export function FieldServiceSection({
             const conductor = m.conductorPublisherId
               ? publishersById.get(m.conductorPublisherId) ?? null
               : null;
-            const isMine =
-              !!myPublisherId && m.conductorPublisherId === myPublisherId;
+            const isMine = viewer.isMine(m);
             const RowWrap = isMine ? MyGlowRow : View;
             return (
               <RowWrap
@@ -164,6 +172,12 @@ export function FieldServiceSection({
                       this to be visible to publishers, not kept among the
                       elders. It sits on the meeting itself, where the group
                       already looks to see where and when. */}
+                  {/* Whose meeting it is — this list alone never said. */}
+                  {m.serviceGroupId ? (
+                    <Text style={styles.groupName}>
+                      {sectionGroupName(m.serviceGroupId)}
+                    </Text>
+                  ) : null}
                   {m.serviceOverseerVisit ? (
                     <View style={styles.visitBadge}>
                       <Ionicons name="walk" size={12} color="#0e7490" />
@@ -173,7 +187,12 @@ export function FieldServiceSection({
                     </View>
                   ) : null}
                   <ChipRow>
-                    {isMine ? <MyDot kind="field_service" /> : null}
+                    {/* The dot stands beside the viewer's own name: on a visit
+                        he may be the overseer or the assistant, not the
+                        conductor this chip names. */}
+                    {viewer.isMine(m) && m.conductorPublisherId === viewer.me ? (
+                      <MyDot kind="field_service" />
+                    ) : null}
                     {conductor ? (
                       <PersonChip
                         label={conductor.displayName}
@@ -185,10 +204,12 @@ export function FieldServiceSection({
                         variant="empty"
                       />
                     )}
+                    <VisitPeopleChips meeting={m} publishersById={publishersById} me={viewer.me} />
                   </ChipRow>
                   <Text style={styles.address} numberOfLines={2}>
                     {resolveHallAddress(m.address, sectionHalls)}
                   </Text>
+                  <FieldNoteLine note={viewer.noteOf(m.id)} groupName={sectionGroupName} />
                   {!!m.topic && (
                     <Text style={styles.topic} numberOfLines={3}>
                       {m.topic}
@@ -1192,6 +1213,12 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     borderRadius: 999,
     backgroundColor: '#cffafe',
+  },
+  groupName: {
+    fontSize: 12.5,
+    color: '#0369a1',
+    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
   },
   visitBadgeText: {
     fontSize: 11.5,

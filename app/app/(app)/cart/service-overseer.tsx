@@ -43,7 +43,16 @@ export default function ServiceOverseerScreen() {
   }, [publishersQuery.data]);
 
   const groups = visitsQuery.data?.groups ?? [];
-  const waiting = groups.filter((g) => g.visitsThisYear === 0);
+  // A visit counts as made once its day has come. The year's count includes
+  // planned ones, and drawing THAT as «visited» turned a group green beside
+  // «Ещё не посещали» (26 September).
+  const made = (g: (typeof groups)[number]) => g.madeThisYear ?? g.visitsThisYear;
+  const year = visitsQuery.data?.serviceYear ?? 0;
+  const plannedThisYear = (g: (typeof groups)[number]) =>
+    !!g.nextVisitDate &&
+    g.nextVisitDate >= `${year - 1}-09-01` &&
+    g.nextVisitDate <= `${year}-08-31`;
+  const waiting = groups.filter((g) => made(g) === 0);
 
   const fmt = (iso: string) => dayjs(iso).locale(language).format('D MMMM YYYY');
 
@@ -70,7 +79,17 @@ export default function ServiceOverseerScreen() {
             </Text>
           </View>
           <Text style={styles.waitingBody}>
-            {waiting.map((g) => g.name).join(' · ')}
+            {waiting
+              .map((g) =>
+                plannedThisYear(g)
+                  ? `${g.name} (${t('serviceOverseer.plannedShort', {
+                      date: dayjs(g.nextVisitDate as string)
+                        .locale(language)
+                        .format('D MMMM'),
+                    })})`
+                  : g.name,
+              )
+              .join(' · ')}
           </Text>
         </View>
       ) : null}
@@ -82,7 +101,7 @@ export default function ServiceOverseerScreen() {
       </Text>
 
       {groups.map((g) => {
-        const visited = g.visitsThisYear > 0;
+        const visited = made(g) > 0;
         return (
           <View
             key={g.serviceGroupId}
@@ -92,7 +111,7 @@ export default function ServiceOverseerScreen() {
               <Text style={styles.groupName}>{g.name}</Text>
               <View style={[styles.count, visited && styles.countDone]}>
                 <Text style={[styles.countText, visited && styles.countTextDone]}>
-                  {g.visitsThisYear}
+                  {made(g)}
                 </Text>
               </View>
             </View>

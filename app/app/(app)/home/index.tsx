@@ -626,9 +626,16 @@ function MeetingRow({
             </Text>
           </View>
         ) : null}
-        {entry.notForMyGroupToday ? (
+        {entry.fieldNote ? (
           <Text style={tl.fsNotForYou}>
-            {t("feed.fieldNotForYourGroup")}
+            {entry.fieldNote.kind === "notForYourGroup"
+              ? t("feed.fieldNotForYourGroup")
+              : t(
+                  entry.fieldNote.kind === "awayOnVisit"
+                    ? "feed.fieldAwayOnVisit"
+                    : "feed.fieldOnlyFor",
+                  { group: entry.fieldNote.groupName },
+                )}
           </Text>
         ) : null}
         {entry.conductorName || entry.unassignedConductor ? (
@@ -637,6 +644,16 @@ function MeetingRow({
           >
             {t("fieldService.conductor")}:{" "}
             {entry.conductorName ?? t("fieldService.unassigned")}
+          </Text>
+        ) : null}
+        {entry.visitPeople?.overseer ? (
+          <Text style={tl.bgMeta}>
+            {t("fieldService.overseer")}: {entry.visitPeople.overseer}
+          </Text>
+        ) : null}
+        {entry.visitPeople?.assistant ? (
+          <Text style={tl.bgMeta}>
+            {t("fieldService.overseerAssistant")}: {entry.visitPeople.assistant}
           </Text>
         ) : null}
         {entry.topic ? <Text style={tl.fsTopic}>{entry.topic}</Text> : null}
@@ -1084,6 +1101,10 @@ function HomeTimeline() {
       myItems: tasksQ.data?.items ?? [],
       todayISO,
       youConductLabel: t("home.feed.youConduct"),
+      youVisitLabels: {
+        overseer: t("home.feed.youVisitAsOverseer"),
+        assistant: t("home.feed.youVisitAsAssistant"),
+      },
       resolvePart: (it) => ({
         section: taskSubsectionLabel(it, t),
         title: taskTitle(it, t),

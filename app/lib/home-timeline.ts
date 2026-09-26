@@ -17,7 +17,12 @@
  * конгресс, отменяющий встречу, — один раз (как отменённая встреча), а не и
  * встречей, и событием.
  */
-import { arrangeFieldDay, type FieldPlace } from './field-audience';
+import {
+  arrangeFieldDay,
+  noteForPlace,
+  type FieldNote,
+  type FieldPlace,
+} from './field-audience';
 import {
   FieldServiceMeeting,
   MeetingSettingsVersion,
@@ -63,8 +68,18 @@ export interface MeetingEntry {
    */
   groupName?: string | null;
   serviceOverseerVisit?: boolean;
-  /** The viewer's group is on a visit that day; this other meeting is not for them. */
-  notForMyGroupToday?: boolean;
+  /** Why this meeting is not the viewer's this time, if it is not (lib/field-audience). */
+  /**
+   * On a visit: the overseer and his assistant, whoever of them is not the
+   * conductor already named. The group is waiting for the overseer; with the
+   * assistant conducting, the row named only the assistant.
+   */
+  visitPeople?: { overseer: string | null; assistant: string | null };
+  fieldNote?: {
+    kind: NonNullable<FieldNote>['kind'];
+    /** The group the note names, if it names one. */
+    groupName: string;
+  } | null;
   sourceUrl: string | null;
   /** When a convention/assembly cancels this meeting, the event that did it. */
   replacedBy: SpecialEvent | null;
@@ -217,6 +232,12 @@ export interface BuildTimelineInput {
   /** Text for a field-service meeting the signed-in person conducts. */
   youConductLabel: string;
   /**
+   * Text for a service overseer's visit the person goes to without
+   * conducting it — as the overseer (his assistant conducts) or as the
+   * assistant. Without it the visit was not marked as theirs at all.
+   */
+  youVisitLabels?: { overseer: string; assistant: string };
+  /**
    * Resolves one of my meeting parts/duties to its display title and section
    * heading. Supplied by the caller (which has i18n) so this builder stays
    * free of translation concerns.
@@ -294,6 +315,7 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
     myItems,
     todayISO,
     youConductLabel,
+    youVisitLabels,
     resolvePart,
     nearDays = 14,
   } = input;
@@ -493,13 +515,29 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
     // Remembered so the personal loop below does not repeat what this row
     // already says.
     spokenFieldService.add(`${m.weekStartDate}|${m.dayOfWeek}`);
-    const iConduct = myItems.some(
-      (it) =>
-        it.kind === 'field_service' &&
-        it.weekStartDate === m.weekStartDate &&
-        it.dayOfWeek === m.dayOfWeek &&
-        (!it.time || it.time === m.startTime),
-    );
+    const iConduct =
+      (!!myPublisherId && m.conductorPublisherId === myPublisherId) ||
+      myItems.some(
+        (it) =>
+          it.kind === 'field_service' &&
+          !it.serviceOverseerVisit &&
+          it.weekStartDate === m.weekStartDate &&
+          it.dayOfWeek === m.dayOfWeek &&
+          (!it.time || it.time === m.startTime),
+      );
+    const onVisitAs =
+      iConduct || !m.serviceOverseerVisit || !myPublisherId
+        ? null
+        : m.serviceOverseerAssistantId === myPublisherId
+          ? 'assistant'
+          : m.serviceOverseerPublisherId === myPublisherId
+            ? 'overseer'
+            : null;
+    const myFieldLine = iConduct
+      ? youConductLabel
+      : onVisitAs && youVisitLabels
+        ? youVisitLabels[onVisitAs]
+        : null;
     entries.push({
       type: 'meeting',
       key: `fs-${m.id}`,
@@ -516,8 +554,35 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
         ? (groupNameById?.get(m.serviceGroupId) ?? null)
         : null,
       serviceOverseerVisit: !!m.serviceOverseerVisit,
-      notForMyGroupToday: !!fieldPlaces.get(m.id)?.notForMyGroupToday,
-      myParts: iConduct ? [{ section: null, title: youConductLabel }] : [],
+      visitPeople: m.serviceOverseerVisit
+        ? {
+            overseer:
+              m.serviceOverseerPublisherId &&
+              m.serviceOverseerPublisherId !== m.conductorPublisherId
+                ? (publishersById.get(m.serviceOverseerPublisherId)
+                    ?.displayName ?? null)
+                : null,
+            assistant:
+              m.serviceOverseerAssistantId &&
+              m.serviceOverseerAssistantId !== m.conductorPublisherId
+                ? (publishersById.get(m.serviceOverseerAssistantId)
+                    ?.displayName ?? null)
+                : null,
+          }
+        : undefined,
+      fieldNote: (() => {
+        const place = fieldPlaces.get(m.id);
+        const n = place ? noteForPlace(place, myServiceGroupId) : null;
+        if (!n) return null;
+        return {
+          kind: n.kind,
+          groupName:
+            n.kind === 'notForYourGroup'
+              ? ''
+              : (groupNameById?.get(n.groupId) ?? ''),
+        };
+      })(),
+      myParts: myFieldLine ? [{ section: null, title: myFieldLine }] : [],
       weeklyCleaning: false,
       isGeneral: !!m.isGeneral,
     });

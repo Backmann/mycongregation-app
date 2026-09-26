@@ -1625,7 +1625,8 @@
     "sameDayAsVisit": "An diesem Tag besucht der Dienstaufseher die Gruppe {{group}} um {{time}}: diese Gruppe kommt nicht hierher.",
     "overseer": "Dienstaufseher",
     "overseerAssistant": "Assistent",
-    "overseerVisitBadge": "Dienstaufseher",
+    "overseerVisitBadge": "Besuch des Dienstaufsehers",
+    "overseerVisitBadgeShort": "Dienstaufseher",
     "whoConducts": "Wer die Zusammenkunft leitet",
     "fillAssistant": "Einsetzen"
   },
@@ -2279,7 +2280,9 @@
       "empty": "Keine Aufgaben in den kommenden Wochen"
     },
     "feed": {
-      "youConduct": "Du leitest diese Zusammenkunft"
+      "youConduct": "Du leitest diese Zusammenkunft",
+      "youVisitAsOverseer": "Du gehst als Dienstaufseher zu diesem Besuch",
+      "youVisitAsAssistant": "Du gehst als Gehilfe zu diesem Besuch"
     },
     "coLunch": {
       "lunch": "Mittagessen organisieren (KA-Besuch)",
@@ -3069,6 +3072,7 @@
     "last": "Letzter Besuch: {{date}} · {{who}}",
     "never": "Noch nicht besucht",
     "planned": "Geplant: {{date}}",
+    "plannedShort": "geplant {{date}}",
     "noGroups": "Noch keine Gruppen",
     "hint": "Ein Besuch wird an einer Zusammenkunft für den Dienst vermerkt — Gruppe wählen und «Besuch des Dienstaufsehers» einschalten.",
     "openFromTask": "Gruppenbesuche öffnen →"
@@ -3463,6 +3467,8 @@
     "speakerUnassigned": "noch kein Redner",
     "minutesOnly": "{{n}} Min.",
     "youLeadShort": "leiten um {{time}}",
+    "youGo": "Sie gehen um {{time}} zum Besuch",
+    "youGoShort": "Besuch um {{time}}",
     "assistantLabel": "Gehilfe",
     "readerLabel": "Leser",
     "mineAsAssistant": "{{part}} — als Gehilfe",
@@ -3472,6 +3478,7 @@
     "fieldOpen": "Treffpunkt für den Predigtdienst",
     "fieldYours": "(Ihre)",
     "fieldNotForYourGroup": "Ihre Gruppe ist an diesem Tag beim Besuch",
+    "fieldAwayOnVisit": "Sie sind an diesem Tag beim Besuch der Gruppe {{group}}",
     "fieldOnlyFor": "nur für die Gruppe {{group}}",
     "fieldVisitTitle": "Besuch des Dienstaufsehers",
     "fieldVisitLine": "{{time}} · Ihre Gruppe {{group}}",

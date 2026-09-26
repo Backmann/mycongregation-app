@@ -30,6 +30,7 @@ import {
 } from '../../../lib/api';
 import { usePermissions } from '../../../lib/permissions';
 import { useMyPublisher } from '../../../lib/useMyPublisher';
+import { VisitPeopleChips, FieldNoteLine, useFieldListViewer } from '../../../components/FieldListBits';
 import { FieldServiceForm } from '../../../components/FieldServiceSection';
 import { resolveHallAddress } from '../../../lib/hallAddress';
 import { FieldServiceGenerateModal } from '../../../components/FieldServiceGenerateModal';
@@ -98,6 +99,7 @@ export default function FieldServiceMeetingsScreen() {
   const publishersById = new Map<string, Publisher>(
     (publishersQuery.data?.data ?? []).map((p) => [p.id, p]),
   );
+  const viewer = useFieldListViewer(meetingsQuery.data ?? []);
   const overviewQuery = useQuery({
     queryKey: ['meeting-settings-overview'],
     queryFn: () => meetingSettingsApi.getOverview(),
@@ -403,7 +405,9 @@ export default function FieldServiceMeetingsScreen() {
         address: t('fieldService.pdf.address'),
         conductor: t('fieldService.conductor'),
         general: t('fieldService.generalBadge'),
-        overseerVisit: t('fieldService.overseerVisitBadge'),
+        // The printed sheet has a narrow date column and already says «Посещение
+        // группы …» beside it; the short badge is enough there.
+        overseerVisit: t('fieldService.overseerVisitBadgeShort'),
         groupVisit: t('fieldService.pdf.groupVisit'),
         assistant: t('fieldService.overseerAssistant'),
         monthTheme: t('fieldService.pdf.monthTheme'),
@@ -552,8 +556,7 @@ export default function FieldServiceMeetingsScreen() {
                 const conductor = mt.conductorPublisherId
                   ? publishersById.get(mt.conductorPublisherId) ?? null
                   : null;
-                const isMine =
-                  !!myPublisherId && mt.conductorPublisherId === myPublisherId;
+                const isMine = viewer.isMine(mt);
                 const dISO = meetingDateISO(mt);
                 const RowWrap = isMine ? MyGlowRow : View;
                 return (
@@ -615,7 +618,12 @@ export default function FieldServiceMeetingsScreen() {
                         </View>
                       ) : null}
                       <ChipRow>
-                        {isMine ? <MyDot kind="field_service" /> : null}
+                        {/* The dot stands beside the viewer's own name: on a visit
+                        he may be the overseer or the assistant, not the
+                        conductor this chip names. */}
+                    {viewer.isMine(mt) && mt.conductorPublisherId === viewer.me ? (
+                      <MyDot kind="field_service" />
+                    ) : null}
                         {conductor ? (
                           <PersonChip
                             label={conductor.displayName}
@@ -627,10 +635,12 @@ export default function FieldServiceMeetingsScreen() {
                             variant="empty"
                           />
                         )}
+                        <VisitPeopleChips meeting={mt} publishersById={publishersById} me={viewer.me} />
                       </ChipRow>
                       <Text style={styles.address} numberOfLines={2}>
                         {resolveHallAddress(mt.address, halls)}
                       </Text>
+                      <FieldNoteLine note={viewer.noteOf(mt.id)} groupName={groupName} />
                       {!!mt.topic && (
                         <Text style={styles.topic} numberOfLines={3}>
                           {mt.topic}

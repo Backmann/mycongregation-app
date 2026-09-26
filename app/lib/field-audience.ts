@@ -33,6 +33,63 @@ export function audienceOf(m: FieldServiceMeeting): FieldAudience {
   return 'open';
 }
 
+/**
+ * The person conducts the meeting, or goes to it as the service overseer or
+ * his assistant. The overseer and assistant are stored on a visit only; on
+ * any other meeting those two fields are empty.
+ */
+export function isOnMeeting(m: FieldServiceMeeting, me: string | null): boolean {
+  return (
+    !!me &&
+    (m.conductorPublisherId === me ||
+      m.serviceOverseerPublisherId === me ||
+      m.serviceOverseerAssistantId === me)
+  );
+}
+
+/**
+ * The one line a list row adds under a meeting for this viewer, or null:
+ * the viewer's group is on a visit that day, or the visit is another
+ * group's. Pure — the caller translates the kind.
+ */
+export type FieldNote =
+  | { kind: 'notForYourGroup' }
+  | { kind: 'awayOnVisit'; groupId: string }
+  | { kind: 'onlyFor'; groupId: string }
+  | null;
+
+/** The note for one place — the same wording decision for every screen. */
+export function noteForPlace(p: FieldPlace, myGroupId: string | null): FieldNote {
+  if (p.notForMyGroupToday) return { kind: 'notForYourGroup' };
+  if (p.awayOnVisitTo) return { kind: 'awayOnVisit', groupId: p.awayOnVisitTo };
+  // «Только для группы …» tells someone else's member to stay away; the
+  // overseer and his assistant are going, and it is not said to them.
+  if (p.audience === 'visit' && !p.own && !p.mine && !!myGroupId) {
+    return { kind: 'onlyFor', groupId: p.meeting.serviceGroupId as string };
+  }
+  return null;
+}
+
+export function fieldNotes(
+  meetings: FieldServiceMeeting[],
+  myGroupId: string | null,
+  me: string | null,
+): Map<string, FieldNote> {
+  const byDay = new Map<string, FieldServiceMeeting[]>();
+  for (const m of meetings) {
+    const k = `${m.weekStartDate}|${m.dayOfWeek}`;
+    byDay.set(k, [...(byDay.get(k) ?? []), m]);
+  }
+  const out = new Map<string, FieldNote>();
+  for (const day of byDay.values()) {
+    const a = arrangeFieldDay(day, myGroupId, me);
+    for (const p of [...a.shown, ...a.others]) {
+      out.set(p.meeting.id, noteForPlace(p, myGroupId));
+    }
+  }
+  return out;
+}
+
 export interface FieldPlace {
   meeting: FieldServiceMeeting;
   audience: FieldAudience;
@@ -45,6 +102,12 @@ export interface FieldPlace {
   notForMyGroupToday: boolean;
   /** The viewer conducts it, or is the overseer or his assistant on it. */
   mine: boolean;
+  /**
+   * The viewer goes that day to a visit to ANOTHER group (as the overseer,
+   * his assistant or its conductor), so this meeting — his own group's or
+   * an open one — is not his: the group visited, by id.
+   */
+  awayOnVisitTo: string | null;
 }
 
 export interface FieldDayArrangement {
@@ -74,6 +137,11 @@ export function arrangeFieldDay(
     sorted.filter((m) => audienceOf(m) === 'visit').map((m) => m.serviceGroupId as string),
   );
   const myGroupOnVisit = !!myGroupId && visited.has(myGroupId);
+  // The overseer and his assistant belong to a group of their own; on the
+  // day they visit another one, their group's meeting and the open ones are
+  // not theirs either.
+  const myVisit =
+    sorted.find((m) => audienceOf(m) === 'visit' && isOnMeeting(m, me)) ?? null;
   const places: FieldPlace[] = sorted.map((m) => {
     const audience = audienceOf(m);
     const own = !!myGroupId && m.serviceGroupId === myGroupId;
@@ -81,12 +149,22 @@ export function arrangeFieldDay(
       meeting: m,
       audience,
       own,
-      notForMyGroupToday: myGroupOnVisit && !(audience === 'visit' && own),
-      mine:
-        !!me &&
-        (m.conductorPublisherId === me ||
-          m.serviceOverseerPublisherId === me ||
-          m.serviceOverseerAssistantId === me),
+      // Only a meeting the group would otherwise have gone to: an open or
+      // combined one, or another of its own. Another group's meeting was
+      // never theirs, and saying «ваша группа на посещении» under it read as
+      // if it had been.
+      notForMyGroupToday:
+        myGroupOnVisit &&
+        !(audience === 'visit' && own) &&
+        (own || audience === 'open' || audience === 'general'),
+      mine: isOnMeeting(m, me),
+      awayOnVisitTo:
+        myVisit &&
+        myVisit.id !== m.id &&
+        myVisit.serviceGroupId !== myGroupId &&
+        (own || audience === 'open' || audience === 'general')
+          ? (myVisit.serviceGroupId as string)
+          : null,
     };
   });
   if (!myGroupId) return { shown: places, others: [], myGroupOnVisit: false };

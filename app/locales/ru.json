@@ -1641,7 +1641,8 @@
     "sameDayAsVisit": "В этот день посещение группы {{group}} в {{time}}: эта группа сюда не придёт.",
     "overseer": "Служебный старейшина",
     "overseerAssistant": "Помощник",
-    "overseerVisitBadge": "Служебный старейшина",
+    "overseerVisitBadge": "Посещение служебного старейшины",
+    "overseerVisitBadgeShort": "Служебный старейшина",
     "whoConducts": "Кто проводит встречу",
     "fillAssistant": "Подставить"
   },
@@ -2295,7 +2296,9 @@
       "empty": "Заданий на ближайшие недели нет"
     },
     "feed": {
-      "youConduct": "Вы ведёте эту встречу"
+      "youConduct": "Вы ведёте эту встречу",
+      "youVisitAsOverseer": "Вы идёте на посещение как служебный старейшина",
+      "youVisitAsAssistant": "Вы идёте на посещение как помощник"
     },
     "coLunch": {
       "lunch": "Организация обеда (визит районного)",
@@ -3087,6 +3090,7 @@
     "last": "Последний визит: {{date}} · {{who}}",
     "never": "Ещё не посещали",
     "planned": "Запланирован: {{date}}",
+    "plannedShort": "запланирован {{date}}",
     "noGroups": "Групп пока нет",
     "hint": "Визит отмечается на встрече для проповеди — выберите группу и включите «Визит служебного старейшины».",
     "openFromTask": "Открыть посещения групп →"
@@ -3495,6 +3499,8 @@
     "speakerUnassigned": "докладчик не назначен",
     "minutesOnly": "{{n}} мин",
     "youLeadShort": "ведёте в {{time}}",
+    "youGo": "Вы идёте на посещение в {{time}}",
+    "youGoShort": "посещение в {{time}}",
     "assistantLabel": "Помощник",
     "readerLabel": "Чтец",
     "mineAsAssistant": "{{part}} — помощник",
@@ -3504,6 +3510,7 @@
     "fieldOpen": "Встреча для проповеди",
     "fieldYours": "(ваша)",
     "fieldNotForYourGroup": "ваша группа в этот день — на посещении",
+    "fieldAwayOnVisit": "вы в этот день — на посещении группы {{group}}",
     "fieldOnlyFor": "только для группы {{group}}",
     "fieldVisitTitle": "Посещение служебного старейшины",
     "fieldVisitLine": "{{time}} · ваша группа {{group}}",
