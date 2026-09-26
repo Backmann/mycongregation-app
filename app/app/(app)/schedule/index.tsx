@@ -41,6 +41,8 @@ import { WindowsLine, WindowsPlanDialog } from "../../../components/WindowsPlan"
 import { effectiveVersionFor } from "../../../lib/meeting-schedule";
 import { addDays, formatDateISO, parseISODate, startOfWeekMonday } from "../../../lib/dates";
 import { partDisplay } from "../../../lib/part-display";
+import { arrangeFieldDay } from "../../../lib/field-audience";
+import type { FieldPlace } from "../../../lib/field-audience";
 import {
   SUBSECTIONS,
   buildMidweekPartTimes,
@@ -185,7 +187,8 @@ export default function ProgrammeFeedScreen() {
   const { t, i18n } = useTranslation();
   const lang = i18n.language;
   const perms = usePermissions();
-  const { myPublisherId: me } = useMyPublisher();
+  const { myPublisherId: me, myPublisher } = useMyPublisher();
+  const myGroupId = myPublisher?.serviceGroupId ?? null;
   const canSeeReadiness =
     perms.canEditMidweekSchedule || perms.canEditWeekendSchedule || perms.canEditDuties;
 
@@ -702,6 +705,7 @@ export default function ProgrammeFeedScreen() {
           onToggle={onToggle}
           mode={mode}
           me={me}
+          myGroupId={myGroupId}
           nameOf={nameOf}
           groupName={groupName}
         />
@@ -1053,6 +1057,7 @@ export default function ProgrammeFeedScreen() {
       onToggle={() => {}}
       mode="detail"
       me={me}
+      myGroupId={myGroupId}
       nameOf={nameOf}
       groupName={groupName}
     />
@@ -1216,7 +1221,11 @@ function Row({
         {line ? <Text style={styles.line}>{line}</Text> : null}
         {mine ? (
           <View style={styles.mineRow}>
-            <Text style={[styles.minePill, past && styles.minePillPast]}>{t("feed.you")}</Text>
+            {/* The sign of «yours», not the word «Вы» (26 September): the list
+                may be read on someone else's device. */}
+            <View style={[styles.minePill, past && styles.minePillPast]} accessibilityLabel={t("feed.you")}>
+              <Ionicons name="person" size={12} color={past ? SOFT : ACC} />
+            </View>
             <Text style={[styles.mine, past && styles.minePast]}>{mine}</Text>
           </View>
         ) : null}
@@ -1322,11 +1331,7 @@ function Meeting({
     line = speaker ? (from ? `${speaker} · ${from}` : speaker) : t("feed.speakerUnassigned");
   } else {
     if (item.kind === "midweek" && firstTalk) title = partDisplay(firstTalk.partKey, firstTalk.partTitle).label;
-    line = chair?.publisherId
-      ? chair.publisherId === me
-        ? t("feed.chairmanYou")
-        : t("feed.chairman", { name: name(chair.publisherId) ?? "" })
-      : t("feed.chairman", { name: t("feed.unassigned") });
+    line = t("feed.chairman", { name: (chair?.publisherId && name(chair.publisherId)) || t("feed.unassigned") });
   }
 
   // What is yours — parts (not chairing: the line above already says it) and duties.
@@ -1340,7 +1345,13 @@ function Meeting({
   const myDuties = duties.filter((d) => d.publisherId === me).map(dutyLabel);
   // Case as the app writes it. Lowering the first letter would be wrong for a
   // topic that starts with a name («Иегова поддерживает…»).
-  const mineList = [...myParts, ...myDuties];
+  // Chairing is yours too — said with the rest, since the line above now
+  // names him like anybody else.
+  const mineList = [
+    ...(me && chair?.publisherId === me ? [t("feed.chairmanLabel")] : []),
+    ...myParts,
+    ...myDuties,
+  ];
   const mine = me && mineList.length ? mineList.join(", ") : null;
 
   // Readiness — only to those who assemble, only ahead.
@@ -1616,7 +1627,15 @@ function Programme({
   return <>{out}</>;
 }
 
-/** Field-ministry meetings of one day — one row, no tabs: nothing to switch between. */
+/**
+ * Field-ministry meetings of one day — one row, no tabs: nothing to switch
+ * between. WHO EACH MEETING IS FOR is said on it, by the rule every screen
+ * shares (lib/field-audience): a service overseer's visit, a group's own
+ * meeting, the combined one, or one open to all. The person's own group comes
+ * with them; other groups' meetings are folded away under one line; and on
+ * a day the person's group is visited, the other meetings say they are not
+ * for that group this time — it goes to the visit only (Lionel, 26 September).
+ */
 function FieldDay({
   item,
   past,
@@ -1624,6 +1643,7 @@ function FieldDay({
   onToggle,
   mode = "inline",
   me,
+  myGroupId,
   nameOf,
   groupName,
 }: {
@@ -1633,25 +1653,87 @@ function FieldDay({
   onToggle: () => void;
   mode?: "inline" | "row" | "detail";
   me: string | null;
+  myGroupId: string | null;
   nameOf: Map<string, string>;
   groupName: Map<string, string>;
 }) {
   const { t } = useTranslation();
-  const what = (m: FieldServiceMeeting) =>
-    (m.serviceGroupId ? groupName.get(m.serviceGroupId) : null) ?? t("fieldService.generalBadge");
+  const [showOthers, setShowOthers] = useState(false);
+  const day = arrangeFieldDay(item.meetings, myGroupId, me);
+  const group = (m: FieldServiceMeeting) => (m.serviceGroupId ? groupName.get(m.serviceGroupId) ?? "" : "");
+  const labelOf = (p: FieldPlace) => {
+    const base =
+      p.audience === "visit"
+        ? t("feed.fieldVisit", { group: group(p.meeting) })
+        : p.audience === "group"
+          ? t("feed.fieldGroup", { group: group(p.meeting) })
+          : p.audience === "general"
+            ? t("feed.fieldGeneral")
+            : t("feed.fieldOpen");
+    return p.own ? `${base} ${t("feed.fieldYours")}` : base;
+  };
+  const noteOf = (p: FieldPlace) =>
+    p.notForMyGroupToday
+      ? t("feed.fieldNotForYourGroup")
+      : p.audience === "visit" && !p.own
+        ? t("feed.fieldOnlyFor", { group: group(p.meeting) })
+        : null;
+
   const mineAt = item.meetings.find((m) => !!me && m.conductorPublisherId === me);
-  const title = item.meetings.length > 1 ? t("feed.fieldService") : t("feed.fieldServiceOne");
-  const line = item.meetings.map((m) => t("feed.fieldAt", { what: what(m), time: m.startTime })).join(" · ");
+  const ownVisit = day.shown.find((p) => p.audience === "visit" && p.own);
+  const title = ownVisit
+    ? t("feed.fieldVisitTitle")
+    : item.meetings.length > 1
+      ? t("feed.fieldService")
+      : t("feed.fieldServiceOne");
+  const line = ownVisit
+    ? t("feed.fieldVisitLine", { time: ownVisit.meeting.startTime, group: group(ownVisit.meeting) })
+    : [
+        ...day.shown.map((p) => `${p.meeting.startTime} ${labelOf(p)}`),
+        ...(day.others.length ? [t("feed.fieldOthers", { count: day.others.length })] : []),
+      ].join(" · ");
   const mine = mineAt ? t("feed.youLeadShort", { time: mineAt.startTime }) : null;
+  const firstTime = (day.shown[0] ?? day.others[0])?.meeting.startTime ?? null;
+
+  const lineOf = (p: FieldPlace) => {
+    const m = p.meeting;
+    const helper =
+      p.audience === "visit" && m.serviceOverseerPublisherId && m.serviceOverseerPublisherId !== m.conductorPublisherId
+        ? {
+            label: t("fieldService.overseer"),
+            name: nameOf.get(m.serviceOverseerPublisherId) ?? null,
+            mine: !!me && m.serviceOverseerPublisherId === me,
+          }
+        : p.audience === "visit" && m.serviceOverseerAssistantId
+          ? {
+              label: t("fieldService.overseerAssistant"),
+              name: nameOf.get(m.serviceOverseerAssistantId) ?? null,
+              mine: !!me && m.serviceOverseerAssistantId === me,
+            }
+          : null;
+    return (
+      <PartLine
+        key={m.id}
+        time={m.startTime}
+        title={labelOf(p)}
+        subtitle={[m.address, noteOf(p)].filter(Boolean).join(" · ")}
+        name={m.conductorPublisherId ? nameOf.get(m.conductorPublisherId) ?? null : null}
+        mine={!!me && m.conductorPublisherId === me}
+        helper={helper}
+        tone={p.own || p.mine ? KIND.field.color : undefined}
+      />
+    );
+  };
+
   return (
     <View>
       {mode !== "detail" ? (
         <Row
           date={item.date}
           kindLabel={t("feed.kindField")}
-          icon={KIND.field.icon}
+          icon={ownVisit ? "walk-outline" : KIND.field.icon}
           title={title}
-          time={item.meetings[0]?.startTime ?? null}
+          time={firstTime}
           line={line}
           mine={mine}
           color={KIND.field.color}
@@ -1666,16 +1748,21 @@ function FieldDay({
       {(mode === "inline" && open) || mode === "detail" ? (
         <View style={[styles.inset, mode === "detail" && styles.insetDetail]}>
           <View style={[styles.card, styles.cardFirst]}>
-            {item.meetings.map((m) => (
-              <PartLine
-                key={m.id}
-                time={m.startTime}
-                title={what(m)}
-                subtitle={m.address}
-                name={m.conductorPublisherId ? nameOf.get(m.conductorPublisherId) ?? null : null}
-                mine={!!me && m.conductorPublisherId === me}
-              />
-            ))}
+            {day.shown.map(lineOf)}
+            {day.others.length ? (
+              <Pressable
+                style={({ pressed }) => [styles.othersToggle, pressed && styles.pressed]}
+                onPress={() => setShowOthers((v) => !v)}
+                accessibilityRole="button"
+                accessibilityState={{ expanded: showOthers }}
+              >
+                <Text style={styles.othersToggleText}>
+                  {showOthers ? t("feed.fieldOthersHide") : t("feed.fieldOthers", { count: day.others.length })}
+                </Text>
+                <Ionicons name={showOthers ? "chevron-up" : "chevron-down"} size={16} color={SOFT} />
+              </Pressable>
+            ) : null}
+            {showOthers ? day.others.map(lineOf) : null}
           </View>
         </View>
       ) : null}
@@ -1856,6 +1943,16 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   filteredAllText: { fontSize: 14, fontFamily: FONT.bold, color: "#ffffff" },
+  othersToggle: {
+    minHeight: 44,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    borderTopWidth: 1,
+    borderTopColor: "#f1f5f9",
+    marginTop: 4,
+  },
+  othersToggleText: { fontSize: 14, fontFamily: FONT.bold, color: MUTE },
   pressed: { opacity: 0.7 },
   yearStart: { flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 16, paddingTop: 16 },
   yearStartText: { fontSize: 12, fontFamily: FONT.semibold, color: SOFT },
@@ -1912,16 +2009,12 @@ const styles = StyleSheet.create({
   minePill: {
     flexShrink: 0,
     marginTop: 1,
-    fontSize: 11,
-    fontFamily: FONT.extrabold,
-    letterSpacing: 0.4,
-    textTransform: "uppercase",
-    color: ACC,
-    backgroundColor: ACC_BG,
+    width: 22,
+    height: 20,
     borderRadius: 6,
-    overflow: "hidden",
-    paddingHorizontal: 7,
-    paddingVertical: 2,
+    backgroundColor: ACC_BG,
+    alignItems: "center",
+    justifyContent: "center",
   },
   minePillPast: { color: SOFT, backgroundColor: "#f1f5f9" },
   mine: { flexShrink: 1, fontSize: 14, fontFamily: FONT.semibold, color: ACC },

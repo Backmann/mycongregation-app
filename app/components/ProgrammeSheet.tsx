@@ -87,6 +87,22 @@ export function PrayerLine({
 export type Helper = { label: string; name?: string | null; mine?: boolean };
 
 /**
+ * The viewer's own name, set apart — instead of «Вы» (Lionel, 26 September).
+ * The sheet is read on a shared tablet on the platform, and sometimes under
+ * someone else's account; «Вы» there names the wrong person, a name never
+ * does. The mark keeps what «Вы» was for: yours is seen at a glance.
+ */
+function MeChip({ name, small, right }: { name?: string | null; small?: boolean; right?: boolean }) {
+  const { t } = useTranslation();
+  return (
+    <View style={[styles.me, small && styles.meSmall, right && styles.meRight]}>
+      <Ionicons name="person" size={small ? 12 : 14} color={ACC} />
+      <Text style={[styles.meText, small && styles.meTextSmall]}>{name || t('feed.you')}</Text>
+    </View>
+  );
+}
+
+/**
  * Who takes a part: «You» as a mark, a name, or a plain «not assigned»; under
  * it, quieter, the one who helps («Помощник: …»). Each line answers for its
  * own person — «You» on the helper's line when you help, never in the place
@@ -113,7 +129,7 @@ function Person({
   const align = left ? styles.alignLeft : null;
   const col = left ? styles.personColLeft : styles.personCol;
   const main = mine ? (
-    <Text style={styles.you}>{t('feed.you')}</Text>
+    <MeChip name={name} right={!left} />
   ) : name ? (
     <Text style={[styles.person, { color: tone }, align]}>{name}</Text>
   ) : (
@@ -127,7 +143,7 @@ function Person({
         <View style={[styles.helperRow, left ? null : styles.helperRowRight]}>
           <Text style={styles.helperLabel}>{`${helper.label}:`}</Text>
           {helper.mine ? (
-            <Text style={styles.youSmall}>{t('feed.you')}</Text>
+            <MeChip name={helper.name} small />
           ) : (
             <Text style={[styles.helperName, align]}>{helper.name ?? t('feed.unassigned')}</Text>
           )}
@@ -253,13 +269,16 @@ export function ChairLine({
       </View>
       <View style={styles.chairBody}>
         <Text style={styles.chairLabel}>{label}</Text>
-        {name ? (
+        {mine ? (
+          <View style={styles.chairMe}>
+            <MeChip name={name} />
+          </View>
+        ) : name ? (
           <Text style={styles.chairName}>{name}</Text>
         ) : (
           <Text style={styles.nobodyLeft}>{t('feed.unassigned')}</Text>
         )}
       </View>
-      {mine ? <Text style={styles.you}>{t('feed.you')}</Text> : null}
     </View>
   );
 }
@@ -312,31 +331,26 @@ const styles = StyleSheet.create({
   alignLeft: { textAlign: 'left' },
   person: { fontSize: 16, lineHeight: 21, fontFamily: FONT.bold, color: INK, textAlign: 'right' },
   personExtra: { fontSize: 14, fontFamily: FONT.medium, color: MUTE, textAlign: 'right', marginTop: 2 },
-  you: {
-    fontSize: 14,
-    fontFamily: FONT.extrabold,
-    color: ACC,
+  me: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    gap: 5,
     backgroundColor: ACC_BG,
-    borderRadius: 7,
-    overflow: 'hidden',
-    paddingHorizontal: 9,
-    paddingVertical: 2,
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
   },
+  meRight: { alignSelf: 'flex-end' },
+  meSmall: { borderRadius: 6, paddingHorizontal: 6, paddingVertical: 1, gap: 4 },
+  meText: { fontSize: 16, lineHeight: 21, fontFamily: FONT.extrabold, color: ACC },
+  meTextSmall: { fontSize: 14, lineHeight: 19 },
+  chairMe: { marginTop: 2, flexDirection: 'row' },
   nobody: { fontSize: 15, fontFamily: FONT.medium, color: SOFT, textAlign: 'right' },
   helperRow: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 6, marginTop: 4 },
   helperRowRight: { justifyContent: 'flex-end' },
   helperLabel: { fontSize: 14, fontFamily: FONT.medium, color: SOFT },
   helperName: { fontSize: 15, fontFamily: FONT.semibold, color: MUTE },
-  youSmall: {
-    fontSize: 13,
-    fontFamily: FONT.extrabold,
-    color: ACC,
-    backgroundColor: ACC_BG,
-    borderRadius: 6,
-    overflow: 'hidden',
-    paddingHorizontal: 7,
-    paddingVertical: 1,
-  },
   nobodyLeft: { fontSize: 15, fontFamily: FONT.medium, color: SOFT },
   pairRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', gap: 12, paddingVertical: 8 },
   pairLabel: { fontSize: 14, fontFamily: FONT.semibold, color: SOFT, flexShrink: 1 },

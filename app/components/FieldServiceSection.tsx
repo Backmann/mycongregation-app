@@ -28,6 +28,7 @@ import {
   UpdateFieldServiceMeetingInput,
   hallsApi,
   fieldServiceStatsApi,
+  fieldServiceApi,
   specialEventsApi,
   absencesApi,
   serviceGroupsApi,
@@ -480,6 +481,49 @@ export function FieldServiceForm({
     pickDate && !editing && pickedDate
       ? pickedDate
       : formatDateISO(addDays(parseISODate(effectiveWeek), dayOfWeek - 1));
+  // The other meetings of the same day. On a service overseer's visit the
+  // visited group goes to the visit and nowhere else (Lionel, 26 September),
+  // so a visit and another meeting on one day are worth one line to whoever
+  // plans them: the other meeting stays for everybody else.
+  const sameWeekQuery = useQuery({
+    queryKey: ['field-service', 'week', effectiveWeek],
+    queryFn: () =>
+      fieldServiceApi.list({
+        weekStart: effectiveWeek,
+        weekEnd: formatDateISO(addDays(parseISODate(effectiveWeek), 7)),
+      }),
+    enabled: visible && !!effectiveWeek,
+  });
+  const sameDay = (sameWeekQuery.data ?? []).filter(
+    (m) =>
+      m.weekStartDate === effectiveWeek &&
+      m.dayOfWeek === dayOfWeek &&
+      m.id !== editing?.id,
+  );
+  const groupNameOf = (id: string | null) =>
+    groups.find((g) => g.id === id)?.name ?? '';
+  const sameDayNote = (() => {
+    const visitNow = !isGeneral && !!serviceGroupId && overseerVisit;
+    if (visitNow) {
+      // Other groups' own meetings are theirs anyway; only the ones anybody
+      // may come to would have had this group too.
+      const rest = sameDay.filter((m) => !m.serviceGroupId);
+      if (rest.length === 0) return null;
+      return t('fieldService.visitSameDay', {
+        group: groupNameOf(serviceGroupId),
+        times: rest.map((m) => m.startTime).join(', '),
+      });
+    }
+    const v = sameDay.find((m) => m.serviceOverseerVisit && m.serviceGroupId);
+    // Another group's own meeting was never the visited group's to come to.
+    if (!v || (!!serviceGroupId && serviceGroupId !== v.serviceGroupId)) {
+      return null;
+    }
+    return t('fieldService.sameDayAsVisit', {
+      group: groupNameOf(v.serviceGroupId),
+      time: v.startTime,
+    });
+  })();
   // Special events (congress, CO visit, ...) overlapping the meeting date.
   const eventsQuery = useQuery({
     queryKey: ['special-events'],
@@ -904,6 +948,11 @@ export function FieldServiceForm({
               </>
             ) : null}
 
+            {sameDayNote ? (
+              <Text style={styles.warnHint} testID="fs-same-day-note">
+                {sameDayNote}
+              </Text>
+            ) : null}
             {/* The visit is offered only where it can mean something: it is a
                 visit TO A GROUP, and the database refuses one without a group.
                 Showing the switch anyway would let a person set it and lose

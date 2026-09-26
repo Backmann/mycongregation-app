@@ -626,6 +626,11 @@ function MeetingRow({
             </Text>
           </View>
         ) : null}
+        {entry.notForMyGroupToday ? (
+          <Text style={tl.fsNotForYou}>
+            {t("feed.fieldNotForYourGroup")}
+          </Text>
+        ) : null}
         {entry.conductorName || entry.unassignedConductor ? (
           <Text
             style={[tl.bgMeta, entry.unassignedConductor && tl.fsUnassigned]}
@@ -981,7 +986,7 @@ function CoVisitRow({ item: it }: { item: MyCoVisitItem }) {
 function HomeTimeline() {
   const { t, i18n } = useTranslation();
   const { user } = useAuth();
-  const { myPublisherId } = useMyPublisher();
+  const { myPublisherId, myPublisher } = useMyPublisher();
   const [showFar, setShowFar] = useState(false);
   const todayISO = formatDateISO(new Date());
   const baseMonday = startOfWeekMonday(new Date());
@@ -1069,6 +1074,8 @@ function HomeTimeline() {
           g.name,
         ]),
       ),
+      myServiceGroupId: myPublisher?.serviceGroupId ?? null,
+      myPublisherId: myPublisherId ?? null,
       events: eventsQ.data ?? [],
       eldersMeetings: eldersMeetingsQ.data ?? [],
       absences: absencesQ.data ?? [],
@@ -1095,6 +1102,8 @@ function HomeTimeline() {
     absencesQ.data,
     coVisitQ.data,
     coFieldServiceQ.data,
+    myPublisher?.serviceGroupId,
+    myPublisherId,
     todayISO,
     i18n.language,
   ]);
@@ -1367,6 +1376,12 @@ const tl = StyleSheet.create({
   bgKind: { fontSize: 12, fontWeight: "700", fontFamily: "Manrope_700Bold" },
   bgTitle: { fontSize: 14, color: "#475569", fontFamily: "Manrope_500Medium" },
   bgMeta: { fontSize: 12.5, color: "#94a3b8", marginTop: 1 },
+  fsNotForYou: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#b45309",
+    marginTop: 2,
+  },
   fsGroup: {
     fontSize: 12.5,
     color: "#0369a1",

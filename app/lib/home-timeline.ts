@@ -17,6 +17,7 @@
  * конгресс, отменяющий встречу, — один раз (как отменённая встреча), а не и
  * встречей, и событием.
  */
+import { arrangeFieldDay, type FieldPlace } from './field-audience';
 import {
   FieldServiceMeeting,
   MeetingSettingsVersion,
@@ -62,6 +63,8 @@ export interface MeetingEntry {
    */
   groupName?: string | null;
   serviceOverseerVisit?: boolean;
+  /** The viewer's group is on a visit that day; this other meeting is not for them. */
+  notForMyGroupToday?: boolean;
   sourceUrl: string | null;
   /** When a convention/assembly cancels this meeting, the event that did it. */
   replacedBy: SpecialEvent | null;
@@ -187,6 +190,13 @@ export interface BuildTimelineInput {
   publishersById: Map<string, Publisher>;
   /** Service-group names, so a visit can say whose group it is. */
   groupNameById?: Map<string, string>;
+  /**
+   * The signed-in person's service group and card. On a day the service
+   * overseer visits their group they go to the visit only, and other groups'
+   * meetings are not theirs to read (lib/field-audience.ts).
+   */
+  myServiceGroupId?: string | null;
+  myPublisherId?: string | null;
   events: SpecialEvent[];
   /** Approved meetings of the body; empty for anybody who is not an elder. */
   eldersMeetings?: {
@@ -274,6 +284,8 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
     fieldServiceMeetings,
     publishersById,
     groupNameById,
+    myServiceGroupId = null,
+    myPublisherId = null,
     events,
     eldersMeetings = [],
     absences = [],
@@ -452,7 +464,25 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
   }
 
   // ---- Field-service meetings ----
+  // Who each meeting is for, per day — the same rule as the Programme feed.
+  // Other groups' own meetings and visits are left out: Home is what is
+  // mine, and the feed still lists them under «ещё N встреч».
+  const fieldPlaces = new Map<string, FieldPlace>();
+  const hiddenField = new Set<string>();
+  {
+    const byDay = new Map<string, FieldServiceMeeting[]>();
+    for (const m of fieldServiceMeetings) {
+      const k = `${m.weekStartDate}|${m.dayOfWeek}`;
+      byDay.set(k, [...(byDay.get(k) ?? []), m]);
+    }
+    for (const day of byDay.values()) {
+      const a = arrangeFieldDay(day, myServiceGroupId, myPublisherId);
+      for (const p of a.shown) fieldPlaces.set(p.meeting.id, p);
+      for (const p of a.others) hiddenField.add(p.meeting.id);
+    }
+  }
   for (const m of fieldServiceMeetings) {
+    if (hiddenField.has(m.id)) continue;
     const dateISO = formatDateISO(
       addDays(new Date(`${m.weekStartDate}T00:00:00`), m.dayOfWeek - 1),
     );
@@ -486,6 +516,7 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
         ? (groupNameById?.get(m.serviceGroupId) ?? null)
         : null,
       serviceOverseerVisit: !!m.serviceOverseerVisit,
+      notForMyGroupToday: !!fieldPlaces.get(m.id)?.notForMyGroupToday,
       myParts: iConduct ? [{ section: null, title: youConductLabel }] : [],
       weeklyCleaning: false,
       isGeneral: !!m.isGeneral,
