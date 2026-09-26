@@ -18,14 +18,20 @@
  *     server's (api.mycongregation.org). A build that talks to the live site
  *     is never served: the audit signs in and presses buttons.
  *
+ * Freshness: the build is stamped with a fingerprint of the code it was made
+ * from (build-info.json, see code-fingerprint.mjs); the walkthrough refuses a
+ * build whose stamp is not the code on disk. On 25 September A15 failed on a
+ * build older than the patch, and the time went to a fault that was not there.
+ *
  * The build goes to a folder NEXT TO the repository (…/congmap-web), not
  * inside it: nothing for git to see, and app/dist — which EAS uses — is left
  * alone.
  */
 import { spawnSync } from 'node:child_process';
 import { createServer } from 'node:http';
-import { createReadStream, existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import { createReadStream, existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { extname, join, resolve } from 'node:path';
+import { appFingerprint, changedFiles, describeChanges } from './code-fingerprint.mjs';
 
 const PORT = Number(process.env.PORT || 8082);
 const OUT = resolve(process.cwd(), '..', '..', 'congmap-web');
@@ -46,6 +52,9 @@ if (!/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?\//.test(api))
   fail(`EXPO_PUBLIC_API_URL в app/.env — ${api}, а не сервер на этом компьютере.`);
 
 if (!process.argv.includes('--serve')) {
+  // What is being built — taken before, and again after: a file saved while
+  // the bundler runs may or may not be in the build, and nobody can tell.
+  const before = appFingerprint(process.cwd());
   console.log(`· собираю веб в ${OUT} (сервер: ${api}) — несколько минут…`);
   // --clear: Metro keeps compiled modules between runs, and a module compiled
   // for `eas update` carries the LIVE address baked in — reused here, it put
@@ -62,6 +71,19 @@ if (!process.argv.includes('--serve')) {
     },
   });
   if (r.status !== 0) fail('сборка не удалась (см. выше).');
+  const after = appFingerprint(process.cwd());
+  if (after.hash !== before.hash) {
+    fail(
+      `код менялся во время сборки (${describeChanges(changedFiles(before, after))}) — ` +
+        'сборка может быть смесью старого и нового. Запусти ещё раз.',
+    );
+  }
+  // The stamp the walkthrough reads before it trusts this build.
+  writeFileSync(
+    join(OUT, 'build-info.json'),
+    JSON.stringify({ app: before, api, builtAt: new Date().toISOString() }),
+  );
+  console.log(`· отпечаток кода в сборке: ${before.hash}`);
 }
 
 // What the built script will actually talk to.

@@ -17,13 +17,23 @@
  * Ничего не назначает и не снимает: окно назначения открывается и
  * закрывается. Боевую базу не трогает никогда — адрес только localhost.
  *
+ * Перед началом проверяет, что сборка и сервер собраны из кода в папках, а в
+ * базе все миграции, — иначе отказывается (см. freshness ниже).
+ *
  * Запуск (база, сервер и Expo web работают):
  *     node scripts/walkthrough.mjs [метка]
  * Можно переопределить: APP_URL, ADMIN, ELDER, PUBLISHER, PASSWORD.
  */
 import { chromium } from 'playwright';
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
+import { spawnSync } from 'node:child_process';
+import {
+  appFingerprint,
+  changedFiles,
+  describeChanges,
+  serverFingerprint,
+} from './code-fingerprint.mjs';
 
 const BASE = process.env.APP_URL || 'http://localhost:8081';
 if (!/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(BASE)) {
@@ -34,6 +44,84 @@ const ADMIN = process.env.ADMIN || 'bauer800@example.invalid';
 const ELDER = process.env.ELDER || 'bondar838@example.invalid';
 const PUBLISHER = process.env.PUBLISHER || 'bergman855@example.invalid';
 const PASSWORD = process.env.PASSWORD || 'local12345';
+
+// --- is what we are about to test the code on disk? ---------------------------
+/*
+ * 25 September: A15 failed on a build older than the patch, and the time went
+ * to a fault that was not there. A green run on old code is worse still — it
+ * says «checked» about something that was not. So before anything opens:
+ *   - the web build must carry the fingerprint of the code in this folder
+ *     (local-web.mjs stamps it);
+ *   - the server must have started from the source in its folder, and the
+ *     database must have every migration (the server tells, in development).
+ * There is no «run anyway»: rebuilding costs minutes, a false green costs a
+ * release. SERVER_DIR — where the server's folder is, if not ../server.
+ */
+const SERVER_DIR = process.env.SERVER_DIR || resolve(process.cwd(), '..', 'server');
+function refuse(msg) {
+  console.error(`Отказ: ${msg}`);
+  process.exit(1);
+}
+async function freshness() {
+  const info = await fetch(`${BASE}/build-info.json`)
+    .then((r) => (r.ok ? r.json() : null))
+    .catch(() => null);
+  if (!info?.app?.hash) {
+    refuse(
+      `у сборки на ${BASE} нет отметки, из какого кода она собрана (собрана до 26 сентября, или это не local-web).\n` +
+        '  Пересоберите: node scripts/local-web.mjs',
+    );
+  }
+  const app = appFingerprint(process.cwd());
+  if (app.hash !== info.app.hash) {
+    refuse(
+      `сборка старше кода — с её сборки изменены: ${describeChanges(changedFiles(info.app, app))}.\n` +
+        '  Остановите local-web (Ctrl+C) и пересоберите: node scripts/local-web.mjs',
+    );
+  }
+  const api = String(info.api || '').replace(/\/$/, '');
+  const res = await fetch(`${api}/health/dev`).catch(() => null);
+  if (!res) refuse(`сервер ${api} не отвечает — в ~/congmap/server: npm run start:dev`);
+  if (res.status === 404) {
+    refuse(
+      'сервер не сообщает, из какого кода он запущен: либо он старее этой проверки (обновите ~/congmap/server: git pull),\n' +
+        '  либо запущен не в режиме разработки (в server/.env должно быть NODE_ENV=development). Потом: npm run start:dev',
+    );
+  }
+  const dev = await res.json().catch(() => null);
+  if (!existsSync(join(SERVER_DIR, 'src'))) {
+    refuse(`не нашёл исходники сервера в ${SERVER_DIR} — укажите папку: SERVER_DIR=… node scripts/walkthrough.mjs`);
+  }
+  const server = serverFingerprint(SERVER_DIR);
+  if (!dev || dev.sourceFingerprint !== server.hash) {
+    refuse(
+      `сервер работает на старом коде (запущен из ${dev?.sourceFingerprint ?? '?'}, в папке сейчас ${server.hash}).\n` +
+        '  Перезапустите его: Ctrl+C в окне сервера, затем npm run start:dev. Если он не стартует — ошибка в том окне.',
+    );
+  }
+  if (dev.pendingMigrations) {
+    refuse('в локальной базе не применены миграции — в ~/congmap/server: npm run migration:run, потом снова обход.');
+  }
+  // Which commit, and how much on top of it — for the report, not a condition.
+  const git = (args, cwd) => {
+    const r = spawnSync('git', args, { cwd, encoding: 'utf8' });
+    return r.status === 0 ? r.stdout.trim() : null;
+  };
+  const describeRepo = (cwd, path) => {
+    const head = git(['rev-parse', '--short', 'HEAD'], cwd);
+    const dirty = (git(['status', '--porcelain', '--', path], cwd) || '').split('\n').filter(Boolean).length;
+    return head ? `${head}${dirty ? ` + ${dirty} незакоммич.` : ''}` : '?';
+  };
+  return {
+    app: app.hash,
+    server: server.hash,
+    appRepo: describeRepo(process.cwd(), '.'),
+    serverRepo: describeRepo(SERVER_DIR, 'src'),
+  };
+}
+const CODE = await freshness();
+const codeLine = `Код: приложение ${CODE.app} (${CODE.appRepo}) · сервер ${CODE.server} (${CODE.serverRepo})`;
+console.log(`· ${codeLine} — сборка и сервер свежие`);
 
 const now = new Date();
 const pad = (n) => String(n).padStart(2, '0');
@@ -817,6 +905,7 @@ const bad = results.filter((r) => r.ok === false).length;
 const skipped = results.filter((r) => r.ok === null).length;
 const lines = [
   `Обход ${stamp} — ✅ ${ok} · ❌ ${bad} · ⚠️ ${skipped}`,
+  codeLine,
   '',
   ...results.map((r) => `${r.ok === true ? '✅' : r.ok === false ? '❌' : '⚠️'} ${r.id} ${r.title}${r.note ? ' — ' + r.note : ''}${r.file ? ` [${r.file}]` : ''}`),
   '',

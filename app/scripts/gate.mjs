@@ -50,6 +50,7 @@ const STEPS = [
   // draw them (26 September: a visit and an ordinary meeting read as two
   // meetings for everybody).
   ['Кому встреча для проповеди', 'node', ['scripts/check-field-audience.mjs']],
+  ['Отпечаток кода (как у сервера)', 'node', ['scripts/check-code-fingerprint.mjs']],
   // Where a tapped notification leads is written twice — the service worker
   // cannot import from lib/ — so the two copies are compared here.
   // Сколько длится каждый отрезок будней встречи. Лист программы берёт
