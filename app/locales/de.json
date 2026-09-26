@@ -2218,13 +2218,8 @@
   },
   "home": {
     "title": "Start",
-    "upcomingEvents": "Bevorstehende Ereignisse",
     "actions": {
-      "report": "Bericht abgeben",
-      "events": "Ereignisse",
-      "absences": "Abwesenheiten",
-      "myGroup": "Meine Gruppe",
-      "tasks": "Aufgaben"
+      "myGroup": "Meine Gruppe"
     },
     "meeting": {
       "midweek": "Zusammenkunft unter der Woche",
@@ -2235,20 +2230,15 @@
       "withPartner": "mit {{name}}"
     },
     "timeline": {
-      "title": "Die nächsten zwei Wochen",
       "today": "Heute",
       "tomorrow": "Morgen",
       "emptyNear": "Für die nächsten zwei Wochen ist nichts geplant",
-      "far": "Später",
-      "farHint": "nur deine Aufgaben · {{count}}",
-      "away": "Du bist abwesend",
+      "away": "Abwesend",
       "outgoingTalk": "Vortrag auswärts",
       "cleaningAfterMeeting": "Eure Gruppe reinigt nach dieser Zusammenkunft",
-      "openMap": "Karte öffnen",
-      "allMine": "Alle meine Aufgaben"
+      "openMap": "Karte öffnen"
     },
     "report": {
-      "outstanding": "Bericht für {{month}} nicht abgegeben",
       "submitted": "Bericht für {{month}} abgegeben"
     },
     "pending": {
@@ -2295,7 +2285,6 @@
       "withWhom": "zusammen mit {{name}}",
       "overseerVisitTitle": "Besuch des Dienstaufsehers"
     },
-    "nextFieldService": "Predigtdienst-Zusammenkunft",
     "myTasksScreen": {
       "title": "Meine Aufgaben",
       "empty": "Keine Aufgaben in den kommenden Wochen"
@@ -2323,6 +2312,52 @@
     },
     "rowKind": {
       "duty": "Aufgabe"
+    },
+    "next": {
+      "title": "Als Nächstes für Sie",
+      "today": "heute",
+      "tomorrow": "morgen",
+      "nowOn": "läuft gerade",
+      "inMinutes_one": "in {{count}} Minute",
+      "inMinutes_other": "in {{count}} Minuten",
+      "inHours_one": "in {{count}} Stunde",
+      "inHours_other": "in {{count}} Stunden",
+      "inDays_one": "in {{count}} Tag",
+      "inDays_other": "in {{count}} Tagen",
+      "following": "Danach — {{when}}: {{what}}",
+      "nothingNear": "In den nächsten zwei Wochen keine Aufgaben",
+      "away": "An diesen Tagen sind Sie als abwesend eingetragen ({{range}}). Sagen Sie es dem, der das Programm plant.",
+      "programme": "Programm",
+      "pair": "zusammen mit {{name}}",
+      "fieldConduct": "Sie leiten das Treffen für den Predigtdienst",
+      "onPlan": "im Plan",
+      "talkNamed": "Ansprache „{{title}}“"
+    },
+    "todo": {
+      "title": "Zu erledigen",
+      "report": "Bericht für {{month}} abgeben"
+    },
+    "list": {
+      "title": "Zwei Wochen",
+      "mineAbove": "Ihres — siehe oben",
+      "mine": "Ihres",
+      "yourGroup": "Ihre Gruppe {{name}}",
+      "conducts": "Leitet: {{name}}",
+      "groupOnVisit": "An diesem Tag geht Ihre Gruppe nur zum Besuch",
+      "youOnVisit_one": "Noch {{count}} Treffen an diesem Tag — Sie sind beim Besuch",
+      "youOnVisit_other": "Noch {{count}} Treffen an diesem Tag — Sie sind beim Besuch",
+      "allMine": "Alle meine Aufgaben",
+      "more": "noch {{count}} · bis {{date}}",
+      "partial": "Nicht alles wurde geladen — zum Aktualisieren nach unten ziehen.",
+      "talkIsYours": "Diese Ansprache halten Sie"
+    },
+    "soon": {
+      "title": "Demnächst",
+      "inWeeks_one": "in {{count}} Woche",
+      "inWeeks_other": "in {{count}} Wochen"
+    },
+    "parts": {
+      "cbsReader": "Leser beim Versammlungsbibelstudium"
     }
   },
   "halls": {

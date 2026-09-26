@@ -640,17 +640,35 @@ let memorialWeek = null; // found as the admin, reused by the others
     return 'язык возвращён на русский';
   });
 
-  await check(page, 'A21', 'Главная → «Все мои задания» → одна шапка → назад на Главную', async () => {
-    await go(page, '/home', 'Ближайшие две недели');
-    await tap(page, 'Все мои задания');
+  await check(page, 'A21', 'Главная → «Все мои назначения» → одна шапка → назад на Главную', async () => {
+    await go(page, '/home', 'Две недели');
+    await tap(page, 'Все мои назначения');
     await atPath(page, '/home/my-assignments');
     await page.waitForTimeout(1500);
     // One header — the screen once drew a second one under the stack's.
-    const titles = await page.getByText(/^Мои задания$/).filter({ visible: true }).count();
-    if (titles !== 1) throw new Error(`заголовок «Мои задания» виден ${titles} раз(а)`);
-    await snap(page, 'A21-мои-задания');
+    const titles = await page.getByText(/^Мои назначения$/).filter({ visible: true }).count();
+    if (titles !== 1) throw new Error(`заголовок «Мои назначения» виден ${titles} раз(а)`);
+    await snap(page, 'A21-мои-назначения');
     await back(page);
     await atPath(page, '/home');
+  });
+  await homeChecks(page, 'A');
+  // 26 September: on a laptop Home is two columns within 1000 points — the
+  // list on the right, the card and the tasks on the left.
+  await check(page, 'A27', 'Главная на ноутбуке: две колонки, не шире 1000 точек', async () => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await go(page, '/home', 'Две недели');
+    await page.waitForTimeout(1200);
+    const box = async (text) => (await see(page, text)).boundingBox();
+    const list = await box('Две недели');
+    const greet = await box(/^(Доброе утро|Добрый день|Добрый вечер|Доброй ночи)/);
+    await snap(page, 'A27-ноутбук');
+    await page.setViewportSize(PHONE);
+    if (!list || !greet) throw new Error('не нашёл заголовков');
+    if (list.x < greet.x + 300) throw new Error(`«Две недели» не во второй колонке: x ${Math.round(list.x)} при приветствии ${Math.round(greet.x)}`);
+    const span = list.x + list.width - greet.x;
+    if (span > 1000) throw new Error(`содержимое шире 1000 точек: ${Math.round(span)}`);
+    return `колонки с ${Math.round(greet.x)} и ${Math.round(list.x)} точек`;
   });
   // 25 September: an arrow used to empty the screen to a spinner and refill it
   // piece by piece. Now the week being left stays, dimmed, until the next one
@@ -684,6 +702,87 @@ let memorialWeek = null; // found as the admin, reused by the others
 
   await keep();
   await ctx.close();
+}
+
+/**
+ * Home, rebuilt 26 September (Lionel chose variant A): no row of round
+ * buttons, «Ваше ближайшее» on top, every row opening its own meeting in the
+ * Programme. Written so it holds on any data: where the account has nothing
+ * of its own, or no field service in the two weeks, the check says so and
+ * passes on what there is.
+ */
+/**
+ * Is a feed card open? This build of react-native-web does not write
+ * aria-expanded, so it is read from what an open card holds and a closed row
+ * never does: the tabs of a meeting, or the bare hour at the start of each
+ * line of the programme or of a field-service day («19:06», «10:30»).
+ */
+async function isOpenCard(loc) {
+  return loc.evaluate(
+    (el) => !!el.querySelector('[role="tablist"]') || /^\d{1,2}:\d{2}$/m.test(el.innerText || ''),
+  );
+}
+
+async function homeChecks(page, p) {
+  await check(page, `${p}23`, 'Главная: нет ряда кругов, есть «Две недели» и «Все мои назначения»', async () => {
+    await go(page, '/home', 'Две недели');
+    await page.waitForTimeout(1500);
+    for (const w of ['Сдать отчёт', 'События', 'Отсутствия', 'Задачи', 'Моя группа', 'Ближайшие две недели', 'Дальше'])
+      await notSee(page, w);
+    await see(page, 'Все мои назначения');
+  });
+  await check(page, `${p}24`, 'Главная: «Ваше ближайшее» открывает свою встречу в Программе', async () => {
+    await go(page, '/home', 'Две недели');
+    await page.waitForTimeout(1500);
+    const label = page.getByText(/^Ваше ближайшее$/).filter({ visible: true });
+    if (!(await label.count())) return 'своих назначений нет — карточки нет, это верно';
+    const programme = page.getByText(/^Программа ›$/).filter({ visible: true }).first();
+    if (!(await programme.count())) return 'ближайшее — не встреча собрания, открывать нечего';
+    await programme.click();
+    await atPath(page, '/schedule');
+    const u = new URL(page.url());
+    const week = u.searchParams.get('week');
+    const meeting = u.searchParams.get('meeting');
+    if (!week || !meeting) throw new Error(`в адресе нет недели или встречи: ${u.search}`);
+    const card = page.getByTestId(meeting === 'memorial' ? `memorial-${week}` : `meeting-${week}-${meeting}`);
+    await card.waitFor({ timeout: 30000 });
+    await page.waitForTimeout(1500);
+    if (!(await isOpenCard(card))) throw new Error(`встреча ${week} ${meeting} не раскрыта`);
+    return `${week} · ${meeting}, раскрыта`;
+  });
+  await check(page, `${p}25`, 'Главная: строка встречи для проповеди открывает свой день в Программе', async () => {
+    await go(page, '/home', 'Две недели');
+    await page.waitForTimeout(1500);
+    const row = page.getByText(/^Проповедь · \d/).filter({ visible: true }).first();
+    if (!(await row.count())) return 'встреч для проповеди в две недели нет';
+    await row.scrollIntoViewIfNeeded().catch(() => {});
+    await row.click();
+    await atPath(page, '/schedule');
+    const u = new URL(page.url());
+    const day = u.searchParams.get('day');
+    if (u.searchParams.get('meeting') !== 'field' || !day) throw new Error(`адрес не называет день проповеди: ${u.search}`);
+    const piece = page.getByTestId(`piece-field|${day}`);
+    await piece.waitFor({ timeout: 30000 });
+    await page.waitForTimeout(1500);
+    if (!(await isOpenCard(piece))) throw new Error(`день ${day} не раскрыт`);
+    return `день ${day}, раскрыт`;
+  });
+  await check(page, `${p}26`, 'Главная: строка встречи собрания открывает её в Программе', async () => {
+    await go(page, '/home', 'Две недели');
+    await page.waitForTimeout(1500);
+    const row = page.getByText(/^(Будний|Выходной) · \d/).filter({ visible: true }).first();
+    if (!(await row.count())) return 'встреч собрания в две недели нет (конгресс?)';
+    const kind = /^Будний/.test((await row.textContent()) || '') ? 'midweek' : 'weekend';
+    await row.click();
+    await atPath(page, '/schedule');
+    const u = new URL(page.url());
+    if (u.searchParams.get('meeting') !== kind) throw new Error(`ожидал встречу ${kind}, в адресе ${u.search}`);
+    const card = page.getByTestId(`meeting-${u.searchParams.get('week')}-${kind}`);
+    await card.waitFor({ timeout: 30000 });
+    await page.waitForTimeout(1500);
+    if (!(await isOpenCard(card))) throw new Error('встреча не раскрыта');
+    return `${u.searchParams.get('week')} · ${kind}`;
+  });
 }
 
 // --- the elder without assignments -------------------------------------------
@@ -755,11 +854,14 @@ try {
       return 'опубликована: программа и «Печать»';
     });
   } else skip('C02', 'Неделя Вечери у возвещателя', 'нет Вечери (см. A08)');
-  await check(page, 'C03', 'Собрание: нет «Управления», «Ответственных», «Составления»', async () => {
+  await check(page, 'C03', 'Собрание: нет «Управления», «Ответственных», «Составления»; «Моя группа» есть', async () => {
     await go(page, '/publishers');
     await page.waitForTimeout(1500);
     for (const w of ['Управление', 'Ответственные', 'Составление программы']) await notSee(page, w);
+    // The tile left Home on 26 September; this is now the one way in.
+    await see(page, 'Моя группа');
   });
+  await homeChecks(page, 'C');
   await check(page, 'C04', 'Служение: нет «Посещаемость встреч»; по адресу — «Нет доступа»', async () => {
     await go(page, '/service-reports');
     await page.waitForTimeout(2000);

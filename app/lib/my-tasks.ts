@@ -216,6 +216,24 @@ export function taskVisual(
 }
 
 /** Row title: part title, translated duty/cleaning, "you conduct" etc. */
+/**
+ * A meeting part's own name, without «помощник» or the pair — Home's card
+ * lays those out in pieces of their own (26 September). `taskTitle` builds
+ * its one-line form on it, so the two can never name a part differently.
+ */
+export function meetingPartLabel(item: MyAssignmentItem): string {
+  // Prayers: clean name only, ignore the joined imported title.
+  if (item.partKey && PRAYER_TASK_KEYS.has(item.partKey)) {
+    return getPartLabel(item.partKey);
+  }
+  let raw = item.label;
+  if (item.partKey && !SONG_TASK_KEYS.has(item.partKey)) {
+    const idx = raw.indexOf(': ');
+    if (idx > 0) raw = raw.slice(0, idx);
+  }
+  return getPartLabel(raw);
+}
+
 export function taskTitle(item: MyAssignmentItem, t: TFunc): string {
   if (item.kind === 'duty') {
     const label = t(`home.dutyTypes.${item.label}`, item.label);
@@ -247,15 +265,7 @@ export function taskTitle(item: MyAssignmentItem, t: TFunc): string {
     // ": "), to match the schedule's clean look. Songs keep their full
     // label (the song name IS the content); everything else is trimmed.
     // Prayers: clean name only, ignore the joined imported title.
-    if (item.partKey && PRAYER_TASK_KEYS.has(item.partKey)) {
-      return getPartLabel(item.partKey);
-    }
-    let raw = item.label;
-    if (item.partKey && !SONG_TASK_KEYS.has(item.partKey)) {
-      const idx = raw.indexOf(': ');
-      if (idx > 0) raw = raw.slice(0, idx);
-    }
-    const label = getPartLabel(raw);
+    const label = meetingPartLabel(item);
     // Who the pair is, not merely that there is one. «Оттачиваем навыки
     // (напарник)» left the brother to guess whom he is helping, and the pair
     // is half of what he needs to know before the meeting.

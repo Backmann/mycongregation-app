@@ -2238,13 +2238,8 @@
   },
   "home": {
     "title": "Главная",
-    "upcomingEvents": "Ближайшие события",
     "actions": {
-      "report": "Сдать отчёт",
-      "events": "События",
-      "absences": "Отсутствия",
-      "myGroup": "Моя группа",
-      "tasks": "Задачи"
+      "myGroup": "Моя группа"
     },
     "meeting": {
       "midweek": "Встреча в будний день",
@@ -2255,20 +2250,15 @@
       "withPartner": "с {{name}}"
     },
     "timeline": {
-      "title": "Ближайшие две недели",
       "today": "Сегодня",
       "tomorrow": "Завтра",
       "emptyNear": "На ближайшие две недели ничего не запланировано",
-      "far": "Дальше",
-      "farHint": "только твои задания · {{count}}",
-      "away": "Тебя нет",
+      "away": "В отъезде",
       "outgoingTalk": "Доклад на выезде",
       "cleaningAfterMeeting": "Уборка после встречи — ваша группа",
-      "openMap": "Открыть карту",
-      "allMine": "Все мои задания"
+      "openMap": "Открыть карту"
     },
     "report": {
-      "outstanding": "Отчёт за {{month}} не сдан",
       "submitted": "Отчёт за {{month}} сдан"
     },
     "pending": {
@@ -2315,10 +2305,9 @@
       "withWhom": "вместе с {{name}}",
       "overseerVisitTitle": "Посещение служебного старейшины"
     },
-    "nextFieldService": "Встреча для проповеди",
     "myTasksScreen": {
-      "title": "Мои задания",
-      "empty": "Заданий на ближайшие недели нет"
+      "title": "Мои назначения",
+      "empty": "Назначений на ближайшие недели нет"
     },
     "feed": {
       "youConduct": "Вы ведёте эту встречу",
@@ -2343,6 +2332,62 @@
     },
     "rowKind": {
       "duty": "Обязанность"
+    },
+    "next": {
+      "title": "Ваше ближайшее",
+      "today": "сегодня",
+      "tomorrow": "завтра",
+      "nowOn": "идёт сейчас",
+      "inMinutes_one": "через {{count}} минуту",
+      "inMinutes_few": "через {{count}} минуты",
+      "inMinutes_many": "через {{count}} минут",
+      "inMinutes_other": "через {{count}} минуты",
+      "inHours_one": "через {{count}} час",
+      "inHours_few": "через {{count}} часа",
+      "inHours_many": "через {{count}} часов",
+      "inHours_other": "через {{count}} часа",
+      "inDays_one": "через {{count}} день",
+      "inDays_few": "через {{count}} дня",
+      "inDays_many": "через {{count}} дней",
+      "inDays_other": "через {{count}} дня",
+      "following": "Следующее — {{when}}: {{what}}",
+      "nothingNear": "В ближайшие две недели назначений нет",
+      "away": "В эти дни вы отмечены в отъезде ({{range}}). Сообщите тому, кто составляет программу.",
+      "programme": "Программа",
+      "pair": "в паре: {{name}}",
+      "fieldConduct": "Вы ведёте встречу для проповеди",
+      "onPlan": "на плане",
+      "talkNamed": "речь «{{title}}»"
+    },
+    "todo": {
+      "title": "Нужно сделать",
+      "report": "Сдать отчёт за {{month}}"
+    },
+    "list": {
+      "title": "Две недели",
+      "mineAbove": "Ваше — выше",
+      "mine": "Ваше",
+      "yourGroup": "Ваша группа {{name}}",
+      "conducts": "Ведёт: {{name}}",
+      "groupOnVisit": "В этот день ваша группа идёт только на посещение",
+      "youOnVisit_one": "Ещё {{count}} встреча в этот день — у вас посещение",
+      "youOnVisit_few": "Ещё {{count}} встречи в этот день — у вас посещение",
+      "youOnVisit_many": "Ещё {{count}} встреч в этот день — у вас посещение",
+      "youOnVisit_other": "Ещё {{count}} встречи в этот день — у вас посещение",
+      "allMine": "Все мои назначения",
+      "more": "ещё {{count}} · до {{date}}",
+      "partial": "Не всё загрузилось — потяните вниз, чтобы обновить.",
+      "talkIsYours": "Эта речь — ваша"
+    },
+    "soon": {
+      "title": "Скоро",
+      "inWeeks_one": "через {{count}} неделю",
+      "inWeeks_few": "через {{count}} недели",
+      "inWeeks_many": "через {{count}} недель",
+      "inWeeks_other": "через {{count}} недели"
+    },
+    "parts": {
+      "cbsReader": "Чтец на изучении Библии в собрании"
     }
   },
   "halls": {

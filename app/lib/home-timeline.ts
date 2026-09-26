@@ -44,7 +44,26 @@ export type MeetingKind = 'midweek' | 'weekend' | 'field_service';
 /** One nested "this part is yours" line inside a meeting row. */
 export interface MyPartLine {
   section: string | null;
+  /** The whole line as older screens print it (with «помощник», «с …»). */
   title: string;
+  /**
+   * The same part in pieces, for Home's card (26 September): the part's own
+   * name, whether he only helps, and with whom. Optional — a field-service
+   * line has only `title`.
+   */
+  label?: string;
+  asAssistant?: boolean;
+  partnerName?: string | null;
+  /** A duty (microphone, attendant…) rather than a part of the programme. */
+  isDuty?: boolean;
+  /** The part's key, for the few whose name is a role and not a topic. */
+  partKey?: string;
+  /**
+   * The topic of a part named by its role — the article of the Watchtower
+   * study, the theme of a public talk. «Доверяйте Иегове» alone did not say
+   * that he conducts the study.
+   */
+  topic?: string | null;
 }
 
 /** A meeting (midweek/weekend/field service) — background unless it is mine. */
@@ -94,6 +113,31 @@ export interface MeetingEntry {
   weekStartISO?: string;
   /** My parts/duties in this meeting; non-empty ⇒ the row is mine. */
   myParts: MyPartLine[];
+  /**
+   * What the meeting is about, as the Programme feed names it (26
+   * September): the weekend by its public talk and speaker, the weekday by
+   * its first talk. Null when the programme is not published or not loaded.
+   */
+  title?: string | null;
+  speaker?: string | null;
+  /**
+   * Held at the congregation's own hall — the address in the settings. Home
+   * says the address only when it is somewhere else: the same «Bunsenstr. 46»
+   * four times in two weeks was the biggest line of every card and told
+   * nobody anything.
+   */
+  atHall?: boolean;
+  /**
+   * Field service: how the signed-in person takes part, if at all — conducts
+   * it, or goes to the visit as the overseer or his assistant.
+   */
+  myRole?: 'conduct' | 'overseer' | 'assistant' | null;
+  /**
+   * Field service on a visit day: the meetings of that day this person does
+   * not go to, folded into one line under the visit (26 September). Home is
+   * what is the person's own; the feed still lists them all.
+   */
+  folded?: { kind: 'groupOnVisit' | 'youOnVisit'; count: number } | null;
   /** My service group cleans the hall after this meeting. */
   weeklyCleaning: boolean;
   /** A combined field-service meeting for the whole congregation. */
@@ -243,6 +287,12 @@ export interface BuildTimelineInput {
    * free of translation concerns.
    */
   resolvePart: (item: MyAssignmentItem) => MyPartLine;
+  /**
+   * What each meeting is about, keyed `${weekMonday}|${midweek|weekend}` —
+   * built by the caller from the published programme (it has the
+   * translations the builder does not).
+   */
+  meetingTitles?: Map<string, { title: string | null; speaker: string | null }>;
   nearDays?: number;
 }
 
@@ -317,6 +367,7 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
     youConductLabel,
     youVisitLabels,
     resolvePart,
+    meetingTitles,
     nearDays = 14,
   } = input;
 
@@ -461,8 +512,15 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
             it.weekStartDate === weekISO &&
             it.eventType === myEventType,
         )
-        .sort((a, b) => (a.partOrder ?? 999) - (b.partOrder ?? 999))
-        .map((it) => resolvePart(it));
+        // A part of the programme before a duty — the tie rule for «Ваше
+        // ближайшее» (20 September): duties carry no order and sort last.
+        .sort(
+          (a, b) =>
+            Number(a.kind === 'duty') - Number(b.kind === 'duty') ||
+            (a.partOrder ?? 999) - (b.partOrder ?? 999),
+        )
+        .map((it) => ({ ...resolvePart(it), isDuty: it.kind === 'duty' }));
+      const about = memorial ? null : meetingTitles?.get(`${weekISO}|${kind}`);
 
       entries.push({
         type: 'meeting',
@@ -471,6 +529,9 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
         time,
         kind,
         address: memorial ? (memorial.address ?? v.address) : v.address,
+        atHall: !memorial || !memorial.address || memorial.address === v.address,
+        title: about?.title ?? null,
+        speaker: about?.speaker ?? null,
         memorial,
         weekStartISO: weekISO,
         conductorName: null,
@@ -554,6 +615,8 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
         ? (groupNameById?.get(m.serviceGroupId) ?? null)
         : null,
       serviceOverseerVisit: !!m.serviceOverseerVisit,
+      weekStartISO: m.weekStartDate,
+      myRole: iConduct ? 'conduct' : onVisitAs,
       visitPeople: m.serviceOverseerVisit
         ? {
             overseer:
@@ -737,6 +800,89 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
       dateISO: it.itemDate,
       item: it,
     });
+  }
+
+  // ---- My meeting parts beyond the two weeks ----
+  // The meetings loop above only walks the weeks of the list, so a part
+  // further out had no row anywhere: «Дальше» never held a single part, and
+  // «Все мои назначения · ещё N» would have counted nothing. One row per
+  // meeting, its lines in the same order as a near one.
+  {
+    const byMeeting = new Map<string, RefinedTask[]>();
+    for (const r of refined) {
+      if (!NESTED_IN_MEETING.has(r.item.kind)) continue;
+      if (r.dateISO <= nearEndISO) continue;
+      const k = `${r.item.weekStartDate ?? r.dateISO}|${r.item.eventType ?? ''}`;
+      byMeeting.set(k, [...(byMeeting.get(k) ?? []), r]);
+    }
+    for (const [k, rs] of byMeeting) {
+      const first = rs[0];
+      const kind: MeetingKind =
+        first.item.eventType === 'midweek' ? 'midweek' : 'weekend';
+      farEntries.push({
+        type: 'meeting',
+        key: `far-${k}`,
+        dateISO: first.dateISO,
+        time: first.meetingTime ?? first.item.time ?? '',
+        kind,
+        address: null,
+        atHall: true,
+        weekStartISO: first.item.weekStartDate,
+        conductorName: null,
+        unassignedConductor: false,
+        topic: null,
+        sourceUrl: null,
+        replacedBy: null,
+        myParts: rs
+          .map((r) => r.item)
+          .sort(
+            (a, b) =>
+              Number(a.kind === 'duty') - Number(b.kind === 'duty') ||
+              (a.partOrder ?? 999) - (b.partOrder ?? 999),
+          )
+          .map((it) => ({ ...resolvePart(it), isDuty: it.kind === 'duty' })),
+        weeklyCleaning: false,
+        isGeneral: false,
+      });
+    }
+  }
+
+  // ---- Field service on a visit day: fold what the person does not go to ----
+  // «В этот день группа идёт только на посещение» (Lionel, 26 September).
+  // The meetings marked so — the group's other meetings, or everything else
+  // when the person himself goes to another group's visit — are taken out
+  // and counted under the visit they go to instead. Without a visit row to
+  // stand under (it should not happen: the note exists because of one) they
+  // stay as they were rather than vanish.
+  {
+    const isFoldable = (en: TimelineEntry): en is MeetingEntry =>
+      en.type === 'meeting' &&
+      en.kind === 'field_service' &&
+      (en.fieldNote?.kind === 'notForYourGroup' ||
+        en.fieldNote?.kind === 'awayOnVisit');
+    const byDate = new Map<string, MeetingEntry[]>();
+    for (const en of entries) {
+      if (!isFoldable(en)) continue;
+      byDate.set(en.dateISO, [...(byDate.get(en.dateISO) ?? []), en]);
+    }
+    for (const [dateISO, list] of byDate) {
+      const host = entries.find(
+        (en): en is MeetingEntry =>
+          en.type === 'meeting' &&
+          en.kind === 'field_service' &&
+          en.dateISO === dateISO &&
+          !!en.serviceOverseerVisit &&
+          !isFoldable(en),
+      );
+      if (!host) continue;
+      host.folded = {
+        kind: list.some((en) => en.fieldNote?.kind === 'awayOnVisit')
+          ? 'youOnVisit'
+          : 'groupOnVisit',
+        count: list.length,
+      };
+      for (const en of list) entries.splice(entries.indexOf(en), 1);
+    }
   }
 
   // ---- Group the near window by day, ordered by date then time ----

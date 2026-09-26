@@ -35,24 +35,35 @@ import { router } from 'expo-router';
  * those who may: the secretary, an administrator, or whoever holds the
  * attendance responsibility. For everyone else it is not there at all.
  */
-export function AttendanceCard() {
-  const { t, i18n } = useTranslation();
-  // On a phone the field and the button crowded each other and the button lost
-  // its label to ellipsis. Below this width they stack instead.
-  const { width } = useWindowDimensions();
-  const narrow = width < 420;
+/**
+ * The first meeting still waiting for its figure, for those who record
+ * attendance — or null. The card and Home's «Нужно сделать» heading ask the
+ * same question here (26 September).
+ */
+export function useAttendanceDue() {
   const perms = usePermissions();
-  const qc = useQueryClient();
-  const [value, setValue] = useState('');
-
   const pending = useQuery({
     queryKey: ['attendance', 'pending'],
     queryFn: () => attendanceApi.pending(),
     enabled: perms.canRecordAttendance,
     staleTime: 5 * 60 * 1000,
   });
+  const meeting = perms.canRecordAttendance ? (pending.data?.meetings?.[0] ?? null) : null;
+  return meeting
+    ? { meeting, outstandingThisYear: pending.data?.outstandingThisYear ?? 0 }
+    : null;
+}
 
-  const meeting = pending.data?.meetings?.[0];
+export function AttendanceCard() {
+  const { t, i18n } = useTranslation();
+  // On a phone the field and the button crowded each other and the button lost
+  // its label to ellipsis. Below this width they stack instead.
+  const { width } = useWindowDimensions();
+  const narrow = width < 420;
+  const qc = useQueryClient();
+  const [value, setValue] = useState('');
+  const due = useAttendanceDue();
+  const meeting = due?.meeting;
 
   const save = useMutation({
     mutationFn: (input: { count?: number; notHeld?: boolean }) =>
@@ -69,7 +80,7 @@ export function AttendanceCard() {
     onError: (e) => reportError(extractErrorMessage(e)),
   });
 
-  if (!perms.canRecordAttendance || !meeting) return null;
+  if (!meeting) return null;
 
   const parsed = Number(value.trim());
   const valid = value.trim() !== '' && Number.isInteger(parsed) && parsed >= 0;
@@ -155,7 +166,7 @@ export function AttendanceCard() {
       {/* A bare number in the corner said nothing. On first use there IS a
           backlog, and the honest answer is to name it and offer the page
           where a whole year can be filled in at once. */}
-      {pending.data && pending.data.outstandingThisYear > 1 ? (
+      {due && due.outstandingThisYear > 1 ? (
         <Pressable
           onPress={() =>
           router.push(
@@ -167,7 +178,7 @@ export function AttendanceCard() {
         >
           <Text style={styles.backlogText}>
             {t('attendance.backlog', {
-              count: pending.data.outstandingThisYear - 1,
+              count: due.outstandingThisYear - 1,
             })}
           </Text>
           <Ionicons name="chevron-forward" size={14} color="#0e7490" />

@@ -25,19 +25,27 @@ import { usePermissions } from '../lib/permissions';
  * It goes quiet when the month is closed: nothing left to collect, nothing to
  * say.
  */
-export function ReportCollectionCard() {
-  const { t, i18n } = useTranslation();
+/**
+ * The collection, when the card has something to say — or null. One place
+ * decides it, for the card and for Home, which heads its «Нужно сделать»
+ * only when a card under the heading will show (26 September).
+ */
+export function useReportCollection() {
   const { canViewServiceSummary } = usePermissions();
-
   const collection = useQuery({
     queryKey: ['service-reports', 'collection'],
     queryFn: () => serviceReportsApi.getCollection(),
     enabled: canViewServiceSummary,
     staleTime: 5 * 60 * 1000,
   });
-
   const data = collection.data;
-  if (!canViewServiceSummary || !data || data.closed) return null;
+  return canViewServiceSummary && data && !data.closed ? data : null;
+}
+
+export function ReportCollectionCard() {
+  const { t, i18n } = useTranslation();
+  const data = useReportCollection();
+  if (!data) return null;
 
   const month = dayjs(data.reportMonth).locale(i18n.language).format('MMMM');
   const deadline = dayjs(data.deadline).locale(i18n.language).format('D MMMM');

@@ -207,17 +207,23 @@ export default function ProgrammeFeedScreen() {
   // Without them the feed opens on today, as it always did. A week before the
   // start of the service year is not in the feed at all — then it opens on
   // today rather than pretend.
-  const params = useLocalSearchParams<{ week?: string; meeting?: string }>();
+  // `meeting=field` with `day` (YYYY-MM-DD) opens that day's field service —
+  // Home's rows lead here, each to its own meeting (26 September).
+  const params = useLocalSearchParams<{ week?: string; meeting?: string; day?: string }>();
   const targetWeek = useMemo(() => {
     const w = typeof params.week === "string" && /^\d{4}-\d{2}-\d{2}$/.test(params.week) ? params.week : null;
     if (!w) return null;
     const monday = formatDateISO(startOfWeekMonday(parseISODate(w)));
     return monday >= startWeek ? monday : null;
   }, [params.week, startWeek]);
-  const targetKind: Kind | "memorial" | null =
-    params.meeting === "midweek" || params.meeting === "weekend" || params.meeting === "memorial"
+  const targetKind: Kind | "memorial" | "field" | null =
+    params.meeting === "midweek" ||
+    params.meeting === "weekend" ||
+    params.meeting === "memorial" ||
+    params.meeting === "field"
       ? params.meeting
       : null;
+  const targetDay = typeof params.day === "string" && /^\d{4}-\d{2}-\d{2}$/.test(params.day) ? params.day : null;
   // Load far enough ahead to hold the week asked for.
   const chunksFor = (week: string | null) =>
     week && week > thisWeek
@@ -522,9 +528,12 @@ export default function ProgrammeFeedScreen() {
   // The Memorial opens like a meeting, and is found by the kind it takes too:
   // «?meeting=memorial» names it, and so does the kind it replaced.
   const inTarget = targetWeek
-    ? items.filter((x) => (x.type === "meeting" || x.type === "memorial") && x.week === targetWeek)
+    ? items.filter(
+        (x) => (x.type === "meeting" || x.type === "memorial" || (targetKind === "field" && x.type === "field")) && x.week === targetWeek,
+      )
     : [];
   const isTarget = (x: Item) =>
+    (x.type === "field" && targetKind === "field" && x.date === targetDay) ||
     (x.type === "meeting" && x.kind === targetKind) ||
     (x.type === "memorial" && (targetKind === "memorial" || x.takes === targetKind));
   const targetOpen = (targetKind && inTarget.find(isTarget)?.id) || inTarget[0]?.id || null;
@@ -596,7 +605,7 @@ export default function ProgrammeFeedScreen() {
     });
     setChunks((c) => Math.max(c, chunksFor(targetWeek)));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [targetWeek, targetKind]);
+  }, [targetWeek, targetKind, targetDay]);
   // On the web a wheel or a key moves the list without any drag, so listen for
   // the act itself. Native touch is onScrollBeginDrag below.
   useEffect(() => {

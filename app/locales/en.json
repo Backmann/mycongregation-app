@@ -2218,13 +2218,8 @@
   },
   "home": {
     "title": "Home",
-    "upcomingEvents": "Upcoming events",
     "actions": {
-      "report": "Submit report",
-      "events": "Events",
-      "absences": "Absences",
-      "myGroup": "My group",
-      "tasks": "Tasks"
+      "myGroup": "My group"
     },
     "meeting": {
       "midweek": "Midweek meeting",
@@ -2235,20 +2230,15 @@
       "withPartner": "with {{name}}"
     },
     "timeline": {
-      "title": "The next two weeks",
       "today": "Today",
       "tomorrow": "Tomorrow",
       "emptyNear": "Nothing scheduled for the next two weeks",
-      "far": "Further out",
-      "farHint": "your assignments only · {{count}}",
-      "away": "You're away",
+      "away": "Away",
       "outgoingTalk": "Talk away",
       "cleaningAfterMeeting": "Your group cleans after this meeting",
-      "openMap": "Open map",
-      "allMine": "All my assignments"
+      "openMap": "Open map"
     },
     "report": {
-      "outstanding": "The {{month}} report isn't submitted",
       "submitted": "The {{month}} report is submitted"
     },
     "pending": {
@@ -2295,7 +2285,6 @@
       "withWhom": "together with {{name}}",
       "overseerVisitTitle": "Service overseer's visit"
     },
-    "nextFieldService": "Field service meeting",
     "myTasksScreen": {
       "title": "My assignments",
       "empty": "No assignments in the coming weeks"
@@ -2323,6 +2312,52 @@
     },
     "rowKind": {
       "duty": "Duty"
+    },
+    "next": {
+      "title": "Your next",
+      "today": "today",
+      "tomorrow": "tomorrow",
+      "nowOn": "on now",
+      "inMinutes_one": "in {{count}} minute",
+      "inMinutes_other": "in {{count}} minutes",
+      "inHours_one": "in {{count}} hour",
+      "inHours_other": "in {{count}} hours",
+      "inDays_one": "in {{count}} day",
+      "inDays_other": "in {{count}} days",
+      "following": "Then — {{when}}: {{what}}",
+      "nothingNear": "No assignments in the next two weeks",
+      "away": "You are marked as away on these days ({{range}}). Let whoever plans the programme know.",
+      "programme": "Programme",
+      "pair": "paired with {{name}}",
+      "fieldConduct": "You conduct the meeting for field service",
+      "onPlan": "on the plan",
+      "talkNamed": "talk “{{title}}”"
+    },
+    "todo": {
+      "title": "To do",
+      "report": "Hand in the report for {{month}}"
+    },
+    "list": {
+      "title": "Two weeks",
+      "mineAbove": "Yours — see above",
+      "mine": "Yours",
+      "yourGroup": "Your group {{name}}",
+      "conducts": "Conducts: {{name}}",
+      "groupOnVisit": "On this day your group goes only to the visit",
+      "youOnVisit_one": "{{count}} more meeting that day — you are on the visit",
+      "youOnVisit_other": "{{count}} more meetings that day — you are on the visit",
+      "allMine": "All my assignments",
+      "more": "{{count}} more · until {{date}}",
+      "partial": "Not everything loaded — pull down to refresh.",
+      "talkIsYours": "This talk is yours"
+    },
+    "soon": {
+      "title": "Coming up",
+      "inWeeks_one": "in {{count}} week",
+      "inWeeks_other": "in {{count}} weeks"
+    },
+    "parts": {
+      "cbsReader": "Reader, Congregation Bible Study"
     }
   },
   "halls": {
