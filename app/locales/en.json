@@ -1487,7 +1487,9 @@
       "attendance_one": "Attendance for {{count}} meeting is already recorded on the old day. After saving it sits on a day with no meeting and has to be entered again on the new day.",
       "attendance_other": "Attendance for {{count}} meetings is already recorded on the old day. After saving it sits on days with no meeting and has to be entered again on the new days.",
       "confirm": "Yes, save"
-    }
+    },
+    "startsMonday": "Meetings run by the week: the new schedule takes effect on Monday {{monday}}; the week this date falls in keeps the old one.",
+    "historySinceShifted": "from {{date}} (entered {{typed}})"
   },
   "duties": {
     "title": "Duties",

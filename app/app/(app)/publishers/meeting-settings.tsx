@@ -30,6 +30,7 @@ import { Dialog } from '../../../components/Dialog';
 import { DateField } from '../../../components/DateField';
 import { TimeField } from '../../../components/TimeField';
 import { formatDateISO, formatLongDate } from '../../../lib/dates';
+import { versionStartsOn } from '../../../lib/meeting-schedule';
 
 /**
  * Meeting times and places — one screen (step 3b, 22 September).
@@ -292,7 +293,7 @@ export default function MeetingPlaceScreen() {
         <ActionRow icon="create-outline" label={t('meetingSettings.change')} onPress={openSchedule} />
       </View>
       {effective ? (
-        <Text style={styles.note}>{t('meetingSettings.since', { date: longDate(effective.effectiveFrom) })}</Text>
+        <Text style={styles.note}>{t('meetingSettings.since', { date: longDate(versionStartsOn(effective.effectiveFrom)) })}</Text>
       ) : null}
 
       {/* ── History ──────────────────────────────────────────────────── */}
@@ -314,7 +315,15 @@ export default function MeetingPlaceScreen() {
                   <View style={{ flex: 1 }}>
                     <View style={styles.histHead}>
                       <Text style={[styles.rowTitle, !now && styles.dim]}>
-                        {t('meetingSettings.historySince', { date: longDate(v.effectiveFrom) })}
+                        {/* The week it actually starts; the date typed is kept
+                            beside it when the two differ (a version takes
+                            effect on the Monday on or after its date). */}
+                        {versionStartsOn(v.effectiveFrom) === v.effectiveFrom
+                          ? t('meetingSettings.historySince', { date: longDate(v.effectiveFrom) })
+                          : t('meetingSettings.historySinceShifted', {
+                              date: longDate(versionStartsOn(v.effectiveFrom)),
+                              typed: longDate(v.effectiveFrom),
+                            })}
                       </Text>
                       {now ? (
                         <View style={styles.nowBadge}>
@@ -480,6 +489,14 @@ export default function MeetingPlaceScreen() {
             <Text style={[styles.fieldLabel, styles.gap]}>{t('meetingSettings.effectiveFromLabel')}</Text>
             <DateField value={draft.effectiveFrom} onChange={(v) => setDraft({ ...draft, effectiveFrom: v })} />
             <Text style={styles.hint}>{t('meetingSettings.effectiveFromHint')}</Text>
+            {/^\d{4}-\d{2}-\d{2}$/.test(draft.effectiveFrom) &&
+            versionStartsOn(draft.effectiveFrom) !== draft.effectiveFrom ? (
+              <Text style={styles.hintStrong} testID="schedule-starts-monday">
+                {t('meetingSettings.startsMonday', {
+                  monday: longDate(versionStartsOn(draft.effectiveFrom)),
+                })}
+              </Text>
+            ) : null}
             {pastImpact ? (
               <View style={styles.pastBox} testID="schedule-past-impact">
                 <Text style={styles.pastTitle}>{t('meetingSettings.past.title')}</Text>
@@ -759,6 +776,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   hint: { fontSize: 12, color: SOFT, lineHeight: 17, marginTop: 2 },
+  hintStrong: { fontSize: 12.5, color: '#0369a1', lineHeight: 17, marginTop: 4, fontFamily: 'Manrope_700Bold', fontWeight: '700' },
   pastBox: {
     marginTop: 12,
     padding: 12,

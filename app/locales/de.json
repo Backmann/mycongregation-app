@@ -1487,7 +1487,9 @@
       "attendance_one": "Die Anwesenheit von {{count}} Zusammenkunft ist bereits am alten Tag eingetragen. Nach dem Speichern steht sie an einem Tag ohne Zusammenkunft und muss am neuen Tag erneut eingetragen werden.",
       "attendance_other": "Die Anwesenheit von {{count}} Zusammenkünften ist bereits am alten Tag eingetragen. Nach dem Speichern steht sie an Tagen ohne Zusammenkunft und muss an den neuen Tagen erneut eingetragen werden.",
       "confirm": "Ja, speichern"
-    }
+    },
+    "startsMonday": "Zusammenkünfte laufen wochenweise: der neue Plan gilt ab Montag, {{monday}}; die Woche, in die dieses Datum fällt, bleibt beim bisherigen.",
+    "historySinceShifted": "ab {{date}} (eingegeben {{typed}})"
   },
   "duties": {
     "title": "Aufgaben",

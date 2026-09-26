@@ -56,6 +56,7 @@ import {
 import { PublisherSelector } from "../../../components/PublisherSelector";
 import { PublicTalkSelector } from "../../../components/PublicTalkSelector";
 import { startOfWeekMonday, addDays, formatDateISO } from "../../../lib/dates";
+import { effectiveVersionFor } from "../../../lib/meeting-schedule";
 import { notify } from "../../../lib/error-bus";
 import { useAllPublishers } from "../../../lib/useAllPublishers";
 
@@ -100,20 +101,6 @@ function mondayISO(dateISO: string): string {
   return formatDateISO(startOfWeekMonday(new Date(`${dateISO}T00:00:00`)));
 }
 
-function effectiveVersionFor(
-  dateISO: string,
-  versions: MeetingSettingsVersion[],
-): MeetingSettingsVersion | null {
-  const sorted = [...versions].sort((a, b) =>
-    b.effectiveFrom.localeCompare(a.effectiveFrom),
-  );
-  return (
-    sorted.find((v) => v.effectiveFrom <= dateISO) ??
-    sorted[sorted.length - 1] ??
-    null
-  );
-}
-
 function buildWeeks(
   versions: MeetingSettingsVersion[],
   fallback: MeetingSettingsVersion | null,
@@ -122,7 +109,8 @@ function buildWeeks(
   let monday = startOfWeekMonday(new Date(`${YEAR_FROM - 1}-12-22T00:00:00`));
   for (let i = 0; i < 130; i++) {
     const mISO = formatDateISO(monday);
-    const v = effectiveVersionFor(mISO, versions) ?? fallback;
+    // The shared rule (lib/meeting-schedule) — this screen had its own copy.
+    const v = effectiveVersionFor(versions, mISO) ?? fallback;
     const dow = v?.weekendDow ?? 7;
     const wd = addDays(monday, dow - 1);
     const y = wd.getFullYear();

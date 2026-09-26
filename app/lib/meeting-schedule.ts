@@ -2,29 +2,61 @@ import { MeetingSettingsVersion } from './api';
 import { addDays } from './dates';
 
 /**
- * Picks the meeting-settings version effective on a given date.
- * A version is effective from its `effectiveFrom` (inclusive) until the next
- * version's start. Returns the version with the latest `effectiveFrom` that is
- * still <= the target date. If no version has started yet on that date (e.g. a
- * week before the first version's `effectiveFrom`), falls back to the earliest
- * version, since the hall's time/place still applies.
+ * The meeting-settings version in force for a WEEK — the same rule as the
+ * server's `versionForWeek` (common/week-rules.ts), held to the same cases by
+ * scripts/check-week-rules.mjs (26 September).
+ *
+ * A version takes effect on the Monday on or after its date: one schedule per
+ * week, so a change dated on a Wednesday does not give that week a second
+ * meeting on the new day. Any date of the week may be passed; it is read as
+ * its week. Before the first version, the first one applies — the hall's
+ * time and place still hold.
+ *
+ * Every caller in the app already passed a Monday, so nothing on screen moves;
+ * what changes is that a caller passing a meeting's own date can no longer
+ * start a version a few days early.
  *
  * ISO date strings (YYYY-MM-DD) compare correctly lexicographically.
  */
 export function effectiveVersionFor(
   versions: MeetingSettingsVersion[] | undefined,
-  dateISO: string,
+  anyDateOfWeekISO: string,
 ): MeetingSettingsVersion | null {
   if (!versions || versions.length === 0) return null;
+  const monday = mondayOfISO(anyDateOfWeekISO);
   let best: MeetingSettingsVersion | null = null;
   let earliest: MeetingSettingsVersion | null = null;
   for (const v of versions) {
     if (!earliest || v.effectiveFrom < earliest.effectiveFrom) earliest = v;
-    if (v.effectiveFrom <= dateISO) {
+    if (v.effectiveFrom <= monday) {
       if (!best || v.effectiveFrom > best.effectiveFrom) best = v;
     }
   }
   return best ?? earliest;
+}
+
+/**
+ * The first Monday on or after a version's date — the week it actually starts.
+ * For the schedule screen: a version dated on a Wednesday is shown as starting
+ * the Monday after, because that is when it does.
+ */
+export function versionStartsOn(effectiveFromISO: string): string {
+  const monday = mondayOfISO(effectiveFromISO);
+  return monday === effectiveFromISO ? monday : shiftISO(monday, 7);
+}
+
+/** Monday of the ISO week of a calendar date, as a calendar date (no time zone). */
+function mondayOfISO(iso: string): string {
+  const d = new Date(`${iso.slice(0, 10)}T00:00:00Z`);
+  const dow = d.getUTCDay() === 0 ? 7 : d.getUTCDay();
+  d.setUTCDate(d.getUTCDate() - (dow - 1));
+  return d.toISOString().slice(0, 10);
+}
+
+function shiftISO(iso: string, days: number): string {
+  const d = new Date(`${iso}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
 }
 
 /**

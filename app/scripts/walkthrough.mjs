@@ -529,7 +529,10 @@ let memorialWeek = null; // found as the admin, reused by the others
     const now = new Date();
     const future = new Date(now.getFullYear() + 1, now.getMonth(), 1);
     const words = future.toLocaleDateString('ru', { day: 'numeric', month: 'long', year: 'numeric' });
-    const futureRow = () => page.getByText(new RegExp('^с ' + words.replace(/\./g, '\\.') + '$'));
+    // The 1st of a month is seldom a Monday; the row then reads «с <Monday>
+    // (указано <1st>)» — the week the version really starts (26 September).
+    const w = words.replace(/\./g, '\\.');
+    const futureRow = () => page.getByText(new RegExp('^с (' + w + '|.+ \\(указано ' + w + '\\))$'));
     // A real version on that date would be overwritten by the save and then
     // deleted by this check — so then nothing is touched at all.
     if (await futureRow().count()) return `версия с ${words} уже есть — сохранение и удаление пропущены, ничего не менялось`;

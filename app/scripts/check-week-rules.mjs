@@ -31,7 +31,7 @@ const require = createRequire(join(ROOT, 'package.json'));
 // Types vanish at transpile time; `./dates` is real and comes along.
 const ts = require('typescript');
 const out = mkdtempSync(join(tmpdir(), 'week-rules-'));
-for (const name of ['week-rules', 'dates']) {
+for (const name of ['week-rules', 'dates', 'meeting-schedule']) {
   const src = readFileSync(join(ROOT, 'lib', `${name}.ts`), 'utf8');
   const js = ts.transpileModule(src, {
     compilerOptions: {
@@ -42,6 +42,9 @@ for (const name of ['week-rules', 'dates']) {
   writeFileSync(join(out, `${name}.mjs`), js.replace(/'\.\/dates'/g, "'./dates.mjs'"));
 }
 const { weekRules } = await import(pathToFileURL(join(out, 'week-rules.mjs')));
+const { effectiveVersionFor, versionStartsOn } = await import(
+  pathToFileURL(join(out, 'meeting-schedule.mjs'))
+);
 
 // Monday 2026-04-06. Midweek meeting Thursday (dow 4), weekend Sunday (dow 7).
 const WEEK = '2026-04-06';
@@ -169,10 +172,29 @@ check(
   ['2026-04-09 midweek'],
 );
 
+// ---- which schedule version is in force (26 September) --------------------
+// The same cases as the server's src/common/week-version.spec.ts: a version
+// takes effect on the Monday on or after its date, any date reads as its week,
+// order does not matter, and before the first version the first applies.
+{
+  const jan = { effectiveFrom: '2026-01-05', midweekDow: 3 };
+  const wed = { effectiveFrom: '2026-09-23', midweekDow: 4 };
+  const future = { effectiveFrom: '2027-01-04', midweekDow: 2 };
+  const pick = (vs, d) => effectiveVersionFor(vs, d)?.effectiveFrom ?? null;
+  check('версия от среды — не в свою неделю', pick([jan, wed], '2026-09-21'), jan.effectiveFrom);
+  check('версия от среды — со следующего понедельника', pick([jan, wed], '2026-09-28'), wed.effectiveFrom);
+  check('любой день недели читается как её понедельник', pick([jan, wed], '2026-09-24'), jan.effectiveFrom);
+  check('порядок не важен', pick([future, wed, jan], '2026-10-05'), wed.effectiveFrom);
+  check('будущая версия не правит сегодня', pick([jan, future], '2026-09-28'), jan.effectiveFrom);
+  check('до первой версии — первая', pick([wed, future], '2025-06-02'), wed.effectiveFrom);
+  check('начало версии от среды — понедельник после', versionStartsOn('2026-09-23'), '2026-09-28');
+  check('начало версии от понедельника — он сам', versionStartsOn('2026-09-28'), '2026-09-28');
+}
+
 if (failures.length > 0) {
   console.error(`Правила недели разошлись — ${failures.length} случаев:\n`);
   for (const f of failures) console.error('  ✗ ' + f + '\n');
   process.exit(1);
 }
 
-console.log('OK: week rules agree with the server (14 cases).');
+console.log('OK: week rules and the version in force agree with the server (22 cases).');
