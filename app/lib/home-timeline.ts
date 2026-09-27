@@ -120,6 +120,24 @@ export interface MeetingEntry {
    */
   title?: string | null;
   speaker?: string | null;
+  /** The speaker is the signed-in person. */
+  speakerIsMine?: boolean;
+  /** The part the title comes from, and whether it is the person's own. */
+  titlePartKey?: string | null;
+  titleIsMine?: boolean;
+  /**
+   * What else the meeting holds, as an announcement (27 September, Lionel):
+   * on a weekday the second part and every part of «Христианская жизнь»,
+   * those added by hand included; at the weekend the Watchtower article.
+   * The person's own part is lit inside it rather than said again below.
+   */
+  agenda?: AgendaLine[];
+  /**
+   * An event held AS this meeting — a special talk, a branch visit — on the
+   * same day and at the same hour. Drawn inside the meeting's row: shown
+   * beside it, the special talk repeated the theme and the hall.
+   */
+  occasion?: SpecialEvent | null;
   /**
    * Held at the congregation's own hall — the address in the settings. Home
    * says the address only when it is somewhere else: the same «Bunsenstr. 46»
@@ -142,6 +160,26 @@ export interface MeetingEntry {
   weeklyCleaning: boolean;
   /** A combined field-service meeting for the whole congregation. */
   isGeneral: boolean;
+}
+
+/** One line of a meeting's announcement. */
+export interface AgendaLine {
+  partKey: string;
+  /** The part's number in the programme, if it has one. */
+  n: number | null;
+  text: string;
+  mine: boolean;
+}
+
+/** What a meeting is about, as the caller reads it from the programme. */
+export interface MeetingAbout {
+  title: string | null;
+  speaker: string | null;
+  speakerIsMine?: boolean;
+  /** The part the title is taken from (the first talk, the public talk). */
+  titlePartKey?: string | null;
+  titleIsMine?: boolean;
+  agenda?: AgendaLine[];
 }
 
 /** A special event shown as background (never one that replaced a meeting). */
@@ -292,7 +330,7 @@ export interface BuildTimelineInput {
    * built by the caller from the published programme (it has the
    * translations the builder does not).
    */
-  meetingTitles?: Map<string, { title: string | null; speaker: string | null }>;
+  meetingTitles?: Map<string, MeetingAbout>;
   nearDays?: number;
 }
 
@@ -345,7 +383,10 @@ export function taskPlacementDate(r: RefinedTask, todayISO: string): string {
   return r.item.kind === 'cleaning' &&
     r.item.label === 'thorough' &&
     r.item.thoroughPlannedAt
-    ? String(r.item.thoroughPlannedAt).slice(0, 10)
+    ? // The server sends an instant (UTC); the day is the one on this
+      // clock — cut from the string, a cleaning planned for 00:30 fell on
+      // the day before.
+      formatDateISO(new Date(r.item.thoroughPlannedAt))
     : placementDate(r, todayISO);
 }
 
@@ -532,6 +573,10 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
         atHall: !memorial || !memorial.address || memorial.address === v.address,
         title: about?.title ?? null,
         speaker: about?.speaker ?? null,
+        speakerIsMine: !!about?.speakerIsMine,
+        titlePartKey: about?.titlePartKey ?? null,
+        titleIsMine: !!about?.titleIsMine,
+        agenda: about?.agenda ?? [],
         memorial,
         weekStartISO: weekISO,
         conductorName: null,
@@ -700,8 +745,34 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
     });
   }
 
+  // An event held as one of the meetings — the same day, the same hour, or a
+  // special talk with no hour of its own on a day with a meeting — goes into
+  // that meeting's row. At another hour or place it is something else, and
+  // keeps its own row.
+  const heldAsMeeting = (e: SpecialEvent): MeetingEntry | null => {
+    if (e.type === 'circuit_overseer_visit' || e.type === 'memorial' || isCongressEvent(e)) return null;
+    if (e.replacesMeeting) return null;
+    if (e.endDate && e.endDate !== e.date) return null;
+    return (
+      (entries.find(
+        (en): en is MeetingEntry =>
+          en.type === 'meeting' &&
+          en.kind !== 'field_service' &&
+          !en.replacedBy &&
+          !en.memorial &&
+          en.dateISO === e.date &&
+          (e.time ? e.time === en.time : e.type === 'special_talk'),
+      ) as MeetingEntry | undefined) ?? null
+    );
+  };
+
   for (const e of events) {
     if (replacedEventIds.has(e.id)) continue;
+    const host = heldAsMeeting(e);
+    if (host) {
+      host.occasion = e;
+      continue;
+    }
     // Place the event on the first day of its range that falls in the window.
     let placed: string | null = null;
     for (let i = 0; i <= nearDays; i++) {
@@ -726,6 +797,11 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
   }
 
   // ---- My own non-meeting tasks (cleaning, cart, outgoing talk, co-lunch) ----
+  const cleaningSpokenWeeks = new Set(
+    entries
+      .filter((en): en is MeetingEntry => en.type === 'meeting' && en.weeklyCleaning)
+      .map((en) => en.weekStartISO ?? ''),
+  );
   const consumedAbsenceIds = new Set<string>();
   for (const r of refined) {
     if (!OWN_ROW_TASK_KINDS.has(r.item.kind)) continue;
@@ -736,8 +812,15 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
     ) {
       continue;
     }
-    // The cleaning done after the meetings is spoken inside the meeting rows.
-    if (r.item.kind === 'cleaning' && r.item.label === 'after_meeting') continue;
+    // The cleaning done after the meetings is spoken inside the meeting rows
+    // — where there are such rows. Beyond the two weeks there are none, and
+    // the week's cleaning was simply lost: «ещё 2» on a list of five.
+    if (r.item.kind === 'cleaning' && r.item.label === 'after_meeting') {
+      const week =
+        r.item.weekStartDate ??
+        formatDateISO(startOfWeekMonday(new Date(`${taskPlacement(r)}T00:00:00`)));
+      if (cleaningSpokenWeeks.has(week)) continue;
+    }
     const dateISO = taskPlacement(r);
 
     if (r.item.kind === 'outgoing_talk') {

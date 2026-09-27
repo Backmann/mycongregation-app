@@ -2299,10 +2299,13 @@
       "lunchBox": "Lunchpaket (KA-Besuch)"
     },
     "cleaning": {
-      "thoroughGroup": "Eure Gruppe reinigt diese Woche den Saal",
-      "afterMeetingGroup": "Eure Gruppe reinigt den Saal nach den Zusammenkünften",
+      "thoroughGroup": "Wöchentliche Reinigung",
+      "afterMeetingGroup": "Reinigung nach den Zusammenkünften",
       "windows": "Fenster: {{list}}",
-      "generalTitle": "Grundreinigung des Saals — die ganze Versammlung ist eingeladen"
+      "generalTitle": "Grundreinigung",
+      "yourGroup": "Ihre Gruppe",
+      "wholeCongregation": "die ganze Versammlung ist eingeladen",
+      "dayNotSet": "Tag noch nicht festgelegt"
     },
     "greeting": {
       "morning": "Guten Morgen",
@@ -2339,8 +2342,6 @@
     },
     "list": {
       "title": "Zwei Wochen",
-      "mineAbove": "Ihres — siehe oben",
-      "mine": "Ihres",
       "yourGroup": "Ihre Gruppe {{name}}",
       "conducts": "Leitet: {{name}}",
       "groupOnVisit": "An diesem Tag geht Ihre Gruppe nur zum Besuch",
@@ -2349,7 +2350,9 @@
       "allMine": "Alle meine Aufgaben",
       "more": "noch {{count}} · bis {{date}}",
       "partial": "Nicht alles wurde geladen — zum Aktualisieren nach unten ziehen.",
-      "talkIsYours": "Diese Ansprache halten Sie"
+      "kindCleaning": "Reinigung",
+      "watchtower": "Wachtturm: {{title}}",
+      "until": "bis {{date}}"
     },
     "soon": {
       "title": "Demnächst",
@@ -2357,7 +2360,8 @@
       "inWeeks_other": "in {{count}} Wochen"
     },
     "parts": {
-      "cbsReader": "Leser beim Versammlungsbibelstudium"
+      "cbsReader": "Leser beim Versammlungsbibelstudium",
+      "cbsConductor": "Versammlungsbibelstudium — Leiter"
     }
   },
   "halls": {

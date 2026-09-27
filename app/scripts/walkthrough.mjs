@@ -35,7 +35,9 @@ import {
   serverFingerprint,
 } from './code-fingerprint.mjs';
 
-const BASE = process.env.APP_URL || 'http://localhost:8081';
+// local-web.mjs serves on 8082; the default used to be Expo's 8081, and a
+// stale Expo server there was found instead of the build (26 September).
+const BASE = process.env.APP_URL || 'http://localhost:8082';
 if (!/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(BASE)) {
   console.error(`Отказ: обход меняет базу и ходит только на localhost, а не на ${BASE}.`);
   process.exit(1);
@@ -724,10 +726,10 @@ async function isOpenCard(loc) {
 }
 
 async function homeChecks(page, p) {
-  await check(page, `${p}23`, 'Главная: нет ряда кругов, есть «Две недели» и «Все мои назначения»', async () => {
+  await check(page, `${p}23`, 'Главная: нет ряда кругов и старых надписей, есть «Две недели» и «Все мои назначения»', async () => {
     await go(page, '/home', 'Две недели');
     await page.waitForTimeout(1500);
-    for (const w of ['Сдать отчёт', 'События', 'Отсутствия', 'Задачи', 'Моя группа', 'Ближайшие две недели', 'Дальше'])
+    for (const w of ['Сдать отчёт', 'События', 'Отсутствия', 'Задачи', 'Моя группа', 'Ближайшие две недели', 'Дальше', 'Ваше — выше', 'Ваша группа убирает зал на этой неделе', 'Ваша группа убирает зал после встреч'])
       await notSee(page, w);
     await see(page, 'Все мои назначения');
   });

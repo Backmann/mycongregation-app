@@ -54,7 +54,7 @@ export const SUBSECTIONS = { none: { label: '', color: '', soft: '' } };\n`,
 writeFileSync(join(out, 'api.mjs'), 'export {};\n');
 
 const { buildTimeline } = await import(pathToFileURL(join(out, 'home-timeline.mjs')));
-const { digestHome, isOver } = await import(pathToFileURL(join(out, 'home-digest.mjs')));
+const { digestHome, isOver, entryTime } = await import(pathToFileURL(join(out, 'home-digest.mjs')));
 
 let failures = 0;
 let passed = 0;
@@ -287,6 +287,52 @@ const labels = (en) => (en ? en.myParts.map((p) => p.label) : null);
   const items = [{ kind: 'cleaning', sortDate: '2026-09-28', weekStartDate: '2026-09-28', label: 'after_meeting' }];
   const { digest } = run({ me: 'p-x', group: null, items });
   check('9 уборка после встреч — своё', [digest.next?.dateISO, digest.next?.weeklyCleaning], ['2026-09-30', true]);
+}
+
+// --- 10. An event held as the meeting goes into its row (27 September) -----
+{
+  const ev = (id, type, date, extra = {}) => ({ id, type, date, endDate: null, time: null, title: id, replacesMeeting: false, ...extra });
+  const events = [
+    ev('special', 'special_talk', '2026-09-27', { time: '13:00', title: 'Как Библия может вам помочь?' }),
+    ev('special-late', 'special_talk', '2026-10-04', { time: '16:00' }),
+    ev('campaign', 'other', '2026-09-01', { endDate: '2026-09-30' }),
+  ];
+  const { timeline } = run({ me: 'p-x', group: null, items: [], events });
+  const sunday = timeline.near.find((g) => g.dateISO === '2026-09-27').entries;
+  check('10а специальная речь в час встречи — внутри строки встречи', sunday.filter((e) => e.type === 'meeting').map((e) => e.occasion?.id ?? null), ['special']);
+  check('10б и отдельной строкой её нет', sunday.some((e) => e.key === 'ev-special'), false);
+  const later = timeline.near.find((g) => g.dateISO === '2026-10-04').entries;
+  check('10в в другой час — своей строкой', [later.some((e) => e.key === 'ev-special-late'), later.find((e) => e.type === 'meeting')?.occasion ?? null], [true, null]);
+  check('10г кампания на месяц не вкладывается во встречу', timeline.near[0].entries.some((e) => e.key === 'ev-campaign'), true);
+}
+
+// --- 11. Cleaning after the meetings beyond the two weeks is counted --------
+{
+  const cleaning = (week) => ({ kind: 'cleaning', sortDate: week, weekStartDate: week, label: 'after_meeting' });
+  const items = [cleaning('2026-09-28'), cleaning('2026-10-19'), cleaning('2026-11-23')];
+  const { timeline, digest } = run({ me: 'p-x', group: null, items });
+  const nearTasks = timeline.near.flatMap((g) => g.entries).filter((e) => e.type === 'task');
+  check('11а в две недели — внутри строк встреч, своей строкой нет', [nearTasks.length, timeline.near.flatMap((g) => g.entries).filter((e) => e.weeklyCleaning).length], [0, 2]);
+  check('11б дальше — в счёте «ещё N»', [digest.moreCount, digest.moreUntil], [2, '2026-11-23']);
+}
+
+// --- 12. The announcement reaches the row as given --------------------------
+{
+  const agenda = [{ partKey: 'living_christians_1', n: 7, text: 'Местные потребности', mine: true }];
+  const titles = new Map([['2026-09-28|midweek', { title: 'Будьте мудрыми в выборе', speaker: null, titlePartKey: 'treasures_talk', titleIsMine: false, agenda }]]);
+  const { timeline } = run({ me: 'p-x', group: null, items: [], titles });
+  const wed = timeline.near.find((g) => g.dateISO === '2026-09-30').entries[0];
+  check('12 анонс и своё в нём доходят до строки', [wed.agenda, wed.titlePartKey, wed.titleIsMine], [agenda, 'treasures_talk', false]);
+}
+
+// --- 13. The weekly cleaning sits on its planned day, at its planned hour --
+{
+  // Built from this clock's own midnight-thirty, so the case holds in any
+  // time zone: cut from the UTC string, it fell on the day before in Berlin.
+  const planned = new Date(2026, 9, 8, 0, 30).toISOString();
+  const items = [{ kind: 'cleaning', sortDate: '2026-10-05', weekStartDate: '2026-10-05', label: 'thorough', windows: [3, 5], thoroughPlannedAt: planned }];
+  const { digest } = run({ me: 'p-x', group: null, items });
+  check('13 еженедельная уборка — в свой день и час', [digest.next?.dateISO, entryTime(digest.next)], ['2026-10-08', '00:30']);
 }
 
 if (failures) {

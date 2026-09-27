@@ -168,7 +168,7 @@ export interface TaskVisual {
 }
 
 export function taskVisual(
-  item: Pick<MyAssignmentItem, 'kind' | 'eventType'>,
+  item: Pick<MyAssignmentItem, 'kind' | 'eventType'> & { label?: string },
 ): TaskVisual {
   // Colour by WHAT the task is, never by which meeting it sits in: a duty at
   // the midweek meeting used to come out in the meeting's colour, which made
@@ -182,10 +182,25 @@ export function taskVisual(
         icon: 'construct-outline',
       };
     case 'cleaning':
+      // Each kind of cleaning its own mark (27 September): the cleaning after
+      // the meetings and the weekly one are two jobs, and both wore the same
+      // sparkles and the same words. Darker than the section's sky blue for
+      // the weekly and the general cleaning: the three read apart, and each
+      // still reads on white.
       return {
-        color: SECTION_COLORS.cleaning.color,
+        color:
+          item.label === 'thorough'
+            ? '#0369a1'
+            : item.label === 'general'
+              ? '#1e40af'
+              : SECTION_COLORS.cleaning.color,
         bg: SECTION_COLORS.cleaning.soft,
-        icon: 'sparkles-outline',
+        icon:
+          item.label === 'thorough'
+            ? 'grid-outline'
+            : item.label === 'general'
+              ? 'home-outline'
+              : 'sparkles-outline',
       };
     case 'field_service':
       return {
@@ -351,6 +366,13 @@ export function taskMeta(r: RefinedTask, t: TFunc, locale: string): string {
       r.item.label === 'lunch_box'
         ? t('home.kinds.co_lunch_box')
         : t('home.kinds.co_lunch'),
+    );
+  } else if (r.item.kind === 'cleaning') {
+    // Who cleans — the kind is already the title.
+    bits.push(
+      r.item.label === 'general'
+        ? t('home.cleaning.wholeCongregation')
+        : t('home.cleaning.yourGroup'),
     );
   } else {
     bits.push(t(`home.kinds.${r.item.kind}`));

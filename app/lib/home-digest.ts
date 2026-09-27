@@ -65,8 +65,15 @@ export function entryTime(en: TimelineEntry): string | null {
   switch (en.type) {
     case 'meeting':
       return en.time || null;
-    case 'task':
-      return en.task.item.time ?? en.task.meetingTime ?? null;
+    case 'task': {
+      const it = en.task.item;
+      // The weekly cleaning carries its hour in the planned instant.
+      if (it.kind === 'cleaning' && it.thoroughPlannedAt) {
+        const d = new Date(it.thoroughPlannedAt);
+        return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+      }
+      return it.time ?? en.task.meetingTime ?? null;
+    }
     case 'outgoing_talk':
       return en.task.item.time ?? null;
     case 'co_visit':

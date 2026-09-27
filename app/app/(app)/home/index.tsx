@@ -62,17 +62,24 @@ import {
   taskVisual,
 } from "../../../lib/my-tasks";
 import {
+  AgendaLine,
   DayGroup,
+  MeetingAbout,
   MeetingEntry,
   MyPartLine,
   TimelineEntry,
   buildTimeline,
 } from "../../../lib/home-timeline";
-import { digestHome, entryTime } from "../../../lib/home-digest";
+import { digestHome, entryTime, isOwnEntry } from "../../../lib/home-digest";
 import { partDisplay } from "../../../lib/part-display";
 import { MyGlowRow } from "../../../components/MyGlowRow";
 import { WindowsPlanDialog } from "../../../components/WindowsPlan";
 import { SECTION_COLORS, SectionKind } from "../../../lib/section-colors";
+import {
+  buildPartNumbers,
+  isNumberedPart,
+  resolveSubsection,
+} from "../../../lib/parts";
 import { isCongressEvent } from "../../../lib/week-rules";
 
 /*
@@ -803,7 +810,10 @@ function NextCard({
             <Text style={[s.nextWhen, { color: darker(kind) }]}>
               {whenLabel(entry.dateISO, time, loc)}
             </Text>
-            <Text style={[s.nextRel, { color: darker(kind) }]}>
+            <Text
+              style={[s.nextRel, { color: darker(kind) }]}
+              numberOfLines={1}
+            >
               {relativeLabel(entry.dateISO, time, now, todayISO, t)}
             </Text>
           </View>
@@ -885,7 +895,17 @@ function NextBody({
   if (entry.type === "meeting" && entry.kind !== "field_service") {
     const kindName = entry.memorial
       ? t("home.eventTypes.memorial")
-      : t(`home.eventTypes.${entry.kind}`);
+      : [
+          t(`home.eventTypes.${entry.kind}`),
+          entry.occasion?.type
+            ? t(
+                `specialEvents.types.${entry.occasion.type}`,
+                entry.occasion.type,
+              ).toLowerCase()
+            : null,
+        ]
+          .filter(Boolean)
+          .join(" · ");
     const lines = [...entry.myParts];
     // What the meeting is about — unless that is his own part already said.
     const ownTitles = new Set(
@@ -980,12 +1000,23 @@ function NextBody({
       it.kind === "cleaning" && it.windows?.length ? it.windows : null;
     return (
       <View style={{ gap: 6 }}>
-        {taskSubsectionLabel(it, t) ? (
+        {it.kind !== "cleaning" && taskSubsectionLabel(it, t) ? (
           <Text style={s.nextOverline}>{taskSubsectionLabel(it, t)}</Text>
         ) : null}
         <Text style={s.nextMain}>{taskTitle(it, t)}</Text>
+        {/* The card's head already says when; for a cleaning the line
+            says who, and whether the day is still to be chosen. */}
         <Text style={s.nextPlace}>
-          {taskMeta(entry.task, t, i18n.language)}
+          {it.kind === "cleaning"
+            ? capitalizeFirst(
+                (it.label === "general"
+                  ? t("home.cleaning.wholeCongregation")
+                  : t("home.cleaning.yourGroup")) +
+                  (it.label === "thorough" && !it.thoroughPlannedAt
+                    ? ` · ${t("home.cleaning.dayNotSet")}`
+                    : ""),
+              )
+            : taskMeta(entry.task, t, i18n.language)}
         </Text>
         {windows ? (
           <Pressable
@@ -1054,18 +1085,65 @@ function MineLine({ text }: { text: string }) {
   );
 }
 
+/**
+ * The announcement under a meeting: its numbered parts, the person's own lit
+ * where it stands instead of being said again below (27 September).
+ */
+function AgendaList({ lines }: { lines: AgendaLine[] }) {
+  if (!lines.length) return null;
+  return (
+    <View style={s.agenda}>
+      {lines.map((l) => (
+        <View key={l.partKey} style={s.agendaLine}>
+          {l.n !== null ? (
+            <Text
+              style={[s.agendaNum, l.mine && s.agendaMine]}
+            >{`${l.n}.`}</Text>
+          ) : null}
+          <Text
+            style={[s.agendaText, l.mine && s.agendaMine]}
+            numberOfLines={2}
+          >
+            {l.text}
+          </Text>
+        </View>
+      ))}
+    </View>
+  );
+}
+
+/**
+ * The cleaning after a meeting, said in the colour and with the mark of
+ * cleaning — not in the orange of a part. Two different jobs, the cleaning
+ * after the meetings and the weekly one, read alike before (27 September).
+ */
+function CleaningLine({ text }: { text: string }) {
+  return (
+    <View style={s.mineLine}>
+      <Ionicons
+        name="sparkles-outline"
+        size={13}
+        color={SECTION_COLORS.cleaning.color}
+      />
+      <Text style={s.cleaningText}>{text}</Text>
+    </View>
+  );
+}
+
 function EntryBody({
   en,
   nextKey,
   todayISO,
   myGroupName,
   myName,
+  onWindows,
 }: {
   en: TimelineEntry;
   nextKey: string | null;
   todayISO: string;
   myGroupName: string | null;
   myName: string | null;
+  onWindows: (w: number[]) => void;
 }) {
   const { t, i18n } = useTranslation();
   const loc = i18n.language;
@@ -1100,47 +1178,79 @@ function EntryBody({
     );
   }
   if (en.type === "meeting" && en.kind !== "field_service") {
+    const agenda = en.agenda ?? [];
+    const shownKeys = new Set([
+      ...agenda.filter((l) => l.mine).map((l) => l.partKey),
+      ...(en.titleIsMine && en.titlePartKey ? [en.titlePartKey] : []),
+      ...(en.speakerIsMine ? ["public_talk_speaker"] : []),
+    ]);
+    // What of his is not already lit above, in one line. Nothing at all for
+    // the row the card on top is about: the card says it in full.
     const mine = isNext
-      ? t("home.list.mineAbove")
-      : [
-          // The first talk names the weekday's row; when it is his, the row
-          // already says its title, and the line says only that it is his.
-          ...en.myParts.map((p) =>
-            p.partKey === "treasures_talk" && (p.label ?? p.title) === en.title
-              ? t("home.list.talkIsYours")
-              : partText(p, t),
-          ),
-          ...(en.weeklyCleaning
-            ? [t("home.timeline.cleaningAfterMeeting")]
-            : []),
-        ].join(" · ");
+      ? null
+      : en.myParts
+          .filter((p) => !p.partKey || !shownKeys.has(p.partKey))
+          .map((p) => partText(p, t))
+          .join(" · ");
+    const occasion = en.occasion
+      ? en.occasion.type
+        ? t(`specialEvents.types.${en.occasion.type}`, en.occasion.type)
+        : t("feed.kindSpecial")
+      : null;
+    const title = en.memorial
+      ? en.memorial.title
+      : (en.title ?? en.occasion?.title ?? t(`home.eventTypes.${en.kind}`));
+    const lower = (x: string | null) =>
+      x ? x.charAt(0).toLowerCase() + x.slice(1) : x;
     return (
       <>
-        {overline(
-          en.memorial
-            ? t("home.eventTypes.memorial")
-            : t(
-                en.kind === "midweek" ? "feed.kindMidweek" : "feed.kindWeekend",
-              ),
-          en.memorial ? KIND_COLOR.memorial : KIND_COLOR[en.kind],
-          en.time || null,
-        )}
-        <Text style={s.rowTitle}>
-          {en.memorial
-            ? en.memorial.title
-            : (en.title ?? t(`home.eventTypes.${en.kind}`))}
+        <Text
+          style={[
+            s.rowKind,
+            { color: en.memorial ? KIND_COLOR.memorial : KIND_COLOR[en.kind] },
+          ]}
+        >
+          {[
+            en.memorial
+              ? t("home.eventTypes.memorial")
+              : t(
+                  en.kind === "midweek"
+                    ? "feed.kindMidweek"
+                    : "feed.kindWeekend",
+                ),
+            en.time || null,
+            dayWord,
+          ]
+            .filter(Boolean)
+            .join(" · ")}
+          {occasion ? (
+            <Text style={s.rowOccasion}>{` · ${lower(occasion)}`}</Text>
+          ) : null}
         </Text>
-        {en.speaker ? <Text style={s.rowSub}>{en.speaker}</Text> : null}
+        <Text style={[s.rowTitle, en.titleIsMine && s.titleMine]}>{title}</Text>
+        {en.speaker ? (
+          <Text style={[s.rowSub, en.speakerIsMine && s.titleMine]}>
+            {en.speaker}
+          </Text>
+        ) : null}
+        {/* The event's own title, only when it says something the programme
+            does not. */}
+        {en.occasion && en.title && en.occasion.title !== en.title ? (
+          <Text style={s.rowSub}>{en.occasion.title}</Text>
+        ) : null}
         {!en.atHall && en.address ? (
           <Text style={s.rowSub}>{en.address}</Text>
         ) : null}
+        <AgendaList lines={agenda} />
         {mine ? <MineLine text={mine} /> : null}
+        {en.weeklyCleaning && !isNext ? (
+          <CleaningLine text={t("home.timeline.cleaningAfterMeeting")} />
+        ) : null}
       </>
     );
   }
   if (en.type === "meeting") {
     const where = fieldWhere(en, myGroupName, t);
-    const mine = en.myRole ? (isNext ? t("home.list.mineAbove") : null) : null;
     return (
       <>
         {overline(
@@ -1174,7 +1284,46 @@ function EntryBody({
             <Text style={s.link}>{t("fieldService.openLink")}</Text>
           </Pressable>
         ) : null}
-        {mine ? <MineLine text={mine} /> : null}
+      </>
+    );
+  }
+  if (en.type === "task" && en.task.item.kind === "cleaning") {
+    // Named by its kind: «Уборка после встреч», «Еженедельная уборка» —
+    // two different jobs that used to read almost the same.
+    const it = en.task.item;
+    const v = taskVisual(it);
+    const windows =
+      it.label === "thorough" && it.windows?.length ? it.windows : null;
+    return (
+      <>
+        <Text style={[s.rowKind, { color: v.color }]}>
+          {[t("home.list.kindCleaning"), entryTime(en), dayWord]
+            .filter(Boolean)
+            .join(" · ")}
+        </Text>
+        <Text style={s.rowTitle}>{taskTitle(it, t)}</Text>
+        <Text style={s.rowSub}>
+          {capitalizeFirst(
+            it.label === "general"
+              ? t("home.cleaning.wholeCongregation")
+              : t("home.cleaning.yourGroup"),
+          )}
+          {it.label === "thorough" && !it.thoroughPlannedAt
+            ? ` · ${t("home.cleaning.dayNotSet")}`
+            : ""}
+        </Text>
+        {windows ? (
+          <Pressable
+            onPress={() => onWindows(windows)}
+            hitSlop={6}
+            accessibilityRole="button"
+          >
+            <Text style={s.link}>
+              {t("home.cleaning.windows", { list: windows.join(", ") })} ·{" "}
+              {t("home.next.onPlan")} ›
+            </Text>
+          </Pressable>
+        ) : null}
       </>
     );
   }
@@ -1189,9 +1338,6 @@ function EntryBody({
             .join(" · ")}
         </Text>
         <Text style={s.rowTitle}>{taskTitle(it, t)}</Text>
-        <MineLine
-          text={isNext ? t("home.list.mineAbove") : t("home.list.mine")}
-        />
       </>
     );
   }
@@ -1208,9 +1354,6 @@ function EntryBody({
         {it.congregationName ? (
           <Text style={s.rowSub}>{it.congregationName}</Text>
         ) : null}
-        <MineLine
-          text={isNext ? t("home.list.mineAbove") : t("home.list.mine")}
-        />
       </>
     );
   }
@@ -1229,9 +1372,6 @@ function EntryBody({
         {coVisitPlace(it) ? (
           <Text style={s.rowSub}>{coVisitPlace(it)}</Text>
         ) : null}
-        <MineLine
-          text={isNext ? t("home.list.mineAbove") : t("home.list.mine")}
-        />
       </>
     );
   }
@@ -1275,21 +1415,40 @@ function EntryBody({
       </>
     );
   }
-  // An event.
+  // An event. One that runs for days says until when — «сегодня» on a
+  // month-long campaign read as if it happened today only.
   const e = en.event;
+  const multiDay = !!e.endDate && e.endDate !== e.date;
   return (
     <>
-      {overline(
-        e.type
-          ? t(`specialEvents.types.${e.type}`, e.type)
-          : t("feed.kindSpecial"),
-        KIND_COLOR.event,
-        e.time ?? null,
-      )}
+      <Text style={[s.rowKind, { color: KIND_COLOR.event }]}>
+        {[
+          e.type
+            ? t(`specialEvents.types.${e.type}`, e.type)
+            : t("feed.kindSpecial"),
+          e.time ?? null,
+          multiDay
+            ? e.date < en.dateISO
+              ? t("home.list.until", {
+                  date: shortDate(e.endDate as string, loc),
+                })
+              : eventRange(e, loc)
+            : dayWord,
+        ]
+          .filter(Boolean)
+          .join(" · ")}
+      </Text>
       <Text style={s.rowTitle}>{e.title}</Text>
       {e.address ? <Text style={s.rowSub}>{e.address}</Text> : null}
     </>
   );
+}
+
+function shortDate(iso: string, loc: string): string {
+  return new Date(`${iso}T00:00:00`).toLocaleDateString(loc, {
+    day: "numeric",
+    month: "long",
+  });
 }
 
 function eventRange(e: SpecialEvent, loc: string): string {
@@ -1309,12 +1468,14 @@ function DayRow({
   todayISO,
   myGroupName,
   myName,
+  onWindows,
 }: {
   group: DayGroup;
   nextKey: string | null;
   todayISO: string;
   myGroupName: string | null;
   myName: string | null;
+  onWindows: (w: number[]) => void;
 }) {
   const { i18n } = useTranslation();
   const d = new Date(`${group.dateISO}T00:00:00`);
@@ -1323,11 +1484,17 @@ function DayRow({
     .replace(".", "")
     .toUpperCase();
   const isToday = group.dateISO === todayISO;
+  // A day that holds something of the person's own carries the mark under
+  // its date — the one sign in the list, instead of «Ваше — выше».
+  const hasOwn = group.entries.some(isOwnEntry);
   return (
     <View style={s.dayRow}>
       <View style={s.dateCol}>
         <Text style={[s.dateNum, isToday && s.dateToday]}>{d.getDate()}</Text>
         <Text style={[s.dateDow, isToday && s.dateToday]}>{weekday}</Text>
+        {hasOwn ? (
+          <View style={[s.dot, s.dateDot]} accessibilityLabel="ваше" />
+        ) : null}
       </View>
       <View style={s.dayEntries}>
         {group.entries.map((en) => {
@@ -1338,6 +1505,7 @@ function DayRow({
               todayISO={todayISO}
               myGroupName={myGroupName}
               myName={myName}
+              onWindows={onWindows}
             />
           );
           return canOpen(en) ? (
@@ -1464,41 +1632,90 @@ function useHomeData(todayISO: string) {
       id ? (publishersById.get(id)?.displayName ?? null) : null;
     // What each meeting is about, as the feed names it: the weekend by its
     // public talk and speaker (a visiting speaker is stored by name, with his
-    // congregation), the weekday by its first talk.
-    const meetingTitles = new Map<
-      string,
-      { title: string | null; speaker: string | null }
-    >();
+    // congregation), the weekday by its first talk. Under it, the
+    // announcement (27 September): on a weekday parts 1 and 2 and all of
+    // «Христианская жизнь» — added parts too — with the numbers the workbook
+    // gives them; at the weekend the Watchtower article.
+    const me = myPublisherId ?? null;
+    const isMine = (a: Assignment) =>
+      !!me && (a.publisherId === me || a.assistantPublisherId === me);
+    const meetingTitles = new Map<string, MeetingAbout>();
     const byMeeting = new Map<string, Assignment[]>();
     for (const a of programmeQ.data?.data ?? []) {
       const k = `${a.weekStartDate}|${a.eventType}`;
       byMeeting.set(k, [...(byMeeting.get(k) ?? []), a]);
     }
-    for (const [k, parts] of byMeeting) {
+    for (const [k, unsorted] of byMeeting) {
       const [, eventType] = k.split("|");
+      const parts = [...unsorted].sort(
+        (a, b) => (a.partOrder ?? 0) - (b.partOrder ?? 0),
+      );
+      const numbers = buildPartNumbers(parts);
       if (eventType === "weekend") {
         const talk = parts.find((p) => p.partKey === "public_talk_speaker");
-        if (!talk) continue;
-        const who = talk.speakerName?.trim() || nameOf(talk.publisherId);
+        const study = parts.find((p) => p.partKey === "watchtower_conductor");
+        const who = talk
+          ? talk.speakerName?.trim() || nameOf(talk.publisherId)
+          : null;
         const from =
-          !talk.publisherId && talk.speakerName?.trim()
+          talk && !talk.publisherId && talk.speakerName?.trim()
             ? talk.speakerCongregation?.trim()
             : null;
+        const studyTitle = study?.partTitle
+          ? partDisplay(study.partKey, study.partTitle).label
+          : null;
         meetingTitles.set(k, {
-          title: partDisplay(talk.partKey, talk.partTitle).label,
-          speaker: who
-            ? from
-              ? `${who} · ${from}`
-              : who
-            : t("feed.speakerUnassigned"),
+          title: talk ? partDisplay(talk.partKey, talk.partTitle).label : null,
+          speaker: talk
+            ? who
+              ? from
+                ? `${who} · ${from}`
+                : who
+              : t("feed.speakerUnassigned")
+            : null,
+          speakerIsMine: !!talk && isMine(talk),
+          titlePartKey: talk ? "public_talk_speaker" : null,
+          agenda:
+            study && studyTitle
+              ? [
+                  {
+                    partKey: study.partKey,
+                    n: null,
+                    text: t("home.list.watchtower", { title: studyTitle }),
+                    mine: isMine(study),
+                  },
+                ]
+              : [],
         });
       } else if (eventType === "midweek") {
         const first = parts.find((p) => p.partKey === "treasures_talk");
-        if (first)
-          meetingTitles.set(k, {
-            title: partDisplay(first.partKey, first.partTitle).label,
-            speaker: null,
+        const agenda: AgendaLine[] = [];
+        for (const p of parts) {
+          if (p === first) continue;
+          const n = numbers.get(p.id) ?? null;
+          const sub = resolveSubsection(p.partKey);
+          // Part 2 by its key, not its number: a week whose gems were not
+          // imported numbered the Bible reading «2».
+          const wanted =
+            p.partKey === "spiritual_gems" ||
+            (sub === "christian_life" && isNumberedPart(p.partKey));
+          if (!wanted) continue;
+          agenda.push({
+            partKey: p.partKey,
+            n,
+            text: partDisplay(p.partKey, p.partTitle).label,
+            mine: isMine(p),
           });
+        }
+        meetingTitles.set(k, {
+          title: first
+            ? partDisplay(first.partKey, first.partTitle).label
+            : null,
+          speaker: null,
+          titlePartKey: first ? "treasures_talk" : null,
+          titleIsMine: !!first && isMine(first),
+          agenda,
+        });
       }
     }
     return buildTimeline({
@@ -1530,9 +1747,11 @@ function useHomeData(todayISO: string) {
             ? taskTitle(it, t)
             : it.partKey === "cbs_reader"
               ? t("home.parts.cbsReader")
-              : it.partKey && ROLE_PARTS.has(it.partKey)
-                ? t(`parts.${it.partKey}`)
-                : meetingPartLabel(it),
+              : it.partKey === "cbs_conductor"
+                ? t("home.parts.cbsConductor")
+                : it.partKey && ROLE_PARTS.has(it.partKey)
+                  ? t(`parts.${it.partKey}`)
+                  : meetingPartLabel(it),
         topic:
           it.kind === "meeting" && it.partKey && ROLE_PARTS.has(it.partKey)
             ? meetingPartLabel(it) !== t(`parts.${it.partKey}`)
@@ -1715,6 +1934,7 @@ export default function HomeScreen() {
                 todayISO={todayISO}
                 myGroupName={data.myGroupName}
                 myName={data.myName}
+                onWindows={setWindows}
               />
             </View>
           );
@@ -1905,6 +2125,7 @@ const s = StyleSheet.create({
   },
   nextRel: {
     marginLeft: "auto",
+    flexShrink: 0,
     fontSize: 12,
     fontWeight: "700",
     fontFamily: "Manrope_700Bold",
@@ -2109,6 +2330,32 @@ const s = StyleSheet.create({
     color: "#c2410c",
   },
   dot: { width: 7, height: 7, borderRadius: 4 },
+  dateDot: { backgroundColor: "#f97316", marginTop: 5 },
+  agenda: { gap: 2, marginTop: 3 },
+  agendaLine: { flexDirection: "row", alignItems: "flex-start", gap: 6 },
+  agendaNum: {
+    width: 18,
+    fontSize: 12.5,
+    lineHeight: 17,
+    color: "#94a3b8",
+    fontFamily: "Manrope_600SemiBold",
+    fontWeight: "600",
+  },
+  agendaText: { flexShrink: 1, fontSize: 13, lineHeight: 17, color: "#475569" },
+  agendaMine: {
+    color: "#c2410c",
+    fontFamily: "Manrope_700Bold",
+    fontWeight: "700",
+  },
+  titleMine: { color: "#c2410c" },
+  rowOccasion: { color: "#b45309" },
+  cleaningText: {
+    flexShrink: 1,
+    fontSize: 13,
+    fontWeight: "700",
+    fontFamily: "Manrope_700Bold",
+    color: "#0284c7",
+  },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 2 },
   chip: {
     flexDirection: "row",

@@ -2299,10 +2299,13 @@
       "lunchBox": "Lunch box (CO visit)"
     },
     "cleaning": {
-      "thoroughGroup": "Your group cleans the hall this week",
-      "afterMeetingGroup": "Your group cleans the hall after the meetings",
+      "thoroughGroup": "Weekly cleaning",
+      "afterMeetingGroup": "Cleaning after the meetings",
       "windows": "Windows: {{list}}",
-      "generalTitle": "General hall cleaning — the whole congregation is invited"
+      "generalTitle": "General cleaning",
+      "yourGroup": "your group",
+      "wholeCongregation": "the whole congregation is invited",
+      "dayNotSet": "day not chosen yet"
     },
     "greeting": {
       "morning": "Good morning",
@@ -2339,8 +2342,6 @@
     },
     "list": {
       "title": "Two weeks",
-      "mineAbove": "Yours — see above",
-      "mine": "Yours",
       "yourGroup": "Your group {{name}}",
       "conducts": "Conducts: {{name}}",
       "groupOnVisit": "On this day your group goes only to the visit",
@@ -2349,7 +2350,9 @@
       "allMine": "All my assignments",
       "more": "{{count}} more · until {{date}}",
       "partial": "Not everything loaded — pull down to refresh.",
-      "talkIsYours": "This talk is yours"
+      "kindCleaning": "Cleaning",
+      "watchtower": "Watchtower: {{title}}",
+      "until": "until {{date}}"
     },
     "soon": {
       "title": "Coming up",
@@ -2357,7 +2360,8 @@
       "inWeeks_other": "in {{count}} weeks"
     },
     "parts": {
-      "cbsReader": "Reader, Congregation Bible Study"
+      "cbsReader": "Reader, Congregation Bible Study",
+      "cbsConductor": "Congregation Bible Study — conductor"
     }
   },
   "halls": {
