@@ -3118,14 +3118,16 @@
       "ministry": "Ministry",
       "cleaning": "Cleaning",
       "reports": "Report",
-      "admin": "Administrative"
+      "admin": "Administrative",
+      "events": "Congregation events"
     },
     "hints": {
       "assignments": "What you were given at the meetings",
       "ministry": "Field service meetings and the cart",
       "cleaning": "When your group cleans",
       "reports": "A reminder to submit your report",
-      "admin": "For overseers and the secretary"
+      "admin": "For overseers and the secretary",
+      "events": "New, changed, and a reminder the evening before"
     },
     "allOff": "You have turned everything off",
     "device": {

@@ -91,8 +91,18 @@ const routes = new Set(
   }),
 );
 
-const used = [...normalize(a).matchAll(/path: '([^']+)'/g)].map((m) => m[1]);
-const missing = [...new Set(used)].filter((p) => !routes.has(p));
+// A path built from the notification's data — `/special-events/${data.eventId}` —
+// is checked as its route pattern: every `${…}` must land on a [param] segment.
+const DYN = '[*]';
+const shape = (p) => p.replace(/\$\{[^}]+\}/g, DYN).replace(/\[[^\]]+\]/g, DYN);
+const shapes = new Set([...routes].map(shape));
+const used = [
+  ...[...normalize(a).matchAll(/path: '([^']+)'/g)].map((m) => m[1]),
+  ...[...normalize(a).matchAll(/path: `([^`]+)`/g)].map((m) => m[1]),
+];
+const missing = [...new Set(used)].filter((p) =>
+  p.includes('${') ? !shapes.has(shape(p)) : !routes.has(p),
+);
 
 if (missing.length > 0) {
   console.error('Маршруты уведомлений ведут туда, где нет экрана:\n');

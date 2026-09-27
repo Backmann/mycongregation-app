@@ -140,6 +140,7 @@ function DeviceState() {
 
 const CATEGORIES: { key: NotificationCategory; icon: string }[] = [
   { key: 'assignments', icon: 'mic-outline' },
+  { key: 'events', icon: 'megaphone-outline' },
   { key: 'ministry', icon: 'navigate-outline' },
   { key: 'cleaning', icon: 'sparkles-outline' },
   { key: 'reports', icon: 'document-text-outline' },

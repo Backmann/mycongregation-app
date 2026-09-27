@@ -3118,14 +3118,16 @@
       "ministry": "Predigtdienst",
       "cleaning": "Reinigung",
       "reports": "Bericht",
-      "admin": "Verwaltung"
+      "admin": "Verwaltung",
+      "events": "Ereignisse der Versammlung"
     },
     "hints": {
       "assignments": "Was dir in den Zusammenkünften zugeteilt wurde",
       "ministry": "Predigtdienst-Zusammenkünfte und Trolley",
       "cleaning": "Wenn deine Gruppe reinigt",
       "reports": "Erinnerung an deinen Bericht",
-      "admin": "Für Aufseher und den Sekretär"
+      "admin": "Für Aufseher und den Sekretär",
+      "events": "Neue, Änderungen und Erinnerung am Vorabend"
     },
     "allOff": "Du hast alles ausgeschaltet",
     "device": {

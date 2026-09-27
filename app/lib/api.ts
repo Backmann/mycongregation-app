@@ -2956,6 +2956,8 @@ export interface NotificationPreferences {
   cleaning: boolean;
   reports: boolean;
   admin: boolean;
+  /** The congregation's events: new, changed, cancelled, and the evening before. */
+  events: boolean;
 }
 
 export type NotificationCategory = keyof NotificationPreferences;
