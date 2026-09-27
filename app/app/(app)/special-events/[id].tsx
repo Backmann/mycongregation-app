@@ -11,7 +11,6 @@ import {
 import { useLocalSearchParams, router } from 'expo-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import dayjs from 'dayjs';
 import { Ionicons } from '@expo/vector-icons';
 import { RichText } from '../../../components/RichText';
 import { formatDateISO, startOfWeekMonday } from '../../../lib/dates';
@@ -19,9 +18,19 @@ import {
   circuitOverseersApi,
   CircuitOverseer,
   extractErrorMessage,
+  meetingSettingsApi,
   SpecialEvent,
   specialEventsApi,
 } from '../../../lib/api';
+import {
+  CongressSections,
+  EventHeader,
+  PastVisits,
+  PrimaryAction,
+  VisitTools,
+  VisitWeek,
+} from '../../../components/EventDetailSections';
+import { programmeLinkOf } from '../../../lib/event-view';
 import { usePermissions } from '../../../lib/permissions';
 import { MeetingChangeNote } from '../../../components/MeetingChangeNote';
 import { confirm } from '../../../components/ConfirmHost';
@@ -63,10 +72,15 @@ function toForm(e: SpecialEvent): EventFormValue {
 }
 
 export default function SpecialEventDetailScreen() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { id } = useLocalSearchParams<{ id: string }>();
   const qc = useQueryClient();
-  const { canManageEvents, isAdmin } = usePermissions();
+  const { canManageEvents, isAdmin, canViewCoSchedule } = usePermissions();
+  const settingsQ = useQuery({
+    queryKey: ['meeting-settings'],
+    queryFn: () => meetingSettingsApi.getOverview(),
+  });
+  const versions = settingsQ.data?.versions;
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState<EventFormValue | null>(null);
 
@@ -143,6 +157,12 @@ export default function SpecialEventDetailScreen() {
     queryKey: ['circuit-overseers'],
     queryFn: () => circuitOverseersApi.list(),
     enabled: !!isCoVisit && canManageEvents,
+  });
+  // Earlier visits, for the history under a visit's page.
+  const { data: allEvents } = useQuery({
+    queryKey: ['special-events', 'list-all', false],
+    queryFn: () => specialEventsApi.list({ all: true }),
+    enabled: !!isCoVisit,
   });
 
   const pickM = useMutation({
@@ -231,38 +251,20 @@ export default function SpecialEventDetailScreen() {
     );
   }
 
-  const startLabel = dayjs(`${event.date}T00:00:00`)
-    .toDate()
-    .toLocaleDateString(i18n.language, {
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-    });
-  const endLabel = event.endDate
-    ? dayjs(`${event.endDate}T00:00:00`)
-        .toDate()
-        .toLocaleDateString(i18n.language, {
-          day: 'numeric',
-          month: 'long',
-          year: 'numeric',
-        })
-    : null;
-  const typeLabel = event.type
-    ? t(`specialEvents.types.${event.type}`, event.type)
-    : null;
+  const today = formatDateISO(new Date());
+  const isCongress =
+    event.type === 'regional_convention' || event.type === 'circuit_assembly';
+  const link = programmeLinkOf(
+    { kind: 'event', key: event.id, date: event.date, end: event.endDate ?? event.date, event },
+    versions,
+  );
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.h1}>{event.title}</Text>
-      <Text style={styles.date}>
-        {startLabel}
-        {endLabel ? ` – ${endLabel}` : ''}
-        {event.time
-          ? ` · ${event.time}${event.timeEnd ? `–${event.timeEnd}` : ''}`
-          : ''}
-      </Text>
-      {typeLabel ? <Text style={styles.badge}>{typeLabel}</Text> : null}
+      <EventHeader event={event} today={today} />
+      {isCoVisit && event.coRole === 'substitute' ? (
+        <Text style={styles.coMeta}>{t('circuitOverseer.roleSubstitute')}</Text>
+      ) : null}
       {isRemoved ? (
         <Text style={styles.removedBadge}>{t('common.showRemoved')}</Text>
       ) : null}
@@ -274,6 +276,27 @@ export default function SpecialEventDetailScreen() {
         <Text style={styles.hint}>{t('specialEvents.replacesMeetingHint')}</Text>
       ) : null}
       <MeetingChangeNote event={event} />
+
+      {/* The one thing the page is most often opened for. */}
+      {isCongress && event.programUrl ? (
+        <PrimaryAction
+          icon="document-text-outline"
+          label={t('specialEvents.page.congressProgramme')}
+          onPress={() => Linking.openURL(event.programUrl!)}
+        />
+      ) : link && !isMemorial ? (
+        <PrimaryAction
+          icon="calendar-outline"
+          label={t(isCoVisit ? 'specialEvents.page.weekInProgramme' : 'specialEvents.page.meetingInProgramme')}
+          onPress={() =>
+            router.push(`/schedule?week=${link.week}&meeting=${link.meeting}` as never)
+          }
+        />
+      ) : null}
+
+      {isCoVisit && !isRemoved ? <VisitWeek event={event} versions={versions} /> : null}
+      {isCoVisit ? <VisitTools canView={canViewCoSchedule} /> : null}
+      {isCongress ? <CongressSections event={event} versions={versions} /> : null}
 
       {isMemorial ? (
         <Pressable
@@ -299,29 +322,12 @@ export default function SpecialEventDetailScreen() {
         </Pressable>
       ) : null}
 
-      {isCoVisit ? (
+      {/* The keeper's part of a visit: where they stay, who comes. */}
+      {isCoVisit &&
+      canManageEvents &&
+      !isRemoved &&
+      (!!event.coAccommodationAddress || (overseers?.length ?? 0) > 0) ? (
         <View style={styles.coBlock}>
-          <Text style={styles.infoLabel}>
-            {t(
-              event.coRole === 'substitute'
-                ? 'circuitOverseer.roleSubstitute'
-                : 'circuitOverseer.roleOverseer',
-            )}
-          </Text>
-          <Text style={styles.coName}>
-            {[event.coFirstName, event.coLastName].filter(Boolean).join(' ') ||
-              '—'}
-            {event.coWifeName
-              ? ` · ${t('specialEvents.coWife', { name: event.coWifeName })}`
-              : ''}
-          </Text>
-
-          {event.coMidweekDow ? (
-            <Text style={styles.coMeta}>
-              {t('circuitOverseer.midweekDow')}:{' '}
-              {t(`meetingSettings.dow.${event.coMidweekDow}`)}
-            </Text>
-          ) : null}
           {canManageEvents && event.coAccommodationAddress ? (
             <Text style={styles.coMeta}>
               {t('circuitOverseer.accommodationAddress')}:{' '}
@@ -371,20 +377,21 @@ export default function SpecialEventDetailScreen() {
         </View>
       ) : null}
 
-      {event.address ? (
+      {event.address && !isCongress ? (
         <InfoRow label={t('specialEvents.fields.address')} value={event.address} />
       ) : null}
       {event.note ? (
         <InfoRow label={t('specialEvents.fields.note')} value={event.note} />
       ) : null}
 
-      {event.mapUrl ? (
+      {event.mapUrl && !isCongress ? (
         <LinkButton
           label={t('specialEvents.actions.openMap')}
           url={event.mapUrl}
         />
       ) : null}
-      {event.programUrl ? (
+      {isCoVisit ? <PastVisits events={allEvents} current={event} today={today} /> : null}
+      {event.programUrl && !isCongress ? (
         <LinkButton
           label={t('specialEvents.actions.openProgram')}
           url={event.programUrl}
@@ -552,7 +559,6 @@ const styles = StyleSheet.create({
     borderColor: '#e2e8f0',
     padding: 14,
   },
-  coName: { fontSize: 18, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0f172a', marginTop: 2 },
   coMeta: { fontSize: 14, color: '#475569', marginTop: 6 },
   pickerWrap: {
     marginTop: 14,
