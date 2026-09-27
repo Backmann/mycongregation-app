@@ -2204,7 +2204,8 @@
         "noMeetings": "Keine Zusammenkunft: {{days}}",
         "notifyNew": "Alle werden benachrichtigt und am Vorabend erinnert",
         "notifyEdit": "Ändern sich Tage, Uhrzeit, Ort oder Zusammenkunft, werden alle benachrichtigt"
-      }
+      },
+      "titleExample": "Zum Beispiel Grundstückspflege"
     },
     "types": {
       "regional_convention": "Regionaler Kongress",

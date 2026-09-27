@@ -678,7 +678,13 @@ export function SpecialEventForm({
             style={styles.input}
             value={value.title}
             onChangeText={(x) => set({ title: x })}
-            placeholder={t('specialEvents.placeholders.title')}
+            // An example, not an order: the order is already under the
+            // save button, and the two said the same words.
+            placeholder={
+              isOther
+                ? t('specialEvents.form.titleExample')
+                : t('specialEvents.placeholders.title')
+            }
             placeholderTextColor="#94a3b8"
           />
         </Section>

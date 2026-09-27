@@ -183,39 +183,43 @@ export function MonthCalendar({
         ))}
       </View>
 
-      {/* Day grid */}
-      <View style={styles.grid}>
-        {cells.map((d, i) => {
-          const iso = toISO(d);
-          const otherMonth = d.getMonth() !== viewMonth.getMonth();
-          const selected = isStart(iso) || isEnd(iso);
-          const between = inRange(iso);
-          const isToday = iso === todayISO;
-          return (
-            <Pressable
-              key={i}
-              style={[
-                styles.cell,
-                between && styles.cellBetween,
-              ]}
-              onPress={() => pick(iso)}
-            >
-              <View style={[styles.dayInner, selected && styles.daySelected]}>
-                <Text
-                  style={[
-                    styles.dayText,
-                    otherMonth && styles.dayOther,
-                    isToday && !selected && styles.dayToday,
-                    selected && styles.daySelectedText,
-                  ]}
-                >
-                  {d.getDate()}
-                </Text>
-              </View>
-            </Pressable>
-          );
-        })}
-      </View>
+      {/* Day grid — six rows of seven, each row its own line. It used to be
+          42 cells in one wrapping row, each 1/7 wide: on Android the widths
+          round to whole pixels, seven came out a hair wider than the row,
+          and the seventh fell to the next line — every date then sat under
+          the wrong weekday (27 September, a Sunday, under «Thu»). A row of
+          seven equal shares cannot wrap. */}
+      {Array.from({ length: 6 }, (_, w) => (
+        <View key={w} style={styles.weekRow}>
+          {cells.slice(w * 7, w * 7 + 7).map((d, i) => {
+            const iso = toISO(d);
+            const otherMonth = d.getMonth() !== viewMonth.getMonth();
+            const selected = isStart(iso) || isEnd(iso);
+            const between = inRange(iso);
+            const isToday = iso === todayISO;
+            return (
+              <Pressable
+                key={i}
+                style={[styles.cell, between && styles.cellBetween]}
+                onPress={() => pick(iso)}
+              >
+                <View style={[styles.dayInner, selected && styles.daySelected]}>
+                  <Text
+                    style={[
+                      styles.dayText,
+                      otherMonth && styles.dayOther,
+                      isToday && !selected && styles.dayToday,
+                      selected && styles.daySelectedText,
+                    ]}
+                  >
+                    {d.getDate()}
+                  </Text>
+                </View>
+              </Pressable>
+            );
+          })}
+        </View>
+      ))}
     </View>
   );
 }
@@ -244,9 +248,9 @@ const styles = StyleSheet.create({
     textTransform: 'capitalize',
   },
   weekRow: { flexDirection: 'row' },
-  grid: { flexDirection: 'row', flexWrap: 'wrap' },
+  // An equal share of its row, not a percentage: shares always add up.
   cell: {
-    width: `${100 / 7}%`,
+    flex: 1,
     aspectRatio: 1,
     alignItems: 'center',
     justifyContent: 'center',

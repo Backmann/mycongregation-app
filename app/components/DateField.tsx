@@ -230,33 +230,38 @@ export function DateField({
                     </Text>
                   ))}
                 </View>
-                <View style={styles.grid}>
-                  {grid.map((d, i) => (
-                    <View key={i} style={styles.cell}>
-                      {d != null ? (
-                        <Pressable
-                          style={[
-                            styles.day,
-                            isSelected(d) && styles.daySelected,
-                          ]}
-                          onPress={() => pick(d)}
-                        >
-                          <Text
+                {/* Rows of seven, not one wrapping row of 1/7-wide cells:
+                    on Android the rounded widths overflowed and the dates
+                    slid off their weekdays (see MonthCalendar). */}
+                {Array.from({ length: grid.length / 7 }, (_, w) => (
+                  <View key={w} style={styles.dayRow}>
+                    {grid.slice(w * 7, w * 7 + 7).map((d, i) => (
+                      <View key={i} style={styles.cell}>
+                        {d != null ? (
+                          <Pressable
                             style={[
-                              styles.dayText,
-                              isToday(d) && styles.dayToday,
-                              isSelected(d) && styles.dayTextSelected,
+                              styles.day,
+                              isSelected(d) && styles.daySelected,
                             ]}
+                            onPress={() => pick(d)}
                           >
-                            {d}
-                          </Text>
-                        </Pressable>
-                      ) : (
-                        <View style={styles.day} />
-                      )}
-                    </View>
-                  ))}
-                </View>
+                            <Text
+                              style={[
+                                styles.dayText,
+                                isToday(d) && styles.dayToday,
+                                isSelected(d) && styles.dayTextSelected,
+                              ]}
+                            >
+                              {d}
+                            </Text>
+                          </Pressable>
+                        ) : (
+                          <View style={styles.day} />
+                        )}
+                      </View>
+                    ))}
+                  </View>
+                ))}
               </>
             )}
 
@@ -375,8 +380,8 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     textTransform: 'capitalize',
   },
-  grid: { flexDirection: 'row', flexWrap: 'wrap' },
-  cell: { width: `${100 / 7}%`, aspectRatio: 1, padding: 2 },
+  dayRow: { flexDirection: 'row' },
+  cell: { flex: 1, aspectRatio: 1, padding: 2 },
   day: {
     flex: 1,
     borderRadius: 10,

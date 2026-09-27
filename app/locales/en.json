@@ -2204,7 +2204,8 @@
         "noMeetings": "No meeting on: {{days}}",
         "notifyNew": "Everyone is notified, and reminded the evening before",
         "notifyEdit": "If the days, time, place or meeting change, everyone is notified"
-      }
+      },
+      "titleExample": "For example, grounds cleaning"
     },
     "types": {
       "regional_convention": "Regional convention",
