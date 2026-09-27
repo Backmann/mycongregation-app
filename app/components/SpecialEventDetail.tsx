@@ -40,12 +40,11 @@ import {
   invalidateAfterEventChange,
 } from '../lib/special-event-effects';
 import {
-  SpecialEventForm,
   EventFormValue,
   CIRCUIT_OVERSEER_VISIT_TYPE,
-  eventFormProblem,
   meetingPayload,
 } from './SpecialEventForm';
+import { EventFormScreen } from './EventFormScreen';
 
 function toForm(e: SpecialEvent): EventFormValue {
   return {
@@ -94,7 +93,6 @@ export function SpecialEventDetail({
   const versions = settingsQ.data?.versions;
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState<EventFormValue | null>(null);
-  const [editMultiDay, setEditMultiDay] = useState(false);
 
   const { data: event, isLoading, error } = useQuery({
     queryKey: ['special-events', id],
@@ -230,44 +228,20 @@ export function SpecialEventDetail({
   };
 
   if (editing && form) {
-    const problem = eventFormProblem(form, t, editMultiDay);
     return (
-      <ScrollView contentContainerStyle={styles.container}>
-        <SpecialEventForm
-          value={form}
-          onChange={setForm}
-          pastLocked={isOver}
-          onMultiDayChange={setEditMultiDay}
-        />
-        {problem ? <Text style={styles.problem}>{problem}</Text> : null}
-        {updateM.isError && (
-          <Text style={styles.error}>{eventErrorMessage(updateM.error, t)}</Text>
-        )}
-        <Pressable
-          style={[styles.save, !!problem && { opacity: 0.5 }]}
-          disabled={updateM.isPending || !!problem}
-          onPress={() => updateM.mutate()}
-        >
-          {updateM.isPending ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.saveText}>
-              {t('specialEvents.actions.save')}
-            </Text>
-          )}
-        </Pressable>
-        <Pressable
-          style={styles.cancel}
-          onPress={() => {
-            setForm(toForm(event));
-            setEditing(false);
-          }}
-        >
-          <Text style={styles.cancelText}>
-            {t('specialEvents.actions.cancel')}
-          </Text>
-        </Pressable>
-      </ScrollView>
+      <EventFormScreen
+        value={form}
+        onChange={setForm}
+        pastLocked={isOver}
+        selfId={event.id}
+        saving={updateM.isPending}
+        errorText={updateM.isError ? eventErrorMessage(updateM.error, t) : null}
+        onSave={() => updateM.mutate()}
+        onCancel={() => {
+          setForm(toForm(event));
+          setEditing(false);
+        }}
+      />
     );
   }
 

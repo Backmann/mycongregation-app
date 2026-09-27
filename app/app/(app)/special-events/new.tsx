@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import {
-  ActivityIndicator,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -18,14 +17,12 @@ import {
   invalidateAfterEventChange,
 } from '../../../lib/special-event-effects';
 import {
-  SpecialEventForm,
   EventFormValue,
   emptyEventForm,
   CIRCUIT_OVERSEER_VISIT_TYPE,
-  eventFormProblem,
   meetingPayload,
 } from '../../../components/SpecialEventForm';
-import { formatDateISO } from '../../../lib/dates';
+import { EventFormScreen } from '../../../components/EventFormScreen';
 
 export default function NewSpecialEventScreen() {
   const { t } = useTranslation();
@@ -84,13 +81,6 @@ export default function NewSpecialEventScreen() {
     },
   });
 
-  const [multiDay, setMultiDay] = useState(false);
-  const problem = eventFormProblem(form, t, multiDay);
-  const canSave = !problem;
-  const isPast =
-    /^\d{4}-\d{2}-\d{2}$/.test(form.date) &&
-    (form.endDate || form.date) < formatDateISO(new Date());
-
   if (!picked) {
     return (
       <ScrollView contentContainerStyle={styles.container}>
@@ -143,33 +133,14 @@ export default function NewSpecialEventScreen() {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <SpecialEventForm
-        value={form}
-        onChange={setForm}
-        onMultiDayChange={setMultiDay}
-      />
-      {isPast ? (
-        <Text style={styles.pastNotice}>
-          {t('specialEvents.form.problem.pastNotice')}
-        </Text>
-      ) : null}
-      {problem ? <Text style={styles.problem}>{problem}</Text> : null}
-      {mutation.isError && (
-        <Text style={styles.error}>{eventErrorMessage(mutation.error, t)}</Text>
-      )}
-      <Pressable
-        style={[styles.save, (!canSave || mutation.isPending) && styles.disabled]}
-        disabled={!canSave || mutation.isPending}
-        onPress={() => mutation.mutate()}
-      >
-        {mutation.isPending ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text style={styles.saveText}>{t('specialEvents.actions.save')}</Text>
-        )}
-      </Pressable>
-    </ScrollView>
+    <EventFormScreen
+      value={form}
+      onChange={setForm}
+      isNew
+      saving={mutation.isPending}
+      errorText={mutation.isError ? eventErrorMessage(mutation.error, t) : null}
+      onSave={() => mutation.mutate()}
+    />
   );
 }
 
@@ -230,23 +201,4 @@ const styles = StyleSheet.create({
   },
   talkNoteText: { fontSize: 14, color: '#86198f', lineHeight: 20 },
   talkNoteLink: { fontFamily: 'Manrope_700Bold', fontWeight: '700' },
-  error: { color: '#b91c1c', marginBottom: 12 },
-  problem: { color: '#b45309', marginBottom: 8, textAlign: 'center' },
-  pastNotice: {
-    color: '#475569',
-    backgroundColor: '#f1f5f9',
-    borderRadius: 10,
-    padding: 10,
-    marginBottom: 10,
-    lineHeight: 19,
-  },
-  save: {
-    backgroundColor: '#0ea5e9',
-    borderRadius: 8,
-    paddingVertical: 14,
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  saveText: { color: '#fff', fontSize: 16, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
-  disabled: { opacity: 0.5 },
 });

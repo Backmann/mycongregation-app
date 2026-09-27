@@ -38,6 +38,14 @@ interface Props {
   end: string | null;
   onChange: (v: { start: string | null; end: string | null }) => void;
   locale: string;
+  /**
+   * The caller decides what a tap means (the event form: a tap on any day of
+   * a week picks the visit's whole week). `start`–`end` is still what is
+   * drawn; `onChange` is not called for taps.
+   */
+  onPickDay?: (iso: string) => void;
+  /** No «today / this weekend» shortcuts — where they would not fit. */
+  hidePresets?: boolean;
 }
 
 export function MonthCalendar({
@@ -47,6 +55,8 @@ export function MonthCalendar({
   onChange,
   locale,
   compact,
+  onPickDay,
+  hidePresets,
 }: Props) {
   const { t } = useTranslation();
   const todayISO = toISO(new Date());
@@ -107,6 +117,10 @@ export function MonthCalendar({
     mode === 'range' && !!start && !!end && iso > start && iso < end;
 
   const pick = (iso: string) => {
+    if (onPickDay) {
+      onPickDay(iso);
+      return;
+    }
     if (mode === 'single') {
       onChange({ start: iso, end: null });
       return;
@@ -135,6 +149,7 @@ export function MonthCalendar({
   return (
     <View style={compact ? styles.compactWrap : undefined}>
       {/* Presets */}
+      {hidePresets ? null : (
       <View style={styles.presetRow}>
         {presets.map((p) => (
           <Pressable
@@ -146,6 +161,7 @@ export function MonthCalendar({
           </Pressable>
         ))}
       </View>
+      )}
 
       {/* Header */}
       <View style={styles.header}>
