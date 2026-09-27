@@ -2767,7 +2767,15 @@ export interface CreateSpecialEventInput {
   replacesMeeting?: boolean;
 }
 
-export type UpdateSpecialEventInput = Partial<CreateSpecialEventInput>;
+/**
+ * A change to an event. `null` CLEARS a field; a key left out stays as it is.
+ * The form used to turn an emptied field into «left out», so a time, an end
+ * day, an address or a note, once written, could never be taken away again —
+ * saving said nothing and kept the old value.
+ */
+export type UpdateSpecialEventInput = {
+  [K in keyof CreateSpecialEventInput]?: CreateSpecialEventInput[K] | null;
+};
 
 export type CircuitOverseerRole = "overseer" | "substitute";
 
@@ -3373,6 +3381,30 @@ export const specialEventsApi = {
   async restore(id: string): Promise<SpecialEvent> {
     const { data } = await api.post<SpecialEvent>(
       `/special-events/${id}/restore`,
+    );
+    return data;
+  },
+  /**
+   * Where the circuit overseer stays — the visit schedule's own door, open to
+   * the service overseer and his assistant as well. An empty address clears.
+   */
+  async updateAccommodation(
+    id: string,
+    input: {
+      coAccommodationPublisherId?: string | null;
+      coAccommodationAddress?: string | null;
+    },
+  ): Promise<SpecialEvent> {
+    const body: Record<string, unknown> = {};
+    if (input.coAccommodationPublisherId !== undefined)
+      body.coAccommodationPublisherId = input.coAccommodationPublisherId;
+    if (input.coAccommodationAddress !== undefined)
+      body.coAccommodationAddress = input.coAccommodationAddress?.trim()
+        ? input.coAccommodationAddress.trim()
+        : null;
+    const { data } = await api.patch<SpecialEvent>(
+      `/special-events/${id}/accommodation`,
+      body,
     );
     return data;
   },

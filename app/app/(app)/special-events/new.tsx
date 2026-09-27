@@ -9,7 +9,11 @@ import {
 import { router } from 'expo-router';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { extractErrorMessage, specialEventsApi } from '../../../lib/api';
+import { specialEventsApi } from '../../../lib/api';
+import {
+  eventErrorMessage,
+  invalidateAfterEventChange,
+} from '../../../lib/special-event-effects';
 import {
   SpecialEventForm,
   EventFormValue,
@@ -50,7 +54,7 @@ export default function NewSpecialEventScreen() {
             : undefined,
       }),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['special-events'] });
+      invalidateAfterEventChange(qc);
       router.back();
     },
   });
@@ -63,7 +67,7 @@ export default function NewSpecialEventScreen() {
     <ScrollView contentContainerStyle={styles.container}>
       <SpecialEventForm value={form} onChange={setForm} />
       {mutation.isError && (
-        <Text style={styles.error}>{extractErrorMessage(mutation.error)}</Text>
+        <Text style={styles.error}>{eventErrorMessage(mutation.error, t)}</Text>
       )}
       <Pressable
         style={[styles.save, (!canSave || mutation.isPending) && styles.disabled]}

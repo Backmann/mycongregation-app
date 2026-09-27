@@ -168,7 +168,7 @@ export default function CoScheduleScreen() {
     mutationFn: (input: {
       coAccommodationPublisherId?: string | null;
       coAccommodationAddress?: string;
-    }) => specialEventsApi.update(visit!.id, input),
+    }) => specialEventsApi.updateAccommodation(visit!.id, input),
     onSuccess: () =>
       qc.invalidateQueries({ queryKey: ['special-events'] }),
   });

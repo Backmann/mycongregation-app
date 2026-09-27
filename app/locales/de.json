@@ -2144,7 +2144,8 @@
       "rangeTime": "Von — bis",
       "timeFrom": "Von",
       "timeTo": "Bis",
-      "notePreview": "Vorschau"
+      "notePreview": "Vorschau",
+      "pastLocked": "Das Ereignis ist vorbei: Tage und Art bleiben, wie sie waren. Alles andere lässt sich korrigieren."
     },
     "types": {
       "regional_convention": "Regionaler Kongress",
@@ -2164,7 +2165,22 @@
       "title": "Ereignis an diesem Datum",
       "replaces": "Das Ereignis ersetzt diese Zusammenkunft – prüfe, ob die Aufgabe nötig ist"
     },
-    "coWife": "mit Ehefrau {{name}}"
+    "coWife": "mit Ehefrau {{name}}",
+    "errors": {
+      "EVENT_PAST_LOCKED": "Das Ereignis ist vorbei: Tage und Art bleiben, wie sie waren. Titel, Ort, Links und Notiz lassen sich noch korrigieren.",
+      "EVENT_MOVED_INTO_PAST": "Ein Ereignis kann nicht in die Vergangenheit verschoben werden. Um ein vergangenes festzuhalten, legen Sie es mit seinem Datum neu an.",
+      "EVENT_PAST_ADMIN_ONLY": "Ein vergangenes Ereignis ist Geschichte. Nur ein Administrator kann es entfernen.",
+      "EVENT_END_BEFORE_START": "Ein Ereignis kann nicht enden, bevor es beginnt.",
+      "CO_VISIT_WEEK_TAKEN": "In dieser Woche gibt es bereits einen Besuch des Kreisaufsehers."
+    },
+    "remove": {
+      "title": "„{{title}}“ entfernen?",
+      "body": "Das Ereignis kommt in den Papierkorb und kann von dort zurückgeholt werden.",
+      "bodyMeetings": "Das Ereignis kommt in den Papierkorb. Die Zusammenkünfte an diesen Tagen finden wieder wie gewohnt statt.",
+      "bodyVisit": "Das Programm der Woche wird wieder normal: die Zusammenkunft unter der Woche wieder an ihrem Tag, das Versammlungsbibelstudium kehrt zurück, die Vorträge des Kreisaufsehers verschwinden. Der Besuch lässt sich aus dem Papierkorb zurückholen.",
+      "bodyPast": "Das Ereignis ist vorbei. Entfernt wird nur der Eintrag — das Programm jener Woche bleibt, wie es gehalten wurde.",
+      "confirm": "Entfernen"
+    }
   },
   "calendar": {
     "today": "Heute",
@@ -3014,7 +3030,8 @@
       "slotType": "Reinigungsart",
       "serviceOverseerVisit": "Besuch des Dienstaufsehers",
       "serviceOverseerPublisherId": "Dienstaufseher",
-      "serviceOverseerAssistantId": "Assistent des Dienstaufsehers"
+      "serviceOverseerAssistantId": "Assistent des Dienstaufsehers",
+      "timeEnd": "Endzeit"
     },
     "noValue": "leer",
     "changedNoValues": "geändert (Werte werden nicht gespeichert)",

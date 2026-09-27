@@ -2144,7 +2144,8 @@
       "rangeTime": "From — to",
       "timeFrom": "From",
       "timeTo": "To",
-      "notePreview": "Preview"
+      "notePreview": "Preview",
+      "pastLocked": "This event is over: its days and kind stay as they were. Everything else can be corrected."
     },
     "types": {
       "regional_convention": "Regional convention",
@@ -2164,7 +2165,22 @@
       "title": "Event on this date",
       "replaces": "The event replaces this meeting — check whether the assignment is needed"
     },
-    "coWife": "with wife {{name}}"
+    "coWife": "with wife {{name}}",
+    "errors": {
+      "EVENT_PAST_LOCKED": "This event is over: its days and kind stay as they were. The title, place, links and note can still be corrected.",
+      "EVENT_MOVED_INTO_PAST": "An event cannot be moved into the past. To record a past event, add it anew with its own date.",
+      "EVENT_PAST_ADMIN_ONLY": "A past event is history. Only an administrator can remove it.",
+      "EVENT_END_BEFORE_START": "An event cannot end before it starts.",
+      "CO_VISIT_WEEK_TAKEN": "This week already has a circuit overseer visit."
+    },
+    "remove": {
+      "title": "Remove “{{title}}”?",
+      "body": "The event goes to the bin, from where it can be restored.",
+      "bodyMeetings": "The event goes to the bin. The congregation meetings on those days will be held as usual again.",
+      "bodyVisit": "The week’s programme returns to normal: the midweek meeting goes back to its day, the Bible study returns, the overseer’s talks leave the programme. The visit can be restored from the bin.",
+      "bodyPast": "This event is over. Only the entry is removed — the programme of that week stays as it was given.",
+      "confirm": "Remove"
+    }
   },
   "calendar": {
     "today": "Today",
@@ -3014,7 +3030,8 @@
       "slotType": "Cleaning kind",
       "serviceOverseerVisit": "Service overseer's visit",
       "serviceOverseerPublisherId": "Service overseer",
-      "serviceOverseerAssistantId": "Overseer's assistant"
+      "serviceOverseerAssistantId": "Overseer's assistant",
+      "timeEnd": "End time"
     },
     "noValue": "empty",
     "changedNoValues": "changed (values are not kept)",

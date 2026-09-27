@@ -93,9 +93,15 @@ function fmt(d: string): string {
 export function SpecialEventForm({
   value,
   onChange,
+  pastLocked = false,
 }: {
   value: EventFormValue;
   onChange: (v: EventFormValue) => void;
+  /**
+   * The event is over: its days and its kind are history and stay as they
+   * are (the server refuses to change them). The rest can be put right.
+   */
+  pastLocked?: boolean;
 }) {
   const { t, i18n } = useTranslation();
   const locale = i18n.language;
@@ -216,6 +222,14 @@ export function SpecialEventForm({
 
   return (
     <View>
+      {pastLocked ? (
+        <View style={styles.pastNote}>
+          <Ionicons name="lock-closed-outline" size={16} color="#475569" />
+          <Text style={styles.pastNoteText}>
+            {t('specialEvents.form.pastLocked')}
+          </Text>
+        </View>
+      ) : null}
       {/* Title */}
       <Field label={t('specialEvents.fields.title')}>
         <TextInput
@@ -230,7 +244,8 @@ export function SpecialEventForm({
       {/* Type (inline list) */}
       <Field label={t('specialEvents.fields.type')}>
         <Pressable
-          style={styles.selectBtn}
+          style={[styles.selectBtn, pastLocked && styles.locked]}
+          disabled={pastLocked}
           onPress={() => setShowType((s) => !s)}
         >
           <Text style={[styles.selectText, !value.type && styles.placeholder]}>
@@ -349,6 +364,7 @@ export function SpecialEventForm({
         <Text style={styles.label}>{t('specialEvents.form.multiDay')}</Text>
         <Switch
           value={multiDay}
+          disabled={pastLocked}
           onValueChange={(on) => {
             setMultiDay(on);
             if (!on) set({ endDate: '' });
@@ -359,7 +375,8 @@ export function SpecialEventForm({
       {/* Date (inline calendar) */}
       <Field label={t('specialEvents.fields.date')}>
         <Pressable
-          style={styles.selectBtn}
+          style={[styles.selectBtn, pastLocked && styles.locked]}
+          disabled={pastLocked}
           onPress={() => setShowDate((s) => !s)}
         >
           <Ionicons
@@ -609,6 +626,17 @@ const NOTE_SNIPPETS = [
 ];
 
 const styles = StyleSheet.create({
+  pastNote: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#f1f5f9',
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 14,
+  },
+  pastNoteText: { flex: 1, fontSize: 13.5, color: '#334155', lineHeight: 19 },
+  locked: { backgroundColor: '#f8fafc', opacity: 0.7 },
   noteToolbar: { marginBottom: 8, flexGrow: 0 },
   noteTool: {
     backgroundColor: '#f1f5f9',

@@ -18,16 +18,22 @@ import {
   specialEventsApi,
 } from '../../../lib/api';
 import { FilterToggle } from '../../../components/FilterToggle';
+import { usePermissions } from '../../../lib/permissions';
 
 export default function SpecialEventsListScreen() {
   const { t } = useTranslation();
   const [showPast, setShowPast] = useState(false);
   const [showRemoved, setShowRemoved] = useState(false);
+  // The bin is the keeper's tool; the server no longer shows it to others.
+  const { canManageEvents } = usePermissions();
 
   const { data, isLoading, isRefetching, refetch, error } = useQuery({
-    queryKey: ['special-events', showPast, showRemoved],
+    queryKey: ['special-events', showPast, showRemoved && canManageEvents],
     queryFn: () =>
-      specialEventsApi.list({ all: showPast, includeRemoved: showRemoved }),
+      specialEventsApi.list({
+        all: showPast,
+        includeRemoved: showRemoved && canManageEvents,
+      }),
   });
 
   return (
@@ -37,11 +43,13 @@ export default function SpecialEventsListScreen() {
         value={showPast}
         onValueChange={setShowPast}
       />
-      <FilterToggle
-        label={t('common.showRemoved')}
-        value={showRemoved}
-        onValueChange={setShowRemoved}
-      />
+      {canManageEvents ? (
+        <FilterToggle
+          label={t('common.showRemoved')}
+          value={showRemoved}
+          onValueChange={setShowRemoved}
+        />
+      ) : null}
 
       {error && (
         <View style={styles.errorBox}>

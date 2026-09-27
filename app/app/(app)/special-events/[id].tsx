@@ -23,6 +23,12 @@ import {
   specialEventsApi,
 } from '../../../lib/api';
 import { usePermissions } from '../../../lib/permissions';
+import { confirm } from '../../../components/ConfirmHost';
+import {
+  eventErrorMessage,
+  eventIsOver,
+  invalidateAfterEventChange,
+} from '../../../lib/special-event-effects';
 import {
   SpecialEventForm,
   EventFormValue,
@@ -55,7 +61,7 @@ export default function SpecialEventDetailScreen() {
   const { t, i18n } = useTranslation();
   const { id } = useLocalSearchParams<{ id: string }>();
   const qc = useQueryClient();
-  const { canManageEvents } = usePermissions();
+  const { canManageEvents, isAdmin } = usePermissions();
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState<EventFormValue | null>(null);
 
@@ -72,33 +78,34 @@ export default function SpecialEventDetailScreen() {
   const updateM = useMutation({
     mutationFn: () =>
       specialEventsApi.update(id!, {
+        // An emptied field is sent as null — cleared — not left out, which
+        // the server reads as «unchanged».
         title: form!.title.trim(),
-        type: form!.type.trim() || undefined,
+        type: form!.type.trim() || null,
         date: form!.date.trim(),
-        endDate: form!.endDate.trim() || undefined,
-        time: form!.time.trim() || undefined,
-        timeEnd: form!.timeEnd.trim(),
-        address: form!.address.trim() || undefined,
-        mapUrl: form!.mapUrl.trim() || undefined,
-        programUrl: form!.programUrl.trim() || undefined,
-        note: form!.note.trim() || undefined,
+        endDate: form!.endDate.trim() || null,
+        time: form!.time.trim() || null,
+        timeEnd: form!.timeEnd.trim() || null,
+        address: form!.address.trim() || null,
+        mapUrl: form!.mapUrl.trim() || null,
+        programUrl: form!.programUrl.trim() || null,
+        note: form!.note.trim() || null,
         replacesMeeting: form!.replacesMeeting,
-        coFirstName: form!.coFirstName.trim() || undefined,
-        coLastName: form!.coLastName.trim() || undefined,
-        coWifeName: form!.coWifeName.trim() || undefined,
+        coFirstName: form!.coFirstName.trim() || null,
+        coLastName: form!.coLastName.trim() || null,
+        coWifeName: form!.coWifeName.trim() || null,
         coRole:
           form!.type.trim() === CIRCUIT_OVERSEER_VISIT_TYPE
             ? form!.coRole
             : undefined,
-        coAccommodationAddress:
-          form!.coAccommodationAddress.trim() || undefined,
+        coAccommodationAddress: form!.coAccommodationAddress.trim() || null,
         coMidweekDow:
           form!.type.trim() === CIRCUIT_OVERSEER_VISIT_TYPE
             ? form!.coMidweekDow
             : undefined,
       }),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['special-events'] });
+      invalidateAfterEventChange(qc);
       setEditing(false);
     },
   });
@@ -106,16 +113,14 @@ export default function SpecialEventDetailScreen() {
   const removeM = useMutation({
     mutationFn: () => specialEventsApi.remove(id!),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['special-events'] });
+      invalidateAfterEventChange(qc);
       router.back();
     },
   });
 
   const restoreM = useMutation({
     mutationFn: () => specialEventsApi.restore(id!),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['special-events'] });
-    },
+    onSuccess: () => invalidateAfterEventChange(qc),
   });
 
   const isCoVisit = event?.type === CIRCUIT_OVERSEER_VISIT_TYPE;
@@ -143,9 +148,7 @@ export default function SpecialEventDetailScreen() {
         coWifeName: c.wifeName ?? null,
         coRole: c.role,
       }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['special-events'] });
-    },
+    onSuccess: () => invalidateAfterEventChange(qc),
   });
 
   if (isLoading) {
@@ -160,13 +163,38 @@ export default function SpecialEventDetailScreen() {
   }
 
   const isRemoved = !!event.deletedAt;
+  // Past events are history: their days and kind stay, and only an
+  // administrator removes one (without touching the programme of that week).
+  const isOver = eventIsOver(event, formatDateISO(new Date()));
+
+  /**
+   * One tap used to delete — for a visit, rewriting the programme of its week
+   * with no word said. Now it asks, and says what will happen.
+   */
+  const askRemove = async () => {
+    const body = isOver
+      ? t('specialEvents.remove.bodyPast')
+      : isCoVisit
+        ? t('specialEvents.remove.bodyVisit')
+        : event.replacesMeeting || event.type === 'regional_convention' ||
+            event.type === 'circuit_assembly'
+          ? t('specialEvents.remove.bodyMeetings')
+          : t('specialEvents.remove.body');
+    const ok = await confirm({
+      title: t('specialEvents.remove.title', { title: event.title }),
+      body,
+      confirmLabel: t('specialEvents.remove.confirm'),
+      danger: true,
+    });
+    if (ok) removeM.mutate();
+  };
 
   if (editing && form) {
     return (
       <ScrollView contentContainerStyle={styles.container}>
-        <SpecialEventForm value={form} onChange={setForm} />
+        <SpecialEventForm value={form} onChange={setForm} pastLocked={isOver} />
         {updateM.isError && (
-          <Text style={styles.error}>{extractErrorMessage(updateM.error)}</Text>
+          <Text style={styles.error}>{eventErrorMessage(updateM.error, t)}</Text>
         )}
         <Pressable
           style={styles.save}
@@ -358,15 +386,22 @@ export default function SpecialEventDetailScreen() {
       {canManageEvents && (
         <View style={styles.actions}>
           {isRemoved ? (
-            <Pressable
-              style={styles.save}
-              disabled={restoreM.isPending}
-              onPress={() => restoreM.mutate()}
-            >
-              <Text style={styles.saveText}>
-                {t('specialEvents.actions.restore')}
-              </Text>
-            </Pressable>
+            <>
+              <Pressable
+                style={styles.save}
+                disabled={restoreM.isPending}
+                onPress={() => restoreM.mutate()}
+              >
+                <Text style={styles.saveText}>
+                  {t('specialEvents.actions.restore')}
+                </Text>
+              </Pressable>
+              {restoreM.isError ? (
+                <Text style={styles.error}>
+                  {eventErrorMessage(restoreM.error, t)}
+                </Text>
+              ) : null}
+            </>
           ) : (
             <>
               <Pressable
@@ -380,15 +415,22 @@ export default function SpecialEventDetailScreen() {
                   {t('specialEvents.actions.edit')}
                 </Text>
               </Pressable>
-              <Pressable
-                style={styles.delete}
-                disabled={removeM.isPending}
-                onPress={() => removeM.mutate()}
-              >
-                <Text style={styles.deleteText}>
-                  {t('specialEvents.actions.delete')}
+              {!isOver || isAdmin ? (
+                <Pressable
+                  style={styles.delete}
+                  disabled={removeM.isPending}
+                  onPress={askRemove}
+                >
+                  <Text style={styles.deleteText}>
+                    {t('specialEvents.actions.delete')}
+                  </Text>
+                </Pressable>
+              ) : null}
+              {removeM.isError ? (
+                <Text style={styles.error}>
+                  {eventErrorMessage(removeM.error, t)}
                 </Text>
-              </Pressable>
+              ) : null}
             </>
           )}
         </View>
