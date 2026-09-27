@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { createContext, useContext, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -6,8 +6,10 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  useWindowDimensions,
   View,
 } from 'react-native';
+import { SpecialEventDetail } from '../../../components/SpecialEventDetail';
 import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -54,6 +56,12 @@ export default function SpecialEventsListScreen() {
   const [showPast, setShowPast] = useState(false);
   const [showBin, setShowBin] = useState(false);
   const today = formatDateISO(new Date());
+  // A wide screen shows the list and the open event side by side (27
+  // September): on a laptop, going back and forth between two screens to
+  // compare the next events is what the space is for.
+  const { width } = useWindowDimensions();
+  const wide = width >= 900;
+  const [picked, setPicked] = useState<string | null>(null);
 
   const eventsQ = useQuery({
     // Everything ever recorded, and the bin for those who keep it: the past
@@ -106,7 +114,11 @@ export default function SpecialEventsListScreen() {
   const weekendTime = (iso: string) =>
     effectiveVersionFor(versions, iso)?.weekendTime ?? null;
 
-  return (
+  const firstEvent = upcoming.find((x) => x.kind === 'event');
+  const selected =
+    picked ?? (firstEvent && firstEvent.kind === 'event' ? firstEvent.event.id : null);
+
+  const list = (
     <ScrollView
       style={styles.screen}
       contentContainerStyle={styles.content}
@@ -238,7 +250,33 @@ export default function SpecialEventsListScreen() {
       )}
     </ScrollView>
   );
+
+  if (!wide) return list;
+  return (
+    <OpenCtx.Provider value={{ selected, select: setPicked }}>
+      <View style={styles.wideRow}>
+        <View style={styles.listWide}>{list}</View>
+        <View style={styles.detailPane}>
+          {selected ? (
+            <SpecialEventDetail
+              key={selected}
+              id={selected}
+              onRemoved={() => setPicked(null)}
+            />
+          ) : (
+            <Text style={styles.empty}>{t('specialEvents.empty')}</Text>
+          )}
+        </View>
+      </View>
+    </OpenCtx.Provider>
+  );
 }
+
+/** On a wide screen an event opens beside the list instead of over it. */
+const OpenCtx = createContext<{
+  selected: string | null;
+  select: ((id: string) => void) | null;
+}>({ selected: null, select: null });
 
 function groupBy<T>(items: T[], key: (x: T) => string): [string, T[]][] {
   const out: [string, T[]][] = [];
@@ -338,8 +376,11 @@ function useManagerHint(item: EventListItem): string | null {
 function openItem(
   item: EventListItem,
   link: { week: string; meeting: string } | null,
+  select: ((id: string) => void) | null = null,
 ) {
-  if (item.kind === 'event') {
+  if (item.kind === 'event' && select) {
+    select(item.event.id);
+  } else if (item.kind === 'event') {
     router.push(`/special-events/${item.event.id}` as never);
   } else if (link) {
     router.push(`/schedule?week=${link.week}&meeting=${link.meeting}` as never);
@@ -359,6 +400,7 @@ function Hero({
 }) {
   const { t, i18n } = useTranslation();
   const loc = i18n.language;
+  const open = useContext(OpenCtx);
   const text = useItemText(item, weekendTime);
   const effect = effectOf(item);
   const effectText = useEffectText(effect);
@@ -381,7 +423,7 @@ function Hero({
       : cap(dayjs(item.date).locale(loc).format('dddd, D MMMM'));
   return (
     <Pressable
-      onPress={() => openItem(item, link)}
+      onPress={() => openItem(item, link, open.select)}
       style={({ pressed }) => [
         styles.hero,
         { borderColor: look.soft },
@@ -463,14 +505,18 @@ function Row({
   const effectText = useEffectText(effect);
   const hint = useManagerHint(item);
   const look = KIND_LOOK[text.kind];
+  const open = useContext(OpenCtx);
+  const isSelected =
+    !!open.select && item.kind === 'event' && open.selected === item.event.id;
   const d = (iso: string, f: string) => dayjs(iso).locale(loc).format(f);
   const range = item.end !== item.date;
   return (
     <Pressable
-      onPress={() => openItem(item, link)}
+      onPress={() => openItem(item, link, open.select)}
       style={({ pressed }) => [
         styles.row,
         !first && styles.rowBorder,
+        isSelected && styles.rowSelected,
         pressed && styles.pressed,
       ]}
     >
@@ -530,6 +576,14 @@ function Row({
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: '#f8fafc' },
+  wideRow: { flex: 1, flexDirection: 'row', backgroundColor: '#f8fafc' },
+  listWide: {
+    width: 440,
+    borderRightWidth: 1,
+    borderRightColor: '#e2e8f0',
+  },
+  detailPane: { flex: 1 },
+  rowSelected: { backgroundColor: '#f0f9ff' },
   content: { padding: 16, paddingBottom: 40, gap: 4 },
   empty: { textAlign: 'center', color: '#64748b', marginTop: 32 },
   errorBox: {
