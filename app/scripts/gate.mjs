@@ -53,6 +53,9 @@ const STEPS = [
   // Home's «Ваше ближайшее» and its two weeks — the stand's own week and every
   // rule the card carries (26 September).
   ['Главная: ближайшее и лента', 'node', ['scripts/check-home-digest.mjs']],
+  // The lines under the «Собрание» doors: which are amber, whose absences
+  // (27 September).
+  ['Строки «Собрания»', 'node', ['scripts/check-congregation-lines.mjs']],
   ['Отпечаток кода (как у сервера)', 'node', ['scripts/check-code-fingerprint.mjs']],
   // Where a tapped notification leads is written twice — the service worker
   // cannot import from lib/ — so the two copies are compared here.

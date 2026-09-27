@@ -1910,6 +1910,48 @@ export const readinessApi = {
   },
 };
 
+/**
+ * What stands under each door of the «Собрание» contents (27 September) —
+ * the server gives each person only what the screen behind a door would.
+ * Absent keys mean «not for you»; the row keeps its plain description then.
+ */
+export interface CongregationSummary {
+  today: string;
+  programme?: { windowWeeks: number; notReady: number; loadedUntil: string | null };
+  duties: {
+    next: { date: string; kind: "midweek" | "weekend"; assigned: number; total: number } | null;
+  };
+  talks: {
+    nextIncoming: { date: string; speaker: string | null; congregation: string | null } | null;
+  };
+  tasks?: { open: number; overdue: number };
+  absences: {
+    readAll: boolean;
+    awayNow: number | null;
+    mine: { startDate: string; endDate: string | null } | null;
+  };
+  cleaning: {
+    thisWeek: { afterMeeting: string | null; thorough: string | null; meetingsHeld: boolean };
+    mine: { weekStart: string; slot: string; plannedAt: string | null } | null;
+  };
+  meetingPlace: {
+    midweekDow: number;
+    midweekTime: string;
+    weekendDow: number;
+    weekendTime: string;
+  } | null;
+  publishers?: { count: number };
+  myGroup: { name: string; overseerName: string | null } | null;
+  groups: { count: number };
+}
+
+export const congregationSummaryApi = {
+  async get(): Promise<CongregationSummary> {
+    const { data } = await api.get<CongregationSummary>("/congregation-summary");
+    return data;
+  },
+};
+
 export const cleaningApi = {
   /**
    * Many weeks at once — rows only, no round-robin hint (that is for whoever

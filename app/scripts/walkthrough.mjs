@@ -655,6 +655,33 @@ let memorialWeek = null; // found as the admin, reused by the others
     await atPath(page, '/home');
   });
   await homeChecks(page, 'A');
+  // 27 September: the «Собрание» doors say what stands behind them, from
+  // one server summary — and a number there must be the screen's own.
+  await check(page, 'A28', 'Собрание: строки с данными; число возвещателей = «Всего» в списке', async () => {
+    await go(page, '/publishers', 'Возвещатели');
+    await page.waitForTimeout(2500);
+    const line = await see(page, /^\d+ возвещател/);
+    const n = Number(((await line.textContent()) || '').match(/\d+/)?.[0]);
+    await see(page, /^Ср|^Пн|^Вт|^Чт|^Пт|^Сб|^Вс/); // «Время и место встреч»: дни и часы
+    await tap(page, 'Возвещатели');
+    await atPath(page, '/publishers/list');
+    const total = await see(page, /^Всего: \d+/);
+    const m = Number(((await total.textContent()) || '').match(/\d+/)?.[0]);
+    if (n !== m) throw new Error(`в оглавлении ${n}, в списке «Всего: ${m}»`);
+    return `${n} = ${m}`;
+  });
+  await check(page, 'A29', 'Собрание на ноутбуке: разделы в две колонки', async () => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await go(page, '/publishers', 'Возвещатели');
+    await page.waitForTimeout(1200);
+    const left = await (await see(page, /^Люди$/i)).boundingBox();
+    const right = await (await see(page, /^Управление$/i)).boundingBox();
+    await snap(page, 'A29-ноутбук');
+    await page.setViewportSize(PHONE);
+    if (!left || !right) throw new Error('не нашёл заголовков разделов');
+    if (right.x < left.x + 300) throw new Error(`«Управление» не во второй колонке: x ${Math.round(right.x)} при «Люди» ${Math.round(left.x)}`);
+    return `колонки с ${Math.round(left.x)} и ${Math.round(right.x)} точек`;
+  });
   // 26 September: on a laptop Home is two columns within 1000 points — the
   // list on the right, the card and the tasks on the left.
   await check(page, 'A27', 'Главная на ноутбуке: две колонки, не шире 1000 точек', async () => {
@@ -862,6 +889,10 @@ try {
     for (const w of ['Управление', 'Ответственные', 'Составление программы']) await notSee(page, w);
     // The tile left Home on 26 September; this is now the one way in.
     await see(page, 'Моя группа');
+    // The groups line names his own group when he has one (27 September).
+    await page.waitForTimeout(1500);
+    const own = await page.getByText(/ · ваша: /).filter({ visible: true }).count();
+    return own ? 'строка групп называет свою' : 'своей группы нет — строка без «ваша»';
   });
   await homeChecks(page, 'C');
   await check(page, 'C04', 'Служение: нет «Посещаемость встреч»; по адресу — «Нет доступа»', async () => {
