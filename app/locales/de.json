@@ -2146,7 +2146,17 @@
       "timeTo": "Bis",
       "notePreview": "Vorschau",
       "pastLocked": "Das Ereignis ist vorbei: Tage und Art bleiben, wie sie waren. Alles andere lässt sich korrigieren.",
-      "specialTalkMoved": "Ein Sondervortrag wird im Vortragsplan eingetragen — „Zu uns“, mit Thema statt Nummer."
+      "specialTalkMoved": "Ein Sondervortrag wird im Vortragsplan eingetragen — „Zu uns“, mit Thema statt Nummer.",
+      "problem": {
+        "needDate": "Datum wählen",
+        "needTitle": "Titel eingeben",
+        "needEnd": "Letzten Tag wählen",
+        "memorialTime": "Das Gedächtnismahl braucht eine Anfangszeit",
+        "timeOrder": "Das Ende liegt vor dem Beginn",
+        "linkInvalid": "Ein Link beginnt mit https://",
+        "changeEmpty": "Schreib, was sich an der Zusammenkunft ändert",
+        "pastNotice": "Das Datum ist vorbei: Das Ereignis wird für die Geschichte eingetragen. Niemand wird benachrichtigt, das Programm ändert sich nicht."
+      }
     },
     "types": {
       "regional_convention": "Regionaler Kongress",
@@ -2173,7 +2183,14 @@
       "EVENT_PAST_ADMIN_ONLY": "Ein vergangenes Ereignis ist Geschichte. Nur ein Administrator kann es entfernen.",
       "EVENT_END_BEFORE_START": "Ein Ereignis kann nicht enden, bevor es beginnt.",
       "CO_VISIT_WEEK_TAKEN": "In dieser Woche gibt es bereits einen Besuch des Kreisaufsehers.",
-      "EVENT_CHANGE_EMPTY": "Sag, was sich an der Zusammenkunft ändert: in Worten, die Zeit oder den Ort."
+      "EVENT_CHANGE_EMPTY": "Sag, was sich an der Zusammenkunft ändert: in Worten, die Zeit oder den Ort.",
+      "EVENT_TIME_INVALID": "Die Zeit wird als HH:mm geschrieben, zum Beispiel 09:40.",
+      "EVENT_TIME_ORDER": "Das Ereignis muss nach dem Beginn enden.",
+      "EVENT_LINK_INVALID": "Ein Link beginnt mit https://",
+      "EVENT_TYPE_UNKNOWN": "Diese Art von Ereignis gibt es nicht.",
+      "EVENT_SPECIAL_TALK_IN_JOURNAL": "Ein Sondervortrag wird im Vortragsprotokoll eingetragen — „Zu uns“, mit dem Redner.",
+      "EVENT_MEMORIAL_NEEDS_TIME": "Das Gedächtnismahl braucht eine Anfangszeit — sonst kommt keine Erinnerung.",
+      "EVENT_MEMORIAL_TAKEN": "In diesem Dienstjahr ist das Gedächtnismahl schon eingetragen."
     },
     "remove": {
       "title": "„{{title}}“ entfernen?",

@@ -72,7 +72,8 @@ export interface EventFormValue {
   coMidweekDow: number;
 }
 
-export const CIRCUIT_OVERSEER_VISIT_TYPE = 'circuit_overseer_visit';
+const CIRCUIT_OVERSEER_VISIT_TYPE_KEY = 'circuit_overseer_visit';
+export const CIRCUIT_OVERSEER_VISIT_TYPE = CIRCUIT_OVERSEER_VISIT_TYPE_KEY;
 
 export function emptyEventForm(): EventFormValue {
   return {
@@ -119,6 +120,46 @@ export function meetingPayload(v: EventFormValue) {
   };
 }
 
+/**
+ * What still keeps the event from being saved, in the reader's words — or
+ * null. The save button used to go pale and say nothing; now it says this.
+ * The same rules the server enforces, so a refusal after tapping is rare.
+ */
+export function eventFormProblem(
+  v: EventFormValue,
+  t: (k: string) => string,
+  multiDay: boolean,
+): string | null {
+  const p = (k: string) => t(`specialEvents.form.problem.${k}`);
+  if (!v.title.trim()) return p('needTitle');
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(v.date.trim())) return p('needDate');
+  if (multiDay && !v.endDate.trim()) return p('needEnd');
+  if (v.type === 'memorial' && !v.time.trim()) return p('memorialTime');
+  if (v.time && v.timeEnd && v.timeEnd <= v.time) return p('timeOrder');
+  const bad = (u: string) => !!u.trim() && !/^https?:\/\/\S+$/i.test(u.trim());
+  if (bad(v.mapUrl) || bad(v.programUrl)) return p('linkInvalid');
+  if (
+    v.meetingMode === 'changed' &&
+    takesMeetingMode(v.type || null) &&
+    !v.meetingNote.trim() &&
+    !v.meetingTime.trim() &&
+    !v.meetingAddress.trim()
+  )
+    return p('changeEmpty');
+  return null;
+}
+
+/**
+ * Kinds that always last several days: a regional convention runs Friday to
+ * Sunday, a circuit visit Tuesday to Sunday. Their form opens with «several
+ * days» on — it used to open as a one-day event, and a convention saved that
+ * way took one day of the week away instead of the week.
+ */
+export const MULTI_DAY_KINDS = new Set([
+  'regional_convention',
+  CIRCUIT_OVERSEER_VISIT_TYPE_KEY,
+]);
+
 /** Normalize free time input ('1830', '18:3', '930', '9') to 'HH:mm' or ''. */
 
 function capitalize(x: string): string {
@@ -133,9 +174,11 @@ export function SpecialEventForm({
   value,
   onChange,
   pastLocked = false,
+  onMultiDayChange,
 }: {
   value: EventFormValue;
   onChange: (v: EventFormValue) => void;
+  onMultiDayChange?: (on: boolean) => void;
   /**
    * The event is over: its days and its kind are history and stay as they
    * are (the server refuses to change them). The rest can be put right.
@@ -145,7 +188,13 @@ export function SpecialEventForm({
   const { t, i18n } = useTranslation();
   const locale = i18n.language;
 
-  const [multiDay, setMultiDay] = useState<boolean>(!!value.endDate);
+  const [multiDay, setMultiDay] = useState<boolean>(
+    !!value.endDate || MULTI_DAY_KINDS.has(value.type),
+  );
+  // Tell the screen that owns the save button, so it can say what is missing.
+  useEffect(() => {
+    onMultiDayChange?.(multiDay);
+  }, [multiDay, onMultiDayChange]);
   const [showDate, setShowDate] = useState(false);
   const [showType, setShowType] = useState(false);
 
@@ -233,6 +282,7 @@ export function SpecialEventForm({
       type: isOther ? '' : key,
       title: titleIsAuto ? (isOther ? '' : label) : value.title,
     });
+    if (MULTI_DAY_KINDS.has(key)) setMultiDay(true);
     setShowType(false);
   };
 
@@ -421,7 +471,9 @@ export function SpecialEventForm({
           <FormChips
             label={t('circuitOverseer.midweekDow')}
             value={value.coMidweekDow}
-            options={[1, 2, 3, 4, 5, 6, 7].map((d) => ({
+            // A midweek meeting is on a weekday: Saturday and Sunday are the
+            // weekend meeting's, and the visit does not move that one.
+            options={[1, 2, 3, 4, 5].map((d) => ({
               value: d,
               label: t(`meetingSettings.dow.${d}`),
             }))}

@@ -189,7 +189,14 @@ export function usePermissions(): Permissions {
         holds("public_talk_coordinator") ||
         holds("public_talk_coordinator_assistant"),
       canViewServiceSummary: isAdmin || holds("secretary"),
-      canViewCoSchedule: isAdmin || isElder,
+      // Those who plan the visit read its schedule too (27 September): the
+      // service overseer's assistant could already change it.
+      canViewCoSchedule:
+        isAdmin ||
+        isElder ||
+        holds("service_overseer") ||
+        holds("service_overseer_assistant") ||
+        holds("body_coordinator"),
       canEditCoSchedule:
         isAdmin ||
         holds("service_overseer") ||

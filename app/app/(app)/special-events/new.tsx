@@ -22,8 +22,10 @@ import {
   EventFormValue,
   emptyEventForm,
   CIRCUIT_OVERSEER_VISIT_TYPE,
+  eventFormProblem,
   meetingPayload,
 } from '../../../components/SpecialEventForm';
+import { formatDateISO } from '../../../lib/dates';
 
 export default function NewSpecialEventScreen() {
   const { t } = useTranslation();
@@ -73,21 +75,21 @@ export default function NewSpecialEventScreen() {
             ? form.coMidweekDow
             : undefined,
       }),
-    onSuccess: () => {
+    // The new event opens — not the list it was made from: that is where
+    // the next thing to do with it (the visit schedule, the programme link)
+    // is.
+    onSuccess: (created) => {
       invalidateAfterEventChange(qc);
-      router.back();
+      router.replace(`/special-events/${created.id}` as never);
     },
   });
 
-  const changeSaysNothing =
-    form.meetingMode === 'changed' &&
-    !form.meetingNote.trim() &&
-    !form.meetingTime.trim() &&
-    !form.meetingAddress.trim();
-  const canSave =
-    form.title.trim().length > 0 &&
-    /^\d{4}-\d{2}-\d{2}$/.test(form.date.trim()) &&
-    !changeSaysNothing;
+  const [multiDay, setMultiDay] = useState(false);
+  const problem = eventFormProblem(form, t, multiDay);
+  const canSave = !problem;
+  const isPast =
+    /^\d{4}-\d{2}-\d{2}$/.test(form.date) &&
+    (form.endDate || form.date) < formatDateISO(new Date());
 
   if (!picked) {
     return (
@@ -142,7 +144,17 @@ export default function NewSpecialEventScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <SpecialEventForm value={form} onChange={setForm} />
+      <SpecialEventForm
+        value={form}
+        onChange={setForm}
+        onMultiDayChange={setMultiDay}
+      />
+      {isPast ? (
+        <Text style={styles.pastNotice}>
+          {t('specialEvents.form.problem.pastNotice')}
+        </Text>
+      ) : null}
+      {problem ? <Text style={styles.problem}>{problem}</Text> : null}
       {mutation.isError && (
         <Text style={styles.error}>{eventErrorMessage(mutation.error, t)}</Text>
       )}
@@ -219,6 +231,15 @@ const styles = StyleSheet.create({
   talkNoteText: { fontSize: 14, color: '#86198f', lineHeight: 20 },
   talkNoteLink: { fontFamily: 'Manrope_700Bold', fontWeight: '700' },
   error: { color: '#b91c1c', marginBottom: 12 },
+  problem: { color: '#b45309', marginBottom: 8, textAlign: 'center' },
+  pastNotice: {
+    color: '#475569',
+    backgroundColor: '#f1f5f9',
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 10,
+    lineHeight: 19,
+  },
   save: {
     backgroundColor: '#0ea5e9',
     borderRadius: 8,

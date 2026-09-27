@@ -43,6 +43,7 @@ import {
   SpecialEventForm,
   EventFormValue,
   CIRCUIT_OVERSEER_VISIT_TYPE,
+  eventFormProblem,
   meetingPayload,
 } from './SpecialEventForm';
 
@@ -93,6 +94,7 @@ export function SpecialEventDetail({
   const versions = settingsQ.data?.versions;
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState<EventFormValue | null>(null);
+  const [editMultiDay, setEditMultiDay] = useState(false);
 
   const { data: event, isLoading, error } = useQuery({
     queryKey: ['special-events', id],
@@ -228,15 +230,22 @@ export function SpecialEventDetail({
   };
 
   if (editing && form) {
+    const problem = eventFormProblem(form, t, editMultiDay);
     return (
       <ScrollView contentContainerStyle={styles.container}>
-        <SpecialEventForm value={form} onChange={setForm} pastLocked={isOver} />
+        <SpecialEventForm
+          value={form}
+          onChange={setForm}
+          pastLocked={isOver}
+          onMultiDayChange={setEditMultiDay}
+        />
+        {problem ? <Text style={styles.problem}>{problem}</Text> : null}
         {updateM.isError && (
           <Text style={styles.error}>{eventErrorMessage(updateM.error, t)}</Text>
         )}
         <Pressable
-          style={styles.save}
-          disabled={updateM.isPending}
+          style={[styles.save, !!problem && { opacity: 0.5 }]}
+          disabled={updateM.isPending || !!problem}
           onPress={() => updateM.mutate()}
         >
           {updateM.isPending ? (
@@ -485,6 +494,7 @@ function LinkButton({ label, url }: { label: string; url: string }) {
 const styles = StyleSheet.create({
   container: { padding: 16, backgroundColor: '#f8fafc' },
   error: { color: '#b91c1c' },
+  problem: { color: '#b45309', marginTop: 8, textAlign: 'center' },
   h1: { fontSize: 22, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0f172a' },
   date: { fontSize: 15, color: '#0369a1', marginTop: 4 },
   badge: {

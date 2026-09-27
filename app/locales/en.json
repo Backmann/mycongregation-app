@@ -2146,7 +2146,17 @@
       "timeTo": "To",
       "notePreview": "Preview",
       "pastLocked": "This event is over: its days and kind stay as they were. Everything else can be corrected.",
-      "specialTalkMoved": "A special talk is recorded in the talk log — “Incoming”, with its theme in place of a number."
+      "specialTalkMoved": "A special talk is recorded in the talk log — “Incoming”, with its theme in place of a number.",
+      "problem": {
+        "needDate": "Pick the date",
+        "needTitle": "Enter a title",
+        "needEnd": "Pick the last day",
+        "memorialTime": "The Memorial needs its starting time",
+        "timeOrder": "The end is before the start",
+        "linkInvalid": "A link must start with https://",
+        "changeEmpty": "Say what changes about the meeting",
+        "pastNotice": "The date is past: the event is recorded for history. Nobody is notified and the programme does not change."
+      }
     },
     "types": {
       "regional_convention": "Regional convention",
@@ -2173,7 +2183,14 @@
       "EVENT_PAST_ADMIN_ONLY": "A past event is history. Only an administrator can remove it.",
       "EVENT_END_BEFORE_START": "An event cannot end before it starts.",
       "CO_VISIT_WEEK_TAKEN": "This week already has a circuit overseer visit.",
-      "EVENT_CHANGE_EMPTY": "Say what changes about the meeting: in words, its time or its place."
+      "EVENT_CHANGE_EMPTY": "Say what changes about the meeting: in words, its time or its place.",
+      "EVENT_TIME_INVALID": "Write the time as HH:mm, for example 09:40.",
+      "EVENT_TIME_ORDER": "The event must end after it starts.",
+      "EVENT_LINK_INVALID": "A link must start with https://",
+      "EVENT_TYPE_UNKNOWN": "There is no such kind of event.",
+      "EVENT_SPECIAL_TALK_IN_JOURNAL": "A special talk is recorded in the talk log — Incoming, with its speaker.",
+      "EVENT_MEMORIAL_NEEDS_TIME": "The Memorial needs its starting time — without it no reminder is sent.",
+      "EVENT_MEMORIAL_TAKEN": "This service year already has a Memorial."
     },
     "remove": {
       "title": "Remove “{{title}}”?",
