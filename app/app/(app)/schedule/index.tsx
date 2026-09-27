@@ -37,6 +37,8 @@ import type {
 } from "../../../lib/api";
 import { usePermissions } from "../../../lib/permissions";
 import { isCongressEvent, weekRules } from "../../../lib/week-rules";
+import { meetingChangeOn, takesMeetingMode } from "../../../lib/event-meeting";
+import { MeetingChangeNote } from "../../../components/MeetingChangeNote";
 import { WindowsLine, WindowsPlanDialog } from "../../../components/WindowsPlan";
 import { effectiveVersionFor } from "../../../lib/meeting-schedule";
 import { addDays, formatDateISO, parseISODate, startOfWeekMonday } from "../../../lib/dates";
@@ -164,9 +166,27 @@ function serviceYearEndISO(today: Date): string {
   return `${start + 1}-08-31`;
 }
 
-type MeetingItem = { type: "meeting"; id: string; date: string; week: string; kind: Kind; time: string | null; movedByVisit: boolean };
+type MeetingItem = {
+  type: "meeting";
+  id: string;
+  date: string;
+  week: string;
+  kind: Kind;
+  time: string | null;
+  movedByVisit: boolean;
+  /** An event that day changes the meeting — another hour, place, programme. */
+  change: SpecialEvent | null;
+};
 type FieldItem = { type: "field"; id: string; date: string; week: string; meetings: FieldServiceMeeting[] };
-type SpecialItem = { type: "special"; id: string; date: string; title: string; line: string };
+type SpecialItem = {
+  type: "special";
+  id: string;
+  date: string;
+  title: string;
+  line: string;
+  /** An event with a page of its own: the row opens it. */
+  eventId?: string;
+};
 /**
  * The Memorial — a meeting of its own kind, opened like one (23 September).
  * Its programme once lived only on the old screen; with the feed as the
@@ -433,15 +453,37 @@ export default function ProgrammeFeedScreen() {
     }
     for (const kind of ["midweek", "weekend"] as Kind[]) {
       const date = rules.dateOf(kind);
-      if (!date || rules.isTakenAway(kind)) continue;
+      if (!date) continue;
+      if (rules.isTakenAway(kind)) {
+        // A branch representative's visit or «Other» that takes the meeting's
+        // place stands in the feed where the meeting would have been — until
+        // now the meeting just vanished and nothing said why.
+        const by = rules.replacedBy(kind);
+        if (!rules.congress && by && by.type !== "memorial" && takesMeetingMode(by.type)) {
+          items.push({
+            type: "special",
+            id: `replaced|${by.id}|${date}`,
+            date,
+            title: by.title,
+            line: t("feed.noMeetingThatDay"),
+            eventId: by.id,
+          });
+        }
+        continue;
+      }
+      const change = meetingChangeOn(eventsQ.data, date);
       items.push({
         type: "meeting",
         id: `${week}|${kind}`,
         date,
         week,
         kind,
-        time: (kind === "midweek" ? version?.midweekTime : version?.weekendTime) ?? null,
+        time:
+          change?.meetingTime ??
+          (kind === "midweek" ? version?.midweekTime : version?.weekendTime) ??
+          null,
         movedByVisit: kind === "midweek" && !!rules.coVisit,
+        change,
       });
     }
     const byDay = byKey(fieldOf.get(week) ?? [], (f) =>
@@ -692,6 +734,7 @@ export default function ProgrammeFeedScreen() {
           line={x.line}
           color={KIND.special.color}
           past={isPast}
+          onPress={x.eventId ? () => router.push(`/special-events/${x.eventId}`) : undefined}
         />
       );
     } else if (x.type === "memorial") {
@@ -1328,6 +1371,9 @@ function Meeting({
   // weekend. Before, the row's big words were «Встреча в будний день» on
   // every other row, and what mattered sat grey below.
   const kindTitle = item.kind === "midweek" ? t("eventTypes.midweek") : t("eventTypes.weekend");
+  // «Представитель филиала», or the title of an «Other» event.
+  const eventLabel = (e: SpecialEvent) =>
+    e.type ? t(`specialEvents.types.${e.type}`, { defaultValue: e.title }) : e.title;
   const chair = parts.find((p) => CHAIR_KEYS.has(p.partKey));
   const talk = parts.find((p) => p.partKey === "public_talk_speaker");
   const firstTalk = parts.find((p) => p.partKey === "treasures_talk");
@@ -1403,9 +1449,11 @@ function Meeting({
         tag={
           item.movedByVisit
             ? t("feed.movedByVisit")
-            : item.kind === "weekend" && talk?.specialTalk
-              ? t("feed.specialTalk")
-              : null
+            : item.change
+              ? t("feed.withChanges", { event: eventLabel(item.change) })
+              : item.kind === "weekend" && talk?.specialTalk
+                ? t("feed.specialTalk")
+                : null
         }
         color={KIND[item.kind].color}
         past={past}
@@ -1431,6 +1479,11 @@ function Meeting({
       )}
       {(mode === "inline" && open) || mode === "detail" ? (
         <View style={[styles.inset, mode === "detail" && styles.insetDetail]}>
+          {item.change ? (
+            <Pressable onPress={() => router.push(`/special-events/${item.change!.id}`)}>
+              <MeetingChangeNote event={item.change} />
+            </Pressable>
+          ) : null}
           {tab === "programme" && mineInDuties && !mineInProgramme ? (
             <Pressable
               style={({ pressed }) => [styles.strip, pressed && styles.pressed]}

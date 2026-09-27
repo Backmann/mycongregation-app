@@ -23,6 +23,7 @@ import {
   specialEventsApi,
 } from '../../../lib/api';
 import { usePermissions } from '../../../lib/permissions';
+import { MeetingChangeNote } from '../../../components/MeetingChangeNote';
 import { confirm } from '../../../components/ConfirmHost';
 import {
   eventErrorMessage,
@@ -33,6 +34,7 @@ import {
   SpecialEventForm,
   EventFormValue,
   CIRCUIT_OVERSEER_VISIT_TYPE,
+  meetingPayload,
 } from '../../../components/SpecialEventForm';
 
 function toForm(e: SpecialEvent): EventFormValue {
@@ -47,7 +49,10 @@ function toForm(e: SpecialEvent): EventFormValue {
     mapUrl: e.mapUrl ?? '',
     programUrl: e.programUrl ?? '',
     note: e.note ?? '',
-    replacesMeeting: !!e.replacesMeeting,
+    meetingMode: e.meetingMode ?? (e.replacesMeeting ? 'none' : 'usual'),
+    meetingNote: e.meetingNote ?? '',
+    meetingTime: e.meetingTime ?? '',
+    meetingAddress: e.meetingAddress ?? '',
     coFirstName: e.coFirstName ?? '',
     coLastName: e.coLastName ?? '',
     coWifeName: e.coWifeName ?? '',
@@ -90,7 +95,7 @@ export default function SpecialEventDetailScreen() {
         mapUrl: form!.mapUrl.trim() || null,
         programUrl: form!.programUrl.trim() || null,
         note: form!.note.trim() || null,
-        replacesMeeting: form!.replacesMeeting,
+        ...meetingPayload(form!),
         coFirstName: form!.coFirstName.trim() || null,
         coLastName: form!.coLastName.trim() || null,
         coWifeName: form!.coWifeName.trim() || null,
@@ -176,7 +181,9 @@ export default function SpecialEventDetailScreen() {
       ? t('specialEvents.remove.bodyPast')
       : isCoVisit
         ? t('specialEvents.remove.bodyVisit')
-        : event.replacesMeeting || event.type === 'regional_convention' ||
+        : event.replacesMeeting ||
+            event.meetingMode === 'changed' ||
+            event.type === 'regional_convention' ||
             event.type === 'circuit_assembly'
           ? t('specialEvents.remove.bodyMeetings')
           : t('specialEvents.remove.body');
@@ -266,6 +273,7 @@ export default function SpecialEventDetailScreen() {
       {event.replacesMeeting && event.type !== 'memorial' ? (
         <Text style={styles.hint}>{t('specialEvents.replacesMeetingHint')}</Text>
       ) : null}
+      <MeetingChangeNote event={event} />
 
       {isMemorial ? (
         <Pressable

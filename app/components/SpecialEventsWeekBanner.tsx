@@ -1,3 +1,4 @@
+import { MeetingChangeNote } from './MeetingChangeNote';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -77,6 +78,7 @@ export function SpecialEventsWeekBanner({ events }: { events: SpecialEvent[] }) 
                     </Text>
                   </View>
                 ) : null}
+                <MeetingChangeNote event={e} compact />
               </View>
               <Text style={styles.chevron}>›</Text>
             </Pressable>

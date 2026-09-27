@@ -17,6 +17,7 @@
  * конгресс, отменяющий встречу, — один раз (как отменённая встреча), а не и
  * встречей, и событием.
  */
+import { takesMeetingMode } from './event-meeting';
 import {
   arrangeFieldDay,
   noteForPlace,
@@ -140,6 +141,12 @@ export interface MeetingEntry {
    * beside it, the special talk repeated the theme and the hall.
    */
   occasion?: SpecialEvent | null;
+  /**
+   * The occasion changes the meeting (27 September): the hour and the place
+   * above are already the changed ones; this is what else changes, in words.
+   */
+  meetingChanged?: boolean;
+  meetingChangeNote?: string | null;
   /**
    * Held at the congregation's own hall — the address in the settings. Home
    * says the address only when it is somewhere else: the same «Bunsenstr. 46»
@@ -772,6 +779,31 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
 
   for (const e of events) {
     if (replacedEventIds.has(e.id)) continue;
+    // An event that CHANGES the meeting of its day — a branch
+    // representative's visit, most often — belongs in that meeting's row
+    // whatever its own hour: the row shows the meeting at its new hour and
+    // place, and says that it goes ahead differently.
+    if (e.meetingMode === 'changed' && takesMeetingMode(e.type)) {
+      const hosts = entries.filter(
+        (en): en is MeetingEntry =>
+          en.type === 'meeting' &&
+          en.kind !== 'field_service' &&
+          !en.replacedBy &&
+          !en.memorial &&
+          eventCoversDay(e, en.dateISO),
+      );
+      for (const h of hosts) {
+        h.occasion = e;
+        h.meetingChanged = true;
+        h.meetingChangeNote = e.meetingNote?.trim() || null;
+        if (e.meetingTime) h.time = e.meetingTime;
+        if (e.meetingAddress?.trim()) {
+          h.address = e.meetingAddress.trim();
+          h.atHall = false;
+        }
+      }
+      if (hosts.length > 0) continue;
+    }
     const host = heldAsMeeting(e);
     if (host) {
       host.occasion = e;

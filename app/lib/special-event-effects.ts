@@ -32,6 +32,7 @@ const CODES = [
   'EVENT_PAST_ADMIN_ONLY',
   'EVENT_END_BEFORE_START',
   'CO_VISIT_WEEK_TAKEN',
+  'EVENT_CHANGE_EMPTY',
 ] as const;
 
 export function eventErrorMessage(

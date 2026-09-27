@@ -1,3 +1,4 @@
+import { MeetingChangeNote } from '../../../components/MeetingChangeNote';
 import { useState } from 'react';
 import {
   ActivityIndicator,
@@ -166,6 +167,7 @@ function EventRow({ event }: { event: SpecialEvent }) {
             )}
           </Text>
         ) : null}
+        <MeetingChangeNote event={event} compact />
       </View>
 
       <Ionicons name="chevron-forward" size={20} color="#94a3b8" />

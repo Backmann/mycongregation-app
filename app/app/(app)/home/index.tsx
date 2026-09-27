@@ -905,6 +905,7 @@ function NextBody({
             : entry.specialTalk
               ? t("specialEvents.types.special_talk").toLowerCase()
               : null,
+          entry.meetingChanged ? t("specialEvents.meeting.withChanges") : null,
         ]
           .filter(Boolean)
           .join(" · ");
@@ -1201,6 +1202,12 @@ function EntryBody({
       : en.specialTalk
         ? t("specialEvents.types.special_talk")
         : null;
+    // «Представитель филиала · с изменениями»: the hour and place shown are
+    // already the changed ones; the words say what else is different.
+    const occasionLine =
+      occasion && en.meetingChanged
+        ? `${occasion} · ${t("specialEvents.meeting.withChanges")}`
+        : occasion;
     const title = en.memorial
       ? en.memorial.title
       : (en.title ?? en.occasion?.title ?? t(`home.eventTypes.${en.kind}`));
@@ -1228,7 +1235,7 @@ function EntryBody({
             .filter(Boolean)
             .join(" · ")}
           {occasion ? (
-            <Text style={s.rowOccasion}>{` · ${lower(occasion)}`}</Text>
+            <Text style={s.rowOccasion}>{` · ${lower(occasionLine)}`}</Text>
           ) : null}
         </Text>
         <Text style={[s.rowTitle, en.titleIsMine && s.titleMine]}>{title}</Text>
@@ -1239,8 +1246,15 @@ function EntryBody({
         ) : null}
         {/* The event's own title, only when it says something the programme
             does not. */}
-        {en.occasion && en.title && en.occasion.title !== en.title ? (
+        {en.occasion &&
+        en.title &&
+        en.occasion.title !== en.title &&
+        // Not when it only repeats the kind already said above.
+        en.occasion.title !== occasion ? (
           <Text style={s.rowSub}>{en.occasion.title}</Text>
+        ) : null}
+        {en.meetingChangeNote ? (
+          <Text style={s.rowSub}>{en.meetingChangeNote}</Text>
         ) : null}
         {!en.atHall && en.address ? (
           <Text style={s.rowSub}>{en.address}</Text>

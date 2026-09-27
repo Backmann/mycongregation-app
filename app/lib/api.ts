@@ -2749,6 +2749,16 @@ export interface SpecialEvent {
   coAccommodationPublisherId: string | null;
   coMidweekDow: number | null;
   replacesMeeting: boolean;
+  /**
+   * Как идёт встреча собрания в день события — у визита представителя
+   * филиала и «Другого»: как обычно, с изменениями, встречи нет («none» —
+   * это и есть replacesMeeting).
+   */
+  meetingMode?: MeetingMode;
+  /** «С изменениями»: что меняется, время и место встречи в этот день. */
+  meetingNote?: string | null;
+  meetingTime?: string | null;
+  meetingAddress?: string | null;
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;
@@ -2773,7 +2783,13 @@ export interface CreateSpecialEventInput {
   coAccommodationPublisherId?: string | null;
   coMidweekDow?: number;
   replacesMeeting?: boolean;
+  meetingMode?: MeetingMode;
+  meetingNote?: string | null;
+  meetingTime?: string | null;
+  meetingAddress?: string | null;
 }
+
+export type MeetingMode = "usual" | "changed" | "none";
 
 /**
  * A change to an event. `null` CLEARS a field; a key left out stays as it is.

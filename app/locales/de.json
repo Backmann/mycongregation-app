@@ -2172,7 +2172,8 @@
       "EVENT_MOVED_INTO_PAST": "Ein Ereignis kann nicht in die Vergangenheit verschoben werden. Um ein vergangenes festzuhalten, legen Sie es mit seinem Datum neu an.",
       "EVENT_PAST_ADMIN_ONLY": "Ein vergangenes Ereignis ist Geschichte. Nur ein Administrator kann es entfernen.",
       "EVENT_END_BEFORE_START": "Ein Ereignis kann nicht enden, bevor es beginnt.",
-      "CO_VISIT_WEEK_TAKEN": "In dieser Woche gibt es bereits einen Besuch des Kreisaufsehers."
+      "CO_VISIT_WEEK_TAKEN": "In dieser Woche gibt es bereits einen Besuch des Kreisaufsehers.",
+      "EVENT_CHANGE_EMPTY": "Sag, was sich an der Zusammenkunft ändert: in Worten, die Zeit oder den Ort."
     },
     "remove": {
       "title": "„{{title}}“ entfernen?",
@@ -2181,6 +2182,34 @@
       "bodyVisit": "Das Programm der Woche wird wieder normal: die Zusammenkunft unter der Woche wieder an ihrem Tag, das Versammlungsbibelstudium kehrt zurück, die Vorträge des Kreisaufsehers verschwinden. Der Besuch lässt sich aus dem Papierkorb zurückholen.",
       "bodyPast": "Das Ereignis ist vorbei. Entfernt wird nur der Eintrag — das Programm jener Woche bleibt, wie es gehalten wurde.",
       "confirm": "Entfernen"
+    },
+    "meeting": {
+      "label": "Die Zusammenkunft an diesem Tag",
+      "dayIs": "{{day}} — {{kind}}",
+      "kind": {
+        "midweek": "Tag der Zusammenkunft unter der Woche",
+        "weekend": "Tag der Zusammenkunft am Wochenende"
+      },
+      "mode": {
+        "usual": "Wie gewohnt",
+        "changed": "Findet mit Änderungen statt",
+        "none": "Keine Zusammenkunft"
+      },
+      "modeHint": {
+        "usual": "Zeit, Ort und Programm bleiben",
+        "changed": "Wir sagen allen, was genau anders ist",
+        "none": "Das Ereignis tritt an ihre Stelle"
+      },
+      "what": "Was sich ändert",
+      "whatPlaceholder": "Zum Beispiel: Vortrag des Vertreters statt des öffentlichen Vortrags",
+      "time": "Beginn der Zusammenkunft",
+      "timeSame": "Wie gewohnt",
+      "place": "Ort",
+      "placeSame": "Wie gewohnt — im Königreichssaal",
+      "sayWhat": "Schreib, was sich ändert, oder gib Zeit oder Ort an",
+      "changedHint": "Die Zusammenkunft an diesem Tag — mit Änderungen",
+      "startsAt": "Beginn {{time}}",
+      "withChanges": "mit Änderungen"
     }
   },
   "calendar": {
@@ -3571,7 +3600,9 @@
     "fieldVisitLine": "{{time}} · Ihre Gruppe {{group}}",
     "fieldOthers_one": "noch {{count}} Treffpunkt anderer Gruppen",
     "fieldOthers_other": "noch {{count}} Treffpunkte anderer Gruppen",
-    "fieldOthersHide": "Treffpunkte anderer Gruppen ausblenden"
+    "fieldOthersHide": "Treffpunkte anderer Gruppen ausblenden",
+    "noMeetingThatDay": "An diesem Tag keine Zusammenkunft der Versammlung",
+    "withChanges": "{{event}} · mit Änderungen"
   },
   "conduct": {
     "title": "Zusammenkunft leiten",

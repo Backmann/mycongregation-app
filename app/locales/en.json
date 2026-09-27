@@ -2172,7 +2172,8 @@
       "EVENT_MOVED_INTO_PAST": "An event cannot be moved into the past. To record a past event, add it anew with its own date.",
       "EVENT_PAST_ADMIN_ONLY": "A past event is history. Only an administrator can remove it.",
       "EVENT_END_BEFORE_START": "An event cannot end before it starts.",
-      "CO_VISIT_WEEK_TAKEN": "This week already has a circuit overseer visit."
+      "CO_VISIT_WEEK_TAKEN": "This week already has a circuit overseer visit.",
+      "EVENT_CHANGE_EMPTY": "Say what changes about the meeting: in words, its time or its place."
     },
     "remove": {
       "title": "Remove “{{title}}”?",
@@ -2181,6 +2182,34 @@
       "bodyVisit": "The week’s programme returns to normal: the midweek meeting goes back to its day, the Bible study returns, the overseer’s talks leave the programme. The visit can be restored from the bin.",
       "bodyPast": "This event is over. Only the entry is removed — the programme of that week stays as it was given.",
       "confirm": "Remove"
+    },
+    "meeting": {
+      "label": "The congregation meeting that day",
+      "dayIs": "{{day}} — {{kind}}",
+      "kind": {
+        "midweek": "a midweek meeting day",
+        "weekend": "a weekend meeting day"
+      },
+      "mode": {
+        "usual": "As usual",
+        "changed": "Goes ahead with changes",
+        "none": "No meeting"
+      },
+      "modeHint": {
+        "usual": "Same time, place and programme",
+        "changed": "We tell everyone what exactly is different",
+        "none": "The event takes its place"
+      },
+      "what": "What changes",
+      "whatPlaceholder": "For example: the representative's talk instead of the public talk",
+      "time": "Meeting time",
+      "timeSame": "As usual",
+      "place": "Place",
+      "placeSame": "As usual — at the Kingdom Hall",
+      "sayWhat": "Say what changes, or give the time or the place",
+      "changedHint": "The congregation meeting that day — with changes",
+      "startsAt": "Starts at {{time}}",
+      "withChanges": "with changes"
     }
   },
   "calendar": {
@@ -3571,7 +3600,9 @@
     "fieldVisitLine": "{{time}} · your group {{group}}",
     "fieldOthers_one": "{{count}} more meeting of other groups",
     "fieldOthers_other": "{{count}} more meetings of other groups",
-    "fieldOthersHide": "Hide other groups' meetings"
+    "fieldOthersHide": "Hide other groups' meetings",
+    "noMeetingThatDay": "No congregation meeting that day",
+    "withChanges": "{{event}} · with changes"
   },
   "conduct": {
     "title": "Conducting the meeting",

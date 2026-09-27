@@ -14,7 +14,13 @@ import { Ionicons } from '@expo/vector-icons';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ru';
 import 'dayjs/locale/de';
-import { circuitOverseersApi, CircuitOverseer } from '../lib/api';
+import {
+  circuitOverseersApi,
+  CircuitOverseer,
+  meetingSettingsApi,
+  MeetingMode,
+} from '../lib/api';
+import { meetingDaysCovered, takesMeetingMode } from '../lib/event-meeting';
 import { FormChips } from './FormChips';
 import { MonthCalendar } from './MonthCalendar';
 import { TimeField } from './TimeField';
@@ -53,7 +59,11 @@ export interface EventFormValue {
   mapUrl: string;
   programUrl: string;
   note: string;
-  replacesMeeting: boolean;
+  /** How the meeting goes that day — see lib/event-meeting.ts. */
+  meetingMode: MeetingMode;
+  meetingNote: string;
+  meetingTime: string;
+  meetingAddress: string;
   coFirstName: string;
   coLastName: string;
   coWifeName: string;
@@ -76,7 +86,10 @@ export function emptyEventForm(): EventFormValue {
     mapUrl: '',
     programUrl: '',
     note: '',
-    replacesMeeting: false,
+    meetingMode: 'usual',
+    meetingNote: '',
+    meetingTime: '',
+    meetingAddress: '',
     coFirstName: '',
     coLastName: '',
     coWifeName: '',
@@ -86,7 +99,31 @@ export function emptyEventForm(): EventFormValue {
   };
 }
 
+/**
+ * The meeting answer as the server takes it. Only the events that carry it
+ * send more than «as usual»; `replacesMeeting` goes along for the servers and
+ * apps that still read it.
+ */
+export function meetingPayload(v: EventFormValue) {
+  const mode: MeetingMode = takesMeetingMode(v.type.trim() || null)
+    ? v.meetingMode
+    : 'usual';
+  const changed = mode === 'changed';
+  return {
+    meetingMode: mode,
+    replacesMeeting: mode === 'none',
+    // null, not «left out»: an emptied field must clear what was said.
+    meetingNote: changed ? v.meetingNote.trim() || null : null,
+    meetingTime: changed ? v.meetingTime.trim() || null : null,
+    meetingAddress: changed ? v.meetingAddress.trim() || null : null,
+  };
+}
+
 /** Normalize free time input ('1830', '18:3', '930', '9') to 'HH:mm' or ''. */
+
+function capitalize(x: string): string {
+  return x ? x.charAt(0).toUpperCase() + x.slice(1) : x;
+}
 
 function fmt(d: string): string {
   return d ? dayjs(d).format('DD.MM.YYYY') : '';
@@ -116,6 +153,33 @@ export function SpecialEventForm({
     onChange({ ...value, ...patch });
 
   const isCoVisit = value.type === CIRCUIT_OVERSEER_VISIT_TYPE;
+
+  /**
+   * «How does the meeting go» is asked only where there is a meeting to ask
+   * about: an event of the kinds that carry the answer, on a day the
+   * congregation meets. Until the settings arrive it is asked anyway —
+   * hiding it would hide an answer already given.
+   */
+  const settingsQ = useQuery({
+    queryKey: ['meeting-settings'],
+    queryFn: () => meetingSettingsApi.getOverview(),
+  });
+  const covered = meetingDaysCovered(
+    value.date,
+    multiDay ? value.endDate : null,
+    settingsQ.data?.versions,
+  );
+  const asksMeeting =
+    takesMeetingMode(value.type || null) &&
+    !!value.date &&
+    (!settingsQ.data || covered.length > 0);
+  // A day without a meeting has nothing to change or cancel: the answer goes
+  // back to «as usual» rather than staying behind unseen.
+  useEffect(() => {
+    if (settingsQ.data && !asksMeeting && value.meetingMode !== 'usual') {
+      onChange({ ...value, meetingMode: 'usual' });
+    }
+  }, [settingsQ.data, asksMeeting, value, onChange]);
 
   // Circuit overseers to choose from (regular + substitutes). A new visit
   // pre-fills the names from the primary; the picker lets you switch to a
@@ -562,18 +626,103 @@ export function SpecialEventForm({
         ) : null}
       </Field>
 
-      {/* Replaces meeting (not for a CO visit — the meeting still happens) */}
-      {!isCoVisit && (
-        <View style={styles.switchRow}>
-          <Text style={styles.label}>
-            {t('specialEvents.fields.replacesMeeting')}
-          </Text>
-          <Switch
-            value={value.replacesMeeting}
-            onValueChange={(x) => set({ replacesMeeting: x })}
-          />
-        </View>
-      )}
+      {/*
+        How the congregation meeting goes that day (27 September). A branch
+        representative's visit usually does NOT cancel the meeting — it goes
+        ahead, differently: another hour, another hall, his talk in place of
+        the public talk. A yes/no switch could not say that.
+      */}
+      {asksMeeting ? (
+        <Field label={t('specialEvents.meeting.label')}>
+          {covered.length > 0 ? (
+            <Text style={styles.meetingDay}>
+              {covered
+                .map((c) =>
+                  t('specialEvents.meeting.dayIs', {
+                    day: capitalize(
+                      dayjs(c.date).locale(locale).format('dddd, D MMMM'),
+                    ),
+                    kind: t(`specialEvents.meeting.kind.${c.kind}`),
+                  }),
+                )
+                .join('\n')}
+            </Text>
+          ) : null}
+          <View style={styles.modeList}>
+            {(['usual', 'changed', 'none'] as const).map((m) => {
+              const on = value.meetingMode === m;
+              return (
+                <Pressable
+                  key={m}
+                  disabled={pastLocked}
+                  onPress={() => set({ meetingMode: m })}
+                  style={[
+                    styles.modeRow,
+                    on && styles.modeRowOn,
+                    pastLocked && !on && styles.locked,
+                  ]}
+                >
+                  <Ionicons
+                    name={on ? 'radio-button-on' : 'radio-button-off'}
+                    size={20}
+                    color={on ? '#0284c7' : '#94a3b8'}
+                  />
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.modeTitle, on && styles.modeTitleOn]}>
+                      {t(`specialEvents.meeting.mode.${m}`)}
+                    </Text>
+                    <Text style={styles.modeHint}>
+                      {t(`specialEvents.meeting.modeHint.${m}`)}
+                    </Text>
+                  </View>
+                </Pressable>
+              );
+            })}
+          </View>
+          {value.meetingMode === 'changed' ? (
+            <View style={styles.changeBox}>
+              <Text style={styles.label}>
+                {t('specialEvents.meeting.what')}
+              </Text>
+              <TextInput
+                style={[styles.input, styles.multilineShort]}
+                value={value.meetingNote}
+                onChangeText={(x) => set({ meetingNote: x })}
+                placeholder={t('specialEvents.meeting.whatPlaceholder')}
+                placeholderTextColor="#94a3b8"
+                maxLength={500}
+                multiline
+              />
+              <Text style={[styles.label, { marginTop: 10 }]}>
+                {t('specialEvents.meeting.time')}
+              </Text>
+              <TimeField
+                value={value.meetingTime}
+                onChange={(v) => set({ meetingTime: v })}
+                placeholder={t('specialEvents.meeting.timeSame')}
+              />
+              <Text style={[styles.label, { marginTop: 10 }]}>
+                {t('specialEvents.meeting.place')}
+              </Text>
+              <TextInput
+                style={styles.input}
+                value={value.meetingAddress}
+                onChangeText={(x) => set({ meetingAddress: x })}
+                placeholder={t('specialEvents.meeting.placeSame')}
+                placeholderTextColor="#94a3b8"
+                maxLength={500}
+              />
+              {!value.meetingNote.trim() &&
+              !value.meetingTime.trim() &&
+              !value.meetingAddress.trim() ? (
+                <Text style={styles.changeNeed}>
+                  {t('specialEvents.meeting.sayWhat')}
+                </Text>
+              ) : null}
+            </View>
+          ) : null}
+        </Field>
+      ) : null}
     </View>
   );
 }
@@ -692,6 +841,43 @@ const styles = StyleSheet.create({
     color: '#0f172a',
   },
   multiline: { minHeight: 80, textAlignVertical: 'top' },
+  meetingDay: {
+    fontSize: 13,
+    color: '#0369a1',
+    marginBottom: 8,
+    lineHeight: 18,
+  },
+  modeList: { gap: 8 },
+  modeRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    backgroundColor: '#fff',
+  },
+  modeRowOn: { borderColor: '#38bdf8', backgroundColor: '#f0f9ff' },
+  modeTitle: {
+    fontSize: 15,
+    fontFamily: 'Manrope_600SemiBold',
+    fontWeight: '600',
+    color: '#0f172a',
+  },
+  modeTitleOn: { color: '#0369a1' },
+  modeHint: { fontSize: 12, color: '#64748b', marginTop: 2, lineHeight: 17 },
+  changeBox: {
+    marginTop: 10,
+    padding: 12,
+    borderRadius: 12,
+    backgroundColor: '#f8fafc',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  multilineShort: { minHeight: 64, textAlignVertical: 'top' },
+  changeNeed: { fontSize: 12, color: '#b45309', marginTop: 8 },
   switchRow: {
     flexDirection: 'row',
     alignItems: 'center',

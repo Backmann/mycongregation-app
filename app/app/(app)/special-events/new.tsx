@@ -19,6 +19,7 @@ import {
   EventFormValue,
   emptyEventForm,
   CIRCUIT_OVERSEER_VISIT_TYPE,
+  meetingPayload,
 } from '../../../components/SpecialEventForm';
 
 export default function NewSpecialEventScreen() {
@@ -39,7 +40,7 @@ export default function NewSpecialEventScreen() {
         mapUrl: form.mapUrl.trim() || undefined,
         programUrl: form.programUrl.trim() || undefined,
         note: form.note.trim() || undefined,
-        replacesMeeting: form.replacesMeeting,
+        ...meetingPayload(form),
         coFirstName: form.coFirstName.trim() || undefined,
         coLastName: form.coLastName.trim() || undefined,
         coWifeName: form.coWifeName.trim() || undefined,

@@ -32,6 +32,7 @@ const MODULES = [
   'week-rules',
   'my-tasks',
   'section-colors',
+  'event-meeting',
 ];
 for (const name of MODULES) {
   const src = readFileSync(join(ROOT, 'lib', `${name}.ts`), 'utf8');
@@ -333,6 +334,41 @@ const labels = (en) => (en ? en.myParts.map((p) => p.label) : null);
   const items = [{ kind: 'cleaning', sortDate: '2026-10-05', weekStartDate: '2026-10-05', label: 'thorough', windows: [3, 5], thoroughPlannedAt: planned }];
   const { digest } = run({ me: 'p-x', group: null, items });
   check('13 еженедельная уборка — в свой день и час', [digest.next?.dateISO, entryTime(digest.next)], ['2026-10-08', '00:30']);
+}
+
+// --- 14. A branch representative's day: the meeting goes ahead WITH CHANGES --
+{
+  // Sunday 4 October: the meeting starts at 10:00 in another hall; the row
+  // shows it at that hour and place and says it goes ahead differently.
+  const events = [
+    {
+      id: 'ev-branch',
+      title: 'Посещение представителя филиала',
+      type: 'branch_representative_visit',
+      date: '2026-10-04',
+      endDate: null,
+      time: '10:00',
+      replacesMeeting: false,
+      meetingMode: 'changed',
+      meetingNote: 'Речь представителя вместо публичной',
+      meetingTime: '10:00',
+      meetingAddress: 'Westfalenhalle, Dortmund',
+    },
+  ];
+  const { timeline } = run({ me: 'p-x', group: null, items: [], events });
+  const sun = timeline.near
+    .flatMap((g) => g.entries)
+    .find((e) => e.type === 'meeting' && e.dateISO === '2026-10-04');
+  check(
+    '14 день представителя: встреча в новый час и в новом месте, с пометкой',
+    [sun?.time, sun?.address, sun?.atHall, sun?.meetingChanged, sun?.meetingChangeNote, sun?.occasion?.id],
+    ['10:00', 'Westfalenhalle, Dortmund', false, true, 'Речь представителя вместо публичной', 'ev-branch'],
+  );
+  check(
+    '14б и своей строкой событие не повторяется',
+    timeline.near.flatMap((g) => g.entries).some((e) => e.key === 'ev-ev-branch'),
+    false,
+  );
 }
 
 if (failures) {
