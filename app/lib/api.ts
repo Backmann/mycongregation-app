@@ -1524,6 +1524,19 @@ export interface TalkExchangeInput {
 }
 
 export const talkExchangeApi = {
+  /** Special talks — date, theme, speaker — for the events screen. */
+  async specialTalks(): Promise<
+    {
+      id: string;
+      date: string;
+      theme: string;
+      speaker: string | null;
+      speakerCongregation: string | null;
+    }[]
+  > {
+    const { data } = await api.get("/talk-exchange/special-talks");
+    return data;
+  },
   /**
    * Rebuild the journal from the weekend programme, from a date onwards.
    *
@@ -2759,6 +2772,8 @@ export interface SpecialEvent {
   meetingNote?: string | null;
   meetingTime?: string | null;
   meetingAddress?: string | null;
+  /** The Memorial's programme is out (null — still a draft). */
+  memorialPublishedAt?: string | null;
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;

@@ -186,6 +186,8 @@ type SpecialItem = {
   line: string;
   /** An event with a page of its own: the row opens it. */
   eventId?: string;
+  /** Its own hour, when it has one. */
+  time?: string | null;
 };
 /**
  * The Memorial — a meeting of its own kind, opened like one (23 September).
@@ -486,6 +488,38 @@ export default function ProgrammeFeedScreen() {
         change,
       });
     }
+    // EVENTS ON THEIR OWN DAYS (27 September): a clean-up day, a group
+    // gathering, a branch representative's day that leaves the meeting as it
+    // is — the congregation plans its week by them too, and the feed was the
+    // one place they were missing. Those that change or replace a meeting are
+    // already told on the meeting's own row.
+    const weekEnd = formatDateISO(addDays(w, 6));
+    for (const e of eventsQ.data ?? []) {
+      if (!takesMeetingMode(e.type)) continue;
+      if (e.meetingMode === "changed" || e.meetingMode === "none" || e.replacesMeeting) continue;
+      if (e.date < week || e.date > weekEnd) continue;
+      items.push({
+        type: "special",
+        id: `event|${e.id}`,
+        date: e.date,
+        title: e.title,
+        line: [
+          e.endDate && e.endDate !== e.date
+            ? t("feed.until", {
+                date: new Date(`${e.endDate}T00:00:00`).toLocaleDateString(i18n.language, {
+                  day: "numeric",
+                  month: "long",
+                }),
+              })
+            : null,
+          e.address,
+        ]
+          .filter(Boolean)
+          .join(" · "),
+        eventId: e.id,
+        time: e.time ? `${e.time}${e.timeEnd ? `–${e.timeEnd}` : ""}` : null,
+      });
+    }
     const byDay = byKey(fieldOf.get(week) ?? [], (f) =>
       formatDateISO(addDays(w, f.dayOfWeek - 1)),
     );
@@ -731,7 +765,8 @@ export default function ProgrammeFeedScreen() {
           kindLabel={t("feed.kindSpecial")}
           icon="star-outline"
           title={x.title}
-          line={x.line}
+          time={x.time ?? null}
+          line={x.line || null}
           color={KIND.special.color}
           past={isPast}
           onPress={x.eventId ? () => router.push(`/special-events/${x.eventId}`) : undefined}

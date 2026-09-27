@@ -746,6 +746,8 @@ export default function TalkExchangeYearScreen() {
     // effects, so refresh the schedule's assignments/events too.
     qc.invalidateQueries({ queryKey: ["assignments"] });
     qc.invalidateQueries({ queryKey: ["special-events"] });
+    // A special talk shows on the events screen too.
+    qc.invalidateQueries({ queryKey: ["special-talks"] });
   };
   const showError = (e: unknown) => {
     const msg = extractErrorMessage(e);

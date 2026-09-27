@@ -2210,6 +2210,51 @@
       "changedHint": "Die Zusammenkunft an diesem Tag — mit Änderungen",
       "startsAt": "Beginn {{time}}",
       "withChanges": "mit Änderungen"
+    },
+    "list": {
+      "nearest": "Als Nächstes",
+      "past": "Vergangene · {{n}}",
+      "bin": "Papierkorb · {{n}}",
+      "serviceYear": "Dienstjahr {{from}}/{{to}}",
+      "binTitle": "Im Papierkorb",
+      "kindOther": "Ereignis der Versammlung",
+      "speakerLater": "Redner — später",
+      "coWithWife": "{{name}} mit seiner Frau {{wife}}",
+      "noProgramme": "Kein Link zum Programm",
+      "memorialDraft": "Programm des Gedächtnismahls — Entwurf",
+      "inBin": "Im Papierkorb — öffnen, um es zurückzuholen",
+      "now": "jetzt",
+      "tomorrow": "morgen",
+      "inDays_one": "in {{count}} Tag",
+      "inDays_other": "in {{count}} Tagen",
+      "inProgramme": "Zusammenkunft im Programm ›",
+      "today": "heute"
+    },
+    "effect": {
+      "noMeetingsWeeks": "Keine Zusammenkünfte {{range}}",
+      "visitMidweek": "Zusammenkunft unter der Woche — {{day}}",
+      "memorialMidweek": "Anstelle der Zusammenkunft unter der Woche",
+      "memorialWeekend": "Anstelle der Zusammenkunft am Wochenende",
+      "noMeetingThatDay": "An diesem Tag keine Zusammenkunft",
+      "changed": "Zusammenkunft mit Änderungen",
+      "changedAt": "Zusammenkunft mit Änderungen: {{at}}",
+      "asUsual": "Zusammenkünfte wie gewohnt",
+      "atWeekendMeeting": "In der Zusammenkunft am Wochenende"
+    },
+    "create": {
+      "title": "Was für ein Ereignis?",
+      "subtitle": "Danach fragen wir nur, was diese Art braucht.",
+      "other": "Anderes Ereignis der Versammlung",
+      "hint": {
+        "circuit_overseer_visit": "Verlegt die Zusammenkunft unter der Woche und ändert das Programm der Woche",
+        "circuit_assembly": "Ein Tag; in dieser Woche keine Zusammenkünfte",
+        "regional_convention": "Mehrere Tage; in dieser Woche keine Zusammenkünfte",
+        "memorial": "Tritt an die Stelle einer Zusammenkunft; sein Programm steht im Gedächtnismahl selbst",
+        "branch_representative_visit": "Die Zusammenkunft findet meist statt, mit Änderungen — wir fragen, welchen",
+        "other": "Arbeitseinsatz, Gruppentreffen… Betrifft die Zusammenkünfte nur, wenn du es angibst"
+      },
+      "specialTalk": "Einen Sondervortrag trägt der Vortragskoordinator ein — im Protokoll „Zu uns / Von uns“, mit dem Redner.",
+      "openLog": "Protokoll öffnen ›"
     }
   },
   "calendar": {
@@ -3602,7 +3647,8 @@
     "fieldOthers_other": "noch {{count}} Treffpunkte anderer Gruppen",
     "fieldOthersHide": "Treffpunkte anderer Gruppen ausblenden",
     "noMeetingThatDay": "An diesem Tag keine Zusammenkunft der Versammlung",
-    "withChanges": "{{event}} · mit Änderungen"
+    "withChanges": "{{event}} · mit Änderungen",
+    "until": "bis {{date}}"
   },
   "conduct": {
     "title": "Zusammenkunft leiten",

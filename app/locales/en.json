@@ -2210,6 +2210,51 @@
       "changedHint": "The congregation meeting that day — with changes",
       "startsAt": "Starts at {{time}}",
       "withChanges": "with changes"
+    },
+    "list": {
+      "nearest": "Next",
+      "past": "Past · {{n}}",
+      "bin": "Bin · {{n}}",
+      "serviceYear": "Service year {{from}}/{{to}}",
+      "binTitle": "In the bin",
+      "kindOther": "Congregation event",
+      "speakerLater": "Speaker — later",
+      "coWithWife": "{{name}} and his wife {{wife}}",
+      "noProgramme": "No link to the programme",
+      "memorialDraft": "Memorial programme — draft",
+      "inBin": "In the bin — open it to bring it back",
+      "now": "now",
+      "tomorrow": "tomorrow",
+      "inDays_one": "in {{count}} day",
+      "inDays_other": "in {{count}} days",
+      "inProgramme": "Meeting in the Programme ›",
+      "today": "today"
+    },
+    "effect": {
+      "noMeetingsWeeks": "No congregation meetings {{range}}",
+      "visitMidweek": "Midweek meeting — {{day}}",
+      "memorialMidweek": "In place of the midweek meeting",
+      "memorialWeekend": "In place of the weekend meeting",
+      "noMeetingThatDay": "No congregation meeting that day",
+      "changed": "Meeting with changes",
+      "changedAt": "Meeting with changes: {{at}}",
+      "asUsual": "Meetings as usual",
+      "atWeekendMeeting": "At the weekend meeting"
+    },
+    "create": {
+      "title": "What kind of event?",
+      "subtitle": "Next we ask only what this kind needs.",
+      "other": "Other congregation event",
+      "hint": {
+        "circuit_overseer_visit": "Moves the midweek meeting and changes the week's programme",
+        "circuit_assembly": "One day; no congregation meetings that week",
+        "regional_convention": "Several days; no congregation meetings that week",
+        "memorial": "Takes the place of one meeting; its programme is in the Memorial itself",
+        "branch_representative_visit": "The meeting usually goes ahead, with changes — we ask which",
+        "other": "A clean-up day, a group gathering… Does not affect meetings unless you say so"
+      },
+      "specialTalk": "A special talk is recorded by the talk coordinator — in the Incoming / Outgoing log, with its speaker.",
+      "openLog": "Open the log ›"
     }
   },
   "calendar": {
@@ -3602,7 +3647,8 @@
     "fieldOthers_other": "{{count}} more meetings of other groups",
     "fieldOthersHide": "Hide other groups' meetings",
     "noMeetingThatDay": "No congregation meeting that day",
-    "withChanges": "{{event}} · with changes"
+    "withChanges": "{{event}} · with changes",
+    "until": "until {{date}}"
   },
   "conduct": {
     "title": "Conducting the meeting",
