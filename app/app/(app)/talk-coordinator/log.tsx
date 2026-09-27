@@ -67,11 +67,12 @@ const YEAR_FROM = new Date().getFullYear();
 const YEAR_TO = YEAR_FROM + 1;
 
 // Only these special events are written onto the planner (Memorial only shows
-// when it lands on a weekend row, which happens automatically).
+// when it lands on a weekend row, which happens automatically). The special
+// talk is not an event any more: it is a talk of this journal, with a theme
+// instead of a number (27 September).
 const PLANNER_EVENT_TYPES = new Set([
   "regional_convention",
   "circuit_assembly",
-  "special_talk",
   "memorial",
   "circuit_overseer_visit",
 ]);
@@ -158,6 +159,9 @@ export default function TalkExchangeYearScreen() {
   const [swapError, setSwapError] = useState<string | null>(null);
   const [date, setDate] = useState<string>("");
   const [publicTalkId, setPublicTalkId] = useState<string | null>(null);
+  // Специальная речь: тема вместо номера из каталога.
+  const [special, setSpecial] = useState(false);
+  const [specialTheme, setSpecialTheme] = useState("");
   const [visitingSpeakerId, setVisitingSpeakerId] = useState<string | null>(
     null,
   );
@@ -848,6 +852,8 @@ export default function TalkExchangeYearScreen() {
     setDirection(dir);
     setDate(entry?.date ?? w.date);
     setPublicTalkId(entry?.publicTalkId ?? null);
+    setSpecial(dir === "incoming" && !!entry?.specialTheme);
+    setSpecialTheme(entry?.specialTheme ?? "");
     setVisitingSpeakerId(entry?.visitingSpeakerId ?? null);
     if (entry?.visitingSpeakerId) {
       const sp = speakerById.get(entry.visitingSpeakerId);
@@ -895,19 +901,32 @@ export default function TalkExchangeYearScreen() {
     }
   };
 
+  const themeGiven = special && specialTheme.trim().length > 0;
+  /**
+   * Специальную речь можно записать без докладчика: тему филиал сообщает
+   * заранее, а кто её скажет, решается позже. Так было со специальной речью
+   * 14 марта 2027 года — и программы той недели ещё нет вовсе.
+   */
   const canSave =
     direction === "incoming"
-      ? incomingMode === "local"
-        ? !!publisherId
-        : !!visitingSpeakerId || speakerNameInput.trim().length > 0
+      ? special && !themeGiven
+        ? false
+        : themeGiven ||
+          (incomingMode === "local"
+            ? !!publisherId
+            : !!visitingSpeakerId || speakerNameInput.trim().length > 0)
       : !!publisherId && !!date;
 
   const save = async () => {
     if (!canSave) return;
+    const isSpecial = direction === "incoming" && special;
     const input: TalkExchangeInput = {
       direction,
       date,
-      publicTalkId: publicTalkId ?? null,
+      publicTalkId: isSpecial ? null : (publicTalkId ?? null),
+      ...(direction === "incoming"
+        ? { specialTheme: isSpecial ? specialTheme.trim() || null : null }
+        : {}),
       note: note.trim() || null,
       visitingSpeakerId:
         direction === "incoming" && incomingMode === "invited"
@@ -1282,10 +1301,13 @@ export default function TalkExchangeYearScreen() {
                * событие: в прошлом пометка бессмысленна — его не исправляют, а
                * под событием речи и не должно быть.
                */
+              // A special talk recorded with its theme alone still needs a
+              // speaker: the week is not arranged until somebody says it.
+              const inc = byWeek.get(w.monday)?.incoming;
               const needsSpeaker =
                 upcoming &&
                 events.length === 0 &&
-                !byWeek.get(w.monday)?.incoming;
+                (!inc || !incomingName(inc));
               return (
                 <Fragment key={w.monday}>
                   {firstUpcoming ? (
@@ -1327,12 +1349,10 @@ export default function TalkExchangeYearScreen() {
                               .join(" · ")}
                           </Text>
                           {/*
-                          Специальная речь — это тоже речь: у неё есть тема и
-                          докладчик, и координатору они нужны так же, как в
-                          обычную неделю. Раньше здесь стояло одно название
-                          рода события, и неделя выглядела пустой.
-
-                          Берётся из программы встречи — там она и назначается.
+                          Речь недели под событием (визит районного старейшины):
+                          у неё есть тема и докладчик, и координатору они нужны
+                          так же, как в обычную неделю. Берётся из программы
+                          встречи — там она и назначается.
                         */}
                           {(() => {
                             const slotOf = talkSlotByWeek.get(w.monday);
@@ -1428,6 +1448,18 @@ export default function TalkExchangeYearScreen() {
                                     {incomingPhone(slot.incoming)}
                                   </Text>
                                 )}
+                                {slot.incoming.specialTheme ? (
+                                  <>
+                                    <View style={styles.specialChip}>
+                                      <Text style={styles.specialChipText}>
+                                        {t("talkCoordinator.log.specialTalk")}
+                                      </Text>
+                                    </View>
+                                    <Text style={styles.slotSub}>
+                                      {slot.incoming.specialTheme}
+                                    </Text>
+                                  </>
+                                ) : null}
                                 {!!talkLabel(slot.incoming.publicTalkId) && (
                                   <Text style={styles.slotSub}>
                                     {talkLabel(slot.incoming.publicTalkId)}
@@ -1577,9 +1609,10 @@ export default function TalkExchangeYearScreen() {
                         {incomingName(inc) ??
                           t("talkCoordinator.log.unknownSpeaker")}
                       </Text>
-                      {talkLabel(inc.publicTalkId) ? (
+                      {talkLabel(inc.publicTalkId) || inc.specialTheme ? (
                         <Text style={styles.swapRowTalk} numberOfLines={1}>
-                          {talkLabel(inc.publicTalkId)}
+                          {talkLabel(inc.publicTalkId) ??
+                            `${t("talkCoordinator.log.specialTalk")}: ${inc.specialTheme}`}
                         </Text>
                       ) : null}
                       {/* Also where a speaker is being swapped in: the moment a
@@ -1658,9 +1691,11 @@ export default function TalkExchangeYearScreen() {
             {!canSave ? (
               <Text style={styles.needText} numberOfLines={2}>
                 {direction === "incoming"
-                  ? incomingMode === "local"
-                    ? t("talkCoordinator.log.needBrother")
-                    : t("talkCoordinator.log.needSpeaker")
+                  ? special && !themeGiven
+                    ? t("talkCoordinator.log.needTheme")
+                    : incomingMode === "local"
+                      ? t("talkCoordinator.log.needBrother")
+                      : t("talkCoordinator.log.needSpeaker")
                   : t("talkCoordinator.log.needBrother")}
               </Text>
             ) : null}
@@ -2023,14 +2058,65 @@ export default function TalkExchangeYearScreen() {
 
               {/* Лист 2: что и кем сопровождается — речь, приём, заметка. */}
               <View style={styles.formCard}>
-                <View style={{ marginTop: 2 }}>
-                  <PublicTalkSelector
-                    label={t("talkCoordinator.log.talk")}
-                    value={publicTalkId}
-                    onChange={(talk) => setPublicTalkId(talk?.id ?? null)}
-                  />
+                {/*
+                  Речь из каталога или специальная.
+
+                  Специальная речь раз-два в год приходит от филиала: номера у
+                  неё нет, есть тема. Раньше её заводили событием, отдельно от
+                  докладчика; теперь это та же речь журнала, только с темой.
+                */}
+                <View style={styles.chipWrap}>
+                  {([false, true] as const).map((sp) => (
+                    <Pressable
+                      key={String(sp)}
+                      style={[
+                        styles.pickChip,
+                        special === sp && styles.pickChipActive,
+                      ]}
+                      onPress={() => setSpecial(sp)}
+                    >
+                      <Text
+                        style={[
+                          styles.pickChipText,
+                          special === sp && styles.pickChipTextActive,
+                        ]}
+                      >
+                        {sp
+                          ? t("talkCoordinator.log.specialTalk")
+                          : t("talkCoordinator.log.catalogueTalk")}
+                      </Text>
+                    </Pressable>
+                  ))}
                 </View>
-                {publicTalkId ? (
+                {special ? (
+                  <>
+                    <Text style={styles.fieldLabel}>
+                      {t("talkCoordinator.log.specialTheme")}
+                    </Text>
+                    <TextInput
+                      style={styles.input}
+                      value={specialTheme}
+                      onChangeText={setSpecialTheme}
+                      maxLength={255}
+                      placeholder={t(
+                        "talkCoordinator.log.specialThemePlaceholder",
+                      )}
+                      placeholderTextColor="#94a3b8"
+                    />
+                    <Text style={styles.dirCaption}>
+                      {t("talkCoordinator.log.specialHint")}
+                    </Text>
+                  </>
+                ) : (
+                  <View style={{ marginTop: 8 }}>
+                    <PublicTalkSelector
+                      label={t("talkCoordinator.log.talk")}
+                      value={publicTalkId}
+                      onChange={(talk) => setPublicTalkId(talk?.id ?? null)}
+                    />
+                  </View>
+                )}
+                {!special && publicTalkId ? (
                   <View style={styles.histBox}>
                     <Text style={styles.histCount}>
                       {t("talkCoordinator.log.givenTimes", {
@@ -2415,6 +2501,20 @@ const styles = StyleSheet.create({
     marginTop: 3,
   },
   slotSub: { fontSize: 11, color: "#475569", marginTop: 1 },
+  specialChip: {
+    alignSelf: "flex-start",
+    backgroundColor: "#ede9fe",
+    borderRadius: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    marginTop: 3,
+  },
+  specialChipText: {
+    fontSize: 10,
+    fontWeight: "700",
+    color: "#6d28d9",
+    letterSpacing: 0.2,
+  },
   missedBox: { marginBottom: 6, gap: 4 },
   missedRow: { flexDirection: "row", alignItems: "center", gap: 6 },
   missedText: { flex: 1, fontSize: 12, color: "#b45309", lineHeight: 17 },

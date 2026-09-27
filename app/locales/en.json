@@ -2145,7 +2145,8 @@
       "timeFrom": "From",
       "timeTo": "To",
       "notePreview": "Preview",
-      "pastLocked": "This event is over: its days and kind stay as they were. Everything else can be corrected."
+      "pastLocked": "This event is over: its days and kind stay as they were. Everything else can be corrected.",
+      "specialTalkMoved": "A special talk is recorded in the talk log — “Incoming”, with its theme in place of a number."
     },
     "types": {
       "regional_convention": "Regional convention",
@@ -2653,6 +2654,12 @@
       "orTypeName": "Or type a speaker who is not in the directory:",
       "longestAgoFirst": "Those away the longest come first",
       "needSpeaker": "Pick a speaker",
+      "needTheme": "Enter the theme",
+      "specialTalk": "Special talk",
+      "catalogueTalk": "From the list",
+      "specialTheme": "Special talk theme",
+      "specialThemePlaceholder": "As in the branch letter",
+      "specialHint": "It has no number — the programme shows the theme in place of the talk title. The speaker can be added later. The congregation is notified.",
       "needBrother": "Pick a brother",
       "undoReplacement": "Undo",
       "undoTitle": "He came after all?",
@@ -3487,6 +3494,7 @@
     "notLoaded": "Programme not loaded yet",
     "noMeetings": "No congregation meetings this week",
     "movedByVisit": "moved for the circuit overseer's visit",
+    "specialTalk": "special talk",
     "unassigned": "not assigned",
     "fieldService": "Field ministry meetings",
     "memorialInsteadMidweek": "Instead of the midweek meeting",

@@ -2145,7 +2145,8 @@
       "timeFrom": "Von",
       "timeTo": "Bis",
       "notePreview": "Vorschau",
-      "pastLocked": "Das Ereignis ist vorbei: Tage und Art bleiben, wie sie waren. Alles andere lässt sich korrigieren."
+      "pastLocked": "Das Ereignis ist vorbei: Tage und Art bleiben, wie sie waren. Alles andere lässt sich korrigieren.",
+      "specialTalkMoved": "Ein Sondervortrag wird im Vortragsplan eingetragen — „Zu uns“, mit Thema statt Nummer."
     },
     "types": {
       "regional_convention": "Regionaler Kongress",
@@ -2653,6 +2654,12 @@
       "orTypeName": "Oder einen Redner eintragen, der nicht im Verzeichnis steht:",
       "longestAgoFirst": "Oben stehen die, die am längsten nicht da waren",
       "needSpeaker": "Redner wählen",
+      "needTheme": "Thema eingeben",
+      "specialTalk": "Sondervortrag",
+      "catalogueTalk": "Aus der Liste",
+      "specialTheme": "Thema des Sondervortrags",
+      "specialThemePlaceholder": "Wie im Brief des Zweigbüros",
+      "specialHint": "Er hat keine Nummer — im Programm steht das Thema anstelle des Vortragstitels. Den Redner kann man später eintragen. Die Versammlung wird benachrichtigt.",
       "needBrother": "Bruder wählen",
       "undoReplacement": "Zurücknehmen",
       "undoTitle": "Er ist doch gekommen?",
@@ -3487,6 +3494,7 @@
     "notLoaded": "Programm noch nicht geladen",
     "noMeetings": "Diese Woche keine Zusammenkünfte der Versammlung",
     "movedByVisit": "verlegt wegen des Kreisaufseherbesuchs",
+    "specialTalk": "Sondervortrag",
     "unassigned": "nicht zugeteilt",
     "fieldService": "Treffpunkte für den Predigtdienst",
     "memorialInsteadMidweek": "Statt der Zusammenkunft unter der Woche",

@@ -118,6 +118,7 @@ const READER_KEYS = new Set(Object.values(READER_OF));
  * not «No 78. Serve Jehovah joyfully!».
  */
 const ROLE_KEYS = new Set(["public_talk_speaker", "watchtower_conductor", "watchtower_reader", "cbs_reader"]);
+const upperFirst = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
 /** Sections that carry a label; opening and closing are plain rows (as in SUBSECTIONS). */
 const LABELLED = new Set(["treasures", "apply_yourself", "christian_life", "public_talk", "watchtower"]);
 /**
@@ -1399,7 +1400,13 @@ function Meeting({
         line={line}
         mine={mine}
         status={status}
-        tag={item.movedByVisit ? t("feed.movedByVisit") : null}
+        tag={
+          item.movedByVisit
+            ? t("feed.movedByVisit")
+            : item.kind === "weekend" && talk?.specialTalk
+              ? t("feed.specialTalk")
+              : null
+        }
         color={KIND[item.kind].color}
         past={past}
         open={open}
@@ -1410,7 +1417,13 @@ function Meeting({
         <DetailHead
           date={item.date}
           time={item.time}
-          kind={title === kindTitle ? kindTitle : `${kindTitle} · ${title}`}
+          kind={
+            title === kindTitle
+              ? kindTitle
+              : item.kind === "weekend" && talk?.specialTalk
+                ? `${kindTitle} · ${t("feed.specialTalk")}: ${title}`
+                : `${kindTitle} · ${title}`
+          }
           line={line}
           mine={mine ? t(past ? "feed.minePast" : "feed.mine", { list: mine }) : null}
           status={status}
@@ -1586,7 +1599,15 @@ function Programme({
       out.push(<PrayerLine key={p.id} time={start} label={text} name={person} mine={mine} />);
     } else if (p.partKey === "public_talk_speaker" || p.partKey === "co_concluding_talk") {
       out.push(
-        <Topic key={p.id} meta={t("feed.minutes", { time: start ?? "", n: p.partDurationMin ?? 30 })} title={shown.label}>
+        <Topic
+          key={p.id}
+          meta={
+            // A special talk says so: its theme alone reads like any other.
+            (p.specialTalk ? `${upperFirst(t("feed.specialTalk"))} · ` : "") +
+            t("feed.minutes", { time: start ?? "", n: p.partDurationMin ?? 30 })
+          }
+          title={shown.label}
+        >
           <PairLine label={t("feed.speaker")} name={person} extra={whoFrom(p)} mine={mine} tone={tone} />
         </Topic>,
       );

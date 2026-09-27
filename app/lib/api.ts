@@ -459,6 +459,11 @@ export interface Assignment {
   notes: string | null;
   changedSincePublish: boolean;
   publicTalkId: string | null;
+  /**
+   * Специальная речь: темы нет в каталоге, она в `partTitle`. Ставится из
+   * журнала речей и снимается выбором речи из каталога.
+   */
+  specialTalk?: boolean;
   speakerName: string | null;
   speakerCongregation: string | null;
   createdAt: string;
@@ -1486,6 +1491,8 @@ export interface TalkExchange {
   date: string;
   status: TalkExchangeStatus;
   publicTalkId: string | null;
+  /** Тема специальной речи; тогда номера из каталога нет. */
+  specialTheme?: string | null;
   visitingSpeakerId: string | null;
   speakerName: string | null;
   speakerCongregation: string | null;
@@ -1505,6 +1512,7 @@ export interface TalkExchangeInput {
   date: string;
   status?: TalkExchangeStatus;
   publicTalkId?: string | null;
+  specialTheme?: string | null;
   visitingSpeakerId?: string | null;
   speakerName?: string | null;
   speakerCongregation?: string | null;

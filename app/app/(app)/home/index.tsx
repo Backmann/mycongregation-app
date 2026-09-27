@@ -902,7 +902,9 @@ function NextBody({
                 `specialEvents.types.${entry.occasion.type}`,
                 entry.occasion.type,
               ).toLowerCase()
-            : null,
+            : entry.specialTalk
+              ? t("specialEvents.types.special_talk").toLowerCase()
+              : null,
         ]
           .filter(Boolean)
           .join(" · ");
@@ -1196,7 +1198,9 @@ function EntryBody({
       ? en.occasion.type
         ? t(`specialEvents.types.${en.occasion.type}`, en.occasion.type)
         : t("feed.kindSpecial")
-      : null;
+      : en.specialTalk
+        ? t("specialEvents.types.special_talk")
+        : null;
     const title = en.memorial
       ? en.memorial.title
       : (en.title ?? en.occasion?.title ?? t(`home.eventTypes.${en.kind}`));
@@ -1675,6 +1679,7 @@ function useHomeData(todayISO: string) {
             : null,
           speakerIsMine: !!talk && isMine(talk),
           titlePartKey: talk ? "public_talk_speaker" : null,
+          specialTalk: !!talk?.specialTalk,
           agenda:
             study && studyTitle
               ? [

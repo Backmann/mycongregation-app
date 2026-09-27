@@ -102,12 +102,18 @@ function routeForNotification(data) {
         path: '/schedule',
         params: data.weekStartDate ? { week: data.weekStartDate, meeting: 'memorial' } : {},
       };
-// An event opens its own page: what it is, when, where, and what it
-// changes for the meetings. Without an id, the list of events.
-case 'special_event':
-  return data.eventId
-    ? { path: `/special-events/${data.eventId}`, params: {} }
-    : { path: '/special-events', params: {} };
+    // An event opens its own page: what it is, when, where, and what it
+    // changes for the meetings. Without an id, the list of events.
+    case 'special_event':
+      return data.eventId
+        ? { path: `/special-events/${data.eventId}`, params: {} }
+        : { path: '/special-events', params: {} };
+    // A special talk is a talk of the weekend meeting: it opens that meeting.
+    case 'special_talk':
+      return {
+        path: '/schedule',
+        params: data.weekStartDate ? { week: data.weekStartDate, meeting: 'weekend' } : {},
+      };
     case 'field_service_meeting':
       return { path: '/cart/field-service', params: {} };
     // Cleaning has its own screen: the reminder opens the week it is about.

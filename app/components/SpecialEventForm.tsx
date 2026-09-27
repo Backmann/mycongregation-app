@@ -26,7 +26,9 @@ export const EVENT_TYPES = [
   'memorial',
   'circuit_overseer_visit',
   'branch_representative_visit',
-  'special_talk',
+  // The special talk is not made here any more: it is a talk of the talk
+  // journal, with a theme in place of a number (27 September). Its label stays
+  // in the translations for the events already in the bin.
   'other',
 ] as const;
 
@@ -277,6 +279,9 @@ export function SpecialEventForm({
                 </Pressable>
               );
             })}
+            <Text style={styles.typeHint}>
+              {t('specialEvents.form.specialTalkMoved')}
+            </Text>
           </View>
         )}
       </Field>
@@ -733,6 +738,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     borderBottomWidth: 1,
     borderBottomColor: '#f1f5f9',
+  },
+  typeHint: {
+    fontSize: 12,
+    color: '#64748b',
+    lineHeight: 17,
+    paddingHorizontal: 4,
+    paddingTop: 8,
   },
   typeText: { fontSize: 16, color: '#0f172a' },
 });

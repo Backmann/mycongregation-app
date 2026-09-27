@@ -125,6 +125,8 @@ export interface MeetingEntry {
   /** The part the title comes from, and whether it is the person's own. */
   titlePartKey?: string | null;
   titleIsMine?: boolean;
+  /** The public talk is a special talk: its theme is the title. */
+  specialTalk?: boolean;
   /**
    * What else the meeting holds, as an announcement (27 September, Lionel):
    * on a weekday the second part and every part of «Христианская жизнь»,
@@ -179,6 +181,7 @@ export interface MeetingAbout {
   /** The part the title is taken from (the first talk, the public talk). */
   titlePartKey?: string | null;
   titleIsMine?: boolean;
+  specialTalk?: boolean;
   agenda?: AgendaLine[];
 }
 
@@ -576,6 +579,7 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
         speakerIsMine: !!about?.speakerIsMine,
         titlePartKey: about?.titlePartKey ?? null,
         titleIsMine: !!about?.titleIsMine,
+        specialTalk: !!about?.specialTalk,
         agenda: about?.agenda ?? [],
         memorial,
         weekStartISO: weekISO,
