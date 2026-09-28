@@ -3495,7 +3495,7 @@
     },
     "calendar": {
       "accounts_audit": "Accounts check",
-      "pioneer_service_review": "Review of the pioneers’ ministry",
+      "pioneer_service_review": "Mid-year review of the regular pioneers’ service",
       "service_year_review": "Review of the regular pioneers’ service",
       "quarters": {
         "sepNov": "September–November",
@@ -3686,7 +3686,7 @@
     "forYear": "Service year: {{from}} — {{to}}",
     "title": "Pioneer service review",
     "openFromTask": "Open the pioneer service review →",
-    "counted": "Months counted: {{count}} of 12.",
+    "counted": "Months counted: {{count}} of {{of}}.",
     "collecting": "Reports for {{month}} are still coming in — the totals will grow.",
     "rule": "The year’s goal is 600 hours. A pioneer may continue if, with any credited hours, he has at least 560.",
     "hours": "{{count}} h",
@@ -3699,7 +3699,31 @@
     "shortCount": "Below 560: {{count}} of {{total}}",
     "allFine": "All {{count}} are above 560",
     "nobody": "There are no regular pioneers in the congregation",
-    "checkSince": "Hours for only {{count}} of {{of}} months, and the card gives no date of appointment — check from which month he has been pioneering."
+    "checkSince": "Hours for only {{count}} of {{of}} months, and the card gives no date of appointment — check from which month he has been pioneering.",
+    "windowHalf": "September – February",
+    "windowYear": "Whole year",
+    "prevYear": "Previous service year",
+    "nextYear": "Next service year",
+    "ruleHalf": "Measured by the months gone by: the goal is 50 h a month, the minimum 560 a year (about 47 a month). The mid-year review is for timely encouragement, not for decisions.",
+    "ruleRunning": "The year is still running — measured by the months gone by: the goal is 50 h a month, the minimum 560 a year (about 47 a month).",
+    "toMinimumPart": "{{count}} h short of the minimum’s pace ({{expected}} h)",
+    "toGoalPart": "{{count}} h from the goal’s pace ({{expected}} h)",
+    "meetsPart": "On the minimum’s pace ({{expected}} h in {{months}} months)",
+    "yearLeft": "{{count}} h left to 560 for the year — {{perMonth}} a month",
+    "yearLeftDone": "560 for the year already reached",
+    "endedIn": "Pioneer through {{month}} — the measure does not apply to this window",
+    "shortCountPart": "Behind the pace: {{count}} of {{total}}",
+    "allFinePart": "All {{count}} are on the minimum’s pace",
+    "history": "Month by month",
+    "historyNotes": "Month by month · notes: {{count}}",
+    "state": {
+      "missing": "no report",
+      "zero": "reported, no hours",
+      "collecting": "coming in",
+      "upcoming": "ahead",
+      "notPioneer": "not a pioneer"
+    },
+    "studies": "studies: {{count}}"
   },
   "memorial": {
     "title": "Memorial",

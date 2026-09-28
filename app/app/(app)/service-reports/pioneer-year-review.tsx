@@ -16,7 +16,11 @@ import dayjs from "dayjs";
 import "dayjs/locale/ru";
 import "dayjs/locale/de";
 import i18n from "../../../lib/i18n";
-import { PioneerYearRow, serviceReportsApi } from "../../../lib/api";
+import {
+  PioneerMonthLine,
+  PioneerYearRow,
+  serviceReportsApi,
+} from "../../../lib/api";
 import { LoadFailure } from "../../../components/LoadFailure";
 
 /**
@@ -43,24 +47,37 @@ export default function PioneerYearReviewScreen() {
    * нулями. Задача же говорит о годе, который закончился 31 августа, и несёт
    * его метку с собой.
    */
-  const { year: yearParam } = useLocalSearchParams<{ year?: string }>();
-  const year = yearParam
-    ? parseInt(String(yearParam), 10) || undefined
-    : undefined;
+  const { year: yearParam, window: windowParam } = useLocalSearchParams<{
+    year?: string;
+    window?: string;
+  }>();
+  /**
+   * Год и окно — из ссылки, а без неё решает сервер по дате собрания: до 20
+   * октября — закончившийся год, с февраля по апрель — «сентябрь – февраль».
+   * На экране оба переключаются (28 сентября: прежде год был только тот, что
+   * в ссылке, а полугодовой обзор не открывался вовсе).
+   */
+  const [year, setYear] = useState<number | undefined>(() =>
+    yearParam ? parseInt(String(yearParam), 10) || undefined : undefined,
+  );
+  const [win, setWin] = useState<"half" | "year" | undefined>(() =>
+    windowParam === "half" || windowParam === "year" ? windowParam : undefined,
+  );
 
-  /** Чьи заметки раскрыты — по одному человеку, не все разом. */
-  const [openNotes, setOpenNotes] = useState<Set<string>>(new Set());
-  const toggleNotes = (id: string) =>
-    setOpenNotes((prev) => {
+  /** Чья история по месяцам раскрыта — по одному человеку, не все разом. */
+  const [open, setOpen] = useState<Set<string>>(new Set());
+  const toggle = (id: string) =>
+    setOpen((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
       return next;
     });
 
-  const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ["pioneer-year-review", year ?? "current"],
-    queryFn: () => serviceReportsApi.getPioneerYearReview(year),
+  const { data, isLoading, error, refetch, isFetching } = useQuery({
+    queryKey: ["pioneer-year-review", year ?? "auto", win ?? "auto"],
+    queryFn: () => serviceReportsApi.getPioneerYearReview(year, win),
+    placeholderData: (prev) => prev,
   });
 
   /**
@@ -93,9 +110,54 @@ export default function PioneerYearReviewScreen() {
     return <LoadFailure error={error} onRetry={() => void refetch()} />;
   }
 
+  const part = data.window === "part";
+  const windowMonths = data.windowMonths ?? 12;
+  const complete = data.windowComplete ?? data.monthsElapsed >= 12;
+  /** The final word «не дотянул до 560» belongs only to a finished year. */
+  const finalYear = !part && complete;
+  const expectedGoal = data.expectedGoal ?? 600;
+  const expectedMin = data.expectedMinimum ?? 560;
   const shortCount = data.rows.filter((r) => r.short).length;
+  const now = new Date();
+  const runningYear =
+    now.getMonth() >= 8 ? now.getFullYear() + 1 : now.getFullYear();
 
-  const card = (row: PioneerYearRow) => (
+  const monthLine = (m: PioneerMonthLine) => (
+    <View
+      key={m.reportMonth}
+      style={[styles.mRow, m.state === "notPioneer" && styles.mRowDim]}
+    >
+      <Text style={styles.mName}>{capitalizeFirst(monthPlain(m.reportMonth))}</Text>
+      <View style={{ flex: 1 }}>
+        <View style={styles.mFigures}>
+          {m.state === "reported" ? (
+            <Text style={styles.mHours}>
+              {t("pioneerReview.hours", { count: m.hours ?? 0 })}
+            </Text>
+          ) : (
+            <Text
+              style={[
+                styles.mState,
+                m.state === "missing" && styles.mStateMissing,
+              ]}
+            >
+              {t(`pioneerReview.state.${m.state}`)}
+            </Text>
+          )}
+          {m.bibleStudies ? (
+            <Text style={styles.mStudies}>
+              {t("pioneerReview.studies", { count: m.bibleStudies })}
+            </Text>
+          ) : null}
+        </View>
+        {m.note ? <Text style={styles.mNote}>{m.note}</Text> : null}
+      </View>
+    </View>
+  );
+
+  const card = (row: PioneerYearRow) => {
+    const measured = row.toMinimum !== null && !row.endedIn;
+    return (
     <View
       key={row.publisherId}
       style={[
@@ -112,16 +174,15 @@ export default function PioneerYearReviewScreen() {
       </View>
 
       {/*
-        Темп — наверх.
-
-        Он отвечает на вопрос, ради которого экран открывают: дотянет ли. 47
-        часов в месяц дают 564 за год, и это видно сразу; сумма же одинакова у
-        того, кто идёт ровно, и у того, кто остановился в мае.
+        Темп — наверх: он отвечает на вопрос, ради которого экран открывают, —
+        дотянет ли. Сумма одинакова у того, кто идёт ровно, и у того, кто
+        остановился в мае.
       */}
       {row.pace !== null ? (
         <Text style={styles.paceLead}>
           {t("pioneerReview.pace", {
-            pace: row.pace,
+            // «37,8», not «37.8», in Russian and German.
+            pace: row.pace.toLocaleString(i18n.language),
             count: row.monthsReported,
           })}
         </Text>
@@ -130,73 +191,121 @@ export default function PioneerYearReviewScreen() {
       )}
 
       {/*
-        Одна полоса с двумя отметками вместо двух вычитаний.
-
-        «До 560 не хватает 285» и «до цели 600 — 305» читались как два разных
-        требования. На полосе видно одно: где он и куда идёт.
+        Полоса меряет то же, что и слова под ней: в законченном году — 600 с
+        отметкой 560, в середине года — темп за прошедшие месяцы. Прежде она
+        всегда мерила год, и в феврале все стояли на трети.
       */}
-      {!row.startedMidYear ? (
+      {measured && expectedGoal > 0 ? (
         <View style={styles.bar}>
           <View
             style={[
               styles.barFill,
               {
-                width: `${Math.min(100, (row.hours / 600) * 100)}%`,
+                width: `${Math.min(100, (row.hours / expectedGoal) * 100)}%`,
               },
-              row.short && styles.barFillShort,
+              (row.short || row.shortSoFar) && styles.barFillShort,
             ]}
           />
-          <View style={[styles.barMark, { left: `${(560 / 600) * 100}%` }]} />
+          <View
+            style={[
+              styles.barMark,
+              { left: `${(expectedMin / expectedGoal) * 100}%` },
+            ]}
+          />
         </View>
       ) : null}
 
       {/*
-        Месяцы без отчёта названы вслух.
-
-        Обзор читают, пока август досдают, и месяц без отчёта прежде был
-        неотличим от месяца с нулём: человек, отслуживший год, выглядел
-        недобравшим полсотни часов — ровно тогда, когда по этой цифре решают.
+        Месяцы без отчёта названы вслух: месяц без отчёта не то же, что месяц
+        с нулём, и человек без августовского отчёта не должен выглядеть
+        недобравшим полсотни часов.
       */}
       {row.missingMonths.length > 0 ? (
         <Text style={styles.missing}>
           {t("pioneerReview.missing", {
-            months: row.missingMonths.map(monthName).join(", "),
+            // «за август», not «за августа»: after «за» the month stands as
+            // it is (the declined form is for «с августа»).
+            months: row.missingMonths.map(monthPlain).join(", "),
             count: row.missingMonths.length,
           })}
         </Text>
       ) : null}
 
-      {row.startedMidYear ? (
-        /* No target for him, and no highlight: he was not a pioneer for the
-           whole year, and measuring him against it would report a shortfall he
-           could not have avoided. */
+      {row.endedIn ? (
+        /* He stopped inside the window: the months after are not his. */
+        <Text style={styles.since}>
+          {t("pioneerReview.endedIn", { month: monthName(row.endedIn) })}
+        </Text>
+      ) : row.startedMidYear ? (
+        /* No target for him: he was not a pioneer for the whole window. */
         <Text style={styles.since}>
           {t("pioneerReview.sinceOnly", {
             month: row.pioneerSince ? monthName(row.pioneerSince) : "",
           })}
         </Text>
-      ) : (
+      ) : measured ? (
         <View style={styles.figures}>
-          {row.toMinimum && row.toMinimum > 0 ? (
-            <Text style={styles.toMinimum}>
-              {t("pioneerReview.toMinimum", { count: row.toMinimum })}
-            </Text>
+          {finalYear ? (
+            <>
+              {row.toMinimum && row.toMinimum > 0 ? (
+                <Text style={styles.toMinimum}>
+                  {t("pioneerReview.toMinimum", { count: row.toMinimum })}
+                </Text>
+              ) : (
+                <Text style={styles.meets}>{t("pioneerReview.meets")}</Text>
+              )}
+              {row.toGoal && row.toGoal > 0 ? (
+                <Text style={styles.toGoal}>
+                  {t("pioneerReview.toGoal", { count: row.toGoal })}
+                </Text>
+              ) : null}
+            </>
           ) : (
-            <Text style={styles.meets}>{t("pioneerReview.meets")}</Text>
+            <>
+              {row.toMinimum && row.toMinimum > 0 ? (
+                <Text style={styles.toMinimum}>
+                  {t("pioneerReview.toMinimumPart", {
+                    count: row.toMinimum,
+                    expected: expectedMin,
+                  })}
+                </Text>
+              ) : (
+                <Text style={styles.meets}>
+                  {t("pioneerReview.meetsPart", {
+                    expected: expectedMin,
+                    months: data.monthsElapsed,
+                  })}
+                </Text>
+              )}
+              {row.toGoal && row.toGoal > 0 ? (
+                <Text style={styles.toGoal}>
+                  {t("pioneerReview.toGoalPart", {
+                    count: row.toGoal,
+                    expected: expectedGoal,
+                  })}
+                </Text>
+              ) : null}
+            </>
           )}
-          {row.toGoal && row.toGoal > 0 ? (
-            <Text style={styles.toGoal}>
-              {t("pioneerReview.toGoal", { count: row.toGoal })}
-            </Text>
-          ) : null}
         </View>
-      )}
+      ) : null}
 
-      {/* Hours for only a few months, and no date of appointment on the card.
-          Then the low total may mean «he became a pioneer in May», and the
-          screen must not quietly present it as a shortfall. We do not guess —
+      {/* The figure a conversation in the middle of the year is about. */}
+      {!finalYear && measured && row.yearLeftToMinimum != null ? (
+        <Text style={styles.yearLeft}>
+          {row.yearLeftToMinimum > 0
+            ? t("pioneerReview.yearLeft", {
+                count: row.yearLeftToMinimum,
+                perMonth: row.perMonthToMinimum ?? 0,
+              })
+            : t("pioneerReview.yearLeftDone")}
+        </Text>
+      ) : null}
+
+      {/* Hours for only a few months, and no date of appointment on the card:
+          the low total may mean «he became a pioneer in May». We do not guess —
           we say what is missing and let the brothers check. */}
-      {!row.startedMidYear &&
+      {measured &&
       !row.pioneerSince &&
       row.monthsReported > 0 &&
       row.monthsReported < data.monthsElapsed - 1 ? (
@@ -209,42 +318,36 @@ export default function PioneerYearReviewScreen() {
       ) : null}
 
       {/*
-        Заметки — под свёрткой.
-
-        Здесь пишут засчитанные часы, и читать их нужно. Но развёрнутые они
-        занимали почти всю карточку: восемь строк слов против одной строки
-        чисел, и числа терялись.
+        История по месяцам — под свёрткой (28 сентября, просьба Лионеля:
+        раскрыть пионера и увидеть его месяцы). В ней же заметки: там пишут
+        засчитанные часы.
       */}
-      {row.notes.length > 0 ? (
+      {row.months && row.months.length > 0 ? (
         <Pressable
-          onPress={() => toggleNotes(row.publisherId)}
+          onPress={() => toggle(row.publisherId)}
           hitSlop={6}
           style={styles.notesToggle}
+          accessibilityRole="button"
+          accessibilityState={{ expanded: open.has(row.publisherId) }}
         >
           <Ionicons
-            name={
-              openNotes.has(row.publisherId) ? "chevron-up" : "chevron-down"
-            }
+            name={open.has(row.publisherId) ? "chevron-up" : "chevron-down"}
             size={14}
             color="#0369a1"
           />
           <Text style={styles.notesToggleText}>
-            {t("pioneerReview.notesCount", { count: row.notes.length })}
+            {row.notes.length > 0
+              ? t("pioneerReview.historyNotes", { count: row.notes.length })
+              : t("pioneerReview.history")}
           </Text>
         </Pressable>
       ) : null}
-      {openNotes.has(row.publisherId)
-        ? row.notes.map((n) => (
-            <View key={n.reportMonth} style={styles.note}>
-              <Text style={styles.noteMonth}>
-                {monthTitle(n.reportMonth)}
-              </Text>
-              <Text style={styles.noteText}>{n.note}</Text>
-            </View>
-          ))
-        : null}
+      {open.has(row.publisherId) && row.months ? (
+        <View style={styles.history}>{row.months.map(monthLine)}</View>
+      ) : null}
     </View>
-  );
+    );
+  };
 
   return (
     <ScrollView
@@ -258,20 +361,69 @@ export default function PioneerYearReviewScreen() {
         Поэтому подмена и осталась незамеченной: в сентябре открывался
         начавшийся год с нулями у всех, и понять это было неоткуда.
       */}
-      <Text style={styles.yearLine}>
-        {capitalizeFirst(
-          t("pioneerReview.forYear", {
-          from: monthTitle(data.firstMonth),
-          to: monthTitle(data.lastMonth),
-        }),
-        )}
-      </Text>
+      <View style={styles.switchRow}>
+        <Pressable
+          onPress={() => setYear(data.serviceYear - 1)}
+          hitSlop={8}
+          style={styles.arrow}
+          accessibilityRole="button"
+          accessibilityLabel={t("pioneerReview.prevYear")}
+        >
+          <Ionicons name="chevron-back" size={18} color="#0369a1" />
+        </Pressable>
+        <Text style={styles.yearLine}>
+          {capitalizeFirst(
+            t("pioneerReview.forYear", {
+              from: monthTitle(data.firstMonth),
+              to: monthTitle(data.lastMonth),
+            }),
+          )}
+        </Text>
+        <Pressable
+          onPress={() => setYear(data.serviceYear + 1)}
+          disabled={data.serviceYear >= runningYear}
+          hitSlop={8}
+          style={[
+            styles.arrow,
+            data.serviceYear >= runningYear && { opacity: 0.3 },
+          ]}
+          accessibilityRole="button"
+          accessibilityLabel={t("pioneerReview.nextYear")}
+        >
+          <Ionicons name="chevron-forward" size={18} color="#0369a1" />
+        </Pressable>
+        {isFetching ? <ActivityIndicator size="small" /> : null}
+      </View>
+      <View style={styles.chips}>
+        {(["half", "year"] as const).map((w) => {
+          const on = (w === "half") === part;
+          return (
+            <Pressable
+              key={w}
+              onPress={() => {
+                setYear(data.serviceYear);
+                setWin(w);
+              }}
+              style={[styles.chip, on && styles.chipOn]}
+              accessibilityRole="button"
+              accessibilityState={{ selected: on }}
+            >
+              <Text style={[styles.chipText, on && styles.chipTextOn]}>
+                {t(w === "half" ? "pioneerReview.windowHalf" : "pioneerReview.windowYear")}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
 
       <View style={styles.lede}>
         <Ionicons name="information-circle-outline" size={16} color="#0369a1" />
         <View style={{ flex: 1 }}>
           <Text style={styles.ledeText}>
-            {t("pioneerReview.counted", { count: data.monthsElapsed })}
+            {t("pioneerReview.counted", {
+              count: data.monthsElapsed,
+              of: windowMonths,
+            })}
             {data.collectingMonth
               ? " " +
                 t("pioneerReview.collecting", {
@@ -279,7 +431,15 @@ export default function PioneerYearReviewScreen() {
                 })
               : ""}
           </Text>
-          <Text style={styles.ledeHint}>{t("pioneerReview.rule")}</Text>
+          <Text style={styles.ledeHint}>
+            {t(
+              part
+                ? "pioneerReview.ruleHalf"
+                : finalYear
+                  ? "pioneerReview.rule"
+                  : "pioneerReview.ruleRunning",
+            )}
+          </Text>
         </View>
       </View>
 
@@ -289,11 +449,18 @@ export default function PioneerYearReviewScreen() {
         <>
           <Text style={styles.summary}>
             {shortCount > 0
-              ? t("pioneerReview.shortCount", {
-                  count: shortCount,
-                  total: data.rows.length,
-                })
-              : t("pioneerReview.allFine", { count: data.rows.length })}
+              ? t(
+                  finalYear
+                    ? "pioneerReview.shortCount"
+                    : "pioneerReview.shortCountPart",
+                  { count: shortCount, total: data.rows.length },
+                )
+              : t(
+                  finalYear
+                    ? "pioneerReview.allFine"
+                    : "pioneerReview.allFinePart",
+                  { count: data.rows.length },
+                )}
           </Text>
           {data.rows.map(card)}
         </>
@@ -311,11 +478,58 @@ const styles = StyleSheet.create({
     alignSelf: "center",
   },
   yearLine: {
+    flexShrink: 1,
     fontSize: 15,
     fontWeight: "700",
     color: "#0f172a",
+  },
+  switchRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
     marginBottom: 10,
   },
+  arrow: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#e0f2fe",
+  },
+  chips: { flexDirection: "row", gap: 8, marginBottom: 12, flexWrap: "wrap" },
+  chip: {
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 999,
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#cbd5e1",
+  },
+  chipOn: { backgroundColor: "#0369a1", borderColor: "#0369a1" },
+  chipText: { fontSize: 13, color: "#334155", fontWeight: "600" },
+  chipTextOn: { color: "#fff" },
+  yearLeft: { fontSize: 13, color: "#334155", marginTop: 6 },
+  history: {
+    marginTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: "#eef2f6",
+  },
+  mRow: {
+    flexDirection: "row",
+    gap: 10,
+    paddingVertical: 7,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f1f5f9",
+  },
+  mRowDim: { opacity: 0.5 },
+  mName: { width: 92, fontSize: 13, color: "#475569" },
+  mFigures: { flexDirection: "row", gap: 10, flexWrap: "wrap" },
+  mHours: { fontSize: 13, color: "#0f172a", fontWeight: "700" },
+  mState: { fontSize: 13, color: "#64748b" },
+  mStateMissing: { color: "#b45309", fontWeight: "600" },
+  mStudies: { fontSize: 13, color: "#64748b" },
+  mNote: { fontSize: 12.5, color: "#334155", lineHeight: 18, marginTop: 2 },
   lede: {
     flexDirection: "row",
     alignItems: "flex-start",

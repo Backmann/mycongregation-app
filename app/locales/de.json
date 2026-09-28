@@ -3495,7 +3495,7 @@
     },
     "calendar": {
       "accounts_audit": "Kontenprüfung",
-      "pioneer_service_review": "Überblick über den Dienst der Pioniere",
+      "pioneer_service_review": "Halbjahresüberblick über den Dienst der allgemeinen Pioniere",
       "service_year_review": "Überblick über den Dienst der allgemeinen Pioniere",
       "quarters": {
         "sepNov": "September–November",
@@ -3686,7 +3686,7 @@
     "forYear": "Dienstjahr: {{from}} — {{to}}",
     "title": "Überblick über den Pionierdienst",
     "openFromTask": "Überblick über den Pionierdienst öffnen →",
-    "counted": "Berücksichtigte Monate: {{count}} von 12.",
+    "counted": "Berücksichtigte Monate: {{count}} von {{of}}.",
     "collecting": "Die Berichte für {{month}} kommen noch — die Summen wachsen noch.",
     "rule": "Das Jahresziel sind 600 Stunden. Weiter Pionier sein kann, wer mit angerechneten Stunden mindestens 560 erreicht.",
     "hours": "{{count}} Std.",
@@ -3699,7 +3699,31 @@
     "shortCount": "Unter 560: {{count}} von {{total}}",
     "allFine": "Alle {{count}} liegen über 560",
     "nobody": "In der Versammlung gibt es keine allgemeinen Pioniere",
-    "checkSince": "Stunden nur für {{count}} von {{of}} Monaten, und auf der Karte fehlt das Datum des Pionierdienstbeginns — prüfe, seit wann er Pionier ist."
+    "checkSince": "Stunden nur für {{count}} von {{of}} Monaten, und auf der Karte fehlt das Datum des Pionierdienstbeginns — prüfe, seit wann er Pionier ist.",
+    "windowHalf": "September – Februar",
+    "windowYear": "Ganzes Jahr",
+    "prevYear": "Voriges Dienstjahr",
+    "nextYear": "Nächstes Dienstjahr",
+    "ruleHalf": "Gemessen an den vergangenen Monaten: Ziel 50 Std. im Monat, Minimum 560 im Jahr (etwa 47 im Monat). Der Überblick zur Jahresmitte dient der rechtzeitigen Ermunterung, nicht Entscheidungen.",
+    "ruleRunning": "Das Jahr läuft noch — gemessen an den vergangenen Monaten: Ziel 50 Std. im Monat, Minimum 560 im Jahr (etwa 47 im Monat).",
+    "toMinimumPart": "{{count}} Std. unter dem Tempo des Minimums ({{expected}} Std.)",
+    "toGoalPart": "{{count}} Std. bis zum Tempo des Ziels ({{expected}} Std.)",
+    "meetsPart": "Im Tempo des Minimums ({{expected}} Std. in {{months}} Monaten)",
+    "yearLeft": "Bis 560 im Jahr fehlen {{count}} Std. — {{perMonth}} im Monat",
+    "yearLeftDone": "560 im Jahr bereits erreicht",
+    "endedIn": "Pionier bis einschließlich {{month}} — der Maßstab gilt für diesen Zeitraum nicht",
+    "shortCountPart": "Unter dem Tempo: {{count}} von {{total}}",
+    "allFinePart": "Alle {{count}} liegen im Tempo des Minimums",
+    "history": "Nach Monaten",
+    "historyNotes": "Nach Monaten · Notizen: {{count}}",
+    "state": {
+      "missing": "kein Bericht",
+      "zero": "ohne Stunden berichtet",
+      "collecting": "kommt noch",
+      "upcoming": "steht bevor",
+      "notPioneer": "kein Pionier"
+    },
+    "studies": "Studien: {{count}}"
   },
   "memorial": {
     "title": "Gedächtnismahl",

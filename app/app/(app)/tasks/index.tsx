@@ -266,7 +266,8 @@ export default function TasksScreen() {
 
         {/* A calendar task that has a screen behind it says so. The brothers
             open the task, not the reports section — this is where they are. */}
-        {task.kind === "service_year_review" ? (
+        {task.kind === "service_year_review" ||
+        task.kind === "pioneer_service_review" ? (
           <Pressable
             onPress={() =>
               router.push(
@@ -279,9 +280,13 @@ export default function TasksScreen() {
                  * 0 из 12» и нули у всех десяти пионеров, хотя год они
                  * отслужили.
                  */
+                // The review in February looks at September to February of
+                // the year it falls in (28 September: it had no screen).
                 `/service-reports/pioneer-year-review?year=${encodeURIComponent(
                   task.kindPeriod ?? "",
-                )}&from=${encodeURIComponent("/tasks")}` as never,
+                )}&window=${
+                  task.kind === "pioneer_service_review" ? "half" : "year"
+                }&from=${encodeURIComponent("/tasks")}` as never,
               )
             }
             hitSlop={6}

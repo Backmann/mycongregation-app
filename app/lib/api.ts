@@ -3794,33 +3794,63 @@ export interface MyReportStanding {
 }
 
 /** Where one regular pioneer stands in the service year. */
+/** One month of the review window on a pioneer's card. */
+export interface PioneerMonthLine {
+  reportMonth: string;
+  /**
+   * reported — hours came; zero — a report came without hours; missing — the
+   * month is over and no report came; collecting — being handed in now;
+   * upcoming — not reached; notPioneer — he was not a pioneer that month.
+   */
+  state: "reported" | "zero" | "missing" | "collecting" | "upcoming" | "notPioneer";
+  hours: number | null;
+  bibleStudies: number | null;
+  note: string | null;
+}
+
 export interface PioneerYearRow {
   publisherId: string;
   displayName: string;
   pioneerSince: string | null;
   /** Became a pioneer after the year began — the year's numbers do not apply. */
   startedMidYear: boolean;
+  /** His pioneering ended inside the window — the last month he served. */
+  endedIn?: string | null;
   hours: number;
   monthsReported: number;
   /** Hours per reported month — the tendency the total hides. */
   pace: number | null;
+  /** Distances to 50 a month and to 560/12 a month, over the months counted. */
   toGoal: number | null;
   toMinimum: number | null;
-  /** Месяцы года без отчёта — не то же самое, что месяцы с нулём. */
+  /** Left to 560 for the whole year, and per month still to come. */
+  yearLeftToMinimum?: number | null;
+  perMonthToMinimum?: number | null;
+  /** Месяцы без отчёта — не то же самое, что месяцы с нулём. */
   missingMonths: string[];
-  /** Ниже порога ОКОНЧАТЕЛЬНО: год собран целиком. */
+  /** Ниже мерки ОКОНЧАТЕЛЬНО: все посчитанные месяцы сданы. */
   short: boolean;
-  /** Ниже порога по сданному, но год ещё не полон. */
+  /** Ниже мерки по сданному, но сдано не всё. */
   shortSoFar: boolean;
   /** Only months where something was written — credit hours live there. */
   notes: { reportMonth: string; note: string }[];
+  /** Every month of the window, in the order the year runs. */
+  months?: PioneerMonthLine[];
 }
 
 export interface PioneerYearReview {
   serviceYear: number;
   firstMonth: string;
   lastMonth: string;
+  /** Last month looked at: August for the year, February mid-year. */
+  throughMonth?: string;
+  window?: "year" | "part";
+  windowMonths?: number;
+  /** Months of the window already over — what the measure is taken over. */
   monthsElapsed: number;
+  windowComplete?: boolean;
+  expectedGoal?: number;
+  expectedMinimum?: number;
   /** The month still being collected, or null once the year is over. */
   collectingMonth: string | null;
   rows: PioneerYearRow[];
@@ -3918,10 +3948,13 @@ export const serviceReportsApi = {
     return data;
   },
   /** The pioneers' standing in a service year — for the calendar task. */
-  async getPioneerYearReview(year?: number): Promise<PioneerYearReview> {
+  async getPioneerYearReview(
+    year?: number,
+    window?: "half" | "year",
+  ): Promise<PioneerYearReview> {
     const { data } = await api.get<PioneerYearReview>(
       "/service-reports/pioneer-year-review",
-      { params: year ? { year } : {} },
+      { params: { ...(year ? { year } : {}), ...(window ? { window } : {}) } },
     );
     return data;
   },
