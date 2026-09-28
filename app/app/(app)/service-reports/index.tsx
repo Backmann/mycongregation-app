@@ -64,7 +64,13 @@ function MonthCard() {
   if (!data?.applicable || !data.reportMonth) return null;
 
   const days = data.daysLeft;
-  const closed = days !== null && days < 0;
+  // Two different ends (28 September): the last day to CORRECT a filed
+  // report is `closesOn`; a missing one is still taken after it, until the
+  // secretary closes the month. The screen used to treat the date as the
+  // closing and said «обратитесь к секретарю» while the report could still
+  // simply be handed in — and the Home screen said the opposite.
+  const pastDeadline = days !== null && days < 0;
+  const closed = data.closed === true;
   const monthLabel = formatMonthLabel(data.reportMonth);
   const closesLabel = data.closesOn
     ? new Date(`${data.closesOn}T12:00:00`).toLocaleDateString(i18n.language, {
@@ -74,12 +80,14 @@ function MonthCard() {
     : '';
 
   const call = data.submitted
-    ? closed
+    ? closed || pastDeadline
       ? t('reports.entry.doneClosed')
       : t('reports.entry.doneEditable', { date: closesLabel })
     : closed
       ? t('reports.entry.missed')
-      : days !== null && days <= 4
+      : pastDeadline
+        ? t('reports.entry.late', { date: closesLabel })
+        : days !== null && days <= 4
         ? t('reports.entry.lastDays', { date: closesLabel })
         : days !== null && days <= 11
           ? t('reports.entry.daysLeft', { count: days })
@@ -99,7 +107,8 @@ function MonthCard() {
       >
         {call}
       </Text>
-      {!closed ? (
+      {/* Hand in while the month is open; correct only until the deadline. */}
+      {!closed && !(data.submitted && pastDeadline) ? (
         <Pressable
           style={styles.monthBtn}
           onPress={() =>

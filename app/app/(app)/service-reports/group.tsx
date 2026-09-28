@@ -1,3 +1,4 @@
+import { LoadFailure } from '../../../components/LoadFailure';
 import { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
@@ -14,7 +15,6 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, router } from 'expo-router';
 import {
-  extractErrorMessage,
   GroupReportRow,
   publishersApi,
   PublisherStatus,
@@ -275,20 +275,12 @@ export default function GroupReportsScreen() {
   }
 
   if (error) {
-    const message = extractErrorMessage(error);
-    const isForbidden = /403|forbid|authoriz/i.test(message);
+    // One way to say «no» and «could not»: the server's English paragraph
+    // used to stand under the lock (28 September).
     return (
       <View style={styles.center}>
         <Stack.Screen options={{ title: t('reports.title.group') }} />
-        <Ionicons
-          name={isForbidden ? 'lock-closed-outline' : 'alert-circle-outline'}
-          size={64}
-          color="#cbd5e1"
-        />
-        <Text style={styles.errorTitle}>
-          {isForbidden ? t('audit.notAuthorized') : t('reports.group.couldNotLoad')}
-        </Text>
-        <Text style={styles.errorText}>{message}</Text>
+        <LoadFailure error={error} />
       </View>
     );
   }

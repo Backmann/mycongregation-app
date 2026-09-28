@@ -1,3 +1,4 @@
+import { usePermissions } from "../../../../lib/permissions";
 import { useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -66,6 +67,7 @@ export default function SpeakerProfileScreen() {
     ).length;
 
   const qc = useQueryClient();
+  const canEdit = usePermissions().canCoordinatePublicTalks;
   const [mergeOpen, setMergeOpen] = useState(false);
   const [mergeSearch, setMergeSearch] = useState("");
   const [mergePick, setMergePick] = useState<string | null>(null);
@@ -397,6 +399,10 @@ export default function SpeakerProfileScreen() {
       ) : null}
 
       {/* Edit */}
+      {/* Changing and merging belong to whoever keeps the speakers; the card
+          itself may be read by others (28 September: a publisher saw both
+          buttons, and both would have been refused). */}
+      {canEdit ? (
       <Pressable
         style={styles.editBtn}
         onPress={() =>
@@ -408,6 +414,7 @@ export default function SpeakerProfileScreen() {
           {t("talkCoordinator.speakerProfile.edit")}
         </Text>
       </Pressable>
+      ) : null}
 
       {/*
         Объединение двойников.
@@ -420,12 +427,14 @@ export default function SpeakerProfileScreen() {
         Эта карточка ОСТАЁТСЯ, выбранная становится следом. Так понятнее, чем
         выбирать обе в списке и потом решать, какая из них главная.
       */}
+      {canEdit ? (
       <Pressable style={styles.mergeBtn} onPress={() => setMergeOpen(true)}>
         <Ionicons name="git-merge-outline" size={18} color="#7c3aed" />
         <Text style={styles.mergeBtnText}>
           {t("talkCoordinator.merge.action")}
         </Text>
       </Pressable>
+      ) : null}
 
       <Dialog
         visible={mergeOpen}

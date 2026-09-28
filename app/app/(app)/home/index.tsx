@@ -55,7 +55,7 @@ import {
 import { monthLabel } from "../../../lib/month-label";
 import { LoadError } from "../../../components/LoadError";
 import {
-  meetingPartLabel,
+  myPartLine,
   taskMeta,
   taskSubsectionLabel,
   taskTitle,
@@ -108,12 +108,6 @@ import { isCongressEvent } from "../../../lib/week-rules";
  * Parts whose stored title is a TOPIC, not what the person does: the card
  * names the role and puts the topic under it.
  */
-const ROLE_PARTS = new Set([
-  "watchtower_conductor",
-  "public_talk_speaker",
-  "cbs_conductor",
-]);
-
 /** Two columns from this width; the content never grows past MAX_WIDTH. */
 const WIDE_FROM = 900;
 const MAX_WIDTH = 1000;
@@ -326,7 +320,11 @@ function useReportStanding() {
   // Кто собирает отчёты, видит карточку сбора — и в ней уже есть он сам.
   // Скрывается ТОЛЬКО зелёное «сдан»; несданный — это дело при любых правах.
   if (data.submitted && canViewServiceSummary && collection) return null;
-  return { submitted: !!data.submitted, reportMonth: data.reportMonth };
+  return {
+    submitted: !!data.submitted,
+    reportMonth: data.reportMonth,
+    closed: data.closed === true,
+  };
 }
 
 function usePending() {
@@ -412,7 +410,9 @@ function TodoSection() {
   const pending = usePending();
   const collection = useReportCollection();
   const attendance = useAttendanceDue();
-  const reportDue = !!report && !report.submitted;
+  // Not once the secretary has closed the month: the report is refused then,
+  // and the Reports screen sends the person to the secretary instead.
+  const reportDue = !!report && !report.submitted && !report.closed;
   if (!reportDue && !pending && !collection && !attendance) return null;
 
   const dayMonth = (iso: string) =>
@@ -1761,22 +1761,10 @@ function useHomeData(todayISO: string) {
         title: taskTitle(it, t),
         // The reader of the Bible study is «Чтец» in the programme, under
         // its section's heading; on its own it needs the rest of its name.
-        label:
-          it.kind !== "meeting"
-            ? taskTitle(it, t)
-            : it.partKey === "cbs_reader"
-              ? t("home.parts.cbsReader")
-              : it.partKey === "cbs_conductor"
-                ? t("home.parts.cbsConductor")
-                : it.partKey && ROLE_PARTS.has(it.partKey)
-                  ? t(`parts.${it.partKey}`)
-                  : meetingPartLabel(it),
-        topic:
-          it.kind === "meeting" && it.partKey && ROLE_PARTS.has(it.partKey)
-            ? meetingPartLabel(it) !== t(`parts.${it.partKey}`)
-              ? meetingPartLabel(it)
-              : null
-            : null,
+        // One rule with «Мои назначения» (lib/my-tasks myPartLine); the
+        // «— помощник» is added by partText here, so the bare name is taken.
+        label: myPartLine({ ...it, asAssistant: false }, t).label,
+        topic: myPartLine(it, t).topic,
         partKey: it.partKey,
         asAssistant: !!it.asAssistant,
         partnerName: it.partnerName ?? null,

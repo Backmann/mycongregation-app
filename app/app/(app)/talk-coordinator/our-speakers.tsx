@@ -313,9 +313,12 @@ export default function OurSpeakersScreen() {
                     */}
                     {st?.nextVisit ? (
                       <Text style={styles.badge}>
-                        {t("talkCoordinator.ourSpeakers.goesOn", {
-                          date: shortDate(st.nextVisit.date),
-                        })}
+                        {t(
+                          st.nextVisit.local
+                            ? "talkCoordinator.ourSpeakers.homeBadge"
+                            : "talkCoordinator.ourSpeakers.goesOn",
+                          { date: shortDate(st.nextVisit.date) },
+                        )}
                       </Text>
                     ) : null}
                   </View>
@@ -329,13 +332,18 @@ export default function OurSpeakersScreen() {
                       apt,
                       !st || st.count === 0
                         ? t("talkCoordinator.ourSpeakers.neverWent")
-                        : t("talkCoordinator.ourSpeakers.sinceLast", {
+                        : t(
+                            st.lastVisit!.local
+                              ? "talkCoordinator.ourSpeakers.sinceLastHome"
+                              : "talkCoordinator.ourSpeakers.sinceLast",
+                            {
                             rel: formatRelativeDay(
                               st.lastVisit!.date,
                               today,
                               t,
                             ),
-                          }),
+                            },
+                          ),
                     ]
                       .filter(Boolean)
                       .join(" · ")}
@@ -345,13 +353,21 @@ export default function OurSpeakersScreen() {
                       «когда» без «куда» отвечает на половину вопроса. */}
                   {st && st.count > 0 && st.lastVisit ? (
                     <Text style={styles.line}>
-                      {t("talkCoordinator.ourSpeakers.lastTrip", {
-                        date: shortDate(st.lastVisit.date),
-                        where:
-                          st.lastVisit.hostCongregation ??
-                          t("talkCoordinator.ourSpeakers.unknownPlace"),
-                        count: st.count,
-                      })}
+                      {/* A talk at home (a special talk in our own hall,
+                          from the talk journal) is not a trip «в собрание не
+                          указано» — it says where it was (28 September). */}
+                      {t(
+                        st.lastVisit.local
+                          ? "talkCoordinator.ourSpeakers.lastHome"
+                          : st.lastVisit.hostCongregation
+                            ? "talkCoordinator.ourSpeakers.lastTrip"
+                            : "talkCoordinator.ourSpeakers.lastTripUnknown",
+                        {
+                          date: shortDate(st.lastVisit.date),
+                          where: st.lastVisit.hostCongregation ?? "",
+                          count: st.count,
+                        },
+                      )}
                       {st.distinctCongregations > 1
                         ? " " +
                           t("talkCoordinator.ourSpeakers.inCongregations", {
@@ -365,12 +381,17 @@ export default function OurSpeakersScreen() {
                       нему и замечают, что в то же собрание везут то же самое. */}
                   {st?.nextVisit ? (
                     <Text style={styles.line}>
-                      {t("talkCoordinator.ourSpeakers.nextTrip", {
-                        date: longDate(st.nextVisit.date),
-                        where:
-                          st.nextVisit.hostCongregation ??
-                          t("talkCoordinator.ourSpeakers.unknownPlace"),
-                      })}
+                      {t(
+                        st.nextVisit.local
+                          ? "talkCoordinator.ourSpeakers.nextHome"
+                          : st.nextVisit.hostCongregation
+                            ? "talkCoordinator.ourSpeakers.nextTrip"
+                            : "talkCoordinator.ourSpeakers.nextTripUnknown",
+                        {
+                          date: longDate(st.nextVisit.date),
+                          where: st.nextVisit.hostCongregation ?? "",
+                        },
+                      )}
                       {st.nextVisit.talkNumber
                         ? ", " +
                           t("talkCoordinator.ourSpeakers.withTalk", {

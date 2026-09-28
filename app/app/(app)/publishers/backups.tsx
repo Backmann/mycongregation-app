@@ -1,3 +1,4 @@
+import { LoadFailure } from '../../../components/LoadFailure';
 import { useState } from 'react';
 import {
   ActivityIndicator,
@@ -61,7 +62,9 @@ export default function BackupsScreen() {
       {query.isLoading ? (
         <ActivityIndicator style={{ marginTop: 32 }} />
       ) : query.isError ? (
-        <Text style={styles.error}>{t('backups.error')}</Text>
+        // A refusal (the copies belong to whoever runs the platform) is a
+        // «нет доступа», not a red failure (28 September).
+        <LoadFailure error={query.error} onRetry={() => void query.refetch()} />
       ) : !latest ? (
         <View style={styles.card}>
           <Text style={styles.muted}>{t('backups.none')}</Text>

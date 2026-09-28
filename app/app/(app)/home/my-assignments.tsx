@@ -20,6 +20,7 @@ import {
   specialEventsApi,
 } from '../../../lib/api';
 import {
+  myPartLine,
   RefinedTask,
   refineMyTasks,
   taskMeta,
@@ -202,9 +203,24 @@ export default function MyAssignmentsScreen() {
                             {t('home.rowKind.duty')}
                           </Text>
                         ) : null}
+                        {/* Named as on the Home card: the whole name of the
+                            reader's part, «— помощник», the pair on its own
+                            line — «в паре: …» needs no case to agree. */}
                         <Text style={styles.title} numberOfLines={2}>
-                          {taskTitle(r.item, t)}
+                          {r.item.kind === 'meeting'
+                            ? myPartLine(r.item, t).label
+                            : taskTitle(r.item, t)}
                         </Text>
+                        {r.item.kind === 'meeting' && myPartLine(r.item, t).topic ? (
+                          <Text style={styles.topic} numberOfLines={2}>
+                            «{myPartLine(r.item, t).topic}»
+                          </Text>
+                        ) : null}
+                        {r.item.kind === 'meeting' && r.item.partnerName ? (
+                          <Text style={styles.pair}>
+                            {t('home.next.pair', { name: r.item.partnerName })}
+                          </Text>
+                        ) : null}
                         {/* When and where — shown for a visit because that is
                             what a man needs before setting off, and the screen
                             gave neither. Only where the server sends them, so
@@ -400,6 +416,18 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   title: { fontSize: 15, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0f172a' },
+  topic: { fontSize: 13.5, color: '#475569', marginTop: 2, lineHeight: 19 },
+  pair: {
+    alignSelf: 'flex-start',
+    marginTop: 6,
+    fontSize: 12.5,
+    color: '#1d4ed8',
+    backgroundColor: '#eff6ff',
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    overflow: 'hidden',
+  },
   emptyBox: { alignItems: 'center', marginTop: 48, gap: 10 },
   emptyText: { fontSize: 14, color: '#64748b', textAlign: 'center' },
 });

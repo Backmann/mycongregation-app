@@ -225,7 +225,7 @@
       "submit": "Passwort ändern",
       "successTitle": "Passwort geändert",
       "successBody": "Dein Passwort wurde aktualisiert. Bestehende Sitzungen auf diesem Gerät bleiben angemeldet.",
-      "note": "Hinweis: Wenn du dein aktuelles Passwort vergessen hast, bitte einen Administrator, es über die Benutzerverwaltung zurückzusetzen.",
+      "note": "Wenn Sie Ihr aktuelles Passwort vergessen haben, bitten Sie einen Administrator, es über die Benutzerverwaltung zurückzusetzen.",
       "errors": {
         "tooShort": "Neues Passwort muss mindestens {{count}} Zeichen haben",
         "sameAsCurrent": "Neues Passwort muss sich vom aktuellen unterscheiden",
@@ -640,7 +640,8 @@
       "change": "Ändern",
       "myMonths": "Meine Monate",
       "collected": "{{received}} von {{expected}} abgegeben · {{month}}",
-      "serviceYear": "Dienstjahr {{from}}/{{to}}"
+      "serviceYear": "Dienstjahr {{from}}/{{to}}",
+      "late": "Frist war bis {{date}} — der Bericht wird noch angenommen, bis der Sekretär den Monat abschließt"
     },
     "title": {
       "list": "Berichte",
@@ -1263,7 +1264,7 @@
         "sheetTitle": "Wem gehört dieses Konto?",
         "sheetHint": "Wählen Sie den Verkündiger, dem der Zugang {{email}} gehört."
       },
-      "readOnlyNote": "Diese Liste der Zugänge dient nur der Ansicht. Einen Zugang erteilst oder änderst du unter «Brüder»: dort wird das Konto der Person zugeordnet, die Rolle folgt der Ernennung.",
+      "readOnlyNote": "Diese Liste der Zugänge dient nur der Ansicht. Einen Zugang erteilen oder ändern Sie unter «Versammlung» → «Verkündiger», in der Karte der Person: dort wird das Konto der Person zugeordnet, die Rolle folgt der Ernennung.",
       "noPassword": {
         "badge": "Kein Passwort gesetzt",
         "neverInvited": "Es wurde keine Einladung verschickt",
@@ -2749,7 +2750,12 @@
       "withTalk": "Vortrag Nr. {{n}}",
       "sameAgain": "Fährt wieder nach {{where}}",
       "repertoire": "Vorträge bereit: {{count}}",
-      "unknownPlace": "Versammlung nicht angegeben"
+      "homeBadge": "bei uns {{date}}",
+      "sinceLastHome": "sprach {{rel}} bei uns",
+      "lastHome": "Sprach am {{date}} bei uns, Vorträge insgesamt: {{count}}",
+      "lastTripUnknown": "War am {{date}} unterwegs (Versammlung nicht angegeben), Reisen insgesamt: {{count}}",
+      "nextHome": "Spricht am {{date}} bei uns",
+      "nextTripUnknown": "Am {{date}} unterwegs (Versammlung nicht angegeben)"
     },
     "title": "Redner-Koordinator",
     "intro": "Verwalte eingehende und ausgehende Redner, ihre Vorträge und die Verzeichnisse. Das Protokoll „Zu uns / Von uns“ erscheint hier.",
@@ -3134,7 +3140,7 @@
       "absence": "Abwesenheiten",
       "hall": "Säle",
       "circuit_overseer": "Kreisaufseher",
-      "special_event": "Besondere Ereignisse",
+      "special_event": "Termine",
       "local_need": "Örtliche Bedürfnisse",
       "cart_location": "Trolley-Standorte",
       "user": "Konten",
@@ -3221,7 +3227,14 @@
       "serviceOverseerVisit": "Besuch des Dienstaufsehers",
       "serviceOverseerPublisherId": "Dienstaufseher",
       "serviceOverseerAssistantId": "Assistent des Dienstaufsehers",
-      "timeEnd": "Endzeit"
+      "timeEnd": "Endzeit",
+      "meetingMode": "Zusammenkunft",
+      "meetingNote": "Was sich ändert",
+      "meetingTime": "Uhrzeit der Zusammenkunft",
+      "meetingAddress": "Ort der Zusammenkunft",
+      "coMidweekDow": "Tag unter der Woche",
+      "programUrl": "Programm-Link",
+      "mapUrl": "Karten-Link"
     },
     "noValue": "leer",
     "changedNoValues": "geändert (Werte werden nicht gespeichert)",
@@ -3234,7 +3247,10 @@
       "weekend": "Wochenende",
       "after_meeting": "nach der Zusammenkunft",
       "thorough": "gründlich",
-      "general": "general"
+      "general": "general",
+      "usual": "wie gewohnt",
+      "changed": "mit Änderungen",
+      "none": "keine Zusammenkunft"
     },
     "revert": "Zurücksetzen",
     "revertDo": "Zurücksetzen",
@@ -3848,10 +3864,10 @@
   "cleaningHall": {
     "thisWeek": "Diese Woche",
     "after": "Nach den Zusammenkünften — {{group}}",
-    "afterMissing": "Reinigung nach den Zusammenkünften nicht eingeteilt",
+    "afterMissing": "Nach den Zusammenkünften — nicht eingeteilt",
     "weekly": "Wöchentlich — {{group}} · {{when}}",
     "dayNotSet": "Tag nicht festgelegt",
-    "weeklyMissing": "Wöchentliche Reinigung nicht eingeteilt",
+    "weeklyMissing": "Wöchentlich — nicht eingeteilt",
     "general": "Grundreinigung — {{when}}",
     "dateTbd": "Datum folgt",
     "mineAfter": "Eure Gruppe reinigt — nach den Zusammenkünften",

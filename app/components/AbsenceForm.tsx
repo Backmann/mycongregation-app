@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -54,6 +54,16 @@ export function AbsenceForm({
   const [publisherId, setPublisherId] = useState<string | null>(
     lockedPublisher?.id ?? initial?.publisherId ?? defaultPublisher?.id ?? null,
   );
+  // The screen learns who «I» am only once my card has loaded — often after
+  // the form has mounted. The locked name was shown, but the choice stayed
+  // empty, and a publisher could not save his own absence (28 September):
+  // «Выберите возвещателя» under a name he could not change.
+  const lateId = lockedPublisher?.id ?? defaultPublisher?.id ?? null;
+  useEffect(() => {
+    if (lockedPublisher) setPublisherId(lockedPublisher.id);
+    else if (lateId) setPublisherId((cur) => cur ?? lateId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lateId]);
 
   const [multiDay, setMultiDay] = useState<boolean>(!!initial?.endDate);
   const [startDate, setStartDate] = useState<string | null>(

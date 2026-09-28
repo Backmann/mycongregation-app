@@ -249,6 +249,47 @@ export function meetingPartLabel(item: MyAssignmentItem): string {
   return getPartLabel(raw);
 }
 
+/**
+ * Parts whose programme title is a TOPIC, not a role: the role is said, and
+ * the topic goes under it (the public talk, the studies' conductors).
+ */
+export const ROLE_PARTS = new Set([
+  'watchtower_conductor',
+  'public_talk_speaker',
+  'cbs_conductor',
+]);
+
+/**
+ * How a part of mine is named when it stands on its own — on the Home card
+ * and in «Мои назначения» alike (28 September: the two said «Чтец на
+ * изучении Библии в собрании» and a bare «Чтец» for the same part, and
+ * «с Гаврилюк Роман» in the wrong case). The pair goes on its own line as
+ * «в паре: …», never glued to the title.
+ */
+export function myPartLine(
+  it: MyAssignmentItem,
+  t: TFunc,
+): { label: string; topic: string | null } {
+  if (it.kind !== 'meeting') return { label: taskTitle(it, t), topic: null };
+  const plain = meetingPartLabel(it);
+  const label =
+    it.partKey === 'cbs_reader'
+      ? t('home.parts.cbsReader')
+      : it.partKey === 'cbs_conductor'
+        ? t('home.parts.cbsConductor')
+        : it.partKey && ROLE_PARTS.has(it.partKey)
+          ? t(`parts.${it.partKey}`)
+          : plain;
+  const topic =
+    it.partKey && ROLE_PARTS.has(it.partKey) && plain !== t(`parts.${it.partKey}`)
+      ? plain
+      : null;
+  return {
+    label: it.asAssistant ? `${label} — ${t('home.meeting.asAssistant')}` : label,
+    topic,
+  };
+}
+
 export function taskTitle(item: MyAssignmentItem, t: TFunc): string {
   if (item.kind === 'duty') {
     const label = t(`home.dutyTypes.${item.label}`, item.label);

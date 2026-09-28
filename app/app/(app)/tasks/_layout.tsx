@@ -34,7 +34,11 @@ export default function TasksLayout() {
       />
       <Stack.Screen
         name="archive"
-        options={{ title: t('agenda.archive.title') }}
+        // A way back even when opened straight by its address (28.09).
+        options={{
+          title: t('agenda.archive.title'),
+          headerLeft: () => <BackButton fallback="/tasks/agenda" toParent />,
+        }}
       />
       <Stack.Screen
         name="agenda"

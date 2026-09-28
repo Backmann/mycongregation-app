@@ -640,7 +640,8 @@
       "change": "Change",
       "myMonths": "My months",
       "collected": "{{received}} of {{expected}} handed in · {{month}}",
-      "serviceYear": "Service year {{from}}/{{to}}"
+      "serviceYear": "Service year {{from}}/{{to}}",
+      "late": "It was due by {{date}} — the report is still taken until the secretary closes the month"
     },
     "title": {
       "list": "Reports",
@@ -1263,7 +1264,7 @@
         "sheetTitle": "Whose account is this?",
         "sheetHint": "Choose the publisher this login ({{email}}) belongs to."
       },
-      "readOnlyNote": "This list of logins is read-only. Grant or change a login under «Brothers»: that is where an account is tied to a person, and the role follows the appointment.",
+      "readOnlyNote": "This list of logins is read-only. Grant or change a login in «Congregation» → «Publishers», on the person's card: that is where an account is tied to a person, and the role follows the appointment.",
       "noPassword": {
         "badge": "No password set",
         "neverInvited": "No invitation has been sent",
@@ -2749,7 +2750,12 @@
       "withTalk": "talk no. {{n}}",
       "sameAgain": "Going to {{where}} again",
       "repertoire": "Talks ready: {{count}}",
-      "unknownPlace": "congregation not given"
+      "homeBadge": "here {{date}}",
+      "sinceLastHome": "spoke here {{rel}}",
+      "lastHome": "Spoke here on {{date}}, talks in all: {{count}}",
+      "lastTripUnknown": "Was away on {{date}} (congregation not given), trips in all: {{count}}",
+      "nextHome": "Speaking here on {{date}}",
+      "nextTripUnknown": "Away on {{date}} (congregation not given)"
     },
     "title": "Talk coordinator",
     "intro": "Keep incoming and outgoing speakers, their talks and the directories. The “Incoming / Outgoing” log will live here.",
@@ -3134,7 +3140,7 @@
       "absence": "Absences",
       "hall": "Halls",
       "circuit_overseer": "Circuit overseer",
-      "special_event": "Special events",
+      "special_event": "Events",
       "local_need": "Local needs",
       "cart_location": "Cart locations",
       "user": "Accounts",
@@ -3221,7 +3227,14 @@
       "serviceOverseerVisit": "Service overseer's visit",
       "serviceOverseerPublisherId": "Service overseer",
       "serviceOverseerAssistantId": "Overseer's assistant",
-      "timeEnd": "End time"
+      "timeEnd": "End time",
+      "meetingMode": "Congregation meeting",
+      "meetingNote": "What changes at the meeting",
+      "meetingTime": "Meeting time",
+      "meetingAddress": "Meeting place",
+      "coMidweekDow": "Midweek meeting day",
+      "programUrl": "Programme link",
+      "mapUrl": "Map link"
     },
     "noValue": "empty",
     "changedNoValues": "changed (values are not kept)",
@@ -3234,7 +3247,10 @@
       "weekend": "weekend",
       "after_meeting": "after the meeting",
       "thorough": "thorough",
-      "general": "general"
+      "general": "general",
+      "usual": "as usual",
+      "changed": "with changes",
+      "none": "no meeting"
     },
     "revert": "Put it back",
     "revertDo": "Put back",
@@ -3848,10 +3864,10 @@
   "cleaningHall": {
     "thisWeek": "This week",
     "after": "After meetings — {{group}}",
-    "afterMissing": "After-meeting cleaning not assigned",
+    "afterMissing": "After meetings — not assigned",
     "weekly": "Weekly — {{group}} · {{when}}",
     "dayNotSet": "day not set",
-    "weeklyMissing": "Weekly cleaning not assigned",
+    "weeklyMissing": "Weekly — not assigned",
     "general": "General cleaning — {{when}}",
     "dateTbd": "date to be set",
     "mineAfter": "Your group cleans — after meetings",

@@ -19,11 +19,19 @@ export default function PioneerSchoolLayout() {
       />
       <Stack.Screen
         name="[id]"
-        options={{ title: t('pioneerSchool.scheduleTitle') }}
+        // A way back even when opened straight by its address (a reload, a
+        // link) — there is no history then, and no default arrow (28.09).
+        options={{
+          title: t('pioneerSchool.scheduleTitle'),
+          headerLeft: () => <BackButton fallback="/pioneer-school" toParent />,
+        }}
       />
       <Stack.Screen
         name="helpers"
-        options={{ title: t('pioneerSchool.helpers.title') }}
+        options={{
+          title: t('pioneerSchool.helpers.title'),
+          headerLeft: () => <BackButton fallback="/pioneer-school" toParent />,
+        }}
       />
     </Stack>
   );

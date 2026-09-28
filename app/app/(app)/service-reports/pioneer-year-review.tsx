@@ -75,8 +75,16 @@ export default function PioneerYearReviewScreen() {
     return full.split(" ").slice(1).join(" ") || full;
   };
 
-  /** With the year, because a service year spans two of them. */
-  const monthWithYear = (iso: string) => `${monthName(iso)} ${iso.slice(0, 4)}`;
+  /**
+   * The month as a name — with the year where it stands alone, because a
+   * service year spans two of them: «сентябрь 2026», «отчёты за сентябрь». The
+   * declined form above is for «с августа»; used for these it read
+   * «Служебный год: сентября 2026 — августа 2027» (28 September).
+   */
+  const monthTitle = (iso: string) =>
+    dayjs(iso).locale(i18n.language).format("MMMM YYYY");
+  const monthPlain = (iso: string) =>
+    dayjs(iso).locale(i18n.language).format("MMMM");
 
   if (isLoading) {
     return <ActivityIndicator size="large" style={{ marginTop: 48 }} />;
@@ -229,7 +237,7 @@ export default function PioneerYearReviewScreen() {
         ? row.notes.map((n) => (
             <View key={n.reportMonth} style={styles.note}>
               <Text style={styles.noteMonth}>
-                {monthWithYear(n.reportMonth)}
+                {monthTitle(n.reportMonth)}
               </Text>
               <Text style={styles.noteText}>{n.note}</Text>
             </View>
@@ -253,8 +261,8 @@ export default function PioneerYearReviewScreen() {
       <Text style={styles.yearLine}>
         {capitalizeFirst(
           t("pioneerReview.forYear", {
-          from: monthWithYear(data.firstMonth),
-          to: monthWithYear(data.lastMonth),
+          from: monthTitle(data.firstMonth),
+          to: monthTitle(data.lastMonth),
         }),
         )}
       </Text>
@@ -267,7 +275,7 @@ export default function PioneerYearReviewScreen() {
             {data.collectingMonth
               ? " " +
                 t("pioneerReview.collecting", {
-                  month: monthName(data.collectingMonth),
+                  month: monthPlain(data.collectingMonth),
                 })
               : ""}
           </Text>

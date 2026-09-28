@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { LoadFailure } from '../../../components/LoadFailure';
 import {
   Pressable,
   ActivityIndicator,
@@ -191,11 +192,14 @@ export default function AdminUsersScreen() {
       >
         <View style={styles.headerBar}>
           <Text style={styles.headerTitle}>{t('admin.users.title')}</Text>
+          {usersQuery.error ? null : (
           <Text style={styles.headerSubtitle}>
             {t('admin.users.countSummary', { count: users.length })}
           </Text>
+          )}
         </View>
 
+        {usersQuery.error ? null : (
         <View style={styles.noteCard}>
           <Ionicons
             name="information-circle-outline"
@@ -206,6 +210,7 @@ export default function AdminUsersScreen() {
             {t('admin.users.readOnlyNote')}
           </Text>
         </View>
+        )}
 
         {orphans.length > 0 && (
           <View style={styles.orphanCard}>
@@ -221,16 +226,16 @@ export default function AdminUsersScreen() {
           </View>
         )}
 
-        {usersQuery.error && (
-          <View style={styles.errorBox}>
-            <Text style={styles.errorText}>
-              {extractErrorMessage(usersQuery.error)}
-            </Text>
-          </View>
-        )}
-
+        {/* A refusal or a failure is said as itself — not in the server's
+            English, and not followed by «0 пользователей · Нет
+            пользователей» as if the list were empty (28 September). */}
         {usersQuery.isLoading ? (
           <ActivityIndicator size="large" style={{ marginTop: 32 }} />
+        ) : usersQuery.error ? (
+          <LoadFailure
+            error={usersQuery.error}
+            onRetry={() => void usersQuery.refetch()}
+          />
         ) : users.length === 0 ? (
           <Text style={styles.empty}>{t('admin.users.noUsers')}</Text>
         ) : (

@@ -3785,6 +3785,12 @@ export interface MyReportStanding {
   closesOn: string | null;
   /** Days from today to `closesOn`; 0 on the last day, negative once past. */
   daysLeft: number | null;
+  /**
+   * The secretary has closed the month: only now is a missing report refused.
+   * Past `closesOn` it is still taken; only a filed one can no longer be
+   * corrected. Absent from servers before 28 September.
+   */
+  closed?: boolean;
 }
 
 /** Where one regular pioneer stands in the service year. */

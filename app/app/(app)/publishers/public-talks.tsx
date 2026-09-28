@@ -98,10 +98,11 @@ export default function PublicTalksScreen() {
           </Text>
         </Pressable>
 
-        <View style={{ flex: 1 }} />
-
         {/* Two acts, two buttons: loading a catalogue, and striking out the
-            talks an instruction says are no longer to be given. */}
+            talks an instruction says are no longer to be given. They keep
+            together and move to their own line when the row is too narrow —
+            on a phone «Массовый импорт» used to run off the screen (28.09). */}
+        <View style={styles.toolbarActions}>
         <Pressable
           style={styles.retireButton}
           onPress={() => router.push('/publishers/public-talks-retire' as any)}
@@ -121,6 +122,7 @@ export default function PublicTalksScreen() {
             {t('publicTalks.bulkImport')}
           </Text>
         </Pressable>
+        </View>
       </View>
 
       <ScrollView
@@ -311,10 +313,17 @@ const styles = StyleSheet.create({
   searchInput: { flex: 1, fontSize: 15, color: '#0f172a' },
   toolbar: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     alignItems: 'center',
     paddingHorizontal: 16,
     marginBottom: 12,
-    gap: 6,
+    columnGap: 6,
+    rowGap: 8,
+  },
+  toolbarActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: 'auto',
   },
   toggleButton: {
     flexDirection: 'row',

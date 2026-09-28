@@ -72,10 +72,13 @@ export function MonthCalendar({
     );
   }, [locale]);
 
-  const monthLabel = viewMonth.toLocaleDateString(locale, {
+  // Only the first letter up: CSS «capitalize» raised every word, and the
+  // Russian «2026 г.» came out «2026 Г.» (28 September).
+  const monthRaw = viewMonth.toLocaleDateString(locale, {
     month: 'long',
     year: 'numeric',
   });
+  const monthLabel = monthRaw.charAt(0).toUpperCase() + monthRaw.slice(1);
 
   const cells = useMemo(() => {
     const first = new Date(viewMonth.getFullYear(), viewMonth.getMonth(), 1);
@@ -245,7 +248,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '700', fontFamily: 'Manrope_700Bold',
     color: '#0f172a',
-    textTransform: 'capitalize',
   },
   weekRow: { flexDirection: 'row' },
   // An equal share of its row, not a percentage: shares always add up.

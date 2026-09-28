@@ -1,3 +1,4 @@
+import { usePermissions } from "../../../../lib/permissions";
 import { useMemo } from "react";
 import {
   ActivityIndicator,
@@ -43,6 +44,7 @@ const todayISO = () => new Date().toLocaleDateString("en-CA");
 export default function CongregationProfileScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { t, i18n } = useTranslation();
+  const canEdit = usePermissions().canCoordinatePublicTalks;
   const today = todayISO();
 
   const congQuery = useQuery({
@@ -245,6 +247,8 @@ export default function CongregationProfileScreen() {
       {/* Adding from here saves choosing the congregation again — it is
           already known, and choosing it by hand is how a speaker ends up
           filed under the wrong one. */}
+      {/* Adding belongs to whoever keeps the speakers (28 September). */}
+      {canEdit ? (
       <Pressable
         style={({ pressed }) => [
           styles.addBtn,
@@ -261,6 +265,7 @@ export default function CongregationProfileScreen() {
           {t("talkCoordinator.congregationProfile.addSpeaker")}
         </Text>
       </Pressable>
+      ) : null}
     </ScrollView>
   );
 }
