@@ -162,6 +162,13 @@ export default function ServiceReportsListScreen() {
   const now = new Date();
   const serviceYearNow =
     now.getMonth() >= 8 ? now.getFullYear() : now.getFullYear() - 1;
+  // The year the annual report OPENS on — the ended one until 20 October,
+  // as on its own screen (28 September: the row said «2026/2027» while the
+  // screen opened 2025/2026).
+  const annualYear =
+    now.getMonth() === 8 || (now.getMonth() === 9 && now.getDate() <= 20)
+      ? serviceYearNow - 1
+      : serviceYearNow;
   const canViewActivityFeed = isAdmin || isElder;
   const { data, isLoading, isRefetching, refetch, error } = useQuery({
     queryKey: ['service-reports', 'my'],
@@ -278,8 +285,8 @@ export default function ServiceReportsListScreen() {
                   // No request for this one: which service year we are in is
                   // arithmetic, and September starts the next.
                   value={t('reports.entry.serviceYear', {
-                    from: serviceYearNow,
-                    to: serviceYearNow + 1,
+                    from: annualYear,
+                    to: annualYear + 1,
                   })}
                   onPress={() =>
                     router.push('/service-reports/annual' as any)
