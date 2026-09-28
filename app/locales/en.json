@@ -174,7 +174,8 @@
       "secondsAgo": "{{count}}s ago",
       "minutesAgo": "{{count}}min ago",
       "hoursAgo": "{{count}}h ago",
-      "daysAgo": "{{count}}d ago",
+      "daysAgo_one": "{{count}} day ago",
+      "daysAgo_other": "{{count}} days ago",
       "monthsAgo": "{{count}}mo ago",
       "yearsAgo": "{{count}}y ago"
     },
@@ -1952,7 +1953,8 @@
     "strandedHint": "These items sit on days the visit no longer covers — the period was shortened. They still reach the PDF but are invisible on the schedule. Open one to move or delete it.",
     "readinessTitle": "Still to arrange",
     "gapAccommodation": "accommodation",
-    "gapLunches": "days without a lunch: {{count}}",
+    "gapLunches_one": "{{count}} day without a lunch",
+    "gapLunches_other": "{{count}} days without a lunch",
     "gapPartners": "outings without a partner: {{count}}",
     "never": {
       "lunch": "has not hosted yet",
@@ -2627,8 +2629,8 @@
     "insertTitle": "Choose a topic",
     "insertEmpty": "No planned topics. Add them on the Local Needs screen (the bulb icon in the schedule header).",
     "noAccess": "Local Needs are available to elders only.",
-    "wasUsedOn": "Covered {{week}}",
-    "scheduledFor": "In the programme for {{week}}",
+    "wasUsedOn": "Covered in the week {{week}}",
+    "scheduledFor": "In the programme for the week {{week}}",
     "archived": "Archived",
     "restore": "Restore from the archive",
     "searchPlaceholder": "Search topics and notes",
@@ -2745,7 +2747,8 @@
       "neverWent": "has not been away yet",
       "sinceLast": "was away {{rel}}",
       "lastTrip": "Was at {{where}} on {{date}}, trips in all: {{count}}",
-      "inCongregations": "to {{count}} congregations",
+      "inCongregations_one": "to {{count}} congregation",
+      "inCongregations_other": "to {{count}} congregations",
       "nextTrip": "Going to {{where}} on {{date}}",
       "withTalk": "talk no. {{n}}",
       "sameAgain": "Going to {{where}} again",
@@ -3017,7 +3020,15 @@
     "memorialShort": "Memorial"
   },
   "activityFeed": {
-    "noAccess": "The activity feed is available to elders and congregation administrators."
+    "noAccess": "The activity feed is available to elders and congregation administrators.",
+    "statusChange": "{{name}}: status “{{from}}” → “{{to}}”",
+    "overrideApplied": "{{name}}: status set by hand — “{{to}}”",
+    "overrideCleared": "{{name}}: manual status cleared",
+    "reportSubmitted": "{{name}} submitted the report for {{month}}",
+    "reportUpdated": "{{name}}: report for {{month}} changed",
+    "reportUpdatedNoMonth": "{{name}}: report changed",
+    "other": "{{name}}: card changed",
+    "deletedCard": "deleted card"
   },
   "myContacts": {
     "rowTitle": "My contacts",
@@ -3145,7 +3156,13 @@
       "cart_location": "Cart locations",
       "user": "Accounts",
       "pioneer_school": "Pioneer school",
-      "pioneer_school_duty": "School duty"
+      "pioneer_school_duty": "School duty",
+      "agenda_item": "Elders’ agenda",
+      "co_visit_item": "Circuit overseer visit",
+      "field_service_template": "Field service template",
+      "meeting_attendance": "Attendance",
+      "memorial_item": "Memorial",
+      "public_talk_catalog": "Talk catalogue"
     },
     "actions": {
       "CREATE": "added",
@@ -3234,7 +3251,34 @@
       "meetingAddress": "Meeting place",
       "coMidweekDow": "Midweek meeting day",
       "programUrl": "Programme link",
-      "mapUrl": "Map link"
+      "mapUrl": "Map link",
+      "specialTheme": "Special theme",
+      "from": "Source",
+      "lines": "Lines",
+      "bytes": "Size",
+      "size": "Size",
+      "created": "Added",
+      "updated": "Changed",
+      "replaced": "Replaced",
+      "unchanged": "Unchanged",
+      "retired": "Retired",
+      "retiredNumbers": "Retired numbers",
+      "lifted": "Restored",
+      "liftedNumbers": "Restored numbers",
+      "itemDate": "Date",
+      "memorialDate": "Memorial date",
+      "partKey": "Part",
+      "placeText": "Place",
+      "reportMonth": "Report month",
+      "serviceYear": "Service year",
+      "section": "Section",
+      "rows": "Rows",
+      "parsed": "Read",
+      "invalid": "Invalid",
+      "missing": "Not found",
+      "until": "Until",
+      "visitEnded": "Visit ended",
+      "specialEventId": "Event"
     },
     "noValue": "empty",
     "changedNoValues": "changed (values are not kept)",
@@ -3250,7 +3294,8 @@
       "general": "general",
       "usual": "as usual",
       "changed": "with changes",
-      "none": "no meeting"
+      "none": "no meeting",
+      "template": "from the template"
     },
     "revert": "Put it back",
     "revertDo": "Put back",
@@ -3261,7 +3306,8 @@
       "redacted": "The contents of this entry were erased at a person’s request; there is nothing to put back.",
       "entityNotSupported": "This kind of record cannot be put back. Open it and correct it by hand.",
       "nothingRevertable": "This entry holds no field that can be put back."
-    }
+    },
+    "goneRecord": "record no longer exists"
   },
   "attendance": {
     "cardTitle": "Meeting attendance",

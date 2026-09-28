@@ -1,5 +1,5 @@
 import { createElement } from "react";
-import { Platform } from "react-native";
+import { Dimensions, Platform, Text } from "react-native";
 import { HeaderSurface } from "../components/HeaderSurface";
 import type { NativeStackNavigationOptions } from "@react-navigation/native-stack";
 
@@ -44,6 +44,33 @@ export const headerTitleText = {
   color: "#ffffff",
 };
 
+/**
+ * The title on a phone: a long one steps its size down instead of losing its
+ * end (28 September, Android: «Служение в общественных мес…», «Подсобное
+ * пионерское служен…»; German titles are longer still). The native bar gives
+ * a title one line and cuts it; so the size is chosen from the room there is —
+ * the screen minus the back arrow and the margins, about 0.67 of the font
+ * size per letter of Manrope Bold — never below 14, and whatever still does
+ * not fit is cut as before.
+ */
+function NativeTitle({ children }: { children: string }) {
+  const title = String(children ?? "");
+  const room = Dimensions.get("window").width - 100;
+  const fontSize = Math.max(
+    14,
+    Math.min(18, Math.floor(room / Math.max(1, title.length * 0.67))),
+  );
+  return createElement(
+    Text,
+    {
+      numberOfLines: 1,
+      ellipsizeMode: "tail",
+      style: { ...headerTitleText, fontSize },
+    },
+    title,
+  );
+}
+
 export const headerOptions: NativeStackNavigationOptions = {
   headerStyle: { backgroundColor: BRAND },
   headerTintColor: "#ffffff",
@@ -79,4 +106,5 @@ export const headerOptions: NativeStackNavigationOptions = {
       ? () => createElement(HeaderSurface, { lifted: true })
       : undefined,
   headerBackTitle: "",
+  headerTitle: Platform.OS === "web" ? undefined : NativeTitle,
 };

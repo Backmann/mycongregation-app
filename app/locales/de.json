@@ -174,7 +174,8 @@
       "secondsAgo": "vor {{count}} Sek.",
       "minutesAgo": "vor {{count}} Min.",
       "hoursAgo": "vor {{count}} Std.",
-      "daysAgo": "vor {{count}} Tg.",
+      "daysAgo_one": "vor {{count}} Tag",
+      "daysAgo_other": "vor {{count}} Tagen",
       "monthsAgo": "vor {{count}} Mon.",
       "yearsAgo": "vor {{count}} J."
     },
@@ -1952,7 +1953,8 @@
     "strandedHint": "Diese Punkte liegen an Tagen, die der Besuch nicht mehr umfasst — der Zeitraum wurde gekürzt. Sie erscheinen im PDF, sind im Plan aber unsichtbar. Öffne sie zum Verschieben oder Löschen.",
     "readinessTitle": "Noch offen",
     "gapAccommodation": "Unterkunft",
-    "gapLunches": "Tage ohne Mittagessen: {{count}}",
+    "gapLunches_one": "{{count}} Tag ohne Mittagessen",
+    "gapLunches_other": "{{count}} Tage ohne Mittagessen",
     "gapPartners": "Einsätze ohne Partner: {{count}}",
     "never": {
       "lunch": "noch nie bewirtet",
@@ -2627,8 +2629,8 @@
     "insertTitle": "Thema auswählen",
     "insertEmpty": "Keine geplanten Themen. Füge sie im Bildschirm „Örtliche Bedürfnisse“ hinzu (Glühbirne in der Kopfzeile des Programms).",
     "noAccess": "Örtliche Bedürfnisse sind nur für Älteste verfügbar.",
-    "wasUsedOn": "Behandelt am {{week}}",
-    "scheduledFor": "Im Programm für {{week}}",
+    "wasUsedOn": "Behandelt in der Woche {{week}}",
+    "scheduledFor": "Im Programm für die Woche {{week}}",
     "archived": "Archiviert",
     "restore": "Aus dem Archiv zurückholen",
     "searchPlaceholder": "Themen und Notizen durchsuchen",
@@ -2745,7 +2747,8 @@
       "neverWent": "war noch nicht unterwegs",
       "sinceLast": "war {{rel}} unterwegs",
       "lastTrip": "War am {{date}} in {{where}}, Reisen insgesamt: {{count}}",
-      "inCongregations": "in {{count}} Versammlungen",
+      "inCongregations_one": "in {{count}} Versammlung",
+      "inCongregations_other": "in {{count}} Versammlungen",
       "nextTrip": "Fährt am {{date}} nach {{where}}",
       "withTalk": "Vortrag Nr. {{n}}",
       "sameAgain": "Fährt wieder nach {{where}}",
@@ -3017,7 +3020,15 @@
     "memorialShort": "Gedächtnis"
   },
   "activityFeed": {
-    "noAccess": "Die Ereignisliste steht Ältesten und Administratoren der Versammlung zur Verfügung."
+    "noAccess": "Die Ereignisliste steht Ältesten und Administratoren der Versammlung zur Verfügung.",
+    "statusChange": "{{name}}: Status „{{from}}“ → „{{to}}“",
+    "overrideApplied": "{{name}}: Status von Hand festgelegt — „{{to}}“",
+    "overrideCleared": "{{name}}: manueller Status aufgehoben",
+    "reportSubmitted": "{{name}} hat den Bericht für {{month}} abgegeben",
+    "reportUpdated": "{{name}}: Bericht für {{month}} geändert",
+    "reportUpdatedNoMonth": "{{name}}: Bericht geändert",
+    "other": "{{name}}: Karte geändert",
+    "deletedCard": "gelöschte Karte"
   },
   "myContacts": {
     "rowTitle": "Meine Kontaktdaten",
@@ -3145,7 +3156,13 @@
       "cart_location": "Trolley-Standorte",
       "user": "Konten",
       "pioneer_school": "Pionierschule",
-      "pioneer_school_duty": "Dienst an der Schule"
+      "pioneer_school_duty": "Dienst an der Schule",
+      "agenda_item": "Tagesordnung der Ältesten",
+      "co_visit_item": "Kreisaufseherbesuch",
+      "field_service_template": "Predigtdienst-Vorlage",
+      "meeting_attendance": "Anwesenheit",
+      "memorial_item": "Gedächtnismahl",
+      "public_talk_catalog": "Vortragskatalog"
     },
     "actions": {
       "CREATE": "hat hinzugefügt",
@@ -3234,7 +3251,34 @@
       "meetingAddress": "Ort der Zusammenkunft",
       "coMidweekDow": "Tag unter der Woche",
       "programUrl": "Programm-Link",
-      "mapUrl": "Karten-Link"
+      "mapUrl": "Karten-Link",
+      "specialTheme": "Sonderthema",
+      "from": "Quelle",
+      "lines": "Zeilen",
+      "bytes": "Größe",
+      "size": "Größe",
+      "created": "Hinzugefügt",
+      "updated": "Geändert",
+      "replaced": "Ersetzt",
+      "unchanged": "Unverändert",
+      "retired": "Zurückgezogen",
+      "retiredNumbers": "Zurückgezogene Nummern",
+      "lifted": "Wiederhergestellt",
+      "liftedNumbers": "Wiederhergestellte Nummern",
+      "itemDate": "Datum",
+      "memorialDate": "Datum des Gedächtnismahls",
+      "partKey": "Programmpunkt",
+      "placeText": "Ort",
+      "reportMonth": "Berichtsmonat",
+      "serviceYear": "Dienstjahr",
+      "section": "Bereich",
+      "rows": "Zeilen",
+      "parsed": "Gelesen",
+      "invalid": "Fehlerhaft",
+      "missing": "Nicht gefunden",
+      "until": "Bis",
+      "visitEnded": "Besuch beendet",
+      "specialEventId": "Ereignis"
     },
     "noValue": "leer",
     "changedNoValues": "geändert (Werte werden nicht gespeichert)",
@@ -3250,7 +3294,8 @@
       "general": "general",
       "usual": "wie gewohnt",
       "changed": "mit Änderungen",
-      "none": "keine Zusammenkunft"
+      "none": "keine Zusammenkunft",
+      "template": "aus der Vorlage"
     },
     "revert": "Zurücksetzen",
     "revertDo": "Zurücksetzen",
@@ -3261,7 +3306,8 @@
       "redacted": "Der Inhalt dieses Eintrags wurde auf Wunsch gelöscht; es gibt nichts zurückzusetzen.",
       "entityNotSupported": "Diese Art von Eintrag lässt sich nicht zurücksetzen. Öffne ihn und korrigiere ihn von Hand.",
       "nothingRevertable": "Dieser Eintrag enthält kein Feld, das zurückgesetzt werden kann."
-    }
+    },
+    "goneRecord": "Eintrag nicht mehr vorhanden"
   },
   "attendance": {
     "cardTitle": "Zusammenkunftsbesuch",

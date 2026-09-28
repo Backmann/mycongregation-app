@@ -4,6 +4,7 @@ import { Platform } from 'react-native';
 import * as Localization from 'expo-localization';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+import { installPluralRules } from './plural-rules';
 import en from '../locales/en.json';
 import ru from '../locales/ru.json';
 import de from '../locales/de.json';
@@ -39,6 +40,10 @@ export function getDeviceLanguage(): SupportedLanguage {
     return 'en';
   }
 }
+
+// Before i18next asks for them: on Android (Hermes) there are no plural
+// rules, and «86 возвещателя» was the result (see lib/plural-rules.ts).
+installPluralRules();
 
 // Synchronous init at module load — uses device language as initial
 i18n.use(initReactI18next).init({

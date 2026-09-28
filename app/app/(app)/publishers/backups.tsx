@@ -16,14 +16,18 @@ import { Ionicons } from '@expo/vector-icons';
 import { backupsApi, extractErrorMessage } from '../../../lib/api';
 import { notify } from '../../../lib/error-bus';
 
-function formatBytes(n: number): string {
-  if (n < 1024) return `${n} B`;
-  if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`;
-  return `${(n / (1024 * 1024)).toFixed(1)} MB`;
+/** «956,6 КБ» in Russian, «956.6 KB» in English — not the English form everywhere. */
+function formatBytes(n: number, lang: string): string {
+  const units = lang === 'ru' ? ['Б', 'КБ', 'МБ'] : ['B', 'KB', 'MB'];
+  const num = (x: number) =>
+    x.toLocaleString(lang, { maximumFractionDigits: 1, minimumFractionDigits: 1 });
+  if (n < 1024) return `${n} ${units[0]}`;
+  if (n < 1024 * 1024) return `${num(n / 1024)} ${units[1]}`;
+  return `${num(n / (1024 * 1024))} ${units[2]}`;
 }
 
 export default function BackupsScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [downloading, setDownloading] = useState(false);
 
   const query = useQuery({
@@ -76,12 +80,18 @@ export default function BackupsScreen() {
               <Ionicons name="shield-checkmark" size={22} color="#16a34a" />
               <Text style={styles.statusText}>
                 {t('backups.statusOk', {
-                  date: new Date(latest.modifiedAt).toLocaleString(),
+                  // In the reader's language, without seconds (28.09).
+                  date: new Date(latest.modifiedAt).toLocaleString(i18n.language, {
+                    day: 'numeric',
+                    month: 'long',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  }),
                 })}
               </Text>
             </View>
             <Text style={styles.meta}>
-              {t('backups.size', { size: formatBytes(latest.size) })}
+              {t('backups.size', { size: formatBytes(latest.size, i18n.language) })}
             </Text>
             <Text style={styles.meta}>
               {t('backups.count', { count: query.data?.count ?? 0 })}

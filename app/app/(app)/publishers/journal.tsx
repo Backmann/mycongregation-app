@@ -98,6 +98,8 @@ const SECTION_ICON: Record<string, keyof typeof Ionicons.glyphMap> = {
  * a person opens this screen for, and they must not sit indistinguishable
  * between "added" and "removed".
  */
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 const NOTABLE = new Set(['DENY', 'VIEW', 'DOWNLOAD']);
 
 /** Detail keys the tail already speaks; listing them again would stutter. */
@@ -315,6 +317,14 @@ function readValue(
     // that drifts.
     const eventKind = t(`specialEvents.types.${v}`, { defaultValue: '' });
     if (eventKind) return eventKind;
+    // A part of the programme by its code («treasures_talk») — the same
+    // names the schedule prints.
+    const part = t(`parts.${v}`, { defaultValue: '' });
+    if (part) return part;
+    // An id the server could not name is a record since deleted (a talk of
+    // a replaced catalogue, a removed guest). The bare uuid told a reader
+    // nothing — the Android pass of 28 September.
+    if (UUID_RE.test(v)) return t('journal.goneRecord');
     // A bare ISO date reads better as a date.
     // Dates were coming out in English — «4 August 2026» in a Russian
     // journal — because this one call never got the language the rest of the

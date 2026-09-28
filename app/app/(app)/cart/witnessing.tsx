@@ -68,11 +68,14 @@ const DOW = [1, 2, 3, 4, 5, 6, 7];
 
 function dayHeader(dateISO: string, locale: string): string {
   const d = parseISODate(dateISO);
-  return d.toLocaleDateString(locale, {
+  const s = d.toLocaleDateString(locale, {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
   });
+  // The first letter only: `textTransform: 'capitalize'` raised every word —
+  // «Понедельник, 28 Сентября».
+  return s.charAt(0).toLocaleUpperCase(locale) + s.slice(1);
 }
 
 export default function WitnessingScreen() {
@@ -1017,7 +1020,6 @@ const styles = StyleSheet.create({
     fontWeight: '700', fontFamily: 'Manrope_700Bold',
     color: '#0f172a',
     marginBottom: 10,
-    textTransform: 'capitalize',
   },
   locBlock: { marginBottom: 16 },
   locName: {

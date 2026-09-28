@@ -1140,7 +1140,14 @@ export default function CoScheduleScreen() {
                   <View style={styles.dayPlate}>
                     <Text style={styles.dayPlateNum}>{day.slice(8, 10)}</Text>
                   </View>
-                  <Text style={styles.dayHeader}>{fmt(day)}</Text>
+                  <Text style={styles.dayHeader}>
+                    {/* The first letter only: `capitalize` raised every word —
+                        «Вторник, 24 Февраля». */}
+                    {(() => {
+                      const s = fmt(day);
+                      return s.charAt(0).toLocaleUpperCase(i18n.language) + s.slice(1);
+                    })()}
+                  </Text>
                 </View>
                 {canEditVisit ? (
                   <Pressable
@@ -2283,7 +2290,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '700', fontFamily: 'Manrope_700Bold',
     color: '#475569',
-    textTransform: 'capitalize',
   },
   itemRow: {
     flexDirection: 'row',

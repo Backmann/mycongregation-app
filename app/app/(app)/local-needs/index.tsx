@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
+import { formatWeekRange } from '../../../lib/week-range';
 import { UndoBar } from '../../../components/UndoBar';
 import { Ionicons } from '@expo/vector-icons';
 import {
@@ -71,13 +72,15 @@ function thisMonday(): string {
   return `${y}-${m}-${dd}`;
 }
 
+// `usedWeek` is the Monday the week starts on, not the day of the meeting:
+// «на 5 октября» read as a date nobody meets on (the Android pass of 28
+// September). Say the week.
 function fmtWeek(week: string, loc: string): string {
-  const d = new Date(`${week}T00:00:00`);
-  return d.toLocaleDateString(loc, {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  });
+  const monday = new Date(`${week}T00:00:00`);
+  const range = formatWeekRange(monday, loc);
+  return monday.getFullYear() === new Date().getFullYear()
+    ? range
+    : `${range} ${monday.getFullYear()}`;
 }
 
 export default function LocalNeedsScreen() {

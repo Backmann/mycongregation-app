@@ -174,7 +174,10 @@
       "secondsAgo": "{{count}} с назад",
       "minutesAgo": "{{count}} мин назад",
       "hoursAgo": "{{count}} ч назад",
-      "daysAgo": "{{count}} дн назад",
+      "daysAgo_one": "{{count}} день назад",
+      "daysAgo_few": "{{count}} дня назад",
+      "daysAgo_many": "{{count}} дней назад",
+      "daysAgo_other": "{{count}} дня назад",
       "monthsAgo": "{{count}} мес назад",
       "yearsAgo": "{{count}} г назад"
     },
@@ -1972,7 +1975,10 @@
     "strandedHint": "Эти пункты стоят на днях, которых в визите больше нет — период сократили. Они попадают в PDF, но на графике их не видно. Откройте и перенесите или удалите.",
     "readinessTitle": "Ещё не назначено",
     "gapAccommodation": "жильё",
-    "gapLunches": "обед не назначен на дней: {{count}}",
+    "gapLunches_one": "обед не назначен на {{count}} день",
+    "gapLunches_few": "обед не назначен на {{count}} дня",
+    "gapLunches_many": "обед не назначен на {{count}} дней",
+    "gapLunches_other": "обед не назначен на {{count}} дня",
     "gapPartners": "без напарника выходов: {{count}}",
     "never": {
       "lunch": "ещё не принимал",
@@ -2665,8 +2671,8 @@
     "insertTitle": "Выберите тему",
     "insertEmpty": "Нет запланированных тем. Добавьте их на экране «Местные потребности» (лампочка в шапке расписания).",
     "noAccess": "Местные потребности доступны только старейшинам.",
-    "wasUsedOn": "Прошла {{week}}",
-    "scheduledFor": "В программе на {{week}}",
+    "wasUsedOn": "Прошла на неделе {{week}}",
+    "scheduledFor": "В программе на неделю {{week}}",
     "archived": "В архиве",
     "restore": "Вернуть из архива",
     "searchPlaceholder": "Поиск по темам и заметкам",
@@ -2783,7 +2789,10 @@
       "neverWent": "ещё не ездил",
       "sinceLast": "ездил {{rel}}",
       "lastTrip": "Был {{date}} в {{where}}, всего поездок: {{count}}",
-      "inCongregations": "в {{count}} собрания",
+      "inCongregations_one": "в {{count}} собрании",
+      "inCongregations_few": "в {{count}} собраниях",
+      "inCongregations_many": "в {{count}} собраниях",
+      "inCongregations_other": "в {{count}} собраниях",
       "nextTrip": "Едет {{date}} в {{where}}",
       "withTalk": "речь №{{n}}",
       "sameAgain": "Едет туда же, в {{where}}",
@@ -3055,7 +3064,15 @@
     "memorialShort": "Вечеря"
   },
   "activityFeed": {
-    "noAccess": "Лента событий доступна старейшинам и администраторам собрания."
+    "noAccess": "Лента событий доступна старейшинам и администраторам собрания.",
+    "statusChange": "{{name}}: статус «{{from}}» → «{{to}}»",
+    "overrideApplied": "{{name}}: статус закреплён вручную — «{{to}}»",
+    "overrideCleared": "{{name}}: ручной статус снят",
+    "reportSubmitted": "{{name}}: сдан отчёт за {{month}}",
+    "reportUpdated": "{{name}}: изменён отчёт за {{month}}",
+    "reportUpdatedNoMonth": "{{name}}: изменён отчёт",
+    "other": "{{name}}: изменена карточка",
+    "deletedCard": "удалённая карточка"
   },
   "myContacts": {
     "rowTitle": "Мои контакты",
@@ -3183,7 +3200,13 @@
       "cart_location": "Локации тележки",
       "user": "Учётные записи",
       "pioneer_school": "Школа пионеров",
-      "pioneer_school_duty": "Дежурство на школе"
+      "pioneer_school_duty": "Дежурство на школе",
+      "agenda_item": "Повестка совета",
+      "co_visit_item": "Посещение районного",
+      "field_service_template": "Шаблон проповеди",
+      "meeting_attendance": "Посещаемость",
+      "memorial_item": "Вечеря",
+      "public_talk_catalog": "Каталог речей"
     },
     "actions": {
       "CREATE": "добавил",
@@ -3272,7 +3295,34 @@
       "meetingAddress": "Место встречи",
       "coMidweekDow": "День будней встречи",
       "programUrl": "Ссылка на программу",
-      "mapUrl": "Ссылка на карту"
+      "mapUrl": "Ссылка на карту",
+      "specialTheme": "Особая тема",
+      "from": "Откуда",
+      "lines": "Строк",
+      "bytes": "Размер",
+      "size": "Размер",
+      "created": "Добавлено",
+      "updated": "Изменено",
+      "replaced": "Заменено",
+      "unchanged": "Без изменений",
+      "retired": "Снято",
+      "retiredNumbers": "Снятые номера",
+      "lifted": "Возвращено",
+      "liftedNumbers": "Возвращённые номера",
+      "itemDate": "Дата",
+      "memorialDate": "Дата Вечери",
+      "partKey": "Часть",
+      "placeText": "Место",
+      "reportMonth": "Месяц отчёта",
+      "serviceYear": "Служебный год",
+      "section": "Раздел",
+      "rows": "Строк",
+      "parsed": "Прочитано",
+      "invalid": "С ошибкой",
+      "missing": "Не найдено",
+      "until": "До",
+      "visitEnded": "Посещение закончилось",
+      "specialEventId": "Событие"
     },
     "noValue": "пусто",
     "changedNoValues": "изменено (значения не сохраняются)",
@@ -3288,7 +3338,8 @@
       "general": "генеральная",
       "usual": "как обычно",
       "changed": "с изменениями",
-      "none": "встречи нет"
+      "none": "встречи нет",
+      "template": "из шаблона"
     },
     "revert": "Вернуть как было",
     "revertDo": "Вернуть",
@@ -3301,7 +3352,8 @@
       "redacted": "Содержимое этой записи стёрто по просьбе человека, возвращать нечего.",
       "entityNotSupported": "Этот вид записи вернуть нельзя. Откройте её и исправьте вручную.",
       "nothingRevertable": "В этой записи нет полей, которые можно вернуть."
-    }
+    },
+    "goneRecord": "запись уже удалена"
   },
   "attendance": {
     "cardTitle": "Посещаемость встречи",

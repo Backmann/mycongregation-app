@@ -16,6 +16,7 @@ import {
   extractErrorMessage,
 } from '../../../lib/api';
 import i18n from '../../../lib/i18n';
+import { monthLabel } from '../../../lib/month-label';
 
 function formatRelativeTime(iso: string): string {
   const d = new Date(iso);
@@ -25,6 +26,47 @@ function formatRelativeTime(iso: string): string {
   if (diff < 86400) return i18n.t('common.time.hoursAgo', { count: Math.floor(diff / 3600) });
   if (diff < 86400 * 7) return i18n.t('common.time.daysAgo', { count: Math.floor(diff / 86400) });
   return d.toLocaleDateString(i18n.language, { month: 'short', day: 'numeric' });
+}
+
+const statusLabel = (s?: string) =>
+  s && i18n.exists(`publishers.status.${s}`) ? i18n.t(`publishers.status.${s}`) : (s ?? '—');
+
+/**
+ * The line in the reader's language (28 September). The server's `summary`
+ * is an English sentence — «vil.natalya updated Виль Наталья» on a Russian
+ * phone; the parts it is made of come alongside, and the sentence is put
+ * together here. An entry of a kind this build does not know keeps the
+ * server's sentence.
+ */
+function sentence(item: ActivityFeedEntry): string {
+  const name = item.publisherName || i18n.t('activityFeed.deletedCard');
+  const month = item.reportMonth ? monthLabel(i18n.language, item.reportMonth) : '';
+  switch (item.type) {
+    case 'status_change':
+      return i18n.t('activityFeed.statusChange', {
+        name,
+        from: statusLabel(item.oldStatus),
+        to: statusLabel(item.newStatus),
+      });
+    case 'override_applied':
+      return i18n.t('activityFeed.overrideApplied', { name, to: statusLabel(item.newStatus) });
+    case 'override_cleared':
+      return i18n.t('activityFeed.overrideCleared', { name });
+    case 'report_submitted':
+      return month
+        ? i18n.t('activityFeed.reportSubmitted', { name, month })
+        : i18n.t('activityFeed.reportUpdatedNoMonth', { name });
+    case 'report_updated':
+      return month
+        ? i18n.t('activityFeed.reportUpdated', { name, month })
+        : i18n.t('activityFeed.reportUpdatedNoMonth', { name });
+    case 'other':
+      return item.targetType === 'publisher'
+        ? i18n.t('activityFeed.other', { name })
+        : item.summary;
+    default:
+      return item.summary;
+  }
 }
 
 type IconSpec = { name: any; color: string };
@@ -76,7 +118,7 @@ function ActivityCard({ item }: { item: ActivityFeedEntry }) {
         <Ionicons name={icon.name} size={20} color={icon.color} />
       </View>
       <View style={styles.body}>
-        <Text style={styles.summary}>{item.summary}</Text>
+        <Text style={styles.summary}>{sentence(item)}</Text>
         <Text style={styles.meta}>
           {formatRelativeTime(item.occurredAt)}
           {item.actorName ? ` · ${item.actorName}` : ''}
