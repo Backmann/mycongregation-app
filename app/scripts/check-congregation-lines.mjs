@@ -57,9 +57,9 @@ const lines = (over, p = {}) => congregationLines({ ...base, ...over }, { ...per
 const due = (l) => (l ? l.due : null);
 
 // Programme — judged.
-check('программа: не готово — янтарь', due(lines({ programme: { windowWeeks: 8, notReady: 2, loadedUntil: '2026-11-08' } }).programme), true);
-check('программа: всё собрано — без цвета', due(lines({ programme: { windowWeeks: 8, notReady: 0, loadedUntil: '2026-11-08' } }).programme), false);
-check('программа: не импортирована — янтарь', due(lines({ programme: { windowWeeks: 8, notReady: 0, loadedUntil: null } }).programme), true);
+check('программа: не готово — янтарь', due(lines({ programme: { windowWeeks: 4, notReady: 2, loadedUntil: '2026-11-08' } }).programme), true);
+check('программа: всё собрано — без цвета', due(lines({ programme: { windowWeeks: 4, notReady: 0, loadedUntil: '2026-11-08' } }).programme), false);
+check('программа: не импортирована — янтарь', due(lines({ programme: { windowWeeks: 4, notReady: 0, loadedUntil: null } }).programme), true);
 check('программа: не для него — строки нет', lines({}).programme, undefined);
 
 // Duties — counted, never amber, even at 0 of 8.

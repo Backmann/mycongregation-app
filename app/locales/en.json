@@ -2578,8 +2578,10 @@
       "cbsConductor": "Congregation Bible Study — conductor"
     },
     "attention": {
-      "programme_one": "{{count}} meeting not ready · next {{weeks}} weeks",
-      "programme_other": "{{count}} meetings not ready · next {{weeks}} weeks",
+      "window_one": "next week",
+      "window_other": "next {{count}} weeks",
+      "programme_one": "{{count}} meeting not ready · {{window}}",
+      "programme_other": "{{count}} meetings not ready · {{window}}",
       "tasksOverdue_one": "{{count}} elders’ task overdue",
       "tasksOverdue_other": "{{count}} elders’ tasks overdue",
       "restrictedTalks_one": "{{count}} booking on a withdrawn talk — arrange a replacement",
@@ -3932,7 +3934,7 @@
       "awayMineNext": "Your next absence: {{range}}",
       "awayNow": "Away now: {{count}}",
       "awayNobody": "Nobody is away now",
-      "programmeNotReady": "Not ready: {{count}} meetings in the next {{weeks}} weeks",
+      "programmeNotReady": "Not ready: {{count}} meetings · {{window}}",
       "programmeUntil": "Complete until {{date}}",
       "programmeNone": "No programme imported yet",
       "duties": "{{when}}: {{assigned}} of {{total}} places",

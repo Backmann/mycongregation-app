@@ -65,6 +65,84 @@ export interface MyPartLine {
    * that he conducts the study.
    */
   topic?: string | null;
+  /**
+   * Minutes from the start of the meeting to this part, as the schedule
+   * sheet counts them (lib/run-order.ts) — the card writes the clock from
+   * it and the meeting's own hour (28 September). Null for a duty, which
+   * runs the whole meeting, and wherever the programme is not loaded.
+   */
+  offsetMin?: number | null;
+}
+
+/**
+ * THE ORDER OF A MEETING, by part key.
+ *
+ * «Ваше ближайшее» listed his parts by the stored `partOrder`, and that
+ * number is not the order of the meeting: a week from the workbook import
+ * gives the Bible study 13 and the closing prayer 15, while the reader added
+ * from the template keeps 21 — so «чтец» came after «заключительная
+ * молитва». What the meeting does first is fixed; it is written here once
+ * (28 September). A key not in the list falls back to its stored order,
+ * after the known ones.
+ */
+export const PROGRAMME_SEQUENCE: readonly string[] = [
+  // Midweek
+  'midweek_chairman',
+  'midweek_opening_prayer',
+  'treasures_talk',
+  'spiritual_gems',
+  'bible_reading',
+  'apply_yourself_1',
+  'apply_yourself_2',
+  'apply_yourself_3',
+  'apply_yourself_4',
+  'living_christians_1',
+  'living_christians_2',
+  'living_christians_3',
+  'co_service_talk',
+  'cbs_conductor',
+  'cbs_reader',
+  'midweek_closing_prayer',
+  // Weekend
+  'weekend_chairman',
+  'weekend_opening_prayer',
+  'public_talk_speaker',
+  'watchtower_conductor',
+  'watchtower_reader',
+  'co_concluding_talk',
+  'weekend_closing_prayer',
+];
+
+function programmeRank(it: { partKey?: string; partOrder?: number }): number {
+  const i = it.partKey ? PROGRAMME_SEQUENCE.indexOf(it.partKey) : -1;
+  return i >= 0 ? i : PROGRAMME_SEQUENCE.length + (it.partOrder ?? 999);
+}
+
+/**
+ * His lines of one meeting in the order the meeting runs: the parts by the
+ * sequence above, the duties (microphone, attendant…) after them — they run
+ * the whole meeting and carry no place in it.
+ */
+export function byProgramme(
+  a: { kind: string; partKey?: string; partOrder?: number },
+  b: { kind: string; partKey?: string; partOrder?: number },
+): number {
+  return (
+    Number(a.kind === 'duty') - Number(b.kind === 'duty') ||
+    programmeRank(a) - programmeRank(b)
+  );
+}
+
+/** «19:00» plus 36 minutes → «19:36». Null when the hour is not a clock. */
+export function clockPlus(
+  time: string | null | undefined,
+  minutes: number,
+): string | null {
+  const m = /^(\d{1,2}):(\d{2})/.exec(time ?? '');
+  if (!m) return null;
+  const total = parseInt(m[1], 10) * 60 + parseInt(m[2], 10) + minutes;
+  const h = Math.floor(total / 60) % 24;
+  return `${String(h).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`;
 }
 
 /** A meeting (midweek/weekend/field service) — background unless it is mine. */
@@ -178,6 +256,11 @@ export interface AgendaLine {
   n: number | null;
   text: string;
   mine: boolean;
+  /**
+   * The first line of «Христианская жизнь» carries the section's name, as
+   * the programme heads it (28 September).
+   */
+  opensSection?: 'christian_life' | null;
 }
 
 /** What a meeting is about, as the caller reads it from the programme. */
@@ -190,6 +273,8 @@ export interface MeetingAbout {
   titleIsMine?: boolean;
   specialTalk?: boolean;
   agenda?: AgendaLine[];
+  /** Minutes from the start to each part, by part key (see offsetMin). */
+  partStarts?: Record<string, number>;
 }
 
 /** A special event shown as background (never one that replaced a meeting). */
@@ -556,6 +641,7 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
       // midweek/weekend only left the brother saying a prayer, and the brother
       // on the parking, with nothing on the home screen at all.
       const myEventType = memorial ? 'memorial' : kind;
+      const about = memorial ? null : meetingTitles?.get(`${weekISO}|${kind}`);
       const myParts: MyPartLine[] = myItems
         .filter(
           (it) =>
@@ -563,15 +649,16 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
             it.weekStartDate === weekISO &&
             it.eventType === myEventType,
         )
-        // A part of the programme before a duty — the tie rule for «Ваше
-        // ближайшее» (20 September): duties carry no order and sort last.
-        .sort(
-          (a, b) =>
-            Number(a.kind === 'duty') - Number(b.kind === 'duty') ||
-            (a.partOrder ?? 999) - (b.partOrder ?? 999),
-        )
-        .map((it) => ({ ...resolvePart(it), isDuty: it.kind === 'duty' }));
-      const about = memorial ? null : meetingTitles?.get(`${weekISO}|${kind}`);
+        // In the order the meeting runs, duties last (20 and 28 September).
+        .sort(byProgramme)
+        .map((it) => ({
+          ...resolvePart(it),
+          isDuty: it.kind === 'duty',
+          offsetMin:
+            it.kind === 'duty' || !it.partKey
+              ? null
+              : (about?.partStarts?.[it.partKey] ?? null),
+        }));
 
       entries.push({
         type: 'meeting',
@@ -954,11 +1041,7 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
         replacedBy: null,
         myParts: rs
           .map((r) => r.item)
-          .sort(
-            (a, b) =>
-              Number(a.kind === 'duty') - Number(b.kind === 'duty') ||
-              (a.partOrder ?? 999) - (b.partOrder ?? 999),
-          )
+          .sort(byProgramme)
           .map((it) => ({ ...resolvePart(it), isDuty: it.kind === 'duty' })),
         weeklyCleaning: false,
         isGeneral: false,

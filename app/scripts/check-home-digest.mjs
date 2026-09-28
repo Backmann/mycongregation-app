@@ -54,7 +54,7 @@ export const SUBSECTIONS = { none: { label: '', color: '', soft: '' } };\n`,
 );
 writeFileSync(join(out, 'api.mjs'), 'export {};\n');
 
-const { buildTimeline } = await import(pathToFileURL(join(out, 'home-timeline.mjs')));
+const { buildTimeline, clockPlus } = await import(pathToFileURL(join(out, 'home-timeline.mjs')));
 const { digestHome, isOver, entryTime } = await import(pathToFileURL(join(out, 'home-digest.mjs')));
 
 let failures = 0;
@@ -369,6 +369,34 @@ const labels = (en) => (en ? en.myParts.map((p) => p.label) : null);
     timeline.near.flatMap((g) => g.entries).some((e) => e.key === 'ev-ev-branch'),
     false,
   );
+}
+
+// --- 15. His parts in the order the meeting runs, each at its minute -------
+// (28 September). The stored order of an imported week puts the Bible study
+// at 13 and the closing prayer at 15, while the template's reader keeps 21:
+// sorted by it, «чтец» stood after «заключительная молитва».
+{
+  const W = '2026-09-28';
+  const items = [
+    part(W, 'midweek', 'cbs_reader', 21),
+    part(W, 'midweek', 'midweek_closing_prayer', 15),
+    { ...part(W, 'midweek', 'microphone', undefined), kind: 'duty', partKey: undefined, label: 'Микрофон 1' },
+    part(W, 'midweek', 'midweek_opening_prayer', 2),
+    part(W, 'midweek', 'midweek_chairman', 1),
+  ];
+  const partStarts = { midweek_chairman: 0, midweek_opening_prayer: 0, cbs_conductor: 66, cbs_reader: 66, midweek_closing_prayer: 96 };
+  const titles = new Map([[`${W}|midweek`, { title: null, speaker: null, agenda: [], partStarts }]]);
+  const { timeline, digest } = run({ me: BERGMAN, group: AHLEN, items, titles });
+  const wed = timeline.near.find((g) => g.dateISO === '2026-09-30').entries.find((e) => e.type === 'meeting');
+  check(
+    '15а по ходу встречи, обязанность последней',
+    labels(wed),
+    ['midweek_chairman', 'midweek_opening_prayer', 'cbs_reader', 'midweek_closing_prayer', 'Микрофон 1'],
+  );
+  check('15б минуты от начала — у частей, у обязанности нет', wed.myParts.map((p) => p.offsetMin), [0, 0, 66, 96, null]);
+  check('15в часы на карточке', wed.myParts.map((p) => (p.offsetMin == null ? null : clockPlus(wed.time, p.offsetMin))), ['19:00', '19:00', '20:06', '20:36', null]);
+  check('15г карточка берёт ту же встречу', digest.next?.key, wed.key);
+  check('15д часы: не время — ничего', [clockPlus('', 5), clockPlus(null, 5), clockPlus('9:05', 60)], [null, null, '10:05']);
 }
 
 if (failures) {

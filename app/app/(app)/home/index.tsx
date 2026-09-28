@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import {
   Animated,
   AppState,
@@ -71,6 +71,7 @@ import {
   MyPartLine,
   TimelineEntry,
   buildTimeline,
+  clockPlus,
 } from "../../../lib/home-timeline";
 import { digestHome, entryTime, isOwnEntry } from "../../../lib/home-digest";
 import { partDisplay } from "../../../lib/part-display";
@@ -78,7 +79,10 @@ import { MyGlowRow } from "../../../components/MyGlowRow";
 import { WindowsPlanDialog } from "../../../components/WindowsPlan";
 import { SECTION_COLORS, SectionKind } from "../../../lib/section-colors";
 import {
+  SUBSECTIONS,
+  buildMidweekPartTimes,
   buildPartNumbers,
+  buildWeekendPartTimes,
   isNumberedPart,
   resolveSubsection,
 } from "../../../lib/parts";
@@ -444,7 +448,7 @@ function useAttention() {
   if (notReady === 0 && overdue === 0 && talks === 0) return null;
   return {
     notReady,
-    weeks: programme?.windowWeeks ?? 8,
+    weeks: programme?.windowWeeks ?? 4,
     overdue,
     talks,
   };
@@ -527,7 +531,7 @@ function TodoSection() {
           icon="calendar-outline"
           text={t("home.attention.programme", {
             count: attention.notReady,
-            weeks: attention.weeks,
+            window: t("home.attention.window", { count: attention.weeks }),
           })}
           onPress={() => router.push("/schedule/edit" as never)}
         />
@@ -984,6 +988,10 @@ function NextBody({
           .filter(Boolean)
           .join(" · ");
     const lines = [...entry.myParts];
+    // Each part at its minute, as the sheet has it (28 September) — only
+    // when the meeting has an hour and the programme gives the minutes.
+    const timed =
+      !!clockPlus(entry.time, 0) && lines.some((p) => p.offsetMin != null);
     // What the meeting is about — unless that is his own part already said.
     const ownTitles = new Set(
       lines.flatMap((p) => [p.label ?? p.title, p.topic ?? ""]),
@@ -999,19 +1007,36 @@ function NextBody({
       <>
         <View style={{ gap: 6 }}>
           {lines.map((p, i) => (
-            <View key={i} style={{ gap: 2 }}>
-              <View style={s.partLine}>
-                <Text style={i === 0 ? s.nextMain : s.nextSecond}>
-                  {partText(p, t)}
+            <View key={i} style={timed ? s.timedLine : { gap: 2 }}>
+              {timed ? (
+                <Text style={[s.partClock, { color: darker(ownKind(entry)) }]}>
+                  {p.offsetMin != null
+                    ? (clockPlus(entry.time, p.offsetMin) ?? "")
+                    : ""}
                 </Text>
-                {p.partnerName ? (
-                  <Chip
-                    tone="blue"
-                    text={t("home.next.pair", { name: p.partnerName })}
-                  />
-                ) : null}
+              ) : null}
+              <View style={timed ? { flex: 1, gap: 2 } : { gap: 2 }}>
+                <View style={s.partLine}>
+                  <Text
+                    style={
+                      lines.length > 1
+                        ? s.nextEqual
+                        : i === 0
+                          ? s.nextMain
+                          : s.nextSecond
+                    }
+                  >
+                    {partText(p, t)}
+                  </Text>
+                  {p.partnerName ? (
+                    <Chip
+                      tone="blue"
+                      text={t("home.next.pair", { name: p.partnerName })}
+                    />
+                  ) : null}
+                </View>
+                {p.topic ? <Text style={s.nextTopic}>«{p.topic}»</Text> : null}
               </View>
-              {p.topic ? <Text style={s.nextTopic}>«{p.topic}»</Text> : null}
             </View>
           ))}
           {entry.weeklyCleaning ? (
@@ -1167,23 +1192,36 @@ function MineLine({ text }: { text: string }) {
  * where it stands instead of being said again below (27 September).
  */
 function AgendaList({ lines }: { lines: AgendaLine[] }) {
+  const { t } = useTranslation();
   if (!lines.length) return null;
   return (
     <View style={s.agenda}>
       {lines.map((l) => (
-        <View key={l.partKey} style={s.agendaLine}>
-          {l.n !== null ? (
+        <Fragment key={l.partKey}>
+          {l.opensSection ? (
             <Text
-              style={[s.agendaNum, l.mine && s.agendaMine]}
-            >{`${l.n}.`}</Text>
+              style={[
+                s.agendaSection,
+                { color: SUBSECTIONS[l.opensSection].color },
+              ]}
+            >
+              {t(SUBSECTIONS[l.opensSection].i18nKey).toUpperCase()}
+            </Text>
           ) : null}
-          <Text
-            style={[s.agendaText, l.mine && s.agendaMine]}
-            numberOfLines={2}
-          >
-            {l.text}
-          </Text>
-        </View>
+          <View style={s.agendaLine}>
+            {l.n !== null ? (
+              <Text
+                style={[s.agendaNum, l.mine && s.agendaMine]}
+              >{`${l.n}.`}</Text>
+            ) : null}
+            <Text
+              style={[s.agendaText, l.mine && s.agendaMine]}
+              numberOfLines={2}
+            >
+              {l.text}
+            </Text>
+          </View>
+        </Fragment>
       ))}
     </View>
   );
@@ -1282,9 +1320,15 @@ function EntryBody({
       occasion && en.meetingChanged
         ? `${occasion} · ${t("specialEvents.meeting.withChanges")}`
         : occasion;
+    // A weekday whose programme is loaded has no title of its own: its
+    // first talk is part 1 of the list below (28 September), and the kind
+    // and hour are already said above. Without a programme the kind stands
+    // in, so the row is never only an overline.
     const title = en.memorial
       ? en.memorial.title
-      : (en.title ?? en.occasion?.title ?? t(`home.eventTypes.${en.kind}`));
+      : (en.title ??
+        en.occasion?.title ??
+        (agenda.length ? null : t(`home.eventTypes.${en.kind}`)));
     const lower = (x: string | null) =>
       x ? x.charAt(0).toLowerCase() + x.slice(1) : x;
     return (
@@ -1312,7 +1356,11 @@ function EntryBody({
             <Text style={s.rowOccasion}>{` · ${lower(occasionLine)}`}</Text>
           ) : null}
         </Text>
-        <Text style={[s.rowTitle, en.titleIsMine && s.titleMine]}>{title}</Text>
+        {title ? (
+          <Text style={[s.rowTitle, en.titleIsMine && s.titleMine]}>
+            {title}
+          </Text>
+        ) : null}
         {en.speaker ? (
           <Text style={[s.rowSub, en.speakerIsMine && s.titleMine]}>
             {en.speaker}
@@ -1624,6 +1672,35 @@ function DayRow({
 // The data, in one place
 // ---------------------------------------------------------------------------
 
+/**
+ * Minutes from the start of the meeting to each part, by part key — the
+ * schedule sheet's own clock (lib/parts → lib/run-order), walked from 00:00
+ * so the card can add the meeting's real hour, which a special event may
+ * still move. The chairman opens the meeting; a reader reads inside the
+ * study he belongs to.
+ */
+function partStartsOf(
+  kind: "midweek" | "weekend",
+  parts: Assignment[],
+): Record<string, number> {
+  const intervals =
+    kind === "midweek"
+      ? buildMidweekPartTimes(parts, "00:00")
+      : buildWeekendPartTimes(parts, "00:00");
+  const out: Record<string, number> = {};
+  for (const p of parts) {
+    const iv = intervals.get(p.id);
+    if (!iv || p.partKey in out) continue;
+    const [h, m] = iv.start.split(":").map(Number);
+    out[p.partKey] = h * 60 + m;
+  }
+  out[kind === "midweek" ? "midweek_chairman" : "weekend_chairman"] = 0;
+  const study = kind === "midweek" ? "cbs_conductor" : "watchtower_conductor";
+  const reader = kind === "midweek" ? "cbs_reader" : "watchtower_reader";
+  if (study in out) out[reader] = out[study];
+  return out;
+}
+
 function useHomeData(todayISO: string) {
   const { t, i18n } = useTranslation();
   const { user } = useAuth();
@@ -1768,6 +1845,7 @@ function useHomeData(todayISO: string) {
           speakerIsMine: !!talk && isMine(talk),
           titlePartKey: talk ? "public_talk_speaker" : null,
           specialTalk: !!talk?.specialTalk,
+          partStarts: partStartsOf("weekend", parts),
           agenda:
             study && studyTitle
               ? [
@@ -1781,33 +1859,49 @@ function useHomeData(todayISO: string) {
               : [],
         });
       } else if (eventType === "midweek") {
-        const first = parts.find((p) => p.partKey === "treasures_talk");
+        // The announcement is the programme's own list, the first talk
+        // included (28 September): it used to stand above the list as the
+        // meeting's bold title, and read as a heading of the week rather
+        // than as part 1 among the others. The gems say their theme and the
+        // Bible study its source — the text after the colon, exactly as
+        // «Составление программы» shows them under the part's name.
         const agenda: AgendaLine[] = [];
+        let christianLifeOpened = false;
         for (const p of parts) {
-          if (p === first) continue;
           const n = numbers.get(p.id) ?? null;
           const sub = resolveSubsection(p.partKey);
           // Part 2 by its key, not its number: a week whose gems were not
           // imported numbered the Bible reading «2».
           const wanted =
+            p.partKey === "treasures_talk" ||
             p.partKey === "spiritual_gems" ||
             (sub === "christian_life" && isNumberedPart(p.partKey));
           if (!wanted) continue;
+          const shown = partDisplay(p.partKey, p.partTitle);
+          const text =
+            p.partKey === "spiritual_gems" || p.partKey === "cbs_conductor"
+              ? (shown.subtitle ?? shown.label)
+              : shown.label;
+          const opensSection =
+            sub === "christian_life" && !christianLifeOpened
+              ? "christian_life"
+              : null;
+          if (opensSection) christianLifeOpened = true;
           agenda.push({
             partKey: p.partKey,
             n,
-            text: partDisplay(p.partKey, p.partTitle).label,
+            text,
             mine: isMine(p),
+            opensSection,
           });
         }
         meetingTitles.set(k, {
-          title: first
-            ? partDisplay(first.partKey, first.partTitle).label
-            : null,
+          title: null,
           speaker: null,
-          titlePartKey: first ? "treasures_talk" : null,
-          titleIsMine: !!first && isMine(first),
+          titlePartKey: null,
+          titleIsMine: false,
           agenda,
+          partStarts: partStartsOf("midweek", parts),
         });
       }
     }
@@ -2235,6 +2329,22 @@ const s = StyleSheet.create({
     fontFamily: "Manrope_800ExtraBold",
     color: "#0f172a",
   },
+  nextEqual: {
+    fontSize: 17,
+    lineHeight: 22,
+    fontWeight: "800",
+    fontFamily: "Manrope_800ExtraBold",
+    color: "#0f172a",
+  },
+  timedLine: { flexDirection: "row", alignItems: "flex-start", gap: 12 },
+  partClock: {
+    width: 44,
+    fontSize: 13,
+    lineHeight: 22,
+    fontWeight: "700",
+    fontFamily: "Manrope_700Bold",
+    fontVariant: ["tabular-nums"],
+  },
   nextSecond: {
     fontSize: 15,
     lineHeight: 20,
@@ -2414,8 +2524,18 @@ const s = StyleSheet.create({
   dateDot: { backgroundColor: "#f97316", marginTop: 5 },
   agenda: { gap: 2, marginTop: 3 },
   agendaLine: { flexDirection: "row", alignItems: "flex-start", gap: 6 },
+  agendaSection: {
+    marginTop: 4,
+    fontSize: 10.5,
+    letterSpacing: 0.8,
+    fontFamily: "Manrope_800ExtraBold",
+    fontWeight: "800",
+  },
   agendaNum: {
+    // Fixed, or a line long enough to wrap squeezed its number and the
+    // text of «2.» started left of «1.» (28 September).
     width: 18,
+    flexShrink: 0,
     fontSize: 12.5,
     lineHeight: 17,
     color: "#94a3b8",

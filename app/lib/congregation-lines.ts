@@ -115,7 +115,7 @@ export function congregationLines(
     const p = summary.programme;
     lines.programme =
       p.notReady > 0
-        ? { text: t('congregationHub.live.programmeNotReady', { count: p.notReady, weeks: p.windowWeeks }), due: true }
+        ? { text: t('congregationHub.live.programmeNotReady', { count: p.notReady, window: t('home.attention.window', { count: p.windowWeeks }) }), due: true }
         : p.loadedUntil
           ? { text: t('congregationHub.live.programmeUntil', { date: dayMonth(p.loadedUntil, locale) }), due: false }
           : { text: t('congregationHub.live.programmeNone'), due: true };

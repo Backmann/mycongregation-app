@@ -2578,8 +2578,10 @@
       "cbsConductor": "Versammlungsbibelstudium — Leiter"
     },
     "attention": {
-      "programme_one": "{{count}} Zusammenkunft nicht fertig · nächste {{weeks}} Wochen",
-      "programme_other": "{{count}} Zusammenkünfte nicht fertig · nächste {{weeks}} Wochen",
+      "window_one": "nächste Woche",
+      "window_other": "nächste {{count}} Wochen",
+      "programme_one": "{{count}} Zusammenkunft nicht fertig · {{window}}",
+      "programme_other": "{{count}} Zusammenkünfte nicht fertig · {{window}}",
       "tasksOverdue_one": "{{count}} Aufgabe der Ältestenschaft überfällig",
       "tasksOverdue_other": "{{count}} Aufgaben der Ältestenschaft überfällig",
       "restrictedTalks_one": "{{count}} Einplanung mit zurückgezogenem Vortrag — Ersatz absprechen",
@@ -3932,7 +3934,7 @@
       "awayMineNext": "Ihre nächste Abwesenheit: {{range}}",
       "awayNow": "Zurzeit abwesend: {{count}}",
       "awayNobody": "Zurzeit niemand abwesend",
-      "programmeNotReady": "Nicht fertig: {{count}} Zusammenkünfte in den nächsten {{weeks}} Wochen",
+      "programmeNotReady": "Nicht fertig: {{count}} Zusammenkünfte · {{window}}",
       "programmeUntil": "Fertig bis {{date}}",
       "programmeNone": "Noch kein Programm importiert",
       "duties": "{{when}}: {{assigned}} von {{total}} Plätzen",
