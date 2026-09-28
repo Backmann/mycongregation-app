@@ -3695,9 +3695,9 @@
     "meets": "Above 560",
     "pace": "Averaging {{pace}} h a month ({{count}} months with hours)",
     "noReports": "No reports yet this year",
-    "sinceOnly": "Pioneer since {{month}} — the year’s measure does not apply",
-    "shortCount": "Below 560: {{count}} of {{total}}",
-    "allFine": "All {{count}} are above 560",
+    "sinceOnly": "Pioneer since {{month}} — measured pro rata to his months",
+    "shortCount": "Below the minimum: {{count}} of {{total}}",
+    "allFine": "All {{count}} meet the minimum",
     "nobody": "There are no regular pioneers in the congregation",
     "checkSince": "Hours for only {{count}} of {{of}} months, and the card gives no date of appointment — check from which month he has been pioneering.",
     "windowHalf": "September – February",
@@ -3711,7 +3711,7 @@
     "meetsPart": "On the minimum’s pace ({{expected}} h in {{months}} months)",
     "yearLeft": "{{count}} h left to 560 for the year — {{perMonth}} a month",
     "yearLeftDone": "560 for the year already reached",
-    "endedIn": "Pioneer through {{month}} — the measure does not apply to this window",
+    "endedIn": "Pioneer through {{month}} — measured pro rata to his months",
     "shortCountPart": "Behind the pace: {{count}} of {{total}}",
     "allFinePart": "All {{count}} are on the minimum’s pace",
     "history": "Month by month",
@@ -3723,7 +3723,10 @@
       "upcoming": "ahead",
       "notPioneer": "not a pioneer"
     },
-    "studies": "studies: {{count}}"
+    "studies": "studies: {{count}}",
+    "toMinimumOwn": "For {{months}} months of service the minimum is {{expected}} h: {{count}} h short",
+    "meetsOwn": "For {{months}} months of service the minimum of {{expected}} h is met",
+    "yearLeftOwn": "{{count}} h left to his year’s measure ({{total}} h) — {{perMonth}} a month"
   },
   "memorial": {
     "title": "Memorial",

@@ -156,7 +156,15 @@ export default function PioneerYearReviewScreen() {
   );
 
   const card = (row: PioneerYearRow) => {
-    const measured = row.toMinimum !== null && !row.endedIn;
+    const measured = row.toMinimum !== null;
+    /**
+     * Served part of the year — appointed after September or stopped before
+     * August. Measured pro rata to HIS months (28 September, Lionel), so his
+     * sentences name his own figures, not the window's.
+     */
+    const partial = row.startedMidYear || !!row.endedIn;
+    const rowGoal = row.expectedGoal ?? expectedGoal;
+    const rowMin = row.expectedMinimum ?? expectedMin;
     return (
     <View
       key={row.publisherId}
@@ -191,17 +199,16 @@ export default function PioneerYearReviewScreen() {
       )}
 
       {/*
-        Полоса меряет то же, что и слова под ней: в законченном году — 600 с
-        отметкой 560, в середине года — темп за прошедшие месяцы. Прежде она
-        всегда мерила год, и в феврале все стояли на трети.
+        Полоса меряет то же, что и слова под ней: его цель (50 в месяц) с
+        отметкой порога за посчитанные месяцы.
       */}
-      {measured && expectedGoal > 0 ? (
+      {measured && rowGoal > 0 ? (
         <View style={styles.bar}>
           <View
             style={[
               styles.barFill,
               {
-                width: `${Math.min(100, (row.hours / expectedGoal) * 100)}%`,
+                width: `${Math.min(100, (row.hours / rowGoal) * 100)}%`,
               },
               (row.short || row.shortSoFar) && styles.barFillShort,
             ]}
@@ -209,7 +216,7 @@ export default function PioneerYearReviewScreen() {
           <View
             style={[
               styles.barMark,
-              { left: `${(expectedMin / expectedGoal) * 100}%` },
+              { left: `${(rowMin / rowGoal) * 100}%` },
             ]}
           />
         </View>
@@ -232,20 +239,47 @@ export default function PioneerYearReviewScreen() {
       ) : null}
 
       {row.endedIn ? (
-        /* He stopped inside the window: the months after are not his. */
         <Text style={styles.since}>
           {t("pioneerReview.endedIn", { month: monthName(row.endedIn) })}
         </Text>
       ) : row.startedMidYear ? (
-        /* No target for him: he was not a pioneer for the whole window. */
         <Text style={styles.since}>
           {t("pioneerReview.sinceOnly", {
             month: row.pioneerSince ? monthName(row.pioneerSince) : "",
           })}
         </Text>
-      ) : measured ? (
+      ) : null}
+
+      {measured ? (
         <View style={styles.figures}>
-          {finalYear ? (
+          {partial ? (
+            <>
+              {row.toMinimum && row.toMinimum > 0 ? (
+                <Text style={styles.toMinimum}>
+                  {t("pioneerReview.toMinimumOwn", {
+                    count: row.toMinimum,
+                    expected: rowMin,
+                    months: row.countedMonths ?? 0,
+                  })}
+                </Text>
+              ) : (
+                <Text style={styles.meets}>
+                  {t("pioneerReview.meetsOwn", {
+                    expected: rowMin,
+                    months: row.countedMonths ?? 0,
+                  })}
+                </Text>
+              )}
+              {row.toGoal && row.toGoal > 0 ? (
+                <Text style={styles.toGoal}>
+                  {t("pioneerReview.toGoalPart", {
+                    count: row.toGoal,
+                    expected: rowGoal,
+                  })}
+                </Text>
+              ) : null}
+            </>
+          ) : finalYear ? (
             <>
               {row.toMinimum && row.toMinimum > 0 ? (
                 <Text style={styles.toMinimum}>
@@ -266,13 +300,13 @@ export default function PioneerYearReviewScreen() {
                 <Text style={styles.toMinimum}>
                   {t("pioneerReview.toMinimumPart", {
                     count: row.toMinimum,
-                    expected: expectedMin,
+                    expected: rowMin,
                   })}
                 </Text>
               ) : (
                 <Text style={styles.meets}>
                   {t("pioneerReview.meetsPart", {
-                    expected: expectedMin,
+                    expected: rowMin,
                     months: data.monthsElapsed,
                   })}
                 </Text>
@@ -281,7 +315,7 @@ export default function PioneerYearReviewScreen() {
                 <Text style={styles.toGoal}>
                   {t("pioneerReview.toGoalPart", {
                     count: row.toGoal,
-                    expected: expectedGoal,
+                    expected: rowGoal,
                   })}
                 </Text>
               ) : null}
@@ -290,14 +324,21 @@ export default function PioneerYearReviewScreen() {
         </View>
       ) : null}
 
-      {/* The figure a conversation in the middle of the year is about. */}
-      {!finalYear && measured && row.yearLeftToMinimum != null ? (
+      {/* The figure a conversation in the middle of the year is about — to
+          560, or to his own year's measure when he serves part of it. */}
+      {measured && row.yearLeftToMinimum != null ? (
         <Text style={styles.yearLeft}>
           {row.yearLeftToMinimum > 0
-            ? t("pioneerReview.yearLeft", {
-                count: row.yearLeftToMinimum,
-                perMonth: row.perMonthToMinimum ?? 0,
-              })
+            ? t(
+                partial
+                  ? "pioneerReview.yearLeftOwn"
+                  : "pioneerReview.yearLeft",
+                {
+                  count: row.yearLeftToMinimum,
+                  perMonth: row.perMonthToMinimum ?? 0,
+                  total: row.yearMinimum ?? 560,
+                },
+              )
             : t("pioneerReview.yearLeftDone")}
         </Text>
       ) : null}
@@ -306,6 +347,7 @@ export default function PioneerYearReviewScreen() {
           the low total may mean «he became a pioneer in May». We do not guess —
           we say what is missing and let the brothers check. */}
       {measured &&
+      !partial &&
       !row.pioneerSince &&
       row.monthsReported > 0 &&
       row.monthsReported < data.monthsElapsed - 1 ? (

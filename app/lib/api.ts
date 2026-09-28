@@ -3825,6 +3825,12 @@ export interface PioneerYearRow {
   toMinimum: number | null;
   /** Left to 560 for the whole year, and per month still to come. */
   yearLeftToMinimum?: number | null;
+  /** 560, or pro rata to his months of the year. */
+  yearMinimum?: number;
+  /** His months of the window that are over, and his measure over them. */
+  countedMonths?: number;
+  expectedMinimum?: number | null;
+  expectedGoal?: number | null;
   perMonthToMinimum?: number | null;
   /** Месяцы без отчёта — не то же самое, что месяцы с нулём. */
   missingMonths: string[];

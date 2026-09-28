@@ -3695,9 +3695,9 @@
     "meets": "Über 560",
     "pace": "Im Schnitt {{pace}} Std. pro Monat ({{count}} Monate mit Stunden)",
     "noReports": "Für dieses Jahr liegen noch keine Berichte vor",
-    "sinceOnly": "Pionier seit {{month}} — der Jahresmaßstab gilt hier nicht",
-    "shortCount": "Unter 560: {{count}} von {{total}}",
-    "allFine": "Alle {{count}} liegen über 560",
+    "sinceOnly": "Pionier seit {{month}} — anteilig nach seinen Monaten gemessen",
+    "shortCount": "Unter dem Minimum: {{count}} von {{total}}",
+    "allFine": "Alle {{count}} erreichen das Minimum",
     "nobody": "In der Versammlung gibt es keine allgemeinen Pioniere",
     "checkSince": "Stunden nur für {{count}} von {{of}} Monaten, und auf der Karte fehlt das Datum des Pionierdienstbeginns — prüfe, seit wann er Pionier ist.",
     "windowHalf": "September – Februar",
@@ -3711,7 +3711,7 @@
     "meetsPart": "Im Tempo des Minimums ({{expected}} Std. in {{months}} Monaten)",
     "yearLeft": "Bis 560 im Jahr fehlen {{count}} Std. — {{perMonth}} im Monat",
     "yearLeftDone": "560 im Jahr bereits erreicht",
-    "endedIn": "Pionier bis einschließlich {{month}} — der Maßstab gilt für diesen Zeitraum nicht",
+    "endedIn": "Pionier bis einschließlich {{month}} — anteilig nach seinen Monaten gemessen",
     "shortCountPart": "Unter dem Tempo: {{count}} von {{total}}",
     "allFinePart": "Alle {{count}} liegen im Tempo des Minimums",
     "history": "Nach Monaten",
@@ -3723,7 +3723,10 @@
       "upcoming": "steht bevor",
       "notPioneer": "kein Pionier"
     },
-    "studies": "Studien: {{count}}"
+    "studies": "Studien: {{count}}",
+    "toMinimumOwn": "Für {{months}} Monate Dienst liegt das Minimum bei {{expected}} Std.: {{count}} Std. fehlen",
+    "meetsOwn": "Für {{months}} Monate Dienst ist das Minimum von {{expected}} Std. erreicht",
+    "yearLeftOwn": "Bis zu seinem Jahresmaß ({{total}} Std.) fehlen {{count}} Std. — {{perMonth}} im Monat"
   },
   "memorial": {
     "title": "Gedächtnismahl",
