@@ -322,7 +322,7 @@ let memorialWeek = null; // found as the admin, reused by the others
     await atPath(page, '/schedule');
   });
 
-  await check(page, 'A03', '«Составление»: «+» и «…» с тремя пунктами, каждый открывается', async () => {
+  await check(page, 'A03', '«Составление»: «+» больше нет, «…» с тремя пунктами, каждый открывается', async () => {
     const targets = [
       ['Правила собрания', '/schedule/rules'],
       ['Импорт программы', '/schedule/import'],
@@ -331,7 +331,8 @@ let memorialWeek = null; // found as the admin, reused by the others
     for (const [row, path] of targets) {
       await go(page, '/schedule/edit');
       await page.waitForTimeout(1500);
-      if (!(await hasLabel(page, 'Новое назначение'))) throw new Error('нет «+» (метка «Новое назначение»)');
+      // 28 September: the bare «new assignment» form is gone from the header.
+      if (await hasLabel(page, 'Новое назначение')) throw new Error('«+» (метка «Новое назначение») всё ещё в шапке');
       await page.getByLabel('Ещё', { exact: true }).first().click();
       await tap(page, row);
       await atPath(page, path);

@@ -28,9 +28,21 @@ import {
 } from "../../../lib/speaker-stats";
 import { formatRelativeDay } from "../../../lib/relative-time";
 import { useAllPublishers } from "../../../lib/useAllPublishers";
+import { useRestrictedScheduled } from "../../../components/RestrictedScheduledCard";
 
 export default function OurSpeakersScreen() {
   const { t, i18n } = useTranslation();
+  /** Our brothers' trips with a talk no longer given on that date. */
+  const restricted = useRestrictedScheduled();
+  const restrictedOut = useMemo(
+    () =>
+      new Set(
+        (restricted.data ?? [])
+          .filter((u) => u.source === "outgoing")
+          .map((u) => `${u.meetingDate}|${u.talkNumber}`),
+      ),
+    [restricted.data],
+  );
   const perms = usePermissions();
 
   const [search, setSearch] = useState("");
@@ -401,6 +413,23 @@ export default function OurSpeakersScreen() {
                     </Text>
                   ) : null}
 
+                  {/* Едет с речью, которую на эту дату уже не говорят (28
+                      сентября: «Едет 25 октября в Unna, речь №87» при снятой
+                      №87 — и ни слова). Решает координатор с братом. */}
+                  {st?.nextVisit &&
+                  restrictedOut.has(
+                    `${st.nextVisit.date}|${st.nextVisit.talkNumber}`,
+                  ) ? (
+                    <View style={styles.restrictBadge}>
+                      <Ionicons name="close-circle" size={12} color="#b45309" />
+                      <Text style={styles.restrictText}>
+                        {t("publicTalks.restrictedScheduled.badge", {
+                          n: st.nextVisit.talkNumber,
+                        })}
+                      </Text>
+                    </View>
+                  ) : null}
+
                   {/* Тот же приход второй раз подряд — сказано спокойно, без
                       цвета: заметит тот, кто смотрит на этого брата. */}
                   {st?.nextVisit &&
@@ -435,6 +464,18 @@ export default function OurSpeakersScreen() {
 }
 
 const styles = StyleSheet.create({
+  restrictBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-start",
+    gap: 4,
+    backgroundColor: "#fef3c7",
+    borderRadius: 999,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    marginTop: 4,
+  },
+  restrictText: { fontSize: 12, color: "#92400e", fontWeight: "600" },
   center: {
     flex: 1,
     justifyContent: "center",

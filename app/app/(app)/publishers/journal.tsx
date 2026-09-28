@@ -669,7 +669,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   revertGoText: { color: '#fff', fontSize: 15, fontFamily: 'Manrope_700Bold' },
-  screen: { flex: 1, backgroundColor: '#f8fafc' },
+  screen: { flex: 1, backgroundColor: '#f1f5f9' },
   content: { paddingBottom: 40 },
   centre: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
   centreText: { textAlign: 'center', marginTop: 40 },

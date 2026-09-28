@@ -748,6 +748,10 @@ export default function TalkExchangeYearScreen() {
     qc.invalidateQueries({ queryKey: ["special-events"] });
     // A special talk shows on the events screen too.
     qc.invalidateQueries({ queryKey: ["special-talks"] });
+    // A talk changed here may settle (or make) a restricted promise.
+    qc.invalidateQueries({
+      queryKey: ["public-talks", "restricted-scheduled"],
+    });
   };
   const showError = (e: unknown) => {
     const msg = extractErrorMessage(e);
@@ -1026,10 +1030,24 @@ export default function TalkExchangeYearScreen() {
    * the talk's name and was missed. It is the one thing on this screen that
    * has to stop somebody, so it is rendered as a badge of its own.
    */
-  const talkRestriction = (id: string | null): string | null => {
+  const talkRestriction = (
+    id: string | null,
+    onDate?: string | null,
+  ): string | null => {
     if (!id) return null;
     const tk = talkById.get(id);
     if (!tk || tk.isActive) return null;
+    /**
+     * On THAT day (28 September): a talk withdrawn from 1 December is fine on
+     * 8 November, and a pause that has ended is over. The badge used to stand
+     * on every week alike, so it cried wolf before the date and was learned
+     * to be ignored.
+     */
+    if (onDate && tk.retiredFrom) {
+      const started = onDate >= tk.retiredFrom;
+      const ended = !!tk.retiredUntil && onDate > tk.retiredUntil;
+      if (!started || ended) return null;
+    }
     const day = (iso: string) =>
       new Date(`${iso}T00:00:00`).toLocaleDateString(i18n.language, {
         day: "numeric",
@@ -1046,8 +1064,14 @@ export default function TalkExchangeYearScreen() {
   };
 
   /** The badge itself — same shape wherever a talk is named. */
-  const RestrictionBadge = ({ id }: { id: string | null }) => {
-    const words = talkRestriction(id);
+  const RestrictionBadge = ({
+    id,
+    date,
+  }: {
+    id: string | null;
+    date?: string | null;
+  }) => {
+    const words = talkRestriction(id, date);
     if (!words) return null;
     return (
       <View style={styles.restrictBadge}>
@@ -1469,6 +1493,7 @@ export default function TalkExchangeYearScreen() {
                                 )}
                                 <RestrictionBadge
                                   id={slot.incoming.publicTalkId}
+                                  date={slot.incoming.date}
                                 />
                               </>
                             ) : null}
@@ -1507,7 +1532,7 @@ export default function TalkExchangeYearScreen() {
                             </Text>
                             {/* Our own brother travelling with it — the case
                               that costs a telephone call if it is missed. */}
-                            <RestrictionBadge id={o.publicTalkId} />
+                            <RestrictionBadge id={o.publicTalkId} date={o.date} />
                             {!o.publicTalkId && (
                               <Text style={styles.outHint}>
                                 {t("talkCoordinator.log.noTalk")}
@@ -1619,7 +1644,7 @@ export default function TalkExchangeYearScreen() {
                       ) : null}
                       {/* Also where a speaker is being swapped in: the moment a
                         restricted talk would otherwise be chosen. */}
-                      <RestrictionBadge id={inc.publicTalkId} />
+                      <RestrictionBadge id={inc.publicTalkId} date={inc.date} />
                     </View>
                     {active ? (
                       <Ionicons

@@ -327,7 +327,7 @@ function CleaningRowExtras({
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#f8fafc' },
+  screen: { flex: 1, backgroundColor: '#f1f5f9' },
   cleaningExtras: { marginTop: 6, gap: 6 },
   cleaningPlanned: {
     fontSize: 13,
@@ -361,7 +361,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f1f5f9',
   },
   modalCloseText: { fontSize: 13.5, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#334155' },
-  container: { flex: 1, backgroundColor: '#f8fafc' },
+  container: { flex: 1, backgroundColor: '#f1f5f9' },
   weekBlock: { marginBottom: 18 },
   weekHeader: {
     fontSize: 13,

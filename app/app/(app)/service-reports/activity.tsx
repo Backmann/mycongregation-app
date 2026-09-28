@@ -175,6 +175,7 @@ export default function ActivityFeedScreen() {
       data={allItems}
       keyExtractor={(item) => item.id}
       renderItem={({ item }) => <ActivityCard item={item} />}
+      style={styles.screen}
       contentContainerStyle={styles.list}
       onEndReached={() => {
         if (query.hasNextPage && !query.isFetchingNextPage) {
@@ -210,8 +211,9 @@ export default function ActivityFeedScreen() {
 
 const styles = StyleSheet.create({
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  container: { flex: 1, padding: 16 },
+  container: { flex: 1, padding: 16, backgroundColor: '#f1f5f9' },
   list: { padding: 16, paddingBottom: 32 },
+  screen: { flex: 1, backgroundColor: '#f1f5f9' },
   card: {
     flexDirection: 'row',
     alignItems: 'center',

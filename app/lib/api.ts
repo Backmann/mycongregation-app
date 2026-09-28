@@ -592,6 +592,21 @@ export interface ScheduledUse {
   source: "programme" | "incoming" | "outgoing";
 }
 
+/**
+ * A talk no longer given that is still promised on its day (28 September) —
+ * the programme, a speaker coming to us, or one of ours travelling with it.
+ */
+export interface RestrictedUse extends ScheduledUse {
+  talkNumber: number;
+  talkTitle: string;
+  restriction:
+    | { state: "withdrawn"; from: string }
+    | { state: "paused"; from: string; until: string }
+    | { state: "removed" };
+  publisherName: string | null;
+  hostCongregationName: string | null;
+}
+
 /** What retiring a list of numbers would mean, before it is done. */
 export interface RetirementPreview {
   talks: Array<{
@@ -3708,6 +3723,13 @@ export const publicTalksApi = {
   /** Every decision about the catalogue, newest first. */
   async history(): Promise<CatalogueEvent[]> {
     const { data } = await api.get<CatalogueEvent[]>("/public-talks/history");
+    return data;
+  },
+  /** Restricted talks still promised from today on. Read-only. */
+  async restrictedScheduled(): Promise<RestrictedUse[]> {
+    const { data } = await api.get<RestrictedUse[]>(
+      "/public-talks/restricted-scheduled",
+    );
     return data;
   },
   /** The last time talks were set aside, and on what grounds. */

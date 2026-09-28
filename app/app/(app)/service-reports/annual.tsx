@@ -42,7 +42,18 @@ export default function AnnualReportScreen() {
 
   const now = dayjs();
   const currentStart = now.month() >= 8 ? now.year() : now.year() - 1;
-  const [year, setYear] = useState(currentStart);
+  /**
+   * Which year opens (28 September, Lionel agreed): the one that ENDED, until
+   * 20 October. The yearly report is gathered and sent in September, and
+   * opened then the running year showed a year of zeros. From 21 October —
+   * when September's reports are due — the new year opens. The arrows still
+   * reach either.
+   */
+  const inAutumnGrace =
+    now.month() === 8 || (now.month() === 9 && now.date() <= 20);
+  const [year, setYear] = useState(
+    inAutumnGrace ? currentStart - 1 : currentStart,
+  );
   const [open, setOpen] = useState<string | null>(null);
 
   const figures = useQuery({
@@ -405,7 +416,7 @@ function Figure({
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#f8fafc' },
+  screen: { flex: 1, backgroundColor: '#f1f5f9' },
   content: { padding: 12, paddingBottom: 40 },
   centre: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
   muted: { color: '#64748b', fontSize: 14, textAlign: 'center' },

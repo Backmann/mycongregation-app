@@ -5,8 +5,7 @@ import {
   HEADER_MARK,
   headerTitleText,
 } from '../../../lib/header';
-import { Pressable, Text, View, useWindowDimensions } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Text, View, useWindowDimensions } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { BackButton } from '../../../components/BackButton';
 import BrandLockup from '../../../components/BrandLockup';
@@ -154,16 +153,12 @@ export default function ScheduleLayout() {
           headerLeft: () => <BackButton fallback="/schedule" toParent />,
           headerRight: () => (
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              {canCreate && (
-                <Pressable
-                  onPress={() => router.push('/schedule/new' as any)}
-                  style={{ paddingHorizontal: iconPad }}
-                  hitSlop={8}
-                  accessibilityLabel={t('schedule.a11y.newAssignment')}
-                >
-                  <Ionicons name="add" size={iconSize} color={HEADER_ICON} />
-                </Pressable>
-              )}
+              {/* No «+» here any more (28 September, Lionel agreed): it opened
+                  a bare technical form — the part by its code, the date as
+                  text — that could make an assignment for a day with no
+                  meeting or a part the programme does not have. Parts are
+                  assigned in the week's card, by tapping the empty one;
+                  an extra part is added inside «Христианская жизнь». */}
               <HeaderMenu
                 title={t('congregationHub.programme')}
                 items={editMenu}

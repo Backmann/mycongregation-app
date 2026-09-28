@@ -120,7 +120,7 @@ export default function BackupsScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#f8fafc' },
+  screen: { flex: 1, backgroundColor: '#f1f5f9' },
   content: { padding: 16, gap: 16 },
   card: {
     backgroundColor: '#ffffff',

@@ -328,7 +328,7 @@ function Row({ door, line }: { door: Door; line?: DoorLine }) {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#ffffff' },
+  screen: { flex: 1, backgroundColor: '#f1f5f9' },
   content: { paddingBottom: 40, alignItems: 'center' },
   column: { width: '100%', maxWidth: 720 },
   wide: { width: '100%', maxWidth: 1000, flexDirection: 'row', gap: 32, paddingHorizontal: 8 },
@@ -345,7 +345,10 @@ const styles = StyleSheet.create({
     color: SOFT,
     textTransform: 'uppercase',
   },
+  // White rows on the app's grey (28 September): one background for every
+  // screen, and the doors still read as one block under their heading.
   row: {
+    backgroundColor: '#ffffff',
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,

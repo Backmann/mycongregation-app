@@ -44,6 +44,7 @@ const STEPS = [
   // The phone has no plural rules of its own (Hermes); ours stand in, and
   // must answer as the real ones do (28 September: «86 возвещателя»).
   ['Правила чисел', 'node', ['scripts/check-plural-rules.mjs']],
+  ['Календарь', 'node', ['scripts/check-calendar-link.mjs']],
   ['Даты без UTC', 'node', ['scripts/check-dates.mjs']],
   // The client and the server both answer "which meetings does this week
   // hold". They have drifted apart three times now, and every time it was

@@ -148,7 +148,7 @@ export default function AbsencesListScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, backgroundColor: '#f8fafc' },
+  container: { flex: 1, padding: 16, backgroundColor: '#f1f5f9' },
   emptyBox: { alignItems: 'center', marginTop: 32, gap: 16 },
   addBtn: {
     flexDirection: 'row',

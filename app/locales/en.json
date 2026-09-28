@@ -1387,7 +1387,17 @@
     },
     "showMore": "Show more · {{shown}} of {{total}}",
     "loading": "Loading…",
-    "pausedBetween": "Not to be given from {{from}} to {{until}}"
+    "pausedBetween": "Not to be given from {{from}} to {{until}}",
+    "restrictedScheduled": {
+      "title": "Already scheduled on withdrawn talks · {{count}}",
+      "hint": "Arrange another talk with the speaker — the app changes nothing by itself.",
+      "outgoing": "{{name}} goes to {{where}} on {{date}}",
+      "outgoingNoName": "Our speaker goes to {{where}} on {{date}}",
+      "incoming": "Coming to us on {{date}}: {{name}}",
+      "programme": "Programme, {{date}}",
+      "openLog": "Open the Incoming / Outgoing log",
+      "badge": "Talk no. {{n}} is withdrawn on this date"
+    }
   },
   "responsibilities": {
     "title": "Responsibilities",
@@ -2366,7 +2376,8 @@
       "where": "Where",
       "inCongregation": "What changes for the congregation",
       "noMeetingsWeek": "Week of {{range}} — no congregation meetings",
-      "neither": "No meetings on: {{days}}. No cleaning after meetings and no duties that week."
+      "neither": "No meetings on: {{days}}. No cleaning after meetings and no duties that week.",
+      "addToCalendar": "Add to my calendar"
     }
   },
   "calendar": {
@@ -2565,6 +2576,14 @@
     "parts": {
       "cbsReader": "Reader, Congregation Bible Study",
       "cbsConductor": "Congregation Bible Study — conductor"
+    },
+    "attention": {
+      "programme_one": "{{count}} meeting not ready · next {{weeks}} weeks",
+      "programme_other": "{{count}} meetings not ready · next {{weeks}} weeks",
+      "tasksOverdue_one": "{{count}} elders’ task overdue",
+      "tasksOverdue_other": "{{count}} elders’ tasks overdue",
+      "restrictedTalks_one": "{{count}} booking on a withdrawn talk — arrange a replacement",
+      "restrictedTalks_other": "{{count}} bookings on withdrawn talks — arrange replacements"
     }
   },
   "halls": {

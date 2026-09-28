@@ -1971,7 +1971,7 @@ function EditLink({ label, onPress }: { label: string; onPress: () => void }) {
 
 const styles = StyleSheet.create({
   windowsIndent: { marginTop: -2, marginBottom: 8 },
-  screen: { flex: 1, backgroundColor: "#ffffff" },
+  screen: { flex: 1, backgroundColor: '#f1f5f9' },
   fill: { flex: 1 },
   veil: { ...StyleSheet.absoluteFillObject, alignItems: "center", paddingTop: 96 },
   content: { paddingBottom: 40 },

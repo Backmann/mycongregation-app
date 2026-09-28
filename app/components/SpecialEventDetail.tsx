@@ -11,6 +11,7 @@ import {
 import { router } from 'expo-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
+import { addToCalendar } from '../lib/calendar-link';
 import { Ionicons } from '@expo/vector-icons';
 import { RichText } from './RichText';
 import { formatDateISO, startOfWeekMonday } from '../lib/dates';
@@ -253,8 +254,18 @@ export function SpecialEventDetail({
     versions,
   );
 
+  /** What the calendar entry is called: the kind and, for a visit, who. */
+  const coName = [event.coFirstName, event.coLastName].filter(Boolean).join(' ');
+  const kindName = event.type
+    ? t(`specialEvents.types.${event.type}`, { defaultValue: '' })
+    : '';
+  const calendarTitle =
+    isCoVisit && coName
+      ? `${kindName || event.title} — ${coName}`
+      : event.title || kindName;
+
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView style={styles.scroll} contentContainerStyle={styles.container}>
       <EventHeader event={event} today={today} />
       {isCoVisit && event.coRole === 'substitute' ? (
         <Text style={styles.coMeta}>{t('circuitOverseer.roleSubstitute')}</Text>
@@ -286,6 +297,36 @@ export function SpecialEventDetail({
             router.push(`/schedule?week=${link.week}&meeting=${link.meeting}` as never)
           }
         />
+      ) : null}
+
+      {/* «В мой календарь» (28 September): for what is still ahead. On the
+          phone it opens the calendar's own new-event page, in the browser it
+          saves a small .ics file. */}
+      {!isRemoved && (event.endDate ?? event.date) >= today ? (
+        <Pressable
+          onPress={() =>
+            void addToCalendar(
+              {
+                title: calendarTitle,
+                date: event.date,
+                endDate: event.endDate,
+                time: isCoVisit ? null : event.meetingTime ?? event.time,
+                timeEnd: isCoVisit ? null : event.timeEnd,
+                location: event.meetingAddress ?? event.address,
+                details: [event.programUrl, event.note]
+                  .filter(Boolean)
+                  .join('\n') || null,
+              },
+              event.id,
+            )
+          }
+          style={({ pressed }) => [styles.calendarLink, pressed && { opacity: 0.6 }]}
+          accessibilityRole="button"
+          hitSlop={6}
+        >
+          <Ionicons name="calendar-number-outline" size={18} color="#0369a1" />
+          <Text style={styles.calendarLinkText}>{t('specialEvents.page.addToCalendar')}</Text>
+        </Pressable>
       ) : null}
 
       {isCoVisit && !isRemoved ? <VisitWeek event={event} versions={versions} /> : null}
@@ -466,7 +507,8 @@ function LinkButton({ label, url }: { label: string; url: string }) {
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 16, backgroundColor: '#f8fafc' },
+  scroll: { flex: 1, backgroundColor: '#f1f5f9' },
+  container: { padding: 16 },
   error: { color: '#b91c1c' },
   problem: { color: '#b45309', marginTop: 8, textAlign: 'center' },
   h1: { fontSize: 22, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0f172a' },
@@ -523,6 +565,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   deleteText: { color: '#ef4444', fontSize: 16, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
+  calendarLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    gap: 8,
+    paddingVertical: 8,
+    marginBottom: 4,
+  },
+  calendarLinkText: { fontSize: 14.5, color: '#0369a1', fontWeight: '600' },
   weekLink: {
     flexDirection: 'row',
     alignItems: 'center',

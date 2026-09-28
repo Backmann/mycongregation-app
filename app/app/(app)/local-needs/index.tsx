@@ -759,7 +759,7 @@ export default function LocalNeedsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f8fafc' },
+  container: { flex: 1, backgroundColor: '#f1f5f9' },
   intro: { fontSize: 13, color: '#64748b', marginBottom: 12, lineHeight: 18 },
   addBtn: {
     flexDirection: 'row',

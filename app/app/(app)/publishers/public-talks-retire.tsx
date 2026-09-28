@@ -9,6 +9,7 @@ import {
   View,
 } from 'react-native';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { RestrictedScheduledCard } from '../../../components/RestrictedScheduledCard';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -174,6 +175,10 @@ export default function RetireTalksScreen() {
         <Text style={styles.title}>{t('publicTalks.retire.title')}</Text>
         <Text style={styles.subtitle}>{t('publicTalks.retire.subtitle')}</Text>
       </View>
+
+      {/* What is already promised on talks no longer given — the thing to
+          talk over before anything else on this screen. */}
+      <RestrictedScheduledCard />
 
       {/* Which of the two acts. Both arrive as a letter naming numbers and
           giving grounds, so they share a screen; only the dates differ. */}

@@ -473,7 +473,7 @@ function driftStyle(sec: number) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f8fafc' },
+  container: { flex: 1, backgroundColor: '#f1f5f9' },
   content: { padding: 16, paddingBottom: 48 },
   center: {
     flex: 1,

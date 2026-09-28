@@ -1,4 +1,9 @@
 import { Redirect, Tabs } from "expo-router";
+import {
+  BottomTabBar,
+  type BottomTabBarProps,
+} from "@react-navigation/bottom-tabs";
+import { CommonActions } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ActivityIndicator, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -8,6 +13,66 @@ import { usePushNotifications } from "../../lib/push-notifications";
 import { ContactsCheckPrompt } from "../../components/ContactsCheckPrompt";
 import { UpdateBanner } from '../../components/UpdateBanner';
 import { AppLock } from '../../components/AppLock';
+/**
+ * Which visible tab a hidden section belongs to (28 September, Lionel
+ * agreed: «экран всегда подсвечивает вкладку, из которой в него попадают»).
+ *
+ * Sections such as «Отсутствия» or «Задачи» live in folders of their own,
+ * hidden from the bar, and while one was open NO tab was lit — the reader
+ * could not tell where he was, and «назад» felt random. Each is opened from
+ * one place; that place's tab stays lit.
+ */
+const PARENT_TAB: Record<string, string> = {
+  "special-events": "schedule",
+  "local-needs": "schedule",
+  absences: "publishers",
+  tasks: "publishers",
+  "pioneer-school": "publishers",
+  "talk-coordinator": "publishers",
+  cleaning: "publishers",
+  "service-groups": "publishers",
+  "service-reports": "cart",
+};
+
+function TabBar(props: BottomTabBarProps) {
+  const { state, navigation } = props;
+  const current = state.routes[state.index]?.name;
+  const parentName = current ? PARENT_TAB[current] : undefined;
+  const parentIndex = parentName
+    ? state.routes.findIndex((r) => r.name === parentName)
+    : -1;
+  if (parentIndex < 0) return <BottomTabBar {...props} />;
+  const parent = state.routes[parentIndex];
+  // The bar thinks the parent tab is the open one, so a press on it would
+  // do nothing; here it goes to that tab, as a press on any other tab does.
+  const nav = new Proxy(navigation, {
+    get(target, key, receiver) {
+      if (key !== "emit") return Reflect.get(target, key, receiver);
+      return (event: Parameters<typeof navigation.emit>[0]) => {
+        const result = target.emit(event);
+        if (
+          event.type === "tabPress" &&
+          event.target === parent.key &&
+          !(result as { defaultPrevented?: boolean }).defaultPrevented
+        ) {
+          target.dispatch({
+            ...CommonActions.navigate(parent),
+            target: state.key,
+          });
+        }
+        return result;
+      };
+    },
+  });
+  return (
+    <BottomTabBar
+      {...props}
+      navigation={nav}
+      state={{ ...state, index: parentIndex }}
+    />
+  );
+}
+
 export default function AppLayout() {
   const insets = useSafeAreaInsets();
   const { user, isLoading } = useAuth();
@@ -31,6 +96,7 @@ export default function AppLayout() {
       <UpdateBanner />
       <ContactsCheckPrompt />
       <Tabs
+        tabBar={(props) => <TabBar {...props} />}
         screenOptions={{
           headerShown: false,
           tabBarActiveTintColor: "#0ea5e9",

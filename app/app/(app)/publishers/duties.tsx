@@ -267,7 +267,7 @@ export default function DutiesScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#ffffff' },
+  screen: { flex: 1, backgroundColor: '#f1f5f9' },
   content: { paddingBottom: 40, alignItems: 'center' },
   column: { width: '100%', maxWidth: 720, paddingTop: 8 },
   note: { fontSize: 15, fontFamily: FONT.medium, color: SOFT, padding: 16 },

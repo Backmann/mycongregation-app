@@ -547,7 +547,7 @@ function Row({
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#f8fafc' },
+  screen: { flex: 1, backgroundColor: '#f1f5f9' },
   wideRow: { flex: 1, flexDirection: 'row', backgroundColor: '#f8fafc' },
   listWide: {
     width: 440,

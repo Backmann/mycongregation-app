@@ -291,7 +291,7 @@ export default function CleaningGuideScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#f8fafc' },
+  screen: { flex: 1, backgroundColor: '#f1f5f9' },
   content: { padding: 12, paddingBottom: 40, gap: 10 },
   intro: {
     backgroundColor: '#fff',

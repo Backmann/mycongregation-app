@@ -223,7 +223,7 @@ export default function AbsenceDetailScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16 },
+  container: { flex: 1, padding: 16, backgroundColor: "#f1f5f9" },
   name: {
     fontSize: 22,
     fontWeight: "700",

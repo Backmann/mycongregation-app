@@ -474,7 +474,7 @@ function MeetingRow({
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#f8fafc' },
+  screen: { flex: 1, backgroundColor: '#f1f5f9' },
   content: { padding: 12, paddingBottom: 40 },
   centre: { flex: 1, alignItems: 'center', justifyContent: 'center' },
 

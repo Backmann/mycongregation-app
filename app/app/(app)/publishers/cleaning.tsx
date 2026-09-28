@@ -323,7 +323,7 @@ export default function CleaningScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#ffffff' },
+  screen: { flex: 1, backgroundColor: '#f1f5f9' },
   content: { paddingBottom: 40, alignItems: 'center' },
   column: { width: '100%', maxWidth: 720 },
   split: { flex: 1, flexDirection: 'row', backgroundColor: '#ffffff' },

@@ -44,7 +44,9 @@ import {
   serviceReportsApi,
   specialEventsApi,
   tasksApi,
+  congregationSummaryApi,
 } from "../../../lib/api";
+import { useRestrictedScheduled } from "../../../components/RestrictedScheduledCard";
 import { addDays, formatDateISO, startOfWeekMonday } from "../../../lib/dates";
 import { useAuth } from "../../../lib/auth";
 import { useMyPublisher } from "../../../lib/useMyPublisher";
@@ -404,16 +406,62 @@ function ReportDone() {
   );
 }
 
+/**
+ * «Требует внимания» — for those who plan and oversee (28 September, Lionel
+ * agreed): the few congregation-wide things only they can move, each one
+ * line that opens its screen, and nothing at all when all is well. The
+ * figures are the ones «Собрание» already shows under its doors; Home
+ * simply puts them in front of the person who has to act.
+ *
+ *   — meetings of the next weeks whose programme is not ready;
+ *   — elders' tasks past their date;
+ *   — a talk no longer given that is still promised (coordinator).
+ *
+ * Unreported months are not repeated here: the collection card below says
+ * that already, to whoever collects.
+ */
+function useAttention() {
+  const perms = usePermissions();
+  const oversees =
+    perms.isElder ||
+    perms.isAdmin ||
+    perms.canEditMidweekSchedule ||
+    perms.canEditWeekendSchedule;
+  const summary = useQuery({
+    queryKey: ["congregation-summary"],
+    queryFn: () => congregationSummaryApi.get(),
+    staleTime: 60 * 1000,
+    enabled: oversees,
+  });
+  const restricted = useRestrictedScheduled(perms.canCoordinatePublicTalks);
+  if (!oversees) return null;
+  const programme = summary.data?.programme;
+  const overdue = summary.data?.tasks?.overdue ?? 0;
+  const talks = perms.canCoordinatePublicTalks
+    ? (restricted.data?.length ?? 0)
+    : 0;
+  const notReady = programme?.notReady ?? 0;
+  if (notReady === 0 && overdue === 0 && talks === 0) return null;
+  return {
+    notReady,
+    weeks: programme?.windowWeeks ?? 8,
+    overdue,
+    talks,
+  };
+}
+
 function TodoSection() {
   const { t, i18n } = useTranslation();
   const report = useReportStanding();
   const pending = usePending();
   const collection = useReportCollection();
   const attendance = useAttendanceDue();
+  const attention = useAttention();
   // Not once the secretary has closed the month: the report is refused then,
   // and the Reports screen sends the person to the secretary instead.
   const reportDue = !!report && !report.submitted && !report.closed;
-  if (!reportDue && !pending && !collection && !attendance) return null;
+  if (!reportDue && !pending && !collection && !attendance && !attention)
+    return null;
 
   const dayMonth = (iso: string) =>
     new Date(`${iso}T00:00:00`).toLocaleDateString(i18n.language, {
@@ -472,6 +520,32 @@ function TodoSection() {
           icon="ellipsis-horizontal"
           text={t("home.pending.more", { count: pending.more })}
           onPress={() => router.push("/profile/my-tasks" as never)}
+        />
+      ) : null}
+      {attention && attention.notReady > 0 ? (
+        <Strip
+          icon="calendar-outline"
+          text={t("home.attention.programme", {
+            count: attention.notReady,
+            weeks: attention.weeks,
+          })}
+          onPress={() => router.push("/schedule/edit" as never)}
+        />
+      ) : null}
+      {attention && attention.overdue > 0 ? (
+        <Strip
+          icon="alarm-outline"
+          text={t("home.attention.tasksOverdue", { count: attention.overdue })}
+          onPress={() => router.push("/tasks" as never)}
+        />
+      ) : null}
+      {attention && attention.talks > 0 ? (
+        <Strip
+          icon="close-circle-outline"
+          text={t("home.attention.restrictedTalks", { count: attention.talks })}
+          onPress={() =>
+            router.push("/publishers/public-talks-retire" as never)
+          }
         />
       ) : null}
       <ReportCollectionCard />
@@ -2058,7 +2132,7 @@ export default function HomeScreen() {
 }
 
 const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f8fafc" },
+  container: { flex: 1, backgroundColor: '#f1f5f9' },
   content: { padding: 16, paddingBottom: 40, alignItems: "center" },
   frame: { width: "100%", maxWidth: MAX_WIDTH, gap: 22 },
   frameWide: { flexDirection: "row", alignItems: "flex-start", gap: 40 },

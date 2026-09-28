@@ -107,4 +107,10 @@ export const headerOptions: NativeStackNavigationOptions = {
       : undefined,
   headerBackTitle: "",
   headerTitle: Platform.OS === "web" ? undefined : NativeTitle,
+  /**
+   * One background under every screen (28 September, Lionel agreed): the
+   * app's light grey. A screen that paints none of its own showed the
+   * navigator's default instead — a third grey next to #f1f5f9 and #f8fafc.
+   */
+  contentStyle: { backgroundColor: "#f1f5f9" },
 };
