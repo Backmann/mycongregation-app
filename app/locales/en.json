@@ -3138,7 +3138,9 @@
       "regular": "Regular pioneers",
       "special": "Special pioneers",
       "missionary": "Missionaries"
-    }
+    },
+    "inactiveUnknown_one": "{{count}} more the app’s records cannot settle: no reports entered, or the six months before this one are not held in the app. Not counted as inactive — check the S-21 cards:",
+    "inactiveUnknown_other": "{{count}} more the app’s records cannot settle: no reports entered, or the six months before this one are not held in the app. Not counted as inactive — check the S-21 cards:"
   },
   "journal": {
     "title": "Change journal",

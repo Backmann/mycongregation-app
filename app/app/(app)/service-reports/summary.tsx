@@ -434,6 +434,22 @@ export default function ServiceSummaryScreen() {
             </View>
           </View>
           <Text style={styles.totalsHint}>{t('serviceSummary.sizeHint')}</Text>
+          {/* Who the records cannot answer for — never folded into the count.
+              A month before the app kept reports is not a month of silence. */}
+          {(data?.inactiveUnknown?.length ?? 0) > 0 ? (
+            <View style={styles.unknownBox}>
+              <Text style={styles.unknownTitle}>
+                {t('serviceSummary.inactiveUnknown', {
+                  count: data!.inactiveUnknown!.length,
+                })}
+              </Text>
+              {data!.inactiveUnknown!.map((p) => (
+                <Text key={p.id} style={styles.unknownName}>
+                  · {p.name}
+                </Text>
+              ))}
+            </View>
+          ) : null}
         </View>
 
         {/* Two averages, from the S-3 sheet, where the secretary copies them.
@@ -514,6 +530,16 @@ const styles = StyleSheet.create({
   scrollBody: { padding: 16, paddingBottom: 32, gap: 12 },
   closedCard: { borderColor: '#fcd34d', backgroundColor: '#fffbeb' },
   sentCard: { borderColor: '#a5f3fc', backgroundColor: '#ecfeff' },
+  unknownBox: {
+    marginTop: 10,
+    padding: 10,
+    borderRadius: 10,
+    backgroundColor: '#fffbeb',
+    borderWidth: 1,
+    borderColor: '#fde68a',
+  },
+  unknownTitle: { fontSize: 13, color: '#92400e', lineHeight: 18 },
+  unknownName: { fontSize: 13, color: '#475569', marginTop: 2, marginLeft: 4 },
   frozenCard: { borderColor: '#cbd5e1', backgroundColor: '#f8fafc' },
   driftCard: { borderColor: '#fde68a', backgroundColor: '#fffbeb' },
   driftLine: { fontSize: 14, color: '#92400e', lineHeight: 20 },

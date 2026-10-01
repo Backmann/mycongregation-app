@@ -3138,7 +3138,9 @@
       "regular": "Allgemeine Pioniere",
       "special": "Sonderpioniere",
       "missionary": "Missionare"
-    }
+    },
+    "inactiveUnknown_one": "{{count}} weiterer lässt sich aus den Daten der App nicht bestimmen: keine Berichte erfasst oder die sechs Monate davor sind nicht in der App. Nicht als untätig gezählt — bitte anhand der S-21-Karten prüfen:",
+    "inactiveUnknown_other": "{{count}} weitere lassen sich aus den Daten der App nicht bestimmen: keine Berichte erfasst oder die sechs Monate davor sind nicht in der App. Nicht als untätig gezählt — bitte anhand der S-21-Karten prüfen:"
   },
   "journal": {
     "title": "Änderungsjournal",

@@ -856,6 +856,12 @@ export interface ServiceReportSummary {
   categories: ServiceReportSummaryCategory[];
   totalActivePublishers: number;
   totalInactivePublishers: number;
+  /**
+   * Members the records cannot answer for at the end of the month — nothing
+   * entered, or silent while the six months asked about reach back before
+   * the records. Named, not counted. Absent on an older server.
+   */
+  inactiveUnknown?: { id: string; name: string }[];
   averages: {
     pioneerHours: number;
     bibleStudies: number;
