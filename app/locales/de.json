@@ -3183,7 +3183,9 @@
       "field_service_template": "Predigtdienst-Vorlage",
       "meeting_attendance": "Anwesenheit",
       "memorial_item": "Gedächtnismahl",
-      "public_talk_catalog": "Vortragskatalog"
+      "public_talk_catalog": "Vortragskatalog",
+      "elder_task": "Aufgaben der Ältestenschaft",
+      "meeting_settings": "Zeit & Ort der Zusammenkünfte"
     },
     "actions": {
       "CREATE": "hat hinzugefügt",
@@ -3299,7 +3301,18 @@
       "missing": "Nicht gefunden",
       "until": "Bis",
       "visitEnded": "Besuch beendet",
-      "specialEventId": "Ereignis"
+      "specialEventId": "Ereignis",
+      "area": "Bereich",
+      "assigneeKind": "Zuständig",
+      "assignees": "Brüder",
+      "dueDate": "Fällig",
+      "dueTime": "Uhrzeit",
+      "effectiveFrom": "Gültig ab",
+      "midweekDow": "Tag der Zusammenkunft unter der Woche",
+      "midweekTime": "Uhrzeit unter der Woche",
+      "weekendDow": "Tag der Zusammenkunft am Wochenende",
+      "weekendTime": "Uhrzeit am Wochenende",
+      "microphoneSlots": "Mikrofone"
     },
     "noValue": "leer",
     "changedNoValues": "geändert (Werte werden nicht gespeichert)",
@@ -3328,7 +3341,11 @@
       "entityNotSupported": "Diese Art von Eintrag lässt sich nicht zurücksetzen. Öffnen Sie ihn und korrigieren Sie ihn von Hand.",
       "nothingRevertable": "Dieser Eintrag enthält kein Feld, das zurückgesetzt werden kann."
     },
-    "goneRecord": "Eintrag nicht mehr vorhanden"
+    "goneRecord": "Eintrag nicht mehr vorhanden",
+    "taskStatus": {
+      "open": "offen",
+      "done": "erledigt"
+    }
   },
   "attendance": {
     "cardTitle": "Zusammenkunftsbesuch",

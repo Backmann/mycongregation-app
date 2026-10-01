@@ -503,13 +503,23 @@ let memorialWeek = null; // found as the admin, reused by the others
     await see(page, 'Окна недели');
     const before = (await page.getByText(/^Окна: /).last().innerText().catch(() => '')) || '';
     const dialog = page.locator('[role="dialog"]').last();
+    // The week may already have windows (8 among them) — then the tap takes
+    // 8 away. What must hold either way: one tap flips 8, a second flips it
+    // back. (30 September: the stand got a week with 5, 7, 8 and the old
+    // «8 must appear» read a correct toggle as a failure.)
+    const has8 = (s) => /(^|\D)8(\D|$)/.test(s.replace(/^Окна:\s*/, ''));
+    const line = async () => (await page.getByText(/^Окна: /).last().innerText().catch(() => '')) || '';
     await dialog.getByText(/^8$/).first().click();
     await page.waitForTimeout(600);
-    const after = (await page.getByText(/^Окна: /).last().innerText().catch(() => '')) || '';
+    const after = await line();
     await snap(page, 'A14-после-нажатия');
+    await dialog.getByText(/^8$/).first().click();
+    await page.waitForTimeout(600);
+    const back = await line();
     await tap(page, 'Отмена');
-    if (!/8/.test(after) || before === after) throw new Error(`строка под планом: было «${before}», стало «${after}»`);
-    return `«${before}» → «${after}», отменено`;
+    if (has8(before) === has8(after)) throw new Error(`строка под планом: было «${before}», после нажатия «${after}» — 8 не переключилась`);
+    if (back !== before) throw new Error(`второе нажатие не вернуло: было «${before}», стало «${back}»`);
+    return `«${before}» → «${after}» → «${back}», отменено`;
   });
 
   // 25 September: only a version that has not started may be deleted — past

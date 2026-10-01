@@ -17,6 +17,7 @@ import {
   lockEnabled,
   RELOCK_AFTER_MS,
 } from '../lib/biometrics';
+import { SCREEN_BACKGROUND } from '../lib/header';
 
 /**
  * The lock over the signed-in app, and the cover over its back.
@@ -58,13 +59,25 @@ export function AppLock({ children }: { children: React.ReactNode }) {
     return on;
   }, []);
 
+  /**
+   * The first read decides everything at once.
+   *
+   * Until 30 September the setting, the kind of unlock and the lock itself
+   * arrived in three separate renders: the content stood open while the
+   * setting was read, and again while the device was asked what kind of
+   * biometrics it has — on a cold start, with the lock switched on. Now all
+   * three are learned first and set together, and the content stays under
+   * a plain cover until then.
+   */
   useEffect(() => {
     void (async () => {
-      const on = await readSetting();
-      setByFinger(await hasRealBiometrics());
+      const on = await lockEnabled();
+      const finger = on ? await hasRealBiometrics() : true;
+      setByFinger(finger);
       if (on) setLocked(true);
+      setArmed(on);
     })();
-  }, [readSetting]);
+  }, []);
 
   const unlock = useCallback(async () => {
     setAsking(true);
@@ -102,11 +115,18 @@ export function AppLock({ children }: { children: React.ReactNode }) {
     return () => sub.remove();
   }, [readSetting]);
 
-  if (armed === null) return <>{children}</>;
-
+  // ONE wrapper whatever the state. It used to be a fragment until the
+  // setting was read and a View after, and a different parent type makes
+  // React throw the whole signed-in app away and mount it again — on every
+  // start, on the web too, where the lock does not even exist.
   return (
     <View style={{ flex: 1 }}>
       {children}
+      {armed === null ? (
+        // Not the lock's teal: most people never switch the lock on, and for
+        // them this is a few milliseconds that must look like nothing at all.
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: SCREEN_BACKGROUND }]} />
+      ) : null}
       {(locked || covered) && armed ? (
         <View style={styles.veil}>
           <Ionicons name="lock-closed-outline" size={40} color="#e0f2fe" />

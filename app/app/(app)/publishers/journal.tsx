@@ -66,6 +66,8 @@ const SECTION_TONE: Record<string, string> = {
   congregation: '#64748b',
   backup: '#64748b',
   user: '#64748b',
+  elder_task: '#64748b',
+  meeting_settings: '#64748b',
 };
 
 const SECTION_ICON: Record<string, keyof typeof Ionicons.glyphMap> = {
@@ -90,6 +92,8 @@ const SECTION_ICON: Record<string, keyof typeof Ionicons.glyphMap> = {
   congregation: 'settings-outline',
   backup: 'shield-checkmark-outline',
   user: 'key-outline',
+  elder_task: 'checkbox-outline',
+  meeting_settings: 'time-outline',
 };
 
 /**
@@ -128,6 +132,8 @@ const FILTERS = [
   'cart_location',
   'congregation',
   'backup',
+  'meeting_settings',
+  'elder_task',
 ] as const;
 
 export default function JournalScreen() {
@@ -303,8 +309,21 @@ function readValue(
   names: Record<string, string>,
   t: (k: string, o?: Record<string, unknown>) => string,
   language: string,
+  at?: { entityType: string; field: string },
 ): string | null {
   if (v === null || v === undefined || v === '') return t('journal.noValue');
+  // A list (the brothers a task is given to, a speaker's talk numbers) is
+  // each of its values, read the same way. It used to be dropped as «no
+  // value» — 30 September, when tasks joined the journal.
+  if (Array.isArray(v)) {
+    if (v.length === 0) return t('journal.noValue');
+    return v
+      .map((x) => readValue(x, names, t, language, at))
+      .filter((x): x is string => !!x)
+      .join(', ');
+  }
+  const own = at ? fieldWord(at.entityType, at.field, v, t, language) : '';
+  if (own) return own;
   if (typeof v === 'string') {
     // A name first, then a known code word — "incoming" and "confirmed" are
     // for the machine, not for whoever opens the journal.
@@ -338,6 +357,48 @@ function readValue(
   }
   if (typeof v === 'number' || typeof v === 'boolean') return String(v);
   return null;
+}
+
+/**
+ * Words that only mean something next to their own field.
+ *
+ * `other`, `people`, `done` are too common to go into the shared
+ * `journal.values` dictionary, which is read for EVERY value of every
+ * section: «done» there would rename whatever else happens to say done. So a
+ * task's values are translated here, by field, from the task screens' own
+ * dictionary — one set of words for both places.
+ */
+function fieldWord(
+  entityType: string,
+  field: string,
+  v: unknown,
+  t: (k: string, o?: Record<string, unknown>) => string,
+  language: string,
+): string {
+  if (entityType === 'meeting_settings') {
+    // ISO weekday, 1 = Monday … 7 = Sunday, as the schedule stores it. A bare
+    // «3» next to «День будней» says nothing.
+    if ((field === 'midweekDow' || field === 'weekendDow') && typeof v === 'number') {
+      return dayjs().locale(language).day(v % 7).format('dddd');
+    }
+    return '';
+  }
+  if (entityType !== 'elder_task' || typeof v !== 'string') return '';
+  switch (field) {
+    case 'kind':
+      return t(`tasks.calendar.${v}`, { defaultValue: '' });
+    case 'area':
+      return t(`tasks.areas.${v}`, { defaultValue: '' });
+    case 'assigneeKind':
+      if (v === 'people') return t('tasks.form.assigneePeople');
+      if (v === 'service_committee') return t('tasks.assignee.serviceCommittee');
+      if (v === 'body_of_elders') return t('tasks.assignee.bodyOfElders');
+      return '';
+    case 'status':
+      return t(`journal.taskStatus.${v}`, { defaultValue: '' });
+    default:
+      return '';
+  }
 }
 
 function Row({
@@ -383,14 +444,23 @@ function Row({
     );
   }
   if (ctx?.date) {
-    contextBits.push(dayjs(ctx.date).locale(language).format('D MMMM'));
+    // The year is spoken when it is not this one. A task due «31 августа»
+    // read as last August while it said 2027 — 30 September.
+    const d = dayjs(ctx.date).locale(language);
+    contextBits.push(
+      d.format(d.year() === dayjs().year() ? 'D MMMM' : 'D MMMM YYYY'),
+    );
   }
   // A specific title beats a generic kind; fall back to the kind's own name.
   const kindName = ctx?.kind
     ? t(`parts.${ctx.kind}`, {
         defaultValue: t(`duties.types.${ctx.kind}`, {
           defaultValue: t(`cleaning.slots.${ctx.kind}`, {
-            defaultValue: '',
+            // A task the app raised, by its own name.
+            defaultValue:
+              entry.entityType === 'elder_task'
+                ? t(`tasks.calendar.${ctx.kind}`, { defaultValue: '' })
+                : '',
           }),
         }),
       })
@@ -446,8 +516,16 @@ function Row({
       const isCreate = entry.action === 'CREATE';
       changes.push({
         label,
-        was: isCreate ? null : readValue(entry.before?.[field], names, t, language),
-        now: readValue(entry.detail?.[field], names, t, language),
+        was: isCreate
+          ? null
+          : readValue(entry.before?.[field], names, t, language, {
+              entityType: entry.entityType,
+              field,
+            }),
+        now: readValue(entry.detail?.[field], names, t, language, {
+          entityType: entry.entityType,
+          field,
+        }),
         valuesKept: hadWas || hadNow,
       });
     }
@@ -461,7 +539,10 @@ function Row({
         // These are already spoken in the tail above; saying them twice reads
         // as a stutter.
         if (HANDLED_DETAIL.has(key)) continue;
-        const shown = readValue(value, names, t, language);
+        const shown = readValue(value, names, t, language, {
+          entityType: entry.entityType,
+          field: key,
+        });
         if (shown === null || shown === t('journal.noValue')) continue;
         changes.push({
           label: t(`journal.fieldNames.${key}`, { defaultValue: key }),

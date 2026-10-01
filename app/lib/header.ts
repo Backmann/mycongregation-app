@@ -22,6 +22,9 @@ import type { NativeStackNavigationOptions } from "@react-navigation/native-stac
  */
 export const BRAND = "#0e7490";
 
+/** The light grey under every screen — see `contentStyle` below. */
+export const SCREEN_BACKGROUND = "#f1f5f9";
+
 /**
  * Header action icons. They used to be the app's sky blue, which was right on
  * a white bar and nearly invisible on the brand colour — the icons were there
@@ -112,5 +115,5 @@ export const headerOptions: NativeStackNavigationOptions = {
    * app's light grey. A screen that paints none of its own showed the
    * navigator's default instead — a third grey next to #f1f5f9 and #f8fafc.
    */
-  contentStyle: { backgroundColor: "#f1f5f9" },
+  contentStyle: { backgroundColor: SCREEN_BACKGROUND },
 };

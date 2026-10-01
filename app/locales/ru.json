@@ -3235,7 +3235,9 @@
       "field_service_template": "Шаблон проповеди",
       "meeting_attendance": "Посещаемость",
       "memorial_item": "Вечеря",
-      "public_talk_catalog": "Каталог речей"
+      "public_talk_catalog": "Каталог речей",
+      "elder_task": "Задачи совета",
+      "meeting_settings": "Время и место встреч"
     },
     "actions": {
       "CREATE": "добавил",
@@ -3351,7 +3353,18 @@
       "missing": "Не найдено",
       "until": "До",
       "visitEnded": "Посещение закончилось",
-      "specialEventId": "Событие"
+      "specialEventId": "Событие",
+      "area": "Область",
+      "assigneeKind": "Кому поручено",
+      "assignees": "Братья",
+      "dueDate": "Срок",
+      "dueTime": "Время",
+      "effectiveFrom": "Действует с",
+      "midweekDow": "День будней встречи",
+      "midweekTime": "Время будней встречи",
+      "weekendDow": "День выходной встречи",
+      "weekendTime": "Время выходной встречи",
+      "microphoneSlots": "Микрофонов"
     },
     "noValue": "пусто",
     "changedNoValues": "изменено (значения не сохраняются)",
@@ -3382,7 +3395,11 @@
       "entityNotSupported": "Этот вид записи вернуть нельзя. Откройте её и исправьте вручную.",
       "nothingRevertable": "В этой записи нет полей, которые можно вернуть."
     },
-    "goneRecord": "запись уже удалена"
+    "goneRecord": "запись уже удалена",
+    "taskStatus": {
+      "open": "открыта",
+      "done": "выполнена"
+    }
   },
   "attendance": {
     "cardTitle": "Посещаемость встречи",
