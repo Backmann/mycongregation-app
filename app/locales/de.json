@@ -375,7 +375,8 @@
       "movedTo": "Gewechselt zu",
       "movedToPlaceholder": "z. B. Versammlung Dortmund-Zentrum",
       "note": "Notiz",
-      "hint": "Verstorben · gewechselt · entfernt — der Eintrag bleibt erhalten und kann wiederhergestellt werden"
+      "hint": "Verstorben · gewechselt · entfernt — der Eintrag bleibt erhalten und kann wiederhergestellt werden",
+      "dateHint": "Das Datum entscheidet, in welchen Berichten er bleibt: Wegzug am 1. September oder später — er bleibt im Jahresbericht des abgelaufenen Dienstjahres und in allen Monaten davor."
     },
     "actions": {
       "edit": "Bearbeiten",
@@ -4087,6 +4088,10 @@
     "monthDriftLine": "{{label}}: {{now}} (gesendet {{sent}})",
     "monthLateTitle": "Nach dem Abschließen erfasst",
     "monthReopenHint": "Gesendetes korrigieren: Monat öffnen, Berichte korrigieren und wieder abschließen.",
-    "attendanceNow": "Laut Anwesenheitsliste jetzt: unter der Woche {{midweek}}, Wochenende {{weekend}}."
+    "attendanceNow": "Laut Anwesenheitsliste jetzt: unter der Woche {{midweek}}, Wochenende {{weekend}}.",
+    "lastMonthCount": "Berichte für {{month}}: {{received}} von {{expected}}.",
+    "lastMonthDecides": "Für {{month}} fehlt noch — und nur dieser Bericht entscheidet, ob sie als aktiv zählen:",
+    "lastMonthOthers_one": "{{count}} weiterer fehlt noch — an „Aktive“ ändert das nichts.",
+    "lastMonthOthers_other": "{{count}} weitere fehlen noch — an „Aktive“ ändert das nichts."
   }
 }

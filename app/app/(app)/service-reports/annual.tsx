@@ -517,6 +517,7 @@ function SentBanner({
       <Text style={[styles.bannerText, { color: '#78350f' }]}>
         {t('sent.unsavedBody')}
       </Text>
+      <LastMonthNote view={view} language={language} />
       <Pressable style={styles.saveBtn} onPress={onSave}>
         <Text style={styles.saveBtnText}>{t('sent.save')}</Text>
       </Pressable>
@@ -526,6 +527,57 @@ function SentBanner({
       {!dayjs().isAfter(dayjs(view.freezeOn), 'day') ? (
         <Text style={styles.bannerNote}>
           {t('sent.freezeNote', { date: day(view.freezeOn) })}
+        </Text>
+      ) : null}
+    </View>
+  );
+}
+
+/**
+ * August before the form goes out: who has not reported yet, and for whom
+ * that one report decides «active». The 2025/26 report went out as 85 and
+ * the app later counted 86 — a brother's August report, his only one from
+ * March on, was entered the afternoon the form was sent. Said here, before
+ * saving, it is a choice; found afterwards, it is a discrepancy.
+ */
+function LastMonthNote({
+  view,
+  language,
+}: {
+  view: AnnualSentView;
+  language: string;
+}) {
+  const { t } = useTranslation();
+  const lm = view.lastMonth;
+  if (!lm || lm.expected === 0) return null;
+  const month = dayjs(`${lm.month}-01`).locale(language).format('MMMM');
+  const deciding = lm.missing.filter((m) => m.decidesActive);
+  return (
+    <View style={styles.collect}>
+      <Text style={styles.collectTitle}>
+        {t('sent.lastMonthCount', {
+          month,
+          received: lm.received,
+          expected: lm.expected,
+        })}
+      </Text>
+      {deciding.length > 0 ? (
+        <>
+          <Text style={styles.collectWarn}>
+            {t('sent.lastMonthDecides', { month })}
+          </Text>
+          {deciding.map((m) => (
+            <Text key={m.id} style={styles.collectName}>
+              · {m.name}
+            </Text>
+          ))}
+        </>
+      ) : null}
+      {lm.missing.length > deciding.length ? (
+        <Text style={styles.collectHint}>
+          {t('sent.lastMonthOthers', {
+            count: lm.missing.length - deciding.length,
+          })}
         </Text>
       ) : null}
     </View>
@@ -653,7 +705,7 @@ function SaveSheet({
   initial: Partial<AnnualNumbers>;
   onClose: () => void;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const qc = useQueryClient();
   const [sentOn, setSentOn] = useState(
     view.sent?.sentOn ?? dayjs().format('YYYY-MM-DD'),
@@ -708,6 +760,9 @@ function SaveSheet({
         <Text style={styles.sheetIntro}>
           {t('sent.sheetIntro', { year: `${year}/${String(year + 1).slice(2)}` })}
         </Text>
+        {view.sent?.confirmed ? null : (
+          <LastMonthNote view={view} language={i18n.language} />
+        )}
         <Text style={styles.fieldLabel}>{t('sent.sentOnLabel')}</Text>
         <DateField value={sentOn} onChange={setSentOn} />
         {FORM_LINES.map(({ key, label }) => {
@@ -1108,4 +1163,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   error: { color: '#b91c1c', fontSize: 13, marginTop: 10 },
+  collect: {
+    marginTop: 10,
+    padding: 10,
+    borderRadius: 10,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#fde68a',
+  },
+  collectTitle: { fontSize: 13.5, color: '#0f172a', fontFamily: 'Manrope_600SemiBold' },
+  collectWarn: { fontSize: 13, color: '#92400e', marginTop: 6, lineHeight: 18 },
+  collectName: { fontSize: 13, color: '#334155', marginTop: 2, marginLeft: 4 },
+  collectHint: { fontSize: 12.5, color: '#64748b', marginTop: 6, lineHeight: 17 },
 });

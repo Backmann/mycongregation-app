@@ -375,7 +375,8 @@
       "movedTo": "Moved to",
       "movedToPlaceholder": "e.g. Dortmund Central congregation",
       "note": "Note",
-      "hint": "Died · moved · removed — the record is kept and can be restored"
+      "hint": "Died · moved · removed — the record is kept and can be restored",
+      "dateHint": "The date decides which reports keep him: leaving on 1 September or later keeps him in the annual report for the year just ended and in every month before he left."
     },
     "actions": {
       "edit": "Edit",
@@ -4087,6 +4088,10 @@
     "monthDriftLine": "{{label}}: {{now}} (sent {{sent}})",
     "monthLateTitle": "Entered after closing",
     "monthReopenHint": "To correct what was sent: reopen the month, fix the reports and close it again.",
-    "attendanceNow": "By the attendance record now: midweek {{midweek}}, weekend {{weekend}}."
+    "attendanceNow": "By the attendance record now: midweek {{midweek}}, weekend {{weekend}}.",
+    "lastMonthCount": "Reports for {{month}}: {{received}} of {{expected}}.",
+    "lastMonthDecides": "Not yet in for {{month}} — and that one report decides whether they count as active:",
+    "lastMonthOthers_one": "{{count}} more has not reported — it does not change “Active”.",
+    "lastMonthOthers_other": "{{count}} more have not reported — it does not change “Active”."
   }
 }

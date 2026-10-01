@@ -755,6 +755,12 @@ function RemoveModal({
                 placeholderTextColor="#94a3b8"
                 autoCapitalize="none"
               />
+              {/* The day decides which reports keep him — said where it is
+                  typed, since «moved on the 1st» and «moved on the 31st» put
+                  him in different annual reports. */}
+              <Text style={styles.modalDateHint}>
+                {t('publishers.removal.dateHint')}
+              </Text>
               <Text style={styles.modalFieldLabel}>{noteLabel}</Text>
               <TextInput
                 style={styles.modalInput}
@@ -868,6 +874,12 @@ const styles = StyleSheet.create({
   reasonChipActive: { backgroundColor: '#0ea5e9', borderColor: '#0ea5e9' },
   reasonChipText: { color: '#334155', fontSize: 14, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
   reasonChipTextActive: { color: '#fff' },
+  modalDateHint: {
+    fontSize: 12,
+    color: '#64748b',
+    lineHeight: 16,
+    marginTop: 4,
+  },
   modalFieldLabel: {
     fontSize: 13,
     color: '#64748b',

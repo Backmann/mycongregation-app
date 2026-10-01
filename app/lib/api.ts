@@ -4764,6 +4764,13 @@ export interface AnnualSentView {
         members: Record<AnnualListKey, CountedPublisher[]>;
       });
   drift: AnnualDriftLine[];
+  /** August's collection — absent on an older server. */
+  lastMonth?: {
+    month: string;
+    expected: number;
+    received: number;
+    missing: { id: string; name: string; decidesActive: boolean }[];
+  };
 }
 
 // ---- Задачи совета старейшин ------------------------------------------
