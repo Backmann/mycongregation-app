@@ -19,6 +19,9 @@ import {
 } from '../../../lib/api';
 import { usePermissions } from '../../../lib/permissions';
 import { useTranslation } from 'react-i18next';
+import dayjs from 'dayjs';
+import 'dayjs/locale/ru';
+import 'dayjs/locale/de';
 import { formatMonthLabel } from '../../../lib/i18n';
 import { exportHtmlAsPdf, openPrintWindow } from '../../../lib/pdf';
 import { buildMonthlyReportPdfHtml } from '../../../lib/monthlyReportPdf';
@@ -141,6 +144,8 @@ export default function ServiceSummaryScreen() {
     });
   };
 
+  /** Closed and kept as sent: the figures below are the ones that went out. */
+  const sentNow = !!(data?.closed && data?.sent?.confirmed);
   const queryClient = useQueryClient();
   const closureMutation = useMutation({
     mutationFn: (action: 'close' | 'reopen') =>
@@ -246,24 +251,45 @@ export default function ServiceSummaryScreen() {
           <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
         }
       >
+        {/* Closed and kept: one card says both — that the month is shut and
+            that what stands below is what went to the branch. */}
         <View
           style={[
             styles.card,
-            data?.closed ? styles.closedCard : styles.openCard,
+            sentNow
+              ? styles.sentCard
+              : data?.closed
+                ? styles.closedCard
+                : styles.openCard,
           ]}
         >
           <View style={styles.closureRow}>
             <Ionicons
               name={data?.closed ? 'lock-closed' : 'lock-open-outline'}
               size={20}
-              color={data?.closed ? '#b45309' : '#0ea5e9'}
+              color={sentNow ? '#0e7490' : data?.closed ? '#b45309' : '#0ea5e9'}
             />
             <Text style={styles.closureTitle}>
-              {data?.closed
-                ? t('reports.summary.monthClosed')
-                : t('reports.summary.monthOpen')}
+              {sentNow
+                ? t('sent.monthTitle')
+                : data?.closed
+                  ? t('reports.summary.monthClosed')
+                  : t('reports.summary.monthOpen')}
             </Text>
           </View>
+          {sentNow && data?.sent ? (
+            <Text style={styles.closureHint}>
+              {data.sent.sentOn && data.sent.savedByName
+                ? `${t('sent.byWhom', {
+                    date: dayjs(data.sent.sentOn)
+                      .locale(i18nInstance.language)
+                      .format('D MMMM YYYY'),
+                    name: data.sent.savedByName,
+                  })} `
+                : ''}
+              {t('sent.monthBody')}
+            </Text>
+          ) : null}
           <Text style={styles.closureHint}>
             {data?.closed
               ? t('reports.summary.closedHint')
@@ -301,6 +327,69 @@ export default function ServiceSummaryScreen() {
             </Text>
           )}
         </View>
+
+        {/* What went to the branch. Closing is «done, sent»: the figures
+            below are then the ones kept at closing, and anything entered
+            since stands beside them by name — never silently folded in. */}
+        {data?.sent && !data.sent.confirmed ? (
+          <View style={[styles.card, styles.frozenCard]}>
+            <View style={styles.closureRow}>
+              <Ionicons name="lock-closed-outline" size={20} color="#475569" />
+              <Text style={styles.closureTitle}>
+                {t('sent.monthFrozenTitle')}
+              </Text>
+            </View>
+            <Text style={styles.closureHint}>{t('sent.monthFrozenBody')}</Text>
+          </View>
+        ) : null}
+
+        {data?.sent && (data.drift?.length ?? 0) > 0 ? (
+          <View style={[styles.card, styles.driftCard]}>
+            <Text style={styles.cardTitle}>{t('sent.monthDriftTitle')}</Text>
+            {data.drift!.map((d) => (
+              <View key={d.key} style={{ marginTop: 6 }}>
+                <Text style={styles.driftLine}>
+                  {t('sent.monthDriftLine', {
+                    label: t(`journal.fieldNames.${d.key}`, {
+                      defaultValue: d.key,
+                    }),
+                    now: d.now ?? '—',
+                    sent: d.sent ?? '—',
+                  })}
+                </Text>
+                {d.people.map((p) => (
+                  <Text key={p.id} style={styles.driftPerson}>
+                    · {p.name} — {t(`sent.${p.change}`)}
+                  </Text>
+                ))}
+              </View>
+            ))}
+            {(data.late?.length ?? 0) > 0 ? (
+              <>
+                <Text style={[styles.cardTitle, { marginTop: 12 }]}>
+                  {t('sent.monthLateTitle')}
+                </Text>
+                {data.late!.map((f, i) => (
+                  <Text key={i} style={styles.driftPerson}>
+                    · {f.name}:{' '}
+                    {t(`sent.facts.${f.kind}`, {
+                      month: f.reportMonth
+                        ? dayjs(f.reportMonth)
+                            .locale(i18nInstance.language)
+                            .format('MMMM YYYY')
+                        : '',
+                      date: dayjs(f.at).locale(i18nInstance.language).format('D MMMM'),
+                      day: f.day
+                        ? dayjs(f.day).locale(i18nInstance.language).format('D MMMM YYYY')
+                        : '',
+                    })}
+                  </Text>
+                ))}
+              </>
+            ) : null}
+            <Text style={styles.totalsHint}>{t('sent.monthReopenHint')}</Text>
+          </View>
+        ) : null}
 
         {data?.categories.map((cat) => (
           <View key={cat.pioneerType} style={styles.card}>
@@ -424,6 +513,11 @@ const styles = StyleSheet.create({
   monthChipTextActive: { color: '#fff', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
   scrollBody: { padding: 16, paddingBottom: 32, gap: 12 },
   closedCard: { borderColor: '#fcd34d', backgroundColor: '#fffbeb' },
+  sentCard: { borderColor: '#a5f3fc', backgroundColor: '#ecfeff' },
+  frozenCard: { borderColor: '#cbd5e1', backgroundColor: '#f8fafc' },
+  driftCard: { borderColor: '#fde68a', backgroundColor: '#fffbeb' },
+  driftLine: { fontSize: 14, color: '#92400e', lineHeight: 20 },
+  driftPerson: { fontSize: 13, color: '#475569', lineHeight: 19, marginLeft: 4 },
   openCard: { borderColor: '#bae6fd', backgroundColor: '#f0f9ff' },
   closureRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   closureTitle: { fontSize: 15, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0f172a' },

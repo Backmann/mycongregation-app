@@ -5,17 +5,25 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ru';
 import 'dayjs/locale/de';
 import {
+  AnnualDriftLine,
   AnnualFigures,
+  AnnualListKey,
+  AnnualNumberKey,
+  AnnualNumbers,
+  AnnualSentView,
   CountedPublisher,
+  LateFact,
   annualReportApi,
   attendanceApi,
   extractErrorMessage,
@@ -23,6 +31,8 @@ import {
 } from '../../../lib/api';
 import { buildAnnualReportPdfHtml } from '../../../lib/annualReportPdf';
 import { exportHtmlAsPdf, openPrintWindow } from '../../../lib/pdf';
+import { Sheet } from '../../../components/Sheet';
+import { DateField } from '../../../components/DateField';
 
 /**
  * A draft of the annual congregation report (S-10).
@@ -51,10 +61,33 @@ export default function AnnualReportScreen() {
    */
   const inAutumnGrace =
     now.month() === 8 || (now.month() === 9 && now.date() <= 20);
+  // The September task opens the year it is about.
+  const params = useLocalSearchParams<{ startYear?: string }>();
+  const asked = Number(params.startYear);
   const [year, setYear] = useState(
-    inAutumnGrace ? currentStart - 1 : currentStart,
+    Number.isInteger(asked) && asked > 2000
+      ? asked
+      : inAutumnGrace
+        ? currentStart - 1
+        : currentStart,
   );
   const [open, setOpen] = useState<string | null>(null);
+  const [editing, setEditing] = useState<Partial<AnnualNumbers> | null>(null);
+  const [why, setWhy] = useState<AnnualDriftLine | null>(null);
+
+  /**
+   * A year is over on 1 September — only then is there anything to send, and
+   * only then does what was sent stand beside what the reports say.
+   */
+  const yearOver = !now.isBefore(dayjs(`${year + 1}-09-01`));
+  const sentView = useQuery({
+    queryKey: ['annual-report', 'sent', year],
+    queryFn: () => annualReportApi.sent(year),
+    enabled: yearOver,
+  });
+  const kept = yearOver ? (sentView.data?.sent ?? null) : null;
+  const driftOf = (key: AnnualNumberKey) =>
+    sentView.data?.drift.find((d) => d.key === key) ?? null;
 
   const figures = useQuery({
     queryKey: ['annual-report', year],
@@ -104,11 +137,16 @@ export default function AnnualReportScreen() {
   const print = () => {
     if (!figures.data) return;
     const preopened = openPrintWindow();
+    // What was sent, where it was kept: the people counted then, and the
+    // averages as filed — a printout of a closed year must match the form.
+    const printed: AnnualFigures = kept
+      ? { ...figures.data, ...kept.members }
+      : figures.data;
     const html = buildAnnualReportPdfHtml({
-      figures: figures.data,
+      figures: printed,
       attendance: {
-        midweek: attendanceAverages.midweek,
-        weekend: attendanceAverages.weekend,
+        midweek: kept ? kept.figures.midweekAverage : attendanceAverages.midweek,
+        weekend: kept ? kept.figures.weekendAverage : attendanceAverages.weekend,
       },
       congregationName: overview.data?.congregation?.name ?? '',
       monthName: (m) => dayjs(m).locale(i18n.language).format('MMMM YYYY'),
@@ -146,7 +184,7 @@ export default function AnnualReportScreen() {
     void exportHtmlAsPdf(html, { fileName: 'S-10', preopenedWindow: preopened });
   };
 
-  if (figures.isLoading || attendance.isLoading) {
+  if (figures.isLoading || attendance.isLoading || sentView.isLoading) {
     return (
       <View style={styles.centre}>
         <ActivityIndicator />
@@ -174,6 +212,23 @@ export default function AnnualReportScreen() {
   }
 
   const f = figures.data as AnnualFigures;
+  /** The people behind a form line: as sent where kept, as counted otherwise. */
+  const peopleOf = (key: AnnualListKey): CountedPublisher[] =>
+    kept ? kept.members[key] : f[key];
+  /** The number on a form line: as typed when it was sent, or the count. */
+  const valueOf = (key: AnnualListKey): number =>
+    kept ? (kept.figures[key] ?? 0) : f[key].length;
+  const lineProps = (key: AnnualListKey) => ({
+    people: peopleOf(key),
+    value: valueOf(key),
+    drift: driftOf(key),
+    onWhy: setWhy,
+  });
+  const startSaving = (over: Partial<AnnualNumbers> = {}) =>
+    setEditing({
+      ...(kept?.figures ?? sentView.data?.now ?? {}),
+      ...over,
+    });
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
@@ -200,27 +255,51 @@ export default function AnnualReportScreen() {
         </Pressable>
       </View>
 
+      {yearOver && sentView.data ? (
+        <SentBanner
+          view={sentView.data}
+          language={i18n.language}
+          onSave={() => startSaving()}
+        />
+      ) : null}
+
       <Text style={styles.sectionTitle}>
         {t('annualReport.attendanceSection')}
       </Text>
       <View style={styles.plain}>
         <PlainRow
           label={t('eventTypes.midweek')}
-          value={attendanceAverages.midweek}
+          value={
+            kept ? kept.figures.midweekAverage : attendanceAverages.midweek
+          }
         />
         <PlainRow
           label={t('eventTypes.weekend')}
-          value={attendanceAverages.weekend}
+          value={
+            kept ? kept.figures.weekendAverage : attendanceAverages.weekend
+          }
         />
       </View>
+      {kept && (driftOf('midweekAverage') || driftOf('weekendAverage')) ? (
+        <Text style={styles.driftPlain}>
+          {t('sent.attendanceNow', {
+            midweek: sentView.data?.now.midweekAverage ?? '—',
+            weekend: sentView.data?.now.weekendAverage ?? '—',
+          })}
+        </Text>
+      ) : null}
       {/* Said plainly: how many months the figure rests on, and how many are
           still to fill. A number without its footing invites being copied. */}
-      <Text style={styles.basis}>
-        {t('annualReport.averageBasis', {
-          count: attendanceAverages.counted,
-        })}
-      </Text>
-      {attendanceAverages.missing > 0 ? (
+      {/* Where the figures are the ones sent, the footing of today's record
+          is beside the point — the drift line above says what moved. */}
+      {kept ? null : (
+        <Text style={styles.basis}>
+          {t('annualReport.averageBasis', {
+            count: attendanceAverages.counted,
+          })}
+        </Text>
+      )}
+      {!kept && attendanceAverages.missing > 0 ? (
         <View style={styles.warn}>
           <Ionicons name="alert-circle-outline" size={16} color="#b45309" />
           <Text style={styles.warnText}>
@@ -257,7 +336,7 @@ export default function AnnualReportScreen() {
         id="active"
         label={t('annualReport.active')}
         hint={t('annualReport.activeHint')}
-        people={f.active}
+        {...lineProps('active')}
         open={open}
         setOpen={setOpen}
         language={i18n.language}
@@ -266,7 +345,7 @@ export default function AnnualReportScreen() {
         id="inactive"
         label={t('annualReport.becameInactive')}
         hint={t('annualReport.becameInactiveHint')}
-        people={f.becameInactive}
+        {...lineProps('becameInactive')}
         open={open}
         setOpen={setOpen}
         language={i18n.language}
@@ -275,7 +354,7 @@ export default function AnnualReportScreen() {
         id="reactivated"
         label={t('annualReport.reactivated')}
         hint={t('annualReport.reactivatedHint')}
-        people={f.reactivated}
+        {...lineProps('reactivated')}
         open={open}
         setOpen={setOpen}
         language={i18n.language}
@@ -316,7 +395,7 @@ export default function AnnualReportScreen() {
       <Figure
         id="deaf"
         label={t('publishers.fields.isDeaf')}
-        people={f.deaf}
+        {...lineProps('deaf')}
         open={open}
         setOpen={setOpen}
         language={i18n.language}
@@ -324,7 +403,7 @@ export default function AnnualReportScreen() {
       <Figure
         id="blind"
         label={t('publishers.fields.isBlind')}
-        people={f.blind}
+        {...lineProps('blind')}
         open={open}
         setOpen={setOpen}
         language={i18n.language}
@@ -332,7 +411,7 @@ export default function AnnualReportScreen() {
       <Figure
         id="imprisoned"
         label={t('publishers.fields.isImprisoned')}
-        people={f.imprisoned}
+        {...lineProps('imprisoned')}
         open={open}
         setOpen={setOpen}
         language={i18n.language}
@@ -346,7 +425,321 @@ export default function AnnualReportScreen() {
       <View style={styles.byHand}>
         <Text style={styles.byHandText}>{t('annualReport.byHandNote')}</Text>
       </View>
+
+      {why && sentView.data ? (
+        <DriftSheet
+          line={why}
+          language={i18n.language}
+          onClose={() => setWhy(null)}
+          onCorrect={() => {
+            const line = why;
+            setWhy(null);
+            startSaving({ [line.key]: line.now });
+          }}
+        />
+      ) : null}
+      {editing && sentView.data ? (
+        <SaveSheet
+          year={year}
+          view={sentView.data}
+          initial={editing}
+          onClose={() => setEditing(null)}
+        />
+      ) : null}
     </ScrollView>
+  );
+}
+
+/**
+ * Where the year stands with the branch: sent and kept, frozen by the app, or
+ * not yet saved — each with the one thing to do about it.
+ */
+function SentBanner({
+  view,
+  language,
+  onSave,
+}: {
+  view: AnnualSentView;
+  language: string;
+  onSave: () => void;
+}) {
+  const { t } = useTranslation();
+  const day = (d: string) => dayjs(d).locale(language).format('D MMMM YYYY');
+  const kept = view.sent;
+
+  if (kept?.confirmed) {
+    return (
+      <View style={[styles.banner, styles.bannerSent]}>
+        <View style={styles.bannerHead}>
+          <Ionicons name="lock-closed-outline" size={18} color="#0e7490" />
+          <Text style={styles.bannerTitle}>{t('sent.annualTitle')}</Text>
+        </View>
+        <Text style={styles.bannerText}>
+          {kept.savedByName && kept.sentOn
+            ? t('sent.byWhom', { date: day(kept.sentOn), name: kept.savedByName })
+            : kept.sentOn
+              ? t('sent.onDay', { date: day(kept.sentOn) })
+              : ''}{' '}
+          {t('sent.annualBody')}
+        </Text>
+        <Pressable onPress={onSave} hitSlop={6} style={styles.bannerLink}>
+          <Ionicons name="create-outline" size={15} color="#0e7490" />
+          <Text style={styles.bannerLinkText}>{t('sent.correct')}</Text>
+        </Pressable>
+      </View>
+    );
+  }
+  if (kept) {
+    return (
+      <View style={[styles.banner, styles.bannerFrozen]}>
+        <View style={styles.bannerHead}>
+          <Ionicons name="lock-closed-outline" size={18} color="#475569" />
+          <Text style={styles.bannerTitle}>{t('sent.frozenTitle')}</Text>
+        </View>
+        <Text style={styles.bannerText}>
+          {t('sent.frozenBody', { date: day(kept.savedAt.slice(0, 10)) })}
+        </Text>
+        <Pressable onPress={onSave} hitSlop={6} style={styles.bannerLink}>
+          <Ionicons name="create-outline" size={15} color="#0e7490" />
+          <Text style={styles.bannerLinkText}>{t('sent.confirm')}</Text>
+        </Pressable>
+      </View>
+    );
+  }
+  return (
+    <View style={[styles.banner, styles.bannerUnsaved]}>
+      <View style={styles.bannerHead}>
+        <Ionicons name="lock-open-outline" size={18} color="#92400e" />
+        <Text style={[styles.bannerTitle, { color: '#92400e' }]}>
+          {t('sent.unsavedTitle')}
+        </Text>
+      </View>
+      <Text style={[styles.bannerText, { color: '#78350f' }]}>
+        {t('sent.unsavedBody')}
+      </Text>
+      <Pressable style={styles.saveBtn} onPress={onSave}>
+        <Text style={styles.saveBtnText}>{t('sent.save')}</Text>
+      </Pressable>
+      {/* Only while it is still ahead: an older year, from before the app
+          kept anything, has no freeze coming, and a date in the past would
+          read as a threat already carried out. */}
+      {!dayjs().isAfter(dayjs(view.freezeOn), 'day') ? (
+        <Text style={styles.bannerNote}>
+          {t('sent.freezeNote', { date: day(view.freezeOn) })}
+        </Text>
+      ) : null}
+    </View>
+  );
+}
+
+/** «Report for August filed 3 September» — one later fact, said plainly. */
+function factText(
+  f: LateFact,
+  t: (k: string, o?: Record<string, unknown>) => string,
+  language: string,
+): string {
+  return t(`sent.facts.${f.kind}`, {
+    month: f.reportMonth
+      ? dayjs(f.reportMonth).locale(language).format('MMMM YYYY')
+      : '',
+    date: dayjs(f.at).locale(language).format('D MMMM'),
+    day: f.day ? dayjs(f.day).locale(language).format('D MMMM YYYY') : '',
+  });
+}
+
+/**
+ * Why a sent figure and today's count part — person by person, with what was
+ * entered after the form went out. Then the two honest choices: correct what
+ * was sent, or keep it.
+ */
+function DriftSheet({
+  line,
+  language,
+  onClose,
+  onCorrect,
+}: {
+  line: AnnualDriftLine;
+  language: string;
+  onClose: () => void;
+  onCorrect: () => void;
+}) {
+  const { t } = useTranslation();
+  return (
+    <Sheet
+      visible
+      variant="bottom"
+      title={t('sent.driftTitle')}
+      onClose={onClose}
+      closeLabel={t('common.close')}
+      footer={
+        <View style={{ gap: 8 }}>
+          <Pressable style={styles.primaryBtn} onPress={onCorrect}>
+            <Text style={styles.primaryBtnText}>
+              {t('sent.correctTo', { from: line.sent ?? '—', to: line.now ?? '—' })}
+            </Text>
+          </Pressable>
+          <Pressable style={styles.secondaryBtn} onPress={onClose}>
+            <Text style={styles.secondaryBtnText}>
+              {t('sent.keep', { count: line.sent ?? '—' })}
+            </Text>
+          </Pressable>
+        </View>
+      }
+    >
+      <ScrollView contentContainerStyle={{ paddingBottom: 12 }}>
+        <View style={styles.compare}>
+          <View style={styles.compareCell}>
+            <Text style={styles.compareLabel}>{t('sent.sentLabel')}</Text>
+            <Text style={styles.compareValue}>{line.sent ?? '—'}</Text>
+          </View>
+          <View style={styles.compareCell}>
+            <Text style={styles.compareLabel}>{t('sent.nowLabel')}</Text>
+            <Text style={[styles.compareValue, { color: '#b45309' }]}>
+              {line.now ?? '—'}
+            </Text>
+          </View>
+        </View>
+
+        {line.people.length > 0 ? (
+          <Text style={styles.sheetSection}>{t('sent.whoTitle')}</Text>
+        ) : null}
+        {line.people.map((p) => (
+          <View key={p.id} style={styles.driftPerson}>
+            <Text style={styles.personName}>{p.name}</Text>
+            <Text style={styles.driftChange}>{t(`sent.${p.change}`)}</Text>
+            {p.reasons.length > 0 ? (
+              p.reasons.map((r, i) => (
+                <Text key={i} style={styles.driftReason}>
+                  · {factText(r, t, language)}
+                </Text>
+              ))
+            ) : (
+              <Text style={styles.driftReason}>{t('sent.noReason')}</Text>
+            )}
+          </View>
+        ))}
+
+        <Text style={styles.sheetNote}>{t('sent.notAffect')}</Text>
+        <Text style={styles.sheetNote}>{t('sent.correctHint')}</Text>
+      </ScrollView>
+    </Sheet>
+  );
+}
+
+const FORM_LINES: { key: AnnualNumberKey; label: string }[] = [
+  { key: 'midweekAverage', label: 'eventTypes.midweek' },
+  { key: 'weekendAverage', label: 'eventTypes.weekend' },
+  { key: 'active', label: 'annualReport.active' },
+  { key: 'becameInactive', label: 'annualReport.becameInactive' },
+  { key: 'reactivated', label: 'annualReport.reactivated' },
+  { key: 'deaf', label: 'publishers.fields.isDeaf' },
+  { key: 'blind', label: 'publishers.fields.isBlind' },
+  { key: 'imprisoned', label: 'publishers.fields.isImprisoned' },
+];
+
+/**
+ * «This is what I sent.» The app offers its own numbers; the secretary keeps
+ * or changes them to match the form he filed. The record has to agree with
+ * the form, not with the app.
+ */
+function SaveSheet({
+  year,
+  view,
+  initial,
+  onClose,
+}: {
+  year: number;
+  view: AnnualSentView;
+  initial: Partial<AnnualNumbers>;
+  onClose: () => void;
+}) {
+  const { t } = useTranslation();
+  const qc = useQueryClient();
+  const [sentOn, setSentOn] = useState(
+    view.sent?.sentOn ?? dayjs().format('YYYY-MM-DD'),
+  );
+  const [values, setValues] = useState<Record<string, string>>(() =>
+    Object.fromEntries(
+      FORM_LINES.map(({ key }) => [key, initial[key] == null ? '' : String(initial[key])]),
+    ),
+  );
+  const save = useMutation({
+    mutationFn: () =>
+      annualReportApi.saveSent({
+        startYear: year,
+        sentOn,
+        figures: Object.fromEntries(
+          FORM_LINES.map(({ key }) => [
+            key,
+            values[key].trim() === '' ? null : Number(values[key]),
+          ]),
+        ) as AnnualNumbers,
+      }),
+    onSuccess: (data) => {
+      qc.setQueryData(['annual-report', 'sent', year], data);
+      void qc.invalidateQueries({ queryKey: ['tasks'] });
+      onClose();
+    },
+  });
+  const valid = FORM_LINES.every(({ key }) => /^\d*$/.test(values[key].trim()));
+
+  return (
+    <Sheet
+      visible
+      variant="bottom"
+      fills
+      title={t('sent.sheetTitle')}
+      onClose={onClose}
+      closeLabel={t('common.cancel')}
+      footer={
+        <Pressable
+          style={[styles.primaryBtn, (!valid || save.isPending) && { opacity: 0.5 }]}
+          disabled={!valid || save.isPending}
+          onPress={() => save.mutate()}
+        >
+          <Text style={styles.primaryBtnText}>{t('common.save')}</Text>
+        </Pressable>
+      }
+    >
+      <ScrollView
+        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 16 }}
+        keyboardShouldPersistTaps="handled"
+      >
+        <Text style={styles.sheetIntro}>
+          {t('sent.sheetIntro', { year: `${year}/${String(year + 1).slice(2)}` })}
+        </Text>
+        <Text style={styles.fieldLabel}>{t('sent.sentOnLabel')}</Text>
+        <DateField value={sentOn} onChange={setSentOn} />
+        {FORM_LINES.map(({ key, label }) => {
+          const now = view.now[key];
+          const typed = values[key].trim();
+          const differs = typed !== '' && now !== null && Number(typed) !== now;
+          return (
+            <View key={key} style={styles.formRow}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.formLabel}>{t(label)}</Text>
+                {differs ? (
+                  <Text style={styles.formHint}>
+                    {t('sent.byReports', { count: now })}
+                  </Text>
+                ) : null}
+              </View>
+              <TextInput
+                value={values[key]}
+                onChangeText={(v) => setValues((s) => ({ ...s, [key]: v }))}
+                keyboardType="number-pad"
+                style={styles.formInput}
+                accessibilityLabel={t(label)}
+              />
+            </View>
+          );
+        })}
+        <Text style={styles.sheetNote}>{t('sent.appointmentsNote')}</Text>
+        {save.isError ? (
+          <Text style={styles.error}>{extractErrorMessage(save.error)}</Text>
+        ) : null}
+      </ScrollView>
+    </Sheet>
   );
 }
 
@@ -364,6 +757,9 @@ function Figure({
   label,
   hint,
   people,
+  value,
+  drift,
+  onWhy,
   open,
   setOpen,
   language,
@@ -372,10 +768,16 @@ function Figure({
   label: string;
   hint?: string;
   people: CountedPublisher[];
+  /** The number shown — as sent, where it was; the count otherwise. */
+  value?: number;
+  /** What the reports say now, where it differs from what was sent. */
+  drift?: AnnualDriftLine | null;
+  onWhy?: (line: AnnualDriftLine) => void;
   open: string | null;
   setOpen: (v: string | null) => void;
   language: string;
 }) {
+  const { t } = useTranslation();
   const isOpen = open === id;
   return (
     <View style={styles.figure}>
@@ -387,7 +789,7 @@ function Figure({
           <Text style={styles.figureLabel}>{label}</Text>
           {hint ? <Text style={styles.figureHint}>{hint}</Text> : null}
         </View>
-        <Text style={styles.figureValue}>{people.length}</Text>
+        <Text style={styles.figureValue}>{value ?? people.length}</Text>
         <Ionicons
           name={isOpen ? 'chevron-up' : 'chevron-down'}
           size={16}
@@ -410,6 +812,16 @@ function Figure({
             </View>
           ))
         )
+      ) : null}
+
+      {drift && onWhy ? (
+        <Pressable style={styles.driftLine} onPress={() => onWhy(drift)}>
+          <Ionicons name="alert-circle-outline" size={16} color="#b45309" />
+          <Text style={styles.driftText}>
+            {t('sent.nowDiffers', { count: drift.now ?? '—' })}
+          </Text>
+          <Text style={styles.driftWhy}>{t('sent.why')}</Text>
+        </Pressable>
       ) : null}
     </View>
   );
@@ -564,4 +976,136 @@ const styles = StyleSheet.create({
     padding: 14,
   },
   byHandText: { fontSize: 13.5, color: '#475569', lineHeight: 19 },
+
+  banner: {
+    borderRadius: 14,
+    borderWidth: 1,
+    padding: 14,
+    marginTop: 4,
+    marginBottom: 4,
+  },
+  bannerSent: { backgroundColor: '#ecfeff', borderColor: '#a5f3fc' },
+  bannerFrozen: { backgroundColor: '#f8fafc', borderColor: '#cbd5e1' },
+  bannerUnsaved: { backgroundColor: '#fffbeb', borderColor: '#fde68a' },
+  bannerHead: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  bannerTitle: {
+    fontSize: 15.5,
+    color: '#0f172a',
+    fontFamily: 'Manrope_700Bold',
+    flex: 1,
+  },
+  bannerText: { fontSize: 13.5, color: '#334155', lineHeight: 19, marginTop: 6 },
+  bannerNote: { fontSize: 12.5, color: '#92400e', lineHeight: 17, marginTop: 10 },
+  bannerLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 10,
+    alignSelf: 'flex-start',
+  },
+  bannerLinkText: {
+    fontSize: 13.5,
+    color: '#0e7490',
+    fontFamily: 'Manrope_700Bold',
+  },
+  saveBtn: {
+    marginTop: 12,
+    backgroundColor: '#b45309',
+    borderRadius: 12,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  saveBtnText: { color: '#fff', fontSize: 15, fontFamily: 'Manrope_700Bold' },
+
+  driftLine: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    borderTopWidth: 1,
+    borderTopColor: '#f1f5f9',
+    borderStyle: 'dashed',
+    paddingVertical: 10,
+  },
+  driftText: { flex: 1, fontSize: 13, color: '#92400e' },
+  driftWhy: { fontSize: 13, color: '#0e7490', fontFamily: 'Manrope_700Bold' },
+  driftPlain: {
+    fontSize: 12.5,
+    color: '#92400e',
+    marginTop: 6,
+    marginLeft: 4,
+    lineHeight: 17,
+  },
+
+  compare: { flexDirection: 'row', gap: 10, marginBottom: 6 },
+  compareCell: {
+    flex: 1,
+    backgroundColor: '#f8fafc',
+    borderRadius: 12,
+    padding: 12,
+  },
+  compareLabel: { fontSize: 12.5, color: '#64748b' },
+  compareValue: {
+    fontSize: 26,
+    color: '#0e7490',
+    fontFamily: 'Manrope_700Bold',
+  },
+  sheetSection: {
+    fontSize: 12,
+    color: '#94a3b8',
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+    fontFamily: 'Manrope_700Bold',
+    marginTop: 14,
+    marginBottom: 4,
+  },
+  driftPerson: {
+    paddingVertical: 9,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f5f9',
+  },
+  driftChange: { fontSize: 12.5, color: '#b45309', marginTop: 2 },
+  driftReason: { fontSize: 13, color: '#475569', marginTop: 3, lineHeight: 18 },
+  sheetNote: { fontSize: 12.5, color: '#64748b', lineHeight: 18, marginTop: 12 },
+  sheetIntro: { fontSize: 13.5, color: '#475569', lineHeight: 19, marginBottom: 10 },
+  primaryBtn: {
+    backgroundColor: '#0e7490',
+    borderRadius: 12,
+    paddingVertical: 13,
+    alignItems: 'center',
+  },
+  primaryBtnText: { color: '#fff', fontSize: 15, fontFamily: 'Manrope_700Bold' },
+  secondaryBtn: {
+    borderWidth: 1,
+    borderColor: '#cbd5e1',
+    borderRadius: 12,
+    paddingVertical: 12,
+    alignItems: 'center',
+    backgroundColor: '#fff',
+  },
+  secondaryBtnText: { color: '#0f172a', fontSize: 15, fontFamily: 'Manrope_600SemiBold' },
+  fieldLabel: { fontSize: 13, color: '#64748b', marginBottom: 6 },
+  formRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 9,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f5f9',
+  },
+  formLabel: { fontSize: 14.5, color: '#0f172a' },
+  formHint: { fontSize: 12, color: '#b45309', marginTop: 2 },
+  formInput: {
+    width: 76,
+    textAlign: 'right',
+    fontSize: 17,
+    fontFamily: 'Manrope_700Bold',
+    color: '#0f172a',
+    borderWidth: 1,
+    borderColor: '#cbd5e1',
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    backgroundColor: '#fff',
+  },
+  error: { color: '#b91c1c', fontSize: 13, marginTop: 10 },
 });

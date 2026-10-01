@@ -297,6 +297,23 @@ export default function TasksScreen() {
           </Pressable>
         ) : null}
 
+        {/* «Save what was sent» opens the year it is about — the one that
+            ended, which is the task's period minus one: 2025/26 is «2026». */}
+        {task.kind === "annual_report_sent" ? (
+          <Pressable
+            onPress={() =>
+              router.push(
+                `/service-reports/annual?startYear=${encodeURIComponent(
+                  String(Number(task.kindPeriod ?? "0") - 1),
+                )}` as never,
+              )
+            }
+            hitSlop={6}
+          >
+            <Text style={styles.openScreen}>{t("sent.openAnnual")}</Text>
+          </Pressable>
+        ) : null}
+
         {/* The task says there is something to plan; the page says which
             groups. The names cannot be in the task itself — its words are
             written from `kind` in the reader's own language. */}

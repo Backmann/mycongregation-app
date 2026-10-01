@@ -68,6 +68,8 @@ const SECTION_TONE: Record<string, string> = {
   user: '#64748b',
   elder_task: '#64748b',
   meeting_settings: '#64748b',
+  annual_report: '#0e7490',
+  monthly_report: '#0e7490',
 };
 
 const SECTION_ICON: Record<string, keyof typeof Ionicons.glyphMap> = {
@@ -94,6 +96,8 @@ const SECTION_ICON: Record<string, keyof typeof Ionicons.glyphMap> = {
   user: 'key-outline',
   elder_task: 'checkbox-outline',
   meeting_settings: 'time-outline',
+  annual_report: 'lock-closed-outline',
+  monthly_report: 'lock-closed-outline',
 };
 
 /**
@@ -134,6 +138,8 @@ const FILTERS = [
   'backup',
   'meeting_settings',
   'elder_task',
+  'annual_report',
+  'monthly_report',
 ] as const;
 
 export default function JournalScreen() {
@@ -375,6 +381,30 @@ function fieldWord(
   t: (k: string, o?: Record<string, unknown>) => string,
   language: string,
 ): string {
+  // A yes/no on a card or a kept sheet: «true» is the machine's word.
+  if (typeof v === 'boolean') {
+    if (
+      field === 'confirmed' ||
+      field === 'isDeaf' ||
+      field === 'isBlind' ||
+      field === 'isImprisoned'
+    ) {
+      return v ? t('common.yes') : t('common.no');
+    }
+  }
+  if (entityType === 'publisher' && typeof v === 'string') {
+    // What the card's own screens call these — one dictionary, two readers.
+    if (field === 'appointment') {
+      return t(`publishers.appointment.${v}`, { defaultValue: '' });
+    }
+    if (field === 'pioneerType') {
+      return t(`publishers.pioneer.options.${v}`, { defaultValue: '' });
+    }
+    if (field === 'removalReason') {
+      return t(`publishers.removal.${v}`, { defaultValue: '' });
+    }
+    return '';
+  }
   if (entityType === 'meeting_settings') {
     // ISO weekday, 1 = Monday … 7 = Sunday, as the schedule stores it. A bare
     // «3» next to «День будней» says nothing.
@@ -465,7 +495,14 @@ function Row({
         }),
       })
     : '';
-  const what = ctx?.title || kindName;
+  // A sheet kept as sent, by the period it covers: «2025/26», «август 2026».
+  const sheetName =
+    entry.entityType === 'annual_report' && ctx?.title
+      ? `${ctx.title}/${String(Number(ctx.title) + 1).slice(2)}`
+      : entry.entityType === 'monthly_report' && ctx?.title
+        ? dayjs(`${ctx.title}-01`).locale(language).format('MMMM YYYY')
+        : '';
+  const what = sheetName || ctx?.title || kindName;
   if (what) contextBits.push(what);
   const contextLine = contextBits.join(' · ');
 

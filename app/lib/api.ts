@@ -840,21 +840,6 @@ export interface S21DataResponse {
   months: S21MonthRow[];
 }
 
-export interface ServiceYearSummary {
-  serviceYear: number;
-  firstMonth: string;
-  lastMonth: string;
-  totalHours: number;
-  totalStudies: number;
-  avgMonthlyPioneerReports: number;
-  monthly: {
-    reportMonth: string;
-    hours: number;
-    studies: number;
-    reporters: number;
-  }[];
-}
-
 /** Where the collection of the month's reports stands — the home card. */
 export interface ReportCollection {
   reportMonth: string;
@@ -878,6 +863,51 @@ export interface ServiceReportSummary {
     activePct: number;
   };
   closed: boolean;
+  /**
+   * What went to the branch for this month, when it did: the figures above
+   * are then the ones kept at closing, not worked out afresh. Absent on an
+   * older server; null when the month was never kept.
+   */
+  sent?: SentMeta | null;
+  /** The lines where what was sent and what the reports say now differ. */
+  drift?: MonthlyDrift[];
+  /** What was entered after the month was kept, by whom it concerns. */
+  late?: (LateFact & { name: string })[];
+}
+
+/** Who kept a sheet as sent, and when. */
+export interface SentMeta {
+  /** false — nobody saved it; the app froze its own figures. */
+  confirmed: boolean;
+  sentOn: string | null;
+  savedByName: string | null;
+  savedAt: string;
+  updatedAt: string;
+}
+
+/** Something entered after a sheet was sent that bears on it. */
+export interface LateFact {
+  publisherId: string;
+  kind:
+    | "report_filed"
+    | "report_changed"
+    | "report_withdrawn"
+    | "report_restored"
+    | "departure_entered"
+    | "card_created";
+  /** When it was entered. */
+  at: string;
+  reportMonth?: string;
+  /** For a departure: the day the person left. */
+  day?: string;
+}
+
+export interface MonthlyDrift {
+  /** publishers, publishersStudies, auxiliary, auxiliaryHours, …, active, inactive */
+  key: string;
+  sent: number | null;
+  now: number | null;
+  people: { id: string; name: string; change: "added" | "removed" }[];
 }
 
 export interface ClosureStatus {
@@ -3986,13 +4016,6 @@ export const serviceReportsApi = {
     );
     return data;
   },
-  async getYearSummary(year?: number): Promise<ServiceYearSummary> {
-    const { data } = await api.get<ServiceYearSummary>(
-      "/service-reports/year-summary",
-      { params: year ? { year } : {} },
-    );
-    return data;
-  },
   async getS21Data(
     publisherId: string,
     year?: number,
@@ -4680,7 +4703,68 @@ export const annualReportApi = {
     });
     return data;
   },
+  /** What went to the branch for the year, beside what the reports say now. */
+  async sent(startYear: number): Promise<AnnualSentView> {
+    const { data } = await api.get<AnnualSentView>("/annual-report/sent", {
+      params: { startYear },
+    });
+    return data;
+  },
+  /** «This is what I sent» — saved, or corrected. */
+  async saveSent(input: {
+    startYear: number;
+    sentOn: string;
+    figures: AnnualNumbers;
+  }): Promise<AnnualSentView> {
+    const { data } = await api.put<AnnualSentView>(
+      "/annual-report/sent",
+      input,
+    );
+    return data;
+  },
 };
+
+/** The S-10 lines that are lists of people. */
+export type AnnualListKey =
+  | "active"
+  | "becameInactive"
+  | "reactivated"
+  | "deaf"
+  | "blind"
+  | "imprisoned";
+
+export type AnnualNumberKey =
+  | AnnualListKey
+  | "midweekAverage"
+  | "weekendAverage";
+
+export type AnnualNumbers = Record<AnnualNumberKey, number | null>;
+
+export interface AnnualDriftLine {
+  key: AnnualNumberKey;
+  sent: number | null;
+  now: number | null;
+  people: {
+    id: string;
+    name: string;
+    change: "added" | "removed";
+    reasons: LateFact[];
+  }[];
+}
+
+export interface AnnualSentView {
+  startYear: number;
+  /** The day the app freezes its own figures if nobody saved: 20 October. */
+  freezeOn: string;
+  now: AnnualNumbers;
+  sent:
+    | null
+    | (SentMeta & {
+        figures: AnnualNumbers;
+        members: Record<AnnualListKey, CountedPublisher[]>;
+      });
+  drift: AnnualDriftLine[];
+}
 
 // ---- Задачи совета старейшин ------------------------------------------
 
@@ -4728,6 +4812,7 @@ export interface ElderTask {
     | "pioneer_service_review"
     | "service_year_review"
     | "service_overseer_visits"
+    | "annual_report_sent"
     | null;
   /** Which turn of it — «2026-Q3», «2026». Two audits a year need telling apart. */
   kindPeriod: string | null;
