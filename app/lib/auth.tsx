@@ -18,7 +18,26 @@ import {
   clearAuthTokens,
   mayHaveSession,
   setOnAuthFailure,
+  pushApi,
 } from './api';
+import { Platform } from 'react-native';
+import { detachWebPush } from './web-push';
+import { rememberedPushToken, rememberPushToken } from './push-token-store';
+
+/** Best effort, and never a reason for signing out to fail. */
+async function detachThisDevice(): Promise<void> {
+  try {
+    if (Platform.OS === 'web') {
+      await detachWebPush();
+      return;
+    }
+    const token = rememberedPushToken();
+    if (token) await pushApi.unregister(token);
+    rememberPushToken(null);
+  } catch {
+    // The server prunes dead tokens on its own; the sign-out goes ahead.
+  }
+}
 
 interface AuthContextValue {
   user: AuthUser | null;
@@ -140,6 +159,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // token cleared only on this device would stay usable for its full life.
     // In cookie mode there is nothing to read here: the browser sends the
     // cookie and the server clears it, so the call is made unconditionally.
+    // This device stops receiving for the person who is leaving — while the
+    // session can still say so. Nothing did this before, and on a shared
+    // phone or tablet his notifications went on arriving for the next person.
+    await detachThisDevice();
     const refreshToken = await storage.getItem(REFRESH_TOKEN_KEY);
     if (refreshToken || mayHaveSession()) {
       await authApi.logout(refreshToken ?? undefined);

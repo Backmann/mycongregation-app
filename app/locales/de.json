@@ -4095,5 +4095,75 @@
     "lastMonthDecides": "Für {{month}} fehlt noch — und nur dieser Bericht entscheidet, ob sie als aktiv zählen:",
     "lastMonthOthers_one": "{{count}} weiterer fehlt noch — an „Aktive“ ändert das nichts.",
     "lastMonthOthers_other": "{{count}} weitere fehlen noch — an „Aktive“ ändert das nichts."
+  },
+  "notifyDevice": {
+    "card": {
+      "title": "Benachrichtigungen einschalten",
+      "body": "Ohne sie erfahren Sie nichts von einer Aufgabe in der Zusammenkunft, vom Putzen oder von anderen Aufgaben.",
+      "enable": "Benachrichtigungen einschalten",
+      "later": "Später",
+      "iosTitle": "Benachrichtigungen auf dem iPhone",
+      "iosBody": "Das iPhone stellt Benachrichtigungen nur einer Seite zu, die zum Home-Bildschirm hinzugefügt wurde.",
+      "iosStep1": "Unten in Safari auf „Teilen“ tippen",
+      "iosStep2": "„Zum Home-Bildschirm“ wählen",
+      "iosStep3": "Die App über das neue Symbol öffnen",
+      "androidBody": "Am zuverlässigsten funktionieren Benachrichtigungen in der App. Im Browser geht es auch.",
+      "install": "App installieren",
+      "enableBrowser": "Im Browser einschalten",
+      "deniedTitle": "Benachrichtigungen sind blockiert",
+      "deniedApp": "Erlauben Sie sie in den Einstellungen des Telefons.",
+      "deniedWeb": "Erlauben Sie Benachrichtigungen für diese Seite in den Browser-Einstellungen und kommen Sie dann hierher zurück.",
+      "openSettings": "Einstellungen öffnen",
+      "doneTitle": "Benachrichtigungen sind eingeschaltet",
+      "doneBody": "Wir haben eine Testbenachrichtigung gesendet. Kommt sie nicht innerhalb einer Minute an, öffnen Sie „Profil“ → „Benachrichtigungen“."
+    },
+    "state": {
+      "checking": "Wird geprüft…",
+      "ok": "Dieses Gerät erhält Benachrichtigungen",
+      "off": "Benachrichtigungen sind auf diesem Gerät nicht eingeschaltet",
+      "denied": "Benachrichtigungen sind in den Geräteeinstellungen blockiert",
+      "not_installed": "Die Seite ist in Safari geöffnet, nicht vom Home-Bildschirm",
+      "unsupported": "Dieser Browser unterstützt keine Benachrichtigungen",
+      "no_token": "Das Gerät hat keinen Schlüssel für Benachrichtigungen ausgestellt",
+      "not_registered": "Das Gerät ist bereit, aber der Server hat es nicht angenommen"
+    },
+    "test": {
+      "button": "Test senden",
+      "sent": "Test um {{time}} gesendet. Kommt er nicht innerhalb einer Minute an, prüfen Sie die Benachrichtigungseinstellungen des Geräts.",
+      "noDevice": "Kein Ziel: Auf keinem Ihrer Geräte sind Benachrichtigungen eingeschaltet.",
+      "failed": "Senden fehlgeschlagen. Bitte später erneut versuchen."
+    },
+    "reach": {
+      "title": "Wer Benachrichtigungen erhält",
+      "rowSub": "Wen sie nicht erreichen und warum",
+      "summary": "Erhalten Benachrichtigungen: {{receiving}} von {{total}}",
+      "summaryRest_one": "{{count}} erhält keine. Mit Aufgaben in den nächsten 4 Wochen: {{parts}}.",
+      "summaryRest_other": "{{count}} erhalten keine. Mit Aufgaben in den nächsten 4 Wochen: {{parts}}.",
+      "allGood": "Alle erhalten Benachrichtigungen.",
+      "yes": "erhält",
+      "no": "nein",
+      "upcoming_one": "{{count}} Aufgabe",
+      "upcoming_other": "{{count}} Aufgaben",
+      "lastTest": "Test {{date}}",
+      "lastTestFailed": "Test {{date}} kam nicht an",
+      "platform": {
+        "android_app": "Android, App",
+        "android_browser": "Android, Browser",
+        "ios_browser": "iPhone",
+        "ios_app": "iPhone, App",
+        "mac_browser": "Mac oder iPad",
+        "windows_browser": "Windows"
+      },
+      "reasons": {
+        "no_login": "Kein Zugang zur App",
+        "never_opened": "Zugang vorhanden, App aber nie geöffnet",
+        "not_installed": "Die Seite ist nicht auf dem Home-Bildschirm",
+        "denied": "Benachrichtigungen in den Einstellungen blockiert",
+        "off": "Benachrichtigungen nicht eingeschaltet",
+        "unsupported": "Der Browser unterstützt keine Benachrichtigungen",
+        "no_token": "Das Telefon hat keinen Schlüssel ausgestellt",
+        "unknown": "Kein Gerät vorhanden; der Grund wird bekannt, sobald die Person die App öffnet"
+      }
+    }
   }
 }

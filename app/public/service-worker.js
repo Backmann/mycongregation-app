@@ -125,6 +125,9 @@ function routeForNotification(data) {
         path: '/publishers/cleaning-week',
         params: data.weekStart ? { week: data.weekStart } : {},
       };
+    // «Отправить пробное» is sent from this screen; tapping it comes back.
+    case 'test':
+      return { path: '/profile/notifications', params: {} };
     default:
       return null;
   }

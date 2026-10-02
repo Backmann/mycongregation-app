@@ -10,6 +10,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../../lib/auth";
 import { usePushNotifications } from "../../lib/push-notifications";
+import { useDeviceNotifySync } from "../../lib/notify-device";
 import { ContactsCheckPrompt } from "../../components/ContactsCheckPrompt";
 import { UpdateBanner } from '../../components/UpdateBanner';
 import { AppLock } from '../../components/AppLock';
@@ -78,6 +79,7 @@ export default function AppLayout() {
   const { user, isLoading } = useAuth();
   const { t } = useTranslation();
   usePushNotifications();
+  useDeviceNotifySync();
   if (isLoading) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>

@@ -27,6 +27,7 @@ import {
   unsubscribeFromWebPush,
   WebPushStatus,
 } from "../../../lib/web-push";
+import { refreshDeviceNotify } from "../../../lib/notify-device";
 import { notify } from "../../../lib/error-bus";
 import {
   biometricsAvailable,
@@ -157,6 +158,8 @@ export default function ProfileScreen() {
       }
       const fresh = await getWebPushStatus();
       setWebPushStatus(fresh);
+      // The home card and the «Уведомления» screen read the shared state.
+      void refreshDeviceNotify();
     } finally {
       setWebPushBusy(false);
     }

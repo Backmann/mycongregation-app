@@ -1,6 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
+  ActivityIndicator,
   Platform,
+  Pressable,
   ScrollView,
   StyleSheet,
   Switch,
@@ -19,97 +21,75 @@ import {
 import { LoadError } from '../../../components/LoadError';
 import { PushState, usePushState } from '../../../lib/push-notifications';
 import {
-  getWebPushStatus,
-  isIosWithoutStandalone,
-  WebPushStatus,
-} from '../../../lib/web-push';
+  enableDeviceNotify,
+  useDeviceNotify,
+} from '../../../lib/notify-device';
+import { usePermissions } from '../../../lib/permissions';
+import { router } from 'expo-router';
 import { notify } from '../../../lib/error-bus';
 
 /**
- * Whether this device is actually receiving anything.
+ * Whether this device is actually receiving anything — and the two things a
+ * person can do about it from here: switch it on, and try it.
  *
- * Both ways it can fail used to end in a console warning nobody sees, so
- * «уведомления не приходят» carried no clue as to why. Now the screen says
- * which step failed and what the device reported — the difference between
- * guessing and knowing.
+ * «Уведомления не приходят» used to carry no clue as to why. The screen first
+ * learned to say which step failed; it now also offers the step itself. On the
+ * site the only switch sat in the profile and this screen merely pointed at
+ * it — twelve of twenty-three iPhone users never got there.
  */
 function DeviceState() {
   const { t } = useTranslation();
-  const state: PushState = usePushState();
+  const state = useDeviceNotify();
+  const native: PushState = usePushState();
+  const [busy, setBusy] = useState(false);
+  const [testing, setTesting] = useState(false);
+  const [result, setResult] = useState<string | null>(null);
 
-  // On the web — which is what an iPhone or iPad runs, since the app there is
-  // the site added to the Home Screen — notifications travel a DIFFERENT road:
-  // a service worker and a browser subscription, not a device token. The
-  // banner only knew the native road, so it sat at «Проверяем…» for ever and
-  // told nobody anything. It now asks the road this device is actually on.
-  const [web, setWeb] = useState<WebPushStatus | null>(null);
-  useEffect(() => {
-    if (Platform.OS !== 'web') return;
-    let cancelled = false;
-    getWebPushStatus().then((s) => {
-      if (!cancelled) setWeb(s);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  if (Platform.OS === 'web') {
-    const iosNeedsHomeScreen = isIosWithoutStandalone();
-    const ok = web === 'subscribed';
-    const line =
-      web === null
-        ? t('notificationPrefs.device.idle')
-        : web === 'subscribed'
-          ? t('profile.webPush.enabled')
-          : web === 'denied'
-            ? t('profile.webPush.denied')
-            : web === 'unsupported'
-              ? t('profile.webPush.unsupported')
-              : web === 'unconfigured'
-                ? t('profile.webPush.unconfigured')
-                : t('profile.webPush.disabled');
-    return (
-      <View style={[styles.deviceCard, ok && styles.deviceCardOk]}>
-        <View style={styles.deviceHead}>
-          <Ionicons
-            name={ok ? 'checkmark-circle' : 'alert-circle-outline'}
-            size={17}
-            color={ok ? '#16a34a' : '#b45309'}
-          />
-          <Text style={styles.deviceTitle}>
-            {t('notificationPrefs.device.title')}
-          </Text>
-        </View>
-        <Text style={styles.deviceLine}>{line}</Text>
-        {/* On iOS this is not a preference but a precondition: Safari hands
-            push only to a site opened from the Home Screen. */}
-        {iosNeedsHomeScreen ? (
-          <Text style={styles.deviceReason}>{t('profile.webPush.iosHint')}</Text>
-        ) : null}
-        {!ok && web !== null && web !== 'unsupported' ? (
-          <Text style={styles.deviceReason}>
-            {t('notificationPrefs.device.webWhere')}
-          </Text>
-        ) : null}
-      </View>
-    );
-  }
-
-  const ok = state.kind === 'registered';
-  const line = {
-    idle: t('notificationPrefs.device.idle'),
-    unsupported: t('notificationPrefs.device.unsupported'),
-    denied: t('notificationPrefs.device.denied'),
-    no_token: t('notificationPrefs.device.noToken'),
-    not_registered: t('notificationPrefs.device.notRegistered'),
-    registered: t('notificationPrefs.device.registered'),
-  }[state.kind];
-
+  const ok = state === 'ok';
   const error =
-    state.kind === 'no_token' || state.kind === 'not_registered'
-      ? state.error
+    native.kind === 'no_token' || native.kind === 'not_registered'
+      ? native.error
       : null;
+  // What can be done from here: the site can ask the browser; the app can
+  // only lead to the phone's settings once the system has said no.
+  const canEnable =
+    (Platform.OS === 'web' && state === 'off') ||
+    (Platform.OS !== 'web' && state === 'denied');
+
+  const enable = async () => {
+    if (busy) return;
+    setBusy(true);
+    try {
+      await enableDeviceNotify();
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const test = async () => {
+    if (testing) return;
+    setTesting(true);
+    setResult(null);
+    try {
+      const res = await meApi.testNotification();
+      setResult(
+        res.status === 'sent'
+          ? t('notifyDevice.test.sent', {
+              time: new Date().toLocaleTimeString([], {
+                hour: '2-digit',
+                minute: '2-digit',
+              }),
+            })
+          : res.status === 'no_device'
+            ? t('notifyDevice.test.noDevice')
+            : t('notifyDevice.test.failed'),
+      );
+    } catch (err) {
+      setResult(extractErrorMessage(err));
+    } finally {
+      setTesting(false);
+    }
+  };
 
   return (
     <View style={[styles.deviceCard, ok && styles.deviceCardOk]}>
@@ -123,17 +103,62 @@ function DeviceState() {
           {t('notificationPrefs.device.title')}
         </Text>
       </View>
-      <Text style={styles.deviceLine}>{line}</Text>
+      <Text style={styles.deviceLine}>{t(`notifyDevice.state.${state}`)}</Text>
+      {state === 'not_installed' ? (
+        <Text style={styles.deviceReason}>{t('profile.webPush.iosHint')}</Text>
+      ) : null}
+      {state === 'denied' && Platform.OS === 'web' ? (
+        <Text style={styles.deviceReason}>
+          {t('notifyDevice.card.deniedWeb')}
+        </Text>
+      ) : null}
       {error ? (
         <Text style={styles.deviceReason}>
           {t('notificationPrefs.device.reason', { error })}
         </Text>
       ) : null}
-      {state.kind === 'no_token' && Platform.OS === 'android' ? (
+      {state === 'no_token' && Platform.OS === 'android' ? (
         <Text style={styles.deviceReason}>
           {t('notificationPrefs.device.androidHint')}
         </Text>
       ) : null}
+      {canEnable ? (
+        <Pressable
+          style={styles.devicePrimary}
+          onPress={enable}
+          disabled={busy}
+          accessibilityRole="button"
+        >
+          {busy ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.devicePrimaryText}>
+              {t(
+                Platform.OS === 'web'
+                  ? 'notifyDevice.card.enable'
+                  : 'notifyDevice.card.openSettings',
+              )}
+            </Text>
+          )}
+        </Pressable>
+      ) : null}
+      {state !== 'checking' ? (
+        <Pressable
+          style={styles.deviceSecondary}
+          onPress={test}
+          disabled={testing}
+          accessibilityRole="button"
+        >
+          {testing ? (
+            <ActivityIndicator color="#0e7490" />
+          ) : (
+            <Text style={styles.deviceSecondaryText}>
+              {t('notifyDevice.test.button')}
+            </Text>
+          )}
+        </Pressable>
+      ) : null}
+      {result ? <Text style={styles.deviceReason}>{result}</Text> : null}
     </View>
   );
 }
@@ -163,6 +188,7 @@ const CATEGORIES: { key: NotificationCategory; icon: string }[] = [
 export default function NotificationPreferencesScreen() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
+  const perms = usePermissions();
 
   const prefsQuery = useQuery({
     queryKey: ['me', 'notification-preferences'],
@@ -256,6 +282,29 @@ export default function NotificationPreferencesScreen() {
       {allOff ? (
         <Text style={styles.allOff}>{t('notificationPrefs.allOff')}</Text>
       ) : null}
+
+      {perms.isAdmin ? (
+        <Pressable
+          style={({ pressed }) => [
+            styles.card,
+            styles.row,
+            pressed && { opacity: 0.7 },
+          ]}
+          onPress={() => router.push('/profile/notification-reach' as never)}
+          accessibilityRole="button"
+        >
+          <View style={styles.rowIcon}>
+            <Ionicons name="people-outline" size={19} color="#0ea5e9" />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.rowTitle}>{t('notifyDevice.reach.title')}</Text>
+            <Text style={styles.rowSubtitle}>
+              {t('notifyDevice.reach.rowSub')}
+            </Text>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color="#94a3b8" />
+        </Pressable>
+      ) : null}
     </ScrollView>
   );
 }
@@ -282,6 +331,35 @@ const styles = StyleSheet.create({
   },
   deviceLine: { fontSize: 13.5, color: '#0f172a' },
   deviceReason: { fontSize: 12, color: '#64748b', lineHeight: 17 },
+  devicePrimary: {
+    backgroundColor: '#0e7490',
+    borderRadius: 10,
+    minHeight: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 6,
+  },
+  devicePrimaryText: {
+    color: '#fff',
+    fontSize: 14.5,
+    fontWeight: '600',
+    fontFamily: 'Manrope_600SemiBold',
+  },
+  deviceSecondary: {
+    borderWidth: 1,
+    borderColor: '#0e7490',
+    borderRadius: 10,
+    minHeight: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 6,
+  },
+  deviceSecondaryText: {
+    color: '#0e7490',
+    fontSize: 14.5,
+    fontWeight: '600',
+    fontFamily: 'Manrope_600SemiBold',
+  },
   card: {
     backgroundColor: '#fff',
     borderRadius: 14,

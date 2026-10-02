@@ -36,6 +36,10 @@ export default function ProfileLayout() {
         options={{ title: t('notificationPrefs.title') }}
       />
       <Stack.Screen
+        name="notification-reach"
+        options={{ title: t('notifyDevice.reach.title') }}
+      />
+      <Stack.Screen
         name="my-tasks"
         options={{ title: t('tasks.mine.title') }}
       />

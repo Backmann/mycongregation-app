@@ -26,6 +26,7 @@ import {
   useReportCollection,
 } from "../../../components/ReportCollectionCard";
 import { usePermissions } from "../../../lib/permissions";
+import { EnableNotificationsCard } from "../../../components/EnableNotificationsCard";
 import {
   Absence,
   Assignment,
@@ -2202,6 +2203,7 @@ export default function HomeScreen() {
               <View style={s.colLeft}>
                 <GreetingHeader now={now} />
                 <ReportDone />
+                <EnableNotificationsCard />
                 {next}
                 <TodoSection />
                 {soon}
@@ -2212,6 +2214,7 @@ export default function HomeScreen() {
             <>
               <GreetingHeader now={now} />
               <ReportDone />
+              <EnableNotificationsCard />
               {next}
               <TodoSection />
               {list}

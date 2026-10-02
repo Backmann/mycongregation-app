@@ -3077,6 +3077,17 @@ export const meApi = {
     const { data } = await api.get<MePending>("/me/pending");
     return data;
   },
+  /** «Отправить пробное»: one notification to my own devices, now. */
+  async testNotification(): Promise<NotificationTestResult> {
+    const { data } = await api.post<NotificationTestResult>(
+      "/me/notifications/test",
+    );
+    return data;
+  },
+  /** What this device says about notifications — for the admin's list. */
+  async reportPushState(state: DevicePushState): Promise<void> {
+    await api.post("/me/push-state", { state });
+  },
   async notificationPreferences(): Promise<NotificationPreferences> {
     const { data } = await api.get<NotificationPreferences>(
       "/me/notification-preferences",
@@ -4206,6 +4217,61 @@ export interface PushDeviceInfo {
   platform: string;
   osVersion?: string | null;
 }
+
+/** What the server stores of a device's own account of itself. */
+export type DevicePushState =
+  | "ok"
+  | "denied"
+  | "off"
+  | "not_installed"
+  | "unsupported"
+  | "no_token";
+
+export interface NotificationTestResult {
+  status: "sent" | "no_device" | "failed";
+  channel: "phone" | "web" | null;
+}
+
+export type UnreachableReason =
+  | "no_login"
+  | "never_opened"
+  | "not_installed"
+  | "denied"
+  | "off"
+  | "unsupported"
+  | "no_token"
+  | "unknown";
+
+export interface NotificationReachRow {
+  publisherId: string;
+  displayName: string;
+  hasLogin: boolean;
+  receives: boolean;
+  reason: UnreachableReason | null;
+  platform: string | null;
+  clientKind: string | null;
+  seenAt: string | null;
+  phones: number;
+  browsers: number;
+  upcoming: number;
+  lastTest: { at: string; status: string } | null;
+}
+
+export interface NotificationReach {
+  total: number;
+  receiving: number;
+  unreachable: number;
+  unreachableWithParts: number;
+  rows: NotificationReachRow[];
+}
+
+export const notificationsApi = {
+  /** Admin only: who the congregation's notifications reach. */
+  async reach(): Promise<NotificationReach> {
+    const { data } = await api.get<NotificationReach>("/notifications/reach");
+    return data;
+  },
+};
 
 export const pushApi = {
   register: async (

@@ -4095,5 +4095,75 @@
     "lastMonthDecides": "Not yet in for {{month}} — and that one report decides whether they count as active:",
     "lastMonthOthers_one": "{{count}} more has not reported — it does not change “Active”.",
     "lastMonthOthers_other": "{{count}} more have not reported — it does not change “Active”."
+  },
+  "notifyDevice": {
+    "card": {
+      "title": "Turn on notifications",
+      "body": "Without them you will not hear about a meeting part, cleaning or other assignments.",
+      "enable": "Turn on notifications",
+      "later": "Later",
+      "iosTitle": "Notifications on iPhone",
+      "iosBody": "An iPhone delivers notifications only to a site that has been added to the Home Screen.",
+      "iosStep1": "Tap Share at the bottom of Safari",
+      "iosStep2": "Choose Add to Home Screen",
+      "iosStep3": "Open the app from the new icon",
+      "androidBody": "Notifications are most reliable in the app. You can also turn them on in the browser.",
+      "install": "Install the app",
+      "enableBrowser": "Turn on in the browser",
+      "deniedTitle": "Notifications are blocked",
+      "deniedApp": "Allow them in the phone settings.",
+      "deniedWeb": "Allow notifications for this site in the browser settings, then come back here.",
+      "openSettings": "Open settings",
+      "doneTitle": "Notifications are on",
+      "doneBody": "We sent a test notification. If it has not arrived within a minute, open Profile → Notifications."
+    },
+    "state": {
+      "checking": "Checking…",
+      "ok": "This device receives notifications",
+      "off": "Notifications are not turned on for this device",
+      "denied": "Notifications are blocked in the device settings",
+      "not_installed": "The site is open in Safari, not from the Home Screen",
+      "unsupported": "This browser does not support notifications",
+      "no_token": "The device did not issue a notification key",
+      "not_registered": "The device is ready, but the server did not accept it"
+    },
+    "test": {
+      "button": "Send a test",
+      "sent": "Test sent at {{time}}. If it has not arrived within a minute, check the notification settings on the device.",
+      "noDevice": "Nowhere to send: notifications are not turned on for any of your devices.",
+      "failed": "Could not send. Try again later."
+    },
+    "reach": {
+      "title": "Who receives notifications",
+      "rowSub": "Who cannot be reached, and why",
+      "summary": "Receiving notifications: {{receiving}} of {{total}}",
+      "summaryRest_one": "{{count}} does not. With parts in the next 4 weeks: {{parts}}.",
+      "summaryRest_other": "{{count}} do not. With parts in the next 4 weeks: {{parts}}.",
+      "allGood": "Everyone receives notifications.",
+      "yes": "receives",
+      "no": "no",
+      "upcoming_one": "{{count}} part",
+      "upcoming_other": "{{count}} parts",
+      "lastTest": "test {{date}}",
+      "lastTestFailed": "test {{date}} did not arrive",
+      "platform": {
+        "android_app": "Android, app",
+        "android_browser": "Android, browser",
+        "ios_browser": "iPhone",
+        "ios_app": "iPhone, app",
+        "mac_browser": "Mac or iPad",
+        "windows_browser": "Windows"
+      },
+      "reasons": {
+        "no_login": "No login to the app",
+        "never_opened": "Has a login but has never opened the app",
+        "not_installed": "The site is not on the Home Screen",
+        "denied": "Blocked notifications in the settings",
+        "off": "Has not turned notifications on",
+        "unsupported": "The browser does not support notifications",
+        "no_token": "The phone did not issue a notification key",
+        "unknown": "No device at all; the reason will be known once the person opens the app"
+      }
+    }
   }
 }

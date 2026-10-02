@@ -1,10 +1,11 @@
-import { useEffect, useRef, useSyncExternalStore } from 'react';
-import { Platform } from 'react-native';
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { AppState, Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
 import { pushApi } from './api';
 import { useAuth } from './auth';
+import { rememberPushToken } from './push-token-store';
 
 /**
  * Where this device stands with notifications.
@@ -199,6 +200,9 @@ function routeForNotification(
         path: '/publishers/cleaning-week',
         params: data.weekStart ? { week: data.weekStart } : {},
       };
+    // «Отправить пробное» is sent from this screen; tapping it comes back.
+    case 'test':
+      return { path: '/profile/notifications', params: {} };
     default:
       return null;
   }
@@ -210,23 +214,51 @@ export function usePushNotifications() {
   const router = useRouter();
   const registeredRef = useRef<string | null>(null);
 
+  // Coming back to the app asks again while the phone is not registered:
+  // somebody sent to the system settings to allow notifications returns here,
+  // and the answer used to stay «запрещены» until the app was restarted.
+  const [wake, setWake] = useState(0);
+  useEffect(() => {
+    if (Platform.OS === 'web') return;
+    const sub = AppState.addEventListener('change', (next) => {
+      if (next === 'active' && pushState.kind !== 'registered') {
+        setWake((n) => n + 1);
+      }
+    });
+    return () => sub.remove();
+  }, []);
+
   // Register token whenever a user is present
   useEffect(() => {
-    if (!user || Platform.OS === 'web') return;
+    if (Platform.OS === 'web') return;
+    if (!user) {
+      // Signed out: the server has dropped this phone's token (see signOut),
+      // so whoever signs in next must be registered afresh. The ref used to
+      // survive the sign-out, and a second person on the same phone was then
+      // never registered at all — «same token, already done».
+      registeredRef.current = null;
+      return;
+    }
 
     let cancelled = false;
+    const mark = `${user.id}:`;
 
     (async () => {
       const token = await getPushToken();
       if (cancelled || !token) return;
-      if (registeredRef.current === token) return; // same token already registered
+      rememberPushToken(token);
+      // Already registered for THIS person.
+      if (registeredRef.current === mark + token) {
+        setPushState({ kind: 'registered', token });
+        return;
+      }
 
       try {
         await pushApi.register(token, {
           platform: Platform.OS,
           osVersion: Platform.Version != null ? String(Platform.Version) : null,
         });
-        registeredRef.current = token;
+        registeredRef.current = mark + token;
         setPushState({ kind: 'registered', token });
       } catch (err) {
         setPushState({ kind: 'not_registered', error: describe(err) });
@@ -237,7 +269,7 @@ export function usePushNotifications() {
     return () => {
       cancelled = true;
     };
-  }, [user]);
+  }, [user, wake]);
 
   // Tap handler — works whether app is foreground, background, or killed
   useEffect(() => {
