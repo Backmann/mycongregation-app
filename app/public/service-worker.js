@@ -125,6 +125,15 @@ function routeForNotification(data) {
         path: '/publishers/cleaning-week',
         params: data.weekStart ? { week: data.weekStart } : {},
       };
+    // The evening digest is about the reader's own assignments.
+    case 'assignment_reminder':
+      return { path: '/home/my-assignments', params: {} };
+    // What a meeting still lacks, for whoever assembles it.
+    case 'meeting_gaps':
+      return {
+        path: '/schedule/edit',
+        params: data.weekStartDate ? { week: data.weekStartDate } : {},
+      };
     // «Отправить пробное» is sent from this screen; tapping it comes back.
     case 'test':
       return { path: '/profile/notifications', params: {} };

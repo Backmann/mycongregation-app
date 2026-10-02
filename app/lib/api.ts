@@ -3084,6 +3084,22 @@ export const meApi = {
     );
     return data;
   },
+  /** How often my own assignments are recalled. */
+  async reminderLadder(): Promise<{ ladder: ReminderLadder }> {
+    const { data } = await api.get<{ ladder: ReminderLadder }>(
+      "/me/reminder-ladder",
+    );
+    return data;
+  },
+  async setReminderLadder(
+    ladder: ReminderLadder,
+  ): Promise<{ ladder: ReminderLadder }> {
+    const { data } = await api.patch<{ ladder: ReminderLadder }>(
+      "/me/reminder-ladder",
+      { ladder },
+    );
+    return data;
+  },
   /** What this device says about notifications — for the admin's list. */
   async reportPushState(state: DevicePushState): Promise<void> {
     await api.post("/me/push-state", { state });
@@ -3628,6 +3644,17 @@ export const assignmentsApi = {
   }): Promise<{ published: number }> {
     const { data } = await api.post<{ published: number }>(
       "/assignments/publish",
+      input,
+    );
+    return data;
+  },
+  /** Who an edit to a published meeting concerns, before anything is sent. */
+  async pendingNotice(input: {
+    weekStartDate: string;
+    eventType: EventType;
+  }): Promise<PendingNotice> {
+    const { data } = await api.post<PendingNotice>(
+      "/assignments/pending-notice",
       input,
     );
     return data;
@@ -4264,6 +4291,27 @@ export interface NotificationReach {
   unreachableWithParts: number;
   rows: NotificationReachRow[];
 }
+
+export interface PendingNoticeRow {
+  publisherId: string;
+  displayName: string;
+  tone: "assigned" | "removed";
+  label: string;
+  /** push — a device takes it; email — a letter; none — no way at all. */
+  reach: "push" | "email" | "none";
+  nextWord: string | null;
+}
+
+export interface PendingNotice {
+  meetingDate: string | null;
+  rows: PendingNoticeRow[];
+  /** False when somebody would otherwise not hear before the meeting. */
+  canWait: boolean;
+  /** The first evening the ladder speaks of any of it, when waiting. */
+  nextWord: string | null;
+}
+
+export type ReminderLadder = "full" | "short";
 
 export const notificationsApi = {
   /** Admin only: who the congregation's notifications reach. */

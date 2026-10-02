@@ -1087,7 +1087,7 @@
       "notify": "Veröffentlichen und benachrichtigen",
       "notifyHint": "Die Brüder erhalten eine Benachrichtigung",
       "silent": "Still veröffentlichen",
-      "silentHint": "Ohne Benachrichtigung"
+      "silentHint": "Jetzt ohne Benachrichtigung; die Zugeteilten erfahren es durch die Abenderinnerungen"
     },
     "sheet": {
       "next": "Weiter →",
@@ -1109,11 +1109,23 @@
       "button": "Mitteilen",
       "badge": "geändert",
       "dialog": {
-        "title": "Über Änderungen benachrichtigen",
-        "subtitle": "Verkündiger werden benachrichtigt, dass das veröffentlichte Programm geändert wurde.",
-        "confirm": "Senden",
-        "silent": "Still übernehmen",
-        "silentHint": "Änderungen ohne Benachrichtigung übernehmen."
+        "title": "Über die Änderungen informieren?",
+        "lead_one": "Nur {{count}} Person wird benachrichtigt:",
+        "lead_other": "Nur diese {{count}} werden benachrichtigt:",
+        "nobody": "Niemand zu informieren: Die Änderungen betreffen niemanden mit Zugang zur App.",
+        "tone": {
+          "assigned": "zugeteilt: {{label}}",
+          "removed": "entfällt: {{label}}"
+        },
+        "reach": {
+          "email": "per E-Mail",
+          "none": "erhält nichts"
+        },
+        "now": "Jetzt informieren",
+        "later": "Nicht jetzt",
+        "laterHint": "Heute geht nichts raus. Jeder erfährt es durch die Abenderinnerung; die nächste kommt am {{date}}, gegen 18:00.",
+        "laterHintPlain": "Heute geht nichts raus.",
+        "mustNow": "Bis zur Zusammenkunft bleibt kein Abend mit Erinnerung, deshalb kann nur jetzt informiert werden."
       }
     },
     "autoBadge": "auto",
@@ -4164,6 +4176,13 @@
         "no_token": "Das Telefon hat keinen Schlüssel ausgestellt",
         "unknown": "Kein Gerät vorhanden; der Grund wird bekannt, sobald die Person die App öffnet"
       }
+    },
+    "ladder": {
+      "title": "An meine Aufgaben erinnern",
+      "full": "Frühzeitig und am Vortag",
+      "fullHint": "3, 2 und 1 Woche, 3 Tage und 1 Tag vorher",
+      "short": "Nur eine Woche vorher und am Vortag",
+      "note": "An Dienste wird eine Woche vorher und am Vortag erinnert. Die Erinnerung am Vortag kommt immer."
     }
   }
 }

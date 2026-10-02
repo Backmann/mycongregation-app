@@ -17,6 +17,7 @@ import {
   meApi,
   NotificationCategory,
   NotificationPreferences,
+  ReminderLadder,
 } from '../../../lib/api';
 import { LoadError } from '../../../components/LoadError';
 import { PushState, usePushState } from '../../../lib/push-notifications';
@@ -163,6 +164,82 @@ function DeviceState() {
   );
 }
 
+/**
+ * How often a person's own assignments are recalled.
+ *
+ * The full ladder is the default — three, two and one week, three days and
+ * the day before — because that is what was asked for (1 October 2026). But a
+ * brother with a part nearly every week would hear about them almost nightly,
+ * and the usual answer to that is switching notifications off altogether. So
+ * he may thin it out himself. There is no «никогда»: the evening before always
+ * comes.
+ */
+function LadderChoice() {
+  const { t } = useTranslation();
+  const queryClient = useQueryClient();
+  const query = useQuery({
+    queryKey: ['me', 'reminder-ladder'],
+    queryFn: () => meApi.reminderLadder(),
+  });
+  const save = useMutation({
+    mutationFn: (ladder: ReminderLadder) => meApi.setReminderLadder(ladder),
+    onMutate: async (ladder) => {
+      await queryClient.cancelQueries({ queryKey: ['me', 'reminder-ladder'] });
+      const previous = queryClient.getQueryData<{ ladder: ReminderLadder }>([
+        'me',
+        'reminder-ladder',
+      ]);
+      queryClient.setQueryData(['me', 'reminder-ladder'], { ladder });
+      return { previous };
+    },
+    onError: (err, _ladder, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(['me', 'reminder-ladder'], context.previous);
+      }
+      notify(extractErrorMessage(err));
+    },
+    onSuccess: (data) => {
+      queryClient.setQueryData(['me', 'reminder-ladder'], data);
+    },
+  });
+  const current = query.data?.ladder ?? 'full';
+  const options: { key: ReminderLadder; hint?: string }[] = [
+    { key: 'full', hint: t('notifyDevice.ladder.fullHint') },
+    { key: 'short' },
+  ];
+
+  return (
+    <View style={[styles.card, { paddingVertical: 12, gap: 10 }]}>
+      <Text style={styles.rowTitle}>{t('notifyDevice.ladder.title')}</Text>
+      {options.map((o) => (
+        <Pressable
+          key={o.key}
+          style={styles.radioRow}
+          onPress={() => {
+            if (o.key !== current) save.mutate(o.key);
+          }}
+          disabled={!query.data || save.isPending}
+          accessibilityRole="radio"
+          accessibilityState={{ checked: current === o.key }}
+        >
+          <Ionicons
+            name={current === o.key ? 'radio-button-on' : 'radio-button-off'}
+            size={20}
+            color="#0e7490"
+          />
+          <View style={{ flex: 1 }}>
+            <Text style={styles.radioText}>
+              {t(`notifyDevice.ladder.${o.key}`)}
+            </Text>
+            {o.hint ? <Text style={styles.rowSubtitle}>{o.hint}</Text> : null}
+          </View>
+        </Pressable>
+      ))}
+      <Text style={styles.rowSubtitle}>{t('notifyDevice.ladder.note')}</Text>
+    </View>
+  );
+}
+
 const CATEGORIES: { key: NotificationCategory; icon: string }[] = [
   { key: 'assignments', icon: 'mic-outline' },
   { key: 'events', icon: 'megaphone-outline' },
@@ -248,6 +325,8 @@ export default function NotificationPreferencesScreen() {
       keyboardShouldPersistTaps="handled"
     >
       <DeviceState />
+
+      <LadderChoice />
 
       <Text style={styles.hint}>{t('notificationPrefs.hint')}</Text>
 
@@ -390,6 +469,8 @@ const styles = StyleSheet.create({
     fontFamily: 'Manrope_600SemiBold',
   },
   rowSubtitle: { fontSize: 12.5, color: '#64748b', marginTop: 1 },
+  radioRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
+  radioText: { fontSize: 14.5, color: '#0f172a' },
   allOff: {
     fontSize: 13,
     color: '#b45309',

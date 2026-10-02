@@ -1056,6 +1056,8 @@ export default function ScheduleIndexScreen() {
         />
         <NotifyChangesDialog
           open={!!notifyPrompt}
+          weekStartDate={notifyPrompt?.weekStartDate}
+          eventType={notifyPrompt?.eventType as EventType | undefined}
           busy={
             notifyingType === notifyPrompt?.eventType ||
             publishingType === notifyPrompt?.eventType

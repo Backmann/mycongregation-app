@@ -1087,7 +1087,7 @@
       "notify": "Publish and notify",
       "notifyHint": "The brothers get a notification",
       "silent": "Publish silently",
-      "silentHint": "No notification"
+      "silentHint": "No notification now; those assigned will hear from the evening reminders"
     },
     "sheet": {
       "next": "Next →",
@@ -1109,11 +1109,23 @@
       "button": "Notify",
       "badge": "changed",
       "dialog": {
-        "title": "Notify about changes",
-        "subtitle": "Publishers will be notified that the published programme has changed.",
-        "confirm": "Send",
-        "silent": "Apply silently",
-        "silentHint": "Apply the changes without notifying publishers."
+        "title": "Tell them about the changes?",
+        "lead_one": "Only {{count}} person will be notified:",
+        "lead_other": "Only these {{count}} will be notified:",
+        "nobody": "Nobody to tell: the changes touch no one who has a login to the app.",
+        "tone": {
+          "assigned": "assigned: {{label}}",
+          "removed": "removed: {{label}}"
+        },
+        "reach": {
+          "email": "by e-mail",
+          "none": "will not get it"
+        },
+        "now": "Tell them now",
+        "later": "Not now",
+        "laterHint": "Nothing goes out today. Each person will hear from the evening reminder; the next one is {{date}}, around 18:00.",
+        "laterHintPlain": "Nothing goes out today.",
+        "mustNow": "No evening with a reminder is left before the meeting, so the only time to tell them is now."
       }
     },
     "autoBadge": "auto",
@@ -4164,6 +4176,13 @@
         "no_token": "The phone did not issue a notification key",
         "unknown": "No device at all; the reason will be known once the person opens the app"
       }
+    },
+    "ladder": {
+      "title": "Remind me of my assignments",
+      "full": "Well ahead and the day before",
+      "fullHint": "3, 2 and 1 week, 3 days and 1 day before",
+      "short": "Only a week before and the day before",
+      "note": "Duties are recalled a week before and the day before. The reminder the day before always comes."
     }
   }
 }
