@@ -4141,8 +4141,8 @@
     },
     "test": {
       "button": "Send a test",
-      "sent": "Test sent at {{time}}. If it has not arrived within a minute, check the notification settings on the device.",
-      "noDevice": "Nowhere to send: notifications are not turned on for any of your devices.",
+      "sent": "Test sent to this device at {{time}}. If it has not arrived within a minute, check the notification settings on the device.",
+      "noDevice": "Nowhere to send: notifications are not turned on for this device.",
       "failed": "Could not send. Try again later."
     },
     "reach": {

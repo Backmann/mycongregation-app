@@ -10,8 +10,11 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import { meApi } from '../lib/api';
-import { enableDeviceNotify, useDeviceNotify } from '../lib/notify-device';
+import {
+  enableDeviceNotify,
+  testThisDevice,
+  useDeviceNotify,
+} from '../lib/notify-device';
 import { isAndroidBrowser } from '../lib/web-push';
 import { storage } from '../lib/storage';
 
@@ -75,7 +78,7 @@ export function EnableNotificationsCard() {
       if (next === 'ok') {
         setDone(true);
         // The proof that it worked is a notification, not our word for it.
-        meApi.testNotification().catch(() => undefined);
+        testThisDevice().catch(() => undefined);
       }
     } finally {
       setBusy(false);

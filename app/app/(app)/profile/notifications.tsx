@@ -23,6 +23,7 @@ import { LoadError } from '../../../components/LoadError';
 import { PushState, usePushState } from '../../../lib/push-notifications';
 import {
   enableDeviceNotify,
+  testThisDevice,
   useDeviceNotify,
 } from '../../../lib/notify-device';
 import { usePermissions } from '../../../lib/permissions';
@@ -72,7 +73,7 @@ function DeviceState() {
     setTesting(true);
     setResult(null);
     try {
-      const res = await meApi.testNotification();
+      const res = await testThisDevice();
       setResult(
         res.status === 'sent'
           ? t('notifyDevice.test.sent', {

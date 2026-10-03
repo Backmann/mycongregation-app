@@ -3078,9 +3078,17 @@ export const meApi = {
     return data;
   },
   /** «Отправить пробное»: one notification to my own devices, now. */
-  async testNotification(): Promise<NotificationTestResult> {
+  async testNotification(device: {
+    token?: string | null;
+    endpoint?: string | null;
+  }): Promise<NotificationTestResult> {
     const { data } = await api.post<NotificationTestResult>(
       "/me/notifications/test",
+      // The device that asks, so the answer comes to IT.
+      {
+        ...(device.token ? { token: device.token } : {}),
+        ...(device.endpoint ? { endpoint: device.endpoint } : {}),
+      },
     );
     return data;
   },

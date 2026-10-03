@@ -1,9 +1,11 @@
 import { useEffect, useSyncExternalStore } from 'react';
 import { AppState, Linking, Platform } from 'react-native';
-import { DevicePushState, meApi } from './api';
+import { DevicePushState, meApi, NotificationTestResult } from './api';
+import { rememberedPushToken } from './push-token-store';
 import { useAuth } from './auth';
 import { usePushState } from './push-notifications';
 import {
+  currentWebPushEndpoint,
   getWebPushStatus,
   isIosWithoutStandalone,
   subscribeToWebPush,
@@ -87,6 +89,26 @@ export async function enableDeviceNotify(): Promise<DeviceNotify> {
     // The state below says what came of it.
   }
   return refreshDeviceNotify();
+}
+
+/**
+ * One test notification to THIS device — the one in the person's hand.
+ *
+ * Asked without naming the device, the server sends where «one person, one
+ * channel» points: pressed on an iPad by somebody whose Android phone is
+ * registered, the test arrived on the phone and the iPad looked broken. So
+ * the device names itself. One that has nothing registered does not ask at
+ * all: there is nowhere for the answer to come.
+ */
+export async function testThisDevice(): Promise<NotificationTestResult> {
+  const device =
+    Platform.OS === 'web'
+      ? { endpoint: await currentWebPushEndpoint() }
+      : { token: rememberedPushToken() };
+  if (!device.endpoint && !device.token) {
+    return { status: 'no_device', channel: null };
+  }
+  return meApi.testNotification(device);
 }
 
 /** The state of this device; re-renders when it changes. */

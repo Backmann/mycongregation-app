@@ -157,6 +157,23 @@ export async function detachWebPush(): Promise<void> {
   }
 }
 
+/**
+ * The address of THIS browser's subscription, or null when it has none.
+ *
+ * «Отправить пробное» names the device it was pressed on, so the answer comes
+ * to that device and not to the phone the person's account happens to prefer.
+ */
+export async function currentWebPushEndpoint(): Promise<string | null> {
+  if (!isWebSupported()) return null;
+  try {
+    const reg = await workerReady();
+    const sub = reg ? await reg.pushManager.getSubscription() : null;
+    return sub?.endpoint ?? null;
+  } catch {
+    return null;
+  }
+}
+
 /** Android in a browser — the one web client that could run the app instead. */
 export function isAndroidBrowser(): boolean {
   if (Platform.OS !== 'web' || typeof window === 'undefined') return false;

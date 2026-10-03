@@ -4141,8 +4141,8 @@
     },
     "test": {
       "button": "Test senden",
-      "sent": "Test um {{time}} gesendet. Kommt er nicht innerhalb einer Minute an, prüfen Sie die Benachrichtigungseinstellungen des Geräts.",
-      "noDevice": "Kein Ziel: Auf keinem Ihrer Geräte sind Benachrichtigungen eingeschaltet.",
+      "sent": "Test um {{time}} an dieses Gerät gesendet. Kommt er nicht innerhalb einer Minute an, prüfe die Benachrichtigungseinstellungen des Geräts.",
+      "noDevice": "Kein Ziel: Auf diesem Gerät sind Benachrichtigungen nicht eingeschaltet.",
       "failed": "Senden fehlgeschlagen. Bitte später erneut versuchen."
     },
     "reach": {
