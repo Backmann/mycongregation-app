@@ -148,6 +148,9 @@ function routeForNotification(
     // taskId travels with these, but there is no screen that opens one task
     // by id. His own list is the closest true answer.
     case 'task_assigned':
+    // «Задача на завтра» was missing from this list from the start, so the
+    // one reminder a brother has a whole evening to act on led nowhere.
+    case 'task_tomorrow':
     case 'task_soon':
     case 'task_overdue':
       return { path: '/profile/my-tasks', params: {} };
@@ -191,6 +194,16 @@ function routeForNotification(
       };
     case 'field_service_meeting':
       return { path: '/cart/field-service', params: {} };
+    // The carts: a published week for whoever is on it, a request or a
+    // cancellation for whoever arranges them — all three open the carts.
+    case 'cart_published':
+    case 'cart_dobor_request':
+    case 'cart_cancel':
+      return { path: '/cart/witnessing', params: {} };
+    // A talk one of ours gives in another congregation. It stands on Home,
+    // among his own things, with the address of the hall.
+    case 'outgoing_talk':
+      return { path: '/home', params: {} };
     // Cleaning has its own screen: the reminder opens the week it is about.
     case 'cleaning_after_meeting':
     case 'cleaning_weekly_monday':

@@ -110,6 +110,40 @@ if (missing.length > 0) {
   process.exit(1);
 }
 
+// --- every type the server sends must lead somewhere -----------------------
+//
+// The table above was only ever compared with ITSELF. The server went on
+// adding kinds of notification, and four of them had no line here at all —
+// «задача на завтра» from the very first day (found 3 October 2026): the
+// message arrived, the tap opened whatever screen the app happened to be on.
+// The server keeps its types in one list; each of them needs a `case` here.
+let serverTypes = null;
+try {
+  const text = readFileSync(
+    join(ROOT, '..', 'server', 'src', 'notifications', 'notification-types.ts'),
+    'utf8',
+  );
+  const body = text.slice(text.indexOf('NOTIFICATION_TYPES = ['));
+  serverTypes = [...body.slice(0, body.indexOf(']')).matchAll(/'([a-z_]+)'/g)].map((m) => m[1]);
+} catch {
+  // The server is not checked out beside the app (CI of the app alone).
+}
+if (serverTypes) {
+  if (serverTypes.length === 0) {
+    console.error('Список типов уведомлений сервера пуст или не читается.');
+    process.exit(1);
+  }
+  const cases = new Set([...normalize(a).matchAll(/case '([a-z_]+)':/g)].map((m) => m[1]));
+  const nowhere = serverTypes.filter((t) => !cases.has(t));
+  if (nowhere.length > 0) {
+    console.error('Сервер шлёт уведомления, у которых нажатие никуда не ведёт:\n');
+    for (const t of nowhere) console.error('  ' + t);
+    console.error('\nДобавить `case` нужно в ОБА файла: ' + COPIES.join(' и ') + '.');
+    process.exit(1);
+  }
+}
+
 console.log(
-  `OK: notification routes match, ${new Set(used).size} destinations all exist.`,
+  `OK: notification routes match, ${new Set(used).size} destinations all exist` +
+    (serverTypes ? `, all ${serverTypes.length} server types lead somewhere.` : '.'),
 );
