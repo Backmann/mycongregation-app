@@ -73,6 +73,7 @@
     <div class="tries" id="grounds">
       <button type="button" data-bg="" class="on">А · как есть</button>
       <button type="button" data-bg="#0e7490">Б · бирюзовый</button>
+      <button type="button" data-bg="#0e7490" data-body="#ffffff">В · как в приложении</button>
     </div>
     <pre id="out">…</pre>
     <div class="bar">
@@ -111,7 +112,9 @@
   document.getElementById('grounds').addEventListener('click', function (e) {
     var b = e.target.closest('button'); if (!b) return;
     var v = b.getAttribute('data-bg');
-    document.documentElement.style.background = v; document.body.style.background = v;
+    document.documentElement.style.background = v;
+    // «В» is what the app does: the canvas in the brand colour, the body white.
+    document.body.style.background = b.getAttribute('data-body') || v;
     tried.bg = b.textContent.charAt(0); pick(this, b); measure();
   });
   function measure() {

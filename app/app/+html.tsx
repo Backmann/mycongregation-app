@@ -45,26 +45,35 @@ export default function Root({ children }: PropsWithChildren) {
             2026). Opened from the Home Screen with a translucent status bar,
             iOS draws the page from the very top of the screen but gives
             «100%» the height of the screen WITHOUT the status bar — so the
-            page ends that much above the bottom edge. Measured on a 12.9″
-            iPad: the tab bar ended some 35 points short, the status bar there
-            being 32.
+            page ends that much above the bottom edge.
 
-            This is WebKit bug 301108 (iOS 26, still open): several projects
-            met it and do not agree on the cure. 100vh, tried first, changed
-            nothing on the iPad; one report finds 100lvh to be the whole
-            screen, another that no unit is. So the page asks for 100lvh —
-            100vh stays for a browser that does not know the unit — and
-            /screen-check.html lets a device try each height and show which
-            one reaches the bottom edge. Only where both conditions hold — a web app on the
+            This is WebKit bug 301108 (iOS 26, still open). What a 13″ iPad
+            itself measured on 3 October 2026 (/screen-check.html): screen
+            1032, «100%» 1000, 100vh and 100lvh 1032, top inset 32 — and
+            100dvh 1344, a number that is simply wrong, so that unit is never
+            to size the page. The page therefore takes its height from 100lvh,
+            with 100vh for a browser that does not know the unit.
+
+            Only where both conditions hold — a web app on the
             Home Screen, and iOS (nothing else knows -webkit-touch-callout):
             in a browser tab 100vh is TALLER than what is seen, and there the
             rule would push the tab bar under Safari's toolbar. Where iOS has
             no such fault 100vh and 100% are the same number and the rule
-            changes nothing — the rule can fail to help, but cannot harm. */}
+            changes nothing — the rule can fail to help, but cannot harm.
+
+            THE WASHED-OUT HEADER, same place, same evening. iOS 26 lays a
+            band of its own under the status bar and tints it with the colour
+            BEHIND the page — the canvas, which was white: the top of the
+            brand header faded to pale, and the clock was drawn in black. With
+            the canvas in the brand colour the band is the header's own colour
+            and the clock turns white (tried on the device: «Б» on
+            /screen-check.html). The body keeps white, exactly what every
+            screen has stood on until now, so nothing shows through that did
+            not before; the canvas is only what the system looks at. */}
         <style
           dangerouslySetInnerHTML={{
             __html:
-              '@media (display-mode: standalone){@supports (-webkit-touch-callout: none){html{height:100vh;height:100lvh}}}',
+              '@media (display-mode: standalone){@supports (-webkit-touch-callout: none){html{height:100vh;height:100lvh;background:#0e7490}body{background:#fff}}}',
           }}
         />
       </head>
