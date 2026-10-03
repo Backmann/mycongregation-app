@@ -64,16 +64,20 @@ export default function Root({ children }: PropsWithChildren) {
             THE WASHED-OUT HEADER, same place, same evening. iOS 26 lays a
             band of its own under the status bar and tints it with the colour
             BEHIND the page — the canvas, which was white: the top of the
-            brand header faded to pale, and the clock was drawn in black. With
-            the canvas in the brand colour the band is the header's own colour
-            and the clock turns white (tried on the device: «Б» on
-            /screen-check.html). The body keeps white, exactly what every
-            screen has stood on until now, so nothing shows through that did
-            not before; the canvas is only what the system looks at. */}
+            brand header faded to pale, and the clock was drawn in black.
+
+            Tried on the device with /screen-check.html. «Б» — html AND body
+            in the brand colour, the page itself (#root) in its own — made the
+            band the header's colour and the clock white. The first attempt
+            here gave only html the colour and left body white, to keep what
+            the screens stand on: the header stayed pale, so it is the body's
+            colour the system reads. This is «Б» exactly: both in the brand
+            colour, and #root — which fills the body — white, the same white
+            every screen has stood on until now. */}
         <style
           dangerouslySetInnerHTML={{
             __html:
-              '@media (display-mode: standalone){@supports (-webkit-touch-callout: none){html{height:100vh;height:100lvh;background:#0e7490}body{background:#fff}}}',
+              '@media (display-mode: standalone){@supports (-webkit-touch-callout: none){html{height:100vh;height:100lvh}html,body{background:#0e7490}#root{background:#fff}}}',
           }}
         />
       </head>
