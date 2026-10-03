@@ -68,6 +68,9 @@ const STEPS = [
   // и то и другое молча.
   ['Порядок ведения', 'node', ['scripts/check-run-order.mjs']],
   ['Маршруты уведомлений', 'node', ['scripts/check-notification-routes.mjs']],
+  // What a browser says its device is decides whether the server sends to it
+  // at all: an iPad taken for a Mac stays silent while a phone is registered.
+  ['Устройство подписки', 'node', ['scripts/check-web-device-kind.mjs']],
   // A folder nobody names in the tab layout becomes a tab. Silently.
   ['Вкладки', 'node', ['scripts/check-tabs.mjs']],
 ];

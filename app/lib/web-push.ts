@@ -1,5 +1,6 @@
 import { Platform } from 'react-native';
 import { api } from './api';
+import { deviceKindOf } from './web-device-kind';
 
 const VAPID_PUBLIC_KEY = process.env.EXPO_PUBLIC_VAPID_KEY;
 
@@ -91,6 +92,11 @@ async function sendToServer(sub: PushSubscription): Promise<boolean> {
     endpoint: json.endpoint,
     keys: { p256dh: json.keys.p256dh, auth: json.keys.auth },
     userAgent: window.navigator.userAgent.slice(0, 512),
+    // An iPad calls itself a Mac; only the device can tell the server apart.
+    deviceKind: deviceKindOf(
+      window.navigator.userAgent || '',
+      window.navigator.maxTouchPoints ?? 0,
+    ),
   });
   return true;
 }
