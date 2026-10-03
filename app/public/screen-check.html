@@ -22,11 +22,19 @@
 -->
 <style>
   html, body { height: 100%; margin: 0; }
-  body { font: 15px/1.45 -apple-system, system-ui, sans-serif; color: #0f172a; background: #fff7ed; overflow: hidden; }
-  #root { height: 100%; display: flex; flex-direction: column; }
-  main { flex: 1; overflow: auto; -webkit-overflow-scrolling: touch;
-         padding: calc(env(safe-area-inset-top) + 12px) 16px 12px; }
-  h1 { font-size: 20px; margin: 0 0 4px; }
+  body { font: 15px/1.45 -apple-system, system-ui, sans-serif; color: #0f172a; overflow: hidden; }
+  /* The page has a colour of its own, so that whatever shows AROUND it —
+     above the header, under the footer — is plainly not the page. */
+  #root { height: 100%; display: flex; flex-direction: column; background: #fff7ed; }
+  /* The app's own header, as it is drawn there: the brand colour from the
+     very top of the screen, under the status bar. */
+  header { flex: none; background: #0e7490; color: #fff; font-weight: 700; font-size: 18px;
+           padding: calc(env(safe-area-inset-top) + 14px) 16px 14px; }
+  main { flex: 1; overflow: auto; -webkit-overflow-scrolling: touch; padding: 12px 16px; }
+  .tries { display: flex; gap: 8px; flex-wrap: wrap; margin: 0 0 12px; }
+  .tries button { background: #fff; color: #0f172a; border: 1px solid #cbd5e1; padding: 9px 12px; }
+  .tries button.on { background: #0f172a; color: #fff; border-color: #0f172a; }
+  h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: #64748b; margin: 0 0 6px; }
   p { margin: 0 0 10px; color: #475569; }
   #verdict { font-weight: 700; padding: 10px 12px; border-radius: 10px; margin: 0 0 12px; }
   .ok { background: #dcfce7; color: #166534; }
@@ -49,10 +57,23 @@
 </head>
 <body>
 <div id="root">
+  <header>Проверка экрана</header>
   <main>
-    <h1>Проверка экрана</h1>
-    <p>Синяя полоса внизу должна доходить до самого края экрана. Если под ней видна полоска фона — страница короче экрана.</p>
+    <p>Бирюзовая полоса внизу должна доходить до самого края экрана, а шапка сверху — быть ровного цвета. Нажимайте варианты по очереди и смотрите, при каком это так.</p>
     <div id="verdict"></div>
+    <h2>Высота страницы</h2>
+    <div class="tries" id="heights">
+      <button type="button" data-h="100%" class="on">1 · как есть</button>
+      <button type="button" data-h="100vh">2 · 100vh</button>
+      <button type="button" data-h="100lvh">3 · 100lvh</button>
+      <button type="button" data-h="screen">4 · по экрану</button>
+      <button type="button" data-h="calc(100% + env(safe-area-inset-top))">5 · плюс отступ</button>
+    </div>
+    <h2>Фон под страницей</h2>
+    <div class="tries" id="grounds">
+      <button type="button" data-bg="" class="on">А · как есть</button>
+      <button type="button" data-bg="#0e7490">Б · бирюзовый</button>
+    </div>
     <pre id="out">…</pre>
     <div class="bar">
       <button id="copy" type="button">Скопировать</button>
@@ -73,6 +94,26 @@
 <script>
 (function () {
   function h(id) { return Math.round(document.getElementById(id).getBoundingClientRect().height * 10) / 10; }
+  var tried = { h: '1', bg: 'А' };
+  function screenNow() {
+    var portrait = innerHeight >= innerWidth;
+    return portrait ? Math.max(screen.width, screen.height) : Math.min(screen.width, screen.height);
+  }
+  function pick(box, btn) {
+    Array.prototype.forEach.call(box.querySelectorAll('button'), function (b) { b.className = b === btn ? 'on' : ''; });
+  }
+  document.getElementById('heights').addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (!b) return;
+    var v = b.getAttribute('data-h');
+    document.documentElement.style.height = v === 'screen' ? screenNow() + 'px' : v;
+    tried.h = b.textContent.charAt(0); pick(this, b); setTimeout(measure, 60);
+  });
+  document.getElementById('grounds').addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (!b) return;
+    var v = b.getAttribute('data-bg');
+    document.documentElement.style.background = v; document.body.style.background = v;
+    tried.bg = b.textContent.charAt(0); pick(this, b); measure();
+  });
   function measure() {
     var cs = getComputedStyle(document.getElementById('insets'));
     var standalone = (navigator.standalone === true) ||
@@ -81,7 +122,10 @@
     // screen.width/height do not turn with the device on iOS.
     var screenH = portrait ? Math.max(screen.width, screen.height) : Math.min(screen.width, screen.height);
     var page = document.documentElement.clientHeight;
+    var foot = document.querySelector('footer').getBoundingClientRect();
     var rows = [
+      ['вариант', tried.h + ' / ' + tried.bg],
+      ['низ полосы', Math.round(foot.bottom * 10) / 10],
       ['режим', standalone ? 'с экрана «Домой»' : 'вкладка браузера'],
       ['положение', portrait ? 'книжное' : 'альбомное'],
       ['экран', screen.width + ' × ' + screen.height + ' (×' + devicePixelRatio + ')'],

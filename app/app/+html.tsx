@@ -49,9 +49,13 @@ export default function Root({ children }: PropsWithChildren) {
             iPad: the tab bar ended some 35 points short, the status bar there
             being 32.
 
-            The viewport unit is the whole window there — so it is reported,
-            and so the page takes its height from it; whether it holds on a
-            given device is what /screen-check.html is for. Only where both conditions hold — a web app on the
+            This is WebKit bug 301108 (iOS 26, still open): several projects
+            met it and do not agree on the cure. 100vh, tried first, changed
+            nothing on the iPad; one report finds 100lvh to be the whole
+            screen, another that no unit is. So the page asks for 100lvh —
+            100vh stays for a browser that does not know the unit — and
+            /screen-check.html lets a device try each height and show which
+            one reaches the bottom edge. Only where both conditions hold — a web app on the
             Home Screen, and iOS (nothing else knows -webkit-touch-callout):
             in a browser tab 100vh is TALLER than what is seen, and there the
             rule would push the tab bar under Safari's toolbar. Where iOS has
@@ -60,7 +64,7 @@ export default function Root({ children }: PropsWithChildren) {
         <style
           dangerouslySetInnerHTML={{
             __html:
-              '@media (display-mode: standalone){@supports (-webkit-touch-callout: none){html{height:100vh}}}',
+              '@media (display-mode: standalone){@supports (-webkit-touch-callout: none){html{height:100vh;height:100lvh}}}',
           }}
         />
       </head>
