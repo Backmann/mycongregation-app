@@ -4145,6 +4145,10 @@
       "noDevice": "Nowhere to send: notifications are not turned on for this device.",
       "failed": "Could not send. Try again later."
     },
+    "screenCheck": {
+      "title": "Screen check",
+      "rowSub": "What this screen really measures"
+    },
     "reach": {
       "title": "Who receives notifications",
       "rowSub": "Who cannot be reached, and why",

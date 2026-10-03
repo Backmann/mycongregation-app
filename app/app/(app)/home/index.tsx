@@ -1194,7 +1194,16 @@ function MineLine({ text }: { text: string }) {
  */
 function AgendaList({ lines }: { lines: AgendaLine[] }) {
   const { t } = useTranslation();
+  const { fontScale } = useWindowDimensions();
   if (!lines.length) return null;
+  // The column of numbers is as wide as its widest number needs. It was a
+  // flat 18, measured for «9.»: «10.» in bold is 17.5 wide in Chrome and a
+  // hair more in Safari, so on an iPad the dot fell to a line of its own
+  // (3 October). It is fixed all the same — one width for the whole list —
+  // or a long line would squeeze its number and the texts would not start
+  // under one another. Larger system type widens it in step.
+  const twoDigits = lines.some((l) => (l.n ?? 0) >= 10);
+  const numWidth = Math.ceil((twoDigits ? 25 : 18) * Math.max(1, fontScale));
   return (
     <View style={s.agenda}>
       {lines.map((l) => (
@@ -1212,7 +1221,13 @@ function AgendaList({ lines }: { lines: AgendaLine[] }) {
           <View style={s.agendaLine}>
             {l.n !== null ? (
               <Text
-                style={[s.agendaNum, l.mine && s.agendaMine]}
+                style={[
+                  s.agendaNum,
+                  { width: numWidth },
+                  l.mine && s.agendaMine,
+                ]}
+                numberOfLines={1}
+                ellipsizeMode="clip"
               >{`${l.n}.`}</Text>
             ) : null}
             <Text
@@ -2536,8 +2551,8 @@ const s = StyleSheet.create({
   },
   agendaNum: {
     // Fixed, or a line long enough to wrap squeezed its number and the
-    // text of «2.» started left of «1.» (28 September).
-    width: 18,
+    // text of «2.» started left of «1.» (28 September). The width itself is
+    // set where the list is drawn: it depends on the widest number.
     flexShrink: 0,
     fontSize: 12.5,
     lineHeight: 17,

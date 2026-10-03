@@ -4145,6 +4145,10 @@
       "noDevice": "Kein Ziel: Auf diesem Gerät sind Benachrichtigungen nicht eingeschaltet.",
       "failed": "Senden fehlgeschlagen. Bitte später erneut versuchen."
     },
+    "screenCheck": {
+      "title": "Bildschirm prüfen",
+      "rowSub": "Was dieser Bildschirm wirklich misst"
+    },
     "reach": {
       "title": "Wer Benachrichtigungen erhält",
       "rowSub": "Wen sie nicht erreichen und warum",

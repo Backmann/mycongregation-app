@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="robots" content="noindex">
+<title>Проверка экрана</title>
+<!--
+  What the screen of THIS device really measures.
+
+  The app fills «100%» of the page. On an iPad added to the Home Screen the
+  page turned out shorter than the screen by about the height of the status
+  bar, and a white strip stood under the tab bar (3 October 2026). Which CSS
+  height IS the whole screen there cannot be told from a desktop browser — so
+  the device says it itself. Nothing is sent anywhere: the numbers are shown,
+  and copied by the person if they choose.
+
+  Kept deliberately free of the app's own fix (see +html.tsx): this page shows
+  the device as it is, the app shows whether the fix worked.
+-->
+<style>
+  html, body { height: 100%; margin: 0; }
+  body { font: 15px/1.45 -apple-system, system-ui, sans-serif; color: #0f172a; background: #fff7ed; overflow: hidden; }
+  #root { height: 100%; display: flex; flex-direction: column; }
+  main { flex: 1; overflow: auto; -webkit-overflow-scrolling: touch;
+         padding: calc(env(safe-area-inset-top) + 12px) 16px 12px; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  p { margin: 0 0 10px; color: #475569; }
+  #verdict { font-weight: 700; padding: 10px 12px; border-radius: 10px; margin: 0 0 12px; }
+  .ok { background: #dcfce7; color: #166534; }
+  .bad { background: #fee2e2; color: #991b1b; }
+  pre { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px; margin: 0 0 12px;
+        font: 13px/1.5 ui-monospace, Menlo, monospace; white-space: pre-wrap; user-select: text; -webkit-user-select: text; }
+  .bar { display: flex; gap: 10px; flex-wrap: wrap; }
+  button, a.btn { font: inherit; font-weight: 700; border: 0; border-radius: 10px; padding: 11px 16px;
+                  background: #0e7490; color: #fff; text-decoration: none; }
+  a.btn { background: #e2e8f0; color: #0f172a; }
+  /* Where the page thinks its bottom is: the app's tab bar sits exactly here. */
+  footer { flex: none; background: #0e7490; color: #fff; text-align: center; font-weight: 700;
+           padding: 10px 8px calc(env(safe-area-inset-bottom) + 10px); }
+  /* The probes: never seen, only measured. */
+  .probe { position: absolute; left: -9999px; top: 0; width: 1px; visibility: hidden; }
+  #insets { position: fixed; left: -9999px; top: 0;
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
+  #fixed { position: fixed; left: -9999px; top: 0; bottom: 0; width: 1px; visibility: hidden; }
+</style>
+</head>
+<body>
+<div id="root">
+  <main>
+    <h1>Проверка экрана</h1>
+    <p>Синяя полоса внизу должна доходить до самого края экрана. Если под ней видна полоска фона — страница короче экрана.</p>
+    <div id="verdict"></div>
+    <pre id="out">…</pre>
+    <div class="bar">
+      <button id="copy" type="button">Скопировать</button>
+      <a class="btn" href="/">← В приложение</a>
+    </div>
+  </main>
+  <footer>нижний край страницы</footer>
+</div>
+<div id="insets"></div>
+<div id="fixed"></div>
+<div class="probe" id="p-pct" style="height:100%"></div>
+<div class="probe" id="p-vh" style="height:100vh"></div>
+<div class="probe" id="p-dvh" style="height:100dvh"></div>
+<div class="probe" id="p-svh" style="height:100svh"></div>
+<div class="probe" id="p-lvh" style="height:100lvh"></div>
+<div class="probe" id="p-fill" style="height:-webkit-fill-available"></div>
+<div class="probe" id="p-plus" style="height:calc(100% + env(safe-area-inset-top))"></div>
+<script>
+(function () {
+  function h(id) { return Math.round(document.getElementById(id).getBoundingClientRect().height * 10) / 10; }
+  function measure() {
+    var cs = getComputedStyle(document.getElementById('insets'));
+    var standalone = (navigator.standalone === true) ||
+      (window.matchMedia && matchMedia('(display-mode: standalone)').matches);
+    var portrait = innerHeight >= innerWidth;
+    // screen.width/height do not turn with the device on iOS.
+    var screenH = portrait ? Math.max(screen.width, screen.height) : Math.min(screen.width, screen.height);
+    var page = document.documentElement.clientHeight;
+    var rows = [
+      ['режим', standalone ? 'с экрана «Домой»' : 'вкладка браузера'],
+      ['положение', portrait ? 'книжное' : 'альбомное'],
+      ['экран', screen.width + ' × ' + screen.height + ' (×' + devicePixelRatio + ')'],
+      ['высота экрана сейчас', screenH],
+      ['страница (100%)', h('p-pct')],
+      ['clientHeight', page],
+      ['innerHeight', innerHeight],
+      ['visualViewport', window.visualViewport ? Math.round(visualViewport.height * 10) / 10 : '—'],
+      ['fixed top..bottom', h('fixed')],
+      ['100vh', h('p-vh')],
+      ['100dvh', h('p-dvh')],
+      ['100svh', h('p-svh')],
+      ['100lvh', h('p-lvh')],
+      ['fill-available', h('p-fill')],
+      ['100% + верхний отступ', h('p-plus')],
+      ['отступы (в/п/н/л)', [cs.paddingTop, cs.paddingRight, cs.paddingBottom, cs.paddingLeft].join(' ')],
+      ['касаний', navigator.maxTouchPoints],
+      ['браузер', navigator.userAgent]
+    ];
+    var w = 0;
+    rows.forEach(function (r) { w = Math.max(w, r[0].length); });
+    document.getElementById('out').textContent = rows.map(function (r) {
+      return (r[0] + ':' + new Array(w - r[0].length + 2).join(' ')) + r[1];
+    }).join('\n');
+    var v = document.getElementById('verdict');
+    var gap = Math.round(screenH - page);
+    if (!standalone) {
+      v.className = 'bad';
+      v.textContent = 'Открыто во вкладке браузера. Откройте эту страницу из приложения на экране «Домой» — мерить нужно там.';
+    } else if (gap > 1) {
+      v.className = 'bad';
+      v.textContent = 'Страница короче экрана на ' + gap + '.';
+    } else {
+      v.className = 'ok';
+      v.textContent = 'Страница занимает весь экран.';
+    }
+  }
+  measure();
+  addEventListener('resize', measure);
+  addEventListener('orientationchange', function () { setTimeout(measure, 400); });
+  document.getElementById('copy').addEventListener('click', function () {
+    var text = document.getElementById('out').textContent;
+    var done = function () { document.getElementById('copy').textContent = 'Скопировано'; };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, function () {});
+    } else {
+      var r = document.createRange(); r.selectNodeContents(document.getElementById('out'));
+      var s = getSelection(); s.removeAllRanges(); s.addRange(r);
+      try { document.execCommand('copy'); done(); } catch (e) {}
+    }
+  });
+})();
+</script>
+</body>
+</html>

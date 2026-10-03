@@ -41,6 +41,28 @@ export default function Root({ children }: PropsWithChildren) {
         <meta name="apple-mobile-web-app-title" content="Собрание" />
         <meta name="mobile-web-app-capable" content="yes" />
         <ScrollViewStyleReset />
+        {/* THE WHITE STRIP UNDER THE TAB BAR on an iPad or iPhone (3 October
+            2026). Opened from the Home Screen with a translucent status bar,
+            iOS draws the page from the very top of the screen but gives
+            «100%» the height of the screen WITHOUT the status bar — so the
+            page ends that much above the bottom edge. Measured on a 12.9″
+            iPad: the tab bar ended some 35 points short, the status bar there
+            being 32.
+
+            The viewport unit is the whole window there — so it is reported,
+            and so the page takes its height from it; whether it holds on a
+            given device is what /screen-check.html is for. Only where both conditions hold — a web app on the
+            Home Screen, and iOS (nothing else knows -webkit-touch-callout):
+            in a browser tab 100vh is TALLER than what is seen, and there the
+            rule would push the tab bar under Safari's toolbar. Where iOS has
+            no such fault 100vh and 100% are the same number and the rule
+            changes nothing — the rule can fail to help, but cannot harm. */}
+        <style
+          dangerouslySetInnerHTML={{
+            __html:
+              '@media (display-mode: standalone){@supports (-webkit-touch-callout: none){html{height:100vh}}}',
+          }}
+        />
       </head>
       <body>{children}</body>
     </html>

@@ -385,6 +385,33 @@ export default function NotificationPreferencesScreen() {
           <Ionicons name="chevron-forward" size={18} color="#94a3b8" />
         </Pressable>
       ) : null}
+
+      {/* What this device's screen really measures — a plain page outside the
+          app, opened in place so that it stays in the Home Screen window. */}
+      {perms.isAdmin && Platform.OS === 'web' ? (
+        <Pressable
+          style={({ pressed }) => [
+            styles.card,
+            styles.row,
+            pressed && { opacity: 0.7 },
+          ]}
+          onPress={() => window.location.assign('/screen-check.html')}
+          accessibilityRole="button"
+        >
+          <View style={styles.rowIcon}>
+            <Ionicons name="scan-outline" size={19} color="#0ea5e9" />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.rowTitle}>
+              {t('notifyDevice.screenCheck.title')}
+            </Text>
+            <Text style={styles.rowSubtitle}>
+              {t('notifyDevice.screenCheck.rowSub')}
+            </Text>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color="#94a3b8" />
+        </Pressable>
+      ) : null}
     </ScrollView>
   );
 }
