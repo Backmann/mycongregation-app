@@ -316,7 +316,7 @@ function GreetingHeader({ now }: { now: Date }) {
 
 /** One's own report for the month just closed: due, handed in, or nothing. */
 function useReportStanding() {
-  const { canViewServiceSummary } = usePermissions();
+  const { canManageServiceSummary } = usePermissions();
   const { data } = useQuery({
     queryKey: ["reports", "my-standing"],
     queryFn: () => serviceReportsApi.myStanding(),
@@ -326,7 +326,7 @@ function useReportStanding() {
   if (!data || !data.applicable || !data.reportMonth) return null;
   // Кто собирает отчёты, видит карточку сбора — и в ней уже есть он сам.
   // Скрывается ТОЛЬКО зелёное «сдан»; несданный — это дело при любых правах.
-  if (data.submitted && canViewServiceSummary && collection) return null;
+  if (data.submitted && canManageServiceSummary && collection) return null;
   return {
     submitted: !!data.submitted,
     reportMonth: data.reportMonth,

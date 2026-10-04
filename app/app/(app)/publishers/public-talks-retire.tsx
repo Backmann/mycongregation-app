@@ -434,6 +434,18 @@ export default function RetireTalksScreen() {
                   {t(`publicTalks.retire.history.${e.kind}`, {
                     count: e.count,
                   })}
+                  {/* What a re-upload did: «Загружен каталог: 194» alone says
+                      nothing of whether anything changed. */}
+                  {e.kind === 'import' && e.created !== undefined
+                    ? ` · ${
+                        (e.created ?? 0) + (e.updated ?? 0) > 0
+                          ? t('publicTalks.retire.history.importChanged', {
+                              created: e.created ?? 0,
+                              updated: e.updated ?? 0,
+                            })
+                          : t('publicTalks.retire.history.importSame')
+                      }`
+                    : ''}
                   {e.from
                     ? ` · ${t('publicTalks.retire.historyFrom', {
                         date: fmtDate(e.from),

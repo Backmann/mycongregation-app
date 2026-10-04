@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
 import { ElderTask, meApi } from '../../../lib/api';
 import { LoadFailure } from '../../../components/LoadFailure';
+import { dayLabel } from '../../../lib/day-label';
 
 /**
  * What has been put on me — and nothing else.
@@ -28,7 +29,7 @@ export default function MyTasksScreen() {
   });
 
   const today = dayjs().format('YYYY-MM-DD');
-  const fmt = (iso: string) => dayjs(iso).locale(i18n.language).format('D MMMM');
+  const fmt = (iso: string) => dayLabel(iso, i18n.language, today);
 
   const titleOf = (task: ElderTask): string =>
     task.kind ? t(`tasks.calendar.${task.kind}`) : task.title;

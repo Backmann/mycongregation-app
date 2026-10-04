@@ -240,6 +240,7 @@
     "roles": {
       "admin": "Administrator",
       "elder": "Elder",
+      "ministerial_servant": "Ministerial servant",
       "secretary": "Secretary",
       "publisher": "Publisher"
     },
@@ -247,6 +248,7 @@
     "circuitOverseerDescription": "Default name for the CO visit",
     "loginNameHint": "This is your name for signing in.",
     "noLoginName": "No login name set — ask your administrator.",
+    "noLoginNameAdmin": "No login name set. You can set one in “Congregation” → “User management”.",
     "deliveryEmail": "Letters go to: {{email}}",
     "noEmail": "No e-mail address. A forgotten password is reset by the congregation administrator."
   },
@@ -1386,7 +1388,9 @@
       "history": {
         "retire": "Talks retired: {{count}}",
         "lift": "Talks brought back: {{count}}",
-        "import": "Catalogue imported: {{count}}"
+        "import": "Catalogue imported: {{count}}",
+        "importChanged": "new: {{created}}, changed: {{updated}}",
+        "importSame": "nothing changed"
       },
       "willLift": "Talks to bring back: {{count}}",
       "confirmLift": "Bring these talks back",
@@ -3117,7 +3121,7 @@
   },
   "serviceSummary": {
     "noAccessTitle": "Access restricted",
-    "noAccessBody": "The summary is available to the secretary and administrators only.",
+    "noAccessBody": "The summary is read by the elders, the secretary and administrators.",
     "loadFailed": "Could not load the summary",
     "count": "Count",
     "hours": "Hours",
@@ -3496,7 +3500,10 @@
     "plannedShort": "planned {{date}}",
     "noGroups": "No groups yet",
     "hint": "A visit is marked on a field-service meeting — choose the group and turn on «Service overseer's visit».",
-    "openFromTask": "Open the group visits →"
+    "openFromTask": "Open the group visits →",
+    "prevYear": "Previous service year",
+    "nextYear": "Next service year",
+    "noneThatYear": "Not visited that year"
   },
   "tasks": {
     "title": "Body of elders' tasks",

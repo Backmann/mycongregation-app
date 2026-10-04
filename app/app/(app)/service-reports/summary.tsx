@@ -51,7 +51,9 @@ function getRecentMonths(count: number): { value: string; label: string }[] {
 
 export default function ServiceSummaryScreen() {
   const { t, i18n: i18nInstance } = useTranslation();
-  const { canViewServiceSummary } = usePermissions();
+  // Every elder READS the summary; closing the month and printing the S-1
+  // stay with the secretary and the administrators.
+  const { canViewServiceSummary, canManageServiceSummary } = usePermissions();
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const recentMonths = useMemo(() => getRecentMonths(6), [i18nInstance.language]);
@@ -95,7 +97,9 @@ export default function ServiceSummaryScreen() {
   const groupRows = useQuery({
     queryKey: ['group-reports', reportMonth],
     queryFn: () => serviceReportsApi.findGroup(reportMonth),
-    enabled: canViewServiceSummary,
+    // The list of who has not handed in feeds the printed sheet only, and the
+    // server gives the whole congregation's list to the secretary alone.
+    enabled: canManageServiceSummary,
   });
 
   const print = () => {
@@ -210,11 +214,12 @@ export default function ServiceSummaryScreen() {
       <Stack.Screen
         options={{
           title: t('reports.summary.title'),
-          headerRight: () => (
-            <Pressable onPress={print} style={{ paddingHorizontal: 8 }} hitSlop={8}>
-              <Ionicons name="print-outline" size={22} color={HEADER_ICON} />
-            </Pressable>
-          ),
+          headerRight: () =>
+            canManageServiceSummary ? (
+              <Pressable onPress={print} style={{ paddingHorizontal: 8 }} hitSlop={8}>
+                <Ionicons name="print-outline" size={22} color={HEADER_ICON} />
+              </Pressable>
+            ) : null,
         }}
       />
       <View style={styles.header}>
@@ -297,11 +302,12 @@ export default function ServiceSummaryScreen() {
           </Text>
           {/* Closing settles the statuses too, and does it at once. Said
               before the click, not discovered after it. */}
-          {!data?.closed ? (
+          {canManageServiceSummary && !data?.closed ? (
             <Text style={styles.closureHint}>
               {t('reports.summary.closureAffectsStatus')}
             </Text>
           ) : null}
+          {canManageServiceSummary ? (
           <Pressable
             onPress={() =>
               closureMutation.mutate(data?.closed ? 'reopen' : 'close')
@@ -321,6 +327,7 @@ export default function ServiceSummaryScreen() {
                   : t('reports.summary.closeMonth')}
             </Text>
           </Pressable>
+          ) : null}
           {closureMutation.isError && (
             <Text style={styles.closureError}>
               {extractErrorMessage(closureMutation.error)}

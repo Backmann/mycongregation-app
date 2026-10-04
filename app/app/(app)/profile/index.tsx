@@ -20,14 +20,7 @@ import { LanguagePickerModal } from "../../../components/LanguagePicker";
 import { getCurrentLanguage } from "../../../lib/i18n";
 import { extractErrorMessage, meApi } from "../../../lib/api";
 import { contactsCheckLine } from "../../../lib/contacts-check";
-import {
-  getWebPushStatus,
-  isIosWithoutStandalone,
-  subscribeToWebPush,
-  unsubscribeFromWebPush,
-  WebPushStatus,
-} from "../../../lib/web-push";
-import { refreshDeviceNotify } from "../../../lib/notify-device";
+import { useDeviceNotify } from "../../../lib/notify-device";
 import { notify } from "../../../lib/error-bus";
 import {
   biometricsAvailable,
@@ -101,11 +94,8 @@ export default function ProfileScreen() {
   const buildLine = useBuildLine();
   const [langModalVisible, setLangModalVisible] = useState(false);
   const currentLang = getCurrentLanguage();
-  const [webPushStatus, setWebPushStatus] = useState<WebPushStatus | null>(
-    null,
-  );
-  const [webPushBusy, setWebPushBusy] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const deviceNotify = useDeviceNotify();
 
   const handleExport = useCallback(async () => {
     if (exporting) return;
@@ -135,54 +125,6 @@ export default function ProfileScreen() {
       setExporting(false);
     }
   }, [exporting, t]);
-  const showIosHint = isIosWithoutStandalone();
-
-  useEffect(() => {
-    if (Platform.OS !== "web") return;
-    getWebPushStatus().then(setWebPushStatus);
-  }, []);
-
-  const handleWebPushToggle = useCallback(async () => {
-    if (webPushBusy) return;
-    setWebPushBusy(true);
-    try {
-      if (webPushStatus === "subscribed") {
-        await unsubscribeFromWebPush();
-      } else if (webPushStatus === "granted" || webPushStatus === "default") {
-        await subscribeToWebPush();
-      } else if (webPushStatus === "denied") {
-        notify(
-          t("profile.webPush.deniedTitle"),
-          t("profile.webPush.deniedBody"),
-        );
-      }
-      const fresh = await getWebPushStatus();
-      setWebPushStatus(fresh);
-      // The home card and the «Уведомления» screen read the shared state.
-      void refreshDeviceNotify();
-    } finally {
-      setWebPushBusy(false);
-    }
-  }, [webPushStatus, webPushBusy, t]);
-
-  const webPushSubtitleKey = showIosHint
-    ? "profile.webPush.iosHint"
-    : webPushStatus === "subscribed"
-      ? "profile.webPush.enabled"
-      : webPushStatus === "denied"
-        ? "profile.webPush.denied"
-        : webPushStatus === "unsupported"
-          ? "profile.webPush.unsupported"
-          : webPushStatus === "unconfigured"
-            ? "profile.webPush.unconfigured"
-            : "profile.webPush.disabled";
-
-  const webPushDisabled =
-    webPushBusy ||
-    webPushStatus === "unsupported" ||
-    webPushStatus === "unconfigured" ||
-    showIosHint;
-
   if (!user) return null;
 
   const initials =
@@ -220,7 +162,11 @@ export default function ProfileScreen() {
                 <Text style={styles.identityHint}>
                   {user.loginName
                     ? t("profile.loginNameHint")
-                    : t("profile.noLoginName")}
+                    : user.role === "admin"
+                      ? // «Спросите у администратора» was said to the
+                        // administrator himself, who has nobody to ask.
+                        t("profile.noLoginNameAdmin")
+                      : t("profile.noLoginName")}
                 </Text>
                 {user.email ? (
                   <Text style={styles.identityHint} selectable>
@@ -233,9 +179,11 @@ export default function ProfileScreen() {
                 )}
                 <View style={styles.identityBadge}>
                   <Text style={styles.identityBadgeText}>
-                    {t(`profile.roles.${user.role}`, {
-                      defaultValue: user.role,
-                    })}
+                    {/* No fallback to the raw key: «ministerial_servant»
+                        stood here for every ministerial servant, and the
+                        fallback is what kept it from being noticed. The gate
+                        holds the list to the server's roles. */}
+                    {t(`profile.roles.${user.role}`)}
                   </Text>
                 </View>
               </View>
@@ -325,48 +273,19 @@ export default function ProfileScreen() {
                 <Text style={styles.rowTitle}>
                   {t("notificationPrefs.rowTitle")}
                 </Text>
+                {/* What THIS device does, said on the row itself. A second
+                    row, «Уведомления в браузере», used to stand under this
+                    one: an older switch for the same thing, whose «off» the
+                    app undid at its next start (permission granted is
+                    subscribed again). One door, and it says where it stands. */}
                 <Text style={styles.rowSubtitle}>
-                  {t("notificationPrefs.rowSubtitle")}
+                  {deviceNotify === "checking"
+                    ? t("notificationPrefs.rowSubtitle")
+                    : t(`notifyDevice.state.${deviceNotify}`)}
                 </Text>
               </View>
               <Ionicons name="chevron-forward" size={18} color="#94a3b8" />
             </Pressable>
-            {/* The browser's own switch, in the same section — it used to
-                stand alone under a second «Уведомления» heading. */}
-            {Platform.OS === "web" && webPushStatus !== null ? (
-                <Pressable
-                  style={({ pressed }) => [
-                    styles.row,
-                    pressed && !webPushDisabled && styles.rowPressed,
-                    webPushDisabled && { opacity: 0.6 },
-                  ]}
-                  onPress={handleWebPushToggle}
-                  disabled={webPushDisabled}
-                >
-                  <View style={styles.rowIcon}>
-                    <Ionicons
-                      name={
-                        webPushStatus === "subscribed"
-                          ? "notifications"
-                          : "notifications-outline"
-                      }
-                      size={20}
-                      color="#0ea5e9"
-                    />
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.rowTitle}>
-                      {t("profile.webPush.title")}
-                    </Text>
-                    <Text style={styles.rowSubtitle}>
-                      {t(webPushSubtitleKey)}
-                    </Text>
-                  </View>
-                  {webPushStatus === "subscribed" && (
-                    <Ionicons name="checkmark-circle" size={20} color="#10b981" />
-                  )}
-                </Pressable>
-            ) : null}
           </View>
         </View>
 

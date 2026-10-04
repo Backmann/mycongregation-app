@@ -1,6 +1,7 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -28,10 +29,25 @@ export default function ServiceOverseerScreen() {
   const { t, i18n } = useTranslation();
   const language = i18n.language;
 
-  const visitsQuery = useQuery({
+  // The year looked at; null is the one in progress, which the server names.
+  //
+  // «История посещений по годам должна оставаться видна, чтобы видеть
+  // тенденцию» (30 September 2026). The server could always answer for any
+  // year — the screen simply never asked for another.
+  const [asked, setAsked] = useState<number | null>(null);
+  const currentQuery = useQuery({
     queryKey: ['service-overseer', 'group-visits'],
     queryFn: () => serviceOverseerApi.groupVisits(),
   });
+  const pastQuery = useQuery({
+    queryKey: ['service-overseer', 'group-visits', asked],
+    queryFn: () => serviceOverseerApi.groupVisits(asked as number),
+    enabled: asked !== null,
+  });
+  const currentYear = currentQuery.data?.serviceYear ?? 0;
+  const earliestYear = currentQuery.data?.earliestYear ?? currentYear;
+  const past = asked !== null && asked !== currentYear;
+  const visitsQuery = past ? pastQuery : currentQuery;
   const publishersQuery = useAllPublishers();
 
   const nameOf = useMemo(() => {
@@ -52,11 +68,13 @@ export default function ServiceOverseerScreen() {
     !!g.nextVisitDate &&
     g.nextVisitDate >= `${year - 1}-09-01` &&
     g.nextVisitDate <= `${year}-08-31`;
-  const waiting = groups.filter((g) => made(g) === 0);
+  // What still waits is a question about the year in progress only.
+  const waiting = past ? [] : groups.filter((g) => made(g) === 0);
+  const shownYear = past ? (asked as number) : currentYear;
 
   const fmt = (iso: string) => dayjs(iso).locale(language).format('D MMMM YYYY');
 
-  if (visitsQuery.isLoading) {
+  if (currentQuery.isLoading) {
     return (
       <View style={styles.center}>
         <ActivityIndicator />
@@ -94,11 +112,43 @@ export default function ServiceOverseerScreen() {
         </View>
       ) : null}
 
-      <Text style={styles.sectionTitle}>
-        {t('serviceOverseer.yearLabel', {
-          year: visitsQuery.data?.serviceYear ?? '',
-        })}
-      </Text>
+      {/* The same switch as on the annual report: a year back, a year
+          forward, never past the year in progress nor before the records. */}
+      <View style={styles.yearRow}>
+        <Pressable
+          onPress={() => setAsked(shownYear - 1)}
+          hitSlop={10}
+          disabled={shownYear <= earliestYear}
+          accessibilityRole="button"
+          accessibilityLabel={t('serviceOverseer.prevYear')}
+        >
+          <Ionicons
+            name="chevron-back"
+            size={20}
+            color={shownYear <= earliestYear ? '#cbd5e1' : '#0e7490'}
+          />
+        </Pressable>
+        <Text style={styles.yearLabel}>
+          {t('attendance.serviceYear', { from: shownYear - 1, to: shownYear })}
+        </Text>
+        <Pressable
+          onPress={() =>
+            setAsked(shownYear + 1 >= currentYear ? null : shownYear + 1)
+          }
+          hitSlop={10}
+          disabled={!past}
+          accessibilityRole="button"
+          accessibilityLabel={t('serviceOverseer.nextYear')}
+        >
+          <Ionicons
+            name="chevron-forward"
+            size={20}
+            color={past ? '#0e7490' : '#cbd5e1'}
+          />
+        </Pressable>
+      </View>
+
+      {past && pastQuery.isLoading ? <ActivityIndicator /> : null}
 
       {groups.map((g) => {
         const visited = made(g) > 0;
@@ -116,18 +166,34 @@ export default function ServiceOverseerScreen() {
               </View>
             </View>
 
-            <Text style={styles.line}>
-              {g.lastVisitDate
-                ? t('serviceOverseer.last', {
-                    date: fmt(g.lastVisitDate),
-                    who: nameOf(g.lastVisitBy) ?? '—',
-                  })
-                : t('serviceOverseer.never')}
-            </Text>
+            {past ? (
+              // A year that has ended: «last» and «next» speak of today, so
+              // the year's own visits are named instead, one to a line.
+              (g.visitsInYear ?? []).length > 0 ? (
+                (g.visitsInYear ?? []).map((v) => (
+                  <Text key={v.date} style={styles.line}>
+                    {`${fmt(v.date)} · ${nameOf(v.by) ?? '—'}`}
+                  </Text>
+                ))
+              ) : (
+                <Text style={styles.line}>
+                  {t('serviceOverseer.noneThatYear')}
+                </Text>
+              )
+            ) : (
+              <Text style={styles.line}>
+                {g.lastVisitDate
+                  ? t('serviceOverseer.last', {
+                      date: fmt(g.lastVisitDate),
+                      who: nameOf(g.lastVisitBy) ?? '—',
+                    })
+                  : t('serviceOverseer.never')}
+              </Text>
+            )}
 
             {/* A planned visit is stated separately from one already made: a
                 group is not covered by something that has not happened. */}
-            {g.nextVisitDate ? (
+            {!past && g.nextVisitDate ? (
               <Text style={styles.planned}>
                 {t('serviceOverseer.planned', { date: fmt(g.nextVisitDate) })}
               </Text>
@@ -167,6 +233,21 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
   },
   waitingBody: { fontSize: 13.5, color: '#78350f', lineHeight: 19 },
+  yearRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 14,
+    marginTop: 6,
+  },
+  yearLabel: {
+    fontSize: 15,
+    color: '#0f172a',
+    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
+    minWidth: 190,
+    textAlign: 'center',
+  },
   sectionTitle: {
     fontSize: 12,
     color: '#64748b',

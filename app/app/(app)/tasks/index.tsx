@@ -30,6 +30,7 @@ import { confirm } from "../../../components/ConfirmHost";
 import { AREA_BG, AREA_FG, AREAS, quarterLabel } from "../../../lib/task-areas";
 import { UndoBar } from "../../../components/UndoBar";
 import { useAllPublishers } from "../../../lib/useAllPublishers";
+import { dayLabel } from "../../../lib/day-label";
 
 /** One colour per area — the glance before the reading. */
 const AREA_TINT: Record<TaskArea, string> = {
@@ -126,8 +127,7 @@ export default function TasksScreen() {
   });
 
   const today = dayjs().format("YYYY-MM-DD");
-  const fmt = (iso: string) =>
-    dayjs(iso).locale(i18n.language).format("D MMMM");
+  const fmt = (iso: string) => dayLabel(iso, i18n.language, today);
 
   const open = openQuery.data ?? [];
 

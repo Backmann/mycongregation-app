@@ -76,7 +76,18 @@ export interface Permissions {
   /** Public talk coordinator — speaker exchange (incoming/outgoing) + directories. */
   canCoordinatePublicTalks: boolean;
 
+  /**
+   * READ the month's service summary — every elder (Lionel, 30 September
+   * 2026: «неактивные должны быть видны всем старейшинам»).
+   */
   canViewServiceSummary: boolean;
+  /**
+   * COMPILE it — close the month, print the S-1, follow the collection: the
+   * secretary's work, and an administrator's. The two used to be one flag,
+   * so opening the figures to the elders would have handed them the
+   * secretary's buttons and his card on Home as well.
+   */
+  canManageServiceSummary: boolean;
 
   /** Circuit-overseer visit schedule (Служение). View: admin or elder; edit:
    *  admin, service overseer, or body coordinator. */
@@ -188,7 +199,8 @@ export function usePermissions(): Permissions {
         isAdmin ||
         holds("public_talk_coordinator") ||
         holds("public_talk_coordinator_assistant"),
-      canViewServiceSummary: isAdmin || holds("secretary"),
+      canViewServiceSummary: isAdmin || isElder || holds("secretary"),
+      canManageServiceSummary: isAdmin || holds("secretary"),
       // Those who plan the visit read its schedule too (27 September): the
       // service overseer's assistant could already change it.
       canViewCoSchedule:

@@ -31,15 +31,15 @@ import { usePermissions } from '../lib/permissions';
  * only when a card under the heading will show (26 September).
  */
 export function useReportCollection() {
-  const { canViewServiceSummary } = usePermissions();
+  const { canManageServiceSummary } = usePermissions();
   const collection = useQuery({
     queryKey: ['service-reports', 'collection'],
     queryFn: () => serviceReportsApi.getCollection(),
-    enabled: canViewServiceSummary,
+    enabled: canManageServiceSummary,
     staleTime: 5 * 60 * 1000,
   });
   const data = collection.data;
-  return canViewServiceSummary && data && !data.closed ? data : null;
+  return canManageServiceSummary && data && !data.closed ? data : null;
 }
 
 export function ReportCollectionCard() {

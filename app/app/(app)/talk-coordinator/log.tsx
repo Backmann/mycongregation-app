@@ -1255,7 +1255,9 @@ export default function TalkExchangeYearScreen() {
                   m.key === visibleMonth && styles.monthChipTextCurrent,
                 ]}
               >
-                {dayjs(`${m.key}-01`).locale(i18n.language).format("MMM YY")}
+                {/* The year in full: «Окт. 26» read as the 26th of October
+                    (Lionel, 30 September 2026). */}
+                {dayjs(`${m.key}-01`).locale(i18n.language).format("MMM YYYY")}
               </Text>
             </Pressable>
           ))}

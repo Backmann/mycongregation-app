@@ -627,6 +627,9 @@ export interface CatalogueEvent {
   kind: "import" | "retire" | "lift";
   numbers: number[];
   count: number;
+  /** An import only: of the talks loaded, how many were new or changed. */
+  created?: number;
+  updated?: number;
   from: string | null;
   until: string | null;
   reason: string | null;
@@ -1950,6 +1953,11 @@ export interface ReadinessProgramme {
   total: number;
   /** Part keys still without a person — name them with getPartLabel. */
   missing: string[];
+  /**
+   * The server says nothing about the programme to this reader (the duties
+   * coordinator): the four fields above are empty on purpose.
+   */
+  withheld?: true;
 }
 
 export interface ReadinessDuties {
@@ -2721,6 +2729,8 @@ export interface GroupVisitRow {
   lastVisitDate: string | null;
   lastVisitBy: string | null;
   nextVisitDate: string | null;
+  /** The visits of the year asked about, oldest first. */
+  visitsInYear?: { date: string; by: string | null }[];
 }
 
 /** Which groups the service overseer has visited, and which still wait. */
@@ -2728,6 +2738,8 @@ export const serviceOverseerApi = {
   async groupVisits(serviceYear?: number) {
     const { data } = await api.get<{
       serviceYear: number;
+      /** The year of the oldest visit on record. */
+      earliestYear?: number;
       groups: GroupVisitRow[];
     }>("/service-overseer/group-visits", {
       params: serviceYear ? { serviceYear } : undefined,

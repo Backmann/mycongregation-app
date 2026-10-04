@@ -156,7 +156,7 @@ function SectionRow({
 
 export default function ServiceReportsListScreen() {
   const { t } = useTranslation();
-  const { canViewServiceSummary, canViewAttendance, isAdmin, isElder, responsibilities } =
+  const { canViewServiceSummary, canManageServiceSummary, canViewAttendance, isAdmin, isElder, responsibilities } =
     usePermissions();
   const { myPublisherId } = useMyPublisher();
   const now = new Date();
@@ -271,14 +271,17 @@ export default function ServiceReportsListScreen() {
               />
             ) : null}
             {canViewServiceSummary ? (
+              <SectionRow
+                icon="stats-chart-outline"
+                label={t('reports.summary.title')}
+                onPress={() => router.push('/service-reports/summary' as any)}
+              />
+            ) : null}
+            {/* The annual report stays the secretary's: the server gives it
+                to nobody else, and a row that opens onto a refusal is worse
+                than no row. */}
+            {canManageServiceSummary ? (
               <>
-                <SectionRow
-                  icon="stats-chart-outline"
-                  label={t('reports.summary.title')}
-                  onPress={() =>
-                    router.push('/service-reports/summary' as any)
-                  }
-                />
                 <SectionRow
                   icon="clipboard-outline"
                   label={t('annualReport.pageTitle')}

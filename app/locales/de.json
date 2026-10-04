@@ -240,6 +240,7 @@
     "roles": {
       "admin": "Administrator",
       "elder": "Ältester",
+      "ministerial_servant": "Dienstamtgehilfe",
       "secretary": "Sekretär",
       "publisher": "Verkündiger"
     },
@@ -247,6 +248,7 @@
     "circuitOverseerDescription": "Standardname für den Besuch",
     "loginNameHint": "Das ist Ihr Name für die Anmeldung.",
     "noLoginName": "Kein Anmeldename gesetzt — fragen Sie Ihren Administrator.",
+    "noLoginNameAdmin": "Kein Anmeldename gesetzt. Festlegen können Sie ihn unter „Versammlung“ → „Benutzerverwaltung“.",
     "deliveryEmail": "Post geht an: {{email}}",
     "noEmail": "Keine E-Mail-Adresse. Ein vergessenes Passwort setzt der Versammlungsadministrator zurück."
   },
@@ -1386,7 +1388,9 @@
       "history": {
         "retire": "Abgesetzte Vorträge: {{count}}",
         "lift": "Zurückgeholte Vorträge: {{count}}",
-        "import": "Katalog importiert: {{count}}"
+        "import": "Katalog importiert: {{count}}",
+        "importChanged": "neu: {{created}}, geändert: {{updated}}",
+        "importSame": "keine Änderungen"
       },
       "willLift": "Zurückzuholende Vorträge: {{count}}",
       "confirmLift": "Diese Vorträge zurückholen",
@@ -3117,7 +3121,7 @@
   },
   "serviceSummary": {
     "noAccessTitle": "Zugriff beschränkt",
-    "noAccessBody": "Die Übersicht steht nur dem Sekretär und Administratoren zur Verfügung.",
+    "noAccessBody": "Die Übersicht lesen die Ältesten, der Sekretär und die Administratoren.",
     "loadFailed": "Übersicht konnte nicht geladen werden",
     "count": "Anzahl",
     "hours": "Stunden",
@@ -3496,7 +3500,10 @@
     "plannedShort": "geplant {{date}}",
     "noGroups": "Noch keine Gruppen",
     "hint": "Ein Besuch wird an einer Zusammenkunft für den Dienst vermerkt — Gruppe wählen und «Besuch des Dienstaufsehers» einschalten.",
-    "openFromTask": "Gruppenbesuche öffnen →"
+    "openFromTask": "Gruppenbesuche öffnen →",
+    "prevYear": "Vorheriges Dienstjahr",
+    "nextYear": "Nächstes Dienstjahr",
+    "noneThatYear": "In diesem Jahr nicht besucht"
   },
   "tasks": {
     "title": "Aufgaben der Ältestenschaft",
