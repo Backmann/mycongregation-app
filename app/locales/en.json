@@ -4151,6 +4151,9 @@
     "lastMonthOthers_other": "{{count}} more have not reported — it does not change “Active”."
   },
   "notifyDevice": {
+    "strip": {
+      "title": "Notifications are off"
+    },
     "card": {
       "title": "Turn on notifications",
       "body": "Without them you will not hear about a meeting part, cleaning or other assignments.",

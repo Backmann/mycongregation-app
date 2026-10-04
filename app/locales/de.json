@@ -4151,6 +4151,9 @@
     "lastMonthOthers_other": "{{count}} weitere fehlen noch — an „Aktive“ ändert das nichts."
   },
   "notifyDevice": {
+    "strip": {
+      "title": "Benachrichtigungen sind aus"
+    },
     "card": {
       "title": "Benachrichtigungen einschalten",
       "body": "Ohne sie erfahren Sie nichts von einer Aufgabe in der Zusammenkunft, vom Putzen oder von anderen Aufgaben.",

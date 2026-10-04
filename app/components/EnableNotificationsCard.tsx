@@ -41,8 +41,14 @@ const INSTALL_URL = 'https://mycongregation.org/app/';
  * good is a card that has been dismissed for good by exactly the people it is
  * for.
  */
-export function EnableNotificationsCard() {
-  const { t } = useTranslation();
+/**
+ * Whether this device needs the nudge, and what the person has done about it.
+ *
+ * Kept apart from the card so that Home can ask BEFORE drawing: the card now
+ * stands among the things to do, and that section's heading is drawn only
+ * when something under it will show.
+ */
+export function useNotifyNudge() {
   const state = useDeviceNotify();
   const [snoozed, setSnoozed] = useState<boolean | null>(null);
   const [busy, setBusy] = useState(false);
@@ -85,6 +91,35 @@ export function EnableNotificationsCard() {
     }
   };
 
+  const needed =
+    snoozed === false &&
+    (state === 'off' || state === 'denied' || state === 'not_installed');
+  return {
+    state,
+    busy,
+    done,
+    /** Something will be drawn: the nudge, or the «включены» that follows it. */
+    show: done || needed,
+    later,
+    enable,
+    dismissDone: () => setDone(false),
+  };
+}
+
+export type NotifyNudge = ReturnType<typeof useNotifyNudge>;
+
+/**
+ * The nudge itself. It opens as ONE LINE among the things to do and unfolds
+ * when tapped (4 October 2026): as a full card above everything it took a
+ * third of the first screen from the person's own next assignment, every day
+ * for as long as the device stayed silent. What it says once unfolded is
+ * unchanged.
+ */
+export function EnableNotificationsCard({ nudge }: { nudge: NotifyNudge }) {
+  const { t } = useTranslation();
+  const { state, busy, done, later, enable } = nudge;
+  const [open, setOpen] = useState(false);
+
   if (done) {
     return (
       <View style={[s.card, s.ok]}>
@@ -95,7 +130,7 @@ export function EnableNotificationsCard() {
         <Text style={s.body}>{t('notifyDevice.card.doneBody')}</Text>
         <Pressable
           style={s.quiet}
-          onPress={() => setDone(false)}
+          onPress={nudge.dismissDone}
           accessibilityRole="button"
         >
           <Text style={s.quietText}>{t('common.ok')}</Text>
@@ -104,9 +139,25 @@ export function EnableNotificationsCard() {
     );
   }
 
-  if (snoozed !== false) return null;
-  if (state !== 'off' && state !== 'denied' && state !== 'not_installed') {
-    return null;
+  if (!nudge.show) return null;
+
+  if (!open) {
+    return (
+      <Pressable
+        style={({ pressed }) => [s.strip, pressed && { opacity: 0.7 }]}
+        onPress={() => setOpen(true)}
+        accessibilityRole="button"
+        accessibilityState={{ expanded: false }}
+      >
+        <Ionicons
+          name={state === 'denied' ? 'notifications-off-outline' : 'notifications-outline'}
+          size={20}
+          color="#b45309"
+        />
+        <Text style={s.stripText}>{t('notifyDevice.strip.title')}</Text>
+        <Ionicons name="chevron-down" size={18} color="#b45309" />
+      </Pressable>
+    );
   }
 
   const Later = (
@@ -207,6 +258,25 @@ export function EnableNotificationsCard() {
 }
 
 const s = StyleSheet.create({
+  // The same line as the other things to do on Home (its `strip` styles).
+  strip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    backgroundColor: '#fffbeb',
+    borderColor: '#fde68a',
+  },
+  stripText: {
+    flex: 1,
+    fontSize: 14.5,
+    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
+    color: '#92400e',
+  },
   card: {
     backgroundColor: '#fffbeb',
     borderWidth: 1,

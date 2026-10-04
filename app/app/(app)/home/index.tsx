@@ -26,7 +26,10 @@ import {
   useReportCollection,
 } from "../../../components/ReportCollectionCard";
 import { usePermissions } from "../../../lib/permissions";
-import { EnableNotificationsCard } from "../../../components/EnableNotificationsCard";
+import {
+  EnableNotificationsCard,
+  useNotifyNudge,
+} from "../../../components/EnableNotificationsCard";
 import {
   Absence,
   Assignment,
@@ -462,10 +465,20 @@ function TodoSection() {
   const collection = useReportCollection();
   const attendance = useAttendanceDue();
   const attention = useAttention();
+  // A device that receives nothing: one line here, last — the things with a
+  // date come first — which unfolds into the full explanation (4 October).
+  const nudge = useNotifyNudge();
   // Not once the secretary has closed the month: the report is refused then,
   // and the Reports screen sends the person to the secretary instead.
   const reportDue = !!report && !report.submitted && !report.closed;
-  if (!reportDue && !pending && !collection && !attendance && !attention)
+  if (
+    !reportDue &&
+    !pending &&
+    !collection &&
+    !attendance &&
+    !attention &&
+    !nudge.show
+  )
     return null;
 
   const dayMonth = (iso: string) =>
@@ -555,6 +568,7 @@ function TodoSection() {
       ) : null}
       <ReportCollectionCard />
       <AttendanceCard />
+      <EnableNotificationsCard nudge={nudge} />
     </View>
   );
 }
@@ -2218,7 +2232,6 @@ export default function HomeScreen() {
               <View style={s.colLeft}>
                 <GreetingHeader now={now} />
                 <ReportDone />
-                <EnableNotificationsCard />
                 {next}
                 <TodoSection />
                 {soon}
@@ -2229,7 +2242,6 @@ export default function HomeScreen() {
             <>
               <GreetingHeader now={now} />
               <ReportDone />
-              <EnableNotificationsCard />
               {next}
               <TodoSection />
               {list}
