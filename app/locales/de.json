@@ -3970,6 +3970,41 @@
     "ahead": "{{minutes}} Min voraus",
     "behind": "{{minutes}} Min im Rückstand"
   },
+  "serviceHub": {
+    "sections": {
+      "preaching": "Predigtdienst",
+      "reports": "Berichte",
+      "visits": "Besuche",
+      "pioneers": "Pioniere"
+    },
+    "sub": {
+      "summary": "Monatsergebnis der Versammlung",
+      "attendance": "Wie viele die Zusammenkünfte besuchten"
+    },
+    "live": {
+      "reportDue": "{{month}}: Bericht nicht abgegeben",
+      "reportDone": "{{month}}: Bericht abgegeben",
+      "collected": "{{month}}: {{received}} von {{expected}} abgegeben",
+      "attendanceMissing": "Nicht eingetragene Zusammenkünfte: {{count}}",
+      "attendanceDone": "Alle Zusammenkünfte eingetragen",
+      "fieldNext": "Nächste: {{when}}",
+      "fieldMine": "Sie leiten: {{when}}",
+      "fieldNone": "In den nächsten drei Wochen keine Zusammenkünfte",
+      "cartMine": "Sie: {{when}} · {{place}}",
+      "cartCollecting": "Anmeldung läuft für die Woche ab {{date}}",
+      "cartRequested": "Anmeldung gesendet · Woche ab {{date}}",
+      "cartNotMine": "Diese Woche sind Sie nicht eingeteilt",
+      "visitsCount": "Besuchte Gruppen: {{made}} von {{total}}",
+      "visitsAll": "Alle Gruppen besucht",
+      "visitsWaiting": "Nicht besucht: {{names}}",
+      "visitMyGroup": "Ihre Gruppe: Besuch {{when}}",
+      "coNow": "Besuch läuft: {{range}}",
+      "coNext": "Besuch {{range}}",
+      "coNone": "Kein Besuch geplant",
+      "auxCount": "{{month}}: {{count}} im Dienst",
+      "auxNone": "{{month}}: niemand im Dienst"
+    }
+  },
   "congregationHub": {
     "sections": {
       "people": "Personen",

@@ -3970,6 +3970,41 @@
     "ahead": "{{minutes}} min ahead",
     "behind": "{{minutes}} min behind"
   },
+  "serviceHub": {
+    "sections": {
+      "preaching": "Preaching",
+      "reports": "Reports",
+      "visits": "Visits",
+      "pioneers": "Pioneers"
+    },
+    "sub": {
+      "summary": "The month's totals for the congregation",
+      "attendance": "How many attended the meetings"
+    },
+    "live": {
+      "reportDue": "{{month}}: report not handed in",
+      "reportDone": "{{month}}: report handed in",
+      "collected": "{{month}}: {{received}} of {{expected}} handed in",
+      "attendanceMissing": "Meetings not recorded: {{count}}",
+      "attendanceDone": "All meetings recorded",
+      "fieldNext": "Next: {{when}}",
+      "fieldMine": "You conduct: {{when}}",
+      "fieldNone": "No meetings in the next three weeks",
+      "cartMine": "You: {{when}} · {{place}}",
+      "cartCollecting": "Sign-up open for the week of {{date}}",
+      "cartRequested": "Request sent · week of {{date}}",
+      "cartNotMine": "You are not scheduled this week",
+      "visitsCount": "Groups visited: {{made}} of {{total}}",
+      "visitsAll": "All groups visited",
+      "visitsWaiting": "Not visited: {{names}}",
+      "visitMyGroup": "Your group: visit {{when}}",
+      "coNow": "Visit in progress: {{range}}",
+      "coNext": "Visit {{range}}",
+      "coNone": "No visit planned",
+      "auxCount": "{{month}}: {{count}} serving",
+      "auxNone": "{{month}}: nobody serving"
+    }
+  },
   "congregationHub": {
     "sections": {
       "people": "People",

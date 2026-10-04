@@ -4044,6 +4044,41 @@
     "ahead": "с опережением на {{minutes}} мин",
     "behind": "с отставанием на {{minutes}} мин"
   },
+  "serviceHub": {
+    "sections": {
+      "preaching": "Проповедь",
+      "reports": "Отчёты",
+      "visits": "Посещения",
+      "pioneers": "Пионеры"
+    },
+    "sub": {
+      "summary": "Итоги месяца по собранию",
+      "attendance": "Сколько присутствовало на встречах"
+    },
+    "live": {
+      "reportDue": "{{month}}: отчёт не сдан",
+      "reportDone": "{{month}}: отчёт сдан",
+      "collected": "{{month}}: сдали {{received}} из {{expected}}",
+      "attendanceMissing": "Не записано встреч: {{count}}",
+      "attendanceDone": "Все встречи записаны",
+      "fieldNext": "Ближайшая: {{when}}",
+      "fieldMine": "Вы проводите: {{when}}",
+      "fieldNone": "В ближайшие три недели встреч нет",
+      "cartMine": "Вы: {{when}} · {{place}}",
+      "cartCollecting": "Идёт запись на неделю с {{date}}",
+      "cartRequested": "Заявка подана · неделя с {{date}}",
+      "cartNotMine": "На этой неделе вы не записаны",
+      "visitsCount": "Посещено групп: {{made}} из {{total}}",
+      "visitsAll": "Все группы посещены",
+      "visitsWaiting": "Не посещены: {{names}}",
+      "visitMyGroup": "Ваша группа: визит {{when}}",
+      "coNow": "Визит идёт: {{range}}",
+      "coNext": "Визит {{range}}",
+      "coNone": "Визит не запланирован",
+      "auxCount": "{{month}}: служат {{count}}",
+      "auxNone": "{{month}}: никто не служит"
+    }
+  },
   "congregationHub": {
     "sections": {
       "people": "Люди",

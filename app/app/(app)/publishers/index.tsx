@@ -1,21 +1,12 @@
 import { useCallback } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
-import { router, useFocusEffect } from 'expo-router';
+import { useFocusEffect } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../../lib/auth';
 import { usePermissions } from '../../../lib/permissions';
-import { FONT } from '../../../lib/typography';
 import { congregationSummaryApi } from '../../../lib/api';
 import { congregationLines, type DoorLine } from '../../../lib/congregation-lines';
-
-const INK = '#0f172a';
-const SOFT = '#64748b';
-const LINE = '#eef2f6';
-
-type Door = { key: string; title: string; subtitle: string; href: string };
-type Section = { key: string; label: string | null; doors: Door[] };
+import { DoorList, type Door, type DoorSection } from '../../../components/DoorList';
 
 /**
  * The congregation's contents — every door into the congregation's work.
@@ -33,15 +24,10 @@ type Section = { key: string; label: string | null; doors: Door[] };
  * Those who may browse the roster see sections; everyone else sees a handful
  * of rows with no headings, a door of their own first.
  */
-/** Two columns of sections from this width, as on Home. */
-const WIDE_FROM = 900;
-
 export default function CongregationScreen() {
   const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const perms = usePermissions();
-  const { width } = useWindowDimensions();
-  const wide = width >= WIDE_FROM;
   // What stands under each door — one request (27 September); until it
   // arrives, or if it fails, every row keeps its plain description.
   const summaryQ = useQuery({
@@ -218,7 +204,7 @@ export default function CongregationScreen() {
       ]
     : [];
 
-  const sections: Section[] = privileged
+  const sections: DoorSection[] = privileged
     ? [
         {
           key: 'people',
@@ -263,103 +249,5 @@ export default function CongregationScreen() {
         },
       ];
 
-  const shown = sections.filter((s) => s.doors.length > 0);
-  const block = (s: Section) => (
-    <View key={s.key} style={s.label ? null : styles.unlabelled}>
-      {s.label ? (
-        <Text style={styles.label} accessibilityRole="header">
-          {s.label}
-        </Text>
-      ) : null}
-      {s.doors.map((d) => (
-        <Row key={d.key} door={d} line={lines[d.key]} />
-      ))}
-    </View>
-  );
-  // On a wide screen the sections stand in two columns, split by rows rather
-  // than by count, so neither column runs long.
-  const half = (() => {
-    const total = shown.reduce((n, s) => n + s.doors.length + 1, 0);
-    let acc = 0;
-    for (let i = 0; i < shown.length; i++) {
-      acc += shown[i].doors.length + 1;
-      if (acc >= total / 2) return i + 1;
-    }
-    return shown.length;
-  })();
-
-  return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      {wide && shown.length > 1 ? (
-        <View style={styles.wide}>
-          <View style={styles.wideCol}>{shown.slice(0, half).map(block)}</View>
-          <View style={styles.wideCol}>{shown.slice(half).map(block)}</View>
-        </View>
-      ) : (
-        <View style={styles.column}>{shown.map(block)}</View>
-      )}
-    </ScrollView>
-  );
+  return <DoorList sections={sections} lines={lines} />;
 }
-
-function Row({ door, line }: { door: Door; line?: DoorLine }) {
-  return (
-    <Pressable
-      onPress={() => router.push(door.href as never)}
-      style={({ pressed }) => [styles.row, pressed && styles.pressed]}
-      accessibilityRole="button"
-      accessibilityLabel={door.title}
-      accessibilityHint={line?.text ?? door.subtitle}
-    >
-      <View style={styles.body}>
-        <Text style={styles.title} numberOfLines={2}>
-          {door.title}
-        </Text>
-        {/* One line: a subtitle that wraps breaks the list's even rhythm.
-            The live line takes the description's place; amber only where
-            there is something to do. */}
-        <Text style={[styles.subtitle, line?.due && styles.due]} numberOfLines={1}>
-          {line?.text ?? door.subtitle}
-        </Text>
-      </View>
-      <Ionicons name="chevron-forward" size={18} color="#94a3b8" />
-    </Pressable>
-  );
-}
-
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#f1f5f9' },
-  content: { paddingBottom: 40, alignItems: 'center' },
-  column: { width: '100%', maxWidth: 720 },
-  wide: { width: '100%', maxWidth: 1000, flexDirection: 'row', gap: 32, paddingHorizontal: 8 },
-  wideCol: { flex: 1, minWidth: 0 },
-  due: { color: '#b45309', fontFamily: FONT.bold },
-  unlabelled: { paddingTop: 8 },
-  label: {
-    paddingHorizontal: 16,
-    paddingTop: 18,
-    paddingBottom: 6,
-    fontSize: 12,
-    fontFamily: FONT.bold,
-    letterSpacing: 1.2,
-    color: SOFT,
-    textTransform: 'uppercase',
-  },
-  // White rows on the app's grey (28 September): one background for every
-  // screen, and the doors still read as one block under their heading.
-  row: {
-    backgroundColor: '#ffffff',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    minHeight: 60,
-    borderBottomWidth: 1,
-    borderBottomColor: LINE,
-  },
-  pressed: { backgroundColor: '#f8fafc' },
-  body: { flex: 1, minWidth: 0 },
-  title: { fontSize: 16, fontFamily: FONT.bold, color: INK },
-  subtitle: { fontSize: 14, fontFamily: FONT.medium, color: SOFT, marginTop: 3 },
-});

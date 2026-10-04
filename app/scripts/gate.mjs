@@ -71,6 +71,9 @@ const STEPS = [
   // What a browser says its device is decides whether the server sends to it
   // at all: an iPad taken for a Mac stays silent while a phone is registered.
   ['Устройство подписки', 'node', ['scripts/check-web-device-kind.mjs']],
+  // The lines under the «Служение» doors: whose report, whose meeting, and
+  // what is amber for whom.
+  ['Строки «Служения»', 'node', ['scripts/check-service-lines.mjs']],
   // The role's name is a key built at run time, which no translation check
   // sees: a ministerial servant read «ministerial_servant» in his profile.
   ['Названия ролей', 'node', ['scripts/check-role-names.mjs']],

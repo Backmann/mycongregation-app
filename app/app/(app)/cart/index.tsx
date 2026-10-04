@@ -1,144 +1,243 @@
-import { ScrollView, StyleSheet, Text, View, Pressable } from "react-native";
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import { useTranslation } from "react-i18next";
-import { useRouter } from "expo-router";
-import { usePermissions } from "../../../lib/permissions";
+import { useCallback, useMemo } from 'react';
+import { useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useFocusEffect } from 'expo-router';
+import { useTranslation } from 'react-i18next';
+import { usePermissions } from '../../../lib/permissions';
+import { useMyPublisher } from '../../../lib/useMyPublisher';
+import {
+  attendanceApi,
+  auxiliaryPioneersApi,
+  cartWeeksApi,
+  fieldServiceApi,
+  serviceOverseerApi,
+  serviceReportsApi,
+  specialEventsApi,
+} from '../../../lib/api';
+import { addDays, formatDateISO, startOfWeekMonday } from '../../../lib/dates';
+import { serviceLines, type ServiceLine } from '../../../lib/service-lines';
+import { useReportCollection } from '../../../components/ReportCollectionCard';
+import { DoorList, type Door, type DoorSection } from '../../../components/DoorList';
 
-type Row = {
-  family: "ion" | "mdi";
-  icon: string;
-  title: string;
-  subtitle: string;
-  route: string;
-  show?: boolean;
-};
-
+/**
+ * The contents of «Служение» — every door into the ministry's side of the
+ * congregation, drawn as «Собрание» is (4 October 2026).
+ *
+ * Each door is shown by the SAME rule that guarded it before: the two that
+ * came out of «Отчёты» — the month's summary and the attendance sheet — by
+ * the rules their rows have there (they stay there too). «Школа пионеров»
+ * left this screen: it stands in «Собрание», under the body of elders, and
+ * two doors onto one screen were one too many (Lionel, 4 October).
+ *
+ * Under each door stands what its own screen would answer first. Every line
+ * is read from the request that screen makes — the same query key, so the
+ * two share one answer and cannot disagree — and lib/service-lines decides
+ * the wording. Until an answer arrives, or if it fails, the row keeps its
+ * plain description.
+ *
+ * Elders and administrators see sections; everyone else a few rows with no
+ * headings, their own report first.
+ */
 export default function ServiceHubScreen() {
-  const { t } = useTranslation();
-  const router = useRouter();
-  const {
-    canViewCoSchedule,
-    canManageAuxiliaryPioneers,
-    canViewPioneerSchool,
-  } = usePermissions();
+  const { t, i18n } = useTranslation();
+  const perms = usePermissions();
+  const { myPublisher, myPublisherId } = useMyPublisher();
 
-  const rows: Row[] = [
-    {
-      family: "mdi",
-      icon: "bookshelf",
-      title: t("service.publicWitnessing"),
-      subtitle: t("service.publicWitnessingSubtitle"),
-      route: "/cart/witnessing",
-    },
-    {
-      family: "ion",
-      icon: "document-text-outline",
-      title: t("service.reports"),
-      subtitle: t("service.reportsSubtitle"),
-      route: "/service-reports",
-    },
-    {
-      family: "ion",
-      icon: "walk-outline",
-      title: t("fieldService.title"),
-      subtitle: t("fieldService.hubSubtitle"),
-      route: "/cart/field-service",
-    },
-    {
-      family: "ion",
-      icon: "clipboard-outline",
-      title: t("service.coSchedule"),
-      subtitle: t("service.coScheduleSubtitle"),
-      route: "/cart/co-schedule",
-      show: canViewCoSchedule,
-    },
-    {
-      family: "ion",
-      icon: "walk-outline",
-      title: t("serviceOverseer.title"),
-      subtitle: t("serviceOverseer.menuSubtitle"),
-      route: "/cart/service-overseer",
-    },
-    {
-      family: "mdi",
-      icon: "clock-plus-outline",
-      title: t("auxPioneer.title"),
-      subtitle: t("auxPioneer.menuSubtitle"),
-      route: "/cart/auxiliary-pioneers",
-      show: canManageAuxiliaryPioneers,
-    },
-    {
-      family: "ion",
-      icon: "school-outline",
-      title: t("pioneerSchool.title"),
-      subtitle: t("pioneerSchool.menuSubtitle"),
-      route: "/pioneer-school",
-      show: canViewPioneerSchool,
-    },
-  ];
+  // The day is read once per mount: the tab is remounted often enough, and a
+  // line that changes under the finger is worse than one a minute old.
+  const { today, nowHM, monday, nextMonday, month } = useMemo(() => {
+    const now = new Date();
+    const mon = startOfWeekMonday(now);
+    const p = (n: number) => String(n).padStart(2, '0');
+    const iso = formatDateISO(now);
+    return {
+      today: iso,
+      nowHM: `${p(now.getHours())}:${p(now.getMinutes())}`,
+      monday: mon,
+      nextMonday: addDays(mon, 7),
+      month: `${iso.slice(0, 7)}-01`,
+    };
+  }, []);
+  const mon0 = formatDateISO(monday);
+  const mon1 = formatDateISO(nextMonday);
 
-  return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      {rows
-        .filter((r) => r.show !== false)
-        .map((r) => (
-          <Pressable
-            key={r.route}
-            style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
-            onPress={() => router.push(r.route as never)}
-          >
-            <View style={styles.rowIcon}>
-              {r.family === "mdi" ? (
-                <MaterialCommunityIcons
-                  name={r.icon as keyof typeof MaterialCommunityIcons.glyphMap}
-                  size={24}
-                  color="#0ea5e9"
-                />
-              ) : (
-                <Ionicons
-                  name={r.icon as keyof typeof Ionicons.glyphMap}
-                  size={22}
-                  color="#0ea5e9"
-                />
-              )}
-            </View>
-            <View style={styles.rowText}>
-              <Text style={styles.rowTitle}>{r.title}</Text>
-              <Text style={styles.rowSubtitle}>{r.subtitle}</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={18} color="#cbd5e1" />
-          </Pressable>
-        ))}
-    </ScrollView>
+  // The same keys as the screens behind the doors (and as Home), so nothing
+  // is asked twice.
+  const standingQ = useQuery({
+    queryKey: ['reports', 'my-standing'],
+    queryFn: () => serviceReportsApi.myStanding(),
+    staleTime: 5 * 60 * 1000,
+  });
+  const collection = useReportCollection();
+  const attendanceQ = useQuery({
+    queryKey: ['attendance', 'pending'],
+    queryFn: () => attendanceApi.pending(),
+    enabled: perms.canViewAttendance,
+    staleTime: 60 * 1000,
+  });
+  const fieldQ = useQuery({
+    queryKey: ['field-service', 'range', mon0],
+    queryFn: () =>
+      fieldServiceApi.list({ weekStart: mon0, weekEnd: formatDateISO(addDays(monday, 21)) }),
+    staleTime: 60 * 1000,
+  });
+  const cartQs = useQueries({
+    queries: [mon0, mon1].map((w) => ({
+      queryKey: ['cart-week', w],
+      queryFn: () => cartWeeksApi.getWeek(w),
+      staleTime: 60 * 1000,
+    })),
+  });
+  const visitsQ = useQuery({
+    queryKey: ['service-overseer', 'group-visits'],
+    queryFn: () => serviceOverseerApi.groupVisits(),
+    staleTime: 60 * 1000,
+  });
+  const eventsQ = useQuery({
+    queryKey: ['special-events', 'home'],
+    queryFn: () => specialEventsApi.list(),
+    enabled: perms.canViewCoSchedule,
+    staleTime: 60 * 1000,
+  });
+  const auxQ = useQuery({
+    queryKey: ['aux-pioneers', 'month', month],
+    queryFn: () => auxiliaryPioneersApi.listForMonth(month),
+    enabled: perms.canManageAuxiliaryPioneers,
+    staleTime: 60 * 1000,
+  });
+
+  // Back from a screen where something was just changed, the lines say so:
+  // every answer is marked stale whenever the tab comes to the front, and
+  // those in use here are asked again.
+  const qc = useQueryClient();
+  useFocusEffect(
+    useCallback(() => {
+      for (const queryKey of [
+        ['reports', 'my-standing'],
+        ['service-reports', 'collection'],
+        ['attendance', 'pending'],
+        ['field-service', 'range', mon0],
+        ['cart-week', mon0],
+        ['cart-week', mon1],
+        ['service-overseer', 'group-visits'],
+        ['special-events', 'home'],
+        ['aux-pioneers', 'month', month],
+      ]) {
+        void qc.invalidateQueries({ queryKey });
+      }
+    }, [qc, mon0, mon1, month]),
   );
-}
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f1f5f9" },
-  content: { padding: 16, gap: 12 },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#ffffff",
-    borderRadius: 12,
-    padding: 16,
-    gap: 14,
-  },
-  rowPressed: { opacity: 0.6 },
-  rowIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 10,
-    backgroundColor: "#e0f2fe",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  rowText: { flex: 1 },
-  rowTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    fontFamily: "Manrope_600SemiBold",
-    color: "#0f172a",
-  },
-  rowSubtitle: { fontSize: 13, color: "#64748b", marginTop: 2 },
-});
+  // Both cart weeks answered (null is an answer: no week set up) — or none.
+  const cartWeeks = cartQs.every((q) => q.isSuccess) ? cartQs.map((q) => q.data ?? null) : null;
+
+  const lines: Record<string, ServiceLine> = serviceLines(
+    {
+      today,
+      nowHM,
+      me: myPublisherId,
+      myGroupId: myPublisher?.serviceGroupId ?? null,
+      standing: standingQ.data ?? null,
+      collection,
+      attendance: attendanceQ.data ?? null,
+      fieldMeetings: fieldQ.data ?? null,
+      cartWeeks,
+      groupVisits: visitsQ.data ?? null,
+      events: eventsQ.data ?? null,
+      auxCount: auxQ.data ? auxQ.data.rows.length : null,
+    },
+    {
+      recordsAttendance: perms.canRecordAttendance,
+      plansVisits: perms.canEditFieldServiceMeetings,
+    },
+    t as never,
+    i18n.language,
+  );
+
+  const reports: Door = {
+    key: 'reports',
+    title: t('service.reports'),
+    subtitle: t('service.reportsSubtitle'),
+    href: '/service-reports',
+  };
+  const fieldService: Door = {
+    key: 'fieldService',
+    title: t('fieldService.title'),
+    subtitle: t('fieldService.hubSubtitle'),
+    href: '/cart/field-service',
+  };
+  const cart: Door = {
+    key: 'cart',
+    title: t('service.publicWitnessing'),
+    subtitle: t('service.publicWitnessingSubtitle'),
+    href: '/cart/witnessing',
+  };
+  // Open to everyone, as the screen is (24 September): a group sees in
+  // advance that the service overseer is coming.
+  const serviceOverseer: Door = {
+    key: 'serviceOverseer',
+    title: t('serviceOverseer.title'),
+    subtitle: t('serviceOverseer.menuSubtitle'),
+    href: '/cart/service-overseer',
+  };
+  // The same two conditions as their rows inside «Отчёты».
+  const summary: Door[] = perms.canViewServiceSummary
+    ? [
+        {
+          key: 'summary',
+          title: t('reports.summary.title'),
+          subtitle: t('serviceHub.sub.summary'),
+          href: '/service-reports/summary',
+        },
+      ]
+    : [];
+  const attendance: Door[] = perms.canViewAttendance
+    ? [
+        {
+          key: 'attendance',
+          title: t('attendance.pageTitle'),
+          subtitle: t('serviceHub.sub.attendance'),
+          href: '/service-reports/attendance',
+        },
+      ]
+    : [];
+  const coSchedule: Door[] = perms.canViewCoSchedule
+    ? [
+        {
+          key: 'coSchedule',
+          title: t('service.coSchedule'),
+          subtitle: t('service.coScheduleSubtitle'),
+          href: '/cart/co-schedule',
+        },
+      ]
+    : [];
+  const auxPioneers: Door[] = perms.canManageAuxiliaryPioneers
+    ? [
+        {
+          key: 'auxPioneers',
+          title: t('auxPioneer.title'),
+          subtitle: t('auxPioneer.menuSubtitle'),
+          href: '/cart/auxiliary-pioneers',
+        },
+      ]
+    : [];
+
+  const sections: DoorSection[] =
+    perms.isElder || perms.isAdmin
+      ? [
+          { key: 'preaching', label: t('serviceHub.sections.preaching'), doors: [fieldService, cart] },
+          { key: 'reports', label: t('serviceHub.sections.reports'), doors: [reports, ...summary, ...attendance] },
+          { key: 'visits', label: t('serviceHub.sections.visits'), doors: [serviceOverseer, ...coSchedule] },
+          { key: 'pioneers', label: t('serviceHub.sections.pioneers'), doors: auxPioneers },
+        ]
+      : [
+          {
+            key: 'mine',
+            label: null,
+            // His own report first; then where he goes; then what a
+            // responsibility of his adds, if he holds one.
+            doors: [reports, fieldService, cart, serviceOverseer, ...attendance, ...summary, ...coSchedule, ...auxPioneers],
+          },
+        ];
+
+  return <DoorList sections={sections} lines={lines} />;
+}
