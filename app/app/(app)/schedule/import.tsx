@@ -26,6 +26,8 @@ import {
   toApplyPayload,
 } from '../../../lib/mwb-parser';
 import { parseWtFile, wtToWorkbook } from '../../../lib/wt-parser';
+import { parseISODate } from '../../../lib/dates';
+import { formatWeekRange } from '../../../lib/week-range';
 import { DropZone } from '../../../components/DropZone';
 import { useTranslation } from 'react-i18next';
 
@@ -455,7 +457,39 @@ function ResultSummary({ result }: { result: ImportResult }) {
    * not «done», it is «now go and put brothers in it», and the link saves
    * paging through the schedule to find the week that was just filled.
    */
-  const firstWeek = result.weeks[0]?.weekStartDate;
+  const firstWeek = result.weeks.find((w) => !w.notHeld)?.weekStartDate;
+  /**
+   * What the server reports, said in the reader's language.
+   *
+   * It used to send finished English sentences and they were printed as they
+   * came — «Week 2027-01-18: the congregation holds no midweek meeting…» on a
+   * Russian screen (5 October). Now it sends the facts, and the sentence is
+   * built here. Its own sentences are shown only when it sent no facts: a
+   * server not updated yet.
+   */
+  const weekLabel = (iso: string) =>
+    formatWeekRange(parseISODate(iso), i18n.language);
+  const messages: string[] = result.notices
+    ? result.notices.map((n) =>
+        n.code === 'meeting_not_held'
+          ? n.meeting === 'weekend'
+            ? t('schedule.import.result.noWeekend', {
+                week: weekLabel(n.weekStartDate),
+                count: n.parts,
+              })
+            : t('schedule.import.result.noMidweek', {
+                week: weekLabel(n.weekStartDate),
+                count: n.parts,
+              })
+          : t('schedule.import.result.unclassifiedPart', {
+              week: weekLabel(n.weekStartDate),
+              title: n.title ?? '—',
+            }),
+      )
+    : result.warnings;
+  const someNotHeld = !!result.notices?.some(
+    (n) => n.code === 'meeting_not_held',
+  );
   return (
     <View style={styles.section}>
       <View style={styles.successHeader}>
@@ -498,21 +532,26 @@ function ResultSummary({ result }: { result: ImportResult }) {
         </View>
       )}
 
-      {result.warnings.length > 0 && (
+      {messages.length > 0 && (
         <View style={styles.warningBox}>
           <Text style={styles.warningTitle}>
             {t('schedule.import.result.warningsTitle')}
           </Text>
-          {result.warnings.slice(0, 5).map((w, i) => (
+          {messages.slice(0, 5).map((w, i) => (
             <Text key={i} style={styles.warningText}>
               • {w}
             </Text>
           ))}
-          {result.warnings.length > 5 && (
+          {messages.length > 5 && (
             <Text style={styles.warningText}>
               {t('schedule.import.result.moreWarnings', {
-                count: result.warnings.length - 5,
+                count: messages.length - 5,
               })}
+            </Text>
+          )}
+          {someNotHeld && (
+            <Text style={[styles.warningText, { marginTop: 6 }]}>
+              {t('schedule.import.result.notHeldHint')}
             </Text>
           )}
         </View>
@@ -540,7 +579,7 @@ function ResultSummary({ result }: { result: ImportResult }) {
           <View key={w.weekStartDate} style={styles.weekRow}>
             <View style={{ flex: 1 }}>
               <Text style={styles.weekDate}>
-                {w.weekStartDate} → {w.weekEndDate}
+                {weekLabel(w.weekStartDate)}
               </Text>
               <Text style={styles.weekBible} numberOfLines={1}>
                 {w.biblePassage}
@@ -557,10 +596,16 @@ function ResultSummary({ result }: { result: ImportResult }) {
                   ~{w.updated}
                 </Text>
               )}
-              {w.skipped > 0 && (
-                <Text style={[styles.weekStat, { color: '#64748b' }]}>
-                  ={w.skipped}
+              {w.notHeld ? (
+                <Text style={styles.weekNotHeld}>
+                  {t('schedule.import.result.weekNotHeld')}
                 </Text>
+              ) : (
+                w.skipped > 0 && (
+                  <Text style={[styles.weekStat, { color: '#64748b' }]}>
+                    ={w.skipped}
+                  </Text>
+                )
               )}
             </View>
           </View>
@@ -837,6 +882,7 @@ const styles = StyleSheet.create({
   weekBible: { fontSize: 12, color: '#64748b', marginTop: 2 },
   weekPartsCount: { fontSize: 12, color: '#64748b', fontWeight: '500', fontFamily: 'Manrope_500Medium',},
   weekStats: { flexDirection: 'row', gap: 8 },
+  weekNotHeld: { fontSize: 12, color: '#92400e' },
   weekStat: {
     fontSize: 13,
     fontWeight: '600', fontFamily: 'Manrope_600SemiBold',

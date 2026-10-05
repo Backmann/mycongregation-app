@@ -959,6 +959,11 @@
         "unclassified": "{{count}} Programmpunkt(e) konnten nicht klassifiziert werden",
         "warningsTitle": "Warnungen:",
         "moreWarnings": "… und {{count}} weitere",
+        "noMidweek": "{{week}}: In dieser Woche findet keine Zusammenkunft unter der Woche statt – nicht geladene Programmpunkte: {{count}}",
+        "noWeekend": "{{week}}: In dieser Woche findet keine Zusammenkunft am Wochenende statt – nicht geladene Programmpunkte: {{count}}",
+        "notHeldHint": "Das ergibt sich aus den Ereignissen und den Zusammenkunftseinstellungen der Versammlung. Findet die Zusammenkunft doch statt, korrigieren Sie diese und laden Sie die Datei erneut – bereits Eingeteiltes bleibt unverändert.",
+        "unclassifiedPart": "{{week}}: Ein Programmpunkt wurde nicht erkannt und nicht geladen – „{{title}}“",
+        "weekNotHeld": "keine Zusammenkunft",
         "importedWeeks": "Importierte Wochen",
         "openSchedule": "Plan öffnen und Brüder eintragen"
       },

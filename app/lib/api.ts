@@ -503,7 +503,24 @@ export interface WeekImportSummary {
   created: number;
   updated: number;
   skipped: number;
+  /** The congregation holds no such meeting that week; nothing was applied. */
+  notHeld?: boolean;
 }
+
+/**
+ * What the server has to tell whoever loaded the file — as data, so the
+ * sentence is built here, in the reader's language. Its own finished
+ * sentences (`warnings`) are English and stay only for a server that does
+ * not send these yet.
+ */
+export type ImportNotice =
+  | {
+      code: 'meeting_not_held';
+      weekStartDate: string;
+      meeting: 'midweek' | 'weekend';
+      parts: number;
+    }
+  | { code: 'unclassified_part'; weekStartDate: string; title: string | null };
 
 export interface ImportResult {
   epubFile: string;
@@ -516,6 +533,8 @@ export interface ImportResult {
   weeks: WeekImportSummary[];
   errors: string[];
   warnings: string[];
+  /** Absent from a server older than 5 October 2026. */
+  notices?: ImportNotice[];
 }
 
 // ---------- Public talks types ----------

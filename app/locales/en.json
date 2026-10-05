@@ -959,6 +959,11 @@
         "unclassified": "{{count}} part(s) could not be classified",
         "warningsTitle": "Warnings:",
         "moreWarnings": "… and {{count}} more",
+        "noMidweek": "{{week}}: no midweek meeting this week — parts not loaded: {{count}}",
+        "noWeekend": "{{week}}: no weekend meeting this week — parts not loaded: {{count}}",
+        "notHeldHint": "This follows from the congregation’s events and meeting settings. If the meeting does take place, correct them and load the file again — what is already assigned will not change.",
+        "unclassifiedPart": "{{week}}: a part was not recognised and was not loaded — “{{title}}”",
+        "weekNotHeld": "no meeting",
         "importedWeeks": "Imported weeks",
         "openSchedule": "Open the schedule and assign the brothers"
       },
