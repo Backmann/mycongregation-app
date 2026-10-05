@@ -28,6 +28,7 @@ import { computeSpeakerStats, SpeakerStats } from "../../../lib/speaker-stats";
 import { formatRelativeDay } from "../../../lib/relative-time";
 import { notify } from "../../../lib/error-bus";
 import { confirm } from "../../../components/ConfirmHost";
+import { likelyDoubles, likelySameName } from "../../../lib/similar-names";
 
 const QK = ["visiting-speakers"] as const;
 
@@ -78,6 +79,11 @@ export default function SpeakersScreen() {
     queryFn: () => talkExchangeApi.list(),
   });
 
+  const distinctQuery = useQuery({
+    queryKey: [...QK, "distinct"],
+    queryFn: () => visitingSpeakersApi.distinctPairs(),
+  });
+
   const titleByNumber = useMemo(() => {
     const map = new Map<number, string>();
     for (const pt of talksQuery.data?.data ?? []) map.set(pt.number, pt.title);
@@ -111,6 +117,41 @@ export default function SpeakersScreen() {
       m.set(sp.id, computeSpeakerStats(sp, entries, talkById, today));
     return m;
   }, [listQuery.data, entriesQuery.data, talkById, today]);
+  /**
+   * «Возможно, один брат» (5 October 2026).
+   *
+   * Two cards whose names are the same apart from word order and alphabet —
+   * lib/similar-names decides. Shown only once BOTH answers are in: without
+   * the list of pairs already answered «разные братья» the hint would bring
+   * back what somebody has just dismissed.
+   *
+   * The card that stays is suggested, not decided: the one with more visits,
+   * then the one a person entered rather than the app. The merge window names
+   * it in words, and the other card can be opened instead.
+   */
+  const doubles = useMemo(() => {
+    if (!listQuery.data || !distinctQuery.data) return [];
+    const byId = new Map(listQuery.data.map((sp) => [sp.id, sp]));
+    return likelyDoubles(
+      listQuery.data.map((sp) => ({ id: sp.id, fullName: speakerName(sp) })),
+      distinctQuery.data,
+    ).map(([a, b]) => {
+      // More visits first; between equals, the card that knows more about
+      // the man — entered by a person, with a congregation, with a phone.
+      const weight = (id: string) => {
+        const sp = byId.get(id);
+        return (
+          (statsById.get(id)?.count ?? 0) * 10 +
+          (sp?.autoCreated ? 0 : 1) +
+          (sp?.externalCongregationId ? 1 : 0) +
+          (sp?.phone ? 1 : 0)
+        );
+      };
+      const [keep, other] = weight(b.id) > weight(a.id) ? [b, a] : [a, b];
+      return [byId.get(keep.id)!, byId.get(other.id)!] as const;
+    });
+  }, [listQuery.data, distinctQuery.data, statsById]);
+
   const rows = useMemo(() => {
     let list = [...(listQuery.data ?? [])];
     const q = search.trim().toLowerCase();
@@ -244,6 +285,13 @@ export default function SpeakersScreen() {
     onError: showError,
   });
 
+  const distinctMutation = useMutation({
+    mutationFn: (v: { a: string; b: string }) =>
+      visitingSpeakersApi.markDistinct(v.a, v.b),
+    onSuccess: invalidate,
+    onError: showError,
+  });
+
   const pending =
     createMutation.isPending ||
     updateMutation.isPending ||
@@ -327,13 +375,17 @@ export default function SpeakersScreen() {
     // the list would show it — so ask once when a new name matches an existing
     // one.
     if (editingId === "new") {
+      // The same rule as the hint above the list (5 October 2026): «Иван
+      // Ротарь» typed again as «Rotar Iwan» is caught here, before the second
+      // card exists. One word («Иван») falls back to the exact comparison.
       const typed = `${firstName.trim()} ${lastName.trim()}`
         .toLowerCase()
         .replace(/\s+/g, " ")
         .trim();
       const twin = (listQuery.data ?? []).find(
         (sp) =>
-          speakerName(sp).toLowerCase().replace(/\s+/g, " ").trim() === typed,
+          speakerName(sp).toLowerCase().replace(/\s+/g, " ").trim() ===
+            typed || likelySameName(speakerName(sp), typed),
       );
       if (twin) {
         const proceed = await confirm({
@@ -627,6 +679,86 @@ export default function SpeakersScreen() {
             </Text>
           </Pressable>
         )}
+
+        {/*
+          «Возможно, один брат» — quiet, above the list, and only while
+          nothing is being edited. Three pairs at most: a directory with more
+          doubles than that is worked through, not read.
+        */}
+        {editingId === null && doubles.length > 0 ? (
+          <View style={styles.doublesCard}>
+            <View style={styles.doublesHead}>
+              <Ionicons name="git-merge-outline" size={16} color="#7c3aed" />
+              <Text style={styles.doublesTitle}>
+                {t("talkCoordinator.merge.hintTitle")}
+              </Text>
+            </View>
+            <Text style={styles.doublesLead}>
+              {t("talkCoordinator.merge.hintLead")}
+            </Text>
+            {doubles.slice(0, 3).map(([keep, other]) => (
+              <View key={`${keep.id}-${other.id}`} style={styles.doublesPair}>
+                {[keep, other].map((sp) => (
+                  <Text key={sp.id} style={styles.doublesName}>
+                    {speakerName(sp)}
+                    <Text style={styles.doublesSub}>
+                      {"  "}
+                      {[
+                        sp.externalCongregation?.name ??
+                          t("talkCoordinator.speakers.noCongregation"),
+                        (statsById.get(sp.id)?.count ?? 0) > 0
+                          ? t("talkCoordinator.merge.visits", {
+                              n: statsById.get(sp.id)?.count ?? 0,
+                            })
+                          : t("talkCoordinator.merge.noVisits"),
+                      ].join(" · ")}
+                    </Text>
+                  </Text>
+                ))}
+                <View style={styles.doublesActions}>
+                  <Pressable
+                    style={({ pressed }) => [
+                      styles.doublesBtn,
+                      styles.doublesBtnMain,
+                      pressed && { opacity: 0.7 },
+                    ]}
+                    onPress={() =>
+                      router.push(
+                        `/talk-coordinator/speaker-profile/${keep.id}?mergeWith=${other.id}` as never,
+                      )
+                    }
+                    accessibilityRole="button"
+                  >
+                    <Text style={styles.doublesBtnMainText}>
+                      {t("talkCoordinator.merge.hintCompare")}
+                    </Text>
+                  </Pressable>
+                  <Pressable
+                    style={({ pressed }) => [
+                      styles.doublesBtn,
+                      pressed && { opacity: 0.7 },
+                      distinctMutation.isPending && styles.disabled,
+                    ]}
+                    disabled={distinctMutation.isPending}
+                    onPress={() =>
+                      distinctMutation.mutate({ a: keep.id, b: other.id })
+                    }
+                    accessibilityRole="button"
+                  >
+                    <Text style={styles.doublesBtnText}>
+                      {t("talkCoordinator.merge.hintDistinct")}
+                    </Text>
+                  </Pressable>
+                </View>
+              </View>
+            ))}
+            {doubles.length > 3 ? (
+              <Text style={styles.doublesMore}>
+                {t("talkCoordinator.merge.hintMore", { n: doubles.length - 3 })}
+              </Text>
+            ) : null}
+          </View>
+        ) : null}
 
         {editingId === null ? (
           <View style={styles.toolbar}>
@@ -944,6 +1076,65 @@ const styles = StyleSheet.create({
     color: "#0369a1",
   },
   disabled: { opacity: 0.5 },
+  doublesCard: {
+    backgroundColor: "#faf5ff",
+    borderWidth: 1,
+    borderColor: "#e9d5ff",
+    borderRadius: 12,
+    padding: 12,
+    marginTop: 12,
+    marginBottom: 12,
+  },
+  doublesHead: { flexDirection: "row", alignItems: "center", gap: 6 },
+  doublesTitle: {
+    fontSize: 14,
+    fontWeight: "700",
+    fontFamily: "Manrope_700Bold",
+    color: "#6d28d9",
+  },
+  doublesLead: { fontSize: 12.5, color: "#64748b", marginTop: 3 },
+  doublesPair: {
+    marginTop: 10,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: "#e9d5ff",
+  },
+  doublesName: {
+    fontSize: 14.5,
+    fontWeight: "600",
+    fontFamily: "Manrope_600SemiBold",
+    color: "#0f172a",
+    marginBottom: 2,
+  },
+  doublesSub: {
+    fontSize: 12.5,
+    fontWeight: "400",
+    fontFamily: "Manrope_400Regular",
+    color: "#64748b",
+  },
+  doublesActions: { flexDirection: "row", gap: 8, marginTop: 8 },
+  doublesBtn: {
+    borderRadius: 999,
+    paddingVertical: 9,
+    paddingHorizontal: 14,
+    borderWidth: 1,
+    borderColor: "#d8b4fe",
+    backgroundColor: "#fff",
+  },
+  doublesBtnMain: { backgroundColor: "#7c3aed", borderColor: "#7c3aed" },
+  doublesBtnMainText: {
+    fontSize: 13,
+    fontWeight: "700",
+    fontFamily: "Manrope_700Bold",
+    color: "#fff",
+  },
+  doublesBtnText: {
+    fontSize: 13,
+    fontWeight: "600",
+    fontFamily: "Manrope_600SemiBold",
+    color: "#6d28d9",
+  },
+  doublesMore: { fontSize: 12.5, color: "#64748b", marginTop: 10 },
   editorCard: {
     backgroundColor: "#fff",
     borderRadius: 12,

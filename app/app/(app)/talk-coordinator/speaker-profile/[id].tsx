@@ -1,5 +1,5 @@
 import { usePermissions } from "../../../../lib/permissions";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Linking,
@@ -19,7 +19,12 @@ import {
   publicTalksApi,
   talkExchangeApi,
   visitingSpeakersApi,
+  extractErrorMessage,
+  type MergedSpeakerCard,
 } from "../../../../lib/api";
+import { likelySameName } from "../../../../lib/similar-names";
+import { notify } from "../../../../lib/error-bus";
+import { confirm } from "../../../../components/ConfirmHost";
 import {
   computeSpeakerStats,
   SpeakerVisit,
@@ -31,7 +36,10 @@ import { Dialog } from "../../../../components/Dialog";
 const todayISO = () => new Date().toLocaleDateString("en-CA");
 
 export default function SpeakerProfileScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, mergeWith } = useLocalSearchParams<{
+    id: string;
+    mergeWith?: string;
+  }>();
   const { t, i18n } = useTranslation();
 
   const speakersQuery = useQuery({
@@ -72,6 +80,48 @@ export default function SpeakerProfileScreen() {
   const [mergeSearch, setMergeSearch] = useState("");
   const [mergePick, setMergePick] = useState<string | null>(null);
 
+  // Arrived from «Возможно, один брат» in the list: the window opens with
+  // that card already picked — once, so closing it does not bring it back.
+  const mergeWithHandled = useRef(false);
+  useEffect(() => {
+    if (mergeWithHandled.current || !canEdit) return;
+    if (typeof mergeWith !== "string" || !speakersQuery.data) return;
+    mergeWithHandled.current = true;
+    if (speakersQuery.data.some((c) => c.id === mergeWith && c.id !== id)) {
+      setMergePick(mergeWith);
+      setMergeOpen(true);
+    }
+  }, [mergeWith, speakersQuery.data, canEdit, id]);
+
+  /** Карточки, объединённые с этой: в ней две истории, и их можно разобрать. */
+  const mergedQuery = useQuery({
+    queryKey: ["visiting-speakers", "merged", String(id)],
+    queryFn: () => visitingSpeakersApi.merged(String(id)),
+    enabled: !!id,
+  });
+  const unmergeMutation = useMutation({
+    mutationFn: (mergedId: string) =>
+      visitingSpeakersApi.unmerge(String(id), mergedId),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["visiting-speakers"] });
+      void qc.invalidateQueries({ queryKey: ["talk-exchange"] });
+      notify(t("talkCoordinator.merge.unmergeDone"), "", "success");
+    },
+    onError: (e: unknown) =>
+      notify(t("talkCoordinator.errorTitle"), extractErrorMessage(e)),
+  });
+  const askUnmerge = async (m: MergedSpeakerCard) => {
+    const ok = await confirm({
+      title: t("talkCoordinator.merge.unmergeTitle"),
+      body: t("talkCoordinator.merge.unmergeBody", {
+        name: speakerName(m),
+        n: m.visits ?? 0,
+      }),
+      confirmLabel: t("talkCoordinator.merge.unmerge"),
+    });
+    if (ok) unmergeMutation.mutate(m.id);
+  };
+
   /**
    * Кого предлагать в пару — все, кроме него самого.
    *
@@ -81,7 +131,17 @@ export default function SpeakerProfileScreen() {
    */
   const mergeCandidates = useMemo(() => {
     const q = mergeSearch.trim().toLowerCase();
-    const all = (speakersQuery.data ?? []).filter((c) => c.id !== id);
+    // Похожие имена — первыми (5 октября 2026): двойник почти всегда среди
+    // них, и искать его по списку из тридцати карточек незачем. Уже выбранная
+    // карточка остаётся на виду, что бы ни было набрано в поиске.
+    const mine = speaker ? speakerName(speaker) : "";
+    const rank = (c: { id: string; firstName: string; lastName: string | null }) =>
+      c.id === mergePick ? 0 : likelySameName(speakerName(c), mine) ? 1 : 2;
+    const all = (speakersQuery.data ?? [])
+      .filter((c) => c.id !== id)
+      .map((c, i) => ({ c, i, r: rank(c) }))
+      .sort((x, y) => x.r - y.r || x.i - y.i)
+      .map((x) => x.c);
     if (q.length < 2) return all.slice(0, 5);
     return all
       .filter(
@@ -90,7 +150,7 @@ export default function SpeakerProfileScreen() {
           (c.externalCongregation?.name ?? "").toLowerCase().includes(q),
       )
       .slice(0, 6);
-  }, [speakersQuery.data, mergeSearch, id]);
+  }, [speakersQuery.data, mergeSearch, id, mergePick, speaker]);
 
   const mergeMutation = useMutation({
     mutationFn: () => visitingSpeakersApi.merge(String(id), mergePick!),
@@ -427,6 +487,50 @@ export default function SpeakerProfileScreen() {
         Эта карточка ОСТАЁТСЯ, выбранная становится следом. Так понятнее, чем
         выбирать обе в списке и потом решать, какая из них главная.
       */}
+      {/*
+        Что уже объединено с этой карточкой — и «Разъединить» (5 октября 2026).
+        Окно объединения с первого дня обещало, что его можно будет разобрать;
+        теперь сервер помнит, что именно переехало, и возвращает ровно это.
+        Объединённое раньше разобрать нельзя — об этом сказано, а не скрыто.
+      */}
+      {(mergedQuery.data ?? []).map((m) => (
+        <View key={m.id} style={styles.mergedCard}>
+          <Ionicons name="git-merge-outline" size={18} color="#7c3aed" />
+          <View style={{ flex: 1, minWidth: 0 }}>
+            <Text style={styles.mergedTitle}>
+              {t("talkCoordinator.merge.mergedWith", { name: speakerName(m) })}
+            </Text>
+            <Text style={styles.mergedMeta}>
+              {m.canUnmerge && m.mergedAt
+                ? t("talkCoordinator.merge.mergedMeta", {
+                    date: new Date(m.mergedAt).toLocaleDateString(
+                      i18n.language,
+                      { day: "numeric", month: "long", year: "numeric" },
+                    ),
+                    n: m.visits ?? 0,
+                  })
+                : t("talkCoordinator.merge.oldMerge")}
+            </Text>
+          </View>
+          {canEdit && m.canUnmerge ? (
+            <Pressable
+              style={({ pressed }) => [
+                styles.unmergeBtn,
+                pressed && { opacity: 0.7 },
+                unmergeMutation.isPending && { opacity: 0.5 },
+              ]}
+              disabled={unmergeMutation.isPending}
+              onPress={() => void askUnmerge(m)}
+              accessibilityRole="button"
+            >
+              <Text style={styles.unmergeBtnText}>
+                {t("talkCoordinator.merge.unmerge")}
+              </Text>
+            </Pressable>
+          ) : null}
+        </View>
+      ))}
+
       {canEdit ? (
       <Pressable style={styles.mergeBtn} onPress={() => setMergeOpen(true)}>
         <Ionicons name="git-merge-outline" size={18} color="#7c3aed" />
@@ -468,7 +572,15 @@ export default function SpeakerProfileScreen() {
               onPress={() => setMergePick(on ? null : c.id)}
             >
               <View style={{ flex: 1 }}>
-                <Text style={styles.mergeName}>{speakerName(c)}</Text>
+                <Text style={styles.mergeName}>
+                  {speakerName(c)}
+                  {likelySameName(speakerName(c), speakerName(speaker)) ? (
+                    <Text style={styles.mergeSimilar}>
+                      {"  "}
+                      {t("talkCoordinator.merge.similar")}
+                    </Text>
+                  ) : null}
+                </Text>
                 <Text style={styles.mergeSub}>
                   {[
                     c.externalCongregation?.name,
@@ -712,6 +824,29 @@ const styles = StyleSheet.create({
   mergeRowOn: { borderColor: "#a78bfa", backgroundColor: "#f5f3ff" },
   mergeName: { fontSize: 14.5, color: "#0f172a", fontWeight: "600" },
   mergeSub: { fontSize: 12.5, color: "#64748b", marginTop: 1 },
+  mergeSimilar: { fontSize: 12, fontWeight: "600", color: "#7c3aed" },
+  mergedCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    backgroundColor: "#faf5ff",
+    borderWidth: 1,
+    borderColor: "#e9d5ff",
+    borderRadius: 12,
+    padding: 12,
+    marginTop: 12,
+  },
+  mergedTitle: { fontSize: 14.5, fontWeight: "600", color: "#0f172a" },
+  mergedMeta: { fontSize: 12.5, color: "#64748b", marginTop: 2 },
+  unmergeBtn: {
+    borderRadius: 999,
+    paddingVertical: 9,
+    paddingHorizontal: 14,
+    borderWidth: 1,
+    borderColor: "#d8b4fe",
+    backgroundColor: "#fff",
+  },
+  unmergeBtnText: { fontSize: 13, fontWeight: "600", color: "#6d28d9" },
   mergeNone: { fontSize: 12.5, color: "#64748b", marginTop: 6 },
   mergeNote: { fontSize: 12, color: "#64748b", lineHeight: 17, marginTop: 10 },
   mergeConfirm: {

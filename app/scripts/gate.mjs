@@ -77,6 +77,7 @@ const STEPS = [
   // «Открыть источник»: an address typed without https:// still opens, and
   // what is not an address is not offered as a link.
   ['Ссылка на источник', 'node', ['scripts/check-source-link.mjs']],
+  ['Похожие имена докладчиков', 'node', ['scripts/check-similar-names.mjs']],
   // The role's name is a key built at run time, which no translation check
   // sees: a ministerial servant read «ministerial_servant» in his profile.
   ['Названия ролей', 'node', ['scripts/check-role-names.mjs']],

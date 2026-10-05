@@ -1426,6 +1426,19 @@ export interface VisitingSpeaker {
   updatedAt: string;
 }
 
+/** Карточка, объединённая с другой, — как её показывает оставшаяся. */
+export interface MergedSpeakerCard {
+  id: string;
+  firstName: string;
+  lastName: string | null;
+  /** Когда объединили; пусто у объединённых до 5 октября 2026. */
+  mergedAt: string | null;
+  /** Сколько визитов с неё переехало; пусто, если это не было записано. */
+  visits: number | null;
+  /** Объединённые раньше не помнят, что с них ушло, — их не разобрать. */
+  canUnmerge: boolean;
+}
+
 export const externalCongregationsApi = {
   async list(): Promise<ExternalCongregation[]> {
     const { data } = await api.get<ExternalCongregation[]>(
@@ -1492,6 +1505,33 @@ export const visitingSpeakersApi = {
   async list(): Promise<VisitingSpeaker[]> {
     const { data } = await api.get<VisitingSpeaker[]>("/visiting-speakers");
     return data;
+  },
+  /** Карточки, объединённые с этой, и можно ли каждую разобрать. */
+  async merged(keepId: string): Promise<MergedSpeakerCard[]> {
+    const { data } = await api.get<MergedSpeakerCard[]>(
+      `/visiting-speakers/${keepId}/merged`,
+    );
+    return data;
+  },
+  /**
+   * Это были разные братья: объединённой карточке возвращается ровно то, что
+   * с неё переехало. Пара после этого запоминается как «разные братья».
+   */
+  async unmerge(keepId: string, mergedId: string): Promise<VisitingSpeaker> {
+    const { data } = await api.post<VisitingSpeaker>(
+      `/visiting-speakers/${keepId}/unmerge/${mergedId}`,
+    );
+    return data;
+  },
+  /** Пары карточек, про которые уже сказано «это разные братья». */
+  async distinctPairs(): Promise<Array<[string, string]>> {
+    const { data } = await api.get<Array<[string, string]>>(
+      "/visiting-speakers/distinct-pairs",
+    );
+    return data;
+  },
+  async markDistinct(firstId: string, secondId: string): Promise<void> {
+    await api.post("/visiting-speakers/distinct-pairs", { firstId, secondId });
   },
   async create(input: {
     firstName: string;
