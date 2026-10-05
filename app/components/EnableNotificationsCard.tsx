@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import {
   ActivityIndicator,
   Linking,
@@ -17,6 +18,7 @@ import {
 } from '../lib/notify-device';
 import { isAndroidBrowser } from '../lib/web-push';
 import { storage } from '../lib/storage';
+import { meApi } from '../lib/api';
 
 const SNOOZE_KEY = 'notify-card-snooze-until';
 const SNOOZE_MS = 7 * 24 * 60 * 60 * 1000;
@@ -50,6 +52,32 @@ const INSTALL_URL = 'https://mycongregation.org/app/';
  */
 export function useNotifyNudge() {
   const state = useDeviceNotify();
+  // A browser on Android is the one place the card offers «Установить
+  // приложение» — and a page cannot see whether the app is already on the
+  // phone it is shown on. It offered it to everybody, and somebody who had
+  // the app downloaded it a second time (5 October 2026). The server knows:
+  // the app registers itself at sign-in. With the app on record the phone
+  // takes every notification and this browser is skipped anyway, so there
+  // is nothing to ask of the person here.
+  const android = isAndroidBrowser();
+  const devicesQ = useQuery({
+    queryKey: ['me', 'devices'],
+    queryFn: () => meApi.devices(),
+    enabled: android && (state === 'off' || state === 'denied'),
+    staleTime: 5 * 60 * 1000,
+    retry: false,
+  });
+  // Not known yet: nothing is drawn rather than an offer that vanishes. An
+  // answer that failed (an older server) leaves the card as it was.
+  const appAnswer = !android
+    ? 'no'
+    : devicesQ.isSuccess
+      ? devicesQ.data.app
+        ? 'yes'
+        : 'no'
+      : devicesQ.isError
+        ? 'no'
+        : 'unknown';
   const [snoozed, setSnoozed] = useState<boolean | null>(null);
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
@@ -91,8 +119,18 @@ export function useNotifyNudge() {
     }
   };
 
+  // Gone to install the app: the offer is put away for the week, as «Позже»
+  // does. Once the app is opened and signed in it never comes back; if the
+  // person did not get that far, it returns. Without this the card stood
+  // there unchanged and invited a second download.
+  const install = () => {
+    later();
+    void Linking.openURL(INSTALL_URL);
+  };
+
   const needed =
     snoozed === false &&
+    appAnswer === 'no' &&
     (state === 'off' || state === 'denied' || state === 'not_installed');
   return {
     state,
@@ -102,6 +140,7 @@ export function useNotifyNudge() {
     show: done || needed,
     later,
     enable,
+    install,
     dismissDone: () => setDone(false),
   };
 }
@@ -117,7 +156,7 @@ export type NotifyNudge = ReturnType<typeof useNotifyNudge>;
  */
 export function EnableNotificationsCard({ nudge }: { nudge: NotifyNudge }) {
   const { t } = useTranslation();
-  const { state, busy, done, later, enable } = nudge;
+  const { state, busy, done, later, enable, install } = nudge;
   const [open, setOpen] = useState(false);
 
   if (done) {
@@ -228,7 +267,7 @@ export function EnableNotificationsCard({ nudge }: { nudge: NotifyNudge }) {
       {android ? (
         <Pressable
           style={s.primary}
-          onPress={() => void Linking.openURL(INSTALL_URL)}
+          onPress={install}
           accessibilityRole="link"
         >
           <Text style={s.primaryText}>{t('notifyDevice.card.install')}</Text>

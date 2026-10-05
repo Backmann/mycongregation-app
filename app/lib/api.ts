@@ -3120,6 +3120,14 @@ export const meApi = {
     );
     return data;
   },
+  /**
+   * Whether the phone app is already registered for me. Asked by the site in
+   * a browser on Android before it offers to install the app.
+   */
+  async devices(): Promise<{ app: boolean }> {
+    const { data } = await api.get<{ app: boolean }>("/me/devices");
+    return data;
+  },
   /** What this device says about notifications — for the admin's list. */
   async reportPushState(state: DevicePushState): Promise<void> {
     await api.post("/me/push-state", { state });

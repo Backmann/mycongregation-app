@@ -1244,10 +1244,9 @@ function AgendaList({ lines }: { lines: AgendaLine[] }) {
                 ellipsizeMode="clip"
               >{`${l.n}.`}</Text>
             ) : null}
-            <Text
-              style={[s.agendaText, l.mine && s.agendaMine]}
-              numberOfLines={2}
-            >
+            {/* In full, however long (Lionel, 5 October): two lines cut a
+                part's name in the middle of a word — «…приносить жер». */}
+            <Text style={[s.agendaText, l.mine && s.agendaMine]}>
               {l.text}
             </Text>
           </View>
