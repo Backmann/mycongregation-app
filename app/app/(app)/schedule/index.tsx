@@ -43,6 +43,7 @@ import { WindowsLine, WindowsPlanDialog } from "../../../components/WindowsPlan"
 import { effectiveVersionFor } from "../../../lib/meeting-schedule";
 import { addDays, formatDateISO, parseISODate, startOfWeekMonday } from "../../../lib/dates";
 import { partDisplay } from "../../../lib/part-display";
+import { MEETING_LENGTH_MIN } from "../../../lib/home-digest";
 import { useSongsMap, enrichSongRef } from "../../../lib/songs";
 import { SourceLink } from "../../../components/SourceLink";
 import { arrangeFieldDay, noteForPlace } from "../../../lib/field-audience";
@@ -218,6 +219,21 @@ export default function ProgrammeFeedScreen() {
     perms.canEditMidweekSchedule || perms.canEditWeekendSchedule || perms.canEditDuties;
 
   const today = formatDateISO(new Date());
+  // A MEETING OF TODAY THAT IS ALREADY OVER (5 October 2026).
+  //
+  // «Past» was a matter of the date alone, so on the evening after a meeting
+  // the feed still opened on it — whole, first, as though it lay ahead — and
+  // the next one was a screen below. Home has had the rule since 26
+  // September (lib/home-digest isOver: the hour plus a meeting's length);
+  // the same length is used here, so the two screens agree on when a
+  // meeting stops being «next». A meeting with no hour on record is never
+  // called over on its own day.
+  const overToday = (x: { date: string; time?: string | null }) => {
+    if (x.date !== today || !x.time || !/^\d{1,2}:\d{2}/.test(x.time)) return false;
+    const [h, m] = x.time.split(":").map(Number);
+    const now = new Date();
+    return h * 60 + (m || 0) + MEETING_LENGTH_MIN < now.getHours() * 60 + now.getMinutes();
+  };
   const currentMonday = useMemo(() => startOfWeekMonday(new Date()), []);
   const firstMonday = useMemo(() => serviceYearMonday(new Date()), []);
   const thisWeek = formatDateISO(currentMonday);
@@ -618,7 +634,8 @@ export default function ProgrammeFeedScreen() {
   const targetOpen = (targetKind && inTarget.find(isTarget)?.id) || inTarget[0]?.id || null;
   const defaultOpen = targetWeek
     ? targetOpen
-    : (coming.find((x) => x.type === "meeting" || x.type === "memorial")?.id ?? null);
+    : // The nearest one still ahead: today's, unless it is over already.
+      (coming.find((x) => (x.type === "meeting" && !overToday(x)) || x.type === "memorial")?.id ?? null);
   // ONE MEETING OPEN AT A TIME — AND THE ONE TAPPED STAYS UNDER THE FINGER
   // (25 September, Lionel's choice). Opening a meeting closes the one open
   // before it. When that one stands ABOVE, everything below it moves up by its
@@ -721,7 +738,9 @@ export default function ProgrammeFeedScreen() {
   };
   const meetingProps = (x: MeetingItem) => ({
     item: x,
-    past: x.date < today,
+    // Over is past: quiet in the list, and nothing left to prepare in it.
+    past: x.date < today || overToday(x),
+    overToday: overToday(x),
     me,
     parts: partsOf.get(`${x.week}|${x.kind}`) ?? [],
     duties: dutiesOf.get(`${x.week}|${x.kind}`) ?? [],
@@ -1349,6 +1368,7 @@ function Row({
 function Meeting({
   item,
   past,
+  overToday = false,
   open,
   onToggle,
   mode = "inline",
@@ -1365,6 +1385,12 @@ function Meeting({
 }: {
   item: MeetingItem;
   past: boolean;
+  /**
+   * Over, but still of today: quiet like any past meeting, and the edit
+   * links stay until midnight — a substitution made at the last minute is
+   * written down after the meeting, not before it (5 October).
+   */
+  overToday?: boolean;
   open: boolean;
   onToggle: () => void;
   /** Open in place (phone), a list row (wide, left), or whole (wide, right). */
@@ -1587,13 +1613,13 @@ function Meeting({
               <Text style={styles.empty}>{t("feed.noCleaning")}</Text>
             )}
           </View>
-          {!past && tab === "programme" && canEditProgramme ? (
+          {(!past || overToday) && tab === "programme" && canEditProgramme ? (
             <EditLink
               label={t("feed.editProgramme")}
               onPress={() => router.push(`/schedule/edit?week=${item.week}&meeting=${item.kind}` as never)}
             />
           ) : null}
-          {!past && tab === "duties" && canEditDuties ? (
+          {(!past || overToday) && tab === "duties" && canEditDuties ? (
             // Straight to this meeting's sheet — duties live in their own screen
             // now, not in the programme screen.
             <EditLink
@@ -1601,7 +1627,7 @@ function Meeting({
               onPress={() => router.push(`/publishers/duties-meeting?week=${item.week}&meeting=${item.kind}` as never)}
             />
           ) : null}
-          {!past && tab === "cleaning" && canEditCleaning ? (
+          {(!past || overToday) && tab === "cleaning" && canEditCleaning ? (
             <EditLink
               label={t("feed.editCleaning")}
               onPress={() => router.push(`/publishers/cleaning-week?week=${item.week}` as never)}

@@ -34,6 +34,7 @@ import { PublisherSelector } from '../../../components/PublisherSelector';
 import { DateField } from '../../../components/DateField';
 import { TimeField } from '../../../components/TimeField';
 import { confirm } from '../../../components/ConfirmHost';
+import { notify } from '../../../lib/error-bus';
 import { AREA_BG, AREA_FG, AREAS } from '../../../lib/task-areas';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useAllPublishers } from '../../../lib/useAllPublishers';
@@ -187,6 +188,96 @@ export default function AgendaScreen() {
   const fmt = (iso: string) => dayjs(iso).locale(i18n.language).format('D MMMM YYYY');
   const agenda = agendaQuery.data;
 
+  // WHICH MEETINGS STAND IN THE ROW ABOVE (5 October 2026).
+  //
+  // It listed every meeting ever held, newest first and all alike — so with
+  // nothing ahead the row showed «5 сент.» as though it were the one being
+  // prepared, and under it the screen said no meeting had been set. Both
+  // true, and together they read as a fault.
+  //
+  // The row is for what is being worked on: the meetings AHEAD, nearest
+  // first, and before them the one just held — its outcomes are written
+  // after it, so it is still work — marked as held. Everything older is the
+  // archive's. A meeting opened from elsewhere keeps a chip of its own, so
+  // what is on screen is always named in the row.
+  const todayISO = dayjs().format('YYYY-MM-DD');
+  const allMeetings = meetingsQuery.data ?? [];
+  const ahead = allMeetings
+    .filter((m) => m.date >= todayISO)
+    .sort((a, b) => a.date.localeCompare(b.date));
+  // The list arrives newest first.
+  const lastHeld = allMeetings.find((m) => m.date < todayISO) ?? null;
+  const shownId = meetingId ?? agenda?.meeting?.id ?? null;
+  const opened =
+    shownId && shownId !== lastHeld?.id && !ahead.some((m) => m.id === shownId)
+      ? (allMeetings.find((m) => m.id === shownId) ?? null)
+      : null;
+  const chips = [
+    ...(opened ? [opened] : []),
+    ...(lastHeld ? [lastHeld] : []),
+    ...ahead,
+  ];
+
+  // REMOVING A MEETING — SAYING WHAT GOES WITH IT (5 October 2026).
+  //
+  // The agenda items are deleted with the meeting, and for one already held
+  // they are its record: what was considered, what was carried over. The
+  // confirmation used to speak of the tasks alone («останутся»), which was
+  // true and left out the part that is lost. Now it counts the items and
+  // the outcomes written on them; a held meeting with outcomes is asked
+  // about twice, because that is not cancelling an evening but destroying
+  // the record of one. It cannot be brought back.
+  const removeMeetingMut = useMutation({
+    mutationFn: (id: string) => tasksApi.removeMeeting(id),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['tasks'] });
+      void qc.invalidateQueries({ queryKey: ['agenda-items'] });
+      setMeetingId(undefined);
+      setEditingMeeting(null);
+    },
+    onError: (e) => notify(extractErrorMessage(e)),
+  });
+  const askRemoveMeeting = async (m: EldersMeeting) => {
+    if (removeMeetingMut.isPending) return;
+    // The items on screen are this meeting's when it is the one shown;
+    // otherwise they are asked for — never guessed as «none».
+    let its: AgendaItem[];
+    try {
+      its = m.id === currentId && itemsQuery.data ? itemsQuery.data : await agendaApi.items(m.id);
+    } catch (e) {
+      notify(extractErrorMessage(e));
+      return;
+    }
+    const total = its.length;
+    const withOutcome = its.filter((i) => !!i.outcome).length;
+    const date = dayjs(m.date).locale(i18n.language).format('D MMMM');
+    const ok = await confirm({
+      title: t('tasks.meeting.deleteTitleDated', { date }),
+      body: [
+        total === 0
+          ? t('tasks.meeting.deleteNoItems')
+          : withOutcome > 0
+            ? t('tasks.meeting.deleteItemsOutcomes', { total, withOutcome })
+            : t('tasks.meeting.deleteItems', { total }),
+        t('tasks.meeting.deleteBody'),
+        t('tasks.meeting.deleteForGood'),
+      ].join(' '),
+      confirmLabel: t('common.delete'),
+      danger: true,
+    });
+    if (!ok) return;
+    if (m.date < todayISO && withOutcome > 0) {
+      const sure = await confirm({
+        title: t('tasks.meeting.deleteHeldTitle'),
+        body: t('tasks.meeting.deleteHeldBody', { date, withOutcome }),
+        confirmLabel: t('tasks.meeting.deleteHeldConfirm'),
+        danger: true,
+      });
+      if (!sure) return;
+    }
+    removeMeetingMut.mutate(m.id);
+  };
+
   const print = async () => {
     if (!agenda) return;
     const preopened = openPrintWindow();
@@ -286,26 +377,44 @@ export default function AgendaScreen() {
         <View style={styles.meetingBar}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             <View style={styles.chipRow}>
-              {(meetingsQuery.data ?? []).map((m) => (
-                <Pressable
-                  key={m.id}
-                  onPress={() => setMeetingId(m.id)}
-                  style={[
-                    styles.chip,
-                    (meetingId ?? agenda?.meeting?.id) === m.id && styles.chipOn,
-                  ]}
-                >
-                  <Text
+              {chips.map((m) => {
+                const on = shownId === m.id;
+                const held = m.date < todayISO;
+                const label = dayjs(m.date).locale(i18n.language).format('D MMM');
+                return (
+                  <Pressable
+                    key={m.id}
+                    onPress={() => setMeetingId(m.id)}
                     style={[
-                      styles.chipText,
-                      (meetingId ?? agenda?.meeting?.id) === m.id &&
-                        styles.chipTextOn,
+                      styles.chip,
+                      held && styles.chipHeld,
+                      on && styles.chipOn,
                     ]}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: on }}
+                    accessibilityLabel={
+                      held ? t('tasks.agenda.heldOn', { date: label }) : label
+                    }
                   >
-                    {dayjs(m.date).locale(i18n.language).format('D MMM')}
-                  </Text>
-                </Pressable>
-              ))}
+                    {held ? (
+                      <Ionicons
+                        name="checkmark"
+                        size={14}
+                        color={on ? '#fff' : '#64748b'}
+                      />
+                    ) : null}
+                    <Text
+                      style={[
+                        styles.chipText,
+                        held && styles.chipTextHeld,
+                        on && styles.chipTextOn,
+                      ]}
+                    >
+                      {label}
+                    </Text>
+                  </Pressable>
+                );
+              })}
               <Pressable
                 onPress={() => setEditingMeeting('new')}
                 style={[styles.chip, styles.chipAdd]}
@@ -319,7 +428,32 @@ export default function AgendaScreen() {
         {agendaQuery.isLoading ? (
           <ActivityIndicator style={{ marginTop: 32 }} />
         ) : !agenda?.meeting ? (
-          <Text style={styles.empty}>{t('tasks.agenda.noMeeting')}</Text>
+          // Nothing ahead: say so, offer the one thing to do about it, and
+          // name the meeting just held — which is what the chip above is.
+          <View style={styles.emptyBox}>
+            <Text style={styles.empty}>{t('tasks.agenda.noMeeting')}</Text>
+            <Pressable
+              style={({ pressed }) => [styles.emptyBtn, pressed && { opacity: 0.8 }]}
+              onPress={() => setEditingMeeting('new')}
+              accessibilityRole="button"
+            >
+              <Ionicons name="add" size={18} color="#fff" />
+              <Text style={styles.emptyBtnText}>{t('tasks.agenda.schedule')}</Text>
+            </Pressable>
+            {lastHeld ? (
+              <Pressable
+                onPress={() => setMeetingId(lastHeld.id)}
+                hitSlop={8}
+                accessibilityRole="link"
+              >
+                <Text style={styles.emptyLink}>
+                  {t('tasks.agenda.openLast', {
+                    date: dayjs(lastHeld.date).locale(i18n.language).format('D MMMM'),
+                  })}
+                </Text>
+              </Pressable>
+            ) : null}
+          </View>
         ) : (
           <>
             <Pressable
@@ -336,7 +470,21 @@ export default function AgendaScreen() {
                 {/* The card always opened the form — silently. A pencil says
                     so, and with it the way to change the date or remove the
                     meeting altogether. */}
-                <Ionicons name="create-outline" size={18} color="#0369a1" />
+                <View style={styles.meetingTools}>
+                  {/* Removing it was only at the very bottom of the form.
+                      Shown to those who may — the server refuses the rest. */}
+                  {mayBuild ? (
+                    <Pressable
+                      onPress={() => void askRemoveMeeting(agenda.meeting!)}
+                      hitSlop={10}
+                      accessibilityRole="button"
+                      accessibilityLabel={t('tasks.meeting.deleteAction')}
+                    >
+                      <Ionicons name="trash-outline" size={18} color="#b91c1c" />
+                    </Pressable>
+                  ) : null}
+                  <Ionicons name="create-outline" size={18} color="#0369a1" />
+                </View>
               </View>
 
               {meetingLines.length > 0 ? (
@@ -625,6 +773,7 @@ export default function AgendaScreen() {
           if (id) setMeetingId(id);
           setEditingMeeting(null);
         }}
+        onAskRemove={(m) => void askRemoveMeeting(m)}
       />
     </View>
   );
@@ -634,10 +783,13 @@ function MeetingForm({
   target,
   onClose,
   onSaved,
+  onAskRemove,
 }: {
   target: EldersMeeting | 'new' | null;
   onClose: () => void;
   onSaved: (id?: string) => void;
+  /** One question, asked by the screen — it knows what the meeting holds. */
+  onAskRemove: (m: EldersMeeting) => void;
 }) {
   const { t } = useTranslation();
   const editing = target && target !== 'new' ? target : null;
@@ -694,10 +846,6 @@ function MeetingForm({
         : tasksApi.createMeeting(input);
     },
     onSuccess: (m) => onSaved(m?.id),
-  });
-  const removeMut = useMutation({
-    mutationFn: () => tasksApi.removeMeeting(editing!.id),
-    onSuccess: () => onSaved(),
   });
 
   return (
@@ -796,19 +944,10 @@ function MeetingForm({
         {editing ? (
           <Pressable
             style={styles.delete}
-            onPress={async () => {
-              const ok = await confirm({
-                title: t('tasks.meeting.deleteTitle'),
-                // Says plainly what survives: a cancelled evening must not
-                // look as though it takes the work with it.
-                body: t('tasks.meeting.deleteBody'),
-                confirmLabel: t('common.delete'),
-                danger: true,
-              });
-              if (ok) removeMut.mutate();
-            }}
+            onPress={() => onAskRemove(editing)}
+            accessibilityRole="button"
           >
-            <Text style={styles.deleteText}>{t('common.delete')}</Text>
+            <Text style={styles.deleteText}>{t('tasks.meeting.deleteAction')}</Text>
           </Pressable>
         ) : null}
       </ScrollView>
@@ -827,10 +966,22 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     backgroundColor: '#e2e8f0',
   },
-  chipOn: { backgroundColor: '#0e7490' },
+  // The meeting just held: quieter than the ones ahead, with a tick.
+  chipHeld: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: '#cbd5e1',
+    paddingVertical: 6,
+  },
+  chipTextHeld: { color: '#64748b' },
+  chipOn: { backgroundColor: '#0e7490', borderColor: '#0e7490' },
   chipAdd: { backgroundColor: '#e0f2fe' },
   chipText: { fontSize: 13, color: '#334155', fontWeight: '600' },
   chipTextOn: { color: '#fff' },
+  meetingTools: { flexDirection: 'row', alignItems: 'center', gap: 16 },
   meetingHead: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -985,6 +1136,18 @@ const styles = StyleSheet.create({
   // and a heading that vanished tells the reader nothing at all.
   nothing: { fontSize: 13, color: '#94a3b8', fontStyle: 'italic' },
   empty: { fontSize: 14, color: '#64748b', textAlign: 'center', marginTop: 32 },
+  emptyBox: { alignItems: 'center', gap: 14 },
+  emptyBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#0e7490',
+    borderRadius: 12,
+    minHeight: 44,
+    paddingHorizontal: 18,
+  },
+  emptyBtnText: { color: '#fff', fontSize: 15, fontWeight: '600', fontFamily: 'Manrope_600SemiBold' },
+  emptyLink: { fontSize: 14, color: '#0369a1', fontWeight: '600', fontFamily: 'Manrope_600SemiBold' },
   print: {
     flexDirection: 'row',
     alignItems: 'center',

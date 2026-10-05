@@ -67,6 +67,8 @@ const SECTION_TONE: Record<string, string> = {
   backup: '#64748b',
   user: '#64748b',
   elder_task: '#64748b',
+  elders_meeting: '#64748b',
+  agenda_item: '#64748b',
   meeting_settings: '#64748b',
   annual_report: '#0e7490',
   monthly_report: '#0e7490',
@@ -95,6 +97,8 @@ const SECTION_ICON: Record<string, keyof typeof Ionicons.glyphMap> = {
   backup: 'shield-checkmark-outline',
   user: 'key-outline',
   elder_task: 'checkbox-outline',
+  elders_meeting: 'people-outline',
+  agenda_item: 'list-outline',
   meeting_settings: 'time-outline',
   annual_report: 'lock-closed-outline',
   monthly_report: 'lock-closed-outline',
@@ -412,6 +416,13 @@ function fieldWord(
       return dayjs().locale(language).day(v % 7).format('dddd');
     }
     return '';
+  }
+  // An agenda item's outcome was printed as the machine's word —
+  // «reviewed» — beside a label left in English (5 October).
+  if (entityType === 'agenda_item') {
+    return field === 'outcome' && typeof v === 'string'
+      ? t(`agenda.items.outcome.${v}`, { defaultValue: '' })
+      : '';
   }
   if (entityType !== 'elder_task' || typeof v !== 'string') return '';
   switch (field) {

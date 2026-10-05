@@ -5080,8 +5080,17 @@ export const tasksApi = {
     );
     return data;
   },
-  async removeMeeting(id: string) {
-    await api.delete(`/tasks/meetings/${id}`);
+  /**
+   * Removes a meeting. Its agenda items go with it; the answer says how many
+   * there were and how many carried an outcome (absent from an older server).
+   */
+  async removeMeeting(
+    id: string,
+  ): Promise<{ date: string; agendaItems: number; agendaOutcomes: number } | null> {
+    const { data } = await api.delete<
+      { date: string; agendaItems: number; agendaOutcomes: number } | ""
+    >(`/tasks/meetings/${id}`);
+    return data || null;
   },
 
   async agenda(meetingId?: string) {
