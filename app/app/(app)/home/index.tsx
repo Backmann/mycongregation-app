@@ -26,6 +26,7 @@ import {
   useReportCollection,
 } from "../../../components/ReportCollectionCard";
 import { usePermissions } from "../../../lib/permissions";
+import { SourceLink } from "../../../components/SourceLink";
 import {
   EnableNotificationsCard,
   useNotifyNudge,
@@ -1108,6 +1109,8 @@ function NextBody({
         {where ? <Text style={s.nextPlace}>{where}</Text> : null}
         <FieldPeople en={entry} myName={myName} />
         {entry.topic ? <Text style={s.topic}>{entry.topic}</Text> : null}
+        {/* The one who conducts opens the source from here (5 October). */}
+        <SourceLink url={entry.sourceUrl} />
       </View>
     );
   }
@@ -1443,16 +1446,7 @@ function EntryBody({
           </Text>
         ) : null}
         {en.topic ? <Text style={s.topic}>{en.topic}</Text> : null}
-        {en.sourceUrl ? (
-          <Pressable
-            onPress={() =>
-              Linking.openURL(en.sourceUrl as string).catch(() => {})
-            }
-            hitSlop={6}
-          >
-            <Text style={s.link}>{t("fieldService.openLink")}</Text>
-          </Pressable>
-        ) : null}
+        <SourceLink url={en.sourceUrl} />
       </>
     );
   }

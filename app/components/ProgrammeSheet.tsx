@@ -182,12 +182,15 @@ export function PartLine({
   helper,
   mine,
   tone,
+  below,
 }: {
   time?: string | null;
   /** «10 мин» — under the time. */
   minutes?: string | null;
   title: string;
   subtitle?: string | null;
+  /** Under the subtitle: a field-service meeting's theme and its link. */
+  below?: ReactNode;
   name?: string | null;
   extra?: string | null;
   helper?: Helper | null;
@@ -202,6 +205,7 @@ export function PartLine({
         <View style={styles.partBody}>
           <Text style={styles.partTitle}>{title}</Text>
           {subtitle ? <Text style={styles.partSub}>{subtitle}</Text> : null}
+          {below}
           <View style={styles.stackedPerson}>
             <Person name={name} extra={extra} helper={helper} mine={mine} tone={tone} left />
           </View>
@@ -215,6 +219,7 @@ export function PartLine({
       <View style={styles.partBody}>
         <Text style={styles.partTitle}>{title}</Text>
         {subtitle ? <Text style={styles.partSub}>{subtitle}</Text> : null}
+        {below}
       </View>
       <View style={styles.personSlot}>
         <Person name={name} extra={extra} helper={helper} mine={mine} tone={tone} />

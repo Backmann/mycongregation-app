@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import {
-  Linking,
   Modal,
   Pressable,
   ScrollView,
@@ -19,6 +18,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useMyPublisher } from '../lib/useMyPublisher';
 import { VisitPeopleChips, FieldNoteLine, useFieldListViewer } from './FieldListBits';
 import { MyDot } from './MyDot';
+import { SourceLink } from './SourceLink';
 import { MyGlowRow } from './MyGlowRow';
 import { ChipRow, PersonChip } from './PersonChip';
 import {
@@ -127,10 +127,6 @@ export function FieldServiceSection({
 
   const list = meetings.slice().sort(sortMeetings);
 
-  const openLink = (url: string) => {
-    Linking.openURL(url).catch(() => {});
-  };
-
   return (
     <View style={styles.section}>
       {!hideHeader ? (
@@ -215,21 +211,7 @@ export function FieldServiceSection({
                       {m.topic}
                     </Text>
                   )}
-                  {!!m.sourceUrl && (
-                    <Pressable
-                      onPress={() => openLink(m.sourceUrl as string)}
-                      hitSlop={6}
-                    >
-                      <Text style={styles.link} numberOfLines={1}>
-                        <Ionicons
-                          name="link-outline"
-                          size={13}
-                          color="#0369a1"
-                        />{' '}
-                        {t('fieldService.openLink')}
-                      </Text>
-                    </Pressable>
-                  )}
+                  <SourceLink url={m.sourceUrl} />
                 </View>
                 {canEdit && (
                   <View style={styles.rowActions}>

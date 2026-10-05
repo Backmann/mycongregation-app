@@ -2,7 +2,6 @@ import { useRef, useState } from 'react';
 import {
   ActivityIndicator,
   
-  Linking,
   Modal,
   
   Pressable,
@@ -44,6 +43,7 @@ import { ChipRow, PersonChip } from '../../../components/PersonChip';
 import { parseISODate, addDays, formatDateISO } from '../../../lib/dates';
 import { LoadError } from '../../../components/LoadError';
 import { Dialog } from '../../../components/Dialog';
+import { SourceLink } from '../../../components/SourceLink';
 import { confirm } from '../../../components/ConfirmHost';
 
 /** Actual calendar date (ISO) of a meeting, from its week + weekday. */
@@ -646,21 +646,7 @@ export default function FieldServiceMeetingsScreen() {
                           {mt.topic}
                         </Text>
                       )}
-                      {!!mt.sourceUrl && (
-                        <Pressable
-                          onPress={() => Linking.openURL(mt.sourceUrl as string)}
-                          hitSlop={6}
-                        >
-                          <Text style={styles.link} numberOfLines={1}>
-                            <Ionicons
-                              name="link-outline"
-                              size={13}
-                              color="#0369a1"
-                            />{' '}
-                            {t('fieldService.openLink')}
-                          </Text>
-                        </Pressable>
-                      )}
+                      <SourceLink url={mt.sourceUrl} />
                     </Pressable>
                     {canEdit && (
                       <Pressable

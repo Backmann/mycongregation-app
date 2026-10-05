@@ -43,6 +43,8 @@ import { WindowsLine, WindowsPlanDialog } from "../../../components/WindowsPlan"
 import { effectiveVersionFor } from "../../../lib/meeting-schedule";
 import { addDays, formatDateISO, parseISODate, startOfWeekMonday } from "../../../lib/dates";
 import { partDisplay } from "../../../lib/part-display";
+import { useSongsMap, enrichSongRef } from "../../../lib/songs";
+import { SourceLink } from "../../../components/SourceLink";
 import { arrangeFieldDay, noteForPlace } from "../../../lib/field-audience";
 import type { FieldPlace } from "../../../lib/field-audience";
 import {
@@ -1633,6 +1635,8 @@ function Programme({
   whoFrom: (p: Assignment | undefined) => string | null;
 }) {
   const { t } = useTranslation();
+  // One request for the whole feed, an hour in the cache (lib/songs).
+  const songTitles = useSongsMap();
   if (parts.length === 0) return <Text style={styles.empty}>{t("feed.notLoaded")}</Text>;
   const times = kind === "midweek" ? buildMidweekPartTimes(parts, time) : buildWeekendPartTimes(parts, time);
   const out: ReactNode[] = [];
@@ -1681,9 +1685,14 @@ function Programme({
     const mine = !!me && p.publisherId === me;
     const minutes = p.partDurationMin ? t("feed.minutesOnly", { n: p.partDurationMin }) : null;
     if (SONG_KEYS.has(p.partKey)) {
-      out.push(<SongLine key={p.id} time={start} text={p.partTitle || shown.label} />);
+      // «Песня 35 — Удостоверяйтесь…»: the name from the congregation's song
+      // list, as «Составление программы» has shown it all along (5 October —
+      // the readers of the Programme saw the number alone). No list, or a
+      // number not in it: the number stays as it was.
+      const text = p.partTitle || shown.label;
+      out.push(<SongLine key={p.id} time={start} text={enrichSongRef(text, songTitles) ?? text} />);
     } else if (PRAYER_KEYS.has(p.partKey)) {
-      const text = [shown.subtitle, shown.label].filter(Boolean).join(" · ");
+      const text = [enrichSongRef(shown.subtitle, songTitles), shown.label].filter(Boolean).join(" · ");
       out.push(<PrayerLine key={p.id} time={start} label={text} name={person} mine={mine} />);
     } else if (p.partKey === "public_talk_speaker" || p.partKey === "co_concluding_talk") {
       out.push(
@@ -1846,6 +1855,17 @@ function FieldDay({
         time={m.startTime}
         title={labelOf(p)}
         subtitle={[m.address, noteOf(p)].filter(Boolean).join(" · ")}
+        // What the meeting is about and where to read it — said on Home and
+        // on «Встречи для проповеди», and missing from the one screen the
+        // week is read from (5 October).
+        below={
+          m.topic || m.sourceUrl ? (
+            <View style={styles.fieldAbout}>
+              {m.topic ? <Text style={styles.fieldTopic}>{m.topic}</Text> : null}
+              <SourceLink url={m.sourceUrl} />
+            </View>
+          ) : null
+        }
         name={m.conductorPublisherId ? nameOf.get(m.conductorPublisherId) ?? null : null}
         mine={!!me && m.conductorPublisherId === me}
         helper={helper}
@@ -2072,6 +2092,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   filteredAllText: { fontSize: 14, fontFamily: FONT.bold, color: "#ffffff" },
+  fieldAbout: { marginTop: 4, gap: 4 },
+  fieldTopic: { fontSize: 14, fontFamily: FONT.medium, color: "#475569", fontStyle: "italic" },
   othersToggle: {
     minHeight: 44,
     flexDirection: "row",

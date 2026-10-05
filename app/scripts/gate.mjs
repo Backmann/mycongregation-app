@@ -74,6 +74,9 @@ const STEPS = [
   // The lines under the «Служение» doors: whose report, whose meeting, and
   // what is amber for whom.
   ['Строки «Служения»', 'node', ['scripts/check-service-lines.mjs']],
+  // «Открыть источник»: an address typed without https:// still opens, and
+  // what is not an address is not offered as a link.
+  ['Ссылка на источник', 'node', ['scripts/check-source-link.mjs']],
   // The role's name is a key built at run time, which no translation check
   // sees: a ministerial servant read «ministerial_servant» in his profile.
   ['Названия ролей', 'node', ['scripts/check-role-names.mjs']],
