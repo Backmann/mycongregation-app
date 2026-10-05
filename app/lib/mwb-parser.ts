@@ -107,8 +107,8 @@ export function parseWeekRange(
    * where the week ends, and that beats arithmetic on a name.
    *
    * Kept 1:1 with server/src/mwb-import/mwb-parser.ts, where the same fault
-   * lived — this copy is the one that actually runs, and only that one has
-   * tests, which is a debt worth remembering.
+   * lived. This copy is the one that actually runs; since 5 October 2026 it
+   * is also the one that is checked — scripts/check-import-parsers.mjs.
    */
   let m = normalized.match(
     /^(\d+)\s+([А-Яа-яё]+)\s+(\d{4})\s*(?:года?|г\.?)?\s*-\s*(\d+)\s+([А-Яа-яё]+)\s+(\d{4})\s*(?:года?|г\.?)?$/iu,

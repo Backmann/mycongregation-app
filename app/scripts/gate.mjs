@@ -83,6 +83,9 @@ const STEPS = [
   // what is not an address is not offered as a link.
   ['Ссылка на источник', 'node', ['scripts/check-source-link.mjs']],
   ['Похожие имена докладчиков', 'node', ['scripts/check-similar-names.mjs']],
+  // The workbook and the Watchtower are read in the browser since 12 June;
+  // the 71 cases that guarded the server's unused copy now guard this one.
+  ['Разбор программы', 'node', ['scripts/check-import-parsers.mjs']],
   // The role's name is a key built at run time, which no translation check
   // sees: a ministerial servant read «ministerial_servant» in his profile.
   ['Названия ролей', 'node', ['scripts/check-role-names.mjs']],
