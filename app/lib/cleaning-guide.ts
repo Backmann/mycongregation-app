@@ -35,13 +35,6 @@ export interface CleaningCategory {
   steps: Partial<Record<CleaningFrequency, CleaningStep[]>>;
 }
 
-/**
- * Width / height of each materials strip, measured from the file. They differ
- * (3.29 … 5.54), so a single shared ratio letterboxed the odd ones — the
- * sanitary strip lost a third of its width to white.
- */
-export const MATERIALS_ASPECT = 5.16;
-
 export const TECHNIK_BLOCKS: {
   key: 'ladder' | 'rules';
   image: number;

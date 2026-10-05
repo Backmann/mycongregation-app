@@ -21,7 +21,6 @@ export type PeriodLike = {
 type Translate = (key: string, options?: Record<string, unknown>) => string;
 
 // Прежние имена — чтобы главная и список пионеров не меняли свои импорты.
-export const auxMonthLabel = monthLabel;
 export const auxMonthSinceLabel = monthSinceLabel;
 
 /**

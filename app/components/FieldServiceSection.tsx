@@ -15,7 +15,6 @@ import dayjs from 'dayjs';
 import 'dayjs/locale/ru';
 import 'dayjs/locale/de';
 import { useQuery } from '@tanstack/react-query';
-import { useMyPublisher } from '../lib/useMyPublisher';
 import { VisitPeopleChips, FieldNoteLine, useFieldListViewer } from './FieldListBits';
 import { MyDot } from './MyDot';
 import { SourceLink } from './SourceLink';
@@ -102,7 +101,6 @@ export function FieldServiceSection({
   hideHeader,
 }: Props) {
   const { t } = useTranslation();
-  const { myPublisherId } = useMyPublisher();
   // Halls: resolve shorthand meeting addresses to the exact hall address.
   const sectionHallsQuery = useQuery({
     queryKey: ['halls'],

@@ -65,7 +65,7 @@ function wordKey(word: string): string {
     .replace(/eu/g, 'oi')
     .replace(/ei/g, 'ai')
     .replace(/ie/g, 'i')
-    // Doubled letters: Kaufmann, Беккер, Василий.
+    // Doubled letters: Bergmann, Деккер, Василий.
     .replace(/([a-zSC])\1+/g, '$1');
   return s;
 }
@@ -74,7 +74,7 @@ function wordKey(word: string): string {
 function finish(key: string): string {
   return (
     key
-      // A silent h: Hahn / Хан, Chernih / Черных, Tschernych.
+      // A silent h: Kuhn / Кун, Chumnih / Чумных, Tschumnych.
       .replace(/([aeiou])h(?![aeiou])/g, '$1')
       // Alexander / Александр, Peter / Пётр.
       .replace(/([^aeiou])er$/, '$1r')
@@ -137,11 +137,11 @@ export function pairKey(a: string, b: string): string {
  */
 export function likelyDoubles<T extends NamedCard>(
   cards: T[],
-  distinct: Array<[string, string]>,
-): Array<[T, T]> {
+  distinct: [string, string][],
+): [T, T][] {
   const no = new Set(distinct.map(([a, b]) => pairKey(a, b)));
   const keyed = cards.map((c) => ({ c, n: nameKeys(c.fullName).length }));
-  const out: Array<[T, T]> = [];
+  const out: [T, T][] = [];
   for (let i = 0; i < keyed.length; i++) {
     if (keyed[i].n < 2) continue;
     for (let j = i + 1; j < keyed.length; j++) {

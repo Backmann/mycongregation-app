@@ -9,8 +9,7 @@
     "encryptedNote": "Die Datei ist verschlüsselt. Entschlüsseln nur mit Ihrem Backup-Schlüssel am Computer möglich.",
     "download": "Letzte Sicherung herunterladen",
     "downloading": "Wird heruntergeladen…",
-    "webOnly": "Der Download ist in der Web-Version (im Browser) verfügbar.",
-    "error": "Sicherungen konnten nicht geladen werden"
+    "webOnly": "Der Download ist in der Web-Version (im Browser) verfügbar."
   },
   "dataRights": {
     "sectionLabel": "Meine Daten",
@@ -35,9 +34,7 @@
     "title": "Rechtliche Informationen",
     "subtitle": "Impressum, Datenschutz, Nutzung",
     "sectionLabel": "Rechtliches",
-    "linkShort": "Rechtliche Informationen",
-    "prevailNote": "Bei Abweichungen ist die deutsche Fassung maßgeblich.",
-    "updated": "Fassung: {{date}}"
+    "linkShort": "Rechtliche Informationen"
   },
   "publisherAccess": {
     "neverLoggedIn": "noch nicht angemeldet",
@@ -57,28 +54,16 @@
     "fromCard": "Aus dem Datensatz: {{value}}",
     "cancel": "Abbrechen",
     "save": "Speichern",
-    "sendInvite": "Einladung per E-Mail senden",
-    "password": "Passwort",
-    "min8": "Mindestens 8 Zeichen",
     "makeAdmin": "Zum Administrator machen",
-    "inviteHint": "Die Person erhält eine E-Mail mit einem Link und legt ihr eigenes Passwort fest (der Link ist 72 Stunden gültig).",
-    "manualHint": "Sie legen das Passwort selbst fest und geben es weiter — hier wird es nicht mehr angezeigt.",
     "invite": "Einladen",
-    "create": "Erstellen",
     "newPassword": "Neues Passwort",
     "resetHint": "Nennen Sie dem Verkündiger das neue Passwort selbst — er sieht es nirgends. Alle offenen Sitzungen auf seinen Geräten enden, er muss sich neu anmelden. Hat das Konto eine Adresse, geht darüber eine E-Mail raus.",
-    "resendInvite": "Einladung erneut senden",
-    "resendInviteDone": "Einladung per E-Mail gesendet",
     "resendInviteSending": "Senden…",
-    "resendInviteTitle": "Einladung gesendet",
-    "resendInviteBody": "Eine E-Mail mit dem Link wurde an {{email}} gesendet. Der Link ist 72 Stunden gültig.",
     "disableConfirmTitle": "Zugang deaktivieren?",
     "disableConfirmBody": "{{name}} kann sich dann nicht mehr anmelden. Sie können den Zugang später wieder aktivieren.",
     "emailLabel": "E-Mail",
-    "emailInvalid": "Die Adresse sieht falsch aus",
     "roleHint": "Die Rolle ergibt sich normalerweise aus der Ernennung — nur einschalten, wenn Administratorrechte nötig sind.",
     "disableConfirmYes": "Deaktivieren",
-    "passwordHint": "Mindestens {{count}} Zeichen",
     "passwordPlaceholder": "Mindestens {{count}} Zeichen",
     "loginNameRow": "Anmeldename",
     "loginNameLabel": "Name für die Anmeldung",
@@ -133,7 +118,6 @@
     "schedule": "Programm",
     "publishers": "Versammlung",
     "groups": "Gruppen",
-    "reports": "Berichte",
     "profile": "Profil",
     "cart": "Dienst",
     "home": "Start"
@@ -151,12 +135,9 @@
     "ok": "OK",
     "close": "Schließen",
     "back": "Zurück",
-    "next": "Weiter",
-    "submit": "Absenden",
     "loading": "Wird geladen…",
     "error": "Fehler",
     "retry": "Erneut",
-    "search": "Suchen",
     "restore": "Wiederherstellen",
     "removing": "Wird entfernt…",
     "restoring": "Wird wiederhergestellt…",
@@ -204,15 +185,7 @@
     "language": "Sprache",
     "signOut": "Abmelden",
     "webPush": {
-      "title": "Browser-Benachrichtigungen",
-      "enabled": "Aktiviert",
-      "disabled": "Deaktiviert",
-      "denied": "In den Browser-Einstellungen blockiert",
-      "unsupported": "Von diesem Browser nicht unterstützt",
-      "unconfigured": "In diesem Build nicht verfügbar",
-      "iosHint": "Zum Aktivieren: Website zuerst zum Home-Bildschirm hinzufügen",
-      "deniedTitle": "Benachrichtigungen blockiert",
-      "deniedBody": "Öffnen Sie die Browser-Einstellungen und erlauben Sie Benachrichtigungen für diese Website."
+      "iosHint": "Zum Aktivieren: Website zuerst zum Home-Bildschirm hinzufügen"
     },
     "userManagement": "Benutzerverwaltung",
     "changePassword": {
@@ -222,13 +195,9 @@
       "currentPassword": "Aktuelles Passwort",
       "newPassword": "Neues Passwort",
       "confirmPassword": "Neues Passwort bestätigen",
-      "minLength": "Mindestens {{count}} Zeichen",
       "submit": "Passwort ändern",
-      "successTitle": "Passwort geändert",
-      "successBody": "Ihr Passwort wurde aktualisiert. Bestehende Sitzungen auf diesem Gerät bleiben angemeldet.",
       "note": "Wenn Sie Ihr aktuelles Passwort vergessen haben, bitten Sie einen Administrator, es über die Benutzerverwaltung zurückzusetzen.",
       "errors": {
-        "tooShort": "Neues Passwort muss mindestens {{count}} Zeichen haben",
         "sameAsCurrent": "Neues Passwort muss sich vom aktuellen unterscheiden",
         "mismatch": "Passwörter stimmen nicht überein"
       },
@@ -268,7 +237,6 @@
       "roster": "Verkündiger"
     },
     "search": "Suche nach Namen…",
-    "showRemoved": "Entfernte anzeigen",
     "noMatches": "Keine Treffer",
     "noPublishers": "Noch keine Verkündiger",
     "totalCount": "Gesamt: {{count}}",
@@ -283,7 +251,6 @@
       "regularPioneer": "Allgemeiner Pionier",
       "specialPioneer": "Sonderpionier",
       "missionary": "Missionar",
-      "anointed": "Gesalbter",
       "inactive": "Inaktiv",
       "auxiliaryPioneer": "Hilfspionier",
       "student": "Schüler"
@@ -293,8 +260,6 @@
       "spirituality": "Geistliches",
       "capabilities": "Fähigkeiten",
       "personal": "Persönlich",
-      "specialNeeds": "Besondere Bedürfnisse",
-      "status": "Status",
       "notes": "Notizen",
       "appAccess": "App-Zugang",
       "circumstances": "Besondere Umstände"
@@ -316,10 +281,7 @@
       "pioneerSince": "Pionier seit",
       "birthDate": "Geburtsdatum",
       "gender": "Geschlecht",
-      "active": "Aktiv",
-      "regular": "Regelmäßig",
       "firstName": "Vorname",
-      "middleName": "Zweiter Vorname",
       "lastName": "Nachname",
       "mobilePhone": "Mobiltelefon",
       "generalNotes": "Allgemeine Notizen",
@@ -383,11 +345,8 @@
     "actions": {
       "edit": "Bearbeiten",
       "remove": "Als ausgeschieden markieren",
-      "restore": "Wiederherstellen",
       "removing": "Markiere…",
-      "restoring": "Wird wiederhergestellt…",
-      "save": "Speichern",
-      "create": "Erstellen"
+      "save": "Speichern"
     },
     "validation": {
       "firstNameRequired": "Vorname ist erforderlich",
@@ -397,7 +356,6 @@
     },
     "placeholders": {
       "firstName": "Hans",
-      "middleName": "Karl",
       "lastName": "Müller",
       "date": "Datum wählen",
       "phone": "+49 170 1234567",
@@ -419,8 +377,6 @@
       "statusSection": "Status",
       "brother": "Bruder",
       "sister": "Schwester",
-      "active": "Aktiv",
-      "inactive": "Inaktiv",
       "standingSection": "Versammlungsstatus",
       "current": "Aktuell",
       "departed": "Ausgeschieden"
@@ -514,12 +470,9 @@
   },
   "auth": {
     "subtitle": "Bei Ihrer Versammlung anmelden",
-    "email": "E-Mail",
     "password": "Passwort",
-    "emailPlaceholder": "name@beispiel.de",
     "signIn": "Anmelden",
     "noAccountHint": "Konten legt der Versammlungsadministrator an. Kam keine Einladung an, wenden Sie sich an ihn.",
-    "forgotPasswordHint": "Passwort vergessen? Wenden Sie sich an den Administrator der Versammlung.",
     "showPassword": "Passwort anzeigen",
     "hidePassword": "Passwort verbergen",
     "forgotPassword": "Passwort vergessen?",
@@ -540,11 +493,8 @@
       "title": "Neues Passwort",
       "newPassword": "Neues Passwort",
       "confirmPassword": "Passwort wiederholen",
-      "minLength": "Mindestens {{count}} Zeichen",
       "mismatch": "Passwörter stimmen nicht überein",
       "submit": "Passwort speichern",
-      "success": "Passwort geändert. Sie können sich jetzt mit dem neuen Passwort anmelden.",
-      "goToLogin": "Anmelden",
       "invalidLink": "Dieser Link ist ungültig oder abgelaufen.",
       "requestNew": "Neuen Link anfordern",
       "rule": "Mindestens {{count}} Zeichen. Ein paar Wörter sind besser als eine kurze Zeichenfolge.",
@@ -557,7 +507,6 @@
     },
     "wrongEmailOrPassword": "Anmeldename (oder Adresse) und Passwort passen nicht zusammen. Wenn Sie eingeladen wurden und noch kein Passwort haben, gehen Sie zurück und tippen Sie auf «Wurden Sie eingeladen?».",
     "invite": {
-      "iWasInvited": "Ich wurde eingeladen",
       "title": "Einladung",
       "intro": "Geben Sie den Code ein, den Sie erhalten haben, und wählen Sie ein Passwort — Sie sind dann sofort drin. Eine separate Anmeldung ist nicht nötig.",
       "code": "Einladungscode",
@@ -668,13 +617,9 @@
     "editedAtBy": "bearbeitet {{when}} von {{name}}",
     "submittingOnBehalfOf": "Bericht abgegeben für",
     "publisher": "Verkündiger",
-    "pioneerSuffix": " (Pionier)",
-    "editingReportFor": "Bericht bearbeiten für ",
-    "submittingAs": "Bericht abgeben als ",
     "reportMonth": "Berichtsmonat",
     "alreadySubmitted": "Bereits eingereicht. Gehen Sie zurück und tippen Sie auf das Stift-Symbol, um zu bearbeiten.",
     "hoursLabel": "Stunden im Predigtdienst",
-    "hoursPlaceholder": "z. B. 70",
     "didTheyShare": "Haben sie diesen Monat am Predigtdienst teilgenommen?",
     "didYouShare": "Haben Sie diesen Monat am Predigtdienst teilgenommen?",
     "bibleStudies": "Bibelstudien",
@@ -682,7 +627,6 @@
     "notesPlaceholder": "Zusätzliche Informationen…",
     "viewEditHistory": "Bearbeitungsverlauf anzeigen",
     "updateReport": "Bericht aktualisieren",
-    "submitReport": "Bericht einreichen",
     "alerts": {
       "alreadySubmittedTitle": "Bereits eingereicht",
       "alreadySubmittedBody": "Ein Bericht für {{month}} existiert bereits. Gehen Sie zurück und tippen Sie auf das Stift-Symbol, um ihn zu bearbeiten.",
@@ -705,7 +649,6 @@
       "pending": "ausstehend",
       "noPublishersInScope": "Keine Verkündiger im Bereich",
       "noReportYet": "Noch kein Bericht",
-      "couldNotLoad": "Konnte nicht geladen werden",
       "submittedOfTotal": "{{submitted}} von {{total}} eingereicht",
       "noGroup": "Ohne Gruppe",
       "submittedByWhen": "erfasst von {{name}} · {{when}}",
@@ -733,14 +676,7 @@
       "editedBy": "bearbeitet von {{name}}",
       "trendTitle": "Diensttrend",
       "hours": "Stunden",
-      "studies": "Studien",
-      "noReport": "Kein Bericht",
-      "participated": "Teilgenommen",
-      "didNotParticipate": "Nicht teilgenommen",
-      "exportSubtitle": "Dienstverlauf",
-      "month": "Monat",
-      "activityCol": "Aktivität",
-      "notesCol": "Notizen"
+      "studies": "Studien"
     },
     "pioneerGoal": {
       "title": "Stundenziel (Jahr)",
@@ -917,11 +853,6 @@
         "coTalk": "Vortrag des Kreisaufsehers",
         "prayer": "Gebet"
       },
-      "readonly": {
-        "weekStart": "Wochenbeginn",
-        "eventType": "Veranstaltungstyp",
-        "part": "Programmpunkt"
-      },
       "field": {
         "weekStartFull": "Wochenbeginn (Montag, JJJJ-MM-TT)",
         "eventType": "Veranstaltungstyp",
@@ -985,7 +916,6 @@
       "rules": "Versammlungsregeln"
     },
     "a11y": {
-      "newAssignment": "Neue Zuteilung",
       "localNeeds": "Örtliche Bedürfnisse"
     },
     "menu": {
@@ -999,17 +929,11 @@
     "createEmptyMidweek": "Leere Wochenzusammenkunft erstellen ({{count}} Plätze)",
     "createEmptyWeekend": "Leere Wochenendzusammenkunft erstellen ({{count}} Plätze)",
     "removedBanner": "Diese Zuteilung wurde entfernt",
-    "removeConfirm": {
-      "title": "Zuteilung entfernen",
-      "webMessage": "Diese Zuteilung entfernen?"
-    },
     "import": {
       "title": "Programm (EPUB) importieren",
       "subtitle": "Laden Sie das Arbeitsheft für die Zusammenkunft (mwb_*.epub) oder das Wachtturm-Studium (w_*.epub) hoch, um das Wochenprogramm automatisch zu erstellen. Leere Plätze werden mit offiziellen Titeln gefüllt; Zuteilungen mit Verkündigern bleiben erhalten.",
       "choosePrompt": "EPUB-Datei wählen",
       "chooseDifferent": "Andere Datei wählen",
-      "uploadAndImport": "Hochladen und importieren",
-      "uploading": "Wird hochgeladen…",
       "openSchedule": "Programm öffnen",
       "errors": {
         "noFileSelected": "Keine Datei ausgewählt",
@@ -1099,7 +1023,6 @@
       "duties": "Aufgaben"
     },
     "weekend": {
-      "watchtowerStudy": "Wachtturm-Studium",
       "reader": "Leser"
     },
     "congressWeek": {
@@ -1190,16 +1113,6 @@
     "hiddenByCapability": "{{count}} durch Filter ausgeblendet",
     "lastGiven": "Zuletzt gehalten {{date}}",
     "upcoming": "Geplant {{date}}",
-    "lastDidPart": "Dieser Teil: {{date}} ({{ago}})",
-    "weeksAgoShort": "vor {{count}} Wo.",
-    "neverDidPart": "Hat diesen Teil noch nicht gemacht",
-    "recentPartner": "Kürzlich Partner ({{date}})",
-    "didThisPart": "Dieser Teil (3 Mon.): {{dates}}",
-    "neverDidPart3mo": "Diesen Teil seit 3 Monaten nicht",
-    "didThisDuty": "Diese Aufgabe (3 Mon.): {{dates}}",
-    "neverDidDuty3mo": "Diese Aufgabe seit 3 Monaten nicht",
-    "pairedWith": "Mit {{name}}: {{count}}× — {{dates}}",
-    "notPairedYet": "Noch nicht mit {{name}} im Team",
     "histThisPart": "dieser Teil war:",
     "histThisDuty": "diese Aufgabe war:",
     "histNever": "noch nie",
@@ -1211,12 +1124,10 @@
     "users": {
       "title": "Benutzer",
       "countSummary": "{{count}} Benutzer",
-      "addUser": "Benutzer hinzufügen",
       "noUsers": "Keine Benutzer",
       "you": "Sie",
       "neverLoggedIn": "Noch nie angemeldet",
       "status": {
-        "active": "Aktiv",
         "inactive": "Deaktiviert"
       },
       "roles": {
@@ -1224,51 +1135,6 @@
         "elder": "Ältester",
         "ministerial_servant": "Dienstamtgehilfe",
         "publisher": "Verkündiger"
-      },
-      "actions": {
-        "changeRole": "Rolle",
-        "resetPassword": "Passwort",
-        "deactivate": "Deaktivieren",
-        "activate": "Aktivieren"
-      },
-      "create": {
-        "title": "Neuer Benutzer",
-        "email": "E-Mail",
-        "password": "Anfangspasswort",
-        "passwordHint": "Mindestens {{count}} Zeichen. Teilen Sie es dem Benutzer separat mit — das Passwort wird hier nicht mehr angezeigt.",
-        "role": "Rolle",
-        "submit": "Erstellen"
-      },
-      "changeRole": {
-        "title": "Rolle ändern",
-        "subtitle": "Aktuelle Rolle für {{email}}: {{current}}",
-        "submit": "Übernehmen",
-        "confirmDemoteAdmin": "Administrator herabstufen",
-        "confirmDemoteAdminBody": "{{email}} kann die Systembenutzer dann nicht mehr verwalten. Fortfahren?"
-      },
-      "resetPassword": {
-        "title": "Passwort zurücksetzen",
-        "subtitle": "Neues Passwort für {{email}} festlegen. Teilen Sie es dem Benutzer separat mit.",
-        "password": "Neues Passwort",
-        "passwordHint": "Mindestens {{count}} Zeichen.",
-        "submit": "Zurücksetzen",
-        "successMessage": "Passwort für {{email}} aktualisiert."
-      },
-      "deactivate": {
-        "confirmTitle": "Benutzer deaktivieren",
-        "confirmBody": "{{email}} kann sich dann nicht mehr anmelden. Daten bleiben erhalten. Fortfahren?",
-        "confirmAction": "Deaktivieren"
-      },
-      "activate": {
-        "confirmTitle": "Benutzer aktivieren",
-        "confirmBody": "{{email}} kann sich wieder anmelden.",
-        "confirmAction": "Aktivieren"
-      },
-      "adminLimit": {
-        "banner": "Empfohlen werden höchstens 2 Administratoren. Derzeit aktiv: {{count}}.",
-        "confirmTitle": "Viele Administratoren",
-        "confirmBody": "Für eine Versammlung genügen normalerweise 2 Administratoren (derzeit aktiv: {{count}}). Trotzdem einen weiteren zuweisen?",
-        "confirmAction": "Zuweisen"
       },
       "online": "online",
       "orphans": {
@@ -1282,7 +1148,6 @@
       },
       "readOnlyNote": "Diese Liste der Zugänge dient nur der Ansicht. Einen Zugang erteilen oder ändern Sie unter «Versammlung» → «Verkündiger», in der Karte der Person: dort wird das Konto der Person zugeordnet, die Rolle folgt der Ernennung.",
       "noPassword": {
-        "badge": "Kein Passwort gesetzt",
         "neverInvited": "Es wurde keine Einladung verschickt",
         "codeLivesUntil": "Eingeladen — der Code gilt bis {{date}}",
         "codeExpired": "Der Einladungscode ist am {{date}} abgelaufen — neuen ausstellen",
@@ -1377,7 +1242,6 @@
       "untilHint": "Leer lassen, wenn der Vortrag endgültig entfällt. Mit Datum kommt er am Tag danach von selbst zurück.",
       "reasonLabel": "Auf welcher Grundlage",
       "reasonPlaceholder": "Bekanntmachungen und Hinweise, Mai 2026",
-      "lastDone": "Zuletzt abgesetzt: {{count}} Vorträge · {{date}} · {{name}}",
       "lastReason": "Grundlage: {{reason}}",
       "mode": {
         "retire": "Vorträge absetzen",
@@ -1474,7 +1338,6 @@
     "weekend": "Zusammenkunft am Wochenende",
     "address": "Adresse des Königreichssaals",
     "addressPlaceholder": "Straße, PLZ, Stadt",
-    "microphoneSlots": "Mikrofon-Plätze",
     "effectiveFromHint": "Beim Speichern wird ab diesem Datum eine neue Version erstellt. Wochen davor behalten ihren bisherigen Tag und ihre Uhrzeit.",
     "history": "Änderungsverlauf",
     "effectiveNow": "Aktuell gültig",
@@ -1522,20 +1385,9 @@
   },
   "duties": {
     "title": "Aufgaben",
-    "generate": "Aufgaben anlegen",
     "addCustom": "Aufgabe hinzufügen",
-    "customLabel": "Bezeichnung der Aufgabe",
     "customLabelPlaceholder": "z. B. Besucher begrüßen",
-    "pickPublisher": "Verkündiger auswählen",
     "unassigned": "Nicht zugeteilt",
-    "clear": "Leeren",
-    "remove": "Löschen",
-    "removeConfirmTitle": "Aufgabe löschen?",
-    "removeConfirmBody": "Diese Aufgabe aus der Zusammenkunft entfernen?",
-    "removeAction": "Löschen",
-    "errorTitle": "Fehler",
-    "microphoneSlots": "Anzahl der Mikrofone",
-    "micCountHint": "Wird beim Anlegen der Aufgaben verwendet.",
     "noDuties": "Aufgaben noch nicht angelegt",
     "warningsTitle": "Hinweis",
     "types": {
@@ -1553,7 +1405,6 @@
       "has_program_part": "Hat bereits einen Programmteil in dieser Zusammenkunft",
       "capability_off": "Nicht als fähig für diese Aufgabe markiert"
     },
-    "assignee": "Zugeteilt an",
     "preparing": "Wird vorbereitet…",
     "dutyColumn": "Aufgabe",
     "today": "Heute",
@@ -1565,8 +1416,7 @@
     "removePlaceAsk": "«{{label}}» mitsamt allen Zugeteilten entfernen?"
   },
   "publisherActivity": {
-    "thisMeeting": "Dieses Treffen:",
-    "recent": "Letzte 4 Wo.: {{count}}"
+    "thisMeeting": "Dieses Treffen:"
   },
   "fieldService": {
     "title": "Treffen für den Predigtdienst",
@@ -1584,7 +1434,6 @@
       "addTitle": "Neues Treffen",
       "editTitle": "Treffen bearbeiten",
       "save": "Speichern",
-      "timePlaceholder": "HH:MM",
       "addressPlaceholder": "Treffpunkt",
       "topicPlaceholder": "Thema oder Hinweis (optional)",
       "linkPlaceholder": "https://…",
@@ -1636,11 +1485,9 @@
       "result": "Erstellt {{created}}, übersprungen {{skipped}}",
       "previewTitle": "Wird erstellt",
       "previewEmpty": "Keine passenden Daten — Vorlage prüfen",
-      "successTitle": "Zusammenkünfte erstellt",
-      "working": "Wird erstellt…"
+      "successTitle": "Zusammenkünfte erstellt"
     },
     "stat": {
-      "last": "letzte: {{date}}",
       "never": "Noch nicht geleitet",
       "next": "Bereits eingeteilt für {{date}}",
       "firstTime": "noch nicht geleitet",
@@ -1655,8 +1502,6 @@
       "title": "Zusammenkünfte für den Predigtdienst",
       "startMonth": "Startmonat",
       "monthsCount": "Anzahl der Monate",
-      "download": "PDF herunterladen",
-      "webOnly": "Der PDF-Export ist in der Web-Version verfügbar",
       "blocked": "Der Browser hat das Druckfenster blockiert. Pop-ups erlauben und erneut versuchen.",
       "monthTheme": "Monatsthema",
       "generated": "Erstellt",
@@ -1685,17 +1530,13 @@
     "empty": "Nicht zugeteilt",
     "notSelected": "Nicht ausgewählt",
     "noGroups": "Keine Dienstgruppen",
-    "nextInTurn": "Als Nächstes",
     "allCongregation": "Ganze Versammlung",
     "scheduled": "Geplant",
-    "unknownGroup": "Gruppe entfernt",
     "slots": {
       "after_meeting": "Reinigung nach den Zusammenkünften",
       "thorough": "Wöchentliche Reinigung",
       "general": "Generalreinigung"
     },
-    "planAllDone": "Reinigung ist zugeteilt",
-    "useSuggested": "Vorschlag: {{name}}",
     "windows": {
       "title": "Fenster dieser Woche",
       "hint": "Tippen Sie auf die Fenster, die die Gruppe diese Woche putzt. Nummern 8 und 9 sind Fenstergruppen.",
@@ -1715,7 +1556,6 @@
     },
     "plan": {
       "title": "Wann passt es der Gruppe?",
-      "planned": "Geplant",
       "tbd": "Tag wird abgestimmt",
       "set": "Tag wählen",
       "clear": "Zurücksetzen",
@@ -1869,7 +1709,6 @@
     "fieldServiceTitle": "Zusammenkunft für den Predigtdienst",
     "addMeeting": "Treffen hinzufügen",
     "editMeeting": "Treffen",
-    "noMeetings": "Keine Treffen hinzugefügt",
     "day": "Tag",
     "time": "Zeit",
     "place": "Ort",
@@ -1878,13 +1717,10 @@
     "placeOther": "Andere",
     "placeOtherHint": "Adresse oder Beschreibung",
     "accompanying": "Partner",
-    "serveWithSpouse": "Predigtdienst mit der Ehefrau",
     "spouseBadge": "Mit Ehefrau",
     "coBadge": "Mit Aufseher",
     "serviceKind": "Art des Dienstes",
     "serviceKindHint": "z. B. Gebiet, Rückbesuch, Bibelstudium",
-    "dayViewTab": "Nach Tagen",
-    "typeViewTab": "Nach Art",
     "shortFieldService": "Predigtdienst",
     "shortLunch": "Mittagessen",
     "shortPastoral": "Seelsorgebesuch",
@@ -1895,21 +1731,16 @@
     "lunchBoxTitle": "Lunchpaket",
     "shortLunchBox": "Lunchpaket",
     "lunchBoxPublisher": "Verkündiger",
-    "choosePartner": "Begleiter wählen",
     "save": "Speichern",
     "cancel": "Abbrechen",
     "delete": "Löschen",
     "confirmDelete": "Treffen löschen?",
     "lunchesTitle": "Mittagessen",
-    "addLunch": "Mittagessen hinzufügen",
-    "noLunches": "Keine Mittagessen hinzugefügt",
     "lunch": "Mittagessen",
     "host": "Organisator",
     "hostOther": "Andere",
     "hostName": "Name des Organisators",
     "pastoralTitle": "Seelsorgebesuch",
-    "addPastoral": "Besuch hinzufügen",
-    "noPastoral": "Keine Besuche hinzugefügt",
     "pastoral": "Seelsorgebesuch",
     "pastoralElder": "Ältester",
     "pastoralTarget": "Bei wem",
@@ -1920,11 +1751,8 @@
     "eldersTitle": "Treffen mit Ältesten und Dienstamtgehilfen",
     "elders": "Treffen mit Ältesten und Dienstamtgehilfen",
     "docReviewTitle": "Dokumentenprüfung",
-    "docReview": "Dokumentenprüfung",
     "add": "Hinzufügen",
     "empty": "Nicht hinzugefügt",
-    "tabCo": "Aufseher",
-    "tabWife": "Frau",
     "printButton": "PDF herunterladen",
     "visitTitle": "Besuch des Kreisaufsehers",
     "coScheduleTitle": "Dienstplan des Kreisaufsehers",
@@ -1932,32 +1760,20 @@
     "phone": "Telefon",
     "address": "Adresse",
     "congregation": "Versammlung",
-    "printWebOnly": "PDF-Druck ist in der Webversion verfügbar.",
     "printBlocked": "Der Browser hat das Druckfenster blockiert. Pop-ups zulassen.",
-    "copyFromOverseer": "Plan des Kreisaufsehers kopieren",
-    "copyConfirm": "Erstellt Einträge an denselben Tagen, Zeiten und Orten (Predigtdienst, Mittagessen). Die Begleiter im Predigtdienst müssen neu zugewiesen werden. Vorhandene Einträge werden nicht dupliziert.",
-    "copyDo": "Kopieren",
-    "copying": "Wird kopiert…",
     "organizerNote": "Hinweis für den Organisator",
     "organizerNoteHint": "z. B. glutenfrei, ohne Zucker",
-    "scheduleOfCo": "Plan des Kreisaufsehers: {{name}}",
-    "scheduleOfWife": "Plan der Ehefrau: {{name}}",
-    "togetherBadge": "gemeinsam mit dem KA",
     "pdfItem": "Programmpunkt",
     "pdfWho": "Teilnehmer",
-    "spouseField": "Ehefrau ({{name}})",
     "spouseNone": "Nimmt nicht teil",
     "spouseTogether": "Mit ihrem Mann",
     "spouseSeparate": "Getrennt",
-    "wifePartner": "Partnerin der Ehefrau",
     "coShort": "KA",
     "wifeShort": "Ehefrau",
     "mineTitle": "Besuch des Kreisaufsehers",
     "mineWithCo": "Gemeinsam mit dem Kreisaufseher",
     "mineWithWife": "Gemeinsam mit der Frau des KA",
     "mineJoint": "Dienst mit dem KA und seiner Frau",
-    "hostNever": "hat noch nicht beherbergt",
-    "hostTotal": "beherbergt: {{count}}",
     "hostLast": "zuletzt: {{date}}",
     "hostNext": "nächste: {{date}}",
     "accTitle": "Unterkunft",
@@ -1966,7 +1782,6 @@
     "accAddressLabel": "Oder Adresse eingeben",
     "accAddressHint": "Adresse der Unterkunft",
     "accNotArranged": "Unterkunft noch nicht organisiert",
-    "serviceKindOf": "Dienstart ({{name}})",
     "participation": "Teilnahme",
     "togetherHint": "Dient gemeinsam mit ihrem Mann — Partner und Dienstart oben gelten für beide",
     "accMine": "Der Kreisaufseher und seine Frau wohnen bei Ihnen",
@@ -2039,8 +1854,6 @@
     "days": "Tage",
     "locations": "Standorte",
     "noLocations": "Zuerst Standorte hinzufügen",
-    "windowStart": "Beginn",
-    "windowEnd": "Ende",
     "step": "Schichtlänge",
     "step60": "1 Std",
     "step90": "1 Std 30 Min",
@@ -2055,13 +1868,9 @@
     "apply": "Anmelden",
     "withdraw": "Zurückziehen",
     "applied": "Anmeldung gesendet. Der Verantwortliche verteilt.",
-    "withWhom": "Ich möchte dienen mit (optional)",
-    "withWhomPlaceholder": "Name",
-    "free": "Frei",
     "noSlots": "Keine Slots an diesem Tag",
     "notEligible": "Sie sind nicht berechtigt, sich anzumelden",
     "buildError": "Konnte nicht ausgeführt werden",
-    "requests": "Anm.",
     "cancel": "Abbrechen",
     "close": "Schließen",
     "dow": {
@@ -2075,7 +1884,6 @@
     }
   },
   "cartLocations": {
-    "title": "Zeugnis-Standorte",
     "add": "Standort hinzufügen",
     "empty": "Noch keine Standorte",
     "name": "Name",
@@ -2095,29 +1903,7 @@
     "addTitle": "Neuer Standort",
     "removeTitle": "Standort löschen?",
     "removeBody": "Der Standort wird unwiderruflich gelöscht.",
-    "removeWeb": "Diesen Standort löschen?",
     "saveError": "Speichern fehlgeschlagen"
-  },
-  "cart": {
-    "title": "Wagen",
-    "empty": "Noch keine Schichten geplant",
-    "createShift": "Schicht erstellen",
-    "editTitle": "Schicht bearbeiten",
-    "addTitle": "Neue Schicht",
-    "dateLabel": "Datum",
-    "datePlaceholder": "JJJJ-MM-TT",
-    "startLabel": "Beginn",
-    "endLabel": "Ende",
-    "timePlaceholder": "HH:MM",
-    "locationLabel": "Ort",
-    "locationPlaceholder": "Adresse oder Ort",
-    "save": "Speichern",
-    "addParticipant": "Teilnehmer hinzufügen",
-    "needMin": "Mindestens 2 nötig",
-    "full": "Maximal 4 Teilnehmer",
-    "removeTitle": "Schicht löschen?",
-    "removeBody": "Die Schicht und alle Teilnehmer werden gelöscht.",
-    "removeWeb": "Diese Schicht und alle Teilnehmer löschen?"
   },
   "specialEvents": {
     "title": {
@@ -2126,33 +1912,21 @@
       "new": "Neuer Termin"
     },
     "empty": "Noch keine bevorstehenden Termine",
-    "showPast": "Vergangene anzeigen",
-    "upcoming": "Bevorstehend",
     "replacesMeetingHint": "An diesem Tag keine reguläre Zusammenkunft",
     "fields": {
       "title": "Titel",
-      "type": "Typ",
-      "date": "Datum",
-      "time": "Uhrzeit",
       "address": "Adresse",
       "mapUrl": "Karten-Link",
       "programUrl": "Programm-Link",
-      "note": "Notiz",
-      "replacesMeeting": "An diesem Tag keine reguläre Zusammenkunft"
+      "note": "Notiz"
     },
     "placeholders": {
       "title": "Titel eingeben",
-      "type": "regional_convention",
-      "date": "JJJJ-MM-TT",
-      "time": "09:20",
       "address": "Stadt, Adresse",
-      "mapUrl": "https://…",
-      "programUrl": "https://…",
       "note": "Weitere Angaben"
     },
     "actions": {
       "create": "Termin hinzufügen",
-      "save": "Speichern",
       "edit": "Bearbeiten",
       "delete": "Löschen",
       "restore": "Wiederherstellen",
@@ -2163,13 +1937,8 @@
     "form": {
       "multiDay": "Mehrtägig",
       "pickDate": "Datum wählen",
-      "pickType": "Typ wählen",
       "time": "Uhrzeit",
       "noTime": "ohne Uhrzeit",
-      "customTime": "eigene…",
-      "timePlaceholder": "HH:MM",
-      "timeHint": "4 Ziffern eingeben, z. B. 1830 → 18:30",
-      "close": "Fertig",
       "singleTime": "Uhrzeit",
       "rangeTime": "Von — bis",
       "timeFrom": "Von",
@@ -2511,7 +2280,6 @@
     },
     "fieldService": {
       "leading": "Predigtdienst-Zusammenkunft — Sie leiten",
-      "asOverseerAssistant": "Gruppenbesuch mit dem Dienstaufseher",
       "forGroup": "Gruppe {{name}}",
       "withWhom": "zusammen mit {{name}}",
       "overseerVisitTitle": "Besuch des Dienstaufsehers"
@@ -2639,7 +2407,6 @@
     "empty": "Noch keine Themen. Fügen Sie Themen hinzu, die die Versammlung betreffen.",
     "section": {
       "planned": "Geplant",
-      "used": "Behandelt",
       "upcoming": "Eingeplant",
       "past": "Vergangen",
       "archived": "Archiviert",
@@ -2680,16 +2447,11 @@
     "deleted": "Thema gelöscht"
   },
   "circuitOverseer": {
-    "intro": "Diese Angaben füllen ein neues Ereignis „Besuch des Kreisaufsehers“ vor. Jeder Besuch behält seine eigene Namenskopie, daher ändert eine Bearbeitung hier keine vergangenen Besuche.",
     "firstName": "Vorname",
     "lastName": "Nachname",
     "wifeName": "Name der Frau",
     "wifeHint": "Optional — falls der Kreisaufseher verheiratet ist.",
-    "save": "Speichern",
-    "savedTitle": "Gespeichert",
-    "savedBody": "Angaben zum Kreisaufseher aktualisiert.",
     "note": "Sie können dies jederzeit ändern.",
-    "midweekDow": "Tag der Versammlung unter der Woche",
     "accommodationAddress": "Unterkunftsadresse",
     "listIntro": "Kreisaufseher (und Vertreter), die Ihre Versammlung empfangen kann. Einer ist als primär markiert und wird beim Anlegen eines Besuchs vorausgefüllt; im Besuchsformular können Sie einen anderen wählen. Jeder Besuch behält seinen eigenen Namens-Schnappschuss, daher ändern Anpassungen hier keine vergangenen Besuche.",
     "roleOverseer": "Kreisaufseher",
@@ -2698,7 +2460,6 @@
     "addButton": "Aufseher hinzufügen",
     "addTitle": "Neuer Kreisaufseher",
     "editTitle": "Eintrag bearbeiten",
-    "roleLabel": "Rolle",
     "makePrimary": "Als primär festlegen (Standard)",
     "deleteConfirmTitle": "Eintrag löschen?",
     "deleteConfirmBody": "„{{name}}“ aus der Liste entfernen? Bereits erstellte Besuche sind nicht betroffen.",
@@ -2844,7 +2605,6 @@
       "hint": "Verzeichnis der Gastredner. Repertoire = die Vortragsnummern, die er hält.",
       "empty": "Noch keine Redner.",
       "add": "Redner hinzufügen",
-      "editTitle": "Redner bearbeiten",
       "deleteTitle": "Redner löschen?",
       "firstName": "Vorname",
       "lastName": "Nachname",
@@ -2854,7 +2614,6 @@
       "note": "Notiz",
       "repertoire": "Repertoire (Vortragsnummern)",
       "talkNumberPlaceholder": "Vortrag-Nr.",
-      "talksCount": "Vorträge: {{n}}",
       "newCongregation": "Neu",
       "newCongregationPlaceholder": "Versammlungsname",
       "searchPlaceholder": "Nach Name oder Versammlung suchen",
@@ -2910,40 +2669,26 @@
       "didNotCome": "{{name}} — war eingeplant, kam nicht",
       "title": "Protokoll „Zu uns / Von uns“",
       "subtitle": "Eingehende und ausgehende Vorträge in einer Liste",
-      "add": "Eintrag hinzufügen",
-      "editTitle": "Eintrag bearbeiten",
-      "empty": "Noch keine Einträge.",
-      "date": "Datum",
-      "statusLabel": "Status",
       "note": "Notiz",
-      "speaker": "Redner",
       "talk": "Vortrag",
       "hospitality": "Gastgeber",
       "ourBrother": "Unser Bruder",
       "visiting": "Auswärtiger",
       "speakerSource": "Wer hält den Vortrag",
       "hostCongregation": "Gastversammlung",
-      "noSpeakers": "Fügen Sie zuerst Redner zum Verzeichnis hinzu.",
       "noCongregations": "Fügen Sie zuerst Versammlungen zum Verzeichnis hinzu.",
       "unknownSpeaker": "Kein Redner angegeben",
-      "hostedBy": "Gastgeber: {{name}}",
       "deleteTitle": "Eintrag löschen?",
       "deleteBody": "Die verknüpfte Abwesenheit wird ebenfalls entfernt. Der Vortrag bleibt im Programm.",
       "conflictTitle": "Slot belegt",
       "conflictBody": "Für diese Woche steht bereits ein öffentlicher Vortrag im Programm. Mit diesem Redner ersetzen?",
       "replace": "Ersetzen",
       "filter": {
-        "all": "Alle",
         "incoming": "Zu uns",
         "outgoing": "Von uns"
       },
-      "status": {
-        "confirmed": "Bestätigt",
-        "tentative": "Vorläufig"
-      },
       "addSlot": "Hinzufügen",
       "event": "Ereignis",
-      "ourMeetingHint": "Zeit/Adresse aus den Einstellungen",
       "openMap": "Karte öffnen",
       "tripDate": "Reisedatum",
       "fromDirectory": "Aus Verzeichnis",
@@ -2953,11 +2698,9 @@
       "speakerName": "Name des Redners",
       "speakerCong": "Versammlung",
       "givenTimes": "Gehalten: {{n}}×",
-      "upcoming": "Geplant",
       "noTalk": "Kein Vortrag gewählt",
       "phone": "Telefon",
       "rebuild": "Mit dem Plan abgleichen",
-      "rebuilding": "Wird wiederhergestellt…",
       "rebuildTitle": "Einträge aus dem Plan wiederherstellen?",
       "rebuildBody": "Die App geht die Wochen dieses Jahres durch und legt einen «zu uns»-Eintrag an, wo der Plan einen Redner hat und das Journal keinen. Es wird nichts gelöscht, vorhandene Einträge bleiben unverändert.",
       "rebuildAction": "Wiederherstellen",
@@ -3028,18 +2771,13 @@
     "noneThisMonth": "Diesen Monat dient niemand als Hilfspionier",
     "journal": "Dienstjournal",
     "journalEmpty": "Noch keine Einträge",
-    "serving": "dient",
-    "finished": "beendet",
     "stop": "Beenden",
     "untilCancelledSince": "bis auf Widerruf · seit {{month}}",
     "onlyMonth": "nur {{month}}",
     "rangeMonths": "{{from}} – {{to}}",
-    "addTitle": "Hinzufügen · {{month}}",
     "publisher": "Verkündiger",
     "untilCancelled": "Bis auf Widerruf",
     "untilCancelledHint": "dient unbefristet, bis es beendet wird",
-    "singleMonthHint": "nur für {{month}}",
-    "youAreServing": "Sie dienen als Hilfspionier",
     "badgeServing": "Hilfspionier · {{period}}",
     "badgeUpcoming": "Hilfspionierdienst ab {{month}}",
     "servesAsAux": "Dient als Hilfspionier",
@@ -3091,7 +2829,6 @@
     "saved": "Gespeichert",
     "empty": "nicht angegeben",
     "noCard": "Ihr Zugang ist mit keiner Verkündigerkarte verknüpft, deshalb gibt es hier nichts zu zeigen. Bitten Sie einen Ältesten oder Administrator, sie zu verknüpfen: Versammlung → Verwaltung → Benutzerverwaltung → «Verknüpfen».",
-    "confirmedAt": "Bestätigt am {{date}}",
     "neverConfirmed": "Noch nie bestätigt",
     "checkTitle": "Bitte Daten prüfen",
     "checkSubtitle": "Einmal im Jahr, ab {{date}}, bitten wir Sie zu bestätigen, dass Ihre Kontaktdaten aktuell sind.",
@@ -3152,15 +2889,6 @@
     "notForForm": "Nicht für das Formular",
     "missingTitle": "Nicht abgegeben",
     "printDraftNote": "Entwurf zum Übertragen in JW Hub. Reihenfolge wie im Formular.",
-    "averagesTitle": "Durchschnitt",
-    "yearTotalTitle": "Dienstjahr {{from}}/{{to}} bisher",
-    "stillCollecting": "Der Monat wird noch gesammelt — einige Berichte fehlen noch",
-    "hoursPioneers": "Stunden (Pioniere)",
-    "reported": "Bericht abgegeben",
-    "activeCount": "Aktive",
-    "averagesHint": "Durchschnittliche Stunden: Pioniere mit Bericht; Studien: alle mit Bericht. „Bericht abgegeben“ ist ein Anteil der Aktiven, „Aktive“ ein Anteil aller.",
-    "totalHours": "Stunden gesamt",
-    "totalStudies": "Studien gesamt",
     "categories": {
       "none": "Verkündiger",
       "auxiliary": "Hilfspioniere",
@@ -3183,9 +2911,7 @@
     "system": "System",
     "someone": "Jemand",
     "redacted": "Einzelheiten auf Wunsch der Person entfernt",
-    "filters": "Filter",
     "filtersAll": "Alle",
-    "reset": "Zurücksetzen",
     "sections": {
       "assignment": "Programm",
       "duty": "Aufgaben",
@@ -3502,22 +3228,14 @@
     "allOff": "Sie haben alles ausgeschaltet",
     "device": {
       "title": "Dieses Gerät",
-      "idle": "Wird geprüft…",
-      "unsupported": "Im Browser werden Benachrichtigungen vom Browser selbst eingestellt",
-      "denied": "Benachrichtigungen sind in den Geräteeinstellungen gesperrt",
-      "noToken": "Das Gerät hat keinen Benachrichtigungsschlüssel ausgegeben",
-      "notRegistered": "Der Schlüssel wurde ausgegeben, aber der Server hat ihn abgelehnt",
-      "registered": "Dieses Gerät erhält Benachrichtigungen",
       "reason": "Grund: {{error}}",
-      "androidHint": "Unter Android fehlt dann meist die Firebase-Konfiguration im Build. Das erfordert einen neuen Build; ein Over-the-Air-Update hilft hier nicht.",
-      "webWhere": "Einschalten unter Profil → Benachrichtigungen im Browser."
+      "androidHint": "Unter Android fehlt dann meist die Firebase-Konfiguration im Build. Das erfordert einen neuen Build; ein Over-the-Air-Update hilft hier nicht."
     }
   },
   "serviceOverseer": {
     "title": "Dienstaufseher",
     "menuSubtitle": "Besuche der Dienstgruppen",
     "waitingTitle": "In diesem Dienstjahr noch nicht besucht",
-    "yearLabel": "Dienstjahr {{year}}",
     "last": "Letzter Besuch: {{date}} · {{who}}",
     "never": "Noch nicht besucht",
     "planned": "Geplant: {{date}}",
@@ -3532,10 +3250,6 @@
   "tasks": {
     "title": "Aufgaben der Ältestenschaft",
     "empty": "Noch keine Aufgaben",
-    "doneSection": "Erledigt",
-    "due": "Frist: {{date}}",
-    "overdueSince": "Überfällig seit {{date}}",
-    "overdueCount": "Überfällig: {{count}}",
     "areas": {
       "ministry": "Dienst",
       "teaching": "Schulung",
@@ -3588,7 +3302,6 @@
       "date": "Datum",
       "time": "Zeit",
       "note": "Notiz",
-      "deleteTitle": "Zusammenkunft löschen?",
       "deleteBody": "Zugeordnete Aufgaben bleiben bestehen — nur die Zuordnung entfällt.",
       "deleteAction": "Zusammenkunft löschen",
       "deleteTitleDated": "Zusammenkunft vom {{date}} löschen?",
@@ -3653,7 +3366,6 @@
   },
   "pioneerSchool": {
     "title": "Pionierschule",
-    "menuSubtitle": "Die Brüder, die während der Schule dienen",
     "scheduleTitle": "Plan der Schule",
     "defaultTitle": "Pionierdienstschule",
     "intro": "Die Schule, ihre Tage und die Brüder, die an jedem Tag dienen. Der Plan lässt sich drucken und versenden.",
@@ -3801,9 +3513,7 @@
       "notCommon": "Keines der zuerst versuchten",
       "notRepetitive": "Nicht dasselbe Zeichen immer wieder"
     },
-    "suggest": "Vorschlag machen",
-    "show": "Passwort anzeigen",
-    "hide": "Passwort verbergen"
+    "suggest": "Vorschlag machen"
   },
   "loginName": {
     "taken": "Dieser Name ist schon vergeben — wählen Sie einen anderen.",
@@ -3816,7 +3526,6 @@
   },
   "pioneerReview": {
     "missing": "Kein Bericht für {{months}} — das Jahr ist noch nicht vollständig",
-    "notesCount": "Notizen im Jahr: {{count}}",
     "forYear": "Dienstjahr: {{from}} — {{to}}",
     "title": "Überblick über den Pionierdienst",
     "openFromTask": "Überblick über den Pionierdienst öffnen →",
@@ -3865,11 +3574,8 @@
   "memorial": {
     "title": "Gedächtnismahl",
     "preparing": "Das Programm für das Gedächtnismahl wird vorbereitet",
-    "programmeLink": "Programm des Gedächtnismahls",
-    "programmeLinkHint": "Vorsitz, Vortrag, Gebete, Symbole und Aufgaben",
     "sections": {
       "programme": "Programm",
-      "emblems": "Weiterreichen der Symbole",
       "duty": "Aufgaben"
     },
     "theme": "Thema des Vortrags",
@@ -3878,18 +3584,13 @@
     "draft": "Entwurf — noch wurde niemand benachrichtigt",
     "published": "Programm veröffentlicht",
     "publish": "Veröffentlichen",
-    "pastReadOnly": "Das Gedächtnismahl ist vorbei — das Programm ist schreibgeschützt",
     "empty": "Das Programm wurde noch nicht erstellt",
     "prepare": "Programm erstellen",
     "prepareHint": "Wird vom letztjährigen Gedächtnismahl übernommen: Bezeichnungen, Reihenfolge, Lieder und Thema. Personen werden neu eingeteilt.",
-    "noTime": "Keine Zeit angegeben",
     "addNote": "Notiz hinzufügen",
     "notePlaceholder": "Was man vorher wissen muss",
     "openInSchedule": "Im Programm öffnen",
     "openInScheduleHint": "Programm, Aufgaben und Weiterreichen der Symbole",
-    "dutiesTitle": "Gedächtnismahl",
-    "sectionEmpty": "Noch nichts eingetragen",
-    "sectionPrepare": "Vorlage übernehmen",
     "songWord": "Lied"
   },
   "feed": {
@@ -3914,8 +3615,6 @@
     "today": "Heute · {{date}}",
     "chairman": "Vorsitz: {{name}}",
     "chairmanLabel": "Vorsitz",
-    "talkLine": "{{title}} · {{name}}",
-    "talkNoSpeaker": "{{title}} · Redner noch offen",
     "mine": "Ihre Aufgabe: {{list}}",
     "minePast": "Ihre Aufgabe war: {{list}}",
     "youLead": "Sie leiten um {{time}}",

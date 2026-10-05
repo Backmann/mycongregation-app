@@ -220,34 +220,3 @@ export async function subscribeToWebPush(): Promise<{
 
   return { ok: true };
 }
-
-/**
- * Unsubscribe and remove the subscription from both the browser and the
- * backend. Server call is best-effort — the browser-side unsubscribe is
- * what actually stops the pushes.
- */
-export async function unsubscribeFromWebPush(): Promise<{
-  ok: boolean;
-  reason?: string;
-}> {
-  if (!isWebSupported()) return { ok: false, reason: 'unsupported' };
-
-  try {
-    const reg = await workerReady();
-    const sub = reg ? await reg.pushManager.getSubscription() : null;
-    if (!sub) return { ok: true };
-
-    const endpoint = sub.endpoint;
-    await sub.unsubscribe();
-
-    try {
-      await api.delete('/web-push-subscriptions', { data: { endpoint } });
-    } catch (err) {
-      console.warn('Web Push: server unsubscribe failed', err);
-    }
-
-    return { ok: true };
-  } catch {
-    return { ok: false, reason: 'error' };
-  }
-}

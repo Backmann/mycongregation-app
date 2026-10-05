@@ -41,6 +41,11 @@ const STEPS = [
   // and public/ — 51 files it never saw, including api.ts and week-rules.ts.
   ['eslint (всё остальное)', 'npx', ['eslint', '.']],
   ['Переводы', 'npm', ['run', 'i18n:check']],
+  // The way back (5 October): wording nothing asks for is removed, not kept —
+  // 279 keys had piled up unseen. The rule itself is pinned first, because a
+  // wrong rule here deletes working text.
+  ['Правило «какой текст ещё нужен»', 'node', ['scripts/check-i18n-unused-rule.mjs']],
+  ['Лишние переводы', 'node', ['scripts/check-i18n-unused.mjs']],
   // The phone has no plural rules of its own (Hermes); ours stand in, and
   // must answer as the real ones do (28 September: «86 возвещателя»).
   ['Правила чисел', 'node', ['scripts/check-plural-rules.mjs']],

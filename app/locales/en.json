@@ -9,8 +9,7 @@
     "encryptedNote": "The file is encrypted. It can only be decrypted with your backup key on a computer.",
     "download": "Download latest backup",
     "downloading": "Downloading…",
-    "webOnly": "Download is available in the web version (in a browser).",
-    "error": "Could not load backups"
+    "webOnly": "Download is available in the web version (in a browser)."
   },
   "dataRights": {
     "sectionLabel": "My data",
@@ -35,9 +34,7 @@
     "title": "Legal information",
     "subtitle": "Imprint, privacy, terms",
     "sectionLabel": "Legal",
-    "linkShort": "Legal information",
-    "prevailNote": "In case of discrepancy, the German version prevails.",
-    "updated": "Version: {{date}}"
+    "linkShort": "Legal information"
   },
   "publisherAccess": {
     "neverLoggedIn": "never logged in",
@@ -57,28 +54,16 @@
     "fromCard": "From the record: {{value}}",
     "cancel": "Cancel",
     "save": "Save",
-    "sendInvite": "Send an invitation by email",
-    "password": "Password",
-    "min8": "At least 8 characters",
     "makeAdmin": "Make administrator",
-    "inviteHint": "The person will receive an email with a link and set their own password (the link is valid for 72 hours).",
-    "manualHint": "You set the password yourself and pass it on — it is not shown here again.",
     "invite": "Invite",
-    "create": "Create",
     "newPassword": "New password",
     "resetHint": "Tell the publisher the new password yourself — they will not see it anywhere. Every open session on their devices ends and they will have to sign in again. If the account has an address, a letter goes out about it.",
-    "resendInvite": "Resend invitation",
-    "resendInviteDone": "Invitation sent by email",
     "resendInviteSending": "Sending…",
-    "resendInviteTitle": "Invitation sent",
-    "resendInviteBody": "An email with the link was sent to {{email}}. The link is valid for 72 hours.",
     "disableConfirmTitle": "Disable access?",
     "disableConfirmBody": "{{name}} will no longer be able to sign in. You can enable access again later.",
     "emailLabel": "E-mail",
-    "emailInvalid": "That address looks wrong",
     "roleHint": "The role normally follows the appointment — turn this on only if administrator rights are needed.",
     "disableConfirmYes": "Disable",
-    "passwordHint": "At least {{count}} characters",
     "passwordPlaceholder": "At least {{count}} characters",
     "loginNameRow": "Login name",
     "loginNameLabel": "Name to sign in with",
@@ -133,7 +118,6 @@
     "schedule": "Programme",
     "publishers": "Congregation",
     "groups": "Groups",
-    "reports": "Reports",
     "profile": "Profile",
     "cart": "Ministry",
     "home": "Home"
@@ -151,12 +135,9 @@
     "ok": "OK",
     "close": "Close",
     "back": "Back",
-    "next": "Next",
-    "submit": "Submit",
     "loading": "Loading…",
     "error": "Error",
     "retry": "Retry",
-    "search": "Search",
     "restore": "Restore",
     "removing": "Removing…",
     "restoring": "Restoring…",
@@ -204,15 +185,7 @@
     "language": "Language",
     "signOut": "Sign out",
     "webPush": {
-      "title": "Browser notifications",
-      "enabled": "Enabled",
-      "disabled": "Disabled",
-      "denied": "Blocked in browser settings",
-      "unsupported": "Not supported by this browser",
-      "unconfigured": "Not available in this build",
-      "iosHint": "To enable, first add the site to your home screen",
-      "deniedTitle": "Notifications blocked",
-      "deniedBody": "Open browser settings and allow notifications for this site."
+      "iosHint": "To enable, first add the site to your home screen"
     },
     "userManagement": "User management",
     "changePassword": {
@@ -222,13 +195,9 @@
       "currentPassword": "Current password",
       "newPassword": "New password",
       "confirmPassword": "Confirm new password",
-      "minLength": "At least {{count}} characters",
       "submit": "Change password",
-      "successTitle": "Password changed",
-      "successBody": "Your password has been updated. Existing sessions on this device stay signed in.",
       "note": "Tip: if you forgot your current password, ask an administrator to reset it via User management.",
       "errors": {
-        "tooShort": "New password must be at least {{count}} characters",
         "sameAsCurrent": "New password must differ from current password",
         "mismatch": "Passwords don't match"
       },
@@ -268,7 +237,6 @@
       "roster": "Publishers"
     },
     "search": "Search by name…",
-    "showRemoved": "Show removed",
     "noMatches": "No matches",
     "noPublishers": "No publishers yet",
     "totalCount": "{{count}} total",
@@ -283,7 +251,6 @@
       "regularPioneer": "Regular pioneer",
       "specialPioneer": "Special pioneer",
       "missionary": "Missionary",
-      "anointed": "Anointed",
       "inactive": "Inactive",
       "auxiliaryPioneer": "Auxiliary pioneer",
       "student": "Student"
@@ -293,8 +260,6 @@
       "spirituality": "Spirituality",
       "capabilities": "Capabilities",
       "personal": "Personal",
-      "specialNeeds": "Special needs",
-      "status": "Status",
       "notes": "Notes",
       "appAccess": "App access",
       "circumstances": "Special circumstances"
@@ -316,10 +281,7 @@
       "pioneerSince": "Pioneer since",
       "birthDate": "Birth date",
       "gender": "Gender",
-      "active": "Active",
-      "regular": "Regular",
       "firstName": "First name",
-      "middleName": "Middle name / Patronymic",
       "lastName": "Last name",
       "mobilePhone": "Mobile phone",
       "generalNotes": "General notes",
@@ -383,11 +345,8 @@
     "actions": {
       "edit": "Edit",
       "remove": "Mark as departed",
-      "restore": "Restore",
       "removing": "Marking…",
-      "restoring": "Restoring…",
-      "save": "Save",
-      "create": "Create"
+      "save": "Save"
     },
     "validation": {
       "firstNameRequired": "First name is required",
@@ -397,7 +356,6 @@
     },
     "placeholders": {
       "firstName": "John",
-      "middleName": "James",
       "lastName": "Smith",
       "date": "Choose a date",
       "phone": "+49 170 1234567",
@@ -419,8 +377,6 @@
       "statusSection": "Status",
       "brother": "Brother",
       "sister": "Sister",
-      "active": "Active",
-      "inactive": "Inactive",
       "standingSection": "Congregation standing",
       "current": "Current",
       "departed": "Departed"
@@ -514,12 +470,9 @@
   },
   "auth": {
     "subtitle": "Sign in to your congregation",
-    "email": "Email",
     "password": "Password",
-    "emailPlaceholder": "you@example.com",
     "signIn": "Sign in",
     "noAccountHint": "Accounts are created by the congregation administrator. If no invitation arrived, ask them.",
-    "forgotPasswordHint": "Forgot your password? Contact your congregation administrator.",
     "showPassword": "Show password",
     "hidePassword": "Hide password",
     "forgotPassword": "Forgot password?",
@@ -540,11 +493,8 @@
       "title": "New password",
       "newPassword": "New password",
       "confirmPassword": "Repeat the password",
-      "minLength": "At least {{count}} characters",
       "mismatch": "Passwords do not match",
       "submit": "Save the password",
-      "success": "Password changed. You can sign in with the new password now.",
-      "goToLogin": "Sign in",
       "invalidLink": "This link is invalid or has expired.",
       "requestNew": "Request a new link",
       "rule": "At least {{count}} characters. A few words beat a short string of symbols.",
@@ -557,7 +507,6 @@
     },
     "wrongEmailOrPassword": "That login name (or address) and password did not match. If you were invited and have no password yet, go back and tap «Were you invited?».",
     "invite": {
-      "iWasInvited": "I was invited",
       "title": "Invitation",
       "intro": "Enter the code you were given and choose a password — you will be taken straight in. No separate sign-in needed.",
       "code": "Invitation code",
@@ -668,13 +617,9 @@
     "editedAtBy": "edited {{when}} by {{name}}",
     "submittingOnBehalfOf": "Submitting on behalf of",
     "publisher": "publisher",
-    "pioneerSuffix": " (pioneer)",
-    "editingReportFor": "Editing report for ",
-    "submittingAs": "Submitting as ",
     "reportMonth": "Report month",
     "alreadySubmitted": "Already submitted. Go back and tap the pencil icon to edit.",
     "hoursLabel": "Hours in ministry",
-    "hoursPlaceholder": "e.g. 70",
     "didTheyShare": "Did they share in the ministry this month?",
     "didYouShare": "Did you share in the ministry this month?",
     "bibleStudies": "Bible studies",
@@ -682,7 +627,6 @@
     "notesPlaceholder": "Any additional information…",
     "viewEditHistory": "View edit history",
     "updateReport": "Update Report",
-    "submitReport": "Submit Report",
     "alerts": {
       "alreadySubmittedTitle": "Already submitted",
       "alreadySubmittedBody": "A report for {{month}} already exists. Go back and tap the pencil icon to edit it.",
@@ -705,7 +649,6 @@
       "pending": "pending",
       "noPublishersInScope": "No publishers in scope",
       "noReportYet": "No report yet",
-      "couldNotLoad": "Could not load",
       "submittedOfTotal": "{{submitted}} of {{total}} submitted",
       "noGroup": "No group",
       "submittedByWhen": "entered by {{name}} · {{when}}",
@@ -733,14 +676,7 @@
       "editedBy": "edited by {{name}}",
       "trendTitle": "Service trend",
       "hours": "Hours",
-      "studies": "Studies",
-      "noReport": "No report",
-      "participated": "Participated",
-      "didNotParticipate": "Did not participate",
-      "exportSubtitle": "Service history",
-      "month": "Month",
-      "activityCol": "Activity",
-      "notesCol": "Notes"
+      "studies": "Studies"
     },
     "pioneerGoal": {
       "title": "Hour goal (year)",
@@ -917,11 +853,6 @@
         "coTalk": "Circuit overseer talk",
         "prayer": "Prayer"
       },
-      "readonly": {
-        "weekStart": "Week start",
-        "eventType": "Event type",
-        "part": "Part"
-      },
       "field": {
         "weekStartFull": "Week start (Monday, YYYY-MM-DD)",
         "eventType": "Event type",
@@ -985,7 +916,6 @@
       "rules": "Congregation rules"
     },
     "a11y": {
-      "newAssignment": "New assignment",
       "localNeeds": "Local Needs"
     },
     "menu": {
@@ -999,17 +929,11 @@
     "createEmptyMidweek": "Create empty midweek ({{count}} slots)",
     "createEmptyWeekend": "Create empty weekend ({{count}} slots)",
     "removedBanner": "This assignment is removed",
-    "removeConfirm": {
-      "title": "Remove assignment",
-      "webMessage": "Remove this assignment?"
-    },
     "import": {
       "title": "Import schedule EPUB",
       "subtitle": "Upload Meeting Workbook (mwb_*.epub) or Watchtower study (w_*.epub) to auto-create the weekly programme. Existing empty slots are filled with official titles; assignments with publishers are preserved.",
       "choosePrompt": "Choose EPUB file",
       "chooseDifferent": "Choose a different file",
-      "uploadAndImport": "Upload and import",
-      "uploading": "Uploading…",
       "openSchedule": "Open schedule",
       "errors": {
         "noFileSelected": "No file selected",
@@ -1099,7 +1023,6 @@
       "duties": "Duties"
     },
     "weekend": {
-      "watchtowerStudy": "Watchtower Study",
       "reader": "Reader"
     },
     "congressWeek": {
@@ -1190,16 +1113,6 @@
     "hiddenByCapability": "{{count}} hidden by capability filter",
     "lastGiven": "Last given {{date}}",
     "upcoming": "Upcoming {{date}}",
-    "lastDidPart": "This part: {{date}} ({{ago}})",
-    "weeksAgoShort": "{{count}} wk ago",
-    "neverDidPart": "Hasn't done this part yet",
-    "recentPartner": "Recent partner ({{date}})",
-    "didThisPart": "This part (3 mo): {{dates}}",
-    "neverDidPart3mo": "Hasn't done this part in 3 months",
-    "didThisDuty": "This duty (3 mo): {{dates}}",
-    "neverDidDuty3mo": "Hasn't done this duty in 3 months",
-    "pairedWith": "With {{name}}: {{count}}× — {{dates}}",
-    "notPairedYet": "Not paired with {{name}} yet",
     "histThisPart": "this part was:",
     "histThisDuty": "this duty was:",
     "histNever": "not yet",
@@ -1211,12 +1124,10 @@
     "users": {
       "title": "Users",
       "countSummary": "{{count}} users",
-      "addUser": "Add user",
       "noUsers": "No users",
       "you": "You",
       "neverLoggedIn": "Never signed in",
       "status": {
-        "active": "Active",
         "inactive": "Deactivated"
       },
       "roles": {
@@ -1224,51 +1135,6 @@
         "elder": "Elder",
         "ministerial_servant": "Ministerial servant",
         "publisher": "Publisher"
-      },
-      "actions": {
-        "changeRole": "Role",
-        "resetPassword": "Password",
-        "deactivate": "Deactivate",
-        "activate": "Activate"
-      },
-      "create": {
-        "title": "New user",
-        "email": "Email",
-        "password": "Initial password",
-        "passwordHint": "At least {{count}} characters. Share it with the user out-of-band — the password is not shown again here.",
-        "role": "Role",
-        "submit": "Create"
-      },
-      "changeRole": {
-        "title": "Change role",
-        "subtitle": "Current role for {{email}}: {{current}}",
-        "submit": "Apply",
-        "confirmDemoteAdmin": "Demote administrator",
-        "confirmDemoteAdminBody": "{{email}} will no longer be able to manage system users. Continue?"
-      },
-      "resetPassword": {
-        "title": "Reset password",
-        "subtitle": "Set a new password for {{email}}. Share it with the user out-of-band.",
-        "password": "New password",
-        "passwordHint": "At least {{count}} characters.",
-        "submit": "Reset",
-        "successMessage": "Password for {{email}} updated."
-      },
-      "deactivate": {
-        "confirmTitle": "Deactivate user",
-        "confirmBody": "{{email}} will no longer be able to sign in. Data is preserved. Continue?",
-        "confirmAction": "Deactivate"
-      },
-      "activate": {
-        "confirmTitle": "Activate user",
-        "confirmBody": "{{email}} will be able to sign in again.",
-        "confirmAction": "Activate"
-      },
-      "adminLimit": {
-        "banner": "We recommend no more than 2 administrators. Currently active: {{count}}.",
-        "confirmTitle": "Many administrators",
-        "confirmBody": "Two administrators are usually enough for a congregation (currently active: {{count}}). Assign another one anyway?",
-        "confirmAction": "Assign"
       },
       "online": "online",
       "orphans": {
@@ -1282,7 +1148,6 @@
       },
       "readOnlyNote": "This list of logins is read-only. Grant or change a login in «Congregation» → «Publishers», on the person's card: that is where an account is tied to a person, and the role follows the appointment.",
       "noPassword": {
-        "badge": "No password set",
         "neverInvited": "No invitation has been sent",
         "codeLivesUntil": "Invited — the code works until {{date}}",
         "codeExpired": "The invitation code expired on {{date}} — issue a new one",
@@ -1377,7 +1242,6 @@
       "untilHint": "Leave empty when the talk goes for good. Given a date, the talk returns by itself the next day.",
       "reasonLabel": "On what grounds",
       "reasonPlaceholder": "Announcements and reminders, May 2026",
-      "lastDone": "Last time: {{count}} talks · {{date}} · {{name}}",
       "lastReason": "Grounds: {{reason}}",
       "mode": {
         "retire": "Retire talks",
@@ -1474,7 +1338,6 @@
     "weekend": "Weekend meeting",
     "address": "Kingdom Hall address",
     "addressPlaceholder": "Street, postcode, city",
-    "microphoneSlots": "Microphone slots",
     "effectiveFromHint": "Saving creates a new schedule version from this date. Weeks before it keep their previous day and time.",
     "history": "Change history",
     "effectiveNow": "In effect now",
@@ -1522,20 +1385,9 @@
   },
   "duties": {
     "title": "Duties",
-    "generate": "Fill in duties",
     "addCustom": "Add duty",
-    "customLabel": "Duty name",
     "customLabelPlaceholder": "e.g. Greeting visitors",
-    "pickPublisher": "Choose a publisher",
     "unassigned": "Unassigned",
-    "clear": "Clear",
-    "remove": "Delete",
-    "removeConfirmTitle": "Delete duty?",
-    "removeConfirmBody": "Remove this duty from the meeting?",
-    "removeAction": "Delete",
-    "errorTitle": "Error",
-    "microphoneSlots": "Number of microphones",
-    "micCountHint": "Applied when filling in duties.",
     "noDuties": "Duties not filled in yet",
     "warningsTitle": "Note",
     "types": {
@@ -1553,7 +1405,6 @@
       "has_program_part": "Already has a program part in this meeting",
       "capability_off": "Not marked as able for this duty"
     },
-    "assignee": "Assignee",
     "preparing": "Preparing…",
     "dutyColumn": "Duty",
     "today": "Today",
@@ -1565,8 +1416,7 @@
     "removePlaceAsk": "Remove «{{label}}» along with everyone assigned to it?"
   },
   "publisherActivity": {
-    "thisMeeting": "This meeting:",
-    "recent": "Last 4 wks: {{count}}"
+    "thisMeeting": "This meeting:"
   },
   "fieldService": {
     "title": "Field Ministry Meetings",
@@ -1584,7 +1434,6 @@
       "addTitle": "New meeting",
       "editTitle": "Edit meeting",
       "save": "Save",
-      "timePlaceholder": "HH:MM",
       "addressPlaceholder": "Where to meet",
       "topicPlaceholder": "Topic or note (optional)",
       "linkPlaceholder": "https://…",
@@ -1636,11 +1485,9 @@
       "result": "Created {{created}}, skipped {{skipped}}",
       "previewTitle": "Will be created",
       "previewEmpty": "No matching dates — check the template",
-      "successTitle": "Meetings created",
-      "working": "Generating…"
+      "successTitle": "Meetings created"
     },
     "stat": {
-      "last": "last: {{date}}",
       "never": "Has not led yet",
       "next": "Already booked for {{date}}",
       "firstTime": "not led yet",
@@ -1655,8 +1502,6 @@
       "title": "Field service meetings",
       "startMonth": "Start month",
       "monthsCount": "Number of months",
-      "download": "Download PDF",
-      "webOnly": "PDF export is available in the web version",
       "blocked": "The browser blocked the print window. Allow pop-ups and try again.",
       "monthTheme": "Month theme",
       "generated": "Generated",
@@ -1685,17 +1530,13 @@
     "empty": "Unassigned",
     "notSelected": "Not selected",
     "noGroups": "No service groups",
-    "nextInTurn": "Next in turn",
     "allCongregation": "Whole congregation",
     "scheduled": "Scheduled",
-    "unknownGroup": "Group removed",
     "slots": {
       "after_meeting": "Cleaning after meetings",
       "thorough": "Weekly cleaning",
       "general": "General cleaning"
     },
-    "planAllDone": "Cleaning is assigned",
-    "useSuggested": "Suggested: {{name}}",
     "windows": {
       "title": "This week's windows",
       "hint": "Tap the windows the group washes this week. Numbers 8 and 9 are window groups.",
@@ -1715,7 +1556,6 @@
     },
     "plan": {
       "title": "When suits the group to clean?",
-      "planned": "Planned",
       "tbd": "Day to be agreed",
       "set": "Pick a day",
       "clear": "Clear",
@@ -1869,7 +1709,6 @@
     "fieldServiceTitle": "Field service meeting",
     "addMeeting": "Add meeting",
     "editMeeting": "Meeting",
-    "noMeetings": "No meetings added",
     "day": "Day",
     "time": "Time",
     "place": "Place",
@@ -1878,13 +1717,10 @@
     "placeOther": "Other",
     "placeOtherHint": "Address or description",
     "accompanying": "Partner",
-    "serveWithSpouse": "Field service with his wife",
     "spouseBadge": "With wife",
     "coBadge": "With overseer",
     "serviceKind": "Type of service",
     "serviceKindHint": "e.g. territory, return visit, Bible study",
-    "dayViewTab": "By day",
-    "typeViewTab": "By type",
     "shortFieldService": "Field service",
     "shortLunch": "Lunch",
     "shortPastoral": "Pastoral visit",
@@ -1895,21 +1731,16 @@
     "lunchBoxTitle": "Lunch box",
     "shortLunchBox": "Lunch box",
     "lunchBoxPublisher": "Publisher",
-    "choosePartner": "Choose a partner",
     "save": "Save",
     "cancel": "Cancel",
     "delete": "Delete",
     "confirmDelete": "Delete this meeting?",
     "lunchesTitle": "Lunch",
-    "addLunch": "Add lunch",
-    "noLunches": "No lunches added",
     "lunch": "Lunch",
     "host": "Organizer",
     "hostOther": "Other",
     "hostName": "Organizer name",
     "pastoralTitle": "Pastoral visit",
-    "addPastoral": "Add visit",
-    "noPastoral": "No visits added",
     "pastoral": "Pastoral visit",
     "pastoralElder": "Elder",
     "pastoralTarget": "Whom",
@@ -1920,11 +1751,8 @@
     "eldersTitle": "Meeting with elders and ministerial servants",
     "elders": "Meeting with elders and ministerial servants",
     "docReviewTitle": "Document review",
-    "docReview": "Document review",
     "add": "Add",
     "empty": "Not added",
-    "tabCo": "Overseer",
-    "tabWife": "Wife",
     "printButton": "Download PDF",
     "visitTitle": "Circuit overseer visit",
     "coScheduleTitle": "Circuit overseer service schedule",
@@ -1932,32 +1760,20 @@
     "phone": "Phone",
     "address": "Address",
     "congregation": "Congregation",
-    "printWebOnly": "PDF printing is available in the web version.",
     "printBlocked": "The browser blocked the print window. Allow pop-ups.",
-    "copyFromOverseer": "Copy overseer's schedule",
-    "copyConfirm": "Creates entries on the same days, times and places (field service, lunches). Field-service partners will need to be reassigned. Existing entries are not duplicated.",
-    "copyDo": "Copy",
-    "copying": "Copying…",
     "organizerNote": "Note for the organizer",
     "organizerNoteHint": "e.g. gluten-free, no sugar",
-    "scheduleOfCo": "Circuit overseer's schedule: {{name}}",
-    "scheduleOfWife": "Wife's schedule: {{name}}",
-    "togetherBadge": "together with the CO",
     "pdfItem": "Item",
     "pdfWho": "Participant",
-    "spouseField": "Wife ({{name}})",
     "spouseNone": "Not taking part",
     "spouseTogether": "Together with him",
     "spouseSeparate": "Separately",
-    "wifePartner": "Wife's partner",
     "coShort": "CO",
     "wifeShort": "Wife",
     "mineTitle": "Circuit overseer visit",
     "mineWithCo": "Paired with the circuit overseer",
     "mineWithWife": "Paired with the CO's wife",
     "mineJoint": "Service with the CO and his wife",
-    "hostNever": "has not hosted yet",
-    "hostTotal": "hosted: {{count}}",
     "hostLast": "last: {{date}}",
     "hostNext": "next: {{date}}",
     "accTitle": "Accommodation",
@@ -1966,7 +1782,6 @@
     "accAddressLabel": "Or enter an address",
     "accAddressHint": "Accommodation address",
     "accNotArranged": "Accommodation not arranged yet",
-    "serviceKindOf": "Type of service ({{name}})",
     "participation": "Participation",
     "togetherHint": "Serves together with her husband — shared partner and type of service above",
     "accMine": "The circuit overseer and his wife are staying with you",
@@ -2039,8 +1854,6 @@
     "days": "Days",
     "locations": "Points",
     "noLocations": "Add witnessing points first",
-    "windowStart": "Start",
-    "windowEnd": "End",
     "step": "Shift length",
     "step60": "1 h",
     "step90": "1 h 30 min",
@@ -2055,13 +1868,9 @@
     "apply": "Apply",
     "withdraw": "Withdraw",
     "applied": "Application sent. The responsible will distribute.",
-    "withWhom": "I'd like to serve with (optional)",
-    "withWhomPlaceholder": "Name",
-    "free": "Free",
     "noSlots": "No slots on this day",
     "notEligible": "You are not eligible to apply",
     "buildError": "Could not complete",
-    "requests": "req.",
     "cancel": "Cancel",
     "close": "Close",
     "dow": {
@@ -2075,7 +1884,6 @@
     }
   },
   "cartLocations": {
-    "title": "Witnessing points",
     "add": "Add point",
     "empty": "No points yet",
     "name": "Name",
@@ -2095,29 +1903,7 @@
     "addTitle": "New point",
     "removeTitle": "Delete point?",
     "removeBody": "The point will be permanently deleted.",
-    "removeWeb": "Delete this point?",
     "saveError": "Could not save"
-  },
-  "cart": {
-    "title": "Carts",
-    "empty": "No shifts scheduled yet",
-    "createShift": "Create shift",
-    "editTitle": "Edit shift",
-    "addTitle": "New shift",
-    "dateLabel": "Date",
-    "datePlaceholder": "YYYY-MM-DD",
-    "startLabel": "Start",
-    "endLabel": "End",
-    "timePlaceholder": "HH:MM",
-    "locationLabel": "Location",
-    "locationPlaceholder": "Address or place",
-    "save": "Save",
-    "addParticipant": "Add participant",
-    "needMin": "At least 2 needed",
-    "full": "Maximum 4 participants",
-    "removeTitle": "Delete shift?",
-    "removeBody": "The shift and all its participants will be deleted.",
-    "removeWeb": "Delete this shift and all its participants?"
   },
   "specialEvents": {
     "title": {
@@ -2126,33 +1912,21 @@
       "new": "New event"
     },
     "empty": "No upcoming events yet",
-    "showPast": "Show past",
-    "upcoming": "Upcoming",
     "replacesMeetingHint": "No regular meeting on this day",
     "fields": {
       "title": "Title",
-      "type": "Type",
-      "date": "Date",
-      "time": "Time",
       "address": "Address",
       "mapUrl": "Map link",
       "programUrl": "Program link",
-      "note": "Note",
-      "replacesMeeting": "No regular meeting on this day"
+      "note": "Note"
     },
     "placeholders": {
       "title": "Enter a title",
-      "type": "regional_convention",
-      "date": "YYYY-MM-DD",
-      "time": "09:20",
       "address": "City, address",
-      "mapUrl": "https://…",
-      "programUrl": "https://…",
       "note": "Additional details"
     },
     "actions": {
       "create": "Add event",
-      "save": "Save",
       "edit": "Edit",
       "delete": "Delete",
       "restore": "Restore",
@@ -2163,13 +1937,8 @@
     "form": {
       "multiDay": "Multi-day",
       "pickDate": "Pick a date",
-      "pickType": "Pick a type",
       "time": "Time",
       "noTime": "no time",
-      "customTime": "custom…",
-      "timePlaceholder": "HH:MM",
-      "timeHint": "Type 4 digits, e.g. 1830 → 18:30",
-      "close": "Done",
       "singleTime": "Time",
       "rangeTime": "From — to",
       "timeFrom": "From",
@@ -2511,7 +2280,6 @@
     },
     "fieldService": {
       "leading": "Field service meeting — you conduct",
-      "asOverseerAssistant": "Visiting the group with the service overseer",
       "forGroup": "group {{name}}",
       "withWhom": "together with {{name}}",
       "overseerVisitTitle": "Service overseer's visit"
@@ -2639,7 +2407,6 @@
     "empty": "No topics yet. Add topics that concern the congregation.",
     "section": {
       "planned": "Planned",
-      "used": "Covered",
       "upcoming": "Scheduled",
       "past": "Past",
       "archived": "Archived",
@@ -2680,16 +2447,11 @@
     "deleted": "Topic deleted"
   },
   "circuitOverseer": {
-    "intro": "These details pre-fill a new circuit-overseer-visit event. Each visit keeps its own name snapshot, so editing here doesn't change past visits.",
     "firstName": "First name",
     "lastName": "Last name",
     "wifeName": "Wife's name",
     "wifeHint": "Optional — if the circuit overseer is married.",
-    "save": "Save",
-    "savedTitle": "Saved",
-    "savedBody": "Circuit overseer details updated.",
     "note": "You can change this anytime.",
-    "midweekDow": "Midweek meeting day",
     "accommodationAddress": "Accommodation address",
     "listIntro": "Circuit overseers (and substitutes) your congregation may host. One is marked primary and pre-fills a new visit; you can pick a different one in the visit form. Each visit keeps its own name snapshot, so changes here never rewrite past visits.",
     "roleOverseer": "Circuit overseer",
@@ -2698,7 +2460,6 @@
     "addButton": "Add overseer",
     "addTitle": "New circuit overseer",
     "editTitle": "Edit record",
-    "roleLabel": "Role",
     "makePrimary": "Make primary (default)",
     "deleteConfirmTitle": "Delete record?",
     "deleteConfirmBody": "Remove “{{name}}” from the list? This won’t affect visits already created.",
@@ -2844,7 +2605,6 @@
       "hint": "Directory of visiting speakers. Repertoire = the talk numbers he gives.",
       "empty": "No speakers yet.",
       "add": "Add speaker",
-      "editTitle": "Edit speaker",
       "deleteTitle": "Delete speaker?",
       "firstName": "First name",
       "lastName": "Last name",
@@ -2854,7 +2614,6 @@
       "note": "Note",
       "repertoire": "Repertoire (talk numbers)",
       "talkNumberPlaceholder": "Talk no.",
-      "talksCount": "Talks: {{n}}",
       "newCongregation": "New",
       "newCongregationPlaceholder": "Congregation name",
       "searchPlaceholder": "Search by name or congregation",
@@ -2910,40 +2669,26 @@
       "didNotCome": "{{name}} — was scheduled, did not come",
       "title": "Incoming / Outgoing log",
       "subtitle": "Visiting and outgoing talks in one list",
-      "add": "Add entry",
-      "editTitle": "Edit entry",
-      "empty": "No entries yet.",
-      "date": "Date",
-      "statusLabel": "Status",
       "note": "Note",
-      "speaker": "Speaker",
       "talk": "Talk",
       "hospitality": "Hospitality (host)",
       "ourBrother": "Our brother",
       "visiting": "Visiting",
       "speakerSource": "Who gives the talk",
       "hostCongregation": "Host congregation",
-      "noSpeakers": "Add speakers to the directory first.",
       "noCongregations": "Add congregations to the directory first.",
       "unknownSpeaker": "No speaker set",
-      "hostedBy": "Hosted by: {{name}}",
       "deleteTitle": "Delete entry?",
       "deleteBody": "The linked absence will also be removed. The talk stays in the program.",
       "conflictTitle": "Slot taken",
       "conflictBody": "That week already has a public talk in the program. Replace it with this speaker?",
       "replace": "Replace",
       "filter": {
-        "all": "All",
         "incoming": "Incoming",
         "outgoing": "Outgoing"
       },
-      "status": {
-        "confirmed": "Confirmed",
-        "tentative": "Tentative"
-      },
       "addSlot": "Add",
       "event": "Event",
-      "ourMeetingHint": "Time/address from meeting settings",
       "openMap": "Open map",
       "tripDate": "Trip date",
       "fromDirectory": "From directory",
@@ -2953,11 +2698,9 @@
       "speakerName": "Speaker name",
       "speakerCong": "Congregation",
       "givenTimes": "Given times: {{n}}",
-      "upcoming": "Upcoming",
       "noTalk": "No talk selected",
       "phone": "Phone",
       "rebuild": "Check against the programme",
-      "rebuilding": "Rebuilding…",
       "rebuildTitle": "Rebuild entries from the programme?",
       "rebuildBody": "The app walks this year’s weeks and creates a «to us» entry wherever the programme has a speaker and the journal has none. Nothing is deleted and existing entries are left as they are.",
       "rebuildAction": "Rebuild",
@@ -3028,18 +2771,13 @@
     "noneThisMonth": "No one serves as an auxiliary pioneer this month",
     "journal": "Service journal",
     "journalEmpty": "No records yet",
-    "serving": "serving",
-    "finished": "finished",
     "stop": "Stop",
     "untilCancelledSince": "until cancelled · since {{month}}",
     "onlyMonth": "only {{month}}",
     "rangeMonths": "{{from}} – {{to}}",
-    "addTitle": "Add · {{month}}",
     "publisher": "Publisher",
     "untilCancelled": "Until cancelled",
     "untilCancelledHint": "serves indefinitely until stopped",
-    "singleMonthHint": "only for {{month}}",
-    "youAreServing": "You serve as an auxiliary pioneer",
     "badgeServing": "Auxiliary pioneer · {{period}}",
     "badgeUpcoming": "Auxiliary pioneering from {{month}}",
     "servesAsAux": "Serves as an auxiliary pioneer",
@@ -3091,7 +2829,6 @@
     "saved": "Saved",
     "empty": "not set",
     "noCard": "Your login is not linked to a publisher record, so there is nothing to show here. Ask an elder or an administrator to link them: Congregation → Administration → User management → «Link».",
-    "confirmedAt": "Confirmed {{date}}",
     "neverConfirmed": "Never confirmed yet",
     "checkTitle": "Check your details",
     "checkSubtitle": "Once a year, from {{date}}, we ask you to confirm your contacts are current.",
@@ -3152,15 +2889,6 @@
     "notForForm": "Not for the form",
     "missingTitle": "Not handed in",
     "printDraftNote": "A draft to copy into JW Hub. The lines are in the form’s own order.",
-    "averagesTitle": "Averages",
-    "yearTotalTitle": "Service year {{from}}/{{to}} so far",
-    "stillCollecting": "The month is still being collected — some reports are not in yet",
-    "hoursPioneers": "Hours (pioneers)",
-    "reported": "Reported",
-    "activeCount": "Active",
-    "averagesHint": "Average hours cover pioneers who reported; average studies cover everyone who reported. \"Reported\" is a share of the active; \"active\" is a share of everyone.",
-    "totalHours": "Total hours",
-    "totalStudies": "Total studies",
     "categories": {
       "none": "Publishers",
       "auxiliary": "Auxiliary pioneers",
@@ -3183,9 +2911,7 @@
     "system": "System",
     "someone": "Someone",
     "redacted": "Details removed at the person's request",
-    "filters": "Filter",
     "filtersAll": "All",
-    "reset": "Reset",
     "sections": {
       "assignment": "Schedule",
       "duty": "Duties",
@@ -3502,22 +3228,14 @@
     "allOff": "You have turned everything off",
     "device": {
       "title": "This device",
-      "idle": "Checking…",
-      "unsupported": "In a browser, notifications are set up by the browser itself",
-      "denied": "Notifications are blocked in the device settings",
-      "noToken": "The device would not issue a notification key",
-      "notRegistered": "The key was issued but the server did not accept it",
-      "registered": "This device receives notifications",
       "reason": "Reason: {{error}}",
-      "androidHint": "On Android this usually means the build has no Firebase configuration. It takes a rebuild — an over-the-air update cannot fix it.",
-      "webWhere": "Turn them on in Profile → Notifications in the browser."
+      "androidHint": "On Android this usually means the build has no Firebase configuration. It takes a rebuild — an over-the-air update cannot fix it."
     }
   },
   "serviceOverseer": {
     "title": "Service overseer",
     "menuSubtitle": "Visits to the field-service groups",
     "waitingTitle": "Not yet visited this service year",
-    "yearLabel": "Service year {{year}}",
     "last": "Last visit: {{date}} · {{who}}",
     "never": "Not visited yet",
     "planned": "Planned: {{date}}",
@@ -3532,10 +3250,6 @@
   "tasks": {
     "title": "Body of elders' tasks",
     "empty": "No tasks yet",
-    "doneSection": "Done",
-    "due": "Due {{date}}",
-    "overdueSince": "Overdue since {{date}}",
-    "overdueCount": "Overdue: {{count}}",
     "areas": {
       "ministry": "Ministry",
       "teaching": "Teaching",
@@ -3588,7 +3302,6 @@
       "date": "Date",
       "time": "Time",
       "note": "Note",
-      "deleteTitle": "Delete this meeting?",
       "deleteBody": "Tasks put on it remain — they simply stop being tied to it.",
       "deleteAction": "Delete the meeting",
       "deleteTitleDated": "Delete the meeting of {{date}}?",
@@ -3653,7 +3366,6 @@
   },
   "pioneerSchool": {
     "title": "Pioneer school",
-    "menuSubtitle": "The brothers serving during the school",
     "scheduleTitle": "School schedule",
     "defaultTitle": "Pioneer Service School",
     "intro": "The school, its days and the brothers serving each day. The schedule can be printed and sent out.",
@@ -3801,9 +3513,7 @@
       "notCommon": "Not one of the first ones tried",
       "notRepetitive": "Not the same character over and over"
     },
-    "suggest": "Suggest one for me",
-    "show": "Show password",
-    "hide": "Hide password"
+    "suggest": "Suggest one for me"
   },
   "loginName": {
     "taken": "That name is already taken — choose another.",
@@ -3816,7 +3526,6 @@
   },
   "pioneerReview": {
     "missing": "No report for {{months}} — the year is not complete yet",
-    "notesCount": "Notes this year: {{count}}",
     "forYear": "Service year: {{from}} — {{to}}",
     "title": "Pioneer service review",
     "openFromTask": "Open the pioneer service review →",
@@ -3865,11 +3574,8 @@
   "memorial": {
     "title": "Memorial",
     "preparing": "The Memorial programme is being prepared",
-    "programmeLink": "Memorial programme",
-    "programmeLinkHint": "Chairman, talk, prayers, emblems and duties",
     "sections": {
       "programme": "Programme",
-      "emblems": "Passing the emblems",
       "duty": "Duties"
     },
     "theme": "Theme of the talk",
@@ -3878,18 +3584,13 @@
     "draft": "Draft — nobody has been told yet",
     "published": "Programme published",
     "publish": "Publish",
-    "pastReadOnly": "The Memorial is over — its programme is read-only",
     "empty": "The programme has not been drawn up yet",
     "prepare": "Draw up the programme",
     "prepareHint": "Taken from last year's Memorial: labels, order, songs and theme. People are assigned afresh.",
-    "noTime": "No time set",
     "addNote": "Add a note",
     "notePlaceholder": "What to know beforehand",
     "openInSchedule": "Open in the schedule",
     "openInScheduleHint": "The programme, the duties and the passing of the emblems",
-    "dutiesTitle": "Memorial",
-    "sectionEmpty": "Nothing here yet",
-    "sectionPrepare": "Use the starting list",
     "songWord": "Song"
   },
   "feed": {
@@ -3914,8 +3615,6 @@
     "today": "Today · {{date}}",
     "chairman": "Chairman: {{name}}",
     "chairmanLabel": "Chairman",
-    "talkLine": "{{title}} · {{name}}",
-    "talkNoSpeaker": "{{title}} · no speaker yet",
     "mine": "Yours: {{list}}",
     "minePast": "Yours was: {{list}}",
     "youLead": "You conduct at {{time}}",

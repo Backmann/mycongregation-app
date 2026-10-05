@@ -3627,15 +3627,6 @@ export const circuitOverseersApi = {
   },
 };
 
-// Backward-compatible helper used by the visit form until it adopts the
-// picker: returns the primary overseer (or the first), or null.
-export const circuitOverseerApi = {
-  async get(): Promise<CircuitOverseer | null> {
-    const list = await circuitOverseersApi.list();
-    return list.find((c) => c.isPrimary) ?? list[0] ?? null;
-  },
-};
-
 /** A week the schedule can be opened at, as the week drawer lists them. */
 export interface PublishedWeek {
   weekStartDate: string;

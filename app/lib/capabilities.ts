@@ -115,9 +115,6 @@ export const ALL_CAPABILITIES: Record<string, CapabilityDef> = Object.fromEntrie
   ),
 );
 
-/** Total count of all defined capabilities. */
-export const TOTAL_CAPABILITIES = Object.keys(ALL_CAPABILITIES).length;
-
 /** Counts active capabilities in a given record. */
 export function countActiveCapabilities(caps: Record<string, boolean>): number {
   return Object.values(caps ?? {}).filter(Boolean).length;

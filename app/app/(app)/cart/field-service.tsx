@@ -28,7 +28,6 @@ import {
   serviceGroupsApi,
 } from '../../../lib/api';
 import { usePermissions } from '../../../lib/permissions';
-import { useMyPublisher } from '../../../lib/useMyPublisher';
 import { VisitPeopleChips, FieldNoteLine, useFieldListViewer } from '../../../components/FieldListBits';
 import { FieldServiceForm } from '../../../components/FieldServiceSection';
 import { resolveHallAddress } from '../../../lib/hallAddress';
@@ -69,7 +68,6 @@ export default function FieldServiceMeetingsScreen() {
   const perms = usePermissions();
   const canEdit = perms.canEditFieldServiceMeetings;
   const qc = useQueryClient();
-  const { myPublisherId } = useMyPublisher();
 
   const scrollRef = useRef<ScrollView>(null);
   const monthOffsets = useRef<Record<string, number>>({});

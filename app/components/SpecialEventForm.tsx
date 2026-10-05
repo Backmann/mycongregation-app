@@ -171,17 +171,6 @@ export function eventFormProblem(
   return null;
 }
 
-/**
- * Kinds that always last several days: a regional convention runs Friday to
- * Sunday, a circuit visit Tuesday to Sunday. Their form opens with «several
- * days» on — it used to open as a one-day event, and a convention saved that
- * way took one day of the week away instead of the week.
- */
-export const MULTI_DAY_KINDS = new Set([
-  'regional_convention',
-  CIRCUIT_OVERSEER_VISIT_TYPE_KEY,
-]);
-
 const CONGRESS = new Set(['regional_convention', 'circuit_assembly']);
 
 /** The form's kind, as the rest of the events screen names kinds. */

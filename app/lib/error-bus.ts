@@ -26,13 +26,6 @@ export function onToast(listener: Listener): () => void {
   return () => listeners.delete(listener);
 }
 
-/** @deprecated use onToast — kept so existing imports keep working */
-export function onErrorReported(listener: (message: string) => void): () => void {
-  return onToast((m, tone) => {
-    if (tone === 'error') listener(m);
-  });
-}
-
 /**
  * Notify from a former Alert.alert(title, body) call. React Native's Alert
  * shows nothing on the web, so these messages used to vanish there entirely.
