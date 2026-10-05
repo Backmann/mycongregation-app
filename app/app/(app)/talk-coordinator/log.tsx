@@ -10,6 +10,7 @@ import {
   Text,
   TextInput,
   View,
+ useWindowDimensions,
 } from "react-native";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigation } from "expo-router";
@@ -138,6 +139,11 @@ function confirmReplace(
 }
 
 export default function TalkExchangeYearScreen() {
+  // The one-line empty week is drawn tighter on a narrow phone and keeps its
+  // buttons beside the date on a wide screen (see `bare` below).
+  const { width: screenWidth } = useWindowDimensions();
+  const bareTight = screenWidth < 360;
+  const bareWide = screenWidth >= 700;
   const { t, i18n } = useTranslation();
   const navigation = useNavigation();
   const perms = usePermissions();
@@ -1336,6 +1342,18 @@ export default function TalkExchangeYearScreen() {
                 upcoming &&
                 events.length === 0 &&
                 (!inc || !incomingName(inc));
+              // AN EMPTY WEEK IS ONE LINE (5 October 2026). A week with nobody
+              // coming and nobody going drew the same two boxes as a full
+              // one, each holding only «+ Добавить»: half a year of them made
+              // the journal nineteen screens long, and the weeks that DO hold
+              // something were lost among them. The line keeps everything the
+              // boxes did — add «к нам», add «от нас», move a speaker here —
+              // and the amber edge that says a speaker is still to be found.
+              const bare =
+                events.length === 0 &&
+                !slot.incoming &&
+                slot.outgoing.length === 0 &&
+                slot.missed.length === 0;
               return (
                 <Fragment key={w.monday}>
                   {firstUpcoming ? (
@@ -1360,6 +1378,47 @@ export default function TalkExchangeYearScreen() {
                       if (w.monday === currentWeekMonday) placeCurrentWeek();
                     }}
                   >
+                    {bare ? (
+                      // Nothing arranged either way: one line, with the same
+                      // three doors the two empty boxes had.
+                      <View style={[styles.bareRow, bareTight && styles.bareRowTight]}>
+                        <Text style={[styles.bareDate, bareWide && styles.bareDateWide]} numberOfLines={1}>
+                          {fmtDay(w.date)}
+                        </Text>
+                        <Pressable
+                          style={({ pressed }) => [styles.bareBtn, bareTight && styles.bareBtnTight, styles.bareIn, pressed && { opacity: 0.6 }]}
+                          onPress={() => openSlot(w, "incoming", undefined)}
+                          hitSlop={6}
+                          accessibilityRole="button"
+                        >
+                          <Ionicons name="add" size={14} color="#0369a1" />
+                          <Text style={[styles.bareBtnText, { color: "#0369a1" }]}>
+                            {t("talkCoordinator.log.filter.incoming")}
+                          </Text>
+                        </Pressable>
+                        <Pressable
+                          onPress={() => openSwap(w)}
+                          hitSlop={8}
+                          accessibilityRole="button"
+                          accessibilityLabel={t("talkCoordinator.swap.action")}
+                          style={styles.bareSwap}
+                        >
+                          <Ionicons name="swap-horizontal" size={16} color="#0369a1" />
+                        </Pressable>
+                        <Pressable
+                          style={({ pressed }) => [styles.bareBtn, bareTight && styles.bareBtnTight, styles.bareOut, pressed && { opacity: 0.6 }]}
+                          onPress={() => openSlot(w, "outgoing", undefined)}
+                          hitSlop={6}
+                          accessibilityRole="button"
+                        >
+                          <Ionicons name="add" size={14} color="#b45309" />
+                          <Text style={[styles.bareBtnText, { color: "#b45309" }]}>
+                            {t("talkCoordinator.log.filter.outgoing")}
+                          </Text>
+                        </Pressable>
+                      </View>
+                    ) : (
+                    <>
                     <Text style={styles.weekendDate}>{fmtDay(w.date)}</Text>
                     <View style={styles.slots}>
                       {events.length > 0 ? (
@@ -1553,6 +1612,8 @@ export default function TalkExchangeYearScreen() {
                         </Pressable>
                       </View>
                     </View>
+                    </>
+                    )}
                   </View>
                 </Fragment>
               );
@@ -2450,6 +2511,32 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   weekendPast: { opacity: 0.55 },
+  bareRow: { flexDirection: "row", alignItems: "center", gap: 8 },
+  bareDate: {
+    flex: 1,
+    fontSize: 13,
+    fontWeight: "700",
+    fontFamily: "Manrope_700Bold",
+    color: "#0f172a",
+  },
+  bareBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 3,
+    borderRadius: 999,
+    paddingVertical: 9,
+    paddingHorizontal: 11,
+  },
+  // 320 points across (iPhone SE): the date stays on one line.
+  bareRowTight: { gap: 4 },
+  bareBtnTight: { paddingHorizontal: 7, gap: 1 },
+  // On a tablet or a desktop the row is a metre wide: the buttons stand by
+  // the date instead of at the far edge.
+  bareDateWide: { flex: 0, minWidth: 150 },
+  bareIn: { backgroundColor: "#e0f2fe" },
+  bareOut: { backgroundColor: "#fef3c7" },
+  bareBtnText: { fontSize: 12.5, fontWeight: "700", fontFamily: "Manrope_700Bold" },
+  bareSwap: { padding: 4 },
   /** Неделя, у которой ещё нет докладчика: работа, а не ошибка. */
   weekendNeeds: { borderLeftWidth: 3, borderLeftColor: "#f59e0b" },
   pastLine: {
