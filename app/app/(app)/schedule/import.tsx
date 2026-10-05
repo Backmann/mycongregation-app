@@ -332,6 +332,30 @@ export default function ImportEpubScreen() {
           </View>
         )}
 
+        {/*
+          A week the file holds and the import could not date (5 October
+          2026). It is not in the list below and will not be loaded — and
+          until now nothing on this screen said so: the list was simply one
+          week shorter.
+        */}
+        {parsed && parsed.unreadWeeks.length > 0 && !parsing && !result && (
+          <View style={styles.warningBox}>
+            <Text style={styles.warningTitle}>
+              {t('schedule.import.preview.unreadWeeksTitle', {
+                count: parsed.unreadWeeks.length,
+              })}
+            </Text>
+            {parsed.unreadWeeks.map((heading, i) => (
+              <Text key={i} style={styles.warningText}>
+                • {heading}
+              </Text>
+            ))}
+            <Text style={styles.warningText}>
+              {t('schedule.import.preview.unreadWeeksHint')}
+            </Text>
+          </View>
+        )}
+
         {parsed && parsed.weeks.length > 0 && !result && (
           <>
             <Text style={styles.weeksHeader}>

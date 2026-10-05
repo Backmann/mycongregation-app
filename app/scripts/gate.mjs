@@ -86,6 +86,9 @@ const STEPS = [
   // The workbook and the Watchtower are read in the browser since 12 June;
   // the 71 cases that guarded the server's unused copy now guard this one.
   ['Разбор программы', 'node', ['scripts/check-import-parsers.mjs']],
+  // …and the half that had no test in either copy: reading a whole issue.
+  // On samples with invented wording, built on the skeleton of the real pages.
+  ['Чтение выпуска', 'node', ['scripts/check-import-documents.mjs']],
   // The role's name is a key built at run time, which no translation check
   // sees: a ministerial servant read «ministerial_servant» in his profile.
   ['Названия ролей', 'node', ['scripts/check-role-names.mjs']],

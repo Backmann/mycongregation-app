@@ -969,7 +969,9 @@
       "preview": {
         "title": "Weeks found",
         "partsShort": "{{count}} parts",
-        "unclassifiedTitle": "Unrecognized parts: {{count}} (will be skipped)"
+        "unclassifiedTitle": "Unrecognized parts: {{count}} (will be skipped)",
+        "unreadWeeksTitle": "Week dates not understood: {{count}} — these weeks will not be loaded",
+        "unreadWeeksHint": "The other weeks load as usual. The programme of these weeks has to be entered by hand."
       },
       "dropHint": "or drag an .epub file here",
       "dropRelease": "Release to load",

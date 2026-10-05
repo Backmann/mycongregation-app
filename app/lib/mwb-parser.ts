@@ -43,6 +43,15 @@ export interface ParsedWorkbook {
   year: number;
   weeks: ParsedWeek[];
   errors: string[];
+  /**
+   * Headings of documents that hold a week's programme and whose dates could
+   * not be read — so the week is NOT in `weeks`.
+   *
+   * Until 5 October 2026 such a week vanished without a word: the preview
+   * simply listed one week fewer. The server's copy of this parser was taught
+   * to say so in August, and by then nobody was calling it.
+   */
+  unreadWeeks: string[];
 }
 
 // ---------- Russian month names ----------
@@ -331,12 +340,85 @@ function parseWeeklyDocument(
     living_christians: 0,
   };
 
-  doc.querySelectorAll('h2, h3').forEach((el) => {
+  /**
+   * THE SONGS ARE PARAGRAPHS NOW (found 5 October 2026, on the January 2027
+   * issue). In May 2026 each stood in a heading — «<h3>Песня N» — and only
+   * headings were read here. Since the layout changed, a midweek meeting came
+   * in with no opening song and prayer, no song in the middle and no song at
+   * the end, for every week of the issue, and nothing said so.
+   *
+   * Both layouts are read: the heading branch below is as it was, and a
+   * paragraph that BEGINS with «Песня N» is taken in exactly three places —
+   *   - before the first section, with «молитва»: the opening song and prayer;
+   *   - in «Христианская жизнь», standing alone: the song in the middle;
+   *   - after the concluding comments, with «молитва»: the closing song.
+   * Anywhere else a paragraph is the text of a part, and is left to it.
+   */
+  const SONG_AT_START = /^Песн[яи]\s*\d+/iu;
+  const songParagraph = (text: string) => {
+    if (!SONG_AT_START.test(text)) return;
+    const lower = text.toLowerCase();
+    const has = (key: string) => parts.some((p) => p.partKey === key);
+
+    if (currentSection === 'intro') {
+      if (!lower.includes('молитва') || has('midweek_opening_prayer')) return;
+      const { min, raw } = extractDuration(text);
+      parts.push({
+        rawTitle: text,
+        rawNumber: null,
+        rawSection: currentSection,
+        durationMin: min,
+        durationRawText: raw,
+        notes: [],
+        partKey: 'midweek_opening_prayer',
+        partOrder: 2,
+        classifierConfidence: 'high',
+      });
+      return;
+    }
+    if (currentSection !== 'living_christians') return;
+
+    const closing = parts.find((p) => p.partKey === 'midweek_closing_prayer');
+    if (closing) {
+      // «Заключительные слова (3 мин.)» + «Песня 164 и молитва»: one row, as
+      // the opening is — the minutes are already held apart from the title.
+      if (
+        lower.includes('молитва') &&
+        !/Песн[яи]\s*\d+/iu.test(closing.rawTitle ?? '')
+      ) {
+        const words = (closing.rawTitle ?? '')
+          .replace(/\s*\(\s*\d+\s*мин\.?\s*\)\s*$/u, '')
+          .trim();
+        closing.rawTitle = words ? `${words} | ${text}` : text;
+      }
+      return;
+    }
+    if (/^Песн[яи]\s*\d+\s*$/iu.test(text) && !has('mid_song')) {
+      parts.push({
+        rawTitle: text,
+        rawNumber: null,
+        rawSection: currentSection,
+        durationMin: null,
+        durationRawText: null,
+        notes: [],
+        partKey: 'mid_song',
+        partOrder: 9,
+        classifierConfidence: 'high',
+      });
+    }
+  };
+
+  doc.querySelectorAll('h2, h3, p').forEach((el) => {
     const tag = tagOf(el);
     const text = textOf(el);
 
     if (tag === 'h2') {
       if (isSectionH2(text)) currentSection = detectSection(text);
+      return;
+    }
+
+    if (tag === 'p') {
+      songParagraph(text);
       return;
     }
 
@@ -392,6 +474,28 @@ function parseWeeklyDocument(
             notes.push(nt.slice(0, 120));
           }
         }
+      }
+
+      /**
+       * A HEADING INSIDE A PART IS NOT A PART (5 October 2026). The week of
+       * 18–24 January 2027 has a box inside part 7 with its own heading —
+       * «Как успешно делать повторные посещения» — and it came in as a second
+       * part of «Христианская жизнь», with no minutes, waiting for somebody
+       * to be assigned to it.
+       *
+       * Every part of the three sections carries a number, and the concluding
+       * comments carry their minutes. A heading with neither is the inside of
+       * the part before it. One that has minutes is kept, numbered or not:
+       * that is the cautious side to err on.
+       */
+      if (
+        number === null &&
+        durationMin === null &&
+        (currentSection === 'treasures' ||
+          currentSection === 'apply_yourself' ||
+          currentSection === 'living_christians')
+      ) {
+        return;
       }
 
       const cls = classify(
@@ -516,6 +620,7 @@ export async function parseMwbFile(
     year: resolvedYear,
     weeks: [],
     errors: [],
+    unreadWeeks: [],
   };
 
   const weeklyNames = Object.keys(zip.files)
@@ -531,7 +636,21 @@ export async function parseMwbFile(
       const content = await zip.files[entryName].async('string');
       const doc = parseXhtml(content);
       const week = parseWeeklyDocument(entryName, doc, resolvedYear);
-      if (week) result.weeks.push(week);
+      if (week) {
+        result.weeks.push(week);
+      } else {
+        // A document with the meeting's sections in it IS a week; the cover
+        // and the contents page have none and are passed over in silence.
+        let isWeek = false;
+        doc.querySelectorAll('h2').forEach((el) => {
+          if (isSectionH2(textOf(el))) isWeek = true;
+        });
+        if (isWeek) {
+          result.unreadWeeks.push(
+            textOf(doc.querySelector('h1')) || baseName(entryName),
+          );
+        }
+      }
     } catch (err: any) {
       result.errors.push(`${entryName}: ${err?.message ?? String(err)}`);
     }

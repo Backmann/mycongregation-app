@@ -347,6 +347,7 @@ export function wtToWorkbook(issue: ParsedWtIssue): ParsedWorkbook {
     epubFile: issue.epubFile,
     year: issue.year,
     errors: issue.errors,
+    unreadWeeks: [],
     weeks: issue.weeks.map((w) => ({
       fileName: w.fileName,
       weekStartDate: w.weekStartDate,
