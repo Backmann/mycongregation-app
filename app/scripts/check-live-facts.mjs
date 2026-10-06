@@ -119,6 +119,10 @@ function world() {
       { id: newId(), type: 'memorial', title: `${MARK}`, date: farAhead, deletedAt: null },
     ],
     '/visiting-speakers': speakers,
+    '/external-congregations': [
+      { id: newId(), name: `${MARK}-Собрание`, contactName: `${MARK}`, contactPhone: `+49 ${MARK}`, note: `${MARK}` },
+      { id: newId(), name: `${MARK}-Собрание-2`, contactName: null, contactPhone: '  ', note: null },
+    ],
     '/talk-exchange': [
       entry(sunday(ahead), { visitingSpeakerId: overseerCard, speakerName: `${MARK}Иван ${MARK}ов` }),
       entry(sunday(farAhead), { visitingSpeakerId: guestCard, speakerName: `${MARK}Пётр ${MARK}ин` }),
@@ -220,6 +224,10 @@ for (const host of ['mycongregation.org', 'localhost']) {
   expect(/✗\s+под районным не остался наш брат/.test(text), `[${host}] a brother left beneath the overseer should fail a check`);
   expect(/из них другого докладчика: 1/.test(text), `[${host}] another guest on the visit's weekend was not reported`);
   expect(/ИТОГ: не прошло проверок — \d+/.test(text), `[${host}] a visit without its entry should fail a check`);
+  // The directory section counts filled fields and prints none of them.
+  expect(/карточек приезжих: 2\n\s+из них с телефоном: 2\n\s+из них с заметкой: 1/.test(text), `[${host}] the speakers' contacts were not counted`);
+  expect(/других собраний: 2\n\s+из них с контактным лицом: 1\n\s+из них с телефоном контакта: 1\n\s+из них с заметкой: 1/.test(text), `[${host}] the congregations' contacts were not counted`);
+  expect(/записей журнала: 3\n\s+из них с заметкой: 3\n\s+из них с указанным гостеприимством: 3/.test(text), `[${host}] the journal's notes were not counted`);
 }
 
 // The guard itself: a value that is not a number, a date, yes/no or a word

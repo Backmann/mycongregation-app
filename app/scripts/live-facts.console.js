@@ -232,7 +232,8 @@
           // визита.
           check(!slot.publisherId, '  под районным не остался наш брат');
         }
-        check(entries.length === his.length || !slot, '  на выходных с программой записан только он');
+        // Без программы выходных сравнивать не с чем: галочка тут была бы пустой.
+        if (slot) check(entries.length === his.length, '  на выходных с программой записан только он');
       }
     }
 
@@ -263,6 +264,32 @@
         !visits.some((v) => inWeek(e, mondayOf(v.date))),
     );
     check(stray.length === 0, '  нет будущих записей на районного без визита', stray.length);
+  });
+
+  // ─── 2. справочник докладчиков: сколько в нём личного ───────────────────
+  // До правки 6 октября сервер отдавал телефоны и заметки справочника любому
+  // вошедшему, а не только тем, кто его ведёт. Здесь — только счёт: сколько
+  // таких полей заполнено, то есть сколько было открыто. Ни одно значение не
+  // печатается. Закрыто ли теперь — этим входом не проверить: владелец видит
+  // всё и после правки; это держат тесты сервера.
+  await section('СПРАВОЧНИК ДОКЛАДЧИКОВ: СКОЛЬКО В НЁМ ЛИЧНОГО', async () => {
+    const [speakers, congregations, journal] = await Promise.all([
+      get('/visiting-speakers'),
+      get('/external-congregations'),
+      get('/talk-exchange'),
+    ]);
+    const filled = (v) => typeof v === 'string' && v.trim() !== '';
+    const count = (rows, field) => rows.filter((r) => filled(r[field])).length;
+    fact('карточек приезжих', speakers.length);
+    fact('  из них с телефоном', count(speakers, 'phone'));
+    fact('  из них с заметкой', count(speakers, 'note'));
+    fact('других собраний', congregations.length);
+    fact('  из них с контактным лицом', count(congregations, 'contactName'));
+    fact('  из них с телефоном контакта', count(congregations, 'contactPhone'));
+    fact('  из них с заметкой', count(congregations, 'note'));
+    fact('записей журнала', journal.length);
+    fact('  из них с заметкой', count(journal, 'note'));
+    fact('  из них с указанным гостеприимством', count(journal, 'hospitalityPublisherId'));
   });
 
   // ─── итог ───────────────────────────────────────────────────────────────
