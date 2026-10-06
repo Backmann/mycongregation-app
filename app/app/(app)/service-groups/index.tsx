@@ -12,7 +12,6 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import {
-  extractErrorMessage,
   ServiceGroup,
   serviceGroupsApi,
 } from '../../../lib/api';
@@ -20,6 +19,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { FilterToggle } from '../../../components/FilterToggle';
 import { useTranslation } from 'react-i18next';
 import { usePermissions } from '../../../lib/permissions';
+import { LoadFailure } from '../../../components/LoadFailure';
 
 export default function ServiceGroupsListScreen() {
   const { t } = useTranslation();
@@ -57,9 +57,7 @@ export default function ServiceGroupsListScreen() {
       />
 
       {error && (
-        <View style={styles.errorBox}>
-          <Text style={styles.errorText}>{extractErrorMessage(error)}</Text>
-        </View>
+        <LoadFailure error={error} onRetry={() => void refetch()} />
       )}
 
       {isLoading ? (

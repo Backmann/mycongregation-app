@@ -12,10 +12,11 @@ import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import { Absence, absencesApi, extractErrorMessage } from '../../../lib/api';
+import { Absence, absencesApi } from '../../../lib/api';
 import { FilterToggle } from '../../../components/FilterToggle';
 import { usePermissions } from '../../../lib/permissions';
 import { useMyPublisher } from '../../../lib/useMyPublisher';
+import { LoadFailure } from '../../../components/LoadFailure';
 
 function fmtRange(a: Absence, loc: string): string {
   const start = new Date(`${a.startDate}T00:00:00`);
@@ -77,9 +78,7 @@ export default function AbsencesListScreen() {
       ) : null}
 
       {error && (
-        <View style={styles.errorBox}>
-          <Text style={styles.errorText}>{extractErrorMessage(error)}</Text>
-        </View>
+        <LoadFailure error={error} onRetry={() => void refetch()} />
       )}
 
       {isLoading ? (

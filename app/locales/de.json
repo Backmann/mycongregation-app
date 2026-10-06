@@ -1079,8 +1079,6 @@
   },
   "audit": {
     "noReportId": "Keine Bericht-ID angegeben.",
-    "notAuthorized": "Nicht autorisiert",
-    "couldNotLoadHistory": "Verlauf konnte nicht geladen werden",
     "noEdits": "Noch keine Bearbeitungen",
     "noEditsHint": "Dieser Bericht wurde seit der Einreichung nicht geändert.",
     "unknownEditor": "(unbekannter Bearbeiter)",

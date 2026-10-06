@@ -1093,8 +1093,6 @@
   },
   "audit": {
     "noReportId": "ID отчёта не указан.",
-    "notAuthorized": "Нет доступа",
-    "couldNotLoadHistory": "Не удалось загрузить историю",
     "noEdits": "Изменений пока нет",
     "noEditsHint": "Этот отчёт не изменялся с момента подачи.",
     "unknownEditor": "(неизвестный редактор)",

@@ -12,11 +12,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import {
   AuditLogEntry,
-  extractErrorMessage,
   serviceReportsApi,
 } from '../../../lib/api';
 import { useTranslation } from 'react-i18next';
 import i18n from '../../../lib/i18n';
+import { LoadFailure } from '../../../components/LoadFailure';
 
 function formatRelative(iso: string): string {
   const then = new Date(iso).getTime();
@@ -161,20 +161,13 @@ export default function AuditLogScreen() {
   }
 
   if (error) {
-    const message = extractErrorMessage(error);
-    const isForbidden = /403|forbid|authoriz/i.test(message);
+    // The server's own words are English and are not for the page: a refusal
+    // is said as «Нет доступа», a failure as a failure with a way to try
+    // again (6 October: «You may only view your own…» stood here).
     return (
       <View style={styles.center}>
         <Stack.Screen options={{ title: t('reports.title.editHistory') }} />
-        <Ionicons
-          name={isForbidden ? 'lock-closed-outline' : 'alert-circle-outline'}
-          size={64}
-          color="#cbd5e1"
-        />
-        <Text style={styles.errorTitle}>
-          {isForbidden ? t('audit.notAuthorized') : t('audit.couldNotLoadHistory')}
-        </Text>
-        <Text style={styles.errorText}>{message}</Text>
+        <LoadFailure error={error} onRetry={() => void refetch()} />
       </View>
     );
   }

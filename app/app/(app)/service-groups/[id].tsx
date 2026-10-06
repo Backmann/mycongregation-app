@@ -29,6 +29,7 @@ import { publisherTags } from '../../../lib/publisher-tags';
 import { notify } from '../../../lib/error-bus';
 import { confirm } from '../../../components/ConfirmHost';
 import { useAllPublishers } from '../../../lib/useAllPublishers';
+import { LoadFailure } from '../../../components/LoadFailure';
 
 export default function ServiceGroupDetailScreen() {
   const { t } = useTranslation();
@@ -150,17 +151,30 @@ export default function ServiceGroupDetailScreen() {
     );
   }
 
-  if (groupQuery.error || !groupQuery.data) {
+  if (groupQuery.error) {
     return (
       <View style={styles.center}>
-        <Text style={styles.errorText}>
-          {groupQuery.error
-            ? extractErrorMessage(groupQuery.error)
-            : t('common.notFound')}
-        </Text>
+        <LoadFailure
+          error={groupQuery.error}
+          onRetry={() => void groupQuery.refetch()}
+        />
       </View>
     );
   }
+  if (!groupQuery.data) {
+    return (
+      <View style={styles.center}>
+        <Text style={styles.errorText}>{t('common.notFound')}</Text>
+      </View>
+    );
+  }
+  // A group's members are shown to the group itself and to the elders. For
+  // anybody else the server refuses the list — and that refusal used to be
+  // drawn as «Участников (0). В группе пока нет участников», a plain untruth
+  // about a group of fifteen (6 October).
+  const membersRefused =
+    (membersQuery.error as { response?: { status?: number } } | null)?.response
+      ?.status === 403;
 
   const group = groupQuery.data;
   const members = membersQuery.data?.data ?? [];
@@ -247,6 +261,10 @@ export default function ServiceGroupDetailScreen() {
         </View>
       )}
 
+      {membersRefused ? (
+        <Text style={styles.empty}>{t('serviceGroups.otherGroupClosed')}</Text>
+      ) : (
+      <>
       <Text style={styles.sectionTitle}>
         {/* Students are not publishers: the congregation's list leaves them
             out of its total, and so does this one — they are named apart. */}
@@ -261,6 +279,11 @@ export default function ServiceGroupDetailScreen() {
       <View style={styles.list}>
         {membersQuery.isLoading ? (
           <ActivityIndicator style={{ padding: 16 }} />
+        ) : membersQuery.error ? (
+          <LoadFailure
+            error={membersQuery.error}
+            onRetry={() => void membersQuery.refetch()}
+          />
         ) : members.length === 0 ? (
           <Text style={styles.empty}>{t('serviceGroups.noMembersYet')}</Text>
         ) : (
@@ -292,6 +315,8 @@ export default function ServiceGroupDetailScreen() {
           })
         )}
       </View>
+      </>
+      )}
 
       {canManage && (
         <Pressable

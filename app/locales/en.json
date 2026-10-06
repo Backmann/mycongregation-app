@@ -1079,8 +1079,6 @@
   },
   "audit": {
     "noReportId": "No report id supplied.",
-    "notAuthorized": "Not authorized",
-    "couldNotLoadHistory": "Could not load history",
     "noEdits": "No edits yet",
     "noEditsHint": "This report has not been modified since it was submitted.",
     "unknownEditor": "(unknown editor)",

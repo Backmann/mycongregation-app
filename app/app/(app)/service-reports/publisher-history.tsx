@@ -29,6 +29,7 @@ import {
   HistoryTrendChart,
   TrendPoint,
 } from '../../../components/HistoryTrendChart';
+import { LoadFailure } from '../../../components/LoadFailure';
 
 // formatMonthLabel now imported from lib/i18n
 
@@ -511,20 +512,13 @@ export default function PublisherHistoryScreen() {
   }
 
   if (error) {
-    const message = extractErrorMessage(error);
-    const isForbidden = /403|forbid|authoriz/i.test(message);
+    // The server's own words are English and are not for the page: a refusal
+    // is said as «Нет доступа», a failure as a failure with a way to try
+    // again (6 October: «You may only view your own…» stood here).
     return (
       <View style={styles.center}>
         <Stack.Screen options={{ title: t('reports.title.publisherHistory') }} />
-        <Ionicons
-          name={isForbidden ? 'lock-closed-outline' : 'alert-circle-outline'}
-          size={64}
-          color="#cbd5e1"
-        />
-        <Text style={styles.errorTitle}>
-          {isForbidden ? t('audit.notAuthorized') : t('audit.couldNotLoadHistory')}
-        </Text>
-        <Text style={styles.errorText}>{message}</Text>
+        <LoadFailure error={error} onRetry={() => void refetch()} />
       </View>
     );
   }

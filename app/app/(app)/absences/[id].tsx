@@ -13,12 +13,12 @@ import { useTranslation } from "react-i18next";
 import { Ionicons } from "@expo/vector-icons";
 import {
   absencesApi,
-  extractErrorMessage,
   UpdateAbsenceInput,
 } from "../../../lib/api";
 import { AbsenceForm } from "../../../components/AbsenceForm";
 import { usePermissions } from "../../../lib/permissions";
 import { useMyPublisher } from "../../../lib/useMyPublisher";
+import { LoadFailure } from "../../../components/LoadFailure";
 
 export default function AbsenceDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -41,7 +41,7 @@ export default function AbsenceDetailScreen() {
    * `mine` is deliberately not «has no manager permission»: an elder looking
    * at his own absence is both, and must see the buttons too.
    */
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["absences", "detail", id],
     queryFn: () => absencesApi.getById(id),
     enabled: !!id,
@@ -74,12 +74,19 @@ export default function AbsenceDetailScreen() {
   if (isLoading) {
     return <ActivityIndicator size="large" style={{ marginTop: 48 }} />;
   }
-  if (error || !data) {
+  if (error) {
+    // Somebody else's absence, or a lost connection — said as what it is, not
+    // in the server's English («You may only view your own absences»).
     return (
       <View style={styles.container}>
-        <Text style={styles.errorText}>
-          {error ? extractErrorMessage(error) : t("absences.empty")}
-        </Text>
+        <LoadFailure error={error} onRetry={() => void refetch()} />
+      </View>
+    );
+  }
+  if (!data) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.errorText}>{t("absences.empty")}</Text>
       </View>
     );
   }

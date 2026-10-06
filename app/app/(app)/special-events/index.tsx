@@ -18,7 +18,6 @@ import dayjs from 'dayjs';
 import 'dayjs/locale/ru';
 import 'dayjs/locale/de';
 import {
-  extractErrorMessage,
   meetingSettingsApi,
   specialEventsApi,
   talkExchangeApi,
@@ -38,6 +37,7 @@ import {
   serviceYearOf,
 } from '../../../lib/event-view';
 import { useEffectText } from '../../../lib/event-effect-text';
+import { LoadFailure } from '../../../components/LoadFailure';
 
 /**
  * The congregation's events (27 September) — what is coming and what it
@@ -130,11 +130,10 @@ export default function SpecialEventsListScreen() {
       }
     >
       {eventsQ.error ? (
-        <View style={styles.errorBox}>
-          <Text style={styles.errorText}>
-            {extractErrorMessage(eventsQ.error)}
-          </Text>
-        </View>
+        <LoadFailure
+          error={eventsQ.error}
+          onRetry={() => void eventsQ.refetch()}
+        />
       ) : null}
 
       {eventsQ.isLoading ? (
