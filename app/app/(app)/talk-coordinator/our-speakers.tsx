@@ -21,7 +21,6 @@ import {
   publicTalksApi,
   talkExchangeApi,
 } from "../../../lib/api";
-import { usePermissions } from "../../../lib/permissions";
 import {
   computeOutgoingStats,
   OutgoingStats,
@@ -43,7 +42,6 @@ export default function OurSpeakersScreen() {
       ),
     [restricted.data],
   );
-  const perms = usePermissions();
 
   const [search, setSearch] = useState("");
   /**
@@ -204,14 +202,6 @@ export default function OurSpeakersScreen() {
       all: ourSpeakers.length,
     };
   }, [ourSpeakers, statsById]);
-
-  if (!perms.canCoordinatePublicTalks) {
-    return (
-      <View style={styles.center}>
-        <Text style={styles.muted}>{t("talkCoordinator.noAccess")}</Text>
-      </View>
-    );
-  }
 
   const loading =
     publishersQuery.isLoading ||

@@ -142,14 +142,6 @@ export default function DutiesScreen() {
       onBusy: () => {},
     });
 
-  if (!canView) {
-    return (
-      <View style={styles.screen}>
-        <Text style={styles.note}>{t('dutiesScreen.noAccess')}</Text>
-      </View>
-    );
-  }
-
   const open = (week: string, meeting: DutyMeeting) => {
     if (wide) setChosen({ week, meeting });
     else router.push(`/publishers/duties-meeting?week=${week}&meeting=${meeting}` as never);

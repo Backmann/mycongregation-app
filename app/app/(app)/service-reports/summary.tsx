@@ -17,6 +17,7 @@ import {
   meetingSettingsApi,
   serviceReportsApi,
 } from '../../../lib/api';
+import { LoadFailure } from '../../../components/LoadFailure';
 import { usePermissions } from '../../../lib/permissions';
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
@@ -166,19 +167,6 @@ export default function ServiceSummaryScreen() {
     },
   });
 
-  if (!canViewServiceSummary) {
-    return (
-      <View style={styles.center}>
-        <Stack.Screen options={{ title: t('reports.summary.title') }} />
-        <Ionicons name="lock-closed-outline" size={64} color="#cbd5e1" />
-        <Text style={styles.errorTitle}>{t('serviceSummary.noAccessTitle')}</Text>
-        <Text style={styles.errorText}>
-          {t('serviceSummary.noAccessBody')}
-        </Text>
-      </View>
-    );
-  }
-
   if (isLoading) {
     return (
       <View style={styles.center}>
@@ -189,22 +177,12 @@ export default function ServiceSummaryScreen() {
   }
 
   if (error) {
-    const message = extractErrorMessage(error);
-    const isForbidden = /403|forbid|authoriz/i.test(message);
+    // The server's «no» is said as every screen says it, and a failure as a
+    // failure with a way to try again (components/LoadFailure).
     return (
       <View style={styles.center}>
         <Stack.Screen options={{ title: t('reports.summary.title') }} />
-        <Ionicons
-          name={isForbidden ? 'lock-closed-outline' : 'alert-circle-outline'}
-          size={64}
-          color="#cbd5e1"
-        />
-        <Text style={styles.errorTitle}>
-          {isForbidden
-            ? t('serviceSummary.noAccessTitle')
-            : t('serviceSummary.loadFailed')}
-        </Text>
-        <Text style={styles.errorText}>{message}</Text>
+        <LoadFailure error={error} onRetry={() => void refetch()} />
       </View>
     );
   }
@@ -607,19 +585,5 @@ const styles = StyleSheet.create({
     color: '#94a3b8',
     marginTop: 12,
     lineHeight: 17,
-  },
-  errorTitle: {
-    fontSize: 18,
-    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
-    color: '#475569',
-    marginTop: 16,
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  errorText: {
-    fontSize: 14,
-    color: '#64748b',
-    textAlign: 'center',
-    lineHeight: 20,
   },
 });

@@ -1,5 +1,6 @@
 import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import { router } from 'expo-router';
+import { useMayOpen } from '../lib/useMayOpen';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
@@ -194,9 +195,11 @@ export function VisitWeek({
 }
 
 /** A visit's own tools: the schedule of the week, with its printable sheet. */
-export function VisitTools({ canView }: { canView: boolean }) {
+export function VisitTools() {
   const { t } = useTranslation();
-  if (!canView) return null;
+  // For whoever the visit's schedule is for — the screen's own rule.
+  const mayOpen = useMayOpen();
+  if (!mayOpen('/cart/co-schedule')) return null;
   return (
     <Section title={t('specialEvents.page.duringVisit')}>
       <Pressable

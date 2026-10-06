@@ -379,14 +379,6 @@ export default function CoScheduleScreen() {
   // The wife's schedule mirrors the overseer's joint field-service day, so
   // that day shows on both sides from a single source of truth (no dupes).
   const isSynced = (_it: CoVisitItem) => false;
-
-  if (!canViewCoSchedule) {
-    return (
-      <View style={styles.center}>
-        <Text style={styles.muted}>{t('coVisit.noAccess')}</Text>
-      </View>
-    );
-  }
   if (isLoading) {
     return (
       <View style={styles.center}>

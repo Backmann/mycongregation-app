@@ -198,14 +198,6 @@ export default function PioneerSchoolScreen() {
       preopenedWindow: preopened,
     });
   }
-
-  if (!canViewPioneerSchool) {
-    return (
-      <View style={styles.center}>
-        <Text style={styles.empty}>{t('pioneerSchool.noAccess')}</Text>
-      </View>
-    );
-  }
   if (query.isLoading) {
     return <ActivityIndicator size="large" style={{ marginTop: 32 }} />;
   }

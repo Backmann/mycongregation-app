@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { capitalizeFirst } from '../lib/relative-time';
 import { router } from 'expo-router';
+import { useMayOpen } from '../lib/useMayOpen';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ru';
 import 'dayjs/locale/de';
@@ -45,7 +46,9 @@ export function useReportCollection() {
 export function ReportCollectionCard() {
   const { t, i18n } = useTranslation();
   const data = useReportCollection();
-  if (!data) return null;
+  // The whole card is a way into the month's summary.
+  const mayOpen = useMayOpen();
+  if (!data || !mayOpen('/service-reports/summary')) return null;
 
   const month = dayjs(data.reportMonth).locale(i18n.language).format('MMMM');
   const deadline = dayjs(data.deadline).locale(i18n.language).format('D MMMM');

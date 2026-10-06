@@ -86,7 +86,7 @@ export function SpecialEventDetail({
 }) {
   const { t } = useTranslation();
   const qc = useQueryClient();
-  const { canManageEvents, isAdmin, canViewCoSchedule } = usePermissions();
+  const { canManageEvents, isAdmin } = usePermissions();
   const settingsQ = useQuery({
     queryKey: ['meeting-settings'],
     queryFn: () => meetingSettingsApi.getOverview(),
@@ -330,7 +330,7 @@ export function SpecialEventDetail({
       ) : null}
 
       {isCoVisit && !isRemoved ? <VisitWeek event={event} versions={versions} /> : null}
-      {isCoVisit ? <VisitTools canView={canViewCoSchedule} /> : null}
+      {isCoVisit ? <VisitTools /> : null}
       {isCongress ? <CongressSections event={event} versions={versions} /> : null}
 
       {isMemorial ? (

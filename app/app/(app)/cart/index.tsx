@@ -22,11 +22,12 @@ import { DoorList, type Door, type DoorSection } from '../../../components/DoorL
  * The contents of «Служение» — every door into the ministry's side of the
  * congregation, drawn as «Собрание» is (4 October 2026).
  *
- * Each door is shown by the SAME rule that guarded it before: the two that
- * came out of «Отчёты» — the month's summary and the attendance sheet — by
- * the rules their rows have there (they stay there too). «Школа пионеров»
- * left this screen: it stands in «Собрание», under the body of elders, and
- * two doors onto one screen were one too many (Lionel, 4 October).
+ * WHO SEES A DOOR is not decided here: DoorList draws each for whoever its
+ * screen lets in (lib/screen-access), so a door and its screen cannot
+ * disagree. One door is narrower than its screen, and says so below.
+ * «Школа пионеров» left this screen: it stands in «Собрание», under the body
+ * of elders, and two doors onto one screen were one too many (Lionel,
+ * 4 October).
  *
  * Under each door stands what its own screen would answer first. Every line
  * is read from the request that screen makes — the same query key, so the
@@ -179,37 +180,33 @@ export default function ServiceHubScreen() {
     subtitle: t('serviceOverseer.menuSubtitle'),
     href: '/cart/service-overseer',
   };
-  // The same two conditions as their rows inside «Отчёты».
-  const summary: Door[] = perms.canViewServiceSummary
-    ? [
-        {
-          key: 'summary',
-          title: t('reports.summary.title'),
-          subtitle: t('serviceHub.sub.summary'),
-          href: '/service-reports/summary',
-        },
-      ]
-    : [];
-  const attendance: Door[] = perms.canViewAttendance
-    ? [
-        {
-          key: 'attendance',
-          title: t('attendance.pageTitle'),
-          subtitle: t('serviceHub.sub.attendance'),
-          href: '/service-reports/attendance',
-        },
-      ]
-    : [];
-  const coSchedule: Door[] = perms.canViewCoSchedule
-    ? [
-        {
-          key: 'coSchedule',
-          title: t('service.coSchedule'),
-          subtitle: t('service.coScheduleSubtitle'),
-          href: '/cart/co-schedule',
-        },
-      ]
-    : [];
+  // The two that came out of «Отчёты» (they stay there too).
+  const summary: Door[] = [
+    {
+      key: 'summary',
+      title: t('reports.summary.title'),
+      subtitle: t('serviceHub.sub.summary'),
+      href: '/service-reports/summary',
+    },
+  ];
+  const attendance: Door[] = [
+    {
+      key: 'attendance',
+      title: t('attendance.pageTitle'),
+      subtitle: t('serviceHub.sub.attendance'),
+      href: '/service-reports/attendance',
+    },
+  ];
+  const coSchedule: Door[] = [
+    {
+      key: 'coSchedule',
+      title: t('service.coSchedule'),
+      subtitle: t('service.coScheduleSubtitle'),
+      href: '/cart/co-schedule',
+    },
+  ];
+  // NARROWER THAN ITS SCREEN, on purpose: the screen behind is the working
+  // list of those who keep it — hours, terms, the journal.
   const auxPioneers: Door[] = perms.canManageAuxiliaryPioneers
     ? [
         {

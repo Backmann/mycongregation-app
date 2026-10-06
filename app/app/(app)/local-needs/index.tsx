@@ -480,16 +480,6 @@ export default function LocalNeedsScreen() {
     );
   }
 
-  if (!canViewLocalNeeds) {
-    return (
-      <View style={styles.container}>
-        <Text style={[styles.empty, { paddingHorizontal: 24 }]}>
-          {t('localNeeds.noAccess')}
-        </Text>
-      </View>
-    );
-  }
-
   return (
     <View style={styles.container}>
       <ScrollView

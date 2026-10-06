@@ -191,14 +191,6 @@ export default function JournalScreen() {
     return [...groups.entries()];
   }, [query.data]);
 
-  if (user?.role !== 'admin') {
-    return (
-      <View style={styles.centre}>
-        <Text style={styles.muted}>{t('journal.noAccess')}</Text>
-      </View>
-    );
-  }
-
   const dayLabel = (key: string) => {
     const day = dayjs(key);
     const today = dayjs().startOf('day');

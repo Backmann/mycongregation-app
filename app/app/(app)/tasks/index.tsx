@@ -11,6 +11,7 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
+import { useMayOpen } from "../../../lib/useMayOpen";
 import { useTranslation } from "react-i18next";
 import dayjs from "dayjs";
 import "dayjs/locale/ru";
@@ -53,6 +54,7 @@ const AREA_TINT: Record<TaskArea, string> = {
  */
 export default function TasksScreen() {
   const { t, i18n } = useTranslation();
+  const mayOpen = useMayOpen();
   const qc = useQueryClient();
   const [editing, setEditing] = useState<ElderTask | "new" | null>(null);
   const [tab, setTab] = useState<"open" | "mine" | "done">("open");
@@ -299,7 +301,10 @@ export default function TasksScreen() {
 
         {/* «Save what was sent» opens the year it is about — the one that
             ended, which is the task's period minus one: 2025/26 is «2026». */}
-        {task.kind === "annual_report_sent" ? (
+        {/* Only for whoever the annual report is for: every elder reads the
+            task, the secretary keeps the report. */}
+        {task.kind === "annual_report_sent" &&
+        mayOpen("/service-reports/annual") ? (
           <Pressable
             onPress={() =>
               router.push(

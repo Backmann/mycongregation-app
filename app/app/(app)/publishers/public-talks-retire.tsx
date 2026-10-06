@@ -16,7 +16,7 @@ import { useTranslation } from 'react-i18next';
 import { RetirementPreview, extractErrorMessage, publicTalksApi } from '../../../lib/api';
 import { DateField } from '../../../components/DateField';
 import i18n from '../../../lib/i18n';
-import { usePermissions } from '../../../lib/permissions';
+import { useMayOpen } from '../../../lib/useMayOpen';
 import { confirm } from '../../../components/ConfirmHost';
 import { formatDateISO } from '../../../lib/dates';
 
@@ -37,7 +37,7 @@ import { formatDateISO } from '../../../lib/dates';
 export default function RetireTalksScreen() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
-  const { canCoordinatePublicTalks } = usePermissions();
+  const mayOpen = useMayOpen();
 
   /**
    * Which of the two the coordinator is doing.
@@ -148,15 +148,6 @@ export default function RetireTalksScreen() {
       month: 'long',
       year: 'numeric',
     });
-
-  if (!canCoordinatePublicTalks) {
-    return (
-      <View style={styles.center}>
-        <Ionicons name="lock-closed-outline" size={28} color="#94a3b8" />
-        <Text style={styles.noRights}>{t('publicTalks.retire.noRights')}</Text>
-      </View>
-    );
-  }
 
   const ready =
     text.trim() !== '' && (mode === 'lift' || from.trim() !== '');
@@ -399,7 +390,9 @@ export default function RetireTalksScreen() {
             </Text>
           </Pressable>
 
-          {retireMutation.isSuccess ? (
+          {/* The catalogue is the elders'; a talk coordinator who is not an
+              elder strikes talks out here and has no catalogue to go back to. */}
+          {retireMutation.isSuccess && mayOpen('/publishers/public-talks') ? (
             <Pressable
               style={styles.backBtn}
               onPress={() => router.replace('/publishers/public-talks' as never)}
@@ -503,7 +496,6 @@ const styles = StyleSheet.create({
     padding: 32,
     backgroundColor: '#f1f5f9',
   },
-  noRights: { fontSize: 14, color: '#64748b', textAlign: 'center' },
   intro: { alignItems: 'center', paddingVertical: 8, marginBottom: 10 },
   introIcon: {
     width: 52,

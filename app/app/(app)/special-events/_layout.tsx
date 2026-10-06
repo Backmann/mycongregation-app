@@ -4,12 +4,12 @@ import { Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { BackButton } from '../../../components/BackButton';
-import { usePermissions } from '../../../lib/permissions';
+import { useMayOpen } from '../../../lib/useMayOpen';
 import { screenGate } from '../../../components/ScreenGate';
 
 export default function SpecialEventsLayout() {
   const { t } = useTranslation();
-  const { canManageEvents } = usePermissions();
+  const mayOpen = useMayOpen();
   return (
     <Stack screenOptions={headerOptions} screenLayout={screenGate('/special-events')}>
       <Stack.Screen
@@ -17,7 +17,7 @@ export default function SpecialEventsLayout() {
         options={{
           title: t('specialEvents.title.list'),
           headerLeft: () => <BackButton fallback="/schedule" toParent />,
-          headerRight: canManageEvents
+          headerRight: mayOpen('/special-events/new')
             ? () => (
                 <Pressable
                   onPress={() => router.push('/special-events/new' as any)}

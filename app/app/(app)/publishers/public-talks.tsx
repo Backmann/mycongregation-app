@@ -14,6 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { router, useFocusEffect } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import i18n from '../../../lib/i18n';
+import { useMayOpen } from '../../../lib/useMayOpen';
 import {
   extractErrorMessage,
   PublicTalk,
@@ -22,6 +23,7 @@ import {
 
 export default function PublicTalksScreen() {
   const { t } = useTranslation();
+  const mayOpen = useMayOpen();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [showInactive, setShowInactive] = useState(false);
@@ -103,6 +105,10 @@ export default function PublicTalksScreen() {
             together and move to their own line when the row is too narrow —
             on a phone «Массовый импорт» used to run off the screen (28.09). */}
         <View style={styles.toolbarActions}>
+        {/* Striking talks out is the talk coordinator's; the catalogue is
+            every elder's to read. The button used to stand for all of them
+            and opened onto a refusal (6 October). */}
+        {mayOpen('/publishers/public-talks-retire') ? (
         <Pressable
           style={styles.retireButton}
           onPress={() => router.push('/publishers/public-talks-retire' as any)}
@@ -112,6 +118,7 @@ export default function PublicTalksScreen() {
             {t('publicTalks.retire.button')}
           </Text>
         </Pressable>
+        ) : null}
 
         <Pressable
           style={styles.importButton}

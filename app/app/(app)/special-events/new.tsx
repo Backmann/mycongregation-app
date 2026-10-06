@@ -9,6 +9,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { KIND_LOOK, KindKey } from '../../../lib/event-view';
 import { router } from 'expo-router';
+import { useMayOpen } from '../../../lib/useMayOpen';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { specialEventsApi } from '../../../lib/api';
@@ -26,6 +27,7 @@ import { EventFormScreen } from '../../../components/EventFormScreen';
 
 export default function NewSpecialEventScreen() {
   const { t } = useTranslation();
+  const mayOpen = useMayOpen();
   const qc = useQueryClient();
   const [form, setForm] = useState<EventFormValue>(emptyEventForm());
   // The kind first (27 September): what follows depends on it, and a form
@@ -117,17 +119,28 @@ export default function NewSpecialEventScreen() {
             );
           })}
         </View>
-        <Pressable
-          style={styles.talkNote}
-          onPress={() => router.push('/talk-coordinator/log' as never)}
-        >
-          <Text style={styles.talkNoteText}>
-            {t('specialEvents.create.specialTalk')}{' '}
-            <Text style={styles.talkNoteLink}>
-              {t('specialEvents.create.openLog')}
+        {/* The note is for everybody who makes events; the way into the log
+            only for whoever the log is for — the body coordinator who is not
+            the talk coordinator was sent onto a refusal (6 October). */}
+        {mayOpen('/talk-coordinator/log') ? (
+          <Pressable
+            style={styles.talkNote}
+            onPress={() => router.push('/talk-coordinator/log' as never)}
+          >
+            <Text style={styles.talkNoteText}>
+              {t('specialEvents.create.specialTalk')}{' '}
+              <Text style={styles.talkNoteLink}>
+                {t('specialEvents.create.openLog')}
+              </Text>
             </Text>
-          </Text>
-        </Pressable>
+          </Pressable>
+        ) : (
+          <View style={styles.talkNote}>
+            <Text style={styles.talkNoteText}>
+              {t('specialEvents.create.specialTalk')}
+            </Text>
+          </View>
+        )}
       </ScrollView>
     );
   }

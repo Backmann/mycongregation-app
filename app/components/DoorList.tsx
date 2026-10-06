@@ -2,6 +2,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } fr
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { FONT } from '../lib/typography';
+import { useMayOpen } from '../lib/useMayOpen';
 
 const INK = '#0f172a';
 const SOFT = '#64748b';
@@ -29,6 +30,12 @@ const WIDE_FROM = 900;
  * line — the live one where there is something to say, the plain description
  * otherwise — amber only where there is something to do. A section with no
  * doors is not drawn.
+ *
+ * WHO SEES A DOOR is decided here, for every door at once: a door is drawn
+ * for whoever its screen lets in (lib/screen-access), and for nobody else.
+ * The screens that hand this list their doors do not repeat that rule — they
+ * leave a door out only where it is meant to be narrower than its screen,
+ * and say why.
  */
 export function DoorList({
   sections,
@@ -40,7 +47,10 @@ export function DoorList({
   const { width } = useWindowDimensions();
   const wide = width >= WIDE_FROM;
 
-  const shown = sections.filter((s) => s.doors.length > 0);
+  const mayOpen = useMayOpen();
+  const shown = sections
+    .map((s) => ({ ...s, doors: s.doors.filter((d) => mayOpen(d.href)) }))
+    .filter((s) => s.doors.length > 0);
   const block = (s: DoorSection) => (
     <View key={s.key} style={s.label ? null : styles.unlabelled}>
       {s.label ? (

@@ -26,6 +26,7 @@ import {
   useReportCollection,
 } from "../../../components/ReportCollectionCard";
 import { usePermissions } from "../../../lib/permissions";
+import { useMayOpen } from "../../../lib/useMayOpen";
 import { SourceLink } from "../../../components/SourceLink";
 import {
   EnableNotificationsCard,
@@ -466,6 +467,7 @@ function TodoSection() {
   const collection = useReportCollection();
   const attendance = useAttendanceDue();
   const attention = useAttention();
+  const mayOpen = useMayOpen();
   // A device that receives nothing: one line here, last — the things with a
   // date come first — which unfolds into the full explanation (4 October).
   const nudge = useNotifyNudge();
@@ -551,14 +553,16 @@ function TodoSection() {
           onPress={() => router.push("/schedule/edit" as never)}
         />
       ) : null}
-      {attention && attention.overdue > 0 ? (
+      {attention && attention.overdue > 0 && mayOpen("/tasks") ? (
         <Strip
           icon="alarm-outline"
           text={t("home.attention.tasksOverdue", { count: attention.overdue })}
           onPress={() => router.push("/tasks" as never)}
         />
       ) : null}
-      {attention && attention.talks > 0 ? (
+      {attention &&
+      attention.talks > 0 &&
+      mayOpen("/publishers/public-talks-retire") ? (
         <Strip
           icon="close-circle-outline"
           text={t("home.attention.restrictedTalks", { count: attention.talks })}

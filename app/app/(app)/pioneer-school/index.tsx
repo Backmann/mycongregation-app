@@ -69,14 +69,6 @@ export default function PioneerSchoolsScreen() {
       router.push(`/pioneer-school/${school.id}` as never);
     },
   });
-
-  if (!canViewPioneerSchool) {
-    return (
-      <View style={styles.center}>
-        <Text style={styles.empty}>{t('pioneerSchool.noAccess')}</Text>
-      </View>
-    );
-  }
   if (query.isLoading) {
     return <ActivityIndicator size="large" style={{ marginTop: 32 }} />;
   }

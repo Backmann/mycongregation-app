@@ -1237,7 +1237,6 @@
       "confirm": "Retire these talks from {{date}}",
       "done": "Talks retired: {{count}}",
       "backToCatalogue": "Back to the catalogue",
-      "noRights": "Retiring talks is for the public talk coordinator or an administrator.",
       "source": {
         "programme": "In the weekend programme",
         "incoming": "A visiting speaker — the «to us» log",
@@ -1705,7 +1704,6 @@
   "coVisit": {
     "title": "Circuit overseer schedule",
     "noVisit": "No visit scheduled",
-    "noAccess": "No access",
     "overseer": "Circuit overseer",
     "wife": "Wife",
     "period": "Visit period",
@@ -2438,7 +2436,6 @@
     "insertCta": "Insert from Local Needs",
     "insertTitle": "Choose a topic",
     "insertEmpty": "No planned topics. Add them on the Local Needs screen (the bulb icon in the schedule header).",
-    "noAccess": "Local Needs are available to elders only.",
     "wasUsedOn": "Covered in the week {{week}}",
     "scheduledFor": "In the programme for the week {{week}}",
     "archived": "Archived",
@@ -2579,7 +2576,6 @@
     },
     "title": "Talk coordinator",
     "intro": "Keep incoming and outgoing speakers, their talks and the directories. The “Incoming / Outgoing” log will live here.",
-    "noAccess": "Available to the public talk coordinator.",
     "errorTitle": "Error",
     "directoriesLabel": "Directories",
     "congregations": {
@@ -2819,7 +2815,6 @@
     "memorialShort": "Memorial"
   },
   "activityFeed": {
-    "noAccess": "The activity feed is available to elders and congregation administrators.",
     "statusChange": "{{name}}: status “{{from}}” → “{{to}}”",
     "overrideApplied": "{{name}}: status set by hand — “{{to}}”",
     "overrideCleared": "{{name}}: manual status cleared",
@@ -2880,9 +2875,6 @@
     "missingHint": "An import never removes anything. If these songs are no longer used, switch them off in the song catalogue yourself."
   },
   "serviceSummary": {
-    "noAccessTitle": "Access restricted",
-    "noAccessBody": "The summary is read by the elders, the secretary and administrators.",
-    "loadFailed": "Could not load the summary",
     "count": "Count",
     "hours": "Hours",
     "studies": "Bible studies",
@@ -2912,7 +2904,6 @@
   "journal": {
     "title": "Change journal",
     "rowSubtitle": "Who changed what in the congregation",
-    "noAccess": "The journal is available to administrators only.",
     "empty": "Nothing recorded yet.",
     "loadFailed": "Could not load the journal",
     "loadMore": "Show more",
@@ -3188,7 +3179,6 @@
   },
   "annualReport": {
     "pageTitle": "Annual congregation report",
-    "noAccess": "This report is for administrators and the secretary.",
     "attendanceSection": "Average attendance",
     "publishersSection": "Publishers",
     "circumstancesSection": "Special circumstances",
@@ -3383,7 +3373,6 @@
     "add": "Add a school",
     "newTitle": "New school",
     "editTitle": "School",
-    "noAccess": "This section is for elders.",
     "unassigned": "Not assigned",
     "noTime": "No time set",
     "dayTime": "This day's hours",
@@ -3834,7 +3823,6 @@
     "showPast": "Show past weeks"
   },
   "dutiesScreen": {
-    "noAccess": "Meeting duties are assigned by the duties coordinator and the coordinator of the body of elders.",
     "congress": "{{event}} — no meetings",
     "notHeld": "This meeting is not held",
     "showMore": "Show more",

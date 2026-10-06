@@ -11,12 +11,15 @@ import { DoorList, type Door, type DoorSection } from '../../../components/DoorL
 /**
  * The congregation's contents — every door into the congregation's work.
  *
- * Each door is shown by the SAME rule that guarded it before it moved here
- * (lib/permissions, and the role checks the Profile and the Home tiles used),
- * so this screen changes where a door stands, never who may pass it. Most of
- * the screens behind these doors do not check rights themselves: the rule on
- * the door is the only thing between a person and a screen not meant for him,
- * with the server refusing the data behind it. Copy a condition here exactly.
+ * WHO SEES A DOOR is not decided here. Every door is handed to DoorList,
+ * which draws it for whoever its screen lets in (lib/screen-access) — one
+ * rule for the door and for the screen behind it. Until 6 October each door
+ * carried a copy of its screen's rule, written to match and free to drift.
+ *
+ * Two doors are narrower than their screens, on purpose, and say so below:
+ * «Составление программы» (the screen forwards by itself; the door asks the
+ * same question it does) and «Районный старейшина» (readable by everybody
+ * from the visit's page, but a row of the contents only for an admin).
  *
  * A row is named by the title of the screen it opens, so a tap never lands on
  * a heading that says something else.
@@ -55,8 +58,6 @@ export default function CongregationScreen() {
   // The roster rule — the same as the roster screen's and the server's.
   const privileged =
     user?.role === 'admin' || user?.role === 'elder' || user?.canViewPrivateData === true;
-  // The elders' tasks — the same rule as the Tasks tile on Home.
-  const elderOrAdmin = user?.role === 'admin' || user?.role === 'elder';
 
   // One screen: those who keep everyone's absences see all, the rest see their
   // own. The row and the screen's title say which.
@@ -72,7 +73,10 @@ export default function CongregationScreen() {
 
   const editsProgramme = perms.canEditMidweekSchedule || perms.canEditWeekendSchedule;
   const meetings: Door[] = [];
-  // The same rule the screen itself asks (lib/permissions).
+  // NARROWER THAN THE TABLE SAYS, on purpose: the screen is «self» there — it
+  // forwards whoever is not let in — and this is the question it asks
+  // (lib/permissions; scripts/check-programme-editor-door.mjs holds the two
+  // together).
   if (perms.canOpenProgrammeEditor) {
     meetings.push({
       key: 'programme',
@@ -83,39 +87,30 @@ export default function CongregationScreen() {
       href: '/schedule/edit',
     });
   }
-  // Meeting duties — whoever edits them (lib/permissions canEditDuties: admin,
-  // duties coordinator, body coordinator), and every elder to read and print,
-  // as the programme screen let them. A ministerial servant keeping the duties
-  // gets this as his first row.
-  if (perms.canEditDuties || perms.isElder || perms.isAdmin) {
-    meetings.push({
-      key: 'duties',
-      title: t('congregationHub.duties'),
-      subtitle: t('congregationHub.sub.duties'),
-      href: '/publishers/duties',
-    });
-  }
-  if (perms.canCoordinatePublicTalks) {
-    meetings.push({
-      key: 'talks',
-      title: t('talkCoordinator.title'),
-      subtitle: t('congregationHub.sub.talks'),
-      href: '/talk-coordinator',
-    });
-  }
+  // Meeting duties — for whoever edits them and for every elder, to read and
+  // print. A ministerial servant keeping the duties gets this as his first row.
+  meetings.push({
+    key: 'duties',
+    title: t('congregationHub.duties'),
+    subtitle: t('congregationHub.sub.duties'),
+    href: '/publishers/duties',
+  });
+  meetings.push({
+    key: 'talks',
+    title: t('talkCoordinator.title'),
+    subtitle: t('congregationHub.sub.talks'),
+    href: '/talk-coordinator',
+  });
 
-  const elders: Door[] = [];
-  if (elderOrAdmin) {
-    elders.push({ key: 'tasks', title: t('tasks.title'), subtitle: t('congregationHub.sub.tasks'), href: '/tasks' });
-  }
-  if (perms.canViewPioneerSchool) {
-    elders.push({
+  const elders: Door[] = [
+    { key: 'tasks', title: t('tasks.title'), subtitle: t('congregationHub.sub.tasks'), href: '/tasks' },
+    {
       key: 'school',
       title: t('pioneerSchool.title'),
       subtitle: t('congregationHub.sub.school'),
       href: '/pioneer-school',
-    });
-  }
+    },
+  ];
 
   // Hall cleaning — read by everyone: when one's own group cleans is every
   // publisher's question. Editing inside is decided by the cleaning detail itself.
@@ -126,53 +121,45 @@ export default function CongregationScreen() {
     href: '/publishers/cleaning',
   };
 
-  // Administration — moved from the Profile (step 3a, 22 September), each row
-  // behind the same condition it had there: the Profile's section showed for
-  // admins and elders (its `isAdmin` meant both), and inside it users,
-  // responsibilities, the circuit overseer and the journal only for a full
-  // admin, backups for whoever holds that right, the talks catalogue and the
-  // song import for admins and elders alike. Nobody gains or loses a door.
-  const fullAdmin = user?.role === 'admin';
-  const management: Door[] = [];
-  if (fullAdmin) {
-    management.push({
+  // Administration — moved from the Profile (step 3a, 22 September).
+  const management: Door[] = [
+    {
       key: 'users',
       title: t('profile.userManagement'),
       subtitle: t('congregationHub.sub.users'),
       href: '/publishers/admin-users',
-    });
-    management.push({
+    },
+    {
       key: 'journal',
       title: t('journal.title'),
       subtitle: t('journal.rowSubtitle'),
       href: '/publishers/journal',
-    });
-  }
-  // The dump covers every congregation at once, so it belongs to whoever runs
-  // the platform — hidden rather than a door onto a refusal.
-  if (user?.canManageBackups) {
-    management.push({
+    },
+    // The dump covers every congregation at once, so it belongs to whoever
+    // runs the platform.
+    {
       key: 'backups',
       title: t('backups.title'),
       subtitle: t('backups.rowSubtitle'),
       href: '/publishers/backups',
-    });
-  }
-  if (elderOrAdmin) {
-    management.push({
+    },
+    {
       key: 'publicTalks',
       title: t('profile.publicTalks'),
       subtitle: t('profile.publicTalksDescription'),
       href: '/publishers/public-talks',
-    });
-    management.push({
+    },
+    {
       key: 'songs',
       title: t('songsImport.title'),
       subtitle: t('profileExtra.songsSub'),
       href: '/publishers/songs-import',
-    });
-  }
-  if (fullAdmin) {
+    },
+  ];
+  // NARROWER THAN ITS SCREEN, on purpose: everybody may read the circuit
+  // overseer's page (24 September) and reaches it from the visit; as a row of
+  // the contents it stands among the administrator's settings only.
+  if (user?.role === 'admin') {
     management.push({
       key: 'circuitOverseer',
       title: t('profile.circuitOverseer'),
@@ -180,29 +167,24 @@ export default function CongregationScreen() {
       href: '/publishers/circuit-overseer',
     });
   }
-  // Meeting times and the halls — one screen since step 3b, a full admin's
-  // door as both Profile rows were.
-  const meetingPlace: Door[] = fullAdmin
-    ? [
-        {
-          key: 'meetingPlace',
-          title: t('meetingSettings.title'),
-          subtitle: t('congregationHub.sub.meetingPlace'),
-          href: '/publishers/meeting-settings',
-        },
-      ]
-    : [];
-  // Who keeps which area — a full admin's door, as it was in the Profile.
-  const responsibilities: Door[] = fullAdmin
-    ? [
-        {
-          key: 'responsibilities',
-          title: t('responsibilities.title'),
-          subtitle: t('profile.responsibilitiesDescription'),
-          href: '/publishers/responsibilities',
-        },
-      ]
-    : [];
+  // Meeting times and the halls — one screen since step 3b.
+  const meetingPlace: Door[] = [
+    {
+      key: 'meetingPlace',
+      title: t('meetingSettings.title'),
+      subtitle: t('congregationHub.sub.meetingPlace'),
+      href: '/publishers/meeting-settings',
+    },
+  ];
+  // Who keeps which area.
+  const responsibilities: Door[] = [
+    {
+      key: 'responsibilities',
+      title: t('responsibilities.title'),
+      subtitle: t('profile.responsibilitiesDescription'),
+      href: '/publishers/responsibilities',
+    },
+  ];
 
   const sections: DoorSection[] = privileged
     ? [

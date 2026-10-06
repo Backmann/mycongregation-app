@@ -103,6 +103,7 @@ const STEPS = [
   // (6 October: typed as an address, the administrator's screens opened for
   // anybody signed in).
   ['Кому открыт экран', 'node', ['scripts/check-screen-access.mjs']],
+  ['Двери спрашивают экран', 'node', ['scripts/check-doors.mjs']],
   // One rule for who may open «Составление программы» — asked by the doors
   // and by the screen (6 October: the address opened it for a publisher).
   ['Дверь «Составления программы»', 'node', ['scripts/check-programme-editor-door.mjs']],

@@ -9,19 +9,9 @@ import {
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
-import { usePermissions } from '../../../lib/permissions';
 
 export default function TalkCoordinatorScreen() {
   const { t } = useTranslation();
-  const perms = usePermissions();
-
-  if (!perms.canCoordinatePublicTalks) {
-    return (
-      <View style={styles.center}>
-        <Text style={styles.muted}>{t('talkCoordinator.noAccess')}</Text>
-      </View>
-    );
-  }
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#f1f5f9' }}>

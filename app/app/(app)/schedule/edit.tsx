@@ -78,6 +78,7 @@ import {
 import { FieldServiceSection } from "../../../components/FieldServiceSection";
 import { CongressWeekBanner } from "../../../components/CongressWeekBanner";
 import { usePermissions } from "../../../lib/permissions";
+import { useMayOpen } from "../../../lib/useMayOpen";
 import { SpecialEventsWeekBanner } from "../../../components/SpecialEventsWeekBanner";
 import { weekRules } from "../../../lib/week-rules";
 import { ReplacedMeetingNotice } from "../../../components/ReplacedMeetingNotice";
@@ -148,6 +149,7 @@ export default function ScheduleEditScreen() {
 function ProgrammeEditor() {
   const { t, i18n } = useTranslation();
   const perms = usePermissions();
+  const mayOpen = useMayOpen();
   const [publishingType, setPublishingType] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [notifyingType, setNotifyingType] = useState<string | null>(null);
@@ -1393,7 +1395,7 @@ function ProgrammeEditor() {
                   so whoever looks for them here learns where they went. */}
               {!congressThisWeek && (
                 <View style={styles.movedDoors}>
-                  {perms.canEditDuties || perms.isElder || perms.isAdmin ? (
+                  {mayOpen("/publishers/duties") ? (
                     <MovedDoor
                       icon="people-outline"
                       color={SECTION_COLORS.duty.color}

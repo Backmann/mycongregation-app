@@ -24,7 +24,6 @@ import {
   visitingSpeakersApi,
   extractErrorMessage,
 } from '../../../lib/api';
-import { usePermissions } from '../../../lib/permissions';
 import { Dialog } from '../../../components/Dialog';
 import { notify } from '../../../lib/error-bus';
 import { confirm } from '../../../components/ConfirmHost';
@@ -33,7 +32,6 @@ const QK = ['external-congregations'] as const;
 
 export default function CongregationsScreen() {
   const { t, i18n } = useTranslation();
-  const perms = usePermissions();
   const qc = useQueryClient();
 
   const [modalOpen, setModalOpen] = useState(false);
@@ -162,14 +160,6 @@ export default function CongregationsScreen() {
       removeMutation.mutate(c.id);
     }
   };
-
-  if (!perms.canCoordinatePublicTalks) {
-    return (
-      <View style={styles.center}>
-        <Text style={styles.muted}>{t('talkCoordinator.noAccess')}</Text>
-      </View>
-    );
-  }
   if (listQuery.isLoading) {
     return (
       <View style={styles.center}>

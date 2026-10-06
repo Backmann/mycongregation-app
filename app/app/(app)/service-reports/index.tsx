@@ -20,6 +20,7 @@ import { useMyPublisher } from '../../../lib/useMyPublisher';
 import { useTranslation } from 'react-i18next';
 import i18n, { formatMonthLabel } from '../../../lib/i18n';
 import { usePermissions } from '../../../lib/permissions';
+import { useMayOpen } from '../../../lib/useMayOpen';
 
 // formatMonth now lives in lib/i18n.ts as formatMonthLabel
 
@@ -156,8 +157,10 @@ function SectionRow({
 
 export default function ServiceReportsListScreen() {
   const { t } = useTranslation();
-  const { canViewServiceSummary, canManageServiceSummary, canViewAttendance, isAdmin, isElder, responsibilities } =
-    usePermissions();
+  const { isAdmin, isElder, responsibilities } = usePermissions();
+  // Each row below stands for whoever its screen lets in — the screen's own
+  // rule (lib/screen-access), not a copy of it.
+  const mayOpen = useMayOpen();
   const { myPublisherId } = useMyPublisher();
   const now = new Date();
   const serviceYearNow =
@@ -169,7 +172,6 @@ export default function ServiceReportsListScreen() {
     now.getMonth() === 8 || (now.getMonth() === 9 && now.getDate() <= 20)
       ? serviceYearNow - 1
       : serviceYearNow;
-  const canViewActivityFeed = isAdmin || isElder;
   const { data, isLoading, isRefetching, refetch, error } = useQuery({
     queryKey: ['service-reports', 'my'],
     queryFn: () => serviceReportsApi.listMy(),
@@ -261,7 +263,7 @@ export default function ServiceReportsListScreen() {
             ) : null}
             {/* The attendance sheet is for the elders and for those who
                 count at the meeting — not a publisher's errand. */}
-            {canViewAttendance ? (
+            {mayOpen('/service-reports/attendance') ? (
               <SectionRow
                 icon="people-circle-outline"
                 label={t('attendance.pageTitle')}
@@ -270,17 +272,15 @@ export default function ServiceReportsListScreen() {
                 }
               />
             ) : null}
-            {canViewServiceSummary ? (
+            {mayOpen('/service-reports/summary') ? (
               <SectionRow
                 icon="stats-chart-outline"
                 label={t('reports.summary.title')}
                 onPress={() => router.push('/service-reports/summary' as any)}
               />
             ) : null}
-            {/* The annual report stays the secretary's: the server gives it
-                to nobody else, and a row that opens onto a refusal is worse
-                than no row. */}
-            {canManageServiceSummary ? (
+            {/* The annual report stays the secretary's. */}
+            {mayOpen('/service-reports/annual') ? (
               <>
                 <SectionRow
                   icon="clipboard-outline"
@@ -297,7 +297,7 @@ export default function ServiceReportsListScreen() {
                 />
               </>
             ) : null}
-            {canViewActivityFeed ? (
+            {mayOpen('/service-reports/activity') ? (
               <SectionRow
                 icon="pulse-outline"
                 label={t('reports.title.activity')}

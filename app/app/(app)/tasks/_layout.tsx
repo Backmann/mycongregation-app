@@ -5,15 +5,12 @@ import { HEADER_ICON, headerOptions } from '../../../lib/header';
 import { useTranslation } from 'react-i18next';
 import { BackButton } from '../../../components/BackButton';
 import { screenGate } from '../../../components/ScreenGate';
-import { useAuth } from '../../../lib/auth';
-import { usePermissions } from '../../../lib/permissions';
-import { screenAllowed } from '../../../lib/screen-access';
+import { useMayOpen } from '../../../lib/useMayOpen';
 
 export default function TasksLayout() {
   const { t } = useTranslation();
-  const perms = usePermissions();
-  const { user } = useAuth();
-  const toAgenda = screenAllowed('/tasks/agenda', perms, user);
+  const mayOpen = useMayOpen();
+  const toAgenda = mayOpen('/tasks/agenda');
   return (
     <Stack screenOptions={headerOptions} screenLayout={screenGate('/tasks')}>
       <Stack.Screen

@@ -5,13 +5,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { BackButton } from '../../../components/BackButton';
 import BrandLockup from '../../../components/BrandLockup';
-import { usePermissions } from '../../../lib/permissions';
+import { useMayOpen } from '../../../lib/useMayOpen';
 import { useAuth } from '../../../lib/auth';
 import { screenGate } from '../../../components/ScreenGate';
 
 export default function PublishersLayout() {
   const { t } = useTranslation();
-  const { canEditPublishers } = usePermissions();
+  const mayOpen = useMayOpen();
   const { user } = useAuth();
   // The list screen shows the roster to those who may browse it and, to
   // everyone else, only their own group — the server sends nothing more. Its
@@ -38,7 +38,7 @@ export default function PublishersLayout() {
         options={{
           title: privileged ? t('publishers.title.roster') : t('home.actions.myGroup'),
           headerLeft: () => <BackButton fallback="/publishers" toParent />,
-          headerRight: canEditPublishers
+          headerRight: mayOpen('/publishers/new')
             ? () => (
                 <Pressable
                   onPress={() => router.push('/publishers/new' as any)}

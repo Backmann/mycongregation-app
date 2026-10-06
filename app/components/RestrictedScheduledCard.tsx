@@ -3,6 +3,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { router } from 'expo-router';
+import { useMayOpen } from '../lib/useMayOpen';
 import { publicTalksApi, RestrictedUse } from '../lib/api';
 
 /**
@@ -47,6 +48,7 @@ export function restrictionWords(
 export function RestrictedScheduledCard() {
   const { t, i18n } = useTranslation();
   const q = useRestrictedScheduled();
+  const mayOpen = useMayOpen();
   const list = q.data ?? [];
   if (list.length === 0) return null;
   const day = (iso: string) =>
@@ -100,15 +102,17 @@ export function RestrictedScheduledCard() {
           <Text style={styles.why}>{restrictionWords(u, t, i18n.language)}</Text>
         </View>
       ))}
-      <Pressable
-        onPress={() => router.push('/talk-coordinator/log' as never)}
-        hitSlop={6}
-        style={styles.link}
-      >
-        <Text style={styles.linkText}>
-          {t('publicTalks.restrictedScheduled.openLog')} →
-        </Text>
-      </Pressable>
+      {mayOpen('/talk-coordinator/log') ? (
+        <Pressable
+          onPress={() => router.push('/talk-coordinator/log' as never)}
+          hitSlop={6}
+          style={styles.link}
+        >
+          <Text style={styles.linkText}>
+            {t('publicTalks.restrictedScheduled.openLog')} →
+          </Text>
+        </Pressable>
+      ) : null}
     </View>
   );
 }

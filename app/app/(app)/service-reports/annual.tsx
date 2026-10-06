@@ -9,6 +9,7 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { LoadFailure } from '../../../components/LoadFailure';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -193,20 +194,11 @@ export default function AnnualReportScreen() {
   }
 
   if (figures.isError) {
-    // Blaming permissions for anything that went wrong sent us looking in the
-    // wrong place for an hour: the real cause was a failing query, and the
-    // screen insisted the report was not available. Only a refusal is called a
-    // refusal now; everything else says what actually happened.
-    const status = (figures.error as { response?: { status?: number } })
-      ?.response?.status;
-    const denied = status === 401 || status === 403;
+    // Only a refusal is called a refusal; everything else says that it could
+    // not be loaded and offers to try again (components/LoadFailure).
     return (
       <View style={styles.centre}>
-        <Text style={styles.muted}>
-          {denied
-            ? t('annualReport.noAccess')
-            : extractErrorMessage(figures.error)}
-        </Text>
+        <LoadFailure error={figures.error} onRetry={() => void figures.refetch()} />
       </View>
     );
   }

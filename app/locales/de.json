@@ -1237,7 +1237,6 @@
       "confirm": "Diese Vorträge ab {{date}} absetzen",
       "done": "Abgesetzte Vorträge: {{count}}",
       "backToCatalogue": "Zurück zum Katalog",
-      "noRights": "Vorträge absetzen darf der Koordinator für öffentliche Vorträge oder ein Administrator.",
       "source": {
         "programme": "Im Wochenendprogramm",
         "incoming": "Auswärtiger Redner — Journal «zu uns»",
@@ -1705,7 +1704,6 @@
   "coVisit": {
     "title": "Kreisaufseher-Plan",
     "noVisit": "Kein Besuch geplant",
-    "noAccess": "Kein Zugriff",
     "overseer": "Kreisaufseher",
     "wife": "Frau",
     "period": "Besuchszeitraum",
@@ -2438,7 +2436,6 @@
     "insertCta": "Aus Örtlichen Bedürfnissen einfügen",
     "insertTitle": "Thema auswählen",
     "insertEmpty": "Keine geplanten Themen. Fügen Sie sie im Bildschirm „Örtliche Bedürfnisse“ hinzu (Glühbirne in der Kopfzeile des Programms).",
-    "noAccess": "Örtliche Bedürfnisse sind nur für Älteste verfügbar.",
     "wasUsedOn": "Behandelt in der Woche {{week}}",
     "scheduledFor": "Im Programm für die Woche {{week}}",
     "archived": "Archiviert",
@@ -2579,7 +2576,6 @@
     },
     "title": "Redner-Koordinator",
     "intro": "Verwalten Sie eingehende und ausgehende Redner, ihre Vorträge und die Verzeichnisse. Das Protokoll „Zu uns / Von uns“ erscheint hier.",
-    "noAccess": "Verfügbar für den Verantwortlichen für öffentliche Vorträge.",
     "errorTitle": "Fehler",
     "directoriesLabel": "Verzeichnisse",
     "congregations": {
@@ -2819,7 +2815,6 @@
     "memorialShort": "Gedächtnis"
   },
   "activityFeed": {
-    "noAccess": "Die Ereignisliste steht Ältesten und Administratoren der Versammlung zur Verfügung.",
     "statusChange": "{{name}}: Status „{{from}}“ → „{{to}}“",
     "overrideApplied": "{{name}}: Status von Hand festgelegt — „{{to}}“",
     "overrideCleared": "{{name}}: manueller Status aufgehoben",
@@ -2880,9 +2875,6 @@
     "missingHint": "Ein Import löscht nichts. Werden diese Lieder nicht mehr benutzt, schalten Sie sie im Liederkatalog selbst ab."
   },
   "serviceSummary": {
-    "noAccessTitle": "Zugriff beschränkt",
-    "noAccessBody": "Die Übersicht lesen die Ältesten, der Sekretär und die Administratoren.",
-    "loadFailed": "Übersicht konnte nicht geladen werden",
     "count": "Anzahl",
     "hours": "Stunden",
     "studies": "Bibelstudien",
@@ -2912,7 +2904,6 @@
   "journal": {
     "title": "Änderungsjournal",
     "rowSubtitle": "Wer was in der Versammlung geändert hat",
-    "noAccess": "Das Journal ist nur für Administratoren zugänglich.",
     "empty": "Noch nichts aufgezeichnet.",
     "loadFailed": "Journal konnte nicht geladen werden",
     "loadMore": "Mehr anzeigen",
@@ -3188,7 +3179,6 @@
   },
   "annualReport": {
     "pageTitle": "Jahresbericht der Versammlung",
-    "noAccess": "Dieser Bericht ist für Administratoren und den Sekretär.",
     "attendanceSection": "Durchschnittlicher Besuch",
     "publishersSection": "Verkündiger",
     "circumstancesSection": "Besondere Umstände",
@@ -3383,7 +3373,6 @@
     "add": "Schule hinzufügen",
     "newTitle": "Neue Schule",
     "editTitle": "Schule",
-    "noAccess": "Dieser Bereich ist für Älteste.",
     "unassigned": "Nicht zugeteilt",
     "noTime": "Keine Zeit angegeben",
     "dayTime": "Zeiten dieses Tages",
@@ -3834,7 +3823,6 @@
     "showPast": "Vergangene Wochen anzeigen"
   },
   "dutiesScreen": {
-    "noAccess": "Die Dienste teilen der Koordinator für Dienste und der Koordinator der Ältestenschaft ein.",
     "congress": "{{event}} — keine Zusammenkünfte",
     "notHeld": "Diese Zusammenkunft findet nicht statt",
     "showMore": "Mehr anzeigen",

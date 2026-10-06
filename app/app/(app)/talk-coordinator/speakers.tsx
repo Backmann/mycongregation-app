@@ -23,7 +23,6 @@ import {
   PublicTalk,
   extractErrorMessage,
 } from "../../../lib/api";
-import { usePermissions } from "../../../lib/permissions";
 import { computeSpeakerStats, SpeakerStats } from "../../../lib/speaker-stats";
 import { formatRelativeDay } from "../../../lib/relative-time";
 import { notify } from "../../../lib/error-bus";
@@ -41,7 +40,6 @@ function speakerName(s: {
 
 export default function SpeakersScreen() {
   const { t, i18n } = useTranslation();
-  const perms = usePermissions();
   const qc = useQueryClient();
 
   // editingId: a speaker id, or 'new' for the add form, or null
@@ -487,14 +485,6 @@ export default function SpeakersScreen() {
       removeMutation.mutate(s.id);
     }
   };
-
-  if (!perms.canCoordinatePublicTalks) {
-    return (
-      <View style={styles.center}>
-        <Text style={styles.muted}>{t("talkCoordinator.noAccess")}</Text>
-      </View>
-    );
-  }
   if (listQuery.isLoading) {
     return (
       <View style={styles.center}>

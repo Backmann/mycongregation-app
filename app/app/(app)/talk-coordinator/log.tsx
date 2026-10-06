@@ -40,7 +40,6 @@ import {
 } from "../../../lib/api";
 import { Dialog } from "../../../components/Dialog";
 import { Sheet } from "../../../components/Sheet";
-import { usePermissions } from "../../../lib/permissions";
 import { confirm } from "../../../components/ConfirmHost";
 import {
   computeSpeakerStats,
@@ -146,7 +145,6 @@ export default function TalkExchangeYearScreen() {
   const bareWide = screenWidth >= 700;
   const { t, i18n } = useTranslation();
   const navigation = useNavigation();
-  const perms = usePermissions();
   const qc = useQueryClient();
 
   const scrollRef = useRef<ScrollView>(null);
@@ -1011,14 +1009,6 @@ export default function TalkExchangeYearScreen() {
       setOpen(false);
     }
   };
-
-  if (!perms.canCoordinatePublicTalks) {
-    return (
-      <View style={styles.center}>
-        <Text style={styles.muted}>{t("talkCoordinator.noAccess")}</Text>
-      </View>
-    );
-  }
   if (listQuery.isLoading || settingsQuery.isLoading) {
     return (
       <View style={styles.center}>

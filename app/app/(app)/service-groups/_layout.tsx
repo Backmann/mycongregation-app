@@ -4,12 +4,12 @@ import { Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { BackButton } from '../../../components/BackButton';
-import { useAuth } from '../../../lib/auth';
+import { useMayOpen } from '../../../lib/useMayOpen';
 import { screenGate } from '../../../components/ScreenGate';
 
 export default function ServiceGroupsLayout() {
   const { t } = useTranslation();
-  const isAdmin = useAuth().user?.role === 'admin';
+  const mayOpen = useMayOpen();
   return (
     <Stack screenOptions={headerOptions} screenLayout={screenGate('/service-groups')}>
       <Stack.Screen
@@ -17,7 +17,7 @@ export default function ServiceGroupsLayout() {
         options={{
           title: t('serviceGroups.title.list'),
           headerLeft: () => <BackButton fallback="/publishers" toParent />,
-          headerRight: isAdmin ? () => (
+          headerRight: mayOpen('/service-groups/new') ? () => (
             <Pressable
               onPress={() => router.push('/service-groups/new' as any)}
               style={{ paddingHorizontal: 12 }}

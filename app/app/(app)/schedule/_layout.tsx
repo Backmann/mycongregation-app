@@ -11,20 +11,14 @@ import { BackButton } from '../../../components/BackButton';
 import BrandLockup from '../../../components/BrandLockup';
 import { HeaderMenu } from '../../../components/HeaderMenu';
 import { usePermissions } from '../../../lib/permissions';
+import { useMayOpen } from '../../../lib/useMayOpen';
 import { screenGate } from '../../../components/ScreenGate';
 
 export default function ScheduleLayout() {
   const { t } = useTranslation();
-  const {
-    canEditMidweekSchedule,
-    canEditWeekendSchedule,
-    canImportMidweekSchedule,
-    canImportWeekendSchedule,
-    canViewLocalNeeds,
-    canOpenProgrammeEditor,
-  } = usePermissions();
-  const canCreate = canEditMidweekSchedule || canEditWeekendSchedule;
-  const canImport = canImportMidweekSchedule || canImportWeekendSchedule;
+  const { canOpenProgrammeEditor } = usePermissions();
+  // The rows of «…» stand for whoever their screens let in (lib/screen-access).
+  const mayOpen = useMayOpen();
   // «Составление программы» is offered to exactly those the screen itself
   // lets in — one rule, lib/permissions canOpenProgrammeEditor.
   const plans = canOpenProgrammeEditor;
@@ -84,7 +78,7 @@ export default function ScheduleLayout() {
   // rest behind «…». The talk coordinator has its own row in the Congregation
   // tab, for the same people, so its icon is gone from here.
   const editMenu = [
-    ...(canCreate
+    ...(mayOpen('/schedule/rules')
       ? [
           {
             key: 'rules',
@@ -95,7 +89,7 @@ export default function ScheduleLayout() {
           },
         ]
       : []),
-    ...(canImport
+    ...(mayOpen('/schedule/import')
       ? [
           {
             key: 'import',
@@ -106,7 +100,7 @@ export default function ScheduleLayout() {
           },
         ]
       : []),
-    ...(canViewLocalNeeds
+    ...(mayOpen('/local-needs')
       ? [
           {
             key: 'localNeeds',

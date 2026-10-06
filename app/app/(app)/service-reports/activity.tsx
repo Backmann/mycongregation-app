@@ -13,9 +13,9 @@ import { router } from 'expo-router';
 import {
   activityApi,
   ActivityFeedEntry,
-  extractErrorMessage,
 } from '../../../lib/api';
 import i18n from '../../../lib/i18n';
+import { LoadFailure } from '../../../components/LoadFailure';
 import { monthLabel } from '../../../lib/month-label';
 
 function formatRelativeTime(iso: string): string {
@@ -149,21 +149,11 @@ export default function ActivityFeedScreen() {
   }
 
   if (query.error) {
-    // The feed is served to admins and elders only. Reaching it without the
-    // right — by opening the link directly — should read as a plain sentence,
-    // not as the API's own wording.
-    const status = (query.error as { response?: { status?: number } })?.response
-      ?.status;
-    const forbidden = status === 401 || status === 403;
+    // A refusal as every screen says it; a failure as a failure, with a way
+    // to try again (components/LoadFailure).
     return (
       <View style={styles.container}>
-        <View style={[styles.errorBox, forbidden && styles.noticeBox]}>
-          <Text style={[styles.errorText, forbidden && styles.noticeText]}>
-            {forbidden
-              ? i18n.t('activityFeed.noAccess')
-              : extractErrorMessage(query.error)}
-          </Text>
-        </View>
+        <LoadFailure error={query.error} onRetry={() => void query.refetch()} />
       </View>
     );
   }
@@ -247,8 +237,4 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   footer: { padding: 16 },
-  errorBox: { padding: 16, backgroundColor: '#fee2e2', borderRadius: 8 },
-  noticeBox: { backgroundColor: '#f1f5f9' },
-  noticeText: { color: '#475569', lineHeight: 20 },
-  errorText: { color: '#991b1b' },
 });

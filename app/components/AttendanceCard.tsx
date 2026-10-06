@@ -22,6 +22,7 @@ import { usePermissions } from '../lib/permissions';
 import { reportError, reportSuccess } from '../lib/error-bus';
 import { confirm } from './ConfirmHost';
 import { router } from 'expo-router';
+import { useMayOpen } from '../lib/useMayOpen';
 
 /**
  * Recording attendance for a meeting that has just been held — form S-3.
@@ -63,6 +64,7 @@ export function AttendanceCard() {
   const qc = useQueryClient();
   const [value, setValue] = useState('');
   const due = useAttendanceDue();
+  const mayOpen = useMayOpen();
   const meeting = due?.meeting;
 
   const save = useMutation({
@@ -166,7 +168,7 @@ export function AttendanceCard() {
       {/* A bare number in the corner said nothing. On first use there IS a
           backlog, and the honest answer is to name it and offer the page
           where a whole year can be filled in at once. */}
-      {due && due.outstandingThisYear > 1 ? (
+      {due && due.outstandingThisYear > 1 && mayOpen('/service-reports/attendance') ? (
         <Pressable
           onPress={() =>
           router.push(
