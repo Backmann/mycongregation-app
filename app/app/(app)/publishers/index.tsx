@@ -20,6 +20,7 @@ import { DoorList, type Door, type DoorSection } from '../../../components/DoorL
  * «Составление программы» (the screen forwards by itself; the door asks the
  * same question it does) and «Районный старейшина» (readable by everybody
  * from the visit's page, but a row of the contents only for an admin).
+ * «Ответственные» is one row with two screens behind it — see below.
  *
  * A row is named by the title of the screen it opens, so a tap never lands on
  * a heading that says something else.
@@ -176,15 +177,27 @@ export default function CongregationScreen() {
       href: '/publishers/meeting-settings',
     },
   ];
-  // Who keeps which area.
-  const responsibilities: Door[] = [
-    {
-      key: 'responsibilities',
-      title: t('responsibilities.title'),
-      subtitle: t('profile.responsibilitiesDescription'),
-      href: '/publishers/responsibilities',
-    },
-  ];
+  // Who keeps which area — one row under one name. For the administrator it
+  // opens the screen where duties are assigned (DoorList draws that door for
+  // him alone); for everybody else, the list of who carries what.
+  const responsibilities: Door[] =
+    user?.role === 'admin'
+      ? [
+          {
+            key: 'responsibilities',
+            title: t('responsibilities.title'),
+            subtitle: t('profile.responsibilitiesDescription'),
+            href: '/publishers/responsibilities',
+          },
+        ]
+      : [
+          {
+            key: 'responsibilities',
+            title: t('responsibilities.title'),
+            subtitle: t('congregationHub.sub.responsibilities'),
+            href: '/publishers/responsibilities-list',
+          },
+        ];
 
   const sections: DoorSection[] = privileged
     ? [
@@ -227,6 +240,7 @@ export default function CongregationScreen() {
             groups,
             absences,
             cleaning,
+            ...responsibilities,
           ],
         },
       ];

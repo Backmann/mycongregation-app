@@ -93,6 +93,13 @@ export default function PublishersLayout() {
         }}
       />
       <Stack.Screen
+        name="responsibilities-list"
+        options={{
+          title: t('responsibilities.title'),
+          headerLeft: () => <BackButton fallback="/publishers" toParent />,
+        }}
+      />
+      <Stack.Screen
         name="admin-users"
         options={{
           title: t('profile.userManagement'),

@@ -116,6 +116,10 @@ export const SCREEN_ACCESS: Record<string, AccessRule> = {
   '/absences': 'all',
   '/absences/[id]': 'all',
   '/absences/new': 'all',
+  // Two screens under one name (6 October): who carries which duty is read
+  // by everybody; assigning, and «who appointed him and when», is the
+  // administrator's.
+  '/publishers/responsibilities-list': 'all',
   '/publishers/responsibilities': 'admin',
   '/publishers/duties': 'duties',
   '/publishers/duties-meeting': 'duties',

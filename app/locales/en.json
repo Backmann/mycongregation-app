@@ -1326,7 +1326,10 @@
     "replace": "Replace",
     "assignedByOn": "Assigned by {{name}} · {{date}}",
     "assignedOn": "Assigned {{date}}",
-    "alreadyHolds": "Already holds: {{list}}"
+    "alreadyHolds": "Already holds: {{list}}",
+    "publicSubtitle": "Who is responsible for what in the congregation — and whom to turn to.",
+    "you": "you",
+    "noneYet": "No responsibilities have been assigned yet."
   },
   "meetingSettings": {
     "title": "Meeting time & place",
@@ -3767,7 +3770,8 @@
       "cleaning": "Cleaning schedule and how to clean",
       "duties": "Who is at which place at the coming meetings",
       "users": "Sign-ins, roles and passwords",
-      "meetingPlace": "Days, times, halls"
+      "meetingPlace": "Days, times, halls",
+      "responsibilities": "Who is responsible for what"
     },
     "cleaning": "Hall cleaning",
     "duties": "Meeting duties",

@@ -217,6 +217,20 @@ async function go(page, path, waitFor) {
   if (waitFor) await see(page, waitFor, 30000);
   await page.waitForTimeout(800);
 }
+/**
+ * «Ответственные» as everybody reads it (6 October): the row leads to the
+ * list of who carries what — and to nothing an administrator's screen has.
+ */
+async function readsResponsibilities(page) {
+  await tap(page, 'Ответственные');
+  await atPath(page, '/publishers/responsibilities-list');
+  await see(page, /^Кто за что отвечает в собрании —/);
+  await page.waitForTimeout(1200);
+  for (const w of [/^Заменить$/, /^Назначить$/, /^Не назначено$/, /Назначил/, /^Назначено /]) await notSee(page, w);
+  // The administrator's own screen stays his: by address, a refusal.
+  await go(page, '/publishers/responsibilities');
+  await see(page, 'Нет доступа');
+}
 /** The app's own «back» in the header — the browser's follows tab history. */
 async function back(page) {
   const b = page.getByLabel('Назад', { exact: true }).last();
@@ -830,13 +844,14 @@ try {
   const { ctx, page, keep } = await signedIn(browser, ELDER);
   acceptDialogs(page);
   console.log('\n— Старейшина без поручений —');
-  await check(page, 'B01', '«Управление»: каталог и импорт песен, без админских строк', async () => {
+  await check(page, 'B01', '«Управление»: каталог и импорт песен, без админских строк; «Ответственные» — только список', async () => {
     await go(page, '/publishers');
     await page.waitForTimeout(1500);
     await see(page, 'Каталог публичных речей');
     await see(page, 'Импорт песен');
-    for (const w of ['Управление пользователями', 'Журнал изменений', 'Районный старейшина', 'Ответственные'])
+    for (const w of ['Управление пользователями', 'Журнал изменений', 'Районный старейшина'])
       await notSee(page, w);
+    await readsResponsibilities(page);
   });
   await check(page, 'B02', 'Программа → «…» → есть «Составление программы»', async () => {
     await go(page, '/schedule', /^Сегодня ·/);
@@ -894,15 +909,16 @@ try {
       return 'опубликована: программа и «Печать»';
     });
   } else skip('C02', 'Неделя Вечери у возвещателя', 'нет Вечери (см. A08)');
-  await check(page, 'C03', 'Собрание: нет «Управления», «Ответственных», «Составления»; «Моя группа» есть', async () => {
+  await check(page, 'C03', 'Собрание: нет «Управления» и «Составления»; «Моя группа» есть; «Ответственные» — только список', async () => {
     await go(page, '/publishers');
     await page.waitForTimeout(1500);
-    for (const w of ['Управление', 'Ответственные', 'Составление программы']) await notSee(page, w);
+    for (const w of ['Управление', 'Составление программы']) await notSee(page, w);
     // The tile left Home on 26 September; this is now the one way in.
     await see(page, 'Моя группа');
     // The groups line names his own group when he has one (27 September).
     await page.waitForTimeout(1500);
     const own = await page.getByText(/ · ваша: /).filter({ visible: true }).count();
+    await readsResponsibilities(page);
     return own ? 'строка групп называет свою' : 'своей группы нет — строка без «ваша»';
   });
   await homeChecks(page, 'C');

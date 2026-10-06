@@ -1326,7 +1326,10 @@
     "replace": "Ersetzen",
     "assignedByOn": "Ernannt von {{name}} · {{date}}",
     "assignedOn": "Ernannt am {{date}}",
-    "alreadyHolds": "Hat bereits: {{list}}"
+    "alreadyHolds": "Hat bereits: {{list}}",
+    "publicSubtitle": "Wer in der Versammlung wofür zuständig ist – und an wen Sie sich wenden können.",
+    "you": "Sie",
+    "noneYet": "Es sind noch keine Aufgaben verteilt."
   },
   "meetingSettings": {
     "title": "Zeit & Ort der Zusammenkünfte",
@@ -3767,7 +3770,8 @@
       "cleaning": "Reinigungsplan und wie man reinigt",
       "duties": "Wer bei den nächsten Zusammenkünften welchen Platz hat",
       "users": "Zugänge, Rollen und Passwörter",
-      "meetingPlace": "Tage, Zeiten, Säle"
+      "meetingPlace": "Tage, Zeiten, Säle",
+      "responsibilities": "Wer wofür zuständig ist"
     },
     "cleaning": "Saalreinigung",
     "duties": "Dienste bei Zusammenkünften",

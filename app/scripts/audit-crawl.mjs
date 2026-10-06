@@ -41,7 +41,7 @@ const ROUTES = [
   '/schedule', '/schedule/edit', '/schedule/conduct', '/schedule/new', '/schedule/rules', '/schedule/import',
   '/special-events', '/special-events/new', '/local-needs',
   '/publishers', '/publishers/list', '/publishers/new', '/service-groups', '/service-groups/new',
-  '/absences', '/absences/new', '/publishers/responsibilities',
+  '/absences', '/absences/new', '/publishers/responsibilities', '/publishers/responsibilities-list',
   '/publishers/duties', '/publishers/duties-meeting', '/publishers/cleaning', '/publishers/cleaning-week', '/cleaning/guide',
   '/publishers/meeting-settings',
   '/publishers/admin-users', '/publishers/journal', '/publishers/backups', '/publishers/public-talks',

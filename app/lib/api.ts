@@ -1177,8 +1177,24 @@ export interface Responsibility {
   assignedByName: string | null;
 }
 
+/**
+ * A responsibility as everybody is told it: which duty and who carries it.
+ * «Who appointed him and when» is the administrator's record and the server
+ * gives it to the administrator alone.
+ */
+export type PublicResponsibility = Pick<
+  Responsibility,
+  "type" | "userId" | "holderName"
+>;
+
 export const responsibilitiesApi = {
-  async list(): Promise<Responsibility[]> {
+  async list(): Promise<PublicResponsibility[]> {
+    const { data } =
+      await api.get<PublicResponsibility[]>("/responsibilities");
+    return data;
+  },
+  /** The same request as an administrator makes it: the record whole. */
+  async listWithRecord(): Promise<Responsibility[]> {
     const { data } = await api.get<Responsibility[]>("/responsibilities");
     return data;
   },
