@@ -15,8 +15,8 @@
  *   1. Открыть mycongregation.org и войти.
  *   2. F12 → вкладка Console.
  *   3. Скопировать этот файл целиком и вставить. Enter.
- *   4. Отдать текст между строками «──── факты ────» и «──── конец ────».
- *      Он же уже лежит в буфере обмена, если браузер это позволил.
+ *   4. Выделить текст между строками «──── факты ────» и «──── конец ────»,
+ *      скопировать и отдать.
  *
  * ЧТО ОН ОБЕЩАЕТ
  *   - ТОЛЬКО ЧИТАЕТ. Ни одного запроса, который что-то меняет; единственный
@@ -162,13 +162,18 @@
       'сервер отдаёт роль у каждой помеченной карточки',
     );
 
-    // Слоты публичной речи за те недели, где есть визит впереди.
+    // Последние два прошедших визита — для сравнения, все будущие — для дела.
     const ahead = visits.filter((v) => addDays(mondayOf(v.date), 6) >= today);
-    const slots = ahead.length
+    const past = visits.filter((v) => addDays(mondayOf(v.date), 6) < today).slice(-2);
+    const shown = [...past, ...ahead];
+    // Слоты публичной речи за все недели, о которых пойдёт речь. До 6 октября
+    // они читались только для будущих визитов, и про прошедший печаталось
+    // «программы выходных нет» там, где её просто не спрашивали.
+    const slots = shown.length
       ? (
           await get(
-            `/assignments?partKey=public_talk_speaker&weekStart=${mondayOf(ahead[0].date)}` +
-              `&weekEnd=${mondayOf(ahead[ahead.length - 1].date)}&limit=500`,
+            `/assignments?partKey=public_talk_speaker&weekStart=${mondayOf(shown[0].date)}` +
+              `&weekEnd=${mondayOf(shown[shown.length - 1].date)}&limit=500`,
           )
         ).data ?? []
       : [];
@@ -178,10 +183,8 @@
     );
     const inWeek = (e, week) => e.date >= week && e.date <= addDays(week, 6);
 
-    // Последние два прошедших визита — для сравнения, все будущие — для дела.
-    const past = visits.filter((v) => addDays(mondayOf(v.date), 6) < today).slice(-2);
     let n = 0;
-    for (const v of [...past, ...ahead]) {
+    for (const v of shown) {
       n += 1;
       const week = mondayOf(v.date);
       const isAhead = ahead.includes(v);
@@ -223,7 +226,13 @@
             normal(slot.speakerName) === name && slot.visitingSpeakerId === card?.id,
             '  программа и журнал говорят одно',
           );
+          // Правка 6 октября: визит снимает прежнего докладчика со слота
+          // целиком и возвращает его, когда визит убирают. Остался под
+          // районным — значит визит положен до правки; чинится сохранением
+          // визита.
+          check(!slot.publisherId, '  под районным не остался наш брат');
         }
+        check(entries.length === his.length || !slot, '  на выходных с программой записан только он');
       }
     }
 
@@ -260,13 +269,9 @@
   lines.push('', failed === 0 ? 'ИТОГ: все проверки прошли' : `ИТОГ: не прошло проверок — ${failed}`);
   const text = ['──── факты ────', ...lines, '──── конец ────'].join('\n');
   console.log(text);
-  try {
-    // `copy` есть только в консоли разработчика; вне её — молча пропускаем.
-    // eslint-disable-next-line no-undef
-    copy(text);
-    console.log('%cСкопировано в буфер обмена.', 'color:#15803d');
-  } catch {
-    console.log('%cВыдели текст между линиями и скопируй.', 'color:#0369a1');
-  }
+  // В буфер обмена отсюда не положить: консольная `copy()` перестаёт быть
+  // доступной после первого же запроса к серверу, а буфер браузера требует,
+  // чтобы страница была в фокусе, — он у консоли (живой запуск 6 октября).
+  console.log('%cВыдели текст между линиями и скопируй.', 'color:#0369a1');
   return text;
 })();

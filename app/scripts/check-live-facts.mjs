@@ -217,6 +217,7 @@ for (const host of ['mycongregation.org', 'localhost']) {
   expect(/визитов районного всего: 3/.test(text), `[${host}] the visits were not counted`);
   expect(/из них с пометкой: 1/.test(text), `[${host}] the marked cards were not counted`);
   expect(/под ним остался наш брат: да/.test(text), `[${host}] the brother beneath the overseer was not reported`);
+  expect(/✗\s+под районным не остался наш брат/.test(text), `[${host}] a brother left beneath the overseer should fail a check`);
   expect(/из них другого докладчика: 1/.test(text), `[${host}] another guest on the visit's weekend was not reported`);
   expect(/ИТОГ: не прошло проверок — \d+/.test(text), `[${host}] a visit without its entry should fail a check`);
 }
