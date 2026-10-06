@@ -6,6 +6,7 @@ import BrandLockup from '../../../components/BrandLockup';
 import { HeaderCongregation } from '../../../components/HeaderCongregation';
 import { UpdateChip } from '../../../components/UpdateBanner';
 import { BackButton } from '../../../components/BackButton';
+import { screenGate } from '../../../components/ScreenGate';
 
 export default function HomeLayout() {
   const { t } = useTranslation();
@@ -13,7 +14,7 @@ export default function HomeLayout() {
   const compact = width < 430;
   const wordSize = compact ? 16 : 18;
   return (
-    <Stack screenOptions={headerOptions}>
+    <Stack screenOptions={headerOptions} screenLayout={screenGate('/home')}>
       <Stack.Screen
         name="index"
         options={{

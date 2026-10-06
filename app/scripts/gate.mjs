@@ -99,6 +99,10 @@ const STEPS = [
   // The role's name is a key built at run time, which no translation check
   // sees: a ministerial servant read «ministerial_servant» in his profile.
   ['Названия ролей', 'node', ['scripts/check-role-names.mjs']],
+  // Every screen has a decision about who it is for, and every stack asks
+  // (6 October: typed as an address, the administrator's screens opened for
+  // anybody signed in).
+  ['Кому открыт экран', 'node', ['scripts/check-screen-access.mjs']],
   // One rule for who may open «Составление программы» — asked by the doors
   // and by the screen (6 October: the address opened it for a publisher).
   ['Дверь «Составления программы»', 'node', ['scripts/check-programme-editor-door.mjs']],

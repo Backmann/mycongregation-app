@@ -5,12 +5,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { BackButton } from '../../../components/BackButton';
 import { usePermissions } from '../../../lib/permissions';
+import { screenGate } from '../../../components/ScreenGate';
 
 export default function SpecialEventsLayout() {
   const { t } = useTranslation();
   const { canManageEvents } = usePermissions();
   return (
-    <Stack screenOptions={headerOptions}>
+    <Stack screenOptions={headerOptions} screenLayout={screenGate('/special-events')}>
       <Stack.Screen
         name="index"
         options={{

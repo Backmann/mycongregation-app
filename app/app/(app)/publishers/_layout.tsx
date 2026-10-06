@@ -7,6 +7,7 @@ import { BackButton } from '../../../components/BackButton';
 import BrandLockup from '../../../components/BrandLockup';
 import { usePermissions } from '../../../lib/permissions';
 import { useAuth } from '../../../lib/auth';
+import { screenGate } from '../../../components/ScreenGate';
 
 export default function PublishersLayout() {
   const { t } = useTranslation();
@@ -18,7 +19,7 @@ export default function PublishersLayout() {
   const privileged =
     user?.role === 'admin' || user?.role === 'elder' || user?.canViewPrivateData === true;
   return (
-    <Stack screenOptions={headerOptions}>
+    <Stack screenOptions={headerOptions} screenLayout={screenGate('/publishers')}>
       {/* The congregation's contents. Groups and absences used to be icons in
           this header; they are rows of the contents now. */}
       <Stack.Screen
@@ -73,6 +74,10 @@ export default function PublishersLayout() {
       <Stack.Screen
         name="duties-meeting"
         options={{
+          // The screen names itself by its day; this stands until it does —
+          // and for whoever is turned away at the door, for whom it never
+          // mounts (the header read «duties-meeting»).
+          title: t('congregationHub.duties'),
           headerLeft: () => <BackButton fallback="/publishers/duties" toParent />,
         }}
       />

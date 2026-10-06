@@ -4,11 +4,13 @@ import { Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { BackButton } from '../../../components/BackButton';
+import { screenGate } from '../../../components/ScreenGate';
 
 export default function ServiceReportsLayout() {
   const { t } = useTranslation();
   return (
     <Stack
+      screenLayout={screenGate('/service-reports')}
       screenOptions={{
         ...headerOptions,
         headerLeft: () => <BackButton fallback="/service-reports" toParent />,

@@ -4,11 +4,18 @@ import { Ionicons } from '@expo/vector-icons';
 import { HEADER_ICON, headerOptions } from '../../../lib/header';
 import { useTranslation } from 'react-i18next';
 import { BackButton } from '../../../components/BackButton';
+import { screenGate } from '../../../components/ScreenGate';
+import { useAuth } from '../../../lib/auth';
+import { usePermissions } from '../../../lib/permissions';
+import { screenAllowed } from '../../../lib/screen-access';
 
 export default function TasksLayout() {
   const { t } = useTranslation();
+  const perms = usePermissions();
+  const { user } = useAuth();
+  const toAgenda = screenAllowed('/tasks/agenda', perms, user);
   return (
-    <Stack screenOptions={headerOptions}>
+    <Stack screenOptions={headerOptions} screenLayout={screenGate('/tasks')}>
       <Stack.Screen
         name="index"
         options={{
@@ -17,7 +24,9 @@ export default function TasksLayout() {
           // The agenda used to float at the foot of the list beside the
           // create button; two buttons in one corner compete for the same
           // thumb. This is a place to GO, which is what a header is for.
-          headerRight: () => (
+          // No way to the agenda for whoever the agenda is not for: on the
+          // refusal it was a button to a second refusal.
+          headerRight: !toAgenda ? undefined : () => (
             // The padding is what keeps it off the edge — every other header
             // in the app wraps its icon this way, and this one did not, so it
             // sat flush against the screen and looked clipped.

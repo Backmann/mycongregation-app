@@ -17,7 +17,7 @@
  *   node scripts/audit-crawl.mjs [метка]
  */
 import { chromium } from 'playwright';
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const BASE = process.env.APP_URL || 'http://localhost:8081';
@@ -196,6 +196,39 @@ async function signedIn(browser, email) {
   return { ctx, page, file };
 }
 
+/**
+ * Who each screen is for, as lib/screen-access.ts says it — read from the file
+ * itself, so that the walk checks the table that is actually built in, and
+ * checks it end to end: the table, the gate in every stack, the name the gate
+ * builds for a screen. (A wrong name looks a screen up under another key,
+ * finds nothing and lets everybody through — nothing but a walk sees that.)
+ *
+ * Which rules open for whom is said here for the three accounts the walk
+ * uses, in words of its own: the administrator, an elder WITHOUT a
+ * responsibility, a publisher WITHOUT one. Give it other accounts and these
+ * expectations are wrong, not the app.
+ */
+const accessSource = readFileSync(join(process.cwd(), 'lib', 'screen-access.ts'), 'utf8');
+const ACCESS = new Map(
+  [...accessSource
+    .slice(accessSource.indexOf('export const SCREEN_ACCESS'), accessSource.indexOf('export function screenAllowed'))
+    .matchAll(/^\s*'(\/[^']*)':\s*'([A-Za-z]+)',/gm)].map((m) => [m[1], m[2]]),
+);
+const OPENS_FOR = {
+  // «backups» depends on who owns the platform, which the walk does not know.
+  admin: (rule) => (rule === 'backups' ? null : true),
+  elder: (rule) =>
+    ['all', 'elders', 'importsProgramme', 'localNeeds', 'pioneerSchool', 'coSchedule', 'summary', 'attendance', 'duties'].includes(rule),
+  publisher: (rule) => rule === 'all',
+};
+const REFUSED = /Нет доступа\s+Этот раздел открыт тем|No access|Kein Zugriff/;
+/** What the table expects on this address for this account: true, false, or null — not for the walk to say. */
+function expected(role, path) {
+  const rule = ACCESS.get(path);
+  if (!rule || rule === 'self') return null;
+  return OPENS_FOR[role]?.(rule) ?? null;
+}
+
 const BROKEN = /Что-то пошло не так|Something went wrong|Unmatched Route|This screen doesn't exist|Не удалось загрузить|Ошибка загрузки/i;
 
 /** Open one address and record everything that went wrong on the way. */
@@ -260,6 +293,12 @@ async function visit(page, role, path, name) {
   page.off('response', onResp);
   page.off('pageerror', onErr);
   page.off('console', onCon);
+  // Against the table: only where the address stayed where it was — a forward
+  // is another screen's business.
+  const want = landed === path ? expected(role, path) : null;
+  const refused = REFUSED.test(body);
+  if (want === true && refused) errors.push({ kind: 'access', text: 'по таблице доступа экран открыт этой роли, а показан отказ' });
+  if (want === false && !refused) errors.push({ kind: 'access', text: 'по таблице доступа экран закрыт этой роли, а он открылся' });
   return { role, path, landed, broken, textLength: words, errors, file };
 }
 

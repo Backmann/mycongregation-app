@@ -2,12 +2,14 @@ import { Stack } from 'expo-router';
 import { headerOptions } from '../../../lib/header';
 import { useTranslation } from 'react-i18next';
 import { BackButton } from '../../../components/BackButton';
+import { screenGate } from '../../../components/ScreenGate';
 
 export default function TalkCoordinatorLayout() {
   const { t } = useTranslation();
 
   return (
     <Stack
+      screenLayout={screenGate('/talk-coordinator')}
       screenOptions={{
         ...headerOptions,
         headerLeft: () => <BackButton fallback="/talk-coordinator" toParent />,

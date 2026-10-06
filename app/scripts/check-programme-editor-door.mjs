@@ -69,6 +69,7 @@ const KNOWN = new Map([
   ['app/(app)/home/index.tsx', 'полоска «не готовы встречи» — старейшинам и тем, кто правит'],
   ['app/(app)/local-needs/_layout.tsx', '«назад» из местных потребностей'],
   ['lib/push-notifications.ts', 'уведомление о пробелах — тем, кто собирает встречу'],
+  ['lib/screen-access.ts', 'таблица «кому открыт экран»: называет экран, а не ведёт на него'],
 ]);
 const walk = (dir, out = []) => {
   for (const name of readdirSync(join(ROOT, dir))) {

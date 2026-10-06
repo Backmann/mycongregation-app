@@ -11,6 +11,7 @@ import { BackButton } from '../../../components/BackButton';
 import BrandLockup from '../../../components/BrandLockup';
 import { HeaderMenu } from '../../../components/HeaderMenu';
 import { usePermissions } from '../../../lib/permissions';
+import { screenGate } from '../../../components/ScreenGate';
 
 export default function ScheduleLayout() {
   const { t } = useTranslation();
@@ -119,7 +120,7 @@ export default function ScheduleLayout() {
   ];
 
   return (
-    <Stack screenOptions={headerOptions}>
+    <Stack screenOptions={headerOptions} screenLayout={screenGate('/schedule')}>
       <Stack.Screen
         name="index"
         options={{

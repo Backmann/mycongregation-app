@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { BackButton } from '../../../components/BackButton';
 import { usePermissions } from '../../../lib/permissions';
+import { screenGate } from '../../../components/ScreenGate';
 
 export default function AbsencesLayout() {
   const { t } = useTranslation();
@@ -12,7 +13,7 @@ export default function AbsencesLayout() {
   // — the screen already does that; now its title says so.
   const { canManageAbsences } = usePermissions();
   return (
-    <Stack screenOptions={headerOptions}>
+    <Stack screenOptions={headerOptions} screenLayout={screenGate('/absences')}>
       <Stack.Screen
         name="index"
         options={{

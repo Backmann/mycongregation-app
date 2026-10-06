@@ -2,6 +2,7 @@ import { Stack } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { headerOptions } from '../../../lib/header';
 import { BackButton } from '../../../components/BackButton';
+import { screenGate } from '../../../components/ScreenGate';
 
 export default function PioneerSchoolLayout() {
   const { t } = useTranslation();
@@ -9,7 +10,7 @@ export default function PioneerSchoolLayout() {
     // The app has ONE header — brand colour, Manrope, white icons. This
     // section was handed to the navigator without it and got the platform
     // default: a white bar in a teal app.
-    <Stack screenOptions={headerOptions}>
+    <Stack screenOptions={headerOptions} screenLayout={screenGate('/pioneer-school')}>
       <Stack.Screen
         name="index"
         options={{

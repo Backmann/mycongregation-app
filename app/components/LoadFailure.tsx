@@ -3,6 +3,7 @@ import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { extractErrorMessage } from '../lib/api';
+import { NoAccess } from './NoAccess';
 
 /**
  * "We could not ask" — said as itself, and never as an answer.
@@ -32,13 +33,7 @@ export function LoadFailure({
   // as a «no», with no retry and no technical line.
   const status = (error as { response?: { status?: number } } | null)?.response?.status;
   if (status === 403) {
-    return (
-      <View style={styles.box}>
-        <Ionicons name="lock-closed-outline" size={28} color="#94a3b8" />
-        <Text style={styles.title}>{t('common.noAccessTitle')}</Text>
-        <Text style={styles.hint}>{t('common.noAccessHint')}</Text>
-      </View>
-    );
+    return <NoAccess />;
   }
   const detail = extractErrorMessage(error);
   return (

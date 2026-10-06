@@ -4,11 +4,13 @@ import { View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { BackButton } from '../../../components/BackButton';
 import BrandLockup from '../../../components/BrandLockup';
+import { screenGate } from '../../../components/ScreenGate';
 
 export default function CartLayout() {
   const { t } = useTranslation();
   return (
     <Stack
+      screenLayout={screenGate('/cart')}
       screenOptions={{
         ...headerOptions,
         headerLeft: () => <BackButton fallback="/cart" toParent />,

@@ -5,12 +5,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { BackButton } from '../../../components/BackButton';
 import { useAuth } from '../../../lib/auth';
+import { screenGate } from '../../../components/ScreenGate';
 
 export default function ServiceGroupsLayout() {
   const { t } = useTranslation();
   const isAdmin = useAuth().user?.role === 'admin';
   return (
-    <Stack screenOptions={headerOptions}>
+    <Stack screenOptions={headerOptions} screenLayout={screenGate('/service-groups')}>
       <Stack.Screen
         name="index"
         options={{
