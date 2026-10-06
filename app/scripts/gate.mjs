@@ -51,6 +51,10 @@ const STEPS = [
   ['Правила чисел', 'node', ['scripts/check-plural-rules.mjs']],
   ['Календарь', 'node', ['scripts/check-calendar-link.mjs']],
   ['Даты без UTC', 'node', ['scripts/check-dates.mjs']],
+  // dayjs speaks English until told otherwise, and each screen told it for
+  // itself — the ones that forgot said «28 February» on a Russian page when
+  // opened first (6 October, on a copy of the live data).
+  ['Названия месяцев', 'node', ['scripts/check-dayjs-locales.mjs']],
   // The client and the server both answer "which meetings does this week
   // hold". They have drifted apart three times now, and every time it was
   // found by reading the code months later.

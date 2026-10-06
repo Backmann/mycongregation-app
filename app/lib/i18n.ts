@@ -5,6 +5,8 @@ import * as Localization from 'expo-localization';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { installPluralRules } from './plural-rules';
+// Month and weekday names for dayjs, before any screen asks for a date.
+import './dayjs-locales';
 import en from '../locales/en.json';
 import ru from '../locales/ru.json';
 import de from '../locales/de.json';
