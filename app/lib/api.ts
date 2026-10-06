@@ -4513,7 +4513,24 @@ export interface MyAuxPioneerStatus {
   upcoming: MyAuxPioneerPeriod | null;
 }
 
+/** This month's auxiliary pioneers, as everybody is told: names only. */
+export interface AuxPioneersServingNow {
+  month: string;
+  people: { publisherId: string; name: string }[];
+}
+
 export const auxiliaryPioneersApi = {
+  /**
+   * Who serves THIS month — the one answer about auxiliary pioneers given to
+   * everybody. No month can be asked for; the server takes the
+   * congregation's own. The two below are for those who keep the list.
+   */
+  async servingNow(): Promise<AuxPioneersServingNow> {
+    const { data } = await api.get<AuxPioneersServingNow>(
+      "/auxiliary-pioneers/serving-now",
+    );
+    return data;
+  },
   async listForMonth(monthIso: string): Promise<{
     month: string;
     hourGoal: number;

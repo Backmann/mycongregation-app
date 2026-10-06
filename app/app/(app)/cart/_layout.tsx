@@ -53,6 +53,12 @@ export default function CartLayout() {
         name="auxiliary-pioneers"
         options={{ title: t('auxPioneer.title') }}
       />
+      {/* The same name: for whoever does not keep the list, this IS the
+          screen behind the row. */}
+      <Stack.Screen
+        name="auxiliary-pioneers-month"
+        options={{ title: t('auxPioneer.title') }}
+      />
     </Stack>
   );
 }

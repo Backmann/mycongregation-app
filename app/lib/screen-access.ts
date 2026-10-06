@@ -41,6 +41,7 @@ export type AccessRule =
   | 'localNeeds'
   | 'pioneerSchool'
   | 'coSchedule'
+  | 'auxPioneers'
   | 'summary'
   | 'annual'
   | 'attendance'
@@ -69,6 +70,7 @@ export const ACCESS_RULES: Record<
   localNeeds: (p) => p.canViewLocalNeeds,
   pioneerSchool: (p) => p.canViewPioneerSchool,
   coSchedule: (p) => p.canViewCoSchedule,
+  auxPioneers: (p) => p.canManageAuxiliaryPioneers,
   summary: (p) => p.canViewServiceSummary,
   annual: (p) => p.canManageServiceSummary,
   attendance: (p) => p.canViewAttendance,
@@ -151,10 +153,14 @@ export const SCREEN_ACCESS: Record<string, AccessRule> = {
   '/cart/witnessing': 'all',
   '/cart/locations': 'all',
   '/cart/co-schedule': 'coSchedule',
-  // Both readable by everybody: the owner's decisions of 24 September and of
-  // 6 October («хорошо, что возвещатель видит, кто служит вместе с ним»).
+  // Readable by everybody: the owner's decision of 24 September.
   '/cart/service-overseer': 'all',
-  '/cart/auxiliary-pioneers': 'all',
+  // Two screens under one name (6 October). Everybody is told who serves
+  // THIS month — names and nothing else. The working list — hours, terms,
+  // other months, the journal — is for those who keep it, and the server
+  // gives it to nobody else.
+  '/cart/auxiliary-pioneers-month': 'all',
+  '/cart/auxiliary-pioneers': 'auxPioneers',
   '/service-reports': 'all',
   '/service-reports/new': 'all',
   // Whoever oversees a group reads that group's reports — the server knows.

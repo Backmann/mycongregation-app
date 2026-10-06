@@ -46,7 +46,7 @@ const ROUTES = [
   '/publishers/public-talks-retire', '/publishers/circuit-overseer',
   '/talk-coordinator', '/talk-coordinator/speakers', '/talk-coordinator/our-speakers', '/talk-coordinator/congregations', '/talk-coordinator/log',
   '/tasks', '/tasks/agenda', '/tasks/archive', '/pioneer-school',
-  '/cart', '/cart/field-service', '/cart/witnessing', '/cart/locations', '/cart/co-schedule', '/cart/service-overseer', '/cart/auxiliary-pioneers',
+  '/cart', '/cart/field-service', '/cart/witnessing', '/cart/locations', '/cart/co-schedule', '/cart/service-overseer', '/cart/auxiliary-pioneers', '/cart/auxiliary-pioneers-month',
   '/service-reports', '/service-reports/group', '/service-reports/summary', '/service-reports/annual',
   '/service-reports/attendance', '/service-reports/activity', '/service-reports/publisher-history',
   '/service-reports/pioneer-year-review',

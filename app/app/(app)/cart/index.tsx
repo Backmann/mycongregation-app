@@ -24,7 +24,7 @@ import { DoorList, type Door, type DoorSection } from '../../../components/DoorL
  *
  * WHO SEES A DOOR is not decided here: DoorList draws each for whoever its
  * screen lets in (lib/screen-access), so a door and its screen cannot
- * disagree. One door is narrower than its screen, and says so below.
+ * disagree.
  * «Школа пионеров» left this screen: it stands in «Собрание», under the body
  * of elders, and two doors onto one screen were one too many (Lionel,
  * 4 October).
@@ -99,12 +99,23 @@ export default function ServiceHubScreen() {
     enabled: perms.canViewCoSchedule,
     staleTime: 60 * 1000,
   });
+  // Auxiliary pioneers: one row, two screens. Whoever keeps the list is led
+  // to it and reads its month; everybody else is told who serves this month,
+  // by name, and is led to that.
+  const keepsAux = perms.canManageAuxiliaryPioneers;
   const auxQ = useQuery({
     queryKey: ['aux-pioneers', 'month', month],
     queryFn: () => auxiliaryPioneersApi.listForMonth(month),
-    enabled: perms.canManageAuxiliaryPioneers,
+    enabled: keepsAux,
     staleTime: 60 * 1000,
   });
+  const servingQ = useQuery({
+    queryKey: ['aux-pioneers', 'serving-now'],
+    queryFn: () => auxiliaryPioneersApi.servingNow(),
+    enabled: perms.loaded && !keepsAux,
+    staleTime: 60 * 1000,
+  });
+  const servingCount = servingQ.data ? servingQ.data.people.length : null;
 
   // Back from a screen where something was just changed, the lines say so:
   // every answer is marked stale whenever the tab comes to the front, and
@@ -122,6 +133,7 @@ export default function ServiceHubScreen() {
         ['service-overseer', 'group-visits'],
         ['special-events', 'home'],
         ['aux-pioneers', 'month', month],
+        ['aux-pioneers', 'serving-now'],
       ]) {
         void qc.invalidateQueries({ queryKey });
       }
@@ -144,7 +156,7 @@ export default function ServiceHubScreen() {
       cartWeeks,
       groupVisits: visitsQ.data ?? null,
       events: eventsQ.data ?? null,
-      auxCount: auxQ.data ? auxQ.data.rows.length : null,
+      auxCount: keepsAux ? (auxQ.data ? auxQ.data.rows.length : null) : servingCount,
     },
     {
       recordsAttendance: perms.canRecordAttendance,
@@ -205,9 +217,12 @@ export default function ServiceHubScreen() {
       href: '/cart/co-schedule',
     },
   ];
-  // NARROWER THAN ITS SCREEN, on purpose: the screen behind is the working
-  // list of those who keep it — hours, terms, the journal.
-  const auxPioneers: Door[] = perms.canManageAuxiliaryPioneers
+  // One row under one name. For whoever keeps the list it opens the working
+  // list (DoorList draws that door for them alone). For everybody else it
+  // opens this month's names — and is not drawn at all in a month when
+  // nobody serves, or before the answer has come: a row that says «никто»
+  // would only point at an absence.
+  const auxPioneers: Door[] = keepsAux
     ? [
         {
           key: 'auxPioneers',
@@ -216,7 +231,16 @@ export default function ServiceHubScreen() {
           href: '/cart/auxiliary-pioneers',
         },
       ]
-    : [];
+    : servingCount !== null && servingCount > 0
+      ? [
+          {
+            key: 'auxPioneers',
+            title: t('auxPioneer.title'),
+            subtitle: t('auxPioneer.menuSubtitle'),
+            href: '/cart/auxiliary-pioneers-month',
+          },
+        ]
+      : [];
 
   const sections: DoorSection[] =
     perms.isElder || perms.isAdmin

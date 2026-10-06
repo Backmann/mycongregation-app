@@ -109,6 +109,9 @@ export default function AuxiliaryPioneersScreen() {
   const invalidate = () => {
     qc.invalidateQueries({ queryKey: QK_MONTH(monthParam) });
     qc.invalidateQueries({ queryKey: QK_JOURNAL });
+    // What everybody is told — the row in «Служение», the marks in a group's
+    // card and in the roster.
+    qc.invalidateQueries({ queryKey: ['aux-pioneers', 'serving-now'] });
   };
 
   const createMutation = useMutation({

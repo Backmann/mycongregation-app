@@ -46,8 +46,10 @@ export default function ServiceGroupDetailScreen() {
   });
 
   const auxQuery = useQuery({
-    queryKey: ['aux-pioneers', 'journal'],
-    queryFn: () => auxiliaryPioneersApi.journal(),
+    // Who serves now, and no more: this card is open to the whole group, and
+    // it used to read the entire journal for the sake of a mark (6 October).
+    queryKey: ['aux-pioneers', 'serving-now'],
+    queryFn: () => auxiliaryPioneersApi.servingNow(),
     staleTime: 5 * 60 * 1000,
   });
   // Auxiliary pioneering comes from the real service periods, the same source
@@ -55,9 +57,7 @@ export default function ServiceGroupDetailScreen() {
   // never changes.
   const activeAuxIds = useMemo(() => {
     const ids = new Set<string>();
-    for (const row of auxQuery.data ?? []) {
-      if (row.state === 'serving') ids.add(row.publisherId);
-    }
+    for (const p of auxQuery.data?.people ?? []) ids.add(p.publisherId);
     return ids;
   }, [auxQuery.data]);
   const membersQuery = useQuery({

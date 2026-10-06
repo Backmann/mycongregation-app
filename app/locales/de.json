@@ -2803,7 +2803,12 @@
     },
     "currentMonth": "aktuell",
     "pastPeriodWarning": "Dieser Zeitraum liegt in der Vergangenheit — prüfen Sie das Jahr.",
-    "lateMonthWarning": "Es ist bereits der {{day}}. Das Ziel sind volle 30 Stunden für einen angebrochenen Monat. Stimmt das?"
+    "lateMonthWarning": "Es ist bereits der {{day}}. Das Ziel sind volle 30 Stunden für einen angebrochenen Monat. Stimmt das?",
+    "now": {
+      "intro": "In diesem Monat dienen als Hilfspioniere",
+      "you": "Sie",
+      "meetingsHint": "Wann Sie gemeinsam in den Dienst gehen können"
+    }
   },
   "weekDrawer": {
     "title": "Zur Zusammenkunft",

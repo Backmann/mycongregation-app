@@ -106,14 +106,16 @@ export default function PublishersListScreen() {
     // releasing an auxiliary pioneer left this filter showing yesterday's
     // answer until the app happened to refetch. One letter apart, invisible
     // to every check that exists.
-    queryKey: ['aux-pioneers', 'journal'],
-    queryFn: () => auxiliaryPioneersApi.journal(),
+    //
+    // And 'serving-now', not the journal (6 October): the filter needs to
+    // know who serves this month, and the list is open to everybody — it had
+    // no business reading every period ever served.
+    queryKey: ['aux-pioneers', 'serving-now'],
+    queryFn: () => auxiliaryPioneersApi.servingNow(),
   });
   const activeAuxIds = useMemo(() => {
     const s = new Set<string>();
-    for (const row of auxJournalQuery.data ?? []) {
-      if (row.state === 'serving') s.add(row.publisherId);
-    }
+    for (const p of auxJournalQuery.data?.people ?? []) s.add(p.publisherId);
     return s;
   }, [auxJournalQuery.data]);
   const groupNameById = useMemo(() => {
