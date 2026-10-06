@@ -1439,6 +1439,15 @@ export interface VisitingSpeaker {
    * иначе справочник выглядит заполненным, а он нет.
    */
   autoCreated?: boolean;
+  /**
+   * Районный старейшина, а не брат, которого приглашают.
+   *
+   * Его публичная речь в неделю визита — тоже запись «К нам», и история у
+   * карточки обычная. Но в списках, по которым решают, кого позвать, ей не
+   * место: он приезжает сам. Ставит пометку визит; руками — если районный
+   * уже был заведён как обычный докладчик. Нет у сервера старше 5 октября.
+   */
+  circuitOverseer?: boolean;
   /** Карточка объединена с другой — ссылка на оставшуюся. */
   mergedIntoId?: string | null;
   createdAt: string;
@@ -1559,6 +1568,7 @@ export const visitingSpeakersApi = {
     phone?: string | null;
     note?: string | null;
     talkNumbers?: number[];
+    circuitOverseer?: boolean;
   }): Promise<VisitingSpeaker> {
     const { data } = await api.post<VisitingSpeaker>(
       "/visiting-speakers",
@@ -1575,6 +1585,7 @@ export const visitingSpeakersApi = {
       phone: string | null;
       note: string | null;
       talkNumbers: number[];
+      circuitOverseer: boolean;
     }>,
   ): Promise<VisitingSpeaker> {
     const { data } = await api.patch<VisitingSpeaker>(

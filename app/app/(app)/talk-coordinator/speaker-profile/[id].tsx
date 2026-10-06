@@ -269,6 +269,11 @@ export default function SpeakerProfileScreen() {
       {/* Header */}
       <View style={styles.card}>
         <Text style={styles.name}>{name}</Text>
+        {speaker.circuitOverseer ? (
+          <Text style={styles.cong}>
+            {t("talkCoordinator.speakers.circuitOverseer")}
+          </Text>
+        ) : null}
         {speaker.externalCongregation ? (
           <Text style={styles.cong}>{speaker.externalCongregation.name}</Text>
         ) : null}
@@ -298,7 +303,7 @@ export default function SpeakerProfileScreen() {
               {t("talkCoordinator.speakers.mergedAway")}
             </Text>
           </View>
-        ) : speaker.autoCreated ? (
+        ) : speaker.autoCreated && !speaker.circuitOverseer ? (
           <View style={styles.originRow}>
             <Ionicons name="sparkles-outline" size={14} color="#7c3aed" />
             <Text style={styles.originText}>

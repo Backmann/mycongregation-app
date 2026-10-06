@@ -61,6 +61,7 @@ export default function SpeakersScreen() {
   const [note, setNote] = useState("");
   const [talks, setTalks] = useState<number[]>([]);
   const [talkInput, setTalkInput] = useState("");
+  const [overseer, setOverseer] = useState(false);
 
   const listQuery = useQuery({
     queryKey: QK,
@@ -133,7 +134,11 @@ export default function SpeakersScreen() {
     if (!listQuery.data || !distinctQuery.data) return [];
     const byId = new Map(listQuery.data.map((sp) => [sp.id, sp]));
     return likelyDoubles(
-      listQuery.data.map((sp) => ({ id: sp.id, fullName: speakerName(sp) })),
+      // The circuit overseer's card is not offered for merging by a hint: it
+      // is a card of another kind, and nobody is choosing whom to invite.
+      listQuery.data
+        .filter((sp) => !sp.circuitOverseer)
+        .map((sp) => ({ id: sp.id, fullName: speakerName(sp) })),
       distinctQuery.data,
     ).map(([a, b]) => {
       // More visits first; between equals, the card that knows more about
@@ -178,15 +183,23 @@ export default function SpeakersScreen() {
     }
 
     if (view === "never") {
-      list = list.filter((sp) => (st(sp)?.count ?? 0) === 0);
+      list = list.filter(
+        (sp) => !sp.circuitOverseer && (st(sp)?.count ?? 0) === 0,
+      );
       list.sort((a, b) => nameKey(a).localeCompare(nameKey(b)));
       return list;
     }
 
     if (view === "byCongregation") {
+      // Overseers last, under their own heading — not among the brothers
+      // who merely have no congregation entered.
+      const group = (sp: VisitingSpeaker) =>
+        sp.circuitOverseer
+          ? "\uffff\uffff"
+          : (sp.externalCongregation?.name ?? "\uffff");
       list.sort((a, b) => {
-        const ca = a.externalCongregation?.name ?? "\uffff";
-        const cb = b.externalCongregation?.name ?? "\uffff";
+        const ca = group(a);
+        const cb = group(b);
         return ca.localeCompare(cb) || nameKey(a).localeCompare(nameKey(b));
       });
       return list;
@@ -199,7 +212,8 @@ export default function SpeakersScreen() {
        * дана, а прежде они стояли в самом верху, потому что «давность» у
        * будущего визита наибольшая.
        */
-      list = list.filter((sp) => !st(sp)?.nextVisit);
+      // The circuit overseer is not invited: he comes on his visit.
+      list = list.filter((sp) => !sp.circuitOverseer && !st(sp)?.nextVisit);
       const key = (sp: VisitingSpeaker) => {
         const x = st(sp);
         if (!x || x.count === 0) return "0_";
@@ -225,9 +239,12 @@ export default function SpeakersScreen() {
     const st = (sp: VisitingSpeaker) => statsById.get(sp.id);
     return {
       all: all.length,
-      due: all.filter((sp) => !st(sp)?.nextVisit).length,
+      due: all.filter((sp) => !sp.circuitOverseer && !st(sp)?.nextVisit)
+        .length,
       planned: all.filter((sp) => !!st(sp)?.nextVisit).length,
-      never: all.filter((sp) => (st(sp)?.count ?? 0) === 0).length,
+      never: all.filter(
+        (sp) => !sp.circuitOverseer && (st(sp)?.count ?? 0) === 0,
+      ).length,
       byCongregation: all.length,
     };
   }, [listQuery.data, statsById]);
@@ -245,8 +262,10 @@ export default function SpeakersScreen() {
   const headingFor = (index: number): string | null => {
     if (view !== "byCongregation") return null;
     const nameOf = (sp: VisitingSpeaker | undefined) =>
-      sp?.externalCongregation?.name ??
-      (sp ? t("talkCoordinator.speakers.noCongregationSection") : null);
+      sp?.circuitOverseer
+        ? t("talkCoordinator.speakers.circuitOverseerSection")
+        : (sp?.externalCongregation?.name ??
+          (sp ? t("talkCoordinator.speakers.noCongregationSection") : null));
     const here = nameOf(rows[index]);
     const before = index === 0 ? null : nameOf(rows[index - 1]);
     return here !== before ? here : null;
@@ -307,6 +326,7 @@ export default function SpeakersScreen() {
     setNote("");
     setTalks([]);
     setTalkInput("");
+    setOverseer(false);
   };
 
   const startAdd = () => {
@@ -324,6 +344,7 @@ export default function SpeakersScreen() {
     setNote(s.note ?? "");
     setTalks([...s.talkNumbers].sort((a, b) => a - b));
     setTalkInput("");
+    setOverseer(!!s.circuitOverseer);
     setEditingId(s.id);
   };
 
@@ -351,6 +372,7 @@ export default function SpeakersScreen() {
     setNote("");
     setTalks([]);
     setTalkInput("");
+    setOverseer(false);
     setEditingId("new");
   }, [congParam]);
 
@@ -417,6 +439,13 @@ export default function SpeakersScreen() {
       phone: phone.trim() || null,
       note: note.trim() || null,
       talkNumbers: talks,
+      // Sent only when it says something: a server that does not know the
+      // mark yet refuses a field it has never heard of.
+      ...(overseer ||
+      (editingId !== "new" &&
+        (listQuery.data ?? []).find((x) => x.id === editingId)?.circuitOverseer)
+        ? { circuitOverseer: overseer }
+        : {}),
     };
     if (editingId && editingId !== "new")
       await updateMutation.mutateAsync({ id: editingId, input });
@@ -580,6 +609,36 @@ export default function SpeakersScreen() {
           autoFocus
         />
       )}
+
+      {/*
+        Районный старейшина.
+
+        Обычно пометку ставит сам визит. Переключатель нужен, когда районного
+        уже завели как обычного докладчика — с собранием или до появления
+        пометки: тогда его карточка одна, и её достаточно пометить.
+      */}
+      <Pressable
+        style={[styles.pickChip, styles.overseerChip, overseer && styles.pickChipActive]}
+        onPress={() => setOverseer((v) => !v)}
+        accessibilityRole="checkbox"
+        accessibilityState={{ checked: overseer }}
+      >
+        <Ionicons
+          name={overseer ? "checkbox" : "square-outline"}
+          size={16}
+          color={overseer ? "#0369a1" : "#475569"}
+        />
+        <Text
+          style={[styles.pickChipText, overseer && styles.pickChipTextActive]}
+        >
+          {t("talkCoordinator.speakers.circuitOverseer")}
+        </Text>
+      </Pressable>
+      {overseer ? (
+        <Text style={styles.overseerHint}>
+          {t("talkCoordinator.speakers.circuitOverseerHint")}
+        </Text>
+      ) : null}
 
       <Text style={styles.fieldLabel}>
         {t("talkCoordinator.speakers.phone")}
@@ -830,6 +889,11 @@ export default function SpeakersScreen() {
                     disabled={pending}
                   >
                     <Text style={styles.name}>{speakerName(s)}</Text>
+                    {s.circuitOverseer ? (
+                      <Text style={styles.sub}>
+                        {t("talkCoordinator.speakers.circuitOverseer")}
+                      </Text>
+                    ) : null}
                     {!!s.externalCongregation && (
                       <Text style={styles.sub}>
                         {s.externalCongregation.name}
@@ -844,7 +908,8 @@ export default function SpeakersScreen() {
                     ни собрания, ни телефона, ни репертуара, — и без пометки
                     справочник выглядит заполненным, хотя это не так.
                   */}
-                    {s.autoCreated ? (
+                    {/* An overseer's card has nothing to be filled in for. */}
+                    {s.autoCreated && !s.circuitOverseer ? (
                       <View style={styles.autoRow}>
                         <Ionicons
                           name="sparkles-outline"
@@ -1173,6 +1238,14 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   pickChipActive: { backgroundColor: "#e0f2fe", borderColor: "#0ea5e9" },
+  overseerChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    alignSelf: "flex-start",
+    marginTop: 12,
+  },
+  overseerHint: { fontSize: 12, color: "#64748b", marginTop: 6, lineHeight: 17 },
   pickChipText: { fontSize: 13, color: "#475569" },
   pickChipTextActive: {
     color: "#0369a1",

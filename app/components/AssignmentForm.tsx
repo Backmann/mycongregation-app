@@ -240,6 +240,7 @@ export function AssignmentForm({
       id: sp.id,
       name: [sp.firstName, sp.lastName].filter(Boolean).join(" "),
       cong: sp.externalCongregation?.name ?? null,
+      overseer: !!sp.circuitOverseer,
     }));
     // Тот, кто уже стоит в неделе, в списке не нужен: заменять им же самим
     // нечего, и сервер такую замену отвергает.
@@ -247,7 +248,10 @@ export function AssignmentForm({
       (x) => x.name !== (form.speakerName ?? "").trim(),
     );
     const typed = replaceSearch.trim().toLowerCase();
-    if (typed.length < 2) return others.slice(0, 5);
+    // Without anything typed these are suggestions of whom to call — and the
+    // circuit overseer is not somebody one calls in. By name he is found.
+    if (typed.length < 2)
+      return others.filter((x) => !x.overseer).slice(0, 5);
     return others
       .filter(
         (x) =>

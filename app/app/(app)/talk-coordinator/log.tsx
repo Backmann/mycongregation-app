@@ -235,13 +235,19 @@ export default function TalkExchangeYearScreen() {
   const speakerById = useMemo(() => {
     const m = new Map<
       string,
-      { name: string; cong: string | null; phone: string | null }
+      {
+        name: string;
+        cong: string | null;
+        phone: string | null;
+        overseer: boolean;
+      }
     >();
     for (const s of speakersQuery.data ?? [])
       m.set(s.id, {
         name: [s.firstName, s.lastName].filter(Boolean).join(" "),
         cong: s.externalCongregation?.name ?? null,
         phone: s.phone ?? null,
+        overseer: !!s.circuitOverseer,
       });
     return m;
   }, [speakersQuery.data]);
@@ -290,7 +296,11 @@ export default function TalkExchangeYearScreen() {
     return m;
   }, [speakersQuery.data, listQuery.data, talksQuery.data, today]);
   const sortedSpeakers = useMemo(() => {
-    const arr = [...(speakersQuery.data ?? [])];
+    // The circuit overseer is not chosen here: his entry is written by his
+    // visit. He stays in the list only where an entry already names him.
+    const arr = (speakersQuery.data ?? []).filter(
+      (sp) => !sp.circuitOverseer || sp.id === visitingSpeakerId,
+    );
     const q = speakerSearch.trim().toLowerCase();
     const nameOf = (sp: VisitingSpeaker) =>
       [sp.firstName, sp.lastName].filter(Boolean).join(" ");
@@ -307,7 +317,7 @@ export default function TalkExchangeYearScreen() {
       return la.localeCompare(lb) || nameOf(a).localeCompare(nameOf(b));
     });
     return filtered;
-  }, [speakersQuery.data, speakerSearch, statsById]);
+  }, [speakersQuery.data, speakerSearch, statsById, visitingSpeakerId]);
   const visibleSpeakers = useMemo(() => {
     if (speakerSearch.trim() || showAllSpeakers) return sortedSpeakers;
     /**
@@ -1094,9 +1104,14 @@ export default function TalkExchangeYearScreen() {
       : e.visitingSpeakerId
         ? (speakerById.get(e.visitingSpeakerId)?.name ?? null)
         : e.speakerName;
+  // Where a congregation would stand, the overseer's entry says who he is —
+  // otherwise it reads as a visiting speaker from nowhere.
   const incomingCong = (e: TalkExchange): string | null =>
     e.visitingSpeakerId
-      ? (speakerById.get(e.visitingSpeakerId)?.cong ?? null)
+      ? (speakerById.get(e.visitingSpeakerId)?.cong ??
+        (speakerById.get(e.visitingSpeakerId)?.overseer
+          ? t("talkCoordinator.speakers.circuitOverseer")
+          : null))
       : e.speakerCongregation;
   const incomingPhone = (e: TalkExchange): string | null =>
     e.visitingSpeakerId
