@@ -79,7 +79,12 @@ function collectIds(url, json) {
  */
 const PRIVATE = ['mobilePhone', 'email', 'address', 'notes', 'removedNote', 'birthDate', 'baptismDate',
   'ministryStartDate', 'pioneerSince', 'removalReason', 'removedAt', 'isDeaf', 'isBlind', 'isImprisoned',
-  'contactsConfirmedAt', 'userId'];
+  'contactsConfirmedAt', 'userId',
+  // 6 October: found travelling with the roster and with the leaders of groups.
+  'spiritualStatus', 'contactsConfirmedByUserId', 'lastEditedById', 'statusOverriddenById', 'statusOverriddenAt',
+  'restoredAt', 'anonymizedAt',
+  // A visiting speaker's card (it has a name too): how to reach him, and the coordinator's note.
+  'phone', 'note'];
 function leaks(json, selfUserId) {
   const found = new Set();
   const walk = (o) => {
