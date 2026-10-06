@@ -1448,6 +1448,11 @@ export interface VisitingSpeaker {
    * уже был заведён как обычный докладчик. Нет у сервера старше 5 октября.
    */
   circuitOverseer?: boolean;
+  /**
+   * Кем он приезжал в последний раз — районным или его заместителем. Считает
+   * сервер, по визитам; есть только у помеченных карточек.
+   */
+  circuitRole?: "overseer" | "substitute";
   /** Карточка объединена с другой — ссылка на оставшуюся. */
   mergedIntoId?: string | null;
   createdAt: string;

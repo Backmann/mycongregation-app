@@ -240,6 +240,7 @@ export default function TalkExchangeYearScreen() {
         cong: string | null;
         phone: string | null;
         overseer: boolean;
+        substitute: boolean;
       }
     >();
     for (const s of speakersQuery.data ?? [])
@@ -248,6 +249,7 @@ export default function TalkExchangeYearScreen() {
         cong: s.externalCongregation?.name ?? null,
         phone: s.phone ?? null,
         overseer: !!s.circuitOverseer,
+        substitute: s.circuitRole === "substitute",
       });
     return m;
   }, [speakersQuery.data]);
@@ -1110,7 +1112,9 @@ export default function TalkExchangeYearScreen() {
     e.visitingSpeakerId
       ? (speakerById.get(e.visitingSpeakerId)?.cong ??
         (speakerById.get(e.visitingSpeakerId)?.overseer
-          ? t("talkCoordinator.speakers.circuitOverseer")
+          ? speakerById.get(e.visitingSpeakerId)?.substitute
+            ? t("talkCoordinator.speakers.circuitSubstitute")
+            : t("talkCoordinator.speakers.circuitOverseer")
           : null))
       : e.speakerCongregation;
   const incomingPhone = (e: TalkExchange): string | null =>

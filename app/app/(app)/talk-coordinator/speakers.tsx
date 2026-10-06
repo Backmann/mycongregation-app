@@ -631,7 +631,7 @@ export default function SpeakersScreen() {
         <Text
           style={[styles.pickChipText, overseer && styles.pickChipTextActive]}
         >
-          {t("talkCoordinator.speakers.circuitOverseer")}
+          {t("talkCoordinator.speakers.circuitOverseerToggle")}
         </Text>
       </Pressable>
       {overseer ? (
@@ -891,7 +891,9 @@ export default function SpeakersScreen() {
                     <Text style={styles.name}>{speakerName(s)}</Text>
                     {s.circuitOverseer ? (
                       <Text style={styles.sub}>
-                        {t("talkCoordinator.speakers.circuitOverseer")}
+                        {s.circuitRole === "substitute"
+                          ? t("talkCoordinator.speakers.circuitSubstitute")
+                          : t("talkCoordinator.speakers.circuitOverseer")}
                       </Text>
                     ) : null}
                     {!!s.externalCongregation && (

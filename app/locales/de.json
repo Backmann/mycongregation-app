@@ -2633,6 +2633,8 @@
       "autoCreatedHint": "Nichts ausgefüllt: Versammlung, Telefon, Vorträge",
       "circuitOverseer": "Kreisaufseher",
       "circuitOverseerSection": "Kreisaufseher",
+      "circuitSubstitute": "Vertreter des Kreisaufsehers",
+      "circuitOverseerToggle": "Kommt zum Besuch des Kreisaufsehers",
       "circuitOverseerHint": "Er wird nicht eingeladen – er kommt zu seinem Besuch. Unter „Wen einladen“ und „Noch nicht“ erscheint diese Karte nicht.",
       "mergedAway": "Diese Karte wurde mit einer anderen zusammengeführt — ihre Geschichte ist dort.",
       "view": {

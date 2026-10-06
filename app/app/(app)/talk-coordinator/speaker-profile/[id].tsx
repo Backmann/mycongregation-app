@@ -271,7 +271,9 @@ export default function SpeakerProfileScreen() {
         <Text style={styles.name}>{name}</Text>
         {speaker.circuitOverseer ? (
           <Text style={styles.cong}>
-            {t("talkCoordinator.speakers.circuitOverseer")}
+            {speaker.circuitRole === "substitute"
+              ? t("talkCoordinator.speakers.circuitSubstitute")
+              : t("talkCoordinator.speakers.circuitOverseer")}
           </Text>
         ) : null}
         {speaker.externalCongregation ? (

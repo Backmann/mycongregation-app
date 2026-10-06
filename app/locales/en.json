@@ -2633,6 +2633,8 @@
       "autoCreatedHint": "Nothing filled in: congregation, phone, talks",
       "circuitOverseer": "Circuit overseer",
       "circuitOverseerSection": "Circuit overseers",
+      "circuitSubstitute": "Substitute circuit overseer",
+      "circuitOverseerToggle": "Comes on the circuit visit",
       "circuitOverseerHint": "He is not invited — he comes on his visit. Such a card is left out of “Whom to invite” and “Not yet”.",
       "mergedAway": "This card was merged into another one — its history moved there.",
       "view": {
