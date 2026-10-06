@@ -71,9 +71,9 @@ export default function CongregationScreen() {
   };
 
   const editsProgramme = perms.canEditMidweekSchedule || perms.canEditWeekendSchedule;
-  const importsProgramme = perms.canImportMidweekSchedule || perms.canImportWeekendSchedule;
   const meetings: Door[] = [];
-  if (editsProgramme || importsProgramme) {
+  // The same rule the screen itself asks (lib/permissions).
+  if (perms.canOpenProgrammeEditor) {
     meetings.push({
       key: 'programme',
       title: t('congregationHub.programme'),

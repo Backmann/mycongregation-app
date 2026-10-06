@@ -30,6 +30,25 @@ export interface Permissions {
   canManagePublicTalks: boolean;
   canImportMidweekSchedule: boolean;
   canImportWeekendSchedule: boolean;
+  /**
+   * «Составление программы» (/schedule/edit) is for whoever edits or imports
+   * the programme — and for nobody else. ONE rule, asked by every door to that
+   * screen and by the screen itself.
+   *
+   * It used to be asked by the doors only: a publisher had no way in, but the
+   * address opened the screen for her all the same (found on a copy of the
+   * live data, 6 October). Nothing leaked — the server gives her no drafts and
+   * refuses every change — but a screen titled «Составление программы» is not
+   * hers to stand on. scripts/check-programme-editor-door.mjs holds the doors
+   * and the screen to this one rule.
+   */
+  canOpenProgrammeEditor: boolean;
+  /**
+   * False until the list of responsibilities has arrived (or failed to).
+   * Before that a flag that depends on a responsibility reads «no» for
+   * everybody, so a screen that turns people away must wait for this.
+   */
+  loaded: boolean;
   canEditPublishers: boolean;
   /** Record meeting attendance (form S-3). */
   canRecordAttendance: boolean;
@@ -105,7 +124,7 @@ export function usePermissions(): Permissions {
 
   // All responsibilities in the congregation, fetched once and shared across
   // every usePermissions() consumer via react-query's cache.
-  const { data: allResponsibilities } = useQuery({
+  const { data: allResponsibilities, isFetched } = useQuery({
     queryKey: ["responsibilities"],
     queryFn: () => responsibilitiesApi.list(),
     enabled: !!user,
@@ -129,6 +148,13 @@ export function usePermissions(): Permissions {
     const isElder = role === "elder";
     const holds = (t: ResponsibilityType) => mine.has(t);
 
+    // The programme: who edits each meeting, who may import. Named here so
+    // that «who may open the editor» is made of the very same answers and
+    // cannot drift from them.
+    const editsMidweek = isAdmin || holds("life_ministry_overseer");
+    const editsWeekend = isAdmin || holds("body_coordinator");
+    const importsProgramme = isAdmin || isElder;
+
     return {
       isAdmin,
       isElder,
@@ -141,8 +167,10 @@ export function usePermissions(): Permissions {
 
       // Admin + Elder (current broad scope, pre responsibility refinement)
       canManagePublicTalks: isAdmin || isElder,
-      canImportMidweekSchedule: isAdmin || isElder,
-      canImportWeekendSchedule: isAdmin || isElder,
+      canImportMidweekSchedule: importsProgramme,
+      canImportWeekendSchedule: importsProgramme,
+      canOpenProgrammeEditor: editsMidweek || editsWeekend || importsProgramme,
+      loaded: isFetched,
       canEditPublishers: isAdmin || holds("secretary"),
       // Meeting attendance (form S-3): the secretary keeps it, and a brother
       // may be given the attendance responsibility to enter the figures.
@@ -163,8 +191,8 @@ export function usePermissions(): Permissions {
       canGenerateS21: isAdmin || isElder,
 
       // Responsibility-aware (Phase 2): admin OR specific responsibility.
-      canEditMidweekSchedule: isAdmin || holds("life_ministry_overseer"),
-      canEditWeekendSchedule: isAdmin || holds("body_coordinator"),
+      canEditMidweekSchedule: editsMidweek,
+      canEditWeekendSchedule: editsWeekend,
       canEditCleaning: isAdmin || holds("cleaning_coordinator"),
       canEditCartWitnessing: isAdmin || holds("public_witnessing"),
       canEditFieldServiceMeetings:
@@ -217,5 +245,5 @@ export function usePermissions(): Permissions {
 
       responsibilities: mine,
     };
-  }, [role, mine]);
+  }, [role, mine, isFetched]);
 }

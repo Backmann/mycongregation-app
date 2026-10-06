@@ -22,7 +22,7 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import { router, useLocalSearchParams } from "expo-router";
+import { Redirect, router, useLocalSearchParams } from "expo-router";
 import {
   Assignment,
   assignmentsApi,
@@ -117,7 +117,35 @@ function weekFromParam(raw: string | string[] | undefined): Date {
 /** IDs of prayer slots auto-filled from the chairman (for the "авто" badge). */
 const AutoAssignedContext = createContext<Set<string>>(new Set());
 
-export default function ScheduleIndexScreen() {
+/**
+ * The door of «Составление программы», at the screen itself.
+ *
+ * Every way in is offered only to those who edit or import the programme —
+ * but the address is a way in too, and it was open to everybody. Whoever the
+ * screen is not for is taken to the programme as everybody reads it, on the
+ * same week, rather than told «нет доступа»: the week they asked for is one
+ * they may see, just not here.
+ *
+ * The editor is a separate component on purpose: turned away, a person
+ * never mounts it, so none of its requests are even sent.
+ */
+export default function ScheduleEditScreen() {
+  const perms = usePermissions();
+  const params = useLocalSearchParams<{ week?: string }>();
+  if (perms.canOpenProgrammeEditor) return <ProgrammeEditor />;
+  // Not yet known whether this person holds a responsibility: wait, do not
+  // turn away somebody whose answer is a moment from arriving.
+  if (!perms.loaded) return null;
+  const week =
+    typeof params.week === "string" && /^\d{4}-\d{2}-\d{2}$/.test(params.week)
+      ? params.week
+      : null;
+  return (
+    <Redirect href={(week ? `/schedule?week=${week}` : "/schedule") as never} />
+  );
+}
+
+function ProgrammeEditor() {
   const { t, i18n } = useTranslation();
   const perms = usePermissions();
   const [publishingType, setPublishingType] = useState<string | null>(null);

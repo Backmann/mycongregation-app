@@ -20,12 +20,13 @@ export default function ScheduleLayout() {
     canImportMidweekSchedule,
     canImportWeekendSchedule,
     canViewLocalNeeds,
+    canOpenProgrammeEditor,
   } = usePermissions();
   const canCreate = canEditMidweekSchedule || canEditWeekendSchedule;
   const canImport = canImportMidweekSchedule || canImportWeekendSchedule;
-  // «Составление программы» is offered to exactly those the Congregation tab
-  // offers it to (publishers/index.tsx): who edits or who imports.
-  const plans = canCreate || canImport;
+  // «Составление программы» is offered to exactly those the screen itself
+  // lets in — one rule, lib/permissions canOpenProgrammeEditor.
+  const plans = canOpenProgrammeEditor;
   // On a narrow viewport (a phone with a larger display-size setting, or a
   // zoomed-in browser) header icons leave too little room for the title — so
   // shrink the icons and the brand mark, and keep the title on one line

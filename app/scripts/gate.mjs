@@ -99,6 +99,9 @@ const STEPS = [
   // The role's name is a key built at run time, which no translation check
   // sees: a ministerial servant read «ministerial_servant» in his profile.
   ['Названия ролей', 'node', ['scripts/check-role-names.mjs']],
+  // One rule for who may open «Составление программы» — asked by the doors
+  // and by the screen (6 October: the address opened it for a publisher).
+  ['Дверь «Составления программы»', 'node', ['scripts/check-programme-editor-door.mjs']],
   // A folder nobody names in the tab layout becomes a tab. Silently.
   ['Вкладки', 'node', ['scripts/check-tabs.mjs']],
 ];
