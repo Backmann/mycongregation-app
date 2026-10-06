@@ -89,6 +89,9 @@ const STEPS = [
   // …and the half that had no test in either copy: reading a whole issue.
   // On samples with invented wording, built on the skeleton of the real pages.
   ['Чтение выпуска', 'node', ['scripts/check-import-documents.mjs']],
+  // The script pasted into the live site's console to report facts: proved to
+  // only read, and to let no name, phone, note or record id into its output.
+  ['Факты без имён', 'node', ['scripts/check-live-facts.mjs']],
   // The role's name is a key built at run time, which no translation check
   // sees: a ministerial servant read «ministerial_servant» in his profile.
   ['Названия ролей', 'node', ['scripts/check-role-names.mjs']],
