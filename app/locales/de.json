@@ -112,7 +112,14 @@
     "invitePending": "Eine Einladung wurde verschickt und noch nicht genutzt. Der Code gilt bis {{until}}.",
     "revokeInvite": "Einladung zurückziehen",
     "revokingInvite": "Wird zurückgezogen…",
-    "saveToCardShared": "Achtung: das Postfach wird geteilt. Als eigener Kontakt gespeichert, gilt die Adresse im Brief als seine — und der Brief enthält dann einen Anmeldelink, den derjenige nutzen kann, der ihn zuerst öffnet. Lassen Sie das aus, wenn zwei Personen das Postfach teilen."
+    "saveToCardShared": "Achtung: das Postfach wird geteilt. Als eigener Kontakt gespeichert, gilt die Adresse im Brief als seine — und der Brief enthält dann einen Anmeldelink, den derjenige nutzen kann, der ihn zuerst öffnet. Lassen Sie das aus, wenn zwei Personen das Postfach teilen.",
+    "passwordLabel": "Passwort",
+    "passwordSet": "festgelegt",
+    "passwordNotSet": "nicht festgelegt",
+    "noPasswordNote": "Es gibt kein Passwort – diese Person kann sich nicht anmelden. Geben Sie unten einen Code aus oder legen Sie ein Passwort fest.",
+    "neverUsedNote": "Ein Passwort ist festgelegt, aber diese Person hat sich noch nie angemeldet. Wenn es nicht klappt, legen Sie das Passwort neu fest und probieren Sie die Anmeldung gemeinsam mit dem Anmeldenamen.",
+    "showPassword": "Passwort anzeigen",
+    "hidePassword": "Passwort verbergen"
   },
   "tabs": {
     "schedule": "Programm",
@@ -3974,6 +3981,11 @@
       "fullHint": "3, 2 und 1 Woche, 3 Tage und 1 Tag vorher",
       "short": "Nur eine Woche vorher und am Vortag",
       "note": "An Dienste wird eine Woche vorher und am Vortag erinnert. Die Erinnerung am Vortag kommt immer."
+    },
+    "noGoogle": {
+      "title": "Auf diesem Telefon gibt es keine Google-Dienste, deshalb kommen die Benachrichtigungen der App hier nicht an.",
+      "byMail": "Das Wichtige kommt per E-Mail an {{email}}: Ihre Aufgaben in den Zusammenkünften und die Erinnerungen daran. Zu Reinigung und Bericht kommen keine E-Mails – bitte schauen Sie in die App.",
+      "noMail": "Bitten Sie die Ältesten, Ihre E-Mail-Adresse einzutragen – dann kommen Ihre Aufgaben und die Erinnerungen daran per E-Mail."
     }
   }
 }

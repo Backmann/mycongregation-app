@@ -112,7 +112,14 @@
     "invitePending": "An invitation was sent and has not been used yet. The code is valid until {{until}}.",
     "revokeInvite": "Call the invitation back",
     "revokingInvite": "Calling back…",
-    "saveToCardShared": "Careful: this mailbox is shared. Recorded as the publisher’s own contact, the letter will treat it as theirs and include a sign-in link — and whoever opens the letter first can use it. Leave this off if two people share the mailbox."
+    "saveToCardShared": "Careful: this mailbox is shared. Recorded as the publisher’s own contact, the letter will treat it as theirs and include a sign-in link — and whoever opens the letter first can use it. Leave this off if two people share the mailbox.",
+    "passwordLabel": "Password",
+    "passwordSet": "set",
+    "passwordNotSet": "not set",
+    "noPasswordNote": "There is no password — this person cannot sign in. Issue a code or set a password below.",
+    "neverUsedNote": "A password is set, but this person has never signed in. If it does not work, set the password again and try signing in together, using the login name.",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password"
   },
   "tabs": {
     "schedule": "Programme",
@@ -3974,6 +3981,11 @@
       "fullHint": "3, 2 and 1 week, 3 days and 1 day before",
       "short": "Only a week before and the day before",
       "note": "Duties are recalled a week before and the day before. The reminder the day before always comes."
+    },
+    "noGoogle": {
+      "title": "This phone has no Google services, so the app's notifications cannot reach it.",
+      "byMail": "What matters will come by e-mail to {{email}}: your meeting assignments and reminders of them. Cleaning and report reminders are not mailed — please look in the app.",
+      "noMail": "Ask the elders to add your e-mail address — your assignments and reminders of them will then come by e-mail."
     }
   }
 }

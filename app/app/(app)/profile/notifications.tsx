@@ -27,6 +27,8 @@ import {
   useDeviceNotify,
 } from '../../../lib/notify-device';
 import { usePermissions } from '../../../lib/permissions';
+import { noGoogleServices } from '../../../lib/push-no-google';
+import { useAuth } from '../../../lib/auth';
 import { router } from 'expo-router';
 import { notify } from '../../../lib/error-bus';
 
@@ -48,10 +50,16 @@ function DeviceState() {
   const [result, setResult] = useState<string | null>(null);
 
   const ok = state === 'ok';
+  const { user } = useAuth();
   const error =
     native.kind === 'no_token' || native.kind === 'not_registered'
       ? native.error
       : null;
+  // A phone with no Google services (a Huawei): not a fault of the build and
+  // nothing a button here can change — said as that, with what does reach
+  // the person (lib/push-no-google).
+  const noGoogle =
+    state === 'no_token' && Platform.OS === 'android' && noGoogleServices(error);
   // What can be done from here: the site can ask the browser; the app can
   // only lead to the phone's settings once the system has said no.
   const canEnable =
@@ -105,7 +113,16 @@ function DeviceState() {
           {t('notificationPrefs.device.title')}
         </Text>
       </View>
-      <Text style={styles.deviceLine}>{t(`notifyDevice.state.${state}`)}</Text>
+      <Text style={styles.deviceLine}>
+        {noGoogle ? t('notifyDevice.noGoogle.title') : t(`notifyDevice.state.${state}`)}
+      </Text>
+      {noGoogle ? (
+        <Text style={styles.deviceReason}>
+          {user?.email
+            ? t('notifyDevice.noGoogle.byMail', { email: user.email })
+            : t('notifyDevice.noGoogle.noMail')}
+        </Text>
+      ) : null}
       {state === 'not_installed' ? (
         <Text style={styles.deviceReason}>{t('profile.webPush.iosHint')}</Text>
       ) : null}
@@ -114,12 +131,12 @@ function DeviceState() {
           {t('notifyDevice.card.deniedWeb')}
         </Text>
       ) : null}
-      {error ? (
+      {error && !noGoogle ? (
         <Text style={styles.deviceReason}>
           {t('notificationPrefs.device.reason', { error })}
         </Text>
       ) : null}
-      {state === 'no_token' && Platform.OS === 'android' ? (
+      {state === 'no_token' && Platform.OS === 'android' && !noGoogle ? (
         <Text style={styles.deviceReason}>
           {t('notificationPrefs.device.androidHint')}
         </Text>
@@ -144,7 +161,7 @@ function DeviceState() {
           )}
         </Pressable>
       ) : null}
-      {state !== 'checking' ? (
+      {state !== 'checking' && !noGoogle ? (
         <Pressable
           style={styles.deviceSecondary}
           onPress={test}

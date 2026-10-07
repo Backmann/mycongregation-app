@@ -15,7 +15,11 @@ import { Ionicons } from "@expo/vector-icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { extractErrorMessage, publishersApi, usersApi } from "../lib/api";
-import { passwordProblem, PASSWORD_MIN_LENGTH } from "../lib/password";
+import {
+  passwordProblem,
+  PASSWORD_MIN_LENGTH,
+  suggestPassword,
+} from "../lib/password";
 import {
   loginNameProblem,
   loginNameRefusal,
@@ -227,6 +231,38 @@ export function PublisherAccessContent({
             t("publisherAccess.neverLoggedIn")}
         </Text>
       </View>
+      {/* Whether there is a password at all. «Ещё не заходил» alone left an
+          elder guessing between «never set one» and «cannot get it right» —
+          and with an invitation that had run out, the card said nothing
+          (7 October 2026). Not drawn while an older server leaves it unsaid. */}
+      {typeof access.hasPassword === "boolean" ? (
+        <View style={styles.row}>
+          <Text style={styles.rowLabel}>
+            {t("publisherAccess.passwordLabel")}
+          </Text>
+          <Text
+            style={[
+              styles.rowValue,
+              !access.hasPassword && { color: "#b45309" },
+            ]}
+          >
+            {access.hasPassword
+              ? t("publisherAccess.passwordSet")
+              : t("publisherAccess.passwordNotSet")}
+          </Text>
+        </View>
+      ) : null}
+      {access.hasPassword === false && !access.invitePendingUntil ? (
+        <View style={styles.pendingBox}>
+          <Ionicons name="alert-circle-outline" size={16} color="#92400e" />
+          <Text style={[styles.pendingText, { flex: 1 }]}>
+            {t("publisherAccess.noPasswordNote")}
+          </Text>
+        </View>
+      ) : null}
+      {access.hasPassword === true && !access.lastLoginAt ? (
+        <Text style={styles.hint}>{t("publisherAccess.neverUsedNote")}</Text>
+      ) : null}
       <View style={styles.switchRow}>
         <Text style={styles.rowLabel}>{t("publisherAccess.admin")}</Text>
         <Switch
@@ -1352,9 +1388,17 @@ function ResetModal({
 }) {
   const { t } = useTranslation();
   const [password, setPassword] = useState("");
+  // SEEN by default. The elder types it once, for somebody else, and then
+  // says it aloud: typed blind, a slip went into the account unseen and the
+  // person was refused with the «right» password (7 October 2026). The
+  // invitation screen has shown its password since August.
+  const [show, setShow] = useState(true);
 
   useEffect(() => {
-    if (visible) setPassword("");
+    if (visible) {
+      setPassword("");
+      setShow(true);
+    }
   }, [visible]);
 
   const canSubmit = !passwordProblem(password) && !pending;
@@ -1368,20 +1412,63 @@ function ResetModal({
       confirmLabel={t("publisherAccess.save")}
       confirmDisabled={!canSubmit}
       pending={pending}
-      onConfirm={() => onSubmit(password)}
+      // Without the spaces around it: pasted from a note it brings one along,
+      // and the server stores none (auth/password-edges).
+      onConfirm={() => onSubmit(password.trim())}
       onCancel={onCancel}
     >
       <Text style={styles.modalLabel}>{t("publisherAccess.newPassword")}</Text>
-      <TextInput
-        style={styles.input}
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-        placeholder={t("publisherAccess.passwordPlaceholder", {
-          count: PASSWORD_MIN_LENGTH,
-        })}
-      />
+      <View style={{ justifyContent: "center" }}>
+        <TextInput
+          style={[styles.input, { paddingRight: 42 }]}
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry={!show}
+          autoCapitalize="none"
+          autoCorrect={false}
+          autoComplete="off"
+          placeholder={t("publisherAccess.passwordPlaceholder", {
+            count: PASSWORD_MIN_LENGTH,
+          })}
+        />
+        <Pressable
+          onPress={() => setShow((v) => !v)}
+          hitSlop={8}
+          style={{ position: "absolute", right: 10, padding: 4 }}
+          accessibilityRole="button"
+          accessibilityLabel={
+            show
+              ? t("publisherAccess.hidePassword")
+              : t("publisherAccess.showPassword")
+          }
+        >
+          <Ionicons
+            name={show ? "eye-off-outline" : "eye-outline"}
+            size={18}
+            color="#94a3b8"
+          />
+        </Pressable>
+      </View>
       <PasswordRules password={password} />
+      <Pressable
+        onPress={() => {
+          setPassword(suggestPassword());
+          setShow(true);
+        }}
+        hitSlop={6}
+        style={{ alignSelf: "flex-start", marginTop: 8 }}
+      >
+        <Text
+          style={{
+            color: "#0369a1",
+            fontSize: 14,
+            fontWeight: "600",
+            fontFamily: "Manrope_600SemiBold",
+          }}
+        >
+          {t("password.suggest")}
+        </Text>
+      </Pressable>
 
       <Text style={styles.hint}>{t("publisherAccess.resetHint")}</Text>
 

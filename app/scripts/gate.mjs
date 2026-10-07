@@ -104,6 +104,7 @@ const STEPS = [
   // anybody signed in).
   ['Кому открыт экран', 'node', ['scripts/check-screen-access.mjs']],
   ['Двери спрашивают экран', 'node', ['scripts/check-doors.mjs']],
+  ['Телефон без сервисов Google', 'node', ['scripts/check-push-no-google.mjs']],
   // One rule for who may open «Составление программы» — asked by the doors
   // and by the screen (6 October: the address opened it for a publisher).
   ['Дверь «Составления программы»', 'node', ['scripts/check-programme-editor-door.mjs']],
