@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import BrandLockup from '../../../components/BrandLockup';
 import { HeaderCongregation } from '../../../components/HeaderCongregation';
 import { UpdateChip } from '../../../components/UpdateBanner';
+import { InboxBell } from '../../../components/InboxBell';
 import { BackButton } from '../../../components/BackButton';
 import { screenGate } from '../../../components/ScreenGate';
 
@@ -36,12 +37,34 @@ export default function HomeLayout() {
           ),
           // The invitation to update lives here now: in reach of a thumb, and
           // absent entirely while the build is current.
-          headerRight: () => <UpdateChip />,
+          // …and beside it the bell: everything the app has told this person,
+          // for the day a notification was swiped away or never came.
+          headerRight: () => (
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 12,
+                // The web header gives its right slot no inset of its own.
+                paddingRight: 14,
+              }}
+            >
+              <UpdateChip />
+              <InboxBell />
+            </View>
+          ),
         }}
       />
       {/* One header: this one, with the app's own back. The screen used to
           draw a second one of its own under it — the title twice, two backs
           (found by the screen audit, 24 September). */}
+      <Stack.Screen
+        name="inbox"
+        options={{
+          title: t('inbox.title'),
+          headerLeft: () => <BackButton fallback="/home" toParent />,
+        }}
+      />
       <Stack.Screen
         name="my-assignments"
         options={{

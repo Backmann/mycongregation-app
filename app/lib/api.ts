@@ -3229,7 +3229,35 @@ export interface MePending {
   more: number;
 }
 
+/** One thing the app told me — see the server's InboxService. */
+export interface InboxItem {
+  id: string;
+  title: string;
+  body: string;
+  /** What a tap opens: the payload the notification itself carried. */
+  data: Record<string, unknown>;
+  kind: string;
+  at: string;
+  /** Whether any device of mine took it. */
+  delivered: boolean;
+}
+
+export interface Inbox {
+  /** Up to when I have read the list; null when never opened. */
+  seenAt: string | null;
+  items: InboxItem[];
+}
+
 export const meApi = {
+  /** «Мои уведомления»: what I was told lately, newest first. */
+  async inbox(): Promise<Inbox> {
+    const { data } = await api.get<Inbox>("/me/inbox");
+    return data;
+  },
+  /** I have opened the list — the dot on the bell goes out everywhere. */
+  async inboxSeen(): Promise<void> {
+    await api.post("/me/inbox/seen");
+  },
   async pending(): Promise<MePending> {
     const { data } = await api.get<MePending>("/me/pending");
     return data;

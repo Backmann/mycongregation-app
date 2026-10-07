@@ -127,7 +127,7 @@ interface NotificationRoute {
  * reminder about a task, a duty, cleaning or a visiting speaker took the
  * reader nowhere in particular.
  */
-function routeForNotification(
+export function routeForNotification(
   data: NotificationData,
 ): NotificationRoute | null {
   // <<< NOTIFICATION ROUTES — one table, two copies. The service worker is

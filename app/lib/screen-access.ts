@@ -92,6 +92,7 @@ export const SCREEN_ACCESS: Record<string, AccessRule> = {
   // ── Главная ──────────────────────────────────────────────────────────
   '/home': 'all',
   '/home/my-assignments': 'all',
+  '/home/inbox': 'all',
 
   // ── Программа ────────────────────────────────────────────────────────
   '/schedule': 'all',

@@ -4060,5 +4060,18 @@
     "loginNameHint": "Write it down. It is always in «Profile».",
     "contacts": "Check my contacts",
     "done": "Got it"
+  },
+  "inbox": {
+    "title": "My notifications",
+    "bell": "My notifications",
+    "bellUnread": "My notifications — there are new ones",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "notDelivered": "did not reach a device",
+    "missedNote": "Messages marked «did not reach a device» were sent by the app, but none of your phones or browsers took them.",
+    "missedLink": "Check notifications on this device",
+    "emptyTitle": "Nothing has come yet",
+    "emptyHint": "Everything the app tells you will appear here: assignments, reminders, changes.",
+    "foot": "This keeps what the app has told you over the last six weeks."
   }
 }

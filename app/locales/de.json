@@ -4060,5 +4060,18 @@
     "loginNameHint": "Schreiben Sie ihn auf. Er steht immer im «Profil».",
     "contacts": "Meine Kontaktdaten prüfen",
     "done": "Verstanden"
+  },
+  "inbox": {
+    "title": "Meine Mitteilungen",
+    "bell": "Meine Mitteilungen",
+    "bellUnread": "Meine Mitteilungen – es gibt neue",
+    "today": "Heute",
+    "yesterday": "Gestern",
+    "notDelivered": "kein Gerät erreicht",
+    "missedNote": "Mitteilungen mit dem Vermerk «kein Gerät erreicht» hat die App gesendet, aber keines Ihrer Telefone und kein Browser hat sie angenommen.",
+    "missedLink": "Mitteilungen auf diesem Gerät prüfen",
+    "emptyTitle": "Bisher ist nichts gekommen",
+    "emptyHint": "Hier erscheint alles, was die App Ihnen mitteilt: Aufgaben, Erinnerungen, Änderungen.",
+    "foot": "Hier bleibt, was die App Ihnen in den letzten sechs Wochen mitgeteilt hat."
   }
 }

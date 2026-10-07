@@ -35,7 +35,7 @@ const ADB =
 // The same list as the browser audit (scripts/audit-crawl.mjs), minus the
 // old addresses that only forward.
 const ROUTES = [
-  '/home', '/home/my-assignments',
+  '/home', '/home/my-assignments', '/home/inbox',
   '/schedule', '/schedule/edit', '/schedule/conduct', '/schedule/rules', '/schedule/import',
   '/special-events', '/special-events/new', '/local-needs',
   '/publishers', '/publishers/list', '/service-groups',

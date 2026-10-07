@@ -110,6 +110,8 @@ const STEPS = [
   ['QR-код', 'node', ['scripts/check-qr.mjs']],
   // Who the list of accounts points at as stuck at the door — case by case.
   ['Кому нужна помощь', 'node', ['scripts/check-access-help.mjs']],
+  // When the bell is lit, and which day a message stands under.
+  ['Мои уведомления', 'node', ['scripts/check-inbox.mjs']],
   // One rule for who may open «Составление программы» — asked by the doors
   // and by the screen (6 October: the address opened it for a publisher).
   ['Дверь «Составления программы»', 'node', ['scripts/check-programme-editor-door.mjs']],

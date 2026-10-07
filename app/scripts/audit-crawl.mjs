@@ -37,7 +37,7 @@ const PASSWORD = process.env.PASSWORD || 'local12345';
 // Every screen of the app reachable by a plain address. Dynamic ones ([id])
 // are reached from their lists at the end.
 const ROUTES = [
-  '/home', '/home/my-assignments',
+  '/home', '/home/my-assignments', '/home/inbox',
   '/schedule', '/schedule/edit', '/schedule/conduct', '/schedule/new', '/schedule/rules', '/schedule/import',
   '/special-events', '/special-events/new', '/local-needs',
   '/publishers', '/publishers/list', '/publishers/new', '/service-groups', '/service-groups/new',

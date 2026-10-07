@@ -512,6 +512,26 @@ let memorialWeek = null; // found as the admin, reused by the others
     return `нуждаются в помощи: ${n}`;
   });
 
+  await check(page, 'A12в', 'Колокольчик на Главной → «Мои уведомления»; после прочтения точка гаснет', async () => {
+    await go(page, '/home');
+    const bell = page.getByLabel(/^Мои уведомления/).first();
+    await bell.waitFor({ timeout: 15000 }).catch(() => {
+      throw new Error('на Главной нет колокольчика');
+    });
+    await bell.click();
+    await atPath(page, '/home/inbox');
+    // Either messages under their days, or the plain «nothing yet».
+    const lines = await page.getByText(/^(Сегодня|Вчера|Пока ничего не приходило)$/i).filter({ visible: true }).count();
+    const dated = await page.locator('[role="heading"]').filter({ visible: true }).count();
+    if (!lines && !dated) throw new Error('в списке нет ни сообщений по дням, ни слов «пока ничего»');
+    await page.waitForTimeout(1500);
+    await back(page);
+    await atPath(page, '/home');
+    await page.waitForTimeout(1200);
+    const label = await page.getByLabel(/^Мои уведомления/).first().getAttribute('aria-label');
+    if (label !== 'Мои уведомления') throw new Error(`после прочтения колокольчик говорит «${label}»`);
+  });
+
   await check(page, 'A13', 'Каталог речей → «Снятие речей» → назад в каталог', async () => {
     await go(page, '/publishers/public-talks');
     await page.waitForTimeout(1500);
