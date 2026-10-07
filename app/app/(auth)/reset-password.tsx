@@ -10,7 +10,7 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { router, useLocalSearchParams } from 'expo-router';
+import { Redirect, router, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { authApi, extractErrorMessage } from '../../lib/api';
 import { useAuth } from '../../lib/auth';
@@ -24,7 +24,31 @@ import { PasswordRules } from '../../components/PasswordRules';
 
 const TOKEN_RE = /^[0-9a-f]{64}$/;
 
-export default function ResetPasswordScreen() {
+/**
+ * Two letters lead here, and only the old one stays.
+ *
+ * `?token=` — the sign-in LINK of letters sent before 7 October 2026. Still
+ * honoured until those links run out.
+ *
+ * `?code=` — the button of today's letters. It signs nobody in: it arrives
+ * here only because /reset-password is the one address the installed Android
+ * app is registered to open, and is handed straight to the code screen with
+ * the code filled in.
+ */
+export default function ResetPasswordDoor() {
+  const params = useLocalSearchParams<{ code?: string; token?: string }>();
+  const code = typeof params.code === 'string' ? params.code : '';
+  if (code && typeof params.token !== 'string') {
+    return (
+      <Redirect
+        href={`/(auth)/invite?code=${encodeURIComponent(code)}` as never}
+      />
+    );
+  }
+  return <ResetPasswordScreen />;
+}
+
+function ResetPasswordScreen() {
   const { t } = useTranslation();
   const params = useLocalSearchParams<{ token?: string }>();
   const token = typeof params.token === 'string' ? params.token : '';

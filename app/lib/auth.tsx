@@ -5,6 +5,7 @@ import {
   useContext,
   useEffect,
   useState,
+  useRef,
 } from 'react';
 import { router } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
@@ -56,6 +57,11 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  /** Whether anybody is signed in right now — read by the failure callback. */
+  const signedInRef = useRef(false);
+  useEffect(() => {
+    signedInRef.current = user !== null;
+  }, [user]);
   const queryClient = useQueryClient();
 
   /**
@@ -79,8 +85,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Register a callback so the api response interceptor can clear UI state
   // and redirect to /login when refresh also fails (both tokens dead).
+  //
+  // ONLY for somebody who was signed in. On the web every visitor is asked
+  // «is there a session?» at start (the cookie cannot be seen, so we try),
+  // and for a visitor who has none that question ends in this very callback.
+  // It then threw him to the sign-in screen from wherever he had arrived —
+  // and where an invited person arrives is the link in the letter. Since the
+  // cookie switch of 21 July, every invitation and every password link
+  // opened in a browser — which is every iPhone — landed on «Войти», asking
+  // for a password that did not exist yet (found 7 October 2026, on the
+  // stand: /invite, /reset-password and /forgot-password all ended at
+  // /login). A visitor who was never in has nothing to be thrown out of.
   useEffect(() => {
     setOnAuthFailure(() => {
+      if (!signedInRef.current) return;
       void forgetCache();
       setUser(null);
       router.replace('/(auth)/login');

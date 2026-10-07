@@ -10,7 +10,7 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { authApi, extractErrorMessage } from '../../lib/api';
 import type { LoginResponse } from '../../lib/api';
@@ -37,9 +37,24 @@ export default function InviteScreen() {
   const { t } = useTranslation();
   const { adoptSession } = useAuth();
 
-  const [code, setCode] = useState('');
+  /**
+   * `code` — typed in for the reader by the button in the letter. The button
+   * signs nobody in (7 October 2026): it only opens this screen, here, with
+   * the code filled. If it opened in the wrong place — the mail client's
+   * browser on an iPhone, not the icon on the Home Screen — nothing is lost:
+   * the code is still good and can be typed where the app really is.
+   *
+   * `mode=reset` — the same screen for a forgotten password: other words,
+   * the same act.
+   */
+  const params = useLocalSearchParams<{ code?: string; mode?: string }>();
+  const reset = params.mode === 'reset';
+  const [code, setCode] = useState(() =>
+    typeof params.code === 'string' ? tidy(params.code) : '',
+  );
   const [password, setPassword] = useState('');
-  const [confirm, setConfirm] = useState('');
+  // Seen by default, and therefore asked ONCE: a second field exists to catch
+  // a slip that cannot be seen, and this one can.
   const [show, setShow] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -65,27 +80,22 @@ export default function InviteScreen() {
 
   const bareCode = code.replace(/-/g, '');
   const problem = password ? passwordProblem(password) : null;
-  const mismatch = confirm !== '' && confirm !== password;
   const canSubmit =
-    bareCode.length === 8 &&
-    !problem &&
-    password === confirm &&
-    !submitting;
+    bareCode.length === 8 && password !== '' && !problem && !submitting;
 
-  const why = bareCode.length !== 8
+  const why =
+    bareCode.length !== 8
       ? t('auth.invite.needCode')
-      : mismatch
-        ? t('auth.reset.mismatch')
-        : problem
-          ? t(`auth.reset.problem.${problem}`)
-          : null;
+      : problem
+        ? t(`auth.reset.problem.${problem}`)
+        : null;
 
   const submit = async () => {
     if (!canSubmit) return;
     setSubmitting(true);
     setError(null);
     try {
-      const session = await authApi.redeemInvite(bareCode, password);
+      const session = await authApi.redeemInvite(bareCode, password.trim());
       // The name first, the app second: adopting the session immediately would
       // sweep them into the home screen with their own name unread.
       setLoginName(session.user.loginName ?? null);
@@ -102,7 +112,7 @@ export default function InviteScreen() {
         setError(t('auth.tooMany'));
       } else if (refusal?.kind === 'invalid') {
         // One message for four causes, on purpose — see the server.
-        setError(t('auth.invite.invalid'));
+        setError(t(reset ? 'auth.invite.resetInvalid' : 'auth.invite.invalid'));
       } else if (weak) {
         setError(t(`auth.reset.problem.${weak}`));
       } else {
@@ -144,6 +154,9 @@ export default function InviteScreen() {
                 </Text>
               </>
             ) : null}
+            {/* A session here is not a session on the other device — said
+                once, at the moment it is true for the first time. */}
+            <Text style={styles.hint}>{t('auth.invite.eachDevice')}</Text>
 
             <Pressable
               style={styles.button}
@@ -169,10 +182,14 @@ export default function InviteScreen() {
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.card}>
-          <Text style={styles.title}>{t('auth.invite.title')}</Text>
-          <Text style={styles.intro}>{t('auth.invite.intro')}</Text>
+          <Text style={styles.title}>
+            {t(reset ? 'auth.invite.resetTitle' : 'auth.invite.title')}
+          </Text>
+          <Text style={styles.intro}>
+            {t(reset ? 'auth.invite.resetIntro' : 'auth.invite.intro')}
+          </Text>
 
-          <Text style={styles.label}>{t('auth.invite.code')}</Text>
+          <Text style={styles.label}>{t(reset ? 'auth.invite.resetCode' : 'auth.invite.code')}</Text>
           <TextInput
             style={[styles.input, styles.codeInput]}
             value={code}
@@ -185,7 +202,17 @@ export default function InviteScreen() {
           />
           <Text style={styles.hint}>{t('auth.invite.codeHint')}</Text>
           <Text style={styles.hint}>{t('auth.invite.newestLetter')}</Text>
-          {asking ? (
+          {reset ? (
+            // Somebody who has a password is not «waiting for an invitation»,
+            // and the box below would take their name and send nothing. The
+            // door that does send is the one they came through.
+            <Pressable
+              onPress={() => router.replace('/(auth)/forgot-password')}
+              hitSlop={6}
+            >
+              <Text style={styles.askLink}>{t('auth.invite.resetAskAgain')}</Text>
+            </Pressable>
+          ) : asking ? (
             <View style={styles.askBox}>
               {asked ? (
                 <>
@@ -258,6 +285,7 @@ export default function InviteScreen() {
               placeholder="••••••••"
               placeholderTextColor="#cbd5e1"
               editable={!submitting}
+              onSubmitEditing={() => void submit()}
             />
             <Pressable
               onPress={() => setShow((v) => !v)}
@@ -274,30 +302,13 @@ export default function InviteScreen() {
           <PasswordRules password={password} />
           <Pressable
             onPress={() => {
-              const made = suggestPassword();
-              setPassword(made);
-              setConfirm(made);
+              setPassword(suggestPassword());
               setShow(true);
             }}
             hitSlop={6}
           >
             <Text style={styles.suggest}>{t('password.suggest')}</Text>
           </Pressable>
-
-          <Text style={styles.label}>{t('auth.reset.confirmPassword')}</Text>
-          <TextInput
-            style={[styles.input, styles.inputFull]}
-            value={confirm}
-            onChangeText={setConfirm}
-            secureTextEntry={!show}
-            autoCapitalize="none"
-            autoCorrect={false}
-            autoComplete="new-password"
-            placeholder="••••••••"
-            placeholderTextColor="#cbd5e1"
-            editable={!submitting}
-            onSubmitEditing={() => void submit()}
-          />
 
           {error && (
             <View style={styles.errorBox}>

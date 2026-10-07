@@ -2635,6 +2635,13 @@ export interface AccessSummary {
   invitePendingUntil?: string | null;
   /** Whether a password has ever been set — i.e. whether they ever got in. */
   hasPassword?: boolean;
+  /**
+   * The last time this account was turned away at the door, if that was
+   * after the last time it got in — and which of four reasons. Null when
+   * there is none; absent from a server that does not record it yet.
+   */
+  lastFailedLoginAt?: string | null;
+  lastFailedLoginReason?: string | null;
 }
 
 export interface GrantAccessInput {

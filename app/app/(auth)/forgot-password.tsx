@@ -35,6 +35,7 @@ export default function ForgotPasswordScreen() {
   const [hasEmail, setHasEmail] = useState<boolean | null>(null);
 
   const canSubmit = login.trim().length >= 3 && !submitting;
+  const toCode = () => router.push('/(auth)/invite?mode=reset' as never);
 
   const submit = async () => {
     if (!canSubmit) return;
@@ -67,6 +68,13 @@ export default function ForgotPasswordScreen() {
                 <Text style={styles.sentText}>{t('auth.forgot.sent')}</Text>
               </View>
               <Text style={styles.hint}>{t('auth.forgot.checkSpam')}</Text>
+              {/* The code is entered HERE, where the person already is — not
+                  wherever the letter happens to open (7 October 2026). */}
+              <Pressable style={styles.button} onPress={toCode}>
+                <Text style={styles.buttonText}>
+                  {t('auth.forgot.enterCode')}
+                </Text>
+              </Pressable>
             </>
           ) : hasEmail === null ? (
             /* The question that decides whether this screen can help at all. */
@@ -86,6 +94,14 @@ export default function ForgotPasswordScreen() {
               >
                 <Text style={styles.secondaryButtonText}>
                   {t('auth.forgot.noEmail')}
+                </Text>
+              </Pressable>
+              {/* Back from the mailbox with the letter open: straight to the
+                  code, without asking for it again. */}
+              <Pressable onPress={toCode} hitSlop={6} style={styles.backLink}>
+                <Ionicons name="key-outline" size={15} color="#0369a1" />
+                <Text style={styles.backLinkText}>
+                  {t('auth.forgot.haveCode')}
                 </Text>
               </Pressable>
             </>

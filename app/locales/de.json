@@ -84,7 +84,7 @@
     "inviteMailSubject": "Einladung in die Versammlungs-App",
     "inviteCopied": "Kopiert — in den Chat einfügen",
     "inviteOnlyOnce": "Der Code wird einmal angezeigt: gespeichert ist nur sein Fingerabdruck. Geht er verloren, geben Sie einen neuen aus — der alte funktioniert dann nicht mehr.",
-    "inviteMessage": "{{name}}, hier ist dein Code für die App: {{code}} (gültig bis {{until}}). Dein Anmeldename: {{loginName}}. Die App gibt es unter {{url}}, dort auf „Ich wurde eingeladen“ tippen.",
+    "inviteMessage": "{{name}}, hier ist Ihr Code für die App: {{code}} (gültig bis {{until}}). Ihr Anmeldename: {{loginName}}. Die App – {{url}}; tippen Sie dort auf «Wurden Sie eingeladen?».",
     "newCode": "Code ausgeben — Passwort wählt er selbst",
     "howSendTitle": "Wie soll der Code ankommen?",
     "howSendByMailHint": "Ein Brief geht an {{email}}. Er enthält mehr als eine selbst geschriebene Nachricht: den Anmeldenamen, die Frist und die Installationsseite.",
@@ -100,17 +100,18 @@
     "deliveryByMailHint": "Der übliche Weg: der Verkündiger bekommt eine E-Mail mit dem Code und seinem Anmeldenamen.",
     "fromCardNote": "Die Adresse aus der Verkündigerkarte. Sie können sie ersetzen — etwa durch das Postfach des Ehepartners.",
     "notOnCardNote": "Auf der Karte steht keine E-Mail — tragen Sie die Adresse ein, an die der Brief gehen soll.",
-    "howEntryWorks": "Ein Verkündiger meldet sich mit einem Namen an, nicht mit einer E-Mail-Adresse. Deshalb kann ein Postfach gleich zwei Personen dienen — etwa Mann und Frau.",
+    "howEntryWorks": "Ein Verkündiger meldet sich mit dem Anmeldenamen an. Die E-Mail-Adresse funktioniert ebenfalls, solange nur eine Person das Postfach nutzt; nutzen es zwei – etwa ein Ehepaar –, melden sich beide mit ihren Namen an.",
     "changeIt": "Ändern",
     "addressInUse": "Mit dieser Adresse meldet sich bereits {{who}} an. Nach der Einladung kann sich diese Person nicht mehr per Adresse anmelden — nur noch mit dem Namen {{loginName}}. Wir schreiben ihr deswegen, aber sagen Sie es ihr besser auch selbst.",
     "addressInUseWayOut": "Damit sich für sie nichts ändert, wählen Sie „Ich gebe den Code persönlich weiter“ — dann bleibt die Adresse allein ihre.",
     "anotherLogin": "ein anderes Konto",
     "andTheirLoginName": "Name für die Anmeldung",
-    "inviteMessageNoName": "{{name}}, hier ist dein Code für die App: {{code}} (gültig bis {{until}}). Die App gibt es unter {{url}}, dort auf „Ich wurde eingeladen“ tippen.",
+    "inviteMessageNoName": "{{name}}, hier ist Ihr Code für die App: {{code}} (gültig bis {{until}}). Die App – {{url}}; tippen Sie dort auf «Wurden Sie eingeladen?».",
     "wayBackIn": "Wenn der Verkündiger sich nicht anmelden kann",
     "resetPasswordHint": "Für den Fall, dass niemand einen Code eingeben kann — die Person steht vor Ihnen oder hat kein Telefon dabei. Sie müssen das Passwort laut sagen, also kennen Sie es auch. Alle offenen Sitzungen auf ihren Geräten werden beendet, und sie bekommt eine E-Mail, falls eine Adresse hinterlegt ist.",
     "invitePending": "Eine Einladung wurde verschickt und noch nicht genutzt. Der Code gilt bis {{until}}.",
     "revokeInvite": "Einladung zurückziehen",
+    "revokeCode": "Code zurückziehen",
     "revokingInvite": "Wird zurückgezogen…",
     "saveToCardShared": "Achtung: das Postfach wird geteilt. Als eigener Kontakt gespeichert, gilt die Adresse im Brief als seine — und der Brief enthält dann einen Anmeldelink, den derjenige nutzen kann, der ihn zuerst öffnet. Lassen Sie das aus, wenn zwei Personen das Postfach teilen.",
     "passwordLabel": "Passwort",
@@ -119,7 +120,17 @@
     "noPasswordNote": "Es gibt kein Passwort – diese Person kann sich nicht anmelden. Geben Sie unten einen Code aus oder legen Sie ein Passwort fest.",
     "neverUsedNote": "Ein Passwort ist festgelegt, aber diese Person hat sich noch nie angemeldet. Wenn es nicht klappt, legen Sie das Passwort neu fest und probieren Sie die Anmeldung gemeinsam mit dem Anmeldenamen.",
     "showPassword": "Passwort anzeigen",
-    "hidePassword": "Passwort verbergen"
+    "hidePassword": "Passwort verbergen",
+    "codePending": "Ein Anmeldecode wurde ausgegeben und noch nicht benutzt. Er ist gültig bis {{until}}.",
+    "lastFailed": "Letzter fehlgeschlagener Anmeldeversuch: {{when}} – {{reason}}.",
+    "failedReason": {
+      "wrong_password": "falsches Passwort",
+      "no_password": "noch kein Passwort festgelegt",
+      "disabled": "Zugang deaktiviert",
+      "code_expired": "der Code war abgelaufen",
+      "other": "Grund nicht erfasst"
+    },
+    "neverUsedNoAttempts": "Ein Passwort ist festgelegt, aber diese Person hat sich noch nie angemeldet – und es gab keine fehlgeschlagenen Versuche mit ihrem Namen oder ihrer Adresse. Sie hat es also noch nicht versucht oder gibt einen anderen Namen ein."
   },
   "tabs": {
     "schedule": "Programm",
@@ -485,16 +496,18 @@
     "forgotPassword": "Passwort vergessen?",
     "forgot": {
       "title": "Passwort wiederherstellen",
-      "subtitle": "Geben Sie Ihren Anmeldenamen oder Ihre E-Mail-Adresse ein — ist eine Adresse hinterlegt, senden wir einen Link zum Ändern des Passworts.",
+      "subtitle": "Geben Sie Ihren Anmeldenamen oder Ihre E-Mail-Adresse an – wir senden eine E-Mail mit einem Code. Den Code geben Sie gleich hier in der App ein.",
       "askEmail": "Ist zu diesem Konto eine E-Mail-Adresse hinterlegt?",
       "haveEmail": "Ja, ich habe eine Adresse",
       "noEmail": "Ich habe keine Adresse",
       "noEmailWhat": "Dann gibt es keinen Empfänger für einen Brief. Der Versammlungsadministrator setzt Ihnen ein neues Passwort — nennen Sie ihm Ihren Anmeldenamen; er steht im Profil, wenn Sie sich schon einmal angemeldet haben.",
-      "submit": "Link senden",
-      "sent": "Wenn es ein solches Konto gibt und eine Adresse hinterlegt ist, wurde eine E-Mail mit einem Link verschickt. Der Link gilt 1 Stunde.",
+      "submit": "Code senden",
+      "sent": "Falls es ein solches Konto mit Adresse gibt, haben wir eine E-Mail mit einem Code gesendet. Der Code ist einen Tag gültig.",
       "checkSpam": "Keine E-Mail? Prüfen Sie den Spam-Ordner.",
       "backToLogin": "Zurück zur Anmeldung",
-      "noEmailHint": "Ohne E-Mail-Adresse gibt es nichts zu senden — bitten Sie den Versammlungsadministrator, Ihnen ein neues Passwort zu setzen."
+      "noEmailHint": "Ohne E-Mail-Adresse gibt es nichts zu senden — bitten Sie den Versammlungsadministrator, Ihnen ein neues Passwort zu setzen.",
+      "enterCode": "Code aus der E-Mail eingeben",
+      "haveCode": "Ich habe einen Code"
     },
     "reset": {
       "title": "Neues Passwort",
@@ -512,7 +525,7 @@
         "tooRepetitive": "Immer dieselben Zeichen ergeben einen einzigen Rateversuch."
       }
     },
-    "wrongEmailOrPassword": "Anmeldename (oder Adresse) und Passwort passen nicht zusammen. Wenn Sie eingeladen wurden und noch kein Passwort haben, gehen Sie zurück und tippen Sie auf «Wurden Sie eingeladen?».",
+    "wrongEmailOrPassword": "Anmeldename (oder Adresse) und Passwort passen nicht zusammen. Wurden Sie eingeladen und haben noch kein Passwort? Tippen Sie oben auf «Wurden Sie eingeladen?». Passwort vergessen? Tippen Sie auf «Passwort vergessen?».",
     "invite": {
       "title": "Einladung",
       "intro": "Geben Sie den Code ein, den Sie erhalten haben, und wählen Sie ein Passwort — Sie sind dann sofort drin. Eine separate Anmeldung ist nicht nötig.",
@@ -521,7 +534,7 @@
       "codeHint": "Acht Zeichen, z. B. XXXX-XXXX. Groß- und Kleinschreibung und der Bindestrich spielen keine Rolle.",
       "submit": "Anmelden",
       "needCode": "Der Code besteht aus acht Zeichen.",
-      "invalid": "Der Code hat nicht funktioniert. Möglicherweise ist er abgelaufen oder wurde schon benutzt — bitten Sie um einen neuen.",
+      "invalid": "Der Code hat nicht funktioniert. Vielleicht ist er abgelaufen oder wurde schon benutzt. Tippen Sie auf «Kein Code, oder er funktioniert nicht mehr?» – oder bitten Sie die Person, die Sie eingeladen hat, um einen neuen.",
       "backToLogin": "Ich habe bereits ein Passwort — anmelden",
       "entryTitle": "Wurden Sie eingeladen? Hier starten",
       "entryHint": "Geben Sie den erhaltenen Code ein — das Passwort wählen Sie selbst",
@@ -534,8 +547,14 @@
       "welcomeTitle": "Fertig, Sie sind dabei",
       "welcomeIntro": "Ihr Passwort ist gespeichert. Merken Sie sich den Namen, mit dem Sie sich künftig anmelden:",
       "yourLoginName": "Ihr Name für die Anmeldung",
-      "yourLoginNameHint": "Geben Sie diesen ein, nicht die E-Mail-Adresse. Er steht jederzeit in Ihrem Profil.",
-      "welcomeGo": "Zur App"
+      "yourLoginNameHint": "Bitte notieren Sie ihn. Ihre E-Mail-Adresse funktioniert ebenfalls, wenn nur Sie dieses Postfach nutzen. Der Name steht immer im «Profil».",
+      "welcomeGo": "Zur App",
+      "resetTitle": "Code aus der E-Mail",
+      "resetIntro": "Geben Sie den Code aus der E-Mail ein und wählen Sie ein neues Passwort – dann sind Sie sofort drin.",
+      "resetCode": "Code",
+      "resetInvalid": "Der Code hat nicht funktioniert. Vielleicht ist er abgelaufen oder wurde schon benutzt – nur der neueste funktioniert. Tippen Sie auf «Neuen Code anfordern».",
+      "resetAskAgain": "Kein Code, oder er funktioniert nicht? Neuen Code anfordern",
+      "eachDevice": "Nutzen Sie Telefon und Computer? Auf jedem Gerät melden Sie sich separat an – mit demselben Namen und Passwort."
     },
     "loginOrEmail": "Anmeldename oder E-Mail",
     "loginPlaceholder": "ivanov.petr oder you@example.com",

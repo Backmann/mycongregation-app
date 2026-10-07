@@ -839,6 +839,45 @@ async function homeChecks(page, p) {
   });
 }
 
+// --- a visitor who is not signed in -------------------------------------------
+// Where an invited person arrives is the address in the letter. From 21 July
+// to 7 October a browser threw every such visitor to «Войти»: the app asks
+// «is there a session?» at start, and the answer «no» was handled as «you
+// have been signed out». Nobody had ever opened these addresses signed out
+// in a check.
+try {
+  const ctx = await browser.newContext({ viewport: PHONE, locale: 'ru-RU' });
+  const page = await ctx.newPage();
+  console.log('\n— Гость, который ещё не входил —');
+  await check(page, 'D01', 'Кнопка из письма: гость остаётся на экране кода, код вписан', async () => {
+    await go(page, '/reset-password?code=ABCD-2345');
+    await atPath(page, '/invite');
+    // The question «is there a session?» has been answered by now.
+    await page.waitForTimeout(3500);
+    await atPath(page, '/invite');
+    const typed = await page.locator('input').first().inputValue();
+    if (typed !== 'ABCD-2345') throw new Error(`в поле кода «${typed}», а не код из адреса`);
+    const fields = await page.locator('input:visible').count();
+    if (fields !== 2) throw new Error(`полей ввода ${fields}, а должно быть два: код и пароль`);
+  });
+  await check(page, 'D02', 'Гость по адресу «Забыли пароль» остаётся на нём', async () => {
+    await go(page, '/forgot-password');
+    await page.waitForTimeout(3500);
+    await atPath(page, '/forgot-password');
+    await see(page, 'Восстановление пароля');
+    await see(page, 'У меня есть код');
+  });
+  await check(page, 'D03', 'Старая ссылка из прежних писем открывает свой экран, а не «Войти»', async () => {
+    await go(page, `/reset-password?token=${'0'.repeat(64)}`);
+    await page.waitForTimeout(3500);
+    await atPath(page, '/reset-password');
+    await see(page, 'Новый пароль');
+  });
+  await ctx.close();
+} catch (e) {
+  console.log(`гость: ${e.message}`);
+}
+
 // --- the elder without assignments -------------------------------------------
 try {
   const { ctx, page, keep } = await signedIn(browser, ELDER);

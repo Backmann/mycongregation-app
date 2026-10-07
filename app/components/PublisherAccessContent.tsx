@@ -31,6 +31,9 @@ import { Dialog } from "./Dialog";
 import type { AccessSummary, GrantAccessInput, Publisher } from "../lib/api";
 import i18n from "../lib/i18n";
 
+/** The four reasons the server records (UsersService.noteFailedLogin). */
+const FAILED_REASONS = ["wrong_password", "no_password", "disabled", "code_expired"];
+
 function formatLastLogin(iso: string | null): string | null {
   if (!iso) return null;
   const d = new Date(iso);
@@ -260,8 +263,43 @@ export function PublisherAccessContent({
           </Text>
         </View>
       ) : null}
-      {access.hasPassword === true && !access.lastLoginAt ? (
-        <Text style={styles.hint}>{t("publisherAccess.neverUsedNote")}</Text>
+      {/* Why this account was last turned away — the one thing nobody could
+          say on 7 October, when the server's log had been wiped by a deploy.
+          Only refusals that reached THIS account: a mistyped name belongs to
+          no account, and for somebody who has never got in the absence of
+          any refusal is itself the clue. */}
+      {access.lastFailedLoginAt ? (
+        <View style={styles.pendingBox}>
+          <Ionicons name="alert-circle-outline" size={16} color="#92400e" />
+          <Text style={[styles.pendingText, { flex: 1 }]}>
+            {t("publisherAccess.lastFailed", {
+              when: new Date(access.lastFailedLoginAt).toLocaleString(
+                i18n.language,
+                {
+                  day: "numeric",
+                  month: "long",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                },
+              ),
+              reason: t(
+                `publisherAccess.failedReason.${
+                  FAILED_REASONS.includes(access.lastFailedLoginReason ?? "")
+                    ? access.lastFailedLoginReason
+                    : "other"
+                }`,
+              ),
+            })}
+          </Text>
+        </View>
+      ) : access.hasPassword === true && !access.lastLoginAt ? (
+        <Text style={styles.hint}>
+          {t(
+            access.lastFailedLoginAt === null
+              ? "publisherAccess.neverUsedNoAttempts"
+              : "publisherAccess.neverUsedNote",
+          )}
+        </Text>
       ) : null}
       <View style={styles.switchRow}>
         <Text style={styles.rowLabel}>{t("publisherAccess.admin")}</Text>
@@ -302,17 +340,25 @@ export function PublisherAccessContent({
       {/* A code that is out there and unused: the elder can see it, and call
           it back. Until now the only way to kill a code was to issue another,
           which leaves a live one either way. */}
-      {access.invitePendingUntil && !access.hasPassword ? (
+      {/* Shown whenever a code is alive, password or no password: a code an
+          elder issued to somebody who lost their phone is just as much «out
+          there» as an invitation, and it used to be invisible here. */}
+      {access.invitePendingUntil ? (
         <View style={styles.pendingBox}>
           <Ionicons name="time-outline" size={16} color="#92400e" />
           <View style={{ flex: 1 }}>
             <Text style={styles.pendingText}>
-              {t("publisherAccess.invitePending", {
+              {t(
+                access.hasPassword
+                  ? "publisherAccess.codePending"
+                  : "publisherAccess.invitePending",
+                {
                 until: new Date(access.invitePendingUntil).toLocaleDateString(
                   i18n.language,
                   { day: "numeric", month: "long" },
                 ),
-              })}
+                },
+              )}
             </Text>
             <Pressable
               onPress={() => revokeMutation.mutate()}
@@ -322,7 +368,11 @@ export function PublisherAccessContent({
               <Text style={styles.pendingAction}>
                 {revokeMutation.isPending
                   ? t("publisherAccess.revokingInvite")
-                  : t("publisherAccess.revokeInvite")}
+                  : t(
+                      access.hasPassword
+                        ? "publisherAccess.revokeCode"
+                        : "publisherAccess.revokeInvite",
+                    )}
               </Text>
             </Pressable>
           </View>
