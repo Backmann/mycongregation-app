@@ -113,13 +113,8 @@ const OUT = join(process.cwd(), '.screens', `${stamp}_${LABEL}`);
 mkdirSync(OUT, { recursive: true });
 const PHONE = { width: 390, height: 844 };
 
-async function answerLanguage(page) {
-  const dialog = page.locator('[role="dialog"]').filter({ hasText: /Выберите язык|Choose .*language|Sprache wählen/i });
-  if (!(await dialog.first().waitFor({ timeout: 1500 }).then(() => true).catch(() => false))) return;
-  await dialog.getByText(/^Русский$/).first().click();
-  await dialog.getByText(/^Подтвердить$|^Confirm$|^Bestätigen$/).first().click();
-  await dialog.first().waitFor({ state: 'detached', timeout: 10000 }).catch(() => {});
-}
+// No «выберите язык» to answer any more (7 October 2026): the app opens in
+// the browser's language — these windows ask for ru-RU — and asks nobody.
 async function answerContactsCheck(page) {
   const later = page.getByText(/^Позже$/).filter({ visible: true }).first();
   if (await later.waitFor({ timeout: 1000 }).then(() => true).catch(() => false)) {
@@ -157,7 +152,6 @@ async function login(page, email) {
   // Only a page whose script has loaded can be signed in on.
   await page.waitForLoadState('networkidle', { timeout: 60000 }).catch(() => {});
   await page.waitForTimeout(1000);
-  await answerLanguage(page);
   await page.locator('input:not([type="password"])').first().fill(email);
   await pw.fill(PASSWORD);
   // What the server says to the sign-in is kept, so a refusal explains itself
@@ -277,7 +271,6 @@ async function visit(page, role, path, name) {
   page.on('console', onCon);
   try {
     await page.goto(`${BASE}${path}`);
-    await answerLanguage(page);
     await answerContactsCheck(page);
     await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
     await page.waitForTimeout(1200);

@@ -28,6 +28,8 @@ import {
 } from "../lib/login-name";
 import { PasswordRules } from "./PasswordRules";
 import { Dialog } from "./Dialog";
+import { QrCode } from "./QrCode";
+import { SignedInPlaces } from "./SignedInPlaces";
 import type { AccessSummary, GrantAccessInput, Publisher } from "../lib/api";
 import i18n from "../lib/i18n";
 
@@ -253,6 +255,19 @@ export function PublisherAccessContent({
               ? t("publisherAccess.passwordSet")
               : t("publisherAccess.passwordNotSet")}
           </Text>
+        </View>
+      ) : null}
+      {/* Where the account is signed in right now — «у меня не открывается»
+          from somebody who is signed in in a browser and has never signed in
+          from the icon is answered by this list and by nothing else. Not drawn
+          while an older server leaves it unsaid. */}
+      {access.signedIn ? (
+        <View style={styles.placesBlock}>
+          <Text style={styles.rowLabel}>{t("places.cardTitle")}</Text>
+          <SignedInPlaces
+            places={access.signedIn}
+            emptyText={t("places.cardNone")}
+          />
         </View>
       ) : null}
       {access.hasPassword === false && !access.invitePendingUntil ? (
@@ -1188,7 +1203,15 @@ function InviteResultDialog({
 }) {
   const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
+  const [showQr, setShowQr] = useState(false);
   if (!code) return null;
+
+  // The same address the letter's button carries: it opens the code screen
+  // with the code typed in and signs nobody in. In the language this elder is
+  // reading — the two of them are standing side by side.
+  const link = `https://mycongregation.org/reset-password?code=${code}&lang=${
+    (i18n.language ?? "ru").split("-")[0]
+  }`;
 
   const until = expiresAt
     ? new Date(expiresAt).toLocaleDateString(i18n.language, {
@@ -1210,6 +1233,7 @@ function InviteResultDialog({
       code,
       until: until ?? "",
       url: "mycongregation.org/app/",
+      link,
     },
   );
 
@@ -1241,6 +1265,30 @@ function InviteResultDialog({
           {t("publisherAccess.inviteUntil", { until })}
         </Text>
       ) : null}
+
+      {/*
+        For the person standing next to the elder. Typing eight characters
+        from another phone's screen is where «код не подошёл» comes from;
+        a camera does not mistype. Closed until asked for — over the phone
+        or in a message it is of no use, and the dialog is long as it is.
+      */}
+      {showQr ? (
+        <View style={codeStyles.qrBox}>
+          <QrCode value={link} size={232} />
+          <Text style={codeStyles.qrHint}>{t("publisherAccess.qrHint")}</Text>
+        </View>
+      ) : (
+        <Pressable
+          style={codeStyles.qrToggle}
+          onPress={() => setShowQr(true)}
+          hitSlop={6}
+        >
+          <Ionicons name="qr-code-outline" size={16} color="#0369a1" />
+          <Text style={codeStyles.qrToggleText}>
+            {t("publisherAccess.qrShow")}
+          </Text>
+        </Pressable>
+      )}
 
       {loginName ? (
         <View style={codeStyles.nameRow}>
@@ -1529,6 +1577,28 @@ function ResetModal({
 
 /** The code itself: large, spaced, and impossible to mistake for body text. */
 const codeStyles = StyleSheet.create({
+  qrToggle: {
+    marginTop: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    paddingVertical: 6,
+  },
+  qrToggleText: {
+    fontSize: 13.5,
+    color: "#0369a1",
+    fontWeight: "600",
+    fontFamily: "Manrope_600SemiBold",
+  },
+  qrBox: { marginTop: 12, alignItems: "center" },
+  qrHint: {
+    marginTop: 8,
+    fontSize: 12.5,
+    lineHeight: 18,
+    color: "#64748b",
+    textAlign: "center",
+  },
   codeBox: {
     marginTop: 14,
     borderRadius: 14,
@@ -1668,6 +1738,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 8,
   },
+  placesBlock: { paddingTop: 8, paddingBottom: 2 },
   rowLabel: {
     fontSize: 15,
     color: "#374151",

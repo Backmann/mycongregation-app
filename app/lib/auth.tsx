@@ -24,6 +24,25 @@ import {
 import { Platform } from 'react-native';
 import { detachWebPush } from './web-push';
 import { rememberedPushToken, rememberPushToken } from './push-token-store';
+import { adoptLanguage } from './i18n';
+import { beginWelcome, forgetWelcome, restoreWelcome } from './welcome';
+
+/**
+ * A device where nobody chose a language takes the account's. Where somebody
+ * did choose, the choice stands — and is handed to the account, so that the
+ * letters and notifications it sends arrive in the language the person reads
+ * the app in. Best effort: a sign-in never waits on it or fails for it.
+ */
+async function settleLanguage(authUser: AuthUser): Promise<void> {
+  try {
+    const used = await adoptLanguage(authUser.uiLanguage);
+    if (authUser.uiLanguage && used !== authUser.uiLanguage) {
+      await authApi.setUiLanguage(used);
+    }
+  } catch {
+    // The screen language is already right; the account catches up next time.
+  }
+}
 
 /** Best effort, and never a reason for signing out to fail. */
 async function detachThisDevice(): Promise<void> {
@@ -48,6 +67,8 @@ interface AuthContextValue {
     accessToken: string,
     refreshToken: string | undefined,
     user: AuthUser,
+    /** What the server said about this entry — see lib/welcome.ts. */
+    entry?: { firstSignIn?: boolean },
   ) => Promise<void>;
   signOut: () => Promise<void>;
 }
@@ -127,7 +148,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       try {
         const me = await authApi.me();
-        if (alive) setUser(me);
+        if (alive) {
+          await restoreWelcome(me.id);
+          setUser(me);
+          void settleLanguage(me);
+        }
       } catch {
         // Nothing usable: no cookie, or both it and the access token are dead.
         await clearAuthTokens();
@@ -145,10 +170,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       accessToken,
       refreshToken,
       user: authUser,
+      firstSignIn,
     } = await authApi.login(email, password);
     await storeAuthTokens(accessToken, refreshToken);
     await forgetCache();
+    forgetWelcome();
+    if (firstSignIn) await beginWelcome(authUser.id);
+    else await restoreWelcome(authUser.id);
     setUser(authUser);
+    void settleLanguage(authUser);
   }, [forgetCache]);
 
   /**
@@ -164,10 +194,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       accessToken: string,
       refreshToken: string | undefined,
       authUser: AuthUser,
+      entry?: { firstSignIn?: boolean },
     ) => {
       await storeAuthTokens(accessToken, refreshToken);
       await forgetCache();
+      forgetWelcome();
+      if (entry?.firstSignIn) await beginWelcome(authUser.id);
+      else await restoreWelcome(authUser.id);
       setUser(authUser);
+      void settleLanguage(authUser);
     },
     [forgetCache],
   );
@@ -187,6 +222,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     await clearAuthTokens();
     await forgetCache();
+    forgetWelcome();
     setUser(null);
   }, [forgetCache]);
 

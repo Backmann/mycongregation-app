@@ -14,8 +14,7 @@ import {
   setLanguage,
   SupportedLanguage,
 } from '../lib/i18n';
-import { api, TOKEN_KEY } from '../lib/api';
-import { storage } from '../lib/storage';
+import { authApi } from '../lib/api';
 
 interface Props {
   visible: boolean;
@@ -45,11 +44,13 @@ export function LanguagePickerModal({ visible, onClose, required = false }: Prop
     onClose();
     // Persist to server so push notifications and cross-device sync use the
     // latest choice. Best-effort: failures don't undo the local change.
+    //
+    // No look into storage for a token first: on the web there is none to
+    // find — the session lives in a cookie — so the choice made in a browser
+    // never reached the account, and its letters stayed in the old language.
+    // This picker is only ever opened from «Профиль», by somebody signed in.
     try {
-      const token = await storage.getItem(TOKEN_KEY);
-      if (token) {
-        await api.patch('/auth/me', { uiLanguage: selected });
-      }
+      await authApi.setUiLanguage(selected);
     } catch (err) {
       console.warn('[i18n] Failed to persist uiLanguage to server:', err);
     }

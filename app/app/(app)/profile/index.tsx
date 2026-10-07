@@ -17,8 +17,9 @@ import { useTranslation } from "react-i18next";
 import { useAuth } from "../../../lib/auth";
 import { useMyPublisher } from "../../../lib/useMyPublisher";
 import { LanguagePickerModal } from "../../../components/LanguagePicker";
+import { SignedInPlaces } from "../../../components/SignedInPlaces";
 import { getCurrentLanguage } from "../../../lib/i18n";
-import { extractErrorMessage, meApi } from "../../../lib/api";
+import { authApi, extractErrorMessage, meApi } from "../../../lib/api";
 import { contactsCheckLine } from "../../../lib/contacts-check";
 import { useDeviceNotify } from "../../../lib/notify-device";
 import { notify } from "../../../lib/error-bus";
@@ -82,6 +83,14 @@ export default function ProfileScreen() {
     user?.role === "admin" || user?.canViewPrivateData === true;
   // An elder already has the whole section; this row is for everybody else.
   const isElder = user?.role === "admin" || user?.role === "elder";
+  // Asked afresh each time the screen is opened: the answer changes when the
+  // person signs in somewhere else, which is exactly when they come to look.
+  const { data: signedIn } = useQuery({
+    queryKey: ["auth", "sessions"],
+    queryFn: () => authApi.sessions(),
+    staleTime: 0,
+    retry: false,
+  });
   const myTasksQuery = useQuery({
     queryKey: ["me", "tasks"],
     queryFn: () => meApi.tasks(),
@@ -190,6 +199,22 @@ export default function ProfileScreen() {
             </View>
           </View>
         </View>
+
+        {/* Where this account is signed in. The app, the website and the icon
+          on an iPhone are three separate sign-ins, and nothing told anybody
+          which of them they were looking at (7 October 2026). Not drawn while
+          an older server has no answer. */}
+        {signedIn ? (
+          <View style={styles.section}>
+            <Text style={styles.sectionLabel} accessibilityRole="header">
+              {t("places.title")}
+            </Text>
+            <View style={[styles.card, { paddingHorizontal: 16 }]}>
+              <SignedInPlaces places={signedIn} emptyText={t("places.none")} />
+            </View>
+            <Text style={styles.placesHint}>{t("places.hint")}</Text>
+          </View>
+        ) : null}
 
         {/* The tasks section belongs to the elders, and stays there. But a task
           given to a brother and invisible to him is not a task — it is a
@@ -452,6 +477,13 @@ export default function ProfileScreen() {
 
 const styles = StyleSheet.create({
   section: { marginTop: 16 },
+  placesHint: {
+    paddingHorizontal: 20,
+    marginTop: 6,
+    fontSize: 12.5,
+    lineHeight: 18,
+    color: "#64748b",
+  },
   // Every section label carries accessibilityRole="header": a screen reader
   // announces it as a heading, and the screenshot script counts headings, not
   // any text — «Уведомления» is both a heading and the title of its first row.

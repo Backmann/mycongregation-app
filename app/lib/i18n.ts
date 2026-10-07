@@ -92,6 +92,38 @@ export async function setLanguage(lang: SupportedLanguage): Promise<void> {
   syncHtmlLang(lang);
 }
 
+/**
+ * A language nobody on this device chose: the one a letter was written in, or
+ * the one the account is kept in.
+ *
+ * It applies ONLY where no choice has been made here. A phone set to German
+ * in the hands of somebody whose letters come in Russian used to be asked
+ * «выберите язык» before anything else; now the letter's button and the
+ * account answer that, and whoever disagrees has the three letters at the top
+ * of the sign-in screens and the row in «Профиль» — and that choice wins from
+ * then on.
+ *
+ * Returns the language the device ends up in.
+ */
+export async function adoptLanguage(
+  suggested: string | null | undefined,
+): Promise<SupportedLanguage> {
+  const lang = (suggested ?? '').toLowerCase().split('-')[0];
+  if (!(SUPPORTED_LANGUAGES as readonly string[]).includes(lang)) {
+    return getCurrentLanguage();
+  }
+  try {
+    const stored = await AsyncStorage.getItem(STORAGE_KEY);
+    if (stored && (SUPPORTED_LANGUAGES as readonly string[]).includes(stored)) {
+      return stored as SupportedLanguage;
+    }
+  } catch {
+    // Unreadable storage: apply for this visit, which is all that can be done.
+  }
+  await setLanguage(lang as SupportedLanguage);
+  return lang as SupportedLanguage;
+}
+
 export function getCurrentLanguage(): SupportedLanguage {
   const lang = i18n.language?.split('-')[0] ?? 'en';
   if ((SUPPORTED_LANGUAGES as readonly string[]).includes(lang)) {

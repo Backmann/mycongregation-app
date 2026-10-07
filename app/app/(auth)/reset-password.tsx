@@ -36,12 +36,22 @@ const TOKEN_RE = /^[0-9a-f]{64}$/;
  * the code filled in.
  */
 export default function ResetPasswordDoor() {
-  const params = useLocalSearchParams<{ code?: string; token?: string }>();
+  const params = useLocalSearchParams<{
+    code?: string;
+    token?: string;
+    lang?: string;
+  }>();
   const code = typeof params.code === 'string' ? params.code : '';
+  // The letter's language travels on with the code.
+  const lang = typeof params.lang === 'string' ? params.lang : '';
   if (code && typeof params.token !== 'string') {
     return (
       <Redirect
-        href={`/(auth)/invite?code=${encodeURIComponent(code)}` as never}
+        href={
+          `/(auth)/invite?code=${encodeURIComponent(code)}${
+            lang ? `&lang=${encodeURIComponent(lang)}` : ''
+          }` as never
+        }
       />
     );
   }
@@ -77,7 +87,9 @@ function ResetPasswordScreen() {
       // Straight in. The server handed over a session because it knows who
       // this is; asking for the address and the password again would be
       // asking for what was typed ten seconds ago.
-      await adoptSession(session.accessToken, session.refreshToken, session.user);
+      await adoptSession(session.accessToken, session.refreshToken, session.user, {
+        firstSignIn: session.firstSignIn,
+      });
       router.replace('/(app)/home' as never);
     } catch (e) {
       const weak = weakPasswordProblem(e);

@@ -78,13 +78,15 @@
     "inviteSentTo": "A letter went to {{email}}. The code can also be passed on directly:",
     "inviteNotSent": "No letter was sent — pass the code on yourself:",
     "inviteUntil": "Valid until {{until}}",
+    "qrShow": "Is the person next to you? Show a QR code",
+    "qrHint": "Let them point their phone's camera at it: a screen opens with the code already filled in — they only choose a password. On Android, install the app first.",
     "inviteShare": "Send in a message",
     "inviteCopy": "Copy the message",
     "inviteMail": "Write an e-mail",
     "inviteMailSubject": "Invitation to the congregation app",
     "inviteCopied": "Copied — paste it into a chat",
     "inviteOnlyOnce": "The code is shown once: only its fingerprint is stored. If it is lost, issue a new one — but the old one then stops working.",
-    "inviteMessage": "{{name}}, here is your code for the app: {{code}} (valid until {{until}}). Your login name: {{loginName}}. The app — {{url}}; there tap «Were you invited?».",
+    "inviteMessage": "{{name}}, here is your way into the congregation app.\n1. Android phone — install the app first: {{url}}. iPhone or computer — nothing to install.\n2. Tap: {{link}} — the code fills itself in, you only choose a password.\nIf the link cannot be tapped, the code is {{code}} (valid until {{until}}) — in the app tap «Were you invited?». Your login name: {{loginName}}.",
     "newCode": "Issue a code — they choose the password",
     "howSendTitle": "How should the code travel?",
     "howSendByMailHint": "A letter goes to {{email}}. It carries more than a hand-written one: the login name, the deadline and the install page.",
@@ -106,7 +108,7 @@
     "addressInUseWayOut": "To leave them untouched, choose “I will pass the code on myself” — the address then stays theirs alone.",
     "anotherLogin": "another account",
     "andTheirLoginName": "Name to sign in with",
-    "inviteMessageNoName": "{{name}}, here is your code for the app: {{code}} (valid until {{until}}). The app — {{url}}; there tap «Were you invited?».",
+    "inviteMessageNoName": "{{name}}, here is your way into the congregation app.\n1. Android phone — install the app first: {{url}}. iPhone or computer — nothing to install.\n2. Tap: {{link}} — the code fills itself in, you only choose a password.\nIf the link cannot be tapped, the code is {{code}} (valid until {{until}}) — in the app tap «Were you invited?».",
     "wayBackIn": "If the publisher cannot sign in",
     "resetPasswordHint": "For when nobody can type a code — they are standing here, or have no phone to hand. You will have to say the password out loud, so you will know it too. Every open session on their devices is ended, and they get a letter if there is an address.",
     "invitePending": "An invitation was sent and has not been used yet. The code is valid until {{until}}.",
@@ -4006,5 +4008,42 @@
       "byMail": "What matters will come by e-mail to {{email}}: your meeting assignments and reminders of them. Cleaning and report reminders are not mailed — please look in the app.",
       "noMail": "Ask the elders to add your e-mail address — your assignments and reminders of them will then come by e-mail."
     }
+  },
+  "places": {
+    "title": "Where you are signed in",
+    "hint": "Each device is signed in separately — with the same name and password. The app, the website in a browser and the icon on an iPhone screen are three separate sign-ins, even on one phone.",
+    "none": "The list is empty — it fills in at the next sign-in.",
+    "cardTitle": "Signed in now",
+    "cardNone": "Nowhere: no device holds a live sign-in.",
+    "here": "this device",
+    "lastActive": "last time — {{when}}",
+    "today": "today",
+    "yesterday": "yesterday",
+    "unknown": "Device not recognised",
+    "platform": {
+      "android": "Android",
+      "ios": "iPhone",
+      "windows": "Windows",
+      "mac": "Mac",
+      "other": "Another device"
+    },
+    "kind": {
+      "app": "app",
+      "browser": "browser",
+      "homescreen": "Home Screen icon"
+    }
+  },
+  "welcome": {
+    "title": "Welcome!",
+    "youAreIn": "You are signed in: {{place}}.",
+    "note": {
+      "iosBrowser": "The icon on the Home Screen is a separate sign-in: when you open the app from the icon, sign in there once more, with the same name and password.",
+      "androidBrowser": "The app on this phone is a separate sign-in: sign in there once more, with the same name and password.",
+      "other": "Another device is signed in separately — with the same name and password."
+    },
+    "loginName": "Your login name",
+    "loginNameHint": "Write it down. It is always in «Profile».",
+    "contacts": "Check my contacts",
+    "done": "Got it"
   }
 }

@@ -78,13 +78,15 @@
     "inviteSentTo": "Eine E-Mail ging an {{email}}. Den Code können Sie auch direkt weitergeben:",
     "inviteNotSent": "Es wurde keine E-Mail verschickt — geben Sie den Code selbst weiter:",
     "inviteUntil": "Gültig bis {{until}}",
+    "qrShow": "Steht die Person neben Ihnen? QR-Code zeigen",
+    "qrHint": "Die Person richtet die Kamera ihres Telefons darauf: Es öffnet sich ein Bildschirm, auf dem der Code schon eingetragen ist – sie wählt nur noch ein Passwort. Auf Android zuerst die App installieren.",
     "inviteShare": "Als Nachricht senden",
     "inviteCopy": "Nachricht kopieren",
     "inviteMail": "E-Mail schreiben",
     "inviteMailSubject": "Einladung in die Versammlungs-App",
     "inviteCopied": "Kopiert — in den Chat einfügen",
     "inviteOnlyOnce": "Der Code wird einmal angezeigt: gespeichert ist nur sein Fingerabdruck. Geht er verloren, geben Sie einen neuen aus — der alte funktioniert dann nicht mehr.",
-    "inviteMessage": "{{name}}, hier ist Ihr Code für die App: {{code}} (gültig bis {{until}}). Ihr Anmeldename: {{loginName}}. Die App – {{url}}; tippen Sie dort auf «Wurden Sie eingeladen?».",
+    "inviteMessage": "{{name}}, hier ist Ihr Zugang zur App der Versammlung.\n1. Android-Telefon – installieren Sie zuerst die App: {{url}}. iPhone oder Computer – nichts zu installieren.\n2. Tippen Sie auf: {{link}} – der Code wird von selbst eingetragen, Sie wählen nur noch ein Passwort.\nFalls sich der Link nicht antippen lässt, lautet der Code {{code}} (gültig bis {{until}}) – tippen Sie in der App auf «Wurden Sie eingeladen?». Ihr Anmeldename: {{loginName}}.",
     "newCode": "Code ausgeben — Passwort wählt er selbst",
     "howSendTitle": "Wie soll der Code ankommen?",
     "howSendByMailHint": "Ein Brief geht an {{email}}. Er enthält mehr als eine selbst geschriebene Nachricht: den Anmeldenamen, die Frist und die Installationsseite.",
@@ -106,7 +108,7 @@
     "addressInUseWayOut": "Damit sich für sie nichts ändert, wählen Sie „Ich gebe den Code persönlich weiter“ — dann bleibt die Adresse allein ihre.",
     "anotherLogin": "ein anderes Konto",
     "andTheirLoginName": "Name für die Anmeldung",
-    "inviteMessageNoName": "{{name}}, hier ist Ihr Code für die App: {{code}} (gültig bis {{until}}). Die App – {{url}}; tippen Sie dort auf «Wurden Sie eingeladen?».",
+    "inviteMessageNoName": "{{name}}, hier ist Ihr Zugang zur App der Versammlung.\n1. Android-Telefon – installieren Sie zuerst die App: {{url}}. iPhone oder Computer – nichts zu installieren.\n2. Tippen Sie auf: {{link}} – der Code wird von selbst eingetragen, Sie wählen nur noch ein Passwort.\nFalls sich der Link nicht antippen lässt, lautet der Code {{code}} (gültig bis {{until}}) – tippen Sie in der App auf «Wurden Sie eingeladen?».",
     "wayBackIn": "Wenn der Verkündiger sich nicht anmelden kann",
     "resetPasswordHint": "Für den Fall, dass niemand einen Code eingeben kann — die Person steht vor Ihnen oder hat kein Telefon dabei. Sie müssen das Passwort laut sagen, also kennen Sie es auch. Alle offenen Sitzungen auf ihren Geräten werden beendet, und sie bekommt eine E-Mail, falls eine Adresse hinterlegt ist.",
     "invitePending": "Eine Einladung wurde verschickt und noch nicht genutzt. Der Code gilt bis {{until}}.",
@@ -4006,5 +4008,42 @@
       "byMail": "Das Wichtige kommt per E-Mail an {{email}}: Ihre Aufgaben in den Zusammenkünften und die Erinnerungen daran. Zu Reinigung und Bericht kommen keine E-Mails – bitte schauen Sie in die App.",
       "noMail": "Bitten Sie die Ältesten, Ihre E-Mail-Adresse einzutragen – dann kommen Ihre Aufgaben und die Erinnerungen daran per E-Mail."
     }
+  },
+  "places": {
+    "title": "Wo Sie angemeldet sind",
+    "hint": "Auf jedem Gerät meldet man sich einzeln an – mit demselben Namen und Passwort. Die App, die Website im Browser und das Symbol auf dem iPhone-Bildschirm sind drei getrennte Anmeldungen, auch auf einem einzigen Telefon.",
+    "none": "Die Liste ist leer – sie füllt sich bei der nächsten Anmeldung.",
+    "cardTitle": "Jetzt angemeldet",
+    "cardNone": "Nirgends: Auf keinem Gerät besteht eine gültige Anmeldung.",
+    "here": "dieses Gerät",
+    "lastActive": "zuletzt – {{when}}",
+    "today": "heute",
+    "yesterday": "gestern",
+    "unknown": "Gerät nicht erkannt",
+    "platform": {
+      "android": "Android",
+      "ios": "iPhone",
+      "windows": "Windows",
+      "mac": "Mac",
+      "other": "Anderes Gerät"
+    },
+    "kind": {
+      "app": "App",
+      "browser": "Browser",
+      "homescreen": "Symbol auf dem Home-Bildschirm"
+    }
+  },
+  "welcome": {
+    "title": "Willkommen!",
+    "youAreIn": "Sie sind angemeldet: {{place}}.",
+    "note": {
+      "iosBrowser": "Das Symbol auf dem Home-Bildschirm ist eine eigene Anmeldung: Wenn Sie die App über das Symbol öffnen, melden Sie sich dort noch einmal an – mit demselben Namen und Passwort.",
+      "androidBrowser": "Die App auf diesem Telefon ist eine eigene Anmeldung: Melden Sie sich dort noch einmal an – mit demselben Namen und Passwort.",
+      "other": "Auf einem anderen Gerät meldet man sich einzeln an – mit demselben Namen und Passwort."
+    },
+    "loginName": "Ihr Anmeldename",
+    "loginNameHint": "Schreiben Sie ihn auf. Er steht immer im «Profil».",
+    "contacts": "Meine Kontaktdaten prüfen",
+    "done": "Verstanden"
   }
 }

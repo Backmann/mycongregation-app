@@ -86,7 +86,6 @@ async function login(page, email) {
   }
   // The language question can stand over the sign-in page too; a key press
   // went through its layer, a click does not — so answer it first.
-  await answerLanguage(page);
   await page.locator('input:not([type="password"])').first().fill(email);
   await pw.fill(PASSWORD);
   // The sign-in button has no button role, so it is found by its label. The
@@ -163,22 +162,8 @@ async function keep(ctx, file, email) {
  * so the app asks — over everything, with a full-screen layer that takes every
  * tap. A person answers it once; the script answers it the same way.
  */
-async function answerLanguage(page) {
-  const dialog = page.locator('[role="dialog"]').filter({ hasText: /Выберите язык|Choose .*language|Sprache/i });
-  try {
-    await dialog.first().waitFor({ timeout: 3000 });
-  } catch {
-    return; // no question asked — nothing to answer
-  }
-  await dialog.getByText(/^Русский$/).first().click();
-  await dialog.getByText(/^Подтвердить$|^Confirm$|^Bestätigen$/).first().click();
-  try {
-    await dialog.first().waitFor({ state: 'detached', timeout: 10000 });
-  } catch {
-    await fail(page, 'окно выбора языка не закрылось');
-  }
-  console.log('· язык выбран: русский');
-}
+// No «выберите язык» to answer any more (7 October 2026): the app opens in
+// the browser's language — these windows ask for ru-RU — and asks nobody.
 
 /**
  * The congregation's contents, as one person sees them. Which rows stand is
@@ -209,7 +194,6 @@ async function management(page) {
 async function profileFrame(page, name, expect, forbid) {
   await page.goto(`${BASE}/profile`);
   await page.getByText(/^Язык$/).first().waitFor({ timeout: 30000 }).catch(() => {});
-  await answerLanguage(page);
   await page.waitForTimeout(1000);
   const vp = page.viewportSize();
   await page.screenshot({ path: join(OUT, name), clip: { x: 0, y: 0, width: vp.width, height: Math.min(vp.height, 2600) } });
@@ -234,7 +218,6 @@ async function profileFrame(page, name, expect, forbid) {
 async function meetingPlace(page) {
   await page.goto(`${BASE}/publishers/meeting-settings`);
   await page.getByText(/^Сейчас действует$/).first().waitFor({ timeout: 30000 }).catch(() => {});
-  await answerLanguage(page);
   await page.waitForTimeout(1000);
   const vp = page.viewportSize();
   // «Сейчас там: 22 сентября в 22:02» is a live clock — two runs ten minutes
@@ -279,7 +262,6 @@ async function redirectCheck(page) {
 async function hub(page, name, expect, forbid) {
   await page.goto(`${BASE}/publishers`);
   await page.getByText(/^(Люди|Моя группа)$/).first().waitFor({ timeout: 30000 }).catch(() => {});
-  await answerLanguage(page);
   await page.waitForTimeout(800);
   const vp = page.viewportSize();
   await page.screenshot({ path: join(OUT, name), clip: { x: 0, y: 0, width: vp.width, height: Math.min(vp.height, 900) } });
@@ -300,7 +282,6 @@ async function programmeSections(page) {
   await page.goto(`${BASE}/schedule/edit`);
   const door = page.getByText(/^Уборка зала$/).first();
   await door.waitFor({ timeout: 30000 }).catch(() => {});
-  await answerLanguage(page);
   if (!(await door.count())) {
     console.log('· 14/15 — НЕ ТАК: на экране программы нет двери «Уборка зала»');
     return;
@@ -338,7 +319,6 @@ async function programmeMenus(page) {
 
   await page.goto(`${BASE}/schedule/edit`);
   await page.getByText(/^Уборка зала$/).first().waitFor({ timeout: 30000 }).catch(() => {});
-  await answerLanguage(page);
   await page.waitForTimeout(800);
   // The talk coordinator and the events left this header; «+» stayed.
   await words(page, '32-edit-menu.png', ['Составление программы'], [],
@@ -376,7 +356,6 @@ async function weekLanding(page) {
   await page.goto(`${BASE}/schedule?week=${iso}&meeting=weekend`);
   const card = page.getByTestId(`meeting-${iso}-weekend`);
   await card.waitFor({ timeout: 30000 }).catch(() => {});
-  await answerLanguage(page);
   await page.waitForTimeout(2500); // the rows above arrive; the hold must keep the week in place
   const box = await card.boundingBox();
   const ok = !!box && box.y >= 0 && box.y < 260;
@@ -399,7 +378,6 @@ async function words(page, name, expect, forbid, labels = { must: [], mustNot: [
 async function cleaningFrames(page, name, expect, forbid, labels, weekFrame, planFrame) {
   await page.goto(`${BASE}/publishers/cleaning`);
   await page.getByText(/^Эта неделя$/).first().waitFor({ timeout: 30000 }).catch(() => {});
-  await answerLanguage(page);
   await page.waitForTimeout(1200);
   const vp = page.viewportSize();
   await page.screenshot({ path: join(OUT, name), clip: { x: 0, y: 0, width: vp.width, height: Math.min(vp.height, 900) } });
@@ -458,7 +436,6 @@ const NB = '\u00a0';
 async function dutiesFrames(page, name, expect, forbid, labels, meetingFrame) {
   await page.goto(`${BASE}/publishers/duties`);
   await page.getByText(/^(Встреча в будний день|Обязанности на встречах распределяют.*)$/).first().waitFor({ timeout: 30000 }).catch(() => {});
-  await answerLanguage(page);
   await page.waitForTimeout(1200);
   const vp = page.viewportSize();
   await page.screenshot({ path: join(OUT, name), clip: { x: 0, y: 0, width: vp.width, height: Math.min(vp.height, 900) } });
@@ -512,7 +489,6 @@ async function openFeed(page) {
   } catch {
     await fail(page, 'лента: не появилась черта «Сегодня»');
   }
-  await answerLanguage(page);
   await page.waitForTimeout(1500); // let every piece of the list arrive
 }
 

@@ -105,6 +105,9 @@ const STEPS = [
   ['Кому открыт экран', 'node', ['scripts/check-screen-access.mjs']],
   ['Двери спрашивают экран', 'node', ['scripts/check-doors.mjs']],
   ['Телефон без сервисов Google', 'node', ['scripts/check-push-no-google.mjs']],
+  // The code the app draws for a camera is compared, module by module, with
+  // an implementation that shares no line with ours.
+  ['QR-код', 'node', ['scripts/check-qr.mjs']],
   // One rule for who may open «Составление программы» — asked by the doors
   // and by the screen (6 October: the address opened it for a publisher).
   ['Дверь «Составления программы»', 'node', ['scripts/check-programme-editor-door.mjs']],

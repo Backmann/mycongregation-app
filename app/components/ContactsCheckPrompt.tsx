@@ -7,6 +7,7 @@ import { router } from 'expo-router';
 import { extractErrorMessage, meApi } from '../lib/api';
 import { useAuth } from '../lib/auth';
 import { Dialog } from './Dialog';
+import { useWelcomePending, welcomedToday } from '../lib/welcome';
 
 /**
  * The yearly contact check. From 1 September the publisher's own card comes to
@@ -49,6 +50,12 @@ export function ContactsCheckPrompt() {
     },
     onError: (e) => setError(extractErrorMessage(e)),
   });
+
+  // Not on somebody's first visit: they are being greeted (WelcomeCard), and
+  // the card itself points at «Мои контакты». The question comes on a later
+  // day, as it does for everybody else — see lib/welcome.ts.
+  const welcoming = useWelcomePending(user?.id);
+  if (welcoming || welcomedToday()) return null;
 
   if (!me || deferred) return null;
   const since = checkDueSince(new Date());

@@ -55,6 +55,7 @@ import {
 import { useRestrictedScheduled } from "../../../components/RestrictedScheduledCard";
 import { addDays, formatDateISO, startOfWeekMonday } from "../../../lib/dates";
 import { useAuth } from "../../../lib/auth";
+import { WelcomeCard } from "../../../components/WelcomeCard";
 import { useMyPublisher } from "../../../lib/useMyPublisher";
 import {
   auxMonthSinceLabel,
@@ -2228,6 +2229,7 @@ export default function HomeScreen() {
             <>
               <View style={s.colLeft}>
                 <GreetingHeader now={now} />
+                <WelcomeCard />
                 <ReportDone />
                 {next}
                 <TodoSection />
@@ -2238,6 +2240,7 @@ export default function HomeScreen() {
           ) : (
             <>
               <GreetingHeader now={now} />
+              <WelcomeCard />
               <ReportDone />
               {next}
               <TodoSection />

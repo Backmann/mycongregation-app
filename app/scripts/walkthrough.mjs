@@ -212,7 +212,6 @@ async function answerContactsCheck(page) {
 }
 async function go(page, path, waitFor) {
   await page.goto(`${BASE}${path}`);
-  await answerLanguage(page);
   await answerContactsCheck(page);
   if (waitFor) await see(page, waitFor, 30000);
   await page.waitForTimeout(800);
@@ -248,18 +247,12 @@ function mondayPlus(weeks) {
 }
 
 // --- signing in (the same way screens.mjs does) ----------------------------
-async function answerLanguage(page) {
-  const dialog = page.locator('[role="dialog"]').filter({ hasText: /Выберите язык|Choose .*language|Sprache wählen/i });
-  if (!(await dialog.first().waitFor({ timeout: 2000 }).then(() => true).catch(() => false))) return;
-  await dialog.getByText(/^Русский$/).first().click();
-  await dialog.getByText(/^Подтвердить$|^Confirm$|^Bestätigen$/).first().click();
-  await dialog.first().waitFor({ state: 'detached', timeout: 10000 }).catch(() => {});
-}
+// No «выберите язык» to answer any more (7 October 2026): the app opens in
+// the browser's language — these windows ask for ru-RU — and asks nobody.
 async function login(page, email) {
   await page.goto(BASE);
   const pw = page.locator('input[type="password"]').first();
   await pw.waitFor({ timeout: 30000 });
-  await answerLanguage(page);
   await page.locator('input:not([type="password"])').first().fill(email);
   await pw.fill(PASSWORD);
   const submit = page.getByText(/^(Войти|Log in|Sign in|Anmelden)$/).last();
@@ -876,6 +869,89 @@ try {
   await ctx.close();
 } catch (e) {
   console.log(`гость: ${e.message}`);
+}
+
+// --- a code, from the elder's hand to the newcomer's phone --------------------
+// The whole road, on a phone set to German whose owner reads Russian: the
+// letter's button, the code, the password — and then the page is closed and
+// opened again. Until 7 October a browser forgot the person at that moment:
+// the code let them in without the cookie a browser lives on.
+try {
+  console.log('\n— Код: от старейшины до телефона новичка —');
+  const info = await fetch(`${BASE}/build-info.json`).then((r) => r.json());
+  const api = String(info.api || '').replace(/\/$/, '');
+  const call = async (path, init = {}, token) => {
+    const res = await fetch(`${api}${path}`, {
+      ...init,
+      headers: {
+        'content-type': 'application/json',
+        ...(token ? { authorization: `Bearer ${token}` } : {}),
+      },
+    });
+    if (!res.ok) throw new Error(`${init.method || 'GET'} ${path} → ${res.status}`);
+    return res.json();
+  };
+  const admin = await call('/auth/login', {
+    method: 'POST',
+    body: JSON.stringify({ login: ADMIN, password: PASSWORD }),
+  });
+  // Somebody the other checks never sign in as: an account that is none of
+  // the three this script uses. Always the same one, and it is given the
+  // stand's usual password again, so nothing else that signs in as it breaks.
+  const list = await call('/publishers?limit=200', {}, admin.accessToken);
+  const people = (Array.isArray(list) ? list : list.data)
+    .filter((p) => p.userId)
+    .sort((a, b) => a.id.localeCompare(b.id));
+  let guest = null;
+  for (const p of people) {
+    const access = await call(`/publishers/${p.id}/access`, {}, admin.accessToken);
+    if (access.role === 'admin' || !access.isActive) continue;
+    if ([ADMIN, ELDER, PUBLISHER].includes(access.email)) continue;
+    guest = p;
+    break;
+  }
+  if (!guest) throw new Error('нет записи с доступом, которой не пользуются другие проверки');
+  const issued = await call(
+    `/publishers/${guest.id}/access/resend-invite`,
+    { method: 'POST', body: JSON.stringify({ post: false }) },
+    admin.accessToken,
+  );
+  const code = issued.inviteCode;
+
+  const ctx = await browser.newContext({ viewport: PHONE, locale: 'de-DE' });
+  const page = await ctx.newPage();
+  await check(page, 'D04', 'Немецкий телефон, русское письмо: экран кода по-русски, о языке никто не спрашивает', async () => {
+    await page.goto(`${BASE}/reset-password?code=${code}&lang=ru`);
+    await atPath(page, '/invite');
+    await see(page, /^(Приглашение|Код из письма)$/);
+    await page.waitForTimeout(2500);
+    if (await page.locator('[role="dialog"]:visible').count()) throw new Error('поверх экрана открыто окно');
+    if ((await page.locator('input').first().inputValue()) !== code) throw new Error('код из адреса не вписан');
+  });
+  await check(page, 'D05', 'Вход по коду держится: страницу закрыли и открыли — человек внутри', async () => {
+    await page.locator('input').nth(1).fill(PASSWORD);
+    await page.getByText(/^Войти$/).last().click();
+    await see(page, 'Готово, вы в собрании');
+    await tap(page, 'Перейти в приложение');
+    await atPath(page, '/home');
+    await page.waitForTimeout(1500);
+    await page.reload();
+    await page.waitForTimeout(4000);
+    await atPath(page, '/home');
+    await see(page, /^Главная$/);
+  });
+  await check(page, 'D06', '«Где вы вошли» называет это устройство своими словами', async () => {
+    await page.goto(`${BASE}/profile`);
+    await see(page, /^Где вы вошли$/i);
+    await see(page, /— браузер$/);
+    await see(page, /^это устройство$/);
+  });
+  await ctx.close();
+} catch (e) {
+  // Counted, not just printed: a road that could not even be set up is a
+  // failed check, and a line in the log is where such things get lost.
+  results.push({ id: 'D04', title: 'Код: дорога от старейшины до телефона', ok: false, note: String(e.message).slice(0, 300), file: '' });
+  console.log(`❌ D04 Код: дорога не началась — ${e.message}`);
 }
 
 // --- the elder without assignments -------------------------------------------

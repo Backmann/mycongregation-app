@@ -2,6 +2,7 @@ import axios, { AxiosError } from "axios";
 import { Platform } from "react-native";
 import Constants from "expo-constants";
 import { storage } from "./storage";
+import { openedFromIcon } from "./this-place";
 import type { ApplyParsedPayload } from "./mwb-parser";
 
 function resolveApiUrl(): string {
@@ -110,7 +111,12 @@ export function clientDescription(): string | null {
   // браузер 1.1.0». The user-agent, meanwhile, describes a browser honestly:
   // Windows, iPhone, Mac. So the web says nothing and lets the server read the
   // agent, which is the one client that string was always good for.
-  if (Platform.OS === "web") return null;
+  //
+  // One thing the agent cannot say, and so the site does: that it was opened
+  // from its own icon — «На экран „Домой“» on an iPhone. To the phone that is
+  // a separate browser with a separate sign-in, and «Где вы вошли» has to be
+  // able to tell the two apart (lib/this-place.ts).
+  if (Platform.OS === "web") return openedFromIcon() ? "kind=homescreen" : null;
 
   const platform = Platform.OS === "android" ? "android" : "ios";
 
@@ -221,6 +227,12 @@ export interface AuthUser {
    * Absent on older responses, and absent means no.
    */
   canManageBackups?: boolean;
+  /**
+   * The language the account is kept in — the one its letters are written in.
+   * Taken by a device where nobody has chosen a language (lib/i18n.ts
+   * adoptLanguage). Absent on answers from an older server.
+   */
+  uiLanguage?: string;
 }
 
 export interface LoginResponse {
@@ -228,6 +240,20 @@ export interface LoginResponse {
   /** Absent in cookie mode — the server put it in an httpOnly cookie instead. */
   refreshToken?: string;
   user: AuthUser;
+  /** The first time this account has ever got in — see lib/welcome.ts. */
+  firstSignIn?: boolean;
+}
+
+/** One place the account is signed in right now — see lib/this-place.ts. */
+export interface SignedInPlace {
+  platform: string | null;
+  kind: string | null;
+  os: string | null;
+  appVersion: string | null;
+  since: string;
+  lastActiveAt: string;
+  /** The one this request came from. */
+  current: boolean;
 }
 
 /**
@@ -1057,6 +1083,17 @@ export const authApi = {
    * for, the ones with no address at all, that made it unusable. The code
    * identifies the account on its own.
    */
+  /** The language this account's letters and notifications are written in. */
+  async setUiLanguage(uiLanguage: string): Promise<void> {
+    await api.patch("/auth/me", { uiLanguage });
+  },
+
+  /** Where I am signed in — «это устройство» first. */
+  async sessions(): Promise<SignedInPlace[]> {
+    const { data } = await api.get<SignedInPlace[]>("/auth/sessions");
+    return data;
+  },
+
   async redeemInvite(code: string, password: string): Promise<LoginResponse> {
     const { data } = await api.post<LoginResponse>("/auth/invite/redeem", {
       code,
@@ -2642,6 +2679,8 @@ export interface AccessSummary {
    */
   lastFailedLoginAt?: string | null;
   lastFailedLoginReason?: string | null;
+  /** Where the account is signed in right now. Absent from an older server. */
+  signedIn?: SignedInPlace[];
 }
 
 export interface GrantAccessInput {

@@ -13,7 +13,6 @@ import { ErrorToast } from "../components/ErrorToast";
 import { ConfirmHost } from "../components/ConfirmHost";
 import { AuthProvider } from "../lib/auth";
 import i18n, { initI18nFromStorage } from "../lib/i18n";
-import { LanguagePickerModal } from "../components/LanguagePicker";
 import { useAppFonts } from "../lib/fonts";
 import { useSelfApplyingUpdate } from "../lib/self-update";
 import { tapRefused, tapSaved } from "../lib/haptics";
@@ -100,14 +99,16 @@ const queryClient = new QueryClient({
 
 export default function RootLayout() {
   const [ready, setReady] = useState(false);
-  const [showLanguagePrompt, setShowLanguagePrompt] = useState(false);
   const { fontsLoaded } = useAppFonts();
   const { applying } = useSelfApplyingUpdate();
 
   useEffect(() => {
     (async () => {
-      const { isFirstLaunch } = await initI18nFromStorage();
-      setShowLanguagePrompt(isFirstLaunch);
+      // No «выберите язык» at the first start (7 October 2026): the app opens
+      // in the phone's language, takes the letter's or the account's where
+      // nobody chose (lib/i18n.ts adoptLanguage), and the choice itself sits
+      // at the top of the sign-in screens and in «Профиль».
+      await initI18nFromStorage();
       setReady(true);
     })();
   }, []);
@@ -162,11 +163,6 @@ export default function RootLayout() {
             theme will need from the native side. */}
         <StatusBar style="light" />
         <Stack screenOptions={{ headerShown: false }} />
-        <LanguagePickerModal
-          visible={showLanguagePrompt}
-          onClose={() => setShowLanguagePrompt(false)}
-          required
-        />
         <ErrorToast />
         <ConfirmHost />
       </AuthProvider>

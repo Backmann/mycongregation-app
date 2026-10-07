@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -15,6 +15,8 @@ import { useTranslation } from 'react-i18next';
 import { authApi, extractErrorMessage } from '../../lib/api';
 import type { LoginResponse } from '../../lib/api';
 import { useAuth } from '../../lib/auth';
+import { adoptLanguage } from '../../lib/i18n';
+import { LanguagePills } from '../../components/LanguagePills';
 import {
   passwordProblem,
   suggestPassword,
@@ -47,8 +49,19 @@ export default function InviteScreen() {
    * `mode=reset` — the same screen for a forgotten password: other words,
    * the same act.
    */
-  const params = useLocalSearchParams<{ code?: string; mode?: string }>();
+  const params = useLocalSearchParams<{
+    code?: string;
+    mode?: string;
+    lang?: string;
+  }>();
   const reset = params.mode === 'reset';
+  // `lang` — the language of the letter whose button was pressed. Taken only
+  // where nobody has chosen one on this device; the three letters at the top
+  // are for whoever wants another.
+  const letterLanguage = typeof params.lang === 'string' ? params.lang : '';
+  useEffect(() => {
+    if (letterLanguage) void adoptLanguage(letterLanguage);
+  }, [letterLanguage]);
   const [code, setCode] = useState(() =>
     typeof params.code === 'string' ? tidy(params.code) : '',
   );
@@ -165,6 +178,7 @@ export default function InviteScreen() {
                   session.accessToken,
                   session.refreshToken,
                   session.user,
+                  { firstSignIn: session.firstSignIn },
                 ).then(() => router.replace('/(app)/home' as never));
               }}
             >
@@ -182,6 +196,7 @@ export default function InviteScreen() {
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.card}>
+          <LanguagePills />
           <Text style={styles.title}>
             {t(reset ? 'auth.invite.resetTitle' : 'auth.invite.title')}
           </Text>

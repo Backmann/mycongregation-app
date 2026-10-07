@@ -13,6 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { authApi } from '../../lib/api';
+import { LanguagePills } from '../../components/LanguagePills';
 
 export default function ForgotPasswordScreen() {
   const { t } = useTranslation();
@@ -55,6 +56,7 @@ export default function ForgotPasswordScreen() {
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.card}>
+          <LanguagePills />
           <Text style={styles.title}>{t('auth.forgot.title')}</Text>
 
           {sent ? (
