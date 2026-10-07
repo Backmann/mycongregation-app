@@ -491,6 +491,27 @@ let memorialWeek = null; // found as the admin, reused by the others
     return missing.length ? '«Резервных копий» нет — у этой учётки нет права на копии' : '';
   });
 
+  await check(page, 'A12б', '«Пользователи»: люди по именам, «Нужна помощь» — отдельным видом, имя ведёт в карточку', async () => {
+    await go(page, '/publishers/admin-users');
+    await see(page, /^Все · \d+$/);
+    const help = await see(page, /^Нужна помощь · \d+$/);
+    const n = Number((await help.innerText()).match(/\d+/)[0]);
+    await help.click();
+    await page.waitForTimeout(800);
+    if (n === 0) await see(page, 'Помогать некому');
+    else {
+      const reasons = await page.getByText(/^(Последняя попытка входа не удалась|Входа ещё не было|Вход есть, но за записью|Код выдан и пока не использован)/).filter({ visible: true }).count();
+      if (reasons !== n) throw new Error(`в счётчике ${n}, а причин на экране ${reasons}`);
+    }
+    await tap(page, /^Все · \d+$/);
+    const name = page.getByLabel(/^Открыть карточку: /).first();
+    if (!(await name.count())) throw new Error('ни у одной записи нет имени человека');
+    await name.click();
+    await atPath(page, '/publishers/');
+    await see(page, 'Возвещатель');
+    return `нуждаются в помощи: ${n}`;
+  });
+
   await check(page, 'A13', 'Каталог речей → «Снятие речей» → назад в каталог', async () => {
     await go(page, '/publishers/public-talks');
     await page.waitForTimeout(1500);
@@ -967,6 +988,32 @@ try {
     for (const w of ['Управление пользователями', 'Журнал изменений', 'Районный старейшина'])
       await notSee(page, w);
     await readsResponsibilities(page);
+  });
+  await check(page, 'B01б', 'Старейшина без поручений снимает речи: кнопка есть, экран открыт, сервер согласен', async () => {
+    // The screen asked for the coordinator's duty and the server for the
+    // elder's role — one rule now, on both sides (7 October).
+    await go(page, '/publishers/public-talks');
+    await page.waitForTimeout(1500);
+    await tap(page, 'Снять речи');
+    await atPath(page, '/publishers/public-talks-retire');
+    await page.waitForTimeout(1200);
+    await notSee(page, 'Нет доступа');
+    // …and the server says the same to this very account. Asked directly:
+    // the form wants a date picked before it lets «Проверить» be pressed, and
+    // what is being checked here is the rule, not the calendar.
+    const info = await fetch(`${BASE}/build-info.json`).then((r) => r.json());
+    const api = String(info.api || '').replace(/\/$/, '');
+    const signed = await fetch(`${api}/auth/login`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ login: ELDER, password: PASSWORD }),
+    }).then((r) => r.json());
+    const res = await fetch(`${api}/public-talks/retirement-preview`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: `Bearer ${signed.accessToken}` },
+      body: JSON.stringify({ text: 'не следует преподносить: 84 и 85', from: '2030-01-01' }),
+    });
+    if (!res.ok) throw new Error(`сервер ответил ${res.status} на проверку снятия`);
   });
   await check(page, 'B02', 'Программа → «…» → есть «Составление программы»', async () => {
     await go(page, '/schedule', /^Сегодня ·/);

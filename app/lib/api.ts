@@ -302,6 +302,14 @@ export interface PublicUser {
    * people were in the second state with nothing on screen to show it.
    */
   inviteExpiresAt: string | null;
+  /** The name on the account's card — whose it is. Absent from an older server. */
+  publisherName?: string | null;
+  /**
+   * The last refusal, when it came after the last time the person got in —
+   * see lib/access-help.ts. Absent from an older server.
+   */
+  lastFailedLoginAt?: string | null;
+  lastFailedLoginReason?: string | null;
   /**
    * What this person last signed in from — platform, app or browser, when.
    *

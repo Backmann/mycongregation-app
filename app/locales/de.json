@@ -1156,6 +1156,21 @@
   "admin": {
     "users": {
       "title": "Benutzer",
+      "help": {
+        "all": "Alle · {{count}}",
+        "needHelp": "Brauchen Hilfe · {{count}}",
+        "none": "Niemand braucht Hilfe",
+        "noneHint": "Alle, die einen Zugang haben, konnten sich anmelden: keine fehlgeschlagenen Versuche, keine abgelaufenen Codes, keine Konten ohne Passwort.",
+        "openCardOf": "Karte öffnen: {{name}}",
+        "reason": {
+          "failed": "Der letzte Anmeldeversuch ist fehlgeschlagen – {{when}}: {{why}}.",
+          "codeExpired": "Noch keine Anmeldung. Der Code ist am {{date}} abgelaufen – geben Sie einen neuen aus.",
+          "neverInvited": "Noch keine Anmeldung: kein Passwort, und es wurde nie ein Code ausgegeben.",
+          "neverSignedIn": "Noch keine Anmeldung, obwohl ein Passwort gesetzt ist. Vielleicht ist der Anmeldename nicht bekannt.",
+          "noCard": "Es gibt einen Zugang, aber hinter dem Konto steht keine Verkündigerkarte – die persönlichen Bildschirme sind geschlossen.",
+          "codeWaiting": "Ein Code wurde ausgegeben und noch nicht benutzt – gültig bis {{date}}."
+        }
+      },
       "countSummary": "{{count}} Benutzer",
       "noUsers": "Keine Benutzer",
       "you": "Sie",

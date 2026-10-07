@@ -108,6 +108,8 @@ const STEPS = [
   // The code the app draws for a camera is compared, module by module, with
   // an implementation that shares no line with ours.
   ['QR-код', 'node', ['scripts/check-qr.mjs']],
+  // Who the list of accounts points at as stuck at the door — case by case.
+  ['Кому нужна помощь', 'node', ['scripts/check-access-help.mjs']],
   // One rule for who may open «Составление программы» — asked by the doors
   // and by the screen (6 October: the address opened it for a publisher).
   ['Дверь «Составления программы»', 'node', ['scripts/check-programme-editor-door.mjs']],

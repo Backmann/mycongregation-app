@@ -212,7 +212,7 @@ const OPENS_FOR = {
   // «backups» depends on who owns the platform, which the walk does not know.
   admin: (rule) => (rule === 'backups' ? null : true),
   elder: (rule) =>
-    ['all', 'elders', 'importsProgramme', 'localNeeds', 'pioneerSchool', 'coSchedule', 'summary', 'attendance', 'duties'].includes(rule),
+    ['all', 'elders', 'importsProgramme', 'localNeeds', 'pioneerSchool', 'coSchedule', 'summary', 'attendance', 'duties', 'talkCatalogue'].includes(rule),
   publisher: (rule) => rule === 'all',
 };
 const REFUSED = /Нет доступа\s+Этот раздел открыт тем|No access|Kein Zugriff/;

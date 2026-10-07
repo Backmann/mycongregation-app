@@ -38,6 +38,7 @@ export type AccessRule =
   | 'events'
   | 'publisherCards'
   | 'publicTalks'
+  | 'talkCatalogue'
   | 'localNeeds'
   | 'pioneerSchool'
   | 'coSchedule'
@@ -67,6 +68,15 @@ export const ACCESS_RULES: Record<
   events: (p) => p.canManageEvents,
   publisherCards: (p) => p.canEditPublishers,
   publicTalks: (p) => p.canCoordinatePublicTalks,
+  // Setting talks aside and bringing them back. The letter that says so
+  // arrives to the body of elders; the coordinator is the one who works with
+  // the talks — so either. The SAME rule stands on the server
+  // (public-talks/catalogue-keeper.guard.ts). Until 7 October the two sides
+  // asked different questions: the screen for the duty, the server for the
+  // role — and an assistant who is a ministerial servant was shown the
+  // button and refused on pressing it.
+  talkCatalogue: (p) =>
+    p.isAdmin || p.isElder || p.canCoordinatePublicTalks,
   localNeeds: (p) => p.canViewLocalNeeds,
   pioneerSchool: (p) => p.canViewPioneerSchool,
   coSchedule: (p) => p.canViewCoSchedule,
@@ -133,7 +143,7 @@ export const SCREEN_ACCESS: Record<string, AccessRule> = {
   '/publishers/public-talks': 'elders',
   '/publishers/public-talks-import': 'elders',
   '/publishers/songs-import': 'elders',
-  '/publishers/public-talks-retire': 'publicTalks',
+  '/publishers/public-talks-retire': 'talkCatalogue',
   // Readable by everybody by the owner's decision of 24 September.
   '/publishers/circuit-overseer': 'all',
   '/talk-coordinator': 'publicTalks',

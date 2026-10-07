@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
+import { router } from 'expo-router';
 import { LoadFailure } from '../../../components/LoadFailure';
 import {
   Pressable,
@@ -37,6 +38,8 @@ import {
 } from '../../../lib/login-name';
 import { androidVersionName } from '../../../lib/android-version';
 import i18n from '../../../lib/i18n';
+import { helpRank, helpReason } from '../../../lib/access-help';
+import type { HelpReason } from '../../../lib/access-help';
 
 // Login accounts are created and managed per-person on the Братья screen
 // (role derived from appointment). This screen is a read-only audit list.
@@ -83,6 +86,9 @@ function inviteState(
 
 const QK_USERS = ['users'] as const;
 
+/** The refusals the server names — anything else reads «причина не записана». */
+const FAILED_REASONS = ['wrong_password', 'no_password', 'disabled', 'code_expired'];
+
 function formatRelativeTime(
   iso: string | null,
   t: (k: string, opts?: any) => string,
@@ -116,7 +122,40 @@ export default function AdminUsersScreen() {
     refetchInterval: 30_000,
   });
 
-  const users = usersQuery.data ?? [];
+  const users = useMemo(() => {
+    // By the person's name, not by the day the account was made: the list is
+    // read to find somebody. Accounts with no card behind them go last —
+    // they have no name to be found by.
+    const rows = [...(usersQuery.data ?? [])];
+    return rows.sort((a, b) => {
+      if (!!a.publisherName !== !!b.publisherName) return a.publisherName ? -1 : 1;
+      return (a.publisherName ?? a.loginName ?? a.email ?? '').localeCompare(
+        b.publisherName ?? b.loginName ?? b.email ?? '',
+        i18n.language,
+      );
+    });
+  }, [usersQuery.data]);
+  // Who cannot get in — lib/access-help.ts. Most urgent first, and among
+  // refusals the freshest: that person is trying right now.
+  const needHelp = useMemo(() => {
+    const now = Date.now();
+    return users
+      .map((u) => ({ user: u, reason: helpReason(u, now) }))
+      .filter((r): r is { user: PublicUser; reason: HelpReason } => !!r.reason)
+      .sort(
+        (a, b) =>
+          helpRank(a.reason) - helpRank(b.reason) ||
+          (b.user.lastFailedLoginAt ?? '').localeCompare(
+            a.user.lastFailedLoginAt ?? '',
+          ),
+      );
+  }, [users]);
+  const reasonOf = useMemo(
+    () => new Map(needHelp.map((r) => [r.user.id, r.reason])),
+    [needHelp],
+  );
+  const [view, setView] = useState<'all' | 'help'>('all');
+  const shown = view === 'help' ? needHelp.map((r) => r.user) : users;
   // An account with no publisher card can sign in and then find every personal
   // screen closed. Nobody could see who was in that state, so it surfaced one
   // complaint at a time — which is exactly what this line prevents.
@@ -212,6 +251,50 @@ export default function AdminUsersScreen() {
         </View>
         )}
 
+        {/* «Кому помочь» is the question this screen is opened with on a bad
+            day, and it took scrolling eight screens of accounts to answer.
+            Two views of one list; the second is amber only when it has
+            somebody in it. */}
+        {usersQuery.error || usersQuery.isLoading || users.length === 0 ? null : (
+          <View style={styles.viewRow}>
+            <Pressable
+              onPress={() => setView('all')}
+              style={[styles.viewChip, view === 'all' && styles.viewChipOn]}
+              accessibilityRole="button"
+              accessibilityState={{ selected: view === 'all' }}
+            >
+              <Text
+                style={[
+                  styles.viewChipText,
+                  view === 'all' && styles.viewChipTextOn,
+                ]}
+              >
+                {t('admin.users.help.all', { count: users.length })}
+              </Text>
+            </Pressable>
+            <Pressable
+              onPress={() => setView('help')}
+              style={[
+                styles.viewChip,
+                needHelp.length > 0 && styles.viewChipAmber,
+                view === 'help' && styles.viewChipOn,
+              ]}
+              accessibilityRole="button"
+              accessibilityState={{ selected: view === 'help' }}
+            >
+              <Text
+                style={[
+                  styles.viewChipText,
+                  needHelp.length > 0 && styles.viewChipTextAmber,
+                  view === 'help' && styles.viewChipTextOn,
+                ]}
+              >
+                {t('admin.users.help.needHelp', { count: needHelp.length })}
+              </Text>
+            </Pressable>
+          </View>
+        )}
+
         {orphans.length > 0 && (
           <View style={styles.orphanCard}>
             <View style={styles.orphanHead}>
@@ -238,11 +321,22 @@ export default function AdminUsersScreen() {
           />
         ) : users.length === 0 ? (
           <Text style={styles.empty}>{t('admin.users.noUsers')}</Text>
+        ) : shown.length === 0 ? (
+          <View style={styles.helpNone}>
+            <Ionicons name="checkmark-circle" size={22} color="#16a34a" />
+            <Text style={styles.helpNoneTitle}>
+              {t('admin.users.help.none')}
+            </Text>
+            <Text style={styles.helpNoneHint}>
+              {t('admin.users.help.noneHint')}
+            </Text>
+          </View>
         ) : (
-          users.map((u) => (
+          shown.map((u) => (
             <UserCard
               key={u.id}
               user={u}
+              reason={reasonOf.get(u.id) ?? null}
               isSelf={u.id === currentUser?.id}
               onLink={() => setLinkFor(u)}
               onSetPassword={() => {
@@ -400,8 +494,11 @@ function UserCard({
   onInvite,
   inviting,
   invited,
+  reason,
 }: {
   user: PublicUser;
+  /** Why this person needs help getting in, if they do — lib/access-help.ts. */
+  reason: HelpReason | null;
   isSelf: boolean;
   onLink: () => void;
   onSetPassword: () => void;
@@ -429,10 +526,63 @@ function UserCard({
     ? t(`publishers.appointment.${override}`)
     : t(`admin.users.roles.${user.role}`);
 
+  const day = (iso: string) =>
+    new Date(iso).toLocaleDateString(i18n.language, {
+      day: 'numeric',
+      month: 'long',
+    });
+  const reasonText = !reason
+    ? null
+    : reason === 'failed' && user.lastFailedLoginAt
+      ? t('admin.users.help.reason.failed', {
+          when: new Date(user.lastFailedLoginAt).toLocaleString(i18n.language, {
+            day: 'numeric',
+            month: 'long',
+            hour: '2-digit',
+            minute: '2-digit',
+          }),
+          why: t(
+            `publisherAccess.failedReason.${
+              FAILED_REASONS.includes(user.lastFailedLoginReason ?? '')
+                ? user.lastFailedLoginReason
+                : 'other'
+            }`,
+          ),
+        })
+      : t(`admin.users.help.reason.${reason}`, {
+          date: user.inviteExpiresAt ? day(user.inviteExpiresAt) : '',
+        });
+
   return (
-    <View style={[styles.userCard, !user.isActive && styles.userCardInactive]}>
+    <View
+      style={[
+        styles.userCard,
+        !user.isActive && styles.userCardInactive,
+        reason && reason !== 'codeWaiting' && styles.userCardHelp,
+      ]}
+    >
       <View style={styles.userCardHeader}>
         <View style={{ flex: 1 }}>
+          {/* Whose account this is. The list named accounts by what is typed
+              to sign in, and a helper looks for a person. */}
+          {user.publisherName ? (
+            <Pressable
+              onPress={() =>
+                router.push(`/publishers/${user.publisherId}` as never)
+              }
+              hitSlop={6}
+              style={styles.personRow}
+              accessibilityRole="link"
+              accessibilityLabel={t('admin.users.help.openCardOf', {
+                name: user.publisherName,
+              })}
+            >
+              <Text style={styles.personName} numberOfLines={1}>
+                {user.publisherName}
+              </Text>
+              <Ionicons name="chevron-forward" size={15} color="#94a3b8" />
+            </Pressable>
+          ) : null}
           <View style={styles.emailRow}>
             <Pressable
               onPress={onEditName}
@@ -472,6 +622,18 @@ function UserCard({
         </View>
       </View>
 
+      {/* Why this person cannot get in, in the words that decide what the
+          helper does next — and the way to where it is done. */}
+      {reasonText ? (
+        <View style={styles.helpRow}>
+          <Ionicons
+            name={reason === 'codeWaiting' ? 'time-outline' : 'alert-circle-outline'}
+            size={15}
+            color="#92400e"
+          />
+          <Text style={styles.helpText}>{reasonText}</Text>
+        </View>
+      ) : null}
       {/* Said on the row itself, not only in the summary above: a person
           scanning the list should see which account is the broken one without
           counting. */}
@@ -547,7 +709,8 @@ function UserCard({
                 is waiting on a code that still works or on one that died
                 three weeks ago — and it was the second case for five people
                 here, with nothing on any screen to show it. */}
-            {inviteState(user, t)}
+            {/* …unless the line above has just said it. */}
+            {reasonText ? '' : inviteState(user, t)}
           </Text>
           {/* Seen here, fixed here. The invitation used to live only on the
               publisher's card, so the one place that showed the problem was
@@ -712,6 +875,63 @@ const styles = StyleSheet.create({
   },
   userCardInactive: { opacity: 0.6 },
   userCardHeader: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  userCardHelp: { borderColor: '#fcd34d' },
+  personRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    gap: 3,
+    marginBottom: 2,
+  },
+  personName: {
+    fontSize: 16,
+    color: '#0f172a',
+    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
+    flexShrink: 1,
+  },
+  viewRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginHorizontal: 16,
+    marginBottom: 10,
+  },
+  viewChip: {
+    paddingHorizontal: 13,
+    paddingVertical: 8,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    backgroundColor: '#fff',
+  },
+  viewChipAmber: { borderColor: '#fcd34d', backgroundColor: '#fffbeb' },
+  viewChipOn: { borderColor: '#0e7490', backgroundColor: '#0e7490' },
+  viewChipText: {
+    fontSize: 13.5,
+    color: '#334155',
+    fontWeight: '600',
+    fontFamily: 'Manrope_600SemiBold',
+  },
+  viewChipTextAmber: { color: '#92400e' },
+  viewChipTextOn: { color: '#fff' },
+  helpRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 7,
+    marginTop: 10,
+    padding: 10,
+    borderRadius: 10,
+    backgroundColor: '#fffbeb',
+  },
+  helpText: { flex: 1, fontSize: 13.5, lineHeight: 19, color: '#92400e' },
+  helpNone: { alignItems: 'center', gap: 6, marginTop: 36, paddingHorizontal: 32 },
+  helpNoneTitle: {
+    fontSize: 16,
+    color: '#0f172a',
+    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
+  },
+  helpNoneHint: { fontSize: 13.5, lineHeight: 19, color: '#64748b', textAlign: 'center' },
   emailRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   userEmail: {
     fontSize: 15,

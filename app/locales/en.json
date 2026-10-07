@@ -1156,6 +1156,21 @@
   "admin": {
     "users": {
       "title": "Users",
+      "help": {
+        "all": "All · {{count}}",
+        "needHelp": "Need help · {{count}}",
+        "none": "Nobody to help",
+        "noneHint": "Everybody who has a way in has got in: no failed tries, no expired codes, no accounts without a password.",
+        "openCardOf": "Open the card of {{name}}",
+        "reason": {
+          "failed": "The last sign-in try failed — {{when}}: {{why}}.",
+          "codeExpired": "No sign-in yet. The code expired on {{date}} — issue a new one.",
+          "neverInvited": "No sign-in yet: there is no password and no code was ever issued.",
+          "neverSignedIn": "No sign-in yet, although a password is set. The person may not know their login name.",
+          "noCard": "There is a way in, but no publisher card behind the account — the personal screens are closed.",
+          "codeWaiting": "A code has been issued and not used yet — valid until {{date}}."
+        }
+      },
       "countSummary": "{{count}} users",
       "noUsers": "No users",
       "you": "You",
