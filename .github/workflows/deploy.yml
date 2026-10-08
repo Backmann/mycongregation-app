@@ -161,6 +161,27 @@ jobs:
           echo "The live site does not serve $GITHUB_SHA after 60s. Last answer:"
           echo "$BODY" | head -c 300
           exit 1
+      # The page being new does not mean the SERVICE WORKER is: its name never
+      # changes, and from 26 June to 8 October 2026 Cloudflare kept handing
+      # out the June file under nginx's «immutable» for every .js — eleven
+      # changes to it reached no browser while this job stayed green. Asked
+      # exactly as a browser asks: no query string, which a cache would take
+      # for another file.
+      - name: Confirm browsers get this service worker
+        run: |
+          WANT="$(tr -d '\r' < app/public/service-worker.js | sha256sum | cut -d' ' -f1)"
+          for i in $(seq 1 6); do
+            GOT="$(curl -fsS https://mycongregation.org/service-worker.js | tr -d '\r' | sha256sum | cut -d' ' -f1 || true)"
+            if [ "$GOT" = "$WANT" ]; then
+              echo "Service worker live: $GOT"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "Browsers are handed ANOTHER service worker than app/public/service-worker.js."
+          curl -sI https://mycongregation.org/service-worker.js | grep -iE '^(HTTP|cache-control|cf-cache-status|age|last-modified|content-length)' || true
+          echo "Check nginx (location = /service-worker.js must say no-cache) and purge it in Cloudflare."
+          exit 1
       - name: Cleanup local
         if: always()
         run: rm -f ~/.ssh/deploy_key ~/.ssh/known_hosts ~/.ssh/config web-dist.tar.gz
