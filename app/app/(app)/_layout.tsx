@@ -14,6 +14,7 @@ import { useDeviceNotifySync } from "../../lib/notify-device";
 import { ContactsCheckPrompt } from "../../components/ContactsCheckPrompt";
 import { UpdateBanner } from '../../components/UpdateBanner';
 import { AppLock } from '../../components/AppLock';
+import { ConnectionPill, NoConnectionScreen } from '../../components/ConnectionState';
 /**
  * Which visible tab a hidden section belongs to (28 September, Lionel
  * agreed: «экран всегда подсвечивает вкладку, из которой в него попадают»).
@@ -76,7 +77,7 @@ function TabBar(props: BottomTabBarProps) {
 
 export default function AppLayout() {
   const insets = useSafeAreaInsets();
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, unreachable } = useAuth();
   const { t } = useTranslation();
   usePushNotifications();
   useDeviceNotifySync();
@@ -88,6 +89,8 @@ export default function AppLayout() {
     );
   }
   if (!user) {
+    // Nobody could be asked who is signed in — which is not «signed out».
+    if (unreachable) return <NoConnectionScreen />;
     return <Redirect href="/(auth)/login" />;
   }
   return (
@@ -227,6 +230,7 @@ export default function AppLayout() {
         <Tabs.Screen name="talk-coordinator" options={{ href: null }} />
         <Tabs.Screen name="cleaning" options={{ href: null }} />
       </Tabs>
+      <ConnectionPill />
     </AppLock>
   );
 }

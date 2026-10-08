@@ -133,11 +133,16 @@ async function signedIn(browser, email, viewport) {
   if (existsSync(file)) {
     const ctx = await browser.newContext({ viewport, locale: 'ru-RU', storageState: file });
     const page = await ctx.newPage();
+    // Since 7 October «Главная» alone proves nothing: the app opens from
+    // memory and asks the server alongside, so its answer is awaited — and
+    // listened for before the page is opened, or it is missed.
+    const answer = page
+      .waitForResponse((r) => /\/auth\/me(\?|$)/.test(r.url()) && r.status() === 200, { timeout: 30000 })
+      .then(() => true)
+      .catch(() => false);
     await page.goto(BASE);
-    // The app shows the sign-in page for a moment while it restores a session,
-    // so wait for a sign of being inside rather than judging at first sight.
     const inside = page.getByText(/^Главная$/).first();
-    const alive = await inside.waitFor({ timeout: 15000 }).then(() => true).catch(() => false);
+    const alive = (await answer) && (await inside.waitFor({ timeout: 15000 }).then(() => true).catch(() => false));
     if (alive) {
       console.log(`· вход (${email}): сохранённая сессия`);
       return { ctx, page, keep: () => keep(ctx, file, email) };

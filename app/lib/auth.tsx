@@ -19,9 +19,11 @@ import {
   clearAuthTokens,
   mayHaveSession,
   setOnAuthFailure,
+  setOnReachability,
   pushApi,
 } from './api';
-import { Platform } from 'react-native';
+import { AppState, Platform } from 'react-native';
+import { sessionVerdict } from './session-verdict';
 import { detachWebPush } from './web-push';
 import { rememberedPushToken, rememberPushToken } from './push-token-store';
 import { adoptLanguage } from './i18n';
@@ -59,9 +61,55 @@ async function detachThisDevice(): Promise<void> {
   }
 }
 
+/**
+ * Who was signed in here last — remembered so the app can be OPENED when the
+ * server cannot be reached.
+ *
+ * It grants nothing: every request is still judged by the server, and what
+ * is kept is what «Профиль» shows anyway. It is what lets a brother open the
+ * programme in a hall with no signal instead of being shown «Войти» — and it
+ * is forgotten the moment he signs out or the server refuses the session.
+ */
+const USER_KEY = 'mycongregation.user';
+
+async function rememberUser(user: AuthUser): Promise<void> {
+  try {
+    await storage.setItem(USER_KEY, JSON.stringify(user));
+  } catch {
+    // The app still works; it just cannot be opened without the server.
+  }
+}
+
+async function recallUser(): Promise<AuthUser | null> {
+  try {
+    const raw = await storage.getItem(USER_KEY);
+    const user = raw ? (JSON.parse(raw) as AuthUser) : null;
+    return user && typeof user.id === 'string' ? user : null;
+  } catch {
+    return null;
+  }
+}
+
+async function forgetUser(): Promise<void> {
+  try {
+    await storage.removeItem(USER_KEY);
+  } catch {
+    // Nothing to forget, then.
+  }
+}
+
 interface AuthContextValue {
   user: AuthUser | null;
   isLoading: boolean;
+  /**
+   * The server could not be reached when the session was last checked. With
+   * a `user` it means «opened from memory, not yet confirmed»; without one,
+   * «nobody remembered here and nobody can be asked» — which is not the same
+   * as signed out, and must not be drawn as «Войти».
+   */
+  unreachable: boolean;
+  /** Ask the server again, now. */
+  retryConnection: () => void;
   signIn: (email: string, password: string) => Promise<void>;
   adoptSession: (
     accessToken: string,
@@ -78,6 +126,7 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [unreachable, setUnreachable] = useState(false);
   /** Whether anybody is signed in right now — read by the failure callback. */
   const signedInRef = useRef(false);
   useEffect(() => {
@@ -119,13 +168,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // /login). A visitor who was never in has nothing to be thrown out of.
   useEffect(() => {
     setOnAuthFailure(() => {
+      // The server has refused the session: nobody is remembered here any
+      // more, signed in on screen or not.
+      void forgetUser();
+      setUnreachable(false);
       if (!signedInRef.current) return;
       void forgetCache();
       setUser(null);
       router.replace('/(auth)/login');
     });
+    // Said by the renewal of the session, the one place that knows.
+    setOnReachability((reached) => setUnreachable(!reached));
     return () => {
       setOnAuthFailure(null);
+      setOnReachability(null);
     };
   }, [forgetCache]);
 
@@ -146,16 +202,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (alive) setIsLoading(false);
         return;
       }
+      // WHOEVER WAS SIGNED IN HERE LAST IS LET IN AT ONCE, from memory, and
+      // the server is asked alongside. Waiting for its answer first meant a
+      // spinner for as long as a bad connection cared to take — up to half a
+      // minute of retries — before the person saw anything at all. The
+      // memory grants nothing: every request is still judged by the server,
+      // and its refusal signs the person out a moment later (below, and in
+      // the api interceptor).
+      const remembered = await recallUser();
+      if (remembered && alive) {
+        await restoreWelcome(remembered.id);
+        setUser(remembered);
+        setIsLoading(false);
+      }
       try {
         const me = await authApi.me();
         if (alive) {
           await restoreWelcome(me.id);
+          await rememberUser(me);
           setUser(me);
           void settleLanguage(me);
         }
-      } catch {
-        // Nothing usable: no cookie, or both it and the access token are dead.
-        await clearAuthTokens();
+      } catch (error) {
+        if (sessionVerdict(error) === 'refused') {
+          // Nothing usable: no cookie, or the server ended the session.
+          await clearAuthTokens();
+          await forgetUser();
+          if (alive) setUser(null);
+        } else if (alive) {
+          // THE SERVER COULD NOT BE ASKED. Until 7 October 2026 this branch
+          // did not exist: any failure here wiped the keys, so opening the
+          // app in a hall with no signal — or in the half-minute the server
+          // restarts after an update — signed the person out, on a phone for
+          // good. The keys stay, the person stays (if anybody is remembered),
+          // and the server is asked again as soon as it answers.
+          setUnreachable(true);
+        }
       } finally {
         if (alive) setIsLoading(false);
       }
@@ -177,9 +259,51 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     forgetWelcome();
     if (firstSignIn) await beginWelcome(authUser.id);
     else await restoreWelcome(authUser.id);
+    await rememberUser(authUser);
+    setUnreachable(false);
     setUser(authUser);
     void settleLanguage(authUser);
   }, [forgetCache]);
+
+  /**
+   * While the server cannot be reached it is asked again — every quarter of
+   * a minute, the moment the app comes back to the front, and when the
+   * person presses «Повторить». Its first answer confirms a session opened
+   * from memory and loads afresh everything that failed in the meantime.
+   */
+  const confirm = useCallback(async () => {
+    try {
+      const me = await authApi.me();
+      await rememberUser(me);
+      setUser(me);
+      setUnreachable(false);
+      void settleLanguage(me);
+      // Whatever was asked for while there was no connection is asked again;
+      // nobody should have to pull every screen down by hand.
+      void queryClient.invalidateQueries();
+    } catch (error) {
+      if (sessionVerdict(error) === 'refused') {
+        // The interceptor has signed a remembered person out already; this
+        // covers the start where nobody was remembered at all.
+        await clearAuthTokens();
+        await forgetUser();
+        setUnreachable(false);
+        }
+      // Still unreachable: ask again later.
+    }
+  }, [queryClient]);
+  useEffect(() => {
+    if (!unreachable) return;
+    const timer = setInterval(() => void confirm(), 15_000);
+    const sub = AppState.addEventListener('change', (next) => {
+      if (next === 'active') void confirm();
+    });
+    return () => {
+      clearInterval(timer);
+      sub.remove();
+    };
+  }, [unreachable, confirm]);
+  const retryConnection = useCallback(() => void confirm(), [confirm]);
 
   /**
    * Take up a session the server handed over outside the sign-in form.
@@ -201,6 +325,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       forgetWelcome();
       if (entry?.firstSignIn) await beginWelcome(authUser.id);
       else await restoreWelcome(authUser.id);
+      await rememberUser(authUser);
+      setUnreachable(false);
       setUser(authUser);
       void settleLanguage(authUser);
     },
@@ -221,13 +347,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await authApi.logout(refreshToken ?? undefined);
     }
     await clearAuthTokens();
+    await forgetUser();
     await forgetCache();
     forgetWelcome();
+    setUnreachable(false);
     setUser(null);
   }, [forgetCache]);
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, signIn, adoptSession, signOut }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        isLoading,
+        unreachable,
+        retryConnection,
+        signIn,
+        adoptSession,
+        signOut,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

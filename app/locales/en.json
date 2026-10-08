@@ -4073,5 +4073,13 @@
     "emptyTitle": "Nothing has come yet",
     "emptyHint": "Everything the app tells you will appear here: assignments, reminders, changes.",
     "foot": "This keeps what the app has told you over the last six weeks."
+  },
+  "connection": {
+    "pill": "No connection to the server",
+    "pillLabel": "No connection to the server. Tap to try again",
+    "retry": "Try again",
+    "title": "No connection to the server",
+    "body": "You have not been signed out: the app simply cannot reach the server right now. Check your internet — as soon as the connection is back, everything opens by itself.",
+    "toLogin": "Go to the sign-in screen anyway"
   }
 }

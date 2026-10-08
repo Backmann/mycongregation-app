@@ -4073,5 +4073,13 @@
     "emptyTitle": "Bisher ist nichts gekommen",
     "emptyHint": "Hier erscheint alles, was die App Ihnen mitteilt: Aufgaben, Erinnerungen, Änderungen.",
     "foot": "Hier bleibt, was die App Ihnen in den letzten sechs Wochen mitgeteilt hat."
+  },
+  "connection": {
+    "pill": "Keine Verbindung zum Server",
+    "pillLabel": "Keine Verbindung zum Server. Tippen, um es erneut zu versuchen",
+    "retry": "Erneut versuchen",
+    "title": "Keine Verbindung zum Server",
+    "body": "Sie wurden nicht abgemeldet: Die App erreicht den Server gerade nicht. Prüfen Sie Ihre Internetverbindung – sobald sie wieder da ist, öffnet sich alles von selbst.",
+    "toLogin": "Trotzdem zur Anmeldung"
   }
 }

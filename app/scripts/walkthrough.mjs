@@ -270,8 +270,15 @@ async function signedIn(browser, email) {
   if (existsSync(file)) {
     const ctx = await browser.newContext({ viewport: PHONE, locale: 'ru-RU', storageState: file });
     const page = await ctx.newPage();
+    // «Главная» on screen no longer proves the session: since 7 October the
+    // app opens from memory at once and asks the server alongside. The proof
+    // is the server's own answer.
+    const confirmed = page
+      .waitForResponse((r) => /\/auth\/me(\?|$)/.test(r.url()) && r.status() === 200, { timeout: 30000 })
+      .then(() => true)
+      .catch(() => false);
     await page.goto(BASE);
-    if (await page.getByText(/^Главная$/).first().waitFor({ timeout: 15000 }).then(() => true).catch(() => false)) {
+    if ((await confirmed) && (await page.getByText(/^Главная$/).first().waitFor({ timeout: 15000 }).then(() => true).catch(() => false))) {
       console.log(`· вход (${email}): сохранённая сессия`);
       return { ctx, page, keep: () => keep(ctx) };
     }
@@ -871,6 +878,46 @@ async function homeChecks(page, p) {
     if (!(await isOpenCard(card))) throw new Error('встреча не раскрыта');
     return `${u.searchParams.get('week')} · ${kind}`;
   });
+}
+
+// --- the server cannot be reached ----------------------------------------------
+// Until 7 October every failure to renew a session ended it: the app opened
+// in a hall with no signal, or in the half-minute the server restarts after
+// an update, put the person in front of «Войти» — on a phone for good.
+try {
+  const { ctx, page, keep } = await signedIn(browser, PUBLISHER);
+  console.log('\n— Сервер недоступен —');
+  let mode = 'up';
+  await page.route('**/api/**', (route) => {
+    if (mode === 'down') return route.abort('internetdisconnected');
+    if (mode === '502') return route.fulfill({ status: 502, body: 'Bad Gateway' });
+    return route.continue();
+  });
+  for (const [id, how, title] of [
+    ['E01', 'down', 'Нет сети: приложение открыли заново — человек внутри, сказано «Нет связи»'],
+    ['E02', '502', 'Сервер перезапускается (502): то же самое'],
+  ]) {
+    await check(page, id, title, async () => {
+      mode = how;
+      await page.goto(`${BASE}/home`);
+      await see(page, 'Нет связи с сервером', 40000);
+      await atPath(page, '/home');
+      await notSee(page, 'Войдите в собрание');
+      // …and when it answers again, nothing has to be pressed.
+      mode = 'up';
+      await page.getByText(/^Нет связи с сервером$/).first().waitFor({ state: 'detached', timeout: 40000 }).catch(() => {
+        throw new Error('связь вернулась, а «Нет связи» осталось');
+      });
+      await atPath(page, '/home');
+    });
+  }
+  mode = 'up';
+  await page.unroute('**/api/**');
+  await keep();
+  await ctx.close();
+} catch (e) {
+  results.push({ id: 'E01', title: 'Сервер недоступен', ok: false, note: String(e.message).slice(0, 300), file: '' });
+  console.log(`❌ E01 Сервер недоступен — ${e.message}`);
 }
 
 // --- a visitor who is not signed in -------------------------------------------

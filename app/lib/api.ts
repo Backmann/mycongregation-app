@@ -3,6 +3,7 @@ import { Platform } from "react-native";
 import Constants from "expo-constants";
 import { storage } from "./storage";
 import { openedFromIcon } from "./this-place";
+import { renewalRetryDelayMs, sessionVerdict } from "./session-verdict";
 import type { ApplyParsedPayload } from "./mwb-parser";
 
 function resolveApiUrl(): string {
@@ -4293,6 +4294,21 @@ export function extractErrorMessage(error: unknown): string {
   return "Unknown error";
 }
 
+// ---------- Whether the server can be reached ----------
+// Said by the one place that knows — the renewal of a session — so that the
+// app can tell «нет связи» from «вас выбросило» and say the first out loud.
+let onReachability: ((reached: boolean) => void) | null = null;
+
+export function setOnReachability(
+  callback: ((reached: boolean) => void) | null,
+) {
+  onReachability = callback;
+}
+
+function serverReached(reached: boolean) {
+  onReachability?.(reached);
+}
+
 // ---------- Auth failure callback ----------
 // AuthProvider registers a callback so the interceptor can clear UI state
 // and navigate to /login when both access AND refresh tokens are dead.
@@ -4337,7 +4353,34 @@ export function mayHaveSession(): boolean {
 // all other 401s wait for the same promise and retry with the new token.
 let refreshPromise: Promise<string> | null = null;
 
+/**
+ * Renew the session, asking again when the server could not be reached.
+ *
+ * One try used to be all there was, and its failure — a tunnel, a restart of
+ * the server — ended the session. Now only a refusal ends it
+ * (lib/session-verdict.ts), and a renewal that got no answer is repeated
+ * inside the minute in which the server still takes a spent key for an
+ * honest retry.
+ */
 async function performRefresh(): Promise<string> {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      const token = await renewOnce();
+      serverReached(true);
+      return token;
+    } catch (error) {
+      if (sessionVerdict(error) === "refused") throw error;
+      const wait = renewalRetryDelayMs(attempt);
+      if (wait === null) {
+        serverReached(false);
+        throw error;
+      }
+      await new Promise((resolve) => setTimeout(resolve, wait));
+    }
+  }
+}
+
+async function renewOnce(): Promise<string> {
   // On the web the token is not ours to send: the browser attaches the cookie.
   // On a device we still hand it over explicitly from secure storage.
   const refreshToken = USE_COOKIE_AUTH
@@ -4416,10 +4459,17 @@ api.interceptors.response.use(
           original.headers.Authorization = `Bearer ${newAccessToken}`;
         }
         return api.request(original);
-      } catch {
-        // Refresh itself failed — both tokens are dead. Clear and notify UI.
-        await clearAuthTokens();
-        onAuthFailure?.();
+      } catch (renewal) {
+        // The renewal failed — and WHY decides everything. Only a refusal
+        // means the session is dead; a server that could not be reached says
+        // nothing about it, and the keys stay where they are.
+        if (sessionVerdict(renewal) === 'refused') {
+          await clearAuthTokens();
+          onAuthFailure?.();
+          return Promise.reject(error);
+        }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (error as any).sessionKept = true;
         return Promise.reject(error);
       }
     }

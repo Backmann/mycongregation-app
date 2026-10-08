@@ -176,8 +176,15 @@ async function signedIn(browser, email) {
   if (existsSync(file)) {
     const ctx = await browser.newContext({ viewport: PHONE, locale: 'ru-RU', storageState: file });
     const page = await ctx.newPage();
+    // «Главная» on screen no longer proves the session: since 7 October the
+    // app opens from memory at once and asks the server alongside. The proof
+    // is the server's own answer.
+    const confirmed = page
+      .waitForResponse((r) => /\/auth\/me(\?|$)/.test(r.url()) && r.status() === 200, { timeout: 30000 })
+      .then(() => true)
+      .catch(() => false);
     await page.goto(BASE);
-    if (await page.getByText(/^Главная$/).first().waitFor({ timeout: 30000 }).then(() => true).catch(() => false)) {
+    if ((await confirmed) && (await page.getByText(/^Главная$/).first().waitFor({ timeout: 30000 }).then(() => true).catch(() => false))) {
       console.log(`· вход (${email}): сохранённая сессия`);
       return { ctx, page, file };
     }
