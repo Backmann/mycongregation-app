@@ -987,6 +987,37 @@ try {
     await page.waitForTimeout(1500);
     if (await page.getByTestId('kept-notice').filter({ visible: true }).count()) throw new Error('строка о сохранённом осталась');
   });
+  // THE APP ITSELF OPENS WITH NO INTERNET AT ALL (8 October 2026). Before,
+  // the browser showed its own «No internet» page: the worker only handled
+  // notifications and kept nothing of the app (public/service-worker.js).
+  await check(page, 'E07', 'Совсем без интернета приложение в браузере открывается — с сохранёнными назначениями и программой', async () => {
+    mode = 'up';
+    await go(page, '/home/my-assignments');
+    await see(page, mineOnline, 30000);
+    const controlled = await page
+      .waitForFunction(() => !!navigator.serviceWorker?.controller, null, { timeout: 30000 })
+      .then(() => true)
+      .catch(() => false);
+    if (!controlled) throw new Error('сервис-воркер не взял страницу под себя');
+    // Kept in the background: the pages, the program, the fonts.
+    await page.waitForTimeout(5000);
+    await ctx.setOffline(true);
+    try {
+      await page.goto(`${BASE}/home/my-assignments`).catch(() => {
+        throw new Error('браузер не открыл страницу без сети');
+      });
+      await page.getByTestId('kept-notice').filter({ visible: true }).first().waitFor({ timeout: 40000 }).catch(() => {
+        throw new Error('без сети нет строки «показано то, что пришло» — приложение не открылось или пусто');
+      });
+      await see(page, mineOnline);
+      await page.goto(`${BASE}/schedule`);
+      await page.getByText(/^(Будний|Выходной) · /).filter({ visible: true }).first().waitFor({ timeout: 40000 }).catch(() => {
+        throw new Error('без сети в «Программе» нет встреч');
+      });
+    } finally {
+      await ctx.setOffline(false);
+    }
+  });
   mode = 'up';
   await page.unroute('**/api/**');
   await keep();

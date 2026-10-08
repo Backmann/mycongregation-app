@@ -182,3 +182,263 @@ self.addEventListener('notificationclick', (event) => {
     })
   );
 });
+
+// ===========================================================================
+// THE APP ITSELF, KEPT FOR A HALL WITH NO SIGNAL (8 October 2026)
+//
+// Until then this worker only showed notifications, and a browser with no
+// connection could not open the app at all — however much of the person's
+// programme was kept inside it (lib/offline-keep.ts). On an iPhone the web
+// app IS the app.
+//
+//   • Pages: the NETWORK first — online, every opening gets the page the
+//     server has now, exactly as before — and a copy is kept. With no network,
+//     or no answer in five seconds, the kept copy opens.
+//   • The program, fonts and pictures carry a hash in their name: a name is
+//     one content for ever, so a kept one is served without asking.
+//   • Nothing else is touched: not the data server (another address), not
+//     /app/ (the APK), not build-info.json, not anything but a plain GET.
+//   • Any error in here falls through to the network, as if this part did
+//     not exist. A broken cache must never be a broken site.
+//
+// The site is deployed by wiping its folder, so an old program does not
+// outlive a deploy on the server. Here a page is never kept apart from the
+// program it names: when a new program appears, every kept page is fetched
+// again with it, and programs no kept page names are dropped.
+// ===========================================================================
+
+const PAGES = 'mc-pages-v1';
+const FILES = 'mc-files-v1';
+const PAGE_WAIT_MS = 5000;
+/** Kept at installation, so they open offline even if never visited here. */
+const SHELL = ['/', '/home', '/home/my-assignments', '/schedule', '/login'];
+const ENTRY = /\/_expo\/static\/js\/web\/entry-[0-9a-f]+\.js/g;
+
+// <<< OFFLINE RULES — pure; scripts/check-offline-shell.mjs runs this block.
+/**
+ * What this worker does with a request: 'page' (network first, kept copy
+ * when there is none), 'file' (hash-named: kept copy first), 'icon' (network
+ * first) — or null: not touched at all.
+ */
+function offlineRule(href, method, mode, origin) {
+  if (method !== 'GET') return null;
+  let url;
+  try {
+    url = new URL(href);
+  } catch (e) {
+    return null;
+  }
+  if (url.origin !== origin) return null;
+  const p = url.pathname;
+  if (p === '/app' || p.startsWith('/app/')) return null;
+  if (p.startsWith('/.well-known/')) return null;
+  if (p === '/build-info.json' || p === '/service-worker.js' || p === '/screen-check.html') return null;
+  if (p.startsWith('/_expo/static/') || p.startsWith('/assets/')) return 'file';
+  if (mode === 'navigate') return 'page';
+  if (
+    p === '/favicon.ico' ||
+    p === '/favicon-32.png' ||
+    p === '/icon-192.png' ||
+    p === '/icon-mono-96.png' ||
+    p === '/apple-touch-icon-180.png' ||
+    p === '/manifest.webmanifest'
+  )
+    return 'icon';
+  return null;
+}
+
+/** One kept copy per page, whatever the query: «/schedule?week=…» is «/schedule». */
+function pageKey(href) {
+  const url = new URL(href);
+  let p = url.pathname.replace(/\.html$/, '').replace(/\/index$/, '');
+  if (p.length > 1) p = p.replace(/\/+$/, '');
+  return url.origin + (p || '/');
+}
+
+/** The programs a page names. */
+function programsIn(html) {
+  return Array.from(new Set(String(html).match(ENTRY) || []));
+}
+// >>> OFFLINE RULES
+
+/**
+ * A file worth keeping: a real answer of our own site, and not a page. A
+ * missing file may be answered with the app's page and «200» (that is how a
+ * route without a file of its own is served) — kept under a program's name,
+ * that page would break the app for good.
+ */
+function isKeepableFile(res) {
+  return !!res && res.ok && res.type === 'basic' && !(res.headers.get('content-type') || '').includes('text/html');
+}
+
+function isHtml(res) {
+  return !!res && res.ok && res.type === 'basic' && (res.headers.get('content-type') || '').includes('text/html');
+}
+
+async function keepPage(key, res) {
+  const html = await res.text();
+  const cache = await caches.open(PAGES);
+  await cache.put(
+    key,
+    new Response(html, { headers: { 'content-type': res.headers.get('content-type') || 'text/html; charset=utf-8' } }),
+  );
+  return programsIn(html);
+}
+
+/** Fetch and keep a program (or any hash-named file) — once. */
+async function keepFile(href) {
+  const cache = await caches.open(FILES);
+  if (await cache.match(href)) return;
+  const res = await fetch(href, { cache: 'no-store' });
+  if (isKeepableFile(res)) await cache.put(href, res);
+}
+
+/**
+ * Bring every kept page to the program the server serves now, then drop the
+ * programs that no kept page names any more. One at a time.
+ */
+let refreshing = null;
+function refreshShell() {
+  if (refreshing) return refreshing;
+  refreshing = (async () => {
+    const origin = self.location.origin;
+    const pages = await caches.open(PAGES);
+    const keys = new Set(SHELL.map((p) => origin + p));
+    for (const req of await pages.keys()) keys.add(req.url);
+    const named = new Set();
+    for (const key of keys) {
+      try {
+        const res = await fetch(key, { cache: 'no-store', credentials: 'same-origin' });
+        if (!isHtml(res)) continue;
+        for (const prog of await keepPage(key, res)) {
+          await keepFile(origin + prog);
+          named.add(origin + prog);
+        }
+      } catch (e) {
+        // Offline in the middle of it: what was kept stays as it was.
+        return;
+      }
+    }
+    // Every kept page now names a kept program; the rest are a deploy behind.
+    for (const req of await pages.keys()) {
+      const res = await pages.match(req);
+      if (res) for (const prog of programsIn(await res.text())) named.add(origin + prog);
+    }
+    const files = await caches.open(FILES);
+    for (const req of await files.keys()) {
+      if (/\/_expo\/static\/js\/web\/entry-/.test(req.url) && !named.has(req.url)) await files.delete(req);
+    }
+  })().finally(() => {
+    refreshing = null;
+  });
+  return refreshing;
+}
+
+async function servePage(event) {
+  const key = pageKey(event.request.url);
+  const network = fetch(event.request).then((res) => {
+    if (isHtml(res)) {
+      const copy = res.clone();
+      event.waitUntil(
+        (async () => {
+          const progs = await keepPage(key, copy);
+          // A program not kept yet: a deploy (or the first opening). Bring
+          // every kept page along to it, and keep the program itself.
+          const files = await caches.open(FILES);
+          let fresh = false;
+          for (const prog of progs) if (!(await files.match(self.location.origin + prog))) fresh = true;
+          if (fresh) await refreshShell();
+        })().catch(() => {}),
+      );
+    }
+    return res;
+  });
+  const late = new Promise((resolve) => setTimeout(() => resolve(null), PAGE_WAIT_MS));
+  const first = await Promise.race([network.catch(() => null), late]);
+  if (first) return first;
+  // No network, or no answer in time: the kept copy of this page — or of
+  // «Главная», which opens any screen once the program has started.
+  const pages = await caches.open(PAGES);
+  const kept =
+    (await pages.match(key)) ||
+    (await pages.match(self.location.origin + '/home')) ||
+    (await pages.match(self.location.origin + '/'));
+  if (kept) return kept;
+  return network; // nothing kept: whatever the network ends up saying
+}
+
+async function serveFile(request) {
+  const cache = await caches.open(FILES);
+  const kept = await cache.match(request.url);
+  if (kept) return kept;
+  const res = await fetch(request);
+  if (isKeepableFile(res)) {
+    const copy = res.clone();
+    cache.put(request.url, copy).catch(() => {});
+  }
+  return res;
+}
+
+async function serveIcon(request) {
+  try {
+    const res = await fetch(request);
+    if (isKeepableFile(res)) {
+      const copy = res.clone();
+      caches.open(FILES).then((c) => c.put(request.url, copy)).catch(() => {});
+    }
+    return res;
+  } catch (e) {
+    const kept = await caches.open(FILES).then((c) => c.match(request.url));
+    if (kept) return kept;
+    throw e;
+  }
+}
+
+self.addEventListener('install', (event) => {
+  // Takes over at once: what it adds is only ever a fallback.
+  self.skipWaiting();
+  // Never fails the installation — notifications must work regardless.
+  event.waitUntil(refreshShell().catch(() => {}));
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    (async () => {
+      for (const name of await caches.keys()) {
+        if (name.startsWith('mc-') && name !== PAGES && name !== FILES) await caches.delete(name);
+      }
+      await self.clients.claim();
+    })().catch(() => {}),
+  );
+});
+
+self.addEventListener('fetch', (event) => {
+  let rule = null;
+  try {
+    rule = offlineRule(event.request.url, event.request.method, event.request.mode, self.location.origin);
+  } catch (e) {
+    rule = null;
+  }
+  if (!rule) return;
+  const handle = rule === 'page' ? servePage(event) : rule === 'file' ? serveFile(event.request) : serveIcon(event.request);
+  event.respondWith(handle.catch(() => fetch(event.request)));
+});
+
+/**
+ * The page tells what it loaded before this worker was in charge — the
+ * fonts above all — so they are kept from the first opening, not the second.
+ */
+self.addEventListener('message', (event) => {
+  const msg = event.data || {};
+  if (msg.type !== 'keep-loaded' || !Array.isArray(msg.urls)) return;
+  const origin = self.location.origin;
+  event.waitUntil(
+    (async () => {
+      for (const href of msg.urls.slice(0, 200)) {
+        if (offlineRule(String(href), 'GET', 'no-cors', origin) === 'file') {
+          await keepFile(String(href)).catch(() => {});
+        }
+      }
+    })(),
+  );
+});

@@ -116,6 +116,8 @@ const STEPS = [
   ['Сеанс и связь', 'node', ['scripts/check-session-verdict.mjs']],
   // What a phone keeps for a hall with no signal — and what it never keeps.
   ['Сохранённое на устройстве', 'node', ['scripts/check-offline-keep.mjs']],
+  // What the service worker keeps of the app itself, and what it never touches.
+  ['Приложение без сети', 'node', ['scripts/check-offline-shell.mjs']],
   // One rule for who may open «Составление программы» — asked by the doors
   // and by the screen (6 October: the address opened it for a publisher).
   ['Дверь «Составления программы»', 'node', ['scripts/check-programme-editor-door.mjs']],

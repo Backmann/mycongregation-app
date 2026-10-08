@@ -137,6 +137,18 @@ export default function RootLayout() {
     }
     navigator.serviceWorker
       .register("/service-worker.js")
+      .then(() => navigator.serviceWorker.ready)
+      .then((reg) => {
+        // What this page loaded before the worker was in charge — the
+        // program and the fonts above all — is handed to it to keep, so the
+        // app opens with no signal from the first visit, not the second
+        // (public/service-worker.js, «keep-loaded»).
+        const urls = performance
+          .getEntriesByType("resource")
+          .map((e) => e.name)
+          .filter((u) => u.startsWith(window.location.origin));
+        reg.active?.postMessage({ type: "keep-loaded", urls });
+      })
       .catch((err) => console.warn("SW registration failed:", err));
   }, []);
 
