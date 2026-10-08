@@ -136,7 +136,10 @@ export default function RootLayout() {
       return;
     }
     navigator.serviceWorker
-      .register("/service-worker.js")
+      // updateViaCache "none": the browser asks for the worker past its own
+      // cache every time it checks for a new one. The site once handed it out
+      // as «keep for a year» (8 October 2026) — see scripts/check-live.mjs.
+      .register("/service-worker.js", { updateViaCache: "none" })
       .then(() => navigator.serviceWorker.ready)
       .then((reg) => {
         // What this page loaded before the worker was in charge — the

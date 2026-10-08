@@ -15,8 +15,17 @@
  * before. That used to read ❌ with nothing wrong; it is now told apart — see
  * nothingToDeploy.
  *
- * Reads only: two public addresses and `git ls-remote`. Changes nothing.
+ * A third line (8 October) compares the service worker the site actually
+ * hands out with the one in the repository. From 26 June to 8 October
+ * Cloudflare served the June file — kept for a year on the strength of
+ * nginx's «immutable» for every .js — and not one of eleven changes to it
+ * reached a browser, while the two lines above said ✅ every time.
+ *
+ * Reads only: three public addresses, `git ls-remote` and `git show`.
+ * Changes nothing.
  */
+import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -25,6 +34,8 @@ import { fileURLToPath } from 'node:url';
 const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 
 const SITE = 'https://mycongregation.org/build-info.json';
+/** Exactly as a browser asks for it — no query string, which a cache would treat as another file. */
+const SW = 'https://mycongregation.org/service-worker.js';
 const API = 'https://api.mycongregation.org/api/health';
 const REPOS = {
   app: 'https://github.com/Backmann/mycongregation-app',
@@ -81,4 +92,37 @@ line('Сайт', site?.commit ?? null, want.app, site?.app?.hash ? ` · отпе
   '.github/workflows/deploy.yml',
 ]);
 line('Сервер', api?.commit ?? null, want.server);
+
+// --- the service worker, as handed out -------------------------------------
+const norm = (t) => t.replace(/\r\n/g, '\n');
+const sha = (t) => createHash('sha256').update(norm(t), 'utf8').digest('hex');
+function repoServiceWorker(commit) {
+  // The file of the commit the site says it was built from; the working tree
+  // when this repository does not know that commit.
+  if (commit) {
+    const r = spawnSync('git', ['show', `${commit}:app/public/service-worker.js`], { cwd: REPO_ROOT, encoding: 'utf8' });
+    if (r.status === 0) return r.stdout;
+  }
+  return readFileSync(join(REPO_ROOT, 'app', 'public', 'service-worker.js'), 'utf8');
+}
+try {
+  const res = await fetch(SW);
+  const body = res.ok ? await res.text() : null;
+  const cache = res.headers.get('cf-cache-status');
+  const since = res.headers.get('last-modified');
+  if (!body) {
+    bad += 1;
+    console.log(`❌ Сервис-воркер: сайт ответил ${res.status}`);
+  } else if (sha(body) === sha(repoServiceWorker(site?.commit ?? null))) {
+    console.log(`✅ Сервис-воркер: отдаётся тот, что в репозитории${cache ? ` · Cloudflare: ${cache}` : ''}`);
+  } else {
+    bad += 1;
+    console.log(
+      `❌ Сервис-воркер: сайт отдаёт ДРУГОЙ файл (${body.length} байт${since ? `, изменён ${new Date(since).toISOString().slice(0, 10)}` : ''}${cache ? `, Cloudflare: ${cache}` : ''}) — браузеры его новую версию не получат`,
+    );
+  }
+} catch (e) {
+  bad += 1;
+  console.log(`❌ Сервис-воркер: не удалось спросить (${e.message})`);
+}
 process.exit(bad ? 1 : 0);
