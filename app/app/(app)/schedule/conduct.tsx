@@ -188,9 +188,37 @@ export default function ConductScreen() {
     return () => clearInterval(id);
   }, [state.startedAt]);
 
-  // Экран не должен гаснуть. В браузере это умеет сам браузер; в сборке из
-  // APK для этого нужен expo-keep-awake, которого в дереве пока нет — там
-  // планшет придётся будить, и это не повод откладывать остальное.
+  // Экран не должен гаснуть, пока идёт встреча.
+  //
+  // В ПРИЛОЖЕНИИ (8 октября 2026). Раньше здесь было написано, что
+  // expo-keep-awake «в дереве пока нет» и для него нужна новая сборка APK. Это
+  // было неверно: модуль приходит вместе с самим expo и уже вшит в
+  // установленную сборку — он стоит в списке автоподключения
+  // (`npx expo-modules-autolinking resolve -p android`) и в отпечатке
+  // (node_modules/expo-keep-awake/android). Значит, это доезжает по воздуху.
+  //
+  // Подключается ЛЕНИВО и под try: модуль при подключении сразу ищет свою
+  // нативную часть и бросает исключение, если её нет. Сборка, где её вдруг не
+  // окажется, должна просто гаснуть, как раньше, а не терять весь экран.
+  useEffect(() => {
+    if (Platform.OS === 'web' || state.startedAt === null) return;
+    const TAG = 'conduct-mode';
+    let keep: {
+      activateKeepAwakeAsync: (tag?: string) => Promise<void>;
+      deactivateKeepAwake: (tag?: string) => Promise<void>;
+    } | null = null;
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      keep = require('expo-keep-awake');
+      void keep?.activateKeepAwakeAsync(TAG).catch(() => undefined);
+    } catch {
+      keep = null;
+    }
+    return () => {
+      void keep?.deactivateKeepAwake(TAG).catch(() => undefined);
+    };
+  }, [state.startedAt]);
+  // В браузере — его собственным средством.
   useEffect(() => {
     if (Platform.OS !== 'web' || state.startedAt === null) return;
     let lock: { release: () => Promise<void> } | null = null;
