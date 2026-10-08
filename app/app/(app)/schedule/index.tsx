@@ -56,6 +56,8 @@ import {
   resolveSubsection,
 } from "../../../lib/parts";
 import { useMyPublisher } from "../../../lib/useMyPublisher";
+import { KeptNotice, LoadFailed } from "../../../components/ConnectionState";
+import { sessionVerdict } from "../../../lib/session-verdict";
 import { FONT } from "../../../lib/typography";
 import { SegmentedControl } from "../../../components/SegmentedControl";
 import { MemorialMeetingBlock } from "../../../components/MemorialMeetingBlock";
@@ -390,6 +392,28 @@ export default function ProgrammeFeedScreen() {
   useEffect(() => {
     if (shown) Animated.timing(fade, { toValue: 1, duration: 160, useNativeDriver: true }).start();
   }, [shown, fade]);
+
+  // EVERYTHING the feed is drawn from — for «shown from before» and for the
+  // retry. And what makes it «did not load»: the programme piece at the end,
+  // or the meeting times (without them no meeting is drawn at all). Until 8
+  // October either failure left an empty feed and «Показать ещё», which in a
+  // hall with no signal reads as «nothing is planned».
+  const feedQueries = [
+    ...assignmentsQs,
+    ...dutiesQs,
+    ...cleaningQs,
+    ...fieldQs,
+    eventsQ,
+    settingsQ,
+    publishersQ,
+    groupsQ,
+  ];
+  const feedFailed = [assignmentsQs[assignmentsQs.length - 1], settingsQ].find(
+    (q) => q && q.isError && q.data === undefined,
+  );
+  const retryFeed = () => {
+    for (const q of feedQueries) if (q.isError) void q.refetch();
+  };
 
   const allAssignments = assignmentsQs.flatMap((q) => q.data?.data ?? []);
   const allReadiness = readinessQs.flatMap((q) => q.data ?? []);
@@ -886,7 +910,13 @@ export default function ProgrammeFeedScreen() {
   }
   pieces.push({
     key: "tail",
-    node: reachedEnd ? (
+    node: feedFailed ? (
+      <LoadFailed
+        style={{ marginHorizontal: 0 }}
+        onRetry={retryFeed}
+        unreachable={sessionVerdict(feedFailed.error) === "unreachable"}
+      />
+    ) : reachedEnd ? (
       <>
         <View style={styles.end}>
           <Text style={styles.endTitle}>{t("feed.end")}</Text>
@@ -1103,6 +1133,7 @@ export default function ProgrammeFeedScreen() {
   const listScroll = (
     <View style={wide ? styles.listPane : styles.screen}>
       {bar}
+      <KeptNotice queries={feedQueries} onRetry={retryFeed} style={{ marginBottom: 6 }} />
       <Animated.View style={[styles.fill, { opacity: fade }]}>
         <ScrollView
           ref={scrollRef}

@@ -98,7 +98,8 @@ export default function ProfileScreen() {
     retry: false,
   });
   const myTasks = myTasksQuery.data ?? [];
-  const { myPublisher } = useMyPublisher();
+  // The contacts line below reads the real card, never the kept one.
+  const { myPublisher } = useMyPublisher({ kept: false });
   const { t, i18n } = useTranslation();
   const buildLine = useBuildLine();
   const [langModalVisible, setLangModalVisible] = useState(false);

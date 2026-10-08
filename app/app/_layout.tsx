@@ -93,6 +93,21 @@ const queryClient = new QueryClient({
       retry: 1,
       refetchOnWindowFocus: false,
       staleTime: 30_000,
+      // ASK EVEN WHEN THE BROWSER SAYS «OFFLINE» (8 October 2026). By default
+      // a request is not made at all while the browser reports no network:
+      // it is paused — neither loading nor failed — and a screen drew
+      // nothing, without a word. A request that is made fails, and a failure
+      // is what the screens know how to say: «Не удалось загрузить», or the
+      // kept answer under «Без связи · показано на …». The phone never
+      // reported «offline» to the library in the first place, so this only
+      // makes the browser behave like the phone.
+      networkMode: "always",
+    },
+    mutations: {
+      // The same for a change: paused, it waited silently and was sent much
+      // later, perhaps after the person had made it again some other way.
+      // Now it fails at once and says so (the strip above).
+      networkMode: "always",
     },
   },
 });

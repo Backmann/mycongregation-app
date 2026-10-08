@@ -28,6 +28,7 @@ import { detachWebPush } from './web-push';
 import { rememberedPushToken, rememberPushToken } from './push-token-store';
 import { adoptLanguage } from './i18n';
 import { beginWelcome, forgetWelcome, restoreWelcome } from './welcome';
+import { forgetKept, forgetKeptOfOthers, restoreKept, startKeeping } from './offline-keep';
 
 /**
  * A device where nobody chose a language takes the account's. Where somebody
@@ -171,6 +172,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // The server has refused the session: nobody is remembered here any
       // more, signed in on screen or not.
       void forgetUser();
+      void forgetKept();
       setUnreachable(false);
       if (!signedInRef.current) return;
       void forgetCache();
@@ -212,12 +214,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const remembered = await recallUser();
       if (remembered && alive) {
         await restoreWelcome(remembered.id);
+        // What the server last told this person goes back first, so a hall
+        // with no signal shows his assignments instead of «нет назначений».
+        await restoreKept(queryClient, remembered.id);
         setUser(remembered);
         setIsLoading(false);
       }
       try {
         const me = await authApi.me();
         if (alive) {
+          await forgetKeptOfOthers(me.id);
           await restoreWelcome(me.id);
           await rememberUser(me);
           setUser(me);
@@ -228,6 +234,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           // Nothing usable: no cookie, or the server ended the session.
           await clearAuthTokens();
           await forgetUser();
+          await forgetKept();
           if (alive) setUser(null);
         } else if (alive) {
           // THE SERVER COULD NOT BE ASKED. Until 7 October 2026 this branch
@@ -256,6 +263,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } = await authApi.login(email, password);
     await storeAuthTokens(accessToken, refreshToken);
     await forgetCache();
+    await forgetKeptOfOthers(authUser.id);
     forgetWelcome();
     if (firstSignIn) await beginWelcome(authUser.id);
     else await restoreWelcome(authUser.id);
@@ -287,8 +295,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // covers the start where nobody was remembered at all.
         await clearAuthTokens();
         await forgetUser();
+        await forgetKept();
         setUnreachable(false);
-        }
+      }
       // Still unreachable: ask again later.
     }
   }, [queryClient]);
@@ -304,6 +313,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, [unreachable, confirm]);
   const retryConnection = useCallback(() => void confirm(), [confirm]);
+
+  // Every good answer of the few kept requests is kept for this person while
+  // he is signed in (lib/offline-keep.ts) — for the next time there is no
+  // signal.
+  const userId = user?.id ?? null;
+  useEffect(() => {
+    if (!userId) return;
+    return startKeeping(queryClient, userId);
+  }, [userId, queryClient]);
 
   /**
    * Take up a session the server handed over outside the sign-in form.
@@ -322,6 +340,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     ) => {
       await storeAuthTokens(accessToken, refreshToken);
       await forgetCache();
+      await forgetKeptOfOthers(authUser.id);
       forgetWelcome();
       if (entry?.firstSignIn) await beginWelcome(authUser.id);
       else await restoreWelcome(authUser.id);
@@ -348,6 +367,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     await clearAuthTokens();
     await forgetUser();
+    await forgetKept();
     await forgetCache();
     forgetWelcome();
     setUnreachable(false);

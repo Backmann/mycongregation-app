@@ -4080,6 +4080,13 @@
     "retry": "Erneut versuchen",
     "title": "Keine Verbindung zum Server",
     "body": "Sie wurden nicht abgemeldet: Die App erreicht den Server gerade nicht. Prüfen Sie Ihre Internetverbindung – sobald sie wieder da ist, öffnet sich alles von selbst.",
-    "toLogin": "Trotzdem zur Anmeldung"
+    "toLogin": "Trotzdem zur Anmeldung",
+    "today": "heute",
+    "keptOffline": "Keine Verbindung · angezeigt wird, was {{when}} ankam. Es kann sich seitdem geändert haben.",
+    "keptFailed": "Aktualisieren fehlgeschlagen · angezeigt wird, was {{when}} ankam.",
+    "refresh": "Aktualisieren",
+    "loadFailed": "Laden fehlgeschlagen",
+    "loadFailedOffline": "Keine Verbindung zum Server, und auf diesem Gerät ist nichts gespeichert. Das heißt nicht „leer“ — die Daten sind nur nicht angekommen.",
+    "loadFailedOther": "Der Server hat mit einem Fehler geantwortet. Das heißt nicht „leer“ — die Daten sind nur nicht angekommen."
   }
 }

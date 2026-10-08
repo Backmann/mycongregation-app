@@ -4080,6 +4080,13 @@
     "retry": "Try again",
     "title": "No connection to the server",
     "body": "You have not been signed out: the app simply cannot reach the server right now. Check your internet — as soon as the connection is back, everything opens by itself.",
-    "toLogin": "Go to the sign-in screen anyway"
+    "toLogin": "Go to the sign-in screen anyway",
+    "today": "today",
+    "keptOffline": "No connection · showing what arrived {{when}}. It may have changed since.",
+    "keptFailed": "Could not refresh · showing what arrived {{when}}.",
+    "refresh": "Refresh",
+    "loadFailed": "Could not load",
+    "loadFailedOffline": "No connection to the server, and nothing is saved on this device. This is not «empty» — the data just did not arrive.",
+    "loadFailedOther": "The server answered with an error. This is not «empty» — the data just did not arrive."
   }
 }

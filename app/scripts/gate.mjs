@@ -114,6 +114,8 @@ const STEPS = [
   ['Мои уведомления', 'node', ['scripts/check-inbox.mjs']],
   // A session ends when the server says so — not when it cannot be reached.
   ['Сеанс и связь', 'node', ['scripts/check-session-verdict.mjs']],
+  // What a phone keeps for a hall with no signal — and what it never keeps.
+  ['Сохранённое на устройстве', 'node', ['scripts/check-offline-keep.mjs']],
   // One rule for who may open «Составление программы» — asked by the doors
   // and by the screen (6 October: the address opened it for a publisher).
   ['Дверь «Составления программы»', 'node', ['scripts/check-programme-editor-door.mjs']],

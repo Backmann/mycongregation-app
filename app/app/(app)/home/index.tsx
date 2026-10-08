@@ -57,6 +57,7 @@ import { addDays, formatDateISO, startOfWeekMonday } from "../../../lib/dates";
 import { useAuth } from "../../../lib/auth";
 import { WelcomeCard } from "../../../components/WelcomeCard";
 import { useMyPublisher } from "../../../lib/useMyPublisher";
+import { KeptNotice } from "../../../components/ConnectionState";
 import {
   auxMonthSinceLabel,
   auxPeriodLabel,
@@ -2009,6 +2010,13 @@ function useHomeData(todayISO: string) {
       (overviewQ.isError && !overviewQ.data) ||
       (tasksQ.isError && !tasksQ.data),
     partialFailure,
+    // What the list is drawn from — for «shown from before» (KeptNotice).
+    asked: [overviewQ, tasksQ, programmeQ, fieldServiceQ, eventsQ, publishersQ, groupsQ],
+    refreshFailed: () => {
+      for (const q of [overviewQ, tasksQ, programmeQ, fieldServiceQ, eventsQ, publishersQ, groupsQ]) {
+        if (q.isError) void q.refetch();
+      }
+    },
     retry: () => {
       overviewQ.refetch();
       tasksQ.refetch();
@@ -2099,6 +2107,11 @@ export default function HomeScreen() {
           {fmtDay(todayISO)} – {fmtDay(nearTo)}
         </Text>
       </View>
+      <KeptNotice
+        queries={data.asked}
+        onRetry={data.refreshFailed}
+        style={{ marginHorizontal: 0, marginTop: 0, marginBottom: 8 }}
+      />
       {data.partialFailure ? (
         <Text style={s.partial}>{t("home.list.partial")}</Text>
       ) : null}

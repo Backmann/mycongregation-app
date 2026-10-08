@@ -1,10 +1,19 @@
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Pressable,
+  StyleProp,
+  StyleSheet,
+  Text,
+  View,
+  ViewStyle,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../lib/auth';
+import { sessionVerdict } from '../lib/session-verdict';
 
 /**
  * «Нет связи» — said as itself, in the two places it can be met.
@@ -89,7 +98,149 @@ export function NoConnectionScreen() {
   );
 }
 
+/** What a screen hands in: the few fields of a query that tell the story. */
+interface Asked {
+  data: unknown;
+  isError: boolean;
+  error: unknown;
+  dataUpdatedAt: number;
+}
+
+/**
+ * Is an OLD answer on screen because the new one failed? Then: when it was
+ * received (the oldest of them) and whether the server simply was not there.
+ */
+export function shownFromBefore(queries: Asked[]): { at: number; unreachable: boolean } | null {
+  const stale = queries.filter((q) => q.isError && q.data !== undefined && q.dataUpdatedAt > 0);
+  if (stale.length === 0) return null;
+  return {
+    at: Math.min(...stale.map((q) => q.dataUpdatedAt)),
+    unreachable: stale.some((q) => sessionVerdict(q.error) === 'unreachable'),
+  };
+}
+
+/** «сегодня, 21:40» / «7 октября, 21:40». */
+function whenSaid(at: number, lang: string, today: string): string {
+  const d = new Date(at);
+  const time = d.toLocaleTimeString(lang, { hour: '2-digit', minute: '2-digit' });
+  const now = new Date();
+  if (d.toDateString() === now.toDateString()) return `${today}, ${time}`;
+  return `${d.toLocaleDateString(lang, { day: 'numeric', month: 'long' })}, ${time}`;
+}
+
+/**
+ * A line at the top of a screen that shows an answer the server gave EARLIER
+ * — kept on this device, or still in memory — because the new one did not
+ * come. Says when it is from: in a hall with no signal the programme on
+ * screen may be a day old, and the person must be able to tell.
+ */
+export function KeptNotice({
+  queries,
+  onRetry,
+  style,
+}: {
+  queries: Asked[];
+  onRetry?: () => void;
+  style?: StyleProp<ViewStyle>;
+}) {
+  const { t, i18n } = useTranslation();
+  const before = shownFromBefore(queries);
+  if (!before) return null;
+  const when = whenSaid(before.at, i18n.language, t('connection.today'));
+  return (
+    <View style={[styles.kept, style]} testID="kept-notice">
+      <Ionicons name="cloud-offline-outline" size={16} color="#92400e" />
+      <Text style={styles.keptText}>
+        {t(before.unreachable ? 'connection.keptOffline' : 'connection.keptFailed', { when })}
+      </Text>
+      {onRetry ? (
+        <Pressable onPress={onRetry} hitSlop={8} accessibilityRole="button">
+          <Text style={styles.keptAction}>{t('connection.refresh')}</Text>
+        </Pressable>
+      ) : null}
+    </View>
+  );
+}
+
+/**
+ * In place of a list that did not come and has nothing kept to stand in:
+ * said as a failure — never as «нет назначений» or an empty feed, which a
+ * person in a hall would take for the truth.
+ */
+export function LoadFailed({
+  onRetry,
+  unreachable,
+  style,
+}: {
+  onRetry: () => void;
+  unreachable: boolean;
+  style?: StyleProp<ViewStyle>;
+}) {
+  const { t } = useTranslation();
+  return (
+    <View style={[styles.failed, style]} testID="load-failed">
+      <Ionicons name="cloud-offline-outline" size={30} color="#64748b" />
+      <Text style={styles.failedTitle}>{t('connection.loadFailed')}</Text>
+      <Text style={styles.failedBody}>
+        {t(unreachable ? 'connection.loadFailedOffline' : 'connection.loadFailedOther')}
+      </Text>
+      <Pressable
+        style={({ pressed }) => [styles.failedButton, pressed && { opacity: 0.8 }]}
+        onPress={onRetry}
+        accessibilityRole="button"
+      >
+        <Text style={styles.failedButtonText}>{t('connection.retry')}</Text>
+      </Pressable>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
+  kept: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#fef3c7',
+    borderRadius: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    marginHorizontal: 16,
+    marginTop: 10,
+  },
+  keptText: { flex: 1, color: '#78350f', fontSize: 13, lineHeight: 18 },
+  keptAction: {
+    color: '#0e7490',
+    fontSize: 13,
+    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
+  },
+  failed: {
+    alignItems: 'center',
+    gap: 8,
+    marginHorizontal: 16,
+    marginVertical: 24,
+    padding: 22,
+    borderRadius: 14,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  failedTitle: {
+    fontSize: 16,
+    color: '#0f172a',
+    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
+    textAlign: 'center',
+  },
+  failedBody: { fontSize: 13.5, lineHeight: 19, color: '#475569', textAlign: 'center', maxWidth: 340 },
+  failedButton: {
+    marginTop: 6,
+    borderRadius: 10,
+    backgroundColor: '#0e7490',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+  },
+  failedButtonText: { color: '#fff', fontSize: 14.5, fontWeight: '700', fontFamily: 'Manrope_700Bold' },
   pillWrap: {
     position: 'absolute',
     left: 0,

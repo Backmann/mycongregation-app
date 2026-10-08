@@ -30,6 +30,8 @@ import {
 } from '../../../lib/my-tasks';
 import { addDays, formatDateISO, startOfWeekMonday } from '../../../lib/dates';
 import { WindowsPlanDialog } from '../../../components/WindowsPlan';
+import { KeptNotice, LoadFailed } from '../../../components/ConnectionState';
+import { sessionVerdict } from '../../../lib/session-verdict';
 
 function weekHeaderLabel(weekStartISO: string, locale: string): string {
   const start = new Date(`${weekStartISO}T00:00:00`);
@@ -126,7 +128,13 @@ export default function MyAssignmentsScreen() {
   const onRefresh = () => {
     tasksQuery.refetch();
     overviewQuery.refetch();
+    eventsQuery.refetch();
   };
+  // NOTHING CAME, AND NOTHING IS KEPT (8 October 2026). This screen used to
+  // read «Назначений на ближайшие недели нет» whenever the list failed to
+  // load — in a hall with no signal, to a brother who was the chairman that
+  // evening. A failure is now said as one.
+  const failedQuery = [tasksQuery, overviewQuery].find((q) => q.isError && q.data === undefined);
 
   const refined = refineMyTasks(
     tasksQuery.data?.items ?? [],
@@ -145,8 +153,19 @@ export default function MyAssignmentsScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
+        <KeptNotice
+          queries={[tasksQuery, overviewQuery, eventsQuery]}
+          onRetry={onRefresh}
+          style={{ marginHorizontal: 0, marginTop: 0, marginBottom: 12 }}
+        />
         {isLoading ? (
           <ActivityIndicator size="large" style={{ marginTop: 32 }} />
+        ) : failedQuery ? (
+          <LoadFailed
+            style={{ marginHorizontal: 0 }}
+            onRetry={onRefresh}
+            unreachable={sessionVerdict(failedQuery.error) === 'unreachable'}
+          />
         ) : refined.length === 0 ? (
           <View style={styles.emptyBox}>
             <Ionicons

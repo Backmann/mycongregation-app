@@ -911,6 +911,82 @@ try {
       await atPath(page, '/home');
     });
   }
+  // WHAT WAS SHOWN LAST IS SHOWN WITHOUT A SIGNAL (8 October 2026). Until
+  // then «Мои назначения» opened with no connection read «Назначений на
+  // ближайшие недели нет», and the programme was an empty feed.
+  const keptOnDevice = () =>
+    page.evaluate(() => {
+      const raw = window.localStorage.getItem('mycongregation.kept');
+      return raw ? JSON.parse(raw) : null;
+    });
+  let mineOnline = '';
+  await check(page, 'E03', 'Без сети «Мои назначения» показывают сохранённое, с датой — не «назначений нет»', async () => {
+    mode = 'up';
+    await go(page, '/home/my-assignments');
+    const head = page.getByText(/^Неделя с /).filter({ visible: true }).first();
+    await head.waitFor({ timeout: 30000 }).catch(() => {
+      throw new Error('у возвещателя нет ни одного назначения — нечем проверять');
+    });
+    mineOnline = (await head.textContent()) || '';
+    // A write is put off by a second and a half.
+    let kept = null;
+    for (let i = 0; i < 20 && !kept?.entries?.['me/assignments']; i++) {
+      await page.waitForTimeout(500);
+      kept = await keptOnDevice();
+    }
+    if (!kept?.entries?.['me/assignments']) throw new Error('на устройстве не сохранилось «мои назначения»');
+    // The hall's and an event's address are what everybody is shown; a
+    // person's phone, e-mail or home address is never kept.
+    const raw = JSON.stringify(kept);
+    if (/"mobilePhone"|"email"/.test(raw)) throw new Error('в сохранённом есть телефон или почта');
+    for (const name of ['publishers/roster', 'service-groups', 'me/assignments']) {
+      if (/"address"/.test(JSON.stringify(kept.entries[name] ?? {}))) throw new Error(`в сохранённом «${name}» есть адрес`);
+    }
+    if (kept.me && /phone|mail|address|contacts/i.test(Object.keys(kept.me).join(' '))) throw new Error('своя карточка сохранена с контактами');
+    mode = 'down';
+    await page.goto(`${BASE}/home/my-assignments`);
+    await page.getByTestId('kept-notice').filter({ visible: true }).first().waitFor({ timeout: 40000 }).catch(() => {
+      throw new Error('нет строки «Нет связи · показано то, что пришло …»');
+    });
+    await see(page, mineOnline);
+    await notSee(page, 'Назначений на ближайшие недели нет');
+    return mineOnline;
+  });
+  await check(page, 'E04', 'Без сети «Программа» показывает сохранённые встречи, с датой', async () => {
+    mode = 'up';
+    await go(page, '/schedule');
+    await page.getByText(/^(Будний|Выходной) · /).filter({ visible: true }).first().waitFor({ timeout: 30000 });
+    await page.waitForTimeout(2500);
+    mode = 'down';
+    await page.goto(`${BASE}/schedule`);
+    await page.getByTestId('kept-notice').filter({ visible: true }).first().waitFor({ timeout: 40000 }).catch(() => {
+      throw new Error('нет строки «Нет связи · показано то, что пришло …»');
+    });
+    const rows = await page.getByText(/^(Будний|Выходной) · /).filter({ visible: true }).count();
+    if (!rows) throw new Error('встреч в ленте нет — сохранённое не показано');
+    return `встреч видно: ${rows}`;
+  });
+  await check(page, 'E05', 'Без сети и без сохранённого — «Не удалось загрузить», а не «назначений нет» и не пустая лента', async () => {
+    mode = 'down';
+    await page.evaluate(() => window.localStorage.removeItem('mycongregation.kept'));
+    await page.goto(`${BASE}/home/my-assignments`);
+    await page.getByTestId('load-failed').filter({ visible: true }).first().waitFor({ timeout: 40000 }).catch(() => {
+      throw new Error('нет «Не удалось загрузить»');
+    });
+    await notSee(page, 'Назначений на ближайшие недели нет');
+    await page.goto(`${BASE}/schedule`);
+    await page.getByTestId('load-failed').filter({ visible: true }).first().waitFor({ timeout: 40000 }).catch(() => {
+      throw new Error('в ленте нет «Не удалось загрузить» — снова пустая лента');
+    });
+    await notSee(page, 'Показать ещё');
+  });
+  await check(page, 'E06', 'Связь вернулась — всё загрузилось само, строка «показано то, что пришло» ушла', async () => {
+    mode = 'up';
+    await page.goto(`${BASE}/home/my-assignments`);
+    await see(page, mineOnline, 40000);
+    await page.waitForTimeout(1500);
+    if (await page.getByTestId('kept-notice').filter({ visible: true }).count()) throw new Error('строка о сохранённом осталась');
+  });
   mode = 'up';
   await page.unroute('**/api/**');
   await keep();
@@ -1105,6 +1181,24 @@ try {
     await notSee(page, 'Нет доступа');
   });
   await keep();
+  // LAST for this person: it ends his session (the next run signs in anew).
+  await check(page, 'B09', 'Выход стирает всё, что было сохранено на устройстве', async () => {
+    await go(page, '/home');
+    let kept = null;
+    for (let i = 0; i < 30 && !kept; i++) {
+      await page.waitForTimeout(500);
+      kept = await page.evaluate(() => window.localStorage.getItem('mycongregation.kept'));
+    }
+    if (!kept) throw new Error('до выхода ничего не сохранилось — нечего проверять');
+    await go(page, '/profile');
+    await tap(page, 'Выйти');
+    await atPath(page, '/login', 30000);
+    await page.waitForTimeout(2500);
+    const left = await page.evaluate(() =>
+      ['mycongregation.kept', 'mycongregation.user'].filter((k) => window.localStorage.getItem(k) !== null),
+    );
+    if (left.length) throw new Error(`после выхода осталось: ${left.join(', ')}`);
+  });
   await ctx.close();
 } catch (e) {
   skip('B', 'Старейшина без поручений', String(e.message || e));
