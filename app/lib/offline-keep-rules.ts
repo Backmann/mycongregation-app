@@ -117,3 +117,25 @@ export function mondayOf(d: Date): string {
   const p = (v: number) => String(v).padStart(2, '0');
   return `${m.getFullYear()}-${p(m.getMonth() + 1)}-${p(m.getDate())}`;
 }
+
+/**
+ * One meeting's programme, from what is kept (9 October 2026).
+ *
+ * «Ведение встречи» asks the server for its week alone, under a key that is
+ * never kept. In a hall with no signal the chairman then had nothing — while
+ * the same rows lay on the device in the programme kept for the eight weeks
+ * from this Monday. Of the kept pieces that hold this meeting, the most
+ * recent answer wins.
+ */
+export function keptMeetingRows<T extends { weekStartDate: string; eventType: string; deletedAt: string | null }>(
+  pieces: { rows: readonly T[]; at: number }[],
+  week: string,
+  eventType: string,
+): { rows: T[]; at: number } | null {
+  let best: { rows: T[]; at: number } | null = null;
+  for (const p of pieces) {
+    const rows = p.rows.filter((r) => r.weekStartDate === week && r.eventType === eventType && !r.deletedAt);
+    if (rows.length > 0 && (!best || p.at > best.at)) best = { rows, at: p.at };
+  }
+  return best;
+}

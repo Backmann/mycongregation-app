@@ -9,18 +9,20 @@ import {
   View,
   useWindowDimensions,
 } from 'react-native';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { router, useLocalSearchParams } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
-import { Assignment, assignmentsApi, meApi } from '../../../lib/api';
-import { useAllPublishers } from '../../../lib/useAllPublishers';
+import { Assignment, assignmentsApi, meApi, publishersApi } from '../../../lib/api';
 import { useAuth } from '../../../lib/auth';
 import { buildMidweekRunOrder, RunSegment } from '../../../lib/run-order';
 import { partDisplay } from '../../../lib/part-display';
 import { failsScreen } from '../../../lib/screen-failure';
+import { keptMeetingRows } from '../../../lib/offline-keep-rules';
+import { keptMe } from '../../../lib/offline-keep';
+import { KeptNotice } from '../../../components/ConnectionState';
 
 /**
  * CONDUCT MODE — what the chairman keeps open on a tablet while the midweek
@@ -86,8 +88,25 @@ export default function ConductScreen() {
   const { width } = useWindowDimensions();
   const wide = width >= 900;
 
+  // WITH NO SIGNAL IN THE HALL (9 October 2026): the meeting's rows as kept on
+  // the device with the programme of the coming weeks (lib/offline-keep.ts).
+  // Read once, when the screen opens — they are what was there to begin with.
+  const queryClient = useQueryClient();
+  const kept = useMemo(() => {
+    if (!week) return null;
+    const pieces = queryClient
+      .getQueriesData<{ data: Assignment[] }>({ queryKey: ['assignments', 'range'] })
+      .filter(([, d]) => Array.isArray(d?.data))
+      .map(([key, d]) => ({
+        rows: d!.data,
+        at: queryClient.getQueryState(key)?.dataUpdatedAt ?? 0,
+      }));
+    return keptMeetingRows(pieces, week, 'midweek');
+  }, [queryClient, week]);
+
   const assignmentsQuery = useQuery({
-    throwOnError: failsScreen,
+    // «Не удалось загрузить» only when nothing is kept for this meeting.
+    throwOnError: (error, query) => !kept && failsScreen(error, query),
     queryKey: ['conduct-assignments', week],
     // The server's filter semantics for weekStart are not relied on here: we
     // ask for the week and then keep only the rows that say they belong to it.
@@ -99,14 +118,21 @@ export default function ConductScreen() {
     queryKey: ['me-publisher'],
     queryFn: () => meApi.publisher(),
   });
-  const publishersQuery = useAllPublishers();
+  // Names from the roster: open to every member (the full directory is not —
+  // a chairman who is not an elder saw no names), and kept on the device.
+  const rosterQuery = useQuery({
+    queryKey: ['publishers', 'roster'],
+    queryFn: () => publishersApi.roster(),
+    staleTime: 5 * 60 * 1000,
+  });
 
+  const fromKept = !assignmentsQuery.data && !!kept;
   const rows: Assignment[] = useMemo(
     () =>
-      (assignmentsQuery.data?.data ?? []).filter(
-        (a) => a.weekStartDate === week && !a.deletedAt,
-      ),
-    [assignmentsQuery.data, week],
+      assignmentsQuery.data
+        ? assignmentsQuery.data.data.filter((a) => a.weekStartDate === week && !a.deletedAt)
+        : (kept?.rows ?? []),
+    [assignmentsQuery.data, week, kept],
   );
 
   const segments: RunSegment[] = useMemo(
@@ -129,12 +155,16 @@ export default function ConductScreen() {
 
   const nameById = useMemo(() => {
     const m = new Map<string, string>();
-    for (const p of publishersQuery.data?.data ?? []) m.set(p.id, p.displayName);
+    for (const p of rosterQuery.data?.data ?? []) m.set(p.id, p.displayName);
     return m;
-  }, [publishersQuery.data]);
+  }, [rosterQuery.data]);
 
   const chairmanRow = rows.find((a) => a.partKey === 'midweek_chairman');
-  const myPublisherId = meQuery.data?.publisher?.id ?? null;
+  // Who is asking: the server's answer, or — with no signal — one's own card
+  // as kept (who, never the contacts). Without it every chairman read «you
+  // are not the chairman» in a hall with no signal.
+  const keptMyId = keptMe(user?.id)?.id ?? null;
+  const myPublisherId = meQuery.data?.publisher?.id ?? keptMyId;
   const isAdmin = user?.role === 'admin';
   const isChairman =
     !!chairmanRow?.publisherId && chairmanRow.publisherId === myPublisherId;
@@ -282,7 +312,7 @@ export default function ConductScreen() {
   if (!week) {
     return <Notice text={t('conduct.noWeek')} />;
   }
-  if (assignmentsQuery.isLoading || meQuery.isLoading) {
+  if ((assignmentsQuery.isLoading && !kept) || (meQuery.isLoading && !keptMyId)) {
     return (
       <View style={styles.center}>
         <ActivityIndicator color="#0ea5e9" />
@@ -428,6 +458,20 @@ export default function ConductScreen() {
       style={styles.container}
       contentContainerStyle={styles.content}
     >
+      {fromKept && kept ? (
+        <KeptNotice
+          queries={[
+            {
+              data: kept.rows,
+              isError: assignmentsQuery.isError,
+              error: assignmentsQuery.error,
+              dataUpdatedAt: kept.at,
+            },
+          ]}
+          onRetry={() => void assignmentsQuery.refetch()}
+          style={{ marginHorizontal: 0, marginTop: 0, marginBottom: 12 }}
+        />
+      ) : null}
       <View style={wide ? styles.twoCol : undefined}>
         <View style={wide ? styles.colMain : undefined}>
           {nowCard}

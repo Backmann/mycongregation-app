@@ -122,7 +122,8 @@ const VIA = {
   'special-events/[id].tsx': ['components/SpecialEventDetail.tsx'],
   'publishers/cleaning-week.tsx': ['lib/useCleaningWeek.ts'],
 };
-const MARK = /throwOnError: failsScreen\b/;
+// A screen may also fall back on something kept first: «(e, q) => !kept && failsScreen(e, q)».
+const MARK = /throwOnError: (?:failsScreen\b|\([^)]*\) => [^\n]*\bfailsScreen\()/;
 const walk = (d) =>
   readdirSync(d).flatMap((n) => {
     const p = join(d, n);

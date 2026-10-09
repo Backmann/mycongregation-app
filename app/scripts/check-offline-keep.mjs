@@ -26,7 +26,7 @@ const read = (rel) => readFileSync(join(ROOT, rel), 'utf8');
 const js = ts.transpileModule(read('lib/offline-keep-rules.ts'), {
   compilerOptions: { module: ts.ModuleKind.ES2020, target: ts.ScriptTarget.ES2020 },
 }).outputText;
-const { keptName, pruneKept, keptIdentity, mondayOf, KEEP_DAYS } = await import(
+const { keptName, pruneKept, keptIdentity, mondayOf, KEEP_DAYS, keptMeetingRows } = await import(
   `data:text/javascript;base64,${Buffer.from(js).toString('base64')}`
 );
 
@@ -193,6 +193,28 @@ for (const [where, src, re] of [
 ]) {
   if (!re.test(src)) problems.push(`${where}: ключ запроса изменился — сохранение его больше не узнаёт`);
 }
+
+// --- «Ведение встречи» from what is kept -----------------------------------------
+{
+  const row = (week, eventType, id, deletedAt = null) => ({ weekStartDate: week, eventType, id, deletedAt });
+  const older = { at: 100, rows: [row('2026-10-12', 'midweek', 'a1'), row('2026-10-12', 'weekend', 'w1')] };
+  const newer = { at: 200, rows: [row('2026-10-12', 'midweek', 'a2'), row('2026-10-12', 'midweek', 'gone', '2026-10-01')] };
+  const other = { at: 300, rows: [row('2026-10-19', 'midweek', 'b1')] };
+  const got = keptMeetingRows([older, newer, other], '2026-10-12', 'midweek');
+  if (!got || got.at !== 200 || got.rows.map((r) => r.id).join() !== 'a2') {
+    problems.push(`встреча из сохранённого: взято ${JSON.stringify(got)}, а не свежий кусок без удалённых и без выходной`);
+  }
+  if (keptMeetingRows([other], '2026-10-12', 'midweek') !== null) problems.push('встреча из сохранённого: чужая неделя выдана за эту');
+  if (keptMeetingRows([], '2026-10-12', 'midweek') !== null) problems.push('встреча из сохранённого: из ничего что-то взялось');
+}
+const conduct = read('app/(app)/schedule/conduct.tsx');
+if (!/throwOnError: \(error, query\) => !kept && failsScreen\(error, query\)/.test(conduct)) {
+  problems.push('«Ведение встречи»: «Не удалось загрузить» и при сохранённой программе');
+}
+if (!/keptMeetingRows\(pieces, week, 'midweek'\)/.test(conduct)) problems.push('«Ведение встречи»: не берёт программу из сохранённого');
+if (!/keptMe\(user\?\.id\)/.test(conduct) || !/const myPublisherId = meQuery\.data\?\.publisher\?\.id \?\? keptMyId;/.test(conduct)) problems.push('«Ведение встречи»: без связи председатель не узнан — «вести может председатель этой недели»');
+if (/useAllPublishers/.test(conduct)) problems.push('«Ведение встречи»: имена из полного справочника — он не хранится и закрыт не-старейшинам');
+if (!/<KeptNotice/.test(conduct)) problems.push('«Ведение встречи»: не сказано, что показано сохранённое');
 
 if (problems.length) {
   console.error('✗ Сохранённое на устройстве:');

@@ -1018,6 +1018,55 @@ try {
       await ctx.setOffline(false);
     }
   });
+  // «ВЕДЕНИЕ ВСТРЕЧИ» IN A HALL WITH NO SIGNAL (9 October 2026). The screen
+  // asked for its week alone and kept nothing: with no signal the chairman
+  // read «На эту неделю программы нет» — and, his own card not arriving,
+  // «Вести встречу может председатель этой недели». Now it takes the rows
+  // kept with the programme, the names from the kept roster, and who he is
+  // from his kept card.
+  let chairWeek = null;
+  await check(page, 'E08', 'Ведение встречи без сервера: части встречи из сохранённого, строка «показано то, что пришло», председатель узнан', async () => {
+    mode = 'up';
+    await go(page, '/home');
+    let found = null;
+    for (let i = 0; i < 30 && !found; i++) {
+      await page.waitForTimeout(500);
+      found = await page.evaluate(() => {
+        const k = JSON.parse(window.localStorage.getItem('mycongregation.kept') || 'null');
+        const me = k?.me?.id;
+        if (!me) return null;
+        for (const [name, e] of Object.entries(k.entries || {})) {
+          if (!name.startsWith('assignments/')) continue;
+          const row = (e.data?.data || []).find((a) => a.partKey === 'midweek_chairman' && a.publisherId === me && !a.deletedAt);
+          if (row) return row.weekStartDate;
+        }
+        return null;
+      });
+    }
+    if (!found) throw new Error('у возвещателя нет председательства в сохранённой программе — нечем проверить');
+    chairWeek = found;
+    mode = 'down';
+    await page.goto(`${BASE}/schedule/conduct?week=${chairWeek}`);
+    await page.getByTestId('kept-notice').filter({ visible: true }).first().waitFor({ timeout: 45000 }).catch(() => {
+      throw new Error('нет строки «Нет связи · показано то, что пришло …»');
+    });
+    await see(page, 'Начать встречу');
+    await notSee(page, 'Вести встречу может председатель этой недели');
+    await notSee(page, 'На эту неделю программы нет');
+    if (await page.getByTestId('screen-load-failed').filter({ visible: true }).count()) throw new Error('«Не удалось загрузить», хотя сохранённое есть');
+    return chairWeek;
+  });
+  await check(page, 'E09', 'Ведение встречи без сервера и без сохранённого: «Не удалось загрузить», не «программы нет»', async () => {
+    if (!chairWeek) throw new Error('E08 не нашёл неделю');
+    mode = 'down';
+    await page.evaluate(() => window.localStorage.removeItem('mycongregation.kept'));
+    await page.goto(`${BASE}/schedule/conduct?week=${chairWeek}`);
+    await page.getByTestId('screen-load-failed').filter({ visible: true }).first().waitFor({ timeout: 45000 }).catch(() => {
+      throw new Error('нет «Не удалось загрузить»');
+    });
+    await notSee(page, 'На эту неделю программы нет');
+    mode = 'up';
+  });
   mode = 'up';
   await page.unroute('**/api/**');
   await keep();
