@@ -59,6 +59,7 @@ import { startOfWeekMonday, addDays, formatDateISO } from "../../../lib/dates";
 import { effectiveVersionFor } from "../../../lib/meeting-schedule";
 import { notify } from "../../../lib/error-bus";
 import { useAllPublishers } from "../../../lib/useAllPublishers";
+import { failsScreen } from "../../../lib/screen-failure";
 
 const QK = ["talk-exchange"] as const;
 
@@ -188,6 +189,7 @@ export default function TalkExchangeYearScreen() {
   const [note, setNote] = useState("");
 
   const listQuery = useQuery({
+    throwOnError: failsScreen,
     queryKey: QK,
     queryFn: () => talkExchangeApi.list(),
   });

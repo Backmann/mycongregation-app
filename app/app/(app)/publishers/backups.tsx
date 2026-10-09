@@ -15,6 +15,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
 import { backupsApi, extractErrorMessage } from '../../../lib/api';
 import { notify } from '../../../lib/error-bus';
+import { failsScreen } from '../../../lib/screen-failure';
 
 /** «956,6 КБ» in Russian, «956.6 KB» in English — not the English form everywhere. */
 function formatBytes(n: number, lang: string): string {
@@ -31,6 +32,7 @@ export default function BackupsScreen() {
   const [downloading, setDownloading] = useState(false);
 
   const query = useQuery({
+    throwOnError: failsScreen,
     queryKey: ['backups-status'],
     queryFn: () => backupsApi.status(),
   });

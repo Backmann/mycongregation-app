@@ -14,6 +14,7 @@ import { router } from 'expo-router';
 import dayjs from 'dayjs';
 import { tasksApi, hallsApi, EldersMeeting } from '../../../lib/api';
 import { LoadFailure } from '../../../components/LoadFailure';
+import { failsScreen } from '../../../lib/screen-failure';
 
 /**
  * Every meeting that has been held, newest first, grouped by year.
@@ -33,6 +34,7 @@ export default function AgendaArchiveScreen() {
   const today = dayjs().format('YYYY-MM-DD');
 
   const meetingsQuery = useQuery({
+    throwOnError: failsScreen,
     queryKey: ['tasks', 'meetings'],
     queryFn: () => tasksApi.meetings(),
   });

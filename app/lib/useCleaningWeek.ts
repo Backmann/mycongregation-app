@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { cleaningApi } from "./api";
+import { failsScreen } from "./screen-failure";
 
 /**
  * The cleaning of one week: the query, assigning and clearing a slot, and the
@@ -12,6 +13,7 @@ import { cleaningApi } from "./api";
 export function useCleaningWeek(weekStartISO: string) {
   const queryClient = useQueryClient();
   const cleaningQuery = useQuery({
+    throwOnError: failsScreen,
     queryKey: ["cleaning", weekStartISO],
     queryFn: () => cleaningApi.getWeek(weekStartISO),
   });

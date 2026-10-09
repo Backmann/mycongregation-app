@@ -25,6 +25,7 @@ import { useTranslation } from 'react-i18next';
 import { LoadFailure } from '../../../components/LoadFailure';
 import { formatMonthLabel } from '../../../lib/i18n';
 import { notify } from '../../../lib/error-bus';
+import { failsScreen } from '../../../lib/screen-failure';
 
 // formatMonth replaced by formatMonthLabel from lib/i18n.ts
 
@@ -109,6 +110,7 @@ export default function NewOrEditServiceReportScreen() {
     error: myPublisherError,
     refetch: refetchMyPublisher,
   } = useQuery({
+    throwOnError: failsScreen,
     queryKey: ['me', 'publisher'],
     queryFn: async () => (await meApi.publisher()).publisher,
     enabled: !!user,

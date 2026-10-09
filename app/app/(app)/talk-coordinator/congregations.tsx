@@ -27,6 +27,7 @@ import {
 import { Dialog } from '../../../components/Dialog';
 import { notify } from '../../../lib/error-bus';
 import { confirm } from '../../../components/ConfirmHost';
+import { failsScreen } from '../../../lib/screen-failure';
 
 const QK = ['external-congregations'] as const;
 
@@ -50,7 +51,7 @@ export default function CongregationsScreen() {
   const dayLabel = (dow: number) =>
     dayjs('2024-01-01').add(dow - 1, 'day').locale(i18n.language).format('dd');
 
-  const listQuery = useQuery({ queryKey: QK, queryFn: () => externalCongregationsApi.list() });
+  const listQuery = useQuery({ throwOnError: failsScreen, queryKey: QK, queryFn: () => externalCongregationsApi.list() });
   // Only to show how many speakers each holds; the card does the real work.
   const speakersQuery = useQuery({
     queryKey: ['visiting-speakers'],

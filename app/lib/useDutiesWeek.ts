@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { dutiesApi, EventType, publisherActivityApi, PublisherActivity } from "./api";
 import { notify } from "./error-bus";
+import { failsScreen } from "./screen-failure";
 
 /**
  * The duties of one week: the query, the helpers' activity, and every edit the
@@ -16,6 +17,7 @@ export function useDutiesWeek(weekStartISO: string, nextWeekISO: string) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const dutiesQuery = useQuery({
+    throwOnError: failsScreen,
     queryKey: ["duties", weekStartISO],
     queryFn: () =>
       dutiesApi.list({ weekStart: weekStartISO, weekEnd: nextWeekISO }),

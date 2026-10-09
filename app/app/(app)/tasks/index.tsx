@@ -32,6 +32,7 @@ import { AREA_BG, AREA_FG, AREAS, quarterLabel } from "../../../lib/task-areas";
 import { UndoBar } from "../../../components/UndoBar";
 import { useAllPublishers } from "../../../lib/useAllPublishers";
 import { dayLabel } from "../../../lib/day-label";
+import { failsScreen } from "../../../lib/screen-failure";
 
 /** One colour per area — the glance before the reading. */
 const AREA_TINT: Record<TaskArea, string> = {
@@ -66,10 +67,12 @@ export default function TasksScreen() {
   >({});
 
   const openQuery = useQuery({
+    throwOnError: failsScreen,
     queryKey: ["tasks", "open"],
     queryFn: () => tasksApi.list("open"),
   });
   const doneQuery = useQuery({
+    throwOnError: failsScreen,
     queryKey: ["tasks", "done"],
     queryFn: () => tasksApi.list("done"),
     // Fetched always now, because the tab shows a count — and a count that

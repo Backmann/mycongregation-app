@@ -24,6 +24,7 @@ import {
 import { computeSpeakerStats } from "../../../../lib/speaker-stats";
 import { formatRelativeDay } from "../../../../lib/relative-time";
 import { LoadError } from "../../../../components/LoadError";
+import { failsScreen } from "../../../../lib/screen-failure";
 
 const todayISO = () => new Date().toLocaleDateString("en-CA");
 
@@ -48,6 +49,7 @@ export default function CongregationProfileScreen() {
   const today = todayISO();
 
   const congQuery = useQuery({
+    throwOnError: failsScreen,
     queryKey: ["external-congregations"],
     queryFn: () => externalCongregationsApi.list(),
   });

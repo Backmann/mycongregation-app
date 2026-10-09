@@ -31,6 +31,7 @@ import { noGoogleServices } from '../../../lib/push-no-google';
 import { useAuth } from '../../../lib/auth';
 import { router } from 'expo-router';
 import { notify } from '../../../lib/error-bus';
+import { failsScreen } from '../../../lib/screen-failure';
 
 /**
  * Whether this device is actually receiving anything — and the two things a
@@ -286,6 +287,7 @@ export default function NotificationPreferencesScreen() {
   const perms = usePermissions();
 
   const prefsQuery = useQuery({
+    throwOnError: failsScreen,
     queryKey: ['me', 'notification-preferences'],
     queryFn: () => meApi.notificationPreferences(),
   });

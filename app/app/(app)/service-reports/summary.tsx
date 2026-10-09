@@ -27,6 +27,7 @@ import { formatMonthLabel } from '../../../lib/i18n';
 import { exportHtmlAsPdf, openPrintWindow } from '../../../lib/pdf';
 import { buildMonthlyReportPdfHtml } from '../../../lib/monthlyReportPdf';
 import { HEADER_ICON } from '../../../lib/header';
+import { failsScreen } from '../../../lib/screen-failure';
 
 
 
@@ -64,6 +65,7 @@ export default function ServiceSummaryScreen() {
   );
 
   const { data, isLoading, isRefetching, refetch, error } = useQuery({
+    throwOnError: failsScreen,
     queryKey: ['service-reports', 'summary', reportMonth],
     queryFn: () => serviceReportsApi.getSummary(reportMonth),
     enabled: canViewServiceSummary,

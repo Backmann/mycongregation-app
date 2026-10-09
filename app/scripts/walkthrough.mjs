@@ -1027,6 +1027,77 @@ try {
   console.log(`❌ E01 Сервер недоступен — ${e.message}`);
 }
 
+// --- «did not load» is not «nothing there» ------------------------------------
+// With the server off, a screen drawing `data ?? []` used to say what it says
+// about an empty list (audit of 8 October 2026): «Задач пока нет» to an
+// administrator with three open tasks, «График на эту неделю ещё не открыт»
+// with a button to build it. Now the screen gives way to «Не удалось
+// загрузить» (lib/screen-failure.ts).
+try {
+  const { ctx, page, keep } = await signedIn(browser, ADMIN);
+  acceptDialogs(page);
+  console.log('\n— Без сервера экран не говорит «пусто» —');
+  let down = false;
+  await page.route('**/api/**', (route) => (down ? route.abort('internetdisconnected') : route.continue()));
+  const failedShown = async () =>
+    page.getByTestId('screen-load-failed').filter({ visible: true }).first().waitFor({ timeout: 45000 }).then(() => true).catch(() => false);
+  await check(page, 'F01', 'Задачи совета без сервера: «Не удалось загрузить», не «Задач пока нет»; связь вернулась — «Повторить» показывает задачи', async () => {
+    down = false;
+    await go(page, '/tasks');
+    await page.waitForTimeout(2500);
+    await notSee(page, 'Задач пока нет');
+    down = true;
+    await page.goto(`${BASE}/tasks`);
+    if (!(await failedShown())) throw new Error('нет «Не удалось загрузить»');
+    await notSee(page, 'Задач пока нет');
+    down = false;
+    await tap(page, 'Повторить');
+    await page.getByTestId('screen-load-failed').filter({ visible: true }).first().waitFor({ state: 'detached', timeout: 45000 }).catch(() => {
+      throw new Error('после «Повторить» с сервером экран не вернулся');
+    });
+    await page.waitForTimeout(2000);
+    await notSee(page, 'Задач пока нет');
+  });
+  await check(page, 'F02', 'Служение в общественных местах без сервера: нет «График не открыт» и кнопки «Построить неделю»', async () => {
+    down = true;
+    await page.goto(`${BASE}/cart/witnessing`);
+    if (!(await failedShown())) throw new Error('нет «Не удалось загрузить»');
+    await notSee(page, /ещё не открыт/);
+    await notSee(page, 'Построить неделю');
+    down = false;
+  });
+  down = false;
+  await page.unroute('**/api/**');
+  await keep();
+  await ctx.close();
+} catch (e) {
+  skip('F', 'Без сервера экран не говорит «пусто»', String(e.message || e));
+}
+// A brother whose right to a screen comes from a responsibility: without the
+// server the list of responsibilities does not arrive, and «no
+// responsibility» read as «Нет доступа» (found 8 October 2026, from the code).
+try {
+  const holder = process.env.HOLDER || 'koval811@example.invalid';
+  const { ctx, page, keep } = await signedIn(browser, holder);
+  acceptDialogs(page);
+  await check(page, 'F03', 'Брат с поручением без сервера: на своём разделе «Не удалось загрузить», не «Нет доступа»', async () => {
+    await go(page, '/cart/service-overseer');
+    await page.waitForTimeout(2500);
+    await notSee(page, 'Нет доступа');
+    await page.route('**/api/**', (route) => route.abort('internetdisconnected'));
+    await page.goto(`${BASE}/cart/service-overseer`);
+    await page.getByTestId('screen-load-failed').filter({ visible: true }).first().waitFor({ timeout: 45000 }).catch(() => {
+      throw new Error('нет «Не удалось загрузить»');
+    });
+    await notSee(page, 'Нет доступа');
+    await page.unroute('**/api/**');
+  });
+  await keep();
+  await ctx.close();
+} catch (e) {
+  skip('F03', 'Брат с поручением без сервера', String(e.message || e));
+}
+
 // --- a visitor who is not signed in -------------------------------------------
 // Where an invited person arrives is the address in the letter. From 21 July
 // to 7 October a browser threw every such visitor to «Войти»: the app asks

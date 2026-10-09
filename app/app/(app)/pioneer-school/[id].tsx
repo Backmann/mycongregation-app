@@ -32,6 +32,7 @@ import { DateField } from '../../../components/DateField';
 import { exportHtmlAsPdf, openPrintWindow } from '../../../lib/pdf';
 import { buildPioneerSchoolPdfHtml } from '../../../lib/pioneerSchoolPdf';
 import { schoolDates } from './index';
+import { failsScreen } from '../../../lib/screen-failure';
 
 export default function PioneerSchoolScreen() {
   const { t, i18n } = useTranslation();
@@ -50,6 +51,7 @@ export default function PioneerSchoolScreen() {
    */
 
   const query = useQuery({
+    throwOnError: failsScreen,
     queryKey: ['pioneer-school', id],
     queryFn: () => pioneerSchoolApi.get(id),
     enabled: canViewPioneerSchool && !!id,

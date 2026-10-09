@@ -30,6 +30,7 @@ import { parseISODate } from '../../../lib/dates';
 import { formatWeekRange } from '../../../lib/week-range';
 import { DropZone } from '../../../components/DropZone';
 import { useTranslation } from 'react-i18next';
+import { failsScreen } from '../../../lib/screen-failure';
 
 interface PickedFile {
   uri: string;
@@ -128,6 +129,7 @@ export default function ImportEpubScreen() {
 
   /** Which months the congregation already has — asked once, on opening. */
   const coverageQuery = useQuery({
+    throwOnError: failsScreen,
     queryKey: ['import-coverage'],
     queryFn: () => scheduleImportApi.coverage(),
   });

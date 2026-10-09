@@ -28,6 +28,7 @@ import { LoadFailure } from '../../../components/LoadFailure';
 import { buildAttendancePdfHtml } from '../../../lib/attendancePdf';
 import { exportHtmlAsPdf, openPrintWindow } from '../../../lib/pdf';
 import { reportError, reportSuccess } from '../../../lib/error-bus';
+import { failsScreen } from '../../../lib/screen-failure';
 
 /**
  * Meeting attendance for a service year — form S-3.
@@ -63,6 +64,7 @@ export default function AttendanceScreen() {
   const thisMonth = now.format('YYYY-MM-01');
 
   const query = useQuery({
+    throwOnError: failsScreen,
     queryKey: ['attendance', 'year', year],
     queryFn: () => attendanceApi.serviceYear(year),
   });

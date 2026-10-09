@@ -46,6 +46,7 @@ import {
   meetingPayload,
 } from './SpecialEventForm';
 import { EventFormScreen } from './EventFormScreen';
+import { failsScreen } from '../lib/screen-failure';
 
 function toForm(e: SpecialEvent): EventFormValue {
   return {
@@ -96,6 +97,7 @@ export function SpecialEventDetail({
   const [form, setForm] = useState<EventFormValue | null>(null);
 
   const { data: event, isLoading, error } = useQuery({
+    throwOnError: failsScreen,
     queryKey: ['special-events', id],
     queryFn: () => specialEventsApi.getById(id!),
     enabled: !!id,

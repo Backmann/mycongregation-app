@@ -27,6 +27,7 @@ import {
 } from '../../../lib/aux-pioneer-period';
 import { PublisherSelector } from '../../../components/PublisherSelector';
 import { Dialog } from '../../../components/Dialog';
+import { failsScreen } from '../../../lib/screen-failure';
 
 const QK_MONTH = (m: string) => ['aux-pioneers', 'month', m];
 const QK_JOURNAL = ['aux-pioneers', 'journal'];
@@ -47,6 +48,7 @@ export default function AuxiliaryPioneersScreen() {
   const monthParam = cursor.format('YYYY-MM-01');
 
   const monthQuery = useQuery({
+    throwOnError: failsScreen,
     queryKey: QK_MONTH(monthParam),
     queryFn: () => auxiliaryPioneersApi.listForMonth(monthParam),
   });

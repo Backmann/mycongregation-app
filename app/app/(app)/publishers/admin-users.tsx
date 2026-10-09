@@ -40,6 +40,7 @@ import { androidVersionName } from '../../../lib/android-version';
 import i18n from '../../../lib/i18n';
 import { helpRank, helpReason } from '../../../lib/access-help';
 import type { HelpReason } from '../../../lib/access-help';
+import { failsScreen } from '../../../lib/screen-failure';
 
 // Login accounts are created and managed per-person on the Братья screen
 // (role derived from appointment). This screen is a read-only audit list.
@@ -117,6 +118,7 @@ export default function AdminUsersScreen() {
   const { user: currentUser } = useAuth();
 
   const usersQuery = useQuery({
+    throwOnError: failsScreen,
     queryKey: QK_USERS,
     queryFn: () => usersApi.list(),
     refetchInterval: 30_000,

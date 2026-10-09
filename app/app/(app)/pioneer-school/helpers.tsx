@@ -24,6 +24,7 @@ import { LoadFailure } from '../../../components/LoadFailure';
 import { Sheet } from '../../../components/Sheet';
 import { useAllPublishers } from '../../../lib/useAllPublishers';
 import { formatDateISO } from '../../../lib/dates';
+import { failsScreen } from '../../../lib/screen-failure';
 
 /**
  * The brothers who may serve at the school.
@@ -40,6 +41,7 @@ export default function PioneerSchoolHelpersScreen() {
   const { canManagePioneerSchool, canViewPioneerSchool } = usePermissions();
 
   const query = useQuery({
+    throwOnError: failsScreen,
     queryKey: ['pioneer-school', 'helpers'],
     queryFn: () => pioneerSchoolApi.listHelpers(),
     enabled: canViewPioneerSchool,

@@ -49,6 +49,13 @@ export interface Permissions {
    * everybody, so a screen that turns people away must wait for this.
    */
   loaded: boolean;
+  /**
+   * The list of responsibilities could not be fetched and nothing earlier is
+   * known (9 October 2026). Then «no responsibility» is not an answer but a
+   * missing one — ScreenGate says «could not load» instead of «no access» to
+   * a brother whose right comes from a responsibility.
+   */
+  failed: boolean;
   canEditPublishers: boolean;
   /** Record meeting attendance (form S-3). */
   canRecordAttendance: boolean;
@@ -124,7 +131,7 @@ export function usePermissions(): Permissions {
 
   // All responsibilities in the congregation, fetched once and shared across
   // every usePermissions() consumer via react-query's cache.
-  const { data: allResponsibilities, isFetched } = useQuery({
+  const { data: allResponsibilities, isFetched, isError } = useQuery({
     queryKey: ["responsibilities"],
     queryFn: () => responsibilitiesApi.list(),
     enabled: !!user,
@@ -171,6 +178,7 @@ export function usePermissions(): Permissions {
       canImportWeekendSchedule: importsProgramme,
       canOpenProgrammeEditor: editsMidweek || editsWeekend || importsProgramme,
       loaded: isFetched,
+      failed: isError && allResponsibilities === undefined,
       canEditPublishers: isAdmin || holds("secretary"),
       // Meeting attendance (form S-3): the secretary keeps it, and a brother
       // may be given the attendance responsibility to enter the figures.
@@ -245,5 +253,5 @@ export function usePermissions(): Permissions {
 
       responsibilities: mine,
     };
-  }, [role, mine, isFetched]);
+  }, [role, mine, isFetched, isError, allResponsibilities]);
 }

@@ -21,6 +21,7 @@ import { usePermissions } from '../../../lib/permissions';
 import { DateField } from '../../../components/DateField';
 import { LoadFailure } from '../../../components/LoadFailure';
 import { Sheet } from '../../../components/Sheet';
+import { failsScreen } from '../../../lib/screen-failure';
 
 /** «23–29 ноября 2026» — one line, no repeated month or year. */
 export function schoolDates(
@@ -46,6 +47,7 @@ export default function PioneerSchoolsScreen() {
   const { canViewPioneerSchool, canManagePioneerSchool } = usePermissions();
 
   const query = useQuery({
+    throwOnError: failsScreen,
     queryKey: ['pioneer-school'],
     queryFn: () => pioneerSchoolApi.list(),
     enabled: canViewPioneerSchool,

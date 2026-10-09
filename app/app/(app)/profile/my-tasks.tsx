@@ -6,6 +6,7 @@ import dayjs from 'dayjs';
 import { ElderTask, meApi } from '../../../lib/api';
 import { LoadFailure } from '../../../components/LoadFailure';
 import { dayLabel } from '../../../lib/day-label';
+import { failsScreen } from '../../../lib/screen-failure';
 
 /**
  * What has been put on me — and nothing else.
@@ -24,6 +25,7 @@ export default function MyTasksScreen() {
   const { t, i18n } = useTranslation();
 
   const query = useQuery({
+    throwOnError: failsScreen,
     queryKey: ['me', 'tasks'],
     queryFn: () => meApi.tasks(),
   });

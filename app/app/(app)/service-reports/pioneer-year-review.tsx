@@ -22,6 +22,7 @@ import {
   serviceReportsApi,
 } from "../../../lib/api";
 import { LoadFailure } from "../../../components/LoadFailure";
+import { failsScreen } from "../../../lib/screen-failure";
 
 /**
  * Where each regular pioneer stands, at the end of the service year.
@@ -75,6 +76,7 @@ export default function PioneerYearReviewScreen() {
     });
 
   const { data, isLoading, error, refetch, isFetching } = useQuery({
+    throwOnError: failsScreen,
     queryKey: ["pioneer-year-review", year ?? "auto", win ?? "auto"],
     queryFn: () => serviceReportsApi.getPioneerYearReview(year, win),
     placeholderData: (prev) => prev,

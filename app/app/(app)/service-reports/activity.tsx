@@ -17,6 +17,7 @@ import {
 import i18n from '../../../lib/i18n';
 import { LoadFailure } from '../../../components/LoadFailure';
 import { monthLabel } from '../../../lib/month-label';
+import { failsScreen } from '../../../lib/screen-failure';
 
 function formatRelativeTime(iso: string): string {
   const d = new Date(iso);
@@ -133,6 +134,7 @@ const FROM = encodeURIComponent('/service-reports/activity');
 
 export default function ActivityFeedScreen() {
   const query = useInfiniteQuery({
+    throwOnError: failsScreen,
     queryKey: ['activity-feed'],
     queryFn: ({ pageParam }) =>
       activityApi.list({ limit: 20, before: pageParam }),

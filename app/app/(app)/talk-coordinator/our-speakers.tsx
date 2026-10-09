@@ -28,6 +28,7 @@ import {
 import { formatRelativeDay } from "../../../lib/relative-time";
 import { useAllPublishers } from "../../../lib/useAllPublishers";
 import { useRestrictedScheduled } from "../../../components/RestrictedScheduledCard";
+import { failsScreen } from "../../../lib/screen-failure";
 
 export default function OurSpeakersScreen() {
   const { t, i18n } = useTranslation();
@@ -74,6 +75,7 @@ export default function OurSpeakersScreen() {
     queryFn: () => publicTalksApi.list({ includeInactive: true, limit: 300 }),
   });
   const entriesQuery = useQuery({
+    throwOnError: failsScreen,
     queryKey: ["talk-exchange"],
     queryFn: () => talkExchangeApi.list(),
   });

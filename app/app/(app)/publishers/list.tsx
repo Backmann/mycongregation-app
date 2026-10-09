@@ -25,6 +25,7 @@ import {
 } from '../../../lib/api';
 import { Ionicons } from '@expo/vector-icons';
 import { Sheet } from '../../../components/Sheet';
+import { failsScreen } from '../../../lib/screen-failure';
 
 type Filters = {
   groupId: string | 'none' | null;
@@ -72,6 +73,7 @@ export default function PublishersListScreen() {
   const [filterOpen, setFilterOpen] = useState(false);
 
   const { data, isLoading, isRefetching, refetch, error } = useQuery({
+    throwOnError: failsScreen,
     queryKey: ['publishers', search, 'with-removed'],
     queryFn: () =>
       publishersApi.list({

@@ -43,6 +43,7 @@ import { reportError, notify } from '../../../lib/error-bus';
 import { confirm } from '../../../components/ConfirmHost';
 import { UndoBar } from '../../../components/UndoBar';
 import { useAllPublishers } from '../../../lib/useAllPublishers';
+import { failsScreen } from '../../../lib/screen-failure';
 
 const WEEKDAY_ANCHOR = [
   '2024-01-01',
@@ -150,6 +151,7 @@ export default function CoScheduleScreen() {
   const [undo, setUndo] = useState<{ ids: string[] } | null>(null);
 
   const { data: events, isLoading } = useQuery({
+    throwOnError: failsScreen,
     queryKey: ['special-events', 'co-schedule'],
     queryFn: () => specialEventsApi.list({ all: true }),
     enabled: canViewCoSchedule,

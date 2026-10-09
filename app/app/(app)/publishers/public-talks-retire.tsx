@@ -19,6 +19,7 @@ import i18n from '../../../lib/i18n';
 import { useMayOpen } from '../../../lib/useMayOpen';
 import { confirm } from '../../../components/ConfirmHost';
 import { formatDateISO } from '../../../lib/dates';
+import { failsScreen } from '../../../lib/screen-failure';
 
 /**
  * «Планы речей, которые больше не используются.»
@@ -75,6 +76,7 @@ export default function RetireTalksScreen() {
    * letter, answers that.
    */
   const historyQuery = useQuery({
+    throwOnError: failsScreen,
     queryKey: ['public-talks', 'history'],
     queryFn: () => publicTalksApi.history(),
   });

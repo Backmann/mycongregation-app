@@ -19,6 +19,7 @@ import { AbsenceForm } from "../../../components/AbsenceForm";
 import { usePermissions } from "../../../lib/permissions";
 import { useMyPublisher } from "../../../lib/useMyPublisher";
 import { LoadFailure } from "../../../components/LoadFailure";
+import { failsScreen } from "../../../lib/screen-failure";
 
 export default function AbsenceDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -42,6 +43,7 @@ export default function AbsenceDetailScreen() {
    * at his own absence is both, and must see the buttons too.
    */
   const { data, isLoading, error, refetch } = useQuery({
+    throwOnError: failsScreen,
     queryKey: ["absences", "detail", id],
     queryFn: () => absencesApi.getById(id),
     enabled: !!id,

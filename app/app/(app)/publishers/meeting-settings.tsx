@@ -31,6 +31,7 @@ import { DateField } from '../../../components/DateField';
 import { TimeField } from '../../../components/TimeField';
 import { formatDateISO, formatLongDate } from '../../../lib/dates';
 import { versionStartsOn } from '../../../lib/meeting-schedule';
+import { failsScreen } from '../../../lib/screen-failure';
 
 /**
  * Meeting times and places — one screen (step 3b, 22 September).
@@ -116,8 +117,8 @@ export default function MeetingPlaceScreen() {
   const isAdmin = user?.role === 'admin';
   const lang = i18n.language;
 
-  const query = useQuery({ queryKey: QK, queryFn: () => meetingSettingsApi.getOverview(), enabled: isAdmin });
-  const hallsQuery = useQuery({ queryKey: HALLS, queryFn: () => hallsApi.list(), enabled: isAdmin });
+  const query = useQuery({ throwOnError: failsScreen, queryKey: QK, queryFn: () => meetingSettingsApi.getOverview(), enabled: isAdmin });
+  const hallsQuery = useQuery({ throwOnError: failsScreen, queryKey: HALLS, queryFn: () => hallsApi.list(), enabled: isAdmin });
 
   const day = useMemo(
     () => (dow: number) => dayjs(WEEK_ANCHOR).add(dow - 1, 'day').locale(lang).format('dddd'),

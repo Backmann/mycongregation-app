@@ -24,6 +24,7 @@ import { notify } from "../../../lib/error-bus";
 import i18n from "../../../lib/i18n";
 import { confirm } from "../../../components/ConfirmHost";
 import { RESPONSIBILITY_GROUPS } from "../../../lib/responsibility-groups";
+import { failsScreen } from "../../../lib/screen-failure";
 
 /**
  * The one duty several brothers may hold at once — mirrored from the server's
@@ -54,6 +55,7 @@ export default function ResponsibilitiesScreen() {
   const [pickerFor, setPickerFor] = useState<ResponsibilityType | null>(null);
 
   const respQuery = useQuery({
+    throwOnError: failsScreen,
     queryKey: QK_RESPONSIBILITIES,
     queryFn: () => responsibilitiesApi.listWithRecord(),
   });

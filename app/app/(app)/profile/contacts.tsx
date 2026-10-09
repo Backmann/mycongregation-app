@@ -16,6 +16,7 @@ import { FormSection } from '../../../components/FormSection';
 import { extractErrorMessage, meApi } from '../../../lib/api';
 import { contactsCheckLine } from '../../../lib/contacts-check';
 import { LoadFailure } from '../../../components/LoadFailure';
+import { failsScreen } from '../../../lib/screen-failure';
 
 /**
  * "My contacts": the one part of their card a publisher keeps up to date
@@ -28,6 +29,7 @@ export default function MyContactsScreen() {
   const { t, i18n } = useTranslation();
   const queryClient = useQueryClient();
   const query = useQuery({
+    throwOnError: failsScreen,
     queryKey: ['me-publisher'],
     queryFn: () => meApi.publisher(),
   });

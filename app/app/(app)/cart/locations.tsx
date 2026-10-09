@@ -24,6 +24,7 @@ import { usePermissions } from '../../../lib/permissions';
 import { Dialog } from '../../../components/Dialog';
 import { notify } from '../../../lib/error-bus';
 import { confirm } from '../../../components/ConfirmHost';
+import { failsScreen } from '../../../lib/screen-failure';
 
 export default function CartLocationsScreen() {
   const { t } = useTranslation();
@@ -41,6 +42,7 @@ export default function CartLocationsScreen() {
   const [active, setActive] = useState(true);
 
   const { data, isLoading } = useQuery({
+    throwOnError: failsScreen,
     queryKey: ['cart-locations', showInactive],
     queryFn: () => cartLocationsApi.list(showInactive),
   });

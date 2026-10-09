@@ -20,6 +20,7 @@ import { useAllPublishers } from '../../../lib/useAllPublishers';
 import { useAuth } from '../../../lib/auth';
 import { buildMidweekRunOrder, RunSegment } from '../../../lib/run-order';
 import { partDisplay } from '../../../lib/part-display';
+import { failsScreen } from '../../../lib/screen-failure';
 
 /**
  * CONDUCT MODE — what the chairman keeps open on a tablet while the midweek
@@ -86,6 +87,7 @@ export default function ConductScreen() {
   const wide = width >= 900;
 
   const assignmentsQuery = useQuery({
+    throwOnError: failsScreen,
     queryKey: ['conduct-assignments', week],
     // The server's filter semantics for weekStart are not relied on here: we
     // ask for the week and then keep only the rows that say they belong to it.

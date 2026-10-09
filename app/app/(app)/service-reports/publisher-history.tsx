@@ -30,6 +30,7 @@ import {
   TrendPoint,
 } from '../../../components/HistoryTrendChart';
 import { LoadFailure } from '../../../components/LoadFailure';
+import { failsScreen } from '../../../lib/screen-failure';
 
 // formatMonthLabel now imported from lib/i18n
 
@@ -381,6 +382,7 @@ export default function PublisherHistoryScreen() {
   const [explain, setExplain] = useState(false);
 
   const { data, isLoading, isRefetching, refetch, error } = useQuery({
+    throwOnError: failsScreen,
     queryKey: ['publisher-history', publisherId],
     // Two years. Nothing in the app looks further back — a status weighs six
     // closed months, the annual report twelve — and asking for ten years meant

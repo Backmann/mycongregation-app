@@ -38,6 +38,7 @@ import { notify } from '../../../lib/error-bus';
 import { AREA_BG, AREA_FG, AREAS } from '../../../lib/task-areas';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useAllPublishers } from '../../../lib/useAllPublishers';
+import { failsScreen } from '../../../lib/screen-failure';
 
 /**
  * The agenda of an elders' meeting.
@@ -59,10 +60,12 @@ export default function AgendaScreen() {
   >(null);
 
   const meetingsQuery = useQuery({
+    throwOnError: failsScreen,
     queryKey: ['tasks', 'meetings'],
     queryFn: () => tasksApi.meetings(),
   });
   const agendaQuery = useQuery({
+    throwOnError: failsScreen,
     queryKey: ['tasks', 'agenda', meetingId ?? 'next'],
     queryFn: () => tasksApi.agenda(meetingId),
   });

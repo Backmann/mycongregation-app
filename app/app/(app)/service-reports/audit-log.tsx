@@ -17,6 +17,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import i18n from '../../../lib/i18n';
 import { LoadFailure } from '../../../components/LoadFailure';
+import { failsScreen } from '../../../lib/screen-failure';
 
 function formatRelative(iso: string): string {
   const then = new Date(iso).getTime();
@@ -135,6 +136,7 @@ export default function AuditLogScreen() {
   const reportId = typeof params.id === 'string' ? params.id : undefined;
 
   const { data, isLoading, isRefetching, refetch, error } = useQuery({
+    throwOnError: failsScreen,
     queryKey: ['service-report', reportId, 'audit-log'],
     queryFn: () => serviceReportsApi.getAuditLog(reportId!),
     enabled: !!reportId,

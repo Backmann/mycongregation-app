@@ -17,6 +17,7 @@ import { FilterToggle } from '../../../components/FilterToggle';
 import { usePermissions } from '../../../lib/permissions';
 import { useMyPublisher } from '../../../lib/useMyPublisher';
 import { LoadFailure } from '../../../components/LoadFailure';
+import { failsScreen } from '../../../lib/screen-failure';
 
 function fmtRange(a: Absence, loc: string): string {
   const start = new Date(`${a.startDate}T00:00:00`);
@@ -52,6 +53,7 @@ export default function AbsencesListScreen() {
   const mineOnly = !canManageAbsences;
 
   const { data, isLoading, isRefetching, refetch, error } = useQuery({
+    throwOnError: failsScreen,
     queryKey: ['absences', showPast, showRemoved, mineOnly, myPublisherId],
     queryFn: () =>
       absencesApi.list({

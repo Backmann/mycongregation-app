@@ -120,6 +120,8 @@ const STEPS = [
   ['Приложение без сети', 'node', ['scripts/check-offline-shell.mjs']],
   // The chairman's screen stays on while the meeting runs — in the app too.
   ['Экран не гаснет', 'node', ['scripts/check-keep-awake.mjs']],
+  // «Did not load» is never drawn as «nothing there».
+  ['Не удалось — не «пусто»', 'node', ['scripts/check-screen-failure.mjs']],
   // One rule for who may open «Составление программы» — asked by the doors
   // and by the screen (6 October: the address opened it for a publisher).
   ['Дверь «Составления программы»', 'node', ['scripts/check-programme-editor-door.mjs']],

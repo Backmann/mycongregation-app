@@ -9,6 +9,7 @@ import { capitalizeFirst } from '../../../lib/relative-time';
 import { useMyPublisher } from '../../../lib/useMyPublisher';
 import { FONT } from '../../../lib/typography';
 import { LoadFailure } from '../../../components/LoadFailure';
+import { failsScreen } from '../../../lib/screen-failure';
 
 /**
  * Who serves as an auxiliary pioneer this month — for everybody.
@@ -30,6 +31,7 @@ export default function AuxiliaryPioneersThisMonthScreen() {
   const { t, i18n } = useTranslation();
   const { myPublisherId } = useMyPublisher();
   const q = useQuery({
+    throwOnError: failsScreen,
     queryKey: ['aux-pioneers', 'serving-now'],
     queryFn: () => auxiliaryPioneersApi.servingNow(),
     staleTime: 60 * 1000,

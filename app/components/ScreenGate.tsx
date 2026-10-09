@@ -1,9 +1,12 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../lib/auth';
 import { usePermissions } from '../lib/permissions';
 import { routeOf, screenAllowed } from '../lib/screen-access';
 import { NoAccess } from './NoAccess';
+import { LoadFailure } from './LoadFailure';
+import { ScreenFailureBoundary } from './ScreenFailure';
 
 /**
  * The check that stands before every screen of a stack.
@@ -28,9 +31,28 @@ function Gate({
   children: React.ReactElement;
 }) {
   const perms = usePermissions();
-  const { user } = useAuth();
-  if (screenAllowed(route, perms, user)) return children;
+  const { user, retryConnection } = useAuth();
+  const queryClient = useQueryClient();
+  if (screenAllowed(route, perms, user)) {
+    return <ScreenFailureBoundary>{children}</ScreenFailureBoundary>;
+  }
   if (!perms.loaded) return <View style={styles.fill} />;
+  // The list of responsibilities did not arrive (9 October 2026): «no
+  // access» would be a guess, and for a brother whose right comes from a
+  // responsibility a wrong one. Said as what it is.
+  if (perms.failed) {
+    return (
+      <View style={[styles.fill, styles.failed]} testID="screen-load-failed">
+        <LoadFailure
+          error={queryClient.getQueryState(['responsibilities'])?.error}
+          onRetry={() => {
+            retryConnection();
+            void queryClient.refetchQueries({ queryKey: ['responsibilities'] });
+          }}
+        />
+      </View>
+    );
+  }
   return (
     <View style={styles.fill}>
       <NoAccess />
@@ -63,4 +85,5 @@ export function screenGate(base: string): ScreenLayout {
 
 const styles = StyleSheet.create({
   fill: { flex: 1, backgroundColor: '#f1f5f9' },
+  failed: { paddingTop: 24 },
 });

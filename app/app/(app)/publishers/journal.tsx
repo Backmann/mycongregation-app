@@ -27,6 +27,7 @@ import {
 } from '../../../lib/api';
 import { Sheet } from '../../../components/Sheet';
 import { useAuth } from '../../../lib/auth';
+import { failsScreen } from '../../../lib/screen-failure';
 
 /**
  * The change journal, for administrators.
@@ -157,6 +158,7 @@ export default function JournalScreen() {
   const [section, setSection] = useState<string | null>(null);
 
   const query = useInfiniteQuery({
+    throwOnError: failsScreen,
     queryKey: ['journal', section],
     initialPageParam: undefined as string | undefined,
     queryFn: ({ pageParam }) =>

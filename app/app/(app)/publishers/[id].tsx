@@ -38,6 +38,7 @@ import { reportError, notify } from '../../../lib/error-bus';
 import { buildS21Html, availableServiceYears } from '../../../lib/s21';
 import { exportHtmlAsPdf, openPrintWindow } from '../../../lib/pdf';
 import { confirm } from '../../../components/ConfirmHost';
+import { failsScreen } from '../../../lib/screen-failure';
 
 function removalLabel(reason: RemovalReason): string {
   return i18n.t(`publishers.removal.${reason}`);
@@ -96,6 +97,7 @@ export default function PublisherDetailScreen() {
     isLoading,
     error,
   } = useQuery({
+    throwOnError: failsScreen,
     queryKey: ['publisher', id],
     queryFn: () => publishersApi.getById(id!),
     enabled: !!id,

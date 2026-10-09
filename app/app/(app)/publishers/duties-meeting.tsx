@@ -7,6 +7,7 @@ import { effectiveVersionFor } from '../../../lib/meeting-schedule';
 import { weekRules } from '../../../lib/week-rules';
 import { capitalizeFirst } from '../../../lib/relative-time';
 import { DutiesMeetingEditor, type DutyMeeting } from '../../../components/DutiesMeetingEditor';
+import { failsScreen } from '../../../lib/screen-failure';
 
 /** One meeting's duties on a phone — ?week=YYYY-MM-DD&meeting=midweek|weekend|memorial. */
 export default function DutiesMeetingScreen() {
@@ -22,7 +23,7 @@ export default function DutiesMeetingScreen() {
   // sheet says only in small print — the day. Until the rules are loaded, the
   // name stands in.
   const eventsQ = useQuery({ queryKey: ['special-events', 'all'], queryFn: () => specialEventsApi.list({ all: true }) });
-  const settingsQ = useQuery({ queryKey: ['meeting-settings'], queryFn: () => meetingSettingsApi.getOverview() });
+  const settingsQ = useQuery({ throwOnError: failsScreen, queryKey: ['meeting-settings'], queryFn: () => meetingSettingsApi.getOverview() });
   const rules = weekRules({
     weekStartISO: week,
     version: effectiveVersionFor(settingsQ.data?.versions, week),

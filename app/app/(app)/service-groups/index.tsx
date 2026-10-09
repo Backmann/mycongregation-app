@@ -20,6 +20,7 @@ import { FilterToggle } from '../../../components/FilterToggle';
 import { useTranslation } from 'react-i18next';
 import { usePermissions } from '../../../lib/permissions';
 import { LoadFailure } from '../../../components/LoadFailure';
+import { failsScreen } from '../../../lib/screen-failure';
 
 export default function ServiceGroupsListScreen() {
   const { t } = useTranslation();
@@ -31,6 +32,7 @@ export default function ServiceGroupsListScreen() {
   const [showRemoved, setShowRemoved] = useState(false);
 
   const { data, isLoading, isRefetching, refetch, error } = useQuery({
+    throwOnError: failsScreen,
     queryKey: ['service-groups', search, showRemoved],
     queryFn: () =>
       serviceGroupsApi.list({

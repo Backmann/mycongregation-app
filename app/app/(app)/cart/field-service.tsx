@@ -44,6 +44,7 @@ import { LoadError } from '../../../components/LoadError';
 import { Dialog } from '../../../components/Dialog';
 import { SourceLink } from '../../../components/SourceLink';
 import { confirm } from '../../../components/ConfirmHost';
+import { failsScreen } from '../../../lib/screen-failure';
 
 /** Actual calendar date (ISO) of a meeting, from its week + weekday. */
 function meetingDateISO(m: FieldServiceMeeting): string {
@@ -83,6 +84,7 @@ export default function FieldServiceMeetingsScreen() {
   const didInitialScroll = useRef(false);
 
   const meetingsQuery = useQuery({
+    throwOnError: failsScreen,
     queryKey: ['field-service', 'all'],
     queryFn: () => fieldServiceApi.list(),
   });

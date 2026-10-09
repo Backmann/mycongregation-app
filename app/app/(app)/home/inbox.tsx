@@ -18,6 +18,7 @@ import { meApi } from '../../../lib/api';
 import type { InboxItem } from '../../../lib/api';
 import { daysAgo, isUnread } from '../../../lib/inbox';
 import { routeForNotification } from '../../../lib/push-notifications';
+import { failsScreen } from '../../../lib/screen-failure';
 
 /**
  * «Мои уведомления» — everything the app has told this person lately.
@@ -35,6 +36,7 @@ export default function InboxScreen() {
   const { t, i18n } = useTranslation();
   const queryClient = useQueryClient();
   const query = useQuery({
+    throwOnError: failsScreen,
     queryKey: QK_INBOX,
     queryFn: () => meApi.inbox(),
     staleTime: 0,

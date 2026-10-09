@@ -23,6 +23,7 @@ import { useAuth } from '../../../lib/auth';
 import { Sheet } from '../../../components/Sheet';
 import { notify } from '../../../lib/error-bus';
 import { confirm } from '../../../components/ConfirmHost';
+import { failsScreen } from '../../../lib/screen-failure';
 
 type FormState = {
   id: string | null;
@@ -55,6 +56,7 @@ export default function CircuitOverseerScreen() {
   const isAdmin = user?.role === 'admin';
 
   const { data, isLoading } = useQuery({
+    throwOnError: failsScreen,
     queryKey: ['circuit-overseers'],
     queryFn: () => circuitOverseersApi.list(),
   });

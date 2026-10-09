@@ -22,6 +22,7 @@ import { FONT } from '../../../lib/typography';
 import { HEADER_ICON } from '../../../lib/header';
 import { CleaningWeekEditor } from '../../../components/CleaningWeekEditor';
 import { WindowsLine, WindowsPlanDialog } from '../../../components/WindowsPlan';
+import { failsScreen } from '../../../lib/screen-failure';
 
 const INK = '#0f172a';
 const SOFT = '#64748b';
@@ -77,6 +78,7 @@ export default function CleaningScreen() {
   const endISO = formatDateISO(addWeeks(atMidnight(thisMonday), count));
 
   const rangeQ = useQuery({
+    throwOnError: failsScreen,
     queryKey: ['cleaning', 'range', startISO, endISO],
     queryFn: () => cleaningApi.range(startISO, endISO),
   });

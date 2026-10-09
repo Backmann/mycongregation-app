@@ -25,6 +25,7 @@ import { StatusReasonsModal } from '../../../components/StatusReasonsModal';
 import { useTranslation } from 'react-i18next';
 import { formatMonthLabel } from '../../../lib/i18n';
 import { useAllPublishers } from '../../../lib/useAllPublishers';
+import { failsScreen } from '../../../lib/screen-failure';
 
 /** Compact date like "8 июл." for the who/when byline. */
 function formatByline(iso: string): string {
@@ -90,6 +91,7 @@ export default function GroupReportsScreen() {
   );
 
   const { data, isLoading, isRefetching, refetch, error } = useQuery({
+    throwOnError: failsScreen,
     queryKey: ['service-reports', 'group', reportMonth],
     queryFn: () => serviceReportsApi.findGroup(reportMonth),
   });

@@ -20,6 +20,7 @@ import {
   PublicTalk,
   publicTalksApi,
 } from '../../../lib/api';
+import { failsScreen } from '../../../lib/screen-failure';
 
 export default function PublicTalksScreen() {
   const { t } = useTranslation();
@@ -39,6 +40,7 @@ export default function PublicTalksScreen() {
   const [limit, setLimit] = useState(200);
 
   const query = useQuery({
+    throwOnError: failsScreen,
     queryKey: ['public-talks', { search, includeInactive: showInactive, limit }],
     queryFn: () =>
       publicTalksApi.list({

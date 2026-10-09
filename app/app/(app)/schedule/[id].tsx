@@ -20,6 +20,7 @@ import { usePermissions } from '../../../lib/permissions';
 import { useTranslation } from 'react-i18next';
 import { notify } from '../../../lib/error-bus';
 import { confirm } from '../../../components/ConfirmHost';
+import { failsScreen } from '../../../lib/screen-failure';
 
 export default function AssignmentDetailScreen() {
   const { t } = useTranslation();
@@ -28,6 +29,7 @@ export default function AssignmentDetailScreen() {
   const queryClient = useQueryClient();
 
   const assignmentQuery = useQuery({
+    throwOnError: failsScreen,
     queryKey: ['assignment', id],
     queryFn: () => assignmentsApi.getById(id!),
     enabled: !!id,

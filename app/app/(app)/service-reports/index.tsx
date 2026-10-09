@@ -21,6 +21,7 @@ import { useTranslation } from 'react-i18next';
 import i18n, { formatMonthLabel } from '../../../lib/i18n';
 import { usePermissions } from '../../../lib/permissions';
 import { useMayOpen } from '../../../lib/useMayOpen';
+import { failsScreen } from '../../../lib/screen-failure';
 
 // formatMonth now lives in lib/i18n.ts as formatMonthLabel
 
@@ -173,6 +174,7 @@ export default function ServiceReportsListScreen() {
       ? serviceYearNow - 1
       : serviceYearNow;
   const { data, isLoading, isRefetching, refetch, error } = useQuery({
+    throwOnError: failsScreen,
     queryKey: ['service-reports', 'my'],
     queryFn: () => serviceReportsApi.listMy(),
   });

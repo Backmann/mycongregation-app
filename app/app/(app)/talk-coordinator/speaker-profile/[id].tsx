@@ -32,6 +32,7 @@ import {
 } from "../../../../lib/speaker-stats";
 import { formatRelativeDay } from "../../../../lib/relative-time";
 import { Dialog } from "../../../../components/Dialog";
+import { failsScreen } from "../../../../lib/screen-failure";
 
 const todayISO = () => new Date().toLocaleDateString("en-CA");
 
@@ -43,6 +44,7 @@ export default function SpeakerProfileScreen() {
   const { t, i18n } = useTranslation();
 
   const speakersQuery = useQuery({
+    throwOnError: failsScreen,
     queryKey: ["visiting-speakers"],
     queryFn: () => visitingSpeakersApi.list(),
   });

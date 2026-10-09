@@ -34,6 +34,7 @@ import { buildAnnualReportPdfHtml } from '../../../lib/annualReportPdf';
 import { exportHtmlAsPdf, openPrintWindow } from '../../../lib/pdf';
 import { Sheet } from '../../../components/Sheet';
 import { DateField } from '../../../components/DateField';
+import { failsScreen } from '../../../lib/screen-failure';
 
 /**
  * A draft of the annual congregation report (S-10).
@@ -91,6 +92,7 @@ export default function AnnualReportScreen() {
     sentView.data?.drift.find((d) => d.key === key) ?? null;
 
   const figures = useQuery({
+    throwOnError: failsScreen,
     queryKey: ['annual-report', year],
     queryFn: () => annualReportApi.figures(year),
   });

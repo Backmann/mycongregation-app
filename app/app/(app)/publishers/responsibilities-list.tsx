@@ -6,6 +6,7 @@ import { useAuth } from '../../../lib/auth';
 import { RESPONSIBILITY_GROUPS } from '../../../lib/responsibility-groups';
 import { FONT } from '../../../lib/typography';
 import { LoadFailure } from '../../../components/LoadFailure';
+import { failsScreen } from '../../../lib/screen-failure';
 
 /**
  * Who carries which duty — for everybody.
@@ -25,6 +26,7 @@ export default function ResponsibilitiesListScreen() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const q = useQuery({
+    throwOnError: failsScreen,
     queryKey: ['responsibilities'],
     queryFn: () => responsibilitiesApi.list(),
     staleTime: 5 * 60 * 1000,

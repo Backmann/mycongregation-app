@@ -30,6 +30,7 @@ import { notify } from '../../../lib/error-bus';
 import { confirm } from '../../../components/ConfirmHost';
 import { useAllPublishers } from '../../../lib/useAllPublishers';
 import { LoadFailure } from '../../../components/LoadFailure';
+import { failsScreen } from '../../../lib/screen-failure';
 
 export default function ServiceGroupDetailScreen() {
   const { t } = useTranslation();
@@ -40,6 +41,7 @@ export default function ServiceGroupDetailScreen() {
   const [addOpen, setAddOpen] = useState(false);
 
   const groupQuery = useQuery({
+    throwOnError: failsScreen,
     queryKey: ['service-groups', id],
     queryFn: () => serviceGroupsApi.getById(id!),
     enabled: !!id,
@@ -61,6 +63,7 @@ export default function ServiceGroupDetailScreen() {
     return ids;
   }, [auxQuery.data]);
   const membersQuery = useQuery({
+    throwOnError: failsScreen,
     queryKey: ['service-groups', id, 'publishers'],
     queryFn: () => serviceGroupsApi.getPublishers(id!),
     enabled: !!id && !editing,

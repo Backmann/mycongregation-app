@@ -33,6 +33,7 @@ import {
 } from '../../../lib/dates';
 import { notify } from '../../../lib/error-bus';
 import { confirm } from '../../../components/ConfirmHost';
+import { failsScreen } from '../../../lib/screen-failure';
 
 const TIME_OPTIONS: string[] = (() => {
   const out: string[] = [];
@@ -105,6 +106,7 @@ export default function WitnessingScreen() {
   const [extName, setExtName] = useState('');
 
   const weekQuery = useQuery({
+    throwOnError: failsScreen,
     queryKey: ['cart-week', weekISO],
     queryFn: () => cartWeeksApi.getWeek(weekISO),
   });

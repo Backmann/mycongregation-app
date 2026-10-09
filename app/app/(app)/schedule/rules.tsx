@@ -11,6 +11,7 @@ import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 import { meetingSettingsApi } from '../../../lib/api';
 import { useAuth } from '../../../lib/auth';
+import { failsScreen } from '../../../lib/screen-failure';
 
 export default function CongregationRulesScreen() {
   const { t } = useTranslation();
@@ -19,6 +20,7 @@ export default function CongregationRulesScreen() {
   const isAdmin = user?.role === 'admin';
 
   const { data: overview, isLoading } = useQuery({
+    throwOnError: failsScreen,
     queryKey: ['meeting-settings'],
     queryFn: () => meetingSettingsApi.getOverview(),
   });

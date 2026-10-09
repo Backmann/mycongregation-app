@@ -5,6 +5,7 @@ import { Redirect } from 'expo-router';
 import { NotificationReachRow, notificationsApi } from '../../../lib/api';
 import { usePermissions } from '../../../lib/permissions';
 import { LoadError } from '../../../components/LoadError';
+import { failsScreen } from '../../../lib/screen-failure';
 
 /**
  * Who the congregation's notifications reach — and why not the rest.
@@ -20,6 +21,7 @@ export default function NotificationReachScreen() {
   const { t, i18n } = useTranslation();
   const perms = usePermissions();
   const query = useQuery({
+    throwOnError: failsScreen,
     queryKey: ['notifications', 'reach'],
     queryFn: () => notificationsApi.reach(),
     enabled: perms.isAdmin,

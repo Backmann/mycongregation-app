@@ -19,6 +19,7 @@ import { printDutiesMonth } from '../../../lib/print-duties-month';
 import { FONT } from '../../../lib/typography';
 import { HEADER_ICON } from '../../../lib/header';
 import { DutiesMeetingEditor, type DutyMeeting } from '../../../components/DutiesMeetingEditor';
+import { failsScreen } from '../../../lib/screen-failure';
 
 const INK = '#0f172a';
 const SOFT = '#64748b';
@@ -71,6 +72,7 @@ export default function DutiesScreen() {
   const endISO = formatDateISO(addWeeks(atMidnight(thisMonday), count));
 
   const dutiesQ = useQuery({
+    throwOnError: failsScreen,
     queryKey: ['duties', 'range', thisMonday, endISO],
     queryFn: () => dutiesApi.list({ weekStart: thisMonday, weekEnd: endISO }),
     enabled: canView,

@@ -38,6 +38,7 @@ import {
 } from '../../../lib/event-view';
 import { useEffectText } from '../../../lib/event-effect-text';
 import { LoadFailure } from '../../../components/LoadFailure';
+import { failsScreen } from '../../../lib/screen-failure';
 
 /**
  * The congregation's events (27 September) — what is coming and what it
@@ -64,6 +65,7 @@ export default function SpecialEventsListScreen() {
   const [picked, setPicked] = useState<string | null>(null);
 
   const eventsQ = useQuery({
+    throwOnError: failsScreen,
     // Everything ever recorded, and the bin for those who keep it: the past
     // and the bin show their counts on their buttons before they are opened.
     queryKey: ['special-events', 'list-all', canManageEvents],

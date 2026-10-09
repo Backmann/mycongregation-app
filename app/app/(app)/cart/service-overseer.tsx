@@ -15,6 +15,7 @@ import 'dayjs/locale/ru';
 import 'dayjs/locale/de';
 import { serviceOverseerApi } from '../../../lib/api';
 import { useAllPublishers } from '../../../lib/useAllPublishers';
+import { failsScreen } from '../../../lib/screen-failure';
 
 /**
  * Which groups the service overseer has visited this service year, and which
@@ -36,6 +37,7 @@ export default function ServiceOverseerScreen() {
   // year — the screen simply never asked for another.
   const [asked, setAsked] = useState<number | null>(null);
   const currentQuery = useQuery({
+    throwOnError: failsScreen,
     queryKey: ['service-overseer', 'group-visits'],
     queryFn: () => serviceOverseerApi.groupVisits(),
   });

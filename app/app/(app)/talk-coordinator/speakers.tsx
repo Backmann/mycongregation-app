@@ -28,6 +28,7 @@ import { formatRelativeDay } from "../../../lib/relative-time";
 import { notify } from "../../../lib/error-bus";
 import { confirm } from "../../../components/ConfirmHost";
 import { likelyDoubles, likelySameName } from "../../../lib/similar-names";
+import { failsScreen } from "../../../lib/screen-failure";
 
 const QK = ["visiting-speakers"] as const;
 
@@ -62,6 +63,7 @@ export default function SpeakersScreen() {
   const [overseer, setOverseer] = useState(false);
 
   const listQuery = useQuery({
+    throwOnError: failsScreen,
     queryKey: QK,
     queryFn: () => visitingSpeakersApi.list(),
   });

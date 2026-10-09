@@ -25,6 +25,7 @@ import {
 } from "../../../../lib/speaker-stats";
 import { formatRelativeDay } from "../../../../lib/relative-time";
 import { useAllPublishers } from "../../../../lib/useAllPublishers";
+import { failsScreen } from "../../../../lib/screen-failure";
 
 const todayISO = () => new Date().toLocaleDateString("en-CA");
 
@@ -38,6 +39,7 @@ export default function OurSpeakerProfileScreen() {
     queryFn: () => externalCongregationsApi.list(),
   });
   const entriesQuery = useQuery({
+    throwOnError: failsScreen,
     queryKey: ["talk-exchange"],
     queryFn: () => talkExchangeApi.list(),
   });

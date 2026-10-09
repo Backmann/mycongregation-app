@@ -31,6 +31,7 @@ import { DateField } from '../../../components/DateField';
 import { usePermissions } from '../../../lib/permissions';
 import { weekRules } from '../../../lib/week-rules';
 import { effectiveVersionFor } from '../../../lib/meeting-schedule';
+import { failsScreen } from '../../../lib/screen-failure';
 
 /**
  * The day a week's midweek meeting actually falls on.
@@ -89,6 +90,7 @@ export default function LocalNeedsScreen() {
   const { canManageLocalNeeds, canViewLocalNeeds } = usePermissions();
 
   const { data, isLoading, isRefetching, refetch, error } = useQuery({
+    throwOnError: failsScreen,
     // Deleted topics come along: they are the archive, and the whole reason
     // the archive exists is that a subject already covered must stay findable.
     queryKey: ['local-needs', 'with-archive'],

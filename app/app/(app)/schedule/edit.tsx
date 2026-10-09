@@ -96,6 +96,7 @@ import { reportError } from "../../../lib/error-bus";
 import { LoadError } from "../../../components/LoadError";
 import { SECTION_COLORS } from "../../../lib/section-colors";
 import { useDutiesWeek } from "../../../lib/useDutiesWeek";
+import { failsScreen } from "../../../lib/screen-failure";
 
 const EVENT_TYPE_ORDER: EventType[] = [
   "midweek",
@@ -178,6 +179,7 @@ function ProgrammeEditor() {
   // arrived; and the weeks on either side are fetched ahead, so an arrow
   // usually lands on data already in hand.
   const assignmentsQuery = useQuery({
+    throwOnError: failsScreen,
     queryKey: ["assignments", weekStartISO],
     queryFn: () =>
       assignmentsApi.list({
@@ -246,6 +248,7 @@ function ProgrammeEditor() {
     queryFn: () => publishersApi.roster(),
   });
   const meetingSettingsQuery = useQuery({
+    throwOnError: failsScreen,
     queryKey: ["meeting-settings"],
     queryFn: () => meetingSettingsApi.getOverview(),
   });
