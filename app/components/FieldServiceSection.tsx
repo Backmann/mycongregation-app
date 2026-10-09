@@ -124,6 +124,15 @@ export function FieldServiceSection({
     return null;
 
   const list = meetings.slice().sort(sortMeetings);
+  // A meeting already held cannot be deleted (the server keeps it as a
+  // record), and a week already over takes no new ones.
+  const todayISO = formatDateISO(new Date());
+  const isHeld = (m: FieldServiceMeeting) =>
+    formatDateISO(addDays(parseISODate(m.weekStartDate), m.dayOfWeek - 1)) <
+    todayISO;
+  const weekOver =
+    !!weekStartISO &&
+    formatDateISO(addDays(parseISODate(weekStartISO), 6)) < todayISO;
 
   return (
     <View style={styles.section}>
@@ -221,14 +230,16 @@ export function FieldServiceSection({
                     >
                       <Ionicons name="create-outline" size={20} color="#0369a1" />
                     </Pressable>
-                    <Pressable
-                      onPress={() => onRemove(m.id)}
-                      hitSlop={8}
-                      style={styles.iconBtn}
-                      disabled={pending}
-                    >
-                      <Ionicons name="trash-outline" size={20} color="#dc2626" />
-                    </Pressable>
+                    {isHeld(m) ? null : (
+                      <Pressable
+                        onPress={() => onRemove(m.id)}
+                        hitSlop={8}
+                        style={styles.iconBtn}
+                        disabled={pending}
+                      >
+                        <Ionicons name="trash-outline" size={20} color="#dc2626" />
+                      </Pressable>
+                    )}
                   </View>
                 )}
               </RowWrap>
@@ -273,7 +284,7 @@ export function FieldServiceSection({
         </View>
       ) : null}
 
-      {canEdit && (
+      {canEdit && !weekOver && (
         <Pressable
           style={({ pressed }) => [styles.addBtn, pressed && styles.addBtnPressed]}
           onPress={() => setFormFor('new')}
@@ -411,7 +422,17 @@ export function FieldServiceForm({
 
   useEffect(() => {
     if (target === 'new') {
-      setDayOfWeek(2);
+      // Tuesday as before — unless, in the week being lived, Tuesday is
+      // already gone: then today, the first day still open.
+      const today = formatDateISO(new Date());
+      const tuesday = weekStartISO
+        ? formatDateISO(addDays(parseISODate(weekStartISO), 1))
+        : '';
+      setDayOfWeek(
+        tuesday && tuesday < today && mondayOf(today) === weekStartISO
+          ? isoDow(today)
+          : 2,
+      );
       setStartTime(prefill?.startTime ?? '10:30');
       setAddress(prefill?.address ?? '');
       setConductorPublisherId(prefill?.conductorPublisherId ?? null);
@@ -452,13 +473,38 @@ export function FieldServiceForm({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [target, hallsQuery.data]);
 
+  // A meeting already held is a record, not a plan — the server refuses to
+  // change it, as it refuses for a past meeting's duties, a finished circuit
+  // visit and the Memorial (9 October 2026). The form says so before the tap
+  // on «Сохранить», not after it. «Today» is still open: the meeting may not
+  // have started yet.
+  const todayISO = formatDateISO(new Date());
+  const heldOn = (week: string, dow: number) =>
+    formatDateISO(addDays(parseISODate(week), dow - 1));
+  const recordDate = editing
+    ? heldOn(editing.weekStartDate, editing.dayOfWeek)
+    : null;
+  const isRecord = !!recordDate && recordDate < todayISO;
+  const chosenDate = editing
+    ? heldOn(editing.weekStartDate, dayOfWeek)
+    : pickDate
+      ? pickedDate || null
+      : weekStartISO
+        ? heldOn(weekStartISO, dayOfWeek)
+        : null;
+  const chosenPast = !isRecord && !!chosenDate && chosenDate < todayISO;
+
   const canSave =
     address.trim().length > 0 &&
     TIME_RE.test(startTime) &&
-    (!pickDate || !!editing || !!pickedDate);
+    (!pickDate || !!editing || !!pickedDate) &&
+    !isRecord &&
+    !chosenPast;
 
   // Explain a disabled Save button: list exactly what is still missing.
   const saveHints: string[] = [];
+  if (isRecord) saveHints.push(t('fieldService.form.hintRecord'));
+  if (chosenPast) saveHints.push(t('fieldService.form.hintPastDay'));
   if (pickDate && !editing && !pickedDate)
     saveHints.push(t('fieldService.form.hintDate'));
   if (!TIME_RE.test(startTime)) saveHints.push(t('fieldService.form.hintTime'));
@@ -554,12 +600,17 @@ export function FieldServiceForm({
   // longest-not-led. Anyone with an UPCOMING meeting already on the books
   // sinks to the bottom (they are taken), soonest upcoming last but ordered
   // among themselves by that date.
+  //
+  // Until 9 October 2026 the code did the opposite of this comment: it added
+  // the date, so among the taken the SOONEST came first — the brother leading
+  // next Saturday was the one «Подобрать» offered. The date is now taken away
+  // from the ceiling, so the sooner his next meeting, the lower he stands.
   const UPCOMING = 1e14; // larger than any Date.parse() ms value
   const conductorRank = (publisherId: string) => {
     const st = conductorStatsQuery.data?.find(
       (c) => c.conductorPublisherId === publisherId,
     );
-    if (st?.nextDate) return UPCOMING + Date.parse(st.nextDate);
+    if (st?.nextDate) return UPCOMING + (UPCOMING - Date.parse(st.nextDate));
     if (!st || st.total === 0 || !st.lastDate) return 0;
     return Date.parse(st.lastDate);
   };
@@ -675,6 +726,7 @@ export function FieldServiceForm({
                   end={null}
                   onChange={({ start }) => start && setPickedDate(start)}
                   locale={i18n.language}
+                  minDate={todayISO}
                 />
               </>
             ) : (

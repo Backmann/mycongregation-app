@@ -46,6 +46,14 @@ interface Props {
   onPickDay?: (iso: string) => void;
   /** No «today / this weekend» shortcuts — where they would not fit. */
   hidePresets?: boolean;
+  /**
+   * The earliest day that can be picked (ISO). Days before it are drawn
+   * faded and do nothing when tapped — a new field-service meeting cannot be
+   * put on a day already gone (the server refuses it, 9 October 2026), and a
+   * calendar that lets the tap through only to be refused on «Сохранить»
+   * teaches nothing.
+   */
+  minDate?: string;
 }
 
 export function MonthCalendar({
@@ -57,6 +65,7 @@ export function MonthCalendar({
   compact,
   onPickDay,
   hidePresets,
+  minDate,
 }: Props) {
   const { t } = useTranslation();
   const todayISO = toISO(new Date());
@@ -113,6 +122,11 @@ export function MonthCalendar({
       },
     ];
   }, [mode, t]);
+  // A shortcut to a day that cannot be picked would be a button that fails.
+  const shownPresets = minDate
+    ? presets.filter((p) => p.start >= minDate)
+    : presets;
+  const tooEarly = (iso: string) => !!minDate && iso < minDate;
 
   const isStart = (iso: string) => start === iso;
   const isEnd = (iso: string) => mode === 'range' && end === iso;
@@ -154,7 +168,7 @@ export function MonthCalendar({
       {/* Presets */}
       {hidePresets ? null : (
       <View style={styles.presetRow}>
-        {presets.map((p) => (
+        {shownPresets.map((p) => (
           <Pressable
             key={p.key}
             style={styles.presetChip}
@@ -200,17 +214,20 @@ export function MonthCalendar({
             const selected = isStart(iso) || isEnd(iso);
             const between = inRange(iso);
             const isToday = iso === todayISO;
+            const off = tooEarly(iso);
             return (
               <Pressable
                 key={i}
                 style={[styles.cell, between && styles.cellBetween]}
-                onPress={() => pick(iso)}
+                onPress={off ? undefined : () => pick(iso)}
+                disabled={off}
+                accessibilityState={{ disabled: off, selected }}
               >
                 <View style={[styles.dayInner, selected && styles.daySelected]}>
                   <Text
                     style={[
                       styles.dayText,
-                      otherMonth && styles.dayOther,
+                      (otherMonth || off) && styles.dayOther,
                       isToday && !selected && styles.dayToday,
                       selected && styles.daySelectedText,
                     ]}

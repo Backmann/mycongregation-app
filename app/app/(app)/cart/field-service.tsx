@@ -16,8 +16,10 @@ import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import {
+  CoVisitFieldServiceMeeting,
   CreateFieldServiceMeetingInput,
   FieldServiceMeeting,
+  coVisitItemsApi,
   Publisher,
   UpdateFieldServiceMeetingInput,
   fieldServiceApi,
@@ -47,21 +49,36 @@ import { confirm } from '../../../components/ConfirmHost';
 import { failsScreen } from '../../../lib/screen-failure';
 
 /** Actual calendar date (ISO) of a meeting, from its week + weekday. */
+/** ISO weekday (1 = Monday … 7 = Sunday) of a YYYY-MM-DD date. */
+function isoDayOf(dateISO: string): number {
+  const day = new Date(`${dateISO}T00:00:00`).getDay();
+  return day === 0 ? 7 : day;
+}
+
 function meetingDateISO(m: FieldServiceMeeting): string {
   return formatDateISO(addDays(parseISODate(m.weekStartDate), m.dayOfWeek - 1));
 }
 
-/** First Saturday (ISO) of a "YYYY-MM" month — a sensible default for a new entry. */
-function firstSaturdayOf(monthKey: string): string {
-  let d = dayjs(`${monthKey}-01`);
-  while (d.day() !== 6) d = d.add(1, 'day');
-  return d.format('YYYY-MM-DD');
+/**
+ * The day a new entry in a "YYYY-MM" month starts on: its first Saturday —
+ * but never a day already gone. In the month being lived that is the next
+ * Saturday from today, or today itself once no Saturday is left. Until
+ * 9 October 2026 it was always the month's first Saturday, so a meeting added
+ * on the 9th opened on the 3rd, a day the server no longer accepts.
+ */
+function defaultDayOf(monthKey: string, todayISO: string): string {
+  const first = `${monthKey}-01`;
+  let d = dayjs(first < todayISO ? todayISO : first);
+  while (d.day() !== 6 && d.format('YYYY-MM') === monthKey) d = d.add(1, 'day');
+  return d.format('YYYY-MM') === monthKey ? d.format('YYYY-MM-DD') : todayISO;
 }
 
 type MonthBlock = {
   key: string;
   title: string;
   meetings: FieldServiceMeeting[];
+  /** Outings planned inside a circuit-overseer visit that month. */
+  visits: CoVisitFieldServiceMeeting[];
 };
 
 export default function FieldServiceMeetingsScreen() {
@@ -88,6 +105,30 @@ export default function FieldServiceMeetingsScreen() {
     queryKey: ['field-service', 'all'],
     queryFn: () => fieldServiceApi.list(),
   });
+  // During a circuit-overseer visit the field service is planned in the
+  // visit schedule, not here — so this page, and the sheet printed from it,
+  // left that week empty exactly when there was most going on (found
+  // 9 October 2026). The week view of the programme already shows them; the
+  // month and its printout do now too. Shown, not edited: they belong to the
+  // visit. Only visits not yet over come back — that is all the server
+  // opens to everyone.
+  const coVisitQuery = useQuery({
+    queryKey: ['co-visit-field-service'],
+    queryFn: () => coVisitItemsApi.fieldService(),
+    staleTime: 5 * 60 * 1000,
+  });
+  const visitByMonth = new Map<string, CoVisitFieldServiceMeeting[]>();
+  for (const v of (coVisitQuery.data ?? []).flatMap((w) => w.meetings)) {
+    const k = v.itemDate.slice(0, 7);
+    visitByMonth.set(k, [...(visitByMonth.get(k) ?? []), v]);
+  }
+  for (const list of visitByMonth.values()) {
+    list.sort(
+      (a, b) =>
+        a.itemDate.localeCompare(b.itemDate) ||
+        (a.startTime ?? '').localeCompare(b.startTime ?? ''),
+    );
+  }
   const publishersQuery = useQuery({
     // Names-only roster: the full directory is restricted to the caller's own
     // group for regular publishers, which broke conductor name resolution
@@ -244,6 +285,7 @@ export default function FieldServiceMeetingsScreen() {
     else byMonth.set(k, [m]);
   }
   const currentMonthKey = dayjs().format('YYYY-MM');
+  const todayISO = dayjs().format('YYYY-MM-DD');
   // Monday of the current week, worked out with the helpers already in this
   // file — dayjs's isoWeek needs a plugin that is not loaded here.
   const currentWeekStart = (() => {
@@ -253,7 +295,7 @@ export default function FieldServiceMeetingsScreen() {
   })();
   let minK = currentMonthKey;
   let maxK = currentMonthKey;
-  for (const k of byMonth.keys()) {
+  for (const k of [...byMonth.keys(), ...visitByMonth.keys()]) {
     if (k < minK) minK = k;
     if (k > maxK) maxK = k;
   }
@@ -273,7 +315,12 @@ export default function FieldServiceMeetingsScreen() {
       const title = d
         .toDate()
         .toLocaleDateString(i18n.language, { month: 'long', year: 'numeric' });
-      months.push({ key: k, title: title.charAt(0).toUpperCase() + title.slice(1), meetings: ms });
+      months.push({
+        key: k,
+        title: title.charAt(0).toUpperCase() + title.slice(1),
+        meetings: ms,
+        visits: visitByMonth.get(k) ?? [],
+      });
       d = d.add(1, 'month');
     }
   }
@@ -356,7 +403,8 @@ export default function FieldServiceMeetingsScreen() {
             year: 'numeric',
           }),
         theme: themeByMonth.get(key) ?? null,
-        rows: list.map((m) => {
+        rows: [
+          ...list.map((m) => {
           const dateISO = meetingDateISO(m);
           return {
             dateISO,
@@ -382,8 +430,30 @@ export default function FieldServiceMeetingsScreen() {
               ? (publishersById.get(m.serviceOverseerAssistantId)
                   ?.displayName ?? null)
               : null,
+            fromCoVisit: false,
           };
         }),
+          ...(visitByMonth.get(key) ?? []).map((v) => ({
+            dateISO: v.itemDate,
+            dayLabel: new Date(`${v.itemDate}T00:00:00`).toLocaleDateString(
+              i18n.language,
+              { weekday: 'short' },
+            ),
+            time: v.startTime ?? '',
+            address: v.place ? resolveHallAddress(v.place, halls) : '',
+            topic: null,
+            conductorName: null,
+            isGeneral: false,
+            groupName: null,
+            isOverseerVisit: false,
+            overseerName: null,
+            assistantName: null,
+            fromCoVisit: true,
+          })),
+        ].sort(
+          (a, b) =>
+            a.dateISO.localeCompare(b.dateISO) || a.time.localeCompare(b.time),
+        ),
       });
     }
     const startT = dayjs(`${pdfStart}-01`)
@@ -411,6 +481,7 @@ export default function FieldServiceMeetingsScreen() {
         groupVisit: t('fieldService.pdf.groupVisit'),
         assistant: t('fieldService.overseerAssistant'),
         monthTheme: t('fieldService.pdf.monthTheme'),
+        fromCoVisit: t('fieldService.fromCoVisit'),
         generated: t('fieldService.pdf.generated'),
       },
     });
@@ -424,7 +495,7 @@ export default function FieldServiceMeetingsScreen() {
   };
 
   const openAdd = (monthKey: string) => {
-    setAddDefaultDate(firstSaturdayOf(monthKey));
+    setAddDefaultDate(defaultDayOf(monthKey, dayjs().format('YYYY-MM-DD')));
     setPrefill(undefined);
     setTarget('new');
   };
@@ -549,7 +620,7 @@ export default function FieldServiceMeetingsScreen() {
               return null;
             })()}
 
-            {m.meetings.length === 0 ? (
+            {m.meetings.length === 0 && m.visits.length === 0 ? (
               <Text style={styles.emptyMonth}>{t('fieldService.emptyMonth')}</Text>
             ) : (
               m.meetings.map((mt) => {
@@ -648,7 +719,8 @@ export default function FieldServiceMeetingsScreen() {
                       )}
                       <SourceLink url={mt.sourceUrl} />
                     </Pressable>
-                    {canEdit && (
+                    {/* A meeting already held stays as a record. */}
+                    {canEdit && meetingDateISO(mt) >= todayISO && (
                       <Pressable
                         style={styles.removeBtn}
                         onPress={() => confirmRemove(mt.id)}
@@ -666,7 +738,36 @@ export default function FieldServiceMeetingsScreen() {
               })
             )}
 
-            {canEdit && (
+            {m.visits.length > 0 ? (
+              <View style={styles.visitBlock}>
+                <View style={styles.visitHead}>
+                  <Ionicons name="briefcase-outline" size={14} color="#0e7490" />
+                  <Text style={styles.visitHeadText}>
+                    {t('fieldService.fromCoVisit')}
+                  </Text>
+                </View>
+                {m.visits.map((v) => (
+                  <View key={v.id} style={styles.visitRow}>
+                    <Text style={styles.when}>
+                      {t(`fieldService.days.${isoDayOf(v.itemDate)}`)}{' '}
+                      {dayjs(v.itemDate).format('DD.MM')}
+                      {v.startTime ? ` \u00b7 ${v.startTime}` : ''}
+                    </Text>
+                    {v.place ? (
+                      <Text style={styles.address} numberOfLines={2}>
+                        {resolveHallAddress(v.place, halls)}
+                      </Text>
+                    ) : null}
+                  </View>
+                ))}
+                <Text style={styles.visitHint}>
+                  {t('fieldService.fromCoVisitHint')}
+                </Text>
+              </View>
+            ) : null}
+
+            {/* A month already over takes no new meetings. */}
+            {canEdit && m.key >= currentMonthKey && (
               <Pressable style={styles.addBtn} onPress={() => openAdd(m.key)}>
                 <Ionicons name="add" size={18} color="#0369a1" />
                 <Text style={styles.addBtnText}>{t('fieldService.addEntry')}</Text>
@@ -1068,6 +1169,26 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   addBtnText: { fontSize: 14, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0369a1' },
+  // The circuit-overseer visit's outings — the same look as in the week view
+  // of the programme (components/FieldServiceSection), so they read as one.
+  visitBlock: {
+    marginBottom: 10,
+    padding: 12,
+    borderRadius: 12,
+    backgroundColor: '#f0fdff',
+    borderWidth: 1,
+    borderColor: '#cff2f7',
+    gap: 8,
+  },
+  visitHead: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  visitHeadText: {
+    fontSize: 12,
+    color: '#0e7490',
+    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
+  },
+  visitRow: { gap: 2 },
+  visitHint: { fontSize: 12, color: '#64748b', fontStyle: 'italic' },
 });
 
 const pdfStyles = StyleSheet.create({

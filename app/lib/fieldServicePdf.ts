@@ -21,6 +21,12 @@ export interface FsPdfMeetingRow {
   /** Who is visiting, and who comes with him. */
   overseerName: string | null;
   assistantName: string | null;
+  /**
+   * An outing planned inside a circuit-overseer visit (9 October 2026: the
+   * sheet left that week empty). It names no conductor — the visit's public
+   * view does not carry one, and «—» would read as «nobody leads it».
+   */
+  fromCoVisit?: boolean;
 }
 
 export interface FsPdfMonth {
@@ -41,6 +47,8 @@ export interface FsPdfLabels {
   assistant: string;
   monthTheme: string;
   generated: string;
+  /** «Из расписания посещения районного старейшины». */
+  fromCoVisit: string;
 }
 
 function esc(s: string | null | undefined): string {
@@ -79,7 +87,9 @@ export function buildFieldServicePdfHtml(opts: {
           // and the row read as an ordinary meeting nobody had filled in. It
           // says what is actually happening instead: the overseer is visiting
           // this group.
-          const what = r.isOverseerVisit
+          const what = r.fromCoVisit
+            ? `<div class="visitline">${esc(L.fromCoVisit)}</div>`
+            : r.isOverseerVisit
             ? `<div class="visitline">${esc(
                 r.groupName
                   ? `${L.groupVisit} ${r.groupName}`
@@ -99,10 +109,12 @@ export function buildFieldServicePdfHtml(opts: {
             : '';
           // On a visit the overseer is the person the group is waiting for;
           // he is named here even when someone else conducts.
-          const who = r.isOverseerVisit
-            ? (r.overseerName ?? r.conductorName ?? '—')
-            : (r.conductorName ?? '—');
-          return `<tr${r.isOverseerVisit ? ' class="visitrow"' : ''}>
+          const who = r.fromCoVisit
+            ? ''
+            : r.isOverseerVisit
+              ? (r.overseerName ?? r.conductorName ?? '—')
+              : (r.conductorName ?? '—');
+          return `<tr${r.isOverseerVisit || r.fromCoVisit ? ' class="visitrow"' : ''}>
 <td class="date">${esc(r.dayLabel)} ${r.dateISO.slice(8, 10)}.${r.dateISO.slice(5, 7)}${badges ? `<div class="badges">${badges}</div>` : ''}</td>
 <td class="time">${esc(r.time)}</td>
 <td>${esc(r.address)}${group}${what}</td>

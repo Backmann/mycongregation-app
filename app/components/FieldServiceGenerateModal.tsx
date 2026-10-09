@@ -89,6 +89,7 @@ export function FieldServiceGenerateModal({
   const [result, setResult] = useState<{
     created: number;
     skipped: number;
+    past?: number;
   } | null>(null);
   const [savedFlash, setSavedFlash] = useState(false);
 
@@ -240,7 +241,13 @@ export function FieldServiceGenerateModal({
     }
     return out;
   }, [year, month, months, slots, i18n.language]);
-  const previewTotal = preview.reduce((n, mo) => n + mo.items.length, 0);
+  // The server does not fill a day already gone (9 October 2026); the
+  // preview says so instead of promising it.
+  const todayISO = dayjs().format('YYYY-MM-DD');
+  const previewTotal = preview.reduce(
+    (n, mo) => n + mo.items.filter((it) => it.dateISO >= todayISO).length,
+    0,
+  );
 
   // Special events (congress, CO visit, ...) — mark clashing preview dates.
   const eventsQuery = useQuery({
@@ -299,6 +306,11 @@ export function FieldServiceGenerateModal({
                   skipped: result.skipped,
                 })}
               </Text>
+              {result.past ? (
+                <Text style={styles.successBody}>
+                  {t('fieldService.generate.resultPast', { count: result.past })}
+                </Text>
+              ) : null}
             </View>
           ) : (
           <View>
@@ -510,12 +522,21 @@ export function FieldServiceGenerateModal({
                   <View key={mo.label} style={styles.previewMonth}>
                     <Text style={styles.previewMonthLabel}>{mo.label}</Text>
                     {mo.items.map((it) => {
-                      const clashes = eventsOn(it.dateISO);
+                      const gone = it.dateISO < todayISO;
+                      const clashes = gone ? [] : eventsOn(it.dateISO);
                       return (
                         <View key={it.dateISO}>
-                          <Text style={styles.previewItem}>
+                          <Text
+                            style={[
+                              styles.previewItem,
+                              gone && styles.previewGone,
+                            ]}
+                          >
                             {t(`fieldService.days.${it.dayOfWeek}`)}{' '}
                             {dayjs(it.dateISO).format('D.MM')} · {it.address}
+                            {gone
+                              ? ` — ${t('fieldService.generate.previewPast')}`
+                              : ''}
                           </Text>
                           {clashes.map((e) => (
                             <Text key={e.id} style={styles.previewClash}>
@@ -692,6 +713,7 @@ const styles = StyleSheet.create({
     marginBottom: 3,
   },
   previewItem: { fontSize: 12, color: '#334155', lineHeight: 18 },
+  previewGone: { color: '#94a3b8' },
   previewClash: {
     color: '#b45309',
     fontSize: 12,

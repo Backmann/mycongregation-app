@@ -2049,8 +2049,14 @@ export const fieldServiceTemplateApi = {
     startYear: number;
     startMonth: number;
     months: number;
-  }): Promise<{ created: number; skipped: number }> {
-    const { data } = await api.post<{ created: number; skipped: number }>(
+  }): Promise<{ created: number; skipped: number; past?: number }> {
+    // `past`: dates of the range already gone, not filled (server, 9 October
+    // 2026). Optional — a server before that does not send it.
+    const { data } = await api.post<{
+      created: number;
+      skipped: number;
+      past?: number;
+    }>(
       "/field-service-template/generate",
       input,
     );
