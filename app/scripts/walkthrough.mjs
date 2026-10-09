@@ -1225,6 +1225,43 @@ try {
   skip('F03', 'Брат с поручением без сервера', String(e.message || e));
 }
 
+// --- a phone on its side ------------------------------------------------------
+// Edge-to-edge, the system buttons stand at the side of a phone turned on its
+// side; screens ran on under them (28 September, Lionel's phone). Chromium can
+// report the same insets as the phone does, so the stand shows it.
+try {
+  const { ctx, page, keep } = await signedIn(browser, ADMIN);
+  console.log('\n— Телефон на боку —');
+  await check(page, 'G01', 'Телефон на боку: ни строка, ни кнопка экрана не заходит под системные кнопки справа', async () => {
+    await page.setViewportSize({ width: 844, height: 390 });
+    const cdp = await ctx.newCDPSession(page);
+    await cdp.send('Emulation.setSafeAreaInsetsOverride', { insets: { left: 0, right: 48, top: 0, bottom: 0 } });
+    for (const path of ['/publishers/list', '/home', '/tasks']) {
+      await go(page, path);
+      await page.waitForTimeout(3000);
+      const under = await page.evaluate(() => {
+        const W = innerWidth, H = innerHeight, out = [];
+        const w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+        while (w.nextNode()) {
+          const n = w.currentNode;
+          if (!n.textContent.trim()) continue;
+          const r = document.createRange();
+          r.selectNodeContents(n);
+          for (const b of r.getClientRects()) if (b.width >= 1 && b.top > 70 && b.bottom < H - 60 && b.right > W - 47) out.push(n.textContent.trim().slice(0, 30));
+        }
+        return out;
+      });
+      if (under.length) throw new Error(`${path}: под кнопками — ${under.slice(0, 3).join(' | ')}`);
+    }
+    await cdp.send('Emulation.setSafeAreaInsetsOverride', { insets: {} }).catch(() => {});
+    await page.setViewportSize(PHONE);
+  });
+  await keep();
+  await ctx.close();
+} catch (e) {
+  skip('G01', 'Телефон на боку', String(e.message || e));
+}
+
 // --- a visitor who is not signed in -------------------------------------------
 // Where an invited person arrives is the address in the letter. From 21 July
 // to 7 October a browser threw every such visitor to «Войти»: the app asks

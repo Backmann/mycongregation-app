@@ -106,6 +106,13 @@ export function Sheet({
   const { t } = useTranslation();
   const bottomRoom = useBottomRoom();
   const { width: screenW, height: screenH } = useWindowDimensions();
+  // A phone on its side, Android: the full-screen sheet is drawn under the
+  // system buttons at the side too (the SafeAreaView here is React Native's,
+  // which pads on iOS alone). The screens step aside in ScreenGate; this is
+  // the same for the one sheet that covers the whole screen (9 October 2026).
+  const sideInsets = useSafeAreaInsets();
+  const sideRoom =
+    Platform.OS === "android" ? { paddingLeft: sideInsets.left, paddingRight: sideInsets.right } : null;
 
   /**
    * A REAL height for the card, not one worked out from its content.
@@ -205,7 +212,7 @@ export function Sheet({
   }
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
-      <SafeAreaView style={styles.screen}>
+      <SafeAreaView style={[styles.screen, sideRoom]}>
         <View style={styles.header}>
           <View style={styles.headerText}>
             <Text style={styles.title} numberOfLines={1}>

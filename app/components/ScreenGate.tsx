@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../lib/auth';
 import { usePermissions } from '../lib/permissions';
@@ -60,6 +61,28 @@ function Gate({
   );
 }
 
+/**
+ * A phone on its side: the system buttons (or the camera cut-out) stand at
+ * the left or right edge, and edge-to-edge the app draws under them. The
+ * header and the tab bar step aside by themselves — the libraries read the
+ * insets (react-native-screens CustomToolbar, BottomTabBar) — but every
+ * screen's own content ran on underneath: on the right it went under the
+ * system buttons (Lionel's phone, 28 September 2026; on the stand, with the
+ * insets emulated, the filter button and every row's «›» — 9 October).
+ *
+ * One place for every screen: each stands under this frame, which keeps its
+ * content out of the side insets. Always drawn — zero in portrait — so that
+ * turning the phone does not rebuild the screen and lose what was typed.
+ */
+function SideInsets({ children }: { children: React.ReactNode }) {
+  const { left, right } = useSafeAreaInsets();
+  return (
+    <View style={[styles.frame, { paddingLeft: left, paddingRight: right }]} testID="side-insets">
+      {children}
+    </View>
+  );
+}
+
 type ScreenLayout = (props: {
   children: React.ReactElement;
   route: { name: string };
@@ -76,7 +99,11 @@ export function screenGate(base: string): ScreenLayout {
   let layout = made.get(base);
   if (!layout) {
     layout = function ScreenLayout({ children, route }) {
-      return <Gate route={routeOf(base, route.name)}>{children}</Gate>;
+      return (
+        <SideInsets>
+          <Gate route={routeOf(base, route.name)}>{children}</Gate>
+        </SideInsets>
+      );
     };
     made.set(base, layout);
   }
@@ -85,5 +112,6 @@ export function screenGate(base: string): ScreenLayout {
 
 const styles = StyleSheet.create({
   fill: { flex: 1, backgroundColor: '#f1f5f9' },
+  frame: { flex: 1, backgroundColor: '#f1f5f9' },
   failed: { paddingTop: 24 },
 });
