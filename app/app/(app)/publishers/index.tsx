@@ -7,6 +7,7 @@ import { usePermissions } from '../../../lib/permissions';
 import { congregationSummaryApi } from '../../../lib/api';
 import { congregationLines, type DoorLine } from '../../../lib/congregation-lines';
 import { DoorList, type Door, type DoorSection } from '../../../components/DoorList';
+import { PartlyShown } from '../../../components/ConnectionState';
 
 /**
  * The congregation's contents — every door into the congregation's work.
@@ -245,5 +246,13 @@ export default function CongregationScreen() {
         },
       ];
 
-  return <DoorList sections={sections} lines={lines} />;
+  return (
+    <DoorList
+      sections={sections}
+      lines={lines}
+      // The one request every line is read from (9 October 2026): when it did
+      // not come, the screen says that the lines are not shown.
+      notice={<PartlyShown queries={[summaryQ]} onRetry={() => void refetch()} />}
+    />
+  );
 }

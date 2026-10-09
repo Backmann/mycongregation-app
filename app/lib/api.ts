@@ -5,6 +5,8 @@ import { storage } from "./storage";
 import { openedFromIcon } from "./this-place";
 import { renewalRetryDelayMs, sessionVerdict } from "./session-verdict";
 import type { ApplyParsedPayload } from "./mwb-parser";
+import i18n from "./i18n";
+import { requestErrorText } from "./error-text";
 
 function resolveApiUrl(): string {
   const url = process.env.EXPO_PUBLIC_API_URL;
@@ -4285,6 +4287,10 @@ export const serviceReportsApi = {
 
 export function extractErrorMessage(error: unknown): string {
   if (error instanceof AxiosError) {
+    // What the server did not put into words is said here, in the reader's
+    // language — never «Network Error» (lib/error-text.ts).
+    const said = requestErrorText(error, (key, options) => i18n.t(key, options));
+    if (said) return said;
     const msg = error.response?.data?.message;
     if (Array.isArray(msg)) return msg.join(", ");
     if (typeof msg === "string") return msg;

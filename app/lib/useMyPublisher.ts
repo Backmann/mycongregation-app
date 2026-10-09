@@ -21,14 +21,16 @@ export function useMyPublisher(options?: {
 }): {
   myPublisher: MyPublisherLite | null;
   myPublisherId: string | null;
+  asked: { data: unknown; isError: boolean; error: unknown; dataUpdatedAt: number; refetch: () => unknown };
 } {
   const { user } = useAuth();
-  const { data } = useQuery({
+  const asked = useQuery({
     queryKey: ['me-publisher'],
     queryFn: () => meApi.publisher(),
     enabled: !!user,
     staleTime: 5 * 60 * 1000,
   });
+  const { data } = asked;
   const kept = data === undefined && options?.kept !== false ? keptMe(user?.id) : null;
   const myPublisher: MyPublisherLite | null =
     data?.publisher ??
@@ -43,5 +45,6 @@ export function useMyPublisher(options?: {
           contactsConfirmedByName: null,
         }
       : null);
-  return { myPublisher, myPublisherId: myPublisher?.id ?? null };
+  // `asked`: the request itself, for a screen that says when it did not come.
+  return { myPublisher, myPublisherId: myPublisher?.id ?? null, asked };
 }

@@ -4089,6 +4089,15 @@
     "loadFailed": "Could not load",
     "loadFailedOffline": "No connection to the server, and nothing is saved on this device. This is not «empty» — the data just did not arrive.",
     "loadFailedOther": "The server answered with an error. This is not «empty» — the data just did not arrive.",
-    "keptEnd": "Beyond this, nothing can be seen without a connection — only this much is saved."
+    "keptEnd": "Beyond this, nothing can be seen without a connection — only this much is saved.",
+    "request": {
+      "offline": "No connection to the server.",
+      "timeout": "The server is taking too long to answer — please try again.",
+      "server": "The server could not handle the request just now ({{status}}). Please try again a little later.",
+      "tooMany": "Too many attempts in a row — wait a minute and try again.",
+      "other": "The server did not accept the request ({{status}})."
+    },
+    "partlyOffline": "No connection · some lines are not shown.",
+    "partlyFailed": "Not everything loaded · some lines are not shown."
   }
 }

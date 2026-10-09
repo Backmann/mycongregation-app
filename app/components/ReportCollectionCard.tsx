@@ -32,6 +32,11 @@ import { usePermissions } from '../lib/permissions';
  * only when a card under the heading will show (26 September).
  */
 export function useReportCollection() {
+  return useReportCollectionAsked().shown;
+}
+
+/** The same, with the request itself — for a screen that says when it did not come. */
+export function useReportCollectionAsked() {
   const { canManageServiceSummary } = usePermissions();
   const collection = useQuery({
     queryKey: ['service-reports', 'collection'],
@@ -40,7 +45,7 @@ export function useReportCollection() {
     staleTime: 5 * 60 * 1000,
   });
   const data = collection.data;
-  return canManageServiceSummary && data && !data.closed ? data : null;
+  return { shown: canManageServiceSummary && data && !data.closed ? data : null, query: collection };
 }
 
 export function ReportCollectionCard() {

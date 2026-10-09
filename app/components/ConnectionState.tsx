@@ -14,6 +14,7 @@ import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../lib/auth';
 import { sessionVerdict } from '../lib/session-verdict';
+import { lineMissing, noAnswer } from '../lib/screen-failure';
 
 /**
  * «Нет связи» — said as itself, in the two places it can be met.
@@ -176,6 +177,42 @@ export function KeptNotice({
           <Text style={styles.keptAction}>{t('connection.refresh')}</Text>
         </Pressable>
       ) : null}
+    </View>
+  );
+}
+
+/**
+ * The line above a contents screen («Служение», «Собрание», «Профиль»).
+ *
+ * Each row there carries a line from its own request; one that did not come
+ * is left out and the row keeps its plain description — honest, but silent:
+ * offline the amber «something to do» lines simply were not there, which
+ * reads as «nothing waiting» (found 9 October 2026). Now the screen says that not everything is
+ * shown, with a way to ask again. When nothing is missing but an EARLIER
+ * answer is standing in, it is the usual KeptNotice.
+ */
+export function PartlyShown({
+  queries,
+  onRetry,
+  style,
+}: {
+  queries: Asked[];
+  onRetry: () => void;
+  style?: StyleProp<ViewStyle>;
+}) {
+  const { t } = useTranslation();
+  const missing = queries.filter(lineMissing);
+  if (missing.length === 0) return <KeptNotice queries={queries} onRetry={onRetry} style={style} />;
+  const offline = missing.some((q) => noAnswer(q.error));
+  return (
+    <View style={[styles.kept, style]} testID="partly-shown">
+      <Ionicons name="cloud-offline-outline" size={16} color="#92400e" />
+      <Text style={styles.keptText}>
+        {t(offline ? 'connection.partlyOffline' : 'connection.partlyFailed')}
+      </Text>
+      <Pressable onPress={onRetry} hitSlop={8} accessibilityRole="button">
+        <Text style={styles.keptAction}>{t('connection.retry')}</Text>
+      </Pressable>
     </View>
   );
 }

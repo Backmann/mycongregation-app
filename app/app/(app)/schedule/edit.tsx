@@ -982,10 +982,10 @@ function ProgrammeEditor() {
       await assignmentsApi.publish({ weekStartDate, eventType, notify });
       await queryClient.invalidateQueries({ queryKey: ["assignments"] });
     } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
-      if (typeof window !== "undefined" && typeof window.alert === "function") {
-        window.alert(msg);
-      }
+      // The server's own words (or lib/error-text's), on the strip every
+      // other failure uses — not the library's «Request failed with status
+      // code 400» in window.alert, as it was until 9 October 2026.
+      reportError(extractErrorMessage(e));
     } finally {
       setPublishingType(null);
     }
@@ -999,10 +999,10 @@ function ProgrammeEditor() {
       await assignmentsApi.notifyChanges({ weekStartDate, eventType });
       await queryClient.invalidateQueries({ queryKey: ["assignments"] });
     } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
-      if (typeof window !== "undefined" && typeof window.alert === "function") {
-        window.alert(msg);
-      }
+      // The server's own words (or lib/error-text's), on the strip every
+      // other failure uses — not the library's «Request failed with status
+      // code 400» in window.alert, as it was until 9 October 2026.
+      reportError(extractErrorMessage(e));
     } finally {
       setNotifyingType(null);
     }

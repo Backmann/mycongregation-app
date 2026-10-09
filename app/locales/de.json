@@ -4089,6 +4089,15 @@
     "loadFailed": "Laden fehlgeschlagen",
     "loadFailedOffline": "Keine Verbindung zum Server, und auf diesem Gerät ist nichts gespeichert. Das heißt nicht „leer“ — die Daten sind nur nicht angekommen.",
     "loadFailedOther": "Der Server hat mit einem Fehler geantwortet. Das heißt nicht „leer“ — die Daten sind nur nicht angekommen.",
-    "keptEnd": "Weiter lässt sich ohne Verbindung nichts sehen – nur bis hier ist gespeichert."
+    "keptEnd": "Weiter lässt sich ohne Verbindung nichts sehen – nur bis hier ist gespeichert.",
+    "request": {
+      "offline": "Keine Verbindung zum Server.",
+      "timeout": "Der Server antwortet nicht rechtzeitig — bitte versuchen Sie es noch einmal.",
+      "server": "Der Server konnte die Anfrage gerade nicht bearbeiten ({{status}}). Bitte versuchen Sie es etwas später.",
+      "tooMany": "Zu viele Versuche hintereinander — bitte warten Sie eine Minute und versuchen Sie es erneut.",
+      "other": "Der Server hat die Anfrage nicht angenommen ({{status}})."
+    },
+    "partlyOffline": "Keine Verbindung · einige Zeilen werden nicht angezeigt.",
+    "partlyFailed": "Nicht alles wurde geladen · einige Zeilen werden nicht angezeigt."
   }
 }

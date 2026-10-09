@@ -122,6 +122,8 @@ const STEPS = [
   ['Экран не гаснет', 'node', ['scripts/check-keep-awake.mjs']],
   // «Did not load» is never drawn as «nothing there».
   ['Не удалось — не «пусто»', 'node', ['scripts/check-screen-failure.mjs']],
+  // A failed request is said in words; contents screens say when lines are missing.
+  ['Ошибка — словами', 'node', ['scripts/check-error-text.mjs']],
   // One rule for who may open «Составление программы» — asked by the doors
   // and by the screen (6 October: the address opened it for a publisher).
   ['Дверь «Составления программы»', 'node', ['scripts/check-programme-editor-door.mjs']],

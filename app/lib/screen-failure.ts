@@ -39,3 +39,20 @@ export function isRequestError(error: unknown): boolean {
 export function failsScreen(error: unknown, query: Query<any, any, any, any>): boolean {
   return query.state.data === undefined && isRequestError(error) && sessionVerdict(error) === 'unreachable';
 }
+
+/**
+ * A line of a contents screen («Служение», «Собрание», «Профиль») that did
+ * not come — by the same test as a screen: the request could not reach the
+ * server and nothing earlier stands in. Such a line is left out (the row
+ * keeps its plain description, or is not drawn); the screen says above that
+ * it is not showing everything (components/ConnectionState.tsx, PartlyShown).
+ * A refusal (403) is an answer: a line nobody may read is not «missing».
+ */
+export function lineMissing(q: { data: unknown; isError: boolean; error: unknown }): boolean {
+  return q.isError && q.data === undefined && isRequestError(q.error) && sessionVerdict(q.error) === 'unreachable';
+}
+
+/** No answer at all, as opposed to the server answering with a failure. */
+export function noAnswer(error: unknown): boolean {
+  return isRequestError(error) && (error as { response?: unknown }).response === undefined;
+}

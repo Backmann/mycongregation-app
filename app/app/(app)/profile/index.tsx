@@ -18,6 +18,7 @@ import { useAuth } from "../../../lib/auth";
 import { useMyPublisher } from "../../../lib/useMyPublisher";
 import { LanguagePickerModal } from "../../../components/LanguagePicker";
 import { SignedInPlaces } from "../../../components/SignedInPlaces";
+import { PartlyShown } from "../../../components/ConnectionState";
 import { getCurrentLanguage } from "../../../lib/i18n";
 import { authApi, extractErrorMessage, meApi } from "../../../lib/api";
 import { contactsCheckLine } from "../../../lib/contacts-check";
@@ -85,12 +86,13 @@ export default function ProfileScreen() {
   const isElder = user?.role === "admin" || user?.role === "elder";
   // Asked afresh each time the screen is opened: the answer changes when the
   // person signs in somewhere else, which is exactly when they come to look.
-  const { data: signedIn } = useQuery({
+  const signedInQuery = useQuery({
     queryKey: ["auth", "sessions"],
     queryFn: () => authApi.sessions(),
     staleTime: 0,
     retry: false,
   });
+  const signedIn = signedInQuery.data;
   const myTasksQuery = useQuery({
     queryKey: ["me", "tasks"],
     queryFn: () => meApi.tasks(),
@@ -99,7 +101,7 @@ export default function ProfileScreen() {
   });
   const myTasks = myTasksQuery.data ?? [];
   // The contacts line below reads the real card, never the kept one.
-  const { myPublisher } = useMyPublisher({ kept: false });
+  const { myPublisher, asked: myPublisherQuery } = useMyPublisher({ kept: false });
   const { t, i18n } = useTranslation();
   const buildLine = useBuildLine();
   const [langModalVisible, setLangModalVisible] = useState(false);
@@ -149,6 +151,14 @@ export default function ProfileScreen() {
         style={{ flex: 1, backgroundColor: "#f1f5f9" }}
         contentContainerStyle={{ paddingBottom: 32 }}
       >
+        {/* Offline the name, «Где вы вошли», «Мои задачи» and the contacts
+            row are simply not drawn: say so, rather than look complete. */}
+        <PartlyShown
+          queries={[signedInQuery, myTasksQuery, myPublisherQuery]}
+          onRetry={() => {
+            for (const q of [signedInQuery, myTasksQuery, myPublisherQuery]) if (q.isError) void q.refetch();
+          }}
+        />
         <View style={styles.section}>
           <Text style={styles.sectionLabel} accessibilityRole="header">{t("profile.signedInAs")}</Text>
           <View style={styles.card}>

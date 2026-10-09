@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -40,9 +41,12 @@ const WIDE_FROM = 900;
 export function DoorList({
   sections,
   lines,
+  notice,
 }: {
   sections: DoorSection[];
   lines: Record<string, DoorLineView | undefined>;
+  /** Above the rows: that some lines did not come (ConnectionState, PartlyShown). */
+  notice?: ReactNode;
 }) {
   const { width } = useWindowDimensions();
   const wide = width >= WIDE_FROM;
@@ -77,6 +81,7 @@ export function DoorList({
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+      {notice ? <View style={wide ? styles.noticeWide : styles.column}>{notice}</View> : null}
       {wide && shown.length > 1 ? (
         <View style={styles.wide}>
           <View style={styles.wideCol}>{shown.slice(0, half).map(block)}</View>
@@ -120,6 +125,7 @@ const styles = StyleSheet.create({
   column: { width: '100%', maxWidth: 720 },
   wide: { width: '100%', maxWidth: 1000, flexDirection: 'row', gap: 32, paddingHorizontal: 8 },
   wideCol: { flex: 1, minWidth: 0 },
+  noticeWide: { width: '100%', maxWidth: 1000, paddingHorizontal: 8 },
   due: { color: '#b45309', fontFamily: FONT.bold },
   unlabelled: { paddingTop: 8 },
   label: {

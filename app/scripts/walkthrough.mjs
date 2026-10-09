@@ -1169,6 +1169,30 @@ try {
     await notSee(page, 'Построить неделю');
     down = false;
   });
+  await check(page, 'F04', 'Без сервера ошибка — словами, не «Network Error»; оглавления говорят «часть строк не показана», «Повторить» возвращает строки', async () => {
+    down = true;
+    await page.goto(`${BASE}/tasks`);
+    if (!(await failedShown())) throw new Error('нет «Не удалось загрузить»');
+    await see(page, 'Нет связи с сервером.');
+    await notSee(page, /Network Error|status code/);
+    for (const path of ['/cart', '/publishers', '/profile']) {
+      down = false;
+      await go(page, path);
+      await page.waitForTimeout(2500);
+      if (await page.getByTestId('partly-shown').filter({ visible: true }).count()) throw new Error(`${path}: строка «не всё показано» при живом сервере`);
+      down = true;
+      await page.goto(`${BASE}${path}`);
+      await page.getByTestId('partly-shown').filter({ visible: true }).first().waitFor({ timeout: 45000 }).catch(() => {
+        throw new Error(`${path}: без сервера нет строки «часть строк не показана»`);
+      });
+      await notSee(page, /Network Error|status code/);
+    }
+    down = false;
+    await page.getByTestId('partly-shown').getByText('Повторить').click();
+    await page.getByTestId('partly-shown').waitFor({ state: 'detached', timeout: 45000 }).catch(() => {
+      throw new Error('после «Повторить» с сервером строка осталась');
+    });
+  });
   down = false;
   await page.unroute('**/api/**');
   await keep();

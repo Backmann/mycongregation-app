@@ -15,7 +15,8 @@ import {
 } from '../../../lib/api';
 import { addDays, formatDateISO, startOfWeekMonday } from '../../../lib/dates';
 import { serviceLines, type ServiceLine } from '../../../lib/service-lines';
-import { useReportCollection } from '../../../components/ReportCollectionCard';
+import { useReportCollectionAsked } from '../../../components/ReportCollectionCard';
+import { PartlyShown } from '../../../components/ConnectionState';
 import { DoorList, type Door, type DoorSection } from '../../../components/DoorList';
 
 /**
@@ -68,7 +69,7 @@ export default function ServiceHubScreen() {
     queryFn: () => serviceReportsApi.myStanding(),
     staleTime: 5 * 60 * 1000,
   });
-  const collection = useReportCollection();
+  const { shown: collection, query: collectionQ } = useReportCollectionAsked();
   const attendanceQ = useQuery({
     queryKey: ['attendance', 'pending'],
     queryFn: () => attendanceApi.pending(),
@@ -260,5 +261,18 @@ export default function ServiceHubScreen() {
           },
         ];
 
-  return <DoorList sections={sections} lines={lines} />;
+  // Every request a line here is read from: when one did not come, the
+  // screen says that it is not showing everything (9 October 2026).
+  const asked = [standingQ, collectionQ, attendanceQ, fieldQ, ...cartQs, visitsQ, eventsQ, auxQ, servingQ];
+  const retryFailed = () => {
+    for (const q of asked) if (q.isError) void q.refetch();
+  };
+
+  return (
+    <DoorList
+      sections={sections}
+      lines={lines}
+      notice={<PartlyShown queries={asked} onRetry={retryFailed} />}
+    />
+  );
 }

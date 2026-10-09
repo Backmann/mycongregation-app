@@ -112,7 +112,7 @@ export function AssignmentForm({
       await onInstantSave(patch);
       setInstantSavedAt(Date.now());
     } catch (e) {
-      setInstantError(e instanceof Error ? e.message : String(e));
+      setInstantError(extractErrorMessage(e));
     } finally {
       setInstantSaving(false);
     }
