@@ -56,7 +56,9 @@ import {
   resolveSubsection,
 } from "../../../lib/parts";
 import { useMyPublisher } from "../../../lib/useMyPublisher";
-import { KeptNotice, LoadFailed } from "../../../components/ConnectionState";
+import { KeptEnd, KeptNotice, LoadFailed } from "../../../components/ConnectionState";
+import { earlierPiece } from "../../../lib/offline-keep";
+import { useAuth } from "../../../lib/auth";
 import { sessionVerdict } from "../../../lib/session-verdict";
 import { FONT } from "../../../lib/typography";
 import { SegmentedControl } from "../../../components/SegmentedControl";
@@ -215,6 +217,7 @@ export default function ProgrammeFeedScreen() {
   const { t, i18n } = useTranslation();
   const lang = i18n.language;
   const perms = usePermissions();
+  const { user } = useAuth();
   const { myPublisherId: me, myPublisher } = useMyPublisher();
   const myGroupId = myPublisher?.serviceGroupId ?? null;
   const canSeeReadiness =
@@ -398,6 +401,29 @@ export default function ProgrammeFeedScreen() {
   // or the meeting times (without them no meeting is drawn at all). Until 8
   // October either failure left an empty feed and «Показать ещё», which in a
   // hall with no signal reads as «nothing is planned».
+  // NO SIGNAL, AND THIS MONDAY'S PIECE WAS NEVER KEPT (9 October 2026): the
+  // first piece of the feed — from this Monday — is taken from an earlier
+  // kept piece that still reaches these weeks (lib/offline-keep.ts). Only
+  // that piece: later ones were never kept anywhere.
+  const curIdx = spans.findIndex((sp) => sp.from === thisWeek);
+  const cur = curIdx >= 0 ? spans[curIdx] : null;
+  const has = (qs: { data?: unknown }[]) => curIdx >= 0 && qs[curIdx]?.data !== undefined;
+  const earlier = useMemo(
+    () => ({
+      assignments: cur && !has(assignmentsQs) ? earlierPiece<Assignment>("assignments", user?.id, cur.from, cur.to) : null,
+      duties: cur && !has(dutiesQs) ? earlierPiece<Duty>("duties", user?.id, cur.from, cur.to) : null,
+      cleaning: cur && !has(cleaningQs) ? earlierPiece<CleaningAssignment>("cleaning", user?.id, cur.from, cur.to) : null,
+      field: cur && !has(fieldQs) ? earlierPiece<FieldServiceMeeting>("field-service", user?.id, cur.from, cur.to) : null,
+    }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [cur?.from, cur?.to, user?.id, has(assignmentsQs), has(dutiesQs), has(cleaningQs), has(fieldQs)],
+  );
+  const standIns = [
+    [earlier.assignments, assignmentsQs[curIdx]],
+    [earlier.duties, dutiesQs[curIdx]],
+    [earlier.cleaning, cleaningQs[curIdx]],
+    [earlier.field, fieldQs[curIdx]],
+  ] as const;
   const feedQueries = [
     ...assignmentsQs,
     ...dutiesQs,
@@ -408,18 +434,26 @@ export default function ProgrammeFeedScreen() {
     publishersQ,
     groupsQ,
   ];
-  const feedFailed = [assignmentsQs[assignmentsQs.length - 1], settingsQ].find(
+  // For «shown from before»: an earlier piece counts as the request's own old answer.
+  const keptAsked = standIns
+    .filter(([e, q]) => e && q)
+    .map(([e, q]) => ({ data: e!.rows, isError: true, error: q!.error, dataUpdatedAt: e!.at }));
+  // The programme piece at the end stands in from an earlier one: the feed
+  // knows the weeks only up to where that piece ends — and must not call
+  // that «the end of the programme».
+  const keptEnd = curIdx === assignmentsQs.length - 1 && earlier.assignments ? earlier.assignments.coveredTo : null;
+  const feedFailed = [keptEnd ? undefined : assignmentsQs[assignmentsQs.length - 1], settingsQ].find(
     (q) => q && q.isError && q.data === undefined,
   );
   const retryFeed = () => {
     for (const q of feedQueries) if (q.isError) void q.refetch();
   };
 
-  const allAssignments = assignmentsQs.flatMap((q) => q.data?.data ?? []);
+  const allAssignments = assignmentsQs.flatMap((q, i) => q.data?.data ?? (i === curIdx ? (earlier.assignments?.rows ?? []) : []));
   const allReadiness = readinessQs.flatMap((q) => q.data ?? []);
-  const allDuties = dutiesQs.flatMap((q) => q.data ?? []);
-  const allCleaning = cleaningQs.flatMap((q) => q.data ?? []);
-  const allField = fieldQs.flatMap((q) => q.data ?? []);
+  const allDuties = dutiesQs.flatMap((q, i) => q.data ?? (i === curIdx ? (earlier.duties?.rows ?? []) : []));
+  const allCleaning = cleaningQs.flatMap((q, i) => q.data ?? (i === curIdx ? (earlier.cleaning?.rows ?? []) : []));
+  const allField = fieldQs.flatMap((q, i) => q.data ?? (i === curIdx ? (earlier.field?.rows ?? []) : []));
 
   const nameOf = new Map<string, string>();
   for (const p of publishersQ.data?.data ?? []) nameOf.set(p.id, p.displayName);
@@ -453,11 +487,16 @@ export default function ProgrammeFeedScreen() {
     null,
   );
   const reachedEnd = lastLoaded && !allAssignments.some((a) => a.weekStartDate === lastSpanWeek);
-  const programmeEnd = reachedEnd
-    ? lastProgrammeWeek && lastProgrammeWeek > thisWeek
-      ? lastProgrammeWeek
-      : thisWeek
-    : lastSpanWeek;
+  const keptLastWeek = keptEnd ? formatDateISO(addDays(atMidnight(keptEnd), -7)) : null;
+  const programmeEnd = keptLastWeek
+    ? keptLastWeek < lastSpanWeek
+      ? keptLastWeek
+      : lastSpanWeek
+    : reachedEnd
+      ? lastProgrammeWeek && lastProgrammeWeek > thisWeek
+        ? lastProgrammeWeek
+        : thisWeek
+      : lastSpanWeek;
   // A week asked for by the address is shown even past the programme's end
   // (24 September). The Memorial is the case: its programme is published
   // before the workbooks for its week are imported, and «the Memorial
@@ -916,6 +955,8 @@ export default function ProgrammeFeedScreen() {
         onRetry={retryFeed}
         unreachable={sessionVerdict(feedFailed.error) === "unreachable"}
       />
+    ) : keptEnd ? (
+      <KeptEnd onRetry={retryFeed} />
     ) : reachedEnd ? (
       <>
         <View style={styles.end}>
@@ -1133,7 +1174,7 @@ export default function ProgrammeFeedScreen() {
   const listScroll = (
     <View style={wide ? styles.listPane : styles.screen}>
       {bar}
-      <KeptNotice queries={feedQueries} onRetry={retryFeed} style={{ marginBottom: 6 }} />
+      <KeptNotice queries={[...feedQueries, ...keptAsked]} onRetry={retryFeed} style={{ marginBottom: 6 }} />
       <Animated.View style={[styles.fill, { opacity: fade }]}>
         <ScrollView
           ref={scrollRef}

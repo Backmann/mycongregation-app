@@ -1067,6 +1067,60 @@ try {
     await notSee(page, 'На эту неделю программы нет');
     mode = 'up';
   });
+  // A NEW WEEK DOES NOT WIPE WHAT IS STILL AHEAD (9 October 2026). The kept
+  // programme was wiped the first Monday after it was kept: a brother last
+  // online on Sunday had nothing on Wednesday. Here the device is made to
+  // hold only LAST week's pieces — as if he had last been online then.
+  await check(page, 'E10', 'Сохранено на прошлой неделе: без сервера «Программа» и «Главная» показывают эту неделю, конец ленты — «дальше без связи не видно»', async () => {
+    mode = 'up';
+    await go(page, '/schedule');
+    await page.getByText(/^(Будний|Выходной) · /).filter({ visible: true }).first().waitFor({ timeout: 30000 });
+    await go(page, '/home');
+    await page.waitForTimeout(3000);
+    const moved = await page.evaluate(() => {
+      const raw = window.localStorage.getItem('mycongregation.kept');
+      if (!raw) return 0;
+      const k = JSON.parse(raw);
+      const back = (iso, days) => {
+        const [y, m, d] = iso.split('-').map(Number);
+        const t = new Date(y, m - 1, d - days);
+        const p = (v) => String(v).padStart(2, '0');
+        return `${t.getFullYear()}-${p(t.getMonth() + 1)}-${p(t.getDate())}`;
+      };
+      const out = {};
+      let n = 0;
+      for (const [name, e] of Object.entries(k.entries)) {
+        if (e.key[1] !== 'range') {
+          out[name] = e;
+          continue;
+        }
+        const key = [...e.key];
+        key[2] = back(key[2], 7);
+        if (key.length === 4) key[3] = back(key[3], 7);
+        out[key.length === 4 ? `${key[0]}/${key[2]}/${key[3]}` : `${key[0]}/${key[2]}`] = { ...e, key, at: e.at - 3 * 86400000 };
+        n++;
+      }
+      k.entries = out;
+      window.localStorage.setItem('mycongregation.kept', JSON.stringify(k));
+      return n;
+    });
+    if (!moved) throw new Error('на устройстве нечего сдвигать — сохранённого нет');
+    mode = 'down';
+    await page.goto(`${BASE}/schedule`);
+    await page.getByTestId('kept-notice').filter({ visible: true }).first().waitFor({ timeout: 45000 }).catch(() => {
+      throw new Error('в «Программе» нет строки «показано то, что пришло» — прошлонедельное не взято');
+    });
+    const rows = await page.getByText(/^(Будний|Выходной) · /).filter({ visible: true }).count();
+    if (!rows) throw new Error('в «Программе» нет встреч');
+    if (!(await page.getByTestId('kept-end').count())) throw new Error('в конце ленты нет «дальше без связи не видно»');
+    await notSee(page, 'Дальше программы нет');
+    await page.goto(`${BASE}/home`);
+    await page.getByTestId('kept-notice').filter({ visible: true }).first().waitFor({ timeout: 45000 }).catch(() => {
+      throw new Error('на «Главной» нет строки «показано то, что пришло»');
+    });
+    mode = 'up';
+    return `встреч в ленте: ${rows}`;
+  });
   mode = 'up';
   await page.unroute('**/api/**');
   await keep();

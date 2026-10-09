@@ -38,6 +38,7 @@ import {
   MyCoVisitItem,
   Publisher,
   SpecialEvent,
+  FieldServiceMeeting,
   absencesApi,
   assignmentsApi,
   auxiliaryPioneersApi,
@@ -58,6 +59,7 @@ import { useAuth } from "../../../lib/auth";
 import { WelcomeCard } from "../../../components/WelcomeCard";
 import { useMyPublisher } from "../../../lib/useMyPublisher";
 import { KeptNotice } from "../../../components/ConnectionState";
+import { earlierPiece } from "../../../lib/offline-keep";
 import {
   auxMonthSinceLabel,
   auxPeriodLabel,
@@ -1766,6 +1768,30 @@ function useHomeData(todayISO: string) {
       }),
     staleTime: 60 * 1000,
   });
+  // NO SIGNAL, AND THIS MONDAY'S PIECE WAS NEVER KEPT (9 October 2026): the
+  // weeks from an earlier piece that still reaches them — the brother who
+  // was last online on Sunday still sees Wednesday's meeting.
+  const programmeEarlier = useMemo(
+    () => (programmeQ.data ? null : earlierPiece<Assignment>("assignments", user?.id, mon0, programmeTo)),
+    [programmeQ.data, user?.id, mon0, programmeTo],
+  );
+  const fieldTo = formatDateISO(addDays(baseMonday, 21));
+  const fieldEarlier = useMemo(
+    () => (fieldServiceQ.data ? null : earlierPiece<FieldServiceMeeting>("field-service", user?.id, mon0, fieldTo)),
+    [fieldServiceQ.data, user?.id, mon0, fieldTo],
+  );
+  const programmeRows = programmeQ.data?.data ?? programmeEarlier?.rows;
+  const fieldRows = fieldServiceQ.data ?? fieldEarlier?.rows;
+  // For «shown from before»: an earlier piece standing in IS an answer from
+  // before, with its own time — from the first moment it is drawn, not only
+  // once the request has failed (else the line names a newer time than the
+  // programme on screen for the first seconds).
+  const programmeAsked = programmeEarlier
+    ? { data: programmeEarlier.rows, isError: true, error: programmeQ.error, dataUpdatedAt: programmeEarlier.at }
+    : programmeQ;
+  const fieldAsked = fieldEarlier
+    ? { data: fieldEarlier.rows, isError: true, error: fieldServiceQ.error, dataUpdatedAt: fieldEarlier.at }
+    : fieldServiceQ;
   const publishersQ = useQuery({
     queryKey: ["publishers", "roster"],
     queryFn: () => publishersApi.roster(),
@@ -1839,7 +1865,7 @@ function useHomeData(todayISO: string) {
       !!me && (a.publisherId === me || a.assistantPublisherId === me);
     const meetingTitles = new Map<string, MeetingAbout>();
     const byMeeting = new Map<string, Assignment[]>();
-    for (const a of programmeQ.data?.data ?? []) {
+    for (const a of programmeRows ?? []) {
       const k = `${a.weekStartDate}|${a.eventType}`;
       byMeeting.set(k, [...(byMeeting.get(k) ?? []), a]);
     }
@@ -1936,7 +1962,7 @@ function useHomeData(todayISO: string) {
     }
     return buildTimeline({
       versions: overviewQ.data?.versions ?? [],
-      fieldServiceMeetings: fieldServiceQ.data ?? [],
+      fieldServiceMeetings: fieldRows ?? [],
       publishersById,
       groupNameById,
       myServiceGroupId: myPublisher?.serviceGroupId ?? null,
@@ -1974,8 +2000,8 @@ function useHomeData(todayISO: string) {
   }, [
     overviewQ.data,
     groupNameById,
-    fieldServiceQ.data,
-    programmeQ.data,
+    fieldRows,
+    programmeRows,
     publishersQ.data,
     eventsQ.data,
     tasksQ.data,
@@ -1991,8 +2017,8 @@ function useHomeData(todayISO: string) {
 
   // A source that failed says so, instead of looking like «nothing there».
   const partialFailure = [
-    fieldServiceQ,
-    programmeQ,
+    fieldAsked,
+    programmeAsked,
     eventsQ,
     absencesQ,
     coVisitQ,
@@ -2011,7 +2037,7 @@ function useHomeData(todayISO: string) {
       (tasksQ.isError && !tasksQ.data),
     partialFailure,
     // What the list is drawn from — for «shown from before» (KeptNotice).
-    asked: [overviewQ, tasksQ, programmeQ, fieldServiceQ, eventsQ, publishersQ, groupsQ],
+    asked: [overviewQ, tasksQ, programmeAsked, fieldAsked, eventsQ, publishersQ, groupsQ],
     refreshFailed: () => {
       for (const q of [overviewQ, tasksQ, programmeQ, fieldServiceQ, eventsQ, publishersQ, groupsQ]) {
         if (q.isError) void q.refetch();

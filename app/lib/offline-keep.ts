@@ -5,6 +5,8 @@ import {
   keptName,
   mondayOf,
   pruneKept,
+  rangeSpan,
+  rowsFromEarlierPiece,
   type KeptEntry,
   type KeptIdentity,
 } from './offline-keep-rules';
@@ -84,6 +86,12 @@ export async function restoreKept(qc: QueryClient, userId: string): Promise<void
   current = { v: VERSION, userId, entries, me: s.me ?? null };
   for (const e of Object.values(entries)) {
     if (qc.getQueryData(e.key) === undefined) {
+      // Kept for the whole session, not five minutes. A restored answer has
+      // nobody looking at it until its screen opens — and the query cache
+      // drops what nobody looks at after five minutes: the duties of the
+      // programme, the meeting's own week, were gone by the time the brother
+      // reached the hall (found 9 October 2026, from the library's code).
+      qc.setQueryDefaults(e.key, { gcTime: Infinity });
       qc.setQueryData(e.key, e.data, { updatedAt: e.at });
       // Old by definition, however recent its time: a kept answer given
       // twenty seconds ago would otherwise count as fresh, never be asked
@@ -157,4 +165,44 @@ export async function forgetKeptOfOthers(userId: string): Promise<void> {
  */
 export function keptMe(userId: string | undefined): KeptIdentity | null {
   return userId && current?.userId === userId ? current.me : null;
+}
+
+/**
+ * The kept pieces of one kind of range («assignments», «duties», «cleaning»,
+ * «field-service») — read from what is KEPT, not from the query cache: a
+ * piece nobody is looking at leaves the cache after five minutes, and the
+ * hall is often more than five minutes after the app was opened. The
+ * programme comes wrapped ({ data: [...] }), the others as plain lists.
+ */
+export function keptPieces<T extends { weekStartDate: string }>(
+  kind: string,
+  userId: string | undefined,
+): { from: string; to: string; rows: T[]; at: number }[] {
+  if (!userId || current?.userId !== userId) return [];
+  const out: { from: string; to: string; rows: T[]; at: number }[] = [];
+  for (const e of Object.values(current.entries)) {
+    const span = rangeSpan(e.key);
+    if (!span || span.kind !== kind) continue;
+    const data = e.data as unknown;
+    const rows = Array.isArray(data)
+      ? (data as T[])
+      : Array.isArray((data as { data?: unknown } | null)?.data)
+        ? (data as { data: T[] }).data
+        : null;
+    if (rows) out.push({ from: span.from, to: span.to, rows, at: e.at });
+  }
+  return out;
+}
+
+/**
+ * The weeks [from, to) from an EARLIER kept piece — for a screen whose own
+ * request (this Monday's piece) did not come. See rowsFromEarlierPiece.
+ */
+export function earlierPiece<T extends { weekStartDate: string }>(
+  kind: string,
+  userId: string | undefined,
+  from: string,
+  to: string,
+): { rows: T[]; at: number; coveredTo: string } | null {
+  return rowsFromEarlierPiece(keptPieces<T>(kind, userId), from, to);
 }

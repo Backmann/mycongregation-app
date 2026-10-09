@@ -4084,9 +4084,11 @@
     "today": "heute",
     "keptOffline": "Keine Verbindung · angezeigt wird, was {{when}} ankam. Es kann sich seitdem geändert haben.",
     "keptFailed": "Aktualisieren fehlgeschlagen · angezeigt wird, was {{when}} ankam.",
+    "keptUpdating": "Angezeigt wird, was {{when}} ankam – wird aktualisiert…",
     "refresh": "Aktualisieren",
     "loadFailed": "Laden fehlgeschlagen",
     "loadFailedOffline": "Keine Verbindung zum Server, und auf diesem Gerät ist nichts gespeichert. Das heißt nicht „leer“ — die Daten sind nur nicht angekommen.",
-    "loadFailedOther": "Der Server hat mit einem Fehler geantwortet. Das heißt nicht „leer“ — die Daten sind nur nicht angekommen."
+    "loadFailedOther": "Der Server hat mit einem Fehler geantwortet. Das heißt nicht „leer“ — die Daten sind nur nicht angekommen.",
+    "keptEnd": "Weiter lässt sich ohne Verbindung nichts sehen – nur bis hier ist gespeichert."
   }
 }

@@ -110,12 +110,23 @@ interface Asked {
  * Is an OLD answer on screen because the new one failed? Then: when it was
  * received (the oldest of them) and whether the server simply was not there.
  */
-export function shownFromBefore(queries: Asked[]): { at: number; unreachable: boolean } | null {
+export function shownFromBefore(
+  queries: Asked[],
+): { at: number; why: 'offline' | 'failed' | 'updating' } | null {
   const stale = queries.filter((q) => q.isError && q.data !== undefined && q.dataUpdatedAt > 0);
   if (stale.length === 0) return null;
+  // A piece kept from before stands in from its first moment — while its own
+  // request may still be on the way. Then it is «being updated», not «no
+  // connection»: on a Monday with a good signal that line would be untrue.
+  const failed = stale.filter((q) => q.error != null);
   return {
     at: Math.min(...stale.map((q) => q.dataUpdatedAt)),
-    unreachable: stale.some((q) => sessionVerdict(q.error) === 'unreachable'),
+    why:
+      failed.length === 0
+        ? 'updating'
+        : failed.some((q) => sessionVerdict(q.error) === 'unreachable')
+          ? 'offline'
+          : 'failed',
   };
 }
 
@@ -151,13 +162,36 @@ export function KeptNotice({
     <View style={[styles.kept, style]} testID="kept-notice">
       <Ionicons name="cloud-offline-outline" size={16} color="#92400e" />
       <Text style={styles.keptText}>
-        {t(before.unreachable ? 'connection.keptOffline' : 'connection.keptFailed', { when })}
+        {t(
+          before.why === 'offline'
+            ? 'connection.keptOffline'
+            : before.why === 'failed'
+              ? 'connection.keptFailed'
+              : 'connection.keptUpdating',
+          { when },
+        )}
       </Text>
       {onRetry ? (
         <Pressable onPress={onRetry} hitSlop={8} accessibilityRole="button">
           <Text style={styles.keptAction}>{t('connection.refresh')}</Text>
         </Pressable>
       ) : null}
+    </View>
+  );
+}
+
+/**
+ * At the end of a feed shown from an earlier kept piece: what lies beyond is
+ * not known without the server — not «the programme ends here».
+ */
+export function KeptEnd({ onRetry }: { onRetry: () => void }) {
+  const { t } = useTranslation();
+  return (
+    <View style={styles.keptEnd} testID="kept-end">
+      <Text style={styles.keptEndText}>{t('connection.keptEnd')}</Text>
+      <Pressable onPress={onRetry} hitSlop={8} accessibilityRole="button">
+        <Text style={styles.keptAction}>{t('connection.refresh')}</Text>
+      </Pressable>
     </View>
   );
 }
@@ -214,6 +248,12 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
   },
+  keptEnd: {
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 18,
+  },
+  keptEndText: { color: '#64748b', fontSize: 13.5, textAlign: 'center' },
   failed: {
     alignItems: 'center',
     gap: 8,

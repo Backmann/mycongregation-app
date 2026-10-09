@@ -63,9 +63,33 @@ export interface KeptEntry {
   at: number;
 }
 
+/** YYYY-MM-DD plus whole days, in local time. */
+function plusDays(iso: string, days: number): string {
+  const [y, m, d] = iso.split('-').map(Number);
+  const t = new Date(y, m - 1, d + days);
+  const p = (v: number) => String(v).padStart(2, '0');
+  return `${t.getFullYear()}-${p(t.getMonth() + 1)}-${p(t.getDate())}`;
+}
+
 /**
- * What stays of what was kept: nothing older than KEEP_DAYS, and no range
- * that does not start this Monday (last week's piece is never asked for).
+ * The weeks a kept range covers: [from, to). «Главная»'s field-service key
+ * has no end of its own — it asks for three weeks.
+ */
+export function rangeSpan(key: readonly unknown[]): { kind: string; from: string; to: string } | null {
+  const [kind, b, from, to] = key;
+  if (typeof kind !== 'string' || !RANGE_KINDS.includes(kind) || b !== 'range' || typeof from !== 'string') return null;
+  if (key.length === 4 && typeof to === 'string') return { kind, from, to };
+  if (key.length === 3) return { kind, from, to: plusDays(from, 21) };
+  return null;
+}
+
+/**
+ * What stays of what was kept: nothing older than KEEP_DAYS — and a range
+ * only while it still covers this week or a later one.
+ *
+ * Until 9 October a range was wiped the first Monday after it was kept, with
+ * seven of its eight weeks still ahead: a brother last online on Sunday had
+ * no programme in a hall with no signal on Wednesday.
  */
 export function pruneKept(
   entries: Record<string, KeptEntry>,
@@ -76,10 +100,72 @@ export function pruneKept(
   for (const [name, e] of Object.entries(entries)) {
     if (!e || !Array.isArray(e.key) || typeof e.at !== 'number') continue;
     if (nowMs - e.at > KEEP_DAYS * 86_400_000 || e.at > nowMs + 86_400_000) continue;
-    if (keptName(e.key, mondayISO) !== name) continue;
+    const span = rangeSpan(e.key);
+    if (span) {
+      // Kept under the name it was given on its own Monday; still ahead of us.
+      if (keptName(e.key, span.from) !== name) continue;
+      if (span.from > mondayISO || span.to <= mondayISO) continue;
+    } else if (keptName(e.key, mondayISO) !== name) {
+      continue;
+    }
     out[name] = e;
   }
+  // At most ONE earlier piece of each range besides this Monday's: a brother
+  // online every week would otherwise gather up to eight eight-week pieces
+  // of each — about 1.6 MB on a real congregation (measured 9 October on the
+  // anonymised copy: 205 KB a week) — and past the limit nothing is written
+  // at all. The newest earlier piece is the one that can be wanted.
+  const newestEarlier = new Map<string, string>();
+  for (const [name, e] of Object.entries(out)) {
+    const span = rangeSpan(e.key);
+    if (!span || span.from >= mondayISO) continue;
+    const group = `${span.kind}/${e.key.length}`;
+    const held = newestEarlier.get(group);
+    if (!held || out[held].at < e.at) newestEarlier.set(group, name);
+  }
+  for (const [name, e] of Object.entries(out)) {
+    const span = rangeSpan(e.key);
+    if (!span || span.from >= mondayISO) continue;
+    if (newestEarlier.get(`${span.kind}/${e.key.length}`) !== name) delete out[name];
+  }
   return out;
+}
+
+/**
+ * The rows of the weeks [from, to) taken from EARLIER kept pieces — for a
+ * screen whose own request (this Monday's piece) did not come.
+ *
+ * Week by week, the most recent piece that covers the week answers for it
+ * («Главная» keeps three weeks of field service, the feed eight: the newer
+ * short piece must not cut the older long one short). `at` is the OLDEST
+ * answer used — the line «показано то, что пришло …» must not make the
+ * programme look newer than it is. `coveredTo` is where knowledge ends:
+ * past it a screen must not say «the programme ends here».
+ */
+export function rowsFromEarlierPiece<T extends { weekStartDate: string }>(
+  pieces: { from: string; to: string; rows: readonly T[]; at: number }[],
+  from: string,
+  to: string,
+): { rows: T[]; at: number; coveredTo: string } | null {
+  const usable = pieces.filter((p) => p.from < from && p.to > from).sort((a, b) => b.at - a.at);
+  if (usable.length === 0) return null;
+  const claimed = new Set<string>();
+  const rows: T[] = [];
+  let at = Infinity;
+  let coveredTo = from;
+  for (const p of usable) {
+    const end = p.to < to ? p.to : to;
+    let used = false;
+    for (let w = from; w < end; w = plusDays(w, 7)) {
+      if (claimed.has(w)) continue;
+      claimed.add(w);
+      used = true;
+      for (const r of p.rows) if (r.weekStartDate === w) rows.push(r);
+    }
+    if (used) at = Math.min(at, p.at);
+    if (end > coveredTo) coveredTo = end;
+  }
+  return { rows, at, coveredTo };
 }
 
 /** The fields of one's own card that are kept: who and which group — no contacts. */

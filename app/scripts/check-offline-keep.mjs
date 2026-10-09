@@ -26,7 +26,7 @@ const read = (rel) => readFileSync(join(ROOT, rel), 'utf8');
 const js = ts.transpileModule(read('lib/offline-keep-rules.ts'), {
   compilerOptions: { module: ts.ModuleKind.ES2020, target: ts.ScriptTarget.ES2020 },
 }).outputText;
-const { keptName, pruneKept, keptIdentity, mondayOf, KEEP_DAYS, keptMeetingRows } = await import(
+const { keptName, pruneKept, keptIdentity, mondayOf, KEEP_DAYS, keptMeetingRows, rowsFromEarlierPiece, rangeSpan } = await import(
   `data:text/javascript;base64,${Buffer.from(js).toString('base64')}`
 );
 
@@ -86,7 +86,17 @@ const pruned = pruneKept(
     'me/assignments': entry(['me', 'assignments'], 3),
     'meeting-settings': entry(['meeting-settings'], KEEP_DAYS + 1),
     [`assignments/${MON}/2026-11-30`]: entry(['assignments', 'range', MON, '2026-11-30'], 1),
+    // Last Monday's piece still reaches seven weeks ahead: it stays.
     'assignments/2026-09-28/2026-11-23': entry(['assignments', 'range', '2026-09-28', '2026-11-23'], 8),
+    // «Главная»'s three weeks of field service from last Monday: still reaches this week.
+    'field-service/2026-09-28': entry(['field-service', 'range', '2026-09-28'], 8),
+    // Wholly in the past: gone.
+    'duties/2026-08-10/2026-10-05': entry(['duties', 'range', '2026-08-10', '2026-10-05'], 20),
+    'field-service/2026-09-07': entry(['field-service', 'range', '2026-09-07'], 25),
+    // Starting after this Monday — never asked for under that key: gone.
+    'cleaning/2026-10-12/2026-12-07': entry(['cleaning', 'range', '2026-10-12', '2026-12-07'], 1),
+    // Kept under the wrong name: gone.
+    'duties/2026-09-28/x': entry(['duties', 'range', '2026-09-28', '2026-11-23'], 2),
     'service-groups': entry(['me-publisher'], 1),
     'publishers/roster': { key: ['publishers', 'roster'], data: {}, at: now + 5 * day },
     junk: null,
@@ -95,8 +105,46 @@ const pruned = pruneKept(
   MON,
 );
 const keptNow = Object.keys(pruned).sort().join(', ');
-const wantNow = [`assignments/${MON}/2026-11-30`, 'me/assignments'].sort().join(', ');
+const wantNow = [`assignments/${MON}/2026-11-30`, 'assignments/2026-09-28/2026-11-23', 'field-service/2026-09-28', 'me/assignments'].sort().join(', ');
 if (keptNow !== wantNow) problems.push(`после чистки осталось «${keptNow}», ожидалось «${wantNow}»`);
+
+// --- at most one earlier piece of each range ---------------------------------------
+{
+  const many = {};
+  for (let k = 1; k <= 6; k++) {
+    const from = `2026-${String(k <= 1 ? 9 : 8).padStart(2, '0')}-${String(k <= 1 ? 28 : 31 - (k - 2) * 7).padStart(2, '0')}`;
+    many[`assignments/${from}/2026-12-28`] = { key: ['assignments', 'range', from, '2026-12-28'], data: {}, at: now - k * day };
+  }
+  many[`assignments/${MON}/2026-11-30`] = { key: ['assignments', 'range', MON, '2026-11-30'], data: {}, at: now };
+  const left = Object.keys(pruneKept(many, now, MON)).sort();
+  if (left.join() !== [`assignments/${MON}/2026-11-30`, 'assignments/2026-09-28/2026-12-28'].sort().join()) {
+    problems.push(`прежних кусков осталось: ${left.join(', ')} — ожидались этот понедельник и один самый свежий прежний`);
+  }
+}
+
+// --- weeks from an earlier piece --------------------------------------------------
+{
+  const r = (w, id) => ({ weekStartDate: w, id });
+  const last = { from: '2026-09-28', to: '2026-11-23', at: 100, rows: [r('2026-09-28', 'old'), r(MON, 'a'), r('2026-11-16', 'b')] };
+  const older = { from: '2026-09-21', to: '2026-11-16', at: 50, rows: [r(MON, 'z')] };
+  const same = { from: MON, to: '2026-11-30', at: 999, rows: [r(MON, 'own')] };
+  const got = rowsFromEarlierPiece([older, last, same], MON, '2026-11-30');
+  if (!got || got.at !== 100 || got.rows.map((x) => x.id).join() !== 'a,b' || got.coveredTo !== '2026-11-23') {
+    problems.push(`недели из прежнего куска: ${JSON.stringify(got)} — ожидался свежий прежний кусок, без прошедшей недели, конец 2026-11-23`);
+  }
+  if (rowsFromEarlierPiece([{ from: '2026-08-03', to: MON, at: 1, rows: [] }], MON, '2026-11-30') !== null) {
+    problems.push('недели из прежнего куска: взят кусок, который до этой недели не доходит');
+  }
+  // A newer SHORT piece («Главная», three weeks) must not cut an older long one short.
+  const short = { from: '2026-09-28', to: '2026-10-19', at: 200, rows: [r(MON, 'new5'), r('2026-10-12', 'new12')] };
+  const long = { from: '2026-09-28', to: '2026-11-23', at: 100, rows: [r(MON, 'old5'), r('2026-10-19', 'old19'), r('2026-11-16', 'old16')] };
+  const mix = rowsFromEarlierPiece([short, long], MON, '2026-11-30');
+  if (!mix || mix.rows.map((x) => x.id).join() !== 'new5,new12,old19,old16' || mix.at !== 100 || mix.coveredTo !== '2026-11-23') {
+    problems.push(`недели из прежних кусков: ${JSON.stringify(mix)} — ожидалось по неделе из самого свежего, время — самое старое из взятых, конец 2026-11-23`);
+  }
+  const span = rangeSpan(['field-service', 'range', '2026-09-28']);
+  if (!span || span.to !== '2026-10-19') problems.push(`три недели проповеди с Главной считаются до ${span?.to}, а не до 2026-10-19`);
+}
 
 // --- one's own card: who and which group, never the contacts ------------------
 const me = keptIdentity({
@@ -211,10 +259,37 @@ const conduct = read('app/(app)/schedule/conduct.tsx');
 if (!/throwOnError: \(error, query\) => !kept && failsScreen\(error, query\)/.test(conduct)) {
   problems.push('«Ведение встречи»: «Не удалось загрузить» и при сохранённой программе');
 }
-if (!/keptMeetingRows\(pieces, week, 'midweek'\)/.test(conduct)) problems.push('«Ведение встречи»: не берёт программу из сохранённого');
+if (!/keptMeetingRows\(keptPieces<Assignment>\('assignments', user\?\.id\), week, 'midweek'\)/.test(conduct)) problems.push('«Ведение встречи»: не берёт программу из сохранённого');
 if (!/keptMe\(user\?\.id\)/.test(conduct) || !/const myPublisherId = meQuery\.data\?\.publisher\?\.id \?\? keptMyId;/.test(conduct)) problems.push('«Ведение встречи»: без связи председатель не узнан — «вести может председатель этой недели»');
 if (/useAllPublishers/.test(conduct)) problems.push('«Ведение встречи»: имена из полного справочника — он не хранится и закрыт не-старейшинам');
 if (!/<KeptNotice/.test(conduct)) problems.push('«Ведение встречи»: не сказано, что показано сохранённое');
+
+// --- a new week does not wipe what is still ahead --------------------------------
+if (!/qc\.setQueryDefaults\(e\.key, \{ gcTime: Infinity \}\);\s*\n\s*qc\.setQueryData\(e\.key/.test(keep)) {
+  problems.push('lib/offline-keep.ts: возвращённое сохранённое живёт в памяти 5 минут — к залу его уже нет');
+}
+if (!/export function keptPieces/.test(keep) || !/current\.entries/.test(keep.slice(keep.indexOf('export function keptPieces')))) {
+  problems.push('lib/offline-keep.ts: прежние куски берутся не из сохранённого');
+}
+for (const [kind, re] of [
+  ['программа', /earlierPiece<Assignment>\("assignments", user\?\.id, mon0, programmeTo\)/],
+  ['проповедь', /earlierPiece<FieldServiceMeeting>\("field-service", user\?\.id, mon0, fieldTo\)/],
+]) {
+  if (!re.test(home)) problems.push(`«Главная»: ${kind} без сети не берётся из прежнего сохранённого куска`);
+}
+for (const kind of ['assignments', 'duties', 'cleaning', 'field-service']) {
+  if (!new RegExp(`earlierPiece<\\w+>\\("${kind}", user\\?\\.id, cur\\.from, cur\\.to\\)`).test(feed)) {
+    problems.push(`«Программа»: ${kind} без сети не берётся из прежнего сохранённого куска`);
+  }
+}
+if (!/\) : keptEnd \? \(\s*<KeptEnd/.test(feed)) {
+  problems.push('«Программа»: в конце сохранённого — «Дальше программы нет», хотя дальше просто не видно без связи');
+}
+const conn = read('components/ConnectionState.tsx');
+if (!/failed\.length === 0\s*\?\s*'updating'/.test(conn)) {
+  problems.push('строка о сохранённом: пока свой запрос ещё идёт, пишет «Нет связи» — на понедельник с хорошей связью это неправда');
+}
+if (!/const programmeEnd = keptLastWeek/.test(feed)) problems.push('«Программа»: лента рисует недели дальше сохранённого как пустые');
 
 if (problems.length) {
   console.error('✗ Сохранённое на устройстве:');

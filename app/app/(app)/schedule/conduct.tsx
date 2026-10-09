@@ -9,7 +9,7 @@ import {
   View,
   useWindowDimensions,
 } from 'react-native';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -21,7 +21,7 @@ import { buildMidweekRunOrder, RunSegment } from '../../../lib/run-order';
 import { partDisplay } from '../../../lib/part-display';
 import { failsScreen } from '../../../lib/screen-failure';
 import { keptMeetingRows } from '../../../lib/offline-keep-rules';
-import { keptMe } from '../../../lib/offline-keep';
+import { keptMe, keptPieces } from '../../../lib/offline-keep';
 import { KeptNotice } from '../../../components/ConnectionState';
 
 /**
@@ -91,18 +91,13 @@ export default function ConductScreen() {
   // WITH NO SIGNAL IN THE HALL (9 October 2026): the meeting's rows as kept on
   // the device with the programme of the coming weeks (lib/offline-keep.ts).
   // Read once, when the screen opens — they are what was there to begin with.
-  const queryClient = useQueryClient();
-  const kept = useMemo(() => {
-    if (!week) return null;
-    const pieces = queryClient
-      .getQueriesData<{ data: Assignment[] }>({ queryKey: ['assignments', 'range'] })
-      .filter(([, d]) => Array.isArray(d?.data))
-      .map(([key, d]) => ({
-        rows: d!.data,
-        at: queryClient.getQueryState(key)?.dataUpdatedAt ?? 0,
-      }));
-    return keptMeetingRows(pieces, week, 'midweek');
-  }, [queryClient, week]);
+  // Read from what is KEPT (not the query cache, which lets go of an answer
+  // nobody has looked at for five minutes) — every piece, this Monday's and
+  // the ones before it that still reach this week.
+  const kept = useMemo(
+    () => (week ? keptMeetingRows(keptPieces<Assignment>('assignments', user?.id), week, 'midweek') : null),
+    [week, user?.id],
+  );
 
   const assignmentsQuery = useQuery({
     // «Не удалось загрузить» only when nothing is kept for this meeting.
@@ -463,7 +458,7 @@ export default function ConductScreen() {
           queries={[
             {
               data: kept.rows,
-              isError: assignmentsQuery.isError,
+              isError: true,
               error: assignmentsQuery.error,
               dataUpdatedAt: kept.at,
             },

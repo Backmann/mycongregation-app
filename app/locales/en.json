@@ -4084,9 +4084,11 @@
     "today": "today",
     "keptOffline": "No connection · showing what arrived {{when}}. It may have changed since.",
     "keptFailed": "Could not refresh · showing what arrived {{when}}.",
+    "keptUpdating": "Showing what arrived {{when}} — updating…",
     "refresh": "Refresh",
     "loadFailed": "Could not load",
     "loadFailedOffline": "No connection to the server, and nothing is saved on this device. This is not «empty» — the data just did not arrive.",
-    "loadFailedOther": "The server answered with an error. This is not «empty» — the data just did not arrive."
+    "loadFailedOther": "The server answered with an error. This is not «empty» — the data just did not arrive.",
+    "keptEnd": "Beyond this, nothing can be seen without a connection — only this much is saved."
   }
 }
