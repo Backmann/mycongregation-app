@@ -2097,11 +2097,35 @@ export interface FieldServiceTemplateSlot {
   conductorRule?: ConductorRule;
 }
 
+/**
+ * One rule of the template, as the window writes it (October 2026): which
+ * occurrences (`ordinals`, and/or the last), whose meeting (`serviceGroupId`,
+ * null for everybody), where (`address`, or null for the group's own place)
+ * and who conducts. The server also still takes the old `{ordinal, …}`.
+ */
 export interface TemplateSlotInput {
-  ordinal: number;
+  ordinals: number[];
+  lastOnly?: boolean;
   dayOfWeek: number;
   startTime: string;
-  address: string;
+  address?: string | null;
+  serviceGroupId?: string | null;
+  conductorRule?: ConductorRule;
+}
+
+export type FieldServicePrepareLead = "2w" | "1m" | "2m";
+export type FieldServiceUnpublishedPolicy = "publish_7d" | "remind";
+
+/** The congregation's switches for preparing its months. */
+export interface FieldServiceSettings {
+  congregationId: string;
+  skipAssemblies: boolean;
+  coVisitFromSchedule: boolean;
+  autoPrepare: boolean;
+  prepareLead: FieldServicePrepareLead;
+  autoPickConductors: boolean;
+  unpublishedPolicy: FieldServiceUnpublishedPolicy;
+  updatedAt: string;
 }
 
 export type FieldServicePlannedStatus =
@@ -2162,6 +2186,23 @@ export const fieldServiceTemplateApi = {
     const { data } = await api.put<FieldServiceTemplateSlot[]>(
       "/field-service-template",
       { slots },
+    );
+    return data;
+  },
+  async getSettings(): Promise<FieldServiceSettings> {
+    const { data } = await api.get<FieldServiceSettings>(
+      "/field-service-template/settings",
+    );
+    return data;
+  },
+  async updateSettings(
+    input: Partial<
+      Omit<FieldServiceSettings, "congregationId" | "updatedAt">
+    >,
+  ): Promise<FieldServiceSettings> {
+    const { data } = await api.patch<FieldServiceSettings>(
+      "/field-service-template/settings",
+      input,
     );
     return data;
   },

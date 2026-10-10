@@ -1512,29 +1512,6 @@
       "placeholder": "e.g. Helping interested ones (optional)",
       "addLink": "add"
     },
-    "generate": {
-      "title": "Generate schedule",
-      "button": "Generate",
-      "startMonth": "Start month",
-      "monthsCount": "How many months",
-      "template": "Meeting template",
-      "hint": "Each rule is a recurring meeting: which Saturday of the month, when and where. Dates for the chosen months are computed automatically. Conductor and topic stay empty.",
-      "slot": "Rule {{n}}",
-      "ordinal": "Which one in the month",
-      "day": "Day",
-      "time": "Time",
-      "address": "Address",
-      "addSlot": "Add slot",
-      "saveTemplate": "Save template",
-      "saved": "Template saved",
-      "result": "Created {{created}}, already there {{skipped}}",
-      "resultPast": "Dates already past, not created: {{count}}",
-      "previewPast": "already past, not created",
-      "previewTitle": "Will be created",
-      "previewEmpty": "No matching dates — check the template",
-      "successTitle": "Meetings created",
-      "newShape": "The template is already in the new shape (group meetings, conductor rules). The window for it comes with the next update; it is not edited here so nothing is lost."
-    },
     "topicUsed": "Topic already used: {{date}}",
     "duplicate": "Duplicate meeting",
     "pdf": {
@@ -1644,6 +1621,140 @@
       "doneTitle": "Month prepared",
       "doneAll": "Draft: {{count}} meetings",
       "doneSome": "Draft: {{count}} meetings, without a conductor: {{left}}"
+    },
+    "template": {
+      "title": "Meeting template",
+      "rules": "Regular meetings",
+      "empty": "No rules yet — add the first meeting",
+      "add": "Add a meeting to the template",
+      "conductorLine": "Conductor: {{rule}}",
+      "groupBusyNote": "If the group already has a meeting that day (a visit, say), none is created",
+      "calendar": "Follow the calendar",
+      "skipAssemblies": "Assembly and convention — no meetings",
+      "coVisitWeek": "Circuit overseer's week — meetings from the visit schedule",
+      "coVisitWeekHint": "If there are none there yet, the week is skipped, not filled",
+      "autoOn": "on · prepare {{lead}}",
+      "autoOff": "off — you prepare the month yourself",
+      "saved": "Template saved",
+      "discardTitle": "Discard changes?",
+      "discardBody": "The rules you changed will be lost.",
+      "discard": "Discard",
+      "conductorRule": {
+        "group_overseer": "Group overseer, else the assistant",
+        "rotation": "In turn from the circle of conductors",
+        "none": "Do not pick"
+      },
+      "conductorRuleHint": {
+        "group_overseer": "whoever is set on the group's card",
+        "rotation": "who has not conducted longest, skipping the absent and those busy that day",
+        "none": "I assign myself"
+      },
+      "rule": {
+        "title": "Meeting in the template",
+        "weekday": "Weekday",
+        "which": "Which in the month",
+        "every": "Every",
+        "last": "Last",
+        "orListed": "or specific ones:",
+        "whose": "Whose",
+        "remove": "Remove",
+        "hintWhich": "Choose which days of the month",
+        "noGroupPlace": "The group has no meeting place recorded — give an address or write it on the group's card"
+      },
+      "auto": {
+        "title": "Automatically",
+        "notYet": "These settings are only stored for now: automatic preparation and publication come with the next update.",
+        "prepare": "Prepare the month itself",
+        "prepareHint": "by the template and the congregation's calendar, as a draft",
+        "when": "When to prepare",
+        "lead": {
+          "2w": "2 weeks ahead",
+          "1m": "a month ahead",
+          "2m": "2 months ahead"
+        },
+        "pick": "Pick conductors",
+        "pickHint": "as each meeting of the template says",
+        "unpublished": "If the draft is not published",
+        "policy": {
+          "publish_7d": "Publish itself 7 days before the month",
+          "remind": "Only remind"
+        },
+        "policyHint": {
+          "publish_7d": "meetings without a conductor too, marked “conductor to be assigned”",
+          "remind": "the month stays a draft until you publish"
+        },
+        "walkTitle": "How it goes for “{{month}}”",
+        "walk1": "The draft is ready. You get a task “Check {{month}}”",
+        "walk2": "You edit and tap “Publish” — when convenient",
+        "walk3": "Still a draft? A reminder: “publishes itself tomorrow”",
+        "walk3remind": "Still a draft? A reminder",
+        "walk4": "Publishes itself. Each conductor gets one message with his dates",
+        "walk5": "The month can be added to and changed as now: every change is seen at once, the conductor is notified",
+        "later": "after"
+      },
+      "phrase": {
+        "gender": {
+          "1": "m",
+          "2": "m",
+          "3": "m",
+          "4": "m",
+          "5": "m",
+          "6": "m",
+          "7": "m"
+        },
+        "every": {
+          "1": "Every Monday",
+          "2": "Every Tuesday",
+          "3": "Every Wednesday",
+          "4": "Every Thursday",
+          "5": "Every Friday",
+          "6": "Every Saturday",
+          "7": "Every Sunday"
+        },
+        "last": {
+          "1": "Last Monday",
+          "2": "Last Tuesday",
+          "3": "Last Wednesday",
+          "4": "Last Thursday",
+          "5": "Last Friday",
+          "6": "Last Saturday",
+          "7": "Last Sunday"
+        },
+        "nth": {
+          "1": "{{list}} Monday",
+          "2": "{{list}} Tuesday",
+          "3": "{{list}} Wednesday",
+          "4": "{{list}} Thursday",
+          "5": "{{list}} Friday",
+          "6": "{{list}} Saturday",
+          "7": "{{list}} Sunday"
+        },
+        "ordinal": {
+          "m": {
+            "1": "1st",
+            "2": "2nd",
+            "3": "3rd",
+            "4": "4th",
+            "5": "5th"
+          },
+          "f": {
+            "1": "1st",
+            "2": "2nd",
+            "3": "3rd",
+            "4": "4th",
+            "5": "5th"
+          },
+          "n": {
+            "1": "1st",
+            "2": "2nd",
+            "3": "3rd",
+            "4": "4th",
+            "5": "5th"
+          }
+        },
+        "lastWord": "last",
+        "and": "and"
+      }
     }
   },
   "cleaning": {

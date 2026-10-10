@@ -33,8 +33,8 @@ import { usePermissions } from '../../../lib/permissions';
 import { FieldNoteLine, useFieldListViewer } from '../../../components/FieldListBits';
 import { FieldServiceForm } from '../../../components/FieldServiceMeetingSheet';
 import { resolveHallAddress } from '../../../lib/hallAddress';
-import { FieldServiceGenerateModal } from '../../../components/FieldServiceGenerateModal';
 import { FieldServicePrepareSheet } from '../../../components/FieldServicePrepareSheet';
+import { FieldServiceTemplateSheet } from '../../../components/FieldServiceTemplateSheet';
 import { buildFieldServicePdfHtml } from '../../../lib/fieldServicePdf';
 import type { FsPdfMonth } from '../../../lib/fieldServicePdf';
 import { exportHtmlAsPdf } from '../../../lib/pdf';
@@ -1075,12 +1075,10 @@ export default function FieldServiceMeetingsScreen() {
         }
         onEditTemplate={() => setGenOpen(true)}
       />
-      {/* The rules themselves, until the new template window replaces this
-          (stage 3c): no month here, no «Сгенерировать». */}
-      <FieldServiceGenerateModal
+      <FieldServiceTemplateSheet
         visible={genOpen}
         onClose={() => setGenOpen(false)}
-        templateOnly
+        onPrepare={() => setPrepareOpen(true)}
       />
     </View>
   );

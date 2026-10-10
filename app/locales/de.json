@@ -1512,29 +1512,6 @@
       "placeholder": "z. B. Interessierten helfen (optional)",
       "addLink": "hinzufügen"
     },
-    "generate": {
-      "title": "Plan generieren",
-      "button": "Generieren",
-      "startMonth": "Startmonat",
-      "monthsCount": "Wie viele Monate",
-      "template": "Vorlage",
-      "hint": "Jede Regel ist eine wiederkehrende Zusammenkunft: welcher Samstag im Monat, wann und wo. Die Daten für die gewählten Monate werden automatisch berechnet. Leitung und Thema bleiben leer.",
-      "slot": "Regel {{n}}",
-      "ordinal": "Die wievielte im Monat",
-      "day": "Tag",
-      "time": "Zeit",
-      "address": "Adresse",
-      "addSlot": "Slot hinzufügen",
-      "saveTemplate": "Vorlage speichern",
-      "saved": "Vorlage gespeichert",
-      "result": "Erstellt {{created}}, schon vorhanden {{skipped}}",
-      "resultPast": "Bereits vergangene Daten nicht erstellt: {{count}}",
-      "previewPast": "schon vorbei, wird nicht erstellt",
-      "previewTitle": "Wird erstellt",
-      "previewEmpty": "Keine passenden Daten — Vorlage prüfen",
-      "successTitle": "Zusammenkünfte erstellt",
-      "newShape": "Die Vorlage ist bereits in der neuen Form beschrieben (Gruppen, Leiterregeln). Das Fenster dafür kommt mit dem nächsten Update; hier wird sie nicht geändert, damit nichts verloren geht."
-    },
     "topicUsed": "Thema schon verwendet: {{date}}",
     "duplicate": "Zusammenkunft duplizieren",
     "pdf": {
@@ -1644,6 +1621,140 @@
       "doneTitle": "Monat vorbereitet",
       "doneAll": "Entwurf: {{count}} Zusammenkünfte",
       "doneSome": "Entwurf: {{count}} Zusammenkünfte, ohne Leiter: {{left}}"
+    },
+    "template": {
+      "title": "Vorlage der Zusammenkünfte",
+      "rules": "Regelmäßige Zusammenkünfte",
+      "empty": "Noch keine Regeln – erste Zusammenkunft hinzufügen",
+      "add": "Zusammenkunft zur Vorlage hinzufügen",
+      "conductorLine": "Leiter: {{rule}}",
+      "groupBusyNote": "Hat die Gruppe an dem Tag schon eine Zusammenkunft (z. B. einen Besuch), wird keine angelegt",
+      "calendar": "Kalender berücksichtigen",
+      "skipAssemblies": "Kongress und Tagung – keine Zusammenkünfte",
+      "coVisitWeek": "Woche des Kreisaufseherbesuchs – Zusammenkünfte aus dem Besuchsplan",
+      "coVisitWeekHint": "Stehen dort noch keine, wird die Woche übersprungen, nicht gefüllt",
+      "autoOn": "ein · vorbereiten {{lead}}",
+      "autoOff": "aus – den Monat bereiten Sie selbst vor",
+      "saved": "Vorlage gespeichert",
+      "discardTitle": "Änderungen verwerfen?",
+      "discardBody": "Die geänderten Regeln gehen verloren.",
+      "discard": "Verwerfen",
+      "conductorRule": {
+        "group_overseer": "Gruppenaufseher, sonst Gehilfe",
+        "rotation": "Der Reihe nach aus dem Kreis der Leiter",
+        "none": "Nicht auswählen"
+      },
+      "conductorRuleHint": {
+        "group_overseer": "wer in der Gruppenkarte eingetragen ist",
+        "rotation": "wer am längsten nicht geleitet hat, ohne Abwesende und an dem Tag Belegte",
+        "none": "ich teile selbst zu"
+      },
+      "rule": {
+        "title": "Zusammenkunft in der Vorlage",
+        "weekday": "Wochentag",
+        "which": "Welche im Monat",
+        "every": "Jede",
+        "last": "Letzte",
+        "orListed": "oder einzelne:",
+        "whose": "Wessen",
+        "remove": "Entfernen",
+        "hintWhich": "Wählen Sie die Tage des Monats",
+        "noGroupPlace": "Für die Gruppe ist kein Treffpunkt eingetragen – Adresse angeben oder in der Gruppenkarte eintragen"
+      },
+      "auto": {
+        "title": "Automatisch",
+        "notYet": "Diese Einstellungen werden vorerst nur gespeichert: die automatische Vorbereitung und Veröffentlichung kommen mit dem nächsten Update.",
+        "prepare": "Monat selbst vorbereiten",
+        "prepareHint": "nach Vorlage und Versammlungskalender, als Entwurf",
+        "when": "Wann vorbereiten",
+        "lead": {
+          "2w": "2 Wochen vorher",
+          "1m": "einen Monat vorher",
+          "2m": "2 Monate vorher"
+        },
+        "pick": "Leiter auswählen",
+        "pickHint": "wie in jeder Zusammenkunft der Vorlage angegeben",
+        "unpublished": "Wenn der Entwurf nicht veröffentlicht ist",
+        "policy": {
+          "publish_7d": "7 Tage vor Monatsbeginn selbst veröffentlichen",
+          "remind": "Nur erinnern"
+        },
+        "policyHint": {
+          "publish_7d": "auch Zusammenkünfte ohne Leiter, mit dem Vermerk „Leiter wird noch zugeteilt“",
+          "remind": "der Monat bleibt Entwurf, bis Sie veröffentlichen"
+        },
+        "walkTitle": "So läuft es für den Monat „{{month}}“",
+        "walk1": "Entwurf fertig. Für Sie die Aufgabe „{{month}} prüfen“",
+        "walk2": "Sie ändern und tippen „Veröffentlichen“ – wann es passt",
+        "walk3": "Noch Entwurf? Erinnerung: „wird morgen selbst veröffentlicht“",
+        "walk3remind": "Noch Entwurf? Erinnerung",
+        "walk4": "Wird selbst veröffentlicht. Jeder Leiter erhält eine Nachricht mit seinen Terminen",
+        "walk5": "Der Monat kann wie bisher ergänzt und geändert werden: jede Änderung ist sofort sichtbar, der Leiter wird benachrichtigt",
+        "later": "danach"
+      },
+      "phrase": {
+        "gender": {
+          "1": "m",
+          "2": "m",
+          "3": "m",
+          "4": "m",
+          "5": "m",
+          "6": "m",
+          "7": "m"
+        },
+        "every": {
+          "1": "Jeden Montag",
+          "2": "Jeden Dienstag",
+          "3": "Jeden Mittwoch",
+          "4": "Jeden Donnerstag",
+          "5": "Jeden Freitag",
+          "6": "Jeden Samstag",
+          "7": "Jeden Sonntag"
+        },
+        "last": {
+          "1": "Letzter Montag",
+          "2": "Letzter Dienstag",
+          "3": "Letzter Mittwoch",
+          "4": "Letzter Donnerstag",
+          "5": "Letzter Freitag",
+          "6": "Letzter Samstag",
+          "7": "Letzter Sonntag"
+        },
+        "nth": {
+          "1": "{{list}} Montag",
+          "2": "{{list}} Dienstag",
+          "3": "{{list}} Mittwoch",
+          "4": "{{list}} Donnerstag",
+          "5": "{{list}} Freitag",
+          "6": "{{list}} Samstag",
+          "7": "{{list}} Sonntag"
+        },
+        "ordinal": {
+          "m": {
+            "1": "1.",
+            "2": "2.",
+            "3": "3.",
+            "4": "4.",
+            "5": "5."
+          },
+          "f": {
+            "1": "1.",
+            "2": "2.",
+            "3": "3.",
+            "4": "4.",
+            "5": "5."
+          },
+          "n": {
+            "1": "1.",
+            "2": "2.",
+            "3": "3.",
+            "4": "4.",
+            "5": "5."
+          }
+        },
+        "lastWord": "letzter",
+        "and": "und"
+      }
     }
   },
   "cleaning": {
