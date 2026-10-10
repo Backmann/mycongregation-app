@@ -1585,7 +1585,8 @@
       "publishedBody": "Meetings: {{count}} · messages: {{people}}",
       "filledTitle": "Conductors picked",
       "filledSome": "Assigned: {{count}}, nobody free: {{left}}",
-      "filledAll": "Assigned: {{count}}"
+      "filledAll": "Assigned: {{count}}",
+      "openFromTask": "Open the field service meetings"
     },
     "row": {
       "unassigned": "No conductor assigned",
@@ -1663,7 +1664,6 @@
       },
       "auto": {
         "title": "Automatically",
-        "notYet": "These settings are only stored for now: automatic preparation and publication come with the next update.",
         "prepare": "Prepare the month itself",
         "prepareHint": "by the template and the congregation's calendar, as a draft",
         "when": "When to prepare",
@@ -3583,7 +3583,8 @@
         "junAug": "June–August"
       },
       "service_overseer_visits": "Plan the visits to the groups",
-      "annual_report_sent": "Save the annual report as sent"
+      "annual_report_sent": "Save the annual report as sent",
+      "field_service_month": "Check the field service meetings"
     },
     "mine": {
       "title": "My tasks",

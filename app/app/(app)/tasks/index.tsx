@@ -199,6 +199,13 @@ export default function TasksScreen() {
   const titleOf = (task: ElderTask): string => {
     if (!task.kind) return task.title;
     const name = t(`tasks.calendar.${task.kind}`);
+    // «Проверить месяц» names its month: the period is «2026-11».
+    if (task.kind === "field_service_month" && task.kindPeriod) {
+      const m = dayjs(`${task.kindPeriod}-01`)
+        .locale(i18n.language)
+        .format("MMMM YYYY");
+      return `${name} · ${m}`;
+    }
     // Two audits can stand open at once, and «Проверка счетов» twice over says
     // nothing about which quarter is which. The period is part of the name.
     const quarter = quarterLabel(task.kindPeriod, t);
@@ -332,6 +339,18 @@ export default function TasksScreen() {
           >
             <Text style={styles.openScreen}>
               {t("serviceOverseer.openFromTask")}
+            </Text>
+          </Pressable>
+        ) : null}
+
+        {/* The draft month waits on its own page: check it, publish it. */}
+        {task.kind === "field_service_month" ? (
+          <Pressable
+            onPress={() => router.push("/cart/field-service" as never)}
+            hitSlop={6}
+          >
+            <Text style={styles.openScreen}>
+              {t("fieldService.draft.openFromTask")}
             </Text>
           </Pressable>
         ) : null}

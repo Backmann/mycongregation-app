@@ -1585,7 +1585,8 @@
       "publishedBody": "Zusammenkünfte: {{count}} · Nachrichten: {{people}}",
       "filledTitle": "Leiter ausgewählt",
       "filledSome": "Zugeteilt: {{count}}, niemand frei: {{left}}",
-      "filledAll": "Zugeteilt: {{count}}"
+      "filledAll": "Zugeteilt: {{count}}",
+      "openFromTask": "Zusammenkünfte für den Predigtdienst öffnen"
     },
     "row": {
       "unassigned": "Kein Leiter zugeteilt",
@@ -1663,7 +1664,6 @@
       },
       "auto": {
         "title": "Automatisch",
-        "notYet": "Diese Einstellungen werden vorerst nur gespeichert: die automatische Vorbereitung und Veröffentlichung kommen mit dem nächsten Update.",
         "prepare": "Monat selbst vorbereiten",
         "prepareHint": "nach Vorlage und Versammlungskalender, als Entwurf",
         "when": "Wann vorbereiten",
@@ -3583,7 +3583,8 @@
         "junAug": "Juni–August"
       },
       "service_overseer_visits": "Besuche der Gruppen planen",
-      "annual_report_sent": "Gesendeten Jahresbericht speichern"
+      "annual_report_sent": "Gesendeten Jahresbericht speichern",
+      "field_service_month": "Zusammenkünfte für den Predigtdienst prüfen"
     },
     "mine": {
       "title": "Meine Aufgaben",

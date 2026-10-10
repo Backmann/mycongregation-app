@@ -95,9 +95,6 @@ export function FieldServiceAutoSheet({
         </View>
       }
     >
-      <View style={styles.notYet}>
-        <Text style={styles.notYetText}>{t('fieldService.template.auto.notYet')}</Text>
-      </View>
 
       <View style={styles.toggleRow}>
         <View style={{ flex: 1 }}>
@@ -170,8 +167,6 @@ function WalkRow({ when, text }: { when: string; text: string }) {
 }
 
 const styles = StyleSheet.create({
-  notYet: { marginTop: 12, backgroundColor: '#fffbeb', borderRadius: 12, padding: 12 },
-  notYetText: { fontSize: 13.5, color: '#92400e', fontFamily: 'Manrope_500Medium' },
   label: { fontSize: 13, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#64748b', marginTop: 16, marginBottom: 8 },
   toggleRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 16 },
   toggleLabel: { fontSize: 15, fontWeight: '600', color: '#0f172a', fontFamily: 'Manrope_600SemiBold' },

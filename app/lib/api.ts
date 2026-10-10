@@ -5396,6 +5396,7 @@ export interface ElderTask {
     | "service_year_review"
     | "service_overseer_visits"
     | "annual_report_sent"
+    | "field_service_month"
     | null;
   /** Which turn of it — «2026-Q3», «2026». Two audits a year need telling apart. */
   kindPeriod: string | null;
