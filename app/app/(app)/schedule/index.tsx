@@ -503,7 +503,25 @@ export default function ProgrammeFeedScreen() {
   // programme is out» led to a feed that stopped short of it — the week sat
   // only in «Впереди», with nothing to open. The old screen had the same trap
   // and drew the block anyway; so does the feed now, for the week sent to.
-  const endWeek = targetWeek && targetWeek > programmeEnd ? targetWeek : programmeEnd;
+  // UNDER «ПРОПОВЕДЬ» THE FEED RUNS TO THE LAST MEETING PLANNED (stage 4,
+  // October 2026), not to the last workbook: a month prepared two months
+  // ahead is out before its workbook is, and the feed used to stop short of
+  // it with «Дальше программы нет» — untrue for this filter. The loaded
+  // pieces hold the meetings already; only the last week drawn moves.
+  const lastFieldWeek = allField.reduce<string | null>(
+    (m, f) => (!m || f.weekStartDate > m ? f.weekStartDate : m),
+    null,
+  );
+  const fieldOnly = filter === "field";
+  const endWeek = [
+    programmeEnd,
+    targetWeek ?? "",
+    fieldOnly && lastFieldWeek ? minISO(lastFieldWeek, lastSpanWeek) : "",
+  ].reduce(maxISO);
+  // The meetings end where the last loaded piece holds none: one more piece
+  // is offered while the latest one still has meetings in it.
+  const fieldReachedEnd =
+    lastLoaded && !!fieldQs[fieldQs.length - 1]?.data && !allField.some((f) => f.weekStartDate >= lastSpan.from);
 
   // Every dated thing the weeks hold, in date order.
   const items: Item[] = [];
@@ -678,8 +696,10 @@ export default function ProgrammeFeedScreen() {
   // it holds (from the week rules, so known before anything is fetched).
   const pastMonths = [...new Set(pastAll.map((x) => x.date.slice(0, 7)))].sort();
   const nextPastMonth = [...pastMonths].reverse().find((m) => !pastFrom || m < pastFrom) ?? null;
+  // «N встреч» counts the congregation's meetings — or, under «Проповедь»,
+  // the field-service days: before, that button promised «0 встреч» there.
   const nextPastCount = nextPastMonth
-    ? pastAll.filter((x) => x.date.slice(0, 7) === nextPastMonth && x.type !== "field").length
+    ? pastAll.filter((x) => x.date.slice(0, 7) === nextPastMonth && (x.type === "field") === fieldOnly).length
     : 0;
   // The nearest meeting opens by itself — readable without a tap. Sent to a
   // week, it is that week's meeting: the one named, else its first.
@@ -957,11 +977,11 @@ export default function ProgrammeFeedScreen() {
       />
     ) : keptEnd ? (
       <KeptEnd onRetry={retryFeed} />
-    ) : reachedEnd ? (
+    ) : (fieldOnly ? fieldReachedEnd : reachedEnd) ? (
       <>
         <View style={styles.end}>
-          <Text style={styles.endTitle}>{t("feed.end")}</Text>
-          {lastProgrammeWeek ? (
+          <Text style={styles.endTitle}>{t(fieldOnly ? "feed.endField" : "feed.end")}</Text>
+          {lastProgrammeWeek && !fieldOnly ? (
             <Text style={styles.endNote}>
               {t("feed.endLoadedTo", {
                 date: atMidnight(formatDateISO(addDays(atMidnight(lastProgrammeWeek), 6))).toLocaleDateString(lang, {
@@ -1353,6 +1373,7 @@ function Row({
   title,
   time,
   line,
+  lines,
   mine,
   status,
   tag,
@@ -1370,6 +1391,8 @@ function Row({
   title: string;
   time?: string | null;
   line?: string | null;
+  /** Several lines under the title, one each — a field-service day's meetings. */
+  lines?: string[];
   /** What is yours in it — shown with a «Вы» mark. */
   mine?: string | null;
   status?: { color: string; text: string } | null;
@@ -1400,6 +1423,11 @@ function Row({
           {title}
         </Text>
         {line ? <Text style={styles.line}>{line}</Text> : null}
+        {lines?.map((l, i) => (
+          <Text key={i} style={styles.line}>
+            {l}
+          </Text>
+        ))}
         {mine ? (
           <View style={styles.mineRow}>
             {/* The sign of «yours», not the word «Вы» (26 September): the list
@@ -1913,23 +1941,56 @@ function FieldDay({
   const mineAt = item.meetings.find((m) => !!me && m.conductorPublisherId === me);
   const helpingAt = mineAt ? undefined : day.shown.find((p) => p.mine)?.meeting;
   const ownVisit = day.shown.find((p) => p.audience === "visit" && p.own);
-  const title = ownVisit
-    ? t("feed.fieldVisitTitle")
-    : item.meetings.length > 1
-      ? t("feed.fieldService")
-      : t("feed.fieldServiceOne");
-  const line = ownVisit
-    ? t("feed.fieldVisitLine", { time: ownVisit.meeting.startTime, group: group(ownVisit.meeting) })
-    : [
-        ...day.shown.map((p) => `${p.meeting.startTime} ${labelOf(p)}`),
-        ...(day.others.length ? [t("feed.fieldOthers", { count: day.others.length })] : []),
-      ].join(" · ");
+  // THE ROW READS WITHOUT A TAP (stage 4, October 2026). It used to say
+  // «Встреча для проповеди» under a chip that already said «Проповедь», and
+  // the one thing people open it for — which meeting, and who conducts —
+  // sat inside. Now the title is the meeting itself (the one the person
+  // conducts first: a conductor from the visited group leads the combined
+  // meeting, not the visit), and each meeting gets its own line with its
+  // conductor, as the planner's list has them.
+  const lead = mineAt ? day.shown.find((p) => p.meeting.id === mineAt.id) : undefined;
+  const title = lead
+    ? labelOf(lead)
+    : ownVisit
+      ? t("feed.fieldVisitTitle")
+      : day.shown.length === 1 && !day.others.length
+        ? labelOf(day.shown[0])
+        : t("feed.fieldService");
+  // «Встреча по группам» is each group on its own: nobody conducts it as a
+  // whole, so no conductor there is not a gap to announce.
+  const conductorOf = (p: FieldPlace): string | null => {
+    const id = p.meeting.conductorPublisherId;
+    if (!id) return p.audience === "open" ? null : t("feed.fieldNoConductor");
+    return t("feed.fieldLedBy", { name: nameOf.get(id) ?? "" });
+  };
+  const lineOfPlace = (p: FieldPlace) =>
+    [p.meeting.startTime, labelOf(p), conductorOf(p)].filter(Boolean).join(" · ");
+  const lines =
+    ownVisit && !lead
+      ? // The group goes to the visit and nowhere else that day: the other
+        // meetings wait inside, each saying so.
+        [
+          [t("feed.fieldVisitLine", { time: ownVisit.meeting.startTime, group: group(ownVisit.meeting) }), conductorOf(ownVisit)]
+            .filter(Boolean)
+            .join(" · "),
+        ]
+      : [
+          // One meeting: the title names it, the line says who leads it. The
+          // one the person conducts is the title, and «ведёте в …» below.
+          ...(day.shown.length === 1 && !day.others.length
+            ? lead
+              ? []
+              : [conductorOf(day.shown[0])].filter((x): x is string => !!x)
+            : day.shown.filter((p) => p !== lead).map(lineOfPlace)),
+          ...(day.others.length ? [t("feed.fieldOthers", { count: day.others.length })] : []),
+        ];
   const mine = mineAt
     ? t("feed.youLeadShort", { time: mineAt.startTime })
     : helpingAt
       ? t("feed.youGoShort", { time: helpingAt.startTime })
       : null;
   const firstTime = (day.shown[0] ?? day.others[0])?.meeting.startTime ?? null;
+  const line = lines.join(" · ");
 
   const lineOf = (p: FieldPlace) => {
     const m = p.meeting;
@@ -1981,7 +2042,7 @@ function FieldDay({
           icon={ownVisit ? "walk-outline" : KIND.field.icon}
           title={title}
           time={firstTime}
-          line={line}
+          lines={lines}
           mine={mine}
           color={KIND.field.color}
           past={past}
