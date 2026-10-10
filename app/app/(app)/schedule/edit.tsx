@@ -356,9 +356,21 @@ function ProgrammeEditor() {
   // lives in «Meeting duties».
   const { duties, activityById } = useDutiesWeek(weekStartISO, nextWeekISO);
 
+  // The planners see the week's drafts here too (marked «черновик»), so a
+  // Saturday prepared on the month page is not added a second time from
+  // this editor. Everybody else reads the announced schedule, under its own
+  // key, so the two never share a cache entry.
   const fieldServiceQuery = useQuery({
-    queryKey: ["field-service", weekStartISO],
-    queryFn: () => fieldServiceApi.list({ weekStart: weekStartISO }),
+    queryKey: [
+      "field-service",
+      weekStartISO,
+      canEditFieldServiceMeetings ? "drafts" : "public",
+    ],
+    queryFn: () =>
+      fieldServiceApi.list({
+        weekStart: weekStartISO,
+        drafts: canEditFieldServiceMeetings,
+      }),
     placeholderData: keepPreviousData,
   });
   const fieldServiceMeetings = fieldServiceQuery.data ?? [];

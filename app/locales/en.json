@@ -1474,27 +1474,21 @@
     "addEntry": "Add a meeting",
     "conductor": "Conductor",
     "unassigned": "unassigned",
-    "addressLabel": "Address",
     "timeLabel": "Time",
-    "dayLabel": "Day",
     "topicLabel": "Topic",
     "linkLabel": "Link",
     "openLink": "Open source",
     "form": {
       "addTitle": "New meeting",
-      "editTitle": "Edit meeting",
       "save": "Save",
       "addressPlaceholder": "Where to meet",
       "topicPlaceholder": "Topic or note (optional)",
       "linkPlaceholder": "https://…",
-      "dateLabel": "Date",
-      "hintRecord": "This meeting has already taken place and can no longer be changed",
       "hintPastDay": "That day has already passed — pick another",
       "hintDate": "Pick a date",
       "hintTime": "Set a time",
       "hintAddress": "Enter an address",
       "eventWarn": "On this day: {{title}}",
-      "suggest": "Suggest a conductor",
       "notifyConductor": "Notify the conductor",
       "notifyConductorHint": "Push to the brother when assigned or removed"
     },
@@ -1507,8 +1501,6 @@
       "6": "Sat",
       "7": "Sun"
     },
-    "isGeneral": "Combined field-service meeting",
-    "isGeneralHint": "Meeting for the whole congregation",
     "generalBadge": "Combined",
     "hubSubtitle": "Field-service meeting schedule",
     "emptyMonth": "No meetings this month",
@@ -1517,7 +1509,8 @@
     "monthTheme": {
       "add": "Month theme",
       "title": "Month theme",
-      "placeholder": "e.g. Helping interested ones (optional)"
+      "placeholder": "e.g. Helping interested ones (optional)",
+      "addLink": "add"
     },
     "generate": {
       "title": "Generate schedule",
@@ -1541,18 +1534,9 @@
       "previewEmpty": "No matching dates — check the template",
       "successTitle": "Meetings created"
     },
-    "stat": {
-      "never": "Has not led yet",
-      "next": "Already booked for {{date}}",
-      "firstTime": "not led yet",
-      "led": "Led {{count}} · last {{date}}",
-      "ledOnly": "Led {{count}}"
-    },
-    "doubleWeek": "Already leads a meeting this week",
     "topicUsed": "Topic already used: {{date}}",
     "duplicate": "Duplicate meeting",
     "pdf": {
-      "button": "PDF",
       "title": "Field service meetings",
       "startMonth": "Start month",
       "monthsCount": "Number of months",
@@ -1566,8 +1550,6 @@
     },
     "fromCoVisit": "From the circuit overseer's visit schedule",
     "fromCoVisitHint": "Edited in the visit schedule",
-    "groupLabel": "Group",
-    "groupNone": "No group",
     "overseerVisit": "Service overseer's visit",
     "overseerVisitHint": "He conducts this meeting and goes out in the ministry with the group",
     "visitSameDay": "On this day group {{group}} goes to the visit only. The other meetings ({{times}}) are for everyone else.",
@@ -1577,7 +1559,66 @@
     "overseerVisitBadge": "Service overseer's visit",
     "overseerVisitBadgeShort": "Service overseer",
     "whoConducts": "Who conducts the meeting",
-    "fillAssistant": "Fill in"
+    "fillAssistant": "Fill in",
+    "why": {
+      "neverLed": "has never conducted",
+      "lastLed": "last conducted {{date}}",
+      "groupOverseer": "group overseer",
+      "groupAssistant": "group overseer's assistant",
+      "leadsThatDay": "already conducts that day",
+      "absent": "away that day",
+      "upcoming": "already assigned on {{date}}"
+    },
+    "sheet": {
+      "groupVisit": "Group {{group}} · service overseer's visit",
+      "group": "Group {{group}}",
+      "recordNote": "The meeting has taken place. It can no longer be changed or deleted — like a past programme.",
+      "where": "Where",
+      "led": "Conducted by",
+      "noTopic": "no topic",
+      "sameOnAnotherDate": "Create the same on another date",
+      "whose": "Whose meeting",
+      "general": "General",
+      "when": "When",
+      "otherDate": "Another date",
+      "groupPlace": "Group's place",
+      "otherAddress": "Another address",
+      "whoLeads": "Who conducts",
+      "pickDayFirst": "Pick the day first",
+      "listFailed": "Could not get the list — pick a brother below",
+      "allBrothers": "All brothers",
+      "addMaterial": "Topic and material"
+    },
+    "draft": {
+      "badge": "draft",
+      "toldOnPublish": "This is a draft: the conductors learn their dates when the month is published.",
+      "chip": "draft",
+      "title": "{{month}} — draft",
+      "count_one": "{{count}} meeting in the draft",
+      "count_other": "{{count}} meetings in the draft",
+      "noConductor_one": "{{count}} without a conductor",
+      "noConductor_other": "{{count}} without a conductor",
+      "hint": "Publishers will see the month once it is published. Each conductor gets one message with all his dates.",
+      "fill": "Pick conductors",
+      "publish": "Publish",
+      "publishConfirm": "Publish {{month}}? Meetings: {{count}}. Publishers will see them; each conductor gets one message with his dates.",
+      "publishedTitle": "Month published",
+      "publishedBody": "Meetings: {{count}} · messages: {{people}}",
+      "filledTitle": "Conductors picked",
+      "filledSome": "Assigned: {{count}}, nobody free: {{left}}",
+      "filledAll": "Assigned: {{count}}"
+    },
+    "row": {
+      "unassigned": "No conductor assigned",
+      "leads": "Conducted by {{name}}",
+      "withOverseer": "service overseer {{name}}",
+      "withAssistant": "assistant {{name}}",
+      "count_one": "{{count}} meeting",
+      "count_other": "{{count}} meetings",
+      "coVisit": "From the circuit overseer visit schedule",
+      "group": "Group {{group}}",
+      "visitBadge": "SO visit"
+    }
   },
   "cleaning": {
     "title": "Cleaning",

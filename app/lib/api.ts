@@ -1897,8 +1897,20 @@ export interface FieldServiceMeeting {
   serviceOverseerVisit: boolean;
   serviceOverseerPublisherId: string | null;
   serviceOverseerAssistantId: string | null;
+  /**
+   * When the congregation was told. Null is a DRAFT — a month prepared and
+   * not yet announced; the server gives drafts only to those who may plan,
+   * and only when asked (`drafts: true`). Absent from a server older than
+   * October 2026: treated as announced.
+   */
+  publishedAt?: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+/** A draft, or announced. An old server never sends the field. */
+export function isFieldServiceDraft(m: FieldServiceMeeting): boolean {
+  return m.publishedAt === null;
 }
 
 export interface CreateFieldServiceMeetingInput {
@@ -1916,20 +1928,77 @@ export interface CreateFieldServiceMeetingInput {
   serviceOverseerAssistantId?: string | null;
   /** When false, the conductor is not push-notified about this change. */
   notifyConductor?: boolean;
+  /** Part of a month still being prepared: seen by the planners, told to
+   * nobody until the month is published. */
+  draft?: boolean;
 }
 
 export type UpdateFieldServiceMeetingInput = Partial<
-  Omit<CreateFieldServiceMeetingInput, "weekStartDate">
+  Omit<CreateFieldServiceMeetingInput, "weekStartDate" | "draft">
 >;
+
+/** Why a brother stands where he stands in the «Кто ведёт» list. */
+export type ConductorReason =
+  | "never_led"
+  | "last_led"
+  | "upcoming"
+  | "group_overseer"
+  | "group_assistant"
+  | "leads_that_day"
+  | "absent";
+
+export interface ConductorCandidate {
+  publisherId: string;
+  name: string;
+  reason: ConductorReason;
+  lastDate: string | null;
+  /** Free to be picked; the others are shown so the planner may overrule. */
+  free: boolean;
+}
+
+export type ConductorRule = "group_overseer" | "rotation" | "none";
 
 export const fieldServiceApi = {
   async list(
-    /** `weekEnd` is EXCLUSIVE; given with weekStart it reads as a span. */
-    params: { weekStart?: string; weekEnd?: string } = {},
+    /**
+     * `weekEnd` is EXCLUSIVE; given with weekStart it reads as a span.
+     * `drafts` asks for the month being prepared as well — honoured by the
+     * server only for a planner; everybody else gets the announced schedule.
+     */
+    params: { weekStart?: string; weekEnd?: string; drafts?: boolean } = {},
   ): Promise<FieldServiceMeeting[]> {
+    const { drafts, ...rest } = params;
     const { data } = await api.get<FieldServiceMeeting[]>(
       "/field-service-meetings",
-      { params },
+      { params: drafts ? { ...rest, drafts: "1" } : rest },
+    );
+    return data;
+  },
+  /** Announce a month: its drafts become meetings, each person told once. */
+  async publish(input: {
+    year: number;
+    month: number;
+  }): Promise<{ published: number; notified: number }> {
+    const { data } = await api.post<{ published: number; notified: number }>(
+      "/field-service-meetings/publish",
+      input,
+    );
+    return data;
+  },
+  /** Who could conduct on a day, best first, each with his reason. */
+  async suggestConductor(params: {
+    date: string;
+    serviceGroupId?: string | null;
+    conductorRule?: ConductorRule;
+    excludeMeetingId?: string | null;
+  }): Promise<ConductorCandidate[]> {
+    const q: Record<string, string> = { date: params.date };
+    if (params.serviceGroupId) q.serviceGroupId = params.serviceGroupId;
+    if (params.conductorRule) q.conductorRule = params.conductorRule;
+    if (params.excludeMeetingId) q.excludeMeetingId = params.excludeMeetingId;
+    const { data } = await api.get<ConductorCandidate[]>(
+      "/field-service-meetings/suggest-conductor",
+      { params: q },
     );
     return data;
   },

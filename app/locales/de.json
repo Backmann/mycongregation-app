@@ -1474,27 +1474,21 @@
     "addEntry": "Treffen hinzufügen",
     "conductor": "Leitung",
     "unassigned": "nicht zugeteilt",
-    "addressLabel": "Adresse",
     "timeLabel": "Zeit",
-    "dayLabel": "Tag",
     "topicLabel": "Thema",
     "linkLabel": "Link",
     "openLink": "Quelle öffnen",
     "form": {
       "addTitle": "Neues Treffen",
-      "editTitle": "Treffen bearbeiten",
       "save": "Speichern",
       "addressPlaceholder": "Treffpunkt",
       "topicPlaceholder": "Thema oder Hinweis (optional)",
       "linkPlaceholder": "https://…",
-      "dateLabel": "Datum",
-      "hintRecord": "Diese Zusammenkunft hat bereits stattgefunden und kann nicht mehr geändert werden",
       "hintPastDay": "Dieser Tag ist bereits vorbei — wähle einen anderen",
       "hintDate": "Datum wählen",
       "hintTime": "Uhrzeit angeben",
       "hintAddress": "Adresse angeben",
       "eventWarn": "An diesem Tag: {{title}}",
-      "suggest": "Leiter vorschlagen",
       "notifyConductor": "Leiter benachrichtigen",
       "notifyConductorHint": "Push an den Bruder bei Ein- oder Austeilung"
     },
@@ -1507,8 +1501,6 @@
       "6": "Sa",
       "7": "So"
     },
-    "isGeneral": "Gemeinsame Zusammenkunft für den Predigtdienst",
-    "isGeneralHint": "Zusammenkunft für die ganze Versammlung",
     "generalBadge": "Gemeinsam",
     "hubSubtitle": "Plan der Zusammenkünfte für den Predigtdienst",
     "emptyMonth": "Keine Zusammenkünfte in diesem Monat",
@@ -1517,7 +1509,8 @@
     "monthTheme": {
       "add": "Monatsthema",
       "title": "Monatsthema",
-      "placeholder": "z. B. Interessierten helfen (optional)"
+      "placeholder": "z. B. Interessierten helfen (optional)",
+      "addLink": "hinzufügen"
     },
     "generate": {
       "title": "Plan generieren",
@@ -1541,18 +1534,9 @@
       "previewEmpty": "Keine passenden Daten — Vorlage prüfen",
       "successTitle": "Zusammenkünfte erstellt"
     },
-    "stat": {
-      "never": "Noch nicht geleitet",
-      "next": "Bereits eingeteilt für {{date}}",
-      "firstTime": "noch nicht geleitet",
-      "led": "Geleitet {{count}} · zuletzt {{date}}",
-      "ledOnly": "Geleitet {{count}}"
-    },
-    "doubleWeek": "Leitet bereits eine Zusammenkunft diese Woche",
     "topicUsed": "Thema schon verwendet: {{date}}",
     "duplicate": "Zusammenkunft duplizieren",
     "pdf": {
-      "button": "PDF",
       "title": "Zusammenkünfte für den Predigtdienst",
       "startMonth": "Startmonat",
       "monthsCount": "Anzahl der Monate",
@@ -1566,8 +1550,6 @@
     },
     "fromCoVisit": "Aus dem Besuchsplan des Kreisaufsehers",
     "fromCoVisitHint": "Wird im Besuchsplan bearbeitet",
-    "groupLabel": "Gruppe",
-    "groupNone": "Ohne Gruppe",
     "overseerVisit": "Besuch des Dienstaufsehers",
     "overseerVisitHint": "Er leitet diese Zusammenkunft und geht mit der Gruppe in den Dienst",
     "visitSameDay": "Die Gruppe {{group}} geht an diesem Tag nur zum Besuch. Die anderen Zusammenkünfte ({{times}}) sind für alle anderen.",
@@ -1577,7 +1559,66 @@
     "overseerVisitBadge": "Besuch des Dienstaufsehers",
     "overseerVisitBadgeShort": "Dienstaufseher",
     "whoConducts": "Wer die Zusammenkunft leitet",
-    "fillAssistant": "Einsetzen"
+    "fillAssistant": "Einsetzen",
+    "why": {
+      "neverLed": "hat noch nie geleitet",
+      "lastLed": "zuletzt am {{date}}",
+      "groupOverseer": "Gruppenaufseher",
+      "groupAssistant": "Gehilfe des Gruppenaufsehers",
+      "leadsThatDay": "leitet an diesem Tag bereits",
+      "absent": "an diesem Tag abwesend",
+      "upcoming": "bereits eingeteilt am {{date}}"
+    },
+    "sheet": {
+      "groupVisit": "Gruppe {{group}} · Besuch des Dienstaufsehers",
+      "group": "Gruppe {{group}}",
+      "recordNote": "Die Zusammenkunft ist vorbei. Sie kann nicht mehr geändert oder gelöscht werden – wie ein vergangenes Programm.",
+      "where": "Wo",
+      "led": "Geleitet",
+      "noTopic": "kein Thema",
+      "sameOnAnotherDate": "Gleiche an einem anderen Tag anlegen",
+      "whose": "Wessen Zusammenkunft",
+      "general": "Gemeinsame",
+      "when": "Wann",
+      "otherDate": "Anderer Tag",
+      "groupPlace": "Treffpunkt der Gruppe",
+      "otherAddress": "Andere Adresse",
+      "whoLeads": "Wer leitet",
+      "pickDayFirst": "Zuerst den Tag wählen",
+      "listFailed": "Liste nicht erhalten – unten einen Bruder wählen",
+      "allBrothers": "Alle Brüder",
+      "addMaterial": "Thema und Material"
+    },
+    "draft": {
+      "badge": "Entwurf",
+      "toldOnPublish": "Das ist ein Entwurf: die Leiter erfahren ihre Termine bei der Veröffentlichung des Monats.",
+      "chip": "Entwurf",
+      "title": "{{month}} – Entwurf",
+      "count_one": "{{count}} Zusammenkunft im Entwurf",
+      "count_other": "{{count}} Zusammenkünfte im Entwurf",
+      "noConductor_one": "{{count}} ohne Leiter",
+      "noConductor_other": "{{count}} ohne Leiter",
+      "hint": "Die Verkündiger sehen den Monat nach der Veröffentlichung. Jeder Leiter erhält eine Nachricht mit allen seinen Terminen.",
+      "fill": "Leiter auswählen",
+      "publish": "Veröffentlichen",
+      "publishConfirm": "{{month}} veröffentlichen? Zusammenkünfte: {{count}}. Die Verkündiger sehen sie, jeder Leiter erhält eine Nachricht mit seinen Terminen.",
+      "publishedTitle": "Monat veröffentlicht",
+      "publishedBody": "Zusammenkünfte: {{count}} · Nachrichten: {{people}}",
+      "filledTitle": "Leiter ausgewählt",
+      "filledSome": "Zugeteilt: {{count}}, niemand frei: {{left}}",
+      "filledAll": "Zugeteilt: {{count}}"
+    },
+    "row": {
+      "unassigned": "Kein Leiter zugeteilt",
+      "leads": "Leitet {{name}}",
+      "withOverseer": "Dienstaufseher {{name}}",
+      "withAssistant": "Gehilfe {{name}}",
+      "count_one": "{{count}} Zusammenkunft",
+      "count_other": "{{count}} Zusammenkünfte",
+      "coVisit": "Aus dem Plan des Kreisaufseherbesuchs",
+      "group": "Gruppe {{group}}",
+      "visitBadge": "Besuch"
+    }
   },
   "cleaning": {
     "title": "Reinigung",
