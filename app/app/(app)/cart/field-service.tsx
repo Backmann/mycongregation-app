@@ -34,6 +34,7 @@ import { FieldNoteLine, useFieldListViewer } from '../../../components/FieldList
 import { FieldServiceForm } from '../../../components/FieldServiceMeetingSheet';
 import { resolveHallAddress } from '../../../lib/hallAddress';
 import { FieldServiceGenerateModal } from '../../../components/FieldServiceGenerateModal';
+import { FieldServicePrepareSheet } from '../../../components/FieldServicePrepareSheet';
 import { buildFieldServicePdfHtml } from '../../../lib/fieldServicePdf';
 import type { FsPdfMonth } from '../../../lib/fieldServicePdf';
 import { exportHtmlAsPdf } from '../../../lib/pdf';
@@ -228,6 +229,7 @@ export default function FieldServiceMeetingsScreen() {
     | undefined
   >();
   const [genOpen, setGenOpen] = useState(false);
+  const [prepareOpen, setPrepareOpen] = useState(false);
 
   // The printed sheet: a button in the header, where the mockup put it, so
   // the row under the month strip is left to what is done to the plan.
@@ -670,11 +672,11 @@ export default function FieldServiceMeetingsScreen() {
         {canEdit && (
           <Pressable
             style={styles.planBtn}
-            onPress={() => setGenOpen(true)}
-            accessibilityLabel={t('fieldService.generate.button')}
+            onPress={() => setPrepareOpen(true)}
+            accessibilityLabel={t('fieldService.prepare.button')}
           >
-            <Ionicons name="sparkles-outline" size={16} color="#0369a1" />
-            <Text style={styles.planBtnText}>{t('fieldService.generate.button')}</Text>
+            <Ionicons name="add" size={16} color="#0369a1" />
+            <Text style={styles.planBtnText}>{t('fieldService.prepare.button')}</Text>
           </Pressable>
         )}
       </View>
@@ -1061,9 +1063,24 @@ export default function FieldServiceMeetingsScreen() {
         </View>
       </Dialog>
 
+      <FieldServicePrepareSheet
+        visible={prepareOpen}
+        onClose={() => setPrepareOpen(false)}
+        // The month after the one on screen when that one is already
+        // being lived; the overseer prepares ahead, not behind.
+        initialMonthKey={
+          activeMonthKey <= currentMonthKey
+            ? dayjs(`${currentMonthKey}-01`).add(1, 'month').format('YYYY-MM')
+            : activeMonthKey
+        }
+        onEditTemplate={() => setGenOpen(true)}
+      />
+      {/* The rules themselves, until the new template window replaces this
+          (stage 3c): no month here, no «Сгенерировать». */}
       <FieldServiceGenerateModal
         visible={genOpen}
         onClose={() => setGenOpen(false)}
+        templateOnly
       />
     </View>
   );

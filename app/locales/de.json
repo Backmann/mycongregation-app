@@ -1532,7 +1532,8 @@
       "previewPast": "schon vorbei, wird nicht erstellt",
       "previewTitle": "Wird erstellt",
       "previewEmpty": "Keine passenden Daten — Vorlage prüfen",
-      "successTitle": "Zusammenkünfte erstellt"
+      "successTitle": "Zusammenkünfte erstellt",
+      "newShape": "Die Vorlage ist bereits in der neuen Form beschrieben (Gruppen, Leiterregeln). Das Fenster dafür kommt mit dem nächsten Update; hier wird sie nicht geändert, damit nichts verloren geht."
     },
     "topicUsed": "Thema schon verwendet: {{date}}",
     "duplicate": "Zusammenkunft duplizieren",
@@ -1620,6 +1621,29 @@
       "group": "Gruppe {{group}}",
       "visitBadge": "Besuch des Dienstaufsehers",
       "byGroups": "Zusammenkunft nach Gruppen"
+    },
+    "prepare": {
+      "title": "Monat vorbereiten",
+      "button": "Monat vorbereiten",
+      "hint": "So wird es — nach Vorlage und Versammlungskalender",
+      "draftNote": "Neue Zusammenkünfte sind ein Entwurf: die Verkündiger sehen sie und die Leiter erfahren davon erst nach der Veröffentlichung",
+      "create_one": "{{count}} Zusammenkunft anlegen",
+      "create_other": "{{count}} Zusammenkünfte anlegen",
+      "prevMonth": "Vormonat",
+      "nextMonth": "Nächster Monat",
+      "failed": "Die Berechnung des Monats ist nicht gelungen",
+      "emptyTemplate": "Die Vorlage ist leer – zuerst beschreiben, welche Zusammenkünfte es gibt",
+      "skipAssembly": "Übersprungen – {{title}}",
+      "skipCoVisit": "Woche des Kreisaufseherbesuchs – Zusammenkünfte aus dem Besuchsplan",
+      "skipExists": "Schon vorhanden – bleibt unberührt",
+      "skipPast": "Schon vorbei",
+      "nobodyFree": "niemand vorzuschlagen – alle Leiter sind belegt oder abwesend",
+      "noOverseer": "die Gruppe hat keinen Aufseher",
+      "ruleNone": "den Leiter teilen Sie selbst zu",
+      "editTemplate": "Vorlage ändern",
+      "doneTitle": "Monat vorbereitet",
+      "doneAll": "Entwurf: {{count}} Zusammenkünfte",
+      "doneSome": "Entwurf: {{count}} Zusammenkünfte, ohne Leiter: {{left}}"
     }
   },
   "cleaning": {

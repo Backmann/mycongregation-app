@@ -1532,7 +1532,8 @@
       "previewPast": "already past, not created",
       "previewTitle": "Will be created",
       "previewEmpty": "No matching dates — check the template",
-      "successTitle": "Meetings created"
+      "successTitle": "Meetings created",
+      "newShape": "The template is already in the new shape (group meetings, conductor rules). The window for it comes with the next update; it is not edited here so nothing is lost."
     },
     "topicUsed": "Topic already used: {{date}}",
     "duplicate": "Duplicate meeting",
@@ -1620,6 +1621,29 @@
       "group": "Group {{group}}",
       "visitBadge": "service overseer's visit",
       "byGroups": "Meeting by groups"
+    },
+    "prepare": {
+      "title": "Prepare the month",
+      "button": "Prepare month",
+      "hint": "This is how it will be — by the template and the congregation's calendar",
+      "draftNote": "New meetings are a draft: publishers see them and conductors learn of them only after publication",
+      "create_one": "Create {{count}} meeting",
+      "create_other": "Create {{count}} meetings",
+      "prevMonth": "Previous month",
+      "nextMonth": "Next month",
+      "failed": "Could not work out the month",
+      "emptyTemplate": "The template is empty — first describe which meetings there are",
+      "skipAssembly": "Skipped — {{title}}",
+      "skipCoVisit": "Circuit overseer's week — meetings from the visit schedule",
+      "skipExists": "Already there — left alone",
+      "skipPast": "Already past",
+      "nobodyFree": "nobody to suggest — every conductor is busy or away",
+      "noOverseer": "the group has no overseer",
+      "ruleNone": "you assign the conductor yourself",
+      "editTemplate": "Edit the template",
+      "doneTitle": "Month prepared",
+      "doneAll": "Draft: {{count}} meetings",
+      "doneSome": "Draft: {{count}} meetings, without a conductor: {{left}}"
     }
   },
   "cleaning": {

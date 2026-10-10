@@ -75,9 +75,16 @@ function defaultTemplate(halls: { address: string; isDefault?: boolean }[]): Edi
 export function FieldServiceGenerateModal({
   visible,
   onClose,
+  templateOnly = false,
 }: {
   visible: boolean;
   onClose: () => void;
+  /**
+   * Only the template: no month, no «Сгенерировать». Since stage 3b the
+   * month is prepared as a draft from «Подготовить месяц»; this window is
+   * kept for editing the rules until the new template window replaces it.
+   */
+  templateOnly?: boolean;
 }) {
   const { t, i18n } = useTranslation();
   const qc = useQueryClient();
@@ -130,11 +137,23 @@ export function FieldServiceGenerateModal({
           ordinal: s.ordinal,
           dayOfWeek: s.dayOfWeek,
           startTime: s.startTime,
-          address: resolveAddr(s.address),
+          address: resolveAddr(s.address ?? ''),
         }),
       ),
     );
   }, [visible, templateQuery.data, hallsQuery.data]);
+
+  // A template already written in the new shape — a group's meeting, «every
+  // Saturday», a conductor rule — cannot be shown here, and saving from
+  // here would flatten it. Until the new template window exists (stage 3c)
+  // this editor steps aside rather than doing that.
+  const newShape = (templateQuery.data ?? []).some(
+    (sl) =>
+      !!sl.serviceGroupId ||
+      (sl.ordinals?.length ?? 1) > 1 ||
+      sl.lastOnly === true ||
+      (!!sl.conductorRule && sl.conductorRule !== 'none'),
+  );
 
   const saveTemplate = useMutation({
     mutationFn: () =>
@@ -279,15 +298,21 @@ export function FieldServiceGenerateModal({
   return (
     <Dialog
       visible={visible}
-      title={t('fieldService.generate.title')}
+      title={
+        templateOnly
+          ? t('fieldService.generate.template')
+          : t('fieldService.generate.title')
+      }
       icon="sparkles-outline"
       iconTint="#16a34a"
       iconBg="#dcfce7"
-      cancelLabel={result ? t('common.done') : t('common.cancel')}
-      confirmLabel={result ? undefined : t('fieldService.generate.button')}
+      cancelLabel={result || templateOnly ? t('common.done') : t('common.cancel')}
+      confirmLabel={
+        result || templateOnly ? undefined : t('fieldService.generate.button')
+      }
       confirmDisabled={!slotsValid}
       pending={generateM.isPending}
-      onConfirm={result ? undefined : () => generateM.mutate()}
+      onConfirm={result || templateOnly ? undefined : () => generateM.mutate()}
       onCancel={onClose}
       scroll
     >
@@ -314,6 +339,8 @@ export function FieldServiceGenerateModal({
             </View>
           ) : (
           <View>
+            {templateOnly ? null : (
+            <>
             {/* Start month */}
             <Text style={styles.label}>
               {t('fieldService.generate.startMonth')}
@@ -362,10 +389,20 @@ export function FieldServiceGenerateModal({
               ))}
             </View>
 
+            </>
+            )}
+
             {/* Template */}
+            {templateOnly ? null : (
             <Text style={[styles.label, { marginTop: 16 }]}>
               {t('fieldService.generate.template')}
             </Text>
+            )}
+            {newShape ? (
+              <Text style={styles.hint}>{t('fieldService.generate.newShape')}</Text>
+            ) : null}
+            {newShape ? null : (
+            <>
             <Text style={styles.hint}>{t('fieldService.generate.hint')}</Text>
 
             {slots.map((s, i) => (
@@ -490,7 +527,7 @@ export function FieldServiceGenerateModal({
             <Pressable
               style={[styles.saveTemplate, savedFlash && styles.saveTemplateOk]}
               onPress={() => saveTemplate.mutate()}
-              disabled={!slotsValid || saveTemplate.isPending}
+              disabled={!slotsValid || saveTemplate.isPending || newShape}
             >
               <Ionicons
                 name={savedFlash ? 'checkmark' : 'bookmark-outline'}
@@ -508,7 +545,10 @@ export function FieldServiceGenerateModal({
                   : t('fieldService.generate.saveTemplate')}
               </Text>
             </Pressable>
+            </>
+            )}
 
+            {templateOnly ? null : (
             <View style={styles.previewBox}>
               <Text style={styles.previewTitle}>
                 {t('fieldService.generate.previewTitle')} ({previewTotal})
@@ -553,6 +593,7 @@ export function FieldServiceGenerateModal({
                 ))
               )}
             </View>
+            )}
 
           </View>
           )}

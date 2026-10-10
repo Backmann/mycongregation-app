@@ -2085,10 +2085,16 @@ export interface FieldServiceTemplateSlot {
   id: string;
   congregationId: string;
   position: number;
-  ordinal: number; // 1-5
+  ordinal: number; // 1-5 — the first of `ordinals`, kept for the old editor
   dayOfWeek: number; // 1=Mon..7=Sun
   startTime: string; // "HH:MM"
-  address: string;
+  /** Null since October 2026: a group's meeting at the group's own place. */
+  address: string | null;
+  // The new shape (server since October 2026); absent from an older server.
+  ordinals?: number[];
+  lastOnly?: boolean;
+  serviceGroupId?: string | null;
+  conductorRule?: ConductorRule;
 }
 
 export interface TemplateSlotInput {
@@ -2096,6 +2102,51 @@ export interface TemplateSlotInput {
   dayOfWeek: number;
   startTime: string;
   address: string;
+}
+
+export type FieldServicePlannedStatus =
+  | "create"
+  | "exists"
+  | "assembly"
+  | "co_visit"
+  | "past";
+
+/** One slot's date in the month being prepared, with what happens to it. */
+export interface FieldServicePlannedRow {
+  date: string;
+  dayOfWeek: number;
+  startTime: string;
+  address: string;
+  serviceGroupId: string | null;
+  groupName: string | null;
+  conductorRule: ConductorRule;
+  status: FieldServicePlannedStatus;
+  /** With `exists`, `assembly`, `co_visit`: what stands in the way. */
+  because: string | null;
+  conductor: ConductorCandidate | null;
+  noConductor: "rule_none" | "nobody_free" | "no_overseer" | null;
+}
+
+export interface FieldServiceMonthPreview {
+  year: number;
+  month: number;
+  rows: FieldServicePlannedRow[];
+  existing: {
+    id: string;
+    date: string;
+    startTime: string;
+    address: string;
+    serviceGroupId: string | null;
+    conductorPublisherId: string | null;
+    serviceOverseerVisit: boolean;
+    published: boolean;
+  }[];
+}
+
+export interface FieldServicePrepareResult {
+  created: number;
+  withoutConductor: number;
+  skipped: { exists: number; assembly: number; co_visit: number; past: number };
 }
 
 export const fieldServiceTemplateApi = {
@@ -2111,6 +2162,30 @@ export const fieldServiceTemplateApi = {
     const { data } = await api.put<FieldServiceTemplateSlot[]>(
       "/field-service-template",
       { slots },
+    );
+    return data;
+  },
+  /** The month as it will be — nothing written. */
+  async preview(input: {
+    year: number;
+    month: number;
+    pickConductors?: boolean;
+  }): Promise<FieldServiceMonthPreview> {
+    const { data } = await api.post<FieldServiceMonthPreview>(
+      "/field-service-template/preview",
+      input,
+    );
+    return data;
+  },
+  /** The month written as drafts; publishing it is a separate step. */
+  async prepare(input: {
+    year: number;
+    month: number;
+    pickConductors?: boolean;
+  }): Promise<FieldServicePrepareResult> {
+    const { data } = await api.post<FieldServicePrepareResult>(
+      "/field-service-template/prepare",
+      input,
     );
     return data;
   },
