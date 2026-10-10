@@ -51,9 +51,11 @@ import { useAllPublishers } from '../lib/useAllPublishers';
  * ведёт», «отсутствует» — counted from the DAY of the meeting, and one
  * rule serves this window and the month's preparation alike.
  *
- * Two kinds of meeting, by Lionel's word: the groups' own and the one for
- * the whole congregation. «Общая» IS «no group»; a meeting stored before
- * October 2026 as «no group, not general» is shown and saved as general.
+ * Three kinds of meeting: a group's own, the one for the whole congregation
+ * («Общая»), and «по группам» — the day every group goes out on its own,
+ * written as one line with no group and not general. The last one is what
+ * the live schedule mostly holds (Lionel, 10 October 2026), so it stays a
+ * choice of its own rather than being folded into «общая».
  *
  * One window for two screens: the month page picks a date, the week's
  * programme editor picks a weekday of its week. A meeting already held is
@@ -167,6 +169,7 @@ export function FieldServiceForm({
   const [sourceUrl, setSourceUrl] = useState('');
   const [materialOpen, setMaterialOpen] = useState(false);
   const [serviceGroupId, setServiceGroupId] = useState<string | null>(null);
+  const [general, setGeneral] = useState(false);
   const [overseerVisit, setOverseerVisit] = useState(false);
   const [overseerId, setOverseerId] = useState<string | null>(null);
   const [assistantId, setAssistantId] = useState<string | null>(null);
@@ -187,6 +190,7 @@ export function FieldServiceForm({
       setSourceUrl(prefill?.sourceUrl ?? '');
       setMaterialOpen(!!(prefill?.topic || prefill?.sourceUrl));
       setServiceGroupId(prefill?.serviceGroupId ?? null);
+      setGeneral(!prefill?.serviceGroupId && prefill?.isGeneral === true);
       setOverseerVisit(false);
       setOverseerId(null);
       setAssistantId(null);
@@ -203,6 +207,7 @@ export function FieldServiceForm({
       setSourceUrl(target.sourceUrl ?? '');
       setMaterialOpen(!!(target.topic || target.sourceUrl));
       setServiceGroupId(target.serviceGroupId ?? null);
+      setGeneral(!target.serviceGroupId && target.isGeneral);
       setOverseerVisit(target.serviceOverseerVisit ?? false);
       setOverseerId(target.serviceOverseerPublisherId ?? null);
       setAssistantId(target.serviceOverseerAssistantId ?? null);
@@ -226,7 +231,7 @@ export function FieldServiceForm({
     ? (groups.find((g) => g.id === serviceGroupId) ?? null)
     : null;
   const groupPlace = group?.meetingLocation?.trim() || '';
-  const isGeneral = serviceGroupId === null;
+  const isGeneral = serviceGroupId === null && general;
 
   // Where, by default: the group's own place; everybody's — the main hall.
   // Once, and only while the field is still empty: a cleared field stays
@@ -461,7 +466,9 @@ export function FieldServiceForm({
         : t('fieldService.sheet.group', {
             group: groupNameOf(editing.serviceGroupId),
           })
-      : t('fieldService.generalBadge')
+      : editing.isGeneral
+        ? t('fieldService.generalBadge')
+        : t('fieldService.row.byGroups')
     : null;
   const title = editing
     ? `${cap(fmtDayLong(recordDate!))} · ${editing.startTime}`
@@ -567,20 +574,25 @@ export function FieldServiceForm({
       {/* Whose */}
       <Text style={styles.label}>{t('fieldService.sheet.whose')}</Text>
       <View style={styles.segmentTrack}>
-        {[{ id: null as string | null, name: t('fieldService.sheet.general') }, ...groups].map(
+        {[
+          { key: 'general', id: null as string | null, general: true, name: t('fieldService.sheet.general') },
+          { key: 'open', id: null as string | null, general: false, name: t('fieldService.sheet.byGroups') },
+          ...groups.map((g) => ({ key: g.id, id: g.id as string | null, general: false, name: g.name })),
+        ].map(
           (g) => {
-            const on = serviceGroupId === g.id;
+            const on = serviceGroupId === g.id && (g.id !== null || general === g.general);
             return (
               <Pressable
-                key={g.id ?? 'general'}
+                key={g.key}
                 onPress={() => {
                   if (g.id === null && overseerVisit) {
-                    // A visit is to a group; everybody's meeting has none.
+                    // A visit is to a group; a meeting with none has no visit.
                     setOverseerVisit(false);
                     setOverseerId(null);
                     setAssistantId(null);
                   }
                   setServiceGroupId(g.id);
+                  setGeneral(g.general);
                   // The place follows the choice while nobody has typed one.
                   const place =
                     g.id === null

@@ -1580,7 +1580,7 @@
     "sameDayAsVisit": "В этот день посещение группы {{group}} в {{time}}: эта группа сюда не придёт.",
     "overseer": "Служебный старейшина",
     "overseerAssistant": "Помощник",
-    "overseerVisitBadge": "Посещение служебного старейшины",
+    "overseerVisitBadge": "Посещение служебным старейшиной",
     "overseerVisitBadgeShort": "Служебный старейшина",
     "whoConducts": "Кто проводит встречу",
     "fillAssistant": "Подставить",
@@ -1594,7 +1594,7 @@
       "upcoming": "уже назначен на {{date}}"
     },
     "sheet": {
-      "groupVisit": "Группа {{group}} · посещение служебного старейшины",
+      "groupVisit": "Группа {{group}} · посещение служебным старейшиной",
       "group": "Группа {{group}}",
       "recordNote": "Встреча прошла. Изменить или удалить её нельзя — как и прошедшую программу.",
       "where": "Где",
@@ -1611,7 +1611,8 @@
       "pickDayFirst": "Сначала выберите день",
       "listFailed": "Не удалось получить список — выберите брата ниже",
       "allBrothers": "Все братья",
-      "addMaterial": "Тема и материал"
+      "addMaterial": "Тема и материал",
+      "byGroups": "По группам"
     },
     "draft": {
       "badge": "черновик",
@@ -1647,7 +1648,8 @@
       "count_other": "{{count}} встречи",
       "coVisit": "Из расписания визита районного старейшины",
       "group": "Группа {{group}}",
-      "visitBadge": "визит СС"
+      "visitBadge": "посещение служебным старейшиной",
+      "byGroups": "Встреча по группам"
     }
   },
   "cleaning": {
@@ -3837,15 +3839,15 @@
     "assistantLabel": "Помощник",
     "readerLabel": "Чтец",
     "mineAsAssistant": "{{part}} — помощник",
-    "fieldVisit": "Посещение служебного старейшины · группа {{group}}",
+    "fieldVisit": "Посещение служебным старейшиной · группа {{group}}",
     "fieldGroup": "Группа {{group}}",
     "fieldGeneral": "Общая встреча собрания",
-    "fieldOpen": "Встреча для проповеди",
+    "fieldOpen": "Встреча по группам",
     "fieldYours": "(ваша)",
     "fieldNotForYourGroup": "ваша группа в этот день — на посещении",
     "fieldAwayOnVisit": "вы в этот день — на посещении группы {{group}}",
     "fieldOnlyFor": "только для группы {{group}}",
-    "fieldVisitTitle": "Посещение служебного старейшины",
+    "fieldVisitTitle": "Посещение служебным старейшиной",
     "fieldVisitLine": "{{time}} · ваша группа {{group}}",
     "fieldOthers_one": "ещё {{count}} встреча других групп",
     "fieldOthers_few": "ещё {{count}} встречи других групп",

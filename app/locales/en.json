@@ -1587,7 +1587,8 @@
       "pickDayFirst": "Pick the day first",
       "listFailed": "Could not get the list — pick a brother below",
       "allBrothers": "All brothers",
-      "addMaterial": "Topic and material"
+      "addMaterial": "Topic and material",
+      "byGroups": "By groups"
     },
     "draft": {
       "badge": "draft",
@@ -1617,7 +1618,8 @@
       "count_other": "{{count}} meetings",
       "coVisit": "From the circuit overseer visit schedule",
       "group": "Group {{group}}",
-      "visitBadge": "SO visit"
+      "visitBadge": "service overseer's visit",
+      "byGroups": "Meeting by groups"
     }
   },
   "cleaning": {
@@ -3762,7 +3764,7 @@
     "fieldVisit": "Service overseer's visit · group {{group}}",
     "fieldGroup": "Group {{group}}",
     "fieldGeneral": "Combined congregation meeting",
-    "fieldOpen": "Meeting for field service",
+    "fieldOpen": "Meeting by groups",
     "fieldYours": "(yours)",
     "fieldNotForYourGroup": "your group is on the visit that day",
     "fieldAwayOnVisit": "you are on the visit to group {{group}} that day",

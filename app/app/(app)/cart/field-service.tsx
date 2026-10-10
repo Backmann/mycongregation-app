@@ -868,7 +868,9 @@ export default function FieldServiceMeetingsScreen() {
                                   ? t('fieldService.row.group', {
                                       group: groupName(mt.serviceGroupId),
                                     })
-                                  : t('fieldService.generalBadge')}
+                                  : mt.isGeneral
+                                    ? t('fieldService.generalBadge')
+                                    : t('fieldService.row.byGroups')}
                               </Text>
                               {mt.serviceOverseerVisit ? (
                                 <View style={styles.visitBadge}>

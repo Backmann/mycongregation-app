@@ -1587,7 +1587,8 @@
       "pickDayFirst": "Zuerst den Tag wählen",
       "listFailed": "Liste nicht erhalten – unten einen Bruder wählen",
       "allBrothers": "Alle Brüder",
-      "addMaterial": "Thema und Material"
+      "addMaterial": "Thema und Material",
+      "byGroups": "Nach Gruppen"
     },
     "draft": {
       "badge": "Entwurf",
@@ -1617,7 +1618,8 @@
       "count_other": "{{count}} Zusammenkünfte",
       "coVisit": "Aus dem Plan des Kreisaufseherbesuchs",
       "group": "Gruppe {{group}}",
-      "visitBadge": "Besuch"
+      "visitBadge": "Besuch des Dienstaufsehers",
+      "byGroups": "Zusammenkunft nach Gruppen"
     }
   },
   "cleaning": {
@@ -3762,7 +3764,7 @@
     "fieldVisit": "Besuch des Dienstaufsehers · Gruppe {{group}}",
     "fieldGroup": "Gruppe {{group}}",
     "fieldGeneral": "Gemeinsames Treffen der Versammlung",
-    "fieldOpen": "Treffpunkt für den Predigtdienst",
+    "fieldOpen": "Zusammenkunft nach Gruppen",
     "fieldYours": "(Ihre)",
     "fieldNotForYourGroup": "Ihre Gruppe ist an diesem Tag beim Besuch",
     "fieldAwayOnVisit": "Sie sind an diesem Tag beim Besuch der Gruppe {{group}}",
