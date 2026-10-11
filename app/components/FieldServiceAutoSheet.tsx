@@ -60,13 +60,17 @@ export function FieldServiceAutoSheet({
     },
   });
 
-  // The walk-through for the next month, with real dates.
-  // Prepared on the 1st, a month or two ahead — or two weeks before.
-  const next = dayjs().add(1, 'month').startOf('month');
-  const prepared =
-    lead === '2w'
-      ? next.subtract(14, 'day')
-      : next.subtract(lead === '1m' ? 1 : 2, 'month');
+  // The walk-through for the nearest month whose preparation is still
+  // ahead, with real dates. Prepared on the 1st, a month or two ahead — or
+  // two weeks before. On 11 October it used to walk through November with
+  // «1 Oct: the draft is ready» — a day already gone (phone, 11 October).
+  const preparedFor = (m: dayjs.Dayjs) =>
+    lead === '2w' ? m.subtract(14, 'day') : m.subtract(lead === '1m' ? 1 : 2, 'month');
+  const today = dayjs().startOf('day');
+  const next = [1, 2, 3]
+    .map((k) => today.add(k, 'month').startOf('month'))
+    .find((m) => !preparedFor(m).isBefore(today)) ?? today.add(1, 'month').startOf('month');
+  const prepared = preparedFor(next);
   const remind = next.subtract(8, 'day');
   const published = next.subtract(7, 'day');
   const fmt = (d: dayjs.Dayjs) => d.locale(i18n.language).format('D MMM');

@@ -806,7 +806,7 @@ function FieldPeople({
       <Chip
         key="c"
         tone="green"
-        text={t("home.list.conducts", { name: t("fieldService.unassigned") })}
+        text={t("home.list.conductsNobody")}
       />,
     );
   }

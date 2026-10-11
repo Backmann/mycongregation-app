@@ -1,11 +1,9 @@
-import { Fragment, useMemo } from 'react';
+import { useMemo } from 'react';
 import { StyleSheet, Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import type { FieldServiceMeeting, Publisher } from '../lib/api';
+import type { FieldServiceMeeting } from '../lib/api';
 import { fieldNotes, isOnMeeting, type FieldNote } from '../lib/field-audience';
 import { useMyPublisher } from '../lib/useMyPublisher';
-import { MyDot } from './MyDot';
-import { PersonChip } from './PersonChip';
 
 /**
  * What the two LISTS of field-service meetings add for the person reading
@@ -49,43 +47,6 @@ export function FieldNoteLine({
           ? t('feed.fieldAwayOnVisit', { group: groupName(note.groupId) })
           : t('feed.fieldOnlyFor', { group: groupName(note.groupId) })}
     </Text>
-  );
-}
-
-/**
- * The overseer and his assistant on a visit, whoever of them does not
- * already stand there as the conductor. The lists named the conductor only:
- * the assistant was stored, printed and shown in the feed but not here, and
- * when the assistant conducted, the overseer — the one the group is waiting
- * for — was not named at all.
- */
-export function VisitPeopleChips({
-  meeting,
-  publishersById,
-  me,
-}: {
-  meeting: FieldServiceMeeting;
-  publishersById: Map<string, Publisher>;
-  me: string | null;
-}) {
-  const { t } = useTranslation();
-  if (!meeting.serviceOverseerVisit) return null;
-  const chip = (id: string | null, label: string) => {
-    if (!id || id === meeting.conductorPublisherId) return null;
-    const p = publishersById.get(id);
-    if (!p) return null;
-    return (
-      <Fragment key={id}>
-        {id === me ? <MyDot kind="field_service" /> : null}
-        <PersonChip label={`${label}: ${p.displayName}`} variant="assistant" />
-      </Fragment>
-    );
-  };
-  return (
-    <>
-      {chip(meeting.serviceOverseerPublisherId, t('fieldService.overseer'))}
-      {chip(meeting.serviceOverseerAssistantId, t('fieldService.overseerAssistant'))}
-    </>
   );
 }
 

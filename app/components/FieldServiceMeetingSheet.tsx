@@ -190,7 +190,9 @@ export function FieldServiceForm({
       setSourceUrl(prefill?.sourceUrl ?? '');
       setMaterialOpen(!!(prefill?.topic || prefill?.sourceUrl));
       setServiceGroupId(prefill?.serviceGroupId ?? null);
-      setGeneral(!prefill?.serviceGroupId && prefill?.isGeneral === true);
+      // The congregation's own meeting is the usual one (Lionel, 10 October):
+      // a new entry starts as that unless the caller says whose it is.
+      setGeneral(!prefill?.serviceGroupId && (prefill?.isGeneral ?? true));
       setOverseerVisit(false);
       setOverseerId(null);
       setAssistantId(null);
@@ -608,7 +610,7 @@ export function FieldServiceForm({
                 style={[styles.segment, on && styles.segmentOn]}
                 accessibilityState={{ selected: on }}
               >
-                <Text style={[styles.segmentText, on && styles.segmentTextOn]}>
+                <Text style={[styles.segmentText, on && styles.segmentTextOn]} numberOfLines={1}>
                   {g.name}
                 </Text>
               </Pressable>
@@ -1063,7 +1065,10 @@ const styles = StyleSheet.create({
   },
   segment: {
     flexGrow: 1,
-    flexBasis: '30%',
+    // Wide enough for its name («Hamm-Uentrop» broke in two on the phone);
+    // three to a row when the names are short.
+    flexBasis: 'auto',
+    minWidth: '30%',
     minHeight: 42,
     alignItems: 'center',
     justifyContent: 'center',

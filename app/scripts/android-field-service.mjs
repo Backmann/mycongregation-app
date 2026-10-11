@@ -271,7 +271,11 @@ if (await tap(/^Подготовить месяц$/, '«Подготовить �
 await open('/schedule/edit', /^Встречи для проповеди$/);
 if (await tap(/^Встречи для проповеди$/, 'раздел «Встречи для проповеди» в неделе')) {
   // The section may have been open already — then the tap closed it.
-  if (!dump().some((x) => x.h > 0 && /^Добавить встречу$/.test(x.text))) await tap(/^Встречи для проповеди$/, 'раздел «Встречи для проповеди» в неделе');
+  await sleep(1500);
+  if (!dump().some((x) => x.h > 0 && /^(Добавить встречу|Ведёт |Ведущий не назначен)/.test(x.text))) {
+    await tap(/^Встречи для проповеди$/, 'раздел «Встречи для проповеди» в неделе');
+    await sleep(1500);
+  }
   await snap('edit-week-field');
 }
 

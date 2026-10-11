@@ -1516,6 +1516,7 @@
     "topicUsed": "Thema schon verwendet: {{date}}",
     "duplicate": "Zusammenkunft duplizieren",
     "pdf": {
+      "download": "PDF herunterladen",
       "title": "Zusammenkünfte für den Predigtdienst",
       "startMonth": "Startmonat",
       "monthsCount": "Anzahl der Monate",
@@ -1535,7 +1536,6 @@
     "sameDayAsVisit": "An diesem Tag besucht der Dienstaufseher die Gruppe {{group}} um {{time}}: diese Gruppe kommt nicht hierher.",
     "overseer": "Dienstaufseher",
     "overseerAssistant": "Assistent",
-    "overseerVisitBadge": "Besuch des Dienstaufsehers",
     "overseerVisitBadgeShort": "Dienstaufseher",
     "whoConducts": "Wer die Zusammenkunft leitet",
     "fillAssistant": "Einsetzen",
@@ -2574,7 +2574,8 @@
     "list": {
       "title": "Zwei Wochen",
       "yourGroup": "Ihre Gruppe {{name}}",
-      "conducts": "Leitet: {{name}}",
+      "conducts": "Leitung: {{name}}",
+      "conductsNobody": "Leitung noch nicht eingeteilt",
       "groupOnVisit": "An diesem Tag geht Ihre Gruppe nur zum Besuch",
       "youOnVisit_one": "Noch {{count}} Treffen an diesem Tag — Sie sind beim Besuch",
       "youOnVisit_other": "Noch {{count}} Treffen an diesem Tag — Sie sind beim Besuch",

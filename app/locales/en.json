@@ -1516,6 +1516,7 @@
     "topicUsed": "Topic already used: {{date}}",
     "duplicate": "Duplicate meeting",
     "pdf": {
+      "download": "Download PDF",
       "title": "Field service meetings",
       "startMonth": "Start month",
       "monthsCount": "Number of months",
@@ -1535,7 +1536,6 @@
     "sameDayAsVisit": "Group {{group}} has the service overseer's visit at {{time}} that day and will not come to this meeting.",
     "overseer": "Service overseer",
     "overseerAssistant": "Assistant",
-    "overseerVisitBadge": "Service overseer's visit",
     "overseerVisitBadgeShort": "Service overseer",
     "whoConducts": "Who conducts the meeting",
     "fillAssistant": "Fill in",
@@ -2574,7 +2574,8 @@
     "list": {
       "title": "Two weeks",
       "yourGroup": "Your group {{name}}",
-      "conducts": "Conducts: {{name}}",
+      "conducts": "Led by {{name}}",
+      "conductsNobody": "No conductor yet",
       "groupOnVisit": "On this day your group goes only to the visit",
       "youOnVisit_one": "{{count}} more meeting that day — you are on the visit",
       "youOnVisit_other": "{{count}} more meetings that day — you are on the visit",

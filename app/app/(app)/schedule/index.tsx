@@ -1910,7 +1910,7 @@ function FieldDay({
   nameOf: Map<string, string>;
   groupName: Map<string, string>;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [showOthers, setShowOthers] = useState(false);
   const day = arrangeFieldDay(item.meetings, myGroupId, me);
   const group = (m: FieldServiceMeeting) => (m.serviceGroupId ? groupName.get(m.serviceGroupId) ?? "" : "");
@@ -1965,6 +1965,8 @@ function FieldDay({
   };
   const lineOfPlace = (p: FieldPlace) =>
     [p.meeting.startTime, labelOf(p), conductorOf(p)].filter(Boolean).join(" · ");
+  // Standing alone under the title the line starts a sentence of its own.
+  const upper = (x: string) => x.charAt(0).toLocaleUpperCase(i18n.language) + x.slice(1);
   const lines =
     ownVisit && !lead
       ? // The group goes to the visit and nowhere else that day: the other
@@ -1980,7 +1982,7 @@ function FieldDay({
           ...(day.shown.length === 1 && !day.others.length
             ? lead
               ? []
-              : [conductorOf(day.shown[0])].filter((x): x is string => !!x)
+              : [conductorOf(day.shown[0])].filter((x): x is string => !!x).map(upper)
             : day.shown.filter((p) => p !== lead).map(lineOfPlace)),
           ...(day.others.length ? [t("feed.fieldOthers", { count: day.others.length })] : []),
         ];
@@ -2014,6 +2016,8 @@ function FieldDay({
         time={m.startTime}
         title={labelOf(p)}
         subtitle={[m.address, noteOf(p)].filter(Boolean).join(" · ")}
+        // The name alone under a card said nothing of his part (phone, 11 Oct).
+        extra={m.conductorPublisherId ? t("feed.lead") : null}
         // What the meeting is about and where to read it — said on Home and
         // on «Встречи для проповеди», and missing from the one screen the
         // week is read from (5 October).

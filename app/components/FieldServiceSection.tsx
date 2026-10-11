@@ -3,11 +3,8 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
-import { VisitPeopleChips, FieldNoteLine, useFieldListViewer } from './FieldListBits';
-import { MyDot } from './MyDot';
-import { SourceLink } from './SourceLink';
-import { MyGlowRow } from './MyGlowRow';
-import { ChipRow, PersonChip } from './PersonChip';
+import { useFieldListViewer } from './FieldListBits';
+import { FieldMeetingRow } from './FieldMeetingRow';
 import {
   CoVisitFieldServiceMeeting,
   CreateFieldServiceMeetingInput,
@@ -114,113 +111,51 @@ export function FieldServiceSection({
         <Text style={styles.empty}>{t('fieldService.empty')}</Text>
       ) : (
         <View style={styles.rows}>
-          {list.map((m) => {
-            const conductor = m.conductorPublisherId
-              ? publishersById.get(m.conductorPublisherId) ?? null
-              : null;
-            const isMine = viewer.isMine(m);
-            const RowWrap = isMine ? MyGlowRow : View;
-            return (
-              <RowWrap
-                key={m.id}
-                kind="field_service"
-                style={[styles.row, isMine && styles.rowMineGlow]}
-              >
-                <View style={styles.rowMain}>
-                  <Text style={styles.when}>
-                    {t(`fieldService.days.${m.dayOfWeek}`)} · {m.startTime}
-                  </Text>
-                  {m.isGeneral ? (
-                    <View style={styles.generalBadge}>
-                      <Ionicons name="people" size={12} color="#7c3aed" />
-                      <Text style={styles.generalBadgeText}>
-                        {t('fieldService.generalBadge')}
-                      </Text>
-                    </View>
-                  ) : null}
-                  {/* A month still being prepared: the planner sees it here
-                      too, so he does not add the same Saturday twice. */}
-                  {isFieldServiceDraft(m) ? (
-                    <View style={styles.draftBadge}>
-                      <Text style={styles.draftBadgeText}>
-                        {t('fieldService.draft.badge')}
-                      </Text>
-                    </View>
-                  ) : null}
-                  {/* The group should know he is coming — Lionel asked for
-                      this to be visible to publishers, not kept among the
-                      elders. It sits on the meeting itself, where the group
-                      already looks to see where and when. */}
-                  {/* Whose meeting it is — this list alone never said. */}
-                  {m.serviceGroupId ? (
-                    <Text style={styles.groupName}>
-                      {sectionGroupName(m.serviceGroupId)}
-                    </Text>
-                  ) : null}
-                  {m.serviceOverseerVisit ? (
-                    <View style={styles.visitBadge}>
-                      <Ionicons name="walk" size={12} color="#0e7490" />
-                      <Text style={styles.visitBadgeText}>
-                        {t('fieldService.overseerVisitBadge')}
-                      </Text>
-                    </View>
-                  ) : null}
-                  <ChipRow>
-                    {/* The dot stands beside the viewer's own name: on a visit
-                        he may be the overseer or the assistant, not the
-                        conductor this chip names. */}
-                    {viewer.isMine(m) && m.conductorPublisherId === viewer.me ? (
-                      <MyDot kind="field_service" />
-                    ) : null}
-                    {conductor ? (
-                      <PersonChip
-                        label={conductor.displayName}
-                        variant="main"
-                      />
-                    ) : (
-                      <PersonChip
-                        label={t('fieldService.unassigned')}
-                        variant="empty"
-                      />
-                    )}
-                    <VisitPeopleChips meeting={m} publishersById={publishersById} me={viewer.me} />
-                  </ChipRow>
-                  <Text style={styles.address} numberOfLines={2}>
-                    {resolveHallAddress(m.address, sectionHalls)}
-                  </Text>
-                  <FieldNoteLine note={viewer.noteOf(m.id)} groupName={sectionGroupName} />
-                  {!!m.topic && (
-                    <Text style={styles.topic} numberOfLines={3}>
-                      {m.topic}
-                    </Text>
-                  )}
-                  <SourceLink url={m.sourceUrl} />
-                </View>
-                {canEdit && (
-                  <View style={styles.rowActions}>
-                    <Pressable
-                      onPress={() => setFormFor(m)}
-                      hitSlop={8}
-                      style={styles.iconBtn}
-                      disabled={pending}
-                    >
-                      <Ionicons name="create-outline" size={20} color="#0369a1" />
-                    </Pressable>
-                    {isHeld(m) ? null : (
+          {/* The same line as the month page draws (components/FieldMeetingRow);
+              the day stands at the head of each, since a week holds several. */}
+          {list.map((m, i) => (
+            <View key={m.id}>
+              {m.dayOfWeek !== list[i - 1]?.dayOfWeek ? (
+                <Text style={styles.dayHead}>{t(`fieldService.days.${m.dayOfWeek}`)}</Text>
+              ) : null}
+              <FieldMeetingRow
+                meeting={m}
+                nameOf={(id) => (id ? (publishersById.get(id)?.displayName ?? null) : null)}
+                groupName={sectionGroupName}
+                place={resolveHallAddress(m.address, sectionHalls)}
+                note={viewer.noteOf(m.id)}
+                isMine={viewer.isMine(m)}
+                me={viewer.me}
+                last
+                trailing={
+                  canEdit ? (
+                    <View style={styles.rowActions}>
                       <Pressable
-                        onPress={() => onRemove(m.id)}
+                        onPress={() => setFormFor(m)}
                         hitSlop={8}
                         style={styles.iconBtn}
                         disabled={pending}
+                        accessibilityLabel={t('common.edit')}
                       >
-                        <Ionicons name="trash-outline" size={20} color="#dc2626" />
+                        <Ionicons name="create-outline" size={20} color="#0369a1" />
                       </Pressable>
-                    )}
-                  </View>
-                )}
-              </RowWrap>
-            );
-          })}
+                      {isHeld(m) ? null : (
+                        <Pressable
+                          onPress={() => onRemove(m.id)}
+                          hitSlop={8}
+                          style={styles.iconBtn}
+                          disabled={pending}
+                          accessibilityLabel={t('common.delete')}
+                        >
+                          <Ionicons name="trash-outline" size={20} color="#dc2626" />
+                        </Pressable>
+                      )}
+                    </View>
+                  ) : undefined
+                }
+              />
+            </View>
+          ))}
         </View>
       )}
 
@@ -295,6 +230,16 @@ export function FieldServiceSection({
 }
 
 const styles = StyleSheet.create({
+  dayHead: {
+    fontSize: 12.5,
+    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
+    color: '#64748b',
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+    paddingHorizontal: 14,
+    paddingTop: 8,
+  },
   draftBadge: {
     alignSelf: 'flex-start',
     backgroundColor: '#f1f5f9',

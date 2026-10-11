@@ -21,10 +21,10 @@ export function TimeField({
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   return (
-    <View>
+    <View style={styles.root}>
       <Pressable style={styles.field} onPress={() => setOpen((v) => !v)}>
         <Ionicons name="time-outline" size={17} color="#0369a1" />
-        <Text style={[styles.value, !value && styles.placeholder]}>
+        <Text style={[styles.value, !value && styles.placeholder]} numberOfLines={1}>
           {value || placeholder || '—'}
         </Text>
         <Ionicons
@@ -46,6 +46,10 @@ export function TimeField({
 }
 
 const styles = StyleSheet.create({
+  // In a row beside its label the field used to get no width of its own on
+  // Android and drew as a tall empty box without the time (phone, 11 October
+  // 2026); it now fills the rest of the row, and stands alone in a column.
+  root: { flexGrow: 1, flexShrink: 1, minWidth: 140 },
   field: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -8,6 +8,7 @@ import {
   Text,
   TextInput,
   View,
+  useWindowDimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from 'expo-router';
@@ -30,7 +31,8 @@ import {
   serviceGroupsApi,
 } from '../../../lib/api';
 import { usePermissions } from '../../../lib/permissions';
-import { FieldNoteLine, useFieldListViewer } from '../../../components/FieldListBits';
+import { useFieldListViewer } from '../../../components/FieldListBits';
+import { FieldMeetingRow } from '../../../components/FieldMeetingRow';
 import { FieldServiceForm } from '../../../components/FieldServiceMeetingSheet';
 import { resolveHallAddress } from '../../../lib/hallAddress';
 import { FieldServicePrepareSheet } from '../../../components/FieldServicePrepareSheet';
@@ -38,14 +40,11 @@ import { FieldServiceTemplateSheet } from '../../../components/FieldServiceTempl
 import { buildFieldServicePdfHtml } from '../../../lib/fieldServicePdf';
 import type { FsPdfMonth } from '../../../lib/fieldServicePdf';
 import { exportHtmlAsPdf } from '../../../lib/pdf';
-import { MyDot } from '../../../components/MyDot';
-import { MyGlowRow } from '../../../components/MyGlowRow';
 import { notify } from '../../../lib/error-bus';
 import { parseISODate, addDays, formatDateISO, startOfWeekMonday } from '../../../lib/dates';
 import { HEADER_ICON } from '../../../lib/header';
 import { LoadError } from '../../../components/LoadError';
 import { Dialog } from '../../../components/Dialog';
-import { SourceLink } from '../../../components/SourceLink';
 import { confirm } from '../../../components/ConfirmHost';
 import { failsScreen } from '../../../lib/screen-failure';
 
@@ -129,6 +128,9 @@ export default function FieldServiceMeetingsScreen() {
   const { t, i18n } = useTranslation();
   const navigation = useNavigation();
   const perms = usePermissions();
+  // Under ~400 points the month chips and «Подготовить месяц» fought for one
+  // row (the chips slid under the button); there the button is its icon.
+  const wide = useWindowDimensions().width >= 400;
   const canEdit = perms.canEditFieldServiceMeetings;
   const qc = useQueryClient();
 
@@ -680,27 +682,6 @@ export default function FieldServiceMeetingsScreen() {
   const fmtDayHead = (iso: string) =>
     cap(dayjs(iso).locale(i18n.language).format('dd, D MMMM'));
 
-  /** The one line under a meeting: who conducts, or that nobody does yet. */
-  const whoLine = (m: FieldServiceMeeting): { text: string; empty: boolean } => {
-    const conductor = nameOf(m.conductorPublisherId);
-    if (!conductor) return { text: t('fieldService.row.unassigned'), empty: true };
-    const bits = [t('fieldService.row.leads', { name: conductor })];
-    if (m.serviceOverseerVisit) {
-      const assistant =
-        m.serviceOverseerAssistantId &&
-        m.serviceOverseerAssistantId !== m.conductorPublisherId
-          ? nameOf(m.serviceOverseerAssistantId)
-          : null;
-      const overseer =
-        m.serviceOverseerPublisherId &&
-        m.serviceOverseerPublisherId !== m.conductorPublisherId
-          ? nameOf(m.serviceOverseerPublisherId)
-          : null;
-      if (overseer) bits.push(t('fieldService.row.withOverseer', { name: overseer }));
-      if (assistant) bits.push(t('fieldService.row.withAssistant', { name: assistant }));
-    }
-    return { text: bits.join(' · '), empty: false };
-  };
 
   return (
     <View style={styles.container}>
@@ -742,7 +723,7 @@ export default function FieldServiceMeetingsScreen() {
             accessibilityLabel={t('fieldService.prepare.button')}
           >
             <Ionicons name="add" size={16} color="#0369a1" />
-            <Text style={styles.planBtnText}>{t('fieldService.prepare.button')}</Text>
+            {wide ? <Text style={styles.planBtnText}>{t('fieldService.prepare.button')}</Text> : null}
           </Pressable>
         )}
       </View>
@@ -933,65 +914,19 @@ export default function FieldServiceMeetingsScreen() {
                       );
                     }
                     const mt = line.meeting;
-                    const isMine = viewer.isMine(mt);
-                    const who = whoLine(mt);
-                    const RowWrap = isMine ? MyGlowRow : View;
-                    const place = resolveHallAddress(mt.address, halls);
                     return (
-                      <RowWrap
+                      <FieldMeetingRow
                         key={mt.id}
-                        kind="field_service"
-                        style={[styles.row, last && styles.rowLast, isMine && styles.rowMine]}
-                      >
-                        <Pressable
-                          style={styles.rowPress}
-                          onPress={() => canEdit && setTarget(mt)}
-                          disabled={!canEdit}
-                        >
-                          <Text style={styles.rowTime}>{mt.startTime}</Text>
-                          <View style={styles.rowBody}>
-                            <View style={styles.rowTitleLine}>
-                              {isMine && mt.conductorPublisherId === viewer.me ? (
-                                <MyDot kind="field_service" />
-                              ) : null}
-                              <Text style={styles.rowTitle}>
-                                {mt.serviceGroupId
-                                  ? t('fieldService.row.group', {
-                                      group: groupName(mt.serviceGroupId),
-                                    })
-                                  : mt.isGeneral
-                                    ? t('fieldService.generalBadge')
-                                    : t('fieldService.row.byGroups')}
-                              </Text>
-                              {mt.serviceOverseerVisit ? (
-                                <View style={styles.visitBadge}>
-                                  <Text style={styles.visitBadgeText}>
-                                    {t('fieldService.row.visitBadge')}
-                                  </Text>
-                                </View>
-                              ) : null}
-                              {isFieldServiceDraft(mt) ? (
-                                <View style={styles.draftBadge}>
-                                  <Text style={styles.draftBadgeText}>
-                                    {t('fieldService.draft.badge')}
-                                  </Text>
-                                </View>
-                              ) : null}
-                            </View>
-                            <Text style={[styles.rowWho, who.empty && styles.rowWhoEmpty]}>
-                              {who.text}
-                            </Text>
-                            <Text style={styles.rowMuted} numberOfLines={2}>
-                              {[place, mt.topic].filter(Boolean).join(' · ')}
-                            </Text>
-                            <FieldNoteLine note={viewer.noteOf(mt.id)} groupName={groupName} />
-                            <SourceLink url={mt.sourceUrl} />
-                          </View>
-                          {canEdit ? (
-                            <Ionicons name="chevron-forward" size={16} color="#94a3b8" />
-                          ) : null}
-                        </Pressable>
-                      </RowWrap>
+                        meeting={mt}
+                        nameOf={nameOf}
+                        groupName={groupName}
+                        place={resolveHallAddress(mt.address, halls)}
+                        note={viewer.noteOf(mt.id)}
+                        isMine={viewer.isMine(mt)}
+                        me={viewer.me}
+                        last={last}
+                        onPress={canEdit ? () => setTarget(mt) : undefined}
+                      />
                     );
                   })}
                 </View>
@@ -1096,7 +1031,7 @@ export default function FieldServiceMeetingsScreen() {
         iconTint="#16a34a"
         iconBg="#dcfce7"
         cancelLabel={t('common.cancel')}
-        confirmLabel={t('fieldService.pdf.title')}
+        confirmLabel={t('fieldService.pdf.download')}
         confirmDisabled={pdfBusy}
         onConfirm={exportPdf}
         onCancel={() => setPdfOpen(false)}
@@ -1190,7 +1125,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#e2e8f0',
     paddingRight: 8,
   },
-  monthBarScroll: { flex: 1 },
+  monthBarScroll: { flex: 1, minWidth: 0 },
   monthBarInner: { paddingHorizontal: 12, paddingVertical: 8, gap: 6 },
   earlierBtn: {
     flexDirection: 'row',
@@ -1218,6 +1153,7 @@ const styles = StyleSheet.create({
   planBtn: {
     flexDirection: 'row',
     alignItems: 'center',
+    flexShrink: 0,
     gap: 6,
     borderWidth: 1,
     borderColor: '#0369a1',
@@ -1318,6 +1254,7 @@ const styles = StyleSheet.create({
   rowWho: { fontSize: 13.5, color: '#334155', fontFamily: 'Manrope_500Medium' },
   rowWhoEmpty: { color: '#a14a00', fontWeight: '700', fontFamily: 'Manrope_700Bold' },
   rowMuted: { fontSize: 13, color: '#64748b', fontFamily: 'Manrope_500Medium' },
+  rowTopic: { fontSize: 13.5, color: '#334155', fontFamily: 'Manrope_500Medium', marginTop: 2 },
   rowFaint: { fontSize: 12, color: '#94a3b8', fontStyle: 'italic' },
   visitBadge: {
     paddingHorizontal: 8,

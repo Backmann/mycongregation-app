@@ -20,6 +20,7 @@
 import { takesMeetingMode } from './event-meeting';
 import {
   arrangeFieldDay,
+  audienceOf,
   noteForPlace,
   type FieldNote,
   type FieldPlace,
@@ -750,7 +751,9 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
       kind: 'field_service',
       address: m.address,
       conductorName: conductor ? conductor.displayName : null,
-      unassignedConductor: !conductor,
+      // «Встреча по группам» is each group on its own: nobody conducts it
+      // as a whole, so no conductor there is not a gap to announce.
+      unassignedConductor: !conductor && audienceOf(m) !== 'open',
       topic: m.topic,
       sourceUrl: m.sourceUrl,
       replacedBy: null,
