@@ -1503,6 +1503,7 @@
     },
     "generalBadge": "Combined",
     "hubSubtitle": "Field-service meeting schedule",
+    "earlier": "Earlier: {{month}}",
     "emptyMonth": "No meetings this month",
     "deleteConfirm": "Delete this meeting?",
     "delete": "Delete",

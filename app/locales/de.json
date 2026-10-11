@@ -1503,6 +1503,7 @@
     },
     "generalBadge": "Gemeinsam",
     "hubSubtitle": "Plan der Zusammenkünfte für den Predigtdienst",
+    "earlier": "Früher: {{month}}",
     "emptyMonth": "Keine Zusammenkünfte in diesem Monat",
     "deleteConfirm": "Diese Zusammenkunft löschen?",
     "delete": "Löschen",

@@ -41,7 +41,7 @@ import { exportHtmlAsPdf } from '../../../lib/pdf';
 import { MyDot } from '../../../components/MyDot';
 import { MyGlowRow } from '../../../components/MyGlowRow';
 import { notify } from '../../../lib/error-bus';
-import { parseISODate, addDays, formatDateISO } from '../../../lib/dates';
+import { parseISODate, addDays, formatDateISO, startOfWeekMonday } from '../../../lib/dates';
 import { HEADER_ICON } from '../../../lib/header';
 import { LoadError } from '../../../components/LoadError';
 import { Dialog } from '../../../components/Dialog';
@@ -87,6 +87,29 @@ function defaultDayOf(monthKey: string, todayISO: string): string {
   return d.format('YYYY-MM') === monthKey ? d.format('YYYY-MM-DD') : todayISO;
 }
 
+/**
+ * THE WINDOW THIS PAGE ASKS FOR (October 2026). It used to ask for every
+ * meeting the congregation ever had and draw them all; the list grew by a
+ * month every month, and the page is opened for the month ahead. Now: from
+ * the start of the service year (1 September — the same line the Programme
+ * feed draws) to half a year ahead, which holds a month prepared two months
+ * early; earlier months come one at a time, on request («Раньше: август»).
+ * Weeks are keyed by their Monday, so both ends are Mondays and the end is
+ * exclusive, as the server reads them.
+ */
+function serviceYearStartISO(today: Date): string {
+  const year = today.getMonth() >= 8 ? today.getFullYear() : today.getFullYear() - 1;
+  return formatDateISO(new Date(year, 8, 1));
+}
+function mondayOf(dateISO: string): string {
+  return formatDateISO(startOfWeekMonday(parseISODate(dateISO)));
+}
+/** Monday of the first week fully after the month «YYYY-MM» — exclusive end. */
+function mondayAfterMonth(monthKey: string): string {
+  const next = dayjs(`${monthKey}-01`).add(1, 'month').format('YYYY-MM-DD');
+  return formatDateISO(addDays(startOfWeekMonday(parseISODate(next)), 7));
+}
+
 /** One line of a day: a meeting of ours, or an outing of the CO visit. */
 type DayLine =
   | { kind: 'meeting'; time: string; meeting: FieldServiceMeeting }
@@ -120,14 +143,34 @@ export default function FieldServiceMeetingsScreen() {
   );
   const didInitialScroll = useRef(false);
 
+  // The window (see serviceYearStartISO): its start moves back a month each
+  // time «Раньше» is pressed, and the months asked for that way are drawn
+  // even when empty — the person asked to see them.
+  const [windowFromMonth, setWindowFromMonth] = useState(() =>
+    serviceYearStartISO(new Date()).slice(0, 7),
+  );
+  const [askedMonths, setAskedMonths] = useState<string[]>([]);
+  const weekStart = mondayOf(`${windowFromMonth}-01`);
+  const weekEnd = mondayAfterMonth(dayjs().add(6, 'month').format('YYYY-MM'));
   // The planners read the drafts too; everybody else the announced schedule.
   // Two keys, so a planner's drafts never land in the cache the Home screen
   // and the Programme feed read from.
   const meetingsQuery = useQuery({
     throwOnError: failsScreen,
-    queryKey: ['field-service', 'all', canEdit ? 'drafts' : 'public'],
-    queryFn: () => fieldServiceApi.list({ drafts: canEdit }),
+    queryKey: ['field-service', 'window', weekStart, weekEnd, canEdit ? 'drafts' : 'public'],
+    queryFn: () => fieldServiceApi.list({ weekStart, weekEnd, drafts: canEdit }),
+    // A wider window replaces, never blanks, what is on screen.
+    placeholderData: (prev) => prev,
   });
+  const earlierMonth = dayjs(`${windowFromMonth}-01`).subtract(1, 'month').format('YYYY-MM');
+  // The month asked for is scrolled to once it is laid out, so the list does
+  // not stay where it was with the new month out of sight above.
+  const wantMonth = useRef<string | null>(null);
+  const showEarlier = () => {
+    wantMonth.current = earlierMonth;
+    setAskedMonths((xs) => [...xs, earlierMonth]);
+    setWindowFromMonth(earlierMonth);
+  };
   // During a circuit-overseer visit the field service is planned in the
   // visit schedule, not here — so this page, and the sheet printed from it,
   // left that week empty exactly when there was most going on (found
@@ -214,6 +257,7 @@ export default function FieldServiceMeetingsScreen() {
   const [pdfOpen, setPdfOpen] = useState(false);
   const [pdfStart, setPdfStart] = useState(() => dayjs().format('YYYY-MM'));
   const [pdfMonths, setPdfMonths] = useState(2);
+  const [pdfBusy, setPdfBusy] = useState(false);
   const [addDefaultDate, setAddDefaultDate] = useState<string | undefined>();
   const [addAsDraft, setAddAsDraft] = useState(false);
   const [prefill, setPrefill] = useState<
@@ -395,19 +439,21 @@ export default function FieldServiceMeetingsScreen() {
     const dow = now.getDay() === 0 ? 7 : now.getDay();
     return formatDateISO(addDays(now, 1 - dow));
   })();
-  let minK = currentMonthKey;
-  let maxK = currentMonthKey;
-  for (const k of [...byMonth.keys(), ...visitByMonth.keys()]) {
-    if (k < minK) minK = k;
-    if (k > maxK) maxK = k;
-  }
+  // The months drawn: those with something in them, the month being lived,
+  // and the ones asked for with «Раньше». An empty month in between — a
+  // summer without meetings — is not drawn; it used to be, as a bare title.
+  const monthKeys = [
+    ...new Set([
+      ...[...byMonth.keys(), ...visitByMonth.keys()].filter((k) => k >= windowFromMonth),
+      currentMonthKey,
+      ...askedMonths,
+    ]),
+  ].sort();
   const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
   const months: MonthBlock[] = [];
   {
-    let d = dayjs(`${minK}-01`);
-    const end = dayjs(`${maxK}-01`);
-    while (d.isBefore(end) || d.isSame(end)) {
-      const k = d.format('YYYY-MM');
+    for (const k of monthKeys) {
+      const d = dayjs(`${k}-01`);
       const ms = (byMonth.get(k) ?? [])
         .slice()
         .sort(
@@ -449,7 +495,6 @@ export default function FieldServiceMeetingsScreen() {
         days,
         drafts: ms.filter(isFieldServiceDraft),
       });
-      d = d.add(1, 'month');
     }
   }
 
@@ -505,11 +550,32 @@ export default function FieldServiceMeetingsScreen() {
   };
 
   const exportPdf = async () => {
+    // The sheet asks for its own months: it may be printed for a month the
+    // page is not showing, and it must not depend on what is on screen.
+    const lastKey = dayjs(`${pdfStart}-01`).add(pdfMonths - 1, 'month').format('YYYY-MM');
+    let fetched: FieldServiceMeeting[];
+    setPdfBusy(true);
+    try {
+      fetched = await fieldServiceApi.list({
+        weekStart: mondayOf(`${pdfStart}-01`),
+        weekEnd: mondayAfterMonth(lastKey),
+      });
+    } catch {
+      notify(t('common.loadFailed'), t('common.loadFailedHint'));
+      setPdfBusy(false);
+      return;
+    }
+    setPdfBusy(false);
+    const pdfByMonth = new Map<string, FieldServiceMeeting[]>();
+    for (const m of fetched) {
+      const k = meetingDateISO(m).slice(0, 7);
+      pdfByMonth.set(k, [...(pdfByMonth.get(k) ?? []), m]);
+    }
     const monthsOut: FsPdfMonth[] = [];
     for (let i = 0; i < pdfMonths; i++) {
       const key = dayjs(`${pdfStart}-01`).add(i, 'month').format('YYYY-MM');
       // The printed sheet is the announced plan: a draft stays off it.
-      const list = (byMonth.get(key) ?? [])
+      const list = (pdfByMonth.get(key) ?? [])
         .filter((m) => !isFieldServiceDraft(m))
         .sort(
           (a, b) =>
@@ -688,6 +754,25 @@ export default function FieldServiceMeetingsScreen() {
         onScroll={(e) => syncActiveMonth(e.nativeEvent.contentOffset.y)}
         scrollEventThrottle={48}
       >
+        {/* One month back at a time; what came before the window is not
+            gone, only not asked for yet. */}
+        <Pressable
+          style={styles.earlierBtn}
+          onPress={showEarlier}
+          disabled={meetingsQuery.isFetching}
+          accessibilityRole="button"
+        >
+          <Ionicons name="chevron-up" size={16} color="#475569" />
+          <Text style={styles.earlierText}>
+            {t('fieldService.earlier', {
+              month: cap(
+                dayjs(`${earlierMonth}-01`)
+                  .toDate()
+                  .toLocaleDateString(i18n.language, { month: 'long', year: 'numeric' }),
+              ),
+            })}
+          </Text>
+        </Pressable>
         {months.map((m) => (
           <View
             key={m.key}
@@ -696,6 +781,10 @@ export default function FieldServiceMeetingsScreen() {
               // The month is measured after its children, so this is the
               // first moment both halves of the sum are known.
               scrollToCurrent();
+              if (wantMonth.current === m.key) {
+                wantMonth.current = null;
+                scrollToMonth(m.key);
+              }
             }}
             style={styles.monthSection}
           >
@@ -1008,6 +1097,7 @@ export default function FieldServiceMeetingsScreen() {
         iconBg="#dcfce7"
         cancelLabel={t('common.cancel')}
         confirmLabel={t('fieldService.pdf.title')}
+        confirmDisabled={pdfBusy}
         onConfirm={exportPdf}
         onCancel={() => setPdfOpen(false)}
       >
@@ -1102,6 +1192,20 @@ const styles = StyleSheet.create({
   },
   monthBarScroll: { flex: 1 },
   monthBarInner: { paddingHorizontal: 12, paddingVertical: 8, gap: 6 },
+  earlierBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    marginHorizontal: 16,
+    marginTop: 12,
+    paddingVertical: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#dbe3ea',
+    backgroundColor: '#ffffff',
+  },
+  earlierText: { fontSize: 14, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#475569' },
   monthChip: {
     paddingHorizontal: 14,
     paddingVertical: 8,
