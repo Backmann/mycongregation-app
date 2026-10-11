@@ -183,7 +183,15 @@ export function FieldServiceForm({
       setPickedDate(defaultDate ?? '');
       setCalendarOpen(false);
       setStartTime(prefill?.startTime ?? '10:30');
-      setAddress(prefill?.address ?? '');
+      // Where, from the start: the group's own place, else the main hall.
+      // Set HERE, not in the effect below — that one read the address the
+      // last window had left behind and stayed silent, and a new meeting
+      // opened with «Укажите адрес» and no hall chosen (phone, 11 October).
+      const hallDefault = (halls.find((h) => h.isDefault) ?? halls[0])?.address ?? '';
+      const groupDefault = prefill?.serviceGroupId
+        ? (groups.find((g) => g.id === prefill.serviceGroupId)?.meetingLocation?.trim() ?? '')
+        : '';
+      setAddress(prefill?.address ?? (groupDefault || hallDefault));
       setAddressOpen(false);
       setConductorPublisherId(prefill?.conductorPublisherId ?? null);
       setTopic(prefill?.topic ?? '');

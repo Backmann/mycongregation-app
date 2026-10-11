@@ -270,11 +270,12 @@ if (await tap(/^Подготовить месяц$/, '«Подготовить �
 // ── Составление программы → неделя → встречи для проповеди ────────────
 await open('/schedule/edit', /^Встречи для проповеди$/);
 if (await tap(/^Встречи для проповеди$/, 'раздел «Встречи для проповеди» в неделе')) {
-  // The section may have been open already — then the tap closed it.
-  await sleep(1500);
-  if (!dump().some((x) => x.h > 0 && /^(Добавить встречу|Ведёт |Ведущий не назначен)/.test(x.text))) {
+  // The section may have been open already — then the tap closed it: wait
+  // for its lines, and only when none come, tap once more.
+  const OPENED = /^(Добавить встречу|Ведёт |Ведущий не назначен)/;
+  if (!(await waitFor(OPENED, 6000))) {
     await tap(/^Встречи для проповеди$/, 'раздел «Встречи для проповеди» в неделе');
-    await sleep(1500);
+    if (!(await waitFor(OPENED, 6000))) say('⚠️  раздел недели так и не раскрылся');
   }
   await snap('edit-week-field');
 }

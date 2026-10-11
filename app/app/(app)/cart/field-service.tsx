@@ -128,9 +128,10 @@ export default function FieldServiceMeetingsScreen() {
   const { t, i18n } = useTranslation();
   const navigation = useNavigation();
   const perms = usePermissions();
-  // Under ~400 points the month chips and «Подготовить месяц» fought for one
-  // row (the chips slid under the button); there the button is its icon.
-  const wide = useWindowDimensions().width >= 400;
+  // On the narrowest phones the month chips and «Подготовить месяц» fought
+  // for one row (the chips slid under the button); there the button is its
+  // icon. A phone of 384 points (the Galaxy in hand) keeps the words.
+  const wide = useWindowDimensions().width >= 380;
   const canEdit = perms.canEditFieldServiceMeetings;
   const qc = useQueryClient();
 
