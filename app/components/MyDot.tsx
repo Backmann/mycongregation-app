@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { Animated, Easing, View } from 'react-native';
 import { SECTION_COLORS, SectionKind } from '../lib/section-colors';
+import { useReduceMotion } from '../lib/reduce-motion';
 
 /**
  * A small neon dot marking something that belongs to the signed-in publisher —
@@ -24,8 +25,13 @@ export function MyDot({
 }) {
   const tone = color ?? SECTION_COLORS[kind].color;
   const pulse = useRef(new Animated.Value(0)).current;
+  const still = useReduceMotion();
 
   useEffect(() => {
+    if (still) {
+      pulse.setValue(0.5);
+      return;
+    }
     const loop = Animated.loop(
       Animated.sequence([
         Animated.timing(pulse, {
@@ -44,7 +50,7 @@ export function MyDot({
     );
     loop.start();
     return () => loop.stop();
-  }, [pulse]);
+  }, [still, pulse]);
 
   const halo = size + 10;
   const scale = pulse.interpolate({

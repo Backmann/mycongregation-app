@@ -53,11 +53,25 @@ function adb(args, { binary = false } = {}) {
 }
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+/**
+ * The screen's markup — or nothing. uiautomator refuses while anything on
+ * screen keeps moving («could not get idle state»), and the first two runs
+ * then read the PREVIOUS dump from the file and acted on a screen that was
+ * no longer there. The file is removed before each try, the tool's own
+ * answer is checked, and a failure is reported as one, never papered over.
+ */
+let stale = 0;
 function dump(name) {
   let xml = '';
-  for (let i = 0; i < 3 && !xml.includes('<hierarchy'); i++) {
-    spawnSync(ADB, ['shell', 'uiautomator', 'dump', '/sdcard/cm-fs.xml'], { encoding: 'utf8' });
+  for (let i = 0; i < 4 && !xml.includes('<hierarchy'); i++) {
+    spawnSync(ADB, ['shell', 'rm', '-f', '/sdcard/cm-fs.xml'], { encoding: 'utf8' });
+    const r = spawnSync(ADB, ['shell', 'uiautomator', 'dump', '/sdcard/cm-fs.xml'], { encoding: 'utf8' });
+    if (!/dumped to/i.test(String(r.stdout) + String(r.stderr))) continue;
     xml = adb(['exec-out', 'cat', '/sdcard/cm-fs.xml']);
+  }
+  if (!xml.includes('<hierarchy')) {
+    stale += 1;
+    say(`⚠️  разметка экрана не прочиталась${name ? ` (${name})` : ''} — экран не успокаивается`);
   }
   if (name) writeFileSync(join(OUT, `${name}.xml`), xml);
   const nodes = [];
@@ -86,6 +100,21 @@ const size = adb(['shell', 'wm', 'size']).match(/(\d+)x(\d+)\s*$/m);
 const [W, H] = size ? [Number(size[1]), Number(size[2])] : [1080, 2400];
 say(`Телефон: ${adb(['shell', 'getprop', 'ro.product.model']).trim()}, экран ${W}×${H}`);
 say(`Дата: ${now.toLocaleString('ru-RU')}`);
+
+// Animations off for the run: the app follows the device's «reduce motion»
+// (React Native reads transition_animation_scale == 0), so the breathing
+// rows stand still and uiautomator can read the screen. Put back at the end.
+const SCALES = ['window_animation_scale', 'transition_animation_scale', 'animator_duration_scale'];
+const savedScales = SCALES.map((k) => adb(['shell', 'settings', 'get', 'global', k]).trim());
+for (const k of SCALES) adb(['shell', 'settings', 'put', 'global', k, '0']);
+const restoreScales = () => {
+  SCALES.forEach((k, i) => {
+    const v = savedScales[i] === 'null' || savedScales[i] === '' ? '1' : savedScales[i];
+    spawnSync(ADB, ['shell', 'settings', 'put', 'global', k, v], { encoding: 'utf8' });
+  });
+};
+process.on('exit', restoreScales);
+say(`Анимации на время прогона выключены (было: ${savedScales.join(' / ')})`);
 
 const tapNode = (n) =>
   adb(['shell', 'input', 'tap', String(Math.round((n.x1 + n.x2) / 2)), String(Math.round((n.y1 + n.y2) / 2))]);
@@ -253,6 +282,6 @@ await open('/tasks', /^Открытые/);
 await snap('tasks');
 
 say('');
-say(`Шагов: ${n}, с находками: ${findings.length}`);
+say(`Шагов: ${n}, с находками: ${findings.length}${stale ? `, разметка не прочиталась ${stale} раз` : ''}`);
 for (const f of findings) say(`  ${f}`);
 finish(0);

@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
+import { useReduceMotion } from '../lib/reduce-motion';
 import {
-  AccessibilityInfo,
   Animated,
   Easing,
   Pressable,
@@ -129,31 +129,6 @@ const SIGN_ICON: Record<SignKey, keyof typeof MaterialCommunityIcons.glyphMap> =
   wcAccessible: 'wheelchair-accessibility',
 };
 
-/**
- * The device's «reduce motion» setting, followed as it changes.
- *
- * Read through AccessibilityInfo rather than once at start-up: on the web it
- * is the `prefers-reduced-motion` media query, and the screenshot script turns
- * it on for the plan's frame only, while the page is already running.
- */
-function useReduceMotion(): boolean {
-  const [on, setOn] = useState(false);
-  useEffect(() => {
-    let alive = true;
-    AccessibilityInfo.isReduceMotionEnabled()
-      .then((value) => {
-        if (alive) setOn(value);
-      })
-      .catch(() => {});
-    const sub = AccessibilityInfo.addEventListener('reduceMotionChanged', setOn);
-    return () => {
-      alive = false;
-      // react-native-web returns nothing when the browser has no matchMedia.
-      sub?.remove();
-    };
-  }, []);
-  return on;
-}
 
 function WindowHalo({ vertical }: { vertical: boolean }) {
   const pulse = useRef(new Animated.Value(0)).current;

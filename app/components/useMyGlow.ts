@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { Animated, Easing } from 'react-native';
 import { SectionKind, sectionRgba } from '../lib/section-colors';
+import { useReduceMotion } from '../lib/reduce-motion';
 
 /**
  * Shared "breathing" amber glow for schedule rows that belong to the signed-in
@@ -12,9 +13,15 @@ import { SectionKind, sectionRgba } from '../lib/section-colors';
  */
 export function useMyGlow(active: boolean, kind: SectionKind = 'meeting') {
   const pulse = useRef(new Animated.Value(0)).current;
+  const still = useReduceMotion();
 
   useEffect(() => {
     if (!active) return;
+    // Less motion asked for: the glow holds its middle tint and stays.
+    if (still) {
+      pulse.setValue(0.5);
+      return;
+    }
     const loop = Animated.loop(
       Animated.sequence([
         Animated.timing(pulse, {
@@ -33,7 +40,7 @@ export function useMyGlow(active: boolean, kind: SectionKind = 'meeting') {
     );
     loop.start();
     return () => loop.stop();
-  }, [active, pulse]);
+  }, [active, still, pulse]);
 
   if (!active) {
     return { backgroundColor: undefined, borderColor: undefined };

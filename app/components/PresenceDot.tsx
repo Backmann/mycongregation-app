@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Animated, Easing } from 'react-native';
+import { useReduceMotion } from '../lib/reduce-motion';
 
 /**
  * A small green dot with a gentle pulse, marking a user as currently online
@@ -7,8 +8,13 @@ import { Animated, Easing } from 'react-native';
  */
 export function PresenceDot({ size = 8 }: { size?: number }) {
   const pulse = useRef(new Animated.Value(0)).current;
+  const still = useReduceMotion();
 
   useEffect(() => {
+    if (still) {
+      pulse.setValue(1);
+      return;
+    }
     const loop = Animated.loop(
       Animated.sequence([
         Animated.timing(pulse, {
@@ -27,7 +33,7 @@ export function PresenceDot({ size = 8 }: { size?: number }) {
     );
     loop.start();
     return () => loop.stop();
-  }, [pulse]);
+  }, [still, pulse]);
 
   const opacity = pulse.interpolate({
     inputRange: [0, 1],

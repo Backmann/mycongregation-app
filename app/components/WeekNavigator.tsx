@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { useReduceMotion } from '../lib/reduce-motion';
 import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 import type { ReactNode } from 'react';
 import { Ionicons } from '@expo/vector-icons';
@@ -78,7 +79,12 @@ export function WeekNavigator({
 
 function BreathingDrawerButton({ onPress }: { onPress: () => void }) {
   const anim = useRef(new Animated.Value(0)).current;
+  const still = useReduceMotion();
   useEffect(() => {
+    if (still) {
+      anim.setValue(0);
+      return;
+    }
     const loop = Animated.loop(
       Animated.sequence([
         Animated.timing(anim, {
@@ -95,7 +101,7 @@ function BreathingDrawerButton({ onPress }: { onPress: () => void }) {
     );
     loop.start();
     return () => loop.stop();
-  }, [anim]);
+  }, [still, anim]);
   const scale = anim.interpolate({
     inputRange: [0, 1],
     outputRange: [1, 0.94],
