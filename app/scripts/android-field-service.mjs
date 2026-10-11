@@ -97,15 +97,31 @@ const swipeUp = async () => {
   adb(['shell', 'input', 'swipe', String(W / 2), String(Math.round(H * 0.75)), String(W / 2), String(Math.round(H * 0.3)), '600']);
   await sleep(1300);
 };
-const open = async (path) => {
-  adb(['shell', 'am', 'start', '-a', 'android.intent.action.VIEW', '-d', `mycongregation:/${path}`, PKG]);
-  await sleep(4500);
-  const ns = dump();
-  const later = ns.find((x) => x.text === 'Позже' && x.h > 0);
-  if (later) {
-    tapNode(later);
-    await sleep(1500);
+/**
+ * Wait until a text is on screen (the phone draws a screen in one to ten
+ * seconds, and the first run read the previous screen at 4.5 s flat).
+ */
+const waitFor = async (re, ms = 15000) => {
+  const until = Date.now() + ms;
+  let ns = [];
+  while (Date.now() < until) {
+    ns = dump();
+    const later = ns.find((x) => x.text === 'Позже' && x.h > 0);
+    if (later) {
+      tapNode(later);
+      await sleep(1500);
+      continue;
+    }
+    if (ns.some((x) => x.h > 0 && re.test(x.text))) return ns;
+    await sleep(1000);
   }
+  return null;
+};
+const open = async (path, until) => {
+  adb(['shell', 'am', 'start', '-a', 'android.intent.action.VIEW', '-d', `mycongregation:/${path}`, PKG]);
+  await sleep(2500);
+  if (!(await waitFor(until))) say(`⚠️  ${path}: не дождался «${until}»`);
+  await sleep(800);
 };
 
 let n = 0;
@@ -145,9 +161,13 @@ async function snap(label, { scroll = true } = {}) {
   return ns;
 }
 /** Tap the first visible node whose text matches; false when none is there. */
-async function tap(re, what, wait = 1800) {
-  const ns = dump();
-  const hit = ns.find((x) => x.h > 0 && x.y1 >= 0 && x.y2 <= H && re.test(x.text));
+async function tap(re, what, wait = 1800, { right = false } = {}) {
+  let hit = null;
+  for (let i = 0; i < 8 && !hit; i++) {
+    const ns = dump();
+    hit = ns.find((x) => x.h > 0 && x.y1 >= 0 && x.y2 <= H && re.test(x.text) && (!right || x.x1 > W * 0.7));
+    if (!hit) await sleep(1000);
+  }
   if (!hit) {
     say(`⚠️  не нашёл «${what}» — пропускаю`);
     findings.push(`не найдено на экране: «${what}»`);
@@ -162,24 +182,25 @@ adb(['shell', 'am', 'force-stop', PKG]);
 await sleep(800);
 
 // ── Главная ────────────────────────────────────────────────────────────
-await open('/home');
+await open('/home', /^Две недели|^Ваше ближайшее/i);
 await snap('home');
 
 // ── Программа: фильтр «Проповедь», открытый день ──────────────────────
-await open('/schedule');
+await open('/schedule', /^Проповедь$/);
 await snap('programme-all', { scroll: false });
 if (await tap(/^Проповедь$/, 'чип «Проповедь»')) {
   await snap('programme-field');
-  await open('/schedule');
+  await open('/schedule', /^Проповедь$/);
   await tap(/^Проповедь$/, 'чип «Проповедь»');
   // The kind line above a row's title is the row itself.
   if (await tap(/^Проповедь · \d/, 'строка дня проповеди')) await snap('programme-field-open');
 }
 
 // ── Служение → Встречи для проповеди ──────────────────────────────────
-await open('/cart');
+await open('/cart', /^Встречи для проповеди$/);
 await snap('cart', { scroll: false });
-await open('/cart/field-service');
+const MONTH = /^Подготовить месяц$|^Добавить встречу$|^Ведёт /;
+await open('/cart/field-service', MONTH);
 await snap('month');
 // A meeting: its conductor line is the row.
 if (await tap(/^(Ведёт |Ведущий не назначен)/, 'строка встречи')) {
@@ -187,19 +208,19 @@ if (await tap(/^(Ведёт |Ведущий не назначен)/, 'строк
   await back();
 }
 // A new meeting, opened and closed empty.
-await open('/cart/field-service');
+await open('/cart/field-service', MONTH);
 if (await tap(/^Добавить встречу$/, '«Добавить встречу»')) {
   await snap('meeting-new');
   await back();
 }
 // The printed sheet's dialog (its button is the icon in the header).
-await open('/cart/field-service');
-if (await tap(/^Встречи для проповеди$/, 'значок листа на печать (шапка)')) {
+await open('/cart/field-service', MONTH);
+if (await tap(/^Встречи для проповеди$/, 'значок листа на печать (шапка)', 1800, { right: true })) {
   await snap('pdf-dialog', { scroll: false });
   await back();
 }
 // Prepare → template → rule → automatic.
-await open('/cart/field-service');
+await open('/cart/field-service', MONTH);
 if (await tap(/^Подготовить месяц$/, '«Подготовить месяц»')) {
   await snap('prepare');
   if (await tap(/^Изменить шаблон встреч$/, '«Изменить шаблон встреч»')) {
@@ -218,13 +239,17 @@ if (await tap(/^Подготовить месяц$/, '«Подготовить �
 }
 
 // ── Составление программы → неделя → встречи для проповеди ────────────
-await open('/schedule/edit');
-if (await tap(/^Встречи для проповеди$/, 'раздел «Встречи для проповеди» в неделе')) await snap('edit-week-field');
+await open('/schedule/edit', /^Встречи для проповеди$/);
+if (await tap(/^Встречи для проповеди$/, 'раздел «Встречи для проповеди» в неделе')) {
+  // The section may have been open already — then the tap closed it.
+  if (!dump().some((x) => x.h > 0 && /^Добавить встречу$/.test(x.text))) await tap(/^Встречи для проповеди$/, 'раздел «Встречи для проповеди» в неделе');
+  await snap('edit-week-field');
+}
 
 // ── Служебный старейшина, задачи ──────────────────────────────────────
-await open('/cart/service-overseer');
+await open('/cart/service-overseer', /^Служебный год/);
 await snap('service-overseer');
-await open('/tasks');
+await open('/tasks', /^Открытые/);
 await snap('tasks');
 
 say('');
