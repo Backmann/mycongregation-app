@@ -39,6 +39,7 @@ import {
 } from "../lib/parts";
 import { usePermissions } from "../lib/permissions";
 import { useTranslation } from "react-i18next";
+import { Toast } from "./ErrorToast";
 
 interface Props {
   initial?: Partial<CreateAssignmentInput>;
@@ -803,6 +804,8 @@ export function AssignmentForm({
               )}
             </View>
           </View>
+          {/* Its own strip: the root one is drawn under this window. */}
+          <Toast layer />
         </Modal>
 
         {isCoTalk && (

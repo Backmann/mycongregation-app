@@ -7,7 +7,14 @@ import {
   Text,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { onToast, ToastTone } from '../lib/error-bus';
+import {
+  enterToastLayer,
+  isTopToastLayer,
+  leaveToastLayer,
+  onToast,
+  ToastTone,
+} from '../lib/error-bus';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const VISIBLE_MS = 6000;
 
@@ -23,15 +30,28 @@ const VISIBLE_MS = 6000;
  *
  * One strip, two tones — never two at once. Tapping dismisses it; otherwise it
  * fades on its own.
+ *
+ * `layer`: this strip belongs to an open window (Sheet, Dialog, a screen's
+ * own Modal) and is drawn at its TOP — the bottom of a window is its Save
+ * button. Only the topmost open strip speaks (lib/error-bus).
  */
-export function Toast() {
+export function Toast({ layer = false }: { layer?: boolean } = {}) {
   const [message, setMessage] = useState<string | null>(null);
   const [tone, setTone] = useState<ToastTone>('error');
   const opacity = useRef(new Animated.Value(0)).current;
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const insets = useSafeAreaInsets();
+  const id = useRef<number>(0);
+
+  useEffect(() => {
+    if (!layer) return;
+    id.current = enterToastLayer();
+    return () => leaveToastLayer(id.current);
+  }, [layer]);
 
   useEffect(() => {
     return onToast((m, t) => {
+      if (!isTopToastLayer(id.current)) return;
       setMessage(m);
       setTone(t);
       if (timer.current) clearTimeout(timer.current);
@@ -59,7 +79,14 @@ export function Toast() {
   const success = tone === 'success';
 
   return (
-    <Animated.View style={[styles.wrap, { opacity }]} pointerEvents="box-none">
+    <Animated.View
+      style={[
+        styles.wrap,
+        layer ? { top: insets.top + 12, bottom: undefined } : null,
+        { opacity },
+      ]}
+      pointerEvents="box-none"
+    >
       <Pressable
         style={[styles.toast, success ? styles.success : styles.error]}
         onPress={() => setMessage(null)}

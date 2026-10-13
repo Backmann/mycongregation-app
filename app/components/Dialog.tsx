@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useBottomRoom } from './Sheet';
+import { Toast } from './ErrorToast';
 
 /**
  * One shell for every dialog in the app. Before this each screen brought its
@@ -136,6 +137,8 @@ export function Dialog({
           ) : null}
         </View>
       </View>
+      {/* Its own strip: the root one is drawn under this window. */}
+      <Toast layer />
     </Modal>
   );
 }

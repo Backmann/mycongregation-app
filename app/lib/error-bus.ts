@@ -27,6 +27,39 @@ export function onToast(listener: Listener): () => void {
 }
 
 /**
+ * Where a message is drawn: the topmost of the open layers (13 October 2026).
+ *
+ * The strip lived only at the root of the app, and React Native draws a
+ * Modal ABOVE the whole app — so a save refused inside a window (a meeting,
+ * a rule, an assignment) raised its message UNDER that window, where nobody
+ * could see it. Found on the stand: the words were in the page, the window
+ * covered them.
+ *
+ * Each window now carries a strip of its own (<Toast layer />) and enters
+ * here while it is open; a message goes to the topmost one only, so it is
+ * always in front and never shown twice. The root strip is layer 0 and
+ * speaks when no window is open.
+ */
+const layers: number[] = [];
+let nextLayer = 1;
+
+export function enterToastLayer(): number {
+  const id = nextLayer++;
+  layers.push(id);
+  return id;
+}
+
+export function leaveToastLayer(id: number): void {
+  const i = layers.indexOf(id);
+  if (i >= 0) layers.splice(i, 1);
+}
+
+/** Whether a strip is the one that should speak now (0 is the root). */
+export function isTopToastLayer(id: number): boolean {
+  return layers.length === 0 ? id === 0 : layers[layers.length - 1] === id;
+}
+
+/**
  * Notify from a former Alert.alert(title, body) call. React Native's Alert
  * shows nothing on the web, so these messages used to vanish there entirely.
  * On the strip there is one line, so title and body are joined when both carry

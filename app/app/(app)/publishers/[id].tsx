@@ -39,6 +39,7 @@ import { buildS21Html, availableServiceYears } from '../../../lib/s21';
 import { exportHtmlAsPdf, openPrintWindow } from '../../../lib/pdf';
 import { confirm } from '../../../components/ConfirmHost';
 import { failsScreen } from '../../../lib/screen-failure';
+import { Toast } from '../../../components/ErrorToast';
 
 function removalLabel(reason: RemovalReason): string {
   return i18n.t(`publishers.removal.${reason}`);
@@ -802,6 +803,8 @@ function RemoveModal({
           </View>
         </View>
       </View>
+      {/* Its own strip: the root one is drawn under this window. */}
+      <Toast layer />
     </Modal>
   );
 }

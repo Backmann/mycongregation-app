@@ -173,7 +173,19 @@ async function snap(label, { scroll = true } = {}) {
   // Two things drawn over each other: the month chips under «Подготовить месяц».
   const prep = texts.find((x) => x.text === 'Подготовить месяц');
   if (prep) {
-    const under = texts.filter((x) => x !== prep && x.y1 < prep.y2 && x.y2 > prep.y1 && x.x2 > prep.x1 && x.x1 < prep.x2);
+    // The button's own nodes are not «under» it: the pressable around the
+    // words (no text of its own, or the same words as its label) and any
+    // ancestor that contains it whole. Two runs reported exactly those
+    // (13 October 2026) while the chips sat clean beside the button.
+    const contains = (o, i) => o.x1 <= i.x1 && o.y1 <= i.y1 && o.x2 >= i.x2 && o.y2 >= i.y2;
+    const under = texts.filter(
+      (x) =>
+        x !== prep &&
+        x.text.trim() !== '' &&
+        x.text !== prep.text &&
+        !contains(x, prep) &&
+        x.y1 < prep.y2 && x.y2 > prep.y1 && x.x2 > prep.x1 && x.x1 < prep.x2,
+    );
     if (under.length) problems.push(`под кнопкой «Подготовить месяц»: ${under.map((x) => `«${x.text}»`).join(', ')}`);
   }
   if (scroll) {
@@ -298,7 +310,9 @@ if (await tap(/^Запланировать (посещение|ещё одно)$
   await snap('visit-from-overseer-page');
   await back();
 }
-await open('/tasks', /^Открытые/);
+// The elders' tasks open on their own title; «Открытые» is a tab further
+// down and was not always on screen (run of 13 October 2026).
+await open('/tasks', /^Задачи совета старейшин$|^Открытые/);
 await snap('tasks');
 
 say('');

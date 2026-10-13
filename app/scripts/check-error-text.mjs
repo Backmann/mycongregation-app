@@ -61,7 +61,9 @@ for (const [what, err, want] of [
 }
 
 const api = read('lib/api.ts');
-if (!/export function extractErrorMessage\(error: unknown\): string \{\s*if \(error instanceof AxiosError\) \{[\s\S]{0,200}requestErrorText\(error,[\s\S]{0,80}if \(said\) return said;/.test(api)) {
+// The server's coded refusals are put into words first (lib/refusal-text.ts,
+// checked by check-server-refusals.mjs), so the room before is wider.
+if (!/export function extractErrorMessage\(error: unknown\): string \{\s*if \(error instanceof AxiosError\) \{[\s\S]{0,1600}requestErrorText\(error,[\s\S]{0,80}if \(said\) return said;/.test(api)) {
   problems.push('lib/api.ts: extractErrorMessage больше не спрашивает lib/error-text — вернётся «Network Error»');
 }
 

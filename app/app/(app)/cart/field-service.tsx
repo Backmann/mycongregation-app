@@ -48,6 +48,7 @@ import { LoadError } from '../../../components/LoadError';
 import { Dialog } from '../../../components/Dialog';
 import { confirm } from '../../../components/ConfirmHost';
 import { failsScreen } from '../../../lib/screen-failure';
+import { Toast } from '../../../components/ErrorToast';
 
 /**
  * The month of field-service meetings (rebuilt October 2026, stage 3a).
@@ -1073,6 +1074,8 @@ export default function FieldServiceMeetingsScreen() {
             </View>
           </View>
         </View>
+        {/* Its own strip: the root one is drawn under this window. */}
+        <Toast layer />
       </Modal>
 
       <Dialog

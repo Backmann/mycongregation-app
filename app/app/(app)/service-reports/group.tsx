@@ -26,6 +26,7 @@ import { useTranslation } from 'react-i18next';
 import { formatMonthLabel } from '../../../lib/i18n';
 import { useAllPublishers } from '../../../lib/useAllPublishers';
 import { failsScreen } from '../../../lib/screen-failure';
+import { Toast } from '../../../components/ErrorToast';
 
 /** Compact date like "8 июл." for the who/when byline. */
 function formatByline(iso: string): string {
@@ -356,6 +357,8 @@ export default function GroupReportsScreen() {
               </ScrollView>
             </View>
           </Pressable>
+          {/* Its own strip: the root one is drawn under this window. */}
+          <Toast layer />
         </Modal>
 
         <View style={styles.statsBar}>
@@ -823,6 +826,8 @@ function OverrideStatusModal({
           )}
         </Pressable>
       </Pressable>
+      {/* Its own strip: the root one is drawn under this window. */}
+      <Toast layer />
     </Modal>
   );
 }

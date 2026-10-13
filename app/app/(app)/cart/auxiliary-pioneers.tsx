@@ -28,6 +28,7 @@ import {
 import { PublisherSelector } from '../../../components/PublisherSelector';
 import { Dialog } from '../../../components/Dialog';
 import { failsScreen } from '../../../lib/screen-failure';
+import { Toast } from '../../../components/ErrorToast';
 
 const QK_MONTH = (m: string) => ['aux-pioneers', 'month', m];
 const QK_JOURNAL = ['aux-pioneers', 'journal'];
@@ -526,6 +527,8 @@ function MonthPicker({
             </ScrollView>
           </View>
         </Pressable>
+        {/* Its own strip: the root one is drawn under this window. */}
+        <Toast layer />
       </Modal>
     </>
   );
@@ -641,6 +644,8 @@ function ServingCard({
             </Pressable>
           </View>
         </Pressable>
+        {/* Its own strip: the root one is drawn under this window. */}
+        <Toast layer />
       </Modal>
     </View>
   );

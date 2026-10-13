@@ -31,6 +31,7 @@ import { confirm } from '../../../components/ConfirmHost';
 import { useAllPublishers } from '../../../lib/useAllPublishers';
 import { LoadFailure } from '../../../components/LoadFailure';
 import { failsScreen } from '../../../lib/screen-failure';
+import { Toast } from '../../../components/ErrorToast';
 
 export default function ServiceGroupDetailScreen() {
   const { t } = useTranslation();
@@ -585,6 +586,8 @@ function AddMembersModal({
           </Pressable>
         </View>
       </View>
+      {/* Its own strip: the root one is drawn under this window. */}
+      <Toast layer />
     </Modal>
   );
 }

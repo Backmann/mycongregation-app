@@ -32,6 +32,7 @@ import { usePermissions } from '../../../lib/permissions';
 import { weekRules } from '../../../lib/week-rules';
 import { effectiveVersionFor } from '../../../lib/meeting-schedule';
 import { failsScreen } from '../../../lib/screen-failure';
+import { Toast } from '../../../components/ErrorToast';
 
 /**
  * The day a week's midweek meeting actually falls on.
@@ -733,6 +734,8 @@ export default function LocalNeedsScreen() {
             </View>
           </View>
         </View>
+        {/* Its own strip: the root one is drawn under this window. */}
+        <Toast layer />
       </Modal>
 
       <UndoBar

@@ -7,6 +7,7 @@ import { renewalRetryDelayMs, sessionVerdict } from "./session-verdict";
 import type { ApplyParsedPayload } from "./mwb-parser";
 import i18n from "./i18n";
 import { requestErrorText } from "./error-text";
+import { refusalText } from "./refusal-text";
 
 function resolveApiUrl(): string {
   const url = process.env.EXPO_PUBLIC_API_URL;
@@ -4522,6 +4523,31 @@ export const serviceReportsApi = {
 
 export function extractErrorMessage(error: unknown): string {
   if (error instanceof AxiosError) {
+    // The server's refusal by its code, in the reader's language
+    // (lib/refusal-text.ts) — first, for any refusal (4xx): a code that came
+    // without an English sentence beside it is still words for a person.
+    const status = error.response?.status;
+    const refused =
+      typeof status === "number" && status >= 400 && status < 500 && status !== 408 && status !== 429
+        ? refusalText(status, error.response?.data, {
+            say: (key, options) => i18n.t(key, options),
+            has: (key) => i18n.exists(key),
+            day: (iso) =>
+              new Intl.DateTimeFormat(i18n.language, {
+                day: "numeric",
+                month: "long",
+                timeZone: "UTC",
+              }).format(new Date(`${iso}T12:00:00Z`)),
+            month: (ym) =>
+              new Intl.DateTimeFormat(i18n.language, {
+                month: "long",
+                year: "numeric",
+                timeZone: "UTC",
+              }).format(new Date(`${ym}-15T12:00:00Z`)),
+            lang: i18n.language,
+          })
+        : null;
+    if (refused) return refused;
     // What the server did not put into words is said here, in the reader's
     // language — never «Network Error» (lib/error-text.ts).
     const said = requestErrorText(error, (key, options) => i18n.t(key, options));

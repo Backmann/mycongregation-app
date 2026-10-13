@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
+import { Toast } from "./ErrorToast";
 
 /**
  * How much room is taken at the BOTTOM of the screen on Android — by the
@@ -215,6 +216,8 @@ export function Sheet({
             {footer ? <View style={styles.footer}>{footer}</View> : null}
           </View>
         </View>
+        {/* Its own strip: the root one is drawn under this window. */}
+        <Toast layer />
       </Modal>
     );
   }
@@ -246,6 +249,8 @@ export function Sheet({
           <View style={{ height: bottomRoom }} />
         )}
       </SafeAreaView>
+      {/* Its own strip: the root one is drawn under this window. */}
+      <Toast layer />
     </Modal>
   );
 }
