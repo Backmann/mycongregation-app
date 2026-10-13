@@ -1757,7 +1757,8 @@
         "lastWord": "letzter",
         "and": "und"
       }
-    }
+    },
+    "overseerVisitNeedsGroup": "Ein Besuch gehört zur Zusammenkunft einer Gruppe – wähle die Gruppe unter „Wessen Zusammenkunft“"
   },
   "cleaning": {
     "title": "Reinigung",
@@ -3481,7 +3482,10 @@
     "openFromTask": "Gruppenbesuche öffnen →",
     "prevYear": "Vorheriges Dienstjahr",
     "nextYear": "Nächstes Dienstjahr",
-    "noneThatYear": "In diesem Jahr nicht besucht"
+    "noneThatYear": "In diesem Jahr nicht besucht",
+    "plan": "Besuch planen",
+    "planAnother": "Weiteren Besuch planen",
+    "hintPlan": "„Besuch planen“ öffnet das Fenster der Predigtdienstzusammenkunft dieser Gruppe mit bereits eingeschaltetem Besuch – es bleiben Datum und Begleiter."
   },
   "tasks": {
     "title": "Aufgaben der Ältestenschaft",

@@ -9,12 +9,14 @@ import {
 } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ru';
 import 'dayjs/locale/de';
 import { serviceOverseerApi } from '../../../lib/api';
 import { useAllPublishers } from '../../../lib/useAllPublishers';
+import { usePermissions } from '../../../lib/permissions';
 import { failsScreen } from '../../../lib/screen-failure';
 
 /**
@@ -29,6 +31,12 @@ import { failsScreen } from '../../../lib/screen-failure';
 export default function ServiceOverseerScreen() {
   const { t, i18n } = useTranslation();
   const language = i18n.language;
+  // Whoever may write a field-service meeting may plan a visit from here:
+  // the page names the group that waits, and the door beside it opens the
+  // meeting window already as his visit to that group. Before, the only
+  // way was to know that the visit switch hides behind a group in that
+  // window — nobody found it (Lionel, 13 October 2026).
+  const canPlan = usePermissions().canEditFieldServiceMeetings;
 
   // The year looked at; null is the one in progress, which the server names.
   //
@@ -200,6 +208,25 @@ export default function ServiceOverseerScreen() {
                 {t('serviceOverseer.planned', { date: fmt(g.nextVisitDate) })}
               </Text>
             ) : null}
+
+            {!past && canPlan ? (
+              <Pressable
+                onPress={() =>
+                  router.push({
+                    pathname: '/cart/field-service',
+                    params: { visitGroup: g.serviceGroupId },
+                  })
+                }
+                style={styles.planBtn}
+                hitSlop={6}
+                accessibilityRole="button"
+              >
+                <Ionicons name="add-circle-outline" size={16} color="#0369a1" />
+                <Text style={styles.planBtnText}>
+                  {t(g.nextVisitDate ? 'serviceOverseer.planAnother' : 'serviceOverseer.plan')}
+                </Text>
+              </Pressable>
+            ) : null}
           </View>
         );
       })}
@@ -208,7 +235,9 @@ export default function ServiceOverseerScreen() {
         <Text style={styles.muted}>{t('serviceOverseer.noGroups')}</Text>
       ) : null}
 
-      <Text style={styles.hint}>{t('serviceOverseer.hint')}</Text>
+      <Text style={styles.hint}>
+        {t(canPlan ? 'serviceOverseer.hintPlan' : 'serviceOverseer.hint')}
+      </Text>
     </ScrollView>
   );
 }
@@ -294,6 +323,19 @@ const styles = StyleSheet.create({
   countTextDone: { color: '#15803d' },
   line: { fontSize: 13.5, color: '#475569' },
   planned: { fontSize: 13, color: '#0369a1' },
+  planBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    alignSelf: 'flex-start',
+    marginTop: 6,
+  },
+  planBtnText: {
+    fontSize: 13.5,
+    color: '#0369a1',
+    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
+  },
   muted: { fontSize: 14, color: '#64748b' },
   hint: { fontSize: 12.5, color: '#94a3b8', lineHeight: 18, marginTop: 8 },
 });

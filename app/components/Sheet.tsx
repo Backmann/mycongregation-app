@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, RefObject, useEffect, useState } from "react";
 import {
   Keyboard,
   Modal,
@@ -65,6 +65,7 @@ export function Sheet({
   action,
   hideClose,
   fills,
+  scrollRef,
 }: {
   visible: boolean;
   title: string;
@@ -102,6 +103,12 @@ export function Sheet({
    * nothing. That took four attempts to find on the assignment sheet.
    */
   fills?: boolean;
+  /**
+   * A handle on the sheet's own scroller, for a caller that needs to bring
+   * a part of its form back into view — the meeting window scrolls up to
+   * «Чья» when the visit card below says «choose the group first».
+   */
+  scrollRef?: RefObject<ScrollView | null>;
 }) {
   const { t } = useTranslation();
   const bottomRoom = useBottomRoom();
@@ -197,6 +204,7 @@ export function Sheet({
               <View style={styles.fillBody}>{children}</View>
             ) : (
               <ScrollView
+                ref={scrollRef}
                 style={styles.bottomScroll}
                 contentContainerStyle={styles.bottomBody}
                 keyboardShouldPersistTaps="handled"

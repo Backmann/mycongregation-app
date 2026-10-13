@@ -1757,7 +1757,8 @@
         "lastWord": "last",
         "and": "and"
       }
-    }
+    },
+    "overseerVisitNeedsGroup": "A visit belongs to a group’s meeting — choose the group under “Whose meeting”"
   },
   "cleaning": {
     "title": "Cleaning",
@@ -3481,7 +3482,10 @@
     "openFromTask": "Open the group visits →",
     "prevYear": "Previous service year",
     "nextYear": "Next service year",
-    "noneThatYear": "Not visited that year"
+    "noneThatYear": "Not visited that year",
+    "plan": "Plan a visit",
+    "planAnother": "Plan another visit",
+    "hintPlan": "“Plan a visit” opens the field service meeting window for that group with the visit already switched on — only the date and the assistant remain."
   },
   "tasks": {
     "title": "Body of elders' tasks",

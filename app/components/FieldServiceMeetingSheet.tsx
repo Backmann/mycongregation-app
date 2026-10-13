@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
+  ScrollView,
   StyleSheet,
   Switch,
   Text,
@@ -96,6 +97,11 @@ export type FieldServiceFormProps = {
     isGeneral?: boolean;
     conductorPublisherId?: string | null;
     serviceGroupId?: string | null;
+    /**
+     * Open as the service overseer's visit to that group, with the overseer
+     * filled in — the «Запланировать посещение» door on his page.
+     */
+    serviceOverseerVisit?: boolean;
   };
   /** Default date (ISO) to preselect in date-pick mode. */
   defaultDate?: string;
@@ -174,6 +180,13 @@ export function FieldServiceForm({
   const [overseerId, setOverseerId] = useState<string | null>(null);
   const [assistantId, setAssistantId] = useState<string | null>(null);
   const [notifyConductor, setNotifyConductor] = useState(true);
+  // «Choose the group first» was tapped under the visit card: «Чья» lights
+  // up for a moment, and the sheet scrolls back to it.
+  const [whoseNudge, setWhoseNudge] = useState(false);
+  const scrollRef = useRef<ScrollView | null>(null);
+  // A visit asked for by the caller still waits for its overseer: the
+  // responsibilities and the roster arrive after the window has opened.
+  const fillOverseer = useRef(false);
 
   const todayISO = formatDateISO(new Date());
 
@@ -201,10 +214,13 @@ export function FieldServiceForm({
       // The congregation's own meeting is the usual one (Lionel, 10 October):
       // a new entry starts as that unless the caller says whose it is.
       setGeneral(!prefill?.serviceGroupId && (prefill?.isGeneral ?? true));
-      setOverseerVisit(false);
+      const visit = !!prefill?.serviceGroupId && !!prefill?.serviceOverseerVisit;
+      setOverseerVisit(visit);
       setOverseerId(null);
       setAssistantId(null);
+      fillOverseer.current = visit;
       setNotifyConductor(true);
+      setWhoseNudge(false);
     } else if (target) {
       setDayOfWeek(target.dayOfWeek);
       setPickedDate('');
@@ -221,10 +237,30 @@ export function FieldServiceForm({
       setOverseerVisit(target.serviceOverseerVisit ?? false);
       setOverseerId(target.serviceOverseerPublisherId ?? null);
       setAssistantId(target.serviceOverseerAssistantId ?? null);
+      fillOverseer.current = false;
       setNotifyConductor(true);
+      setWhoseNudge(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [target]);
+
+  // The overseer for a visit the caller asked for, once the roster and the
+  // responsibilities are here — the same fill the switch does by hand.
+  useEffect(() => {
+    if (!fillOverseer.current || target !== 'new') return;
+    const holder = holderOf('service_overseer');
+    if (!holder) return;
+    fillOverseer.current = false;
+    setOverseerId(holder);
+    setConductorPublisherId((c) => c ?? holder);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [target, respQuery.data, publishersQuery.data]);
+
+  useEffect(() => {
+    if (!whoseNudge) return;
+    const h = setTimeout(() => setWhoseNudge(false), 2500);
+    return () => clearTimeout(h);
+  }, [whoseNudge]);
 
   // In the week editor the weekday opens on the first day still to come.
   useEffect(() => {
@@ -561,6 +597,7 @@ export function FieldServiceForm({
       onClose={onClose}
       closeLabel={t('common.close')}
       hideClose
+      scrollRef={scrollRef}
       footer={
         <View style={styles.footer}>
           {!canSave && saveHints.length > 0 ? (
@@ -582,8 +619,10 @@ export function FieldServiceForm({
       }
     >
       {/* Whose */}
-      <Text style={styles.label}>{t('fieldService.sheet.whose')}</Text>
-      <View style={styles.segmentTrack}>
+      <Text style={[styles.label, whoseNudge && styles.labelNudge]}>
+        {t('fieldService.sheet.whose')}
+      </Text>
+      <View style={[styles.segmentTrack, whoseNudge && styles.segmentTrackNudge]}>
         {[
           { key: 'general', id: null as string | null, general: true, name: t('fieldService.sheet.general') },
           { key: 'open', id: null as string | null, general: false, name: t('fieldService.sheet.byGroups') },
@@ -791,7 +830,10 @@ export function FieldServiceForm({
         <Text style={styles.addressEcho}>{address.trim() || '—'}</Text>
       )}
 
-      {/* The visit, when it is a group's meeting */}
+      {/* The visit. A visit is to a GROUP — the database refuses one without
+          — so until a group is chosen the switch is off and grey, and the
+          card says what to do instead of hiding: shown only after a group
+          was tapped, nobody found it (Lionel, 13 October 2026). */}
       {serviceGroupId ? (
         <View style={styles.visitCard}>
           <View style={styles.toggleRow}>
@@ -886,7 +928,31 @@ export function FieldServiceForm({
             </>
           ) : null}
         </View>
-      ) : null}
+      ) : (
+        <Pressable
+          style={[styles.visitCard, styles.visitCardOff]}
+          onPress={() => {
+            setWhoseNudge(true);
+            scrollRef.current?.scrollTo({ y: 0, animated: true });
+          }}
+          accessibilityRole="button"
+          accessibilityLabel={t('fieldService.overseerVisitNeedsGroup')}
+        >
+          <View style={styles.toggleRow}>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.toggleLabel, styles.toggleLabelOff]}>
+                {t('fieldService.overseerVisit')}
+              </Text>
+              <Text style={styles.toggleHint}>{t('fieldService.overseerVisitNeedsGroup')}</Text>
+            </View>
+            <Switch
+              value={false}
+              disabled
+              trackColor={{ true: '#0ea5e9', false: '#cbd5e1' }}
+            />
+          </View>
+        </Pressable>
+      )}
       {sameDayNote ? (
         <Text style={styles.warnHint} testID="fs-same-day-note">
           {sameDayNote}
@@ -1068,7 +1134,9 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     backgroundColor: '#e9eef4',
     borderRadius: 12,
-    padding: 3,
+    borderWidth: 1,
+    borderColor: '#e9eef4',
+    padding: 2,
     gap: 3,
   },
   segment: {
@@ -1165,6 +1233,10 @@ const styles = StyleSheet.create({
     padding: 12,
     backgroundColor: '#f8fafc',
   },
+  visitCardOff: { backgroundColor: '#f8fafc', borderStyle: 'dashed' },
+  labelNudge: { color: '#b45309' },
+  segmentTrackNudge: { borderColor: '#f59e0b', backgroundColor: '#fffbeb' },
+  toggleLabelOff: { color: '#64748b' },
   toggleRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 14 },
   toggleLabel: { fontSize: 15, fontWeight: '600', color: '#0f172a', fontFamily: 'Manrope_600SemiBold' },
   toggleHint: { fontSize: 12.5, color: '#64748b', fontFamily: 'Manrope_500Medium' },

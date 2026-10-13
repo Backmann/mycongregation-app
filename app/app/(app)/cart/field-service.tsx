@@ -11,7 +11,7 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from 'expo-router';
+import { router, useLocalSearchParams, useNavigation } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
@@ -272,9 +272,24 @@ export default function FieldServiceMeetingsScreen() {
         isGeneral?: boolean;
         conductorPublisherId?: string | null;
         serviceGroupId?: string | null;
+        serviceOverseerVisit?: boolean;
       }
     | undefined
   >();
+
+  // «Запланировать посещение» on the service overseer's page lands here
+  // with the group: the window opens at once as his visit to it, the date
+  // still to pick. The parameter is cleared so that closing the window and
+  // coming back does not open it again.
+  const { visitGroup } = useLocalSearchParams<{ visitGroup?: string }>();
+  useEffect(() => {
+    if (!visitGroup || !canEdit) return;
+    setPrefill({ serviceGroupId: visitGroup, serviceOverseerVisit: true });
+    setAddDefaultDate(undefined);
+    setAddAsDraft(false);
+    setTarget('new');
+    router.setParams({ visitGroup: undefined });
+  }, [visitGroup, canEdit]);
   const [genOpen, setGenOpen] = useState(false);
   const [prepareOpen, setPrepareOpen] = useState(false);
 

@@ -292,6 +292,12 @@ if (await tap(/^Встречи для проповеди$/, 'раздел «Вс
 // ── Служебный старейшина, задачи ──────────────────────────────────────
 await open('/cart/service-overseer', /^Служебный год/);
 await snap('service-overseer');
+// «Запланировать посещение» opens the meeting window as the visit to that
+// group — the overseer filled in, the date still to pick.
+if (await tap(/^Запланировать (посещение|ещё одно)$/, '«Запланировать посещение»', 3000)) {
+  await snap('visit-from-overseer-page');
+  await back();
+}
 await open('/tasks', /^Открытые/);
 await snap('tasks');
 
