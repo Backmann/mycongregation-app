@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { FieldServiceMeeting, isFieldServiceDraft } from '../lib/api';
 import type { FieldNote } from '../lib/field-audience';
 import { FieldNoteLine } from './FieldListBits';
+import { FieldNotice } from './FieldNotice';
 import { MyDot } from './MyDot';
 import { MyGlowRow } from './MyGlowRow';
 import { SourceLink } from './SourceLink';
@@ -101,6 +102,9 @@ export function FieldMeetingRow({
           ) : null}
         </View>
         <Text style={[styles.rowWho, who.empty && styles.rowWhoEmpty]}>{who.text}</Text>
+        {/* What is different this time — before the theme and the address,
+            which are what the notice usually corrects. */}
+        <FieldNotice text={m.notice} />
         {/* What the meeting is about, whole: it used to share two lines with
             the address and end in «…» — the address is the same every week,
             the theme is what people read (phone, 11 October 2026). */}

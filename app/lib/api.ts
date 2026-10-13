@@ -1890,6 +1890,12 @@ export interface FieldServiceMeeting {
   conductorPublisherId: string | null;
   topic: string | null;
   sourceUrl: string | null;
+  /**
+   * A short word for everyone about what is different this time — «зал на
+   * ремонте, собираемся у входа в парк». Drawn in amber wherever the meeting
+   * is drawn; absent on an ordinary meeting (13 October 2026).
+   */
+  notice?: string | null;
   isGeneral: boolean;
   /** Whose meeting this is; null when it belongs to no one group. */
   serviceGroupId: string | null;
@@ -1921,6 +1927,7 @@ export interface CreateFieldServiceMeetingInput {
   conductorPublisherId?: string | null;
   topic?: string | null;
   sourceUrl?: string | null;
+  notice?: string | null;
   isGeneral?: boolean;
   serviceGroupId?: string | null;
   serviceOverseerVisit?: boolean;
@@ -3330,6 +3337,8 @@ export interface MyAssignmentItem {
   serviceOverseerVisit?: boolean;
   /** Field-service visit: the other man of the pair, by name. */
   visitWithName?: string;
+  /** Field service: the meeting's notice for everyone. */
+  notice?: string | null;
   note?: string;
   partKey?: string;
   partOrder?: number;

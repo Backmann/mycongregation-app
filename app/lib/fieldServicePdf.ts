@@ -12,6 +12,8 @@ export interface FsPdfMeetingRow {
   time: string;
   address: string;
   topic: string | null;
+  /** What is different this time, printed bold under the address. */
+  notice?: string | null;
   conductorName: string | null;
   isGeneral: boolean;
   /** The group this meeting belongs to; null when it belongs to no one group. */
@@ -104,6 +106,12 @@ export function buildFieldServicePdfHtml(opts: {
             r.groupName && !r.isOverseerVisit
               ? `<div class="group">${esc(r.groupName)}</div>`
               : '';
+          // The notice for everyone, printed as it is drawn on screen: a
+          // bold amber line, before the theme — a sheet pinned in the hall
+          // is where many first read that the hall is under repair.
+          const notice = r.notice?.trim()
+            ? `<div class="notice">${esc(r.notice.trim())}</div>`
+            : '';
           const assistant = r.assistantName
             ? `<div class="assist">${esc(L.assistant)}: ${esc(r.assistantName)}</div>`
             : '';
@@ -117,7 +125,7 @@ export function buildFieldServicePdfHtml(opts: {
           return `<tr${r.isOverseerVisit || r.fromCoVisit ? ' class="visitrow"' : ''}>
 <td class="date">${esc(r.dayLabel)} ${r.dateISO.slice(8, 10)}.${r.dateISO.slice(5, 7)}${badges ? `<div class="badges">${badges}</div>` : ''}</td>
 <td class="time">${esc(r.time)}</td>
-<td>${esc(r.address)}${group}${what}</td>
+<td>${esc(r.address)}${group}${notice}${what}</td>
 <td class="cond">${esc(who)}${assistant}</td>
 </tr>`;
         })
@@ -175,6 +183,8 @@ ${rows}
   .cond { font-weight: 600; }
   .group { color: #0f172a; font-size: 9pt; font-weight: 600; margin-top: 2px; }
   .topic { color: #475569; font-size: 8.5pt; margin-top: 2px; line-height: 1.35; }
+  .notice { color: #78350f; background: #fffbeb; border: 1px solid #fde68a; border-radius: 4px;
+    padding: 2px 6px; font-size: 9pt; font-weight: 700; margin-top: 3px; line-height: 1.35; }
   .assist { color: #64748b; font-size: 8.5pt; font-weight: 400; margin-top: 2px; }
 
   .badges { margin-top: 3px; }

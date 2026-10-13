@@ -28,6 +28,7 @@ import {
 import { usePermissions } from "../../../lib/permissions";
 import { useMayOpen } from "../../../lib/useMayOpen";
 import { SourceLink } from "../../../components/SourceLink";
+import { FieldNotice } from "../../../components/FieldNotice";
 import {
   EnableNotificationsCard,
   useNotifyNudge,
@@ -1115,6 +1116,7 @@ function NextBody({
           <Text style={s.nextSecond}>{t("feed.fieldVisitTitle")}</Text>
         ) : null}
         {where ? <Text style={s.nextPlace}>{where}</Text> : null}
+        <FieldNotice text={entry.notice} big />
         <FieldPeople en={entry} myName={myName} />
         {entry.topic ? <Text style={s.topic}>{entry.topic}</Text> : null}
         {/* The one who conducts opens the source from here (5 October). */}
@@ -1440,6 +1442,7 @@ function EntryBody({
         )}
         <Text style={s.rowTitle}>{fieldTitle(en, t)}</Text>
         {where ? <Text style={s.rowPlain}>{where}</Text> : null}
+        <FieldNotice text={en.notice} />
         <FieldPeople en={en} myName={myName} />
         {en.fieldNote?.kind === "onlyFor" ? (
           <Text style={s.rowNote}>

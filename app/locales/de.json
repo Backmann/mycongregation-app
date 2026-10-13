@@ -1758,7 +1758,12 @@
         "and": "und"
       }
     },
-    "overseerVisitNeedsGroup": "Ein Besuch gehört zur Zusammenkunft einer Gruppe – wähle die Gruppe unter „Wessen Zusammenkunft“"
+    "overseerVisitNeedsGroup": "Ein Besuch gehört zur Zusammenkunft einer Gruppe – wähle die Gruppe unter „Wessen Zusammenkunft“",
+    "notice": {
+      "label": "Hinweis für alle",
+      "placeholder": "Zum Beispiel: Saal wird renoviert – wir treffen uns am Parkeingang",
+      "hint": "Kurz, was diesmal anders ist. Alle, die die Zusammenkunft betrifft, sehen es: auf der Startseite, im Programm und in der Liste."
+    }
   },
   "cleaning": {
     "title": "Reinigung",

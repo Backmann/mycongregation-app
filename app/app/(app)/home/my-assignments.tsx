@@ -30,6 +30,7 @@ import {
 } from '../../../lib/my-tasks';
 import { addDays, formatDateISO, startOfWeekMonday } from '../../../lib/dates';
 import { WindowsPlanDialog } from '../../../components/WindowsPlan';
+import { FieldNotice } from '../../../components/FieldNotice';
 import { KeptNotice, LoadFailed } from '../../../components/ConnectionState';
 import { sessionVerdict } from '../../../lib/session-verdict';
 
@@ -251,6 +252,9 @@ export default function MyAssignmentsScreen() {
                               .filter(Boolean)
                               .join(' · ')}
                           </Text>
+                        ) : null}
+                        {r.item.kind === 'field_service' ? (
+                          <FieldNotice text={r.item.notice} />
                         ) : null}
                         {r.item.kind === 'cleaning' ? (
                           <CleaningRowExtras

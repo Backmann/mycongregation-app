@@ -1758,7 +1758,12 @@
         "and": "and"
       }
     },
-    "overseerVisitNeedsGroup": "A visit belongs to a group’s meeting — choose the group under “Whose meeting”"
+    "overseerVisitNeedsGroup": "A visit belongs to a group’s meeting — choose the group under “Whose meeting”",
+    "notice": {
+      "label": "Notice for everyone",
+      "placeholder": "For example: hall under repair — we meet at the park entrance",
+      "hint": "Briefly, what is different this time. Everyone the meeting concerns sees it: on Home, in the Programme and in the list."
+    }
   },
   "cleaning": {
     "title": "Cleaning",

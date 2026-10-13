@@ -46,6 +46,7 @@ import { partDisplay } from "../../../lib/part-display";
 import { MEETING_LENGTH_MIN } from "../../../lib/home-digest";
 import { useSongsMap, enrichSongRef } from "../../../lib/songs";
 import { SourceLink } from "../../../components/SourceLink";
+import { FieldNotice } from "../../../components/FieldNotice";
 import { arrangeFieldDay, noteForPlace } from "../../../lib/field-audience";
 import type { FieldPlace } from "../../../lib/field-audience";
 import {
@@ -1374,6 +1375,7 @@ function Row({
   time,
   line,
   lines,
+  notices,
   mine,
   status,
   tag,
@@ -1393,6 +1395,8 @@ function Row({
   line?: string | null;
   /** Several lines under the title, one each — a field-service day's meetings. */
   lines?: string[];
+  /** Field service: what is different this time, in amber, one per meeting that says so. */
+  notices?: string[];
   /** What is yours in it — shown with a «Вы» mark. */
   mine?: string | null;
   status?: { color: string; text: string } | null;
@@ -1428,6 +1432,7 @@ function Row({
             {l}
           </Text>
         ))}
+        {notices?.map((n, i) => <FieldNotice key={`n${i}`} text={n} />)}
         {mine ? (
           <View style={styles.mineRow}>
             {/* The sign of «yours», not the word «Вы» (26 September): the list
@@ -1993,6 +1998,12 @@ function FieldDay({
       : null;
   const firstTime = (day.shown[0] ?? day.others[0])?.meeting.startTime ?? null;
   const line = lines.join(" · ");
+  // The notice is read in the collapsed row too: what is different this
+  // Saturday must not wait for a tap. Several meetings with a notice each —
+  // one strip each, in the day's order; the same text twice is said once.
+  const notices = [...new Set(
+    [...day.shown, ...day.others].map((p) => p.meeting.notice?.trim() ?? "").filter(Boolean),
+  )];
 
   const lineOf = (p: FieldPlace) => {
     const m = p.meeting;
@@ -2022,8 +2033,9 @@ function FieldDay({
         // on «Встречи для проповеди», and missing from the one screen the
         // week is read from (5 October).
         below={
-          m.topic || m.sourceUrl ? (
+          m.notice || m.topic || m.sourceUrl ? (
             <View style={styles.fieldAbout}>
+              <FieldNotice text={m.notice} />
               {m.topic ? <Text style={styles.fieldTopic}>{m.topic}</Text> : null}
               <SourceLink url={m.sourceUrl} />
             </View>
@@ -2047,6 +2059,7 @@ function FieldDay({
           title={title}
           time={firstTime}
           lines={lines}
+          notices={notices}
           mine={mine}
           color={KIND.field.color}
           past={past}

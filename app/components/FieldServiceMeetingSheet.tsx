@@ -30,6 +30,7 @@ import { resolveHallAddress } from '../lib/hallAddress';
 import { Sheet } from './Sheet';
 import { PublisherSelector } from './PublisherSelector';
 import { TimeField } from './TimeField';
+import { FieldNotice } from './FieldNotice';
 import { MonthCalendar } from './MonthCalendar';
 import {
   startOfWeekMonday,
@@ -172,6 +173,7 @@ export function FieldServiceForm({
     string | null
   >(null);
   const [topic, setTopic] = useState('');
+  const [notice, setNotice] = useState('');
   const [sourceUrl, setSourceUrl] = useState('');
   const [materialOpen, setMaterialOpen] = useState(false);
   const [serviceGroupId, setServiceGroupId] = useState<string | null>(null);
@@ -208,6 +210,8 @@ export function FieldServiceForm({
       setAddressOpen(false);
       setConductorPublisherId(prefill?.conductorPublisherId ?? null);
       setTopic(prefill?.topic ?? '');
+      // Never copied from a prefill: a notice is about one Saturday.
+      setNotice('');
       setSourceUrl(prefill?.sourceUrl ?? '');
       setMaterialOpen(!!(prefill?.topic || prefill?.sourceUrl));
       setServiceGroupId(prefill?.serviceGroupId ?? null);
@@ -230,6 +234,7 @@ export function FieldServiceForm({
       setAddressOpen(false);
       setConductorPublisherId(target.conductorPublisherId);
       setTopic(target.topic ?? '');
+      setNotice(target.notice ?? '');
       setSourceUrl(target.sourceUrl ?? '');
       setMaterialOpen(!!(target.topic || target.sourceUrl));
       setServiceGroupId(target.serviceGroupId ?? null);
@@ -475,6 +480,7 @@ export function FieldServiceForm({
       address: address.trim(),
       conductorPublisherId,
       topic: topic.trim() || null,
+      notice: notice.trim() || null,
       sourceUrl: sourceUrl.trim() || null,
       // Two kinds only: a group's own, or everybody's.
       isGeneral,
@@ -569,6 +575,7 @@ export function FieldServiceForm({
             last
           />
         </View>
+        <FieldNotice text={editing.notice} />
         {onDuplicate ? (
           <Pressable style={styles.secondaryBtn} onPress={onDuplicate}>
             <Text style={styles.secondaryBtnText}>
@@ -829,6 +836,21 @@ export function FieldServiceForm({
       ) : (
         <Text style={styles.addressEcho}>{address.trim() || '—'}</Text>
       )}
+
+      {/* What is different this time — for everyone who reads the meeting.
+          Under «Где», because that is what it usually corrects; not folded
+          away with the theme, which is what the meeting is about. */}
+      <Text style={styles.label}>{t('fieldService.notice.label')}</Text>
+      <TextInput
+        style={[styles.input, styles.multiline, notice.trim() !== '' && styles.inputNotice]}
+        value={notice}
+        onChangeText={setNotice}
+        placeholder={t('fieldService.notice.placeholder')}
+        placeholderTextColor="#94a3b8"
+        multiline
+        maxLength={300}
+      />
+      <Text style={styles.noticeHint}>{t('fieldService.notice.hint')}</Text>
 
       {/* The visit. A visit is to a GROUP — the database refuses one without
           — so until a group is chosen the switch is off and grey, and the
@@ -1225,6 +1247,8 @@ const styles = StyleSheet.create({
   },
   multiline: { minHeight: 72, textAlignVertical: 'top' },
   addressEcho: { fontSize: 13.5, color: '#64748b', marginTop: 8, fontFamily: 'Manrope_500Medium' },
+  inputNotice: { borderColor: '#f59e0b', backgroundColor: '#fffbeb' },
+  noticeHint: { fontSize: 12.5, color: '#64748b', marginTop: 6, fontFamily: 'Manrope_500Medium' },
   visitCard: {
     marginTop: 14,
     borderWidth: 1,

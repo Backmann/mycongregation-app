@@ -157,6 +157,8 @@ export interface MeetingEntry {
   conductorName: string | null;
   unassignedConductor: boolean;
   topic: string | null;
+  /** Field service: the notice for everyone — «зал на ремонте…». */
+  notice?: string | null;
   /**
    * Field service: whose group, and whether the service overseer is coming.
    *
@@ -755,6 +757,7 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
       // as a whole, so no conductor there is not a gap to announce.
       unassignedConductor: !conductor && audienceOf(m) !== 'open',
       topic: m.topic,
+      notice: m.notice ?? null,
       sourceUrl: m.sourceUrl,
       replacedBy: null,
       groupName: m.serviceGroupId

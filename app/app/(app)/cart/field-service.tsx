@@ -619,6 +619,7 @@ export default function FieldServiceMeetingsScreen() {
               time: m.startTime,
               address: resolveHallAddress(m.address, halls),
               topic: m.topic ?? null,
+              notice: m.notice ?? null,
               conductorName: nameOf(m.conductorPublisherId),
               isGeneral: m.isGeneral,
               groupName: m.serviceGroupId ? groupName(m.serviceGroupId) : null,
