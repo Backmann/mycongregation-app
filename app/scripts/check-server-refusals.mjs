@@ -56,8 +56,9 @@ for (const [what, status, data, check] of [
   ['поле во вложенном списке — по последней части', 400,
     { code: 'INVALID_FIELD', fields: [{ field: 'slots.2.startTime', rules: ['matches'] }] },
     (s) => s?.includes(get(ru, 'serverError.fields.startTime'))],
-  ['поле без имени в приложении', 400, { code: 'INVALID_FIELD', fields: [{ field: 'zzz', rules: ['isUUID'] }] },
-    (s) => s?.startsWith(get(ru, 'serverError.invalid.anonymous').split('{{')[0])],
+  ['поле без имени в приложении', 400, { code: 'INVALID_FIELD', fields: [{ field: 'zzz', rules: ['isUuid'] }] },
+    (s) => s?.startsWith(get(ru, 'serverError.invalid.anonymous').split('{{')[0]) &&
+      s.includes(get(ru, 'serverError.rules.isUuid'))],
   ['неизвестное правило', 400, { code: 'INVALID_FIELD', fields: [{ field: 'address', rules: ['somethingNew'] }] },
     (s) => s?.includes(get(ru, 'serverError.rules.other'))],
   ['лишнее поле — ошибка приложения, не человека', 400,
@@ -142,6 +143,59 @@ if (codes) {
   }
 }
 
+// --- 2b. the rule names are class-validator's own ---------------------------------
+// The server names a broken rule by class-validator's constraint key, and
+// those are not the decorators' names: @IsUUID says `isUuid`, @IsISO8601
+// `isIso8601`, @Length `isLength`. Words kept under the decorator's name
+// were never found, and «ничего не выбрано» became «значение не подходит»
+// (13 October 2026). Checked when the server is checked out beside the app.
+let rulesChecked = 0;
+try {
+  const serverRequire = createRequire(join(ROOT, '../server/package.json'));
+  const cv = serverRequire('class-validator');
+  const KNOWN = new Set(
+    Object.entries(cv)
+      .filter(([k, v]) => /^[A-Z][A-Z0-9_]+$/.test(k) && typeof v === 'string')
+      .map(([, v]) => v),
+  );
+  const ruleKeys = (lang) => Object.keys(get(locales[lang], 'serverError.rules') ?? {});
+  for (const lang of LANGS) {
+    for (const key of ruleKeys(lang)) {
+      if (key !== 'other' && !KNOWN.has(key)) {
+        problems.push(`serverError.rules.${key} (${lang}): такого правила class-validator не присылает — слова не найдутся`);
+      }
+    }
+  }
+  // Every validating decorator the server uses has words, in every language.
+  const scanServer = (d) =>
+    readdirSync(join(ROOT, d)).flatMap((n) => {
+      const p = `${d}/${n}`;
+      return statSync(join(ROOT, p)).isDirectory() ? scanServer(p) : /\.ts$/.test(n) && !/\.spec\.ts$/.test(n) ? [p] : [];
+    });
+  const used = new Set();
+  for (const rel of scanServer('../server/src')) {
+    for (const m of read(rel).matchAll(/@([A-Z][A-Za-z0-9]+)\(/g)) used.add(m[1]);
+  }
+  // Decorator → constant: IsUUID → IS_UUID, MaxLength → MAX_LENGTH, Length → IS_LENGTH.
+  const constant = (d) => d.replace(/([a-z0-9])([A-Z])/g, '$1_$2').replace(/([A-Z]+)([A-Z][a-z])/g, '$1_$2').toUpperCase();
+  const NOT_A_RULE = new Set(['IsOptional', 'ValidateIf', 'ValidateNested', 'Validate', 'Type', 'Transform']);
+  for (const dec of used) {
+    if (NOT_A_RULE.has(dec) || typeof cv[dec] !== 'function') continue;
+    const value = cv[constant(dec)] ?? cv[`IS_${constant(dec)}`];
+    if (typeof value !== 'string') continue;
+    rulesChecked += 1;
+    for (const lang of LANGS) {
+      if (!hasIn(lang, `serverError.rules.${value}`) && value !== 'isObject') {
+        problems.push(`@${dec}: сервер пришлёт правило «${value}», а слов serverError.rules.${value} (${lang}) нет`);
+      }
+    }
+  }
+  if (rulesChecked === 0) problems.push('Ни одного правила сервера не распознано — проверка правил сломалась.');
+} catch (e) {
+  if (e?.code !== 'MODULE_NOT_FOUND' && e?.code !== 'ENOENT') throw e;
+  // The server is not checked out beside the app, or not installed.
+}
+
 // --- 3. the one door every screen goes through asks the words first -------------------
 {
   const api = read('lib/api.ts');
@@ -184,6 +238,6 @@ if (problems.length > 0) {
 }
 console.log(
   codes
-    ? `✓ Отказы сервера словами: ${codes.length} кодов — ${byWords} общими словами, ${byScreen} своим экраном; правило проверено на 15 случаях; ${windows} окон показывают сообщения поверх себя`
+    ? `✓ Отказы сервера словами: ${codes.length} кодов — ${byWords} общими словами, ${byScreen} своим экраном; ${rulesChecked} правил проверки полей — со словами; правило проверено на 15 случаях; ${windows} окон показывают сообщения поверх себя`
     : `✓ Отказы сервера словами: правило проверено на 15 случаях (сервера рядом нет — коды не сверены); ${windows} окон показывают сообщения поверх себя`,
 );

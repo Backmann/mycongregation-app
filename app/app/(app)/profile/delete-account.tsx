@@ -40,8 +40,13 @@ export default function DeleteAccountScreen() {
     },
     onError: (err: unknown) => {
       const msg = extractErrorMessage(err);
+      // The code first; the words for older servers that sent only words.
+      const code = (err as { response?: { data?: { code?: unknown } } })
+        ?.response?.data?.code;
       setServerError(
-        msg.includes('LAST_ADMIN') ? t('deleteAccount.lastAdmin') : msg,
+        code === 'LAST_ADMIN' || msg.includes('LAST_ADMIN')
+          ? t('deleteAccount.lastAdmin')
+          : msg,
       );
     },
   });

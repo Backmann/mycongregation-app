@@ -121,6 +121,13 @@ export function refusalText(
     return t.say("serverError.codes.NEEDS_ROLE", { who: names.join(", ") });
   }
 
+  // A journal entry that cannot be undone says why in the journal's own
+  // words — the same reasons its preview already shows.
+  if (code === 'NOT_REVERTABLE' && typeof body.reason === 'string') {
+    const key = `journal.revertNo.${body.reason}`;
+    if (t.has(key)) return t.say(key);
+  }
+
   if (code) {
     // The section's own words first, where a section had them before this
     // list existed (special events); then the shared ones.

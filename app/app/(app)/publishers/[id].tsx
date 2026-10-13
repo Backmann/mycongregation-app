@@ -191,7 +191,11 @@ export default function PublisherDetailScreen() {
     onError: (e: unknown) => {
       const raw = extractErrorMessage(e);
       const holders = describePurgeHolders(raw, t);
-      const body = raw.includes('publisher_has_history')
+      // Known by its code (PUBLISHER_HAS_HISTORY) and, for an older server,
+      // by the words it begins with; the list of what holds the card stays
+      // in the server's sentence, which this screen reads for itself.
+      const code = (e as { response?: { data?: { code?: unknown } } })?.response?.data?.code;
+      const body = code === 'PUBLISHER_HAS_HISTORY' || raw.includes('publisher_has_history')
         ? holders
           ? t('publishers.purge.hasHistoryNamed', { holders })
           : t('publishers.purge.hasHistory')
