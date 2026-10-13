@@ -385,7 +385,9 @@ function fieldWord(
       field === 'confirmed' ||
       field === 'isDeaf' ||
       field === 'isBlind' ||
-      field === 'isImprisoned'
+      field === 'isImprisoned' ||
+      // A programme part corrected after it became the record (13 October 2026).
+      field === 'retroactive'
     ) {
       return v ? t('common.yes') : t('common.no');
     }

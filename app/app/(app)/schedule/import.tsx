@@ -459,7 +459,7 @@ function ResultSummary({ result }: { result: ImportResult }) {
    * not «done», it is «now go and put brothers in it», and the link saves
    * paging through the schedule to find the week that was just filled.
    */
-  const firstWeek = result.weeks.find((w) => !w.notHeld)?.weekStartDate;
+  const firstWeek = result.weeks.find((w) => !w.notHeld && !w.frozen)?.weekStartDate;
   /**
    * What the server reports, said in the reader's language.
    *
@@ -483,7 +483,12 @@ function ResultSummary({ result }: { result: ImportResult }) {
                 week: weekLabel(n.weekStartDate),
                 count: n.parts,
               })
-          : t('schedule.import.result.unclassifiedPart', {
+          : n.code === 'week_frozen'
+            ? t('schedule.import.result.weekFrozenNotice', {
+                week: weekLabel(n.weekStartDate),
+                count: n.parts,
+              })
+            : t('schedule.import.result.unclassifiedPart', {
               week: weekLabel(n.weekStartDate),
               title: n.title ?? '—',
             }),
@@ -601,6 +606,10 @@ function ResultSummary({ result }: { result: ImportResult }) {
               {w.notHeld ? (
                 <Text style={styles.weekNotHeld}>
                   {t('schedule.import.result.weekNotHeld')}
+                </Text>
+              ) : w.frozen ? (
+                <Text style={styles.weekNotHeld}>
+                  {t('schedule.import.result.weekFrozen')}
                 </Text>
               ) : (
                 w.skipped > 0 && (

@@ -980,6 +980,16 @@ export default function TalkExchangeYearScreen() {
     const saved = editing
       ? await updateMutation.mutateAsync({ id: editing.id, input })
       : await createMutation.mutateAsync(input);
+    // The journal keeps its own history; the programme of a week that is
+    // already the record is not rewritten by it. Said, so the two are not
+    // left to disagree in silence (13 October 2026).
+    if (saved.programmeFrozen) {
+      notify(
+        t("talkCoordinator.log.programmeFrozenTitle"),
+        t("talkCoordinator.log.programmeFrozenBody"),
+        "success",
+      );
+    }
     if (saved.programConflict) {
       const ok = await confirmReplace(
         t("talkCoordinator.log.conflictTitle"),

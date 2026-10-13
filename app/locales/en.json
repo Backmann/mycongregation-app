@@ -993,7 +993,9 @@
         "unclassifiedPart": "{{week}}: a part was not recognised and was not loaded — “{{title}}”",
         "weekNotHeld": "no meeting",
         "importedWeeks": "Imported weeks",
-        "openSchedule": "Open the schedule and assign the brothers"
+        "openSchedule": "Open the schedule and assign the brothers",
+        "weekFrozenNotice": "{{week}}: this week’s programme is already the record — parts not loaded: {{count}}",
+        "weekFrozen": "already the record"
       },
       "privacyNote": "The file is read on this screen, in the browser, and is not sent anywhere — only part titles and durations reach the schedule.",
       "parsing": "Parsing the file…",
@@ -1103,7 +1105,17 @@
       "weekendTitle": "Weekend Meeting",
       "watchtowerPrefix": "Watchtower"
     },
-    "movedTo": "Now a screen of its own: {{path}}"
+    "movedTo": "Now a screen of its own: {{path}}",
+    "lock": {
+      "frozen": "The meeting was on {{date}} — its programme is now the record and can no longer be changed.",
+      "grace": "The meeting has taken place — the programme can still be corrected until {{until}}.",
+      "fix": "Correct after the fact",
+      "fixConfirmTitle": "Correct the programme after the fact?",
+      "fixConfirmBody": "The week opens for editing. Changes are announced to nobody and are marked in the journal as a correction after the fact.",
+      "retroOn": "Correcting after the fact — no notifications, marked in the journal",
+      "retroDone": "Done",
+      "fixConfirmGo": "Correct"
+    }
   },
   "audit": {
     "noReportId": "No report id supplied.",
@@ -2995,7 +3007,9 @@
       "rebuildDoneBody": "Weeks examined: {{weeks}}. Visits linked to a speaker's card: {{linked}}.",
       "spokeAway": "spoke {{rel}}, times in all: {{count}}",
       "awayThisDay": "that day he is at another congregation",
-      "upcomingFrom": "Upcoming"
+      "upcomingFrom": "Upcoming",
+      "programmeFrozenTitle": "Entry saved",
+      "programmeFrozenBody": "This week’s programme is already the record and was not changed. If needed, an administrator or the coordinator of the body of elders can correct it after the fact."
     },
     "swap": {
       "pastRefused": "That week is over. The brother has spoken and his name was read from the stage — only what has not happened yet can be moved.",
@@ -3247,7 +3261,8 @@
     "about": "about {{name}}",
     "bulk": "{{count}} at once",
     "denyReason": {
-      "past_frozen": "the meeting has already taken place"
+      "past_frozen": "the meeting has already taken place",
+      "programme_frozen": "the meeting’s programme is already the record"
     },
     "s21": "the S-21 card",
     "fieldNames": {
@@ -3405,7 +3420,8 @@
       "ministryStartDate": "Began in the ministry",
       "isDeaf": "Deaf",
       "isBlind": "Blind",
-      "isImprisoned": "In prison"
+      "isImprisoned": "In prison",
+      "retroactive": "Corrected after the fact"
     },
     "noValue": "empty",
     "changedNoValues": "changed (values are not kept)",
@@ -3432,7 +3448,8 @@
       "notAnEdit": "Only an edit can be put back — not an addition or a deletion.",
       "redacted": "The contents of this entry were erased at a person’s request; there is nothing to put back.",
       "entityNotSupported": "This kind of record cannot be put back. Open it and correct it by hand.",
-      "nothingRevertable": "This entry holds no field that can be put back."
+      "nothingRevertable": "This entry holds no field that can be put back.",
+      "programmeFrozen": "This meeting was more than a week ago — its programme is the record. It can only be corrected after the fact, in the programme editor."
     },
     "goneRecord": "record no longer exists",
     "taskStatus": {
@@ -4520,7 +4537,9 @@
       "FS_CANCELLED": "The meeting is cancelled. To change it, restore it first.",
       "FS_DRAFT_NOT_CANCELLABLE": "A draft was never announced — it is deleted, not cancelled.",
       "FS_ALREADY_CANCELLED": "The meeting is already cancelled.",
-      "FS_NOT_CANCELLED": "The meeting is not cancelled — there is nothing to restore."
+      "FS_NOT_CANCELLED": "The meeting is not cancelled — there is nothing to restore.",
+      "PROGRAMME_PAST_LOCKED": "The meeting on {{date}} was more than a week ago — its programme is the record. It could be changed until {{until}}.",
+      "PROGRAMME_FIX_FORBIDDEN": "A programme can be corrected after the fact by an administrator and the coordinator of the body of elders."
     }
   }
 }

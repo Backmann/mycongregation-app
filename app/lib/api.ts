@@ -529,8 +529,33 @@ export interface CreateAssignmentInput {
   publicTalkId?: string | null;
   speakerName?: string | null;
   speakerCongregation?: string | null;
+  /**
+   * A correction of a programme that is already the record (a week after
+   * its meeting) — honoured only for an administrator or the coordinator of
+   * the body of elders (13 October 2026).
+   */
+  retroactive?: boolean;
 }
 export type UpdateAssignmentInput = Partial<CreateAssignmentInput>;
+
+/** How one meeting's programme stands (server: AssignmentsController.locks). */
+export interface ProgrammeLock {
+  /** The meeting's own day (the week's Sunday when it had none). */
+  meetingDate: string;
+  /** The last day its programme may still change, inclusive. */
+  editableUntil: string;
+  /** The meeting has taken place. */
+  held: boolean;
+  /** Past `editableUntil`: the record. */
+  frozen: boolean;
+}
+
+export interface ProgrammeLocks {
+  weekStartDate: string;
+  meetings: Record<"midweek" | "weekend" | "memorial", ProgrammeLock>;
+  /** This reader may correct a frozen programme after the fact. */
+  mayFixAfterwards: boolean;
+}
 
 // ---------- Schedule import types ----------
 
@@ -543,6 +568,8 @@ export interface WeekImportSummary {
   skipped: number;
   /** The congregation holds no such meeting that week; nothing was applied. */
   notHeld?: boolean;
+  /** The week's programme is already the record; nothing was applied. */
+  frozen?: boolean;
 }
 
 /**
@@ -557,6 +584,14 @@ export type ImportNotice =
       weekStartDate: string;
       meeting: 'midweek' | 'weekend';
       parts: number;
+    }
+  | {
+      /** Its meeting was held more than a week ago: the programme is the record. */
+      code: 'week_frozen';
+      weekStartDate: string;
+      meeting: 'midweek' | 'weekend';
+      parts: number;
+      editableUntil: string;
     }
   | { code: 'unclassified_part'; weekStartDate: string; title: string | null };
 
@@ -1699,6 +1734,11 @@ export interface TalkExchange {
   updatedAt: string;
   /** Transient: set on create/update when an occupied program slot was not overwritten. */
   programConflict?: boolean;
+  /**
+   * Transient: the week's programme is already the record (a week after the
+   * meeting) — the entry was saved, the programme was left as it was.
+   */
+  programmeFrozen?: boolean;
 }
 
 export interface TalkExchangeInput {
@@ -4120,9 +4160,24 @@ export const assignmentsApi = {
     );
     return data;
   },
-  async bulkCreate(inputs: CreateAssignmentInput[]): Promise<Assignment[]> {
+  async bulkCreate(
+    inputs: CreateAssignmentInput[],
+    opts: { retroactive?: boolean } = {},
+  ): Promise<Assignment[]> {
     const { data } = await api.post<Assignment[]>("/assignments/bulk", {
-      assignments: inputs.map(cleanPayload),
+      assignments: inputs.map(({ retroactive: _r, ...i }) => cleanPayload(i)),
+      ...(opts.retroactive ? { retroactive: true } : {}),
+    });
+    return data;
+  },
+  /**
+   * How the week's meetings stand — held, until when they may change, the
+   * record — and whether this reader may correct them afterwards. The
+   * screens draw from this; they never count the days themselves.
+   */
+  async locks(weekStart: string): Promise<ProgrammeLocks> {
+    const { data } = await api.get<ProgrammeLocks>("/assignments/locks", {
+      params: { weekStart },
     });
     return data;
   },
@@ -4168,11 +4223,19 @@ export const assignmentsApi = {
     const { data } = await api.patch<Assignment>(`/assignments/${id}`, payload);
     return data;
   },
-  async remove(id: string): Promise<void> {
-    await api.delete(`/assignments/${id}`);
+  async remove(id: string, opts: { retroactive?: boolean } = {}): Promise<void> {
+    await api.delete(`/assignments/${id}`, {
+      params: opts.retroactive ? { retroactive: "1" } : undefined,
+    });
   },
-  async restore(id: string): Promise<Assignment> {
-    const { data } = await api.post<Assignment>(`/assignments/${id}/restore`);
+  async restore(
+    id: string,
+    opts: { retroactive?: boolean } = {},
+  ): Promise<Assignment> {
+    const { data } = await api.post<Assignment>(
+      `/assignments/${id}/restore`,
+      opts.retroactive ? { retroactive: true } : undefined,
+    );
     return data;
   },
 };

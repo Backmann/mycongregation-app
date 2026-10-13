@@ -993,7 +993,9 @@
         "unclassifiedPart": "{{week}}: Ein Programmpunkt wurde nicht erkannt und nicht geladen – „{{title}}“",
         "weekNotHeld": "keine Zusammenkunft",
         "importedWeeks": "Importierte Wochen",
-        "openSchedule": "Plan öffnen und Brüder eintragen"
+        "openSchedule": "Plan öffnen und Brüder eintragen",
+        "weekFrozenNotice": "{{week}}: Das Programm dieser Woche ist bereits Teil der Aufzeichnungen – nicht geladene Programmpunkte: {{count}}",
+        "weekFrozen": "bereits aufgezeichnet"
       },
       "privacyNote": "Die Datei wird auf diesem Bildschirm im Browser gelesen und nirgendwohin gesendet — in den Plan gelangen nur Titel und Dauer der Programmpunkte.",
       "parsing": "Datei wird ausgewertet…",
@@ -1103,7 +1105,17 @@
       "weekendTitle": "Zusammenkunft am Wochenende",
       "watchtowerPrefix": "Wachtturm"
     },
-    "movedTo": "Jetzt eine eigene Seite: {{path}}"
+    "movedTo": "Jetzt eine eigene Seite: {{path}}",
+    "lock": {
+      "frozen": "Die Zusammenkunft war am {{date}} — das Programm ist jetzt Teil der Aufzeichnungen und kann nicht mehr geändert werden.",
+      "grace": "Die Zusammenkunft hat stattgefunden — das Programm kann bis {{until}} noch korrigiert werden.",
+      "fix": "Nachträglich korrigieren",
+      "fixConfirmTitle": "Programm nachträglich korrigieren?",
+      "fixConfirmBody": "Die Woche wird zum Bearbeiten geöffnet. Änderungen werden niemandem angekündigt und im Änderungsprotokoll als nachträgliche Korrektur vermerkt.",
+      "retroOn": "Nachträgliche Korrektur — ohne Benachrichtigungen, im Protokoll vermerkt",
+      "retroDone": "Fertig",
+      "fixConfirmGo": "Korrigieren"
+    }
   },
   "audit": {
     "noReportId": "Keine Bericht-ID angegeben.",
@@ -2995,7 +3007,9 @@
       "rebuildDoneBody": "Geprüfte Wochen: {{weeks}}. Besuche mit einer Rednerkarte verknüpft: {{linked}}.",
       "spokeAway": "sprach {{rel}}, insgesamt: {{count}}",
       "awayThisDay": "an diesem Tag ist er in einer anderen Versammlung",
-      "upcomingFrom": "Bevorstehend"
+      "upcomingFrom": "Bevorstehend",
+      "programmeFrozenTitle": "Eintrag gespeichert",
+      "programmeFrozenBody": "Das Programm dieser Woche ist bereits Teil der Aufzeichnungen und wurde nicht geändert. Falls nötig, korrigiert es ein Administrator oder der Koordinator der Ältestenschaft nachträglich."
     },
     "swap": {
       "pastRefused": "Diese Woche ist vorbei. Der Bruder hat gesprochen und sein Name wurde von der Bühne genannt — verschieben lässt sich nur, was noch nicht war.",
@@ -3247,7 +3261,8 @@
     "about": "betrifft: {{name}}",
     "bulk": "{{count}} auf einmal",
     "denyReason": {
-      "past_frozen": "die Zusammenkunft hat bereits stattgefunden"
+      "past_frozen": "die Zusammenkunft hat bereits stattgefunden",
+      "programme_frozen": "Programm bereits aufgezeichnet"
     },
     "s21": "die S-21-Karte",
     "fieldNames": {
@@ -3405,7 +3420,8 @@
       "ministryStartDate": "Beginn im Predigtdienst",
       "isDeaf": "Gehörlos",
       "isBlind": "Blind",
-      "isImprisoned": "In Haft"
+      "isImprisoned": "In Haft",
+      "retroactive": "Nachträglich korrigiert"
     },
     "noValue": "leer",
     "changedNoValues": "geändert (Werte werden nicht gespeichert)",
@@ -3432,7 +3448,8 @@
       "notAnEdit": "Nur eine Änderung lässt sich zurücksetzen — kein Hinzufügen und kein Löschen.",
       "redacted": "Der Inhalt dieses Eintrags wurde auf Wunsch gelöscht; es gibt nichts zurückzusetzen.",
       "entityNotSupported": "Diese Art von Eintrag lässt sich nicht zurücksetzen. Öffnen Sie ihn und korrigieren Sie ihn von Hand.",
-      "nothingRevertable": "Dieser Eintrag enthält kein Feld, das zurückgesetzt werden kann."
+      "nothingRevertable": "Dieser Eintrag enthält kein Feld, das zurückgesetzt werden kann.",
+      "programmeFrozen": "Diese Zusammenkunft liegt mehr als eine Woche zurück — ihr Programm ist Teil der Aufzeichnungen. Es kann nur nachträglich in der Programmplanung korrigiert werden."
     },
     "goneRecord": "Eintrag nicht mehr vorhanden",
     "taskStatus": {
@@ -4520,7 +4537,9 @@
       "FS_CANCELLED": "Die Zusammenkunft ist abgesagt. Um sie zu ändern, stellen Sie sie zuerst wieder her.",
       "FS_DRAFT_NOT_CANCELLABLE": "Ein Entwurf wurde noch niemandem angekündigt – er wird nicht abgesagt, sondern gelöscht.",
       "FS_ALREADY_CANCELLED": "Die Zusammenkunft ist schon abgesagt.",
-      "FS_NOT_CANCELLED": "Die Zusammenkunft ist nicht abgesagt – es gibt nichts wiederherzustellen."
+      "FS_NOT_CANCELLED": "Die Zusammenkunft ist nicht abgesagt – es gibt nichts wiederherzustellen.",
+      "PROGRAMME_PAST_LOCKED": "Die Zusammenkunft am {{date}} liegt mehr als eine Woche zurück — ihr Programm ist Teil der Aufzeichnungen. Ändern konnte man es bis {{until}}.",
+      "PROGRAMME_FIX_FORBIDDEN": "Ein Programm nachträglich korrigieren können ein Administrator und der Koordinator der Ältestenschaft."
     }
   }
 }

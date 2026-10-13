@@ -5,6 +5,7 @@ import {
   Text,
   useWindowDimensions,
 } from "react-native";
+import { useProgrammeRetro } from "./ProgrammeLockNote";
 import { useEffect, useState } from "react";
 import { Sheet } from "./Sheet";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -72,10 +73,15 @@ export function AssignmentSheet({
     return () => clearTimeout(timer);
   }, [assignment]);
   const queryKey = ["assignments", weekStartISO];
+  // A correction after the fact, opened by the week (see ProgrammeLockNote):
+  // every write from here says so, and the server marks it in the journal.
+  const retro = useProgrammeRetro();
+  const asRetro = <T extends object>(input: T): T =>
+    retro ? { ...input, retroactive: true } : input;
 
   const updateMutation = useMutation({
     mutationFn: (input: UpdateAssignmentInput) =>
-      assignmentsApi.update(assignment!.id, input),
+      assignmentsApi.update(assignment!.id, asRetro(input)),
     // Optimistic: patch the cached week immediately.
     onMutate: async (input) => {
       await queryClient.cancelQueries({ queryKey });
@@ -139,13 +145,16 @@ export function AssignmentSheet({
 
   const unassignMutation = useMutation({
     mutationFn: () =>
-      assignmentsApi.update(assignment!.id, {
-        publisherId: null,
-        assistantPublisherId: null,
-        speakerName: null,
-        speakerCongregation: null,
-        publicTalkId: null,
-      }),
+      assignmentsApi.update(
+        assignment!.id,
+        asRetro({
+          publisherId: null,
+          assistantPublisherId: null,
+          speakerName: null,
+          speakerCongregation: null,
+          publicTalkId: null,
+        }),
+      ),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["assignments"] });
       // Both ways here too: clearing the prayer clears the auto-filled talk
@@ -169,7 +178,7 @@ export function AssignmentSheet({
   // workbook parts cannot — they have no delete affordance).
   const isExtraPart = !!active && active.partKey === "living_christians_extra";
   const removeMutation = useMutation({
-    mutationFn: () => assignmentsApi.remove(assignment!.id),
+    mutationFn: () => assignmentsApi.remove(assignment!.id, { retroactive: retro }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["assignments"] });
       onClose();

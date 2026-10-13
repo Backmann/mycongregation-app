@@ -21,6 +21,7 @@ import { useTranslation } from 'react-i18next';
 import { notify } from '../../../lib/error-bus';
 import { confirm } from '../../../components/ConfirmHost';
 import { failsScreen } from '../../../lib/screen-failure';
+import { ProgrammeLockNote } from '../../../components/ProgrammeLockNote';
 
 export default function AssignmentDetailScreen() {
   const { t } = useTranslation();
@@ -33,6 +34,16 @@ export default function AssignmentDetailScreen() {
     queryKey: ['assignment', id],
     queryFn: () => assignmentsApi.getById(id!),
     enabled: !!id,
+  });
+  // A part of a programme already the record is shown, not edited (13
+  // October 2026). A correction after the fact is made from the week, on
+  // purpose — not from a notification that happened to open this screen.
+  const lockWeek = assignmentQuery.data?.weekStartDate ?? null;
+  const locksQuery = useQuery({
+    queryKey: ['programme-locks', lockWeek],
+    queryFn: () => assignmentsApi.locks(lockWeek!),
+    enabled: !!lockWeek,
+    staleTime: 60 * 1000,
   });
 
   const updateMutation = useMutation({
@@ -124,12 +135,17 @@ export default function AssignmentDetailScreen() {
   }
 
   const a = assignmentQuery.data;
+  const lock =
+    a.eventType === 'midweek' || a.eventType === 'weekend' || a.eventType === 'memorial'
+      ? locksQuery.data?.meetings[a.eventType]
+      : undefined;
   const canEdit =
-    a.eventType === 'weekend'
+    !lock?.frozen &&
+    (a.eventType === 'weekend'
       ? perms.canEditWeekendSchedule
       : a.eventType === 'midweek'
         ? perms.canEditMidweekSchedule
-        : perms.isAdmin;
+        : perms.isAdmin);
 
   const isSong =
     a.partKey === 'mid_song' ||
@@ -143,10 +159,14 @@ export default function AssignmentDetailScreen() {
           <Text style={styles.removedText}>{t('schedule.removedBanner')}</Text>
         </View>
       )}
-      {!canEdit && (
+      {lock?.frozen ? (
+        <ProgrammeLockNote lock={lock} retro={false} />
+      ) : !canEdit ? (
         <View style={styles.removedBanner}>
           <Text style={styles.removedText}>{t('schedule.readOnlyBanner')}</Text>
         </View>
+      ) : (
+        <ProgrammeLockNote lock={lock} retro={false} />
       )}
 
       {isSong ? (

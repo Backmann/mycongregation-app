@@ -87,6 +87,12 @@ import { CollapsibleMeetingBlock } from "../../../components/CollapsibleMeetingB
 import { ConductEntry } from "../../../components/ConductEntry";
 import { HospitalityZone } from "../../../components/HospitalityZone";
 import { AssignmentSheet } from "../../../components/AssignmentSheet";
+import {
+  ProgrammeLockNote,
+  ProgrammeRetroBar,
+  ProgrammeRetroContext,
+} from "../../../components/ProgrammeLockNote";
+import { confirm } from "../../../components/ConfirmHost";
 import { PublishDialog } from "../../../components/PublishDialog";
 import { NotifyChangesDialog } from "../../../components/NotifyChangesDialog";
 import { useMyPublisher } from "../../../lib/useMyPublisher";
@@ -316,9 +322,40 @@ function ProgrammeEditor() {
   });
   const {
     canEditFieldServiceMeetings,
-    canEditMidweekSchedule,
-    canEditWeekendSchedule,
+    canEditMidweekSchedule: mayEditMidweek,
+    canEditWeekendSchedule: mayEditWeekend,
   } = usePermissions();
+  // A meeting's programme becomes the record a week after it (13 October
+  // 2026). How each of this week's meetings stands comes from the server —
+  // never counted here — and a frozen one is drawn read-only. An
+  // administrator or the coordinator of the body of elders may open the
+  // week for a correction after the fact: `retro`, for this week only.
+  const locksQuery = useQuery({
+    queryKey: ["programme-locks", weekStartISO],
+    queryFn: () => assignmentsApi.locks(weekStartISO),
+    staleTime: 60 * 1000,
+  });
+  const locks =
+    locksQuery.data?.weekStartDate === weekStartISO
+      ? locksQuery.data
+      : undefined;
+  const [retroWeek, setRetroWeek] = useState<string | null>(null);
+  const retro = retroWeek === weekStartISO;
+  const frozenNow = (k: "midweek" | "weekend") =>
+    !!locks?.meetings[k]?.frozen && !retro;
+  const canEditMidweekSchedule = mayEditMidweek && !frozenNow("midweek");
+  const canEditWeekendSchedule = mayEditWeekend && !frozenNow("weekend");
+  const startRetro = async () => {
+    if (
+      await confirm({
+        title: t("schedule.lock.fixConfirmTitle"),
+        body: t("schedule.lock.fixConfirmBody"),
+        confirmLabel: t("schedule.lock.fixConfirmGo"),
+      })
+    ) {
+      setRetroWeek(weekStartISO);
+    }
+  };
   // The badge figures, as the server counts them. Asked for only by the
   // people the endpoint answers — the same three responsibilities its guard
   // checks — so that nobody else collects a 403 on every screen load.
@@ -432,7 +469,7 @@ function ProgrammeEditor() {
         partDurationMin: p.defaultDurationMin || undefined,
         status: "draft",
       }));
-      return assignmentsApi.bulkCreate(inputs);
+      return assignmentsApi.bulkCreate(inputs, { retroactive: retro });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
@@ -471,7 +508,10 @@ function ProgrammeEditor() {
         .filter((a) => a.partOrder >= newOrder)
         .sort((a, b) => b.partOrder - a.partOrder);
       for (const a of toBump) {
-        await assignmentsApi.update(a.id, { partOrder: a.partOrder + 1 });
+        await assignmentsApi.update(a.id, {
+          partOrder: a.partOrder + 1,
+          ...(retro ? { retroactive: true } : {}),
+        });
       }
       return assignmentsApi.create({
         weekStartDate: weekStartISO,
@@ -481,6 +521,7 @@ function ProgrammeEditor() {
         partTitle: "",
         partDurationMin: 5,
         status: "draft",
+        ...(retro ? { retroactive: true } : {}),
       });
     },
     onSuccess: (created) => {
@@ -1029,7 +1070,10 @@ function ProgrammeEditor() {
       weekStartDate: string;
     }) =>
       v.existing
-        ? assignmentsApi.update(v.existing.id, { publisherId: v.publisherId })
+        ? assignmentsApi.update(v.existing.id, {
+            publisherId: v.publisherId,
+            ...(retro ? { retroactive: true } : {}),
+          })
         : assignmentsApi.create({
             weekStartDate: v.weekStartDate,
             eventType: "weekend",
@@ -1038,6 +1082,7 @@ function ProgrammeEditor() {
             partTitle: "Гостеприимство",
             publisherId: v.publisherId,
             status: "draft",
+            ...(retro ? { retroactive: true } : {}),
           }),
     onSuccess: () =>
       queryClient.invalidateQueries({ queryKey: ["assignments"] }),
@@ -1056,6 +1101,7 @@ function ProgrammeEditor() {
           : perms.isAdmin;
 
   return (
+    <ProgrammeRetroContext.Provider value={retro}>
     <AutoAssignedContext.Provider value={autoAssignedIds}>
       <View style={styles.container}>
         <WeekNavigator
@@ -1166,6 +1212,21 @@ function ProgrammeEditor() {
               pointerEvents={showingPreviousWeek ? "none" : "auto"}
             >
               <SpecialEventsWeekBanner events={weekEvents} />
+              <ProgrammeRetroBar
+                // Only a frozen meeting this person may edit at all: the
+                // coordinator of the body of elders holds the weekend, the
+                // midweek is the life-and-ministry overseer's — offering a
+                // fix there would open a week that stays read-only.
+                anyFrozen={
+                  !!locks &&
+                  ((hasMidweek && mayEditMidweek && locks.meetings.midweek.frozen) ||
+                    (hasWeekend && mayEditWeekend && locks.meetings.weekend.frozen))
+                }
+                mayFix={!!locks?.mayFixAfterwards}
+                retro={retro}
+                onStart={() => void startRetro()}
+                onDone={() => setRetroWeek(null)}
+              />
               {congressThisWeek && (
                 <CongressWeekBanner event={congressThisWeek} />
               )}
@@ -1253,7 +1314,7 @@ function ProgrammeEditor() {
                       assigned={badgeOf("midweek", items).assigned}
                       total={badgeOf("midweek", items).total}
                       actionLabel={
-                        !perms.canEditMidweekSchedule
+                        !canEditMidweekSchedule
                           ? undefined
                           : draftCount(items) > 0
                             ? t("schedule.publish.button")
@@ -1277,6 +1338,10 @@ function ProgrammeEditor() {
                             })
                       }
                     >
+                      <ProgrammeLockNote
+                        lock={locks?.meetings.midweek}
+                        retro={retro}
+                      />
                       <ConductEntry
                         week={items[0].weekStartDate}
                         chairmanPublisherId={
@@ -1285,7 +1350,7 @@ function ProgrammeEditor() {
                         }
                       />
                       <MidweekSections
-                        canEdit={perms.canEditMidweekSchedule}
+                        canEdit={canEditMidweekSchedule}
                         onEdit={setEditing}
                         onAddChristianLife={() => addChristianLifeMut.mutate()}
                         addingChristianLife={addChristianLifeMut.isPending}
@@ -1326,7 +1391,7 @@ function ProgrammeEditor() {
                       assigned={badgeOf("weekend", programItems).assigned}
                       total={badgeOf("weekend", programItems).total}
                       actionLabel={
-                        !perms.canEditWeekendSchedule
+                        !canEditWeekendSchedule
                           ? undefined
                           : draftCount(items) > 0
                             ? t("schedule.publish.button")
@@ -1350,8 +1415,12 @@ function ProgrammeEditor() {
                             })
                       }
                     >
+                      <ProgrammeLockNote
+                        lock={locks?.meetings.weekend}
+                        retro={retro}
+                      />
                       <WeekendSections
-                        canEdit={perms.canEditWeekendSchedule}
+                        canEdit={canEditWeekendSchedule}
                         items={programItems}
                         numbers={numbers}
                         times={partTimes}
@@ -1361,7 +1430,7 @@ function ProgrammeEditor() {
                       />
                       <HospitalityZone
                         hospitality={hospitality}
-                        canEdit={perms.canEditWeekendSchedule}
+                        canEdit={canEditWeekendSchedule}
                         publishersById={publishersById}
                         activityById={activityById}
                         weekStartISO={weekStartISO}
@@ -1504,6 +1573,7 @@ function ProgrammeEditor() {
 
       </View>
     </AutoAssignedContext.Provider>
+    </ProgrammeRetroContext.Provider>
   );
 }
 
