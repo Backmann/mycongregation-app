@@ -270,14 +270,23 @@ if (await tap(/^Подготовить месяц$/, '«Подготовить �
 // ── Составление программы → неделя → встречи для проповеди ────────────
 await open('/schedule/edit', /^Встречи для проповеди$/);
 if (await tap(/^Встречи для проповеди$/, 'раздел «Встречи для проповеди» в неделе')) {
-  // The section may have been open already — then the tap closed it: wait
-  // for its lines, and only when none come, tap once more.
+  // The section's header sits at the foot of the screen, so its lines open
+  // BELOW the edge — and uiautomator lists what is on screen only. Scroll
+  // down first, then look; the three runs before this one looked without
+  // scrolling, saw nothing, tapped again and closed what had just opened.
   const OPENED = /^(Добавить встречу|Ведёт |Ведущий не назначен)/;
-  if (!(await waitFor(OPENED, 6000))) {
+  await sleep(1500);
+  await swipeUp();
+  if (!(await waitFor(OPENED, 5000))) {
+    // Not open after all (or it was open and the tap closed it): once more.
+    adb(['shell', 'input', 'swipe', String(W / 2), String(Math.round(H * 0.3)), String(W / 2), String(Math.round(H * 0.75)), '600']);
+    await sleep(1200);
     await tap(/^Встречи для проповеди$/, 'раздел «Встречи для проповеди» в неделе');
-    if (!(await waitFor(OPENED, 6000))) say('⚠️  раздел недели так и не раскрылся');
+    await sleep(1500);
+    await swipeUp();
+    if (!(await waitFor(OPENED, 5000))) say('⚠️  раздел недели так и не раскрылся');
   }
-  await snap('edit-week-field');
+  await snap('edit-week-field', { scroll: false });
 }
 
 // ── Служебный старейшина, задачи ──────────────────────────────────────
