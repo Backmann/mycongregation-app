@@ -102,7 +102,9 @@ export function FieldServicePrepareSheet({
   const whose = (r: FieldServicePlannedRow) =>
     r.groupName
       ? t('fieldService.row.group', { group: r.groupName })
-      : t('fieldService.generalBadge');
+      : r.isGeneral === false
+        ? t('fieldService.row.byGroups')
+        : t('fieldService.generalBadge');
   const reason = (r: FieldServicePlannedRow) => {
     const c = r.conductor;
     if (!c) return null;

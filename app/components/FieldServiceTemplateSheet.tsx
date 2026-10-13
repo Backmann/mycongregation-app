@@ -73,12 +73,18 @@ export function FieldServiceTemplateSheet({
     if (!visible || !templateQuery.data) return;
     setRules(
       templateQuery.data.map((s) => ({
-        ordinals: s.ordinals?.length ? [...s.ordinals] : [s.ordinal],
+        // A new server always sends the list — empty when the rule is «the
+        // last» alone; only an older server (no list) is read by `ordinal`.
+        // Before, an empty list fell back to the 5th and the rule read
+        // «5-е и последнюю» (13 October 2026).
+        ordinals: Array.isArray(s.ordinals) ? [...s.ordinals] : [s.ordinal],
         lastOnly: s.lastOnly === true,
         dayOfWeek: s.dayOfWeek,
         startTime: s.startTime,
         address: s.address ?? null,
         serviceGroupId: s.serviceGroupId ?? null,
+        // An older server says nothing: a group-less slot is the general one.
+        isGeneral: !s.serviceGroupId && s.isGeneral !== false,
         conductorRule: s.conductorRule ?? 'none',
       })),
     );
@@ -112,7 +118,9 @@ export function FieldServiceTemplateSheet({
   const whoseText = (r: RuleDraft) =>
     r.serviceGroupId
       ? t('fieldService.row.group', { group: groupName(r.serviceGroupId) })
-      : t('fieldService.generalBadge');
+      : r.isGeneral === false
+        ? t('fieldService.row.byGroups')
+        : t('fieldService.generalBadge');
   const whereText = (r: RuleDraft) =>
     r.address
       ? resolveHallAddress(r.address, halls)

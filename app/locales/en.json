@@ -1661,6 +1661,7 @@
         "whose": "Whose",
         "remove": "Remove",
         "hintWhich": "Choose which days of the month",
+        "openPlaceHint": "May be left empty — each group meets at its own place; if all together, pick the hall",
         "noGroupPlace": "The group has no meeting place recorded — give an address or write it on the group's card"
       },
       "auto": {

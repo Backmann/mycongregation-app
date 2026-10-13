@@ -1661,6 +1661,7 @@
         "whose": "Wessen",
         "remove": "Entfernen",
         "hintWhich": "Wählen Sie die Tage des Monats",
+        "openPlaceHint": "Kann leer bleiben — jede Gruppe trifft sich bei sich; wenn alle zusammen, den Saal wählen",
         "noGroupPlace": "Für die Gruppe ist kein Treffpunkt eingetragen – Adresse angeben oder in der Gruppenkarte eintragen"
       },
       "auto": {

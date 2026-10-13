@@ -2094,6 +2094,8 @@ export interface FieldServiceTemplateSlot {
   ordinals?: number[];
   lastOnly?: boolean;
   serviceGroupId?: string | null;
+  /** Without a group: the congregation's own (true) or the groups' on their own (false). Absent from an older server: general. */
+  isGeneral?: boolean;
   conductorRule?: ConductorRule;
 }
 
@@ -2110,6 +2112,8 @@ export interface TemplateSlotInput {
   startTime: string;
   address?: string | null;
   serviceGroupId?: string | null;
+  /** No group: the congregation's own (true) or the groups each on their own (false). */
+  isGeneral?: boolean;
   conductorRule?: ConductorRule;
 }
 
@@ -2142,6 +2146,8 @@ export interface FieldServicePlannedRow {
   startTime: string;
   address: string;
   serviceGroupId: string | null;
+  /** Absent from an older server: a group-less row is the general one. */
+  isGeneral?: boolean;
   groupName: string | null;
   conductorRule: ConductorRule;
   status: FieldServicePlannedStatus;

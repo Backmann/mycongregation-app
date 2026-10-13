@@ -44,6 +44,9 @@ export function FieldServiceRuleSheet({
   const [lastOnly, setLastOnly] = useState(false);
   const [startTime, setStartTime] = useState('10:30');
   const [serviceGroupId, setServiceGroupId] = useState<string | null>(null);
+  // Without a group: the congregation's own meeting, or the groups each on
+  // their own («по группам») — the same three kinds the meeting window has.
+  const [general, setGeneral] = useState(true);
   const [address, setAddress] = useState('');
   const [ownAddress, setOwnAddress] = useState(false);
   const [conductorRule, setConductorRule] = useState<ConductorRule>('rotation');
@@ -57,6 +60,7 @@ export function FieldServiceRuleSheet({
       setLastOnly(rule.lastOnly === true);
       setStartTime(rule.startTime);
       setServiceGroupId(rule.serviceGroupId ?? null);
+      setGeneral(!rule.serviceGroupId && rule.isGeneral !== false);
       setAddress(rule.address ?? '');
       setOwnAddress(!!rule.serviceGroupId && !!rule.address);
       setConductorRule(rule.conductorRule ?? 'none');
@@ -66,6 +70,7 @@ export function FieldServiceRuleSheet({
       setLastOnly(false);
       setStartTime('10:30');
       setServiceGroupId(null);
+      setGeneral(true);
       setAddress(defHall);
       setOwnAddress(false);
       setConductorRule('rotation');
@@ -89,6 +94,7 @@ export function FieldServiceRuleSheet({
     dayOfWeek,
     startTime,
     serviceGroupId,
+    isGeneral: !serviceGroupId && general,
     address: serviceGroupId
       ? ownAddress && address.trim()
         ? address.trim()
@@ -96,21 +102,27 @@ export function FieldServiceRuleSheet({
       : address.trim() || null,
     conductorRule,
   };
+  const isGeneral = !serviceGroupId && general;
   const landsSomewhere = draft.ordinals.length > 0 || draft.lastOnly === true;
+  // Only the congregation's own meeting must say where: a group has its
+  // place, and «by groups» meets wherever each group does.
   const canSave =
     landsSomewhere &&
     TIME_RE.test(startTime) &&
-    (!!serviceGroupId || !!draft.address);
+    (!isGeneral || !!draft.address);
   const hints: string[] = [];
   if (!landsSomewhere) hints.push(t('fieldService.template.rule.hintWhich'));
   if (!TIME_RE.test(startTime)) hints.push(t('fieldService.form.hintTime'));
-  if (!serviceGroupId && !draft.address)
+  if (isGeneral && !draft.address)
     hints.push(t('fieldService.form.hintAddress'));
 
+  const whoseName = group
+    ? t('fieldService.row.group', { group: group.name })
+    : isGeneral
+      ? t('fieldService.sheet.general')
+      : t('fieldService.sheet.byGroups');
   const phrase = landsSomewhere
-    ? `${slotWhenPhrase(draft, (k, o) => t(k, o))} · ${
-        group ? t('fieldService.row.group', { group: group.name }) : t('fieldService.sheet.general')
-      }`
+    ? `${slotWhenPhrase(draft, (k, o) => t(k, o))} · ${whoseName}`
     : t('fieldService.template.rule.hintWhich');
 
   const chip = (
@@ -210,16 +222,21 @@ export function FieldServiceRuleSheet({
 
       <Text style={styles.label}>{t('fieldService.template.rule.whose')}</Text>
       <View style={styles.segmentTrack}>
-        {[{ id: null as string | null, name: t('fieldService.sheet.general') }, ...groups].map((g) => {
-          const on = serviceGroupId === g.id;
+        {[
+          { key: 'general', id: null as string | null, general: true, name: t('fieldService.sheet.general') },
+          { key: 'open', id: null as string | null, general: false, name: t('fieldService.sheet.byGroups') },
+          ...groups.map((g) => ({ key: g.id, id: g.id as string | null, general: false, name: g.name })),
+        ].map((g) => {
+          const on = serviceGroupId === g.id && (g.id !== null || general === g.general);
           return (
             <Pressable
-              key={g.id ?? 'general'}
+              key={g.key}
               onPress={() => {
                 setServiceGroupId(g.id);
+                setGeneral(g.general);
                 setOwnAddress(false);
                 if (g.id === null) {
-                  if (!address.trim()) {
+                  if (g.general && !address.trim()) {
                     setAddress((halls.find((h) => h.isDefault) ?? halls[0])?.address ?? '');
                   }
                   if (conductorRule === 'group_overseer') setConductorRule('rotation');
@@ -230,7 +247,9 @@ export function FieldServiceRuleSheet({
               style={[styles.segment, on && styles.segmentOn]}
               accessibilityState={{ selected: on }}
             >
-              <Text style={[styles.segmentText, on && styles.segmentTextOn]}>{g.name}</Text>
+              <Text style={[styles.segmentText, on && styles.segmentTextOn]} numberOfLines={1}>
+                {g.name}
+              </Text>
             </Pressable>
           );
         })}
@@ -273,6 +292,9 @@ export function FieldServiceRuleSheet({
             placeholderTextColor="#94a3b8"
             maxLength={255}
           />
+          {!isGeneral ? (
+            <Text style={styles.echo}>{t('fieldService.template.rule.openPlaceHint')}</Text>
+          ) : null}
         </>
       )}
 
