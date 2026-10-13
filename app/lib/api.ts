@@ -1993,6 +1993,17 @@ export const fieldServiceApi = {
     return data;
   },
   /** Who could conduct on a day, best first, each with his reason. */
+  /**
+   * What else is on between two days, both included — the pioneer school,
+   * the events. For the planners (13 October 2026): said, never acted on.
+   */
+  async hallBusy(params: { from: string; to: string }): Promise<HallBusy[]> {
+    const { data } = await api.get<HallBusy[]>("/field-service-meetings/hall-busy", {
+      params,
+    });
+    return data;
+  },
+
   async suggestConductor(params: {
     date: string;
     serviceGroupId?: string | null;
@@ -2162,6 +2173,24 @@ export interface FieldServicePlannedRow {
   because: string | null;
   conductor: ConductorCandidate | null;
   noConductor: "rule_none" | "nobody_free" | "no_overseer" | null;
+  /** What else is on that day; absent from an older server. */
+  busy?: HallBusy[];
+}
+
+/**
+ * Something else on a day — the pioneer school or an event (13 October
+ * 2026). `hard` ones (an assembly, the circuit overseer's week) are already
+ * rules of the month preparation; the rest are only said.
+ */
+export interface HallBusy {
+  date: string;
+  kind: "pioneer_school" | "event";
+  eventType: string | null;
+  title: string;
+  place: string | null;
+  startTime: string | null;
+  endTime: string | null;
+  hard: boolean;
 }
 
 export interface FieldServiceMonthPreview {

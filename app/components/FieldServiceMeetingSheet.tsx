@@ -24,13 +24,13 @@ import {
   isFieldServiceDraft,
   responsibilitiesApi,
   serviceGroupsApi,
-  specialEventsApi,
 } from '../lib/api';
 import { resolveHallAddress } from '../lib/hallAddress';
 import { Sheet } from './Sheet';
 import { PublisherSelector } from './PublisherSelector';
 import { TimeField } from './TimeField';
 import { FieldNotice } from './FieldNotice';
+import { hallBusyLine, hallBusyNoticeSeed } from '../lib/hall-busy';
 import { MonthCalendar } from './MonthCalendar';
 import {
   startOfWeekMonday,
@@ -432,17 +432,18 @@ export function FieldServiceForm({
       time: v.startTime,
     });
   })();
-  const eventsQuery = useQuery({
-    queryKey: ['special-events'],
-    queryFn: () => specialEventsApi.list(),
-    enabled: visible,
-    staleTime: 5 * 60 * 1000,
+  // What else is on that day — events and the pioneer school — asked of
+  // the server, which the month preparation and the nightly message ask
+  // too (13 October 2026). Before, the window read the events list itself
+  // and knew nothing of the pioneer school.
+  const busyQuery = useQuery({
+    queryKey: ['field-service', 'hall-busy', meetingDate, meetingDate],
+    queryFn: () => fieldServiceApi.hallBusy({ from: meetingDate!, to: meetingDate! }),
+    enabled: visible && !!meetingDate && !isRecord,
+    staleTime: 60 * 1000,
   });
-  const clashingEvents = meetingDate
-    ? (eventsQuery.data ?? []).filter(
-        (e) => e.date <= meetingDate && meetingDate <= (e.endDate ?? e.date),
-      )
-    : [];
+  const dayBusy = busyQuery.data ?? [];
+  const softBusy = dayBusy.filter((b) => !b.hard);
   const topicMatch = (() => {
     const tt = topic.trim().toLowerCase();
     if (!tt) return null;
@@ -762,14 +763,27 @@ export function FieldServiceForm({
         <Text style={styles.inlineLabel}>{t('fieldService.timeLabel')}</Text>
         <TimeField value={startTime} onChange={setStartTime} />
       </View>
-      {clashingEvents.length > 0 ? (
+      {dayBusy.length > 0 ? (
         <View style={styles.warnBox}>
           <Ionicons name="warning-outline" size={16} color="#b45309" />
-          <Text style={styles.warnText}>
-            {clashingEvents
-              .map((e) => t('fieldService.form.eventWarn', { title: e.title }))
-              .join('\n')}
-          </Text>
+          <View style={styles.warnBody}>
+            <Text style={styles.warnText}>
+              {[...new Set(dayBusy.map(hallBusyLine))]
+                .map((line) => t('fieldService.form.eventWarn', { title: line }))
+                .join('\n')}
+            </Text>
+            {/* The meeting stays as planned; if it is held differently,
+                the notice says so to everyone. One tap starts it. */}
+            {softBusy.length > 0 && notice.trim() === '' ? (
+              <Pressable
+                onPress={() => setNotice(hallBusyNoticeSeed(softBusy, t))}
+                hitSlop={6}
+                accessibilityRole="button"
+              >
+                <Text style={styles.warnAction}>{t('fieldService.busy.toNotice')}</Text>
+              </Pressable>
+            ) : null}
+          </View>
         </View>
       ) : null}
 
@@ -1225,7 +1239,14 @@ const styles = StyleSheet.create({
     padding: 10,
     marginTop: 10,
   },
-  warnText: { flex: 1, fontSize: 13, color: '#92400e', fontFamily: 'Manrope_500Medium' },
+  warnText: { fontSize: 13, color: '#92400e', fontFamily: 'Manrope_500Medium' },
+  warnBody: { flex: 1, gap: 6 },
+  warnAction: {
+    fontSize: 13.5,
+    color: '#0369a1',
+    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
+  },
   warnHint: {
     fontSize: 12.5,
     color: '#b45309',

@@ -1587,7 +1587,9 @@
       "filledTitle": "Leiter ausgewählt",
       "filledSome": "Zugeteilt: {{count}}, niemand frei: {{left}}",
       "filledAll": "Zugeteilt: {{count}}",
-      "openFromTask": "Zusammenkünfte für den Predigtdienst öffnen"
+      "openFromTask": "Zusammenkünfte für den Predigtdienst öffnen",
+      "busy_one": "{{count}} Zusammenkunft an einem Tag mit etwas anderem ({{what}}) – ohne Hinweis",
+      "busy_other": "{{count}} Zusammenkünfte an Tagen mit etwas anderem ({{what}}) – ohne Hinweis"
     },
     "row": {
       "unassigned": "Kein Leiter zugeteilt",
@@ -1763,6 +1765,11 @@
       "label": "Hinweis für alle",
       "placeholder": "Zum Beispiel: Saal wird renoviert – wir treffen uns am Parkeingang",
       "hint": "Kurz, was diesmal anders ist. Alle, die die Zusammenkunft betrifft, sehen es: auf der Startseite, im Programm und in der Liste."
+    },
+    "busy": {
+      "lead": "An diesem Tag ist noch etwas anderes",
+      "toNotice": "Als Hinweis eintragen",
+      "seed": "An diesem Tag: {{what}}. Wir treffen uns: "
     }
   },
   "cleaning": {

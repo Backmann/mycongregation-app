@@ -1587,7 +1587,9 @@
       "filledTitle": "Conductors picked",
       "filledSome": "Assigned: {{count}}, nobody free: {{left}}",
       "filledAll": "Assigned: {{count}}",
-      "openFromTask": "Open the field service meetings"
+      "openFromTask": "Open the field service meetings",
+      "busy_one": "{{count}} meeting on a day with something else on ({{what}}) — no notice",
+      "busy_other": "{{count}} meetings on days with something else on ({{what}}) — no notice"
     },
     "row": {
       "unassigned": "No conductor assigned",
@@ -1763,6 +1765,11 @@
       "label": "Notice for everyone",
       "placeholder": "For example: hall under repair — we meet at the park entrance",
       "hint": "Briefly, what is different this time. Everyone the meeting concerns sees it: on Home, in the Programme and in the list."
+    },
+    "busy": {
+      "lead": "Something else is on this day",
+      "toNotice": "Put it in the notice",
+      "seed": "On this day: {{what}}. We meet: "
     }
   },
   "cleaning": {

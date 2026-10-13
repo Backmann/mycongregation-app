@@ -42,6 +42,7 @@ import type { FsPdfMonth } from '../../../lib/fieldServicePdf';
 import { exportHtmlAsPdf } from '../../../lib/pdf';
 import { notify } from '../../../lib/error-bus';
 import { parseISODate, addDays, formatDateISO, startOfWeekMonday } from '../../../lib/dates';
+import { softOn } from '../../../lib/hall-busy';
 import { HEADER_ICON } from '../../../lib/header';
 import { LoadError } from '../../../components/LoadError';
 import { Dialog } from '../../../components/Dialog';
@@ -165,6 +166,19 @@ export default function FieldServiceMeetingsScreen() {
     // A wider window replaces, never blanks, what is on screen.
     placeholderData: (prev) => prev,
   });
+  // What else is on in the months ahead — for the planners' draft block:
+  // a draft on such a day without a notice is counted there (13 October
+  // 2026). From today only: a day gone needs no notice.
+  const busyFrom = formatDateISO(new Date());
+  const busyTo = formatDateISO(addDays(parseISODate(weekEnd), -1));
+  const busyQuery = useQuery({
+    queryKey: ['field-service', 'hall-busy', busyFrom, busyTo],
+    queryFn: () => fieldServiceApi.hallBusy({ from: busyFrom, to: busyTo }),
+    enabled: canEdit,
+    staleTime: 60 * 1000,
+  });
+  const busyOf = (d: FieldServiceMeeting) =>
+    softOn(busyQuery.data, meetingDateISO(d));
   const earlierMonth = dayjs(`${windowFromMonth}-01`).subtract(1, 'month').format('YYYY-MM');
   // The month asked for is scrolled to once it is laid out, so the list does
   // not stay where it was with the new month out of sight above.
@@ -844,6 +858,26 @@ export default function FieldServiceMeetingsScreen() {
                     })}
                   </Text>
                 ) : null}
+                {(() => {
+                  // A draft on a day with something else on, and no notice
+                  // yet: said, with a tap to the first of them. Nothing is
+                  // blocked — publishing stays the planner's call.
+                  const open = m.drafts.filter(
+                    (d) =>
+                      meetingDateISO(d) >= todayISO &&
+                      !d.notice?.trim() &&
+                      busyOf(d).length > 0,
+                  );
+                  if (open.length === 0) return null;
+                  const what = [...new Set(open.flatMap((d) => busyOf(d).map((b) => b.title)))].join(', ');
+                  return (
+                    <Pressable onPress={() => setTarget(open[0])} hitSlop={6} accessibilityRole="button">
+                      <Text style={[styles.draftLine, styles.draftLineWarn]}>
+                        {t('fieldService.draft.busy', { count: open.length, what })}
+                      </Text>
+                    </Pressable>
+                  );
+                })()}
                 <Text style={styles.draftHint}>{t('fieldService.draft.hint')}</Text>
                 <View style={styles.draftActions}>
                   {m.drafts.some((d) => !d.conductorPublisherId) ? (

@@ -12,6 +12,7 @@ import {
 import { resolveHallAddress } from '../lib/hallAddress';
 import { notify } from '../lib/error-bus';
 import { Sheet } from './Sheet';
+import { HallBusyNote } from './HallBusyNote';
 
 /**
  * «Подготовить месяц» (October 2026, stage 3b).
@@ -248,6 +249,12 @@ export function FieldServicePrepareSheet({
                           {noConductorText(r)}
                         </Text>
                       )}
+                      {/* The pioneer school, an event: the day is still
+                          prepared — this only says what else is on. */}
+                      <HallBusyNote
+                        list={(r.busy ?? []).filter((b) => !b.hard)}
+                        lead={t('fieldService.busy.lead')}
+                      />
                     </>
                   )}
                 </View>
