@@ -183,6 +183,7 @@ export function PartLine({
   mine,
   tone,
   below,
+  noPerson,
 }: {
   time?: string | null;
   /** «10 мин» — under the time. */
@@ -196,6 +197,11 @@ export function PartLine({
   helper?: Helper | null;
   mine?: boolean;
   tone?: string;
+  /**
+   * Nobody to name at all — a field-service meeting called off: «не
+   * назначен» under it would read as a gap still to fill.
+   */
+  noPerson?: boolean;
 }) {
   const { width } = useWindowDimensions();
   if (width < STACK_BELOW) {
@@ -206,9 +212,11 @@ export function PartLine({
           <Text style={styles.partTitle}>{title}</Text>
           {subtitle ? <Text style={styles.partSub}>{subtitle}</Text> : null}
           {below}
-          <View style={styles.stackedPerson}>
-            <Person name={name} extra={extra} helper={helper} mine={mine} tone={tone} left />
-          </View>
+          {noPerson ? null : (
+            <View style={styles.stackedPerson}>
+              <Person name={name} extra={extra} helper={helper} mine={mine} tone={tone} left />
+            </View>
+          )}
         </View>
       </View>
     );
@@ -221,9 +229,11 @@ export function PartLine({
         {subtitle ? <Text style={styles.partSub}>{subtitle}</Text> : null}
         {below}
       </View>
-      <View style={styles.personSlot}>
-        <Person name={name} extra={extra} helper={helper} mine={mine} tone={tone} />
-      </View>
+      {noPerson ? null : (
+        <View style={styles.personSlot}>
+          <Person name={name} extra={extra} helper={helper} mine={mine} tone={tone} />
+        </View>
+      )}
     </View>
   );
 }

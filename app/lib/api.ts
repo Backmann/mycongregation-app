@@ -1911,6 +1911,14 @@ export interface FieldServiceMeeting {
    * October 2026: treated as announced.
    */
   publishedAt?: string | null;
+  /**
+   * When it was called off (13 October 2026); null or absent for a meeting
+   * that holds. Sent only when the list was asked `cancelled: true` — a
+   * cancelled meeting stays in sight, crossed out with its reason.
+   */
+  cancelledAt?: string | null;
+  /** The short reason under the crossed-out line. */
+  cancelReason?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -1918,6 +1926,11 @@ export interface FieldServiceMeeting {
 /** A draft, or announced. An old server never sends the field. */
 export function isFieldServiceDraft(m: FieldServiceMeeting): boolean {
   return m.publishedAt === null;
+}
+
+/** Called off — drawn crossed out, never counted as a meeting that holds. */
+export function isFieldServiceCancelled(m: FieldServiceMeeting): boolean {
+  return !!m.cancelledAt;
 }
 
 export interface CreateFieldServiceMeetingInput {
@@ -1942,8 +1955,15 @@ export interface CreateFieldServiceMeetingInput {
 }
 
 export type UpdateFieldServiceMeetingInput = Partial<
-  Omit<CreateFieldServiceMeetingInput, "weekStartDate" | "draft">
->;
+  Omit<CreateFieldServiceMeetingInput, "draft">
+> & {
+  /**
+   * When the day, the hour or the place of an announced meeting changes:
+   * false keeps the news from the group or congregation it is for. Those
+   * assigned to it are told regardless (unless `notifyConductor` is false).
+   */
+  notifyAudience?: boolean;
+};
 
 /** Why a brother stands where he stands in the «Кто ведёт» list. */
 export type ConductorReason =
@@ -1973,12 +1993,51 @@ export const fieldServiceApi = {
      * `drafts` asks for the month being prepared as well — honoured by the
      * server only for a planner; everybody else gets the announced schedule.
      */
-    params: { weekStart?: string; weekEnd?: string; drafts?: boolean } = {},
+    params: {
+      weekStart?: string;
+      weekEnd?: string;
+      drafts?: boolean;
+      /**
+       * Include the cancelled meetings. Asked ONLY where a meeting is drawn
+       * and can be drawn crossed out; everywhere a meeting is counted or
+       * checked, a cancelled one is not a meeting at all.
+       */
+      cancelled?: boolean;
+    } = {},
   ): Promise<FieldServiceMeeting[]> {
-    const { drafts, ...rest } = params;
+    const { drafts, cancelled, ...rest } = params;
+    const query: Record<string, string> = { ...rest } as Record<string, string>;
+    if (drafts) query.drafts = "1";
+    if (cancelled) query.cancelled = "1";
     const { data } = await api.get<FieldServiceMeeting[]>(
       "/field-service-meetings",
-      { params: drafts ? { ...rest, drafts: "1" } : rest },
+      { params: query },
+    );
+    return data;
+  },
+  /**
+   * Call an announced meeting off: it stays in sight, crossed out with the
+   * reason; those assigned are told, and — unless `notifyAudience` is false —
+   * everyone it concerns.
+   */
+  async cancel(
+    id: string,
+    input: { reason?: string | null; notifyAudience?: boolean },
+  ): Promise<FieldServiceMeeting> {
+    const { data } = await api.post<FieldServiceMeeting>(
+      `/field-service-meetings/${id}/cancel`,
+      input,
+    );
+    return data;
+  },
+  /** Bring a cancelled meeting back; told the same way. */
+  async restore(
+    id: string,
+    input: { notifyAudience?: boolean } = {},
+  ): Promise<FieldServiceMeeting> {
+    const { data } = await api.post<FieldServiceMeeting>(
+      `/field-service-meetings/${id}/restore`,
+      input,
     );
     return data;
   },

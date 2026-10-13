@@ -17,7 +17,7 @@ import {
 } from '../lib/api';
 import { resolveHallAddress } from '../lib/hallAddress';
 import { formatDateISO, parseISODate, addDays } from '../lib/dates';
-import { FieldServiceForm } from './FieldServiceMeetingSheet';
+import { FieldServiceForm, confirmFieldServiceDelete } from './FieldServiceMeetingSheet';
 
 // The window itself lives in FieldServiceMeetingSheet (October 2026); this
 // name is what the two screens import.
@@ -65,6 +65,12 @@ export function FieldServiceSection({
   hideHeader,
 }: Props) {
   const { t } = useTranslation();
+  // A meeting is never deleted at a single tap: an announced one is called
+  // off for everyone by it (13 October 2026; until then the bin here deleted
+  // at once, while the month page asked).
+  const askRemove = async (m: FieldServiceMeeting) => {
+    if (await confirmFieldServiceDelete(m, t)) onRemove(m.id);
+  };
   // Halls: resolve shorthand meeting addresses to the exact hall address.
   const sectionHallsQuery = useQuery({
     queryKey: ['halls'],
@@ -141,7 +147,7 @@ export function FieldServiceSection({
                       </Pressable>
                       {isHeld(m) ? null : (
                         <Pressable
-                          onPress={() => onRemove(m.id)}
+                          onPress={() => void askRemove(m)}
                           hitSlop={8}
                           style={styles.iconBtn}
                           disabled={pending}
@@ -212,8 +218,12 @@ export function FieldServiceSection({
         // draft too: one announcement for the whole month.
         asDraft={meetings.some(isFieldServiceDraft)}
         onRemove={(id) => {
-          setFormFor(null);
-          onRemove(id);
+          const m = meetings.find((x) => x.id === id) ?? null;
+          void (async () => {
+            if (!(await confirmFieldServiceDelete(m, t))) return;
+            setFormFor(null);
+            onRemove(id);
+          })();
         }}
         onClose={() => setFormFor(null)}
         onCreate={(input) => {

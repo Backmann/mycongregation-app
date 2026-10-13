@@ -2,10 +2,10 @@ import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import { FieldServiceMeeting, isFieldServiceDraft } from '../lib/api';
+import { FieldServiceMeeting, isFieldServiceCancelled, isFieldServiceDraft } from '../lib/api';
 import type { FieldNote } from '../lib/field-audience';
 import { FieldNoteLine } from './FieldListBits';
-import { FieldNotice } from './FieldNotice';
+import { FieldCancelled, FieldNotice } from './FieldNotice';
 import { MyDot } from './MyDot';
 import { MyGlowRow } from './MyGlowRow';
 import { SourceLink } from './SourceLink';
@@ -52,7 +52,10 @@ export function FieldMeetingRow({
 }) {
   const { t } = useTranslation();
   const m = meeting;
-  const RowWrap = isMine ? MyGlowRow : View;
+  // Called off: still drawn, crossed out, with the reason in place of the
+  // notice — and nobody's glow: it is nobody's Saturday any more.
+  const off = isFieldServiceCancelled(m);
+  const RowWrap = isMine && !off ? MyGlowRow : View;
   const title = m.serviceGroupId
     ? t('fieldService.row.group', { group: groupName(m.serviceGroupId) })
     : m.isGeneral
@@ -85,11 +88,11 @@ export function FieldMeetingRow({
 
   const body = (
     <>
-      <Text style={styles.rowTime}>{m.startTime}</Text>
+      <Text style={[styles.rowTime, off && styles.struck]}>{m.startTime}</Text>
       <View style={styles.rowBody}>
         <View style={styles.rowTitleLine}>
-          {isMine && m.conductorPublisherId === me ? <MyDot kind="field_service" /> : null}
-          <Text style={styles.rowTitle}>{title}</Text>
+          {isMine && !off && m.conductorPublisherId === me ? <MyDot kind="field_service" /> : null}
+          <Text style={[styles.rowTitle, off && styles.struck]}>{title}</Text>
           {m.serviceOverseerVisit ? (
             <View style={styles.visitBadge}>
               <Text style={styles.visitBadgeText}>{t('fieldService.row.visitBadge')}</Text>
@@ -101,21 +104,28 @@ export function FieldMeetingRow({
             </View>
           ) : null}
         </View>
-        <Text style={[styles.rowWho, who.empty && styles.rowWhoEmpty]}>{who.text}</Text>
+        {off ? null : (
+          <Text style={[styles.rowWho, who.empty && styles.rowWhoEmpty]}>{who.text}</Text>
+        )}
         {/* What is different this time — before the theme and the address,
-            which are what the notice usually corrects. */}
-        <FieldNotice text={m.notice} />
+            which are what the notice usually corrects. A cancelled meeting
+            says that instead, and nothing else is different about it. */}
+        {off ? <FieldCancelled reason={m.cancelReason} /> : <FieldNotice text={m.notice} />}
         {/* What the meeting is about, whole: it used to share two lines with
             the address and end in «…» — the address is the same every week,
             the theme is what people read (phone, 11 October 2026). */}
-        {m.topic ? <Text style={styles.rowTopic}>{m.topic}</Text> : null}
+        {m.topic ? <Text style={[styles.rowTopic, off && styles.struck]}>{m.topic}</Text> : null}
         {place ? (
-          <Text style={styles.rowMuted} numberOfLines={2}>
+          <Text style={[styles.rowMuted, off && styles.struck]} numberOfLines={2}>
             {place}
           </Text>
         ) : null}
-        <FieldNoteLine note={note} groupName={groupName} />
-        <SourceLink url={m.sourceUrl} />
+        {off ? null : (
+          <>
+            <FieldNoteLine note={note} groupName={groupName} />
+            <SourceLink url={m.sourceUrl} />
+          </>
+        )}
       </View>
       {trailing ?? (onPress ? <Ionicons name="chevron-forward" size={16} color="#94a3b8" /> : null)}
     </>
@@ -144,6 +154,7 @@ const styles = StyleSheet.create({
     paddingVertical: 11,
   },
   rowLast: { borderBottomWidth: 0 },
+  struck: { textDecorationLine: 'line-through', color: '#94a3b8' },
   rowPress: { flex: 1, flexDirection: 'row', gap: 12, alignItems: 'flex-start' },
   rowTime: {
     width: 46,

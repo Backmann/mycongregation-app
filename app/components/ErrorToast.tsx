@@ -10,8 +10,9 @@ import { Ionicons } from '@expo/vector-icons';
 import {
   enterToastLayer,
   isTopToastLayer,
-  leaveToastLayer,
+  leaveToastLayerHandingOver,
   onToast,
+  ShownMessage,
   ToastTone,
 } from '../lib/error-bus';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -42,20 +43,26 @@ export function Toast({ layer = false }: { layer?: boolean } = {}) {
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const insets = useSafeAreaInsets();
   const id = useRef<number>(0);
+  // What this strip is saying now, so a closing window can pass it on.
+  const shown = useRef<ShownMessage | null>(null);
 
   useEffect(() => {
     if (!layer) return;
     id.current = enterToastLayer();
-    return () => leaveToastLayer(id.current);
+    return () => leaveToastLayerHandingOver(id.current, shown.current);
   }, [layer]);
 
   useEffect(() => {
     return onToast((m, t) => {
       if (!isTopToastLayer(id.current)) return;
+      shown.current = { message: m, tone: t, at: Date.now() };
       setMessage(m);
       setTone(t);
       if (timer.current) clearTimeout(timer.current);
-      timer.current = setTimeout(() => setMessage(null), VISIBLE_MS);
+      timer.current = setTimeout(() => {
+        shown.current = null;
+        setMessage(null);
+      }, VISIBLE_MS);
     });
   }, []);
 
@@ -89,7 +96,10 @@ export function Toast({ layer = false }: { layer?: boolean } = {}) {
     >
       <Pressable
         style={[styles.toast, success ? styles.success : styles.error]}
-        onPress={() => setMessage(null)}
+        onPress={() => {
+          shown.current = null;
+          setMessage(null);
+        }}
       >
         <Ionicons
           name={success ? 'checkmark-circle' : 'alert-circle'}

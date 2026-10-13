@@ -231,6 +231,28 @@ for (const rel of ['app', 'components'].flatMap(scan)) {
   }
 }
 
+// --- 5. a window that closes passes its fresh message down ---------------------------
+// «Встреча отменена» was said by the meeting window, which closed at once:
+// the message died with the window's strip (13 October 2026).
+{
+  const bus = await load(transpile(read('lib/error-bus.ts')));
+  const heard = [];
+  const off = bus.onToast((m, tone) => {
+    if (bus.isTopToastLayer(0)) heard.push(`${tone}:${m}`);
+  });
+  const win = bus.enterToastLayer();
+  bus.reportSuccess('в окне');
+  if (heard.length) problems.push('сообщение в окне услышала и полоса под ним');
+  bus.leaveToastLayerHandingOver(win, { message: 'в окне', tone: 'success', at: Date.now() });
+  const old = bus.enterToastLayer();
+  bus.leaveToastLayerHandingOver(old, { message: 'давнее', tone: 'error', at: Date.now() - bus.HANDOVER_MS - 1 });
+  await new Promise((r) => setTimeout(r, 10));
+  off();
+  if (heard.join('|') !== 'success:в окне') {
+    problems.push(`закрытое окно не передало свежее сообщение вниз (или передало давнее): ${JSON.stringify(heard)}`);
+  }
+}
+
 if (problems.length > 0) {
   console.error('✗ Отказы сервера словами:');
   for (const p of problems) console.error('  ' + p);

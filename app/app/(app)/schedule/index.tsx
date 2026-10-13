@@ -46,7 +46,7 @@ import { partDisplay } from "../../../lib/part-display";
 import { MEETING_LENGTH_MIN } from "../../../lib/home-digest";
 import { useSongsMap, enrichSongRef } from "../../../lib/songs";
 import { SourceLink } from "../../../components/SourceLink";
-import { FieldNotice } from "../../../components/FieldNotice";
+import { FieldCancelled, FieldNotice } from "../../../components/FieldNotice";
 import { arrangeFieldDay, noteForPlace } from "../../../lib/field-audience";
 import type { FieldPlace } from "../../../lib/field-audience";
 import {
@@ -337,7 +337,8 @@ export default function ProgrammeFeedScreen() {
   const fieldQs = useQueries({
     queries: spans.map((sp) => ({
       queryKey: ["field-service", "range", sp.from, sp.to],
-      queryFn: () => fieldServiceApi.list({ weekStart: sp.from, weekEnd: sp.to }),
+      // Called-off meetings too, drawn crossed out (13 October 2026).
+      queryFn: () => fieldServiceApi.list({ weekStart: sp.from, weekEnd: sp.to, cancelled: true }),
     })),
   });
   const eventsQ = useQuery({
@@ -1376,6 +1377,7 @@ function Row({
   line,
   lines,
   notices,
+  cancelled,
   mine,
   status,
   tag,
@@ -1397,6 +1399,8 @@ function Row({
   lines?: string[];
   /** Field service: what is different this time, in amber, one per meeting that says so. */
   notices?: string[];
+  /** Field service: the day's one meeting is called off — its reason, in red. */
+  cancelled?: (string | null)[];
   /** What is yours in it — shown with a «Вы» mark. */
   mine?: string | null;
   status?: { color: string; text: string } | null;
@@ -1433,6 +1437,7 @@ function Row({
           </Text>
         ))}
         {notices?.map((n, i) => <FieldNotice key={`n${i}`} text={n} />)}
+        {cancelled?.map((r, i) => <FieldCancelled key={`c${i}`} reason={r} />)}
         {mine ? (
           <View style={styles.mineRow}>
             {/* The sign of «yours», not the word «Вы» (26 September): the list
@@ -1943,9 +1948,10 @@ function FieldDay({
 
   // Conducting first; then going to a visit as the service overseer or his
   // assistant without conducting it — he goes, and the row should say so.
-  const mineAt = item.meetings.find((m) => !!me && m.conductorPublisherId === me);
-  const helpingAt = mineAt ? undefined : day.shown.find((p) => p.mine)?.meeting;
-  const ownVisit = day.shown.find((p) => p.audience === "visit" && p.own);
+  // A meeting called off is nobody's to lead or go to (13 October 2026).
+  const mineAt = item.meetings.find((m) => !m.cancelledAt && !!me && m.conductorPublisherId === me);
+  const helpingAt = mineAt ? undefined : day.shown.find((p) => p.mine && !p.meeting.cancelledAt)?.meeting;
+  const ownVisit = day.shown.find((p) => p.audience === "visit" && p.own && !p.meeting.cancelledAt);
   // THE ROW READS WITHOUT A TAP (stage 4, October 2026). It used to say
   // «Встреча для проповеди» under a chip that already said «Проповедь», and
   // the one thing people open it for — which meeting, and who conducts —
@@ -1964,6 +1970,8 @@ function FieldDay({
   // «Встреча по группам» is each group on its own: nobody conducts it as a
   // whole, so no conductor there is not a gap to announce.
   const conductorOf = (p: FieldPlace): string | null => {
+    // Called off: that, not who would have led it.
+    if (p.meeting.cancelledAt) return t("fieldService.cancelled.label").toLocaleLowerCase(i18n.language);
     const id = p.meeting.conductorPublisherId;
     if (!id) return p.audience === "open" ? null : t("feed.fieldNoConductor");
     return t("feed.fieldLedBy", { name: nameOf.get(id) ?? "" });
@@ -1972,8 +1980,14 @@ function FieldDay({
     [p.meeting.startTime, labelOf(p), conductorOf(p)].filter(Boolean).join(" · ");
   // Standing alone under the title the line starts a sentence of its own.
   const upper = (x: string) => x.charAt(0).toLocaleUpperCase(i18n.language) + x.slice(1);
+  // One meeting on the day, and it is called off: the red strip with its
+  // reason says it; the line under the title would only repeat it.
+  const single = day.shown.length === 1 && !day.others.length ? day.shown[0] : null;
+  const singleOff = single?.meeting.cancelledAt ? single.meeting : null;
   const lines =
-    ownVisit && !lead
+    singleOff
+      ? []
+      : ownVisit && !lead
       ? // The group goes to the visit and nowhere else that day: the other
         // meetings wait inside, each saying so.
         [
@@ -2002,7 +2016,10 @@ function FieldDay({
   // Saturday must not wait for a tap. Several meetings with a notice each —
   // one strip each, in the day's order; the same text twice is said once.
   const notices = [...new Set(
-    [...day.shown, ...day.others].map((p) => p.meeting.notice?.trim() ?? "").filter(Boolean),
+    [...day.shown, ...day.others]
+      .filter((p) => !p.meeting.cancelledAt)
+      .map((p) => p.meeting.notice?.trim() ?? "")
+      .filter(Boolean),
   )];
 
   const lineOf = (p: FieldPlace) => {
@@ -2021,6 +2038,27 @@ function FieldDay({
               mine: !!me && m.serviceOverseerAssistantId === me,
             }
           : null;
+    if (m.cancelledAt) {
+      // Crossed out with its reason; nobody named, nobody's part.
+      return (
+        <PartLine
+          key={m.id}
+          time={m.startTime}
+          title={labelOf(p)}
+          subtitle={m.address}
+          extra={null}
+          below={
+            <View style={styles.fieldAbout}>
+              <FieldCancelled reason={m.cancelReason} />
+            </View>
+          }
+          name={null}
+          mine={false}
+          helper={null}
+          noPerson
+        />
+      );
+    }
     return (
       <PartLine
         key={m.id}
@@ -2060,6 +2098,7 @@ function FieldDay({
           time={firstTime}
           lines={lines}
           notices={notices}
+          cancelled={singleOff ? [singleOff.cancelReason ?? null] : undefined}
           mine={mine}
           color={KIND.field.color}
           past={past}

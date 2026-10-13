@@ -145,6 +145,28 @@ check(
   check('ведущий встречи Hamm не на посещении — пометок нет', [lead.get('hamm'), lead.get('open')], [null, null]);
 }
 
+// A visit called off (13 October 2026): crossed out, still in the list,
+// deciding nothing — the group goes to its own meeting as on any Saturday.
+{
+  const offVisit = { ...visit, cancelledAt: '2026-09-20T10:00:00Z' };
+  const day = arrangeFieldDay([open, offVisit, hamm], AHLEN, 'me');
+  check('отменённое посещение: группа Ahlen видит его и открытую', ids(day.shown), ['visit', 'open']);
+  check(
+    'отменённое посещение не уводит группу с открытой встречи',
+    day.shown.find((p) => p.meeting.id === 'open').notForMyGroupToday,
+    false,
+  );
+  check('отменённое посещение: группа не «на посещении»', day.myGroupOnVisit, false);
+  const notes = fieldNotes([open, offVisit], AHLEN, 'me');
+  check('отменённое посещение: под открытой никакой пометки', notes.get('open'), null);
+  const overseerDay = arrangeFieldDay([offVisit, meeting('own', '10:30', { serviceGroupId: HAMM })], HAMM, 'overseer');
+  check(
+    'старейшина видит своё отменённое посещение, а своя встреча снова его',
+    [ids(overseerDay.shown), overseerDay.shown.find((p) => p.meeting.id === 'own').awayOnVisitTo],
+    [['visit', 'own'], null],
+  );
+}
+
 if (failures.length > 0) {
   console.error(`Кому встреча для проповеди — ${failures.length} расхождений:\n`);
   for (const f of failures) console.error('  ✗ ' + f + '\n');

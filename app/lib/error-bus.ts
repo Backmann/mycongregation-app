@@ -54,6 +54,39 @@ export function leaveToastLayer(id: number): void {
   if (i >= 0) layers.splice(i, 1);
 }
 
+/**
+ * A window that closes while its strip is still saying something hands the
+ * message down to the strip below (13 October 2026).
+ *
+ * «Встреча отменена» is said by the meeting window and the window closes at
+ * once — the message went to the window's own strip and died with it, and
+ * the person saw the page change with no word. A message younger than this
+ * is passed on; an old one has been read.
+ */
+export const HANDOVER_MS = 3000;
+
+export interface ShownMessage {
+  message: string;
+  tone: ToastTone;
+  /** Date.now() when it was shown. */
+  at: number;
+}
+
+/** Leave the layer; a fresh message goes on to whichever strip is now on top. */
+export function leaveToastLayerHandingOver(
+  id: number,
+  shown: ShownMessage | null,
+  now: number = Date.now(),
+): void {
+  leaveToastLayer(id);
+  if (!shown || now - shown.at >= HANDOVER_MS) return;
+  // After the window has gone: the strip below must already be the top.
+  setTimeout(() => {
+    if (shown.tone === 'success') reportSuccess(shown.message);
+    else reportError(shown.message);
+  }, 0);
+}
+
 /** Whether a strip is the one that should speak now (0 is the root). */
 export function isTopToastLayer(id: number): boolean {
   return layers.length === 0 ? id === 0 : layers[layers.length - 1] === id;

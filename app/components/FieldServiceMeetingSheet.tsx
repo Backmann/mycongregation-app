@@ -12,7 +12,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   ConductorCandidate,
   CreateFieldServiceMeetingInput,
@@ -21,6 +21,7 @@ import {
   fieldServiceApi,
   fieldServiceStatsApi,
   hallsApi,
+  isFieldServiceCancelled,
   isFieldServiceDraft,
   responsibilitiesApi,
   serviceGroupsApi,
@@ -29,7 +30,8 @@ import { resolveHallAddress } from '../lib/hallAddress';
 import { Sheet } from './Sheet';
 import { PublisherSelector } from './PublisherSelector';
 import { TimeField } from './TimeField';
-import { FieldNotice } from './FieldNotice';
+import { FieldCancelled, FieldNotice } from './FieldNotice';
+import { confirm } from './ConfirmHost';
 import { hallBusyLine, hallBusyNoticeSeed } from '../lib/hall-busy';
 import { MonthCalendar } from './MonthCalendar';
 import {
@@ -39,6 +41,7 @@ import {
   addDays,
 } from '../lib/dates';
 import { useAllPublishers } from '../lib/useAllPublishers';
+import { notify } from '../lib/error-bus';
 
 /**
  * The window of one field-service meeting (October 2026, stage 3a).
@@ -76,6 +79,32 @@ function isoDow(dateISO: string): number {
 
 const TIME_RE = /^([01]\d|2[0-3]):[0-5]\d$/;
 const DAYS = [1, 2, 3, 4, 5, 6, 7] as const;
+
+/**
+ * «Delete?» — said the way the meeting stands (13 October 2026). A draft
+ * goes quietly; an announced one is called off for everyone, and the
+ * planner is pointed to «Отменить», which keeps it in sight; a cancelled one
+ * only leaves the schedule. Both screens that delete ask through this, so
+ * the programme editor no longer deletes at a single tap.
+ */
+export async function confirmFieldServiceDelete(
+  m: FieldServiceMeeting | null | undefined,
+  t: (key: string) => string,
+): Promise<boolean> {
+  const body = !m
+    ? t('fieldService.deleteConfirm')
+    : isFieldServiceDraft(m)
+      ? t('fieldService.deleteConfirmDraft')
+      : isFieldServiceCancelled(m)
+        ? t('fieldService.deleteConfirmCancelled')
+        : t('fieldService.deleteConfirmPublished');
+  return confirm({
+    title: t('fieldService.delete'),
+    body,
+    confirmLabel: t('fieldService.delete'),
+    danger: true,
+  });
+}
 
 export type FieldServiceFormProps = {
   target: FieldServiceMeeting | 'new' | null;
@@ -182,6 +211,14 @@ export function FieldServiceForm({
   const [overseerId, setOverseerId] = useState<string | null>(null);
   const [assistantId, setAssistantId] = useState<string | null>(null);
   const [notifyConductor, setNotifyConductor] = useState(true);
+  // The week a meeting being edited stands in — it may move to another one
+  // (13 October 2026). Empty for a new meeting.
+  const [editWeek, setEditWeek] = useState('');
+  // Tell the group or congregation when the day, hour or place moves, or
+  // the meeting is called off. On unless the planner says otherwise.
+  const [notifyAudience, setNotifyAudience] = useState(true);
+  const [cancelOpen, setCancelOpen] = useState(false);
+  const [cancelReason, setCancelReason] = useState('');
   // «Choose the group first» was tapped under the visit card: «Чья» lights
   // up for a moment, and the sheet scrolls back to it.
   const [whoseNudge, setWhoseNudge] = useState(false);
@@ -224,6 +261,10 @@ export function FieldServiceForm({
       setAssistantId(null);
       fillOverseer.current = visit;
       setNotifyConductor(true);
+      setEditWeek('');
+      setNotifyAudience(true);
+      setCancelOpen(false);
+      setCancelReason('');
       setWhoseNudge(false);
     } else if (target) {
       setDayOfWeek(target.dayOfWeek);
@@ -244,6 +285,10 @@ export function FieldServiceForm({
       setAssistantId(target.serviceOverseerAssistantId ?? null);
       fillOverseer.current = false;
       setNotifyConductor(true);
+      setEditWeek(target.weekStartDate);
+      setNotifyAudience(true);
+      setCancelOpen(false);
+      setCancelReason('');
       setWhoseNudge(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -307,8 +352,9 @@ export function FieldServiceForm({
     ? heldOn(editing.weekStartDate, editing.dayOfWeek)
     : null;
   const isRecord = !!recordDate && recordDate < todayISO;
+  const editingWeek = editing ? editWeek || editing.weekStartDate : '';
   const meetingDate: string | null = editing
-    ? heldOn(editing.weekStartDate, dayOfWeek)
+    ? heldOn(editingWeek, dayOfWeek)
     : pickDate
       ? pickedDate || null
       : weekStartISO
@@ -316,7 +362,7 @@ export function FieldServiceForm({
         : null;
   const chosenPast = !isRecord && !!meetingDate && meetingDate < todayISO;
   const effectiveWeek = editing
-    ? editing.weekStartDate
+    ? editingWeek
     : pickDate && pickedDate
       ? mondayOf(pickedDate)
       : weekStartISO;
@@ -471,6 +517,19 @@ export function FieldServiceForm({
     saveHints.push(t('fieldService.form.hintAddress'));
 
   const draft = editing ? isFieldServiceDraft(editing) : asDraft;
+  // The day, the hour or the place of an announced meeting is changing:
+  // that is news for everyone going, not only for the conductor.
+  const movedDay = !!editing && !!meetingDate && meetingDate !== recordDate;
+  const changesForPeople =
+    !!editing &&
+    !draft &&
+    (movedDay ||
+      startTime !== editing.startTime ||
+      address.trim() !== editing.address);
+  const audienceName = (m: { serviceGroupId: string | null }) =>
+    m.serviceGroupId
+      ? t('fieldService.audience.group', { group: groupNameOf(m.serviceGroupId) })
+      : t('fieldService.audience.everyone');
 
   const submit = () => {
     if (!canSave) return;
@@ -492,7 +551,12 @@ export function FieldServiceForm({
       notifyConductor: draft ? false : notifyConductor,
     };
     if (editing) {
-      onUpdate(editing.id, base);
+      onUpdate(editing.id, {
+        ...base,
+        // Only when it moved: an unchanged week is not sent at all.
+        ...(editingWeek !== editing.weekStartDate ? { weekStartDate: editingWeek } : {}),
+        ...(changesForPeople ? { notifyAudience } : {}),
+      });
     } else if (pickDate && pickedDate) {
       onCreate({
         ...base,
@@ -506,6 +570,48 @@ export function FieldServiceForm({
         ...base,
         draft: asDraft || undefined,
       });
+    }
+  };
+
+  // ---- calling it off, bringing it back ------------------------------------
+  // Here rather than in the two screens that open this window: both need
+  // exactly the same, and the window is where the planner decides it.
+  const qc = useQueryClient();
+  const refresh = () => {
+    qc.invalidateQueries({ queryKey: ['field-service'] });
+    qc.invalidateQueries({ queryKey: ['field-service-topic-history'] });
+    qc.invalidateQueries({ queryKey: ['field-service-conductor-stats'] });
+    qc.invalidateQueries({ queryKey: ['service-overseer'] });
+  };
+  const cancelM = useMutation({
+    mutationFn: (id: string) =>
+      fieldServiceApi.cancel(id, {
+        reason: cancelReason.trim() || null,
+        notifyAudience,
+      }),
+    onSuccess: () => {
+      refresh();
+      notify(t('fieldService.cancel.done'), undefined, 'success');
+      onClose();
+    },
+  });
+  const restoreM = useMutation({
+    mutationFn: (id: string) => fieldServiceApi.restore(id, {}),
+    onSuccess: () => {
+      refresh();
+      notify(t('fieldService.restore.done'), undefined, 'success');
+      onClose();
+    },
+  });
+  const askRestore = async (m: FieldServiceMeeting) => {
+    if (
+      await confirm({
+        title: t('fieldService.restore.confirmTitle'),
+        body: t('fieldService.restore.confirmBody'),
+        confirmLabel: t('fieldService.restore.button'),
+      })
+    ) {
+      restoreM.mutate(m.id);
     }
   };
 
@@ -576,11 +682,66 @@ export function FieldServiceForm({
             last
           />
         </View>
-        <FieldNotice text={editing.notice} />
+        {isFieldServiceCancelled(editing) ? (
+          <FieldCancelled reason={editing.cancelReason} />
+        ) : (
+          <FieldNotice text={editing.notice} />
+        )}
         {onDuplicate ? (
           <Pressable style={styles.secondaryBtn} onPress={onDuplicate}>
             <Text style={styles.secondaryBtnText}>
               {t('fieldService.sheet.sameOnAnotherDate')}
+            </Text>
+          </Pressable>
+        ) : null}
+      </Sheet>
+    );
+  }
+
+  // ---- a meeting called off: crossed out, to bring back or delete -------
+  if (editing && isFieldServiceCancelled(editing)) {
+    return (
+      <Sheet
+        visible={visible}
+        variant="bottom"
+        title={title}
+        subtitle={whose ?? undefined}
+        onClose={onClose}
+        closeLabel={t('common.close')}
+      >
+        <FieldCancelled reason={editing.cancelReason} big />
+        <Text style={styles.cancelledNote}>{t('fieldService.sheetCancelled.note')}</Text>
+        <View style={styles.summaryCard}>
+          <SummaryRow
+            label={t('fieldService.sheet.where')}
+            value={resolveHallAddress(editing.address, halls)}
+          />
+          <SummaryRow
+            label={t('fieldService.sheetCancelled.leads')}
+            value={nameOf(editing.conductorPublisherId) || t('fieldService.unassigned')}
+            strong
+          />
+          <SummaryRow
+            label={t('fieldService.topicLabel')}
+            value={editing.topic || t('fieldService.sheet.noTopic')}
+            last
+          />
+        </View>
+        <Pressable
+          style={[styles.primaryBtn, restoreM.isPending && styles.saveBtnOff]}
+          disabled={restoreM.isPending}
+          onPress={() => void askRestore(editing)}
+        >
+          <Ionicons name="refresh" size={16} color="#fff" />
+          <Text style={styles.primaryBtnText}>{t('fieldService.restore.button')}</Text>
+        </Pressable>
+        {onRemove ? (
+          <Pressable
+            style={[styles.secondaryBtn, styles.dangerBtn]}
+            onPress={() => onRemove(editing.id)}
+          >
+            <Text style={[styles.secondaryBtnText, styles.dangerBtnText]}>
+              {t('fieldService.delete')}
             </Text>
           </Pressable>
         ) : null}
@@ -759,6 +920,53 @@ export function FieldServiceForm({
           })}
         </View>
       )}
+      {/* Another week for a meeting already made (13 October 2026): until
+          now it could only change its day within its own week, and a
+          Saturday moved by a week had to be deleted and made again. */}
+      {editing ? (
+        <>
+          <View style={styles.moveRow}>
+            <Pressable
+              onPress={() => setCalendarOpen((v) => !v)}
+              style={[styles.chip, styles.chipDashed, styles.chipRow, calendarOpen && styles.chipOn]}
+            >
+              <Ionicons
+                name="calendar-outline"
+                size={14}
+                color={calendarOpen ? '#fff' : '#0369a1'}
+              />
+              <Text style={[styles.chipText, styles.chipLink, calendarOpen && styles.chipTextOn]}>
+                {t('fieldService.move.otherWeek')}
+              </Text>
+            </Pressable>
+            {movedDay && recordDate && meetingDate ? (
+              <Text style={styles.movedText}>
+                {t('fieldService.move.moved', {
+                  from: cap(fmtDay(recordDate)),
+                  to: cap(fmtDay(meetingDate)),
+                })}
+              </Text>
+            ) : null}
+          </View>
+          {calendarOpen ? (
+            <MonthCalendar
+              compact
+              mode="single"
+              start={meetingDate}
+              end={null}
+              onChange={({ start }) => {
+                if (start) {
+                  setEditWeek(mondayOf(start));
+                  setDayOfWeek(isoDow(start));
+                  setCalendarOpen(false);
+                }
+              }}
+              locale={i18n.language}
+              minDate={todayISO}
+            />
+          ) : null}
+        </>
+      ) : null}
       <View style={styles.timeRow}>
         <Text style={styles.inlineLabel}>{t('fieldService.timeLabel')}</Text>
         <TimeField value={startTime} onChange={setStartTime} />
@@ -1103,6 +1311,25 @@ export function FieldServiceForm({
           />
         </View>
       )}
+      {/* The day, the hour or the place moves: the group or the whole
+          congregation hears it too (Lionel, 13 October 2026). */}
+      {changesForPeople && editing && !cancelOpen ? (
+        <View style={styles.toggleRow}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.toggleLabel}>{t('fieldService.audience.notify')}</Text>
+            <Text style={styles.toggleHint}>
+              {notifyAudience
+                ? audienceName({ serviceGroupId })
+                : t('fieldService.audience.off')}
+            </Text>
+          </View>
+          <Switch
+            value={notifyAudience}
+            onValueChange={setNotifyAudience}
+            trackColor={{ true: '#0ea5e9', false: '#cbd5e1' }}
+          />
+        </View>
+      ) : null}
 
       {editing ? (
         <View style={styles.editActions}>
@@ -1121,6 +1348,62 @@ export function FieldServiceForm({
               </Text>
             </Pressable>
           ) : null}
+        </View>
+      ) : null}
+      {/* Call it off — an announced meeting only; a draft was never told to
+          anyone and is simply deleted (13 October 2026). */}
+      {editing && !draft && !cancelOpen ? (
+        <Pressable
+          style={[styles.secondaryBtn, styles.dangerBtn, styles.cancelOpenBtn]}
+          onPress={() => {
+            setCancelOpen(true);
+            setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 50);
+          }}
+        >
+          <Ionicons name="close-circle-outline" size={16} color="#b91c1c" />
+          <Text style={[styles.secondaryBtnText, styles.dangerBtnText]}>
+            {t('fieldService.cancel.button')}
+          </Text>
+        </Pressable>
+      ) : null}
+      {editing && !draft && cancelOpen ? (
+        <View style={styles.cancelPanel}>
+          <Text style={styles.cancelTitle}>{t('fieldService.cancel.title')}</Text>
+          <Text style={styles.cancelHint}>{t('fieldService.cancel.hint')}</Text>
+          <Text style={styles.label}>{t('fieldService.cancel.reasonLabel')}</Text>
+          <TextInput
+            style={styles.input}
+            value={cancelReason}
+            onChangeText={setCancelReason}
+            placeholder={t('fieldService.cancel.reasonPlaceholder')}
+            placeholderTextColor="#94a3b8"
+            maxLength={300}
+          />
+          <View style={styles.toggleRow}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.toggleLabel}>{t('fieldService.audience.notify')}</Text>
+              <Text style={styles.toggleHint}>
+                {notifyAudience ? audienceName(editing) : t('fieldService.audience.off')}
+              </Text>
+            </View>
+            <Switch
+              value={notifyAudience}
+              onValueChange={setNotifyAudience}
+              trackColor={{ true: '#0ea5e9', false: '#cbd5e1' }}
+            />
+          </View>
+          <View style={styles.editActions}>
+            <Pressable style={styles.secondaryBtn} onPress={() => setCancelOpen(false)}>
+              <Text style={styles.secondaryBtnText}>{t('fieldService.cancel.keep')}</Text>
+            </Pressable>
+            <Pressable
+              style={[styles.dangerFill, cancelM.isPending && styles.saveBtnOff]}
+              disabled={cancelM.isPending}
+              onPress={() => cancelM.mutate(editing.id)}
+            >
+              <Text style={styles.dangerFillText}>{t('fieldService.cancel.confirm')}</Text>
+            </Pressable>
+          </View>
         </View>
       ) : null}
     </Sheet>
@@ -1333,6 +1616,34 @@ const styles = StyleSheet.create({
   },
   secondaryBtnText: { fontSize: 14, color: '#0369a1', fontWeight: '600', fontFamily: 'Manrope_600SemiBold' },
   dangerBtn: { borderColor: '#fecaca' },
+  chipRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  moveRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 8, flexWrap: 'wrap' },
+  movedText: { flexShrink: 1, fontSize: 13, color: '#0369a1', fontWeight: '700', fontFamily: 'Manrope_700Bold' },
+  cancelOpenBtn: { flexDirection: 'row', gap: 6, justifyContent: 'center', marginTop: 10 },
+  cancelPanel: {
+    marginTop: 14,
+    padding: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#fecaca',
+    backgroundColor: '#fff7f7',
+  },
+  cancelTitle: { fontSize: 16, fontWeight: '800', color: '#991b1b', fontFamily: 'Manrope_800ExtraBold' },
+  cancelHint: { fontSize: 13, color: '#475569', marginTop: 4, fontFamily: 'Manrope_500Medium' },
+  dangerFill: { flex: 1, borderRadius: 12, paddingVertical: 12, alignItems: 'center', backgroundColor: '#b91c1c' },
+  dangerFillText: { fontSize: 14.5, fontWeight: '700', color: '#ffffff', fontFamily: 'Manrope_700Bold' },
+  cancelledNote: { fontSize: 13.5, color: '#475569', marginTop: 10, fontFamily: 'Manrope_500Medium' },
+  primaryBtn: {
+    flexDirection: 'row',
+    gap: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 12,
+    paddingVertical: 13,
+    marginTop: 16,
+    backgroundColor: '#0369a1',
+  },
+  primaryBtnText: { fontSize: 15, fontWeight: '700', color: '#ffffff', fontFamily: 'Manrope_700Bold' },
   dangerBtnText: { color: '#b91c1c' },
   footer: { gap: 8 },
   footerRow: { flexDirection: 'row', gap: 10 },

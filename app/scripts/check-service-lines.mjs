@@ -90,6 +90,8 @@ check('проповедь: встреча чужой группы — не мо�
 check('проповедь: визит в чужую группу — не моя', key(lines({ fieldMeetings: [fs({ serviceGroupId: 'g-ahlen', serviceOverseerVisit: true })] }).fieldService), 'fieldNone');
 check('проповедь: моя группа на посещении — общая встреча не моя, визит мой', lines({ fieldMeetings: [fs({ startTime: '09:00' }), fs({ startTime: '10:30', serviceGroupId: 'g-hamm', serviceOverseerVisit: true })] }).fieldService.text, t('fieldNext', { when: 'сб, 10 октября, 10:30' }));
 check('проповедь: веду сам — «вы проводите»', key(lines({ fieldMeetings: [fs({ conductorPublisherId: 'p-me' })] }).fieldService), 'fieldMine');
+check('проповедь: отменённая — не ближайшая, беру следующую', lines({ fieldMeetings: [fs({ dayOfWeek: 5, cancelledAt: '2026-10-01T10:00:00Z' }), fs({ dayOfWeek: 6 })] }).fieldService.text, t('fieldNext', { when: 'сб, 10 октября, 10:00' }));
+check('проповедь: отменённая, которую вёл, — не «вы проводите»', key(lines({ fieldMeetings: [fs({ conductorPublisherId: 'p-me', cancelledAt: '2026-10-01T10:00:00Z' })] }).fieldService), 'fieldNone');
 check('проповедь: без группы и карточки — любая встреча', key(serviceLines({ ...base, me: null, myGroupId: null, fieldMeetings: [fs({ serviceGroupId: 'g-ahlen' })] }, perms, t, 'ru').fieldService), 'fieldNext');
 
 // Public witnessing.

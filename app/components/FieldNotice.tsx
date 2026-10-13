@@ -1,5 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 
 /**
  * The notice for everyone on a field-service meeting (13 October 2026):
@@ -49,4 +50,27 @@ const styles = StyleSheet.create({
     fontFamily: 'Manrope_700Bold',
   },
   textBig: { fontSize: 14.5, lineHeight: 20 },
+  cancelled: { backgroundColor: '#fef2f2', borderColor: '#fecaca' },
+  cancelledText: { color: '#991b1b' },
 });
+
+/**
+ * A meeting called off (13 October 2026): «Отменена: в этот день конгресс».
+ *
+ * Drawn wherever the meeting is drawn, in place of the notice — a cancelled
+ * meeting is not ON with a remark, it is not on at all. Red, quieter than an
+ * error: the reader should not miss it, and must not take it for a fault of
+ * the app. The line itself is crossed out by the caller.
+ */
+export function FieldCancelled({ reason, big }: { reason?: string | null; big?: boolean }) {
+  const { t } = useTranslation();
+  const r = reason?.trim() || null;
+  return (
+    <View style={[styles.strip, styles.cancelled, big && styles.stripBig]}>
+      <Ionicons name="close-circle" size={big ? 18 : 15} color="#b91c1c" style={styles.icon} />
+      <Text style={[styles.text, styles.cancelledText, big && styles.textBig]}>
+        {r ? t('fieldService.cancelled.withReason', { reason: r }) : t('fieldService.cancelled.label')}
+      </Text>
+    </View>
+  );
+}

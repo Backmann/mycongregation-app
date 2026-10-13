@@ -1490,7 +1490,7 @@
       "hintAddress": "Adresse angeben",
       "eventWarn": "An diesem Tag: {{title}}",
       "notifyConductor": "Leiter benachrichtigen",
-      "notifyConductorHint": "Push an den Bruder bei Ein- oder Austeilung"
+      "notifyConductorHint": "Push an den Bruder bei Ein- oder Austeilung und bei Verlegung"
     },
     "days": {
       "1": "Mo",
@@ -1770,7 +1770,44 @@
       "lead": "An diesem Tag ist noch etwas anderes",
       "toNotice": "Als Hinweis eintragen",
       "seed": "An diesem Tag: {{what}}. Wir treffen uns: "
-    }
+    },
+    "cancelled": {
+      "label": "Abgesagt",
+      "withReason": "Abgesagt: {{reason}}"
+    },
+    "cancel": {
+      "button": "Zusammenkunft absagen",
+      "title": "Zusammenkunft absagen",
+      "hint": "Die Zusammenkunft bleibt durchgestrichen und mit Grund im Plan – niemand denkt, er hätte sie verpasst. Der Leiter erhält eine Nachricht.",
+      "reasonLabel": "Grund",
+      "reasonPlaceholder": "Zum Beispiel: an diesem Tag ist Kreiskongress",
+      "confirm": "Zusammenkunft absagen",
+      "keep": "Nicht absagen",
+      "done": "Zusammenkunft abgesagt"
+    },
+    "restore": {
+      "button": "Zusammenkunft wiederherstellen",
+      "confirmTitle": "Zusammenkunft wiederherstellen?",
+      "confirmBody": "Die Zusammenkunft findet wieder statt. Der Leiter und alle, die sie betrifft, erhalten eine Nachricht.",
+      "done": "Die Zusammenkunft findet wieder statt"
+    },
+    "audience": {
+      "notify": "Alle benachrichtigen, die die Zusammenkunft betrifft",
+      "group": "Alle in der Gruppe {{group}}",
+      "everyone": "Die ganze Versammlung",
+      "off": "Nur der Leiter und – bei einem Besuch – der Dienstaufseher und sein Gehilfe erhalten eine Nachricht"
+    },
+    "move": {
+      "otherWeek": "Andere Woche",
+      "moved": "Verlegt: {{from}} → {{to}}"
+    },
+    "sheetCancelled": {
+      "note": "Die Zusammenkunft ist abgesagt. Um sie zu ändern, stellen Sie sie zuerst wieder her.",
+      "leads": "Leitet"
+    },
+    "deleteConfirmDraft": "Diese Zusammenkunft aus dem Entwurf löschen?",
+    "deleteConfirmPublished": "Die Zusammenkunft verschwindet bei allen, und der Leiter sowie alle, die sie betrifft, erhalten eine Absage. Wenn sie nur ausfällt, ist „Zusammenkunft absagen“ besser – sie bleibt durchgestrichen und mit Grund im Plan.",
+    "deleteConfirmCancelled": "Abgesagte Zusammenkunft löschen? Sie verschwindet aus dem Plan, weitere Nachrichten gibt es nicht."
   },
   "cleaning": {
     "title": "Reinigung",
@@ -4413,13 +4450,13 @@
       "SAME_CARD": "Bitte zwei verschiedene Karten wählen.",
       "SAME_SPEAKER": "Dieser Redner hat diese Woche schon.",
       "WEEK_ALREADY_PAST": "Die Woche ist schon vorbei – sie kann nicht getauscht werden.",
-      "NO_OWN_CARD": "Dein Konto ist mit keiner Verkündigerkarte verbunden. Bitte einen Administrator, sie zu verbinden.",
+      "NO_OWN_CARD": "Ihr Konto ist mit keiner Verkündigerkarte verbunden. Bitten Sie einen Administrator, sie zu verbinden.",
       "NOTHING_TO_SAVE": "Nichts zu speichern – es wurde nichts geändert.",
       "END_BEFORE_START": "Das Ende kann nicht vor dem Beginn liegen – bitte die Daten prüfen.",
       "REPORT_STUDENT": "Bibelschüler geben keinen Predigtdienstbericht ab.",
       "REPORT_MONTH_CLOSED": "Dieser Monat ist schon abgeschlossen. Ändern können den Bericht jetzt der Sekretär oder ein Administrator – bitte an den Sekretär wenden.",
       "REPORT_ON_BEHALF_FORBIDDEN": "Einen Bericht für einen anderen abgeben dürfen ein Administrator, der Sekretär und der Aufseher seiner Gruppe.",
-      "REPORT_NOT_EDITABLE": "Diesen Bericht kannst du nicht mehr ändern: Der Monat ist abgeschlossen oder der Bericht ist nicht deiner. Bitte an den Sekretär wenden.",
+      "REPORT_NOT_EDITABLE": "Diesen Bericht können Sie nicht mehr ändern: Der Monat ist abgeschlossen oder der Bericht ist nicht Ihrer. Bitte an den Sekretär wenden.",
       "REPORT_ONLY_OWN": "Man kann nur die eigenen Berichte ansehen.",
       "REPORT_COLLECTION_OVER": "Die Berichte für diesen Monat sind schon eingesammelt – den eigenen Bericht kann man nicht mehr ändern. Bitte an den Sekretär wenden.",
       "REPORT_GROUP_FORBIDDEN": "Die Berichte einer Gruppe sehen die Ältesten, die Administratoren, der Sekretär und die Gruppenaufseher.",
@@ -4431,7 +4468,7 @@
       "REPORT_FORM_MISMATCH": "Das Berichtsformular passt nicht zum Dienst dieses Verkündigers – vielleicht hat sich sein Status gerade geändert. Ansicht aktualisieren und den Bericht neu ausfüllen.",
       "REPORT_MONTH_NOT_OVER": "Ein Bericht wird für einen Monat abgegeben, der schon vorbei ist.",
       "REPORT_HOURS_REQUIRED": "Ein Pionier gibt Stunden an – bitte das Feld „Stunden“ ausfüllen.",
-      "REPORT_SERVED_REQUIRED": "Bitte angeben, ob du in diesem Monat im Predigtdienst warst.",
+      "REPORT_SERVED_REQUIRED": "Bitte angeben, ob Sie in diesem Monat im Predigtdienst waren.",
       "CART_WINDOW_TOO_SHORT": "Der Zeitraum ist kürzer als eine Schicht – bitte verlängern.",
       "CART_NO_SUCH_LOCATION": "Diesen Standort gibt es nicht – vielleicht wurde er gelöscht. Bitte die Ansicht aktualisieren.",
       "CART_WEEK_PUBLISHED": "Diese Woche ist schon veröffentlicht – Schichten können nicht mehr hinzugefügt werden.",
@@ -4479,7 +4516,11 @@
       "SCHEDULE_PAST_NEEDS_CONFIRM": "Das verlegt Zusammenkünfte schon begonnener Wochen auf einen anderen Tag, und für {{moved}} davon ist die Anwesenheit schon am alten Tag erfasst. Bitte das Speichern bestätigen.",
       "SCHEDULE_VERSION_IN_FORCE": "Dieser Zeitplan gilt schon – vergangene Wochen sind danach gezählt, er kann nicht gelöscht werden. Zum Korrigieren den Zeitplan mit demselben Startdatum speichern.",
       "GROUP_ALREADY_REMOVED": "Diese Gruppe ist schon entfernt.",
-      "GROUP_NOT_REMOVED": "Diese Gruppe ist nicht entfernt – es gibt nichts wiederherzustellen."
+      "GROUP_NOT_REMOVED": "Diese Gruppe ist nicht entfernt – es gibt nichts wiederherzustellen.",
+      "FS_CANCELLED": "Die Zusammenkunft ist abgesagt. Um sie zu ändern, stellen Sie sie zuerst wieder her.",
+      "FS_DRAFT_NOT_CANCELLABLE": "Ein Entwurf wurde noch niemandem angekündigt – er wird nicht abgesagt, sondern gelöscht.",
+      "FS_ALREADY_CANCELLED": "Die Zusammenkunft ist schon abgesagt.",
+      "FS_NOT_CANCELLED": "Die Zusammenkunft ist nicht abgesagt – es gibt nichts wiederherzustellen."
     }
   }
 }

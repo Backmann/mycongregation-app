@@ -1490,7 +1490,7 @@
       "hintAddress": "Enter an address",
       "eventWarn": "On this day: {{title}}",
       "notifyConductor": "Notify the conductor",
-      "notifyConductorHint": "Push to the brother when assigned or removed"
+      "notifyConductorHint": "Push to the brother when assigned, removed or moved"
     },
     "days": {
       "1": "Mon",
@@ -1770,7 +1770,44 @@
       "lead": "Something else is on this day",
       "toNotice": "Put it in the notice",
       "seed": "On this day: {{what}}. We meet: "
-    }
+    },
+    "cancelled": {
+      "label": "Cancelled",
+      "withReason": "Cancelled: {{reason}}"
+    },
+    "cancel": {
+      "button": "Cancel the meeting",
+      "title": "Cancel the meeting",
+      "hint": "The meeting stays in the schedule, crossed out, with the reason — nobody will think they missed it. The conductor gets a message.",
+      "reasonLabel": "Reason",
+      "reasonPlaceholder": "For example: the circuit assembly is that day",
+      "confirm": "Cancel the meeting",
+      "keep": "Keep it",
+      "done": "Meeting cancelled"
+    },
+    "restore": {
+      "button": "Restore the meeting",
+      "confirmTitle": "Restore the meeting?",
+      "confirmBody": "The meeting will be on again. The conductor and everyone it concerns will get a message.",
+      "done": "The meeting is on again"
+    },
+    "audience": {
+      "notify": "Tell everyone the meeting concerns",
+      "group": "Everyone in group {{group}}",
+      "everyone": "The whole congregation",
+      "off": "Only the conductor and — on a visit — the service overseer and his assistant will get a message"
+    },
+    "move": {
+      "otherWeek": "Another week",
+      "moved": "Moved: {{from}} → {{to}}"
+    },
+    "sheetCancelled": {
+      "note": "The meeting is cancelled. To change it, restore it first.",
+      "leads": "Conducts"
+    },
+    "deleteConfirmDraft": "Delete this meeting from the draft?",
+    "deleteConfirmPublished": "The meeting will disappear for everyone, and the conductor and everyone it concerns will get a cancellation message. If it is only not taking place, “Cancel the meeting” is better — it stays in the schedule, crossed out, with the reason.",
+    "deleteConfirmCancelled": "Delete the cancelled meeting? It will disappear from the schedule; no more messages are sent."
   },
   "cleaning": {
     "title": "Cleaning",
@@ -4479,7 +4516,11 @@
       "SCHEDULE_PAST_NEEDS_CONFIRM": "This moves meetings of weeks already begun to another day, and attendance for {{moved}} of them is already recorded on the old day. Please confirm saving.",
       "SCHEDULE_VERSION_IN_FORCE": "This schedule is already in force — past weeks are counted by it, so it cannot be deleted. Correct it by saving the schedule with the same start date.",
       "GROUP_ALREADY_REMOVED": "This group is already removed.",
-      "GROUP_NOT_REMOVED": "This group is not removed — there is nothing to restore."
+      "GROUP_NOT_REMOVED": "This group is not removed — there is nothing to restore.",
+      "FS_CANCELLED": "The meeting is cancelled. To change it, restore it first.",
+      "FS_DRAFT_NOT_CANCELLABLE": "A draft was never announced — it is deleted, not cancelled.",
+      "FS_ALREADY_CANCELLED": "The meeting is already cancelled.",
+      "FS_NOT_CANCELLED": "The meeting is not cancelled — there is nothing to restore."
     }
   }
 }

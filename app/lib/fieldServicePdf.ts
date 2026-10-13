@@ -14,6 +14,12 @@ export interface FsPdfMeetingRow {
   topic: string | null;
   /** What is different this time, printed bold under the address. */
   notice?: string | null;
+  /**
+   * Called off (13 October 2026): the row is printed crossed out with this
+   * line under it — «Отменена: …». A sheet that simply left the Saturday out
+   * would read as «nothing planned».
+   */
+  cancelledLine?: string | null;
   conductorName: string | null;
   isGeneral: boolean;
   /** The group this meeting belongs to; null when it belongs to no one group. */
@@ -109,9 +115,11 @@ export function buildFieldServicePdfHtml(opts: {
           // The notice for everyone, printed as it is drawn on screen: a
           // bold amber line, before the theme — a sheet pinned in the hall
           // is where many first read that the hall is under repair.
-          const notice = r.notice?.trim()
-            ? `<div class="notice">${esc(r.notice.trim())}</div>`
-            : '';
+          const notice = r.cancelledLine
+            ? `<div class="cancelled">${esc(r.cancelledLine)}</div>`
+            : r.notice?.trim()
+              ? `<div class="notice">${esc(r.notice.trim())}</div>`
+              : '';
           const assistant = r.assistantName
             ? `<div class="assist">${esc(L.assistant)}: ${esc(r.assistantName)}</div>`
             : '';
@@ -122,7 +130,13 @@ export function buildFieldServicePdfHtml(opts: {
             : r.isOverseerVisit
               ? (r.overseerName ?? r.conductorName ?? '—')
               : (r.conductorName ?? '—');
-          return `<tr${r.isOverseerVisit || r.fromCoVisit ? ' class="visitrow"' : ''}>
+          const rowClass = [
+            r.isOverseerVisit || r.fromCoVisit ? 'visitrow' : '',
+            r.cancelledLine ? 'offrow' : '',
+          ]
+            .filter(Boolean)
+            .join(' ');
+          return `<tr${rowClass ? ` class="${rowClass}"` : ''}>
 <td class="date">${esc(r.dayLabel)} ${r.dateISO.slice(8, 10)}.${r.dateISO.slice(5, 7)}${badges ? `<div class="badges">${badges}</div>` : ''}</td>
 <td class="time">${esc(r.time)}</td>
 <td>${esc(r.address)}${group}${notice}${what}</td>
@@ -183,6 +197,10 @@ ${rows}
   .cond { font-weight: 600; }
   .group { color: #0f172a; font-size: 9pt; font-weight: 600; margin-top: 2px; }
   .topic { color: #475569; font-size: 8.5pt; margin-top: 2px; line-height: 1.35; }
+  .offrow td { color: #94a3b8; text-decoration: line-through; }
+  .offrow td .cancelled { text-decoration: none; }
+  .cancelled { color: #991b1b; background: #fef2f2; border: 1px solid #fecaca; border-radius: 4px;
+    padding: 2px 6px; margin-top: 3px; font-weight: 700; display: inline-block; }
   .notice { color: #78350f; background: #fffbeb; border: 1px solid #fde68a; border-radius: 4px;
     padding: 2px 6px; font-size: 9pt; font-weight: 700; margin-top: 3px; line-height: 1.35; }
   .assist { color: #64748b; font-size: 8.5pt; font-weight: 400; margin-top: 2px; }

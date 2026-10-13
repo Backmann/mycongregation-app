@@ -125,6 +125,8 @@ const STEPS = [
   // A failed request is said in words; contents screens say when lines are missing.
   ['Ошибка — словами', 'node', ['scripts/check-error-text.mjs']],
   ['Отказы сервера словами', 'node', ['scripts/check-server-refusals.mjs']],
+  // German speaks with «Sie»: no «du» slips back in.
+  ['Немецкий на «Sie»', 'node', ['scripts/check-german-sie.mjs']],
   // A phone on its side: no screen under the system buttons.
   ['Телефон на боку', 'node', ['scripts/check-side-insets.mjs']],
   // One rule for who may open «Составление программы» — asked by the doors

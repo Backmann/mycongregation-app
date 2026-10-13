@@ -160,6 +160,12 @@ export interface MeetingEntry {
   /** Field service: the notice for everyone — «зал на ремонте…». */
   notice?: string | null;
   /**
+   * Field service: called off (13 October 2026). Still listed, crossed out
+   * with its reason; never the «next» card, nobody's part.
+   */
+  cancelled?: boolean;
+  cancelReason?: string | null;
+  /**
    * Field service: whose group, and whether the service overseer is coming.
    *
    * The home timeline is the THIRD place a field-service meeting is drawn —
@@ -719,11 +725,13 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
     const conductor = m.conductorPublisherId
       ? publishersById.get(m.conductorPublisherId) ?? null
       : null;
+    const off = !!m.cancelledAt;
     // Remembered so the personal loop below does not repeat what this row
-    // already says.
-    spokenFieldService.add(`${m.weekStartDate}|${m.dayOfWeek}`);
+    // already says. A cancelled row says nothing of the reader's part.
+    if (!off) spokenFieldService.add(`${m.weekStartDate}|${m.dayOfWeek}`);
     const iConduct =
-      (!!myPublisherId && m.conductorPublisherId === myPublisherId) ||
+      !off &&
+      ((!!myPublisherId && m.conductorPublisherId === myPublisherId) ||
       myItems.some(
         (it) =>
           it.kind === 'field_service' &&
@@ -731,9 +739,9 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
           it.weekStartDate === m.weekStartDate &&
           it.dayOfWeek === m.dayOfWeek &&
           (!it.time || it.time === m.startTime),
-      );
+      ));
     const onVisitAs =
-      iConduct || !m.serviceOverseerVisit || !myPublisherId
+      off || iConduct || !m.serviceOverseerVisit || !myPublisherId
         ? null
         : m.serviceOverseerAssistantId === myPublisherId
           ? 'assistant'
@@ -755,9 +763,11 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
       conductorName: conductor ? conductor.displayName : null,
       // «Встреча по группам» is each group on its own: nobody conducts it
       // as a whole, so no conductor there is not a gap to announce.
-      unassignedConductor: !conductor && audienceOf(m) !== 'open',
+      unassignedConductor: !off && !conductor && audienceOf(m) !== 'open',
       topic: m.topic,
       notice: m.notice ?? null,
+      cancelled: off,
+      cancelReason: m.cancelReason ?? null,
       sourceUrl: m.sourceUrl,
       replacedBy: null,
       groupName: m.serviceGroupId

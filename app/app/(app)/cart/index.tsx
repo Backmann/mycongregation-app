@@ -79,7 +79,13 @@ export default function ServiceHubScreen() {
   const fieldQ = useQuery({
     queryKey: ['field-service', 'range', mon0],
     queryFn: () =>
-      fieldServiceApi.list({ weekStart: mon0, weekEnd: formatDateISO(addDays(monday, 21)) }),
+      // The same key as Home, so the same answer — cancelled meetings
+      // included; lib/service-lines leaves them out of «the next one».
+      fieldServiceApi.list({
+        weekStart: mon0,
+        weekEnd: formatDateISO(addDays(monday, 21)),
+        cancelled: true,
+      }),
     staleTime: 60 * 1000,
   });
   const cartQs = useQueries({

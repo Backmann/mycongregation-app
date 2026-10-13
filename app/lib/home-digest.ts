@@ -113,7 +113,12 @@ export function digestHome(input: {
   const { timeline, todayISO, nowHM, absences, events, nearDays } = input;
   const near = flat(timeline.near).filter(isOwnEntry);
   const far = flat(timeline.far).filter(isOwnEntry);
-  const own = [...near, ...far].filter((en) => !isOver(en, todayISO, nowHM));
+  const own = [...near, ...far].filter(
+    (en) =>
+      !isOver(en, todayISO, nowHM) &&
+      // A meeting called off is not what comes next (13 October 2026).
+      !(en.type === 'meeting' && en.cancelled),
+  );
 
   const next = own[0] ?? null;
   const following = own[1] ?? null;

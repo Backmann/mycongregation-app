@@ -174,6 +174,8 @@ export function serviceLines(
     for (const m of input.fieldMeetings) {
       const date = addDaysISO(m.weekStartDate, m.dayOfWeek - 1);
       if (date < today) continue;
+      // A meeting called off is nobody's next (13 October 2026).
+      if (m.cancelledAt) continue;
       byDay.set(date, [...(byDay.get(date) ?? []), m]);
     }
     let next: { date: string; time: string; mine: boolean } | null = null;

@@ -60,6 +60,8 @@ export type FieldNote =
 
 /** The note for one place — the same wording decision for every screen. */
 export function noteForPlace(p: FieldPlace, myGroupId: string | null): FieldNote {
+  // A meeting called off carries its reason, not a note about who goes.
+  if (p.meeting.cancelledAt) return null;
   if (p.notForMyGroupToday) return { kind: 'notForYourGroup' };
   if (p.awayOnVisitTo) return { kind: 'awayOnVisit', groupId: p.awayOnVisitTo };
   // «Только для группы …» tells someone else's member to stay away; the
@@ -133,18 +135,35 @@ export function arrangeFieldDay(
   me: string | null,
 ): FieldDayArrangement {
   const sorted = [...meetings].sort((a, b) => a.startTime.localeCompare(b.startTime));
+  // A meeting called off still stands in the list, crossed out — but it
+  // decides nothing about the day (13 October 2026): a cancelled visit does
+  // not take the group away from its own meeting, and nobody «goes» to it.
+  const holds = sorted.filter((m) => !m.cancelledAt);
   const visited = new Set(
-    sorted.filter((m) => audienceOf(m) === 'visit').map((m) => m.serviceGroupId as string),
+    holds.filter((m) => audienceOf(m) === 'visit').map((m) => m.serviceGroupId as string),
   );
   const myGroupOnVisit = !!myGroupId && visited.has(myGroupId);
   // The overseer and his assistant belong to a group of their own; on the
   // day they visit another one, their group's meeting and the open ones are
   // not theirs either.
   const myVisit =
-    sorted.find((m) => audienceOf(m) === 'visit' && isOnMeeting(m, me)) ?? null;
+    holds.find((m) => audienceOf(m) === 'visit' && isOnMeeting(m, me)) ?? null;
   const places: FieldPlace[] = sorted.map((m) => {
     const audience = audienceOf(m);
     const own = !!myGroupId && m.serviceGroupId === myGroupId;
+    if (m.cancelledAt) {
+      // Shown where it would have been shown, with no note: the crossed-out
+      // line and its reason say all there is.
+      return {
+        meeting: m,
+        audience,
+        own,
+        notForMyGroupToday: false,
+        // Still his to see — he was told it is off — never his to go to.
+        mine: isOnMeeting(m, me),
+        awayOnVisitTo: null,
+      };
+    }
     return {
       meeting: m,
       audience,

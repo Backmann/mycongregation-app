@@ -370,6 +370,8 @@ function ProgrammeEditor() {
       fieldServiceApi.list({
         weekStart: weekStartISO,
         drafts: canEditFieldServiceMeetings,
+        // Crossed out where called off — the planner restores or deletes it.
+        cancelled: true,
       }),
     placeholderData: keepPreviousData,
   });

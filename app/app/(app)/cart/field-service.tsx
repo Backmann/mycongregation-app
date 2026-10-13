@@ -33,7 +33,10 @@ import {
 import { usePermissions } from '../../../lib/permissions';
 import { useFieldListViewer } from '../../../components/FieldListBits';
 import { FieldMeetingRow } from '../../../components/FieldMeetingRow';
-import { FieldServiceForm } from '../../../components/FieldServiceMeetingSheet';
+import {
+  FieldServiceForm,
+  confirmFieldServiceDelete,
+} from '../../../components/FieldServiceMeetingSheet';
 import { resolveHallAddress } from '../../../lib/hallAddress';
 import { FieldServicePrepareSheet } from '../../../components/FieldServicePrepareSheet';
 import { FieldServiceTemplateSheet } from '../../../components/FieldServiceTemplateSheet';
@@ -163,7 +166,8 @@ export default function FieldServiceMeetingsScreen() {
   const meetingsQuery = useQuery({
     throwOnError: failsScreen,
     queryKey: ['field-service', 'window', weekStart, weekEnd, canEdit ? 'drafts' : 'public'],
-    queryFn: () => fieldServiceApi.list({ weekStart, weekEnd, drafts: canEdit }),
+    // Called-off meetings too, crossed out (13 October 2026).
+    queryFn: () => fieldServiceApi.list({ weekStart, weekEnd, drafts: canEdit, cancelled: true }),
     // A wider window replaces, never blanks, what is on screen.
     placeholderData: (prev) => prev,
   });
@@ -408,14 +412,8 @@ export default function FieldServiceMeetingsScreen() {
   });
 
   const confirmRemove = async (id: string) => {
-    if (
-      await confirm({
-        title: t('fieldService.delete'),
-        body: t('fieldService.deleteConfirm'),
-        confirmLabel: t('fieldService.delete'),
-        danger: true,
-      })
-    ) {
+    const m = target && target !== 'new' && target.id === id ? target : null;
+    if (await confirmFieldServiceDelete(m, t)) {
       setTarget(null);
       removeM.mutate(id);
     }
@@ -592,6 +590,9 @@ export default function FieldServiceMeetingsScreen() {
       fetched = await fieldServiceApi.list({
         weekStart: mondayOf(`${pdfStart}-01`),
         weekEnd: mondayAfterMonth(lastKey),
+        // A printed sheet that leaves a cancelled Saturday out reads as «no
+        // meeting planned»; crossed out, it says what happened.
+        cancelled: true,
       });
     } catch {
       notify(t('common.loadFailed'), t('common.loadFailedHint'));
@@ -635,6 +636,11 @@ export default function FieldServiceMeetingsScreen() {
               address: resolveHallAddress(m.address, halls),
               topic: m.topic ?? null,
               notice: m.notice ?? null,
+              cancelledLine: m.cancelledAt
+                ? m.cancelReason?.trim()
+                  ? t('fieldService.cancelled.withReason', { reason: m.cancelReason.trim() })
+                  : t('fieldService.cancelled.label')
+                : null,
               conductorName: nameOf(m.conductorPublisherId),
               isGeneral: m.isGeneral,
               groupName: m.serviceGroupId ? groupName(m.serviceGroupId) : null,

@@ -28,7 +28,7 @@ import {
 import { usePermissions } from "../../../lib/permissions";
 import { useMayOpen } from "../../../lib/useMayOpen";
 import { SourceLink } from "../../../components/SourceLink";
-import { FieldNotice } from "../../../components/FieldNotice";
+import { FieldCancelled, FieldNotice } from "../../../components/FieldNotice";
 import {
   EnableNotificationsCard,
   useNotifyNudge,
@@ -1440,10 +1440,17 @@ function EntryBody({
           KIND_COLOR.field_service,
           en.time || null,
         )}
-        <Text style={s.rowTitle}>{fieldTitle(en, t)}</Text>
-        {where ? <Text style={s.rowPlain}>{where}</Text> : null}
-        <FieldNotice text={en.notice} />
-        <FieldPeople en={en} myName={myName} />
+        <Text style={[s.rowTitle, en.cancelled && s.struck]}>{fieldTitle(en, t)}</Text>
+        {where ? <Text style={[s.rowPlain, en.cancelled && s.struck]}>{where}</Text> : null}
+        {/* Called off: crossed out with its reason, and nobody to name. */}
+        {en.cancelled ? (
+          <FieldCancelled reason={en.cancelReason} />
+        ) : (
+          <>
+            <FieldNotice text={en.notice} />
+            <FieldPeople en={en} myName={myName} />
+          </>
+        )}
         {en.fieldNote?.kind === "onlyFor" ? (
           <Text style={s.rowNote}>
             {t("feed.fieldOnlyFor", { group: en.fieldNote.groupName })}
@@ -1754,6 +1761,9 @@ function useHomeData(todayISO: string) {
       fieldServiceApi.list({
         weekStart: mon0,
         weekEnd: formatDateISO(addDays(baseMonday, 21)),
+        // Crossed out where called off (13 October 2026). The same key and
+        // answer as «Служение», which leaves them out of its count itself.
+        cancelled: true,
       }),
     staleTime: 60 * 1000,
   });
@@ -2565,6 +2575,7 @@ const s = StyleSheet.create({
   },
   rowSub: { fontSize: 13, color: "#64748b" },
   rowPlain: { fontSize: 13, color: "#0f172a" },
+  struck: { textDecorationLine: "line-through", color: "#94a3b8" },
   rowNote: {
     fontSize: 12.5,
     color: "#b45309",
