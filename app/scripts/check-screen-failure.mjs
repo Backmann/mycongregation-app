@@ -161,9 +161,12 @@ for (const rel of [...Object.keys(EXEMPT), ...Object.keys(VIA)]) {
 // The rule may be used only where a screen boundary stands above: in screen
 // files, and in the few hooks and components drawn by screens alone.
 const OUTSIDE_SCREENS = ['lib/useCleaningWeek.ts', 'lib/useDutiesWeek.ts', 'components/SpecialEventDetail.tsx'];
+// Relative paths are built with «/» by hand, not with join(): on Windows
+// join() gives «lib\screen-failure.ts», which matches none of the names
+// below, and the gate closed on every machine but Linux (13 October 2026).
 const scan = (d) =>
   readdirSync(join(ROOT, d)).flatMap((n) => {
-    const p = join(d, n);
+    const p = `${d}/${n}`;
     return statSync(join(ROOT, p)).isDirectory() ? scan(p) : /\.tsx?$/.test(n) ? [p] : [];
   });
 for (const rel of [...scan('components'), ...scan('lib')]) {
