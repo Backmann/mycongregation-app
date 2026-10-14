@@ -1484,12 +1484,11 @@
     "title": "Field Ministry Meetings",
     "empty": "No meetings this week",
     "addEntry": "Add a meeting",
-    "conductor": "Conductor",
     "unassigned": "unassigned",
     "timeLabel": "Time",
     "topicLabel": "Topic",
     "linkLabel": "Link",
-    "openLink": "Open source",
+    "openLink": "Material",
     "form": {
       "addTitle": "New meeting",
       "save": "Save",
@@ -1513,7 +1512,7 @@
       "6": "Sat",
       "7": "Sun"
     },
-    "generalBadge": "Combined",
+    "generalBadge": "Combined meeting",
     "hubSubtitle": "Field-service meeting schedule",
     "earlier": "Earlier: {{month}}",
     "emptyMonth": "No meetings this month",
@@ -1537,8 +1536,12 @@
       "generated": "Generated",
       "date": "Date",
       "time": "Time",
-      "address": "Address",
-      "groupVisit": "Visit to group"
+      "meeting": "Meeting",
+      "leads": "Conducts",
+      "overseer": "service overseer",
+      "assistant": "assistant",
+      "usualPlace": "Unless stated otherwise:",
+      "place": "Place"
     },
     "fromCoVisit": "From the circuit overseer's visit schedule",
     "fromCoVisitHint": "Edited in the visit schedule",
@@ -1548,7 +1551,6 @@
     "sameDayAsVisit": "Group {{group}} has the service overseer's visit at {{time}} that day and will not come to this meeting.",
     "overseer": "Service overseer",
     "overseerAssistant": "Assistant",
-    "overseerVisitBadgeShort": "Service overseer",
     "whoConducts": "Who conducts the meeting",
     "fillAssistant": "Fill in",
     "why": {
@@ -1605,15 +1607,14 @@
     },
     "row": {
       "unassigned": "No conductor assigned",
-      "leads": "Conducted by {{name}}",
-      "withOverseer": "service overseer {{name}}",
-      "withAssistant": "assistant {{name}}",
       "count_one": "{{count}} meeting",
       "count_other": "{{count}} meetings",
       "coVisit": "From the circuit overseer visit schedule",
       "group": "Group {{group}}",
       "visitBadge": "service overseer's visit",
-      "byGroups": "Meeting by groups"
+      "byGroups": "Meeting by groups",
+      "youLead": "You conduct it",
+      "leadsWord": "Conducted by"
     },
     "prepare": {
       "title": "Prepare the month",
@@ -2637,8 +2638,6 @@
     "list": {
       "title": "Two weeks",
       "yourGroup": "Your group {{name}}",
-      "conducts": "Led by {{name}}",
-      "conductsNobody": "No conductor yet",
       "groupOnVisit": "On this day your group goes only to the visit",
       "youOnVisit_one": "{{count}} more meeting that day — you are on the visit",
       "youOnVisit_other": "{{count}} more meetings that day — you are on the visit",
@@ -3971,7 +3970,7 @@
     "mineAsAssistant": "{{part}} — assistant",
     "fieldVisit": "Service overseer's visit · group {{group}}",
     "fieldGroup": "Group {{group}}",
-    "fieldGeneral": "Combined congregation meeting",
+    "fieldGeneral": "Combined meeting",
     "fieldOpen": "Meeting by groups",
     "fieldYours": "(yours)",
     "fieldNotForYourGroup": "your group is on the visit that day",

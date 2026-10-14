@@ -1,39 +1,50 @@
+import { splitTopic } from './field-topic';
+
 /**
- * Printable field-service meeting schedule (per the approved mockup):
- * congregation header, then per month — the month theme in italics and a
- * table of meetings: date (with a "general" badge), time, exact address
- * (meeting topic in small print under it), conductor. Web-only, same
- * open-window + print flow as the CO-schedule export.
+ * The printed sheet of field-service meetings (variant A, 14 October 2026).
+ *
+ * What the sheet of before got wrong, seen on a printed copy:
+ *  - the columns moved from month to month (a badge widened the date column
+ *    of one month only), so the tables did not stand under each other;
+ *  - WHAT the meeting is sat nowhere — the column was «Адрес», and the
+ *    address, the group, the notice and the theme all went into it; a meeting
+ *    by groups had no name at all, the combined one a violet badge;
+ *  - the same hall's address on every line;
+ *  - three meetings of one Saturday repeated the date three times;
+ *  - on a visit the «Ведущий» column named the service overseer;
+ *  - the video length ran into the theme and broke mid-line;
+ *  - a month could not continue on the next page, so half a page stood empty;
+ *  - the notice and the cancellation differed by colour alone — the same grey
+ *    on a black-and-white printer;
+ *  - the system font of whichever computer printed it.
+ *
+ * Now: one set of columns for every month — Date | Time | Meeting | Leads;
+ * the usual place said once at the top, a row names its place only when it
+ * differs; the meeting's name first, then «!» the notice, then the theme with
+ * its length quietly at the end; a date once per day; a visit marked by a
+ * rule at the left and in words; «✕» and the reason for a cancelled one; a
+ * month runs on across pages, a row never splits; the app's own faces when
+ * the browser has them.
  */
 
 export interface FsPdfMeetingRow {
   dateISO: string;
   dayLabel: string; // localized short weekday, e.g. "сб"
   time: string;
+  /** What the meeting is: «Общая встреча», «Группа Верне», «Встреча по группам»… */
+  kind: string;
   address: string;
   topic: string | null;
-  /** What is different this time, printed bold under the address. */
+  /** What is different this time. */
   notice?: string | null;
-  /**
-   * Called off (13 October 2026): the row is printed crossed out with this
-   * line under it — «Отменена: …». A sheet that simply left the Saturday out
-   * would read as «nothing planned».
-   */
+  /** Called off: «Отменена: …». */
   cancelledLine?: string | null;
   conductorName: string | null;
-  isGeneral: boolean;
-  /** The group this meeting belongs to; null when it belongs to no one group. */
-  groupName: string | null;
   /** The service overseer is visiting this group's meeting. */
   isOverseerVisit: boolean;
-  /** Who is visiting, and who comes with him. */
   overseerName: string | null;
   assistantName: string | null;
-  /**
-   * An outing planned inside a circuit-overseer visit (9 October 2026: the
-   * sheet left that week empty). It names no conductor — the visit's public
-   * view does not carry one, and «—» would read as «nobody leads it».
-   */
+  /** An outing planned inside a circuit-overseer visit; it names no conductor. */
   fromCoVisit?: boolean;
 }
 
@@ -47,16 +58,16 @@ export interface FsPdfLabels {
   title: string;
   date: string;
   time: string;
-  address: string;
+  meeting: string;
   conductor: string;
-  general: string;
-  overseerVisit: string;
-  groupVisit: string;
+  overseer: string;
   assistant: string;
+  /** «Где не указано иначе —». */
+  usualPlace: string;
+  /** «Место». */
+  place: string;
   monthTheme: string;
   generated: string;
-  /** «Из расписания посещения районного старейшины». */
-  fromCoVisit: string;
 }
 
 function esc(s: string | null | undefined): string {
@@ -68,171 +79,171 @@ function esc(s: string | null | undefined): string {
     .replace(/"/g, '&quot;');
 }
 
+const cap = (s: string) => (s ? s.charAt(0).toLocaleUpperCase() + s.slice(1) : s);
+
+/**
+ * The place most rows share — said once at the top. Only when it is really
+ * the usual one: at least two meetings and two in five.
+ */
+export function usualPlace(months: FsPdfMonth[]): string | null {
+  const counts = new Map<string, number>();
+  let total = 0;
+  for (const mo of months)
+    for (const r of mo.rows) {
+      if (r.fromCoVisit || !r.address.trim()) continue;
+      total += 1;
+      counts.set(r.address.trim(), (counts.get(r.address.trim()) ?? 0) + 1);
+    }
+  let best: string | null = null;
+  let n = 0;
+  for (const [a, c] of counts) if (c > n) [best, n] = [a, c];
+  return best && n >= 2 && n * 5 >= total * 2 ? best : null;
+}
+
 export function buildFieldServicePdfHtml(opts: {
   congregationName: string | null;
   rangeLabel: string;
   generatedDate: string;
   months: FsPdfMonth[];
   labels: FsPdfLabels;
+  /** @font-face rules of the app's faces (lib/print-fonts); empty → system font. */
+  fontFaces?: string;
 }): string {
-  const { congregationName, rangeLabel, generatedDate, months, labels: L } = opts;
+  const { congregationName, rangeLabel, generatedDate, months, labels: L, fontFaces = '' } = opts;
+  const usual = usualPlace(months);
 
   const monthBlocks = months
     .map((mo) => {
+      let prevDate = '';
       const rows = mo.rows
         .map((r) => {
-          const badges = [
-            r.isGeneral
-              ? `<span class="badge general">${esc(L.general)}</span>`
+          const sameDay = r.dateISO === prevDate;
+          prevDate = r.dateISO;
+          const off = !!r.cancelledLine;
+          const { text: theme, length } = splitTopic(r.topic);
+          const place = r.address.trim() && r.address.trim() !== usual ? r.address.trim() : '';
+          const bits = [
+            `<div class="kind">${esc(r.kind)}</div>`,
+            off ? `<div class="off">✕ ${esc(r.cancelledLine)}</div>` : '',
+            !off && r.notice?.trim() ? `<div class="notice">! ${esc(r.notice.trim())}</div>` : '',
+            place ? `<div class="place">${esc(L.place)}: ${esc(place)}</div>` : '',
+            !off && theme
+              ? `<div class="topic">${esc(theme)}${length ? ` <span class="len">· ${esc(length)}</span>` : ''}</div>`
               : '',
-            r.isOverseerVisit
-              ? `<span class="badge visit">${esc(L.overseerVisit)}</span>`
-              : '',
-          ]
-            .filter(Boolean)
-            .join(' ');
-          // A group visit carries no lesson, so the topic column stood empty
-          // and the row read as an ordinary meeting nobody had filled in. It
-          // says what is actually happening instead: the overseer is visiting
-          // this group.
-          const what = r.fromCoVisit
-            ? `<div class="visitline">${esc(L.fromCoVisit)}</div>`
-            : r.isOverseerVisit
-            ? `<div class="visitline">${esc(
-                r.groupName
-                  ? `${L.groupVisit} ${r.groupName}`
-                  : L.overseerVisit,
-              )}</div>`
-            : r.topic
-              ? `<div class="topic">${esc(r.topic)}</div>`
-              : '';
-          // The group belongs on every row that has one, not only on a visit:
-          // the screen shows it and the printed sheet did not.
-          const group =
-            r.groupName && !r.isOverseerVisit
-              ? `<div class="group">${esc(r.groupName)}</div>`
-              : '';
-          // The notice for everyone, printed as it is drawn on screen: a
-          // bold amber line, before the theme — a sheet pinned in the hall
-          // is where many first read that the hall is under repair.
-          const notice = r.cancelledLine
-            ? `<div class="cancelled">${esc(r.cancelledLine)}</div>`
-            : r.notice?.trim()
-              ? `<div class="notice">${esc(r.notice.trim())}</div>`
-              : '';
-          const assistant = r.assistantName
-            ? `<div class="assist">${esc(L.assistant)}: ${esc(r.assistantName)}</div>`
-            : '';
-          // On a visit the overseer is the person the group is waiting for;
-          // he is named here even when someone else conducts.
+          ].join('');
+          // Leads: the conductor; on a visit the overseer and his assistant
+          // under him, when they are not the conductor himself.
+          const helpers = r.isOverseerVisit
+            ? [
+                r.overseerName && r.overseerName !== r.conductorName ? `${L.overseer} ${r.overseerName}` : '',
+                r.assistantName && r.assistantName !== r.conductorName ? `${L.assistant} ${r.assistantName}` : '',
+              ].filter(Boolean)
+            : [];
           const who = r.fromCoVisit
             ? ''
-            : r.isOverseerVisit
-              ? (r.overseerName ?? r.conductorName ?? '—')
-              : (r.conductorName ?? '—');
-          const rowClass = [
-            r.isOverseerVisit || r.fromCoVisit ? 'visitrow' : '',
-            r.cancelledLine ? 'offrow' : '',
+            : `${esc(r.conductorName ?? '—')}${helpers.map((h) => `<div class="with">${esc(h)}</div>`).join('')}`;
+          const cls = [
+            sameDay ? 'same' : '',
+            r.isOverseerVisit || r.fromCoVisit ? 'visit' : '',
+            off ? 'offrow' : '',
           ]
             .filter(Boolean)
             .join(' ');
-          return `<tr${rowClass ? ` class="${rowClass}"` : ''}>
-<td class="date">${esc(r.dayLabel)} ${r.dateISO.slice(8, 10)}.${r.dateISO.slice(5, 7)}${badges ? `<div class="badges">${badges}</div>` : ''}</td>
+          return `<tr${cls ? ` class="${cls}"` : ''}>
+<td class="date">${sameDay ? '' : `${esc(r.dayLabel)} ${r.dateISO.slice(8, 10)}.${r.dateISO.slice(5, 7)}`}</td>
 <td class="time">${esc(r.time)}</td>
-<td>${esc(r.address)}${group}${notice}${what}</td>
-<td class="cond">${esc(who)}${assistant}</td>
+<td>${bits}</td>
+<td class="who">${who}</td>
 </tr>`;
         })
         .join('\n');
-      const theme = mo.theme
-        ? `<p class="mtheme">${esc(L.monthTheme)}: ${esc(mo.theme)}</p>`
-        : '';
-      return `<div class="month">
-<p class="mtitle">${esc(mo.title)}</p>
+      const theme = mo.theme ? `<p class="mtheme">${esc(L.monthTheme)}: ${esc(mo.theme)}</p>` : '';
+      return `<section class="month">
+<h2>${esc(cap(mo.title))}</h2>
 ${theme}
 <table>
-<thead><tr><th style="width:74px">${esc(L.date)}</th><th style="width:46px">${esc(L.time)}</th><th>${esc(L.address)}</th><th style="width:150px">${esc(L.conductor)}</th></tr></thead>
+<colgroup><col class="c-date"><col class="c-time"><col><col class="c-who"></colgroup>
+<thead><tr><th>${esc(L.date)}</th><th>${esc(L.time)}</th><th>${esc(L.meeting)}</th><th>${esc(L.conductor)}</th></tr></thead>
 <tbody>
 ${rows}
 </tbody>
 </table>
-</div>`;
+</section>`;
     })
     .join('\n');
 
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${esc(L.title)}</title>
 <style>
-  /* Print, not screen: sizes in pt, hairline rules, and colour used only
-     where it carries meaning — the month, the two badges, the visit row. */
+${fontFaces}
+  /* Print, not screen: sizes in pt, hairline rules; colour only where it
+     carries meaning, and never ALONE — «!» and «✕» say it in black and white
+     too. The weight is the face (Manrope_700Bold), never font-weight beside
+     it: a browser would fake a bolder bold over the bold file. */
   * { box-sizing: border-box; }
   body {
-    font-family: -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+    font-family: 'Manrope_400Regular', -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
     color: #0f172a;
-    padding: 0;
+    margin: 0;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
-  header { border-bottom: 2px solid #0e7490; padding-bottom: 10px; margin-bottom: 18px; }
-  .congr { font-size: 8.5pt; letter-spacing: 1.6px; text-transform: uppercase; color: #64748b; }
-  h1 { font-size: 17pt; margin: 3px 0 1px; font-weight: 700; letter-spacing: -0.2px; }
+  header { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px;
+    border-bottom: 2px solid #0e7490; padding-bottom: 8px; margin-bottom: 14px; }
+  .congr { font-size: 8pt; letter-spacing: 1.4px; text-transform: uppercase; color: #64748b; }
+  h1 { font-family: 'Manrope_800ExtraBold', -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; font-weight: normal;
+    font-size: 17pt; margin: 2px 0 0; }
   .range { font-size: 10pt; color: #475569; }
+  .usual { font-size: 8.5pt; color: #475569; text-align: right; line-height: 1.4; }
+  .usual b { font-family: 'Manrope_700Bold', -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; font-weight: normal; color: #0f172a; }
 
-  .month { margin-bottom: 20px; page-break-inside: avoid; }
-  .mtitle { font-size: 12pt; font-weight: 700; color: #0e7490; margin: 0 0 1px; }
-  .mtheme { font-size: 9.5pt; color: #475569; font-style: italic; margin: 0 0 7px; }
+  .month { margin-bottom: 14px; }
+  h2 { font-family: 'Manrope_800ExtraBold', -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; font-weight: normal;
+    font-size: 12pt; color: #0e7490; margin: 0 0 2px; break-after: avoid; page-break-after: avoid; }
+  .mtheme { font-size: 9pt; color: #475569; margin: 0 0 4px; }
 
-  table { width: 100%; border-collapse: collapse; }
-  thead { display: table-header-group; }  /* repeat the head on every page */
-  th {
-    text-align: left; font-size: 7.5pt; text-transform: uppercase;
-    letter-spacing: 0.7px; color: #94a3b8; font-weight: 700;
-    padding: 3px 8px; border-bottom: 1.5px solid #cbd5e1;
-  }
-  td { font-size: 9.5pt; padding: 7px 8px; border-bottom: 1px solid #eef2f6; vertical-align: top; }
-  tr { page-break-inside: avoid; }
-  tbody tr:nth-child(even) td { background: #fbfcfd; }
-
-  .date { white-space: nowrap; font-weight: 700; }
+  table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+  col.c-date { width: 15%; }
+  col.c-time { width: 8%; }
+  col.c-who { width: 24%; }
+  thead { display: table-header-group; }  /* the head again on every page */
+  th { text-align: left; font-family: 'Manrope_700Bold', -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; font-weight: normal;
+    font-size: 7pt; letter-spacing: 0.8px; text-transform: uppercase; color: #64748b;
+    padding: 3px 6px; border-bottom: 1.2px solid #94a3b8; }
+  td { font-size: 9.5pt; padding: 6px 6px; border-top: 1px solid #e2e8f0; vertical-align: top; }
+  tr { break-inside: avoid; page-break-inside: avoid; }
+  tr.same td { border-top-color: #f1f5f9; }
+  .date, .kind, .who { font-family: 'Manrope_700Bold', -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; font-weight: normal; }
+  .date { white-space: nowrap; }
   .time { white-space: nowrap; font-variant-numeric: tabular-nums; color: #334155; }
-  .cond { font-weight: 600; }
-  .group { color: #0f172a; font-size: 9pt; font-weight: 600; margin-top: 2px; }
-  .topic { color: #475569; font-size: 8.5pt; margin-top: 2px; line-height: 1.35; }
-  .offrow td { color: #94a3b8; text-decoration: line-through; }
-  .offrow td .cancelled { text-decoration: none; }
-  .cancelled { color: #991b1b; background: #fef2f2; border: 1px solid #fecaca; border-radius: 4px;
-    padding: 2px 6px; margin-top: 3px; font-weight: 700; display: inline-block; }
-  .notice { color: #78350f; background: #fffbeb; border: 1px solid #fde68a; border-radius: 4px;
-    padding: 2px 6px; font-size: 9pt; font-weight: 700; margin-top: 3px; line-height: 1.35; }
-  .assist { color: #64748b; font-size: 8.5pt; font-weight: 400; margin-top: 2px; }
+  .kind { font-size: 10pt; }
+  .notice { display: inline-block; margin-top: 2px; padding: 1px 6px; border: 1px solid #d97706; border-radius: 4px;
+    background: #fffbeb; color: #78350f; font-size: 9pt;
+    font-family: 'Manrope_700Bold', -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; font-weight: normal; }
+  .off { margin-top: 2px; color: #991b1b; font-size: 9pt;
+    font-family: 'Manrope_800ExtraBold', -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; font-weight: normal; }
+  .offrow .kind, .offrow .time, .offrow .who { text-decoration: line-through; color: #94a3b8; }
+  .place { margin-top: 2px; font-size: 8.5pt; color: #0f172a; }
+  .topic { margin-top: 2px; font-size: 8.5pt; line-height: 1.35; color: #334155; }
+  .len { color: #94a3b8; white-space: nowrap; }
+  .with { font-family: 'Manrope_400Regular', -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+    font-size: 8.5pt; color: #475569; margin-top: 1px; }
+  /* The visit is what a reader looks for: a rule at the left, kept in print
+     (a border, not a shadow — some print engines drop shadows). */
+  .visit td { background: #f6fdff; }
+  .visit td:first-child { border-left: 3px solid #0e7490; padding-left: 4px; }
 
-  .badges { margin-top: 3px; }
-  .badge {
-    display: inline-block; font-size: 7pt; font-weight: 700;
-    border-radius: 99px; padding: 1px 7px; letter-spacing: 0.3px;
-  }
-  .badge.general { color: #6d28d9; background: #f3e8ff; }
-  .badge.visit { color: #0e7490; background: #cffafe; }
-
-  /* The visit is the row a reader is looking for; a left edge finds it
-     without hunting through the dates. */
-  .visitrow td { background: #f6fdff !important; }
-  /* A LEFT BORDER, not an inset box-shadow: shadows are dropped by some
-     print engines, and this mark is the one thing that finds the visit at a
-     glance. Verified rendered, not assumed. */
-  .visitrow td:first-child { border-left: 3px solid #0e7490; padding-left: 5px; }
-  .visitline { color: #0e7490; font-size: 9pt; font-weight: 600; margin-top: 2px; }
-
-  .foot {
-    margin-top: 22px; padding-top: 8px; border-top: 1px solid #e2e8f0;
-    font-size: 7.5pt; color: #94a3b8; display: flex; justify-content: space-between;
-  }
-  @page { size: A4 portrait; margin: 15mm; }
+  .foot { margin-top: 16px; padding-top: 6px; border-top: 1px solid #e2e8f0;
+    font-size: 7.5pt; color: #64748b; display: flex; justify-content: space-between; }
+  @page { size: A4 portrait; margin: 14mm; }
 </style></head>
 <body>
 <header>
+<div>
 ${congregationName ? `<div class="congr">${esc(congregationName)}</div>` : ''}
 <h1>${esc(L.title)}</h1>
-<div class="range">${esc(rangeLabel)}</div>
+<div class="range">${esc(cap(rangeLabel))}</div>
+</div>
+${usual ? `<div class="usual">${esc(L.usualPlace)}<br><b>${esc(usual)}</b></div>` : ''}
 </header>
 ${monthBlocks}
 <div class="foot"><span>mycongregation.org</span><span>${esc(L.generated)} ${esc(generatedDate)}</span></div>

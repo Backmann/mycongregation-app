@@ -1508,12 +1508,11 @@
     "title": "Встречи для проповеди",
     "empty": "На эту неделю встреч нет",
     "addEntry": "Добавить встречу",
-    "conductor": "Ведущий",
     "unassigned": "не назначен",
     "timeLabel": "Время",
     "topicLabel": "Тема",
     "linkLabel": "Ссылка",
-    "openLink": "Открыть источник",
+    "openLink": "Материал",
     "form": {
       "addTitle": "Новая встреча",
       "save": "Сохранить",
@@ -1561,8 +1560,12 @@
       "generated": "Сформировано",
       "date": "Дата",
       "time": "Время",
-      "address": "Адрес",
-      "groupVisit": "Посещение группы"
+      "meeting": "Встреча",
+      "leads": "Ведёт",
+      "overseer": "служебный старейшина",
+      "assistant": "помощник",
+      "usualPlace": "Где не указано иначе —",
+      "place": "Место"
     },
     "fromCoVisit": "Из расписания посещения районного старейшины",
     "fromCoVisitHint": "Изменяется в расписании визита",
@@ -1572,7 +1575,6 @@
     "sameDayAsVisit": "В этот день посещение группы {{group}} в {{time}}: эта группа сюда не придёт.",
     "overseer": "Служебный старейшина",
     "overseerAssistant": "Помощник",
-    "overseerVisitBadgeShort": "Служебный старейшина",
     "whoConducts": "Кто проводит встречу",
     "fillAssistant": "Подставить",
     "why": {
@@ -1635,9 +1637,6 @@
     },
     "row": {
       "unassigned": "Ведущий не назначен",
-      "leads": "Ведёт {{name}}",
-      "withOverseer": "служебный старейшина {{name}}",
-      "withAssistant": "помощник {{name}}",
       "count_one": "{{count}} встреча",
       "count_few": "{{count}} встречи",
       "count_many": "{{count}} встреч",
@@ -1645,7 +1644,9 @@
       "coVisit": "Из расписания визита районного старейшины",
       "group": "Группа {{group}}",
       "visitBadge": "посещение служебным старейшиной",
-      "byGroups": "Встреча по группам"
+      "byGroups": "Встреча по группам",
+      "youLead": "Ведёте вы",
+      "leadsWord": "Ведёт"
     },
     "prepare": {
       "title": "Подготовить месяц",
@@ -2687,8 +2688,6 @@
     "list": {
       "title": "Две недели",
       "yourGroup": "Ваша группа {{name}}",
-      "conducts": "Ведёт {{name}}",
-      "conductsNobody": "Ведущий не назначен",
       "groupOnVisit": "В этот день ваша группа идёт только на посещение",
       "youOnVisit_one": "Ещё {{count}} встреча в этот день — у вас посещение",
       "youOnVisit_few": "Ещё {{count}} встречи в этот день — у вас посещение",
@@ -4053,7 +4052,7 @@
     "mineAsAssistant": "{{part}} — помощник",
     "fieldVisit": "Посещение служебным старейшиной · группа {{group}}",
     "fieldGroup": "Группа {{group}}",
-    "fieldGeneral": "Общая встреча собрания",
+    "fieldGeneral": "Общая встреча",
     "fieldOpen": "Встреча по группам",
     "fieldYours": "(ваша)",
     "fieldNotForYourGroup": "ваша группа в этот день — на посещении",

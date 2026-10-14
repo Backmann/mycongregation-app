@@ -45,8 +45,8 @@ import { addDays, formatDateISO, parseISODate, startOfWeekMonday } from "../../.
 import { partDisplay } from "../../../lib/part-display";
 import { MEETING_LENGTH_MIN } from "../../../lib/home-digest";
 import { useSongsMap, enrichSongRef } from "../../../lib/songs";
-import { SourceLink } from "../../../components/SourceLink";
 import { FieldCancelled, FieldNotice } from "../../../components/FieldNotice";
+import { FieldMeetingBlock, WhoLine, type FieldHelper, type FieldWho } from "../../../components/FieldMeetingBlock";
 import { arrangeFieldDay, noteForPlace } from "../../../lib/field-audience";
 import type { FieldPlace } from "../../../lib/field-audience";
 import {
@@ -1376,6 +1376,9 @@ function Row({
   time,
   line,
   lines,
+  who,
+  meetings,
+  wholeTitle,
   notices,
   cancelled,
   mine,
@@ -1397,6 +1400,16 @@ function Row({
   line?: string | null;
   /** Several lines under the title, one each — a field-service day's meetings. */
   lines?: string[];
+  /** Field service, one meeting: who leads it, as every screen says it. */
+  who?: FieldWho;
+  /**
+   * Field service, several meetings on the day: each its own two lines — the
+   * time and the meeting, then who leads it (14 October 2026: one long line
+   * «10:30 · Общая встреча собрания · ведёт …» broke inside the name).
+   */
+  meetings?: { key: string; time: string; title: string; who: string | null }[];
+  /** The title whole, however long (a visit names its group). */
+  wholeTitle?: boolean;
   /** Field service: what is different this time, in amber, one per meeting that says so. */
   notices?: string[];
   /** Field service: the day's one meeting is called off — its reason, in red. */
@@ -1427,10 +1440,24 @@ function Row({
           <Ionicons name={icon} size={14} color={tone} />
           <Text style={[styles.kind, { color: tone }]}>{time ? `${kindLabel} · ${time}` : kindLabel}</Text>
         </View>
-        <Text style={[styles.title, past && styles.pastTitle]} numberOfLines={2}>
+        <Text style={[styles.title, past && styles.pastTitle]} numberOfLines={wholeTitle ? undefined : 2}>
           {title}
         </Text>
         {line ? <Text style={styles.line}>{line}</Text> : null}
+        {who ? (
+          <View style={styles.whoLine}>
+            <WhoLine who={who} />
+          </View>
+        ) : null}
+        {meetings?.map((x) => (
+          <View key={x.key} style={styles.dayMeeting}>
+            <Text style={styles.dayMeetingTime}>{x.time}</Text>
+            <View style={styles.dayMeetingBody}>
+              <Text style={styles.dayMeetingTitle}>{x.title}</Text>
+              {x.who ? <Text style={styles.dayMeetingWho}>{x.who}</Text> : null}
+            </View>
+          </View>
+        ))}
         {lines?.map((l, i) => (
           <Text key={i} style={styles.line}>
             {l}
@@ -1976,14 +2003,31 @@ function FieldDay({
     if (!id) return p.audience === "open" ? null : t("feed.fieldNoConductor");
     return t("feed.fieldLedBy", { name: nameOf.get(id) ?? "" });
   };
-  const lineOfPlace = (p: FieldPlace) =>
-    [p.meeting.startTime, labelOf(p), conductorOf(p)].filter(Boolean).join(" · ");
   // Standing alone under the title the line starts a sentence of its own.
   const upper = (x: string) => x.charAt(0).toLocaleUpperCase(i18n.language) + x.slice(1);
   // One meeting on the day, and it is called off: the red strip with its
   // reason says it; the line under the title would only repeat it.
   const single = day.shown.length === 1 && !day.others.length ? day.shown[0] : null;
   const singleOff = single?.meeting.cancelledAt ? single.meeting : null;
+  // One meeting, not yours: who leads it, in the line every screen draws.
+  const singleWho: FieldWho | undefined =
+    single && !singleOff && !lead && !(ownVisit && !lead)
+      ? single.meeting.conductorPublisherId
+        ? { kind: "name", name: nameOf.get(single.meeting.conductorPublisherId) ?? "" }
+        : single.audience === "open"
+          ? undefined
+          : { kind: "empty" }
+      : undefined;
+  // Several: each its own two lines.
+  const several =
+    !singleOff && !(ownVisit && !lead) && !(day.shown.length === 1 && !day.others.length)
+      ? day.shown
+          .filter((p) => p !== lead)
+          .map((p) => {
+            const w = conductorOf(p);
+            return { key: p.meeting.id, time: p.meeting.startTime, title: labelOf(p), who: w ? upper(w) : null };
+          })
+      : [];
   const lines =
     singleOff
       ? []
@@ -1998,11 +2042,6 @@ function FieldDay({
       : [
           // One meeting: the title names it, the line says who leads it. The
           // one the person conducts is the title, and «ведёте в …» below.
-          ...(day.shown.length === 1 && !day.others.length
-            ? lead
-              ? []
-              : [conductorOf(day.shown[0])].filter((x): x is string => !!x).map(upper)
-            : day.shown.filter((p) => p !== lead).map(lineOfPlace)),
           ...(day.others.length ? [t("feed.fieldOthers", { count: day.others.length })] : []),
         ];
   const mine = mineAt
@@ -2022,68 +2061,53 @@ function FieldDay({
       .filter(Boolean),
   )];
 
-  const lineOf = (p: FieldPlace) => {
+  // Open, the day says only what its row did not: one meeting — what it is
+  // about, where, the material, who goes with the overseer; several, or the
+  // wide screen's right side — each meeting whole (variant A, 14 October
+  // 2026: the open day repeated the title and the notice of the row above).
+  const whole = mode === "detail" || !single || ownVisit !== undefined;
+  const narrowScreen = useWindowDimensions().width < 361;
+  const lineOf = (p: FieldPlace, i: number) => {
     const m = p.meeting;
-    const helper =
-      p.audience === "visit" && m.serviceOverseerPublisherId && m.serviceOverseerPublisherId !== m.conductorPublisherId
-        ? {
-            label: t("fieldService.overseer"),
-            name: nameOf.get(m.serviceOverseerPublisherId) ?? null,
-            mine: !!me && m.serviceOverseerPublisherId === me,
-          }
-        : p.audience === "visit" && m.serviceOverseerAssistantId
-          ? {
-              label: t("fieldService.overseerAssistant"),
-              name: nameOf.get(m.serviceOverseerAssistantId) ?? null,
-              mine: !!me && m.serviceOverseerAssistantId === me,
-            }
-          : null;
-    if (m.cancelledAt) {
-      // Crossed out with its reason; nobody named, nobody's part.
-      return (
-        <PartLine
-          key={m.id}
-          time={m.startTime}
-          title={labelOf(p)}
-          subtitle={m.address}
-          extra={null}
-          below={
-            <View style={styles.fieldAbout}>
-              <FieldCancelled reason={m.cancelReason} />
-            </View>
-          }
-          name={null}
-          mine={false}
-          helper={null}
-          noPerson
-        />
-      );
+    const helpers: FieldHelper[] = [];
+    if (p.audience === "visit" && !m.cancelledAt) {
+      if (m.serviceOverseerPublisherId && m.serviceOverseerPublisherId !== m.conductorPublisherId)
+        helpers.push({
+          label: t("fieldService.overseer"),
+          name: nameOf.get(m.serviceOverseerPublisherId) ?? "",
+          mine: !!me && m.serviceOverseerPublisherId === me,
+        });
+      if (m.serviceOverseerAssistantId && m.serviceOverseerAssistantId !== m.conductorPublisherId)
+        helpers.push({
+          label: t("fieldService.overseerAssistant"),
+          name: nameOf.get(m.serviceOverseerAssistantId) ?? "",
+          mine: !!me && m.serviceOverseerAssistantId === me,
+        });
     }
+    const who: FieldWho = m.conductorPublisherId
+      ? !!me && m.conductorPublisherId === me
+        ? { kind: "mine" }
+        : { kind: "name", name: nameOf.get(m.conductorPublisherId) ?? "" }
+      : p.audience === "open"
+        ? null
+        : { kind: "empty" };
     return (
-      <PartLine
-        key={m.id}
-        time={m.startTime}
-        title={labelOf(p)}
-        subtitle={[m.address, noteOf(p)].filter(Boolean).join(" · ")}
-        // The name alone under a card said nothing of his part (phone, 11 Oct).
-        extra={m.conductorPublisherId ? t("feed.lead") : null}
-        // What the meeting is about and where to read it — said on Home and
-        // on «Встречи для проповеди», and missing from the one screen the
-        // week is read from (5 October).
-        below={
-          m.notice || m.topic || m.sourceUrl ? (
-            <View style={styles.fieldAbout}>
-              <FieldNotice text={m.notice} />
-              {m.topic ? <Text style={styles.fieldTopic}>{m.topic}</Text> : null}
-              <SourceLink url={m.sourceUrl} />
-            </View>
-          ) : null
-        }
-        name={m.conductorPublisherId ? nameOf.get(m.conductorPublisherId) ?? null : null}
-        mine={!!me && m.conductorPublisherId === me}
-        helper={helper}
-        tone={p.own || p.mine ? KIND.field.color : undefined}
-      />
+      <View key={m.id} style={[styles.fieldBlock, i > 0 && styles.fieldBlockNext]}>
+        <FieldMeetingBlock
+          time={whole ? m.startTime : null}
+          timeLayout={whole ? (narrowScreen ? "inline" : "column") : "none"}
+          title={whole ? labelOf(p) : null}
+          who={whole ? who : null}
+          helpers={helpers}
+          notice={whole ? m.notice : null}
+          cancelled={!!m.cancelledAt}
+          cancelReason={whole ? m.cancelReason : null}
+          topic={m.topic}
+          place={m.address}
+          sourceUrl={m.sourceUrl}
+          note={noteOf(p)}
+        />
+      </View>
     );
   };
 
@@ -2095,8 +2119,11 @@ function FieldDay({
           kindLabel={t("feed.kindField")}
           icon={ownVisit ? "walk-outline" : KIND.field.icon}
           title={title}
+          wholeTitle
           time={firstTime}
           lines={lines}
+          who={singleWho}
+          meetings={several}
           notices={notices}
           cancelled={singleOff ? [singleOff.cancelReason ?? null] : undefined}
           mine={mine}
@@ -2107,7 +2134,7 @@ function FieldDay({
           onPress={onToggle}
         />
       ) : (
-        <DetailHead date={item.date} kind={title} line={line} mine={mineAt ? t("feed.youLead", { time: mineAt.startTime }) : helpingAt ? t("feed.youGo", { time: helpingAt.startTime }) : null} />
+        <DetailHead date={item.date} kind={single ? t("feed.kindField") : title} line={line} mine={mineAt ? t("feed.youLead", { time: mineAt.startTime }) : helpingAt ? t("feed.youGo", { time: helpingAt.startTime }) : null} />
       )}
       {(mode === "inline" && open) || mode === "detail" ? (
         <View style={[styles.inset, mode === "detail" && styles.insetDetail]}>
@@ -2308,6 +2335,14 @@ const styles = StyleSheet.create({
   },
   filteredAllText: { fontSize: 14, fontFamily: FONT.bold, color: "#ffffff" },
   fieldAbout: { marginTop: 4, gap: 4 },
+  fieldBlock: { paddingVertical: 10 },
+  fieldBlockNext: { borderTopWidth: 1, borderTopColor: "#f1f5f9" },
+  whoLine: { marginTop: 3 },
+  dayMeeting: { flexDirection: "row", alignItems: "flex-start", gap: 10, marginTop: 6 },
+  dayMeetingTime: { minWidth: 42, fontSize: 14, lineHeight: 19, fontFamily: FONT.extrabold, color: INK },
+  dayMeetingBody: { flex: 1, minWidth: 0 },
+  dayMeetingTitle: { fontSize: 14.5, lineHeight: 19, fontFamily: FONT.bold, color: INK },
+  dayMeetingWho: { fontSize: 13.5, lineHeight: 18, fontFamily: FONT.medium, color: MUTE, marginTop: 1 },
   fieldTopic: { fontSize: 14, fontFamily: FONT.medium, color: "#475569" },
   othersToggle: {
     minHeight: 44,

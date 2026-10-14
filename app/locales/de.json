@@ -1484,12 +1484,11 @@
     "title": "Treffen für den Predigtdienst",
     "empty": "Diese Woche keine Treffen",
     "addEntry": "Treffen hinzufügen",
-    "conductor": "Leitung",
     "unassigned": "nicht zugeteilt",
     "timeLabel": "Zeit",
     "topicLabel": "Thema",
     "linkLabel": "Link",
-    "openLink": "Quelle öffnen",
+    "openLink": "Material",
     "form": {
       "addTitle": "Neues Treffen",
       "save": "Speichern",
@@ -1513,7 +1512,7 @@
       "6": "Sa",
       "7": "So"
     },
-    "generalBadge": "Gemeinsam",
+    "generalBadge": "Gemeinsame Zusammenkunft",
     "hubSubtitle": "Plan der Zusammenkünfte für den Predigtdienst",
     "earlier": "Früher: {{month}}",
     "emptyMonth": "Keine Zusammenkünfte in diesem Monat",
@@ -1537,8 +1536,12 @@
       "generated": "Erstellt",
       "date": "Datum",
       "time": "Zeit",
-      "address": "Adresse",
-      "groupVisit": "Besuch der Gruppe"
+      "meeting": "Zusammenkunft",
+      "leads": "Leitung",
+      "overseer": "Dienstaufseher",
+      "assistant": "Gehilfe",
+      "usualPlace": "Wenn nicht anders angegeben:",
+      "place": "Ort"
     },
     "fromCoVisit": "Aus dem Besuchsplan des Kreisaufsehers",
     "fromCoVisitHint": "Wird im Besuchsplan bearbeitet",
@@ -1548,7 +1551,6 @@
     "sameDayAsVisit": "An diesem Tag besucht der Dienstaufseher die Gruppe {{group}} um {{time}}: diese Gruppe kommt nicht hierher.",
     "overseer": "Dienstaufseher",
     "overseerAssistant": "Assistent",
-    "overseerVisitBadgeShort": "Dienstaufseher",
     "whoConducts": "Wer die Zusammenkunft leitet",
     "fillAssistant": "Einsetzen",
     "why": {
@@ -1605,15 +1607,14 @@
     },
     "row": {
       "unassigned": "Kein Leiter zugeteilt",
-      "leads": "Leitet {{name}}",
-      "withOverseer": "Dienstaufseher {{name}}",
-      "withAssistant": "Gehilfe {{name}}",
       "count_one": "{{count}} Zusammenkunft",
       "count_other": "{{count}} Zusammenkünfte",
       "coVisit": "Aus dem Plan des Kreisaufseherbesuchs",
       "group": "Gruppe {{group}}",
       "visitBadge": "Besuch des Dienstaufsehers",
-      "byGroups": "Zusammenkunft nach Gruppen"
+      "byGroups": "Zusammenkunft nach Gruppen",
+      "youLead": "Sie leiten",
+      "leadsWord": "Leitung:"
     },
     "prepare": {
       "title": "Monat vorbereiten",
@@ -2637,8 +2638,6 @@
     "list": {
       "title": "Zwei Wochen",
       "yourGroup": "Ihre Gruppe {{name}}",
-      "conducts": "Leitung: {{name}}",
-      "conductsNobody": "Leitung noch nicht eingeteilt",
       "groupOnVisit": "An diesem Tag geht Ihre Gruppe nur zum Besuch",
       "youOnVisit_one": "Noch {{count}} Treffen an diesem Tag — Sie sind beim Besuch",
       "youOnVisit_other": "Noch {{count}} Treffen an diesem Tag — Sie sind beim Besuch",
@@ -3971,7 +3970,7 @@
     "mineAsAssistant": "{{part}} — als Gehilfe",
     "fieldVisit": "Besuch des Dienstaufsehers · Gruppe {{group}}",
     "fieldGroup": "Gruppe {{group}}",
-    "fieldGeneral": "Gemeinsames Treffen der Versammlung",
+    "fieldGeneral": "Gemeinsame Zusammenkunft",
     "fieldOpen": "Zusammenkunft nach Gruppen",
     "fieldYours": "(Ihre)",
     "fieldNotForYourGroup": "Ihre Gruppe ist an diesem Tag beim Besuch",

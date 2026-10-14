@@ -130,6 +130,8 @@ const STEPS = [
   // One typeface: no weight beside a Manrope face (Android drew Roboto), and
   // every Text names its face (14 October 2026).
   ['Шрифт', 'node', ['scripts/check-fonts.mjs']],
+  // The field-service sheet and the theme's length (variant A, 14 October 2026).
+  ['Лист встреч для проповеди', 'node', ['scripts/check-field-sheet.mjs']],
   // A phone on its side: no screen under the system buttons.
   ['Телефон на боку', 'node', ['scripts/check-side-insets.mjs']],
   // One rule for who may open «Составление программы» — asked by the doors

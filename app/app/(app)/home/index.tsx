@@ -27,8 +27,7 @@ import {
 } from "../../../components/ReportCollectionCard";
 import { usePermissions } from "../../../lib/permissions";
 import { useMayOpen } from "../../../lib/useMayOpen";
-import { SourceLink } from "../../../components/SourceLink";
-import { FieldCancelled, FieldNotice } from "../../../components/FieldNotice";
+import { FieldMeetingBlock, type FieldHelper, type FieldWho } from "../../../components/FieldMeetingBlock";
 import {
   EnableNotificationsCard,
   useNotifyNudge,
@@ -762,76 +761,55 @@ function coVisitPlace(it: MyCoVisitItem): string {
     : (it.placeText ?? "");
 }
 
-/** The name of a field-service meeting: the visit, a group's, the combined one. */
-function fieldTitle(en: MeetingEntry, t: TFunction): string {
-  if (en.serviceOverseerVisit) return t("feed.fieldVisitTitle");
+/**
+ * The name of a field-service meeting, as the month page and the Programme
+ * name it (variant A, 14 October 2026): the visit with its group, a group's
+ * own («ваша группа …» for the reader's), the combined one, by groups. The
+ * group used to ride in the address line and the title said «Встреча по
+ * группам» for a group's own meeting too.
+ */
+function fieldTitle(en: MeetingEntry, myGroupName: string | null, t: TFunction): string {
+  if (en.serviceOverseerVisit)
+    return en.groupName ? t("feed.fieldVisit", { group: en.groupName }) : t("feed.fieldVisitTitle");
+  if (en.groupName)
+    return en.groupName === myGroupName
+      ? t("home.list.yourGroup", { name: en.groupName })
+      : t("feed.fieldGroup", { group: en.groupName });
   if (en.isGeneral) return t("feed.fieldGeneral");
   return t("feed.fieldOpen");
 }
 
-/** «Ваша группа Ahlen · Marktplatz 1» — whose meeting and where. */
-function fieldWhere(
+/**
+ * Who goes: the conductor (yours, in green), and on a visit the overseer and
+ * his assistant. No conductor is said only where the week is known and the
+ * meeting is not one each group holds on its own.
+ */
+function fieldPeople(
   en: MeetingEntry,
-  myGroupName: string | null,
+  myName: string | null,
   t: TFunction,
-): string {
-  const group = en.groupName
-    ? en.groupName === myGroupName
-      ? t("home.list.yourGroup", { name: en.groupName })
-      : t("feed.fieldGroup", { group: en.groupName })
-    : null;
-  return [group, en.address].filter(Boolean).join(" · ");
-}
-
-/** Who goes: the conductor and, on a visit, the overseer and his assistant. */
-function FieldPeople({
-  en,
-  myName,
-}: {
-  en: MeetingEntry;
-  myName: string | null;
-}) {
-  const { t } = useTranslation();
-  const chips: React.ReactNode[] = [];
-  if (en.conductorName) {
-    chips.push(
-      <Chip
-        key="c"
-        tone="green"
-        text={t("home.list.conducts", { name: en.conductorName })}
-        mine={en.myRole === "conduct"}
-      />,
-    );
-  } else if (en.unassignedConductor && en.weekStartISO) {
-    chips.push(
-      <Chip
-        key="c"
-        tone="green"
-        text={t("home.list.conductsNobody")}
-      />,
-    );
-  }
-  if (en.visitPeople?.overseer) {
-    chips.push(
-      <Chip
-        key="o"
-        tone="teal"
-        text={`${t("fieldService.overseer")}: ${en.visitPeople.overseer}`}
-        mine={en.myRole === "overseer" || en.visitPeople.overseer === myName}
-      />,
-    );
-  }
-  if (en.visitPeople?.assistant) {
-    chips.push(
-      <Chip
-        key="a"
-        tone="teal"
-        text={`${t("fieldService.overseerAssistant")}: ${en.visitPeople.assistant}`}
-        mine={en.myRole === "assistant" || en.visitPeople.assistant === myName}
-      />,
-    );
-  }
-  return chips.length ? <View style={s.chips}>{chips}</View> : null;
+): { who: FieldWho; helpers: FieldHelper[] } {
+  const who: FieldWho = en.conductorName
+    ? en.myRole === "conduct"
+      ? { kind: "mine" }
+      : { kind: "name", name: en.conductorName }
+    : en.unassignedConductor && en.weekStartISO
+      ? { kind: "empty" }
+      : null;
+  const helpers: FieldHelper[] = [];
+  if (en.visitPeople?.overseer)
+    helpers.push({
+      label: t("fieldService.overseer"),
+      name: en.visitPeople.overseer,
+      mine: en.myRole === "overseer" || en.visitPeople.overseer === myName,
+    });
+  if (en.visitPeople?.assistant)
+    helpers.push({
+      label: t("fieldService.overseerAssistant"),
+      name: en.visitPeople.assistant,
+      mine: en.myRole === "assistant" || en.visitPeople.assistant === myName,
+    });
+  return { who, helpers };
 }
 
 // ---------------------------------------------------------------------------
@@ -1107,20 +1085,25 @@ function NextBody({
           ? t("home.feed.youVisitAsOverseer")
           : entry.myRole === "assistant"
             ? t("home.feed.youVisitAsAssistant")
-            : fieldTitle(entry, t);
-    const where = fieldWhere(entry, myGroupName, t);
+            : fieldTitle(entry, myGroupName, t);
+    const people = fieldPeople(entry, myName, t);
     return (
       <View style={{ gap: 6 }}>
         <Text style={s.nextMain}>{title}</Text>
-        {entry.serviceOverseerVisit && entry.myRole ? (
-          <Text style={s.nextSecond}>{t("feed.fieldVisitTitle")}</Text>
+        {/* Yours: the title says what you do; this line, which meeting. */}
+        {entry.myRole ? (
+          <Text style={s.nextSecond}>{fieldTitle(entry, myGroupName, t)}</Text>
         ) : null}
-        {where ? <Text style={s.nextPlace}>{where}</Text> : null}
-        <FieldNotice text={entry.notice} big />
-        <FieldPeople en={entry} myName={myName} />
-        {entry.topic ? <Text style={s.topic}>{entry.topic}</Text> : null}
-        {/* The one who conducts opens the source from here (5 October). */}
-        <SourceLink url={entry.sourceUrl} />
+        <FieldMeetingBlock
+          timeLayout="none"
+          who={entry.myRole === "conduct" ? null : people.who}
+          helpers={people.helpers}
+          notice={entry.notice}
+          topic={entry.topic}
+          place={entry.address}
+          sourceUrl={entry.sourceUrl}
+          big
+        />
       </View>
     );
   }
@@ -1432,7 +1415,7 @@ function EntryBody({
     );
   }
   if (en.type === "meeting") {
-    const where = fieldWhere(en, myGroupName, t);
+    const people = fieldPeople(en, myName, t);
     return (
       <>
         {overline(
@@ -1440,22 +1423,23 @@ function EntryBody({
           KIND_COLOR.field_service,
           en.time || null,
         )}
-        <Text style={[s.rowTitle, en.cancelled && s.struck]}>{fieldTitle(en, t)}</Text>
-        {where ? <Text style={[s.rowPlain, en.cancelled && s.struck]}>{where}</Text> : null}
-        {/* Called off: crossed out with its reason, and nobody to name. */}
-        {en.cancelled ? (
-          <FieldCancelled reason={en.cancelReason} />
-        ) : (
-          <>
-            <FieldNotice text={en.notice} />
-            <FieldPeople en={en} myName={myName} />
-          </>
-        )}
-        {en.fieldNote?.kind === "onlyFor" ? (
-          <Text style={s.rowNote}>
-            {t("feed.fieldOnlyFor", { group: en.fieldNote.groupName })}
-          </Text>
-        ) : null}
+        <FieldMeetingBlock
+          timeLayout="none"
+          title={fieldTitle(en, myGroupName, t)}
+          who={people.who}
+          helpers={people.helpers}
+          notice={en.notice}
+          cancelled={!!en.cancelled}
+          cancelReason={en.cancelReason}
+          topic={en.topic}
+          place={en.address}
+          sourceUrl={en.sourceUrl}
+          note={
+            en.fieldNote?.kind === "onlyFor"
+              ? t("feed.fieldOnlyFor", { group: en.fieldNote.groupName })
+              : null
+          }
+        />
         {en.folded ? (
           <Text style={s.rowQuiet}>
             {en.folded.kind === "groupOnVisit"
@@ -1463,8 +1447,6 @@ function EntryBody({
               : t("home.list.youOnVisit", { count: en.folded.count })}
           </Text>
         ) : null}
-        {en.topic ? <Text style={s.topic}>{en.topic}</Text> : null}
-        <SourceLink url={en.sourceUrl} />
       </>
     );
   }

@@ -41,6 +41,7 @@ import { resolveHallAddress } from '../../../lib/hallAddress';
 import { FieldServicePrepareSheet } from '../../../components/FieldServicePrepareSheet';
 import { FieldServiceTemplateSheet } from '../../../components/FieldServiceTemplateSheet';
 import { buildFieldServicePdfHtml } from '../../../lib/fieldServicePdf';
+import { appFontFaces } from '../../../lib/print-fonts';
 import type { FsPdfMonth } from '../../../lib/fieldServicePdf';
 import { exportHtmlAsPdf } from '../../../lib/pdf';
 import { notify } from '../../../lib/error-bus';
@@ -136,7 +137,13 @@ export default function FieldServiceMeetingsScreen() {
   // On the narrowest phones the month chips and «Подготовить месяц» fought
   // for one row (the chips slid under the button); there the button is its
   // icon. A phone of 384 points (the Galaxy in hand) keeps the words.
-  const wide = useWindowDimensions().width >= 380;
+  const screenW = useWindowDimensions().width;
+  const wide = screenW >= 380;
+  // On a big screen the month is one readable column, not a band across the
+  // whole window (14 October 2026: at 1280 points the time stood at one edge
+  // and its arrow 1200 points away). The rows inside lay their people and
+  // place out at the right once they are wide enough (FieldMeetingRow).
+  const side = Math.max(0, Math.floor((screenW - PAGE_MAX) / 2));
   const canEdit = perms.canEditFieldServiceMeetings;
   const qc = useQueryClient();
 
@@ -633,6 +640,13 @@ export default function FieldServiceMeetingsScreen() {
                 weekday: 'short',
               }),
               time: m.startTime,
+              kind: m.serviceGroupId
+                ? m.serviceOverseerVisit
+                  ? `${t('fieldService.row.group', { group: groupName(m.serviceGroupId) })} — ${t('fieldService.row.visitBadge')}`
+                  : t('fieldService.row.group', { group: groupName(m.serviceGroupId) })
+                : m.isGeneral
+                  ? t('fieldService.generalBadge')
+                  : t('fieldService.row.byGroups'),
               address: resolveHallAddress(m.address, halls),
               topic: m.topic ?? null,
               notice: m.notice ?? null,
@@ -642,8 +656,6 @@ export default function FieldServiceMeetingsScreen() {
                   : t('fieldService.cancelled.label')
                 : null,
               conductorName: nameOf(m.conductorPublisherId),
-              isGeneral: m.isGeneral,
-              groupName: m.serviceGroupId ? groupName(m.serviceGroupId) : null,
               isOverseerVisit: !!m.serviceOverseerVisit,
               overseerName: nameOf(m.serviceOverseerPublisherId),
               assistantName: nameOf(m.serviceOverseerAssistantId),
@@ -656,11 +668,10 @@ export default function FieldServiceMeetingsScreen() {
               weekday: 'short',
             }),
             time: v.startTime ?? '',
+            kind: t('fieldService.fromCoVisit'),
             address: v.place ? resolveHallAddress(v.place, halls) : '',
             topic: null,
             conductorName: null,
-            isGeneral: false,
-            groupName: null,
             isOverseerVisit: false,
             overseerName: null,
             assistantName: null,
@@ -688,16 +699,16 @@ export default function FieldServiceMeetingsScreen() {
         title: t('fieldService.pdf.title'),
         date: t('fieldService.pdf.date'),
         time: t('fieldService.pdf.time'),
-        address: t('fieldService.pdf.address'),
-        conductor: t('fieldService.conductor'),
-        general: t('fieldService.generalBadge'),
-        overseerVisit: t('fieldService.overseerVisitBadgeShort'),
-        groupVisit: t('fieldService.pdf.groupVisit'),
-        assistant: t('fieldService.overseerAssistant'),
+        meeting: t('fieldService.pdf.meeting'),
+        conductor: t('fieldService.pdf.leads'),
+        overseer: t('fieldService.pdf.overseer'),
+        assistant: t('fieldService.pdf.assistant'),
+        usualPlace: t('fieldService.pdf.usualPlace'),
+        place: t('fieldService.pdf.place'),
         monthTheme: t('fieldService.pdf.monthTheme'),
-        fromCoVisit: t('fieldService.fromCoVisit'),
         generated: t('fieldService.pdf.generated'),
       },
+      fontFaces: appFontFaces(),
     });
     const ok = await exportHtmlAsPdf(html, {
       fileName: t('fieldService.pdf.title'),
@@ -724,7 +735,7 @@ export default function FieldServiceMeetingsScreen() {
   return (
     <View style={styles.container}>
       {/* Month strip; the one action on the plan at its right. */}
-      <View style={styles.monthBar}>
+      <View style={[styles.monthBar, side > 0 && { paddingLeft: side, paddingRight: side + 8 }]}>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -768,7 +779,7 @@ export default function FieldServiceMeetingsScreen() {
 
       <ScrollView
         ref={scrollRef}
-        contentContainerStyle={{ paddingBottom: 48 }}
+        contentContainerStyle={{ paddingBottom: 48, paddingHorizontal: side }}
         onContentSizeChange={scrollToCurrent}
         onScroll={(e) => syncActiveMonth(e.nativeEvent.contentOffset.y)}
         scrollEventThrottle={48}
@@ -1168,6 +1179,9 @@ export default function FieldServiceMeetingsScreen() {
     </View>
   );
 }
+
+/** The widest the month reads at; beyond it the page keeps margins. */
+const PAGE_MAX = 960;
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f1f5f9' },

@@ -1,14 +1,11 @@
-import type { ReactNode } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useState, type ReactNode } from 'react';
+import { Pressable, StyleSheet, Text, View, useWindowDimensions, type LayoutChangeEvent } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { FieldServiceMeeting, isFieldServiceCancelled, isFieldServiceDraft } from '../lib/api';
 import type { FieldNote } from '../lib/field-audience';
-import { FieldNoteLine } from './FieldListBits';
-import { FieldCancelled, FieldNotice } from './FieldNotice';
-import { MyDot } from './MyDot';
+import { FieldMeetingBlock, type FieldHelper, type FieldWho } from './FieldMeetingBlock';
 import { MyGlowRow } from './MyGlowRow';
-import { SourceLink } from './SourceLink';
 
 /**
  * ONE field-service meeting as a line (11 October 2026): the time at the
@@ -62,77 +59,82 @@ export function FieldMeetingRow({
       ? t('fieldService.generalBadge')
       : t('fieldService.row.byGroups');
 
-  // The one line under the title: who conducts, or that nobody does yet.
-  // The planner reads this to fill the gap, so an empty place is said
-  // plainly here — unlike Home and the Programme, which only read.
-  const conductor = nameOf(m.conductorPublisherId);
-  let who: { text: string; empty: boolean };
-  if (!conductor) {
-    who = { text: t('fieldService.row.unassigned'), empty: true };
-  } else {
-    const bits = [t('fieldService.row.leads', { name: conductor })];
-    if (m.serviceOverseerVisit) {
-      const overseer =
-        m.serviceOverseerPublisherId && m.serviceOverseerPublisherId !== m.conductorPublisherId
-          ? nameOf(m.serviceOverseerPublisherId)
-          : null;
-      const assistant =
-        m.serviceOverseerAssistantId && m.serviceOverseerAssistantId !== m.conductorPublisherId
-          ? nameOf(m.serviceOverseerAssistantId)
-          : null;
-      if (overseer) bits.push(t('fieldService.row.withOverseer', { name: overseer }));
-      if (assistant) bits.push(t('fieldService.row.withAssistant', { name: assistant }));
+  // A narrow phone gives the time column a third of the line: the time
+  // goes into the title line there (14 October 2026, 320 points). A wide
+  // screen puts the people and the place in a column of their own.
+  const narrow = useWindowDimensions().width < 361;
+  const [boxWidth, setBoxWidth] = useState(0);
+  const wide = boxWidth >= 640;
+
+  const helpers: FieldHelper[] = [];
+  if (m.serviceOverseerVisit && !off) {
+    if (m.serviceOverseerPublisherId && m.serviceOverseerPublisherId !== m.conductorPublisherId) {
+      const name = nameOf(m.serviceOverseerPublisherId);
+      if (name) helpers.push({ label: t('fieldService.overseer'), name, mine: m.serviceOverseerPublisherId === me });
     }
-    who = { text: bits.join(' · '), empty: false };
+    if (m.serviceOverseerAssistantId && m.serviceOverseerAssistantId !== m.conductorPublisherId) {
+      const name = nameOf(m.serviceOverseerAssistantId);
+      if (name) helpers.push({ label: t('fieldService.overseerAssistant'), name, mine: m.serviceOverseerAssistantId === me });
+    }
   }
+  const conductor = nameOf(m.conductorPublisherId);
+  // The planner reads the empty place to fill it, so it is said plainly
+  // here — unlike Home and the Programme, which only read.
+  const who: FieldWho = !conductor
+    ? { kind: 'empty' }
+    : me && m.conductorPublisherId === me
+      ? { kind: 'mine' }
+      : { kind: 'name', name: conductor };
+
+  const badges = (
+    <>
+      {m.serviceOverseerVisit ? (
+        <View style={styles.visitBadge}>
+          <Text style={styles.visitBadgeText}>{t('fieldService.row.visitBadge')}</Text>
+        </View>
+      ) : null}
+      {isFieldServiceDraft(m) ? (
+        <View style={styles.draftBadge}>
+          <Text style={styles.draftBadgeText}>{t('fieldService.draft.badge')}</Text>
+        </View>
+      ) : null}
+    </>
+  );
+  const noteText =
+    note == null
+      ? null
+      : note.kind === 'notForYourGroup'
+        ? t('feed.fieldNotForYourGroup')
+        : note.kind === 'awayOnVisit'
+          ? t('feed.fieldAwayOnVisit', { group: groupName(note.groupId) })
+          : t('feed.fieldOnlyFor', { group: groupName(note.groupId) });
 
   const body = (
-    <>
-      <Text style={[styles.rowTime, off && styles.struck]}>{m.startTime}</Text>
-      <View style={styles.rowBody}>
-        <View style={styles.rowTitleLine}>
-          {isMine && !off && m.conductorPublisherId === me ? <MyDot kind="field_service" /> : null}
-          <Text style={[styles.rowTitle, off && styles.struck]}>{title}</Text>
-          {m.serviceOverseerVisit ? (
-            <View style={styles.visitBadge}>
-              <Text style={styles.visitBadgeText}>{t('fieldService.row.visitBadge')}</Text>
-            </View>
-          ) : null}
-          {isFieldServiceDraft(m) ? (
-            <View style={styles.draftBadge}>
-              <Text style={styles.draftBadgeText}>{t('fieldService.draft.badge')}</Text>
-            </View>
-          ) : null}
-        </View>
-        {off ? null : (
-          <Text style={[styles.rowWho, who.empty && styles.rowWhoEmpty]}>{who.text}</Text>
-        )}
-        {/* What is different this time — before the theme and the address,
-            which are what the notice usually corrects. A cancelled meeting
-            says that instead, and nothing else is different about it. */}
-        {off ? <FieldCancelled reason={m.cancelReason} /> : <FieldNotice text={m.notice} />}
-        {/* What the meeting is about, whole: it used to share two lines with
-            the address and end in «…» — the address is the same every week,
-            the theme is what people read (phone, 11 October 2026). */}
-        {m.topic ? <Text style={[styles.rowTopic, off && styles.struck]}>{m.topic}</Text> : null}
-        {place ? (
-          <Text style={[styles.rowMuted, off && styles.struck]} numberOfLines={2}>
-            {place}
-          </Text>
-        ) : null}
-        {off ? null : (
-          <>
-            <FieldNoteLine note={note} groupName={groupName} />
-            <SourceLink url={m.sourceUrl} />
-          </>
-        )}
-      </View>
-      {trailing ?? (onPress ? <Ionicons name="chevron-forward" size={16} color="#94a3b8" /> : null)}
-    </>
+    <FieldMeetingBlock
+      time={m.startTime}
+      timeLayout={narrow ? 'inline' : 'column'}
+      title={title}
+      badges={badges}
+      who={who}
+      helpers={helpers}
+      notice={m.notice}
+      cancelled={off}
+      cancelReason={m.cancelReason}
+      topic={m.topic}
+      place={place}
+      sourceUrl={m.sourceUrl}
+      note={noteText}
+      wide={wide}
+      trailing={trailing ?? (onPress ? <Ionicons name="chevron-forward" size={16} color="#94a3b8" style={styles.chev} /> : null)}
+    />
   );
 
   return (
-    <RowWrap kind="field_service" style={[styles.row, last && styles.rowLast]}>
+    <RowWrap
+      kind="field_service"
+      style={[styles.row, last && styles.rowLast]}
+      onLayout={(e: LayoutChangeEvent) => setBoxWidth(e.nativeEvent.layout.width)}
+    >
       {onPress ? (
         <Pressable style={styles.rowPress} onPress={onPress}>
           {body}
@@ -148,28 +150,12 @@ const styles = StyleSheet.create({
   row: {
     borderBottomWidth: 1,
     borderBottomColor: '#eef2f6',
-    flexDirection: 'row',
-    gap: 12,
     paddingHorizontal: 14,
-    paddingVertical: 11,
+    paddingVertical: 12,
   },
   rowLast: { borderBottomWidth: 0 },
-  struck: { textDecorationLine: 'line-through', color: '#94a3b8' },
-  rowPress: { flex: 1, flexDirection: 'row', gap: 12, alignItems: 'flex-start' },
-  rowTime: {
-    width: 46,
-    fontSize: 15,
-    fontFamily: 'Manrope_800ExtraBold',
-    color: '#0f172a',
-    paddingTop: 1,
-  },
-  rowBody: { flex: 1, gap: 2 },
-  rowTitleLine: { flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' },
-  rowTitle: { fontSize: 15, fontFamily: 'Manrope_700Bold', color: '#0f172a' },
-  rowWho: { fontSize: 13.5, color: '#334155', fontFamily: 'Manrope_500Medium' },
-  rowWhoEmpty: { color: '#a14a00', fontFamily: 'Manrope_700Bold' },
-  rowMuted: { fontSize: 13, color: '#64748b', fontFamily: 'Manrope_500Medium' },
-  rowTopic: { fontSize: 13.5, color: '#334155', fontFamily: 'Manrope_500Medium', marginTop: 2 },
+  rowPress: { flex: 1 },
+  chev: { marginTop: 3 },
   visitBadge: {
     paddingHorizontal: 8,
     paddingVertical: 2,

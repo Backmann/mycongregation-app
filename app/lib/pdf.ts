@@ -1,6 +1,7 @@
 import { Platform } from 'react-native';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
+import { fontsReady } from './print-fonts';
 
 /**
  * Open a blank print window synchronously — call this inside a click handler,
@@ -66,11 +67,12 @@ function printViaFrame(html: string): Promise<{ ok: boolean; reason?: string }> 
       try {
         const w = frame.contentWindow;
         if (!w) return done(false, 'no_frame');
-        setTimeout(() => {
+        // The sheet's own faces first, else it prints in the system font.
+        void fontsReady(w.document).then(() => {
           w.focus();
           w.print();
           done(true);
-        }, 300);
+        });
       } catch (e) {
         done(false, String(e));
       }
@@ -117,11 +119,11 @@ export async function exportHtmlAsPdf(
     win.document.write(withTitle);
     win.document.close();
     win.focus();
-    // Give layout/fonts a moment, then print.
-    setTimeout(() => {
+    // Layout and the sheet's own faces first, then print.
+    void fontsReady(win.document).then(() => {
       win.focus();
       win.print();
-    }, 300);
+    });
     return { ok: true };
   }
 
