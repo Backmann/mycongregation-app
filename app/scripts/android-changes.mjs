@@ -184,6 +184,8 @@ async function snap(label, { scroll = true } = {}) {
         x.text.trim() !== '' &&
         x.text !== prep.text &&
         !contains(x, prep) &&
+        // The «+» glyph is drawn INSIDE the button (run of 13 October 2026).
+        !contains(prep, x) &&
         x.y1 < prep.y2 && x.y2 > prep.y1 && x.x2 > prep.x1 && x.x1 < prep.x2,
     );
     if (under.length) problems.push(`под кнопкой «Подготовить месяц»: ${under.map((x) => `«${x.text}»`).join(', ')}`);
@@ -262,7 +264,9 @@ expect(has(ns, FROZEN), '«…программа стала записью, из
 const mayFix = has(ns, /^Исправить задним числом$/);
 say(`   кнопка «Исправить задним числом»: ${mayFix ? 'есть' : 'нет'} (есть только у администратора и координатора совета)`);
 // A part of a frozen week opens nothing.
-if (await tap(/^Чтение Библии$|^Сокровища из Слова Бога$/, 'часть программы')) {
+// The first parts on screen (the live run of 13 October found no «Чтение
+// Библии» there: it sits lower).
+if (await tap(/^(Вступительная молитва|Председатель встречи|Председатель)$/, 'часть программы')) {
   ns = await snap('frozen-part-tap', { scroll: false });
   const opened = has(ns, SHEET);
   expect(!opened, 'нажатие на часть ничего не открывает');
@@ -293,7 +297,19 @@ await open('/schedule/edit', WEEK_READY);
 ns = await snap('this-week', { scroll: false });
 expect(!has(ns, FROZEN) && !has(ns, /^Исправить задним числом$/), 'текущая неделя открыта, без «стала записью»');
 
+// ── 4. Встречи для проповеди: перенос и отмена (без сохранения) ──────
+const MONTH = /^Подготовить месяц$|^Добавить встречу$|^Ведёт /;
 const ROW = /^(Ведёт |Ведущий не назначен)/;
+/**
+ * The month from a clean start. A deep link to the screen already open
+ * leaves an open sheet in place, and the live run of 13 October then looked
+ * for the month under it twice and found nothing.
+ */
+async function freshMonth() {
+  adb(['shell', 'am', 'force-stop', PKG]);
+  await sleep(800);
+  await open('/cart/field-service', MONTH);
+}
 /**
  * A meeting still ahead: the month lists its past days first, so scroll
  * once and take the LAST meeting row on screen.
@@ -311,26 +327,32 @@ async function tapFutureRow() {
   return true;
 }
 
-// ── 4. Встречи для проповеди: перенос и отмена (без сохранения) ──────
-const MONTH = /^Подготовить месяц$|^Добавить встречу$|^Ведёт /;
-await open('/cart/field-service', MONTH);
+await freshMonth();
 ns = await snap('month');
 say(`   отменённые встречи в месяце: ${has(ns, /^Отменена/) ? 'есть' : 'нет на первом экране'}`);
 if (await tapFutureRow()) {
-  ns = await snap('meeting-sheet');
+  // No scroll before the tap: the snap's own swipe moved «Другая неделя»
+  // off the screen in the live run of 13 October.
+  ns = await snap('meeting-sheet', { scroll: false });
   const other = has(ns, /^Другая неделя$/);
   say(`   «Другая неделя»: ${other ? 'есть' : 'нет (прошедшая или черновик?)'}`);
   if (other && (await tap(/^Другая неделя$/, '«Другая неделя»', 1500))) {
     await snap('move-calendar', { scroll: false });
     await back();
   }
+  await swipeUp();
+  await snap('meeting-sheet-lower', { scroll: false });
 }
-await open('/cart/field-service', MONTH);
+await freshMonth();
 if (await tapFutureRow()) {
   // The cancel button sits low in the sheet.
   let found = null;
   for (let i = 0; i < 4 && !found; i++) {
-    found = dump().find((x) => x.h > 0 && x.y2 <= H && x.text === 'Отменить встречу');
+    // Only above the sheet's foot: a button scrolled behind «Отмена /
+    // Сохранить» is still listed, and a tap there would land on «Сохранить».
+    const ns2 = dump();
+    const foot = Math.min(H, ...ns2.filter((x) => x.h > 0 && /^(Сохранить|Отмена)$/.test(x.text)).map((x) => x.y1 - 20));
+    found = ns2.find((x) => x.h > 0 && x.y1 > 0 && x.y2 <= foot && x.text === 'Отменить встречу');
     if (!found) await swipeUp();
   }
   if (found) {
@@ -346,7 +368,7 @@ if (await tapFutureRow()) {
   }
 }
 // A cancelled meeting, when the month has one on screen.
-await open('/cart/field-service', MONTH);
+await freshMonth();
 if (has(dump(), /^Отменена/)) {
   await tap(/^Отменена/, 'отменённая встреча');
   ns = await snap('cancelled-sheet');

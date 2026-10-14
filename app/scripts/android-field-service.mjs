@@ -184,6 +184,8 @@ async function snap(label, { scroll = true } = {}) {
         x.text.trim() !== '' &&
         x.text !== prep.text &&
         !contains(x, prep) &&
+        // The «+» glyph is drawn INSIDE the button (run of 13 October 2026).
+        !contains(prep, x) &&
         x.y1 < prep.y2 && x.y2 > prep.y1 && x.x2 > prep.x1 && x.x1 < prep.x2,
     );
     if (under.length) problems.push(`под кнопкой «Подготовить месяц»: ${under.map((x) => `«${x.text}»`).join(', ')}`);
