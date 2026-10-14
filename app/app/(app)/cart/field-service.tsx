@@ -492,10 +492,14 @@ export default function FieldServiceMeetingsScreen() {
     ]),
   ].sort();
   const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+  // «Октябрь 2026», never «октябрь 2026 г.»: the browser's own month-and-year
+  // (toLocaleDateString) adds «г.» in Russian and starts small; dayjs gives
+  // the month as a name on its own (nominative) and the year bare.
+  const monthYear = (key: string) =>
+    cap(dayjs(`${key}-01`).locale(i18n.language).format('MMMM YYYY'));
   const months: MonthBlock[] = [];
   {
     for (const k of monthKeys) {
-      const d = dayjs(`${k}-01`);
       const ms = (byMonth.get(k) ?? [])
         .slice()
         .sort(
@@ -527,12 +531,7 @@ export default function FieldServiceMeetingsScreen() {
       }
       months.push({
         key: k,
-        title: cap(
-          d.toDate().toLocaleDateString(i18n.language, {
-            month: 'long',
-            year: 'numeric',
-          }),
-        ),
+        title: monthYear(k),
         meetings: ms,
         days,
         drafts: ms.filter(isFieldServiceDraft),
@@ -814,11 +813,7 @@ export default function FieldServiceMeetingsScreen() {
           <Ionicons name="chevron-up" size={16} color="#475569" />
           <Text style={styles.earlierText}>
             {t('fieldService.earlier', {
-              month: cap(
-                dayjs(`${earlierMonth}-01`)
-                  .toDate()
-                  .toLocaleDateString(i18n.language, { month: 'long', year: 'numeric' }),
-              ),
+              month: monthYear(earlierMonth),
             })}
           </Text>
         </Pressable>
@@ -1050,7 +1045,7 @@ export default function FieldServiceMeetingsScreen() {
                 accessibilityState={{ selected: active }}
               >
                 <Text style={[styles.panelMonthName, active && styles.panelMonthNameActive]}>
-                  {cap(dayjs(`${m.key}-01`).locale(i18n.language).format('MMMM YYYY'))}
+                  {monthYear(m.key)}
                 </Text>
                 <Text style={[styles.panelMonthSub, m.drafts.length > 0 && styles.panelMonthDraft]}>
                   {m.drafts.length > 0
@@ -1191,12 +1186,7 @@ export default function FieldServiceMeetingsScreen() {
             <Ionicons name="chevron-back" size={18} color="#0369a1" />
           </Pressable>
           <Text style={pdfStyles.stepValue}>
-            {dayjs(`${pdfStart}-01`)
-              .toDate()
-              .toLocaleDateString(i18n.language, {
-                month: 'long',
-                year: 'numeric',
-              })}
+            {monthYear(pdfStart)}
           </Text>
           <Pressable
             style={pdfStyles.stepBtn}

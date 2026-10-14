@@ -1,6 +1,8 @@
 /**
  * The theme's length and the printed sheet of field-service meetings
- * (variant A, 14 October 2026) — checked on cases, not by eye.
+ * (variant A, 14 October 2026) — checked on cases, not by eye. The month
+ * and its theme stand in the table head, which the printer repeats at the
+ * top of a continued page.
  *
  *  - lib/field-topic: the jw.org length at the END of a theme is split off
  *    («… Обсуждение. Длительность: 2:35» → theme + «2:35»); anything else,
@@ -49,6 +51,10 @@ const TOPICS = [
   ['Встреча в 10:30 у парка', 'Встреча в 10:30 у парка', null],
   ['Длительность: 2:35 — потом обсуждение', 'Длительность: 2:35 — потом обсуждение', null],
   ['Длительность: 2:35', null, '2:35'],
+  ['Как проповедовать по домофону (№ 1 и №2) Обсуждение Длительность: 1:10 и 3:39', 'Как проповедовать по домофону (№ 1 и №2) Обсуждение', '1:10 и 3:39'],
+  ['Zwei Videos. Dauer: 1:10 und 3:39', 'Zwei Videos.', '1:10 und 3:39'],
+  ['Тема. Длительность: 1:10, 2:00', 'Тема.', '1:10, 2:00'],
+  ['Тема. Длительность: 1:10 и потом', 'Тема. Длительность: 1:10 и потом', null],
   ['', null, null],
   [null, null, null],
 ];
@@ -97,7 +103,16 @@ has('a visit tagged under the group', 'Группа Верне</div><div class="
 has('the overseer who conducts: named once, with his role', 'Вебер Андреас<div class="with">служебный старейшина</div><div class="with">помощник Келлер Давид</div>');
 eq('two months: a heading each', count('<h2>'), 2);
 has('the month capitalised', '<h2>Октябрь</h2>');
+// In the table's head, so that a month running over onto the next page is
+// named again at the top of it.
+has('the month in the head that repeats on every page', '<thead><tr><th colspan="5" class="mcap"><h2>Октябрь</h2></th></tr><tr class="cols">');
+has('the head repeated on every page', 'thead { display: table-header-group; }');
 eq('one month: no heading under the header', count('<h2>', sheet([{ title: 'Ноябрь', theme: null, rows: [row({})] }])), 0);
+has(
+  "one month's theme still in the repeating head",
+  '<thead><tr><th colspan="5" class="mcap"><div class="mtheme">Тема месяца: Радуйтесь</div></th></tr>',
+  sheet([{ title: 'Ноябрь', theme: 'Радуйтесь', rows: [row({})] }]),
+);
 hasNot('no weight beside a face', 'font-weight: 700');
 has('the columns fixed for every month', 'table-layout: fixed');
 
@@ -105,4 +120,4 @@ if (problems.length) {
   console.error(`✗ Лист встреч для проповеди:\n  ${problems.join('\n  ')}`);
   process.exit(1);
 }
-console.log(`✓ Лист встреч для проповеди: ${TOPICS.length} тем с длительностью и без, 17 проверок листа`);
+console.log(`✓ Лист встреч для проповеди: ${TOPICS.length} тем с длительностью и без, 20 проверок листа`);

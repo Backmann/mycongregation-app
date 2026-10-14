@@ -161,13 +161,21 @@ export function buildFieldServicePdfHtml(opts: {
 </tr>`;
         })
         .join('\n');
-      const theme = mo.theme ? `<p class="mtheme">${esc(L.monthTheme)}: ${esc(mo.theme)}</p>` : '';
+      // The month and its theme stand IN the table's head, not above it: the
+      // head is printed again at the top of every page, so a month that runs
+      // over onto the next page says there whose rows these are (live sheet,
+      // 14 October 2026: the last Saturday of October stood alone on page 2
+      // under bare column names).
+      const theme = mo.theme ? `<div class="mtheme">${esc(L.monthTheme)}: ${esc(mo.theme)}</div>` : '';
+      const caption = oneMonth
+        ? theme
+          ? `<tr><th colspan="5" class="mcap">${theme}</th></tr>`
+          : ''
+        : `<tr><th colspan="5" class="mcap"><h2>${esc(cap(mo.title))}</h2>${theme}</th></tr>`;
       return `<section class="month">
-${oneMonth ? '' : `<h2>${esc(cap(mo.title))}</h2>`}
-${theme}
 <table>
 <colgroup><col class="c-date"><col class="c-time"><col><col class="c-where"><col class="c-who"></colgroup>
-<thead><tr><th>${esc(L.date)}</th><th>${esc(L.time)}</th><th>${esc(L.meeting)}</th><th>${esc(L.where)}</th><th>${esc(L.conductor)}</th></tr></thead>
+<thead>${caption}<tr class="cols"><th>${esc(L.date)}</th><th>${esc(L.time)}</th><th>${esc(L.meeting)}</th><th>${esc(L.where)}</th><th>${esc(L.conductor)}</th></tr></thead>
 <tbody>
 ${rows}
 </tbody>
@@ -195,9 +203,12 @@ ${fontFaces}
   .range { font-family: 'Manrope_700Bold', -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; font-weight: normal; font-size: 12pt; color: #15803d; margin-top: 1px; }
 
   .month { margin-bottom: 16px; }
+  /* The month's caption row: plain text, not the small capitals of the
+     column names under it. */
+  th.mcap { padding: 0 0 4px; border-bottom: 0; text-transform: none; letter-spacing: 0; font-size: 9pt; }
   h2 { font-family: 'Manrope_800ExtraBold', -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; font-weight: normal; font-size: 12.5pt; color: #0f172a; margin: 0 0 4px;
-    padding-bottom: 3px; border-bottom: 2px solid #15803d; break-after: avoid; page-break-after: avoid; }
-  .mtheme { font-size: 9pt; color: #475569; margin: 0 0 4px; }
+    padding-bottom: 3px; border-bottom: 2px solid #15803d; }
+  .mtheme { font-family: 'Manrope_400Regular', -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; font-weight: normal; font-size: 9pt; color: #475569; margin: 0; }
 
   table { width: 100%; border-collapse: collapse; table-layout: fixed; }
   col.c-date { width: 9%; }

@@ -14,7 +14,14 @@
  * word was seen in the live data; the German and English ones are the
  * words the site uses in those languages and are taken on trust.
  */
-const LENGTH = /(?:^|[\s.;,])(?:Длительность|Продолжительность|Dauer|Länge|Duration|Length)\s*:\s*(\d{1,2}:\d{2}(?::\d{2})?)\s*$/iu;
+// One length, or two or more joined by «и» / «und» / «and» / a comma —
+// «Обсуждение. Длительность: 1:10 и 3:39» (two videos, live data 14 October
+// 2026); they are kept as written.
+const T = String.raw`\d{1,2}:\d{2}(?::\d{2})?`;
+const LENGTH = new RegExp(
+  String.raw`(?:^|[\s.;,])(?:Длительность|Продолжительность|Dauer|Länge|Duration|Length)\s*:\s*(${T}(?:\s*(?:,|и|und|and|&|\+)\s*${T})*)\s*$`,
+  'iu',
+);
 
 export function splitTopic(topic: string | null | undefined): { text: string | null; length: string | null } {
   const t = topic?.trim() ?? '';
