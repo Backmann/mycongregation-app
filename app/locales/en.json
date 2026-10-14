@@ -1540,8 +1540,9 @@
       "leads": "Conducts",
       "overseer": "service overseer",
       "assistant": "assistant",
-      "usualPlace": "Unless stated otherwise:",
-      "place": "Place"
+      "place": "Place",
+      "hall": "Kingdom Hall {{name}}",
+      "visitTag": "service overseer’s visit"
     },
     "fromCoVisit": "From the circuit overseer's visit schedule",
     "fromCoVisitHint": "Edited in the visit schedule",

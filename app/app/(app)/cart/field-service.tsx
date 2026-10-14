@@ -612,6 +612,23 @@ export default function FieldServiceMeetingsScreen() {
       const k = meetingDateISO(m).slice(0, 7);
       pdfByMonth.set(k, [...(pdfByMonth.get(k) ?? []), m]);
     }
+    // The sheet's period, said once and the way a person says it (14 October
+    // 2026): «Ноябрь 2026», «Октябрь – декабрь 2026», «Декабрь 2026 – январь
+    // 2027» — not «ноябрь 2026 г.» in the header and again over the table.
+    const sameYear = pdfStart.slice(0, 4) === lastKey.slice(0, 4);
+    const monthName = (key: string, withYear: boolean) => {
+      const name = cap(dayjs(`${key}-01`).locale(i18n.language).format('MMMM'));
+      return withYear ? `${name} ${key.slice(0, 4)}` : name;
+    };
+    const hallName = (address: string) => {
+      const a = address.trim().toLowerCase();
+      const h = a ? halls?.find((x) => x.address.trim().toLowerCase() === a) : undefined;
+      const name = h?.name.trim();
+      if (!name) return null;
+      // «Ahlen» becomes «Зал Царства Ahlen»; a name that says it already stays.
+      const word = t('fieldService.pdf.hall', { name: '' }).trim().toLocaleLowerCase(i18n.language);
+      return name.toLocaleLowerCase(i18n.language).includes(word) ? name : t('fieldService.pdf.hall', { name });
+    };
     const monthsOut: FsPdfMonth[] = [];
     for (let i = 0; i < pdfMonths; i++) {
       const key = dayjs(`${pdfStart}-01`).add(i, 'month').format('YYYY-MM');
@@ -624,12 +641,7 @@ export default function FieldServiceMeetingsScreen() {
             a.startTime.localeCompare(b.startTime),
         );
       monthsOut.push({
-        title: dayjs(`${key}-01`)
-          .toDate()
-          .toLocaleDateString(i18n.language, {
-            month: 'long',
-            year: 'numeric',
-          }),
+        title: monthName(key, !sameYear),
         theme: themeByMonth.get(key) ?? null,
         rows: [
           ...list.map((m) => {
@@ -641,13 +653,12 @@ export default function FieldServiceMeetingsScreen() {
               }),
               time: m.startTime,
               kind: m.serviceGroupId
-                ? m.serviceOverseerVisit
-                  ? `${t('fieldService.row.group', { group: groupName(m.serviceGroupId) })} — ${t('fieldService.row.visitBadge')}`
-                  : t('fieldService.row.group', { group: groupName(m.serviceGroupId) })
+                ? t('fieldService.row.group', { group: groupName(m.serviceGroupId) })
                 : m.isGeneral
                   ? t('fieldService.generalBadge')
                   : t('fieldService.row.byGroups'),
               address: resolveHallAddress(m.address, halls),
+              placeName: hallName(resolveHallAddress(m.address, halls)),
               topic: m.topic ?? null,
               notice: m.notice ?? null,
               cancelledLine: m.cancelledAt
@@ -670,6 +681,7 @@ export default function FieldServiceMeetingsScreen() {
             time: v.startTime ?? '',
             kind: t('fieldService.fromCoVisit'),
             address: v.place ? resolveHallAddress(v.place, halls) : '',
+            placeName: v.place ? hallName(resolveHallAddress(v.place, halls)) : null,
             topic: null,
             conductorName: null,
             isOverseerVisit: false,
@@ -683,16 +695,15 @@ export default function FieldServiceMeetingsScreen() {
         ),
       });
     }
-    const startT = dayjs(`${pdfStart}-01`)
-      .toDate()
-      .toLocaleDateString(i18n.language, { month: 'long', year: 'numeric' });
-    const endT = dayjs(`${pdfStart}-01`)
-      .add(pdfMonths - 1, 'month')
-      .toDate()
-      .toLocaleDateString(i18n.language, { month: 'long', year: 'numeric' });
+    const rangeLabel =
+      pdfMonths === 1
+        ? monthName(pdfStart, true)
+        : sameYear
+          ? `${monthName(pdfStart, false)} – ${monthName(lastKey, false).toLocaleLowerCase(i18n.language)} ${lastKey.slice(0, 4)}`
+          : `${monthName(pdfStart, true)} – ${monthName(lastKey, true).toLocaleLowerCase(i18n.language)}`;
     const html = buildFieldServicePdfHtml({
       congregationName: overviewQuery.data?.congregation.name ?? null,
-      rangeLabel: pdfMonths === 1 ? startT : `${startT} – ${endT}`,
+      rangeLabel,
       generatedDate: new Date().toLocaleDateString(i18n.language),
       months: monthsOut,
       labels: {
@@ -703,8 +714,8 @@ export default function FieldServiceMeetingsScreen() {
         conductor: t('fieldService.pdf.leads'),
         overseer: t('fieldService.pdf.overseer'),
         assistant: t('fieldService.pdf.assistant'),
-        usualPlace: t('fieldService.pdf.usualPlace'),
-        place: t('fieldService.pdf.place'),
+        where: t('fieldService.pdf.place'),
+        visit: t('fieldService.pdf.visitTag'),
         monthTheme: t('fieldService.pdf.monthTheme'),
         generated: t('fieldService.pdf.generated'),
       },

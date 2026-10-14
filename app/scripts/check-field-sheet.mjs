@@ -5,9 +5,8 @@
  *  - lib/field-topic: the jw.org length at the END of a theme is split off
  *    («… Обсуждение. Длительность: 2:35» → theme + «2:35»); anything else,
  *    including a time inside the sentence, stays the theme.
- *  - lib/fieldServicePdf: the usual place is said once at the top and only
- *    when it really is the usual one; a row names its place only when it
- *    differs; a date once per day; «!» before a notice and «✕» before a
+ *  - lib/fieldServicePdf: the place on every line, a hall by its name over
+ *    its address; one month — no month heading under the header; a day once; «!» before a notice and «✕» before a
  *    cancellation (black-and-white printers); a cancelled meeting prints no
  *    theme; on a visit the conductor leads, the overseer stands under him.
  *
@@ -33,7 +32,7 @@ const sheetJs = transpile(readFileSync(join(ROOT, 'lib/fieldServicePdf.ts'), 'ut
   /from ['"]\.\/field-topic['"]/,
   `from '${toUrl(topicJs)}'`,
 );
-const { buildFieldServicePdfHtml, usualPlace } = await import(toUrl(sheetJs));
+const { buildFieldServicePdfHtml } = await import(toUrl(sheetJs));
 
 const problems = [];
 const eq = (what, got, want) => {
@@ -55,55 +54,50 @@ const TOPICS = [
 ];
 for (const [topic, text, length] of TOPICS) eq(`splitTopic(${JSON.stringify(topic)})`, splitTopic(topic), { text, length });
 
-// --- the usual place -------------------------------------------------------------
+// --- the sheet -------------------------------------------------------------------
 const row = (o) => ({
-  dateISO: '2026-10-17', dayLabel: 'сб', time: '10:30', kind: 'Общая встреча', address: 'Зал, Hamm',
-  topic: null, notice: null, cancelledLine: null, conductorName: 'Кох Никлас',
+  dateISO: '2026-10-17', dayLabel: 'сб', time: '10:30', kind: 'Общая встреча', address: 'Bunsenstr. 46, Ahlen',
+  placeName: 'Зал Царства Ahlen', topic: null, notice: null, cancelledLine: null, conductorName: 'Кох Никлас',
   isOverseerVisit: false, overseerName: null, assistantName: null, fromCoVisit: false, ...o,
 });
-eq('usual: one meeting is not «usual»', usualPlace([{ title: 'x', theme: null, rows: [row({})] }]), null);
-eq('usual: 2 of 3', usualPlace([{ title: 'x', theme: null, rows: [row({}), row({}), row({ address: 'Парк' })] }]), 'Зал, Hamm');
-eq('usual: 2 of 6 is not', usualPlace([{ title: 'x', theme: null, rows: [row({}), row({}), row({ address: 'a' }), row({ address: 'b' }), row({ address: 'c' }), row({ address: 'd' })] }]), null);
-eq('usual: a circuit visit outing is not counted', usualPlace([{ title: 'x', theme: null, rows: [row({}), row({ fromCoVisit: true, address: 'B' }), row({ fromCoVisit: true, address: 'B' }), row({ fromCoVisit: true, address: 'B' })] }]), null);
-
-// --- the sheet -------------------------------------------------------------------
 const L = {
-  title: 'Встречи для проповеди', date: 'Дата', time: 'Время', meeting: 'Встреча', conductor: 'Ведёт',
-  overseer: 'служебный старейшина', assistant: 'помощник', usualPlace: 'Где не указано иначе —', place: 'Место',
+  title: 'Встречи для проповеди', date: 'День', time: 'Время', meeting: 'Встреча', where: 'Место', conductor: 'Ведёт',
+  visit: 'посещение служебного старейшины', overseer: 'служебный старейшина', assistant: 'помощник',
   monthTheme: 'Тема месяца', generated: 'Сформировано',
 };
-const html = buildFieldServicePdfHtml({
-  congregationName: 'Test',
-  rangeLabel: 'октябрь 2026 г.',
-  generatedDate: '14.10.2026',
-  labels: L,
-  months: [
-    {
-      title: 'октябрь 2026 г.',
-      theme: null,
-      rows: [
-        row({ dateISO: '2026-10-10', time: '10:00', kind: 'Группа Верне — посещение', address: 'Lindenweg 5, Werne', isOverseerVisit: true, conductorName: 'Вебер Андреас', overseerName: 'Беккер Йонас', assistantName: 'Вебер Андреас' }),
-        row({ dateISO: '2026-10-10', time: '10:30', topic: 'Тема. Длительность: 2:35' }),
-        row({ dateISO: '2026-10-17', notice: 'Зал на ремонте' }),
-        row({ dateISO: '2026-10-31', cancelledLine: 'Отменена: конгресс', topic: 'Тема, которой не будет' }),
-      ],
-    },
-  ],
-});
-const has = (what, s) => (html.includes(s) ? null : problems.push(`sheet: ${what} — нет «${s}»`));
-const hasNot = (what, s) => (html.includes(s) ? problems.push(`sheet: ${what} — лишнее «${s}»`) : null);
-has('usual place at the top', 'Где не указано иначе —<br><b>Зал, Hamm</b>');
-has('a row names a place that differs', 'Место: Lindenweg 5, Werne');
-hasNot('the usual place in a row', 'Место: Зал, Hamm');
-eq('the date once per day', (html.match(/сб 10\.10/g) ?? []).length, 1);
+const sheet = (months) =>
+  buildFieldServicePdfHtml({ congregationName: 'Test', rangeLabel: 'Ноябрь 2026', generatedDate: '14.10.2026', labels: L, months });
+const html = sheet([
+  {
+    title: 'Октябрь',
+    theme: null,
+    rows: [
+      row({ dateISO: '2026-10-10', time: '10:00', kind: 'Группа Верне', address: 'Lindenweg 5, Werne', placeName: null, isOverseerVisit: true, conductorName: 'Вебер Андреас', overseerName: 'Вебер Андреас', assistantName: 'Келлер Давид' }),
+      row({ dateISO: '2026-10-10', time: '10:30', topic: 'Тема. Длительность: 2:35' }),
+      row({ dateISO: '2026-10-17', notice: 'Зал на ремонте' }),
+      row({ dateISO: '2026-10-31', cancelledLine: 'Отменена: конгресс', topic: 'Тема, которой не будет' }),
+    ],
+  },
+  { title: 'Ноябрь', theme: null, rows: [row({ dateISO: '2026-11-07', overseerName: null })] },
+]);
+const has = (what, s, h = html) => (h.includes(s) ? null : problems.push(`sheet: ${what} — нет «${s}»`));
+const hasNot = (what, s, h = html) => (h.includes(s) ? problems.push(`sheet: ${what} — лишнее «${s}»`) : null);
+const count = (s, h = html) => h.split(s).length - 1;
+eq('the place on every line', count('<div class="addr">'), 5);
+has("a hall named over its address, street and town on two lines", "<div class=\"hall\">Зал Царства Ahlen</div><div class=\"addr\">Bunsenstr. 46<br>Ahlen</div>");
+has("a place that is no hall: its address alone", "<td class=\"where\"><div class=\"addr\">Lindenweg 5<br>Werne</div></td>");
+hasNot('no «usual place» any more', 'Где не указано');
+eq('the day once per day', count('<span class="dnum">10</span>'), 1);
 has('the second meeting of the day marked as the same day', 'class="same"');
 has('the length at the end of the theme', 'Тема. <span class="len">· 2:35</span>');
 has('notice with «!»', '! Зал на ремонте');
 has('cancellation with «✕»', '✕ Отменена: конгресс');
 hasNot('a cancelled meeting prints no theme', 'Тема, которой не будет');
-has('on a visit the overseer under the conductor', 'Вебер Андреас<div class="with">служебный старейшина Беккер Йонас</div>');
-hasNot('the assistant who IS the conductor is not repeated', 'помощник Вебер Андреас');
-has('the month capitalised', '<h2>Октябрь 2026 г.</h2>');
+has('a visit tagged under the group', 'Группа Верне</div><div class="tag">посещение служебного старейшины</div>');
+has('the overseer who conducts: named once, with his role', 'Вебер Андреас<div class="with">служебный старейшина</div><div class="with">помощник Келлер Давид</div>');
+eq('two months: a heading each', count('<h2>'), 2);
+has('the month capitalised', '<h2>Октябрь</h2>');
+eq('one month: no heading under the header', count('<h2>', sheet([{ title: 'Ноябрь', theme: null, rows: [row({})] }])), 0);
 hasNot('no weight beside a face', 'font-weight: 700');
 has('the columns fixed for every month', 'table-layout: fixed');
 
@@ -111,4 +105,4 @@ if (problems.length) {
   console.error(`✗ Лист встреч для проповеди:\n  ${problems.join('\n  ')}`);
   process.exit(1);
 }
-console.log(`✓ Лист встреч для проповеди: ${TOPICS.length} тем с длительностью и без, 4 случая «обычного места», 14 проверок листа`);
+console.log(`✓ Лист встреч для проповеди: ${TOPICS.length} тем с длительностью и без, 17 проверок листа`);

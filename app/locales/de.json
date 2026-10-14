@@ -1540,8 +1540,9 @@
       "leads": "Leitung",
       "overseer": "Dienstaufseher",
       "assistant": "Gehilfe",
-      "usualPlace": "Wenn nicht anders angegeben:",
-      "place": "Ort"
+      "place": "Ort",
+      "hall": "Königreichssaal {{name}}",
+      "visitTag": "Besuch des Dienstaufsehers"
     },
     "fromCoVisit": "Aus dem Besuchsplan des Kreisaufsehers",
     "fromCoVisitHint": "Wird im Besuchsplan bearbeitet",
