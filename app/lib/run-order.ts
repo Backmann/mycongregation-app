@@ -20,8 +20,16 @@
  * - The CHAIRMAN and the CBS READER get no segment at all. They are roles
  *   within the meeting rather than items in it: the reader reads inside the
  *   Bible study.
- * - BIBLE READING and EVERY MINISTRY PART get their own duration PLUS ONE
- *   MINUTE of counsel.
+ * - BIBLE READING and EVERY STUDENT PART of the ministry section get their
+ *   own duration PLUS ONE MINUTE of counsel. The minute is the chairman's,
+ *   not the student's: conduct mode counts the student down from the
+ *   programme's own figure (`partMin`) and keeps the minute apart
+ *   (`counselMin`) — «время заданий должно быть именно столько, сколько оно
+ *   зафиксировано в программе» (Lionel, 14 October 2026).
+ * - A DISCUSSION in the ministry section is led by an elder and gets no
+ *   counsel after it, so no minute either. The workbook marks it in the
+ *   part's first note — «Обсуждение.» — which the import keeps after «: » in
+ *   the title. (Read off the workbook's layout; not yet seen in live data.)
  * - LIVING AS CHRISTIANS shares a fifteen-minute block among the parts that
  *   carry no duration of their own.
  *
@@ -38,6 +46,8 @@ export interface RunItem {
   id: string;
   partKey: string;
   partDurationMin: number | null;
+  /** «<heading>: <first note>» as imported — it tells a discussion apart. */
+  partTitle?: string | null;
 }
 
 export interface RunSegment {
@@ -45,8 +55,12 @@ export interface RunSegment {
   key: string;
   /** The programme row, where there is one. The song has one; an empty slot does not. */
   assignmentId: string | null;
-  /** How many minutes the segment occupies. */
+  /** How many minutes the segment occupies on the clock, counsel included. */
   minutes: number;
+  /** The part's own minutes, as the programme prints them. */
+  partMin: number;
+  /** The counsel minute after a student part; 0 for everything else. */
+  counselMin: number;
   /**
    * Whether the schedule sheet stamps a time range on this row. The song runs
    * on the clock but carries no range, or the sheet would fill with rows that
@@ -65,6 +79,14 @@ const MIDDLE_SONG_MIN = 5;
 const CLOSING_MIN = 9;
 /** The congregation Bible study — and the service talk that replaces it. */
 const STUDY_MIN = 30;
+/** Counsel after a student part. */
+const COUNSEL_MIN = 1;
+
+/** A ministry-section part led as a discussion — no student, no counsel. */
+export function isDiscussion(title: string | null | undefined): boolean {
+  if (!title) return false;
+  return /(?:^|:\s*)(?:обсуждение|besprechung|discussion)(?=[\s.,:;!]|$)/iu.test(title.trim());
+}
 
 export function buildMidweekRunOrder(items: RunItem[]): RunSegment[] {
   const first = (key: string): RunItem | null =>
@@ -84,14 +106,22 @@ export function buildMidweekRunOrder(items: RunItem[]): RunSegment[] {
     key: string,
     minutes: number,
     showInterval = true,
+    counselMin = 0,
   ) => {
-    out.push({ key, assignmentId: it?.id ?? null, minutes, showInterval });
+    out.push({
+      key,
+      assignmentId: it?.id ?? null,
+      minutes: minutes + counselMin,
+      partMin: minutes,
+      counselMin,
+      showInterval,
+    });
   };
 
   push(first('midweek_opening_prayer'), 'midweek_opening_prayer', OPENING_MIN);
   push(first('treasures_talk'), 'treasures_talk', dur(first('treasures_talk'), 10));
   push(first('spiritual_gems'), 'spiritual_gems', dur(first('spiritual_gems'), 10));
-  push(first('bible_reading'), 'bible_reading', dur(first('bible_reading'), 4) + 1);
+  push(first('bible_reading'), 'bible_reading', dur(first('bible_reading'), 4), true, COUNSEL_MIN);
 
   for (const key of [
     'apply_yourself_1',
@@ -103,7 +133,7 @@ export function buildMidweekRunOrder(items: RunItem[]): RunSegment[] {
     // Unlike the rest, a missing ministry part is skipped ENTIRELY: there are
     // three to five of them and they leave no empty slot behind.
     if (!p) continue;
-    push(p, key, dur(p, 4) + 1);
+    push(p, key, dur(p, 4), true, isDiscussion(p.partTitle) ? 0 : COUNSEL_MIN);
   }
 
   push(first('mid_song'), 'mid_song', MIDDLE_SONG_MIN, false);

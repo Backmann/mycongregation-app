@@ -866,6 +866,7 @@ function ProgrammeEditor() {
               id: a.id,
               partKey: a.partKey,
               partDurationMin: a.partDurationMin,
+              partTitle: a.partTitle,
             }));
           if (items.length === 0) continue;
           buildMidweekPartTimes(items, meetingVersion.midweekTime).forEach(

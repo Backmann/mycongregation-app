@@ -9,20 +9,30 @@ import {
   View,
   useWindowDimensions,
 } from 'react-native';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { router, useLocalSearchParams } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
-import { Assignment, assignmentsApi, meApi, publishersApi } from '../../../lib/api';
+import {
+  Assignment,
+  assignmentsApi,
+  conductRunsApi,
+  ConductRunSegment,
+  meApi,
+  publishersApi,
+} from '../../../lib/api';
 import { useAuth } from '../../../lib/auth';
-import { buildMidweekRunOrder, RunSegment } from '../../../lib/run-order';
+import { buildMidweekRunOrder, RunSegment, totalRunMinutes } from '../../../lib/run-order';
 import { partDisplay } from '../../../lib/part-display';
 import { failsScreen } from '../../../lib/screen-failure';
 import { keptMeetingRows } from '../../../lib/offline-keep-rules';
 import { keptMe, keptPieces } from '../../../lib/offline-keep';
 import { KeptNotice } from '../../../components/ConnectionState';
+import { ConductSummary, ConductSummaryData, mmss } from '../../../components/ConductSummary';
+import { confirm } from '../../../components/ConfirmHost';
+import { formatDateISO, startOfWeekMonday } from '../../../lib/dates';
 
 /**
  * CONDUCT MODE — what the chairman keeps open on a tablet while the midweek
@@ -34,35 +44,78 @@ import { KeptNotice } from '../../../components/ConnectionState';
  * how long THIS part has left and how far the meeting as a whole has drifted,
  * so that is what the screen says.
  *
- * NOTHING IS WRITTEN TO THE SERVER. How a meeting actually ran is not a record
- * the congregation keeps, and a half-finished run left on the server would
- * show up on somebody else's screen as fact. The run lives on this device
- * only — but it DOES live there: an iPad that reloads the tab mid-meeting
- * (Safari does, coming back from the background) would otherwise lose the
- * count with no way to recover it.
+ * WHILE IT RUNS, IT LIVES ON THIS DEVICE: a half-finished run left on the
+ * server would show up on somebody else's screen as fact. But it DOES live
+ * there: an iPad that reloads the tab mid-meeting (Safari does, coming back
+ * from the background) would otherwise lose the count with no way back.
+ *
+ * WHEN IT ENDS, IT GOES TO THE SERVER FOR SEVEN DAYS (14 October 2026).
+ * Lionel wanted the chairman — and the elders — to see afterwards who had
+ * how much time, and decided it is kept a week and then deleted. The
+ * server checks who sends it and who reads it (conduct-runs).
+ *
+ * THE STUDENT COUNTS DOWN FROM THE PROGRAMME'S OWN MINUTES. A four-minute
+ * reading shows 4:00, not 5:00: the fifth minute is the chairman's counsel.
+ * The chairman taps «Следующая» when the student finishes; the counsel minute
+ * then runs on its own, and the next part's clock starts by itself a minute
+ * later — or at once, with «Начать сейчас», when there was no counsel. The
+ * counsel is never a phase the chairman has to tap through (Lionel: «совет
+ * не нужно фиксировать… это уже будет путать»); its seconds are only kept so
+ * the meeting's drift stays true.
  *
  * THE MINUTES COME FROM lib/run-order.ts and THE NAMES FROM lib/part-display.ts,
  * the same two places the schedule sheet reads. The chairman announces what he
  * sees here out loud; if it differed from the sheet by a word, one of the two
  * would be wrong in front of the whole congregation.
  *
- * WHO MAY OPEN IT: the chairman named in this week's programme, and an admin.
+ * WHO MAY RUN IT: the chairman named in this week's programme, and an admin.
  * Not the elders in general — the screen is a tool for the man running the
- * meeting, and two people advancing the same parts would help nobody.
+ * meeting, and two people advancing the same parts would help nobody. The
+ * elders may READ the result once it is saved, for its seven days.
  */
 
 interface RunState {
   /** Which segment is running; equals segments.length once the meeting ends. */
   index: number;
-  /** Seconds already spent on each finished segment, by position. */
+  /** Seconds each finished segment took — the part itself, no counsel. */
   spent: number[];
-  /** When the current segment started running, epoch ms; null while paused. */
+  /** Seconds of counsel after a student part, by the part's position. */
+  counsel: (number | null)[];
+  /**
+   * When the current segment's clock started, epoch ms; null while paused.
+   * IN THE FUTURE during the counsel minute: the clock starts by itself then.
+   */
   startedAt: number | null;
   /** Seconds accumulated on the CURRENT segment before the latest pause. */
   carried: number;
+  /** When the counsel minute began (the tap on «Следующая»); null otherwise. */
+  counselFrom: number | null;
+  /** When the meeting's first part started. */
+  meetingStartedAt: number | null;
+  /** Paused seconds already over — they count in the drift, not in a part. */
+  pausedSec: number;
+  pausedAt: number | null;
+  finishedAt: number | null;
+  /** Whether the finished run reached the server. */
+  saved: boolean;
+  /** The state before the last tap, for «Вернуть». One step, never a chain. */
+  prev: Omit<RunState, 'prev'> | null;
 }
 
-const EMPTY: RunState = { index: 0, spent: [], startedAt: null, carried: 0 };
+const EMPTY: RunState = {
+  index: 0,
+  spent: [],
+  counsel: [],
+  startedAt: null,
+  carried: 0,
+  counselFrom: null,
+  meetingStartedAt: null,
+  pausedSec: 0,
+  pausedAt: null,
+  finishedAt: null,
+  saved: false,
+  prev: null,
+};
 
 /** One second, the only cadence this screen needs. */
 const TICK_MS = 1000;
@@ -71,13 +124,19 @@ function storageKey(week: string) {
   return `conduct:midweek:${week}`;
 }
 
-/** m:ss, or -m:ss once a part has run over. */
+/** m:ss, or −m:ss once a part has run over. */
 function formatCountdown(seconds: number): string {
   const over = seconds < 0;
   const s = Math.abs(Math.round(seconds));
   const mm = Math.floor(s / 60);
   const ss = s % 60;
   return `${over ? '−' : ''}${mm}:${String(ss).padStart(2, '0')}`;
+}
+
+/** The state as it stood, to come back to with «Вернуть». */
+function snapshot(s: RunState): Omit<RunState, 'prev'> {
+  const { prev: _prev, ...rest } = s;
+  return rest;
 }
 
 export default function ConductScreen() {
@@ -137,6 +196,7 @@ export default function ConductScreen() {
           id: a.id,
           partKey: a.partKey,
           partDurationMin: a.partDurationMin,
+          partTitle: a.partTitle,
         })),
       ),
     [rows],
@@ -163,6 +223,20 @@ export default function ConductScreen() {
   const isAdmin = user?.role === 'admin';
   const isChairman =
     !!chairmanRow?.publisherId && chairmanRow.publisherId === myPublisherId;
+  const canRun = isChairman || isAdmin;
+  // The result is read by the chairman and the elders (the server says the same).
+  const canRead = canRun || user?.role === 'elder';
+  const thisWeek = formatDateISO(startOfWeekMonday(new Date()));
+  const pastWeek = !!week && week < thisWeek;
+
+  // The saved result — what an elder reads, and what a chairman sees again
+  // on another device. Never kept on the device (lib/offline-keep-rules).
+  const runQuery = useQuery({
+    queryKey: ['conduct-run', week],
+    queryFn: () => conductRunsApi.get(week),
+    enabled: week.length > 0 && canRead,
+    retry: 1,
+  });
 
   // --- ход встречи ---------------------------------------------------
   const [state, setState] = useState<RunState>(EMPTY);
@@ -176,12 +250,12 @@ export default function ConductScreen() {
     AsyncStorage.getItem(storageKey(week))
       .then((raw) => {
         if (!alive || !raw) return;
-        const saved = JSON.parse(raw) as RunState;
         // Поднимаем ход КАК ЕСТЬ, вместе со временем начала части. Встреча
         // идёт по стенным часам и не останавливается оттого, что вкладка
         // перезагрузилась; обнулять отсчёт значило бы врать. Сбросить можно
-        // кнопкой «Начать заново».
-        setState(saved);
+        // кнопкой «Начать заново». Поля, которых в старой записи не было,
+        // берутся пустыми.
+        setState({ ...EMPTY, ...(JSON.parse(raw) as Partial<RunState>) });
       })
       .catch(() => {
         // Хранилище может не ответить — на ходе встречи это не сказывается.
@@ -209,11 +283,12 @@ export default function ConductScreen() {
     [persist],
   );
 
+  const ticking = state.finishedAt === null && (state.startedAt !== null || state.pausedAt !== null);
   useEffect(() => {
-    if (state.startedAt === null) return;
+    if (!ticking) return;
     const id = setInterval(() => setNow(Date.now()), TICK_MS);
     return () => clearInterval(id);
-  }, [state.startedAt]);
+  }, [ticking]);
 
   // Экран не должен гаснуть, пока идёт встреча.
   //
@@ -228,7 +303,7 @@ export default function ConductScreen() {
   // нативную часть и бросает исключение, если её нет. Сборка, где её вдруг не
   // окажется, должна просто гаснуть, как раньше, а не терять весь экран.
   useEffect(() => {
-    if (Platform.OS === 'web' || state.startedAt === null) return;
+    if (Platform.OS === 'web' || !ticking) return;
     const TAG = 'conduct-mode';
     let keep: {
       activateKeepAwakeAsync: (tag?: string) => Promise<void>;
@@ -244,10 +319,10 @@ export default function ConductScreen() {
     return () => {
       void keep?.deactivateKeepAwake(TAG).catch(() => undefined);
     };
-  }, [state.startedAt]);
+  }, [ticking]);
   // В браузере — его собственным средством.
   useEffect(() => {
-    if (Platform.OS !== 'web' || state.startedAt === null) return;
+    if (Platform.OS !== 'web' || !ticking) return;
     let lock: { release: () => Promise<void> } | null = null;
     const nav = navigator as Navigator & {
       wakeLock?: { request: (type: 'screen') => Promise<typeof lock> };
@@ -263,45 +338,166 @@ export default function ConductScreen() {
     return () => {
       lock?.release().catch(() => undefined);
     };
-  }, [state.startedAt]);
+  }, [ticking]);
 
   const finished = state.index >= segments.length && segments.length > 0;
   const current = finished ? null : (segments[state.index] ?? null);
   const next = finished ? null : (segments[state.index + 1] ?? null);
 
+  // The counsel minute after a student part: the next part is on screen, its
+  // clock not yet started.
+  const inCounsel =
+    state.counselFrom !== null && state.startedAt !== null && now < state.startedAt;
+  const counselElapsed = inCounsel && state.counselFrom !== null ? (now - state.counselFrom) / 1000 : 0;
   const currentElapsed =
-    state.carried + (state.startedAt ? (now - state.startedAt) / 1000 : 0);
-  const plannedSoFar = segments
-    .slice(0, state.index)
-    .reduce((sum, s) => sum + s.minutes * 60, 0);
-  const actualSoFar = state.spent.reduce((sum, s) => sum + s, 0);
+    state.carried +
+    (state.startedAt !== null && now > state.startedAt ? (now - state.startedAt) / 1000 : 0);
+
   /**
-   * Перерасход ТЕКУЩЕЙ части входит в отставание, её опережение — нет. Пока
-   * часть идёт, сэкономленное может уйти обратно; просроченное не вернётся, и
-   * председателю надо видеть, как оно набегает, а не узнавать об этом скачком
-   * при переходе к следующей.
+   * ОТСТАВАНИЕ. Сделанные части сравниваются со своими минутами вместе с
+   * минутой совета; пока совет идёт, в план входит только прошедшая его часть.
+   * Пауза — время встречи, которого не было в программе, и потому идёт в
+   * отставание, а не в чью-то часть. Перерасход ТЕКУЩЕЙ части входит в
+   * отставание, её опережение — нет: пока часть идёт, сэкономленное может уйти
+   * обратно, просроченное не вернётся.
    */
-  const currentOverrun = current
-    ? Math.max(0, currentElapsed - current.minutes * 60)
-    : 0;
+  const lastDone = state.index - 1;
+  const plannedSoFar = segments.slice(0, state.index).reduce((sum, s, i) => {
+    const counselPlan =
+      i === lastDone && inCounsel ? Math.min(counselElapsed, s.counselMin * 60) : s.counselMin * 60;
+    return sum + s.partMin * 60 + counselPlan;
+  }, 0);
+  const counselSoFar = state.counsel
+    .slice(0, state.index)
+    .reduce<number>((sum, c, i) => sum + (i === lastDone && inCounsel ? counselElapsed : (c ?? 0)), 0);
+  const pausedSoFar = state.pausedSec + (state.pausedAt !== null ? (now - state.pausedAt) / 1000 : 0);
+  const actualSoFar =
+    state.spent.slice(0, state.index).reduce((sum, s) => sum + s, 0) + counselSoFar + pausedSoFar;
+  const currentOverrun = current ? Math.max(0, currentElapsed - current.partMin * 60) : 0;
   const driftSec = Math.round(actualSoFar - plannedSoFar + currentOverrun);
+  const started = state.meetingStartedAt !== null;
 
-  const start = () => apply({ ...state, startedAt: Date.now() });
-  const pause = () =>
-    apply({ ...state, carried: currentElapsed, startedAt: null });
-
-  const advance = () => {
-    const spent = [...state.spent];
-    spent[state.index] = currentElapsed;
+  const start = () => {
+    const at = Date.now();
+    apply({ ...EMPTY, startedAt: at, meetingStartedAt: at, prev: snapshot(state) });
+  };
+  const pause = () => {
+    const at = Date.now();
+    apply({ ...state, carried: currentElapsed, startedAt: null, pausedAt: at, prev: snapshot(state) });
+  };
+  const resume = () => {
+    const at = Date.now();
     apply({
-      index: state.index + 1,
-      spent,
-      startedAt: state.index + 1 < segments.length ? Date.now() : null,
-      carried: 0,
+      ...state,
+      startedAt: at,
+      pausedAt: null,
+      pausedSec: state.pausedSec + (state.pausedAt !== null ? (at - state.pausedAt) / 1000 : 0),
+      prev: snapshot(state),
     });
   };
 
-  const reset = () => apply(EMPTY);
+  const advance = () => {
+    if (!current) return;
+    const at = Date.now();
+    const spent = [...state.spent];
+    spent[state.index] = currentElapsed;
+    const counsel = [...state.counsel];
+    const nextIndex = state.index + 1;
+    const last = nextIndex >= segments.length;
+    // A pause still open is closed by the tap: the meeting goes on.
+    const pausedSec =
+      state.pausedSec + (state.pausedAt !== null ? (at - state.pausedAt) / 1000 : 0);
+    const withCounsel = current.counselMin > 0 && !last;
+    counsel[state.index] = withCounsel ? current.counselMin * 60 : null;
+    apply({
+      ...state,
+      index: nextIndex,
+      spent,
+      counsel,
+      carried: 0,
+      pausedSec,
+      pausedAt: null,
+      counselFrom: withCounsel ? at : null,
+      startedAt: last ? null : withCounsel ? at + current.counselMin * 60 * 1000 : at,
+      finishedAt: last ? at : null,
+      saved: false,
+      prev: snapshot(state),
+    });
+  };
+
+  /** No counsel, or a short one: the next part starts now. */
+  const startNow = () => {
+    if (state.counselFrom === null) return;
+    const at = Date.now();
+    const counsel = [...state.counsel];
+    counsel[state.index - 1] = (at - state.counselFrom) / 1000;
+    apply({ ...state, counsel, startedAt: at, counselFrom: null, prev: snapshot(state) });
+  };
+
+  /** One tap back: a «Следующая» pressed too early must not cost anybody time. */
+  const undo = () => {
+    if (!state.prev) return;
+    apply({ ...state.prev, prev: null });
+  };
+
+  const reset = async () => {
+    const ok = await confirm({
+      title: t('conduct.againTitle'),
+      body: t('conduct.againBody'),
+      confirmLabel: t('conduct.again'),
+      danger: true,
+    });
+    if (ok) apply(EMPTY);
+  };
+
+  // --- итог ----------------------------------------------------------
+  const local: ConductSummaryData | null = useMemo(() => {
+    if (!finished || state.finishedAt === null || state.meetingStartedAt === null) return null;
+    const segs: ConductRunSegment[] = segments.map((s, i) => {
+      const row = s.assignmentId ? byId.get(s.assignmentId) : undefined;
+      return {
+        key: s.key,
+        assignmentId: s.assignmentId,
+        publisherIds: [row?.publisherId, row?.assistantPublisherId].filter(
+          (x): x is string => !!x,
+        ),
+        plannedSec: s.partMin * 60,
+        actualSec: Math.round(state.spent[i] ?? 0),
+        counselSec: s.counselMin > 0 && state.counsel[i] != null ? Math.round(state.counsel[i] ?? 0) : null,
+      };
+    });
+    return {
+      segments: segs,
+      totalSec: Math.round((state.finishedAt - state.meetingStartedAt) / 1000),
+      plannedSec: totalRunMinutes(segments) * 60,
+    };
+  }, [finished, state, segments, byId]);
+
+  const save = useMutation({
+    mutationFn: (data: ConductSummaryData) =>
+      conductRunsApi.save({ weekStartDate: week, ...data }),
+    onSuccess: () => {
+      setState((s) => {
+        const n = { ...s, saved: true };
+        persist(n);
+        return n;
+      });
+      void runQuery.refetch();
+    },
+  });
+  // Sent once when the meeting ends — and again on the next opening if it
+  // did not reach the server (no signal in the hall).
+  const triedFor = useRef<number | null>(null);
+  useEffect(() => {
+    if (!local || state.saved || !canRun || state.finishedAt === null) return;
+    if (triedFor.current === state.finishedAt) return;
+    triedFor.current = state.finishedAt;
+    save.mutate(local);
+  }, [local, state.saved, state.finishedAt, canRun, save]);
+
+  const titleOf = (id: string | null) => (id ? (byId.get(id)?.partTitle ?? null) : null);
+  const nameOf = (id: string) => nameById.get(id) ?? null;
+  const chairmanName = chairmanRow?.publisherId ? (nameById.get(chairmanRow.publisherId) ?? null) : null;
 
   // --- что показывать -------------------------------------------------
   if (!week) {
@@ -317,6 +513,32 @@ export default function ConductScreen() {
   if (segments.length === 0) {
     return <Notice text={t('conduct.noProgramme')} />;
   }
+
+  // The result: this device's own run, or the one saved on the server.
+  const remote = runQuery.data ?? null;
+  const showLocal = !!local && canRun;
+  const reading = !showLocal && (!canRun || pastWeek);
+  if (reading) {
+    if (!canRead) return <Notice text={t('conduct.notChairman')} />;
+    if (runQuery.isLoading) {
+      return (
+        <View style={styles.center}>
+          <ActivityIndicator color="#0ea5e9" />
+        </View>
+      );
+    }
+    if (!remote) return <Notice text={t('conduct.result.none')} />;
+    return (
+      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+        <View style={styles.resultWrap}>
+          <Text style={styles.overline}>{t('conduct.result.title')}</Text>
+          <ConductSummary data={remote} titleOf={titleOf} nameOf={nameOf} chairmanName={chairmanName} />
+          <Text style={styles.keepNote}>{t('conduct.result.keep')}</Text>
+        </View>
+      </ScrollView>
+    );
+  }
+
   if (!chairmanRow?.publisherId) {
     return (
       <Notice
@@ -325,52 +547,86 @@ export default function ConductScreen() {
       />
     );
   }
-  if (!isChairman && !isAdmin) {
-    return <Notice text={t('conduct.notChairman')} />;
+
+  if (showLocal && local) {
+    return (
+      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+        <View style={styles.resultWrap}>
+          <Text style={styles.overline}>{t('conduct.finished')}</Text>
+          <ConductSummary data={local} titleOf={titleOf} nameOf={nameOf} chairmanName={chairmanName} />
+          <Text style={[styles.keepNote, save.isError && styles.keepNoteError]}>
+            {state.saved
+              ? t('conduct.result.saved')
+              : save.isError
+                ? t('conduct.result.notSaved')
+                : t('conduct.result.saving')}
+          </Text>
+          {save.isError && !state.saved ? (
+            <Pressable style={styles.ghostBtn} onPress={() => save.mutate(local)}>
+              <Text style={styles.ghostBtnText}>{t('conduct.result.retry')}</Text>
+            </Pressable>
+          ) : null}
+          <View style={styles.rowBtns}>
+            {state.prev ? (
+              <Pressable style={styles.ghostBtn} onPress={undo}>
+                <Ionicons name="arrow-undo" size={16} color="#0369a1" />
+                <Text style={styles.ghostBtnText}>{t('conduct.undo')}</Text>
+              </Pressable>
+            ) : null}
+            <Pressable style={styles.ghostBtn} onPress={() => void reset()}>
+              <Text style={styles.ghostBtnText}>{t('conduct.again')}</Text>
+            </Pressable>
+          </View>
+        </View>
+      </ScrollView>
+    );
   }
 
   const nowCard = current ? (
     <View style={styles.nowCard}>
-      <Text style={styles.overline}>{t('conduct.now')}</Text>
+      <Text style={styles.overline}>{inCounsel ? t('conduct.upNow') : t('conduct.now')}</Text>
       <SegmentHeadline
         segment={current}
         row={current.assignmentId ? byId.get(current.assignmentId) : undefined}
         nameById={nameById}
         big
       />
-      <Text
-        style={[
-          styles.countdown,
-          current.minutes * 60 - currentElapsed < 0 && styles.countdownOver,
-        ]}
-      >
-        {formatCountdown(current.minutes * 60 - currentElapsed)}
-      </Text>
-      <Text style={styles.planned}>
-        {t('conduct.planned', { minutes: current.minutes })}
-      </Text>
+      {inCounsel && state.startedAt !== null ? (
+        <>
+          <Text style={[styles.countdown, styles.countdownWaiting]}>{mmss(current.partMin * 60)}</Text>
+          <Text style={styles.counselLine}>
+            {t('conduct.startsIn', { time: mmss((state.startedAt - now) / 1000) })}
+          </Text>
+        </>
+      ) : (
+        <>
+          <Text
+            style={[
+              styles.countdown,
+              current.partMin * 60 - currentElapsed < 0 && styles.countdownOver,
+            ]}
+          >
+            {formatCountdown(current.partMin * 60 - currentElapsed)}
+          </Text>
+          <Text style={styles.planned}>
+            {t('conduct.planned', { minutes: current.partMin })}
+          </Text>
+        </>
+      )}
     </View>
-  ) : (
-    <View style={styles.nowCard}>
-      <Text style={styles.overline}>{t('conduct.finished')}</Text>
-      <Text style={styles.summary}>
-        {t('conduct.summary', {
-          minutes: Math.round(actualSoFar / 60),
-          drift: driftLabel(driftSec, t),
-        })}
-      </Text>
-    </View>
-  );
+  ) : null;
 
   const controls = (
     <View style={styles.controls}>
-      {!finished && state.startedAt === null && state.index === 0 && state.carried === 0 ? (
+      {!started ? (
         <Pressable style={styles.primaryBtn} onPress={start}>
           <Text style={styles.primaryBtnText}>{t('conduct.start')}</Text>
         </Pressable>
-      ) : null}
-
-      {!finished && (state.startedAt !== null || state.carried > 0 || state.index > 0) ? (
+      ) : inCounsel ? (
+        <Pressable style={styles.primaryBtn} onPress={startNow}>
+          <Text style={styles.primaryBtnText}>{t('conduct.startNow')}</Text>
+        </Pressable>
+      ) : (
         <>
           <Pressable style={styles.primaryBtn} onPress={advance}>
             <Text style={styles.primaryBtnText}>
@@ -381,7 +637,7 @@ export default function ConductScreen() {
           </Pressable>
           <Pressable
             style={styles.ghostBtn}
-            onPress={state.startedAt === null ? start : pause}
+            onPress={state.startedAt === null ? resume : pause}
           >
             <Ionicons
               name={state.startedAt === null ? 'play' : 'pause'}
@@ -393,15 +649,23 @@ export default function ConductScreen() {
             </Text>
           </Pressable>
         </>
+      )}
+
+      {started ? (
+        <View style={styles.rowBtns}>
+          {state.prev ? (
+            <Pressable style={styles.ghostBtn} onPress={undo}>
+              <Ionicons name="arrow-undo" size={16} color="#0369a1" />
+              <Text style={styles.ghostBtnText}>{t('conduct.undo')}</Text>
+            </Pressable>
+          ) : null}
+          <Pressable style={styles.ghostBtn} onPress={() => void reset()}>
+            <Text style={styles.ghostBtnText}>{t('conduct.again')}</Text>
+          </Pressable>
+        </View>
       ) : null}
 
-      {finished || state.index > 0 || state.startedAt !== null ? (
-        <Pressable style={styles.ghostBtn} onPress={reset}>
-          <Text style={styles.ghostBtnText}>{t('conduct.again')}</Text>
-        </Pressable>
-      ) : null}
-
-      {state.index > 0 || state.startedAt !== null || state.carried > 0 ? (
+      {started ? (
         <Text style={[styles.drift, driftStyle(driftSec)]}>
           {driftLabel(driftSec, t)}
         </Text>
@@ -432,7 +696,10 @@ export default function ConductScreen() {
             key={`${s.key}-${i}`}
             style={[styles.sheetRow, i < state.index && styles.sheetRowDone]}
           >
-            <Text style={styles.sheetMin}>{s.minutes}</Text>
+            <Text style={styles.sheetMin}>
+              {s.partMin}
+              {s.counselMin > 0 ? <Text style={styles.sheetCounsel}>{` +${s.counselMin}`}</Text> : null}
+            </Text>
             <View style={{ flex: 1 }}>
               <Text style={styles.sheetLabel} numberOfLines={1}>
                 {d.label}
@@ -445,6 +712,7 @@ export default function ConductScreen() {
           </View>
         );
       })}
+      <Text style={styles.sheetNote}>{t('conduct.counselNote')}</Text>
     </View>
   );
 
@@ -590,8 +858,9 @@ const styles = StyleSheet.create({
     fontVariant: ['tabular-nums'],
   },
   countdownOver: { color: '#b91c1c' },
+  countdownWaiting: { color: '#94a3b8' },
+  counselLine: { fontFamily: 'Manrope_600SemiBold', fontSize: 15, color: '#0369a1' },
   planned: { fontFamily: 'Manrope_400Regular', fontSize: 13, color: '#64748b' },
-  summary: { fontFamily: 'Manrope_400Regular', fontSize: 20, color: '#0f172a' },
 
   controls: { marginTop: 16, gap: 10 },
   primaryBtn: {
@@ -628,7 +897,7 @@ const styles = StyleSheet.create({
   sheetRowDone: { opacity: 0.45 },
   sheetMin: {
     fontFamily: 'Manrope_400Regular',
-    width: 28,
+    width: 40,
     textAlign: 'right',
     fontSize: 13,
     color: '#64748b',
@@ -636,6 +905,12 @@ const styles = StyleSheet.create({
   },
   sheetLabel: { fontFamily: 'Manrope_400Regular', fontSize: 15, color: '#0f172a' },
   sheetPerson: { fontFamily: 'Manrope_400Regular', fontSize: 13, color: '#64748b' },
+  sheetCounsel: { fontFamily: 'Manrope_400Regular', fontSize: 11, color: '#94a3b8' },
+  sheetNote: { fontFamily: 'Manrope_400Regular', fontSize: 12, color: '#94a3b8', marginTop: 8 },
+  rowBtns: { flexDirection: 'row', justifyContent: 'center', gap: 16, flexWrap: 'wrap' },
+  resultWrap: { width: '100%', maxWidth: 640, alignSelf: 'center' },
+  keepNote: { fontFamily: 'Manrope_400Regular', fontSize: 13, color: '#64748b', marginTop: 10, textAlign: 'center' },
+  keepNoteError: { color: '#b91c1c' },
 
   notice: { fontFamily: 'Manrope_400Regular', fontSize: 16, color: '#475569', textAlign: 'center' },
 });

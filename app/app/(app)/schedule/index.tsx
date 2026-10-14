@@ -64,6 +64,7 @@ import { sessionVerdict } from "../../../lib/session-verdict";
 import { FONT } from "../../../lib/typography";
 import { SegmentedControl } from "../../../components/SegmentedControl";
 import { MemorialMeetingBlock } from "../../../components/MemorialMeetingBlock";
+import { ConductResultLink } from "../../../components/ConductEntry";
 import {
   ChairLine,
   PairLine,
@@ -1756,6 +1757,15 @@ function Meeting({
               onPress={() => router.push(`/schedule/edit?week=${item.week}&meeting=${item.kind}` as never)}
             />
           ) : null}
+          {tab === "programme" && item.kind === "midweek" ? (
+            // How the meeting ran — for its chairman and the elders, seven days.
+            <View style={styles.conductLink}>
+              <ConductResultLink
+                week={item.week}
+                chairmanPublisherId={parts.find((p) => p.partKey === "midweek_chairman")?.publisherId ?? null}
+              />
+            </View>
+          ) : null}
           {(!past || overToday) && tab === "duties" && canEditDuties ? (
             // Straight to this meeting's sheet — duties live in their own screen
             // now, not in the programme screen.
@@ -2232,6 +2242,7 @@ function EditLink({ label, onPress }: { label: string; onPress: () => void }) {
 }
 
 const styles = StyleSheet.create({
+  conductLink: { marginTop: 10, marginBottom: -12 },
   windowsIndent: { marginTop: -2, marginBottom: 8 },
   screen: { flex: 1, backgroundColor: '#f1f5f9' },
   fill: { flex: 1 },

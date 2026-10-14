@@ -5434,6 +5434,52 @@ export const attendanceApi = {
   },
 };
 
+// ------------------------------------------- Как прошла встреча (ведение)
+
+/**
+ * One part of a midweek meeting as the chairman's screen walked it — kept on
+ * the server SEVEN DAYS, for the chairman and the elders (14 October 2026).
+ */
+export interface ConductRunSegment {
+  key: string;
+  assignmentId: string | null;
+  /** Who took the part at the time: the speaker, then his assistant. */
+  publisherIds: string[];
+  /** The programme's own minutes, in seconds — no counsel minute. */
+  plannedSec: number;
+  actualSec: number;
+  /** After a student part: seconds until the next part began. */
+  counselSec: number | null;
+}
+
+export interface ConductRun {
+  weekStartDate: string;
+  segments: ConductRunSegment[];
+  /** Wall-clock seconds, first part to the end, pauses included. */
+  totalSec: number;
+  /** The programme's minutes for the whole meeting, in seconds. */
+  plannedSec: number;
+  savedAt: string;
+}
+
+export const conductRunsApi = {
+  /** Null when there is none, or it is older than seven days. */
+  async get(week: string): Promise<ConductRun | null> {
+    const { data } = await api.get<{ run: ConductRun | null }>("/conduct-runs", {
+      params: { week },
+    });
+    return data.run;
+  },
+  async save(input: {
+    weekStartDate: string;
+    segments: ConductRunSegment[];
+    totalSec: number;
+    plannedSec: number;
+  }): Promise<void> {
+    await api.put("/conduct-runs", input);
+  },
+};
+
 // ------------------------------------------- Годовой отчёт собрания (S-10)
 
 export interface CountedPublisher {

@@ -8,7 +8,7 @@ export type DocKey = 'impressum' | 'privacy' | 'terms' | 'disclaimer';
 export type Block = { h?: string; p?: string; li?: string[] };
 export type Doc = { title: string; tab: string; blocks: Block[] };
 
-export const LEGAL_UPDATED = '01.07.2026';
+export const LEGAL_UPDATED = '14.10.2026';
 
 /**
  * Chrome strings for the legal screen itself (header title + footer notes).
@@ -91,6 +91,7 @@ export const LEGAL: Record<Lang, Record<DocKey, Doc>> = {
           'Данные члена — пока он активен в собрании; после выхода удаляются/анонимизируются в разумный срок.',
           'Учётная запись — пока активна.',
           'Журнал действий — 12 месяцев.',
+          'Итог экрана «Ведение встречи» (сколько времени заняла каждая часть) — 7 дней, затем удаляется.',
           'Резервные копии — в пределах цикла ротации.',
         ] },
         { h: 'Безопасность (ст. 32 GDPR)' },
@@ -183,6 +184,7 @@ export const LEGAL: Record<Lang, Record<DocKey, Doc>> = {
           'Mitgliederdaten — solange die Person in der Versammlung aktiv ist; danach Löschung/Anonymisierung in angemessener Frist.',
           'Konto — solange es aktiv ist.',
           'Aktivitätsprotokoll — 12 Monate.',
+          'Ergebnis des Bildschirms „Zusammenkunft leiten“ (wie lange jeder Programmpunkt dauerte) — 7 Tage, danach gelöscht.',
           'Backups — im Rahmen des Rotationszyklus.',
         ] },
         { h: 'Sicherheit (Art. 32 DSGVO)' },
@@ -275,6 +277,7 @@ export const LEGAL: Record<Lang, Record<DocKey, Doc>> = {
           'Member data — while the person is active in the congregation; afterwards deleted/anonymized within a reasonable period.',
           'Account — while active.',
           'Audit log — 12 months.',
+          'Result of the “Conduct the meeting” screen (how long each part took) — 7 days, then deleted.',
           'Backups — within the rotation cycle.',
         ] },
         { h: 'Security (Art. 32 GDPR)' },

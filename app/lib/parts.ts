@@ -405,6 +405,8 @@ export function buildMidweekPartTimes(
     id: string;
     partKey: string;
     partDurationMin: number | null;
+    /** Tells a discussion (no counsel minute) from a student part. */
+    partTitle?: string | null;
   }[],
   startTime: string | null | undefined,
 ): Map<string, PartInterval> {

@@ -44,10 +44,11 @@ const { buildMidweekRunOrder, totalRunMinutes } = await import(
 );
 
 let n = 0;
-const p = (partKey, partDurationMin = null) => ({
+const p = (partKey, partDurationMin = null, partTitle = null) => ({
   id: `a${++n}`,
   partKey,
   partDurationMin,
+  partTitle,
 });
 
 /** A week as the workbook parser leaves it. */
@@ -135,6 +136,32 @@ const CASES = [
     ],
     total: 105,
   },
+  {
+    // 14 October 2026: an elder's discussion in the ministry section has no
+    // student and no counsel after it — its minutes are the programme's.
+    name: 'обсуждение в «Оттачиваем навыки» — без минуты на совет',
+    items: week(
+      [p('apply_yourself_3', 15, 'Объясняйте свои взгляды: Обсуждение. Посмотрите видео')],
+      ['apply_yourself_3'],
+    ),
+    expectMinutesOf: { apply_yourself_1: 4, apply_yourself_2: 5, apply_yourself_3: 15 },
+    expectSplit: {
+      bible_reading: [4, 1],
+      apply_yourself_1: [3, 1],
+      apply_yourself_3: [15, 0],
+      treasures_talk: [10, 0],
+    },
+  },
+  {
+    // A student's part is not taken for a discussion because the heading
+    // talks about one or a note mentions it later on.
+    name: 'ученическое задание со словом «обсуждение» внутри — минута остаётся',
+    items: week(
+      [p('apply_yourself_3', 5, 'Объясняйте свои взгляды: Речь. Обсуждение с хозяином')],
+      ['apply_yourself_3'],
+    ),
+    expectSplit: { apply_yourself_3: [5, 1] },
+  },
 ];
 
 const fails = [];
@@ -161,6 +188,25 @@ for (const c of CASES) {
       else if (seg.minutes !== minutes) {
         fails.push(`${c.name}: «${key}» ${seg.minutes} мин вместо ${minutes}`);
       }
+    }
+  }
+
+  // The student counts down from the programme's own figure; the counsel
+  // minute is kept apart and the clock still holds both (Lionel, 14.10.2026).
+  if (c.expectSplit) {
+    for (const [key, [partMin, counselMin]] of Object.entries(c.expectSplit)) {
+      const seg = segs.find((s) => s.key === key);
+      if (!seg) fails.push(`${c.name}: отрезка «${key}» нет вовсе`);
+      else if (seg.partMin !== partMin || seg.counselMin !== counselMin) {
+        fails.push(
+          `${c.name}: «${key}» задание ${seg.partMin} + совет ${seg.counselMin} вместо ${partMin} + ${counselMin}`,
+        );
+      }
+    }
+  }
+  for (const s of segs) {
+    if (s.minutes !== s.partMin + s.counselMin) {
+      fails.push(`${c.name}: у «${s.key}» на часах ${s.minutes}, а задание и совет дают ${s.partMin + s.counselMin}`);
     }
   }
 
