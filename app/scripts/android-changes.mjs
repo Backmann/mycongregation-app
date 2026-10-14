@@ -146,10 +146,10 @@ const waitFor = async (re, ms = 15000) => {
   }
   return null;
 };
-const open = async (path, until) => {
+const open = async (path, until, ms = 15000) => {
   adb(['shell', 'am', 'start', '-a', 'android.intent.action.VIEW', '-d', `mycongregation:/${path}`, PKG]);
   await sleep(2500);
-  if (!(await waitFor(until))) say(`⚠️  ${path}: не дождался «${until}»`);
+  if (!(await waitFor(until, ms))) say(`⚠️  ${path}: не дождался «${until}»`);
   await sleep(800);
 };
 
@@ -308,7 +308,9 @@ const ROW = /^(Ведёт |Ведущий не назначен)/;
 async function freshMonth() {
   adb(['shell', 'am', 'force-stop', PKG]);
   await sleep(800);
-  await open('/cart/field-service', MONTH);
+  // After a force-stop the app starts cold: the run of 14 October 2026
+  // waited its 15 s, photographed a black screen and found no meeting.
+  await open('/cart/field-service', MONTH, 45000);
 }
 /**
  * A meeting still ahead: the month lists its past days first, so scroll
