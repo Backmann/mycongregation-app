@@ -429,8 +429,9 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   circumstanceText: { flex: 1, paddingRight: 12 },
-  circumstanceLabel: { fontSize: 14.5, color: '#0f172a' },
+  circumstanceLabel: { fontFamily: 'Manrope_400Regular', fontSize: 14.5, color: '#0f172a' },
   circumstanceHint: {
+    fontFamily: 'Manrope_400Regular',
     fontSize: 12,
     color: '#64748b',
     marginTop: 2,
@@ -451,7 +452,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 8,
   },
-  errorText: { color: '#dc2626', fontSize: 14 },
+  errorText: { fontFamily: 'Manrope_400Regular', color: '#dc2626', fontSize: 14 },
   actions: { paddingHorizontal: 12, paddingVertical: 20, gap: 10 },
   button: {
     paddingVertical: 14,
@@ -460,11 +461,11 @@ const styles = StyleSheet.create({
   },
   buttonPrimary: { backgroundColor: '#0ea5e9' },
   buttonDisabled: { opacity: 0.6 },
-  buttonPrimaryText: { color: '#fff', fontSize: 16, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
+  buttonPrimaryText: { color: '#fff', fontSize: 16, fontFamily: 'Manrope_600SemiBold',},
   buttonSecondary: {
     backgroundColor: '#fff',
     borderWidth: 1,
     borderColor: '#cbd5e1',
   },
-  buttonSecondaryText: { color: '#475569', fontSize: 16, fontWeight: '500', fontFamily: 'Manrope_500Medium',},
+  buttonSecondaryText: { color: '#475569', fontSize: 16, fontFamily: 'Manrope_500Medium',},
 });

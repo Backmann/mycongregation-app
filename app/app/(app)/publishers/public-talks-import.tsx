@@ -319,6 +319,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   renamedFrom: {
+    fontFamily: 'Manrope_400Regular',
     fontSize: 12.5,
     color: '#94a3b8',
     textDecorationLine: 'line-through',
@@ -334,12 +335,11 @@ const styles = StyleSheet.create({
   missingTitle: {
     fontSize: 13.5,
     color: '#92400e',
-    fontWeight: '600',
     fontFamily: 'Manrope_600SemiBold',
     marginBottom: 6,
   },
-  missingRow: { fontSize: 13, color: '#92400e', lineHeight: 19 },
-  missingHint: { fontSize: 12, color: '#a16207', marginTop: 8, lineHeight: 17 },
+  missingRow: { fontFamily: 'Manrope_400Regular', fontSize: 13, color: '#92400e', lineHeight: 19 },
+  missingHint: { fontFamily: 'Manrope_400Regular', fontSize: 12, color: '#a16207', marginTop: 8, lineHeight: 17 },
   retireButton: {
     marginTop: 10,
     alignSelf: 'flex-start',
@@ -353,7 +353,6 @@ const styles = StyleSheet.create({
   retireButtonText: {
     fontSize: 13,
     color: '#92400e',
-    fontWeight: '600',
     fontFamily: 'Manrope_600SemiBold',
   },
   intro: {
@@ -367,13 +366,14 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 18,
-    fontWeight: '700', fontFamily: 'Manrope_700Bold',
+    fontFamily: 'Manrope_700Bold',
     color: '#0f172a',
     marginTop: 12,
     marginBottom: 8,
     textAlign: 'center',
   },
   subtitle: {
+    fontFamily: 'Manrope_400Regular',
     fontSize: 13,
     color: '#64748b',
     textAlign: 'center',
@@ -412,7 +412,7 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     borderRadius: 4,
   },
-  lineCounterText: { fontSize: 11, color: '#64748b' },
+  lineCounterText: { fontFamily: 'Manrope_400Regular', fontSize: 11, color: '#64748b' },
 
   importButton: {
     flexDirection: 'row',
@@ -423,7 +423,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#0ea5e9',
     borderRadius: 10,
   },
-  importButtonText: { color: '#fff', fontSize: 16, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
+  importButtonText: { color: '#fff', fontSize: 16, fontFamily: 'Manrope_600SemiBold',},
 
   errorBox: {
     padding: 12,
@@ -432,7 +432,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 8,
   },
-  errorText: { color: '#dc2626', fontSize: 14 },
+  errorText: { fontFamily: 'Manrope_400Regular', color: '#dc2626', fontSize: 14 },
 
   successHeader: {
     flexDirection: 'row',
@@ -440,7 +440,7 @@ const styles = StyleSheet.create({
     gap: 8,
     marginBottom: 8,
   },
-  successTitle: { fontSize: 18, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#059669' },
+  successTitle: { fontSize: 18, fontFamily: 'Manrope_700Bold', color: '#059669' },
 
   statsRow: {
     flexDirection: 'row',
@@ -451,8 +451,9 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   stat: { flex: 1, alignItems: 'center' },
-  statValue: { fontSize: 22, fontWeight: '700', fontFamily: 'Manrope_700Bold',},
+  statValue: { fontSize: 22, fontFamily: 'Manrope_700Bold',},
   statLabel: {
+    fontFamily: 'Manrope_400Regular',
     fontSize: 11,
     color: '#64748b',
     marginTop: 4,
@@ -467,11 +468,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 8,
   },
-  warningText: { color: '#92400e', fontSize: 13, lineHeight: 18 },
+  warningText: { fontFamily: 'Manrope_400Regular', color: '#92400e', fontSize: 13, lineHeight: 18 },
 
   examplesHeader: {
     fontSize: 12,
-    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
+    fontFamily: 'Manrope_600SemiBold',
     color: '#64748b',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -503,8 +504,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginRight: 10,
   },
-  numberText: { fontSize: 12, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0369a1' },
-  exampleTitle: { fontSize: 13, color: '#0f172a', flex: 1 },
+  numberText: { fontSize: 12, fontFamily: 'Manrope_700Bold', color: '#0369a1' },
+  exampleTitle: { fontFamily: 'Manrope_400Regular', fontSize: 13, color: '#0f172a', flex: 1 },
 
   doneButton: {
     marginTop: 12,
@@ -513,5 +514,5 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: 'center',
   },
-  doneButtonText: { color: '#fff', fontSize: 16, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
+  doneButtonText: { color: '#fff', fontSize: 16, fontFamily: 'Manrope_600SemiBold',},
 });

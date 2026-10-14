@@ -171,10 +171,9 @@ const styles = StyleSheet.create({
   chooseTitle: {
     fontSize: 24,
     fontFamily: 'Manrope_800ExtraBold',
-    fontWeight: '800',
     color: '#0f172a',
   },
-  chooseSub: { fontSize: 14, color: '#64748b', marginTop: 4, marginBottom: 14 },
+  chooseSub: { fontFamily: 'Manrope_400Regular', fontSize: 14, color: '#64748b', marginTop: 4, marginBottom: 14 },
   choices: {
     backgroundColor: '#fff',
     borderRadius: 16,
@@ -200,10 +199,9 @@ const styles = StyleSheet.create({
   choiceName: {
     fontSize: 16,
     fontFamily: 'Manrope_700Bold',
-    fontWeight: '700',
     color: '#0f172a',
   },
-  choiceHint: { fontSize: 13, color: '#64748b', marginTop: 2, lineHeight: 18 },
+  choiceHint: { fontFamily: 'Manrope_400Regular', fontSize: 13, color: '#64748b', marginTop: 2, lineHeight: 18 },
   talkNote: {
     marginTop: 16,
     padding: 14,
@@ -212,6 +210,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#f5d0fe',
   },
-  talkNoteText: { fontSize: 14, color: '#86198f', lineHeight: 20 },
-  talkNoteLink: { fontFamily: 'Manrope_700Bold', fontWeight: '700' },
+  talkNoteText: { fontFamily: 'Manrope_400Regular', fontSize: 14, color: '#86198f', lineHeight: 20 },
+  talkNoteLink: { fontFamily: 'Manrope_700Bold' },
 });

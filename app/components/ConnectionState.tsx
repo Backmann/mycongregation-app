@@ -278,11 +278,10 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginTop: 10,
   },
-  keptText: { flex: 1, color: '#78350f', fontSize: 13, lineHeight: 18 },
+  keptText: { fontFamily: 'Manrope_400Regular', flex: 1, color: '#78350f', fontSize: 13, lineHeight: 18 },
   keptAction: {
     color: '#0e7490',
     fontSize: 13,
-    fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
   },
   keptEnd: {
@@ -290,7 +289,7 @@ const styles = StyleSheet.create({
     gap: 6,
     paddingVertical: 18,
   },
-  keptEndText: { color: '#64748b', fontSize: 13.5, textAlign: 'center' },
+  keptEndText: { fontFamily: 'Manrope_400Regular', color: '#64748b', fontSize: 13.5, textAlign: 'center' },
   failed: {
     alignItems: 'center',
     gap: 8,
@@ -305,11 +304,10 @@ const styles = StyleSheet.create({
   failedTitle: {
     fontSize: 16,
     color: '#0f172a',
-    fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
     textAlign: 'center',
   },
-  failedBody: { fontSize: 13.5, lineHeight: 19, color: '#475569', textAlign: 'center', maxWidth: 340 },
+  failedBody: { fontFamily: 'Manrope_400Regular', fontSize: 13.5, lineHeight: 19, color: '#475569', textAlign: 'center', maxWidth: 340 },
   failedButton: {
     marginTop: 6,
     borderRadius: 10,
@@ -317,7 +315,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 20,
   },
-  failedButtonText: { color: '#fff', fontSize: 14.5, fontWeight: '700', fontFamily: 'Manrope_700Bold' },
+  failedButtonText: { color: '#fff', fontSize: 14.5, fontFamily: 'Manrope_700Bold' },
   pillWrap: {
     position: 'absolute',
     left: 0,
@@ -338,11 +336,10 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 3 },
     elevation: 5,
   },
-  pillText: { color: '#fff', fontSize: 13.5 },
+  pillText: { fontFamily: 'Manrope_400Regular', color: '#fff', fontSize: 13.5 },
   pillAction: {
     color: '#7dd3fc',
     fontSize: 13.5,
-    fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
   },
   screen: {
@@ -356,11 +353,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 19,
     color: '#0f172a',
-    fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
     textAlign: 'center',
   },
   body: {
+    fontFamily: 'Manrope_400Regular',
     fontSize: 14.5,
     lineHeight: 21,
     color: '#475569',
@@ -379,8 +376,7 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#fff',
     fontSize: 15.5,
-    fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
   },
-  link: { marginTop: 10, fontSize: 13.5, color: '#0369a1' },
+  link: { fontFamily: 'Manrope_400Regular', marginTop: 10, fontSize: 13.5, color: '#0369a1' },
 });

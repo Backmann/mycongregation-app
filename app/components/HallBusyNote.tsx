@@ -48,6 +48,6 @@ const styles = StyleSheet.create({
   },
   icon: { marginTop: 1 },
   body: { flex: 1, gap: 1 },
-  lead: { fontSize: 12.5, color: '#92400e', fontWeight: '700', fontFamily: 'Manrope_700Bold' },
+  lead: { fontSize: 12.5, color: '#92400e', fontFamily: 'Manrope_700Bold' },
   text: { fontSize: 13, lineHeight: 18, color: '#78350f', fontFamily: 'Manrope_500Medium' },
 });

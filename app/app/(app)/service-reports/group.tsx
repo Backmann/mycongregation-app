@@ -846,7 +846,7 @@ const modalStyles = StyleSheet.create({
   },
   title: {
     fontSize: 16,
-    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
+    fontFamily: 'Manrope_600SemiBold',
     color: '#0f172a',
     marginBottom: 16,
   },
@@ -865,7 +865,7 @@ const modalStyles = StyleSheet.create({
     borderColor: '#0ea5e9',
     backgroundColor: '#f0f9ff',
   },
-  optionText: { fontSize: 15, color: '#0f172a' },
+  optionText: { fontFamily: 'Manrope_400Regular', fontSize: 15, color: '#0f172a' },
   btnRow: { flexDirection: 'row', gap: 12, marginTop: 12 },
   btn: {
     flex: 1,
@@ -875,8 +875,8 @@ const modalStyles = StyleSheet.create({
   },
   btnSecondary: { backgroundColor: '#f1f5f9' },
   btnPrimary: { backgroundColor: '#0ea5e9' },
-  btnTextSecondary: { color: '#475569', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
-  btnTextPrimary: { color: '#fff', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
+  btnTextSecondary: { color: '#475569', fontFamily: 'Manrope_600SemiBold',},
+  btnTextPrimary: { color: '#fff', fontFamily: 'Manrope_600SemiBold',},
   clearBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -888,7 +888,7 @@ const modalStyles = StyleSheet.create({
     marginTop: 14,
     paddingTop: 14,
   },
-  clearBtnText: { color: '#dc2626', fontSize: 13, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
+  clearBtnText: { color: '#dc2626', fontSize: 13, fontFamily: 'Manrope_600SemiBold',},
 });
 
 const styles = StyleSheet.create({
@@ -909,7 +909,7 @@ const styles = StyleSheet.create({
   scopeLabel: {
     fontSize: 12,
     color: '#64748b',
-    fontWeight: '500', fontFamily: 'Manrope_500Medium',
+    fontFamily: 'Manrope_500Medium',
     paddingHorizontal: 20,
     marginBottom: 8,
     textTransform: 'uppercase',
@@ -930,7 +930,6 @@ const styles = StyleSheet.create({
   monthPickerBtnText: {
     flex: 1,
     fontSize: 14,
-    fontWeight: '600',
     color: '#0f172a',
     fontFamily: 'Manrope_600SemiBold',
   },
@@ -948,7 +947,7 @@ const styles = StyleSheet.create({
   },
   monthModalTitle: {
     fontSize: 13,
-    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
     color: '#64748b',
     paddingHorizontal: 16,
     paddingVertical: 10,
@@ -961,8 +960,8 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   monthModalRowActive: { backgroundColor: '#E6F1FB' },
-  monthModalRowText: { fontSize: 15, color: '#0f172a' },
-  monthModalRowTextActive: { color: '#0C447C', fontWeight: '600' },
+  monthModalRowText: { fontFamily: 'Manrope_400Regular', fontSize: 15, color: '#0f172a' },
+  monthModalRowTextActive: { color: '#0C447C', fontFamily: 'Manrope_600SemiBold' },
   monthChip: {
     paddingHorizontal: 14,
     paddingVertical: 8,
@@ -973,18 +972,17 @@ const styles = StyleSheet.create({
   },
   monthChipActive: { backgroundColor: '#0ea5e9', borderColor: '#0ea5e9' },
   monthChipText: { fontSize: 13, color: '#0f172a' },
-  monthChipTextActive: { color: '#fff', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
+  monthChipTextActive: { color: '#fff', fontFamily: 'Manrope_600SemiBold',},
   removedRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
     marginTop: 3,
   },
-  removedText: { flex: 1, fontSize: 11.5, color: '#b45309' },
+  removedText: { fontFamily: 'Manrope_400Regular', flex: 1, fontSize: 11.5, color: '#b45309' },
   restoreText: {
     fontSize: 11.5,
     color: '#0e7490',
-    fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
   },
   missedBadge: {
@@ -1000,7 +998,7 @@ const styles = StyleSheet.create({
   missedBadgeText: {
     fontSize: 10,
     color: '#fff',
-    fontWeight: '600',
+    fontFamily: 'Manrope_600SemiBold',
   },
   thresholdRow: {
     flexDirection: 'row',
@@ -1009,7 +1007,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 10,
   },
-  thresholdLabel: { fontSize: 12, color: '#64748b', marginRight: 2 },
+  thresholdLabel: { fontFamily: 'Manrope_400Regular', fontSize: 12, color: '#64748b', marginRight: 2 },
   thresholdChip: {
     paddingHorizontal: 9,
     paddingVertical: 3,
@@ -1017,7 +1015,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f1f5f9',
   },
   thresholdChipActive: { backgroundColor: '#fee2e2' },
-  thresholdChipText: { fontSize: 12, color: '#64748b', fontWeight: '600' },
+  thresholdChipText: { fontSize: 12, color: '#64748b', fontFamily: 'Manrope_600SemiBold' },
   thresholdChipTextActive: { color: '#b91c1c' },
   statsBar: {
     flexDirection: 'row',
@@ -1032,10 +1030,11 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: 'center',
   },
-  statBig: { fontSize: 20, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0f172a' },
+  statBig: { fontSize: 20, fontFamily: 'Manrope_700Bold', color: '#0f172a' },
   statActive: { color: '#10b981' },
   statPending: { color: '#dc2626' },
   statLabel: {
+    fontFamily: 'Manrope_400Regular',
     fontSize: 11,
     color: '#64748b',
     marginTop: 4,
@@ -1071,11 +1070,11 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: 15,
-    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
+    fontFamily: 'Manrope_600SemiBold',
     color: '#0f172a',
     flexShrink: 1,
   },
-  pioneerTag: { fontSize: 12, color: '#0ea5e9', fontWeight: '500', fontFamily: 'Manrope_500Medium',},
+  pioneerTag: { fontSize: 12, color: '#0ea5e9', fontFamily: 'Manrope_500Medium',},
   statusBadge: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1089,11 +1088,11 @@ const styles = StyleSheet.create({
   statusBadgeText: {
     color: '#fff',
     fontSize: 10,
-    fontWeight: '700', fontFamily: 'Manrope_700Bold',
+    fontFamily: 'Manrope_700Bold',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
-  activity: { fontSize: 13, color: '#64748b', marginTop: 2 },
+  activity: { fontFamily: 'Manrope_400Regular', fontSize: 13, color: '#64748b', marginTop: 2 },
   studies: { fontSize: 13, color: '#64748b' },
   rowMain: {
     flex: 1,
@@ -1103,10 +1102,10 @@ const styles = StyleSheet.create({
   addBtn: { marginLeft: 8, padding: 4 },
   overrideBtn: { marginLeft: 4, padding: 6 },
   byline: {
+    fontFamily: 'Manrope_400Regular',
     fontSize: 11,
     color: '#94a3b8',
     marginTop: 2,
-    fontStyle: 'italic',
   },
   groupHeader: {
     flexDirection: 'row',
@@ -1119,13 +1118,12 @@ const styles = StyleSheet.create({
   groupHeaderCountDone: { color: '#16a34a' },
   groupHeaderName: {
     fontSize: 14,
-    fontWeight: '700',
     color: '#0f172a',
     fontFamily: 'Manrope_700Bold',
   },
   groupHeaderCount: {
     fontSize: 12.5,
-    fontWeight: '600',
+    fontFamily: 'Manrope_600SemiBold',
     color: '#64748b',
   },
   emptyState: {
@@ -1135,13 +1133,13 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 18,
-    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
+    fontFamily: 'Manrope_600SemiBold',
     color: '#475569',
     marginTop: 16,
   },
   errorTitle: {
     fontSize: 18,
-    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
+    fontFamily: 'Manrope_600SemiBold',
     color: '#475569',
     marginTop: 16,
     marginBottom: 8,

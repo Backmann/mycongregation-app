@@ -127,6 +127,9 @@ const STEPS = [
   ['Отказы сервера словами', 'node', ['scripts/check-server-refusals.mjs']],
   // German speaks with «Sie»: no «du» slips back in.
   ['Немецкий на «Sie»', 'node', ['scripts/check-german-sie.mjs']],
+  // One typeface: no weight beside a Manrope face (Android drew Roboto), and
+  // every Text names its face (14 October 2026).
+  ['Шрифт', 'node', ['scripts/check-fonts.mjs']],
   // A phone on its side: no screen under the system buttons.
   ['Телефон на боку', 'node', ['scripts/check-side-insets.mjs']],
   // One rule for who may open «Составление программы» — asked by the doors

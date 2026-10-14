@@ -173,7 +173,7 @@ export function Sheet({
                   {title}
                 </Text>
                 {subtitle ? (
-                  <View style={styles.subtitle}>{subtitle}</View>
+                  <View style={styles.subtitle}>{subtitleNode(subtitle)}</View>
                 ) : null}
               </View>
               {action}
@@ -229,7 +229,7 @@ export function Sheet({
             <Text style={styles.title} numberOfLines={1}>
               {title}
             </Text>
-            {subtitle ? <View style={styles.subtitle}>{subtitle}</View> : null}
+            {subtitle ? <View style={styles.subtitle}>{subtitleNode(subtitle)}</View> : null}
           </View>
           {action}
           {hideClose ? null : (
@@ -252,6 +252,22 @@ export function Sheet({
       {/* Its own strip: the root one is drawn under this window. */}
       <Toast layer />
     </Modal>
+  );
+}
+
+/**
+ * A subtitle given as words is drawn as words (14 October 2026). A bare
+ * string inside a View is not text: the browser drew it in Times New Roman
+ * («Общая встреча» under the meeting window's date) and the phone did not
+ * draw it at all. A caller that passes its own <Text> keeps its own look.
+ */
+function subtitleNode(subtitle: ReactNode): ReactNode {
+  return typeof subtitle === "string" || typeof subtitle === "number" ? (
+    <Text style={styles.subtitleText} numberOfLines={2}>
+      {subtitle}
+    </Text>
+  ) : (
+    subtitle
   );
 }
 
@@ -315,16 +331,15 @@ const styles = StyleSheet.create({
   headerText: { flex: 1, minWidth: 0 },
   title: {
     fontSize: 16.5,
-    fontWeight: "700",
     fontFamily: "Manrope_700Bold",
     color: "#0f172a",
   },
   subtitle: { marginTop: 2 },
+  subtitleText: { fontSize: 13.5, fontFamily: "Manrope_500Medium", color: "#64748b" },
   closeBtn: { paddingHorizontal: 4, paddingVertical: 2 },
   closeText: {
     fontSize: 15,
     color: "#0ea5e9",
-    fontWeight: "700",
     fontFamily: "Manrope_700Bold",
   },
   body: { flex: 1 },

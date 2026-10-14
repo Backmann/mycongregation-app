@@ -511,10 +511,10 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     color: '#0f172a',
-    fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
   },
   subtitle: {
+    fontFamily: 'Manrope_400Regular',
     fontSize: 13,
     color: '#64748b',
     textAlign: 'center',
@@ -534,11 +534,10 @@ const styles = StyleSheet.create({
     letterSpacing: 0.7,
     textTransform: 'uppercase',
     color: '#94a3b8',
-    fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
     marginBottom: 8,
   },
-  fieldHint: { fontSize: 12, color: '#94a3b8', marginTop: 5, lineHeight: 17 },
+  fieldHint: { fontFamily: 'Manrope_400Regular', fontSize: 12, color: '#94a3b8', marginTop: 5, lineHeight: 17 },
   modeRow: { flexDirection: 'row', gap: 8, marginBottom: 14 },
   modeChip: {
     flex: 1,
@@ -553,7 +552,6 @@ const styles = StyleSheet.create({
   modeText: {
     fontSize: 13.5,
     color: '#475569',
-    fontWeight: '600',
     fontFamily: 'Manrope_600SemiBold',
   },
   modeTextOn: { color: '#fff' },
@@ -572,12 +570,12 @@ const styles = StyleSheet.create({
   historyHead: {
     fontSize: 13.5,
     color: '#0f172a',
-    fontWeight: '600',
     fontFamily: 'Manrope_600SemiBold',
   },
-  historyMeta: { fontSize: 12, color: '#94a3b8', marginTop: 2, lineHeight: 17 },
-  historyMetaTail: { fontSize: 12, color: '#94a3b8', lineHeight: 17 },
+  historyMeta: { fontFamily: 'Manrope_400Regular', fontSize: 12, color: '#94a3b8', marginTop: 2, lineHeight: 17 },
+  historyMetaTail: { fontFamily: 'Manrope_400Regular', fontSize: 12, color: '#94a3b8', lineHeight: 17 },
   historyNumbers: {
+    fontFamily: 'Manrope_400Regular',
     fontSize: 12.5,
     color: '#475569',
     lineHeight: 18,
@@ -587,10 +585,9 @@ const styles = StyleSheet.create({
   historyMoreText: {
     fontSize: 13,
     color: '#0369a1',
-    fontWeight: '600',
     fontFamily: 'Manrope_600SemiBold',
   },
-  historyReason: { fontSize: 12.5, color: '#0369a1', marginTop: 3 },
+  historyReason: { fontFamily: 'Manrope_400Regular', fontSize: 12.5, color: '#0369a1', marginTop: 3 },
   lastBox: {
     flexDirection: 'row',
     alignItems: 'flex-start',
@@ -605,6 +602,7 @@ const styles = StyleSheet.create({
   lastText: { fontSize: 12.5, color: '#075985', lineHeight: 18 },
   lastReason: { fontSize: 12, color: '#0369a1', lineHeight: 17, marginTop: 3 },
   reasonInput: {
+    fontFamily: 'Manrope_400Regular',
     borderWidth: 1,
     borderColor: '#e2e8f0',
     borderRadius: 12,
@@ -615,6 +613,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8fafc',
   },
   input: {
+    fontFamily: 'Manrope_400Regular',
     borderWidth: 1,
     borderColor: '#e2e8f0',
     borderRadius: 12,
@@ -636,10 +635,9 @@ const styles = StyleSheet.create({
   primaryBtnText: {
     color: '#fff',
     fontSize: 15,
-    fontWeight: '600',
     fontFamily: 'Manrope_600SemiBold',
   },
-  error: { fontSize: 13, color: '#dc2626', marginTop: 10 },
+  error: { fontFamily: 'Manrope_400Regular', fontSize: 13, color: '#dc2626', marginTop: 10 },
   alertBox: {
     backgroundColor: '#fffbeb',
     borderWidth: 1,
@@ -651,10 +649,9 @@ const styles = StyleSheet.create({
   alertTitle: {
     fontSize: 14,
     color: '#92400e',
-    fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
   },
-  alertHint: { fontSize: 12.5, color: '#a16207', lineHeight: 18, marginTop: 4 },
+  alertHint: { fontFamily: 'Manrope_400Regular', fontSize: 12.5, color: '#a16207', lineHeight: 18, marginTop: 4 },
   scheduledRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -667,13 +664,12 @@ const styles = StyleSheet.create({
   scheduledTalk: {
     fontSize: 13.5,
     color: '#92400e',
-    fontWeight: '600',
     fontFamily: 'Manrope_600SemiBold',
   },
-  scheduledWhen: { fontSize: 12, color: '#a16207', marginTop: 2 },
+  scheduledWhen: { fontFamily: 'Manrope_400Regular', fontSize: 12, color: '#a16207', marginTop: 2 },
   /* Where it came from: the programme, or the coordinator's log — a talk one
      of our brothers is taking away needs a different telephone call. */
-  scheduledSource: { fontSize: 11.5, color: '#b45309', marginTop: 2 },
+  scheduledSource: { fontFamily: 'Manrope_400Regular', fontSize: 11.5, color: '#b45309', marginTop: 2 },
   warnBox: {
     backgroundColor: '#fff7ed',
     borderWidth: 1,
@@ -682,13 +678,12 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 14,
   },
-  warnText: { fontSize: 12.5, color: '#9a3412', lineHeight: 18 },
+  warnText: { fontFamily: 'Manrope_400Regular', fontSize: 12.5, color: '#9a3412', lineHeight: 18 },
   listHeader: {
     fontSize: 11,
     letterSpacing: 0.7,
     textTransform: 'uppercase',
     color: '#94a3b8',
-    fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
     marginBottom: 8,
     marginLeft: 2,
@@ -711,12 +706,11 @@ const styles = StyleSheet.create({
   numberText: {
     fontSize: 13,
     color: '#0369a1',
-    fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
   },
   numberTextDone: { color: '#94a3b8' },
-  talkTitle: { flex: 1, fontSize: 14, color: '#0f172a', lineHeight: 19 },
-  alreadyText: { fontSize: 11.5, color: '#94a3b8' },
+  talkTitle: { fontFamily: 'Manrope_400Regular', flex: 1, fontSize: 14, color: '#0f172a', lineHeight: 19 },
+  alreadyText: { fontFamily: 'Manrope_400Regular', fontSize: 11.5, color: '#94a3b8' },
   retireBtn: {
     backgroundColor: '#b45309',
     borderRadius: 12,
@@ -735,14 +729,12 @@ const styles = StyleSheet.create({
   retireBtnText: {
     color: '#fff',
     fontSize: 15,
-    fontWeight: '600',
     fontFamily: 'Manrope_600SemiBold',
   },
   backBtn: { alignItems: 'center', paddingVertical: 14 },
   backBtnText: {
     fontSize: 14,
     color: '#0369a1',
-    fontWeight: '600',
     fontFamily: 'Manrope_600SemiBold',
   },
 });

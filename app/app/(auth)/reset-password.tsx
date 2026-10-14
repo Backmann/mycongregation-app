@@ -226,12 +226,14 @@ function ResetPasswordScreen() {
 
 const styles = StyleSheet.create({
   suggest: {
+    fontFamily: 'Manrope_400Regular',
     fontSize: 13,
     color: '#2563eb',
     marginTop: 6,
     marginBottom: 2,
   },
   why: {
+    fontFamily: 'Manrope_400Regular',
     fontSize: 13,
     color: '#b45309',
     marginTop: 10,
@@ -250,10 +252,10 @@ const styles = StyleSheet.create({
     width: '100%',
     alignSelf: 'center',
   },
-  title: { fontSize: 20, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0f172a' },
-  rule: { fontSize: 12.5, color: '#94a3b8', marginBottom: 6, lineHeight: 17 },
+  title: { fontSize: 20, fontFamily: 'Manrope_700Bold', color: '#0f172a' },
+  rule: { fontFamily: 'Manrope_400Regular', fontSize: 12.5, color: '#94a3b8', marginBottom: 6, lineHeight: 17 },
   problem: { fontSize: 12.5, color: '#b45309', marginTop: 6, lineHeight: 17 },
-  label: { fontSize: 13, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#475569', marginTop: 2 },
+  label: { fontSize: 13, fontFamily: 'Manrope_600SemiBold', color: '#475569', marginTop: 2 },
   inputWrap: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -262,6 +264,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   input: {
+    fontFamily: 'Manrope_400Regular',
     flex: 1,
     paddingHorizontal: 12,
     paddingVertical: 11,
@@ -276,7 +279,7 @@ const styles = StyleSheet.create({
   },
   eyeBtn: { paddingHorizontal: 10 },
   hint: { fontSize: 12, color: '#94a3b8' },
-  mismatch: { fontSize: 13, color: '#b91c1c' },
+  mismatch: { fontFamily: 'Manrope_400Regular', fontSize: 13, color: '#b91c1c' },
   errorBox: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -285,7 +288,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 10,
   },
-  errorText: { flex: 1, fontSize: 13, color: '#b91c1c' },
+  errorText: { fontFamily: 'Manrope_400Regular', flex: 1, fontSize: 13, color: '#b91c1c' },
   sentRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   sentText: { flex: 1, fontSize: 14, color: '#0f172a', lineHeight: 20 },
   button: {
@@ -296,5 +299,5 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
   buttonDisabled: { opacity: 0.5 },
-  buttonText: { color: '#fff', fontSize: 15, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
+  buttonText: { color: '#fff', fontSize: 15, fontFamily: 'Manrope_600SemiBold',},
 });

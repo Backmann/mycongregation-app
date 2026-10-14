@@ -601,7 +601,7 @@ function SongRow({
 }
 
 const styles = StyleSheet.create({
-  preparing: { fontSize: 14, color: '#6d28d9', fontStyle: 'italic', paddingVertical: 10 },
+  preparing: { fontFamily: 'Manrope_400Regular', fontSize: 14, color: '#6d28d9', paddingVertical: 10 },
   bareprint: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -611,7 +611,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 2,
     marginBottom: 4,
   },
-  bareprintText: { fontSize: 13, color: '#6d28d9', fontWeight: '600' },
+  bareprintText: { fontSize: 13, color: '#6d28d9', fontFamily: 'Manrope_600SemiBold' },
   body: { gap: 10, paddingHorizontal: 16, paddingBottom: 16 },
   stateDraft: {
     flexDirection: 'row',
@@ -646,22 +646,20 @@ const styles = StyleSheet.create({
   themeEdit: { gap: 8, paddingVertical: 6 },
   themeLabel: {
     fontSize: 11,
-    fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
     color: '#64748b',
     textTransform: 'uppercase',
     letterSpacing: 0.4,
   },
-  themeValue: { fontSize: 14, color: '#0f172a', lineHeight: 20 },
+  themeValue: { fontFamily: 'Manrope_400Regular', fontSize: 14, color: '#0f172a', lineHeight: 20 },
 
   line: { gap: 6, paddingTop: 10, borderTopWidth: 1, borderTopColor: '#f1f5f9' },
   lineLabel: {
     fontSize: 13,
-    fontWeight: '600',
     fontFamily: 'Manrope_600SemiBold',
     color: '#334155',
   },
-  readValue: { fontSize: 15, color: '#0f172a' },
+  readValue: { fontFamily: 'Manrope_400Regular', fontSize: 15, color: '#0f172a' },
 
   songRow: {
     flexDirection: 'row',
@@ -673,8 +671,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 9,
   },
-  songValue: { fontSize: 15, color: '#0f172a', marginTop: 2 },
-  songEmpty: { fontSize: 15, color: '#94a3b8', marginTop: 2 },
+  songValue: { fontFamily: 'Manrope_400Regular', fontSize: 15, color: '#0f172a', marginTop: 2 },
+  songEmpty: { fontFamily: 'Manrope_400Regular', fontSize: 15, color: '#94a3b8', marginTop: 2 },
   songList: { maxHeight: 420 },
   songOption: {
     flexDirection: 'row',
@@ -690,23 +688,23 @@ const styles = StyleSheet.create({
     width: 34,
     textAlign: 'center',
     fontSize: 12,
-    fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
     color: '#0369a1',
     backgroundColor: '#e0f2fe',
     borderRadius: 6,
     paddingVertical: 2,
   },
-  songTitle: { flex: 1, fontSize: 14, color: '#0f172a' },
+  songTitle: { fontFamily: 'Manrope_400Regular', flex: 1, fontSize: 14, color: '#0f172a' },
   clearRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
     paddingVertical: 10,
   },
-  clearText: { fontSize: 14, color: '#dc2626' },
+  clearText: { fontFamily: 'Manrope_400Regular', fontSize: 14, color: '#dc2626' },
 
   input: {
+    fontFamily: 'Manrope_400Regular',
     borderWidth: 1,
     borderColor: '#e2e8f0',
     borderRadius: 8,
@@ -724,11 +722,10 @@ const styles = StyleSheet.create({
   saveBtnText: {
     color: '#fff',
     fontSize: 14,
-    fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
   },
   emptyBox: { alignItems: 'center', gap: 10, paddingVertical: 14 },
-  emptyText: { fontSize: 14, color: '#64748b', textAlign: 'center' },
+  emptyText: { fontFamily: 'Manrope_400Regular', fontSize: 14, color: '#64748b', textAlign: 'center' },
   prepareBtn: {
     backgroundColor: '#0ea5e9',
     borderRadius: 10,
@@ -738,21 +735,21 @@ const styles = StyleSheet.create({
   prepareBtnText: {
     color: '#fff',
     fontSize: 15,
-    fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
   },
   prepareHint: {
+    fontFamily: 'Manrope_400Regular',
     fontSize: 12,
     color: '#94a3b8',
     textAlign: 'center',
     lineHeight: 17,
   },
   noteRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  noteText: { flex: 1, fontSize: 12, color: '#64748b', lineHeight: 17 },
+  noteText: { fontFamily: 'Manrope_400Regular', flex: 1, fontSize: 12, color: '#64748b', lineHeight: 17 },
   hidden: {
+    fontFamily: 'Manrope_400Regular',
     fontSize: 12,
     color: '#b45309',
-    fontStyle: 'italic',
     marginTop: 6,
   },
 });

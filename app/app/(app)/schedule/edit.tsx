@@ -2156,7 +2156,6 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#f1f5f9" },
   overline: {
     fontSize: 11,
-    fontWeight: "700",
     fontFamily: "Manrope_700Bold",
     color: "#7c3aed",
     textTransform: "uppercase",
@@ -2164,6 +2163,7 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   emptyHint: {
+    fontFamily: "Manrope_400Regular",
     fontSize: 14,
     color: "#64748b",
     textAlign: "center",
@@ -2185,7 +2185,6 @@ const styles = StyleSheet.create({
   },
   createButtonText: {
     fontSize: 14,
-    fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
   },
   createPrimaryText: { color: "#fff" },
@@ -2224,7 +2223,6 @@ const styles = StyleSheet.create({
   },
   weekendCardTitle: {
     fontSize: 13,
-    fontWeight: "800",
     fontFamily: "Manrope_800ExtraBold",
     letterSpacing: 0.3,
     flex: 1,
@@ -2242,7 +2240,6 @@ const styles = StyleSheet.create({
   subsectionBannerText: {
     color: "#fff",
     fontSize: 13,
-    fontWeight: "700",
     fontFamily: "Manrope_700Bold",
     textTransform: "uppercase",
     letterSpacing: 0.6,
@@ -2264,7 +2261,6 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 12,
-    fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
     color: "#64748b",
     textTransform: "uppercase",
@@ -2306,14 +2302,12 @@ const styles = StyleSheet.create({
   },
   timePillStart: {
     fontSize: 12.5,
-    fontWeight: "800",
     fontFamily: "Manrope_800ExtraBold",
     color: "#475569",
     lineHeight: 15,
   },
   timePillEnd: {
     fontSize: 11,
-    fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
     color: "#94a3b8",
     lineHeight: 13,
@@ -2328,14 +2322,12 @@ const styles = StyleSheet.create({
   },
   orderText: {
     color: "#0369a1",
-    fontWeight: "700",
     fontFamily: "Manrope_700Bold",
     fontSize: 13,
   },
   orderBadgeInfo: { backgroundColor: "#f1f5f9" },
   partLabel: {
     fontSize: 15,
-    fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
     color: "#0f172a",
   },
@@ -2351,7 +2343,6 @@ const styles = StyleSheet.create({
   },
   autoBadgeText: {
     fontSize: 10,
-    fontWeight: "700",
     fontFamily: "Manrope_700Bold",
     color: "#0369a1",
   },
@@ -2362,16 +2353,16 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   songHint: {
+    fontFamily: "Manrope_400Regular",
     fontSize: 13,
     color: "#94a3b8",
-    fontStyle: "italic",
     marginTop: 2,
   },
   partTitle: {
+    fontFamily: "Manrope_400Regular",
     fontSize: 13,
     color: "#475569",
     marginTop: 2,
-    fontStyle: "italic",
   },
   pairRow: {
     flexDirection: "row",
@@ -2392,27 +2383,23 @@ const styles = StyleSheet.create({
   chipMainText: {
     fontSize: 13,
     color: "#0c4a6e",
-    fontWeight: "500",
     fontFamily: "Manrope_500Medium",
   },
   chipAssistant: { backgroundColor: "#f1f5f9" },
   chipAssistantText: {
     fontSize: 13,
     color: "#475569",
-    fontWeight: "500",
     fontFamily: "Manrope_500Medium",
   },
   chipSpeaker: { backgroundColor: "#ede9fe" },
   chipSpeakerText: {
     fontSize: 13,
     color: "#6d28d9",
-    fontWeight: "500",
     fontFamily: "Manrope_500Medium",
   },
   chipSpeakerCong: {
     fontSize: 13,
     color: "#9b7fd4",
-    fontWeight: "400",
     fontFamily: "Manrope_400Regular",
   },
   chipEmpty: {
@@ -2422,7 +2409,7 @@ const styles = StyleSheet.create({
     borderColor: "#cbd5e1",
     paddingVertical: 3,
   },
-  chipEmptyText: { fontSize: 13, color: "#94a3b8", fontStyle: "italic" },
+  chipEmptyText: { fontFamily: "Manrope_400Regular", fontSize: 13, color: "#94a3b8" },
   statusDotRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -2438,12 +2425,11 @@ const styles = StyleSheet.create({
   statusDotCancelled: { backgroundColor: "#dc2626" },
   statusDotLabel: {
     fontSize: 11,
-    fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
   },
   statusDotLabelChanged: { color: "#b45309" },
   statusDotLabelCancel: { color: "#b91c1c" },
-  chevron: { color: "#cbd5e1", fontSize: 24, marginLeft: 8 },
+  chevron: { fontFamily: "Manrope_400Regular", color: "#cbd5e1", fontSize: 24, marginLeft: 8 },
   errorBox: {
     margin: 16,
     padding: 12,
@@ -2452,5 +2438,5 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 8,
   },
-  errorText: { color: "#dc2626", fontSize: 14 },
+  errorText: { fontFamily: "Manrope_400Regular", color: "#dc2626", fontSize: 14 },
 });

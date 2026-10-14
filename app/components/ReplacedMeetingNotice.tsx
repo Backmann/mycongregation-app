@@ -105,7 +105,7 @@ const styles = StyleSheet.create({
   wrap: { marginTop: 16, marginHorizontal: 16 },
   replacedLabel: {
     fontSize: 12,
-    fontWeight: '700', fontFamily: 'Manrope_700Bold',
+    fontFamily: 'Manrope_700Bold',
     color: '#92400e',
     textTransform: 'uppercase',
     letterSpacing: 0.4,
@@ -123,22 +123,22 @@ const styles = StyleSheet.create({
   title: {
     flex: 1,
     fontSize: 15,
-    fontWeight: '700', fontFamily: 'Manrope_700Bold',
+    fontFamily: 'Manrope_700Bold',
     color: '#78350f',
   },
-  meta: { fontSize: 13, color: '#92400e', marginTop: 4 },
+  meta: { fontFamily: 'Manrope_400Regular', fontSize: 13, color: '#92400e', marginTop: 4 },
   linksRow: { flexDirection: 'row', gap: 16, marginTop: 8 },
   linkBtn: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   linkText: {
     fontSize: 13,
     color: '#92400e',
-    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
+    fontFamily: 'Manrope_600SemiBold',
     textDecorationLine: 'underline',
   },
   hiddenText: {
+    fontFamily: 'Manrope_400Regular',
     fontSize: 12,
     color: '#b45309',
     marginTop: 8,
-    fontStyle: 'italic',
   },
 });

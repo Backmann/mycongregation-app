@@ -489,6 +489,7 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   section: { marginTop: 16 },
   placesHint: {
+    fontFamily: "Manrope_400Regular",
     paddingHorizontal: 20,
     marginTop: 6,
     fontSize: 12.5,
@@ -500,7 +501,6 @@ const styles = StyleSheet.create({
   // any text — «Уведомления» is both a heading and the title of its first row.
   sectionLabel: {
     fontSize: 12,
-    fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
     color: "#64748b",
     textTransform: "uppercase",
@@ -531,23 +531,22 @@ const styles = StyleSheet.create({
   avatarText: {
     color: "#ffffff",
     fontSize: 16,
-    fontWeight: "700",
     fontFamily: "Manrope_700Bold",
   },
   identityCol: { flex: 1, gap: 2 },
   identityName: {
     fontSize: 17,
-    fontWeight: "700",
     fontFamily: "Manrope_700Bold",
     color: "#0f172a",
   },
   identityHint: {
+    fontFamily: "Manrope_400Regular",
     fontSize: 12,
     color: "#64748b",
     marginTop: 2,
     lineHeight: 17,
   },
-  identityEmail: { fontSize: 13, color: "#64748b" },
+  identityEmail: { fontFamily: "Manrope_400Regular", fontSize: 13, color: "#64748b" },
   identityBadge: {
     alignSelf: "flex-start",
     backgroundColor: "#e0f2fe",
@@ -558,7 +557,6 @@ const styles = StyleSheet.create({
   },
   identityBadgeText: {
     fontSize: 11,
-    fontWeight: "700",
     fontFamily: "Manrope_700Bold",
     color: "#0369a1",
     letterSpacing: 0.3,
@@ -568,7 +566,6 @@ const styles = StyleSheet.create({
     color: "#0f172a",
     paddingHorizontal: 20,
     paddingTop: 14,
-    fontWeight: "500",
     fontFamily: "Manrope_500Medium",
   },
   roleBadge: {
@@ -583,7 +580,6 @@ const styles = StyleSheet.create({
   roleText: {
     fontSize: 11,
     color: "#0369a1",
-    fontWeight: "700",
     fontFamily: "Manrope_700Bold",
     textTransform: "uppercase",
     letterSpacing: 0.5,
@@ -607,10 +603,9 @@ const styles = StyleSheet.create({
   rowTitle: {
     fontSize: 15,
     color: "#0f172a",
-    fontWeight: "500",
     fontFamily: "Manrope_500Medium",
   },
-  rowSubtitle: { fontSize: 12, color: "#64748b", marginTop: 2 },
+  rowSubtitle: { fontFamily: "Manrope_400Regular", fontSize: 12, color: "#64748b", marginTop: 2 },
   logoutButton: {
     flexDirection: "row",
     alignItems: "center",
@@ -624,6 +619,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   buildLine: {
+    fontFamily: "Manrope_400Regular",
     textAlign: "center",
     color: "#94a3b8",
     fontSize: 11,
@@ -633,7 +629,6 @@ const styles = StyleSheet.create({
   logoutText: {
     color: "#dc2626",
     fontSize: 16,
-    fontWeight: "500",
     fontFamily: "Manrope_500Medium",
   },
 });

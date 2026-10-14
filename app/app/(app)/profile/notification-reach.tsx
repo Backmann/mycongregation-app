@@ -136,10 +136,9 @@ const s = StyleSheet.create({
   summaryTitle: {
     fontSize: 16,
     color: '#0f172a',
-    fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
   },
-  summarySub: { fontSize: 13.5, color: '#64748b', lineHeight: 19 },
+  summarySub: { fontFamily: 'Manrope_400Regular', fontSize: 13.5, color: '#64748b', lineHeight: 19 },
   card: { backgroundColor: '#fff', borderRadius: 14, paddingHorizontal: 14 },
   row: {
     flexDirection: 'row',
@@ -154,14 +153,13 @@ const s = StyleSheet.create({
   name: {
     fontSize: 15,
     color: '#0f172a',
-    fontWeight: '600',
     fontFamily: 'Manrope_600SemiBold',
   },
-  line: { fontSize: 12.5, color: '#64748b', marginTop: 2, lineHeight: 17 },
+  line: { fontFamily: 'Manrope_400Regular', fontSize: 12.5, color: '#64748b', marginTop: 2, lineHeight: 17 },
   pill: { borderRadius: 999, paddingHorizontal: 9, paddingVertical: 3 },
   pillOk: { backgroundColor: '#dcfce7' },
   pillNo: { backgroundColor: '#fee2e2' },
-  pillText: { fontSize: 11.5, fontWeight: '600' },
+  pillText: { fontSize: 11.5, fontFamily: 'Manrope_600SemiBold' },
   pillTextOk: { color: '#166534' },
   pillTextNo: { color: '#b91c1c' },
 });

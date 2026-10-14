@@ -149,5 +149,5 @@ const styles = StyleSheet.create({
   },
   error: { backgroundColor: '#7f1d1d' },
   success: { backgroundColor: '#14532d' },
-  text: { flex: 1, color: '#fff', fontSize: 13.5, lineHeight: 19 },
+  text: { fontFamily: 'Manrope_400Regular', flex: 1, color: '#fff', fontSize: 13.5, lineHeight: 19 },
 });

@@ -232,12 +232,12 @@ export function AbsenceForm({
 const styles = StyleSheet.create({
   label: {
     fontSize: 14,
-    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
+    fontFamily: 'Manrope_600SemiBold',
     color: '#0f172a',
     marginTop: 16,
     marginBottom: 6,
   },
-  subLabel: { fontSize: 12, color: '#64748b', marginBottom: 6 },
+  subLabel: { fontFamily: 'Manrope_400Regular', fontSize: 12, color: '#64748b', marginBottom: 6 },
   selectedRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 12,
   },
-  selectedName: { fontSize: 16, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0369a1' },
+  selectedName: { fontSize: 16, fontFamily: 'Manrope_600SemiBold', color: '#0369a1' },
   /** The selector brings its own label and spacing; this only sets it apart
    *  from the switch below it, the way `label` does for the other fields. */
   selectorSlot: { marginTop: 16 },
@@ -264,6 +264,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   noteInput: {
+    fontFamily: 'Manrope_400Regular',
     borderWidth: 1,
     borderColor: '#e2e8f0',
     borderRadius: 8,
@@ -283,9 +284,9 @@ const styles = StyleSheet.create({
     padding: 10,
     marginTop: 14,
   },
-  overlapText: { flex: 1, fontSize: 13, color: '#92400e' },
-  errorText: { color: '#b91c1c', marginTop: 12 },
-  hintText: { color: '#64748b', marginTop: 12, fontSize: 13 },
+  overlapText: { fontFamily: 'Manrope_400Regular', flex: 1, fontSize: 13, color: '#92400e' },
+  errorText: { fontFamily: 'Manrope_400Regular', color: '#b91c1c', marginTop: 12 },
+  hintText: { fontFamily: 'Manrope_400Regular', color: '#64748b', marginTop: 12, fontSize: 13 },
   actions: { flexDirection: 'row', gap: 10, marginTop: 20 },
   btn: {
     flex: 1,
@@ -295,8 +296,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   btnPrimary: { backgroundColor: '#0ea5e9' },
-  btnPrimaryText: { color: '#fff', fontWeight: '700', fontFamily: 'Manrope_700Bold', fontSize: 16 },
+  btnPrimaryText: { color: '#fff', fontFamily: 'Manrope_700Bold', fontSize: 16 },
   btnGhost: { backgroundColor: '#f1f5f9' },
-  btnGhostText: { color: '#475569', fontWeight: '600', fontFamily: 'Manrope_600SemiBold', fontSize: 16 },
+  btnGhostText: { color: '#475569', fontFamily: 'Manrope_600SemiBold', fontSize: 16 },
   btnDisabled: { opacity: 0.5 },
 });

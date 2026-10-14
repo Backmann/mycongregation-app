@@ -438,7 +438,7 @@ export default function NotificationPreferencesScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f1f5f9' },
   content: { padding: 16, gap: 12 },
-  hint: { fontSize: 13, color: '#64748b', lineHeight: 19 },
+  hint: { fontFamily: 'Manrope_400Regular', fontSize: 13, color: '#64748b', lineHeight: 19 },
   deviceCard: {
     backgroundColor: '#fffbeb',
     borderWidth: 1,
@@ -452,11 +452,10 @@ const styles = StyleSheet.create({
   deviceTitle: {
     fontSize: 12,
     color: '#475569',
-    fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
   },
-  deviceLine: { fontSize: 13.5, color: '#0f172a' },
-  deviceReason: { fontSize: 12, color: '#64748b', lineHeight: 17 },
+  deviceLine: { fontFamily: 'Manrope_400Regular', fontSize: 13.5, color: '#0f172a' },
+  deviceReason: { fontFamily: 'Manrope_400Regular', fontSize: 12, color: '#64748b', lineHeight: 17 },
   devicePrimary: {
     backgroundColor: '#0e7490',
     borderRadius: 10,
@@ -468,7 +467,6 @@ const styles = StyleSheet.create({
   devicePrimaryText: {
     color: '#fff',
     fontSize: 14.5,
-    fontWeight: '600',
     fontFamily: 'Manrope_600SemiBold',
   },
   deviceSecondary: {
@@ -483,7 +481,6 @@ const styles = StyleSheet.create({
   deviceSecondaryText: {
     color: '#0e7490',
     fontSize: 14.5,
-    fontWeight: '600',
     fontFamily: 'Manrope_600SemiBold',
   },
   card: {
@@ -512,13 +509,13 @@ const styles = StyleSheet.create({
   rowTitle: {
     fontSize: 15,
     color: '#0f172a',
-    fontWeight: '600',
     fontFamily: 'Manrope_600SemiBold',
   },
-  rowSubtitle: { fontSize: 12.5, color: '#64748b', marginTop: 1 },
+  rowSubtitle: { fontFamily: 'Manrope_400Regular', fontSize: 12.5, color: '#64748b', marginTop: 1 },
   radioRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
-  radioText: { fontSize: 14.5, color: '#0f172a' },
+  radioText: { fontFamily: 'Manrope_400Regular', fontSize: 14.5, color: '#0f172a' },
   allOff: {
+    fontFamily: 'Manrope_400Regular',
     fontSize: 13,
     color: '#b45309',
     backgroundColor: '#fffbeb',

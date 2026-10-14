@@ -220,6 +220,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Manrope_600SemiBold',
   },
   subtitleDate: {
+    fontFamily: 'Manrope_400Regular',
     fontSize: 12.5,
     color: '#64748b',
     marginTop: 1,
@@ -243,6 +244,7 @@ const styles = StyleSheet.create({
   rowStacked: { flexDirection: 'column' },
   saveWide: { paddingVertical: 12, alignItems: 'center' },
   input: {
+    fontFamily: 'Manrope_400Regular',
     flex: 1,
     borderWidth: 1,
     borderColor: '#e2e8f0',
@@ -262,6 +264,7 @@ const styles = StyleSheet.create({
   saveOff: { backgroundColor: '#cbd5e1' },
   saveText: { color: '#fff', fontFamily: 'Manrope_700Bold', fontSize: 14 },
   notHeld: {
+    fontFamily: 'Manrope_400Regular',
     marginTop: 10,
     fontSize: 13,
     color: '#64748b',

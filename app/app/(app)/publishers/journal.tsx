@@ -785,8 +785,8 @@ const styles = StyleSheet.create({
     padding: 10,
     marginBottom: 10,
   },
-  revertWarnText: { flex: 1, fontSize: 13, color: '#92400e', lineHeight: 18 },
-  revertNo: { fontSize: 13.5, color: '#64748b', lineHeight: 19 },
+  revertWarnText: { fontFamily: 'Manrope_400Regular', flex: 1, fontSize: 13, color: '#92400e', lineHeight: 18 },
+  revertNo: { fontFamily: 'Manrope_400Regular', fontSize: 13.5, color: '#64748b', lineHeight: 19 },
   revertGo: {
     backgroundColor: '#0ea5e9',
     borderRadius: 12,
@@ -798,7 +798,7 @@ const styles = StyleSheet.create({
   content: { paddingBottom: 40 },
   centre: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
   centreText: { textAlign: 'center', marginTop: 40 },
-  muted: { color: '#64748b', fontSize: 14 },
+  muted: { fontFamily: 'Manrope_400Regular', color: '#64748b', fontSize: 14 },
 
   filters: { paddingHorizontal: 16, paddingVertical: 12, gap: 8 },
   chip: {
@@ -849,9 +849,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  sentence: { fontSize: 14.5, color: '#0f172a', lineHeight: 20 },
+  sentence: { fontFamily: 'Manrope_400Regular', fontSize: 14.5, color: '#0f172a', lineHeight: 20 },
   strong: { fontFamily: 'Manrope_700Bold' },
-  tail: { fontSize: 12.5, color: '#64748b', marginTop: 2, lineHeight: 17 },
+  tail: { fontFamily: 'Manrope_400Regular', fontSize: 12.5, color: '#64748b', marginTop: 2, lineHeight: 17 },
   // Which item — stated once, quietly, above the values that changed.
   context: {
     fontSize: 12.5,
@@ -871,14 +871,14 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 0.4,
   },
-  changeValue: { fontSize: 13, lineHeight: 19, color: '#334155' },
+  changeValue: { fontFamily: 'Manrope_400Regular', fontSize: 13, lineHeight: 19, color: '#334155' },
   // The old value is stated quietly and struck through; the new one carries
   // the weight, because that is what holds now.
   was: { color: '#94a3b8', textDecorationLine: 'line-through' },
   // Values deliberately not kept — say so plainly instead of showing blanks.
-  changedOnly: { fontSize: 13, lineHeight: 19, color: '#64748b', fontStyle: 'italic' },
+  changedOnly: { fontFamily: 'Manrope_400Regular', fontSize: 13, lineHeight: 19, color: '#64748b' },
   now: { color: '#0f172a', fontFamily: 'Manrope_600SemiBold' },
-  redacted: { fontSize: 12, color: '#94a3b8', fontStyle: 'italic', marginTop: 2 },
+  redacted: { fontFamily: 'Manrope_400Regular', fontSize: 12, color: '#94a3b8', marginTop: 2 },
 
   more: {
     marginTop: 16,

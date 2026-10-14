@@ -982,7 +982,7 @@ const styles = StyleSheet.create({
   chipTextHeld: { color: '#64748b' },
   chipOn: { backgroundColor: '#0e7490', borderColor: '#0e7490' },
   chipAdd: { backgroundColor: '#e0f2fe' },
-  chipText: { fontSize: 13, color: '#334155', fontWeight: '600' },
+  chipText: { fontSize: 13, color: '#334155', fontFamily: 'Manrope_600SemiBold' },
   chipTextOn: { color: '#fff' },
   meetingTools: { flexDirection: 'row', alignItems: 'center', gap: 16 },
   meetingHead: {
@@ -995,20 +995,19 @@ const styles = StyleSheet.create({
   meetingWhen: {
     fontSize: 15,
     color: '#0f172a',
-    fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
   },
-  meetingNote: { fontSize: 13.5, color: '#475569', lineHeight: 19 },
+  meetingNote: { fontFamily: 'Manrope_400Regular', fontSize: 13.5, color: '#475569', lineHeight: 19 },
   groupHead: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 8,
   },
-  total: { fontSize: 12.5, color: '#64748b' },
+  total: { fontFamily: 'Manrope_400Regular', fontSize: 12.5, color: '#64748b' },
   itemHead: { flexDirection: 'row', alignItems: 'flex-start', gap: 8 },
   itemNo: { fontSize: 14, color: '#94a3b8', fontFamily: 'Manrope_600SemiBold' },
-  itemMinutes: { fontSize: 12.5, color: '#64748b' },
+  itemMinutes: { fontFamily: 'Manrope_400Regular', fontSize: 12.5, color: '#64748b' },
   itemMetaRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -1016,7 +1015,7 @@ const styles = StyleSheet.create({
     marginTop: 6,
     marginLeft: 20,
   },
-  itemLink: { fontSize: 12.5, color: '#0369a1', textDecorationLine: 'underline' },
+  itemLink: { fontFamily: 'Manrope_400Regular', fontSize: 12.5, color: '#0369a1', textDecorationLine: 'underline' },
   outcomeChip: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1024,7 +1023,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
     marginLeft: 20,
   },
-  outcomeText: { fontSize: 12.5, color: '#0369a1' },
+  outcomeText: { fontFamily: 'Manrope_400Regular', fontSize: 12.5, color: '#0369a1' },
   itemActions: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1041,7 +1040,7 @@ const styles = StyleSheet.create({
     borderColor: '#e2e8f0',
   },
   actOn: { backgroundColor: '#0e7490', borderColor: '#0e7490' },
-  actText: { fontSize: 12.5, color: '#475569' },
+  actText: { fontFamily: 'Manrope_400Regular', fontSize: 12.5, color: '#475569' },
   actTextOn: { color: '#fff' },
   actIcon: { padding: 5 },
   addItem: {
@@ -1051,7 +1050,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
     alignSelf: 'flex-start',
   },
-  addItemText: { fontSize: 13.5, color: '#0369a1' },
+  addItemText: { fontFamily: 'Manrope_400Regular', fontSize: 13.5, color: '#0369a1' },
   approve: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1070,12 +1069,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 12,
   },
-  archiveLinkText: { fontSize: 13.5, color: '#0369a1' },
+  archiveLinkText: { fontFamily: 'Manrope_400Regular', fontSize: 13.5, color: '#0369a1' },
   approvedRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  approvedText: { fontSize: 13, color: '#15803d' },
-  error: { fontSize: 13, color: '#b91c1c', marginTop: 8 },
+  approvedText: { fontFamily: 'Manrope_400Regular', fontSize: 13, color: '#15803d' },
+  error: { fontFamily: 'Manrope_400Regular', fontSize: 13, color: '#b91c1c', marginTop: 8 },
   areaTag: { borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 },
-  areaTagText: { fontSize: 11.5 },
+  areaTagText: { fontFamily: 'Manrope_400Regular', fontSize: 11.5 },
   areaRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   areaPick: {
     borderRadius: 999,
@@ -1084,7 +1083,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 11,
     paddingVertical: 6,
   },
-  areaPickText: { fontSize: 13 },
+  areaPickText: { fontFamily: 'Manrope_400Regular', fontSize: 13 },
   inputTitle: { minHeight: 52, fontSize: 16, textAlignVertical: 'top' },
   stepper: {
     flexDirection: 'row',
@@ -1107,7 +1106,7 @@ const styles = StyleSheet.create({
   },
   stepValue: { flexDirection: 'row', alignItems: 'baseline', gap: 5 },
   stepNumber: { fontSize: 22, color: '#0f172a', fontFamily: 'Manrope_700Bold' },
-  stepUnit: { fontSize: 13, color: '#64748b' },
+  stepUnit: { fontFamily: 'Manrope_400Regular', fontSize: 13, color: '#64748b' },
   presetRow: { flexDirection: 'row', gap: 6, marginTop: 8 },
   preset: {
     flex: 1,
@@ -1118,7 +1117,7 @@ const styles = StyleSheet.create({
     borderColor: '#e2e8f0',
   },
   presetOn: { backgroundColor: '#0e7490', borderColor: '#0e7490' },
-  presetText: { fontSize: 13, color: '#475569' },
+  presetText: { fontFamily: 'Manrope_400Regular', fontSize: 13, color: '#475569' },
   presetTextOn: { color: '#fff', fontFamily: 'Manrope_600SemiBold' },
   hallOn: { backgroundColor: '#0e7490', borderColor: '#0e7490' },
   hallOnText: { color: '#fff' },
@@ -1126,19 +1125,18 @@ const styles = StyleSheet.create({
   groupTitle: {
     fontSize: 12,
     color: '#0369a1',
-    fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
     textTransform: 'uppercase',
     letterSpacing: 0.4,
     marginTop: 6,
   },
   item: { backgroundColor: '#fff', borderRadius: 10, padding: 12, gap: 3 },
-  itemTitle: { fontSize: 14.5, color: '#0f172a', fontWeight: '600' },
-  itemMeta: { fontSize: 12.5, color: '#475569' },
+  itemTitle: { fontSize: 14.5, color: '#0f172a', fontFamily: 'Manrope_600SemiBold' },
+  itemMeta: { fontFamily: 'Manrope_400Regular', fontSize: 12.5, color: '#475569' },
   // An empty group is SHOWN as empty: «nothing is overdue» is worth reading,
   // and a heading that vanished tells the reader nothing at all.
-  nothing: { fontSize: 13, color: '#94a3b8', fontStyle: 'italic' },
-  empty: { fontSize: 14, color: '#64748b', textAlign: 'center', marginTop: 32 },
+  nothing: { fontFamily: 'Manrope_400Regular', fontSize: 13, color: '#94a3b8' },
+  empty: { fontFamily: 'Manrope_400Regular', fontSize: 14, color: '#64748b', textAlign: 'center', marginTop: 32 },
   emptyBox: { alignItems: 'center', gap: 14 },
   emptyBtn: {
     flexDirection: 'row',
@@ -1149,8 +1147,8 @@ const styles = StyleSheet.create({
     minHeight: 44,
     paddingHorizontal: 18,
   },
-  emptyBtnText: { color: '#fff', fontSize: 15, fontWeight: '600', fontFamily: 'Manrope_600SemiBold' },
-  emptyLink: { fontSize: 14, color: '#0369a1', fontWeight: '600', fontFamily: 'Manrope_600SemiBold' },
+  emptyBtnText: { color: '#fff', fontSize: 15, fontFamily: 'Manrope_600SemiBold' },
+  emptyLink: { fontSize: 14, color: '#0369a1', fontFamily: 'Manrope_600SemiBold' },
   print: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1164,20 +1162,19 @@ const styles = StyleSheet.create({
   printText: {
     color: '#fff',
     fontSize: 14.5,
-    fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
   },
   formBody: { padding: 16, gap: 6, paddingBottom: 32 },
   label: {
     fontSize: 12,
     color: '#64748b',
-    fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
     textTransform: 'uppercase',
     letterSpacing: 0.3,
     marginTop: 10,
   },
   input: {
+    fontFamily: 'Manrope_400Regular',
     backgroundColor: '#fff',
     borderRadius: 10,
     paddingHorizontal: 12,
@@ -1197,11 +1194,10 @@ const styles = StyleSheet.create({
   saveText: {
     color: '#fff',
     fontSize: 15,
-    fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
   },
   delete: { marginTop: 22, alignItems: 'center', paddingVertical: 12 },
-  deleteText: { color: '#dc2626', fontSize: 14, fontWeight: '600' },
+  deleteText: { color: '#dc2626', fontSize: 14, fontFamily: 'Manrope_600SemiBold' },
 });
 
 /**

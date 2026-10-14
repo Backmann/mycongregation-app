@@ -70,7 +70,7 @@ export function PublishDialog({ open, busy, onPublish, onCancel }: Props) {
 
 /** A choice inside a dialog: a bold action with a line explaining it. */
 export const choiceStyles = StyleSheet.create({
-  subtitle: { fontSize: 13.5, color: '#475569', lineHeight: 19, marginBottom: 14 },
+  subtitle: { fontFamily: 'Manrope_400Regular', fontSize: 13.5, color: '#475569', lineHeight: 19, marginBottom: 14 },
   primary: {
     backgroundColor: '#0ea5e9',
     borderRadius: 12,
@@ -78,8 +78,8 @@ export const choiceStyles = StyleSheet.create({
     paddingHorizontal: 14,
     marginBottom: 10,
   },
-  primaryText: { color: '#fff', fontSize: 15, fontWeight: '700' },
-  primaryHint: { color: '#e0f2fe', fontSize: 12.5, marginTop: 3, lineHeight: 17 },
+  primaryText: { color: '#fff', fontSize: 15, fontFamily: 'Manrope_700Bold' },
+  primaryHint: { fontFamily: 'Manrope_400Regular', color: '#e0f2fe', fontSize: 12.5, marginTop: 3, lineHeight: 17 },
   secondary: {
     backgroundColor: '#fff',
     borderWidth: 1,
@@ -88,8 +88,8 @@ export const choiceStyles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 14,
   },
-  secondaryText: { color: '#0f172a', fontSize: 15, fontWeight: '600' },
-  secondaryHint: { color: '#64748b', fontSize: 12.5, marginTop: 3, lineHeight: 17 },
+  secondaryText: { color: '#0f172a', fontSize: 15, fontFamily: 'Manrope_600SemiBold' },
+  secondaryHint: { fontFamily: 'Manrope_400Regular', color: '#64748b', fontSize: 12.5, marginTop: 3, lineHeight: 17 },
   pressed: { opacity: 0.85 },
   disabled: { opacity: 0.5 },
 });

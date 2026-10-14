@@ -89,5 +89,5 @@ export function ConfirmHost() {
 }
 
 const styles = StyleSheet.create({
-  body: { fontSize: 14.5, color: '#334155', lineHeight: 21 },
+  body: { fontFamily: 'Manrope_400Regular', fontSize: 14.5, color: '#334155', lineHeight: 21 },
 });

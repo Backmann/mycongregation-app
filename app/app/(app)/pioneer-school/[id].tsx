@@ -836,7 +836,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   headTitle: { fontSize: 18, color: '#0f172a', fontFamily: 'Manrope_700Bold' },
-  headDates: { fontSize: 14, color: '#0369a1', marginTop: 2 },
+  headDates: { fontFamily: 'Manrope_400Regular', fontSize: 14, color: '#0369a1', marginTop: 2 },
   hallBox: {
     flexDirection: 'row',
     gap: 8,
@@ -846,7 +846,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   hallName: { fontSize: 14, color: '#0f172a', fontFamily: 'Manrope_600SemiBold' },
-  hallAddress: { fontSize: 12.5, color: '#475569', marginTop: 1 },
+  hallAddress: { fontFamily: 'Manrope_400Regular', fontSize: 12.5, color: '#475569', marginTop: 1 },
   headActions: { flexDirection: 'row', gap: 10, marginTop: 14 },
   ghostBtn: {
     flexDirection: 'row',
@@ -884,7 +884,7 @@ const styles = StyleSheet.create({
     color: '#0f172a',
     fontFamily: 'Manrope_700Bold',
   },
-  dayTime: { fontSize: 13, color: '#94a3b8' },
+  dayTime: { fontFamily: 'Manrope_400Regular', fontSize: 13, color: '#94a3b8' },
   dayTimeOwn: { color: '#0369a1', fontFamily: 'Manrope_600SemiBold' },
   dutyRow: {
     flexDirection: 'row',
@@ -894,14 +894,14 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#f1f5f9',
   },
-  dutyLabel: { width: 118, fontSize: 13, color: '#64748b' },
-  dutyName: { fontSize: 14.5, color: '#0f172a' },
+  dutyLabel: { fontFamily: 'Manrope_400Regular', width: 118, fontSize: 13, color: '#64748b' },
+  dutyName: { fontFamily: 'Manrope_400Regular', fontSize: 14.5, color: '#0f172a' },
   dutyEmpty: { color: '#b45309' },
   dutyRemoved: { color: '#94a3b8', textDecorationLine: 'line-through' },
-  dutyRemovedNote: { fontSize: 11.5, color: '#b45309', marginTop: 1 },
-  dutyCong: { fontSize: 12, color: '#94a3b8', marginTop: 1 },
+  dutyRemovedNote: { fontFamily: 'Manrope_400Regular', fontSize: 11.5, color: '#b45309', marginTop: 1 },
+  dutyCong: { fontFamily: 'Manrope_400Regular', fontSize: 12, color: '#94a3b8', marginTop: 1 },
   warnRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 3 },
-  warnText: { fontSize: 11.5, color: '#b45309' },
+  warnText: { fontFamily: 'Manrope_400Regular', fontSize: 11.5, color: '#b45309' },
   addRole: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -963,7 +963,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     marginBottom: 8,
   },
-  searchInput: { flex: 1, fontSize: 14, color: '#0f172a' },
+  searchInput: { fontFamily: 'Manrope_400Regular', flex: 1, fontSize: 14, color: '#0f172a' },
   pickRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -972,16 +972,16 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#f1f5f9',
   },
-  pickName: { fontSize: 15, color: '#0f172a' },
-  pickCong: { fontSize: 12, color: '#94a3b8', marginTop: 1 },
-  pickClear: { fontSize: 14.5, color: '#64748b' },
+  pickName: { fontFamily: 'Manrope_400Regular', fontSize: 15, color: '#0f172a' },
+  pickCong: { fontFamily: 'Manrope_400Regular', fontSize: 12, color: '#94a3b8', marginTop: 1 },
+  pickClear: { fontFamily: 'Manrope_400Regular', fontSize: 14.5, color: '#64748b' },
   loadChip: {
     backgroundColor: '#f1f5f9',
     borderRadius: 999,
     paddingHorizontal: 8,
     paddingVertical: 3,
   },
-  loadText: { fontSize: 11.5, color: '#64748b' },
+  loadText: { fontFamily: 'Manrope_400Regular', fontSize: 11.5, color: '#64748b' },
 
   label: {
     fontSize: 13,
@@ -991,6 +991,7 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   input: {
+    fontFamily: 'Manrope_400Regular',
     borderWidth: 1,
     borderColor: '#e2e8f0',
     borderRadius: 10,
@@ -1011,7 +1012,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   noteToolBold: { fontSize: 14, fontFamily: 'Manrope_800ExtraBold' },
-  noteToolItalic: { fontSize: 14, fontStyle: 'italic' },
+  noteToolItalic: { fontFamily: 'Manrope_400Regular', fontSize: 14, fontStyle: 'italic' },
   preview: {
     marginTop: 10,
     padding: 12,
@@ -1021,6 +1022,7 @@ const styles = StyleSheet.create({
     borderColor: '#e2e8f0',
   },
   previewHead: {
+    fontFamily: 'Manrope_400Regular',
     fontSize: 11,
     color: '#94a3b8',
     textTransform: 'uppercase',
@@ -1052,8 +1054,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: 8,
   },
-  hallOptionFrom: { fontSize: 11.5, color: '#94a3b8' },
-  hallOptionMissing: { color: '#b45309', fontStyle: 'italic' },
+  hallOptionFrom: { fontFamily: 'Manrope_400Regular', fontSize: 11.5, color: '#94a3b8' },
+  hallOptionMissing: { color: '#b45309' },
   pickAdd: {
     fontSize: 14.5,
     color: '#0ea5e9',
@@ -1069,9 +1071,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#f1f5f9',
   },
-  hallOptionName: { fontSize: 14, color: '#0f172a' },
-  hallOptionAddr: { fontSize: 12, color: '#94a3b8', marginTop: 1 },
-  hint: { fontSize: 12.5, color: '#94a3b8', marginBottom: 8, lineHeight: 17 },
+  hallOptionName: { fontFamily: 'Manrope_400Regular', fontSize: 14, color: '#0f172a' },
+  hallOptionAddr: { fontFamily: 'Manrope_400Regular', fontSize: 12, color: '#94a3b8', marginTop: 1 },
+  hint: { fontFamily: 'Manrope_400Regular', fontSize: 12.5, color: '#94a3b8', marginBottom: 8, lineHeight: 17 },
   primaryBtn: {
     backgroundColor: '#0ea5e9',
     borderRadius: 12,
@@ -1081,5 +1083,5 @@ const styles = StyleSheet.create({
   },
   primaryBtnText: { color: '#fff', fontSize: 15, fontFamily: 'Manrope_700Bold' },
   btnOff: { opacity: 0.5 },
-  error: { color: '#dc2626', fontSize: 13, marginTop: 8 },
+  error: { fontFamily: 'Manrope_400Regular', color: '#dc2626', fontSize: 13, marginTop: 8 },
 });

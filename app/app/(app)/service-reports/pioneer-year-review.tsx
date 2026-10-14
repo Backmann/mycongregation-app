@@ -524,7 +524,7 @@ const styles = StyleSheet.create({
   yearLine: {
     flexShrink: 1,
     fontSize: 15,
-    fontWeight: "700",
+    fontFamily: "Manrope_700Bold",
     color: "#0f172a",
   },
   switchRow: {
@@ -551,9 +551,9 @@ const styles = StyleSheet.create({
     borderColor: "#cbd5e1",
   },
   chipOn: { backgroundColor: "#0369a1", borderColor: "#0369a1" },
-  chipText: { fontSize: 13, color: "#334155", fontWeight: "600" },
+  chipText: { fontSize: 13, color: "#334155", fontFamily: "Manrope_600SemiBold" },
   chipTextOn: { color: "#fff" },
-  yearLeft: { fontSize: 13, color: "#334155", marginTop: 6 },
+  yearLeft: { fontFamily: "Manrope_400Regular", fontSize: 13, color: "#334155", marginTop: 6 },
   history: {
     marginTop: 8,
     borderTopWidth: 1,
@@ -567,13 +567,13 @@ const styles = StyleSheet.create({
     borderBottomColor: "#f1f5f9",
   },
   mRowDim: { opacity: 0.5 },
-  mName: { width: 92, fontSize: 13, color: "#475569" },
+  mName: { fontFamily: "Manrope_400Regular", width: 92, fontSize: 13, color: "#475569" },
   mFigures: { flexDirection: "row", gap: 10, flexWrap: "wrap" },
-  mHours: { fontSize: 13, color: "#0f172a", fontWeight: "700" },
-  mState: { fontSize: 13, color: "#64748b" },
-  mStateMissing: { color: "#b45309", fontWeight: "600" },
-  mStudies: { fontSize: 13, color: "#64748b" },
-  mNote: { fontSize: 12.5, color: "#334155", lineHeight: 18, marginTop: 2 },
+  mHours: { fontSize: 13, color: "#0f172a", fontFamily: "Manrope_700Bold" },
+  mState: { fontFamily: "Manrope_400Regular", fontSize: 13, color: "#64748b" },
+  mStateMissing: { color: "#b45309", fontFamily: "Manrope_600SemiBold" },
+  mStudies: { fontFamily: "Manrope_400Regular", fontSize: 13, color: "#64748b" },
+  mNote: { fontFamily: "Manrope_400Regular", fontSize: 12.5, color: "#334155", lineHeight: 18, marginTop: 2 },
   lede: {
     flexDirection: "row",
     alignItems: "flex-start",
@@ -585,9 +585,10 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 14,
   },
-  ledeText: { fontSize: 13, color: "#075985", lineHeight: 19 },
-  ledeHint: { fontSize: 12, color: "#0369a1", lineHeight: 17, marginTop: 4 },
+  ledeText: { fontFamily: "Manrope_400Regular", fontSize: 13, color: "#075985", lineHeight: 19 },
+  ledeHint: { fontFamily: "Manrope_400Regular", fontSize: 12, color: "#0369a1", lineHeight: 17, marginTop: 4 },
   summary: {
+    fontFamily: "Manrope_400Regular",
     fontSize: 12.5,
     color: "#64748b",
     marginBottom: 10,
@@ -612,13 +613,11 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 15.5,
     color: "#0f172a",
-    fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
   },
   hours: {
     fontSize: 19,
     color: "#0f172a",
-    fontWeight: "700",
     fontFamily: "Manrope_700Bold",
   },
   hoursShort: { color: "#92400e" },
@@ -626,13 +625,13 @@ const styles = StyleSheet.create({
   toMinimum: {
     fontSize: 13,
     color: "#92400e",
-    fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
   },
-  meets: { fontSize: 13, color: "#15803d" },
-  toGoal: { fontSize: 13, color: "#64748b" },
-  since: { fontSize: 13, color: "#475569", marginTop: 6 },
+  meets: { fontFamily: "Manrope_400Regular", fontSize: 13, color: "#15803d" },
+  toGoal: { fontFamily: "Manrope_400Regular", fontSize: 13, color: "#64748b" },
+  since: { fontFamily: "Manrope_400Regular", fontSize: 13, color: "#475569", marginTop: 6 },
   unknownSince: {
+    fontFamily: "Manrope_400Regular",
     fontSize: 12.5,
     color: "#b45309",
     lineHeight: 18,
@@ -640,7 +639,7 @@ const styles = StyleSheet.create({
   },
   /** Тень статуса, когда год ещё не собран: не обвинение, а вопрос. */
   cardPending: { borderColor: "#fcd34d", backgroundColor: "#fffdf5" },
-  paceLead: { fontSize: 14, color: "#0f172a", fontWeight: "600", marginTop: 2 },
+  paceLead: { fontSize: 14, color: "#0f172a", fontFamily: "Manrope_600SemiBold", marginTop: 2 },
   /** Полоса: где он и куда идёт. Отметка — порог 560 внутри цели 600. */
   bar: {
     height: 8,
@@ -660,6 +659,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#475569",
   },
   missing: {
+    fontFamily: "Manrope_400Regular",
     fontSize: 13,
     color: "#b45309",
     marginTop: 8,
@@ -671,7 +671,7 @@ const styles = StyleSheet.create({
     gap: 6,
     marginTop: 10,
   },
-  notesToggleText: { fontSize: 13, color: "#0369a1", fontWeight: "600" },
+  notesToggleText: { fontSize: 13, color: "#0369a1", fontFamily: "Manrope_600SemiBold" },
   pace: { fontSize: 12.5, color: "#64748b", marginTop: 8 },
   note: {
     marginTop: 8,
@@ -684,9 +684,8 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
     textTransform: "uppercase",
     color: "#94a3b8",
-    fontWeight: "700",
     fontFamily: "Manrope_700Bold",
   },
   noteText: { fontSize: 13, color: "#334155", lineHeight: 19, marginTop: 2 },
-  empty: { fontSize: 14, color: "#64748b", textAlign: "center", marginTop: 32 },
+  empty: { fontFamily: "Manrope_400Regular", fontSize: 14, color: "#64748b", textAlign: "center", marginTop: 32 },
 });

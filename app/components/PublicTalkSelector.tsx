@@ -319,7 +319,7 @@ const styles = StyleSheet.create({
     marginTop: 3,
   },
   retiredRowInline: { marginTop: 0 },
-  retiredText: { fontSize: 12, color: "#b45309", flexShrink: 1 },
+  retiredText: { fontFamily: "Manrope_400Regular", fontSize: 12, color: "#b45309", flexShrink: 1 },
   field: {
     paddingVertical: 10,
     paddingHorizontal: 20,
@@ -331,7 +331,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#64748b",
     marginBottom: 4,
-    fontWeight: "500",
     fontFamily: "Manrope_500Medium",
   },
   fieldRow: {
@@ -339,7 +338,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
   },
-  fieldValue: { fontSize: 15, color: "#0f172a", flex: 1, marginRight: 8 },
+  fieldValue: { fontFamily: "Manrope_400Regular", fontSize: 15, color: "#0f172a", flex: 1, marginRight: 8 },
   /** Пустое — не выключенное; см. PublisherSelector. */
   fieldValuePlaceholder: { color: "#64748b" },
 
@@ -361,7 +360,7 @@ const styles = StyleSheet.create({
     borderColor: "#e2e8f0",
     gap: 8,
   },
-  searchInput: { flex: 1, fontSize: 15, color: "#0f172a" },
+  searchInput: { fontFamily: "Manrope_400Regular", flex: 1, fontSize: 15, color: "#0f172a" },
 
   list: { flex: 1, backgroundColor: "#fff" },
   option: {
@@ -373,8 +372,8 @@ const styles = StyleSheet.create({
     borderBottomColor: "#f1f5f9",
   },
   optionPressed: { backgroundColor: "#f8fafc" },
-  optionText: { fontSize: 15, color: "#0f172a", flex: 1 },
-  optionTitle: { fontSize: 14, color: "#0f172a", lineHeight: 20 },
+  optionText: { fontFamily: "Manrope_400Regular", fontSize: 15, color: "#0f172a", flex: 1 },
+  optionTitle: { fontFamily: "Manrope_400Regular", fontSize: 14, color: "#0f172a", lineHeight: 20 },
   numberBadge: {
     minWidth: 36,
     height: 28,
@@ -388,7 +387,6 @@ const styles = StyleSheet.create({
   },
   numberText: {
     fontSize: 13,
-    fontWeight: "700",
     fontFamily: "Manrope_700Bold",
     color: "#0369a1",
   },
@@ -399,9 +397,10 @@ const styles = StyleSheet.create({
     gap: 4,
     marginTop: 3,
   },
-  hintText: { fontSize: 11 },
+  hintText: { fontFamily: "Manrope_400Regular", fontSize: 11 },
 
   empty: {
+    fontFamily: "Manrope_400Regular",
     textAlign: "center",
     color: "#94a3b8",
     padding: 32,

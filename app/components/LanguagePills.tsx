@@ -64,7 +64,6 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 13,
-    fontWeight: '600',
     fontFamily: 'Manrope_600SemiBold',
     color: '#94a3b8',
     letterSpacing: 0.5,

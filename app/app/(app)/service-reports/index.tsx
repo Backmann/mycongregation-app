@@ -384,18 +384,16 @@ const styles = StyleSheet.create({
     letterSpacing: 0.4,
     textTransform: 'uppercase',
     color: '#94a3b8',
-    fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
   },
   monthBig: {
     fontSize: 20,
     marginTop: 2,
     color: '#0f172a',
-    fontWeight: '800',
     fontFamily: 'Manrope_800ExtraBold',
   },
-  monthCall: { fontSize: 13.5, color: '#475569', marginTop: 4, lineHeight: 19 },
-  monthCallUrgent: { color: '#b45309', fontWeight: '700' },
+  monthCall: { fontFamily: 'Manrope_400Regular', fontSize: 13.5, color: '#475569', marginTop: 4, lineHeight: 19 },
+  monthCallUrgent: { color: '#b45309', fontFamily: 'Manrope_700Bold' },
   monthBtn: {
     marginTop: 12,
     backgroundColor: '#0e7490',
@@ -406,7 +404,6 @@ const styles = StyleSheet.create({
   monthBtnText: {
     color: '#fff',
     fontSize: 15,
-    fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
   },
   sectionRow: {
@@ -422,11 +419,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#e2e8f0',
   },
-  sectionValue: { fontSize: 12.5, color: '#64748b', marginTop: 1 },
+  sectionValue: { fontFamily: 'Manrope_400Regular', fontSize: 12.5, color: '#64748b', marginTop: 1 },
   sectionLabel: {
     fontSize: 15,
     color: '#0f172a',
-    fontWeight: '600',
     fontFamily: 'Manrope_600SemiBold',
   },
   listHeading: {
@@ -434,7 +430,6 @@ const styles = StyleSheet.create({
     letterSpacing: 0.4,
     textTransform: 'uppercase',
     color: '#94a3b8',
-    fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
     paddingHorizontal: 20,
     paddingTop: 14,
@@ -451,17 +446,17 @@ const styles = StyleSheet.create({
     borderBottomColor: '#e2e8f0',
   },
   editBtn: { marginLeft: 12, padding: 8 },
-  month: { fontSize: 16, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0f172a' },
+  month: { fontSize: 16, fontFamily: 'Manrope_600SemiBold', color: '#0f172a' },
   statsRow: { flexDirection: 'row', gap: 12, marginTop: 6, flexWrap: 'wrap' },
-  statPrimary: { fontSize: 13, color: '#0ea5e9', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
-  statSecondary: { fontSize: 13, color: '#64748b', fontWeight: '500', fontFamily: 'Manrope_500Medium',},
+  statPrimary: { fontSize: 13, color: '#0ea5e9', fontFamily: 'Manrope_600SemiBold',},
+  statSecondary: { fontSize: 13, color: '#64748b', fontFamily: 'Manrope_500Medium',},
   editInfo: {
+    fontFamily: 'Manrope_400Regular',
     fontSize: 11,
     color: '#94a3b8',
-    fontStyle: 'italic',
     marginTop: 6,
   },
-  notes: { fontSize: 13, color: '#64748b', marginTop: 6, lineHeight: 18 },
+  notes: { fontFamily: 'Manrope_400Regular', fontSize: 13, color: '#64748b', marginTop: 6, lineHeight: 18 },
   emptyState: {
     alignItems: 'center',
     paddingTop: 80,
@@ -469,11 +464,12 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 18,
-    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
+    fontFamily: 'Manrope_600SemiBold',
     color: '#475569',
     marginTop: 16,
   },
   emptySubtitle: {
+    fontFamily: 'Manrope_400Regular',
     fontSize: 14,
     color: '#94a3b8',
     marginTop: 8,
@@ -488,5 +484,5 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 8,
   },
-  errorText: { color: '#dc2626', fontSize: 14 },
+  errorText: { fontFamily: 'Manrope_400Regular', color: '#dc2626', fontSize: 14 },
 });

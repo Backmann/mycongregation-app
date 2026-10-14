@@ -56,10 +56,9 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 13.5,
     color: '#92400e',
-    fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
   },
-  hint: { fontSize: 12.5, color: '#a16207', marginTop: 2, lineHeight: 17 },
+  hint: { fontFamily: 'Manrope_400Regular', fontSize: 12.5, color: '#a16207', marginTop: 2, lineHeight: 17 },
   retry: {
     backgroundColor: '#fff',
     borderWidth: 1,
@@ -71,7 +70,6 @@ const styles = StyleSheet.create({
   retryText: {
     fontSize: 12.5,
     color: '#92400e',
-    fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
   },
   pressed: { opacity: 0.85 },

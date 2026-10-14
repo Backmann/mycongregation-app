@@ -506,7 +506,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#e2e8f0',
   },
-  summaryLabel: { fontSize: 12.5, color: '#64748b' },
+  summaryLabel: { fontFamily: 'Manrope_400Regular', fontSize: 12.5, color: '#64748b' },
   summaryValue: {
     fontSize: 28,
     color: '#0e7490',
@@ -514,12 +514,14 @@ const styles = StyleSheet.create({
     marginVertical: 2,
   },
   summaryCaption: {
+    fontFamily: 'Manrope_400Regular',
     fontSize: 11,
     color: '#94a3b8',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   summaryNote: {
+    fontFamily: 'Manrope_400Regular',
     fontSize: 12,
     color: '#94a3b8',
     textAlign: 'center',
@@ -547,8 +549,8 @@ const styles = StyleSheet.create({
     fontFamily: 'Manrope_700Bold',
     textTransform: 'capitalize',
   },
-  monthTotals: { fontSize: 12.5, color: '#64748b' },
-  monthNothing: { fontSize: 13, color: '#94a3b8', marginTop: 6 },
+  monthTotals: { fontFamily: 'Manrope_400Regular', fontSize: 12.5, color: '#64748b' },
+  monthNothing: { fontFamily: 'Manrope_400Regular', fontSize: 13, color: '#94a3b8', marginTop: 6 },
 
   kindBlock: { marginTop: 10 },
   kindLabel: {
@@ -567,6 +569,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   signature: {
+    fontFamily: 'Manrope_400Regular',
     fontSize: 11.5,
     color: '#94a3b8',
     marginLeft: 76,
@@ -580,7 +583,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Manrope_700Bold',
     textAlign: 'center',
   },
-  rowDate: { width: 58, fontSize: 13.5, color: '#475569' },
+  rowDate: { fontFamily: 'Manrope_400Regular', width: 58, fontSize: 13.5, color: '#475569' },
   rowValue: {
     flex: 1,
     fontSize: 15,
@@ -589,17 +592,16 @@ const styles = StyleSheet.create({
   },
   rowMissing: {
     color: '#b45309',
-    fontStyle: 'italic',
-    fontFamily: undefined,
+    fontFamily: 'Manrope_400Regular',
     fontSize: 13,
   },
   rowNotHeld: {
     color: '#94a3b8',
-    fontStyle: 'italic',
-    fontFamily: undefined,
+    fontFamily: 'Manrope_400Regular',
     fontSize: 13,
   },
   rowInput: {
+    fontFamily: 'Manrope_400Regular',
     flex: 1,
     borderWidth: 1,
     borderColor: '#0e7490',

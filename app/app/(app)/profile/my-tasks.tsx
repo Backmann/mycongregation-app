@@ -110,9 +110,9 @@ const styles = StyleSheet.create({
     lineHeight: 21,
   },
   whenRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 8 },
-  when: { fontSize: 13, color: '#64748b' },
+  when: { fontFamily: 'Manrope_400Regular', fontSize: 13, color: '#64748b' },
   whenLate: { color: '#A32D2D' },
-  details: { fontSize: 13.5, color: '#475569', lineHeight: 19, marginTop: 8 },
-  empty: { fontSize: 14, color: '#64748b', textAlign: 'center', marginTop: 32 },
-  note: { fontSize: 12.5, color: '#94a3b8', marginTop: 6, lineHeight: 18 },
+  details: { fontFamily: 'Manrope_400Regular', fontSize: 13.5, color: '#475569', lineHeight: 19, marginTop: 8 },
+  empty: { fontFamily: 'Manrope_400Regular', fontSize: 14, color: '#64748b', textAlign: 'center', marginTop: 32 },
+  note: { fontFamily: 'Manrope_400Regular', fontSize: 12.5, color: '#94a3b8', marginTop: 6, lineHeight: 18 },
 });

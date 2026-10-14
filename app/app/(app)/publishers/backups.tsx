@@ -133,14 +133,14 @@ const styles = StyleSheet.create({
     borderColor: '#e2e8f0',
   },
   statusRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  statusText: { fontSize: 15, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0f172a', flex: 1 },
-  meta: { fontSize: 13, color: '#64748b' },
-  muted: { fontSize: 14, color: '#94a3b8' },
+  statusText: { fontSize: 15, fontFamily: 'Manrope_600SemiBold', color: '#0f172a', flex: 1 },
+  meta: { fontFamily: 'Manrope_400Regular', fontSize: 13, color: '#64748b' },
+  muted: { fontFamily: 'Manrope_400Regular', fontSize: 14, color: '#94a3b8' },
   note: {
+    fontFamily: 'Manrope_400Regular',
     fontSize: 13,
     lineHeight: 19,
     color: '#475569',
-    fontStyle: 'italic',
     paddingHorizontal: 4,
   },
   button: {
@@ -153,6 +153,6 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
   },
   buttonPressed: { opacity: 0.85 },
-  buttonText: { color: '#ffffff', fontSize: 15, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
+  buttonText: { color: '#ffffff', fontSize: 15, fontFamily: 'Manrope_600SemiBold',},
   error: { color: '#dc2626', fontSize: 14, textAlign: 'center', marginTop: 32 },
 });

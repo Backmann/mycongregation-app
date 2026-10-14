@@ -108,10 +108,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(14,165,233,0.06)',
   },
   hint: {
+    fontFamily: 'Manrope_400Regular',
     textAlign: 'center',
     color: '#94a3b8',
     fontSize: 13,
     marginTop: 8,
   },
-  hintActive: { color: '#0ea5e9', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
+  hintActive: { color: '#0ea5e9', fontFamily: 'Manrope_600SemiBold',},
 });

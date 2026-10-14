@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 18,
-    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
+    fontFamily: 'Manrope_600SemiBold',
     color: '#0f172a',
     marginBottom: 16,
     textAlign: 'center',
@@ -142,8 +142,8 @@ const styles = StyleSheet.create({
     borderColor: '#0ea5e9',
     backgroundColor: '#e0f2fe',
   },
-  optionText: { fontSize: 15, color: '#0f172a' },
-  detectedText: { fontSize: 11, color: '#0ea5e9', marginTop: 2 },
+  optionText: { fontFamily: 'Manrope_400Regular', fontSize: 15, color: '#0f172a' },
+  detectedText: { fontFamily: 'Manrope_400Regular', fontSize: 11, color: '#0ea5e9', marginTop: 2 },
   confirmButton: {
     backgroundColor: '#0ea5e9',
     paddingVertical: 14,
@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 8,
   },
-  confirmText: { color: 'white', fontSize: 16, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
+  confirmText: { color: 'white', fontSize: 16, fontFamily: 'Manrope_600SemiBold',},
   cancelButton: { paddingVertical: 12, alignItems: 'center', marginTop: 4 },
-  cancelText: { color: '#64748b', fontSize: 14 },
+  cancelText: { fontFamily: 'Manrope_400Regular', color: '#64748b', fontSize: 14 },
 });

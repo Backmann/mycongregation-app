@@ -79,6 +79,9 @@ export const headerOptions: NativeStackNavigationOptions = {
   headerTintColor: "#ffffff",
   headerTitleStyle: {
     fontFamily: "Manrope_700Bold",
+    // The navigator puts its own weight on the title (500 in the browser):
+    // set back to normal, the face alone carries it (14 October 2026).
+    fontWeight: "normal",
     fontSize: 18,
     color: "#ffffff",
   },

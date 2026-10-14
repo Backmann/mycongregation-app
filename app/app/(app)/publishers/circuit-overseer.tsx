@@ -314,8 +314,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#f1f5f9',
   },
-  intro: { fontSize: 14, color: '#475569', marginBottom: 12, lineHeight: 20 },
+  intro: { fontFamily: 'Manrope_400Regular', fontSize: 14, color: '#475569', marginBottom: 12, lineHeight: 20 },
   empty: {
+    fontFamily: 'Manrope_400Regular',
     fontSize: 14,
     color: '#94a3b8',
     textAlign: 'center',
@@ -334,14 +335,14 @@ const styles = StyleSheet.create({
   cardTop: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   roleTag: {
     fontSize: 11,
-    fontWeight: '700', fontFamily: 'Manrope_700Bold',
+    fontFamily: 'Manrope_700Bold',
     color: '#0e7490',
     textTransform: 'uppercase',
     letterSpacing: 0.4,
   },
   primaryBadge: {
     fontSize: 10,
-    fontWeight: '700', fontFamily: 'Manrope_700Bold',
+    fontFamily: 'Manrope_700Bold',
     color: '#fff',
     backgroundColor: '#0ea5e9',
     borderRadius: 6,
@@ -349,8 +350,8 @@ const styles = StyleSheet.create({
     paddingVertical: 1,
     overflow: 'hidden',
   },
-  name: { fontSize: 16, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0f172a', marginTop: 3 },
-  wife: { fontSize: 13, color: '#64748b', marginTop: 2 },
+  name: { fontSize: 16, fontFamily: 'Manrope_600SemiBold', color: '#0f172a', marginTop: 3 },
+  wife: { fontFamily: 'Manrope_400Regular', fontSize: 13, color: '#64748b', marginTop: 2 },
   cardActions: { flexDirection: 'row', gap: 4 },
   iconBtn: { padding: 6 },
   addBtn: {
@@ -363,8 +364,9 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginTop: 8,
   },
-  addBtnText: { color: '#fff', fontSize: 15, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
+  addBtnText: { color: '#fff', fontSize: 15, fontFamily: 'Manrope_600SemiBold',},
   note: {
+    fontFamily: 'Manrope_400Regular',
     fontSize: 12,
     color: '#94a3b8',
     textAlign: 'center',
@@ -372,6 +374,7 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   errorBoxText: {
+    fontFamily: 'Manrope_400Regular',
     color: '#991b1b',
     fontSize: 13,
     backgroundColor: '#fef2f2',
@@ -384,11 +387,11 @@ const styles = StyleSheet.create({
   fieldLabel: {
     fontSize: 13,
     color: '#475569',
-    fontWeight: '600',
     fontFamily: 'Manrope_600SemiBold',
     marginBottom: 6,
   },
   fieldHint: {
+    fontFamily: 'Manrope_400Regular',
     fontSize: 12.5,
     color: '#94a3b8',
     lineHeight: 17,
@@ -396,6 +399,7 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   input: {
+    fontFamily: 'Manrope_400Regular',
     borderWidth: 1,
     borderColor: '#e2e8f0',
     borderRadius: 10,
@@ -416,7 +420,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   chipActive: { backgroundColor: '#0ea5e9', borderColor: '#0ea5e9' },
-  chipText: { fontSize: 13, color: '#475569', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
+  chipText: { fontSize: 13, color: '#475569', fontFamily: 'Manrope_600SemiBold',},
   chipTextActive: { color: '#fff' },
   toggleRow: {
     flexDirection: 'row',
@@ -431,7 +435,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
     marginBottom: 4,
   },
-  toggleLabel: { fontSize: 14, color: '#334155' },
+  toggleLabel: { fontFamily: 'Manrope_400Regular', fontSize: 14, color: '#334155' },
   submitButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -441,5 +445,5 @@ const styles = StyleSheet.create({
     paddingVertical: 13,
     borderRadius: 12,
   },
-  submitButtonText: { color: '#fff', fontSize: 15, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
+  submitButtonText: { color: '#fff', fontSize: 15, fontFamily: 'Manrope_600SemiBold',},
 });

@@ -35,6 +35,7 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
   hint: {
+    fontFamily: 'Manrope_400Regular',
     fontSize: 13.5,
     color: '#64748b',
     textAlign: 'center',

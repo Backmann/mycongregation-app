@@ -990,7 +990,6 @@ const styles = StyleSheet.create({
   sectionHeading: {
     fontSize: 12,
     color: "#0369a1",
-    fontWeight: "700",
     fontFamily: "Manrope_700Bold",
     textTransform: "uppercase",
     letterSpacing: 0.4,
@@ -1005,8 +1004,8 @@ const styles = StyleSheet.create({
   },
   muted: { color: "#64748b", fontSize: 15, textAlign: "center" },
   container: { padding: 16, paddingBottom: 40 },
-  hint: { fontSize: 13, color: "#64748b", marginBottom: 12, lineHeight: 18 },
-  empty: { padding: 18, color: "#94a3b8", fontSize: 14, textAlign: "center" },
+  hint: { fontFamily: "Manrope_400Regular", fontSize: 13, color: "#64748b", marginBottom: 12, lineHeight: 18 },
+  empty: { fontFamily: "Manrope_400Regular", padding: 18, color: "#94a3b8", fontSize: 14, textAlign: "center" },
   row: {
     flexDirection: "row",
     alignItems: "center",
@@ -1021,11 +1020,10 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: 15,
-    fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
     color: "#0f172a",
   },
-  sub: { fontSize: 13, color: "#475569", marginTop: 1 },
+  sub: { fontFamily: "Manrope_400Regular", fontSize: 13, color: "#475569", marginTop: 1 },
   toolbar: { marginBottom: 12, gap: 8 },
   searchRow: {
     flexDirection: "row",
@@ -1038,7 +1036,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
   },
-  searchInput: { flex: 1, fontSize: 15, color: "#0f172a", paddingVertical: 0 },
+  searchInput: { fontFamily: "Manrope_400Regular", flex: 1, fontSize: 15, color: "#0f172a", paddingVertical: 0 },
   segmentRow: {
     flexDirection: "row",
     backgroundColor: "#e2e8f0",
@@ -1055,12 +1053,10 @@ const styles = StyleSheet.create({
   segmentText: {
     fontSize: 13,
     color: "#64748b",
-    fontWeight: "500",
     fontFamily: "Manrope_500Medium",
   },
   segmentTextActive: {
     color: "#0f172a",
-    fontWeight: "700",
     fontFamily: "Manrope_700Bold",
   },
   filterRow: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
@@ -1073,10 +1069,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   filterChipActive: { backgroundColor: "#0ea5e9", borderColor: "#0ea5e9" },
-  filterChipText: { fontSize: 13, color: "#475569" },
+  filterChipText: { fontFamily: "Manrope_400Regular", fontSize: 13, color: "#475569" },
   filterChipTextActive: {
     color: "#fff",
-    fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
   },
   statusRow: {
@@ -1086,10 +1081,9 @@ const styles = StyleSheet.create({
     gap: 8,
     marginTop: 3,
   },
-  statusText: { fontSize: 13, color: "#64748b" },
+  statusText: { fontFamily: "Manrope_400Regular", fontSize: 13, color: "#64748b" },
   statusRecent: {
     color: "#b45309",
-    fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
   },
   autoRow: {
@@ -1098,20 +1092,18 @@ const styles = StyleSheet.create({
     gap: 5,
     marginTop: 3,
   },
-  autoText: { fontSize: 12, color: "#7c3aed" },
+  autoText: { fontFamily: "Manrope_400Regular", fontSize: 12, color: "#7c3aed" },
   /** Ближайший приезд — то, ради чего строку и читают. */
-  comingLine: { fontSize: 13, color: "#0369a1", marginTop: 2, lineHeight: 18 },
+  comingLine: { fontFamily: "Manrope_400Regular", fontSize: 13, color: "#0369a1", marginTop: 2, lineHeight: 18 },
   statusNever: {
     fontSize: 13,
     color: "#94a3b8",
-    fontStyle: "italic",
     marginTop: 3,
   },
   upcomingTag: { flexDirection: "row", alignItems: "center", gap: 3 },
   upcomingText: {
     fontSize: 13,
     color: "#0369a1",
-    fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
   },
   iconBtn: { padding: 6 },
@@ -1130,7 +1122,6 @@ const styles = StyleSheet.create({
   addBtnPressed: { backgroundColor: "#e0f2fe" },
   addBtnText: {
     fontSize: 14,
-    fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
     color: "#0369a1",
   },
@@ -1147,11 +1138,10 @@ const styles = StyleSheet.create({
   doublesHead: { flexDirection: "row", alignItems: "center", gap: 6 },
   doublesTitle: {
     fontSize: 14,
-    fontWeight: "700",
     fontFamily: "Manrope_700Bold",
     color: "#6d28d9",
   },
-  doublesLead: { fontSize: 12.5, color: "#64748b", marginTop: 3 },
+  doublesLead: { fontFamily: "Manrope_400Regular", fontSize: 12.5, color: "#64748b", marginTop: 3 },
   doublesPair: {
     marginTop: 10,
     paddingTop: 10,
@@ -1160,14 +1150,12 @@ const styles = StyleSheet.create({
   },
   doublesName: {
     fontSize: 14.5,
-    fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
     color: "#0f172a",
     marginBottom: 2,
   },
   doublesSub: {
     fontSize: 12.5,
-    fontWeight: "400",
     fontFamily: "Manrope_400Regular",
     color: "#64748b",
   },
@@ -1183,17 +1171,15 @@ const styles = StyleSheet.create({
   doublesBtnMain: { backgroundColor: "#7c3aed", borderColor: "#7c3aed" },
   doublesBtnMainText: {
     fontSize: 13,
-    fontWeight: "700",
     fontFamily: "Manrope_700Bold",
     color: "#fff",
   },
   doublesBtnText: {
     fontSize: 13,
-    fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
     color: "#6d28d9",
   },
-  doublesMore: { fontSize: 12.5, color: "#64748b", marginTop: 10 },
+  doublesMore: { fontFamily: "Manrope_400Regular", fontSize: 12.5, color: "#64748b", marginTop: 10 },
   editorCard: {
     backgroundColor: "#fff",
     borderRadius: 12,
@@ -1204,13 +1190,13 @@ const styles = StyleSheet.create({
   },
   fieldLabel: {
     fontSize: 12,
-    fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
     color: "#64748b",
     marginTop: 10,
     marginBottom: 4,
   },
   input: {
+    fontFamily: "Manrope_400Regular",
     borderWidth: 1,
     borderColor: "#cbd5e1",
     borderRadius: 8,
@@ -1239,11 +1225,10 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
     marginTop: 12,
   },
-  overseerHint: { fontSize: 12, color: "#64748b", marginTop: 6, lineHeight: 17 },
-  pickChipText: { fontSize: 13, color: "#475569" },
+  overseerHint: { fontFamily: "Manrope_400Regular", fontSize: 12, color: "#64748b", marginTop: 6, lineHeight: 17 },
+  pickChipText: { fontFamily: "Manrope_400Regular", fontSize: 13, color: "#475569" },
   pickChipTextActive: {
     color: "#0369a1",
-    fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
   },
   newChip: { borderStyle: "dashed" },
@@ -1271,7 +1256,6 @@ const styles = StyleSheet.create({
   talkChipText: {
     fontSize: 12,
     color: "#6d28d9",
-    fontWeight: "500",
     fontFamily: "Manrope_500Medium",
     flexShrink: 1,
   },
@@ -1285,7 +1269,6 @@ const styles = StyleSheet.create({
   cancelText: {
     fontSize: 15,
     color: "#64748b",
-    fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
   },
   saveBtn: {
@@ -1297,7 +1280,6 @@ const styles = StyleSheet.create({
   saveText: {
     fontSize: 15,
     color: "#fff",
-    fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
   },
 });

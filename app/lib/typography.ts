@@ -3,9 +3,9 @@
  *
  * React Native does not derive a bold from a regular the way a browser does:
  * a `fontWeight` without the matching `fontFamily` falls back to the system
- * face, or to a smeared fake bold. The rest of the app names the file for
- * every weight explicitly — 782 times — and a screen that forgets it looks
- * subtly foreign next to the others. Name it through here.
+ * face — and so does a `fontWeight` BESIDE the face, on Android (14 October
+ * 2026). The face is the weight: name the file, never a weight with it.
+ * scripts/check-fonts.mjs keeps it so.
  *
  * There is no italic: only upright files are loaded, so nothing should ask
  * for `fontStyle: 'italic'`.

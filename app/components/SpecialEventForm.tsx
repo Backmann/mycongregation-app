@@ -1126,7 +1126,7 @@ export function SpecialEventForm({
           keyboardShouldPersistTaps="always"
         >
           <Pressable style={styles.noteTool} onPress={() => wrapNote('**')}>
-            <Text style={[styles.noteToolText, { fontWeight: '800', fontFamily: 'Manrope_800ExtraBold',}]}>{t('common.boldShort')}</Text>
+            <Text style={[styles.noteToolText, { fontFamily: 'Manrope_800ExtraBold',}]}>{t('common.boldShort')}</Text>
           </Pressable>
           <Pressable style={styles.noteTool} onPress={() => wrapNote('_')}>
             <Text style={[styles.noteToolText, { fontStyle: 'italic' }]}>
@@ -1388,7 +1388,7 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 14,
   },
-  pastNoteText: { flex: 1, fontSize: 13.5, color: '#334155', lineHeight: 19 },
+  pastNoteText: { fontFamily: 'Manrope_400Regular', flex: 1, fontSize: 13.5, color: '#334155', lineHeight: 19 },
   locked: { backgroundColor: '#f8fafc', opacity: 0.7 },
   kindHead: {
     flexDirection: 'row',
@@ -1407,13 +1407,11 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     fontFamily: 'Manrope_700Bold',
-    fontWeight: '700',
     color: '#0f172a',
   },
   kindChange: {
     fontSize: 13,
     fontFamily: 'Manrope_700Bold',
-    fontWeight: '700',
     color: '#0369a1',
   },
   noteToolbar: { marginBottom: 8, flexGrow: 0 },
@@ -1424,11 +1422,11 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     marginRight: 6,
   },
-  noteToolText: { fontSize: 14, color: '#0f172a' },
+  noteToolText: { fontFamily: 'Manrope_400Regular', fontSize: 14, color: '#0f172a' },
   timeFields: { flexDirection: 'row', gap: 10, marginTop: 8 },
   timeSubLabel: {
     fontSize: 11,
-    fontWeight: '700', fontFamily: 'Manrope_700Bold',
+    fontFamily: 'Manrope_700Bold',
     color: '#64748b',
     marginBottom: 4,
     textTransform: 'uppercase',
@@ -1447,7 +1445,7 @@ const styles = StyleSheet.create({
   },
   notePreviewLabel: {
     fontSize: 10.5,
-    fontWeight: '700', fontFamily: 'Manrope_700Bold',
+    fontFamily: 'Manrope_700Bold',
     color: '#94a3b8',
     textTransform: 'uppercase',
     marginBottom: 3,
@@ -1457,14 +1455,14 @@ const styles = StyleSheet.create({
   sectionLabel: {
     fontSize: 12,
     fontFamily: 'Manrope_700Bold',
-    fontWeight: '700',
     color: '#64748b',
     letterSpacing: 0.6,
     textTransform: 'uppercase',
     marginBottom: 8,
   },
-  label: { fontSize: 13, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#475569', marginBottom: 6 },
+  label: { fontSize: 13, fontFamily: 'Manrope_600SemiBold', color: '#475569', marginBottom: 6 },
   input: {
+    fontFamily: 'Manrope_400Regular',
     borderWidth: 1,
     borderColor: '#cbd5e1',
     borderRadius: 10,
@@ -1482,10 +1480,10 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#0369a1',
     fontFamily: 'Manrope_600SemiBold',
-    fontWeight: '600',
     marginTop: 8,
   },
   stayHint: {
+    fontFamily: 'Manrope_400Regular',
     fontSize: 13,
     color: '#64748b',
     lineHeight: 18,
@@ -1493,6 +1491,7 @@ const styles = StyleSheet.create({
     marginBottom: 18,
   },
   calendarHint: {
+    fontFamily: 'Manrope_400Regular',
     fontSize: 12.5,
     color: '#64748b',
     lineHeight: 17,
@@ -1500,6 +1499,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   meetingDay: {
+    fontFamily: 'Manrope_400Regular',
     fontSize: 13,
     color: '#0369a1',
     marginBottom: 8,
@@ -1521,11 +1521,10 @@ const styles = StyleSheet.create({
   modeTitle: {
     fontSize: 15,
     fontFamily: 'Manrope_600SemiBold',
-    fontWeight: '600',
     color: '#0f172a',
   },
   modeTitleOn: { color: '#0369a1' },
-  modeHint: { fontSize: 12, color: '#64748b', marginTop: 2, lineHeight: 17 },
+  modeHint: { fontFamily: 'Manrope_400Regular', fontSize: 12, color: '#64748b', marginTop: 2, lineHeight: 17 },
   changeBox: {
     marginTop: 10,
     padding: 12,
@@ -1535,14 +1534,14 @@ const styles = StyleSheet.create({
     borderColor: '#e2e8f0',
   },
   multilineShort: { minHeight: 64, textAlignVertical: 'top' },
-  changeNeed: { fontSize: 12, color: '#b45309', marginTop: 8 },
+  changeNeed: { fontFamily: 'Manrope_400Regular', fontSize: 12, color: '#b45309', marginTop: 8 },
   switchRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 10,
   },
-  switchLabel: { fontSize: 15, color: '#0f172a' },
+  switchLabel: { fontFamily: 'Manrope_400Regular', fontSize: 15, color: '#0f172a' },
   selectBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1553,7 +1552,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     backgroundColor: '#fff',
   },
-  selectText: { flex: 1, fontSize: 16, color: '#0f172a' },
+  selectText: { fontFamily: 'Manrope_400Regular', flex: 1, fontSize: 16, color: '#0f172a' },
   placeholder: { color: '#94a3b8' },
   inlineCard: {
     marginTop: 8,
@@ -1574,8 +1573,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   chipActive: { backgroundColor: '#0ea5e9', borderColor: '#0ea5e9' },
-  chipText: { fontSize: 14, color: '#334155' },
-  chipTextActive: { color: '#fff', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
+  chipText: { fontFamily: 'Manrope_400Regular', fontSize: 14, color: '#334155' },
+  chipTextActive: { color: '#fff', fontFamily: 'Manrope_600SemiBold',},
   typeRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1586,13 +1585,14 @@ const styles = StyleSheet.create({
     borderBottomColor: '#f1f5f9',
   },
   typeHint: {
+    fontFamily: 'Manrope_400Regular',
     fontSize: 12,
     color: '#64748b',
     lineHeight: 17,
     paddingHorizontal: 4,
     paddingTop: 8,
   },
-  typeText: { flex: 1, fontSize: 16, color: '#0f172a' },
+  typeText: { fontFamily: 'Manrope_400Regular', flex: 1, fontSize: 16, color: '#0f172a' },
   summary: {
     backgroundColor: '#f0f9ff',
     borderWidth: 1,
@@ -1605,12 +1605,11 @@ const styles = StyleSheet.create({
   summaryTitle: {
     fontSize: 12,
     fontFamily: 'Manrope_700Bold',
-    fontWeight: '700',
     color: '#0369a1',
     letterSpacing: 0.6,
     textTransform: 'uppercase',
   },
   summaryRow: { flexDirection: 'row', gap: 8, alignItems: 'flex-start' },
-  summaryText: { flex: 1, fontSize: 14, color: '#0f172a', lineHeight: 20 },
+  summaryText: { fontFamily: 'Manrope_400Regular', flex: 1, fontSize: 14, color: '#0f172a', lineHeight: 20 },
   summaryWarn: { color: '#92400e' },
 });

@@ -1233,10 +1233,10 @@ export function AssignmentForm({
                 borderTopColor: "#f1f5f9",
               }}
             >
-              <Text style={{ fontSize: 13, color: "#94a3b8", marginBottom: 4 }}>
+              <Text style={{ fontFamily: "Manrope_400Regular", fontSize: 13, color: "#94a3b8", marginBottom: 4 }}>
                 {t("assignments.form.field.requiredSkill")}
               </Text>
-              <Text style={{ fontSize: 15, color: "#0f172a" }}>
+              <Text style={{ fontFamily: "Manrope_400Regular", fontSize: 15, color: "#0f172a" }}>
                 {requiredSkillLabel}
               </Text>
             </View>
@@ -1334,6 +1334,7 @@ export function AssignmentForm({
 
 const styles = StyleSheet.create({
   instantStatus: {
+    fontFamily: "Manrope_400Regular",
     fontSize: 12,
     color: "#16a34a",
     marginTop: 2,
@@ -1348,7 +1349,6 @@ const styles = StyleSheet.create({
   cancelPartText: {
     color: "#dc2626",
     fontSize: 14,
-    fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
   },
   restorePartText: { color: "#0369a1" },
@@ -1363,6 +1363,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   contextMeta: {
+    fontFamily: "Manrope_400Regular",
     fontSize: 12,
     color: "#64748b",
     textTransform: "uppercase",
@@ -1378,7 +1379,6 @@ const styles = StyleSheet.create({
   contextChipText: {
     fontSize: 12,
     color: "#475569",
-    fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
   },
   container: { flex: 1, backgroundColor: "#f1f5f9" },
@@ -1402,7 +1402,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 8,
   },
-  errorText: { color: "#dc2626", fontSize: 14 },
+  errorText: { fontFamily: "Manrope_400Regular", color: "#dc2626", fontSize: 14 },
   actions: { padding: 20, gap: 8 },
   button: { paddingVertical: 14, borderRadius: 8, alignItems: "center" },
   buttonPrimary: { backgroundColor: "#0ea5e9" },
@@ -1410,7 +1410,6 @@ const styles = StyleSheet.create({
   buttonPrimaryText: {
     color: "#fff",
     fontSize: 16,
-    fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
   },
   buttonSecondary: {
@@ -1421,7 +1420,6 @@ const styles = StyleSheet.create({
   buttonSecondaryText: {
     color: "#475569",
     fontSize: 16,
-    fontWeight: "500",
     fontFamily: "Manrope_500Medium",
   },
   lnInsertBtn: {
@@ -1440,7 +1438,6 @@ const styles = StyleSheet.create({
   lnInsertText: {
     color: "#0369a1",
     fontSize: 15,
-    fontWeight: "700",
     fontFamily: "Manrope_700Bold",
   },
   coSpeakerNote: {
@@ -1454,13 +1451,11 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 14,
     color: "#6d28d9",
-    fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
   },
   coPickerWrap: { paddingHorizontal: 20, paddingBottom: 14 },
   coPickerLabel: {
     fontSize: 12,
-    fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
     color: "#475569",
     textTransform: "uppercase",
@@ -1480,7 +1475,6 @@ const styles = StyleSheet.create({
   coChipText: {
     fontSize: 13,
     color: "#6d28d9",
-    fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
   },
   coChipTextActive: { color: "#fff" },
@@ -1504,11 +1498,11 @@ const styles = StyleSheet.create({
   },
   lnTitle: {
     fontSize: 18,
-    fontWeight: "700",
     fontFamily: "Manrope_700Bold",
     color: "#0f172a",
   },
   lnEmpty: {
+    fontFamily: "Manrope_400Regular",
     fontSize: 14,
     color: "#64748b",
     textAlign: "center",
@@ -1526,11 +1520,10 @@ const styles = StyleSheet.create({
   },
   lnRowTitle: {
     fontSize: 15,
-    fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
     color: "#0f172a",
   },
-  lnRowNotes: { fontSize: 13, color: "#64748b", marginTop: 2 },
+  lnRowNotes: { fontFamily: "Manrope_400Regular", fontSize: 13, color: "#64748b", marginTop: 2 },
   lnSearchBox: {
     flexDirection: "row",
     alignItems: "center",
@@ -1542,7 +1535,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     marginBottom: 8,
   },
-  lnSearchInput: { flex: 1, fontSize: 14, color: "#0f172a" },
+  lnSearchInput: { fontFamily: "Manrope_400Regular", flex: 1, fontSize: 14, color: "#0f172a" },
   lnGroup: {
     fontSize: 11,
     color: "#94a3b8",
@@ -1552,11 +1545,10 @@ const styles = StyleSheet.create({
     marginBottom: 2,
     fontFamily: "Manrope_600SemiBold",
   },
-  lnRowUsed: { fontSize: 12, color: "#047857", marginTop: 2 },
+  lnRowUsed: { fontFamily: "Manrope_400Regular", fontSize: 12, color: "#047857", marginTop: 2 },
   lnRowSpeaker: {
     fontSize: 12,
     color: "#0369a1",
-    fontWeight: "500",
     fontFamily: "Manrope_500Medium",
     marginTop: 3,
   },
@@ -1569,17 +1561,18 @@ const styles = StyleSheet.create({
 const rp = StyleSheet.create({
   /** Шапка окна: значок и название, чтобы панель читалась как отдельное дело. */
   head: { flexDirection: "row", alignItems: "center", gap: 7, marginBottom: 2 },
-  title: { fontSize: 14.5, fontWeight: "700", color: "#0c4a6e" },
+  title: { fontSize: 14.5, fontFamily: "Manrope_700Bold", color: "#0c4a6e" },
   /** Подпись ступени: «кто», «что говорит». */
   step: {
     fontSize: 11.5,
-    fontWeight: "700",
+    fontFamily: "Manrope_700Bold",
     color: "#0369a1",
     letterSpacing: 0.3,
     textTransform: "uppercase",
     marginTop: 6,
   },
   search: {
+    fontFamily: "Manrope_400Regular",
     borderWidth: 1,
     borderColor: "#e2e8f0",
     backgroundColor: "#ffffff",
@@ -1589,14 +1582,14 @@ const rp = StyleSheet.create({
     fontSize: 14,
     color: "#0f172a",
   },
-  none: { fontSize: 12.5, color: "#64748b", paddingVertical: 2 },
+  none: { fontFamily: "Manrope_400Regular", fontSize: 12.5, color: "#64748b", paddingVertical: 2 },
   link: {
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
     marginTop: 10,
   },
-  linkText: { color: "#0369a1", fontSize: 13, fontWeight: "600" },
+  linkText: { color: "#0369a1", fontSize: 13, fontFamily: "Manrope_600SemiBold" },
   box: {
     marginTop: 10,
     padding: 12,
@@ -1606,7 +1599,7 @@ const rp = StyleSheet.create({
     backgroundColor: "#f0f9ff",
     gap: 8,
   },
-  lead: { fontSize: 13, color: "#0c4a6e", lineHeight: 19 },
+  lead: { fontFamily: "Manrope_400Regular", fontSize: 13, color: "#0c4a6e", lineHeight: 19 },
   row: {
     paddingVertical: 9,
     paddingHorizontal: 10,
@@ -1616,9 +1609,9 @@ const rp = StyleSheet.create({
     backgroundColor: "#ffffff",
   },
   rowOn: { borderColor: "#0ea5e9", backgroundColor: "#e0f2fe" },
-  rowName: { fontSize: 14, color: "#0f172a", fontWeight: "600" },
-  rowCong: { fontSize: 12, color: "#64748b", marginTop: 2 },
-  note: { fontSize: 12, color: "#64748b", lineHeight: 17 },
+  rowName: { fontSize: 14, color: "#0f172a", fontFamily: "Manrope_600SemiBold" },
+  rowCong: { fontFamily: "Manrope_400Regular", fontSize: 12, color: "#64748b", marginTop: 2 },
+  note: { fontFamily: "Manrope_400Regular", fontSize: 12, color: "#64748b", lineHeight: 17 },
   confirm: {
     backgroundColor: "#0ea5e9",
     borderRadius: 10,
@@ -1626,8 +1619,9 @@ const rp = StyleSheet.create({
     alignItems: "center",
   },
   confirmOff: { opacity: 0.5 },
-  confirmText: { color: "#fff", fontSize: 14, fontWeight: "700" },
+  confirmText: { color: "#fff", fontSize: 14, fontFamily: "Manrope_700Bold" },
   cancel: {
+    fontFamily: "Manrope_400Regular",
     textAlign: "center",
     color: "#64748b",
     fontSize: 13,
@@ -1647,6 +1641,7 @@ const hint = StyleSheet.create({
     overflow: "hidden",
   },
   lead: {
+    fontFamily: "Manrope_400Regular",
     fontSize: 11.5,
     color: "#64748b",
     paddingHorizontal: 10,
@@ -1660,6 +1655,6 @@ const hint = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 8,
   },
-  name: { fontSize: 14, color: "#0f172a" },
-  cong: { fontSize: 12, color: "#64748b", marginTop: 1 },
+  name: { fontFamily: "Manrope_400Regular", fontSize: 14, color: "#0f172a" },
+  cong: { fontFamily: "Manrope_400Regular", fontSize: 12, color: "#64748b", marginTop: 1 },
 });

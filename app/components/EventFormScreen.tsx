@@ -125,8 +125,8 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
     gap: 6,
   },
-  problem: { color: '#b45309', textAlign: 'center', fontSize: 13.5 },
-  error: { color: '#b91c1c', textAlign: 'center', fontSize: 13.5 },
+  problem: { fontFamily: 'Manrope_400Regular', color: '#b45309', textAlign: 'center', fontSize: 13.5 },
+  error: { fontFamily: 'Manrope_400Regular', color: '#b91c1c', textAlign: 'center', fontSize: 13.5 },
   buttons: { flexDirection: 'row', gap: 10 },
   save: {
     flex: 1,
@@ -138,7 +138,6 @@ const styles = StyleSheet.create({
   saveText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
   },
   disabled: { opacity: 0.45 },
@@ -154,7 +153,6 @@ const styles = StyleSheet.create({
   cancelText: {
     color: '#334155',
     fontSize: 16,
-    fontWeight: '600',
     fontFamily: 'Manrope_600SemiBold',
   },
 });

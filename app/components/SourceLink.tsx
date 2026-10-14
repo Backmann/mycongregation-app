@@ -42,5 +42,5 @@ const styles = StyleSheet.create({
   // As wide as its words, not as the row: a tap beside it belongs to the row.
   row: { flexDirection: 'row', alignItems: 'center', gap: 5, alignSelf: 'flex-start', paddingVertical: 2 },
   pressed: { opacity: 0.6 },
-  text: { fontSize: 13, color: LINK, fontWeight: '700', fontFamily: 'Manrope_700Bold' },
+  text: { fontSize: 13, color: LINK, fontFamily: 'Manrope_700Bold' },
 });

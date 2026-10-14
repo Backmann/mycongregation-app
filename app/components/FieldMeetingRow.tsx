@@ -159,16 +159,15 @@ const styles = StyleSheet.create({
   rowTime: {
     width: 46,
     fontSize: 15,
-    fontWeight: '800',
     fontFamily: 'Manrope_800ExtraBold',
     color: '#0f172a',
     paddingTop: 1,
   },
   rowBody: { flex: 1, gap: 2 },
   rowTitleLine: { flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' },
-  rowTitle: { fontSize: 15, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0f172a' },
+  rowTitle: { fontSize: 15, fontFamily: 'Manrope_700Bold', color: '#0f172a' },
   rowWho: { fontSize: 13.5, color: '#334155', fontFamily: 'Manrope_500Medium' },
-  rowWhoEmpty: { color: '#a14a00', fontWeight: '700', fontFamily: 'Manrope_700Bold' },
+  rowWhoEmpty: { color: '#a14a00', fontFamily: 'Manrope_700Bold' },
   rowMuted: { fontSize: 13, color: '#64748b', fontFamily: 'Manrope_500Medium' },
   rowTopic: { fontSize: 13.5, color: '#334155', fontFamily: 'Manrope_500Medium', marginTop: 2 },
   visitBadge: {
@@ -177,12 +176,12 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     backgroundColor: '#fdf0d9',
   },
-  visitBadgeText: { fontSize: 11.5, color: '#7a4a06', fontWeight: '700', fontFamily: 'Manrope_700Bold' },
+  visitBadgeText: { fontSize: 11.5, color: '#7a4a06', fontFamily: 'Manrope_700Bold' },
   draftBadge: {
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 999,
     backgroundColor: '#f1f5f9',
   },
-  draftBadgeText: { fontSize: 11.5, color: '#475569', fontWeight: '700', fontFamily: 'Manrope_700Bold' },
+  draftBadgeText: { fontSize: 11.5, color: '#475569', fontFamily: 'Manrope_700Bold' },
 });

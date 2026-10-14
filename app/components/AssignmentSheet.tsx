@@ -329,7 +329,6 @@ const styles = StyleSheet.create({
   nextText: {
     color: "#fff",
     fontSize: 14,
-    fontWeight: "700",
     fontFamily: "Manrope_700Bold",
   },
   unassignLink: {
@@ -342,7 +341,6 @@ const styles = StyleSheet.create({
   unassignLinkText: {
     color: "#dc2626",
     fontSize: 14,
-    fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
   },
   deletePartLink: {
@@ -355,7 +353,6 @@ const styles = StyleSheet.create({
   deletePartLinkText: {
     color: "#b91c1c",
     fontSize: 13,
-    fontWeight: "700",
     fontFamily: "Manrope_700Bold",
   },
 });

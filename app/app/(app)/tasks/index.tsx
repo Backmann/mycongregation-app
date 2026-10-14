@@ -898,9 +898,10 @@ const styles = StyleSheet.create({
     borderColor: "#e2e8f0",
   },
   tabOn: { backgroundColor: "#0e7490", borderColor: "#0e7490" },
-  tabText: { fontSize: 13, color: "#64748b" },
+  tabText: { fontFamily: "Manrope_400Regular", fontSize: 13, color: "#64748b" },
   tabTextOn: { color: "#fff", fontFamily: "Manrope_600SemiBold" },
   groupLabel: {
+    fontFamily: "Manrope_400Regular",
     fontSize: 12,
     color: "#64748b",
     marginTop: 6,
@@ -921,12 +922,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#fde68a",
   },
-  lateText: { fontSize: 13.5, color: "#78350f", fontWeight: "600" },
+  lateText: { fontSize: 13.5, color: "#78350f", fontFamily: "Manrope_600SemiBold" },
   tagRow: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 8 },
   tag: { borderRadius: 999, paddingHorizontal: 9, paddingVertical: 3 },
-  tagText: { fontSize: 12 },
+  tagText: { fontFamily: "Manrope_400Regular", fontSize: 12 },
   whoRow: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: 9 },
-  who: { fontSize: 13, color: "#64748b", flex: 1 },
+  who: { fontFamily: "Manrope_400Regular", fontSize: 13, color: "#64748b", flex: 1 },
   whoBody: { color: "#0369a1" },
   cardLate: { borderColor: "#F09595" },
   card: {
@@ -947,7 +948,6 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 15,
     color: "#0f172a",
-    fontWeight: "700",
     fontFamily: "Manrope_700Bold",
   },
   titleDone: { color: "#94a3b8", textDecorationLine: "line-through" },
@@ -968,15 +968,14 @@ const styles = StyleSheet.create({
   // The 18pt indent belonged to the coloured dot that used to sit before the
   // title. The dot became a labelled chip and the indent was left behind,
   // holding the detail line out of line with everything above it.
-  details: { fontSize: 13.5, color: "#475569", lineHeight: 20, marginTop: 8 },
+  details: { fontFamily: "Manrope_400Regular", fontSize: 13.5, color: "#475569", lineHeight: 20, marginTop: 8 },
   detailsToggle: {
     fontSize: 12.5,
     color: "#0369a1",
-    fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
     marginTop: 4,
   },
-  closedBy: { fontSize: 12.5, color: "#64748b", marginTop: 8 },
+  closedBy: { fontFamily: "Manrope_400Regular", fontSize: 12.5, color: "#64748b", marginTop: 8 },
   lockedTitle: {
     borderWidth: 1,
     borderColor: "#e2e8f0",
@@ -988,10 +987,10 @@ const styles = StyleSheet.create({
   lockedTitleText: {
     fontSize: 15,
     color: "#0f172a",
-    fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
   },
   lockedTitleHint: {
+    fontFamily: "Manrope_400Regular",
     fontSize: 12,
     color: "#94a3b8",
     lineHeight: 17,
@@ -1000,14 +999,13 @@ const styles = StyleSheet.create({
   openScreen: {
     fontSize: 13.5,
     color: "#0369a1",
-    fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
     marginTop: 10,
   },
   metaRow: { flexDirection: "row", gap: 12, flexWrap: "wrap" },
   meta: { fontSize: 12.5, color: "#475569" },
-  metaLate: { color: "#b45309", fontWeight: "700" },
-  empty: { fontSize: 14, color: "#64748b", textAlign: "center", marginTop: 32 },
+  metaLate: { color: "#b45309", fontFamily: "Manrope_700Bold" },
+  empty: { fontFamily: "Manrope_400Regular", fontSize: 14, color: "#64748b", textAlign: "center", marginTop: 32 },
   doneToggle: {
     flexDirection: "row",
     alignItems: "center",
@@ -1018,7 +1016,6 @@ const styles = StyleSheet.create({
   doneToggleText: {
     fontSize: 13.5,
     color: "#0369a1",
-    fontWeight: "700",
     fontFamily: "Manrope_700Bold",
   },
   fab: {
@@ -1049,11 +1046,11 @@ const styles = StyleSheet.create({
   agendaText: {
     fontSize: 13.5,
     color: "#0369a1",
-    fontWeight: "700",
     fontFamily: "Manrope_700Bold",
   },
   formBody: { padding: 16, gap: 6, paddingBottom: 40 },
   warn: {
+    fontFamily: "Manrope_400Regular",
     fontSize: 13,
     color: "#92400e",
     backgroundColor: "#fffbeb",
@@ -1064,11 +1061,10 @@ const styles = StyleSheet.create({
     marginTop: 8,
     lineHeight: 18,
   },
-  hint: { fontSize: 13, color: "#64748b", marginTop: 6, lineHeight: 18 },
+  hint: { fontFamily: "Manrope_400Regular", fontSize: 13, color: "#64748b", marginTop: 6, lineHeight: 18 },
   label: {
     fontSize: 11.5,
     color: "#94a3b8",
-    fontWeight: "700",
     fontFamily: "Manrope_700Bold",
     textTransform: "uppercase",
     letterSpacing: 0.6,
@@ -1078,6 +1074,7 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   input: {
+    fontFamily: "Manrope_400Regular",
     backgroundColor: "#fff",
     borderRadius: 10,
     paddingHorizontal: 12,
@@ -1102,7 +1099,7 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     backgroundColor: "#e2e8f0",
   },
-  chipText: { fontSize: 13, color: "#334155", fontWeight: "600" },
+  chipText: { fontSize: 13, color: "#334155", fontFamily: "Manrope_600SemiBold" },
   chipOnTeal: { backgroundColor: "#0e7490" },
   chipTextOn: { color: "#fff" },
   save: {
@@ -1115,9 +1112,8 @@ const styles = StyleSheet.create({
   saveText: {
     color: "#fff",
     fontSize: 15,
-    fontWeight: "700",
     fontFamily: "Manrope_700Bold",
   },
   delete: { marginTop: 22, alignItems: "center", paddingVertical: 12 },
-  deleteText: { color: "#dc2626", fontSize: 14, fontWeight: "600" },
+  deleteText: { color: "#dc2626", fontSize: 14, fontFamily: "Manrope_600SemiBold" },
 });

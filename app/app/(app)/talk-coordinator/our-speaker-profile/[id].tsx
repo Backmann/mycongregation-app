@@ -337,7 +337,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 32,
   },
-  muted: { color: "#64748b", fontSize: 15, textAlign: "center" },
+  muted: { fontFamily: "Manrope_400Regular", color: "#64748b", fontSize: 15, textAlign: "center" },
   container: { padding: 16, paddingBottom: 48 },
   card: {
     backgroundColor: "#fff",
@@ -349,18 +349,17 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: 20,
-    fontWeight: "700",
     fontFamily: "Manrope_700Bold",
     color: "#0f172a",
   },
-  cong: { fontSize: 14, color: "#475569", marginTop: 2 },
+  cong: { fontFamily: "Manrope_400Regular", fontSize: 14, color: "#475569", marginTop: 2 },
   phoneRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
     marginTop: 10,
   },
-  phone: { fontSize: 15, color: "#0369a1" },
+  phone: { fontFamily: "Manrope_400Regular", fontSize: 15, color: "#0369a1" },
 
   statsBand: {
     flexDirection: "row",
@@ -376,22 +375,19 @@ const styles = StyleSheet.create({
   statDivider: { width: 1, backgroundColor: "#e2e8f0" },
   statNum: {
     fontSize: 20,
-    fontWeight: "700",
     fontFamily: "Manrope_700Bold",
     color: "#0f172a",
   },
   statText: {
     fontSize: 14,
-    fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
     color: "#0f172a",
     textAlign: "center",
   },
-  statLabel: { fontSize: 11, color: "#94a3b8", textAlign: "center" },
+  statLabel: { fontFamily: "Manrope_400Regular", fontSize: 11, color: "#94a3b8", textAlign: "center" },
 
   sectionTitle: {
     fontSize: 13,
-    fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
     color: "#64748b",
     textTransform: "uppercase",
@@ -399,7 +395,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     marginLeft: 2,
   },
-  sectionEmpty: { fontSize: 14, color: "#94a3b8" },
+  sectionEmpty: { fontFamily: "Manrope_400Regular", fontSize: 14, color: "#94a3b8" },
 
   visitRow: {
     flexDirection: "row",
@@ -411,35 +407,32 @@ const styles = StyleSheet.create({
   visitDateCol: { width: 96 },
   visitDate: {
     fontSize: 14,
-    fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
     color: "#0f172a",
   },
-  visitRel: { fontSize: 12, color: "#94a3b8", marginTop: 1 },
+  visitRel: { fontFamily: "Manrope_400Regular", fontSize: 12, color: "#94a3b8", marginTop: 1 },
   visitTalkCol: { flex: 1 },
   visitHost: {
     fontSize: 14,
-    fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
     color: "#0f172a",
   },
-  visitTalk: { fontSize: 13, color: "#475569", lineHeight: 18, marginTop: 1 },
+  visitTalk: { fontFamily: "Manrope_400Regular", fontSize: 13, color: "#475569", lineHeight: 18, marginTop: 1 },
   visitNum: {
-    fontWeight: "700",
     fontFamily: "Manrope_700Bold",
     color: "#0369a1",
   },
   /** Снятая речь — предупреждение, его надо увидеть. */
-  visitWarn: { fontSize: 12.5, color: "#b45309", marginTop: 3, lineHeight: 17 },
+  visitWarn: { fontFamily: "Manrope_400Regular", fontSize: 12.5, color: "#b45309", marginTop: 3, lineHeight: 17 },
   /** Повтор темы в то же собрание — сведение, сказанное спокойно. */
-  visitNote: { fontSize: 12.5, color: "#64748b", marginTop: 3, lineHeight: 17 },
+  visitNote: { fontFamily: "Manrope_400Regular", fontSize: 12.5, color: "#64748b", marginTop: 3, lineHeight: 17 },
   visitTalkMuted: {
+    fontFamily: "Manrope_400Regular",
     fontSize: 13,
     color: "#94a3b8",
-    fontStyle: "italic",
     marginTop: 1,
   },
-  tentative: { fontSize: 11, color: "#b45309", marginTop: 2 },
+  tentative: { fontFamily: "Manrope_400Regular", fontSize: 11, color: "#b45309", marginTop: 2 },
 
   chipWrap: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
   talkChip: {
@@ -455,18 +448,16 @@ const styles = StyleSheet.create({
   },
   talkChipText: {
     fontSize: 13,
-    fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
     color: "#0369a1",
   },
   /** Речь, которую он ещё не говорил, но повезёт. */
   talkChipPlanned: { borderColor: "#bae6fd", backgroundColor: "#f0f9ff" },
-  talkChipPlannedMark: { fontSize: 11, color: "#0369a1", marginLeft: 4 },
+  talkChipPlannedMark: { fontFamily: "Manrope_400Regular", fontSize: 11, color: "#0369a1", marginLeft: 4 },
   talkChipCount: {
     fontSize: 12,
-    fontWeight: "700",
     fontFamily: "Manrope_700Bold",
     color: "#64748b",
   },
-  repertoireLegend: { fontSize: 12, color: "#94a3b8", marginTop: 10 },
+  repertoireLegend: { fontFamily: "Manrope_400Regular", fontSize: 12, color: "#94a3b8", marginTop: 10 },
 });

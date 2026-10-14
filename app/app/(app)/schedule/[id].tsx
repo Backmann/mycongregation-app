@@ -241,7 +241,7 @@ export default function AssignmentDetailScreen() {
 
 const styles = StyleSheet.create({
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 32 },
-  errorText: { color: '#dc2626', fontSize: 16, textAlign: 'center' },
+  errorText: { fontFamily: 'Manrope_400Regular', color: '#dc2626', fontSize: 16, textAlign: 'center' },
   removedBanner: {
     backgroundColor: '#fef3c7',
     borderColor: '#fde68a',
@@ -250,7 +250,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     alignItems: 'center',
   },
-  removedText: { color: '#92400e', fontWeight: '600', fontFamily: 'Manrope_600SemiBold', fontSize: 13 },
+  removedText: { color: '#92400e', fontFamily: 'Manrope_600SemiBold', fontSize: 13 },
   unassignLink: {
     alignSelf: 'center',
     paddingVertical: 10,
@@ -261,7 +261,7 @@ const styles = StyleSheet.create({
   unassignLinkText: {
     color: '#dc2626',
     fontSize: 14,
-    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
+    fontFamily: 'Manrope_600SemiBold',
   },
   bottomActions: {
     padding: 16,
@@ -273,5 +273,5 @@ const styles = StyleSheet.create({
   buttonRemove: { backgroundColor: '#dc2626' },
   buttonUnassign: { backgroundColor: '#d97706' },
   buttonRestore: { backgroundColor: '#059669' },
-  buttonText: { color: '#fff', fontSize: 16, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
+  buttonText: { color: '#fff', fontSize: 16, fontFamily: 'Manrope_600SemiBold',},
 });

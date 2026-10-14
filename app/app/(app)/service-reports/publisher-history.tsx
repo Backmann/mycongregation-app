@@ -758,7 +758,7 @@ const styles = StyleSheet.create({
     borderTopColor: '#e2e8f0',
     backgroundColor: '#fff',
   },
-  fillHint: { flex: 1, fontSize: 12, color: '#64748b', lineHeight: 16 },
+  fillHint: { fontFamily: 'Manrope_400Regular', flex: 1, fontSize: 12, color: '#64748b', lineHeight: 16 },
   fillSave: {
     backgroundColor: '#0e7490',
     borderRadius: 10,
@@ -769,13 +769,11 @@ const styles = StyleSheet.create({
   fillSaveText: {
     color: '#fff',
     fontSize: 15,
-    fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
   },
   fillToggle: {
     color: '#fff',
     fontSize: 14.5,
-    fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
   },
   fillRow: {
@@ -797,7 +795,6 @@ const styles = StyleSheet.create({
   fillMonth: {
     fontSize: 13,
     color: '#0f172a',
-    fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
   },
   fillAux: {
@@ -813,14 +810,13 @@ const styles = StyleSheet.create({
   },
   fillAuxOn: { backgroundColor: '#e0e7ff', borderColor: '#a5b4fc' },
   fillAuxOff: { backgroundColor: '#f8fafc', borderColor: '#f1f5f9' },
-  fillAuxText: { fontSize: 12, color: '#475569' },
+  fillAuxText: { fontFamily: 'Manrope_400Regular', fontSize: 12, color: '#475569' },
   fillAuxTextOn: {
     color: '#0f172a',
-    fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
   },
   fillAuxTextOff: { color: '#cbd5e1' },
-  fillAuxNote: { fontSize: 11.5, color: '#94a3b8', marginBottom: 8 },
+  fillAuxNote: { fontFamily: 'Manrope_400Regular', fontSize: 11.5, color: '#94a3b8', marginBottom: 8 },
   fillFields: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   fillChoice: { flexDirection: 'row', gap: 6, flex: 1 },
   fillPill: {
@@ -833,13 +829,13 @@ const styles = StyleSheet.create({
   },
   fillPillYes: { backgroundColor: '#dcfce7', borderColor: '#86efac' },
   fillPillNo: { backgroundColor: '#f1f5f9', borderColor: '#cbd5e1' },
-  fillPillText: { fontSize: 13, color: '#475569' },
+  fillPillText: { fontFamily: 'Manrope_400Regular', fontSize: 13, color: '#475569' },
   fillPillTextOn: {
     color: '#0f172a',
-    fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
   },
   fillInput: {
+    fontFamily: 'Manrope_400Regular',
     flex: 1,
     borderWidth: 1,
     borderColor: '#e2e8f0',
@@ -851,7 +847,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8fafc',
   },
   fillStudies: { maxWidth: 110 },
-  fillError: { fontSize: 11.5, color: '#b91c1c', marginTop: 6 },
+  fillError: { fontFamily: 'Manrope_400Regular', fontSize: 11.5, color: '#b91c1c', marginTop: 6 },
   goalCard: {
     backgroundColor: '#fff',
     borderRadius: 12,
@@ -866,8 +862,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 8,
   },
-  goalLabel: { fontSize: 14, fontWeight: '600', color: '#0f172a' },
-  goalPace: { fontSize: 12, fontWeight: '600' },
+  goalLabel: { fontSize: 14, fontFamily: 'Manrope_600SemiBold', color: '#0f172a' },
+  goalPace: { fontSize: 12, fontFamily: 'Manrope_600SemiBold' },
   goalOk: { color: '#0f766e' },
   goalBehind: { color: '#b45309' },
   goalBarTrack: {
@@ -879,7 +875,7 @@ const styles = StyleSheet.create({
   goalBarFill: { height: 8, borderRadius: 4 },
   goalBarOk: { backgroundColor: '#0ea5e9' },
   goalBarBehind: { backgroundColor: '#f59e0b' },
-  goalDetail: { fontSize: 12, color: '#64748b', marginTop: 6 },
+  goalDetail: { fontFamily: 'Manrope_400Regular', fontSize: 12, color: '#64748b', marginTop: 6 },
   center: {
     flex: 1,
     justifyContent: 'center',
@@ -902,12 +898,12 @@ const styles = StyleSheet.create({
   },
   headerName: {
     fontSize: 18,
-    fontWeight: '700', fontFamily: 'Manrope_700Bold',
+    fontFamily: 'Manrope_700Bold',
     color: '#0f172a',
     flexShrink: 1,
   },
-  pioneerTag: { fontSize: 13, color: '#0ea5e9', fontWeight: '500', fontFamily: 'Manrope_500Medium',},
-  headerSub: { fontSize: 12, color: '#64748b', marginTop: 4 },
+  pioneerTag: { fontSize: 13, color: '#0ea5e9', fontFamily: 'Manrope_500Medium',},
+  headerSub: { fontFamily: 'Manrope_400Regular', fontSize: 12, color: '#64748b', marginTop: 4 },
   badge: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -921,7 +917,7 @@ const styles = StyleSheet.create({
   badgeText: {
     color: '#fff',
     fontSize: 10,
-    fontWeight: '700', fontFamily: 'Manrope_700Bold',
+    fontFamily: 'Manrope_700Bold',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
@@ -939,22 +935,22 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 6,
   },
-  monthLabel: { fontSize: 14, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0f172a' },
+  monthLabel: { fontSize: 14, fontFamily: 'Manrope_700Bold', color: '#0f172a' },
   row: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   dot: { width: 10, height: 10, borderRadius: 5 },
   dotActive: { backgroundColor: '#10b981' },
   dotInactive: { backgroundColor: '#94a3b8' },
   dotPending: { backgroundColor: '#cbd5e1' },
-  summary: { fontSize: 14, color: '#0f172a' },
+  summary: { fontFamily: 'Manrope_400Regular', fontSize: 14, color: '#0f172a' },
   studies: { fontSize: 14, color: '#64748b' },
-  emptyText: { fontSize: 13, color: '#94a3b8', fontStyle: 'italic' },
+  emptyText: { fontFamily: 'Manrope_400Regular', fontSize: 13, color: '#94a3b8' },
   notes: {
+    fontFamily: 'Manrope_400Regular',
     fontSize: 13,
     color: '#475569',
     marginTop: 6,
-    fontStyle: 'italic',
   },
-  meta: { fontSize: 11, color: '#94a3b8', marginTop: 6 },
+  meta: { fontFamily: 'Manrope_400Regular', fontSize: 11, color: '#94a3b8', marginTop: 6 },
   metaEdited: { color: '#0ea5e9' },
   emptyState: {
     alignItems: 'center',
@@ -963,19 +959,20 @@ const styles = StyleSheet.create({
   },
   emptyStateTitle: {
     fontSize: 18,
-    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
+    fontFamily: 'Manrope_600SemiBold',
     color: '#475569',
     marginTop: 16,
   },
   errorTitle: {
     fontSize: 18,
-    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
+    fontFamily: 'Manrope_600SemiBold',
     color: '#475569',
     marginTop: 16,
     marginBottom: 8,
     textAlign: 'center',
   },
   errorText: {
+    fontFamily: 'Manrope_400Regular',
     fontSize: 14,
     color: '#64748b',
     textAlign: 'center',

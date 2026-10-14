@@ -2317,7 +2317,6 @@ const s = StyleSheet.create({
   section: { gap: 8 },
   sectionLabel: {
     fontSize: 12,
-    fontWeight: "700",
     fontFamily: "Manrope_700Bold",
     color: "#64748b",
     letterSpacing: 0.6,
@@ -2327,7 +2326,6 @@ const s = StyleSheet.create({
   greeting: { gap: 4 },
   greetingText: {
     fontSize: 23,
-    fontWeight: "800",
     fontFamily: "Manrope_800ExtraBold",
     color: "#0f172a",
   },
@@ -2337,7 +2335,7 @@ const s = StyleSheet.create({
     alignItems: "center",
     gap: 8,
   },
-  greetingDate: { fontSize: 13.5, color: "#64748b" },
+  greetingDate: { fontFamily: "Manrope_400Regular", fontSize: 13.5, color: "#64748b" },
   badge: {
     flexDirection: "row",
     alignItems: "center",
@@ -2349,7 +2347,6 @@ const s = StyleSheet.create({
   },
   badgeText: {
     fontSize: 12,
-    fontWeight: "700",
     fontFamily: "Manrope_700Bold",
     color: "#0F6E56",
   },
@@ -2368,7 +2365,6 @@ const s = StyleSheet.create({
     fontSize: 13,
     color: "#166534",
     fontFamily: "Manrope_600SemiBold",
-    fontWeight: "600",
   },
 
   nextCard: { padding: 16, gap: 12 },
@@ -2377,14 +2373,12 @@ const s = StyleSheet.create({
   nextWhen: {
     flexShrink: 1,
     fontSize: 14,
-    fontWeight: "700",
     fontFamily: "Manrope_700Bold",
   },
   nextRel: {
     marginLeft: "auto",
     flexShrink: 0,
     fontSize: 12,
-    fontWeight: "700",
     fontFamily: "Manrope_700Bold",
     backgroundColor: "rgba(255,255,255,0.7)",
     borderRadius: 999,
@@ -2400,21 +2394,18 @@ const s = StyleSheet.create({
   },
   nextOverline: {
     fontSize: 12.5,
-    fontWeight: "700",
     fontFamily: "Manrope_700Bold",
     color: "#64748b",
   },
   nextMain: {
     fontSize: 21,
     lineHeight: 26,
-    fontWeight: "800",
     fontFamily: "Manrope_800ExtraBold",
     color: "#0f172a",
   },
   nextEqual: {
     fontSize: 17,
     lineHeight: 22,
-    fontWeight: "800",
     fontFamily: "Manrope_800ExtraBold",
     color: "#0f172a",
   },
@@ -2423,18 +2414,16 @@ const s = StyleSheet.create({
     width: 44,
     fontSize: 13,
     lineHeight: 22,
-    fontWeight: "700",
     fontFamily: "Manrope_700Bold",
     fontVariant: ["tabular-nums"],
   },
   nextSecond: {
     fontSize: 15,
     lineHeight: 20,
-    fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
     color: "#0f172a",
   },
-  nextPlace: { fontSize: 14, color: "#334155" },
+  nextPlace: { fontFamily: "Manrope_400Regular", fontSize: 14, color: "#334155" },
   nextFoot: {
     flexDirection: "row",
     alignItems: "center",
@@ -2445,23 +2434,20 @@ const s = StyleSheet.create({
   },
   nextFootKind: {
     fontSize: 13,
-    fontWeight: "700",
     fontFamily: "Manrope_700Bold",
   },
-  nextFootAbout: { fontSize: 13, color: "#64748b" },
+  nextFootAbout: { fontFamily: "Manrope_400Regular", fontSize: 13, color: "#64748b" },
   nextTopic: {
     fontSize: 14.5,
     color: "#334155",
     fontFamily: "Manrope_600SemiBold",
-    fontWeight: "600",
   },
   nextFootLink: {
     fontSize: 13,
-    fontWeight: "700",
     fontFamily: "Manrope_700Bold",
     color: "#0369a1",
   },
-  followingLine: { fontSize: 13, color: "#64748b", paddingLeft: 4 },
+  followingLine: { fontFamily: "Manrope_400Regular", fontSize: 13, color: "#64748b", paddingLeft: 4 },
   awayNote: {
     flexDirection: "row",
     gap: 8,
@@ -2488,11 +2474,10 @@ const s = StyleSheet.create({
   },
   quietTitle: {
     fontSize: 16,
-    fontWeight: "700",
     fontFamily: "Manrope_700Bold",
     color: "#0f172a",
   },
-  quietSub: { fontSize: 13.5, color: "#64748b" },
+  quietSub: { fontFamily: "Manrope_400Regular", fontSize: 13.5, color: "#64748b" },
 
   strip: {
     flexDirection: "row",
@@ -2507,10 +2492,9 @@ const s = StyleSheet.create({
   stripDone: { backgroundColor: "#f0fdf4", borderColor: "#bbf7d0" },
   stripText: {
     fontSize: 14.5,
-    fontWeight: "700",
     fontFamily: "Manrope_700Bold",
   },
-  stripSub: { fontSize: 13, marginTop: 1 },
+  stripSub: { fontFamily: "Manrope_400Regular", fontSize: 13, marginTop: 1 },
   stripTextDue: { color: "#92400e" },
   stripTextDone: { color: "#166534" },
 
@@ -2522,15 +2506,13 @@ const s = StyleSheet.create({
   },
   listTitle: {
     fontSize: 18,
-    fontWeight: "800",
     fontFamily: "Manrope_800ExtraBold",
     color: "#0f172a",
   },
-  listRange: { fontSize: 13, color: "#64748b" },
-  partial: { fontSize: 12.5, color: "#b45309" },
+  listRange: { fontFamily: "Manrope_400Regular", fontSize: 13, color: "#64748b" },
+  partial: { fontFamily: "Manrope_400Regular", fontSize: 12.5, color: "#b45309" },
   monthLabel: {
     fontSize: 12,
-    fontWeight: "800",
     fontFamily: "Manrope_800ExtraBold",
     color: "#64748b",
     letterSpacing: 0.6,
@@ -2551,13 +2533,11 @@ const s = StyleSheet.create({
   dateNum: {
     fontSize: 24,
     lineHeight: 26,
-    fontWeight: "800",
     fontFamily: "Manrope_800ExtraBold",
     color: "#0f172a",
   },
   dateDow: {
     fontSize: 11,
-    fontWeight: "700",
     fontFamily: "Manrope_700Bold",
     color: "#64748b",
     marginTop: 2,
@@ -2565,29 +2545,26 @@ const s = StyleSheet.create({
   dateToday: { color: "#0369a1" },
   dayEntries: { flex: 1, minWidth: 0, gap: 12 },
   entry: { gap: 3 },
-  rowKind: { fontSize: 12.5, fontWeight: "700", fontFamily: "Manrope_700Bold" },
+  rowKind: { fontSize: 12.5, fontFamily: "Manrope_700Bold" },
   rowTitle: {
     fontSize: 15,
     lineHeight: 20,
-    fontWeight: "700",
     fontFamily: "Manrope_700Bold",
     color: "#0f172a",
   },
-  rowSub: { fontSize: 13, color: "#64748b" },
-  rowPlain: { fontSize: 13, color: "#0f172a" },
+  rowSub: { fontFamily: "Manrope_400Regular", fontSize: 13, color: "#64748b" },
+  rowPlain: { fontFamily: "Manrope_400Regular", fontSize: 13, color: "#0f172a" },
   struck: { textDecorationLine: "line-through", color: "#94a3b8" },
   rowNote: {
     fontSize: 12.5,
     color: "#b45309",
     fontFamily: "Manrope_600SemiBold",
-    fontWeight: "600",
   },
-  rowQuiet: { fontSize: 12.5, color: "#94a3b8" },
-  topic: { fontSize: 13, color: "#475569", fontStyle: "italic" },
+  rowQuiet: { fontFamily: "Manrope_400Regular", fontSize: 12.5, color: "#94a3b8" },
+  topic: { fontFamily: "Manrope_400Regular", fontSize: 13, color: "#475569" },
   link: {
     fontSize: 13,
     color: "#0369a1",
-    fontWeight: "700",
     fontFamily: "Manrope_700Bold",
   },
   mineLine: {
@@ -2599,7 +2576,6 @@ const s = StyleSheet.create({
   mineText: {
     flexShrink: 1,
     fontSize: 13,
-    fontWeight: "700",
     fontFamily: "Manrope_700Bold",
     color: "#c2410c",
   },
@@ -2612,7 +2588,6 @@ const s = StyleSheet.create({
     fontSize: 10.5,
     letterSpacing: 0.8,
     fontFamily: "Manrope_800ExtraBold",
-    fontWeight: "800",
   },
   agendaNum: {
     // Fixed, or a line long enough to wrap squeezed its number and the
@@ -2623,20 +2598,17 @@ const s = StyleSheet.create({
     lineHeight: 17,
     color: "#94a3b8",
     fontFamily: "Manrope_600SemiBold",
-    fontWeight: "600",
   },
-  agendaText: { flexShrink: 1, fontSize: 13, lineHeight: 17, color: "#475569" },
+  agendaText: { fontFamily: "Manrope_400Regular", flexShrink: 1, fontSize: 13, lineHeight: 17, color: "#475569" },
   agendaMine: {
     color: "#c2410c",
     fontFamily: "Manrope_700Bold",
-    fontWeight: "700",
   },
   titleMine: { color: "#c2410c" },
   rowOccasion: { color: "#b45309" },
   cleaningText: {
     flexShrink: 1,
     fontSize: 13,
-    fontWeight: "700",
     fontFamily: "Manrope_700Bold",
     color: "#0284c7",
   },
@@ -2649,7 +2621,7 @@ const s = StyleSheet.create({
     paddingHorizontal: 9,
     paddingVertical: 3,
   },
-  chipText: { fontSize: 12, fontWeight: "700", fontFamily: "Manrope_700Bold" },
+  chipText: { fontSize: 12, fontFamily: "Manrope_700Bold" },
   absence: { flexDirection: "row", alignItems: "center", gap: 8 },
   absenceText: {
     flexShrink: 1,
@@ -2671,11 +2643,10 @@ const s = StyleSheet.create({
   bannerCongress: { backgroundColor: "#fffbeb", borderColor: "#fde68a" },
   bannerTitle: {
     fontSize: 14.5,
-    fontWeight: "700",
     fontFamily: "Manrope_700Bold",
     color: "#0e7490",
   },
-  bannerSub: { fontSize: 13, color: "#0891b2", marginTop: 1 },
+  bannerSub: { fontFamily: "Manrope_400Regular", fontSize: 13, color: "#0891b2", marginTop: 1 },
   allMine: {
     flexDirection: "row",
     alignItems: "center",
@@ -2685,7 +2656,6 @@ const s = StyleSheet.create({
   },
   allMineText: {
     fontSize: 14.5,
-    fontWeight: "700",
     fontFamily: "Manrope_700Bold",
     color: "#0369a1",
   },

@@ -249,10 +249,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#f1f5f9',
   },
   actionBtnDisabled: { opacity: 0.5 },
-  actionBtnText: { color: '#fff', fontSize: 12, fontWeight: '700', fontFamily: 'Manrope_700Bold',},
+  actionBtnText: { color: '#fff', fontSize: 12, fontFamily: 'Manrope_700Bold',},
   title: {
     fontSize: 14,
-    fontWeight: '700', fontFamily: 'Manrope_700Bold',
+    fontFamily: 'Manrope_700Bold',
     color: '#0f172a',
     letterSpacing: 0.2,
   },
@@ -262,8 +262,8 @@ const styles = StyleSheet.create({
     gap: 5,
     marginTop: 2,
   },
-  metaAddr: { flex: 1, fontSize: 12, color: '#64748b' },
-  meta: { fontSize: 12, color: '#64748b' },
+  metaAddr: { fontFamily: 'Manrope_400Regular', flex: 1, fontSize: 12, color: '#64748b' },
+  meta: { fontFamily: 'Manrope_400Regular', fontSize: 12, color: '#64748b' },
   badge: {
     borderRadius: 999,
     paddingHorizontal: 11,
@@ -271,7 +271,7 @@ const styles = StyleSheet.create({
   },
   badgeOpen: { backgroundColor: '#fef3c7' },
   badgeDone: { backgroundColor: '#dcfce7' },
-  badgeText: { fontSize: 12, fontWeight: '800', fontFamily: 'Manrope_800ExtraBold',},
+  badgeText: { fontSize: 12, fontFamily: 'Manrope_800ExtraBold',},
   badgeTextOpen: { color: '#b45309' },
   badgeTextDone: { color: '#15803d' },
 });

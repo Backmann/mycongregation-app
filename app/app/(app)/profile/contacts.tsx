@@ -233,7 +233,7 @@ const styles = StyleSheet.create({
   // Everything sits on the same vertical as the section cards (12 + 6),
   // so the paragraph, the fields and the check line line up.
   intro: { paddingHorizontal: 18, paddingTop: 16, paddingBottom: 2 },
-  introText: { fontSize: 13.5, color: '#475569', lineHeight: 20 },
+  introText: { fontFamily: 'Manrope_400Regular', fontSize: 13.5, color: '#475569', lineHeight: 20 },
   stampRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -241,14 +241,14 @@ const styles = StyleSheet.create({
     marginHorizontal: 18,
     marginTop: 12,
   },
-  stampText: { flex: 1, fontSize: 12.5, color: '#64748b' },
+  stampText: { fontFamily: 'Manrope_400Regular', flex: 1, fontSize: 12.5, color: '#64748b' },
   noticeBox: {
     margin: 16,
     padding: 14,
     backgroundColor: '#f1f5f9',
     borderRadius: 12,
   },
-  noticeText: { color: '#475569', fontSize: 13.5, lineHeight: 20 },
+  noticeText: { fontFamily: 'Manrope_400Regular', color: '#475569', fontSize: 13.5, lineHeight: 20 },
   errorBox: {
     marginHorizontal: 12,
     marginTop: 12,
@@ -258,7 +258,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 12,
   },
-  errorText: { color: '#991b1b', fontSize: 13 },
+  errorText: { fontFamily: 'Manrope_400Regular', color: '#991b1b', fontSize: 13 },
   okBox: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -271,13 +271,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 12,
   },
-  okText: { color: '#166534', fontSize: 13, fontWeight: '600' },
+  okText: { color: '#166534', fontSize: 13, fontFamily: 'Manrope_600SemiBold' },
   actions: { paddingHorizontal: 12, paddingVertical: 18, gap: 10 },
   button: { paddingVertical: 14, borderRadius: 12, alignItems: 'center' },
   primary: { backgroundColor: '#0ea5e9' },
-  primaryText: { color: '#fff', fontSize: 15, fontWeight: '700' },
+  primaryText: { color: '#fff', fontSize: 15, fontFamily: 'Manrope_700Bold' },
   secondary: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#e2e8f0' },
-  secondaryText: { color: '#334155', fontSize: 15, fontWeight: '600' },
+  secondaryText: { color: '#334155', fontSize: 15, fontFamily: 'Manrope_600SemiBold' },
   pressed: { opacity: 0.85 },
   disabled: { opacity: 0.5 },
 });

@@ -2308,7 +2308,7 @@ const styles = StyleSheet.create({
   },
   filteredAllText: { fontSize: 14, fontFamily: FONT.bold, color: "#ffffff" },
   fieldAbout: { marginTop: 4, gap: 4 },
-  fieldTopic: { fontSize: 14, fontFamily: FONT.medium, color: "#475569", fontStyle: "italic" },
+  fieldTopic: { fontSize: 14, fontFamily: FONT.medium, color: "#475569" },
   othersToggle: {
     minHeight: 44,
     flexDirection: "row",

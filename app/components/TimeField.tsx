@@ -61,8 +61,8 @@ const styles = StyleSheet.create({
     paddingVertical: 11,
     backgroundColor: '#f8fafc',
   },
-  value: { flex: 1, fontSize: 15, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0f172a' },
-  placeholder: { color: '#94a3b8', fontWeight: '400', fontFamily: 'Manrope_400Regular',},
+  value: { flex: 1, fontSize: 15, fontFamily: 'Manrope_700Bold', color: '#0f172a' },
+  placeholder: { color: '#94a3b8', fontFamily: 'Manrope_400Regular',},
   wheelBox: { marginTop: 6 },
   doneBtn: {
     alignSelf: 'center',
@@ -72,5 +72,5 @@ const styles = StyleSheet.create({
     backgroundColor: '#e0f2fe',
     marginTop: 2,
   },
-  doneText: { color: '#0369a1', fontSize: 14, fontWeight: '700', fontFamily: 'Manrope_700Bold',},
+  doneText: { color: '#0369a1', fontSize: 14, fontFamily: 'Manrope_700Bold',},
 });

@@ -83,11 +83,10 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 18,
-    fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
     color: '#0c4a6e',
   },
-  body: { marginTop: 6, fontSize: 14.5, lineHeight: 21, color: '#334155' },
+  body: { fontFamily: 'Manrope_400Regular', marginTop: 6, fontSize: 14.5, lineHeight: 21, color: '#334155' },
   nameBox: {
     marginTop: 12,
     borderRadius: 12,
@@ -97,15 +96,14 @@ const styles = StyleSheet.create({
     paddingVertical: 11,
     paddingHorizontal: 13,
   },
-  nameLabel: { fontSize: 12, color: '#64748b' },
+  nameLabel: { fontFamily: 'Manrope_400Regular', fontSize: 12, color: '#64748b' },
   nameValue: {
     marginTop: 2,
     fontSize: 17,
-    fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
     color: '#0f172a',
   },
-  nameHint: { marginTop: 4, fontSize: 12.5, lineHeight: 18, color: '#64748b' },
+  nameHint: { fontFamily: 'Manrope_400Regular', marginTop: 4, fontSize: 12.5, lineHeight: 18, color: '#64748b' },
   link: {
     marginTop: 12,
     flexDirection: 'row',
@@ -117,7 +115,6 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 14.5,
     color: '#0369a1',
-    fontWeight: '600',
     fontFamily: 'Manrope_600SemiBold',
   },
   done: {
@@ -130,7 +127,6 @@ const styles = StyleSheet.create({
   doneText: {
     color: '#fff',
     fontSize: 15,
-    fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
   },
   pressed: { opacity: 0.7 },

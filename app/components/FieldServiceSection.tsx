@@ -242,7 +242,6 @@ export function FieldServiceSection({
 const styles = StyleSheet.create({
   dayHead: {
     fontSize: 12.5,
-    fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
     color: '#64748b',
     textTransform: 'uppercase',
@@ -261,7 +260,6 @@ const styles = StyleSheet.create({
   draftBadgeText: {
     fontSize: 11.5,
     color: '#475569',
-    fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
   },
   assistantHead: {
@@ -272,7 +270,6 @@ const styles = StyleSheet.create({
   fillIn: {
     fontSize: 12.5,
     color: '#0369a1',
-    fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
   },
   chipOff: { opacity: 0.45 },
@@ -288,13 +285,11 @@ const styles = StyleSheet.create({
   groupName: {
     fontSize: 12.5,
     color: '#0369a1',
-    fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
   },
   visitBadgeText: {
     fontSize: 11.5,
     color: '#0e7490',
-    fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
   },
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 4 },
@@ -308,7 +303,6 @@ const styles = StyleSheet.create({
   chipText: {
     fontSize: 13,
     color: '#334155',
-    fontWeight: '600',
     fontFamily: 'Manrope_600SemiBold',
   },
   chipTextOn: { color: '#ffffff' },
@@ -330,7 +324,7 @@ const styles = StyleSheet.create({
     borderColor: '#0ea5e9',
     backgroundColor: '#e0f2fe',
   },
-  hallChipText: { fontSize: 13, color: '#475569', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
+  hallChipText: { fontSize: 13, color: '#475569', fontFamily: 'Manrope_600SemiBold',},
   hallChipTextActive: { color: '#0369a1' },
   section: { marginTop: 16 },
   header: {
@@ -342,12 +336,13 @@ const styles = StyleSheet.create({
   },
   headerText: {
     fontSize: 13,
-    fontWeight: '700', fontFamily: 'Manrope_700Bold',
+    fontFamily: 'Manrope_700Bold',
     color: '#475569',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   empty: {
+    fontFamily: 'Manrope_400Regular',
     fontSize: 13,
     color: '#94a3b8',
     paddingHorizontal: 16,
@@ -368,11 +363,10 @@ const styles = StyleSheet.create({
   visitHeadText: {
     fontSize: 12,
     color: '#0e7490',
-    fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
   },
   visitRow: { gap: 2 },
-  visitHint: { fontSize: 12, color: '#64748b', fontStyle: 'italic' },
+  visitHint: { fontFamily: 'Manrope_400Regular', fontSize: 12, color: '#64748b' },
   rows: {
     backgroundColor: '#fff',
     borderTopWidth: 1,
@@ -389,7 +383,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   rowMain: { flex: 1, gap: 2 },
-  when: { fontSize: 14, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0f172a' },
+  when: { fontSize: 14, fontFamily: 'Manrope_700Bold', color: '#0f172a' },
   generalBadge: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -401,19 +395,19 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     marginTop: 4,
   },
-  generalBadgeText: { fontSize: 11, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#7c3aed' },
+  generalBadgeText: { fontSize: 11, fontFamily: 'Manrope_700Bold', color: '#7c3aed' },
   toggleRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
     marginTop: 14,
   },
-  toggleLabel: { fontSize: 14, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0f172a' },
+  toggleLabel: { fontSize: 14, fontFamily: 'Manrope_600SemiBold', color: '#0f172a' },
   toggleHint: { fontSize: 12, color: '#64748b', marginTop: 2 },
   rowMineGlow: { borderRadius: 12, marginVertical: 2 },
-  address: { fontSize: 13, color: '#475569' },
-  topic: { fontSize: 13, color: '#64748b', fontStyle: 'italic' },
-  link: { fontSize: 13, color: '#0369a1', fontWeight: '600', fontFamily: 'Manrope_600SemiBold', marginTop: 2 },
+  address: { fontFamily: 'Manrope_400Regular', fontSize: 13, color: '#475569' },
+  topic: { fontSize: 13, color: '#64748b' },
+  link: { fontSize: 13, color: '#0369a1', fontFamily: 'Manrope_600SemiBold', marginTop: 2 },
   rowActions: { flexDirection: 'row', gap: 2 },
   iconBtn: { padding: 4 },
 
@@ -432,7 +426,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8fafc',
   },
   addBtnPressed: { backgroundColor: '#e0f2fe' },
-  addBtnText: { fontSize: 14, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0369a1' },
+  addBtnText: { fontSize: 14, fontFamily: 'Manrope_600SemiBold', color: '#0369a1' },
 
   overlay: {
     flex: 1,
@@ -447,11 +441,11 @@ const styles = StyleSheet.create({
     gap: 12,
     maxHeight: '85%',
   },
-  modalTitle: { fontSize: 16, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0f172a' },
+  modalTitle: { fontSize: 16, fontFamily: 'Manrope_700Bold', color: '#0f172a' },
   formScroll: { maxHeight: 420 },
   fieldLabel: {
     fontSize: 12,
-    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
+    fontFamily: 'Manrope_600SemiBold',
     color: '#475569',
     marginTop: 10,
     marginBottom: 4,
@@ -460,13 +454,13 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#0369a1',
     marginTop: 6,
-    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
+    fontFamily: 'Manrope_600SemiBold',
   },
   warnHint: {
     fontSize: 12,
     color: '#b45309',
     marginTop: 4,
-    fontWeight: '700', fontFamily: 'Manrope_700Bold',
+    fontFamily: 'Manrope_700Bold',
   },
   dayRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   dayChip: {
@@ -478,7 +472,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8fafc',
   },
   dayChipOn: { borderColor: '#0ea5e9', backgroundColor: '#e0f2fe' },
-  dayChipText: { fontSize: 13, color: '#475569', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
+  dayChipText: { fontSize: 13, color: '#475569', fontFamily: 'Manrope_600SemiBold',},
   dayChipTextOn: { color: '#0369a1' },
   input: {
     borderWidth: 1,
@@ -498,7 +492,7 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     marginTop: 12,
   },
-  duplicateLinkText: { color: '#0369a1', fontSize: 14, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
+  duplicateLinkText: { color: '#0369a1', fontSize: 14, fontFamily: 'Manrope_600SemiBold',},
   suggestBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -506,11 +500,11 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     marginTop: 6,
   },
-  suggestBtnText: { color: '#0369a1', fontSize: 13, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
+  suggestBtnText: { color: '#0369a1', fontSize: 13, fontFamily: 'Manrope_600SemiBold',},
   saveHint: {
     color: '#dc2626',
     fontSize: 12,
-    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
+    fontFamily: 'Manrope_600SemiBold',
     textAlign: 'right',
     marginBottom: 6,
   },
@@ -533,13 +527,13 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   modalCancel: { paddingVertical: 10, paddingHorizontal: 14 },
-  modalCancelText: { fontSize: 15, color: '#64748b', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
+  modalCancelText: { fontSize: 15, color: '#64748b', fontFamily: 'Manrope_600SemiBold',},
   modalConfirm: {
     paddingVertical: 10,
     paddingHorizontal: 18,
     borderRadius: 10,
     backgroundColor: '#0ea5e9',
   },
-  modalConfirmText: { fontSize: 15, color: '#fff', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
+  modalConfirmText: { fontSize: 15, color: '#fff', fontFamily: 'Manrope_600SemiBold',},
   disabled: { opacity: 0.5 },
 });

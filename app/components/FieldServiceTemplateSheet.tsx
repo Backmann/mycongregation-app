@@ -289,10 +289,10 @@ export function FieldServiceTemplateSheet({
 }
 
 const styles = StyleSheet.create({
-  label: { fontSize: 13, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#64748b', marginTop: 16, marginBottom: 8 },
+  label: { fontSize: 13, fontFamily: 'Manrope_600SemiBold', color: '#64748b', marginTop: 16, marginBottom: 8 },
   empty: { fontSize: 14, color: '#64748b', fontFamily: 'Manrope_500Medium', marginBottom: 8 },
   ruleCard: { borderWidth: 1, borderColor: '#dde3e8', borderRadius: 14, padding: 14, backgroundColor: '#ffffff', marginBottom: 10, gap: 4 },
-  ruleWhen: { fontSize: 16, fontWeight: '800', fontFamily: 'Manrope_800ExtraBold', color: '#0f172a' },
+  ruleWhen: { fontSize: 16, fontFamily: 'Manrope_800ExtraBold', color: '#0f172a' },
   ruleWhose: { fontSize: 14.5, color: '#334155', fontFamily: 'Manrope_500Medium' },
   ruleWho: { fontSize: 13.5, color: '#64748b', fontFamily: 'Manrope_500Medium' },
   ruleNote: { fontSize: 12.5, color: '#64748b', fontFamily: 'Manrope_500Medium' },
@@ -307,9 +307,9 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingVertical: 12,
   },
-  addBtnText: { fontSize: 14, color: '#0369a1', fontWeight: '600', fontFamily: 'Manrope_600SemiBold' },
+  addBtnText: { fontSize: 14, color: '#0369a1', fontFamily: 'Manrope_600SemiBold' },
   toggleRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 10 },
-  toggleLabel: { flex: 1, fontSize: 15, fontWeight: '600', color: '#0f172a', fontFamily: 'Manrope_600SemiBold' },
+  toggleLabel: { flex: 1, fontSize: 15, color: '#0f172a', fontFamily: 'Manrope_600SemiBold' },
   toggleHint: { fontSize: 12.5, color: '#64748b', fontFamily: 'Manrope_500Medium' },
   autoRow: {
     flexDirection: 'row',
@@ -324,8 +324,8 @@ const styles = StyleSheet.create({
   },
   footerRow: { flexDirection: 'row', gap: 10 },
   cancelBtn: { flex: 1, borderWidth: 1, borderColor: '#0369a1', borderRadius: 12, paddingVertical: 13, alignItems: 'center', backgroundColor: '#ffffff' },
-  cancelBtnText: { fontSize: 15, fontWeight: '600', color: '#0369a1', fontFamily: 'Manrope_600SemiBold' },
+  cancelBtnText: { fontSize: 15, color: '#0369a1', fontFamily: 'Manrope_600SemiBold' },
   btnOff: { opacity: 0.45 },
   saveBtn: { flex: 2, borderRadius: 12, paddingVertical: 13, alignItems: 'center', backgroundColor: '#0369a1' },
-  saveBtnText: { fontSize: 15, fontWeight: '700', color: '#ffffff', fontFamily: 'Manrope_700Bold' },
+  saveBtnText: { fontSize: 15, color: '#ffffff', fontFamily: 'Manrope_700Bold' },
 });

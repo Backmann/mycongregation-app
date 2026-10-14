@@ -170,7 +170,7 @@ export default function RootLayout() {
         }}
       >
         <ActivityIndicator color="#ffffff" />
-        <Text style={{ color: "#e0f2fe", fontSize: 14 }}>
+        <Text style={{ fontFamily: 'Manrope_400Regular', color: "#e0f2fe", fontSize: 14 }}>
           {i18n.t("update.applying")}
         </Text>
       </View>

@@ -332,7 +332,7 @@ export default function PioneerSchoolHelpersScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: '#f1f5f9' },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32 },
-  intro: { fontSize: 13.5, color: '#64748b', lineHeight: 19, marginBottom: 14 },
+  intro: { fontFamily: 'Manrope_400Regular', fontSize: 13.5, color: '#64748b', lineHeight: 19, marginBottom: 14 },
   addBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -358,7 +358,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     marginBottom: 12,
   },
-  searchInput: { flex: 1, fontSize: 14, color: '#0f172a' },
+  searchInput: { fontFamily: 'Manrope_400Regular', flex: 1, fontSize: 14, color: '#0f172a' },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -373,7 +373,7 @@ const styles = StyleSheet.create({
   rowActions: { flexDirection: 'row', gap: 14 },
   name: { fontSize: 15, color: '#0f172a', fontFamily: 'Manrope_600SemiBold' },
   metaRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 3 },
-  meta: { fontSize: 12.5, color: '#64748b' },
+  meta: { fontFamily: 'Manrope_400Regular', fontSize: 12.5, color: '#64748b' },
   oursChip: {
     backgroundColor: '#e0f2fe',
     borderRadius: 999,
@@ -385,15 +385,15 @@ const styles = StyleSheet.create({
     color: '#0369a1',
     fontFamily: 'Manrope_600SemiBold',
   },
-  empty: { fontSize: 14, color: '#94a3b8', textAlign: 'center', marginTop: 24 },
-  countedFor: { fontSize: 12.5, color: '#94a3b8', marginBottom: 10 },
+  empty: { fontFamily: 'Manrope_400Regular', fontSize: 14, color: '#94a3b8', textAlign: 'center', marginTop: 24 },
+  countedFor: { fontFamily: 'Manrope_400Regular', fontSize: 12.5, color: '#94a3b8', marginBottom: 10 },
   loadChip: {
     backgroundColor: '#f1f5f9',
     borderRadius: 999,
     paddingHorizontal: 8,
     paddingVertical: 2,
   },
-  loadText: { fontSize: 11.5, color: '#64748b' },
+  loadText: { fontFamily: 'Manrope_400Regular', fontSize: 11.5, color: '#64748b' },
   label: {
     fontSize: 13,
     color: '#475569',
@@ -402,6 +402,7 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   input: {
+    fontFamily: 'Manrope_400Regular',
     borderWidth: 1,
     borderColor: '#e2e8f0',
     borderRadius: 10,
@@ -410,6 +411,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#0f172a',
   },
-  hint: { fontSize: 12, color: '#94a3b8', marginTop: 6, lineHeight: 16 },
-  error: { color: '#dc2626', fontSize: 13, marginTop: 8 },
+  hint: { fontFamily: 'Manrope_400Regular', fontSize: 12, color: '#94a3b8', marginTop: 6, lineHeight: 16 },
+  error: { fontFamily: 'Manrope_400Regular', color: '#dc2626', fontSize: 13, marginTop: 8 },
 });

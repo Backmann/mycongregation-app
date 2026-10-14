@@ -17,10 +17,14 @@ import {
  *  - Regular is set as the base family via defaultProps, so any text without an
  *    explicit weight inherits Manrope. We do NOT wrap Text.render (that blanked
  *    the schedule on RN 0.81).
- *  - Everywhere a style sets a fontWeight, a matching `fontFamily`
- *    ('Manrope_600SemiBold', 'Manrope_700Bold', …) is added by the codemod, so
- *    bold text renders in the real bold face on every platform, including the
- *    native Google Play build.
+ *  - A weight is said by the FACE alone ('Manrope_600SemiBold',
+ *    'Manrope_700Bold', …), never by `fontWeight` beside it (14 October
+ *    2026). Android looks a custom family plus a weight up as «Manrope_700Bold,
+ *    bold», finds nothing registered under that pair, and draws Roboto — which
+ *    is what most of the app looked like on a phone until then.
+ *  - defaultProps only apply to a Text WITHOUT a style: any style replaces
+ *    them. So every Text that has a style names its face in that style;
+ *    scripts/check-fonts.mjs holds both rules in the gate.
  */
 let applied = false;
 

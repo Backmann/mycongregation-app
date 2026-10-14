@@ -161,8 +161,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     gap: 6,
   },
-  addBtnText: { color: '#fff', fontSize: 15, fontWeight: '700', fontFamily: 'Manrope_700Bold',},
-  empty: { textAlign: 'center', color: '#64748b' },
+  addBtnText: { color: '#fff', fontSize: 15, fontFamily: 'Manrope_700Bold',},
+  empty: { fontFamily: 'Manrope_400Regular', textAlign: 'center', color: '#64748b' },
   errorBox: {
     backgroundColor: '#fee2e2',
     borderRadius: 8,
@@ -179,8 +179,8 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   rowPressed: { backgroundColor: '#f8fafc' },
-  name: { fontSize: 16, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0f172a' },
+  name: { fontSize: 16, fontFamily: 'Manrope_600SemiBold', color: '#0f172a' },
   removedText: { textDecorationLine: 'line-through', color: '#94a3b8' },
-  dates: { fontSize: 13, color: '#0369a1', fontWeight: '500', fontFamily: 'Manrope_500Medium', marginTop: 2 },
-  note: { fontSize: 13, color: '#64748b', marginTop: 2 },
+  dates: { fontSize: 13, color: '#0369a1', fontFamily: 'Manrope_500Medium', marginTop: 2 },
+  note: { fontFamily: 'Manrope_400Regular', fontSize: 13, color: '#64748b', marginTop: 2 },
 });

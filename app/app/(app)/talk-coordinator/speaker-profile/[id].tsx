@@ -641,6 +641,7 @@ const styles = StyleSheet.create({
     textDecorationLine: "line-through",
   },
   retiredLegend: {
+    fontFamily: "Manrope_400Regular",
     fontSize: 12,
     color: "#b45309",
     marginTop: 6,
@@ -652,7 +653,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 32,
   },
-  muted: { color: "#64748b", fontSize: 15, textAlign: "center" },
+  muted: { fontFamily: "Manrope_400Regular", color: "#64748b", fontSize: 15, textAlign: "center" },
   container: { padding: 16, paddingBottom: 48 },
   card: {
     backgroundColor: "#fff",
@@ -664,7 +665,6 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: 20,
-    fontWeight: "700",
     fontFamily: "Manrope_700Bold",
     color: "#0f172a",
   },
@@ -679,16 +679,16 @@ const styles = StyleSheet.create({
     backgroundColor: "#faf5ff",
   },
   originMerged: { backgroundColor: "#f5f3ff" },
-  originText: { flex: 1, fontSize: 12.5, color: "#5b21b6", lineHeight: 18 },
-  cong: { fontSize: 14, color: "#475569", marginTop: 2 },
+  originText: { fontFamily: "Manrope_400Regular", flex: 1, fontSize: 12.5, color: "#5b21b6", lineHeight: 18 },
+  cong: { fontFamily: "Manrope_400Regular", fontSize: 14, color: "#475569", marginTop: 2 },
   phoneRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
     marginTop: 10,
   },
-  phone: { fontSize: 15, color: "#0369a1" },
-  note: { fontSize: 14, color: "#475569", marginTop: 10, lineHeight: 19 },
+  phone: { fontFamily: "Manrope_400Regular", fontSize: 15, color: "#0369a1" },
+  note: { fontFamily: "Manrope_400Regular", fontSize: 14, color: "#475569", marginTop: 10, lineHeight: 19 },
 
   statsBand: {
     flexDirection: "row",
@@ -705,19 +705,17 @@ const styles = StyleSheet.create({
   statDivider: { width: 1, backgroundColor: "#e2e8f0" },
   statNum: {
     fontSize: 20,
-    fontWeight: "700",
     fontFamily: "Manrope_700Bold",
     color: "#0f172a",
   },
   statText: {
     fontSize: 14,
-    fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
     color: "#0f172a",
     textAlign: "center",
   },
   statTextRecent: { color: "#b45309" },
-  statLabel: { fontSize: 11, color: "#94a3b8", textAlign: "center" },
+  statLabel: { fontFamily: "Manrope_400Regular", fontSize: 11, color: "#94a3b8", textAlign: "center" },
 
   recentWarn: {
     flexDirection: "row",
@@ -729,11 +727,10 @@ const styles = StyleSheet.create({
     marginTop: -4,
     marginBottom: 14,
   },
-  recentWarnText: { flex: 1, fontSize: 13, color: "#92400e" },
+  recentWarnText: { fontFamily: "Manrope_400Regular", flex: 1, fontSize: 13, color: "#92400e" },
 
   sectionTitle: {
     fontSize: 13,
-    fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
     color: "#64748b",
     textTransform: "uppercase",
@@ -741,7 +738,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     marginLeft: 2,
   },
-  sectionEmpty: { fontSize: 14, color: "#94a3b8" },
+  sectionEmpty: { fontFamily: "Manrope_400Regular", fontSize: 14, color: "#94a3b8" },
 
   visitRow: {
     flexDirection: "row",
@@ -753,20 +750,18 @@ const styles = StyleSheet.create({
   visitDateCol: { width: 96 },
   visitDate: {
     fontSize: 14,
-    fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
     color: "#0f172a",
   },
-  visitRel: { fontSize: 12, color: "#94a3b8", marginTop: 1 },
+  visitRel: { fontFamily: "Manrope_400Regular", fontSize: 12, color: "#94a3b8", marginTop: 1 },
   visitTalkCol: { flex: 1 },
-  visitTalk: { fontSize: 14, color: "#0f172a", lineHeight: 19 },
+  visitTalk: { fontFamily: "Manrope_400Regular", fontSize: 14, color: "#0f172a", lineHeight: 19 },
   visitNum: {
-    fontWeight: "700",
     fontFamily: "Manrope_700Bold",
     color: "#0369a1",
   },
-  visitTalkMuted: { fontSize: 14, color: "#94a3b8", fontStyle: "italic" },
-  tentative: { fontSize: 11, color: "#b45309", marginTop: 2 },
+  visitTalkMuted: { fontFamily: "Manrope_400Regular", fontSize: 14, color: "#94a3b8" },
+  tentative: { fontFamily: "Manrope_400Regular", fontSize: 11, color: "#b45309", marginTop: 2 },
 
   chipWrap: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
   talkChip: {
@@ -783,16 +778,14 @@ const styles = StyleSheet.create({
   talkChipGiven: { borderColor: "#e2e8f0", backgroundColor: "#f8fafc" },
   talkChipText: {
     fontSize: 13,
-    fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
     color: "#0369a1",
   },
   talkChipTextGiven: {
     color: "#94a3b8",
-    fontWeight: "500",
     fontFamily: "Manrope_500Medium",
   },
-  repertoireLegend: { fontSize: 12, color: "#94a3b8", marginTop: 10 },
+  repertoireLegend: { fontFamily: "Manrope_400Regular", fontSize: 12, color: "#94a3b8", marginTop: 10 },
 
   mergeBtn: {
     flexDirection: "row",
@@ -806,9 +799,10 @@ const styles = StyleSheet.create({
     borderColor: "#ddd6fe",
     backgroundColor: "#faf5ff",
   },
-  mergeBtnText: { fontSize: 15, color: "#7c3aed", fontWeight: "600" },
-  mergeLead: { fontSize: 13.5, color: "#334155", lineHeight: 19 },
+  mergeBtnText: { fontSize: 15, color: "#7c3aed", fontFamily: "Manrope_600SemiBold" },
+  mergeLead: { fontFamily: "Manrope_400Regular", fontSize: 13.5, color: "#334155", lineHeight: 19 },
   mergeSearch: {
+    fontFamily: "Manrope_400Regular",
     borderWidth: 1,
     borderColor: "#e2e8f0",
     backgroundColor: "#f8fafc",
@@ -831,9 +825,9 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
   mergeRowOn: { borderColor: "#a78bfa", backgroundColor: "#f5f3ff" },
-  mergeName: { fontSize: 14.5, color: "#0f172a", fontWeight: "600" },
-  mergeSub: { fontSize: 12.5, color: "#64748b", marginTop: 1 },
-  mergeSimilar: { fontSize: 12, fontWeight: "600", color: "#7c3aed" },
+  mergeName: { fontSize: 14.5, color: "#0f172a", fontFamily: "Manrope_600SemiBold" },
+  mergeSub: { fontFamily: "Manrope_400Regular", fontSize: 12.5, color: "#64748b", marginTop: 1 },
+  mergeSimilar: { fontSize: 12, fontFamily: "Manrope_600SemiBold", color: "#7c3aed" },
   mergedCard: {
     flexDirection: "row",
     alignItems: "center",
@@ -845,8 +839,8 @@ const styles = StyleSheet.create({
     padding: 12,
     marginTop: 12,
   },
-  mergedTitle: { fontSize: 14.5, fontWeight: "600", color: "#0f172a" },
-  mergedMeta: { fontSize: 12.5, color: "#64748b", marginTop: 2 },
+  mergedTitle: { fontSize: 14.5, fontFamily: "Manrope_600SemiBold", color: "#0f172a" },
+  mergedMeta: { fontFamily: "Manrope_400Regular", fontSize: 12.5, color: "#64748b", marginTop: 2 },
   unmergeBtn: {
     borderRadius: 999,
     paddingVertical: 9,
@@ -855,9 +849,9 @@ const styles = StyleSheet.create({
     borderColor: "#d8b4fe",
     backgroundColor: "#fff",
   },
-  unmergeBtnText: { fontSize: 13, fontWeight: "600", color: "#6d28d9" },
-  mergeNone: { fontSize: 12.5, color: "#64748b", marginTop: 6 },
-  mergeNote: { fontSize: 12, color: "#64748b", lineHeight: 17, marginTop: 10 },
+  unmergeBtnText: { fontSize: 13, fontFamily: "Manrope_600SemiBold", color: "#6d28d9" },
+  mergeNone: { fontFamily: "Manrope_400Regular", fontSize: 12.5, color: "#64748b", marginTop: 6 },
+  mergeNote: { fontFamily: "Manrope_400Regular", fontSize: 12, color: "#64748b", lineHeight: 17, marginTop: 10 },
   mergeConfirm: {
     marginTop: 10,
     paddingVertical: 11,
@@ -866,7 +860,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#7c3aed",
   },
   mergeConfirmOff: { opacity: 0.45 },
-  mergeConfirmText: { color: "#fff", fontSize: 14.5, fontWeight: "700" },
+  mergeConfirmText: { color: "#fff", fontSize: 14.5, fontFamily: "Manrope_700Bold" },
   editBtn: {
     flexDirection: "row",
     alignItems: "center",
@@ -880,7 +874,6 @@ const styles = StyleSheet.create({
   },
   editBtnText: {
     fontSize: 15,
-    fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
     color: "#0369a1",
   },

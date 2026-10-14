@@ -206,7 +206,7 @@ export default function LoginScreen() {
               <Text
                 style={[
                   styles.forgotText,
-                  { color: '#0369a1', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
+                  { color: '#0369a1', fontFamily: 'Manrope_600SemiBold',},
                 ]}
               >
                 {t('auth.forgotPassword')}
@@ -250,11 +250,11 @@ const styles = StyleSheet.create({
   },
   inviteCardTitle: {
     fontSize: 15,
-    fontWeight: '700',
+    fontFamily: 'Manrope_700Bold',
     color: '#0e7490',
     marginBottom: 2,
   },
-  inviteCardHint: { fontSize: 12.5, color: '#0891b2', lineHeight: 17 },
+  inviteCardHint: { fontFamily: 'Manrope_400Regular', fontSize: 12.5, color: '#0891b2', lineHeight: 17 },
   card: {
     backgroundColor: '#fff',
     borderRadius: 20,
@@ -283,17 +283,18 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 26,
-    fontWeight: '700', fontFamily: 'Manrope_700Bold',
+    fontFamily: 'Manrope_700Bold',
     color: '#0f172a',
   },
   subtitle: {
+    fontFamily: 'Manrope_400Regular',
     fontSize: 15,
     color: '#64748b',
     marginTop: 4,
   },
   label: {
     fontSize: 13,
-    fontWeight: '500', fontFamily: 'Manrope_500Medium',
+    fontFamily: 'Manrope_500Medium',
     color: '#475569',
     marginBottom: 6,
     marginTop: 14,
@@ -311,6 +312,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   input: {
+    fontFamily: 'Manrope_400Regular',
     flex: 1,
     paddingVertical: 12,
     fontSize: 16,
@@ -333,6 +335,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   errorText: {
+    fontFamily: 'Manrope_400Regular',
     flex: 1,
     color: '#b91c1c',
     fontSize: 14,
@@ -350,7 +353,7 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
+    fontFamily: 'Manrope_600SemiBold',
   },
   footer: {
     marginTop: 22,
@@ -367,12 +370,14 @@ const styles = StyleSheet.create({
     marginTop: 1,
   },
   hintText: {
+    fontFamily: 'Manrope_400Regular',
     flex: 1,
     color: '#64748b',
     fontSize: 13,
     lineHeight: 18,
   },
   forgotText: {
+    fontFamily: 'Manrope_400Regular',
     color: '#64748b',
     fontSize: 13,
     textAlign: 'center',
@@ -383,6 +388,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   legalLink: {
+    fontFamily: 'Manrope_400Regular',
     fontSize: 13,
     color: '#64748b',
     textDecorationLine: 'underline',

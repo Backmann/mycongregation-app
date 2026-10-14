@@ -179,5 +179,5 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontFamily: 'Manrope_700Bold',
   },
-  escape: { color: '#bae6fd', fontSize: 14, marginTop: 4 },
+  escape: { fontFamily: 'Manrope_400Regular', color: '#bae6fd', fontSize: 14, marginTop: 4 },
 });

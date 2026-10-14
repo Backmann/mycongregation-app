@@ -312,7 +312,6 @@ const s = StyleSheet.create({
   stripText: {
     flex: 1,
     fontSize: 14.5,
-    fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
     color: '#92400e',
   },
@@ -329,12 +328,11 @@ const s = StyleSheet.create({
   title: {
     flex: 1,
     fontSize: 16,
-    fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
     color: '#0f172a',
   },
-  body: { fontSize: 14, color: '#475569', lineHeight: 20 },
-  step: { fontSize: 14, color: '#0f172a', lineHeight: 20 },
+  body: { fontFamily: 'Manrope_400Regular', fontSize: 14, color: '#475569', lineHeight: 20 },
+  step: { fontFamily: 'Manrope_400Regular', fontSize: 14, color: '#0f172a', lineHeight: 20 },
   primary: {
     backgroundColor: '#0e7490',
     borderRadius: 12,
@@ -347,7 +345,6 @@ const s = StyleSheet.create({
   primaryText: {
     color: '#fff',
     fontSize: 15,
-    fontWeight: '600',
     fontFamily: 'Manrope_600SemiBold',
   },
   secondary: {
@@ -362,9 +359,8 @@ const s = StyleSheet.create({
   secondaryText: {
     color: '#0e7490',
     fontSize: 15,
-    fontWeight: '600',
     fontFamily: 'Manrope_600SemiBold',
   },
   quiet: { minHeight: 36, alignItems: 'center', justifyContent: 'center' },
-  quietText: { color: '#64748b', fontSize: 14 },
+  quietText: { fontFamily: 'Manrope_400Regular', color: '#64748b', fontSize: 14 },
 });

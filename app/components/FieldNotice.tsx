@@ -46,7 +46,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 18,
     color: '#78350f',
-    fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
   },
   textBig: { fontSize: 14.5, lineHeight: 20 },

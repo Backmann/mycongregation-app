@@ -94,8 +94,8 @@ export function richNoteToHtml(text: string): string {
 const styles = StyleSheet.create({
   line: { flexDirection: 'row', gap: 6 },
   gap: { height: 8 },
-  text: { flex: 1, fontSize: 14, color: '#0f172a', lineHeight: 20 },
-  bulletMark: { fontSize: 14, color: '#94a3b8', lineHeight: 20 },
+  text: { fontFamily: 'Manrope_400Regular', flex: 1, fontSize: 14, color: '#0f172a', lineHeight: 20 },
+  bulletMark: { fontFamily: 'Manrope_400Regular', fontSize: 14, color: '#94a3b8', lineHeight: 20 },
   bold: { fontFamily: 'Manrope_700Bold' },
-  italic: { fontStyle: 'italic' },
+  italic: { fontFamily: 'Manrope_400Regular',  },
 });

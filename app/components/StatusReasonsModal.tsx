@@ -112,11 +112,10 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 17,
     color: '#0f172a',
-    fontWeight: '800',
     fontFamily: 'Manrope_800ExtraBold',
   },
-  line: { fontSize: 14, color: '#334155', lineHeight: 20 },
-  warn: { fontSize: 14, color: '#b45309', lineHeight: 20 },
+  line: { fontFamily: 'Manrope_400Regular', fontSize: 14, color: '#334155', lineHeight: 20 },
+  warn: { fontFamily: 'Manrope_400Regular', fontSize: 14, color: '#b45309', lineHeight: 20 },
   close: {
     marginTop: 16,
     alignSelf: 'flex-end',
@@ -126,7 +125,6 @@ const styles = StyleSheet.create({
   closeText: {
     color: '#0e7490',
     fontSize: 15,
-    fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
   },
 });

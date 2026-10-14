@@ -115,6 +115,6 @@ const styles = StyleSheet.create({
   pressed: { opacity: 0.6 },
   disc: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
   text: { flex: 1 },
-  title: { fontSize: 15.5, color: '#0f172a', fontFamily: 'Manrope_600SemiBold', fontWeight: '600' },
-  subtitle: { fontSize: 12.5, color: '#64748b', marginTop: 2 },
+  title: { fontSize: 15.5, color: '#0f172a', fontFamily: 'Manrope_600SemiBold' },
+  subtitle: { fontFamily: 'Manrope_400Regular', fontSize: 12.5, color: '#64748b', marginTop: 2 },
 });

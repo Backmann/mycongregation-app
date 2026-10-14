@@ -45,11 +45,11 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#475569',
     marginBottom: 6,
-    fontWeight: '600',
     fontFamily: 'Manrope_600SemiBold',
   },
   required: { color: '#dc2626' },
   input: {
+    fontFamily: 'Manrope_400Regular',
     fontSize: 15,
     color: '#0f172a',
     borderWidth: 1,

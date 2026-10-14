@@ -43,8 +43,8 @@ export function PasswordRules({ password }: { password: string }) {
 
 const styles = StyleSheet.create({
   wrap: { marginTop: 8, marginBottom: 4, gap: 4 },
-  intro: { fontSize: 12, color: '#64748b', lineHeight: 17, marginBottom: 4 },
+  intro: { fontFamily: 'Manrope_400Regular', fontSize: 12, color: '#64748b', lineHeight: 17, marginBottom: 4 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  label: { fontSize: 12, color: '#94a3b8' },
+  label: { fontFamily: 'Manrope_400Regular', fontSize: 12, color: '#94a3b8' },
   labelOk: { color: '#16a34a' },
 });

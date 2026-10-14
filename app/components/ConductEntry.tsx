@@ -85,5 +85,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     marginBottom: 12,
   },
-  label: { color: '#0369a1', fontSize: 14, fontWeight: '600' },
+  label: { color: '#0369a1', fontSize: 14, fontFamily: 'Manrope_600SemiBold' },
 });

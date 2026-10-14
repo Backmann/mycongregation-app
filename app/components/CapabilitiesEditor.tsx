@@ -172,14 +172,14 @@ const styles = StyleSheet.create({
     minHeight: 44,
   },
   headerPressed: { backgroundColor: '#f8fafc' },
-  headerLabel: { flex: 1, fontSize: 15, color: '#0f172a', fontWeight: '500', fontFamily: 'Manrope_500Medium',},
+  headerLabel: { flex: 1, fontSize: 15, color: '#0f172a', fontFamily: 'Manrope_500Medium',},
   counter: {
     backgroundColor: '#e0f2fe',
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 10,
   },
-  counterText: { color: '#0369a1', fontSize: 12, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
+  counterText: { color: '#0369a1', fontSize: 12, fontFamily: 'Manrope_600SemiBold',},
 
   body: {
     backgroundColor: '#f8fafc',
@@ -200,13 +200,13 @@ const styles = StyleSheet.create({
   },
   selectAllLabel: {
     flex: 1,
-    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
+    fontFamily: 'Manrope_600SemiBold',
     color: '#475569',
     textTransform: 'uppercase',
     fontSize: 12,
     letterSpacing: 0.4,
   },
-  capLabel: { fontSize: 14.5, color: '#0f172a', lineHeight: 20 },
+  capLabel: { fontFamily: 'Manrope_400Regular', fontSize: 14.5, color: '#0f172a', lineHeight: 20 },
   capLabelDisabled: { color: '#cbd5e1' },
   hintRow: { flexDirection: 'row', gap: 4, marginTop: 2 },
   hint: {
@@ -216,7 +216,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 5,
     paddingVertical: 1,
     borderRadius: 3,
-    fontWeight: '500', fontFamily: 'Manrope_500Medium',
+    fontFamily: 'Manrope_500Medium',
   },
   hintWarn: { color: '#dc2626', backgroundColor: '#fef2f2' },
 });

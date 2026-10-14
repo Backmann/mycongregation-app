@@ -915,7 +915,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 12,
   },
-  plainLabel: { flex: 1, fontSize: 14.5, color: '#0f172a' },
+  plainLabel: { fontFamily: 'Manrope_400Regular', flex: 1, fontSize: 14.5, color: '#0f172a' },
   plainValue: {
     fontSize: 20,
     color: '#0e7490',
@@ -923,6 +923,7 @@ const styles = StyleSheet.create({
   },
 
   basis: {
+    fontFamily: 'Manrope_400Regular',
     fontSize: 11.5,
     color: '#94a3b8',
     marginTop: 6,
@@ -939,7 +940,7 @@ const styles = StyleSheet.create({
     padding: 10,
     marginTop: 8,
   },
-  warnText: { flex: 1, fontSize: 13, color: '#92400e', lineHeight: 18 },
+  warnText: { fontFamily: 'Manrope_400Regular', flex: 1, fontSize: 13, color: '#92400e', lineHeight: 18 },
 
   monthsCard: {
     backgroundColor: '#fff',
@@ -970,11 +971,13 @@ const styles = StyleSheet.create({
     fontFamily: 'Manrope_700Bold',
   },
   monthName: {
+    fontFamily: 'Manrope_400Regular',
     fontSize: 10.5,
     color: '#94a3b8',
     textTransform: 'capitalize',
   },
   monthsNote: {
+    fontFamily: 'Manrope_400Regular',
     fontSize: 11.5,
     color: '#94a3b8',
     marginTop: 8,
@@ -994,14 +997,14 @@ const styles = StyleSheet.create({
     gap: 10,
     paddingVertical: 12,
   },
-  figureLabel: { fontSize: 14.5, color: '#0f172a' },
-  figureHint: { fontSize: 12, color: '#94a3b8', marginTop: 2, lineHeight: 16 },
+  figureLabel: { fontFamily: 'Manrope_400Regular', fontSize: 14.5, color: '#0f172a' },
+  figureHint: { fontFamily: 'Manrope_400Regular', fontSize: 12, color: '#94a3b8', marginTop: 2, lineHeight: 16 },
   figureValue: {
     fontSize: 22,
     color: '#0e7490',
     fontFamily: 'Manrope_700Bold',
   },
-  figureEmpty: { fontSize: 14, color: '#94a3b8', paddingBottom: 12 },
+  figureEmpty: { fontFamily: 'Manrope_400Regular', fontSize: 14, color: '#94a3b8', paddingBottom: 12 },
   person: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1010,8 +1013,9 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#f1f5f9',
   },
-  personName: { flex: 1, fontSize: 14, color: '#334155' },
+  personName: { fontFamily: 'Manrope_400Regular', flex: 1, fontSize: 14, color: '#334155' },
   personMonth: {
+    fontFamily: 'Manrope_400Regular',
     fontSize: 12.5,
     color: '#94a3b8',
     textTransform: 'capitalize',
@@ -1024,7 +1028,7 @@ const styles = StyleSheet.create({
     borderColor: '#e2e8f0',
     padding: 14,
   },
-  byHandText: { fontSize: 13.5, color: '#475569', lineHeight: 19 },
+  byHandText: { fontFamily: 'Manrope_400Regular', fontSize: 13.5, color: '#475569', lineHeight: 19 },
 
   banner: {
     borderRadius: 14,
@@ -1043,8 +1047,8 @@ const styles = StyleSheet.create({
     fontFamily: 'Manrope_700Bold',
     flex: 1,
   },
-  bannerText: { fontSize: 13.5, color: '#334155', lineHeight: 19, marginTop: 6 },
-  bannerNote: { fontSize: 12.5, color: '#92400e', lineHeight: 17, marginTop: 10 },
+  bannerText: { fontFamily: 'Manrope_400Regular', fontSize: 13.5, color: '#334155', lineHeight: 19, marginTop: 6 },
+  bannerNote: { fontFamily: 'Manrope_400Regular', fontSize: 12.5, color: '#92400e', lineHeight: 17, marginTop: 10 },
   bannerLink: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1075,9 +1079,10 @@ const styles = StyleSheet.create({
     borderStyle: 'dashed',
     paddingVertical: 10,
   },
-  driftText: { flex: 1, fontSize: 13, color: '#92400e' },
+  driftText: { fontFamily: 'Manrope_400Regular', flex: 1, fontSize: 13, color: '#92400e' },
   driftWhy: { fontSize: 13, color: '#0e7490', fontFamily: 'Manrope_700Bold' },
   driftPlain: {
+    fontFamily: 'Manrope_400Regular',
     fontSize: 12.5,
     color: '#92400e',
     marginTop: 6,
@@ -1092,7 +1097,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 12,
   },
-  compareLabel: { fontSize: 12.5, color: '#64748b' },
+  compareLabel: { fontFamily: 'Manrope_400Regular', fontSize: 12.5, color: '#64748b' },
   compareValue: {
     fontSize: 26,
     color: '#0e7490',
@@ -1112,10 +1117,10 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#f1f5f9',
   },
-  driftChange: { fontSize: 12.5, color: '#b45309', marginTop: 2 },
-  driftReason: { fontSize: 13, color: '#475569', marginTop: 3, lineHeight: 18 },
-  sheetNote: { fontSize: 12.5, color: '#64748b', lineHeight: 18, marginTop: 12 },
-  sheetIntro: { fontSize: 13.5, color: '#475569', lineHeight: 19, marginBottom: 10 },
+  driftChange: { fontFamily: 'Manrope_400Regular', fontSize: 12.5, color: '#b45309', marginTop: 2 },
+  driftReason: { fontFamily: 'Manrope_400Regular', fontSize: 13, color: '#475569', marginTop: 3, lineHeight: 18 },
+  sheetNote: { fontFamily: 'Manrope_400Regular', fontSize: 12.5, color: '#64748b', lineHeight: 18, marginTop: 12 },
+  sheetIntro: { fontFamily: 'Manrope_400Regular', fontSize: 13.5, color: '#475569', lineHeight: 19, marginBottom: 10 },
   primaryBtn: {
     backgroundColor: '#0e7490',
     borderRadius: 12,
@@ -1132,7 +1137,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   secondaryBtnText: { color: '#0f172a', fontSize: 15, fontFamily: 'Manrope_600SemiBold' },
-  fieldLabel: { fontSize: 13, color: '#64748b', marginBottom: 6 },
+  fieldLabel: { fontFamily: 'Manrope_400Regular', fontSize: 13, color: '#64748b', marginBottom: 6 },
   formRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1141,8 +1146,8 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#f1f5f9',
   },
-  formLabel: { fontSize: 14.5, color: '#0f172a' },
-  formHint: { fontSize: 12, color: '#b45309', marginTop: 2 },
+  formLabel: { fontFamily: 'Manrope_400Regular', fontSize: 14.5, color: '#0f172a' },
+  formHint: { fontFamily: 'Manrope_400Regular', fontSize: 12, color: '#b45309', marginTop: 2 },
   formInput: {
     width: 76,
     textAlign: 'right',
@@ -1156,7 +1161,7 @@ const styles = StyleSheet.create({
     paddingVertical: 7,
     backgroundColor: '#fff',
   },
-  error: { color: '#b91c1c', fontSize: 13, marginTop: 10 },
+  error: { fontFamily: 'Manrope_400Regular', color: '#b91c1c', fontSize: 13, marginTop: 10 },
   collect: {
     marginTop: 10,
     padding: 10,
@@ -1166,7 +1171,7 @@ const styles = StyleSheet.create({
     borderColor: '#fde68a',
   },
   collectTitle: { fontSize: 13.5, color: '#0f172a', fontFamily: 'Manrope_600SemiBold' },
-  collectWarn: { fontSize: 13, color: '#92400e', marginTop: 6, lineHeight: 18 },
-  collectName: { fontSize: 13, color: '#334155', marginTop: 2, marginLeft: 4 },
-  collectHint: { fontSize: 12.5, color: '#64748b', marginTop: 6, lineHeight: 17 },
+  collectWarn: { fontFamily: 'Manrope_400Regular', fontSize: 13, color: '#92400e', marginTop: 6, lineHeight: 18 },
+  collectName: { fontFamily: 'Manrope_400Regular', fontSize: 13, color: '#334155', marginTop: 2, marginLeft: 4 },
+  collectHint: { fontFamily: 'Manrope_400Regular', fontSize: 12.5, color: '#64748b', marginTop: 6, lineHeight: 17 },
 });

@@ -836,7 +836,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#64748b",
     marginBottom: 4,
-    fontWeight: "500",
     fontFamily: "Manrope_500Medium",
   },
   row: {
@@ -844,7 +843,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
   },
-  value: { fontSize: 16, color: "#0f172a" },
+  value: { fontFamily: "Manrope_400Regular", fontSize: 16, color: "#0f172a" },
   /**
    * Пустое поле — не выключенное.
    *
@@ -860,14 +859,14 @@ const styles = StyleSheet.create({
     gap: 4,
     marginTop: 4,
   },
-  warningText: { fontSize: 11, color: "#dc2626" },
+  warningText: { fontFamily: "Manrope_400Regular", fontSize: 11, color: "#dc2626" },
   absenceRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
     marginTop: 4,
   },
-  absenceText: { fontSize: 11, color: "#b45309", flex: 1 },
+  absenceText: { fontFamily: "Manrope_400Regular", fontSize: 11, color: "#b45309", flex: 1 },
   optionLastDone: { fontSize: 11, color: "#0369a1", marginTop: 2 },
   optionPartner: { fontSize: 11, color: "#7c3aed", marginTop: 2 },
   busyChipRow: {
@@ -882,6 +881,7 @@ const styles = StyleSheet.create({
     marginTop: 3,
   },
   busyChipText: {
+    fontFamily: "Manrope_400Regular",
     fontSize: 11,
     color: "#92400e",
     flexShrink: 1,
@@ -891,7 +891,6 @@ const styles = StyleSheet.create({
   optionBusyText: {
     fontSize: 12,
     color: "#0369a1",
-    fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
     marginLeft: 16,
     marginTop: 2,
@@ -899,12 +898,12 @@ const styles = StyleSheet.create({
   optionAbsentText: {
     fontSize: 12,
     color: "#b45309",
-    fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
     marginLeft: 16,
     marginTop: 2,
   },
   optionMetaText: {
+    fontFamily: "Manrope_400Regular",
     fontSize: 12,
     color: "#64748b",
     marginTop: 2,
@@ -934,7 +933,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 6,
   },
-  histLabel: { fontSize: 11, color: "#94a3b8" },
+  histLabel: { fontFamily: "Manrope_400Regular", fontSize: 11, color: "#94a3b8" },
   chip: {
     flexDirection: "row",
     alignItems: "center",
@@ -944,11 +943,11 @@ const styles = StyleSheet.create({
     paddingVertical: 1,
   },
   chipBusy: { backgroundColor: "#faeeda" },
-  chipBusyText: { fontSize: 11, color: "#854f0b" },
+  chipBusyText: { fontFamily: "Manrope_400Regular", fontSize: 11, color: "#854f0b" },
   chipPair: { backgroundColor: "#eeedfe" },
-  chipPairText: { fontSize: 11, color: "#3c3489" },
+  chipPairText: { fontFamily: "Manrope_400Regular", fontSize: 11, color: "#3c3489" },
   chipFresh: { backgroundColor: "#e1f5ee" },
-  chipFreshText: { fontSize: 11, color: "#0f6e56" },
+  chipFreshText: { fontFamily: "Manrope_400Regular", fontSize: 11, color: "#0f6e56" },
   histScopeNote: {
     flexDirection: "row",
     alignItems: "center",
@@ -957,17 +956,16 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
     marginTop: -4,
   },
-  histScopeText: { fontSize: 11, color: "#64748b" },
+  histScopeText: { fontFamily: "Manrope_400Regular", fontSize: 11, color: "#64748b" },
 
   modal: {
     flex: 1,
     backgroundColor: "#f1f5f9",
     ...(Platform.OS === "web" && { paddingTop: 0 }),
   },
-  modalSubtitle: { fontSize: 12, color: "#64748b", marginTop: 2 },
+  modalSubtitle: { fontFamily: "Manrope_400Regular", fontSize: 12, color: "#64748b", marginTop: 2 },
   modalCapName: {
     color: "#0369a1",
-    fontWeight: "500",
     fontFamily: "Manrope_500Medium",
   },
 
@@ -983,12 +981,12 @@ const styles = StyleSheet.create({
   toggleLabel: {
     fontSize: 13,
     color: "#78350f",
-    fontWeight: "500",
     fontFamily: "Manrope_500Medium",
   },
-  toggleHint: { fontSize: 11, color: "#92400e", marginTop: 2 },
+  toggleHint: { fontFamily: "Manrope_400Regular", fontSize: 11, color: "#92400e", marginTop: 2 },
 
   search: {
+    fontFamily: "Manrope_400Regular",
     margin: 16,
     paddingHorizontal: 14,
     paddingVertical: 10,
@@ -1017,7 +1015,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   dot: { width: 10, height: 10, borderRadius: 5, marginRight: 6 },
-  optionText: { fontSize: 15, color: "#0f172a" },
+  optionText: { fontFamily: "Manrope_400Regular", fontSize: 15, color: "#0f172a" },
   optionWarn: {
     backgroundColor: "#fef2f2",
     paddingHorizontal: 4,
@@ -1025,6 +1023,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   empty: {
+    fontFamily: "Manrope_400Regular",
     textAlign: "center",
     color: "#94a3b8",
     padding: 32,

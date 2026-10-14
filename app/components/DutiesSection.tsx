@@ -769,7 +769,7 @@ const styles = StyleSheet.create({
   },
   // One neutral look for the count, full or not — see the card count above.
   countBadgeNeutral: { backgroundColor: '#f1f5f9' },
-  countBadgeText: { fontSize: 11, fontWeight: '700', fontFamily: 'Manrope_700Bold',},
+  countBadgeText: { fontSize: 11, fontFamily: 'Manrope_700Bold',},
   countTextNeutral: { color: '#64748b' },
   section: { marginTop: 16 },
   header: {
@@ -781,7 +781,7 @@ const styles = StyleSheet.create({
   },
   headerText: {
     fontSize: 13,
-    fontWeight: '700', fontFamily: 'Manrope_700Bold',
+    fontFamily: 'Manrope_700Bold',
     color: '#475569',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -794,7 +794,6 @@ const styles = StyleSheet.create({
     fontSize: 13.5,
     color: '#334155',
     flexShrink: 1,
-    fontWeight: '600',
     fontFamily: 'Manrope_600SemiBold',
   },
   dutyLabelRow: {
@@ -813,7 +812,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
     paddingVertical: 1,
   },
-  autoBadgeText: { fontSize: 10, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0369a1' },
+  autoBadgeText: { fontSize: 10, fontFamily: 'Manrope_700Bold', color: '#0369a1' },
   rowMineGlow: {
     borderTopWidth: 0,
     marginHorizontal: -6,
@@ -847,7 +846,6 @@ const styles = StyleSheet.create({
   },
   pastChipText: {
     fontSize: 10,
-    fontWeight: '800',
     fontFamily: 'Manrope_800ExtraBold',
     color: '#64748b',
     textTransform: 'uppercase',
@@ -865,6 +863,7 @@ const styles = StyleSheet.create({
   cardDot: { width: 8, height: 8, borderRadius: 4 },
   cardTitleWrap: { flex: 1, minWidth: 0 },
   cardDate: {
+    fontFamily: 'Manrope_400Regular',
     fontSize: 10.5,
     color: '#64748b',
     marginTop: 1,
@@ -872,20 +871,17 @@ const styles = StyleSheet.create({
   nextChip: { borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 },
   nextChipText: {
     fontSize: 10,
-    fontWeight: '800',
     fontFamily: 'Manrope_800ExtraBold',
     textTransform: 'uppercase',
   },
   cardTitle: {
     fontSize: 12.5,
-    fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
     color: '#0f172a',
   },
   cardCount: { borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 },
   cardCountText: {
     fontSize: 11,
-    fontWeight: '800',
     fontFamily: 'Manrope_800ExtraBold',
   },
   cardBody: { paddingHorizontal: 11, paddingBottom: 2 },
@@ -955,7 +951,6 @@ const styles = StyleSheet.create({
     width: 18,
     textAlign: 'center',
     fontSize: 11,
-    fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
     color: '#94a3b8',
   },
@@ -968,18 +963,17 @@ const styles = StyleSheet.create({
   },
   groupAddText: {
     fontSize: 12,
-    fontWeight: '600',
     fontFamily: 'Manrope_600SemiBold',
     color: '#0369a1',
   },
   placeBtn: { padding: 4 },
-  dialogText: { fontSize: 15, color: '#0f172a', lineHeight: 21 },
+  dialogText: { fontFamily: 'Manrope_400Regular', fontSize: 15, color: '#0f172a', lineHeight: 21 },
   delBtn: { padding: 6 },
   // two-up on narrow screens: tighten horizontal padding/margins
   hPadCompact: { paddingHorizontal: 8 },
 
   fillBtnPressed: { backgroundColor: '#e0f2fe' },
-  fillBtnText: { fontSize: 14, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0369a1' },
+  fillBtnText: { fontSize: 14, fontFamily: 'Manrope_600SemiBold', color: '#0369a1' },
   addCustomBtn: {
     marginHorizontal: 11,
     marginTop: 2,
@@ -999,6 +993,7 @@ const styles = StyleSheet.create({
 
   // custom modal
   modalInput: {
+    fontFamily: 'Manrope_400Regular',
     borderWidth: 1,
     borderColor: '#cbd5e1',
     borderRadius: 8,

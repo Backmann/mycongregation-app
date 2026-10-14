@@ -134,6 +134,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Manrope_600SemiBold',
   },
   note: {
+    fontFamily: 'Manrope_400Regular',
     fontSize: 12.5,
     color: '#64748b',
     marginTop: 1,

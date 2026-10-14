@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   year: { fontSize: 20, color: '#0f172a', fontFamily: 'Manrope_800ExtraBold' },
-  yearCount: { fontSize: 12.5, color: '#94a3b8' },
+  yearCount: { fontFamily: 'Manrope_400Regular', fontSize: 12.5, color: '#94a3b8' },
   card: {
     backgroundColor: '#fff',
     borderRadius: 14,
@@ -173,13 +173,13 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   day: { fontSize: 18, color: '#0e7490', fontFamily: 'Manrope_700Bold' },
-  month: { fontSize: 11, color: '#64748b' },
+  month: { fontFamily: 'Manrope_400Regular', fontSize: 11, color: '#64748b' },
   weekday: {
     fontSize: 14.5,
     color: '#0f172a',
     fontFamily: 'Manrope_600SemiBold',
     textTransform: 'capitalize',
   },
-  meta: { fontSize: 12.5, color: '#64748b', marginTop: 2 },
-  empty: { fontSize: 14, color: '#64748b', textAlign: 'center', marginTop: 40 },
+  meta: { fontFamily: 'Manrope_400Regular', fontSize: 12.5, color: '#64748b', marginTop: 2 },
+  empty: { fontFamily: 'Manrope_400Regular', fontSize: 14, color: '#64748b', textAlign: 'center', marginTop: 40 },
 });

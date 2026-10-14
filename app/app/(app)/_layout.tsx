@@ -130,6 +130,11 @@ export default function AppLayout() {
           // and 56 exceeds the library's 49 — every platform gets more room
           // than before, none gets less.
           tabBarStyle: { height: 56 + insets.bottom },
+          // The labels in the app's own face (14 October 2026). The library
+          // draws them in the system font at weight 500; on Android a weight
+          // over a custom family is not found and Roboto is drawn, so the
+          // weight is set back to normal and the face carries it.
+          tabBarLabelStyle: { fontFamily: "Manrope_600SemiBold", fontWeight: "normal" },
           // No height, no padding, no line height set here — on purpose.
           //
           // The tab bar ALREADY adds the device's bottom inset itself; the

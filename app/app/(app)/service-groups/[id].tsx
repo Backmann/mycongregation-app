@@ -595,7 +595,7 @@ function AddMembersModal({
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f1f5f9' },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 32 },
-  errorText: { color: '#dc2626', fontSize: 16, textAlign: 'center' },
+  errorText: { fontFamily: 'Manrope_400Regular', color: '#dc2626', fontSize: 16, textAlign: 'center' },
 
   headerSection: {
     backgroundColor: '#fff',
@@ -607,12 +607,12 @@ const styles = StyleSheet.create({
   },
   headerName: {
     fontSize: 22,
-    fontWeight: '700', fontFamily: 'Manrope_700Bold',
+    fontFamily: 'Manrope_700Bold',
     color: '#0f172a',
     paddingHorizontal: 24,
     textAlign: 'center',
   },
-  headerSub: { color: '#64748b', marginTop: 6, fontSize: 14 },
+  headerSub: { fontFamily: 'Manrope_400Regular', color: '#64748b', marginTop: 6, fontSize: 14 },
   removedBadge: {
     marginTop: 8,
     color: '#92400e',
@@ -621,7 +621,7 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     borderRadius: 4,
     fontSize: 12,
-    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
+    fontFamily: 'Manrope_600SemiBold',
   },
 
   leadership: { flexDirection: 'row', padding: 16, gap: 12 },
@@ -636,7 +636,7 @@ const styles = StyleSheet.create({
   leaderRole: {
     fontSize: 11,
     color: '#7c3aed',
-    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
+    fontFamily: 'Manrope_600SemiBold',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
@@ -644,7 +644,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#0f172a',
     marginTop: 4,
-    fontWeight: '500', fontFamily: 'Manrope_500Medium',
+    fontFamily: 'Manrope_500Medium',
   },
 
   notesBox: {
@@ -656,11 +656,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#e2e8f0',
   },
-  notesText: { color: '#475569', fontSize: 14 },
+  notesText: { fontFamily: 'Manrope_400Regular', color: '#475569', fontSize: 14 },
 
   sectionTitle: {
     fontSize: 12,
-    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
+    fontFamily: 'Manrope_600SemiBold',
     color: '#64748b',
     textTransform: 'uppercase',
     paddingHorizontal: 20,
@@ -675,6 +675,7 @@ const styles = StyleSheet.create({
     borderColor: '#e2e8f0',
   },
   empty: {
+    fontFamily: 'Manrope_400Regular',
     textAlign: 'center',
     color: '#94a3b8',
     padding: 32,
@@ -698,18 +699,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginRight: 14,
   },
-  avatarText: { color: '#fff', fontWeight: '700', fontFamily: 'Manrope_700Bold', fontSize: 13 },
-  name: { fontSize: 15, fontWeight: '500', fontFamily: 'Manrope_500Medium', color: '#0f172a', flex: 1 },
+  avatarText: { color: '#fff', fontFamily: 'Manrope_700Bold', fontSize: 13 },
+  name: { fontSize: 15, fontFamily: 'Manrope_500Medium', color: '#0f172a', flex: 1 },
   removeBtn: { marginLeft: 8, padding: 2 },
   memberRole: {
     fontSize: 12,
     color: '#7c3aed',
-    fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
     marginTop: 1,
   },
-  memberTags: { fontSize: 12, color: '#64748b', marginTop: 1 },
-  chevron: { color: '#cbd5e1', fontSize: 24, marginLeft: 8 },
+  memberTags: { fontFamily: 'Manrope_400Regular', fontSize: 12, color: '#64748b', marginTop: 1 },
+  chevron: { fontFamily: 'Manrope_400Regular', color: '#cbd5e1', fontSize: 24, marginLeft: 8 },
 
   addBtn: {
     flexDirection: 'row',
@@ -726,15 +726,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   addBtnPressed: { backgroundColor: '#e0f2fe' },
-  addBtnText: { fontSize: 14, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0369a1' },
+  addBtnText: { fontSize: 14, fontFamily: 'Manrope_600SemiBold', color: '#0369a1' },
 
   actions: { padding: 20, gap: 8 },
   button: { paddingVertical: 14, borderRadius: 8, alignItems: 'center' },
   buttonEdit: { backgroundColor: '#0ea5e9' },
-  buttonEditText: { color: '#fff', fontSize: 16, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
+  buttonEditText: { color: '#fff', fontSize: 16, fontFamily: 'Manrope_600SemiBold',},
   buttonRemove: { backgroundColor: '#dc2626' },
   buttonRestore: { backgroundColor: '#059669' },
-  buttonText: { color: '#fff', fontSize: 16, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
+  buttonText: { color: '#fff', fontSize: 16, fontFamily: 'Manrope_600SemiBold',},
 
   modal: { flex: 1, backgroundColor: '#f1f5f9' },
   modalHeader: {
@@ -747,9 +747,10 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#e2e8f0',
   },
-  modalTitle: { fontSize: 18, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#0f172a' },
-  cancelText: { color: '#64748b', fontSize: 16, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
+  modalTitle: { fontSize: 18, fontFamily: 'Manrope_700Bold', color: '#0f172a' },
+  cancelText: { color: '#64748b', fontSize: 16, fontFamily: 'Manrope_600SemiBold',},
   search: {
+    fontFamily: 'Manrope_400Regular',
     margin: 16,
     paddingHorizontal: 14,
     paddingVertical: 10,
@@ -779,8 +780,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   checkboxOn: { backgroundColor: '#0ea5e9', borderColor: '#0ea5e9' },
-  checkName: { fontSize: 15, color: '#0f172a', fontWeight: '500', fontFamily: 'Manrope_500Medium',},
-  checkSub: { fontSize: 12, color: '#94a3b8', marginTop: 2 },
+  checkName: { fontSize: 15, color: '#0f172a', fontFamily: 'Manrope_500Medium',},
+  checkSub: { fontFamily: 'Manrope_400Regular', fontSize: 12, color: '#94a3b8', marginTop: 2 },
   modalFooter: {
     padding: 16,
     backgroundColor: '#fff',
@@ -793,6 +794,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#0ea5e9',
   },
-  confirmBtnText: { color: '#fff', fontSize: 16, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
+  confirmBtnText: { color: '#fff', fontSize: 16, fontFamily: 'Manrope_600SemiBold',},
   disabled: { opacity: 0.5 },
 });

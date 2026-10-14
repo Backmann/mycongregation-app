@@ -54,7 +54,6 @@ const styles = StyleSheet.create({
   note: {
     fontSize: 12.5,
     color: '#b45309',
-    fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
     marginTop: 2,
   },

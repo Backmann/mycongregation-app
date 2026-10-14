@@ -81,10 +81,9 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 15,
     color: '#0f172a',
-    fontWeight: '600',
     fontFamily: 'Manrope_600SemiBold',
   },
-  sub: { marginTop: 1, fontSize: 13, color: '#64748b' },
+  sub: { fontFamily: 'Manrope_400Regular', marginTop: 1, fontSize: 13, color: '#64748b' },
   subHere: { color: '#0e7490' },
-  empty: { fontSize: 14, lineHeight: 20, color: '#64748b', paddingVertical: 8 },
+  empty: { fontFamily: 'Manrope_400Regular', fontSize: 14, lineHeight: 20, color: '#64748b', paddingVertical: 8 },
 });

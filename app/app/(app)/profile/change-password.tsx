@@ -201,6 +201,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f1f5f9' },
 
   intro: {
+    fontFamily: 'Manrope_400Regular',
     fontSize: 14,
     color: '#475569',
     marginBottom: 16,
@@ -218,11 +219,11 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 16,
   },
-  errorBoxText: { flex: 1, color: '#991b1b', fontSize: 13 },
+  errorBoxText: { fontFamily: 'Manrope_400Regular', flex: 1, color: '#991b1b', fontSize: 13 },
 
   fieldLabel: {
     fontSize: 12,
-    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
+    fontFamily: 'Manrope_600SemiBold',
     color: '#475569',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -230,8 +231,9 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   fieldHint: { fontSize: 12, color: '#94a3b8', marginTop: 4 },
-  fieldError: { fontSize: 12, color: '#dc2626', marginTop: 4 },
+  fieldError: { fontFamily: 'Manrope_400Regular', fontSize: 12, color: '#dc2626', marginTop: 4 },
   input: {
+    fontFamily: 'Manrope_400Regular',
     backgroundColor: '#fff',
     borderWidth: 1,
     borderColor: '#cbd5e1',
@@ -253,9 +255,10 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 10,
   },
-  submitButtonText: { color: '#fff', fontSize: 15, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
+  submitButtonText: { color: '#fff', fontSize: 15, fontFamily: 'Manrope_600SemiBold',},
 
   note: {
+    fontFamily: 'Manrope_400Regular',
     fontSize: 12,
     color: '#94a3b8',
     textAlign: 'center',

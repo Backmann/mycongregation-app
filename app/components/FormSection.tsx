@@ -22,7 +22,6 @@ const styles = StyleSheet.create({
   section: { marginTop: 16, marginHorizontal: 12 },
   title: {
     fontSize: 11.5,
-    fontWeight: '600',
     fontFamily: 'Manrope_600SemiBold',
     color: '#64748b',
     textTransform: 'uppercase',

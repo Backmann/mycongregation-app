@@ -57,7 +57,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#475569',
     marginBottom: 8,
-    fontWeight: '600',
     fontFamily: 'Manrope_600SemiBold',
   },
   chips: {
@@ -77,6 +76,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#0ea5e9',
     borderColor: '#0ea5e9',
   },
-  chipText: { color: '#475569', fontSize: 13, fontWeight: '500', fontFamily: 'Manrope_500Medium',},
+  chipText: { color: '#475569', fontSize: 13, fontFamily: 'Manrope_500Medium',},
   chipTextActive: { color: '#fff' },
 });

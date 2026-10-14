@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 8 },
     elevation: 8,
   },
-  text: { flex: 1, color: '#e2e8f0', fontSize: 13.5, lineHeight: 18 },
+  text: { fontFamily: 'Manrope_400Regular', flex: 1, color: '#e2e8f0', fontSize: 13.5, lineHeight: 18 },
   trackWrap: {
     width: '100%',
     maxWidth: 520,

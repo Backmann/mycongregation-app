@@ -279,13 +279,12 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 18,
     color: "#0f172a",
-    fontWeight: "700",
     fontFamily: "Manrope_700Bold",
   },
-  sub: { fontSize: 13, color: "#64748b" },
-  line: { fontSize: 13.5, color: "#334155", marginTop: 2 },
+  sub: { fontFamily: "Manrope_400Regular", fontSize: 13, color: "#64748b" },
+  line: { fontFamily: "Manrope_400Regular", fontSize: 13.5, color: "#334155", marginTop: 2 },
   link: { color: "#0369a1" },
-  note: { fontSize: 13, color: "#64748b", fontStyle: "italic", marginTop: 4 },
+  note: { fontFamily: "Manrope_400Regular", fontSize: 13, color: "#64748b", marginTop: 4 },
   dayBadge: {
     flexDirection: "row",
     alignItems: "center",
@@ -300,13 +299,11 @@ const styles = StyleSheet.create({
   dayBadgeText: {
     fontSize: 11.5,
     color: "#0369a1",
-    fontWeight: "700",
     fontFamily: "Manrope_700Bold",
   },
   sectionLabel: {
     fontSize: 12,
     color: "#64748b",
-    fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
     textTransform: "uppercase",
     letterSpacing: 0.4,
@@ -326,7 +323,6 @@ const styles = StyleSheet.create({
   speakerName: {
     fontSize: 15,
     color: "#0f172a",
-    fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
   },
   statusRow: {
@@ -336,8 +332,8 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     marginTop: 2,
   },
-  statusText: { fontSize: 12, color: "#64748b" },
-  statusNever: { fontSize: 12, color: "#b45309", marginTop: 2 },
+  statusText: { fontFamily: "Manrope_400Regular", fontSize: 12, color: "#64748b" },
+  statusNever: { fontFamily: "Manrope_400Regular", fontSize: 12, color: "#b45309", marginTop: 2 },
   upcomingTag: {
     flexDirection: "row",
     alignItems: "center",
@@ -350,10 +346,9 @@ const styles = StyleSheet.create({
   upcomingText: {
     fontSize: 11,
     color: "#0369a1",
-    fontWeight: "700",
     fontFamily: "Manrope_700Bold",
   },
-  empty: { fontSize: 13.5, color: "#94a3b8", paddingVertical: 6 },
+  empty: { fontFamily: "Manrope_400Regular", fontSize: 13.5, color: "#94a3b8", paddingVertical: 6 },
   addBtn: {
     flexDirection: "row",
     alignItems: "center",
@@ -367,7 +362,6 @@ const styles = StyleSheet.create({
   addBtnText: {
     fontSize: 14.5,
     color: "#0369a1",
-    fontWeight: "700",
     fontFamily: "Manrope_700Bold",
   },
 });

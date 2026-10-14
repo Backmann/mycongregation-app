@@ -172,6 +172,7 @@ function GroupRow({
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f1f5f9' },
   search: {
+    fontFamily: 'Manrope_400Regular',
     margin: 16,
     marginBottom: 8,
     paddingHorizontal: 14,
@@ -183,6 +184,7 @@ const styles = StyleSheet.create({
     borderColor: '#e2e8f0',
   },
   count: {
+    fontFamily: 'Manrope_400Regular',
     paddingHorizontal: 20,
     paddingBottom: 8,
     color: '#64748b',
@@ -206,8 +208,8 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: '#e0f2fe',
   },
-  mineBadgeText: { fontSize: 11.5, color: '#0369a1', fontWeight: '600' },
-  closedHint: { fontSize: 12.5, color: '#94a3b8', marginTop: 2 },
+  mineBadgeText: { fontSize: 11.5, color: '#0369a1', fontFamily: 'Manrope_600SemiBold' },
+  closedHint: { fontFamily: 'Manrope_400Regular', fontSize: 12.5, color: '#94a3b8', marginTop: 2 },
   rowRemoved: { opacity: 0.55 },
   icon: {
     width: 40,
@@ -219,7 +221,7 @@ const styles = StyleSheet.create({
     marginRight: 14,
   },
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  name: { fontSize: 16, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0f172a' },
+  name: { fontSize: 16, fontFamily: 'Manrope_600SemiBold', color: '#0f172a' },
   nameRemoved: { textDecorationLine: 'line-through', color: '#64748b' },
   removedBadge: {
     backgroundColor: '#fef3c7',
@@ -227,10 +229,11 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     borderRadius: 4,
   },
-  removedBadgeText: { color: '#92400e', fontSize: 10, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
-  meta: { fontSize: 13, color: '#64748b', marginTop: 2 },
-  chevron: { color: '#cbd5e1', fontSize: 24, marginLeft: 8 },
+  removedBadgeText: { color: '#92400e', fontSize: 10, fontFamily: 'Manrope_600SemiBold',},
+  meta: { fontFamily: 'Manrope_400Regular', fontSize: 13, color: '#64748b', marginTop: 2 },
+  chevron: { fontFamily: 'Manrope_400Regular', color: '#cbd5e1', fontSize: 24, marginLeft: 8 },
   empty: {
+    fontFamily: 'Manrope_400Regular',
     textAlign: 'center',
     color: '#94a3b8',
     marginTop: 48,

@@ -258,12 +258,11 @@ const styles = StyleSheet.create({
   waitingTitle: {
     fontSize: 12,
     color: '#92400e',
-    fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
     textTransform: 'uppercase',
     letterSpacing: 0.3,
   },
-  waitingBody: { fontSize: 13.5, color: '#78350f', lineHeight: 19 },
+  waitingBody: { fontFamily: 'Manrope_400Regular', fontSize: 13.5, color: '#78350f', lineHeight: 19 },
   yearRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -274,7 +273,6 @@ const styles = StyleSheet.create({
   yearLabel: {
     fontSize: 15,
     color: '#0f172a',
-    fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
     minWidth: 190,
     textAlign: 'center',
@@ -282,7 +280,6 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 12,
     color: '#64748b',
-    fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
     textTransform: 'uppercase',
     letterSpacing: 0.4,
@@ -302,7 +299,6 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 15,
     color: '#0f172a',
-    fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
   },
   count: {
@@ -317,12 +313,11 @@ const styles = StyleSheet.create({
   countText: {
     fontSize: 13,
     color: '#92400e',
-    fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
   },
   countTextDone: { color: '#15803d' },
-  line: { fontSize: 13.5, color: '#475569' },
-  planned: { fontSize: 13, color: '#0369a1' },
+  line: { fontFamily: 'Manrope_400Regular', fontSize: 13.5, color: '#475569' },
+  planned: { fontFamily: 'Manrope_400Regular', fontSize: 13, color: '#0369a1' },
   planBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -333,9 +328,8 @@ const styles = StyleSheet.create({
   planBtnText: {
     fontSize: 13.5,
     color: '#0369a1',
-    fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
   },
-  muted: { fontSize: 14, color: '#64748b' },
-  hint: { fontSize: 12.5, color: '#94a3b8', lineHeight: 18, marginTop: 8 },
+  muted: { fontFamily: 'Manrope_400Regular', fontSize: 14, color: '#64748b' },
+  hint: { fontFamily: 'Manrope_400Regular', fontSize: 12.5, color: '#94a3b8', lineHeight: 18, marginTop: 8 },
 });

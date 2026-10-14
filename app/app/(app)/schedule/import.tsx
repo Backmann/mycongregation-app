@@ -662,6 +662,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f1f5f9',
   },
   noRightsText: {
+    fontFamily: 'Manrope_400Regular',
     fontSize: 14,
     color: '#64748b',
     textAlign: 'center',
@@ -672,7 +673,6 @@ const styles = StyleSheet.create({
     letterSpacing: 0.7,
     textTransform: 'uppercase',
     color: '#94a3b8',
-    fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
     marginBottom: 10,
   },
@@ -689,10 +689,9 @@ const styles = StyleSheet.create({
   haveChipMonth: {
     fontSize: 13.5,
     color: '#0c4a6e',
-    fontWeight: '600',
     fontFamily: 'Manrope_600SemiBold',
   },
-  haveChipWeeks: { fontSize: 11.5, color: '#0369a1', marginTop: 1 },
+  haveChipWeeks: { fontFamily: 'Manrope_400Regular', fontSize: 11.5, color: '#0369a1', marginTop: 1 },
   openWeek: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -707,7 +706,6 @@ const styles = StyleSheet.create({
   openWeekText: {
     fontSize: 13.5,
     color: '#0369a1',
-    fontWeight: '600',
     fontFamily: 'Manrope_600SemiBold',
   },
   container: { flex: 1, backgroundColor: '#f1f5f9' },
@@ -722,13 +720,14 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 20,
-    fontWeight: '700', fontFamily: 'Manrope_700Bold',
+    fontFamily: 'Manrope_700Bold',
     color: '#0f172a',
     marginTop: 12,
     marginBottom: 8,
     textAlign: 'center',
   },
   subtitle: {
+    fontFamily: 'Manrope_400Regular',
     fontSize: 14,
     color: '#64748b',
     textAlign: 'center',
@@ -745,6 +744,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   privacyText: {
+    fontFamily: 'Manrope_400Regular',
     flex: 1,
     fontSize: 12,
     color: '#047857',
@@ -764,7 +764,7 @@ const styles = StyleSheet.create({
     borderColor: '#0ea5e9',
     borderStyle: 'dashed',
   },
-  pickButtonText: { color: '#0ea5e9', fontSize: 15, fontWeight: '500', fontFamily: 'Manrope_500Medium',},
+  pickButtonText: { color: '#0ea5e9', fontSize: 15, fontFamily: 'Manrope_500Medium',},
 
   fileCard: {
     flexDirection: 'row',
@@ -777,14 +777,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#e2e8f0',
   },
-  fileName: { fontSize: 14, fontWeight: '500', fontFamily: 'Manrope_500Medium', color: '#0f172a' },
+  fileName: { fontSize: 14, fontFamily: 'Manrope_500Medium', color: '#0f172a' },
   fileMetaRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
     marginTop: 4,
   },
-  fileMeta: { fontSize: 12, color: '#64748b' },
+  fileMeta: { fontFamily: 'Manrope_400Regular', fontSize: 12, color: '#64748b' },
   typeBadge: {
     paddingHorizontal: 8,
     paddingVertical: 2,
@@ -793,7 +793,7 @@ const styles = StyleSheet.create({
   typeBadgeMidweek: { backgroundColor: '#dbeafe' },
   typeBadgeWeekend: { backgroundColor: '#fef3c7' },
   typeBadgeUnknown: { backgroundColor: '#f1f5f9' },
-  typeBadgeText: { fontSize: 10, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0f172a' },
+  typeBadgeText: { fontSize: 10, fontFamily: 'Manrope_600SemiBold', color: '#0f172a' },
 
   parsingRow: {
     flexDirection: 'row',
@@ -802,7 +802,7 @@ const styles = StyleSheet.create({
     gap: 10,
     paddingVertical: 12,
   },
-  parsingText: { color: '#0ea5e9', fontSize: 14, fontWeight: '500', fontFamily: 'Manrope_500Medium',},
+  parsingText: { color: '#0ea5e9', fontSize: 14, fontFamily: 'Manrope_500Medium',},
 
   uploadButton: {
     flexDirection: 'row',
@@ -813,7 +813,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#0ea5e9',
     borderRadius: 10,
   },
-  uploadButtonText: { color: '#fff', fontSize: 16, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
+  uploadButtonText: { color: '#fff', fontSize: 16, fontFamily: 'Manrope_600SemiBold',},
 
   errorBox: {
     padding: 12,
@@ -822,7 +822,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 8,
   },
-  errorText: { color: '#dc2626', fontSize: 14 },
+  errorText: { fontFamily: 'Manrope_400Regular', color: '#dc2626', fontSize: 14 },
 
   successHeader: {
     flexDirection: 'row',
@@ -830,7 +830,7 @@ const styles = StyleSheet.create({
     gap: 8,
     marginBottom: 8,
   },
-  successTitle: { fontSize: 18, fontWeight: '700', fontFamily: 'Manrope_700Bold', color: '#059669' },
+  successTitle: { fontSize: 18, fontFamily: 'Manrope_700Bold', color: '#059669' },
 
   statsRow: {
     flexDirection: 'row',
@@ -841,8 +841,9 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   stat: { flex: 1, alignItems: 'center' },
-  statValue: { fontSize: 22, fontWeight: '700', fontFamily: 'Manrope_700Bold',},
+  statValue: { fontSize: 22, fontFamily: 'Manrope_700Bold',},
   statLabel: {
+    fontFamily: 'Manrope_400Regular',
     fontSize: 11,
     color: '#64748b',
     marginTop: 4,
@@ -860,14 +861,14 @@ const styles = StyleSheet.create({
   warningTitle: {
     color: '#78350f',
     fontSize: 13,
-    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
+    fontFamily: 'Manrope_600SemiBold',
     marginBottom: 4,
   },
-  warningText: { color: '#92400e', fontSize: 13, lineHeight: 18 },
+  warningText: { fontFamily: 'Manrope_400Regular', color: '#92400e', fontSize: 13, lineHeight: 18 },
 
   weeksHeader: {
     fontSize: 12,
-    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
+    fontFamily: 'Manrope_600SemiBold',
     color: '#64748b',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -889,14 +890,14 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#f1f5f9',
   },
-  weekDate: { fontSize: 13, color: '#0f172a', fontWeight: '500', fontFamily: 'Manrope_500Medium',},
-  weekBible: { fontSize: 12, color: '#64748b', marginTop: 2 },
-  weekPartsCount: { fontSize: 12, color: '#64748b', fontWeight: '500', fontFamily: 'Manrope_500Medium',},
+  weekDate: { fontSize: 13, color: '#0f172a', fontFamily: 'Manrope_500Medium',},
+  weekBible: { fontFamily: 'Manrope_400Regular', fontSize: 12, color: '#64748b', marginTop: 2 },
+  weekPartsCount: { fontSize: 12, color: '#64748b', fontFamily: 'Manrope_500Medium',},
   weekStats: { flexDirection: 'row', gap: 8 },
-  weekNotHeld: { fontSize: 12, color: '#92400e' },
+  weekNotHeld: { fontFamily: 'Manrope_400Regular', fontSize: 12, color: '#92400e' },
   weekStat: {
     fontSize: 13,
-    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
+    fontFamily: 'Manrope_600SemiBold',
     minWidth: 28,
     textAlign: 'right',
   },
@@ -908,5 +909,5 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: 'center',
   },
-  doneButtonText: { color: '#fff', fontSize: 16, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
+  doneButtonText: { color: '#fff', fontSize: 16, fontFamily: 'Manrope_600SemiBold',},
 });

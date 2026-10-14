@@ -170,7 +170,6 @@ const styles = StyleSheet.create({
   title: {
     flex: 1,
     fontSize: 17,
-    fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
     color: '#0f172a',
   },
@@ -197,11 +196,11 @@ const styles = StyleSheet.create({
   },
   cancel: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#e2e8f0' },
   extra: { minWidth: 0, paddingHorizontal: 4, backgroundColor: 'transparent' },
-  extraText: { color: '#b91c1c', fontSize: 14, fontWeight: '600' },
-  cancelText: { color: '#334155', fontSize: 14.5, fontWeight: '600' },
+  extraText: { color: '#b91c1c', fontSize: 14, fontFamily: 'Manrope_600SemiBold' },
+  cancelText: { color: '#334155', fontSize: 14.5, fontFamily: 'Manrope_600SemiBold' },
   confirm: { backgroundColor: '#0ea5e9' },
   danger: { backgroundColor: '#dc2626' },
-  confirmText: { color: '#fff', fontSize: 14.5, fontWeight: '700' },
+  confirmText: { color: '#fff', fontSize: 14.5, fontFamily: 'Manrope_700Bold' },
   disabled: { opacity: 0.5 },
   pressed: { opacity: 0.85 },
 });

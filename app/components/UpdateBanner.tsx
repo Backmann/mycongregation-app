@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 10,
   },
-  text: { flex: 1, fontSize: 13, color: '#7f1d1d', lineHeight: 18 },
+  text: { fontFamily: 'Manrope_400Regular', flex: 1, fontSize: 13, color: '#7f1d1d', lineHeight: 18 },
   action: {
     fontSize: 13.5,
     color: '#b91c1c',

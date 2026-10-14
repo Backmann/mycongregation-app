@@ -111,7 +111,6 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 14,
-    fontWeight: '600',
     color: '#0f172a',
     fontFamily: 'Manrope_600SemiBold',
     marginBottom: 12,
@@ -130,7 +129,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#9FE1CB',
     borderRadius: 2,
   },
-  legendText: { fontSize: 12, color: '#64748b' },
+  legendText: { fontFamily: 'Manrope_400Regular', fontSize: 12, color: '#64748b' },
   chart: {
     flexDirection: 'row',
     alignItems: 'flex-end',
@@ -161,7 +160,7 @@ const styles = StyleSheet.create({
   dotValue: {
     fontSize: 10,
     color: '#185FA5',
-    fontWeight: '600',
+    fontFamily: 'Manrope_600SemiBold',
     marginBottom: 1,
   },
   dot: {
@@ -178,6 +177,7 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
   monthLabel: {
+    fontFamily: 'Manrope_400Regular',
     flex: 1,
     textAlign: 'center',
     fontSize: 11,

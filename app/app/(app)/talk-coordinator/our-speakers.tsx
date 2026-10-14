@@ -467,7 +467,7 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     marginTop: 4,
   },
-  restrictText: { fontSize: 12, color: "#92400e", fontWeight: "600" },
+  restrictText: { fontSize: 12, color: "#92400e", fontFamily: "Manrope_600SemiBold" },
   center: {
     flex: 1,
     justifyContent: "center",
@@ -476,7 +476,7 @@ const styles = StyleSheet.create({
   },
   muted: { color: "#64748b", fontSize: 15, textAlign: "center" },
   container: { padding: 16, paddingBottom: 40 },
-  hint: { fontSize: 13, color: "#64748b", marginBottom: 16, lineHeight: 18 },
+  hint: { fontFamily: "Manrope_400Regular", fontSize: 13, color: "#64748b", marginBottom: 16, lineHeight: 18 },
 
   toolbar: { marginBottom: 12, gap: 8 },
   searchRow: {
@@ -490,7 +490,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
   },
-  searchInput: { flex: 1, fontSize: 15, color: "#0f172a", paddingVertical: 0 },
+  searchInput: { fontFamily: "Manrope_400Regular", flex: 1, fontSize: 15, color: "#0f172a", paddingVertical: 0 },
   segmentRow: {
     flexDirection: "row",
     backgroundColor: "#e2e8f0",
@@ -507,12 +507,10 @@ const styles = StyleSheet.create({
   segmentText: {
     fontSize: 13,
     color: "#64748b",
-    fontWeight: "500",
     fontFamily: "Manrope_500Medium",
   },
   segmentTextActive: {
     color: "#0f172a",
-    fontWeight: "700",
     fontFamily: "Manrope_700Bold",
   },
   filterRow: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
@@ -525,10 +523,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   filterChipActive: { backgroundColor: "#0ea5e9", borderColor: "#0ea5e9" },
-  filterChipText: { fontSize: 13, color: "#475569" },
+  filterChipText: { fontFamily: "Manrope_400Regular", fontSize: 13, color: "#475569" },
   filterChipTextActive: {
     color: "#fff",
-    fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
   },
 
@@ -547,7 +544,6 @@ const styles = StyleSheet.create({
   rowPressed: { backgroundColor: "#f8fafc" },
   name: {
     fontSize: 15,
-    fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
     color: "#0f172a",
   },
@@ -562,11 +558,11 @@ const styles = StyleSheet.create({
   statusText: { fontSize: 13, color: "#64748b" },
   statusRecent: {
     color: "#b45309",
-    fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
   },
   headRow: { flexDirection: "row", alignItems: "center", gap: 8 },
   badge: {
+    fontFamily: "Manrope_400Regular",
     fontSize: 12,
     color: "#0369a1",
     backgroundColor: "#e0f2fe",
@@ -575,20 +571,18 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     overflow: "hidden",
   },
-  line: { fontSize: 13, color: "#475569", lineHeight: 18, marginTop: 2 },
-  lineMuted: { fontSize: 12.5, color: "#94a3b8", marginTop: 2 },
+  line: { fontFamily: "Manrope_400Regular", fontSize: 13, color: "#475569", lineHeight: 18, marginTop: 2 },
+  lineMuted: { fontFamily: "Manrope_400Regular", fontSize: 12.5, color: "#94a3b8", marginTop: 2 },
   statusNever: {
     fontSize: 13,
     color: "#94a3b8",
-    fontStyle: "italic",
     marginTop: 3,
   },
   upcomingTag: { flexDirection: "row", alignItems: "center", gap: 3 },
   upcomingText: {
     fontSize: 13,
     color: "#0369a1",
-    fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
   },
-  empty: { fontSize: 14, color: "#94a3b8", textAlign: "center", marginTop: 24 },
+  empty: { fontFamily: "Manrope_400Regular", fontSize: 14, color: "#94a3b8", textAlign: "center", marginTop: 24 },
 });

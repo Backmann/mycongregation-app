@@ -788,13 +788,14 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   doneMonth: {
+    fontFamily: 'Manrope_400Regular',
     fontSize: 15,
     color: '#64748b',
     marginTop: 2,
     textTransform: 'capitalize',
   },
   doneFigures: { alignItems: 'center', marginTop: 14, gap: 2 },
-  doneFigure: { fontSize: 15, color: '#0f172a' },
+  doneFigure: { fontFamily: 'Manrope_400Regular', fontSize: 15, color: '#0f172a' },
   doneBtn: {
     marginTop: 28,
     backgroundColor: '#0ea5e9',
@@ -887,7 +888,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 2,
     borderBottomColor: '#e2e8f0',
   },
-  bigInputUnit: { fontSize: 18, color: '#94a3b8' },
+  bigInputUnit: { fontFamily: 'Manrope_400Regular', fontSize: 18, color: '#94a3b8' },
   stepperRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -914,6 +915,7 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
   },
   notesInput: {
+    fontFamily: 'Manrope_400Regular',
     minHeight: 90,
     borderWidth: 1,
     borderColor: '#e2e8f0',
@@ -925,6 +927,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8fafc',
   },
   blockedHint: {
+    fontFamily: 'Manrope_400Regular',
     fontSize: 13,
     color: '#64748b',
     textAlign: 'center',
@@ -943,8 +946,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 10,
   },
-  noticeText: { flex: 1, color: '#0c4a6e', fontSize: 13.5, lineHeight: 19 },
+  noticeText: { fontFamily: 'Manrope_400Regular', flex: 1, color: '#0c4a6e', fontSize: 13.5, lineHeight: 19 },
   monthChipTaken2: {
+    fontFamily: 'Manrope_400Regular',
     fontSize: 11,
     color: '#94a3b8',
     marginTop: 1,
@@ -959,7 +963,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 13,
-    fontWeight: '600', fontFamily: 'Manrope_600SemiBold',
+    fontFamily: 'Manrope_600SemiBold',
     color: '#0f172a',
     marginTop: 16,
     marginBottom: 8,
@@ -999,8 +1003,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#e0f2fe',
     borderColor: '#7dd3fc',
   },
-  monthChipText: { fontSize: 14, color: '#0f172a' },
-  monthChipTextActive: { color: '#fff', fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
+  monthChipText: { fontFamily: 'Manrope_400Regular', fontSize: 14, color: '#0f172a' },
+  monthChipTextActive: { color: '#fff', fontFamily: 'Manrope_600SemiBold',},
   monthChipTextTaken: { color: '#94a3b8' },
   toggleRow: { flexDirection: 'row', gap: 12 },
   toggleBtn: {
@@ -1014,8 +1018,8 @@ const styles = StyleSheet.create({
   },
   toggleBtnYes: { backgroundColor: '#10b981', borderColor: '#10b981' },
   toggleBtnNo: { backgroundColor: '#64748b', borderColor: '#64748b' },
-  toggleText: { fontSize: 16, fontWeight: '500', fontFamily: 'Manrope_500Medium', color: '#0f172a' },
-  toggleTextActive: { color: '#fff', fontWeight: '700', fontFamily: 'Manrope_700Bold',},
+  toggleText: { fontSize: 16, fontFamily: 'Manrope_500Medium', color: '#0f172a' },
+  toggleTextActive: { color: '#fff', fontFamily: 'Manrope_700Bold',},
   submitBtn: {
     backgroundColor: '#0ea5e9',
     paddingVertical: 14,
@@ -1038,7 +1042,6 @@ const styles = StyleSheet.create({
   removeBtnText: {
     color: '#b91c1c',
     fontSize: 14.5,
-    fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
   },
   historyBtn: {
@@ -1053,9 +1056,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#f0f9ff',
     marginTop: 16,
   },
-  historyBtnText: { color: '#0ea5e9', fontSize: 14, fontWeight: '600', fontFamily: 'Manrope_600SemiBold',},
+  historyBtnText: { color: '#0ea5e9', fontSize: 14, fontFamily: 'Manrope_600SemiBold',},
   submitBtnDisabled: { backgroundColor: '#cbd5e1' },
-  submitBtnText: { color: '#fff', fontWeight: '700', fontFamily: 'Manrope_700Bold', fontSize: 16 },
+  submitBtnText: { color: '#fff', fontFamily: 'Manrope_700Bold', fontSize: 16 },
   errorBox: {
     marginTop: 16,
     padding: 12,
@@ -1064,5 +1067,5 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 8,
   },
-  errorText: { color: '#dc2626', fontSize: 14, textAlign: 'center' },
+  errorText: { fontFamily: 'Manrope_400Regular', color: '#dc2626', fontSize: 14, textAlign: 'center' },
 });

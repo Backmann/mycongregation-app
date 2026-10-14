@@ -558,7 +558,7 @@ const styles = StyleSheet.create({
   detailPane: { flex: 1 },
   rowSelected: { backgroundColor: '#f0f9ff' },
   content: { padding: 16, paddingBottom: 40, gap: 4 },
-  empty: { textAlign: 'center', color: '#64748b', marginTop: 32 },
+  empty: { fontFamily: 'Manrope_400Regular', textAlign: 'center', color: '#64748b', marginTop: 32 },
   errorBox: {
     backgroundColor: '#fee2e2',
     borderRadius: 8,
@@ -569,7 +569,6 @@ const styles = StyleSheet.create({
   sectionLabel: {
     fontSize: 12,
     fontFamily: 'Manrope_700Bold',
-    fontWeight: '700',
     color: '#64748b',
     letterSpacing: 0.6,
     textTransform: 'uppercase',
@@ -595,12 +594,10 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 13,
     fontFamily: 'Manrope_700Bold',
-    fontWeight: '700',
   },
   heroWhen: {
     fontSize: 12,
     fontFamily: 'Manrope_700Bold',
-    fontWeight: '700',
     paddingHorizontal: 10,
     paddingVertical: 3,
     borderRadius: 999,
@@ -609,17 +606,15 @@ const styles = StyleSheet.create({
   heroDate: {
     fontSize: 21,
     fontFamily: 'Manrope_800ExtraBold',
-    fontWeight: '800',
     color: '#0f172a',
     marginTop: 8,
   },
   heroTitle: {
     fontSize: 16,
     fontFamily: 'Manrope_600SemiBold',
-    fontWeight: '600',
     color: '#1e293b',
   },
-  heroMeta: { fontSize: 14, color: '#475569' },
+  heroMeta: { fontFamily: 'Manrope_400Regular', fontSize: 14, color: '#475569' },
   heroActions: {
     flexDirection: 'row',
     borderTopWidth: 1,
@@ -630,7 +625,6 @@ const styles = StyleSheet.create({
   heroAction: {
     fontSize: 14,
     fontFamily: 'Manrope_700Bold',
-    fontWeight: '700',
     color: '#0369a1',
   },
   card: {
@@ -653,7 +647,6 @@ const styles = StyleSheet.create({
   dateNum: {
     fontSize: 22,
     fontFamily: 'Manrope_800ExtraBold',
-    fontWeight: '800',
     color: '#0f172a',
     textAlign: 'center',
   },
@@ -661,7 +654,6 @@ const styles = StyleSheet.create({
   dateDow: {
     fontSize: 11,
     fontFamily: 'Manrope_700Bold',
-    fontWeight: '700',
     color: '#64748b',
     textTransform: 'uppercase',
     marginTop: 2,
@@ -671,27 +663,24 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 12,
     fontFamily: 'Manrope_700Bold',
-    fontWeight: '700',
   },
   title: {
     fontSize: 16,
     fontFamily: 'Manrope_700Bold',
-    fontWeight: '700',
     color: '#0f172a',
     marginTop: 2,
   },
   titlePast: { color: '#475569' },
   removed: { textDecorationLine: 'line-through' },
-  meta: { fontSize: 13, color: '#64748b', marginTop: 2 },
+  meta: { fontFamily: 'Manrope_400Regular', fontSize: 13, color: '#64748b', marginTop: 2 },
   effectRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 3 },
   dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#ea580c' },
-  effect: { flex: 1, fontSize: 13, color: '#64748b' },
+  effect: { fontFamily: 'Manrope_400Regular', flex: 1, fontSize: 13, color: '#64748b' },
   effectNotable: {
     color: '#c2410c',
     fontFamily: 'Manrope_600SemiBold',
-    fontWeight: '600',
   },
-  hint: { fontSize: 12, color: '#b45309', marginTop: 3 },
+  hint: { fontFamily: 'Manrope_400Regular', fontSize: 12, color: '#b45309', marginTop: 3 },
   moreRow: { flexDirection: 'row', gap: 10, marginTop: 18 },
   moreBtn: {
     flex: 1,
@@ -710,7 +699,6 @@ const styles = StyleSheet.create({
   moreText: {
     fontSize: 14,
     fontFamily: 'Manrope_600SemiBold',
-    fontWeight: '600',
     color: '#334155',
   },
 });

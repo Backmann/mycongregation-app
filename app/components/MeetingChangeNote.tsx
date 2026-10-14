@@ -50,7 +50,7 @@ export function MeetingChangeNote({
 }
 
 const styles = StyleSheet.create({
-  compact: { fontSize: 13, color: '#b45309', marginTop: 4 },
+  compact: { fontFamily: 'Manrope_400Regular', fontSize: 13, color: '#b45309', marginTop: 4 },
   box: {
     marginTop: 10,
     padding: 12,
@@ -64,9 +64,8 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 14,
     fontFamily: 'Manrope_600SemiBold',
-    fontWeight: '600',
     color: '#92400e',
   },
-  note: { fontSize: 14, color: '#1e293b', lineHeight: 20 },
-  at: { fontSize: 13, color: '#475569' },
+  note: { fontFamily: 'Manrope_400Regular', fontSize: 14, color: '#1e293b', lineHeight: 20 },
+  at: { fontFamily: 'Manrope_400Regular', fontSize: 13, color: '#475569' },
 });

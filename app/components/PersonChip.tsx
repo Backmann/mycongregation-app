@@ -112,7 +112,6 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 13,
-    fontWeight: '500',
     fontFamily: 'Manrope_500Medium',
     flexShrink: 1,
   },
@@ -136,5 +135,5 @@ const styles = StyleSheet.create({
     borderColor: '#cbd5e1',
     paddingVertical: 3,
   },
-  emptyText: { color: '#94a3b8', fontStyle: 'italic', fontWeight: '400', fontFamily: 'Manrope_400Regular',},
+  emptyText: { color: '#94a3b8', fontFamily: 'Manrope_400Regular',},
 });

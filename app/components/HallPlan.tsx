@@ -370,7 +370,6 @@ const styles = StyleSheet.create({
   roomNameText: {
     fontSize: 8.5,
     fontFamily: 'Manrope_800ExtraBold',
-    fontWeight: '800',
     letterSpacing: 1.2,
     color: INK_SOFT,
     textTransform: 'uppercase',
@@ -393,7 +392,7 @@ const styles = StyleSheet.create({
   },
   stageText: {
     fontSize: 9,
-    fontWeight: '800', fontFamily: 'Manrope_800ExtraBold',
+    fontFamily: 'Manrope_800ExtraBold',
     letterSpacing: 1.2,
     color: INK_SOFT,
     textTransform: 'uppercase',
@@ -434,7 +433,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f59e0b',
     borderColor: '#d97706',
   },
-  badgeText: { fontSize: 11, fontWeight: '800', fontFamily: 'Manrope_800ExtraBold', color: INK_SOFT },
+  badgeText: { fontSize: 11, fontFamily: 'Manrope_800ExtraBold', color: INK_SOFT },
   badgeTextActive: { color: '#fff' },
   // Door sign right of the number: 5 + 20 chip + 2 gap. Worked out from the
   // plan's width on frame 24 (246 points on a 390-point phone): the sign ends
@@ -462,6 +461,6 @@ const styles = StyleSheet.create({
     marginTop: 14,
   },
   legendSwatch: { width: 12, height: 12, borderRadius: 3, backgroundColor: '#f59e0b' },
-  legendText: { fontSize: 13.5, fontFamily: 'Manrope_600SemiBold', fontWeight: '600', color: '#b45309' },
-  legendNone: { fontSize: 13.5, fontFamily: 'Manrope_500Medium', fontWeight: '500', color: '#94a3b8' },
+  legendText: { fontSize: 13.5, fontFamily: 'Manrope_600SemiBold', color: '#b45309' },
+  legendNone: { fontSize: 13.5, fontFamily: 'Manrope_500Medium', color: '#94a3b8' },
 });

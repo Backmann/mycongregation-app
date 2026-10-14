@@ -102,10 +102,10 @@ const styles = StyleSheet.create({
   },
   muted: { color: '#64748b', fontSize: 15, textAlign: 'center' },
   container: { padding: 16, paddingBottom: 40 },
-  hint: { fontSize: 13, color: '#64748b', marginBottom: 16, lineHeight: 18 },
+  hint: { fontFamily: 'Manrope_400Regular', fontSize: 13, color: '#64748b', marginBottom: 16, lineHeight: 18 },
   sectionLabel: {
     fontSize: 12,
-    fontWeight: '700', fontFamily: 'Manrope_700Bold',
+    fontFamily: 'Manrope_700Bold',
     color: '#64748b',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -135,6 +135,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  rowTitle: { fontSize: 15, fontWeight: '600', fontFamily: 'Manrope_600SemiBold', color: '#0f172a' },
-  rowSubtitle: { fontSize: 13, color: '#64748b', marginTop: 1 },
+  rowTitle: { fontSize: 15, fontFamily: 'Manrope_600SemiBold', color: '#0f172a' },
+  rowSubtitle: { fontFamily: 'Manrope_400Regular', fontSize: 13, color: '#64748b', marginTop: 1 },
 });

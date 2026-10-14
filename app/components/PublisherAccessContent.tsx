@@ -690,9 +690,10 @@ function EmailModal({
 
 const emailStyles = StyleSheet.create({
   rowBtn: { flexDirection: "row", alignItems: "center", gap: 6 },
-  pencil: { fontSize: 14, color: "#0369a1" },
-  hint: { fontSize: 13, color: "#64748b", lineHeight: 18 },
+  pencil: { fontFamily: "Manrope_400Regular", fontSize: 14, color: "#0369a1" },
+  hint: { fontFamily: "Manrope_400Regular", fontSize: 13, color: "#64748b", lineHeight: 18 },
   input: {
+    fontFamily: "Manrope_400Regular",
     borderWidth: 1,
     borderColor: "#cbd5e1",
     borderRadius: 8,
@@ -701,7 +702,7 @@ const emailStyles = StyleSheet.create({
     fontSize: 15,
     color: "#0f172a",
   },
-  error: { fontSize: 13, color: "#dc2626" },
+  error: { fontFamily: "Manrope_400Regular", fontSize: 13, color: "#dc2626" },
   suggestBtn: {
     alignSelf: "flex-start",
     borderRadius: 999,
@@ -714,7 +715,6 @@ const emailStyles = StyleSheet.create({
   suggestText: {
     fontSize: 13,
     color: "#0369a1",
-    fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
   },
 });
@@ -1048,7 +1048,6 @@ const g = StyleSheet.create({
     letterSpacing: 0.7,
     textTransform: "uppercase",
     color: "#94a3b8",
-    fontWeight: "700",
     fontFamily: "Manrope_700Bold",
     marginBottom: 8,
   },
@@ -1064,7 +1063,7 @@ const g = StyleSheet.create({
     padding: 11,
     marginBottom: 18,
   },
-  ledeText: { flex: 1, fontSize: 12.5, color: "#075985", lineHeight: 18 },
+  ledeText: { fontFamily: "Manrope_400Regular", flex: 1, fontSize: 12.5, color: "#075985", lineHeight: 18 },
   nameRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -1080,13 +1079,11 @@ const g = StyleSheet.create({
     flex: 1,
     fontSize: 15.5,
     color: "#0f172a",
-    fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
   },
   nameEdit: {
     fontSize: 13,
     color: "#0369a1",
-    fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
   },
   warnBox: {
@@ -1100,14 +1097,16 @@ const g = StyleSheet.create({
     padding: 11,
     marginTop: 12,
   },
-  warnBoxText: { fontSize: 12.5, color: "#92400e", lineHeight: 18 },
+  warnBoxText: { fontFamily: "Manrope_400Regular", fontSize: 12.5, color: "#92400e", lineHeight: 18 },
   warnBoxHint: {
+    fontFamily: "Manrope_400Regular",
     fontSize: 12,
     color: "#a16207",
     lineHeight: 17,
     marginTop: 5,
   },
   input: {
+    fontFamily: "Manrope_400Regular",
     borderWidth: 1,
     borderColor: "#e2e8f0",
     borderRadius: 12,
@@ -1118,14 +1117,14 @@ const g = StyleSheet.create({
     backgroundColor: "#fff",
   },
   inputBad: { borderColor: "#fca5a5", backgroundColor: "#fff7f7" },
-  hint: { fontSize: 12, color: "#94a3b8", lineHeight: 17, marginTop: 7 },
+  hint: { fontFamily: "Manrope_400Regular", fontSize: 12, color: "#94a3b8", lineHeight: 17, marginTop: 7 },
   warnRow: {
     flexDirection: "row",
     alignItems: "flex-start",
     gap: 6,
     marginTop: 7,
   },
-  warnText: { flex: 1, fontSize: 12, color: "#b45309", lineHeight: 17 },
+  warnText: { fontFamily: "Manrope_400Regular", flex: 1, fontSize: 12, color: "#b45309", lineHeight: 17 },
   choice: {
     borderWidth: 1,
     borderColor: "#e8edf3",
@@ -1139,10 +1138,9 @@ const g = StyleSheet.create({
   choiceTitle: {
     fontSize: 14.5,
     color: "#0f172a",
-    fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
   },
-  choiceHint: { fontSize: 12, color: "#64748b", lineHeight: 17, marginTop: 3 },
+  choiceHint: { fontFamily: "Manrope_400Regular", fontSize: 12, color: "#64748b", lineHeight: 17, marginTop: 3 },
   choiceBody: { marginTop: 12, gap: 0 },
   check: {
     flexDirection: "row",
@@ -1153,11 +1151,10 @@ const g = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: "#dbeafe",
   },
-  checkWarn: { fontSize: 12, color: "#92400e", lineHeight: 17, marginTop: 3 },
+  checkWarn: { fontFamily: "Manrope_400Regular", fontSize: 12, color: "#92400e", lineHeight: 17, marginTop: 3 },
   checkTitle: {
     fontSize: 13.5,
     color: "#0f172a",
-    fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
   },
   adminRow: {
@@ -1180,7 +1177,7 @@ const g = StyleSheet.create({
     padding: 11,
     marginTop: 16,
   },
-  errorText: { flex: 1, fontSize: 12.5, color: "#991b1b", lineHeight: 17 },
+  errorText: { fontFamily: "Manrope_400Regular", flex: 1, fontSize: 12.5, color: "#991b1b", lineHeight: 17 },
 });
 
 function InviteResultDialog({
@@ -1560,7 +1557,6 @@ function ResetModal({
           style={{
             color: "#0369a1",
             fontSize: 14,
-            fontWeight: "600",
             fontFamily: "Manrope_600SemiBold",
           }}
         >
@@ -1588,11 +1584,11 @@ const codeStyles = StyleSheet.create({
   qrToggleText: {
     fontSize: 13.5,
     color: "#0369a1",
-    fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
   },
   qrBox: { marginTop: 12, alignItems: "center" },
   qrHint: {
+    fontFamily: "Manrope_400Regular",
     marginTop: 8,
     fontSize: 12.5,
     lineHeight: 18,
@@ -1612,7 +1608,6 @@ const codeStyles = StyleSheet.create({
     fontSize: 30,
     letterSpacing: 3,
     color: "#0c4a6e",
-    fontWeight: "700",
     fontFamily: "Manrope_700Bold",
   },
   nameRow: {
@@ -1625,15 +1620,15 @@ const codeStyles = StyleSheet.create({
     paddingHorizontal: 13,
     alignItems: "center",
   },
-  nameLabel: { fontSize: 12, color: "#64748b" },
+  nameLabel: { fontFamily: "Manrope_400Regular", fontSize: 12, color: "#64748b" },
   nameValue: {
     marginTop: 3,
     fontSize: 16,
     color: "#0f172a",
-    fontWeight: "700",
     fontFamily: "Manrope_700Bold",
   },
   until: {
+    fontFamily: "Manrope_400Regular",
     marginTop: 8,
     fontSize: 12.5,
     color: "#64748b",
@@ -1652,7 +1647,6 @@ const codeStyles = StyleSheet.create({
   shareText: {
     color: "#fff",
     fontSize: 15,
-    fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
   },
   mailBtn: {
@@ -1670,10 +1664,10 @@ const codeStyles = StyleSheet.create({
   mailText: {
     color: "#0f172a",
     fontSize: 14,
-    fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
   },
   warning: {
+    fontFamily: "Manrope_400Regular",
     marginTop: 12,
     fontSize: 12.5,
     color: "#b45309",
@@ -1683,7 +1677,7 @@ const codeStyles = StyleSheet.create({
 
 /** Body text inside a dialog. */
 const dialogText = StyleSheet.create({
-  body: { fontSize: 14, color: "#475569", lineHeight: 20 },
+  body: { fontFamily: "Manrope_400Regular", fontSize: 14, color: "#475569", lineHeight: 20 },
 });
 
 const styles = StyleSheet.create({
@@ -1698,11 +1692,10 @@ const styles = StyleSheet.create({
     padding: 11,
     marginTop: 16,
   },
-  pendingText: { fontSize: 12.5, color: "#92400e", lineHeight: 18 },
+  pendingText: { fontFamily: "Manrope_400Regular", fontSize: 12.5, color: "#92400e", lineHeight: 18 },
   pendingAction: {
     fontSize: 13,
     color: "#b45309",
-    fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
     marginTop: 6,
   },
@@ -1712,7 +1705,6 @@ const styles = StyleSheet.create({
     letterSpacing: 0.7,
     textTransform: "uppercase",
     color: "#94a3b8",
-    fontWeight: "700",
     fontFamily: "Manrope_700Bold",
     marginTop: 20,
     marginBottom: 10,
@@ -1722,6 +1714,7 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
   },
   muted: {
+    fontFamily: "Manrope_400Regular",
     fontSize: 15,
     color: "#6b7280",
     marginBottom: 12,
@@ -1740,6 +1733,7 @@ const styles = StyleSheet.create({
   },
   placesBlock: { paddingTop: 8, paddingBottom: 2 },
   rowLabel: {
+    fontFamily: "Manrope_400Regular",
     fontSize: 15,
     color: "#374151",
     flexShrink: 1,
@@ -1748,12 +1742,12 @@ const styles = StyleSheet.create({
   rowValue: {
     fontSize: 15,
     color: "#111827",
-    fontWeight: "500",
     fontFamily: "Manrope_500Medium",
     flexShrink: 1,
     textAlign: "right",
   },
   disabledNote: {
+    fontFamily: "Manrope_400Regular",
     fontSize: 13,
     color: "#b45309",
     marginTop: 4,
@@ -1768,7 +1762,6 @@ const styles = StyleSheet.create({
   primaryBtnText: {
     color: "#ffffff",
     fontSize: 16,
-    fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
   },
   secondaryBtn: {
@@ -1782,7 +1775,6 @@ const styles = StyleSheet.create({
   secondaryBtnText: {
     color: "#2563eb",
     fontSize: 15,
-    fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
   },
   btnRow: {
@@ -1795,6 +1787,7 @@ const styles = StyleSheet.create({
     color: "#dc2626",
   },
   error: {
+    fontFamily: "Manrope_400Regular",
     color: "#dc2626",
     fontSize: 14,
     marginTop: 8,
@@ -1812,12 +1805,12 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 18,
-    fontWeight: "700",
     fontFamily: "Manrope_700Bold",
     color: "#111827",
     marginBottom: 16,
   },
   modalLabel: {
+    fontFamily: "Manrope_400Regular",
     fontSize: 13,
     color: "#6b7280",
     marginBottom: 6,
@@ -1825,6 +1818,7 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
   },
   input: {
+    fontFamily: "Manrope_400Regular",
     borderWidth: 1,
     borderColor: "#d1d5db",
     borderRadius: 10,
@@ -1834,6 +1828,7 @@ const styles = StyleSheet.create({
     color: "#111827",
   },
   hint: {
+    fontFamily: "Manrope_400Regular",
     fontSize: 13,
     color: "#6b7280",
     marginTop: 12,
@@ -1851,7 +1846,6 @@ const styles = StyleSheet.create({
   modalCancelText: {
     color: "#6b7280",
     fontSize: 16,
-    fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
   },
   modalOk: {
@@ -1866,7 +1860,6 @@ const styles = StyleSheet.create({
   modalOkText: {
     color: "#ffffff",
     fontSize: 16,
-    fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
   },
 });

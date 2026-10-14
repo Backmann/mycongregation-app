@@ -119,7 +119,6 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 13,
     color: '#78350f',
-    fontWeight: '700',
     fontFamily: 'Manrope_700Bold',
   },
   doneBtn: {
@@ -128,7 +127,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: '#92400e',
   },
-  doneText: { fontSize: 13, color: '#ffffff', fontWeight: '700', fontFamily: 'Manrope_700Bold' },
+  doneText: { fontSize: 13, color: '#ffffff', fontFamily: 'Manrope_700Bold' },
   fixBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -143,5 +142,5 @@ const styles = StyleSheet.create({
     borderStyle: 'dashed',
     borderColor: '#93c5fd',
   },
-  fixText: { fontSize: 13.5, color: '#0369a1', fontWeight: '700', fontFamily: 'Manrope_700Bold' },
+  fixText: { fontSize: 13.5, color: '#0369a1', fontFamily: 'Manrope_700Bold' },
 });

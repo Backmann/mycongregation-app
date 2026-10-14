@@ -321,6 +321,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#f1f5f9",
   },
   intro: {
+    fontFamily: "Manrope_400Regular",
     fontSize: 13,
     color: "#475569",
     paddingHorizontal: 20,
@@ -334,7 +335,6 @@ const styles = StyleSheet.create({
     letterSpacing: 0.7,
     textTransform: "uppercase",
     color: "#94a3b8",
-    fontWeight: "700",
     fontFamily: "Manrope_700Bold",
     marginLeft: 4,
     marginBottom: 8,
@@ -355,7 +355,6 @@ const styles = StyleSheet.create({
   roleTitle: {
     fontSize: 15,
     color: "#0f172a",
-    fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
     lineHeight: 21,
   },
@@ -375,15 +374,14 @@ const styles = StyleSheet.create({
   holderName: {
     fontSize: 14.5,
     color: "#0f172a",
-    fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
   },
-  holderMeta: { fontSize: 12, color: "#94a3b8", lineHeight: 17, marginTop: 3 },
+  holderMeta: { fontFamily: "Manrope_400Regular", fontSize: 12, color: "#94a3b8", lineHeight: 17, marginTop: 3 },
   removeBtn: { padding: 2 },
   holderUnassigned: {
+    fontFamily: "Manrope_400Regular",
     fontSize: 13,
     color: "#94a3b8",
-    fontStyle: "italic",
     marginTop: 8,
   },
   assignBtn: {
@@ -402,10 +400,10 @@ const styles = StyleSheet.create({
   assignBtnText: {
     fontSize: 13,
     color: "#0369a1",
-    fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
   },
   sheetSubtitle: {
+    fontFamily: "Manrope_400Regular",
     fontSize: 13,
     color: "#64748b",
     marginTop: 2,
@@ -424,10 +422,9 @@ const styles = StyleSheet.create({
   userName: {
     fontSize: 15,
     color: "#0f172a",
-    fontWeight: "600",
     fontFamily: "Manrope_600SemiBold",
   },
   /* What he already carries. The body distributes work by looking at this, and
      the picker used to show twelve e-mail addresses and nothing else. */
-  userHolds: { fontSize: 12, color: "#94a3b8", lineHeight: 17, marginTop: 2 },
+  userHolds: { fontFamily: "Manrope_400Regular", fontSize: 12, color: "#94a3b8", lineHeight: 17, marginTop: 2 },
 });

@@ -177,7 +177,7 @@ export default function PioneerSchoolsScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: '#f1f5f9' },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32 },
-  intro: { fontSize: 13.5, color: '#64748b', lineHeight: 19, marginBottom: 14 },
+  intro: { fontFamily: 'Manrope_400Regular', fontSize: 13.5, color: '#64748b', lineHeight: 19, marginBottom: 14 },
   actions: { flexDirection: 'row', gap: 10, marginBottom: 16 },
   addBtn: {
     flex: 1,
@@ -219,10 +219,10 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   cardTitle: { fontSize: 16, color: '#0f172a', fontFamily: 'Manrope_700Bold' },
-  cardDates: { fontSize: 13.5, color: '#0369a1', marginTop: 2 },
+  cardDates: { fontFamily: 'Manrope_400Regular', fontSize: 13.5, color: '#0369a1', marginTop: 2 },
   hallRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 },
-  cardHall: { fontSize: 12.5, color: '#64748b' },
-  empty: { fontSize: 14, color: '#94a3b8', textAlign: 'center', marginTop: 24 },
+  cardHall: { fontFamily: 'Manrope_400Regular', fontSize: 12.5, color: '#64748b' },
+  empty: { fontFamily: 'Manrope_400Regular', fontSize: 14, color: '#94a3b8', textAlign: 'center', marginTop: 24 },
   label: {
     fontSize: 13,
     color: '#475569',
@@ -231,6 +231,7 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   input: {
+    fontFamily: 'Manrope_400Regular',
     borderWidth: 1,
     borderColor: '#e2e8f0',
     borderRadius: 10,
@@ -239,5 +240,5 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#0f172a',
   },
-  error: { color: '#dc2626', fontSize: 13, marginTop: 8 },
+  error: { fontFamily: 'Manrope_400Regular', color: '#dc2626', fontSize: 13, marginTop: 8 },
 });
