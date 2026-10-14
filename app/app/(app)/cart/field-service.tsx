@@ -143,7 +143,10 @@ export default function FieldServiceMeetingsScreen() {
   // whole window (14 October 2026: at 1280 points the time stood at one edge
   // and its arrow 1200 points away). The rows inside lay their people and
   // place out at the right once they are wide enough (FieldMeetingRow).
-  const side = Math.max(0, Math.floor((screenW - PAGE_MAX) / 2));
+  // From PANEL_FROM the months and the month's actions stand in a panel at
+  // the right (variant A, 14 October 2026), and the strip above goes.
+  const panel = screenW >= PANEL_FROM;
+  const side = Math.max(0, Math.floor((screenW - (panel ? LIST_MAX + PANEL_GAP + PANEL_W : PAGE_MAX)) / 2));
   const canEdit = perms.canEditFieldServiceMeetings;
   const qc = useQueryClient();
 
@@ -320,10 +323,11 @@ export default function FieldServiceMeetingsScreen() {
   const [prepareOpen, setPrepareOpen] = useState(false);
 
   // The printed sheet: a button in the header, where the mockup put it, so
-  // the row under the month strip is left to what is done to the plan.
+  // the row under the month strip is left to what is done to the plan. With
+  // the month panel open it is there instead — one place, not two.
   useEffect(() => {
     navigation.setOptions({
-      headerRight: () => (
+      headerRight: panel ? () => null : () => (
         <Pressable
           onPress={() => setPdfOpen(true)}
           style={{ paddingHorizontal: 10 }}
@@ -334,7 +338,7 @@ export default function FieldServiceMeetingsScreen() {
         </Pressable>
       ),
     });
-  }, [navigation, t]);
+  }, [navigation, t, panel]);
 
   const invalidate = () => {
     qc.invalidateQueries({ queryKey: ['field-service'] });
@@ -746,6 +750,7 @@ export default function FieldServiceMeetingsScreen() {
   return (
     <View style={styles.container}>
       {/* Month strip; the one action on the plan at its right. */}
+      {panel ? null : (
       <View style={[styles.monthBar, side > 0 && { paddingLeft: side, paddingRight: side + 8 }]}>
         <ScrollView
           horizontal
@@ -787,10 +792,13 @@ export default function FieldServiceMeetingsScreen() {
           </Pressable>
         )}
       </View>
+      )}
 
+      <View style={[styles.body, panel && { flexDirection: 'row', paddingHorizontal: side, gap: PANEL_GAP }]}>
       <ScrollView
         ref={scrollRef}
-        contentContainerStyle={{ paddingBottom: 48, paddingHorizontal: side }}
+        style={styles.list}
+        contentContainerStyle={{ paddingBottom: 48, paddingHorizontal: panel ? 0 : side }}
         onContentSizeChange={scrollToCurrent}
         onScroll={(e) => syncActiveMonth(e.nativeEvent.contentOffset.y)}
         scrollEventThrottle={48}
@@ -1023,6 +1031,58 @@ export default function FieldServiceMeetingsScreen() {
           </View>
         ))}
       </ScrollView>
+      {panel ? (
+        <View style={styles.panel}>
+          <Text style={styles.panelHead}>{t('fieldService.panel.months')}</Text>
+          {months.map((m) => {
+            const active = m.key === activeMonthKey;
+            // What will take place: the month's meetings, not called off and
+            // not still drafts, and the outings of a circuit visit with them.
+            const live = m.days
+              .flatMap((d) => d.lines)
+              .filter((l) => l.kind === 'visit' || (!l.meeting.cancelledAt && !isFieldServiceDraft(l.meeting))).length;
+            return (
+              <Pressable
+                key={m.key}
+                style={({ pressed }) => [styles.panelMonth, active && styles.panelMonthActive, pressed && styles.panelPressed]}
+                onPress={() => scrollToMonth(m.key)}
+                accessibilityRole="button"
+                accessibilityState={{ selected: active }}
+              >
+                <Text style={[styles.panelMonthName, active && styles.panelMonthNameActive]}>
+                  {cap(dayjs(`${m.key}-01`).locale(i18n.language).format('MMMM YYYY'))}
+                </Text>
+                <Text style={[styles.panelMonthSub, m.drafts.length > 0 && styles.panelMonthDraft]}>
+                  {m.drafts.length > 0
+                    ? t('fieldService.draft.chip')
+                    : live > 0
+                      ? t('fieldService.row.count', { count: live })
+                      : t('fieldService.panel.none')}
+                </Text>
+              </Pressable>
+            );
+          })}
+          {canEdit ? (
+            <Pressable
+              style={({ pressed }) => [styles.panelPrimary, pressed && styles.panelPressed]}
+              onPress={() => setPrepareOpen(true)}
+              accessibilityRole="button"
+            >
+              <Ionicons name="add" size={18} color="#ffffff" />
+              <Text style={styles.panelPrimaryText}>{t('fieldService.prepare.button')}</Text>
+            </Pressable>
+          ) : null}
+          <Pressable
+            style={({ pressed }) => [styles.panelSecondary, pressed && styles.panelPressed]}
+            onPress={() => setPdfOpen(true)}
+            accessibilityRole="button"
+          >
+            <Ionicons name="download-outline" size={17} color="#0369a1" />
+            <Text style={styles.panelSecondaryText}>{t('fieldService.pdf.download')}</Text>
+          </Pressable>
+        </View>
+      ) : null}
+      </View>
 
       <FieldServiceForm
         target={target}
@@ -1193,9 +1253,64 @@ export default function FieldServiceMeetingsScreen() {
 
 /** The widest the month reads at; beyond it the page keeps margins. */
 const PAGE_MAX = 960;
+/** From this width the months and their actions stand at the right. */
+const PANEL_FROM = 1100;
+const LIST_MAX = 760;
+const PANEL_W = 280;
+const PANEL_GAP = 24;
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f1f5f9' },
+  body: { flex: 1 },
+  list: { flex: 1 },
+  panel: {
+    width: PANEL_W,
+    marginTop: 16,
+    alignSelf: 'flex-start',
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderRadius: 16,
+    padding: 14,
+    gap: 6,
+  },
+  panelHead: {
+    fontSize: 11.5,
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
+    fontFamily: 'Manrope_700Bold',
+    color: '#64748b',
+    marginBottom: 2,
+  },
+  panelMonth: { paddingHorizontal: 12, paddingVertical: 9, borderRadius: 10 },
+  panelMonthActive: { backgroundColor: '#e0f2fe' },
+  panelPressed: { opacity: 0.7 },
+  panelMonthName: { fontSize: 15, fontFamily: 'Manrope_700Bold', color: '#0f172a' },
+  panelMonthNameActive: { color: '#0369a1' },
+  panelMonthSub: { fontSize: 12.5, fontFamily: 'Manrope_500Medium', color: '#64748b', marginTop: 1 },
+  panelMonthDraft: { color: '#b45309', fontFamily: 'Manrope_700Bold' },
+  panelPrimary: {
+    marginTop: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    minHeight: 44,
+    borderRadius: 12,
+    backgroundColor: '#0e7490',
+  },
+  panelPrimaryText: { fontSize: 14.5, fontFamily: 'Manrope_700Bold', color: '#ffffff' },
+  panelSecondary: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    minHeight: 44,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#bae6fd',
+  },
+  panelSecondaryText: { fontSize: 14, fontFamily: 'Manrope_700Bold', color: '#0369a1' },
   center: {
     flex: 1,
     justifyContent: 'center',

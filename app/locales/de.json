@@ -1821,7 +1821,11 @@
     },
     "deleteConfirmDraft": "Diese Zusammenkunft aus dem Entwurf löschen?",
     "deleteConfirmPublished": "Die Zusammenkunft verschwindet bei allen, und der Leiter sowie alle, die sie betrifft, erhalten eine Absage. Wenn sie nur ausfällt, ist „Zusammenkunft absagen“ besser – sie bleibt durchgestrichen und mit Grund im Plan.",
-    "deleteConfirmCancelled": "Abgesagte Zusammenkunft löschen? Sie verschwindet aus dem Plan, weitere Nachrichten gibt es nicht."
+    "deleteConfirmCancelled": "Abgesagte Zusammenkunft löschen? Sie verschwindet aus dem Plan, weitere Nachrichten gibt es nicht.",
+    "panel": {
+      "months": "Monate",
+      "none": "keine Zusammenkünfte"
+    }
   },
   "cleaning": {
     "title": "Reinigung",

@@ -1821,7 +1821,11 @@
     },
     "deleteConfirmDraft": "Delete this meeting from the draft?",
     "deleteConfirmPublished": "The meeting will disappear for everyone, and the conductor and everyone it concerns will get a cancellation message. If it is only not taking place, “Cancel the meeting” is better — it stays in the schedule, crossed out, with the reason.",
-    "deleteConfirmCancelled": "Delete the cancelled meeting? It will disappear from the schedule; no more messages are sent."
+    "deleteConfirmCancelled": "Delete the cancelled meeting? It will disappear from the schedule; no more messages are sent.",
+    "panel": {
+      "months": "Months",
+      "none": "no meetings"
+    }
   },
   "cleaning": {
     "title": "Cleaning",
