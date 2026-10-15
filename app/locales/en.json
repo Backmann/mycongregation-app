@@ -4022,6 +4022,12 @@
     "againTitle": "Start over?",
     "againBody": "The times of every part of this meeting will be erased on this device.",
     "counselNote": "+1 — a minute of counsel after a student part. The part itself is counted exactly by the programme.",
+    "changed": {
+      "title": "The programme changed during the meeting",
+      "added": "Added: {{parts}}",
+      "removed": "Removed: {{parts}}",
+      "note": "The run goes on part by part; finished parts keep their times."
+    },
     "result": {
       "title": "How the meeting ran",
       "open": "How the meeting ran",
@@ -4041,7 +4047,8 @@
       "retry": "Save again",
       "opening": "Opening: song, prayer, opening comments",
       "closing": "Concluding comments, song and prayer",
-      "between": "Pauses and time between parts"
+      "between": "Pauses and time between parts",
+      "legacyNote": "The first parts ({{n}}) were timed by the previous version of the app — their time includes the counsel minute."
     }
   },
   "serviceHub": {

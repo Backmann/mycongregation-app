@@ -4022,6 +4022,12 @@
     "againTitle": "Neu beginnen?",
     "againBody": "Die Zeiten aller Programmpunkte dieser Zusammenkunft werden auf diesem Gerät gelöscht.",
     "counselNote": "+1 — eine Minute Rat nach einer Schüleraufgabe. Die Aufgabe selbst wird genau nach dem Programm gezählt.",
+    "changed": {
+      "title": "Das Programm hat sich während der Zusammenkunft geändert",
+      "added": "Hinzugekommen: {{parts}}",
+      "removed": "Entfallen: {{parts}}",
+      "note": "Der Ablauf geht Teil für Teil weiter; die Zeiten der erledigten Teile bleiben erhalten."
+    },
     "result": {
       "title": "Ergebnis der Zusammenkunft",
       "open": "Ergebnis der Zusammenkunft",
@@ -4041,7 +4047,8 @@
       "retry": "Erneut speichern",
       "opening": "Beginn: Lied, Gebet, einleitende Worte",
       "closing": "Schlussworte, Lied und Gebet",
-      "between": "Pausen und Zeit zwischen den Programmpunkten"
+      "between": "Pausen und Zeit zwischen den Programmpunkten",
+      "legacyNote": "Die ersten Teile ({{n}}) hat die vorherige Version der App gemessen – ihre Zeit enthält die Minute Rat."
     }
   },
   "serviceHub": {

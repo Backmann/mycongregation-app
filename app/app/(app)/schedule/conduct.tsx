@@ -33,6 +33,13 @@ import { KeptNotice } from '../../../components/ConnectionState';
 import { ConductSummary, ConductSummaryData, mmss } from '../../../components/ConductSummary';
 import { confirm } from '../../../components/ConfirmHost';
 import { formatDateISO, startOfWeekMonday } from '../../../lib/dates';
+import {
+  EMPTY_RUN as EMPTY,
+  reconcileKeys,
+  readRunRecord,
+  RunState,
+  writeRunRecord,
+} from '../../../lib/conduct-run-record';
 
 /**
  * CONDUCT MODE — what the chairman keeps open on a tablet while the midweek
@@ -74,48 +81,9 @@ import { formatDateISO, startOfWeekMonday } from '../../../lib/dates';
  * elders may READ the result once it is saved, for its seven days.
  */
 
-interface RunState {
-  /** Which segment is running; equals segments.length once the meeting ends. */
-  index: number;
-  /** Seconds each finished segment took — the part itself, no counsel. */
-  spent: number[];
-  /** Seconds of counsel after a student part, by the part's position. */
-  counsel: (number | null)[];
-  /**
-   * When the current segment's clock started, epoch ms; null while paused.
-   * IN THE FUTURE during the counsel minute: the clock starts by itself then.
-   */
-  startedAt: number | null;
-  /** Seconds accumulated on the CURRENT segment before the latest pause. */
-  carried: number;
-  /** When the counsel minute began (the tap on «Следующая»); null otherwise. */
-  counselFrom: number | null;
-  /** When the meeting's first part started. */
-  meetingStartedAt: number | null;
-  /** Paused seconds already over — they count in the drift, not in a part. */
-  pausedSec: number;
-  pausedAt: number | null;
-  finishedAt: number | null;
-  /** Whether the finished run reached the server. */
-  saved: boolean;
-  /** The state before the last tap, for «Вернуть». One step, never a chain. */
-  prev: Omit<RunState, 'prev'> | null;
-}
-
-const EMPTY: RunState = {
-  index: 0,
-  spent: [],
-  counsel: [],
-  startedAt: null,
-  carried: 0,
-  counselFrom: null,
-  meetingStartedAt: null,
-  pausedSec: 0,
-  pausedAt: null,
-  finishedAt: null,
-  saved: false,
-  prev: null,
-};
+// THE RUN AS KEPT ON THE DEVICE — its shape, every older shape and how they
+// are read, and how a run follows a programme that changed under it — lives
+// in lib/conduct-run-record.ts (15 October 2026).
 
 /** One second, the only cadence this screen needs. */
 const TICK_MS = 1000;
@@ -202,6 +170,8 @@ export default function ConductScreen() {
     [rows],
   );
 
+  const segKeys = useMemo(() => segments.map((s) => s.key), [segments]);
+
   const byId = useMemo(() => {
     const m = new Map<string, Assignment>();
     for (const a of rows) m.set(a.id, a);
@@ -242,33 +212,42 @@ export default function ConductScreen() {
   const [state, setState] = useState<RunState>(EMPTY);
   const [now, setNow] = useState(() => Date.now());
   const loadedFor = useRef<string | null>(null);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    if (!week || loadedFor.current === week) return;
+    // Read once the programme is on screen: an old record is understood
+    // against the segments it was timed on (lib/conduct-run-record.ts).
+    if (!week || segKeys.length === 0 || loadedFor.current === week) return;
     loadedFor.current = week;
-    let alive = true;
-    AsyncStorage.getItem(storageKey(week))
+    const key = storageKey(week);
+    AsyncStorage.getItem(key)
       .then((raw) => {
-        if (!alive || !raw) return;
+        if (loadedFor.current !== week) return;
         // Поднимаем ход КАК ЕСТЬ, вместе со временем начала части. Встреча
         // идёт по стенным часам и не останавливается оттого, что вкладка
         // перезагрузилась; обнулять отсчёт значило бы врать. Сбросить можно
-        // кнопкой «Начать заново». Поля, которых в старой записи не было,
-        // берутся пустыми.
-        setState({ ...EMPTY, ...(JSON.parse(raw) as Partial<RunState>) });
+        // кнопкой «Начать заново».
+        const { state: kept, verdict } = readRunRecord(raw, segKeys, Date.now());
+        if (verdict === 'legacy-dropped' || verdict === 'unreadable') {
+          AsyncStorage.removeItem(key).catch(() => undefined);
+        } else if (verdict === 'legacy-continued') {
+          // Written back at once in the new shape: the next opening reads v2.
+          AsyncStorage.setItem(key, writeRunRecord(kept)).catch(() => undefined);
+        }
+        setState(kept);
       })
       .catch(() => {
         // Хранилище может не ответить — на ходе встречи это не сказывается.
+      })
+      .finally(() => {
+        if (loadedFor.current === week) setLoaded(true);
       });
-    return () => {
-      alive = false;
-    };
-  }, [week]);
+  }, [week, segKeys]);
 
   const persist = useCallback(
     (next: RunState) => {
       if (!week) return;
-      AsyncStorage.setItem(storageKey(week), JSON.stringify(next)).catch(() => {
+      AsyncStorage.setItem(storageKey(week), writeRunRecord(next)).catch(() => {
         // Не удалось сохранить — встреча всё равно идёт.
       });
     },
@@ -282,6 +261,18 @@ export default function ConductScreen() {
     },
     [persist],
   );
+
+  // THE PROGRAMME CHANGED UNDER A RUNNING MEETING — the kept rows were
+  // replaced by the server's, and a part came or went. The run follows by
+  // key, not by position (lib/conduct-run-record.ts reconcileKeys).
+  useEffect(() => {
+    if (!loaded || segKeys.length === 0) return;
+    setState((s) => {
+      const n = reconcileKeys(s, segKeys, Date.now());
+      if (n !== s) persist(n);
+      return n;
+    });
+  }, [loaded, segKeys, persist]);
 
   const ticking = state.finishedAt === null && (state.startedAt !== null || state.pausedAt !== null);
   useEffect(() => {
@@ -379,7 +370,7 @@ export default function ConductScreen() {
 
   const start = () => {
     const at = Date.now();
-    apply({ ...EMPTY, startedAt: at, meetingStartedAt: at, prev: snapshot(state) });
+    apply({ ...EMPTY, startedAt: at, meetingStartedAt: at, keys: [...segKeys], prev: snapshot(state) });
   };
   const pause = () => {
     const at = Date.now();
@@ -453,17 +444,22 @@ export default function ConductScreen() {
   // --- итог ----------------------------------------------------------
   const local: ConductSummaryData | null = useMemo(() => {
     if (!finished || state.finishedAt === null || state.meetingStartedAt === null) return null;
+    // Parts timed by the version before 14 October hold the counsel minute
+    // inside: they are compared with part + counsel, and carry no counsel.
+    const legacy = new Set(state.legacyKeys);
     const segs: ConductRunSegment[] = segments.map((s, i) => {
       const row = s.assignmentId ? byId.get(s.assignmentId) : undefined;
+      const old = legacy.has(s.key);
       return {
         key: s.key,
         assignmentId: s.assignmentId,
         publisherIds: [row?.publisherId, row?.assistantPublisherId].filter(
           (x): x is string => !!x,
         ),
-        plannedSec: s.partMin * 60,
+        plannedSec: (s.partMin + (old ? s.counselMin : 0)) * 60,
         actualSec: Math.round(state.spent[i] ?? 0),
-        counselSec: s.counselMin > 0 && state.counsel[i] != null ? Math.round(state.counsel[i] ?? 0) : null,
+        counselSec:
+          !old && s.counselMin > 0 && state.counsel[i] != null ? Math.round(state.counsel[i] ?? 0) : null,
       };
     });
     return {
@@ -496,6 +492,33 @@ export default function ConductScreen() {
   }, [local, state.saved, state.finishedAt, canRun, save]);
 
   const titleOf = (id: string | null) => (id ? (byId.get(id)?.partTitle ?? null) : null);
+
+  /** A segment key as the run sheet names it — also for a part that is gone. */
+  const keyLabel = (key: string) => {
+    const seg = segments.find((s) => s.key === key);
+    const row = seg?.assignmentId ? byId.get(seg.assignmentId) : undefined;
+    return partDisplay(key, row?.partTitle ?? null).label;
+  };
+  const changedNote = state.changed ? (
+    <View style={styles.changedNote}>
+      <Text style={styles.changedTitle}>{t('conduct.changed.title')}</Text>
+      {state.changed.added.length > 0 ? (
+        <Text style={styles.changedLine}>
+          {t('conduct.changed.added', { parts: state.changed.added.map(keyLabel).join(', ') })}
+        </Text>
+      ) : null}
+      {state.changed.removed.length > 0 ? (
+        <Text style={styles.changedLine}>
+          {t('conduct.changed.removed', { parts: state.changed.removed.map(keyLabel).join(', ') })}
+        </Text>
+      ) : null}
+      <Text style={styles.changedLine}>{t('conduct.changed.note')}</Text>
+    </View>
+  ) : null;
+  const legacyNote =
+    state.legacyKeys.length > 0 ? (
+      <Text style={styles.keepNote}>{t('conduct.result.legacyNote', { n: state.legacyKeys.length })}</Text>
+    ) : null;
   const nameOf = (id: string) => nameById.get(id) ?? null;
   const chairmanName = chairmanRow?.publisherId ? (nameById.get(chairmanRow.publisherId) ?? null) : null;
 
@@ -553,7 +576,9 @@ export default function ConductScreen() {
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
         <View style={styles.resultWrap}>
           <Text style={styles.overline}>{t('conduct.finished')}</Text>
+          {changedNote}
           <ConductSummary data={local} titleOf={titleOf} nameOf={nameOf} chairmanName={chairmanName} />
+          {legacyNote}
           <Text style={[styles.keepNote, save.isError && styles.keepNoteError]}>
             {state.saved
               ? t('conduct.result.saved')
@@ -737,6 +762,7 @@ export default function ConductScreen() {
       ) : null}
       <View style={wide ? styles.twoCol : undefined}>
         <View style={wide ? styles.colMain : undefined}>
+          {changedNote}
           {nowCard}
           {controls}
           {upNext}
@@ -913,4 +939,16 @@ const styles = StyleSheet.create({
   keepNoteError: { color: '#b91c1c' },
 
   notice: { fontFamily: 'Manrope_400Regular', fontSize: 16, color: '#475569', textAlign: 'center' },
+
+  changedNote: {
+    backgroundColor: '#fffbeb',
+    borderColor: '#fcd34d',
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 12,
+    gap: 2,
+  },
+  changedTitle: { fontFamily: 'Manrope_600SemiBold', fontSize: 15, color: '#92400e' },
+  changedLine: { fontFamily: 'Manrope_400Regular', fontSize: 14, color: '#78350f' },
 });
