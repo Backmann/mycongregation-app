@@ -5,10 +5,20 @@ on:
     paths:
       - 'app/**'
       - '.github/workflows/deploy.yml'
+  # A pull request runs the checks only — nothing is deployed from it. Claude
+  # opens the pull request, Lionel merges it, and the merge is the deploy
+  # (decided 15 October 2026).
+  pull_request:
+    branches: [main]
+    paths:
+      - 'app/**'
+      - '.github/workflows/deploy.yml'
   workflow_dispatch:
 concurrency:
-  group: deploy-frontend
-  cancel-in-progress: false
+  # Deploys queue one behind another and are never cut short. A pull request
+  # has its own lane, and a newer push to it replaces the older check.
+  group: ${{ github.event_name == 'pull_request' && format('check-{0}', github.ref) || 'deploy-frontend' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -49,10 +59,40 @@ jobs:
           EXPO_PUBLIC_API_URL: https://example.invalid
         run: npx expo export --platform android
   deploy:
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     needs: test
-    timeout-minutes: 20
+    timeout-minutes: 40
     steps:
+      # THE SERVER GOES OUT FIRST (Lionel's rule). With both repositories
+      # merged within minutes of each other, the app's deploy is quicker than
+      # the server's and would reach the congregation against the old server.
+      # So it waits until the live server reports the commit at the head of
+      # the server's main — that is, until no server deploy is still on its
+      # way. A server deploy that failed stops this one too: an app that needs
+      # the new server must not go out without it.
+      - name: Wait for the live server to run the server's main
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          WANT="$(curl -fsS -H "Authorization: Bearer $GH_TOKEN" \
+            https://api.github.com/repos/Backmann/mycongregation-server/commits/main \
+            | python3 -c 'import json,sys; print(json.load(sys.stdin)["sha"])')"
+          echo "Server main: $WANT"
+          for i in $(seq 1 120); do
+            BODY="$(curl -fsS https://api.mycongregation.org/api/health || true)"
+            if echo "$BODY" | grep -q "\"commit\":\"$WANT\""; then
+              echo "Live server runs it: $BODY"
+              exit 0
+            fi
+            [ "$i" = 1 ] && echo "Live server is not on it yet — waiting (up to 20 min)."
+            sleep 10
+          done
+          echo "After 20 minutes the live server still does not run $WANT."
+          echo "Last answer: $BODY"
+          echo "Look at the server's deploy run; the app was NOT deployed."
+          exit 1
       - name: Checkout
         uses: actions/checkout@v4
       - name: Setup Node.js
@@ -185,3 +225,99 @@ jobs:
       - name: Cleanup local
         if: always()
         run: rm -f ~/.ssh/deploy_key ~/.ssh/known_hosts ~/.ssh/config web-dist.tar.gz
+  # THE UPDATE OVER THE AIR for the installed Android app (15 October 2026:
+  # moved here from Lionel's laptop). Same channel as always — `preview`, the
+  # one the installed APK listens to; `production` reaches nobody.
+  #
+  # THE GUARD. An update published under a runtime version no installed app
+  # carries reaches nobody, silently (four releases lost that way on
+  # 3 August). The runtime is the Expo fingerprint, and on 15 October a clean
+  # Linux clone computed cee67fec… where the installed APK carries 6257b64b…
+  # — so the runner's own number is NOT trusted. The runtime of the latest
+  # update already on `preview` is what the phones run; this job publishes
+  # only when its fingerprint equals that, and otherwise stops without
+  # publishing anything and says which number it got. A new APK with a new
+  # runtime needs its first update published by hand; after that this job
+  # matches again.
+  ota:
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    needs: deploy
+    timeout-minutes: 30
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      EAS: npx -y eas-cli@24.8.0
+    steps:
+      - name: Is there a token at all?
+        id: token
+        run: |
+          if [ -z "$EXPO_TOKEN" ]; then
+            echo "::warning::EXPO_TOKEN is not set — the Android update was NOT published. Publish it by hand."
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Checkout
+        if: steps.token.outputs.ok == 'true'
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        if: steps.token.outputs.ok == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: app/package-lock.json
+      - name: Install dependencies
+        if: steps.token.outputs.ok == 'true'
+        working-directory: app
+        run: npm install --prefer-offline --no-audit --fund=false
+      - name: Runtime here and runtime on the phones must be the same
+        if: steps.token.outputs.ok == 'true'
+        working-directory: app
+        run: |
+          set -euo pipefail
+          npx expo-updates runtimeversion:resolve --platform android 2>/dev/null > /tmp/fp.json
+          $EAS update:list --branch preview --platform android --limit 1 --json --non-interactive > /tmp/live.json
+          node -e '
+            const fs = require("fs");
+            const here = JSON.parse(fs.readFileSync("/tmp/fp.json", "utf8")).runtimeVersion;
+            // The first runtimeVersion anywhere in the answer: the shape of
+            // update:list --json is not relied on beyond that.
+            const find = (o) => {
+              if (!o || typeof o !== "object") return null;
+              if (typeof o.runtimeVersion === "string") return o.runtimeVersion;
+              for (const v of Object.values(o)) { const r = find(v); if (r) return r; }
+              return null;
+            };
+            const live = find(JSON.parse(fs.readFileSync("/tmp/live.json", "utf8")));
+            console.log("runtime here:      " + here);
+            console.log("runtime on phones: " + live);
+            if (!here || !live || here !== live) {
+              console.log("::error::Runtime differs — the update would reach nobody. NOT published.");
+              process.exit(1);
+            }
+          '
+      - name: Export the Android bundle
+        if: steps.token.outputs.ok == 'true'
+        working-directory: app
+        env:
+          NODE_ENV: production
+          EXPO_PUBLIC_API_URL: https://api.mycongregation.org/api
+          EXPO_PUBLIC_VAPID_KEY: ${{ secrets.EXPO_PUBLIC_VAPID_KEY }}
+        run: |
+          set -euo pipefail
+          rm -rf .expo node_modules/.cache dist
+          npx expo export --platform android --clear
+          BUNDLE="$(ls dist/_expo/static/js/android/*.hbc dist/_expo/static/js/android/*.js 2>/dev/null | head -1)"
+          echo "Bundle: $BUNDLE"
+          grep -q 'api.mycongregation.org' "$BUNDLE" || { echo "::error::API URL not in the bundle"; exit 1; }
+          if grep -q 'localhost:3000' "$BUNDLE"; then echo "::error::localhost in the bundle"; exit 1; fi
+      - name: Publish to preview
+        if: steps.token.outputs.ok == 'true'
+        working-directory: app
+        run: |
+          set -euo pipefail
+          MSG="$(git log -1 --format=%s | cut -c1-200) (${GITHUB_SHA::7})"
+          # --skip-bundler: publish THE bundle checked above. Without it
+          # eas update runs the bundler again and publishes a fresh one.
+          $EAS update --channel preview --input-dir dist --skip-bundler --platform android --message "$MSG" --non-interactive
