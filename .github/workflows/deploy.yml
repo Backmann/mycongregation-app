@@ -271,6 +271,22 @@ jobs:
         if: steps.token.outputs.ok == 'true'
         working-directory: app
         run: npm install --prefer-offline --no-audit --fund=false
+      # WHY THE CRLF (found 15 October 2026). The installed APK was built
+      # from Lionel's Windows checkout, where app/.gitignore still has CRLF
+      # line endings (checked out before .gitattributes said eol=lf; git
+      # does not rewrite a file it already wrote, and calls it clean). The
+      # fingerprint hashes the file as it is on disk: CRLF gives 6257b64b…,
+      # the LF in the repository gives cee67fec…, and that file was the ONLY
+      # input that differed (all 90-odd others matched hash for hash). So
+      # the runner's copy — never the repository's — is given the line
+      # endings the APK was built with. The check below still decides: when
+      # a new APK is built from LF, it fails here, and this step goes.
+      - name: Line endings of app/.gitignore as in the installed APK
+        if: steps.token.outputs.ok == 'true'
+        working-directory: app
+        run: |
+          sed -i 's/\r$//; s/$/\r/' .gitignore
+          sha1sum .gitignore
       - name: Runtime here and runtime on the phones must be the same
         if: steps.token.outputs.ok == 'true'
         working-directory: app
