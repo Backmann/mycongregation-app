@@ -26,6 +26,31 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      # LIONEL'S RULE, CHECKED BY THE MACHINE (15 October 2026). app/package.json
+      # and app/.gitignore are inputs to the Expo fingerprint: a change to either
+      # moves the runtime version, and updates stop reaching the installed
+      # phones. Lionel used to look for them in «Files changed» before every
+      # merge; now a pull request that touches them is red, and so is a push
+      # to main (a second lock, in case one got through some other way). The
+      # day a new APK is built on purpose, this step is changed on purpose too.
+      - name: app/package.json and app/.gitignore are not touched
+        env:
+          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          set -euo pipefail
+          if [ -z "$BASE" ] || [ "$BASE" = "0000000000000000000000000000000000000000" ]; then
+            echo "Nothing to compare with (run by hand) — skipped."
+            exit 0
+          fi
+          git fetch -q --depth=1 origin "$BASE"
+          CHANGED="$(git diff --name-only "$BASE" HEAD)"
+          echo "Changed files:"; printf '  %s\n' $CHANGED
+          BAD="$(printf '%s\n' "$CHANGED" | grep -xE 'app/package\.json|app/\.gitignore' || true)"
+          if [ -n "$BAD" ]; then
+            echo "::error::Touched: $BAD — the Expo fingerprint would move and updates would stop reaching the phones. Not allowed without a new APK."
+            exit 1
+          fi
+          echo "OK: neither file is touched."
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
