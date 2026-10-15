@@ -29,6 +29,7 @@ import { rememberedPushToken, rememberPushToken } from './push-token-store';
 import { adoptLanguage } from './i18n';
 import { beginWelcome, forgetWelcome, restoreWelcome } from './welcome';
 import { forgetKept, forgetKeptOfOthers, restoreKept, startKeeping } from './offline-keep';
+import { resendPendingConductRuns } from './conduct-resend';
 
 /**
  * A device where nobody chose a language takes the account's. Where somebody
@@ -322,6 +323,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!userId) return;
     return startKeeping(queryClient, userId);
   }, [userId, queryClient]);
+
+  // A meeting's result that did not reach the server from a hall with no
+  // signal goes now, from whatever screen is open — and runs older than
+  // seven days leave the device (lib/conduct-resend.ts).
+  useEffect(() => {
+    if (!userId || unreachable) return;
+    void resendPendingConductRuns();
+    const sub = AppState.addEventListener('change', (next) => {
+      if (next === 'active') void resendPendingConductRuns();
+    });
+    return () => sub.remove();
+  }, [userId, unreachable]);
 
   /**
    * Take up a session the server handed over outside the sign-in form.

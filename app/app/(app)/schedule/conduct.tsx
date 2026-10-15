@@ -12,7 +12,7 @@ import {
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
-import { router, useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams, useNavigation } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import {
@@ -21,6 +21,7 @@ import {
   conductRunsApi,
   ConductRunSegment,
   meApi,
+  meetingSettingsApi,
   publishersApi,
 } from '../../../lib/api';
 import { useAuth } from '../../../lib/auth';
@@ -35,11 +36,19 @@ import { confirm } from '../../../components/ConfirmHost';
 import { formatDateISO, startOfWeekMonday } from '../../../lib/dates';
 import {
   EMPTY_RUN as EMPTY,
+  inCounsel,
+  isExpiredRecord,
   reconcileKeys,
   readRunRecord,
+  RECORD_PREFIX,
+  RUN_RECORD_VERSION,
   RunState,
   writeRunRecord,
 } from '../../../lib/conduct-run-record';
+import { effectiveVersionFor } from '../../../lib/meeting-schedule';
+import { HeaderMenu } from '../../../components/HeaderMenu';
+import { HEADER_ICON } from '../../../lib/header';
+import { tapSaved } from '../../../lib/haptics';
 
 /**
  * CONDUCT MODE — what the chairman keeps open on a tablet while the midweek
@@ -63,12 +72,15 @@ import {
  *
  * THE STUDENT COUNTS DOWN FROM THE PROGRAMME'S OWN MINUTES. A four-minute
  * reading shows 4:00, not 5:00: the fifth minute is the chairman's counsel.
- * The chairman taps «Следующая» when the student finishes; the counsel minute
- * then runs on its own, and the next part's clock starts by itself a minute
- * later — or at once, with «Начать сейчас», when there was no counsel. The
- * counsel is never a phase the chairman has to tap through (Lionel: «совет
- * не нужно фиксировать… это уже будет путать»); its seconds are only kept so
- * the meeting's drift stays true.
+ *
+ * VARIANT A (15 October 2026). When the student is done the chairman taps
+ * «Закончено»: the part's clock stops, the screen shows whom the counsel is
+ * for, and the counsel counts UP — it starts nothing by itself. «Следующая»
+ * (with the names to announce on it) starts the next part. Until then the
+ * counsel ran a minute on its own and started the next part itself; on
+ * 14 October all three counsels ran ~1:13 and that minute had to be overtaken
+ * by hand every time. A discussion led by an elder has no counsel: after it
+ * the button is «Следующая» straight away.
  *
  * THE MINUTES COME FROM lib/run-order.ts and THE NAMES FROM lib/part-display.ts,
  * the same two places the schedule sheet reads. The chairman announces what he
@@ -88,8 +100,29 @@ import {
 /** One second, the only cadence this screen needs. */
 const TICK_MS = 1000;
 
+/** After a tap the big button does not answer for this long (a double tap). */
+const TAP_LOCK_MS = 1500;
+/** The last stretch of a part, shown amber and in words. */
+const LAST_SECONDS = 30;
+/** A counsel shorter than this was no counsel — it is not shown. */
+const MIN_COUNSEL_SEC = 3;
+
 function storageKey(week: string) {
-  return `conduct:midweek:${week}`;
+  return `${RECORD_PREFIX}${week}`;
+}
+
+/** «20:46» — the device's local time. */
+function clockOf(d: Date): string {
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+}
+
+/** «19:00» + 105 min → «20:45». */
+function addMinutes(hhmm: string, minutes: number): string | null {
+  const m = /^(\d{1,2}):(\d{2})/.exec(hhmm);
+  if (!m) return null;
+  const total = Number(m[1]) * 60 + Number(m[2]) + minutes;
+  const h = Math.floor(total / 60) % 24;
+  return `${String(h).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`;
 }
 
 /** m:ss, or −m:ss once a part has run over. */
@@ -146,6 +179,14 @@ export default function ConductScreen() {
     queryKey: ['publishers', 'roster'],
     queryFn: () => publishersApi.roster(),
     staleTime: 5 * 60 * 1000,
+  });
+
+  // The meeting's start time, for «по программе 20:44». Open to every member
+  // and kept on the device for a hall with no signal (lib/offline-keep-rules).
+  const settingsQuery = useQuery({
+    queryKey: ['meeting-settings'],
+    queryFn: () => meetingSettingsApi.getOverview(),
+    staleTime: 60 * 60 * 1000,
   });
 
   const fromKept = !assignmentsQuery.data && !!kept;
@@ -226,12 +267,18 @@ export default function ConductScreen() {
         // Поднимаем ход КАК ЕСТЬ, вместе со временем начала части. Встреча
         // идёт по стенным часам и не останавливается оттого, что вкладка
         // перезагрузилась; обнулять отсчёт значило бы врать. Сбросить можно
-        // кнопкой «Начать заново».
-        const { state: kept, verdict } = readRunRecord(raw, segKeys, Date.now());
+        // в меню «⋯» — «Начать заново».
+        const at = Date.now();
+        if (isExpiredRecord(raw, week, at)) {
+          // Older than the seven days the server keeps the result: gone.
+          AsyncStorage.removeItem(key).catch(() => undefined);
+          return;
+        }
+        const { state: kept, verdict } = readRunRecord(raw, segKeys, at);
         if (verdict === 'legacy-dropped' || verdict === 'unreadable') {
           AsyncStorage.removeItem(key).catch(() => undefined);
-        } else if (verdict === 'legacy-continued') {
-          // Written back at once in the new shape: the next opening reads v2.
+        } else if (verdict === 'legacy-continued' || (raw !== null && !raw.includes(`"v":${RUN_RECORD_VERSION}`))) {
+          // Written back at once in the current shape.
           AsyncStorage.setItem(key, writeRunRecord(kept)).catch(() => undefined);
         }
         setState(kept);
@@ -262,6 +309,22 @@ export default function ConductScreen() {
     [persist],
   );
 
+  // ТРЕНИРОВКА (15 октября 2026). Председатель проходит встречу дома, как на
+  // сцене, — и ничего не остаётся: ход живёт только в памяти этого экрана, на
+  // сервер не уходит, настоящий ход недели (если он есть) не трогается и
+  // возвращается, как только тренировка закончена или экран закрыт. Иначе
+  // пробная встреча, доведённая до «Завершить», семь дней висела бы итогом у
+  // старейшин.
+  const [practice, setPractice] = useState<RunState | null>(null);
+  const run = practice ?? state;
+  const applyRun = useCallback(
+    (next: RunState) => {
+      if (practice) setPractice(next);
+      else apply(next);
+    },
+    [practice, apply],
+  );
+
   // THE PROGRAMME CHANGED UNDER A RUNNING MEETING — the kept rows were
   // replaced by the server's, and a part came or went. The run follows by
   // key, not by position (lib/conduct-run-record.ts reconcileKeys).
@@ -272,9 +335,12 @@ export default function ConductScreen() {
       if (n !== s) persist(n);
       return n;
     });
+    setPractice((p) => (p ? reconcileKeys(p, segKeys, Date.now()) : p));
   }, [loaded, segKeys, persist]);
 
-  const ticking = state.finishedAt === null && (state.startedAt !== null || state.pausedAt !== null);
+  const counselling = inCounsel(run);
+  const ticking =
+    run.finishedAt === null && (run.startedAt !== null || run.pausedAt !== null || counselling);
   useEffect(() => {
     if (!ticking) return;
     const id = setInterval(() => setNow(Date.now()), TICK_MS);
@@ -331,18 +397,15 @@ export default function ConductScreen() {
     };
   }, [ticking]);
 
-  const finished = state.index >= segments.length && segments.length > 0;
-  const current = finished ? null : (segments[state.index] ?? null);
-  const next = finished ? null : (segments[state.index + 1] ?? null);
+  const finished = run.index >= segments.length && segments.length > 0;
+  const current = finished ? null : (segments[run.index] ?? null);
+  const next = finished ? null : (segments[run.index + 1] ?? null);
+  const afterNext = finished ? null : (segments[run.index + 2] ?? null);
 
-  // The counsel minute after a student part: the next part is on screen, its
-  // clock not yet started.
-  const inCounsel =
-    state.counselFrom !== null && state.startedAt !== null && now < state.startedAt;
-  const counselElapsed = inCounsel && state.counselFrom !== null ? (now - state.counselFrom) / 1000 : 0;
+  const counselElapsed = counselling && run.counselFrom !== null ? Math.max(0, (now - run.counselFrom) / 1000) : 0;
   const currentElapsed =
-    state.carried +
-    (state.startedAt !== null && now > state.startedAt ? (now - state.startedAt) / 1000 : 0);
+    run.carried + (run.startedAt !== null && now > run.startedAt ? (now - run.startedAt) / 1000 : 0);
+  const isStudent = !!current && current.counselMin > 0;
 
   /**
    * ОТСТАВАНИЕ. Сделанные части сравниваются со своими минутами вместе с
@@ -352,104 +415,147 @@ export default function ConductScreen() {
    * отставание, её опережение — нет: пока часть идёт, сэкономленное может уйти
    * обратно, просроченное не вернётся.
    */
-  const lastDone = state.index - 1;
-  const plannedSoFar = segments.slice(0, state.index).reduce((sum, s, i) => {
-    const counselPlan =
-      i === lastDone && inCounsel ? Math.min(counselElapsed, s.counselMin * 60) : s.counselMin * 60;
-    return sum + s.partMin * 60 + counselPlan;
-  }, 0);
-  const counselSoFar = state.counsel
-    .slice(0, state.index)
-    .reduce<number>((sum, c, i) => sum + (i === lastDone && inCounsel ? counselElapsed : (c ?? 0)), 0);
-  const pausedSoFar = state.pausedSec + (state.pausedAt !== null ? (now - state.pausedAt) / 1000 : 0);
-  const actualSoFar =
-    state.spent.slice(0, state.index).reduce((sum, s) => sum + s, 0) + counselSoFar + pausedSoFar;
-  const currentOverrun = current ? Math.max(0, currentElapsed - current.partMin * 60) : 0;
+  const done = segments.slice(0, run.index);
+  let plannedSoFar = done.reduce((sum, s) => sum + (s.partMin + s.counselMin) * 60, 0);
+  let actualSoFar = done.reduce((sum, _s, i) => sum + (run.spent[i] ?? 0) + (run.counsel[i] ?? 0), 0);
+  actualSoFar += run.pausedSec + (run.pausedAt !== null ? (now - run.pausedAt) / 1000 : 0);
+  if (counselling && current) {
+    plannedSoFar += current.partMin * 60 + Math.min(counselElapsed, current.counselMin * 60);
+    actualSoFar += (run.spent[run.index] ?? 0) + counselElapsed;
+  }
+  const currentOverrun = current && !counselling ? Math.max(0, currentElapsed - current.partMin * 60) : 0;
   const driftSec = Math.round(actualSoFar - plannedSoFar + currentOverrun);
-  const started = state.meetingStartedAt !== null;
+  const started = run.meetingStartedAt !== null;
+
+  /**
+   * ОКОНЧАНИЕ ≈ — сейчас плюс то, что осталось по программе: остаток текущей
+   * части (не меньше нуля — сверх времени уже прошло), её совет, все
+   * следующие части. Председатель так видит, когда встреча кончится, а не
+   * абстрактное «отстаём на 2 минуты». Рядом мелко — когда по программе:
+   * время начала из настроек встреч плюс вся программа.
+   */
+  const remainingSec = current
+    ? (counselling
+        ? Math.max(0, current.counselMin * 60 - counselElapsed)
+        : Math.max(0, current.partMin * 60 - currentElapsed) + current.counselMin * 60) +
+      segments.slice(run.index + 1).reduce((sum, s) => sum + s.minutes * 60, 0)
+    : 0;
+  const endsAt = clockOf(new Date(now + remainingSec * 1000));
+  const meetingTime = effectiveVersionFor(settingsQuery.data?.versions, week)?.midweekTime ?? null;
+  const plannedEnd = meetingTime ? addMinutes(meetingTime, totalRunMinutes(segments)) : null;
+
+  // ONE TAP, ONE STEP. The big button changes its meaning under the finger
+  // («Закончено» → «Следующая»), so a double tap on stage would skip the
+  // counsel. For 1.5 s after a tap the big button does not answer — and says
+  // so by fading.
+  const lockedUntil = useRef(0);
+  const [locked, setLocked] = useState(false);
+  const guarded = (fn: () => void) => () => {
+    const at = Date.now();
+    if (at < lockedUntil.current) return;
+    lockedUntil.current = at + TAP_LOCK_MS;
+    setLocked(true);
+    setTimeout(() => setLocked(false), TAP_LOCK_MS);
+    // The hand on the stage knows it took without the eyes leaving the hall.
+    tapSaved();
+    fn();
+  };
 
   const start = () => {
     const at = Date.now();
-    apply({ ...EMPTY, startedAt: at, meetingStartedAt: at, keys: [...segKeys], prev: snapshot(state) });
+    applyRun({ ...EMPTY, startedAt: at, meetingStartedAt: at, keys: [...segKeys], prev: snapshot(run) });
   };
+  const closePause = (at: number) =>
+    run.pausedSec + (run.pausedAt !== null ? (at - run.pausedAt) / 1000 : 0);
   const pause = () => {
     const at = Date.now();
-    apply({ ...state, carried: currentElapsed, startedAt: null, pausedAt: at, prev: snapshot(state) });
+    applyRun({ ...run, carried: currentElapsed, startedAt: null, pausedAt: at, prev: snapshot(run) });
   };
   const resume = () => {
     const at = Date.now();
-    apply({
-      ...state,
-      startedAt: at,
+    applyRun({ ...run, startedAt: at, pausedAt: null, pausedSec: closePause(at), prev: snapshot(run) });
+  };
+
+  /** «Закончено» — the student is done; the counsel begins and counts up. */
+  const finishPart = () => {
+    if (!current) return;
+    const at = Date.now();
+    const spent = [...run.spent];
+    spent[run.index] = currentElapsed;
+    applyRun({
+      ...run,
+      spent,
+      carried: 0,
+      startedAt: null,
+      pausedSec: closePause(at),
       pausedAt: null,
-      pausedSec: state.pausedSec + (state.pausedAt !== null ? (at - state.pausedAt) / 1000 : 0),
-      prev: snapshot(state),
+      counselFrom: at,
+      prev: snapshot(run),
     });
   };
 
+  /**
+   * «Следующая» — after the counsel, or after a part with none. The next part
+   * starts NOW: nothing starts by itself (variant A, 15 October 2026 — on
+   * 14 October all three counsels ran ~1:13 and the minute that started the
+   * next part by itself had to be overtaken by hand every time).
+   */
   const advance = () => {
     if (!current) return;
     const at = Date.now();
-    const spent = [...state.spent];
-    spent[state.index] = currentElapsed;
-    const counsel = [...state.counsel];
-    const nextIndex = state.index + 1;
+    const spent = [...run.spent];
+    const counsel = [...run.counsel];
+    if (counselling && run.counselFrom !== null) {
+      counsel[run.index] = (at - run.counselFrom) / 1000;
+    } else {
+      spent[run.index] = currentElapsed;
+      counsel[run.index] = null;
+    }
+    const nextIndex = run.index + 1;
     const last = nextIndex >= segments.length;
-    // A pause still open is closed by the tap: the meeting goes on.
-    const pausedSec =
-      state.pausedSec + (state.pausedAt !== null ? (at - state.pausedAt) / 1000 : 0);
-    const withCounsel = current.counselMin > 0 && !last;
-    counsel[state.index] = withCounsel ? current.counselMin * 60 : null;
-    apply({
-      ...state,
+    applyRun({
+      ...run,
       index: nextIndex,
       spent,
       counsel,
       carried: 0,
-      pausedSec,
+      pausedSec: closePause(at),
       pausedAt: null,
-      counselFrom: withCounsel ? at : null,
-      startedAt: last ? null : withCounsel ? at + current.counselMin * 60 * 1000 : at,
+      counselFrom: null,
+      startedAt: last ? null : at,
       finishedAt: last ? at : null,
       saved: false,
-      prev: snapshot(state),
+      pending: null,
+      prev: snapshot(run),
     });
   };
 
-  /** No counsel, or a short one: the next part starts now. */
-  const startNow = () => {
-    if (state.counselFrom === null) return;
-    const at = Date.now();
-    const counsel = [...state.counsel];
-    counsel[state.index - 1] = (at - state.counselFrom) / 1000;
-    apply({ ...state, counsel, startedAt: at, counselFrom: null, prev: snapshot(state) });
-  };
-
-  /** One tap back: a «Следующая» pressed too early must not cost anybody time. */
+  /** One tap back: a tap pressed too early must not cost anybody time. */
   const undo = () => {
-    if (!state.prev) return;
-    apply({ ...state.prev, prev: null });
+    if (!run.prev) return;
+    applyRun({ ...run.prev, prev: null });
   };
 
   const reset = async () => {
     const ok = await confirm({
       title: t('conduct.againTitle'),
-      body: t('conduct.againBody'),
+      body: practice ? t('conduct.practice.againBody') : t('conduct.againBody'),
       confirmLabel: t('conduct.again'),
       danger: true,
     });
-    if (ok) apply(EMPTY);
+    if (ok) applyRun(EMPTY);
   };
 
   // --- итог ----------------------------------------------------------
   const local: ConductSummaryData | null = useMemo(() => {
-    if (!finished || state.finishedAt === null || state.meetingStartedAt === null) return null;
+    if (!finished || run.finishedAt === null || run.meetingStartedAt === null) return null;
     // Parts timed by the version before 14 October hold the counsel minute
     // inside: they are compared with part + counsel, and carry no counsel.
-    const legacy = new Set(state.legacyKeys);
+    const legacy = new Set(run.legacyKeys);
     const segs: ConductRunSegment[] = segments.map((s, i) => {
       const row = s.assignmentId ? byId.get(s.assignmentId) : undefined;
       const old = legacy.has(s.key);
+      const counselSec = run.counsel[i];
       return {
         key: s.key,
         assignmentId: s.assignmentId,
@@ -457,24 +563,35 @@ export default function ConductScreen() {
           (x): x is string => !!x,
         ),
         plannedSec: (s.partMin + (old ? s.counselMin : 0)) * 60,
-        actualSec: Math.round(state.spent[i] ?? 0),
+        actualSec: Math.round(run.spent[i] ?? 0),
+        // A counsel of a moment is no counsel: «Следующая» pressed straight
+        // after «Закончено» — a discussion the workbook did not mark, say.
         counselSec:
-          !old && s.counselMin > 0 && state.counsel[i] != null ? Math.round(state.counsel[i] ?? 0) : null,
+          !old && s.counselMin > 0 && counselSec != null && counselSec >= MIN_COUNSEL_SEC
+            ? Math.round(counselSec)
+            : null,
       };
     });
     return {
       segments: segs,
-      totalSec: Math.round((state.finishedAt - state.meetingStartedAt) / 1000),
+      totalSec: Math.round((run.finishedAt - run.meetingStartedAt) / 1000),
       plannedSec: totalRunMinutes(segments) * 60,
     };
-  }, [finished, state, segments, byId]);
+  }, [finished, run, segments, byId]);
+
+  // Kept with the run until it reaches the server, so it can go from any
+  // screen the moment there is a signal (lib/conduct-resend.ts).
+  useEffect(() => {
+    if (practice || !local || state.saved || state.pending || state.finishedAt === null) return;
+    apply({ ...state, pending: local });
+  }, [practice, local, state, apply]);
 
   const save = useMutation({
     mutationFn: (data: ConductSummaryData) =>
       conductRunsApi.save({ weekStartDate: week, ...data }),
     onSuccess: () => {
       setState((s) => {
-        const n = { ...s, saved: true };
+        const n = { ...s, saved: true, pending: null };
         persist(n);
         return n;
       });
@@ -482,14 +599,14 @@ export default function ConductScreen() {
     },
   });
   // Sent once when the meeting ends — and again on the next opening if it
-  // did not reach the server (no signal in the hall).
+  // did not reach the server (no signal in the hall). Never from practice.
   const triedFor = useRef<number | null>(null);
   useEffect(() => {
-    if (!local || state.saved || !canRun || state.finishedAt === null) return;
+    if (practice || !local || state.saved || !canRun || state.finishedAt === null) return;
     if (triedFor.current === state.finishedAt) return;
     triedFor.current = state.finishedAt;
     save.mutate(local);
-  }, [local, state.saved, state.finishedAt, canRun, save]);
+  }, [practice, local, state.saved, state.finishedAt, canRun, save]);
 
   const titleOf = (id: string | null) => (id ? (byId.get(id)?.partTitle ?? null) : null);
 
@@ -499,28 +616,102 @@ export default function ConductScreen() {
     const row = seg?.assignmentId ? byId.get(seg.assignmentId) : undefined;
     return partDisplay(key, row?.partTitle ?? null).label;
   };
-  const changedNote = state.changed ? (
+  /** «Анна Вебер · Мария Кох — Начинаем разговор»: what the chairman announces. */
+  const announce = (seg: RunSegment) => {
+    const row = seg.assignmentId ? byId.get(seg.assignmentId) : undefined;
+    const label = partDisplay(seg.key, row?.partTitle ?? null).label;
+    const people = [row?.publisherId, row?.assistantPublisherId]
+      .map((id) => (id ? nameById.get(id) : null))
+      .filter((x): x is string => !!x);
+    return people.length > 0 ? `${people.join(' · ')} — ${label}` : label;
+  };
+  const changedNote = run.changed ? (
     <View style={styles.changedNote}>
       <Text style={styles.changedTitle}>{t('conduct.changed.title')}</Text>
-      {state.changed.added.length > 0 ? (
+      {run.changed.added.length > 0 ? (
         <Text style={styles.changedLine}>
-          {t('conduct.changed.added', { parts: state.changed.added.map(keyLabel).join(', ') })}
+          {t('conduct.changed.added', { parts: run.changed.added.map(keyLabel).join(', ') })}
         </Text>
       ) : null}
-      {state.changed.removed.length > 0 ? (
+      {run.changed.removed.length > 0 ? (
         <Text style={styles.changedLine}>
-          {t('conduct.changed.removed', { parts: state.changed.removed.map(keyLabel).join(', ') })}
+          {t('conduct.changed.removed', { parts: run.changed.removed.map(keyLabel).join(', ') })}
         </Text>
       ) : null}
       <Text style={styles.changedLine}>{t('conduct.changed.note')}</Text>
     </View>
   ) : null;
   const legacyNote =
-    state.legacyKeys.length > 0 ? (
-      <Text style={styles.keepNote}>{t('conduct.result.legacyNote', { n: state.legacyKeys.length })}</Text>
+    run.legacyKeys.length > 0 ? (
+      <Text style={styles.keepNote}>{t('conduct.result.legacyNote', { n: run.legacyKeys.length })}</Text>
     ) : null;
+  const practiceNote = practice ? (
+    <View style={styles.practiceNote}>
+      <Ionicons name="school-outline" size={18} color="#075985" />
+      <Text style={styles.practiceText}>{t('conduct.practice.banner')}</Text>
+      {/* The way out is on the banner itself: in the header it would be a
+          lone cap icon before the practice has begun, which says nothing. */}
+      <Pressable onPress={() => setPractice(null)} hitSlop={8} accessibilityRole="button">
+        <Text style={styles.practiceEnd}>{t('conduct.practice.endShort')}</Text>
+      </Pressable>
+    </View>
+  ) : null;
   const nameOf = (id: string) => nameById.get(id) ?? null;
   const chairmanName = chairmanRow?.publisherId ? (nameById.get(chairmanRow.publisherId) ?? null) : null;
+
+  // The remote result is what a reader sees; the menu is the runner's.
+  const remote = runQuery.data ?? null;
+  const showLocal = !!local && (canRun || !!practice);
+  const reading = !showLocal && !practice && (!canRun || pastWeek);
+
+  // «⋯» in the header: practice, and «Начать заново» — away from «Вернуть»,
+  // which is pressed often, while this wipes the meeting.
+  const navigation = useNavigation();
+  const menuOpen = canRun && !reading && segments.length > 0;
+  useEffect(() => {
+    navigation.setOptions({
+      headerRight: !menuOpen
+        ? undefined
+        : () => (
+            <HeaderMenu
+              title={t('conduct.title')}
+              color={HEADER_ICON}
+              items={[
+                practice
+                  ? {
+                      key: 'practice-end',
+                      icon: 'school-outline' as const,
+                      title: t('conduct.practice.end'),
+                      subtitle: t('conduct.practice.endHint'),
+                      onPress: () => setPractice(null),
+                    }
+                  : {
+                      key: 'practice',
+                      icon: 'school-outline' as const,
+                      title: t('conduct.practice.start'),
+                      subtitle: t('conduct.practice.hint'),
+                      onPress: () => setPractice(EMPTY),
+                    },
+                ...(run.meetingStartedAt !== null
+                  ? [
+                      {
+                        key: 'again',
+                        icon: 'refresh' as const,
+                        title: t('conduct.again'),
+                        subtitle: t('conduct.againHint'),
+                        onPress: () => void reset(),
+                        tint: '#b91c1c',
+                        tintBg: '#fee2e2',
+                      },
+                    ]
+                  : []),
+              ]}
+            />
+          ),
+    });
+    // reset is recreated each render; what it reads is in the deps below.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [navigation, menuOpen, practice, run.meetingStartedAt, t]);
 
   // --- что показывать -------------------------------------------------
   if (!week) {
@@ -538,9 +729,6 @@ export default function ConductScreen() {
   }
 
   // The result: this device's own run, or the one saved on the server.
-  const remote = runQuery.data ?? null;
-  const showLocal = !!local && canRun;
-  const reading = !showLocal && (!canRun || pastWeek);
   if (reading) {
     if (!canRead) return <Notice text={t('conduct.notChairman')} />;
     if (runQuery.isLoading) {
@@ -575,135 +763,157 @@ export default function ConductScreen() {
     return (
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
         <View style={styles.resultWrap}>
+          {practiceNote}
           <Text style={styles.overline}>{t('conduct.finished')}</Text>
           {changedNote}
           <ConductSummary data={local} titleOf={titleOf} nameOf={nameOf} chairmanName={chairmanName} />
           {legacyNote}
-          <Text style={[styles.keepNote, save.isError && styles.keepNoteError]}>
-            {state.saved
-              ? t('conduct.result.saved')
-              : save.isError
-                ? t('conduct.result.notSaved')
-                : t('conduct.result.saving')}
-          </Text>
-          {save.isError && !state.saved ? (
+          {practice ? (
+            <Text style={styles.keepNote}>{t('conduct.practice.notSaved')}</Text>
+          ) : (
+            <Text style={[styles.keepNote, save.isError && styles.keepNoteError]}>
+              {state.saved
+                ? t('conduct.result.saved')
+                : save.isError
+                  ? t('conduct.result.notSaved')
+                  : t('conduct.result.saving')}
+            </Text>
+          )}
+          {!practice && save.isError && !state.saved ? (
             <Pressable style={styles.ghostBtn} onPress={() => save.mutate(local)}>
               <Text style={styles.ghostBtnText}>{t('conduct.result.retry')}</Text>
             </Pressable>
           ) : null}
           <View style={styles.rowBtns}>
-            {state.prev ? (
+            {run.prev ? (
               <Pressable style={styles.ghostBtn} onPress={undo}>
                 <Ionicons name="arrow-undo" size={16} color="#0369a1" />
                 <Text style={styles.ghostBtnText}>{t('conduct.undo')}</Text>
               </Pressable>
             ) : null}
-            <Pressable style={styles.ghostBtn} onPress={() => void reset()}>
-              <Text style={styles.ghostBtnText}>{t('conduct.again')}</Text>
-            </Pressable>
+            {practice ? (
+              <Pressable style={styles.ghostBtn} onPress={() => setPractice(null)}>
+                <Text style={styles.ghostBtnText}>{t('conduct.practice.end')}</Text>
+              </Pressable>
+            ) : null}
           </View>
         </View>
       </ScrollView>
     );
   }
 
+  // The countdown, and what it means in words as well as colour: about one man
+  // in twelve tells amber from red badly, and a minus alone is easy to miss.
+  const left = current ? current.partMin * 60 - currentElapsed : 0;
+  const tone: 'calm' | 'soon' | 'over' = left < 0 ? 'over' : left <= LAST_SECONDS ? 'soon' : 'calm';
+  const counselLong = current ? counselElapsed > current.counselMin * 60 : false;
+  const big = wide ? styles.countdownWide : styles.countdown;
+
   const nowCard = current ? (
-    <View style={styles.nowCard}>
-      <Text style={styles.overline}>{inCounsel ? t('conduct.upNow') : t('conduct.now')}</Text>
-      <SegmentHeadline
-        segment={current}
-        row={current.assignmentId ? byId.get(current.assignmentId) : undefined}
-        nameById={nameById}
-        big
-      />
-      {inCounsel && state.startedAt !== null ? (
-        <>
-          <Text style={[styles.countdown, styles.countdownWaiting]}>{mmss(current.partMin * 60)}</Text>
-          <Text style={styles.counselLine}>
-            {t('conduct.startsIn', { time: mmss((state.startedAt - now) / 1000) })}
-          </Text>
-        </>
-      ) : (
-        <>
-          <Text
-            style={[
-              styles.countdown,
-              current.partMin * 60 - currentElapsed < 0 && styles.countdownOver,
-            ]}
-          >
-            {formatCountdown(current.partMin * 60 - currentElapsed)}
-          </Text>
-          <Text style={styles.planned}>
-            {t('conduct.planned', { minutes: current.partMin })}
-          </Text>
-        </>
-      )}
-    </View>
+    counselling ? (
+      <View style={[styles.nowCard, styles.counselCard]}>
+        <Text style={styles.overline}>
+          {t('conduct.counsel.title', { part: keyLabel(current.key) })}
+        </Text>
+        <CounselledHeadline row={current.assignmentId ? byId.get(current.assignmentId) : undefined} nameById={nameById} />
+        <Text style={styles.subtitle}>
+          {t('conduct.counsel.took', { time: mmss(run.spent[run.index] ?? 0) })}
+        </Text>
+        <Text style={[big, counselLong && styles.toneSoon]}>{mmss(counselElapsed)}</Text>
+        {counselLong ? <Text style={[styles.stateLine, styles.toneSoon]}>{t('conduct.counsel.long')}</Text> : null}
+        <Text style={styles.planned}>{t('conduct.counsel.note')}</Text>
+      </View>
+    ) : (
+      <View style={styles.nowCard}>
+        <Text style={styles.overline}>{isStudent ? t('conduct.nowStudent') : t('conduct.now')}</Text>
+        <SegmentHeadline
+          segment={current}
+          row={current.assignmentId ? byId.get(current.assignmentId) : undefined}
+          nameById={nameById}
+          big
+        />
+        <Text style={[big, tone === 'soon' && styles.toneSoon, tone === 'over' && styles.toneOver]}>
+          {formatCountdown(left)}
+        </Text>
+        {started && tone === 'soon' ? (
+          <Text style={[styles.stateLine, styles.toneSoon]}>{t('conduct.lastSeconds')}</Text>
+        ) : null}
+        {started && tone === 'over' ? (
+          <Text style={[styles.stateLine, styles.toneOver]}>{t('conduct.overtime')}</Text>
+        ) : null}
+        <Text style={styles.planned}>
+          {isStudent
+            ? t('conduct.plannedThenCounsel', { minutes: current.partMin, counsel: current.counselMin })
+            : t('conduct.planned', { minutes: current.partMin })}
+        </Text>
+      </View>
+    )
   ) : null;
+
+  // What the big button does now, and whom it calls next.
+  const last = run.index === segments.length - 1;
+  const primary: { label: string; sub: string | null; onPress: () => void } = !started
+    ? { label: t('conduct.start'), sub: null, onPress: start }
+    : isStudent && !counselling
+      ? { label: t('conduct.partDone'), sub: null, onPress: finishPart }
+      : last
+        ? { label: t('conduct.finish'), sub: null, onPress: advance }
+        : { label: t('conduct.nextPart'), sub: next ? announce(next) : null, onPress: advance };
 
   const controls = (
     <View style={styles.controls}>
-      {!started ? (
-        <Pressable style={styles.primaryBtn} onPress={start}>
-          <Text style={styles.primaryBtnText}>{t('conduct.start')}</Text>
-        </Pressable>
-      ) : inCounsel ? (
-        <Pressable style={styles.primaryBtn} onPress={startNow}>
-          <Text style={styles.primaryBtnText}>{t('conduct.startNow')}</Text>
-        </Pressable>
-      ) : (
-        <>
-          <Pressable style={styles.primaryBtn} onPress={advance}>
-            <Text style={styles.primaryBtnText}>
-              {state.index === segments.length - 1
-                ? t('conduct.finish')
-                : t('conduct.nextPart')}
-            </Text>
-          </Pressable>
-          <Pressable
-            style={styles.ghostBtn}
-            onPress={state.startedAt === null ? resume : pause}
-          >
-            <Ionicons
-              name={state.startedAt === null ? 'play' : 'pause'}
-              size={18}
-              color="#0369a1"
-            />
-            <Text style={styles.ghostBtnText}>
-              {state.startedAt === null ? t('conduct.resume') : t('conduct.pause')}
-            </Text>
-          </Pressable>
-        </>
-      )}
+      <Pressable
+        style={[styles.primaryBtn, locked && styles.primaryBtnLocked]}
+        onPress={guarded(primary.onPress)}
+        accessibilityRole="button"
+      >
+        <Text style={styles.primaryBtnText}>{primary.label}</Text>
+        {primary.sub ? (
+          <Text style={styles.primaryBtnSub} numberOfLines={2}>
+            {primary.sub}
+          </Text>
+        ) : null}
+      </Pressable>
 
       {started ? (
         <View style={styles.rowBtns}>
-          {state.prev ? (
+          {!counselling ? (
+            <Pressable style={styles.ghostBtn} onPress={run.startedAt === null ? resume : pause}>
+              <Ionicons name={run.startedAt === null ? 'play' : 'pause'} size={18} color="#0369a1" />
+              <Text style={styles.ghostBtnText}>
+                {run.startedAt === null ? t('conduct.resume') : t('conduct.pause')}
+              </Text>
+            </Pressable>
+          ) : null}
+          {run.prev ? (
             <Pressable style={styles.ghostBtn} onPress={undo}>
               <Ionicons name="arrow-undo" size={16} color="#0369a1" />
               <Text style={styles.ghostBtnText}>{t('conduct.undo')}</Text>
             </Pressable>
           ) : null}
-          <Pressable style={styles.ghostBtn} onPress={() => void reset()}>
-            <Text style={styles.ghostBtnText}>{t('conduct.again')}</Text>
-          </Pressable>
         </View>
       ) : null}
 
       {started ? (
-        <Text style={[styles.drift, driftStyle(driftSec)]}>
-          {driftLabel(driftSec, t)}
-        </Text>
+        <View style={styles.endBlock}>
+          <Text style={styles.endLine}>
+            {t('conduct.endsAt')} <Text style={styles.endTime}>{endsAt}</Text>
+            {plannedEnd ? <Text style={styles.endPlanned}>{`  ${t('conduct.byProgramme', { time: plannedEnd })}`}</Text> : null}
+          </Text>
+          <Text style={[styles.drift, driftStyle(driftSec)]}>{driftLabel(driftSec, t)}</Text>
+        </View>
       ) : null}
     </View>
   );
 
-  const upNext = next ? (
+  // During the counsel the next part is on the button; the card shows the one after.
+  const upcoming = counselling ? afterNext : next;
+  const upNext = upcoming ? (
     <View style={styles.nextCard}>
-      <Text style={styles.overline}>{t('conduct.next')}</Text>
+      <Text style={styles.overline}>{counselling ? t('conduct.then') : t('conduct.next')}</Text>
       <SegmentHeadline
-        segment={next}
-        row={next.assignmentId ? byId.get(next.assignmentId) : undefined}
+        segment={upcoming}
+        row={upcoming.assignmentId ? byId.get(upcoming.assignmentId) : undefined}
         nameById={nameById}
       />
     </View>
@@ -719,7 +929,7 @@ export default function ConductScreen() {
         return (
           <View
             key={`${s.key}-${i}`}
-            style={[styles.sheetRow, i < state.index && styles.sheetRowDone]}
+            style={[styles.sheetRow, i < run.index && styles.sheetRowDone]}
           >
             <Text style={styles.sheetMin}>
               {s.partMin}
@@ -728,10 +938,13 @@ export default function ConductScreen() {
             <View style={{ flex: 1 }}>
               <Text style={styles.sheetLabel} numberOfLines={1}>
                 {d.label}
+                {i === run.index && counselling ? (
+                  <Text style={styles.sheetCounselNow}>{` · ${t('conduct.counsel.short')}`}</Text>
+                ) : null}
               </Text>
               {person ? <Text style={styles.sheetPerson}>{person}</Text> : null}
             </View>
-            {i === state.index && !finished ? (
+            {i === run.index && !finished ? (
               <Ionicons name="caret-forward" size={16} color="#0ea5e9" />
             ) : null}
           </View>
@@ -746,6 +959,7 @@ export default function ConductScreen() {
       style={styles.container}
       contentContainerStyle={styles.content}
     >
+      {practiceNote}
       {fromKept && kept ? (
         <KeptNotice
           queries={[
@@ -771,6 +985,20 @@ export default function ConductScreen() {
       </View>
     </ScrollView>
   );
+}
+
+/** The one being counselled — the student; the assistant beside him. */
+function CounselledHeadline({
+  row,
+  nameById,
+}: {
+  row: Assignment | undefined;
+  nameById: Map<string, string>;
+}) {
+  const person = row?.publisherId ? nameById.get(row.publisherId) : null;
+  const assistant = row?.assistantPublisherId ? nameById.get(row.assistantPublisherId) : null;
+  if (!person) return null;
+  return <Text style={styles.personBig}>{assistant ? `${person} · ${assistant}` : person}</Text>;
 }
 
 /** Имя человека крупнее названия: вслух объявляют прежде всего его. */
@@ -876,16 +1104,26 @@ const styles = StyleSheet.create({
   partBig: { fontFamily: 'Manrope_400Regular', fontSize: 26, color: '#334155', marginTop: 4 },
   partSmall: { fontFamily: 'Manrope_400Regular', fontSize: 16, color: '#475569', marginTop: 2 },
   subtitle: { fontFamily: 'Manrope_400Regular', fontSize: 14, color: '#64748b', marginTop: 4 },
+  // Half as big again as on 14 October: read at a glance from the lectern.
   countdown: {
-    fontSize: 56,
+    fontSize: 84,
     fontFamily: 'Manrope_700Bold',
     color: '#0369a1',
-    marginTop: 16,
+    marginTop: 8,
     fontVariant: ['tabular-nums'],
   },
-  countdownOver: { color: '#b91c1c' },
-  countdownWaiting: { color: '#94a3b8' },
-  counselLine: { fontFamily: 'Manrope_600SemiBold', fontSize: 15, color: '#0369a1' },
+  countdownWide: {
+    fontSize: 128,
+    lineHeight: 136,
+    fontFamily: 'Manrope_700Bold',
+    color: '#0369a1',
+    marginTop: 4,
+    fontVariant: ['tabular-nums'],
+  },
+  toneSoon: { color: '#b45309' },
+  toneOver: { color: '#b91c1c' },
+  stateLine: { fontFamily: 'Manrope_700Bold', fontSize: 16, marginTop: 2 },
+  counselCard: { backgroundColor: '#f0f9ff', borderColor: '#bae6fd' },
   planned: { fontFamily: 'Manrope_400Regular', fontSize: 13, color: '#64748b' },
 
   controls: { marginTop: 16, gap: 10 },
@@ -895,7 +1133,18 @@ const styles = StyleSheet.create({
     paddingVertical: 18,
     alignItems: 'center',
   },
-  primaryBtnText: { color: '#ffffff', fontSize: 20, fontFamily: 'Manrope_700Bold' },
+  primaryBtnText: { color: '#ffffff', fontSize: 22, fontFamily: 'Manrope_700Bold' },
+  primaryBtnSub: {
+    color: '#ffffff',
+    fontSize: 15,
+    fontFamily: 'Manrope_600SemiBold',
+    opacity: 0.92,
+    marginTop: 2,
+    textAlign: 'center',
+    paddingHorizontal: 12,
+  },
+  // The 1.5 s after a tap when the button does not answer — and shows it.
+  primaryBtnLocked: { opacity: 0.55 },
   ghostBtn: {
     flexDirection: 'row',
     gap: 6,
@@ -906,7 +1155,11 @@ const styles = StyleSheet.create({
   },
   ghostBtnText: { color: '#0369a1', fontSize: 15, fontFamily: 'Manrope_600SemiBold' },
 
-  drift: { textAlign: 'center', fontSize: 16, fontFamily: 'Manrope_600SemiBold', marginTop: 4 },
+  drift: { textAlign: 'center', fontSize: 15, fontFamily: 'Manrope_600SemiBold', marginTop: 2 },
+  endBlock: { marginTop: 4 },
+  endLine: { textAlign: 'center', fontFamily: 'Manrope_400Regular', fontSize: 16, color: '#334155' },
+  endTime: { fontFamily: 'Manrope_700Bold', color: '#0f172a' },
+  endPlanned: { fontFamily: 'Manrope_400Regular', fontSize: 13, color: '#94a3b8' },
   driftOk: { color: '#64748b' },
   driftBehind: { color: '#b91c1c' },
   driftAhead: { color: '#15803d' },
@@ -932,6 +1185,7 @@ const styles = StyleSheet.create({
   sheetLabel: { fontFamily: 'Manrope_400Regular', fontSize: 15, color: '#0f172a' },
   sheetPerson: { fontFamily: 'Manrope_400Regular', fontSize: 13, color: '#64748b' },
   sheetCounsel: { fontFamily: 'Manrope_400Regular', fontSize: 11, color: '#94a3b8' },
+  sheetCounselNow: { fontFamily: 'Manrope_700Bold', fontSize: 15, color: '#0369a1' },
   sheetNote: { fontFamily: 'Manrope_400Regular', fontSize: 12, color: '#94a3b8', marginTop: 8 },
   rowBtns: { flexDirection: 'row', justifyContent: 'center', gap: 16, flexWrap: 'wrap' },
   resultWrap: { width: '100%', maxWidth: 640, alignSelf: 'center' },
@@ -940,6 +1194,19 @@ const styles = StyleSheet.create({
 
   notice: { fontFamily: 'Manrope_400Regular', fontSize: 16, color: '#475569', textAlign: 'center' },
 
+  practiceNote: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#e0f2fe',
+    borderColor: '#7dd3fc',
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 12,
+  },
+  practiceText: { flex: 1, fontFamily: 'Manrope_600SemiBold', fontSize: 15, color: '#075985' },
+  practiceEnd: { fontFamily: 'Manrope_700Bold', fontSize: 15, color: '#0369a1', paddingHorizontal: 4 },
   changedNote: {
     backgroundColor: '#fffbeb',
     borderColor: '#fcd34d',
