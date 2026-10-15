@@ -8,6 +8,8 @@ import type { ApplyParsedPayload } from "./mwb-parser";
 import i18n from "./i18n";
 import { requestErrorText } from "./error-text";
 import { refusalText } from "./refusal-text";
+import { bestOffset, offsetSample } from "./conduct-live";
+import type { LiveRoles } from "./conduct-live";
 
 function resolveApiUrl(): string {
   const url = process.env.EXPO_PUBLIC_API_URL;
@@ -1393,6 +1395,7 @@ export type DutyType =
   | "zoom"
   | "stage"
   | "ventilation"
+  | "timekeeper"
   | "custom";
 
 export type DutyWarning =
@@ -5477,6 +5480,75 @@ export const conductRunsApi = {
     plannedSec: number;
   }): Promise<void> {
     await api.put("/conduct-runs", input);
+  },
+};
+
+/** The meeting as it runs — server conduct-live (15 October 2026). */
+export interface ConductLive {
+  weekStartDate: string;
+  epoch: number;
+  /** The run in SERVER time — read through lib/conduct-live.ts fromWire. */
+  state: unknown;
+  controllerUserId: string;
+  controllerName: string | null;
+  /** Whether this account's taps are the ones that count. */
+  mine: boolean;
+  controllerSeenAt: string;
+  chairmanSeenAt: string | null;
+  updatedAt: string;
+}
+
+export interface ConductLiveAnswer {
+  live: ConductLive | null;
+  /** Only on a read: who the asker is for this meeting. */
+  roles?: LiveRoles;
+  serverNowMs: number;
+}
+
+/**
+ * Every answer says what time it is on the server; the samples are kept here
+ * and the screen shifts the run's times by the best of them.
+ */
+const clockSamples: { offset: number; rtt: number }[] = [];
+export function serverClockOffset(): number {
+  return bestOffset(clockSamples);
+}
+async function timed<T extends { serverNow: string }>(
+  call: () => Promise<{ data: T }>,
+): Promise<T & { serverNowMs: number }> {
+  const sentAt = Date.now();
+  const { data } = await call();
+  const receivedAt = Date.now();
+  const serverNowMs = Date.parse(data.serverNow);
+  if (Number.isFinite(serverNowMs)) {
+    clockSamples.push(offsetSample(sentAt, receivedAt, serverNowMs));
+    if (clockSamples.length > 15) clockSamples.shift();
+  }
+  return { ...data, serverNowMs: Number.isFinite(serverNowMs) ? serverNowMs : receivedAt };
+}
+
+export const conductLiveApi = {
+  async get(week: string): Promise<ConductLiveAnswer> {
+    return timed(() =>
+      api.get<{ live: ConductLive | null; roles: LiveRoles; serverNow: string }>(
+        "/conduct-live",
+        { params: { week } },
+      ),
+    );
+  },
+  /** A tap of the controller. 409 CONDUCT_LIVE_NOT_YOURS: somebody else runs it now. */
+  async put(input: { weekStartDate: string; epoch: number; state: unknown }): Promise<ConductLiveAnswer> {
+    return timed(() =>
+      api.put<{ live: ConductLive; serverNow: string }>("/conduct-live", input),
+    );
+  },
+  /** «Взять ведение»: from now on this account's taps count. */
+  async take(weekStartDate: string): Promise<ConductLiveAnswer> {
+    return timed(() =>
+      api.post<{ live: ConductLive; serverNow: string }>("/conduct-live/take", {
+        weekStartDate,
+      }),
+    );
   },
 };
 

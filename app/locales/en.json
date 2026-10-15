@@ -481,6 +481,7 @@
       "duty_av": "Audio/Video",
       "duty_stage": "Stage",
       "duty_ventilation": "Ventilation",
+      "duty_timekeeper": "Timekeeper",
       "hospitality": "Hospitality",
       "public_witnessing": "Cart witnessing",
       "fs_meeting_conductor": "Conducts field-service meeting",
@@ -1460,6 +1461,7 @@
       "zoom": "Video conferencing (Zoom)",
       "stage": "Stage",
       "ventilation": "Ventilation",
+      "timekeeper": "Timekeeper",
       "custom": "Other"
     },
     "warnings": {
@@ -2567,6 +2569,7 @@
       "zoom": "Zoom",
       "stage": "Stage",
       "ventilation": "Ventilation",
+      "timekeeper": "Timekeeper",
       "custom": "Custom duty"
     },
     "cleaningSlots": {
@@ -4072,6 +4075,32 @@
       "closing": "Concluding comments, song and prayer",
       "between": "Pauses and time between parts",
       "legacyNote": "The first parts ({{n}}) were timed by the previous version of the app — their time includes the counsel minute."
+    },
+    "live": {
+      "runningYou": "You are keeping time",
+      "runningBy": "Keeping time: {{name}}",
+      "controllerSilent": "Timekeeper offline since {{time}}",
+      "chairmanWatching": "Chairman: {{name}} · watching",
+      "chairmanSilent": "Chairman: {{name}} · offline",
+      "offlineWatch": "No connection to the server · updated at {{time}}. The part may already be over.",
+      "offlineRun": "No connection to the server. The run is kept on this device and will be sent once the connection is back.",
+      "waitingTimekeeper": "{{name}} keeps the time. The countdown appears here once he taps “Start the meeting”.",
+      "waitingNobody": "The meeting has not started yet.",
+      "take": "Take over",
+      "takeTitle": "Take over timekeeping?",
+      "takeBody": "From now on you keep the time. Taps by {{name}} will no longer count.",
+      "takeBodyNobody": "From now on you keep the time, on this device.",
+      "takeFailed": "Could not take over — no connection to the server.",
+      "taken": "{{name}} took over timekeeping. This screen now shows the meeting as it runs.",
+      "someone": "another brother",
+      "resultByController": "The result is saved by whoever kept the time.",
+      "cardRunning": "Meeting in progress · Live",
+      "cardBy": "Keeping time: {{name}}",
+      "cardYou": "You are keeping time",
+      "cardKeeper": "This week you are the timekeeper",
+      "cardKeeperHint": "Open timekeeping in the hall before the meeting — the chairman will see the countdown on his screen.",
+      "watch": "Watch",
+      "open": "Open timekeeping"
     }
   },
   "serviceHub": {
@@ -4591,7 +4620,9 @@
       "ATTENDANCE_FORBIDDEN": "Attendance is seen by the elders and those who record it.",
       "ATTENDANCE_NEEDS_FIGURE": "For a meeting that was held, please give the number present.",
       "ATTENDANCE_NEGATIVE": "The number present cannot be negative.",
-      "CONDUCT_RUN_FORBIDDEN": "The result of the meeting is saved by that week’s chairman.",
+      "CONDUCT_RUN_FORBIDDEN": "The result of the meeting is saved by that week’s chairman or timekeeper.",
+      "CONDUCT_LIVE_FORBIDDEN": "The meeting as it runs is seen by appointed brothers and run by that week’s chairman or timekeeper.",
+      "CONDUCT_LIVE_NOT_YOURS": "Another brother runs the meeting now.",
       "CONDUCT_RESULT_FORBIDDEN": "The result of the meeting is seen by its chairman and the elders.",
       "SCHEDULE_PAST_NEEDS_CONFIRM": "This moves meetings of weeks already begun to another day, and attendance for {{moved}} of them is already recorded on the old day. Please confirm saving.",
       "SCHEDULE_VERSION_IN_FORCE": "This schedule is already in force — past weeks are counted by it, so it cannot be deleted. Correct it by saving the schedule with the same start date.",

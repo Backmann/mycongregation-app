@@ -89,6 +89,7 @@ export const CAPABILITY_CATEGORIES: CapabilityCategory[] = [
       { key: 'duty_av', label: 'Audio/Video' },
       { key: 'duty_stage', label: 'Stage' },
       { key: 'duty_ventilation', label: 'Ventilation' },
+      { key: 'duty_timekeeper', label: 'Timekeeper' },
     ],
   },
   {

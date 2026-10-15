@@ -34,6 +34,7 @@ export const DUTY_ICONS: Record<
   zoom: { icon: 'laptop-outline', color: '#4f46e5' },
   stage: { icon: 'tv-outline', color: '#0d9488' },
   ventilation: { icon: 'cloud-outline', color: '#0284c7' },
+  timekeeper: { icon: 'stopwatch-outline', color: '#ea580c' },
   custom: { icon: 'ellipsis-horizontal-circle-outline', color: '#64748b' },
 };
 
@@ -55,6 +56,7 @@ const DUTY_TYPE_ORDER: DutyType[] = [
   'zoom',
   'stage',
   'ventilation',
+  'timekeeper',
   'custom',
 ];
 

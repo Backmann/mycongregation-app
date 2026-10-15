@@ -1,9 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { Pressable, StyleSheet, Text } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { conductRunsApi, meApi } from '../lib/api';
+import { conductLiveApi, conductRunsApi, meApi, meetingSettingsApi, serverClockOffset } from '../lib/api';
+import { effectiveVersionFor } from '../lib/meeting-schedule';
+import { weekRules } from '../lib/week-rules';
+import { fromWire } from '../lib/conduct-live';
 import { useAuth } from '../lib/auth';
 import { formatDateISO, startOfWeekMonday } from '../lib/dates';
 
@@ -132,4 +135,83 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   label: { color: '#0369a1', fontSize: 14, fontFamily: 'Manrope_600SemiBold' },
+  liveCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#bbf7d0',
+    padding: 16,
+    gap: 4,
+  },
+  liveHead: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  liveDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: '#16a34a' },
+  liveTitle: { fontSize: 17, fontFamily: 'Manrope_700Bold', color: '#0f172a', flex: 1 },
+  liveSub: { fontSize: 14, fontFamily: 'Manrope_400Regular', color: '#475569' },
+  liveAction: { fontSize: 14, fontFamily: 'Manrope_700Bold', color: '#0369a1', marginTop: 4 },
 });
+
+/**
+ * «ИДЁТ ВСТРЕЧА · LIVE» on the home screen (15 October 2026) — for the
+ * appointed brothers, who may watch the meeting run (Lionel), and the door
+ * into conduct mode for the timekeeper, who has no schedule editor to find it
+ * in. The server decides who gets an answer: a publisher who is neither is
+ * refused once, and the card never asks again.
+ *
+ * Asked once a minute while home is open — enough to appear soon after the
+ * meeting starts; the conduct screen itself asks every two seconds.
+ */
+export function ConductLiveCard() {
+  const { t } = useTranslation();
+  const week = formatDateISO(startOfWeekMonday(new Date()));
+  const { data } = useQuery({
+    queryKey: ['conduct-live-home', week],
+    queryFn: () => conductLiveApi.get(week),
+    retry: false,
+    refetchInterval: (q) => {
+      const st = (q.state.error as { response?: { status?: number } } | null)?.response?.status;
+      return st === 403 || st === 404 ? false : 60_000;
+    },
+  });
+  // The meeting's day, so the timekeeper's card is gone once it is over —
+  // the live row itself lasts only a day, and after it the week goes on.
+  const { data: settings } = useQuery({
+    queryKey: ['meeting-settings'],
+    queryFn: () => meetingSettingsApi.getOverview(),
+    staleTime: 60 * 60 * 1000,
+  });
+  if (!data) return null;
+  const meetingDay = weekRules({
+    weekStartISO: week,
+    version: effectiveVersionFor(settings?.versions, week),
+    events: [],
+  }).dateOf('midweek');
+  const today = formatDateISO(new Date());
+  const run = data.live ? fromWire(data.live.state, serverClockOffset()) : null;
+  const running = !!run && run.meetingStartedAt !== null && run.finishedAt === null;
+  const keeperToCome =
+    !running && !!data.roles?.isTimekeeper && !(run && run.finishedAt !== null) && !!meetingDay && today <= meetingDay;
+  if (!running && !keeperToCome) return null;
+  const mine = !!data.live?.mine;
+  return (
+    <Pressable
+      style={styles.liveCard}
+      onPress={() => router.push(`/schedule/conduct?week=${week}` as any)}
+      accessibilityRole="button"
+    >
+      <View style={styles.liveHead}>
+        {running ? <View style={styles.liveDot} /> : <Ionicons name="stopwatch-outline" size={18} color="#ea580c" />}
+        <Text style={styles.liveTitle}>{running ? t('conduct.live.cardRunning') : t('conduct.live.cardKeeper')}</Text>
+      </View>
+      <Text style={styles.liveSub}>
+        {running
+          ? mine
+            ? t('conduct.live.cardYou')
+            : t('conduct.live.cardBy', { name: data.live?.controllerName ?? t('conduct.live.someone') })
+          : t('conduct.live.cardKeeperHint')}
+      </Text>
+      <Text style={styles.liveAction}>
+        {running && !mine ? t('conduct.live.watch') : t('conduct.live.open')}
+      </Text>
+    </Pressable>
+  );
+}

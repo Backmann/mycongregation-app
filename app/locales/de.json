@@ -481,6 +481,7 @@
       "duty_av": "Audio/Video",
       "duty_stage": "Bühne",
       "duty_ventilation": "Lüften",
+      "duty_timekeeper": "Zeitnehmer",
       "hospitality": "Gastfreundschaft",
       "public_witnessing": "Zeugnisgeben mit Wagen",
       "fs_meeting_conductor": "Leitet Zusammenkunft für den Predigtdienst",
@@ -1460,6 +1461,7 @@
       "zoom": "Videokonferenz (Zoom)",
       "stage": "Bühne",
       "ventilation": "Lüftung",
+      "timekeeper": "Zeitnehmer",
       "custom": "Sonstiges"
     },
     "warnings": {
@@ -2567,6 +2569,7 @@
       "zoom": "Zoom",
       "stage": "Bühne",
       "ventilation": "Lüftung",
+      "timekeeper": "Zeitnehmer",
       "custom": "Sonderaufgabe"
     },
     "cleaningSlots": {
@@ -4072,6 +4075,32 @@
       "closing": "Schlussworte, Lied und Gebet",
       "between": "Pausen und Zeit zwischen den Programmpunkten",
       "legacyNote": "Die ersten Teile ({{n}}) hat die vorherige Version der App gemessen – ihre Zeit enthält die Minute Rat."
+    },
+    "live": {
+      "runningYou": "Sie führen die Zeit",
+      "runningBy": "Zeit führt: {{name}}",
+      "controllerSilent": "Zeitnehmer seit {{time}} nicht verbunden",
+      "chairmanWatching": "Vorsitzender: {{name}} · schaut zu",
+      "chairmanSilent": "Vorsitzender: {{name}} · nicht verbunden",
+      "offlineWatch": "Keine Verbindung zum Server · Stand {{time}}. Vielleicht ist der Programmpunkt schon zu Ende.",
+      "offlineRun": "Keine Verbindung zum Server. Der Verlauf wird auf diesem Gerät gespeichert und gesendet, sobald die Verbindung zurück ist.",
+      "waitingTimekeeper": "Die Zeit führt {{name}}. Der Countdown erscheint hier, sobald er „Zusammenkunft beginnen“ tippt.",
+      "waitingNobody": "Die Zusammenkunft hat noch nicht begonnen.",
+      "take": "Zeitführung übernehmen",
+      "takeTitle": "Zeitführung übernehmen?",
+      "takeBody": "Ab jetzt führen Sie die Zeit. Was {{name}} tippt, zählt nicht mehr.",
+      "takeBodyNobody": "Ab jetzt führen Sie die Zeit, auf diesem Gerät.",
+      "takeFailed": "Übernehmen nicht möglich – keine Verbindung zum Server.",
+      "taken": "{{name}} hat die Zeitführung übernommen. Dieser Bildschirm zeigt jetzt den Verlauf.",
+      "someone": "ein anderer Bruder",
+      "resultByController": "Das Ergebnis speichert, wer die Zeit geführt hat.",
+      "cardRunning": "Zusammenkunft läuft · Live",
+      "cardBy": "Zeit führt: {{name}}",
+      "cardYou": "Sie führen die Zeit",
+      "cardKeeper": "Diese Woche sind Sie Zeitnehmer",
+      "cardKeeperHint": "Öffnen Sie die Zeitführung im Saal vor der Zusammenkunft – der Vorsitzende sieht den Countdown bei sich.",
+      "watch": "Ansehen",
+      "open": "Zeitführung öffnen"
     }
   },
   "serviceHub": {
@@ -4591,7 +4620,9 @@
       "ATTENDANCE_FORBIDDEN": "Die Anwesenheit sehen die Ältesten und die, die sie erfassen.",
       "ATTENDANCE_NEEDS_FIGURE": "Für eine Zusammenkunft, die stattgefunden hat, bitte die Zahl der Anwesenden angeben.",
       "ATTENDANCE_NEGATIVE": "Die Zahl der Anwesenden kann nicht negativ sein.",
-      "CONDUCT_RUN_FORBIDDEN": "Das Ergebnis der Zusammenkunft speichert der Vorsitzende dieser Woche.",
+      "CONDUCT_RUN_FORBIDDEN": "Das Ergebnis der Zusammenkunft speichert der Vorsitzende oder der Zeitnehmer dieser Woche.",
+      "CONDUCT_LIVE_FORBIDDEN": "Den Verlauf der Zusammenkunft sehen ernannte Brüder; führen dürfen ihn der Vorsitzende und der Zeitnehmer dieser Woche.",
+      "CONDUCT_LIVE_NOT_YOURS": "Die Zusammenkunft führt jetzt ein anderer Bruder.",
       "CONDUCT_RESULT_FORBIDDEN": "Das Ergebnis der Zusammenkunft sehen ihr Vorsitzender und die Ältesten.",
       "SCHEDULE_PAST_NEEDS_CONFIRM": "Das verlegt Zusammenkünfte schon begonnener Wochen auf einen anderen Tag, und für {{moved}} davon ist die Anwesenheit schon am alten Tag erfasst. Bitte das Speichern bestätigen.",
       "SCHEDULE_VERSION_IN_FORCE": "Dieser Zeitplan gilt schon – vergangene Wochen sind danach gezählt, er kann nicht gelöscht werden. Zum Korrigieren den Zeitplan mit demselben Startdatum speichern.",

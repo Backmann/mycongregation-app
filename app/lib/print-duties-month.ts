@@ -134,6 +134,7 @@ export async function printDutiesMonth({
         "zoom",
         "stage",
         "ventilation",
+        "timekeeper",
         "custom",
       ];
       rowOrder.sort((a, b) => {
