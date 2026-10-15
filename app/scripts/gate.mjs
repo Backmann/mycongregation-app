@@ -76,6 +76,9 @@ const STEPS = [
   // отсюда часы, режим ведения — обратный отсчёт; сдвиг на минуту менял бы
   // и то и другое молча.
   ['Порядок ведения', 'node', ['scripts/check-run-order.mjs']],
+  // The chairman's run as kept on the device: every shape it was ever written
+  // in, and a programme that changes under a running meeting (15.10.2026).
+  ['Запись хода встречи', 'node', ['scripts/check-conduct-record.mjs']],
   ['Маршруты уведомлений', 'node', ['scripts/check-notification-routes.mjs']],
   // What a browser says its device is decides whether the server sends to it
   // at all: an iPad taken for a Mac stays silent while a phone is registered.
