@@ -25,7 +25,7 @@ const js = ts.transpileModule(src, {
   compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2020 },
 }).outputText;
 writeFileSync(join(out, 'conduct-run-record.mjs'), js);
-const { readRunRecord, writeRunRecord, reconcileKeys, EMPTY_RUN, LEGACY_LIVE_MS } = await import(
+const { readRunRecord, writeRunRecord, reconcileKeys, isExpiredRecord, inCounsel, EMPTY_RUN, LEGACY_LIVE_MS, KEEP_MS } = await import(
   pathToFileURL(join(out, 'conduct-run-record.mjs'))
 );
 
@@ -121,7 +121,7 @@ it('v2 written and read back is the same run', () => {
     legacyKeys: ['midweek_opening_prayer'], changed: { added: ['apply_yourself_2'], removed: [] },
   };
   const raw = writeRunRecord(s);
-  assert.equal(JSON.parse(raw).v, 2);
+  assert.equal(JSON.parse(raw).v, 3);
   const r = readRunRecord(raw, KEYS, NOW);
   assert.equal(r.verdict, 'current');
   assert.deepEqual(r.state, s);
@@ -196,20 +196,83 @@ it('a finished meeting re-laid: index = all parts, a new part has 0 s', () => {
   assert.equal(n.finishedAt, fin.finishedAt);
 });
 
-it('during the counsel minute a part slips in between: the minute ends, the part starts now', () => {
-  const inCounsel = { ...running, counselFrom: NOW - 20_000, startedAt: NOW + 40_000, counsel: [null, 60] };
-  const n = reconcileKeys(inCounsel, ['a', 'b', 'x', 'c', 'd'], NOW);
-  assert.equal(n.index, 3);
-  assert.equal(n.counselFrom, null);
-  assert.equal(n.startedAt, NOW);
-  assert.equal(n.counsel[1], 20, 'the counsel that was given is what is counted');
+// v3 counsel: the counselled part is the CURRENT one, its seconds in spent.
+const counselling = {
+  ...running, index: 2, spent: [10, 20, 240], counsel: [null, 60],
+  startedAt: null, counselFrom: NOW - 20_000,
+};
+
+it('v3 counsel: the screen knows it is in counsel', () => {
+  assert.equal(inCounsel(counselling), true);
+  assert.equal(inCounsel(running), false);
 });
 
-it('during the counsel minute an unrelated change: the minute goes on', () => {
-  const inCounsel = { ...running, counselFrom: NOW - 20_000, startedAt: NOW + 40_000 };
-  const n = reconcileKeys(inCounsel, ['a', 'b', 'c', 'd', 'x'], NOW);
-  assert.equal(n.counselFrom, inCounsel.counselFrom);
-  assert.equal(n.startedAt, inCounsel.startedAt);
+it('during the counsel a part slips in before: the counsel goes on, on the same part', () => {
+  const n = reconcileKeys(counselling, ['a', 'x', 'b', 'c', 'd'], NOW);
+  assert.equal(n.index, 3);
+  assert.equal(n.counselFrom, counselling.counselFrom);
+  assert.equal(n.startedAt, null);
+  assert.deepEqual(n.spent, [10, 0, 20, 240], 'the counselled part keeps its own seconds');
+});
+
+it('the counselled part removed during its counsel: the counsel ends, the next part starts now', () => {
+  const n = reconcileKeys(counselling, ['a', 'b', 'd'], NOW);
+  assert.equal(n.index, 2);
+  assert.equal(n.counselFrom, null);
+  assert.equal(n.startedAt, NOW);
+  assert.deepEqual(n.spent, [10, 20]);
+});
+
+// v2 (14–15 October): «Следующая» moved on at once, the next part's clock a
+// minute into the future.
+const v2Counsel = {
+  v: 2, ...EMPTY_RUN, index: 3, spent: [10, 20, 240], counsel: [null, 60, 60],
+  startedAt: NOW + 40_000, counselFrom: NOW - 20_000, meetingStartedAt: NOW - 900_000, keys: K,
+};
+delete v2Counsel.pending;
+
+it('v2 caught in its counsel minute → v3 counsel on the counselled part', () => {
+  const r = readRunRecord(JSON.stringify(v2Counsel), K, NOW);
+  assert.equal(r.verdict, 'current');
+  assert.equal(r.state.index, 2);
+  assert.equal(r.state.startedAt, null);
+  assert.equal(r.state.counselFrom, v2Counsel.counselFrom);
+  assert.deepEqual(r.state.counsel, [null, 60]);
+  assert.equal(r.state.spent[2], 240);
+  assert.equal(inCounsel(r.state), true);
+  assert.equal(r.state.pending, null);
+});
+
+it('v2 whose minute already ran out → the next part simply runs', () => {
+  const r = readRunRecord(JSON.stringify({ ...v2Counsel, startedAt: NOW - 5_000 }), K, NOW);
+  assert.equal(r.state.index, 3);
+  assert.equal(r.state.counselFrom, null);
+  assert.equal(r.state.startedAt, NOW - 5_000);
+});
+
+// ------------------------------------------------------------ seven days
+
+it('a finished run goes 7 days after its end, not before', () => {
+  const rec = writeRunRecord({ ...running, finishedAt: NOW - KEEP_MS + 60_000 });
+  assert.equal(isExpiredRecord(rec, '2026-10-12', NOW), false);
+  const old = writeRunRecord({ ...running, finishedAt: NOW - KEEP_MS - 60_000 });
+  assert.equal(isExpiredRecord(old, '2026-10-12', NOW), true);
+});
+
+it('an unfinished run goes 7 days after it began', () => {
+  const rec = writeRunRecord({ ...running, meetingStartedAt: NOW - KEEP_MS - 1 });
+  assert.equal(isExpiredRecord(rec, '2026-10-12', NOW), true);
+});
+
+it('a run never begun goes two weeks after its Monday', () => {
+  const rec = writeRunRecord(EMPTY_RUN);
+  assert.equal(isExpiredRecord(rec, '2026-10-12', NOW), false);
+  assert.equal(isExpiredRecord(rec, '2026-09-21', NOW), true);
+});
+
+it('nothing kept is not «expired»; anything unreadable is', () => {
+  assert.equal(isExpiredRecord(null, '2026-10-12', NOW), false);
+  assert.equal(isExpiredRecord('{', '2026-10-12', NOW), true);
 });
 
 it('two changes in a row add up, and v1 parts that are gone lose the v1 mark', () => {
