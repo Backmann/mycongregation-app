@@ -54,7 +54,16 @@ interface Props {
    * teaches nothing.
    */
   minDate?: string;
+  /**
+   * A small dot under a day (16 October 2026): what is on it already —
+   * 'meeting' a field-service meeting, 'taken' an assembly, a convention or
+   * the circuit overseer's week, 'busy' something else in the hall. A move
+   * is chosen seeing them, not blind.
+   */
+  marks?: Record<string, 'meeting' | 'taken' | 'busy'>;
 }
+
+const MARK_COLOR = { meeting: '#0ea5e9', taken: '#dc2626', busy: '#d97706' } as const;
 
 export function MonthCalendar({
   mode,
@@ -66,6 +75,7 @@ export function MonthCalendar({
   onPickDay,
   hidePresets,
   minDate,
+  marks,
 }: Props) {
   const { t } = useTranslation();
   const todayISO = toISO(new Date());
@@ -87,7 +97,8 @@ export function MonthCalendar({
     month: 'long',
     year: 'numeric',
   });
-  const monthLabel = monthRaw.charAt(0).toUpperCase() + monthRaw.slice(1);
+  // «Октябрь 2026», without the Russian «г.» (decided 14 October 2026).
+  const monthLabel = (monthRaw.charAt(0).toUpperCase() + monthRaw.slice(1)).replace(/\s*г\.$/, '');
 
   const cells = useMemo(() => {
     const first = new Date(viewMonth.getFullYear(), viewMonth.getMonth(), 1);
@@ -235,6 +246,9 @@ export function MonthCalendar({
                     {d.getDate()}
                   </Text>
                 </View>
+                {marks?.[iso] && !otherMonth ? (
+                  <View style={[styles.mark, { backgroundColor: MARK_COLOR[marks[iso]] }]} />
+                ) : null}
               </Pressable>
             );
           })}
@@ -286,6 +300,7 @@ const styles = StyleSheet.create({
   daySelected: { backgroundColor: '#0ea5e9' },
   dayText: { fontFamily: 'Manrope_400Regular', fontSize: 14, color: '#0f172a' },
   dayOther: { color: '#cbd5e1' },
+  mark: { position: 'absolute', bottom: 3, width: 5, height: 5, borderRadius: 2.5 },
   dayToday: { color: '#0ea5e9', fontFamily: 'Manrope_700Bold',},
   daySelectedText: { color: '#fff', fontFamily: 'Manrope_700Bold',},
 });

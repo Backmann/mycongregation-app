@@ -98,6 +98,7 @@ import {
 } from "../../../lib/parts";
 import { isCongressEvent } from "../../../lib/week-rules";
 import { ConductLiveCard, ConductResultCard } from "../../../components/ConductEntry";
+import { movedDayLabel, withMoveStandIns } from "../../../lib/field-moves";
 
 /*
  * HOME, REBUILT (26 September) — the screen is the face of the app, so it
@@ -1100,6 +1101,7 @@ function NextBody({
           who={entry.myRole === "conduct" ? null : people.who}
           helpers={people.helpers}
           notice={entry.notice}
+          movedFrom={entry.movedFrom ? movedDayLabel(entry.movedFrom, i18n.language) : null}
           topic={entry.topic}
           place={entry.address}
           sourceUrl={entry.sourceUrl}
@@ -1432,6 +1434,8 @@ function EntryBody({
           notice={en.notice}
           cancelled={!!en.cancelled}
           cancelReason={en.cancelReason}
+          movedTo={en.movedTo ? movedDayLabel(en.movedTo, i18n.language) : null}
+          movedFrom={en.movedFrom ? movedDayLabel(en.movedFrom, i18n.language) : null}
           topic={en.topic}
           place={en.address}
           sourceUrl={en.sourceUrl}
@@ -1958,7 +1962,8 @@ function useHomeData(todayISO: string) {
     }
     return buildTimeline({
       versions: overviewQ.data?.versions ?? [],
-      fieldServiceMeetings: fieldRows ?? [],
+      // A moved meeting is said on its old day too (lib/field-moves.ts).
+      fieldServiceMeetings: withMoveStandIns(fieldRows ?? [], todayISO),
       publishersById,
       groupNameById,
       myServiceGroupId: myPublisher?.serviceGroupId ?? null,

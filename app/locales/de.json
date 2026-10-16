@@ -1827,7 +1827,27 @@
     "panel": {
       "months": "Monate",
       "none": "keine Zusammenkünfte"
-    }
+    },
+    "moved": {
+      "from": "Verlegt vom {{date}}",
+      "to": "Verlegt auf {{date}}"
+    },
+    "conflict": {
+      "duplicate": "An diesem Tag gibt es um {{time}} schon die gleiche Zusammenkunft.",
+      "conductorBusy": "{{name}} leitet an diesem Tag schon eine Zusammenkunft um {{time}}.",
+      "hint": "Wenn es so gedacht ist, trotzdem speichern.",
+      "saveAnyway": "Trotzdem speichern",
+      "cancelledThere": "An diesem Tag ist die Zusammenkunft um {{time}} abgesagt.",
+      "cancelledThereWhy": "An diesem Tag ist die Zusammenkunft um {{time}} abgesagt: {{reason}}.",
+      "intoDraftMonth": "{{month}} ist noch ein Entwurf. Diese Zusammenkunft ist schon angekündigt und bleibt für alle sichtbar.",
+      "dayTaken": "An einem solchen Tag werden keine Predigtdienstzusammenkünfte geplant – der Server nimmt sie nicht an."
+    },
+    "calendar": {
+      "meeting": "Zusammenkunft",
+      "taken": "Kongress / Besuch",
+      "busy": "anderes im Saal"
+    },
+    "deleteQuiet": "Ganz löschen – nur wenn die Zusammenkunft irrtümlich eingetragen wurde"
   },
   "cleaning": {
     "title": "Reinigung",
@@ -4671,7 +4691,9 @@
       "PROGRAMME_PAST_LOCKED": "Die Zusammenkunft am {{date}} liegt mehr als eine Woche zurück — ihr Programm ist Teil der Aufzeichnungen. Ändern konnte man es bis {{until}}.",
       "PROGRAMME_FIX_FORBIDDEN": "Ein Programm nachträglich korrigieren können ein Administrator und der Koordinator der Ältestenschaft.",
       "CONDUCT_MEETING_OVER": "Diese Zusammenkunft ist vorbei – nach ihrem Tag wird sie nicht mehr geführt.",
-      "CONDUCT_RESULT_KEPT": "Das Ergebnis dieser Zusammenkunft ist schon gespeichert und kann nach ihrem Tag nicht ersetzt werden."
+      "CONDUCT_RESULT_KEPT": "Das Ergebnis dieser Zusammenkunft ist schon gespeichert und kann nach ihrem Tag nicht ersetzt werden.",
+      "FS_DAY_TAKEN": "An diesem Tag ist ein Kongress oder der Besuch des Kreisaufsehers – hier kann keine Predigtdienstzusammenkunft stattfinden.",
+      "FS_CONFLICT": "An diesem Tag gibt es schon die gleiche Zusammenkunft, oder der Leiter leitet schon eine andere. Bitte prüfen und erneut speichern."
     }
   }
 }

@@ -45,7 +45,8 @@ import { addDays, formatDateISO, parseISODate, startOfWeekMonday } from "../../.
 import { partDisplay } from "../../../lib/part-display";
 import { MEETING_LENGTH_MIN } from "../../../lib/home-digest";
 import { useSongsMap, enrichSongRef } from "../../../lib/songs";
-import { FieldCancelled, FieldNotice } from "../../../components/FieldNotice";
+import { FieldCancelled, FieldMoved, FieldNotice } from "../../../components/FieldNotice";
+import { movedDayLabel, movedFromShown, rowKey, withMoveStandIns } from "../../../lib/field-moves";
 import { FieldMeetingBlock, WhoLine, type FieldHelper, type FieldWho } from "../../../components/FieldMeetingBlock";
 import { arrangeFieldDay, noteForPlace } from "../../../lib/field-audience";
 import type { FieldPlace } from "../../../lib/field-audience";
@@ -456,7 +457,11 @@ export default function ProgrammeFeedScreen() {
   const allReadiness = readinessQs.flatMap((q) => q.data ?? []);
   const allDuties = dutiesQs.flatMap((q, i) => q.data ?? (i === curIdx ? (earlier.duties?.rows ?? []) : []));
   const allCleaning = cleaningQs.flatMap((q, i) => q.data ?? (i === curIdx ? (earlier.cleaning?.rows ?? []) : []));
-  const allField = fieldQs.flatMap((q, i) => q.data ?? (i === curIdx ? (earlier.field?.rows ?? []) : []));
+  // A moved meeting is said on its old day too (lib/field-moves.ts).
+  const allField = withMoveStandIns(
+    fieldQs.flatMap((q, i) => q.data ?? (i === curIdx ? (earlier.field?.rows ?? []) : [])),
+    formatDateISO(new Date()),
+  );
 
   const nameOf = new Map<string, string>();
   for (const p of publishersQ.data?.data ?? []) nameOf.set(p.id, p.displayName);
@@ -1382,6 +1387,7 @@ function Row({
   wholeTitle,
   notices,
   cancelled,
+  moved,
   mine,
   status,
   tag,
@@ -1415,6 +1421,8 @@ function Row({
   notices?: string[];
   /** Field service: the day's one meeting is called off — its reason, in red. */
   cancelled?: (string | null)[];
+  /** Field service: moved meetings — «перенесена с …» / «на …», in blue. */
+  moved?: { from?: string; to?: string }[];
   /** What is yours in it — shown with a «Вы» mark. */
   mine?: string | null;
   status?: { color: string; text: string } | null;
@@ -1465,6 +1473,7 @@ function Row({
           </Text>
         ))}
         {notices?.map((n, i) => <FieldNotice key={`n${i}`} text={n} />)}
+        {moved?.map((mv, i) => <FieldMoved key={`m${i}`} from={mv.from} to={mv.to} />)}
         {cancelled?.map((r, i) => <FieldCancelled key={`c${i}`} reason={r} />)}
         {mine ? (
           <View style={styles.mineRow}>
@@ -2007,7 +2016,9 @@ function FieldDay({
   // «Встреча по группам» is each group on its own: nobody conducts it as a
   // whole, so no conductor there is not a gap to announce.
   const conductorOf = (p: FieldPlace): string | null => {
-    // Called off: that, not who would have led it.
+    // Moved away: where to. Called off: that, not who would have led it.
+    if (p.meeting.movedTo)
+      return t("fieldService.moved.to", { date: movedDayLabel(p.meeting.movedTo, i18n.language) }).toLocaleLowerCase(i18n.language);
     if (p.meeting.cancelledAt) return t("fieldService.cancelled.label").toLocaleLowerCase(i18n.language);
     const id = p.meeting.conductorPublisherId;
     if (!id) return p.audience === "open" ? null : t("feed.fieldNoConductor");
@@ -2018,10 +2029,23 @@ function FieldDay({
   // One meeting on the day, and it is called off: the red strip with its
   // reason says it; the line under the title would only repeat it.
   const single = day.shown.length === 1 && !day.others.length ? day.shown[0] : null;
-  const singleOff = single?.meeting.cancelledAt ? single.meeting : null;
+  const singleOff = single?.meeting.cancelledAt && !single.meeting.movedTo ? single.meeting : null;
+  // The day's one meeting is a stand-in for one moved away: the blue strip says where.
+  const singleMoved = single?.meeting.movedTo ? single.meeting : null;
+  // Moved lines read in the collapsed row too: «перенесена с …» on the new
+  // day, and, for a stand-in alone on its day, «перенесена на …».
+  const today = formatDateISO(new Date());
+  type Move = { to?: string; from?: string };
+  const moves = [...day.shown, ...day.others]
+    .map((p): Move | null => {
+      if (p.meeting.movedTo) return p === single ? { to: movedDayLabel(p.meeting.movedTo, i18n.language) } : null;
+      const from = movedFromShown(p.meeting, today);
+      return from ? { from: movedDayLabel(from, i18n.language) } : null;
+    })
+    .filter((x): x is Move => !!x);
   // One meeting, not yours: who leads it, in the line every screen draws.
   const singleWho: FieldWho | undefined =
-    single && !singleOff && !lead && !(ownVisit && !lead)
+    single && !singleOff && !singleMoved && !lead && !(ownVisit && !lead)
       ? single.meeting.conductorPublisherId
         ? { kind: "name", name: nameOf.get(single.meeting.conductorPublisherId) ?? "" }
         : single.audience === "open"
@@ -2030,7 +2054,7 @@ function FieldDay({
       : undefined;
   // Several: each its own two lines.
   const several =
-    !singleOff && !(ownVisit && !lead) && !(day.shown.length === 1 && !day.others.length)
+    !singleOff && !singleMoved && !(ownVisit && !lead) && !(day.shown.length === 1 && !day.others.length)
       ? day.shown
           .filter((p) => p !== lead)
           .map((p) => {
@@ -2039,7 +2063,7 @@ function FieldDay({
           })
       : [];
   const lines =
-    singleOff
+    singleOff || singleMoved
       ? []
       : ownVisit && !lead
       ? // The group goes to the visit and nowhere else that day: the other
@@ -2102,7 +2126,7 @@ function FieldDay({
         ? null
         : { kind: "empty" };
     return (
-      <View key={m.id} style={[styles.fieldBlock, i > 0 && styles.fieldBlockNext]}>
+      <View key={rowKey(m)} style={[styles.fieldBlock, i > 0 && styles.fieldBlockNext]}>
         <FieldMeetingBlock
           time={whole ? m.startTime : null}
           timeLayout={whole ? (narrowScreen ? "inline" : "column") : "none"}
@@ -2112,6 +2136,8 @@ function FieldDay({
           notice={whole ? m.notice : null}
           cancelled={!!m.cancelledAt}
           cancelReason={whole ? m.cancelReason : null}
+          movedTo={whole && m.movedTo ? movedDayLabel(m.movedTo, i18n.language) : null}
+          movedFrom={whole ? (movedFromShown(m, today) ? movedDayLabel(m.movedFromDate as string, i18n.language) : null) : null}
           topic={m.topic}
           place={m.address}
           sourceUrl={m.sourceUrl}
@@ -2136,6 +2162,7 @@ function FieldDay({
           meetings={several}
           notices={notices}
           cancelled={singleOff ? [singleOff.cancelReason ?? null] : undefined}
+          moved={moves.length ? moves : undefined}
           mine={mine}
           color={KIND.field.color}
           past={past}

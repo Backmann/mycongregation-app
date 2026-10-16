@@ -53,6 +53,7 @@ import { Dialog } from '../../../components/Dialog';
 import { confirm } from '../../../components/ConfirmHost';
 import { failsScreen } from '../../../lib/screen-failure';
 import { Toast } from '../../../components/ErrorToast';
+import { rowKey, withMoveStandIns } from '../../../lib/field-moves';
 
 /**
  * The month of field-service meetings (rebuilt October 2026, stage 3a).
@@ -464,7 +465,9 @@ export default function FieldServiceMeetingsScreen() {
   }
 
   // --- Build continuous month blocks (data span ∪ current month) ---
-  const meetings = meetingsQuery.data ?? [];
+  // A moved meeting is said on its old day too, while that day is to come
+  // (lib/field-moves.ts, 16 October 2026).
+  const meetings = withMoveStandIns(meetingsQuery.data ?? [], formatDateISO(new Date()));
   const byMonth = new Map<string, FieldServiceMeeting[]>();
   for (const m of meetings) {
     const k = meetingDateISO(m).slice(0, 7);
@@ -999,7 +1002,7 @@ export default function FieldServiceMeetingsScreen() {
                     const mt = line.meeting;
                     return (
                       <FieldMeetingRow
-                        key={mt.id}
+                        key={rowKey(mt)}
                         meeting={mt}
                         nameOf={nameOf}
                         groupName={groupName}
@@ -1008,7 +1011,12 @@ export default function FieldServiceMeetingsScreen() {
                         isMine={viewer.isMine(mt)}
                         me={viewer.me}
                         last={last}
-                        onPress={canEdit ? () => setTarget(mt) : undefined}
+                        onPress={
+                          canEdit
+                            ? // The stand-in opens the meeting itself, on its new day.
+                              () => setTarget((mt.movedTo && meetingsQuery.data?.find((x) => x.id === mt.id)) || mt)
+                            : undefined
+                        }
                       />
                     );
                   })}

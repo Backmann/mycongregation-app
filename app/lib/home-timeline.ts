@@ -38,6 +38,7 @@ import {
 } from './api';
 import { effectiveVersionFor } from './meeting-schedule';
 import { addDays, formatDateISO, startOfWeekMonday } from './dates';
+import { movedFromShown } from './field-moves';
 import { isCongressEvent, weekRules } from './week-rules';
 import { refineMyTasks, RefinedTask } from './my-tasks';
 
@@ -165,6 +166,10 @@ export interface MeetingEntry {
    */
   cancelled?: boolean;
   cancelReason?: string | null;
+  /** Field service: moved here from that day (ISO), while it is to come — lib/field-moves.ts. */
+  movedFrom?: string | null;
+  /** Field service: the stand-in on a moved meeting's old day — where it went (ISO). */
+  movedTo?: string | null;
   /**
    * Field service: whose group, and whether the service overseer is coming.
    *
@@ -755,7 +760,7 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
         : null;
     entries.push({
       type: 'meeting',
-      key: `fs-${m.id}`,
+      key: m.movedTo ? `fs-${m.id}-moved` : `fs-${m.id}`,
       dateISO,
       time: m.startTime,
       kind: 'field_service',
@@ -768,6 +773,8 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
       notice: m.notice ?? null,
       cancelled: off,
       cancelReason: m.cancelReason ?? null,
+      movedTo: m.movedTo ?? null,
+      movedFrom: movedFromShown(m, todayISO),
       sourceUrl: m.sourceUrl,
       replacedBy: null,
       groupName: m.serviceGroupId

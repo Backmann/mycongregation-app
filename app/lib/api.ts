@@ -1964,6 +1964,18 @@ export interface FieldServiceMeeting {
   cancelReason?: string | null;
   createdAt: string;
   updatedAt: string;
+  /**
+   * The date this announced meeting was on before its last move (16 October
+   * 2026); null when never moved, and for drafts.
+   */
+  movedFromDate?: string | null;
+  /**
+   * CLIENT ONLY — set on the stand-in this app draws on a moved meeting's
+   * old day (lib/field-moves.ts): the date it moved TO. Such a stand-in is
+   * also `cancelledAt`, so everything that counts meetings that hold leaves
+   * it out; it is never sent to the server.
+   */
+  movedTo?: string;
 }
 
 /** A draft, or announced. An old server never sends the field. */
@@ -1977,6 +1989,11 @@ export function isFieldServiceCancelled(m: FieldServiceMeeting): boolean {
 }
 
 export interface CreateFieldServiceMeetingInput {
+  /**
+   * The planner saw the conflicts on that day — the same meeting there
+   * already, or the conductor busy — and saves anyway (16 October 2026).
+   */
+  confirmConflicts?: boolean;
   weekStartDate: string;
   dayOfWeek: number;
   startTime: string;
