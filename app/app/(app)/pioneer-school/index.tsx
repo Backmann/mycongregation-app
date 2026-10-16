@@ -22,6 +22,7 @@ import { DateField } from '../../../components/DateField';
 import { LoadFailure } from '../../../components/LoadFailure';
 import { Sheet } from '../../../components/Sheet';
 import { failsScreen } from '../../../lib/screen-failure';
+import { rangeStartPattern } from '../../../lib/date-patterns';
 
 /** «23–29 ноября 2026» — one line, no repeated month or year. */
 export function schoolDates(
@@ -33,7 +34,7 @@ export function schoolDates(
   const b = dayjs(end).locale(locale);
   if (a.isSame(b, 'day')) return a.format('D MMMM YYYY');
   if (a.isSame(b, 'month')) {
-    return `${a.format('D')}\u2009\u2013\u2009${b.format('D MMMM YYYY')}`;
+    return `${a.format(rangeStartPattern(locale))}\u2009\u2013\u2009${b.format('D MMMM YYYY')}`;
   }
   if (a.isSame(b, 'year')) {
     return `${a.format('D MMMM')}\u2009\u2013\u2009${b.format('D MMMM YYYY')}`;

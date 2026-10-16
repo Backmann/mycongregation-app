@@ -1483,7 +1483,7 @@
     "thisMeeting": "This meeting:"
   },
   "fieldService": {
-    "title": "Field Ministry Meetings",
+    "title": "Field service meetings",
     "empty": "No meetings this week",
     "addEntry": "Add a meeting",
     "unassigned": "unassigned",
@@ -3936,7 +3936,7 @@
     "movedByVisit": "moved for the circuit overseer's visit",
     "specialTalk": "special talk",
     "unassigned": "not assigned",
-    "fieldService": "Field ministry meetings",
+    "fieldService": "Field service meetings",
     "memorialInsteadMidweek": "Instead of the midweek meeting",
     "memorialInsteadWeekend": "Instead of the weekend meeting",
     "loadMore": "Show more",
