@@ -33,6 +33,7 @@ const MODULES = [
   'my-tasks',
   'section-colors',
   'event-meeting',
+  'field-moves',
 ];
 for (const name of MODULES) {
   const src = readFileSync(join(ROOT, 'lib', `${name}.ts`), 'utf8');

@@ -51,7 +51,37 @@ const styles = StyleSheet.create({
   textBig: { fontSize: 14.5, lineHeight: 20 },
   cancelled: { backgroundColor: '#fef2f2', borderColor: '#fecaca' },
   cancelledText: { color: '#991b1b' },
+  moved: { backgroundColor: '#eff6ff', borderColor: '#bfdbfe' },
+  movedText: { color: '#1e3a8a' },
 });
+
+/**
+ * A moved meeting, said on both of its days (16 October 2026, lib/field-moves.ts):
+ * «Перенесена с сб 24 окт.» on the new one, «Перенесена на сб 31 окт.» on
+ * the old. Blue, not red: the meeting holds — on another day.
+ */
+export function FieldMoved({
+  from,
+  to,
+  big,
+}: {
+  /** The old day, already worded («сб 24 окт.»). */
+  from?: string | null;
+  /** The new day, already worded. */
+  to?: string | null;
+  big?: boolean;
+}) {
+  const { t } = useTranslation();
+  if (!from && !to) return null;
+  return (
+    <View style={[styles.strip, styles.moved, big && styles.stripBig]}>
+      <Ionicons name="swap-horizontal" size={big ? 18 : 15} color="#1d4ed8" style={styles.icon} />
+      <Text style={[styles.text, styles.movedText, big && styles.textBig]}>
+        {to ? t('fieldService.moved.to', { date: to }) : t('fieldService.moved.from', { date: from })}
+      </Text>
+    </View>
+  );
+}
 
 /**
  * A meeting called off (13 October 2026): «Отменена: в этот день конгресс».

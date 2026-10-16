@@ -3,7 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { splitTopic } from '../lib/field-topic';
-import { FieldCancelled, FieldNotice } from './FieldNotice';
+import { FieldCancelled, FieldMoved, FieldNotice } from './FieldNotice';
 import { MyDot } from './MyDot';
 import { SourceLink } from './SourceLink';
 
@@ -49,6 +49,8 @@ export function FieldMeetingBlock({
   notice,
   cancelled,
   cancelReason,
+  movedFrom,
+  movedTo,
   topic,
   place,
   sourceUrl,
@@ -68,6 +70,10 @@ export function FieldMeetingBlock({
   notice?: string | null;
   cancelled?: boolean;
   cancelReason?: string | null;
+  /** Moved here from that day, worded («сб 24 окт.») — lib/field-moves.ts. */
+  movedFrom?: string | null;
+  /** The stand-in on a moved meeting's old day: where it went, worded. */
+  movedTo?: string | null;
   topic?: string | null;
   place?: string | null;
   sourceUrl?: string | null;
@@ -119,10 +125,15 @@ export function FieldMeetingBlock({
     />
   );
 
-  const status = off ? (
+  const status = movedTo ? (
+    <FieldMoved to={movedTo} big={big} />
+  ) : off ? (
     <FieldCancelled reason={cancelReason} big={big} />
   ) : (
-    <FieldNotice text={notice} big={big} />
+    <>
+      <FieldMoved from={movedFrom} big={big} />
+      <FieldNotice text={notice} big={big} />
+    </>
   );
   const about = !off && theme ? <Text style={styles.topic}>{theme}</Text> : null;
   const noteLine = !off && note ? <Text style={styles.note}>{note}</Text> : null;

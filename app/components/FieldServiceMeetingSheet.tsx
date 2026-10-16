@@ -8,6 +8,7 @@ import {
   Text,
   TextInput,
   View,
+  useWindowDimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
@@ -228,6 +229,9 @@ export function FieldServiceForm({
   const fillOverseer = useRef(false);
 
   const todayISO = formatDateISO(new Date());
+  // An iPad or wider: the window floats in the middle at a readable width,
+  // instead of stretching chips and days across the whole screen (16 October 2026).
+  const wideSheet = useWindowDimensions().width >= 900;
 
   useEffect(() => {
     if (target === 'new') {
@@ -443,21 +447,45 @@ export function FieldServiceForm({
 
   // ---- the day's other meetings and events -------------------------------
   const sameWeekQuery = useQuery({
-    queryKey: ['field-service', 'week', effectiveWeek, 'drafts'],
+    queryKey: ['field-service', 'week', effectiveWeek, 'drafts', 'cancelled'],
     queryFn: () =>
       fieldServiceApi.list({
         weekStart: effectiveWeek,
         weekEnd: formatDateISO(addDays(parseISODate(effectiveWeek), 7)),
         drafts: true,
+        // Called-off ones too: moving onto a day whose meeting was called off
+        // is said (16 October 2026).
+        cancelled: true,
       }),
     enabled: visible && !!effectiveWeek,
   });
-  const sameDay = (sameWeekQuery.data ?? []).filter(
+  const onTheDay = (sameWeekQuery.data ?? []).filter(
     (m) =>
       m.weekStartDate === effectiveWeek &&
       m.dayOfWeek === dayOfWeek &&
       m.id !== editing?.id,
   );
+  const sameDay = onTheDay.filter((m) => !m.cancelledAt);
+  const sameDayCancelled = onTheDay.filter((m) => !!m.cancelledAt);
+  // WHAT WOULD CLASH (16 October 2026) — the server's own rule
+  // (field-service-meetings.service assertNoConflicts): the same meeting at
+  // the same hour for the same people, or the conductor already conducting
+  // that day. Said here before «Сохранить»; saving then confirms it.
+  const audienceKey = (general: boolean, group: string | null) =>
+    general ? 'general' : (group ?? 'groups');
+  const conflictLines: string[] = [];
+  for (const o of sameDay) {
+    if (
+      o.startTime === startTime &&
+      audienceKey(o.isGeneral, o.serviceGroupId) === audienceKey(isGeneral, isGeneral ? null : serviceGroupId)
+    ) {
+      conflictLines.push(t('fieldService.conflict.duplicate', { time: o.startTime }));
+    } else if (conductorPublisherId && o.conductorPublisherId === conductorPublisherId) {
+      conflictLines.push(
+        t('fieldService.conflict.conductorBusy', { name: nameOf(conductorPublisherId), time: o.startTime }),
+      );
+    }
+  }
   const groupNameOf = (id: string | null) =>
     groups.find((g) => g.id === id)?.name ?? '';
   const sameDayNote = (() => {
@@ -489,6 +517,48 @@ export function FieldServiceForm({
     staleTime: 60 * 1000,
   });
   const dayBusy = busyQuery.data ?? [];
+  // WHAT IS ON THE DAYS AHEAD, for the calendar's dots (16 October 2026):
+  // asked only while a calendar is open — four months from today.
+  const marksFrom = todayISO;
+  const marksTo = dayjs(todayISO).add(4, 'month').format('YYYY-MM-DD');
+  const marksMeetingsQuery = useQuery({
+    queryKey: ['field-service', 'marks', marksFrom, marksTo],
+    queryFn: () => fieldServiceApi.list({ weekStart: mondayOf(marksFrom), weekEnd: mondayOf(marksTo), drafts: true }),
+    enabled: visible && calendarOpen,
+    staleTime: 60 * 1000,
+  });
+  const marksBusyQuery = useQuery({
+    queryKey: ['field-service', 'hall-busy', marksFrom, marksTo],
+    queryFn: () => fieldServiceApi.hallBusy({ from: marksFrom, to: marksTo }),
+    enabled: visible && calendarOpen,
+    staleTime: 60 * 1000,
+  });
+  const calendarMarks: Record<string, 'meeting' | 'taken' | 'busy'> = {};
+  for (const b of marksBusyQuery.data ?? []) {
+    if (b.hard) calendarMarks[b.date] = 'taken';
+    else if (!calendarMarks[b.date]) calendarMarks[b.date] = 'busy';
+  }
+  for (const m of marksMeetingsQuery.data ?? []) {
+    if (m.id === editing?.id) continue;
+    const d = heldOn(m.weekStartDate, m.dayOfWeek);
+    if (!calendarMarks[d]) calendarMarks[d] = 'meeting';
+  }
+  const calendarLegend = (
+    <View style={styles.legendRow}>
+      {(
+        [
+          ['meeting', '#0ea5e9'],
+          ['taken', '#dc2626'],
+          ['busy', '#d97706'],
+        ] as const
+      ).map(([k, c]) => (
+        <View key={k} style={styles.legendItem}>
+          <View style={[styles.legendDot, { backgroundColor: c }]} />
+          <Text style={styles.legendText}>{t(`fieldService.calendar.${k}`)}</Text>
+        </View>
+      ))}
+    </View>
+  );
   const softBusy = dayBusy.filter((b) => !b.hard);
   const topicMatch = (() => {
     const tt = topic.trim().toLowerCase();
@@ -520,6 +590,31 @@ export function FieldServiceForm({
   // The day, the hour or the place of an announced meeting is changing:
   // that is news for everyone going, not only for the conductor.
   const movedDay = !!editing && !!meetingDate && meetingDate !== recordDate;
+  // INTO A MONTH NOT YET ANNOUNCED (16 October 2026): the meeting stays
+  // announced — its people were told — while the rest of that month is still
+  // a draft. Said, so the planner is not surprised to see it alone there.
+  const targetMonth = meetingDate ? meetingDate.slice(0, 7) : null;
+  const draftMonthQuery = useQuery({
+    queryKey: ['field-service', 'month-drafts', targetMonth],
+    queryFn: () =>
+      fieldServiceApi.list({
+        weekStart: mondayOf(`${targetMonth}-01`),
+        weekEnd: formatDateISO(addDays(parseISODate(mondayOf(dayjs(`${targetMonth}-01`).add(1, 'month').format('YYYY-MM-DD'))), 7)),
+        drafts: true,
+      }),
+    enabled:
+      visible && movedDay && !!editing && !isFieldServiceDraft(editing) && !!targetMonth &&
+      targetMonth !== recordDate?.slice(0, 7),
+  });
+  const intoDraftMonth =
+    movedDay &&
+    targetMonth &&
+    targetMonth !== recordDate?.slice(0, 7) &&
+    (draftMonthQuery.data ?? []).some(
+      (m) => isFieldServiceDraft(m) && heldOn(m.weekStartDate, m.dayOfWeek).startsWith(targetMonth),
+    )
+      ? dayjs(`${targetMonth}-01`).locale(i18n.language).format('MMMM')
+      : null;
   const changesForPeople =
     !!editing &&
     !draft &&
@@ -549,6 +644,8 @@ export function FieldServiceForm({
       serviceOverseerPublisherId: visit ? overseerId : null,
       serviceOverseerAssistantId: visit ? assistantId : null,
       notifyConductor: draft ? false : notifyConductor,
+      // The clash was shown above «Сохранить» — saving is the confirmation.
+      ...(conflictLines.length ? { confirmConflicts: true } : {}),
     };
     if (editing) {
       onUpdate(editing.id, {
@@ -630,7 +727,7 @@ export function FieldServiceForm({
         : t('fieldService.row.byGroups')
     : null;
   const title = editing
-    ? `${cap(fmtDayLong(recordDate!))} · ${editing.startTime}`
+    ? `${cap(fmtDayLong(meetingDate ?? recordDate!))} · ${editing.startTime}`
     : t('fieldService.form.addTitle');
   const subtitle = editing
     ? [whose, draft ? t('fieldService.draft.badge') : null]
@@ -645,7 +742,7 @@ export function FieldServiceForm({
     return (
       <Sheet
         visible={visible}
-        variant="bottom"
+        variant={wideSheet ? "centered" : "bottom"}
         title={title}
         subtitle={whose ?? undefined}
         onClose={onClose}
@@ -703,7 +800,7 @@ export function FieldServiceForm({
     return (
       <Sheet
         visible={visible}
-        variant="bottom"
+        variant={wideSheet ? "centered" : "bottom"}
         title={title}
         subtitle={whose ?? undefined}
         onClose={onClose}
@@ -760,7 +857,7 @@ export function FieldServiceForm({
   return (
     <Sheet
       visible={visible}
-      variant="bottom"
+      variant={wideSheet ? "centered" : "bottom"}
       title={title}
       subtitle={subtitle}
       onClose={onClose}
@@ -777,11 +874,13 @@ export function FieldServiceForm({
               <Text style={styles.cancelBtnText}>{t('common.cancel')}</Text>
             </Pressable>
             <Pressable
-              style={[styles.saveBtn, !canSave && styles.saveBtnOff]}
+              style={[styles.saveBtn, conflictLines.length > 0 && styles.saveBtnAnyway, !canSave && styles.saveBtnOff]}
               onPress={submit}
               disabled={!canSave}
             >
-              <Text style={styles.saveBtnText}>{t('fieldService.form.save')}</Text>
+              <Text style={styles.saveBtnText}>
+                {conflictLines.length > 0 ? t('fieldService.conflict.saveAnyway') : t('fieldService.form.save')}
+              </Text>
             </Pressable>
           </View>
         </View>
@@ -881,20 +980,24 @@ export function FieldServiceForm({
             </Pressable>
           </View>
           {calendarOpen ? (
-            <MonthCalendar
-              compact
-              mode="single"
-              start={pickedDate || null}
-              end={null}
-              onChange={({ start }) => {
-                if (start) {
-                  setPickedDate(start);
-                  setCalendarOpen(false);
-                }
-              }}
-              locale={i18n.language}
-              minDate={todayISO}
-            />
+            <>
+              <MonthCalendar
+                compact
+                mode="single"
+                start={pickedDate || null}
+                end={null}
+                onChange={({ start }) => {
+                  if (start) {
+                    setPickedDate(start);
+                    setCalendarOpen(false);
+                  }
+                }}
+                locale={i18n.language}
+                minDate={todayISO}
+                marks={calendarMarks}
+              />
+              {calendarLegend}
+            </>
           ) : null}
         </>
       ) : (
@@ -949,21 +1052,26 @@ export function FieldServiceForm({
             ) : null}
           </View>
           {calendarOpen ? (
-            <MonthCalendar
-              compact
-              mode="single"
-              start={meetingDate}
-              end={null}
-              onChange={({ start }) => {
-                if (start) {
-                  setEditWeek(mondayOf(start));
-                  setDayOfWeek(isoDow(start));
-                  setCalendarOpen(false);
-                }
-              }}
-              locale={i18n.language}
-              minDate={todayISO}
-            />
+            <>
+              <MonthCalendar
+                compact
+                mode="single"
+                start={meetingDate}
+                end={null}
+                onChange={({ start }) => {
+                  if (start) {
+                    setEditWeek(mondayOf(start));
+                    setDayOfWeek(isoDow(start));
+                    setCalendarOpen(false);
+                  }
+                }}
+                locale={i18n.language}
+                minDate={todayISO}
+                hidePresets
+                marks={calendarMarks}
+              />
+              {calendarLegend}
+            </>
           ) : null}
         </>
       ) : null}
@@ -971,14 +1079,54 @@ export function FieldServiceForm({
         <Text style={styles.inlineLabel}>{t('fieldService.timeLabel')}</Text>
         <TimeField value={startTime} onChange={setStartTime} />
       </View>
-      {dayBusy.length > 0 ? (
+      {/* What the new day already holds (16 October 2026): a clash, a meeting
+          called off there, a month not yet announced. */}
+      {conflictLines.length > 0 ? (
         <View style={styles.warnBox}>
+          <Ionicons name="copy-outline" size={16} color="#b45309" />
+          <View style={styles.warnBody}>
+            <Text style={styles.warnText}>{conflictLines.join('\n')}</Text>
+            <Text style={styles.warnText}>{t('fieldService.conflict.hint')}</Text>
+          </View>
+        </View>
+      ) : null}
+      {sameDayCancelled.length > 0 && (!editing || movedDay) ? (
+        <View style={[styles.warnBox, styles.infoBox]}>
+          <Ionicons name="information-circle-outline" size={16} color="#1d4ed8" />
+          <View style={styles.warnBody}>
+            <Text style={[styles.warnText, styles.infoText]}>
+              {sameDayCancelled
+                .map((m) =>
+                  m.cancelReason?.trim()
+                    ? t('fieldService.conflict.cancelledThereWhy', { time: m.startTime, reason: m.cancelReason.trim() })
+                    : t('fieldService.conflict.cancelledThere', { time: m.startTime }),
+                )
+                .join('\n')}
+            </Text>
+          </View>
+        </View>
+      ) : null}
+      {intoDraftMonth ? (
+        <View style={[styles.warnBox, styles.infoBox]}>
+          <Ionicons name="information-circle-outline" size={16} color="#1d4ed8" />
+          <View style={styles.warnBody}>
+            <Text style={[styles.warnText, styles.infoText]}>
+              {t('fieldService.conflict.intoDraftMonth', { month: intoDraftMonth })}
+            </Text>
+          </View>
+        </View>
+      ) : null}
+      {dayBusy.length > 0 ? (
+        <View style={[styles.warnBox, dayBusy.some((b) => b.hard) && styles.hardBox]}>
           <Ionicons name="warning-outline" size={16} color="#b45309" />
           <View style={styles.warnBody}>
-            <Text style={styles.warnText}>
+            <Text style={[styles.warnText, dayBusy.some((b) => b.hard) && styles.hardText]}>
               {[...new Set(dayBusy.map(hallBusyLine))]
                 .map((line) => t('fieldService.form.eventWarn', { title: line }))
                 .join('\n')}
+              {/* An assembly, a convention, the circuit overseer's week: the
+                  server does not take a meeting there (16 October 2026). */}
+              {dayBusy.some((b) => b.hard) ? `\n${t('fieldService.conflict.dayTaken')}` : ''}
             </Text>
             {/* The meeting stays as planned; if it is held differently,
                 the notice says so to everyone. One tap starts it. */}
@@ -1338,7 +1486,10 @@ export function FieldServiceForm({
               <Text style={styles.secondaryBtnText}>{t('fieldService.duplicate')}</Text>
             </Pressable>
           ) : null}
-          {onRemove ? (
+          {/* A draft is deleted; an announced meeting is called off — its
+              «Удалить» steps back to a quiet link below (16 October 2026),
+              so the two red buttons no longer stand side by side. */}
+          {onRemove && draft ? (
             <Pressable
               style={[styles.secondaryBtn, styles.dangerBtn]}
               onPress={() => onRemove(editing.id)}
@@ -1364,6 +1515,11 @@ export function FieldServiceForm({
           <Text style={[styles.secondaryBtnText, styles.dangerBtnText]}>
             {t('fieldService.cancel.button')}
           </Text>
+        </Pressable>
+      ) : null}
+      {editing && !draft && !cancelOpen && onRemove ? (
+        <Pressable style={styles.deleteLink} onPress={() => onRemove(editing.id)} hitSlop={6}>
+          <Text style={styles.deleteLinkText}>{t('fieldService.deleteQuiet')}</Text>
         </Pressable>
       ) : null}
       {editing && !draft && cancelOpen ? (
@@ -1656,6 +1812,18 @@ const styles = StyleSheet.create({
   cancelBtnText: { fontSize: 15, color: '#334155', fontFamily: 'Manrope_600SemiBold' },
   saveBtn: { flex: 2, borderRadius: 12, paddingVertical: 13, alignItems: 'center', backgroundColor: '#0369a1' },
   saveBtnOff: { opacity: 0.45 },
+  // A clash was shown: saving is saving anyway.
+  saveBtnAnyway: { backgroundColor: '#b45309' },
+  deleteLink: { alignSelf: 'center', marginTop: 12, paddingVertical: 4 },
+  deleteLinkText: { fontSize: 13, color: '#94a3b8', fontFamily: 'Manrope_600SemiBold', textDecorationLine: 'underline' },
+  hardBox: { backgroundColor: '#fef2f2', borderColor: '#fecaca' },
+  hardText: { color: '#991b1b' },
+  infoBox: { backgroundColor: '#eff6ff', borderColor: '#bfdbfe' },
+  infoText: { color: '#1e3a8a' },
+  legendRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, justifyContent: 'center', marginTop: 4, marginBottom: 6 },
+  legendItem: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  legendDot: { width: 7, height: 7, borderRadius: 3.5 },
+  legendText: { fontSize: 11.5, color: '#64748b', fontFamily: 'Manrope_500Medium' },
   saveBtnText: { fontSize: 15, color: '#ffffff', fontFamily: 'Manrope_700Bold' },
   recordNote: {
     flexDirection: 'row',

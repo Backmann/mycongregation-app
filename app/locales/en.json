@@ -1827,7 +1827,27 @@
     "panel": {
       "months": "Months",
       "none": "no meetings"
-    }
+    },
+    "moved": {
+      "from": "Moved from {{date}}",
+      "to": "Moved to {{date}}"
+    },
+    "conflict": {
+      "duplicate": "There is already the same meeting at {{time}} that day.",
+      "conductorBusy": "{{name}} already conducts a meeting at {{time}} that day.",
+      "hint": "If that is intended, save anyway.",
+      "saveAnyway": "Save anyway",
+      "cancelledThere": "The meeting at {{time}} that day is cancelled.",
+      "cancelledThereWhy": "The meeting at {{time}} that day is cancelled: {{reason}}.",
+      "intoDraftMonth": "{{month}} is still a draft. This meeting is already announced and stays visible to everyone.",
+      "dayTaken": "No field service meetings are planned on such a day — the server will not accept it."
+    },
+    "calendar": {
+      "meeting": "meeting",
+      "taken": "assembly / visit",
+      "busy": "something else in the hall"
+    },
+    "deleteQuiet": "Delete for good — only if the meeting was entered by mistake"
   },
   "cleaning": {
     "title": "Cleaning",
@@ -4671,7 +4691,9 @@
       "PROGRAMME_PAST_LOCKED": "The meeting on {{date}} was more than a week ago — its programme is the record. It could be changed until {{until}}.",
       "PROGRAMME_FIX_FORBIDDEN": "A programme can be corrected after the fact by an administrator and the coordinator of the body of elders.",
       "CONDUCT_MEETING_OVER": "This meeting is over — it is not run again after its day.",
-      "CONDUCT_RESULT_KEPT": "The result of this meeting is saved already and cannot be replaced after its day."
+      "CONDUCT_RESULT_KEPT": "The result of this meeting is saved already and cannot be replaced after its day.",
+      "FS_DAY_TAKEN": "That day belongs to an assembly, a convention or the circuit overseer’s visit — no field service meeting can go there.",
+      "FS_CONFLICT": "The same meeting is already there that day, or the conductor already conducts another. Check and save again."
     }
   }
 }

@@ -6,6 +6,8 @@ import { FieldServiceMeeting, isFieldServiceCancelled, isFieldServiceDraft } fro
 import type { FieldNote } from '../lib/field-audience';
 import { FieldMeetingBlock, type FieldHelper, type FieldWho } from './FieldMeetingBlock';
 import { MyGlowRow } from './MyGlowRow';
+import { movedDayLabel, movedFromShown } from '../lib/field-moves';
+import { formatDateISO } from '../lib/dates';
 
 /**
  * ONE field-service meeting as a line (11 October 2026): the time at the
@@ -47,11 +49,13 @@ export function FieldMeetingRow({
   onPress?: () => void;
   trailing?: ReactNode;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const m = meeting;
   // Called off: still drawn, crossed out, with the reason in place of the
   // notice — and nobody's glow: it is nobody's Saturday any more.
   const off = isFieldServiceCancelled(m);
+  // Moved: said on both days (lib/field-moves.ts).
+  const movedFrom = movedFromShown(m, formatDateISO(new Date()));
   const RowWrap = isMine && !off ? MyGlowRow : View;
   const title = m.serviceGroupId
     ? t('fieldService.row.group', { group: groupName(m.serviceGroupId) })
@@ -120,6 +124,8 @@ export function FieldMeetingRow({
       notice={m.notice}
       cancelled={off}
       cancelReason={m.cancelReason}
+      movedFrom={movedFrom ? movedDayLabel(movedFrom, i18n.language) : null}
+      movedTo={m.movedTo ? movedDayLabel(m.movedTo, i18n.language) : null}
       topic={m.topic}
       place={place}
       sourceUrl={m.sourceUrl}
