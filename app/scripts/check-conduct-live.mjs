@@ -64,6 +64,16 @@ check('local → server → another device: every moment shifted, durations not'
   assert.deepEqual(onB.keys, running.keys);
 });
 
+check('when each part began goes over the wire on the server clock, like every moment', () => {
+  const s = { ...running, starts: [T - 1_700_000, null, T - 30_000] };
+  const wire = L.toWire(s, 2_000);
+  assert.deepEqual(wire.starts, [T - 1_698_000, null, T - 28_000]);
+  assert.deepEqual(L.fromWire(JSON.parse(JSON.stringify(wire)), 2_000).starts, s.starts);
+  // An older device sends none: an empty list, not a crash.
+  const old = { ...wire }; delete old.starts;
+  assert.deepEqual(L.fromWire(old, 0).starts, []);
+});
+
 check('the device bookkeeping does not go up, and does not come back', () => {
   const wire = L.toWire(running, 0);
   assert.ok(!('prev' in wire) && !('pending' in wire) && !('saved' in wire));

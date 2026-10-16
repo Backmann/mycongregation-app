@@ -39,7 +39,8 @@ import { failsScreen } from '../../../lib/screen-failure';
 import { keptMeetingRows } from '../../../lib/offline-keep-rules';
 import { keptMe, keptPieces } from '../../../lib/offline-keep';
 import { KeptNotice } from '../../../components/ConnectionState';
-import { ConductSummary, ConductSummaryData, mmss } from '../../../components/ConductSummary';
+import { ConductSummaryData, mmss } from '../../../components/ConductSummary';
+import { ConductReport } from '../../../components/ConductReport';
 import { confirm } from '../../../components/ConfirmHost';
 import { formatDateISO, startOfWeekMonday } from '../../../lib/dates';
 import {
@@ -567,7 +568,7 @@ export default function ConductScreen() {
 
   const start = () => {
     const at = Date.now();
-    applyRun({ ...EMPTY, startedAt: at, meetingStartedAt: at, keys: [...segKeys], prev: snapshot(run) });
+    applyRun({ ...EMPTY, startedAt: at, meetingStartedAt: at, starts: [at], keys: [...segKeys], prev: snapshot(run) });
   };
   const closePause = (at: number) =>
     run.pausedSec + (run.pausedAt !== null ? (at - run.pausedAt) / 1000 : 0);
@@ -617,11 +618,16 @@ export default function ConductScreen() {
     }
     const nextIndex = run.index + 1;
     const last = nextIndex >= segments.length;
+    // When each part began — so the result can place the pauses between them.
+    const starts = run.starts.slice(0, nextIndex);
+    while (starts.length < nextIndex) starts.push(null);
+    if (!last) starts.push(at);
     applyRun({
       ...run,
       index: nextIndex,
       spent,
       counsel,
+      starts,
       carried: 0,
       pausedSec: closePause(at),
       pausedAt: null,
@@ -757,10 +763,12 @@ export default function ConductScreen() {
     // Parts timed by the version before 14 October hold the counsel minute
     // inside: they are compared with part + counsel, and carry no counsel.
     const legacy = new Set(run.legacyKeys);
+    const meetingStart = run.meetingStartedAt;
     const segs: ConductRunSegment[] = segments.map((s, i) => {
       const row = s.assignmentId ? byId.get(s.assignmentId) : undefined;
       const old = legacy.has(s.key);
       const counselSec = run.counsel[i];
+      const began = run.starts[i];
       return {
         key: s.key,
         assignmentId: s.assignmentId,
@@ -775,12 +783,16 @@ export default function ConductScreen() {
           !old && s.counselMin > 0 && counselSec != null && counselSec >= MIN_COUNSEL_SEC
             ? Math.round(counselSec)
             : null,
+        // When the part began, seconds from the meeting's start — where the
+        // pauses between parts fell (16 October 2026). Null when not known.
+        startSec: typeof began === 'number' ? Math.max(0, Math.round((began - meetingStart) / 1000)) : null,
       };
     });
     return {
       segments: segs,
       totalSec: Math.round((run.finishedAt - run.meetingStartedAt) / 1000),
       plannedSec: totalRunMinutes(segments) * 60,
+      startedAt: new Date(run.meetingStartedAt).toISOString(),
     };
   }, [finished, run, segments, byId]);
 
@@ -827,6 +839,14 @@ export default function ConductScreen() {
   }, [practice, watching, meetingOver, local, state.saved, state.finishedAt, canRun, save]);
 
   const titleOf = (id: string | null) => (id ? (byId.get(id)?.partTitle ?? null) : null);
+  /** The programme's counsel after a part, seconds — the report's plan for it. */
+  const counselPlannedOf = useCallback(
+    (key: string) => {
+      const seg = segments.find((s) => s.key === key);
+      return seg ? seg.counselMin * 60 : null;
+    },
+    [segments],
+  );
 
   /** A segment key as the run sheet names it — also for a part that is gone. */
   const keyLabel = (key: string) => {
@@ -1030,7 +1050,7 @@ export default function ConductScreen() {
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
         <View style={styles.resultWrap}>
           <Text style={styles.overline}>{t('conduct.result.title')}</Text>
-          <ConductSummary data={remote} titleOf={titleOf} nameOf={nameOf} chairmanName={chairmanName} />
+          <ConductReport data={remote} titleOf={titleOf} nameOf={nameOf} chairmanName={chairmanName} counselPlannedOf={counselPlannedOf} wide={wide} />
           <Text style={styles.keepNote}>{t('conduct.result.keep')}</Text>
         </View>
       </ScrollView>
@@ -1054,7 +1074,7 @@ export default function ConductScreen() {
           {liveStrip}
           <Text style={styles.overline}>{t('conduct.finished')}</Text>
           {changedNote}
-          <ConductSummary data={local} titleOf={titleOf} nameOf={nameOf} chairmanName={chairmanName} />
+          <ConductReport data={local} titleOf={titleOf} nameOf={nameOf} chairmanName={chairmanName} counselPlannedOf={counselPlannedOf} wide={wide} />
           {legacyNote}
           {practice ? (
             <Text style={styles.keepNote}>{t('conduct.practice.notSaved')}</Text>
@@ -1489,7 +1509,7 @@ const styles = StyleSheet.create({
   sheetCounselNow: { fontFamily: 'Manrope_700Bold', fontSize: 15, color: '#0369a1' },
   sheetNote: { fontFamily: 'Manrope_400Regular', fontSize: 12, color: '#94a3b8', marginTop: 8 },
   rowBtns: { flexDirection: 'row', justifyContent: 'center', gap: 16, flexWrap: 'wrap' },
-  resultWrap: { width: '100%', maxWidth: 640, alignSelf: 'center' },
+  resultWrap: { width: '100%', maxWidth: 1180, alignSelf: 'center' },
   keepNote: { fontFamily: 'Manrope_400Regular', fontSize: 13, color: '#64748b', marginTop: 10, textAlign: 'center' },
   keepNoteError: { color: '#b91c1c' },
 

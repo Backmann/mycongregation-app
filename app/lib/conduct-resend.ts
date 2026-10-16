@@ -57,6 +57,7 @@ export async function resendPendingConductRuns(now = Date.now()): Promise<void> 
           segments: state.pending.segments as ConductRunSegment[],
           totalSec: state.pending.totalSec,
           plannedSec: state.pending.plannedSec,
+          startedAt: state.pending.startedAt ?? null,
         });
         await AsyncStorage.setItem(key, writeRunRecord({ ...state, saved: true, pending: null }));
       } catch (e) {
