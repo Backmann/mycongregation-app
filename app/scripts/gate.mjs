@@ -80,6 +80,7 @@ const STEPS = [
   // in, and a programme that changes under a running meeting (15.10.2026).
   ['Запись хода встречи', 'node', ['scripts/check-conduct-record.mjs']],
   ['Ход встречи вживую', 'node', ['scripts/check-conduct-live.mjs']],
+  ['Подробный итог встречи', 'node', ['scripts/check-conduct-report.mjs']],
   ['Маршруты уведомлений', 'node', ['scripts/check-notification-routes.mjs']],
   // What a browser says its device is decides whether the server sends to it
   // at all: an iPad taken for a Mac stays silent while a phone is registered.

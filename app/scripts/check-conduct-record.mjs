@@ -290,6 +290,43 @@ it('a run with no keys yet adopts the programme on screen', () => {
   assert.equal(n.changed, null);
 });
 
+// ------------------------------------------- when each part began (16 Oct)
+
+it('a v3 record from before 16 October (no starts) reads as starts: []', () => {
+  const rec = { ...running, prev: null };
+  delete rec.starts;
+  const r = readRunRecord(writeRunRecord(rec).replace(',"starts":[]', ''), K, NOW);
+  assert.equal(r.verdict, 'current');
+  assert.deepEqual(r.state.starts, []);
+});
+
+it('starts survive the round trip; junk in them reads as null', () => {
+  const s = { ...running, starts: [NOW - 100_000, NOW - 60_000, NOW - 5_000], prev: null };
+  assert.deepEqual(readRunRecord(writeRunRecord(s), K, NOW).state.starts, s.starts);
+  const junk = JSON.parse(writeRunRecord(s));
+  junk.starts = [NOW - 100_000, 'x', null];
+  assert.deepEqual(readRunRecord(JSON.stringify(junk), K, NOW).state.starts, [NOW - 100_000, null, null]);
+});
+
+it('a programme change keeps each part\'s start by key — the running one too', () => {
+  const s = { ...running, starts: [NOW - 100_000, NOW - 60_000, NOW - 5_000] };
+  // 'x' appears before the running part 'c'; 'a' is gone.
+  const n = reconcileKeys(s, ['b', 'x', 'c', 'd'], NOW);
+  assert.equal(n.index, 2);
+  assert.deepEqual(n.starts, [NOW - 60_000, null, NOW - 5_000]);
+});
+
+it('the counselled part removed: the part that takes its place began now', () => {
+  const s = {
+    ...EMPTY_RUN, index: 2, spent: [10, 20, 30], counsel: [null, null], startedAt: null,
+    counselFrom: NOW - 20_000, meetingStartedAt: NOW - 100_000, keys: K,
+    starts: [NOW - 100_000, NOW - 80_000, NOW - 50_000],
+  };
+  const n = reconcileKeys(s, ['a', 'b', 'd'], NOW);
+  assert.equal(n.index, 2);
+  assert.deepEqual(n.starts, [NOW - 100_000, NOW - 80_000, NOW]);
+});
+
 // ------------------------------------------------------------------ run
 
 for (const [name, fn] of cases) {

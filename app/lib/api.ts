@@ -5453,6 +5453,11 @@ export interface ConductRunSegment {
   actualSec: number;
   /** After a student part: seconds until the next part began. */
   counselSec: number | null;
+  /**
+   * When the part began, in seconds from the meeting's start (16 October
+   * 2026) — where the pauses between parts fell. Absent in older results.
+   */
+  startSec?: number | null;
 }
 
 export interface ConductRun {
@@ -5462,6 +5467,8 @@ export interface ConductRun {
   totalSec: number;
   /** The programme's minutes for the whole meeting, in seconds. */
   plannedSec: number;
+  /** When the first part began (16 October 2026); null in older results. */
+  startedAt?: string | null;
   savedAt: string;
 }
 
@@ -5478,6 +5485,7 @@ export const conductRunsApi = {
     segments: ConductRunSegment[];
     totalSec: number;
     plannedSec: number;
+    startedAt?: string | null;
   }): Promise<void> {
     await api.put("/conduct-runs", input);
   },

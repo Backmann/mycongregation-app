@@ -21,6 +21,10 @@
  *     `index` STAYS on that part while its counsel runs (`counselFrom` set,
  *     `startedAt` null), the counsel counts UP and starts nothing; the next
  *     part starts only with «Следующая».
+ *     From 16 October v3 also keeps `starts` — the moment each part began —
+ *     so the result can place the pauses between parts where they happened.
+ *     A v3 record without it reads as `starts: []`: nothing is lost but the
+ *     places of its pauses.
  *
  * A v1 record of a meeting that is running NOW (its part started less than
  * three hours ago) is carried on: same part, same clock. That moment is the
@@ -72,6 +76,8 @@ export interface PendingResult {
   segments: unknown[];
   totalSec: number;
   plannedSec: number;
+  /** When the first part began, ISO (16 October 2026); absent in older records. */
+  startedAt?: string | null;
 }
 
 export interface RunState {
@@ -92,6 +98,12 @@ export interface RunState {
   counselFrom: number | null;
   /** When the meeting's first part started. */
   meetingStartedAt: number | null;
+  /**
+   * When each part began, epoch ms, by position (16 October 2026). A pause
+   * inside a part does not move it. Null for a part timed before this was
+   * kept, or one that appeared behind the running part.
+   */
+  starts: (number | null)[];
   /** Paused seconds already over — they count in the drift, not in a part. */
   pausedSec: number;
   pausedAt: number | null;
@@ -122,6 +134,7 @@ export const EMPTY_RUN: RunState = {
   carried: 0,
   counselFrom: null,
   meetingStartedAt: null,
+  starts: [],
   pausedSec: 0,
   pausedAt: null,
   finishedAt: null,
@@ -152,6 +165,7 @@ export type RecordVerdict =
 
 const isNum = (x: unknown): x is number => typeof x === 'number' && Number.isFinite(x);
 const nums = (x: unknown): number[] => (Array.isArray(x) ? x.map((v) => (isNum(v) ? v : 0)) : []);
+const moments = (x: unknown): (number | null)[] => (Array.isArray(x) ? x.map((v) => (isNum(v) ? v : null)) : []);
 
 function parse(raw: string): Record<string, unknown> | null {
   try {
@@ -176,7 +190,8 @@ function v2ToV3(s: RunState, now: number): RunState {
     s.counselFrom !== null && s.startedAt !== null && s.startedAt > now && s.index > 0 && s.finishedAt === null;
   if (waiting) {
     const counsel = s.counsel.slice(0, s.index - 1);
-    return { ...s, index: s.index - 1, startedAt: null, carried: 0, counsel, prev: null };
+    const starts = s.starts.slice(0, s.index);
+    return { ...s, index: s.index - 1, startedAt: null, carried: 0, counsel, starts, prev: null };
   }
   // The minute ran out and the next part started by itself: the counsel that
   // was given is the full minute v2 had written down. Nothing pending.
@@ -206,6 +221,7 @@ export function readRunRecord(
       state.keys = [...keys];
     }
     if (!Array.isArray(state.legacyKeys)) state.legacyKeys = [];
+    state.starts = moments(state.starts);
     if (state.pending === undefined) state.pending = null;
     if (v !== RUN_RECORD_VERSION) state = v2ToV3(state, now);
     return { state, verdict: 'current' };
@@ -282,7 +298,11 @@ export function reconcileKeys(state: RunState, keys: string[], now: number): Run
   const done = new Set(old.slice(0, Math.min(state.index, old.length)));
   const spentBy = new Map<string, number>();
   const counselBy = new Map<string, number | null>();
+  // Every part that began keeps when it began — the running one too.
+  const startBy = new Map<string, number>();
   old.forEach((k, i) => {
+    const began = state.starts[i];
+    if (i <= state.index && typeof began === 'number') startBy.set(k, began);
     // The counselled part's own seconds are in `spent` already.
     if (i < state.index || (counselling && i === state.index)) {
       spentBy.set(k, state.spent[i] ?? 0);
@@ -297,6 +317,8 @@ export function reconcileKeys(state: RunState, keys: string[], now: number): Run
   else index = keys.findIndex((k) => !done.has(k) && k !== current);
 
   let next: RunState = { ...state };
+  /** When the part that took a removed counselled part's place began. */
+  let replacedAt: number | null = null;
   if (!finished && index === -1) {
     // The running part and every part after it are gone: the meeting has
     // nothing left to run. The running part's seconds go with it.
@@ -306,6 +328,7 @@ export function reconcileKeys(state: RunState, keys: string[], now: number): Run
     // The part being counselled is gone: its counsel ends, the part that
     // takes its place starts now.
     next = { ...next, counselFrom: null, startedAt: now, carried: 0 };
+    replacedAt = now;
   }
 
   const upTo = Math.min(index, keys.length);
@@ -319,6 +342,11 @@ export function reconcileKeys(state: RunState, keys: string[], now: number): Run
   if (inCounsel(next) && index < keys.length) {
     spent.push(spentBy.get(keys[index]) ?? 0);
   }
+  const starts: (number | null)[] = [];
+  for (let j = 0; j <= Math.min(index, keys.length - 1); j++) {
+    starts.push(startBy.get(keys[j]) ?? null);
+  }
+  if (replacedAt !== null && index < keys.length) starts[index] = replacedAt;
 
   const added = keys.filter((k) => !old.includes(k));
   const removed = old.filter((k) => !keys.includes(k));
@@ -327,6 +355,7 @@ export function reconcileKeys(state: RunState, keys: string[], now: number): Run
     index,
     spent,
     counsel,
+    starts,
     keys: [...keys],
     legacyKeys: state.legacyKeys.filter((k) => keys.includes(k)),
     changed: {

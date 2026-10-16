@@ -34,6 +34,8 @@ export function toWire(s: RunState, offsetMs: number): WireState {
   const { prev: _p, pending: _q, saved: _s, ...rest } = s;
   const out = { ...rest, v: 1 as const };
   for (const k of MOMENTS) out[k] = shift(s[k], offsetMs);
+  // When each part began — moments too, so shifted the same way.
+  out.starts = (s.starts ?? []).map((m) => shift(m, offsetMs));
   return out;
 }
 
@@ -60,6 +62,7 @@ export function fromWire(raw: unknown, offsetMs: number): RunState | null {
     carried: typeof o.carried === 'number' && Number.isFinite(o.carried) ? o.carried : 0,
     counselFrom: shift(o.counselFrom, -offsetMs),
     meetingStartedAt: shift(o.meetingStartedAt, -offsetMs),
+    starts: Array.isArray(o.starts) ? o.starts.map((m) => shift(m, -offsetMs)) : [],
     pausedSec: typeof o.pausedSec === 'number' && Number.isFinite(o.pausedSec) ? o.pausedSec : 0,
     pausedAt: shift(o.pausedAt, -offsetMs),
     finishedAt: shift(o.finishedAt, -offsetMs),
