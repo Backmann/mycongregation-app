@@ -4077,7 +4077,8 @@
       "legacyNote": "The first parts ({{n}}) were timed by the previous version of the app — their time includes the counsel minute.",
       "cardTitle": "Meeting result · {{day}}",
       "cardKeep": "Available until {{day}}",
-      "cardOpen": "Open the result"
+      "cardOpen": "Open the result",
+      "refused": "The result was not saved: {{reason}}"
     },
     "live": {
       "runningYou": "You are keeping time",
@@ -4636,7 +4637,9 @@
       "FS_ALREADY_CANCELLED": "The meeting is already cancelled.",
       "FS_NOT_CANCELLED": "The meeting is not cancelled — there is nothing to restore.",
       "PROGRAMME_PAST_LOCKED": "The meeting on {{date}} was more than a week ago — its programme is the record. It could be changed until {{until}}.",
-      "PROGRAMME_FIX_FORBIDDEN": "A programme can be corrected after the fact by an administrator and the coordinator of the body of elders."
+      "PROGRAMME_FIX_FORBIDDEN": "A programme can be corrected after the fact by an administrator and the coordinator of the body of elders.",
+      "CONDUCT_MEETING_OVER": "This meeting is over — it is not run again after its day.",
+      "CONDUCT_RESULT_KEPT": "The result of this meeting is saved already and cannot be replaced after its day."
     }
   }
 }

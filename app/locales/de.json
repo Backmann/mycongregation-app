@@ -4077,7 +4077,8 @@
       "legacyNote": "Die ersten Teile ({{n}}) hat die vorherige Version der App gemessen – ihre Zeit enthält die Minute Rat.",
       "cardTitle": "Ergebnis der Zusammenkunft · {{day}}",
       "cardKeep": "Verfügbar bis {{day}}",
-      "cardOpen": "Ergebnis öffnen"
+      "cardOpen": "Ergebnis öffnen",
+      "refused": "Ergebnis nicht gespeichert: {{reason}}"
     },
     "live": {
       "runningYou": "Sie führen die Zeit",
@@ -4636,7 +4637,9 @@
       "FS_ALREADY_CANCELLED": "Die Zusammenkunft ist schon abgesagt.",
       "FS_NOT_CANCELLED": "Die Zusammenkunft ist nicht abgesagt – es gibt nichts wiederherzustellen.",
       "PROGRAMME_PAST_LOCKED": "Die Zusammenkunft am {{date}} liegt mehr als eine Woche zurück — ihr Programm ist Teil der Aufzeichnungen. Ändern konnte man es bis {{until}}.",
-      "PROGRAMME_FIX_FORBIDDEN": "Ein Programm nachträglich korrigieren können ein Administrator und der Koordinator der Ältestenschaft."
+      "PROGRAMME_FIX_FORBIDDEN": "Ein Programm nachträglich korrigieren können ein Administrator und der Koordinator der Ältestenschaft.",
+      "CONDUCT_MEETING_OVER": "Diese Zusammenkunft ist vorbei – nach ihrem Tag wird sie nicht mehr geführt.",
+      "CONDUCT_RESULT_KEPT": "Das Ergebnis dieser Zusammenkunft ist schon gespeichert und kann nach ihrem Tag nicht ersetzt werden."
     }
   }
 }
