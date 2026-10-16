@@ -6,7 +6,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { conductLiveApi, conductRunsApi, meApi, meetingSettingsApi, serverClockOffset, specialEventsApi } from '../lib/api';
 import { effectiveVersionFor } from '../lib/meeting-schedule';
 import { weekRules } from '../lib/week-rules';
-import { fromWire, isAppointedBrother } from '../lib/conduct-live';
+import { fromWire, isConductOverseer } from '../lib/conduct-live';
+import { usePermissions } from '../lib/permissions';
 import { clock } from './ConductSummary';
 import { addDays } from '../lib/dates';
 import { useAuth } from '../lib/auth';
@@ -101,28 +102,17 @@ export function ConductEntry({
  * «ИТОГ ВСТРЕЧИ» — how a midweek meeting ran, for its seven days
  * (14 October 2026).
  *
- * Shown to whoever may read it — the chairman of that week and every
- * appointed brother, by role or by card (the server holds the same rule,
- * common/appointed-brother.ts) — and only when there IS a result:
+ * Shown to whoever may read it — the admins, the counsel brother and the
+ * Life and Ministry overseer (the server holds the same rule,
+ * common/conduct-overseer.ts) — and only when there IS a result:
  * a link to an empty page would be a promise the screen cannot keep. Asked
  * of the server once per meeting the reader opens; never kept on the device.
  */
-export function ConductResultLink({
-  week,
-  chairmanPublisherId,
-}: {
-  week: string;
-  chairmanPublisherId: string | null;
-}) {
+export function ConductResultLink({ week }: { week: string; chairmanPublisherId?: string | null }) {
   const { t } = useTranslation();
   const { user } = useAuth();
-  const { data: me } = useQuery({
-    queryKey: ['me-publisher'],
-    queryFn: () => meApi.publisher(),
-  });
-  const isChairman =
-    !!chairmanPublisherId && chairmanPublisherId === (me?.publisher?.id ?? null);
-  const mayRead = isAppointedBrother(user?.role, me?.publisher?.appointment) || isChairman;
+  const { responsibilities } = usePermissions();
+  const mayRead = isConductOverseer(user?.role, responsibilities);
   const thisWeek = formatDateISO(startOfWeekMonday(new Date()));
   const { data: run } = useQuery({
     queryKey: ['conduct-run', week],
@@ -183,11 +173,12 @@ const styles = StyleSheet.create({
 });
 
 /**
- * «ИДЁТ ВСТРЕЧА · LIVE» on the home screen (15 October 2026) — for the
- * appointed brothers, who may watch the meeting run (Lionel), and the door
- * into conduct mode for the timekeeper, who has no schedule editor to find it
- * in. The server decides who gets an answer: a publisher who is neither is
- * refused once, and the card never asks again.
+ * "MEETING IN PROGRESS · LIVE" on the home screen (15 October 2026) — for
+ * those who may watch the meeting run (the admins, the counsel brother, the
+ * Life and Ministry overseer — 16 October 2026) and for its chairman and
+ * timekeeper; for the timekeeper it is also the door into conduct mode, as
+ * he has no schedule editor to find it in. The server decides who gets an
+ * answer: anybody else is refused once, and the card never asks again.
  *
  * Asked once a minute while home is open — enough to appear soon after the
  * meeting starts; the conduct screen itself asks every two seconds.
@@ -249,20 +240,17 @@ export function ConductLiveCard() {
 }
 
 /**
- * «ИТОГ ВСТРЕЧИ» ON THE HOME SCREEN (15 October 2026) — for every appointed
- * brother, for the seven days the result is kept, then it goes by itself
- * (Lionel: «чтобы итог хранился в удобном месте и его 7 дней видели все
- * назначенные братья»). The last midweek meeting with a result: this week's,
+ * THE RESULT ON THE HOME SCREEN (15 October 2026) — for the admins, the
+ * counsel brother and the Life and Ministry overseer (Lionel, 16 October
+ * 2026), for the seven days the result is kept; then it goes by itself.
+ * The last midweek meeting with a result: this week's,
  * or last week's while it is still kept. Nothing to show — no card.
  */
 export function ConductResultCard() {
   const { t, i18n } = useTranslation();
   const { user } = useAuth();
-  const { data: me } = useQuery({
-    queryKey: ['me-publisher'],
-    queryFn: () => meApi.publisher(),
-  });
-  const appointed = isAppointedBrother(user?.role, me?.publisher?.appointment);
+  const { responsibilities } = usePermissions();
+  const overseer = isConductOverseer(user?.role, responsibilities);
   const monday = startOfWeekMonday(new Date());
   const thisWeek = formatDateISO(monday);
   const lastWeek = formatDateISO(addDays(monday, -7));
@@ -270,13 +258,13 @@ export function ConductResultCard() {
   const thisQ = useQuery({
     queryKey: ['conduct-run', thisWeek],
     queryFn: () => conductRunsApi.get(thisWeek),
-    enabled: appointed,
+    enabled: overseer,
     retry: false,
   });
   const lastQ = useQuery({
     queryKey: ['conduct-run', lastWeek],
     queryFn: () => conductRunsApi.get(lastWeek),
-    enabled: appointed && !thisQ.isPending && !thisQ.data,
+    enabled: overseer && !thisQ.isPending && !thisQ.data,
     retry: false,
   });
   const { data: settings } = useQuery({
@@ -285,7 +273,7 @@ export function ConductResultCard() {
     staleTime: 60 * 60 * 1000,
   });
   const run = thisQ.data ?? lastQ.data ?? null;
-  if (!appointed || !run) return null;
+  if (!overseer || !run) return null;
   const meetingDay = weekRules({
     weekStartISO: run.weekStartDate,
     version: effectiveVersionFor(settings?.versions, run.weekStartDate),
