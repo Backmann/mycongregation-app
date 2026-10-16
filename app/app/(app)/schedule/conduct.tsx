@@ -30,7 +30,8 @@ import {
   specialEventsApi,
 } from '../../../lib/api';
 import { weekRules } from '../../../lib/week-rules';
-import { fromWire, isAppointedBrother, isSilent, liveMode, LIVE_POLL_MS, toWire } from '../../../lib/conduct-live';
+import { fromWire, isConductOverseer, isSilent, liveMode, LIVE_POLL_MS, toWire } from '../../../lib/conduct-live';
+import { usePermissions } from '../../../lib/permissions';
 import { useAuth } from '../../../lib/auth';
 import { buildMidweekRunOrder, RunSegment, totalRunMinutes } from '../../../lib/run-order';
 import { partDisplay } from '../../../lib/part-display';
@@ -322,9 +323,11 @@ export default function ConductScreen() {
   const isChairman =
     !!chairmanRow?.publisherId && chairmanRow.publisherId === myPublisherId;
   const canRun = isChairman || isAdmin || !!roles?.mayRun;
-  // The result is read by whoever may run it and every appointed brother — by
-  // role or by card (the server says the same, common/appointed-brother.ts).
-  const canRead = canRun || isAppointedBrother(user?.role, meQuery.data?.publisher?.appointment);
+  // The result is read by the admins, the counsel brother and the Life and
+  // Ministry overseer — not by the chairman afterwards: he sees it here when
+  // the meeting ends (the server says the same, common/conduct-overseer.ts).
+  const { responsibilities } = usePermissions();
+  const canRead = isConductOverseer(user?.role, responsibilities);
 
   // The saved result — what an elder reads, and what a chairman sees again
   // on another device. Never kept on the device (lib/offline-keep-rules).
@@ -807,7 +810,7 @@ export default function ConductScreen() {
         persist(n);
         return n;
       });
-      void runQuery.refetch();
+      if (canRead) void runQuery.refetch();
     },
   });
   // Sent once when the meeting ends — and again on the next opening if it
@@ -1014,7 +1017,7 @@ export default function ConductScreen() {
 
   // The result: this device's own run, or the one saved on the server.
   if (reading) {
-    if (!canRead) return <Notice text={t('conduct.notChairman')} />;
+    if (!canRead) return <Notice text={meetingOver ? t('conduct.result.notYours') : t('conduct.notChairman')} />;
     if (runQuery.isLoading) {
       return (
         <View style={styles.center}>

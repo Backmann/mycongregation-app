@@ -4066,8 +4066,8 @@
       "chairmanNamed": "Vorsitzender · {{name}}",
       "counsel": "Rat nach den Aufgaben ({{n}})",
       "none": "Für diese Zusammenkunft gibt es kein Ergebnis: Sie wurde auf dem Leitungsbildschirm nicht zu Ende geführt, oder es sind mehr als 7 Tage vergangen.",
-      "keep": "Das Ergebnis wird 7 Tage aufbewahrt und dann gelöscht. Es sehen der Vorsitzende und die ernannten Brüder.",
-      "saved": "Ergebnis für 7 Tage gespeichert – es sehen der Vorsitzende und die ernannten Brüder.",
+      "keep": "Das Ergebnis wird 7 Tage aufbewahrt und dann gelöscht. Es sehen die Admins, der Bruder, der den Rat gibt, und der Verantwortliche für „Leben und Dienst“.",
+      "saved": "Ergebnis für 7 Tage gespeichert – es sehen die Admins, der Bruder, der den Rat gibt, und der Verantwortliche für „Leben und Dienst“.",
       "saving": "Ergebnis wird gespeichert …",
       "notSaved": "Das Ergebnis wurde nicht gespeichert — keine Verbindung. Es ist auf diesem Gerät geblieben.",
       "retry": "Erneut speichern",
@@ -4078,7 +4078,8 @@
       "cardTitle": "Ergebnis der Zusammenkunft · {{day}}",
       "cardKeep": "Verfügbar bis {{day}}",
       "cardOpen": "Ergebnis öffnen",
-      "refused": "Ergebnis nicht gespeichert: {{reason}}"
+      "refused": "Ergebnis nicht gespeichert: {{reason}}",
+      "notYours": "Das Ergebnis der Zusammenkunft sehen die Admins, der Bruder, der den Rat gibt, und der Verantwortliche für „Leben und Dienst“."
     },
     "live": {
       "runningYou": "Sie führen die Zeit",
@@ -4625,9 +4626,9 @@
       "ATTENDANCE_NEEDS_FIGURE": "Für eine Zusammenkunft, die stattgefunden hat, bitte die Zahl der Anwesenden angeben.",
       "ATTENDANCE_NEGATIVE": "Die Zahl der Anwesenden kann nicht negativ sein.",
       "CONDUCT_RUN_FORBIDDEN": "Das Ergebnis der Zusammenkunft speichert der Vorsitzende oder der Zeitnehmer dieser Woche.",
-      "CONDUCT_LIVE_FORBIDDEN": "Den Verlauf der Zusammenkunft sehen ernannte Brüder; führen dürfen ihn der Vorsitzende und der Zeitnehmer dieser Woche.",
+      "CONDUCT_LIVE_FORBIDDEN": "Den Verlauf der Zusammenkunft sehen die Admins, der Bruder, der den Rat gibt, und der Verantwortliche für „Leben und Dienst“; führen dürfen ihn der Vorsitzende und der Zeitnehmer dieser Woche.",
       "CONDUCT_LIVE_NOT_YOURS": "Die Zusammenkunft führt jetzt ein anderer Bruder.",
-      "CONDUCT_RESULT_FORBIDDEN": "Das Ergebnis der Zusammenkunft sehen ihr Vorsitzender und die ernannten Brüder.",
+      "CONDUCT_RESULT_FORBIDDEN": "Das Ergebnis der Zusammenkunft sehen die Admins, der Bruder, der den Rat gibt, und der Verantwortliche für „Leben und Dienst“.",
       "SCHEDULE_PAST_NEEDS_CONFIRM": "Das verlegt Zusammenkünfte schon begonnener Wochen auf einen anderen Tag, und für {{moved}} davon ist die Anwesenheit schon am alten Tag erfasst. Bitte das Speichern bestätigen.",
       "SCHEDULE_VERSION_IN_FORCE": "Dieser Zeitplan gilt schon – vergangene Wochen sind danach gezählt, er kann nicht gelöscht werden. Zum Korrigieren den Zeitplan mit demselben Startdatum speichern.",
       "GROUP_ALREADY_REMOVED": "Diese Gruppe ist schon entfernt.",
