@@ -2267,7 +2267,6 @@ export default function HomeScreen() {
                 <WelcomeCard />
                 <ReportDone />
                 <ConductLiveCard />
-              <ConductResultCard />
                 <ConductResultCard />
                 {next}
                 <TodoSection />
