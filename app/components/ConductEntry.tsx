@@ -6,7 +6,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { conductLiveApi, conductRunsApi, meApi, meetingSettingsApi, serverClockOffset } from '../lib/api';
 import { effectiveVersionFor } from '../lib/meeting-schedule';
 import { weekRules } from '../lib/week-rules';
-import { fromWire } from '../lib/conduct-live';
+import { fromWire, isAppointedBrother } from '../lib/conduct-live';
+import { clock } from './ConductSummary';
+import { addDays } from '../lib/dates';
 import { useAuth } from '../lib/auth';
 import { formatDateISO, startOfWeekMonday } from '../lib/dates';
 
@@ -79,8 +81,9 @@ export function ConductEntry({
  * «ИТОГ ВСТРЕЧИ» — how a midweek meeting ran, for its seven days
  * (14 October 2026).
  *
- * Shown to whoever may read it — the chairman of that week, the elders, an
- * admin (the server holds the same rule) — and only when there IS a result:
+ * Shown to whoever may read it — the chairman of that week and every
+ * appointed brother, by role or by card (the server holds the same rule,
+ * common/appointed-brother.ts) — and only when there IS a result:
  * a link to an empty page would be a promise the screen cannot keep. Asked
  * of the server once per meeting the reader opens; never kept on the device.
  */
@@ -99,7 +102,7 @@ export function ConductResultLink({
   });
   const isChairman =
     !!chairmanPublisherId && chairmanPublisherId === (me?.publisher?.id ?? null);
-  const mayRead = user?.role === 'admin' || user?.role === 'elder' || isChairman;
+  const mayRead = isAppointedBrother(user?.role, me?.publisher?.appointment) || isChairman;
   const thisWeek = formatDateISO(startOfWeekMonday(new Date()));
   const { data: run } = useQuery({
     queryKey: ['conduct-run', week],
@@ -143,6 +146,15 @@ const styles = StyleSheet.create({
     padding: 16,
     gap: 4,
   },
+  resultCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#bae6fd',
+    padding: 16,
+    gap: 4,
+  },
+  resultKeep: { fontSize: 13, fontFamily: 'Manrope_400Regular', color: '#94a3b8' },
   liveHead: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   liveDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: '#16a34a' },
   liveTitle: { fontSize: 17, fontFamily: 'Manrope_700Bold', color: '#0f172a', flex: 1 },
@@ -212,6 +224,79 @@ export function ConductLiveCard() {
       <Text style={styles.liveAction}>
         {running && !mine ? t('conduct.live.watch') : t('conduct.live.open')}
       </Text>
+    </Pressable>
+  );
+}
+
+/**
+ * «ИТОГ ВСТРЕЧИ» ON THE HOME SCREEN (15 October 2026) — for every appointed
+ * brother, for the seven days the result is kept, then it goes by itself
+ * (Lionel: «чтобы итог хранился в удобном месте и его 7 дней видели все
+ * назначенные братья»). The last midweek meeting with a result: this week's,
+ * or last week's while it is still kept. Nothing to show — no card.
+ */
+export function ConductResultCard() {
+  const { t, i18n } = useTranslation();
+  const { user } = useAuth();
+  const { data: me } = useQuery({
+    queryKey: ['me-publisher'],
+    queryFn: () => meApi.publisher(),
+  });
+  const appointed = isAppointedBrother(user?.role, me?.publisher?.appointment);
+  const monday = startOfWeekMonday(new Date());
+  const thisWeek = formatDateISO(monday);
+  const lastWeek = formatDateISO(addDays(monday, -7));
+  // The same keys the conduct screen and the result link use: one request each.
+  const thisQ = useQuery({
+    queryKey: ['conduct-run', thisWeek],
+    queryFn: () => conductRunsApi.get(thisWeek),
+    enabled: appointed,
+    retry: false,
+  });
+  const lastQ = useQuery({
+    queryKey: ['conduct-run', lastWeek],
+    queryFn: () => conductRunsApi.get(lastWeek),
+    enabled: appointed && !thisQ.isPending && !thisQ.data,
+    retry: false,
+  });
+  const { data: settings } = useQuery({
+    queryKey: ['meeting-settings'],
+    queryFn: () => meetingSettingsApi.getOverview(),
+    staleTime: 60 * 60 * 1000,
+  });
+  const run = thisQ.data ?? lastQ.data ?? null;
+  if (!appointed || !run) return null;
+  const meetingDay = weekRules({
+    weekStartISO: run.weekStartDate,
+    version: effectiveVersionFor(settings?.versions, run.weekStartDate),
+    events: [],
+  }).dateOf('midweek');
+  const dayLabel = (d: Date, withWeekday: boolean) =>
+    d.toLocaleDateString(i18n.language, {
+      ...(withWeekday ? { weekday: 'long' as const } : {}),
+      day: 'numeric',
+      month: 'long',
+    });
+  const keepUntil = new Date(new Date(run.savedAt).getTime() + 7 * 24 * 60 * 60 * 1000);
+  return (
+    <Pressable
+      style={styles.resultCard}
+      onPress={() => router.push(`/schedule/conduct?week=${run.weekStartDate}` as any)}
+      accessibilityRole="button"
+    >
+      <View style={styles.liveHead}>
+        <Ionicons name="stats-chart-outline" size={18} color="#0369a1" />
+        <Text style={styles.liveTitle}>
+          {t('conduct.result.cardTitle', {
+            day: meetingDay ? dayLabel(new Date(`${meetingDay}T00:00:00`), true) : run.weekStartDate,
+          })}
+        </Text>
+      </View>
+      <Text style={styles.liveSub}>
+        {`${t('conduct.result.took', { time: clock(run.totalSec) })} · ${t('conduct.result.planned', { time: clock(run.plannedSec) })}`}
+      </Text>
+      <Text style={styles.resultKeep}>{t('conduct.result.cardKeep', { day: dayLabel(keepUntil, false) })}</Text>
+      <Text style={styles.liveAction}>{t('conduct.result.cardOpen')}</Text>
     </Pressable>
   );
 }

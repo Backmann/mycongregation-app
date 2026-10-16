@@ -27,7 +27,7 @@ import {
   publishersApi,
   serverClockOffset,
 } from '../../../lib/api';
-import { fromWire, isSilent, liveMode, LIVE_POLL_MS, toWire } from '../../../lib/conduct-live';
+import { fromWire, isAppointedBrother, isSilent, liveMode, LIVE_POLL_MS, toWire } from '../../../lib/conduct-live';
 import { useAuth } from '../../../lib/auth';
 import { buildMidweekRunOrder, RunSegment, totalRunMinutes } from '../../../lib/run-order';
 import { partDisplay } from '../../../lib/part-display';
@@ -294,8 +294,9 @@ export default function ConductScreen() {
   const isChairman =
     !!chairmanRow?.publisherId && chairmanRow.publisherId === myPublisherId;
   const canRun = isChairman || isAdmin || !!roles?.mayRun;
-  // The result is read by the chairman and the elders (the server says the same).
-  const canRead = canRun || user?.role === 'elder';
+  // The result is read by whoever may run it and every appointed brother — by
+  // role or by card (the server says the same, common/appointed-brother.ts).
+  const canRead = canRun || isAppointedBrother(user?.role, meQuery.data?.publisher?.appointment);
 
   // The saved result — what an elder reads, and what a chairman sees again
   // on another device. Never kept on the device (lib/offline-keep-rules).
