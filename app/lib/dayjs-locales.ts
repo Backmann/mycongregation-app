@@ -14,5 +14,18 @@
  * which the root layout loads before any screen exists. A new language is
  * added here, and scripts/check-dayjs-locales.mjs fails until it is.
  */
+import dayjs from 'dayjs';
 import 'dayjs/locale/ru';
 import 'dayjs/locale/de';
+import { localizePattern } from './date-patterns';
+
+/**
+ * Every pattern is put into the order of the date's own language before it
+ * is formatted — see lib/date-patterns.ts (16 October 2026).
+ */
+dayjs.extend((_option, Dayjs) => {
+  const format = Dayjs.prototype.format;
+  Dayjs.prototype.format = function (this: dayjs.Dayjs, template?: string) {
+    return format.call(this, template ? localizePattern(template, this.locale()) : template);
+  };
+});

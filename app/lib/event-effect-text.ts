@@ -3,6 +3,7 @@ import dayjs from 'dayjs';
 import 'dayjs/locale/ru';
 import 'dayjs/locale/de';
 import type { Effect } from './event-view';
+import { rangeStartPattern } from './date-patterns';
 
 /**
  * The one line that says what an event means for the meetings, in the
@@ -18,7 +19,7 @@ export function useEffectText(effect: Effect | null): string | null {
     case 'noMeetingsWeeks': {
       const sameMonth = effect.from.slice(0, 7) === effect.to.slice(0, 7);
       const range = sameMonth
-        ? `${day(effect.from, 'D')}–${day(effect.to, 'D MMMM')}`
+        ? `${day(effect.from, rangeStartPattern(loc))}–${day(effect.to, 'D MMMM')}`
         : `${day(effect.from, 'D MMMM')} – ${day(effect.to, 'D MMMM')}`;
       return t('specialEvents.effect.noMeetingsWeeks', { range });
     }

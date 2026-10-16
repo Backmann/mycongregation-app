@@ -82,6 +82,7 @@ const STEPS = [
   ['Ход встречи вживую', 'node', ['scripts/check-conduct-live.mjs']],
   ['Подробный итог встречи', 'node', ['scripts/check-conduct-report.mjs']],
   ['Перенос встречи для проповеди', 'node', ['scripts/check-field-moves.mjs']],
+  ['Даты по-немецки и по-английски', 'node', ['scripts/check-date-patterns.mjs']],
   ['Маршруты уведомлений', 'node', ['scripts/check-notification-routes.mjs']],
   // What a browser says its device is decides whether the server sends to it
   // at all: an iPad taken for a Mac stays silent while a phone is registered.
