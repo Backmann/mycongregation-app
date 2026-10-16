@@ -97,6 +97,7 @@ import {
   resolveSubsection,
 } from "../../../lib/parts";
 import { isCongressEvent } from "../../../lib/week-rules";
+import { ConductLiveCard, ConductResultCard } from "../../../components/ConductEntry";
 
 /*
  * HOME, REBUILT (26 September) — the screen is the face of the app, so it
@@ -2265,6 +2266,9 @@ export default function HomeScreen() {
                 <GreetingHeader now={now} />
                 <WelcomeCard />
                 <ReportDone />
+                <ConductLiveCard />
+              <ConductResultCard />
+                <ConductResultCard />
                 {next}
                 <TodoSection />
                 {soon}
@@ -2276,6 +2280,8 @@ export default function HomeScreen() {
               <GreetingHeader now={now} />
               <WelcomeCard />
               <ReportDone />
+              <ConductLiveCard />
+              <ConductResultCard />
               {next}
               <TodoSection />
               {list}

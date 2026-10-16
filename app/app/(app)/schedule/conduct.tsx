@@ -9,7 +9,7 @@ import {
   View,
   useWindowDimensions,
 } from 'react-native';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { router, useLocalSearchParams, useNavigation } from 'expo-router';
@@ -18,12 +18,16 @@ import { Ionicons } from '@expo/vector-icons';
 import {
   Assignment,
   assignmentsApi,
+  conductLiveApi,
+  ConductLiveAnswer,
   conductRunsApi,
   ConductRunSegment,
   meApi,
   meetingSettingsApi,
   publishersApi,
+  serverClockOffset,
 } from '../../../lib/api';
+import { fromWire, isAppointedBrother, isSilent, liveMode, LIVE_POLL_MS, toWire } from '../../../lib/conduct-live';
 import { useAuth } from '../../../lib/auth';
 import { buildMidweekRunOrder, RunSegment, totalRunMinutes } from '../../../lib/run-order';
 import { partDisplay } from '../../../lib/part-display';
@@ -87,11 +91,29 @@ import { tapSaved } from '../../../lib/haptics';
  * sees here out loud; if it differed from the sheet by a word, one of the two
  * would be wrong in front of the whole congregation.
  *
- * WHO MAY RUN IT: the chairman named in this week's programme, and an admin.
- * Not the elders in general — the screen is a tool for the man running the
- * meeting, and two people advancing the same parts would help nobody. The
- * elders may READ the result once it is saved, for its seven days.
+ * WHO MAY RUN IT: the chairman named in this week's programme, the
+ * timekeeper named in its duties («Ведущий времени»), and an admin — ONE of
+ * them at a time. Not the elders in general — two people advancing the same
+ * parts would help nobody. The elders may READ the result once it is saved,
+ * for its seven days.
+ *
+ * LIVE (15 October 2026). Lionel: a brother keeps the time so the chairman
+ * does not have to lead and tap at once. The one who runs it sends every tap
+ * to the server (conduct-live); the chairman's iPad and every appointed
+ * brother who opens the screen WATCH the same run, asking every two seconds.
+ * With a timekeeper named, the chairman opens watching; «Взять ведение» moves
+ * the taps to him (or back) and the server refuses the other's from then on.
+ * With no answer from the server at all, the screen runs on the device as
+ * before — the meeting does not wait for the network (lib/conduct-live.ts).
  */
+
+/** An HTTP status out of a failed request, if there was one. */
+function statusOf(e: unknown): number | undefined {
+  return (e as { response?: { status?: number } } | null)?.response?.status;
+}
+
+/** A first answer about Live waited for at most this long before the screen opens without it. */
+const LIVE_FIRST_WAIT_MS = 4000;
 
 // THE RUN AS KEPT ON THE DEVICE — its shape, every older shape and how they
 // are read, and how a run follows a programme that changed under it — lives
@@ -231,14 +253,50 @@ export default function ConductScreen() {
   // are not the chairman» in a hall with no signal.
   const keptMyId = keptMe(user?.id)?.id ?? null;
   const myPublisherId = meQuery.data?.publisher?.id ?? keptMyId;
+  const thisWeek = formatDateISO(startOfWeekMonday(new Date()));
+  const pastWeek = !!week && week < thisWeek;
+
+  // THE MEETING AS IT RUNS, from the server — and who this account is for it
+  // (the timekeeper is named in the duties, which this screen does not read).
+  // Asked every two seconds; not at all for a past week. A refusal (a
+  // publisher who is not appointed) or an older server stops the asking.
+  const queryClient = useQueryClient();
+  const liveKey = useMemo(() => ['conduct-live', week], [week]);
+  const liveQuery = useQuery({
+    queryKey: liveKey,
+    queryFn: () => conductLiveApi.get(week),
+    enabled: week.length > 0 && !pastWeek,
+    retry: false,
+    staleTime: 0,
+    refetchInterval: (q) => {
+      const st = statusOf(q.state.error);
+      return st === 403 || st === 404 ? false : LIVE_POLL_MS;
+    },
+  });
+  const liveData = liveQuery.data ?? null;
+  const live = liveData?.live ?? null;
+  const roles = liveData?.roles ?? null;
+  // The first answer is waited for — briefly: with no signal the screen opens
+  // without it, as before Live.
+  const [liveGaveUp, setLiveGaveUp] = useState(false);
+  useEffect(() => {
+    const id = setTimeout(() => setLiveGaveUp(true), LIVE_FIRST_WAIT_MS);
+    return () => clearTimeout(id);
+  }, []);
+  /** An answer from put/take carries no roles: keep the ones read before. */
+  const putLive = useCallback(
+    (ans: ConductLiveAnswer) =>
+      queryClient.setQueryData<ConductLiveAnswer>(liveKey, (old) => ({ ...ans, roles: ans.roles ?? old?.roles })),
+    [queryClient, liveKey],
+  );
+
   const isAdmin = user?.role === 'admin';
   const isChairman =
     !!chairmanRow?.publisherId && chairmanRow.publisherId === myPublisherId;
-  const canRun = isChairman || isAdmin;
-  // The result is read by the chairman and the elders (the server says the same).
-  const canRead = canRun || user?.role === 'elder';
-  const thisWeek = formatDateISO(startOfWeekMonday(new Date()));
-  const pastWeek = !!week && week < thisWeek;
+  const canRun = isChairman || isAdmin || !!roles?.mayRun;
+  // The result is read by whoever may run it and every appointed brother — by
+  // role or by card (the server says the same, common/appointed-brother.ts).
+  const canRead = canRun || isAppointedBrother(user?.role, meQuery.data?.publisher?.appointment);
 
   // The saved result — what an elder reads, and what a chairman sees again
   // on another device. Never kept on the device (lib/offline-keep-rules).
@@ -316,7 +374,22 @@ export default function ConductScreen() {
   // пробная встреча, доведённая до «Завершить», семь дней висела бы итогом у
   // старейшин.
   const [practice, setPractice] = useState<RunState | null>(null);
-  const run = practice ?? state;
+
+  // WHO TAPS ON THIS DEVICE (lib/conduct-live.ts liveMode). Watching, the run
+  // shown is the controller's, read from the server and moved to this
+  // device's clock; nothing of it is kept here.
+  const mode = liveMode({
+    practice: !!practice,
+    canRunLocally: canRun,
+    answered: !!liveData,
+    live,
+    roles,
+    localStarted: state.meetingStartedAt !== null,
+  });
+  const watching = mode === 'watch';
+  const offset = serverClockOffset();
+  const watched = useMemo(() => (live ? fromWire(live.state, offset) : null) ?? EMPTY, [live, offset]);
+  const run = practice ?? (watching ? watched : state);
   const applyRun = useCallback(
     (next: RunState) => {
       if (practice) setPractice(next);
@@ -546,6 +619,107 @@ export default function ConductScreen() {
     if (ok) applyRun(EMPTY);
   };
 
+  // --- live: the controller's taps to the server ----------------------
+  /** The run (in this device's time) the server last took from us. */
+  const pushedRef = useRef<string | null>(null);
+  /** The server's updatedAt we know of — older answers do not move us back. */
+  const knownUpdatedAt = useRef<string | null>(null);
+  const pushingRef = useRef(false);
+  const wasMine = useRef(false);
+  const [pushTick, setPushTick] = useState(0);
+  const [takenBy, setTakenBy] = useState<string | null>(null);
+  const [takeFailed, setTakeFailed] = useState(false);
+  const controlling = !!liveData && !practice && mode === 'run';
+
+  // Every change of the run goes up. A failure is tried again on the next
+  // ask (every two seconds) — not at once, which would hammer a dead network.
+  useEffect(() => {
+    if (!controlling || !loaded) return;
+    if (live && !live.mine) return;
+    if (!live && state.meetingStartedAt === null) return; // nothing to say yet
+    const json = JSON.stringify(toWire(state, 0));
+    if (json === pushedRef.current || pushingRef.current) return;
+    pushingRef.current = true;
+    conductLiveApi
+      .put({ weekStartDate: week, epoch: live ? live.epoch : 0, state: toWire(state, serverClockOffset()) })
+      .then((ans) => {
+        pushedRef.current = json;
+        wasMine.current = true;
+        if (ans.live) knownUpdatedAt.current = ans.live.updatedAt;
+        putLive(ans);
+        setPushTick((n) => n + 1);
+      })
+      .catch((e) => {
+        // Somebody took it over: the next answer says who, and this device watches.
+        if (statusOf(e) === 409) void liveQuery.refetch();
+      })
+      .finally(() => {
+        pushingRef.current = false;
+      });
+    // liveQuery is a new object every render; its two moments are what matter.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [controlling, loaded, state, live, week, pushTick, putLive, liveQuery.dataUpdatedAt, liveQuery.errorUpdatedAt]);
+
+  // OURS ON THE SERVER IS NEWER THAN OURS HERE — the same account on another
+  // device, or this one reloaded: taken from the server, unless there are
+  // taps here it has not had yet (those go up next).
+  useEffect(() => {
+    if (!loaded || practice || !live?.mine) return;
+    if (knownUpdatedAt.current !== null && live.updatedAt <= knownUpdatedAt.current) return;
+    knownUpdatedAt.current = live.updatedAt;
+    wasMine.current = true;
+    const here = JSON.stringify(toWire(state, 0));
+    const dirty = pushedRef.current !== null ? here !== pushedRef.current : state.meetingStartedAt !== null;
+    if (dirty) return;
+    const theirs = fromWire(live.state, serverClockOffset()) ?? EMPTY;
+    const next: RunState = { ...theirs, prev: null };
+    pushedRef.current = JSON.stringify(toWire(next, 0));
+    apply(next);
+    // state is read, not followed: a tap here must not pull the server's back.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [live, loaded, practice, apply]);
+
+  // SOMEBODY ELSE RUNS IT NOW. What this device counted is no longer the
+  // meeting: it is let go, so it can neither come back as «Продолжить» nor be
+  // sent as the result.
+  useEffect(() => {
+    if (!loaded || practice || !live || live.mine) return;
+    if (wasMine.current) {
+      wasMine.current = false;
+      setTakenBy(live.controllerName ?? t('conduct.live.someone'));
+    }
+    if (state.meetingStartedAt !== null) {
+      pushedRef.current = null;
+      apply(EMPTY);
+    }
+  }, [live, loaded, practice, state.meetingStartedAt, apply, t]);
+
+  /** «Взять ведение»: the taps move to this device; the server refuses the other's. */
+  const takeOver = async () => {
+    const who = live?.controllerName ?? (live ? null : roles?.timekeeperName) ?? null;
+    const ok = await confirm({
+      title: t('conduct.live.takeTitle'),
+      body: who ? t('conduct.live.takeBody', { name: who }) : t('conduct.live.takeBodyNobody'),
+      confirmLabel: t('conduct.live.take'),
+    });
+    if (!ok) return;
+    try {
+      const ans = await conductLiveApi.take(week);
+      setTakeFailed(false);
+      setTakenBy(null);
+      if (ans.live) {
+        const next: RunState = { ...(fromWire(ans.live.state, serverClockOffset()) ?? EMPTY), prev: null };
+        knownUpdatedAt.current = ans.live.updatedAt;
+        pushedRef.current = JSON.stringify(toWire(next, 0));
+        wasMine.current = true;
+        apply(next);
+      }
+      putLive(ans);
+    } catch {
+      setTakeFailed(true);
+    }
+  };
+
   // --- итог ----------------------------------------------------------
   const local: ConductSummaryData | null = useMemo(() => {
     if (!finished || run.finishedAt === null || run.meetingStartedAt === null) return null;
@@ -581,10 +755,11 @@ export default function ConductScreen() {
 
   // Kept with the run until it reaches the server, so it can go from any
   // screen the moment there is a signal (lib/conduct-resend.ts).
+  // Only the device whose taps counted: a watcher's `local` is somebody else's run.
   useEffect(() => {
-    if (practice || !local || state.saved || state.pending || state.finishedAt === null) return;
+    if (practice || watching || !local || state.saved || state.pending || state.finishedAt === null) return;
     apply({ ...state, pending: local });
-  }, [practice, local, state, apply]);
+  }, [practice, watching, local, state, apply]);
 
   const save = useMutation({
     mutationFn: (data: ConductSummaryData) =>
@@ -602,11 +777,11 @@ export default function ConductScreen() {
   // did not reach the server (no signal in the hall). Never from practice.
   const triedFor = useRef<number | null>(null);
   useEffect(() => {
-    if (practice || !local || state.saved || !canRun || state.finishedAt === null) return;
+    if (practice || watching || !local || state.saved || !canRun || state.finishedAt === null) return;
     if (triedFor.current === state.finishedAt) return;
     triedFor.current = state.finishedAt;
     save.mutate(local);
-  }, [practice, local, state.saved, state.finishedAt, canRun, save]);
+  }, [practice, watching, local, state.saved, state.finishedAt, canRun, save]);
 
   const titleOf = (id: string | null) => (id ? (byId.get(id)?.partTitle ?? null) : null);
 
@@ -661,8 +836,10 @@ export default function ConductScreen() {
 
   // The remote result is what a reader sees; the menu is the runner's.
   const remote = runQuery.data ?? null;
-  const showLocal = !!local && (canRun || !!practice);
-  const reading = !showLocal && !practice && (!canRun || pastWeek);
+  // An appointed brother watching a meeting that is running sees it run.
+  const watchingLive = watching && !!live && !pastWeek;
+  const showLocal = !!local && (canRun || !!practice || watchingLive);
+  const reading = !showLocal && !practice && !watchingLive && (!canRun || pastWeek);
 
   // «⋯» in the header: practice, and «Начать заново» — away from «Вернуть»,
   // which is pressed often, while this wipes the meeting.
@@ -692,7 +869,7 @@ export default function ConductScreen() {
                       subtitle: t('conduct.practice.hint'),
                       onPress: () => setPractice(EMPTY),
                     },
-                ...(run.meetingStartedAt !== null
+                ...(run.meetingStartedAt !== null && !watching
                   ? [
                       {
                         key: 'again',
@@ -711,13 +888,80 @@ export default function ConductScreen() {
     });
     // reset is recreated each render; what it reads is in the deps below.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [navigation, menuOpen, practice, run.meetingStartedAt, t]);
+  }, [navigation, menuOpen, practice, run.meetingStartedAt, watching, t]);
+
+  // The line that says who runs the meeting and whether everybody is there.
+  const serverNowEst = Date.now() + offset;
+  const offline = !!liveData && liveQuery.isError;
+  const liveLines: { text: string; tone: 'live' | 'warn' | 'muted' }[] = [];
+  if (!practice && liveData) {
+    if (offline) {
+      const at = clockOf(new Date(liveQuery.dataUpdatedAt));
+      liveLines.push({
+        text: watching ? t('conduct.live.offlineWatch', { time: at }) : t('conduct.live.offlineRun'),
+        tone: 'warn',
+      });
+    }
+    if (takenBy && watching) liveLines.push({ text: t('conduct.live.taken', { name: takenBy }), tone: 'muted' });
+    if (live?.mine) {
+      liveLines.push({ text: t('conduct.live.runningYou'), tone: 'live' });
+      if (!roles?.isChairman && chairmanName) {
+        liveLines.push(
+          isSilent(live.chairmanSeenAt, serverNowEst)
+            ? { text: t('conduct.live.chairmanSilent', { name: chairmanName }), tone: 'warn' }
+            : { text: t('conduct.live.chairmanWatching', { name: chairmanName }), tone: 'muted' },
+        );
+      }
+    } else if (live) {
+      const name = live.controllerName ?? t('conduct.live.someone');
+      const silent = !offline && isSilent(live.controllerSeenAt, serverNowEst);
+      // No green dot for a device that has stopped answering.
+      liveLines.push({ text: t('conduct.live.runningBy', { name }), tone: silent ? 'muted' : 'live' });
+      if (silent) {
+        const since = clockOf(new Date(Date.parse(live.controllerSeenAt) - offset));
+        liveLines.push({ text: t('conduct.live.controllerSilent', { time: since }), tone: 'warn' });
+      }
+    } else if (watching) {
+      liveLines.push({
+        text: roles?.timekeeperName
+          ? t('conduct.live.waitingTimekeeper', { name: roles.timekeeperName })
+          : t('conduct.live.waitingNobody'),
+        tone: 'muted',
+      });
+    }
+    if (takeFailed) liveLines.push({ text: t('conduct.live.takeFailed'), tone: 'warn' });
+  }
+  const liveStrip =
+    liveLines.length > 0 ? (
+      <View style={styles.liveStrip}>
+        {liveLines.map((l, i) => (
+          <View key={i} style={styles.liveLine}>
+            {l.tone === 'live' ? <View style={styles.liveDot} /> : null}
+            <Text style={[styles.liveText, l.tone === 'warn' && styles.liveWarn, l.tone === 'muted' && styles.liveMuted]}>
+              {l.text}
+            </Text>
+          </View>
+        ))}
+      </View>
+    ) : null;
+  // A watcher may take the taps over only if he is one of the three hands.
+  const takeButton =
+    watching && canRun && !practice && liveData ? (
+      <Pressable style={styles.ghostBtn} onPress={() => void takeOver()} accessibilityRole="button">
+        <Ionicons name="hand-left-outline" size={18} color="#0369a1" />
+        <Text style={styles.ghostBtnText}>{t('conduct.live.take')}</Text>
+      </Pressable>
+    ) : null;
 
   // --- что показывать -------------------------------------------------
   if (!week) {
     return <Notice text={t('conduct.noWeek')} />;
   }
-  if ((assignmentsQuery.isLoading && !kept) || (meQuery.isLoading && !keptMyId)) {
+  if (
+    (assignmentsQuery.isLoading && !kept) ||
+    (meQuery.isLoading && !keptMyId) ||
+    (liveQuery.isLoading && !liveGaveUp)
+  ) {
     return (
       <View style={styles.center}>
         <ActivityIndicator color="#0ea5e9" />
@@ -764,12 +1008,17 @@ export default function ConductScreen() {
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
         <View style={styles.resultWrap}>
           {practiceNote}
+          {liveStrip}
           <Text style={styles.overline}>{t('conduct.finished')}</Text>
           {changedNote}
           <ConductSummary data={local} titleOf={titleOf} nameOf={nameOf} chairmanName={chairmanName} />
           {legacyNote}
           {practice ? (
             <Text style={styles.keepNote}>{t('conduct.practice.notSaved')}</Text>
+          ) : watching ? (
+            <Text style={styles.keepNote}>
+              {remote ? t('conduct.result.saved') : t('conduct.live.resultByController')}
+            </Text>
           ) : (
             <Text style={[styles.keepNote, save.isError && styles.keepNoteError]}>
               {state.saved
@@ -779,13 +1028,13 @@ export default function ConductScreen() {
                   : t('conduct.result.saving')}
             </Text>
           )}
-          {!practice && save.isError && !state.saved ? (
+          {!practice && !watching && save.isError && !state.saved ? (
             <Pressable style={styles.ghostBtn} onPress={() => save.mutate(local)}>
               <Text style={styles.ghostBtnText}>{t('conduct.result.retry')}</Text>
             </Pressable>
           ) : null}
           <View style={styles.rowBtns}>
-            {run.prev ? (
+            {run.prev && !watching ? (
               <Pressable style={styles.ghostBtn} onPress={undo}>
                 <Ionicons name="arrow-undo" size={16} color="#0369a1" />
                 <Text style={styles.ghostBtnText}>{t('conduct.undo')}</Text>
@@ -807,7 +1056,7 @@ export default function ConductScreen() {
   const left = current ? current.partMin * 60 - currentElapsed : 0;
   const tone: 'calm' | 'soon' | 'over' = left < 0 ? 'over' : left <= LAST_SECONDS ? 'soon' : 'calm';
   const counselLong = current ? counselElapsed > current.counselMin * 60 : false;
-  const big = wide ? styles.countdownWide : styles.countdown;
+  const big = [wide ? styles.countdownWide : styles.countdown, watching && offline && styles.countdownStale];
 
   const nowCard = current ? (
     counselling ? (
@@ -819,7 +1068,7 @@ export default function ConductScreen() {
         <Text style={styles.subtitle}>
           {t('conduct.counsel.took', { time: mmss(run.spent[run.index] ?? 0) })}
         </Text>
-        <Text style={[big, counselLong && styles.toneSoon]}>{mmss(counselElapsed)}</Text>
+        <Text style={[...big, counselLong && styles.toneSoon]}>{mmss(counselElapsed)}</Text>
         {counselLong ? <Text style={[styles.stateLine, styles.toneSoon]}>{t('conduct.counsel.long')}</Text> : null}
         <Text style={styles.planned}>{t('conduct.counsel.note')}</Text>
       </View>
@@ -832,7 +1081,7 @@ export default function ConductScreen() {
           nameById={nameById}
           big
         />
-        <Text style={[big, tone === 'soon' && styles.toneSoon, tone === 'over' && styles.toneOver]}>
+        <Text style={[...big, !(watching && offline) && tone === 'soon' && styles.toneSoon, !(watching && offline) && tone === 'over' && styles.toneOver]}>
           {formatCountdown(left)}
         </Text>
         {started && tone === 'soon' ? (
@@ -862,6 +1111,9 @@ export default function ConductScreen() {
 
   const controls = (
     <View style={styles.controls}>
+      {watching ? (
+        takeButton
+      ) : (
       <Pressable
         style={[styles.primaryBtn, locked && styles.primaryBtnLocked]}
         onPress={guarded(primary.onPress)}
@@ -874,8 +1126,9 @@ export default function ConductScreen() {
           </Text>
         ) : null}
       </Pressable>
+      )}
 
-      {started ? (
+      {started && !watching ? (
         <View style={styles.rowBtns}>
           {!counselling ? (
             <Pressable style={styles.ghostBtn} onPress={run.startedAt === null ? resume : pause}>
@@ -960,6 +1213,7 @@ export default function ConductScreen() {
       contentContainerStyle={styles.content}
     >
       {practiceNote}
+      {liveStrip}
       {fromKept && kept ? (
         <KeptNotice
           queries={[
@@ -1120,6 +1374,8 @@ const styles = StyleSheet.create({
     marginTop: 4,
     fontVariant: ['tabular-nums'],
   },
+  // The watcher lost the signal: the number is a guess and looks like one.
+  countdownStale: { color: '#94a3b8' },
   toneSoon: { color: '#b45309' },
   toneOver: { color: '#b91c1c' },
   stateLine: { fontFamily: 'Manrope_700Bold', fontSize: 16, marginTop: 2 },
@@ -1216,6 +1472,24 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     gap: 2,
   },
+  liveStrip: {
+    width: '100%',
+    maxWidth: 1000,
+    alignSelf: 'center',
+    backgroundColor: '#ffffff',
+    borderColor: '#e2e8f0',
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginBottom: 12,
+    gap: 4,
+  },
+  liveLine: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  liveDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#16a34a' },
+  liveText: { flex: 1, fontFamily: 'Manrope_600SemiBold', fontSize: 15, color: '#0f172a' },
+  liveWarn: { color: '#b45309' },
+  liveMuted: { fontFamily: 'Manrope_400Regular', color: '#475569' },
   changedTitle: { fontFamily: 'Manrope_600SemiBold', fontSize: 15, color: '#92400e' },
   changedLine: { fontFamily: 'Manrope_400Regular', fontSize: 14, color: '#78350f' },
 });
