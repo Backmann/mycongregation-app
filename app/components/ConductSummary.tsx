@@ -143,7 +143,8 @@ export function mmss(seconds: number): string {
 }
 
 /** h:mm:ss for an hour or more, m:ss below. */
-function clock(seconds: number): string {
+/** 1:47:05, or 47:05 under an hour. */
+export function clock(seconds: number): string {
   const s = Math.max(0, Math.round(seconds));
   if (s < 3600) return mmss(s);
   const h = Math.floor(s / 3600);

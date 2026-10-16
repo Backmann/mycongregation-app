@@ -143,3 +143,19 @@ export function liveMode(input: {
   if (input.roles.hasTimekeeper && !input.roles.isTimekeeper) return 'watch';
   return 'run';
 }
+
+/**
+ * An appointed brother — an elder or a ministerial servant — by the role of
+ * his account or by his own card; an admin too. The same rule as the
+ * server's (common/appointed-brother.ts): they read how a meeting ran for its
+ * seven days and may watch it run (Lionel, 15 October 2026).
+ */
+export function isAppointedBrother(role: string | null | undefined, appointment: string | null | undefined): boolean {
+  return (
+    role === 'admin' ||
+    role === 'elder' ||
+    role === 'ministerial_servant' ||
+    appointment === 'elder' ||
+    appointment === 'ministerial_servant'
+  );
+}
