@@ -22,12 +22,16 @@ import {
   ConductLiveAnswer,
   conductRunsApi,
   ConductRunSegment,
+  extractErrorMessage,
   meApi,
   meetingSettingsApi,
   publishersApi,
   serverClockOffset,
+  specialEventsApi,
 } from '../../../lib/api';
-import { fromWire, isAppointedBrother, isSilent, liveMode, LIVE_POLL_MS, toWire } from '../../../lib/conduct-live';
+import { weekRules } from '../../../lib/week-rules';
+import { fromWire, isConductOverseer, isSilent, liveMode, LIVE_POLL_MS, toWire } from '../../../lib/conduct-live';
+import { usePermissions } from '../../../lib/permissions';
 import { useAuth } from '../../../lib/auth';
 import { buildMidweekRunOrder, RunSegment, totalRunMinutes } from '../../../lib/run-order';
 import { partDisplay } from '../../../lib/part-display';
@@ -256,6 +260,31 @@ export default function ConductScreen() {
   const thisWeek = formatDateISO(startOfWeekMonday(new Date()));
   const pastWeek = !!week && week < thisWeek;
 
+  // THE MEETING IS OVER once its day has passed — not only once its week has
+  // (16 October 2026). A run started on a phone the evening after the
+  // meeting, as a try-out, sat in a counsel overnight; the next morning it
+  // went to the server as the meeting «as it runs» and was nearly saved as
+  // the result in place of Wednesday's. After the day the screen only shows
+  // the result; the server refuses the rest (conduct-runs/meeting-day).
+  // The same key the duties sheet reads the events by.
+  const eventsQuery = useQuery({
+    queryKey: ['special-events', 'all'],
+    queryFn: () => specialEventsApi.list({ all: true }),
+    staleTime: 60 * 60 * 1000,
+  });
+  const meetingDay = useMemo(
+    () =>
+      week
+        ? weekRules({
+            weekStartISO: week,
+            version: effectiveVersionFor(settingsQuery.data?.versions, week),
+            events: eventsQuery.data ?? [],
+          }).dateOf('midweek')
+        : null,
+    [week, settingsQuery.data, eventsQuery.data],
+  );
+  const meetingOver = pastWeek || (!!meetingDay && meetingDay < formatDateISO(new Date()));
+
   // THE MEETING AS IT RUNS, from the server — and who this account is for it
   // (the timekeeper is named in the duties, which this screen does not read).
   // Asked every two seconds; not at all for a past week. A refusal (a
@@ -265,7 +294,7 @@ export default function ConductScreen() {
   const liveQuery = useQuery({
     queryKey: liveKey,
     queryFn: () => conductLiveApi.get(week),
-    enabled: week.length > 0 && !pastWeek,
+    enabled: week.length > 0 && !meetingOver,
     retry: false,
     staleTime: 0,
     refetchInterval: (q) => {
@@ -294,9 +323,11 @@ export default function ConductScreen() {
   const isChairman =
     !!chairmanRow?.publisherId && chairmanRow.publisherId === myPublisherId;
   const canRun = isChairman || isAdmin || !!roles?.mayRun;
-  // The result is read by whoever may run it and every appointed brother — by
-  // role or by card (the server says the same, common/appointed-brother.ts).
-  const canRead = canRun || isAppointedBrother(user?.role, meQuery.data?.publisher?.appointment);
+  // The result is read by the admins, the counsel brother and the Life and
+  // Ministry overseer — not by the chairman afterwards: he sees it here when
+  // the meeting ends (the server says the same, common/conduct-overseer.ts).
+  const { responsibilities } = usePermissions();
+  const canRead = isConductOverseer(user?.role, responsibilities);
 
   // The saved result — what an elder reads, and what a chairman sees again
   // on another device. Never kept on the device (lib/offline-keep-rules).
@@ -629,7 +660,7 @@ export default function ConductScreen() {
   const [pushTick, setPushTick] = useState(0);
   const [takenBy, setTakenBy] = useState<string | null>(null);
   const [takeFailed, setTakeFailed] = useState(false);
-  const controlling = !!liveData && !practice && mode === 'run';
+  const controlling = !!liveData && !practice && !meetingOver && mode === 'run';
 
   // Every change of the run goes up. A failure is tried again on the next
   // ask (every two seconds) — not at once, which would hammer a dead network.
@@ -757,9 +788,18 @@ export default function ConductScreen() {
   // screen the moment there is a signal (lib/conduct-resend.ts).
   // Only the device whose taps counted: a watcher's `local` is somebody else's run.
   useEffect(() => {
-    if (practice || watching || !local || state.saved || state.pending || state.finishedAt === null) return;
+    if (practice || watching || meetingOver || !local || state.saved || state.pending || state.finishedAt === null) return;
     apply({ ...state, pending: local });
-  }, [practice, watching, local, state, apply]);
+  }, [practice, watching, meetingOver, local, state, apply]);
+
+  // A RUN LEFT UNFINISHED PAST THE MEETING'S DAY is not the meeting: it is
+  // let go. A FINISHED one waiting to be sent stays — the hall may have had
+  // no signal, and lib/conduct-resend.ts sends it when there is one.
+  useEffect(() => {
+    if (!loaded || !meetingOver || state.meetingStartedAt === null || state.finishedAt !== null) return;
+    setState(EMPTY);
+    AsyncStorage.removeItem(storageKey(week)).catch(() => undefined);
+  }, [loaded, meetingOver, state.meetingStartedAt, state.finishedAt, week]);
 
   const save = useMutation({
     mutationFn: (data: ConductSummaryData) =>
@@ -770,18 +810,21 @@ export default function ConductScreen() {
         persist(n);
         return n;
       });
-      void runQuery.refetch();
+      if (canRead) void runQuery.refetch();
     },
   });
   // Sent once when the meeting ends — and again on the next opening if it
   // did not reach the server (no signal in the hall). Never from practice.
   const triedFor = useRef<number | null>(null);
+  // The server ANSWERED and said no — not the same as no signal, and saying
+  // «нет связи» for it (as on 16 October) sends a man looking for Wi-Fi.
+  const saveRefused = statusOf(save.error) !== undefined;
   useEffect(() => {
-    if (practice || watching || !local || state.saved || !canRun || state.finishedAt === null) return;
+    if (practice || watching || meetingOver || !local || state.saved || !canRun || state.finishedAt === null) return;
     if (triedFor.current === state.finishedAt) return;
     triedFor.current = state.finishedAt;
     save.mutate(local);
-  }, [practice, watching, local, state.saved, state.finishedAt, canRun, save]);
+  }, [practice, watching, meetingOver, local, state.saved, state.finishedAt, canRun, save]);
 
   const titleOf = (id: string | null) => (id ? (byId.get(id)?.partTitle ?? null) : null);
 
@@ -837,9 +880,9 @@ export default function ConductScreen() {
   // The remote result is what a reader sees; the menu is the runner's.
   const remote = runQuery.data ?? null;
   // An appointed brother watching a meeting that is running sees it run.
-  const watchingLive = watching && !!live && !pastWeek;
-  const showLocal = !!local && (canRun || !!practice || watchingLive);
-  const reading = !showLocal && !practice && !watchingLive && (!canRun || pastWeek);
+  const watchingLive = watching && !!live && !meetingOver;
+  const showLocal = !meetingOver && !!local && (canRun || !!practice || watchingLive);
+  const reading = !showLocal && !practice && !watchingLive && (!canRun || meetingOver);
 
   // «⋯» in the header: practice, and «Начать заново» — away from «Вернуть»,
   // which is pressed often, while this wipes the meeting.
@@ -974,7 +1017,7 @@ export default function ConductScreen() {
 
   // The result: this device's own run, or the one saved on the server.
   if (reading) {
-    if (!canRead) return <Notice text={t('conduct.notChairman')} />;
+    if (!canRead) return <Notice text={meetingOver ? t('conduct.result.notYours') : t('conduct.notChairman')} />;
     if (runQuery.isLoading) {
       return (
         <View style={styles.center}>
@@ -1024,11 +1067,13 @@ export default function ConductScreen() {
               {state.saved
                 ? t('conduct.result.saved')
                 : save.isError
-                  ? t('conduct.result.notSaved')
+                  ? saveRefused
+                    ? t('conduct.result.refused', { reason: extractErrorMessage(save.error) })
+                    : t('conduct.result.notSaved')
                   : t('conduct.result.saving')}
             </Text>
           )}
-          {!practice && !watching && save.isError && !state.saved ? (
+          {!practice && !watching && save.isError && !saveRefused && !state.saved ? (
             <Pressable style={styles.ghostBtn} onPress={() => save.mutate(local)}>
               <Text style={styles.ghostBtnText}>{t('conduct.result.retry')}</Text>
             </Pressable>

@@ -4066,8 +4066,8 @@
       "chairmanNamed": "Chairman · {{name}}",
       "counsel": "Counsel after the parts ({{n}})",
       "none": "There is no result for this meeting: it was not run to the end on the conduct screen, or more than 7 days have passed.",
-      "keep": "The result is kept for 7 days, then deleted. The chairman and the appointed brothers can see it.",
-      "saved": "Result saved for 7 days — the chairman and the appointed brothers can see it.",
+      "keep": "The result is kept for 7 days, then deleted. The admins, the counsel brother and the Life and Ministry overseer can see it.",
+      "saved": "Result saved for 7 days — the admins, the counsel brother and the Life and Ministry overseer can see it.",
       "saving": "Saving the result…",
       "notSaved": "The result was not saved — no connection. It stayed on this device.",
       "retry": "Save again",
@@ -4077,7 +4077,9 @@
       "legacyNote": "The first parts ({{n}}) were timed by the previous version of the app — their time includes the counsel minute.",
       "cardTitle": "Meeting result · {{day}}",
       "cardKeep": "Available until {{day}}",
-      "cardOpen": "Open the result"
+      "cardOpen": "Open the result",
+      "refused": "The result was not saved: {{reason}}",
+      "notYours": "The result of the meeting is seen by the admins, the counsel brother and the Life and Ministry overseer."
     },
     "live": {
       "runningYou": "You are keeping time",
@@ -4624,9 +4626,9 @@
       "ATTENDANCE_NEEDS_FIGURE": "For a meeting that was held, please give the number present.",
       "ATTENDANCE_NEGATIVE": "The number present cannot be negative.",
       "CONDUCT_RUN_FORBIDDEN": "The result of the meeting is saved by that week’s chairman or timekeeper.",
-      "CONDUCT_LIVE_FORBIDDEN": "The meeting as it runs is seen by appointed brothers and run by that week’s chairman or timekeeper.",
+      "CONDUCT_LIVE_FORBIDDEN": "The meeting as it runs is seen by the admins, the counsel brother and the Life and Ministry overseer, and run by that week’s chairman or timekeeper.",
       "CONDUCT_LIVE_NOT_YOURS": "Another brother runs the meeting now.",
-      "CONDUCT_RESULT_FORBIDDEN": "The result of the meeting is seen by its chairman and the appointed brothers.",
+      "CONDUCT_RESULT_FORBIDDEN": "The result of the meeting is seen by the admins, the counsel brother and the Life and Ministry overseer.",
       "SCHEDULE_PAST_NEEDS_CONFIRM": "This moves meetings of weeks already begun to another day, and attendance for {{moved}} of them is already recorded on the old day. Please confirm saving.",
       "SCHEDULE_VERSION_IN_FORCE": "This schedule is already in force — past weeks are counted by it, so it cannot be deleted. Correct it by saving the schedule with the same start date.",
       "GROUP_ALREADY_REMOVED": "This group is already removed.",
@@ -4636,7 +4638,9 @@
       "FS_ALREADY_CANCELLED": "The meeting is already cancelled.",
       "FS_NOT_CANCELLED": "The meeting is not cancelled — there is nothing to restore.",
       "PROGRAMME_PAST_LOCKED": "The meeting on {{date}} was more than a week ago — its programme is the record. It could be changed until {{until}}.",
-      "PROGRAMME_FIX_FORBIDDEN": "A programme can be corrected after the fact by an administrator and the coordinator of the body of elders."
+      "PROGRAMME_FIX_FORBIDDEN": "A programme can be corrected after the fact by an administrator and the coordinator of the body of elders.",
+      "CONDUCT_MEETING_OVER": "This meeting is over — it is not run again after its day.",
+      "CONDUCT_RESULT_KEPT": "The result of this meeting is saved already and cannot be replaced after its day."
     }
   }
 }

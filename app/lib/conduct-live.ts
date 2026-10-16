@@ -144,18 +144,20 @@ export function liveMode(input: {
   return 'run';
 }
 
+/** The responsibilities that oversee how the midweek meeting runs. */
+export const CONDUCT_OVERSEER_RESPONSIBILITIES = ['adviser', 'life_ministry_overseer'] as const;
+
 /**
- * An appointed brother — an elder or a ministerial servant — by the role of
- * his account or by his own card; an admin too. The same rule as the
- * server's (common/appointed-brother.ts): they read how a meeting ran for its
- * seven days and may watch it run (Lionel, 15 October 2026).
+ * Who oversees how the midweek meeting runs (Lionel, 16 October 2026): the
+ * admins, the brother who gives counsel and the Life and Ministry overseer.
+ * They read the result for its seven days and may watch the meeting run; the
+ * same rule as the server's (common/conduct-overseer.ts). The chairman and
+ * the timekeeper see the result on their own screen when the meeting ends.
  */
-export function isAppointedBrother(role: string | null | undefined, appointment: string | null | undefined): boolean {
-  return (
-    role === 'admin' ||
-    role === 'elder' ||
-    role === 'ministerial_servant' ||
-    appointment === 'elder' ||
-    appointment === 'ministerial_servant'
-  );
+export function isConductOverseer(role: string | null | undefined, responsibilities: Iterable<string>): boolean {
+  if (role === 'admin') return true;
+  for (const r of responsibilities) {
+    if ((CONDUCT_OVERSEER_RESPONSIBILITIES as readonly string[]).includes(r)) return true;
+  }
+  return false;
 }

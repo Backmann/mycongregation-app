@@ -138,14 +138,14 @@ check('who taps on which device', () => {
   assert.equal(L.liveMode({ ...base, practice: true, roles: roles(), live: { mine: false } }), 'run');
 });
 
-check('appointed brothers — by role or by card, as on the server', () => {
-  assert.equal(L.isAppointedBrother('elder', 'publisher'), true);
-  assert.equal(L.isAppointedBrother('ministerial_servant', null), true);
-  assert.equal(L.isAppointedBrother('admin', null), true);
-  assert.equal(L.isAppointedBrother('publisher', 'ministerial_servant'), true, 'by his card');
-  assert.equal(L.isAppointedBrother('publisher', 'elder'), true);
-  assert.equal(L.isAppointedBrother('publisher', 'publisher'), false);
-  assert.equal(L.isAppointedBrother(undefined, undefined), false);
+check('who oversees how the meeting runs — as on the server (16 October 2026)', () => {
+  assert.equal(L.isConductOverseer('admin', []), true);
+  assert.equal(L.isConductOverseer('elder', ['adviser']), true, 'the counsel brother');
+  assert.equal(L.isConductOverseer('ministerial_servant', ['life_ministry_overseer']), true);
+  assert.equal(L.isConductOverseer('elder', []), false, 'an elder as such does not');
+  assert.equal(L.isConductOverseer('elder', ['secretary', 'body_coordinator']), false);
+  assert.equal(L.isConductOverseer('ministerial_servant', []), false);
+  assert.equal(L.isConductOverseer(undefined, new Set()), false);
 });
 
 console.log(`conduct-live: ${n} groups ok`);
