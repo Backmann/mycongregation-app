@@ -158,4 +158,18 @@ check('who oversees how the meeting runs — as on the server (16 October 2026)'
   assert.equal(L.isConductOverseer(undefined, new Set()), false);
 });
 
+check('a watching screen that cannot be trusted says so (17 October 2026)', () => {
+  const ok = { failed: false, lastGoodAtMs: T, nowMs: T + 3000, controllerSilent: false };
+  assert.equal(L.watchUnsure(ok), false, 'a fresh answer three seconds ago');
+  assert.equal(L.watchUnsure({ ...ok, failed: true }), true, 'the last ask failed');
+  assert.equal(L.watchUnsure({ ...ok, nowMs: T + L.LIVE_STALE_MS + 1 }), true, 'an ask still out, nothing new for too long');
+  assert.equal(L.watchUnsure({ ...ok, nowMs: T + L.LIVE_STALE_MS }), false, 'right at the limit is still fine');
+  assert.equal(L.watchUnsure({ ...ok, controllerSilent: true }), true, 'the running device went silent');
+  assert.equal(L.watchUnsure({ ...ok, lastGoodAtMs: 0 }), true, 'never had a good answer');
+  // A hung ask must fail before the screen calls itself stale, or the next
+  // ask never goes out: the library waits for the one still out.
+  assert.ok(L.LIVE_REQUEST_TIMEOUT_MS < L.LIVE_STALE_MS);
+  assert.ok(L.LIVE_STALE_MS > 2 * L.LIVE_POLL_MS, 'one missed ask alone does not grey the screen');
+});
+
 console.log(`conduct-live: ${n} groups ok`);

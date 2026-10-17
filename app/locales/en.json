@@ -4106,6 +4106,7 @@
       "chairmanSilent": "Chairman: {{name}} · offline",
       "offlineWatch": "No connection to the server · updated at {{time}}. The part may already be over.",
       "offlineRun": "No connection to the server. The run is kept on this device and will be sent once the connection is back.",
+      "unsure": "No fresh data — the countdown may be wrong",
       "waitingTimekeeper": "{{name}} keeps the time. The countdown appears here once he taps “Start the meeting”.",
       "waitingNobody": "The meeting has not started yet.",
       "take": "Take over",

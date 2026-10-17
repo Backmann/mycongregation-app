@@ -30,7 +30,7 @@ import {
   specialEventsApi,
 } from '../../../lib/api';
 import { weekRules } from '../../../lib/week-rules';
-import { fromWire, isConductOverseer, isSilent, liveMode, LIVE_POLL_MS, toWire } from '../../../lib/conduct-live';
+import { fromWire, isConductOverseer, isSilent, liveMode, LIVE_POLL_MS, toWire, watchUnsure } from '../../../lib/conduct-live';
 import { usePermissions } from '../../../lib/permissions';
 import { useAuth } from '../../../lib/auth';
 import { buildMidweekRunOrder, RunSegment, totalRunMinutes } from '../../../lib/run-order';
@@ -452,6 +452,11 @@ export default function ConductScreen() {
     return () => clearInterval(id);
   }, [ticking]);
 
+  // Awake while the meeting runs — and while this device watches a meeting
+  // somebody else runs, even before the first part has started (17 October
+  // 2026): the chairman's iPad waiting for the timekeeper went dark before.
+  const keepAwake = ticking || (watching && !!live && !meetingOver);
+
   // Экран не должен гаснуть, пока идёт встреча.
   //
   // В ПРИЛОЖЕНИИ (8 октября 2026). Раньше здесь было написано, что
@@ -465,7 +470,7 @@ export default function ConductScreen() {
   // нативную часть и бросает исключение, если её нет. Сборка, где её вдруг не
   // окажется, должна просто гаснуть, как раньше, а не терять весь экран.
   useEffect(() => {
-    if (Platform.OS === 'web' || !ticking) return;
+    if (Platform.OS === 'web' || !keepAwake) return;
     const TAG = 'conduct-mode';
     let keep: {
       activateKeepAwakeAsync: (tag?: string) => Promise<void>;
@@ -481,26 +486,52 @@ export default function ConductScreen() {
     return () => {
       void keep?.deactivateKeepAwake(TAG).catch(() => undefined);
     };
-  }, [ticking]);
+  }, [keepAwake]);
   // В браузере — его собственным средством.
+  //
+  // БРАУЗЕР СНИМАЕТ ЗАПРЕТ САМ (17 октября 2026), как только страница уходит
+  // из виду: пришло уведомление, экран мигнул блокировкой, переключили
+  // вкладку. Раньше запрет брался один раз при старте — после первого такого
+  // случая экран гас посреди встречи. Теперь он берётся заново, когда
+  // страница снова видна. И запрет, пришедший уже после ухода с экрана,
+  // сразу отпускается, а не остаётся висеть.
   useEffect(() => {
-    if (Platform.OS !== 'web' || !ticking) return;
-    let lock: { release: () => Promise<void> } | null = null;
-    const nav = navigator as Navigator & {
-      wakeLock?: { request: (type: 'screen') => Promise<typeof lock> };
+    if (Platform.OS !== 'web' || !keepAwake) return;
+    type Lock = { release: () => Promise<void>; addEventListener?: (t: 'release', f: () => void) => void };
+    const nav = navigator as Navigator & { wakeLock?: { request: (type: 'screen') => Promise<Lock> } };
+    if (!nav.wakeLock) return; // старый Safari — просто без этого
+    let lock: Lock | null = null;
+    let done = false;
+    const take = () => {
+      if (done || lock || document.visibilityState !== 'visible') return;
+      nav.wakeLock
+        ?.request('screen')
+        .then((l) => {
+          if (done) {
+            l.release().catch(() => undefined);
+            return;
+          }
+          lock = l;
+          l.addEventListener?.('release', () => {
+            if (lock === l) lock = null;
+          });
+        })
+        .catch(() => {
+          // Отказ (например, режим энергосбережения) — без этого.
+        });
     };
-    nav.wakeLock
-      ?.request('screen')
-      .then((l) => {
-        lock = l;
-      })
-      .catch(() => {
-        // Старый Safari или отказ пользователя — просто без этого.
-      });
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') take();
+    };
+    take();
+    document.addEventListener('visibilitychange', onVisible);
     return () => {
+      done = true;
+      document.removeEventListener('visibilitychange', onVisible);
       lock?.release().catch(() => undefined);
+      lock = null;
     };
-  }, [ticking]);
+  }, [keepAwake]);
 
   const finished = run.index >= segments.length && segments.length > 0;
   const current = finished ? null : (segments[run.index] ?? null);
@@ -955,7 +986,14 @@ export default function ConductScreen() {
 
   // The line that says who runs the meeting and whether everybody is there.
   const serverNowEst = Date.now() + offset;
-  const offline = !!liveData && liveQuery.isError;
+  // No good answer, or none for a while (an ask still out) — see watchUnsure.
+  const offline =
+    !!liveData &&
+    watchUnsure({ failed: liveQuery.isError, lastGoodAtMs: liveQuery.dataUpdatedAt, nowMs: Date.now(), controllerSilent: false });
+  // The device that runs it has gone silent: its taps do not arrive either.
+  const controllerGone = !!live && !live.mine && !offline && isSilent(live.controllerSeenAt, serverNowEst);
+  // What a watching device shows can no longer be trusted: grey, and words.
+  const unsure = watching && (offline || controllerGone);
   const liveLines: { text: string; tone: 'live' | 'warn' | 'muted' }[] = [];
   if (!practice && liveData) {
     if (offline) {
@@ -977,9 +1015,10 @@ export default function ConductScreen() {
       }
     } else if (live) {
       const name = live.controllerName ?? t('conduct.live.someone');
-      const silent = !offline && isSilent(live.controllerSeenAt, serverNowEst);
-      // No green dot for a device that has stopped answering.
-      liveLines.push({ text: t('conduct.live.runningBy', { name }), tone: silent ? 'muted' : 'live' });
+      const silent = controllerGone;
+      // No green dot for a device that has stopped answering — nor while
+      // this one cannot hear the server: then nobody knows.
+      liveLines.push({ text: t('conduct.live.runningBy', { name }), tone: silent || offline ? 'muted' : 'live' });
       if (silent) {
         const since = clockOf(new Date(Date.parse(live.controllerSeenAt) - offset));
         liveLines.push({ text: t('conduct.live.controllerSilent', { time: since }), tone: 'warn' });
@@ -1120,8 +1159,10 @@ export default function ConductScreen() {
   // in twelve tells amber from red badly, and a minus alone is easy to miss.
   const left = current ? current.partMin * 60 - currentElapsed : 0;
   const tone: 'calm' | 'soon' | 'over' = left < 0 ? 'over' : left <= LAST_SECONDS ? 'soon' : 'calm';
-  const counselLong = current ? counselElapsed > current.counselMin * 60 : false;
-  const big = [wide ? styles.countdownWide : styles.countdown, watching && offline && styles.countdownStale];
+  const counselLong = !unsure && (current ? counselElapsed > current.counselMin * 60 : false);
+  const big = [wide ? styles.countdownWide : styles.countdown, unsure && styles.countdownStale];
+  // Instead of «сверх времени» on a screen that does not know.
+  const unsureLine = unsure ? <Text style={[styles.stateLine, styles.unsureLine]}>{t('conduct.live.unsure')}</Text> : null;
 
   const nowCard = current ? (
     counselling ? (
@@ -1135,6 +1176,7 @@ export default function ConductScreen() {
         </Text>
         <Text style={[...big, counselLong && styles.toneSoon]}>{mmss(counselElapsed)}</Text>
         {counselLong ? <Text style={[styles.stateLine, styles.toneSoon]}>{t('conduct.counsel.long')}</Text> : null}
+        {unsureLine}
         <Text style={styles.planned}>{t('conduct.counsel.note')}</Text>
       </View>
     ) : (
@@ -1146,13 +1188,14 @@ export default function ConductScreen() {
           nameById={nameById}
           big
         />
-        <Text style={[...big, !(watching && offline) && tone === 'soon' && styles.toneSoon, !(watching && offline) && tone === 'over' && styles.toneOver]}>
+        <Text style={[...big, !unsure && tone === 'soon' && styles.toneSoon, !unsure && tone === 'over' && styles.toneOver]}>
           {formatCountdown(left)}
         </Text>
-        {started && tone === 'soon' ? (
+        {unsureLine}
+        {!unsure && started && tone === 'soon' ? (
           <Text style={[styles.stateLine, styles.toneSoon]}>{t('conduct.lastSeconds')}</Text>
         ) : null}
-        {started && tone === 'over' ? (
+        {!unsure && started && tone === 'over' ? (
           <Text style={[styles.stateLine, styles.toneOver]}>{t('conduct.overtime')}</Text>
         ) : null}
         <Text style={styles.planned}>
@@ -1218,7 +1261,7 @@ export default function ConductScreen() {
             {t('conduct.endsAt')} <Text style={styles.endTime}>{endsAt}</Text>
             {plannedEnd ? <Text style={styles.endPlanned}>{`  ${t('conduct.byProgramme', { time: plannedEnd })}`}</Text> : null}
           </Text>
-          <Text style={[styles.drift, driftStyle(driftSec)]}>{driftLabel(driftSec, t)}</Text>
+          <Text style={[styles.drift, unsure ? styles.driftOk : driftStyle(driftSec)]}>{driftLabel(driftSec, t)}</Text>
         </View>
       ) : null}
     </View>
@@ -1441,6 +1484,7 @@ const styles = StyleSheet.create({
   },
   // The watcher lost the signal: the number is a guess and looks like one.
   countdownStale: { color: '#94a3b8' },
+  unsureLine: { color: '#64748b' },
   toneSoon: { color: '#b45309' },
   toneOver: { color: '#b91c1c' },
   stateLine: { fontFamily: 'Manrope_700Bold', fontSize: 16, marginTop: 2 },
