@@ -20,7 +20,19 @@
  *      без произвольных команд: неизвестное название отклоняется;
  *   3. пишет весь вывод в .phone-jobs/<имя>.log, а итог — в
  *      .phone-jobs/<имя>.done (код выхода, время, коммит).
- * Снимки и report.txt скрипты по-прежнему кладут в ~/congmap-android-screens.
+ * Снимки и report.txt скрипты android-* по-прежнему кладут в
+ * ~/congmap-android-screens.
+ *
+ * Сценарии Maestro (с 17 октября): задание `maestro-<имя>` запускает
+ * `maestro test maestro/<имя>.yaml` из корня репозитория — любой сценарий,
+ * который лежит в репозитории (значит, прошёл через pull request). Отчёт
+ * report.xml и снимки сценария ложатся в .phone-jobs/<заявка>.out/. На время
+ * сценария анимации телефона выключаются (как в скриптах android-*: иначе
+ * бесконечная анимация мешает дождаться экрана), потом возвращаются как были.
+ *
+ * Окно Git Bash помнит PATH на момент своего открытия. Что поставлено позже
+ * (Java, Maestro), исполнитель перед каждым заданием дочитывает из реестра
+ * Windows сам — новое окно открывать не нужно.
  *
  * Если с GitHub пришла новая версия самого исполнителя, он перезапускается
  * сам в том же окне, а заявка ждёт новую версию.
@@ -49,6 +61,29 @@ const adbPath = () => {
   return 'adb';
 };
 const ADB = adbPath();
+const FLOWS = join(ROOT, 'maestro');
+
+// Maestro без вопросов и без отправки сведений о себе: окна для ответа у него нет.
+process.env.MAESTRO_CLI_NO_ANALYTICS ??= '1';
+process.env.MAESTRO_CLI_ANALYSIS_NOTIFICATION_DISABLED ??= 'true';
+process.env.MAESTRO_DISABLE_UPDATE_CHECK ??= 'true';
+
+// PATH из реестра (системный и пользовательский) — то, что окно Git Bash не
+// знает, если программу поставили после его открытия.
+function refreshPath() {
+  if (process.platform !== 'win32') return;
+  const r = spawnSync(
+    'powershell',
+    ['-NoProfile', '-Command', "[Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [Environment]::GetEnvironmentVariable('Path','User')"],
+    { encoding: 'utf8', windowsHide: true },
+  );
+  if (r.status !== 0 || !r.stdout) return;
+  const key = Object.keys(process.env).find((k) => k.toUpperCase() === 'PATH') || 'PATH';
+  const now = process.env[key] || '';
+  const have = new Set(now.split(';').map((d) => d.toLowerCase()));
+  const add = r.stdout.trim().split(';').filter((d) => d && !have.has(d.toLowerCase()));
+  if (add.length) process.env[key] = `${now};${add.join(';')}`;
+}
 
 // Единственное, что исполнитель умеет запускать. Новое задание — только
 // строкой здесь, через pull request.
@@ -62,7 +97,8 @@ const TASKS = {
       `const { spawnSync } = require('node:child_process');
 for (const [n, c] of [['node', 'node --version'], ['git', 'git --version'], ['adb', '"${ADB}" version'],
   ['java', 'java -version'], ['JAVA_HOME', 'echo %JAVA_HOME%'], ['maestro', 'maestro --version']]) {
-  const r = spawnSync(c, { shell: true, encoding: 'utf8' });
+  // chcp 65001: ответы cmd по-русски приходят в UTF-8, а не в кодировке 866.
+  const r = spawnSync((process.platform === 'win32' ? 'chcp 65001 >nul && ' : '') + c, { shell: true, encoding: 'utf8' });
   const out = ((r.stdout || '') + (r.stderr || '')).split(/\\r?\\n/).filter((l) => l.trim() && !l.startsWith('Picked up'))[0] || '';
   console.log(n.padEnd(10) + (r.status === 0 ? out : 'нет (' + (out || 'код ' + r.status) + ')'));
 }`,
@@ -80,6 +116,50 @@ for (const [n, c] of [['node', 'node --version'], ['git', 'git --version'], ['ad
   },
   'android-changes': { what: 'переносы, отмены, журнал', cmd: ['node', 'scripts/android-changes.mjs'] },
 };
+
+const flowNames = () =>
+  existsSync(FLOWS)
+    ? readdirSync(FLOWS)
+        .filter((f) => /^[a-z0-9-]+\.yaml$/.test(f))
+        .map((f) => `maestro-${f.slice(0, -'.yaml'.length)}`)
+    : [];
+
+// Задание maestro-<имя>: только сценарий, который лежит в maestro/ репозитория.
+function maestroTask(name, out) {
+  const m = /^maestro-([a-z0-9-]+)$/.exec(name);
+  if (!m) return null;
+  const flow = join(FLOWS, `${m[1]}.yaml`);
+  if (!existsSync(flow)) return null;
+  const q = (a) => (process.platform === 'win32' ? `"${a}"` : a);
+  return {
+    what: `сценарий Maestro maestro/${m[1]}.yaml`,
+    cmd: ['maestro', 'test', q(flow), '--format', 'junit', '--output', q(join(out, 'report.xml')), '--test-output-dir', q(out)],
+    cwd: out,
+    shell: process.platform === 'win32', // maestro на Windows — это maestro.bat
+    out,
+    phone: true,
+  };
+}
+
+// Анимации телефона: выключить на время сценария и вернуть как были.
+const SCALES = ['window_animation_scale', 'transition_animation_scale', 'animator_duration_scale'];
+function animationsOff(logFile) {
+  spawnSync(ADB, ['start-server'], { encoding: 'utf8' });
+  const was = {};
+  for (const k of SCALES) {
+    const r = spawnSync(ADB, ['shell', 'settings', 'get', 'global', k], { encoding: 'utf8' });
+    was[k] = (r.stdout || '').trim();
+    spawnSync(ADB, ['shell', 'settings', 'put', 'global', k, '0'], { encoding: 'utf8' });
+  }
+  appendFileSync(logFile, `[исполнитель] анимации на телефоне выключены (были: ${JSON.stringify(was)})\n`);
+  return () => {
+    for (const k of SCALES) {
+      const v = was[k] && was[k] !== 'null' ? was[k] : '1';
+      spawnSync(ADB, ['shell', 'settings', 'put', 'global', k, v], { encoding: 'utf8' });
+    }
+    appendFileSync(logFile, '[исполнитель] анимации на телефоне возвращены\n');
+  };
+}
 
 const stamp = () => new Date().toISOString().replace('T', ' ').slice(0, 19);
 const say = (line) => console.log(`[${stamp()}] ${line}`);
@@ -109,7 +189,12 @@ function freshMain() {
 function runTask(name, task, logFile) {
   return new Promise((done) => {
     const [bin, ...args] = task.cmd;
-    const child = spawn(bin, args, { cwd: APP, env: { ...process.env, ADB }, windowsHide: true });
+    const child = spawn(bin, args, {
+      cwd: task.cwd || APP,
+      env: { ...process.env, ADB },
+      shell: Boolean(task.shell),
+      windowsHide: true,
+    });
     const write = (chunk) => appendFileSync(logFile, chunk);
     child.stdout.on('data', write);
     child.stderr.on('data', write);
@@ -151,16 +236,24 @@ async function handle(file) {
   }
   result.note = fresh.note;
   result.head = fresh.head || null;
-  const task = Object.hasOwn(TASKS, name) ? TASKS[name] : null;
+  const task = Object.hasOwn(TASKS, name) ? TASKS[name] : maestroTask(name, join(JOBS, `${id}.out`));
   if (!fresh.ok) {
     result.exit = 3;
   } else if (!task) {
-    result.note = `неизвестное задание «${name}»; разрешены: ${Object.keys(TASKS).join(', ')}`;
+    result.note = `неизвестное задание «${name}»; разрешены: ${[...Object.keys(TASKS), ...flowNames()].join(', ')}`;
     result.exit = 2;
     appendFileSync(logFile, `[исполнитель] ${result.note}\n`);
   } else {
     say(`${id}: ${name} — ${task.what}`);
-    result.exit = await runTask(name, task, logFile);
+    refreshPath();
+    if (task.out) mkdirSync(task.out, { recursive: true });
+    const restore = task.phone ? animationsOff(logFile) : null;
+    try {
+      result.exit = await runTask(name, task, logFile);
+    } finally {
+      restore?.();
+    }
+    if (task.out) result.out = task.out;
   }
   result.finished = stamp();
   appendFileSync(logFile, `\n[исполнитель] готово, код ${result.exit}, ${result.finished}\n`);
@@ -175,7 +268,8 @@ for (const f of readdirSync(JOBS).filter((f) => f.endsWith('.running'))) {
   renameSync(join(JOBS, f), join(JOBS, f.replace(/\.running$/, '.abandoned')));
 }
 say(`Исполнитель запущен. Жду заявки в ${JOBS}`);
-say(`adb: ${ADB}. Задания: ${Object.keys(TASKS).join(', ')}`);
+refreshPath();
+say(`adb: ${ADB}. Задания: ${[...Object.keys(TASKS), ...flowNames()].join(', ')}`);
 say('Окно не закрывать; остановить — Ctrl+C.');
 
 let busy = false;
