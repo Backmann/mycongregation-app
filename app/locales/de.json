@@ -4106,6 +4106,7 @@
       "chairmanSilent": "Vorsitzender: {{name}} · nicht verbunden",
       "offlineWatch": "Keine Verbindung zum Server · Stand {{time}}. Vielleicht ist der Programmpunkt schon zu Ende.",
       "offlineRun": "Keine Verbindung zum Server. Der Verlauf wird auf diesem Gerät gespeichert und gesendet, sobald die Verbindung zurück ist.",
+      "unsure": "Keine aktuellen Daten – die Zeitanzeige stimmt vielleicht nicht",
       "waitingTimekeeper": "Die Zeit führt {{name}}. Der Countdown erscheint hier, sobald er „Zusammenkunft beginnen“ tippt.",
       "waitingNobody": "Die Zusammenkunft hat noch nicht begonnen.",
       "take": "Zeitführung übernehmen",
