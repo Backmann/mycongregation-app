@@ -29,3 +29,7 @@ commit-msg.txt
 dist/
 .expo/
 app/.screens/
+
+# Requests from Claude to the phone runner and their logs (app/scripts/phone-runner.mjs).
+# They live only on Lionel's laptop.
+.phone-jobs/
