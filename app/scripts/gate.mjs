@@ -80,6 +80,8 @@ const STEPS = [
   // in, and a programme that changes under a running meeting (15.10.2026).
   ['Запись хода встречи', 'node', ['scripts/check-conduct-record.mjs']],
   ['Ход встречи вживую', 'node', ['scripts/check-conduct-live.mjs']],
+  // The chairman's screen at the lectern (18.10.2026): amber, the start, «Проверить экран».
+  ['Экран председателя', 'node', ['scripts/check-conduct-stage.mjs']],
   ['Подробный итог встречи', 'node', ['scripts/check-conduct-report.mjs']],
   ['Перенос встречи для проповеди', 'node', ['scripts/check-field-moves.mjs']],
   ['Даты по-немецки и по-английски', 'node', ['scripts/check-date-patterns.mjs']],

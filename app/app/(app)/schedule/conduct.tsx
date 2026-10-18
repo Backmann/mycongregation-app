@@ -42,7 +42,10 @@ import { KeptNotice } from '../../../components/ConnectionState';
 import { ConductSummaryData, mmss } from '../../../components/ConductSummary';
 import { ConductReport } from '../../../components/ConductReport';
 import { confirm } from '../../../components/ConfirmHost';
-import { formatDateISO, startOfWeekMonday } from '../../../lib/dates';
+import { formatDateISO, parseISODate, startOfWeekMonday } from '../../../lib/dates';
+import { ConductStage, STAGE_SECTION_COLORS, type StagePart } from '../../../components/ConductStage';
+import { demoFrame, endDriftSec, stageTone, untilStartSec, warnSecFor } from '../../../lib/conduct-stage';
+import { resolveSubsection, SUBSECTIONS } from '../../../lib/parts';
 import {
   EMPTY_RUN as EMPTY,
   inCounsel,
@@ -129,8 +132,7 @@ const TICK_MS = 1000;
 
 /** After a tap the big button does not answer for this long (a double tap). */
 const TAP_LOCK_MS = 1500;
-/** The last stretch of a part, shown amber and in words. */
-const LAST_SECONDS = 30;
+/* The last stretch of a part (amber) — lib/conduct-stage.ts warnSecFor. */
 /** A counsel shorter than this was no counsel — it is not shown. */
 const MIN_COUNSEL_SEC = 3;
 
@@ -168,7 +170,7 @@ function snapshot(s: RunState): Omit<RunState, 'prev'> {
 }
 
 export default function ConductScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const params = useLocalSearchParams<{ week?: string }>();
   const week = typeof params.week === 'string' ? params.week : '';
@@ -406,6 +408,12 @@ export default function ConductScreen() {
   // пробная встреча, доведённая до «Завершить», семь дней висела бы итогом у
   // старейшин.
   const [practice, setPractice] = useState<RunState | null>(null);
+  // «Проверить экран»: when it began (this device only, nothing saved).
+  const [check, setCheck] = useState<number | null>(null);
+  // After «Взять ведение» from the chairman's screen: keep that screen, with buttons.
+  const [stageRun, setStageRun] = useState(false);
+  // Whether the screen is being kept awake — «Проверить экран» says so.
+  const [awakeOk, setAwakeOk] = useState<boolean | null>(null);
 
   // WHO TAPS ON THIS DEVICE (lib/conduct-live.ts liveMode). Watching, the run
   // shown is the controller's, read from the server and moved to this
@@ -455,7 +463,25 @@ export default function ConductScreen() {
   // Awake while the meeting runs — and while this device watches a meeting
   // somebody else runs, even before the first part has started (17 October
   // 2026): the chairman's iPad waiting for the timekeeper went dark before.
-  const keepAwake = ticking || (watching && !!live && !meetingOver);
+  // And during «Проверить экран», which shows that it is.
+  const keepAwake = ticking || (watching && !meetingOver) || check !== null;
+  // The chairman's screen shows the wall clock and the time to the start,
+  // before anything ticks.
+  // A chairman who took the taps over from the timekeeper keeps his screen —
+  // also after reopening it (the server says the taps are his now).
+  const onStage = watching || stageRun || (!!live?.mine && !!roles?.hasTimekeeper && !roles?.isTimekeeper);
+  const stageClockOn = onStage;
+  useEffect(() => {
+    if (!stageClockOn || ticking) return;
+    const id = setInterval(() => setNow(Date.now()), TICK_MS);
+    return () => clearInterval(id);
+  }, [stageClockOn, ticking]);
+  // «Проверить экран» runs on its own clock.
+  useEffect(() => {
+    if (check === null) return;
+    const id = setInterval(() => setNow(Date.now()), 250);
+    return () => clearInterval(id);
+  }, [check]);
 
   // Экран не должен гаснуть, пока идёт встреча.
   //
@@ -479,9 +505,13 @@ export default function ConductScreen() {
     try {
       // eslint-disable-next-line @typescript-eslint/no-require-imports
       keep = require('expo-keep-awake');
-      void keep?.activateKeepAwakeAsync(TAG).catch(() => undefined);
+      void keep
+        ?.activateKeepAwakeAsync(TAG)
+        .then(() => setAwakeOk(true))
+        .catch(() => setAwakeOk(false));
     } catch {
       keep = null;
+      setAwakeOk(false);
     }
     return () => {
       void keep?.deactivateKeepAwake(TAG).catch(() => undefined);
@@ -499,7 +529,10 @@ export default function ConductScreen() {
     if (Platform.OS !== 'web' || !keepAwake) return;
     type Lock = { release: () => Promise<void>; addEventListener?: (t: 'release', f: () => void) => void };
     const nav = navigator as Navigator & { wakeLock?: { request: (type: 'screen') => Promise<Lock> } };
-    if (!nav.wakeLock) return; // старый Safari — просто без этого
+    if (!nav.wakeLock) {
+      setAwakeOk(false); // старый Safari — просто без этого
+      return;
+    }
     let lock: Lock | null = null;
     let done = false;
     const take = () => {
@@ -512,12 +545,14 @@ export default function ConductScreen() {
             return;
           }
           lock = l;
+          setAwakeOk(true);
           l.addEventListener?.('release', () => {
             if (lock === l) lock = null;
           });
         })
         .catch(() => {
           // Отказ (например, режим энергосбережения) — без этого.
+          setAwakeOk(false);
         });
     };
     const onVisible = () => {
@@ -579,6 +614,8 @@ export default function ConductScreen() {
   const endsAt = clockOf(new Date(now + remainingSec * 1000));
   const meetingTime = effectiveVersionFor(settingsQuery.data?.versions, week)?.midweekTime ?? null;
   const plannedEnd = meetingTime ? addMinutes(meetingTime, totalRunMinutes(segments)) : null;
+  // Behind or ahead of the programme's END — a late start counts (18 October 2026).
+  const shownDriftSec = endDriftSec(now + remainingSec * 1000, plannedEnd, meetingDay, driftSec);
 
   // ONE TAP, ONE STEP. The big button changes its meaning under the finger
   // («Закончено» → «Следующая»), so a double tap on stage would skip the
@@ -783,6 +820,7 @@ export default function ConductScreen() {
         apply(next);
       }
       putLive(ans);
+      if (watching) setStageRun(true);
     } catch {
       setTakeFailed(true);
     }
@@ -938,7 +976,7 @@ export default function ConductScreen() {
   // «⋯» in the header: practice, and «Начать заново» — away from «Вернуть»,
   // which is pressed often, while this wipes the meeting.
   const navigation = useNavigation();
-  const menuOpen = canRun && !reading && segments.length > 0;
+  const menuOpen = (canRun || watching) && !reading && segments.length > 0;
   useEffect(() => {
     navigation.setOptions({
       headerRight: !menuOpen
@@ -948,6 +986,22 @@ export default function ConductScreen() {
               title={t('conduct.title')}
               color={HEADER_ICON}
               items={[
+                check === null
+                  ? {
+                      key: 'check',
+                      icon: 'tv-outline' as const,
+                      title: t('conduct.stage.check.menu'),
+                      subtitle: t('conduct.stage.check.menuHint'),
+                      onPress: () => setCheck(Date.now()),
+                    }
+                  : {
+                      key: 'check-end',
+                      icon: 'tv-outline' as const,
+                      title: t('conduct.stage.check.end'),
+                      subtitle: t('conduct.stage.check.sub'),
+                      onPress: () => setCheck(null),
+                    },
+                ...(canRun ? [
                 practice
                   ? {
                       key: 'practice-end',
@@ -963,7 +1017,8 @@ export default function ConductScreen() {
                       subtitle: t('conduct.practice.hint'),
                       onPress: () => setPractice(EMPTY),
                     },
-                ...(run.meetingStartedAt !== null && !watching
+                ] : []),
+                ...(canRun && run.meetingStartedAt !== null && !watching
                   ? [
                       {
                         key: 'again',
@@ -982,7 +1037,7 @@ export default function ConductScreen() {
     });
     // reset is recreated each render; what it reads is in the deps below.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [navigation, menuOpen, practice, run.meetingStartedAt, watching, t]);
+  }, [navigation, menuOpen, practice, run.meetingStartedAt, watching, check, canRun, t]);
 
   // The line that says who runs the meeting and whether everybody is there.
   const serverNowEst = Date.now() + offset;
@@ -1158,7 +1213,7 @@ export default function ConductScreen() {
   // The countdown, and what it means in words as well as colour: about one man
   // in twelve tells amber from red badly, and a minus alone is easy to miss.
   const left = current ? current.partMin * 60 - currentElapsed : 0;
-  const tone: 'calm' | 'soon' | 'over' = left < 0 ? 'over' : left <= LAST_SECONDS ? 'soon' : 'calm';
+  const tone = current ? stageTone(left, current.partMin) : 'calm';
   const counselLong = !unsure && (current ? counselElapsed > current.counselMin * 60 : false);
   const big = [wide ? styles.countdownWide : styles.countdown, unsure && styles.countdownStale];
   // Instead of «сверх времени» on a screen that does not know.
@@ -1193,7 +1248,9 @@ export default function ConductScreen() {
         </Text>
         {unsureLine}
         {!unsure && started && tone === 'soon' ? (
-          <Text style={[styles.stateLine, styles.toneSoon]}>{t('conduct.lastSeconds')}</Text>
+          <Text style={[styles.stateLine, styles.toneSoon]}>
+            {current && warnSecFor(current.partMin) >= 60 ? t('conduct.stage.lastMinute') : t('conduct.lastSeconds')}
+          </Text>
         ) : null}
         {!unsure && started && tone === 'over' ? (
           <Text style={[styles.stateLine, styles.toneOver]}>{t('conduct.overtime')}</Text>
@@ -1261,7 +1318,7 @@ export default function ConductScreen() {
             {t('conduct.endsAt')} <Text style={styles.endTime}>{endsAt}</Text>
             {plannedEnd ? <Text style={styles.endPlanned}>{`  ${t('conduct.byProgramme', { time: plannedEnd })}`}</Text> : null}
           </Text>
-          <Text style={[styles.drift, unsure ? styles.driftOk : driftStyle(driftSec)]}>{driftLabel(driftSec, t)}</Text>
+          <Text style={[styles.drift, unsure ? styles.driftOk : driftStyle(shownDriftSec)]}>{driftLabel(shownDriftSec, t)}</Text>
         </View>
       ) : null}
     </View>
@@ -1314,6 +1371,132 @@ export default function ConductScreen() {
       <Text style={styles.sheetNote}>{t('conduct.counselNote')}</Text>
     </View>
   );
+
+  // ── THE CHAIRMAN'S SCREEN AT THE LECTERN (18 October 2026) ──────────────
+  // components/ConductStage.tsx. On a device that watches the timekeeper's
+  // taps, after «Взять ведение» from it, and in «Проверить экран».
+  const stagePart = (seg: RunSegment | null | undefined): StagePart | null => {
+    if (!seg) return null;
+    const row = seg.assignmentId ? byId.get(seg.assignmentId) : undefined;
+    const sub = resolveSubsection(seg.key);
+    const people = [row?.publisherId, row?.assistantPublisherId]
+      .map((id) => (id ? nameById.get(id) : null))
+      .filter((x): x is string => !!x);
+    return {
+      section: SUBSECTIONS[sub] ? t(SUBSECTIONS[sub].i18nKey) : null,
+      sectionColor: STAGE_SECTION_COLORS[sub] ?? '#94a3b8',
+      title: partDisplay(seg.key, row?.partTitle ?? null).label,
+      person: people.length > 0 ? people.join(' · ') : null,
+      minutes: seg.partMin,
+    };
+  };
+  const stageHeading = (() => {
+    const day = meetingDay
+      ? parseISODate(meetingDay).toLocaleDateString(i18n.language, { weekday: 'long', day: 'numeric', month: 'long' })
+      : null;
+    return day ? `${t('conduct.stage.midweek')} · ${day}` : t('conduct.stage.midweek');
+  })();
+  const stageClock = clockOf(new Date(now));
+  const stageDrift = (sec: number) => ({
+    text: driftLabel(sec, t),
+    tone: (Math.abs(sec) < 60 ? 'ok' : sec > 0 ? 'behind' : 'ahead') as 'ok' | 'behind' | 'ahead',
+  });
+
+  if (check !== null) {
+    const frame = demoFrame(segments, now - check);
+    const idx = frame.phase === 'done' ? segments.length - 1 : frame.index;
+    const seg = segments[idx];
+    const counsel = frame.phase === 'counsel';
+    const nextSeg = segments[idx + 1];
+    return (
+      <ConductStage
+        heading={stageHeading}
+        clock={stageClock}
+        who={null}
+        banner={null}
+        phase={counsel ? 'counsel' : 'part'}
+        startAt={meetingTime}
+        untilStart={null}
+        current={stagePart(seg)}
+        counselFor={counsel ? (() => { const sp = stagePart(seg); return sp ? { title: sp.title, person: sp.person } : null; })() : null}
+        leftSec={frame.phase === 'part' ? frame.leftSec : 0}
+        unsure={false}
+        next={stagePart(nextSeg)}
+        then={counsel ? null : stagePart(segments[idx + 2])}
+        endsAt={null}
+        plannedEnd={plannedEnd}
+        drift={null}
+        onTake={null}
+        controls={null}
+        check={{
+          online: liveData ? !offline : liveQuery.isError ? false : null,
+          awake: awakeOk,
+          done: frame.phase === 'done',
+          onEnd: () => setCheck(null),
+          onAgain: () => setCheck(Date.now()),
+        }}
+      />
+    );
+  }
+
+  if (!practice && onStage) {
+    const whoName = live?.controllerName ?? roles?.timekeeperName ?? null;
+    const who = !watching
+      ? { text: t('conduct.stage.youRun'), tone: 'mine' as const }
+      : whoName
+        ? {
+            text: t('conduct.stage.runBy', { name: whoName }),
+            tone: (offline || controllerGone || !live ? 'muted' : 'live') as 'muted' | 'live',
+          }
+        : null;
+    const banner =
+      watching && offline
+        ? t('conduct.live.offlineWatch', { time: clockOf(new Date(liveQuery.dataUpdatedAt)) })
+        : watching && controllerGone && live
+          ? t('conduct.live.controllerSilent', { time: clockOf(new Date(Date.parse(live.controllerSeenAt) - offset)) })
+          : null;
+    const lastPart = run.index === segments.length - 1;
+    const controls =
+      !watching && started
+        ? {
+            primary: {
+              label: primary.label,
+              sub: isStudent && !counselling ? null : lastPart ? null : next ? (stagePart(next)?.title ?? null) : null,
+              onPress: guarded(primary.onPress),
+              locked,
+            },
+            pause: counselling
+              ? null
+              : { label: run.startedAt === null ? t('conduct.resume') : t('conduct.pause'), onPress: run.startedAt === null ? resume : pause },
+            undo: run.prev ? { label: t('conduct.undo'), onPress: undo } : null,
+          }
+        : !watching
+          ? { primary: { label: t('conduct.start'), sub: null, onPress: guarded(start), locked }, pause: null, undo: null }
+          : null;
+    return (
+      <ConductStage
+        heading={stageHeading}
+        clock={stageClock}
+        who={who}
+        banner={banner}
+        phase={!started ? 'before' : counselling ? 'counsel' : 'part'}
+        startAt={meetingTime}
+        untilStart={!started ? untilStartSec(meetingTime, meetingDay, now) : null}
+        current={stagePart(current)}
+        counselFor={counselling ? (() => { const sp = stagePart(current); return sp ? { title: sp.title, person: sp.person } : null; })() : null}
+        leftSec={left}
+        unsure={unsure}
+        next={stagePart(!started ? segments[0] : next)}
+        then={counselling ? null : stagePart(!started ? segments[1] : afterNext)}
+        endsAt={started ? endsAt : null}
+        plannedEnd={plannedEnd}
+        drift={started ? stageDrift(shownDriftSec) : null}
+        onTake={watching && canRun && liveData ? () => void takeOver() : null}
+        controls={controls}
+        check={null}
+      />
+    );
+  }
 
   return (
     <ScrollView
