@@ -18,6 +18,37 @@ import type { RunState } from './conduct-run-record';
 export const LIVE_POLL_MS = 2000;
 /** A device silent for longer than this is «не на связи». */
 export const LIVE_SILENT_MS = 20_000;
+/**
+ * One ask may take this long, then it counts as failed (17 October 2026).
+ * The general limit is 60 s: a request that hangs — Wi-Fi up, no way
+ * through — was waited for a whole minute, and the library does not start
+ * the next ask while one is still out. For that minute a watching device
+ * went on drawing the old part in colour as if nothing were wrong.
+ */
+export const LIVE_REQUEST_TIMEOUT_MS = 5000;
+/**
+ * A watching device with no good answer for longer than this no longer
+ * knows where the meeting is: two missed asks and a little slack.
+ */
+export const LIVE_STALE_MS = 7000;
+
+/**
+ * Whether what this device shows of somebody else's run can still be
+ * trusted (17 October 2026). Not when the last ask failed, not when no good
+ * answer came for LIVE_STALE_MS (an ask still out), and not when the device
+ * that runs it has gone silent — then its «Следующая» does not reach the
+ * server either. A screen that cannot be trusted greys the countdown and
+ * says so in words, instead of turning red at somebody on the stage.
+ */
+export function watchUnsure(input: {
+  failed: boolean;
+  lastGoodAtMs: number;
+  nowMs: number;
+  controllerSilent: boolean;
+}): boolean {
+  if (input.failed || input.controllerSilent) return true;
+  return !(input.lastGoodAtMs > 0) || input.nowMs - input.lastGoodAtMs > LIVE_STALE_MS;
+}
 
 /** The run's fields that are moments, not durations. */
 const MOMENTS = ['startedAt', 'counselFrom', 'meetingStartedAt', 'pausedAt', 'finishedAt'] as const;

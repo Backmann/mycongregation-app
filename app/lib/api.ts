@@ -8,7 +8,7 @@ import type { ApplyParsedPayload } from "./mwb-parser";
 import i18n from "./i18n";
 import { requestErrorText } from "./error-text";
 import { refusalText } from "./refusal-text";
-import { bestOffset, offsetSample } from "./conduct-live";
+import { bestOffset, LIVE_REQUEST_TIMEOUT_MS, offsetSample } from "./conduct-live";
 import type { LiveRoles } from "./conduct-live";
 
 function resolveApiUrl(): string {
@@ -5557,7 +5557,9 @@ export const conductLiveApi = {
     return timed(() =>
       api.get<{ live: ConductLive | null; roles: LiveRoles; serverNow: string }>(
         "/conduct-live",
-        { params: { week } },
+        // Short: a hung ask must fail fast, so the next one goes out
+        // (lib/conduct-live.ts LIVE_REQUEST_TIMEOUT_MS).
+        { params: { week }, timeout: LIVE_REQUEST_TIMEOUT_MS },
       ),
     );
   },
