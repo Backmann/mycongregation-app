@@ -4031,7 +4031,6 @@
     "start": "Zusammenkunft beginnen",
     "nextPart": "Nächster Teil",
     "finish": "Beenden",
-    "pause": "Pause",
     "resume": "Fortsetzen",
     "again": "Neu beginnen",
     "runSheet": "Ablauf",
@@ -4103,7 +4102,6 @@
       "runningBy": "Zeit führt: {{name}}",
       "controllerSilent": "Zeitnehmer seit {{time}} nicht verbunden",
       "chairmanWatching": "Vorsitzender: {{name}} · schaut zu",
-      "chairmanSilent": "Vorsitzender: {{name}} · nicht verbunden",
       "offlineWatch": "Keine Verbindung zum Server · Stand {{time}}. Vielleicht ist der Programmpunkt schon zu Ende.",
       "offlineRun": "Keine Verbindung zum Server. Der Verlauf wird auf diesem Gerät gespeichert und gesendet, sobald die Verbindung zurück ist.",
       "unsure": "Keine aktuellen Daten – die Zeitanzeige stimmt vielleicht nicht",
@@ -4210,7 +4208,8 @@
       "prayerBy": "Gebet: {{name}}",
       "openingSong": "Beginn · {{song}} und Gebet",
       "between": "Dank für den Vortrag · Bekanntmachungen",
-      "closing": "Schlusslied und Gebet"
+      "closing": "Schlusslied und Gebet",
+      "betweenSong": "Dank für den Vortrag · Bekanntmachungen · {{song}}"
     }
   },
   "serviceHub": {

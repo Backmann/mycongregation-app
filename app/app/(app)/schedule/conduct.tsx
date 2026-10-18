@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  AppState,
   Platform,
   Pressable,
   ScrollView,
@@ -318,6 +319,18 @@ export default function ConductScreen() {
       return st === 403 || st === 404 ? false : LIVE_POLL_MS;
     },
   });
+  // Back on screen — the phone woken from the pocket, the app brought up: ask
+  // at once, not at the next tick. The chairman opens it when he wants, and
+  // what it shows must be the meeting as it is (Lionel, 18 October 2026). On
+  // the web the library asks by itself when the page is seen again.
+  const refetchLive = liveQuery.refetch;
+  useEffect(() => {
+    if (Platform.OS === 'web') return;
+    const sub = AppState.addEventListener('change', (next) => {
+      if (next === 'active' && week && !meetingOver) void refetchLive();
+    });
+    return () => sub.remove();
+  }, [refetchLive, week, meetingOver]);
   const liveData = liveQuery.data ?? null;
   const live = liveData?.live ?? null;
   const roles = liveData?.roles ?? null;
@@ -656,10 +669,6 @@ export default function ConductScreen() {
   };
   const closePause = (at: number) =>
     run.pausedSec + (run.pausedAt !== null ? (at - run.pausedAt) / 1000 : 0);
-  const pause = () => {
-    const at = Date.now();
-    applyRun({ ...run, carried: currentElapsed, startedAt: null, pausedAt: at, prev: snapshot(run) });
-  };
   const resume = () => {
     const at = Date.now();
     applyRun({ ...run, startedAt: at, pausedAt: null, pausedSec: closePause(at), prev: snapshot(run) });
@@ -951,10 +960,12 @@ export default function ConductScreen() {
    * The weekend as Lionel set it out (18 October 2026):
    *   13:00  the chairman — song and prayer
    *   13:05  the public talk
-   *   13:35  the chairman again — thanks for the talk, announcements, and
-   *          he calls the study conductor
-   *   13:40  the conductor — song 129, then the study (one part, 60 min)
-   *   14:40  the closing song and prayer
+   *   13:35  the chairman again — thanks for the talk, announcements; he
+   *          calls the study conductor, who announces song 129
+   *   13:40  the study itself, sixty minutes, no song inside
+   *   14:40  the conductor announces the closing song and who prays
+   * In the circuit overseer's week: the study 13:40–14:10 with no reader,
+   * his concluding talk 14:10–14:40, then he announces the song and prayer.
    * The schedule's own names («Вступительная молитва», «Песня 129») said
    * nothing about who stands there, and put the song in the wrong place.
    */
@@ -981,11 +992,13 @@ export default function ConductScreen() {
       };
     }
     if (seg.key === 'weekend_song') {
-      return { label: t('conduct.weekendRun.between'), subtitle: null, person: chairmanName, song: null };
-    }
-    if (seg.key === 'watchtower_conductor') {
       const song = songOf('weekend_song');
-      return { label: song ? `${song} · ${d.label}` : d.label, subtitle: null, person, song, title: d.label };
+      return {
+        label: song ? t('conduct.weekendRun.betweenSong', { song }) : t('conduct.weekendRun.between'),
+        subtitle: null,
+        person: chairmanName,
+        song: null,
+      };
     }
     if (seg.key === 'weekend_closing_prayer') {
       return {
@@ -1006,6 +1019,8 @@ export default function ConductScreen() {
   /** «Анна Вебер · Мария Кох — Начинаем разговор»: what the chairman announces. */
   const announce = (seg: RunSegment) => {
     const v = runView(seg);
+    // «Заключительная песня и молитва · молитва: …», not the prayer before the part.
+    if (weekend && seg.key === 'weekend_closing_prayer') return [v.label, v.person].filter(Boolean).join(' · ');
     return v.person ? `${v.person} — ${v.label}` : v.label;
   };
   const changedNote = run.changed ? (
@@ -1140,12 +1155,11 @@ export default function ConductScreen() {
       });
     if (live?.mine) {
       liveLines.push({ text: t('conduct.live.runningYou'), tone: 'live' });
-      if (!roles?.isChairman && chairmanName) {
-        liveLines.push(
-          isSilent(live.chairmanSeenAt, serverNowEst)
-            ? { text: t('conduct.live.chairmanSilent', { name: chairmanName }), tone: 'warn' }
-            : { text: t('conduct.live.chairmanWatching', { name: chairmanName }), tone: 'muted' },
-        );
+      // Whether the chairman looks is his affair (Lionel, 18 October 2026): he
+      // opens the screen when he wants, and it must then simply be right. No
+      // warning when his phone is off — only a quiet line while he looks.
+      if (!roles?.isChairman && chairmanName && !isSilent(live.chairmanSeenAt, serverNowEst)) {
+        liveLines.push({ text: t('conduct.live.chairmanWatching', { name: chairmanName }), tone: 'muted' });
       }
     } else if (live) {
       const name = live.controllerName ?? t('conduct.live.someone');
@@ -1388,12 +1402,14 @@ export default function ConductScreen() {
 
       {started && !watching ? (
         <View style={styles.rowBtns}>
-          {!counselling ? (
-            <Pressable style={styles.ghostBtn} onPress={run.startedAt === null ? resume : pause}>
-              <Ionicons name={run.startedAt === null ? 'play' : 'pause'} size={18} color="#0369a1" />
-              <Text style={styles.ghostBtnText}>
-                {run.startedAt === null ? t('conduct.resume') : t('conduct.pause')}
-              </Text>
+          {/* NO PAUSE (Lionel, 18 October 2026): the meeting goes by the wall
+              clock — start on time, and then as it goes. A pause tapped by
+              mistake held the countdown for twenty minutes that day. A run
+              held by an app from before still gets «Продолжить». */}
+          {!counselling && run.pausedAt !== null ? (
+            <Pressable style={styles.ghostBtn} onPress={resume}>
+              <Ionicons name="play" size={18} color="#0369a1" />
+              <Text style={styles.ghostBtnText}>{t('conduct.resume')}</Text>
             </Pressable>
           ) : null}
           {run.prev ? (
@@ -1486,13 +1502,12 @@ export default function ConductScreen() {
           ? t('conduct.stage.wtPeople', { conductor: person, reader: readerName })
           : t('conduct.stage.wtConductor', { conductor: person })
         : null;
-      if (v.song) person = [v.song, person].filter(Boolean).join(' · ');
     }
     return {
       // The closing group borrows the opening's name in the schedule (lib/parts.ts) — not here.
       section: sub !== 'closing' && SUBSECTIONS[sub] ? t(SUBSECTIONS[sub].i18nKey) : null,
       sectionColor: STAGE_SECTION_COLORS[sub] ?? '#94a3b8',
-      title: v.title ?? v.label,
+      title: v.label,
       person,
       minutes: seg.partMin,
     };
@@ -1574,9 +1589,8 @@ export default function ConductScreen() {
               onPress: guarded(primary.onPress),
               locked,
             },
-            pause: counselling
-              ? null
-              : { label: run.startedAt === null ? t('conduct.resume') : t('conduct.pause'), onPress: run.startedAt === null ? resume : pause },
+            // No pause; only a run held by an app from before is let go on.
+            pause: !counselling && run.pausedAt !== null ? { label: t('conduct.resume'), onPress: resume } : null,
             undo: run.prev ? { label: t('conduct.undo'), onPress: undo } : null,
           }
         : !watching
@@ -1661,10 +1675,8 @@ interface SegView {
   label: string;
   subtitle: string | null;
   person: string | null;
-  /** The weekend study begins with a song: «Песня 129». */
+  /** Unused for now: kept in the shape so a part may carry its song. */
   song: string | null;
-  /** The study's own title, without the song in front — for the chairman's screen. */
-  title?: string;
 }
 
 function SegmentHeadline({ view, big }: { view: SegView; big?: boolean }) {

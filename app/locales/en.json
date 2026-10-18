@@ -4031,7 +4031,6 @@
     "start": "Start the meeting",
     "nextPart": "Next part",
     "finish": "Finish",
-    "pause": "Pause",
     "resume": "Resume",
     "again": "Start again",
     "runSheet": "Run sheet",
@@ -4103,7 +4102,6 @@
       "runningBy": "Keeping time: {{name}}",
       "controllerSilent": "Timekeeper offline since {{time}}",
       "chairmanWatching": "Chairman: {{name}} · watching",
-      "chairmanSilent": "Chairman: {{name}} · offline",
       "offlineWatch": "No connection to the server · updated at {{time}}. The part may already be over.",
       "offlineRun": "No connection to the server. The run is kept on this device and will be sent once the connection is back.",
       "unsure": "No fresh data — the countdown may be wrong",
@@ -4210,7 +4208,8 @@
       "prayerBy": "prayer: {{name}}",
       "openingSong": "Opening · {{song}} and prayer",
       "between": "Thanks for the talk · announcements",
-      "closing": "Closing song and prayer"
+      "closing": "Closing song and prayer",
+      "betweenSong": "Thanks for the talk · announcements · {{song}}"
     }
   },
   "serviceHub": {
