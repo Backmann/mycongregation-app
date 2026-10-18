@@ -2272,7 +2272,9 @@ export default function HomeScreen() {
                 <WelcomeCard />
                 <ReportDone />
                 <ConductLiveCard />
+                <ConductLiveCard kind="weekend" />
                 <ConductResultCard />
+                <ConductResultCard kind="weekend" />
                 {next}
                 <TodoSection />
                 {soon}
@@ -2285,7 +2287,9 @@ export default function HomeScreen() {
               <WelcomeCard />
               <ReportDone />
               <ConductLiveCard />
+              <ConductLiveCard kind="weekend" />
               <ConductResultCard />
+              <ConductResultCard kind="weekend" />
               {next}
               <TodoSection />
               {list}

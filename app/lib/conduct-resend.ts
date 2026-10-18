@@ -4,6 +4,7 @@ import {
   isExpiredRecord,
   readRunRecord,
   RECORD_PREFIX,
+  WEEKEND_RECORD_PREFIX,
   writeRunRecord,
 } from './conduct-run-record';
 
@@ -32,12 +33,16 @@ export async function resendPendingConductRuns(now = Date.now()): Promise<void> 
   try {
     let keys: readonly string[] = [];
     try {
-      keys = (await AsyncStorage.getAllKeys()).filter((k) => k.startsWith(RECORD_PREFIX));
+      keys = (await AsyncStorage.getAllKeys()).filter(
+        (k) => k.startsWith(RECORD_PREFIX) || k.startsWith(WEEKEND_RECORD_PREFIX),
+      );
     } catch {
       return;
     }
     for (const key of keys) {
-      const week = key.slice(RECORD_PREFIX.length);
+      // Midweek and, since 18 October 2026, weekend runs.
+      const kind = key.startsWith(WEEKEND_RECORD_PREFIX) ? 'weekend' : 'midweek';
+      const week = key.slice((kind === 'weekend' ? WEEKEND_RECORD_PREFIX : RECORD_PREFIX).length);
       let raw: string | null = null;
       try {
         raw = await AsyncStorage.getItem(key);
@@ -58,6 +63,7 @@ export async function resendPendingConductRuns(now = Date.now()): Promise<void> 
           totalSec: state.pending.totalSec,
           plannedSec: state.pending.plannedSec,
           startedAt: state.pending.startedAt ?? null,
+          ...(kind === 'weekend' ? { eventType: 'weekend' as const } : {}),
         });
         await AsyncStorage.setItem(key, writeRunRecord({ ...state, saved: true, pending: null }));
       } catch (e) {

@@ -260,7 +260,12 @@ const conduct = read('app/(app)/schedule/conduct.tsx');
 if (!/throwOnError: \(error, query\) => !kept && failsScreen\(error, query\)/.test(conduct)) {
   problems.push('«Ведение встречи»: «Не удалось загрузить» и при сохранённой программе');
 }
-if (!/keptMeetingRows\(keptPieces<Assignment>\('assignments', user\?\.id\), week, 'midweek'\)/.test(conduct)) problems.push('«Ведение встречи»: не берёт программу из сохранённого');
+// The meeting's own kind since 18 October 2026 (midweek or weekend, from the route).
+if (!/keptMeetingRows\(keptPieces<Assignment>\('assignments', user\?\.id\), week, kind\)/.test(conduct)) problems.push('«Ведение встречи»: не берёт программу из сохранённого');
+{
+  const kw = keptMeetingRows([{ at: 100, rows: [{ weekStartDate: '2026-10-19', eventType: 'weekend', id: 'w1', deletedAt: null }] }], '2026-10-19', 'weekend');
+  if (!kw || kw.rows[0]?.id !== 'w1') problems.push('встреча из сохранённого: выходная встреча не берётся');
+}
 if (!/keptMe\(user\?\.id\)/.test(conduct) || !/const myPublisherId = meQuery\.data\?\.publisher\?\.id \?\? keptMyId;/.test(conduct)) problems.push('«Ведение встречи»: без связи председатель не узнан — «вести может председатель этой недели»');
 if (/useAllPublishers/.test(conduct)) problems.push('«Ведение встречи»: имена из полного справочника — он не хранится и закрыт не-старейшинам');
 if (!/<KeptNotice/.test(conduct)) problems.push('«Ведение встречи»: не сказано, что показано сохранённое');

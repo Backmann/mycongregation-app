@@ -160,6 +160,49 @@ export function buildMidweekRunOrder(items: RunItem[]): RunSegment[] {
   return out;
 }
 
+/** Song and prayer, the chairman's opening words. */
+const WEEKEND_OPENING_MIN = 5;
+const PUBLIC_TALK_MIN = 30;
+const WEEKEND_SONG_MIN = 5;
+const WATCHTOWER_MIN = 60;
+/** In the week of the circuit overseer's visit the study is half as long. */
+const WATCHTOWER_CO_WEEK_MIN = 30;
+const CO_CONCLUDING_TALK_MIN = 30;
+/** Concluding words, song and prayer. */
+const WEEKEND_CLOSING_MIN = 5;
+
+/**
+ * THE WEEKEND MEETING, in the order it is held (18 October 2026) — the same
+ * minutes as the schedule sheet (lib/parts.ts buildWeekendPartTimes):
+ * song and prayer 5, public talk 30, song 5, Watchtower study 60, closing 5.
+ *
+ * In the week of the circuit overseer's visit (Lionel, 18 October 2026):
+ * public talk 30, the study 30 without a reader, then his concluding talk
+ * 30. The week is told by the concluding talk standing in the programme.
+ * A part's own minutes in the programme win, except the study in that week,
+ * which is 30 whatever an imported 60 says.
+ */
+export function buildWeekendRunOrder(items: RunItem[]): RunSegment[] {
+  const first = (key: string): RunItem | null => items.find((i) => i.partKey === key) ?? null;
+  const dur = (it: RunItem | null, fallback: number): number => it?.partDurationMin ?? fallback;
+  const out: RunSegment[] = [];
+  const push = (it: RunItem | null, key: string, minutes: number, showInterval = true) => {
+    out.push({ key, assignmentId: it?.id ?? null, minutes, partMin: minutes, counselMin: 0, showInterval });
+  };
+  const coTalk = first('co_concluding_talk');
+  push(first('weekend_opening_prayer'), 'weekend_opening_prayer', WEEKEND_OPENING_MIN);
+  push(first('public_talk_speaker'), 'public_talk_speaker', dur(first('public_talk_speaker'), PUBLIC_TALK_MIN));
+  push(first('weekend_song'), 'weekend_song', WEEKEND_SONG_MIN, false);
+  push(
+    first('watchtower_conductor'),
+    'watchtower_conductor',
+    coTalk ? WATCHTOWER_CO_WEEK_MIN : dur(first('watchtower_conductor'), WATCHTOWER_MIN),
+  );
+  if (coTalk) push(coTalk, 'co_concluding_talk', dur(coTalk, CO_CONCLUDING_TALK_MIN));
+  push(first('weekend_closing_prayer'), 'weekend_closing_prayer', WEEKEND_CLOSING_MIN);
+  return out;
+}
+
 /** How long the meeting runs on paper. */
 export function totalRunMinutes(segments: RunSegment[]): number {
   return segments.reduce((sum, s) => sum + s.minutes, 0);

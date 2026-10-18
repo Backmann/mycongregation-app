@@ -4161,6 +4161,9 @@
     },
     "stage": {
       "midweek": "Zusammenkunft unter der Woche",
+      "weekend": "Zusammenkunft am Wochenende",
+      "wtPeople": "Leitung: {{conductor}} · Lesen: {{reader}}",
+      "wtConductor": "Leitung: {{conductor}}",
       "notStarted": "DIE ZUSAMMENKUNFT HAT NOCH NICHT BEGONNEN",
       "startsAt": "Beginn um {{time}}",
       "byProgrammeAt": "Laut Programm um {{time}}",

@@ -33,7 +33,7 @@ import { weekRules } from '../../../lib/week-rules';
 import { fromWire, isConductOverseer, isSilent, liveMode, LIVE_POLL_MS, toWire, watchUnsure } from '../../../lib/conduct-live';
 import { usePermissions } from '../../../lib/permissions';
 import { useAuth } from '../../../lib/auth';
-import { buildMidweekRunOrder, RunSegment, totalRunMinutes } from '../../../lib/run-order';
+import { buildMidweekRunOrder, buildWeekendRunOrder, RunSegment, totalRunMinutes } from '../../../lib/run-order';
 import { partDisplay } from '../../../lib/part-display';
 import { failsScreen } from '../../../lib/screen-failure';
 import { keptMeetingRows } from '../../../lib/offline-keep-rules';
@@ -52,7 +52,7 @@ import {
   isExpiredRecord,
   reconcileKeys,
   readRunRecord,
-  RECORD_PREFIX,
+  recordPrefix,
   RUN_RECORD_VERSION,
   RunState,
   writeRunRecord,
@@ -136,8 +136,8 @@ const TAP_LOCK_MS = 1500;
 /** A counsel shorter than this was no counsel — it is not shown. */
 const MIN_COUNSEL_SEC = 3;
 
-function storageKey(week: string) {
-  return `${RECORD_PREFIX}${week}`;
+function storageKey(week: string, kind: 'midweek' | 'weekend') {
+  return `${recordPrefix(kind)}${week}`;
 }
 
 /** «20:46» — the device's local time. */
@@ -172,8 +172,12 @@ function snapshot(s: RunState): Omit<RunState, 'prev'> {
 export default function ConductScreen() {
   const { t, i18n } = useTranslation();
   const { user } = useAuth();
-  const params = useLocalSearchParams<{ week?: string }>();
+  const params = useLocalSearchParams<{ week?: string; kind?: string }>();
   const week = typeof params.week === 'string' ? params.week : '';
+  // WHICH MEETING (18 October 2026): the midweek one, or the weekend one with
+  // ?kind=weekend. Everything below that names «the meeting» takes it.
+  const kind: 'midweek' | 'weekend' = params.kind === 'weekend' ? 'weekend' : 'midweek';
+  const weekend = kind === 'weekend';
   const { width } = useWindowDimensions();
   const wide = width >= 900;
 
@@ -184,18 +188,18 @@ export default function ConductScreen() {
   // nobody has looked at for five minutes) — every piece, this Monday's and
   // the ones before it that still reach this week.
   const kept = useMemo(
-    () => (week ? keptMeetingRows(keptPieces<Assignment>('assignments', user?.id), week, 'midweek') : null),
-    [week, user?.id],
+    () => (week ? keptMeetingRows(keptPieces<Assignment>('assignments', user?.id), week, kind) : null),
+    [week, user?.id, kind],
   );
 
   const assignmentsQuery = useQuery({
     // «Не удалось загрузить» only when nothing is kept for this meeting.
     throwOnError: (error, query) => !kept && failsScreen(error, query),
-    queryKey: ['conduct-assignments', week],
+    queryKey: ['conduct-assignments', week, kind],
     // The server's filter semantics for weekStart are not relied on here: we
     // ask for the week and then keep only the rows that say they belong to it.
     queryFn: () =>
-      assignmentsApi.list({ weekStart: week, eventType: 'midweek', limit: 200 }),
+      assignmentsApi.list({ weekStart: week, eventType: kind, limit: 200 }),
     enabled: week.length > 0,
   });
   const meQuery = useQuery({
@@ -229,7 +233,7 @@ export default function ConductScreen() {
 
   const segments: RunSegment[] = useMemo(
     () =>
-      buildMidweekRunOrder(
+      (weekend ? buildWeekendRunOrder : buildMidweekRunOrder)(
         rows.map((a) => ({
           id: a.id,
           partKey: a.partKey,
@@ -237,7 +241,7 @@ export default function ConductScreen() {
           partTitle: a.partTitle,
         })),
       ),
-    [rows],
+    [rows, weekend],
   );
 
   const segKeys = useMemo(() => segments.map((s) => s.key), [segments]);
@@ -254,7 +258,7 @@ export default function ConductScreen() {
     return m;
   }, [rosterQuery.data]);
 
-  const chairmanRow = rows.find((a) => a.partKey === 'midweek_chairman');
+  const chairmanRow = rows.find((a) => a.partKey === (weekend ? 'weekend_chairman' : 'midweek_chairman'));
   // Who is asking: the server's answer, or — with no signal — one's own card
   // as kept (who, never the contacts). Without it every chairman read «you
   // are not the chairman» in a hall with no signal.
@@ -282,9 +286,9 @@ export default function ConductScreen() {
             weekStartISO: week,
             version: effectiveVersionFor(settingsQuery.data?.versions, week),
             events: eventsQuery.data ?? [],
-          }).dateOf('midweek')
+          }).dateOf(kind)
         : null,
-    [week, settingsQuery.data, eventsQuery.data],
+    [week, settingsQuery.data, eventsQuery.data, kind],
   );
   const meetingOver = pastWeek || (!!meetingDay && meetingDay < formatDateISO(new Date()));
 
@@ -293,10 +297,10 @@ export default function ConductScreen() {
   // Asked every two seconds; not at all for a past week. A refusal (a
   // publisher who is not appointed) or an older server stops the asking.
   const queryClient = useQueryClient();
-  const liveKey = useMemo(() => ['conduct-live', week], [week]);
+  const liveKey = useMemo(() => ['conduct-live', week, kind], [week, kind]);
   const liveQuery = useQuery({
     queryKey: liveKey,
-    queryFn: () => conductLiveApi.get(week),
+    queryFn: () => conductLiveApi.get(week, kind),
     enabled: week.length > 0 && !meetingOver,
     retry: false,
     staleTime: 0,
@@ -330,13 +334,13 @@ export default function ConductScreen() {
   // Ministry overseer — not by the chairman afterwards: he sees it here when
   // the meeting ends (the server says the same, common/conduct-overseer.ts).
   const { responsibilities } = usePermissions();
-  const canRead = isConductOverseer(user?.role, responsibilities);
+  const canRead = isConductOverseer(user?.role, responsibilities, kind);
 
   // The saved result — what an elder reads, and what a chairman sees again
   // on another device. Never kept on the device (lib/offline-keep-rules).
   const runQuery = useQuery({
-    queryKey: ['conduct-run', week],
-    queryFn: () => conductRunsApi.get(week),
+    queryKey: ['conduct-run', week, kind],
+    queryFn: () => conductRunsApi.get(week, kind),
     enabled: week.length > 0 && canRead,
     retry: 1,
   });
@@ -350,12 +354,12 @@ export default function ConductScreen() {
   useEffect(() => {
     // Read once the programme is on screen: an old record is understood
     // against the segments it was timed on (lib/conduct-run-record.ts).
-    if (!week || segKeys.length === 0 || loadedFor.current === week) return;
-    loadedFor.current = week;
-    const key = storageKey(week);
+    const key = storageKey(week, kind);
+    if (!week || segKeys.length === 0 || loadedFor.current === key) return;
+    loadedFor.current = key;
     AsyncStorage.getItem(key)
       .then((raw) => {
-        if (loadedFor.current !== week) return;
+        if (loadedFor.current !== key) return;
         // Поднимаем ход КАК ЕСТЬ, вместе со временем начала части. Встреча
         // идёт по стенным часам и не останавливается оттого, что вкладка
         // перезагрузилась; обнулять отсчёт значило бы врать. Сбросить можно
@@ -379,18 +383,18 @@ export default function ConductScreen() {
         // Хранилище может не ответить — на ходе встречи это не сказывается.
       })
       .finally(() => {
-        if (loadedFor.current === week) setLoaded(true);
+        if (loadedFor.current === key) setLoaded(true);
       });
-  }, [week, segKeys]);
+  }, [week, segKeys, kind]);
 
   const persist = useCallback(
     (next: RunState) => {
       if (!week) return;
-      AsyncStorage.setItem(storageKey(week), writeRunRecord(next)).catch(() => {
+      AsyncStorage.setItem(storageKey(week, kind), writeRunRecord(next)).catch(() => {
         // Не удалось сохранить — встреча всё равно идёт.
       });
     },
-    [week],
+    [week, kind],
   );
 
   const apply = useCallback(
@@ -612,7 +616,7 @@ export default function ConductScreen() {
       segments.slice(run.index + 1).reduce((sum, s) => sum + s.minutes * 60, 0)
     : 0;
   const endsAt = clockOf(new Date(now + remainingSec * 1000));
-  const meetingTime = effectiveVersionFor(settingsQuery.data?.versions, week)?.midweekTime ?? null;
+  const meetingTime = (weekend ? effectiveVersionFor(settingsQuery.data?.versions, week)?.weekendTime : effectiveVersionFor(settingsQuery.data?.versions, week)?.midweekTime) ?? null;
   const plannedEnd = meetingTime ? addMinutes(meetingTime, totalRunMinutes(segments)) : null;
   // Behind or ahead of the programme's END — a late start counts (18 October 2026).
   const shownDriftSec = endDriftSec(now + remainingSec * 1000, plannedEnd, meetingDay, driftSec);
@@ -746,7 +750,7 @@ export default function ConductScreen() {
     if (json === pushedRef.current || pushingRef.current) return;
     pushingRef.current = true;
     conductLiveApi
-      .put({ weekStartDate: week, epoch: live ? live.epoch : 0, state: toWire(state, serverClockOffset()) })
+      .put({ weekStartDate: week, epoch: live ? live.epoch : 0, state: toWire(state, serverClockOffset()) }, kind)
       .then((ans) => {
         pushedRef.current = json;
         wasMine.current = true;
@@ -809,7 +813,7 @@ export default function ConductScreen() {
     });
     if (!ok) return;
     try {
-      const ans = await conductLiveApi.take(week);
+      const ans = await conductLiveApi.take(week, kind);
       setTakeFailed(false);
       setTakenBy(null);
       if (ans.live) {
@@ -879,12 +883,12 @@ export default function ConductScreen() {
   useEffect(() => {
     if (!loaded || !meetingOver || state.meetingStartedAt === null || state.finishedAt !== null) return;
     setState(EMPTY);
-    AsyncStorage.removeItem(storageKey(week)).catch(() => undefined);
+    AsyncStorage.removeItem(storageKey(week, kind)).catch(() => undefined);
   }, [loaded, meetingOver, state.meetingStartedAt, state.finishedAt, week]);
 
   const save = useMutation({
     mutationFn: (data: ConductSummaryData) =>
-      conductRunsApi.save({ weekStartDate: week, ...data }),
+      conductRunsApi.save({ weekStartDate: week, ...data, ...(weekend ? { eventType: 'weekend' as const } : {}) }),
     onSuccess: () => {
       setState((s) => {
         const n = { ...s, saved: true, pending: null };
@@ -1382,11 +1386,30 @@ export default function ConductScreen() {
     const people = [row?.publisherId, row?.assistantPublisherId]
       .map((id) => (id ? nameById.get(id) : null))
       .filter((x): x is string => !!x);
+    let person = people.length > 0 ? people.join(' · ') : null;
+    // A visiting speaker has no card: his name and congregation as the
+    // programme keeps them (18 October 2026).
+    if (seg.key === 'public_talk_speaker' && !person && row?.speakerName) {
+      person = [row.speakerName, row.speakerCongregation].filter(Boolean).join(' · ');
+    }
+    // The study: who conducts and who reads — no reader in the week of the
+    // circuit overseer's visit (Lionel, 18 October 2026).
+    if (seg.key === 'watchtower_conductor') {
+      const reader = rows.find((a) => a.partKey === 'watchtower_reader');
+      const readerName = reader?.publisherId ? nameById.get(reader.publisherId) : null;
+      const coWeek = segments.some((x) => x.key === 'co_concluding_talk');
+      person = person
+        ? readerName && !coWeek
+          ? t('conduct.stage.wtPeople', { conductor: person, reader: readerName })
+          : t('conduct.stage.wtConductor', { conductor: person })
+        : null;
+    }
     return {
-      section: SUBSECTIONS[sub] ? t(SUBSECTIONS[sub].i18nKey) : null,
+      // The closing group borrows the opening's name in the schedule (lib/parts.ts) — not here.
+      section: sub !== 'closing' && SUBSECTIONS[sub] ? t(SUBSECTIONS[sub].i18nKey) : null,
       sectionColor: STAGE_SECTION_COLORS[sub] ?? '#94a3b8',
       title: partDisplay(seg.key, row?.partTitle ?? null).label,
-      person: people.length > 0 ? people.join(' · ') : null,
+      person,
       minutes: seg.partMin,
     };
   };
@@ -1394,7 +1417,8 @@ export default function ConductScreen() {
     const day = meetingDay
       ? parseISODate(meetingDay).toLocaleDateString(i18n.language, { weekday: 'long', day: 'numeric', month: 'long' })
       : null;
-    return day ? `${t('conduct.stage.midweek')} · ${day}` : t('conduct.stage.midweek');
+    const name = weekend ? t('conduct.stage.weekend') : t('conduct.stage.midweek');
+    return day ? `${name} · ${day}` : name;
   })();
   const stageClock = clockOf(new Date(now));
   const stageDrift = (sec: number) => ({

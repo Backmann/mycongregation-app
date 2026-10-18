@@ -40,14 +40,21 @@ import { formatDateISO, startOfWeekMonday } from '../lib/dates';
  * device's clock rather than the congregation's — a quiet untruth for the sake
  * of hiding something harmless.
  */
+/** Which meeting (18 October 2026). The route says so with ?kind=weekend. */
+type Kind = 'midweek' | 'weekend';
+const conductHref = (week: string, kind: Kind) =>
+  kind === 'weekend' ? `/schedule/conduct?week=${week}&kind=weekend` : `/schedule/conduct?week=${week}`;
+
 export function ConductEntry({
   week,
   chairmanPublisherId,
+  kind = 'midweek',
 }: {
   /** Monday of the week, 'YYYY-MM-DD'. */
   week: string;
-  /** Who is chairing this midweek meeting, if anybody is yet. */
+  /** Who is chairing this meeting, if anybody is yet. */
   chairmanPublisherId: string | null;
+  kind?: Kind;
 }) {
   const { t } = useTranslation();
   const { user } = useAuth();
@@ -80,16 +87,16 @@ export function ConductEntry({
     weekStartISO: week,
     version: effectiveVersionFor(settings?.versions, week),
     events: events ?? [],
-  }).dateOf('midweek');
+  }).dateOf(kind);
   const over = week < thisWeek || (!!meetingDay && meetingDay < formatDateISO(new Date()));
   if ((!isChairman && !isAdmin) || over) {
-    return <ConductResultLink week={week} chairmanPublisherId={chairmanPublisherId} />;
+    return <ConductResultLink week={week} chairmanPublisherId={chairmanPublisherId} kind={kind} />;
   }
 
   return (
     <Pressable
       style={styles.button}
-      onPress={() => router.push(`/schedule/conduct?week=${week}` as any)}
+      onPress={() => router.push(conductHref(week, kind) as any)}
       accessibilityRole="button"
     >
       <Ionicons name="play-circle-outline" size={18} color="#0369a1" />
@@ -108,15 +115,22 @@ export function ConductEntry({
  * a link to an empty page would be a promise the screen cannot keep. Asked
  * of the server once per meeting the reader opens; never kept on the device.
  */
-export function ConductResultLink({ week }: { week: string; chairmanPublisherId?: string | null }) {
+export function ConductResultLink({
+  week,
+  kind = 'midweek',
+}: {
+  week: string;
+  chairmanPublisherId?: string | null;
+  kind?: Kind;
+}) {
   const { t } = useTranslation();
   const { user } = useAuth();
   const { responsibilities } = usePermissions();
-  const mayRead = isConductOverseer(user?.role, responsibilities);
+  const mayRead = isConductOverseer(user?.role, responsibilities, kind);
   const thisWeek = formatDateISO(startOfWeekMonday(new Date()));
   const { data: run } = useQuery({
-    queryKey: ['conduct-run', week],
-    queryFn: () => conductRunsApi.get(week),
+    queryKey: ['conduct-run', week, kind],
+    queryFn: () => conductRunsApi.get(week, kind),
     enabled: mayRead && week <= thisWeek,
     retry: false,
   });
@@ -124,7 +138,7 @@ export function ConductResultLink({ week }: { week: string; chairmanPublisherId?
   return (
     <Pressable
       style={styles.button}
-      onPress={() => router.push(`/schedule/conduct?week=${week}` as any)}
+      onPress={() => router.push(conductHref(week, kind) as any)}
       accessibilityRole="button"
     >
       <Ionicons name="stats-chart-outline" size={17} color="#0369a1" />
@@ -183,12 +197,12 @@ const styles = StyleSheet.create({
  * Asked once a minute while home is open — enough to appear soon after the
  * meeting starts; the conduct screen itself asks every two seconds.
  */
-export function ConductLiveCard() {
+export function ConductLiveCard({ kind = 'midweek' }: { kind?: Kind }) {
   const { t } = useTranslation();
   const week = formatDateISO(startOfWeekMonday(new Date()));
   const { data } = useQuery({
-    queryKey: ['conduct-live-home', week],
-    queryFn: () => conductLiveApi.get(week),
+    queryKey: ['conduct-live-home', week, kind],
+    queryFn: () => conductLiveApi.get(week, kind),
     retry: false,
     refetchInterval: (q) => {
       const st = (q.state.error as { response?: { status?: number } } | null)?.response?.status;
@@ -207,7 +221,7 @@ export function ConductLiveCard() {
     weekStartISO: week,
     version: effectiveVersionFor(settings?.versions, week),
     events: [],
-  }).dateOf('midweek');
+  }).dateOf(kind);
   const today = formatDateISO(new Date());
   const run = data.live ? fromWire(data.live.state, serverClockOffset()) : null;
   const running = !!run && run.meetingStartedAt !== null && run.finishedAt === null;
@@ -218,7 +232,7 @@ export function ConductLiveCard() {
   return (
     <Pressable
       style={styles.liveCard}
-      onPress={() => router.push(`/schedule/conduct?week=${week}` as any)}
+      onPress={() => router.push(conductHref(week, kind) as any)}
       accessibilityRole="button"
     >
       <View style={styles.liveHead}>
@@ -246,24 +260,24 @@ export function ConductLiveCard() {
  * The last midweek meeting with a result: this week's,
  * or last week's while it is still kept. Nothing to show — no card.
  */
-export function ConductResultCard() {
+export function ConductResultCard({ kind = 'midweek' }: { kind?: Kind }) {
   const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const { responsibilities } = usePermissions();
-  const overseer = isConductOverseer(user?.role, responsibilities);
+  const overseer = isConductOverseer(user?.role, responsibilities, kind);
   const monday = startOfWeekMonday(new Date());
   const thisWeek = formatDateISO(monday);
   const lastWeek = formatDateISO(addDays(monday, -7));
   // The same keys the conduct screen and the result link use: one request each.
   const thisQ = useQuery({
-    queryKey: ['conduct-run', thisWeek],
-    queryFn: () => conductRunsApi.get(thisWeek),
+    queryKey: ['conduct-run', thisWeek, kind],
+    queryFn: () => conductRunsApi.get(thisWeek, kind),
     enabled: overseer,
     retry: false,
   });
   const lastQ = useQuery({
-    queryKey: ['conduct-run', lastWeek],
-    queryFn: () => conductRunsApi.get(lastWeek),
+    queryKey: ['conduct-run', lastWeek, kind],
+    queryFn: () => conductRunsApi.get(lastWeek, kind),
     enabled: overseer && !thisQ.isPending && !thisQ.data,
     retry: false,
   });
@@ -278,7 +292,7 @@ export function ConductResultCard() {
     weekStartISO: run.weekStartDate,
     version: effectiveVersionFor(settings?.versions, run.weekStartDate),
     events: [],
-  }).dateOf('midweek');
+  }).dateOf(kind);
   const dayLabel = (d: Date, withWeekday: boolean) =>
     d.toLocaleDateString(i18n.language, {
       ...(withWeekday ? { weekday: 'long' as const } : {}),
@@ -289,7 +303,7 @@ export function ConductResultCard() {
   return (
     <Pressable
       style={styles.resultCard}
-      onPress={() => router.push(`/schedule/conduct?week=${run.weekStartDate}` as any)}
+      onPress={() => router.push(conductHref(run.weekStartDate, kind) as any)}
       accessibilityRole="button"
     >
       <View style={styles.liveHead}>

@@ -158,6 +158,17 @@ check('who oversees how the meeting runs — as on the server (16 October 2026)'
   assert.equal(L.isConductOverseer(undefined, new Set()), false);
 });
 
+check('who oversees the WEEKEND meeting — as on the server (18 October 2026)', () => {
+  assert.equal(L.isConductOverseer('elder', ['wt_study_conductor'], 'weekend'), true);
+  assert.equal(L.isConductOverseer('elder', ['wt_study_conductor_backup'], 'weekend'), true);
+  assert.equal(L.isConductOverseer('elder', ['body_coordinator'], 'weekend'), true);
+  assert.equal(L.isConductOverseer('ministerial_servant', ['body_coordinator_assistant'], 'weekend'), true);
+  assert.equal(L.isConductOverseer('elder', ['adviser'], 'weekend'), true, 'the counsel brother, both meetings');
+  assert.equal(L.isConductOverseer('elder', ['life_ministry_overseer'], 'weekend'), false, 'midweek only');
+  assert.equal(L.isConductOverseer('elder', ['wt_study_conductor']), false, 'not the midweek meeting');
+  assert.equal(L.isConductOverseer('admin', [], 'weekend'), true);
+});
+
 check('a watching screen that cannot be trusted says so (17 October 2026)', () => {
   const ok = { failed: false, lastGoodAtMs: T, nowMs: T + 3000, controllerSilent: false };
   assert.equal(L.watchUnsure(ok), false, 'a fresh answer three seconds ago');
