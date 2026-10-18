@@ -141,6 +141,23 @@ export function keptRunIsNewer(
   return s === null || k > s;
 }
 
+/**
+ * A run left hanging (18 October 2026): begun, never «Завершить», and no tap
+ * for longer than any part lasts — the meeting is over, only the app was not
+ * told. Before, «Идёт встреча» stayed on every elder's home screen until
+ * midnight. The longest part is the study, sixty minutes; twenty more for a
+ * study that runs long.
+ */
+export const STALE_RUN_MS = 80 * 60 * 1000;
+export function runLeftHanging(
+  s: Parameters<typeof lastMoment>[0] & Pick<RunState, 'finishedAt'>,
+  nowMs: number,
+): boolean {
+  if (s.meetingStartedAt === null || s.finishedAt !== null) return false;
+  const last = lastMoment(s);
+  return last !== null && nowMs - last > STALE_RUN_MS;
+}
+
 /** Two runs the same as far as the server is concerned. */
 export function sameWire(a: WireState | null, b: WireState | null): boolean {
   return JSON.stringify(a) === JSON.stringify(b);

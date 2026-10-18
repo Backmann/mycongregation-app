@@ -36,7 +36,9 @@ import {
   isConductOverseer,
   isSilent,
   keptRunIsNewer,
+  lastMoment,
   liveMode,
+  runLeftHanging,
   LIVE_POLL_MS,
   toWire,
   watchUnsure,
@@ -698,15 +700,16 @@ export default function ConductScreen() {
    * 14 October all three counsels ran ~1:13 and the minute that started the
    * next part by itself had to be overtaken by hand every time).
    */
-  const advance = () => {
+  const advance = () => advanceAt(Date.now());
+  /** «Следующая» as if tapped at `at` — now, or a forgotten «Завершить» (finishLate). */
+  const advanceAt = (at: number) => {
     if (!current) return;
-    const at = Date.now();
     const spent = [...run.spent];
     const counsel = [...run.counsel];
     if (counselling && run.counselFrom !== null) {
-      counsel[run.index] = (at - run.counselFrom) / 1000;
+      counsel[run.index] = Math.max(0, (at - run.counselFrom) / 1000);
     } else {
-      spent[run.index] = currentElapsed;
+      spent[run.index] = run.carried + (run.startedAt !== null && at > run.startedAt ? (at - run.startedAt) / 1000 : 0);
       counsel[run.index] = null;
     }
     const nextIndex = run.index + 1;
@@ -731,6 +734,32 @@ export default function ConductScreen() {
       pending: null,
       prev: snapshot(run),
     });
+  };
+
+  /**
+   * «ЗАВЕРШИТЬ» FORGOTTEN (Lionel, 18 October 2026): the last part was begun
+   * and nobody tapped again. Finished when that part was due to end — its own
+   * minutes after it began — not «now», which may be the evening. Offered
+   * only on the last part: a run that stopped earlier says nothing true about
+   * the rest of the meeting, and is let go instead (dropHanging).
+   */
+  const lateEndAt = (): number | null => {
+    if (!current || run.index !== segments.length - 1) return null;
+    if (run.startedAt === null) return run.pausedAt;
+    return run.startedAt + Math.max(0, current.partMin * 60 - run.carried) * 1000;
+  };
+  const finishLate = () => {
+    const at = lateEndAt();
+    if (at !== null) advanceAt(at);
+  };
+  const dropHanging = async () => {
+    const ok = await confirm({
+      title: t('conduct.hanging.dropTitle'),
+      body: t('conduct.hanging.dropBody'),
+      confirmLabel: t('conduct.hanging.drop'),
+      danger: true,
+    });
+    if (ok) applyRun(EMPTY);
   };
 
   /** One tap back: a tap pressed too early must not cost anybody time. */
@@ -1131,6 +1160,9 @@ export default function ConductScreen() {
 
   // The line that says who runs the meeting and whether everybody is there.
   const serverNowEst = Date.now() + offset;
+  // Begun, never finished, no tap for longer than any part (18 October 2026).
+  const hanging = !practice && check === null && segments.length > 0 && runLeftHanging(run, now);
+  const hangingSince = hanging ? lastMoment(run) : null;
   // No good answer, or none for a while (an ask still out) — see watchUnsure.
   const offline =
     !!liveData &&
@@ -1138,7 +1170,7 @@ export default function ConductScreen() {
   // The device that runs it has gone silent: its taps do not arrive either.
   const controllerGone = !!live && !live.mine && !offline && isSilent(live.controllerSeenAt, serverNowEst);
   // What a watching device shows can no longer be trusted: grey, and words.
-  const unsure = watching && (offline || controllerGone);
+  const unsure = watching && (offline || controllerGone || hanging);
   const liveLines: { text: string; tone: 'live' | 'warn' | 'muted' }[] = [];
   if (!practice && liveData) {
     if (offline) {
@@ -1148,6 +1180,8 @@ export default function ConductScreen() {
         tone: 'warn',
       });
     }
+    if (hanging && watching && hangingSince !== null)
+      liveLines.push({ text: t('conduct.hanging.watch', { time: clockOf(new Date(hangingSince)) }), tone: 'warn' });
     if (takenBy !== null && watching)
       liveLines.push({
         text: takenBy === '' ? t('conduct.live.takenElsewhere') : t('conduct.live.taken', { name: takenBy }),
@@ -1563,7 +1597,32 @@ export default function ConductScreen() {
     );
   }
 
-  if (!practice && onStage) {
+  const lateEnd = hanging && !watching ? lateEndAt() : null;
+  const hangingCard = (
+    <View style={styles.hangingCard}>
+      <Text style={styles.hangingTitle}>{t('conduct.hanging.title')}</Text>
+      <Text style={styles.hangingText}>
+        {lateEnd !== null
+          ? t('conduct.hanging.lastPart', { part: current ? runView(current).label : '' })
+          : t('conduct.hanging.stopped', {
+              part: current ? runView(current).label : '',
+              time: hangingSince !== null ? clockOf(new Date(hangingSince)) : '',
+            })}
+      </Text>
+      {lateEnd !== null ? (
+        <Pressable style={styles.hangingPrimary} onPress={finishLate} accessibilityRole="button">
+          <Text style={styles.hangingPrimaryText}>{t('conduct.hanging.finish', { time: clockOf(new Date(lateEnd)) })}</Text>
+        </Pressable>
+      ) : null}
+      <Pressable style={styles.ghostBtn} onPress={() => void dropHanging()} accessibilityRole="button">
+        <Ionicons name="trash-outline" size={18} color="#b91c1c" />
+        <Text style={[styles.ghostBtnText, { color: '#b91c1c' }]}>{t('conduct.hanging.drop')}</Text>
+      </Pressable>
+    </View>
+  );
+
+  // The one who ran a hanging run finishes it on the timekeeper's screen.
+  if (!practice && onStage && !(hanging && !watching)) {
     const whoName = live?.controllerName ?? roles?.timekeeperName ?? null;
     const who = !watching
       ? { text: t('conduct.stage.youRun'), tone: 'mine' as const }
@@ -1574,7 +1633,9 @@ export default function ConductScreen() {
           }
         : null;
     const banner =
-      watching && offline
+      watching && hanging && hangingSince !== null
+        ? t('conduct.hanging.watch', { time: clockOf(new Date(hangingSince)) })
+        : watching && offline
         ? t('conduct.live.offlineWatch', { time: clockOf(new Date(liveQuery.dataUpdatedAt)) })
         : watching && controllerGone && live
           ? t('conduct.live.controllerSilent', { time: clockOf(new Date(Date.parse(live.controllerSeenAt) - offset)) })
@@ -1646,8 +1707,9 @@ export default function ConductScreen() {
       <View style={wide ? styles.twoCol : undefined}>
         <View style={wide ? styles.colMain : undefined}>
           {changedNote}
-          {nowCard}
-          {controls}
+          {/* A hanging run: the card says what happened; a red «−176:10» under it would only shout. */}
+          {hanging && !watching ? hangingCard : nowCard}
+          {hanging && !watching ? null : controls}
           {upNext}
         </View>
         <View style={wide ? styles.colSide : undefined}>{sheet}</View>
@@ -1782,6 +1844,19 @@ const styles = StyleSheet.create({
   countdownStale: { color: '#94a3b8' },
   unsureLine: { color: '#64748b' },
   countdownPaused: { color: '#94a3b8' },
+  hangingCard: {
+    backgroundColor: '#fffbf5',
+    borderColor: '#fed7aa',
+    borderWidth: 1,
+    borderRadius: 16,
+    padding: 16,
+    gap: 10,
+    marginBottom: 12,
+  },
+  hangingTitle: { fontFamily: 'Manrope_700Bold', fontSize: 17, color: '#9a3412' },
+  hangingText: { fontFamily: 'Manrope_400Regular', fontSize: 15, color: '#7c2d12', lineHeight: 21 },
+  hangingPrimary: { backgroundColor: '#0ea5e9', borderRadius: 14, paddingVertical: 14, alignItems: 'center' },
+  hangingPrimaryText: { fontFamily: 'Manrope_700Bold', fontSize: 17, color: '#ffffff' },
   pausedLine: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   pausedText: { color: '#475569' },
   toneSoon: { color: '#b45309' },

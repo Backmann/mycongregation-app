@@ -4124,7 +4124,15 @@
       "open": "Open timekeeping",
       "runningYouElsewhere": "You are keeping time — on another device. This one only shows it.",
       "takenElsewhere": "Timekeeping moved to another of your devices. This screen now only shows the meeting.",
-      "takeBodyElsewhere": "Time will be kept on this device. Taps on your other device will no longer count."
+      "takeBodyElsewhere": "Time will be kept on this device. Taps on your other device will no longer count.",
+      "cardYouElsewhere": "You are keeping time — on another device",
+      "openStage": "Open the screen",
+      "cardHanging": "Meeting not finished",
+      "cardHangingSub": "“Finish” was not pressed — no result saved.",
+      "cardChairman": "You are chairman today",
+      "cardChairmanKeeper": "{{name}} keeps time. The stage screen will show the countdown.",
+      "cardChairmanKeeperNoName": "The timekeeper keeps time. The stage screen will show the countdown.",
+      "cardChairmanAlone": "No timekeeper assigned — you keep time."
     },
     "report": {
       "took": "Meeting took",
@@ -4210,6 +4218,16 @@
       "between": "Thanks for the talk · announcements",
       "closing": "Closing song and prayer",
       "betweenSong": "Thanks for the talk · announcements · {{song}}"
+    },
+    "hanging": {
+      "title": "Meeting not finished",
+      "lastPart": "The last part was running — “{{part}}” — and “Finish” was not pressed.",
+      "stopped": "The run stopped at “{{part}}” at {{time}}. A result from it would be wrong.",
+      "finish": "Finish: ended at {{time}}",
+      "drop": "Don’t save",
+      "dropTitle": "Don’t save the run?",
+      "dropBody": "This meeting’s run will be deleted; there will be no result.",
+      "watch": "Not updated since {{time}} — the meeting has probably ended."
     }
   },
   "serviceHub": {

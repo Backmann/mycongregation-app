@@ -6,7 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { conductLiveApi, conductRunsApi, meApi, meetingSettingsApi, serverClockOffset, specialEventsApi } from '../lib/api';
 import { effectiveVersionFor } from '../lib/meeting-schedule';
 import { weekRules } from '../lib/week-rules';
-import { fromWire, isConductOverseer } from '../lib/conduct-live';
+import { fromWire, isConductOverseer, runLeftHanging } from '../lib/conduct-live';
 import { usePermissions } from '../lib/permissions';
 import { clock } from './ConductSummary';
 import { addDays } from '../lib/dates';
@@ -184,12 +184,14 @@ const styles = StyleSheet.create({
   liveTitle: { fontSize: 17, fontFamily: 'Manrope_700Bold', color: '#0f172a', flex: 1 },
   liveSub: { fontSize: 14, fontFamily: 'Manrope_400Regular', color: '#475569' },
   liveAction: { fontSize: 14, fontFamily: 'Manrope_700Bold', color: '#0369a1', marginTop: 4 },
+  hangingCard: { borderColor: '#fed7aa', backgroundColor: '#fffbf5' },
+  chairCard: { borderColor: '#bae6fd' },
 });
 
 /**
  * "MEETING IN PROGRESS · LIVE" on the home screen (15 October 2026) — for
- * those who may watch the meeting run (the admins, the counsel brother, the
- * Life and Ministry overseer — 16 October 2026) and for its chairman and
+ * those who may watch the meeting run (the admins, the overseers of that
+ * meeting, and since 18 October 2026 every elder) and for its chairman and
  * timekeeper; for the timekeeper it is also the door into conduct mode, as
  * he has no schedule editor to find it in. The server decides who gets an
  * answer: anybody else is refused once, and the card never asks again.
@@ -222,35 +224,104 @@ export function ConductLiveCard({ kind = 'midweek' }: { kind?: Kind }) {
     version: effectiveVersionFor(settings?.versions, week),
     events: [],
   }).dateOf(kind);
-  const today = formatDateISO(new Date());
-  const run = data.live ? fromWire(data.live.state, serverClockOffset()) : null;
-  const running = !!run && run.meetingStartedAt !== null && run.finishedAt === null;
-  const keeperToCome =
-    !running && !!data.roles?.isTimekeeper && !(run && run.finishedAt !== null) && !!meetingDay && today <= meetingDay;
-  if (!running && !keeperToCome) return null;
-  const mine = !!data.live?.mine;
+  const card = liveCardOf({
+    live: data.live,
+    run: data.live ? fromWire(data.live.state, serverClockOffset()) : null,
+    roles: data.roles ?? null,
+    today: formatDateISO(new Date()),
+    meetingDay,
+    nowMs: Date.now(),
+  });
+  if (!card) return null;
+  const name = data.live?.controllerName ?? t('conduct.live.someone');
+  const texts: Record<LiveCardKind, { title: string; sub: string; action: string }> = {
+    running: {
+      title: t('conduct.live.cardRunning'),
+      sub: data.live?.mine
+        ? t('conduct.live.cardYou')
+        : data.live?.mineElsewhere
+          ? t('conduct.live.cardYouElsewhere')
+          : t('conduct.live.cardBy', { name }),
+      action: data.live?.mine ? t('conduct.live.open') : data.roles?.isChairman ? t('conduct.live.openStage') : t('conduct.live.watch'),
+    },
+    hanging: {
+      title: t('conduct.live.cardHanging'),
+      sub: t('conduct.live.cardHangingSub'),
+      action: t('conduct.live.open'),
+    },
+    keeper: {
+      title: t('conduct.live.cardKeeper'),
+      sub: t('conduct.live.cardKeeperHint'),
+      action: t('conduct.live.open'),
+    },
+    chairman: {
+      title: t('conduct.live.cardChairman'),
+      sub: data.roles?.hasTimekeeper
+        ? data.roles.timekeeperName
+          ? t('conduct.live.cardChairmanKeeper', { name: data.roles.timekeeperName })
+          : t('conduct.live.cardChairmanKeeperNoName')
+        : t('conduct.live.cardChairmanAlone'),
+      action: data.roles?.hasTimekeeper ? t('conduct.live.openStage') : t('conduct.live.open'),
+    },
+  };
+  const x = texts[card];
   return (
     <Pressable
-      style={styles.liveCard}
+      style={[styles.liveCard, card === 'hanging' && styles.hangingCard, card === 'chairman' && styles.chairCard]}
       onPress={() => router.push(conductHref(week, kind) as any)}
       accessibilityRole="button"
     >
       <View style={styles.liveHead}>
-        {running ? <View style={styles.liveDot} /> : <Ionicons name="stopwatch-outline" size={18} color="#ea580c" />}
-        <Text style={styles.liveTitle}>{running ? t('conduct.live.cardRunning') : t('conduct.live.cardKeeper')}</Text>
+        {card === 'running' ? (
+          <View style={styles.liveDot} />
+        ) : (
+          <Ionicons
+            name={card === 'hanging' ? 'alert-circle-outline' : card === 'chairman' ? 'easel-outline' : 'stopwatch-outline'}
+            size={18}
+            color={card === 'chairman' ? '#0369a1' : '#ea580c'}
+          />
+        )}
+        <Text style={styles.liveTitle}>{x.title}</Text>
       </View>
-      <Text style={styles.liveSub}>
-        {running
-          ? mine
-            ? t('conduct.live.cardYou')
-            : t('conduct.live.cardBy', { name: data.live?.controllerName ?? t('conduct.live.someone') })
-          : t('conduct.live.cardKeeperHint')}
-      </Text>
-      <Text style={styles.liveAction}>
-        {running && !mine ? t('conduct.live.watch') : t('conduct.live.open')}
-      </Text>
+      <Text style={styles.liveSub}>{x.sub}</Text>
+      <Text style={styles.liveAction}>{x.action}</Text>
     </Pressable>
   );
+}
+
+type LiveCardKind = 'running' | 'hanging' | 'keeper' | 'chairman';
+
+/**
+ * WHICH CARD, IF ANY (Lionel, 18 October 2026):
+ *
+ * - «Идёт встреча» while it runs — for every elder, the overseers, the
+ *   chairman and the timekeeper (the server says who gets an answer at all).
+ * - Nobody pressed «Завершить» and no tap for longer than any part lasts
+ *   (runLeftHanging): gone for those who watch; for the account that ran it,
+ *   «Встреча не завершена», which leads to finishing it. On 18 October the
+ *   card said «Идёт встреча» until midnight.
+ * - Before the start: the timekeeper's card for his week, as before; the
+ *   chairman's on the meeting's day only — «Сегодня вы председатель».
+ */
+export function liveCardOf(input: {
+  live: { mine: boolean; mineElsewhere?: boolean } | null;
+  run: Parameters<typeof runLeftHanging>[0] | null;
+  roles: { isTimekeeper: boolean; isChairman: boolean } | null;
+  today: string;
+  meetingDay: string | null;
+  nowMs: number;
+}): LiveCardKind | null {
+  const { live, run, roles, today, meetingDay, nowMs } = input;
+  const started = !!run && run.meetingStartedAt !== null;
+  const finished = !!run && run.finishedAt !== null;
+  if (started && !finished) {
+    if (!runLeftHanging(run, nowMs)) return 'running';
+    return live && (live.mine || live.mineElsewhere) ? 'hanging' : null;
+  }
+  if (finished || !meetingDay) return null;
+  if (roles?.isTimekeeper && today <= meetingDay) return 'keeper';
+  if (roles?.isChairman && today === meetingDay) return 'chairman';
+  return null;
 }
 
 /**

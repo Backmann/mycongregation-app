@@ -200,4 +200,14 @@ check('a run kept on a device does not go up over a newer one on the server (18 
   assert.equal(L.keptRunIsNewer(paused, ipad), true);
 });
 
+check('a run nobody finished stops being «Идёт встреча» (18 October 2026)', () => {
+  const m = (min) => T + min * 60_000;
+  const study = { ...EMPTY_RUN, index: 3, meetingStartedAt: m(0), startedAt: m(40), starts: [m(0), m(5), m(35), m(40)] };
+  assert.equal(L.runLeftHanging(study, m(40) + L.STALE_RUN_MS), false, 'the study may run its sixty minutes and twenty more');
+  assert.equal(L.runLeftHanging(study, m(40) + L.STALE_RUN_MS + 1000), true, 'then it is over, only nobody said so');
+  assert.equal(L.runLeftHanging({ ...study, finishedAt: m(105) }, m(500)), false, 'finished is finished, not hanging');
+  assert.equal(L.runLeftHanging(EMPTY_RUN, m(500)), false, 'not begun is not hanging');
+  assert.ok(L.STALE_RUN_MS > 60 * 60_000, 'longer than the longest part');
+});
+
 console.log(`conduct-live: ${n} groups ok`);
