@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  AppState,
   Platform,
   Pressable,
   ScrollView,
@@ -30,7 +31,18 @@ import {
   specialEventsApi,
 } from '../../../lib/api';
 import { weekRules } from '../../../lib/week-rules';
-import { fromWire, isConductOverseer, isSilent, liveMode, LIVE_POLL_MS, toWire, watchUnsure } from '../../../lib/conduct-live';
+import {
+  fromWire,
+  isConductOverseer,
+  isSilent,
+  keptRunIsNewer,
+  lastMoment,
+  liveMode,
+  runLeftHanging,
+  LIVE_POLL_MS,
+  toWire,
+  watchUnsure,
+} from '../../../lib/conduct-live';
 import { usePermissions } from '../../../lib/permissions';
 import { useAuth } from '../../../lib/auth';
 import { buildMidweekRunOrder, buildWeekendRunOrder, RunSegment, totalRunMinutes } from '../../../lib/run-order';
@@ -309,6 +321,18 @@ export default function ConductScreen() {
       return st === 403 || st === 404 ? false : LIVE_POLL_MS;
     },
   });
+  // Back on screen — the phone woken from the pocket, the app brought up: ask
+  // at once, not at the next tick. The chairman opens it when he wants, and
+  // what it shows must be the meeting as it is (Lionel, 18 October 2026). On
+  // the web the library asks by itself when the page is seen again.
+  const refetchLive = liveQuery.refetch;
+  useEffect(() => {
+    if (Platform.OS === 'web') return;
+    const sub = AppState.addEventListener('change', (next) => {
+      if (next === 'active' && week && !meetingOver) void refetchLive();
+    });
+    return () => sub.remove();
+  }, [refetchLive, week, meetingOver]);
   const liveData = liveQuery.data ?? null;
   const live = liveData?.live ?? null;
   const roles = liveData?.roles ?? null;
@@ -473,7 +497,10 @@ export default function ConductScreen() {
   // before anything ticks.
   // A chairman who took the taps over from the timekeeper keeps his screen —
   // also after reopening it (the server says the taps are his now).
-  const onStage = watching || stageRun || (!!live?.mine && !!roles?.hasTimekeeper && !roles?.isTimekeeper);
+  // The timekeeper's own second device (his phone while the iPad taps) is not
+  // the chairman's: it watches on the timekeeper's screen (18 October 2026).
+  const onStage =
+    (watching && !live?.mineElsewhere) || stageRun || (!!live?.mine && !!roles?.hasTimekeeper && !roles?.isTimekeeper);
   const stageClockOn = onStage;
   useEffect(() => {
     if (!stageClockOn || ticking) return;
@@ -644,10 +671,6 @@ export default function ConductScreen() {
   };
   const closePause = (at: number) =>
     run.pausedSec + (run.pausedAt !== null ? (at - run.pausedAt) / 1000 : 0);
-  const pause = () => {
-    const at = Date.now();
-    applyRun({ ...run, carried: currentElapsed, startedAt: null, pausedAt: at, prev: snapshot(run) });
-  };
   const resume = () => {
     const at = Date.now();
     applyRun({ ...run, startedAt: at, pausedAt: null, pausedSec: closePause(at), prev: snapshot(run) });
@@ -677,15 +700,16 @@ export default function ConductScreen() {
    * 14 October all three counsels ran ~1:13 and the minute that started the
    * next part by itself had to be overtaken by hand every time).
    */
-  const advance = () => {
+  const advance = () => advanceAt(Date.now());
+  /** «Следующая» as if tapped at `at` — now, or a forgotten «Завершить» (finishLate). */
+  const advanceAt = (at: number) => {
     if (!current) return;
-    const at = Date.now();
     const spent = [...run.spent];
     const counsel = [...run.counsel];
     if (counselling && run.counselFrom !== null) {
-      counsel[run.index] = (at - run.counselFrom) / 1000;
+      counsel[run.index] = Math.max(0, (at - run.counselFrom) / 1000);
     } else {
-      spent[run.index] = currentElapsed;
+      spent[run.index] = run.carried + (run.startedAt !== null && at > run.startedAt ? (at - run.startedAt) / 1000 : 0);
       counsel[run.index] = null;
     }
     const nextIndex = run.index + 1;
@@ -710,6 +734,32 @@ export default function ConductScreen() {
       pending: null,
       prev: snapshot(run),
     });
+  };
+
+  /**
+   * «ЗАВЕРШИТЬ» FORGOTTEN (Lionel, 18 October 2026): the last part was begun
+   * and nobody tapped again. Finished when that part was due to end — its own
+   * minutes after it began — not «now», which may be the evening. Offered
+   * only on the last part: a run that stopped earlier says nothing true about
+   * the rest of the meeting, and is let go instead (dropHanging).
+   */
+  const lateEndAt = (): number | null => {
+    if (!current || run.index !== segments.length - 1) return null;
+    if (run.startedAt === null) return run.pausedAt;
+    return run.startedAt + Math.max(0, current.partMin * 60 - run.carried) * 1000;
+  };
+  const finishLate = () => {
+    const at = lateEndAt();
+    if (at !== null) advanceAt(at);
+  };
+  const dropHanging = async () => {
+    const ok = await confirm({
+      title: t('conduct.hanging.dropTitle'),
+      body: t('conduct.hanging.dropBody'),
+      confirmLabel: t('conduct.hanging.drop'),
+      danger: true,
+    });
+    if (ok) applyRun(EMPTY);
   };
 
   /** One tap back: a tap pressed too early must not cost anybody time. */
@@ -748,6 +798,9 @@ export default function ConductScreen() {
     if (!live && state.meetingStartedAt === null) return; // nothing to say yet
     const json = JSON.stringify(toWire(state, 0));
     if (json === pushedRef.current || pushingRef.current) return;
+    // Just opened, with a run kept here and one on the server: an older kept
+    // run is not sent up — the server's is taken below (18 October 2026).
+    if (pushedRef.current === null && live && !keptRunIsNewer(state, fromWire(live.state, serverClockOffset()))) return;
     pushingRef.current = true;
     conductLiveApi
       .put({ weekStartDate: week, epoch: live ? live.epoch : 0, state: toWire(state, serverClockOffset()) }, kind)
@@ -778,9 +831,12 @@ export default function ConductScreen() {
     knownUpdatedAt.current = live.updatedAt;
     wasMine.current = true;
     const here = JSON.stringify(toWire(state, 0));
-    const dirty = pushedRef.current !== null ? here !== pushedRef.current : state.meetingStartedAt !== null;
-    if (dirty) return;
     const theirs = fromWire(live.state, serverClockOffset()) ?? EMPTY;
+    // Taps here the server has not had: after a push, anything changed since;
+    // on opening, a kept run only if it is the later one (keptRunIsNewer —
+    // the phone's half-hour-old run went up over the iPad's, 18 October).
+    const dirty = pushedRef.current !== null ? here !== pushedRef.current : keptRunIsNewer(state, theirs);
+    if (dirty) return;
     const next: RunState = { ...theirs, prev: null };
     pushedRef.current = JSON.stringify(toWire(next, 0));
     apply(next);
@@ -795,7 +851,8 @@ export default function ConductScreen() {
     if (!loaded || practice || !live || live.mine) return;
     if (wasMine.current) {
       wasMine.current = false;
-      setTakenBy(live.controllerName ?? t('conduct.live.someone'));
+      // To another of this account's devices: not «Ведение взял Лионель» to Lionel.
+      setTakenBy(live.mineElsewhere ? '' : (live.controllerName ?? t('conduct.live.someone')));
     }
     if (state.meetingStartedAt !== null) {
       pushedRef.current = null;
@@ -808,7 +865,11 @@ export default function ConductScreen() {
     const who = live?.controllerName ?? (live ? null : roles?.timekeeperName) ?? null;
     const ok = await confirm({
       title: t('conduct.live.takeTitle'),
-      body: who ? t('conduct.live.takeBody', { name: who }) : t('conduct.live.takeBodyNobody'),
+      body: live?.mineElsewhere
+        ? t('conduct.live.takeBodyElsewhere')
+        : who
+          ? t('conduct.live.takeBody', { name: who })
+          : t('conduct.live.takeBodyNobody'),
       confirmLabel: t('conduct.live.take'),
     });
     if (!ok) return;
@@ -824,7 +885,7 @@ export default function ConductScreen() {
         apply(next);
       }
       putLive(ans);
-      if (watching) setStageRun(true);
+      if (watching && !roles?.isTimekeeper) setStageRun(true);
     } catch {
       setTakeFailed(true);
     }
@@ -921,20 +982,75 @@ export default function ConductScreen() {
     [segments],
   );
 
+  const chairmanName = chairmanRow?.publisherId ? (nameById.get(chairmanRow.publisherId) ?? null) : null;
+  /**
+   * How a part is named and whom it shows, on every conduct screen.
+   *
+   * The weekend as Lionel set it out (18 October 2026):
+   *   13:00  the chairman — song and prayer
+   *   13:05  the public talk
+   *   13:35  the chairman again — thanks for the talk, announcements; he
+   *          calls the study conductor, who announces song 129
+   *   13:40  the study itself, sixty minutes, no song inside
+   *   14:40  the conductor announces the closing song and who prays
+   * In the circuit overseer's week: the study 13:40–14:10 with no reader,
+   * his concluding talk 14:10–14:40, then he announces the song and prayer.
+   * The schedule's own names («Вступительная молитва», «Песня 129») said
+   * nothing about who stands there, and put the song in the wrong place.
+   */
+  const runView = (seg: RunSegment): SegView => {
+    const row = seg.assignmentId ? byId.get(seg.assignmentId) : undefined;
+    const d = partDisplay(seg.key, row?.partTitle ?? null);
+    const names = [row?.publisherId, row?.assistantPublisherId]
+      .map((id) => (id ? nameById.get(id) : null))
+      .filter((x): x is string => !!x);
+    const person = names.length > 0 ? names.join(' · ') : null;
+    if (!weekend) return { label: d.label, subtitle: d.subtitle ?? null, person, song: null };
+    const songOf = (key: string) => {
+      const r = rows.find((a) => a.partKey === key);
+      return r ? partDisplay(key, r.partTitle ?? null).label : null;
+    };
+    if (seg.key === 'weekend_opening_prayer') {
+      const prayer = person && person !== chairmanName ? t('conduct.weekendRun.prayerBy', { name: person }) : null;
+      const song = songOf('weekend_opening_song');
+      return {
+        label: song ? t('conduct.weekendRun.openingSong', { song }) : t('conduct.weekendRun.opening'),
+        subtitle: null,
+        person: [chairmanName, prayer].filter(Boolean).join(' · ') || null,
+        song: null,
+      };
+    }
+    if (seg.key === 'weekend_song') {
+      const song = songOf('weekend_song');
+      return {
+        label: song ? t('conduct.weekendRun.betweenSong', { song }) : t('conduct.weekendRun.between'),
+        subtitle: null,
+        person: chairmanName,
+        song: null,
+      };
+    }
+    if (seg.key === 'weekend_closing_prayer') {
+      return {
+        label: t('conduct.weekendRun.closing'),
+        subtitle: null,
+        person: person ? t('conduct.weekendRun.prayerBy', { name: person }) : null,
+        song: null,
+      };
+    }
+    return { label: d.label, subtitle: d.subtitle ?? null, person, song: null };
+  };
   /** A segment key as the run sheet names it — also for a part that is gone. */
   const keyLabel = (key: string) => {
     const seg = segments.find((s) => s.key === key);
-    const row = seg?.assignmentId ? byId.get(seg.assignmentId) : undefined;
-    return partDisplay(key, row?.partTitle ?? null).label;
+    if (seg) return runView(seg).label;
+    return partDisplay(key, null).label;
   };
   /** «Анна Вебер · Мария Кох — Начинаем разговор»: what the chairman announces. */
   const announce = (seg: RunSegment) => {
-    const row = seg.assignmentId ? byId.get(seg.assignmentId) : undefined;
-    const label = partDisplay(seg.key, row?.partTitle ?? null).label;
-    const people = [row?.publisherId, row?.assistantPublisherId]
-      .map((id) => (id ? nameById.get(id) : null))
-      .filter((x): x is string => !!x);
-    return people.length > 0 ? `${people.join(' · ')} — ${label}` : label;
+    const v = runView(seg);
+    // «Заключительная песня и молитва · молитва: …», not the prayer before the part.
+    if (weekend && seg.key === 'weekend_closing_prayer') return [v.label, v.person].filter(Boolean).join(' · ');
+    return v.person ? `${v.person} — ${v.label}` : v.label;
   };
   const changedNote = run.changed ? (
     <View style={styles.changedNote}>
@@ -968,7 +1084,6 @@ export default function ConductScreen() {
     </View>
   ) : null;
   const nameOf = (id: string) => nameById.get(id) ?? null;
-  const chairmanName = chairmanRow?.publisherId ? (nameById.get(chairmanRow.publisherId) ?? null) : null;
 
   // The remote result is what a reader sees; the menu is the runner's.
   const remote = runQuery.data ?? null;
@@ -1045,6 +1160,9 @@ export default function ConductScreen() {
 
   // The line that says who runs the meeting and whether everybody is there.
   const serverNowEst = Date.now() + offset;
+  // Begun, never finished, no tap for longer than any part (18 October 2026).
+  const hanging = !practice && check === null && segments.length > 0 && runLeftHanging(run, now);
+  const hangingSince = hanging ? lastMoment(run) : null;
   // No good answer, or none for a while (an ask still out) — see watchUnsure.
   const offline =
     !!liveData &&
@@ -1052,7 +1170,7 @@ export default function ConductScreen() {
   // The device that runs it has gone silent: its taps do not arrive either.
   const controllerGone = !!live && !live.mine && !offline && isSilent(live.controllerSeenAt, serverNowEst);
   // What a watching device shows can no longer be trusted: grey, and words.
-  const unsure = watching && (offline || controllerGone);
+  const unsure = watching && (offline || controllerGone || hanging);
   const liveLines: { text: string; tone: 'live' | 'warn' | 'muted' }[] = [];
   if (!practice && liveData) {
     if (offline) {
@@ -1062,22 +1180,30 @@ export default function ConductScreen() {
         tone: 'warn',
       });
     }
-    if (takenBy && watching) liveLines.push({ text: t('conduct.live.taken', { name: takenBy }), tone: 'muted' });
+    if (hanging && watching && hangingSince !== null)
+      liveLines.push({ text: t('conduct.hanging.watch', { time: clockOf(new Date(hangingSince)) }), tone: 'warn' });
+    if (takenBy !== null && watching)
+      liveLines.push({
+        text: takenBy === '' ? t('conduct.live.takenElsewhere') : t('conduct.live.taken', { name: takenBy }),
+        tone: 'muted',
+      });
     if (live?.mine) {
       liveLines.push({ text: t('conduct.live.runningYou'), tone: 'live' });
-      if (!roles?.isChairman && chairmanName) {
-        liveLines.push(
-          isSilent(live.chairmanSeenAt, serverNowEst)
-            ? { text: t('conduct.live.chairmanSilent', { name: chairmanName }), tone: 'warn' }
-            : { text: t('conduct.live.chairmanWatching', { name: chairmanName }), tone: 'muted' },
-        );
+      // Whether the chairman looks is his affair (Lionel, 18 October 2026): he
+      // opens the screen when he wants, and it must then simply be right. No
+      // warning when his phone is off — only a quiet line while he looks.
+      if (!roles?.isChairman && chairmanName && !isSilent(live.chairmanSeenAt, serverNowEst)) {
+        liveLines.push({ text: t('conduct.live.chairmanWatching', { name: chairmanName }), tone: 'muted' });
       }
     } else if (live) {
       const name = live.controllerName ?? t('conduct.live.someone');
       const silent = controllerGone;
       // No green dot for a device that has stopped answering — nor while
       // this one cannot hear the server: then nobody knows.
-      liveLines.push({ text: t('conduct.live.runningBy', { name }), tone: silent || offline ? 'muted' : 'live' });
+      liveLines.push({
+        text: live.mineElsewhere ? t('conduct.live.runningYouElsewhere') : t('conduct.live.runningBy', { name }),
+        tone: silent || offline ? 'muted' : 'live',
+      });
       if (silent) {
         const since = clockOf(new Date(Date.parse(live.controllerSeenAt) - offset));
         liveLines.push({ text: t('conduct.live.controllerSilent', { time: since }), tone: 'warn' });
@@ -1222,6 +1348,9 @@ export default function ConductScreen() {
   const big = [wide ? styles.countdownWide : styles.countdown, unsure && styles.countdownStale];
   // Instead of «сверх времени» on a screen that does not know.
   const unsureLine = unsure ? <Text style={[styles.stateLine, styles.unsureLine]}>{t('conduct.live.unsure')}</Text> : null;
+  // HELD (18 October 2026): the countdown stood in red for twenty minutes and
+  // only the small «Продолжить» said that it was not counting.
+  const pausedText = started && !counselling && run.pausedAt !== null ? t('conduct.pausedSince', { time: clockOf(new Date(run.pausedAt)) }) : null;
 
   const nowCard = current ? (
     counselling ? (
@@ -1241,22 +1370,30 @@ export default function ConductScreen() {
     ) : (
       <View style={styles.nowCard}>
         <Text style={styles.overline}>{isStudent ? t('conduct.nowStudent') : t('conduct.now')}</Text>
-        <SegmentHeadline
-          segment={current}
-          row={current.assignmentId ? byId.get(current.assignmentId) : undefined}
-          nameById={nameById}
-          big
-        />
-        <Text style={[...big, !unsure && tone === 'soon' && styles.toneSoon, !unsure && tone === 'over' && styles.toneOver]}>
+        <SegmentHeadline view={runView(current)} big />
+        <Text
+          style={[
+            ...big,
+            !unsure && !pausedText && tone === 'soon' && styles.toneSoon,
+            !unsure && !pausedText && tone === 'over' && styles.toneOver,
+            !unsure && !!pausedText && styles.countdownPaused,
+          ]}
+        >
           {formatCountdown(left)}
         </Text>
         {unsureLine}
-        {!unsure && started && tone === 'soon' ? (
+        {!unsure && pausedText ? (
+          <View style={styles.pausedLine}>
+            <Ionicons name="pause" size={18} color="#475569" />
+            <Text style={[styles.stateLine, styles.pausedText]}>{pausedText}</Text>
+          </View>
+        ) : null}
+        {!unsure && !pausedText && started && tone === 'soon' ? (
           <Text style={[styles.stateLine, styles.toneSoon]}>
             {current && warnSecFor(current.partMin) >= 60 ? t('conduct.stage.lastMinute') : t('conduct.lastSeconds')}
           </Text>
         ) : null}
-        {!unsure && started && tone === 'over' ? (
+        {!unsure && !pausedText && started && tone === 'over' ? (
           <Text style={[styles.stateLine, styles.toneOver]}>{t('conduct.overtime')}</Text>
         ) : null}
         <Text style={styles.planned}>
@@ -1299,12 +1436,14 @@ export default function ConductScreen() {
 
       {started && !watching ? (
         <View style={styles.rowBtns}>
-          {!counselling ? (
-            <Pressable style={styles.ghostBtn} onPress={run.startedAt === null ? resume : pause}>
-              <Ionicons name={run.startedAt === null ? 'play' : 'pause'} size={18} color="#0369a1" />
-              <Text style={styles.ghostBtnText}>
-                {run.startedAt === null ? t('conduct.resume') : t('conduct.pause')}
-              </Text>
+          {/* NO PAUSE (Lionel, 18 October 2026): the meeting goes by the wall
+              clock — start on time, and then as it goes. A pause tapped by
+              mistake held the countdown for twenty minutes that day. A run
+              held by an app from before still gets «Продолжить». */}
+          {!counselling && run.pausedAt !== null ? (
+            <Pressable style={styles.ghostBtn} onPress={resume}>
+              <Ionicons name="play" size={18} color="#0369a1" />
+              <Text style={styles.ghostBtnText}>{t('conduct.resume')}</Text>
             </Pressable>
           ) : null}
           {run.prev ? (
@@ -1333,11 +1472,7 @@ export default function ConductScreen() {
   const upNext = upcoming ? (
     <View style={styles.nextCard}>
       <Text style={styles.overline}>{counselling ? t('conduct.then') : t('conduct.next')}</Text>
-      <SegmentHeadline
-        segment={upcoming}
-        row={upcoming.assignmentId ? byId.get(upcoming.assignmentId) : undefined}
-        nameById={nameById}
-      />
+      <SegmentHeadline view={runView(upcoming)} />
     </View>
   ) : null;
 
@@ -1345,9 +1480,8 @@ export default function ConductScreen() {
     <View style={styles.sheet}>
       <Text style={styles.overline}>{t('conduct.runSheet')}</Text>
       {segments.map((s, i) => {
-        const row = s.assignmentId ? byId.get(s.assignmentId) : undefined;
-        const d = partDisplay(s.key, row?.partTitle ?? null);
-        const person = row?.publisherId ? nameById.get(row.publisherId) : null;
+        const v = runView(s);
+        const person = v.person;
         return (
           <View
             key={`${s.key}-${i}`}
@@ -1359,7 +1493,7 @@ export default function ConductScreen() {
             </Text>
             <View style={{ flex: 1 }}>
               <Text style={styles.sheetLabel} numberOfLines={1}>
-                {d.label}
+                {v.label}
                 {i === run.index && counselling ? (
                   <Text style={styles.sheetCounselNow}>{` · ${t('conduct.counsel.short')}`}</Text>
                 ) : null}
@@ -1372,7 +1506,8 @@ export default function ConductScreen() {
           </View>
         );
       })}
-      <Text style={styles.sheetNote}>{t('conduct.counselNote')}</Text>
+      {/* The counsel minute is a midweek thing; the weekend has no student part. */}
+      {segments.some((x) => x.counselMin > 0) ? <Text style={styles.sheetNote}>{t('conduct.counselNote')}</Text> : null}
     </View>
   );
 
@@ -1383,10 +1518,8 @@ export default function ConductScreen() {
     if (!seg) return null;
     const row = seg.assignmentId ? byId.get(seg.assignmentId) : undefined;
     const sub = resolveSubsection(seg.key);
-    const people = [row?.publisherId, row?.assistantPublisherId]
-      .map((id) => (id ? nameById.get(id) : null))
-      .filter((x): x is string => !!x);
-    let person = people.length > 0 ? people.join(' · ') : null;
+    const v = runView(seg);
+    let person = v.person;
     // A visiting speaker has no card: his name and congregation as the
     // programme keeps them (18 October 2026).
     if (seg.key === 'public_talk_speaker' && !person && row?.speakerName) {
@@ -1408,7 +1541,7 @@ export default function ConductScreen() {
       // The closing group borrows the opening's name in the schedule (lib/parts.ts) — not here.
       section: sub !== 'closing' && SUBSECTIONS[sub] ? t(SUBSECTIONS[sub].i18nKey) : null,
       sectionColor: STAGE_SECTION_COLORS[sub] ?? '#94a3b8',
-      title: partDisplay(seg.key, row?.partTitle ?? null).label,
+      title: v.label,
       person,
       minutes: seg.partMin,
     };
@@ -1445,6 +1578,7 @@ export default function ConductScreen() {
         counselFor={counsel ? (() => { const sp = stagePart(seg); return sp ? { title: sp.title, person: sp.person } : null; })() : null}
         leftSec={frame.phase === 'part' ? frame.leftSec : 0}
         unsure={false}
+        paused={null}
         next={stagePart(nextSeg)}
         then={counsel ? null : stagePart(segments[idx + 2])}
         endsAt={null}
@@ -1463,18 +1597,45 @@ export default function ConductScreen() {
     );
   }
 
-  if (!practice && onStage) {
+  const lateEnd = hanging && !watching ? lateEndAt() : null;
+  const hangingCard = (
+    <View style={styles.hangingCard}>
+      <Text style={styles.hangingTitle}>{t('conduct.hanging.title')}</Text>
+      <Text style={styles.hangingText}>
+        {lateEnd !== null
+          ? t('conduct.hanging.lastPart', { part: current ? runView(current).label : '' })
+          : t('conduct.hanging.stopped', {
+              part: current ? runView(current).label : '',
+              time: hangingSince !== null ? clockOf(new Date(hangingSince)) : '',
+            })}
+      </Text>
+      {lateEnd !== null ? (
+        <Pressable style={styles.hangingPrimary} onPress={finishLate} accessibilityRole="button">
+          <Text style={styles.hangingPrimaryText}>{t('conduct.hanging.finish', { time: clockOf(new Date(lateEnd)) })}</Text>
+        </Pressable>
+      ) : null}
+      <Pressable style={styles.ghostBtn} onPress={() => void dropHanging()} accessibilityRole="button">
+        <Ionicons name="trash-outline" size={18} color="#b91c1c" />
+        <Text style={[styles.ghostBtnText, { color: '#b91c1c' }]}>{t('conduct.hanging.drop')}</Text>
+      </Pressable>
+    </View>
+  );
+
+  // The one who ran a hanging run finishes it on the timekeeper's screen.
+  if (!practice && onStage && !(hanging && !watching)) {
     const whoName = live?.controllerName ?? roles?.timekeeperName ?? null;
     const who = !watching
       ? { text: t('conduct.stage.youRun'), tone: 'mine' as const }
       : whoName
         ? {
-            text: t('conduct.stage.runBy', { name: whoName }),
+            text: live?.mineElsewhere ? t('conduct.stage.youRunElsewhere') : t('conduct.stage.runBy', { name: whoName }),
             tone: (offline || controllerGone || !live ? 'muted' : 'live') as 'muted' | 'live',
           }
         : null;
     const banner =
-      watching && offline
+      watching && hanging && hangingSince !== null
+        ? t('conduct.hanging.watch', { time: clockOf(new Date(hangingSince)) })
+        : watching && offline
         ? t('conduct.live.offlineWatch', { time: clockOf(new Date(liveQuery.dataUpdatedAt)) })
         : watching && controllerGone && live
           ? t('conduct.live.controllerSilent', { time: clockOf(new Date(Date.parse(live.controllerSeenAt) - offset)) })
@@ -1489,9 +1650,8 @@ export default function ConductScreen() {
               onPress: guarded(primary.onPress),
               locked,
             },
-            pause: counselling
-              ? null
-              : { label: run.startedAt === null ? t('conduct.resume') : t('conduct.pause'), onPress: run.startedAt === null ? resume : pause },
+            // No pause; only a run held by an app from before is let go on.
+            pause: !counselling && run.pausedAt !== null ? { label: t('conduct.resume'), onPress: resume } : null,
             undo: run.prev ? { label: t('conduct.undo'), onPress: undo } : null,
           }
         : !watching
@@ -1510,6 +1670,7 @@ export default function ConductScreen() {
         counselFor={counselling ? (() => { const sp = stagePart(current); return sp ? { title: sp.title, person: sp.person } : null; })() : null}
         leftSec={left}
         unsure={unsure}
+        paused={pausedText}
         next={stagePart(!started ? segments[0] : next)}
         then={counselling ? null : stagePart(!started ? segments[1] : afterNext)}
         endsAt={started ? endsAt : null}
@@ -1546,8 +1707,9 @@ export default function ConductScreen() {
       <View style={wide ? styles.twoCol : undefined}>
         <View style={wide ? styles.colMain : undefined}>
           {changedNote}
-          {nowCard}
-          {controls}
+          {/* A hanging run: the card says what happened; a red «−176:10» under it would only shout. */}
+          {hanging && !watching ? hangingCard : nowCard}
+          {hanging && !watching ? null : controls}
           {upNext}
         </View>
         <View style={wide ? styles.colSide : undefined}>{sheet}</View>
@@ -1571,31 +1733,20 @@ function CounselledHeadline({
 }
 
 /** Имя человека крупнее названия: вслух объявляют прежде всего его. */
-function SegmentHeadline({
-  segment,
-  row,
-  nameById,
-  big,
-}: {
-  segment: RunSegment;
-  row: Assignment | undefined;
-  nameById: Map<string, string>;
-  big?: boolean;
-}) {
-  const d = partDisplay(segment.key, row?.partTitle ?? null);
-  const person = row?.publisherId ? nameById.get(row.publisherId) : null;
-  const assistant = row?.assistantPublisherId
-    ? nameById.get(row.assistantPublisherId)
-    : null;
+interface SegView {
+  label: string;
+  subtitle: string | null;
+  person: string | null;
+  /** Unused for now: kept in the shape so a part may carry its song. */
+  song: string | null;
+}
+
+function SegmentHeadline({ view, big }: { view: SegView; big?: boolean }) {
   return (
     <View>
-      {person ? (
-        <Text style={big ? styles.personBig : styles.personSmall}>
-          {assistant ? `${person} · ${assistant}` : person}
-        </Text>
-      ) : null}
-      <Text style={big ? styles.partBig : styles.partSmall}>{d.label}</Text>
-      {d.subtitle ? <Text style={styles.subtitle}>{d.subtitle}</Text> : null}
+      {view.person ? <Text style={big ? styles.personBig : styles.personSmall}>{view.person}</Text> : null}
+      <Text style={big ? styles.partBig : styles.partSmall}>{view.label}</Text>
+      {view.subtitle ? <Text style={styles.subtitle}>{view.subtitle}</Text> : null}
     </View>
   );
 }
@@ -1692,6 +1843,22 @@ const styles = StyleSheet.create({
   // The watcher lost the signal: the number is a guess and looks like one.
   countdownStale: { color: '#94a3b8' },
   unsureLine: { color: '#64748b' },
+  countdownPaused: { color: '#94a3b8' },
+  hangingCard: {
+    backgroundColor: '#fffbf5',
+    borderColor: '#fed7aa',
+    borderWidth: 1,
+    borderRadius: 16,
+    padding: 16,
+    gap: 10,
+    marginBottom: 12,
+  },
+  hangingTitle: { fontFamily: 'Manrope_700Bold', fontSize: 17, color: '#9a3412' },
+  hangingText: { fontFamily: 'Manrope_400Regular', fontSize: 15, color: '#7c2d12', lineHeight: 21 },
+  hangingPrimary: { backgroundColor: '#0ea5e9', borderRadius: 14, paddingVertical: 14, alignItems: 'center' },
+  hangingPrimaryText: { fontFamily: 'Manrope_700Bold', fontSize: 17, color: '#ffffff' },
+  pausedLine: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  pausedText: { color: '#475569' },
   toneSoon: { color: '#b45309' },
   toneOver: { color: '#b91c1c' },
   stateLine: { fontFamily: 'Manrope_700Bold', fontSize: 16, marginTop: 2 },

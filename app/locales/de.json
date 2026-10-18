@@ -4031,7 +4031,6 @@
     "start": "Zusammenkunft beginnen",
     "nextPart": "Nächster Teil",
     "finish": "Beenden",
-    "pause": "Pause",
     "resume": "Fortsetzen",
     "again": "Neu beginnen",
     "runSheet": "Ablauf",
@@ -4103,7 +4102,6 @@
       "runningBy": "Zeit führt: {{name}}",
       "controllerSilent": "Zeitnehmer seit {{time}} nicht verbunden",
       "chairmanWatching": "Vorsitzender: {{name}} · schaut zu",
-      "chairmanSilent": "Vorsitzender: {{name}} · nicht verbunden",
       "offlineWatch": "Keine Verbindung zum Server · Stand {{time}}. Vielleicht ist der Programmpunkt schon zu Ende.",
       "offlineRun": "Keine Verbindung zum Server. Der Verlauf wird auf diesem Gerät gespeichert und gesendet, sobald die Verbindung zurück ist.",
       "unsure": "Keine aktuellen Daten – die Zeitanzeige stimmt vielleicht nicht",
@@ -4123,7 +4121,18 @@
       "cardKeeper": "Diese Woche sind Sie Zeitnehmer",
       "cardKeeperHint": "Öffnen Sie die Zeitführung im Saal vor der Zusammenkunft – der Vorsitzende sieht den Countdown bei sich.",
       "watch": "Ansehen",
-      "open": "Zeitführung öffnen"
+      "open": "Zeitführung öffnen",
+      "runningYouElsewhere": "Sie führen die Zeit — auf einem anderen Gerät. Hier wird nur angezeigt.",
+      "takenElsewhere": "Die Zeitführung ist auf ein anderes Gerät von Ihnen gewechselt. Dieser Bildschirm zeigt jetzt nur den Verlauf.",
+      "takeBodyElsewhere": "Die Zeit wird auf diesem Gerät geführt. Eingaben auf Ihrem anderen Gerät zählen nicht mehr.",
+      "cardYouElsewhere": "Sie führen die Zeit — auf einem anderen Gerät",
+      "openStage": "Bildschirm öffnen",
+      "cardHanging": "Zusammenkunft nicht beendet",
+      "cardHangingSub": "„Beenden“ wurde nicht gedrückt — kein Ergebnis gespeichert.",
+      "cardChairman": "Heute sind Sie Vorsitzender",
+      "cardChairmanKeeper": "Die Zeit führt {{name}}. Der Bühnenbildschirm zeigt den Countdown.",
+      "cardChairmanKeeperNoName": "Die Zeit führt der Zeitnehmer. Der Bühnenbildschirm zeigt den Countdown.",
+      "cardChairmanAlone": "Kein Zeitnehmer eingeteilt — Sie führen die Zeit."
     },
     "report": {
       "took": "Dauer der Zusammenkunft",
@@ -4198,7 +4207,27 @@
         "yes": "ja",
         "no": "nein"
       },
-      "countSoon": "Der Countdown bis zum Beginn erscheint hier eine Stunde vorher"
+      "countSoon": "Der Countdown bis zum Beginn erscheint hier eine Stunde vorher",
+      "youRunElsewhere": "Sie führen die Zeit · auf einem anderen Gerät"
+    },
+    "pausedSince": "Pause seit {{time}}",
+    "weekendRun": {
+      "opening": "Beginn · Lied und Gebet",
+      "prayerBy": "Gebet: {{name}}",
+      "openingSong": "Beginn · {{song}} und Gebet",
+      "between": "Dank für den Vortrag · Bekanntmachungen",
+      "closing": "Schlusslied und Gebet",
+      "betweenSong": "Dank für den Vortrag · Bekanntmachungen · {{song}}"
+    },
+    "hanging": {
+      "title": "Zusammenkunft nicht beendet",
+      "lastPart": "Der letzte Programmpunkt lief — „{{part}}“, aber „Beenden“ wurde nicht gedrückt.",
+      "stopped": "Der Verlauf blieb um {{time}} bei „{{part}}“ stehen. Ein Ergebnis daraus wäre falsch.",
+      "finish": "Beenden: Ende um {{time}}",
+      "drop": "Nicht speichern",
+      "dropTitle": "Verlauf nicht speichern?",
+      "dropBody": "Der Verlauf dieser Zusammenkunft wird gelöscht, es gibt kein Ergebnis.",
+      "watch": "Der Verlauf wurde seit {{time}} nicht aktualisiert — die Zusammenkunft ist wohl vorbei."
     }
   },
   "serviceHub": {
