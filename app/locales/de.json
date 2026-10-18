@@ -4158,6 +4158,44 @@
         "applyYourself": "Dienst",
         "christianLife": "Christenleben"
       }
+    },
+    "stage": {
+      "midweek": "Zusammenkunft unter der Woche",
+      "notStarted": "DIE ZUSAMMENKUNFT HAT NOCH NICHT BEGONNEN",
+      "startsAt": "Beginn um {{time}}",
+      "byProgrammeAt": "Laut Programm um {{time}}",
+      "startHint": "Die Zeit läuft, sobald der Zeitnehmer „Zusammenkunft beginnen“ tippt",
+      "lateHint": "Die Verspätung zählt zum Rückstand: Das Ende verschiebt sich um dieselbe Zeit",
+      "delayed": "Beginn verzögert sich",
+      "in": "in",
+      "left": "noch",
+      "ofMinutes": "von {{minutes}} Min.",
+      "byProgrammeMin": "laut Programm {{minutes}} Min.",
+      "lastMinute": "letzte Minute",
+      "counsel": "Rat",
+      "next": "ALS NÄCHSTES",
+      "first": "ZUERST",
+      "nextUp": "ALS NÄCHSTES",
+      "then": "DANACH",
+      "min": "{{minutes}} Min.",
+      "end": "Ende",
+      "endPlanned": "Ende laut Programm",
+      "youRun": "Sie führen die Zeit",
+      "runBy": "Zeit führt: {{name}}",
+      "check": {
+        "menu": "Bildschirm prüfen",
+        "menuHint": "So sieht der Bildschirm in der Zusammenkunft aus. Nichts wird gespeichert",
+        "title": "BILDSCHIRM-PRÜFUNG",
+        "sub": "keine Zusammenkunft · nichts wird gespeichert · die Zeit läuft schneller",
+        "end": "Prüfung beenden",
+        "done": "Prüfung beendet",
+        "again": "Noch einmal",
+        "online": "Verbindung zum Server",
+        "awake": "Bildschirm bleibt an",
+        "yes": "ja",
+        "no": "nein"
+      },
+      "countSoon": "Der Countdown bis zum Beginn erscheint hier eine Stunde vorher"
     }
   },
   "serviceHub": {

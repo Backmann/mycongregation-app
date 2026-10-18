@@ -4158,6 +4158,44 @@
         "applyYourself": "Ministry",
         "christianLife": "Christian life"
       }
+    },
+    "stage": {
+      "midweek": "Midweek meeting",
+      "notStarted": "THE MEETING HAS NOT STARTED",
+      "startsAt": "Starts at {{time}}",
+      "byProgrammeAt": "By the programme — at {{time}}",
+      "startHint": "The countdown begins when the timekeeper taps “Start meeting”",
+      "lateHint": "The delay counts as running behind: the end moves by as much",
+      "delayed": "start delayed",
+      "in": "in",
+      "left": "left",
+      "ofMinutes": "of {{minutes}} min",
+      "byProgrammeMin": "{{minutes}} min by the programme",
+      "lastMinute": "last minute",
+      "counsel": "Counsel",
+      "next": "NEXT",
+      "first": "FIRST",
+      "nextUp": "NEXT UP",
+      "then": "THEN",
+      "min": "{{minutes}} min",
+      "end": "Ends",
+      "endPlanned": "Ends by the programme",
+      "youRun": "You keep the time",
+      "runBy": "Timekeeper: {{name}}",
+      "check": {
+        "menu": "Check the screen",
+        "menuHint": "How the screen will look at the meeting. Nothing is saved",
+        "title": "SCREEN CHECK",
+        "sub": "no meeting is running · nothing is saved · time runs faster",
+        "end": "End the check",
+        "done": "Check finished",
+        "again": "Again",
+        "online": "Connection to the server",
+        "awake": "Screen stays on",
+        "yes": "yes",
+        "no": "no"
+      },
+      "countSoon": "The countdown to the start appears here an hour before"
     }
   },
   "serviceHub": {
