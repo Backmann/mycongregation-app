@@ -63,6 +63,12 @@ export const KEEP_MS = 7 * 24 * 60 * 60 * 1000;
 
 /** A record is `conduct:midweek:<Monday>`. */
 export const RECORD_PREFIX = 'conduct:midweek:';
+/** The weekend meeting's run on the device (18 October 2026). */
+export const WEEKEND_RECORD_PREFIX = 'conduct:weekend:';
+/** Where the run of a meeting of this kind is kept on the device. */
+export function recordPrefix(kind: 'midweek' | 'weekend'): string {
+  return kind === 'weekend' ? WEEKEND_RECORD_PREFIX : RECORD_PREFIX;
+}
 
 export interface ProgrammeChange {
   /** Segment keys that appeared after the meeting started. */

@@ -188,10 +188,29 @@ export const CONDUCT_OVERSEER_RESPONSIBILITIES = ['adviser', 'life_ministry_over
  * same rule as the server's (common/conduct-overseer.ts). The chairman and
  * the timekeeper see the result on their own screen when the meeting ends.
  */
-export function isConductOverseer(role: string | null | undefined, responsibilities: Iterable<string>): boolean {
+/**
+ * The weekend meeting's (Lionel, 18 October 2026): the coordinator of the
+ * body of elders and his assistant, the Watchtower study conductor and his
+ * assistants, the counsel brother. The server's list is the same.
+ */
+export const WEEKEND_CONDUCT_OVERSEER_RESPONSIBILITIES = [
+  'body_coordinator',
+  'body_coordinator_assistant',
+  'wt_study_conductor',
+  'wt_study_conductor_backup',
+  'adviser',
+] as const;
+
+export function isConductOverseer(
+  role: string | null | undefined,
+  responsibilities: Iterable<string>,
+  kind: 'midweek' | 'weekend' = 'midweek',
+): boolean {
   if (role === 'admin') return true;
+  const list: readonly string[] =
+    kind === 'weekend' ? WEEKEND_CONDUCT_OVERSEER_RESPONSIBILITIES : CONDUCT_OVERSEER_RESPONSIBILITIES;
   for (const r of responsibilities) {
-    if ((CONDUCT_OVERSEER_RESPONSIBILITIES as readonly string[]).includes(r)) return true;
+    if (list.includes(r)) return true;
   }
   return false;
 }

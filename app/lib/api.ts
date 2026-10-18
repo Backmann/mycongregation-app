@@ -5491,9 +5491,9 @@ export interface ConductRun {
 
 export const conductRunsApi = {
   /** Null when there is none, or it is older than seven days. */
-  async get(week: string): Promise<ConductRun | null> {
+  async get(week: string, kind: ConductKindWire = "midweek"): Promise<ConductRun | null> {
     const { data } = await api.get<{ run: ConductRun | null }>("/conduct-runs", {
-      params: { week },
+      params: kind === "weekend" ? { week, kind } : { week },
     });
     return data.run;
   },
@@ -5503,6 +5503,8 @@ export const conductRunsApi = {
     totalSec: number;
     plannedSec: number;
     startedAt?: string | null;
+    /** The weekend meeting (18 October 2026); none — midweek. */
+    eventType?: "weekend";
   }): Promise<void> {
     await api.put("/conduct-runs", input);
   },
@@ -5552,29 +5554,45 @@ async function timed<T extends { serverNow: string }>(
   return { ...data, serverNowMs: Number.isFinite(serverNowMs) ? serverNowMs : receivedAt };
 }
 
+/**
+ * Which meeting is run (18 October 2026). The midweek one is asked for as
+ * before — no kind at all — so nothing changes on the wire for it.
+ */
+export type ConductKindWire = "midweek" | "weekend";
+
 export const conductLiveApi = {
-  async get(week: string): Promise<ConductLiveAnswer> {
+  async get(week: string, kind: ConductKindWire = "midweek"): Promise<ConductLiveAnswer> {
     return timed(() =>
       api.get<{ live: ConductLive | null; roles: LiveRoles; serverNow: string }>(
         "/conduct-live",
         // Short: a hung ask must fail fast, so the next one goes out
         // (lib/conduct-live.ts LIVE_REQUEST_TIMEOUT_MS).
-        { params: { week }, timeout: LIVE_REQUEST_TIMEOUT_MS },
+        {
+          params: kind === "weekend" ? { week, kind } : { week },
+          timeout: LIVE_REQUEST_TIMEOUT_MS,
+        },
       ),
     );
   },
   /** A tap of the controller. 409 CONDUCT_LIVE_NOT_YOURS: somebody else runs it now. */
-  async put(input: { weekStartDate: string; epoch: number; state: unknown }): Promise<ConductLiveAnswer> {
+  async put(
+    input: { weekStartDate: string; epoch: number; state: unknown },
+    kind: ConductKindWire = "midweek",
+  ): Promise<ConductLiveAnswer> {
     return timed(() =>
-      api.put<{ live: ConductLive; serverNow: string }>("/conduct-live", input),
+      api.put<{ live: ConductLive; serverNow: string }>(
+        "/conduct-live",
+        kind === "weekend" ? { ...input, eventType: kind } : input,
+      ),
     );
   },
   /** «Взять ведение»: from now on this account's taps count. */
-  async take(weekStartDate: string): Promise<ConductLiveAnswer> {
+  async take(weekStartDate: string, kind: ConductKindWire = "midweek"): Promise<ConductLiveAnswer> {
     return timed(() =>
-      api.post<{ live: ConductLive; serverNow: string }>("/conduct-live/take", {
-        weekStartDate,
-      }),
+      api.post<{ live: ConductLive; serverNow: string }>(
+        "/conduct-live/take",
+        kind === "weekend" ? { weekStartDate, eventType: kind } : { weekStartDate },
+      ),
     );
   },
 };

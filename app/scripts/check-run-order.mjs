@@ -39,7 +39,7 @@ const js = ts.transpileModule(src, {
   },
 }).outputText;
 writeFileSync(join(out, 'run-order.mjs'), js);
-const { buildMidweekRunOrder, totalRunMinutes } = await import(
+const { buildMidweekRunOrder, buildWeekendRunOrder, totalRunMinutes } = await import(
   pathToFileURL(join(out, 'run-order.mjs'))
 );
 
@@ -232,6 +232,36 @@ for (const c of CASES) {
   }
 }
 
+// THE WEEKEND MEETING (18 October 2026). An ordinary week: 5 + 30 + 5 + 60 + 5;
+// the circuit overseer's week (Lionel): talk 30, study 30, his talk 30.
+{
+  const row = (partKey, id = partKey, partDurationMin = null) => ({ id, partKey, partDurationMin, partTitle: null });
+  const plain = buildWeekendRunOrder([
+    row('weekend_chairman'),
+    row('weekend_opening_prayer'),
+    row('public_talk_speaker'),
+    row('watchtower_conductor'),
+    row('watchtower_reader'),
+    row('weekend_closing_prayer'),
+  ]);
+  const minutes = (segs) => segs.map((x) => `${x.key}:${x.minutes}`).join(' ');
+  const want = 'weekend_opening_prayer:5 public_talk_speaker:30 weekend_song:5 watchtower_conductor:60 weekend_closing_prayer:5';
+  if (minutes(plain) !== want) fails.push(`weekend: ${minutes(plain)}\n    want ${want}`);
+  if (totalRunMinutes(plain) !== 105) fails.push(`weekend total ${totalRunMinutes(plain)}, want 105`);
+  if (plain.find((x) => x.key === 'weekend_song').showInterval !== false) fails.push('weekend song carries no range');
+  if (plain.some((x) => x.counselMin !== 0)) fails.push('no counsel on the weekend');
+  const co = buildWeekendRunOrder([
+    row('weekend_opening_prayer'),
+    row('public_talk_speaker'),
+    row('watchtower_conductor', 'wt', 60), // an import that still says 60
+    row('co_concluding_talk'),
+    row('weekend_closing_prayer'),
+  ]);
+  const wantCo =
+    'weekend_opening_prayer:5 public_talk_speaker:30 weekend_song:5 watchtower_conductor:30 co_concluding_talk:30 weekend_closing_prayer:5';
+  if (minutes(co) !== wantCo) fails.push(`CO week: ${minutes(co)}\n    want ${wantCo}`);
+}
+
 if (fails.length > 0) {
   console.error('Минуты будней встречи разошлись с закреплёнными:\n');
   for (const f of fails) console.error('  ' + f + '\n');
@@ -242,4 +272,4 @@ if (fails.length > 0) {
   process.exit(1);
 }
 
-console.log(`OK: run order pinned (${CASES.length} cases, midweek).`);
+console.log(`OK: run order pinned (${CASES.length} cases, midweek; weekend and the CO week).`);

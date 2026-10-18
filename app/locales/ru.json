@@ -4245,6 +4245,9 @@
     },
     "stage": {
       "midweek": "Встреча в будни",
+      "weekend": "Встреча в выходной день",
+      "wtPeople": "ведёт {{conductor}} · читает {{reader}}",
+      "wtConductor": "ведёт {{conductor}}",
       "notStarted": "ВСТРЕЧА ЕЩЁ НЕ НАЧАЛАСЬ",
       "startsAt": "Начало в {{time}}",
       "byProgrammeAt": "По программе — в {{time}}",

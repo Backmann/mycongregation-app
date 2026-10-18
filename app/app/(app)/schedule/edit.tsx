@@ -1420,6 +1420,14 @@ function ProgrammeEditor() {
                         lock={locks?.meetings.weekend}
                         retro={retro}
                       />
+                      <ConductEntry
+                        kind="weekend"
+                        week={items[0].weekStartDate}
+                        chairmanPublisherId={
+                          items.find((a) => a.partKey === "weekend_chairman")
+                            ?.publisherId ?? null
+                        }
+                      />
                       <WeekendSections
                         canEdit={canEditWeekendSchedule}
                         items={programItems}

@@ -4161,6 +4161,9 @@
     },
     "stage": {
       "midweek": "Midweek meeting",
+      "weekend": "Weekend meeting",
+      "wtPeople": "conducted by {{conductor}} · read by {{reader}}",
+      "wtConductor": "conducted by {{conductor}}",
       "notStarted": "THE MEETING HAS NOT STARTED",
       "startsAt": "Starts at {{time}}",
       "byProgrammeAt": "By the programme — at {{time}}",
