@@ -948,12 +948,15 @@ export default function ConductScreen() {
   /**
    * How a part is named and whom it shows, on every conduct screen.
    *
-   * The weekend's short pieces are named for who is on the stage (Lionel,
-   * 18 October 2026): the chairman opens at 13:00 with the song and the
-   * prayer; after the talk he comes out again with short announcements, and
-   * the study conductor begins with the song. The schedule calls them
-   * «Вступительная молитва» and «Песня 129», which said nothing about who
-   * stands there.
+   * The weekend as Lionel set it out (18 October 2026):
+   *   13:00  the chairman — song and prayer
+   *   13:05  the public talk
+   *   13:35  the chairman again — thanks for the talk, announcements, and
+   *          he calls the study conductor
+   *   13:40  the conductor — song 129, then the study (one part, 60 min)
+   *   14:40  the closing song and prayer
+   * The schedule's own names («Вступительная молитва», «Песня 129») said
+   * nothing about who stands there, and put the song in the wrong place.
    */
   const runView = (seg: RunSegment): SegView => {
     const row = seg.assignmentId ? byId.get(seg.assignmentId) : undefined;
@@ -962,18 +965,37 @@ export default function ConductScreen() {
       .map((id) => (id ? nameById.get(id) : null))
       .filter((x): x is string => !!x);
     const person = names.length > 0 ? names.join(' · ') : null;
-    if (weekend && seg.key === 'weekend_opening_prayer') {
+    if (!weekend) return { label: d.label, subtitle: d.subtitle ?? null, person, song: null };
+    const songOf = (key: string) => {
+      const r = rows.find((a) => a.partKey === key);
+      return r ? partDisplay(key, r.partTitle ?? null).label : null;
+    };
+    if (seg.key === 'weekend_opening_prayer') {
       const prayer = person && person !== chairmanName ? t('conduct.weekendRun.prayerBy', { name: person }) : null;
+      const song = songOf('weekend_opening_song');
       return {
-        label: t('conduct.weekendRun.opening'),
+        label: song ? t('conduct.weekendRun.openingSong', { song }) : t('conduct.weekendRun.opening'),
         subtitle: null,
         person: [chairmanName, prayer].filter(Boolean).join(' · ') || null,
+        song: null,
       };
     }
-    if (weekend && seg.key === 'weekend_song') {
-      return { label: t('conduct.weekendRun.announcements', { song: d.label }), subtitle: null, person: chairmanName };
+    if (seg.key === 'weekend_song') {
+      return { label: t('conduct.weekendRun.between'), subtitle: null, person: chairmanName, song: null };
     }
-    return { label: d.label, subtitle: d.subtitle ?? null, person };
+    if (seg.key === 'watchtower_conductor') {
+      const song = songOf('weekend_song');
+      return { label: song ? `${song} · ${d.label}` : d.label, subtitle: null, person, song, title: d.label };
+    }
+    if (seg.key === 'weekend_closing_prayer') {
+      return {
+        label: t('conduct.weekendRun.closing'),
+        subtitle: null,
+        person: person ? t('conduct.weekendRun.prayerBy', { name: person }) : null,
+        song: null,
+      };
+    }
+    return { label: d.label, subtitle: d.subtitle ?? null, person, song: null };
   };
   /** A segment key as the run sheet names it — also for a part that is gone. */
   const keyLabel = (key: string) => {
@@ -1434,7 +1456,8 @@ export default function ConductScreen() {
           </View>
         );
       })}
-      <Text style={styles.sheetNote}>{t('conduct.counselNote')}</Text>
+      {/* The counsel minute is a midweek thing; the weekend has no student part. */}
+      {segments.some((x) => x.counselMin > 0) ? <Text style={styles.sheetNote}>{t('conduct.counselNote')}</Text> : null}
     </View>
   );
 
@@ -1463,12 +1486,13 @@ export default function ConductScreen() {
           ? t('conduct.stage.wtPeople', { conductor: person, reader: readerName })
           : t('conduct.stage.wtConductor', { conductor: person })
         : null;
+      if (v.song) person = [v.song, person].filter(Boolean).join(' · ');
     }
     return {
       // The closing group borrows the opening's name in the schedule (lib/parts.ts) — not here.
       section: sub !== 'closing' && SUBSECTIONS[sub] ? t(SUBSECTIONS[sub].i18nKey) : null,
       sectionColor: STAGE_SECTION_COLORS[sub] ?? '#94a3b8',
-      title: v.label,
+      title: v.title ?? v.label,
       person,
       minutes: seg.partMin,
     };
@@ -1637,6 +1661,10 @@ interface SegView {
   label: string;
   subtitle: string | null;
   person: string | null;
+  /** The weekend study begins with a song: «Песня 129». */
+  song: string | null;
+  /** The study's own title, without the song in front — for the chairman's screen. */
+  title?: string;
 }
 
 function SegmentHeadline({ view, big }: { view: SegView; big?: boolean }) {

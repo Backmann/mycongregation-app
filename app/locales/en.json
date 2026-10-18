@@ -4207,8 +4207,10 @@
     "pausedSince": "Paused since {{time}}",
     "weekendRun": {
       "opening": "Opening · song and prayer",
-      "announcements": "Announcements · {{song}}",
-      "prayerBy": "prayer: {{name}}"
+      "prayerBy": "prayer: {{name}}",
+      "openingSong": "Opening · {{song}} and prayer",
+      "between": "Thanks for the talk · announcements",
+      "closing": "Closing song and prayer"
     }
   },
   "serviceHub": {

@@ -4291,8 +4291,10 @@
     "pausedSince": "Пауза с {{time}}",
     "weekendRun": {
       "opening": "Начало встречи · песня и молитва",
-      "announcements": "Объявления · {{song}}",
-      "prayerBy": "молитва: {{name}}"
+      "prayerBy": "молитва: {{name}}",
+      "openingSong": "Начало встречи · {{song}} и молитва",
+      "between": "Благодарность за речь · объявления",
+      "closing": "Заключительная песня и молитва"
     }
   },
   "serviceHub": {
