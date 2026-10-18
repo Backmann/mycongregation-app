@@ -10,6 +10,7 @@ import { requestErrorText } from "./error-text";
 import { refusalText } from "./refusal-text";
 import { bestOffset, LIVE_REQUEST_TIMEOUT_MS, offsetSample } from "./conduct-live";
 import type { LiveRoles } from "./conduct-live";
+import { deviceId } from "./device-id";
 
 function resolveApiUrl(): string {
   const url = process.env.EXPO_PUBLIC_API_URL;
@@ -5518,8 +5519,13 @@ export interface ConductLive {
   state: unknown;
   controllerUserId: string;
   controllerName: string | null;
-  /** Whether this account's taps are the ones that count. */
+  /** Whether THIS DEVICE's taps are the ones that count. */
   mine: boolean;
+  /**
+   * This account runs it on another of its devices (18 October 2026); absent
+   * from a server before that.
+   */
+  mineElsewhere?: boolean;
   controllerSeenAt: string;
   chairmanSeenAt: string | null;
   updatedAt: string;
@@ -5562,13 +5568,14 @@ export type ConductKindWire = "midweek" | "weekend";
 
 export const conductLiveApi = {
   async get(week: string, kind: ConductKindWire = "midweek"): Promise<ConductLiveAnswer> {
+    const device = await deviceId();
     return timed(() =>
       api.get<{ live: ConductLive | null; roles: LiveRoles; serverNow: string }>(
         "/conduct-live",
         // Short: a hung ask must fail fast, so the next one goes out
         // (lib/conduct-live.ts LIVE_REQUEST_TIMEOUT_MS).
         {
-          params: kind === "weekend" ? { week, kind } : { week },
+          params: kind === "weekend" ? { week, kind, device } : { week, device },
           timeout: LIVE_REQUEST_TIMEOUT_MS,
         },
       ),
@@ -5579,19 +5586,23 @@ export const conductLiveApi = {
     input: { weekStartDate: string; epoch: number; state: unknown },
     kind: ConductKindWire = "midweek",
   ): Promise<ConductLiveAnswer> {
+    const device = await deviceId();
     return timed(() =>
       api.put<{ live: ConductLive; serverNow: string }>(
         "/conduct-live",
-        kind === "weekend" ? { ...input, eventType: kind } : input,
+        kind === "weekend" ? { ...input, eventType: kind, deviceId: device } : { ...input, deviceId: device },
       ),
     );
   },
-  /** «Взять ведение»: from now on this account's taps count. */
+  /** «Взять ведение»: from now on this device's taps count. */
   async take(weekStartDate: string, kind: ConductKindWire = "midweek"): Promise<ConductLiveAnswer> {
+    const device = await deviceId();
     return timed(() =>
       api.post<{ live: ConductLive; serverNow: string }>(
         "/conduct-live/take",
-        kind === "weekend" ? { weekStartDate, eventType: kind } : { weekStartDate },
+        kind === "weekend"
+          ? { weekStartDate, eventType: kind, deviceId: device }
+          : { weekStartDate, deviceId: device },
       ),
     );
   },

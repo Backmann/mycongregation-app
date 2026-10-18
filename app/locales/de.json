@@ -4123,7 +4123,10 @@
       "cardKeeper": "Diese Woche sind Sie Zeitnehmer",
       "cardKeeperHint": "Öffnen Sie die Zeitführung im Saal vor der Zusammenkunft – der Vorsitzende sieht den Countdown bei sich.",
       "watch": "Ansehen",
-      "open": "Zeitführung öffnen"
+      "open": "Zeitführung öffnen",
+      "runningYouElsewhere": "Sie führen die Zeit — auf einem anderen Gerät. Hier wird nur angezeigt.",
+      "takenElsewhere": "Die Zeitführung ist auf ein anderes Gerät von Ihnen gewechselt. Dieser Bildschirm zeigt jetzt nur den Verlauf.",
+      "takeBodyElsewhere": "Die Zeit wird auf diesem Gerät geführt. Eingaben auf Ihrem anderen Gerät zählen nicht mehr."
     },
     "report": {
       "took": "Dauer der Zusammenkunft",
@@ -4198,7 +4201,14 @@
         "yes": "ja",
         "no": "nein"
       },
-      "countSoon": "Der Countdown bis zum Beginn erscheint hier eine Stunde vorher"
+      "countSoon": "Der Countdown bis zum Beginn erscheint hier eine Stunde vorher",
+      "youRunElsewhere": "Sie führen die Zeit · auf einem anderen Gerät"
+    },
+    "pausedSince": "Pause seit {{time}}",
+    "weekendRun": {
+      "opening": "Beginn · Lied und Gebet",
+      "announcements": "Bekanntmachungen · {{song}}",
+      "prayerBy": "Gebet: {{name}}"
     }
   },
   "serviceHub": {

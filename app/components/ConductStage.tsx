@@ -60,6 +60,11 @@ export interface StageProps {
   leftSec: number;
   /** The number cannot be trusted — grey, and words instead of a colour. */
   unsure: boolean;
+  /**
+   * The part is held — «Пауза с 13:56» (18 October 2026: the countdown stood
+   * still in red for twenty minutes and nothing on the screen said why).
+   */
+  paused: string | null;
   next: StagePart | null;
   then: StagePart | null;
   endsAt: string | null;
@@ -126,8 +131,16 @@ export function ConductStage(p: StageProps) {
   const { t } = useTranslation();
   const { width, height } = useWindowDimensions();
   const wide = width >= 900;
+  // The number must fit its column on one line — «+21:06» is six signs.
+  // On an iPad in landscape (1180 wide) the height alone made it 246 and
+  // «29:44» broke over two lines (18 October 2026). «+21:06», the widest it
+  // gets, is about 3.3 of the font's size.
+  const column = wide ? ((width - 80 - 40) * 1.75) / 2.75 : width - 48;
   const digits = Math.round(
-    wide ? Math.min(248, Math.max(150, height * 0.3)) : Math.min(236, Math.max(110, width * 0.27)),
+    Math.min(
+      column / 3.4,
+      wide ? Math.min(248, Math.max(150, height * 0.3)) : Math.min(236, Math.max(110, width * 0.27)),
+    ),
   );
 
   const tone: StageTone | 'stale' =
@@ -148,8 +161,8 @@ export function ConductStage(p: StageProps) {
   }, [tone, flash]);
 
   const numberColor =
-    tone === 'stale' ? C.stale : tone === 'over' ? C.red : tone === 'soon' ? C.amber : C.calm;
-  const barColor = tone === 'stale' ? '#334155' : tone === 'over' ? C.red : tone === 'soon' ? C.amber : C.bar;
+    p.paused && tone !== 'stale' ? C.muted : tone === 'stale' ? C.stale : tone === 'over' ? C.red : tone === 'soon' ? C.amber : C.calm;
+  const barColor = p.paused || tone === 'stale' ? '#334155' : tone === 'over' ? C.red : tone === 'soon' ? C.amber : C.bar;
 
   const heading = (
     <View style={s.header}>
@@ -282,6 +295,7 @@ export function ConductStage(p: StageProps) {
         <View style={{ flex: 1, minHeight: 16 }} />
         <Text
           style={[s.digits, { fontSize: digits, lineHeight: digits * 1.02, color: numberColor }]}
+          numberOfLines={1}
           accessibilityLiveRegion="polite"
         >
           {mmssSigned(p.leftSec)}
@@ -289,6 +303,11 @@ export function ConductStage(p: StageProps) {
         <View style={s.stateRow}>
           {p.unsure ? (
             <Text style={s.unsureText}>{t('conduct.live.unsure')}</Text>
+          ) : p.paused ? (
+            <View style={[s.pill, { backgroundColor: '#1e293b', flexDirection: 'row', alignItems: 'center', gap: 8 }]}>
+              <Ionicons name="pause" size={18} color={C.textMid} />
+              <Text style={[s.pillText, { color: C.textMid }]}>{p.paused}</Text>
+            </View>
           ) : words ? (
             <View style={[s.pill, { backgroundColor: tone === 'over' ? C.redBg : C.amberBg }]}>
               <Text style={[s.pillText, { color: tone === 'over' ? C.redSoft : C.amberSoft }]}>{words}</Text>

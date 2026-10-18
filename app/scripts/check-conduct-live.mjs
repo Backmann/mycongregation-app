@@ -183,4 +183,21 @@ check('a watching screen that cannot be trusted says so (17 October 2026)', () =
   assert.ok(L.LIVE_STALE_MS > 2 * L.LIVE_POLL_MS, 'one missed ask alone does not grey the screen');
 });
 
+check('a run kept on a device does not go up over a newer one on the server (18 October 2026)', () => {
+  const m = (min) => T + min * 60_000;
+  // What the phone kept from 13:05 — the talk begun — and what the iPad sent since.
+  const phone = { ...EMPTY_RUN, index: 1, meetingStartedAt: m(0), startedAt: m(5), starts: [m(0), m(5)] };
+  const ipad = { ...EMPTY_RUN, index: 3, meetingStartedAt: m(0), startedAt: m(40), starts: [m(0), m(5), m(35), m(40)] };
+  assert.equal(L.lastMoment(ipad), m(40));
+  assert.equal(L.lastMoment(EMPTY_RUN), null, 'not begun: no moment');
+  assert.equal(L.keptRunIsNewer(phone, ipad), false, 'the older kept run gives way');
+  assert.equal(L.keptRunIsNewer(ipad, phone), true, 'taps made here with no signal are later — they go up');
+  assert.equal(L.keptRunIsNewer(EMPTY_RUN, ipad), false, 'nothing kept: the server is taken');
+  assert.equal(L.keptRunIsNewer(phone, null), true, 'no run on the server: the kept one is it');
+  assert.equal(L.keptRunIsNewer(phone, EMPTY_RUN), true, 'the server has not begun: the kept one is it');
+  // A pause is a tap too.
+  const paused = { ...phone, startedAt: null, pausedAt: m(50) };
+  assert.equal(L.keptRunIsNewer(paused, ipad), true);
+});
+
 console.log(`conduct-live: ${n} groups ok`);

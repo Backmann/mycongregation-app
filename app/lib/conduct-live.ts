@@ -109,6 +109,38 @@ export function fromWire(raw: unknown, offsetMs: number): RunState | null {
   };
 }
 
+/**
+ * The latest moment a run records — its last tap, near enough: a part begun,
+ * a pause, a counsel, the end. Null for a run not begun.
+ */
+export function lastMoment(s: Pick<RunState, 'startedAt' | 'counselFrom' | 'meetingStartedAt' | 'pausedAt' | 'finishedAt' | 'starts'>): number | null {
+  let best: number | null = null;
+  for (const m of [s.startedAt, s.counselFrom, s.meetingStartedAt, s.pausedAt, s.finishedAt, ...(s.starts ?? [])]) {
+    if (typeof m === 'number' && Number.isFinite(m) && (best === null || m > best)) best = m;
+  }
+  return best;
+}
+
+/**
+ * A device opening the meeting with a run of its own already kept on it,
+ * while the server has one too (18 October 2026): whose is the meeting?
+ * Before, a kept run always counted as «taps the server has not had yet» and
+ * was sent up over the server's. The phone opened at 13:56 with what it had
+ * counted at 13:05 and put the meeting back by half an hour on every screen.
+ * Now the kept run wins only when it is the LATER one — taps made here with
+ * no signal; an older one gives way to the server's.
+ */
+export function keptRunIsNewer(
+  kept: Parameters<typeof lastMoment>[0],
+  server: Parameters<typeof lastMoment>[0] | null,
+): boolean {
+  const k = lastMoment(kept);
+  if (k === null) return false;
+  if (!server) return true;
+  const s = lastMoment(server);
+  return s === null || k > s;
+}
+
 /** Two runs the same as far as the server is concerned. */
 export function sameWire(a: WireState | null, b: WireState | null): boolean {
   return JSON.stringify(a) === JSON.stringify(b);

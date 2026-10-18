@@ -4123,7 +4123,10 @@
       "cardKeeper": "This week you are the timekeeper",
       "cardKeeperHint": "Open timekeeping in the hall before the meeting — the chairman will see the countdown on his screen.",
       "watch": "Watch",
-      "open": "Open timekeeping"
+      "open": "Open timekeeping",
+      "runningYouElsewhere": "You are keeping time — on another device. This one only shows it.",
+      "takenElsewhere": "Timekeeping moved to another of your devices. This screen now only shows the meeting.",
+      "takeBodyElsewhere": "Time will be kept on this device. Taps on your other device will no longer count."
     },
     "report": {
       "took": "Meeting took",
@@ -4198,7 +4201,14 @@
         "yes": "yes",
         "no": "no"
       },
-      "countSoon": "The countdown to the start appears here an hour before"
+      "countSoon": "The countdown to the start appears here an hour before",
+      "youRunElsewhere": "You are keeping time · on another device"
+    },
+    "pausedSince": "Paused since {{time}}",
+    "weekendRun": {
+      "opening": "Opening · song and prayer",
+      "announcements": "Announcements · {{song}}",
+      "prayerBy": "prayer: {{name}}"
     }
   },
   "serviceHub": {
