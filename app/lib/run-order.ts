@@ -48,6 +48,8 @@ export interface RunItem {
   partDurationMin: number | null;
   /** «<heading>: <first note>» as imported — it tells a discussion apart. */
   partTitle?: string | null;
+  /** The programme's own order — which of two weekend songs comes first. */
+  partOrder?: number | null;
 }
 
 export interface RunSegment {
@@ -192,7 +194,13 @@ export function buildWeekendRunOrder(items: RunItem[]): RunSegment[] {
   const coTalk = first('co_concluding_talk');
   push(first('weekend_opening_prayer'), 'weekend_opening_prayer', WEEKEND_OPENING_MIN);
   push(first('public_talk_speaker'), 'public_talk_speaker', dur(first('public_talk_speaker'), PUBLIC_TALK_MIN));
-  push(first('weekend_song'), 'weekend_song', WEEKEND_SONG_MIN, false);
+  // The song before the study. A visit week may carry a second one, the
+  // closing song after the overseer's talk (schedule/edit.tsx): the earlier
+  // by the programme's order is the one before the study.
+  const songs = items
+    .filter((i) => i.partKey === 'weekend_song')
+    .sort((a, b) => (a.partOrder ?? 0) - (b.partOrder ?? 0));
+  push(songs[0] ?? null, 'weekend_song', WEEKEND_SONG_MIN, false);
   push(
     first('watchtower_conductor'),
     'watchtower_conductor',

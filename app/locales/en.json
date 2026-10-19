@@ -4217,7 +4217,11 @@
       "openingSong": "Opening · {{song}} and prayer",
       "between": "Thanks for the talk · announcements",
       "closing": "Closing song and prayer",
-      "betweenSong": "Thanks for the talk · announcements · {{song}}"
+      "betweenSong": "Thanks for the talk · announcements · {{song}}",
+      "songBy": "song announced by {{name}}",
+      "announcedBy": "announced by {{name}}",
+      "closingSong": "Closing {{song}} and prayer",
+      "songNo": "song {{n}}"
     },
     "hanging": {
       "title": "Meeting not finished",

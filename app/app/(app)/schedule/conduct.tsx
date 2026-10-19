@@ -251,6 +251,7 @@ export default function ConductScreen() {
           partKey: a.partKey,
           partDurationMin: a.partDurationMin,
           partTitle: a.partTitle,
+          partOrder: a.partOrder,
         })),
       ),
     [rows, weekend],
@@ -990,7 +991,8 @@ export default function ConductScreen() {
    *   13:00  the chairman — song and prayer
    *   13:05  the public talk
    *   13:35  the chairman again — thanks for the talk, announcements; he
-   *          calls the study conductor, who announces song 129
+   *          calls the study conductor, who announces song 129 (19 October:
+   *          the song is the conductor's, said on the screen)
    *   13:40  the study itself, sixty minutes, no song inside
    *   14:40  the conductor announces the closing song and who prays
    * In the circuit overseer's week: the study 13:40–14:10 with no reader,
@@ -1004,12 +1006,26 @@ export default function ConductScreen() {
     const names = [row?.publisherId, row?.assistantPublisherId]
       .map((id) => (id ? nameById.get(id) : null))
       .filter((x): x is string => !!x);
-    const person = names.length > 0 ? names.join(' · ') : null;
+    // A visiting speaker — the public talk, the circuit overseer's talk — has
+    // no card: his name as the programme keeps it.
+    const person =
+      names.length > 0
+        ? names.join(' · ')
+        : row?.speakerName
+          ? [row.speakerName, row.speakerCongregation].filter(Boolean).join(' · ')
+          : null;
     if (!weekend) return { label: d.label, subtitle: d.subtitle ?? null, person, song: null };
     const songOf = (key: string) => {
       const r = rows.find((a) => a.partKey === key);
       return r ? partDisplay(key, r.partTitle ?? null).label : null;
     };
+    // Two weekend songs in a visit week: before the study, and the closing one
+    // after the overseer's talk — told apart by the programme's order.
+    const weekendSongs = rows
+      .filter((a) => a.partKey === 'weekend_song')
+      .sort((a, b) => (a.partOrder ?? 0) - (b.partOrder ?? 0));
+    const songLabel = (r: (typeof rows)[number] | undefined) =>
+      r ? partDisplay('weekend_song', r.partTitle ?? null).label : null;
     if (seg.key === 'weekend_opening_prayer') {
       const prayer = person && person !== chairmanName ? t('conduct.weekendRun.prayerBy', { name: person }) : null;
       const song = songOf('weekend_opening_song');
@@ -1020,20 +1036,49 @@ export default function ConductScreen() {
         song: null,
       };
     }
+    // Who stands up after the chairman (Lionel, 19 October 2026): the study
+    // conductor announces the song before the study and, after it, the
+    // closing song and who prays. In the circuit overseer's week it is he who
+    // announces the closing song and the prayer, after his talk.
+    const nameOfRow = (key: string) => {
+      const r = rows.find((a) => a.partKey === key);
+      return (r?.publisherId ? nameById.get(r.publisherId) : null) ?? r?.speakerName ?? null;
+    };
+    const conductor = nameOfRow('watchtower_conductor');
     if (seg.key === 'weekend_song') {
-      const song = songOf('weekend_song');
+      const song = songLabel(weekendSongs[0]);
       return {
         label: song ? t('conduct.weekendRun.betweenSong', { song }) : t('conduct.weekendRun.between'),
         subtitle: null,
-        person: chairmanName,
+        person:
+          [chairmanName, conductor ? t('conduct.weekendRun.songBy', { name: conductor }) : null]
+            .filter(Boolean)
+            .join(' · ') || null,
         song: null,
       };
     }
     if (seg.key === 'weekend_closing_prayer') {
+      const coWeek = segments.some((x) => x.key === 'co_concluding_talk');
+      const announcer = coWeek ? nameOfRow('co_concluding_talk') : conductor;
+      // THREE SONGS (Lionel, 19 October 2026): before the talk, before the
+      // study, after it. The third is kept where the import puts it — in the
+      // closing prayer's own title, «Песня 151 и молитва» (lib/wt-parser.ts);
+      // in a visit week it may be a second weekend song of its own.
+      const numberIn = (title: string | null | undefined) => /(\d{1,3})/.exec(title ?? '')?.[1] ?? null;
+      const closingNo =
+        (weekendSongs.length > 1 ? numberIn(weekendSongs[weekendSongs.length - 1].partTitle) : null) ??
+        numberIn(rows.find((a) => a.partKey === 'weekend_closing_prayer')?.partTitle);
+      const closingSong = closingNo ? t('conduct.weekendRun.songNo', { n: closingNo }) : null;
       return {
-        label: t('conduct.weekendRun.closing'),
+        label: closingSong ? t('conduct.weekendRun.closingSong', { song: closingSong }) : t('conduct.weekendRun.closing'),
         subtitle: null,
-        person: person ? t('conduct.weekendRun.prayerBy', { name: person }) : null,
+        person:
+          [
+            announcer ? t('conduct.weekendRun.announcedBy', { name: announcer }) : null,
+            person ? t('conduct.weekendRun.prayerBy', { name: person }) : null,
+          ]
+            .filter(Boolean)
+            .join(' · ') || null,
         song: null,
       };
     }
