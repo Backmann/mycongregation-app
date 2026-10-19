@@ -1,3 +1,4 @@
+import { goBack } from '../../../components/NavHistory';
 import { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
@@ -420,7 +421,7 @@ export default function NewOrEditServiceReportScreen() {
             </Text>
           ) : null}
         </View>
-        <Pressable style={styles.doneBtn} onPress={() => router.back()}>
+        <Pressable style={styles.doneBtn} onPress={() => goBack('/service-reports')}>
           <Text style={styles.doneBtnText}>{t('common.done')}</Text>
         </Pressable>
       </View>
@@ -726,7 +727,7 @@ export default function NewOrEditServiceReportScreen() {
               queryClient.invalidateQueries({ queryKey: ['group-reports'] });
               queryClient.invalidateQueries({ queryKey: ['publisher-history'] });
               queryClient.invalidateQueries({ queryKey: ['my-report-standing'] });
-              router.back();
+              goBack('/service-reports');
             }}
             style={styles.removeBtn}
           >

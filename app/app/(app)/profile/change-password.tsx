@@ -1,3 +1,4 @@
+import { goBack } from '../../../components/NavHistory';
 import { useState } from 'react';
 import {
   ActivityIndicator,
@@ -44,7 +45,7 @@ export default function ChangePasswordScreen() {
       // sign of it; and even where Alert works, an extra "OK" tap to leave a
       // screen that is already done is a step for nothing.
       reportSuccess(t('profile.changePassword.successToast'));
-      router.back();
+      goBack('/profile');
     },
     onError: (err: unknown) => {
       // Server returns 400 with a textual message (e.g. "Current password is

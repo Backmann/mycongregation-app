@@ -1,3 +1,4 @@
+import { goBack } from './NavHistory';
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -147,7 +148,7 @@ export function SpecialEventDetail({
     onSuccess: () => {
       invalidateAfterEventChange(qc);
       if (onRemoved) onRemoved();
-      else router.back();
+      else goBack('/special-events');
     },
   });
 

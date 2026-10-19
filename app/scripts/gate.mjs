@@ -82,6 +82,7 @@ const STEPS = [
   ['Ход встречи вживую', 'node', ['scripts/check-conduct-live.mjs']],
   // The chairman's screen at the lectern (18.10.2026): amber, the start, «Проверить экран».
   ['Экран председателя', 'node', ['scripts/check-conduct-stage.mjs']],
+  ['Назад туда, откуда пришли', 'node', ['scripts/check-nav-history.mjs']],
   ['Подробный итог встречи', 'node', ['scripts/check-conduct-report.mjs']],
   ['Перенос встречи для проповеди', 'node', ['scripts/check-field-moves.mjs']],
   ['Даты по-немецки и по-английски', 'node', ['scripts/check-date-patterns.mjs']],
