@@ -1060,11 +1060,15 @@ export default function ConductScreen() {
     if (seg.key === 'weekend_closing_prayer') {
       const coWeek = segments.some((x) => x.key === 'co_concluding_talk');
       const announcer = coWeek ? nameOfRow('co_concluding_talk') : conductor;
-      const lastSong = weekendSongs.length > 1 ? songLabel(weekendSongs[weekendSongs.length - 1]) : null;
-      // «Заключительная песня 151 и молитва»: the word in the middle of a phrase,
-      // lower case — except in German, where nouns keep their capital.
-      const closingSong =
-        lastSong && !i18n.language.startsWith('de') ? lastSong.charAt(0).toLowerCase() + lastSong.slice(1) : lastSong;
+      // THREE SONGS (Lionel, 19 October 2026): before the talk, before the
+      // study, after it. The third is kept where the import puts it — in the
+      // closing prayer's own title, «Песня 151 и молитва» (lib/wt-parser.ts);
+      // in a visit week it may be a second weekend song of its own.
+      const numberIn = (title: string | null | undefined) => /(\d{1,3})/.exec(title ?? '')?.[1] ?? null;
+      const closingNo =
+        (weekendSongs.length > 1 ? numberIn(weekendSongs[weekendSongs.length - 1].partTitle) : null) ??
+        numberIn(rows.find((a) => a.partKey === 'weekend_closing_prayer')?.partTitle);
+      const closingSong = closingNo ? t('conduct.weekendRun.songNo', { n: closingNo }) : null;
       return {
         label: closingSong ? t('conduct.weekendRun.closingSong', { song: closingSong }) : t('conduct.weekendRun.closing'),
         subtitle: null,
