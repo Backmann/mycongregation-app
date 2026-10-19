@@ -1,3 +1,4 @@
+import { goBack } from '../../../components/NavHistory';
 import { Children, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
@@ -186,7 +187,7 @@ export default function PublisherDetailScreen() {
     mutationFn: () => publishersApi.purge(id!),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['publishers'] });
-      router.back();
+      goBack('/publishers');
     },
     onError: (e: unknown) => {
       const raw = extractErrorMessage(e);

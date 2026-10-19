@@ -23,6 +23,7 @@ import {
   pushApi,
 } from './api';
 import { AppState, Platform } from 'react-native';
+import { resetNav } from './nav-history';
 import { sessionVerdict } from './session-verdict';
 import { detachWebPush } from './web-push';
 import { rememberedPushToken, rememberPushToken } from './push-token-store';
@@ -383,6 +384,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await forgetKept();
     await forgetCache();
     forgetWelcome();
+    // Where the person who leaves has been is not the next person's way back.
+    resetNav();
     setUnreachable(false);
     setUser(null);
   }, [forgetCache]);

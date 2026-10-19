@@ -1,3 +1,4 @@
+import { goBack } from '../../../components/NavHistory';
 import { router } from 'expo-router';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ServiceGroupForm } from '../../../components/ServiceGroupForm';
@@ -22,7 +23,7 @@ export default function NewServiceGroupScreen() {
       onSubmit={createMutation.mutateAsync}
       isSubmitting={createMutation.isPending}
       submitLabel={t('common.create')}
-      onCancel={() => router.back()}
+      onCancel={() => goBack('/service-groups')}
     />
   );
 }

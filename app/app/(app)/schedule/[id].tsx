@@ -1,3 +1,4 @@
+import { goBack } from '../../../components/NavHistory';
 import {
   ActivityIndicator,
   
@@ -90,7 +91,7 @@ export default function AssignmentDetailScreen() {
       // Both directions of the mirror rule rebuild the microphone duty, so
       // this refresh must not be conditional on which part was edited.
       queryClient.invalidateQueries({ queryKey: ['duties'] });
-      router.back();
+      goBack('/schedule');
     },
   });
 
@@ -177,7 +178,7 @@ export default function AssignmentDetailScreen() {
           onSave={(pt) =>
             updateMutation
               .mutateAsync({ partTitle: pt ?? '' })
-              .then(() => router.back())
+              .then(() => goBack('/schedule'))
           }
         />
       ) : (

@@ -21,6 +21,11 @@ export default function HomeLayout() {
         options={{
           title: t('home.title'),
           headerTitleAlign: 'left',
+          // The first screen of the app never shows a back arrow (19 October
+          // 2026): one appeared whenever the stack held a copy of it, and led
+          // back into the screen just left.
+          headerBackVisible: false,
+          headerLeft: () => null,
           // The mark alone, and the congregation's name beside it.
           //
           // The full wordmark used to stand here and the congregation's name at

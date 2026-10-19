@@ -1,3 +1,4 @@
+import { goBack } from '../../../components/NavHistory';
 import { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
@@ -94,7 +95,7 @@ export default function ServiceGroupDetailScreen() {
     mutationFn: () => serviceGroupsApi.remove(id!),
     onSuccess: () => {
       invalidateGroups();
-      router.back();
+      goBack('/service-groups');
     },
   });
 

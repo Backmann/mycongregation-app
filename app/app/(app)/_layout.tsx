@@ -3,7 +3,9 @@ import {
   BottomTabBar,
   type BottomTabBarProps,
 } from "@react-navigation/bottom-tabs";
-import { CommonActions } from "@react-navigation/native";
+import { CommonActions, StackActions } from "@react-navigation/native";
+import { NavHistoryTracker } from "../../components/NavHistory";
+import { clearForeign, isForeign } from "../../lib/nav-history";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ActivityIndicator, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -100,8 +102,24 @@ export default function AppLayout() {
           each brother by hand. */}
       <UpdateBanner />
       <ContactsCheckPrompt />
+      <NavHistoryTracker parentTab={PARENT_TAB} />
       <Tabs
         tabBar={(props) => <TabBar {...props} />}
+        // A section whose screen on top was opened from another section opens
+        // at its first screen when its tab is pressed (lib/nav-history.ts,
+        // 19 October 2026): before, the tab showed that foreign screen and the
+        // person could not find the section's own start.
+        screenListeners={({ navigation, route }) => ({
+          tabPress: () => {
+            if (!isForeign(route.name)) return;
+            clearForeign(route.name);
+            const tabs = navigation.getState() as { routes: { name: string; state?: { key?: string; routes?: unknown[] } }[] };
+            const nested = tabs.routes.find((r) => r.name === route.name)?.state;
+            if (nested?.key && (nested.routes?.length ?? 0) > 1) {
+              navigation.dispatch({ ...StackActions.popToTop(), target: nested.key });
+            }
+          },
+        })}
         screenOptions={{
           headerShown: false,
           tabBarActiveTintColor: "#0ea5e9",

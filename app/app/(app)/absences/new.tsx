@@ -1,3 +1,4 @@
+import { goBack } from '../../../components/NavHistory';
 import { ScrollView } from 'react-native';
 import { router } from 'expo-router';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -34,7 +35,7 @@ export default function NewAbsenceScreen() {
         submitting={mutation.isPending}
         error={mutation.error}
         onSubmit={(input) => mutation.mutate(input)}
-        onCancel={() => router.back()}
+        onCancel={() => goBack('/absences')}
         lockedPublisher={locked}
         defaultPublisher={defaultPublisher}
       />

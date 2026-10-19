@@ -1,3 +1,4 @@
+import { goBack } from '../../../components/NavHistory';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
@@ -1371,7 +1372,7 @@ export default function ConductScreen() {
     return (
       <Notice
         text={t('conduct.noChairman')}
-        action={{ label: t('conduct.toSchedule'), onPress: () => router.back() }}
+        action={{ label: t('conduct.toSchedule'), onPress: () => goBack('/schedule') }}
       />
     );
   }

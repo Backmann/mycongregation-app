@@ -1,28 +1,23 @@
 import { router, useLocalSearchParams } from 'expo-router';
+import { performBack } from './NavHistory';
 import { Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 
 /**
- * Header back button that never gets stuck.
+ * The header's back arrow (19 October 2026): one step back in where the
+ * person has been — lib/nav-history.ts says why and how. Within a section it
+ * closes the screen; from a screen opened from another section it returns
+ * there and closes the screen it leaves.
  *
- * - default: go back when there is history, otherwise replace to `fallback`.
- * - toParent: always navigate to `fallback` (its one logical parent),
- *   regardless of where it was opened from — e.g. a publisher card returns to
- *   the publishers list, service reports return to Service, special events to
- *   the schedule. Uses navigate() so the parent tab's stack is reused and the
- *   next back press behaves naturally instead of jumping to Home.
- */
-/**
- * Where back should go, said by whoever opened the screen.
+ * `fallback` (or `?from=`, said by whoever opened the screen) is the screen's
+ * parent, used only when there is no history to go back in — the app opened
+ * right on this screen, from a notification say.
  *
- * A publisher card can be reached from the roster, from a service group, from
- * a report — and those live in different stacks, so the router's own history
- * is not a reliable answer: opening a publisher from a group switched stacks,
- * and going "back" landed in the whole congregation's roster.
- *
- * So the caller passes `?from=` and is obeyed. Explicit beats clever here: the
- * screen that navigated is the only one that knows where the person came from.
+ * Before, back always went to that parent, with a navigate that in React
+ * Navigation 7 pushes a fresh copy of it: the stack grew, the home screen
+ * showed a second, native arrow, and that arrow led back into the screen just
+ * left. And an event opened from the home screen went back to the Programme.
  */
 export function BackButton({
   fallback,
@@ -30,6 +25,7 @@ export function BackButton({
   color,
 }: {
   fallback: string;
+  /** Kept for the call sites; back follows the person's own way now (lib/nav-history.ts). */
   toParent?: boolean;
   color?: string;
 }) {
@@ -42,26 +38,13 @@ export function BackButton({
       accessibilityRole="button"
       accessibilityLabel={t('common.back')}
       onPress={() => {
-        if (typeof from === 'string' && from) {
-          router.navigate(from as any);
-        } else if (toParent) {
-          // The logical parent, ALWAYS — and this is the point of the prop.
-          //
-          // History cannot answer this question here: the app's stacks belong
-          // to tabs, so «back» from the journal leads not to Profile but to
-          // wherever the person was before Profile — the home screen. Profile
-          // meanwhile still holds the journal at the top of its own stack, so
-          // tapping the tab returns them straight back into it. That is a loop
-          // with no way out, and it is exactly what happened.
-          //
-          // The exception is declared by whoever navigated, through `from`
-          // above — the caller knows where the person came from, and nothing
-          // else does.
-          router.navigate(fallback as any);
-        } else if (router.canGoBack()) {
-          router.back();
-        } else {
-          router.replace(fallback as any);
+        // One step back in where the person has been (lib/nav-history.ts):
+        // within a section it closes the screen; from a screen opened from
+        // another section it returns there. The screen's parent — said by
+        // whoever opened it (`from`), or the section's own (`fallback`) — is
+        // the answer only when there is no history: the app opened right here.
+        if (!performBack(typeof from === 'string' && from ? from : fallback)) {
+          router.replace(fallback as never);
         }
       }}
       style={{ paddingHorizontal: 12 }}

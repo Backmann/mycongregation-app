@@ -1,3 +1,4 @@
+import { goBack } from '../../../components/NavHistory';
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -213,7 +214,7 @@ export default function MyContactsScreen() {
             styles.secondary,
             pressed && styles.pressed,
           ]}
-          onPress={() => router.back()}
+          onPress={() => goBack('/profile')}
         >
           <Text style={styles.secondaryText}>{t('common.back')}</Text>
         </Pressable>
