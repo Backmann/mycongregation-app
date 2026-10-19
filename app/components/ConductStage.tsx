@@ -170,7 +170,7 @@ export function ConductStage(p: StageProps) {
         <View style={s.mark}>
           <Text style={s.markText}>C</Text>
         </View>
-        <Text style={s.heading} numberOfLines={1}>
+        <Text style={s.heading}>
           {p.heading}
         </Text>
       </View>
@@ -216,14 +216,14 @@ export function ConductStage(p: StageProps) {
     main = (
       <View style={s.mainCol}>
         <Text style={[s.overline, late && { color: C.amberSoft }]}>{t('conduct.stage.notStarted')}</Text>
-        <Text style={s.title} numberOfLines={2}>
+        <Text style={s.title}>
           {p.startAt
             ? late
               ? t('conduct.stage.byProgrammeAt', { time: p.startAt })
               : t('conduct.stage.startsAt', { time: p.startAt })
             : t('conduct.live.waitingNobody')}
         </Text>
-        <Text style={s.person} numberOfLines={2}>
+        <Text style={s.person}>
           {late ? t('conduct.stage.lateHint') : t('conduct.stage.startHint')}
         </Text>
         <View style={{ flex: 1, minHeight: 16 }} />
@@ -255,7 +255,7 @@ export function ConductStage(p: StageProps) {
   } else if (p.phase === 'counsel' && p.counselFor) {
     main = (
       <View style={s.counselBox}>
-        <Text style={s.overline} numberOfLines={1}>
+        <Text style={s.overline}>
           {[p.counselFor.title, p.counselFor.person].filter(Boolean).join(' · ').toUpperCase()}
         </Text>
         <Text style={s.counselWord}>{t('conduct.stage.counsel')}</Text>
@@ -279,16 +279,16 @@ export function ConductStage(p: StageProps) {
         {p.current.section ? (
           <View style={s.sectionRow}>
             <View style={[s.sectionBar, { backgroundColor: p.unsure ? C.stale : p.current.sectionColor }]} />
-            <Text style={s.overline} numberOfLines={1}>
+            <Text style={s.overline}>
               {p.current.section.toUpperCase()}
             </Text>
           </View>
         ) : null}
-        <Text style={[s.title, p.unsure && { color: C.textMid }]} numberOfLines={2}>
+        <Text style={[s.title, p.unsure && { color: C.textMid }]}>
           {p.current.title}
         </Text>
         {p.current.person ? (
-          <Text style={s.person} numberOfLines={1}>
+          <Text style={s.person}>
             {p.current.person}
           </Text>
         ) : null}
@@ -342,11 +342,11 @@ export function ConductStage(p: StageProps) {
             ? t('conduct.stage.nextUp')
             : t('conduct.stage.next')}
       </Text>
-      <Text style={s.nextTitle} numberOfLines={2}>
+      <Text style={s.nextTitle}>
         {p.next.title}
       </Text>
       <View style={s.nextRow}>
-        <Text style={s.nextPerson} numberOfLines={1}>
+        <Text style={s.nextPerson}>
           {p.next.person ?? ''}
         </Text>
         <Text style={s.nextMin}>{t('conduct.stage.min', { minutes: p.next.minutes })}</Text>
@@ -357,7 +357,7 @@ export function ConductStage(p: StageProps) {
     <View style={{ paddingHorizontal: 4 }}>
       <Text style={[s.small, { color: C.faint }]}>{t('conduct.stage.then')}</Text>
       <View style={s.nextRow}>
-        <Text style={s.thenText} numberOfLines={1}>
+        <Text style={s.thenText}>
           {[p.then.title, p.then.person].filter(Boolean).join(' · ')}
         </Text>
         <Text style={s.thenText}>{t('conduct.stage.min', { minutes: p.then.minutes })}</Text>
@@ -406,7 +406,7 @@ export function ConductStage(p: StageProps) {
         onPress={p.controls.primary.onPress}
         accessibilityRole="button"
       >
-        <Text style={s.primaryText} numberOfLines={1}>
+        <Text style={s.primaryText}>
           {p.controls.primary.sub ? `${p.controls.primary.label} · ${p.controls.primary.sub}` : p.controls.primary.label}
         </Text>
       </Pressable>
@@ -489,7 +489,7 @@ function WhoPill({ who }: { who: { text: string; tone: 'live' | 'muted' | 'mine'
           who.tone === 'muted' && { borderWidth: 2, borderColor: '#64748b' },
         ]}
       />
-      <Text style={[s.whoText, mine && { color: '#a5f3fc', fontFamily: 'Manrope_700Bold' }, who.tone === 'muted' && { color: C.muted }]} numberOfLines={1}>
+      <Text style={[s.whoText, mine && { color: '#a5f3fc', fontFamily: 'Manrope_700Bold' }, who.tone === 'muted' && { color: C.muted }]}>
         {who.text}
       </Text>
     </View>

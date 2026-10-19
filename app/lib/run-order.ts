@@ -165,7 +165,15 @@ export function buildMidweekRunOrder(items: RunItem[]): RunSegment[] {
 /** Song and prayer, the chairman's opening words. */
 const WEEKEND_OPENING_MIN = 5;
 const PUBLIC_TALK_MIN = 30;
-const WEEKEND_SONG_MIN = 5;
+/**
+ * After the talk (Lionel, 19 October 2026): the chairman thanks the speaker,
+ * gives the announcements and calls the study conductor — two minutes; the
+ * conductor announces the song — three. One person on the stage per line,
+ * so the timekeeper taps when the conductor comes up. Together the five
+ * minutes the programme has between the talk and the study.
+ */
+const WEEKEND_ANNOUNCEMENTS_MIN = 2;
+const WEEKEND_SONG_MIN = 3;
 const WATCHTOWER_MIN = 60;
 /** In the week of the circuit overseer's visit the study is half as long. */
 const WATCHTOWER_CO_WEEK_MIN = 30;
@@ -176,7 +184,8 @@ const WEEKEND_CLOSING_MIN = 5;
 /**
  * THE WEEKEND MEETING, in the order it is held (18 October 2026) — the same
  * minutes as the schedule sheet (lib/parts.ts buildWeekendPartTimes):
- * song and prayer 5, public talk 30, song 5, Watchtower study 60, closing 5.
+ * song and prayer 5, public talk 30, the chairman's thanks and
+ * announcements 2, the song 3, Watchtower study 60, closing 5.
  *
  * In the week of the circuit overseer's visit (Lionel, 18 October 2026):
  * public talk 30, the study 30 without a reader, then his concluding talk
@@ -200,6 +209,7 @@ export function buildWeekendRunOrder(items: RunItem[]): RunSegment[] {
   const songs = items
     .filter((i) => i.partKey === 'weekend_song')
     .sort((a, b) => (a.partOrder ?? 0) - (b.partOrder ?? 0));
+  push(first('weekend_chairman'), 'weekend_announcements', WEEKEND_ANNOUNCEMENTS_MIN);
   push(songs[0] ?? null, 'weekend_song', WEEKEND_SONG_MIN, false);
   push(
     first('watchtower_conductor'),

@@ -245,7 +245,10 @@ for (const c of CASES) {
     row('weekend_closing_prayer'),
   ]);
   const minutes = (segs) => segs.map((x) => `${x.key}:${x.minutes}`).join(' ');
-  const want = 'weekend_opening_prayer:5 public_talk_speaker:30 weekend_song:5 watchtower_conductor:60 weekend_closing_prayer:5';
+  // 19 October 2026: the chairman's thanks and announcements 2, then the
+  // conductor's song 3 — one person on the stage per line.
+  const want =
+    'weekend_opening_prayer:5 public_talk_speaker:30 weekend_announcements:2 weekend_song:3 watchtower_conductor:60 weekend_closing_prayer:5';
   if (minutes(plain) !== want) fails.push(`weekend: ${minutes(plain)}\n    want ${want}`);
   if (totalRunMinutes(plain) !== 105) fails.push(`weekend total ${totalRunMinutes(plain)}, want 105`);
   if (plain.find((x) => x.key === 'weekend_song').showInterval !== false) fails.push('weekend song carries no range');
@@ -258,7 +261,7 @@ for (const c of CASES) {
     row('weekend_closing_prayer'),
   ]);
   const wantCo =
-    'weekend_opening_prayer:5 public_talk_speaker:30 weekend_song:5 watchtower_conductor:30 co_concluding_talk:30 weekend_closing_prayer:5';
+    'weekend_opening_prayer:5 public_talk_speaker:30 weekend_announcements:2 weekend_song:3 watchtower_conductor:30 co_concluding_talk:30 weekend_closing_prayer:5';
   if (minutes(co) !== wantCo) fails.push(`CO week: ${minutes(co)}\n    want ${wantCo}`);
   // A visit week with two songs (19 October 2026): the earlier is the one
   // before the study; the later, the closing song after the overseer's talk,

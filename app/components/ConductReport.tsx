@@ -91,6 +91,9 @@ function hhmm(ms: number): string {
 export function ConductReport({
   data,
   titleOf,
+  keyLabelOf,
+  keyPersonOf,
+  noteKey = 'conduct.report.note',
   nameOf,
   chairmanName,
   counselPlannedOf,
@@ -98,6 +101,12 @@ export function ConductReport({
 }: {
   data: ConductSummaryData;
   titleOf: (assignmentId: string | null) => string | null;
+  /** The conduct screen's own name for a part (the weekend's, 19 October 2026). */
+  keyLabelOf?: (key: string) => string;
+  /** Who was on the stage, as the conduct screen names it (the weekend). */
+  keyPersonOf?: (key: string) => string | null;
+  /** The note under the table: the weekend has no counsel. */
+  noteKey?: string;
   nameOf: (publisherId: string) => string | null;
   chairmanName: string | null;
   /** The programme's counsel after a part, seconds; null for a part it no longer has. */
@@ -125,13 +134,19 @@ export function ConductReport({
   const labelOf = (row: ReportRow) => {
     const block = BLOCK[row.key];
     if (block) return t(block.label);
+    if (keyLabelOf) return keyLabelOf(row.key);
     const seg = data.segments[row.index];
     return partDisplay(row.key, titleOf(seg.assignmentId)).label;
   };
-  const peopleOf = (row: ReportRow) =>
-    BLOCK[row.key]
-      ? []
-      : data.segments[row.index].publisherIds.map(nameOf).filter((n): n is string => !!n);
+  const peopleOf = (row: ReportRow) => {
+    if (BLOCK[row.key]) return [];
+    // The weekend says who was on the stage as its run sheet does — the
+    // chairman with the opening prayer, the visiting speaker, the conductor
+    // with his song (19 October 2026); the midweek reads the cards.
+    const other = keyPersonOf ? keyPersonOf(row.key) : null;
+    if (other) return [other];
+    return data.segments[row.index].publisherIds.map(nameOf).filter((n): n is string => !!n);
+  };
 
   const tiles = (
     <View style={[styles.tiles, !wide && styles.tilesNarrow]}>
@@ -232,6 +247,7 @@ export function ConductReport({
       wide={wide}
       byDeviation={byDeviation}
       setByDeviation={setByDeviation}
+      noteKey={noteKey}
     />
   );
 
@@ -406,7 +422,9 @@ function PartsTable({
   wide,
   byDeviation,
   setByDeviation,
+  noteKey,
 }: {
+  noteKey: string;
   report: Report;
   labelOf: (r: ReportRow) => string;
   peopleOf: (r: ReportRow) => string[];
@@ -498,7 +516,7 @@ function PartsTable({
           </View>
         </View>
       ) : null}
-      <Text style={styles.note}>{t('conduct.report.note')}</Text>
+      <Text style={styles.note}>{t(noteKey)}</Text>
     </View>
   );
 }
