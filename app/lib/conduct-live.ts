@@ -143,19 +143,42 @@ export function keptRunIsNewer(
 
 /**
  * A run left hanging (18 October 2026): begun, never «Завершить», and no tap
- * for longer than any part lasts — the meeting is over, only the app was not
- * told. Before, «Идёт встреча» stayed on every elder's home screen until
- * midnight. The longest part is the study, sixty minutes; twenty more for a
- * study that runs long.
+ * for longer than the part on screen can last — the meeting is over, only
+ * the app was not told. Before, «Идёт встреча» stayed on every elder's home
+ * screen until midnight.
+ *
+ * MEASURED BY THE PART ON SCREEN (19 October 2026): its own minutes and
+ * twenty more. The most likely case is «Завершить» forgotten after the
+ * closing prayer — five minutes, so the run lets go at about 15:05 instead
+ * of 16:00 under one figure for every part. A run from an app that does not
+ * say how long its part is gets the longest: the study's sixty and twenty.
  */
-export const STALE_RUN_MS = 80 * 60 * 1000;
+export const HANGING_SLACK_MIN = 20;
+export const STALE_RUN_MS = (60 + HANGING_SLACK_MIN) * 60 * 1000;
 export function runLeftHanging(
   s: Parameters<typeof lastMoment>[0] & Pick<RunState, 'finishedAt'>,
   nowMs: number,
+  partMin?: number | null,
 ): boolean {
   if (s.meetingStartedAt === null || s.finishedAt !== null) return false;
   const last = lastMoment(s);
-  return last !== null && nowMs - last > STALE_RUN_MS;
+  const limit =
+    typeof partMin === 'number' && Number.isFinite(partMin) && partMin > 0
+      ? (partMin + HANGING_SLACK_MIN) * 60 * 1000
+      : STALE_RUN_MS;
+  return last !== null && nowMs - last > limit;
+}
+
+/**
+ * The minutes of the part the run is on, as the running device sends them
+ * beside the run (`partMin` on the wire) — so a home card that knows no
+ * programme can tell a forgotten «Завершить» (runLeftHanging). Null when the
+ * device did not say.
+ */
+export function wirePartMin(raw: unknown): number | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const n = (raw as { partMin?: unknown }).partMin;
+  return typeof n === 'number' && Number.isFinite(n) && n > 0 ? n : null;
 }
 
 /** Two runs the same as far as the server is concerned. */
