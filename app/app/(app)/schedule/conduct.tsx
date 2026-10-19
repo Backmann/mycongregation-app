@@ -900,7 +900,14 @@ export default function ConductScreen() {
     const legacy = new Set(run.legacyKeys);
     const meetingStart = run.meetingStartedAt;
     const segs: ConductRunSegment[] = segments.map((s, i) => {
-      const row = s.assignmentId ? byId.get(s.assignmentId) : undefined;
+      // The weekend song is the study conductor's line (19 October 2026): it is
+      // his name the result shows, not the song's empty one.
+      const row =
+        weekend && s.key === 'weekend_song'
+          ? rows.find((a) => a.partKey === 'watchtower_conductor')
+          : s.assignmentId
+            ? byId.get(s.assignmentId)
+            : undefined;
       const old = legacy.has(s.key);
       const counselSec = run.counsel[i];
       const began = run.starts[i];
@@ -929,7 +936,7 @@ export default function ConductScreen() {
       plannedSec: totalRunMinutes(segments) * 60,
       startedAt: new Date(run.meetingStartedAt).toISOString(),
     };
-  }, [finished, run, segments, byId]);
+  }, [finished, run, segments, byId, weekend, rows]);
 
   // Kept with the run until it reaches the server, so it can go from any
   // screen the moment there is a signal (lib/conduct-resend.ts).
@@ -1045,15 +1052,17 @@ export default function ConductScreen() {
       return (r?.publisherId ? nameById.get(r.publisherId) : null) ?? r?.speakerName ?? null;
     };
     const conductor = nameOfRow('watchtower_conductor');
+    // Variant A (Lionel, 19 October 2026): the chairman's line has no song in
+    // it — he thanks, announces and calls the conductor; the song is the
+    // conductor's own line, the first thing he says.
+    if (seg.key === 'weekend_announcements') {
+      return { label: t('conduct.weekendRun.between'), subtitle: null, person: chairmanName, song: null };
+    }
     if (seg.key === 'weekend_song') {
-      const song = songLabel(weekendSongs[0]);
       return {
-        label: song ? t('conduct.weekendRun.betweenSong', { song }) : t('conduct.weekendRun.between'),
+        label: songLabel(weekendSongs[0]) ?? t('conduct.weekendRun.song'),
         subtitle: null,
-        person:
-          [chairmanName, conductor ? t('conduct.weekendRun.songBy', { name: conductor }) : null]
-            .filter(Boolean)
-            .join(' · ') || null,
+        person: conductor,
         song: null,
       };
     }
@@ -1089,6 +1098,11 @@ export default function ConductScreen() {
     const seg = segments.find((s) => s.key === key);
     if (seg) return runView(seg).label;
     return partDisplay(key, null).label;
+  };
+  /** Who a part shows when its card names nobody (the result's table, the weekend). */
+  const keyPerson = (key: string) => {
+    const seg = segments.find((s) => s.key === key);
+    return seg ? runView(seg).person : null;
   };
   /** «Анна Вебер · Мария Кох — Начинаем разговор»: what the chairman announces. */
   const announce = (seg: RunSegment) => {
@@ -1306,7 +1320,7 @@ export default function ConductScreen() {
 
   // The result: this device's own run, or the one saved on the server.
   if (reading) {
-    if (!canRead) return <Notice text={meetingOver ? t('conduct.result.notYours') : t('conduct.notChairman')} />;
+    if (!canRead) return <Notice text={meetingOver ? t(weekend ? 'conduct.result.notYoursWeekend' : 'conduct.result.notYours') : t('conduct.notChairman')} />;
     if (runQuery.isLoading) {
       return (
         <View style={styles.center}>
@@ -1319,8 +1333,8 @@ export default function ConductScreen() {
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
         <View style={styles.resultWrap}>
           <Text style={styles.overline}>{t('conduct.result.title')}</Text>
-          <ConductReport data={remote} titleOf={titleOf} nameOf={nameOf} chairmanName={chairmanName} counselPlannedOf={counselPlannedOf} wide={wide} />
-          <Text style={styles.keepNote}>{t('conduct.result.keep')}</Text>
+          <ConductReport data={remote} titleOf={titleOf} keyLabelOf={weekend ? keyLabel : undefined} keyPersonOf={weekend ? keyPerson : undefined} noteKey={weekend ? 'conduct.report.noteWeekend' : undefined} nameOf={nameOf} chairmanName={chairmanName} counselPlannedOf={counselPlannedOf} wide={wide} />
+          <Text style={styles.keepNote}>{t(weekend ? 'conduct.result.keepWeekend' : 'conduct.result.keep')}</Text>
         </View>
       </ScrollView>
     );
@@ -1343,18 +1357,18 @@ export default function ConductScreen() {
           {liveStrip}
           <Text style={styles.overline}>{t('conduct.finished')}</Text>
           {changedNote}
-          <ConductReport data={local} titleOf={titleOf} nameOf={nameOf} chairmanName={chairmanName} counselPlannedOf={counselPlannedOf} wide={wide} />
+          <ConductReport data={local} titleOf={titleOf} keyLabelOf={weekend ? keyLabel : undefined} keyPersonOf={weekend ? keyPerson : undefined} noteKey={weekend ? 'conduct.report.noteWeekend' : undefined} nameOf={nameOf} chairmanName={chairmanName} counselPlannedOf={counselPlannedOf} wide={wide} />
           {legacyNote}
           {practice ? (
             <Text style={styles.keepNote}>{t('conduct.practice.notSaved')}</Text>
           ) : watching ? (
             <Text style={styles.keepNote}>
-              {remote ? t('conduct.result.saved') : t('conduct.live.resultByController')}
+              {remote ? t(weekend ? 'conduct.result.savedWeekend' : 'conduct.result.saved') : t('conduct.live.resultByController')}
             </Text>
           ) : (
             <Text style={[styles.keepNote, save.isError && styles.keepNoteError]}>
               {state.saved
-                ? t('conduct.result.saved')
+                ? t(weekend ? 'conduct.result.savedWeekend' : 'conduct.result.saved')
                 : save.isError
                   ? saveRefused
                     ? t('conduct.result.refused', { reason: extractErrorMessage(save.error) })
@@ -1472,7 +1486,7 @@ export default function ConductScreen() {
       >
         <Text style={styles.primaryBtnText}>{primary.label}</Text>
         {primary.sub ? (
-          <Text style={styles.primaryBtnSub} numberOfLines={2}>
+          <Text style={styles.primaryBtnSub}>
             {primary.sub}
           </Text>
         ) : null}
@@ -1537,7 +1551,7 @@ export default function ConductScreen() {
               {s.counselMin > 0 ? <Text style={styles.sheetCounsel}>{` +${s.counselMin}`}</Text> : null}
             </Text>
             <View style={{ flex: 1 }}>
-              <Text style={styles.sheetLabel} numberOfLines={1}>
+              <Text style={styles.sheetLabel}>
                 {v.label}
                 {i === run.index && counselling ? (
                   <Text style={styles.sheetCounselNow}>{` · ${t('conduct.counsel.short')}`}</Text>
@@ -1584,7 +1598,9 @@ export default function ConductScreen() {
     }
     return {
       // The closing group borrows the opening's name in the schedule (lib/parts.ts) — not here.
-      section: sub !== 'closing' && SUBSECTIONS[sub] ? t(SUBSECTIONS[sub].i18nKey) : null,
+      // The chairman's thanks after the talk is no «Вступление».
+      section:
+        seg.key !== 'weekend_announcements' && sub !== 'closing' && SUBSECTIONS[sub] ? t(SUBSECTIONS[sub].i18nKey) : null,
       sectionColor: STAGE_SECTION_COLORS[sub] ?? '#94a3b8',
       title: v.label,
       person,

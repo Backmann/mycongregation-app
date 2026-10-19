@@ -4095,7 +4095,10 @@
       "cardKeep": "Available until {{day}}",
       "cardOpen": "Open the result",
       "refused": "The result was not saved: {{reason}}",
-      "notYours": "The result of the meeting is seen by the admins, the counsel brother and the Life and Ministry overseer."
+      "notYours": "The result of the meeting is seen by the admins, the counsel brother and the Life and Ministry overseer.",
+      "keepWeekend": "The result is kept for 7 days, then deleted. It is seen by the admins, the coordinator of the body of elders and his assistant, the Watchtower study conductor and his assistants, the counsel brother.",
+      "savedWeekend": "Result saved for 7 days — it is seen by the admins, the coordinator of the body of elders and his assistant, the Watchtower study conductor and his assistants, the counsel brother.",
+      "notYoursWeekend": "The result of the meeting is seen by the admins, the coordinator of the body of elders and his assistant, the Watchtower study conductor and his assistants, the counsel brother."
     },
     "live": {
       "runningYou": "You are keeping time",
@@ -4166,7 +4169,8 @@
         "treasures": "Treasures",
         "applyYourself": "Ministry",
         "christianLife": "Christian life"
-      }
+      },
+      "noteWeekend": "A part’s time runs from one tap on “Next part” to the next; beside it, who was on the stage."
     },
     "stage": {
       "midweek": "Midweek meeting",
@@ -4217,11 +4221,10 @@
       "openingSong": "Opening · {{song}} and prayer",
       "between": "Thanks for the talk · announcements",
       "closing": "Closing song and prayer",
-      "betweenSong": "Thanks for the talk · announcements · {{song}}",
-      "songBy": "song announced by {{name}}",
       "announcedBy": "announced by {{name}}",
       "closingSong": "Closing {{song}} and prayer",
-      "songNo": "song {{n}}"
+      "songNo": "song {{n}}",
+      "song": "Song"
     },
     "hanging": {
       "title": "Meeting not finished",

@@ -4095,7 +4095,10 @@
       "cardKeep": "Verfügbar bis {{day}}",
       "cardOpen": "Ergebnis öffnen",
       "refused": "Ergebnis nicht gespeichert: {{reason}}",
-      "notYours": "Das Ergebnis der Zusammenkunft sehen die Admins, der Bruder, der den Rat gibt, und der Verantwortliche für „Leben und Dienst“."
+      "notYours": "Das Ergebnis der Zusammenkunft sehen die Admins, der Bruder, der den Rat gibt, und der Verantwortliche für „Leben und Dienst“.",
+      "keepWeekend": "Das Ergebnis wird 7 Tage aufbewahrt und dann gelöscht. Es sehen die Administratoren, der Koordinator der Ältestenschaft und sein Gehilfe, der Leiter des Wachtturm-Studiums und seine Gehilfen, der Bruder, der Rat erteilt.",
+      "savedWeekend": "Ergebnis für 7 Tage gespeichert — es sehen die Administratoren, der Koordinator der Ältestenschaft und sein Gehilfe, der Leiter des Wachtturm-Studiums und seine Gehilfen, der Bruder, der Rat erteilt.",
+      "notYoursWeekend": "Das Ergebnis der Zusammenkunft sehen die Administratoren, der Koordinator der Ältestenschaft und sein Gehilfe, der Leiter des Wachtturm-Studiums und seine Gehilfen, der Bruder, der Rat erteilt."
     },
     "live": {
       "runningYou": "Sie führen die Zeit",
@@ -4166,7 +4169,8 @@
         "treasures": "Schätze",
         "applyYourself": "Dienst",
         "christianLife": "Christenleben"
-      }
+      },
+      "noteWeekend": "Die Zeit eines Programmpunkts reicht von einem Tippen auf „Nächster Teil“ bis zum nächsten; daneben, wer auf der Bühne stand."
     },
     "stage": {
       "midweek": "Zusammenkunft unter der Woche",
@@ -4217,11 +4221,10 @@
       "openingSong": "Beginn · {{song}} und Gebet",
       "between": "Dank für den Vortrag · Bekanntmachungen",
       "closing": "Schlusslied und Gebet",
-      "betweenSong": "Dank für den Vortrag · Bekanntmachungen · {{song}}",
-      "songBy": "Lied kündigt an: {{name}}",
       "announcedBy": "kündigt an: {{name}}",
       "closingSong": "Schluss: {{song}} und Gebet",
-      "songNo": "Lied {{n}}"
+      "songNo": "Lied {{n}}",
+      "song": "Lied"
     },
     "hanging": {
       "title": "Zusammenkunft nicht beendet",
