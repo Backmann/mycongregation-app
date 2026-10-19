@@ -763,6 +763,18 @@ export default function ConductScreen() {
     if (ok) applyRun(EMPTY);
   };
 
+  // What to do once the taps are here (ownHanging on the other device).
+  const [afterTake, setAfterTake] = useState<'finish' | 'drop' | null>(null);
+  useEffect(() => {
+    if (!afterTake || mode !== 'run') return;
+    const what = afterTake;
+    setAfterTake(null);
+    if (what === 'finish') finishLate();
+    else void dropHanging();
+    // finishLate and dropHanging read the run just taken over.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [afterTake, mode, state]);
+
   /** One tap back: a tap pressed too early must not cost anybody time. */
   const undo = () => {
     if (!run.prev) return;
@@ -804,7 +816,15 @@ export default function ConductScreen() {
     if (pushedRef.current === null && live && !keptRunIsNewer(state, fromWire(live.state, serverClockOffset()))) return;
     pushingRef.current = true;
     conductLiveApi
-      .put({ weekStartDate: week, epoch: live ? live.epoch : 0, state: toWire(state, serverClockOffset()) }, kind)
+      .put(
+        {
+          weekStartDate: week,
+          epoch: live ? live.epoch : 0,
+          // Beside the run: how long the part on screen is, for the home card.
+          state: { ...toWire(state, serverClockOffset()), partMin: segments[state.index]?.minutes ?? null },
+        },
+        kind,
+      )
       .then((ans) => {
         pushedRef.current = json;
         wasMine.current = true;
@@ -874,6 +894,10 @@ export default function ConductScreen() {
       confirmLabel: t('conduct.live.take'),
     });
     if (!ok) return;
+    await takeNow();
+  };
+  /** The take itself — also without asking, for this account's own hanging run. */
+  const takeNow = async (): Promise<boolean> => {
     try {
       const ans = await conductLiveApi.take(week, kind);
       setTakeFailed(false);
@@ -887,8 +911,10 @@ export default function ConductScreen() {
       }
       putLive(ans);
       if (watching && !roles?.isTimekeeper) setStageRun(true);
+      return true;
     } catch {
       setTakeFailed(true);
+      return false;
     }
   };
 
@@ -1220,7 +1246,8 @@ export default function ConductScreen() {
   // The line that says who runs the meeting and whether everybody is there.
   const serverNowEst = Date.now() + offset;
   // Begun, never finished, no tap for longer than any part (18 October 2026).
-  const hanging = !practice && check === null && segments.length > 0 && runLeftHanging(run, now);
+  const hanging =
+    !practice && check === null && segments.length > 0 && runLeftHanging(run, now, current ? current.minutes : null);
   const hangingSince = hanging ? lastMoment(run) : null;
   // No good answer, or none for a while (an ask still out) — see watchUnsure.
   const offline =
@@ -1658,7 +1685,12 @@ export default function ConductScreen() {
     );
   }
 
-  const lateEnd = hanging && !watching ? lateEndAt() : null;
+  // THIS ACCOUNT'S OWN HANGING RUN, OPENED ON ITS OTHER DEVICE (19 October
+  // 2026): finished or dropped right here — the taps are taken over without
+  // asking first, it is the same brother; before, he had to «Взять ведение»
+  // and only then saw the way to finish.
+  const ownHanging = hanging && (!watching || !!live?.mineElsewhere);
+  const lateEnd = ownHanging ? lateEndAt() : null;
   const hangingCard = (
     <View style={styles.hangingCard}>
       <Text style={styles.hangingTitle}>{t('conduct.hanging.title')}</Text>
@@ -1671,11 +1703,19 @@ export default function ConductScreen() {
             })}
       </Text>
       {lateEnd !== null ? (
-        <Pressable style={styles.hangingPrimary} onPress={finishLate} accessibilityRole="button">
+        <Pressable
+          style={styles.hangingPrimary}
+          onPress={() => (watching ? void takeNow().then((ok) => ok && setAfterTake('finish')) : finishLate())}
+          accessibilityRole="button"
+        >
           <Text style={styles.hangingPrimaryText}>{t('conduct.hanging.finish', { time: clockOf(new Date(lateEnd)) })}</Text>
         </Pressable>
       ) : null}
-      <Pressable style={styles.ghostBtn} onPress={() => void dropHanging()} accessibilityRole="button">
+      <Pressable
+        style={styles.ghostBtn}
+        onPress={() => void (watching ? takeNow().then((ok) => ok && setAfterTake('drop')) : dropHanging())}
+        accessibilityRole="button"
+      >
         <Ionicons name="trash-outline" size={18} color="#b91c1c" />
         <Text style={[styles.ghostBtnText, { color: '#b91c1c' }]}>{t('conduct.hanging.drop')}</Text>
       </Pressable>
@@ -1683,7 +1723,7 @@ export default function ConductScreen() {
   );
 
   // The one who ran a hanging run finishes it on the timekeeper's screen.
-  if (!practice && onStage && !(hanging && !watching)) {
+  if (!practice && onStage && !ownHanging) {
     const whoName = live?.controllerName ?? roles?.timekeeperName ?? null;
     const who = !watching
       ? { text: t('conduct.stage.youRun'), tone: 'mine' as const }
@@ -1769,8 +1809,8 @@ export default function ConductScreen() {
         <View style={wide ? styles.colMain : undefined}>
           {changedNote}
           {/* A hanging run: the card says what happened; a red «−176:10» under it would only shout. */}
-          {hanging && !watching ? hangingCard : nowCard}
-          {hanging && !watching ? null : controls}
+          {ownHanging ? hangingCard : nowCard}
+          {ownHanging ? null : controls}
           {upNext}
         </View>
         <View style={wide ? styles.colSide : undefined}>{sheet}</View>

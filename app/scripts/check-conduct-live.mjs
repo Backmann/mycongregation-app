@@ -208,6 +208,14 @@ check('a run nobody finished stops being «Идёт встреча» (18 October
   assert.equal(L.runLeftHanging({ ...study, finishedAt: m(105) }, m(500)), false, 'finished is finished, not hanging');
   assert.equal(L.runLeftHanging(EMPTY_RUN, m(500)), false, 'not begun is not hanging');
   assert.ok(L.STALE_RUN_MS > 60 * 60_000, 'longer than the longest part');
+  // By the part on screen (19 October 2026): the closing five minutes and twenty.
+  const closing = { ...study, index: 5, startedAt: m(100), starts: [...study.starts, m(95), m(100)] };
+  assert.equal(L.runLeftHanging(closing, m(100) + 25 * 60_000, 5), false, 'five minutes and twenty: not yet');
+  assert.equal(L.runLeftHanging(closing, m(100) + 25 * 60_000 + 1000, 5), true, 'then «Завершить» was forgotten');
+  assert.equal(L.runLeftHanging(closing, m(100) + 25 * 60_000 + 1000, null), false, 'not told the part: the longest limit');
+  assert.equal(L.wirePartMin({ partMin: 5 }), 5);
+  assert.equal(L.wirePartMin({ partMin: 'x' }), null);
+  assert.equal(L.wirePartMin(null), null);
 });
 
 console.log(`conduct-live: ${n} groups ok`);

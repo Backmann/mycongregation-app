@@ -6,7 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { conductLiveApi, conductRunsApi, meApi, meetingSettingsApi, serverClockOffset, specialEventsApi } from '../lib/api';
 import { effectiveVersionFor } from '../lib/meeting-schedule';
 import { weekRules } from '../lib/week-rules';
-import { fromWire, isConductOverseer, runLeftHanging } from '../lib/conduct-live';
+import { fromWire, isConductOverseer, runLeftHanging, wirePartMin } from '../lib/conduct-live';
 import { usePermissions } from '../lib/permissions';
 import { clock } from './ConductSummary';
 import { addDays } from '../lib/dates';
@@ -227,6 +227,7 @@ export function ConductLiveCard({ kind = 'midweek' }: { kind?: Kind }) {
   const card = liveCardOf({
     live: data.live,
     run: data.live ? fromWire(data.live.state, serverClockOffset()) : null,
+    partMin: data.live ? wirePartMin(data.live.state) : null,
     roles: data.roles ?? null,
     today: formatDateISO(new Date()),
     meetingDay,
@@ -306,16 +307,18 @@ type LiveCardKind = 'running' | 'hanging' | 'keeper' | 'chairman';
 export function liveCardOf(input: {
   live: { mine: boolean; mineElsewhere?: boolean } | null;
   run: Parameters<typeof runLeftHanging>[0] | null;
+  /** How long the part on screen is, as the running device said. */
+  partMin?: number | null;
   roles: { isTimekeeper: boolean; isChairman: boolean } | null;
   today: string;
   meetingDay: string | null;
   nowMs: number;
 }): LiveCardKind | null {
-  const { live, run, roles, today, meetingDay, nowMs } = input;
+  const { live, run, roles, today, meetingDay, nowMs, partMin } = input;
   const started = !!run && run.meetingStartedAt !== null;
   const finished = !!run && run.finishedAt !== null;
   if (started && !finished) {
-    if (!runLeftHanging(run, nowMs)) return 'running';
+    if (!runLeftHanging(run, nowMs, partMin)) return 'running';
     return live && (live.mine || live.mineElsewhere) ? 'hanging' : null;
   }
   if (finished || !meetingDay) return null;
