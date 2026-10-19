@@ -4219,7 +4219,8 @@
       "closing": "Schlusslied und Gebet",
       "betweenSong": "Dank für den Vortrag · Bekanntmachungen · {{song}}",
       "songBy": "Lied kündigt an: {{name}}",
-      "announcedBy": "kündigt an: {{name}}"
+      "announcedBy": "kündigt an: {{name}}",
+      "closingSong": "Schluss: {{song}} und Gebet"
     },
     "hanging": {
       "title": "Zusammenkunft nicht beendet",

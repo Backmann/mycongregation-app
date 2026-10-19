@@ -260,6 +260,21 @@ for (const c of CASES) {
   const wantCo =
     'weekend_opening_prayer:5 public_talk_speaker:30 weekend_song:5 watchtower_conductor:30 co_concluding_talk:30 weekend_closing_prayer:5';
   if (minutes(co) !== wantCo) fails.push(`CO week: ${minutes(co)}\n    want ${wantCo}`);
+  // A visit week with two songs (19 October 2026): the earlier is the one
+  // before the study; the later, the closing song after the overseer's talk,
+  // is no segment of its own — it is inside the closing five minutes.
+  const twoSongs = buildWeekendRunOrder([
+    { ...row('weekend_song', 'closing-song'), partOrder: 7 },
+    row('weekend_opening_prayer'),
+    row('public_talk_speaker'),
+    { ...row('weekend_song', 'study-song'), partOrder: 3 },
+    row('watchtower_conductor'),
+    row('co_concluding_talk'),
+    row('weekend_closing_prayer'),
+  ]);
+  if (twoSongs.find((x) => x.key === 'weekend_song')?.assignmentId !== 'study-song')
+    fails.push('two weekend songs: the one before the study must be the earlier by the programme');
+  if (minutes(twoSongs) !== wantCo) fails.push(`CO week, two songs: ${minutes(twoSongs)}`);
 }
 
 if (fails.length > 0) {

@@ -251,6 +251,7 @@ export default function ConductScreen() {
           partKey: a.partKey,
           partDurationMin: a.partDurationMin,
           partTitle: a.partTitle,
+          partOrder: a.partOrder,
         })),
       ),
     [rows, weekend],
@@ -1018,6 +1019,13 @@ export default function ConductScreen() {
       const r = rows.find((a) => a.partKey === key);
       return r ? partDisplay(key, r.partTitle ?? null).label : null;
     };
+    // Two weekend songs in a visit week: before the study, and the closing one
+    // after the overseer's talk — told apart by the programme's order.
+    const weekendSongs = rows
+      .filter((a) => a.partKey === 'weekend_song')
+      .sort((a, b) => (a.partOrder ?? 0) - (b.partOrder ?? 0));
+    const songLabel = (r: (typeof rows)[number] | undefined) =>
+      r ? partDisplay('weekend_song', r.partTitle ?? null).label : null;
     if (seg.key === 'weekend_opening_prayer') {
       const prayer = person && person !== chairmanName ? t('conduct.weekendRun.prayerBy', { name: person }) : null;
       const song = songOf('weekend_opening_song');
@@ -1038,7 +1046,7 @@ export default function ConductScreen() {
     };
     const conductor = nameOfRow('watchtower_conductor');
     if (seg.key === 'weekend_song') {
-      const song = songOf('weekend_song');
+      const song = songLabel(weekendSongs[0]);
       return {
         label: song ? t('conduct.weekendRun.betweenSong', { song }) : t('conduct.weekendRun.between'),
         subtitle: null,
@@ -1052,8 +1060,13 @@ export default function ConductScreen() {
     if (seg.key === 'weekend_closing_prayer') {
       const coWeek = segments.some((x) => x.key === 'co_concluding_talk');
       const announcer = coWeek ? nameOfRow('co_concluding_talk') : conductor;
+      const lastSong = weekendSongs.length > 1 ? songLabel(weekendSongs[weekendSongs.length - 1]) : null;
+      // «Заключительная песня 151 и молитва»: the word in the middle of a phrase,
+      // lower case — except in German, where nouns keep their capital.
+      const closingSong =
+        lastSong && !i18n.language.startsWith('de') ? lastSong.charAt(0).toLowerCase() + lastSong.slice(1) : lastSong;
       return {
-        label: t('conduct.weekendRun.closing'),
+        label: closingSong ? t('conduct.weekendRun.closingSong', { song: closingSong }) : t('conduct.weekendRun.closing'),
         subtitle: null,
         person:
           [
