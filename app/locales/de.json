@@ -3504,7 +3504,12 @@
       "usual": "wie gewohnt",
       "changed": "mit Änderungen",
       "none": "keine Zusammenkunft",
-      "template": "aus der Vorlage"
+      "template": "aus der Vorlage",
+      "did_not_happen": "hat nicht stattgefunden",
+      "previous_memorial": "vom vorigen Gedächtnismahl",
+      "lift": "zurückgeholt",
+      "import": "Import",
+      "retire": "Absetzen"
     },
     "revert": "Zurücksetzen",
     "revertDo": "Zurücksetzen",
@@ -3522,7 +3527,29 @@
       "open": "offen",
       "done": "erledigt"
     },
-    "structured": "geändert"
+    "structured": "geändert",
+    "words": {
+      "coVisitKind": {
+        "field_service": "Predigtdienst",
+        "lunch": "Mittagessen",
+        "lunch_box": "Lunchpaket",
+        "accommodation": "Unterkunft",
+        "pastoral": "Seelsorgebesuch",
+        "pioneers": "Zusammenkunft mit den Pionieren",
+        "elders": "Zusammenkunft mit den Ältesten und Dienstamtgehilfen",
+        "document_review": "Prüfung der Unterlagen",
+        "other": "Sonstiges"
+      },
+      "cartKind": {
+        "cart": "Trolley",
+        "stand": "Stand"
+      },
+      "memorialSection": {
+        "programme": "Programm",
+        "emblems": "Symbole",
+        "duty": "Dienste"
+      }
+    }
   },
   "attendance": {
     "cardTitle": "Zusammenkunftsbesuch",

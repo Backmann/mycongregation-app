@@ -3504,7 +3504,12 @@
       "usual": "as usual",
       "changed": "with changes",
       "none": "no meeting",
-      "template": "from the template"
+      "template": "from the template",
+      "did_not_happen": "did not take place",
+      "previous_memorial": "from the previous Memorial",
+      "lift": "brought back",
+      "import": "import",
+      "retire": "retiring"
     },
     "revert": "Put it back",
     "revertDo": "Put back",
@@ -3522,7 +3527,29 @@
       "open": "open",
       "done": "done"
     },
-    "structured": "changed"
+    "structured": "changed",
+    "words": {
+      "coVisitKind": {
+        "field_service": "field service",
+        "lunch": "lunch",
+        "lunch_box": "packed lunch",
+        "accommodation": "accommodation",
+        "pastoral": "pastoral visit",
+        "pioneers": "meeting with pioneers",
+        "elders": "meeting with elders and ministerial servants",
+        "document_review": "review of records",
+        "other": "other"
+      },
+      "cartKind": {
+        "cart": "cart",
+        "stand": "stand"
+      },
+      "memorialSection": {
+        "programme": "programme",
+        "emblems": "emblems",
+        "duty": "duties"
+      }
+    }
   },
   "attendance": {
     "cardTitle": "Meeting attendance",
