@@ -134,7 +134,7 @@ export function shownFromBefore(
 /** «сегодня, 21:40» / «7 октября, 21:40». */
 function whenSaid(at: number, lang: string, today: string): string {
   const d = new Date(at);
-  const time = d.toLocaleTimeString(lang, { hour: '2-digit', minute: '2-digit' });
+  const time = d.toLocaleTimeString(lang, { hour: '2-digit', hour12: false, minute: '2-digit' });
   const now = new Date();
   if (d.toDateString() === now.toDateString()) return `${today}, ${time}`;
   return `${d.toLocaleDateString(lang, { day: 'numeric', month: 'long' })}, ${time}`;

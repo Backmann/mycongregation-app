@@ -18,6 +18,8 @@ import { FormChips } from "./FormChips";
 import { PublisherSelector } from "./PublisherSelector";
 import { PublicTalkSelector } from "./PublicTalkSelector";
 import { EventOnDateNotice } from "./EventOnDateNotice";
+import { formatWeekRange } from "../lib/week-range";
+import { parseISODate } from "../lib/dates";
 import {
   AssignmentStatus,
   CircuitOverseer,
@@ -592,7 +594,9 @@ export function AssignmentForm({
         {lockIdentity ? (
           <View style={styles.contextCard}>
             <Text style={styles.contextMeta}>
-              {form.weekStartDate}
+              {/^\d{4}-\d{2}-\d{2}$/.test(form.weekStartDate)
+                ? formatWeekRange(parseISODate(form.weekStartDate), i18n.language)
+                : form.weekStartDate}
               {" \u00b7 "}
               {t(`assignments.eventTypeShort.${form.eventType}`, {
                 defaultValue: form.eventType,

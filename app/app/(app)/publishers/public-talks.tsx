@@ -180,7 +180,7 @@ export default function PublicTalksScreen() {
                   ),
                   time: new Date(lastImport.at).toLocaleTimeString(
                     i18n.language,
-                    { hour: '2-digit', minute: '2-digit' },
+                    { hour: '2-digit', hour12: false, minute: '2-digit' },
                   ),
                   name:
                     lastImport.actorName ?? t('publicTalks.someoneUnknown'),
