@@ -1,0 +1,104 @@
+# «Назад» ведёт туда, откуда пришли (20 октября 2026) — на телефоне, на живых
+# данных, ТОЛЬКО СМОТРИТ: открывает экраны и уходит назад, ничего не сохраняет.
+# Системная кнопка «Назад» Android внизу тоже называется «Назад», поэтому
+# стрелка в шапке ищется ВЫШЕ панели вкладок («Главная»).
+# Назад — и системной кнопкой Android (pressKey: back), и стрелкой в шапке.
+# БЕЗ ПЕРЕЗАПУСКА ПРИЛОЖЕНИЯ (20 октября 2026): при новом запуске оно просит
+# PIN телефона (своя блокировка, components/AppLock.tsx), и дальше сценарий
+# пройти не может. Перед запуском приложение открывают и разблокируют сами;
+# сценарий работает в уже открытом.
+appId: com.backmann.mycongregation
+name: Назад ведёт туда, откуда пришли
+---
+- openLink: mycongregation://home
+- runFlow:
+    when:
+      visible: "Позже|Later|Später"
+    commands:
+      - tapOn: "Позже|Later|Später"
+- extendedWaitUntil:
+    visible: "Мои уведомления|My notifications|Meine Benachrichtigungen"
+    timeout: 30000
+- assertNotVisible: { text: "Назад|Back|Zurück|Go back", above: "Главная|Home|Start" }
+- takeScreenshot: 01-home
+
+# 1. Уведомления → системная «Назад» → Главная, без стрелки
+- tapOn: "Мои уведомления|My notifications|Meine Benachrichtigungen"
+- extendedWaitUntil:
+    visible: { text: "Назад|Back|Zurück|Go back", above: "Главная|Home|Start" }
+    timeout: 15000
+- takeScreenshot: 02-inbox
+- pressKey: back
+- extendedWaitUntil:
+    visible: "Мои уведомления|My notifications|Meine Benachrichtigungen"
+    timeout: 15000
+- assertNotVisible: { text: "Назад|Back|Zurück|Go back", above: "Главная|Home|Start" }
+- takeScreenshot: 03-home-after-system-back
+
+# 2. Уведомления → стрелка в шапке → Главная, без стрелки
+- tapOn: "Мои уведомления|My notifications|Meine Benachrichtigungen"
+- extendedWaitUntil:
+    visible: { text: "Назад|Back|Zurück|Go back", above: "Главная|Home|Start" }
+    timeout: 15000
+- tapOn: { text: "Назад|Back|Zurück|Go back", above: "Главная|Home|Start" }
+- extendedWaitUntil:
+    visible: "Мои уведомления|My notifications|Meine Benachrichtigungen"
+    timeout: 15000
+- assertNotVisible: { text: "Назад|Back|Zurück|Go back", above: "Главная|Home|Start" }
+- takeScreenshot: 04-home-after-arrow
+
+# 3. Программа → События → системная «Назад» → Программа
+- tapOn: "Программа|Programme|Programm"
+- extendedWaitUntil:
+    visible: "Все|All|Alle"
+    timeout: 20000
+- takeScreenshot: 05-schedule
+- runFlow:
+    when:
+      visible: "Ещё|More|Mehr"
+    commands:
+      - tapOn: "Ещё|More|Mehr"
+- tapOn: "События|Events|Ereignisse|Veranstaltungen"
+- extendedWaitUntil:
+    visible: { text: "Назад|Back|Zurück|Go back", above: "Главная|Home|Start" }
+    timeout: 15000
+- takeScreenshot: 06-events
+- pressKey: back
+- extendedWaitUntil:
+    visible: "Все|All|Alle"
+    timeout: 15000
+- assertNotVisible: { text: "Назад|Back|Zurück|Go back", above: "Главная|Home|Start" }
+- takeScreenshot: 07-schedule-again
+
+# 4. Программа → системная «Назад» → туда, где был до неё (Главная)
+- pressKey: back
+- extendedWaitUntil:
+    visible: "Мои уведомления|My notifications|Meine Benachrichtigungen"
+    timeout: 15000
+- takeScreenshot: 08-home-from-schedule
+
+# 5. Профиль → свой экран сохраняется при уходе через вкладки
+- tapOn: "Профиль|Profile|Profil"
+- extendedWaitUntil:
+    visible: "Профиль|Profile|Profil"
+    timeout: 15000
+- scrollUntilVisible:
+    element: "Сменить пароль|Change password|Passwort ändern"
+    direction: DOWN
+    timeout: 20000
+- tapOn: "Сменить пароль|Change password|Passwort ändern"
+- extendedWaitUntil:
+    visible: { text: "Назад|Back|Zurück|Go back", above: "Главная|Home|Start" }
+    timeout: 15000
+- takeScreenshot: 09-change-password
+- tapOn: "Главная|Home|Start"
+- tapOn: "Профиль|Profile|Profil"
+- extendedWaitUntil:
+    visible: { text: "Назад|Back|Zurück|Go back", above: "Главная|Home|Start" }
+    timeout: 15000
+- takeScreenshot: 10-change-password-kept
+- pressKey: back
+- extendedWaitUntil:
+    notVisible: { text: "Назад|Back|Zurück|Go back", above: "Главная|Home|Start" }
+    timeout: 15000
+- takeScreenshot: 11-profile
