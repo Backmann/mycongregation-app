@@ -231,7 +231,8 @@
       "elder": "Ältester",
       "ministerial_servant": "Dienstamtgehilfe",
       "secretary": "Sekretär",
-      "publisher": "Verkündiger"
+      "publisher": "Verkündiger",
+      "stage": "Bühnenbildschirm"
     },
     "circuitOverseer": "Kreisaufseher",
     "circuitOverseerDescription": "Standardname für den Besuch",
@@ -1195,7 +1196,8 @@
         "admin": "Administrator",
         "elder": "Ältester",
         "ministerial_servant": "Dienstamtgehilfe",
-        "publisher": "Verkündiger"
+        "publisher": "Verkündiger",
+        "stage": "Bühnenbildschirm"
       },
       "online": "online",
       "orphans": {
@@ -4771,7 +4773,54 @@
       "CONDUCT_MEETING_OVER": "Diese Zusammenkunft ist vorbei – nach ihrem Tag wird sie nicht mehr geführt.",
       "CONDUCT_RESULT_KEPT": "Das Ergebnis dieser Zusammenkunft ist schon gespeichert und kann nach ihrem Tag nicht ersetzt werden.",
       "FS_DAY_TAKEN": "An diesem Tag ist ein Kongress oder der Besuch des Kreisaufsehers – hier kann keine Predigtdienstzusammenkunft stattfinden.",
-      "FS_CONFLICT": "An diesem Tag gibt es schon die gleiche Zusammenkunft, oder der Leiter leitet schon eine andere. Bitte prüfen und erneut speichern."
+      "FS_CONFLICT": "An diesem Tag gibt es schon die gleiche Zusammenkunft, oder der Leiter leitet schon eine andere. Bitte prüfen und erneut speichern.",
+      "STAGE_SCREEN_ONLY": "Der Bühnenbildschirm zeigt nur den Ablauf der Zusammenkunft.",
+      "STAGE_PIN_WRONG": "Das sind nicht die Ziffern.",
+      "STAGE_PIN_INVALID": "Für das Menü des Bildschirms sind 4 bis 8 Ziffern nötig.",
+      "STAGE_ACCOUNT_FIXED": "Ein Bühnenbildschirm ist keine Person: Er hat keine Karte, und seine Rolle ändert sich nicht."
+    }
+  },
+  "stage": {
+    "admin": {
+      "add": "Bühnenbildschirm",
+      "newTitle": "Neuer Bühnenbildschirm",
+      "newHint": "Ein eigener Zugang für den Laptop oder das Tablet auf der Bühne. Er gehört keinem Bruder und bleibt derselbe, wenn der Vorsitzende wechselt.",
+      "name": "Bezeichnung",
+      "namePlaceholder": "Bühnenbildschirm · Königreichssaal",
+      "loginName": "Anmeldename",
+      "password": "Passwort zum Anmelden",
+      "pin": "Ziffern für das Menü des Bildschirms",
+      "pinHint": "4 bis 8 Ziffern. Die Brüder, die den Bildschirm einschalten, kennen sie: ohne sie öffnet sich das Menü nicht und niemand kann den Bildschirm abmelden.",
+      "seesTitle": "DER BILDSCHIRM SIEHT",
+      "sees": "Die Zusammenkunft des Tages, wie sie läuft: Programmpunkt, Countdown, wer als Nächstes dran ist, Ende; zwischen den Zusammenkünften die Uhr und die nächste Zusammenkunft.",
+      "notTitle": "ER SIEHT UND TUT NICHT",
+      "not": "Listen, Karten, Berichte, Kontakte, Aufgaben, Journal. Er ändert nichts, tippt nie „Beginnen“ oder „Weiter“, erhält keine Benachrichtigungen.",
+      "create": "Bühnenbildschirm anlegen",
+      "editTitle": "Bühnenbildschirm",
+      "newPin": "Neue Ziffern für das Menü",
+      "pinKeep": "Die bisherigen behalten",
+      "loginPlaceholder": "buehne.hamm"
+    },
+    "screen": {
+      "title": "Bühnenbildschirm",
+      "viewOnly": "Nur Ansicht",
+      "next": "Nächste Zusammenkunft",
+      "midweek": "Zusammenkunft unter der Woche · {{day}}",
+      "weekend": "Zusammenkunft am Wochenende · {{day}}",
+      "startsAt": "Beginn um {{time}}",
+      "chairman": "Vorsitz {{name}}",
+      "noNext": "In den nächsten Wochen keine Zusammenkünfte",
+      "opensItself": "Am Tag der Zusammenkunft öffnet sich das Programm hier von selbst",
+      "menu": "Menü des Bildschirms",
+      "pinHint": "Geben Sie die Ziffern des Bühnenbildschirms ein. Ohne sie ändert sich nichts — der Bildschirm kehrt zur Zusammenkunft zurück.",
+      "pin": "Ziffern",
+      "open": "Menü öffnen",
+      "wrongPin": "Das sind nicht die Ziffern. Bitte noch einmal.",
+      "tooMany": "Zu viele Versuche. Bitte eine Minute warten.",
+      "check": "Bildschirm prüfen",
+      "signOut": "Auf diesem Gerät abmelden",
+      "back": "Zurück zur Zusammenkunft",
+      "closesItself": "Das Menü schließt sich nach 20 Sekunden ohne Tippen von selbst"
     }
   }
 }

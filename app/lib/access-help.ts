@@ -35,6 +35,8 @@ export type HelpReason =
 export interface HelpSubject {
   isActive: boolean;
   publisherId: string | null;
+  /** `stage` — the screen on the stage has no card, and is meant not to. */
+  role?: string;
   hasPassword: boolean;
   lastLoginAt: string | null;
   /**
@@ -82,7 +84,8 @@ export function helpReason(
     return user.hasPassword ? 'neverSignedIn' : 'neverInvited';
   }
 
-  if (!user.publisherId) return 'noCard';
+  // The screen on the stage is no person: no card is its nature, not a fault.
+  if (!user.publisherId && user.role !== 'stage') return 'noCard';
   // Has been in before, and an elder has since issued a code nobody used.
   if (codeAlive) return 'codeWaiting';
   return null;

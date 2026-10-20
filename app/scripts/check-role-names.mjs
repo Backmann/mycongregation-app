@@ -32,7 +32,9 @@ function fromApp() {
   // Every `role: "a" | "b" | …` union in the API types that is about the
   // user's role — other things are called `role` too (a part's «primary» and
   // «assistant»), and those unions never name an administrator.
-  for (const line of text.matchAll(/\brole\??:\s*((?:"[a-z_]+"\s*\|\s*)+"[a-z_]+")/g)) {
+  // `role: "admin" | …` written out, and the named type itself (the screen
+  // on the stage, 20 October 2026, is only in `export type UserRole`).
+  for (const line of text.matchAll(/\b(?:role\??:|type UserRole =)\s*((?:"[a-z_]+"\s*\|\s*)+"[a-z_]+")/g)) {
     if (!line[1].includes('"admin"')) continue;
     for (const v of line[1].matchAll(/"([a-z_]+)"/g)) found.add(v[1]);
   }

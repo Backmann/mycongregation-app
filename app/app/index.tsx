@@ -17,5 +17,7 @@ export default function Index() {
   // See components/ConnectionState.tsx: «нет связи» is not «вас выбросило».
   if (!user && unreachable) return <NoConnectionScreen />;
 
+  // The screen on the stage has one screen (app/stage.tsx).
+  if (user?.role === 'stage') return <Redirect href={'/stage' as any} />;
   return <Redirect href={(user ? '/(app)/home' : '/(auth)/login') as any} />;
 }

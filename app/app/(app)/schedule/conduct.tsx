@@ -182,7 +182,12 @@ function snapshot(s: RunState): Omit<RunState, 'prev'> {
   return rest;
 }
 
-export default function ConductScreen() {
+/**
+ * `stageCheckAt` — the screen on the stage (app/stage.tsx) starts «Проверить
+ * экран» from its own menu, opened with its digits: it has no header with
+ * this screen's menu in it.
+ */
+export default function ConductScreen({ stageCheckAt }: { stageCheckAt?: number | null } = {}) {
   const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const params = useLocalSearchParams<{ week?: string; kind?: string }>();
@@ -440,6 +445,9 @@ export default function ConductScreen() {
   const [practice, setPractice] = useState<RunState | null>(null);
   // «Проверить экран»: when it began (this device only, nothing saved).
   const [check, setCheck] = useState<number | null>(null);
+  useEffect(() => {
+    if (stageCheckAt) setCheck(stageCheckAt);
+  }, [stageCheckAt]);
   // After «Взять ведение» from the chairman's screen: keep that screen, with buttons.
   const [stageRun, setStageRun] = useState(false);
   // Whether the screen is being kept awake — «Проверить экран» says so.
@@ -1176,7 +1184,12 @@ export default function ConductScreen() {
   // An appointed brother watching a meeting that is running sees it run.
   const watchingLive = watching && !!live && !meetingOver;
   const showLocal = !meetingOver && !!local && (canRun || !!practice || watchingLive);
-  const reading = !showLocal && !practice && !watchingLive && (!canRun || meetingOver);
+  // The screen on the stage (app/stage.tsx) is opened only on the meeting's
+  // day and only to watch: before the timekeeper starts it shows the
+  // chairman's «Начало в 19:00», never a result it may not read.
+  const stageDisplay = user?.role === 'stage';
+  const reading =
+    !stageDisplay && !showLocal && !practice && !watchingLive && (!canRun || meetingOver);
 
   // «⋯» in the header: practice, and «Начать заново» — away from «Вернуть»,
   // which is pressed often, while this wipes the meeting.

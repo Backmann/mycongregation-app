@@ -212,7 +212,12 @@ api.interceptors.request.use(async (config) => {
 
 // ---------- Types ----------
 
-export type UserRole = "admin" | "elder" | "ministerial_servant" | "publisher";
+/**
+ * `stage` is the screen on the stage (20 October 2026): a laptop at the
+ * lectern that shows the meeting as it runs and nothing else — not a person,
+ * no card (app/stage.tsx; the server refuses it everything else).
+ */
+export type UserRole = "admin" | "elder" | "ministerial_servant" | "publisher" | "stage";
 
 export interface AuthUser {
   id: string;
@@ -224,6 +229,8 @@ export interface AuthUser {
    * sign out or change phone, it is the one thing they need.
    */
   loginName: string | null;
+  /** A stage screen's own name (role `stage`); null for a person. */
+  displayLabel?: string | null;
   role: UserRole;
   congregationId: string;
   canViewPrivateData: boolean;
@@ -274,6 +281,8 @@ export interface PublicUser {
   email: string | null;
   /** What this person types to sign in. */
   loginName: string | null;
+  /** A stage screen's own name (role `stage`); null for a person. */
+  displayLabel?: string | null;
   role: UserRole;
   isActive: boolean;
   uiLanguage: string;
@@ -338,10 +347,14 @@ export interface PublicUser {
 }
 
 export interface CreateUserInput {
-  email: string;
+  email?: string;
   password: string;
   role: UserRole;
   uiLanguage?: string;
+  /** A stage screen (role `stage`): its name, what it signs in with, its menu digits. */
+  displayLabel?: string;
+  loginName?: string;
+  stagePin?: string;
 }
 
 export type Gender = "brother" | "sister";
@@ -1085,6 +1098,10 @@ export const authApi = {
     const { data } = await api.get<AuthUser>("/auth/me");
     return data;
   },
+  /** The stage screen's menu opens with its digits — checked by the server. */
+  async stageUnlock(pin: string): Promise<void> {
+    await api.post("/auth/stage/unlock", { pin });
+  },
   /**
    * Self-service password change (Phase 1 follow-up — all roles).
    * Server returns 400 BadRequest if currentPassword is incorrect (NOT 401,
@@ -1177,6 +1194,14 @@ export const usersApi = {
   },
   async create(input: CreateUserInput): Promise<PublicUser> {
     const { data } = await api.post<PublicUser>("/users", cleanPayload(input));
+    return data;
+  },
+  /** A stage screen's name and its menu digits. */
+  async updateStage(
+    id: string,
+    input: { displayLabel?: string; stagePin?: string },
+  ): Promise<PublicUser> {
+    const { data } = await api.patch<PublicUser>(`/users/${id}/stage`, cleanPayload(input));
     return data;
   },
   async updateRole(id: string, role: UserRole): Promise<PublicUser> {

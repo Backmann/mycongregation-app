@@ -37,6 +37,7 @@ import {
   LOGIN_NAME_MIN,
 } from '../../../lib/login-name';
 import { androidVersionName } from '../../../lib/android-version';
+import { StageEditSheet, StageNewSheet } from '../../../components/StageScreenSheets';
 import i18n from '../../../lib/i18n';
 import { helpRank, helpReason } from '../../../lib/access-help';
 import type { HelpReason } from '../../../lib/access-help';
@@ -50,6 +51,7 @@ const ROLE_COLORS: Record<UserRole, { bg: string; fg: string }> = {
   elder: { bg: '#dbeafe', fg: '#1e40af' },
   ministerial_servant: { bg: '#e0e7ff', fg: '#3730a3' },
   publisher: { bg: '#dcfce7', fg: '#166534' },
+  stage: { bg: '#e0f2fe', fg: '#075985' },
 };
 
 // Appointments that all map to the 'publisher' login role but should read
@@ -161,13 +163,17 @@ export default function AdminUsersScreen() {
   // An account with no publisher card can sign in and then find every personal
   // screen closed. Nobody could see who was in that state, so it surfaced one
   // complaint at a time — which is exactly what this line prevents.
-  const orphans = users.filter((u) => !u.publisherId);
+  // The screen on the stage has no card by its nature (role `stage`).
+  const orphans = users.filter((u) => !u.publisherId && u.role !== 'stage');
 
   const qc = useQueryClient();
   const [linkFor, setLinkFor] = useState<PublicUser | null>(null);
   const [passFor, setPassFor] = useState<PublicUser | null>(null);
   const [newPassword, setNewPassword] = useState('');
   const [nameFor, setNameFor] = useState<PublicUser | null>(null);
+  // The screen on the stage (20 October 2026): made here, it has no card.
+  const [stageNew, setStageNew] = useState(false);
+  const [stageFor, setStageFor] = useState<PublicUser | null>(null);
   const [newLoginName, setNewLoginName] = useState('');
 
   const [invitedIds, setInvitedIds] = useState<string[]>([]);
@@ -239,6 +245,17 @@ export default function AdminUsersScreen() {
           </Text>
           )}
         </View>
+
+        {usersQuery.error ? null : (
+          <Pressable
+            onPress={() => setStageNew(true)}
+            style={({ pressed }) => [styles.stageBtn, pressed && { opacity: 0.7 }]}
+            accessibilityRole="button"
+          >
+            <Ionicons name="tv-outline" size={17} color="#0e7490" />
+            <Text style={styles.stageBtnText}>{t('stage.admin.add')}</Text>
+          </Pressable>
+        )}
 
         {usersQuery.error ? null : (
         <View style={styles.noteCard}>
@@ -341,6 +358,7 @@ export default function AdminUsersScreen() {
               reason={reasonOf.get(u.id) ?? null}
               isSelf={u.id === currentUser?.id}
               onLink={() => setLinkFor(u)}
+              onEditStage={() => setStageFor(u)}
               onSetPassword={() => {
                 setNewPassword('');
                 setPassFor(u);
@@ -364,6 +382,9 @@ export default function AdminUsersScreen() {
           ))
         )}
       </ScrollView>
+
+      <StageNewSheet visible={stageNew} onClose={() => setStageNew(false)} />
+      <StageEditSheet user={stageFor} onClose={() => setStageFor(null)} />
 
       <Sheet
         visible={!!linkFor}
@@ -491,6 +512,7 @@ function UserCard({
   user,
   isSelf,
   onLink,
+  onEditStage,
   onSetPassword,
   onEditName,
   onInvite,
@@ -499,6 +521,8 @@ function UserCard({
   reason,
 }: {
   user: PublicUser;
+  /** The screen on the stage: its name and menu digits. */
+  onEditStage: () => void;
   /** Why this person needs help getting in, if they do — lib/access-help.ts. */
   reason: HelpReason | null;
   isSelf: boolean;
@@ -584,6 +608,19 @@ function UserCard({
               </Text>
               <Ionicons name="chevron-forward" size={15} color="#94a3b8" />
             </Pressable>
+          ) : user.role === 'stage' ? (
+            <Pressable
+              onPress={onEditStage}
+              hitSlop={6}
+              style={styles.personRow}
+              accessibilityRole="button"
+              accessibilityLabel={t('stage.admin.editTitle')}
+            >
+              <Text style={styles.personName} numberOfLines={2}>
+                {user.displayLabel ?? t('admin.users.roles.stage')}
+              </Text>
+              <Ionicons name="pencil-outline" size={14} color="#0369a1" />
+            </Pressable>
           ) : null}
           <View style={styles.emailRow}>
             <Pressable
@@ -639,7 +676,7 @@ function UserCard({
       {/* Said on the row itself, not only in the summary above: a person
           scanning the list should see which account is the broken one without
           counting. */}
-      {!user.publisherId && (
+      {!user.publisherId && user.role !== 'stage' && (
         <View style={styles.orphanRow}>
           <Ionicons name="link-outline" size={14} color="#92400e" />
           <Text style={styles.orphanRowText}>
@@ -775,6 +812,21 @@ const styles = StyleSheet.create({
     borderTopColor: '#f1f5f9',
   },
   sheetHint: { fontFamily: 'Manrope_400Regular', fontSize: 13.5, color: '#475569', lineHeight: 19 },
+  stageBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    alignSelf: 'flex-start',
+    marginHorizontal: 16,
+    marginBottom: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#a5f3fc',
+    backgroundColor: '#ecfeff',
+  },
+  stageBtnText: { fontFamily: 'Manrope_600SemiBold', fontSize: 14, color: '#0e7490' },
   nameBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, flexShrink: 1 },
   sheetBtn: {
     backgroundColor: '#2563eb',
