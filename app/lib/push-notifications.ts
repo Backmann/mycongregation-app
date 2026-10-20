@@ -6,6 +6,7 @@ import { useRouter } from 'expo-router';
 import { pushApi } from './api';
 import { useAuth } from './auth';
 import { rememberPushToken } from './push-token-store';
+import { getCurrentLanguage, type SupportedLanguage } from './i18n';
 
 /**
  * Where this device stands with notifications.
@@ -58,6 +59,42 @@ Notifications.setNotificationHandler({
     shouldSetBadge: false,
   }),
 });
+
+/**
+ * NEWS ABOUT A PERSON — a brother or sister becoming irregular or inactive —
+ * goes through a channel of its own, whose content a LOCKED phone does not
+ * show (20 October 2026). The elders asked to be told who it is; a phone on
+ * a table at home must not tell everybody. Unlocked, the notification reads
+ * «Иванов Пётр: Активный → Нерегулярный»; locked, it shows only that the app
+ * has something.
+ *
+ * The server names the person only to a phone that reports this channel
+ * (`deviceInfo.channels`), so a phone where making it failed keeps the old
+ * text, without the name. Android only: iOS has no channels.
+ */
+const PEOPLE_CHANNEL = 'people';
+
+const PEOPLE_CHANNEL_NAME: Record<SupportedLanguage, string> = {
+  ru: 'Изменения статуса возвещателей',
+  en: 'Publisher status changes',
+  de: 'Statusänderungen von Verkündigern',
+};
+
+async function ensurePeopleChannel(): Promise<boolean> {
+  if (Platform.OS !== 'android') return false;
+  try {
+    const made = await Notifications.setNotificationChannelAsync(PEOPLE_CHANNEL, {
+      name: PEOPLE_CHANNEL_NAME[getCurrentLanguage()] ?? PEOPLE_CHANNEL_NAME.ru,
+      importance: Notifications.AndroidImportance.HIGH,
+      lockscreenVisibility: Notifications.AndroidNotificationVisibility.PRIVATE,
+      sound: 'default',
+    });
+    return made != null;
+  } catch (err) {
+    console.warn('[Push] people channel not made:', err);
+    return false;
+  }
+}
 
 async function getPushToken(): Promise<string | null> {
   if (Platform.OS === 'web') {
@@ -278,9 +315,12 @@ export function usePushNotifications() {
       }
 
       try {
+        const people = await ensurePeopleChannel();
+        if (cancelled) return;
         await pushApi.register(token, {
           platform: Platform.OS,
           osVersion: Platform.Version != null ? String(Platform.Version) : null,
+          ...(people ? { channels: [PEOPLE_CHANNEL] } : {}),
         });
         registeredRef.current = mark + token;
         setPushState({ kind: 'registered', token });

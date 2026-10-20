@@ -293,7 +293,7 @@ export function PublisherAccessContent({
                 {
                   day: "numeric",
                   month: "long",
-                  hour: "2-digit",
+                  hour: "2-digit", hour12: false,
                   minute: "2-digit",
                 },
               ),

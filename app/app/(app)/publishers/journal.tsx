@@ -355,13 +355,43 @@ function readValue(
     if (/^\d{4}-\d{2}-\d{2}$/.test(v)) {
       return dayjs(v).locale(language).format('D MMMM YYYY');
     }
+    // A moment — «published at» — reads as its day and time, not as
+    // «2026-10-09T19:29:43.072Z» (the language pass of 20 October 2026).
+    if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(v)) {
+      return dayjs(v).locale(language).format('D MMMM YYYY, HH:mm');
+    }
+    // A whole structure kept as JSON (a template's meetings, the list a
+    // month was published with) is no sentence for a person: it changed.
+    if (/^[[{]/.test(v.trim())) return t('journal.structured');
     // 'HH:MM:SS' from a time column: the seconds are noise.
     if (/^\d{2}:\d{2}(:\d{2})?$/.test(v)) return v.slice(0, 5);
     return v;
   }
-  if (typeof v === 'number' || typeof v === 'boolean') return String(v);
+  if (typeof v === 'boolean') return v ? t('common.yes') : t('common.no');
+  if (typeof v === 'number') return String(v);
   return null;
 }
+
+/** `entity.field` (or `*.field`) → where the screens keep the words for its values. */
+const ENUM_WORDS: Record<string, string> = {
+  'publisher.status': 'publishers.status.',
+  'assignment.status': 'assignments.status.',
+  'user.role': 'profile.roles.',
+  'user.uiLanguage': 'language',
+  'responsibility.type': 'responsibilities.types.',
+  'circuit_overseer.role': 'assignments.form.coRole.',
+  'field_service_settings.prepareLead': 'fieldService.template.auto.lead.',
+  'field_service_settings.unpublishedPolicy': 'fieldService.template.auto.policy.',
+  // ISO weekday, 1 = Monday … 7 = Sunday: a bare «6 → 4» said nothing.
+  'field_service_meeting.dayOfWeek': 'iso-weekday',
+  'external_congregation.meetingDow': 'iso-weekday',
+  // A month stored as its first day: «1 сентября 2026» named a day nobody chose.
+  '*.startMonth': 'month',
+  '*.endMonth': 'month',
+};
+
+/** A language by its own name — the way the language switch shows it. */
+const LANGUAGE_NAMES: Record<string, string> = { ru: 'Русский', en: 'English', de: 'Deutsch' };
 
 /**
  * Words that only mean something next to their own field.
@@ -372,6 +402,29 @@ function readValue(
  * task's values are translated here, by field, from the task screens' own
  * dictionary — one set of words for both places.
  */
+/**
+ * A changed field's name. A pioneer school's duty carries its day and role IN
+ * the name — «2026-11-25 · microphone 2» — written by the server so the line
+ * needs no lookup; here it becomes «25 ноября · Микрофон 2».
+ */
+function fieldLabel(
+  entityType: string,
+  field: string,
+  t: (k: string, o?: Record<string, unknown>) => string,
+  language: string,
+): string {
+  if (entityType === 'pioneer_school_duty') {
+    const m = /^(\d{4}-\d{2}-\d{2}) · ([a-z_]+)(?: (\d+))?$/.exec(field);
+    if (m) {
+      const role = t(`duties.types.${m[2]}`, { defaultValue: m[2] });
+      return `${dayjs(m[1]).locale(language).format('D MMMM')} · ${role}${m[3] ? ` ${m[3]}` : ''}`;
+    }
+    const d = /^(\d{4}-\d{2}-\d{2}) · (.+)$/.exec(field);
+    if (d) return `${dayjs(d[1]).locale(language).format('D MMMM')} · ${d[2]}`;
+  }
+  return t(`journal.fieldNames.${field}`, { defaultValue: field });
+}
+
 function fieldWord(
   entityType: string,
   field: string,
@@ -379,6 +432,36 @@ function fieldWord(
   t: (k: string, o?: Record<string, unknown>) => string,
   language: string,
 ): string {
+  // A stored code word for which a screen already has its words: the same
+  // dictionary, read from here too (the language pass of 20 October 2026).
+  // No screen keeps words for these yet — the journal keeps its own.
+  if (typeof v === 'string') {
+    if (entityType === 'co_visit_item' && field === 'kind') {
+      return t(`journal.words.coVisitKind.${v}`, { defaultValue: '' });
+    }
+    if (entityType === 'cart_location' && field === 'kind') {
+      return t(`journal.words.cartKind.${v}`, { defaultValue: '' });
+    }
+    if (entityType === 'memorial_item' && field === 'section') {
+      return t(`journal.words.memorialSection.${v}`, { defaultValue: '' });
+    }
+  }
+  const dict = ENUM_WORDS[`${entityType}.${field}`] ?? ENUM_WORDS[`*.${field}`];
+  if (dict && (typeof v === 'string' || typeof v === 'number')) {
+    if (dict === 'iso-weekday') {
+      const n = Number(v);
+      return n >= 1 && n <= 7 ? dayjs().locale(language).day(n % 7).format('dddd') : '';
+    }
+    if (dict === 'language') return LANGUAGE_NAMES[String(v)] ?? '';
+    if (dict === 'month') {
+      return /^\d{4}-\d{2}(-\d{2})?$/.test(String(v))
+        ? dayjs(`${String(v).slice(0, 7)}-01`).locale(language).format('MMMM YYYY')
+        : '';
+    }
+    // Each entry ends in a dot, so the families stay visible to
+    // scripts/check-i18n-unused.mjs.
+    return t(`${dict}${v}`, { defaultValue: '' });
+  }
   // A yes/no on a card or a kept sheet: «true» is the machine's word.
   if (typeof v === 'boolean') {
     if (
@@ -552,7 +635,7 @@ function Row({
   }[] = [];
   if (!entry.redacted) {
     for (const field of entry.changedFields) {
-      const label = t(`journal.fieldNames.${field}`, { defaultValue: field });
+      const label = fieldLabel(entry.entityType, field, t, language);
       const hadWas = entry.before !== null && field in entry.before;
       const hadNow = entry.detail !== null && field in entry.detail;
       // A creation has no "before" — showing "empty → X" invents a history

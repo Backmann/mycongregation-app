@@ -448,7 +448,7 @@ export function taskMeta(r: RefinedTask, t: TFunc, locale: string): string {
         day: 'numeric',
         month: 'short',
       })}, ${planned.toLocaleTimeString(locale, {
-        hour: '2-digit',
+        hour: '2-digit', hour12: false,
         minute: '2-digit',
       })}`,
     );

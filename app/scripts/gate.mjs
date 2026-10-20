@@ -46,6 +46,10 @@ const STEPS = [
   // wrong rule here deletes working text.
   ['Правило «какой текст ещё нужен»', 'node', ['scripts/check-i18n-unused-rule.mjs']],
   ['Лишние переводы', 'node', ['scripts/check-i18n-unused.mjs']],
+  // Every field the server writes to the journal has a name in all three
+  // languages (20 October 2026: 33 showed their code names). Needs the
+  // server checked out beside the app; skipped otherwise.
+  ['Поля журнала', 'node', ['scripts/check-journal-fields.mjs']],
   // The phone has no plural rules of its own (Hermes); ours stand in, and
   // must answer as the real ones do (28 September: «86 возвещателя»).
   ['Правила чисел', 'node', ['scripts/check-plural-rules.mjs']],

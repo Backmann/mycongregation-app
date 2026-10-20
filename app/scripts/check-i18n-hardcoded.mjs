@@ -30,6 +30,10 @@
 
 import { readFile, readdir } from 'node:fs/promises';
 import { join, extname } from 'node:path';
+import { createRequire } from 'node:module';
+
+// The TypeScript parser, for the one place a pattern cannot see (below).
+const ts = createRequire(import.meta.url)('typescript');
 
 const SCAN_DIRS = ['app', 'components', 'hooks'];
 const SRC_EXT = new Set(['.ts', '.tsx']);
@@ -84,10 +88,6 @@ const ALLOW = [
   ['lib/', 'parsers, printed forms, song and legal texts — see the note above'],
   ['locales/', 'the translation files themselves'],
   ['scripts/', 'the checks, including this one'],
-  [
-    'app/(app)/publishers/songs-import.tsx',
-    'the placeholder IS the Russian import format being pasted',
-  ],
   ['app/+html.tsx', 'static web shell, rendered before any language is known'],
   [
     'components/BrandLockup.tsx',
@@ -210,6 +210,28 @@ async function scanFile(path) {
   }
   for (const m of src.matchAll(JSX_TEXT)) {
     if (looksLikeProse(m[1])) add(m.index, 'JSX text', m[1]);
+  }
+  // JSX text that stands next to an expression — «Изменил: {name} · {date}»
+  // — is invisible to JSX_TEXT, which needs the text to run up to a closing
+  // tag. That is how a Russian «Изменил:» sat on every publisher's card in
+  // English and German, and a whole Russian instruction on the songs import
+  // (the language pass of 20 October 2026). The parser sees every piece of
+  // text between tags, whatever stands beside it.
+  if (path.endsWith('.tsx')) {
+    const sf = ts.createSourceFile(path, raw, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+    const visit = (node) => {
+      if (node.kind === ts.SyntaxKind.JsxText) {
+        const text = node.getText(sf).replace(/\s+/g, ' ').trim();
+        const line = sf.getLineAndCharacterOfPosition(node.getStart(sf)).line + 1;
+        // Already reported by JSX_TEXT on the same line: once is enough.
+        const twice = problems.some((p) => p.file === path && p.line === line);
+        if (looksLikeProse(text) && !twice) {
+          problems.push({ file: path, line, kind: 'JSX text', text: text.slice(0, 60) });
+        }
+      }
+      ts.forEachChild(node, visit);
+    };
+    visit(sf);
   }
   const keyOffsets = exemptOffsets(src);
   for (const m of src.matchAll(PHRASE)) {

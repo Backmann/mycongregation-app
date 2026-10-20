@@ -86,7 +86,7 @@
     "inviteMailSubject": "Invitation to the congregation app",
     "inviteCopied": "Copied — paste it into a chat",
     "inviteOnlyOnce": "The code is shown once: only its fingerprint is stored. If it is lost, issue a new one — but the old one then stops working.",
-    "inviteMessage": "{{name}}, here is your way into the congregation app.\n1. Android phone — install the app first: {{url}}. iPhone or computer — nothing to install.\n2. Tap: {{link}} — the code fills itself in, you only choose a password.\nIf the link cannot be tapped, the code is {{code}} (valid until {{until}}) — in the app tap «Were you invited?». Your login name: {{loginName}}.",
+    "inviteMessage": "{{name}}, here is your way into the congregation app.\n1. Android phone — install the app first: {{url}}. iPhone or computer — nothing to install.\n2. Tap: {{link}} — the code fills itself in, you only choose a password.\nIf the link cannot be tapped, the code is {{code}} (valid until {{until}}) — in the app tap “Were you invited?”. Your login name: {{loginName}}.",
     "newCode": "Issue a code — they choose the password",
     "howSendTitle": "How should the code travel?",
     "howSendByMailHint": "A letter goes to {{email}}. It carries more than a hand-written one: the login name, the deadline and the install page.",
@@ -108,7 +108,7 @@
     "addressInUseWayOut": "To leave them untouched, choose “I will pass the code on myself” — the address then stays theirs alone.",
     "anotherLogin": "another account",
     "andTheirLoginName": "Name to sign in with",
-    "inviteMessageNoName": "{{name}}, here is your way into the congregation app.\n1. Android phone — install the app first: {{url}}. iPhone or computer — nothing to install.\n2. Tap: {{link}} — the code fills itself in, you only choose a password.\nIf the link cannot be tapped, the code is {{code}} (valid until {{until}}) — in the app tap «Were you invited?».",
+    "inviteMessageNoName": "{{name}}, here is your way into the congregation app.\n1. Android phone — install the app first: {{url}}. iPhone or computer — nothing to install.\n2. Tap: {{link}} — the code fills itself in, you only choose a password.\nIf the link cannot be tapped, the code is {{code}} (valid until {{until}}) — in the app tap “Were you invited?”.",
     "wayBackIn": "If the publisher cannot sign in",
     "resetPasswordHint": "For when nobody can type a code — they are standing here, or have no phone to hand. You will have to say the password out loud, so you will know it too. Every open session on their devices is ended, and they get a letter if there is an address.",
     "invitePending": "An invitation was sent and has not been used yet. The code is valid until {{until}}.",
@@ -408,8 +408,8 @@
       "title": "Delete permanently",
       "action": "Delete permanently",
       "confirm": "Permanently delete the record for {{name}}? This cannot be undone.",
-      "hasHistory": "This publisher has history (reports or assignments). Permanent deletion is blocked — use \"Mark as departed\" instead.",
-      "hasHistoryNamed": "This publisher has history — permanent deletion is blocked. Held by: {{holders}}. Clear those, or use \"Mark as departed\" instead.",
+      "hasHistory": "This publisher has history (reports or assignments). Permanent deletion is blocked — use “Mark as departed” instead.",
+      "hasHistoryNamed": "This publisher has history — permanent deletion is blocked. Held by: {{holders}}. Clear those, or use “Mark as departed” instead.",
       "holders": {
         "absences": "absences",
         "assignments": "meeting assignments",
@@ -440,7 +440,8 @@
       "button": "S-21 card",
       "title": "Generate S-21",
       "year": "Choose the service year"
-    }
+    },
+    "lastEdited": "Last changed by {{name}} · {{when}}"
   },
   "capabilities": {
     "hints": {
@@ -529,7 +530,7 @@
         "tooRepetitive": "The same characters over and over amount to one guess."
       }
     },
-    "wrongEmailOrPassword": "That login name (or address) and password did not match. Invited and no password yet? Tap «Were you invited?» at the top. Forgot the password? Tap «Forgot password?».",
+    "wrongEmailOrPassword": "That login name (or address) and password did not match. Invited and no password yet? Tap “Were you invited?” at the top. Forgot the password? Tap “Forgot password?”.",
     "invite": {
       "title": "Invitation",
       "intro": "Enter the code you were given and choose a password — you will be taken straight in. No separate sign-in needed.",
@@ -538,7 +539,7 @@
       "codeHint": "Eight characters, e.g. XXXX-XXXX. Case and the hyphen do not matter.",
       "submit": "Sign in",
       "needCode": "The code is eight characters long.",
-      "invalid": "The code did not work. It may have expired or been used already. Tap «No code, or it no longer works?» — or ask the person who invited you for a new one.",
+      "invalid": "The code did not work. It may have expired or been used already. Tap “No code, or it no longer works?” — or ask the person who invited you for a new one.",
       "backToLogin": "I already have a password — sign in",
       "entryTitle": "Were you invited? Start here",
       "entryHint": "Enter the code you were given — you choose the password yourself",
@@ -551,12 +552,12 @@
       "welcomeTitle": "You are in",
       "welcomeIntro": "Your password is saved. Remember the name you will sign in with from now on:",
       "yourLoginName": "Your name for signing in",
-      "yourLoginNameHint": "Do write it down. Your e-mail address works too, if you are the only one using that mailbox. The name is always in «Profile».",
+      "yourLoginNameHint": "Do write it down. Your e-mail address works too, if you are the only one using that mailbox. The name is always in “Profile”.",
       "welcomeGo": "Go to the app",
       "resetTitle": "Code from the letter",
       "resetIntro": "Enter the code from the letter and choose a new password — and you are in.",
       "resetCode": "Code",
-      "resetInvalid": "The code did not work. It may have expired or been used already — only the newest one works. Tap «Request a new code».",
+      "resetInvalid": "The code did not work. It may have expired or been used already — only the newest one works. Tap “Request a new code”.",
       "resetAskAgain": "No code, or it does not work? Request a new code",
       "eachDevice": "Using both a phone and a computer? You sign in on each device separately — with the same name and password."
     },
@@ -666,7 +667,7 @@
       "validationServedSelf": "Please indicate whether you served this month."
     },
     "errors": {
-      "notLinkedToPublisher": "Your login is not linked to a publisher record, so a report cannot be submitted. Ask an elder or an administrator to link them: Congregation → Administration → User management → «Link».",
+      "notLinkedToPublisher": "Your login is not linked to a publisher record, so a report cannot be submitted. Ask an elder or an administrator to link them: Congregation → Administration → User management → “Link”.",
       "selfEditWindowClosed": "This report can no longer be changed: its month has closed. A report can be corrected while its month is still being collected — up to the 20th of the following month. Ask the secretary or an admin."
     },
     "pioneerInline": " · pioneer",
@@ -952,7 +953,7 @@
       "more": "More",
       "eventsSub": "Conventions, the Memorial, the circuit overseer's visit",
       "rulesSub": "Automatic assignments: prayers and microphones",
-      "localNeedsSub": "Topics for «Living as Christians»"
+      "localNeedsSub": "Topics for “Living as Christians”"
     },
     "noAssignments": "No assignments for this week.",
     "unassigned": "Unassigned",
@@ -1151,7 +1152,7 @@
     "searchByNumberOrTitle": "Search by number or title…",
     "noMatches": "No matches",
     "noPublishers": "No publishers",
-    "noPublishersWithCapability": "No publishers with capability \"{{capability}}\"",
+    "noPublishersWithCapability": "No publishers with capability “{{capability}}”",
     "noTalksInCatalog": "No talks in catalog",
     "missingCapability": "Missing capability: {{capability}}",
     "filteredByCapability": "Filtered by capability:",
@@ -1209,7 +1210,7 @@
         "sheetTitle": "Whose account is this?",
         "sheetHint": "Choose the publisher this login ({{email}}) belongs to."
       },
-      "readOnlyNote": "This list of logins is read-only. Grant or change a login in «Congregation» → «Publishers», on the person's card: that is where an account is tied to a person, and the role follows the appointment.",
+      "readOnlyNote": "This list of logins is read-only. Grant or change a login in “Congregation” → “Publishers”, on the person's card: that is where an account is tied to a person, and the role follows the appointment.",
       "noPassword": {
         "neverInvited": "No invitation has been sent",
         "codeLivesUntil": "Invited — the code works until {{date}}",
@@ -1260,20 +1261,20 @@
       "statCreated": "Created",
       "statUpdated": "Updated",
       "statUnchanged": "Unchanged",
-      "invalid_one": "{{count}} line looked like a talk but could not be parsed. Expected format: «N. Title».",
-      "invalid_other": "{{count}} lines looked like talks but could not be parsed. Expected format: «N. Title».",
+      "invalid_one": "{{count}} line looked like a talk but could not be parsed. Expected format: “N. Title”.",
+      "invalid_other": "{{count}} lines looked like talks but could not be parsed. Expected format: “N. Title”.",
       "renamed": "Titles that changed",
       "missingTitle": "Talks that are not in the new list: {{count}}",
       "andMore": "…and {{count}} more",
-      "missingHint": "An import never retires anything itself. If these talks are no longer in the outline list, retire them — they stay in the catalogue marked «retired» and can be brought back in one press.",
+      "missingHint": "An import never retires anything itself. If these talks are no longer in the outline list, retire them — they stay in the catalogue marked “retired” and can be brought back in one press.",
       "retireAction": "Retire these talks",
       "retired": "Talks retired: {{count}}"
     },
     "emptySearch": "No talks match your search",
     "emptyTitle": "No public talks yet",
-    "emptyHint": "Tap «{{action}}» to add the S-34 catalogue",
+    "emptyHint": "Tap “{{action}}” to add the S-34 catalogue",
     "totalCount": "Talks in the catalogue: {{count}}",
-    "foundCount": "Found {{count}} for «{{search}}»",
+    "foundCount": "Found {{count}} for “{{search}}”",
     "lastImport": "Last import: {{date}}, {{time}} · {{name}}",
     "someoneUnknown": "by somebody unknown",
     "retiredFrom": "Retired from {{date}}",
@@ -1297,8 +1298,8 @@
       "backToCatalogue": "Back to the catalogue",
       "source": {
         "programme": "In the weekend programme",
-        "incoming": "A visiting speaker — the «to us» log",
-        "outgoing": "One of ours is taking it — the «from us» log"
+        "incoming": "A visiting speaker — the “to us” log",
+        "outgoing": "One of ours is taking it — the “from us” log"
       },
       "untilLabel": "Until (if only for a while)",
       "untilHint": "Leave empty when the talk goes for good. Given a date, the talk returns by itself the next day.",
@@ -1322,7 +1323,7 @@
       "confirmLift": "Bring these talks back",
       "liftDone": "Talks brought back: {{count}}",
       "askTitle": "Retire {{count}} talks from {{date}}?",
-      "askBody": "Check the list is right. They can be brought back later — the «Bring talks back» tab on this screen.",
+      "askBody": "Check the list is right. They can be brought back later — the “Bring talks back” tab on this screen.",
       "askLiftTitle": "Bring back {{count}} talks?",
       "askLiftBody": "The restriction will be lifted and the talks can be scheduled again.",
       "confirmShort": "Retire talks",
@@ -1352,7 +1353,7 @@
     "errorTitle": "Error",
     "revokeConfirm": {
       "title": "Remove responsibility?",
-      "body": "Remove the \"{{role}}\" responsibility?",
+      "body": "Remove the “{{role}}” responsibility?",
       "action": "Remove"
     },
     "types": {
@@ -1479,7 +1480,7 @@
     "addAnother": "One more",
     "renamePlace": "Rename",
     "removePlace": "Remove duty",
-    "removePlaceAsk": "Remove «{{label}}» along with everyone assigned to it?"
+    "removePlaceAsk": "Remove “{{label}}” along with everyone assigned to it?"
   },
   "publisherActivity": {
     "thisMeeting": "This meeting:"
@@ -2311,7 +2312,7 @@
       "stayInSchedule": "Where he stays is settled in the visit schedule, with families and halls to choose from. The visit page links to it.",
       "programme": "Programme",
       "programmePlaceholder": "Programme link — can be added later",
-      "overlap": "Already on those days: «{{title}}» ({{when}})",
+      "overlap": "Already on those days: “{{title}}” ({{when}})",
       "save": {
         "circuit_overseer_visit": "Save visit",
         "regional_convention": "Save convention",
@@ -2869,7 +2870,7 @@
     "ourSpeakers": {
       "title": "Our speakers",
       "subtitle": "Our brothers who give public talks",
-      "hint": "Brothers who give public talks here and away. «Whose turn» shows those with no trip scheduled.",
+      "hint": "Brothers who give public talks here and away. “Whose turn” shows those with no trip scheduled.",
       "searchPlaceholder": "Search by name",
       "noResults": "No matches",
       "empty": "No speakers yet",
@@ -2993,7 +2994,7 @@
       "needBrother": "Pick a brother",
       "undoReplacement": "Undo",
       "undoTitle": "He came after all?",
-      "undoBody": "{{name}} becomes this week’s speaker again: the «did not come» mark goes, the programme returns to him, and the replacement entry is removed.",
+      "undoBody": "{{name}} becomes this week’s speaker again: the “did not come” mark goes, the programme returns to him, and the replacement entry is removed.",
       "didNotCome": "{{name}} — was scheduled, did not come",
       "title": "Incoming / Outgoing log",
       "subtitle": "Visiting and outgoing talks in one list",
@@ -3030,7 +3031,7 @@
       "phone": "Phone",
       "rebuild": "Check against the programme",
       "rebuildTitle": "Rebuild entries from the programme?",
-      "rebuildBody": "The app walks this year’s weeks and creates a «to us» entry wherever the programme has a speaker and the journal has none. Nothing is deleted and existing entries are left as they are.",
+      "rebuildBody": "The app walks this year’s weeks and creates a “to us” entry wherever the programme has a speaker and the journal has none. Nothing is deleted and existing entries are left as they are.",
       "rebuildAction": "Rebuild",
       "rebuildDone": "Entries added: {{count}}",
       "rebuildDoneBody": "Weeks examined: {{weeks}}. Visits linked to a speaker's card: {{linked}}.",
@@ -3045,7 +3046,7 @@
       "noneAvailable": "Nothing to swap with: no upcoming week has a speaker assigned.",
       "action": "Replace speaker",
       "title": "Replace · {{date}}",
-      "hint": "Pick the week to take the speaker from. \"Swap\" exchanges both weeks, \"Move\" clears the source week.",
+      "hint": "Pick the week to take the speaker from. “Swap” exchanges both weeks, “Move” clears the source week.",
       "mode": {
         "swap": "Swap weeks",
         "move": "Move"
@@ -3081,14 +3082,14 @@
       "noteExisting": "Already-filled weeks are not changed — the rule applies on new assignments.",
       "notePublished": "If the meeting is already published, the change marks it as changed (a notification is sent).",
       "micTitle": "Treasures talk",
-      "micBody": "Whoever gives the \"Treasures from God's Word\" talk is automatically assigned the opening prayer and microphone #1. The link works both ways: assign a brother to the talk or to the opening prayer and the other part fills in by itself, whichever you set first. If the speaker is removed, the auto-filled prayer and microphone are cleared too."
+      "micBody": "Whoever gives the “Treasures from God's Word” talk is automatically assigned the opening prayer and microphone #1. The link works both ways: assign a brother to the talk or to the opening prayer and the other part fills in by itself, whichever you set first. If the speaker is removed, the auto-filled prayer and microphone are cleared too."
     },
     "warn": {
       "title": "Capability not set",
       "prayerCapability": "To auto-assign the prayer, add the “Prayer” capability to {{name}} in their publisher card.",
       "micCapability": "{{name}} was put on microphone #1 but lacks the “Microphone” capability — check their publisher card.",
       "micTaken": "Microphone #1 is already taken manually — auto-fill skipped.",
-      "treasuresCapability": "For the Treasures talk to be assigned automatically, add the \"Treasures from God's Word\" capability to {{name}} in the publisher card."
+      "treasuresCapability": "For the Treasures talk to be assigned automatically, add the “Treasures from God's Word” capability to {{name}} in the publisher card."
     }
   },
   "auxPioneer": {
@@ -3162,7 +3163,7 @@
     "later": "Later",
     "saved": "Saved",
     "empty": "not set",
-    "noCard": "Your login is not linked to a publisher record, so there is nothing to show here. Ask an elder or an administrator to link them: Congregation → Administration → User management → «Link».",
+    "noCard": "Your login is not linked to a publisher record, so there is nothing to show here. Ask an elder or an administrator to link them: Congregation → Administration → User management → “Link”.",
     "neverConfirmed": "Never confirmed yet",
     "checkTitle": "Check your details",
     "checkSubtitle": "Once a year, from {{date}}, we ask you to confirm your contacts are current.",
@@ -3196,12 +3197,17 @@
     "created": "Added",
     "updated": "Updated",
     "unchanged": "Unchanged",
-    "notRecognised": "{{count}} lines were not recognised. Expected «SONG N» with the title on the next line.",
+    "notRecognised": "{{count}} lines were not recognised. Expected “SONG N” with the title on the next line.",
     "renamedTitle": "Titles that changed",
     "addedTitle": "Songs added: {{numbers}}",
     "andMore": "and {{count}} more",
     "missingTitle": "Songs the congregation has that this list does not mention: {{count}}",
-    "missingHint": "An import never removes anything. If these songs are no longer used, switch them off in the song catalogue yourself."
+    "missingHint": "An import never removes anything. If these songs are no longer used, switch them off in the song catalogue yourself.",
+    "howTo": "Paste the list: a line “SONG N”, and the title on the next line:",
+    "howToAfter": "Existing songs (matched by number) are updated, new ones are added. The heading “SONGS” and empty lines are ignored.",
+    "placeholder": "SONG 1\nTitle\nSONG 2\nTitle\n…",
+    "lines_one": "{{count}} line",
+    "lines_other": "{{count}} lines"
   },
   "serviceSummary": {
     "count": "Count",
@@ -3210,7 +3216,7 @@
     "sizeTitle": "Congregation size",
     "allActive": "All active",
     "inactive": "Inactive",
-    "sizeHint": "\"All active\": everyone in the congregation at the end of the month who shared in the ministry at least once in the last six months. A report saying \"no\" does not count. \"Inactive\" is also as at the end of this month, not today: six closed months in a row without sharing. Counted separately.",
+    "sizeHint": "“All active”: everyone in the congregation at the end of the month who shared in the ministry at least once in the last six months. A report saying “no” does not count. “Inactive” is also as at the end of this month, not today: six closed months in a row without sharing. Counted separately.",
     "attendanceTitle": "Meeting attendance",
     "weekendAverage": "Weekend average",
     "midweekAverage": "Midweek average",
@@ -3450,7 +3456,40 @@
       "isDeaf": "Deaf",
       "isBlind": "Blind",
       "isImprisoned": "In prison",
-      "retroactive": "Corrected after the fact"
+      "retroactive": "Corrected after the fact",
+      "notice": "Notice",
+      "draft": "Draft",
+      "cancelled": "Cancelled",
+      "cancelReason": "Reason for cancelling",
+      "publishedAt": "Published",
+      "published": "Published meetings",
+      "fromTemplate": "From the template",
+      "year": "Year",
+      "month": "Month",
+      "dates": "Dates",
+      "withoutConductor": "Without a conductor",
+      "slots": "Template meetings",
+      "skipAssemblies": "Skip assembly weeks",
+      "coVisitFromSchedule": "Circuit overseer visit from the programme",
+      "autoPrepare": "Prepare the month automatically",
+      "prepareLead": "How far ahead",
+      "autoPickConductors": "Pick conductors automatically",
+      "unpublishedPolicy": "If the month is not published",
+      "uiLanguage": "Language",
+      "loginName": "Login name",
+      "passwordHash": "Password",
+      "customLabel": "Own name",
+      "hallName": "Hall",
+      "personText": "Who (as written)",
+      "songNumber": "Song",
+      "memorialPublishedAt": "Memorial programme published",
+      "partTitle": "Part title",
+      "specialTalk": "Special talk",
+      "usedAssignmentId": "Used in the programme",
+      "count": "Attendance",
+      "notHeld": "Not held",
+      "permanent": "Permanently",
+      "publisherName": "Publisher"
     },
     "noValue": "empty",
     "changedNoValues": "changed (values are not kept)",
@@ -3467,7 +3506,12 @@
       "usual": "as usual",
       "changed": "with changes",
       "none": "no meeting",
-      "template": "from the template"
+      "template": "from the template",
+      "did_not_happen": "did not take place",
+      "previous_memorial": "from the previous Memorial",
+      "lift": "brought back",
+      "import": "import",
+      "retire": "retiring"
     },
     "revert": "Put it back",
     "revertDo": "Put back",
@@ -3484,6 +3528,29 @@
     "taskStatus": {
       "open": "open",
       "done": "done"
+    },
+    "structured": "changed",
+    "words": {
+      "coVisitKind": {
+        "field_service": "field service",
+        "lunch": "lunch",
+        "lunch_box": "packed lunch",
+        "accommodation": "accommodation",
+        "pastoral": "pastoral visit",
+        "pioneers": "meeting with pioneers",
+        "elders": "meeting with elders and ministerial servants",
+        "document_review": "review of records",
+        "other": "other"
+      },
+      "cartKind": {
+        "cart": "cart",
+        "stand": "stand"
+      },
+      "memorialSection": {
+        "programme": "programme",
+        "emblems": "emblems",
+        "duty": "duties"
+      }
     }
   },
   "attendance": {
@@ -3524,7 +3591,7 @@
     "inactiveNow": "Inactive as things stand (not for the form)",
     "inactiveNowHint": "Six closed months in a row without a report, as of today. For the elders; the form takes the figure above",
     "lapseUnknown": "The app cannot tell — decide yourself",
-    "lapseUnknownHint": "Silent since the first month the app holds records for. When their break began is only on paper: if it fell inside this year, add them to «became inactive» by hand",
+    "lapseUnknownHint": "Silent since the first month the app holds records for. When their break began is only on paper: if it fell inside this year, add them to “became inactive” by hand",
     "asideSection": "Not for the form — for the elders",
     "missingMonths": "{{count}} months have no attendance recorded — fill the gaps or the sheet will be incomplete.",
     "byHandNote": "The app has no territory record and cannot answer for the congregation about help from the branch — write those in yourself.",
@@ -3573,7 +3640,7 @@
     "planned": "Planned: {{date}}",
     "plannedShort": "planned {{date}}",
     "noGroups": "No groups yet",
-    "hint": "A visit is marked on a field-service meeting — choose the group and turn on «Service overseer's visit».",
+    "hint": "A visit is marked on a field-service meeting — choose the group and turn on “Service overseer's visit”.",
     "openFromTask": "Open the group visits →",
     "prevYear": "Previous service year",
     "nextYear": "Next service year",
@@ -3760,7 +3827,7 @@
       "ours": "Ours",
       "linkPublisher": "Link to a publisher card",
       "linkHint": "For our own brothers only. The link is what lets the app see absences and duties at our meetings.",
-      "countedFor": "Days are counted for «{{school}}»",
+      "countedFor": "Days are counted for “{{school}}”",
       "removed": "Helper removed from the list"
     },
     "addAndAssign": "Add and assign",
@@ -4541,7 +4608,7 @@
       "other": "Another device is signed in separately — with the same name and password."
     },
     "loginName": "Your login name",
-    "loginNameHint": "Write it down. It is always in «Profile».",
+    "loginNameHint": "Write it down. It is always in “Profile”.",
     "contacts": "Check my contacts",
     "done": "Got it"
   },
@@ -4552,7 +4619,7 @@
     "today": "Today",
     "yesterday": "Yesterday",
     "notDelivered": "did not reach a device",
-    "missedNote": "Messages marked «did not reach a device» were sent by the app, but none of your phones or browsers took them.",
+    "missedNote": "Messages marked “did not reach a device” were sent by the app, but none of your phones or browsers took them.",
     "missedLink": "Check notifications on this device",
     "emptyTitle": "Nothing has come yet",
     "emptyHint": "Everything the app tells you will appear here: assignments, reminders, changes.",
@@ -4571,8 +4638,8 @@
     "keptUpdating": "Showing what arrived {{when}} — updating…",
     "refresh": "Refresh",
     "loadFailed": "Could not load",
-    "loadFailedOffline": "No connection to the server, and nothing is saved on this device. This is not «empty» — the data just did not arrive.",
-    "loadFailedOther": "The server answered with an error. This is not «empty» — the data just did not arrive.",
+    "loadFailedOffline": "No connection to the server, and nothing is saved on this device. This is not “empty” — the data just did not arrive.",
+    "loadFailedOther": "The server answered with an error. This is not “empty” — the data just did not arrive.",
     "keptEnd": "Beyond this, nothing can be seen without a connection — only this much is saved.",
     "request": {
       "offline": "No connection to the server.",

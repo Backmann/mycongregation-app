@@ -40,14 +40,12 @@ export default function SongsImportScreen() {
         <Ionicons name="musical-notes-outline" size={40} color="#0ea5e9" />
         <Text style={styles.title}>{t('songsImport.title')}</Text>
         <Text style={styles.subtitle}>
-          Вставьте список в формате: строка «ПЕСНЯ N», а на следующей строке —
-          название:{'\n'}
+          {t('songsImport.howTo')}{'\n'}
           <Text style={styles.code}>{t('songsImport.sampleCode')}</Text>
           {'\n'}
           <Text style={styles.code}>{t('songsImport.sampleTitle')}</Text>
           {'\n'}
-          Существующие песни (по номеру) обновятся, новые — добавятся. Заголовок
-          «ПЕСНИ» и пустые строки игнорируются.
+          {t('songsImport.howToAfter')}
         </Text>
       </View>
 
@@ -58,7 +56,7 @@ export default function SongsImportScreen() {
             onChangeText={setText}
             multiline
             textAlignVertical="top"
-            placeholder={'ПЕСНЯ 1\nКачества Иеговы\nПЕСНЯ 2\nТвоё имя — Иегова\n…'}
+            placeholder={t('songsImport.placeholder')}
             placeholderTextColor="#cbd5e1"
             style={styles.textarea}
             autoCapitalize="none"
@@ -66,7 +64,7 @@ export default function SongsImportScreen() {
           />
           {lineCount > 0 && (
             <View style={styles.lineCounter}>
-              <Text style={styles.lineCounterText}>{lineCount} строк</Text>
+              <Text style={styles.lineCounterText}>{t('songsImport.lines', { count: lineCount })}</Text>
             </View>
           )}
         </View>

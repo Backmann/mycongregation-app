@@ -25,6 +25,7 @@ import {
 } from '../../../lib/api';
 import { useTranslation } from 'react-i18next';
 import i18n from '../../../lib/i18n';
+import { formatLongDate } from '../../../lib/dates';
 import { PublisherForm } from '../../../components/PublisherForm';
 import { PublisherAccessContent } from '../../../components/PublisherAccessContent';
 import {
@@ -370,13 +371,13 @@ export default function PublisherDetailScreen() {
           publisher.appointment === 'elder') && (
           <Field
             label={t('publishers.fields.baptism')}
-            value={publisher.baptismDate}
+            value={publisher.baptismDate ? formatLongDate(publisher.baptismDate, i18n.language) : null}
           />
         )}
         {publisher.appointment === 'unbaptized_publisher' && (
           <Field
             label={t('publishers.fields.ministryStart')}
-            value={publisher.ministryStartDate}
+            value={publisher.ministryStartDate ? formatLongDate(publisher.ministryStartDate, i18n.language) : null}
           />
         )}
         {(publisher.appointment === 'publisher' ||
@@ -473,13 +474,16 @@ export default function PublisherDetailScreen() {
             paddingHorizontal: 16,
           }}
         >
-          Изменил: {publisher.lastEditedByName} ·{' '}
-          {new Date(publisher.updatedAt).toLocaleString('ru-RU', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
+          {t('publishers.lastEdited', {
+            name: publisher.lastEditedByName,
+            when: new Date(publisher.updatedAt).toLocaleString(i18n.language, {
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: false,
+            }),
           })}
         </Text>
       ) : null}
