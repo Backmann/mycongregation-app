@@ -3557,7 +3557,9 @@
       "count": "Присутствовало",
       "notHeld": "Не состоялась",
       "permanent": "Безвозвратно",
-      "publisherName": "Возвещатель"
+      "publisherName": "Возвещатель",
+      "displayLabel": "Название экрана",
+      "stagePin": "Цифры меню экрана"
     },
     "noValue": "пусто",
     "changedNoValues": "изменено (значения не сохраняются)",

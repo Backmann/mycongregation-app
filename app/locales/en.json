@@ -3489,7 +3489,9 @@
       "count": "Attendance",
       "notHeld": "Not held",
       "permanent": "Permanently",
-      "publisherName": "Publisher"
+      "publisherName": "Publisher",
+      "displayLabel": "Display name",
+      "stagePin": "Display menu digits"
     },
     "noValue": "empty",
     "changedNoValues": "changed (values are not kept)",

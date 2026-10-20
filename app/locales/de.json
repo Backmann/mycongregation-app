@@ -3489,7 +3489,9 @@
       "count": "Anwesend",
       "notHeld": "Nicht abgehalten",
       "permanent": "Endgültig",
-      "publisherName": "Verkündiger"
+      "publisherName": "Verkündiger",
+      "displayLabel": "Bezeichnung des Bildschirms",
+      "stagePin": "Ziffern des Bildschirmmenüs"
     },
     "noValue": "leer",
     "changedNoValues": "geändert (Werte werden nicht gespeichert)",
