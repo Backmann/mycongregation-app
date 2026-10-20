@@ -374,17 +374,20 @@ function readValue(
 
 /** `entity.field` (or `*.field`) → where the screens keep the words for its values. */
 const ENUM_WORDS: Record<string, string> = {
-  'publisher.status': 'publishers.status',
-  'assignment.status': 'assignments.status',
-  'user.role': 'profile.roles',
+  'publisher.status': 'publishers.status.',
+  'assignment.status': 'assignments.status.',
+  'user.role': 'profile.roles.',
   'user.uiLanguage': 'language',
-  'responsibility.type': 'responsibilities.types',
-  'circuit_overseer.role': 'assignments.form.coRole',
-  'field_service_settings.prepareLead': 'fieldService.template.auto.lead',
-  'field_service_settings.unpublishedPolicy': 'fieldService.template.auto.policy',
+  'responsibility.type': 'responsibilities.types.',
+  'circuit_overseer.role': 'assignments.form.coRole.',
+  'field_service_settings.prepareLead': 'fieldService.template.auto.lead.',
+  'field_service_settings.unpublishedPolicy': 'fieldService.template.auto.policy.',
   // ISO weekday, 1 = Monday … 7 = Sunday: a bare «6 → 4» said nothing.
   'field_service_meeting.dayOfWeek': 'iso-weekday',
   'external_congregation.meetingDow': 'iso-weekday',
+  // A month stored as its first day: «1 сентября 2026» named a day nobody chose.
+  '*.startMonth': 'month',
+  '*.endMonth': 'month',
 };
 
 /** A language by its own name — the way the language switch shows it. */
@@ -431,6 +434,18 @@ function fieldWord(
 ): string {
   // A stored code word for which a screen already has its words: the same
   // dictionary, read from here too (the language pass of 20 October 2026).
+  // No screen keeps words for these yet — the journal keeps its own.
+  if (typeof v === 'string') {
+    if (entityType === 'co_visit_item' && field === 'kind') {
+      return t(`journal.words.coVisitKind.${v}`, { defaultValue: '' });
+    }
+    if (entityType === 'cart_location' && field === 'kind') {
+      return t(`journal.words.cartKind.${v}`, { defaultValue: '' });
+    }
+    if (entityType === 'memorial_item' && field === 'section') {
+      return t(`journal.words.memorialSection.${v}`, { defaultValue: '' });
+    }
+  }
   const dict = ENUM_WORDS[`${entityType}.${field}`] ?? ENUM_WORDS[`*.${field}`];
   if (dict && (typeof v === 'string' || typeof v === 'number')) {
     if (dict === 'iso-weekday') {
@@ -438,7 +453,14 @@ function fieldWord(
       return n >= 1 && n <= 7 ? dayjs().locale(language).day(n % 7).format('dddd') : '';
     }
     if (dict === 'language') return LANGUAGE_NAMES[String(v)] ?? '';
-    return t(`${dict}.${v}`, { defaultValue: '' });
+    if (dict === 'month') {
+      return /^\d{4}-\d{2}(-\d{2})?$/.test(String(v))
+        ? dayjs(`${String(v).slice(0, 7)}-01`).locale(language).format('MMMM YYYY')
+        : '';
+    }
+    // Each entry ends in a dot, so the families stay visible to
+    // scripts/check-i18n-unused.mjs.
+    return t(`${dict}${v}`, { defaultValue: '' });
   }
   // A yes/no on a card or a kept sheet: «true» is the machine's word.
   if (typeof v === 'boolean') {

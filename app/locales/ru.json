@@ -3572,7 +3572,12 @@
       "usual": "как обычно",
       "changed": "с изменениями",
       "none": "встречи нет",
-      "template": "из шаблона"
+      "template": "из шаблона",
+      "did_not_happen": "не состоялась",
+      "previous_memorial": "с прошлой Вечери",
+      "lift": "возвращены",
+      "import": "загрузка",
+      "retire": "снятие"
     },
     "revert": "Вернуть как было",
     "revertDo": "Вернуть",
@@ -3592,7 +3597,29 @@
       "open": "открыта",
       "done": "выполнена"
     },
-    "structured": "изменено"
+    "structured": "изменено",
+    "words": {
+      "coVisitKind": {
+        "field_service": "проповедь",
+        "lunch": "обед",
+        "lunch_box": "обед с собой",
+        "accommodation": "жильё",
+        "pastoral": "пастырский визит",
+        "pioneers": "встреча с пионерами",
+        "elders": "встреча со старейшинами и помощниками",
+        "document_review": "проверка документов",
+        "other": "другое"
+      },
+      "cartKind": {
+        "cart": "тележка",
+        "stand": "стенд"
+      },
+      "memorialSection": {
+        "programme": "программа",
+        "emblems": "символы",
+        "duty": "обязанности"
+      }
+    }
   },
   "attendance": {
     "cardTitle": "Посещаемость встречи",
