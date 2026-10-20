@@ -231,7 +231,8 @@
       "elder": "Elder",
       "ministerial_servant": "Ministerial servant",
       "secretary": "Secretary",
-      "publisher": "Publisher"
+      "publisher": "Publisher",
+      "stage": "Stage display"
     },
     "circuitOverseer": "Circuit overseer",
     "circuitOverseerDescription": "Default name for the CO visit",
@@ -1196,7 +1197,8 @@
         "admin": "Administrator",
         "elder": "Elder",
         "ministerial_servant": "Ministerial servant",
-        "publisher": "Publisher"
+        "publisher": "Publisher",
+        "stage": "Stage display"
       },
       "online": "online",
       "orphans": {
@@ -3487,7 +3489,9 @@
       "count": "Attendance",
       "notHeld": "Not held",
       "permanent": "Permanently",
-      "publisherName": "Publisher"
+      "publisherName": "Publisher",
+      "displayLabel": "Display name",
+      "stagePin": "Display menu digits"
     },
     "noValue": "empty",
     "changedNoValues": "changed (values are not kept)",
@@ -4838,7 +4842,54 @@
       "CONDUCT_MEETING_OVER": "This meeting is over — it is not run again after its day.",
       "CONDUCT_RESULT_KEPT": "The result of this meeting is saved already and cannot be replaced after its day.",
       "FS_DAY_TAKEN": "That day belongs to an assembly, a convention or the circuit overseer’s visit — no field service meeting can go there.",
-      "FS_CONFLICT": "The same meeting is already there that day, or the conductor already conducts another. Check and save again."
+      "FS_CONFLICT": "The same meeting is already there that day, or the conductor already conducts another. Check and save again.",
+      "STAGE_SCREEN_ONLY": "The stage display shows only the meeting as it runs.",
+      "STAGE_PIN_WRONG": "Those are not the digits.",
+      "STAGE_PIN_INVALID": "The display menu needs 4 to 8 digits.",
+      "STAGE_ACCOUNT_FIXED": "A stage display is no person: it has no card and its role cannot change."
+    }
+  },
+  "stage": {
+    "admin": {
+      "add": "Stage display",
+      "newTitle": "New stage display",
+      "newHint": "A sign-in of its own for the laptop or tablet on the stage. It belongs to no brother and stays the same when the chairman changes.",
+      "name": "Name",
+      "namePlaceholder": "Stage display · Kingdom Hall",
+      "loginName": "Login name",
+      "password": "Password to sign in",
+      "pin": "Digits for the display menu",
+      "pinHint": "4 to 8 digits. The brothers who switch the display on know them: without them the display menu does not open and nobody can sign it out.",
+      "seesTitle": "THE DISPLAY SEES",
+      "sees": "The meeting of the day as it runs: the part, the countdown, who is next, the end; between meetings, the clock and the next meeting.",
+      "notTitle": "IT DOES NOT SEE OR DO",
+      "not": "Lists, cards, reports, contacts, tasks, the journal. It changes nothing, never taps “Start” or “Next”, gets no notifications.",
+      "create": "Create stage display",
+      "editTitle": "Stage display",
+      "newPin": "New digits for the menu",
+      "pinKeep": "Keep the current ones",
+      "loginPlaceholder": "stage.hamm"
+    },
+    "screen": {
+      "title": "Stage display",
+      "viewOnly": "View only",
+      "next": "Next meeting",
+      "midweek": "Midweek meeting · {{day}}",
+      "weekend": "Weekend meeting · {{day}}",
+      "startsAt": "Starts at {{time}}",
+      "chairman": "chairman {{name}}",
+      "noNext": "No meetings in the coming weeks",
+      "opensItself": "On a meeting day the programme opens here by itself",
+      "menu": "Display menu",
+      "pinHint": "Enter the stage display’s digits. Without them nothing changes — the display goes back to the meeting.",
+      "pin": "Digits",
+      "open": "Open the menu",
+      "wrongPin": "Those are not the digits. Try again.",
+      "tooMany": "Too many tries. Wait a minute.",
+      "check": "Check the display",
+      "signOut": "Sign out on this device",
+      "back": "Back to the meeting",
+      "closesItself": "The menu closes by itself after 20 seconds without a tap"
     }
   }
 }

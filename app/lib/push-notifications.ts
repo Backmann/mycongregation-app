@@ -298,6 +298,8 @@ export function usePushNotifications() {
       registeredRef.current = null;
       return;
     }
+    // The screen on the stage gets no notifications (app/stage.tsx).
+    if (user.role === 'stage') return;
 
     let cancelled = false;
     const mark = `${user.id}:`;

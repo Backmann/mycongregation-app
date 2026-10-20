@@ -158,7 +158,8 @@ let lastReported: string | null = null;
 export function useDeviceNotifySync(): void {
   const { user } = useAuth();
   const state = useDeviceNotify();
-  const userId = user?.id ?? null;
+  // The screen on the stage gets no notifications (app/stage.tsx).
+  const userId = user && user.role !== 'stage' ? user.id : null;
 
   useEffect(() => {
     if (!userId || Platform.OS !== 'web') return;

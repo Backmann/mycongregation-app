@@ -95,6 +95,10 @@ export default function AppLayout() {
     if (unreachable) return <NoConnectionScreen />;
     return <Redirect href="/(auth)/login" />;
   }
+  // The screen on the stage never sees the app's sections — not by a menu,
+  // not by an address typed in (app/stage.tsx; the server refuses it the
+  // data as well, server common/stage.ts).
+  if (user.role === "stage") return <Redirect href={"/stage" as never} />;
   return (
     <AppLock>
       {/* Above everything, because after the next native build every phone has

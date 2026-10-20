@@ -50,6 +50,7 @@ const CASES = [
   ['не входил, хотя пароль ему задали', { lastLoginAt: null, lastSeenAt: null, hasPassword: true }, 'neverSignedIn'],
   ['не входил, пароль задан, код истёк', { lastLoginAt: null, lastSeenAt: null, hasPassword: true, inviteExpiresAt: ago(1) }, 'codeExpired'],
   ['входит, но карточки за записью нет', { publisherId: null }, 'noCard'],
+  ['экран сцены без карточки — так и задумано (20.10.2026)', { publisherId: null, role: 'stage' }, null],
   ['без карточки и не входил ни разу — сначала вход', { publisherId: null, lastLoginAt: null, lastSeenAt: null, hasPassword: false }, 'neverInvited'],
   ['входил раньше, выдан код, не использован', { inviteExpiresAt: ahead(1) }, 'codeWaiting'],
   ['входил раньше, тот код давно истёк — помогать не с чем', { inviteExpiresAt: ago(10) }, null],
