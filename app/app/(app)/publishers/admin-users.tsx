@@ -540,7 +540,7 @@ function UserCard({
           when: new Date(user.lastFailedLoginAt).toLocaleString(i18n.language, {
             day: 'numeric',
             month: 'long',
-            hour: '2-digit',
+            hour: '2-digit', hour12: false,
             minute: '2-digit',
           }),
           why: t(

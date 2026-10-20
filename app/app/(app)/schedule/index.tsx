@@ -1741,7 +1741,7 @@ function Meeting({
                         ? c.thoroughPlannedAt
                           ? new Date(c.thoroughPlannedAt).toLocaleString(i18n.language, {
                               weekday: "long",
-                              hour: "2-digit",
+                              hour: "2-digit", hour12: false,
                               minute: "2-digit",
                             })
                           : t("feed.dayNotSet")

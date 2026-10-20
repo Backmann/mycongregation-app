@@ -634,12 +634,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#e2e8f0',
   },
+  // Not in capitals: «GRUPPENVERANTWORTLICHER» broke in the middle of the
+  // word on a phone-wide card (the German pass of 20 October 2026).
   leaderRole: {
-    fontSize: 11,
+    fontSize: 12,
     color: '#7c3aed',
     fontFamily: 'Manrope_600SemiBold',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
   },
   leaderName: {
     fontSize: 15,

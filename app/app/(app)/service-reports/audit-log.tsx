@@ -42,7 +42,7 @@ function formatExact(iso: string): string {
   return new Date(iso).toLocaleString(i18n.language, {
     month: 'short',
     day: 'numeric',
-    hour: '2-digit',
+    hour: '2-digit', hour12: false,
     minute: '2-digit',
   });
 }

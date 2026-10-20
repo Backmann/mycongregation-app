@@ -86,7 +86,7 @@ export default function BackupsScreen() {
                   date: new Date(latest.modifiedAt).toLocaleString(i18n.language, {
                     day: 'numeric',
                     month: 'long',
-                    hour: '2-digit',
+                    hour: '2-digit', hour12: false,
                     minute: '2-digit',
                   }),
                 })}

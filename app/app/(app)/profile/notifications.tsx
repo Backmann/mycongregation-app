@@ -87,7 +87,7 @@ function DeviceState() {
         res.status === 'sent'
           ? t('notifyDevice.test.sent', {
               time: new Date().toLocaleTimeString([], {
-                hour: '2-digit',
+                hour: '2-digit', hour12: false,
                 minute: '2-digit',
               }),
             })

@@ -86,7 +86,7 @@
     "inviteMailSubject": "Einladung in die Versammlungs-App",
     "inviteCopied": "Kopiert — in den Chat einfügen",
     "inviteOnlyOnce": "Der Code wird einmal angezeigt: gespeichert ist nur sein Fingerabdruck. Geht er verloren, geben Sie einen neuen aus — der alte funktioniert dann nicht mehr.",
-    "inviteMessage": "{{name}}, hier ist Ihr Zugang zur App der Versammlung.\n1. Android-Telefon – installieren Sie zuerst die App: {{url}}. iPhone oder Computer – nichts zu installieren.\n2. Tippen Sie auf: {{link}} – der Code wird von selbst eingetragen, Sie wählen nur noch ein Passwort.\nFalls sich der Link nicht antippen lässt, lautet der Code {{code}} (gültig bis {{until}}) – tippen Sie in der App auf «Wurden Sie eingeladen?». Ihr Anmeldename: {{loginName}}.",
+    "inviteMessage": "{{name}}, hier ist Ihr Zugang zur App der Versammlung.\n1. Android-Telefon – installieren Sie zuerst die App: {{url}}. iPhone oder Computer – nichts zu installieren.\n2. Tippen Sie auf: {{link}} – der Code wird von selbst eingetragen, Sie wählen nur noch ein Passwort.\nFalls sich der Link nicht antippen lässt, lautet der Code {{code}} (gültig bis {{until}}) – tippen Sie in der App auf „Wurden Sie eingeladen?“. Ihr Anmeldename: {{loginName}}.",
     "newCode": "Code ausgeben — Passwort wählt er selbst",
     "howSendTitle": "Wie soll der Code ankommen?",
     "howSendByMailHint": "Ein Brief geht an {{email}}. Er enthält mehr als eine selbst geschriebene Nachricht: den Anmeldenamen, die Frist und die Installationsseite.",
@@ -108,7 +108,7 @@
     "addressInUseWayOut": "Damit sich für sie nichts ändert, wählen Sie „Ich gebe den Code persönlich weiter“ — dann bleibt die Adresse allein ihre.",
     "anotherLogin": "ein anderes Konto",
     "andTheirLoginName": "Name für die Anmeldung",
-    "inviteMessageNoName": "{{name}}, hier ist Ihr Zugang zur App der Versammlung.\n1. Android-Telefon – installieren Sie zuerst die App: {{url}}. iPhone oder Computer – nichts zu installieren.\n2. Tippen Sie auf: {{link}} – der Code wird von selbst eingetragen, Sie wählen nur noch ein Passwort.\nFalls sich der Link nicht antippen lässt, lautet der Code {{code}} (gültig bis {{until}}) – tippen Sie in der App auf «Wurden Sie eingeladen?».",
+    "inviteMessageNoName": "{{name}}, hier ist Ihr Zugang zur App der Versammlung.\n1. Android-Telefon – installieren Sie zuerst die App: {{url}}. iPhone oder Computer – nichts zu installieren.\n2. Tippen Sie auf: {{link}} – der Code wird von selbst eingetragen, Sie wählen nur noch ein Passwort.\nFalls sich der Link nicht antippen lässt, lautet der Code {{code}} (gültig bis {{until}}) – tippen Sie in der App auf „Wurden Sie eingeladen?“.",
     "wayBackIn": "Wenn der Verkündiger sich nicht anmelden kann",
     "resetPasswordHint": "Für den Fall, dass niemand einen Code eingeben kann — die Person steht vor Ihnen oder hat kein Telefon dabei. Sie müssen das Passwort laut sagen, also kennen Sie es auch. Alle offenen Sitzungen auf ihren Geräten werden beendet, und sie bekommt eine E-Mail, falls eine Adresse hinterlegt ist.",
     "invitePending": "Eine Einladung wurde verschickt und noch nicht genutzt. Der Code gilt bis {{until}}.",
@@ -407,8 +407,8 @@
       "title": "Endgültig löschen",
       "action": "Endgültig löschen",
       "confirm": "Den Eintrag für {{name}} endgültig löschen? Das kann nicht rückgängig gemacht werden.",
-      "hasHistory": "Dieser Verkündiger hat Verlaufsdaten (Berichte oder Zuteilungen). Endgültiges Löschen ist gesperrt — bitte \"Als ausgeschieden markieren\" verwenden.",
-      "hasHistoryNamed": "Dieser Verkündiger hat Verlaufsdaten — endgültiges Löschen ist gesperrt. Gehalten von: {{holders}}. Bitte diese entfernen oder \"Als ausgeschieden markieren\" verwenden.",
+      "hasHistory": "Dieser Verkündiger hat Verlaufsdaten (Berichte oder Zuteilungen). Endgültiges Löschen ist gesperrt — bitte „Als ausgeschieden markieren“ verwenden.",
+      "hasHistoryNamed": "Dieser Verkündiger hat Verlaufsdaten — endgültiges Löschen ist gesperrt. Gehalten von: {{holders}}. Bitte diese entfernen oder „Als ausgeschieden markieren“ verwenden.",
       "holders": {
         "absences": "Abwesenheiten",
         "assignments": "Zuteilungen",
@@ -439,7 +439,8 @@
       "button": "S-21-Karte",
       "title": "S-21 erstellen",
       "year": "Dienstjahr wählen"
-    }
+    },
+    "lastEdited": "Zuletzt geändert von {{name}} · {{when}}"
   },
   "capabilities": {
     "hints": {
@@ -485,7 +486,7 @@
       "hospitality": "Gastfreundschaft",
       "public_witnessing": "Zeugnisgeben mit Wagen",
       "fs_meeting_conductor": "Leitet Zusammenkunft für den Predigtdienst",
-      "christian_life": "Teil „Leben und Dienst\""
+      "christian_life": "Teil „Leben und Dienst“"
     },
     "selectAll": "Alle auswählen"
   },
@@ -528,7 +529,7 @@
         "tooRepetitive": "Immer dieselben Zeichen ergeben einen einzigen Rateversuch."
       }
     },
-    "wrongEmailOrPassword": "Anmeldename (oder Adresse) und Passwort passen nicht zusammen. Wurden Sie eingeladen und haben noch kein Passwort? Tippen Sie oben auf «Wurden Sie eingeladen?». Passwort vergessen? Tippen Sie auf «Passwort vergessen?».",
+    "wrongEmailOrPassword": "Anmeldename (oder Adresse) und Passwort passen nicht zusammen. Wurden Sie eingeladen und haben noch kein Passwort? Tippen Sie oben auf „Wurden Sie eingeladen?“. Passwort vergessen? Tippen Sie auf „Passwort vergessen?“.",
     "invite": {
       "title": "Einladung",
       "intro": "Geben Sie den Code ein, den Sie erhalten haben, und wählen Sie ein Passwort — Sie sind dann sofort drin. Eine separate Anmeldung ist nicht nötig.",
@@ -537,7 +538,7 @@
       "codeHint": "Acht Zeichen, z. B. XXXX-XXXX. Groß- und Kleinschreibung und der Bindestrich spielen keine Rolle.",
       "submit": "Anmelden",
       "needCode": "Der Code besteht aus acht Zeichen.",
-      "invalid": "Der Code hat nicht funktioniert. Vielleicht ist er abgelaufen oder wurde schon benutzt. Tippen Sie auf «Kein Code, oder er funktioniert nicht mehr?» – oder bitten Sie die Person, die Sie eingeladen hat, um einen neuen.",
+      "invalid": "Der Code hat nicht funktioniert. Vielleicht ist er abgelaufen oder wurde schon benutzt. Tippen Sie auf „Kein Code, oder er funktioniert nicht mehr?“ – oder bitten Sie die Person, die Sie eingeladen hat, um einen neuen.",
       "backToLogin": "Ich habe bereits ein Passwort — anmelden",
       "entryTitle": "Wurden Sie eingeladen? Hier starten",
       "entryHint": "Geben Sie den erhaltenen Code ein — das Passwort wählen Sie selbst",
@@ -550,12 +551,12 @@
       "welcomeTitle": "Fertig, Sie sind dabei",
       "welcomeIntro": "Ihr Passwort ist gespeichert. Merken Sie sich den Namen, mit dem Sie sich künftig anmelden:",
       "yourLoginName": "Ihr Name für die Anmeldung",
-      "yourLoginNameHint": "Bitte notieren Sie ihn. Ihre E-Mail-Adresse funktioniert ebenfalls, wenn nur Sie dieses Postfach nutzen. Der Name steht immer im «Profil».",
+      "yourLoginNameHint": "Bitte notieren Sie ihn. Ihre E-Mail-Adresse funktioniert ebenfalls, wenn nur Sie dieses Postfach nutzen. Der Name steht immer im „Profil“.",
       "welcomeGo": "Zur App",
       "resetTitle": "Code aus der E-Mail",
       "resetIntro": "Geben Sie den Code aus der E-Mail ein und wählen Sie ein neues Passwort – dann sind Sie sofort drin.",
       "resetCode": "Code",
-      "resetInvalid": "Der Code hat nicht funktioniert. Vielleicht ist er abgelaufen oder wurde schon benutzt – nur der neueste funktioniert. Tippen Sie auf «Neuen Code anfordern».",
+      "resetInvalid": "Der Code hat nicht funktioniert. Vielleicht ist er abgelaufen oder wurde schon benutzt – nur der neueste funktioniert. Tippen Sie auf „Neuen Code anfordern“.",
       "resetAskAgain": "Kein Code, oder er funktioniert nicht? Neuen Code anfordern",
       "eachDevice": "Nutzen Sie Telefon und Computer? Auf jedem Gerät melden Sie sich separat an – mit demselben Namen und Passwort."
     },
@@ -665,7 +666,7 @@
       "validationServedSelf": "Bitte geben Sie an, ob Sie diesen Monat am Predigtdienst teilgenommen haben."
     },
     "errors": {
-      "notLinkedToPublisher": "Ihr Zugang ist mit keiner Verkündigerkarte verknüpft, deshalb kann kein Bericht abgegeben werden. Bitten Sie einen Ältesten oder Administrator, sie zu verknüpfen: Versammlung → Verwaltung → Benutzerverwaltung → «Verknüpfen».",
+      "notLinkedToPublisher": "Ihr Zugang ist mit keiner Verkündigerkarte verknüpft, deshalb kann kein Bericht abgegeben werden. Bitten Sie einen Ältesten oder Administrator, sie zu verknüpfen: Versammlung → Verwaltung → Benutzerverwaltung → „Verknüpfen“.",
       "selfEditWindowClosed": "Dieser Bericht lässt sich nicht mehr ändern: der Monat ist abgeschlossen. Korrigieren kann man, solange der Monat gesammelt wird — bis zum 20. des Folgemonats. Wenden Sie sich an den Sekretär oder einen Admin."
     },
     "pioneerInline": " · Pionier",
@@ -951,7 +952,7 @@
       "more": "Mehr",
       "eventsSub": "Kongresse, Gedächtnismahl, Besuch des Kreisaufsehers",
       "rulesSub": "Automatische Zuteilungen: Gebete und Mikrofone",
-      "localNeedsSub": "Themen für «Unser Leben als Christ»"
+      "localNeedsSub": "Themen für „Unser Leben als Christ“"
     },
     "noAssignments": "Keine Zuteilungen für diese Woche.",
     "unassigned": "Nicht zugeteilt",
@@ -1092,7 +1093,7 @@
       }
     },
     "autoBadge": "auto",
-    "addChristianLife": "Teil „Leben als Christ\" hinzufügen",
+    "addChristianLife": "Teil „Leben als Christ“ hinzufügen",
     "deletePart": {
       "title": "Teil löschen?",
       "confirm": "Der Teil und seine Zuteilung werden entfernt.",
@@ -1150,7 +1151,7 @@
     "searchByNumberOrTitle": "Nach Nummer oder Titel suchen…",
     "noMatches": "Keine Treffer",
     "noPublishers": "Keine Verkündiger",
-    "noPublishersWithCapability": "Keine Verkündiger mit Fähigkeit \"{{capability}}\"",
+    "noPublishersWithCapability": "Keine Verkündiger mit Fähigkeit „{{capability}}“",
     "noTalksInCatalog": "Keine Vorträge im Katalog",
     "missingCapability": "Fehlende Fähigkeit: {{capability}}",
     "filteredByCapability": "Gefiltert nach Fähigkeit:",
@@ -1207,7 +1208,7 @@
         "sheetTitle": "Wem gehört dieses Konto?",
         "sheetHint": "Wählen Sie den Verkündiger, dem der Zugang {{email}} gehört."
       },
-      "readOnlyNote": "Diese Liste der Zugänge dient nur der Ansicht. Einen Zugang erteilen oder ändern Sie unter «Versammlung» → «Verkündiger», in der Karte der Person: dort wird das Konto der Person zugeordnet, die Rolle folgt der Ernennung.",
+      "readOnlyNote": "Diese Liste der Zugänge dient nur der Ansicht. Einen Zugang erteilen oder ändern Sie unter „Versammlung“ → „Verkündiger“, in der Karte der Person: dort wird das Konto der Person zugeordnet, die Rolle folgt der Ernennung.",
       "noPassword": {
         "neverInvited": "Es wurde keine Einladung verschickt",
         "codeLivesUntil": "Eingeladen — der Code gilt bis {{date}}",
@@ -1258,20 +1259,20 @@
       "statCreated": "Angelegt",
       "statUpdated": "Aktualisiert",
       "statUnchanged": "Unverändert",
-      "invalid_one": "{{count}} Zeile sah nach einem Vortrag aus, konnte aber nicht gelesen werden. Erwartetes Format: «N. Titel».",
-      "invalid_other": "{{count}} Zeilen sahen nach Vorträgen aus, konnten aber nicht gelesen werden. Erwartetes Format: «N. Titel».",
+      "invalid_one": "{{count}} Zeile sah nach einem Vortrag aus, konnte aber nicht gelesen werden. Erwartetes Format: „N. Titel“.",
+      "invalid_other": "{{count}} Zeilen sahen nach Vorträgen aus, konnten aber nicht gelesen werden. Erwartetes Format: „N. Titel“.",
       "renamed": "Geänderte Titel",
       "missingTitle": "Diese Vorträge fehlen in der neuen Liste: {{count}}",
       "andMore": "…und {{count}} weitere",
-      "missingHint": "Ein Import setzt von selbst nichts ab. Fehlen diese Vorträge in der Liste, setzen Sie sie ab — sie bleiben im Katalog als «abgesetzt» und lassen sich mit einem Druck zurückholen.",
+      "missingHint": "Ein Import setzt von selbst nichts ab. Fehlen diese Vorträge in der Liste, setzen Sie sie ab — sie bleiben im Katalog als „abgesetzt“ und lassen sich mit einem Druck zurückholen.",
       "retireAction": "Diese Vorträge absetzen",
       "retired": "Abgesetzte Vorträge: {{count}}"
     },
     "emptySearch": "Keine Vorträge gefunden",
     "emptyTitle": "Noch keine öffentlichen Vorträge",
-    "emptyHint": "Tippen Sie auf «{{action}}», um den S-34-Katalog hinzuzufügen",
+    "emptyHint": "Tippen Sie auf „{{action}}“, um den S-34-Katalog hinzuzufügen",
     "totalCount": "Vorträge im Katalog: {{count}}",
-    "foundCount": "{{count}} gefunden für «{{search}}»",
+    "foundCount": "{{count}} gefunden für „{{search}}“",
     "lastImport": "Letzter Import: {{date}}, {{time}} · {{name}}",
     "someoneUnknown": "von unbekannt",
     "retiredFrom": "Abgesetzt ab {{date}}",
@@ -1295,8 +1296,8 @@
       "backToCatalogue": "Zurück zum Katalog",
       "source": {
         "programme": "Im Wochenendprogramm",
-        "incoming": "Auswärtiger Redner — Journal «zu uns»",
-        "outgoing": "Ein Bruder von uns hält ihn — Journal «von uns»"
+        "incoming": "Auswärtiger Redner — Journal „zu uns“",
+        "outgoing": "Ein Bruder von uns hält ihn — Journal „von uns“"
       },
       "untilLabel": "Bis wann (falls nur vorübergehend)",
       "untilHint": "Leer lassen, wenn der Vortrag endgültig entfällt. Mit Datum kommt er am Tag danach von selbst zurück.",
@@ -1320,7 +1321,7 @@
       "confirmLift": "Diese Vorträge zurückholen",
       "liftDone": "Zurückgeholte Vorträge: {{count}}",
       "askTitle": "{{count}} Vorträge ab {{date}} absetzen?",
-      "askBody": "Prüfen Sie, ob die Liste stimmt. Sie lassen sich später zurückholen — Reiter «Vorträge zurückholen».",
+      "askBody": "Prüfen Sie, ob die Liste stimmt. Sie lassen sich später zurückholen — Reiter „Vorträge zurückholen“.",
       "askLiftTitle": "{{count}} Vorträge zurückholen?",
       "askLiftBody": "Die Sperre wird aufgehoben und die Vorträge können wieder eingeplant werden.",
       "confirmShort": "Absetzen",
@@ -1477,7 +1478,7 @@
     "addAnother": "Noch einer",
     "renamePlace": "Umbenennen",
     "removePlace": "Aufgabe entfernen",
-    "removePlaceAsk": "«{{label}}» mitsamt allen Zugeteilten entfernen?"
+    "removePlaceAsk": "„{{label}}“ mitsamt allen Zugeteilten entfernen?"
   },
   "publisherActivity": {
     "thisMeeting": "Diese Zusammenkunft:"
@@ -2309,7 +2310,7 @@
       "stayInSchedule": "Wo er wohnt, wird im Besuchsplan geregelt — dort stehen Familien und Säle zur Wahl. Die Besuchsseite verlinkt ihn.",
       "programme": "Programm",
       "programmePlaceholder": "Programm-Link — kann später ergänzt werden",
-      "overlap": "An diesen Tagen schon: «{{title}}» ({{when}})",
+      "overlap": "An diesen Tagen schon: „{{title}}“ ({{when}})",
       "save": {
         "circuit_overseer_visit": "Besuch speichern",
         "regional_convention": "Kongress speichern",
@@ -2867,7 +2868,7 @@
     "ourSpeakers": {
       "title": "Unsere Redner",
       "subtitle": "Unsere Brüder, die öffentliche Vorträge halten",
-      "hint": "Brüder, die öffentliche Vorträge halten — hier und auswärts. «Wer dran ist» zeigt die ohne geplante Reise.",
+      "hint": "Brüder, die öffentliche Vorträge halten — hier und auswärts. „Wer dran ist“ zeigt die ohne geplante Reise.",
       "searchPlaceholder": "Nach Name suchen",
       "noResults": "Keine Treffer",
       "empty": "Noch keine Redner",
@@ -2991,7 +2992,7 @@
       "needBrother": "Bruder wählen",
       "undoReplacement": "Zurücknehmen",
       "undoTitle": "Er ist doch gekommen?",
-      "undoBody": "{{name}} ist wieder der Redner dieser Woche: der Vermerk «nicht gekommen» verschwindet, der Plan kehrt zu ihm zurück, und der Eintrag des Ersatzredners wird entfernt.",
+      "undoBody": "{{name}} ist wieder der Redner dieser Woche: der Vermerk „nicht gekommen“ verschwindet, der Plan kehrt zu ihm zurück, und der Eintrag des Ersatzredners wird entfernt.",
       "didNotCome": "{{name}} — war eingeplant, kam nicht",
       "title": "Protokoll „Zu uns / Von uns“",
       "subtitle": "Eingehende und ausgehende Vorträge in einer Liste",
@@ -3028,7 +3029,7 @@
       "phone": "Telefon",
       "rebuild": "Mit dem Plan abgleichen",
       "rebuildTitle": "Einträge aus dem Plan wiederherstellen?",
-      "rebuildBody": "Die App geht die Wochen dieses Jahres durch und legt einen «zu uns»-Eintrag an, wo der Plan einen Redner hat und das Journal keinen. Es wird nichts gelöscht, vorhandene Einträge bleiben unverändert.",
+      "rebuildBody": "Die App geht die Wochen dieses Jahres durch und legt einen „zu uns“-Eintrag an, wo der Plan einen Redner hat und das Journal keinen. Es wird nichts gelöscht, vorhandene Einträge bleiben unverändert.",
       "rebuildAction": "Wiederherstellen",
       "rebuildDone": "Hinzugefügte Einträge: {{count}}",
       "rebuildDoneBody": "Geprüfte Wochen: {{weeks}}. Besuche mit einer Rednerkarte verknüpft: {{linked}}.",
@@ -3043,7 +3044,7 @@
       "noneAvailable": "Kein Tausch möglich: keine kommende Woche hat einen Redner.",
       "action": "Redner ersetzen",
       "title": "Ersetzen · {{date}}",
-      "hint": "Wählen Sie die Woche, aus der der Redner übernommen wird. „Tauschen\" tauscht beide Wochen, „Verschieben\" leert die Quellwoche.",
+      "hint": "Wählen Sie die Woche, aus der der Redner übernommen wird. „Tauschen“ tauscht beide Wochen, „Verschieben“ leert die Quellwoche.",
       "mode": {
         "swap": "Tauschen",
         "move": "Verschieben"
@@ -3078,15 +3079,15 @@
       "noteManual": "Manuelle Änderungen haben Vorrang: Wenn Sie jemand anderen für das Gebet eintragen, rührt die Regel es nicht mehr an.",
       "noteExisting": "Bereits ausgefüllte Wochen werden nicht geändert — die Regel greift bei neuen Einteilungen.",
       "notePublished": "Ist die Zusammenkunft schon veröffentlicht, wird die Änderung als „geändert“ markiert (es wird benachrichtigt).",
-      "micTitle": "Vortrag „Schätze\"",
-      "micBody": "Wer den Vortrag „Schätze aus Gottes Wort\" hält, wird automatisch für das Eingangsgebet und Mikrofon Nr. 1 eingeteilt. Die Verknüpfung wirkt in beide Richtungen: Teilen Sie einen Bruder für den Vortrag oder das Eingangsgebet ein — der andere Punkt füllt sich von selbst, egal was zuerst eingetragen wird. Wird der Redner entfernt, werden das automatisch eingetragene Gebet und das Mikrofon ebenfalls geleert."
+      "micTitle": "Vortrag „Schätze“",
+      "micBody": "Wer den Vortrag „Schätze aus Gottes Wort“ hält, wird automatisch für das Eingangsgebet und Mikrofon Nr. 1 eingeteilt. Die Verknüpfung wirkt in beide Richtungen: Teilen Sie einen Bruder für den Vortrag oder das Eingangsgebet ein — der andere Punkt füllt sich von selbst, egal was zuerst eingetragen wird. Wird der Redner entfernt, werden das automatisch eingetragene Gebet und das Mikrofon ebenfalls geleert."
     },
     "warn": {
       "title": "Fähigkeit nicht gesetzt",
       "prayerCapability": "Um das Gebet automatisch zuzuweisen, fügen Sie {{name}} die Fähigkeit „Gebet“ in der Verkündigerkarte hinzu.",
       "micCapability": "{{name}} wurde Mikrofon Nr. 1 zugeteilt, hat aber nicht die Fähigkeit „Mikrofon“ — prüfen Sie die Verkündigerkarte.",
       "micTaken": "Mikrofon Nr. 1 ist bereits manuell belegt — Auto-Zuweisung übersprungen.",
-      "treasuresCapability": "Damit der Vortrag „Schätze\" automatisch zugeteilt wird, fügen Sie {{name}} in der Verkündigerkarte die Fähigkeit „Schätze aus Gottes Wort\" hinzu."
+      "treasuresCapability": "Damit der Vortrag „Schätze“ automatisch zugeteilt wird, fügen Sie {{name}} in der Verkündigerkarte die Fähigkeit „Schätze aus Gottes Wort“ hinzu."
     }
   },
   "auxPioneer": {
@@ -3160,7 +3161,7 @@
     "later": "Später",
     "saved": "Gespeichert",
     "empty": "nicht angegeben",
-    "noCard": "Ihr Zugang ist mit keiner Verkündigerkarte verknüpft, deshalb gibt es hier nichts zu zeigen. Bitten Sie einen Ältesten oder Administrator, sie zu verknüpfen: Versammlung → Verwaltung → Benutzerverwaltung → «Verknüpfen».",
+    "noCard": "Ihr Zugang ist mit keiner Verkündigerkarte verknüpft, deshalb gibt es hier nichts zu zeigen. Bitten Sie einen Ältesten oder Administrator, sie zu verknüpfen: Versammlung → Verwaltung → Benutzerverwaltung → „Verknüpfen“.",
     "neverConfirmed": "Noch nie bestätigt",
     "checkTitle": "Bitte Daten prüfen",
     "checkSubtitle": "Einmal im Jahr, ab {{date}}, bitten wir Sie zu bestätigen, dass Ihre Kontaktdaten aktuell sind.",
@@ -3194,12 +3195,17 @@
     "created": "Hinzugefügt",
     "updated": "Aktualisiert",
     "unchanged": "Unverändert",
-    "notRecognised": "{{count}} Zeilen wurden nicht erkannt. Erwartet wird «LIED N» und der Titel in der nächsten Zeile.",
+    "notRecognised": "{{count}} Zeilen wurden nicht erkannt. Erwartet wird „LIED N“ und der Titel in der nächsten Zeile.",
     "renamedTitle": "Geänderte Titel",
     "addedTitle": "Hinzugefügte Lieder: {{numbers}}",
     "andMore": "und {{count}} weitere",
     "missingTitle": "Lieder der Versammlung, die in dieser Liste fehlen: {{count}}",
-    "missingHint": "Ein Import löscht nichts. Werden diese Lieder nicht mehr benutzt, schalten Sie sie im Liederkatalog selbst ab."
+    "missingHint": "Ein Import löscht nichts. Werden diese Lieder nicht mehr benutzt, schalten Sie sie im Liederkatalog selbst ab.",
+    "howTo": "Liste einfügen: eine Zeile „LIED N“, in der nächsten Zeile der Titel:",
+    "howToAfter": "Vorhandene Lieder (nach Nummer) werden aktualisiert, neue hinzugefügt. Die Überschrift „LIEDER“ und leere Zeilen werden übergangen.",
+    "placeholder": "LIED 1\nTitel\nLIED 2\nTitel\n…",
+    "lines_one": "{{count}} Zeile",
+    "lines_other": "{{count}} Zeilen"
   },
   "serviceSummary": {
     "count": "Anzahl",
@@ -3448,7 +3454,40 @@
       "isDeaf": "Gehörlos",
       "isBlind": "Blind",
       "isImprisoned": "In Haft",
-      "retroactive": "Nachträglich korrigiert"
+      "retroactive": "Nachträglich korrigiert",
+      "notice": "Hinweis",
+      "draft": "Entwurf",
+      "cancelled": "Abgesagt",
+      "cancelReason": "Grund der Absage",
+      "publishedAt": "Veröffentlicht",
+      "published": "Veröffentlichte Zusammenkünfte",
+      "fromTemplate": "Aus der Vorlage",
+      "year": "Jahr",
+      "month": "Monat",
+      "dates": "Daten",
+      "withoutConductor": "Ohne Leiter",
+      "slots": "Zusammenkünfte der Vorlage",
+      "skipAssemblies": "Kongresswochen auslassen",
+      "coVisitFromSchedule": "Kreisaufseherbesuch aus dem Programm",
+      "autoPrepare": "Monat automatisch vorbereiten",
+      "prepareLead": "Wie lange im Voraus",
+      "autoPickConductors": "Leiter automatisch wählen",
+      "unpublishedPolicy": "Falls der Monat nicht veröffentlicht ist",
+      "uiLanguage": "Sprache",
+      "loginName": "Anmeldename",
+      "passwordHash": "Passwort",
+      "customLabel": "Eigene Bezeichnung",
+      "hallName": "Saal",
+      "personText": "Wer (als Text)",
+      "songNumber": "Lied",
+      "memorialPublishedAt": "Programm des Gedächtnismahls veröffentlicht",
+      "partTitle": "Titel des Programmpunkts",
+      "specialTalk": "Sondervortrag",
+      "usedAssignmentId": "Im Programm verwendet",
+      "count": "Anwesend",
+      "notHeld": "Nicht abgehalten",
+      "permanent": "Endgültig",
+      "publisherName": "Verkündiger"
     },
     "noValue": "leer",
     "changedNoValues": "geändert (Werte werden nicht gespeichert)",
@@ -3482,7 +3521,8 @@
     "taskStatus": {
       "open": "offen",
       "done": "erledigt"
-    }
+    },
+    "structured": "geändert"
   },
   "attendance": {
     "cardTitle": "Zusammenkunftsbesuch",
@@ -3522,7 +3562,7 @@
     "inactiveNow": "Zurzeit inaktiv (nicht für das Formular)",
     "inactiveNowHint": "Sechs abgeschlossene Monate in Folge ohne Bericht, Stand heute. Für die Ältesten; ins Formular geht die Zeile darüber",
     "lapseUnknown": "Die App weiß es nicht — bitte selbst entscheiden",
-    "lapseUnknownHint": "Seit dem ersten erfassten Monat ohne Bericht. Wann die Unterbrechung begann, steht nur auf Papier: fiel sie in dieses Jahr, tragen Sie sie selbst bei «inaktiv geworden» ein",
+    "lapseUnknownHint": "Seit dem ersten erfassten Monat ohne Bericht. Wann die Unterbrechung begann, steht nur auf Papier: fiel sie in dieses Jahr, tragen Sie sie selbst bei „inaktiv geworden“ ein",
     "asideSection": "Nicht für das Formular — für die Ältesten",
     "missingMonths": "Für {{count}} Monate fehlen Besuchszahlen — bitte ergänzen, sonst bleibt das Formular unvollständig.",
     "byHandNote": "Die App kennt keine Gebiete und kann nicht für die Versammlung über Hilfe vom Zweigbüro antworten — bitte selbst eintragen.",
@@ -3571,7 +3611,7 @@
     "planned": "Geplant: {{date}}",
     "plannedShort": "geplant {{date}}",
     "noGroups": "Noch keine Gruppen",
-    "hint": "Ein Besuch wird an einer Zusammenkunft für den Dienst vermerkt — Gruppe wählen und «Besuch des Dienstaufsehers» einschalten.",
+    "hint": "Ein Besuch wird an einer Zusammenkunft für den Dienst vermerkt — Gruppe wählen und „Besuch des Dienstaufsehers“ einschalten.",
     "openFromTask": "Gruppenbesuche öffnen →",
     "prevYear": "Vorheriges Dienstjahr",
     "nextYear": "Nächstes Dienstjahr",
@@ -3758,7 +3798,7 @@
       "ours": "Unser",
       "linkPublisher": "Mit Verkündigerkarte verknüpfen",
       "linkHint": "Nur für eigene Brüder. Die Verknüpfung lässt die App Abwesenheiten und Aufgaben bei unseren Zusammenkünften sehen.",
-      "countedFor": "Die Tage zählen für «{{school}}»",
+      "countedFor": "Die Tage zählen für „{{school}}“",
       "removed": "Helfer aus der Liste entfernt"
     },
     "addAndAssign": "Hinzufügen und zuteilen",
@@ -4539,7 +4579,7 @@
       "other": "Auf einem anderen Gerät meldet man sich einzeln an – mit demselben Namen und Passwort."
     },
     "loginName": "Ihr Anmeldename",
-    "loginNameHint": "Schreiben Sie ihn auf. Er steht immer im «Profil».",
+    "loginNameHint": "Schreiben Sie ihn auf. Er steht immer im „Profil“.",
     "contacts": "Meine Kontaktdaten prüfen",
     "done": "Verstanden"
   },
@@ -4550,7 +4590,7 @@
     "today": "Heute",
     "yesterday": "Gestern",
     "notDelivered": "kein Gerät erreicht",
-    "missedNote": "Mitteilungen mit dem Vermerk «kein Gerät erreicht» hat die App gesendet, aber keines Ihrer Telefone und kein Browser hat sie angenommen.",
+    "missedNote": "Mitteilungen mit dem Vermerk „kein Gerät erreicht“ hat die App gesendet, aber keines Ihrer Telefone und kein Browser hat sie angenommen.",
     "missedLink": "Mitteilungen auf diesem Gerät prüfen",
     "emptyTitle": "Bisher ist nichts gekommen",
     "emptyHint": "Hier erscheint alles, was die App Ihnen mitteilt: Aufgaben, Erinnerungen, Änderungen.",

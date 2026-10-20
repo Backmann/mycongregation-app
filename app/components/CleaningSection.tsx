@@ -347,7 +347,7 @@ function GeneralExtras({
       month: 'short',
     });
     const time = d.toLocaleTimeString(i18n.language, {
-      hour: '2-digit',
+      hour: '2-digit', hour12: false,
       minute: '2-digit',
     });
     return `${day}, ${time}`;
@@ -541,7 +541,7 @@ function ThoroughExtras({
       month: 'short',
     });
     const time = d.toLocaleTimeString(i18n.language, {
-      hour: '2-digit',
+      hour: '2-digit', hour12: false,
       minute: '2-digit',
     });
     return `${day}, ${time}`;
