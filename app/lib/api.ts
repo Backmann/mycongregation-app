@@ -4895,6 +4895,8 @@ api.interceptors.response.use(
 export interface PushDeviceInfo {
   platform: string;
   osVersion?: string | null;
+  /** Android channels the app has made; «people» lets the server name a person (lib/push-notifications). */
+  channels?: string[];
 }
 
 /** What the server stores of a device's own account of itself. */
