@@ -1,0 +1,52 @@
+# Главные экраны открываются без ошибок (17 октября 2026).
+#
+# Первый сценарий Maestro. Запускается на телефоне Лионеля через исполнитель
+# (app/scripts/phone-runner.mjs) заданием `maestro-smoke`, под той учётной
+# записью, в которую вошли на телефоне, — то есть на ЖИВЫХ данных.
+#
+# ПОЭТОМУ ТОЛЬКО СМОТРИТ: открывает экраны по ссылкам mycongregation://…,
+# ничего не сохраняет. Единственное нажатие — «Позже» на ежегодном окне
+# проверки контактов, если оно появится (так сделал бы человек).
+#
+# Надписи — на трёх языках приложения, чтобы сценарий не зависел от языка
+# телефона. Текст в Maestro — регулярное выражение на всю надпись.
+# БЕЗ ПЕРЕЗАПУСКА ПРИЛОЖЕНИЯ (20 октября 2026): при новом запуске оно просит
+# PIN телефона (своя блокировка, components/AppLock.tsx), и дальше сценарий
+# пройти не может. Перед запуском приложение открывают и разблокируют сами;
+# сценарий работает в уже открытом.
+appId: com.backmann.mycongregation
+name: Главные экраны (без перезапуска)
+---
+
+# Главная
+- openLink: mycongregation://home
+- runFlow:
+    when:
+      visible: "Позже|Later|Später"
+    commands:
+      - tapOn: "Позже|Later|Später"
+- extendedWaitUntil:
+    visible: "Главная|Home|Start"
+    timeout: 30000
+- assertNotVisible: ".*(Что-то пошло не так|Something went wrong|Unmatched Route|Не удалось загрузить|Laden fehlgeschlagen|Could not load).*"
+- takeScreenshot: 01-home
+
+# Программа
+- openLink: mycongregation://schedule
+- extendedWaitUntil:
+    visible: "Программа|Programme|Programm"
+    timeout: 20000
+- assertNotVisible: ".*(Что-то пошло не так|Something went wrong|Unmatched Route|Не удалось загрузить|Laden fehlgeschlagen|Could not load).*"
+- takeScreenshot: 02-schedule
+
+# Профиль: строка сборки «v… · …» внизу — какая версия на самом деле работает
+- openLink: mycongregation://profile
+- extendedWaitUntil:
+    visible: "Профиль|Profile|Profil"
+    timeout: 20000
+- assertNotVisible: ".*(Что-то пошло не так|Something went wrong|Unmatched Route|Не удалось загрузить|Laden fehlgeschlagen|Could not load).*"
+- scrollUntilVisible:
+    element: "v\\S+ · .*"
+    direction: DOWN
+    timeout: 20000
+- takeScreenshot: 03-profile
