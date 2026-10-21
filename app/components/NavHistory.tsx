@@ -60,11 +60,57 @@ export function backFallback(path: string, parentTab: Record<string, string>): s
 }
 
 /**
+ * The navigation state as it is NOW, with every section's own stack in it.
+ *
+ * What useRootNavigationState gives at render holds the tab navigator and no
+ * more: the sections' stacks are not in it (seen on the stand, 21 October
+ * 2026, by logging both). So the «stack» measured there was always the root's
+ * — depth 1 — and a screen opened from another section was never closed when
+ * the person went back: the section's tab then reopened on it. The container
+ * knows the whole state.
+ */
+function liveRoot(): NavState | undefined {
+  const c = container as unknown as { getRootState?: () => NavState } | null;
+  return c?.getRootState?.() ?? rootState;
+}
+
+type TabsState = NavState & { routes?: { name: string; state?: NavState & { routes?: { name: string }[] } }[] };
+
+/** The tab navigator's state, wherever it sits under the root. */
+function tabsState(state: NavState | undefined): TabsState | undefined {
+  let s: NavState | undefined = state;
+  while (s) {
+    if (s.type === 'tab') return s as TabsState;
+    const r = s.routes?.[s.index ?? 0];
+    s = r?.state;
+  }
+  return undefined;
+}
+
+/**
+ * A section opens at its first screen (the tab pressed again, or a section
+ * whose top screen was opened from elsewhere): its stack is popped to the top,
+ * or — when it holds one screen that is not its first, as after «Не готовы N
+ * встреч» on Главная — that screen is replaced by the first one (21 October
+ * 2026: «я не смог вернуться в раздел программы»).
+ */
+export function sectionToRoot(tab: string): void {
+  const tabs = tabsState(liveRoot());
+  const nested = tabs?.routes?.find((r) => r.name === tab)?.state;
+  if (!nested?.key || !nested.routes?.length || !container) return;
+  if (nested.routes.length > 1) {
+    container.dispatch({ type: 'POP_TO_TOP', target: nested.key });
+  } else if (nested.routes[0].name !== 'index') {
+    container.dispatch({ type: 'RESET', payload: { index: 0, routes: [{ name: 'index' }] }, target: nested.key });
+  }
+}
+
+/**
  * One step back. Returns false when there is nowhere to go — on Android the
  * system then does what it does from the first screen (leaves the app).
  */
 export function performBack(fallback: string | null): boolean {
-  const stack = focusedStack(rootState);
+  const stack = focusedStack(liveRoot());
   const plan = planBack({
     history: navHistory(),
     stackDepth: stack.depth,
@@ -78,6 +124,7 @@ export function performBack(fallback: string | null): boolean {
       router.dismissTo(plan.href as never);
       return true;
     case 'leave': {
+      const cur = navHistory()[navHistory().length - 1];
       const target = plan.href.split('?')[0];
       // The step being taken back is off the list now; what the person sees
       // between the two moves is not put on it.
@@ -92,6 +139,19 @@ export function performBack(fallback: string | null): boolean {
         const key = stack.key;
         const c = container;
         setTimeout(() => c.dispatch({ type: 'POP', payload: { count: 1 }, target: key }), 0);
+      } else if (!plan.pop && stack.depth === 1 && stack.key && container && cur && !isTabRoot(cur.path)) {
+        // The screen left behind is the ONLY one in its section's stack (it
+        // was opened from another section, and the section's first screen was
+        // never under it). Nothing to pop — so the section's first screen
+        // takes its place, and the tab opens on it next time (21 October 2026:
+        // back from «Составление программы» to «Собрание», then «Программа»
+        // showed «Составление программы» again).
+        const key = stack.key;
+        const c = container;
+        setTimeout(
+          () => c.dispatch({ type: 'RESET', payload: { index: 0, routes: [{ name: 'index' }] }, target: key }),
+          0,
+        );
       }
       return true;
     }

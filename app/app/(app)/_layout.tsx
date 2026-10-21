@@ -3,8 +3,8 @@ import {
   BottomTabBar,
   type BottomTabBarProps,
 } from "@react-navigation/bottom-tabs";
-import { CommonActions, StackActions } from "@react-navigation/native";
-import { NavHistoryTracker } from "../../components/NavHistory";
+import { CommonActions } from "@react-navigation/native";
+import { NavHistoryTracker, sectionToRoot } from "../../components/NavHistory";
 import { clearForeign, isForeign } from "../../lib/nav-history";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ActivityIndicator, View } from "react-native";
@@ -115,13 +115,11 @@ export default function AppLayout() {
         // person could not find the section's own start.
         screenListeners={({ navigation, route }) => ({
           tabPress: () => {
-            if (!isForeign(route.name)) return;
+            // Pressed again, or its top screen came from another section:
+            // the section opens at its first screen (components/NavHistory).
+            if (!isForeign(route.name) && !navigation.isFocused()) return;
             clearForeign(route.name);
-            const tabs = navigation.getState() as { routes: { name: string; state?: { key?: string; routes?: unknown[] } }[] };
-            const nested = tabs.routes.find((r) => r.name === route.name)?.state;
-            if (nested?.key && (nested.routes?.length ?? 0) > 1) {
-              navigation.dispatch({ ...StackActions.popToTop(), target: nested.key });
-            }
+            sectionToRoot(route.name);
           },
         })}
         screenOptions={{
