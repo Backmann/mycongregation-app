@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Redirect, router, useLocalSearchParams } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -16,6 +17,7 @@ import { addDays, formatDateISO, parseISODate, startOfWeekMonday } from '../lib/
 import { effectiveVersionFor } from '../lib/meeting-schedule';
 import { weekRules, type MeetingKind } from '../lib/week-rules';
 import ConductScreen from './(app)/schedule/conduct';
+import { StageChrome } from '../components/ConductStage';
 
 /**
  * THE SCREEN ON THE STAGE (20 October 2026).
@@ -102,6 +104,15 @@ export default function StageScreen() {
     }
   }, [todays, params.week, params.kind]);
 
+  // The meeting of the day has ended (its run's end, ms): the clock and the
+  // next meeting again, with the time it ended — never its result.
+  const [endedAt, setEndedAt] = useState<number | null>(null);
+  const onStageFinished = useCallback((at: number | null) => setEndedAt(at), []);
+  useEffect(() => {
+    setEndedAt(null);
+  }, [todays?.week, todays?.kind]);
+  const insets = useSafeAreaInsets();
+
   // ── the menu, behind the digits ───────────────────────────────────────
   const [menu, setMenu] = useState<'closed' | 'pin' | 'open'>('closed');
   const [pin, setPin] = useState('');
@@ -159,30 +170,44 @@ export default function StageScreen() {
   const label = user.displayLabel ?? t('stage.screen.title');
   const showMeeting = !!todays && params.week === todays.week && params.kind === todays.kind;
 
+  // In the header, beside the clock, clear of the status bar: on a phone the
+  // old corner button sat under it and could not be found (21 October 2026).
+  const menuButton = (
+    <Pressable
+      onPress={() => setMenu('pin')}
+      style={({ pressed }) => [s.menuBtn, pressed && { opacity: 0.6 }]}
+      accessibilityRole="button"
+      accessibilityLabel={t('stage.screen.menu')}
+      hitSlop={6}
+    >
+      <Ionicons name="ellipsis-horizontal" size={22} color="#cbd5e1" />
+    </Pressable>
+  );
+  const ended = showMeeting && endedAt !== null;
+
   return (
     <View style={s.root}>
       {showMeeting ? (
-        <View style={{ flex: 1 }}>
-          <ConductScreen stageCheckAt={checkAt} />
+        // Kept mounted after the end, out of sight: an «Вернуть» on the
+        // timekeeper's device brings the meeting back.
+        <View style={ended ? { display: 'none' } : { flex: 1 }}>
+          <StageChrome.Provider value={{ menu: menuButton, topInset: insets.top }}>
+            <ConductScreen stageCheckAt={checkAt} onStageFinished={onStageFinished} />
+          </StageChrome.Provider>
         </View>
-      ) : (
+      ) : null}
+      {!showMeeting || ended ? (
         <Idle
           label={label}
           now={now}
           next={next}
           loading={settingsQuery.isLoading}
           language={i18n.language}
+          menu={menuButton}
+          topInset={insets.top}
+          endedAt={ended ? endedAt : null}
         />
-      )}
-
-      <Pressable
-        onPress={() => setMenu('pin')}
-        style={({ pressed }) => [s.menuBtn, pressed && { opacity: 0.6 }]}
-        accessibilityRole="button"
-        accessibilityLabel={t('stage.screen.menu')}
-      >
-        <Ionicons name="ellipsis-horizontal" size={18} color="#475569" />
-      </Pressable>
+      ) : null}
 
       {menu !== 'closed' ? (
         <View style={s.overlay} onTouchStart={touch}>
@@ -257,14 +282,26 @@ function Idle({
   next,
   loading,
   language,
+  menu,
+  topInset,
+  endedAt,
 }: {
   label: string;
   now: Date;
   next: { week: string; kind: MeetingKind; date: string } | null;
   loading: boolean;
   language: string;
+  menu: ReactNode;
+  topInset: number;
+  /** Today's meeting has ended, at this moment (ms). */
+  endedAt: number | null;
 }) {
   const { t } = useTranslation();
+  // A laptop at the lectern, and since 21 October also a phone: the clock and
+  // the card follow the width instead of overflowing it.
+  const { width } = useWindowDimensions();
+  const narrow = width < 700;
+  const clockSize = narrow ? Math.max(72, Math.min(150, width * 0.3)) : 180;
   // The minute, not the half minute the day is read at.
   const [clock, setClock] = useState(() => new Date());
   useEffect(() => {
@@ -297,7 +334,7 @@ function Idle({
   const chairman = chairmanId ? roster.data?.data.find((p) => p.id === chairmanId)?.displayName ?? null : null;
 
   return (
-    <View style={[s.root, s.idle]}>
+    <View style={[s.root, s.idle, narrow && s.idleNarrow, { paddingTop: (narrow ? 22 : 28) + topInset }]}>
       <View style={s.header}>
         <View style={s.brandRow}>
           <View style={s.brand}>
@@ -307,21 +344,36 @@ function Idle({
             {label}
           </Text>
         </View>
-        <View style={s.pill}>
-          <Ionicons name="eye-outline" size={17} color="#94a3b8" />
-          <Text style={s.pillText}>{t('stage.screen.viewOnly')}</Text>
+        <View style={s.headRight}>
+          {narrow ? null : (
+            <View style={s.pill}>
+              <Ionicons name="eye-outline" size={17} color="#94a3b8" />
+              <Text style={s.pillText}>{t('stage.screen.viewOnly')}</Text>
+            </View>
+          )}
+          {menu}
         </View>
       </View>
 
       <View style={s.centreCol}>
-        <Text style={s.bigClock}>
+        {endedAt !== null ? (
+          <View style={s.endedPill}>
+            <Ionicons name="checkmark-circle" size={20} color="#4ade80" />
+            <Text style={s.endedText}>
+              {t('stage.screen.ended', {
+                time: new Date(endedAt).toLocaleTimeString(language, { hour: '2-digit', minute: '2-digit', hour12: false }),
+              })}
+            </Text>
+          </View>
+        ) : null}
+        <Text style={[s.bigClock, { fontSize: clockSize, lineHeight: clockSize, letterSpacing: narrow ? -2 : -5 }]}>
           {clock.toLocaleTimeString(language, { hour: '2-digit', minute: '2-digit', hour12: false })}
         </Text>
         <Text style={s.date}>
           {now.toLocaleDateString(language, { weekday: 'long', day: 'numeric', month: 'long' })}
         </Text>
         {loading ? null : next ? (
-          <View style={s.nextCard}>
+          <View style={[s.nextCard, narrow && s.nextCardNarrow]}>
             <Text style={s.nextHead}>{t('stage.screen.next')}</Text>
             <Text style={s.nextTitle}>
               {t(next.kind === 'weekend' ? 'stage.screen.weekend' : 'stage.screen.midweek', {
@@ -393,19 +445,32 @@ const s = StyleSheet.create({
   nextTitle: { fontFamily: 'Manrope_700Bold', fontSize: 30, color: '#f1f5f9', marginTop: 12 },
   nextSub: { fontFamily: 'Manrope_500Medium', fontSize: 21, color: '#94a3b8', marginTop: 8 },
   small: { fontFamily: 'Manrope_500Medium', fontSize: 16, color: '#8592a8', textAlign: 'center' },
-  // In the corner, inside the screen's own margin (40 wide on a laptop, 24
-  // on a tablet): on top of nothing the chairman reads. At the bottom right
-  // it covered the end time.
+  // The screen's own menu, in its header row beside the clock — big enough
+  // to find, plain enough not to be read as part of the meeting.
   menuBtn: {
-    position: 'absolute',
-    right: 2,
-    top: 2,
-    width: 34,
-    height: 34,
-    borderRadius: 10,
+    width: 44,
+    height: 44,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: '#121b2e',
+    borderWidth: 1,
+    borderColor: '#22304a',
   },
+  headRight: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  idleNarrow: { paddingHorizontal: 22 },
+  nextCardNarrow: { minWidth: 0, alignSelf: 'stretch', paddingHorizontal: 22, paddingVertical: 20 },
+  endedPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 999,
+    backgroundColor: '#0b2e22',
+    marginBottom: 6,
+  },
+  endedText: { fontFamily: 'Manrope_700Bold', fontSize: 17, color: '#86efac' },
   overlay: {
     position: 'absolute',
     top: 0,
