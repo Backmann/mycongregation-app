@@ -4250,6 +4250,28 @@ export const assignmentsApi = {
     );
     return data;
   },
+  /** The line on a published meeting's card: when its edits go out, to whom. */
+  async noticeStatus(input: {
+    weekStartDate: string;
+    eventType: EventType;
+  }): Promise<NoticeStatus> {
+    const { data } = await api.post<NoticeStatus>(
+      "/assignments/notice-status",
+      input,
+    );
+    return data;
+  },
+  /** «Отправить вечером»: hold the edits for 18:00. */
+  async noticeLater(input: {
+    weekStartDate: string;
+    eventType: EventType;
+  }): Promise<NoticeStatus> {
+    const { data } = await api.post<NoticeStatus>(
+      "/assignments/notice-later",
+      input,
+    );
+    return data;
+  },
   async notifyChanges(input: {
     weekStartDate: string;
     eventType: EventType;
@@ -4988,6 +5010,21 @@ export interface PendingNotice {
   canWait: boolean;
   /** The first evening the ladder speaks of any of it, when waiting. */
   nextWord: string | null;
+}
+
+/** The server's answer for a published meeting's card (21 October 2026). */
+export interface NoticeStatus {
+  state: "none" | "pending" | "evening" | "sent";
+  /** When the edits go out (pending, evening). */
+  dueAt: string | null;
+  /** The meeting is less than three hours away. */
+  soon: boolean;
+  /** «Отправить вечером» is on offer, and for when. */
+  eveningAt: string | null;
+  rows: PendingNoticeRow[];
+  /** The last sending, today only. */
+  sentAt: string | null;
+  sentNames: string | null;
 }
 
 export type ReminderLadder = "full" | "short";

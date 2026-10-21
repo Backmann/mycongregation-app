@@ -1070,28 +1070,30 @@
       "programRegional": "Programm des regionalen Kongresses",
       "programCircuit": "Programm des Kreiskongresses"
     },
-    "notifyChanges": {
-      "button": "Mitteilen",
-      "badge": "geändert",
-      "dialog": {
-        "title": "Über die Änderungen informieren?",
-        "lead_one": "Nur {{count}} Person wird benachrichtigt:",
-        "lead_other": "Nur diese {{count}} werden benachrichtigt:",
-        "nobody": "Niemand zu informieren: Die Änderungen betreffen niemanden mit Zugang zur App.",
-        "tone": {
-          "assigned": "zugeteilt: {{label}}",
-          "removed": "entfällt: {{label}}"
-        },
-        "reach": {
-          "email": "per E-Mail",
-          "none": "erhält nichts"
-        },
-        "now": "Jetzt informieren",
-        "later": "Nicht jetzt",
-        "laterHint": "Heute geht nichts raus. Jeder erfährt es durch die Abenderinnerung; die nächste kommt am {{date}}, gegen 18:00.",
-        "laterHintPlain": "Heute geht nichts raus.",
-        "mustNow": "Bis zur Zusammenkunft bleibt kein Abend mit Erinnerung, deshalb kann nur jetzt informiert werden."
-      }
+    "notice": {
+      "badge": "noch nicht mitgeteilt",
+      "pending_one": "Änderungen gehen um {{time}} raus · in {{count}} Min.",
+      "pending_other": "Änderungen gehen um {{time}} raus · in {{count}} Min.",
+      "pendingTomorrow": "Änderungen gehen morgen um {{time}} raus",
+      "soon_one": "Geht in {{count}} Min. raus — die Zusammenkunft ist bald",
+      "soon_other": "Geht in {{count}} Min. raus — die Zusammenkunft ist bald",
+      "goingNow": "Änderungen gehen raus…",
+      "evening": "Wir informieren heute Abend, gegen {{time}}",
+      "who_one": "Erfährt es: {{list}}",
+      "who_other": "Erfahren es: {{list}}",
+      "nobody": "Niemand ist über die App zu informieren.",
+      "row": {
+        "assigned": "{{name}} — zugeteilt: „{{label}}“",
+        "removed": "{{name}} — „{{label}}“ entfällt"
+      },
+      "byEmail": " (per E-Mail)",
+      "sendNow": "Jetzt senden",
+      "sendEvening": "Heute Abend senden",
+      "hint": "Weiter bearbeiten — der Countdown beginnt neu, es geht eine einzige Nachricht raus",
+      "unreached": " erhält nichts — kein Zugang und keine E-Mail-Adresse. Bitte persönlich mitteilen: „{{label}}“.",
+      "sentAt": "Mitgeteilt um {{time}} · {{names}}",
+      "sentNobody": "{{time}} · niemand über die App zu informieren",
+      "goesAt": "Geht um {{time}} raus · {{names}}"
     },
     "autoBadge": "auto",
     "addChristianLife": "Teil „Leben als Christ“ hinzufügen",
@@ -4839,6 +4841,7 @@
       "FS_NOT_CANCELLED": "Die Zusammenkunft ist nicht abgesagt – es gibt nichts wiederherzustellen.",
       "PROGRAMME_PAST_LOCKED": "Die Zusammenkunft am {{date}} liegt mehr als eine Woche zurück — ihr Programm ist Teil der Aufzeichnungen. Ändern konnte man es bis {{until}}.",
       "PROGRAMME_FIX_FORBIDDEN": "Ein Programm nachträglich korrigieren können ein Administrator und der Koordinator der Ältestenschaft.",
+      "NOTICE_NO_EVENING": "Bis zur Zusammenkunft bleibt kein Abend mehr — die Änderungen gehen jetzt raus.",
       "CONDUCT_MEETING_OVER": "Diese Zusammenkunft ist vorbei – nach ihrem Tag wird sie nicht mehr geführt.",
       "CONDUCT_RESULT_KEPT": "Das Ergebnis dieser Zusammenkunft ist schon gespeichert und kann nach ihrem Tag nicht ersetzt werden.",
       "FS_DAY_TAKEN": "An diesem Tag ist ein Kongress oder der Besuch des Kreisaufsehers – hier kann keine Predigtdienstzusammenkunft stattfinden.",
