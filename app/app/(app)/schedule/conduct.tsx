@@ -187,7 +187,18 @@ function snapshot(s: RunState): Omit<RunState, 'prev'> {
  * экран» from its own menu, opened with its digits: it has no header with
  * this screen's menu in it.
  */
-export default function ConductScreen({ stageCheckAt }: { stageCheckAt?: number | null } = {}) {
+export default function ConductScreen({
+  stageCheckAt,
+  onStageFinished,
+}: {
+  stageCheckAt?: number | null;
+  /**
+   * The screen on the stage is told when the meeting it watches has ended
+   * (the run's end, ms) — or that it has not, after an «Вернуть» — and shows
+   * its own calm screen instead of the result (21 October 2026).
+   */
+  onStageFinished?: (endedAt: number | null) => void;
+} = {}) {
   const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const params = useLocalSearchParams<{ week?: string; kind?: string }>();
@@ -1191,6 +1202,18 @@ export default function ConductScreen({ stageCheckAt }: { stageCheckAt?: number 
   const reading =
     !stageDisplay && !showLocal && !practice && !watchingLive && (!canRun || meetingOver);
 
+  // AFTER «ЗАВЕРШИТЬ», THE STAGE IS NOT A READER (21 October 2026). The
+  // screen at the lectern used to turn into the whole result — every
+  // brother's minutes, on a laptop anybody passing can look at, while the
+  // result is the admins', the counsel brother's and the overseer's to read
+  // (Lionel, 16 October 2026) — headed by «Ведущий не на связи», since the
+  // timekeeper's device had rightly gone quiet. app/stage.tsx shows the
+  // clock and the next meeting instead, with the time this one ended.
+  const stageEnded = stageDisplay && showLocal && local ? run.finishedAt : null;
+  useEffect(() => {
+    if (stageDisplay) onStageFinished?.(stageEnded);
+  }, [stageDisplay, stageEnded, onStageFinished]);
+
   // «⋯» in the header: practice, and «Начать заново» — away from «Вернуть»,
   // which is pressed often, while this wipes the meeting.
   const navigation = useNavigation();
@@ -1388,6 +1411,11 @@ export default function ConductScreen({ stageCheckAt }: { stageCheckAt?: number 
         action={{ label: t('conduct.toSchedule'), onPress: () => goBack('/schedule') }}
       />
     );
+  }
+
+  if (stageDisplay && showLocal && local) {
+    // app/stage.tsx covers this with its own screen; nothing of the result.
+    return <View style={{ flex: 1, backgroundColor: '#0b1220' }} />;
   }
 
   if (showLocal && local) {

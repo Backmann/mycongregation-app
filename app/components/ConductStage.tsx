@@ -19,11 +19,20 @@
  *
  * Draws what the screen hands it; decides nothing about the meeting itself.
  */
-import { useEffect, useRef, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useRef, type ReactNode } from 'react';
 import { Animated, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { COUNTDOWN_FROM_SEC, stageTone, warnSecFor, type StageTone } from '../lib/conduct-stage';
+
+/**
+ * What the screen on the stage adds around this screen (app/stage.tsx,
+ * 21 October 2026): its own menu button, in the header beside the clock, and
+ * the device's top inset. On a phone the menu sat in the corner under the
+ * status bar — Lionel opened the stage account on his phone on 21 October
+ * and could not find the way out of it.
+ */
+export const StageChrome = createContext<{ menu: ReactNode; topInset: number } | null>(null);
 
 export interface StagePart {
   /** The programme section, as the programme names it («Сокровища из Слова Бога»). */
@@ -129,6 +138,7 @@ export function mmssSigned(seconds: number): string {
 
 export function ConductStage(p: StageProps) {
   const { t } = useTranslation();
+  const chrome = useContext(StageChrome);
   const { width, height } = useWindowDimensions();
   const wide = width >= 900;
   // The number must fit its column on one line — «+21:06» is six signs.
@@ -165,18 +175,21 @@ export function ConductStage(p: StageProps) {
   const barColor = p.paused || tone === 'stale' ? '#334155' : tone === 'over' ? C.red : tone === 'soon' ? C.amber : C.bar;
 
   const heading = (
-    <View style={s.header}>
+    <View style={[s.header, !wide && { gap: 12 }]}>
       <View style={s.headLeft}>
         <View style={s.mark}>
           <Text style={s.markText}>C</Text>
         </View>
-        <Text style={s.heading}>
-          {p.heading}
+        <Text style={[s.heading, !wide && s.headingNarrow]} numberOfLines={wide ? 1 : undefined}>
+          {/* On a phone the meeting and its day go on two lines of their own,
+              not three broken ones beside the clock (21 October 2026). */}
+          {wide ? p.heading : p.heading.replace(' · ', '\n')}
         </Text>
       </View>
       {wide ? <Text style={s.clock}>{p.clock}</Text> : null}
       {p.who && wide ? <WhoPill who={p.who} /> : null}
-      {!wide ? <Text style={s.clock}>{p.clock}</Text> : null}
+      {!wide ? <Text style={[s.clock, s.clockNarrow]}>{p.clock}</Text> : null}
+      {chrome?.menu ?? null}
     </View>
   );
 
@@ -445,7 +458,7 @@ export function ConductStage(p: StageProps) {
         ]}
       />
       {checkBar}
-      <ScrollView contentContainerStyle={[s.page, !wide && s.pageNarrow]}>
+      <ScrollView contentContainerStyle={[s.page, !wide && s.pageNarrow, chrome ? { paddingTop: (wide ? 28 : 22) + chrome.topInset } : null]}>
         {heading}
         {!wide && p.who ? (
           <View style={{ marginTop: 14, alignSelf: 'flex-start' }}>
@@ -519,6 +532,8 @@ const s = StyleSheet.create({
   mark: { width: 36, height: 36, borderRadius: 10, backgroundColor: '#0e7490', alignItems: 'center', justifyContent: 'center' },
   markText: { fontFamily: 'Manrope_800ExtraBold', fontSize: 20, color: '#ffffff' },
   heading: { fontFamily: 'Manrope_600SemiBold', fontSize: 17, color: C.textMid, flexShrink: 1 },
+  headingNarrow: { fontSize: 15, lineHeight: 20 },
+  clockNarrow: { fontSize: 22 },
   clock: { fontFamily: 'Manrope_700Bold', fontSize: 28, color: C.textSoft, fontVariant: ['tabular-nums'] },
   whoPill: {
     flexDirection: 'row',

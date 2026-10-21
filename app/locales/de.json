@@ -4910,6 +4910,7 @@
       "chairman": "Vorsitz {{name}}",
       "noNext": "In den nächsten Wochen keine Zusammenkünfte",
       "opensItself": "Am Tag der Zusammenkunft öffnet sich das Programm hier von selbst",
+      "ended": "Die Zusammenkunft endete um {{time}}",
       "menu": "Menü des Bildschirms",
       "pinHint": "Geben Sie die Ziffern des Bühnenbildschirms ein. Ohne sie ändert sich nichts — der Bildschirm kehrt zur Zusammenkunft zurück.",
       "pin": "Ziffern",
