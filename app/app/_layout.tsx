@@ -1,3 +1,5 @@
+// First: in the browser, sections not open are taken off the screen.
+import "../lib/web-tab-scenes";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Platform, Text, View } from "react-native";
 import { Stack } from "expo-router";
