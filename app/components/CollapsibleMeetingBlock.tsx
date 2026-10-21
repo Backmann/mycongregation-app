@@ -42,6 +42,7 @@ export function CollapsibleMeetingBlock({
   showBadge = true,
   accent = DEFAULT_ACCENT,
   icon = 'calendar-outline',
+  banner,
   children,
 }: {
   title: string;
@@ -69,6 +70,11 @@ export function CollapsibleMeetingBlock({
   accent?: string;
   /** Section icon shown in the tinted circle. */
   icon?: keyof typeof Ionicons.glyphMap;
+  /**
+   * Shown under the header whether the section is open or not — what must
+   * not be missed with the meeting folded (when its edits go out).
+   */
+  banner?: ReactNode;
   children: ReactNode;
 }) {
   const [open, setOpen] = useState(initiallyOpen);
@@ -185,6 +191,7 @@ export function CollapsibleMeetingBlock({
           color="#94a3b8"
         />
       </Pressable>
+      {banner}
       {open ? children : null}
     </View>
   );

@@ -94,7 +94,7 @@ import {
 } from "../../../components/ProgrammeLockNote";
 import { confirm } from "../../../components/ConfirmHost";
 import { PublishDialog } from "../../../components/PublishDialog";
-import { NotifyChangesDialog } from "../../../components/NotifyChangesDialog";
+import { ProgrammeNoticeLine } from "../../../components/ProgrammeNoticeLine";
 import { useMyPublisher } from "../../../lib/useMyPublisher";
 import { MyDot } from "../../../components/MyDot";
 import { useMyGlow } from "../../../components/useMyGlow";
@@ -159,15 +159,10 @@ function ProgrammeEditor() {
   const mayOpen = useMayOpen();
   const [publishingType, setPublishingType] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [notifyingType, setNotifyingType] = useState<string | null>(null);
   const queryClient = useQueryClient();
   const params = useLocalSearchParams<{ week?: string; meeting?: string }>();
   const [editing, setEditing] = useState<Assignment | null>(null);
   const [publishPrompt, setPublishPrompt] = useState<{
-    eventType: "midweek" | "weekend";
-    weekStartDate: string;
-  } | null>(null);
-  const [notifyPrompt, setNotifyPrompt] = useState<{
     eventType: "midweek" | "weekend";
     weekStartDate: string;
   } | null>(null);
@@ -1026,8 +1021,17 @@ function ProgrammeEditor() {
 
   const draftCount = (list: Assignment[]) =>
     list.filter((x) => String(x.status) === "draft").length;
-  const changedCount = (list: Assignment[]) =>
-    list.filter((x) => x.changedSincePublish).length;
+  // What the screen knows of a meeting's «ещё не сообщено» marks: their
+  // number and the latest edit. The notice line asks the server again when
+  // it changes — every edit restarts the wait (21 October 2026).
+  const changedKey = (list: Assignment[]) => {
+    const marked = list.filter((x) => x.changedSincePublish);
+    const last = marked
+      .map((x) => String(x.updatedAt ?? ""))
+      .sort()
+      .pop();
+    return `${marked.length}|${last ?? ""}`;
+  };
   const publishMeetingNow = async (
     eventType: "midweek" | "weekend",
     weekStartDate: string,
@@ -1046,24 +1050,6 @@ function ProgrammeEditor() {
       setPublishingType(null);
     }
   };
-  const notifyChangesNow = async (
-    eventType: "midweek" | "weekend",
-    weekStartDate: string,
-  ) => {
-    setNotifyingType(eventType);
-    try {
-      await assignmentsApi.notifyChanges({ weekStartDate, eventType });
-      await queryClient.invalidateQueries({ queryKey: ["assignments"] });
-    } catch (e) {
-      // The server's own words (or lib/error-text's), on the strip every
-      // other failure uses — not the library's «Request failed with status
-      // code 400» in window.alert, as it was until 9 October 2026.
-      reportError(extractErrorMessage(e));
-    } finally {
-      setNotifyingType(null);
-    }
-  };
-
   const hospitalityMutation = useMutation({
     mutationFn: (v: {
       existing: Assignment | null;
@@ -1147,35 +1133,6 @@ function ProgrammeEditor() {
             setPublishPrompt(null);
           }}
           onCancel={() => setPublishPrompt(null)}
-        />
-        <NotifyChangesDialog
-          open={!!notifyPrompt}
-          weekStartDate={notifyPrompt?.weekStartDate}
-          eventType={notifyPrompt?.eventType as EventType | undefined}
-          busy={
-            notifyingType === notifyPrompt?.eventType ||
-            publishingType === notifyPrompt?.eventType
-          }
-          onConfirm={(notify) => {
-            if (notifyPrompt) {
-              if (notify) {
-                void notifyChangesNow(
-                  notifyPrompt.eventType,
-                  notifyPrompt.weekStartDate,
-                );
-              } else {
-                // Silent: a no-notify re-publish clears the "changed since
-                // publish" flags without sending any push.
-                void publishMeetingNow(
-                  notifyPrompt.eventType,
-                  notifyPrompt.weekStartDate,
-                  false,
-                );
-              }
-            }
-            setNotifyPrompt(null);
-          }}
-          onCancel={() => setNotifyPrompt(null)}
         />
 
         <ScrollView
@@ -1315,28 +1272,25 @@ function ProgrammeEditor() {
                       assigned={badgeOf("midweek", items).assigned}
                       total={badgeOf("midweek", items).total}
                       actionLabel={
-                        !canEditMidweekSchedule
-                          ? undefined
-                          : draftCount(items) > 0
-                            ? t("schedule.publish.button")
-                            : changedCount(items) > 0
-                              ? t("schedule.notifyChanges.button")
-                              : undefined
+                        canEditMidweekSchedule && draftCount(items) > 0
+                          ? t("schedule.publish.button")
+                          : undefined
                       }
-                      actionBusy={
-                        publishingType === "midweek" ||
-                        notifyingType === "midweek"
-                      }
+                      actionBusy={publishingType === "midweek"}
                       onAction={() =>
-                        draftCount(items) > 0
-                          ? setPublishPrompt({
-                              eventType: "midweek",
-                              weekStartDate: items[0].weekStartDate,
-                            })
-                          : setNotifyPrompt({
-                              eventType: "midweek",
-                              weekStartDate: items[0].weekStartDate,
-                            })
+                        setPublishPrompt({
+                          eventType: "midweek",
+                          weekStartDate: items[0].weekStartDate,
+                        })
+                      }
+                      banner={
+                        canEditMidweekSchedule ? (
+                          <ProgrammeNoticeLine
+                            weekStartDate={items[0].weekStartDate}
+                            eventType="midweek"
+                            changed={changedKey(items)}
+                          />
+                        ) : undefined
                       }
                     >
                       <ProgrammeLockNote
@@ -1392,28 +1346,25 @@ function ProgrammeEditor() {
                       assigned={badgeOf("weekend", programItems).assigned}
                       total={badgeOf("weekend", programItems).total}
                       actionLabel={
-                        !canEditWeekendSchedule
-                          ? undefined
-                          : draftCount(items) > 0
-                            ? t("schedule.publish.button")
-                            : changedCount(items) > 0
-                              ? t("schedule.notifyChanges.button")
-                              : undefined
+                        canEditWeekendSchedule && draftCount(items) > 0
+                          ? t("schedule.publish.button")
+                          : undefined
                       }
-                      actionBusy={
-                        publishingType === "weekend" ||
-                        notifyingType === "weekend"
-                      }
+                      actionBusy={publishingType === "weekend"}
                       onAction={() =>
-                        draftCount(items) > 0
-                          ? setPublishPrompt({
-                              eventType: "weekend",
-                              weekStartDate: items[0].weekStartDate,
-                            })
-                          : setNotifyPrompt({
-                              eventType: "weekend",
-                              weekStartDate: items[0].weekStartDate,
-                            })
+                        setPublishPrompt({
+                          eventType: "weekend",
+                          weekStartDate: items[0].weekStartDate,
+                        })
+                      }
+                      banner={
+                        canEditWeekendSchedule ? (
+                          <ProgrammeNoticeLine
+                            weekStartDate={items[0].weekStartDate}
+                            eventType="weekend"
+                            changed={changedKey(items)}
+                          />
+                        ) : undefined
                       }
                     >
                       <ProgrammeLockNote
@@ -2111,7 +2062,7 @@ function AssignmentRow({
           <View style={styles.statusDotRow}>
             <View style={[styles.statusDot, styles.statusDotChanged]} />
             <Text style={[styles.statusDotLabel, styles.statusDotLabelChanged]}>
-              {t("schedule.notifyChanges.badge")}
+              {t("schedule.notice.badge")}
             </Text>
           </View>
         ) : null}

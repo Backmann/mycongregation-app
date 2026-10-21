@@ -1070,28 +1070,30 @@
       "programRegional": "Regional convention program",
       "programCircuit": "Circuit assembly program"
     },
-    "notifyChanges": {
-      "button": "Notify",
-      "badge": "changed",
-      "dialog": {
-        "title": "Tell them about the changes?",
-        "lead_one": "Only {{count}} person will be notified:",
-        "lead_other": "Only these {{count}} will be notified:",
-        "nobody": "Nobody to tell: the changes touch no one who has a login to the app.",
-        "tone": {
-          "assigned": "assigned: {{label}}",
-          "removed": "removed: {{label}}"
-        },
-        "reach": {
-          "email": "by e-mail",
-          "none": "will not get it"
-        },
-        "now": "Tell them now",
-        "later": "Not now",
-        "laterHint": "Nothing goes out today. Each person will hear from the evening reminder; the next one is {{date}}, around 18:00.",
-        "laterHintPlain": "Nothing goes out today.",
-        "mustNow": "No evening with a reminder is left before the meeting, so the only time to tell them is now."
-      }
+    "notice": {
+      "badge": "not told yet",
+      "pending_one": "Changes go out at {{time}} · in {{count}} min",
+      "pending_other": "Changes go out at {{time}} · in {{count}} min",
+      "pendingTomorrow": "Changes go out tomorrow at {{time}}",
+      "soon_one": "Goes out in {{count}} min — the meeting is soon",
+      "soon_other": "Goes out in {{count}} min — the meeting is soon",
+      "goingNow": "Changes are going out…",
+      "evening": "We'll tell them this evening, around {{time}}",
+      "who_one": "Will hear: {{list}}",
+      "who_other": "Will hear: {{list}}",
+      "nobody": "Nobody to tell through the app.",
+      "row": {
+        "assigned": "{{name}} — assigned «{{label}}»",
+        "removed": "{{name}} — «{{label}}» removed"
+      },
+      "byEmail": " (by e-mail)",
+      "sendNow": "Send now",
+      "sendEvening": "Send this evening",
+      "hint": "Keep editing — the countdown restarts and one message goes out",
+      "unreached": " will get nothing — no login and no e-mail address. Tell them in person: «{{label}}».",
+      "sentAt": "Told at {{time}} · {{names}}",
+      "sentNobody": "{{time}} · nobody to tell through the app",
+      "goesAt": "Goes out at {{time}} · {{names}}"
     },
     "autoBadge": "auto",
     "addChristianLife": "Add a Living as Christians part",
@@ -4839,6 +4841,7 @@
       "FS_NOT_CANCELLED": "The meeting is not cancelled — there is nothing to restore.",
       "PROGRAMME_PAST_LOCKED": "The meeting on {{date}} was more than a week ago — its programme is the record. It could be changed until {{until}}.",
       "PROGRAMME_FIX_FORBIDDEN": "A programme can be corrected after the fact by an administrator and the coordinator of the body of elders.",
+      "NOTICE_NO_EVENING": "No evening is left before the meeting — the changes go out now.",
       "CONDUCT_MEETING_OVER": "This meeting is over — it is not run again after its day.",
       "CONDUCT_RESULT_KEPT": "The result of this meeting is saved already and cannot be replaced after its day.",
       "FS_DAY_TAKEN": "That day belongs to an assembly, a convention or the circuit overseer’s visit — no field service meeting can go there.",
