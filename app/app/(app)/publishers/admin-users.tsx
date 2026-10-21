@@ -159,7 +159,10 @@ export default function AdminUsersScreen() {
     [needHelp],
   );
   const [view, setView] = useState<'all' | 'help'>('all');
-  const shown = view === 'help' ? needHelp.map((r) => r.user) : users;
+  // The screens on the stage have a section of their own in the full list:
+  // they are not people, and a helper looking for a person skips them.
+  const stages = users.filter((u) => u.role === 'stage');
+  const shown = view === 'help' ? needHelp.map((r) => r.user) : users.filter((u) => u.role !== 'stage');
   // An account with no publisher card can sign in and then find every personal
   // screen closed. Nobody could see who was in that state, so it surfaced one
   // complaint at a time — which is exactly what this line prevents.
@@ -249,13 +252,58 @@ export default function AdminUsersScreen() {
         {usersQuery.error ? null : (
           <Pressable
             onPress={() => setStageNew(true)}
-            style={({ pressed }) => [styles.stageBtn, pressed && { opacity: 0.7 }]}
+            style={({ pressed }) => [styles.stageEntry, pressed && { opacity: 0.9 }]}
             accessibilityRole="button"
           >
-            <Ionicons name="tv-outline" size={17} color="#0e7490" />
-            <Text style={styles.stageBtnText}>{t('stage.admin.add')}</Text>
+            <View style={styles.stageEntryIcon}>
+              <Ionicons name="tv-outline" size={24} color="#e0f2fe" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.stageEntryTitle}>{t('stage.admin.entryTitle')}</Text>
+              <Text style={styles.stageEntrySub}>{t('stage.admin.entrySub')}</Text>
+            </View>
+            <Ionicons name="add" size={22} color="#67e8f9" />
           </Pressable>
         )}
+
+        {view === 'all' && stages.length > 0 ? (
+          <View style={styles.stageSection}>
+            <Text style={styles.stageSectionTitle}>{t('stage.admin.listTitle')}</Text>
+            <View style={styles.stageList}>
+              {stages.map((u, i) => (
+                <Pressable
+                  key={u.id}
+                  onPress={() => setStageFor(u)}
+                  style={({ pressed }) => [styles.stageRow, i > 0 && styles.stageRowLine, pressed && { opacity: 0.7 }]}
+                  accessibilityRole="button"
+                  accessibilityLabel={u.displayLabel ?? u.loginName ?? ''}
+                >
+                  <View style={styles.stageRowIcon}>
+                    <Ionicons name="tv-outline" size={19} color="#0e7490" />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.stageRowTitle} numberOfLines={1}>
+                      {u.displayLabel ?? t('admin.users.roles.stage')}
+                    </Text>
+                    <Text style={styles.stageRowSub} numberOfLines={1}>
+                      {u.loginName}
+                      {' · '}
+                      {u.online
+                        ? t('admin.users.online')
+                        : u.lastSeenAt || u.lastLoginAt
+                          ? formatRelativeTime(u.lastSeenAt ?? u.lastLoginAt, t)
+                          : t('stage.admin.notYet')}
+                      {u.isActive ? '' : ` · ${t('admin.users.status.inactive')}`}
+                    </Text>
+                  </View>
+                  {u.online ? <PresenceDot /> : null}
+                  <Ionicons name="chevron-forward" size={18} color="#94a3b8" />
+                </Pressable>
+              ))}
+            </View>
+            <Text style={styles.stageSectionTitle}>{t('stage.admin.peopleTitle')}</Text>
+          </View>
+        ) : null}
 
         {usersQuery.error ? null : (
         <View style={styles.noteCard}>
@@ -812,21 +860,34 @@ const styles = StyleSheet.create({
     borderTopColor: '#f1f5f9',
   },
   sheetHint: { fontFamily: 'Manrope_400Regular', fontSize: 13.5, color: '#475569', lineHeight: 19 },
-  stageBtn: {
+  stageEntry: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    alignSelf: 'flex-start',
+    gap: 14,
     marginHorizontal: 16,
-    marginBottom: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#a5f3fc',
-    backgroundColor: '#ecfeff',
+    marginBottom: 14,
+    paddingVertical: 16,
+    paddingLeft: 18,
+    paddingRight: 16,
+    borderRadius: 18,
+    backgroundColor: '#0b1220',
+    shadowColor: '#0b1220',
+    shadowOpacity: 0.18,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 4,
   },
-  stageBtnText: { fontFamily: 'Manrope_600SemiBold', fontSize: 14, color: '#0e7490' },
+  stageEntryIcon: { width: 48, height: 48, borderRadius: 14, backgroundColor: '#0e7490', alignItems: 'center', justifyContent: 'center' },
+  stageEntryTitle: { fontFamily: 'Manrope_700Bold', fontSize: 16, color: '#f8fafc' },
+  stageEntrySub: { fontFamily: 'Manrope_400Regular', fontSize: 13, lineHeight: 18, color: '#94a3b8', marginTop: 2 },
+  stageSection: { marginHorizontal: 16, gap: 8, marginBottom: 2 },
+  stageSectionTitle: { fontFamily: 'Manrope_700Bold', fontSize: 12, letterSpacing: 0.8, color: '#64748b', textTransform: 'uppercase', marginHorizontal: 4, marginTop: 4 },
+  stageList: { backgroundColor: '#ffffff', borderRadius: 16, borderWidth: 1, borderColor: '#e2e8f0', overflow: 'hidden' },
+  stageRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 13 },
+  stageRowLine: { borderTopWidth: 1, borderTopColor: '#f1f5f9' },
+  stageRowIcon: { width: 38, height: 38, borderRadius: 11, backgroundColor: '#ecfeff', alignItems: 'center', justifyContent: 'center' },
+  stageRowTitle: { fontFamily: 'Manrope_700Bold', fontSize: 15, color: '#0f172a' },
+  stageRowSub: { fontFamily: 'Manrope_400Regular', fontSize: 12.5, color: '#64748b', marginTop: 1 },
   nameBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, flexShrink: 1 },
   sheetBtn: {
     backgroundColor: '#2563eb',
