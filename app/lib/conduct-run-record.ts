@@ -137,8 +137,11 @@ export interface RunState {
   /** What changed in the programme while the meeting ran. */
   changed: ProgrammeChange | null;
   /** The state before the last tap, for «Вернуть». One step, never a chain. */
-  prev: Omit<RunState, 'prev'> | null;
+  prev: RunSnapshot | null;
 }
+
+/** The run as it was before a tap, with the step before that under it. */
+export type RunSnapshot = Omit<RunState, 'prev'> & { prev?: Omit<RunState, 'prev'> | null };
 
 export const EMPTY_RUN: RunState = {
   index: 0,

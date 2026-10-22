@@ -73,6 +73,7 @@ import {
   recordPrefix,
   RUN_RECORD_VERSION,
   RunState,
+  RunSnapshot,
   writeRunRecord,
 } from '../../../lib/conduct-run-record';
 import { effectiveVersionFor } from '../../../lib/meeting-schedule';
@@ -150,6 +151,16 @@ const TICK_MS = 1000;
 
 /** After a tap the big button does not answer for this long (a double tap). */
 const TAP_LOCK_MS = 1500;
+/** How long an early «Закончено» waits for its second tap. */
+const EARLY_ARM_MS = 4000;
+/** A bounce of the finger is no second tap. */
+const EARLY_BOUNCE_MS = 600;
+/** How long «Вернуть» stands out after a tap. */
+const UNDO_LOUD_MS = 10_000;
+/** Ending a part before this share of its minutes is «early». */
+const EARLY_SHARE = 1 / 3;
+/** …and never earlier than this many seconds. */
+const EARLY_MIN_SEC = 20;
 /* The last stretch of a part (amber) — lib/conduct-stage.ts warnSecFor. */
 /** A counsel shorter than this was no counsel — it is not shown. */
 const MIN_COUNSEL_SEC = 3;
@@ -182,9 +193,16 @@ function formatCountdown(seconds: number): string {
 }
 
 /** The state as it stood, to come back to with «Вернуть». */
-function snapshot(s: RunState): Omit<RunState, 'prev'> {
-  const { prev: _prev, ...rest } = s;
-  return rest;
+/**
+ * The run before a tap, keeping ONE more step under it (22 October 2026):
+ * «Вернуть» goes back two taps, so a second mistaken tap does not lock in
+ * the first.
+ */
+function snapshot(s: RunState): RunSnapshot {
+  const { prev, ...rest } = s;
+  if (!prev) return { ...rest, prev: null };
+  const { prev: _older, ...under } = prev;
+  return { ...rest, prev: under };
 }
 
 /**
@@ -737,9 +755,25 @@ export default function ConductScreen({
   // so by fading.
   const lockedUntil = useRef(0);
   const [locked, setLocked] = useState(false);
-  const guarded = (fn: () => void) => () => {
+  // «НАЖАТО РАНО» (Lionel, 22 October 2026): ending a part in its first
+  // third asks for a second tap within EARLY_ARM_MS; the button says so.
+  const [armedUntil, setArmedUntil] = useState<number | null>(null);
+  // The last tap — «Вернуть» stands out for UNDO_LOUD_MS after it.
+  const [lastTapAt, setLastTapAt] = useState<number | null>(null);
+  const guarded = (fn: () => void, early = false) => () => {
     const at = Date.now();
     if (at < lockedUntil.current) return;
+    if (early && !(armedUntil !== null && at < armedUntil)) {
+      setArmedUntil(at + EARLY_ARM_MS);
+      setNow(at);
+      // Not 1.5 s: the second, meant tap may follow quickly — but not a bounce.
+      lockedUntil.current = at + EARLY_BOUNCE_MS;
+      setTimeout(() => setNow(Date.now()), EARLY_ARM_MS + 50);
+      return;
+    }
+    setArmedUntil(null);
+    setLastTapAt(at);
+    setTimeout(() => setNow(Date.now()), UNDO_LOUD_MS + 50);
     lockedUntil.current = at + TAP_LOCK_MS;
     setLocked(true);
     setTimeout(() => setLocked(false), TAP_LOCK_MS);
@@ -869,7 +903,8 @@ export default function ConductScreen({
   /** One tap back: a tap pressed too early must not cost anybody time. */
   const undo = () => {
     if (!run.prev) return;
-    applyRun({ ...run.prev, prev: null });
+    applyRun({ ...run.prev, prev: run.prev.prev ?? null });
+    setLastTapAt(null);
   };
 
   const reset = async () => {
@@ -1201,6 +1236,10 @@ export default function ConductScreen({
     // conductor's own line, the first thing he says.
     if (seg.key === 'weekend_announcements') {
       return { label: t('conduct.weekendRun.between'), subtitle: null, person: chairmanName, song: null };
+    }
+    // He welcomes and introduces the speaker (variant A, 22 October 2026).
+    if (seg.key === 'weekend_opening_words') {
+      return { label: t('conduct.midweekRun.openingWords'), subtitle: null, person: chairmanName, song: null };
     }
     if (seg.key === 'weekend_song') {
       return {
@@ -1690,7 +1729,7 @@ export default function ConductScreen({
 
   // What the big button does now, and whom it calls next.
   const last = run.index === segments.length - 1;
-  const primary: { label: string; sub: string | null; onPress: () => void } = !started
+  const primaryBase: { label: string; sub: string | null; onPress: () => void } = !started
     ? { label: t('conduct.start'), sub: null, onPress: start }
     : entering && current
       ? {
@@ -1717,6 +1756,25 @@ export default function ConductScreen({
               : null,
             onPress: advance,
           };
+  // A part ended in its first third (never a song: they run as they run).
+  const earlyEnd =
+    started &&
+    !!current &&
+    !current.soft &&
+    !entering &&
+    !counselling &&
+    run.startedAt !== null &&
+    currentElapsed < Math.max(EARLY_MIN_SEC, current.partMin * 60 * EARLY_SHARE);
+  const armed = earlyEnd && armedUntil !== null && now < armedUntil;
+  const primary = armed
+    ? {
+        ...primaryBase,
+        label: t('conduct.early.again', { time: mmss(currentElapsed) }),
+        sub: t('conduct.early.hint', { minutes: current?.partMin ?? 0 }),
+      }
+    : primaryBase;
+  const pressPrimary = guarded(primary.onPress, earlyEnd);
+  const undoLoud = !!run.prev && lastTapAt !== null && now - lastTapAt < UNDO_LOUD_MS;
 
   const controls = (
     <View style={styles.controls}>
@@ -1724,8 +1782,8 @@ export default function ConductScreen({
         takeButton
       ) : (
       <Pressable
-        style={[styles.primaryBtn, locked && styles.primaryBtnLocked]}
-        onPress={guarded(primary.onPress)}
+        style={[styles.primaryBtn, armed && styles.primaryBtnArmed, locked && !armed && styles.primaryBtnLocked]}
+        onPress={pressPrimary}
         accessibilityRole="button"
       >
         <Text style={styles.primaryBtnText}>{primary.label}</Text>
@@ -1750,9 +1808,12 @@ export default function ConductScreen({
             </Pressable>
           ) : null}
           {run.prev ? (
-            <Pressable style={styles.ghostBtn} onPress={undo}>
-              <Ionicons name="arrow-undo" size={16} color="#0369a1" />
-              <Text style={styles.ghostBtnText}>{t('conduct.undo')}</Text>
+            // Loud for ten seconds after a tap: a mistake is noticed then.
+            <Pressable style={[styles.ghostBtn, undoLoud && styles.undoLoud]} onPress={undo}>
+              <Ionicons name="arrow-undo" size={undoLoud ? 18 : 16} color={undoLoud ? '#92400e' : '#0369a1'} />
+              <Text style={[styles.ghostBtnText, undoLoud && styles.undoLoudText]}>
+                {undoLoud ? t('conduct.undoLoud') : t('conduct.undo')}
+              </Text>
             </Pressable>
           ) : null}
         </View>
@@ -1826,7 +1887,13 @@ export default function ConductScreen({
     const sub =
       seg.key === 'midweek_closing_words' || seg.key === 'midweek_closing_prayer'
         ? 'closing'
-        : resolveSubsection(seg.key === 'midweek_opening_words' ? 'midweek_opening_prayer' : seg.key);
+        : resolveSubsection(
+            seg.key === 'midweek_opening_words'
+              ? 'midweek_opening_prayer'
+              : seg.key === 'weekend_opening_words'
+                ? 'weekend_opening_prayer'
+                : seg.key,
+          );
     const v = runView(seg);
     let person = v.person;
     // A visiting speaker has no card: his name and congregation as the
@@ -1972,13 +2039,13 @@ export default function ConductScreen({
         ? {
             primary: {
               label: primary.label,
-              sub: entering ? primary.sub : isStudent && !counselling ? null : lastPart ? null : next ? (stagePart(next)?.title ?? null) : null,
-              onPress: guarded(primary.onPress),
-              locked,
+              sub: entering || armed ? primary.sub : isStudent && !counselling ? null : lastPart ? null : next ? (stagePart(next)?.title ?? null) : null,
+              onPress: pressPrimary,
+              locked: locked && !armed,
             },
             // No pause; only a run held by an app from before is let go on.
             pause: !counselling && run.pausedAt !== null ? { label: t('conduct.resume'), onPress: resume } : null,
-            undo: run.prev ? { label: t('conduct.undo'), onPress: undo } : null,
+            undo: run.prev ? { label: undoLoud ? t('conduct.undoLoud') : t('conduct.undo'), onPress: undo } : null,
           }
         : !watching
           ? { primary: { label: t('conduct.start'), sub: null, onPress: guarded(start), locked }, pause: null, undo: null }
@@ -2216,6 +2283,16 @@ const styles = StyleSheet.create({
   },
   // The 1.5 s after a tap when the button does not answer — and shows it.
   primaryBtnLocked: { opacity: 0.55 },
+  primaryBtnArmed: { backgroundColor: '#d97706' },
+  undoLoud: {
+    backgroundColor: '#fef3c7',
+    borderWidth: 1,
+    borderColor: '#f59e0b',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  undoLoudText: { color: '#92400e', fontFamily: 'Manrope_700Bold' },
   ghostBtn: {
     flexDirection: 'row',
     gap: 6,

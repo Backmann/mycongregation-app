@@ -4339,7 +4339,12 @@
       "closing": "Schlusslied und Gebet",
       "openingWords": "Einleitende Worte",
       "closingWords": "Schlussworte"
-    }
+    },
+    "early": {
+      "again": "Noch einmal tippen — bei {{time}} beenden",
+      "hint": "Weniger als ein Drittel von {{minutes}} Min. ist vergangen"
+    },
+    "undoLoud": "Versehentlich getippt? Zurück"
   },
   "serviceHub": {
     "sections": {
