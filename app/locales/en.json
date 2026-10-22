@@ -195,7 +195,8 @@
     "undo": "Undo",
     "undoing": "Restoring…",
     "noAccessTitle": "No access",
-    "noAccessHint": "This section is open to those assigned to it. If you need it, please ask the elders."
+    "noAccessHint": "This section is open to those assigned to it. If you need it, please ask the elders.",
+    "noAccessHintLead": "This section is open to those given this responsibility in the congregation, or a special permission."
   },
   "profile": {
     "signedInAs": "Signed in as",
@@ -216,7 +217,7 @@
       "newPassword": "New password",
       "confirmPassword": "Confirm new password",
       "submit": "Change password",
-      "note": "Tip: if you forgot your current password, ask an administrator to reset it via User management.",
+      "note": "If you have forgotten your current password, ask an administrator to reset it — in your publisher card, section “App access”.",
       "errors": {
         "sameAsCurrent": "New password must differ from current password",
         "mismatch": "Passwords don't match"
@@ -238,7 +239,7 @@
     "circuitOverseerDescription": "Default name for the CO visit",
     "loginNameHint": "This is your name for signing in.",
     "noLoginName": "No login name set — ask your administrator.",
-    "noLoginNameAdmin": "No login name set. You can set one in “Congregation” → “User management”.",
+    "noLoginNameAdmin": "No login name set. You can set one in “Congregation” → “Publishers”, in the person’s card, section “App access”.",
     "deliveryEmail": "Letters go to: {{email}}",
     "noEmail": "No e-mail address. A forgotten password is reset by the congregation administrator."
   },
@@ -430,7 +431,6 @@
     },
     "departedCount": "{{count}} departed",
     "myGroupOnly": "Showing publishers from your service group",
-    "cardRestricted": "Publisher cards are available only to elders and assigned brothers",
     "spiritualStatus": {
       "otherSheep": "Other sheep",
       "anointed": "Anointed",
@@ -667,7 +667,7 @@
       "validationServedSelf": "Please indicate whether you served this month."
     },
     "errors": {
-      "notLinkedToPublisher": "Your login is not linked to a publisher record, so a report cannot be submitted. Ask an elder or an administrator to link them: Congregation → Administration → User management → “Link”.",
+      "notLinkedToPublisher": "Your login is not linked to a publisher card, so you cannot submit a report. An administrator can link them: “Congregation” → “Publishers” → the person’s card → “App access”.",
       "selfEditWindowClosed": "This report can no longer be changed: its month has closed. A report can be corrected while its month is still being collected — up to the 20th of the following month. Ask the secretary or an admin."
     },
     "pioneerInline": " · pioneer",
@@ -697,7 +697,7 @@
     },
     "publisherHistory": {
       "notSubmitted": "Not submitted",
-      "noPublisherId": "No publisher id supplied.",
+      "noPublisherId": "Open the history from the group reports — it is not said here whose.",
       "fallbackName": "Publisher",
       "last12Months": "Last 12 months",
       "noHistory": "No history",
@@ -957,8 +957,8 @@
     },
     "noAssignments": "No assignments for this week.",
     "unassigned": "Unassigned",
-    "createEmptyMidweek": "Create empty midweek ({{count}} slots)",
-    "createEmptyWeekend": "Create empty weekend ({{count}} slots)",
+    "createEmptyMidweek": "Create an empty midweek meeting",
+    "createEmptyWeekend": "Create an empty weekend meeting",
     "removedBanner": "This assignment is removed",
     "import": {
       "title": "Import schedule EPUB",
@@ -1110,7 +1110,7 @@
       "weekendTitle": "Weekend Meeting",
       "watchtowerPrefix": "Watchtower"
     },
-    "movedTo": "Now a screen of its own: {{path}}",
+    "movedTo": "In {{path}}",
     "lock": {
       "frozen": "The meeting was on {{date}} — its programme is now the record and can no longer be changed.",
       "grace": "The meeting has taken place — the programme can still be corrected until {{until}}.",
@@ -1123,7 +1123,7 @@
     }
   },
   "audit": {
-    "noReportId": "No report id supplied.",
+    "noReportId": "Open the log from the report itself — it is not said here which.",
     "noEdits": "No edits yet",
     "noEditsHint": "This report has not been modified since it was submitted.",
     "unknownEditor": "(unknown editor)",
@@ -2452,8 +2452,6 @@
     },
     "page": {
       "wasAgo": "was on {{date}}",
-      "inWeeks_one": "in {{count}} week",
-      "inWeeks_other": "in {{count}} weeks",
       "inMonths_one": "in {{count}} month",
       "inMonths_other": "in {{count}} months",
       "withWife": "His wife — {{name}}",
@@ -2795,7 +2793,9 @@
     "deleteConfirmTitle": "Delete record?",
     "deleteConfirmBody": "Remove “{{name}}” from the list? This won’t affect visits already created.",
     "emptyList": "No one yet. Add a circuit overseer.",
-    "pickLabel": "Who is coming"
+    "pickLabel": "Who is coming",
+    "listIntroRead": "The circuit overseer the congregation expects, and his substitutes.",
+    "emptyListRead": "No circuit overseer has been entered yet."
   },
   "relative": {
     "today": "today",
@@ -2904,7 +2904,7 @@
       "nextTripUnknown": "Away on {{date}} (congregation not given)"
     },
     "title": "Talk coordinator",
-    "intro": "Keep incoming and outgoing speakers, their talks and the directories. The “Incoming / Outgoing” log will live here.",
+    "intro": "Keep incoming and outgoing speakers, their talks and the directories.",
     "errorTitle": "Error",
     "directoriesLabel": "Directories",
     "congregations": {
@@ -3169,7 +3169,7 @@
     "later": "Later",
     "saved": "Saved",
     "empty": "not set",
-    "noCard": "Your login is not linked to a publisher record, so there is nothing to show here. Ask an elder or an administrator to link them: Congregation → Administration → User management → “Link”.",
+    "noCard": "Your login is not linked to a publisher card, so there is nothing to show here. An administrator can link them: “Congregation” → “Publishers” → the person’s card → “App access”.",
     "neverConfirmed": "Never confirmed yet",
     "checkTitle": "Check your details",
     "checkSubtitle": "Once a year, from {{date}}, we ask you to confirm your contacts are current.",
@@ -4800,7 +4800,7 @@
       "SAME_CARD": "Please pick two different cards.",
       "SAME_SPEAKER": "This speaker already has that week.",
       "WEEK_ALREADY_PAST": "That week is already past — it cannot be swapped.",
-      "NO_OWN_CARD": "Your account is not linked to a publisher card. Ask an administrator to link them.",
+      "NO_OWN_CARD": "Your account is not linked to a publisher card. An administrator can link them: “Congregation” → “Publishers” → the person’s card → “App access”.",
       "NOTHING_TO_SAVE": "Nothing to save — nothing was changed.",
       "END_BEFORE_START": "The end cannot be before the start — please check the dates.",
       "REPORT_STUDENT": "Bible students do not submit a field service report.",

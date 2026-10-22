@@ -42,6 +42,7 @@ import { exportHtmlAsPdf, openPrintWindow } from '../../../lib/pdf';
 import { confirm } from '../../../components/ConfirmHost';
 import { failsScreen } from '../../../lib/screen-failure';
 import { Toast } from '../../../components/ErrorToast';
+import { NoAccess } from '../../../components/NoAccess';
 
 function removalLabel(reason: RemovalReason): string {
   return i18n.t(`publishers.removal.${reason}`);
@@ -233,15 +234,19 @@ export default function PublisherDetailScreen() {
   if (error || !publisher) {
     const status = (error as { response?: { status?: number } } | null)
       ?.response?.status;
+    // Refused the way every screen is refused (audit, 22 October 2026): the
+    // red «доступны только … назначенным братьям» told a ministerial
+    // servant — an appointed brother — that he was one of them.
+    if (status === 403) {
+      return (
+        <View style={styles.center}>
+          <NoAccess />
+        </View>
+      );
+    }
     return (
       <View style={styles.center}>
-        <Text style={styles.errorText}>
-          {status === 403
-            ? t('publishers.cardRestricted')
-            : error
-              ? extractErrorMessage(error)
-              : t('publishers.notFound')}
-        </Text>
+        <Text style={styles.errorText}>{error ? extractErrorMessage(error) : t('publishers.notFound')}</Text>
       </View>
     );
   }

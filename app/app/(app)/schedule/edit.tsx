@@ -1500,9 +1500,7 @@ function ProgrammeEditor() {
               <View style={styles.createButtons}>
                 {!hasMidweek && canEditMidweekSchedule && (
                   <CreateButton
-                    label={t("schedule.createEmptyMidweek", {
-                      count: PARTS_BY_EVENT.midweek.length,
-                    })}
+                    label={t("schedule.createEmptyMidweek")}
                     primary={isEmpty}
                     onPress={() => createWeekMutation.mutate("midweek")}
                     disabled={createWeekMutation.isPending}
@@ -1510,9 +1508,7 @@ function ProgrammeEditor() {
                 )}
                 {!hasWeekend && canEditWeekendSchedule && (
                   <CreateButton
-                    label={t("schedule.createEmptyWeekend", {
-                      count: PARTS_BY_EVENT.weekend.length,
-                    })}
+                    label={t("schedule.createEmptyWeekend")}
                     primary={isEmpty && !PARTS_BY_EVENT.midweek.length}
                     onPress={() => createWeekMutation.mutate("weekend")}
                     disabled={createWeekMutation.isPending}

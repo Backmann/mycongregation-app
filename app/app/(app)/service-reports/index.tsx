@@ -219,7 +219,12 @@ export default function ServiceReportsListScreen() {
     );
   }
 
-  if (error) {
+  // NO CARD OF ONE'S OWN (audit, 22 October 2026): an administrator's login
+  // with no publisher card got only the red line here — not the group
+  // reports, the summary, the annual report he is there for. Only «my
+  // months» needs a card; the rest of the screen stands.
+  const noCard = (error as { response?: { data?: { code?: string } } } | null)?.response?.data?.code === 'NO_OWN_CARD';
+  if (error && !noCard) {
     return (
       <View style={styles.container}>
         <View style={styles.errorBox}>
@@ -308,10 +313,17 @@ export default function ServiceReportsListScreen() {
                 }
               />
             ) : null}
-            <Text style={styles.listHeading}>{t('reports.entry.myMonths')}</Text>
+            {noCard ? (
+              <View style={[styles.errorBox, { marginTop: 16 }]}>
+                <Text style={styles.errorText}>{extractErrorMessage(error)}</Text>
+              </View>
+            ) : (
+              <Text style={styles.listHeading}>{t('reports.entry.myMonths')}</Text>
+            )}
           </View>
         }
         ListEmptyComponent={
+          noCard ? null : (
           <View style={styles.emptyState}>
             <Ionicons name="document-text-outline" size={64} color="#cbd5e1" />
             <Text style={styles.emptyTitle}>{t('reports.noReports')}</Text>
@@ -319,6 +331,7 @@ export default function ServiceReportsListScreen() {
               {t('reports.noReportsHint')}
             </Text>
           </View>
+          )
         }
         renderItem={({ item }) => <ReportRow report={item} />}
       />

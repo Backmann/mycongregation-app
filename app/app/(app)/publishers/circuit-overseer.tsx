@@ -151,10 +151,10 @@ export default function CircuitOverseerScreen() {
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 32 }}>
-        <Text style={styles.intro}>{t('circuitOverseer.listIntro')}</Text>
+        <Text style={styles.intro}>{t(isAdmin ? 'circuitOverseer.listIntro' : 'circuitOverseer.listIntroRead')}</Text>
 
         {list.length === 0 ? (
-          <Text style={styles.empty}>{t('circuitOverseer.emptyList')}</Text>
+          <Text style={styles.empty}>{t(isAdmin ? 'circuitOverseer.emptyList' : 'circuitOverseer.emptyListRead')}</Text>
         ) : (
           list.map((c) => (
             <View key={c.id} style={styles.card}>
@@ -207,7 +207,7 @@ export default function CircuitOverseerScreen() {
           </Pressable>
         )}
 
-        <Text style={styles.note}>{t('circuitOverseer.note')}</Text>
+        {isAdmin ? <Text style={styles.note}>{t('circuitOverseer.note')}</Text> : null}
       </ScrollView>
 
       <Sheet

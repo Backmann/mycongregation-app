@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '../lib/auth';
 
 /**
  * «Not yours» — said one way, wherever it is said.
@@ -15,13 +16,17 @@ import { useTranslation } from 'react-i18next';
  * LoadFailure when it is the server that says no. No button to try again:
  * trying again cannot help.
  */
-export function NoAccess() {
+export function NoAccess({ hint }: { hint?: string } = {}) {
   const { t } = useTranslation();
+  const { user } = useAuth();
+  // «Обратитесь к старейшинам» said to an elder or the administrator sent
+  // him to himself (audit, 22 October 2026).
+  const leads = user?.role === 'admin' || user?.role === 'elder';
   return (
     <View style={styles.box}>
       <Ionicons name="lock-closed-outline" size={28} color="#94a3b8" />
       <Text style={styles.title}>{t('common.noAccessTitle')}</Text>
-      <Text style={styles.hint}>{t('common.noAccessHint')}</Text>
+      <Text style={styles.hint}>{hint ?? t(leads ? 'common.noAccessHintLead' : 'common.noAccessHint')}</Text>
     </View>
   );
 }

@@ -80,6 +80,7 @@ import { effectiveVersionFor } from '../../../lib/meeting-schedule';
 import { HeaderMenu } from '../../../components/HeaderMenu';
 import { HEADER_ICON } from '../../../lib/header';
 import { tapSaved } from '../../../lib/haptics';
+import { NoAccess } from '../../../components/NoAccess';
 
 /**
  * CONDUCT MODE — what the chairman keeps open on a tablet while the midweek
@@ -1557,7 +1558,15 @@ export default function ConductScreen({
 
   // The result: this device's own run, or the one saved on the server.
   if (reading) {
-    if (!canRead) return <Notice text={meetingOver ? t(weekend ? 'conduct.result.notYoursWeekend' : 'conduct.result.notYours') : t('conduct.notChairman')} />;
+    // Said the way every refusal is (audit, 22 October 2026), with who may.
+    if (!canRead)
+      return (
+        <View style={styles.center}>
+          <NoAccess
+            hint={meetingOver ? t(weekend ? 'conduct.result.notYoursWeekend' : 'conduct.result.notYours') : t('conduct.notChairman')}
+          />
+        </View>
+      );
     if (runQuery.isLoading) {
       return (
         <View style={styles.center}>

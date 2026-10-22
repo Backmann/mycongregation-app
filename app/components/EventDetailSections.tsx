@@ -44,11 +44,11 @@ export function EventHeader({ event, today }: { event: SpecialEvent; today: stri
         ? t('specialEvents.list.now')
         : n === 1
           ? t('specialEvents.list.tomorrow')
-          : n < 14
+          : // Said as the list says it (audit, 22 October 2026: «через 29
+            // дней» there, «через 4 недели» here, for the same congress).
+            n < 60
             ? t('specialEvents.list.inDays', { count: n })
-            : n < 60
-              ? t('specialEvents.page.inWeeks', { count: Math.round(n / 7) })
-              : t('specialEvents.page.inMonths', { count: Math.round(n / 30) });
+            : t('specialEvents.page.inMonths', { count: Math.round(n / 30) });
   const coName = [event.coFirstName, event.coLastName].filter(Boolean).join(' ');
   const isVisit = kind === 'circuit_overseer_visit';
   const title = isVisit && coName ? coName : event.title;
