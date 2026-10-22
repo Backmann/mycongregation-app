@@ -106,10 +106,10 @@ export default function StageScreen() {
 
   // The meeting of the day has ended (its run's end, ms): the clock and the
   // next meeting again, with the time it ended — never its result.
-  const [endedAt, setEndedAt] = useState<number | null>(null);
-  const onStageFinished = useCallback((at: number | null) => setEndedAt(at), []);
+  const [done, setDone] = useState<{ endedAt: number | null } | null>(null);
+  const onStageFinished = useCallback((d: { endedAt: number | null } | null) => setDone(d), []);
   useEffect(() => {
-    setEndedAt(null);
+    setDone(null);
   }, [todays?.week, todays?.kind]);
   const insets = useSafeAreaInsets();
 
@@ -183,7 +183,7 @@ export default function StageScreen() {
       <Ionicons name="ellipsis-horizontal" size={22} color="#cbd5e1" />
     </Pressable>
   );
-  const ended = showMeeting && endedAt !== null;
+  const ended = showMeeting && done !== null;
 
   return (
     <View style={s.root}>
@@ -205,7 +205,7 @@ export default function StageScreen() {
           language={i18n.language}
           menu={menuButton}
           topInset={insets.top}
-          endedAt={ended ? endedAt : null}
+          endedAt={ended ? (done?.endedAt ?? null) : null}
         />
       ) : null}
 

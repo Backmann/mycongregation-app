@@ -261,7 +261,6 @@ export function StageNewSheet({ visible, onClose }: { visible: boolean; onClose:
   const nameProblem = shownLogin ? loginNameProblem(shownLogin.trim().toLowerCase()) : 'tooShort';
   const passProblem = passwordProblem(password.trim());
   const stepOneOk = !!shownLabel.trim() && !nameProblem && !passProblem;
-  const latinOnly = /^[\x20-\x7e]*$/.test(password);
   const takenText = create.isError ? loginNameRefusal(create.error, t) : null;
 
   const footer =
@@ -318,12 +317,8 @@ export function StageNewSheet({ visible, onClose }: { visible: boolean; onClose:
                   <Hint ok={false} text={takenText} />
                 ) : shownLogin && nameProblem ? (
                   <Hint ok={false} text={t(`loginName.problem.${nameProblem}`, { min: LOGIN_NAME_MIN, max: LOGIN_NAME_MAX })} />
-                ) : password && passProblem ? (
-                  <Hint ok={false} text={t(`password.checks.${PASS_CHECK[passProblem]}`, { count: PASSWORD_MIN_LENGTH })} />
-                ) : password && !latinOnly ? (
-                  <Hint ok={false} text={t('stage.admin.latinWarn')} />
                 ) : (
-                  <Hint ok text={t('stage.admin.latinOk')} />
+                  <Hint text={t('stage.admin.passwordLater')} />
                 )
               }
             >
@@ -336,20 +331,12 @@ export function StageNewSheet({ visible, onClose }: { visible: boolean; onClose:
                 }}
                 placeholder={t('stage.admin.loginPlaceholder')}
                 plain
-              />
-              <Field
-                label={t('stage.admin.password')}
-                value={password}
-                onChange={setPassword}
-                plain
                 last
-                right={
-                  <Pressable onPress={() => setPassword(stagePassword())} style={s.chip} accessibilityRole="button">
-                    <Ionicons name="refresh" size={14} color="#0e7490" />
-                    <Text style={s.chipText}>{t('stage.admin.another')}</Text>
-                  </Pressable>
-                }
               />
+              {/* No password here (22 October 2026): shown on the first
+                  step, it was taken for a way in before the account existed,
+                  and the laptop was refused. It is made now and shown once,
+                  on the last step, when it works. */}
             </Section>
           </>
         ) : step === 2 ? (

@@ -47,7 +47,7 @@ import {
 import { usePermissions } from '../../../lib/permissions';
 import { useAuth } from '../../../lib/auth';
 import { buildMidweekRunOrder, buildWeekendRunOrder, RunSegment, totalRunMinutes } from '../../../lib/run-order';
-import { partDisplay } from '../../../lib/part-display';
+import { partDisplay, songFromTitle } from '../../../lib/part-display';
 import { failsScreen } from '../../../lib/screen-failure';
 import { keptMeetingRows } from '../../../lib/offline-keep-rules';
 import { keptMe, keptPieces } from '../../../lib/offline-keep';
@@ -63,8 +63,11 @@ import {
   EMPTY_RUN as EMPTY,
   inCounsel,
   isExpiredRecord,
+  beginPart,
+  inEntrance,
   reconcileKeys,
   readRunRecord,
+  settleEntrance,
   recordPrefix,
   RUN_RECORD_VERSION,
   RunState,
@@ -197,7 +200,7 @@ export default function ConductScreen({
    * (the run's end, ms) — or that it has not, after an «Вернуть» — and shows
    * its own calm screen instead of the result (21 October 2026).
    */
-  onStageFinished?: (endedAt: number | null) => void;
+  onStageFinished?: (done: { endedAt: number | null } | null) => void;
 } = {}) {
   const { t, i18n } = useTranslation();
   const { user } = useAuth();
@@ -282,6 +285,35 @@ export default function ConductScreen({
     return m;
   }, [rows]);
 
+  /**
+   * WHERE ANOTHER BROTHER COMES OUT (Lionel, 22 October 2026). «Следующая»
+   * there calls him up — «Выходит: …» — and his own clock begins with
+   * «Начал», or by itself after thirty seconds; the walk to the stage is
+   * nobody's minutes. Not before a song (it is sung from the seats), not
+   * before the chairman's own words, not when the same brother goes on
+   * (the study conductor after the song he announced).
+   */
+  const entranceAt = useMemo(() => {
+    const personOf = (seg: RunSegment): string | null => {
+      const row =
+        weekend && seg.key === 'weekend_song'
+          ? rows.find((a) => a.partKey === 'watchtower_conductor')
+          : seg.assignmentId
+            ? byId.get(seg.assignmentId)
+            : undefined;
+      const who = [row?.publisherId, row?.assistantPublisherId, row?.speakerName]
+        .filter((x): x is string => !!x)
+        .sort()
+        .join('+');
+      return who || null;
+    };
+    return segments.map((seg, i) => {
+      if (i === 0 || seg.soft || seg.chairmanWords) return false;
+      const who = personOf(seg);
+      return !!who && who !== personOf(segments[i - 1]);
+    });
+  }, [segments, rows, byId, weekend]);
+
   const nameById = useMemo(() => {
     const m = new Map<string, string>();
     for (const p of rosterQuery.data?.data ?? []) m.set(p.id, p.displayName);
@@ -339,6 +371,19 @@ export default function ConductScreen({
       return st === 403 || st === 404 ? false : LIVE_POLL_MS;
     },
   });
+  // A change to the programme while the meeting runs — a brother put in at
+  // the last minute — is on every screen at the next ask (22 October 2026):
+  // the answer says when the programme last changed, and a newer one is read.
+  const programmeStamp = liveQuery.data?.programmeStamp ?? null;
+  const seenStamp = useRef<string | null>(null);
+  useEffect(() => {
+    if (!programmeStamp) return;
+    if (seenStamp.current !== null && seenStamp.current !== programmeStamp) {
+      void queryClient.invalidateQueries({ queryKey: ['conduct-assignments', week, kind] });
+    }
+    seenStamp.current = programmeStamp;
+  }, [programmeStamp, queryClient, week, kind]);
+
   // Back on screen — the phone woken from the pocket, the app brought up: ask
   // at once, not at the next tick. The chairman opens it when he wants, and
   // what it shows must be the meeting as it is (Lionel, 18 October 2026). On
@@ -478,7 +523,9 @@ export default function ConductScreen({
   const watching = mode === 'watch';
   const offset = serverClockOffset();
   const watched = useMemo(() => (live ? fromWire(live.state, offset) : null) ?? EMPTY, [live, offset]);
-  const run = practice ?? (watching ? watched : state);
+  // A forgotten «Начал» has begun the part by itself (lib/conduct-run-record
+  // settleEntrance): the same answer on every device, from the same run.
+  const run = settleEntrance(practice ?? (watching ? watched : state), now);
   const applyRun = useCallback(
     (next: RunState) => {
       if (practice) setPractice(next);
@@ -501,8 +548,9 @@ export default function ConductScreen({
   }, [loaded, segKeys, persist]);
 
   const counselling = inCounsel(run);
+  const entering = inEntrance(run);
   const ticking =
-    run.finishedAt === null && (run.startedAt !== null || run.pausedAt !== null || counselling);
+    run.finishedAt === null && (run.startedAt !== null || run.pausedAt !== null || counselling || entering);
   useEffect(() => {
     if (!ticking) return;
     const id = setInterval(() => setNow(Date.now()), TICK_MS);
@@ -642,6 +690,9 @@ export default function ConductScreen({
   let plannedSoFar = done.reduce((sum, s) => sum + (s.partMin + s.counselMin) * 60, 0);
   let actualSoFar = done.reduce((sum, _s, i) => sum + (run.spent[i] ?? 0) + (run.counsel[i] ?? 0), 0);
   actualSoFar += run.pausedSec + (run.pausedAt !== null ? (now - run.pausedAt) / 1000 : 0);
+  // The walk to the platform is meeting time the programme has no minute for.
+  const entranceElapsed = entering && run.enteringFrom != null ? Math.max(0, (now - run.enteringFrom) / 1000) : 0;
+  actualSoFar += entranceElapsed;
   if (counselling && current) {
     plannedSoFar += current.partMin * 60 + Math.min(counselElapsed, current.counselMin * 60);
     actualSoFar += (run.spent[run.index] ?? 0) + counselElapsed;
@@ -735,10 +786,12 @@ export default function ConductScreen({
     }
     const nextIndex = run.index + 1;
     const last = nextIndex >= segments.length;
+    // Another brother comes out: he is called now, his clock begins later.
+    const calls = !last && !!entranceAt[nextIndex];
     // When each part began — so the result can place the pauses between them.
     const starts = run.starts.slice(0, nextIndex);
     while (starts.length < nextIndex) starts.push(null);
-    if (!last) starts.push(at);
+    if (!last) starts.push(calls ? null : at);
     applyRun({
       ...run,
       index: nextIndex,
@@ -749,12 +802,19 @@ export default function ConductScreen({
       pausedSec: closePause(at),
       pausedAt: null,
       counselFrom: null,
-      startedAt: last ? null : at,
+      enteringFrom: calls ? at : null,
+      startedAt: last || calls ? null : at,
       finishedAt: last ? at : null,
       saved: false,
       pending: null,
       prev: snapshot(run),
     });
+  };
+
+  /** «Начал»: the brother called up has begun; his clock starts now. */
+  const begin = () => {
+    if (!entering) return;
+    applyRun({ ...beginPart(run, Date.now()), prev: snapshot(run) });
   };
 
   /**
@@ -1067,7 +1127,32 @@ export default function ConductScreen({
         : row?.speakerName
           ? [row.speakerName, row.speakerCongregation].filter(Boolean).join(' · ')
           : null;
-    if (!weekend) return { label: d.label, subtitle: d.subtitle ?? null, person, song: null };
+    if (!weekend) {
+      // STEPS OF THEIR OWN (Lionel, 22 October 2026): song and prayer, then
+      // the chairman's words — and at the end the other way round. The song
+      // is in the prayer's imported title («Песня 88 и молитва | …»).
+      if (seg.key === 'midweek_opening_prayer' || seg.key === 'midweek_closing_prayer') {
+        const song = row?.partTitle ? songFromTitle(row.partTitle) : null;
+        const opening = seg.key === 'midweek_opening_prayer';
+        return {
+          label: song
+            ? t('conduct.midweekRun.songAndPrayer', { song })
+            : t(opening ? 'conduct.midweekRun.opening' : 'conduct.midweekRun.closing'),
+          subtitle: null,
+          person: person ? t('conduct.weekendRun.prayerBy', { name: person }) : null,
+          song: null,
+        };
+      }
+      if (seg.key === 'midweek_opening_words' || seg.key === 'midweek_closing_words') {
+        return {
+          label: t(seg.key === 'midweek_opening_words' ? 'conduct.midweekRun.openingWords' : 'conduct.midweekRun.closingWords'),
+          subtitle: null,
+          person,
+          song: null,
+        };
+      }
+      return { label: d.label, subtitle: d.subtitle ?? null, person, song: null };
+    }
     const songOf = (key: string) => {
       const r = rows.find((a) => a.partKey === key);
       return r ? partDisplay(key, r.partTitle ?? null).label : null;
@@ -1139,6 +1224,15 @@ export default function ConductScreen({
     }
     return { label: d.label, subtitle: d.subtitle ?? null, person, song: null };
   };
+  /**
+   * How a step heads a card. A midweek song is the song first, then who
+   * prays (22 October 2026 — «молитва: …» stood above the song as if it
+   * were the part); the weekend keeps the chairman first, as approved.
+   */
+  const headView = (seg: RunSegment): SegView => {
+    const v = runView(seg);
+    return !weekend && seg.soft && v.person ? { ...v, person: null, subtitle: v.person } : v;
+  };
   /** A segment key as the run sheet names it — also for a part that is gone. */
   const keyLabel = (key: string) => {
     const seg = segments.find((s) => s.key === key);
@@ -1154,7 +1248,8 @@ export default function ConductScreen({
   const announce = (seg: RunSegment) => {
     const v = runView(seg);
     // «Заключительная песня и молитва · молитва: …», not the prayer before the part.
-    if (weekend && seg.key === 'weekend_closing_prayer') return [v.label, v.person].filter(Boolean).join(' · ');
+    if ((weekend && seg.key === 'weekend_closing_prayer') || (!weekend && seg.soft))
+      return [v.label, v.person].filter(Boolean).join(' · ');
     return v.person ? `${v.person} — ${v.label}` : v.label;
   };
   const changedNote = run.changed ? (
@@ -1209,10 +1304,18 @@ export default function ConductScreen({
   // (Lionel, 16 October 2026) — headed by «Ведущий не на связи», since the
   // timekeeper's device had rightly gone quiet. app/stage.tsx shows the
   // clock and the next meeting instead, with the time this one ended.
+  // Not run in the app at all, and its end by the programme has passed: the
+  // stage goes back to the clock instead of counting a delay all evening
+  // (22 October 2026 — «Начало задерживается +211:58»).
   const stageEnded = stageDisplay && showLocal && local ? run.finishedAt : null;
+  const notRunAndOver =
+    stageDisplay &&
+    run.meetingStartedAt === null &&
+    (untilStartSec(plannedEnd, meetingDay, now) ?? 1) < 0;
   useEffect(() => {
-    if (stageDisplay) onStageFinished?.(stageEnded);
-  }, [stageDisplay, stageEnded, onStageFinished]);
+    if (!stageDisplay) return;
+    onStageFinished?.(stageEnded !== null ? { endedAt: stageEnded } : notRunAndOver ? { endedAt: null } : null);
+  }, [stageDisplay, stageEnded, notRunAndOver, onStageFinished]);
 
   // «⋯» in the header: practice, and «Начать заново» — away from «Вернуть»,
   // which is pressed often, while this wipes the meeting.
@@ -1291,7 +1394,12 @@ export default function ConductScreen({
     !!liveData &&
     watchUnsure({ failed: liveQuery.isError, lastGoodAtMs: liveQuery.dataUpdatedAt, nowMs: Date.now(), controllerSilent: false });
   // The device that runs it has gone silent: its taps do not arrive either.
-  const controllerGone = !!live && !live.mine && !offline && isSilent(live.controllerSeenAt, serverNowEst);
+  // Once «Завершить» is pressed the device that ran it rightly goes quiet:
+  // that is the end of the meeting, not a lost timekeeper (21 October 2026 —
+  // «Ведущий не на связи с 20:44» stood over the finished meeting).
+  const runEnded = run.finishedAt !== null;
+  const controllerGone =
+    !!live && !live.mine && !offline && !runEnded && isSilent(live.controllerSeenAt, serverNowEst);
   // What a watching device shows can no longer be trusted: grey, and words.
   const unsure = watching && (offline || controllerGone || hanging);
   const liveLines: { text: string; tone: 'live' | 'warn' | 'muted' }[] = [];
@@ -1318,6 +1426,8 @@ export default function ConductScreen({
       if (!roles?.isChairman && chairmanName && !isSilent(live.chairmanSeenAt, serverNowEst)) {
         liveLines.push({ text: t('conduct.live.chairmanWatching', { name: chairmanName }), tone: 'muted' });
       }
+    } else if (live && runEnded && run.finishedAt !== null) {
+      liveLines.push({ text: t('conduct.live.ended', { time: clockOf(new Date(run.finishedAt)) }), tone: 'muted' });
     } else if (live) {
       const name = live.controllerName ?? t('conduct.live.someone');
       const silent = controllerGone;
@@ -1495,10 +1605,29 @@ export default function ConductScreen({
         {unsureLine}
         <Text style={styles.planned}>{t('conduct.counsel.note')}</Text>
       </View>
+    ) : entering ? (
+      // «ПЕРЕХОД · ВЫХОДИТ» (Lionel, 22 October 2026): the brother is on his
+      // way; his minutes begin with «Начал», or by themselves after 30 s.
+      <View style={styles.nowCard}>
+        <Text style={styles.overline}>{t('conduct.entrance.overline')}</Text>
+        <SegmentHeadline view={headView(current)} big />
+        <Text style={[...big, styles.countdownPaused]}>{mmss(entranceElapsed)}</Text>
+        {unsureLine}
+        <Text style={styles.planned}>{t('conduct.entrance.note', { minutes: current.partMin })}</Text>
+      </View>
+    ) : current.soft ? (
+      // A SONG: up from zero, no amber, no red (Lionel, 22 October 2026).
+      <View style={styles.nowCard}>
+        <Text style={styles.overline}>{t('conduct.now')}</Text>
+        <SegmentHeadline view={headView(current)} big />
+        <Text style={[...big, styles.countdownPaused]}>{mmss(currentElapsed)}</Text>
+        {unsureLine}
+        <Text style={styles.planned}>{t('conduct.soft.note', { minutes: current.partMin })}</Text>
+      </View>
     ) : (
       <View style={styles.nowCard}>
         <Text style={styles.overline}>{isStudent ? t('conduct.nowStudent') : t('conduct.now')}</Text>
-        <SegmentHeadline view={runView(current)} big />
+        <SegmentHeadline view={headView(current)} big />
         <Text
           style={[
             ...big,
@@ -1537,6 +1666,12 @@ export default function ConductScreen({
   const last = run.index === segments.length - 1;
   const primary: { label: string; sub: string | null; onPress: () => void } = !started
     ? { label: t('conduct.start'), sub: null, onPress: start }
+    : entering && current
+      ? {
+          label: t('conduct.entrance.begin', { time: mmss(current.partMin * 60) }),
+          sub: t('conduct.entrance.auto'),
+          onPress: begin,
+        }
     : isStudent && !counselling
       ? { label: t('conduct.partDone'), sub: null, onPress: finishPart }
       : last
@@ -1600,7 +1735,7 @@ export default function ConductScreen({
   const upNext = upcoming ? (
     <View style={styles.nextCard}>
       <Text style={styles.overline}>{counselling ? t('conduct.then') : t('conduct.next')}</Text>
-      <SegmentHeadline view={runView(upcoming)} />
+      <SegmentHeadline view={headView(upcoming)} />
     </View>
   ) : null;
 
@@ -1645,7 +1780,13 @@ export default function ConductScreen({
   const stagePart = (seg: RunSegment | null | undefined): StagePart | null => {
     if (!seg) return null;
     const row = seg.assignmentId ? byId.get(seg.assignmentId) : undefined;
-    const sub = resolveSubsection(seg.key);
+    // The chairman's words are no part of the programme's sections: the
+    // opening ones stand with the opening, the concluding ones and the last
+    // song with the close — no heading (22 October 2026).
+    const sub =
+      seg.key === 'midweek_closing_words' || seg.key === 'midweek_closing_prayer'
+        ? 'closing'
+        : resolveSubsection(seg.key === 'midweek_opening_words' ? 'midweek_opening_prayer' : seg.key);
     const v = runView(seg);
     let person = v.person;
     // A visiting speaker has no card: his name and congregation as the
@@ -1674,6 +1815,7 @@ export default function ConductScreen({
       title: v.label,
       person,
       minutes: seg.partMin,
+      soft: !!seg.soft,
     };
   };
   const stageHeading = (() => {
@@ -1789,7 +1931,7 @@ export default function ConductScreen({
         ? {
             primary: {
               label: primary.label,
-              sub: isStudent && !counselling ? null : lastPart ? null : next ? (stagePart(next)?.title ?? null) : null,
+              sub: entering ? primary.sub : isStudent && !counselling ? null : lastPart ? null : next ? (stagePart(next)?.title ?? null) : null,
               onPress: guarded(primary.onPress),
               locked,
             },
@@ -1806,7 +1948,7 @@ export default function ConductScreen({
         clock={stageClock}
         who={who}
         banner={banner}
-        phase={!started ? 'before' : counselling ? 'counsel' : 'part'}
+        phase={!started ? 'before' : counselling ? 'counsel' : entering ? 'entrance' : 'part'}
         startAt={meetingTime}
         untilStart={!started ? untilStartSec(meetingTime, meetingDay, now) : null}
         current={stagePart(current)}
@@ -1888,7 +2030,10 @@ function SegmentHeadline({ view, big }: { view: SegView; big?: boolean }) {
   return (
     <View>
       {view.person ? <Text style={big ? styles.personBig : styles.personSmall}>{view.person}</Text> : null}
-      <Text style={big ? styles.partBig : styles.partSmall}>{view.label}</Text>
+      {/* With nobody named, the step's own name heads the card (a song). */}
+      <Text style={view.person ? (big ? styles.partBig : styles.partSmall) : big ? styles.personBig : styles.personSmall}>
+        {view.label}
+      </Text>
       {view.subtitle ? <Text style={styles.subtitle}>{view.subtitle}</Text> : null}
     </View>
   );

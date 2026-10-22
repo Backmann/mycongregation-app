@@ -202,9 +202,32 @@ const styles = StyleSheet.create({
 export function ConductLiveCard({ kind = 'midweek' }: { kind?: Kind }) {
   const { t } = useTranslation();
   const week = formatDateISO(startOfWeekMonday(new Date()));
+  // Asked only of those the server would answer (22 October 2026): every
+  // other Home asked twice and was refused twice — harmless, but a refusal
+  // in the server's log for every publisher opening the app. The server's
+  // rule (conduct-live.service find): admin, an elder by role or by card,
+  // the overseers of the meeting, its chairman and its timekeeper.
+  const { user } = useAuth();
+  const { responsibilities } = usePermissions();
+  const mine = useQuery({ queryKey: ['me', 'assignments'], queryFn: () => meApi.assignments(), retry: false });
+  const myCard = useQuery({ queryKey: ['me-publisher'], queryFn: () => meApi.publisher(), retry: false });
+  const role = user?.role;
+  const roleOfWeek = (mine.data?.items ?? []).some(
+    (it) =>
+      it.weekStartDate === week &&
+      ((it.kind === 'meeting' && it.partKey === `${kind}_chairman`) ||
+        (it.kind === 'duty' && it.eventType === kind && it.label === 'timekeeper')),
+  );
+  const mayAsk =
+    role === 'admin' ||
+    role === 'elder' ||
+    myCard.data?.publisher?.appointment === 'elder' ||
+    isConductOverseer(role, responsibilities, kind) ||
+    roleOfWeek;
   const { data } = useQuery({
     queryKey: ['conduct-live-home', week, kind],
     queryFn: () => conductLiveApi.get(week, kind),
+    enabled: mayAsk,
     retry: false,
     refetchInterval: (q) => {
       const st = (q.state.error as { response?: { status?: number } } | null)?.response?.status;

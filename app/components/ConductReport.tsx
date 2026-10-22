@@ -30,9 +30,13 @@ import { clock, ConductSummaryData, mmss } from './ConductSummary';
  */
 
 /** The opening and the closing carry several things on the prayer's row (lib/run-order.ts). */
-const BLOCK: Record<string, { label: string; section: ReportSection }> = {
-  midweek_opening_prayer: { label: 'conduct.result.opening', section: 'opening' },
-  midweek_closing_prayer: { label: 'conduct.result.closing', section: 'closing' },
+const BLOCK: Record<string, { label: string; section: ReportSection; split?: string }> = {
+  // `split`: the name once the chairman's words are steps of their own
+  // (22 October 2026); results from before keep the combined name.
+  midweek_opening_prayer: { label: 'conduct.result.opening', section: 'opening', split: 'conduct.midweekRun.opening' },
+  midweek_opening_words: { label: 'conduct.midweekRun.openingWords', section: 'opening' },
+  midweek_closing_words: { label: 'conduct.midweekRun.closingWords', section: 'closing' },
+  midweek_closing_prayer: { label: 'conduct.result.closing', section: 'closing', split: 'conduct.midweekRun.closing' },
 };
 
 const SECTION_META: Record<ReportSection, { color: string; muted: string; label: string; short: string }> = {
@@ -133,7 +137,10 @@ export function ConductReport({
 
   const labelOf = (row: ReportRow) => {
     const block = BLOCK[row.key];
-    if (block) return t(block.label);
+    if (block) {
+      const split = data.segments.some((x) => x.key === 'midweek_opening_words' || x.key === 'midweek_closing_words');
+      return t(split && block.split ? block.split : block.label);
+    }
     if (keyLabelOf) return keyLabelOf(row.key);
     const seg = data.segments[row.index];
     return partDisplay(row.key, titleOf(seg.assignmentId)).label;
@@ -311,9 +318,14 @@ function Curve({ report, startMs }: { report: Report; startMs: number }) {
     if (last && last.section === r.section) last.to = r.toX + (r.pauseAfterSec ?? 0);
     else bands.push({ section: r.section, from: r.fromX, to: r.toX + (r.pauseAfterSec ?? 0) });
   }
+  // The step of the lines follows the range (22 October 2026): a fixed two
+  // minutes piled thirty-seven labels on one another once a meeting ran an
+  // hour off the programme. At most about six lines, on a round step.
+  const span = Math.max(1, (yMax - yMin) / 60);
+  const step = [1, 2, 5, 10, 15, 30, 60].find((n) => span / n <= 6) ?? 120;
   const grid: number[] = [];
-  for (let m = Math.ceil(yMin / 60); m <= Math.floor(yMax / 60); m++) grid.push(m);
-  const step = grid.length > 8 ? 2 : 1;
+  for (let m = Math.ceil(yMin / 60 / step) * step; m <= Math.floor(yMax / 60); m += step) grid.push(m);
+  if (!grid.includes(0)) grid.push(0);
 
   const segment = (a: ReportPoint, b: ReportPoint, k: number) => {
     const x1 = X(a.x);
@@ -361,8 +373,7 @@ function Curve({ report, startMs }: { report: Report; startMs: number }) {
               </View>
             );
           })}
-          {grid.map((m) =>
-            m % step === 0 || m === 0 ? (
+          {grid.map((m) => (
               <View key={`g${m}`} style={{ position: 'absolute', left: 0, right: PAD.r, top: Y(m * 60) - 7 }}>
                 <Text style={styles.axisLabel}>
                   {m === 0 ? '0' : t('conduct.report.minutes', { sign: m > 0 ? '+' : '−', n: Math.abs(m) })}
@@ -378,8 +389,7 @@ function Curve({ report, startMs }: { report: Report; startMs: number }) {
                   }}
                 />
               </View>
-            ) : null,
-          )}
+          ))}
           {pts.slice(1).map((p, i) => segment(pts[i], p, i))}
           {pts.slice(1).map((p, i) =>
             p.pause ? null : (
@@ -495,7 +505,7 @@ function PartsTable({
             ) : null}
             {!byDeviation && r.pauseAfterSec !== null && r.pauseAfterSec >= PAUSE_MIN_SEC ? (
               <View style={[styles.tr, styles.sub]}>
-                <Text style={[styles.subText, styles.cPart, styles.subIndent]}>{`⏸ ${t('conduct.report.pauseRow')}`}</Text>
+                <Text style={[styles.subText, styles.cPart, styles.subIndent]}>{`↪ ${t('conduct.report.pauseRow')}`}</Text>
                 <Text style={[styles.subText, styles.cNum]}>—</Text>
                 <Text style={[styles.subText, styles.cNum]}>{mmss(r.pauseAfterSec)}</Text>
                 <View style={[wide ? styles.cDevWide : styles.cDev, styles.devCell]}>

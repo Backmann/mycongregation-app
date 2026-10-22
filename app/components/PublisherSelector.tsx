@@ -309,7 +309,16 @@ export function PublisherSelector({
   const softGenderActive = matchGender != null && !showAll;
   const softApptActive = !!preferAppointment && !showAll;
 
-  const filterByCapability = !!requiredCapability && !showAll;
+  // A capability nobody has yet (22 October 2026): «Ведущий времени» was
+  // new, the filter left an empty list, and the switch that lifts it went
+  // unnoticed — «нет списка братьев». With nobody to filter for, everybody is
+  // shown and the reason is said.
+  const nobodyHasCapability =
+    !!requiredCapability &&
+    allPublishers.length > 0 &&
+    !allPublishers.some((p) => !!p.capabilities?.[requiredCapability]);
+  const filterByCapability =
+    !!requiredCapability && !showAll && !nobodyHasCapability;
   const capabilityLabel = requiredCapability
     ? t(`capabilities.items.${requiredCapability}`)
     : "";
@@ -528,7 +537,9 @@ export function PublisherSelector({
                 {t("pickers.showAllOverride")}
               </Text>
               <Text style={styles.toggleHint}>
-                {showAll
+                {nobodyHasCapability && !showAll
+                  ? t("pickers.nobodyHasCapability", { name: capabilityLabel })
+                  : showAll
                   ? t("pickers.showingAllNoFilter")
                   : preferAppointment && !requiredCapability && !matchGender
                     ? t("pickers.showingElders")

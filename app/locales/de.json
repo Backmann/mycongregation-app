@@ -1160,6 +1160,7 @@
     "filteredByCapability": "Gefiltert nach Fähigkeit:",
     "showAllOverride": "Alle Verkündiger anzeigen (Filter überschreiben)",
     "showingAllNoFilter": "Alle angezeigt — Fähigkeitsfilter ist AUS",
+    "nobodyHasCapability": "„{{name}}“ ist noch bei niemandem angehakt — alle werden angezeigt. Angehakt wird es in der Karte des Verkündigers.",
     "hiddenByCapability": "{{count}} durch Filter ausgeblendet",
     "lastGiven": "Zuletzt gehalten {{date}}",
     "upcoming": "Geplant {{date}}",
@@ -4180,6 +4181,7 @@
       "runningYou": "Sie führen die Zeit",
       "runningBy": "Zeit führt: {{name}}",
       "controllerSilent": "Zeitnehmer seit {{time}} nicht verbunden",
+      "ended": "Die Zusammenkunft endete um {{time}}",
       "chairmanWatching": "Vorsitzender: {{name}} · schaut zu",
       "offlineWatch": "Keine Verbindung zum Server · Stand {{time}}. Vielleicht ist der Programmpunkt schon zu Ende.",
       "offlineRun": "Keine Verbindung zum Server. Der Verlauf wird auf diesem Gerät gespeichert und gesendet, sobald die Verbindung zurück ist.",
@@ -4226,7 +4228,7 @@
       "betweenSub": "Zeit, die zu keinem Programmpunkt gehört",
       "curve": "Wie die Zeit lief",
       "curveSub": "Rückstand zum Programm im Verlauf · über null — später als geplant",
-      "curvePauses": "Helle Abschnitte — Pausen zwischen den Programmpunkten.",
+      "curvePauses": "Helle Abschnitte: Wechsel und Pausen zwischen den Programmpunkten.",
       "curveNoPauses": "Pausen zwischen den Programmpunkten ({{time}}) sind hier nicht enthalten: Dieses Ergebnis wurde gespeichert, bevor die App den Beginn jedes Punktes festhielt.",
       "start": "Beginn {{time}}",
       "end": "Ende {{time}}",
@@ -4238,7 +4240,7 @@
       "byOrder": "Der Reihe nach",
       "byDeviation": "Nach Abweichung",
       "counselRow": "Rat des Vorsitzenden",
-      "pauseRow": "Pause",
+      "pauseRow": "Wechsel",
       "betweenRow": "Pausen und Übergänge zwischen den Punkten",
       "note": "Zeit der Aufgabe ohne die Minute für den Rat; der Rat steht in der Zeile darunter. Beginn, Schluss und Lied in Grau: Sie sind niemandes Aufgabe.",
       "short": {
@@ -4254,6 +4256,8 @@
       "wtPeople": "Leitung: {{conductor}} · Lesen: {{reader}}",
       "wtConductor": "Leitung: {{conductor}}",
       "notStarted": "DIE ZUSAMMENKUNFT HAT NOCH NICHT BEGONNEN",
+      "notRunTitle": "Die Zusammenkunft wurde in der App nicht gestartet",
+      "notRunHint": "Der Ablauf erscheint hier, sobald der Zeitnehmer „Zusammenkunft beginnen“ drückt.",
       "startsAt": "Beginn um {{time}}",
       "byProgrammeAt": "Laut Programm um {{time}}",
       "startHint": "Die Zeit läuft, sobald der Zeitnehmer „Zusammenkunft beginnen“ tippt",
@@ -4288,7 +4292,11 @@
         "no": "nein"
       },
       "countSoon": "Der Countdown bis zum Beginn erscheint hier eine Stunde vorher",
-      "youRunElsewhere": "Sie führen die Zeit · auf einem anderen Gerät"
+      "youRunElsewhere": "Sie führen die Zeit · auf einem anderen Gerät",
+      "comesOut": "KOMMT NACH VORN",
+      "startsWithHim": "die Zeit läuft, wenn er beginnt",
+      "going": "läuft",
+      "aboutMinutes": "Lied · etwa {{minutes}} Min."
     },
     "pausedSince": "Pause seit {{time}}",
     "weekendRun": {
@@ -4311,6 +4319,22 @@
       "dropTitle": "Verlauf nicht speichern?",
       "dropBody": "Der Verlauf dieser Zusammenkunft wird gelöscht, es gibt kein Ergebnis.",
       "watch": "Der Verlauf wurde seit {{time}} nicht aktualisiert — die Zusammenkunft ist wohl vorbei."
+    },
+    "entrance": {
+      "overline": "WECHSEL · KOMMT NACH VORN",
+      "note": "Der Wechsel zählt nicht zur Zeit des Programmpunkts. Punkt: {{minutes}} Min.",
+      "begin": "Begonnen · Zeit {{time}} läuft",
+      "auto": "Startet nach 30 Sekunden von selbst"
+    },
+    "soft": {
+      "note": "Ein Lied — kein Countdown, kein Rot. Laut Programm etwa {{minutes}} Min."
+    },
+    "midweekRun": {
+      "songAndPrayer": "{{song}} und Gebet",
+      "opening": "Lied und Gebet",
+      "closing": "Schlusslied und Gebet",
+      "openingWords": "Einleitende Worte",
+      "closingWords": "Schlussworte"
     }
   },
   "serviceHub": {
@@ -4875,8 +4899,7 @@
       "signInTitle": "Anmeldung am Laptop",
       "password": "Passwort",
       "another": "Anderes",
-      "latinOk": "Lateinische Buchstaben — auf jeder Tastatur im Saal einzugeben",
-      "latinWarn": "Das Passwort enthält kyrillische Buchstaben — die deutsche Tastatur des Laptops kann sie nicht eingeben",
+      "passwordLater": "Das Passwort erstellt die App selbst und zeigt es am Ende, wenn der Bildschirm angelegt ist.",
       "next": "Weiter: Ziffern für das Menü",
       "back": "Zurück",
       "pinTitle": "Ziffern für das Menü des Bildschirms",
@@ -4884,7 +4907,7 @@
       "shows1": "Die Zusammenkunft des Tages, wie sie läuft: Programmpunkt, Countdown, wer als Nächstes dran ist, Ende",
       "shows2": "Zwischen den Zusammenkünften die Uhr und die nächste Zusammenkunft",
       "doneTitle": "Bühnenbildschirm bereit",
-      "doneHint": "Öffnen Sie mycongregation.org auf dem Laptop am Pult und melden Sie sich hiermit an",
+      "doneHint": "Fertig — jetzt kann man sich anmelden. Öffnen Sie mycongregation.org auf dem Laptop am Rednerpult und melden Sie sich mit diesen Daten an",
       "pinShort": "Ziffern für das Menü",
       "copyOne": "Kopieren: {{what}}",
       "copyAll": "Alles kopieren",
