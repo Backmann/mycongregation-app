@@ -79,6 +79,14 @@ function describePurgeHolders(
 
 export default function PublisherDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  return <PublisherDetail id={id} />;
+}
+
+/**
+ * The card itself — on its own screen, and beside the list on a wide screen
+ * (app/(app)/publishers/list.tsx, 22 October 2026, mockup «Ширина экранов»).
+ */
+export function PublisherDetail({ id }: { id: string | undefined }) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { user } = useAuth();

@@ -39,6 +39,7 @@ const OVERVIEW = new Set<string>([
   '/publishers/duties',
   '/publishers/cleaning',
   '/special-events',
+  '/publishers/list',
 ]);
 
 /** The tabs' own first screens: the side menu is their way back. */
