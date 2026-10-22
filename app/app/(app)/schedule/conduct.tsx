@@ -48,6 +48,7 @@ import { usePermissions } from '../../../lib/permissions';
 import { useAuth } from '../../../lib/auth';
 import { buildMidweekRunOrder, buildWeekendRunOrder, RunSegment, totalRunMinutes } from '../../../lib/run-order';
 import { partDisplay, songFromTitle } from '../../../lib/part-display';
+import { useSongsMap } from '../../../lib/songs';
 import { failsScreen } from '../../../lib/screen-failure';
 import { keptMeetingRows } from '../../../lib/offline-keep-rules';
 import { keptMe, keptPieces } from '../../../lib/offline-keep';
@@ -64,6 +65,7 @@ import {
   inCounsel,
   isExpiredRecord,
   beginPart,
+  ENTRANCE_AUTO_MS,
   inEntrance,
   reconcileKeys,
   readRunRecord,
@@ -322,6 +324,7 @@ export default function ConductScreen({
     });
   }, [segments, rows, byId, weekend]);
 
+  const songTitles = useSongsMap();
   const nameById = useMemo(() => {
     const m = new Map<string, string>();
     for (const p of rosterQuery.data?.data ?? []) m.set(p.id, p.displayName);
@@ -1121,7 +1124,7 @@ export default function ConductScreen({
    * The schedule's own names («Вступительная молитва», «Песня 129») said
    * nothing about who stands there, and put the song in the wrong place.
    */
-  const runView = (seg: RunSegment): SegView => {
+  const runViewBase = (seg: RunSegment): SegView => {
     const row = seg.assignmentId ? byId.get(seg.assignmentId) : undefined;
     const d = partDisplay(seg.key, row?.partTitle ?? null);
     const names = [row?.publisherId, row?.assistantPublisherId]
@@ -1174,7 +1177,9 @@ export default function ConductScreen({
       r ? partDisplay('weekend_song', r.partTitle ?? null).label : null;
     if (seg.key === 'weekend_opening_prayer') {
       const prayer = person && person !== chairmanName ? t('conduct.weekendRun.prayerBy', { name: person }) : null;
-      const song = songOf('weekend_opening_song');
+      // The opening song's own row; else the number in the prayer's title.
+      const prayerRow = rows.find((a) => a.partKey === 'weekend_opening_prayer');
+      const song = songOf('weekend_opening_song') ?? (prayerRow?.partTitle ? songFromTitle(prayerRow.partTitle) : null);
       return {
         label: song ? t('conduct.weekendRun.openingSong', { song }) : t('conduct.weekendRun.opening'),
         subtitle: null,
@@ -1231,6 +1236,17 @@ export default function ConductScreen({
       };
     }
     return { label: d.label, subtitle: d.subtitle ?? null, person, song: null };
+  };
+  /**
+   * THE SONG'S NAME (Lionel, 22 October 2026): a song step names its song by
+   * number in its label; the catalog (Программа → песни) gives the words.
+   */
+  const runView = (seg: RunSegment): SegView => {
+    const v = runViewBase(seg);
+    if (!seg.soft) return v;
+    const n = /(\d{1,3})/.exec(v.label)?.[1];
+    const name = n ? songTitles.get(parseInt(n, 10)) : undefined;
+    return name ? { ...v, song: name } : v;
   };
   /**
    * How a step heads a card. A midweek song is the song first, then who
@@ -1621,7 +1637,9 @@ export default function ConductScreen({
         <SegmentHeadline view={headView(current)} big />
         <Text style={[...big, styles.countdownPaused]}>{mmss(entranceElapsed)}</Text>
         {unsureLine}
-        <Text style={styles.planned}>{t('conduct.entrance.note', { minutes: current.partMin })}</Text>
+        <Text style={styles.planned}>
+          {t(current.soft ? 'conduct.entrance.noteSong' : 'conduct.entrance.note', { minutes: current.partMin })}
+        </Text>
       </View>
     ) : current.soft ? (
       // A SONG: up from zero, no amber, no red (Lionel, 22 October 2026).
@@ -1679,14 +1697,26 @@ export default function ConductScreen({
           label: current.soft
             ? t('conduct.entrance.beginSong')
             : t('conduct.entrance.begin', { time: mmss(current.partMin * 60) }),
-          sub: t('conduct.entrance.auto'),
+          // How long until it starts by itself, counting down.
+          sub: t('conduct.entrance.autoIn', {
+            sec: Math.max(0, Math.ceil((ENTRANCE_AUTO_MS - (now - (run.enteringFrom ?? now))) / 1000)),
+          }),
           onPress: begin,
         }
     : isStudent && !counselling
       ? { label: t('conduct.partDone'), sub: null, onPress: finishPart }
       : last
         ? { label: t('conduct.finish'), sub: null, onPress: advance }
-        : { label: t('conduct.nextPart'), sub: next ? announce(next) : null, onPress: advance };
+        : {
+            label: t('conduct.nextPart'),
+            // «Выходит: …» when the tap calls a brother up to the stage.
+            sub: next
+              ? entranceAt[run.index + 1]
+                ? t('conduct.entrance.callsUp', { who: announce(next) })
+                : announce(next)
+              : null,
+            onPress: advance,
+          };
 
   const controls = (
     <View style={styles.controls}>
@@ -1826,6 +1856,7 @@ export default function ConductScreen({
       person,
       minutes: seg.partMin,
       soft: !!seg.soft,
+      song: v.song,
     };
   };
   const stageHeading = (() => {
@@ -2032,7 +2063,7 @@ interface SegView {
   label: string;
   subtitle: string | null;
   person: string | null;
-  /** Unused for now: kept in the shape so a part may carry its song. */
+  /** A song step: the song's name from the catalog. */
   song: string | null;
 }
 
@@ -2044,6 +2075,7 @@ function SegmentHeadline({ view, big }: { view: SegView; big?: boolean }) {
       <Text style={view.person ? (big ? styles.partBig : styles.partSmall) : big ? styles.personBig : styles.personSmall}>
         {view.label}
       </Text>
+      {view.song ? <Text style={big ? styles.songBig : styles.songSmall}>{`«${view.song}»`}</Text> : null}
       {view.subtitle ? <Text style={styles.subtitle}>{view.subtitle}</Text> : null}
     </View>
   );
@@ -2122,6 +2154,8 @@ const styles = StyleSheet.create({
   partBig: { fontFamily: 'Manrope_400Regular', fontSize: 26, color: '#334155', marginTop: 4 },
   partSmall: { fontFamily: 'Manrope_400Regular', fontSize: 16, color: '#475569', marginTop: 2 },
   subtitle: { fontFamily: 'Manrope_400Regular', fontSize: 14, color: '#64748b', marginTop: 4 },
+  songBig: { fontFamily: 'Manrope_500Medium', fontSize: 17, color: '#334155', marginTop: 4 },
+  songSmall: { fontFamily: 'Manrope_500Medium', fontSize: 14, color: '#334155', marginTop: 2 },
   // Half as big again as on 14 October: read at a glance from the lectern.
   countdown: {
     fontSize: 84,

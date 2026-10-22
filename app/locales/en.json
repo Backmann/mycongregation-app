@@ -4325,8 +4325,10 @@
       "overline": "CHANGEOVER · COMING UP",
       "note": "The changeover is not part time. Part: {{minutes}} min",
       "begin": "Started · count {{time}}",
-      "auto": "Starts by itself in 30 seconds",
-      "beginSong": "Started · song on"
+      "beginSong": "Song started",
+      "autoIn": "Starts by itself in {{sec}} s",
+      "callsUp": "Coming up: {{who}}",
+      "noteSong": "The changeover is not song time. The song: about {{minutes}} min"
     },
     "soft": {
       "note": "A song — no countdown, no red. About {{minutes}} min in the programme"

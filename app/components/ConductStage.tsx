@@ -44,6 +44,8 @@ export interface StagePart {
   minutes: number;
   /** A song: counted up, never amber or red (22 October 2026). */
   soft?: boolean;
+  /** A song's name from the catalog. */
+  song?: string | null;
 }
 
 export interface StageControls {
@@ -293,6 +295,7 @@ export function ConductStage(p: StageProps) {
       <View style={s.mainCol}>
         <Text style={[s.overline, { color: C.entrance }]}>{t('conduct.stage.comesOut')}</Text>
         <Text style={s.title}>{p.current.title}</Text>
+        {p.current.song ? <Text style={s.song}>{`«${p.current.song}»`}</Text> : null}
         {p.current.person ? <Text style={s.person}>{p.current.person}</Text> : null}
         <View style={{ flex: 1, minHeight: 16 }} />
         <Text style={[s.digits, { fontSize: digits, lineHeight: digits * 1.02, color: C.muted }]} numberOfLines={1}>
@@ -342,6 +345,7 @@ export function ConductStage(p: StageProps) {
         <Text style={[s.title, p.unsure && { color: C.textMid }]}>
           {p.current.title}
         </Text>
+        {p.current.song ? <Text style={s.song}>{`«${p.current.song}»`}</Text> : null}
         {p.current.person ? (
           <Text style={s.person}>
             {p.current.person}
@@ -635,6 +639,7 @@ const s = StyleSheet.create({
   overline: { fontFamily: 'Manrope_700Bold', fontSize: 16, letterSpacing: 1.6, color: '#9fb7c6' },
   title: { fontFamily: 'Manrope_700Bold', fontSize: 40, lineHeight: 46, color: C.text, marginTop: 14 },
   person: { fontFamily: 'Manrope_500Medium', fontSize: 23, color: C.muted, marginTop: 8 },
+  song: { fontFamily: 'Manrope_500Medium', fontSize: 23, color: C.textMid, marginTop: 6 },
   digits: { fontFamily: 'Manrope_800ExtraBold', fontVariant: ['tabular-nums'], letterSpacing: -4 },
   rowBaseline: { flexDirection: 'row', alignItems: 'baseline', gap: 22 },
   inWord: { fontFamily: 'Manrope_700Bold', fontSize: 38, color: C.muted },
