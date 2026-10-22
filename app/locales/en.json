@@ -4296,7 +4296,8 @@
       "comesOut": "COMING UP",
       "startsWithHim": "the count starts when he begins",
       "going": "running",
-      "aboutMinutes": "song · about {{minutes}} min"
+      "aboutMinutes": "song · about {{minutes}} min",
+      "songWithHim": "the song comes when he announces it"
     },
     "pausedSince": "Paused since {{time}}",
     "weekendRun": {
@@ -4324,7 +4325,8 @@
       "overline": "CHANGEOVER · COMING UP",
       "note": "The changeover is not part time. Part: {{minutes}} min",
       "begin": "Started · count {{time}}",
-      "auto": "Starts by itself in 30 seconds"
+      "auto": "Starts by itself in 30 seconds",
+      "beginSong": "Started · song on"
     },
     "soft": {
       "note": "A song — no countdown, no red. About {{minutes}} min in the programme"

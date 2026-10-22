@@ -289,9 +289,8 @@ export default function ConductScreen({
    * WHERE ANOTHER BROTHER COMES OUT (Lionel, 22 October 2026). «Следующая»
    * there calls him up — «Выходит: …» — and his own clock begins with
    * «Начал», or by itself after thirty seconds; the walk to the stage is
-   * nobody's minutes. Not before a song (it is sung from the seats), not
-   * before the chairman's own words, not when the same brother goes on
-   * (the study conductor after the song he announced).
+   * nobody's minutes. Not when the same brother goes on (the study
+   * conductor after the song he announced).
    */
   const entranceAt = useMemo(() => {
     const personOf = (seg: RunSegment): string | null => {
@@ -307,10 +306,19 @@ export default function ConductScreen({
         .join('+');
       return who || null;
     };
+    // WHO WALKS UP (Lionel, 22 October 2026): after the public talk the
+    // chairman comes back for the thanks and announcements; after them the
+    // study conductor comes up and announces his song. So the chairman's
+    // words are called up too when someone else stood there — not after a
+    // song, which he himself announced — and so is the song before the study.
+    // A midweek song is announced by whoever is already on the stage.
     return segments.map((seg, i) => {
-      if (i === 0 || seg.soft || seg.chairmanWords) return false;
+      if (i === 0) return false;
+      const prev = segments[i - 1];
+      if (seg.soft && !(weekend && seg.key === 'weekend_song')) return false;
+      if (seg.chairmanWords && prev.soft) return false;
       const who = personOf(seg);
-      return !!who && who !== personOf(segments[i - 1]);
+      return !!who && who !== personOf(prev);
     });
   }, [segments, rows, byId, weekend]);
 
@@ -1668,7 +1676,9 @@ export default function ConductScreen({
     ? { label: t('conduct.start'), sub: null, onPress: start }
     : entering && current
       ? {
-          label: t('conduct.entrance.begin', { time: mmss(current.partMin * 60) }),
+          label: current.soft
+            ? t('conduct.entrance.beginSong')
+            : t('conduct.entrance.begin', { time: mmss(current.partMin * 60) }),
           sub: t('conduct.entrance.auto'),
           onPress: begin,
         }

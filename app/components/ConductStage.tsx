@@ -296,10 +296,10 @@ export function ConductStage(p: StageProps) {
         {p.current.person ? <Text style={s.person}>{p.current.person}</Text> : null}
         <View style={{ flex: 1, minHeight: 16 }} />
         <Text style={[s.digits, { fontSize: digits, lineHeight: digits * 1.02, color: C.muted }]} numberOfLines={1}>
-          {mmssSigned(p.current.minutes * 60)}
+          {mmssSigned(p.current.soft ? 0 : p.current.minutes * 60)}
         </Text>
         <View style={s.stateRow}>
-          <Text style={s.leftWord}>{t('conduct.stage.startsWithHim')}</Text>
+          <Text style={s.leftWord}>{t(p.current.soft ? 'conduct.stage.songWithHim' : 'conduct.stage.startsWithHim')}</Text>
         </View>
         <View style={s.track} />
       </View>
