@@ -140,7 +140,8 @@
     "groups": "Groups",
     "profile": "Profile",
     "cart": "Ministry",
-    "home": "Home"
+    "home": "Home",
+    "menu": "Sections"
   },
   "common": {
     "edit": "Edit",

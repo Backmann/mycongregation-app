@@ -1,5 +1,7 @@
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../lib/auth';
@@ -8,6 +10,8 @@ import { routeOf, screenAllowed } from '../lib/screen-access';
 import { NoAccess } from './NoAccess';
 import { LoadFailure } from './LoadFailure';
 import { ScreenFailureBoundary } from './ScreenFailure';
+import { SIDE_NAV_FROM, TAB_ROOTS, WIDE_FROM, screenMaxWidth } from '../lib/screen-width';
+import { BRAND } from '../lib/header';
 
 /**
  * The check that stands before every screen of a stack.
@@ -74,11 +78,81 @@ function Gate({
  * content out of the side insets. Always drawn — zero in portrait — so that
  * turning the phone does not rebuild the screen and lose what was typed.
  */
-function SideInsets({ children }: { children: React.ReactNode }) {
+type HeaderOptions = {
+  title?: string;
+  headerTitle?: unknown;
+  headerLeft?: (p: { canGoBack: boolean; tintColor?: string }) => React.ReactNode;
+  headerRight?: (p: { canGoBack: boolean; tintColor?: string }) => React.ReactNode;
+};
+type Nav = { setOptions: (o: Record<string, unknown>) => void; canGoBack: () => boolean; goBack: () => void };
+
+/**
+ * THE PAGE'S OWN HEADING on a computer and an iPad on its side (22 October
+ * 2026, mockup «Ширина экранов»). Beside the side menu the teal bar across
+ * the top is gone: the screen's title stands in its column, large, where the
+ * eye already is, with the way back before it and the screen's actions after
+ * it. The actions are the header's own (white on the brand colour), so they
+ * keep that ground as a small teal block — nothing in thirty screens changes.
+ */
+function PageHeader({ options, navigation, root }: { options: HeaderOptions; navigation: Nav; root: boolean }) {
+  const { t } = useTranslation();
+  const canGoBack = navigation.canGoBack();
+  const title = typeof options.headerTitle === 'string' ? options.headerTitle : (options.title ?? '');
+  // A tab's first screen: its mark stood at the left of the bar; the side
+  // menu carries the brand now.
+  const left = root
+    ? null
+    : options.headerLeft !== undefined ? (
+      options.headerLeft({ canGoBack, tintColor: '#ffffff' })
+    ) : canGoBack ? (
+      <Pressable accessibilityRole="button" accessibilityLabel={t('common.back')} onPress={() => navigation.goBack()} style={{ paddingHorizontal: 12 }}>
+        <Ionicons name="chevron-back" size={28} color="#ffffff" />
+      </Pressable>
+    ) : null;
+  const right = options.headerRight?.({ canGoBack, tintColor: '#ffffff' }) ?? null;
+  return (
+    <View style={styles.pageHeader} testID="page-header">
+      {left ? <View style={styles.chip}>{left}</View> : null}
+      <Text style={styles.pageTitle} accessibilityRole="header" numberOfLines={2}>
+        {title}
+      </Text>
+      {right ? <View style={[styles.chip, styles.chipRight]}>{right}</View> : null}
+    </View>
+  );
+}
+
+function SideInsets({
+  children,
+  route,
+  options,
+  navigation,
+  root,
+}: {
+  children: React.ReactNode;
+  route: string;
+  root: boolean;
+  options: HeaderOptions;
+  navigation: Nav;
+}) {
   const { left, right } = useSafeAreaInsets();
+  // ONE WIDTH RULE (lib/screen-width.ts): on an iPad or a computer the
+  // screen stands in a centred column of its kind; a phone is untouched.
+  // The column is always drawn, only its limit changes, so turning an iPad
+  // does not rebuild the screen.
+  const { width } = useWindowDimensions();
+  const max = width >= WIDE_FROM ? screenMaxWidth(route) : null;
+  // In a browser beside the side menu the page carries its own heading; the
+  // native app and narrower windows keep the bar.
+  const pageHeading = Platform.OS === 'web' && width >= SIDE_NAV_FROM;
+  React.useEffect(() => {
+    navigation.setOptions({ headerShown: !pageHeading });
+  }, [navigation, pageHeading]);
   return (
     <View style={[styles.frame, { paddingLeft: left, paddingRight: right }]} testID="side-insets">
-      {children}
+      <View style={[styles.column, max !== null && styles.columnWide, max !== null && { maxWidth: max }]}>
+        {pageHeading ? <PageHeader options={options} navigation={navigation} root={root} /> : null}
+        {children}
+      </View>
     </View>
   );
 }
@@ -86,6 +160,8 @@ function SideInsets({ children }: { children: React.ReactNode }) {
 type ScreenLayout = (props: {
   children: React.ReactElement;
   route: { name: string };
+  options: object;
+  navigation: unknown;
 }) => React.ReactElement;
 
 /**
@@ -98,10 +174,11 @@ const made = new Map<string, ScreenLayout>();
 export function screenGate(base: string): ScreenLayout {
   let layout = made.get(base);
   if (!layout) {
-    layout = function ScreenLayout({ children, route }) {
+    layout = function ScreenLayout({ children, route, options, navigation }) {
+      const path = routeOf(base, route.name);
       return (
-        <SideInsets>
-          <Gate route={routeOf(base, route.name)}>{children}</Gate>
+        <SideInsets route={path} options={options as HeaderOptions} navigation={navigation as Nav} root={TAB_ROOTS.has(path)}>
+          <Gate route={path}>{children}</Gate>
         </SideInsets>
       );
     };
@@ -113,5 +190,31 @@ export function screenGate(base: string): ScreenLayout {
 const styles = StyleSheet.create({
   fill: { flex: 1, backgroundColor: '#f1f5f9' },
   frame: { flex: 1, backgroundColor: '#f1f5f9' },
+  column: { flex: 1, width: '100%', alignSelf: 'center' },
+  // A gutter of its own, so a screen that draws edge to edge does not touch
+  // the side menu or the window's edge.
+  columnWide: { paddingHorizontal: 16 },
+  pageHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    paddingTop: 26,
+    paddingBottom: 10,
+    paddingHorizontal: 16,
+  },
+  pageTitle: {
+    flex: 1,
+    fontFamily: 'Manrope_800ExtraBold',
+    fontSize: 28,
+    letterSpacing: -0.4,
+    color: '#0f1c24',
+  },
+  chip: {
+    backgroundColor: BRAND,
+    borderRadius: 12,
+    minHeight: 42,
+    justifyContent: 'center',
+  },
+  chipRight: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 6 },
   failed: { paddingTop: 24 },
 });
