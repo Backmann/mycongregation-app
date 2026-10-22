@@ -51,7 +51,7 @@ export function watchUnsure(input: {
 }
 
 /** The run's fields that are moments, not durations. */
-const MOMENTS = ['startedAt', 'counselFrom', 'meetingStartedAt', 'pausedAt', 'finishedAt'] as const;
+const MOMENTS = ['startedAt', 'counselFrom', 'enteringFrom', 'meetingStartedAt', 'pausedAt', 'finishedAt'] as const;
 
 /** What goes to the server: the run without the device's own bookkeeping. */
 export type WireState = Omit<RunState, 'prev' | 'pending' | 'saved'> & { v: 1 };
@@ -92,6 +92,7 @@ export function fromWire(raw: unknown, offsetMs: number): RunState | null {
     startedAt: shift(o.startedAt, -offsetMs),
     carried: typeof o.carried === 'number' && Number.isFinite(o.carried) ? o.carried : 0,
     counselFrom: shift(o.counselFrom, -offsetMs),
+    enteringFrom: shift(o.enteringFrom, -offsetMs),
     meetingStartedAt: shift(o.meetingStartedAt, -offsetMs),
     starts: Array.isArray(o.starts) ? o.starts.map((m) => shift(m, -offsetMs)) : [],
     pausedSec: typeof o.pausedSec === 'number' && Number.isFinite(o.pausedSec) ? o.pausedSec : 0,
@@ -113,9 +114,9 @@ export function fromWire(raw: unknown, offsetMs: number): RunState | null {
  * The latest moment a run records — its last tap, near enough: a part begun,
  * a pause, a counsel, the end. Null for a run not begun.
  */
-export function lastMoment(s: Pick<RunState, 'startedAt' | 'counselFrom' | 'meetingStartedAt' | 'pausedAt' | 'finishedAt' | 'starts'>): number | null {
+export function lastMoment(s: Pick<RunState, 'startedAt' | 'counselFrom' | 'enteringFrom' | 'meetingStartedAt' | 'pausedAt' | 'finishedAt' | 'starts'>): number | null {
   let best: number | null = null;
-  for (const m of [s.startedAt, s.counselFrom, s.meetingStartedAt, s.pausedAt, s.finishedAt, ...(s.starts ?? [])]) {
+  for (const m of [s.startedAt, s.counselFrom, s.enteringFrom ?? null, s.meetingStartedAt, s.pausedAt, s.finishedAt, ...(s.starts ?? [])]) {
     if (typeof m === 'number' && Number.isFinite(m) && (best === null || m > best)) best = m;
   }
   return best;

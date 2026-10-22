@@ -102,6 +102,14 @@ export interface RunState {
    * null otherwise. While it is set, the part's own seconds are in `spent`.
    */
   counselFrom: number | null;
+  /**
+   * «Выходит»: the tap that called the next brother up (22 October 2026).
+   * While it is set the part's own clock has not begun — the walk to the
+   * stage is nobody's minutes. «Начал» begins it, or ENTRANCE_AUTO_MS after
+   * the call it begins by itself (settleEntrance). Optional: runs kept
+   * before it had none.
+   */
+  enteringFrom?: number | null;
   /** When the meeting's first part started. */
   meetingStartedAt: number | null;
   /**
@@ -139,6 +147,7 @@ export const EMPTY_RUN: RunState = {
   startedAt: null,
   carried: 0,
   counselFrom: null,
+  enteringFrom: null,
   meetingStartedAt: null,
   starts: [],
   pausedSec: 0,
@@ -155,6 +164,45 @@ export const EMPTY_RUN: RunState = {
 /** In the counsel after a student part: the part is over, the next not begun. */
 export function inCounsel(s: RunState): boolean {
   return s.counselFrom !== null && s.startedAt === null && s.finishedAt === null;
+}
+
+/** A forgotten «Начал» starts the part by itself this long after the call. */
+export const ENTRANCE_AUTO_MS = 30_000;
+
+/** The next brother is walking up: called, his clock not begun. */
+export function inEntrance(s: RunState): boolean {
+  return typeof s.enteringFrom === 'number' && s.startedAt === null && s.finishedAt === null;
+}
+
+/**
+ * The run as it stands at `now`: an entrance older than ENTRANCE_AUTO_MS has
+ * begun its part at call + ENTRANCE_AUTO_MS (Lionel, 22 October 2026 — «забытое
+ * нажатие не испортит итог»). Pure, and the same on every device, so the
+ * screens that watch agree with the one that runs without waiting for it.
+ */
+export function settleEntrance(s: RunState, now: number): RunState {
+  if (!inEntrance(s)) return s;
+  const from = s.enteringFrom as number;
+  if (now - from < ENTRANCE_AUTO_MS) return s;
+  return beginPart(s, from + ENTRANCE_AUTO_MS);
+}
+
+/** «Начал»: the called brother's clock begins at `at`; the walk is a gap. */
+export function beginPart(s: RunState, at: number): RunState {
+  if (!inEntrance(s)) return s;
+  const from = s.enteringFrom as number;
+  const starts = [...s.starts];
+  while (starts.length <= s.index) starts.push(null);
+  starts[s.index] = at;
+  return {
+    ...s,
+    enteringFrom: null,
+    startedAt: at,
+    carried: 0,
+    starts,
+    // The walk is the meeting's time and no part's: counted like a pause.
+    pausedSec: s.pausedSec + Math.max(0, (at - from) / 1000),
+  };
 }
 
 export type RecordVerdict =
@@ -228,6 +276,7 @@ export function readRunRecord(
     }
     if (!Array.isArray(state.legacyKeys)) state.legacyKeys = [];
     state.starts = moments(state.starts);
+    state.enteringFrom = isNum(state.enteringFrom) ? state.enteringFrom : null;
     if (state.pending === undefined) state.pending = null;
     if (v !== RUN_RECORD_VERSION) state = v2ToV3(state, now);
     return { state, verdict: 'current' };

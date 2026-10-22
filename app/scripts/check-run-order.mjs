@@ -77,7 +77,9 @@ const CASES = [
     items: week(),
     // key · minutes
     expect: [
-      ['midweek_opening_prayer', 6],
+      // Song and prayer, then the chairman's words (Lionel, 22 October 2026).
+      ['midweek_opening_prayer', 5],
+      ['midweek_opening_words', 1],
       ['treasures_talk', 10],
       ['spiritual_gems', 10],
       ['bible_reading', 5],
@@ -87,7 +89,8 @@ const CASES = [
       ['mid_song', 5],
       ['living_christians_1', 15],
       ['cbs_conductor', 30],
-      ['midweek_closing_prayer', 9],
+      ['midweek_closing_words', 3],
+      ['midweek_closing_prayer', 6],
     ],
     total: 105,
   },
@@ -95,7 +98,9 @@ const CASES = [
     name: 'четвёртое задание',
     items: week([p('apply_yourself_4', 4)]),
     expect: [
-      ['midweek_opening_prayer', 6],
+      // Song and prayer, then the chairman's words (Lionel, 22 October 2026).
+      ['midweek_opening_prayer', 5],
+      ['midweek_opening_words', 1],
       ['treasures_talk', 10],
       ['spiritual_gems', 10],
       ['bible_reading', 5],
@@ -106,7 +111,8 @@ const CASES = [
       ['mid_song', 5],
       ['living_christians_1', 15],
       ['cbs_conductor', 30],
-      ['midweek_closing_prayer', 9],
+      ['midweek_closing_words', 3],
+      ['midweek_closing_prayer', 6],
     ],
     total: 110,
   },
@@ -122,7 +128,9 @@ const CASES = [
     name: 'визит районного: изучение снято, речь надзирателя на его месте',
     items: week([p('co_service_talk', 30)], ['cbs_conductor', 'cbs_reader']),
     expect: [
-      ['midweek_opening_prayer', 6],
+      // Song and prayer, then the chairman's words (Lionel, 22 October 2026).
+      ['midweek_opening_prayer', 5],
+      ['midweek_opening_words', 1],
       ['treasures_talk', 10],
       ['spiritual_gems', 10],
       ['bible_reading', 5],
@@ -132,7 +140,8 @@ const CASES = [
       ['mid_song', 5],
       ['living_christians_1', 15],
       ['co_service_talk', 30],
-      ['midweek_closing_prayer', 9],
+      ['midweek_closing_words', 3],
+      ['midweek_closing_prayer', 6],
     ],
     total: 105,
   },
@@ -223,6 +232,18 @@ for (const c of CASES) {
     if (segs.some((s) => s.key === key)) {
       fails.push(`${c.name}: у «${key}» появился свой отрезок, а его быть не должно`);
     }
+  }
+
+  // The chairman's words are his, and no range on the sheet: his row is no
+  // part. Songs count up (22 October 2026).
+  for (const key of ['midweek_opening_words', 'midweek_closing_words']) {
+    const w = segs.find((s) => s.key === key);
+    if (!w) fails.push(`${c.name}: шага «${key}» нет`);
+    else if (w.showInterval || !w.chairmanWords || w.soft) fails.push(`${c.name}: «${key}» не слова председателя`);
+  }
+  for (const key of ['midweek_opening_prayer', 'mid_song', 'midweek_closing_prayer']) {
+    const w = segs.find((s) => s.key === key);
+    if (w && !w.soft) fails.push(`${c.name}: «${key}» считается вниз, а песня должна идти вверх`);
   }
 
   // The song runs on the clock but shows no range on the sheet.

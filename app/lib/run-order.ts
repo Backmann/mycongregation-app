@@ -12,11 +12,16 @@
  *
  * - The MIDDLE SONG takes five minutes but shows no time on the sheet. In
  *   conduct mode it must be a line of its own: it is announced out loud.
- * - The OPENING is one six-minute segment carried on the prayer row — song,
- *   prayer and the chairman's opening words run together and splitting them
- *   would help nobody.
- * - The CLOSING is nine minutes: three of concluding words, six of song and
- *   prayer.
+ * - The OPENING is two steps (Lionel, 22 October 2026): the song and the
+ *   prayer — five minutes, on the prayer's row — then the chairman's opening
+ *   words, one minute. Until then they were one six-minute step and the
+ *   screens could not show which was on.
+ * - The CLOSING likewise: the chairman's concluding words, three minutes,
+ *   then the song and the prayer, six — on the prayer's row. The words steps
+ *   carry the chairman's row but no range on the sheet: his row is no part.
+ * - A SONG is `soft`: songs run two to five minutes (Lionel, 22 October
+ *   2026), so it counts up and never turns amber or red; its minutes are the
+ *   programme's, for the end time only.
  * - The CHAIRMAN and the CBS READER get no segment at all. They are roles
  *   within the meeting rather than items in it: the reader reads inside the
  *   Bible study.
@@ -69,16 +74,24 @@ export interface RunSegment {
    * name nobody.
    */
   showInterval: boolean;
+  /** A song (with its prayer): counted up, never amber or red. */
+  soft?: boolean;
+  /** The chairman's own words — his row, never a «comes out» step. */
+  chairmanWords?: boolean;
 }
 
 /** The whole Living-as-Christians block. */
 const LIVING_TOTAL_MIN = 15;
-/** Song, prayer and the chairman's opening words. */
-const OPENING_MIN = 6;
+/** The opening song and prayer. */
+const OPENING_SONG_MIN = 5;
+/** The chairman's opening words. */
+const OPENING_WORDS_MIN = 1;
 /** The middle song. */
 const MIDDLE_SONG_MIN = 5;
-/** Concluding words (3) plus song and prayer (6). */
-const CLOSING_MIN = 9;
+/** The chairman's concluding words. */
+const CLOSING_WORDS_MIN = 3;
+/** The closing song and prayer. */
+const CLOSING_SONG_MIN = 6;
 /** The congregation Bible study — and the service talk that replaces it. */
 const STUDY_MIN = 30;
 /** Counsel after a student part. */
@@ -109,6 +122,7 @@ export function buildMidweekRunOrder(items: RunItem[]): RunSegment[] {
     minutes: number,
     showInterval = true,
     counselMin = 0,
+    extra: Pick<RunSegment, 'soft' | 'chairmanWords'> = {},
   ) => {
     out.push({
       key,
@@ -117,10 +131,12 @@ export function buildMidweekRunOrder(items: RunItem[]): RunSegment[] {
       partMin: minutes,
       counselMin,
       showInterval,
+      ...extra,
     });
   };
 
-  push(first('midweek_opening_prayer'), 'midweek_opening_prayer', OPENING_MIN);
+  push(first('midweek_opening_prayer'), 'midweek_opening_prayer', OPENING_SONG_MIN, true, 0, { soft: true });
+  push(first('midweek_chairman'), 'midweek_opening_words', OPENING_WORDS_MIN, false, 0, { chairmanWords: true });
   push(first('treasures_talk'), 'treasures_talk', dur(first('treasures_talk'), 10));
   push(first('spiritual_gems'), 'spiritual_gems', dur(first('spiritual_gems'), 10));
   push(first('bible_reading'), 'bible_reading', dur(first('bible_reading'), 4), true, COUNSEL_MIN);
@@ -138,7 +154,7 @@ export function buildMidweekRunOrder(items: RunItem[]): RunSegment[] {
     push(p, key, dur(p, 4), true, isDiscussion(p.partTitle) ? 0 : COUNSEL_MIN);
   }
 
-  push(first('mid_song'), 'mid_song', MIDDLE_SONG_MIN, false);
+  push(first('mid_song'), 'mid_song', MIDDLE_SONG_MIN, false, 0, { soft: true });
 
   const living = ['living_christians_1', 'living_christians_2', 'living_christians_3']
     .map(first)
@@ -157,7 +173,8 @@ export function buildMidweekRunOrder(items: RunItem[]): RunSegment[] {
   if (!study && coTalk) push(coTalk, 'co_service_talk', dur(coTalk, STUDY_MIN));
   else push(study, 'cbs_conductor', dur(study, STUDY_MIN));
 
-  push(first('midweek_closing_prayer'), 'midweek_closing_prayer', CLOSING_MIN);
+  push(first('midweek_chairman'), 'midweek_closing_words', CLOSING_WORDS_MIN, false, 0, { chairmanWords: true });
+  push(first('midweek_closing_prayer'), 'midweek_closing_prayer', CLOSING_SONG_MIN, true, 0, { soft: true });
 
   return out;
 }
@@ -197,11 +214,17 @@ export function buildWeekendRunOrder(items: RunItem[]): RunSegment[] {
   const first = (key: string): RunItem | null => items.find((i) => i.partKey === key) ?? null;
   const dur = (it: RunItem | null, fallback: number): number => it?.partDurationMin ?? fallback;
   const out: RunSegment[] = [];
-  const push = (it: RunItem | null, key: string, minutes: number, showInterval = true) => {
-    out.push({ key, assignmentId: it?.id ?? null, minutes, partMin: minutes, counselMin: 0, showInterval });
+  const push = (
+    it: RunItem | null,
+    key: string,
+    minutes: number,
+    showInterval = true,
+    extra: Pick<RunSegment, 'soft' | 'chairmanWords'> = {},
+  ) => {
+    out.push({ key, assignmentId: it?.id ?? null, minutes, partMin: minutes, counselMin: 0, showInterval, ...extra });
   };
   const coTalk = first('co_concluding_talk');
-  push(first('weekend_opening_prayer'), 'weekend_opening_prayer', WEEKEND_OPENING_MIN);
+  push(first('weekend_opening_prayer'), 'weekend_opening_prayer', WEEKEND_OPENING_MIN, true, { soft: true });
   push(first('public_talk_speaker'), 'public_talk_speaker', dur(first('public_talk_speaker'), PUBLIC_TALK_MIN));
   // The song before the study. A visit week may carry a second one, the
   // closing song after the overseer's talk (schedule/edit.tsx): the earlier
@@ -209,15 +232,15 @@ export function buildWeekendRunOrder(items: RunItem[]): RunSegment[] {
   const songs = items
     .filter((i) => i.partKey === 'weekend_song')
     .sort((a, b) => (a.partOrder ?? 0) - (b.partOrder ?? 0));
-  push(first('weekend_chairman'), 'weekend_announcements', WEEKEND_ANNOUNCEMENTS_MIN);
-  push(songs[0] ?? null, 'weekend_song', WEEKEND_SONG_MIN, false);
+  push(first('weekend_chairman'), 'weekend_announcements', WEEKEND_ANNOUNCEMENTS_MIN, true, { chairmanWords: true });
+  push(songs[0] ?? null, 'weekend_song', WEEKEND_SONG_MIN, false, { soft: true });
   push(
     first('watchtower_conductor'),
     'watchtower_conductor',
     coTalk ? WATCHTOWER_CO_WEEK_MIN : dur(first('watchtower_conductor'), WATCHTOWER_MIN),
   );
   if (coTalk) push(coTalk, 'co_concluding_talk', dur(coTalk, CO_CONCLUDING_TALK_MIN));
-  push(first('weekend_closing_prayer'), 'weekend_closing_prayer', WEEKEND_CLOSING_MIN);
+  push(first('weekend_closing_prayer'), 'weekend_closing_prayer', WEEKEND_CLOSING_MIN, true, { soft: true });
   return out;
 }
 

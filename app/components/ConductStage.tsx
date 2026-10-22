@@ -42,6 +42,8 @@ export interface StagePart {
   title: string;
   person: string | null;
   minutes: number;
+  /** A song: counted up, never amber or red (22 October 2026). */
+  soft?: boolean;
 }
 
 export interface StageControls {
@@ -59,7 +61,8 @@ export interface StageProps {
   who: { text: string; tone: 'live' | 'muted' | 'mine' } | null;
   /** A warning across the top: no connection to the server. */
   banner: string | null;
-  phase: 'before' | 'part' | 'counsel';
+  /** «entrance»: the next brother has been called up, his clock not begun. */
+  phase: 'before' | 'part' | 'counsel' | 'entrance';
   /** Before the first tap. */
   startAt: string | null;
   untilStart: number | null;
@@ -126,7 +129,11 @@ const C = {
   stale: '#475569',
   live: '#34d399',
   mine: '#67e8f9',
+  entrance: '#67e8f9',
 };
+
+/** Late by this much and not begun: no more count of the delay. */
+const NOT_RUN_AFTER_SEC = 30 * 60;
 
 export function mmssSigned(seconds: number): string {
   const s = Math.round(seconds);
@@ -154,7 +161,11 @@ export function ConductStage(p: StageProps) {
   );
 
   const tone: StageTone | 'stale' =
-    p.unsure ? 'stale' : p.phase === 'part' && p.current ? stageTone(p.leftSec, p.current.minutes) : 'calm';
+    p.unsure
+      ? 'stale'
+      : p.phase === 'part' && p.current && !p.current.soft
+        ? stageTone(p.leftSec, p.current.minutes)
+        : 'calm';
 
   // One soft pulse when the colour turns amber or red.
   const flash = useRef(new Animated.Value(0)).current;
@@ -224,6 +235,16 @@ export function ConductStage(p: StageProps) {
         </Pressable>
       </View>
     );
+  } else if (p.phase === 'before' && p.untilStart !== null && p.untilStart < -NOT_RUN_AFTER_SEC) {
+    // Half an hour late and still not begun: most likely not run in the app
+    // tonight. No count growing all evening (22 October 2026).
+    main = (
+      <View style={s.mainCol}>
+        <Text style={s.overline}>{t('conduct.stage.notStarted')}</Text>
+        <Text style={s.title}>{t('conduct.stage.notRunTitle')}</Text>
+        <Text style={s.person}>{t('conduct.stage.notRunHint')}</Text>
+      </View>
+    );
   } else if (p.phase === 'before') {
     const late = p.untilStart !== null && p.untilStart <= 0;
     main = (
@@ -265,6 +286,24 @@ export function ConductStage(p: StageProps) {
         <View style={s.track} />
       </View>
     );
+  } else if (p.phase === 'entrance' && p.current) {
+    // «Выходит»: the chairman sees whom he is to call, and the number is the
+    // part's own minutes, grey — it starts when the brother does.
+    main = (
+      <View style={s.mainCol}>
+        <Text style={[s.overline, { color: C.entrance }]}>{t('conduct.stage.comesOut')}</Text>
+        <Text style={s.title}>{p.current.title}</Text>
+        {p.current.person ? <Text style={s.person}>{p.current.person}</Text> : null}
+        <View style={{ flex: 1, minHeight: 16 }} />
+        <Text style={[s.digits, { fontSize: digits, lineHeight: digits * 1.02, color: C.muted }]} numberOfLines={1}>
+          {mmssSigned(p.current.minutes * 60)}
+        </Text>
+        <View style={s.stateRow}>
+          <Text style={s.leftWord}>{t('conduct.stage.startsWithHim')}</Text>
+        </View>
+        <View style={s.track} />
+      </View>
+    );
   } else if (p.phase === 'counsel' && p.counselFor) {
     main = (
       <View style={s.counselBox}>
@@ -287,6 +326,9 @@ export function ConductStage(p: StageProps) {
             : null;
     const full = p.current.minutes * 60;
     const done = full > 0 ? Math.min(1, Math.max(0, 1 - p.leftSec / full)) : 0;
+    // A song runs as long as it runs: the time it has gone, upward.
+    const soft = !!p.current.soft;
+    const shown = soft ? mmssSigned(Math.max(0, full - p.leftSec)) : mmssSigned(p.leftSec);
     main = (
       <View style={s.mainCol}>
         {p.current.section ? (
@@ -311,10 +353,12 @@ export function ConductStage(p: StageProps) {
           numberOfLines={1}
           accessibilityLiveRegion="polite"
         >
-          {mmssSigned(p.leftSec)}
+          {shown}
         </Text>
         <View style={s.stateRow}>
-          {p.unsure ? (
+          {soft && !p.unsure ? (
+            <Text style={s.leftWord}>{t('conduct.stage.going')}</Text>
+          ) : p.unsure ? (
             <Text style={s.unsureText}>{t('conduct.live.unsure')}</Text>
           ) : p.paused ? (
             <View style={[s.pill, { backgroundColor: '#1e293b', flexDirection: 'row', alignItems: 'center', gap: 8 }]}>
@@ -330,14 +374,16 @@ export function ConductStage(p: StageProps) {
           )}
           {!p.unsure ? (
             <Text style={s.ofMinutes}>
-              {tone === 'over'
+              {soft
+                ? t('conduct.stage.aboutMinutes', { minutes: p.current.minutes })
+                : tone === 'over'
                 ? t('conduct.stage.byProgrammeMin', { minutes: p.current.minutes })
                 : t('conduct.stage.ofMinutes', { minutes: p.current.minutes })}
             </Text>
           ) : null}
         </View>
         <View style={s.track}>
-          <View style={[s.fill, { width: `${Math.round(done * 100)}%`, backgroundColor: barColor }]} />
+          {soft ? null : <View style={[s.fill, { width: `${Math.round(done * 100)}%`, backgroundColor: barColor }]} />}
         </View>
       </View>
     );

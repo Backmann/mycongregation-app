@@ -1160,6 +1160,7 @@
     "filteredByCapability": "Filtered by capability:",
     "showAllOverride": "Show all publishers (override filter)",
     "showingAllNoFilter": "Showing all — capability filter is OFF",
+    "nobodyHasCapability": "Nobody has «{{name}}» ticked yet — everybody is shown. It is ticked on the publisher’s card.",
     "hiddenByCapability": "{{count}} hidden by capability filter",
     "lastGiven": "Last given {{date}}",
     "upcoming": "Upcoming {{date}}",
@@ -4180,6 +4181,7 @@
       "runningYou": "You are keeping time",
       "runningBy": "Keeping time: {{name}}",
       "controllerSilent": "Timekeeper offline since {{time}}",
+      "ended": "The meeting ended at {{time}}",
       "chairmanWatching": "Chairman: {{name}} · watching",
       "offlineWatch": "No connection to the server · updated at {{time}}. The part may already be over.",
       "offlineRun": "No connection to the server. The run is kept on this device and will be sent once the connection is back.",
@@ -4226,7 +4228,7 @@
       "betweenSub": "time that belongs to no part",
       "curve": "How the time went",
       "curveSub": "Behind the programme as the meeting went · above zero — later than planned",
-      "curvePauses": "Light stretches are pauses between parts.",
+      "curvePauses": "Light stretches: changeovers and pauses between parts.",
       "curveNoPauses": "Pauses between parts ({{time}}) are not included: this result was saved before the app recorded when each part began.",
       "start": "start {{time}}",
       "end": "end {{time}}",
@@ -4238,7 +4240,7 @@
       "byOrder": "In order",
       "byDeviation": "By deviation",
       "counselRow": "chairman’s counsel",
-      "pauseRow": "pause",
+      "pauseRow": "changeover",
       "betweenRow": "Pauses and transitions between parts",
       "note": "A part’s time excludes the counsel minute; the counsel is on the line below. Opening, closing and song are grey: they are nobody’s assignment.",
       "short": {
@@ -4254,6 +4256,8 @@
       "wtPeople": "conducted by {{conductor}} · read by {{reader}}",
       "wtConductor": "conducted by {{conductor}}",
       "notStarted": "THE MEETING HAS NOT STARTED",
+      "notRunTitle": "The meeting has not been started in the app",
+      "notRunHint": "It appears here when the timekeeper presses «Start the meeting».",
       "startsAt": "Starts at {{time}}",
       "byProgrammeAt": "By the programme — at {{time}}",
       "startHint": "The countdown begins when the timekeeper taps “Start meeting”",
@@ -4288,7 +4292,11 @@
         "no": "no"
       },
       "countSoon": "The countdown to the start appears here an hour before",
-      "youRunElsewhere": "You are keeping time · on another device"
+      "youRunElsewhere": "You are keeping time · on another device",
+      "comesOut": "COMING UP",
+      "startsWithHim": "the count starts when he begins",
+      "going": "running",
+      "aboutMinutes": "song · about {{minutes}} min"
     },
     "pausedSince": "Paused since {{time}}",
     "weekendRun": {
@@ -4311,6 +4319,22 @@
       "dropTitle": "Don’t save the run?",
       "dropBody": "This meeting’s run will be deleted; there will be no result.",
       "watch": "Not updated since {{time}} — the meeting has probably ended."
+    },
+    "entrance": {
+      "overline": "CHANGEOVER · COMING UP",
+      "note": "The changeover is not part time. Part: {{minutes}} min",
+      "begin": "Started · count {{time}}",
+      "auto": "Starts by itself in 30 seconds"
+    },
+    "soft": {
+      "note": "A song — no countdown, no red. About {{minutes}} min in the programme"
+    },
+    "midweekRun": {
+      "songAndPrayer": "{{song}} and prayer",
+      "opening": "Song and prayer",
+      "closing": "Concluding song and prayer",
+      "openingWords": "Opening comments",
+      "closingWords": "Concluding comments"
     }
   },
   "serviceHub": {
@@ -4875,8 +4899,7 @@
       "signInTitle": "Signing in on the laptop",
       "password": "Password",
       "another": "Another",
-      "latinOk": "Latin letters — typed on any keyboard in the hall",
-      "latinWarn": "The password has Cyrillic letters — the laptop’s German keyboard cannot type them",
+      "passwordLater": "The app makes up the password and shows it at the end, once the screen exists.",
       "next": "Next: menu digits",
       "back": "Back",
       "pinTitle": "Display menu digits",
@@ -4884,7 +4907,7 @@
       "shows1": "The meeting of the day as it runs: the part, the countdown, who is next, the end",
       "shows2": "Between meetings, the clock and the next meeting",
       "doneTitle": "Stage display ready",
-      "doneHint": "Open mycongregation.org on the laptop at the lectern and sign in with these",
+      "doneHint": "Done — you can sign in now. Open mycongregation.org on the laptop at the lectern and sign in with these details",
       "pinShort": "Menu digits",
       "copyOne": "Copy: {{what}}",
       "copyAll": "Copy everything",

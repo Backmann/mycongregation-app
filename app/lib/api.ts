@@ -5599,6 +5599,8 @@ export interface ConductLiveAnswer {
   live: ConductLive | null;
   /** Only on a read: who the asker is for this meeting. */
   roles?: LiveRoles;
+  /** When the meeting's programme last changed — a newer one is read at once. */
+  programmeStamp?: string | null;
   serverNowMs: number;
 }
 
@@ -5634,7 +5636,7 @@ export const conductLiveApi = {
   async get(week: string, kind: ConductKindWire = "midweek"): Promise<ConductLiveAnswer> {
     const device = await deviceId();
     return timed(() =>
-      api.get<{ live: ConductLive | null; roles: LiveRoles; serverNow: string }>(
+      api.get<{ live: ConductLive | null; roles: LiveRoles; programmeStamp?: string | null; serverNow: string }>(
         "/conduct-live",
         // Short: a hung ask must fail fast, so the next one goes out
         // (lib/conduct-live.ts LIVE_REQUEST_TIMEOUT_MS).
