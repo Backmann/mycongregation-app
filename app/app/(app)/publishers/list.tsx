@@ -8,6 +8,7 @@ import {
   Text,
   TextInput,
   View,
+  useWindowDimensions,
 } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
@@ -26,6 +27,8 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { Sheet } from '../../../components/Sheet';
 import { failsScreen } from '../../../lib/screen-failure';
+import { SIDE_NAV_FROM } from '../../../lib/screen-width';
+import { PublisherDetail } from './[id]';
 
 type Filters = {
   groupId: string | 'none' | null;
@@ -71,6 +74,12 @@ export default function PublishersListScreen() {
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
   const [filterOpen, setFilterOpen] = useState(false);
+  // LIST AND CARD SIDE BY SIDE (22 October 2026, mockup «Ширина экранов»):
+  // beside the side menu the chosen person's card opens on the right instead
+  // of on a screen of its own.
+  const { width } = useWindowDimensions();
+  const split = width >= SIDE_NAV_FROM;
+  const [chosen, setChosen] = useState<string | null>(null);
 
   const { data, isLoading, isRefetching, refetch, error } = useQuery({
     throwOnError: failsScreen,
@@ -167,6 +176,14 @@ export default function PublishersListScreen() {
     );
   }, [data, filters, activeCount, activeAuxIds]);
 
+  // The card shown beside the list: the one chosen, else the first.
+  const splitOn = split && privileged;
+  const shownId = splitOn
+    ? chosen && filtered.some((p) => p.id === chosen)
+      ? chosen
+      : (filtered[0]?.id ?? null)
+    : null;
+
   const allLoaded = data?.data ?? [];
   // Students (appointment=STUDENT) are not reporting publishers and are not
   // counted in the congregation's publisher total.
@@ -188,8 +205,8 @@ export default function PublishersListScreen() {
     </Text>
   ) : null;
 
-  return (
-    <View style={styles.container}>
+  const listPart = (
+    <View style={[styles.container, splitOn && styles.listPane]}>
       <View style={styles.searchRow}>
         <TextInput
           style={styles.search}
@@ -251,6 +268,8 @@ export default function PublishersListScreen() {
           }
           renderItem={({ item }) => (
             <PublisherRow
+              onOpen={split ? () => setChosen(item.id) : undefined}
+              chosen={split && item.id === shownId}
               publisher={item}
               groupName={groupNameFor(item)}
               groupRole={groupRoleById.get(item.id) ?? null}
@@ -272,9 +291,20 @@ export default function PublishersListScreen() {
       />
     </View>
   );
+  if (!splitOn) return listPart;
+  return (
+    <View style={styles.split}>
+      {listPart}
+      <View style={styles.detailPane}>
+        {shownId ? <PublisherDetail key={shownId} id={shownId} /> : null}
+      </View>
+    </View>
+  );
 }
 
 function PublisherRow({
+  onOpen,
+  chosen,
   publisher,
   groupName,
   canOpenCard,
@@ -282,6 +312,8 @@ function PublisherRow({
   groupRole,
   isAuxiliaryPioneer,
 }: {
+  onOpen?: () => void;
+  chosen?: boolean;
   publisher: Publisher;
   groupName: string | null;
   canOpenCard: boolean;
@@ -324,9 +356,10 @@ function PublisherRow({
         styles.row,
         pressed && styles.rowPressed,
         isRemoved && styles.rowRemoved,
+        chosen && styles.rowChosen,
       ]}
       disabled={!canOpenCard}
-      onPress={() => router.push(`/publishers/${publisher.id}` as any)}
+      onPress={onOpen ?? (() => router.push(`/publishers/${publisher.id}` as any))}
     >
       <View style={[styles.avatar, gendered(publisher.gender)]}>
         <Text style={styles.avatarText}>{initials}</Text>
@@ -596,6 +629,19 @@ const gendered = (g: 'brother' | 'sister') => ({
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f1f5f9' },
+  split: { flex: 1, flexDirection: 'row', gap: 20, backgroundColor: '#f1f5f9' },
+  listPane: { flexGrow: 0, flexShrink: 0, flexBasis: 400, width: 400 },
+  detailPane: {
+    flex: 1,
+    minWidth: 0,
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    overflow: 'hidden',
+    marginTop: 12,
+  },
+  rowChosen: { backgroundColor: '#ecf7fa' },
   searchRow: {
     flexDirection: 'row',
     alignItems: 'center',
