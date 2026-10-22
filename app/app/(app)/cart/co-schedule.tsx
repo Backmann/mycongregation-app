@@ -782,10 +782,13 @@ export default function CoScheduleScreen() {
         return a?.partTitle?.trim() || null;
       };
 
-      // Midweek: CO service talk. During a visit the midweek meeting is often
-      // moved (e.g. from Wednesday to Tuesday) — the visit's own coMidweekDow
-      // takes precedence over the congregation's usual midweek day.
-      const midweekDow = visit.coMidweekDow ?? eff.midweekDow;
+      // Midweek: CO service talk. A visit moves the midweek meeting — to the
+      // visit's own coMidweekDow, Tuesday when none is set: the rule every
+      // other screen and the server keep (lib/event-view.ts, server
+      // common/week-rules.ts). Until 22 October 2026 this fell back to the
+      // congregation's usual day, so the heading said «вторник» while the
+      // day list and the PDF put the meeting on Wednesday.
+      const midweekDow = visit.coMidweekDow ?? 2;
       const mwDate = formatDateISO(meetingDate(monday, midweekDow));
       if (inRange(mwDate)) {
         const coTalk = titleFor('co_service_talk');

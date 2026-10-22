@@ -386,7 +386,9 @@ function Hero({
         ? t('specialEvents.list.today')
         : n === 1
         ? t('specialEvents.list.tomorrow')
-        : t('specialEvents.list.inDays', { count: n });
+        : n < 60
+          ? t('specialEvents.list.inDays', { count: n })
+          : t('specialEvents.page.inMonths', { count: Math.round(n / 30) });
   const cap = (x: string) => x.charAt(0).toUpperCase() + x.slice(1);
   const dateLine =
     item.end !== item.date

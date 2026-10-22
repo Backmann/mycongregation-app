@@ -195,7 +195,8 @@
     "undo": "Rückgängig",
     "undoing": "Wird zurückgeholt…",
     "noAccessTitle": "Kein Zugriff",
-    "noAccessHint": "Dieser Bereich ist für diejenigen geöffnet, die dafür eingeteilt sind. Wenn Sie ihn brauchen, wenden Sie sich bitte an die Ältesten."
+    "noAccessHint": "Dieser Bereich ist für diejenigen geöffnet, die dafür eingeteilt sind. Wenn Sie ihn brauchen, wenden Sie sich bitte an die Ältesten.",
+    "noAccessHintLead": "Dieser Bereich ist für diejenigen geöffnet, die dafür eine Aufgabe in der Versammlung oder eine besondere Berechtigung haben."
   },
   "profile": {
     "signedInAs": "Angemeldet als",
@@ -216,7 +217,7 @@
       "newPassword": "Neues Passwort",
       "confirmPassword": "Neues Passwort bestätigen",
       "submit": "Passwort ändern",
-      "note": "Wenn Sie Ihr aktuelles Passwort vergessen haben, bitten Sie einen Administrator, es über die Benutzerverwaltung zurückzusetzen.",
+      "note": "Wenn Sie Ihr aktuelles Passwort vergessen haben, bitten Sie einen Administrator, es zurückzusetzen — in Ihrer Verkündigerkarte, Abschnitt „App-Zugang“.",
       "errors": {
         "sameAsCurrent": "Neues Passwort muss sich vom aktuellen unterscheiden",
         "mismatch": "Passwörter stimmen nicht überein"
@@ -238,7 +239,7 @@
     "circuitOverseerDescription": "Standardname für den Besuch",
     "loginNameHint": "Das ist Ihr Name für die Anmeldung.",
     "noLoginName": "Kein Anmeldename gesetzt — fragen Sie Ihren Administrator.",
-    "noLoginNameAdmin": "Kein Anmeldename gesetzt. Festlegen können Sie ihn unter „Versammlung“ → „Benutzerverwaltung“.",
+    "noLoginNameAdmin": "Kein Anmeldename gesetzt. Festlegen können Sie ihn unter „Versammlung“ → „Verkündiger“, in der Karte der Person, Abschnitt „App-Zugang“.",
     "deliveryEmail": "Post geht an: {{email}}",
     "noEmail": "Keine E-Mail-Adresse. Ein vergessenes Passwort setzt der Versammlungsadministrator zurück."
   },
@@ -430,7 +431,6 @@
     },
     "departedCount": "{{count}} ausgeschieden",
     "myGroupOnly": "Angezeigt werden Verkündiger Ihrer Gruppe",
-    "cardRestricted": "Verkündigerkarten sind nur für Älteste und beauftragte Brüder sichtbar",
     "spiritualStatus": {
       "otherSheep": "Andere Schafe",
       "anointed": "Gesalbter",
@@ -667,7 +667,7 @@
       "validationServedSelf": "Bitte geben Sie an, ob Sie diesen Monat am Predigtdienst teilgenommen haben."
     },
     "errors": {
-      "notLinkedToPublisher": "Ihr Zugang ist mit keiner Verkündigerkarte verknüpft, deshalb kann kein Bericht abgegeben werden. Bitten Sie einen Ältesten oder Administrator, sie zu verknüpfen: Versammlung → Verwaltung → Benutzerverwaltung → „Verknüpfen“.",
+      "notLinkedToPublisher": "Ihre Anmeldung ist mit keiner Verkündigerkarte verknüpft, daher können Sie keinen Bericht abgeben. Verknüpfen kann sie ein Administrator: „Versammlung“ → „Verkündiger“ → Karte der Person → „App-Zugang“.",
       "selfEditWindowClosed": "Dieser Bericht lässt sich nicht mehr ändern: der Monat ist abgeschlossen. Korrigieren kann man, solange der Monat gesammelt wird — bis zum 20. des Folgemonats. Wenden Sie sich an den Sekretär oder einen Admin."
     },
     "pioneerInline": " · Pionier",
@@ -697,7 +697,7 @@
     },
     "publisherHistory": {
       "notSubmitted": "Nicht eingereicht",
-      "noPublisherId": "Keine Verkündiger-ID angegeben.",
+      "noPublisherId": "Öffnen Sie den Verlauf aus den Gruppenberichten — hier ist nicht angegeben, wessen.",
       "fallbackName": "Verkündiger",
       "last12Months": "Letzte 12 Monate",
       "noHistory": "Kein Verlauf",
@@ -776,8 +776,8 @@
       "meetingLocation": "Versammlungsort",
       "meetingLocationPlaceholder": "Brackeler Hellweg 14",
       "leadership": "Leitung",
-      "overseer": "Gruppenaufseher",
-      "assistant": "Gehilfe des Gruppenaufsehers"
+      "overseer": "Gruppenverantwortlicher",
+      "assistant": "Gruppenassistent"
     },
     "membersCount": "Mitglieder ({{count}})",
     "noMembersYet": "Noch keine Mitglieder in dieser Gruppe",
@@ -957,8 +957,8 @@
     },
     "noAssignments": "Keine Zuteilungen für diese Woche.",
     "unassigned": "Nicht zugeteilt",
-    "createEmptyMidweek": "Leere Wochenzusammenkunft erstellen ({{count}} Plätze)",
-    "createEmptyWeekend": "Leere Wochenendzusammenkunft erstellen ({{count}} Plätze)",
+    "createEmptyMidweek": "Leere Wochenzusammenkunft erstellen",
+    "createEmptyWeekend": "Leere Wochenendzusammenkunft erstellen",
     "removedBanner": "Diese Zuteilung wurde entfernt",
     "import": {
       "title": "Programm (EPUB) importieren",
@@ -1110,7 +1110,7 @@
       "weekendTitle": "Zusammenkunft am Wochenende",
       "watchtowerPrefix": "Wachtturm"
     },
-    "movedTo": "Jetzt eine eigene Seite: {{path}}",
+    "movedTo": "Unter {{path}}",
     "lock": {
       "frozen": "Die Zusammenkunft war am {{date}} — das Programm ist jetzt Teil der Aufzeichnungen und kann nicht mehr geändert werden.",
       "grace": "Die Zusammenkunft hat stattgefunden — das Programm kann bis {{until}} noch korrigiert werden.",
@@ -1123,7 +1123,7 @@
     }
   },
   "audit": {
-    "noReportId": "Keine Bericht-ID angegeben.",
+    "noReportId": "Öffnen Sie das Protokoll aus dem Bericht selbst — hier ist nicht angegeben, welches.",
     "noEdits": "Noch keine Bearbeitungen",
     "noEditsHint": "Dieser Bericht wurde seit der Einreichung nicht geändert.",
     "unknownEditor": "(unbekannter Bearbeiter)",
@@ -2452,8 +2452,6 @@
     },
     "page": {
       "wasAgo": "war am {{date}}",
-      "inWeeks_one": "in {{count}} Woche",
-      "inWeeks_other": "in {{count}} Wochen",
       "inMonths_one": "in {{count}} Monat",
       "inMonths_other": "in {{count}} Monaten",
       "withWife": "Seine Frau — {{name}}",
@@ -2795,7 +2793,9 @@
     "deleteConfirmTitle": "Eintrag löschen?",
     "deleteConfirmBody": "„{{name}}“ aus der Liste entfernen? Bereits erstellte Besuche sind nicht betroffen.",
     "emptyList": "Noch niemand. Fügen Sie einen Kreisaufseher hinzu.",
-    "pickLabel": "Wer kommt"
+    "pickLabel": "Wer kommt",
+    "listIntroRead": "Der Kreisaufseher, den die Versammlung erwartet, und seine Vertreter.",
+    "emptyListRead": "Noch kein Kreisaufseher eingetragen."
   },
   "relative": {
     "today": "heute",
@@ -2904,7 +2904,7 @@
       "nextTripUnknown": "Am {{date}} unterwegs (Versammlung nicht angegeben)"
     },
     "title": "Redner-Koordinator",
-    "intro": "Verwalten Sie eingehende und ausgehende Redner, ihre Vorträge und die Verzeichnisse. Das Protokoll „Zu uns / Von uns“ erscheint hier.",
+    "intro": "Verwalten Sie eingehende und ausgehende Redner, ihre Vorträge und die Verzeichnisse.",
     "errorTitle": "Fehler",
     "directoriesLabel": "Verzeichnisse",
     "congregations": {
@@ -3169,7 +3169,7 @@
     "later": "Später",
     "saved": "Gespeichert",
     "empty": "nicht angegeben",
-    "noCard": "Ihr Zugang ist mit keiner Verkündigerkarte verknüpft, deshalb gibt es hier nichts zu zeigen. Bitten Sie einen Ältesten oder Administrator, sie zu verknüpfen: Versammlung → Verwaltung → Benutzerverwaltung → „Verknüpfen“.",
+    "noCard": "Ihre Anmeldung ist mit keiner Verkündigerkarte verknüpft, daher gibt es hier nichts anzuzeigen. Verknüpfen kann sie ein Administrator: „Versammlung“ → „Verkündiger“ → Karte der Person → „App-Zugang“.",
     "neverConfirmed": "Noch nie bestätigt",
     "checkTitle": "Bitte Daten prüfen",
     "checkSubtitle": "Einmal im Jahr, ab {{date}}, bitten wir Sie zu bestätigen, dass Ihre Kontaktdaten aktuell sind.",
@@ -4800,7 +4800,7 @@
       "SAME_CARD": "Bitte zwei verschiedene Karten wählen.",
       "SAME_SPEAKER": "Dieser Redner hat diese Woche schon.",
       "WEEK_ALREADY_PAST": "Die Woche ist schon vorbei – sie kann nicht getauscht werden.",
-      "NO_OWN_CARD": "Ihr Konto ist mit keiner Verkündigerkarte verbunden. Bitten Sie einen Administrator, sie zu verbinden.",
+      "NO_OWN_CARD": "Ihr Konto ist mit keiner Verkündigerkarte verknüpft. Verknüpfen kann sie ein Administrator: „Versammlung“ → „Verkündiger“ → Karte der Person → „App-Zugang“.",
       "NOTHING_TO_SAVE": "Nichts zu speichern – es wurde nichts geändert.",
       "END_BEFORE_START": "Das Ende kann nicht vor dem Beginn liegen – bitte die Daten prüfen.",
       "REPORT_STUDENT": "Bibelschüler geben keinen Predigtdienstbericht ab.",

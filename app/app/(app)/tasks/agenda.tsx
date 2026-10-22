@@ -377,6 +377,10 @@ export default function AgendaScreen() {
       </Pressable>
 
       <ScrollView contentContainerStyle={styles.content}>
+        {/* The chip row only when there are meetings to choose between: with
+            none, a bare «+» stood over the big «Назначить встречу» (audit,
+            22 October 2026). */}
+        {chips.length > 0 ? (
         <View style={styles.meetingBar}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             <View style={styles.chipRow}>
@@ -427,6 +431,7 @@ export default function AgendaScreen() {
             </View>
           </ScrollView>
         </View>
+        ) : null}
 
         {agendaQuery.isLoading ? (
           <ActivityIndicator style={{ marginTop: 32 }} />

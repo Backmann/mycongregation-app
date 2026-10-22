@@ -5,9 +5,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { BackButton } from '../../../components/BackButton';
 import { screenGate } from '../../../components/ScreenGate';
+import { useMyPublisher } from '../../../lib/useMyPublisher';
 
 export default function ServiceReportsLayout() {
   const { t } = useTranslation();
+  // «+» files one's OWN report: a login with no card has nothing to file.
+  const { myPublisherId, asked } = useMyPublisher();
+  const noCard = asked.data !== undefined && !myPublisherId;
   return (
     <Stack
       screenLayout={screenGate('/service-reports')}
@@ -26,7 +30,8 @@ export default function ServiceReportsLayout() {
           // and people-in-a-circle. Every section is now a named line on the
           // screen below, shown to whoever it belongs to; this is the one
           // action eighty-eight people come for.
-          headerRight: () => (
+          headerRight: () =>
+            noCard ? null : (
             <Pressable
               onPress={() => router.push('/service-reports/new' as any)}
               style={{ paddingHorizontal: 8 }}
@@ -34,7 +39,7 @@ export default function ServiceReportsLayout() {
             >
               <Ionicons name="add" size={28} color={HEADER_ICON} />
             </Pressable>
-          ),
+            ),
         }}
       />
       <Stack.Screen name="new" options={{ title: t('reports.title.new') }} />

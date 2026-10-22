@@ -52,11 +52,14 @@ export default function ServiceGroupsListScreen() {
         autoCorrect={false}
       />
 
-      <FilterToggle
-        label={t('common.showRemoved')}
-        value={showRemoved}
-        onValueChange={setShowRemoved}
-      />
+      {/* Removed groups are the admin's and the elders' business (audit, 22 October 2026). */}
+      {canSeeEveryGroup ? (
+        <FilterToggle
+          label={t('common.showRemoved')}
+          value={showRemoved}
+          onValueChange={setShowRemoved}
+        />
+      ) : null}
 
       {error && (
         <LoadFailure error={error} onRetry={() => void refetch()} />
