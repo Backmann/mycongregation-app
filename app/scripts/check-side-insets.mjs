@@ -25,10 +25,13 @@ const read = (rel) => readFileSync(join(ROOT, rel), 'utf8').replace(/\r\n/g, '\n
 const problems = [];
 
 const gate = read('components/ScreenGate.tsx');
-if (!/function SideInsets\([^)]*\) \{\s*const \{ left, right \} = useSafeAreaInsets\(\);\s*return \(\s*<View style=\{\[styles\.frame, \{ paddingLeft: left, paddingRight: right \}\]\}/.test(gate)) {
+// SideInsets takes the screen's width rule too (22 October 2026), so its
+// arguments and the lines before the frame grew; the frame itself is the same.
+const sideInsets = gate.slice(gate.indexOf('function SideInsets'), gate.indexOf('type ScreenLayout'));
+if (!/const \{ left, right \} = useSafeAreaInsets\(\);/.test(sideInsets) || !/<View style=\{\[styles\.frame, \{ paddingLeft: left, paddingRight: right \}\]\}/.test(sideInsets)) {
   problems.push('ScreenGate: рамка экрана больше не отступает от боковых системных полос');
 }
-if (!/layout = function ScreenLayout\(\{ children, route \}\) \{\s*return \(\s*<SideInsets>\s*<Gate route=/.test(gate)) {
+if (!/layout = function ScreenLayout\(\{ children, route[^}]*\}\) \{[\s\S]{0,200}return \(\s*<SideInsets[^>]*>\s*<Gate route=/.test(gate)) {
   problems.push('ScreenGate: экран стоит не под рамкой с боковыми отступами');
 }
 if (/SideInsets[\s\S]{0,200}(left|right)\s*(>|===|!==|\?\?|&&)/.test(gate.slice(gate.indexOf('function SideInsets'), gate.indexOf('type ScreenLayout')))) {

@@ -82,7 +82,8 @@ const walk = (dir, out = []) => {
 };
 // Not doors: the table itself; the server's addresses (lib/api.ts shares
 // some spellings with the screens).
-const SKIP = new Set(['lib/screen-access.ts', 'lib/api.ts']);
+// lib/screen-width.ts names screens to say how wide they are, not to open them.
+const SKIP = new Set(['lib/screen-access.ts', 'lib/api.ts', 'lib/screen-width.ts']);
 // A screen named here is not a way INTO it: where «back» falls when there is
 // nothing to go back to; the folder a gate is told; a `from=` to return to;
 // and the question itself.

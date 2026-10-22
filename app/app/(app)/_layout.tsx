@@ -7,7 +7,9 @@ import { CommonActions } from "@react-navigation/native";
 import { NavHistoryTracker, sectionToRoot } from "../../components/NavHistory";
 import { clearForeign, isForeign } from "../../lib/nav-history";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { ActivityIndicator, View } from "react-native";
+import { ActivityIndicator, View, useWindowDimensions } from "react-native";
+import { SideNav } from "../../components/SideNav";
+import { SIDE_NAV_FROM } from "../../lib/screen-width";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../../lib/auth";
@@ -38,13 +40,16 @@ const PARENT_TAB: Record<string, string> = {
   "service-reports": "cart",
 };
 
-function TabBar(props: BottomTabBarProps) {
-  const { state, navigation } = props;
+function TabBar(props: BottomTabBarProps & { side?: boolean }) {
+  const { state, navigation, side } = props;
   const current = state.routes[state.index]?.name;
   const parentName = current ? PARENT_TAB[current] : undefined;
   const parentIndex = parentName
     ? state.routes.findIndex((r) => r.name === parentName)
     : -1;
+  // An iPad on its side and a computer: the same tabs down the left edge
+  // (components/SideNav.tsx, 22 October 2026).
+  if (side) return <SideNav {...props} litIndex={parentIndex < 0 ? state.index : parentIndex} />;
   if (parentIndex < 0) return <BottomTabBar {...props} />;
   const parent = state.routes[parentIndex];
   // The bar thinks the parent tab is the open one, so a press on it would
@@ -79,6 +84,8 @@ function TabBar(props: BottomTabBarProps) {
 
 export default function AppLayout() {
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
+  const side = width >= SIDE_NAV_FROM;
   const { user, isLoading, unreachable } = useAuth();
   const { t } = useTranslation();
   usePushNotifications();
@@ -108,7 +115,7 @@ export default function AppLayout() {
       <ContactsCheckPrompt />
       <NavHistoryTracker parentTab={PARENT_TAB} />
       <Tabs
-        tabBar={(props) => <TabBar {...props} />}
+        tabBar={(props) => <TabBar {...props} side={side} />}
         // A section whose screen on top was opened from another section opens
         // at its first screen when its tab is pressed (lib/nav-history.ts,
         // 19 October 2026): before, the tab showed that foreign screen and the
@@ -124,6 +131,7 @@ export default function AppLayout() {
         })}
         screenOptions={{
           headerShown: false,
+          tabBarPosition: side ? "left" : "bottom",
           tabBarActiveTintColor: "#0ea5e9",
           tabBarInactiveTintColor: "#64748b",
           // Read out of the library's own source, not inferred from pictures:

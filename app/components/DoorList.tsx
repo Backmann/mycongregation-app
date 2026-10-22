@@ -123,9 +123,9 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: '#f1f5f9' },
   content: { paddingBottom: 40, alignItems: 'center' },
   column: { width: '100%', maxWidth: 720 },
-  wide: { width: '100%', maxWidth: 1000, flexDirection: 'row', gap: 32, paddingHorizontal: 8 },
+  wide: { width: '100%', maxWidth: 1120, flexDirection: 'row', gap: 32, paddingHorizontal: 8 },
   wideCol: { flex: 1, minWidth: 0 },
-  noticeWide: { width: '100%', maxWidth: 1000, paddingHorizontal: 8 },
+  noticeWide: { width: '100%', maxWidth: 1120, paddingHorizontal: 8 },
   due: { color: '#b45309', fontFamily: FONT.bold },
   unlabelled: { paddingTop: 8 },
   label: {
