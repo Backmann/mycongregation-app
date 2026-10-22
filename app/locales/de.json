@@ -4296,7 +4296,8 @@
       "comesOut": "KOMMT NACH VORN",
       "startsWithHim": "die Zeit läuft, wenn er beginnt",
       "going": "läuft",
-      "aboutMinutes": "Lied · etwa {{minutes}} Min."
+      "aboutMinutes": "Lied · etwa {{minutes}} Min.",
+      "songWithHim": "das Lied folgt, wenn er es ansagt"
     },
     "pausedSince": "Pause seit {{time}}",
     "weekendRun": {
@@ -4324,7 +4325,8 @@
       "overline": "WECHSEL · KOMMT NACH VORN",
       "note": "Der Wechsel zählt nicht zur Zeit des Programmpunkts. Punkt: {{minutes}} Min.",
       "begin": "Begonnen · Zeit {{time}} läuft",
-      "auto": "Startet nach 30 Sekunden von selbst"
+      "auto": "Startet nach 30 Sekunden von selbst",
+      "beginSong": "Begonnen · Lied läuft"
     },
     "soft": {
       "note": "Ein Lied — kein Countdown, kein Rot. Laut Programm etwa {{minutes}} Min."
