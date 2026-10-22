@@ -130,8 +130,9 @@ export function digestHome(input: {
         (a) =>
           a.startDate <= next.dateISO &&
           (a.endDate ?? a.startDate) >= next.dateISO &&
-          // A talk elsewhere already explains its own trip.
-          !(next.type === 'outgoing_talk' && next.absence?.id === a.id),
+          // Away on the day of a talk elsewhere is no news: the trip IS the
+          // absence, however many records describe it (22 October 2026).
+          next.type !== 'outgoing_talk',
       ) ?? null)
     : null;
 

@@ -79,6 +79,7 @@ import {
   MeetingAbout,
   MeetingEntry,
   MyPartLine,
+  OutgoingTalkEntry,
   TimelineEntry,
   buildTimeline,
   clockPlus,
@@ -717,15 +718,51 @@ function relativeLabel(
   return t("home.next.inDays", { count: days });
 }
 
+/**
+ * The theme of a talk elsewhere — or null when the server had none and sent
+ * the hall's name in its place, which the stop already says.
+ */
+function talkTheme(r: OutgoingTalkEntry["task"], t: TFunction): string | null {
+  const x = taskTitle(r.item, t);
+  return x && x !== r.item.congregationName ? x : null;
+}
+
+/** An address kept over two lines, said on one (22 October 2026). */
+function oneLine(text: string): string {
+  return text
+    .split(/\s*\n\s*/)
+    .filter(Boolean)
+    .join(", ");
+}
+
+/**
+ * «✓ Отъезд отмечен» (Lionel, 22 October 2026): the trip is known, there is
+ * nobody to tell — in place of the amber «сообщите», which a talk elsewhere
+ * used to raise against itself.
+ */
+function TripNoted() {
+  const { t } = useTranslation();
+  return (
+    <View style={s.tripNoted}>
+      <Ionicons name="checkmark" size={15} color="#15803d" />
+      <Text style={s.tripNotedText}>{t("home.next.tripNoted")}</Text>
+    </View>
+  );
+}
+
 function absenceRange(a: Absence, locale: string): string {
+  // The year only when it is not this one: «25 октября», not «… 2026 г.».
+  const thisYear = String(new Date().getFullYear());
   const fmt = (iso: string, withYear: boolean) =>
     new Date(`${iso}T00:00:00`).toLocaleDateString(locale, {
       day: "numeric",
       month: "long",
       ...(withYear ? { year: "numeric" } : {}),
     });
-  if (!a.endDate || a.endDate === a.startDate) return fmt(a.startDate, true);
-  return `${fmt(a.startDate, a.startDate.slice(0, 4) !== a.endDate.slice(0, 4))} – ${fmt(a.endDate, true)}`;
+  const end = a.endDate ?? a.startDate;
+  const otherYear = a.startDate.slice(0, 4) !== thisYear || end.slice(0, 4) !== thisYear;
+  if (end === a.startDate) return fmt(a.startDate, otherYear);
+  return `${fmt(a.startDate, a.startDate.slice(0, 4) !== end.slice(0, 4))} – ${fmt(end, otherYear)}`;
 }
 
 function coVisitKindLabel(kind: string, t: TFunction): string {
@@ -867,6 +904,9 @@ function NextCard({
 
   const kind = ownKind(entry);
   const time = entryTime(entry);
+  // A day of several talks names its hours at each stop, not in the head.
+  const headTime =
+    entry.type === "outgoing_talk" && entry.talks.length > 1 ? null : time;
   const tone = SECTION_COLORS[kind].color;
   const body = (
     <NextBody
@@ -891,7 +931,7 @@ function NextCard({
           <View style={s.nextHead}>
             <View style={[s.nextDot, { backgroundColor: tone }]} />
             <Text style={[s.nextWhen, { color: darker(kind) }]}>
-              {whenLabel(entry.dateISO, time, loc)}
+              {whenLabel(entry.dateISO, headTime, loc)}
             </Text>
             <Text
               style={[s.nextRel, { color: darker(kind) }]}
@@ -958,7 +998,11 @@ function shortWhat(en: TimelineEntry, t: TFunction): string {
   }
   if (en.type === "task") return lower(taskTitle(en.task.item, t));
   if (en.type === "outgoing_talk")
-    return lower(t("home.timeline.outgoingTalk"));
+    return lower(
+      en.talks.length > 1
+        ? t("home.timeline.outgoingTalks", { count: en.talks.length })
+        : t("home.timeline.outgoingTalk"),
+    );
   if (en.type === "co_visit") return lower(coVisitKindLabel(en.item.kind, t));
   return "";
 }
@@ -1151,7 +1195,54 @@ function NextBody({
   }
   if (entry.type === "outgoing_talk") {
     const it = entry.task.item;
-    const where = [it.congregationName, it.location]
+    if (entry.talks.length > 1) {
+      // Variant A (22 October 2026): one card for the day, the theme once
+      // when it is one, each hall a stop at its hour with its own way there.
+      const titles = entry.talks.map((r) => talkTheme(r, t));
+      const oneTitle = !!titles[0] && titles.every((x) => x === titles[0]);
+      return (
+        <View style={{ gap: 10 }}>
+          <View style={{ gap: 4 }}>
+            <Text style={[s.nextOverline, { color: KIND_COLOR.weekend }]}>
+              {t("home.timeline.outgoingTalks", { count: entry.talks.length })}
+            </Text>
+            {oneTitle ? <Text style={s.nextMain}>{titles[0]}</Text> : null}
+          </View>
+          <View>
+            {entry.talks.map((r, i) => {
+              const last = i === entry.talks.length - 1;
+              return (
+                <View key={`${r.item.time}-${i}`} style={s.stopRow}>
+                  <View style={s.stopTimeCol}>
+                    <Text style={s.stopTime}>{r.item.time ?? "—"}</Text>
+                    {last ? null : <View style={s.stopLine} />}
+                  </View>
+                  <View style={[s.stopBody, !last && { paddingBottom: 14 }]}>
+                    {oneTitle ? null : <Text style={s.stopTitle}>{titles[i]}</Text>}
+                    {r.item.congregationName ? (
+                      <Text style={s.stopTitle}>{r.item.congregationName}</Text>
+                    ) : null}
+                    {r.item.location ? (
+                      <Text style={s.nextPlace}>{oneLine(r.item.location)}</Text>
+                    ) : null}
+                    {r.item.mapUrl ? (
+                      <Pressable
+                        onPress={() => Linking.openURL(r.item.mapUrl as string).catch(() => {})}
+                        hitSlop={8}
+                      >
+                        <Text style={[s.link, { marginTop: 4 }]}>{t("home.timeline.openMap")} ›</Text>
+                      </Pressable>
+                    ) : null}
+                  </View>
+                </View>
+              );
+            })}
+          </View>
+          {entry.absence ? <TripNoted /> : null}
+        </View>
+      );
+    }
+    const where = [it.congregationName, it.location ? oneLine(it.location) : null]
       .filter(Boolean)
       .join(" · ");
     return (
@@ -1169,6 +1260,7 @@ function NextBody({
             <Text style={s.link}>{t("home.timeline.openMap")} ›</Text>
           </Pressable>
         ) : null}
+        {entry.absence ? <TripNoted /> : null}
       </View>
     );
   }
@@ -1414,6 +1506,16 @@ function EntryBody({
         {en.weeklyCleaning && !isNext ? (
           <CleaningLine text={t("home.timeline.cleaningAfterMeeting")} />
         ) : null}
+        {/* A part of his on a day he is away (22 October 2026). The top card
+            says it for the next thing; the row says it for every other. */}
+        {en.awayConflict && !isNext ? (
+          <View style={[s.awayNote, { marginTop: 8 }]}>
+            <Ionicons name="warning-outline" size={17} color="#b45309" />
+            <Text style={s.awayText}>
+              {t("home.next.away", { range: absenceRange(en.awayConflict, loc) })}
+            </Text>
+          </View>
+        ) : null}
       </>
     );
   }
@@ -1511,6 +1613,32 @@ function EntryBody({
   }
   if (en.type === "outgoing_talk") {
     const it = en.task.item;
+    if (en.talks.length > 1) {
+      // A day of talks elsewhere: one row, the theme once when it is one,
+      // each hall at its hour (22 October 2026).
+      const titles = en.talks.map((r) => talkTheme(r, t));
+      const oneTitle = !!titles[0] && titles.every((x) => x === titles[0]);
+      return (
+        <>
+          {overline(
+            t("home.timeline.outgoingTalks", { count: en.talks.length }),
+            KIND_COLOR.weekend,
+            null,
+          )}
+          {oneTitle ? <Text style={s.rowTitle}>{titles[0]}</Text> : null}
+          {en.talks.map((r, i) => (
+            <Text key={`${r.item.time}-${i}`} style={s.rowSub}>
+              <Text style={[s.rowSub, { fontFamily: "Manrope_700Bold", color: KIND_COLOR.weekend }]}>
+                {r.item.time ?? "—"}
+              </Text>
+              {"  "}
+              {[r.item.congregationName, oneTitle ? null : titles[i]].filter(Boolean).join(" — ")}
+            </Text>
+          ))}
+          {en.absence ? <TripNoted /> : null}
+        </>
+      );
+    }
     return (
       <>
         {overline(
@@ -1522,6 +1650,7 @@ function EntryBody({
         {it.congregationName ? (
           <Text style={s.rowSub}>{it.congregationName}</Text>
         ) : null}
+        {en.absence ? <TripNoted /> : null}
       </>
     );
   }
@@ -2444,6 +2573,24 @@ const s = StyleSheet.create({
     color: "#0369a1",
   },
   followingLine: { fontFamily: "Manrope_400Regular", fontSize: 13, color: "#64748b", paddingLeft: 4 },
+  tripNoted: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    alignSelf: "flex-start",
+    marginTop: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 999,
+    backgroundColor: "#f1f5f9",
+  },
+  tripNotedText: { fontSize: 13, color: "#475569", fontFamily: "Manrope_600SemiBold" },
+  stopRow: { flexDirection: "row", gap: 12 },
+  stopTimeCol: { width: 46, alignItems: "center" },
+  stopTime: { fontSize: 15, fontFamily: "Manrope_800ExtraBold", color: "#c2410c" },
+  stopLine: { flex: 1, width: 2, backgroundColor: "#fed7aa", marginVertical: 6 },
+  stopBody: { flex: 1, gap: 2 },
+  stopTitle: { fontSize: 15, fontFamily: "Manrope_700Bold", color: "#0f172a" },
   awayNote: {
     flexDirection: "row",
     gap: 8,

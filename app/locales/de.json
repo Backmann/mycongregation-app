@@ -2563,6 +2563,8 @@
       "emptyNear": "Für die nächsten zwei Wochen ist nichts geplant",
       "away": "Abwesend",
       "outgoingTalk": "Vortrag auswärts",
+      "outgoingTalks_one": "{{count}} Vortrag auswärts",
+      "outgoingTalks_other": "{{count}} Vorträge auswärts",
       "cleaningAfterMeeting": "Ihre Gruppe reinigt nach dieser Zusammenkunft",
       "openMap": "Karte öffnen"
     },
@@ -2658,6 +2660,7 @@
       "following": "Danach — {{when}}: {{what}}",
       "nothingNear": "In den nächsten zwei Wochen keine Aufgaben",
       "away": "An diesen Tagen sind Sie als abwesend eingetragen ({{range}}). Sagen Sie es dem, der das Programm plant.",
+      "tripNoted": "Abwesenheit vermerkt",
       "programme": "Programm",
       "pair": "zusammen mit {{name}}",
       "fieldConduct": "Sie leiten die Zusammenkunft für den Predigtdienst",
