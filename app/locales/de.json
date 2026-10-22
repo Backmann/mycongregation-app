@@ -4325,8 +4325,10 @@
       "overline": "WECHSEL · KOMMT NACH VORN",
       "note": "Der Wechsel zählt nicht zur Zeit des Programmpunkts. Punkt: {{minutes}} Min.",
       "begin": "Begonnen · Zeit {{time}} läuft",
-      "auto": "Startet nach 30 Sekunden von selbst",
-      "beginSong": "Begonnen · Lied läuft"
+      "beginSong": "Lied hat begonnen",
+      "autoIn": "Startet von selbst in {{sec}} s",
+      "callsUp": "Kommt nach vorn: {{who}}",
+      "noteSong": "Der Wechsel zählt nicht zum Lied. Lied: etwa {{minutes}} Min."
     },
     "soft": {
       "note": "Ein Lied — kein Countdown, kein Rot. Laut Programm etwa {{minutes}} Min."
