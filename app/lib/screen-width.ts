@@ -34,9 +34,15 @@ const OVERVIEW = new Set<string>([
   '/service-reports/summary',
   '/service-reports/attendance',
   '/service-reports/annual',
-  '/service-reports/pioneer-year-review',
   '/talk-coordinator/log',
+  // A list beside the chosen item's detail: two panes need the room.
+  '/publishers/duties',
+  '/publishers/cleaning',
+  '/special-events',
 ]);
+
+/** The tabs' own first screens: the side menu is their way back. */
+export const TAB_ROOTS = new Set<string>(['/home', '/schedule', '/publishers', '/cart', '/profile']);
 
 const FULL = new Set<string>(['/schedule/conduct']);
 

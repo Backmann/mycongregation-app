@@ -10,7 +10,7 @@ import { routeOf, screenAllowed } from '../lib/screen-access';
 import { NoAccess } from './NoAccess';
 import { LoadFailure } from './LoadFailure';
 import { ScreenFailureBoundary } from './ScreenFailure';
-import { SIDE_NAV_FROM, WIDE_FROM, screenMaxWidth } from '../lib/screen-width';
+import { SIDE_NAV_FROM, TAB_ROOTS, WIDE_FROM, screenMaxWidth } from '../lib/screen-width';
 import { BRAND } from '../lib/header';
 
 /**
@@ -143,13 +143,13 @@ function SideInsets({
   const max = width >= WIDE_FROM ? screenMaxWidth(route) : null;
   // In a browser beside the side menu the page carries its own heading; the
   // native app and narrower windows keep the bar.
-  const pageHeading = Platform.OS === 'web' && width >= SIDE_NAV_FROM && screenMaxWidth(route) !== null;
+  const pageHeading = Platform.OS === 'web' && width >= SIDE_NAV_FROM;
   React.useEffect(() => {
     navigation.setOptions({ headerShown: !pageHeading });
   }, [navigation, pageHeading]);
   return (
     <View style={[styles.frame, { paddingLeft: left, paddingRight: right }]} testID="side-insets">
-      <View style={[styles.column, max !== null && { maxWidth: max }]}>
+      <View style={[styles.column, max !== null && styles.columnWide, max !== null && { maxWidth: max }]}>
         {pageHeading ? <PageHeader options={options} navigation={navigation} root={root} /> : null}
         {children}
       </View>
@@ -177,7 +177,7 @@ export function screenGate(base: string): ScreenLayout {
     layout = function ScreenLayout({ children, route, options, navigation }) {
       const path = routeOf(base, route.name);
       return (
-        <SideInsets route={path} options={options as HeaderOptions} navigation={navigation as Nav} root={route.name === 'index'}>
+        <SideInsets route={path} options={options as HeaderOptions} navigation={navigation as Nav} root={TAB_ROOTS.has(path)}>
           <Gate route={path}>{children}</Gate>
         </SideInsets>
       );
@@ -191,6 +191,9 @@ const styles = StyleSheet.create({
   fill: { flex: 1, backgroundColor: '#f1f5f9' },
   frame: { flex: 1, backgroundColor: '#f1f5f9' },
   column: { flex: 1, width: '100%', alignSelf: 'center' },
+  // A gutter of its own, so a screen that draws edge to edge does not touch
+  // the side menu or the window's edge.
+  columnWide: { paddingHorizontal: 16 },
   pageHeader: {
     flexDirection: 'row',
     alignItems: 'center',
