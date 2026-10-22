@@ -4339,7 +4339,12 @@
       "closing": "Concluding song and prayer",
       "openingWords": "Opening comments",
       "closingWords": "Concluding comments"
-    }
+    },
+    "early": {
+      "again": "Tap again to end at {{time}}",
+      "hint": "Less than a third of {{minutes}} min has passed"
+    },
+    "undoLoud": "Tapped by mistake? Undo"
   },
   "serviceHub": {
     "sections": {

@@ -179,8 +179,13 @@ export function buildMidweekRunOrder(items: RunItem[]): RunSegment[] {
   return out;
 }
 
-/** Song and prayer, the chairman's opening words. */
-const WEEKEND_OPENING_MIN = 5;
+/**
+ * Song and prayer (4), then the chairman's opening words — he welcomes and
+ * introduces the speaker (1). Two steps since 22 October 2026 (Lionel,
+ * variant A), like the midweek; together the programme's five minutes.
+ */
+const WEEKEND_OPENING_MIN = 4;
+const WEEKEND_OPENING_WORDS_MIN = 1;
 const PUBLIC_TALK_MIN = 30;
 /**
  * After the talk (Lionel, 19 October 2026): the chairman thanks the speaker,
@@ -201,7 +206,7 @@ const WEEKEND_CLOSING_MIN = 5;
 /**
  * THE WEEKEND MEETING, in the order it is held (18 October 2026) — the same
  * minutes as the schedule sheet (lib/parts.ts buildWeekendPartTimes):
- * song and prayer 5, public talk 30, the chairman's thanks and
+ * song and prayer 4 and the chairman's opening words 1, public talk 30, the chairman's thanks and
  * announcements 2, the song 3, Watchtower study 60, closing 5.
  *
  * In the week of the circuit overseer's visit (Lionel, 18 October 2026):
@@ -225,6 +230,7 @@ export function buildWeekendRunOrder(items: RunItem[]): RunSegment[] {
   };
   const coTalk = first('co_concluding_talk');
   push(first('weekend_opening_prayer'), 'weekend_opening_prayer', WEEKEND_OPENING_MIN, true, { soft: true });
+  push(first('weekend_chairman'), 'weekend_opening_words', WEEKEND_OPENING_WORDS_MIN, false, { chairmanWords: true });
   push(first('public_talk_speaker'), 'public_talk_speaker', dur(first('public_talk_speaker'), PUBLIC_TALK_MIN));
   // The song before the study. A visit week may carry a second one, the
   // closing song after the overseer's talk (schedule/edit.tsx): the earlier
