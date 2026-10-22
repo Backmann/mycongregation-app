@@ -400,6 +400,57 @@ const labels = (en) => (en ? en.myParts.map((p) => p.label) : null);
   check('15д часы: не время — ничего', [clockPlus('', 5), clockPlus(null, 5), clockPlus('9:05', 60)], [null, null, '10:05']);
 }
 
+// --- 16. Two talks elsewhere on one Sunday (22 October 2026) ----------------
+// Each talk wrote its own away-period. Home showed the first talk only, an
+// «В отъезде» row for the second, and warned «сообщите» against the trip.
+{
+  const SUN = '2026-10-04';
+  const talk = (time, congregationName) => ({
+    kind: 'outgoing_talk',
+    sortDate: SUN,
+    date: SUN,
+    weekStartDate: '2026-09-28',
+    time,
+    label: '№78. Служи Иегове с радостью!',
+    partKey: `talk-${time}`,
+    congregationName,
+  });
+  const away = (id, note) => ({ id, publisherId: BERGMAN, startDate: SUN, endDate: SUN, note });
+  const items = [talk('16:30', 'Paderborn'), talk('14:00', 'Rheda'), part('2026-10-05', 'midweek', 'midweek_chairman', 1)];
+  const absences = [away('a1', '№78 · Rheda'), away('a2', '№78 · Paderborn')];
+  const { timeline, digest } = run({ me: BERGMAN, group: AHLEN, items, absences });
+  const day = timeline.near.find((g) => g.dateISO === SUN).entries;
+  check('16а один день — одна строка выезда, без строки «в отъезде»', day.map((e) => e.type), ['outgoing_talk']);
+  check('16б оба доклада, по часам', day[0].talks.map((r) => r.item.time), ['14:00', '16:30']);
+  check('16в оба отъезда объяснены этим днём', day[0].absences.map((a) => a.id), ['a1', 'a2']);
+  check('16г ближайшее — этот день', digest.next?.key, day[0].key);
+  check('16д без «сообщите»: отъезд объяснён', digest.awayDuring, null);
+  check('16е следующее — уже не второй доклад, а среда', digest.following?.dateISO, '2026-10-07');
+}
+
+// --- 16b. A longer away-period of his own around the talk ---------------------
+{
+  const SUN = '2026-10-04';
+  const items = [{ kind: 'outgoing_talk', sortDate: SUN, date: SUN, weekStartDate: '2026-09-28', time: '14:00', label: 'Тема', congregationName: 'Rheda' }];
+  const absences = [{ id: 'weekend', publisherId: BERGMAN, startDate: '2026-10-03', endDate: SUN, note: null }];
+  const { timeline, digest } = run({ me: BERGMAN, group: AHLEN, items, absences });
+  const sat = timeline.near.find((g) => g.dateISO === '2026-10-03').entries;
+  check('16ж свой отъезд на два дня остаётся строкой в субботу', sat.some((e) => e.type === 'absence' && e.absence.id === 'weekend'), true);
+  check('16з и не превращается в «сообщите» у доклада', digest.awayDuring, null);
+}
+
+// --- 17. A part of mine on a day I am away -----------------------------------
+{
+  const W = '2026-10-05';
+  const items = [part('2026-09-28', 'midweek', 'midweek_chairman', 1), part(W, 'midweek', 'bible_reading', 4)];
+  const absences = [{ id: 'school', publisherId: BERGMAN, startDate: '2026-10-07', endDate: '2026-10-07', note: 'Школа' }];
+  const { timeline } = run({ me: BERGMAN, group: AHLEN, items, absences });
+  const wed = timeline.near.find((g) => g.dateISO === '2026-10-07').entries.find((e) => e.type === 'meeting');
+  check('17а часть в день отъезда — конфликт на самой строке', wed.awayConflict?.id, 'school');
+  const first = timeline.near.find((g) => g.dateISO === '2026-09-30').entries.find((e) => e.type === 'meeting');
+  check('17б без отъезда — без конфликта', first.awayConflict ?? null, null);
+}
+
 if (failures) {
   console.error(`\nГлавная: ${failures} из ${passed + failures} не сходятся.`);
   process.exit(1);

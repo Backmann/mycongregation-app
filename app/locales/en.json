@@ -2563,6 +2563,8 @@
       "emptyNear": "Nothing scheduled for the next two weeks",
       "away": "Away",
       "outgoingTalk": "Talk away",
+      "outgoingTalks_one": "{{count}} talk elsewhere",
+      "outgoingTalks_other": "{{count}} talks elsewhere",
       "cleaningAfterMeeting": "Your group cleans after this meeting",
       "openMap": "Open map"
     },
@@ -2658,6 +2660,7 @@
       "following": "Then — {{when}}: {{what}}",
       "nothingNear": "No assignments in the next two weeks",
       "away": "You are marked as away on these days ({{range}}). Let whoever plans the programme know.",
+      "tripNoted": "Trip noted",
       "programme": "Programme",
       "pair": "paired with {{name}}",
       "fieldConduct": "You conduct the meeting for field service",

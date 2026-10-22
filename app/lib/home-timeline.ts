@@ -207,6 +207,12 @@ export interface MeetingEntry {
   /** My parts/duties in this meeting; non-empty ⇒ the row is mine. */
   myParts: MyPartLine[];
   /**
+   * I have a part here and an away-period of mine covers the day — one no
+   * talk elsewhere explains (22 October 2026). Said on the row itself: until
+   * now only the top card warned, and only when it was the next thing.
+   */
+  awayConflict?: Absence | null;
+  /**
    * What the meeting is about, as the Programme feed names it (26
    * September): the weekend by its public talk and speaker, the weekday by
    * its first talk. Null when the programme is not published or not loaded.
@@ -332,9 +338,18 @@ export interface OutgoingTalkEntry {
   type: 'outgoing_talk';
   key: string;
   dateISO: string;
+  /** The first talk of the day — what the time and the sort go by. */
   task: RefinedTask;
+  /**
+   * Every talk elsewhere that day, by the hour (22 October 2026): two talks on
+   * one Sunday are one day away from home, not two rows — Home showed the
+   * first and left the second out of «Ваше ближайшее» altogether.
+   */
+  talks: RefinedTask[];
   /** The away-period this trip explains, if one covers the day. */
   absence: Absence | null;
+  /** Every away-period covering the day — none of them is news on it. */
+  absences: Absence[];
 }
 
 /** «Тебя нет» — an away-period of the signed-in person, quiet context. */
@@ -949,6 +964,7 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
       .map((en) => en.weekStartISO ?? ''),
   );
   const consumedAbsenceIds = new Set<string>();
+  const talkDays = new Map<string, OutgoingTalkEntry>();
   for (const r of refined) {
     if (!OWN_ROW_TASK_KINDS.has(r.item.kind)) continue;
     // Said already by the meeting's own row — one thing, one line.
@@ -970,21 +986,44 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
     const dateISO = taskPlacement(r);
 
     if (r.item.kind === 'outgoing_talk') {
-      // Fold in the away-period this trip explains, so the day carries one row
-      // instead of «тебя нет» plus a talk plus a meeting he will not attend.
-      const away =
-        absences.find(
-          (a) =>
-            a.startDate <= dateISO && (a.endDate ?? a.startDate) >= dateISO,
-        ) ?? null;
-      if (away) consumedAbsenceIds.add(away.id);
-      pushMine({
+      // Fold in the away-periods this trip explains, so the day carries one
+      // row instead of «тебя нет» plus a talk plus a meeting he will not
+      // attend. ALL of them: each talk may have written its own, and the one
+      // left over used to stand as a second row — and made Home warn that he
+      // was away on the day of his own talk (22 October 2026).
+      const covering = absences.filter(
+        (a) => a.startDate <= dateISO && (a.endDate ?? a.startDate) >= dateISO,
+      );
+      // Folded in: what the trips wrote, or else a day the person marked for
+      // this one day by hand. A longer away-period of his own («24–25») is a
+      // fact of its own and keeps its row.
+      const madeByTrips = covering.filter((a) => !!a.talkExchangeId);
+      const folded = madeByTrips.length
+        ? madeByTrips
+        : covering.filter(
+            (a) => a.startDate === dateISO && (a.endDate ?? a.startDate) === dateISO,
+          );
+      for (const a of folded) consumedAbsenceIds.add(a.id);
+      const sameDay = talkDays.get(dateISO);
+      if (sameDay) {
+        sameDay.talks.push(r);
+        sameDay.talks.sort((x, y) =>
+          (x.item.time ?? '99:99').localeCompare(y.item.time ?? '99:99'),
+        );
+        sameDay.task = sameDay.talks[0];
+        continue;
+      }
+      const entry: OutgoingTalkEntry = {
         type: 'outgoing_talk',
-        key: `talk-${dateISO}-${r.item.partKey ?? r.item.label}`,
+        key: `talk-${dateISO}`,
         dateISO,
         task: r,
-        absence: away,
-      });
+        talks: [r],
+        absence: folded[0] ?? covering[0] ?? null,
+        absences: covering,
+      };
+      talkDays.set(dateISO, entry);
+      pushMine(entry);
       continue;
     }
 
@@ -994,6 +1033,18 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
       dateISO,
       task: r,
     });
+  }
+
+  // ---- A part of mine on a day I am away ----
+  for (const en of [...entries, ...farEntries]) {
+    if (en.type !== 'meeting' || en.myParts.length === 0) continue;
+    en.awayConflict =
+      absences.find(
+        (a) =>
+          !consumedAbsenceIds.has(a.id) &&
+          a.startDate <= en.dateISO &&
+          (a.endDate ?? a.startDate) >= en.dateISO,
+      ) ?? null;
   }
 
   // ---- My away-periods (quiet context, "тебя нет") ----
