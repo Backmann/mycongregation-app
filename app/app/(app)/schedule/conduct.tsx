@@ -55,6 +55,7 @@ import { keptMe, keptPieces } from '../../../lib/offline-keep';
 import { KeptNotice } from '../../../components/ConnectionState';
 import { ConductSummaryData, mmss } from '../../../components/ConductSummary';
 import { ConductReport } from '../../../components/ConductReport';
+import { QuickReplaceSheet } from '../../../components/QuickReplaceSheet';
 import { confirm } from '../../../components/ConfirmHost';
 import { formatDateISO, parseISODate, startOfWeekMonday } from '../../../lib/dates';
 import { ConductStage, STAGE_SECTION_COLORS, type StagePart } from '../../../components/ConductStage';
@@ -450,8 +451,14 @@ export default function ConductScreen({
   // The result is read by the admins, the counsel brother and the Life and
   // Ministry overseer — not by the chairman afterwards: he sees it here when
   // the meeting ends (the server says the same, common/conduct-overseer.ts).
-  const { responsibilities } = usePermissions();
+  const perms = usePermissions();
+  const { responsibilities } = perms;
   const canRead = isConductOverseer(user?.role, responsibilities, kind);
+  // «Приехал другой докладчик» — on the meeting day, for those who answer
+  // for the talks (Lionel, 23 October 2026): in a minute, from here.
+  const [replaceOpen, setReplaceOpen] = useState(false);
+  const mayReplaceSpeaker =
+    weekend && perms.canCoordinatePublicTalks && !!meetingDay && meetingDay === formatDateISO(new Date());
 
   // The saved result — what an elder reads, and what a chairman sees again
   // on another device. Never kept on the device (lib/offline-keep-rules).
@@ -1872,6 +1879,16 @@ export default function ConductScreen({
                 ) : null}
               </Text>
               {person ? <Text style={styles.sheetPerson}>{person}</Text> : null}
+              {s.key === 'public_talk_speaker' && mayReplaceSpeaker ? (
+                <Pressable
+                  style={styles.replaceBtn}
+                  onPress={() => setReplaceOpen(true)}
+                  accessibilityRole="button"
+                >
+                  <Ionicons name="swap-horizontal" size={18} color="#ffffff" />
+                  <Text style={styles.replaceBtnText}>{t('quickReplace.action')}</Text>
+                </Pressable>
+              ) : null}
             </View>
             {i === run.index && !finished ? (
               <Ionicons name="caret-forward" size={16} color="#0ea5e9" />
@@ -2116,6 +2133,19 @@ export default function ConductScreen({
         </View>
         <View style={wide ? styles.colSide : undefined}>{sheet}</View>
       </View>
+      {mayReplaceSpeaker ? (
+        <QuickReplaceSheet
+          visible={replaceOpen}
+          weekStartDate={week}
+          currentName={(() => {
+            // The man alone, without his congregation: «… — did not come».
+            const r = rows.find((a) => a.partKey === 'public_talk_speaker');
+            return (r?.publisherId ? nameById.get(r.publisherId) : null) ?? r?.speakerName ?? null;
+          })()}
+          onClose={() => setReplaceOpen(false)}
+          onDone={() => void queryClient.invalidateQueries({ queryKey: ['conduct-assignments', week, kind] })}
+        />
+      ) : null}
     </ScrollView>
   );
 }
@@ -2342,6 +2372,19 @@ const styles = StyleSheet.create({
   },
   sheetLabel: { fontFamily: 'Manrope_400Regular', fontSize: 15, color: '#0f172a' },
   sheetPerson: { fontFamily: 'Manrope_400Regular', fontSize: 13, color: '#64748b' },
+  replaceBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#ea580c',
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    marginTop: 8,
+    minHeight: 46,
+  },
+  replaceBtnText: { color: '#ffffff', fontSize: 15, fontFamily: 'Manrope_800ExtraBold' },
   sheetCounsel: { fontFamily: 'Manrope_400Regular', fontSize: 11, color: '#94a3b8' },
   sheetCounselNow: { fontFamily: 'Manrope_700Bold', fontSize: 15, color: '#0369a1' },
   sheetNote: { fontFamily: 'Manrope_400Regular', fontSize: 12, color: '#94a3b8', marginTop: 8 },
