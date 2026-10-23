@@ -339,7 +339,13 @@
         "regular": "Regular pioneer",
         "special": "Special pioneer",
         "missionary": "Missionary"
-      }
+      },
+      "kindChangeHint": "The earlier service stays in the history ({{kind}} since {{since}}); reports for those months do not change.",
+      "correctLink": "The kind was entered wrong — correct it for all time",
+      "correctPick": "Which kind is right? It replaces the old one for every month, without a new period.",
+      "correctTitle": "Correct the kind for all time?",
+      "correctBody": "“{{from}}” since {{since}} becomes “{{to}}” for all those months. Only when the kind was entered wrong.",
+      "correctConfirm": "Correct"
     },
     "pioneerSinceFormat": "{{label}} (since {{date}})",
     "gender": {
@@ -364,7 +370,14 @@
       "movedToPlaceholder": "e.g. Dortmund Central congregation",
       "note": "Note",
       "hint": "Died · moved · removed — the record is kept and can be restored",
-      "dateHint": "The departure date determines which reports still include the person: if they left on September 1 or later, they stay in the annual report for the service year just ended and in every month before they left."
+      "dateHint": "The departure date determines which reports still include the person: if they left on September 1 or later, they stay in the annual report for the service year just ended and in every month before they left.",
+      "hasAccount": "He has a sign-in to the app",
+      "accountRole": "Role: {{role}}",
+      "closeAccount": "Close sign-in",
+      "recommended": "recommended",
+      "accountKept": "The sign-in stays open",
+      "responsibilitiesGo": "These responsibilities will be removed",
+      "assignOther": "Assign someone else on the Responsibilities page"
     },
     "actions": {
       "edit": "Edit",
@@ -2546,6 +2559,10 @@
     "add": "Add absence",
     "reason": {
       "pioneerSchool": "Pioneer Service School"
+    },
+    "fromSchool": {
+      "title": "From the Pioneer Service School",
+      "body": "The school entered this absence: the brother has a duty at the school that day. To remove it, change the assignment in the school."
     }
   },
   "home": {
@@ -4899,7 +4916,10 @@
       "STAGE_PIN_INVALID": "The display menu PIN must be 4 to 8 digits.",
       "STAGE_ACCOUNT_FIXED": "A stage display is not a person: it has no card and its role cannot be changed.",
       "RESPONSIBILITY_OWN_ASSISTANT": "A brother cannot be his own assistant: this responsibility and its assistant are two different brothers.",
-      "GROUP_LEADER_SISTER": "The group overseer and his assistant must be brothers."
+      "GROUP_LEADER_SISTER": "The group overseer and his assistant must be brothers.",
+      "ABSENCE_FROM_SCHOOL": "This absence comes from an assignment in the Pioneer Service School. Change the assignment in the school instead.",
+      "PIONEER_KIND_CHANGE_DATE": "The new kind of service has to start later than the current one. Enter the month he starts serving this way, or correct the kind for all time.",
+      "PIONEER_KIND_CORRECTION_INVALID": "Only the kind of a current regular pioneer, special pioneer or missionary can be corrected for all time."
     }
   },
   "stage": {

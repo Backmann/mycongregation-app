@@ -24,6 +24,10 @@ import {
 } from '../lib/api';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../lib/auth';
+import i18n from '../lib/i18n';
+import { formatDay } from '../lib/date-range';
+import { Ionicons } from '@expo/vector-icons';
+import { confirm } from './ConfirmHost';
 
 interface Props {
   initial?: Partial<CreatePublisherInput>;
@@ -31,6 +35,19 @@ interface Props {
   onCancel?: () => void;
   isSubmitting: boolean;
   submitLabel?: string;
+  /**
+   * «The kind was written down wrong» — corrects the open spell for all its
+   * months (23 October 2026). Only offered when editing a current pioneer.
+   */
+  onCorrectPioneerKind?: (kind: PioneerType) => Promise<unknown>;
+}
+
+const PERMANENT_KINDS: PioneerType[] = ['regular', 'special', 'missionary'];
+
+/** The first day of the current month, as the date field writes it. */
+function firstOfThisMonth(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`;
 }
 
 // Option arrays moved inside PublisherForm to use translations
@@ -38,6 +55,7 @@ interface Props {
 export function PublisherForm({
   initial,
   onSubmit,
+  onCorrectPioneerKind,
   onCancel,
   isSubmitting,
   submitLabel,
@@ -102,6 +120,48 @@ export function PublisherForm({
   });
 
   const [error, setError] = useState<string | null>(null);
+  const [correctOpen, setCorrectOpen] = useState(false);
+  const [correcting, setCorrecting] = useState(false);
+  /**
+   * A change of kind is a new appointment from a month on (23 October 2026):
+   * the old date stayed in the field, the server took it as the new start,
+   * and the whole past turned into the new kind. Now the field moves to this
+   * month and says what stays in the history.
+   */
+  const initialKind = initial?.pioneerType ?? 'none';
+  const wasPermanent = PERMANENT_KINDS.includes(initialKind);
+  const kindChanged =
+    wasPermanent &&
+    PERMANENT_KINDS.includes(form.pioneerType ?? 'none') &&
+    form.pioneerType !== initialKind;
+  // A whole date, as the language writes it: «1 сентября 2024 г.» — a bare
+  // month put «с сентябрь» into the Russian sentence.
+  const monthYear = (iso?: string | null) =>
+    iso ? formatDay(iso.slice(0, 10), i18n.language, { year: 'always' }) : '';
+  const kindLabel = (k: PioneerType) => t(`publishers.pioneer.options.${k}`);
+  const correctTo = async (kind: PioneerType) => {
+    if (!onCorrectPioneerKind) return;
+    const ok = await confirm({
+      title: t('publishers.pioneer.correctTitle'),
+      body: t('publishers.pioneer.correctBody', {
+        from: kindLabel(initialKind),
+        to: kindLabel(kind),
+        since: monthYear(initial?.pioneerSince),
+      }),
+      confirmLabel: t('publishers.pioneer.correctConfirm'),
+    });
+    if (!ok) return;
+    setCorrecting(true);
+    try {
+      await onCorrectPioneerKind(kind);
+      setForm((prev) => ({ ...prev, pioneerType: kind }));
+      setCorrectOpen(false);
+    } catch (e) {
+      setError(extractErrorMessage(e));
+    } finally {
+      setCorrecting(false);
+    }
+  };
 
   const update = <K extends keyof CreatePublisherInput>(
     key: K,
@@ -311,7 +371,14 @@ export function PublisherForm({
                 setForm((prev) => ({
                   ...prev,
                   pioneerType: v,
-                  pioneerSince: v === 'none' ? '' : prev.pioneerSince,
+                  pioneerSince:
+                    v === 'none'
+                      ? ''
+                      : wasPermanent && v === initialKind
+                        ? (initial?.pioneerSince ?? '')
+                        : wasPermanent && PERMANENT_KINDS.includes(v)
+                          ? firstOfThisMonth()
+                          : prev.pioneerSince,
                 }))
               }
             />
@@ -323,6 +390,51 @@ export function PublisherForm({
                 placeholder={t('publishers.placeholders.date')}
               />
             )}
+            {kindChanged ? (
+              <View style={styles.kindHint}>
+                <Ionicons name="time-outline" size={16} color="#475569" />
+                <Text style={styles.kindHintText}>
+                  {t('publishers.pioneer.kindChangeHint', {
+                    kind: kindLabel(initialKind),
+                    since: monthYear(initial?.pioneerSince),
+                  })}
+                </Text>
+              </View>
+            ) : null}
+            {wasPermanent &&
+            onCorrectPioneerKind &&
+            form.pioneerType === initialKind ? (
+              correctOpen ? (
+                <View style={styles.kindHint}>
+                  <Text style={styles.kindHintText}>
+                    {t('publishers.pioneer.correctPick')}
+                  </Text>
+                  <View style={styles.correctRow}>
+                    {PERMANENT_KINDS.filter((k) => k !== initialKind).map((k) => (
+                      <Pressable
+                        key={k}
+                        style={styles.correctBtn}
+                        disabled={correcting}
+                        onPress={() => void correctTo(k)}
+                      >
+                        <Text style={styles.correctBtnText}>{kindLabel(k)}</Text>
+                      </Pressable>
+                    ))}
+                  </View>
+                </View>
+              ) : (
+                <Pressable
+                  style={styles.correctLink}
+                  onPress={() => setCorrectOpen(true)}
+                  hitSlop={6}
+                >
+                  <Ionicons name="create-outline" size={16} color="#0e7490" />
+                  <Text style={styles.correctLinkText}>
+                    {t('publishers.pioneer.correctLink')}
+                  </Text>
+                </Pressable>
+              )
+            ) : null}
           </>
         )}
       </FormSection>
@@ -422,6 +534,44 @@ export function PublisherForm({
 }
 
 const styles = StyleSheet.create({
+  kindHint: {
+    backgroundColor: '#f8fafc',
+    borderRadius: 12,
+    padding: 12,
+    marginTop: 8,
+    gap: 8,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'flex-start',
+  },
+  kindHintText: {
+    flex: 1,
+    minWidth: 200,
+    fontFamily: 'Manrope_400Regular',
+    fontSize: 13,
+    lineHeight: 19,
+    color: '#334155',
+  },
+  correctRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, width: '100%' },
+  correctBtn: {
+    borderWidth: 1,
+    borderColor: '#0e7490',
+    borderRadius: 999,
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+    minHeight: 40,
+    justifyContent: 'center',
+  },
+  correctBtnText: { fontFamily: 'Manrope_700Bold', fontSize: 14, color: '#0e7490' },
+  correctLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 10,
+    marginTop: 4,
+    minHeight: 44,
+  },
+  correctLinkText: { fontFamily: 'Manrope_700Bold', fontSize: 14, color: '#0e7490', flexShrink: 1 },
   circumstanceRow: {
     flexDirection: 'row',
     alignItems: 'center',
