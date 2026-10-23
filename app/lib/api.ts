@@ -1786,7 +1786,23 @@ export interface TalkExchangeInput {
   overwriteProgram?: boolean;
 }
 
+/** A trip of ours that needs someone (23 October 2026). */
+export interface TalkAttentionItem {
+  id: string;
+  date: string;
+  reason: 'needs_brother' | 'absence' | 'departed';
+  hostCongregationId: string | null;
+  publisherId: string | null;
+}
+
 export const talkExchangeApi = {
+  async attention(): Promise<TalkAttentionItem[]> {
+    const { data } = await api.get<TalkAttentionItem[]>('/talk-exchange/attention');
+    return data;
+  },
+  async attentionAck(id: string, reason: 'absence' | 'departed'): Promise<void> {
+    await api.post(`/talk-exchange/${id}/attention-ack`, { reason });
+  },
   /** Special talks — date, theme, speaker — for the events screen. */
   async specialTalks(): Promise<
     {
@@ -3518,6 +3534,7 @@ export type MyAssignmentKind =
   | "cart"
   | "field_service"
   | "outgoing_talk"
+  | "talk_exchange_attention"
   | "co_lunch";
 
 export interface MyAssignmentItem {

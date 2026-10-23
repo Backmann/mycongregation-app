@@ -3073,7 +3073,32 @@
       "awayThisDay": "that day he is at another congregation",
       "upcomingFrom": "Upcoming",
       "programmeFrozenTitle": "Entry saved",
-      "programmeFrozenBody": "This week’s program is already locked as a record and was not changed. If needed, an administrator or the coordinator of the body of elders can correct it after the fact."
+      "programmeFrozenBody": "This week’s program is already locked as a record and was not changed. If needed, an administrator or the coordinator of the body of elders can correct it after the fact.",
+      "needsBrother": "BROTHER NEEDED",
+      "needsBrotherHint": "The congregation expects a speaker from us.",
+      "assignBrother": "Assign a brother",
+      "inQuestion": "IN QUESTION",
+      "risk": {
+        "absence": "The brother is away that day. Check whether he is going.",
+        "departed": "The brother is marked as departed. Someone else is needed."
+      },
+      "heGoes": "He is going",
+      "findReplacement": "Find a replacement",
+      "attention": {
+        "title": "Needs attention",
+        "needs_one": "{{count}} trip needs a brother",
+        "needs_other": "{{count}} trips need a brother",
+        "risk_one": "{{count}} in question",
+        "risk_other": "{{count}} in question"
+      },
+      "outChoice": {
+        "title": "{{host}} expects a speaker. What happened?",
+        "otherCongregation": "The congregation",
+        "takeOff": "Take off only the brother",
+        "takeOffHint": "The trip stays, marked “brother needed”. The coordinators are told now and reminded 14 and 7 days before if nobody is assigned.",
+        "cancelled": "Trip called off",
+        "cancelledHint": "The congregation has been told; no speaker from us is needed. The entry stays in the history as not held."
+      }
     },
     "swap": {
       "pastRefused": "That week is over. The brother has given his talk and his name was announced from the platform — only what has not happened yet can be moved.",
