@@ -16,12 +16,12 @@
     "export": "Download my data",
     "exportHint": "Export to a file (JSON)",
     "delete": "Delete account and data",
-    "deleteHint": "Irreversibly anonymise my record"
+    "deleteHint": "Irreversibly anonymize my record"
   },
   "deleteAccount": {
     "title": "Delete account",
     "warning": "This action is irreversible.",
-    "intro": "Your account will be deleted and your publisher record anonymised: name and contact details are removed. The congregation's organisational records are kept in anonymised form. Please confirm with your password.",
+    "intro": "Your account will be deleted and your publisher record anonymized: name and contact details are removed. The congregation's organizational records are kept in anonymized form. Please confirm with your password.",
     "passwordLabel": "Password",
     "submit": "Delete permanently",
     "note": "After deletion you will be signed out.",
@@ -61,7 +61,7 @@
     "resendInviteSending": "Sending…",
     "disableConfirmTitle": "Disable access?",
     "disableConfirmBody": "{{name}} will no longer be able to sign in. You can enable access again later.",
-    "emailLabel": "E-mail",
+    "emailLabel": "Email",
     "roleHint": "The role normally follows the appointment — turn this on only if administrator rights are needed.",
     "disableConfirmYes": "Disable",
     "passwordPlaceholder": "At least {{count}} characters",
@@ -73,7 +73,7 @@
     "noEmail": "none",
     "deliveryLabel": "How to pass on the code",
     "deliveryInPerson": "I will pass the code on myself",
-    "deliveryInPersonHint": "No e-mail needed. The code appears on screen — read it out or forward it.",
+    "deliveryInPersonHint": "No email needed. The code appears on screen — read it out or forward it.",
     "inviteReadyTitle": "Code to sign in",
     "inviteSentTo": "A letter went to {{email}}. The code can also be passed on directly:",
     "inviteNotSent": "No letter was sent — pass the code on yourself:",
@@ -82,7 +82,7 @@
     "qrHint": "Let them point their phone's camera at it: a screen opens with the code already filled in — they only choose a password. On Android, install the app first.",
     "inviteShare": "Send in a message",
     "inviteCopy": "Copy the message",
-    "inviteMail": "Write an e-mail",
+    "inviteMail": "Write an email",
     "inviteMailSubject": "Invitation to the congregation app",
     "inviteCopied": "Copied — paste it into a chat",
     "inviteOnlyOnce": "The code is shown once: only its fingerprint is stored. If it is lost, issue a new one — but the old one then stops working.",
@@ -91,7 +91,7 @@
     "howSendTitle": "How should the code travel?",
     "howSendByMailHint": "A letter goes to {{email}}. It carries more than a hand-written one: the login name, the deadline and the install page.",
     "howSendInPersonHint": "No letter. The code appears on your screen — read it out or send it yourself.",
-    "howSendByMail": "Send it by e-mail",
+    "howSendByMail": "Send it by email",
     "howSendInPerson": "Just show the code — I will hand it over",
     "howSendHint": "Either way the code appears on your screen. The previous code stops working.",
     "newCodeHint": "The better way: only they will know the password. It goes by letter if there is an address, and is shown to you on screen either way. The previous code stops working, and the old password stops as soon as they set a new one.",
@@ -101,8 +101,8 @@
     "deliveryByMail": "By letter to an address",
     "deliveryByMailHint": "The ordinary way: the publisher receives a letter with the code and their own login name.",
     "fromCardNote": "The address from the publisher card. You may replace it — with a husband’s or wife’s mailbox, for instance.",
-    "notOnCardNote": "The card holds no e-mail — type the address the letter should go to.",
-    "howEntryWorks": "A publisher signs in with the login name. The e-mail address works too while only one person uses the mailbox; if two do — a husband and wife, say — both sign in with their names.",
+    "notOnCardNote": "The card holds no email — type the address the letter should go to.",
+    "howEntryWorks": "A publisher signs in with the login name. The email address works too while only one person uses the mailbox; if two do — a husband and wife, say — both sign in with their names.",
     "changeIt": "Change",
     "addressInUse": "{{who}} already signs in with this address. After the invitation they will no longer be able to sign in by address — only by the name {{loginName}}. We will write to them about it, but it is better if you say so too.",
     "addressInUseWayOut": "To leave them untouched, choose “I will pass the code on myself” — the address then stays theirs alone.",
@@ -110,7 +110,7 @@
     "andTheirLoginName": "Name to sign in with",
     "inviteMessageNoName": "{{name}}, here is your way into the congregation app.\n1. Android phone — install the app first: {{url}}. iPhone or computer — nothing to install.\n2. Tap: {{link}} — the code fills itself in, you only choose a password.\nIf the link cannot be tapped, the code is {{code}} (valid until {{until}}) — in the app tap “Were you invited?”.",
     "wayBackIn": "If the publisher cannot sign in",
-    "resetPasswordHint": "For when nobody can type a code — they are standing here, or have no phone to hand. You will have to say the password out loud, so you will know it too. Every open session on their devices is ended, and they get a letter if there is an address.",
+    "resetPasswordHint": "For when nobody can type a code — they are standing here, or do not have a phone at hand. You will have to say the password out loud, so you will know it too. Every open session on their devices is ended, and they get a letter if there is an address.",
     "invitePending": "An invitation was sent and has not been used yet. The code is valid until {{until}}.",
     "revokeInvite": "Call the invitation back",
     "revokeCode": "Call the code back",
@@ -135,7 +135,7 @@
     "neverUsedNoAttempts": "A password is set, but this person has never signed in — and there have been no failed attempts with their name or address. So they have not tried yet, or are typing a different name."
   },
   "tabs": {
-    "schedule": "Programme",
+    "schedule": "Program",
     "publishers": "Congregation",
     "groups": "Groups",
     "profile": "Profile",
@@ -197,7 +197,8 @@
     "undoing": "Restoring…",
     "noAccessTitle": "No access",
     "noAccessHint": "This section is open to those assigned to it. If you need it, please ask the elders.",
-    "noAccessHintLead": "This section is open to those given this responsibility in the congregation, or a special permission."
+    "noAccessHintLead": "This section is open to those given this responsibility in the congregation, or a special permission.",
+    "quoted": "“{{text}}”"
   },
   "profile": {
     "signedInAs": "Signed in as",
@@ -242,7 +243,7 @@
     "noLoginName": "No login name set — ask your administrator.",
     "noLoginNameAdmin": "No login name set. You can set one in “Congregation” → “Publishers”, in the person’s card, section “App access”.",
     "deliveryEmail": "Letters go to: {{email}}",
-    "noEmail": "No e-mail address. A forgotten password is reset by the congregation administrator."
+    "noEmail": "No email address. A forgotten password is reset by the congregation administrator."
   },
   "language": {
     "title": "Language",
@@ -289,7 +290,7 @@
     },
     "hints": {
       "isDeaf": "Needs sign-language interpretation",
-      "isImprisoned": "Remand centre, prison, psychiatric hospital or drug-treatment clinic"
+      "isImprisoned": "Jail, prison, psychiatric hospital or drug-treatment clinic"
     },
     "fields": {
       "phone": "Phone",
@@ -502,8 +503,8 @@
     "forgotPassword": "Forgot password?",
     "forgot": {
       "title": "Password recovery",
-      "subtitle": "Enter your login name or e-mail address — we will send a letter with a code. You will enter the code right here, in the app.",
-      "askEmail": "Does this account have an e-mail address?",
+      "subtitle": "Enter your login name or email address — we will send a letter with a code. You will enter the code right here, in the app.",
+      "askEmail": "Does this account have an email address?",
       "haveEmail": "Yes, I have an address",
       "noEmail": "I have no address",
       "noEmailWhat": "Then there is nowhere to send a letter. The congregation administrator will set a new password for you — tell them your login name; it is in your Profile if you have signed in before.",
@@ -511,7 +512,7 @@
       "sent": "If such an account exists and has an address, we have sent a letter with a code. The code is valid for one day.",
       "checkSpam": "No email? Check your spam folder.",
       "backToLogin": "Back to sign in",
-      "noEmailHint": "If you have no e-mail address, there is nowhere to send it — ask the congregation administrator to set you a new password.",
+      "noEmailHint": "If you have no email address, there is nowhere to send it — ask the congregation administrator to set you a new password.",
       "enterCode": "Enter the code from the letter",
       "haveCode": "I have a code"
     },
@@ -553,7 +554,7 @@
       "welcomeTitle": "You are in",
       "welcomeIntro": "Your password is saved. Remember the name you will sign in with from now on:",
       "yourLoginName": "Your name for signing in",
-      "yourLoginNameHint": "Do write it down. Your e-mail address works too, if you are the only one using that mailbox. The name is always in “Profile”.",
+      "yourLoginNameHint": "Do write it down. Your email address works too, if you are the only one using that mailbox. The name is always in “Profile”.",
       "welcomeGo": "Go to the app",
       "resetTitle": "Code from the letter",
       "resetIntro": "Enter the code from the letter and choose a new password — and you are in.",
@@ -562,7 +563,7 @@
       "resetAskAgain": "No code, or it does not work? Request a new code",
       "eachDevice": "Using both a phone and a computer? You sign in on each device separately — with the same name and password."
     },
-    "loginOrEmail": "Login name or e-mail",
+    "loginOrEmail": "Login name or email",
     "loginPlaceholder": "ivanov.petr or you@example.com",
     "tooMany": "Too many attempts in a short time — wait a quarter of an hour and try again. Nothing is wrong with your password.",
     "sharedEmail": "This address belongs to more than one login — sign in with your login name. If you cannot remember it, ask the congregation administrator."
@@ -849,7 +850,7 @@
     "status": {
       "draft": "Draft",
       "published": "Published",
-      "cancelled": "Cancelled"
+      "cancelled": "Canceled"
     },
     "speakerHints": {
       "lead": "From the directory — pick one so the name is written exactly the same"
@@ -867,7 +868,7 @@
       "lead": "Who is speaking today? The previous visit stays in the history as one that did not happen — that is how you later see who was invited and did not come.",
       "reason": "Reason (optional)",
       "reasonHint": "taken ill, did not come…",
-      "note": "The programme updates at once — the chairman reads the right name.",
+      "note": "The program updates at once — the chairman reads the right name.",
       "confirm": "Replace the speaker"
     },
     "speakerType": {
@@ -903,7 +904,7 @@
         "talkThemeManual": "Theme (manual)"
       },
       "hint": {
-        "talkThemeManual": "Fill this in when the talk is not in the catalogue: a special talk, a visitor’s subject, a theme announced differently."
+        "talkThemeManual": "Fill this in when the talk is not in the catalog: a special talk, a visitor’s subject, a theme announced differently."
       },
       "placeholder": {
         "weekStart": "2026-05-04",
@@ -944,7 +945,7 @@
     "title": {
       "detail": "Assignment",
       "new": "New Assignment",
-      "import": "Programme import",
+      "import": "Program import",
       "rules": "Congregation rules"
     },
     "a11y": {
@@ -963,7 +964,7 @@
     "removedBanner": "This assignment is removed",
     "import": {
       "title": "Import schedule EPUB",
-      "subtitle": "Upload Meeting Workbook (mwb_*.epub) or Watchtower study (w_*.epub) to auto-create the weekly programme. Existing empty slots are filled with official titles; assignments with publishers are preserved.",
+      "subtitle": "Upload Meeting Workbook (mwb_*.epub) or Watchtower study (w_*.epub) to auto-create the weekly program. Existing empty slots are filled with official titles; assignments with publishers are preserved.",
       "choosePrompt": "Choose EPUB file",
       "chooseDifferent": "Choose a different file",
       "openSchedule": "Open schedule",
@@ -971,7 +972,7 @@
         "noFileSelected": "No file selected",
         "notEpub": "Please select a .epub file",
         "webOnly": "File import is available in the web version (open mycongregation.org in a desktop browser).",
-        "noWeeks": "No weekly programmes found in this file. Is it a Meeting Workbook?",
+        "noWeeks": "No weekly programs found in this file. Is it a Meeting Workbook?",
         "parseFailed": "Could not parse the file"
       },
       "typeBadge": {
@@ -994,11 +995,11 @@
         "noMidweek": "{{week}}: no midweek meeting this week — parts not loaded: {{count}}",
         "noWeekend": "{{week}}: no weekend meeting this week — parts not loaded: {{count}}",
         "notHeldHint": "This follows from the congregation’s events and meeting settings. If the meeting does take place, correct them and load the file again — what is already assigned will not change.",
-        "unclassifiedPart": "{{week}}: a part was not recognised and was not loaded — “{{title}}”",
+        "unclassifiedPart": "{{week}}: a part was not recognized and was not loaded — “{{title}}”",
         "weekNotHeld": "no meeting",
         "importedWeeks": "Imported weeks",
         "openSchedule": "Open the schedule and assign the brothers",
-        "weekFrozenNotice": "{{week}}: this week’s programme is already the record — parts not loaded: {{count}}",
+        "weekFrozenNotice": "{{week}}: this week’s program is already the record — parts not loaded: {{count}}",
         "weekFrozen": "already the record"
       },
       "privacyNote": "The file is read on this screen, in the browser, and is not sent anywhere — only part titles and durations reach the schedule.",
@@ -1010,7 +1011,7 @@
         "partsShort": "{{count}} parts",
         "unclassifiedTitle": "Unrecognized parts: {{count}} (will be skipped)",
         "unreadWeeksTitle": "Week dates not understood: {{count}} — these weeks will not be loaded",
-        "unreadWeeksHint": "The other weeks load as usual. The programme of these weeks has to be entered by hand."
+        "unreadWeeksHint": "The other weeks load as usual. The program of these weeks has to be entered by hand."
       },
       "dropHint": "or drag an .epub file here",
       "dropRelease": "Release to load",
@@ -1019,7 +1020,7 @@
         "weeks_one": "{{count}} week",
         "weeks_other": "{{count}} weeks"
       },
-      "noRights": "Importing the meeting programme is for the administrator and the elders."
+      "noRights": "Importing the meeting program is for the administrator and the elders."
     },
     "unassign": {
       "button": "Unassign publisher",
@@ -1087,11 +1088,11 @@
         "assigned": "{{name}} — assigned «{{label}}»",
         "removed": "{{name}} — «{{label}}» removed"
       },
-      "byEmail": " (by e-mail)",
+      "byEmail": " (by email)",
       "sendNow": "Send now",
       "sendEvening": "Send this evening",
       "hint": "Keep editing — the countdown restarts and one message goes out",
-      "unreached": " will get nothing — no login and no e-mail address. Tell them in person: «{{label}}».",
+      "unreached": " will get nothing — no login and no email address. Tell them in person: «{{label}}».",
       "sentAt": "Told at {{time}} · {{names}}",
       "sentNobody": "{{time}} · nobody to tell through the app",
       "goesAt": "Goes out at {{time}} · {{names}}"
@@ -1113,10 +1114,10 @@
     },
     "movedTo": "In {{path}}",
     "lock": {
-      "frozen": "The meeting was on {{date}} — its programme is now the record and can no longer be changed.",
-      "grace": "The meeting has taken place — the programme can still be corrected until {{until}}.",
+      "frozen": "The meeting was on {{date}} — its program is now the record and can no longer be changed.",
+      "grace": "The meeting has taken place — the program can still be corrected until {{until}}.",
       "fix": "Correct after the fact",
-      "fixConfirmTitle": "Correct the programme after the fact?",
+      "fixConfirmTitle": "Correct the program after the fact?",
       "fixConfirmBody": "The week opens for editing. Changes are announced to nobody and are marked in the journal as a correction after the fact.",
       "retroOn": "Correcting after the fact — no notifications, marked in the journal",
       "retroDone": "Done",
@@ -1208,7 +1209,7 @@
       "orphans": {
         "title_one": "{{count}} login with no publisher card",
         "title_other": "{{count}} logins with no publisher card",
-        "body": "Such a person can sign in but cannot submit a report and sees none of their assignments: the app recognises people by their card. Link the login to a card and everything opens.",
+        "body": "Such a person can sign in but cannot submit a report and sees none of their assignments: the app recognizes people by their card. Link the login to a card and everything opens.",
         "badge": "No publisher card",
         "fix": "Link",
         "sheetTitle": "Whose account is this?",
@@ -1270,14 +1271,14 @@
       "renamed": "Titles that changed",
       "missingTitle": "Talks that are not in the new list: {{count}}",
       "andMore": "…and {{count}} more",
-      "missingHint": "An import never retires anything itself. If these talks are no longer in the outline list, retire them — they stay in the catalogue marked “retired” and can be brought back in one press.",
+      "missingHint": "An import never retires anything itself. If these talks are no longer in the outline list, retire them — they stay in the catalog marked “retired” and can be brought back in one press.",
       "retireAction": "Retire these talks",
       "retired": "Talks retired: {{count}}"
     },
     "emptySearch": "No talks match your search",
     "emptyTitle": "No public talks yet",
-    "emptyHint": "Tap “{{action}}” to add the S-34 catalogue",
-    "totalCount": "Talks in the catalogue: {{count}}",
+    "emptyHint": "Tap “{{action}}” to add the S-34 catalog",
+    "totalCount": "Talks in the catalog: {{count}}",
     "foundCount": "Found {{count}} for “{{search}}”",
     "lastImport": "Last import: {{date}}, {{time}} · {{name}}",
     "someoneUnknown": "by somebody unknown",
@@ -1294,14 +1295,14 @@
       "check": "Check",
       "willRetire": "Talks to retire: {{count}}",
       "already": "already retired",
-      "unknown": "The catalogue has no such numbers: {{numbers}}. Check the list or import the catalogue again.",
+      "unknown": "The catalog has no such numbers: {{numbers}}. Check the list or import the catalog again.",
       "scheduledTitle": "These talks are already scheduled after that date: {{count}}",
       "scheduledHint": "Nothing in the schedule is changed for you. Tap a line to open that week and choose another talk.",
       "confirm": "Retire these talks from {{date}}",
       "done": "Talks retired: {{count}}",
-      "backToCatalogue": "Back to the catalogue",
+      "backToCatalogue": "Back to the catalog",
       "source": {
-        "programme": "In the weekend programme",
+        "programme": "In the weekend program",
         "incoming": "A visiting speaker — the “to us” log",
         "outgoing": "One of ours is taking it — the “from us” log"
       },
@@ -1319,7 +1320,7 @@
       "history": {
         "retire": "Talks retired: {{count}}",
         "lift": "Talks brought back: {{count}}",
-        "import": "Catalogue imported: {{count}}",
+        "import": "Catalog imported: {{count}}",
         "importChanged": "new: {{created}}, changed: {{updated}}",
         "importSame": "nothing changed"
       },
@@ -1342,7 +1343,7 @@
       "outgoing": "{{name}} goes to {{where}} on {{date}}",
       "outgoingNoName": "Our speaker goes to {{where}} on {{date}}",
       "incoming": "Coming to us on {{date}}: {{name}}",
-      "programme": "Programme, {{date}}",
+      "programme": "Program, {{date}}",
       "openLog": "Open the Incoming / Outgoing log",
       "badge": "Talk no. {{n}} is withdrawn on this date"
     }
@@ -1575,7 +1576,7 @@
     "sheet": {
       "groupVisit": "Group {{group}} · service overseer's visit",
       "group": "Group {{group}}",
-      "recordNote": "The meeting has taken place. It can no longer be changed or deleted — like a past programme.",
+      "recordNote": "The meeting has taken place. It can no longer be changed or deleted — like a past program.",
       "where": "Where",
       "led": "Conducted by",
       "noTopic": "no topic",
@@ -1787,7 +1788,7 @@
     "notice": {
       "label": "Notice for everyone",
       "placeholder": "For example: hall under repair — we meet at the park entrance",
-      "hint": "Briefly, what is different this time. Everyone the meeting concerns sees it: on Home, in the Programme and in the list."
+      "hint": "Briefly, what is different this time. Everyone the meeting concerns sees it: on Home, in the Program and in the list."
     },
     "busy": {
       "lead": "Something else is on this day",
@@ -1795,8 +1796,8 @@
       "seed": "On this day: {{what}}. We meet: "
     },
     "cancelled": {
-      "label": "Cancelled",
-      "withReason": "Cancelled: {{reason}}"
+      "label": "Canceled",
+      "withReason": "Canceled: {{reason}}"
     },
     "cancel": {
       "button": "Cancel the meeting",
@@ -1806,7 +1807,7 @@
       "reasonPlaceholder": "For example: the circuit assembly is that day",
       "confirm": "Cancel the meeting",
       "keep": "Keep it",
-      "done": "Meeting cancelled"
+      "done": "Meeting canceled"
     },
     "restore": {
       "button": "Restore the meeting",
@@ -1825,12 +1826,12 @@
       "moved": "Moved: {{from}} → {{to}}"
     },
     "sheetCancelled": {
-      "note": "The meeting is cancelled. To change it, restore it first.",
+      "note": "The meeting is canceled. To change it, restore it first.",
       "leads": "Conducts"
     },
     "deleteConfirmDraft": "Delete this meeting from the draft?",
     "deleteConfirmPublished": "The meeting will disappear for everyone, and the conductor and everyone it concerns will get a cancellation message. If it is only not taking place, “Cancel the meeting” is better — it stays in the schedule, crossed out, with the reason.",
-    "deleteConfirmCancelled": "Delete the cancelled meeting? It will disappear from the schedule; no more messages are sent.",
+    "deleteConfirmCancelled": "Delete the canceled meeting? It will disappear from the schedule; no more messages are sent.",
     "panel": {
       "months": "Months",
       "none": "no meetings"
@@ -1844,8 +1845,8 @@
       "conductorBusy": "{{name}} already conducts a meeting at {{time}} that day.",
       "hint": "If that is intended, save anyway.",
       "saveAnyway": "Save anyway",
-      "cancelledThere": "The meeting at {{time}} that day is cancelled.",
-      "cancelledThereWhy": "The meeting at {{time}} that day is cancelled: {{reason}}.",
+      "cancelledThere": "The meeting at {{time}} that day is canceled.",
+      "cancelledThereWhy": "The meeting at {{time}} that day is canceled: {{reason}}.",
       "intoDraftMonth": "{{month}} is still a draft. This meeting is already announced and stays visible to everyone.",
       "dayTaken": "No field service meetings are planned on such a day — the server will not accept it."
     },
@@ -1957,7 +1958,7 @@
     "steps": {
       "wc": {
         "zsk1": "Pour cleaner into the toilet and scrub with the brush",
-        "zsk2": "Wipe the seat, lid and cistern with a red cloth",
+        "zsk2": "Wipe the seat, lid and tank with a red cloth",
         "zsk3": "Pour cleaner into the urinal and scrub with the brush",
         "zsk4": "Wipe the urinal outside and the partition next to it",
         "weekly1": "Apply cleaner to toilet and urinal, let it work for 5 minutes",
@@ -1987,11 +1988,11 @@
       "furniture": {
         "zsk1": "Wipe the doors and door handles",
         "zsk2": "Wipe the speaker's stand and the stands",
-        "zsk3": "Wipe the wardrobe rails",
+        "zsk3": "Wipe the coat racks",
         "zsk4": "Wipe the cabinets outside and their handles",
         "weekly1": "Brush the chair seats and backrests",
         "weekly2": "Wash the speaker's stand and stands with a damp cloth",
-        "weekly3": "Wash the wardrobe rails and hooks",
+        "weekly3": "Wash the coat racks and hooks",
         "yearly1": "Wash the chairs completely, including frame and legs",
         "yearly2": "Vacuum the chair upholstery with the nozzle",
         "yearly3": "Deep-clean all doors on every side",
@@ -2008,7 +2009,7 @@
       "kitchen": {
         "weekly1": "Wipe the fronts, handles and appliance exteriors",
         "weekly2": "Damp-mop the kitchen floor",
-        "weekly3": "Wash the splashback and worktops"
+        "weekly3": "Wash the backsplash and countertops"
       }
     },
     "rowSubtitle": "How and where to clean: cards, technique, safety",
@@ -2144,7 +2145,7 @@
     },
     "deleted": "Item removed",
     "accHallLabel": "Or at a Kingdom Hall",
-    "pastReadOnly": "The visit is over — its programme is read-only"
+    "pastReadOnly": "The visit is over — its program is read-only"
   },
   "witnessing": {
     "youAreAssigned": "You're assigned to this slot",
@@ -2284,7 +2285,7 @@
         "timeOrder": "The end is before the start",
         "linkInvalid": "A link must start with https://",
         "changeEmpty": "Say what changes about the meeting",
-        "pastNotice": "The date is past: the event is recorded for history. Nobody is notified and the programme does not change.",
+        "pastNotice": "The date is past: the event is recorded for history. Nobody is notified and the program does not change.",
         "needWeek": "Choose the week",
         "memorialTaken": "This service year's Memorial is already recorded — {{when}}",
         "visitTaken": "A visit is already recorded for this week — {{when}}"
@@ -2314,8 +2315,8 @@
       "mapPlaceholder": "Map link — https://…",
       "asLastTime": "As in {{year}}: {{value}} ›",
       "stayInSchedule": "Where he stays is settled in the visit schedule, with families and halls to choose from. The visit page links to it.",
-      "programme": "Programme",
-      "programmePlaceholder": "Programme link — can be added later",
+      "programme": "Program",
+      "programmePlaceholder": "Program link — can be added later",
       "overlap": "Already on those days: “{{title}}” ({{when}})",
       "save": {
         "circuit_overseer_visit": "Save visit",
@@ -2372,10 +2373,10 @@
     },
     "remove": {
       "title": "Remove “{{title}}”?",
-      "body": "The event goes to the bin, from where it can be restored.",
-      "bodyMeetings": "The event goes to the bin. The congregation meetings on those days will be held as usual again.",
-      "bodyVisit": "The week’s programme returns to normal: the midweek meeting goes back to its day, the Bible study returns, the overseer’s talks leave the programme. The visit can be restored from the bin.",
-      "bodyPast": "This event is over. Only the entry is removed — the programme of that week stays as it was given.",
+      "body": "The event goes to the trash, from where it can be restored.",
+      "bodyMeetings": "The event goes to the trash. The congregation meetings on those days will be held as usual again.",
+      "bodyVisit": "The week’s program returns to normal: the midweek meeting goes back to its day, the Bible study returns, the overseer’s talks leave the program. The visit can be restored from the bin.",
+      "bodyPast": "This event is over. Only the entry is removed — the program of that week stays as it was given.",
       "confirm": "Remove"
     },
     "meeting": {
@@ -2391,7 +2392,7 @@
         "none": "No meeting"
       },
       "modeHint": {
-        "usual": "Same time, place and programme",
+        "usual": "Same time, place and program",
         "changed": "We tell everyone what exactly is different",
         "none": "The event takes its place"
       },
@@ -2409,20 +2410,20 @@
     "list": {
       "nearest": "Next",
       "past": "Past · {{n}}",
-      "bin": "Bin · {{n}}",
+      "bin": "Trash · {{n}}",
       "serviceYear": "Service year {{from}}/{{to}}",
-      "binTitle": "In the bin",
+      "binTitle": "In the trash",
       "kindOther": "Congregation event",
       "speakerLater": "Speaker — later",
       "coWithWife": "{{name}} and {{wife}}",
-      "noProgramme": "No link to the programme",
-      "memorialDraft": "Memorial programme — draft",
-      "inBin": "In the bin — open it to bring it back",
+      "noProgramme": "No link to the program",
+      "memorialDraft": "Memorial program — draft",
+      "inBin": "In the trash — open it to bring it back",
       "now": "now",
       "tomorrow": "tomorrow",
       "inDays_one": "in {{count}} day",
       "inDays_other": "in {{count}} days",
-      "inProgramme": "Meeting in the Programme ›",
+      "inProgramme": "Meeting in the Program ›",
       "today": "today"
     },
     "effect": {
@@ -2441,10 +2442,10 @@
       "subtitle": "Next we ask only what this kind needs.",
       "other": "Other congregation event",
       "hint": {
-        "circuit_overseer_visit": "Moves the midweek meeting and changes the week's programme",
+        "circuit_overseer_visit": "Moves the midweek meeting and changes the week's program",
         "circuit_assembly": "One day; no congregation meetings that week",
         "regional_convention": "Several days; no congregation meetings that week",
-        "memorial": "Takes the place of one meeting; its programme is in the Memorial itself",
+        "memorial": "Takes the place of one meeting; its program is in the Memorial itself",
         "branch_representative_visit": "The meeting usually goes ahead, with changes — we ask which",
         "other": "A clean-up day, a group gathering… Does not affect meetings unless you say so"
       },
@@ -2456,9 +2457,9 @@
       "inMonths_one": "in {{count}} month",
       "inMonths_other": "in {{count}} months",
       "withWife": "His wife — {{name}}",
-      "weekInProgramme": "The week in the Programme",
-      "meetingInProgramme": "The meeting in the Programme",
-      "congressProgramme": "Convention programme",
+      "weekInProgramme": "The week in the Program",
+      "meetingInProgramme": "The meeting in the Program",
+      "congressProgramme": "Convention program",
       "visitWeek": "What changes this week",
       "midweek": "Midweek",
       "weekend": "Weekend",
@@ -2542,7 +2543,10 @@
       "cancel": "Cancel"
     },
     "warnAway": "Away: {{range}}",
-    "add": "Add absence"
+    "add": "Add absence",
+    "reason": {
+      "pioneerSchool": "Pioneer Service School"
+    }
   },
   "home": {
     "title": "Home",
@@ -2566,7 +2570,8 @@
       "outgoingTalks_one": "{{count}} talk elsewhere",
       "outgoingTalks_other": "{{count}} talks elsewhere",
       "cleaningAfterMeeting": "Your group cleans after this meeting",
-      "openMap": "Open map"
+      "openMap": "Open map",
+      "yoursHere": "You have an assignment here"
     },
     "report": {
       "submitted": "The {{month}} report is submitted"
@@ -2625,7 +2630,7 @@
       "youVisitAsAssistant": "You go on this visit as the assistant"
     },
     "coLunch": {
-      "lunch": "Organising lunch (CO visit)",
+      "lunch": "Organizing lunch (CO visit)",
       "lunchBox": "Lunch box (CO visit)"
     },
     "cleaning": {
@@ -2659,9 +2664,9 @@
       "inDays_other": "in {{count}} days",
       "following": "Then — {{when}}: {{what}}",
       "nothingNear": "No assignments in the next two weeks",
-      "away": "You are marked as away on these days ({{range}}). Let whoever plans the programme know.",
+      "away": "You are marked as away on these days ({{range}}). Let whoever plans the program know.",
       "tripNoted": "Trip noted",
-      "programme": "Programme",
+      "programme": "Program",
       "pair": "paired with {{name}}",
       "fieldConduct": "You conduct the meeting for field service",
       "onPlan": "on the plan",
@@ -2765,7 +2770,7 @@
     "insertTitle": "Choose a topic",
     "insertEmpty": "No planned topics. Add them on the Local Needs screen (the bulb icon in the schedule header).",
     "wasUsedOn": "Covered in the week {{week}}",
-    "scheduledFor": "In the programme for the week {{week}}",
+    "scheduledFor": "In the program for the week {{week}}",
     "archived": "Archived",
     "restore": "Restore from the archive",
     "searchPlaceholder": "Search topics and notes",
@@ -2987,7 +2992,7 @@
       },
       "willCome": "coming {{date}}",
       "wasHere": "here {{rel}}, times in all: {{count}}",
-      "alsoFillsProgramme": "This goes into the journal and fills the meeting programme.",
+      "alsoFillsProgramme": "This goes into the journal and fills the meeting program.",
       "changeSpeaker": "Change",
       "orTypeName": "Or type a speaker who is not in the directory:",
       "longestAgoFirst": "Those away the longest come first",
@@ -2997,11 +3002,11 @@
       "catalogueTalk": "From the list",
       "specialTheme": "Special talk theme",
       "specialThemePlaceholder": "As in the branch letter",
-      "specialHint": "It has no number — the programme shows the theme in place of the talk title. The speaker can be added later. The congregation is notified.",
+      "specialHint": "It has no number — the program shows the theme in place of the talk title. The speaker can be added later. The congregation is notified.",
       "needBrother": "Pick a brother",
       "undoReplacement": "Undo",
       "undoTitle": "He came after all?",
-      "undoBody": "{{name}} becomes this week’s speaker again: the “did not come” mark goes, the programme returns to him, and the replacement entry is removed.",
+      "undoBody": "{{name}} becomes this week’s speaker again: the “did not come” mark goes, the program returns to him, and the replacement entry is removed.",
       "didNotCome": "{{name}} — was scheduled, did not come",
       "title": "Incoming / Outgoing log",
       "subtitle": "Visiting and outgoing talks in one list",
@@ -3036,9 +3041,9 @@
       "givenTimes": "Given times: {{n}}",
       "noTalk": "No talk selected",
       "phone": "Phone",
-      "rebuild": "Check against the programme",
-      "rebuildTitle": "Rebuild entries from the programme?",
-      "rebuildBody": "The app walks this year’s weeks and creates a “to us” entry wherever the programme has a speaker and the journal has none. Nothing is deleted and existing entries are left as they are.",
+      "rebuild": "Check against the program",
+      "rebuildTitle": "Rebuild entries from the program?",
+      "rebuildBody": "The app walks this year’s weeks and creates a “to us” entry wherever the program has a speaker and the journal has none. Nothing is deleted and existing entries are left as they are.",
       "rebuildAction": "Rebuild",
       "rebuildDone": "Entries added: {{count}}",
       "rebuildDoneBody": "Weeks examined: {{weeks}}. Visits linked to a speaker's card: {{linked}}.",
@@ -3046,7 +3051,7 @@
       "awayThisDay": "that day he is at another congregation",
       "upcomingFrom": "Upcoming",
       "programmeFrozenTitle": "Entry saved",
-      "programmeFrozenBody": "This week’s programme is already the record and was not changed. If needed, an administrator or the coordinator of the body of elders can correct it after the fact."
+      "programmeFrozenBody": "This week’s program is already the record and was not changed. If needed, an administrator or the coordinator of the body of elders can correct it after the fact."
     },
     "swap": {
       "pastRefused": "That week is over. The brother has spoken and his name was read from the stage — only what has not happened yet can be moved.",
@@ -3110,11 +3115,11 @@
     "journal": "Service journal",
     "journalEmpty": "No records yet",
     "stop": "Stop",
-    "untilCancelledSince": "until cancelled · since {{month}}",
+    "untilCancelledSince": "until canceled · since {{month}}",
     "onlyMonth": "only {{month}}",
     "rangeMonths": "{{from}} – {{to}}",
     "publisher": "Publisher",
-    "untilCancelled": "Until cancelled",
+    "untilCancelled": "Until canceled",
     "untilCancelledHint": "serves indefinitely until stopped",
     "badgeServing": "Auxiliary pioneer · {{period}}",
     "badgeUpcoming": "Auxiliary pioneering from {{month}}",
@@ -3163,7 +3168,7 @@
   },
   "myContacts": {
     "rowTitle": "My contacts",
-    "intro": "You keep your phone, e-mail and address up to date yourself. The name is changed by a congregation administrator — it is used in schedules, reports and printed sheets.",
+    "intro": "You keep your phone, email and address up to date yourself. The name is changed by a congregation administrator — it is used in schedules, reports and printed sheets.",
     "confirm": "These are correct",
     "allCorrect": "These are correct",
     "edit": "Change",
@@ -3182,14 +3187,14 @@
   },
   "profileExtra": {
     "songsSub": "Import the congregation songbook",
-    "mwbImportSub": "Meeting programme from the publications (EPUB)"
+    "mwbImportSub": "Meeting program from the publications (EPUB)"
   },
   "songPicker": {
     "current": "Current song",
     "clear": "Remove the song",
     "search": "Search by number or title",
     "none": "Not chosen",
-    "catalogEmpty": "The song catalogue is empty. Import songs under Profile → Songs."
+    "catalogEmpty": "The song catalog is empty. Import songs under Profile → Songs."
   },
   "songsImport": {
     "title": "Import songs",
@@ -3204,12 +3209,12 @@
     "created": "Added",
     "updated": "Updated",
     "unchanged": "Unchanged",
-    "notRecognised": "{{count}} lines were not recognised. Expected “SONG N” with the title on the next line.",
+    "notRecognised": "{{count}} lines were not recognized. Expected “SONG N” with the title on the next line.",
     "renamedTitle": "Titles that changed",
     "addedTitle": "Songs added: {{numbers}}",
     "andMore": "and {{count}} more",
     "missingTitle": "Songs the congregation has that this list does not mention: {{count}}",
-    "missingHint": "An import never removes anything. If these songs are no longer used, switch them off in the song catalogue yourself.",
+    "missingHint": "An import never removes anything. If these songs are no longer used, switch them off in the song catalog yourself.",
     "howTo": "Paste the list: a line “SONG N”, and the title on the next line:",
     "howToAfter": "Existing songs (matched by number) are updated, new ones are added. The heading “SONGS” and empty lines are ignored.",
     "placeholder": "SONG 1\nTitle\nSONG 2\nTitle\n…",
@@ -3285,7 +3290,7 @@
       "field_service_template": "Field service template",
       "meeting_attendance": "Attendance",
       "memorial_item": "Memorial",
-      "public_talk_catalog": "Talk catalogue",
+      "public_talk_catalog": "Talk catalog",
       "elder_task": "Elders' tasks",
       "meeting_settings": "Meeting time & place",
       "annual_report": "Annual report (S-10)",
@@ -3304,7 +3309,7 @@
     "bulk": "{{count}} at once",
     "denyReason": {
       "past_frozen": "the meeting has already taken place",
-      "programme_frozen": "the meeting’s programme is already the record"
+      "programme_frozen": "the meeting’s program is already the record"
     },
     "s21": "the S-21 card",
     "fieldNames": {
@@ -3360,7 +3365,7 @@
       "userId": "Person",
       "startMonth": "From month",
       "endMonth": "To month",
-      "untilCancelled": "Until cancelled",
+      "untilCancelled": "Until canceled",
       "overseerPublisherId": "Group overseer",
       "startDate": "Start",
       "endDate": "End",
@@ -3373,7 +3378,7 @@
       "usedWeek": "Used in week",
       "speakerPublisherId": "Speaker",
       "mobilePhone": "Phone",
-      "email": "E-mail",
+      "email": "Email",
       "note": "Note",
       "weekStartDate": "Week",
       "eventType": "Meeting",
@@ -3388,7 +3393,7 @@
       "meetingTime": "Meeting time",
       "meetingAddress": "Meeting place",
       "coMidweekDow": "Midweek meeting day",
-      "programUrl": "Programme link",
+      "programUrl": "Program link",
       "mapUrl": "Map link",
       "specialTheme": "Special theme",
       "from": "Source",
@@ -3466,8 +3471,8 @@
       "retroactive": "Corrected after the fact",
       "notice": "Notice",
       "draft": "Draft",
-      "cancelled": "Cancelled",
-      "cancelReason": "Reason for cancelling",
+      "cancelled": "Canceled",
+      "cancelReason": "Reason for canceling",
       "publishedAt": "Published",
       "published": "Published meetings",
       "fromTemplate": "From the template",
@@ -3477,7 +3482,7 @@
       "withoutConductor": "Without a conductor",
       "slots": "Template meetings",
       "skipAssemblies": "Skip assembly weeks",
-      "coVisitFromSchedule": "Circuit overseer visit from the programme",
+      "coVisitFromSchedule": "Circuit overseer visit from the program",
       "autoPrepare": "Prepare the month automatically",
       "prepareLead": "How far ahead",
       "autoPickConductors": "Pick conductors automatically",
@@ -3489,10 +3494,10 @@
       "hallName": "Hall",
       "personText": "Who (as written)",
       "songNumber": "Song",
-      "memorialPublishedAt": "Memorial programme published",
+      "memorialPublishedAt": "Memorial program published",
       "partTitle": "Part title",
       "specialTalk": "Special talk",
-      "usedAssignmentId": "Used in the programme",
+      "usedAssignmentId": "Used in the program",
       "count": "Attendance",
       "notHeld": "Not held",
       "permanent": "Permanently",
@@ -3531,7 +3536,7 @@
       "redacted": "The contents of this entry were erased at a person’s request; there is nothing to put back.",
       "entityNotSupported": "This kind of record cannot be put back. Open it and correct it by hand.",
       "nothingRevertable": "This entry holds no field that can be put back.",
-      "programmeFrozen": "This meeting was more than a week ago — its programme is the record. It can only be corrected after the fact, in the programme editor."
+      "programmeFrozen": "This meeting was more than a week ago — its program is the record. It can only be corrected after the fact, in the program editor."
     },
     "goneRecord": "record no longer exists",
     "taskStatus": {
@@ -3556,11 +3561,12 @@
         "stand": "stand"
       },
       "memorialSection": {
-        "programme": "programme",
+        "programme": "program",
         "emblems": "emblems",
         "duty": "duties"
       }
-    }
+    },
+    "weekOf": "week of {{date}}"
   },
   "attendance": {
     "cardTitle": "Meeting attendance",
@@ -3665,7 +3671,7 @@
       "ministry": "Ministry",
       "teaching": "Teaching",
       "care": "Care",
-      "organisation": "Organisation",
+      "organisation": "Organization",
       "accounts": "Accounts",
       "other": "Other",
       "announcements": "Announcements"
@@ -3984,32 +3990,32 @@
   },
   "memorial": {
     "title": "Memorial",
-    "preparing": "The Memorial programme is being prepared",
+    "preparing": "The Memorial program is being prepared",
     "sections": {
-      "programme": "Programme",
+      "programme": "Program",
       "duty": "Duties"
     },
     "theme": "Theme of the talk",
     "themePlaceholder": "Theme title",
     "themeUrlPlaceholder": "Link to the theme (optional)",
     "draft": "Draft — nobody has been told yet",
-    "published": "Programme published",
+    "published": "Program published",
     "publish": "Publish",
-    "empty": "The programme has not been drawn up yet",
-    "prepare": "Draw up the programme",
+    "empty": "The program has not been drawn up yet",
+    "prepare": "Draw up the program",
     "prepareHint": "Taken from last year's Memorial: labels, order, songs and theme. People are assigned afresh.",
     "addNote": "Add a note",
     "notePlaceholder": "What to know beforehand",
     "openInSchedule": "Open in the schedule",
-    "openInScheduleHint": "The programme, the duties and the passing of the emblems",
+    "openInScheduleHint": "The program, the duties and the passing of the emblems",
     "songWord": "Song"
   },
   "feed": {
-    "ready": "Programme complete",
+    "ready": "Program complete",
     "noneYet": "Nobody assigned yet",
     "missingCount": "{{count}} of {{total}} not assigned",
     "missing": "Missing: {{parts}}",
-    "notLoaded": "Programme not loaded yet",
+    "notLoaded": "Program not loaded yet",
     "noMeetings": "No congregation meetings this week",
     "movedByVisit": "moved for the circuit overseer's visit",
     "specialTalk": "special talk",
@@ -4018,8 +4024,8 @@
     "memorialInsteadMidweek": "Instead of the midweek meeting",
     "memorialInsteadWeekend": "Instead of the weekend meeting",
     "loadMore": "Show more",
-    "end": "No programme beyond this",
-    "endLoadedTo": "Programme up to {{date}}",
+    "end": "No program beyond this",
+    "endLoadedTo": "Program up to {{date}}",
     "serviceYearStart": "Start of the service year",
     "you": "You",
     "past": "Past",
@@ -4033,12 +4039,12 @@
     "speaker": "Speaker",
     "lead": "Conductor",
     "minutes": "{{time}} · {{n}} min",
-    "editProgramme": "Edit programme",
+    "editProgramme": "Edit program",
     "editDuties": "Edit duties",
     "dayNotSet": "no day set yet",
     "noDuties": "No duties assigned for this meeting yet",
     "noCleaning": "No cleaning assigned for this week",
-    "tabProgramme": "Programme",
+    "tabProgramme": "Program",
     "tabDuties": "Duties",
     "tabCleaning": "Cleaning",
     "ahead": "Ahead",
@@ -4098,14 +4104,14 @@
     "title": "Conducting the meeting",
     "open": "Conduct the meeting",
     "noWeek": "No week given",
-    "noProgramme": "There is no programme for this week",
+    "noProgramme": "There is no program for this week",
     "noChairman": "No chairman is assigned — there is nothing to conduct",
     "toSchedule": "Back to the schedule",
     "notChairman": "Only this week's chairman can conduct the meeting",
     "now": "Now",
     "next": "Next",
     "finished": "Meeting finished",
-    "planned": "{{minutes}} min in the programme",
+    "planned": "{{minutes}} min in the program",
     "start": "Start the meeting",
     "nextPart": "Next part",
     "finish": "Finish",
@@ -4118,15 +4124,15 @@
     "undo": "Undo",
     "againTitle": "Start over?",
     "againBody": "The times of every part of this meeting will be erased on this device.",
-    "counselNote": "+1 — a minute of counsel after a student part. The part itself is counted exactly by the programme.",
+    "counselNote": "+1 — a minute of counsel after a student part. The part itself is counted exactly by the program.",
     "nowStudent": "Now · student part",
     "partDone": "Done",
     "then": "Then",
     "lastSeconds": "last 30 seconds",
     "overtime": "over time",
-    "plannedThenCounsel": "{{minutes}} min in the programme · then counsel {{counsel}} min",
+    "plannedThenCounsel": "{{minutes}} min in the program · then counsel {{counsel}} min",
     "endsAt": "ends ≈",
-    "byProgramme": "programme {{time}}",
+    "byProgramme": "program {{time}}",
     "againHint": "Erase this meeting’s run on this device",
     "counsel": {
       "title": "Counsel · after “{{part}}”",
@@ -4146,7 +4152,7 @@
       "againBody": "The practice starts over."
     },
     "changed": {
-      "title": "The programme changed during the meeting",
+      "title": "The program changed during the meeting",
       "added": "Added: {{parts}}",
       "removed": "Removed: {{parts}}",
       "note": "The run goes on part by part; finished parts keep their times."
@@ -4155,7 +4161,7 @@
       "title": "How the meeting ran",
       "open": "How the meeting ran",
       "took": "The meeting took {{time}}",
-      "planned": "{{time}} in the programme",
+      "planned": "{{time}} in the program",
       "part": "Part",
       "plan": "Plan",
       "fact": "Actual",
@@ -4218,24 +4224,24 @@
     },
     "report": {
       "took": "Meeting took",
-      "planned": "programme {{time}}",
+      "planned": "program {{time}}",
       "peak": "Furthest behind",
       "peakAfter": "after “{{part}}”",
-      "peakNone": "never behind the programme",
+      "peakNone": "never behind the program",
       "counsel": "Counsel · {{n}}",
-      "counselSub": "average per counsel · programme 1:00",
+      "counselSub": "average per counsel · program 1:00",
       "counselNone": "no counsel given",
       "between": "Pauses and transitions",
       "betweenSub": "time that belongs to no part",
       "curve": "How the time went",
-      "curveSub": "Behind the programme as the meeting went · above zero — later than planned",
+      "curveSub": "Behind the program as the meeting went · above zero — later than planned",
       "curvePauses": "Light stretches: changeovers and pauses between parts.",
       "curveNoPauses": "Pauses between parts ({{time}}) are not included: this result was saved before the app recorded when each part began.",
       "start": "start {{time}}",
       "end": "end {{time}}",
       "minutes": "{{sign}}{{n}} min",
       "sections": "Sections",
-      "sectionsSub": "Dashed — programme, bar — as it went (with counsel)",
+      "sectionsSub": "Dashed — program, bar — as it went (with counsel)",
       "of": "of {{time}}",
       "parts": "Parts",
       "byOrder": "In order",
@@ -4243,7 +4249,7 @@
       "counselRow": "chairman’s counsel",
       "pauseRow": "changeover",
       "betweenRow": "Pauses and transitions between parts",
-      "note": "A part’s time excludes the counsel minute; the counsel is on the line below. Opening, closing and song are grey: they are nobody’s assignment.",
+      "note": "A part’s time excludes the counsel minute; the counsel is on the line below. Opening, closing and song are gray: they are nobody’s assignment.",
       "short": {
         "treasures": "Treasures",
         "applyYourself": "Ministry",
@@ -4260,14 +4266,14 @@
       "notRunTitle": "The meeting has not been started in the app",
       "notRunHint": "It appears here when the timekeeper presses «Start the meeting».",
       "startsAt": "Starts at {{time}}",
-      "byProgrammeAt": "By the programme — at {{time}}",
+      "byProgrammeAt": "By the program — at {{time}}",
       "startHint": "The countdown begins when the timekeeper taps “Start meeting”",
       "lateHint": "The delay counts as running behind: the end moves by as much",
       "delayed": "start delayed",
       "in": "in",
       "left": "left",
       "ofMinutes": "of {{minutes}} min",
-      "byProgrammeMin": "{{minutes}} min by the programme",
+      "byProgrammeMin": "{{minutes}} min by the program",
       "lastMinute": "last minute",
       "counsel": "Counsel",
       "next": "NEXT",
@@ -4276,7 +4282,7 @@
       "then": "THEN",
       "min": "{{minutes}} min",
       "end": "Ends",
-      "endPlanned": "Ends by the programme",
+      "endPlanned": "Ends by the program",
       "youRun": "You keep the time",
       "runBy": "Timekeeper: {{name}}",
       "check": {
@@ -4332,7 +4338,7 @@
       "noteSong": "The changeover is not song time. The song: about {{minutes}} min"
     },
     "soft": {
-      "note": "A song — no countdown, no red. About {{minutes}} min in the programme"
+      "note": "A song — no countdown, no red. About {{minutes}} min in the program"
     },
     "midweekRun": {
       "songAndPrayer": "{{song}} and prayer",
@@ -4390,15 +4396,15 @@
       "hall": "Kingdom Hall",
       "management": "Administration"
     },
-    "programme": "Programme planning",
+    "programme": "Program planning",
     "sub": {
       "myGroup": "Who is in the group and its overseer",
       "groups": "All the groups of the congregation",
       "absencesMine": "When I will be away — so I am not assigned",
       "absencesAll": "Who is away and when",
       "publishers": "List and cards",
-      "programme": "The meeting programme week by week",
-      "programmeImport": "Import the programme",
+      "programme": "The meeting program week by week",
+      "programmeImport": "Import the program",
       "talks": "Visiting speakers and our own",
       "tasks": "Tasks and the elders' meeting agenda",
       "school": "School schedule and the brothers for it",
@@ -4426,7 +4432,7 @@
       "awayNobody": "Nobody is away now",
       "programmeNotReady": "Not ready: {{count}} meetings · {{window}}",
       "programmeUntil": "Complete until {{date}}",
-      "programmeNone": "No programme imported yet",
+      "programmeNone": "No program imported yet",
       "duties": "{{when}}: {{assigned}} of {{total}} places",
       "talk": "Visiting speaker {{date}}: {{who}}",
       "talkNoName": "name not given",
@@ -4612,8 +4618,8 @@
     },
     "noGoogle": {
       "title": "This phone has no Google services, so the app's notifications cannot reach it.",
-      "byMail": "What matters will come by e-mail to {{email}}: your meeting assignments and reminders of them. Cleaning and report reminders are not mailed — please look in the app.",
-      "noMail": "Ask the elders to add your e-mail address — your assignments and reminders of them will then come by e-mail."
+      "byMail": "What matters will come by email to {{email}}: your meeting assignments and reminders of them. Cleaning and report reminders are not mailed — please look in the app.",
+      "noMail": "Ask the elders to add your email address — your assignments and reminders of them will then come by email."
     }
   },
   "places": {
@@ -4626,7 +4632,7 @@
     "lastActive": "last time — {{when}}",
     "today": "today",
     "yesterday": "yesterday",
-    "unknown": "Device not recognised",
+    "unknown": "Device not recognized",
     "platform": {
       "android": "Android",
       "ios": "iPhone",
@@ -4708,7 +4714,7 @@
       "isBoolean": "“yes” or “no” is needed",
       "isDateString": "not a date",
       "isDefined": "it is empty",
-      "isEmail": "not an e-mail address",
+      "isEmail": "not an email address",
       "isEnum": "that value is not on the list",
       "isIn": "that value is not on the list",
       "isInt": "a whole number is needed",
@@ -4743,7 +4749,7 @@
       "title": "Title",
       "note": "Note",
       "notes": "Notes",
-      "email": "E-mail",
+      "email": "Email",
       "firstName": "First name",
       "lastName": "Last name",
       "phone": "Phone",
@@ -4757,7 +4763,7 @@
       "hours": "Hours",
       "comments": "Comment",
       "reportMonth": "Month",
-      "programUrl": "Link to the programme",
+      "programUrl": "Link to the program",
       "mapUrl": "Link to the map",
       "year": "Year",
       "startYear": "Year",
@@ -4781,14 +4787,14 @@
       "DUTIES_MEETING_NOT_HELD": "That meeting is not held this week — it has no duties.",
       "DUTY_ONLY_OWN_RENAME": "Only a duty the congregation added itself can be renamed.",
       "DUTY_ONLY_OWN_REMOVE": "Only a duty the congregation added itself can be removed this way.",
-      "MEMORIAL_PAST_LOCKED": "The Memorial on {{date}} is already past — its programme is part of the record and can no longer be changed.",
-      "CO_VISIT_PAST_LOCKED": "The circuit overseer's visit is already over ({{date}}) — its programme is part of the record and can no longer be changed.",
+      "MEMORIAL_PAST_LOCKED": "The Memorial on {{date}} is already past — its program is part of the record and can no longer be changed.",
+      "CO_VISIT_PAST_LOCKED": "The circuit overseer's visit is already over ({{date}}) — its program is part of the record and can no longer be changed.",
       "CO_VISIT_SCHEDULE_CLOSED": "The visit's schedule is seen by the elders and those who plan it.",
       "OWNER_PROTECTED": "This is the congregation owner's account — it cannot be changed or deactivated.",
       "OWN_ROLE": "You cannot change your own role — another administrator can.",
       "OWN_DEACTIVATION": "You cannot deactivate yourself — another administrator can.",
       "LAST_ACTIVE_ADMIN": "The congregation must keep at least one active administrator. Appoint another one first.",
-      "BAD_EMAIL": "That does not look like an e-mail address — please check for a typo.",
+      "BAD_EMAIL": "That does not look like an email address — please check for a typo.",
       "RATE_LIMITED": "Too many tries. Please wait a minute and try again.",
       "ABSENCE_FROM_TRIP": "This absence comes from a talk in another congregation. To remove it, cancel the trip itself.",
       "ALREADY_MERGED": "One of these cards is already merged into another.",
@@ -4832,7 +4838,7 @@
       "CART_NOT_ELIGIBLE": "Sign-up is open to those marked for it on their card. Please ask the brother responsible for cart witnessing.",
       "CART_WEEK_NO_REQUESTS": "Sign-up for this week is closed right now.",
       "HAS_APP_ACCESS": "This person already has access to the app.",
-      "ACCESS_PASSWORD_OR_INVITE": "Please give a password or turn on the e-mail invitation.",
+      "ACCESS_PASSWORD_OR_INVITE": "Please give a password or turn on the email invitation.",
       "PIONEER_NOT_BAPTIZED": "Only a baptized publisher can be a pioneer.",
       "PUBLISHER_ALREADY_REMOVED": "This card is already removed from the list.",
       "PUBLISHER_NOT_REMOVED": "This card is not removed — there is nothing to restore.",
@@ -4858,7 +4864,7 @@
       "CLEANING_OUTSIDE_WEEK": "The cleaning time must fall within its week.",
       "TALK_SLOT_NOBODY": "Nobody is given for this week — please choose a speaker.",
       "TALKS_SET_ASIDE_FORBIDDEN": "Talks can be set aside by the elders and the public talk coordinator.",
-      "TALK_NUMBER_TAKEN": "Talk No. {{number}} is already in the catalogue.",
+      "TALK_NUMBER_TAKEN": "Talk No. {{number}} is already in the catalog.",
       "LOCAL_NEEDS_FOR_ELDERS": "Local needs are for the elders.",
       "AGENDA_FORBIDDEN": "The agenda is kept by the coordinator of the body of elders and his assistant; during the meeting the secretary may write too.",
       "ATTENDANCE_FORBIDDEN": "Attendance is seen by the elders and those who record it.",
@@ -4872,12 +4878,12 @@
       "SCHEDULE_VERSION_IN_FORCE": "This schedule is already in force — past weeks are counted by it, so it cannot be deleted. Correct it by saving the schedule with the same start date.",
       "GROUP_ALREADY_REMOVED": "This group is already removed.",
       "GROUP_NOT_REMOVED": "This group is not removed — there is nothing to restore.",
-      "FS_CANCELLED": "The meeting is cancelled. To change it, restore it first.",
-      "FS_DRAFT_NOT_CANCELLABLE": "A draft was never announced — it is deleted, not cancelled.",
-      "FS_ALREADY_CANCELLED": "The meeting is already cancelled.",
-      "FS_NOT_CANCELLED": "The meeting is not cancelled — there is nothing to restore.",
-      "PROGRAMME_PAST_LOCKED": "The meeting on {{date}} was more than a week ago — its programme is the record. It could be changed until {{until}}.",
-      "PROGRAMME_FIX_FORBIDDEN": "A programme can be corrected after the fact by an administrator and the coordinator of the body of elders.",
+      "FS_CANCELLED": "The meeting is canceled. To change it, restore it first.",
+      "FS_DRAFT_NOT_CANCELLABLE": "A draft was never announced — it is deleted, not canceled.",
+      "FS_ALREADY_CANCELLED": "The meeting is already canceled.",
+      "FS_NOT_CANCELLED": "The meeting is not canceled — there is nothing to restore.",
+      "PROGRAMME_PAST_LOCKED": "The meeting on {{date}} was more than a week ago — its program is the record. It could be changed until {{until}}.",
+      "PROGRAMME_FIX_FORBIDDEN": "A program can be corrected after the fact by an administrator and the coordinator of the body of elders.",
       "NOTICE_NO_EVENING": "No evening is left before the meeting — the changes go out now.",
       "CONDUCT_MEETING_OVER": "This meeting is over — it is not run again after its day.",
       "CONDUCT_RESULT_KEPT": "The result of this meeting is saved already and cannot be replaced after its day.",
@@ -4886,7 +4892,9 @@
       "STAGE_SCREEN_ONLY": "The stage display shows only the meeting as it runs.",
       "STAGE_PIN_WRONG": "Those are not the digits.",
       "STAGE_PIN_INVALID": "The display menu needs 4 to 8 digits.",
-      "STAGE_ACCOUNT_FIXED": "A stage display is no person: it has no card and its role cannot change."
+      "STAGE_ACCOUNT_FIXED": "A stage display is no person: it has no card and its role cannot change.",
+      "RESPONSIBILITY_OWN_ASSISTANT": "A brother cannot be his own assistant: this responsibility and its assistant are two different brothers.",
+      "GROUP_LEADER_SISTER": "The group overseer and his assistant are brothers."
     }
   },
   "stage": {
@@ -4945,7 +4953,7 @@
       "startsAt": "Starts at {{time}}",
       "chairman": "chairman {{name}}",
       "noNext": "No meetings in the coming weeks",
-      "opensItself": "On a meeting day the programme opens here by itself",
+      "opensItself": "On a meeting day the program opens here by itself",
       "ended": "The meeting ended at {{time}}",
       "menu": "Display menu",
       "pinHint": "Enter the stage display’s digits. Without them nothing changes — the display goes back to the meeting.",
@@ -4958,5 +4966,24 @@
       "back": "Back to the meeting",
       "closesItself": "The menu closes by itself after 20 seconds without a tap"
     }
+  },
+  "readerTitles": {
+    "song": "Song {{n}}",
+    "songAndPrayer": "Song {{n}} and prayer",
+    "openingComments": "Opening comments ({{min}} min.)",
+    "concludingComments": "Concluding comments ({{min}} min.)",
+    "bibleReading": "Bible reading",
+    "spiritualGems": "Spiritual gems",
+    "startingConversation": "Starting a conversation",
+    "followingUp": "Following up",
+    "makingDisciples": "Making disciples",
+    "talk": "Talk",
+    "cbs": "Congregation Bible study",
+    "reader": "Reader",
+    "chairman": "Chairman",
+    "openingPrayer": "Opening prayer",
+    "closingPrayer": "Closing prayer",
+    "prayer": "Prayer",
+    "treasures": "Treasures from God’s Word"
   }
 }

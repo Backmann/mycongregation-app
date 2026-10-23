@@ -67,6 +67,10 @@ export function SongPicker({
   const current = currentNumber ?? currentNumberFromTitle(currentTitle);
   const emit = (n: number | null) => {
     if (onSaveNumber) onSaveNumber(n);
+    // Stored as the programme stores it — in the congregation's words, which
+    // the import writes in Russian; the screen says it in the reader's
+    // (lib/reader-titles.ts).
+    // cyrillic-ok: stored in the programme’s words; shown via lib/reader-titles
     else onSave?.(n === null ? null : `Песня ${n}`);
   };
   const currentSong = songs.find((s) => s.number === current);
@@ -86,7 +90,7 @@ export function SongPicker({
         <Text style={styles.currentLabel}>{t('songPicker.current')}</Text>
         <Text style={styles.currentValue}>
           {current
-            ? `Песня ${current}${currentSong ? ` — ${currentSong.title}` : ''}`
+            ? `${t('readerTitles.song', { n: current })}${currentSong ? ` — ${currentSong.title}` : ''}`
             : t('songPicker.none')}
         </Text>
       </View>

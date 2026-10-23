@@ -29,30 +29,17 @@ import {
   taskVisual,
 } from '../../../lib/my-tasks';
 import { addDays, formatDateISO, startOfWeekMonday } from '../../../lib/dates';
+import { formatDayRange } from '../../../lib/date-range';
 import { WindowsPlanDialog } from '../../../components/WindowsPlan';
 import { FieldNotice } from '../../../components/FieldNotice';
 import { KeptNotice, LoadFailed } from '../../../components/ConnectionState';
 import { sessionVerdict } from '../../../lib/session-verdict';
 
 function weekHeaderLabel(weekStartISO: string, locale: string): string {
-  const start = new Date(`${weekStartISO}T00:00:00`);
-  const end = addDays(start, 6);
-  const sameMonth =
-    start.getMonth() === end.getMonth() &&
-    start.getFullYear() === end.getFullYear();
-  if (sameMonth) {
-    return `${start.getDate()}\u2013${end.toLocaleDateString(locale, {
-      day: 'numeric',
-      month: 'long',
-    })}`;
-  }
-  return `${start.toLocaleDateString(locale, {
-    day: 'numeric',
-    month: 'long',
-  })} \u2013 ${end.toLocaleDateString(locale, {
-    day: 'numeric',
-    month: 'long',
-  })}`;
+  // As the language writes a span (lib/date-range.ts): «19–OCTOBER 25» was
+  // the Russian order in English (walk, 23 October 2026).
+  const end = formatDateISO(addDays(new Date(`${weekStartISO}T00:00:00`), 6));
+  return formatDayRange(weekStartISO, end, locale, { year: 'never' });
 }
 
 /** One "meeting card": tasks sharing a date + event/kind, in program order. */

@@ -2,20 +2,129 @@ import type { S21DataResponse } from './api';
 
 const MONTHS_ORDER = [8, 9, 10, 11, 0, 1, 2, 3, 4, 5, 6, 7]; // Sep..Aug (0-based)
 
-const MONTH_LABELS_RU = [
-  'Сентябрь',
-  'Октябрь',
-  'Ноябрь',
-  'Декабрь',
-  'Январь',
-  'Февраль',
-  'Март',
-  'Апрель',
-  'Май',
-  'Июнь',
-  'Июль',
-  'Август',
-];
+/**
+ * THE CARD IN THE READER'S LANGUAGE (23 October 2026, Lionel: «да» — translate
+ * the S-21). It used to be Russian whatever language the app spoke. The
+ * Russian text is the one the congregation has used; the German and English
+ * labels follow the printed form's fields, worded plainly — they are not
+ * copied from an official German or English form, which was not at hand.
+ */
+type S21Lang = 'ru' | 'de' | 'en';
+const S21_TEXT: Record<
+  S21Lang,
+  {
+    title: string;
+    name: string;
+    born: string;
+    baptized: string;
+    male: string;
+    female: string;
+    otherSheep: string;
+    anointed: string;
+    elder: string;
+    ms: string;
+    regular: string;
+    special: string;
+    missionary: string;
+    year: string;
+    shared: string;
+    studies: string;
+    aux: string;
+    hours: string;
+    hoursHint: string;
+    remarks: string;
+    total: string;
+    code: string;
+  }
+> = {
+  ru: {
+    title: 'ЗАПИСИ СОБРАНИЯ О СЛУЖЕНИИ ВОЗВЕЩАТЕЛЯ',
+    name: 'ФИО',
+    born: 'Дата рождения',
+    baptized: 'Дата крещения',
+    male: 'Мужчина',
+    female: 'Женщина',
+    otherSheep: 'Другая овца',
+    anointed: 'Помазанник',
+    elder: 'Старейшина',
+    ms: 'Помощник собрания',
+    regular: 'Общий пионер',
+    special: 'Специальный пионер',
+    missionary: 'Миссионер',
+    year: 'Служебный год',
+    shared: 'Участвовал в служении',
+    studies: 'Изучения Библии',
+    aux: 'Подсобный пионер',
+    hours: 'Часы',
+    hoursHint: '(если пионер или миссионер)',
+    remarks: 'Примечания',
+    total: 'Итого',
+    code: 'S-21-U',
+  },
+  de: {
+    title: 'VERKÜNDIGERKARTE DER VERSAMMLUNG',
+    name: 'Name',
+    born: 'Geburtsdatum',
+    baptized: 'Taufdatum',
+    male: 'Männlich',
+    female: 'Weiblich',
+    otherSheep: 'Andere Schafe',
+    anointed: 'Gesalbter',
+    elder: 'Ältester',
+    ms: 'Dienstamtgehilfe',
+    regular: 'Allgemeiner Pionier',
+    special: 'Sonderpionier',
+    missionary: 'Missionar',
+    year: 'Dienstjahr',
+    shared: 'Am Dienst beteiligt',
+    studies: 'Bibelstudien',
+    aux: 'Hilfspionier',
+    hours: 'Stunden',
+    hoursHint: '(bei Pionieren oder Missionaren)',
+    remarks: 'Bemerkungen',
+    total: 'Summe',
+    code: 'S-21-X',
+  },
+  en: {
+    title: 'CONGREGATION’S PUBLISHER RECORD',
+    name: 'Name',
+    born: 'Date of birth',
+    baptized: 'Date of baptism',
+    male: 'Male',
+    female: 'Female',
+    otherSheep: 'Other sheep',
+    anointed: 'Anointed',
+    elder: 'Elder',
+    ms: 'Ministerial servant',
+    regular: 'Regular pioneer',
+    special: 'Special pioneer',
+    missionary: 'Field missionary',
+    year: 'Service year',
+    shared: 'Shared in ministry',
+    studies: 'Bible studies',
+    aux: 'Auxiliary pioneer',
+    hours: 'Hours',
+    hoursHint: '(if pioneer or field missionary)',
+    remarks: 'Remarks',
+    total: 'Total',
+    code: 'S-21-E',
+  },
+};
+
+function s21Lang(lang: string): S21Lang {
+  const l = (lang || 'ru').slice(0, 2).toLowerCase();
+  return l === 'de' || l === 'en' ? l : 'ru';
+}
+
+/** «Сентябрь», «September» — the month on its own, capitalised. */
+function monthLabel(monthIdx: number, lang: S21Lang): string {
+  const m = new Date(2026, monthIdx, 1).toLocaleDateString(
+    lang === 'en' ? 'en-US' : lang,
+    { month: 'long' },
+  );
+  return m.charAt(0).toUpperCase() + m.slice(1);
+}
+
 
 function esc(s: string): string {
   return s.replace(
@@ -40,7 +149,8 @@ export function availableServiceYears(now = new Date()): number[] {
 const CB = (on: boolean) => (on ? '☑' : '☐');
 
 /** Build one S-21 card block from the server's S-21 data package. */
-function cardHtml(data: S21DataResponse): string {
+function cardHtml(data: S21DataResponse, lang: S21Lang): string {
+  const L = S21_TEXT[lang];
   const p = data.publisher;
   const serviceYear = data.serviceYear;
   const fullName = esc(
@@ -75,7 +185,7 @@ function cardHtml(data: S21DataResponse): string {
     const notes = esc(r?.notes ?? '');
 
     return `<tr>
-      <td class="mon">${MONTH_LABELS_RU[i]}</td>
+      <td class="mon">${monthLabel(monthIdx, lang)}</td>
       <td class="ctr">${shared ? '✓' : ''}</td>
       <td class="ctr">${studies === '' ? '' : studies}</td>
       <td class="ctr">${isAux ? '✓' : ''}</td>
@@ -95,46 +205,46 @@ function cardHtml(data: S21DataResponse): string {
 
   return `
   <div class="s21">
-    <div class="title">ЗАПИСИ СОБРАНИЯ О СЛУЖЕНИИ ВОЗВЕЩАТЕЛЯ</div>
-    <div class="idrow"><b>ФИО:</b> ${fullName}</div>
+    <div class="title">${L.title}</div>
+    <div class="idrow"><b>${L.name}:</b> ${fullName}</div>
     <div class="idrow">
-      <span><b>Дата рождения:</b> ${esc(p.birthDate ?? '')}</span>
-      <span class="sp">${CB(male)} Мужчина</span>
-      <span class="sp">${CB(!male)} Женщина</span>
+      <span><b>${L.born}:</b> ${esc(p.birthDate ?? '')}</span>
+      <span class="sp">${CB(male)} ${L.male}</span>
+      <span class="sp">${CB(!male)} ${L.female}</span>
     </div>
     <div class="idrow">
-      <span><b>Дата крещения:</b> ${esc(p.baptismDate ?? '')}</span>
-      <span class="sp">${CB(otherSheep)} Другая овца</span>
-      <span class="sp">${CB(anointed)} Помазанник</span>
+      <span><b>${L.baptized}:</b> ${esc(p.baptismDate ?? '')}</span>
+      <span class="sp">${CB(otherSheep)} ${L.otherSheep}</span>
+      <span class="sp">${CB(anointed)} ${L.anointed}</span>
     </div>
     <div class="idrow chips">
-      <span>${CB(isElder)} Старейшина</span>
-      <span>${CB(isMS)} Помощник собрания</span>
-      <span>${CB(isRegular)} Общий пионер</span>
-      <span>${CB(isSpecial)} Специальный пионер</span>
-      <span>${CB(isMissionary)} Миссионер</span>
+      <span>${CB(isElder)} ${L.elder}</span>
+      <span>${CB(isMS)} ${L.ms}</span>
+      <span>${CB(isRegular)} ${L.regular}</span>
+      <span>${CB(isSpecial)} ${L.special}</span>
+      <span>${CB(isMissionary)} ${L.missionary}</span>
     </div>
     <table>
       <thead>
         <tr>
-          <th>Служебный год</th>
-          <th>Участвовал в служении</th>
-          <th>Изучения Библии</th>
-          <th>Подсобный пионер</th>
-          <th>Часы<br/><span class="hint">(если пионер или миссионер)</span></th>
-          <th>Примечания</th>
+          <th>${L.year}</th>
+          <th>${L.shared}</th>
+          <th>${L.studies}</th>
+          <th>${L.aux}</th>
+          <th>${L.hours}<br/><span class="hint">${L.hoursHint}</span></th>
+          <th>${L.remarks}</th>
         </tr>
       </thead>
       <tbody>
         ${rows}
         <tr class="total">
-          <td colspan="4" class="tlabel">Итого</td>
+          <td colspan="4" class="tlabel">${L.total}</td>
           <td class="ctr">${totalHours > 0 ? totalHours : ''}</td>
           <td></td>
         </tr>
       </tbody>
     </table>
-    <div class="foot">S-21-U · ${esc(String(serviceYear - 1))}/${esc(
+    <div class="foot">${L.code} · ${esc(String(serviceYear - 1))}/${esc(
       String(serviceYear),
     )}</div>
   </div>`;
@@ -161,8 +271,8 @@ const STYLES = `
 `;
 
 /** Full printable HTML for a single S-21 card from the server data package. */
-export function buildS21Html(data: S21DataResponse): string {
-  const body = cardHtml(data);
+export function buildS21Html(data: S21DataResponse, lang = 'ru'): string {
+  const body = cardHtml(data, s21Lang(lang));
   const name =
     [data.publisher.lastName, data.publisher.firstName]
       .filter(Boolean)

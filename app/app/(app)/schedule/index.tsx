@@ -43,6 +43,7 @@ import { WindowsLine, WindowsPlanDialog } from "../../../components/WindowsPlan"
 import { effectiveVersionFor } from "../../../lib/meeting-schedule";
 import { addDays, formatDateISO, parseISODate, startOfWeekMonday } from "../../../lib/dates";
 import { partDisplay } from "../../../lib/part-display";
+import { readerTitle } from "../../../lib/reader-titles";
 import { MEETING_LENGTH_MIN } from "../../../lib/home-digest";
 import { useSongsMap, enrichSongRef } from "../../../lib/songs";
 import { FieldCancelled, FieldMoved, FieldNotice } from "../../../components/FieldNotice";
@@ -75,6 +76,7 @@ import {
   SongLine,
   Topic,
 } from "../../../components/ProgrammeSheet";
+import { lowerFirst } from "../../../lib/lower-first";
 
 /**
  * THE PROGRAMME — what is coming, one date at a time.
@@ -686,7 +688,7 @@ export default function ProgrammeFeedScreen() {
     // After the date the effect reads as the rest of one sentence. These are
     // the app's own set phrases, with no names in them, so the first letter can
     // go down safely.
-    const tail = effect ? effect.charAt(0).toLocaleLowerCase(lang) + effect.slice(1) : "";
+    const tail = effect ? lowerFirst(effect, lang) : "";
     return [span, tail].filter(Boolean).join(" · ");
   };
 
@@ -1871,7 +1873,7 @@ function Programme({
       // list, as «Составление программы» has shown it all along (5 October —
       // the readers of the Programme saw the number alone). No list, or a
       // number not in it: the number stays as it was.
-      const text = p.partTitle || shown.label;
+      const text = readerTitle(p.partTitle) || shown.label;
       out.push(<SongLine key={p.id} time={start} text={enrichSongRef(text, songTitles) ?? text} />);
     } else if (PRAYER_KEYS.has(p.partKey)) {
       const text = [enrichSongRef(shown.subtitle, songTitles), shown.label].filter(Boolean).join(" · ");

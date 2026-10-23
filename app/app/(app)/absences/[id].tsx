@@ -20,6 +20,8 @@ import { usePermissions } from "../../../lib/permissions";
 import { useMyPublisher } from "../../../lib/useMyPublisher";
 import { LoadFailure } from "../../../components/LoadFailure";
 import { failsScreen } from "../../../lib/screen-failure";
+import { formatDayRange } from "../../../lib/date-range";
+import { absenceNote } from "../../../lib/absence-note";
 
 export default function AbsenceDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -97,13 +99,6 @@ export default function AbsenceDetailScreen() {
   /** Идёт из поездки — значит принадлежит ей, а не этому экрану. */
   const fromTrip = !!data.talkExchangeId;
 
-  const fmt = (iso: string) =>
-    new Date(`${iso}T00:00:00`).toLocaleDateString(i18n.language, {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    });
-
   if (editing) {
     return (
       <ScrollView
@@ -137,15 +132,15 @@ export default function AbsenceDetailScreen() {
 
       <Text style={styles.fieldLabel}>{t("absences.fields.dates")}</Text>
       <Text style={styles.fieldValue}>
-        {data.endDate
-          ? `${fmt(data.startDate)} – ${fmt(data.endDate)}`
-          : fmt(data.startDate)}
+        {formatDayRange(data.startDate, data.endDate, i18n.language, {
+          year: "always",
+        })}
       </Text>
 
-      {data.note ? (
+      {absenceNote(data, t) ? (
         <>
           <Text style={styles.fieldLabel}>{t("absences.fields.note")}</Text>
-          <Text style={styles.fieldValue}>{data.note}</Text>
+          <Text style={styles.fieldValue}>{absenceNote(data, t)}</Text>
         </>
       ) : null}
 

@@ -64,6 +64,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import { partDisplay } from "../../../lib/part-display";
+import { readerTitle } from "../../../lib/reader-titles";
 import { WeekNavigator } from "../../../components/WeekNavigator";
 import { WeekDrawer } from "../../../components/WeekDrawer";
 import {
@@ -103,6 +104,7 @@ import { LoadError } from "../../../components/LoadError";
 import { SECTION_COLORS } from "../../../lib/section-colors";
 import { useDutiesWeek } from "../../../lib/useDutiesWeek";
 import { failsScreen } from "../../../lib/screen-failure";
+import { formatDayRange } from "../../../lib/date-range";
 
 const EVENT_TYPE_ORDER: EventType[] = [
   "midweek",
@@ -769,21 +771,8 @@ function ProgrammeEditor() {
           );
         });
       };
-      const fmtRange = (start: string, end: string | null): string => {
-        const s = new Date(`${start}T00:00:00`).toLocaleDateString(
-          i18n.language,
-          { day: "numeric", month: "long" },
-        );
-        if (!end || end === start) return s;
-        const e = new Date(`${end}T00:00:00`).toLocaleDateString(
-          i18n.language,
-          {
-            day: "numeric",
-            month: "long",
-          },
-        );
-        return `${s} — ${e}`;
-      };
+      const fmtRange = (start: string, end: string | null): string =>
+        formatDayRange(start, end, i18n.language, { year: "never" });
 
       // The midweek meeting moves during a circuit-overseer visit (commonly to
       // Tuesday), stored per-visit on the event. Use the visit's day for that
@@ -908,9 +897,10 @@ function ProgrammeEditor() {
         }
         if (FIXED_NAME_PARTS.has(partKey)) return getPartLabel(partKey);
         if (partTitle) {
-          const idx = partTitle.indexOf(": ");
-          if (idx > 0) return partTitle.slice(0, idx);
-          return partTitle;
+          const shown = readerTitle(partTitle);
+          const idx = shown.indexOf(": ");
+          if (idx > 0) return shown.slice(0, idx);
+          return shown;
         }
         return getPartLabel(partKey);
       };
@@ -1066,6 +1056,7 @@ function ProgrammeEditor() {
             eventType: "weekend",
             partKey: "weekend_hospitality",
             partOrder: 99,
+            // cyrillic-ok: stored as the programme stores titles; screens name the part by its key
             partTitle: "Гостеприимство",
             publisherId: v.publisherId,
             status: "draft",

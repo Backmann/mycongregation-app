@@ -16,6 +16,7 @@ import {
   mondayOfISO,
   visitMidweekDay,
 } from '../lib/event-view';
+import { formatDay, formatDayRange } from '../lib/date-range';
 
 /**
  * The event's page, by kind (27 September).
@@ -54,12 +55,10 @@ export function EventHeader({ event, today }: { event: SpecialEvent; today: stri
   const title = isVisit && coName ? coName : event.title;
   const d = (iso: string, f: string) => dayjs(iso).locale(loc).format(f);
   const range = end !== event.date;
-  const sameMonth = event.date.slice(0, 7) === end.slice(0, 7);
   const dateText = range
-    ? sameMonth
-      ? `${d(event.date, 'D')}–${d(end, 'D MMMM YYYY')}`
-      : `${d(event.date, 'D MMMM')} – ${d(end, 'D MMMM YYYY')}`
-    : cap(d(event.date, 'dddd, D MMMM YYYY'));
+    ? formatDayRange(event.date, end, loc, { year: 'always' })
+    : cap(formatDay(event.date, loc, { weekday: 'long', year: 'always' }));
+  // date-span-ok: the weekdays alone, beside the dates said above
   const rangeDays = range ? `${d(event.date, 'dddd')} – ${d(end, 'dddd')}` : null;
   const time = event.time ? `${event.time}${event.timeEnd ? `–${event.timeEnd}` : ''}` : null;
   return (
@@ -245,14 +244,7 @@ export function PastVisits({
       <View style={styles.card}>
         {past.map((e, i) => {
           const end = e.endDate ?? e.date;
-          const sameMonth = e.date.slice(0, 7) === end.slice(0, 7);
-          const d = (iso: string, f: string) => dayjs(iso).locale(loc).format(f);
-          const dates =
-            end === e.date
-              ? d(e.date, 'D MMMM YYYY')
-              : sameMonth
-                ? `${d(e.date, 'D')}–${d(end, 'D MMMM YYYY')}`
-                : `${d(e.date, 'D MMMM')} – ${d(end, 'D MMMM YYYY')}`;
+          const dates = formatDayRange(e.date, end, loc, { year: 'always' });
           const name = [e.coFirstName, e.coLastName].filter(Boolean).join(' ');
           return (
             <Pressable
@@ -289,18 +281,15 @@ export function CongressSections({
   const from = mondayOfISO(event.date);
   const to = addDaysISO(mondayOfISO(end), 6);
   const d = (iso: string, f: string) => dayjs(iso).locale(loc).format(f);
-  const range =
-    from.slice(0, 7) === to.slice(0, 7)
-      ? `${d(from, 'D')}–${d(to, 'D MMMM')}`
-      : `${d(from, 'D MMMM')} – ${d(to, 'D MMMM')}`;
+  const range = formatDayRange(from, to, loc, { year: 'never' });
   // The meetings the week would have held — named, so nobody wonders about
   // «the Wednesday one».
   const lost: string[] = [];
   for (let w = from; w <= to; w = addDaysISO(w, 7)) {
     const v = effectiveVersionFor(versions, w);
     if (!v) continue;
-    lost.push(d(addDaysISO(w, v.midweekDow - 1), 'dddd, D'));
-    lost.push(d(addDaysISO(w, v.weekendDow - 1), 'dddd, D'));
+    lost.push(formatDay(addDaysISO(w, v.midweekDow - 1), loc, { weekday: 'long', year: 'never' }));
+    lost.push(formatDay(addDaysISO(w, v.weekendDow - 1), loc, { weekday: 'long', year: 'never' }));
   }
   const time = event.time ? t('specialEvents.page.from', { time: event.time }) : null;
   return (
@@ -345,7 +334,7 @@ export function CongressSections({
           <Text style={styles.warnTitle}>{t('specialEvents.page.noMeetingsWeek', { range })}</Text>
           {lost.length > 0 ? (
             <Text style={styles.warnText}>
-              {t('specialEvents.page.neither', { days: lost.join(', ') })}
+              {t('specialEvents.page.neither', { days: lost.join(' · ') })}
             </Text>
           ) : null}
         </View>

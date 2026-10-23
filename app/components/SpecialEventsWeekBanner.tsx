@@ -3,8 +3,8 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import dayjs from 'dayjs';
 import { SpecialEvent } from '../lib/api';
+import { formatDayRange } from '../lib/date-range';
 
 /**
  * Shows the special events that fall within the currently displayed schedule
@@ -13,7 +13,7 @@ import { SpecialEvent } from '../lib/api';
  * there are no events for the week.
  */
 export function SpecialEventsWeekBanner({ events }: { events: SpecialEvent[] }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   if (!events || events.length === 0) return null;
 
   return (
@@ -21,10 +21,9 @@ export function SpecialEventsWeekBanner({ events }: { events: SpecialEvent[] }) 
       <Text style={styles.sectionTitle}>{t('specialEvents.weekTitle')}</Text>
       <View style={styles.body}>
         {events.map((e) => {
-          const start = dayjs(e.date);
-          const rangeText = e.endDate
-            ? `${start.format('DD.MM')} – ${dayjs(e.endDate).format('DD.MM.YYYY')}`
-            : start.format('DD.MM.YYYY');
+          const rangeText = formatDayRange(e.date, e.endDate, i18n.language, {
+            year: 'always',
+          });
           const typeLabel = e.type
             ? t(`specialEvents.types.${e.type}`, e.type)
             : null;

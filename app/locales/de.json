@@ -197,7 +197,8 @@
     "undoing": "Wird zurückgeholt…",
     "noAccessTitle": "Kein Zugriff",
     "noAccessHint": "Dieser Bereich ist für diejenigen geöffnet, die dafür eingeteilt sind. Wenn Sie ihn brauchen, wenden Sie sich bitte an die Ältesten.",
-    "noAccessHintLead": "Dieser Bereich ist für diejenigen geöffnet, die dafür eine Aufgabe in der Versammlung oder eine besondere Berechtigung haben."
+    "noAccessHintLead": "Dieser Bereich ist für diejenigen geöffnet, die dafür eine Aufgabe in der Versammlung oder eine besondere Berechtigung haben.",
+    "quoted": "„{{text}}“"
   },
   "profile": {
     "signedInAs": "Angemeldet als",
@@ -839,7 +840,7 @@
   },
   "assignments": {
     "eventTypeShort": {
-      "midweek": "Mittwoch",
+      "midweek": "Unter der Woche",
       "weekend": "Wochenende",
       "cleaning": "Reinigung",
       "av_duty": "A/V",
@@ -2542,7 +2543,10 @@
       "cancel": "Abbrechen"
     },
     "warnAway": "Abwesend: {{range}}",
-    "add": "Abwesenheit hinzufügen"
+    "add": "Abwesenheit hinzufügen",
+    "reason": {
+      "pioneerSchool": "Pionierdienstschule"
+    }
   },
   "home": {
     "title": "Start",
@@ -2566,7 +2570,8 @@
       "outgoingTalks_one": "{{count}} Vortrag auswärts",
       "outgoingTalks_other": "{{count}} Vorträge auswärts",
       "cleaningAfterMeeting": "Ihre Gruppe reinigt nach dieser Zusammenkunft",
-      "openMap": "Karte öffnen"
+      "openMap": "Karte öffnen",
+      "yoursHere": "Hier ist eine Aufgabe für Sie"
     },
     "report": {
       "submitted": "Bericht für {{month}} abgegeben"
@@ -3560,7 +3565,8 @@
         "emblems": "Symbole",
         "duty": "Dienste"
       }
-    }
+    },
+    "weekOf": "Woche ab {{date}}"
   },
   "attendance": {
     "cardTitle": "Zusammenkunftsbesuch",
@@ -4886,7 +4892,9 @@
       "STAGE_SCREEN_ONLY": "Der Bühnenbildschirm zeigt nur den Ablauf der Zusammenkunft.",
       "STAGE_PIN_WRONG": "Das sind nicht die Ziffern.",
       "STAGE_PIN_INVALID": "Für das Menü des Bildschirms sind 4 bis 8 Ziffern nötig.",
-      "STAGE_ACCOUNT_FIXED": "Ein Bühnenbildschirm ist keine Person: Er hat keine Karte, und seine Rolle ändert sich nicht."
+      "STAGE_ACCOUNT_FIXED": "Ein Bühnenbildschirm ist keine Person: Er hat keine Karte, und seine Rolle ändert sich nicht.",
+      "RESPONSIBILITY_OWN_ASSISTANT": "Ein Bruder kann nicht sein eigener Assistent sein: Diese Zuständigkeit und ihr Assistent sind zwei verschiedene Brüder.",
+      "GROUP_LEADER_SISTER": "Gruppenaufseher und sein Gehilfe sind Brüder."
     }
   },
   "stage": {
@@ -4958,5 +4966,24 @@
       "back": "Zurück zur Zusammenkunft",
       "closesItself": "Das Menü schließt sich nach 20 Sekunden ohne Tippen von selbst"
     }
+  },
+  "readerTitles": {
+    "song": "Lied {{n}}",
+    "songAndPrayer": "Lied {{n}} und Gebet",
+    "openingComments": "Einleitende Worte ({{min}} Min.)",
+    "concludingComments": "Schlussworte ({{min}} Min.)",
+    "bibleReading": "Bibellesung",
+    "spiritualGems": "Nach geistigen Schätzen graben",
+    "startingConversation": "Gespräche beginnen",
+    "followingUp": "Interesse fördern",
+    "makingDisciples": "Menschen zu Jüngern machen",
+    "talk": "Vortrag",
+    "cbs": "Versammlungsbibelstudium",
+    "reader": "Leser",
+    "chairman": "Vorsitzender",
+    "openingPrayer": "Anfangsgebet",
+    "closingPrayer": "Schlussgebet",
+    "prayer": "Gebet",
+    "treasures": "Schätze aus Gottes Wort"
   }
 }

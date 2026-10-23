@@ -1,4 +1,6 @@
 import type { EventType } from './api';
+import { formatDateISO } from './dates';
+import { formatDay } from './date-range';
 
 /**
  * Monthly meeting-schedule PDF for the congregation notice board. Each week is a
@@ -244,7 +246,7 @@ export function buildMeetingSchedulePdfHtml(opts: {
     </header>
     ${weeks.map(weekBlock).join('\n')}
     <div class="foot"><span>mycongregation.org</span><span>${esc(
-      new Date().toLocaleDateString(locale),
+      formatDay(formatDateISO(new Date()), locale, { year: 'always' }),
     )}</span></div>
   </section>
 </body></html>`;

@@ -23,6 +23,7 @@ import { HEADER_ICON } from '../../../lib/header';
 import { CleaningWeekEditor } from '../../../components/CleaningWeekEditor';
 import { WindowsLine, WindowsPlanDialog } from '../../../components/WindowsPlan';
 import { failsScreen } from '../../../lib/screen-failure';
+import { formatDay, formatDayRange } from '../../../lib/date-range';
 
 const INK = '#0f172a';
 const SOFT = '#64748b';
@@ -212,7 +213,7 @@ export default function CleaningScreen() {
     // 24 September, on every role). Such a row stays pressable; the windows,
     // read out as part of its label, are the one thing its role gave up.
     const hasPlan = !!weekly?.windows?.length;
-    const rowLabel = `${monday.toLocaleDateString(lang, { day: 'numeric', month: 'long' })} — ${sunday.toLocaleDateString(lang, { day: 'numeric', month: 'long' })}. ${title}`;
+    const rowLabel = `${formatDayRange(formatDateISO(monday), formatDateISO(sunday), lang, { year: 'never' })}. ${title}`;
     out.push(
       <Pressable
         key={week}
@@ -226,7 +227,7 @@ export default function CleaningScreen() {
         <View style={styles.dateCol}>
           <Text style={styles.day}>{monday.getDate()}</Text>
           <Text style={styles.days}>
-            {`–${sunday.toLocaleDateString(lang, { day: 'numeric' })} ${sunday.toLocaleDateString(lang, { month: 'short' }).replace('.', '')}`}
+            {`–${formatDay(formatDateISO(sunday), lang, { month: 'short', year: 'never' })}`}
           </Text>
         </View>
         <View style={styles.body}>

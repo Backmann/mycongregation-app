@@ -5,6 +5,7 @@ import {
   Text,
   useWindowDimensions,
 } from "react-native";
+import { readerTitle } from "../lib/reader-titles";
 import { useProgrammeRetro } from "./ProgrammeLockNote";
 import { useEffect, useState } from "react";
 import { Sheet } from "./Sheet";
@@ -210,7 +211,7 @@ export function AssignmentSheet({
       // one place where a window is a window.
       variant={centered ? "centered" : "bottom"}
       fills
-      title={active ? active.partTitle || t("schedule.sheet.title") : ""}
+      title={active ? readerTitle(active.partTitle) || t("schedule.sheet.title") : ""}
       closeLabel={t("common.close")}
       action={
         onNext ? (

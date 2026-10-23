@@ -36,6 +36,7 @@ import { useEffectText } from '../lib/event-effect-text';
 import { MonthCalendar } from './MonthCalendar';
 import { TimeField } from './TimeField';
 import { RichText } from './RichText';
+import { formatDayRange } from '../lib/date-range';
 
 export const EVENT_TYPES = [
   'regional_convention',
@@ -263,7 +264,7 @@ export function eventConflicts(
   const when = (e: SpecialEvent) => {
     const d = (iso: string, f: string) => dayjs(iso).locale(locale).format(f);
     return e.endDate && e.endDate !== e.date
-      ? `${d(e.date, 'D MMMM')} – ${d(e.endDate, 'D MMMM')}`
+      ? formatDayRange(e.date, e.endDate, locale, { year: 'never' })
       : d(e.date, 'dd, D MMMM');
   };
 
@@ -567,10 +568,8 @@ export function SpecialEventForm({
   const day = (iso: string, f: string) => dayjs(iso).locale(locale).format(f);
   const spanLabel = (from: string, to: string) => {
     if (!to || to === from) return capitalize(day(from, 'dddd, D MMMM YYYY'));
-    const sameMonth = from.slice(0, 7) === to.slice(0, 7);
-    return sameMonth
-      ? `${day(from, 'dd D')} – ${day(to, 'dd D MMMM YYYY')}`
-      : `${day(from, 'dd D MMMM')} – ${day(to, 'dd D MMMM YYYY')}`;
+    // «Fr 20 – So., 22. November» mixed two weekday forms (walk, 23 October).
+    return formatDayRange(from, to, locale, { weekday: 'short', year: 'always' });
   };
   const dateLabel = value.date
     ? spanLabel(value.date, multiDay ? value.endDate : '')

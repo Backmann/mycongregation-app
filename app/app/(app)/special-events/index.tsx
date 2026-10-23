@@ -39,6 +39,7 @@ import {
 import { useEffectText } from '../../../lib/event-effect-text';
 import { LoadFailure } from '../../../components/LoadFailure';
 import { failsScreen } from '../../../lib/screen-failure';
+import { formatDayRange } from '../../../lib/date-range';
 
 /**
  * The congregation's events (27 September) — what is coming and what it
@@ -392,9 +393,7 @@ function Hero({
   const cap = (x: string) => x.charAt(0).toUpperCase() + x.slice(1);
   const dateLine =
     item.end !== item.date
-      ? `${dayjs(item.date).locale(loc).format('D MMMM')} – ${dayjs(item.end)
-          .locale(loc)
-          .format('D MMMM')}`
+      ? formatDayRange(item.date, item.end, loc, { year: 'never' })
       : cap(dayjs(item.date).locale(loc).format('dddd, D MMMM'));
   return (
     <Pressable
@@ -501,7 +500,8 @@ function Row({
         </Text>
         <Text style={styles.dateDow}>
           {range
-            ? `${d(item.date, 'dd')}–${d(item.end, 'dd')}`
+            ? // date-span-ok: two weekday letters in the date box, no dates
+              `${d(item.date, 'dd')}–${d(item.end, 'dd')}`
             : past
               ? d(item.date, 'MMM')
               : d(item.date, 'dd')}

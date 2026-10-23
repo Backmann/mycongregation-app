@@ -28,6 +28,7 @@ import { useTranslation } from "react-i18next";
 import { Sheet } from "./Sheet";
 import { isActivePermanentPioneer } from "../lib/pioneer-status";
 import { useAllPublishers } from "../lib/useAllPublishers";
+import { formatDayRange } from "../lib/date-range";
 
 interface Props {
   label: string;
@@ -120,23 +121,7 @@ function weekEndISO(weekStartISO: string): string {
 
 /** Compact human range for an absence, e.g. "1–5 июля" or "30 июля – 2 августа". */
 function absenceRangeLabel(a: Absence, loc: string): string {
-  const start = new Date(`${a.startDate}T00:00:00`);
-  if (!a.endDate) {
-    return start.toLocaleDateString(loc, { day: "numeric", month: "long" });
-  }
-  const end = new Date(`${a.endDate}T00:00:00`);
-  const sameMonth =
-    start.getMonth() === end.getMonth() &&
-    start.getFullYear() === end.getFullYear();
-  if (sameMonth) {
-    return `${start.getDate()}\u2013${end.toLocaleDateString(loc, {
-      day: "numeric",
-      month: "long",
-    })}`;
-  }
-  const s = start.toLocaleDateString(loc, { day: "numeric", month: "long" });
-  const e = end.toLocaleDateString(loc, { day: "numeric", month: "long" });
-  return `${s} \u2013 ${e}`;
+  return formatDayRange(a.startDate, a.endDate, loc, { year: 'never' });
 }
 
 /** ISO YYYY-MM-DD -> dd.MM.yyyy (locale-independent full date). */

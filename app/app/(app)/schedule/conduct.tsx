@@ -2144,6 +2144,7 @@ interface SegView {
 }
 
 function SegmentHeadline({ view, big }: { view: SegView; big?: boolean }) {
+  const { t } = useTranslation();
   return (
     <View>
       {view.person ? <Text style={big ? styles.personBig : styles.personSmall}>{view.person}</Text> : null}
@@ -2151,7 +2152,7 @@ function SegmentHeadline({ view, big }: { view: SegView; big?: boolean }) {
       <Text style={view.person ? (big ? styles.partBig : styles.partSmall) : big ? styles.personBig : styles.personSmall}>
         {view.label}
       </Text>
-      {view.song ? <Text style={big ? styles.songBig : styles.songSmall}>{`«${view.song}»`}</Text> : null}
+      {view.song ? <Text style={big ? styles.songBig : styles.songSmall}>{t('common.quoted', { text: view.song })}</Text> : null}
       {view.subtitle ? <Text style={styles.subtitle}>{view.subtitle}</Text> : null}
     </View>
   );

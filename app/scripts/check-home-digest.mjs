@@ -54,6 +54,13 @@ export const resolveSubsection = () => 'none';
 export const SUBSECTIONS = { none: { label: '', color: '', soft: '' } };\n`,
 );
 writeFileSync(join(out, 'api.mjs'), 'export {};\n');
+// The programme's fixed names in the reader's language need i18n; the
+// builder's rules do not depend on them (23 October 2026).
+writeFileSync(
+  join(out, 'reader-titles.mjs'),
+  `export const readerTitle = (x) => x ?? '';
+export const readerTitleOrNull = (x) => x ?? null;\n`,
+);
 
 const { buildTimeline, clockPlus } = await import(pathToFileURL(join(out, 'home-timeline.mjs')));
 const { digestHome, isOver, entryTime } = await import(pathToFileURL(join(out, 'home-digest.mjs')));

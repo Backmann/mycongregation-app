@@ -9,6 +9,7 @@ import {
 } from "./cleaningSchedulePdf";
 import { CLEANING_SHADES } from "./section-colors";
 import { reportError } from "./error-bus";
+import { formatDayRange } from "./date-range";
 
 // Monthly cleaning PDF: a grid of cleaning slots (rows) x weeks (columns) with
 // the assigned service group per cell. Weeks grouped by Monday. Loads each
@@ -104,12 +105,12 @@ export async function printCleaningQuarter({
       const mondays = mondaysOfMonth(monthIdx);
       const weeks: CleaningPdfWeek[] = mondays.map((mon) => {
         const sun = addDays(mon, 6);
-        const label = `${mon.toLocaleDateString(lang, {
-          day: "numeric",
-        })}–${sun.toLocaleDateString(lang, {
-          day: "numeric",
+        // «26–1. Nov.» lost October (walk, 23 October 2026): a week across
+        // two months says both, as the language writes a span.
+        const label = formatDayRange(formatDateISO(mon), formatDateISO(sun), lang, {
           month: "short",
-        })}`;
+          year: "never",
+        });
         return {
           weekStartDate: formatDateISO(mon),
           label,

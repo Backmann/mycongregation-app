@@ -1,4 +1,7 @@
 import type { CoVisitItem, SpecialEvent } from './api';
+import { formatDateISO } from './dates';
+import { formatDay } from './date-range';
+import { formatDayRange } from './date-range';
 
 /**
  * A congregation meeting during the visit (midweek or weekend), with the
@@ -357,7 +360,10 @@ export function buildCoScheduleHtml(opts: {
     .trim();
   const period =
     visit.endDate && visit.endDate !== visit.date
-      ? `${fmtDate(visit.date, locale)} — ${fmtDate(visit.endDate, locale)}`
+      ? formatDayRange(visit.date, visit.endDate, locale, {
+          weekday: 'long',
+          year: 'never',
+        })
       : fmtDate(visit.date, locale);
 
   // Compact meta line shown under each page title.
@@ -399,7 +405,7 @@ export function buildCoScheduleHtml(opts: {
   ${pageHead(L.pageForCongregationTitle, L.visitTitle, false)}
   ${congregationPage(items, meetings, locale, L)}
   <div class="foot"><span>mycongregation.org</span><span>${esc(
-    new Date().toLocaleDateString(locale),
+    formatDay(formatDateISO(new Date()), locale, { year: 'always' }),
   )}</span></div>
 </section>`;
 
@@ -407,7 +413,7 @@ export function buildCoScheduleHtml(opts: {
   ${pageHead(L.pageForOverseerTitle, L.coScheduleTitle, true)}
   ${overseerPage(items, locale, L)}
   <div class="foot"><span>mycongregation.org</span><span>${esc(
-    new Date().toLocaleDateString(locale),
+    formatDay(formatDateISO(new Date()), locale, { year: 'always' }),
   )}</span></div>
 </section>`;
 

@@ -90,6 +90,10 @@ const STEPS = [
   ['Подробный итог встречи', 'node', ['scripts/check-conduct-report.mjs']],
   ['Перенос встречи для проповеди', 'node', ['scripts/check-field-moves.mjs']],
   ['Даты по-немецки и по-английски', 'node', ['scripts/check-date-patterns.mjs']],
+  // A span of days is written by lib/date-range.ts; Russian words in the
+  // code fail — they belong in locales (walk in German and English, 23 October 2026).
+  ['Промежутки дат', 'node', ['scripts/check-date-spans.mjs']],
+  ['Русские слова в коде', 'node', ['scripts/check-no-cyrillic-in-code.mjs']],
   ['Маршруты уведомлений', 'node', ['scripts/check-notification-routes.mjs']],
   // What a browser says its device is decides whether the server sends to it
   // at all: an iPad taken for a Mac stays silent while a phone is registered.

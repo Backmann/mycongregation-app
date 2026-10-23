@@ -16,6 +16,8 @@ import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import type { TFunction } from "i18next";
+import i18nGlobal from "../../../lib/i18n";
+import { lowerAll, lowerFirst } from "../../../lib/lower-first";
 import { capitalizeFirst } from "../../../lib/relative-time";
 import {
   AttendanceCard,
@@ -100,6 +102,8 @@ import {
 import { isCongressEvent } from "../../../lib/week-rules";
 import { ConductLiveCard, ConductResultCard } from "../../../components/ConductEntry";
 import { movedDayLabel, withMoveStandIns } from "../../../lib/field-moves";
+import { formatDayRange } from "../../../lib/date-range";
+import { absenceNote } from "../../../lib/absence-note";
 
 /*
  * HOME, REBUILT (26 September) — the screen is the face of the app, so it
@@ -752,17 +756,7 @@ function TripNoted() {
 
 function absenceRange(a: Absence, locale: string): string {
   // The year only when it is not this one: «25 октября», not «… 2026 г.».
-  const thisYear = String(new Date().getFullYear());
-  const fmt = (iso: string, withYear: boolean) =>
-    new Date(`${iso}T00:00:00`).toLocaleDateString(locale, {
-      day: "numeric",
-      month: "long",
-      ...(withYear ? { year: "numeric" } : {}),
-    });
-  const end = a.endDate ?? a.startDate;
-  const otherYear = a.startDate.slice(0, 4) !== thisYear || end.slice(0, 4) !== thisYear;
-  if (end === a.startDate) return fmt(a.startDate, otherYear);
-  return `${fmt(a.startDate, a.startDate.slice(0, 4) !== end.slice(0, 4))} – ${fmt(end, otherYear)}`;
+  return formatDayRange(a.startDate, a.endDate, locale);
 }
 
 function coVisitKindLabel(kind: string, t: TFunction): string {
@@ -983,7 +977,7 @@ function shortDay(dateISO: string, loc: string): string {
 
 /** One short phrase for «Следующее — …»: the first own line of the row. */
 function shortWhat(en: TimelineEntry, t: TFunction): string {
-  const lower = (x: string) => (x ? x.charAt(0).toLowerCase() + x.slice(1) : x);
+  const lower = (x: string) => lowerFirst(x, i18nGlobal.language);
   if (en.type === "meeting") {
     const p = en.myParts[0];
     // A talk is named by its title, and a title keeps its capital letter.
@@ -1025,12 +1019,12 @@ function NextBody({
       : [
           t(`home.eventTypes.${entry.kind}`),
           entry.occasion?.type
-            ? t(
-                `specialEvents.types.${entry.occasion.type}`,
-                entry.occasion.type,
-              ).toLowerCase()
+            ? lowerAll(
+                t(`specialEvents.types.${entry.occasion.type}`, entry.occasion.type),
+                i18n.language,
+              )
             : entry.specialTalk
-              ? t("specialEvents.types.special_talk").toLowerCase()
+              ? lowerAll(t("specialEvents.types.special_talk"), i18n.language)
               : null,
           entry.meetingChanged ? t("specialEvents.meeting.withChanges") : null,
         ]
@@ -1449,8 +1443,7 @@ function EntryBody({
       : (en.title ??
         en.occasion?.title ??
         (agenda.length ? null : t(`home.eventTypes.${en.kind}`)));
-    const lower = (x: string | null) =>
-      x ? x.charAt(0).toLowerCase() + x.slice(1) : x;
+    const lower = (x: string | null) => (x ? lowerFirst(x, loc) : x);
     return (
       <>
         <Text
@@ -1678,7 +1671,7 @@ function EntryBody({
         <Ionicons name="airplane-outline" size={15} color="#94a3b8" />
         <Text style={s.absenceText}>
           {t("home.timeline.away")} · {absenceRange(en.absence, loc)}
-          {en.absence.note ? ` · ${en.absence.note}` : ""}
+          {absenceNote(en.absence, t) ? ` · ${absenceNote(en.absence, t)}` : ""}
         </Text>
       </View>
     );
@@ -1749,14 +1742,8 @@ function shortDate(iso: string, loc: string): string {
 }
 
 function eventRange(e: SpecialEvent, loc: string): string {
-  const fmt = (iso: string) =>
-    new Date(`${iso}T00:00:00`).toLocaleDateString(loc, {
-      day: "numeric",
-      month: "long",
-    });
-  return e.endDate && e.endDate !== e.date
-    ? `${fmt(e.date)} – ${fmt(e.endDate)}`
-    : fmt(e.date);
+  // «November 20 – 22», not «November 20 – November 22» (walk, 23 October).
+  return formatDayRange(e.date, e.endDate, loc, { year: 'never' });
 }
 
 function DayRow({
@@ -1774,7 +1761,7 @@ function DayRow({
   myName: string | null;
   onWindows: (w: number[]) => void;
 }) {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const d = new Date(`${group.dateISO}T00:00:00`);
   const weekday = d
     .toLocaleDateString(i18n.language, { weekday: "short" })
@@ -1790,7 +1777,7 @@ function DayRow({
         <Text style={[s.dateNum, isToday && s.dateToday]}>{d.getDate()}</Text>
         <Text style={[s.dateDow, isToday && s.dateToday]}>{weekday}</Text>
         {hasOwn ? (
-          <View style={[s.dot, s.dateDot]} accessibilityLabel="ваше" />
+          <View style={[s.dot, s.dateDot]} accessibilityLabel={t("home.timeline.yoursHere")} />
         ) : null}
       </View>
       <View style={s.dayEntries}>

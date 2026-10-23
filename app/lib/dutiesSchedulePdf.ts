@@ -1,3 +1,5 @@
+import { formatDateISO } from './dates';
+import { formatDay } from './date-range';
 /**
  * Monthly duties PDF for the congregation notice board. One A4 page with two
  * sections — midweek on top, weekend below — each a grid of duty types (rows)
@@ -154,7 +156,7 @@ export function buildDutiesSchedulePdfHtml(opts: {
     </header>
     ${sections.map((s) => sectionHtml(s, L)).join('\n')}
     <div class="foot"><span>mycongregation.org</span><span>${esc(
-      new Date().toLocaleDateString(locale),
+      formatDay(formatDateISO(new Date()), locale, { year: 'always' }),
     )}</span></div>
   </section>
 </body></html>`;

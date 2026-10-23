@@ -11,6 +11,7 @@ import { effectiveVersionFor } from './meeting-schedule';
 import { SECTION_COLORS } from './section-colors';
 import { addDays, formatDateISO } from './dates';
 import { getPartLabel, resolveSubsection, SUBSECTIONS } from './parts';
+import { readerTitle } from './reader-titles';
 import { weekRules } from './week-rules';
 
 type TFunc = (key: string, options?: any) => string;
@@ -246,7 +247,9 @@ export function meetingPartLabel(item: MyAssignmentItem): string {
     const idx = raw.indexOf(': ');
     if (idx > 0) raw = raw.slice(0, idx);
   }
-  return getPartLabel(raw);
+  // The workbook's fixed names in the reader's language: «Председатель»
+  // stood in the English «My assignments» (23 October 2026).
+  return readerTitle(getPartLabel(raw));
 }
 
 /**

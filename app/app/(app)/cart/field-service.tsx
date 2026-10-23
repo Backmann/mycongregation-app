@@ -54,6 +54,8 @@ import { confirm } from '../../../components/ConfirmHost';
 import { failsScreen } from '../../../lib/screen-failure';
 import { Toast } from '../../../components/ErrorToast';
 import { rowKey, withMoveStandIns } from '../../../lib/field-moves';
+import { lowerMonth } from '../../../lib/lower-first';
+import { formatDay } from '../../../lib/date-range';
 
 /**
  * The month of field-service meetings (rebuilt October 2026, stage 3a).
@@ -436,7 +438,7 @@ export default function FieldServiceMeetingsScreen() {
       await confirm({
         title: t('fieldService.draft.publish'),
         body: t('fieldService.draft.publishConfirm', {
-          month: m.title.charAt(0).toLowerCase() + m.title.slice(1),
+          month: lowerMonth(m.title, i18n.language),
           count: m.drafts.length,
         }),
         confirmLabel: t('fieldService.draft.publish'),
@@ -705,12 +707,12 @@ export default function FieldServiceMeetingsScreen() {
       pdfMonths === 1
         ? monthName(pdfStart, true)
         : sameYear
-          ? `${monthName(pdfStart, false)} – ${monthName(lastKey, false).toLocaleLowerCase(i18n.language)} ${lastKey.slice(0, 4)}`
-          : `${monthName(pdfStart, true)} – ${monthName(lastKey, true).toLocaleLowerCase(i18n.language)}`;
+          ? `${monthName(pdfStart, false)} – ${lowerMonth(monthName(lastKey, false), i18n.language)} ${lastKey.slice(0, 4)}`
+          : `${monthName(pdfStart, true)} – ${lowerMonth(monthName(lastKey, true), i18n.language)}`;
     const html = buildFieldServicePdfHtml({
       congregationName: overviewQuery.data?.congregation.name ?? null,
       rangeLabel,
-      generatedDate: new Date().toLocaleDateString(i18n.language),
+      generatedDate: formatDay(formatDateISO(new Date()), i18n.language, { year: 'always' }),
       months: monthsOut,
       labels: {
         title: t('fieldService.pdf.title'),

@@ -8,6 +8,7 @@ import type {
   SpecialEvent,
 } from './api';
 import { arrangeFieldDay } from './field-audience';
+import { formatDayRange } from './date-range';
 
 /**
  * The line under each door of the «Служение» contents (4 October 2026).
@@ -120,11 +121,9 @@ function when(iso: string, time: string | null, today: string, locale: string, t
 
 /** «10–15 ноября» within a month, «28 октября – 2 ноября» across two. */
 function range(start: string, end: string | null, locale: string): string {
-  if (!end || end === start) return dayMonth(start, locale);
-  if (start.slice(0, 7) === end.slice(0, 7)) {
-    return `${Number(start.slice(8, 10))}–${dayMonth(end, locale)}`;
-  }
-  return `${dayMonth(start, locale)} – ${dayMonth(end, locale)}`;
+  // As the language writes a span (lib/date-range.ts): «8–13 декабря»,
+  // «8.–13. Dezember», «December 8 – 13» — English said «8–December 13».
+  return formatDayRange(start, end, locale, { year: 'never' });
 }
 
 export function serviceLines(
