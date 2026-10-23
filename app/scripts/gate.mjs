@@ -94,6 +94,7 @@ const STEPS = [
   // code fail — they belong in locales (walk in German and English, 23 October 2026).
   ['Промежутки дат', 'node', ['scripts/check-date-spans.mjs']],
   ['Русские слова в коде', 'node', ['scripts/check-no-cyrillic-in-code.mjs']],
+  ['Словарь терминов', 'node', ['scripts/check-glossary.mjs']],
   ['Маршруты уведомлений', 'node', ['scripts/check-notification-routes.mjs']],
   // What a browser says its device is decides whether the server sends to it
   // at all: an iPad taken for a Mac stays silent while a phone is registered.

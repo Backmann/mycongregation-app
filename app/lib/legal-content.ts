@@ -269,7 +269,7 @@ export const LEGAL: Record<Lang, Record<DocKey, Doc>> = {
           'Hetzner Online GmbH (Germany) — hosting, database, backups; data within the EU.',
           'Cloudflare, Inc. (USA) — CDN/proxy/protection; processes IP and request metadata. Transfer outside the EU under Standard Contractual Clauses and/or the EU-US Data Privacy Framework.',
           'Push delivery via browser and OS push services (Google, Mozilla, Apple) and Expo (for mobile builds).',
-          'E-mail is sent from an own server on Hetzner infrastructure.',
+          'Email is sent from our own server on Hetzner infrastructure.',
           'No advertising, analytics or tracking.',
         ] },
         { h: 'Retention' },

@@ -233,10 +233,12 @@ export default function SpeakerProfileScreen() {
     stats.avgIntervalDays == null
       ? null
       : stats.avgIntervalDays < 14
-        ? t("relative.d", { n: stats.avgIntervalDays })
+        ? // A span on its own, not «vor …»: German needs the nominative here
+          // («5 Tage», not «5 Tagen» — 23 October 2026).
+          t("relative.span.d", { n: stats.avgIntervalDays })
         : stats.avgIntervalDays < 60
-          ? t("relative.w", { n: Math.round(stats.avgIntervalDays / 7) })
-          : t("relative.mo", { n: Math.round(stats.avgIntervalDays / 30.44) });
+          ? t("relative.span.w", { n: Math.round(stats.avgIntervalDays / 7) })
+          : t("relative.span.mo", { n: Math.round(stats.avgIntervalDays / 30.44) });
 
   const renderVisit = (v: SpeakerVisit) => (
     <View key={v.id} style={styles.visitRow}>

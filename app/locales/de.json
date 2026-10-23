@@ -57,7 +57,7 @@
     "makeAdmin": "Zum Administrator machen",
     "invite": "Einladen",
     "newPassword": "Neues Passwort",
-    "resetHint": "Nennen Sie dem Verkündiger das neue Passwort selbst — er sieht es nirgends. Alle offenen Sitzungen auf seinen Geräten enden, er muss sich neu anmelden. Hat das Konto eine Adresse, geht darüber eine E-Mail raus.",
+    "resetHint": "Nennen Sie dem Verkündiger das neue Passwort selbst — er sieht es nirgends. Alle offenen Sitzungen auf seinen Geräten enden, er muss sich neu anmelden. Hat das Konto eine Adresse, wird ihm außerdem eine E-Mail gesendet.",
     "resendInviteSending": "Senden…",
     "disableConfirmTitle": "Zugang deaktivieren?",
     "disableConfirmBody": "{{name}} kann sich dann nicht mehr anmelden. Sie können den Zugang später wieder aktivieren.",
@@ -89,8 +89,8 @@
     "inviteMessage": "{{name}}, hier ist Ihr Zugang zur App der Versammlung.\n1. Android-Telefon – installieren Sie zuerst die App: {{url}}. iPhone oder Computer – nichts zu installieren.\n2. Tippen Sie auf: {{link}} – der Code wird von selbst eingetragen, Sie wählen nur noch ein Passwort.\nFalls sich der Link nicht antippen lässt, lautet der Code {{code}} (gültig bis {{until}}) – tippen Sie in der App auf „Wurden Sie eingeladen?“. Ihr Anmeldename: {{loginName}}.",
     "newCode": "Code ausgeben — Passwort wählt er selbst",
     "howSendTitle": "Wie soll der Code ankommen?",
-    "howSendByMailHint": "Ein Brief geht an {{email}}. Er enthält mehr als eine selbst geschriebene Nachricht: den Anmeldenamen, die Frist und die Installationsseite.",
-    "howSendInPersonHint": "Kein Brief. Der Code erscheint auf dem Bildschirm — lesen Sie ihn vor oder schicken Sie ihn selbst.",
+    "howSendByMailHint": "Eine E-Mail geht an {{email}}. Sie enthält mehr als eine selbst geschriebene Nachricht: den Anmeldenamen, die Frist und die Installationsseite.",
+    "howSendInPersonHint": "Keine E-Mail. Der Code erscheint auf dem Bildschirm — lesen Sie ihn vor oder schicken Sie ihn selbst.",
     "howSendByMail": "Per E-Mail senden",
     "howSendInPerson": "Nur den Code zeigen — ich gebe ihn selbst weiter",
     "howSendHint": "Der Code erscheint in jedem Fall auf Ihrem Bildschirm. Der bisherige Code funktioniert dann nicht mehr.",
@@ -101,7 +101,7 @@
     "deliveryByMail": "Per E-Mail an eine Adresse",
     "deliveryByMailHint": "Der übliche Weg: der Verkündiger bekommt eine E-Mail mit dem Code und seinem Anmeldenamen.",
     "fromCardNote": "Die Adresse aus der Verkündigerkarte. Sie können sie ersetzen — etwa durch das Postfach des Ehepartners.",
-    "notOnCardNote": "Auf der Karte steht keine E-Mail — tragen Sie die Adresse ein, an die der Brief gehen soll.",
+    "notOnCardNote": "Auf der Karte steht keine E-Mail — tragen Sie die Adresse ein, an die die E-Mail gehen soll.",
     "howEntryWorks": "Ein Verkündiger meldet sich mit dem Anmeldenamen an. Die E-Mail-Adresse funktioniert ebenfalls, solange nur eine Person das Postfach nutzt; nutzen es zwei – etwa ein Ehepaar –, melden sich beide mit ihren Namen an.",
     "changeIt": "Ändern",
     "addressInUse": "Mit dieser Adresse meldet sich bereits {{who}} an. Nach der Einladung kann sich diese Person nicht mehr per Adresse anmelden — nur noch mit dem Namen {{loginName}}. Wir schreiben ihr deswegen, aber sagen Sie es ihr besser auch selbst.",
@@ -115,7 +115,7 @@
     "revokeInvite": "Einladung zurückziehen",
     "revokeCode": "Code zurückziehen",
     "revokingInvite": "Wird zurückgezogen…",
-    "saveToCardShared": "Achtung: das Postfach wird geteilt. Als eigener Kontakt gespeichert, gilt die Adresse im Brief als seine — und der Brief enthält dann einen Anmeldelink, den derjenige nutzen kann, der ihn zuerst öffnet. Lassen Sie das aus, wenn zwei Personen das Postfach teilen.",
+    "saveToCardShared": "Achtung: Das Postfach wird geteilt. Als eigener Kontakt gespeichert, gilt die Adresse in der E-Mail als seine — und die E-Mail enthält dann einen Anmeldelink, den derjenige nutzen kann, der sie zuerst öffnet. Lassen Sie das aus, wenn zwei Personen das Postfach teilen.",
     "passwordLabel": "Passwort",
     "passwordSet": "festgelegt",
     "passwordNotSet": "nicht festgelegt",
@@ -182,7 +182,7 @@
       "yearsAgo": "vor {{count}} J."
     },
     "done": "Fertig",
-    "none": "Keine",
+    "none": "Nicht festgelegt",
     "saving": "Speichern…",
     "add": "Hinzufügen",
     "today": "Heute",
@@ -197,7 +197,7 @@
     "undoing": "Wird zurückgeholt…",
     "noAccessTitle": "Kein Zugriff",
     "noAccessHint": "Dieser Bereich ist für diejenigen geöffnet, die dafür eingeteilt sind. Wenn Sie ihn brauchen, wenden Sie sich bitte an die Ältesten.",
-    "noAccessHintLead": "Dieser Bereich ist für diejenigen geöffnet, die dafür eine Aufgabe in der Versammlung oder eine besondere Berechtigung haben.",
+    "noAccessHintLead": "Dieser Bereich ist für diejenigen geöffnet, die dafür eine Zuständigkeit in der Versammlung oder eine besondere Berechtigung haben.",
     "quoted": "„{{text}}“"
   },
   "profile": {
@@ -242,7 +242,7 @@
     "loginNameHint": "Das ist Ihr Name für die Anmeldung.",
     "noLoginName": "Kein Anmeldename gesetzt — fragen Sie Ihren Administrator.",
     "noLoginNameAdmin": "Kein Anmeldename gesetzt. Festlegen können Sie ihn unter „Versammlung“ → „Verkündiger“, in der Karte der Person, Abschnitt „App-Zugang“.",
-    "deliveryEmail": "Post geht an: {{email}}",
+    "deliveryEmail": "E-Mails gehen an: {{email}}",
     "noEmail": "Keine E-Mail-Adresse. Ein vergessenes Passwort setzt der Versammlungsadministrator zurück."
   },
   "language": {
@@ -271,17 +271,17 @@
     "noCapabilities": "Keine Fähigkeiten gesetzt",
     "tags": {
       "elder": "Ältester",
-      "ms": "DA-Gehilfe",
+      "ms": "Dienstamtgehilfe",
       "regularPioneer": "Allgemeiner Pionier",
       "specialPioneer": "Sonderpionier",
       "missionary": "Missionar",
       "inactive": "Inaktiv",
       "auxiliaryPioneer": "Hilfspionier",
-      "student": "Schüler"
+      "student": "Bibelschüler"
     },
     "sections": {
       "contact": "Kontakt",
-      "spirituality": "Geistliches",
+      "spirituality": "Geistliche Angaben",
       "capabilities": "Fähigkeiten",
       "personal": "Persönlich",
       "notes": "Notizen",
@@ -290,13 +290,13 @@
     },
     "hints": {
       "isDeaf": "Braucht Gebärdensprache",
-      "isImprisoned": "Untersuchungshaft, Gefängnis, psychiatrische Klinik oder Suchtklinik"
+      "isImprisoned": "Zählt auch: Untersuchungshaft, geschlossene psychiatrische Einrichtung oder Entzugsklinik"
     },
     "fields": {
       "phone": "Telefon",
       "email": "E-Mail",
       "address": "Anschrift",
-      "appointment": "Berufung",
+      "appointment": "Stellung",
       "baptism": "Taufe",
       "baptismDate": "Tauftag",
       "ministryStart": "Predigtdienstbeginn (ungetauft)",
@@ -318,19 +318,19 @@
     "appointment": {
       "publisher": "Verkündiger",
       "unbaptized_publisher": "Ungetaufter Verkündiger",
-      "unbaptized": "Ungetauft",
+      "unbaptized": "Ungetaufter Verkündiger",
       "ministerial_servant": "Dienstamtgehilfe",
-      "ms": "DA-Gehilfe",
+      "ms": "Dienstamtgehilfe",
       "elder": "Ältester",
       "none": "Keine",
-      "student": "Schüler"
+      "student": "Bibelschüler"
     },
     "pioneer": {
       "options": {
         "none": "Keiner",
         "auxiliary_until_cancelled": "Hilfspionier",
-        "regular": "Allgemein",
-        "special": "Sonder",
+        "regular": "Allgemeiner Pionier",
+        "special": "Sonderpionier",
         "missionary": "Missionar"
       },
       "detail": {
@@ -369,7 +369,7 @@
     "actions": {
       "edit": "Bearbeiten",
       "remove": "Als ausgeschieden markieren",
-      "removing": "Markiere…",
+      "removing": "Wird markiert…",
       "save": "Speichern"
     },
     "validation": {
@@ -407,7 +407,7 @@
     },
     "purge": {
       "button": "Endgültig löschen",
-      "deleting": "Lösche…",
+      "deleting": "Wird gelöscht…",
       "title": "Endgültig löschen",
       "action": "Endgültig löschen",
       "confirm": "Den Eintrag für {{name}} endgültig löschen? Das kann nicht rückgängig gemacht werden.",
@@ -420,7 +420,7 @@
         "cart_assignments": "Trolley-Schichten",
         "cart_requests": "Trolley-Anfragen",
         "co_visit_items": "Punkte des Kreisaufseherbesuchs",
-        "duties": "Aufgaben",
+        "duties": "Dienste",
         "elder_task_assignees": "Aufgaben der Ältestenschaft",
         "elders_meeting_items": "Tagesordnungspunkte",
         "elders_meetings": "Ältestenversammlungen",
@@ -453,33 +453,33 @@
     },
     "categories": {
       "midweek": "Zusammenkunft unter der Woche",
-      "weekend": "Zusammenkunft am Wochenende",
-      "field_service": "Uns im Predigtdienst verbessern",
-      "duties": "Aufgaben",
+      "weekend": "Wochenendzusammenkunft",
+      "field_service": "Uns im Dienst verbessern",
+      "duties": "Dienste",
       "hospitality": "Gastfreundschaft",
       "public_witnessing": "Öffentliches Zeugnisgeben",
       "field_service_meeting": "Zusammenkunft für den Predigtdienst"
     },
     "items": {
       "midweek_chairman": "Vorsitzender",
-      "midweek_opening_prayer": "Eröffnungsgebet",
+      "midweek_opening_prayer": "Anfangsgebet",
       "treasures_talk": "Schätze aus Gottes Wort",
-      "spiritual_gems": "Geistige Kostbarkeiten",
+      "spiritual_gems": "Nach geistigen Schätzen graben",
       "bible_reading": "Bibellesung",
-      "congregation_study_conductor": "Bibelstudium der Versammlung",
-      "congregation_study_reader": "Vorleser des Versammlungsbibelstudiums",
+      "congregation_study_conductor": "Leiter des Versammlungsbibelstudiums",
+      "congregation_study_reader": "Leser beim Versammlungsbibelstudium",
       "weekend_chairman": "Vorsitzender",
-      "weekend_opening_prayer": "Eröffnungsgebet",
+      "weekend_opening_prayer": "Anfangsgebet",
       "public_talk_speaker": "Redner für den öffentlichen Vortrag",
       "watchtower_conductor": "Leiter des Wachtturm-Studiums",
-      "watchtower_reader": "Vorleser des Wachtturm-Studiums",
+      "watchtower_reader": "Leser beim Wachtturm-Studium",
       "fs_starting_conversation": "Ein Gespräch beginnen",
-      "fs_following_up": "Interesse wecken",
+      "fs_following_up": "Interesse fördern",
       "fs_making_disciples": "Jünger machen",
       "fs_explaining_beliefs": "Den eigenen Glauben erklären",
       "fs_talk": "Ansprache",
       "duty_security": "Ordner am Eingang",
-      "duty_attendant": "Saaldienst",
+      "duty_attendant": "Ordner im Saal",
       "duty_zoom": "Zoom",
       "duty_microphone": "Mikrofone",
       "duty_av": "Audio/Video",
@@ -487,9 +487,9 @@
       "duty_ventilation": "Lüften",
       "duty_timekeeper": "Zeitnehmer",
       "hospitality": "Gastfreundschaft",
-      "public_witnessing": "Zeugnisgeben mit Wagen",
-      "fs_meeting_conductor": "Leitet Zusammenkunft für den Predigtdienst",
-      "christian_life": "Teil „Leben und Dienst“"
+      "public_witnessing": "Zeugnisgeben mit dem Trolley",
+      "fs_meeting_conductor": "Leiter der Zusammenkunft für den Predigtdienst",
+      "christian_life": "Teil „Unser Leben als Christ“"
     },
     "selectAll": "Alle auswählen"
   },
@@ -507,7 +507,7 @@
       "askEmail": "Ist zu diesem Konto eine E-Mail-Adresse hinterlegt?",
       "haveEmail": "Ja, ich habe eine Adresse",
       "noEmail": "Ich habe keine Adresse",
-      "noEmailWhat": "Dann gibt es keinen Empfänger für einen Brief. Der Versammlungsadministrator setzt Ihnen ein neues Passwort — nennen Sie ihm Ihren Anmeldenamen; er steht im Profil, wenn Sie sich schon einmal angemeldet haben.",
+      "noEmailWhat": "Dann gibt es keinen Empfänger für eine E-Mail. Der Versammlungsadministrator setzt Ihnen ein neues Passwort — nennen Sie ihm Ihren Anmeldenamen; er steht im Profil, wenn Sie sich schon einmal angemeldet haben.",
       "submit": "Code senden",
       "sent": "Falls es ein solches Konto mit Adresse gibt, haben wir eine E-Mail mit einem Code gesendet. Der Code ist einen Tag gültig.",
       "checkSpam": "Keine E-Mail? Prüfen Sie den Spam-Ordner.",
@@ -529,7 +529,7 @@
         "tooShort": "Zu kurz.",
         "tooCommon": "Dieses Passwort wird als Erstes probiert — nehmen Sie ein anderes.",
         "looksLikeEmail": "Das ist Ihre Adresse, kein Passwort.",
-        "tooRepetitive": "Immer dieselben Zeichen ergeben einen einzigen Rateversuch."
+        "tooRepetitive": "Lauter gleiche Zeichen sind mit einem einzigen Versuch erraten."
       }
     },
     "wrongEmailOrPassword": "Anmeldename (oder Adresse) und Passwort passen nicht zusammen. Wurden Sie eingeladen und haben noch kein Passwort? Tippen Sie oben auf „Wurden Sie eingeladen?“. Passwort vergessen? Tippen Sie auf „Passwort vergessen?“.",
@@ -547,9 +547,9 @@
       "entryHint": "Geben Sie den erhaltenen Code ein — das Passwort wählen Sie selbst",
       "newestLetter": "Bei mehreren E-Mails die neueste öffnen: ältere Codes gelten nicht mehr.",
       "noCodeAsk": "Kein Code, oder er funktioniert nicht mehr?",
-      "askLead": "Geben Sie Ihren Anmeldenamen ein — er steht im Einladungsbrief. Ist zu Ihrem Konto eine Adresse hinterlegt, geht der neue Code dorthin.",
+      "askLead": "Geben Sie Ihren Anmeldenamen ein — er steht in der Einladungs-E-Mail. Ist zu Ihrem Konto eine Adresse hinterlegt, geht der neue Code dorthin.",
       "askSubmit": "Neuen Code schicken",
-      "askSent": "Wenn es dieses Konto gibt und eine Adresse hinterlegt ist, wurde ein Brief mit einem neuen Code verschickt.",
+      "askSent": "Wenn es dieses Konto gibt und eine Adresse hinterlegt ist, wurde eine E-Mail mit einem neuen Code verschickt.",
       "askNoEmail": "Ohne Adresse gibt es keinen Empfänger — bitten Sie den Versammlungsadministrator, Ihnen den Code persönlich zu geben.",
       "welcomeTitle": "Fertig, Sie sind dabei",
       "welcomeIntro": "Ihr Passwort ist gespeichert. Merken Sie sich den Namen, mit dem Sie sich künftig anmelden:",
@@ -590,7 +590,7 @@
       "save": "Speichern",
       "saving": "{{done}} von {{total}} gespeichert",
       "leaveTitle": "Ausfüllen beenden?",
-      "leaveBody": "{{count}} Monate ausgefüllt. Nicht Gespeichertes geht verloren.",
+      "leaveBody": "Ausgefüllte Monate: {{count}}. Nicht Gespeichertes geht verloren.",
       "leaveConfirm": "Beenden",
       "hint": "Arbeiten Sie die Papierkarte von oben nach unten ab. Ein leerer Monat wird übersprungen. Markieren Sie einen Monat mit Hilfspionierdienst — dann erscheint das Stundenfeld.",
       "auxiliary": "Hilfspionier",
@@ -598,10 +598,10 @@
     },
     "reasons": {
       "window": "Gewertete abgeschlossene Monate {{from}} — {{to}}: Dienst in {{served}} von {{expected}}",
-      "nothingClosed": "Noch kein abgeschlossener Monat — es wurde nichts verlangt",
+      "nothingClosed": "Noch kein abgeschlossener Monat — es gibt nichts zu bewerten",
       "countsFrom": "Gezählt wird ab {{month}}",
       "restarted": "Neu gezählt ab {{month}}, nach der Rückkehr",
-      "sixth": "Bleibt es still, ist der sechste Monat {{month}}, Dienstjahr {{from}}/{{to}}",
+      "sixth": "Kommt weiterhin kein Bericht, ist der sechste Monat {{month}}, Dienstjahr {{from}}/{{to}}",
       "manual": "Von Hand gesetzt: die Neuberechnung ändert ihn nicht"
     },
     "remove": {
@@ -651,7 +651,7 @@
     "submittingOnBehalfOf": "Bericht abgegeben für",
     "publisher": "Verkündiger",
     "reportMonth": "Berichtsmonat",
-    "alreadySubmitted": "Bereits eingereicht. Gehen Sie zurück und tippen Sie auf das Stift-Symbol, um zu bearbeiten.",
+    "alreadySubmitted": "Bereits abgegeben. Gehen Sie zurück und tippen Sie auf das Stift-Symbol, um zu bearbeiten.",
     "hoursLabel": "Stunden im Predigtdienst",
     "didTheyShare": "Haben sie diesen Monat am Predigtdienst teilgenommen?",
     "didYouShare": "Haben Sie diesen Monat am Predigtdienst teilgenommen?",
@@ -661,7 +661,7 @@
     "viewEditHistory": "Bearbeitungsverlauf anzeigen",
     "updateReport": "Bericht aktualisieren",
     "alerts": {
-      "alreadySubmittedTitle": "Bereits eingereicht",
+      "alreadySubmittedTitle": "Bereits abgegeben",
       "alreadySubmittedBody": "Ein Bericht für {{month}} existiert bereits. Gehen Sie zurück und tippen Sie auf das Stift-Symbol, um ihn zu bearbeiten.",
       "validationTitle": "Validierung",
       "validationHours": "Bitte geben Sie gültige Stunden ein (0–744).",
@@ -677,19 +677,19 @@
     "hoursLong_other": "{{count}} Stunden",
     "group": {
       "scopeCongregation": "Versammlung",
-      "ofReported": "von {{total}} eingereicht",
+      "ofReported": "von {{total}} abgegeben",
       "shared": "im Dienst beteiligt",
       "pending": "ausstehend",
       "noPublishersInScope": "Keine Verkündiger im Bereich",
       "noReportYet": "Noch kein Bericht",
-      "submittedOfTotal": "{{submitted}} von {{total}} eingereicht",
+      "submittedOfTotal": "{{submitted}} von {{total}} abgegeben",
       "noGroup": "Ohne Gruppe",
       "submittedByWhen": "erfasst von {{name}} · {{when}}",
       "editedByWhen": "geändert von {{name}} · {{when}}",
       "pickMonth": "Monat wählen",
-      "flagMissed": "Fehlend-Markierung:",
+      "flagMissed": "Fehlende Berichte markieren:",
       "flagOff": "aus",
-      "missedMonths": "{{count}} Mon. fehlt"
+      "missedMonths": "{{count}} Mon. ohne Bericht"
     },
     "override": {
       "title": "Status manuell überschreiben für {{name}}",
@@ -698,14 +698,14 @@
       "clear": "Aufheben · automatische Neuberechnung fortsetzen"
     },
     "publisherHistory": {
-      "notSubmitted": "Nicht eingereicht",
-      "noPublisherId": "Öffnen Sie den Verlauf aus den Gruppenberichten — hier ist nicht angegeben, wessen.",
+      "notSubmitted": "Nicht abgegeben",
+      "noPublisherId": "Öffnen Sie den Verlauf aus den Gruppenberichten — so ist nicht klar, um welchen Verkündiger es geht.",
       "fallbackName": "Verkündiger",
       "last12Months": "Letzte 12 Monate",
       "noHistory": "Kein Verlauf",
       "self": "(selbst)",
       "someoneElse": "jemand anderes",
-      "submittedBy": "Eingereicht von {{name}}",
+      "submittedBy": "Abgegeben von {{name}}",
       "editedBy": "bearbeitet von {{name}}",
       "trendTitle": "Diensttrend",
       "hours": "Stunden",
@@ -775,24 +775,24 @@
     "form": {
       "section": "Gruppe",
       "namePlaceholder": "Gruppe Nr. 1 Nord",
-      "meetingLocation": "Versammlungsort",
+      "meetingLocation": "Treffpunkt",
       "meetingLocationPlaceholder": "Brackeler Hellweg 14",
       "leadership": "Leitung",
-      "overseer": "Gruppenverantwortlicher",
-      "assistant": "Gruppenassistent"
+      "overseer": "Gruppenaufseher",
+      "assistant": "Gehilfe des Gruppenaufsehers"
     },
     "membersCount": "Mitglieder ({{count}})",
     "noMembersYet": "Noch keine Mitglieder in dieser Gruppe",
-    "overseer": "Gruppenverantwortlicher",
-    "assistant": "Gruppenassistent",
+    "overseer": "Gruppenaufseher",
+    "assistant": "Gehilfe des Gruppenaufsehers",
     "addMembers": "Mitglieder hinzufügen",
     "addSelected": "Hinzufügen ({{count}})",
     "noPublishersToAdd": "Alle Verkündiger sind bereits in dieser Gruppe",
     "inGroup": "In Gruppe: {{name}}",
     "noGroup": "Keine Gruppe",
     "memberRole": {
-      "overseer": "Verantwortlicher",
-      "assistant": "Assistent"
+      "overseer": "Gruppenaufseher",
+      "assistant": "Gehilfe"
     },
     "removeMember": {
       "title": "Aus Gruppe entfernen?",
@@ -802,7 +802,7 @@
     },
     "mine": "Ihre",
     "otherGroupClosed": "Mitglieder sind nur in der eigenen Gruppe sichtbar",
-    "membersWithStudents": "Mitglieder ({{count}}) · Schüler: {{students}}"
+    "membersWithStudents": "Mitglieder ({{count}}) · Bibelschüler: {{students}}"
   },
   "parts": {
     "midweek_chairman": "Vorsitzender",
@@ -810,32 +810,32 @@
     "treasures_talk": "Schätze aus Gottes Wort",
     "spiritual_gems": "Nach geistigen Schätzen graben",
     "bible_reading": "Bibellesung",
-    "apply_yourself_1": "Werde ein besserer Lehrer 1",
-    "apply_yourself_2": "Werde ein besserer Lehrer 2",
-    "apply_yourself_3": "Werde ein besserer Lehrer 3",
-    "apply_yourself_4": "Werde geschickter im Predigtdienst 4",
-    "living_christians_1": "Unser Leben als Christen 1",
-    "living_christians_2": "Unser Leben als Christen 2",
-    "cbs_conductor": "Bibelstudium der Versammlung",
-    "cbs_reader": "Bibelstudium der Versammlung — Vorleser",
+    "apply_yourself_1": "Uns im Dienst verbessern 1",
+    "apply_yourself_2": "Uns im Dienst verbessern 2",
+    "apply_yourself_3": "Uns im Dienst verbessern 3",
+    "apply_yourself_4": "Uns im Dienst verbessern 4",
+    "living_christians_1": "Unser Leben als Christ 1",
+    "living_christians_2": "Unser Leben als Christ 2",
+    "cbs_conductor": "Versammlungsbibelstudium",
+    "cbs_reader": "Versammlungsbibelstudium — Leser",
     "midweek_closing_prayer": "Schlussgebet",
     "weekend_chairman": "Vorsitzender",
     "weekend_opening_prayer": "Anfangsgebet",
     "public_talk_speaker": "Öffentlicher Vortrag",
     "watchtower_conductor": "Wachtturm-Studium — Leiter",
-    "watchtower_reader": "Wachtturm-Studium — Vorleser",
+    "watchtower_reader": "Wachtturm-Studium — Leser",
     "weekend_closing_prayer": "Schlussgebet",
     "co_service_talk": "Dienstvortrag des Kreisaufsehers",
     "co_concluding_talk": "Schlussvortrag",
-    "living_christians_extra": "Leben als Christ",
+    "living_christians_extra": "Unser Leben als Christ",
     "song": "Lied"
   },
   "eventTypes": {
     "midweek": "Zusammenkunft unter der Woche",
-    "weekend": "Zusammenkunft am Wochenende",
+    "weekend": "Wochenendzusammenkunft",
     "cleaning": "Reinigung",
     "av_duty": "Audio/Video",
-    "public_witnessing": "Öffentliches Zeugnis",
+    "public_witnessing": "Öffentliches Zeugnisgeben",
     "memorial": "Gedächtnismahl"
   },
   "assignments": {
@@ -898,7 +898,7 @@
         "publisher": "Verkündiger",
         "speakerName": "Name des Redners",
         "fromCongregation": "Aus Versammlung",
-        "assistant": "Gehilfe",
+        "assistant": "Partner",
         "statusLabel": "Status",
         "requiredSkill": "Erforderliche Fähigkeit",
         "talkThemeManual": "Thema (manuell)"
@@ -959,7 +959,7 @@
     },
     "noAssignments": "Keine Zuteilungen für diese Woche.",
     "unassigned": "Nicht zugeteilt",
-    "createEmptyMidweek": "Leere Wochenzusammenkunft erstellen",
+    "createEmptyMidweek": "Leere Zusammenkunft unter der Woche erstellen",
     "createEmptyWeekend": "Leere Wochenendzusammenkunft erstellen",
     "removedBanner": "Diese Zuteilung wurde entfernt",
     "import": {
@@ -976,7 +976,7 @@
         "parseFailed": "Datei konnte nicht ausgewertet werden"
       },
       "typeBadge": {
-        "midweek": "Mittwoch",
+        "midweek": "Unter der Woche",
         "weekend": "Wochenende",
         "unknown": "Unbekannter Typ"
       },
@@ -993,7 +993,7 @@
         "warningsTitle": "Warnungen:",
         "moreWarnings": "… und {{count}} weitere",
         "noMidweek": "{{week}}: In dieser Woche findet keine Zusammenkunft unter der Woche statt – nicht geladene Programmpunkte: {{count}}",
-        "noWeekend": "{{week}}: In dieser Woche findet keine Zusammenkunft am Wochenende statt – nicht geladene Programmpunkte: {{count}}",
+        "noWeekend": "{{week}}: In dieser Woche findet keine Wochenendzusammenkunft statt – nicht geladene Programmpunkte: {{count}}",
         "notHeldHint": "Das ergibt sich aus den Ereignissen und den Zusammenkunftseinstellungen der Versammlung. Findet die Zusammenkunft doch statt, korrigieren Sie diese und laden Sie die Datei erneut – bereits Eingeteiltes bleibt unverändert.",
         "unclassifiedPart": "{{week}}: Ein Programmpunkt wurde nicht erkannt und nicht geladen – „{{title}}“",
         "weekNotHeld": "keine Zusammenkunft",
@@ -1004,11 +1004,11 @@
       },
       "privacyNote": "Die Datei wird auf diesem Bildschirm im Browser gelesen und nirgendwohin gesendet — in den Plan gelangen nur Titel und Dauer der Programmpunkte.",
       "parsing": "Datei wird ausgewertet…",
-      "applying": "Importiere…",
-      "applyButton": "Importieren ({{count}} Wo.)",
+      "applying": "Wird importiert…",
+      "applyButton": "Importieren (Wochen: {{count}})",
       "preview": {
         "title": "Gefundene Wochen",
-        "partsShort": "{{count}} Punkte",
+        "partsShort": "Punkte: {{count}}",
         "unclassifiedTitle": "Nicht erkannte Punkte: {{count}} (werden übersprungen)",
         "unreadWeeksTitle": "Wochendaten nicht erkannt: {{count}} — diese Wochen werden nicht geladen",
         "unreadWeeksHint": "Die übrigen Wochen werden wie gewohnt geladen. Das Programm dieser Wochen muss von Hand eingetragen werden."
@@ -1036,13 +1036,13 @@
       "next": "Nächste Woche"
     },
     "subsection": {
-      "opening": "Eröffnung",
+      "opening": "Einleitung",
       "treasures": "Schätze aus Gottes Wort",
-      "applyYourself": "Werde ein besserer Lehrer",
+      "applyYourself": "Uns im Dienst verbessern",
       "christianLife": "Unser Leben als Christ",
       "publicTalk": "Öffentlicher Vortrag",
       "watchtower": "Wachtturm-Studium",
-      "concludingTalk": "Abschlussvortrag"
+      "concludingTalk": "Schlussvortrag"
     },
     "songHint": "Nummer wählen",
     "readOnlyBanner": "Nur Ansicht — Sie dürfen diesen Teil nicht bearbeiten",
@@ -1059,10 +1059,10 @@
     },
     "sheet": {
       "next": "Weiter →",
-      "title": "Zuweisung"
+      "title": "Zuteilung"
     },
     "tabs": {
-      "duties": "Aufgaben"
+      "duties": "Dienste"
     },
     "weekend": {
       "reader": "Leser"
@@ -1074,12 +1074,12 @@
     },
     "notice": {
       "badge": "noch nicht mitgeteilt",
-      "pending_one": "Änderungen gehen um {{time}} raus · in {{count}} Min.",
-      "pending_other": "Änderungen gehen um {{time}} raus · in {{count}} Min.",
-      "pendingTomorrow": "Änderungen gehen morgen um {{time}} raus",
-      "soon_one": "Geht in {{count}} Min. raus — die Zusammenkunft ist bald",
-      "soon_other": "Geht in {{count}} Min. raus — die Zusammenkunft ist bald",
-      "goingNow": "Änderungen gehen raus…",
+      "pending_one": "Änderungen werden um {{time}} versendet · in {{count}} Min.",
+      "pending_other": "Änderungen werden um {{time}} versendet · in {{count}} Min.",
+      "pendingTomorrow": "Änderungen werden morgen um {{time}} versendet",
+      "soon_one": "Wird in {{count}} Min. versendet — die Zusammenkunft beginnt bald",
+      "soon_other": "Wird in {{count}} Min. versendet — die Zusammenkunft beginnt bald",
+      "goingNow": "Änderungen werden versendet…",
       "evening": "Wir informieren heute Abend, gegen {{time}}",
       "who_one": "Erfährt es: {{list}}",
       "who_other": "Erfahren es: {{list}}",
@@ -1091,25 +1091,25 @@
       "byEmail": " (per E-Mail)",
       "sendNow": "Jetzt senden",
       "sendEvening": "Heute Abend senden",
-      "hint": "Weiter bearbeiten — der Countdown beginnt neu, es geht eine einzige Nachricht raus",
+      "hint": "Weiter bearbeiten — der Countdown beginnt neu, es wird nur eine einzige Nachricht versendet",
       "unreached": " erhält nichts — kein Zugang und keine E-Mail-Adresse. Bitte persönlich mitteilen: „{{label}}“.",
       "sentAt": "Mitgeteilt um {{time}} · {{names}}",
       "sentNobody": "{{time}} · niemand über die App zu informieren",
-      "goesAt": "Geht um {{time}} raus · {{names}}"
+      "goesAt": "Wird um {{time}} versendet · {{names}}"
     },
     "autoBadge": "auto",
-    "addChristianLife": "Teil „Leben als Christ“ hinzufügen",
+    "addChristianLife": "Teil „Unser Leben als Christ“ hinzufügen",
     "deletePart": {
       "title": "Teil löschen?",
       "confirm": "Der Teil und seine Zuteilung werden entfernt.",
       "button": "Teil löschen",
-      "deleting": "Löschen…"
+      "deleting": "Wird gelöscht…"
     },
     "minShort": "Min",
     "print": {
       "midweekTitle": "Zusammenkunft unter der Woche",
       "coVisitNote": "Besuch des Kreisaufsehers",
-      "weekendTitle": "Zusammenkunft am Wochenende",
+      "weekendTitle": "Wochenendzusammenkunft",
       "watchtowerPrefix": "Wachtturm"
     },
     "movedTo": "Unter {{path}}",
@@ -1125,9 +1125,9 @@
     }
   },
   "audit": {
-    "noReportId": "Öffnen Sie das Protokoll aus dem Bericht selbst — hier ist nicht angegeben, welches.",
+    "noReportId": "Öffnen Sie das Protokoll aus dem Bericht selbst — so ist nicht klar, um welchen Bericht es geht.",
     "noEdits": "Noch keine Bearbeitungen",
-    "noEditsHint": "Dieser Bericht wurde seit der Einreichung nicht geändert.",
+    "noEditsHint": "Dieser Bericht wurde seit der Abgabe nicht geändert.",
     "unknownEditor": "(unbekannter Bearbeiter)",
     "before": "vorher",
     "after": "nachher",
@@ -1149,7 +1149,7 @@
   },
   "activity": {
     "noActivity": "Noch keine Aktivität",
-    "noActivityHint": "Eingereichte Berichte und Statusänderungen erscheinen hier."
+    "noActivityHint": "Abgegebene Berichte und Statusänderungen erscheinen hier."
   },
   "pickers": {
     "search": "Suchen…",
@@ -1167,7 +1167,7 @@
     "lastGiven": "Zuletzt gehalten {{date}}",
     "upcoming": "Geplant {{date}}",
     "histThisPart": "dieser Teil war:",
-    "histThisDuty": "diese Aufgabe war:",
+    "histThisDuty": "dieser Dienst war:",
     "histNever": "noch nie",
     "histPairWith": "im Team mit {{name}}:",
     "historyScope": "Aktivität der letzten 3 Monate",
@@ -1178,7 +1178,7 @@
       "title": "Benutzer",
       "help": {
         "all": "Alle · {{count}}",
-        "needHelp": "Brauchen Hilfe · {{count}}",
+        "needHelp": "Hilfe nötig · {{count}}",
         "none": "Niemand braucht Hilfe",
         "noneHint": "Alle, die einen Zugang haben, konnten sich anmelden: keine fehlgeschlagenen Versuche, keine abgelaufenen Codes, keine Konten ohne Passwort.",
         "openCardOf": "Karte öffnen: {{name}}",
@@ -1187,7 +1187,7 @@
           "codeExpired": "Noch keine Anmeldung. Der Code ist am {{date}} abgelaufen – geben Sie einen neuen aus.",
           "neverInvited": "Noch keine Anmeldung: kein Passwort, und es wurde nie ein Code ausgegeben.",
           "neverSignedIn": "Noch keine Anmeldung, obwohl ein Passwort gesetzt ist. Vielleicht ist der Anmeldename nicht bekannt.",
-          "noCard": "Es gibt einen Zugang, aber hinter dem Konto steht keine Verkündigerkarte – die persönlichen Bildschirme sind geschlossen.",
+          "noCard": "Das Konto besteht, ist aber mit keiner Verkündigerkarte verknüpft – die persönlichen Bereiche sind nicht verfügbar.",
           "codeWaiting": "Ein Code wurde ausgegeben und noch nicht benutzt – gültig bis {{date}}."
         }
       },
@@ -1246,9 +1246,9 @@
   },
   "publicTalks": {
     "searchPlaceholder": "Suche nach Nummer oder Titel…",
-    "showRetired": "Zurückgezogene anzeigen",
+    "showRetired": "Abgesetzte anzeigen",
     "bulkImport": "Massenimport",
-    "retiredBadge": "Zurückgezogen",
+    "retiredBadge": "Abgesetzt",
     "import": {
       "submitButton": "Importieren",
       "successTitle": "Import abgeschlossen",
@@ -1271,7 +1271,7 @@
       "renamed": "Geänderte Titel",
       "missingTitle": "Diese Vorträge fehlen in der neuen Liste: {{count}}",
       "andMore": "…und {{count}} weitere",
-      "missingHint": "Ein Import setzt von selbst nichts ab. Fehlen diese Vorträge in der Liste, setzen Sie sie ab — sie bleiben im Katalog als „abgesetzt“ und lassen sich mit einem Druck zurückholen.",
+      "missingHint": "Ein Import setzt von selbst nichts ab. Fehlen diese Vorträge in der Liste, setzen Sie sie ab — sie bleiben im Katalog als „abgesetzt“ und lassen sich mit einem Fingertipp zurückholen.",
       "retireAction": "Diese Vorträge absetzen",
       "retired": "Abgesetzte Vorträge: {{count}}"
     },
@@ -1288,9 +1288,9 @@
       "button": "Vorträge absetzen",
       "pageTitle": "Vorträge absetzen",
       "title": "Vorträge, die nicht mehr verwendet werden",
-      "subtitle": "Fügen Sie die ganze Anweisung ein — die Nummern liest die App selbst heraus. Es wird nichts abgesetzt, bis Sie bestätigen.",
+      "subtitle": "Fügen Sie den ganzen Text der Mitteilung ein — die Nummern liest die App selbst heraus. Es wird nichts abgesetzt, bis Sie bestätigen.",
       "fromLabel": "Nicht mehr halten ab",
-      "textLabel": "Text der Anweisung",
+      "textLabel": "Text der Mitteilung",
       "placeholder": "…sollen ab dem 1. September 2026 nicht mehr gehalten werden: 84, 85, 87…",
       "check": "Prüfen",
       "willRetire": "Abzusetzende Vorträge: {{count}}",
@@ -1303,12 +1303,12 @@
       "backToCatalogue": "Zurück zum Katalog",
       "source": {
         "programme": "Im Wochenendprogramm",
-        "incoming": "Auswärtiger Redner — Journal „zu uns“",
-        "outgoing": "Ein Bruder von uns hält ihn — Journal „von uns“"
+        "incoming": "Auswärtiger Redner — Protokoll „Zu uns“",
+        "outgoing": "Ein Bruder von uns hält ihn — Protokoll „Von uns“"
       },
-      "untilLabel": "Bis wann (falls nur vorübergehend)",
-      "untilHint": "Leer lassen, wenn der Vortrag endgültig entfällt. Mit Datum kommt er am Tag danach von selbst zurück.",
-      "reasonLabel": "Auf welcher Grundlage",
+      "untilLabel": "Bis wann (nur wenn vorübergehend)",
+      "untilHint": "Leer lassen, wenn der Vortrag endgültig entfällt. Ist ein Datum angegeben, steht er am Tag danach automatisch wieder zur Verfügung.",
+      "reasonLabel": "Grundlage",
       "reasonPlaceholder": "Bekanntmachungen und Hinweise, Mai 2026",
       "lastReason": "Grundlage: {{reason}}",
       "mode": {
@@ -1327,9 +1327,9 @@
       "willLift": "Zurückzuholende Vorträge: {{count}}",
       "confirmLift": "Diese Vorträge zurückholen",
       "liftDone": "Zurückgeholte Vorträge: {{count}}",
-      "askTitle": "{{count}} Vorträge ab {{date}} absetzen?",
+      "askTitle": "Vorträge ab {{date}} absetzen? Anzahl: {{count}}",
       "askBody": "Prüfen Sie, ob die Liste stimmt. Sie lassen sich später zurückholen — Reiter „Vorträge zurückholen“.",
-      "askLiftTitle": "{{count}} Vorträge zurückholen?",
+      "askLiftTitle": "Vorträge zurückholen? Anzahl: {{count}}",
       "askLiftBody": "Die Sperre wird aufgehoben und die Vorträge können wieder eingeplant werden.",
       "confirmShort": "Absetzen",
       "historyMore": "Weitere {{count}} Entscheidungen anzeigen"
@@ -1338,46 +1338,46 @@
     "loading": "Wird geladen…",
     "pausedBetween": "Nicht halten von {{from}} bis {{until}}",
     "restrictedScheduled": {
-      "title": "Bereits eingeplant, obwohl zurückgezogen · {{count}}",
+      "title": "Bereits eingeplant, obwohl abgesetzt · {{count}}",
       "hint": "Sprechen Sie mit dem Redner einen anderen Vortrag ab — die App ändert von sich aus nichts.",
       "outgoing": "{{name}} fährt am {{date}} nach {{where}}",
       "outgoingNoName": "Unser Redner fährt am {{date}} nach {{where}}",
       "incoming": "Zu uns am {{date}}: {{name}}",
       "programme": "Programm, {{date}}",
       "openLog": "Protokoll „Zu uns / Von uns“ öffnen",
-      "badge": "Vortrag Nr. {{n}} ist an diesem Datum zurückgezogen"
+      "badge": "Vortrag Nr. {{n}} ist an diesem Datum abgesetzt"
     }
   },
   "responsibilities": {
     "title": "Zuständigkeiten",
-    "subtitle": "Wer wofür zuständig ist. Eine Ernennung öffnet dem Bruder seinen Teil des Plans, bei manchen Aufgaben kommen Aufgaben und Erinnerungen dazu.",
+    "subtitle": "Wer wofür zuständig ist. Eine Ernennung öffnet dem Bruder seinen Teil des Plans, bei manchen Zuständigkeiten kommen Aufgaben und Erinnerungen dazu.",
     "unassigned": "Nicht zugewiesen",
     "unknownUser": "Unbekannter Benutzer",
     "assign": "Ernennen",
     "pickUser": "Wem übertragen",
     "errorTitle": "Fehler",
     "revokeConfirm": {
-      "title": "Aufgabe entfernen?",
-      "body": "Die Aufgabe „{{role}}“ entfernen?",
+      "title": "Zuständigkeit entfernen?",
+      "body": "Die Zuständigkeit „{{role}}“ entfernen?",
       "action": "Entfernen"
     },
     "types": {
       "body_coordinator": "Koordinator der Ältestenschaft",
-      "life_ministry_overseer": "Aufseher für „Leben und Dienst“",
+      "life_ministry_overseer": "Aufseher der Leben-und-Dienst-Zusammenkunft",
       "wt_study_conductor": "Leiter des Wachtturm-Studiums",
       "wt_study_conductor_backup": "Helfer des Leiters des Wachtturm-Studiums",
-      "public_talk_coordinator": "Koordinator für öffentliche Vorträge",
-      "public_talk_coordinator_assistant": "Assistent des Verantwortlichen für öffentliche Vorträge",
-      "adviser": "Berater",
+      "public_talk_coordinator": "Vortragskoordinator",
+      "public_talk_coordinator_assistant": "Assistent des Vortragskoordinators",
+      "adviser": "Hilfsratgeber",
       "secretary": "Sekretär",
       "service_overseer": "Dienstaufseher",
       "accounts_servant": "Rechnungsführer",
       "public_witnessing": "Aufseher für öffentliches Zeugnisgeben",
       "cleaning_coordinator": "Reinigungskoordinator",
-      "duties_coordinator": "Aufgabenkoordinator",
-      "service_overseer_assistant": "Assistent des Dienstaufsehers",
-      "attendance_recorder": "Besuchszahlen",
-      "body_coordinator_assistant": "Assistent des Koordinators",
+      "duties_coordinator": "Koordinator der Dienste",
+      "service_overseer_assistant": "Gehilfe des Dienstaufsehers",
+      "attendance_recorder": "Anwesenheitszählung",
+      "body_coordinator_assistant": "Assistent des Koordinators der Ältestenschaft",
       "attendance_recorder_assistant": "Helfer für die Anwesenheitszählung"
     },
     "groups": {
@@ -1393,7 +1393,7 @@
     "alreadyHolds": "Hat bereits: {{list}}",
     "publicSubtitle": "Wer in der Versammlung wofür zuständig ist – und an wen Sie sich wenden können.",
     "you": "Sie",
-    "noneYet": "Es sind noch keine Aufgaben verteilt."
+    "noneYet": "Es sind noch keine Zuständigkeiten vergeben."
   },
   "meetingSettings": {
     "title": "Zeit & Ort der Zusammenkünfte",
@@ -1406,14 +1406,14 @@
     "effectiveFromLabel": "Gültig ab",
     "congregationName": "Name der Versammlung",
     "midweek": "Zusammenkunft unter der Woche",
-    "weekend": "Zusammenkunft am Wochenende",
+    "weekend": "Wochenendzusammenkunft",
     "address": "Adresse des Königreichssaals",
     "addressPlaceholder": "Straße, PLZ, Stadt",
     "effectiveFromHint": "Beim Speichern wird ab diesem Datum eine neue Version erstellt. Wochen davor behalten ihren bisherigen Tag und ihre Uhrzeit.",
     "history": "Änderungsverlauf",
     "effectiveNow": "Aktuell gültig",
     "upcoming": "Noch nicht gültig",
-    "historyLocked": "Löschen lässt sich nur eine Version, die noch nicht gilt. Nach der aktuellen und den früheren sind die vergangenen Wochen gezählt — einen Fehler darin korrigiert man, indem man den Plan mit demselben Datum erneut speichert.",
+    "historyLocked": "Löschen lässt sich nur eine Version, die noch nicht gilt. Nach der aktuellen und den früheren Versionen sind die vergangenen Wochen bereits berechnet — einen Fehler darin korrigieren Sie, indem Sie den Plan mit demselben Datum erneut speichern.",
     "noVersions": "Noch keine Versionen",
     "errorTitle": "Fehler",
     "deleteConfirm": {
@@ -1432,7 +1432,7 @@
     },
     "timezone": "Zeitzone der Versammlung",
     "timezoneNow": "Dort ist es jetzt {{when}}",
-    "timezoneInvalid": "Diese Zeitzone gibt es nicht. Ein Name wie Europe/Berlin.",
+    "timezoneInvalid": "Diese Zeitzone gibt es nicht. Geben Sie einen Namen wie Europe/Berlin ein.",
     "useDeviceTimezone": "Von diesem Gerät übernehmen",
     "past": {
       "title": "Das ändert bereits begonnene Wochen",
@@ -1442,7 +1442,7 @@
       "field": {
         "midweekDow": "Tag der Zusammenkunft unter der Woche",
         "midweekTime": "Uhrzeit unter der Woche",
-        "weekendDow": "Tag der Zusammenkunft am Wochenende",
+        "weekendDow": "Tag der Wochenendzusammenkunft",
         "weekendTime": "Uhrzeit am Wochenende",
         "address": "Adresse",
         "microphoneSlots": "Mikrofone"
@@ -1455,11 +1455,11 @@
     "historySinceShifted": "ab {{date}} (eingegeben {{typed}})"
   },
   "duties": {
-    "title": "Aufgaben",
-    "addCustom": "Aufgabe hinzufügen",
+    "title": "Dienste",
+    "addCustom": "Dienst hinzufügen",
     "customLabelPlaceholder": "z. B. Besucher begrüßen",
     "unassigned": "Nicht zugeteilt",
-    "noDuties": "Aufgaben noch nicht angelegt",
+    "noDuties": "Dienste noch nicht angelegt",
     "warningsTitle": "Hinweis",
     "types": {
       "security": "Ordner am Eingang",
@@ -1468,23 +1468,23 @@
       "av": "Audio/Video",
       "zoom": "Videokonferenz (Zoom)",
       "stage": "Bühne",
-      "ventilation": "Lüftung",
+      "ventilation": "Lüften",
       "timekeeper": "Zeitnehmer",
       "custom": "Sonstiges"
     },
     "warnings": {
-      "already_on_duty": "Bereits einer anderen Aufgabe in dieser Zusammenkunft zugeteilt",
+      "already_on_duty": "Bereits für einen anderen Dienst in dieser Zusammenkunft eingeteilt",
       "has_program_part": "Hat bereits einen Programmteil in dieser Zusammenkunft",
-      "capability_off": "Nicht als fähig für diese Aufgabe markiert"
+      "capability_off": "Für diesen Dienst nicht freigegeben"
     },
     "preparing": "Wird vorbereitet…",
-    "dutyColumn": "Aufgabe",
+    "dutyColumn": "Dienst",
     "today": "Heute",
     "nextUp": "Als Nächstes",
     "past": "Vergangen",
     "addAnother": "Noch einer",
     "renamePlace": "Umbenennen",
-    "removePlace": "Aufgabe entfernen",
+    "removePlace": "Dienst entfernen",
     "removePlaceAsk": "„{{label}}“ mitsamt allen Zugeteilten entfernen?"
   },
   "publisherActivity": {
@@ -1505,13 +1505,13 @@
       "addressPlaceholder": "Treffpunkt",
       "topicPlaceholder": "Thema oder Hinweis (optional)",
       "linkPlaceholder": "https://…",
-      "hintPastDay": "Dieser Tag ist bereits vorbei — wähle einen anderen",
+      "hintPastDay": "Dieser Tag ist bereits vorbei — wählen Sie einen anderen",
       "hintDate": "Datum wählen",
       "hintTime": "Uhrzeit angeben",
       "hintAddress": "Adresse angeben",
       "eventWarn": "An diesem Tag: {{title}}",
       "notifyConductor": "Leiter benachrichtigen",
-      "notifyConductorHint": "Push an den Bruder bei Ein- oder Austeilung und bei Verlegung"
+      "notifyConductorHint": "Push-Benachrichtigung an den Bruder, wenn er eingeteilt oder ausgetragen oder die Zusammenkunft verlegt wird"
     },
     "days": {
       "1": "Mo",
@@ -1558,10 +1558,10 @@
     "fromCoVisitHint": "Wird im Besuchsplan bearbeitet",
     "overseerVisit": "Besuch des Dienstaufsehers",
     "overseerVisitHint": "Er leitet diese Zusammenkunft und geht mit der Gruppe in den Dienst",
-    "visitSameDay": "Die Gruppe {{group}} geht an diesem Tag nur zum Besuch. Die anderen Zusammenkünfte ({{times}}) sind für alle anderen.",
+    "visitSameDay": "Die Gruppe {{group}} trifft sich an diesem Tag nur zum Besuch des Dienstaufsehers. Die anderen Zusammenkünfte ({{times}}) sind für alle Übrigen.",
     "sameDayAsVisit": "An diesem Tag besucht der Dienstaufseher die Gruppe {{group}} um {{time}}: diese Gruppe kommt nicht hierher.",
     "overseer": "Dienstaufseher",
-    "overseerAssistant": "Assistent",
+    "overseerAssistant": "Gehilfe",
     "whoConducts": "Wer die Zusammenkunft leitet",
     "fillAssistant": "Einsetzen",
     "why": {
@@ -1581,7 +1581,7 @@
       "led": "Geleitet",
       "noTopic": "kein Thema",
       "sameOnAnotherDate": "Gleiche an einem anderen Tag anlegen",
-      "whose": "Wessen Zusammenkunft",
+      "whose": "Für wen",
       "general": "Gemeinsame",
       "when": "Wann",
       "otherDate": "Anderer Tag",
@@ -1589,7 +1589,7 @@
       "otherAddress": "Andere Adresse",
       "whoLeads": "Wer leitet",
       "pickDayFirst": "Zuerst den Tag wählen",
-      "listFailed": "Liste nicht erhalten – unten einen Bruder wählen",
+      "listFailed": "Liste konnte nicht geladen werden – wählen Sie unten einen Bruder",
       "allBrothers": "Alle Brüder",
       "addMaterial": "Thema und Material",
       "byGroups": "Nach Gruppen"
@@ -1613,8 +1613,8 @@
       "filledSome": "Zugeteilt: {{count}}, niemand frei: {{left}}",
       "filledAll": "Zugeteilt: {{count}}",
       "openFromTask": "Zusammenkünfte für den Predigtdienst öffnen",
-      "busy_one": "{{count}} Zusammenkunft an einem Tag mit etwas anderem ({{what}}) – ohne Hinweis",
-      "busy_other": "{{count}} Zusammenkünfte an Tagen mit etwas anderem ({{what}}) – ohne Hinweis"
+      "busy_one": "{{count}} Zusammenkunft an einem Tag, an dem noch etwas anderes stattfindet ({{what}}) – ohne Vermerk",
+      "busy_other": "{{count}} Zusammenkünfte an Tagen, an denen noch etwas anderes stattfindet ({{what}}) – ohne Vermerk"
     },
     "row": {
       "unassigned": "Kein Leiter zugeteilt",
@@ -1630,8 +1630,8 @@
     "prepare": {
       "title": "Monat vorbereiten",
       "button": "Monat vorbereiten",
-      "hint": "So wird es — nach Vorlage und Versammlungskalender",
-      "draftNote": "Neue Zusammenkünfte sind ein Entwurf: die Verkündiger sehen sie und die Leiter erfahren davon erst nach der Veröffentlichung",
+      "hint": "Vorschau — nach Vorlage und Versammlungskalender",
+      "draftNote": "Neue Zusammenkünfte werden als Entwurf angelegt: Die Verkündiger sehen sie erst nach der Veröffentlichung, und auch die Leiter werden erst dann benachrichtigt",
       "create_one": "{{count}} Zusammenkunft anlegen",
       "create_other": "{{count}} Zusammenkünfte anlegen",
       "prevMonth": "Vormonat",
@@ -1643,12 +1643,12 @@
       "skipExists": "Schon vorhanden – bleibt unberührt",
       "skipPast": "Schon vorbei",
       "nobodyFree": "niemand vorzuschlagen – alle Leiter sind belegt oder abwesend",
-      "noOverseer": "die Gruppe hat keinen Aufseher",
+      "noOverseer": "die Gruppe hat keinen Gruppenaufseher",
       "ruleNone": "den Leiter teilen Sie selbst zu",
       "editTemplate": "Vorlage ändern",
       "doneTitle": "Monat vorbereitet",
-      "doneAll": "Entwurf: {{count}} Zusammenkünfte",
-      "doneSome": "Entwurf: {{count}} Zusammenkünfte, ohne Leiter: {{left}}"
+      "doneAll": "Zusammenkünfte im Entwurf: {{count}}",
+      "doneSome": "Zusammenkünfte im Entwurf: {{count}}, ohne Leiter: {{left}}"
     },
     "template": {
       "title": "Vorlage der Zusammenkünfte",
@@ -1661,7 +1661,7 @@
       "skipAssemblies": "Kongress und Tagung – keine Zusammenkünfte",
       "coVisitWeek": "Woche des Kreisaufseherbesuchs – Zusammenkünfte aus dem Besuchsplan",
       "coVisitWeekHint": "Stehen dort noch keine, wird die Woche übersprungen, nicht gefüllt",
-      "autoOn": "ein · vorbereiten {{lead}}",
+      "autoOn": "an · Vorbereitung {{lead}}",
       "autoOff": "aus – den Monat bereiten Sie selbst vor",
       "saved": "Vorlage gespeichert",
       "discardTitle": "Änderungen verwerfen?",
@@ -1669,12 +1669,12 @@
       "discard": "Verwerfen",
       "conductorRule": {
         "group_overseer": "Gruppenaufseher, sonst Gehilfe",
-        "rotation": "Der Reihe nach aus dem Kreis der Leiter",
+        "rotation": "Abwechselnd unter den Leitern",
         "none": "Nicht auswählen"
       },
       "conductorRuleHint": {
         "group_overseer": "wer in der Gruppenkarte eingetragen ist",
-        "rotation": "wer am längsten nicht geleitet hat, ohne Abwesende und an dem Tag Belegte",
+        "rotation": "wer am längsten nicht geleitet hat; Abwesende und an dem Tag bereits Eingeteilte ausgenommen",
         "none": "ich teile selbst zu"
       },
       "rule": {
@@ -1684,15 +1684,15 @@
         "every": "Jede",
         "last": "Letzte",
         "orListed": "oder einzelne:",
-        "whose": "Wessen",
+        "whose": "Für wen",
         "remove": "Entfernen",
         "hintWhich": "Wählen Sie die Tage des Monats",
-        "openPlaceHint": "Kann leer bleiben — jede Gruppe trifft sich bei sich; wenn alle zusammen, den Saal wählen",
+        "openPlaceHint": "Kann leer bleiben — jede Gruppe trifft sich an ihrem Treffpunkt; wenn alle zusammenkommen, den Saal wählen",
         "noGroupPlace": "Für die Gruppe ist kein Treffpunkt eingetragen – Adresse angeben oder in der Gruppenkarte eintragen"
       },
       "auto": {
         "title": "Automatisch",
-        "prepare": "Monat selbst vorbereiten",
+        "prepare": "Monat automatisch vorbereiten",
         "prepareHint": "nach Vorlage und Versammlungskalender, als Entwurf",
         "when": "Wann vorbereiten",
         "lead": {
@@ -1704,7 +1704,7 @@
         "pickHint": "wie in jeder Zusammenkunft der Vorlage angegeben",
         "unpublished": "Wenn der Entwurf nicht veröffentlicht ist",
         "policy": {
-          "publish_7d": "7 Tage vor Monatsbeginn selbst veröffentlichen",
+          "publish_7d": "7 Tage vor Monatsbeginn automatisch veröffentlichen",
           "remind": "Nur erinnern"
         },
         "policyHint": {
@@ -1712,11 +1712,11 @@
           "remind": "der Monat bleibt Entwurf, bis Sie veröffentlichen"
         },
         "walkTitle": "So läuft es für den Monat „{{month}}“",
-        "walk1": "Entwurf fertig. Für Sie die Aufgabe „{{month}} prüfen“",
+        "walk1": "Entwurf fertig. Sie erhalten die Aufgabe „{{month}} prüfen“",
         "walk2": "Sie ändern und tippen „Veröffentlichen“ – wann es passt",
-        "walk3": "Noch Entwurf? Erinnerung: „wird morgen selbst veröffentlicht“",
+        "walk3": "Noch Entwurf? Erinnerung: „wird morgen automatisch veröffentlicht“",
         "walk3remind": "Noch Entwurf? Erinnerung",
-        "walk4": "Wird selbst veröffentlicht. Jeder Leiter erhält eine Nachricht mit seinen Terminen",
+        "walk4": "Wird automatisch veröffentlicht. Jeder Leiter erhält eine Nachricht mit seinen Terminen",
         "walk5": "Der Monat kann wie bisher ergänzt und geändert werden: jede Änderung ist sofort sichtbar, der Leiter wird benachrichtigt",
         "later": "danach"
       },
@@ -1784,14 +1784,14 @@
         "and": "und"
       }
     },
-    "overseerVisitNeedsGroup": "Ein Besuch gehört zur Zusammenkunft einer Gruppe – wähle die Gruppe unter „Wessen Zusammenkunft“",
+    "overseerVisitNeedsGroup": "Ein Besuch gehört zur Zusammenkunft einer Gruppe – wählen Sie die Gruppe unter „Für wen“",
     "notice": {
       "label": "Hinweis für alle",
       "placeholder": "Zum Beispiel: Saal wird renoviert – wir treffen uns am Parkeingang",
       "hint": "Kurz, was diesmal anders ist. Alle, die die Zusammenkunft betrifft, sehen es: auf der Startseite, im Programm und in der Liste."
     },
     "busy": {
-      "lead": "An diesem Tag ist noch etwas anderes",
+      "lead": "An diesem Tag findet noch etwas anderes statt",
       "toNotice": "Als Hinweis eintragen",
       "seed": "An diesem Tag: {{what}}. Wir treffen uns: "
     },
@@ -1861,13 +1861,13 @@
     "title": "Reinigung",
     "empty": "Nicht zugeteilt",
     "notSelected": "Nicht ausgewählt",
-    "noGroups": "Keine Dienstgruppen",
+    "noGroups": "Keine Predigtdienstgruppen",
     "allCongregation": "Ganze Versammlung",
     "scheduled": "Geplant",
     "slots": {
       "after_meeting": "Reinigung nach den Zusammenkünften",
       "thorough": "Wöchentliche Reinigung",
-      "general": "Generalreinigung"
+      "general": "Grundreinigung"
     },
     "windows": {
       "title": "Fenster dieser Woche",
@@ -1896,7 +1896,7 @@
       "generalTitle": "Wann ist die Grundreinigung?"
     },
     "slotHints": {
-      "after_meeting": "Nach der Zusammenkunft (Woche + Wochenende)",
+      "after_meeting": "Nach der Zusammenkunft (unter der Woche + Wochenende)",
       "thorough": "Einmal pro Woche, an einem passenden Tag"
     },
     "guideLinks": {
@@ -1928,7 +1928,7 @@
       "text": "Der Königreichssaal ist der wichtigste Versammlungsort. Er soll Jehova und seine Organisation würdig repräsentieren — innen wie außen. Regelmäßiges Reinigen schützt die Gesundheit der Anwesenden und spiegelt unseren Glauben und die Liebe zu den Brüdern wider."
     },
     "directions": {
-      "title": "Drei Arbeitsrichtungen",
+      "title": "Drei Regeln für die Reihenfolge",
       "topDown": "Von oben nach unten",
       "outsideIn": "Von außen nach innen",
       "cleanToDirty": "Von sauber nach schmutzig"
@@ -2016,14 +2016,14 @@
     "showingFor": "Angezeigt: {{freq}}",
     "showAll": "Ganzer Leitfaden",
     "showThisOnly": "Nur diese Reinigung",
-    "yearlyExtra": "Zusätzlich bei der Generalreinigung"
+    "yearlyExtra": "Zusätzlich bei der Grundreinigung"
   },
   "service": {
     "hubTitle": "Dienst",
     "publicWitnessing": "Öffentliches Zeugnisgeben",
-    "publicWitnessingSubtitle": "Wagen und Stände",
+    "publicWitnessingSubtitle": "Trolleys und Stände",
     "locations": "Zeugnis-Standorte",
-    "locationsSubtitle": "Adressen für Wagen und Stände",
+    "locationsSubtitle": "Adressen für Trolleys und Stände",
     "reports": "Berichte",
     "reportsSubtitle": "Predigtdienstberichte und Aktivität",
     "coSchedule": "Kreisaufseher-Plan",
@@ -2049,12 +2049,12 @@
     "placeOtherHint": "Adresse oder Beschreibung",
     "accompanying": "Partner",
     "spouseBadge": "Mit Ehefrau",
-    "coBadge": "Mit Aufseher",
+    "coBadge": "Mit Kreisaufseher",
     "serviceKind": "Art des Dienstes",
     "serviceKindHint": "z. B. Gebiet, Rückbesuch, Bibelstudium",
     "shortFieldService": "Predigtdienst",
     "shortLunch": "Mittagessen",
-    "shortPastoral": "Seelsorgebesuch",
+    "shortPastoral": "Hirtenbesuch",
     "shortPioneers": "Pioniere",
     "shortElders": "Älteste",
     "shortDocs": "Dokumente",
@@ -2071,8 +2071,8 @@
     "host": "Organisator",
     "hostOther": "Andere",
     "hostName": "Name des Organisators",
-    "pastoralTitle": "Seelsorgebesuch",
-    "pastoral": "Seelsorgebesuch",
+    "pastoralTitle": "Hirtenbesuch",
+    "pastoral": "Hirtenbesuch",
     "pastoralElder": "Ältester",
     "pastoralTarget": "Bei wem",
     "note": "Notiz",
@@ -2103,8 +2103,8 @@
     "wifeShort": "Ehefrau",
     "mineTitle": "Besuch des Kreisaufsehers",
     "mineWithCo": "Gemeinsam mit dem Kreisaufseher",
-    "mineWithWife": "Gemeinsam mit der Frau des KA",
-    "mineJoint": "Dienst mit dem KA und seiner Frau",
+    "mineWithWife": "Gemeinsam mit der Frau des Kreisaufsehers",
+    "mineJoint": "Dienst mit dem Kreisaufseher und seiner Frau",
     "hostLast": "zuletzt: {{date}}",
     "hostNext": "nächste: {{date}}",
     "accTitle": "Unterkunft",
@@ -2119,8 +2119,8 @@
     "noPartner": "kein Partner eingeteilt",
     "pageForCongregation": "Programm für die Versammlung",
     "pageForOverseer": "Programm für den Kreisaufseher",
-    "midweekMeeting": "Zusammenkunft (Woche)",
-    "weekendMeeting": "Zusammenkunft (Wochenende)",
+    "midweekMeeting": "Zusammenkunft unter der Woche",
+    "weekendMeeting": "Wochenendzusammenkunft",
     "partialLoad": "Einige Wochen konnten nicht geladen werden — Themen sind möglicherweise unvollständig.",
     "strandedTitle": "Außerhalb der Besuchstage",
     "strandedHint": "Diese Punkte liegen an Tagen, die der Besuch nicht mehr umfasst — der Zeitraum wurde gekürzt. Sie erscheinen im PDF, sind im Plan aber unsichtbar. Öffnen Sie sie zum Verschieben oder Löschen.",
@@ -2177,7 +2177,7 @@
     "add": "Hinzufügen",
     "period": {
       "morning": "Morgen",
-      "day": "Tag",
+      "day": "Nachmittag",
       "evening": "Abend"
     },
     "notOpen": "Der Plan für diese Woche ist noch nicht offen",
@@ -2186,9 +2186,9 @@
     "locations": "Standorte",
     "noLocations": "Zuerst Standorte hinzufügen",
     "step": "Schichtlänge",
-    "step60": "1 Std",
-    "step90": "1 Std 30 Min",
-    "step120": "2 Std",
+    "step60": "1 Std.",
+    "step90": "1 Std. 30 Min.",
+    "step120": "2 Std.",
     "create": "Erstellen",
     "openCollecting": "Für Anmeldungen öffnen",
     "deleteWeek": "Woche löschen",
@@ -2198,7 +2198,7 @@
     "statusPublished": "Veröffentlicht",
     "apply": "Anmelden",
     "withdraw": "Zurückziehen",
-    "applied": "Anmeldung gesendet. Der Verantwortliche verteilt.",
+    "applied": "Anmeldung gesendet. Der Verantwortliche teilt ein.",
     "noSlots": "Keine Slots an diesem Tag",
     "notEligible": "Sie sind nicht berechtigt, sich anzumelden",
     "buildError": "Konnte nicht ausgeführt werden",
@@ -2222,7 +2222,7 @@
     "address": "Adresse",
     "addressPlaceholder": "Optional",
     "kind": "Typ",
-    "kindCart": "Wagen",
+    "kindCart": "Trolley",
     "kindStand": "Stand",
     "active": "Aktiv",
     "inactive": "Deaktiviert",
@@ -2285,7 +2285,7 @@
         "timeOrder": "Das Ende liegt vor dem Beginn",
         "linkInvalid": "Ein Link beginnt mit https://",
         "changeEmpty": "Schreiben Sie, was sich an der Zusammenkunft ändert",
-        "pastNotice": "Das Datum ist vorbei: Das Ereignis wird für die Geschichte eingetragen. Niemand wird benachrichtigt, das Programm ändert sich nicht.",
+        "pastNotice": "Das Datum ist vorbei: Das Ereignis wird nur zur Dokumentation eingetragen. Niemand wird benachrichtigt, das Programm ändert sich nicht.",
         "needWeek": "Woche wählen",
         "memorialTaken": "Das Gedächtnismahl dieses Dienstjahres ist schon eingetragen — {{when}}",
         "visitTaken": "Für diese Woche ist schon ein Besuch eingetragen — {{when}}"
@@ -2301,7 +2301,7 @@
       "days": "Tage",
       "day": "Tag",
       "pickWeek": "Woche wählen",
-      "weekHint": "Tippen Sie auf einen beliebigen Tag der Woche — der Besuch geht dann bis Sonntag.",
+      "weekHint": "Tippen Sie auf einen beliebigen Tag der Woche — der Besuch dauert dann bis Sonntag.",
       "congressHint": "Tippen Sie auf den ersten Tag — die übrigen ergeben sich aus der Zahl der Tage.",
       "rangeHint": "Tippen Sie auf den ersten, dann auf den letzten Tag.",
       "midweek": "Zusammenkunft unter der Woche",
@@ -2330,7 +2330,7 @@
       "sum": {
         "title": "Was geschieht",
         "visitMidweek": "Zusammenkunft unter der Woche — {{day}}{{time}}",
-        "visitProgramme": "Unter der Woche ersetzt seine Dienstansprache das Versammlungsbibelstudium; am Wochenende hält er den öffentlichen Vortrag und die Schlussansprache",
+        "visitProgramme": "Unter der Woche ersetzt seine Dienstansprache das Versammlungsbibelstudium; am Wochenende hält er den öffentlichen Vortrag und den Schlussvortrag",
         "noMeetings": "Keine Zusammenkunft: {{days}}",
         "notifyNew": "Alle werden benachrichtigt und am Vorabend erinnert",
         "notifyEdit": "Ändern sich Tage, Uhrzeit, Ort oder Zusammenkunft, werden alle benachrichtigt"
@@ -2349,17 +2349,17 @@
     "weekTitle": "Termine diese Woche",
     "replaced": {
       "insteadOf": "statt der Zusammenkunft",
-      "hidden": "Ausgeblendete Aufgaben: {{count}} — verschieben oder absagen"
+      "hidden": "Ausgeblendete Zuteilungen: {{count}} — verschieben oder absagen"
     },
     "formNotice": {
       "title": "Ereignis an diesem Datum",
-      "replaces": "Das Ereignis ersetzt diese Zusammenkunft – prüfen Sie, ob die Aufgabe nötig ist"
+      "replaces": "Das Ereignis ersetzt diese Zusammenkunft – prüfen Sie, ob die Zuteilung nötig ist"
     },
     "coWife": "mit Ehefrau {{name}}",
     "errors": {
       "EVENT_PAST_LOCKED": "Das Ereignis ist vorbei: Tage und Art bleiben, wie sie waren. Titel, Ort, Links und Notiz lassen sich noch korrigieren.",
       "EVENT_MOVED_INTO_PAST": "Ein Ereignis kann nicht in die Vergangenheit verschoben werden. Um ein vergangenes festzuhalten, legen Sie es mit seinem Datum neu an.",
-      "EVENT_PAST_ADMIN_ONLY": "Ein vergangenes Ereignis ist Geschichte. Nur ein Administrator kann es entfernen.",
+      "EVENT_PAST_ADMIN_ONLY": "Ein vergangenes Ereignis gehört zu den Aufzeichnungen. Nur ein Administrator kann es entfernen.",
       "EVENT_END_BEFORE_START": "Ein Ereignis kann nicht enden, bevor es beginnt.",
       "CO_VISIT_WEEK_TAKEN": "In dieser Woche gibt es bereits einen Besuch des Kreisaufsehers.",
       "EVENT_CHANGE_EMPTY": "Sagen Sie, was sich an der Zusammenkunft ändert: in Worten, die Zeit oder den Ort.",
@@ -2384,7 +2384,7 @@
       "dayIs": "{{day}} — {{kind}}",
       "kind": {
         "midweek": "Tag der Zusammenkunft unter der Woche",
-        "weekend": "Tag der Zusammenkunft am Wochenende"
+        "weekend": "Tag der Wochenendzusammenkunft"
       },
       "mode": {
         "usual": "Wie gewohnt",
@@ -2393,7 +2393,7 @@
       },
       "modeHint": {
         "usual": "Zeit, Ort und Programm bleiben",
-        "changed": "Wir sagen allen, was genau anders ist",
+        "changed": "Alle erfahren, was genau anders ist",
         "none": "Das Ereignis tritt an ihre Stelle"
       },
       "what": "Was sich ändert",
@@ -2430,23 +2430,23 @@
       "noMeetingsWeeks": "Keine Zusammenkünfte {{range}}",
       "visitMidweek": "Zusammenkunft unter der Woche — {{day}}",
       "memorialMidweek": "Anstelle der Zusammenkunft unter der Woche",
-      "memorialWeekend": "Anstelle der Zusammenkunft am Wochenende",
+      "memorialWeekend": "Anstelle der Wochenendzusammenkunft",
       "noMeetingThatDay": "An diesem Tag keine Zusammenkunft",
       "changed": "Zusammenkunft mit Änderungen",
       "changedAt": "Zusammenkunft mit Änderungen: {{at}}",
       "asUsual": "Zusammenkünfte wie gewohnt",
-      "atWeekendMeeting": "In der Zusammenkunft am Wochenende"
+      "atWeekendMeeting": "In der Wochenendzusammenkunft"
     },
     "create": {
       "title": "Was für ein Ereignis?",
-      "subtitle": "Danach fragen wir nur, was diese Art braucht.",
+      "subtitle": "Danach werden nur die Angaben abgefragt, die für diese Art nötig sind.",
       "other": "Anderes Ereignis der Versammlung",
       "hint": {
         "circuit_overseer_visit": "Verlegt die Zusammenkunft unter der Woche und ändert das Programm der Woche",
         "circuit_assembly": "Ein Tag; in dieser Woche keine Zusammenkünfte",
         "regional_convention": "Mehrere Tage; in dieser Woche keine Zusammenkünfte",
-        "memorial": "Tritt an die Stelle einer Zusammenkunft; sein Programm steht im Gedächtnismahl selbst",
-        "branch_representative_visit": "Die Zusammenkunft findet meist statt, mit Änderungen — wir fragen, welchen",
+        "memorial": "Tritt an die Stelle einer Zusammenkunft; das Programm wird beim Gedächtnismahl selbst geplant",
+        "branch_representative_visit": "Die Zusammenkunft findet meist mit Änderungen statt — welche, geben Sie im nächsten Schritt an",
         "other": "Arbeitseinsatz, Gruppentreffen… Betrifft die Zusammenkünfte nur, wenn Sie es angeben"
       },
       "specialTalk": "Einen Sondervortrag trägt der Vortragskoordinator ein — im Protokoll „Zu uns / Von uns“, mit dem Redner.",
@@ -2491,7 +2491,7 @@
       "where": "Wo",
       "inCongregation": "Was sich in der Versammlung ändert",
       "noMeetingsWeek": "Woche {{range}} — keine Zusammenkünfte",
-      "neither": "Keine Zusammenkünfte: {{days}}. Keine Reinigung nach den Zusammenkünften und keine Aufgaben in dieser Woche.",
+      "neither": "Keine Zusammenkünfte: {{days}}. Keine Reinigung nach den Zusammenkünften und keine Dienste in dieser Woche.",
       "addToCalendar": "In meinen Kalender eintragen"
     }
   },
@@ -2519,7 +2519,7 @@
     "confirmDelete": "Wirklich löschen?",
     "fields": {
       "publisher": "Verkündiger",
-      "dates": "Daten",
+      "dates": "Zeitraum",
       "note": "Notiz"
     },
     "placeholders": {
@@ -2555,10 +2555,10 @@
     },
     "meeting": {
       "midweek": "Zusammenkunft unter der Woche",
-      "weekend": "Zusammenkunft am Wochenende",
-      "myParts": "Meine Aufgaben",
-      "asAssistant": "Assistent",
-      "noParts": "Keine Aufgaben in dieser Woche",
+      "weekend": "Wochenendzusammenkunft",
+      "myParts": "Meine Zuteilungen",
+      "asAssistant": "Partner",
+      "noParts": "Keine Zuteilungen in dieser Woche",
       "withPartner": "mit {{name}}"
     },
     "timeline": {
@@ -2571,7 +2571,7 @@
       "outgoingTalks_other": "{{count}} Vorträge auswärts",
       "cleaningAfterMeeting": "Ihre Gruppe reinigt nach dieser Zusammenkunft",
       "openMap": "Karte öffnen",
-      "yoursHere": "Hier ist eine Aufgabe für Sie"
+      "yoursHere": "Hier haben Sie eine Zuteilung"
     },
     "report": {
       "submitted": "Bericht für {{month}} abgegeben"
@@ -2590,7 +2590,7 @@
       "cart": "Trolley",
       "field_service": "Predigtdienst",
       "outgoing_talk": "Vortrag in Versammlung",
-      "co_lunch": "Mittagessen (KA)",
+      "co_lunch": "Mittagessen (Kreisaufseher)",
       "co_lunch_box": "Lunchpaket"
     },
     "dutyTypes": {
@@ -2600,18 +2600,18 @@
       "av": "Audio/Video",
       "zoom": "Zoom",
       "stage": "Bühne",
-      "ventilation": "Lüftung",
+      "ventilation": "Lüften",
       "timekeeper": "Zeitnehmer",
-      "custom": "Sonderaufgabe"
+      "custom": "Sonstiger Dienst"
     },
     "cleaningSlots": {
       "after_meeting": "Reinigung nach den Zusammenkünften",
       "thorough": "Wöchentliche Reinigung",
-      "general": "Generalreinigung"
+      "general": "Grundreinigung"
     },
     "eventTypes": {
       "midweek": "Zusammenkunft unter der Woche",
-      "weekend": "Zusammenkunft am Wochenende",
+      "weekend": "Wochenendzusammenkunft",
       "memorial": "Gedächtnismahl"
     },
     "fieldService": {
@@ -2621,8 +2621,8 @@
       "overseerVisitTitle": "Besuch des Dienstaufsehers"
     },
     "myTasksScreen": {
-      "title": "Meine Aufgaben",
-      "empty": "Keine Aufgaben in den kommenden Wochen"
+      "title": "Meine Zuteilungen",
+      "empty": "Keine Zuteilungen in den kommenden Wochen"
     },
     "feed": {
       "youConduct": "Sie leiten diese Zusammenkunft",
@@ -2630,8 +2630,8 @@
       "youVisitAsAssistant": "Sie gehen als Gehilfe zu diesem Besuch"
     },
     "coLunch": {
-      "lunch": "Mittagessen organisieren (KA-Besuch)",
-      "lunchBox": "Lunchpaket (KA-Besuch)"
+      "lunch": "Mittagessen organisieren (Besuch des Kreisaufsehers)",
+      "lunchBox": "Lunchpaket (Besuch des Kreisaufsehers)"
     },
     "cleaning": {
       "thoroughGroup": "Wöchentliche Reinigung",
@@ -2646,10 +2646,10 @@
       "morning": "Guten Morgen",
       "day": "Guten Tag",
       "evening": "Guten Abend",
-      "night": "Gute Nacht"
+      "night": "Guten Abend"
     },
     "rowKind": {
-      "duty": "Aufgabe"
+      "duty": "Dienst"
     },
     "next": {
       "title": "Als Nächstes für Sie",
@@ -2663,8 +2663,8 @@
       "inDays_one": "in {{count}} Tag",
       "inDays_other": "in {{count}} Tagen",
       "following": "Danach — {{when}}: {{what}}",
-      "nothingNear": "In den nächsten zwei Wochen keine Aufgaben",
-      "away": "An diesen Tagen sind Sie als abwesend eingetragen ({{range}}). Sagen Sie es dem, der das Programm plant.",
+      "nothingNear": "In den nächsten zwei Wochen keine Zuteilungen",
+      "away": "An diesen Tagen sind Sie als abwesend eingetragen ({{range}}). Geben Sie dem Bescheid, der das Programm plant.",
       "tripNoted": "Abwesenheit vermerkt",
       "programme": "Programm",
       "pair": "zusammen mit {{name}}",
@@ -2677,12 +2677,12 @@
       "report": "Bericht für {{month}} abgeben"
     },
     "list": {
-      "title": "Zwei Wochen",
+      "title": "Die nächsten zwei Wochen",
       "yourGroup": "Ihre Gruppe {{name}}",
-      "groupOnVisit": "An diesem Tag geht Ihre Gruppe nur zum Besuch",
+      "groupOnVisit": "An diesem Tag trifft sich Ihre Gruppe nur zum Besuch des Dienstaufsehers",
       "youOnVisit_one": "Noch {{count}} Zusammenkunft an diesem Tag — Sie sind beim Besuch",
       "youOnVisit_other": "Noch {{count}} Zusammenkünfte an diesem Tag — Sie sind beim Besuch",
-      "allMine": "Alle meine Aufgaben",
+      "allMine": "Alle meine Zuteilungen",
       "more": "noch {{count}} · bis {{date}}",
       "partial": "Nicht alles wurde geladen — zum Aktualisieren nach unten ziehen.",
       "kindCleaning": "Reinigung",
@@ -2699,19 +2699,19 @@
       "cbsConductor": "Versammlungsbibelstudium — Leiter"
     },
     "attention": {
-      "window_one": "nächste Woche",
-      "window_other": "nächste {{count}} Wochen",
+      "window_one": "in der nächsten Woche",
+      "window_other": "in den nächsten {{count}} Wochen",
       "programme_one": "{{count}} Zusammenkunft nicht fertig · {{window}}",
       "programme_other": "{{count}} Zusammenkünfte nicht fertig · {{window}}",
       "tasksOverdue_one": "{{count}} Aufgabe der Ältestenschaft überfällig",
       "tasksOverdue_other": "{{count}} Aufgaben der Ältestenschaft überfällig",
-      "restrictedTalks_one": "{{count}} Einplanung mit zurückgezogenem Vortrag — Ersatz absprechen",
-      "restrictedTalks_other": "{{count}} Einplanungen mit zurückgezogenen Vorträgen — Ersatz absprechen"
+      "restrictedTalks_one": "{{count}} Einplanung mit abgesetztem Vortrag — Ersatz absprechen",
+      "restrictedTalks_other": "{{count}} Einplanungen mit abgesetzten Vorträgen — Ersatz absprechen"
     }
   },
   "halls": {
     "title": "Königreichssäle",
-    "hint": "Adress-Verzeichnis: Beim Anlegen einer Predigtdienst-Zusammenkunft wird die Saaladresse mit einem Tipp eingefügt. Vergangene Termine behalten ihre Adresse.",
+    "hint": "Adressverzeichnis: Beim Anlegen einer Zusammenkunft für den Predigtdienst wird die Saaladresse mit einem Fingertipp eingefügt. Vergangene Termine behalten ihre Adresse.",
     "add": "Saal hinzufügen",
     "editTitle": "Saal bearbeiten",
     "name": "Name",
@@ -2766,7 +2766,7 @@
       "notes": "Notizen für den Redner…",
       "week": "Nicht gesetzt"
     },
-    "insertCta": "Aus Örtlichen Bedürfnissen einfügen",
+    "insertCta": "Aus „Örtliche Bedürfnisse“ einfügen",
     "insertTitle": "Thema auswählen",
     "insertEmpty": "Keine geplanten Themen. Fügen Sie sie im Bildschirm „Örtliche Bedürfnisse“ hinzu (Glühbirne in der Kopfzeile des Programms).",
     "wasUsedOn": "Behandelt in der Woche {{week}}",
@@ -2788,14 +2788,14 @@
     "wifeHint": "Optional — falls der Kreisaufseher verheiratet ist.",
     "note": "Sie können dies jederzeit ändern.",
     "accommodationAddress": "Unterkunftsadresse",
-    "listIntro": "Kreisaufseher (und Vertreter), die Ihre Versammlung empfangen kann. Einer ist als primär markiert und wird beim Anlegen eines Besuchs vorausgefüllt; im Besuchsformular können Sie einen anderen wählen. Jeder Besuch behält seinen eigenen Namens-Schnappschuss, daher ändern Anpassungen hier keine vergangenen Besuche.",
+    "listIntro": "Kreisaufseher (und Vertreter), die Ihre Versammlung besuchen. Einer ist als Standard markiert und wird beim Anlegen eines Besuchs vorausgefüllt; im Besuchsformular können Sie einen anderen wählen. Jeder Besuch speichert den Namen so, wie er beim Anlegen war — Änderungen hier wirken sich daher nicht auf vergangene Besuche aus.",
     "roleOverseer": "Kreisaufseher",
-    "roleSubstitute": "Vertretender Aufseher",
-    "primaryBadge": "Primär",
+    "roleSubstitute": "Vertretender Kreisaufseher",
+    "primaryBadge": "Standard",
     "addButton": "Aufseher hinzufügen",
     "addTitle": "Neuer Kreisaufseher",
     "editTitle": "Eintrag bearbeiten",
-    "makePrimary": "Als primär festlegen (Standard)",
+    "makePrimary": "Als Standard festlegen",
     "deleteConfirmTitle": "Eintrag löschen?",
     "deleteConfirmBody": "„{{name}}“ aus der Liste entfernen? Bereits erstellte Besuche sind nicht betroffen.",
     "emptyList": "Noch niemand. Fügen Sie einen Kreisaufseher hinzu.",
@@ -2809,10 +2809,15 @@
     "tomorrow": "morgen",
     "ago": "vor {{value}}",
     "in": "in {{value}}",
-    "d": "{{n}} T.",
-    "w": "{{n}} Wo.",
+    "d": "{{n}} Tagen",
+    "w": "{{n}} Wochen",
     "mo": "{{n}} Mon.",
-    "y": "{{n}} J."
+    "y": "{{n}} Jahren",
+    "span": {
+      "d": "{{n}} Tage",
+      "w": "{{n}} Wochen",
+      "mo": "{{n}} Monate"
+    }
   },
   "talkCoordinator": {
     "merge": {
@@ -2909,7 +2914,7 @@
       "nextHome": "Spricht am {{date}} bei uns",
       "nextTripUnknown": "Am {{date}} unterwegs (Versammlung nicht angegeben)"
     },
-    "title": "Redner-Koordinator",
+    "title": "Vortragskoordinator",
     "intro": "Verwalten Sie eingehende und ausgehende Redner, ihre Vorträge und die Verzeichnisse.",
     "errorTitle": "Fehler",
     "directoriesLabel": "Verzeichnisse",
@@ -2927,10 +2932,10 @@
       "contactPhone": "Telefon",
       "note": "Notiz",
       "address": "Saaladresse",
-      "meetingDay": "Versammlungstag",
+      "meetingDay": "Tag der Zusammenkunft",
       "weekendMeeting": "Wochenendzusammenkunft",
       "moreFields": "Weitere Angaben",
-      "meetingTime": "Versammlungszeit",
+      "meetingTime": "Uhrzeit der Zusammenkunft",
       "mapUrl": "Kartenlink",
       "speakerCount": "Redner: {{count}}",
       "deleteOrphanWarning": "Redner in dieser Versammlung: {{count}}. Sie bleiben auf der Liste, aber ohne Versammlung."
@@ -2977,14 +2982,14 @@
       "wasHereLine": "War {{rel}} da, insgesamt: {{count}}",
       "comingLine": "Kommt am {{date}}",
       "withTalk": "Vortrag Nr. {{n}}",
-      "deleteBodyWithHistory": "{{name}} — verzeichnete Besuche: {{count}}. Nach dem Löschen bleiben sie im Journal, gehören ihm aber nicht mehr. Ist das ein Doppel, führen Sie die Karten zusammen, statt zu löschen."
+      "deleteBodyWithHistory": "{{name}} — verzeichnete Besuche: {{count}}. Nach dem Löschen bleiben sie im Protokoll, gehören ihm aber nicht mehr. Ist das ein Doppel, führen Sie die Karten zusammen, statt zu löschen."
     },
     "log": {
       "group": {
         "longAgo": "Am längsten nicht da",
         "never": "Noch nie da gewesen",
         "recent": "Kürzlich da",
-        "upcoming": "Kommt bereits",
+        "upcoming": "Bereits eingeplant",
         "longAgoOut": "Am längsten nicht dran",
         "neverOut": "Hat noch nicht gesprochen",
         "recentOut": "Kürzlich gesprochen",
@@ -2992,7 +2997,7 @@
       },
       "willCome": "kommt am {{date}}",
       "wasHere": "war {{rel}}, insgesamt: {{count}}",
-      "alsoFillsProgramme": "Der Eintrag erscheint im Journal und füllt das Zusammenkunftsprogramm.",
+      "alsoFillsProgramme": "Der Eintrag erscheint im Protokoll und füllt das Zusammenkunftsprogramm.",
       "changeSpeaker": "Ändern",
       "orTypeName": "Oder einen Redner eintragen, der nicht im Verzeichnis steht:",
       "longestAgoFirst": "Oben stehen die, die am längsten nicht da waren",
@@ -3016,12 +3021,12 @@
       "ourBrother": "Unser Bruder",
       "visiting": "Auswärtiger",
       "speakerSource": "Wer hält den Vortrag",
-      "hostCongregation": "Gastversammlung",
+      "hostCongregation": "Gastgebende Versammlung",
       "noCongregations": "Fügen Sie zuerst Versammlungen zum Verzeichnis hinzu.",
       "unknownSpeaker": "Kein Redner angegeben",
       "deleteTitle": "Eintrag löschen?",
       "deleteBody": "Die verknüpfte Abwesenheit wird ebenfalls entfernt. Der Vortrag bleibt im Programm.",
-      "conflictTitle": "Slot belegt",
+      "conflictTitle": "Termin belegt",
       "conflictBody": "Für diese Woche steht bereits ein öffentlicher Vortrag im Programm. Mit diesem Redner ersetzen?",
       "replace": "Ersetzen",
       "filter": {
@@ -3043,7 +3048,7 @@
       "phone": "Telefon",
       "rebuild": "Mit dem Plan abgleichen",
       "rebuildTitle": "Einträge aus dem Plan wiederherstellen?",
-      "rebuildBody": "Die App geht die Wochen dieses Jahres durch und legt einen „zu uns“-Eintrag an, wo der Plan einen Redner hat und das Journal keinen. Es wird nichts gelöscht, vorhandene Einträge bleiben unverändert.",
+      "rebuildBody": "Die App geht die Wochen dieses Jahres durch und legt einen „Zu uns“-Eintrag an, wo der Plan einen Redner hat und das Protokoll keinen. Es wird nichts gelöscht, vorhandene Einträge bleiben unverändert.",
       "rebuildAction": "Wiederherstellen",
       "rebuildDone": "Hinzugefügte Einträge: {{count}}",
       "rebuildDoneBody": "Geprüfte Wochen: {{weeks}}. Besuche mit einer Rednerkarte verknüpft: {{linked}}.",
@@ -3054,7 +3059,7 @@
       "programmeFrozenBody": "Das Programm dieser Woche ist bereits Teil der Aufzeichnungen und wurde nicht geändert. Falls nötig, korrigiert es ein Administrator oder der Koordinator der Ältestenschaft nachträglich."
     },
     "swap": {
-      "pastRefused": "Diese Woche ist vorbei. Der Bruder hat gesprochen und sein Name wurde von der Bühne genannt — verschieben lässt sich nur, was noch nicht war.",
+      "pastRefused": "Diese Woche ist vorbei. Der Bruder hat gesprochen, und sein Name wurde von der Bühne angekündigt — verschieben lässt sich nur, was noch bevorsteht.",
       "noneAvailable": "Kein Tausch möglich: keine kommende Woche hat einen Redner.",
       "action": "Redner ersetzen",
       "title": "Ersetzen · {{date}}",
@@ -3082,7 +3087,7 @@
     "off": "Aus",
     "adminOnly": "Nur ein Administrator kann Regeln ändern.",
     "autoAssign": {
-      "title": "Auto-Zuweisungen",
+      "title": "Automatische Zuteilungen",
       "whatTitle": "Was sie bewirkt",
       "midweekTitle": "Unter der Woche",
       "midweekBody": "Wer als Vorsitzender der Zusammenkunft eingeteilt ist, erhält automatisch das Schlussgebet.",
@@ -3094,13 +3099,13 @@
       "noteExisting": "Bereits ausgefüllte Wochen werden nicht geändert — die Regel greift bei neuen Einteilungen.",
       "notePublished": "Ist die Zusammenkunft schon veröffentlicht, wird die Änderung als „geändert“ markiert (es wird benachrichtigt).",
       "micTitle": "Vortrag „Schätze“",
-      "micBody": "Wer den Vortrag „Schätze aus Gottes Wort“ hält, wird automatisch für das Eingangsgebet und Mikrofon Nr. 1 eingeteilt. Die Verknüpfung wirkt in beide Richtungen: Teilen Sie einen Bruder für den Vortrag oder das Eingangsgebet ein — der andere Punkt füllt sich von selbst, egal was zuerst eingetragen wird. Wird der Redner entfernt, werden das automatisch eingetragene Gebet und das Mikrofon ebenfalls geleert."
+      "micBody": "Wer den Vortrag „Schätze aus Gottes Wort“ hält, wird automatisch für das Anfangsgebet und Mikrofon Nr. 1 eingeteilt. Die Verknüpfung wirkt in beide Richtungen: Teilen Sie einen Bruder für den Vortrag oder das Anfangsgebet ein — der andere Punkt füllt sich von selbst, egal was zuerst eingetragen wird. Wird der Redner entfernt, werden das automatisch eingetragene Gebet und das Mikrofon ebenfalls geleert."
     },
     "warn": {
       "title": "Fähigkeit nicht gesetzt",
       "prayerCapability": "Um das Gebet automatisch zuzuweisen, fügen Sie {{name}} die Fähigkeit „Gebet“ in der Verkündigerkarte hinzu.",
       "micCapability": "{{name}} wurde Mikrofon Nr. 1 zugeteilt, hat aber nicht die Fähigkeit „Mikrofon“ — prüfen Sie die Verkündigerkarte.",
-      "micTaken": "Mikrofon Nr. 1 ist bereits manuell belegt — Auto-Zuweisung übersprungen.",
+      "micTaken": "Mikrofon Nr. 1 ist bereits manuell belegt — automatische Zuteilung übersprungen.",
       "treasuresCapability": "Damit der Vortrag „Schätze“ automatisch zugeteilt wird, fügen Sie {{name}} in der Verkündigerkarte die Fähigkeit „Schätze aus Gottes Wort“ hinzu."
     }
   },
@@ -3151,10 +3156,10 @@
     "title": "Zur Zusammenkunft",
     "empty": "Keine veröffentlichten Wochen",
     "thisWeek": "Diese Woche",
-    "midweek": "Wochenmitte",
+    "midweek": "Unter der Woche",
     "weekend": "Wochenende",
     "coShort": "KA",
-    "memorialShort": "Gedächtnis"
+    "memorialShort": "Gedächtnismahl"
   },
   "activityFeed": {
     "statusChange": "{{name}}: Status „{{from}}“ → „{{to}}“",
@@ -3169,8 +3174,8 @@
   "myContacts": {
     "rowTitle": "Meine Kontaktdaten",
     "intro": "Telefon, E-Mail und Adresse pflegen Sie selbst. Den Namen ändert ein Administrator der Versammlung — er wird in Plänen, Berichten und Ausdrucken verwendet.",
-    "confirm": "Angaben stimmen",
-    "allCorrect": "Angaben stimmen",
+    "confirm": "Angaben bestätigen",
+    "allCorrect": "Angaben bestätigen",
     "edit": "Ändern",
     "later": "Später",
     "saved": "Gespeichert",
@@ -3186,7 +3191,7 @@
     "listNoAccount": "Kein Konto — der Sekretär bestätigt"
   },
   "profileExtra": {
-    "songsSub": "Liederbuch importieren",
+    "songsSub": "Liederbuch der Versammlung übernehmen",
     "mwbImportSub": "Zusammenkunftsprogramm aus den Publikationen (EPUB)"
   },
   "songPicker": {
@@ -3209,7 +3214,7 @@
     "created": "Hinzugefügt",
     "updated": "Aktualisiert",
     "unchanged": "Unverändert",
-    "notRecognised": "{{count}} Zeilen wurden nicht erkannt. Erwartet wird „LIED N“ und der Titel in der nächsten Zeile.",
+    "notRecognised": "Nicht erkannte Zeilen: {{count}}. Erwartet wird „LIED N“ und der Titel in der nächsten Zeile.",
     "renamedTitle": "Geänderte Titel",
     "addedTitle": "Hinzugefügte Lieder: {{numbers}}",
     "andMore": "und {{count}} weitere",
@@ -3231,8 +3236,8 @@
     "sizeHint": "„Alle aktiven“: alle, die am Monatsende zur Versammlung gehörten und in den letzten sechs Monaten mindestens einmal im Dienst tätig waren. Ein Bericht mit „nein“ zählt nicht. „Inaktive“ ebenfalls zum Ende dieses Monats, nicht heute: sechs abgeschlossene Monate in Folge ohne Dienst. Werden getrennt gezählt.",
     "attendanceTitle": "Zusammenkunftsbesuch",
     "weekendAverage": "Durchschnitt, Wochenende",
-    "midweekAverage": "Durchschnitt, Wochenmitte",
-    "attendanceHint": "Durchschnitte aus S-3. Der Monatsbericht nimmt das Wochenende; die Wochenmitte ist für den Jahresbericht",
+    "midweekAverage": "Durchschnitt, unter der Woche",
+    "attendanceHint": "Durchschnitte aus S-3. In den Monatsbericht geht der Wert vom Wochenende ein, der Wert unter der Woche in den Jahresbericht",
     "printTitle": "Monatsbericht S-1",
     "printedOn": "Gedruckt",
     "notForForm": "Nicht für das Formular",
@@ -3245,14 +3250,14 @@
       "special": "Sonderpioniere",
       "missionary": "Missionare"
     },
-    "inactiveUnknown_one": "{{count}} weiterer lässt sich aus den Daten der App nicht bestimmen: keine Berichte erfasst oder die sechs Monate davor sind nicht in der App. Nicht als untätig gezählt — bitte anhand der S-21-Karten prüfen:",
-    "inactiveUnknown_other": "{{count}} weitere lassen sich aus den Daten der App nicht bestimmen: keine Berichte erfasst oder die sechs Monate davor sind nicht in der App. Nicht als untätig gezählt — bitte anhand der S-21-Karten prüfen:"
+    "inactiveUnknown_one": "{{count}} weiterer lässt sich aus den Daten der App nicht bestimmen: keine Berichte erfasst oder die sechs Monate davor sind nicht in der App. Nicht als inaktiv gezählt — bitte anhand der S-21-Karten prüfen:",
+    "inactiveUnknown_other": "{{count}} weitere lassen sich aus den Daten der App nicht bestimmen: keine Berichte erfasst oder die sechs Monate davor sind nicht in der App. Nicht als inaktiv gezählt — bitte anhand der S-21-Karten prüfen:"
   },
   "journal": {
-    "title": "Änderungsjournal",
+    "title": "Änderungsprotokoll",
     "rowSubtitle": "Wer was in der Versammlung geändert hat",
     "empty": "Noch nichts aufgezeichnet.",
-    "loadFailed": "Journal konnte nicht geladen werden",
+    "loadFailed": "Protokoll konnte nicht geladen werden",
     "loadMore": "Mehr anzeigen",
     "today": "Heute",
     "yesterday": "Gestern",
@@ -3262,7 +3267,7 @@
     "filtersAll": "Alle",
     "sections": {
       "assignment": "Programm",
-      "duty": "Aufgaben",
+      "duty": "Dienste",
       "cleaning": "Reinigung",
       "publisher": "Verkündiger",
       "service_report": "Berichte",
@@ -3271,10 +3276,10 @@
       "field_service_meeting": "Predigtdienst",
       "talk_exchange": "Öffentliche Vorträge",
       "visiting_speaker": "Redner",
-      "external_congregation": "Gastversammlungen",
-      "responsibility": "Aufgaben",
+      "external_congregation": "Andere Versammlungen",
+      "responsibility": "Zuständigkeiten",
       "auxiliary_pioneer": "Hilfspioniere",
-      "service_group": "Dienstgruppen",
+      "service_group": "Predigtdienstgruppen",
       "absence": "Abwesenheiten",
       "hall": "Säle",
       "circuit_overseer": "Kreisaufseher",
@@ -3282,7 +3287,7 @@
       "local_need": "Örtliche Bedürfnisse",
       "cart_location": "Trolley-Standorte",
       "user": "Konten",
-      "pioneer_school": "Pionierschule",
+      "pioneer_school": "Pionierdienstschule",
       "pioneer_school_duty": "Dienst an der Schule",
       "agenda_item": "Tagesordnung der Ältesten",
       "elders_meeting": "Ältestenzusammenkunft",
@@ -3303,7 +3308,7 @@
       "VIEW": "hat geöffnet",
       "DOWNLOAD": "hat heruntergeladen",
       "DENY": "konnte nicht ändern",
-      "RESTORE": "wiederhergestellt"
+      "RESTORE": "hat wiederhergestellt"
     },
     "about": "betrifft: {{name}}",
     "bulk": "{{count}} auf einmal",
@@ -3324,9 +3329,9 @@
       "returnedVisits": "Zurückgegebene Besuche",
       "distinctFrom": "Verschiedene Brüder",
       "publisherId": "Zugewiesen an",
-      "assistantPublisherId": "Assistent",
+      "assistantPublisherId": "Partner",
       "speakerName": "Name des Redners",
-      "serviceGroupId": "Dienstgruppe",
+      "serviceGroupId": "Predigtdienstgruppe",
       "hoursReported": "Stunden",
       "bibleStudies": "Bibelstudien",
       "servedThisMonth": "Am Dienst beteiligt",
@@ -3337,14 +3342,14 @@
       "role": "Rolle",
       "isActive": "Aktiv",
       "canViewPrivateData": "Zugriff auf private Daten",
-      "assignmentAutomationEnabled": "Automatische Zuweisung",
+      "assignmentAutomationEnabled": "Automatische Zuteilung",
       "timezone": "Zeitzone",
       "dayOfWeek": "Wochentag",
       "startTime": "Uhrzeit",
       "address": "Adresse",
       "conductorPublisherId": "Leiter",
       "topic": "Thema",
-      "isGeneral": "Allgemeine Zusammenkunft",
+      "isGeneral": "Gemeinsame Zusammenkunft",
       "direction": "Richtung",
       "date": "Datum",
       "publicTalkId": "Vortrag",
@@ -3373,7 +3378,7 @@
       "title": "Titel",
       "time": "Startzeit",
       "wifeName": "Name der Frau",
-      "isPrimary": "Primär",
+      "isPrimary": "Standard",
       "kind": "Art",
       "usedWeek": "Verwendet in Woche",
       "speakerPublisherId": "Redner",
@@ -3386,7 +3391,7 @@
       "slotType": "Reinigungsart",
       "serviceOverseerVisit": "Besuch des Dienstaufsehers",
       "serviceOverseerPublisherId": "Dienstaufseher",
-      "serviceOverseerAssistantId": "Assistent des Dienstaufsehers",
+      "serviceOverseerAssistantId": "Gehilfe des Dienstaufsehers",
       "timeEnd": "Endzeit",
       "meetingMode": "Zusammenkunft",
       "meetingNote": "Was sich ändert",
@@ -3404,10 +3409,10 @@
       "updated": "Geändert",
       "replaced": "Ersetzt",
       "unchanged": "Unverändert",
-      "retired": "Zurückgezogen",
-      "retiredNumbers": "Zurückgezogene Nummern",
-      "lifted": "Wiederhergestellt",
-      "liftedNumbers": "Wiederhergestellte Nummern",
+      "retired": "Abgesetzt",
+      "retiredNumbers": "Abgesetzte Nummern",
+      "lifted": "Zurückgeholt",
+      "liftedNumbers": "Zurückgeholte Nummern",
       "itemDate": "Datum",
       "memorialDate": "Datum des Gedächtnismahls",
       "partKey": "Programmpunkt",
@@ -3430,14 +3435,14 @@
       "effectiveFrom": "Gültig ab",
       "midweekDow": "Tag der Zusammenkunft unter der Woche",
       "midweekTime": "Uhrzeit unter der Woche",
-      "weekendDow": "Tag der Zusammenkunft am Wochenende",
+      "weekendDow": "Tag der Wochenendzusammenkunft",
       "weekendTime": "Uhrzeit am Wochenende",
       "microphoneSlots": "Mikrofone",
       "sentOn": "Gesendet am",
       "confirmed": "Vom Sekretär bestätigt",
       "active": "Aktive",
-      "becameInactive": "Untätig geworden",
-      "reactivated": "Wieder tätig",
+      "becameInactive": "Inaktiv geworden",
+      "reactivated": "Wieder aktiv",
       "deaf": "Gehörlose",
       "blind": "Blinde",
       "imprisoned": "In Haft",
@@ -3457,10 +3462,10 @@
       "missionary": "Missionare",
       "missionaryHours": "Stunden der Missionare",
       "missionaryStudies": "Bibelstudien der Missionare",
-      "inactive": "Untätige",
-      "removedAt": "Weggegangen",
+      "inactive": "Inaktive",
+      "removedAt": "Ausgeschieden",
       "removalReason": "Grund",
-      "appointment": "Ernennung",
+      "appointment": "Stellung",
       "pioneerType": "Pionierdienst",
       "pioneerSince": "Pionier seit",
       "baptismDate": "Taufdatum",
@@ -3478,7 +3483,7 @@
       "fromTemplate": "Aus der Vorlage",
       "year": "Jahr",
       "month": "Monat",
-      "dates": "Daten",
+      "dates": "Zeitraum",
       "withoutConductor": "Ohne Leiter",
       "slots": "Zusammenkünfte der Vorlage",
       "skipAssemblies": "Kongresswochen auslassen",
@@ -3503,7 +3508,7 @@
       "permanent": "Endgültig",
       "publisherName": "Verkündiger",
       "displayLabel": "Bezeichnung des Bildschirms",
-      "stagePin": "Ziffern des Bildschirmmenüs"
+      "stagePin": "PIN für das Bildschirmmenü"
     },
     "noValue": "leer",
     "changedNoValues": "geändert (Werte werden nicht gespeichert)",
@@ -3515,8 +3520,8 @@
       "midweek": "unter der Woche",
       "weekend": "Wochenende",
       "after_meeting": "nach der Zusammenkunft",
-      "thorough": "gründlich",
-      "general": "general",
+      "thorough": "wöchentlich",
+      "general": "Grundreinigung",
       "usual": "wie gewohnt",
       "changed": "mit Änderungen",
       "none": "keine Zusammenkunft",
@@ -3550,7 +3555,7 @@
         "lunch": "Mittagessen",
         "lunch_box": "Lunchpaket",
         "accommodation": "Unterkunft",
-        "pastoral": "Seelsorgebesuch",
+        "pastoral": "Hirtenbesuch",
         "pioneers": "Zusammenkunft mit den Pionieren",
         "elders": "Zusammenkunft mit den Ältesten und Dienstamtgehilfen",
         "document_review": "Prüfung der Unterlagen",
@@ -3578,7 +3583,7 @@
     "average": "Durchschnitt",
     "nothingYet": "Nichts erfasst",
     "notHeldShort": "fand nicht statt",
-    "yearAverageNote": "Jahresdurchschnitt über {{count}} Monate",
+    "yearAverageNote": "Jahresdurchschnitt · Monate: {{count}}",
     "notHeldConfirmTitle": "Die Zusammenkunft fand nicht statt?",
     "notHeldConfirmBody": "Erfassen, dass am {{date}} keine Zusammenkunft stattfand. Das lässt sich auf der Besuchsseite korrigieren.",
     "backlog": "Noch {{count}} ohne Eintrag im Dienstjahr",
@@ -3608,7 +3613,7 @@
     "lapseUnknown": "Die App weiß es nicht — bitte selbst entscheiden",
     "lapseUnknownHint": "Seit dem ersten erfassten Monat ohne Bericht. Wann die Unterbrechung begann, steht nur auf Papier: fiel sie in dieses Jahr, tragen Sie sie selbst bei „inaktiv geworden“ ein",
     "asideSection": "Nicht für das Formular — für die Ältesten",
-    "missingMonths": "Für {{count}} Monate fehlen Besuchszahlen — bitte ergänzen, sonst bleibt das Formular unvollständig.",
+    "missingMonths": "Monate ohne Anwesenheitszahlen: {{count}} — bitte ergänzen, sonst bleibt das Formular unvollständig.",
     "byHandNote": "Die App kennt keine Gebiete und kann nicht für die Versammlung über Hilfe vom Zweigbüro antworten — bitte selbst eintragen.",
     "reportsPerMonth": "Berichte pro Monat",
     "reportsPerMonthNote": "Liegt der letzte Monat deutlich unter den anderen, sind die Daten noch nicht vollständig und die Zahlen unten fallen zu niedrig aus.",
@@ -3616,7 +3621,7 @@
     "byHandTerritories": "Gesamtzahl der Gebiete",
     "byHandUnworked": "Nicht bearbeitete Gebiete im Jahr",
     "byHandBranchHelp": "Bereit, Hilfe vom Zweigbüro anzunehmen",
-    "averageBasis": "Durchschnitt über {{count}} Monate mit Einträgen"
+    "averageBasis": "Durchschnitt · Monate mit Einträgen: {{count}}"
   },
   "notificationPrefs": {
     "title": "Benachrichtigungen",
@@ -3624,7 +3629,7 @@
     "rowSubtitle": "Wählen Sie, worüber Sie informiert werden",
     "hint": "Alles ist an, bis Sie es ausschalten. Nachts kommt nichts — es wartet bis zum Morgen.",
     "categories": {
-      "assignments": "Meine Aufgaben",
+      "assignments": "Meine Zuteilungen",
       "ministry": "Predigtdienst",
       "cleaning": "Reinigung",
       "reports": "Bericht",
@@ -3648,7 +3653,7 @@
   },
   "serviceOverseer": {
     "title": "Dienstaufseher",
-    "menuSubtitle": "Besuche der Dienstgruppen",
+    "menuSubtitle": "Besuche der Predigtdienstgruppen",
     "waitingTitle": "In diesem Dienstjahr noch nicht besucht",
     "last": "Letzter Besuch: {{date}} · {{who}}",
     "never": "Noch nicht besucht",
@@ -3661,7 +3666,7 @@
     "noneThatYear": "In diesem Jahr nicht besucht",
     "plan": "Besuch planen",
     "planAnother": "Weiteren Besuch planen",
-    "hintPlan": "„Besuch planen“ öffnet das Fenster der Predigtdienstzusammenkunft dieser Gruppe mit bereits eingeschaltetem Besuch – es bleiben Datum und Begleiter."
+    "hintPlan": "„Besuch planen“ öffnet das Fenster der Predigtdienstzusammenkunft dieser Gruppe mit bereits eingeschaltetem Besuch – Sie wählen nur noch Datum und Gehilfen."
   },
   "tasks": {
     "title": "Aufgaben der Ältestenschaft",
@@ -3669,7 +3674,7 @@
     "areas": {
       "ministry": "Dienst",
       "teaching": "Schulung",
-      "care": "Fürsorge",
+      "care": "Hirtentätigkeit",
       "organisation": "Organisation",
       "accounts": "Konten",
       "other": "Sonstiges",
@@ -3687,10 +3692,10 @@
       "due": "Bis wann",
       "deleteTitle": "Aufgabe löschen?",
       "deleteBody": "Der Eintrag wird entfernt und kann nicht wiederhergestellt werden.",
-      "meeting": "Für welche Zusammenkunft",
+      "meeting": "Für welche Ältestenzusammenkunft",
       "noMeeting": "Noch keine",
       "assigneePeople": "Brüder",
-      "bodyHint": "Die Mitglieder ergeben sich aus den aktuellen Zuweisungen: Wechselt der Sekretär, geht die Aufgabe mit dem Amt über.",
+      "bodyHint": "Die Mitglieder ergeben sich aus den aktuellen Zuständigkeiten: Wechselt der Sekretär, geht die Aufgabe mit dem Amt über.",
       "audit": {
         "isSecretary": "Der Sekretär darf die Konten nicht prüfen. Wählen Sie einen anderen Bruder.",
         "keepsAccounts": "Der Rechnungsführer darf die Konten nicht prüfen. Wählen Sie einen anderen.",
@@ -3738,7 +3743,7 @@
     "lateByDays_one": "{{count}} Tag überfällig",
     "lateByDays_other": "{{count}} Tage überfällig",
     "noneDone": "Noch nichts erledigt",
-    "noneMine": "Auf Sie ist nichts eingetragen",
+    "noneMine": "Ihnen ist nichts zugeteilt",
     "tabs": {
       "open": "Offen",
       "mine": "Meine",
@@ -3782,7 +3787,7 @@
     "collapseDetails": "Einklappen"
   },
   "pioneerSchool": {
-    "title": "Pionierschule",
+    "title": "Pionierdienstschule",
     "scheduleTitle": "Plan der Schule",
     "defaultTitle": "Pionierdienstschule",
     "intro": "Die Schule, ihre Tage und die Brüder, die an jedem Tag dienen. Der Plan lässt sich drucken und versenden.",
@@ -3794,7 +3799,7 @@
     "noTime": "Keine Zeit angegeben",
     "dayTime": "Zeiten dieses Tages",
     "dayTimeHint": "Leer lassen — dann gilt die Zeit der Schule. Format 09:00.",
-    "addRole": "Aufgabe hinzufügen",
+    "addRole": "Dienst hinzufügen",
     "addRoleHint": "Zum Beispiel: Gäste empfangen",
     "clearSlot": "Zuteilung entfernen",
     "daysCount_one": "{{count}} Tag",
@@ -3803,8 +3808,8 @@
     "hallNameHint": "Name des Saals",
     "hallAddressHint": "Adresse — damit klar ist, wohin zu fahren ist",
     "notesHint": "Wichtiges für die Brüder: was mitzubringen ist, wo geparkt wird, wen man fragt…",
-    "notesPreview": "So wird es aussehen",
-    "roleColumn": "Aufgabe",
+    "notesPreview": "Vorschau",
+    "roleColumn": "Dienst",
     "personColumn": "Wer",
     "roles": {
       "av": "Audio/Video",
@@ -3820,7 +3825,7 @@
       "title": "Bezeichnung",
       "startDate": "Beginn",
       "endDate": "Ende",
-      "dates": "Termine",
+      "dates": "Zeitraum",
       "hall": "Königreichssaal",
       "time": "Zeiten",
       "microphones": "Wie viele Mikrofone",
@@ -3828,7 +3833,7 @@
     },
     "helpers": {
       "title": "Brüder für die Schule",
-      "intro": "Aus dieser Liste werden die Aufgaben besetzt. Sie darf eigene Brüder und Brüder aus anderen Versammlungen enthalten.",
+      "intro": "Aus dieser Liste werden die Dienste besetzt. Sie darf eigene Brüder und Brüder aus anderen Versammlungen enthalten.",
       "add": "Bruder hinzufügen",
       "newTitle": "Neuer Bruder",
       "editTitle": "Bearbeiten",
@@ -3840,7 +3845,7 @@
       "congregationHint": "Wenn nicht aus unserer Versammlung",
       "ours": "Unser",
       "linkPublisher": "Mit Verkündigerkarte verknüpfen",
-      "linkHint": "Nur für eigene Brüder. Die Verknüpfung lässt die App Abwesenheiten und Aufgaben bei unseren Zusammenkünften sehen.",
+      "linkHint": "Nur für eigene Brüder. Durch die Verknüpfung sieht die App Abwesenheiten und Zuteilungen bei unseren Zusammenkünften.",
       "countedFor": "Die Tage zählen für „{{school}}“",
       "removed": "Helfer aus der Liste entfernt",
       "emptyPick": "In der Liste der Brüder für die Schule steht noch niemand – fügen Sie einen Bruder hinzu."
@@ -3883,7 +3888,7 @@
       "outcome": {
         "reviewed": "Besprochen",
         "carried": "Verschoben",
-        "task": "Wurde Aufgabe"
+        "task": "Als Aufgabe übernommen"
       },
       "form": {
         "new": "Neue Frage",
@@ -3904,7 +3909,7 @@
     "meeting": {
       "place": "Wo sie stattfindet",
       "placeHint": "Oder eine Adresse eintragen",
-      "minuteTaker": "Wer das Protokoll führt",
+      "minuteTaker": "Protokollführer",
       "openingPrayer": "Anfangsgebet",
       "closingPrayer": "Schlussgebet",
       "minuteTakerShort": "Protokoll",
@@ -3927,7 +3932,7 @@
     "intro": "Alle Zeichen sind erlaubt — Buchstaben, Ziffern, Leerzeichen. Großbuchstaben und Sonderzeichen sind nicht nötig. Drei oder vier gewöhnliche Wörter sind am leichtesten zu merken und am schwersten zu erraten.",
     "checks": {
       "length": "Mindestens {{count}} Zeichen",
-      "notCommon": "Keines der zuerst versuchten",
+      "notCommon": "Kein häufig verwendetes Passwort",
       "notRepetitive": "Nicht dasselbe Zeichen immer wieder"
     },
     "suggest": "Vorschlag machen"
@@ -3948,12 +3953,12 @@
     "openFromTask": "Überblick über den Pionierdienst öffnen →",
     "counted": "Berücksichtigte Monate: {{count}} von {{of}}.",
     "collecting": "Die Berichte für {{month}} kommen noch — die Summen wachsen noch.",
-    "rule": "Das Jahresziel sind 600 Stunden. Weiter Pionier sein kann, wer mit angerechneten Stunden mindestens 560 erreicht.",
+    "rule": "Das Jahresziel sind 600 Stunden. Im Pionierdienst bleiben kann, wer einschließlich angerechneter Stunden mindestens 560 erreicht.",
     "hours": "{{count}} Std.",
     "toMinimum": "{{count}} Std. bis 560",
     "toGoal": "{{count}} Std. bis zum Ziel 600",
     "meets": "Über 560",
-    "pace": "Im Schnitt {{pace}} Std. pro Monat ({{count}} Monate mit Stunden)",
+    "pace": "Im Schnitt {{pace}} Std. pro Monat (Monate mit Stunden: {{count}})",
     "noReports": "Für dieses Jahr liegen noch keine Berichte vor",
     "sinceOnly": "Pionier seit {{month}} — anteilig nach seinen Monaten gemessen",
     "shortCount": "Unter dem Minimum: {{count}} von {{total}}",
@@ -3993,7 +3998,7 @@
     "preparing": "Das Programm für das Gedächtnismahl wird vorbereitet",
     "sections": {
       "programme": "Programm",
-      "duty": "Aufgaben"
+      "duty": "Dienste"
     },
     "theme": "Thema des Vortrags",
     "themePlaceholder": "Titel des Themas",
@@ -4007,7 +4012,7 @@
     "addNote": "Notiz hinzufügen",
     "notePlaceholder": "Was man vorher wissen muss",
     "openInSchedule": "Im Programm öffnen",
-    "openInScheduleHint": "Programm, Aufgaben und Weiterreichen der Symbole",
+    "openInScheduleHint": "Programm, Dienste und Herumreichen der Symbole",
     "songWord": "Lied"
   },
   "feed": {
@@ -4022,9 +4027,9 @@
     "unassigned": "nicht zugeteilt",
     "fieldService": "Treffpunkte für den Predigtdienst",
     "memorialInsteadMidweek": "Statt der Zusammenkunft unter der Woche",
-    "memorialInsteadWeekend": "Statt der Zusammenkunft am Wochenende",
+    "memorialInsteadWeekend": "Statt der Wochenendzusammenkunft",
     "loadMore": "Mehr anzeigen",
-    "end": "Weiter reicht das Programm nicht",
+    "end": "Das Programm ist nur bis hierher geplant",
     "endLoadedTo": "Programm bis {{date}}",
     "serviceYearStart": "Beginn des Dienstjahres",
     "you": "Sie",
@@ -4032,8 +4037,8 @@
     "today": "Heute · {{date}}",
     "chairman": "Vorsitz: {{name}}",
     "chairmanLabel": "Vorsitz",
-    "mine": "Ihre Aufgabe: {{list}}",
-    "minePast": "Ihre Aufgabe war: {{list}}",
+    "mine": "Ihre Zuteilung: {{list}}",
+    "minePast": "Ihre Zuteilung war: {{list}}",
     "youLead": "Sie leiten um {{time}}",
     "dutiesShort": "Dienste {{assigned}} von {{total}}",
     "speaker": "Redner",
@@ -4051,20 +4056,20 @@
     "dateRange": "{{from}} — {{to}}",
     "visitMidweekOn": "Zusammenkunft unter der Woche am {{day}}",
     "editCleaning": "Reinigung bearbeiten",
-    "kindMidweek": "Wochentag",
+    "kindMidweek": "Unter der Woche",
     "kindWeekend": "Wochenende",
     "kindField": "Predigtdienst",
     "kindMemorial": "Besondere Zusammenkunft",
     "kindSpecial": "Ereignis",
     "filter": {
       "all": "Alle",
-      "midweek": "Wochentag",
+      "midweek": "Unter der Woche",
       "weekend": "Wochenende",
       "field": "Predigtdienst"
     },
     "onlyShown": {
       "midweek": "Nur Zusammenkünfte unter der Woche werden gezeigt",
-      "weekend": "Nur Zusammenkünfte am Wochenende werden gezeigt",
+      "weekend": "Nur Wochenendzusammenkünfte werden gezeigt",
       "field": "Nur Treffpunkte für den Predigtdienst werden gezeigt"
     },
     "showAll": "Alle zeigen",
@@ -4077,9 +4082,9 @@
     "youLeadShort": "leiten um {{time}}",
     "youGo": "Sie gehen um {{time}} zum Besuch",
     "youGoShort": "Besuch um {{time}}",
-    "assistantLabel": "Gehilfe",
+    "assistantLabel": "Partner",
     "readerLabel": "Leser",
-    "mineAsAssistant": "{{part}} — als Gehilfe",
+    "mineAsAssistant": "{{part}} — als Partner",
     "fieldVisit": "Besuch des Dienstaufsehers · Gruppe {{group}}",
     "fieldGroup": "Gruppe {{group}}",
     "fieldGeneral": "Gemeinsame Zusammenkunft",
@@ -4119,8 +4124,8 @@
     "again": "Neu beginnen",
     "runSheet": "Ablauf",
     "onTime": "im Plan",
-    "ahead": "{{minutes}} Min voraus",
-    "behind": "{{minutes}} Min im Rückstand",
+    "ahead": "{{minutes}} Min. voraus",
+    "behind": "{{minutes}} Min. im Rückstand",
     "undo": "Rückgängig",
     "againTitle": "Neu beginnen?",
     "againBody": "Die Zeiten aller Programmpunkte dieser Zusammenkunft werden auf diesem Gerät gelöscht.",
@@ -4167,8 +4172,8 @@
       "fact": "Ist",
       "chairmanNamed": "Vorsitzender · {{name}}",
       "none": "Für diese Zusammenkunft gibt es kein Ergebnis: Sie wurde auf dem Leitungsbildschirm nicht zu Ende geführt, oder es sind mehr als 7 Tage vergangen.",
-      "keep": "Das Ergebnis wird 7 Tage aufbewahrt und dann gelöscht. Es sehen die Admins, der Bruder, der den Rat gibt, und der Verantwortliche für „Leben und Dienst“.",
-      "saved": "Ergebnis für 7 Tage gespeichert – es sehen die Admins, der Bruder, der den Rat gibt, und der Verantwortliche für „Leben und Dienst“.",
+      "keep": "Das Ergebnis wird 7 Tage aufbewahrt und dann gelöscht. Es sehen die Administratoren, der Bruder, der den Rat gibt, und der Aufseher der Leben-und-Dienst-Zusammenkunft.",
+      "saved": "Ergebnis für 7 Tage gespeichert – es sehen die Administratoren, der Bruder, der den Rat gibt, und der Aufseher der Leben-und-Dienst-Zusammenkunft.",
       "saving": "Ergebnis wird gespeichert …",
       "notSaved": "Das Ergebnis wurde nicht gespeichert — keine Verbindung. Es ist auf diesem Gerät geblieben.",
       "retry": "Erneut speichern",
@@ -4179,10 +4184,10 @@
       "cardKeep": "Verfügbar bis {{day}}",
       "cardOpen": "Ergebnis öffnen",
       "refused": "Ergebnis nicht gespeichert: {{reason}}",
-      "notYours": "Das Ergebnis der Zusammenkunft sehen die Admins, der Bruder, der den Rat gibt, und der Verantwortliche für „Leben und Dienst“.",
-      "keepWeekend": "Das Ergebnis wird 7 Tage aufbewahrt und dann gelöscht. Es sehen die Administratoren, der Koordinator der Ältestenschaft und sein Gehilfe, der Leiter des Wachtturm-Studiums und seine Gehilfen, der Bruder, der Rat erteilt.",
-      "savedWeekend": "Ergebnis für 7 Tage gespeichert — es sehen die Administratoren, der Koordinator der Ältestenschaft und sein Gehilfe, der Leiter des Wachtturm-Studiums und seine Gehilfen, der Bruder, der Rat erteilt.",
-      "notYoursWeekend": "Das Ergebnis der Zusammenkunft sehen die Administratoren, der Koordinator der Ältestenschaft und sein Gehilfe, der Leiter des Wachtturm-Studiums und seine Gehilfen, der Bruder, der Rat erteilt."
+      "notYours": "Das Ergebnis der Zusammenkunft sehen die Administratoren, der Bruder, der den Rat gibt, und der Aufseher der Leben-und-Dienst-Zusammenkunft.",
+      "keepWeekend": "Das Ergebnis wird 7 Tage aufbewahrt und dann gelöscht. Es sehen die Administratoren, der Koordinator der Ältestenschaft und sein Assistent, der Leiter des Wachtturm-Studiums und seine Helfer sowie der Bruder, der Rat erteilt.",
+      "savedWeekend": "Ergebnis für 7 Tage gespeichert — es sehen die Administratoren, der Koordinator der Ältestenschaft und sein Assistent, der Leiter des Wachtturm-Studiums und seine Helfer sowie der Bruder, der Rat erteilt.",
+      "notYoursWeekend": "Das Ergebnis der Zusammenkunft sehen die Administratoren, der Koordinator der Ältestenschaft und sein Assistent, der Leiter des Wachtturm-Studiums und seine Helfer sowie der Bruder, der Rat erteilt."
     },
     "live": {
       "runningYou": "Sie führen die Zeit",
@@ -4249,17 +4254,17 @@
       "counselRow": "Rat des Vorsitzenden",
       "pauseRow": "Wechsel",
       "betweenRow": "Pausen und Übergänge zwischen den Punkten",
-      "note": "Zeit der Aufgabe ohne die Minute für den Rat; der Rat steht in der Zeile darunter. Beginn, Schluss und Lied in Grau: Sie sind niemandes Aufgabe.",
+      "note": "Zeit der Aufgabe ohne die Minute für den Rat; der Rat steht in der Zeile darunter. Beginn, Schluss und Lied in Grau: Sie sind niemandem zugeteilt.",
       "short": {
         "treasures": "Schätze",
         "applyYourself": "Dienst",
-        "christianLife": "Christenleben"
+        "christianLife": "Leben als Christ"
       },
       "noteWeekend": "Die Zeit eines Programmpunkts reicht von einem Tippen auf „Nächster Teil“ bis zum nächsten; daneben, wer auf der Bühne stand."
     },
     "stage": {
       "midweek": "Zusammenkunft unter der Woche",
-      "weekend": "Zusammenkunft am Wochenende",
+      "weekend": "Wochenendzusammenkunft",
       "wtPeople": "Leitung: {{conductor}} · Lesen: {{reader}}",
       "wtConductor": "Leitung: {{conductor}}",
       "notStarted": "DIE ZUSAMMENKUNFT HAT NOCH NICHT BEGONNEN",
@@ -4338,7 +4343,7 @@
       "noteSong": "Der Wechsel zählt nicht zum Lied. Lied: etwa {{minutes}} Min."
     },
     "soft": {
-      "note": "Ein Lied — kein Countdown, kein Rot. Laut Programm etwa {{minutes}} Min."
+      "note": "Während des Liedes läuft kein Countdown, und nichts wird rot. Laut Programm etwa {{minutes}} Min."
     },
     "midweekRun": {
       "songAndPrayer": "{{song}} und Gebet",
@@ -4384,8 +4389,8 @@
       "coNow": "Besuch läuft: {{range}}",
       "coNext": "Besuch {{range}}",
       "coNone": "Kein Besuch geplant",
-      "auxCount": "{{month}}: {{count}} im Dienst",
-      "auxNone": "{{month}}: niemand im Dienst"
+      "auxCount": "{{month}}: Hilfspioniere: {{count}}",
+      "auxNone": "{{month}}: keine Hilfspioniere"
     }
   },
   "congregationHub": {
@@ -4406,8 +4411,8 @@
       "programme": "Das Programm Woche für Woche",
       "programmeImport": "Programm importieren",
       "talks": "Gastredner und unsere eigenen",
-      "tasks": "Aufgaben und Tagesordnung der Ältestensitzung",
-      "school": "Schulplan und Brüder dafür",
+      "tasks": "Aufgaben und Tagesordnung der Ältestenzusammenkunft",
+      "school": "Plan der Pionierdienstschule und eingeteilte Brüder",
       "cleaning": "Reinigungsplan und wie man reinigt",
       "duties": "Wer bei den nächsten Zusammenkünften welchen Platz hat",
       "users": "Zugänge, Rollen und Passwörter",
@@ -4430,7 +4435,7 @@
       "awayMineNext": "Ihre nächste Abwesenheit: {{range}}",
       "awayNow": "Zurzeit abwesend: {{count}}",
       "awayNobody": "Zurzeit niemand abwesend",
-      "programmeNotReady": "Nicht fertig: {{count}} Zusammenkünfte · {{window}}",
+      "programmeNotReady": "Nicht fertige Zusammenkünfte: {{count}} · {{window}}",
       "programmeUntil": "Fertig bis {{date}}",
       "programmeNone": "Noch kein Programm importiert",
       "duties": "{{when}}: {{assigned}} von {{total}} Plätzen",
@@ -4439,7 +4444,7 @@
       "tasksNone": "Keine offenen Aufgaben",
       "tasks": "Offen: {{count}}",
       "tasksOverdue": "Offen: {{count}} · überfällig: {{overdue}}",
-      "cleaningMissing": "Diese Woche keine Reinigung nach den Zusammenkünften eingeteilt",
+      "cleaningMissing": "Diese Woche niemand eingeteilt",
       "cleaningAfter": "Nach den Zusammenkünften: {{name}}",
       "cleaningWeekly": "wöchentlich: {{name}}",
       "cleaningNoMeetings": "Diese Woche keine Zusammenkünfte",
@@ -4489,7 +4494,7 @@
     "frozenBody": "Am {{date}} hatte niemand das Gesendete gespeichert. Die Zahlen unten sind die Berechnung der App an diesem Tag, nicht vom Sekretär bestätigt.",
     "confirm": "Mit dem Gesendeten abgleichen und bestätigen",
     "unsavedTitle": "Noch nicht als gesendet gespeichert",
-    "unsavedBody": "Solange das Jahr nicht gespeichert ist, werden die Zahlen neu berechnet: ein später Bericht oder ein Wegzug verschiebt sie. Ist das Formular beim Zweigbüro, speichere, was gesendet wurde.",
+    "unsavedBody": "Solange das Jahr nicht gespeichert ist, werden die Zahlen neu berechnet: Ein später Bericht oder ein Wegzug verschiebt sie. Ist das Formular beim Zweigbüro, speichern Sie, was gesendet wurde.",
     "save": "Gesendetes speichern",
     "freezeNote": "Wird bis {{date}} nicht gespeichert, friert die App ihre eigenen Zahlen ein, mit dem Vermerk „nicht bestätigt“.",
     "nowDiffers": "Laut Berichten jetzt: {{count}}",
@@ -4502,11 +4507,11 @@
     "removed": "im Gesendeten gezählt, jetzt nicht",
     "noReason": "Später wurde kein Bericht erfasst — eine Markierung auf der Karte oder die Zählregel hat sich geändert.",
     "notAffect": "Für das abgeschlossene Jahr ohne Bedeutung und daher nicht aufgeführt: Wegzüge nach dem 31. August, nach dem Senden geänderte Ernennungen und Markierungen.",
-    "correctHint": "War das Gesendete falsch, korrigiere es hier wie auf der Website des Zweigbüros. Die Korrektur kommt ins Änderungsprotokoll.",
+    "correctHint": "War das Gesendete falsch, korrigieren Sie es hier wie auf der Website des Zweigbüros. Die Korrektur kommt ins Änderungsprotokoll.",
     "correctTo": "Gesendetes korrigieren: {{from}} → {{to}}",
     "keep": "{{count}} lassen — so wurde gesendet",
     "sheetTitle": "An das Zweigbüro gesendet",
-    "sheetIntro": "Dienstjahr {{year}}. Die Zahlen stammen aus den Berichten — ändere die, die auf dem gesendeten Formular anders stehen.",
+    "sheetIntro": "Dienstjahr {{year}}. Die Zahlen stammen aus den Berichten — ändern Sie die, die auf dem gesendeten Formular anders stehen.",
     "sentOnLabel": "Gesendet am",
     "byReports": "laut Berichten {{count}}",
     "appointmentsNote": "Mit den Zahlen wird die Ernennung jedes Einzelnen gespeichert — für die S-21-Karten dieses Jahres.",
@@ -4522,7 +4527,7 @@
     "monthTitle": "Monat abgeschlossen · an das Zweigbüro gesendet",
     "monthBody": "Die Zahlen unten sind die beim Abschließen gespeicherten.",
     "monthFrozenTitle": "Von der App eingefroren",
-    "monthFrozenBody": "Niemand hat den Monat abgeschlossen; nach der Frist hat die App ihre eigenen Zahlen gespeichert. Schließe den Monat ab, um das Gesendete zu speichern.",
+    "monthFrozenBody": "Niemand hat den Monat abgeschlossen; nach der Frist hat die App ihre eigenen Zahlen gespeichert. Schließen Sie den Monat ab, um das Gesendete zu speichern.",
     "monthDriftTitle": "Laut Berichten jetzt",
     "monthDriftLine": "{{label}}: {{now}} (gesendet {{sent}})",
     "monthLateTitle": "Nach dem Abschließen erfasst",
@@ -4539,7 +4544,7 @@
     },
     "card": {
       "title": "Benachrichtigungen einschalten",
-      "body": "Ohne sie erfahren Sie nichts von einer Aufgabe in der Zusammenkunft, vom Putzen oder von anderen Aufgaben.",
+      "body": "Ohne sie erfahren Sie nichts von Ihren Zuteilungen in den Zusammenkünften, von der Reinigung oder von anderen Diensten.",
       "enable": "Benachrichtigungen einschalten",
       "later": "Später",
       "iosTitle": "Benachrichtigungen auf dem iPhone",
@@ -4569,25 +4574,25 @@
     },
     "test": {
       "button": "Test senden",
-      "sent": "Test um {{time}} an dieses Gerät gesendet. Kommt er nicht innerhalb einer Minute an, prüfe die Benachrichtigungseinstellungen des Geräts.",
+      "sent": "Test um {{time}} an dieses Gerät gesendet. Kommt er nicht innerhalb einer Minute an, prüfen Sie die Benachrichtigungseinstellungen des Geräts.",
       "noDevice": "Kein Ziel: Auf diesem Gerät sind Benachrichtigungen nicht eingeschaltet.",
       "failed": "Senden fehlgeschlagen. Bitte später erneut versuchen."
     },
     "screenCheck": {
       "title": "Bildschirm prüfen",
-      "rowSub": "Was dieser Bildschirm wirklich misst"
+      "rowSub": "So sieht der Bildschirm während der Zusammenkunft aus"
     },
     "reach": {
       "title": "Wer Benachrichtigungen erhält",
       "rowSub": "Wen sie nicht erreichen und warum",
       "summary": "Erhalten Benachrichtigungen: {{receiving}} von {{total}}",
-      "summaryRest_one": "{{count}} erhält keine. Mit Aufgaben in den nächsten 4 Wochen: {{parts}}.",
-      "summaryRest_other": "{{count}} erhalten keine. Mit Aufgaben in den nächsten 4 Wochen: {{parts}}.",
+      "summaryRest_one": "{{count}} erhält keine. Mit Zuteilungen in den nächsten 4 Wochen: {{parts}}.",
+      "summaryRest_other": "{{count}} erhalten keine. Mit Zuteilungen in den nächsten 4 Wochen: {{parts}}.",
       "allGood": "Alle erhalten Benachrichtigungen.",
       "yes": "erhält",
       "no": "nein",
-      "upcoming_one": "{{count}} Aufgabe",
-      "upcoming_other": "{{count}} Aufgaben",
+      "upcoming_one": "{{count}} Zuteilung",
+      "upcoming_other": "{{count}} Zuteilungen",
       "lastTest": "Test {{date}}",
       "lastTestFailed": "Test {{date}} kam nicht an",
       "platform": {
@@ -4610,7 +4615,7 @@
       }
     },
     "ladder": {
-      "title": "An meine Aufgaben erinnern",
+      "title": "An meine Zuteilungen erinnern",
       "full": "Frühzeitig und am Vortag",
       "fullHint": "3, 2 und 1 Woche, 3 Tage und 1 Tag vorher",
       "short": "Nur eine Woche vorher und am Vortag",
@@ -4618,8 +4623,8 @@
     },
     "noGoogle": {
       "title": "Auf diesem Telefon gibt es keine Google-Dienste, deshalb kommen die Benachrichtigungen der App hier nicht an.",
-      "byMail": "Das Wichtige kommt per E-Mail an {{email}}: Ihre Aufgaben in den Zusammenkünften und die Erinnerungen daran. Zu Reinigung und Bericht kommen keine E-Mails – bitte schauen Sie in die App.",
-      "noMail": "Bitten Sie die Ältesten, Ihre E-Mail-Adresse einzutragen – dann kommen Ihre Aufgaben und die Erinnerungen daran per E-Mail."
+      "byMail": "Das Wichtige kommt per E-Mail an {{email}}: Ihre Zuteilungen in den Zusammenkünften und die Erinnerungen daran. Zu Reinigung und Bericht kommen keine E-Mails – bitte schauen Sie in die App.",
+      "noMail": "Bitten Sie die Ältesten, Ihre E-Mail-Adresse einzutragen – dann kommen Ihre Zuteilungen und die Erinnerungen daran per E-Mail."
     }
   },
   "places": {
@@ -4629,7 +4634,7 @@
     "cardTitle": "Jetzt angemeldet",
     "cardNone": "Nirgends: Auf keinem Gerät besteht eine gültige Anmeldung.",
     "here": "dieses Gerät",
-    "lastActive": "zuletzt – {{when}}",
+    "lastActive": "zuletzt aktiv: {{when}}",
     "today": "heute",
     "yesterday": "gestern",
     "unknown": "Gerät nicht erkannt",
@@ -4669,7 +4674,7 @@
     "missedNote": "Mitteilungen mit dem Vermerk „kein Gerät erreicht“ hat die App gesendet, aber keines Ihrer Telefone und kein Browser hat sie angenommen.",
     "missedLink": "Mitteilungen auf diesem Gerät prüfen",
     "emptyTitle": "Bisher ist nichts gekommen",
-    "emptyHint": "Hier erscheint alles, was die App Ihnen mitteilt: Aufgaben, Erinnerungen, Änderungen.",
+    "emptyHint": "Hier erscheint alles, was die App Ihnen mitteilt: Zuteilungen, Erinnerungen, Änderungen.",
     "foot": "Hier bleibt, was die App Ihnen in den letzten sechs Wochen mitgeteilt hat."
   },
   "connection": {
@@ -4753,7 +4758,7 @@
       "firstName": "Vorname",
       "lastName": "Nachname",
       "phone": "Telefon",
-      "mobilePhone": "Handy",
+      "mobilePhone": "Mobiltelefon",
       "hallName": "Saal",
       "hallAddress": "Adresse des Saals",
       "name": "Name",
@@ -4777,16 +4782,16 @@
       "SPAN_INVALID": "Ungültiger Zeitraum: Der Beginn liegt nach dem Ende, oder der Zeitraum ist zu lang.",
       "WEEK_NOT_MONDAY": "Eine Woche muss mit dem Montag beginnen. Ansicht aktualisieren und noch einmal versuchen.",
       "FS_PAST_LOCKED": "Die Zusammenkunft am {{date}} ist schon vorbei – sie gehört zur Chronik und kann nicht mehr geändert werden.",
-      "FS_GENERAL_AND_GROUP": "Eine Zusammenkunft ist entweder für die ganze Versammlung oder für eine Gruppe – nicht beides. Unter „Wessen Zusammenkunft“ eins wählen.",
-      "FS_VISIT_NEEDS_GROUP": "Ein Besuch des Dienstaufsehers gehört zur Zusammenkunft einer Gruppe – unter „Wessen Zusammenkunft“ die Gruppe wählen.",
-      "FS_NOT_A_CONDUCTOR": "Dieser Bruder ist nicht als Leiter von Predigtdienstzusammenkünften markiert. In seiner Karte „Leitet die Predigtdienstzusammenkunft“ einschalten oder einen anderen wählen.",
+      "FS_GENERAL_AND_GROUP": "Eine Zusammenkunft ist entweder für die ganze Versammlung oder für eine Gruppe – nicht beides. Unter „Für wen“ eins wählen.",
+      "FS_VISIT_NEEDS_GROUP": "Ein Besuch des Dienstaufsehers gehört zur Zusammenkunft einer Gruppe – unter „Für wen“ die Gruppe wählen.",
+      "FS_NOT_A_CONDUCTOR": "Dieser Bruder ist nicht als Leiter von Predigtdienstzusammenkünften markiert. In seiner Karte „Leiter der Zusammenkunft für den Predigtdienst“ einschalten oder einen anderen wählen.",
       "FS_SLOT_NO_OCCURRENCE": "In der Regel ist nicht gewählt, welcher Wochentag im Monat gemeint ist – mindestens einen markieren.",
       "FS_GENERAL_NEEDS_ADDRESS": "Eine Zusammenkunft für die ganze Versammlung braucht eine Adresse – bitte angeben, wo man sich trifft.",
-      "DUTIES_PAST_LOCKED": "Die Zusammenkunft am {{date}} ist schon vorbei – ihre Aufgaben gehören zur Chronik und können nicht mehr geändert werden.",
-      "DUTIES_NO_MEMORIAL": "In dieser Woche ist kein Gedächtnismahl – es gibt dafür keine Aufgaben.",
-      "DUTIES_MEETING_NOT_HELD": "Diese Zusammenkunft findet in dieser Woche nicht statt – es gibt dafür keine Aufgaben.",
-      "DUTY_ONLY_OWN_RENAME": "Umbenennen kann man nur eine Aufgabe, die die Versammlung selbst hinzugefügt hat.",
-      "DUTY_ONLY_OWN_REMOVE": "So entfernen kann man nur eine Aufgabe, die die Versammlung selbst hinzugefügt hat.",
+      "DUTIES_PAST_LOCKED": "Die Zusammenkunft am {{date}} ist schon vorbei – ihre Dienste gehören zur Chronik und können nicht mehr geändert werden.",
+      "DUTIES_NO_MEMORIAL": "In dieser Woche ist kein Gedächtnismahl – es gibt dafür keine Dienste.",
+      "DUTIES_MEETING_NOT_HELD": "Diese Zusammenkunft findet in dieser Woche nicht statt – es gibt dafür keine Dienste.",
+      "DUTY_ONLY_OWN_RENAME": "Umbenennen kann man nur einen Dienst, den die Versammlung selbst hinzugefügt hat.",
+      "DUTY_ONLY_OWN_REMOVE": "So entfernen kann man nur einen Dienst, den die Versammlung selbst hinzugefügt hat.",
       "MEMORIAL_PAST_LOCKED": "Das Gedächtnismahl am {{date}} ist schon vorbei – sein Programm gehört zur Chronik und kann nicht mehr geändert werden.",
       "CO_VISIT_PAST_LOCKED": "Der Besuch des Kreisaufsehers ist schon vorbei ({{date}}) – sein Programm gehört zur Chronik und kann nicht mehr geändert werden.",
       "CO_VISIT_SCHEDULE_CLOSED": "Den Ablauf des Besuchs sehen die Ältesten und die, die ihn planen.",
@@ -4812,7 +4817,7 @@
       "END_BEFORE_START": "Das Ende kann nicht vor dem Beginn liegen – bitte die Daten prüfen.",
       "REPORT_STUDENT": "Bibelschüler geben keinen Predigtdienstbericht ab.",
       "REPORT_MONTH_CLOSED": "Dieser Monat ist schon abgeschlossen. Ändern können den Bericht jetzt der Sekretär oder ein Administrator – bitte an den Sekretär wenden.",
-      "REPORT_ON_BEHALF_FORBIDDEN": "Einen Bericht für einen anderen abgeben dürfen ein Administrator, der Sekretär und der Aufseher seiner Gruppe.",
+      "REPORT_ON_BEHALF_FORBIDDEN": "Einen Bericht für einen anderen abgeben dürfen ein Administrator, der Sekretär und der zuständige Gruppenaufseher.",
       "REPORT_NOT_EDITABLE": "Diesen Bericht können Sie nicht mehr ändern: Der Monat ist abgeschlossen oder der Bericht ist nicht Ihrer. Bitte an den Sekretär wenden.",
       "REPORT_ONLY_OWN": "Man kann nur die eigenen Berichte ansehen.",
       "REPORT_COLLECTION_OVER": "Die Berichte für diesen Monat sind schon eingesammelt – den eigenen Bericht kann man nicht mehr ändern. Bitte an den Sekretär wenden.",
@@ -4845,7 +4850,7 @@
       "PUBLISHER_CARD_CLOSED": "Die Verkündigerkarten sehen die Administratoren, die Ältesten und die, denen Zugang zu persönlichen Daten gegeben wurde.",
       "AUX_PIONEERS_FORBIDDEN": "Hilfspioniere führen ein Administrator, der Koordinator der Ältestenschaft, der Sekretär und der Dienstaufseher.",
       "SCHOOL_FOR_ELDERS": "Den Ablauf der Pionierdienstschule sehen die Ältesten.",
-      "SCHOOL_ONLY_OWN_ROLE": "Entfernen kann man nur eine Aufgabe, die die Versammlung selbst hinzugefügt hat.",
+      "SCHOOL_ONLY_OWN_ROLE": "Entfernen kann man nur einen Dienst, den die Versammlung selbst hinzugefügt hat.",
       "ABSENCE_ONLY_OWN": "Man kann nur die eigenen Abwesenheiten führen und ansehen.",
       "ANNUAL_YEAR_NOT_OVER": "Der Jahresbericht wird nach dem Ende des Dienstjahres gesendet.",
       "SENT_DAY_AHEAD": "Der Tag des Sendens liegt noch in der Zukunft – bitte heute oder ein vergangenes Datum angeben.",
@@ -4863,19 +4868,19 @@
       "CLEANING_GENERAL_FORBIDDEN": "Die Grundreinigung plant der Reinigungskoordinator.",
       "CLEANING_OUTSIDE_WEEK": "Die Zeit der Reinigung muss in ihrer Woche liegen.",
       "TALK_SLOT_NOBODY": "Für diese Woche ist niemand angegeben – bitte einen Redner wählen.",
-      "TALKS_SET_ASIDE_FORBIDDEN": "Vorträge zurückstellen können die Ältesten und der Koordinator für öffentliche Vorträge.",
+      "TALKS_SET_ASIDE_FORBIDDEN": "Vorträge absetzen können die Ältesten und der Vortragskoordinator.",
       "TALK_NUMBER_TAKEN": "Vortrag Nr. {{number}} ist schon im Katalog.",
       "LOCAL_NEEDS_FOR_ELDERS": "Die örtlichen Bedürfnisse sehen die Ältesten.",
-      "AGENDA_FORBIDDEN": "Die Tagesordnung führen der Koordinator der Ältestenschaft und sein Gehilfe; während der Sitzung darf auch der Sekretär eintragen.",
+      "AGENDA_FORBIDDEN": "Die Tagesordnung führen der Koordinator der Ältestenschaft und sein Assistent; während der Zusammenkunft darf auch der Sekretär eintragen.",
       "ATTENDANCE_FORBIDDEN": "Die Anwesenheit sehen die Ältesten und die, die sie erfassen.",
       "ATTENDANCE_NEEDS_FIGURE": "Für eine Zusammenkunft, die stattgefunden hat, bitte die Zahl der Anwesenden angeben.",
       "ATTENDANCE_NEGATIVE": "Die Zahl der Anwesenden kann nicht negativ sein.",
       "CONDUCT_RUN_FORBIDDEN": "Das Ergebnis der Zusammenkunft speichert der Vorsitzende oder der Zeitnehmer dieser Woche.",
-      "CONDUCT_LIVE_FORBIDDEN": "Den Verlauf der Zusammenkunft sehen die Admins, der Bruder, der den Rat gibt, und der Verantwortliche für „Leben und Dienst“; führen dürfen ihn der Vorsitzende und der Zeitnehmer dieser Woche.",
+      "CONDUCT_LIVE_FORBIDDEN": "Den Verlauf der Zusammenkunft sehen die Administratoren, der Bruder, der den Rat gibt, und der Aufseher der Leben-und-Dienst-Zusammenkunft; führen dürfen ihn der Vorsitzende und der Zeitnehmer dieser Woche.",
       "CONDUCT_LIVE_NOT_YOURS": "Die Zusammenkunft führt jetzt ein anderer Bruder.",
-      "CONDUCT_RESULT_FORBIDDEN": "Das Ergebnis der Zusammenkunft sehen die Admins, der Bruder, der den Rat gibt, und der Verantwortliche für „Leben und Dienst“.",
+      "CONDUCT_RESULT_FORBIDDEN": "Das Ergebnis der Zusammenkunft sehen die Administratoren, der Bruder, der den Rat gibt, und der Aufseher der Leben-und-Dienst-Zusammenkunft.",
       "SCHEDULE_PAST_NEEDS_CONFIRM": "Das verlegt Zusammenkünfte schon begonnener Wochen auf einen anderen Tag, und für {{moved}} davon ist die Anwesenheit schon am alten Tag erfasst. Bitte das Speichern bestätigen.",
-      "SCHEDULE_VERSION_IN_FORCE": "Dieser Zeitplan gilt schon – vergangene Wochen sind danach gezählt, er kann nicht gelöscht werden. Zum Korrigieren den Zeitplan mit demselben Startdatum speichern.",
+      "SCHEDULE_VERSION_IN_FORCE": "Dieser Zeitplan gilt schon – vergangene Wochen wurden danach berechnet, er kann nicht gelöscht werden. Zum Korrigieren den Zeitplan mit demselben Startdatum speichern.",
       "GROUP_ALREADY_REMOVED": "Diese Gruppe ist schon entfernt.",
       "GROUP_NOT_REMOVED": "Diese Gruppe ist nicht entfernt – es gibt nichts wiederherzustellen.",
       "FS_CANCELLED": "Die Zusammenkunft ist abgesagt. Um sie zu ändern, stellen Sie sie zuerst wieder her.",
@@ -4884,17 +4889,17 @@
       "FS_NOT_CANCELLED": "Die Zusammenkunft ist nicht abgesagt – es gibt nichts wiederherzustellen.",
       "PROGRAMME_PAST_LOCKED": "Die Zusammenkunft am {{date}} liegt mehr als eine Woche zurück — ihr Programm ist Teil der Aufzeichnungen. Ändern konnte man es bis {{until}}.",
       "PROGRAMME_FIX_FORBIDDEN": "Ein Programm nachträglich korrigieren können ein Administrator und der Koordinator der Ältestenschaft.",
-      "NOTICE_NO_EVENING": "Bis zur Zusammenkunft bleibt kein Abend mehr — die Änderungen gehen jetzt raus.",
+      "NOTICE_NO_EVENING": "Bis zur Zusammenkunft bleibt kein Abend mehr — die Änderungen werden jetzt versendet.",
       "CONDUCT_MEETING_OVER": "Diese Zusammenkunft ist vorbei – nach ihrem Tag wird sie nicht mehr geführt.",
       "CONDUCT_RESULT_KEPT": "Das Ergebnis dieser Zusammenkunft ist schon gespeichert und kann nach ihrem Tag nicht ersetzt werden.",
       "FS_DAY_TAKEN": "An diesem Tag ist ein Kongress oder der Besuch des Kreisaufsehers – hier kann keine Predigtdienstzusammenkunft stattfinden.",
       "FS_CONFLICT": "An diesem Tag gibt es schon die gleiche Zusammenkunft, oder der Leiter leitet schon eine andere. Bitte prüfen und erneut speichern.",
       "STAGE_SCREEN_ONLY": "Der Bühnenbildschirm zeigt nur den Ablauf der Zusammenkunft.",
-      "STAGE_PIN_WRONG": "Das sind nicht die Ziffern.",
-      "STAGE_PIN_INVALID": "Für das Menü des Bildschirms sind 4 bis 8 Ziffern nötig.",
+      "STAGE_PIN_WRONG": "Die PIN ist falsch.",
+      "STAGE_PIN_INVALID": "Die PIN für das Bildschirmmenü muss 4 bis 8 Ziffern haben.",
       "STAGE_ACCOUNT_FIXED": "Ein Bühnenbildschirm ist keine Person: Er hat keine Karte, und seine Rolle ändert sich nicht.",
       "RESPONSIBILITY_OWN_ASSISTANT": "Ein Bruder kann nicht sein eigener Assistent sein: Diese Zuständigkeit und ihr Assistent sind zwei verschiedene Brüder.",
-      "GROUP_LEADER_SISTER": "Gruppenaufseher und sein Gehilfe sind Brüder."
+      "GROUP_LEADER_SISTER": "Gruppenaufseher und sein Gehilfe müssen Brüder sein."
     }
   },
   "stage": {
@@ -4904,13 +4909,13 @@
       "name": "Bezeichnung",
       "namePlaceholder": "Königreichssaal",
       "loginName": "Anmeldename",
-      "pin": "Ziffern für das Menü des Bildschirms",
-      "pinHint": "4 bis 8 Ziffern. Die Brüder, die den Bildschirm einschalten, kennen sie: ohne sie öffnet sich das Menü nicht und niemand kann den Bildschirm abmelden.",
+      "pin": "PIN für das Bildschirmmenü",
+      "pinHint": "4 bis 8 Ziffern. Die Brüder, die den Bildschirm einschalten, kennen sie: Ohne sie öffnet sich das Menü nicht, und niemand kann den Bildschirm abmelden.",
       "not": "Sonst nichts: keine Listen, Karten oder Berichte. Er tippt nie „Beginnen“ oder „Weiter“ und erhält keine Benachrichtigungen",
       "create": "Bühnenbildschirm anlegen",
       "editTitle": "Bühnenbildschirm",
-      "newPin": "Neue Ziffern für das Menü",
-      "pinKeep": "Die bisherigen behalten",
+      "newPin": "Neue PIN für das Menü",
+      "pinKeep": "Bisherige PIN behalten",
       "loginPlaceholder": "buehne.hamm",
       "whereTitle": "Wo der Bildschirm steht",
       "nameNote": "Erscheint oben auf dem Bildschirm und in der Benutzerliste",
@@ -4918,21 +4923,21 @@
       "password": "Passwort",
       "another": "Anderes",
       "passwordLater": "Das Passwort erstellt die App selbst und zeigt es am Ende, wenn der Bildschirm angelegt ist.",
-      "next": "Weiter: Ziffern für das Menü",
+      "next": "Weiter: PIN für das Menü",
       "back": "Zurück",
-      "pinTitle": "Ziffern für das Menü des Bildschirms",
+      "pinTitle": "PIN für das Bildschirmmenü",
       "showsTitle": "Was der Bildschirm zeigt",
       "shows1": "Die Zusammenkunft des Tages, wie sie läuft: Programmpunkt, Countdown, wer als Nächstes dran ist, Ende",
       "shows2": "Zwischen den Zusammenkünften die Uhr und die nächste Zusammenkunft",
       "doneTitle": "Bühnenbildschirm bereit",
       "doneHint": "Fertig — jetzt kann man sich anmelden. Öffnen Sie mycongregation.org auf dem Laptop am Rednerpult und melden Sie sich mit diesen Daten an",
-      "pinShort": "Ziffern für das Menü",
+      "pinShort": "PIN für das Menü",
       "copyOne": "Kopieren: {{what}}",
       "copyAll": "Alles kopieren",
       "shareAll": "Alles teilen",
       "copied": "Kopiert",
       "onceWarn": "Das Passwort wird nur jetzt gezeigt. Notieren Sie es oder geben Sie es dem Bruder, der den Bildschirm einschaltet. Ändern lässt es sich in der Benutzerliste.",
-      "shareText": "Bühnenbildschirm „{{label}}“\nSeite: mycongregation.org\nAnmeldename: {{login}}\nPasswort: {{password}}\nZiffern für das Menü: {{pin}}",
+      "shareText": "Bühnenbildschirm „{{label}}“\nSeite: mycongregation.org\nAnmeldename: {{login}}\nPasswort: {{password}}\nPIN für das Menü: {{pin}}",
       "entryTitle": "Bildschirm für die Bühne",
       "entrySub": "Ein Laptop oder Tablet am Pult zeigt den Ablauf der Zusammenkunft",
       "listTitle": "Bühnenbildschirme",
@@ -4950,17 +4955,17 @@
       "viewOnly": "Nur Ansicht",
       "next": "Nächste Zusammenkunft",
       "midweek": "Zusammenkunft unter der Woche · {{day}}",
-      "weekend": "Zusammenkunft am Wochenende · {{day}}",
+      "weekend": "Wochenendzusammenkunft · {{day}}",
       "startsAt": "Beginn um {{time}}",
       "chairman": "Vorsitz {{name}}",
       "noNext": "In den nächsten Wochen keine Zusammenkünfte",
       "opensItself": "Am Tag der Zusammenkunft öffnet sich das Programm hier von selbst",
       "ended": "Die Zusammenkunft endete um {{time}}",
       "menu": "Menü des Bildschirms",
-      "pinHint": "Geben Sie die Ziffern des Bühnenbildschirms ein. Ohne sie ändert sich nichts — der Bildschirm kehrt zur Zusammenkunft zurück.",
-      "pin": "Ziffern",
+      "pinHint": "Geben Sie die PIN des Bühnenbildschirms ein. Ohne sie ändert sich nichts — der Bildschirm kehrt zur Zusammenkunft zurück.",
+      "pin": "PIN",
       "open": "Menü öffnen",
-      "wrongPin": "Das sind nicht die Ziffern. Bitte noch einmal.",
+      "wrongPin": "Die PIN ist falsch. Bitte noch einmal.",
       "tooMany": "Zu viele Versuche. Bitte eine Minute warten.",
       "check": "Bildschirm prüfen",
       "signOut": "Auf diesem Gerät abmelden",
