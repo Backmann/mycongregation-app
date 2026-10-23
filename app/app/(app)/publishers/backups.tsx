@@ -19,6 +19,7 @@ import { failsScreen } from '../../../lib/screen-failure';
 
 /** «956,6 КБ» in Russian, «956.6 KB» in English — not the English form everywhere. */
 function formatBytes(n: number, lang: string): string {
+  // cyrillic-ok: byte units per language, Russian on its own branch
   const units = lang === 'ru' ? ['Б', 'КБ', 'МБ'] : ['B', 'KB', 'MB'];
   const num = (x: number) =>
     x.toLocaleString(lang, { maximumFractionDigits: 1, minimumFractionDigits: 1 });

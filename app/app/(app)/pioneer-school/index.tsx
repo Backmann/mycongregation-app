@@ -12,7 +12,6 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import dayjs from 'dayjs';
 import 'dayjs/locale/ru';
 import 'dayjs/locale/de';
 
@@ -22,7 +21,7 @@ import { DateField } from '../../../components/DateField';
 import { LoadFailure } from '../../../components/LoadFailure';
 import { Sheet } from '../../../components/Sheet';
 import { failsScreen } from '../../../lib/screen-failure';
-import { rangeStartPattern } from '../../../lib/date-patterns';
+import { formatDayRange } from '../../../lib/date-range';
 
 /** «23–29 ноября 2026» — one line, no repeated month or year. */
 export function schoolDates(
@@ -30,16 +29,9 @@ export function schoolDates(
   end: string,
   locale: string,
 ): string {
-  const a = dayjs(start).locale(locale);
-  const b = dayjs(end).locale(locale);
-  if (a.isSame(b, 'day')) return a.format('D MMMM YYYY');
-  if (a.isSame(b, 'month')) {
-    return `${a.format(rangeStartPattern(locale))}\u2009\u2013\u2009${b.format('D MMMM YYYY')}`;
-  }
-  if (a.isSame(b, 'year')) {
-    return `${a.format('D MMMM')}\u2009\u2013\u2009${b.format('D MMMM YYYY')}`;
-  }
-  return `${a.format('D MMMM YYYY')}\u2009\u2013\u2009${b.format('D MMMM YYYY')}`;
+  // As the language writes a span (lib/date-range.ts): «23. – 28. November»
+  // had its German day dot and a spaced dash (walk, 23 October 2026).
+  return formatDayRange(start, end, locale, { year: 'always' });
 }
 
 export default function PioneerSchoolsScreen() {

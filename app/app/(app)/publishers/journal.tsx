@@ -16,6 +16,7 @@ import {
 } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
+import { readerTitle } from '../../../lib/reader-titles';
 // Locales are opt-in per file in dayjs: without these the dates come out in
 // English however the app is set, which is exactly what happened here.
 import 'dayjs/locale/ru';
@@ -329,6 +330,10 @@ function readValue(
   const own = at ? fieldWord(at.entityType, at.field, v, t, language) : '';
   if (own) return own;
   if (typeof v === 'string') {
+    // A value the journal keeps hidden (a phone number): older rows say it
+    // in Russian, newer ones with a mark; both read as the mark.
+    // cyrillic-ok: the old rows' own word, recognised to be replaced
+    if (v === '<скрыто>' || v === '•••') return '•••';
     // A name first, then a known code word — "incoming" and "confirmed" are
     // for the machine, not for whoever opens the journal.
     if (names[v]) return names[v];
@@ -391,6 +396,7 @@ const ENUM_WORDS: Record<string, string> = {
 };
 
 /** A language by its own name — the way the language switch shows it. */
+// cyrillic-ok: a language named in its own language
 const LANGUAGE_NAMES: Record<string, string> = { ru: 'Русский', en: 'English', de: 'Deutsch' };
 
 /**
@@ -567,9 +573,13 @@ function Row({
     // The year is spoken when it is not this one. A task due «31 августа»
     // read as last August while it said 2027 — 30 September.
     const d = dayjs(ctx.date).locale(language);
-    contextBits.push(
-      d.format(d.year() === dayjs().year() ? 'D MMMM' : 'D MMMM YYYY'),
-    );
+    const day = d.format(d.year() === dayjs().year() ? 'D MMMM' : 'D MMMM YYYY');
+    // A part or a duty is dated by its WEEK (the Monday), not by the meeting
+    // day: said as a week, not as «Mittwoch · 26. Oktober» for a Monday
+    // (walk in German, 23 October 2026).
+    const byWeek =
+      ctx.eventType === 'midweek' || ctx.eventType === 'weekend';
+    contextBits.push(byWeek ? t('journal.weekOf', { date: day }) : day);
   }
   // A specific title beats a generic kind; fall back to the kind's own name.
   const kindName = ctx?.kind
@@ -592,7 +602,7 @@ function Row({
       : entry.entityType === 'monthly_report' && ctx?.title
         ? dayjs(`${ctx.title}-01`).locale(language).format('MMMM YYYY')
         : '';
-  const what = sheetName || ctx?.title || kindName;
+  const what = sheetName || readerTitle(ctx?.title) || kindName;
   if (what) contextBits.push(what);
   const contextLine = contextBits.join(' · ');
 

@@ -1,4 +1,5 @@
 import i18n from './i18n';
+import { readerTitle } from './reader-titles';
 import { getPartDef, getPartLabel } from './parts';
 import { ActivityItem, PublisherActivity } from './api';
 
@@ -21,8 +22,9 @@ export function activityItemLabel(item: ActivityItem): string {
   const themed =
     key.startsWith('apply_yourself') || key.startsWith('living_christians');
   if (themed && item.partTitle) {
-    const idx = item.partTitle.indexOf(': ');
-    return idx > 0 ? item.partTitle.slice(0, idx) : item.partTitle;
+    const shown = readerTitle(item.partTitle);
+    const idx = shown.indexOf(': ');
+    return idx > 0 ? shown.slice(0, idx) : shown;
   }
   return getPartLabel(key);
 }

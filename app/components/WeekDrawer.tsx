@@ -25,6 +25,7 @@ import {
 import { MyDot } from './MyDot';
 import { SECTION_COLORS } from '../lib/section-colors';
 import { isSameWeek, startOfWeekMonday } from '../lib/dates';
+import { formatDayRange } from '../lib/date-range';
 
 type Kind = 'midweek' | 'weekend';
 
@@ -136,12 +137,10 @@ export function WeekDrawer({
   }, [weeksQuery.data, i18n.language, currentWeekStart, kind, dowForWeek, isCoVisitWeek]);
 
   const weekRange = (weekStartIso: string) => {
-    const start = dayjs(weekStartIso).locale(i18n.language);
-    const end = start.add(6, 'day');
-    if (start.month() === end.month()) {
-      return `${start.date()}–${end.date()} ${start.format('MMMM')}`;
-    }
-    return `${start.format('D MMM')} – ${end.format('D MMM')}`;
+    const end = dayjs(weekStartIso).add(6, 'day').format('YYYY-MM-DD');
+    // As the language writes a span (lib/date-range.ts): «25–31 Oktober»
+    // had neither the dots nor the order German wants.
+    return formatDayRange(weekStartIso, end, i18n.language, { year: 'never' });
   };
 
   // One dot per kind of assignment, in the section's own colour: orange a

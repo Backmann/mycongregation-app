@@ -34,6 +34,7 @@ import {
 import { notify } from '../../../lib/error-bus';
 import { confirm } from '../../../components/ConfirmHost';
 import { failsScreen } from '../../../lib/screen-failure';
+import { formatDayRange } from '../../../lib/date-range';
 
 const TIME_OPTIONS: string[] = (() => {
   const out: string[] = [];
@@ -240,7 +241,10 @@ export default function WitnessingScreen() {
 
   function weekHeader(): string {
     const end = addDays(monday, 6);
-    return `${monday.toLocaleDateString(locale, { day: 'numeric', month: 'short' })} – ${end.toLocaleDateString(locale, { day: 'numeric', month: 'short' })}`;
+    return formatDayRange(formatDateISO(monday), formatDateISO(end), locale, {
+      month: 'short',
+      year: 'never',
+    });
   }
 
   function statusLabel(): string {

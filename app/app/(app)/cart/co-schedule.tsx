@@ -44,6 +44,7 @@ import { confirm } from '../../../components/ConfirmHost';
 import { UndoBar } from '../../../components/UndoBar';
 import { useAllPublishers } from '../../../lib/useAllPublishers';
 import { failsScreen } from '../../../lib/screen-failure';
+import { formatDayRange } from '../../../lib/date-range';
 
 const WEEKDAY_ANCHOR = [
   '2024-01-01',
@@ -548,7 +549,10 @@ export default function CoScheduleScreen() {
     .trim();
   const period =
     visit.endDate && visit.endDate !== visit.date
-      ? `${fmt(visit.date)} — ${fmt(visit.endDate)}`
+      ? formatDayRange(visit.date, visit.endDate, loc, {
+          weekday: 'long',
+          year: 'never',
+        })
       : fmt(visit.date);
   const weekMonday = formatDateISO(
     startOfWeekMonday(new Date(`${visit.date}T00:00:00`)),

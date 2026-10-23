@@ -1,3 +1,5 @@
+import { formatDateISO } from './dates';
+import { formatDay } from './date-range';
 /**
  * Quarterly cleaning PDF for the congregation notice board. One A4 page with a
  * block per month (up to a quarter); each block is a grid of cleaning slots
@@ -145,7 +147,7 @@ export function buildCleaningSchedulePdfHtml(opts: {
     </header>
     ${months.map((mo) => monthHtml(mo, L)).join('\n')}
     <div class="foot"><span>mycongregation.org</span><span>${esc(
-      new Date().toLocaleDateString(locale),
+      formatDay(formatDateISO(new Date()), locale, { year: 'always' }),
     )}</span></div>
   </section>
 </body></html>`;

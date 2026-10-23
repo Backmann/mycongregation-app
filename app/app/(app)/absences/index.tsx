@@ -18,29 +18,13 @@ import { usePermissions } from '../../../lib/permissions';
 import { useMyPublisher } from '../../../lib/useMyPublisher';
 import { LoadFailure } from '../../../components/LoadFailure';
 import { failsScreen } from '../../../lib/screen-failure';
+import { formatDayRange } from '../../../lib/date-range';
+import { absenceNote } from '../../../lib/absence-note';
 
 function fmtRange(a: Absence, loc: string): string {
-  const start = new Date(`${a.startDate}T00:00:00`);
-  if (!a.endDate) {
-    return start.toLocaleDateString(loc, {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-    });
-  }
-  const end = new Date(`${a.endDate}T00:00:00`);
-  const sameYear = start.getFullYear() === end.getFullYear();
-  const s = start.toLocaleDateString(loc, {
-    day: 'numeric',
-    month: 'long',
-    ...(sameYear ? {} : { year: 'numeric' }),
-  });
-  const e = end.toLocaleDateString(loc, {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  });
-  return `${s} – ${e}`;
+  // As the language writes a span: «October 24–25, 2026», not «October 24 –
+  // October 25, 2026», and one day as one date (walk, 23 October 2026).
+  return formatDayRange(a.startDate, a.endDate, loc, { year: 'always' });
 }
 
 export default function AbsencesListScreen() {
@@ -132,9 +116,9 @@ export default function AbsencesListScreen() {
                     {item.publisher?.displayName ?? '—'}
                   </Text>
                   <Text style={styles.dates}>{fmtRange(item, i18n.language)}</Text>
-                  {item.note ? (
+                  {absenceNote(item, t) ? (
                     <Text style={styles.note} numberOfLines={1}>
-                      {item.note}
+                      {absenceNote(item, t)}
                     </Text>
                   ) : null}
                 </View>

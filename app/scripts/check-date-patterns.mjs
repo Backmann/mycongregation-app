@@ -2,7 +2,7 @@
 /**
  * Dates are written the way each language writes them (lib/date-patterns.ts,
  * 16 October 2026): the screens' Russian-order patterns come out as
- * «17. Oktober» in German and «Sat, 17 October» in English, while Russian and
+ * «17. Oktober» in German and «Sat, October 17» in English (American, 23 October 2026), while Russian and
  * every pattern without a day before a month stay exactly as they were.
  * Checked through real dayjs with the plugin installed the way
  * lib/dayjs-locales.ts installs it. Called directly from the gate, never
@@ -44,13 +44,13 @@ dayjs.extend((_o, D) => {
 const d = dayjs('2026-10-17'); // a Saturday
 const cases = [
   // pattern, ru, de, en
-  ['D MMMM', '17 октября', '17. Oktober', '17 October'],
-  ['D MMMM YYYY', '17 октября 2026', '17. Oktober 2026', '17 October 2026'],
-  ['D MMM', '17 окт.', '17. Okt.', '17 Oct'],
-  ['dd, D MMMM', 'сб, 17 октября', 'Sa., 17. Oktober', 'Sat, 17 October'],
-  ['dd D MMM', 'сб 17 окт.', 'Sa., 17. Okt.', 'Sat, 17 Oct'],
-  ['dddd, D MMMM', 'суббота, 17 октября', 'Samstag, 17. Oktober', 'Saturday, 17 October'],
-  ['dd, D MMMM YYYY', 'сб, 17 октября 2026', 'Sa., 17. Oktober 2026', 'Sat, 17 October 2026'],
+  ['D MMMM', '17 октября', '17. Oktober', 'October 17'],
+  ['D MMMM YYYY', '17 октября 2026', '17. Oktober 2026', 'October 17, 2026'],
+  ['D MMM', '17 окт.', '17. Okt.', 'Oct 17'],
+  ['dd, D MMMM', 'сб, 17 октября', 'Sa., 17. Oktober', 'Sat, October 17'],
+  ['dd D MMM', 'сб 17 окт.', 'Sa., 17. Okt.', 'Sat, Oct 17'],
+  ['dddd, D MMMM', 'суббота, 17 октября', 'Samstag, 17. Oktober', 'Saturday, October 17'],
+  ['dd, D MMMM YYYY', 'сб, 17 октября 2026', 'Sa., 17. Oktober 2026', 'Sat, October 17, 2026'],
   // Untouched: no day before a month.
   ['MMMM YYYY', 'октябрь 2026', 'Oktober 2026', 'October 2026'],
   ['dd', 'сб', 'Sa', 'Sa'],
@@ -73,15 +73,9 @@ for (const [p, ru, de, en] of cases) {
 // Applied twice it changes nothing more (a German pattern written by hand stays right).
 for (const p of ['D. MMMM', 'dd., D. MMMM', 'ddd, D MMMM']) {
   assert.equal(localizePattern(p, 'de'), p.startsWith('ddd') ? 'ddd, D. MMMM' : p);
-  assert.equal(localizePattern(localizePattern('dd, D MMMM', 'en'), 'en'), 'ddd, D MMMM');
+  assert.equal(localizePattern(localizePattern('dd, D MMMM', 'en'), 'en'), 'ddd, MMMM D');
   n++;
 }
 assert.equal(localizePattern('[am] D MMMM', 'de'), '[am] D MMMM');
-const { rangeStartPattern } = await import(pathToFileURL(join(out, 'date-patterns.mjs')));
-for (const [lang, want] of [['ru', '16–22 ноября'], ['de', '16.–22. November'], ['en', '16–22 November']]) {
-  const from = dayjs('2026-11-16').locale(lang), to = dayjs('2026-11-22').locale(lang);
-  assert.equal(`${from.format(rangeStartPattern(lang))}–${to.format('D MMMM')}`, want);
-  n++;
-}
 if (process.exitCode) process.exit(1);
 console.log(`✓ Даты по-немецки и по-английски: ${n} проверок`);

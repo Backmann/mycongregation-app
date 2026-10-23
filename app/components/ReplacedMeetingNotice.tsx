@@ -3,6 +3,7 @@ import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { SpecialEvent } from '../lib/api';
+import { formatDayRange } from '../lib/date-range';
 
 /**
  * Rendered in place of a regular meeting section when a special event with
@@ -25,7 +26,7 @@ export function ReplacedMeetingNotice({
   const start = new Date(`${event.date}T00:00:00`);
   const end = event.endDate ? new Date(`${event.endDate}T00:00:00`) : null;
   const dateLabel = end
-    ? `${start.toLocaleDateString(loc, { day: 'numeric', month: 'long' })} \u2013 ${end.toLocaleDateString(loc, { day: 'numeric', month: 'long' })}`
+    ? formatDayRange(event.date, event.endDate, loc, { year: 'never' })
     : start.toLocaleDateString(loc, {
         weekday: 'long',
         day: 'numeric',

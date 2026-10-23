@@ -10,6 +10,7 @@ import {
   fieldServiceTemplateApi,
 } from '../lib/api';
 import { Sheet } from './Sheet';
+import { formatDayRange } from '../lib/date-range';
 
 /**
  * «Автоматически» (October 2026, stage 3c): how a month should be prepared
@@ -146,7 +147,7 @@ export function FieldServiceAutoSheet({
       <Text style={styles.label}>{t('fieldService.template.auto.walkTitle', { month: monthName })}</Text>
       <View style={styles.walk}>
         <WalkRow when={fmt(prepared)} text={t('fieldService.template.auto.walk1', { month: monthName })} />
-        <WalkRow when={`${fmt(prepared)} – ${fmt(remind)}`} text={t('fieldService.template.auto.walk2')} />
+        <WalkRow when={formatDayRange(prepared.format('YYYY-MM-DD'), remind.format('YYYY-MM-DD'), i18n.language, { month: 'short', year: 'never' })} text={t('fieldService.template.auto.walk2')} />
         {policy === 'publish_7d' ? (
           <>
             <WalkRow when={fmt(remind)} text={t('fieldService.template.auto.walk3')} />

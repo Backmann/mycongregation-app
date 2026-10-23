@@ -38,6 +38,9 @@ export default function Root({ children }: PropsWithChildren) {
           name="apple-mobile-web-app-status-bar-style"
           content="black-translucent"
         />
+        {/* The name under the home-screen icon, set once for the whole site
+            before any language is known: the congregation's own word. */}
+        {/* cyrillic-ok: see above */}
         <meta name="apple-mobile-web-app-title" content="Собрание" />
         <meta name="mobile-web-app-capable" content="yes" />
         <ScrollViewStyleReset />

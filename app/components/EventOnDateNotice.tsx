@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { meetingSettingsApi, SpecialEvent, specialEventsApi } from '../lib/api';
 import { effectiveVersionFor, meetingDate } from '../lib/meeting-schedule';
 import { formatDateISO } from '../lib/dates';
+import { formatDayRange } from '../lib/date-range';
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -72,7 +73,7 @@ export function EventOnDateNotice({
   const start = new Date(`${event.date}T00:00:00`);
   const end = event.endDate ? new Date(`${event.endDate}T00:00:00`) : null;
   const dateLabel = end
-    ? `${start.toLocaleDateString(loc, { day: 'numeric', month: 'long' })} \u2013 ${end.toLocaleDateString(loc, { day: 'numeric', month: 'long' })}`
+    ? formatDayRange(event.date, event.endDate, loc, { year: 'never' })
     : start.toLocaleDateString(loc, {
         weekday: 'long',
         day: 'numeric',

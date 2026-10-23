@@ -3450,6 +3450,8 @@ export interface Absence {
    * поездку.
    */
   talkExchangeId?: string | null;
+  /** The pioneer school's duty this absence comes from — the reason itself. */
+  pioneerSchoolDutyId?: string | null;
   startDate: string;
   endDate: string | null;
   note: string | null;

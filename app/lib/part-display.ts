@@ -1,5 +1,6 @@
 import i18n from './i18n';
 import { getPartLabel } from './parts';
+import { readerTitle, readerTitleOrNull } from './reader-titles';
 
 /**
  * HOW A PART OF THE PROGRAMME IS NAMED ON SCREEN.
@@ -29,7 +30,8 @@ const PRAYER_PARTS = new Set<string>([
 /** Extracts just the song reference (e.g. "Песня 44") from a prayer title. */
 export function songFromTitle(title: string): string | null {
   const m = title.match(/(?:Песня|Song|Lied)\s*№?\s*\d+/i);
-  return m ? m[0] : null;
+  // In the reader's language: «Lied 44» for a German reader.
+  return m ? readerTitle(m[0]) : null;
 }
 
 export interface PartDisplay {
@@ -46,8 +48,10 @@ export interface PartDisplay {
  */
 export function partDisplay(
   partKey: string,
-  partTitle: string | null | undefined,
+  rawTitle: string | null | undefined,
 ): PartDisplay {
+  // The workbook's fixed names in the reader's language (23 October 2026).
+  const partTitle = readerTitleOrNull(rawTitle);
   // Weekend: show the part role as an overline above the EPUB topic, so it
   // is clear what the topic belongs to. The reader's long label is shortened.
   if (partKey === 'public_talk_speaker') {

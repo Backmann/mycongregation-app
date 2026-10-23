@@ -21,13 +21,14 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const require = createRequire(join(ROOT, 'package.json'));
 const ts = require('typescript');
 const out = mkdtempSync(join(tmpdir(), 'service-lines-'));
-for (const name of ['field-audience', 'service-lines']) {
+for (const name of ['field-audience', 'date-range', 'service-lines']) {
   const src = readFileSync(join(ROOT, 'lib', `${name}.ts`), 'utf8');
   const js = ts
     .transpileModule(src, {
       compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2020 },
     })
-    .outputText.replace("'./field-audience'", "'./field-audience.mjs'");
+    .outputText.replace("'./field-audience'", "'./field-audience.mjs'")
+    .replace("'./date-range'", "'./date-range.mjs'");
   writeFileSync(join(out, `${name}.mjs`), js);
 }
 const { serviceLines } = await import(pathToFileURL(join(out, 'service-lines.mjs')));

@@ -128,7 +128,7 @@ export function PublisherDetail({ id }: { id: string | undefined }) {
     setS21Loading(true);
     try {
       const pkg = await serviceReportsApi.getS21Data(id, serviceYear);
-      const html = buildS21Html(pkg);
+      const html = buildS21Html(pkg, i18n.language);
       await exportHtmlAsPdf(html, {
         fileName: 'S-21',
         preopenedWindow: preopened,

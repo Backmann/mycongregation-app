@@ -33,14 +33,11 @@ export function localizePattern(pattern: string, lang: string): string {
   if (l === 'de') {
     return pattern.replace(weekday, '$1dd., ').replace(/(^|[^D])D(?!D) (?=M)/g, '$1D. ');
   }
-  return pattern.replace(weekday, '$1ddd, ');
-}
-
-/**
- * The first day of a range within one month, on its own: «16–22 ноября»,
- * «16.–22. November», «16–22 November». German writes this day with its dot
- * too; `localizePattern` cannot know a lone 'D' is half of a range.
- */
-export function rangeStartPattern(lang: string): string {
-  return (lang || '').slice(0, 2).toLowerCase() === 'de' ? 'D.' : 'D';
+  // American English, decided 23 October 2026: the month first, the year
+  // after a comma — «Sat, October 17», «October 17, 2026».
+  return pattern
+    .replace(weekday, '$1ddd, ')
+    .replace(/(^|[^D])D (M{3,4})( YYYY)?/, (_m, pre: string, mon: string, year?: string) =>
+      `${pre}${mon} D${year ? ', YYYY' : ''}`,
+    );
 }
