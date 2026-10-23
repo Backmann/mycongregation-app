@@ -3101,6 +3101,16 @@
       "speakers": "Redner aus dieser Versammlung",
       "noSpeakers": "Noch niemand eingetragen",
       "addSpeaker": "Redner aus dieser Versammlung hinzufügen"
+    },
+    "cancelled": {
+      "badge": "ZUSAMMENKUNFT ABGESAGT",
+      "hint": "Wartet auf Entscheidung. Wird die Absage aufgehoben, kehrt der Eintrag unverändert ins Programm zurück.",
+      "move": "Verschieben",
+      "notHeld": "Findet nicht statt",
+      "moveTitle": "Auf welche Woche verschieben?",
+      "noWeeks": "Vorne ist keine Woche frei – bitte zuerst im Vortragsplan eine Woche freimachen.",
+      "notHeldTitle": "Findet der Besuch nicht statt?",
+      "notHeldBody": "Der Besuch von {{name}} bleibt im Verlauf als nicht stattgefunden."
     }
   },
   "rules": {
@@ -5071,6 +5081,7 @@
     "newCong": "Versammlung",
     "newCongPlaceholder": "Kann später ergänzt werden",
     "saveNew": "Anlegen und eintragen",
-    "back": "Zurück zur Suche"
+    "back": "Zurück zur Suche",
+    "fromJournalShort": "aus dem Vortragsplan"
   }
 }
