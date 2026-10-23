@@ -3073,7 +3073,32 @@
       "awayThisDay": "an diesem Tag ist er in einer anderen Versammlung",
       "upcomingFrom": "Bevorstehend",
       "programmeFrozenTitle": "Eintrag gespeichert",
-      "programmeFrozenBody": "Das Programm dieser Woche ist bereits Teil der Aufzeichnungen und wurde nicht geändert. Falls nötig, korrigiert es ein Administrator oder der Koordinator der Ältestenschaft nachträglich."
+      "programmeFrozenBody": "Das Programm dieser Woche ist bereits Teil der Aufzeichnungen und wurde nicht geändert. Falls nötig, korrigiert es ein Administrator oder der Koordinator der Ältestenschaft nachträglich.",
+      "needsBrother": "BRUDER GESUCHT",
+      "needsBrotherHint": "Die Versammlung erwartet einen Redner von uns.",
+      "assignBrother": "Bruder einteilen",
+      "inQuestion": "FRAGLICH",
+      "risk": {
+        "absence": "Der Bruder ist an diesem Tag abwesend. Bitte klären, ob er fährt.",
+        "departed": "Der Bruder ist als ausgeschieden markiert. Ein anderer wird gebraucht."
+      },
+      "heGoes": "Er fährt",
+      "findReplacement": "Ersatz finden",
+      "attention": {
+        "title": "Erfordert Aufmerksamkeit",
+        "needs_one": "{{count}} Vortragsreise braucht einen Bruder",
+        "needs_other": "{{count}} Vortragsreisen brauchen einen Bruder",
+        "risk_one": "{{count}} fraglich",
+        "risk_other": "{{count}} fraglich"
+      },
+      "outChoice": {
+        "title": "{{host}} erwartet einen Redner. Was ist passiert?",
+        "otherCongregation": "Die Versammlung",
+        "takeOff": "Nur den Bruder austragen",
+        "takeOffHint": "Die Reise bleibt mit dem Hinweis „Bruder gesucht“. Die Koordinatoren werden benachrichtigt und 14 und 7 Tage vorher erinnert, falls kein Ersatz gefunden ist.",
+        "cancelled": "Reise abgesagt",
+        "cancelledHint": "Die Versammlung ist informiert, ein Redner von uns wird nicht gebraucht. Der Eintrag bleibt im Verlauf als nicht stattgefunden."
+      }
     },
     "swap": {
       "pastRefused": "Diese Woche ist vorbei. Der Bruder hat gesprochen, und sein Name wurde von der Bühne angekündigt — verschieben lässt sich nur, was noch bevorsteht.",

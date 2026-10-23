@@ -241,6 +241,10 @@ export function routeForNotification(
     // among his own things, with the address of the hall.
     case 'outgoing_talk':
       return { path: '/home', params: {} };
+    // A trip of ours that needs a brother or came into question: the journal,
+    // whose banner leads to it (23 October 2026).
+    case 'talk_exchange_attention':
+      return { path: '/talk-coordinator/log', params: {} };
     // Cleaning has its own screen: the reminder opens the week it is about.
     case 'cleaning_after_meeting':
     case 'cleaning_weekly_monday':

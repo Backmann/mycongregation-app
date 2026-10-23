@@ -1,4 +1,5 @@
 import { Fragment, useMemo, useRef, useState, useEffect } from "react";
+import type { TalkAttentionItem } from "../../../lib/api";
 import {
   ActivityIndicator,
   Linking,
@@ -193,6 +194,20 @@ export default function TalkExchangeYearScreen() {
     queryKey: QK,
     queryFn: () => talkExchangeApi.list(),
   });
+  /**
+   * Trips of ours that need someone: no brother yet, or the brother away
+   * that day or departed (23 October 2026, Lionel: «то собрание будет ждать
+   * докладчика с нашего собрания»).
+   */
+  const attentionQuery = useQuery({
+    queryKey: [...QK, "attention"],
+    queryFn: () => talkExchangeApi.attention(),
+  });
+  const attentionById = useMemo(() => {
+    const m = new Map<string, TalkAttentionItem>();
+    for (const a of attentionQuery.data ?? []) m.set(a.id, a);
+    return m;
+  }, [attentionQuery.data]);
   const settingsQuery = useQuery({
     queryKey: ["meeting-settings"],
     queryFn: () => meetingSettingsApi.getOverview(),
@@ -792,6 +807,19 @@ export default function TalkExchangeYearScreen() {
     onSuccess: invalidate,
     onError: showError,
   });
+  const ackMutation = useMutation({
+    mutationFn: (v: { id: string; reason: "absence" | "departed" }) =>
+      talkExchangeApi.attentionAck(v.id, v.reason),
+    onSuccess: invalidate,
+    onError: showError,
+  });
+  /**
+   * Deleting a trip that still stands asks first what happened (Lionel,
+   * 23 October 2026): the brother taken off — the trip stays and somebody
+   * else is needed — or the trip itself called off. Shown inside the sheet,
+   * not as a window on top of it.
+   */
+  const [outChoice, setOutChoice] = useState(false);
   const pending =
     createMutation.isPending ||
     updateMutation.isPending ||
@@ -872,6 +900,7 @@ export default function TalkExchangeYearScreen() {
     entry?: TalkExchange,
   ) => {
     setWeek(w);
+    setOutChoice(false);
     setEditing(entry ?? null);
     setDirection(dir);
     setDate(entry?.date ?? w.date);
@@ -939,7 +968,9 @@ export default function TalkExchangeYearScreen() {
           (incomingMode === "local"
             ? !!publisherId
             : !!visitingSpeakerId || speakerNameInput.trim().length > 0)
-      : !!publisherId && !!date;
+      : // A trip may stand without a brother yet: the other congregation is
+        // waiting for one of ours, and the journal is where that is seen.
+        !!date && (!!publisherId || !!hostCongregationId);
 
   const save = async () => {
     if (!canSave) return;
@@ -1009,6 +1040,15 @@ export default function TalkExchangeYearScreen() {
 
   const del = async () => {
     if (!editing) return;
+    if (
+      editing.direction === "outgoing" &&
+      editing.publisherId &&
+      editing.status !== "did_not_happen" &&
+      editing.date.slice(0, 10) >= todayISO
+    ) {
+      setOutChoice(true);
+      return;
+    }
     if (
       await confirm({
         title: t("talkCoordinator.log.deleteTitle"),
@@ -1253,6 +1293,42 @@ export default function TalkExchangeYearScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#f1f5f9" }}>
+      {(attentionQuery.data?.length ?? 0) > 0 ? (
+        <Pressable
+          style={styles.attnBanner}
+          onPress={() => {
+            const first = attentionQuery.data![0];
+            scrollToMonth(first.date.slice(0, 7));
+          }}
+          accessibilityRole="button"
+        >
+          <Text style={styles.attnCount}>{attentionQuery.data!.length}</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.attnTitle}>
+              {t("talkCoordinator.log.attention.title")}
+            </Text>
+            <Text style={styles.attnSub}>
+              {[
+                (() => {
+                  const n = attentionQuery.data!.filter(
+                    (a) => a.reason === "needs_brother",
+                  ).length;
+                  return n ? t("talkCoordinator.log.attention.needs", { count: n }) : null;
+                })(),
+                (() => {
+                  const n = attentionQuery.data!.filter(
+                    (a) => a.reason !== "needs_brother",
+                  ).length;
+                  return n ? t("talkCoordinator.log.attention.risk", { count: n }) : null;
+                })(),
+              ]
+                .filter(Boolean)
+                .join(" · ")}
+            </Text>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color="#9a3412" />
+        </Pressable>
+      ) : null}
       <View style={styles.monthBar}>
         {/* The bar scrolls itself. It never did — so on opening it sat on
             «Янв. 26» while August was on screen, and the highlighted chip was
@@ -1591,10 +1667,35 @@ export default function TalkExchangeYearScreen() {
                         >
                           {t("talkCoordinator.log.filter.outgoing")}
                         </Text>
-                        {slot.outgoing.map((o) => (
+                        {slot.outgoing.map((o) => {
+                          const att = attentionById.get(o.id);
+                          if (att?.reason === "needs_brother") {
+                            return (
+                              <Pressable
+                                key={o.id}
+                                style={styles.needBrother}
+                                onPress={() => openSlot(w, "outgoing", o)}
+                              >
+                                <Text style={styles.needBrotherLabel}>
+                                  {t("talkCoordinator.log.needsBrother")}
+                                </Text>
+                                <Text style={styles.outMain}>
+                                  {`→ ${congById.get(o.hostCongregationId ?? "")?.name ?? "—"}`}
+                                  {o.date !== w.date ? ` · ${fmtDay(o.date)}` : ""}
+                                </Text>
+                                <Text style={styles.needBrotherHint}>
+                                  {t("talkCoordinator.log.needsBrotherHint")}
+                                </Text>
+                                <Text style={styles.needBrotherCta}>
+                                  {t("talkCoordinator.log.assignBrother")}
+                                </Text>
+                              </Pressable>
+                            );
+                          }
+                          return (
                           <Pressable
                             key={o.id}
-                            style={styles.outItem}
+                            style={[styles.outItem, att ? styles.outItemRisk : null]}
                             onPress={() => openSlot(w, "outgoing", o)}
                           >
                             <Text style={styles.outMain}>
@@ -1620,8 +1721,43 @@ export default function TalkExchangeYearScreen() {
                                 {t("talkCoordinator.log.noTalk")}
                               </Text>
                             )}
+                            {att ? (
+                              <View style={styles.riskBlock}>
+                                <Text style={styles.riskBadge}>
+                                  {t("talkCoordinator.log.inQuestion")}
+                                </Text>
+                                <Text style={styles.riskText}>
+                                  {t(`talkCoordinator.log.risk.${att.reason}`)}
+                                </Text>
+                                <View style={styles.riskActions}>
+                                  <Pressable
+                                    style={styles.riskBtn}
+                                    disabled={ackMutation.isPending}
+                                    onPress={() =>
+                                      ackMutation.mutate({
+                                        id: o.id,
+                                        reason: att.reason as "absence" | "departed",
+                                      })
+                                    }
+                                  >
+                                    <Text style={styles.riskBtnText}>
+                                      {t("talkCoordinator.log.heGoes")}
+                                    </Text>
+                                  </Pressable>
+                                  <Pressable
+                                    style={[styles.riskBtn, styles.riskBtnMain]}
+                                    onPress={() => openSlot(w, "outgoing", o)}
+                                  >
+                                    <Text style={styles.riskBtnMainText}>
+                                      {t("talkCoordinator.log.findReplacement")}
+                                    </Text>
+                                  </Pressable>
+                                </View>
+                              </View>
+                            ) : null}
                           </Pressable>
-                        ))}
+                          );
+                        })}
                         <Pressable
                           style={styles.outAdd}
                           onPress={() => openSlot(w, "outgoing", undefined)}
@@ -1785,6 +1921,61 @@ export default function TalkExchangeYearScreen() {
         onClose={() => setOpen(false)}
         closeLabel={t("common.cancel")}
         footer={
+          outChoice && editing ? (
+            <View style={styles.outChoice}>
+              <Text style={styles.outChoiceTitle}>
+                {t("talkCoordinator.log.outChoice.title", {
+                  host:
+                    congById.get(editing.hostCongregationId ?? "")?.name ??
+                    t("talkCoordinator.log.outChoice.otherCongregation"),
+                })}
+              </Text>
+              <Pressable
+                style={[styles.outChoiceBtn, styles.outChoiceBtnMain]}
+                disabled={pending}
+                onPress={async () => {
+                  await updateMutation.mutateAsync({
+                    id: editing.id,
+                    input: { publisherId: null },
+                  });
+                  setOpen(false);
+                }}
+              >
+                <Text style={styles.outChoiceMainText}>
+                  {t("talkCoordinator.log.outChoice.takeOff")}
+                </Text>
+                <Text style={styles.outChoiceSub}>
+                  {t("talkCoordinator.log.outChoice.takeOffHint")}
+                </Text>
+              </Pressable>
+              <Pressable
+                style={styles.outChoiceBtn}
+                disabled={pending}
+                onPress={async () => {
+                  await updateMutation.mutateAsync({
+                    id: editing.id,
+                    input: { status: "did_not_happen" },
+                  });
+                  setOpen(false);
+                }}
+              >
+                <Text style={styles.outChoiceDangerText}>
+                  {t("talkCoordinator.log.outChoice.cancelled")}
+                </Text>
+                <Text style={styles.outChoiceSub}>
+                  {t("talkCoordinator.log.outChoice.cancelledHint")}
+                </Text>
+              </Pressable>
+              <Pressable
+                style={styles.outChoiceBack}
+                onPress={() => setOutChoice(false)}
+              >
+                <Text style={styles.outChoiceBackText}>
+                  {t("common.cancel")}
+                </Text>
+              </Pressable>
+            </View>
+          ) : (
           <View style={styles.modalActions}>
             {editing ? (
               <Pressable
@@ -1821,6 +2012,7 @@ export default function TalkExchangeYearScreen() {
               <Text style={styles.modalConfirmText}>{t("common.save")}</Text>
             </Pressable>
           </View>
+          )
         }
       >
         <ScrollView
@@ -2662,6 +2854,104 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: "#fde68a",
   },
+  outItemRisk: {
+    backgroundColor: "#fefce8",
+    borderRadius: 10,
+    paddingHorizontal: 8,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: "#facc15",
+    marginVertical: 4,
+  },
+  riskBlock: { gap: 4, marginTop: 6 },
+  riskBadge: {
+    alignSelf: "flex-start",
+    fontFamily: "Manrope_800ExtraBold",
+    fontSize: 10.5,
+    letterSpacing: 0.4,
+    color: "#ffffff",
+    backgroundColor: "#ca8a04",
+    borderRadius: 999,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    overflow: "hidden",
+  },
+  riskText: { fontFamily: "Manrope_400Regular", fontSize: 12.5, color: "#713f12" },
+  riskActions: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 2 },
+  riskBtn: {
+    borderWidth: 1,
+    borderColor: "#ca8a04",
+    backgroundColor: "#ffffff",
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    minHeight: 36,
+    justifyContent: "center",
+  },
+  riskBtnText: { fontFamily: "Manrope_700Bold", fontSize: 13, color: "#854d0e" },
+  riskBtnMain: { backgroundColor: "#ca8a04" },
+  riskBtnMainText: { fontFamily: "Manrope_700Bold", fontSize: 13, color: "#ffffff" },
+  needBrother: {
+    borderWidth: 1.5,
+    borderStyle: "dashed",
+    borderColor: "#ea580c",
+    backgroundColor: "#fff7ed",
+    borderRadius: 10,
+    padding: 10,
+    gap: 4,
+    marginVertical: 4,
+  },
+  needBrotherLabel: {
+    fontFamily: "Manrope_800ExtraBold",
+    fontSize: 10.5,
+    letterSpacing: 0.5,
+    color: "#c2410c",
+  },
+  needBrotherHint: { fontFamily: "Manrope_400Regular", fontSize: 12.5, color: "#7c2d12" },
+  needBrotherCta: { fontFamily: "Manrope_700Bold", fontSize: 13, color: "#ea580c", marginTop: 2 },
+  attnBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    marginHorizontal: 12,
+    marginTop: 10,
+    marginBottom: 2,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "#fdba74",
+    backgroundColor: "#fff7ed",
+  },
+  attnCount: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    overflow: "hidden",
+    backgroundColor: "#ea580c",
+    color: "#ffffff",
+    textAlign: "center",
+    lineHeight: 32,
+    fontFamily: "Manrope_800ExtraBold",
+    fontSize: 15,
+  },
+  attnTitle: { fontFamily: "Manrope_800ExtraBold", fontSize: 14.5, color: "#7c2d12" },
+  attnSub: { fontFamily: "Manrope_400Regular", fontSize: 12.5, color: "#9a3412" },
+  outChoice: { gap: 10, width: "100%" },
+  outChoiceTitle: { fontFamily: "Manrope_700Bold", fontSize: 15, color: "#0f172a" },
+  outChoiceBtn: {
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+    borderRadius: 14,
+    padding: 12,
+    gap: 3,
+    backgroundColor: "#ffffff",
+  },
+  outChoiceBtnMain: { borderColor: "#0e7490", borderWidth: 1.5, backgroundColor: "#ecfeff" },
+  outChoiceMainText: { fontFamily: "Manrope_800ExtraBold", fontSize: 15, color: "#0e7490" },
+  outChoiceDangerText: { fontFamily: "Manrope_800ExtraBold", fontSize: 15, color: "#b91c1c" },
+  outChoiceSub: { fontFamily: "Manrope_400Regular", fontSize: 12.5, color: "#475569" },
+  outChoiceBack: { alignItems: "center", paddingVertical: 10, minHeight: 44, justifyContent: "center" },
+  outChoiceBackText: { fontFamily: "Manrope_700Bold", fontSize: 14, color: "#334155" },
   outMain: {
     fontSize: 13,
     fontFamily: "Manrope_600SemiBold",

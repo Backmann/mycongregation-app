@@ -231,8 +231,12 @@ export function usePermissions(): Permissions {
       canManageLocalNeeds: isAdmin || holds("life_ministry_overseer"),
       // Помощник имеет те же права: замену делают перед встречей, и
       // координатора может не быть рядом.
+      // The coordinator of the body of elders answers for the exchange of
+      // talks (Lionel, 23 October 2026) — the same doors as the coordinator;
+      // the server's lists say the same.
       canCoordinatePublicTalks:
         isAdmin ||
+        holds("body_coordinator") ||
         holds("public_talk_coordinator") ||
         holds("public_talk_coordinator_assistant"),
       canViewServiceSummary: isAdmin || isElder || holds("secretary"),
