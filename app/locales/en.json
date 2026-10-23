@@ -4910,6 +4910,7 @@
       "CLEANING_GENERAL_FORBIDDEN": "The general cleaning is planned by the cleaning coordinator.",
       "CLEANING_OUTSIDE_WEEK": "The cleaning time must fall within its week.",
       "TALK_SLOT_NOBODY": "No speaker is given for this week — please choose a speaker.",
+      "TALK_WEEK_TAKEN": "This weekend already has a speaker in the talk log. Open that entry and change it instead.",
       "TALKS_SET_ASIDE_FORBIDDEN": "Talks can be retired by the elders and the public talk coordinator.",
       "TALK_NUMBER_TAKEN": "Talk no. {{number}} is already in the catalog.",
       "LOCAL_NEEDS_FOR_ELDERS": "Local needs are for the elders.",

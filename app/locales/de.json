@@ -4910,6 +4910,7 @@
       "CLEANING_GENERAL_FORBIDDEN": "Die Grundreinigung plant der Reinigungskoordinator.",
       "CLEANING_OUTSIDE_WEEK": "Die Zeit der Reinigung muss in ihrer Woche liegen.",
       "TALK_SLOT_NOBODY": "Für diese Woche ist niemand angegeben – bitte einen Redner wählen.",
+      "TALK_WEEK_TAKEN": "Für dieses Wochenende ist im Vortragsplan bereits ein Redner eingetragen. Bitte diesen Eintrag öffnen und ändern.",
       "TALKS_SET_ASIDE_FORBIDDEN": "Vorträge absetzen können die Ältesten und der Vortragskoordinator.",
       "TALK_NUMBER_TAKEN": "Vortrag Nr. {{number}} ist schon im Katalog.",
       "LOCAL_NEEDS_FOR_ELDERS": "Die örtlichen Bedürfnisse sehen die Ältesten.",
