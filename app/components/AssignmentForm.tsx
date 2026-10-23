@@ -31,7 +31,6 @@ import {
   PublicTalk,
   PublisherActivity,
   publisherActivityApi,
-  talkExchangeApi,
   visitingSpeakersApi,
 } from "../lib/api";
 import {
@@ -40,6 +39,9 @@ import {
   skillCapabilityFromTitle,
 } from "../lib/parts";
 import { usePermissions } from "../lib/permissions";
+import { useAllPublishers } from "../lib/useAllPublishers";
+import { GuestSpeakerField } from "./GuestSpeakerField";
+import { QuickReplaceSheet } from "./QuickReplaceSheet";
 import { useTranslation } from "react-i18next";
 import { Toast } from "./ErrorToast";
 
@@ -72,6 +74,8 @@ interface Props {
   /** Manager-only picker to switch the visiting overseer for the whole week
    * (updates the CO-visit event snapshot, so both meetings reflect it). */
   coPicker?: AssignmentFormCoPicker | null;
+  /** The weekend talk line's own journal entry «К нам», when it has one. */
+  talkExchangeId?: string | null;
 }
 
 export interface AssignmentFormCoPicker {
@@ -95,6 +99,7 @@ export function AssignmentForm({
   readOnly,
   circuitOverseer,
   coPicker,
+  talkExchangeId,
 }: Props) {
   const { t, i18n } = useTranslation();
   const autosave = !!onInstantSave;
@@ -197,109 +202,17 @@ export function AssignmentForm({
   // ---- Local Needs: insert a planned topic into a "Living as Christians" part ----
   const qc = useQueryClient();
 
-  /**
-   * «Приехал другой» — действие дня встречи, а не правка записи.
-   *
-   * Переписать имя в поле было бы быстрее всего, и именно так делали до сих
-   * пор: тогда брат, которого ждали, исчезал бесследно, а по этому следу
-   * решают, звать ли снова. Здесь замена — два факта сразу, и делает их
-   * сервер: прежний визит закрывается как несостоявшийся и остаётся в истории,
-   * новый занимает слот немедленно, потому что со сцены читают программу.
-   */
-  const [replaceOpen, setReplaceOpen] = useState(false);
-  const [replaceName, setReplaceName] = useState("");
-  const [replaceCong, setReplaceCong] = useState("");
-  const [replaceReason, setReplaceReason] = useState("");
-  const [replaceSpeakerId, setReplaceSpeakerId] = useState<string | null>(null);
-  const [replaceSearch, setReplaceSearch] = useState("");
-  /**
-   * Речь заменяющего.
-   *
-   * Приезжает другой брат — как правило, со СВОЕЙ речью, и до сих пор об этом
-   * никто не спрашивал: слот сохранял прежний номер, а новому записывалось то,
-   * чего он не произносил. Пусто — значит остаётся прежняя, и это законный
-   * случай: тот же доклад читает другой.
-   */
-  const [replaceTalkId, setReplaceTalkId] = useState<string | null>(null);
-  /** Заменить может и свой брат — так бывает чаще, чем приезд второго гостя. */
-  const [replaceLocalId, setReplaceLocalId] = useState<string | null>(null);
-
   const speakersQuery = useQuery({
     queryKey: ["visiting-speakers"],
     queryFn: () => visitingSpeakersApi.list(),
     // Нужен и для замены, и для подсказок при наборе имени.
-    enabled: replaceOpen || form.partKey === "public_talk_speaker",
+    enabled: form.partKey === "public_talk_speaker",
   });
 
-  /**
-   * Кого предлагать в замену — по набранному, а не «первые шесть».
-   *
-   * В справочнике тридцать карточек и будет больше; шесть первых — это шесть
-   * случайных. Пока не набрано двух букв, показываем тех, кто ездил недавно:
-   * их и зовут чаще всего.
-   */
-  const replaceCandidates = (() => {
-    const all = (speakersQuery.data ?? []).map((sp) => ({
-      id: sp.id,
-      name: [sp.firstName, sp.lastName].filter(Boolean).join(" "),
-      cong: sp.externalCongregation?.name ?? null,
-      overseer: !!sp.circuitOverseer,
-    }));
-    // Тот, кто уже стоит в неделе, в списке не нужен: заменять им же самим
-    // нечего, и сервер такую замену отвергает.
-    const others = all.filter(
-      (x) => x.name !== (form.speakerName ?? "").trim(),
-    );
-    const typed = replaceSearch.trim().toLowerCase();
-    // Without anything typed these are suggestions of whom to call — and the
-    // circuit overseer is not somebody one calls in. By name he is found.
-    if (typed.length < 2)
-      return others.filter((x) => !x.overseer).slice(0, 5);
-    return others
-      .filter(
-        (x) =>
-          x.name.toLowerCase().includes(typed) ||
-          (x.cong ?? "").toLowerCase().includes(typed),
-      )
-      .slice(0, 6);
-  })();
-
-  /** Замена готова, когда названо, КТО говорит. Речь необязательна. */
-  const replaceReady =
-    !!replaceSpeakerId || !!replaceLocalId || replaceName.trim().length >= 2;
-
-  const replaceMutation = useMutation({
-    meta: { inlineError: true },
-    mutationFn: () =>
-      talkExchangeApi.replaceSpeaker({
-        weekStartDate: form.weekStartDate,
-        ...(replaceLocalId
-          ? { publisherId: replaceLocalId }
-          : replaceSpeakerId
-            ? { visitingSpeakerId: replaceSpeakerId }
-            : {
-                speakerName: replaceName.trim(),
-                speakerCongregation: replaceCong.trim() || undefined,
-              }),
-        ...(replaceTalkId ? { publicTalkId: replaceTalkId } : {}),
-        reason: replaceReason.trim() || undefined,
-      }),
-    onSuccess: () => {
-      setReplaceOpen(false);
-      setReplaceSpeakerId(null);
-      setReplaceLocalId(null);
-      setReplaceTalkId(null);
-      setReplaceSearch("");
-      setReplaceName("");
-      setReplaceCong("");
-      setReplaceReason("");
-      void qc.invalidateQueries({ queryKey: ["assignments"] });
-      void qc.invalidateQueries({ queryKey: ["talk-exchange"] });
-      onCancel?.();
-    },
-  });
-
-  const { canManageLocalNeeds } = usePermissions();
+  const perms = usePermissions();
+  const { canManageLocalNeeds } = perms;
+  const [quickReplaceOpen, setQuickReplaceOpen] = useState(false);
+  const allPublishersQuery = useAllPublishers({ enabled: form.partKey === "public_talk_speaker" });
   const [lnPickerOpen, setLnPickerOpen] = useState(false);
   const isLivingChristians = (form.partKey ?? "").startsWith(
     "living_christians",
@@ -347,39 +260,6 @@ export function AssignmentForm({
   const partDef = getPartDef(form.partKey);
   const isPublicTalkSpeaker = form.partKey === "public_talk_speaker";
 
-  /**
-   * Подсказки из справочника, пока имя набирают.
-   *
-   * Связь визита с братом сервер выводит по ТОЧНОМУ совпадению имени и
-   * собрания. Значит написание решает: «Walter Getko» и «Вальтер Гетко» —
-   * два разных человека, и история одного делится надвое. Подсказка не
-   * добавляет новой возможности, она убирает разночтение: выбранная строка
-   * подставляет имя и собрание ровно так, как они записаны в карточке.
-   *
-   * Ввод от руки остаётся: гостя, которого незачем заводить, по-прежнему
-   * можно просто напечатать — карточку заведёт сервер.
-   */
-  const speakerHints = (() => {
-    if (!isPublicTalkSpeaker || speakerType !== "invited") return [];
-    const typed = (form.speakerName ?? "").trim().toLowerCase();
-    const all = speakersQuery.data ?? [];
-    const named = all.map((sp) => ({
-      id: sp.id,
-      name: [sp.firstName, sp.lastName].filter(Boolean).join(" "),
-      cong: sp.externalCongregation?.name ?? null,
-    }));
-    // Пустое поле — не повод показывать весь справочник: подсказки нужны
-    // тому, кто уже начал печатать.
-    if (typed.length < 2) return [];
-    const hits = named.filter(
-      (n) =>
-        n.name.toLowerCase().includes(typed) ||
-        (n.cong ?? "").toLowerCase().includes(typed),
-    );
-    // Точное совпадение значит, что выбирать уже нечего.
-    if (hits.length === 1 && hits[0].name.toLowerCase() === typed) return [];
-    return hits.slice(0, 5);
-  })();
 
   // Apply-Yourself "Talk" (Речь) is delivered solo — no householder/assistant,
   // unlike the ministry demonstrations. Detect it from the title-derived skill.
@@ -903,73 +783,38 @@ export function AssignmentForm({
                     currentEventType={form.eventType}
                   />
                 ) : (
-                  <>
-                    <FormField
-                      label={t("assignments.form.field.speakerName")}
-                      value={form.speakerName ?? ""}
-                      onChangeText={(v) => {
-                        update("speakerName", v || null);
-                        // instant-save invited speaker
-                        queueInstant({ speakerName: v || null });
-                      }}
-                      onBlur={flushInstant}
-                      placeholder={t(
-                        "assignments.form.placeholder.speakerName",
-                      )}
-                    />
-                    {speakerHints.length > 0 ? (
-                      <View style={hint.box}>
-                        <Text style={hint.lead}>
-                          {t("assignments.speakerHints.lead")}
-                        </Text>
-                        {speakerHints.map((h) => (
-                          <Pressable
-                            key={h.id}
-                            style={hint.row}
-                            onPress={() => {
-                              update("speakerName", h.name);
-                              update("speakerCongregation", h.cong);
-                              void instant({
-                                speakerName: h.name,
-                                speakerCongregation: h.cong,
-                              });
-                            }}
-                          >
-                            <Ionicons
-                              name="person-circle-outline"
-                              size={16}
-                              color="#0369a1"
-                            />
-                            <View style={{ flex: 1 }}>
-                              <Text style={hint.name}>{h.name}</Text>
-                              {h.cong ? (
-                                <Text style={hint.cong}>{h.cong}</Text>
-                              ) : null}
-                            </View>
-                          </Pressable>
-                        ))}
-                      </View>
-                    ) : null}
-                    <FormField
-                      label={t("assignments.form.field.fromCongregation")}
-                      value={form.speakerCongregation ?? ""}
-                      onChangeText={(v) => {
-                        update("speakerCongregation", v || null);
-                        queueInstant({ speakerCongregation: v || null });
-                      }}
-                      onBlur={flushInstant}
-                      placeholder={t(
-                        "assignments.form.placeholder.fromCongregation",
-                      )}
-                    />
-                  </>
+                  <GuestSpeakerField
+                    name={form.speakerName ?? null}
+                    congregation={form.speakerCongregation ?? null}
+                    talkExchangeId={talkExchangeId ?? null}
+                    canReplace={perms.canCoordinatePublicTalks && autosave}
+                    onPick={(cardId) => {
+                      const card = (speakersQuery.data ?? []).find((c) => c.id === cardId);
+                      update(
+                        "speakerName",
+                        card ? [card.firstName, card.lastName].filter(Boolean).join(" ") : form.speakerName,
+                      );
+                      update("speakerCongregation", card?.externalCongregation?.name ?? null);
+                      update("visitingSpeakerId", cardId);
+                      void instant({ visitingSpeakerId: cardId });
+                    }}
+                    onNew={(fullName, cong) => {
+                      update("speakerName", fullName);
+                      update("speakerCongregation", cong);
+                      update("visitingSpeakerId", null);
+                      void instant({ speakerName: fullName, speakerCongregation: cong });
+                    }}
+                    onReplace={() => setQuickReplaceOpen(true)}
+                  />
                 )}
-                {/* Виден только когда докладчик уже назначен: заменять некого,
-                пока никто не назначен. */}
-                {(form.publisherId || form.speakerName) && !replaceOpen ? (
+                {/* «Приехал другой» for our own brother too; a guest has it on his card. */}
+                {speakerType === "local" &&
+                form.publisherId &&
+                autosave &&
+                perms.canCoordinatePublicTalks ? (
                   <Pressable
                     style={rp.link}
-                    onPress={() => setReplaceOpen(true)}
+                    onPress={() => setQuickReplaceOpen(true)}
                     hitSlop={6}
                   >
                     <Ionicons
@@ -982,158 +827,20 @@ export function AssignmentForm({
                     </Text>
                   </Pressable>
                 ) : null}
-                {replaceOpen ? (
-                  <View style={rp.box}>
-                    <View style={rp.head}>
-                      <Ionicons
-                        name="swap-horizontal"
-                        size={16}
-                        color="#0369a1"
-                      />
-                      <Text style={rp.title}>
-                        {t("assignments.replaceSpeaker.title")}
-                      </Text>
-                    </View>
-                    <Text style={rp.lead}>
-                      {t("assignments.replaceSpeaker.lead")}
-                    </Text>
-
-                    {/* Шаг первый: кто. Поиск, а не первые шесть карточек:
-                        справочник вырос, и «первые шесть» — это случайные
-                        шесть. */}
-                    <Text style={rp.step}>
-                      {t("assignments.replaceSpeaker.stepWho")}
-                    </Text>
-                    <TextInput
-                      style={rp.search}
-                      value={replaceSearch}
-                      onChangeText={setReplaceSearch}
-                      placeholder={t("assignments.replaceSpeaker.searchHint")}
-                      placeholderTextColor="#94a3b8"
-                    />
-                    {replaceCandidates.map((sp) => {
-                      const on = replaceSpeakerId === sp.id;
-                      return (
-                        <Pressable
-                          key={sp.id}
-                          style={[rp.row, on ? rp.rowOn : null]}
-                          onPress={() => {
-                            setReplaceSpeakerId(on ? null : sp.id);
-                            setReplaceLocalId(null);
-                          }}
-                        >
-                          <View style={{ flex: 1 }}>
-                            <Text style={rp.rowName}>{sp.name}</Text>
-                            {sp.cong ? (
-                              <Text style={rp.rowCong}>{sp.cong}</Text>
-                            ) : null}
-                          </View>
-                          {on ? (
-                            <Ionicons
-                              name="checkmark-circle"
-                              size={18}
-                              color="#0284c7"
-                            />
-                          ) : null}
-                        </Pressable>
-                      );
-                    })}
-                    {replaceSearch.trim().length >= 2 &&
-                    replaceCandidates.length === 0 ? (
-                      <Text style={rp.none}>
-                        {t("assignments.replaceSpeaker.noMatches")}
-                      </Text>
-                    ) : null}
-
-                    {/* Свой брат — случай не реже приезда второго гостя. */}
-                    {replaceSpeakerId ? null : (
-                      <>
-                        <Text style={rp.step}>
-                          {t("assignments.replaceSpeaker.stepLocal")}
-                        </Text>
-                        <PublisherSelector
-                          label=""
-                          value={replaceLocalId}
-                          onChange={(id) => {
-                            setReplaceLocalId(id);
-                            if (id) setReplaceSpeakerId(null);
-                          }}
-                          requiredCapability={requiredCap}
-                          currentWeekStart={form.weekStartDate}
-                          currentEventType={form.eventType}
-                        />
-                      </>
-                    )}
-
-                    {/* Или просто имя — для гостя, которого незачем заводить. */}
-                    {replaceSpeakerId || replaceLocalId ? null : (
-                      <>
-                        <Text style={rp.step}>
-                          {t("assignments.replaceSpeaker.stepByName")}
-                        </Text>
-                        <FormField
-                          label={t("assignments.form.field.speakerName")}
-                          value={replaceName}
-                          onChangeText={setReplaceName}
-                          placeholder={t(
-                            "assignments.form.placeholder.speakerName",
-                          )}
-                        />
-                        <FormField
-                          label={t("assignments.form.field.fromCongregation")}
-                          value={replaceCong}
-                          onChangeText={setReplaceCong}
-                          placeholder={t(
-                            "assignments.form.placeholder.fromCongregation",
-                          )}
-                        />
-                      </>
-                    )}
-
-                    {/* Шаг второй: что он говорит. Раньше об этом не
-                        спрашивали, и новому доставалась чужая речь. */}
-                    <Text style={rp.step}>
-                      {t("assignments.replaceSpeaker.stepTalk")}
-                    </Text>
-                    <PublicTalkSelector
-                      label=""
-                      value={replaceTalkId}
-                      onChange={(talk) => setReplaceTalkId(talk?.id ?? null)}
-                    />
-                    <Text style={rp.note}>
-                      {t("assignments.replaceSpeaker.talkKeepHint")}
-                    </Text>
-
-                    <FormField
-                      label={t("assignments.replaceSpeaker.reason")}
-                      value={replaceReason}
-                      onChangeText={setReplaceReason}
-                      placeholder={t("assignments.replaceSpeaker.reasonHint")}
-                    />
-                    <Text style={rp.note}>
-                      {t("assignments.replaceSpeaker.note")}
-                    </Text>
-                    <Pressable
-                      style={[rp.confirm, !replaceReady ? rp.confirmOff : null]}
-                      disabled={replaceMutation.isPending || !replaceReady}
-                      onPress={() => replaceMutation.mutate()}
-                    >
-                      {replaceMutation.isPending ? (
-                        <ActivityIndicator color="#fff" />
-                      ) : (
-                        <Text style={rp.confirmText}>
-                          {t("assignments.replaceSpeaker.confirm")}
-                        </Text>
-                      )}
-                    </Pressable>
-                    <Pressable
-                      onPress={() => setReplaceOpen(false)}
-                      hitSlop={6}
-                    >
-                      <Text style={rp.cancel}>{t("common.cancel")}</Text>
-                    </Pressable>
-                  </View>
-                ) : null}
+                <QuickReplaceSheet
+                  visible={quickReplaceOpen}
+                  weekStartDate={form.weekStartDate}
+                  currentName={
+                    form.speakerName ??
+                    (form.publisherId
+                      ? (allPublishersQuery.data?.data ?? [])
+                          .filter((p) => p.id === form.publisherId)
+                          .map((p) => [p.firstName, p.lastName].filter(Boolean).join(" "))[0] ?? null
+                      : null)
+                  }
+                  onClose={() => setQuickReplaceOpen(false)}
+                  onDone={() => onCancel?.()}
+                />
               </>
             ) : isPrayer && isCoWeek ? (
               <>
@@ -1633,32 +1340,3 @@ const rp = StyleSheet.create({
   },
 });
 
-/** Подсказки из справочника: тише формы, но читаемо. */
-const hint = StyleSheet.create({
-  box: {
-    marginTop: -4,
-    marginBottom: 8,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: "#e0f2fe",
-    backgroundColor: "#f8fafc",
-    overflow: "hidden",
-  },
-  lead: {
-    fontFamily: "Manrope_400Regular",
-    fontSize: 11.5,
-    color: "#64748b",
-    paddingHorizontal: 10,
-    paddingTop: 8,
-    paddingBottom: 2,
-  },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-  },
-  name: { fontFamily: "Manrope_400Regular", fontSize: 14, color: "#0f172a" },
-  cong: { fontFamily: "Manrope_400Regular", fontSize: 12, color: "#64748b", marginTop: 1 },
-});

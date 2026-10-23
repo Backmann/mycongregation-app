@@ -14,7 +14,7 @@ import {
  useWindowDimensions,
 } from "react-native";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useNavigation } from "expo-router";
+import { useLocalSearchParams, useNavigation } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { Ionicons } from "@expo/vector-icons";
 import { HEADER_ICON } from "../../../lib/header";
@@ -929,6 +929,23 @@ export default function TalkExchangeYearScreen() {
     setShowAllPubs(false);
     setOpen(true);
   };
+
+  // Opened from the programme («Открыть запись»): the entry comes up at once
+  // (23 October 2026). Once per visit of the screen.
+  const params = useLocalSearchParams<{ entry?: string }>();
+  const openedFromParam = useRef<string | null>(null);
+  useEffect(() => {
+    const id = typeof params.entry === "string" ? params.entry : null;
+    if (!id || openedFromParam.current === id) return;
+    const entry = (listQuery.data ?? []).find((e) => e.id === id);
+    if (!entry) return;
+    const monday = mondayISO(String(entry.date).slice(0, 10));
+    const w = weeksFlat.find((x) => x.monday === monday);
+    if (!w) return;
+    openedFromParam.current = id;
+    openSlot(w, entry.direction, entry);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params.entry, listQuery.data, weeksFlat]);
 
   const pickSpeaker = (id: string) => {
     const sel = visitingSpeakerId === id;

@@ -520,6 +520,13 @@ export interface Assignment {
   specialTalk?: boolean;
   speakerName: string | null;
   speakerCongregation: string | null;
+  /** The guest's directory card (weekend public talk). */
+  visitingSpeakerId?: string | null;
+  /**
+   * The weekend talk's own entry in the journal «К нам», which owns who
+   * speaks (23 October 2026). The line shows that entry.
+   */
+  talkExchangeId?: string | null;
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;
@@ -545,6 +552,8 @@ export interface CreateAssignmentInput {
   publicTalkId?: string | null;
   speakerName?: string | null;
   speakerCongregation?: string | null;
+  /** A guest picked from the directory by his card (weekend public talk). */
+  visitingSpeakerId?: string | null;
   /**
    * A correction of a programme that is already the record (a week after
    * its meeting) — honoured only for an administrator or the coordinator of
@@ -1761,6 +1770,10 @@ export interface TalkExchange {
   note: string | null;
   createdAt: string;
   updatedAt: string;
+  /** The weekend was cancelled; the entry waits, marked (23 October 2026). */
+  meetingCancelled?: boolean;
+  /** Who made it: a person in the journal, or the app from a typed name. */
+  origin?: 'journal' | 'programme';
   /** Transient: set on create/update when an occupied program slot was not overwritten. */
   programConflict?: boolean;
   /**
@@ -1796,6 +1809,10 @@ export interface TalkAttentionItem {
 }
 
 export const talkExchangeApi = {
+  async get(id: string): Promise<TalkExchange> {
+    const { data } = await api.get<TalkExchange>(`/talk-exchange/${id}`);
+    return data;
+  },
   async attention(): Promise<TalkAttentionItem[]> {
     const { data } = await api.get<TalkAttentionItem[]>('/talk-exchange/attention');
     return data;
