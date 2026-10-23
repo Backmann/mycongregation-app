@@ -19,6 +19,7 @@ import {
   extractErrorMessage,
   Publisher,
   publishersApi,
+  RemovalImpact,
   RemovalReason,
   serviceReportsApi,
   UpdatePublisherInput,
@@ -103,6 +104,16 @@ export function PublisherDetail({ id }: { id: string | undefined }) {
   const [removeReason, setRemoveReason] = useState<RemovalReason | null>(null);
   const [removeDate, setRemoveDate] = useState('');
   const [removeNote, setRemoveNote] = useState('');
+  /**
+   * Close the sign-in too — ticked by default (23 October 2026, Lionel's
+   * decision). A departed elder used to keep his role and his reports.
+   */
+  const [closeAccount, setCloseAccount] = useState(true);
+  const impactQuery = useQuery({
+    queryKey: ['publisher', id, 'removal-impact'],
+    queryFn: () => publishersApi.removalImpact(id!),
+    enabled: !!id && removeOpen,
+  });
 
   const {
     data: publisher,
@@ -154,8 +165,12 @@ export function PublisherDetail({ id }: { id: string | undefined }) {
   });
 
   const removeMutation = useMutation({
-    mutationFn: (vars: { reason: RemovalReason; date?: string; note?: string }) =>
-      publishersApi.remove(id!, vars),
+    mutationFn: (vars: {
+      reason: RemovalReason;
+      date?: string;
+      note?: string;
+      closeAccount?: boolean;
+    }) => publishersApi.remove(id!, vars),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['publishers'] });
       queryClient.invalidateQueries({ queryKey: ['publisher', id] });
@@ -168,6 +183,7 @@ export function PublisherDetail({ id }: { id: string | undefined }) {
     setRemoveReason(null);
     setRemoveDate('');
     setRemoveNote('');
+    setCloseAccount(true);
     setRemoveOpen(true);
   };
 
@@ -183,6 +199,8 @@ export function PublisherDetail({ id }: { id: string | undefined }) {
       reason: removeReason,
       date: removeDate.trim() || undefined,
       note: removeNote.trim() || undefined,
+      closeAccount:
+        !!impactQuery.data?.account?.closable && closeAccount,
     });
   };
 
@@ -281,6 +299,10 @@ export function PublisherDetail({ id }: { id: string | undefined }) {
           capabilities: publisher.capabilities ?? {},
         }}
         onSubmit={updateMutation.mutateAsync}
+        onCorrectPioneerKind={async (kind) => {
+          await publishersApi.correctPioneerKind(id!, kind);
+          await queryClient.invalidateQueries({ queryKey: ['publisher', id] });
+        }}
         isSubmitting={updateMutation.isPending}
         submitLabel={t('publishers.actions.save')}
         onCancel={() => setEditing(false)}
@@ -599,6 +621,9 @@ export function PublisherDetail({ id }: { id: string | undefined }) {
         onReason={setRemoveReason}
         onDate={setRemoveDate}
         onNote={setRemoveNote}
+        impact={impactQuery.data ?? null}
+        closeAccount={closeAccount}
+        onCloseAccount={setCloseAccount}
         onCancel={() => setRemoveOpen(false)}
         onSubmit={submitRemove}
       />
@@ -698,9 +723,15 @@ function RemoveModal({
   onReason,
   onDate,
   onNote,
+  impact,
+  closeAccount,
+  onCloseAccount,
   onCancel,
   onSubmit,
 }: {
+  impact: RemovalImpact | null;
+  closeAccount: boolean;
+  onCloseAccount: (v: boolean) => void;
   visible: boolean;
   reason: RemovalReason | null;
   date: string;
@@ -801,6 +832,70 @@ function RemoveModal({
               />
             </>
           )}
+          {impact && (impact.account?.active || impact.responsibilities.length > 0) ? (
+            <View style={styles.leaveBox}>
+              {impact.account?.active ? (
+                <>
+                  <View style={styles.leaveHead}>
+                    <Ionicons name="lock-closed-outline" size={18} color="#b45309" />
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.leaveTitle}>
+                        {t('publishers.removal.hasAccount')}
+                      </Text>
+                      <Text style={styles.leaveSub}>
+                        {t('publishers.removal.accountRole', {
+                          role: t(`admin.users.roles.${impact.account.role}`),
+                        })}
+                      </Text>
+                    </View>
+                  </View>
+                  {impact.account.closable ? (
+                    <Pressable
+                      style={styles.leaveCheck}
+                      onPress={() => onCloseAccount(!closeAccount)}
+                      accessibilityRole="checkbox"
+                      accessibilityState={{ checked: closeAccount }}
+                    >
+                      <Ionicons
+                        name={closeAccount ? 'checkbox' : 'square-outline'}
+                        size={22}
+                        color="#0e7490"
+                      />
+                      <Text style={styles.leaveCheckText}>
+                        {t('publishers.removal.closeAccount')}
+                      </Text>
+                      <Text style={styles.leaveCheckHint}>
+                        {t('publishers.removal.recommended')}
+                      </Text>
+                    </Pressable>
+                  ) : (
+                    <Text style={styles.leaveSub}>
+                      {t(`serverError.codes.${impact.account.refusal ?? 'ACCOUNT_NOT_CLOSABLE'}`, {
+                        defaultValue: t('publishers.removal.accountKept'),
+                      })}
+                    </Text>
+                  )}
+                </>
+              ) : null}
+              {impact.responsibilities.length > 0 ? (
+                <View style={{ gap: 6 }}>
+                  <Text style={styles.leaveTitleSmall}>
+                    {t('publishers.removal.responsibilitiesGo')}
+                  </Text>
+                  <View style={styles.leaveChips}>
+                    {impact.responsibilities.map((r) => (
+                      <Text key={r} style={styles.leaveChip}>
+                        {t(`responsibilities.types.${r}`)}
+                      </Text>
+                    ))}
+                  </View>
+                  <Text style={styles.leaveSub}>
+                    {t('publishers.removal.assignOther')}
+                  </Text>
+                </View>
+              ) : null}
+            </View>
+          ) : null}
           <View style={styles.modalButtons}>
             <Pressable
               style={[styles.modalBtn, styles.modalBtnCancel]}
@@ -833,6 +928,46 @@ function RemoveModal({
 }
 
 const styles = StyleSheet.create({
+  leaveBox: {
+    marginTop: 14,
+    borderWidth: 1,
+    borderColor: '#fde68a',
+    backgroundColor: '#fffbeb',
+    borderRadius: 14,
+    padding: 12,
+    gap: 10,
+  },
+  leaveHead: { flexDirection: 'row', gap: 10, alignItems: 'flex-start' },
+  leaveTitle: { fontFamily: 'Manrope_700Bold', fontSize: 15, color: '#78350f' },
+  leaveTitleSmall: { fontFamily: 'Manrope_700Bold', fontSize: 13, color: '#78350f' },
+  leaveSub: { fontFamily: 'Manrope_400Regular', fontSize: 13, color: '#92400e' },
+  leaveCheck: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: '#ffffff',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#fde68a',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    minHeight: 44,
+  },
+  leaveCheckText: { fontFamily: 'Manrope_700Bold', fontSize: 14, color: '#0f172a', flex: 1 },
+  leaveCheckHint: { fontFamily: 'Manrope_400Regular', fontSize: 12, color: '#64748b' },
+  leaveChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  leaveChip: {
+    fontFamily: 'Manrope_600SemiBold',
+    fontSize: 13,
+    color: '#0f172a',
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#fde68a',
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    overflow: 'hidden',
+  },
   statusRow: {
     flexDirection: 'row',
     alignItems: 'center',

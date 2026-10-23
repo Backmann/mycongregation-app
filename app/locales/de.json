@@ -339,7 +339,13 @@
         "regular": "Allgemeiner Pionier",
         "special": "Sonderpionier",
         "missionary": "Missionar"
-      }
+      },
+      "kindChangeHint": "Der bisherige Dienst bleibt im Verlauf ({{kind}} seit {{since}}), die Berichte dieser Monate ändern sich nicht.",
+      "correctLink": "Art war falsch eingetragen – für die ganze Zeit korrigieren",
+      "correctPick": "Welche Art ist richtig? Sie ersetzt die bisherige für alle Monate, ohne neuen Abschnitt.",
+      "correctTitle": "Art für die ganze Zeit korrigieren?",
+      "correctBody": "„{{from}}“ seit {{since}} wird für alle diese Monate zu „{{to}}“. Nur wenn die Art falsch eingetragen war.",
+      "correctConfirm": "Korrigieren"
     },
     "pioneerSinceFormat": "{{label}} (seit {{date}})",
     "gender": {
@@ -364,7 +370,14 @@
       "movedToPlaceholder": "z. B. Versammlung Dortmund-Zentrum",
       "note": "Notiz",
       "hint": "Verstorben · gewechselt · entfernt — der Eintrag bleibt erhalten und kann wiederhergestellt werden",
-      "dateHint": "Das Datum entscheidet, in welchen Berichten er bleibt: Wegzug am 1. September oder später — er bleibt im Jahresbericht des abgelaufenen Dienstjahres und in allen Monaten davor."
+      "dateHint": "Das Datum entscheidet, in welchen Berichten er bleibt: Wegzug am 1. September oder später — er bleibt im Jahresbericht des abgelaufenen Dienstjahres und in allen Monaten davor.",
+      "hasAccount": "Er hat einen Zugang zur App",
+      "accountRole": "Rolle: {{role}}",
+      "closeAccount": "Zugang schließen",
+      "recommended": "empfohlen",
+      "accountKept": "Der Zugang bleibt offen",
+      "responsibilitiesGo": "Diese Zuständigkeiten werden entfernt",
+      "assignOther": "Bitte auf der Seite „Zuständigkeiten“ einen anderen einteilen"
     },
     "actions": {
       "edit": "Bearbeiten",
@@ -2546,6 +2559,10 @@
     "add": "Abwesenheit hinzufügen",
     "reason": {
       "pioneerSchool": "Pionierdienstschule"
+    },
+    "fromSchool": {
+      "title": "Aus der Pionierdienstschule",
+      "body": "Diese Abwesenheit hat die Schule eingetragen: Der Bruder hat an diesem Tag eine Aufgabe in der Schule. Um sie zu entfernen, die Einteilung in der Schule ändern."
     }
   },
   "home": {
@@ -4899,7 +4916,10 @@
       "STAGE_PIN_INVALID": "Die PIN für das Bildschirmmenü muss 4 bis 8 Ziffern haben.",
       "STAGE_ACCOUNT_FIXED": "Ein Bühnenbildschirm ist keine Person: Er hat keine Karte, und seine Rolle ändert sich nicht.",
       "RESPONSIBILITY_OWN_ASSISTANT": "Ein Bruder kann nicht sein eigener Assistent sein: Diese Zuständigkeit und ihr Assistent sind zwei verschiedene Brüder.",
-      "GROUP_LEADER_SISTER": "Gruppenaufseher und sein Gehilfe müssen Brüder sein."
+      "GROUP_LEADER_SISTER": "Gruppenaufseher und sein Gehilfe müssen Brüder sein.",
+      "ABSENCE_FROM_SCHOOL": "Diese Abwesenheit stammt aus einer Einteilung in der Pionierdienstschule. Bitte die Einteilung in der Schule ändern.",
+      "PIONEER_KIND_CHANGE_DATE": "Die neue Art des Dienstes muss später beginnen als die bisherige. Bitte den Monat angeben, ab dem er so dient, oder die Art für die ganze Zeit korrigieren.",
+      "PIONEER_KIND_CORRECTION_INVALID": "Für die ganze Zeit korrigieren lässt sich nur die Art eines aktuellen allgemeinen Pioniers, Sonderpioniers oder Missionars."
     }
   },
   "stage": {

@@ -3118,6 +3118,18 @@ export interface StatusReasons {
   manuallyOverridden: boolean;
 }
 
+/** Answer of GET /publishers/:id/removal-impact. */
+export interface RemovalImpact {
+  account: {
+    active: boolean;
+    role: UserRole;
+    closable: boolean;
+    /** Why it cannot be closed (OWNER_PROTECTED, LAST_ACTIVE_ADMIN, …). */
+    refusal: string | null;
+  } | null;
+  responsibilities: string[];
+}
+
 export const publishersApi = {
   /** "These contacts are still correct" — for a publisher who doesn't use the app. */
   async confirmContacts(id: string): Promise<Publisher> {
@@ -3170,9 +3182,32 @@ export const publishersApi = {
     );
     return data;
   },
+  /** What marking the card departed would take with it (23 October 2026). */
+  async removalImpact(id: string): Promise<RemovalImpact> {
+    const { data } = await api.get<RemovalImpact>(
+      `/publishers/${id}/removal-impact`,
+    );
+    return data;
+  },
+  /** The pioneer kind was written down wrong: corrected for all its months. */
+  async correctPioneerKind(
+    id: string,
+    pioneerType: PioneerType,
+  ): Promise<Publisher> {
+    const { data } = await api.post<Publisher>(
+      `/publishers/${id}/pioneer-kind-correction`,
+      { pioneerType },
+    );
+    return data;
+  },
   async remove(
     id: string,
-    body: { reason: RemovalReason; date?: string; note?: string },
+    body: {
+      reason: RemovalReason;
+      date?: string;
+      note?: string;
+      closeAccount?: boolean;
+    },
   ): Promise<Publisher> {
     const { data } = await api.post<Publisher>(
       `/publishers/${id}/remove`,

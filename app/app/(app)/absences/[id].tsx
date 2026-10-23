@@ -98,6 +98,11 @@ export default function AbsenceDetailScreen() {
   const removed = !!data.deletedAt;
   /** Идёт из поездки — значит принадлежит ей, а не этому экрану. */
   const fromTrip = !!data.talkExchangeId;
+  /**
+   * Written by the pioneer service school (23 October 2026) — it follows the
+   * duty there. Deleting it here broke the school's later assignments.
+   */
+  const fromSchool = !!data.pioneerSchoolDutyId;
 
   if (editing) {
     return (
@@ -167,7 +172,21 @@ export default function AbsenceDetailScreen() {
         </View>
       ) : null}
 
-      {canWrite && !fromTrip ? (
+      {fromSchool ? (
+        <View style={styles.fromTrip}>
+          <Ionicons name="school-outline" size={16} color="#0369a1" />
+          <View style={{ flex: 1 }}>
+            <Text style={styles.fromTripTitle}>
+              {t("absences.fromSchool.title")}
+            </Text>
+            <Text style={styles.fromTripText}>
+              {t("absences.fromSchool.body")}
+            </Text>
+          </View>
+        </View>
+      ) : null}
+
+      {canWrite && !fromTrip && !fromSchool ? (
         <View style={styles.actions}>
           {removed ? (
             <Pressable
