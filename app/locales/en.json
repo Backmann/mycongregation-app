@@ -865,24 +865,8 @@
       "published": "Published",
       "cancelled": "Canceled"
     },
-    "speakerHints": {
-      "lead": "From the directory — pick one so the name is spelled exactly the same"
-    },
     "replaceSpeaker": {
-      "title": "A different speaker came",
-      "stepWho": "Who is speaking today",
-      "searchHint": "Search by name or congregation",
-      "noMatches": "Nobody found. Type the name below — a card will be created automatically.",
-      "stepLocal": "Or one of our brothers",
-      "stepByName": "Or type a name",
-      "stepTalk": "Which talk he is giving",
-      "talkKeepHint": "Leave unset to keep the talk as it is.",
-      "action": "A different speaker came",
-      "lead": "Who is speaking today? The previous visit stays in the history as one that did not take place — so you can later see who was invited and did not come.",
-      "reason": "Reason (optional)",
-      "reasonHint": "got sick, did not come…",
-      "note": "The program updates immediately — the chairman will read the correct name.",
-      "confirm": "Replace the speaker"
+      "action": "A different speaker came"
     },
     "speakerType": {
       "local": "Local publisher",
@@ -909,8 +893,6 @@
         "durationMinutes": "Duration (minutes)",
         "speakerTypeLabel": "Speaker type",
         "publisher": "Publisher",
-        "speakerName": "Speaker name",
-        "fromCongregation": "From congregation",
         "assistant": "Assistant",
         "statusLabel": "Status",
         "requiredSkill": "Required qualification",
@@ -924,8 +906,6 @@
         "partKey": "bible_reading",
         "partTitleOverride": "e.g. Numbers 1:1-19",
         "duration": "4",
-        "speakerName": "John Smith",
-        "fromCongregation": "Berlin Central",
         "talkThemeManual": "Or enter the theme manually"
       },
       "validation": {
@@ -5066,5 +5046,31 @@
     "offline": "Not sent — no connection. Check the internet and tap again.",
     "done": "Done — on every screen",
     "undoHint": "A mistake? “Undo” on his visit in the talk log, one tap"
+  },
+  "guestField": {
+    "fromJournal": "FROM THE TALK LOG",
+    "inProgramme": "IN THE PROGRAM",
+    "confirmed": "Confirmed",
+    "tentative": "Tentative",
+    "cancelled": "Meeting canceled",
+    "choose": "Choose another",
+    "replace": "A different one came",
+    "openEntry": "Open the entry",
+    "oneRecord": "This is one record for both: what changes here, the talk coordinator sees in his log — and the other way round.",
+    "whoComes": "Who is coming",
+    "searchPlaceholder": "Name or congregation",
+    "newSpeaker": "New speaker: “{{name}}”",
+    "newSpeakerHint": "Make his card and book him for this week",
+    "needFullName": "Type the full first and last name",
+    "nothingSaved": "Nothing is saved while you type. It is saved when you pick a brother or tap “New speaker”.",
+    "isItHim": "Is this him?",
+    "isItHimBody": "You typed “{{typed}}”. The directory already has a brother who looks the same:",
+    "yesHim": "Yes, it is him",
+    "notHim": "No, another brother",
+    "newName": "First and last name",
+    "newCong": "Congregation",
+    "newCongPlaceholder": "Can be added later",
+    "saveNew": "Make and book",
+    "back": "Back to search"
   }
 }

@@ -74,6 +74,9 @@ export function AssignmentSheet({
     return () => clearTimeout(timer);
   }, [assignment]);
   const queryKey = ["assignments", weekStartISO];
+  // The journal entry the weekend talk line shows, as the last save answered
+  // — the row this sheet was opened with is a snapshot (23 October 2026).
+  const [savedLink, setSavedLink] = useState<{ id: string; link: string | null } | null>(null);
   // A correction after the fact, opened by the week (see ProgrammeLockNote):
   // every write from here says so, and the server marks it in the journal.
   const retro = useProgrammeRetro();
@@ -101,7 +104,11 @@ export function AssignmentSheet({
       if (ctx?.prev) queryClient.setQueryData(queryKey, ctx.prev);
     },
     onSuccess: (result) => {
-      const warnings = (result as Assignment).ruleWarnings;
+      const r = result as Assignment;
+      if (r && "talkExchangeId" in r) {
+        setSavedLink({ id: r.id, link: r.talkExchangeId ?? null });
+      }
+      const warnings = r.ruleWarnings;
       if (warnings && warnings.length) {
         const msg = warnings
           .map((w) =>
@@ -266,6 +273,9 @@ export function AssignmentSheet({
               lockIdentity
               circuitOverseer={circuitOverseer}
               coPicker={coPicker}
+              talkExchangeId={
+                savedLink?.id === active.id ? savedLink.link : (active.talkExchangeId ?? null)
+              }
               readOnly={!canEdit}
             />
             {canEdit && (
