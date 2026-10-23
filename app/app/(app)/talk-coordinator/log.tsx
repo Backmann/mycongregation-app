@@ -887,6 +887,44 @@ export default function TalkExchangeYearScreen() {
     await undoMutation.mutateAsync(entry.id);
   };
 
+  /**
+   * A guest booked for a weekend whose meeting was cancelled (mockup 13,
+   * 23 October 2026): his entry waits, marked, until the coordinator moves
+   * the visit to another week or says it will not take place.
+   */
+  const [moveEntry, setMoveEntry] = useState<TalkExchange | null>(null);
+  const moveTargets = useMemo(() => {
+    if (!moveEntry) return [] as WeekRow[];
+    const from = mondayISO(String(moveEntry.date).slice(0, 10));
+    const today = mondayISO(formatDateISO(new Date()));
+    return weeksFlat
+      .filter(
+        (w) =>
+          w.monday >= today &&
+          w.monday !== from &&
+          !byWeek.get(w.monday)?.incoming &&
+          talkSlotByWeek.get(w.monday)?.status !== "cancelled" &&
+          // A congress or the circuit overseer's visit: no guest that weekend.
+          eventsForWeekend(w.monday).length === 0,
+      )
+      .slice(0, 12);
+  }, [moveEntry, weeksFlat, byWeek, talkSlotByWeek, eventsForWeekend]);
+  const askNotHeld = async (entry: TalkExchange) => {
+    const ok = await confirm({
+      title: t("talkCoordinator.cancelled.notHeldTitle"),
+      body: t("talkCoordinator.cancelled.notHeldBody", {
+        name: incomingName(entry) ?? t("talkCoordinator.log.unknownSpeaker"),
+      }),
+      confirmLabel: t("talkCoordinator.cancelled.notHeld"),
+      cancelLabel: t("common.cancel"),
+    });
+    if (!ok) return;
+    await updateMutation.mutateAsync({
+      id: entry.id,
+      input: { status: "did_not_happen" },
+    });
+  };
+
   const openSwap = (w: WeekRow) => {
     setSwapTarget(w);
     setSwapSource(null);
@@ -1670,6 +1708,36 @@ export default function TalkExchangeYearScreen() {
                                   id={slot.incoming.publicTalkId}
                                   date={slot.incoming.date}
                                 />
+                                {slot.incoming.meetingCancelled ? (
+                                  <View style={styles.cancelledBox}>
+                                    <Text style={styles.cancelledBadge}>
+                                      {t("talkCoordinator.cancelled.badge")}
+                                    </Text>
+                                    <Text style={styles.cancelledHint}>
+                                      {t("talkCoordinator.cancelled.hint")}
+                                    </Text>
+                                    <View style={styles.cancelledActions}>
+                                      <Pressable
+                                        style={styles.cancelledMove}
+                                        onPress={() => setMoveEntry(slot.incoming!)}
+                                        accessibilityRole="button"
+                                      >
+                                        <Text style={styles.cancelledMoveText}>
+                                          {t("talkCoordinator.cancelled.move")}
+                                        </Text>
+                                      </Pressable>
+                                      <Pressable
+                                        style={styles.cancelledNot}
+                                        onPress={() => void askNotHeld(slot.incoming!)}
+                                        accessibilityRole="button"
+                                      >
+                                        <Text style={styles.cancelledNotText}>
+                                          {t("talkCoordinator.cancelled.notHeld")}
+                                        </Text>
+                                      </Pressable>
+                                    </View>
+                                  </View>
+                                ) : null}
                               </>
                             ) : null}
                           </Slot>
@@ -1909,6 +1977,46 @@ export default function TalkExchangeYearScreen() {
           {swapError ? <Text style={styles.swapError}>{swapError}</Text> : null}
         </View>
       </Dialog>
+
+      <Sheet
+        visible={!!moveEntry}
+        title={t("talkCoordinator.cancelled.moveTitle")}
+        subtitle={
+          moveEntry ? (
+            <Text style={styles.editorDate}>
+              {incomingName(moveEntry) ?? t("talkCoordinator.log.unknownSpeaker")}
+            </Text>
+          ) : undefined
+        }
+        onClose={() => setMoveEntry(null)}
+        closeLabel={t("common.cancel")}
+        variant="bottom"
+      >
+        <View style={{ gap: 8, paddingBottom: 8 }}>
+          {moveTargets.map((w) => (
+            <Pressable
+              key={w.monday}
+              style={styles.moveRow}
+              disabled={updateMutation.isPending}
+              onPress={async () => {
+                if (!moveEntry) return;
+                await updateMutation.mutateAsync({
+                  id: moveEntry.id,
+                  input: { date: w.date },
+                });
+                setMoveEntry(null);
+              }}
+              accessibilityRole="button"
+            >
+              <Text style={styles.moveRowText}>{fmtDay(w.date)}</Text>
+              <Ionicons name="chevron-forward" size={18} color="#0e7490" />
+            </Pressable>
+          ))}
+          {moveTargets.length === 0 ? (
+            <Text style={styles.cancelledHint}>{t("talkCoordinator.cancelled.noWeeks")}</Text>
+          ) : null}
+        </View>
+      </Sheet>
 
       <Sheet
         visible={open}
@@ -2857,6 +2965,64 @@ const styles = StyleSheet.create({
   missedRow: { flexDirection: "row", alignItems: "center", gap: 6 },
   missedText: { fontFamily: "Manrope_400Regular", flex: 1, fontSize: 12, color: "#b45309", lineHeight: 17 },
   missedUndo: { fontSize: 12, color: "#0369a1", fontFamily: "Manrope_600SemiBold" },
+  cancelledBox: {
+    marginTop: 8,
+    borderWidth: 1.5,
+    borderStyle: "dashed",
+    borderColor: "#94a3b8",
+    backgroundColor: "#f8fafc",
+    borderRadius: 12,
+    padding: 10,
+    gap: 6,
+  },
+  cancelledBadge: {
+    alignSelf: "flex-start",
+    fontFamily: "Manrope_800ExtraBold",
+    fontSize: 11,
+    letterSpacing: 0.4,
+    color: "#ffffff",
+    backgroundColor: "#64748b",
+    borderRadius: 999,
+    paddingHorizontal: 9,
+    paddingVertical: 3,
+    overflow: "hidden",
+  },
+  cancelledHint: { fontFamily: "Manrope_400Regular", fontSize: 12, color: "#475569", lineHeight: 17 },
+  cancelledActions: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  cancelledMove: {
+    flexShrink: 1,
+    backgroundColor: "#0e7490",
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    minHeight: 40,
+    justifyContent: "center",
+  },
+  cancelledMoveText: { fontFamily: "Manrope_700Bold", fontSize: 13, color: "#ffffff" },
+  cancelledNot: {
+    flexShrink: 1,
+    borderWidth: 1,
+    borderColor: "#cbd5e1",
+    backgroundColor: "#ffffff",
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    minHeight: 40,
+    justifyContent: "center",
+  },
+  cancelledNotText: { fontFamily: "Manrope_700Bold", fontSize: 13, color: "#334155" },
+  moveRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    minHeight: 50,
+  },
+  moveRowText: { fontFamily: "Manrope_700Bold", fontSize: 15, color: "#0f172a" },
   slotCong: { fontFamily: "Manrope_400Regular", fontSize: 11, color: "#64748b", marginTop: 1 },
   slotAdd: { fontFamily: "Manrope_400Regular", fontSize: 12, color: "#94a3b8", marginTop: 4 },
   outCol: {

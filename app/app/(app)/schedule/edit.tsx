@@ -2002,17 +2002,26 @@ function AssignmentRow({
               ) : null}
             </View>
           ) : hasInvitedSpeaker ? (
-            <View style={[styles.chip, styles.chipSpeaker]}>
-              <Text style={styles.chipSpeakerText}>
-                {assignment.speakerName}
-                {assignment.speakerCongregation ? (
-                  <Text style={styles.chipSpeakerCong}>
-                    {" · "}
-                    {assignment.speakerCongregation}
-                  </Text>
-                ) : null}
-              </Text>
-            </View>
+            <>
+              <View style={[styles.chip, styles.chipSpeaker]}>
+                <Text style={styles.chipSpeakerText}>
+                  {assignment.speakerName}
+                  {assignment.speakerCongregation ? (
+                    <Text style={styles.chipSpeakerCong}>
+                      {" · "}
+                      {assignment.speakerCongregation}
+                    </Text>
+                  ) : null}
+                </Text>
+              </View>
+              {/* One record with the coordinator's journal (mockup 14). */}
+              {assignment.talkExchangeId ? (
+                <View style={[styles.chip, styles.chipJournal]}>
+                  <Ionicons name="book-outline" size={12} color="#0369a1" />
+                  <Text style={styles.chipJournalText}>{t("guestField.fromJournalShort")}</Text>
+                </View>
+              ) : null}
+            </>
           ) : (
             <View style={[styles.chip, styles.chipEmpty]}>
               <Ionicons name="person-add-outline" size={13} color="#94a3b8" />
@@ -2339,6 +2348,8 @@ const styles = StyleSheet.create({
     fontFamily: "Manrope_500Medium",
   },
   chipSpeaker: { backgroundColor: "#ede9fe" },
+  chipJournal: { backgroundColor: "#e0f2fe", borderColor: "#bae6fd" },
+  chipJournalText: { fontFamily: "Manrope_700Bold", fontSize: 11.5, color: "#0369a1", marginLeft: 4 },
   chipSpeakerText: {
     fontSize: 13,
     color: "#6d28d9",

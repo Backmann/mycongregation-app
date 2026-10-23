@@ -3101,6 +3101,16 @@
       "speakers": "Speakers from this congregation",
       "noSpeakers": "Nobody listed yet",
       "addSpeaker": "Add a speaker from this congregation"
+    },
+    "cancelled": {
+      "badge": "MEETING CANCELED",
+      "hint": "Awaiting a decision. If the cancellation is lifted, the entry returns to the program as it was.",
+      "move": "Move",
+      "notHeld": "Will not take place",
+      "moveTitle": "Move to which week?",
+      "noWeeks": "No free week ahead — free a week in the talk log first.",
+      "notHeldTitle": "The visit will not take place?",
+      "notHeldBody": "The visit of {{name}} stays in the history as not held."
     }
   },
   "rules": {
@@ -5071,6 +5081,7 @@
     "newCong": "Congregation",
     "newCongPlaceholder": "Can be added later",
     "saveNew": "Make and book",
-    "back": "Back to search"
+    "back": "Back to search",
+    "fromJournalShort": "from the talk log"
   }
 }
