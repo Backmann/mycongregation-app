@@ -366,17 +366,26 @@ export default function PioneerSchoolScreen() {
             />
           </View>
           <ScrollView keyboardShouldPersistTaps="handled">
-            <Pressable
-              style={styles.pickRow}
-              onPress={() =>
-                picking &&
-                assignMut.mutate({ dutyId: picking.id, helperId: null })
-              }
-            >
-              <Text style={styles.pickClear}>
-                {t('pioneerSchool.clearSlot')}
+            {/* «Clear» only when somebody is there to clear; an empty list
+                says so rather than looking broken (walk, 23 October 2026). */}
+            {picking?.helperId ? (
+              <Pressable
+                style={styles.pickRow}
+                onPress={() =>
+                  picking &&
+                  assignMut.mutate({ dutyId: picking.id, helperId: null })
+                }
+              >
+                <Text style={styles.pickClear}>
+                  {t('pioneerSchool.clearSlot')}
+                </Text>
+              </Pressable>
+            ) : null}
+            {pickList.length === 0 && !pickSearch.trim() ? (
+              <Text style={[styles.pickClear, { paddingHorizontal: 16, paddingVertical: 10 }]}>
+                {t('pioneerSchool.helpers.emptyPick')}
               </Text>
-            </Pressable>
+            ) : null}
             {canManagePioneerSchool ? (
               <Pressable
                 style={styles.pickRow}
@@ -557,14 +566,14 @@ function DayTimeSheet({
       <Text style={styles.hint}>{t('pioneerSchool.dayTimeHint')}</Text>
       <View style={{ flexDirection: 'row', gap: 10 }}>
         <TextInput
-          style={[styles.input, { flex: 1 }]}
+          style={[styles.input, { flex: 1, minWidth: 0 }]}
           value={start}
           onChangeText={setStart}
           placeholder="09:00"
           placeholderTextColor="#94a3b8"
         />
         <TextInput
-          style={[styles.input, { flex: 1 }]}
+          style={[styles.input, { flex: 1, minWidth: 0 }]}
           value={end}
           onChangeText={setEnd}
           placeholder="16:00"
@@ -754,14 +763,14 @@ function SchoolEditSheet({
             <Text style={styles.label}>{t('pioneerSchool.fields.time')}</Text>
             <View style={{ flexDirection: 'row', gap: 10 }}>
               <TextInput
-                style={[styles.input, { flex: 1 }]}
+                style={[styles.input, { flex: 1, minWidth: 0 }]}
                 value={startTime}
                 onChangeText={setStartTime}
                 placeholder="09:00"
                 placeholderTextColor="#94a3b8"
               />
               <TextInput
-                style={[styles.input, { flex: 1 }]}
+                style={[styles.input, { flex: 1, minWidth: 0 }]}
                 value={endTime}
                 onChangeText={setEndTime}
                 placeholder="16:00"

@@ -13,6 +13,7 @@ import { resolveHallAddress } from '../lib/hallAddress';
 import { notify } from '../lib/error-bus';
 import { Sheet } from './Sheet';
 import { HallBusyNote } from './HallBusyNote';
+import { formatDateISO } from '../lib/dates';
 
 /**
  * «Подготовить месяц» (October 2026, stage 3b).
@@ -117,8 +118,13 @@ export function FieldServicePrepareSheet({
       case 'never_led':
         return t('fieldService.why.neverLed');
       case 'last_led':
+        // A «last» meeting still ahead of today is an assignment, not a past
+        // one: «zuletzt am 24. Oktober» was said the day before (walk, 23
+        // October 2026).
         return c.lastDate
-          ? t('fieldService.why.lastLed', { date: fmtDayMonth(c.lastDate) })
+          ? c.lastDate.slice(0, 10) > formatDateISO(new Date())
+            ? t('fieldService.why.upcoming', { date: fmtDayMonth(c.lastDate) })
+            : t('fieldService.why.lastLed', { date: fmtDayMonth(c.lastDate) })
           : t('fieldService.why.neverLed');
       case 'upcoming':
         return c.lastDate

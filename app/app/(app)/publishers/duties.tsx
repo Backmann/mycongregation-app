@@ -96,6 +96,10 @@ export default function DutiesScreen() {
 
   const counts = new Map<string, { total: number; assigned: number }>();
   for (const d of dutiesQ.data ?? []) {
+    // The timekeeper is a place a congregation may leave empty: counted
+    // neither here nor on «Собрание» («0 из 8» there, «0/9» here — walk,
+    // 23 October 2026; server readiness OPTIONAL_DUTIES).
+    if (d.dutyType === 'timekeeper') continue;
     const key = `${d.weekStartDate}|${d.eventType}`;
     const c = counts.get(key) ?? { total: 0, assigned: 0 };
     c.total += 1;

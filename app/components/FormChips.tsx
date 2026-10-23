@@ -1,6 +1,5 @@
 import {
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -27,11 +26,10 @@ export function FormChips<T extends string | number | null>({
   return (
     <View style={styles.container}>
       {label ? <Text style={styles.label}>{label}</Text> : null}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.chips}
-      >
+      {/* Wrapped, not scrolled sideways (23 October 2026): a row cut off at
+          the edge — «Dien…», «Nicht angegebe…» — gave no sign there was more,
+          and German words are long. */}
+      <View style={styles.chips}>
         {options.map((opt) => {
           const isActive = opt.value === value;
           return (
@@ -46,7 +44,7 @@ export function FormChips<T extends string | number | null>({
             </Pressable>
           );
         })}
-      </ScrollView>
+      </View>
     </View>
   );
 }

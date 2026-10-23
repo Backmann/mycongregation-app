@@ -83,8 +83,11 @@ export function ServiceGroupForm({
       </FormSection>
 
       <FormSection title={t('serviceGroups.form.leadership')}>
+        {/* The overseer and his assistant are brothers (23 October 2026):
+            the picker offered sisters, and the server now refuses them. */}
         <PublisherSelector
           label={t('serviceGroups.form.overseer')}
+          genderFilter="brother"
           value={form.overseerPublisherId}
           onChange={(id) => {
             update('overseerPublisherId', id);
@@ -96,6 +99,7 @@ export function ServiceGroupForm({
         />
         <PublisherSelector
           label={t('serviceGroups.form.assistant')}
+          genderFilter="brother"
           value={form.assistantPublisherId}
           onChange={(id) => update('assistantPublisherId', id)}
           excludeIds={

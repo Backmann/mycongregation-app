@@ -5,6 +5,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -157,6 +158,7 @@ export default function JournalScreen() {
   const mayRevert = user?.role === 'admin';
   const [revertFor, setRevertFor] = useState<JournalEntry | null>(null);
   const [section, setSection] = useState<string | null>(null);
+  const wide = useWindowDimensions().width >= 768;
 
   const query = useInfiniteQuery({
     throwOnError: failsScreen,
@@ -204,10 +206,14 @@ export default function JournalScreen() {
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+      {/* Wide screens wrap the filters: on a laptop the row ran past the
+          edge with no sign that it scrolls (walk, 23 October 2026). A phone
+          keeps one swiped row — wrapped, it took half the screen. */}
       <ScrollView
-        horizontal
+        horizontal={!wide}
+        scrollEnabled={!wide}
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.filters}
+        contentContainerStyle={[styles.filters, wide && styles.filtersWrap]}
       >
         <Chip
           label={t('journal.filtersAll')}
@@ -894,6 +900,7 @@ const styles = StyleSheet.create({
   muted: { fontFamily: 'Manrope_400Regular', color: '#64748b', fontSize: 14 },
 
   filters: { paddingHorizontal: 16, paddingVertical: 12, gap: 8 },
+  filtersWrap: { flexDirection: 'row', flexWrap: 'wrap' },
   chip: {
     paddingHorizontal: 14,
     paddingVertical: 7,

@@ -466,8 +466,13 @@ export default function AdminUsersScreen() {
         visible={!!nameFor}
         onClose={() => setNameFor(null)}
         title={t('admin.users.loginName.sheetTitle')}
+        // A question with one answer: a small window with «Cancel», not a
+        // full screen with both «Done» and «Save» and no margins (walk,
+        // 23 October 2026).
+        variant="centered"
+        closeLabel={t('common.cancel')}
       >
-        <View style={{ gap: 12 }}>
+        <View style={{ gap: 12, padding: 16 }}>
           <Text style={styles.sheetHint}>
             {t('admin.users.loginName.sheetHint')}
           </Text>
@@ -514,8 +519,13 @@ export default function AdminUsersScreen() {
         visible={!!passFor}
         onClose={() => setPassFor(null)}
         title={t('admin.users.noPassword.sheetTitle')}
+        // A question with one answer: a small window with «Cancel», not a
+        // full screen with both «Done» and «Save» and no margins (walk,
+        // 23 October 2026).
+        variant="centered"
+        closeLabel={t('common.cancel')}
       >
-        <View style={{ gap: 12 }}>
+        <View style={{ gap: 12, padding: 16 }}>
           <Text style={styles.sheetHint}>
             {t('admin.users.noPassword.sheetHint', {
               email: passFor?.email ?? '',

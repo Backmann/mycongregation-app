@@ -235,9 +235,11 @@ export default function ServiceOverseerScreen() {
         <Text style={styles.muted}>{t('serviceOverseer.noGroups')}</Text>
       ) : null}
 
-      <Text style={styles.hint}>
-        {t(canPlan ? 'serviceOverseer.hintPlan' : 'serviceOverseer.hint')}
-      </Text>
+      {/* How to plan a visit, said only to those who may: a sister reading
+          the visits was told to «turn on the visit» (walk, 23 October 2026). */}
+      {canPlan ? (
+        <Text style={styles.hint}>{t('serviceOverseer.hintPlan')}</Text>
+      ) : null}
     </ScrollView>
   );
 }

@@ -65,14 +65,18 @@ export function stagePassword(): string {
   return out.join('-');
 }
 
-/** «Зал Царства Hamm» → «scena.hamm»: the Latin part of the hall's name. */
-export function stageLoginFor(hall: string): string {
+/**
+ * «Зал Царства Hamm» → «scena.hamm»: the Latin part of the hall's name, after
+ * the word for «stage» in the reader's language — «buehne.hamm», «stage.hamm»
+ * (23 October 2026: German and English were offered the Russian «scena»).
+ */
+export function stageLoginFor(hall: string, prefix = 'scena'): string {
   const latin = hall
     .toLowerCase()
     .split(/[^a-z0-9]+/)
     .filter((w) => w.length >= 2)
     .join('.');
-  return latin ? `scena.${latin}`.slice(0, LOGIN_NAME_MAX) : '';
+  return latin ? `${prefix}.${latin}`.slice(0, LOGIN_NAME_MAX) : '';
 }
 
 /** The digits as boxes; a hidden field under them takes the typing. */
@@ -216,7 +220,8 @@ export function StageNewSheet({ visible, onClose }: { visible: boolean; onClose:
     return (list.find((h) => h.isDefault) ?? list[0])?.name ?? '';
   }, [halls.data]);
   const shownLabel = label ?? hall;
-  const shownLogin = loginName ?? stageLoginFor(shownLabel);
+  const shownLogin =
+    loginName ?? stageLoginFor(shownLabel, t('stage.admin.loginPrefix'));
 
   useEffect(() => {
     if (visible && !password) setPassword(stagePassword());
