@@ -633,9 +633,15 @@ export default function FieldServiceMeetingsScreen() {
       const h = a ? halls?.find((x) => x.address.trim().toLowerCase() === a) : undefined;
       const name = h?.name.trim();
       if (!name) return null;
-      // «Ahlen» becomes «Зал Царства Ahlen»; a name that says it already stays.
-      const word = t('fieldService.pdf.hall', { name: '' }).trim().toLocaleLowerCase(i18n.language);
-      return name.toLocaleLowerCase(i18n.language).includes(word) ? name : t('fieldService.pdf.hall', { name });
+      // «Ahlen» becomes «Зал Царства Ahlen»; a name that says it already —
+      // in any of the three languages — stays: «Kingdom Hall Зал Царства
+      // Hamm» on the English sheet (walk, 23 October 2026).
+      const low = name.toLocaleLowerCase();
+      const says = ['ru', 'de', 'en'].some((lng) => {
+        const word = t('fieldService.pdf.hall', { name: '', lng }).trim().toLocaleLowerCase();
+        return !!word && low.includes(word);
+      });
+      return says ? name : t('fieldService.pdf.hall', { name });
     };
     const monthsOut: FsPdfMonth[] = [];
     for (let i = 0; i < pdfMonths; i++) {

@@ -235,6 +235,9 @@ export default function ServiceGroupDetailScreen() {
                 styles.leaderCard,
                 pressed && styles.rowPressed,
               ]}
+              // The card opens to those who may read it; for the others the
+              // name is a name, not a door to «No access» (walk, 23 October).
+              disabled={!privileged}
               onPress={() => router.push(
                   `/publishers/${overseer.id}?from=/service-groups/${id}` as any,
                 )}
@@ -249,6 +252,7 @@ export default function ServiceGroupDetailScreen() {
                 styles.leaderCard,
                 pressed && styles.rowPressed,
               ]}
+              disabled={!privileged}
               onPress={() => router.push(
                   `/publishers/${assistant.id}?from=/service-groups/${id}` as any,
                 )}

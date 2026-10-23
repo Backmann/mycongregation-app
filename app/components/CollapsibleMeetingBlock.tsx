@@ -9,6 +9,7 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import i18n from '../lib/i18n';
 
 // Enable LayoutAnimation on Android (no-op on iOS/web where it's on by default).
 if (
@@ -175,6 +176,10 @@ export function CollapsibleMeetingBlock({
                 onPress={onPrint}
                 disabled={!!printBusy}
                 hitSlop={8}
+                // An icon alone said nothing to a screen reader, nor to the
+                // walk that pressed every labelled button (23 October 2026).
+                accessibilityRole="button"
+                accessibilityLabel={i18n.t('common.print')}
               >
                 <Ionicons
                   name={printBusy ? 'hourglass-outline' : 'print-outline'}

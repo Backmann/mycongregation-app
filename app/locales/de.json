@@ -564,7 +564,7 @@
       "eachDevice": "Nutzen Sie Telefon und Computer? Auf jedem Gerät melden Sie sich separat an – mit demselben Namen und Passwort."
     },
     "loginOrEmail": "Anmeldename oder E-Mail",
-    "loginPlaceholder": "ivanov.petr oder you@example.com",
+    "loginPlaceholder": "max.muster oder E-Mail",
     "tooMany": "Zu viele Versuche in kurzer Zeit — warten Sie eine Viertelstunde und versuchen Sie es erneut. Am Passwort liegt es nicht.",
     "sharedEmail": "Diese Adresse gehört zu mehreren Zugängen — melden Sie sich mit Ihrem Anmeldenamen an. Wenn Sie ihn nicht wissen, fragen Sie den Versammlungsadministrator."
   },
@@ -3655,7 +3655,6 @@
     "planned": "Geplant: {{date}}",
     "plannedShort": "geplant {{date}}",
     "noGroups": "Noch keine Gruppen",
-    "hint": "Ein Besuch wird an einer Zusammenkunft für den Dienst vermerkt — Gruppe wählen und „Besuch des Dienstaufsehers“ einschalten.",
     "openFromTask": "Gruppenbesuche öffnen →",
     "prevYear": "Vorheriges Dienstjahr",
     "nextYear": "Nächstes Dienstjahr",
@@ -3843,7 +3842,8 @@
       "linkPublisher": "Mit Verkündigerkarte verknüpfen",
       "linkHint": "Nur für eigene Brüder. Die Verknüpfung lässt die App Abwesenheiten und Aufgaben bei unseren Zusammenkünften sehen.",
       "countedFor": "Die Tage zählen für „{{school}}“",
-      "removed": "Helfer aus der Liste entfernt"
+      "removed": "Helfer aus der Liste entfernt",
+      "emptyPick": "In der Liste der Brüder für die Schule steht noch niemand – fügen Sie einen Bruder hinzu."
     },
     "addAndAssign": "Hinzufügen und zuteilen",
     "fromCongregations": "aus Versammlungen",
@@ -4638,7 +4638,7 @@
       "ios": "iPhone",
       "windows": "Windows",
       "mac": "Mac",
-      "other": "Anderes Gerät"
+      "other": "Gerät"
     },
     "kind": {
       "app": "App",
@@ -4942,7 +4942,8 @@
       "passwordKeep": "Leer lassen, um das Passwort zu behalten",
       "passwordKeepShort": "beibehalten",
       "passwordNewNote": "Nach der Änderung fragt der Laptop erneut nach der Anmeldung — mit dem neuen Passwort",
-      "passwordWeak": "Zu einfach — tippen Sie auf „Anderes“"
+      "passwordWeak": "Zu einfach — tippen Sie auf „Anderes“",
+      "loginPrefix": "buehne"
     },
     "screen": {
       "title": "Bühnenbildschirm",

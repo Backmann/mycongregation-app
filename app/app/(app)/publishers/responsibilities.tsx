@@ -97,8 +97,13 @@ export default function ResponsibilitiesScreen() {
    * A name for an account, from the responsibilities the server already
    * resolved — the users list itself carries only the login name and address.
    */
+  // The card's name, which the users list carries for every account. It was
+  // looked up only among current holders, so a brother holding nothing yet
+  // was offered by his login name — «lang.timo» (walk, 23 October 2026).
   const publisherNameOf = (u: PublicUser): string | null =>
-    (respQuery.data ?? []).find((r) => r.userId === u.id)?.holderName ?? null;
+    u.publisherName ??
+    (respQuery.data ?? []).find((r) => r.userId === u.id)?.holderName ??
+    null;
 
   const userById = useMemo(() => {
     const map = new Map<string, PublicUser>();
@@ -195,6 +200,7 @@ export default function ResponsibilitiesScreen() {
                           <View style={styles.holderMain}>
                             <Text style={styles.holderName}>
                               {h.holderName ??
+                                userById.get(h.userId)?.publisherName ??
                                 userById.get(h.userId)?.loginName ??
                                 t("responsibilities.unknownUser")}
                             </Text>

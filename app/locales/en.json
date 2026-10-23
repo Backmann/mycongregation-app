@@ -564,7 +564,7 @@
       "eachDevice": "Using both a phone and a computer? You sign in on each device separately — with the same name and password."
     },
     "loginOrEmail": "Login name or email",
-    "loginPlaceholder": "ivanov.petr or you@example.com",
+    "loginPlaceholder": "john.smith or email",
     "tooMany": "Too many attempts in a short time — wait a quarter of an hour and try again. Nothing is wrong with your password.",
     "sharedEmail": "This address belongs to more than one login — sign in with your login name. If you cannot remember it, ask the congregation administrator."
   },
@@ -3655,7 +3655,6 @@
     "planned": "Planned: {{date}}",
     "plannedShort": "planned {{date}}",
     "noGroups": "No groups yet",
-    "hint": "A visit is marked on a field-service meeting — choose the group and turn on “Service overseer's visit”.",
     "openFromTask": "Open the group visits →",
     "prevYear": "Previous service year",
     "nextYear": "Next service year",
@@ -3843,7 +3842,8 @@
       "linkPublisher": "Link to a publisher card",
       "linkHint": "For our own brothers only. The link is what lets the app see absences and duties at our meetings.",
       "countedFor": "Days are counted for “{{school}}”",
-      "removed": "Helper removed from the list"
+      "removed": "Helper removed from the list",
+      "emptyPick": "No brothers are on the school’s list yet — add one."
     },
     "addAndAssign": "Add and assign",
     "fromCongregations": "from congregations",
@@ -4638,7 +4638,7 @@
       "ios": "iPhone",
       "windows": "Windows",
       "mac": "Mac",
-      "other": "Another device"
+      "other": "Device"
     },
     "kind": {
       "app": "app",
@@ -4942,7 +4942,8 @@
       "passwordKeep": "Leave empty to keep the password",
       "passwordKeepShort": "keep",
       "passwordNewNote": "After the change the laptop asks to sign in again — with the new password",
-      "passwordWeak": "Too simple — tap “Another”"
+      "passwordWeak": "Too simple — tap “Another”",
+      "loginPrefix": "stage"
     },
     "screen": {
       "title": "Stage display",
