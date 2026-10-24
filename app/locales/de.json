@@ -3540,7 +3540,9 @@
       "permanent": "Endgültig",
       "publisherName": "Verkündiger",
       "displayLabel": "Bezeichnung des Bildschirms",
-      "stagePin": "PIN für das Bildschirmmenü"
+      "stagePin": "PIN für das Bildschirmmenü",
+      "partDurationMin": "Dauer",
+      "to": "Auf die Woche"
     },
     "noValue": "leer",
     "changedNoValues": "geändert (Werte werden nicht gespeichert)",

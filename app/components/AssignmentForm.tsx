@@ -270,9 +270,15 @@ export function AssignmentForm({
   const isStudentTalk = !!partDef?.hasAssistant && titleSkill === "fs_talk";
   const showAssistant = !!partDef?.hasAssistant && !isStudentTalk;
   // A student TALK has one participant: if the workbook title marks this
-  // part as a talk, any previously stored assistant is cleared on open.
+  // part as a talk, any previously stored assistant is cleared on open —
+  // in a draft only. On a published part merely opening the sheet told the
+  // assistant he had been taken off (sync audit L11, 24 October 2026).
   useEffect(() => {
-    if (isStudentTalk && form.assistantPublisherId) {
+    if (
+      isStudentTalk &&
+      form.assistantPublisherId &&
+      form.status !== "published"
+    ) {
       update("assistantPublisherId", null);
       void instant({ assistantPublisherId: null });
     }

@@ -3616,7 +3616,9 @@
       "permanent": "Безвозвратно",
       "publisherName": "Возвещатель",
       "displayLabel": "Название экрана",
-      "stagePin": "Цифры меню экрана"
+      "stagePin": "Цифры меню экрана",
+      "partDurationMin": "Длительность",
+      "to": "На неделю"
     },
     "noValue": "пусто",
     "changedNoValues": "изменено (значения не сохраняются)",
