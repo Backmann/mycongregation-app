@@ -77,10 +77,35 @@ export default function Root({ children }: PropsWithChildren) {
             colour the system reads. This is «Б» exactly: both in the brand
             colour, and #root — which fills the body — white, the same white
             every screen has stood on until now. */}
+        {/* AN iPAD THAT FLICKERS FROM ITS ICON (21 October 2026). On iPadOS
+            27.0.1 the app opened from the Home Screen flickers — parts of a
+            still page blank out and come back — while the same app in a
+            Safari tab is fine, and so is /screen-check.html from an icon,
+            with the same page height. The cause cannot be seen from here: no
+            Safari runs outside an Apple device. So the device is asked.
+
+            /screen-check.html links into the app with `?diag=…`; the choice
+            is kept on this device until `?diag=off`, and shown in a corner so
+            nobody forgets it is on. Each switch takes away ONE thing that
+            only the icon has, or that every list has:
+              nolvh — the page height taken from 100lvh (below);
+              nobg  — the brand colour behind the page (below);
+              no3d  — react-native-web's translateZ(0) on every ScrollView
+                      (its atomic class r-agouwx), which makes each list a
+                      layer of its own for the compositor.
+            Nothing changes for anybody who never follows such a link. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "(function(){try{var m=/[?&]diag=([a-z0-9,]+)/.exec(location.search);if(m){if(m[1]==='off')localStorage.removeItem('diag');else localStorage.setItem('diag',m[1]);}var d=localStorage.getItem('diag');if(d){var h=document.documentElement;h.setAttribute('data-diag',d);d.split(',').forEach(function(x){h.classList.add('diag-'+x);});}}catch(e){}})();",
+          }}
+        />
         <style
           dangerouslySetInnerHTML={{
             __html:
-              '@media (display-mode: standalone){@supports (-webkit-touch-callout: none){html{height:100vh;height:100lvh}html,body{background:#0e7490}#root{background:#fff}}}',
+              '@media (display-mode: standalone){@supports (-webkit-touch-callout: none){html:not(.diag-nolvh){height:100vh;height:100lvh}html:not(.diag-nobg),html:not(.diag-nobg) body{background:#0e7490}#root{background:#fff}}}' +
+              'html.diag-no3d .r-agouwx{transform:none!important}' +
+              'html[data-diag]::after{content:"diag: " attr(data-diag);position:fixed;left:6px;bottom:6px;z-index:99999;font:11px/1.4 -apple-system,system-ui,sans-serif;background:#7c2d12;color:#fff;padding:2px 6px;border-radius:6px;pointer-events:none}',
           }}
         />
       </head>
