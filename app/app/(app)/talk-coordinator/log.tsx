@@ -629,6 +629,19 @@ export default function TalkExchangeYearScreen() {
     };
   }, [eventsQuery.data]);
 
+  // The weeks of a circuit visit — by the visit's own dates, as the server
+  // judges a swap (24 October 2026): its talk is the overseer's, and a swap
+  // into or out of it is refused.
+  const visitWeek = useMemo(() => {
+    const visits = (eventsQuery.data ?? []).filter(
+      (ev) => ev.type === "circuit_overseer_visit",
+    );
+    return (monday: string): boolean => {
+      const sun = formatDateISO(addDays(new Date(`${monday}T00:00:00`), 6));
+      return visits.some((ev) => ev.date >= monday && ev.date <= sun);
+    };
+  }, [eventsQuery.data]);
+
   const months = useMemo<MonthBlock[]>(() => {
     const versions = settingsQuery.data?.versions ?? [];
     const fallback = settingsQuery.data?.effective ?? null;
@@ -866,6 +879,22 @@ export default function TalkExchangeYearScreen() {
    */
   const weekIsOver = (monday: string): boolean =>
     formatDateISO(addDays(new Date(`${monday}T00:00:00`), 6)) < todayISO;
+
+  // The weeks a talk can come from: not past, with a guest, and neither this
+  // week nor that one a circuit visit's (the server refuses those, and the
+  // note above the list says why for the visit's own week).
+  const swapCandidates =
+    swapTarget && !visitWeek(swapTarget.monday)
+      ? weeksFlat.filter(
+          (w) =>
+            !visitWeek(w.monday) &&
+            w.monday !== swapTarget.monday &&
+            !!byWeek.get(w.monday)?.incoming &&
+            // Прошедшие недели не предлагаются вовсе: передвинуть можно то,
+            // чего ещё не было.
+            !weekIsOver(w.monday),
+        )
+      : [];
 
   const undoMutation = useMutation({
     mutationFn: (id: string) => talkExchangeApi.undoReplacement(id),
@@ -1921,18 +1950,13 @@ export default function TalkExchangeYearScreen() {
             ))}
           </View>
 
+          {swapTarget && visitWeek(swapTarget.monday) ? (
+            <Text style={styles.swapVisitNote}>
+              {t("talkCoordinator.swap.visitWeek")}
+            </Text>
+          ) : null}
           <ScrollView style={styles.swapList}>
-            {weeksFlat
-              .filter(
-                (w) =>
-                  w.monday !== swapTarget?.monday &&
-                  !!byWeek.get(w.monday)?.incoming &&
-                  // Прошедшие недели не предлагаются вовсе. Сервер их и так
-                  // отвергнет, но список, показывающий невозможное, заставляет
-                  // человека выяснять правила на отказах — а правило простое:
-                  // передвинуть можно то, чего ещё не было.
-                  !weekIsOver(w.monday),
-              )
+            {swapCandidates
               .map((w) => {
                 const inc = byWeek.get(w.monday)!.incoming!;
                 const active = swapSource === w.monday;
@@ -1970,12 +1994,8 @@ export default function TalkExchangeYearScreen() {
               })}
           </ScrollView>
 
-          {weeksFlat.filter(
-            (w) =>
-              w.monday !== swapTarget?.monday &&
-              !!byWeek.get(w.monday)?.incoming &&
-              !weekIsOver(w.monday),
-          ).length === 0 ? (
+          {swapCandidates.length === 0 &&
+          !(swapTarget && visitWeek(swapTarget.monday)) ? (
             <Text style={styles.swapEmpty}>
               {t("talkCoordinator.swap.noneAvailable")}
             </Text>
@@ -2970,6 +2990,16 @@ const styles = StyleSheet.create({
   },
   inSide: { flex: 1, minWidth: 0 },
   missedBox: { marginBottom: 6, gap: 4 },
+  swapVisitNote: {
+    fontFamily: "Manrope_400Regular",
+    fontSize: 14,
+    lineHeight: 20,
+    color: "#7a4a06",
+    backgroundColor: "#fdf0d9",
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 10,
+  },
   missedRow: { flexDirection: "row", alignItems: "center", gap: 6 },
   missedText: { fontFamily: "Manrope_400Regular", flex: 1, fontSize: 12, color: "#b45309", lineHeight: 17 },
   missedUndo: { fontSize: 12, color: "#0369a1", fontFamily: "Manrope_600SemiBold" },

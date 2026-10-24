@@ -890,6 +890,22 @@ export function SpecialEventForm({
               );
             })}
           </View>
+          {/* Entered or changed after its midweek meeting was held: that
+              meeting keeps the programme it had (24 October 2026, the
+              server leaves it as it was said). */}
+          {value.date &&
+          !pastLocked &&
+          addDaysISO(mondayOfISO(value.date), value.coMidweekDow - 1) <
+            dayjs().format('YYYY-MM-DD') ? (
+            <Text style={styles.heldNote}>
+              {t('specialEvents.form.midweekHeld', {
+                day: day(
+                  addDaysISO(mondayOfISO(value.date), value.coMidweekDow - 1),
+                  'dddd, D MMMM',
+                ),
+              })}
+            </Text>
+          ) : null}
         </Section>
       ) : null}
 
@@ -1378,6 +1394,13 @@ const NOTE_SNIPPETS = [
 ];
 
 const styles = StyleSheet.create({
+  heldNote: {
+    marginTop: 8,
+    fontFamily: 'Manrope_400Regular',
+    fontSize: 13,
+    lineHeight: 18,
+    color: '#7a4a06',
+  },
   pastNote: {
     flexDirection: 'row',
     alignItems: 'center',
