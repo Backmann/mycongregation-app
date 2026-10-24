@@ -993,7 +993,9 @@
         "importedWeeks": "Importierte Wochen",
         "openSchedule": "Plan öffnen und Brüder eintragen",
         "weekFrozenNotice": "{{week}}: Das Programm dieser Woche ist bereits Teil der Aufzeichnungen – nicht geladene Programmpunkte: {{count}}",
-        "weekFrozen": "bereits aufgezeichnet"
+        "weekFrozen": "bereits aufgezeichnet",
+        "keptByHand": "{{week}}: von Hand geänderte Titel wurden belassen – Programmpunkte: {{count}}",
+        "emptyPartsRemoved": "{{week}}: leere Programmpunkte, die im Arbeitsheft fehlen, wurden entfernt – Programmpunkte: {{count}}"
       },
       "privacyNote": "Die Datei wird auf diesem Bildschirm im Browser gelesen und nirgendwohin gesendet — in den Plan gelangen nur Titel und Dauer der Programmpunkte.",
       "parsing": "Datei wird ausgewertet…",

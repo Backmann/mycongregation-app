@@ -488,6 +488,16 @@ function ResultSummary({ result }: { result: ImportResult }) {
                 week: weekLabel(n.weekStartDate),
                 count: n.parts,
               })
+            : n.code === 'kept_by_hand'
+              ? t('schedule.import.result.keptByHand', {
+                  week: weekLabel(n.weekStartDate),
+                  count: n.parts,
+                })
+              : n.code === 'empty_parts_removed'
+                ? t('schedule.import.result.emptyPartsRemoved', {
+                    week: weekLabel(n.weekStartDate),
+                    count: n.parts,
+                  })
             : t('schedule.import.result.unclassifiedPart', {
               week: weekLabel(n.weekStartDate),
               title: n.title ?? '—',
