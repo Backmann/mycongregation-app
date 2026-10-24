@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
+import { attentionText } from '../lib/field-attention';
 import dayjs from 'dayjs';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
@@ -447,6 +448,8 @@ export function FieldServiceForm({
         return t('fieldService.why.leadsThatDay');
       case 'absent':
         return t('fieldService.why.absent');
+      case 'not_conductor':
+        return t('fieldService.why.notConductor');
     }
   };
 
@@ -891,6 +894,18 @@ export function FieldServiceForm({
         </View>
       }
     >
+      {/* What went wrong since it was planned (24 October 2026) — said
+          at the top, before anything is changed. Only for the meeting as it
+          was loaded: a choice made here is checked when it is saved. */}
+      {editing && attentionText(editing, t, (id) => nameOf(id ?? null) || null) ? (
+        <View style={styles.attentionBox} accessibilityRole="alert">
+          <Ionicons name="alert-circle" size={16} color="#b42318" />
+          <Text style={styles.attentionText}>
+            {attentionText(editing, t, (id) => nameOf(id ?? null) || null)}
+          </Text>
+        </View>
+      ) : null}
+
       {/* Whose */}
       <Text style={[styles.label, whoseNudge && styles.labelNudge]}>
         {t('fieldService.sheet.whose')}
@@ -1593,6 +1608,25 @@ function SummaryRow({
 }
 
 const styles = StyleSheet.create({
+  attentionBox: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 8,
+    marginTop: 14,
+    padding: 10,
+    borderRadius: 10,
+    backgroundColor: '#fef3f2',
+    borderWidth: 1,
+    borderColor: '#fecdca',
+  },
+  attentionText: {
+    flex: 1,
+    flexShrink: 1,
+    color: '#b42318',
+    fontSize: 14,
+    lineHeight: 20,
+    fontFamily: 'Manrope_600SemiBold',
+  },
   label: {
     fontSize: 13,
     fontFamily: 'Manrope_600SemiBold',

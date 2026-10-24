@@ -6,6 +6,7 @@ import dayjs from 'dayjs';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   FieldServicePlannedRow,
+  fieldServiceApi,
   fieldServiceTemplateApi,
   hallsApi,
 } from '../lib/api';
@@ -144,10 +145,30 @@ export function FieldServicePrepareSheet({
         return t('fieldService.prepare.skipExists');
       case 'past':
         return t('fieldService.prepare.skipPast');
+      case 'group_removed':
+        return t('fieldService.prepare.skipGroupRemoved', { group: r.because ?? '' });
+      case 'removed':
+        return t('fieldService.prepare.skipRemoved');
+      case 'differs':
+        return t('fieldService.prepare.skipDiffers', { what: r.because ?? '' });
       default:
         return '';
     }
   };
+  // «Заменить»: the meeting standing that day takes the template's time and
+  // place (24 October 2026). An announced one tells its people, as any
+  // change of an announced meeting does.
+  const replaceM = useMutation({
+    mutationFn: (r: FieldServicePlannedRow) =>
+      fieldServiceApi.update(r.existingId!, {
+        startTime: r.startTime,
+        address: r.address,
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['field-service'] });
+      qc.invalidateQueries({ queryKey: ['field-service-template', 'preview', monthKey] });
+    },
+  });
   const noConductorText = (r: FieldServicePlannedRow) => {
     switch (r.noConductor) {
       case 'nobody_free':
@@ -237,7 +258,26 @@ export function FieldServicePrepareSheet({
                       <Text style={styles.rowSkippedText}>{skippedText(r)}</Text>
                       <Text style={styles.rowSub}>
                         {whose(r)} · {r.startTime}
+                        {r.status === 'differs' && r.address
+                          ? ` · ${resolveHallAddress(r.address, halls)}`
+                          : ''}
                       </Text>
+                      {r.status === 'differs' && r.existingId ? (
+                        <Pressable
+                          style={styles.replaceBtn}
+                          disabled={replaceM.isPending}
+                          onPress={() => replaceM.mutate(r)}
+                          accessibilityRole="button"
+                        >
+                          {replaceM.isPending && replaceM.variables === r ? (
+                            <ActivityIndicator size="small" color="#0369a1" />
+                          ) : (
+                            <Text style={styles.replaceText}>
+                              {t('fieldService.prepare.replace', { time: r.startTime })}
+                            </Text>
+                          )}
+                        </Pressable>
+                      ) : null}
                     </>
                   ) : (
                     <>
@@ -284,6 +324,18 @@ export function FieldServicePrepareSheet({
 }
 
 const styles = StyleSheet.create({
+  replaceBtn: {
+    alignSelf: 'flex-start',
+    marginTop: 6,
+    paddingHorizontal: 12,
+    minHeight: 36,
+    justifyContent: 'center',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#bae0f5',
+    backgroundColor: '#f0f9ff',
+  },
+  replaceText: { color: '#0369a1', fontSize: 13.5, fontFamily: 'Manrope_700Bold' },
   monthRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 10 },
   stepBtn: {
     width: 44,

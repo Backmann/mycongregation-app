@@ -2039,7 +2039,21 @@ export interface FieldServiceMeeting {
    * it out; it is never sent to the server.
    */
   movedTo?: string;
+  /**
+   * What has gone wrong since the meeting was planned (24 October 2026):
+   * sent to planners only, and only for a meeting with something to say.
+   */
+  attention?: FieldServiceProblem[];
 }
+
+/** See FieldServiceAttentionService on the server. */
+export type FieldServiceProblem =
+  | "conductor_absent"
+  | "conductor_not_conductor"
+  | "conductor_removed"
+  | "group_removed"
+  | "assembly"
+  | "co_visit";
 
 /** A draft, or announced. An old server never sends the field. */
 export function isFieldServiceDraft(m: FieldServiceMeeting): boolean {
@@ -2096,7 +2110,9 @@ export type ConductorReason =
   | "group_overseer"
   | "group_assistant"
   | "leads_that_day"
-  | "absent";
+  | "absent"
+  /** A group's overseer or assistant without the conductor switch. */
+  | "not_conductor";
 
 export interface ConductorCandidate {
   publisherId: string;
@@ -2338,7 +2354,14 @@ export type FieldServicePlannedStatus =
   | "exists"
   | "assembly"
   | "co_visit"
-  | "past";
+  | "past"
+  /** The slot's group was removed: the row sleeps (24 October 2026). */
+  | "group_removed"
+  /** A meeting like it was deleted or moved off that day by hand. */
+  | "removed"
+  /** The congregation's meeting already stands that day at another time
+   * and place; `existingId` is it. */
+  | "differs";
 
 /** One slot's date in the month being prepared, with what happens to it. */
 export interface FieldServicePlannedRow {
@@ -2352,8 +2375,11 @@ export interface FieldServicePlannedRow {
   groupName: string | null;
   conductorRule: ConductorRule;
   status: FieldServicePlannedStatus;
-  /** With `exists`, `assembly`, `co_visit`: what stands in the way. */
+  /** With `exists`, `assembly`, `co_visit`: what stands in the way; with
+   * `group_removed` the group's name; with `differs` «time · place». */
   because: string | null;
+  /** With `differs`: the meeting that stands there. */
+  existingId?: string | null;
   conductor: ConductorCandidate | null;
   noConductor: "rule_none" | "nobody_free" | "no_overseer" | null;
   /** What else is on that day; absent from an older server. */
@@ -2395,7 +2421,15 @@ export interface FieldServiceMonthPreview {
 export interface FieldServicePrepareResult {
   created: number;
   withoutConductor: number;
-  skipped: { exists: number; assembly: number; co_visit: number; past: number };
+  skipped: {
+    exists: number;
+    assembly: number;
+    co_visit: number;
+    past: number;
+    group_removed?: number;
+    removed?: number;
+    differs?: number;
+  };
 }
 
 export const fieldServiceTemplateApi = {
@@ -2455,21 +2489,17 @@ export const fieldServiceTemplateApi = {
     );
     return data;
   },
-  async generate(input: {
-    startYear: number;
-    startMonth: number;
-    months: number;
-  }): Promise<{ created: number; skipped: number; past?: number }> {
-    // `past`: dates of the range already gone, not filled (server, 9 October
-    // 2026). Optional — a server before that does not send it.
+  /** The empty conductors of a draft month, each by its slot's rule. */
+  async fillConductors(input: { year: number; month: number }): Promise<{
+    filled: number;
+    left: { id: string; date: string; why: "nobody_free" | "no_overseer" }[];
+    ruleNone: number;
+  }> {
     const { data } = await api.post<{
-      created: number;
-      skipped: number;
-      past?: number;
-    }>(
-      "/field-service-template/generate",
-      input,
-    );
+      filled: number;
+      left: { id: string; date: string; why: "nobody_free" | "no_overseer" }[];
+      ruleNone: number;
+    }>("/field-service-template/fill-conductors", input);
     return data;
   },
 };
@@ -3393,6 +3423,17 @@ export const serviceGroupsApi = {
   async remove(id: string): Promise<void> {
     await api.delete(`/service-groups/${id}`);
   },
+  /** What removing the group touches in field service (24 October 2026). */
+  async removalImpact(
+    id: string,
+  ): Promise<{ slots: number; drafts: number; published: number }> {
+    const { data } = await api.get<{
+      slots: number;
+      drafts: number;
+      published: number;
+    }>(`/service-groups/${id}/removal-impact`);
+    return data;
+  },
   async restore(id: string): Promise<ServiceGroup> {
     const { data } = await api.post<ServiceGroup>(
       `/service-groups/${id}/restore`,
@@ -4105,12 +4146,34 @@ export const pioneerSchoolApi = {
     );
     return data;
   },
-  async removeHelper(id: string): Promise<void> {
-    await api.delete(`/pioneer-school/helpers/${id}`);
+  /**
+   * Removes a helper and answers with the places from today on that it took
+   * off him (24 October 2026); an older server answers with nothing.
+   */
+  async removeHelper(id: string): Promise<{ dutyId: string; date: string }[]> {
+    const { data } = await api.delete<
+      { cleared?: { dutyId: string; date: string }[] } | ""
+    >(`/pioneer-school/helpers/${id}`);
+    return (data && typeof data === "object" && data.cleared) || [];
   },
-  /** Take back a removal — the row was only hidden, so nothing is rebuilt. */
-  async restoreHelper(id: string): Promise<void> {
-    await api.post(`/pioneer-school/helpers/${id}/restore`);
+  /** His places ahead, for the words of the confirmation. */
+  async helperRemovalImpact(
+    id: string,
+  ): Promise<{ duties: number; dates: string[] }> {
+    const { data } = await api.get<{ duties: number; dates: string[] }>(
+      `/pioneer-school/helpers/${id}/removal-impact`,
+    );
+    return data;
+  },
+  /**
+   * Take back a removal — the row was only hidden. `dutyIds`: the places the
+   * removal took off, given back where nobody has been put since.
+   */
+  async restoreHelper(id: string, dutyIds: string[] = []): Promise<void> {
+    await api.post(
+      `/pioneer-school/helpers/${id}/restore`,
+      dutyIds.length ? { dutyIds } : {},
+    );
   },
 };
 

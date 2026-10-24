@@ -25,6 +25,8 @@ import { Sheet } from '../../../components/Sheet';
 import { useAllPublishers } from '../../../lib/useAllPublishers';
 import { formatDateISO } from '../../../lib/dates';
 import { failsScreen } from '../../../lib/screen-failure';
+import { confirm } from '../../../components/ConfirmHost';
+import dayjs from 'dayjs';
 
 /**
  * The brothers who may serve at the school.
@@ -36,7 +38,7 @@ import { failsScreen } from '../../../lib/screen-failure';
  * and never required.
  */
 export default function PioneerSchoolHelpersScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const qc = useQueryClient();
   const { canManagePioneerSchool, canViewPioneerSchool } = usePermissions();
 
@@ -105,13 +107,42 @@ export default function PioneerSchoolHelpersScreen() {
   });
   /** The helper just removed, so «Отменить» has something to bring back. */
   const [justRemoved, setJustRemoved] = useState<string | null>(null);
+  /** The places his removal took off, given back with «Отменить». */
+  const [clearedDuties, setClearedDuties] = useState<string[]>([]);
   const removeMut = useMutation({
     mutationFn: (id: string) => pioneerSchoolApi.removeHelper(id),
-    onSuccess: (_r, id) => {
+    onSuccess: (cleared, id) => {
       invalidate();
       setJustRemoved(id);
+      setClearedDuties(cleared.map((c) => c.dutyId));
+      qc.invalidateQueries({ queryKey: ['pioneer-school'] });
     },
   });
+  // Removing a brother who still stands on days ahead takes him off them
+  // (24 October 2026, Lionel): said first, with the days.
+  const askRemove = async (id: string) => {
+    let impact: { duties: number; dates: string[] } | null = null;
+    try {
+      impact = await pioneerSchoolApi.helperRemovalImpact(id);
+    } catch {
+      impact = null;
+    }
+    if (impact && impact.duties > 0) {
+      const ok = await confirm({
+        title: t('pioneerSchool.helpers.removeTitle'),
+        body: t('pioneerSchool.helpers.removeWithDuties', {
+          count: impact.duties,
+          dates: impact.dates
+            .map((d) => dayjs(d).locale(i18n.language).format('D MMMM'))
+            .join(', '),
+        }),
+        confirmLabel: t('pioneerSchool.helpers.removeAction'),
+        danger: true,
+      });
+      if (!ok) return;
+    }
+    removeMut.mutate(id);
+  };
 
   const rows = useMemo(() => {
     const list = query.data ?? [];
@@ -218,7 +249,7 @@ export default function PioneerSchoolHelpersScreen() {
                   <Pressable onPress={() => openEdit(h)} hitSlop={6}>
                     <Ionicons name="create-outline" size={20} color="#0ea5e9" />
                   </Pressable>
-                  <Pressable onPress={() => removeMut.mutate(h.id)} hitSlop={6}>
+                  <Pressable onPress={() => void askRemove(h.id)} hitSlop={6}>
                     <Ionicons name="trash-outline" size={20} color="#ef4444" />
                   </Pressable>
                 </View>
@@ -319,9 +350,11 @@ export default function PioneerSchoolHelpersScreen() {
         message={t('pioneerSchool.helpers.removed')}
         onUndo={async () => {
           if (!justRemoved) return;
-          await pioneerSchoolApi.restoreHelper(justRemoved);
+          await pioneerSchoolApi.restoreHelper(justRemoved, clearedDuties);
           setJustRemoved(null);
+          setClearedDuties([]);
           invalidate();
+          qc.invalidateQueries({ queryKey: ['pioneer-school'] });
         }}
         onDismiss={() => setJustRemoved(null)}
       />

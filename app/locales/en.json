@@ -782,7 +782,13 @@
     "removeConfirm": {
       "title": "Remove group",
       "body": "Members will be unlinked.",
-      "webMessage": "Remove this group? Members will be unlinked."
+      "webMessage": "Remove this group? Members will be unlinked.",
+      "slots_one": "It has one rule in the field service template — it will sleep and wake again if the group is restored.",
+      "slots_other": "It has {{count}} rules in the field service template — they will sleep and wake again if the group is restored.",
+      "drafts_one": "One draft meeting will be deleted — nobody knows of it yet.",
+      "drafts_other": "{{count}} draft meetings will be deleted — nobody knows of them yet.",
+      "published_one": "One announced meeting ahead stays, marked “group removed” — decide what to do with it.",
+      "published_other": "{{count}} announced meetings ahead stay, marked “group removed” — decide what to do with them."
     },
     "noGroupsYet": "No groups yet",
     "form": {
@@ -1566,7 +1572,8 @@
       "groupAssistant": "group overseer's assistant",
       "leadsThatDay": "already conducting a meeting that day",
       "absent": "away that day",
-      "upcoming": "already assigned on {{date}}"
+      "upcoming": "already assigned on {{date}}",
+      "notConductor": "not marked as conducting meetings"
     },
     "sheet": {
       "groupVisit": "Group {{group}} · service overseer's visit",
@@ -1643,7 +1650,11 @@
       "editTemplate": "Edit the template",
       "doneTitle": "Month prepared",
       "doneAll": "Draft: {{count}} meetings",
-      "doneSome": "Draft: {{count}} meetings, without a conductor: {{left}}"
+      "doneSome": "Draft: {{count}} meetings, without a conductor: {{left}}",
+      "skipGroupRemoved": "Group {{group}} removed — rule asleep",
+      "skipRemoved": "Removed by hand — not created",
+      "skipDiffers": "Already there: {{what}} — no second one beside it",
+      "replace": "Change to {{time}} as in the template"
     },
     "template": {
       "title": "Meeting template",
@@ -1777,7 +1788,8 @@
         },
         "lastWord": "last",
         "and": "and"
-      }
+      },
+      "groupRemoved": "{{group}} (removed)"
     },
     "overseerVisitNeedsGroup": "A visit belongs to a group’s meeting — choose the group under “For whom”",
     "notice": {
@@ -1850,7 +1862,20 @@
       "taken": "assembly / visit",
       "busy": "other event in the hall"
     },
-    "deleteQuiet": "Delete for good — only if the meeting was entered by mistake"
+    "deleteQuiet": "Delete for good — only if the meeting was entered by mistake",
+    "attention": {
+      "conductor_absent": "{{who}} is away that day",
+      "conductor_not_conductor": "{{who}} no longer conducts meetings",
+      "conductor_removed": "the conductor has left the congregation",
+      "group_removed": "group removed",
+      "assembly": "an assembly that day",
+      "co_visit": "the circuit overseer's week",
+      "theConductor": "The conductor",
+      "beforePublish_one": "One meeting needs fixing:",
+      "beforePublish_other": "{{count}} meetings need fixing:",
+      "draftLine_one": "One meeting needs fixing — open",
+      "draftLine_other": "{{count}} meetings need fixing — open the first"
+    }
   },
   "cleaning": {
     "title": "Cleaning",
@@ -3544,7 +3569,11 @@
       "displayLabel": "Display name",
       "stagePin": "Display menu PIN",
       "partDurationMin": "Duration",
-      "to": "To the week"
+      "to": "To the week",
+      "conductorsFilled": "Conductors picked",
+      "dutiesCleared": "Assignments taken off",
+      "draftsRemoved": "Drafts deleted",
+      "draftDates": "Draft days"
     },
     "noValue": "empty",
     "changedNoValues": "changed (values are not kept)",
@@ -3884,7 +3913,11 @@
       "linkHint": "Only for our own brothers. The link lets the app see their absences and duties at our meetings.",
       "countedFor": "Days are counted for “{{school}}”",
       "removed": "Helper removed from the list",
-      "emptyPick": "No brothers are on the school’s list yet — add one."
+      "emptyPick": "No brothers are on the school’s list yet — add one.",
+      "removeTitle": "Remove from the list",
+      "removeWithDuties_one": "He has one assignment ahead ({{dates}}). It will be taken off and the place left free.",
+      "removeWithDuties_other": "He has {{count}} assignments ahead ({{dates}}). They will be taken off and the places left free.",
+      "removeAction": "Remove"
     },
     "addAndAssign": "Add and assign",
     "fromCongregations": "from congregations",
@@ -4939,7 +4972,8 @@
       "GROUP_LEADER_SISTER": "The group overseer and his assistant must be brothers.",
       "ABSENCE_FROM_SCHOOL": "This absence comes from an assignment in the Pioneer Service School. Change the assignment in the school instead.",
       "PIONEER_KIND_CHANGE_DATE": "The new kind of service has to start later than the current one. Enter the month he starts serving this way, or correct the kind for all time.",
-      "PIONEER_KIND_CORRECTION_INVALID": "Only the kind of a current regular pioneer, special pioneer or missionary can be corrected for all time."
+      "PIONEER_KIND_CORRECTION_INVALID": "Only the kind of a current regular pioneer, special pioneer or missionary can be corrected for all time.",
+      "FS_GENERATE_RETIRED": "Meetings are no longer made this way. Open “Prepare month” — it follows the calendar and does not publish at once."
     }
   },
   "stage": {

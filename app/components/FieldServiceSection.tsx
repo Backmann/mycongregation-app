@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { useFieldListViewer } from './FieldListBits';
 import { FieldMeetingRow } from './FieldMeetingRow';
+import { attentionText } from '../lib/field-attention';
 import {
   CoVisitFieldServiceMeeting,
   CreateFieldServiceMeetingInput,
@@ -133,6 +134,13 @@ export function FieldServiceSection({
                 isMine={viewer.isMine(m)}
                 me={viewer.me}
                 last
+                attention={
+                  canEdit
+                    ? attentionText(m, t, (id) =>
+                        id ? (publishersById.get(id)?.displayName ?? null) : null,
+                      )
+                    : null
+                }
                 trailing={
                   canEdit ? (
                     <View style={styles.rowActions}>

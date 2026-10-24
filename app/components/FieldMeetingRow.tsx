@@ -34,6 +34,7 @@ export function FieldMeetingRow({
   last,
   onPress,
   trailing,
+  attention,
 }: {
   meeting: FieldServiceMeeting;
   nameOf: (id: string | null | undefined) => string | null;
@@ -48,6 +49,11 @@ export function FieldMeetingRow({
   /** A tap on the line (the planner's month page); none where it is read only. */
   onPress?: () => void;
   trailing?: ReactNode;
+  /**
+   * What went wrong since it was planned, in words — for the planner only
+   * (lib/field-attention.ts, 24 October 2026).
+   */
+  attention?: string | null;
 }) {
   const { t, i18n } = useTranslation();
   const m = meeting;
@@ -135,6 +141,19 @@ export function FieldMeetingRow({
     />
   );
 
+  const marked =
+    attention && !off ? (
+      <>
+        {body}
+        <View style={styles.attention} accessibilityRole="alert">
+          <Ionicons name="alert-circle" size={15} color="#b42318" style={styles.attentionIcon} />
+          <Text style={styles.attentionText}>{attention}</Text>
+        </View>
+      </>
+    ) : (
+      body
+    );
+
   return (
     <RowWrap
       kind="field_service"
@@ -143,10 +162,10 @@ export function FieldMeetingRow({
     >
       {onPress ? (
         <Pressable style={styles.rowPress} onPress={onPress}>
-          {body}
+          {marked}
         </Pressable>
       ) : (
-        <View style={styles.rowPress}>{body}</View>
+        <View style={styles.rowPress}>{marked}</View>
       )}
     </RowWrap>
   );
@@ -176,4 +195,23 @@ const styles = StyleSheet.create({
     backgroundColor: '#f1f5f9',
   },
   draftBadgeText: { fontSize: 11.5, color: '#475569', fontFamily: 'Manrope_700Bold' },
+  attention: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 6,
+    marginTop: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    backgroundColor: '#fef3f2',
+  },
+  attentionIcon: { marginTop: 1 },
+  attentionText: {
+    flex: 1,
+    flexShrink: 1,
+    fontSize: 13,
+    lineHeight: 18,
+    color: '#b42318',
+    fontFamily: 'Manrope_600SemiBold',
+  },
 });
