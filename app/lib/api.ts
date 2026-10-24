@@ -618,7 +618,11 @@ export type ImportNotice =
       parts: number;
       editableUntil: string;
     }
-  | { code: 'unclassified_part'; weekStartDate: string; title: string | null };
+  | { code: 'unclassified_part'; weekStartDate: string; title: string | null }
+  /** Titles a person had changed, left as they were (24 October 2026). */
+  | { code: 'kept_by_hand'; weekStartDate: string; parts: number }
+  /** Empty numbered parts the workbook does not have, removed. */
+  | { code: 'empty_parts_removed'; weekStartDate: string; parts: number };
 
 export interface ImportResult {
   epubFile: string;

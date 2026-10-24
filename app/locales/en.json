@@ -993,7 +993,9 @@
         "importedWeeks": "Imported weeks",
         "openSchedule": "Open the schedule and assign the brothers",
         "weekFrozenNotice": "{{week}}: this week’s program is already locked as a record — parts not loaded: {{count}}",
-        "weekFrozen": "already locked"
+        "weekFrozen": "already locked",
+        "keptByHand": "{{week}}: titles changed by hand were kept as they were — parts: {{count}}",
+        "emptyPartsRemoved": "{{week}}: empty parts the workbook does not have were removed — parts: {{count}}"
       },
       "privacyNote": "The file is read on this screen, in the browser, and is not sent anywhere — only part titles and durations reach the schedule.",
       "parsing": "Parsing the file…",
