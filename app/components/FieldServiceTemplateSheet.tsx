@@ -113,8 +113,20 @@ export function FieldServiceTemplateSheet({
     },
   });
 
-  const groupName = (id: string | null | undefined) =>
-    id ? (groups.find((g) => g.id === id)?.name ?? '') : '';
+  // A removed group's rows stay in the template, asleep (24 October 2026):
+  // its name comes from the removed groups, with the word that it sleeps.
+  const allGroupsQuery = useQuery({
+    queryKey: ['service-groups', 'with-removed'],
+    queryFn: () => serviceGroupsApi.list({ includeRemoved: true }),
+    enabled: visible,
+  });
+  const groupName = (id: string | null | undefined) => {
+    if (!id) return '';
+    const live = groups.find((g) => g.id === id);
+    if (live) return live.name;
+    const gone = (allGroupsQuery.data?.data ?? []).find((g) => g.id === id);
+    return gone ? t('fieldService.template.groupRemoved', { group: gone.name }) : '';
+  };
   const whoseText = (r: RuleDraft) =>
     r.serviceGroupId
       ? t('fieldService.row.group', { group: groupName(r.serviceGroupId) })

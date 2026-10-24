@@ -782,7 +782,13 @@
     "removeConfirm": {
       "title": "Gruppe entfernen",
       "body": "Die Verknüpfung zu den Mitgliedern wird aufgehoben.",
-      "webMessage": "Diese Gruppe entfernen? Die Verknüpfung zu den Mitgliedern wird aufgehoben."
+      "webMessage": "Diese Gruppe entfernen? Die Verknüpfung zu den Mitgliedern wird aufgehoben.",
+      "slots_one": "In der Vorlage der Predigtdienstzusammenkünfte hat sie eine Regel – sie ruht und wird wieder aktiv, wenn die Gruppe wiederhergestellt wird.",
+      "slots_other": "In der Vorlage der Predigtdienstzusammenkünfte hat sie {{count}} Regeln – sie ruhen und werden wieder aktiv, wenn die Gruppe wiederhergestellt wird.",
+      "drafts_one": "Ein Entwurf wird gelöscht – davon weiß noch niemand.",
+      "drafts_other": "{{count}} Entwürfe werden gelöscht – davon weiß noch niemand.",
+      "published_one": "Eine angekündigte Zusammenkunft bleibt mit dem Hinweis „Gruppe gelöscht“ – entscheiden Sie, was damit geschieht.",
+      "published_other": "{{count}} angekündigte Zusammenkünfte bleiben mit dem Hinweis „Gruppe gelöscht“ – entscheiden Sie, was damit geschieht."
     },
     "noGroupsYet": "Noch keine Gruppen",
     "form": {
@@ -1566,7 +1572,8 @@
       "groupAssistant": "Gehilfe des Gruppenaufsehers",
       "leadsThatDay": "leitet an diesem Tag bereits",
       "absent": "an diesem Tag abwesend",
-      "upcoming": "bereits eingeteilt am {{date}}"
+      "upcoming": "bereits eingeteilt am {{date}}",
+      "notConductor": "nicht als Leiter von Zusammenkünften markiert"
     },
     "sheet": {
       "groupVisit": "Gruppe {{group}} · Besuch des Dienstaufsehers",
@@ -1643,7 +1650,11 @@
       "editTemplate": "Vorlage ändern",
       "doneTitle": "Monat vorbereitet",
       "doneAll": "Zusammenkünfte im Entwurf: {{count}}",
-      "doneSome": "Zusammenkünfte im Entwurf: {{count}}, ohne Leiter: {{left}}"
+      "doneSome": "Zusammenkünfte im Entwurf: {{count}}, ohne Leiter: {{left}}",
+      "skipGroupRemoved": "Gruppe {{group}} gelöscht – Regel ruht",
+      "skipRemoved": "Von Hand entfernt – wird nicht erstellt",
+      "skipDiffers": "Schon vorhanden: {{what}} – keine zweite daneben",
+      "replace": "Auf {{time}} laut Vorlage ändern"
     },
     "template": {
       "title": "Vorlage der Zusammenkünfte",
@@ -1777,7 +1788,8 @@
         },
         "lastWord": "letzter",
         "and": "und"
-      }
+      },
+      "groupRemoved": "{{group}} (gelöscht)"
     },
     "overseerVisitNeedsGroup": "Ein Besuch gehört zur Zusammenkunft einer Gruppe – wählen Sie die Gruppe unter „Für wen“",
     "notice": {
@@ -1850,7 +1862,20 @@
       "taken": "Kongress / Besuch",
       "busy": "anderes im Saal"
     },
-    "deleteQuiet": "Ganz löschen – nur wenn die Zusammenkunft irrtümlich eingetragen wurde"
+    "deleteQuiet": "Ganz löschen – nur wenn die Zusammenkunft irrtümlich eingetragen wurde",
+    "attention": {
+      "conductor_absent": "{{who}} ist an diesem Tag abwesend",
+      "conductor_not_conductor": "{{who}} leitet keine Zusammenkünfte mehr",
+      "conductor_removed": "der Leiter ist nicht mehr in der Versammlung",
+      "group_removed": "Gruppe gelöscht",
+      "assembly": "an diesem Tag ist Kongress",
+      "co_visit": "Woche des Kreisaufseherbesuchs",
+      "theConductor": "Der Leiter",
+      "beforePublish_one": "Eine Zusammenkunft muss korrigiert werden:",
+      "beforePublish_other": "{{count}} Zusammenkünfte müssen korrigiert werden:",
+      "draftLine_one": "Eine Zusammenkunft muss korrigiert werden – öffnen",
+      "draftLine_other": "{{count}} Zusammenkünfte müssen korrigiert werden – erste öffnen"
+    }
   },
   "cleaning": {
     "title": "Reinigung",
@@ -3544,7 +3569,11 @@
       "displayLabel": "Bezeichnung des Bildschirms",
       "stagePin": "PIN für das Bildschirmmenü",
       "partDurationMin": "Dauer",
-      "to": "Auf die Woche"
+      "to": "Auf die Woche",
+      "conductorsFilled": "Leiter ausgewählt",
+      "dutiesCleared": "Entfernte Zuteilungen",
+      "draftsRemoved": "Gelöschte Entwürfe",
+      "draftDates": "Tage der Entwürfe"
     },
     "noValue": "leer",
     "changedNoValues": "geändert (Werte werden nicht gespeichert)",
@@ -3884,7 +3913,11 @@
       "linkHint": "Nur für eigene Brüder. Durch die Verknüpfung sieht die App Abwesenheiten und Zuteilungen bei unseren Zusammenkünften.",
       "countedFor": "Die Tage zählen für „{{school}}“",
       "removed": "Helfer aus der Liste entfernt",
-      "emptyPick": "In der Liste der Brüder für die Schule steht noch niemand – fügen Sie einen Bruder hinzu."
+      "emptyPick": "In der Liste der Brüder für die Schule steht noch niemand – fügen Sie einen Bruder hinzu.",
+      "removeTitle": "Aus der Liste entfernen",
+      "removeWithDuties_one": "Er hat noch eine Zuteilung ({{dates}}). Sie wird entfernt, der Platz wird frei.",
+      "removeWithDuties_other": "Er hat noch {{count}} Zuteilungen ({{dates}}). Sie werden entfernt, die Plätze werden frei.",
+      "removeAction": "Entfernen"
     },
     "addAndAssign": "Hinzufügen und zuteilen",
     "fromCongregations": "aus Versammlungen",
@@ -4939,7 +4972,8 @@
       "GROUP_LEADER_SISTER": "Gruppenaufseher und sein Gehilfe müssen Brüder sein.",
       "ABSENCE_FROM_SCHOOL": "Diese Abwesenheit stammt aus einer Einteilung in der Pionierdienstschule. Bitte die Einteilung in der Schule ändern.",
       "PIONEER_KIND_CHANGE_DATE": "Die neue Art des Dienstes muss später beginnen als die bisherige. Bitte den Monat angeben, ab dem er so dient, oder die Art für die ganze Zeit korrigieren.",
-      "PIONEER_KIND_CORRECTION_INVALID": "Für die ganze Zeit korrigieren lässt sich nur die Art eines aktuellen allgemeinen Pioniers, Sonderpioniers oder Missionars."
+      "PIONEER_KIND_CORRECTION_INVALID": "Für die ganze Zeit korrigieren lässt sich nur die Art eines aktuellen allgemeinen Pioniers, Sonderpioniers oder Missionars.",
+      "FS_GENERATE_RETIRED": "Zusammenkünfte werden so nicht mehr erstellt. Öffnen Sie „Monat vorbereiten“ – dort wird der Kalender berücksichtigt und nicht sofort veröffentlicht."
     }
   },
   "stage": {

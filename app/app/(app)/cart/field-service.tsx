@@ -24,6 +24,7 @@ import {
   UpdateFieldServiceMeetingInput,
   fieldServiceApi,
   fieldServiceMonthThemeApi,
+  fieldServiceTemplateApi,
   isFieldServiceDraft,
   publishersApi,
   hallsApi,
@@ -33,6 +34,7 @@ import {
 import { usePermissions } from '../../../lib/permissions';
 import { useFieldListViewer } from '../../../components/FieldListBits';
 import { FieldMeetingRow } from '../../../components/FieldMeetingRow';
+import { attentionText, needingAttention } from '../../../lib/field-attention';
 import {
   FieldServiceForm,
   confirmFieldServiceDelete,
@@ -243,10 +245,20 @@ export default function FieldServiceMeetingsScreen() {
     queryKey: ['service-groups'],
     queryFn: () => serviceGroupsApi.list({}),
   });
+  // Removed groups too, for their names only (24 October 2026): a meeting
+  // announced before its group was removed stays, marked, and still says
+  // whose it was. Asked only by those who plan.
+  const allGroupsQuery = useQuery({
+    queryKey: ['service-groups', 'with-removed'],
+    queryFn: () => serviceGroupsApi.list({ includeRemoved: true }),
+    enabled: canEdit,
+  });
   const groupName = (id: string) =>
     (groupsQuery.data?.data ?? []).find(
       (g: { id: string; name: string }) => g.id === id,
-    )?.name ?? '';
+    )?.name ??
+    (allGroupsQuery.data?.data ?? []).find((g) => g.id === id)?.name ??
+    '';
 
   const hallsQuery = useQuery({
     queryKey: ['halls'],
@@ -386,41 +398,25 @@ export default function FieldServiceMeetingsScreen() {
       );
     },
   });
-  // Fill the empty conductors of a draft month, one by one, with the first
-  // brother the server calls free for that day. The same list the window
-  // shows — this only saves the planner the taps.
+  // Fill the empty conductors of a draft month — on the server, each draft
+  // by the rule of its template slot (24 October 2026). The app's own loop
+  // gave every group meeting «its overseer» and every other a turn, even
+  // where the template said «без ведущего», and stopped at the first
+  // refusal with no word of what it had done.
   const fillM = useMutation({
-    mutationFn: async (drafts: FieldServiceMeeting[]) => {
-      let filled = 0;
-      let left = 0;
-      for (const m of drafts) {
-        const list = await fieldServiceApi.suggestConductor({
-          date: meetingDateISO(m),
-          serviceGroupId: m.serviceGroupId,
-          conductorRule: m.serviceGroupId ? 'group_overseer' : 'rotation',
-          excludeMeetingId: m.id,
-        });
-        const pick = list.find((c) => c.free);
-        if (!pick) {
-          left += 1;
-          continue;
-        }
-        await fieldServiceApi.update(m.id, {
-          conductorPublisherId: pick.publisherId,
-          notifyConductor: false,
-        });
-        filled += 1;
-      }
-      return { filled, left };
-    },
+    mutationFn: (vars: { year: number; month: number }) =>
+      fieldServiceTemplateApi.fillConductors(vars),
     onSuccess: (out) => {
       invalidate();
       notify(
         t('fieldService.draft.filledTitle'),
-        out.left
-          ? t('fieldService.draft.filledSome', { count: out.filled, left: out.left })
+        out.left.length
+          ? t('fieldService.draft.filledSome', {
+              count: out.filled,
+              left: out.left.length,
+            })
           : t('fieldService.draft.filledAll', { count: out.filled }),
-        out.left ? 'error' : 'success',
+        out.left.length ? 'error' : 'success',
       );
     },
   });
@@ -434,13 +430,26 @@ export default function FieldServiceMeetingsScreen() {
   };
 
   const confirmPublish = async (m: MonthBlock) => {
+    // What went wrong since the month was prepared is said before it goes
+    // out (24 October 2026): the night's publication keeps such drafts
+    // back; a person pressing the button decides himself.
+    const wrong = needingAttention(m.drafts).filter((d) => meetingDateISO(d) >= todayISO);
+    const warn = wrong.length
+      ? '\n\n' +
+        t('fieldService.attention.beforePublish', { count: wrong.length }) +
+        '\n' +
+        wrong
+          .map((d) => `${cap(dayjs(meetingDateISO(d)).locale(i18n.language).format('dd, D MMM'))}, ${d.startTime}: ${attentionText(d, t, nameOf)}`)
+          .join('\n')
+      : '';
     if (
       await confirm({
         title: t('fieldService.draft.publish'),
-        body: t('fieldService.draft.publishConfirm', {
-          month: lowerMonth(m.title, i18n.language),
-          count: m.drafts.length,
-        }),
+        body:
+          t('fieldService.draft.publishConfirm', {
+            month: lowerMonth(m.title, i18n.language),
+            count: m.drafts.length,
+          }) + warn,
         confirmLabel: t('fieldService.draft.publish'),
       })
     ) {
@@ -921,6 +930,19 @@ export default function FieldServiceMeetingsScreen() {
                     </Pressable>
                   );
                 })()}
+                {(() => {
+                  // Drafts something went wrong with since they were
+                  // prepared — a tap opens the first.
+                  const wrong = needingAttention(m.drafts).filter((d) => meetingDateISO(d) >= todayISO);
+                  if (wrong.length === 0) return null;
+                  return (
+                    <Pressable onPress={() => setTarget(wrong[0])} hitSlop={6} accessibilityRole="button">
+                      <Text style={[styles.draftLine, styles.draftLineAlert]}>
+                        {t('fieldService.attention.draftLine', { count: wrong.length })}
+                      </Text>
+                    </Pressable>
+                  );
+                })()}
                 <Text style={styles.draftHint}>{t('fieldService.draft.hint')}</Text>
                 <View style={styles.draftActions}>
                   {m.drafts.some((d) => !d.conductorPublisherId) ? (
@@ -928,11 +950,10 @@ export default function FieldServiceMeetingsScreen() {
                       style={styles.draftSecondary}
                       disabled={fillM.isPending}
                       onPress={() =>
-                        fillM.mutate(
-                          m.drafts.filter(
-                            (d) => !d.conductorPublisherId && meetingDateISO(d) >= todayISO,
-                          ),
-                        )
+                        fillM.mutate({
+                          year: Number(m.key.slice(0, 4)),
+                          month: Number(m.key.slice(5, 7)),
+                        })
                       }
                     >
                       {fillM.isPending ? (
@@ -1019,6 +1040,7 @@ export default function FieldServiceMeetingsScreen() {
                         isMine={viewer.isMine(mt)}
                         me={viewer.me}
                         last={last}
+                        attention={canEdit ? attentionText(mt, t, nameOf) : null}
                         onPress={
                           canEdit
                             ? // The stand-in opens the meeting itself, on its new day.
@@ -1392,6 +1414,7 @@ const styles = StyleSheet.create({
   draftTitle: { fontSize: 16, fontFamily: 'Manrope_800ExtraBold', color: '#0f172a' },
   draftLine: { fontSize: 14, color: '#334155', fontFamily: 'Manrope_500Medium' },
   draftLineWarn: { color: '#a14a00', fontFamily: 'Manrope_700Bold' },
+  draftLineAlert: { color: '#b42318', fontFamily: 'Manrope_700Bold' },
   draftHint: { fontSize: 13, color: '#64748b', marginTop: 4, fontFamily: 'Manrope_500Medium' },
   draftActions: { flexDirection: 'row', gap: 8, marginTop: 8 },
   draftSecondary: {

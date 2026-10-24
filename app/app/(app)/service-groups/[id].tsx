@@ -123,10 +123,24 @@ export default function ServiceGroupDetailScreen() {
   });
 
   const confirmRemove = async () => {
+    // What the group still has in field service is said first (24 October
+    // 2026): its template rows sleep, its drafts go, its announced meetings
+    // stay marked for the service overseer.
+    let impact: { slots: number; drafts: number; published: number } | null = null;
+    try {
+      impact = await serviceGroupsApi.removalImpact(id!);
+    } catch {
+      impact = null;
+    }
+    const extra: string[] = [];
+    if (impact?.slots) extra.push(t('serviceGroups.removeConfirm.slots', { count: impact.slots }));
+    if (impact?.drafts) extra.push(t('serviceGroups.removeConfirm.drafts', { count: impact.drafts }));
+    if (impact?.published)
+      extra.push(t('serviceGroups.removeConfirm.published', { count: impact.published }));
     if (
       await confirm({
         title: t('serviceGroups.removeConfirm.title'),
-        body: t('serviceGroups.removeConfirm.body'),
+        body: [t('serviceGroups.removeConfirm.body'), ...extra].join('\n\n'),
         confirmLabel: t('common.remove'),
         danger: true,
       })
