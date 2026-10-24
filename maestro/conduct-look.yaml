@@ -15,7 +15,7 @@ name: Ведение встречи — только смотреть
     commands:
       - tapOn: "Позже|Later|Später"
 - extendedWaitUntil:
-    visible: "Мои уведомления|My notifications|Meine Benachrichtigungen"
+    visible: "Главная|Home|Start"
     timeout: 30000
 - takeScreenshot: 01-home-cards
 - openLink: mycongregation://schedule/conduct?week=2026-10-19
