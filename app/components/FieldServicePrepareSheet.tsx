@@ -87,10 +87,10 @@ export function FieldServicePrepareSheet({
     },
   });
 
+  // «Ноябрь 2026», as the month page writes it (14 October 2026): the
+  // browser's own month-and-year adds «г.» in Russian.
   const monthTitle = (() => {
-    const s = dayjs(`${monthKey}-01`)
-      .toDate()
-      .toLocaleDateString(i18n.language, { month: 'long', year: 'numeric' });
+    const s = dayjs(`${monthKey}-01`).locale(i18n.language).format('MMMM YYYY');
     return s.charAt(0).toUpperCase() + s.slice(1);
   })();
   const step = (n: number) =>

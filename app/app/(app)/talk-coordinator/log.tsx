@@ -1,3 +1,4 @@
+import { breakable } from "../../../lib/breakable";
 import { Fragment, useMemo, useRef, useState, useEffect } from "react";
 import type { TalkAttentionItem } from "../../../lib/api";
 import {
@@ -1206,6 +1207,8 @@ export default function TalkExchangeYearScreen() {
   // Where a congregation would stand, the overseer's entry says who he is —
   // otherwise it reads as a visiting speaker from nowhere.
   const incomingCong = (e: TalkExchange): string | null =>
+    breakable(incomingCongRaw(e)) ?? null;
+  const incomingCongRaw = (e: TalkExchange): string | null =>
     e.visitingSpeakerId
       ? (speakerById.get(e.visitingSpeakerId)?.cong ??
         (speakerById.get(e.visitingSpeakerId)?.overseer
@@ -1624,7 +1627,11 @@ export default function TalkExchangeYearScreen() {
                           })()}
                         </View>
                       ) : (
-                        <>
+                        // One column: the speakers who did not come stand
+                        // above the entry. Loose in the row, they became a
+                        // third column and squeezed «От нас» to a letter
+                        // wide (seen on the stand, 24 October 2026).
+                        <View style={styles.inSide}>
                           {slot.missed.length > 0 ? (
                             <View style={styles.missedBox}>
                               {slot.missed.map((mv) => (
@@ -1741,7 +1748,7 @@ export default function TalkExchangeYearScreen() {
                               </>
                             ) : null}
                           </Slot>
-                        </>
+                        </View>
                       )}
                       <View style={styles.outCol}>
                         <Text
@@ -1765,7 +1772,7 @@ export default function TalkExchangeYearScreen() {
                                   {t("talkCoordinator.log.needsBrother")}
                                 </Text>
                                 <Text style={styles.outMain}>
-                                  {`→ ${congById.get(o.hostCongregationId ?? "")?.name ?? "—"}`}
+                                  {`→ ${breakable(congById.get(o.hostCongregationId ?? "")?.name) ?? "—"}`}
                                   {o.date !== w.date ? ` · ${fmtDay(o.date)}` : ""}
                                 </Text>
                                 <Text style={styles.needBrotherHint}>
@@ -1788,7 +1795,7 @@ export default function TalkExchangeYearScreen() {
                                 ? (pubById.get(o.publisherId) ?? "—")
                                 : "—"}
                               {o.hostCongregationId
-                                ? ` → ${congById.get(o.hostCongregationId)?.name ?? ""}`
+                                ? ` → ${breakable(congById.get(o.hostCongregationId)?.name) ?? ""}`
                                 : ""}
                             </Text>
                             <Text style={styles.outSub}>
@@ -2961,6 +2968,7 @@ const styles = StyleSheet.create({
     color: "#6d28d9",
     letterSpacing: 0.2,
   },
+  inSide: { flex: 1, minWidth: 0 },
   missedBox: { marginBottom: 6, gap: 4 },
   missedRow: { flexDirection: "row", alignItems: "center", gap: 6 },
   missedText: { fontFamily: "Manrope_400Regular", flex: 1, fontSize: 12, color: "#b45309", lineHeight: 17 },
