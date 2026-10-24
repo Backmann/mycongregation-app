@@ -1,0 +1,63 @@
+# Пакеты 3 и 4 (24 октября 2026) — на телефоне, на живых данных, ТОЛЬКО
+# СМОТРИТ: встречи для проповеди (месяц и окно «Подготовить месяц» без
+# «Создать»), братья для школы, журнал «К нам / От нас». Ничего не
+# сохраняет: окно подготовки закрывается системной «Назад».
+# БЕЗ ПЕРЕЗАПУСКА ПРИЛОЖЕНИЯ: при новом запуске оно просит PIN телефона
+# (components/AppLock.tsx). Перед запуском приложение открывают и
+# разблокируют сами; сценарий работает в уже открытом.
+appId: com.backmann.mycongregation
+name: Пакеты 3 и 4 — только смотреть
+---
+- openLink: mycongregation://home
+- runFlow:
+    when:
+      visible: "Позже|Later|Später"
+    commands:
+      - tapOn: "Позже|Later|Später"
+- extendedWaitUntil:
+    visible: "Мои уведомления|My notifications|Meine Benachrichtigungen"
+    timeout: 30000
+- takeScreenshot: 01-home
+
+# Встречи для проповеди: месяц
+- openLink: mycongregation://cart/field-service
+- extendedWaitUntil:
+    visible: "Встречи для проповеди|Field service meetings|Zusammenkünfte für den Predigtdienst"
+    timeout: 30000
+- assertNotVisible: ".*(Что-то пошло не так|Something went wrong|Unmatched Route).*"
+- takeScreenshot: 02-field-service-month
+- scroll
+- takeScreenshot: 03-field-service-month-down
+
+# «Подготовить месяц» — смотреть расчёт, ничего не создавать
+- runFlow:
+    when:
+      visible: "Подготовить месяц|Prepare the month|Monat vorbereiten"
+    commands:
+      - tapOn: "Подготовить месяц|Prepare the month|Monat vorbereiten"
+      - extendedWaitUntil:
+          visible: "Так будет.*|Preview.*|Vorschau.*"
+          timeout: 20000
+      - takeScreenshot: 04-prepare-preview
+      - scroll
+      - takeScreenshot: 05-prepare-preview-down
+      - pressKey: back
+- assertNotVisible: ".*(Что-то пошло не так|Something went wrong).*"
+
+# Братья для школы
+- openLink: mycongregation://pioneer-school/helpers
+- extendedWaitUntil:
+    visible: "Братья для школы|Brothers for the school|Brüder für die Schule"
+    timeout: 30000
+- assertNotVisible: ".*(Что-то пошло не так|Something went wrong|Unmatched Route).*"
+- takeScreenshot: 06-school-helpers
+
+# Журнал «К нам / От нас»
+- openLink: mycongregation://talk-coordinator/log
+- extendedWaitUntil:
+    visible: ".*(К нам|Incoming|Zu uns).*"
+    timeout: 30000
+- assertNotVisible: ".*(Что-то пошло не так|Something went wrong|Unmatched Route).*"
+- takeScreenshot: 07-talk-log
+- scroll
+- takeScreenshot: 08-talk-log-down
