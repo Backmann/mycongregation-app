@@ -3573,7 +3573,8 @@
       "conductorsFilled": "Leiter ausgewählt",
       "dutiesCleared": "Entfernte Zuteilungen",
       "draftsRemoved": "Gelöschte Entwürfe",
-      "draftDates": "Tage der Entwürfe"
+      "draftDates": "Tage der Entwürfe",
+      "programmeSpelling": "Schreibweise im Programm"
     },
     "noValue": "leer",
     "changedNoValues": "geändert (Werte werden nicht gespeichert)",

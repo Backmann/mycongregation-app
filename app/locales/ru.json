@@ -3659,7 +3659,8 @@
       "conductorsFilled": "Подобраны ведущие",
       "dutiesCleared": "Снято назначений",
       "draftsRemoved": "Удалено черновиков",
-      "draftDates": "Дни черновиков"
+      "draftDates": "Дни черновиков",
+      "programmeSpelling": "Написание в программе"
     },
     "noValue": "пусто",
     "changedNoValues": "изменено (значения не сохраняются)",
