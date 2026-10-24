@@ -3573,7 +3573,8 @@
       "conductorsFilled": "Conductors picked",
       "dutiesCleared": "Assignments taken off",
       "draftsRemoved": "Drafts deleted",
-      "draftDates": "Draft days"
+      "draftDates": "Draft days",
+      "programmeSpelling": "Spelling in the program"
     },
     "noValue": "empty",
     "changedNoValues": "changed (values are not kept)",
