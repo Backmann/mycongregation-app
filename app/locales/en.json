@@ -3540,7 +3540,9 @@
       "permanent": "Permanently",
       "publisherName": "Publisher",
       "displayLabel": "Display name",
-      "stagePin": "Display menu PIN"
+      "stagePin": "Display menu PIN",
+      "partDurationMin": "Duration",
+      "to": "To the week"
     },
     "noValue": "empty",
     "changedNoValues": "changed (values are not kept)",
