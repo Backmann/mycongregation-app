@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import { useState } from 'react';
 import {
   ActivityIndicator,
@@ -15,6 +16,7 @@ import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 import {
   circuitOverseersApi,
+  specialEventsApi,
   extractErrorMessage,
   CircuitOverseer,
   CircuitOverseerRole,
@@ -69,7 +71,7 @@ export default function CircuitOverseerScreen() {
     qc.invalidateQueries({ queryKey: ['circuit-overseers'] });
 
   const saveMutation = useMutation({
-    mutationFn: () => {
+    mutationFn: async () => {
       const payload = {
         firstName: form.firstName.trim(),
         lastName: form.lastName.trim(),
@@ -77,9 +79,52 @@ export default function CircuitOverseerScreen() {
         role: form.role,
         isPrimary: form.isPrimary,
       };
-      return form.id
-        ? circuitOverseersApi.update(form.id, payload)
-        : circuitOverseersApi.create(payload);
+      if (!form.id) return circuitOverseersApi.create(payload);
+      /**
+       * A name corrected here reaches the visits to come only when asked
+       * (24 October 2026). The directory holds whoever serves the circuit:
+       * the record is sometimes rewritten for a NEW overseer, and the visits
+       * already arranged are still the old one's — so the app asks rather
+       * than guesses. The visit's own save then puts the name on his talks.
+       */
+      const was = (data ?? []).find((c) => c.id === form.id);
+      const renamed =
+        !!was &&
+        (was.firstName !== payload.firstName ||
+          was.lastName !== payload.lastName);
+      const saved = await circuitOverseersApi.update(form.id, payload);
+      if (!renamed || !was) return saved;
+      // Visits still ahead (or this week's): a past one keeps the name it
+      // was held under, and the server would refuse to change it anyway.
+      const today = dayjs().format('YYYY-MM-DD');
+      const visits = (await specialEventsApi.list()).filter(
+        (e) =>
+          e.type === 'circuit_overseer_visit' &&
+          (e.endDate || e.date) >= today &&
+          (e.coFirstName ?? '') === was.firstName &&
+          (e.coLastName ?? '') === was.lastName,
+      );
+      if (visits.length === 0) return saved;
+      const yes = await confirm({
+        title: t('circuitOverseer.respellTitle'),
+        body: t('circuitOverseer.respellBody', {
+          count: visits.length,
+          from: `${was.firstName} ${was.lastName}`.trim(),
+          to: `${payload.firstName} ${payload.lastName}`.trim(),
+        }),
+        confirmLabel: t('circuitOverseer.respellYes'),
+        cancelLabel: t('circuitOverseer.respellNo'),
+      });
+      if (!yes) return saved;
+      for (const v of visits) {
+        await specialEventsApi.update(v.id, {
+          coFirstName: payload.firstName,
+          coLastName: payload.lastName,
+        });
+      }
+      qc.invalidateQueries({ queryKey: ['special-events'] });
+      qc.invalidateQueries({ queryKey: ['assignments'] });
+      return saved;
     },
     onSuccess: () => {
       invalidate();

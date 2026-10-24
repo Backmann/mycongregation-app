@@ -466,6 +466,9 @@ function MeetingRow({
             ? dayjs(row.recordedAt).locale(language).format('D MMM, HH:mm')
             : null,
           row.corrected ? t('attendance.corrected') : null,
+          // The day lost its meeting after the figure was entered — a visit
+          // changed or removed. Counted, and said (24 October 2026).
+          row.offSchedule ? t('attendance.offSchedule') : null,
         ]
           .filter(Boolean)
           .join(' · ')}

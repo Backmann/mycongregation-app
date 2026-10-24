@@ -5596,6 +5596,11 @@ export interface AttendanceRow {
   recordedAt?: string | null;
   /** True when the figure was changed after it was first entered. */
   corrected?: boolean;
+  /**
+   * Recorded on a day that, by today's rules, has no meeting of this kind
+   * (the visit's day changed or it was removed afterwards). Still counted.
+   */
+  offSchedule?: boolean;
 }
 
 export interface AttendanceMonth {

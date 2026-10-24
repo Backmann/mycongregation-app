@@ -2355,7 +2355,8 @@
         "notifyNew": "Everyone is notified, and reminded the evening before",
         "notifyEdit": "If the days, time, place or meeting change, everyone is notified"
       },
-      "titleExample": "For example, grounds cleaning"
+      "titleExample": "For example, grounds cleaning",
+      "midweekHeld": "The midweek meeting ({{day}}) is already past — its program stays as it was."
     },
     "types": {
       "regional_convention": "Regional convention",
@@ -2825,7 +2826,12 @@
     "emptyList": "No one yet. Add a circuit overseer.",
     "pickLabel": "Who is coming",
     "listIntroRead": "The circuit overseer the congregation expects, and his substitutes.",
-    "emptyListRead": "No circuit overseer has been entered yet."
+    "emptyListRead": "No circuit overseer has been entered yet.",
+    "respellTitle": "Correct the name in the visits?",
+    "respellYes": "Correct",
+    "respellNo": "Leave as is",
+    "respellBody_one": "One coming visit has “{{from}}”. Correct it to “{{to}}”? If this is a new circuit overseer and the visit is still the previous one’s, choose “Leave as is”.",
+    "respellBody_other": "{{count}} coming visits have “{{from}}”. Correct them to “{{to}}”? If this is a new circuit overseer and the visits are still the previous one’s, choose “Leave as is”."
   },
   "relative": {
     "today": "today",
@@ -3120,7 +3126,8 @@
       "confirm": {
         "swap": "Swap",
         "move": "Move"
-      }
+      },
+      "visitWeek": "This is the circuit overseer's visit week — his talk is not swapped. To change the week, move the visit itself. A guest the visit set aside is booked for another week in the Incoming log."
     },
     "congregationProfile": {
       "title": "Congregation",
@@ -3660,7 +3667,8 @@
     "averageShort": "Average",
     "printLegend": "— meeting not held · yellow cell — not entered",
     "printedOn": "Printed",
-    "yearAverageRow": "Average for the service year"
+    "yearAverageRow": "Average for the service year",
+    "offSchedule": "day without a scheduled meeting"
   },
   "annualReport": {
     "pageTitle": "Annual congregation report",
@@ -4974,7 +4982,8 @@
       "ABSENCE_FROM_SCHOOL": "This absence comes from an assignment in the Pioneer Service School. Change the assignment in the school instead.",
       "PIONEER_KIND_CHANGE_DATE": "The new kind of service has to start later than the current one. Enter the month he starts serving this way, or correct the kind for all time.",
       "PIONEER_KIND_CORRECTION_INVALID": "Only the kind of a current regular pioneer, special pioneer or missionary can be corrected for all time.",
-      "FS_GENERATE_RETIRED": "Meetings are no longer made this way. Open “Prepare month” — it follows the calendar and does not publish at once."
+      "FS_GENERATE_RETIRED": "Meetings are no longer made this way. Open “Prepare month” — it follows the calendar and does not publish at once.",
+      "TALK_SWAP_VISIT_WEEK": "In the circuit overseer's visit week the talk is not swapped: move the visit itself, and book the guest for another week in the Incoming log."
     }
   },
   "stage": {

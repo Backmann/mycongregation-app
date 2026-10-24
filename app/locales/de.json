@@ -2355,7 +2355,8 @@
         "notifyNew": "Alle werden benachrichtigt und am Vorabend erinnert",
         "notifyEdit": "Ändern sich Tage, Uhrzeit, Ort oder Zusammenkunft, werden alle benachrichtigt"
       },
-      "titleExample": "Zum Beispiel Grundstückspflege"
+      "titleExample": "Zum Beispiel Grundstückspflege",
+      "midweekHeld": "Die Zusammenkunft unter der Woche ({{day}}) ist schon vorbei – ihr Programm bleibt unverändert."
     },
     "types": {
       "regional_convention": "Regionaler Kongress",
@@ -2825,7 +2826,12 @@
     "emptyList": "Noch niemand. Fügen Sie einen Kreisaufseher hinzu.",
     "pickLabel": "Wer kommt",
     "listIntroRead": "Der Kreisaufseher, den die Versammlung erwartet, und seine Vertreter.",
-    "emptyListRead": "Noch kein Kreisaufseher eingetragen."
+    "emptyListRead": "Noch kein Kreisaufseher eingetragen.",
+    "respellTitle": "Namen in den Besuchen korrigieren?",
+    "respellYes": "Korrigieren",
+    "respellNo": "Nicht ändern",
+    "respellBody_one": "Ein kommender Besuch hat „{{from}}“. Auf „{{to}}“ korrigieren? Wenn das ein neuer Kreisaufseher ist und der Besuch noch der bisherige, wählen Sie „Nicht ändern“.",
+    "respellBody_other": "{{count}} kommende Besuche haben „{{from}}“. Auf „{{to}}“ korrigieren? Wenn das ein neuer Kreisaufseher ist und die Besuche noch der bisherige, wählen Sie „Nicht ändern“."
   },
   "relative": {
     "today": "heute",
@@ -3120,7 +3126,8 @@
       "confirm": {
         "swap": "Tauschen",
         "move": "Verschieben"
-      }
+      },
+      "visitWeek": "In dieser Woche ist der Kreisaufseherbesuch – sein Vortrag wird nicht getauscht. Um die Woche zu ändern, verlegen Sie den Besuch selbst. Einen vom Besuch zurückgestellten Gast tragen Sie im Protokoll „Zu uns“ für eine andere Woche ein."
     },
     "congregationProfile": {
       "title": "Versammlung",
@@ -3660,7 +3667,8 @@
     "averageShort": "Durchschnitt",
     "printLegend": "— fand nicht statt · gelbe Zelle — nicht erfasst",
     "printedOn": "Gedruckt",
-    "yearAverageRow": "Durchschnitt des Dienstjahres"
+    "yearAverageRow": "Durchschnitt des Dienstjahres",
+    "offSchedule": "Tag ohne planmäßige Zusammenkunft"
   },
   "annualReport": {
     "pageTitle": "Jahresbericht der Versammlung",
@@ -4974,7 +4982,8 @@
       "ABSENCE_FROM_SCHOOL": "Diese Abwesenheit stammt aus einer Einteilung in der Pionierdienstschule. Bitte die Einteilung in der Schule ändern.",
       "PIONEER_KIND_CHANGE_DATE": "Die neue Art des Dienstes muss später beginnen als die bisherige. Bitte den Monat angeben, ab dem er so dient, oder die Art für die ganze Zeit korrigieren.",
       "PIONEER_KIND_CORRECTION_INVALID": "Für die ganze Zeit korrigieren lässt sich nur die Art eines aktuellen allgemeinen Pioniers, Sonderpioniers oder Missionars.",
-      "FS_GENERATE_RETIRED": "Zusammenkünfte werden so nicht mehr erstellt. Öffnen Sie „Monat vorbereiten“ – dort wird der Kalender berücksichtigt und nicht sofort veröffentlicht."
+      "FS_GENERATE_RETIRED": "Zusammenkünfte werden so nicht mehr erstellt. Öffnen Sie „Monat vorbereiten“ – dort wird der Kalender berücksichtigt und nicht sofort veröffentlicht.",
+      "TALK_SWAP_VISIT_WEEK": "In der Woche des Kreisaufseherbesuchs wird der Vortrag nicht getauscht: Verlegen Sie den Besuch selbst und tragen Sie den Gast im Protokoll „Zu uns“ für eine andere Woche ein."
     }
   },
   "stage": {
