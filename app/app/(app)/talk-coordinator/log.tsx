@@ -1,6 +1,6 @@
 import { breakable } from "../../../lib/breakable";
 import { Fragment, useMemo, useRef, useState, useEffect } from "react";
-import type { TalkAttentionItem } from "../../../lib/api";
+import type { SetAsideGuest, TalkAttentionItem } from "../../../lib/api";
 import {
   ActivityIndicator,
   Linking,
@@ -204,6 +204,23 @@ export default function TalkExchangeYearScreen() {
     queryKey: [...QK, "attention"],
     queryFn: () => talkExchangeApi.attention(),
   });
+  /**
+   * Guests a circuit visit set aside (25 October 2026): shown under the
+   * overseer of their week, with «Перенести». A server without the list yet
+   * answers 404 — then there is simply nobody to show.
+   */
+  const asideQuery = useQuery({
+    queryKey: [...QK, "set-aside"],
+    queryFn: () => talkExchangeApi.setAside().catch(() => []),
+  });
+  const asideByWeek = useMemo(() => {
+    const m = new Map<string, SetAsideGuest[]>();
+    for (const g of asideQuery.data ?? []) {
+      const wk = mondayISO(String(g.date).slice(0, 10));
+      m.set(wk, [...(m.get(wk) ?? []), g]);
+    }
+    return m;
+  }, [asideQuery.data]);
   const attentionById = useMemo(() => {
     const m = new Map<string, TalkAttentionItem>();
     for (const a of attentionQuery.data ?? []) m.set(a.id, a);
@@ -923,6 +940,16 @@ export default function TalkExchangeYearScreen() {
    * the visit to another week or says it will not take place.
    */
   const [moveEntry, setMoveEntry] = useState<TalkExchange | null>(null);
+  /** «Перенести» for a guest a circuit visit set aside (25 October 2026). */
+  const moveAsideMutation = useMutation({
+    mutationFn: (v: { id: string; week: string }) =>
+      talkExchangeApi.moveAside(v.id, v.week),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: QK });
+      qc.invalidateQueries({ queryKey: ["assignments"] });
+    },
+    onError: (e) => notify(extractErrorMessage(e)),
+  });
   const moveTargets = useMemo(() => {
     if (!moveEntry) return [] as WeekRow[];
     const from = mondayISO(String(moveEntry.date).slice(0, 10));
@@ -1654,6 +1681,55 @@ export default function TalkExchangeYearScreen() {
                               </>
                             );
                           })()}
+                          {/*
+                            Whoever the visit set aside (25 October 2026): not
+                            gone without a word — he may still be on his way.
+                          */}
+                          {(asideByWeek.get(w.monday) ?? []).map((g) => (
+                            <View key={g.id} style={styles.asideBox}>
+                              <View style={styles.asideHead}>
+                                <Ionicons
+                                  name="pause-circle-outline"
+                                  size={14}
+                                  color="#b45309"
+                                />
+                                <Text style={styles.asideLabel}>
+                                  {t("talkCoordinator.aside.badge")}
+                                </Text>
+                              </View>
+                              <Text style={styles.asideName}>
+                                {g.name ?? t("talkCoordinator.log.unknownSpeaker")}
+                              </Text>
+                              {incomingCong(g) || talkLabel(g.publicTalkId) ? (
+                                <Text style={styles.asideSub} numberOfLines={2}>
+                                  {[incomingCong(g), talkLabel(g.publicTalkId)]
+                                    .filter(Boolean)
+                                    .join(" · ")}
+                                </Text>
+                              ) : null}
+                              {upcoming ? (
+                                <>
+                                  <Text style={styles.asideHint}>
+                                    {g.publisherId
+                                      ? t("talkCoordinator.aside.hintOurs")
+                                      : t("talkCoordinator.aside.hint")}
+                                  </Text>
+                                  <Pressable
+                                    style={({ pressed }) => [
+                                      styles.asideMove,
+                                      pressed && { opacity: 0.7 },
+                                    ]}
+                                    onPress={() => setMoveEntry(g)}
+                                    accessibilityRole="button"
+                                  >
+                                    <Text style={styles.asideMoveText}>
+                                      {t("talkCoordinator.aside.move")}
+                                    </Text>
+                                  </Pressable>
+                                </>
+                              ) : null}
+                            </View>
+                          ))}
                         </View>
                       ) : (
                         // One column: the speakers who did not come stand
@@ -2011,7 +2087,9 @@ export default function TalkExchangeYearScreen() {
         subtitle={
           moveEntry ? (
             <Text style={styles.editorDate}>
-              {incomingName(moveEntry) ?? t("talkCoordinator.log.unknownSpeaker")}
+              {(moveEntry as SetAsideGuest).name ??
+                incomingName(moveEntry) ??
+                t("talkCoordinator.log.unknownSpeaker")}
             </Text>
           ) : undefined
         }
@@ -2020,17 +2098,29 @@ export default function TalkExchangeYearScreen() {
         variant="bottom"
       >
         <View style={{ gap: 8, paddingBottom: 8 }}>
+          {moveEntry?.setAsideBy ? (
+            <Text style={styles.cancelledHint}>
+              {t("talkCoordinator.aside.moveHint")}
+            </Text>
+          ) : null}
           {moveTargets.map((w) => (
             <Pressable
               key={w.monday}
               style={styles.moveRow}
-              disabled={updateMutation.isPending}
+              disabled={updateMutation.isPending || moveAsideMutation.isPending}
               onPress={async () => {
                 if (!moveEntry) return;
-                await updateMutation.mutateAsync({
-                  id: moveEntry.id,
-                  input: { date: w.date },
-                });
+                if (moveEntry.setAsideBy) {
+                  await moveAsideMutation.mutateAsync({
+                    id: moveEntry.id,
+                    week: w.monday,
+                  });
+                } else {
+                  await updateMutation.mutateAsync({
+                    id: moveEntry.id,
+                    input: { date: w.date },
+                  });
+                }
                 setMoveEntry(null);
               }}
               accessibilityRole="button"
@@ -2809,6 +2899,55 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   slotSwapBtn: { padding: 2 },
+  asideBox: {
+    marginTop: 10,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderStyle: "dashed",
+    borderTopColor: "#93c5fd",
+    gap: 2,
+  },
+  asideHead: { flexDirection: "row", alignItems: "center", gap: 5 },
+  asideLabel: {
+    fontFamily: "Manrope_800ExtraBold",
+    fontSize: 11,
+    letterSpacing: 0.3,
+    color: "#b45309",
+    textTransform: "uppercase",
+  },
+  asideName: {
+    fontFamily: "Manrope_700Bold",
+    fontSize: 14,
+    color: "#475569",
+    marginTop: 2,
+  },
+  asideSub: { fontFamily: "Manrope_400Regular", fontSize: 12, color: "#94a3b8" },
+  asideHint: {
+    fontFamily: "Manrope_400Regular",
+    fontSize: 12,
+    lineHeight: 16,
+    color: "#92400e",
+    backgroundColor: "#fef3c7",
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    marginTop: 6,
+  },
+  asideMove: {
+    marginTop: 8,
+    alignSelf: "flex-start",
+    borderWidth: 1.5,
+    borderColor: "#0284c7",
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    backgroundColor: "#fff",
+  },
+  asideMoveText: {
+    fontFamily: "Manrope_700Bold",
+    fontSize: 12.5,
+    color: "#0369a1",
+  },
   swapBody: { gap: 10 },
   swapHint: { fontFamily: "Manrope_400Regular", fontSize: 12.5, color: "#64748b" },
   swapModeRow: { flexDirection: "row", gap: 8 },

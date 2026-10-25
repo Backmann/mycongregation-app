@@ -2513,7 +2513,10 @@
       "inCongregation": "Was sich in der Versammlung ändert",
       "noMeetingsWeek": "Woche {{range}} — keine Zusammenkünfte",
       "neither": "Keine Zusammenkünfte: {{days}}. Keine Reinigung nach den Zusammenkünften und keine Dienste in dieser Woche.",
-      "addToCalendar": "In meinen Kalender eintragen"
+      "addToCalendar": "In meinen Kalender eintragen",
+      "midweekKept": "Die Zusammenkunft war schon vorbei, als der Besuch eingetragen wurde – das Programm blieb, wie es war: Versammlungsbibelstudium, ohne Vortrag des Kreisaufsehers.",
+      "setAside": "Wegen des Besuchs zurückgestellt: {{name}}",
+      "setAsideOpen": "im Vortragsplan"
     }
   },
   "calendar": {
@@ -3145,6 +3148,13 @@
       "noWeeks": "Vorne ist keine Woche frei – bitte zuerst im Vortragsplan eine Woche freimachen.",
       "notHeldTitle": "Findet der Besuch nicht statt?",
       "notHeldBody": "Der Besuch von {{name}} bleibt im Verlauf als nicht stattgefunden."
+    },
+    "aside": {
+      "badge": "Wegen des Besuchs zurückgestellt",
+      "hint": "Er könnte noch kommen: bitte ihn informieren oder auf eine andere Woche verlegen.",
+      "hintOurs": "Der Bruder erhält abends „Aufgabe entfällt“. Bei Bedarf seinen Vortrag auf eine andere Woche verlegen.",
+      "move": "Verlegen…",
+      "moveHint": "Sein Vortrag und alles zum Besuch Notierte (Notiz, Gastfreundschaft) ziehen mit um. Den neuen Termin bitte selbst mit ihm absprechen – die App schreibt ihm nicht."
     }
   },
   "rules": {
@@ -3581,7 +3591,8 @@
       "dutiesCleared": "Entfernte Zuteilungen",
       "draftsRemoved": "Gelöschte Entwürfe",
       "draftDates": "Tage der Entwürfe",
-      "programmeSpelling": "Schreibweise im Programm"
+      "programmeSpelling": "Schreibweise im Programm",
+      "setAsideBy": "Vom Kreisaufseherbesuch zurückgestellt"
     },
     "noValue": "leer",
     "changedNoValues": "geändert (Werte werden nicht gespeichert)",
@@ -4983,7 +4994,8 @@
       "PIONEER_KIND_CHANGE_DATE": "Die neue Art des Dienstes muss später beginnen als die bisherige. Bitte den Monat angeben, ab dem er so dient, oder die Art für die ganze Zeit korrigieren.",
       "PIONEER_KIND_CORRECTION_INVALID": "Für die ganze Zeit korrigieren lässt sich nur die Art eines aktuellen allgemeinen Pioniers, Sonderpioniers oder Missionars.",
       "FS_GENERATE_RETIRED": "Zusammenkünfte werden so nicht mehr erstellt. Öffnen Sie „Monat vorbereiten“ – dort wird der Kalender berücksichtigt und nicht sofort veröffentlicht.",
-      "TALK_SWAP_VISIT_WEEK": "In der Woche des Kreisaufseherbesuchs wird der Vortrag nicht getauscht: Verlegen Sie den Besuch selbst und tragen Sie den Gast im Protokoll „Zu uns“ für eine andere Woche ein."
+      "TALK_SWAP_VISIT_WEEK": "In der Woche des Kreisaufseherbesuchs wird der Vortrag nicht getauscht: Verlegen Sie den Besuch selbst und tragen Sie den Gast im Protokoll „Zu uns“ für eine andere Woche ein.",
+      "TALK_MOVE_VISIT_WEEK": "In die Woche des Kreisaufseherbesuchs wird kein Gastredner verlegt – bitte eine andere Woche wählen."
     }
   },
   "stage": {

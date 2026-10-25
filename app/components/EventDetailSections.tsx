@@ -1,4 +1,5 @@
 import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useMayOpen } from '../lib/useMayOpen';
 import { Ionicons } from '@expo/vector-icons';
@@ -7,6 +8,7 @@ import dayjs from 'dayjs';
 import 'dayjs/locale/ru';
 import 'dayjs/locale/de';
 import type { MeetingSettingsVersion, SpecialEvent } from '../lib/api';
+import { talkExchangeApi } from '../lib/api';
 import { effectiveVersionFor } from '../lib/meeting-schedule';
 import {
   addDaysISO,
@@ -135,6 +137,21 @@ export function VisitWeek({
   const moved = usualMidweekDow != null && usualMidweekDow !== (event.coMidweekDow ?? 2);
   const coName = [event.coFirstName, event.coLastName].filter(Boolean).join(' ');
   const day = (iso: string) => cap(dayjs(iso).locale(loc).format('dddd, D MMMM'));
+  // The midweek meeting held before the visit was entered keeps its own
+  // programme (25 October 2026): the page says so rather than promise the
+  // service talk. Known only for a visit that keeps the record of it.
+  const midweekKept =
+    !!event.programmeApplied &&
+    !event.programmeApplied.midweek &&
+    midweek < dayjs().format('YYYY-MM-DD');
+  // The guest whose weekend the visit took, if it set one aside.
+  const asideQuery = useQuery({
+    queryKey: ['talk-exchange', 'set-aside'],
+    queryFn: () => talkExchangeApi.setAside().catch(() => []),
+  });
+  const aside = (asideQuery.data ?? []).filter((g) => g.setAsideBy === event.id);
+  const mayOpen = useMayOpen();
+  const logOpen = mayOpen('/talk-coordinator/log');
   return (
     <Section title={t('specialEvents.page.visitWeek')}>
       <View style={styles.card}>
@@ -155,12 +172,18 @@ export function VisitWeek({
             {day(midweek)}
             {v?.midweekTime ? ` · ${v.midweekTime}` : ''}
           </Text>
-          <Text style={styles.change}>
-            <Text style={styles.struck}>{t('specialEvents.page.cbs')}</Text>
-            {'  →  '}
-            <Text style={styles.changeStrong}>{t('specialEvents.page.serviceTalk')}</Text>
-          </Text>
-          <Text style={styles.changeSoft}>{t('specialEvents.page.songByCo')}</Text>
+          {midweekKept ? (
+            <Text style={styles.kept}>{t('specialEvents.page.midweekKept')}</Text>
+          ) : (
+            <>
+              <Text style={styles.change}>
+                <Text style={styles.struck}>{t('specialEvents.page.cbs')}</Text>
+                {'  →  '}
+                <Text style={styles.changeStrong}>{t('specialEvents.page.serviceTalk')}</Text>
+              </Text>
+              <Text style={styles.changeSoft}>{t('specialEvents.page.songByCo')}</Text>
+            </>
+          )}
         </View>
         {weekend ? (
           <View style={[styles.meeting, styles.meetingBorder]}>
@@ -186,6 +209,24 @@ export function VisitWeek({
               {' — '}
               <Text style={styles.changeStrong}>{t('specialEvents.page.concludingTalk')}</Text>
             </Text>
+            {aside.map((g) => (
+              <Pressable
+                key={g.id}
+                disabled={!logOpen}
+                onPress={() => router.push('/talk-coordinator/log' as never)}
+                accessibilityRole={logOpen ? 'link' : undefined}
+              >
+                <Text style={styles.aside}>
+                  {t('specialEvents.page.setAside', { name: g.name ?? '' })}
+                  {logOpen ? (
+                    <Text style={styles.asideLink}>
+                      {' — '}
+                      {t('specialEvents.page.setAsideOpen')}
+                    </Text>
+                  ) : null}
+                </Text>
+              </Pressable>
+            ))}
           </View>
         ) : null}
       </View>
@@ -344,6 +385,25 @@ export function CongressSections({
 }
 
 const styles = StyleSheet.create({
+  kept: {
+    fontFamily: 'Manrope_400Regular',
+    fontSize: 13,
+    lineHeight: 18,
+    color: '#7a4a06',
+    backgroundColor: '#fef3c7',
+    borderRadius: 8,
+    paddingHorizontal: 9,
+    paddingVertical: 7,
+    marginTop: 4,
+  },
+  aside: {
+    fontFamily: 'Manrope_500Medium',
+    fontSize: 13,
+    lineHeight: 18,
+    color: '#b45309',
+    marginTop: 6,
+  },
+  asideLink: { textDecorationLine: 'underline' },
   header: { gap: 4 },
   kindRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 8 },
   kindIcon: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },

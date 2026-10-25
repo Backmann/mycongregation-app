@@ -2513,7 +2513,10 @@
       "inCongregation": "What changes for the congregation",
       "noMeetingsWeek": "Week of {{range}} — no congregation meetings",
       "neither": "No meetings on: {{days}}. No cleaning after meetings and no duties are needed that week.",
-      "addToCalendar": "Add to my calendar"
+      "addToCalendar": "Add to my calendar",
+      "midweekKept": "The meeting was held before the visit was entered — its program stayed as it was: the Bible study, without the circuit overseer’s talk.",
+      "setAside": "Set aside for the visit: {{name}}",
+      "setAsideOpen": "in the talk log"
     }
   },
   "calendar": {
@@ -3145,6 +3148,13 @@
       "noWeeks": "No free week ahead — free a week in the talk log first.",
       "notHeldTitle": "The visit will not take place?",
       "notHeldBody": "The visit of {{name}} stays in the history as not held."
+    },
+    "aside": {
+      "badge": "Set aside for the visit",
+      "hint": "He may still come: let him know or move him to another week.",
+      "hintOurs": "The brother is told in the evening that the part is no longer his. Move his talk to another week if needed.",
+      "move": "Move…",
+      "moveHint": "His talk and everything noted for the visit (note, hospitality) move with him. Agree the new date with him yourself — the app does not write to him."
     }
   },
   "rules": {
@@ -3581,7 +3591,8 @@
       "dutiesCleared": "Assignments taken off",
       "draftsRemoved": "Drafts deleted",
       "draftDates": "Draft days",
-      "programmeSpelling": "Spelling in the program"
+      "programmeSpelling": "Spelling in the program",
+      "setAsideBy": "Set aside by the circuit visit"
     },
     "noValue": "empty",
     "changedNoValues": "changed (values are not kept)",
@@ -4983,7 +4994,8 @@
       "PIONEER_KIND_CHANGE_DATE": "The new kind of service has to start later than the current one. Enter the month he starts serving this way, or correct the kind for all time.",
       "PIONEER_KIND_CORRECTION_INVALID": "Only the kind of a current regular pioneer, special pioneer or missionary can be corrected for all time.",
       "FS_GENERATE_RETIRED": "Meetings are no longer made this way. Open “Prepare month” — it follows the calendar and does not publish at once.",
-      "TALK_SWAP_VISIT_WEEK": "In the circuit overseer's visit week the talk is not swapped: move the visit itself, and book the guest for another week in the Incoming log."
+      "TALK_SWAP_VISIT_WEEK": "In the circuit overseer's visit week the talk is not swapped: move the visit itself, and book the guest for another week in the Incoming log.",
+      "TALK_MOVE_VISIT_WEEK": "No guest is moved into the circuit overseer's visit week — choose another week."
     }
   },
   "stage": {
