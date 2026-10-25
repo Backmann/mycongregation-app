@@ -66,7 +66,6 @@ import {
   inCounsel,
   isExpiredRecord,
   beginPart,
-  ENTRANCE_AUTO_MS,
   inEntrance,
   reconcileKeys,
   readRunRecord,
@@ -1752,7 +1751,13 @@ export default function ConductScreen({
       <View style={styles.nowCard}>
         <Text style={styles.overline}>{t('conduct.entrance.overline')}</Text>
         <SegmentHeadline view={headView(current)} big whatFirst />
-        <Text style={[...big, styles.countdownPaused]}>{mmss(entranceElapsed)}</Text>
+        {/* NO RUNNING SECONDS while he walks up (Lionel, 25 October 2026):
+            they looked as if something were already being counted. The part's
+            own minutes stand still, grey, as on the chairman's screen; the walk
+            itself is still kept and shown in the result as «переход». */}
+        {current.soft ? null : (
+          <Text style={[...big, styles.countdownPaused]}>{mmss(current.partMin * 60)}</Text>
+        )}
         {unsureLine}
         <Text style={styles.planned}>
           {t(current.soft ? 'conduct.entrance.noteSong' : 'conduct.entrance.note', { minutes: current.partMin })}
@@ -1814,10 +1819,8 @@ export default function ConductScreen({
           label: current.soft
             ? t('conduct.entrance.beginSong')
             : t('conduct.entrance.begin', { time: mmss(current.partMin * 60) }),
-          // How long until it starts by itself, counting down.
-          sub: t('conduct.entrance.autoIn', {
-            sec: Math.max(0, Math.ceil((ENTRANCE_AUTO_MS - (now - (run.enteringFrom ?? now))) / 1000)),
-          }),
+          // That it starts by itself — said once, without seconds ticking.
+          sub: t(current.soft ? 'conduct.entrance.autoSong' : 'conduct.entrance.auto'),
           onPress: begin,
         }
     : isStudent && !counselling

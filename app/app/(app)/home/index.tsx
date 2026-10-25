@@ -100,7 +100,7 @@ import {
   resolveSubsection,
 } from "../../../lib/parts";
 import { isCongressEvent } from "../../../lib/week-rules";
-import { ConductLiveCard, ConductResultCard } from "../../../components/ConductEntry";
+import { ConductLiveCard } from "../../../components/ConductEntry";
 import { movedDayLabel, withMoveStandIns } from "../../../lib/field-moves";
 import { formatDayRange } from "../../../lib/date-range";
 import { absenceNote } from "../../../lib/absence-note";
@@ -2389,8 +2389,6 @@ export default function HomeScreen() {
                 <ReportDone />
                 <ConductLiveCard />
                 <ConductLiveCard kind="weekend" />
-                <ConductResultCard />
-                <ConductResultCard kind="weekend" />
                 {next}
                 <TodoSection />
                 {soon}
@@ -2404,8 +2402,6 @@ export default function HomeScreen() {
               <ReportDone />
               <ConductLiveCard />
               <ConductLiveCard kind="weekend" />
-              <ConductResultCard />
-              <ConductResultCard kind="weekend" />
               {next}
               <TodoSection />
               {list}
