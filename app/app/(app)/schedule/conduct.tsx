@@ -15,6 +15,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { router, useLocalSearchParams, useNavigation } from 'expo-router';
+import { notify } from '../../../lib/error-bus';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import {
@@ -914,14 +915,32 @@ export default function ConductScreen({
     setLastTapAt(null);
   };
 
+  /**
+   * «Начать заново». In practice only this device's run. For real (25 October
+   * 2026) it wipes on the server too — the result and the run — so a run
+   * tried out on the meeting's day leaves nothing behind and the meeting can
+   * be run from the start; refused once the day is over (the result is then
+   * the meeting's), and then nothing is wiped here either.
+   */
   const reset = async () => {
     const ok = await confirm({
-      title: t('conduct.againTitle'),
-      body: practice ? t('conduct.practice.againBody') : t('conduct.againBody'),
-      confirmLabel: t('conduct.again'),
+      title: practice ? t('conduct.againTitle') : t('conduct.wipe.title'),
+      body: practice ? t('conduct.practice.againBody') : t('conduct.wipe.body'),
+      confirmLabel: practice ? t('conduct.again') : t('conduct.wipe.confirm'),
       danger: true,
     });
-    if (ok) applyRun(EMPTY);
+    if (!ok) return;
+    if (!practice) {
+      try {
+        await conductRunsApi.drop(week, kind);
+      } catch (e) {
+        notify(t('conduct.wipe.failed'), extractErrorMessage(e));
+        return;
+      }
+      void queryClient.invalidateQueries({ queryKey: ['conduct-run', week, kind] });
+      void queryClient.invalidateQueries({ queryKey: liveKey });
+    }
+    applyRun(EMPTY);
   };
 
   // --- live: the controller's taps to the server ----------------------
@@ -1469,13 +1488,21 @@ export default function ConductScreen({
                       onPress: () => setPractice(EMPTY),
                     },
                 ] : []),
-                ...(canRun && run.meetingStartedAt !== null && !watching
+                // Practice: this device's run. For real: until the day is over,
+                // also from another device once that run has ended there (a
+                // trial finished on the iPad, wiped from the phone).
+                ...(canRun &&
+                (practice
+                  ? !watching && run.meetingStartedAt !== null
+                  : !meetingOver &&
+                    (run.meetingStartedAt !== null || !!runQuery.data) &&
+                    (!watching || run.finishedAt !== null))
                   ? [
                       {
                         key: 'again',
                         icon: 'refresh' as const,
-                        title: t('conduct.again'),
-                        subtitle: t('conduct.againHint'),
+                        title: practice ? t('conduct.again') : t('conduct.wipe.menu'),
+                        subtitle: practice ? t('conduct.againHint') : t('conduct.wipe.hint'),
                         onPress: () => void reset(),
                         tint: '#b91c1c',
                         tintBg: '#fee2e2',
@@ -1488,7 +1515,7 @@ export default function ConductScreen({
     });
     // reset is recreated each render; what it reads is in the deps below.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [navigation, menuOpen, practice, run.meetingStartedAt, watching, check, canRun, t]);
+  }, [navigation, menuOpen, practice, run.meetingStartedAt, run.finishedAt, watching, check, canRun, t, meetingOver, runQuery.data]);
 
   // The line that says who runs the meeting and whether everybody is there.
   const serverNowEst = Date.now() + offset;

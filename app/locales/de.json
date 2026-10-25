@@ -4217,7 +4217,6 @@
     "behind": "{{minutes}} Min. im Rückstand",
     "undo": "Rückgängig",
     "againTitle": "Neu beginnen?",
-    "againBody": "Die Zeiten aller Programmpunkte dieser Zusammenkunft werden auf diesem Gerät gelöscht.",
     "counselNote": "+1 — eine Minute Rat nach einer Schüleraufgabe. Die Aufgabe selbst wird genau nach dem Programm gezählt.",
     "nowStudent": "Jetzt · Schüleraufgabe",
     "partDone": "Beendet",
@@ -4461,7 +4460,15 @@
     "inMinutes": "in {{m}} Min.",
     "inHours": "in {{h}} Std. {{m}} Min.",
     "first": "Beginn der Zusammenkunft",
-    "comesOutWho": "es kommt {{who}}"
+    "comesOutWho": "es kommt {{who}}",
+    "wipe": {
+      "menu": "Ablauf löschen und neu beginnen",
+      "hint": "Zum Beispiel nach einem Test: Ablauf und Ergebnis dieser Zusammenkunft werden gelöscht – hier und auf dem Server",
+      "title": "Ablauf löschen?",
+      "body": "Ablauf und Ergebnis dieser Zusammenkunft werden gelöscht – auf diesem Gerät und auf dem Server. Die Zusammenkunft kann von vorn geführt werden. Nach ihrem Tag wird das Ergebnis nicht mehr gelöscht.",
+      "confirm": "Löschen",
+      "failed": "Löschen nicht möglich"
+    }
   },
   "serviceHub": {
     "sections": {
