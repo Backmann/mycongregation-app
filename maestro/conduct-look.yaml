@@ -23,12 +23,18 @@ name: Ведение встречи — только смотреть
     visible: "Ведение встречи|Conducting the meeting|Zusammenkunft leiten"
     timeout: 30000
 - assertNotVisible: ".*(Что-то пошло не так|Something went wrong|Unmatched Route).*"
+# The screen first settles into one of its states — the meeting ahead, or its
+# result — before the scenario asks which (25 October 2026: asked at once,
+# the result was not drawn yet and the run sheet was looked for in vain).
+- extendedWaitUntil:
+    visible: ".*(Итог встречи|ИТОГ ВСТРЕЧИ|Meeting result|Начать встречу|Start the meeting|Zusammenkunft beginnen).*"
+    timeout: 30000
 - takeScreenshot: 02-conduct-midweek
 # After the meeting's day the screen is its result, which has no run sheet
 # (25 October 2026): scrolled only while the meeting is still to come.
 - runFlow:
     when:
-      notVisible: "Итог встречи|ИТОГ ВСТРЕЧИ|Meeting result|MEETING RESULT|Ergebnis|ERGEBNIS"
+      notVisible: ".*(Итог встречи|ИТОГ ВСТРЕЧИ|Meeting result|MEETING RESULT|Встреча шла|Meeting took).*"
     commands:
       - scrollUntilVisible:
           element: "Ход встречи|ХОД ВСТРЕЧИ|Run sheet|RUN SHEET|Ablauf|ABLAUF"
@@ -40,10 +46,16 @@ name: Ведение встречи — только смотреть
     visible: "Ведение встречи|Conducting the meeting|Zusammenkunft leiten"
     timeout: 30000
 - assertNotVisible: ".*(Что-то пошло не так|Something went wrong|Unmatched Route).*"
+# The screen first settles into one of its states — the meeting ahead, or its
+# result — before the scenario asks which (25 October 2026: asked at once,
+# the result was not drawn yet and the run sheet was looked for in vain).
+- extendedWaitUntil:
+    visible: ".*(Итог встречи|ИТОГ ВСТРЕЧИ|Meeting result|Начать встречу|Start the meeting|Zusammenkunft beginnen).*"
+    timeout: 30000
 - takeScreenshot: 04-conduct-weekend
 - runFlow:
     when:
-      notVisible: "Итог встречи|ИТОГ ВСТРЕЧИ|Meeting result|MEETING RESULT|Ergebnis|ERGEBNIS"
+      notVisible: ".*(Итог встречи|ИТОГ ВСТРЕЧИ|Meeting result|MEETING RESULT|Встреча шла|Meeting took).*"
     commands:
       - scrollUntilVisible:
           element: "Заключительная.*|Closing.*|Schluss.*"
