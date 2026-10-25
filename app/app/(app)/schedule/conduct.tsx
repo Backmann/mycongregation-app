@@ -1186,14 +1186,27 @@ export default function ConductScreen({
       // the chairman's words — and at the end the other way round. The song
       // is in the prayer's imported title («Песня 88 и молитва | …»).
       if (seg.key === 'midweek_opening_prayer' || seg.key === 'midweek_closing_prayer') {
-        const song = row?.partTitle ? songFromTitle(row.partTitle) : null;
         const opening = seg.key === 'midweek_opening_prayer';
+        // In the circuit overseer's week the closing song is a row of its own,
+        // the later of two midweek songs — the visit took it off the prayer,
+        // and he picks it (co-visit-template on the server).
+        const midSongs = rows
+          .filter((a) => a.partKey === 'mid_song')
+          .sort((a, b) => (a.partOrder ?? 0) - (b.partOrder ?? 0));
+        const ownClosing = !opening && midSongs.length > 1 ? midSongs[midSongs.length - 1].partTitle : null;
+        const song = ownClosing
+          ? songFromTitle(ownClosing)
+          : row?.partTitle
+            ? songFromTitle(row.partTitle)
+            : null;
+        // The chairman announces the song; who prays, when it is another.
+        const prayer = person && person !== chairmanName ? t('conduct.weekendRun.prayerBy', { name: person }) : null;
         return {
           label: song
             ? t('conduct.midweekRun.songAndPrayer', { song })
             : t(opening ? 'conduct.midweekRun.opening' : 'conduct.midweekRun.closing'),
           subtitle: null,
-          person: person ? t('conduct.weekendRun.prayerBy', { name: person }) : null,
+          person: [chairmanName, prayer].filter(Boolean).join(' · ') || null,
           song: null,
         };
       }
@@ -1202,6 +1215,19 @@ export default function ConductScreen({
           label: t(seg.key === 'midweek_opening_words' ? 'conduct.midweekRun.openingWords' : 'conduct.midweekRun.closingWords'),
           subtitle: null,
           person,
+          song: null,
+        };
+      }
+      // The congregation Bible study: who conducts and who reads.
+      if (seg.key === 'cbs_conductor' && person) {
+        const reader = rows.find((a) => a.partKey === 'cbs_reader');
+        const readerName = reader?.publisherId ? nameById.get(reader.publisherId) : null;
+        return {
+          label: d.label,
+          subtitle: d.subtitle ?? null,
+          person: readerName
+            ? t('conduct.stage.wtPeople', { conductor: person, reader: readerName })
+            : t('conduct.stage.wtConductor', { conductor: person }),
           song: null,
         };
       }
@@ -1311,10 +1337,8 @@ export default function ConductScreen({
    * prays (22 October 2026 — «молитва: …» stood above the song as if it
    * were the part); the weekend keeps the chairman first, as approved.
    */
-  const headView = (seg: RunSegment): SegView => {
-    const v = runView(seg);
-    return !weekend && seg.soft && v.person ? { ...v, person: null, subtitle: v.person } : v;
-  };
+  // One order on both meetings since 25 October 2026: what is on, then who.
+  const headView = (seg: RunSegment): SegView => runView(seg);
   /** A segment key as the run sheet names it — also for a part that is gone. */
   const keyLabel = (key: string) => {
     const seg = segments.find((s) => s.key === key);
@@ -1705,7 +1729,7 @@ export default function ConductScreen({
     !started ? (
       <View style={styles.nowCard}>
         <Text style={styles.overline}>{startLine ?? t('conduct.first')}</Text>
-        <SegmentHeadline view={headView(current)} big whatFirst={weekend} />
+        <SegmentHeadline view={headView(current)} big whatFirst />
         <Text style={[styles.planned, { marginTop: 14 }]}>{t('conduct.countAfterStart')}</Text>
       </View>
     ) : counselling ? (
@@ -1727,7 +1751,7 @@ export default function ConductScreen({
       // way; his minutes begin with «Начал», or by themselves after 30 s.
       <View style={styles.nowCard}>
         <Text style={styles.overline}>{t('conduct.entrance.overline')}</Text>
-        <SegmentHeadline view={headView(current)} big whatFirst={weekend} />
+        <SegmentHeadline view={headView(current)} big whatFirst />
         <Text style={[...big, styles.countdownPaused]}>{mmss(entranceElapsed)}</Text>
         {unsureLine}
         <Text style={styles.planned}>
@@ -1738,7 +1762,7 @@ export default function ConductScreen({
       // A SONG: up from zero, no amber, no red (Lionel, 22 October 2026).
       <View style={styles.nowCard}>
         <Text style={styles.overline}>{t('conduct.now')}</Text>
-        <SegmentHeadline view={headView(current)} big whatFirst={weekend} />
+        <SegmentHeadline view={headView(current)} big whatFirst />
         <Text style={[...big, styles.countdownPaused]}>{mmss(currentElapsed)}</Text>
         {unsureLine}
         <Text style={styles.planned}>{t('conduct.soft.note', { minutes: current.partMin })}</Text>
@@ -1746,7 +1770,7 @@ export default function ConductScreen({
     ) : (
       <View style={styles.nowCard}>
         <Text style={styles.overline}>{isStudent ? t('conduct.nowStudent') : t('conduct.now')}</Text>
-        <SegmentHeadline view={headView(current)} big whatFirst={weekend} />
+        <SegmentHeadline view={headView(current)} big whatFirst />
         <Text
           style={[
             ...big,
@@ -1798,18 +1822,24 @@ export default function ConductScreen({
         }
     : isStudent && !counselling
       ? { label: t('conduct.partDone'), sub: null, onPress: finishPart }
-      : weekend && current
-        ? // THE WEEKEND (Lionel, 25 October 2026): the button says what has
-          // just happened in the hall — «Закончил», «Песня закончилась»,
-          // «Молитва закончилась». What comes next is said once, under it.
+      : current
+        ? // BOTH MEETINGS (Lionel, 25 October 2026): the button says what has
+          // just happened in the hall — «Закончил», «Совет закончился»,
+          // «Песня закончилась», «Молитва закончилась». What comes next is
+          // said once, under it. A student's own part keeps «Закончено»: a
+          // sister gives it as often as a brother.
           {
             label: last
               ? t('conduct.done.prayer')
-              : current.key === 'weekend_opening_prayer' || current.chairmanWords
-                ? t('conduct.done.chairman')
-                : current.soft
-                  ? t('conduct.done.song')
-                  : t('conduct.done.part'),
+              : counselling
+                ? t('conduct.done.counsel')
+                : current.key === 'weekend_opening_prayer' || current.chairmanWords
+                  ? t('conduct.done.chairman')
+                  : current.key === 'midweek_opening_prayer'
+                    ? t('conduct.done.prayer')
+                    : current.soft
+                      ? t('conduct.done.song')
+                      : t('conduct.done.part'),
             sub: last ? t('conduct.done.prayerSub') : null,
             onPress: advance,
           }
@@ -1853,8 +1883,8 @@ export default function ConductScreen({
       <Pressable
         style={[
           styles.primaryBtn,
-          weekend && (!started || entering) && styles.primaryBtnBegin,
-          weekend && started && !entering && last && styles.primaryBtnEnd,
+          (!started || entering) && styles.primaryBtnBegin,
+          started && !entering && last && styles.primaryBtnEnd,
           armed && styles.primaryBtnArmed,
           locked && !armed && styles.primaryBtnLocked,
         ]}
@@ -1906,16 +1936,13 @@ export default function ConductScreen({
     </View>
   );
 
-  // During the counsel the next part is on the button; the card shows the one after.
-  const upcoming = counselling ? afterNext : next;
+  // What comes next, said once, under the button — also during the counsel:
+  // the button no longer names it (25 October 2026).
+  const upcoming = next;
   const upNext = upcoming ? (
     <View style={styles.nextCard}>
-      <Text style={styles.overline}>{counselling ? t('conduct.then') : t('conduct.next')}</Text>
-      <SegmentHeadline
-        view={headView(upcoming)}
-        whatFirst={weekend}
-        comesOut={weekend && !counselling && !!entranceAt[run.index + 1]}
-      />
+      <Text style={styles.overline}>{t('conduct.next')}</Text>
+      <SegmentHeadline view={headView(upcoming)} whatFirst comesOut={!!entranceAt[run.index + 1]} />
     </View>
   ) : null;
 

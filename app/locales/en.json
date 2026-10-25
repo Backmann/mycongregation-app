@@ -4221,7 +4221,6 @@
     "counselNote": "+1 — a minute of counsel after a student part. The part itself is timed exactly according to the program.",
     "nowStudent": "Now · student part",
     "partDone": "Done",
-    "then": "Then",
     "lastSeconds": "last 30 seconds",
     "overtime": "over time",
     "plannedThenCounsel": "{{minutes}} min in the program · then counsel {{counsel}} min",
@@ -4454,7 +4453,8 @@
       "chairman": "Chairman finished",
       "song": "Song ended",
       "prayer": "Prayer ended",
-      "prayerSub": "the meeting will be closed"
+      "prayerSub": "the meeting will be closed",
+      "counsel": "Counsel finished"
     },
     "startSub": "tap when the chairman is at the lectern",
     "countAfterStart": "The time runs after “Start the meeting”",

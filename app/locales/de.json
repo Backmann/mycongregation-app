@@ -4221,7 +4221,6 @@
     "counselNote": "+1 — eine Minute Rat nach einer Schüleraufgabe. Die Aufgabe selbst wird genau nach dem Programm gezählt.",
     "nowStudent": "Jetzt · Schüleraufgabe",
     "partDone": "Beendet",
-    "then": "Danach",
     "lastSeconds": "letzte 30 Sekunden",
     "overtime": "über der Zeit",
     "plannedThenCounsel": "laut Programm {{minutes}} Min. · danach Rat {{counsel}} Min.",
@@ -4454,7 +4453,8 @@
       "chairman": "Vorsitzender fertig",
       "song": "Lied zu Ende",
       "prayer": "Gebet zu Ende",
-      "prayerSub": "die Zusammenkunft wird beendet"
+      "prayerSub": "die Zusammenkunft wird beendet",
+      "counsel": "Rat zu Ende"
     },
     "startSub": "tippen, wenn der Vorsitzende vorn ist",
     "countAfterStart": "Die Zeit läuft nach „Zusammenkunft beginnen“",
