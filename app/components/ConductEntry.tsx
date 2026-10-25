@@ -9,7 +9,6 @@ import { weekRules } from '../lib/week-rules';
 import { fromWire, isConductOverseer, runLeftHanging, wirePartMin } from '../lib/conduct-live';
 import { usePermissions } from '../lib/permissions';
 import { clock } from './ConductSummary';
-import { addDays } from '../lib/dates';
 import { useAuth } from '../lib/auth';
 import { formatDateISO, startOfWeekMonday } from '../lib/dates';
 
@@ -143,6 +142,10 @@ export function ConductResultLink({
     >
       <Ionicons name="stats-chart-outline" size={17} color="#0369a1" />
       <Text style={styles.label}>{t('conduct.result.open')}</Text>
+      {/* What the Home card used to say, here at the meeting (25 October 2026). */}
+      <Text style={styles.labelSoft}>
+        {` · ${t('conduct.result.short', { took: clock(run.totalSec), planned: clock(run.plannedSec) })}`}
+      </Text>
     </Pressable>
   );
 }
@@ -162,6 +165,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   label: { color: '#0369a1', fontSize: 14, fontFamily: 'Manrope_600SemiBold' },
+  labelSoft: { color: '#475569', fontSize: 13, fontFamily: 'Manrope_400Regular', flexShrink: 1 },
   liveCard: {
     backgroundColor: '#ffffff',
     borderRadius: 16,
@@ -170,15 +174,7 @@ const styles = StyleSheet.create({
     padding: 16,
     gap: 4,
   },
-  resultCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#bae6fd',
-    padding: 16,
-    gap: 4,
-  },
-  resultKeep: { fontSize: 13, fontFamily: 'Manrope_400Regular', color: '#94a3b8' },
+
   liveHead: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   liveDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: '#16a34a' },
   liveTitle: { fontSize: 17, fontFamily: 'Manrope_700Bold', color: '#0f172a', flex: 1 },
@@ -350,72 +346,3 @@ export function liveCardOf(input: {
   return null;
 }
 
-/**
- * THE RESULT ON THE HOME SCREEN (15 October 2026) — for the admins, the
- * counsel brother and the Life and Ministry overseer (Lionel, 16 October
- * 2026), for the seven days the result is kept; then it goes by itself.
- * The last midweek meeting with a result: this week's,
- * or last week's while it is still kept. Nothing to show — no card.
- */
-export function ConductResultCard({ kind = 'midweek' }: { kind?: Kind }) {
-  const { t, i18n } = useTranslation();
-  const { user } = useAuth();
-  const { responsibilities } = usePermissions();
-  const overseer = isConductOverseer(user?.role, responsibilities, kind);
-  const monday = startOfWeekMonday(new Date());
-  const thisWeek = formatDateISO(monday);
-  const lastWeek = formatDateISO(addDays(monday, -7));
-  // The same keys the conduct screen and the result link use: one request each.
-  const thisQ = useQuery({
-    queryKey: ['conduct-run', thisWeek, kind],
-    queryFn: () => conductRunsApi.get(thisWeek, kind),
-    enabled: overseer,
-    retry: false,
-  });
-  const lastQ = useQuery({
-    queryKey: ['conduct-run', lastWeek, kind],
-    queryFn: () => conductRunsApi.get(lastWeek, kind),
-    enabled: overseer && !thisQ.isPending && !thisQ.data,
-    retry: false,
-  });
-  const { data: settings } = useQuery({
-    queryKey: ['meeting-settings'],
-    queryFn: () => meetingSettingsApi.getOverview(),
-    staleTime: 60 * 60 * 1000,
-  });
-  const run = thisQ.data ?? lastQ.data ?? null;
-  if (!overseer || !run) return null;
-  const meetingDay = weekRules({
-    weekStartISO: run.weekStartDate,
-    version: effectiveVersionFor(settings?.versions, run.weekStartDate),
-    events: [],
-  }).dateOf(kind);
-  const dayLabel = (d: Date, withWeekday: boolean) =>
-    d.toLocaleDateString(i18n.language, {
-      ...(withWeekday ? { weekday: 'long' as const } : {}),
-      day: 'numeric',
-      month: 'long',
-    });
-  const keepUntil = new Date(new Date(run.savedAt).getTime() + 7 * 24 * 60 * 60 * 1000);
-  return (
-    <Pressable
-      style={styles.resultCard}
-      onPress={() => router.push(conductHref(run.weekStartDate, kind) as any)}
-      accessibilityRole="button"
-    >
-      <View style={styles.liveHead}>
-        <Ionicons name="stats-chart-outline" size={18} color="#0369a1" />
-        <Text style={styles.liveTitle}>
-          {t('conduct.result.cardTitle', {
-            day: meetingDay ? dayLabel(new Date(`${meetingDay}T00:00:00`), true) : run.weekStartDate,
-          })}
-        </Text>
-      </View>
-      <Text style={styles.liveSub}>
-        {`${t('conduct.result.took', { time: clock(run.totalSec) })} · ${t('conduct.result.planned', { time: clock(run.plannedSec) })}`}
-      </Text>
-      <Text style={styles.resultKeep}>{t('conduct.result.cardKeep', { day: dayLabel(keepUntil, false) })}</Text>
-      <Text style={styles.liveAction}>{t('conduct.result.cardOpen')}</Text>
-    </Pressable>
-  );
-}

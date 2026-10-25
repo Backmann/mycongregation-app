@@ -4253,8 +4253,6 @@
     "result": {
       "title": "Ergebnis der Zusammenkunft",
       "open": "Ergebnis der Zusammenkunft",
-      "took": "Die Zusammenkunft dauerte {{time}}",
-      "planned": "laut Programm {{time}}",
       "part": "Programmpunkt",
       "plan": "Plan",
       "fact": "Ist",
@@ -4268,14 +4266,12 @@
       "opening": "Beginn: Lied, Gebet, einleitende Worte",
       "closing": "Schlussworte, Lied und Gebet",
       "legacyNote": "Die ersten Teile ({{n}}) hat die vorherige Version der App gemessen – ihre Zeit enthält die Minute Rat.",
-      "cardTitle": "Ergebnis der Zusammenkunft · {{day}}",
-      "cardKeep": "Verfügbar bis {{day}}",
-      "cardOpen": "Ergebnis öffnen",
       "refused": "Ergebnis nicht gespeichert: {{reason}}",
       "notYours": "Das Ergebnis der Zusammenkunft sehen die Administratoren, der Bruder, der den Rat gibt, und der Aufseher der Leben-und-Dienst-Zusammenkunft.",
       "keepWeekend": "Das Ergebnis wird 7 Tage aufbewahrt und dann gelöscht. Es sehen die Administratoren, der Koordinator der Ältestenschaft und sein Assistent, der Leiter des Wachtturm-Studiums und seine Helfer sowie der Bruder, der Rat erteilt.",
       "savedWeekend": "Ergebnis für 7 Tage gespeichert — es sehen die Administratoren, der Koordinator der Ältestenschaft und sein Assistent, der Leiter des Wachtturm-Studiums und seine Helfer sowie der Bruder, der Rat erteilt.",
-      "notYoursWeekend": "Das Ergebnis der Zusammenkunft sehen die Administratoren, der Koordinator der Ältestenschaft und sein Assistent, der Leiter des Wachtturm-Studiums und seine Helfer sowie der Bruder, der Rat erteilt."
+      "notYoursWeekend": "Das Ergebnis der Zusammenkunft sehen die Administratoren, der Koordinator der Ältestenschaft und sein Assistent, der Leiter des Wachtturm-Studiums und seine Helfer sowie der Bruder, der Rat erteilt.",
+      "short": "{{took}} von {{planned}}"
     },
     "live": {
       "runningYou": "Sie führen die Zeit",
@@ -4426,12 +4422,13 @@
     },
     "entrance": {
       "overline": "WECHSEL · KOMMT NACH VORN",
-      "note": "Der Wechsel zählt nicht zur Zeit des Programmpunkts. Punkt: {{minutes}} Min.",
+      "note": "Der Gang nach vorn zählt nicht zum Programmpunkt, er steht im Ergebnis. Programmpunkt: {{minutes}} Min.",
       "begin": "Hat begonnen — {{time}} starten",
       "beginSong": "Lied hat begonnen",
-      "autoIn": "startet von selbst in {{sec}} s",
       "callsUp": "Kommt nach vorn: {{who}}",
-      "noteSong": "Der Wechsel zählt nicht zum Lied. Lied: etwa {{minutes}} Min."
+      "noteSong": "Der Gang nach vorn zählt nicht zum Lied, er steht im Ergebnis. Lied: etwa {{minutes}} Min.",
+      "auto": "die Zeit läuft, wenn er beginnt · ohne Tippen von selbst nach einer halben Minute",
+      "autoSong": "das Lied, wenn es angesagt ist · ohne Tippen von selbst nach einer halben Minute"
     },
     "soft": {
       "note": "Während des Liedes läuft kein Countdown, und nichts wird rot. Laut Programm etwa {{minutes}} Min."

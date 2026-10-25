@@ -1768,12 +1768,18 @@ function Meeting({
               onPress={() => router.push(`/schedule/edit?week=${item.week}&meeting=${item.kind}` as never)}
             />
           ) : null}
-          {tab === "programme" && item.kind === "midweek" ? (
-            // How the meeting ran — for its chairman and the elders, seven days.
+          {tab === "programme" && (item.kind === "midweek" || item.kind === "weekend") ? (
+            // How the meeting ran, for its seven days — here, at the meeting
+            // itself, and no longer on the Home screen (Lionel, 25 October
+            // 2026: Home is for what is to be done today). Both meetings.
             <View style={styles.conductLink}>
               <ConductResultLink
                 week={item.week}
-                chairmanPublisherId={parts.find((p) => p.partKey === "midweek_chairman")?.publisherId ?? null}
+                kind={item.kind}
+                chairmanPublisherId={
+                  parts.find((p) => p.partKey === (item.kind === "weekend" ? "weekend_chairman" : "midweek_chairman"))
+                    ?.publisherId ?? null
+                }
               />
             </View>
           ) : null}

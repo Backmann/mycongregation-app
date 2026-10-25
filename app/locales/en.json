@@ -4253,8 +4253,6 @@
     "result": {
       "title": "How the meeting ran",
       "open": "How the meeting ran",
-      "took": "The meeting took {{time}}",
-      "planned": "{{time}} in the program",
       "part": "Part",
       "plan": "Plan",
       "fact": "Actual",
@@ -4268,14 +4266,12 @@
       "opening": "Opening: song, prayer, opening comments",
       "closing": "Concluding comments, song and prayer",
       "legacyNote": "The first parts ({{n}}) were timed by the previous version of the app — their time includes the counsel minute.",
-      "cardTitle": "Meeting result · {{day}}",
-      "cardKeep": "Available until {{day}}",
-      "cardOpen": "Open the result",
       "refused": "The result was not saved: {{reason}}",
       "notYours": "The result of the meeting is seen by the administrators, the auxiliary counselor and the Life and Ministry Meeting overseer.",
       "keepWeekend": "The result is kept for 7 days, then deleted. It is seen by the administrators, the coordinator of the body of elders and his assistant, the Watchtower Study conductor and his assistants, and the auxiliary counselor.",
       "savedWeekend": "Result saved for 7 days — it is seen by the administrators, the coordinator of the body of elders and his assistant, the Watchtower Study conductor and his assistants, and the auxiliary counselor.",
-      "notYoursWeekend": "The result of the meeting is seen by the administrators, the coordinator of the body of elders and his assistant, the Watchtower Study conductor and his assistants, and the auxiliary counselor."
+      "notYoursWeekend": "The result of the meeting is seen by the administrators, the coordinator of the body of elders and his assistant, the Watchtower Study conductor and his assistants, and the auxiliary counselor.",
+      "short": "{{took}} of {{planned}}"
     },
     "live": {
       "runningYou": "You are keeping time",
@@ -4426,12 +4422,13 @@
     },
     "entrance": {
       "overline": "CHANGEOVER · COMING UP",
-      "note": "The changeover does not count toward the part. Part: {{minutes}} min",
+      "note": "The walk up is not counted in the part; it goes into the result. Part: {{minutes}} min",
       "begin": "Started — run {{time}}",
       "beginSong": "Song started",
-      "autoIn": "starts by itself in {{sec}} s",
       "callsUp": "Coming up: {{who}}",
-      "noteSong": "The changeover does not count toward the song. Song: about {{minutes}} min"
+      "noteSong": "The walk up is not counted in the song; it goes into the result. Song: about {{minutes}} min",
+      "auto": "the time runs when he begins · untapped, by itself after half a minute",
+      "autoSong": "the song, once announced · untapped, by itself after half a minute"
     },
     "soft": {
       "note": "Song — no countdown or red warning. About {{minutes}} min in the program"
