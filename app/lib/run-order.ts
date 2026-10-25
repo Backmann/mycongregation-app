@@ -154,7 +154,13 @@ export function buildMidweekRunOrder(items: RunItem[]): RunSegment[] {
     push(p, key, dur(p, 4), true, isDiscussion(p.partTitle) ? 0 : COUNSEL_MIN);
   }
 
-  push(first('mid_song'), 'mid_song', MIDDLE_SONG_MIN, false, 0, { soft: true });
+  // The middle song: in the overseer's week a second, closing one may stand
+  // in the programme — the earlier by the programme's order is the middle.
+  const midSong =
+    items
+      .filter((i) => i.partKey === 'mid_song')
+      .sort((a, b) => (a.partOrder ?? 0) - (b.partOrder ?? 0))[0] ?? null;
+  push(midSong, 'mid_song', MIDDLE_SONG_MIN, false, 0, { soft: true });
 
   const living = ['living_christians_1', 'living_christians_2', 'living_christians_3']
     .map(first)
